@@ -1,5 +1,6 @@
 package ham.citybuildersim.ui;
 
+import ham.citybuildersim.Auction;
 import ham.citybuildersim.BuildAdvice;
 import ham.citybuildersim.BuildingType;
 import ham.citybuildersim.BuildingsTemplate;
@@ -2135,6 +2136,234 @@ public final class KeptBench {
     /** The Finances tab forgotten, as another city opened would leave it: nothing kept, nothing just landed. */
     public void forgetFinances() {
         ui.financesScreen.forget();
+    }
+
+    /* ----- Borrow, the bond market's book, the city's fund (KP5, slice C) ----- */
+
+    /** The kinds of paper Borrow offers, by key, in its tiles' order. */
+    public static List<String> borrowKinds() {
+        List<String> out = new ArrayList<>();
+        for (FinancesScreen.Instrument kit : FinancesScreen.INSTRUMENTS) out.add(kit.key());
+        return out;
+    }
+
+    /** The terms a kind is sold at (a bill's in months, a bond's in years). */
+    public static List<Integer> borrowTerms(String kind) {
+        List<Integer> out = new ArrayList<>();
+        for (int t : FinancesScreen.instrument(kind).terms()) out.add(t);
+        return out;
+    }
+
+    /** The eight moneys the paper abroad may be asked in, by code. */
+    public static List<String> borrowMoneys() {
+        return new ArrayList<>(ham.citybuildersim.WorldMoneys.EIGHT);
+    }
+
+    /**
+     * Borrow's choices as its tiles, columns, chips and switches would set them (the next draw shows them): the kind of paper, its term,
+     * the money it is asked in (abroad), the ask (0: none), whether a bond is asked callable and whether the dollars are held; the
+     * typed box empty and its refusal gone.
+     */
+    public void financesBorrow(String kind, int term, String money, double ask, boolean callable, boolean hold) {
+        FinancesScreen s = ui.financesScreen;
+        s.borrowType = kind;
+        s.borrowTerm = term;
+        s.borrowMoney = money;
+        s.borrowAsk = ask;
+        s.borrowCallable = callable;
+        s.borrowHold = hold;
+        s.askTyped = null;
+        s.askRefused = null;
+    }
+
+    /** What is typed in Borrow's ask box and not yet set, over the ask as it stands (null: nothing typed), and what the box said of an entry it could not read. */
+    public void financesAskTyped(String typed, String refused) {
+        FinancesScreen s = ui.financesScreen;
+        s.askTyped = typed;
+        s.askTypedOver = s.borrowAsk;
+        s.askRefused = refused;
+    }
+
+    /** Borrow's ask box as the last draw made it (null before one has). */
+    public javafx.scene.control.TextField financesAskBox() {
+        return ui.financesScreen.askField;
+    }
+
+    /** The highest yield the sale will take, as its chips would set it. */
+    public void financesCap(boolean fill, double value) {
+        ui.financesScreen.borrowCap = fill ? Auction.Cap.FILL : Auction.Cap.at(value);
+    }
+
+    /** The numbers of the businesses' bonds outstanding, the largest first (the bond market's book names one). */
+    public List<Integer> bondIds() {
+        List<ham.citybuildersim.CorporateBond> bonds = new ArrayList<>(ui.game.getBondMarket().getBonds());
+        bonds.sort((a, b) -> Double.compare(b.face(), a.face()));
+        List<Integer> out = new ArrayList<>();
+        for (ham.citybuildersim.CorporateBond b : bonds) out.add(b.id());
+        return out;
+    }
+
+    /** A bond's book opened, as a click on its issuer's card would (the next draw shows it). */
+    public void financesBondBook(int id) {
+        FinancesScreen s = ui.financesScreen;
+        s.bookBondId = id;
+        s.financeArea = "The bond market";
+        s.financePage = "A bond's book";
+        s.fundScreen.security = null;
+    }
+
+    /** The securities the fund's Search lists with nothing typed, by lot key (the shares by value, then the bonds): the pages it may open. */
+    public List<String> fundSecurities() {
+        List<String> out = new ArrayList<>();
+        for (FundScreen.Found f : FundScreen.found(ui.game, "", "All")) if (!out.contains(f.key())) out.add(f.key());
+        for (FundScreen.Holding h : FundScreen.holdings(ui.game)) if (!out.contains(h.key())) out.add(h.key());
+        return out;
+    }
+
+    /** The lots the fund holds, by key. */
+    public List<String> fundHoldings() {
+        List<String> out = new ArrayList<>();
+        for (FundScreen.Holding h : FundScreen.holdings(ui.game)) out.add(h.key());
+        return out;
+    }
+
+    /** The fund on one of its four pages (the next draw shows it): no security open. */
+    public void fundPage(String page) {
+        FinancesScreen s = ui.financesScreen;
+        s.financeArea = FundScreen.AREA;
+        s.financePage = page;
+        s.fundScreen.security = null;
+    }
+
+    /** A security's page opened by its lot key, as a row would (the next draw shows it), from the page named; the ticket for it fresh. */
+    public void fundOpen(String key, String from) {
+        FinancesScreen s = ui.financesScreen;
+        FundScreen f = s.fundScreen;
+        s.financeArea = FundScreen.AREA;
+        s.financePage = from;
+        f.cameFrom = from;
+        f.security = key;
+        f.resetTicket(key);
+    }
+
+    /** The ticket on the security open set as its chips, steps and press would: buy or sell, by amount or by quantity, the figure, the price's kind and steps, and whether it is at its review. */
+    public void fundTicket(boolean buy, boolean byAmount, double amount, String priceKind, int steps, boolean review) {
+        FundScreen f = ui.financesScreen.fundScreen;
+        f.buy = buy;
+        f.byAmount = byAmount;
+        f.amount = amount;
+        f.priceKind = priceKind;
+        f.steps = steps;
+        f.review = review;
+    }
+
+    /** The ticket's price kinds, in the chips' words: fair, bid, ask, last and the player's own. */
+    public static List<String> fundPriceKinds() {
+        return List.of(FundScreen.FAIR, FundScreen.BID, FundScreen.ASK, FundScreen.LAST, FundScreen.OWN);
+    }
+
+    /** Search's words and chip, as the box and the chips would set them (the next draw shows them). */
+    public void fundSearch(String query, String filter) {
+        FundScreen f = ui.financesScreen.fundScreen;
+        f.query = query;
+        f.filter = filter;
+    }
+
+    /** Search's chips. */
+    public static List<String> fundFilters() {
+        return List.of(FundScreen.FILTERS);
+    }
+
+    /** Activity's chip and how many months it shows. */
+    public void fundActivity(String group, int months) {
+        FundScreen f = ui.financesScreen.fundScreen;
+        f.group = group;
+        f.activityMonths = months;
+    }
+
+    /** Activity's chips. */
+    public static List<String> fundGroups() {
+        return List.of(FundScreen.GROUPS);
+    }
+
+    /** The fund's search box as the last draw made it (null before one has). */
+    public javafx.scene.control.TextField fundSearchBox() {
+        return ui.financesScreen.fundScreen.box;
+    }
+
+    /** A fold or an opened row of the fund, by its key ("fund:closed", "fund:life", "fund:issuer:...", "fund:small:...", "fund:act:..."), as a click on it would. */
+    public void fundFold(String key, boolean open) {
+        fold(ui.financesScreen.fundScreen.open, key, open);
+    }
+
+    /** The keys of the fund's folds and opened rows that exist before anything is held: the closed lots' and the Rules & cash page's. */
+    public static List<String> fundFolds() {
+        return List.of("fund:closed", "fund:life");
+    }
+
+    /** What the fund's PAY IN, DRAW OUT asks for, as its steps would set it. */
+    public void fundAsk(double ask) {
+        ui.financesScreen.fundAsk = ask;
+    }
+
+    /**
+     * Whether the fund's tab was on show before the next draw, as the show method tells it (FinancesScreen sets it): only then does the
+     * worth count on and a holding's payment pop when the month has moved, and (UserInterface.countsUp()) at a speed a figure can follow.
+     */
+    public void fundOnShow(boolean here) {
+        ui.financesScreen.fundScreen.here = here;
+    }
+
+    /** What the fund has opened so far (folds, grouped lines, bond issuers), for the harness to open every one of them. */
+    public List<String> fundOpenRows() {
+        return new ArrayList<>(ui.financesScreen.fundScreen.open);
+    }
+
+    /* ----- the foreign default menu and the debt result menu (KP5, slice C) ----- */
+
+    /** The foreign default menu: the page that asks twice before the city walks away from what it owes abroad. */
+    public Page foreignDefault() {
+        FinancesScreen s = ui.financesScreen;
+        return new Page("the foreign default menu", "showForeignDefaultMenu", () -> s.pool, pool -> timed(pool, s::drawForeignDefault), s::forget);
+    }
+
+    /** What the last booking the bench made quoted and said: the receipt's two inputs. */
+    private ham.citybuildersim.DebtQuote bookedQuote;
+    private String bookedSummary, bookedMoney;
+    private boolean bookedForeign;
+
+    /**
+     * Paper sold as the Borrow page's own button sells it, through the same calls (the quote struck on the city as it stands, then the
+     * booking the quote's card hands it to): the receipt's inputs are kept for the debt result menu to draw. Returns what the booking
+     * said. `foreign` sells in `money` abroad, else at home at the default highest yield.
+     */
+    public String financesBook(String kind, int term, double ask, boolean foreign, String money) {
+        FinancesScreen s = ui.financesScreen;
+        Game g = ui.game;
+        FinancesScreen.Instrument kit = FinancesScreen.instrument(kind);
+        Auction.Cap cap = Auction.Cap.DEFAULT;
+        bookedQuote = foreign ? g.quoteForeign(kit.key(), money, ask, term, kit.rounding())
+                : g.quoteDebt(kit.key(), ask, term, kit.rounding(), cap);
+        bookedSummary = foreign ? g.handleForeignLogic(kit.key(), money, ask, term, kit.rounding(), false)
+                : s.executeDebtLogic(kit.key(), ask, term, kit.rounding(), cap);
+        bookedForeign = foreign;
+        bookedMoney = money;
+        return bookedSummary;
+    }
+
+    /** The receipt for nothing issued: no quote, the booking's words only (null: the page's own "Nothing issued."). */
+    public void financesBookedNothing(String summary) {
+        bookedQuote = null;
+        bookedSummary = summary;
+        bookedForeign = false;
+        bookedMoney = null;
+    }
+
+    /** The debt result menu, drawn on what financesBook() last quoted and said. */
+    public Page debtResult() {
+        FinancesScreen s = ui.financesScreen;
+        return new Page("the debt result menu", "showDebtResultMenu", () -> s.pool,
+                pool -> timed(pool, () -> s.drawDebtResult(bookedQuote, bookedForeign, bookedMoney, bookedSummary)), s::forget);
     }
 
     /* =====================================================================

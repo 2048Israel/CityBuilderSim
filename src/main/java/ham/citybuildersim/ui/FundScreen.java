@@ -18,7 +18,6 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -136,7 +135,7 @@ final class FundScreen {
     final Set<String> worthHidden = new HashSet<>(), priceHidden = new HashSet<>();
 
     /** The search box, and whether the player was typing in it when the month redrew the page. */
-    private TextField box;
+    TextField box;
 
     /**
      * THE TICKET, kept on the screen: which security it is for, buy or sell,
@@ -174,7 +173,8 @@ final class FundScreen {
     void draw(VBox page, String name) {
         String drawing = security != null ? "security:" + security : name == null ? "" : name;
         int month = ui.game.getMonth();
-        landed = here && drawing.equals(drawnPage) && drawnMonth >= 0 && month != drawnMonth;
+        // Kept (KP5): only at a clock speed a figure can follow (UserInterface.countsUp(), KP1's rule): at 50x a month lands every 100 ms.
+        landed = here && drawing.equals(drawnPage) && drawnMonth >= 0 && month != drawnMonth && ui.countsUp();
         drawnPage = drawing;
         drawnMonth = month;
         if (security != null) { securityPage(page); return; }
@@ -221,20 +221,32 @@ final class FundScreen {
         if (!head.getChildren().isEmpty() && head.getChildren().get(0) instanceof HBox titled) {
             for (Node n : titled.getChildren()) {
                 if (n instanceof Label l && AREA.equals(l.getText())) {
-                    l.setStyle(l.getStyle() + " -fx-cursor: hand;");
+                    // Kept (KP5): the cursor is added once to a style that has it not, never built on again - a style from getStyle() + ...
+                    // grows every month on a node kept between draws.
+                    handStyle(l);
                     l.setOnMouseClicked(e -> back());
                 }
             }
-            Label sep = new Label("›");
-            sep.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_MUTED) + " -fx-padding: 8 0 2 0;");
-            Label here = new Label(securityName(g, security));
-            here.setStyle(Palette.strong(Palette.SIZE_TITLE, Palette.TEXT_HEAD) + " -fx-padding: 8 0 2 0;");
-            here.setWrapText(true);
-            here.setMinWidth(0);
-            titled.getChildren().addAll(sep, here);
+            titled.getChildren().addAll(Kept.scope("security", () -> {
+                Label sep = Kept.label("›");
+                sep.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_MUTED) + " -fx-padding: 8 0 2 0;");
+                Label here = Kept.label(securityName(g, security));
+                here.setStyle(Palette.strong(Palette.SIZE_TITLE, Palette.TEXT_HEAD) + " -fx-padding: 8 0 2 0;");
+                here.setWrapText(true);
+                here.setMinWidth(0);
+                return List.of(sep, here);
+            }));
         }
         return head;
     }
+
+    /** The pointing hand added to a node's style, once: a style the node already has with it is left as it is (Kept, KP5). */
+    static void handStyle(Node n) {
+        String own = n.getStyle();
+        if (!own.contains(HAND)) n.setStyle(own + HAND);
+    }
+
+    private static final String HAND = " -fx-cursor: hand;";
 
     /* =====================================================================
        WORDS - every figure and sentence the pages compose, worked out
@@ -989,55 +1001,67 @@ final class FundScreen {
         Hero w = hero(g, h.months() >= 2 ? worthWindow : null);
 
         /* ----- the hero: its worth, its return, since it began; the chart ----- */
-        Label value = figure(w.value(), 28, Palette.TEXT_HEAD);
-        if (landed && Double.isFinite(shownWorth)) SectorScreen.countUp(value, shownWorth, g.fundValue(), v -> d(g, v));
-        shownWorth = g.fundValue();
-        Label ret = words(w.ret(), Palette.SIZE_BODY + 1, w.retTone());
-        VBox left = new VBox(6, caption("THE CITY'S FUND", HERO_INFO), value, ret);
-        if (w.recorded() != null) left.getChildren().add(muted(w.recorded()));
-        left.getChildren().add(infoLine(w.since(), w.sinceInfo(), true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 340));
-        left.getChildren().add(mini("CASH", w.cash(), w.cashNote(), null));
-        left.getChildren().add(mini("INCOME LAST MONTH", w.income(), w.incomeNote(), null));
-        left.getChildren().add(mini("TO THE TREASURY LAST MONTH", w.transfer(), w.transferNote(), w.transferTone()));
-        Node right;
-        if (h.months() >= 2) {
-            TimeChart chart = worthChart(g);
-            Label title = new Label("WHAT IT IS WORTH");
-            title.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
-            title.setMinWidth(Region.USE_PREF_SIZE);
-            chart.lead().getChildren().setAll(title);
-            chart.onSettled(this::redraw);
-            right = chart;
-        } else {
-            right = card(caption("WHAT IT IS WORTH", null), line("The fund's worth is recorded a month at a time from this "
-                    + "build on; a month on, the chart starts."));
-        }
-        page.getChildren().add(heroCard(left, 360, right));
+        // Kept (KP5): each part of the page is a scope of its own, and what a part has only sometimes is a scope within it.
+        page.getChildren().add(Kept.scope("hero", () -> {
+            Label value = figure(w.value(), 28, Palette.TEXT_HEAD);
+            // The count-up only on the first draw of a month and at a speed a figure can follow (draw()); a count still running from the
+            // last month's is stopped at any other draw, or it would write that month's figure over this one's.
+            if (landed && Double.isFinite(shownWorth)) SectorScreen.countUp(value, shownWorth, g.fundValue(), v -> d(g, v));
+            else SectorScreen.stopCounting(value);
+            shownWorth = g.fundValue();
+            Label ret = words(w.ret(), Palette.SIZE_BODY + 1, w.retTone());
+            VBox left = Kept.column(6, caption("THE CITY'S FUND", HERO_INFO), value, ret);
+            if (w.recorded() != null) left.getChildren().add(Kept.scope("recorded", () -> muted(w.recorded())));
+            left.getChildren().add(infoLine(w.since(), w.sinceInfo(), true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 340));
+            left.getChildren().add(Kept.scope("cash", () -> mini("CASH", w.cash(), w.cashNote(), null)));
+            left.getChildren().add(Kept.scope("income", () -> mini("INCOME LAST MONTH", w.income(), w.incomeNote(), null)));
+            left.getChildren().add(Kept.scope("transfer", () -> mini("TO THE TREASURY LAST MONTH", w.transfer(), w.transferNote(), w.transferTone())));
+            Node right;
+            if (h.months() >= 2) {
+                right = Kept.scope("chart", () -> {
+                    TimeChart chart = worthChart(g);
+                    Label title = Kept.label("WHAT IT IS WORTH");
+                    title.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
+                    title.setMinWidth(Region.USE_PREF_SIZE);
+                    Kept.set(chart.lead().getChildren(), List.of(title));
+                    chart.onSettled(this::redraw);
+                    return chart;
+                });
+            } else {
+                right = Kept.scope("nochart", () -> card(caption("WHAT IT IS WORTH", null), line("The fund's worth is recorded a month at a time from this "
+                        + "build on; a month on, the chart starts.")));
+            }
+            return heroCard(left, 360, right);
+        }));
 
         /* ----- what it holds, and the rule's aim (the old Holdings page's, whole) ----- */
-        page.getChildren().add(holdsCard(g));
+        page.getChildren().add(Kept.scope("holds", () -> holdsCard(g)));
 
         /* ----- every holding ----- */
-        page.getChildren().add(holdingsCard(g));
+        page.getChildren().add(Kept.scope("holdings", () -> holdingsCard(g)));
 
         /* ----- since it began, by kind; closed ----- */
-        page.getChildren().add(pair(kindsCard(g), closedCard(g)));
+        Node kinds = Kept.scope("kinds", () -> kindsCard(g));
+        Node closed = Kept.scope("closed", () -> closedCard(g));
+        page.getChildren().add(Kept.scope("pair", () -> pair(kinds, closed)));
 
         /* ----- the doors ----- */
-        HBox doors = new HBox(10, doorPill("Search shares and bonds", Icons.EXCHANGE, Palette.MONEY, () -> go("Search")),
-                doorPill("Activity", Icons.REPORTS, Palette.MONEY, () -> go("Activity")),
-                doorPill("Rules & cash", Icons.SETTINGS, Palette.MONEY, () -> go("Rules & cash")));
-        doors.setAlignment(Pos.CENTER_LEFT);
-        page.getChildren().add(doors);
+        page.getChildren().add(Kept.scope("doors", () -> {
+            HBox doors = Kept.row(10, doorPill("Search shares and bonds", Icons.EXCHANGE, Palette.MONEY, () -> go("Search")),
+                    doorPill("Activity", Icons.REPORTS, Palette.MONEY, () -> go("Activity")),
+                    doorPill("Rules & cash", Icons.SETTINGS, Palette.MONEY, () -> go("Rules & cash")));
+            doors.setAlignment(Pos.CENTER_LEFT);
+            return doors;
+        }));
     }
 
     /** A small figure under the hero's: its caption, the figure, and a line under it. */
     static VBox mini(String cap, String value, String note, String tone) {
-        Label c = new Label(cap);
+        Label c = Kept.label(cap);
         c.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
         c.setMinWidth(Region.USE_PREF_SIZE);
-        VBox box = new VBox(1, c, figure(value, Palette.SIZE_LEAD, tone == null ? Palette.TEXT_HEAD : tone));
-        if (note != null) box.getChildren().add(words(note, Palette.SIZE_CAPTION, tone == null ? Palette.TEXT_MUTED : tone));
+        VBox box = Kept.column(1, c, figure(value, Palette.SIZE_LEAD, tone == null ? Palette.TEXT_HEAD : tone));
+        if (note != null) box.getChildren().add(Kept.scope("note", () -> words(note, Palette.SIZE_CAPTION, tone == null ? Palette.TEXT_MUTED : tone)));
         box.setStyle("-fx-padding: 4 0 0 0;");
         return box;
     }
@@ -1050,7 +1074,9 @@ final class FundScreen {
                         v -> HistoryScreen.plotScale("money", v), v -> d(g, v), ""),
                 new TimeChart.Line("fundNet", "put in, less taken out", Palette.RAMP_REST, 0, FundView.netPutIn(h),
                         v -> HistoryScreen.plotScale("money", v), v -> d(g, v), ""));
-        TimeChart chart = new TimeChart(worthWindow, worthHidden, true);
+        // Kept (KP5), as the Bank's charts are: made once in its scope (its window and its hidden lines are the screen's), told its
+        // data and its size at every draw.
+        TimeChart chart = Kept.of(TimeChart.class, () -> new TimeChart(worthWindow, worthHidden, true));
         chart.setData(h.getMonth(), lines, HistoryScreen.axisFor("money"), null, false, false, null, List.of(), List.of(),
                 h.getMonth().isEmpty() ? List.of()
                         : ChartModel.onAxis(ChartModel.flagsOf(g.getDecisions(), DecisionLog.FUND, DecisionLog.BANK), h.getMonth().get(0)),
@@ -1101,17 +1127,19 @@ final class FundScreen {
     VBox holdingsCard(Game g) {
         List<Holding> all = holdings(g);
         VBox card = card(caption("HOLDINGS", HOLDINGS_INFO, hint(all.isEmpty() ? "none" : all.size() + (all.size() == 1 ? " lot" : " lots"))));
+        // Kept (KP5): a row is a scope keyed by the lot it shows, a group's head by the group, and what a card has only sometimes is
+        // a scope of its own - so a lot that comes or goes takes its own nodes with it.
         if (all.isEmpty()) {
-            card.getChildren().add(line("It holds nothing yet: what is paid in waits as cash until the book offers something."));
+            card.getChildren().add(Kept.scope("none", () -> line("It holds nothing yet: what is paid in waits as cash until the book offers something.")));
             return card;
         }
-        card.getChildren().add(headRow());
+        card.getChildren().add(Kept.scope("heads", FundScreen::headRow));
         for (String grp : new String[] {SHARES, RESCUE, BONDS}) {
             List<Holding> rows = new ArrayList<>();
             for (Holding hd : all) if (hd.group().equals(grp)) rows.add(hd);
             if (rows.isEmpty()) continue;
             rows.sort((a, b) -> Double.compare(b.worth(), a.worth()));
-            card.getChildren().add(groupHead(grp));
+            card.getChildren().add(Kept.scope("group:" + grp, () -> groupHead(grp)));
             if (BONDS.equals(grp)) {
                 // Folded by issuer: a row an issuer, its bonds inside it.
                 Map<String, List<Holding>> byIssuer = new LinkedHashMap<>();
@@ -1121,11 +1149,12 @@ final class FundScreen {
                     boolean shown = open.contains(k);
                     double worth = 0;
                     for (Holding hd : e.getValue()) worth += hd.worth();
-                    card.getChildren().add(issuerRow(g, e.getKey(), e.getValue().size(), worth, shown, () -> {
+                    final double issuerWorth = worth;
+                    card.getChildren().add(Kept.scope("issuer:" + e.getKey(), () -> issuerRow(g, e.getKey(), e.getValue().size(), issuerWorth, shown, () -> {
                         if (!open.remove(k)) open.add(k);
                         redraw();
-                    }));
-                    if (shown) for (Holding hd : e.getValue()) card.getChildren().add(holdingRow(g, hd, true));
+                    })));
+                    if (shown) for (Holding hd : e.getValue()) card.getChildren().add(Kept.scope("holding:" + hd.key(), () -> holdingRow(g, hd, true)));
                 }
                 continue;
             }
@@ -1133,14 +1162,17 @@ final class FundScreen {
             double smallWorth = 0;
             for (Holding hd : rows) {
                 if (hd.worth() < FundView.FOLD_UNDER && !open.contains("fund:small:" + grp)) { small++; smallWorth += hd.worth(); continue; }
-                card.getChildren().add(holdingRow(g, hd, false));
+                card.getChildren().add(Kept.scope("holding:" + hd.key(), () -> holdingRow(g, hd, false)));
             }
             if (small > 0) {
                 String k = "fund:small:" + grp;
-                Label more = new Label("and " + small + " more under " + d(g, FundView.FOLD_UNDER) + " ▸");
-                more.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.ACCENT) + " -fx-cursor: hand; -fx-padding: 4 0 4 6;");
-                more.setOnMouseClicked(e -> { open.add(k); redraw(); });
-                card.getChildren().add(more);
+                final int hidden = small;
+                card.getChildren().add(Kept.scope("more:" + grp, () -> {
+                    Label more = Kept.label("and " + hidden + " more under " + d(g, FundView.FOLD_UNDER) + " ▸");
+                    more.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.ACCENT) + " -fx-cursor: hand; -fx-padding: 4 0 4 6;");
+                    more.setOnMouseClicked(e -> { open.add(k); redraw(); });
+                    return more;
+                }));
             }
         }
         return card;
@@ -1148,9 +1180,9 @@ final class FundScreen {
 
     /** The column heads over the holdings. */
     static HBox headRow() {
-        HBox row = new HBox(8, cell("", COL_NAME, false), cell("UNITS", COL_UNITS, true), cell("PRICE", COL_PRICE, true),
+        HBox row = Kept.row(8, cell("", COL_NAME, false), cell("UNITS", COL_UNITS, true), cell("PRICE", COL_PRICE, true),
                 cell("WORTH", COL_VALUE, true), cell("AVERAGE COST", COL_AVG, true), cell("UNREALIZED", COL_PNL, true));
-        Label share = new Label("OF THE FUND");
+        Label share = Kept.label("OF THE FUND");
         share.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
         share.setMinWidth(0);
         HBox.setHgrow(share, Priority.ALWAYS);
@@ -1162,7 +1194,7 @@ final class FundScreen {
 
     /** A column head. */
     static Label cell(String text, double width, boolean right) {
-        Label l = new Label(text);
+        Label l = Kept.label(text);
         l.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
         l.setWrapText(true);
         l.setMinWidth(width);
@@ -1173,29 +1205,32 @@ final class FundScreen {
     }
 
     static Label groupHead(String text) {
-        Label l = new Label(text);
+        Label l = Kept.label(text);
         l.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL) + " -fx-padding: 8 0 2 6;");
         return l;
     }
 
     /** A figure in a column, right-aligned, wrapping rather than cut, with a muted line under it (null: none). */
     static VBox figureCell(String value, String tone, String note, double width) {
-        Label v = new Label(value);
+        Label v = Kept.label(value);
         v.setStyle(Palette.figure(Palette.SIZE_BODY, tone == null ? Palette.TEXT_HEAD : tone));
         v.setWrapText(true);
         v.setMinWidth(0);
         v.setMaxWidth(width);
         v.setAlignment(Pos.CENTER_RIGHT);
         v.setTextAlignment(javafx.scene.text.TextAlignment.RIGHT);
-        VBox box = new VBox(1, v);
+        VBox box = Kept.column(1, v);
+        // Kept (KP5): a note drawn only sometimes is a scope of its own: an emptied wrapped label would keep the width of its words.
         if (note != null) {
-            Label n = new Label(note);
-            n.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-            n.setWrapText(true);
-            n.setMinWidth(0);
-            n.setMaxWidth(width);
-            n.setTextAlignment(javafx.scene.text.TextAlignment.RIGHT);
-            box.getChildren().add(n);
+            box.getChildren().add(Kept.scope("note", () -> {
+                Label n = Kept.label(note);
+                n.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+                n.setWrapText(true);
+                n.setMinWidth(0);
+                n.setMaxWidth(width);
+                n.setTextAlignment(javafx.scene.text.TextAlignment.RIGHT);
+                return n;
+            }));
         }
         box.setAlignment(Pos.CENTER_RIGHT);
         box.setMinWidth(width);
@@ -1223,40 +1258,45 @@ final class FundScreen {
 
     /** One holding as a row: a click opens its security. */
     HBox holdingRow(Game g, Holding hd, boolean indented) {
-        Label name = new Label(hd.name());
+        Label name = Kept.label(hd.name());
         name.setWrapText(true);
         name.setMinWidth(0);
         name.setStyle(Palette.words(Palette.SIZE_BODY + 1, Palette.TEXT_BODY));
-        Label sub = new Label(hd.sub());
+        Label sub = Kept.label(hd.sub());
         sub.setWrapText(true);
         sub.setMinWidth(0);
         sub.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-        VBox named = new VBox(0, name, sub);
+        VBox named = Kept.column(0, name, sub);
         if (hd.paidNow() != null) {
             // What it paid in the month just landed, in the money's blue - income, not a verdict - popping as the month lands.
-            Label paid = new Label(hd.paidNow());
-            paid.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.MONEY));
-            paid.setWrapText(true);
-            paid.setMinWidth(0);
-            named.getChildren().add(paid);
-            if (landed) pop(paid);
+            named.getChildren().add(Kept.scope("paid", () -> {
+                Label paid = Kept.label(hd.paidNow());
+                paid.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.MONEY));
+                paid.setWrapText(true);
+                paid.setMinWidth(0);
+                // Kept (KP5): the pop only on the month's first draw at a speed a figure can follow (draw()); at any other the last
+                // draw's pop is stopped and the figure left at rest.
+                if (landed) pop(paid);
+                else BankScreen.restPip(paid);
+                return paid;
+            }));
         }
         HBox.setHgrow(named, Priority.ALWAYS);
-        HBox lead = new HBox(8, iconSquare(iconOf(hd.key()), colourOf(hd.key()), 24, 13), named);
+        HBox lead = Kept.row(8, iconSquare(iconOf(hd.key()), colourOf(hd.key()), 24, 13), named);
         lead.setAlignment(Pos.CENTER_LEFT);
         double nameWidth = indented ? COL_NAME - 18 : COL_NAME;
         lead.setMinWidth(nameWidth);
         lead.setPrefWidth(nameWidth);
         lead.setMaxWidth(nameWidth);
         Region bar = Pieces.bar(hd.share(), colourOf(hd.key()), 120, 8);
-        HBox barBox = new HBox(6, bar, figure(pct1(hd.share()), Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        HBox barBox = Kept.row(6, bar, figure(pct1(hd.share()), Palette.SIZE_LABEL, Palette.TEXT_MUTED));
         barBox.setAlignment(Pos.CENTER_LEFT);
         barBox.setMinWidth(0);
         HBox.setHgrow(barBox, Priority.ALWAYS);
-        Label arrow = new Label("›");
+        Label arrow = Kept.label("›");
         arrow.setStyle(Palette.strong(Palette.SIZE_HEADING + 2, Palette.ACCENT));
         arrow.setMinWidth(16);
-        HBox row = new HBox(8, lead,
+        HBox row = Kept.row(8, lead,
                 figureCell(hd.units(), null, null, COL_UNITS),
                 figureCell(hd.price(), null, hd.priceNote(), COL_PRICE),
                 figureCell(hd.value(), null, null, COL_VALUE),
@@ -1266,7 +1306,8 @@ final class FundScreen {
         row.setAlignment(Pos.CENTER_LEFT);
         String rest = "-fx-padding: 5 6 5 " + (indented ? 24 : 6) + "; -fx-background-radius: 6; -fx-cursor: hand;"
                 + " -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 0 1 0;";
-        row.setStyle(rest);
+        // Kept (KP5): the look the pointer calls for is chosen from isHover() where it is set (a kept row is not entered afresh).
+        row.setStyle(row.isHover() ? rest + " -fx-background-color: " + Palette.CONTROL + ";" : rest);
         row.setOnMouseEntered(e -> row.setStyle(rest + " -fx-background-color: " + Palette.CONTROL + ";"));
         row.setOnMouseExited(e -> row.setStyle(rest));
         row.setOnMouseClicked(e -> openSecurity(hd.key()));
@@ -1280,7 +1321,9 @@ final class FundScreen {
         up.setToX(1.12); up.setToY(1.12);
         up.setAutoReverse(true);
         up.setCycleCount(2);
-        up.play();
+        // Kept (KP5): on a kept page the label is handed back each month, and the last pop on it is stopped first.
+        if (Kept.drawing()) Kept.play(l, up);
+        else up.play();
     }
 
     /** How long a payment's pop takes each way. */
@@ -1288,22 +1331,22 @@ final class FundScreen {
 
     /** An issuer's bonds folded into one row: "▸ Automotive · 8 bonds", its worth. */
     HBox issuerRow(Game g, String issuer, int bonds, double worth, boolean shown, Runnable toggle) {
-        Label name = new Label((shown ? "▾ " : "▸ ") + issuer + " · " + bonds + (bonds == 1 ? " bond" : " bonds"));
+        Label name = Kept.label((shown ? "▾ " : "▸ ") + issuer + " · " + bonds + (bonds == 1 ? " bond" : " bonds"));
         name.setStyle(Palette.words(Palette.SIZE_BODY + 1, Palette.TEXT_BODY));
         name.setWrapText(true);
         name.setMinWidth(0);
-        HBox lead = new HBox(8, iconSquare(Icons.PAPER, Palette.MONEY, 24, 13), name);
+        HBox lead = Kept.row(8, iconSquare(Icons.PAPER, Palette.MONEY, 24, 13), name);
         lead.setAlignment(Pos.CENTER_LEFT);
         lead.setMinWidth(COL_NAME);
         lead.setPrefWidth(COL_NAME);
         lead.setMaxWidth(COL_NAME);
-        Region gap = new Region();
+        Region gap = Kept.region();
         gap.setMinWidth(COL_UNITS + COL_PRICE + 16);
-        HBox row = new HBox(8, lead, gap, figureCell(d(g, worth), null, null, COL_VALUE));
+        HBox row = Kept.row(8, lead, gap, figureCell(d(g, worth), null, null, COL_VALUE));
         row.setAlignment(Pos.CENTER_LEFT);
         String rest = "-fx-padding: 5 6 5 6; -fx-background-radius: 6; -fx-cursor: hand;"
                 + " -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 0 1 0;";
-        row.setStyle(rest);
+        row.setStyle(row.isHover() ? rest + " -fx-background-color: " + Palette.CONTROL + ";" : rest);
         row.setOnMouseEntered(e -> row.setStyle(rest + " -fx-background-color: " + Palette.CONTROL + ";"));
         row.setOnMouseExited(e -> row.setStyle(rest));
         row.setOnMouseClicked(e -> toggle.run());
@@ -1319,12 +1362,12 @@ final class FundScreen {
 
     VBox kindsCard(Game g) {
         VBox card = card(caption("SINCE IT BEGAN, BY KIND", KINDS_INFO));
-        GridPane t = new GridPane();
+        GridPane t = Kept.grid();
         t.setHgap(8);
         t.setVgap(3);
         String[] heads = {"", "PUT IN", "GOT BACK", "WORTH", "INCOME", "GAIN"};
         for (int i = 0; i < heads.length; i++) {
-            Label l = new Label(heads[i]);
+            Label l = Kept.label(heads[i]);
             l.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
             l.setWrapText(true);
             t.add(l, i, 0);
@@ -1333,29 +1376,36 @@ final class FundScreen {
         int r = 1;
         for (KindLine k : kinds(g)) {
             boolean total = "The fund".equals(k.name());
-            Label name = words(k.name(), Palette.SIZE_LABEL + 1, total ? Palette.TEXT_HEAD : Palette.TEXT_LABEL);
-            name.setMinWidth(90);
-            t.add(name, 0, r);
-            String[] vals = {k.putIn(), k.gotBack(), k.worth(), k.income()};
-            for (int i = 0; i < vals.length; i++) {
-                Label v = figure(vals[i], Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD);
-                t.add(v, i + 1, r);
-                GridPane.setHalignment(v, javafx.geometry.HPos.RIGHT);
-            }
-            // The gain wraps its percentage under it rather than push the card past its 612.
-            Label gain = figure(k.gain().text(), Palette.SIZE_LABEL + 1, k.gain().tone());
-            gain.setWrapText(true);
-            gain.setMinWidth(0);
-            gain.setMaxWidth(150);
-            gain.setTextAlignment(javafx.scene.text.TextAlignment.RIGHT);
-            t.add(gain, 5, r);
-            GridPane.setHalignment(gain, javafx.geometry.HPos.RIGHT);
-            r++;
-            if (k.note() != null) {
-                Label n = words(k.note(), Palette.SIZE_CAPTION, Palette.TEXT_MUTED);
-                t.add(n, 0, r, 6, 1);
-                r++;
-            }
+            final int at = r;
+            // Kept (KP5): a kind is a scope keyed by its name, and its note, which it has only sometimes, one within it.
+            boolean noted = Kept.scope("kind:" + k.name(), () -> {
+                Label name = words(k.name(), Palette.SIZE_LABEL + 1, total ? Palette.TEXT_HEAD : Palette.TEXT_LABEL);
+                name.setMinWidth(90);
+                t.add(name, 0, at);
+                String[] vals = {k.putIn(), k.gotBack(), k.worth(), k.income()};
+                for (int i = 0; i < vals.length; i++) {
+                    Label v = figure(vals[i], Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD);
+                    t.add(v, i + 1, at);
+                    GridPane.setHalignment(v, javafx.geometry.HPos.RIGHT);
+                }
+                // The gain wraps its percentage under it rather than push the card past its 612.
+                Label gain = figure(k.gain().text(), Palette.SIZE_LABEL + 1, k.gain().tone());
+                gain.setWrapText(true);
+                gain.setMinWidth(0);
+                gain.setMaxWidth(150);
+                gain.setTextAlignment(javafx.scene.text.TextAlignment.RIGHT);
+                t.add(gain, 5, at);
+                GridPane.setHalignment(gain, javafx.geometry.HPos.RIGHT);
+                if (k.note() != null) {
+                    Kept.scope("note", () -> {
+                        Label n = words(k.note(), Palette.SIZE_CAPTION, Palette.TEXT_MUTED);
+                        t.add(n, 0, at + 1, 6, 1);
+                    });
+                    return true;
+                }
+                return false;
+            });
+            r += noted ? 2 : 1;
         }
         card.getChildren().add(t);
         return card;
@@ -1366,21 +1416,25 @@ final class FundScreen {
         VBox card = card(caption("CLOSED", "Lots the fund no longer holds - sold out, repaid at maturity, written off "
                 + "in a default, or passed to the rescue book in a rescue - with what they realized against what they "
                 + "cost, and the income they paid while it held them. Newest first."));
+        // Kept (KP5): a row is a scope keyed by the lot and the month it closed in, the fold's insides built only while it is open.
         if (all.isEmpty()) {
-            card.getChildren().add(line("None yet."));
+            card.getChildren().add(Kept.scope("none", () -> line("None yet.")));
             return card;
         }
         int n = 0;
         for (Closed c : all) {
             if (n++ >= CLOSED_ROWS) break;
-            card.getChildren().add(closedRow(c));
+            card.getChildren().add(Kept.scope("closed:" + c.key() + "|" + c.when(), () -> closedRow(c)));
         }
         if (all.size() > CLOSED_ROWS) {
-            card.getChildren().add(details("fund:closed", "every closed lot (" + all.size() + ")", open, this::redraw, () -> {
-                VBox more = new VBox(2);
-                for (int i = CLOSED_ROWS; i < all.size(); i++) more.getChildren().add(closedRow(all.get(i)));
+            card.getChildren().add(Kept.scope("fund:closed", () -> details("fund:closed", "every closed lot (" + all.size() + ")", open, this::redraw, () -> {
+                VBox more = Kept.column(2);
+                for (int i = CLOSED_ROWS; i < all.size(); i++) {
+                    Closed c = all.get(i);
+                    more.getChildren().add(Kept.scope("closed:" + c.key() + "|" + c.when(), () -> closedRow(c)));
+                }
                 return more;
-            }));
+            })));
         }
         return card;
     }
@@ -1388,13 +1442,13 @@ final class FundScreen {
     HBox closedRow(Closed c) {
         Label name = words(c.name(), Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL);
         Label when = words(c.when(), Palette.SIZE_CAPTION, Palette.TEXT_MUTED);
-        VBox named = new VBox(0, name, when);
+        VBox named = Kept.column(0, name, when);
         HBox.setHgrow(named, Priority.ALWAYS);
         named.setMinWidth(0);
-        VBox fig = new VBox(0, figure(c.realized().text(), Palette.SIZE_LABEL + 1, c.realized().tone()),
+        VBox fig = Kept.column(0, figure(c.realized().text(), Palette.SIZE_LABEL + 1, c.realized().tone()),
                 figure("income " + c.income(), Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
         fig.setAlignment(Pos.CENTER_RIGHT);
-        HBox row = new HBox(8, named, fig);
+        HBox row = Kept.row(8, named, fig);
         row.setAlignment(Pos.CENTER_LEFT);
         row.setStyle("-fx-cursor: hand; -fx-padding: 2 0 2 0;");
         row.setOnMouseClicked(e -> openSecurity(c.key()));
@@ -1417,26 +1471,35 @@ final class FundScreen {
 
     void searchPage(VBox page) {
         Game g = ui.game;
-        VBox results = new VBox(2);
-        results.setMaxWidth(Double.MAX_VALUE);
         boolean wasTyping = box != null && box.isFocused();
-        box = searchBox(query, "Search shares and bonds", 600, typed -> {
-            query = typed;
-            fillResults(g, results);
-        }, () -> { if (ui.rootMenu != null) ui.rootMenu.requestFocus(); });
-        FlowPane chips = chipStrip(FILTERS, filter, Palette.SIZE_LABEL, pick -> {
-            filter = pick;
-            redraw();
+        // Kept (KP5): each part of the page is a scope of its own. The results are the one list filled in place as the box is typed in
+        // (outside a draw, with new nodes) and filled from the kept nodes at a draw.
+        page.getChildren().add(Kept.scope("head", () -> sectionHead("SEARCH SHARES AND BONDS", SEARCH_INFO, null)));
+        VBox results = Kept.scope("results", () -> {
+            VBox list = Kept.column(2);
+            list.setMaxWidth(Double.MAX_VALUE);
+            fillResults(g, list);
+            return list;
         });
-        HBox top = new HBox(14, box, chips);
-        top.setAlignment(Pos.CENTER_LEFT);
-        page.getChildren().add(sectionHead("SEARCH SHARES AND BONDS", SEARCH_INFO, null));
-        page.getChildren().add(top);
-        fillResults(g, results);
+        page.getChildren().add(Kept.scope("top", () -> {
+            box = searchBox(query, "Search shares and bonds", 600, typed -> {
+                query = typed;
+                fillResults(g, results);
+            }, () -> { if (ui.rootMenu != null) ui.rootMenu.requestFocus(); });
+            FlowPane chips = chipStrip(FILTERS, filter, Palette.SIZE_LABEL, pick -> {
+                filter = pick;
+                redraw();
+            });
+            HBox top = Kept.row(14, box, chips);
+            top.setAlignment(Pos.CENTER_LEFT);
+            return top;
+        }));
         page.getChildren().add(results);
-        if (wasTyping) {
+        // A kept box keeps the focus across a redraw: only a box made new under the player's typing is given it back, the caret at the end.
+        if (wasTyping && Kept.isNew(box)) {
             TextField again = box;
             javafx.application.Platform.runLater(() -> {
+                if (again.isFocused()) return;
                 again.requestFocus();
                 again.positionCaret(again.getText().length());
             });
@@ -1448,42 +1511,45 @@ final class FundScreen {
         results.getChildren().clear();
         List<Found> all = found(g, query, filter);
         if (all.isEmpty()) {
-            results.getChildren().add(line(query.isBlank() ? "Nothing on the market."
-                    : "Nothing matches \"" + query.trim() + "\"."));
+            results.getChildren().add(Kept.scope("none", () -> line(query.isBlank() ? "Nothing on the market."
+                    : "Nothing matches \"" + query.trim() + "\".")));
             return;
         }
+        // Kept (KP5): a row is a scope keyed by the security it shows, a section's head by the section, and what the list says only
+        // sometimes is a scope of its own.
         String section = null;
         boolean anyBond = false;
         for (Found f : all) {
             if (f.section() != null && !f.section().equals(section)) {
                 section = f.section();
-                results.getChildren().add(groupHead(section));
+                final String head = section;
+                results.getChildren().add(Kept.scope("section:" + head, () -> groupHead(head)));
             }
             anyBond |= "BOND".equals(f.tag());
-            results.getChildren().add(foundRow(g, f));
+            results.getChildren().add(Kept.scope("found:" + f.key(), () -> foundRow(g, f)));
         }
         if (query.isBlank() && !anyBond && ("All".equals(filter) || "Bonds".equals(filter))) {
-            results.getChildren().add(groupHead(FundView.BONDS_SECTION));
-            results.getChildren().add(line("No company has a bond outstanding."));
+            results.getChildren().add(Kept.scope("noBonds", () -> groupHead(FundView.BONDS_SECTION)));
+            results.getChildren().add(Kept.scope("noBond", () -> line("No company has a bond outstanding.")));
         }
     }
 
     HBox foundRow(Game g, Found f) {
-        Label name = new Label(f.name());
+        Label name = Kept.label(f.name());
         name.setWrapText(true);
         name.setMinWidth(0);
         name.setStyle(Palette.words(Palette.SIZE_BODY + 1, Palette.TEXT_BODY));
-        Label sub = new Label(f.sub());
+        Label sub = Kept.label(f.sub());
         sub.setWrapText(true);
         sub.setMinWidth(0);
         sub.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-        VBox named = new VBox(0, name, sub);
-        HBox lead = new HBox(8, iconSquare(iconOf(f.key()), colourOf(f.key()), 26, 14), named);
+        VBox named = Kept.column(0, name, sub);
+        HBox lead = Kept.row(8, iconSquare(iconOf(f.key()), colourOf(f.key()), 26, 14), named);
         lead.setAlignment(Pos.CENTER_LEFT);
         lead.setMinWidth(300);
         lead.setPrefWidth(330);
         lead.setMaxWidth(330);
-        HBox tagBox = new HBox(tag(f.tag(), colourOf(f.key())));
+        HBox tagBox = Kept.row(0, tag(f.tag(), colourOf(f.key())));
         tagBox.setMinWidth(86);
         tagBox.setAlignment(Pos.CENTER_LEFT);
         VBox priceBox = figureCell(f.price(), null, null, 150);
@@ -1491,22 +1557,25 @@ final class FundScreen {
         mv.setMinWidth(0);
         mv.setPrefWidth(220);
         mv.setMaxWidth(220);
-        Node spark = f.spark() != null && f.spark().length >= 2
-                ? sparkline(f.spark(), months(g, f.spark().length), Palette.BUSINESS, 96, 22) : spacer(96);
+        // Kept (KP5): the line or the space it leaves are scopes of their own (a node of one is not handed to the other).
+        boolean lined = f.spark() != null && f.spark().length >= 2;
+        Node spark = Kept.scope(lined ? "spark" : "space", () -> lined
+                ? sparkline(f.spark(), months(g, f.spark().length), Palette.BUSINESS, 96, 22) : spacer(96));
         Label held = words(f.held(), Palette.SIZE_LABEL, Palette.TEXT_LABEL);
         held.setMinWidth(0);
         HBox.setHgrow(held, Priority.ALWAYS);
         held.setMaxWidth(Double.MAX_VALUE);
         held.setAlignment(Pos.CENTER_RIGHT);
-        Label arrow = new Label("›");
+        Label arrow = Kept.label("›");
         arrow.setStyle(Palette.strong(Palette.SIZE_HEADING + 2, Palette.ACCENT));
         arrow.setMinWidth(16);
-        HBox row = new HBox(10, lead, tagBox, priceBox, mv, spark, held, arrow);
+        HBox row = Kept.row(10, lead, tagBox, priceBox, mv, spark, held, arrow);
         row.setAlignment(Pos.CENTER_LEFT);
         row.setMinHeight(44);
         String rest = "-fx-padding: 4 6 4 6; -fx-background-radius: 6; -fx-cursor: hand;"
                 + " -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 0 1 0;";
-        row.setStyle(rest);
+        // Kept (KP5): the look the pointer calls for is chosen from isHover() where it is set (a kept row is not entered afresh).
+        row.setStyle(row.isHover() ? rest + " -fx-background-color: " + Palette.CONTROL + ";" : rest);
         row.setOnMouseEntered(e -> row.setStyle(rest + " -fx-background-color: " + Palette.CONTROL + ";"));
         row.setOnMouseExited(e -> row.setStyle(rest));
         row.setOnMouseClicked(e -> openSecurity(f.key()));
@@ -1514,7 +1583,7 @@ final class FundScreen {
     }
 
     static Region spacer(double w) {
-        Region r = new Region();
+        Region r = Kept.region();
         r.setMinWidth(w);
         r.setPrefWidth(w);
         return r;
@@ -1534,53 +1603,63 @@ final class FundScreen {
         Game g = ui.game;
         String key = security;
         Security s = security(g, key);
-
-        /* ----- the left: its head, its chart, its facts, its book, its record ----- */
-        VBox left = new VBox(Palette.GAP_LOOSE);
-        Label nm = new Label(s.name());
-        nm.setWrapText(true);
-        nm.setMinWidth(0);
-        nm.setStyle(Palette.strong(Palette.SIZE_SECTION + 2, Palette.TEXT_HEAD));
-        HBox titleRow = new HBox(10, iconSquare(iconOf(key), colourOf(key), 34, 18), nm, tag(s.tag(), colourOf(key)));
-        titleRow.setAlignment(Pos.CENTER_LEFT);
-        Label px = figure(s.price(), 28, Palette.TEXT_HEAD);
-        Label note = words(s.priceNote(), Palette.SIZE_LABEL + 1, Palette.TEXT_MUTED);
-        VBox headBox = new VBox(4, titleRow, px, note);
         int c = FundView.companyOf(key);
         HistorySave h = g.getHistorySave();
-        if (c >= 0 && h.months() >= 2) {
-            TimeChart chart = priceChart(g, c);
-            double[][] series = FundView.sharePrices(g, c);
-            String mv = windowMove(series[0], h.getMonth(), priceWindow);
-            if (mv != null) headBox.getChildren().add(words(mv, Palette.SIZE_LABEL + 1, Palette.TEXT_BODY));
-            Label title = new Label("ITS PRICE, A SHARE TODAY");
-            title.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
-            title.setMinWidth(Region.USE_PREF_SIZE);
-            chart.lead().getChildren().setAll(title);
-            chart.onSettled(this::redraw);
-            left.getChildren().addAll(headBox, chart);
-        } else if (key.startsWith("B:") && g.getBondMarket().bond(FundView.bondIdOf(key)) != null) {
-            left.getChildren().addAll(headBox, cashFlowCard(g, g.getBondMarket().bond(FundView.bondIdOf(key))));
-        } else {
-            left.getChildren().add(headBox);
-        }
-        if (!s.facts().isEmpty()) left.getChildren().add(factsGrid(g, key, s.facts()));
-        Node book = bookCard(g, key);
-        if (book != null) left.getChildren().add(book);
-        left.getChildren().add(recordCard(g, key));
+
+        /* ----- the left: its head, its chart, its facts, its book, its record ----- */
+        // Kept (KP5): each part of the page is a scope of its own, and what a part has only sometimes is a scope within it.
+        VBox left = Kept.scope("left", () -> {
+            VBox column = Kept.column(Palette.GAP_LOOSE);
+            Label nm = Kept.label(s.name());
+            nm.setWrapText(true);
+            nm.setMinWidth(0);
+            nm.setStyle(Palette.strong(Palette.SIZE_SECTION + 2, Palette.TEXT_HEAD));
+            HBox titleRow = Kept.row(10, iconSquare(iconOf(key), colourOf(key), 34, 18), nm, tag(s.tag(), colourOf(key)));
+            titleRow.setAlignment(Pos.CENTER_LEFT);
+            Label px = figure(s.price(), 28, Palette.TEXT_HEAD);
+            Label note = words(s.priceNote(), Palette.SIZE_LABEL + 1, Palette.TEXT_MUTED);
+            VBox headBox = Kept.column(4, titleRow, px, note);
+            if (c >= 0 && h.months() >= 2) {
+                TimeChart chart = Kept.scope("price", () -> priceChart(g, c));
+                double[][] series = FundView.sharePrices(g, c);
+                String mv = windowMove(series[0], h.getMonth(), priceWindow);
+                if (mv != null) headBox.getChildren().add(Kept.scope("move", () -> words(mv, Palette.SIZE_LABEL + 1, Palette.TEXT_BODY)));
+                Label title = Kept.scope("title", () -> {
+                    Label t = Kept.label("ITS PRICE, A SHARE TODAY");
+                    t.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
+                    t.setMinWidth(Region.USE_PREF_SIZE);
+                    return t;
+                });
+                Kept.set(chart.lead().getChildren(), List.of(title));
+                chart.onSettled(this::redraw);
+                column.getChildren().addAll(headBox, chart);
+            } else if (key.startsWith("B:") && g.getBondMarket().bond(FundView.bondIdOf(key)) != null) {
+                column.getChildren().addAll(headBox, Kept.scope("cashFlow", () -> cashFlowCard(g, g.getBondMarket().bond(FundView.bondIdOf(key)))));
+            } else {
+                column.getChildren().add(headBox);
+            }
+            if (!s.facts().isEmpty()) column.getChildren().add(Kept.scope("facts", () -> factsGrid(g, key, s.facts())));
+            Node book = Kept.scope("book", () -> bookCard(g, key));
+            if (book != null) column.getChildren().add(book);
+            column.getChildren().add(Kept.scope("record", () -> recordCard(g, key)));
+            return column;
+        });
 
         /* ----- the right: your position, and the ticket ----- */
-        VBox right = new VBox(Palette.GAP_LOOSE, positionCard(g, key));
-        if (FundView.companyOf(key) >= 0 || (key.startsWith("B:") && g.getBondMarket().bond(FundView.bondIdOf(key)) != null)) {
-            right.getChildren().add(ticketCard(g, key));
-        }
-        if (c == Equity.BANK) right.getChildren().add(stakeCard(g));
+        VBox right = Kept.scope("right", () -> {
+            VBox column = Kept.column(Palette.GAP_LOOSE, Kept.scope("position", () -> positionCard(g, key)));
+            if (FundView.companyOf(key) >= 0 || (key.startsWith("B:") && g.getBondMarket().bond(FundView.bondIdOf(key)) != null)) {
+                column.getChildren().add(Kept.scope("ticket", () -> ticketCard(g, key)));
+            }
+            if (c == Equity.BANK) column.getChildren().add(Kept.scope("stake", () -> stakeCard(g)));
+            return column;
+        });
         right.setMinWidth(320);
         right.setPrefWidth(RIGHT);
         right.setMaxWidth(RIGHT);
         HBox.setHgrow(left, Priority.ALWAYS);
         left.setMinWidth(0);
-        HBox both = new HBox(TILE_GAP, left, right);
+        HBox both = Kept.row(TILE_GAP, left, right);
         both.setAlignment(Pos.TOP_LEFT);
         page.getChildren().add(both);
     }
@@ -1611,7 +1690,9 @@ final class FundScreen {
         for (double v : s[2]) if (v > 0) { cost = true; break; }
         if (cost) lines.add(new TimeChart.Line("cost", "your average cost", Palette.MONEY_LIGHT, 0, s[2],
                 v -> HistoryScreen.plotScale("share", v), v -> price(g, false, v), ""));
-        TimeChart chart = new TimeChart(priceWindow, priceHidden, true);
+        // Kept (KP5), as the Bank's charts are: made once in its scope (its window and its hidden lines are the screen's), told its
+        // data and its size at every draw.
+        TimeChart chart = Kept.of(TimeChart.class, () -> new TimeChart(priceWindow, priceHidden, true));
         chart.setData(h.getMonth(), lines, HistoryScreen.axisFor("share"), null, false, false, null, List.of(), List.of(),
                 FundView.flagsFor(g, Equity.COMPANIES[c]), "no months recorded yet");
         chart.setSize(LEFT - 30, 220);
@@ -1637,10 +1718,10 @@ final class FundScreen {
         VBox card = card(caption("WHAT IT STILL PAYS", "A bond's price is not kept month by month, so its chart is its "
                 + "cash: a twelfth of its coupon on its face every month it has left, and the face in its last, a column "
                 + "a calendar year. Solid is the fund's part; outlined, the rest of the bond's."));
-        if (cols.isEmpty()) card.getChildren().add(line("Nothing: it falls due this month."));
-        else card.getChildren().add(columns(cols, 0, 0, 180));
-        card.getChildren().add(keyRow(keySwatch(Palette.MONEY_LIGHT, "coupons"), keySwatch(Palette.MONEY, "face"),
-                FinancesScreen.swatch(Palette.MONEY_LIGHT, "the rest of the bond", true)));
+        if (cols.isEmpty()) card.getChildren().add(Kept.scope("nothing", () -> line("Nothing: it falls due this month.")));
+        else card.getChildren().add(Kept.scope("columns", () -> columns(cols, 0, 0, 180)));
+        card.getChildren().add(Kept.scope("key", () -> keyRow(keySwatch(Palette.MONEY_LIGHT, "coupons"), keySwatch(Palette.MONEY, "face"),
+                FinancesScreen.swatch(Palette.MONEY_LIGHT, "the rest of the bond", true))));
         return card;
     }
 
@@ -1650,26 +1731,33 @@ final class FundScreen {
         int c = FundView.companyOf(key);
         for (int i = 0; i < facts.size(); i++) {
             String[] f = facts.get(i);
-            Label cap = new Label(f[0]);
-            cap.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-            cap.setWrapText(true);
-            VBox tile = new VBox(3, cap, words(f[1], Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
-            if ("AGAINST THE CAP".equals(f[0]) && c >= 0) {
-                Equity reg = g.getEquity();
-                double mkt = reg.getShares(c) > 0 ? reg.getCityMarketShares(c) / reg.getShares(c) : 0;
-                tile.getChildren().add(bulletBar(mkt, TreasuryFund.OWNERSHIP_LIMIT, Palette.BUSINESS, 0, null));
-            }
-            CorporateBond bond = c < 0 ? g.getBondMarket().bond(FundView.bondIdOf(key)) : null;
-            if ("THE FUND HOLDS".equals(f[0]) && bond != null) {
-                // Its holders as the bond market's one bar: households, the bank, companies, the world, the fund.
-                tile.getChildren().add(fin.holdersBar(new double[] {bond.households(), bond.bank(), bond.companiesTotal(),
-                        bond.world(), bond.city()}, 6, false));
-            }
-            tile.getChildren().add(words(f[2], Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-            tile.setStyle(FinancesScreen.cardStyle(Palette.EDGE));
-            tile.setMaxWidth(Double.MAX_VALUE);
+            final int at = i;
+            // Kept (KP5): a tile is a scope keyed by what it is, and what it has only sometimes a scope within it.
+            VBox tile = Kept.scope("fact:" + f[0], () -> {
+                Label cap = Kept.label(f[0]);
+                cap.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+                cap.setWrapText(true);
+                VBox t = Kept.column(3, cap, words(f[1], Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
+                if ("AGAINST THE CAP".equals(f[0]) && c >= 0) {
+                    t.getChildren().add(Kept.scope("bullet", () -> {
+                        Equity reg = g.getEquity();
+                        double mkt = reg.getShares(c) > 0 ? reg.getCityMarketShares(c) / reg.getShares(c) : 0;
+                        return bulletBar(mkt, TreasuryFund.OWNERSHIP_LIMIT, Palette.BUSINESS, 0, null);
+                    }));
+                }
+                CorporateBond bond = c < 0 ? g.getBondMarket().bond(FundView.bondIdOf(key)) : null;
+                if ("THE FUND HOLDS".equals(f[0]) && bond != null) {
+                    // Its holders as the bond market's one bar: households, the bank, companies, the world, the fund.
+                    t.getChildren().add(Kept.scope("holders", () -> fin.holdersBar(new double[] {bond.households(), bond.bank(), bond.companiesTotal(),
+                            bond.world(), bond.city()}, 6, false)));
+                }
+                t.getChildren().add(words(f[2], Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+                t.setStyle(FinancesScreen.cardStyle(Palette.EDGE));
+                t.setMaxWidth(Double.MAX_VALUE);
+                return t;
+            });
             GridPane.setFillHeight(tile, true);
-            grid.add(tile, i % 4, i / 4);
+            grid.add(tile, at % 4, at / 4);
         }
         return grid;
     }
@@ -1686,33 +1774,43 @@ final class FundScreen {
                 + "between steps a household short of money sells into the bids." + (c == Equity.BANK
                 ? " The desk's asks in the bank's own shares are new shares, which the fund never buys." : "")));
         List<OrderBook.Level> bids = book.levels(OrderBook.Side.BUY), asks = book.levels(OrderBook.Side.SELL);
+        // Kept (KP5): a level is a scope keyed by its side and price; what is missing, and the key, are scopes of their own.
         if (bids.isEmpty() && asks.isEmpty()) {
-            card.getChildren().add(line("Nobody is bidding and nobody is selling."));
+            card.getChildren().add(Kept.scope("nobody", () -> line("Nobody is bidding and nobody is selling.")));
             return card;
         }
         int shown = 8;
         double most = 0;
         for (int i = 0; i < Math.min(shown, bids.size()); i++) most = Math.max(most, bids.get(i).quantity());
         for (int i = 0; i < Math.min(shown, asks.size()); i++) most = Math.max(most, asks.get(i).quantity());
+        final double widest = most;
         List<OrderBook.Level> askRows = new ArrayList<>(asks.subList(0, Math.min(shown, asks.size())));
         java.util.Collections.reverse(askRows);
-        for (OrderBook.Level l : askRows) card.getChildren().add(depthRow(g, l, false, most, bond));
-        if (asks.isEmpty()) card.getChildren().add(muted("nobody is asking"));
-        if (bids.isEmpty()) card.getChildren().add(muted("nobody is bidding"));
-        for (int i = 0; i < Math.min(shown, bids.size()); i++) card.getChildren().add(depthRow(g, bids.get(i), true, most, bond));
-        card.getChildren().add(keyRow(keySwatch(Palette.MONEY, "bids"), keySwatch(Palette.BUSINESS_LIGHT, "asks")));
+        // (a level is the Nth best of its side, whatever its price is this month)
+        for (int i = 0; i < askRows.size(); i++) {
+            OrderBook.Level l = askRows.get(i);
+            card.getChildren().add(Kept.scope("ask:" + i, () -> depthRow(g, l, false, widest, bond)));
+        }
+        if (asks.isEmpty()) card.getChildren().add(Kept.scope("noAsks", () -> muted("nobody is asking")));
+        if (bids.isEmpty()) card.getChildren().add(Kept.scope("noBids", () -> muted("nobody is bidding")));
+        for (int i = 0; i < Math.min(shown, bids.size()); i++) {
+            OrderBook.Level l = bids.get(i);
+            final int at = i;
+            card.getChildren().add(Kept.scope("bid:" + at, () -> depthRow(g, l, true, widest, bond)));
+        }
+        card.getChildren().add(Kept.scope("key", () -> keyRow(keySwatch(Palette.MONEY, "bids"), keySwatch(Palette.BUSINESS_LIGHT, "asks"))));
         return card;
     }
 
     Node depthRow(Game g, OrderBook.Level l, boolean bid, double most, boolean bond) {
         double side = 220;
         double w = most > 0 ? Math.max(2, l.quantity() / most * side) : 2;
-        Region bar = new Region();
+        Region bar = Kept.region();
         bar.setMinSize(w, 12);
         bar.setPrefSize(w, 12);
         bar.setMaxSize(w, 12);
         bar.setStyle("-fx-background-color: " + (bid ? Palette.MONEY : Palette.BUSINESS_LIGHT) + "; -fx-background-radius: 2;");
-        HBox left = new HBox(), right = new HBox();
+        HBox left = Kept.row(0), right = Kept.row(0);
         left.setMinWidth(side);
         left.setPrefWidth(side);
         right.setMinWidth(side);
@@ -1724,13 +1822,12 @@ final class FundScreen {
         p.setMinWidth(120);
         p.setAlignment(Pos.CENTER);
         Label q = figure(bond ? d(g, l.quantity()) : shares(l.quantity()), Palette.SIZE_CAPTION, Palette.TEXT_MUTED);
-        HBox row = new HBox(6, left, p, right, q);
+        HBox row = Kept.row(6, left, p, right, q);
         row.setAlignment(Pos.CENTER_LEFT);
-        Tooltip tip = new Tooltip((bid ? "bid" : "asked") + " at " + price(g, bond, l.price()) + " · "
+        // Kept (KP5): the row's own tooltip (Kept.tip), its words set each draw.
+        Kept.tip(row, (bid ? "bid" : "asked") + " at " + price(g, bond, l.price()) + " · "
                 + (bond ? d(g, l.quantity()) + " of face" : shares(l.quantity()) + " shares") + " · " + l.orders()
-                + (l.orders() == 1 ? " order" : " orders"));
-        tip.setShowDelay(Duration.millis(150));
-        Tooltip.install(row, tip);
+                + (l.orders() == 1 ? " order" : " orders"), 150);
         return row;
     }
 
@@ -1739,13 +1836,14 @@ final class FundScreen {
         VBox card = card(caption("ITS RECORD", "Every trade in it, by the rule and by your orders, and what happened to it - a "
                 + "split, a maturity, a write-down - newest first."));
         List<Act> rows = acts(g, "All", key, 0);
-        if (rows.isEmpty()) card.getChildren().add(line("Nothing yet."));
+        // Kept (KP5): a row is a scope keyed by its month and words; what the card says only sometimes is a scope of its own.
+        if (rows.isEmpty()) card.getChildren().add(Kept.scope("nothing", () -> line("Nothing yet.")));
         int n = 0;
         for (Act a : rows) {
             if (n++ >= SECURITY_ROWS) break;
-            card.getChildren().add(actRow(g, a, false));
+            card.getChildren().add(Kept.scope("act:" + a.month() + ":" + a.what(), () -> actRow(g, a, false, "")));
         }
-        if (rows.size() > SECURITY_ROWS) card.getChildren().add(doorPill("All of it on Activity", Icons.REPORTS, Palette.MONEY, () -> go("Activity")));
+        if (rows.size() > SECURITY_ROWS) card.getChildren().add(Kept.scope("all", () -> doorPill("All of it on Activity", Icons.REPORTS, Palette.MONEY, () -> go("Activity"))));
         return card;
     }
 
@@ -1756,14 +1854,17 @@ final class FundScreen {
                 + "sold, and the income it was paid. The bank's shares can be in two books: the market book, which the rule "
                 + "trades, and the rescue book, which the city took in a rescue and the rule never sells."));
         for (PositionLine l : position(g, key)) {
-            if (l.value().isEmpty()) {
-                Label head = new Label(l.label());
-                head.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_MUTED) + " -fx-padding: 4 0 0 0;");
-                card.getChildren().add(head);
-                continue;
-            }
-            card.getChildren().add(narrowLine(l.label(), l.value(), l.tone()));
-            if (l.note() != null) card.getChildren().add(muted(l.note()));
+            // Kept (KP5): a line is a scope keyed by its label, its note a scope within it.
+            Kept.scope((l.value().isEmpty() ? "head:" : "line:") + l.label(), () -> {
+                if (l.value().isEmpty()) {
+                    Label head = Kept.label(l.label());
+                    head.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_MUTED) + " -fx-padding: 4 0 0 0;");
+                    card.getChildren().add(head);
+                    return;
+                }
+                card.getChildren().add(narrowLine(l.label(), l.value(), l.tone()));
+                if (l.note() != null) card.getChildren().add(Kept.scope("note", () -> muted(l.note())));
+            });
         }
         return card;
     }
@@ -1779,7 +1880,7 @@ final class FundScreen {
         Label what = words(label, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL);
         what.setMinWidth(96);
         what.setPrefWidth(150);
-        Label v = new Label(value);
+        Label v = Kept.label(value);
         v.setStyle(BuildScreen.figureAt(Palette.SIZE_LABEL + 1, tone == null ? Palette.TEXT_HEAD : tone));
         v.setWrapText(true);
         v.setMinWidth(0);
@@ -1787,7 +1888,7 @@ final class FundScreen {
         v.setAlignment(Pos.TOP_RIGHT);
         v.setTextAlignment(javafx.scene.text.TextAlignment.RIGHT);
         HBox.setHgrow(v, Priority.ALWAYS);
-        HBox row = new HBox(Palette.GAP, what, v);
+        HBox row = Kept.row(Palette.GAP, what, v);
         row.setAlignment(Pos.TOP_LEFT);
         return row;
     }
@@ -1795,7 +1896,7 @@ final class FundScreen {
     /** The city's stake in its bank as a ring, with a door to the Bank tab's owners (the rescue book's card's, here too). */
     VBox stakeCard(Game g) {
         double stake = g.cityStakeInBank();
-        HBox ring = new HBox(10, ring(stake, Palette.MONEY, 56, 6, FinancesScreen.pc(stake), 11),
+        HBox ring = Kept.row(10, ring(stake, Palette.MONEY, 56, 6, FinancesScreen.pc(stake), 11),
                 words("the city's stake in its bank, both books", Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
         ring.setAlignment(Pos.CENTER_LEFT);
         ring.setStyle("-fx-cursor: hand;");
@@ -1855,69 +1956,72 @@ final class FundScreen {
         card.getChildren().addAll(side, mode);
 
         /* ----- the figure and its steps ----- */
+        // Kept (KP5): a step is a scope keyed by its words in its row; what the ticket says only sometimes is a scope of its own.
         String[] figs = ticketFigure(g, t, bond, byAmount, amount);
         Label figLabel = figure(figs[0], Palette.SIZE_TITLE, amount > 0 ? Palette.TEXT_HEAD : Palette.TEXT_SPENT);
         String other = figs[1];
         card.getChildren().add(figLabel);
-        if (other != null) card.getChildren().add(muted(other));
-        FlowPane up = new FlowPane(4, 4), down = new FlowPane(4, 4);
+        if (other != null) card.getChildren().add(Kept.scope("other", () -> muted(other)));
+        FlowPane up = Kept.flow(4, 4), down = Kept.flow(4, 4);
         double held = t.quote() == null ? 0 : t.quote().unitsHeld();
         if (byAmount || bond) {
             for (double s : MONEY_STEPS) {
-                up.getChildren().add(stepChip("+" + d(g, s), () -> { amount += s; review = false; redraw(); }, false));
-                down.getChildren().add(stepChip("−" + d(g, s), () -> { amount = Math.max(0, amount - s); review = false; redraw(); }, true));
+                up.getChildren().add(Kept.scope("up:+" + s, () -> stepChip("+" + d(g, s), () -> { amount += s; review = false; redraw(); }, false)));
+                down.getChildren().add(Kept.scope("down:-" + s, () -> stepChip("−" + d(g, s), () -> { amount = Math.max(0, amount - s); review = false; redraw(); }, true)));
             }
         } else {
             for (double s : new double[] {1, 10, 100, 1_000}) {
-                up.getChildren().add(stepChip("+" + shares(s).replace(".00", ""), () -> { amount += s; review = false; redraw(); }, false));
-                down.getChildren().add(stepChip("−" + shares(s).replace(".00", ""), () -> { amount = Math.max(0, amount - s); review = false; redraw(); }, true));
+                up.getChildren().add(Kept.scope("up:+" + s, () -> stepChip("+" + shares(s).replace(".00", ""), () -> { amount += s; review = false; redraw(); }, false)));
+                down.getChildren().add(Kept.scope("down:-" + s, () -> stepChip("−" + shares(s).replace(".00", ""), () -> { amount = Math.max(0, amount - s); review = false; redraw(); }, true)));
             }
         }
         if (!buy && held > 0) {
             for (double part : new double[] {.25, .5, 1}) {
                 String w = part == 1 ? "all" : part == .5 ? "½" : "¼";
-                up.getChildren().add(stepChip(w, () -> {
+                up.getChildren().add(Kept.scope("up:" + w, () -> stepChip(w, () -> {
                     amount = byAmount ? held * part * (t.quote() == null ? 0 : t.quote().price()) : held * part;
                     review = false;
                     redraw();
-                }, false));
+                }, false)));
             }
         }
         if (buy && g.fundCashFree() > 0) {
-            up.getChildren().add(stepChip("all its free cash", () -> {
+            up.getChildren().add(Kept.scope("up:free", () -> stepChip("all its free cash", () -> {
                 byAmount = true;
                 amount = g.fundCashFree();
                 review = false;
                 redraw();
-            }, false));
+            }, false)));
         }
-        down.getChildren().add(stepChip("clear", () -> { amount = 0; review = false; redraw(); }, true));
+        down.getChildren().add(Kept.scope("down:clear", () -> stepChip("clear", () -> { amount = 0; review = false; redraw(); }, true)));
         card.getChildren().addAll(up, down);
 
         /* ----- the price ----- */
-        card.getChildren().add(priceChips(g, key, bond));
+        card.getChildren().add(Kept.scope("price", () -> priceChips(g, key, bond)));
 
         /* ----- the quote ----- */
         for (PositionLine l : t.lines()) {
-            card.getChildren().add(narrowLine(l.label(), l.value(), l.tone()));
-            if (l.note() != null) card.getChildren().add(muted(l.note()));
+            Kept.scope("line:" + l.label(), () -> {
+                card.getChildren().add(narrowLine(l.label(), l.value(), l.tone()));
+                if (l.note() != null) card.getChildren().add(Kept.scope("note", () -> muted(l.note())));
+            });
         }
 
         /* ----- the action ----- */
         ActionButton go = actionButton(Icons.EXCHANGE, Palette.MONEY, ACTION_TALL, t.press(), () -> press(g, key, t));
         go.setMaxWidth(Double.MAX_VALUE);
         card.getChildren().add(go);
-        if (review) card.getChildren().add(door("Change it", Palette.ACCENT, () -> { review = false; redraw(); }));
+        if (review) card.getChildren().add(Kept.scope("change", () -> door("Change it", Palette.ACCENT, () -> { review = false; redraw(); })));
         if (t.held() != null) {
             double needs = t.quote() == null ? 0 : Math.max(0, t.quote().money() - g.fundCashFree());
-            card.getChildren().add(doorPill("Pay in", Icons.COIN, Palette.MONEY, () -> {
+            card.getChildren().add(Kept.scope("payIn", () -> doorPill("Pay in", Icons.COIN, Palette.MONEY, () -> {
                 fin.fundAsk = needs > 0 ? needs : fin.fundAsk;
                 go("Rules & cash");
-            }));
+            })));
         }
 
         /* ----- this security's orders: waiting, and on the book ----- */
-        VBox waiting = waitingFor(g, key);
+        VBox waiting = Kept.scope("waiting", () -> waitingFor(g, key));
         if (waiting != null) card.getChildren().add(waiting);
         return card;
     }
@@ -1934,14 +2038,14 @@ final class FundScreen {
             review = false;
             redraw();
         });
-        HBox own = new HBox(6, stepper("−1%", 40, () -> { priceKind = OWN; steps--; review = false; redraw(); }),
+        HBox own = Kept.row(6, stepper("−1%", 40, () -> { priceKind = OWN; steps--; review = false; redraw(); }),
                 figure(OWN.equals(priceKind) ? signedPct(steps / 100.0) + " on fair" : "your own price",
                         Palette.SIZE_LABEL, OWN.equals(priceKind) ? Palette.TEXT_HEAD : Palette.TEXT_MUTED),
                 stepper("+1%", 40, () -> { priceKind = OWN; steps++; review = false; redraw(); }));
         own.setAlignment(Pos.CENTER_LEFT);
-        Label cap = new Label("PRICE");
+        Label cap = Kept.label("PRICE");
         cap.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-        return new VBox(4, cap, chips, own);
+        return Kept.column(4, cap, chips, own);
     }
 
     /** The price chips' words and the kind each picks: fair value (the rule's ask; a bond's value, the rule's price both ways) first, then the best bid, the best ask and the last trade where the book has them. */
@@ -2003,32 +2107,34 @@ final class FundScreen {
     /** The player's orders for one security - or all, with `key` null: waiting for the step, each with Cancel, and on the book, filled so far. */
     VBox waitingFor(Game g, String key) {
         TreasuryFund f = g.getFund();
-        VBox box = new VBox(4);
+        VBox box = Kept.column(4);
         List<TreasuryFund.HandOrder> waiting = f.getHandOrders();
+        // Kept (KP5): an order is a scope keyed by where it is and its place in its list, a head by its list.
         boolean any = false;
         for (int i = 0; i < waiting.size(); i++) {
             TreasuryFund.HandOrder o = waiting.get(i);
             String k = o.bond() ? FundLedger.bondKey(o.bondId()) : FundLedger.shareKey(Equity.COMPANIES[o.company()]);
             if (key != null && !FundView.sameLot(key, k)) continue;
-            if (!any) { box.getChildren().add(captionLine("WAITING FOR THE NEXT STEP")); any = true; }
+            if (!any) { box.getChildren().add(Kept.scope("waitingHead", () -> captionLine("WAITING FOR THE NEXT STEP"))); any = true; }
             int at = i;
-            box.getChildren().add(orderRow(orderWords(g, o, false), "Cancel", () -> {
+            box.getChildren().add(Kept.scope("waiting:" + i, () -> orderRow(orderWords(g, o, false), "Cancel", () -> {
                 g.fundCancelOrder(at);
                 redraw();
-            }));
+            })));
         }
         boolean posted = false;
+        int place = 0;
         for (TreasuryFund.HandOrder o : f.getPosted()) {
             String k = o.bond() ? FundLedger.bondKey(o.bondId()) : FundLedger.shareKey(Equity.COMPANIES[o.company()]);
             if (key != null && !FundView.sameLot(key, k)) continue;
-            if (!posted) { box.getChildren().add(captionLine("ON THE BOOK UNTIL THE NEXT STEP")); posted = true; }
-            box.getChildren().add(orderRow(orderWords(g, o, true), null, null));
+            if (!posted) { box.getChildren().add(Kept.scope("postedHead", () -> captionLine("ON THE BOOK UNTIL THE NEXT STEP"))); posted = true; }
+            box.getChildren().add(Kept.scope("posted:" + place++, () -> orderRow(orderWords(g, o, true), null, null)));
         }
         return any || posted ? box : null;
     }
 
     static Label captionLine(String text) {
-        Label l = new Label(text);
+        Label l = Kept.label(text);
         l.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_MUTED) + " -fx-padding: 6 0 0 0;");
         return l;
     }
@@ -2037,8 +2143,8 @@ final class FundScreen {
         Label w = words(words, Palette.SIZE_LABEL + 1, Palette.TEXT_BODY);
         HBox.setHgrow(w, Priority.ALWAYS);
         w.setMaxWidth(Double.MAX_VALUE);
-        HBox row = new HBox(8, w);
-        if (act != null) row.getChildren().add(door(act, Palette.ACCENT, go));
+        HBox row = Kept.row(8, w);
+        if (act != null) row.getChildren().add(Kept.scope("act", () -> door(act, Palette.ACCENT, go)));
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
     }
@@ -2067,77 +2173,90 @@ final class FundScreen {
 
     void activityPage(VBox page) {
         Game g = ui.game;
-        VBox waiting = waitingFor(g, null);
-        page.getChildren().add(card(caption("YOUR ORDERS", "Waiting for the next step - each can be cancelled until then - "
-                        + "and on the book from the last step until the next, with what has filled so far."),
-                waiting != null ? waiting : line("None waiting and none on the book.")));
-        FlowPane chips = chipStrip(GROUPS, group, Palette.SIZE_LABEL, pick -> { group = pick; activityMonths = ACTIVITY_MONTHS; redraw(); });
-        page.getChildren().add(sectionHead("WHAT IT DID", "Every trade the rule and your orders made, what the fund was paid, "
-                + "what went in and out of it, and what happened to it, newest first. A month's trades by the rule in "
-                + "one market are one line: open it for the lots. Before this build kept a record, the rescues and the "
-                + "fund's and the bank's decisions fill in, from the decision log.", chips));
+        // Kept (KP5): each part of the page is a scope of its own; a month is a scope keyed by its date and a line by its month and
+        // words, so a month that goes takes its own nodes with it.
+        page.getChildren().add(Kept.scope("orders", () -> {
+            VBox waiting = Kept.scope("waiting", () -> waitingFor(g, null));
+            return card(caption("YOUR ORDERS", "Waiting for the next step - each can be cancelled until then - "
+                            + "and on the book from the last step until the next, with what has filled so far."),
+                    waiting != null ? waiting : Kept.scope("none", () -> line("None waiting and none on the book.")));
+        }));
+        page.getChildren().add(Kept.scope("head", () -> {
+            FlowPane chips = chipStrip(GROUPS, group, Palette.SIZE_LABEL, pick -> { group = pick; activityMonths = ACTIVITY_MONTHS; redraw(); });
+            return sectionHead("WHAT IT DID", "Every trade the rule and your orders made, what the fund was paid, "
+                    + "what went in and out of it, and what happened to it, newest first. A month's trades by the rule in "
+                    + "one market are one line: open it for the lots. Before this build kept a record, the rescues and the "
+                    + "fund's and the bank's decisions fill in, from the decision log.", chips);
+        }));
         List<Act> rows = acts(g, group, null, activityMonths);
-        VBox list = new VBox(0);
-        int lastMonth = Integer.MIN_VALUE;
-        for (Act a : rows) {
-            if (a.month() != lastMonth) {
-                lastMonth = a.month();
-                Label m = new Label(CityCalendar.format(a.month()));
-                m.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL) + " -fx-padding: 8 0 2 6;");
-                list.getChildren().add(m);
-            }
-            list.getChildren().add(actRow(g, a, true));
-            String k = "fund:act:" + a.month() + ":" + a.what();
-            if (!a.inside().isEmpty() && open.contains(k)) {
-                for (Act inner : a.inside()) {
-                    HBox r = actRow(g, inner, false);
-                    r.setStyle(r.getStyle() + " -fx-padding: 2 6 2 40;");
-                    list.getChildren().add(r);
+        VBox list = Kept.scope("list", () -> {
+            VBox column = Kept.column(0);
+            int lastMonth = Integer.MIN_VALUE;
+            for (Act a : rows) {
+                if (a.month() != lastMonth) {
+                    lastMonth = a.month();
+                    final int dated = lastMonth;
+                    column.getChildren().add(Kept.scope("month:" + dated, () -> {
+                        Label m = Kept.label(CityCalendar.format(dated));
+                        m.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL) + " -fx-padding: 8 0 2 6;");
+                        return m;
+                    }));
+                }
+                String k = "fund:act:" + a.month() + ":" + a.what();
+                column.getChildren().add(Kept.scope("act:" + k, () -> actRow(g, a, true, "")));
+                if (!a.inside().isEmpty() && open.contains(k)) {
+                    for (Act inner : a.inside()) {
+                        column.getChildren().add(Kept.scope("inside:" + k + ":" + inner.what(), () -> actRow(g, inner, false, " -fx-padding: 2 6 2 40;")));
+                    }
                 }
             }
-        }
-        if (rows.isEmpty()) list.getChildren().add(line("Nothing in the last " + activityMonths + " months."));
-        page.getChildren().add(card(list));
+            if (rows.isEmpty()) column.getChildren().add(Kept.scope("nothing", () -> line("Nothing in the last " + activityMonths + " months.")));
+            return column;
+        });
+        page.getChildren().add(Kept.scope("card", () -> card(list)));
         List<Act> older = acts(g, group, null, 0);
         if (older.size() > rows.size()) {
-            page.getChildren().add(door("Show older", Palette.ACCENT, () -> { activityMonths += ACTIVITY_MONTHS; redraw(); }));
+            page.getChildren().add(Kept.scope("older", () -> door("Show older", Palette.ACCENT, () -> { activityMonths += ACTIVITY_MONTHS; redraw(); })));
         }
         FundLedger ledger = g.getFund().getLedger();
         if (ledger.getDropped() > 0) {
-            page.getChildren().add(muted("The record keeps its newest " + FundLedger.ACTIVITY_ROWS + " lines; "
-                    + ledger.getDropped() + " older ones have gone."));
+            page.getChildren().add(Kept.scope("dropped", () -> muted("The record keeps its newest " + FundLedger.ACTIVITY_ROWS + " lines; "
+                    + ledger.getDropped() + " older ones have gone.")));
         }
     }
 
-    /** One line of the record: what, by whom, units, money, realized, and "›" to its security; a grouped line opens. */
-    HBox actRow(Game g, Act a, boolean dated) {
+    /** One line of the record: what, by whom, units, money, realized, and "›" to its security; a grouped line opens. `extra` is more style for the row (an inner line's deeper padding). */
+    HBox actRow(Game g, Act a, boolean dated, String extra) {
         Label what = words(a.what(), Palette.SIZE_LABEL + 1, Palette.TEXT_BODY);
         HBox.setHgrow(what, Priority.ALWAYS);
         what.setMaxWidth(Double.MAX_VALUE);
         if (!a.inside().isEmpty()) {
             String k = "fund:act:" + a.month() + ":" + a.what();
             what.setText((open.contains(k) ? "▾ " : "▸ ") + a.what());
-            what.setStyle(what.getStyle() + " -fx-cursor: hand;");
+            // Kept (KP5): the cursor is added once to a style words() set whole a moment ago, never built on again.
+            handStyle(what);
             what.setOnMouseClicked(e -> { if (!open.remove(k)) open.add(k); redraw(); });
         }
         Label by = words(a.by(), Palette.SIZE_CAPTION, Palette.TEXT_MUTED);
         by.setMinWidth(80);
         by.setPrefWidth(80);
-        HBox row = new HBox(8, what, by, figureCell(a.units(), Palette.TEXT_LABEL, null, 110),
+        HBox row = Kept.row(8, what, by, figureCell(a.units(), Palette.TEXT_LABEL, null, 110),
                 figureCell(a.money(), null, null, 110),
                 figureCell(a.realized() == null ? "" : a.realized().text(), a.realized() == null ? null : a.realized().tone(), null, 150));
         if (a.key() != null) {
-            Label arrow = new Label("›");
-            arrow.setStyle(Palette.strong(Palette.SIZE_HEADING + 2, Palette.ACCENT) + " -fx-cursor: hand;");
-            arrow.setMinWidth(16);
-            String key = a.key();
-            arrow.setOnMouseClicked(e -> openSecurity(key));
-            row.getChildren().add(arrow);
+            row.getChildren().add(Kept.scope("arrow", () -> {
+                Label arrow = Kept.label("›");
+                arrow.setStyle(Palette.strong(Palette.SIZE_HEADING + 2, Palette.ACCENT) + " -fx-cursor: hand;");
+                arrow.setMinWidth(16);
+                String key = a.key();
+                arrow.setOnMouseClicked(e -> openSecurity(key));
+                return arrow;
+            }));
         } else {
-            row.getChildren().add(spacer(16));
+            row.getChildren().add(Kept.scope("space", () -> spacer(16)));
         }
         row.setAlignment(Pos.CENTER_LEFT);
-        row.setStyle("-fx-padding: 2 6 2 6; -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 0 1 0;");
+        row.setStyle("-fx-padding: 2 6 2 6; -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 0 1 0;" + extra);
         return row;
     }
 
@@ -2151,17 +2270,25 @@ final class FundScreen {
 
     void rulesPage(VBox page) {
         Game g = ui.game;
-        page.getChildren().add(withdrawalCard(g));
-        GridPane three = equalColumns(3, TILE_GAP);
-        VBox dial = dialCard(g), transfer = transferCard(g), rescue = rescueBookCard(g);
-        for (VBox c : List.of(dial, transfer, rescue)) GridPane.setFillHeight(c, true);
-        three.add(dial, 0, 0);
-        three.add(transfer, 1, 0);
-        three.add(rescue, 2, 0);
-        page.getChildren().add(three);
-        page.getChildren().add(pair(moveCard(g), ruleCard(g)));
-        VBox waiting = waitingFor(g, null);
-        page.getChildren().add(card(caption("YOUR ORDERS", null), waiting != null ? waiting : line("None waiting and none on the book.")));
+        // Kept (KP5): each part of the page is a scope of its own.
+        page.getChildren().add(Kept.scope("withdrawal", () -> withdrawalCard(g)));
+        page.getChildren().add(Kept.scope("three", () -> {
+            GridPane three = equalColumns(3, TILE_GAP);
+            VBox dial = Kept.scope("dial", () -> dialCard(g)), transfer = Kept.scope("transfer", () -> transferCard(g)),
+                    rescue = Kept.scope("rescue", () -> rescueBookCard(g));
+            for (VBox c : List.of(dial, transfer, rescue)) GridPane.setFillHeight(c, true);
+            three.add(dial, 0, 0);
+            three.add(transfer, 1, 0);
+            three.add(rescue, 2, 0);
+            return three;
+        }));
+        Node move = Kept.scope("move", () -> moveCard(g));
+        Node rule = Kept.scope("rule", () -> ruleCard(g));
+        page.getChildren().add(Kept.scope("pair", () -> pair(move, rule)));
+        page.getChildren().add(Kept.scope("orders", () -> {
+            VBox waiting = Kept.scope("waiting", () -> waitingFor(g, null));
+            return card(caption("YOUR ORDERS", null), waiting != null ? waiting : Kept.scope("none", () -> line("None waiting and none on the book.")));
+        }));
     }
 
     /** The dial's (i). */
@@ -2178,12 +2305,13 @@ final class FundScreen {
         VBox card = card(caption("THE DIAL", dialInfo()),
                 figure(String.format("%.0f%% of the year's surplus", fund.getDial() * 100), Palette.SIZE_LEAD,
                         fund.getDial() > 0 ? Palette.TEXT_HEAD : Palette.TEXT_SPENT));
-        FlowPane steps = new FlowPane(6, 6);
+        FlowPane steps = Kept.flow(6, 6);
+        // Kept (KP5): a step is a scope keyed by its words.
         for (double step : new double[] {-.5, -.1, .1, .5}) {
-            steps.getChildren().add(stepChip(String.format("%+.0f points", step * 100), () -> {
+            steps.getChildren().add(Kept.scope("step:" + step, () -> stepChip(String.format("%+.0f points", step * 100), () -> {
                 g.setFundDial(Math.max(0, Math.min(TreasuryFund.MAX_DIAL, fund.getDial() + step)));
                 redraw();
-            }, step < 0));
+            }, step < 0)));
         }
         card.getChildren().add(steps);
         card.getChildren().add(line("Once a year, in December, the fund takes this share of the year's surplus."));
@@ -2192,20 +2320,20 @@ final class FundScreen {
         // CD7: the surplus above leaves out the D$'s move on the foreign debt (it moved no cash), so the budget's own surplus can differ from it by that.
         double exchange = g.debtExchangeThisYearSoFar();
         if (Math.abs(exchange) >= .5) {
-            card.getChildren().add(muted("the D$'s move on the foreign debt, " + signed(g, exchange) + ", left out: it moved no cash"));
+            card.getChildren().add(Kept.scope("exchange", () -> muted("the D$'s move on the foreign debt, " + signed(g, exchange) + ", left out: it moved no cash")));
         }
         card.getChildren().add(cardLine("...kept for the fund from the rollover", d(g, g.fundReservation()), null));
         card.getChildren().add(cardLine("A month of the treasury's spending, the floor", d(g, g.monthOfSpending()), null));
         card.getChildren().add(cardLine("The last pay-in", fund.getLastPayInMonth() >= 0
                 ? CityCalendar.formatShort(fund.getLastPayInMonth()) : "never", null));
-        card.getChildren().add(details("fund:life", "what it has been paid", open, this::redraw, () -> FinancesScreen.column(
+        card.getChildren().add(Kept.scope("fund:life", () -> details("fund:life", "what it has been paid", open, this::redraw, () -> FinancesScreen.column(
                 statementLine("The last pay-in", fund.getLastPayInMonth() >= 0
                         ? String.format("%s: %s from the surplus, %s from cash", CityCalendar.format(fund.getLastPayInMonth()),
                                 d(g, fund.getLastPayInFromSurplus()), d(g, fund.getLastPayInFromCash())) : "never"),
                 statementLine("Paid in by the dial, over its life", d(g, fund.getPaidInFromSurplus()) + " from the surplus · "
                         + d(g, fund.getPaidInFromCash()) + " from cash"),
                 statementLine("...and by hand, in and out", d(g, fund.getHandPaidIn()) + " in  ·  "
-                        + d(g, fund.getHandDrawnOut()) + " out"))));
+                        + d(g, fund.getHandDrawnOut()) + " out")))));
         return card;
     }
 
@@ -2315,14 +2443,15 @@ final class FundScreen {
         card.getChildren().add(cardLine("Last month's, on what it was worth", d(g, fund.getTransferDue()), null));
         card.getChildren().add(cardLine("...paid from its cash", d(g, fund.getTransferPaid()), null));
         // Over the default the short is what the step sells for, paid at the next top (0.7.48): its own words, no warning.
+        // Kept (KP5): what the card says only sometimes is a scope of its own.
         if (fund.getToRaise() > 0) {
-            card.getChildren().add(cardLine("...sold for, to pay next month", d(g, fund.getToRaise()), null));
+            card.getChildren().add(Kept.scope("toRaise", () -> cardLine("...sold for, to pay next month", d(g, fund.getToRaise()), null)));
         } else {
-            card.getChildren().add(cardLine("...not paid, for want of cash", d(g, fund.getTransferShort()),
-                    fund.getTransferShort() > 0 ? Palette.WARN : Palette.TEXT_SPENT));
+            card.getChildren().add(Kept.scope("short", () -> cardLine("...not paid, for want of cash", d(g, fund.getTransferShort()),
+                    fund.getTransferShort() > 0 ? Palette.WARN : Palette.TEXT_SPENT)));
         }
         if (fund.getTransferPaidLate() > 0) {
-            card.getChildren().add(cardLine("...and the month before's, paid from what it sold", d(g, fund.getTransferPaidLate()), null));
+            card.getChildren().add(Kept.scope("late", () -> cardLine("...and the month before's, paid from what it sold", d(g, fund.getTransferPaidLate()), null)));
         }
         // ...and the year's short without what the step is selling for, the line above's, which the next month
         // pays: "not paid" was counting it (0.7.102, Jerus's B - the fund summary neutral while the dial sells).
@@ -2348,7 +2477,7 @@ final class FundScreen {
     VBox rescueBookCard(Game g) {
         Bank bank = g.getBank();
         double stake = g.cityStakeInBank();
-        HBox ring = new HBox(10, ring(stake, Palette.MONEY, 56, 6, FinancesScreen.pc(stake), 11),
+        HBox ring = Kept.row(10, ring(stake, Palette.MONEY, 56, 6, FinancesScreen.pc(stake), 11),
                 words("the city's stake in its bank", Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
         ring.setAlignment(Pos.CENTER_LEFT);
         VBox card = card(caption("THE RESCUE BOOK", RESCUE_BOOK_INFO), ring,
@@ -2357,7 +2486,7 @@ final class FundScreen {
                 cardLine("...its dividends owed and unpaid", d(g, bank.getPreferredArrears()),
                         bank.getPreferredArrears() > 0 ? Palette.WARN : null),
                 cardLine("The warrants on its shares", d(g, g.fundWarrantsValue()), null));
-        for (String t : rescueTerms(g)) card.getChildren().add(muted(t));
+        for (String t : rescueTerms(g)) card.getChildren().add(Kept.scope("term:" + t, () -> muted(t)));
         return card;
     }
 
@@ -2390,12 +2519,13 @@ final class FundScreen {
                 cardLine("...of it free, not held for your orders", d(g, g.fundCashFree()), null));
         card.getChildren().add(figure(fin.fundAsk <= 0 ? "nothing asked for yet" : d(g, fin.fundAsk),
                 Palette.SIZE_TITLE, fin.fundAsk > 0 ? Palette.TEXT_HEAD : Palette.TEXT_SPENT));
-        FlowPane up = new FlowPane(6, 6), down = new FlowPane(6, 6);
+        FlowPane up = Kept.flow(6, 6), down = Kept.flow(6, 6);
+        // Kept (KP5): a step is a scope keyed by its words in its row.
         for (double step : MONEY_STEPS) {
-            up.getChildren().add(stepChip("+" + d(g, step), () -> { fin.fundAsk += step; redraw(); }, false));
-            down.getChildren().add(stepChip("−" + d(g, step), () -> { fin.fundAsk = Math.max(0, fin.fundAsk - step); redraw(); }, false));
+            up.getChildren().add(Kept.scope("up:" + step, () -> stepChip("+" + d(g, step), () -> { fin.fundAsk += step; redraw(); }, false)));
+            down.getChildren().add(Kept.scope("down:" + step, () -> stepChip("−" + d(g, step), () -> { fin.fundAsk = Math.max(0, fin.fundAsk - step); redraw(); }, false)));
         }
-        down.getChildren().add(stepChip("clear", () -> { fin.fundAsk = 0; redraw(); }, true));
+        down.getChildren().add(Kept.scope("down:clear", () -> stepChip("clear", () -> { fin.fundAsk = 0; redraw(); }, true)));
         card.getChildren().addAll(up, down);
         Press in = payInPress(g, fin.fundAsk), out = drawOutPress(g, fin.fundAsk);
         ActionButton payIn = actionButton(Icons.COIN, Palette.MONEY, ACTION_TALL, in, () -> {
