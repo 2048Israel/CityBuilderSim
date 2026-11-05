@@ -2,7 +2,7 @@
 
 Generated 2026-11-05 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**173 harness files, 19,406 labelled assertions.** AllChecks runs 173 of them.
+**173 harness files, 19,437 labelled assertions.** AllChecks runs 173 of them.
 
 ## Which harnesses read which class
 
@@ -151,7 +151,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [IndustryPicture](map/IndustryPicture.md) | IndustryViewCheck |
 | [IndustryView](map/IndustryView.md) | IndustryViewCheck, OilCheck |
 | [InflationLinkedBond](map/InflationLinkedBond.md) | DeskCheck, FloatLinkCheck |
-| [InfrastructureManager](map/InfrastructureManager.md) | BuildCardCheck, CarCheck, FreightViewCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, LongPlaytest, PortCheck, RailCheck, ReadPathCheck, RoadCheck, SaveFileCheck, TradeCostCheck, TruckCheck |
+| [InfrastructureManager](map/InfrastructureManager.md) | BuildCardCheck, CarCheck, FreightViewCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, KeptCheck, LongPlaytest, PortCheck, RailCheck, ReadPathCheck, RoadCheck, SaveFileCheck, TradeCostCheck, TruckCheck |
 | [InfrastructureScreen](map/InfrastructureScreen.md) | **none** |
 | [InputLog](map/InputLog.md) | ReplayCheck |
 | [InputRecorder](map/InputRecorder.md) | **none** |
@@ -13110,7 +13110,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2150 21d. a + of two one-plot streets keeps its four corners of verge: nothing is filled between single bars
   - L2161 21e. a band across the corner of four tiles is one carriageway too: every pixel between its edges paved, across the seam
 
-## KeptCheck.java - 56 labelled assertions
+## KeptCheck.java - 87 labelled assertions
 
 > The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each
 > month's redraw run over last month's nodes ends exactly where a page built new would, and costs
@@ -13126,81 +13126,118 @@ _(this harness does not label its checks through a helper - it prints its findin
 > times the kept month.
 > ...
 
-- **L260 6: the chrome is kept**
-  - L293 each month's redraw keeps the nodes the header and the rail drew (the same top nodes,
-  - L295 each month hands back nine in ten of the nodes the first draw made, or more (
-  - L297 most months make no node at all (
-- **L300 7 and 8: the kept chrome against a chrome built new, in every state**
-  - L360 the kept chrome's signature equals the new chrome's at every month, through every state (
-- **L362 8: and its pixels**
-  - L364 the kept header and rail are the same pictures as the new ones at
-  - L386 one figure made wrong in the kept header (\"
-  - L388 ...and its picture
-  - L389 ...and the next kept draw sets it right again
-  - L399 a header node that had the focus loses it at the next kept draw, as the rebuild took it
-  - L424 a rail button drawn again under the pointer keeps its hover look, and loses it when the pointer goes
-  - L426 ...and so does a header tile
-- **L428 9: a city opened forgets the chrome**
-  - L441 before the forgetting a draw makes few nodes, after it every node is new (
-  - L445 a draw within another pool's draw gives each pool its own nodes (the envelope inside the header)
-- **L447 10: what the kept chrome costs**
-- **L502 11: the panels are kept**
-  - L552 each month's redraw keeps the nodes the three panels drew (the same top nodes,
-  - L554 each month hands back nine in ten of the nodes the first draw made, or more (
-  - L558 the nodes made in a month are few (
-- **L561 12: the kept panels against panels built new, in every state**
-  - L619 the kept panels' signatures equal the new panels' at every month, through every state (
-  - L621 the kept panels are the same pictures as the new ones at
-  - L643 one figure made wrong in the kept city panel (\"
-  - L645 ...and its picture
-  - L646 ...and the next kept draw sets it right again
-  - L663 the city panel's scroller is kept and stays where it was put (
-  - L683 a summary row drawn again under the pointer keeps its hover look, and loses it when the pointer goes
-  - L699 an inbox button that had the focus loses it at the next kept draw, as the rebuild took it
-- **L701 13: what the whole chrome costs, kept**
-- **L762 14: City History is kept**
-  - L778 the page holds the big chart and the two pins' (
-  - L806 each month's redraw keeps the page it drew (the same top nodes,
-  - L807 each month hands back nine in ten of the nodes the first draw made, or more (
-  - L809 most months make no node at all (
-  - L810 the big chart and both pins' stay in the scene, in the same box, after every redraw (
-  - L812 the legend's chips and the range buttons are the same nodes after every redraw (
-  - L814 no label's graphic is taken off the scene and put back by a kept redraw (
-- **L817 15 and 16: the kept page, month after month, against a page built new, and its pixels**
-  - L858 the kept page's signature equals the new page's at every month (
-  - L860 the kept page and the new page are the same picture at
-  - L881 one figure made wrong on the kept page (\"
-  - L883 ...and its picture
-  - L884 ...and the next kept draw sets it right again
-- **L886 17: what reshapes the page**
-- **L1001 18: the crosshair and the window survive a month**
-  - L1029 a month landed (the history grew by one)
-  - L1030 a window on the newest month follows it across a kept redraw
-  - L1031 a window put by hand, ending before the newest month, stays where it was across a kept redraw
-  - L1049 the pointer over the big chart's plot shows its crosshair
-  - L1050 the crosshair is still there after a kept redraw
-  - L1051 ...and a page built new, which takes the chart off the scene, clears it
-  - L1072 a legend chip has a tooltip to keep
-  - L1073 a legend chip under the pointer is still the same chip, still under it, with the same tooltip, after a kept redraw
-  - L1075 ...and a page built new has a chip of its own, with no pointer on it
-- **L1085 19: the count-up only at 1x-10x**
-  - L1123 a month landing on People starts the headcount's count-up exactly at the rungs countsUp() allows, and when paused (
-  - L1155 a month landing on City History starts the pin's count-up exactly at the rungs countsUp() allows, and when paused (
-  - L1178 a count-up running when a month lands past COUNT_UP_TOP is stopped, and the figure is the month's
-- **L1183 20: what the kept City History month costs**
-- **L1221 KeptCheck: the People page, the chrome and City History kept between redraws (study UP4, UP2, KP1)**
-- **L1236 1 and 2: the kept page, month after month, against a page built new**
-  - L1291 each month's redraw keeps the page it drew (the same top node,
-  - L1292 each month hands back nine in ten of the nodes the first draw made, or more (
-  - L1294 most months make no node at all (
-  - L1296 the kept page's signature equals the new page's at every month (
-- **L1298 3: and its pixels**
-  - L1300 the kept page and the new page are the same picture at
-  - L1320 one figure made wrong on the kept page (\"
-  - L1322 ...and its picture
-  - L1323 ...and the next kept draw sets it right again
-- **L1325 4: what reshapes the page**
-- **L1360 5: what the kept month costs**
+- **L305 6: the chrome is kept**
+  - L338 each month's redraw keeps the nodes the header and the rail drew (the same top nodes,
+  - L340 each month hands back nine in ten of the nodes the first draw made, or more (
+  - L342 most months make no node at all (
+- **L345 7 and 8: the kept chrome against a chrome built new, in every state**
+  - L405 the kept chrome's signature equals the new chrome's at every month, through every state (
+- **L407 8: and its pixels**
+  - L409 the kept header and rail are the same pictures as the new ones at
+  - L431 one figure made wrong in the kept header (\"
+  - L433 ...and its picture
+  - L434 ...and the next kept draw sets it right again
+  - L444 a header node that had the focus loses it at the next kept draw, as the rebuild took it
+  - L469 a rail button drawn again under the pointer keeps its hover look, and loses it when the pointer goes
+  - L471 ...and so does a header tile
+- **L473 9: a city opened forgets the chrome**
+  - L486 before the forgetting a draw makes few nodes, after it every node is new (
+  - L490 a draw within another pool's draw gives each pool its own nodes (the envelope inside the header)
+- **L492 10: what the kept chrome costs**
+- **L547 11: the panels are kept**
+  - L597 each month's redraw keeps the nodes the three panels drew (the same top nodes,
+  - L599 each month hands back nine in ten of the nodes the first draw made, or more (
+  - L603 the nodes made in a month are few (
+- **L606 12: the kept panels against panels built new, in every state**
+  - L664 the kept panels' signatures equal the new panels' at every month, through every state (
+  - L666 the kept panels are the same pictures as the new ones at
+  - L688 one figure made wrong in the kept city panel (\"
+  - L690 ...and its picture
+  - L691 ...and the next kept draw sets it right again
+  - L708 the city panel's scroller is kept and stays where it was put (
+  - L728 a summary row drawn again under the pointer keeps its hover look, and loses it when the pointer goes
+  - L744 an inbox button that had the focus loses it at the next kept draw, as the rebuild took it
+- **L746 13: what the whole chrome costs, kept**
+- **L811 14: City History is kept**
+  - L827 the page holds the big chart and the two pins' (
+  - L855 each month's redraw keeps the page it drew (the same top nodes,
+  - L856 each month hands back nine in ten of the nodes the first draw made, or more (
+  - L858 most months make no node at all (
+  - L859 the big chart and both pins' stay in the scene, in the same box, after every redraw (
+  - L861 the legend's chips and the range buttons are the same nodes after every redraw (
+  - L863 no label's graphic is taken off the scene and put back by a kept redraw (
+- **L866 15 and 16: the kept page, month after month, against a page built new, and its pixels**
+  - L907 the kept page's signature equals the new page's at every month (
+  - L909 the kept page and the new page are the same picture at
+  - L930 one figure made wrong on the kept page (\"
+  - L932 ...and its picture
+  - L933 ...and the next kept draw sets it right again
+- **L935 17: what reshapes the page**
+- **L1050 18: the crosshair and the window survive a month**
+  - L1078 a month landed (the history grew by one)
+  - L1079 a window on the newest month follows it across a kept redraw
+  - L1080 a window put by hand, ending before the newest month, stays where it was across a kept redraw
+  - L1098 the pointer over the big chart's plot shows its crosshair
+  - L1099 the crosshair is still there after a kept redraw
+  - L1100 ...and a page built new, which takes the chart off the scene, clears it
+  - L1121 a legend chip has a tooltip to keep
+  - L1122 a legend chip under the pointer is still the same chip, still under it, with the same tooltip, after a kept redraw
+  - L1124 ...and a page built new has a chip of its own, with no pointer on it
+- **L1134 19: the count-up only at 1x-10x**
+  - L1172 a month landing on People starts the headcount's count-up exactly at the rungs countsUp() allows, and when paused (
+  - L1204 a month landing on City History starts the pin's count-up exactly at the rungs countsUp() allows, and when paused (
+  - L1227 a count-up running when a month lands past COUNT_UP_TOP is stopped, and the figure is the month's
+- **L1232 20: what the kept City History month costs**
+  - L1312 each month's redraw keeps the page it drew (the same top nodes,
+  - L1313 each month hands back nine in ten of the nodes the first draw made, or more (
+  - L1315 most months make no node at all (
+  - L1362 the kept page's signature equals the new page's at every month (
+  - L1364 the kept page and the new page are the same picture at
+  - L1385 one figure made wrong on the kept page (\"
+  - L1387 ...and its picture
+  - L1388 ...and the next kept draw sets it right again
+  - L1434 a month's redraw after each choice hands back nine in ten of the page's nodes, or more
+- **L1506 Infrastructure (KP2)**
+- **L1544 Services (KP2)**
+- **L1567 The land office (KP2)**
+- **L1600 33: the land office's other pages**
+- **L1623 34: a control keeps the player's hand**
+  - L1686 the Transit page has a fare dial (a slider) to hold
+  - L1691 a slider pressed is held
+  - L1692 a month landing on a held slider leaves the same slider node, still held
+  - L1693 ...its value still the thumb's (
+  - L1694 ...the reading the thumb's words in the month's money (\"
+  - L1696 ...Ladder.shown() the thumb's value, not the staged one
+  - L1697 ...and nothing is staged before the release
+  - L1698 a slider released is not held
+  - L1699 ...the fare is staged at the thumb (
+  - L1700 ...and the page is the same slider, kept, equal to a page built new
+  - L1702 after several kept months the one slider node still carries the dial
+  - L1703 a value set outside any draw updates the reading of the latest draw (\"
+  - L1705 ...and it is the reading on the page
+  - L1706 the fare is unstaged at the end of the section
+  - L1717 City History's filter box takes the focus (
+  - L1727 a month landing keeps the filter box (the same node)
+  - L1728 ...its text (\"
+  - L1729 ...its caret (
+  - L1731 ...and its focus
+  - L1742 Kept.text leaves a field with the focus as the player typed it (\"
+  - L1743 ...and sets a field that has none (\"
+- **L1748 35: the hover is kept**
+  - L1808 a
+- **L1831 KeptCheck: the People page, the chrome, City History, Infrastructure, Services and the land office kept between redraws (study UP4, UP2, ...**
+- **L1846 1 and 2: the kept page, month after month, against a page built new**
+  - L1901 each month's redraw keeps the page it drew (the same top node,
+  - L1902 each month hands back nine in ten of the nodes the first draw made, or more (
+  - L1904 most months make no node at all (
+  - L1906 the kept page's signature equals the new page's at every month (
+- **L1908 3: and its pixels**
+  - L1910 the kept page and the new page are the same picture at
+  - L1930 one figure made wrong on the kept page (\"
+  - L1932 ...and its picture
+  - L1933 ...and the next kept draw sets it right again
+- **L1935 4: what reshapes the page**
+- **L1970 5: what the kept month costs**
 
 ## KnownRedsCheck.java - 43 labelled assertions
 

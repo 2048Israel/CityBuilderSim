@@ -1,9 +1,11 @@
 # KP2 - Screens kept: Land, Services and Infrastructure; the controls' rule; KP1's hover kept ({next}, 2026-11-04)
 
-**WHERE IT STANDS** (2026-11-04, late): the five slices are in and reviewed; KeptCheck passes whole (276), and the
-24 harnesses KP2 picks against BA1's tip are green but for BA1's own two (LongPlaytest's layout ring, passed by name
-at BA1's gate; CapitalFlowCheck's fixture, mended on BA1's branch after KP2 branched). Waiting for BA1 to land, then
-`origin/main` merged, the picked harnesses again, and the ship file last.
+**WHERE IT STANDS** (2026-11-05, 05:50): the five slices are in and reviewed; BA1's mended tip (a069746e, with R0b
+and R0c) is merged in, R0b's new causes-of-death section on Services' Health page kept at the merge (§6). The 25
+harnesses KP2 picks against BA1's tip: KeptCheck and 22 more green; the reds are BA1's, each in its notes and passed
+by name at its gate - MapCheck 2d's yard (81 of 500) and 2h's reserve (11, 21), DM2's class; LongPlaytest's "a
+building on the map moved" twice at months 2390-2393, DM1's. Waiting for BA1 to land, then `origin/main` merged and
+the ship file last.
 
 The batch's record. The study's KP2 row (`docs/studies/spec-screens-in-place.md` §7) with §3 (the pattern and its
 five rules) and §6 (what checks it); `QUEUE.md`'s row adds KP1's gate review (a kept row under a still pointer loses
@@ -149,5 +151,8 @@ a hidden tag 22 px tall kept against 17 built new); `CauseBar`'s hidden names an
   Infrastructure's and Services' pools forgotten with the city in `anotherCity()`; Land's side chips stripped of
   their graphic by `chipStrip` and given it back every draw (off the scene and on again) - `chipStrip` takes the
   caller's graphics now, as KP1 made it take its icons.
+- **At BA1's mended tip's merge:** R0b's "what people die of" on Services' Health page (its heading, its card of
+  seven causes and its notes) came made with `new VBox`: its heading and card are scopes now, its two columns
+  `Kept.column`; the table's rows are always seven, so the card's one scope holds them.
 - **By the harness:** before the new sections, KeptCheck's 94 held but one, History's goods' fold: a hidden part
   of the new `ScaleRows` picture kept last month's height (slice E's first mend, §5).
