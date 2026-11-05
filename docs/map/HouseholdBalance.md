@@ -1,6 +1,6 @@
 # HouseholdBalance.java - 4,722 lines · 247 methods · 48 constants · model
 
-`ham/citybuildersim/HouseholdBalance.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HouseholdBalance.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
 > The households' balance sheet: what they have saved, what they owe, and what
 > happens in the month they cannot cover the shop.
@@ -470,7 +470,7 @@
 | line | len | member | says |
 |---:|---:|---|---|
 | 3004 | 3 | `public void seedConstants(double unit)` | Re-seeds the floor at a given unit. |
-| 3024 | 1 | `private boolean owes(Household c)` | WHETHER A CELL OWES ANYTHING, READ AT THE SAME FLOOR (0.7.12 round 6). |
+| 3024 | 1 | `boolean owes(Household c)` | WHETHER A CELL OWES ANYTHING, READ AT THE SAME FLOOR (0.7.12 round 6). |
 | 3029 | 3 | `public void setExchangeRate(double localPerUsd)` |  |
 | 3033 | 1 | `public double getExchangeRate()` |  |
 | 3050 | 70 | `public void investAbroad(double depositRate, double worldRate, double rate)` | Every household decides where to keep its idle money: what is past the cushion goes abroad towards the target share, a little a month; what is abroad comes home when the target falls. |

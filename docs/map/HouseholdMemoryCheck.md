@@ -1,6 +1,6 @@
-# HouseholdMemoryCheck.java - 278 lines · 6 methods · 1 constants · harnesses
+# HouseholdMemoryCheck.java - 292 lines · 6 methods · 1 constants · harnesses
 
-`ham/citybuildersim/HouseholdMemoryCheck.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HouseholdMemoryCheck.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
 > The households remember: the builder keeps what still fits.
 > 
@@ -10,7 +10,7 @@
 > save and on the graphs. Every claim sets its own cause. See
 > claude/the-households-remember.md.
 
-**Uses:** [FamilyStructure](FamilyStructure.md) (36), [FamilyModel](FamilyModel.md) (32), [PayTier](PayTier.md) (14), [AgeBand](AgeBand.md) (10), [PopulationCohorts](PopulationCohorts.md) (8), [Game](Game.md) (4), [GameFiles](GameFiles.md) (2), [HistorySave](HistorySave.md) (2), [TempDirs](TempDirs.md) (1), [BuildingManager](BuildingManager.md) (1)
+**Uses:** [FamilyStructure](FamilyStructure.md) (36), [FamilyModel](FamilyModel.md) (32), [PayTier](PayTier.md) (14), [AgeBand](AgeBand.md) (10), [PopulationCohorts](PopulationCohorts.md) (8), [Game](Game.md) (4), [GameFiles](GameFiles.md) (2), [HistorySave](HistorySave.md) (2), [TempDirs](TempDirs.md) (1), [BuildingManager](BuildingManager.md) (1), [LandManager](LandManager.md) (1)
 
 ## Sections
 
@@ -40,11 +40,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 12 | 267 | **type** `public class HouseholdMemoryCheck` | The households remember: the builder keeps what still fits. |
+| 12 | 281 | **type** `public class HouseholdMemoryCheck` | The households remember: the builder keeps what still fits. |
 | 16 | 5 | `static void check(String label, double actual, double expected, double tol)` |  |
 | 22 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 27 | 5 | `static void quietly(Runnable work)` |  |
 | 34 | 7 | `static PopulationCohorts pyramid(double babies, double children, double teens, double adults, double seniors)` | A pyramid from the five bands this fixture cares about. |
 | 46 | 5 | `static double total(FamilyModel f)` |  |
-| 52 | 226 | `public static void main(String[] args) throws Exception` |  |
+| 52 | 240 | `public static void main(String[] args) throws Exception` |  |
 
