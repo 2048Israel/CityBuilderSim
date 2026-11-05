@@ -52,7 +52,7 @@
     within", "is the same to the person"): the class the orchestrator names R0's farm retirement at 1900 prices (RT1).
     The bond search's stop (BS1, above) is a second source of the same size.
   - SlopeCheck and DeathRecordCheck pass on this tree.
-- The ensemble on b4bf96f4 (run BA1e, started 02:08) replaces `docs/ensemble/BA1.md` when it holds.
+- The ensemble on b4bf96f4 (run BA1e): 22/26 against 0.9.12's 24/26. Section 4 has the comparison.
 - Next: the slices' mends brought here, the full suite once more, alone, then the ship file.
 
 **WHERE IT STOOD (2026-11-04, 22:45): the gate stopped at 22:00; the ship file is off.**
@@ -279,7 +279,19 @@ A bust is people 15%+ under a running peak from m120, and a new one only after a
 gives 25 for BA1 without it). Once is taken. Squared shortened the queue but busted more, and with 16 seeds the two
 are within each other's noise.
 
-### The run on the final model: `docs/ensemble/BA1.md` (2026-11-04 evening)
+### The run on the final model: `docs/ensemble/BA1.md` (2026-11-05, 02:08)
+
+Run `BA1e` on b4bf96f4: the brake, the rounding edges, the builders-first fix, and main at 0.9.12 (R0's 1900 dates)
+merged in. 80 of 80 runs in 26.3 minutes, two at a time, against `docs/ensemble/0.9.12.md` (24/26). **22/26.**
+
+- Better than 0.9.12: A2's longest spell of yoy over 10% is 14 [12 to 35] months against 27 [12 to 36] (still a FAIL,
+  as on 0.9.12). A1 is 2.14% with 16/16 in band (2.54% on 0.9.12). T1 reaches 40,000 people at m878 against m1,038, and
+  T2 ends at 572,286 against 323,765.
+- Worse than 0.9.12, two near-misses: A3, one seed's deflation spell of 13 months against a bar of 12 (median 5), and
+  R3, four HIGH seeds more than a point above (as on 0.9.6). S1 fails as on 0.9.12.
+- AUTO2: busts 12 in 11 seeds, the fewest of BA1's runs. People at m240 / m600 / m1200 are 3,646 / 14,107 / 88,778.
+
+### The evening's run on ab5f3f41, before R0 and the staffing fix (replaced)
 
 Run `BA1d` on ab5f3f41: the brake, the three rounding edges, main at 0.9.11 merged in, the world files named. 80 of 80
 runs in 26.5 minutes, two at a time, against `docs/ensemble/0.9.6.md`. **24/26, against the baseline's 22/26.**
