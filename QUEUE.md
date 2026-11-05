@@ -137,6 +137,7 @@ stuff".
 | BS1 | The corporate issue search (`BondMarket`, `s = filled` until `filled >= s * (1 - 1e-9)`) to a fixed point well inside the price-level twins' tolerance: it stops within 1e-9, so two runs settle bonds up to that apart (4.6e-9 of an issue at month 94 of PriceLevelCheck 8), which a sector's rolled bonds carry to 1.1e-8 of its cash | [BA1 notes](docs/queue/BA1-notes.md) |
 | OB1 | A price tick on bond bids: firms that hold none of a bond bid one price mathematically (`BondMarket.postCompanies`, OUT_SPEED x share / APPETITE), a 1e-19 rounding orders them by price priority in one city and by arrival in its twin, and 28 trades go elsewhere (DenominationCheck on BA1's path, month 133); bids rounded to 1e-12 hold the twins to 1.4e-13 | [BA1 notes](docs/queue/BA1-notes.md) |
 | DT1 | The same code gave another city twice under load (FloatLinkCheck's town: month 125 instead of 61, 1,067 people instead of 909; five other repeats the same): find what in a month reads the machine, if anything, or rule it out | [BA1 notes](docs/queue/BA1-notes.md) |
+| KP2b | KP2's review follow-ups (screens kept): `ui/Pieces.java`'s funnel re-binds its fill's width to the holder every kept draw (bind once, the share a property); `ui/Ladder.java` sets a reading's text twice a draw (`Kept.label("")` then `read()`); `ui/Kept.java`: a slider greyed mid-press can keep `held` set, so its thumb stops following (clear it when disabled) | [KP2 notes](docs/queue/KP2-notes.md) |
 
 ## Pending
 
