@@ -121,6 +121,9 @@ public class OrderSearchCheck {
      * (a Construction Materials Plant of 137 built to 34 on a quarter of its cost and to 68 on a half).
      */
     static final int COPY_MONTH = 500;
+
+    /** BA1: the plots of the smallest building the city is given the ground for in section 6, which the long run's builders have left it none (orderSizes()). */
+    static final int ROOM_GIVEN_PLOTS = 1000;
     /** ...how many times over it is copied... */
     static final long COPY_TIMES = 1000;
     /** ...and the months the copy plays. */
@@ -673,6 +676,20 @@ public class OrderSearchCheck {
     static void orderSizes(Game g) {
         out.println("\n--- 6. orderSize() is the gap and the plots, the countdown's first cover, and reads no wait (BA1) ---");
         BusinessInvestment plans = g.getBusinessInvestment();
+        /*
+         * THE ROOM IS GIVEN, NOT WAITED FOR (BA1, 2026-11-05). With no cap on a business's order the playtest's city builds on all of its
+         * ground: at month 1320 it owns 131 million square feet and has 67.5 of them free, so every building that has a land need has no plot
+         * (145 of the 148 templates; the other three need none and have Integer.MAX_VALUE) and the section had no building with room to
+         * tell from one with less. The ground is owned, as a city buys it, to a thousand of the smallest building's plots, and handed to
+         * the investors the way Game.refreshLand() does: the smallest then has a thousand plots, the largest has none, and the rest lie between.
+         */
+        double smallest = Double.MAX_VALUE;
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) if (t.getLandSqFt() > 0) smallest = Math.min(smallest, t.getLandSqFt());
+        LandManager ground = g.getLandManager();
+        ground.setOwnedSqFt(ground.getOwnedSqFt() + ROOM_GIVEN_PLOTS * smallest);
+        plans.setLandAvailable(ground.getAvailableSqFt(), ground.getPricePerSqFt());
+        plans.setLandAvailableForWorks(ground.freeForAnyone(true));
+        plans.setLandAvailableForRuns(ground.freeForAnyone(LandManager.Use.RUN));
         BuildingsTemplate roomiest = null, tightest = null, landless = null;
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
             int plots = plans.plotsAvailableFor(t);
