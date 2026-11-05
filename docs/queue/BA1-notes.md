@@ -1,6 +1,6 @@
 # BA1 - Every business may build ahead ({next}, 2026-11-03)
 
-**WHERE IT STANDS (2026-11-04, 21:00): done but for one call; no ship file. Its text is item 6, ready to push.**
+**WHERE IT STANDS (2026-11-04, 21:20): ready, the ship file pushed.**
 1. On main at 52b19f18 (CM1 0.9.11 merged in). The brake is dear contracts (section 1, ★), with three rounding edges
    closed since the morning (item 3). The model is final.
 2. **The ensemble on the final model** (`docs/ensemble/BA1.md`, run BA1d on ab5f3f41): **24/26 against 0.9.6's 22/26**.
@@ -34,26 +34,11 @@
    - LongPlaytest, its one finding: "industry stands farther out than the homes", once, at m2400 (industry 1.32 km
      out, the homes' band 0.95 km). It is the layout ring finding that main's own m4000 runs have ended on (WN5's and
      FC1b's notes).
-   - Both pass with the staffing-share edge left open, but then PriceLevelCheck 8 is red. Asked of the orchestrator
-     (20:05): pass both by name at the gate, as LD2-D was, and keep the fix (recommended), or hold BA1.
-6. **The ship file, to push as `docs/queue/BA1-ship.md` on the call's yes** (no eye-check row; its one pending row is the
-   bug the two findings are):
-
-```
-## changelog
-### {next} — BA1, every business may build ahead — 2026-11-04, ready, see docs/queue/BA1-notes.md
-No business is held to one order on site, nor the landlords to twelve months of the builders' work (Jerus: "why
-bounded? why not let contracts flow?"). A sector orders whenever an order clears its test at the price of a point it
-would pay: each building of an order priced on the queue the ones before it leave, its cost grown by the interest
-over its whole wait and, while contracts are dear, once more by its own multiple on the builders' price, since a
-business can wait for them to be cheap ("stop trying to place orders until contracts arent so expensive"). An order
-plans its demand to a horizon that grows with its lead, up to the trend window. The builders keep one depot on site,
-the refiners one crude unit. The 16-seed ensemble scores 24/26 against 0.9.6's 22/26: busts 19 in 13 seeds (25 without
-dear contracts), the queue's p90 45 months, the final city 605,524 people against 335,674. Three rounding edges the
-price-level twins found are closed. Each sector's planner line says how many orders it has on site.
-## pending
-| BA1-D | Two known-class findings on BA1's path, passed by name at the gate: SlopeCheck's `a building on the map moved` (DM1's class) and LongPlaytest's one, `industry stands farther out than the homes` at m2400. Both come from the cities moving off a rounding draw once PriceLevelCheck 8's staffing-share edge was closed ({next}) | DM2 (the map move); the layout ring for whoever takes the district plan next | [BA1 notes](docs/queue/BA1-notes.md) |
-```
+   - Both pass with the staffing-share edge left open, but then PriceLevelCheck 8 is red. **Jerus, 2026-11-04 evening:
+     "Ship it, pass both".** The fix stays, and the gate passes exactly these two lines by name (`--red-ok "Ship it,
+     pass both"`, a `--red-line` each). Any other red still stops it.
+6. **The ship file is pushed** (`docs/queue/BA1-ship.md`, last). Its one pending row, BA1-D, is the two findings, for
+   DM2 and whoever takes the district plan's layout next.
 
 Jerus, 2026-11-01: "why bounded? why not let contracts flow? market after is efficient, too much and contracts get
 expensive thus business stop trying to place orders until contracts arent so expensive". The brief is
