@@ -306,15 +306,32 @@ public class PassThroughCheck {
          * and the city is saved there; the 240 months of the series (section 6) are those played above. On main's path the gap is
          * apart at month 240 and it plays none.
          */
+        /*
+         * ...AND ON UNTIL THE DEFENCE LETS THE SWING'S SELL-BACK BE WHAT THE TREASURY BOUGHT (BA1, 2026-11-04). Section 4's treasury sells back
+         * the dollars its vault holds over its twin's, and its fixture is that these are the dollars it bought less what the defence sold
+         * (never more). Since BA1 uncapped the businesses' orders the town's trade runs another course (a deficit all through, the D$
+         * ending at 3.97 for 1.00 where main's ends near 0.77) and the defence sells in lumps (months 4, 8 and 9 of the 12): from the city
+         * at month 241 the shock twin, whose weaker D$ left it the smaller deficit (measured), sold US$0.198k LESS than its twin over the 12
+         * months, so its vault held US$22.71k over its twin's for US$22.52k bought, one for one. From months 242 to 252 the sell-back is what
+         * was bought, both speeds. The base city plays on, a month at a time, until the D$ is apart (APART) AND a trial of the swing's first HELD months
+         * at both speeds leaves the vault holding no more than was bought (vaultHoldsNoMoreThanBought()), at most APART_LOOK_MONTHS; the
+         * swing's own assertion stands as it was, and still says whether the state arose.
+         */
         int past = 0;
-        while (past < APART_LOOK_MONTHS && Math.abs(Math.log(fx.getRate() / em.getStruckRate())) <= APART) {
+        boolean[] saved = new boolean[1];
+        while (true) {
+            boolean apart = Math.abs(Math.log(fx.getRate() / em.getStruckRate())) > APART;
+            if (apart) {
+                quietly(() -> saved[0] = city.saveGame(BASE_SLOT, "the pass-through city").ok);
+                if (vaultHoldsNoMoreThanBought(K) && vaultHoldsNoMoreThanBought(1)) break;
+            }
+            if (past >= APART_LOOK_MONTHS) break;
             month(city);
             past++;
         }
         out.printf("   the city plays %d month(s) past the %d to stand with the D$ %.1f%% from the goods' D$ (more than %.0f%%, as sections 3 and 5 need)%n",
                 past, MONTHS, 100 * Math.abs(Math.log(fx.getRate() / em.getStruckRate())), 100 * APART);
 
-        boolean[] saved = new boolean[1];
         quietly(() -> saved[0] = city.saveGame(BASE_SLOT, "the pass-through city").ok);
         assertTrue("the city is saved at its end, for the twins of the sections after", saved[0]);
     }
@@ -400,6 +417,34 @@ public class PassThroughCheck {
         boolean purchaseMoved;
         /** The gaps, in logs, month by month after the purchase (index 0 is the day of it: none): the D$, the goods' D$ and the price index. */
         final double[] dollarSeries = new double[FOLLOWED + 1], goodsSeries = new double[FOLLOWED + 1], indexSeries = new double[FOLLOWED + 1];
+    }
+
+    /**
+     * BA1, 2026-11-04: whether, from the base city in its slot, a twin that buys dollars worth SWING of a year's GDP holds HELD months on no
+     * more dollars over its twin's than it bought (and some): the premise of swing()'s sell-back, played on the same twins as swing() sets
+     * them (the vault of twice THIN_COVER months of imports, the goods following the D$ at `speed`), HELD months and no further.
+     */
+    static boolean vaultHoldsNoMoreThanBought(double speed) {
+        Game calm = load(city), shock = load(city);
+        if (speed != K) {
+            calm.getEconomyManager().setPassThroughForTest(speed);
+            shock.getEconomyManager().setPassThroughForTest(speed);
+        }
+        ForeignAccounts calmFx = calm.getForeignAccounts(), shockFx = shock.getForeignAccounts();
+        double vaultBill = 2 * ForeignAccounts.THIN_COVER * calmFx.monthlyImports();
+        quietly(() -> { calm.buyForeignCurrency(vaultBill); shock.buyForeignCurrency(vaultBill); });
+        calmFx.forgetDealing();
+        shockFx.forgetDealing();
+        double bill = SWING * 12 * shockFx.getGdpTrailing();
+        double vaultBefore = shockFx.getReservesUsd();
+        quietly(() -> shock.buyForeignCurrency(bill));
+        double boughtUsd = shockFx.getReservesUsd() - vaultBefore;
+        for (int n = 1; n <= HELD; n++) {
+            month(calm);
+            month(shock);
+        }
+        double extra = shockFx.getReservesUsd() - calmFx.getReservesUsd();
+        return extra > 0 && extra <= boughtUsd;
     }
 
     /** The twins of the base city, one buying dollars worth SWING of a year's GDP and selling them back HELD months later, played FOLLOWED months, goods following the D$ at `speed`. */

@@ -288,14 +288,29 @@ public class CapitalFlowCheck {
             // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
             city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(30_000_000);
-            city.buildStack(template(city, "House"), 400, false);
-            city.buildStack(template(city, "Convenience Store"), 6, false);
-            city.buildStack(template(city, "Construction Depot"), 4, false);
-            city.buildStack(template(city, "Coal Power Plant"), 1, false);
-            city.buildStack(template(city, "Water Treatment Plant"), 1, false);
-            city.buildStack(template(city, "Industrial Bakery"), 2, false);
-            city.buildStack(template(city, "Paved Road"), 30, false);
-            city.buildStack(template(city, "Commercial Bank"), 3, false);
+            /*
+             * BA1, 2026-11-04: THE FIXTURE NO LONGER CAUSED ITS CONDITION. The build
+             * list is priced by the builders' queue now, and every business may queue
+             * as many orders as the price allows (the caps are gone), so two things
+             * moved. (1) 400 houses ahead of it made the power plant dearer than what
+             * the Wealthy treasury had left: the order came back NEEDS_FUNDING and the
+             * city never had power - the treasury is topped up to each order's quote
+             * and every order is asserted taken. (2) Four depots are the whole of the
+             * city's builders, and a queue the businesses may now fill ranks the work
+             * behind the houses for years: the city took off in month 200 instead of
+             * month 100, and fifteen years brought a carry worth $60, not $1,000.
+             * Builders are what the queue is rationed by, so the city is given thirty.
+             */
+            boolean listBuilt = true;
+            listBuilt &= order(city, "House", 400);
+            listBuilt &= order(city, "Convenience Store", 6);
+            listBuilt &= order(city, "Construction Depot", 30);
+            listBuilt &= order(city, "Coal Power Plant", 1);
+            listBuilt &= order(city, "Water Treatment Plant", 1);
+            listBuilt &= order(city, "Industrial Bakery", 2);
+            listBuilt &= order(city, "Paved Road", 30);
+            listBuilt &= order(city, "Commercial Bank", 3);
+            fixtureListBuilt = listBuilt;
             /*
              * THE FIXTURE HAS TO CAUSE THE CONDITION. Nineteenth sighting, and
              * the cleanest yet. Hot money comes for a carry: the city's rate
@@ -328,6 +343,8 @@ public class CapitalFlowCheck {
                 flows.getPeakStock(), flows.getPeakSpread() * 100,
                 flows.getStopsSuffered(), worst);
 
+        assertTrue("fixture: every order of the build list was taken, the power plant among them",
+                fixtureListBuilt);
         assertTrue("fixture: the city actually offered a carry over the world",
                 flows.getPeakSpread() > 0.005);
 
@@ -735,6 +752,17 @@ public class CapitalFlowCheck {
         f[1] = imports;
         f[5] = investedAbroad;
         return new MoneyAudit.Result(0, 0, 0, exports, imports + investedAbroad, 0, "", f);
+    }
+
+    /** BA1, 2026-11-04: whether section 7's whole build list was taken (see the comment where it is ordered). */
+    static boolean fixtureListBuilt;
+
+    /** An order paid out of cash: the treasury is raised to the order's quote if the queue's price outran it; true if the order was taken. */
+    static boolean order(Game game, String name, int quantity) {
+        BuildingsTemplate t = template(game, name);
+        double quote = game.quoteBuildOn(t, quantity, Landmasses.CHOSEN).total;
+        if (quote > game.getCash()) game.setCashForTest(quote);
+        return game.buildStack(t, quantity, false) == Game.BuildResult.SUCCESS;
     }
 
     static BuildingsTemplate template(Game game, String name) {
