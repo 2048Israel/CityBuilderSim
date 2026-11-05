@@ -1128,8 +1128,9 @@ public class Game {
 
     /**
      * Tells the policy the city's month (it holds every closed lever at zero), the labour market whether the minimum wage is law yet and
-     * the households what a pensioner is paid (R0): the one place the three callers (founding, the top of every month, a load) say it, so
-     * the three cannot part.
+     * the households what a pensioner is paid (R0), and the sectors the 1900 forms their unfitted buildings leave (R1; EquipmentForms): the one
+     * place the three callers (founding, the top of every month, a load) say it, so the three cannot part. A load says the forms again once its
+     * buildings and their unfitted counts are back (loadGame(): the stacks do not stand yet where it says the rest).
      */
     private void policyHearsTheMonth() {
         economyManager.getTaxPolicy().setMonth(month);
@@ -1137,7 +1138,15 @@ public class Game {
         // ...and the households what a pensioner is paid, from the first month: HouseholdAccounts opens on the 45% default, and the month's own
         // push (where the households are told their bills) comes after anything that reads it. The pension is shut until 1927 and the dial is zero.
         households.setPensionPerSenior(economyManager.getTaxPolicy().pensionPerSenior());
+        // ...and the sectors the 1900 forms their unfitted buildings leave (R1; EquipmentForms): nothing in a city with none unfitted.
+        equipmentForms.apply(this);
     }
+
+    /** The shares of the 1900 forms (steam, the farms' horses, the carts') set from the buildings still without the equipment that ends them (R1). Not saved: the counts are, and drive the shares again after a load. */
+    private final EquipmentForms equipmentForms = new EquipmentForms();
+
+    /** The 1900 forms' driver, for the harnesses that read which shares the counts hold (R1). */
+    public EquipmentForms getEquipmentForms() { return equipmentForms; }
 
     /**
      * The player's hand on the minimum-wage dial (R0): refused until the lever opens (1918 on history's dates), because the dial is also the
@@ -15911,6 +15920,8 @@ public class Game {
                 buildingManager.getContractValueById());
         // ...and who placed each part of it (0.7.19; see OLD CONTRACTS).
         dataSave.setContractRecords(buildingManager.getContractRecords());
+        // ...and the buildings still without a piece of equipment, where a stack has any (R1; none in a played city).
+        dataSave.setUnfittedById(buildingManager.getUnfittedById());
         // ...and how many founding endowments of household places, care and police it holds (FW9).
         dataSave.setFoundingEndowments(buildingManager.getFoundingEndowments());
         // ...and the order the stacks stand in (0.7.43; DataSave.getStackOrder()).
@@ -19953,6 +19964,13 @@ public class Game {
             // ...stood in the order the city stood them in (0.7.43): the
             // restore above is by id. See DataSave.getStackOrder().
             buildingManager.orderStacks(order);
+
+            // ...and the buildings still without a piece of equipment (R1; BuildingsStacks' unfitted counts), once their stacks stand: an older
+            // save has none, which reads as every building fitted. The forms are said again here and not only where the Policy hears the month
+            // (policyHearsTheMonth(), far above), because the stacks did not stand there yet: before rebuildSimulationState(), which re-derives
+            // the factories' grid draw from the steam share.
+            buildingManager.restoreUnfitted(loaded.getUnfittedById());
+            equipmentForms.apply(this);
 
             // A save that kept one order book for the whole city: spread it
             // over the sites by the work still owed, which is the rate the

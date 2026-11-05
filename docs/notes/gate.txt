@@ -1,13 +1,13 @@
-# gate of Merge batch/R0c: research: the 1900 mechanics - horses on farms and road freight, lamp oil and heat as goods, steam recipes, 0.9.14
+# gate of Merge batch/R1: research: recipes and equipment as data, 0.9.15
 # date: 2026-11-05
 # earth-2.bin: named
 # nightly: 2026-11-05 01:27 0.9.12 b52be80a 4,000 months: OK in 96 s
-# suite: 173 harnesses run in 2209s: 170 passed, 3 failed
-# timing: 16 harnesses run in 566s: 14 passed, 2 failed; its red lines were judged side by side with main's, below
+# suite: 174 harnesses run in 2070s: 171 passed, 3 failed
+# timing: 16 harnesses run in 560s: 14 passed, 2 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 32.9 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 34.4 ms, batch 41.0 ms (+19.1%), budget 25 ms: main over the budget too]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 26.4 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 26.6 ms, batch 26.1 ms (-1.9%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 27.0 ms, batch 27.0 ms (+0.0%), budget 19 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 19.2 ms, batch 21.7 ms (+13.1%), budget 19 ms: within 15% of main's]
 # timing red not the batch's (paired): MapCheck | 8 FAILED   [the harness's own count of the timing reds above]
 ShortSellingCheck | exit 1
 ShortSellingCheck | every company's holdings were the shares in issue plus what the world was short, every month: worst drift 1.15e-06 of the shares in issue (Real Estate m83) FAIL

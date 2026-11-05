@@ -54,7 +54,7 @@
 
 **Uses:** [Good](Good.md) (19), [BusinessInvestment](BusinessInvestment.md) (8), [Game](Game.md) (4), [Formats](Formats.md) (4), [Sector](Sector.md) (2), [BuildingType](BuildingType.md) (1), [EconomyManager](EconomyManager.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [LandManager](LandManager.md) (1)
 
-**Used by (6):** [AgricultureCheck](AgricultureCheck.md), [FoodIndustry](FoodIndustry.md), [Forms1900Check](Forms1900Check.md), [LongPlaytest](LongPlaytest.md), [Sectors](Sectors.md), [ZoningCheck](ZoningCheck.md)
+**Used by (8):** [AgricultureCheck](AgricultureCheck.md), [EquipmentCheck](EquipmentCheck.md), [EquipmentForms](EquipmentForms.md), [FoodIndustry](FoodIndustry.md), [Forms1900Check](Forms1900Check.md), [LongPlaytest](LongPlaytest.md), [Sectors](Sectors.md), [ZoningCheck](ZoningCheck.md)
 
 ## Sections
 

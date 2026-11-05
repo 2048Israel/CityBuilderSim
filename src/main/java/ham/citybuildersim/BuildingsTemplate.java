@@ -544,6 +544,30 @@ public class BuildingsTemplate {
     /** Every kind of old metal it takes, tonnes a month at nameplate; empty for every building but a yard. */
     public java.util.Map<Good, Double> oldMetalTaken() { return java.util.Collections.unmodifiableMap(oldMetal); }
 
+    /* ----- THE EQUIPMENT IT CAN BE FITTED WITH (R1, 2026-11-05; research-design.md 2.1-2.2) -----
+       A building may carry pieces of equipment ("equipment" in buildings.json,
+       read by BuildingCatalog.readEquipment()): the electric motor drive on a
+       factory, the motor truck on a depot, the tractor on a farm. Each ends a
+       1900 form (Equipment.Form), so that the count of this template's
+       buildings still unfitted (BuildingsStacks.getUnfitted()) sets that form's
+       share (EquipmentForms). Most templates carry none. */
+    private java.util.List<Equipment> equipment = java.util.List.of();
+
+    /** Gives this building its equipment, in the order given; a copy, and null or empty is none. */
+    public BuildingsTemplate setEquipment(java.util.List<Equipment> pieces) {
+        this.equipment = pieces == null ? java.util.List.of() : java.util.List.copyOf(pieces);
+        return this;
+    }
+
+    /** The pieces of equipment it can be fitted with, in the file's order; unmodifiable, empty for most buildings. */
+    public java.util.List<Equipment> getEquipment() { return equipment; }
+
+    /** The piece of this id, or null if the building carries none of it. */
+    public Equipment getEquipment(String id) {
+        for (Equipment e : equipment) if (e.getId().equals(id)) return e;
+        return null;
+    }
+
     /* ----- THE YEAR IT FIRST EXISTED (0.7.123, batch I4; research-design.md 2.1) -----
        The research study (Jerus's start year 1900, 2026-10-10) asks every
        building after the start to say when it came ("since" in

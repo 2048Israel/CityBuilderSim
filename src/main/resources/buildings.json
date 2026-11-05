@@ -152,6 +152,21 @@
   "bought (captive). The Pulp Mill burns its black liquor and bark: its \"gen\" of 13,500 kW",
   "meets its own draw and is all sold to the grid.",
   "",
+  "EQUIPMENT (R1; docs/studies/research-design.md 2.1): a building may carry pieces it can be fitted",
+  "with, \"equipment\": [{\"id\": \"electric-drive\", \"name\": \"Electric motor drive\", \"since\": \"1900\",",
+  "\"ends\": \"STEAM\", \"buys\": {\"MACHINERY\": 10.9}, \"work\": 114, \"lifeMonths\": 300}]. \"since\" is a year",
+  "(known from its January) or a catalogue code such as \"PE14\" (unknown until the research catalogue",
+  "reads it). \"ends\" names the 1900 form the piece ends: STEAM (a factory turning its own engine,",
+  "Sector's steam share), FARM_HORSES (Agriculture's horse share) or CART_HORSES (Haulage's). \"buys\"",
+  "is the goods fitting it takes, units at nameplate; \"work\" the BUILDING_WORK points; \"lifeMonths\"",
+  "its life. A city's buildings stand fitted: the count of unfitted ones is the city's own",
+  "(BuildingsStacks), and a building that finishes comes fitted. The figures are R1's estimates",
+  "(est.): the electric drive 8 kg of motors, shafting and switchgear a kW of peak draw (the",
+  "month's mean over a 0.6 load factor), so MACHINERY is electricity x 0.008 / 0.6 rounded to",
+  "0.1 t, its work a tenth of the building's constructionPoints and its life 300 months; the",
+  "motor truck the depot's truckRoom in TRUCKS, life 120 months; the tractor 3 t of MACHINERY a",
+  "hundred acres of the farm, life 180 months.",
+  "",
   "For HEALTHCARE, 'care' says what the building treats and 'capacity' is how",
   "many of those people it has room for: CHILDCARE counts babies and children,",
   "SENIOR counts seniors, GENERAL counts everyone and is what decides how much",
@@ -326,7 +341,20 @@
    "uses": {
     "CROPS": 579
    },
-   "stock": 829000
+   "stock": 829000,
+   "equipment": [
+    {
+     "id": "electric-drive",
+     "name": "Electric motor drive",
+     "since": "1900",
+     "ends": "STEAM",
+     "buys": {
+      "MACHINERY": 0.5
+     },
+     "work": 180,
+     "lifeMonths": 300
+    }
+   ]
   },
   {
    "id": 7,
@@ -352,7 +380,20 @@
    "uses": {
     "CROPS": 632
    },
-   "stock": 996000
+   "stock": 996000,
+   "equipment": [
+    {
+     "id": "electric-drive",
+     "name": "Electric motor drive",
+     "since": "1900",
+     "ends": "STEAM",
+     "buys": {
+      "MACHINERY": 0.3
+     },
+     "work": 70,
+     "lifeMonths": 300
+    }
+   ]
   },
   {
    "id": 8,
@@ -374,7 +415,20 @@
    "makes": {
     "MATERIALS": 160
    },
-   "stock": 480
+   "stock": 480,
+   "equipment": [
+    {
+     "id": "electric-drive",
+     "name": "Electric motor drive",
+     "since": "1900",
+     "ends": "STEAM",
+     "buys": {
+      "MACHINERY": 2.7
+     },
+     "work": 900,
+     "lifeMonths": 300
+    }
+   ]
   },
   {
    "id": 143,
@@ -1284,7 +1338,20 @@
    "uses": {
     "STEEL": 1260,
     "LUBRICANTS": 2400
-   }
+   },
+   "equipment": [
+    {
+     "id": "electric-drive",
+     "name": "Electric motor drive",
+     "since": "1900",
+     "ends": "STEAM",
+     "buys": {
+      "MACHINERY": 2.5
+     },
+     "work": 244,
+     "lifeMonths": 300
+    }
+   ]
   },
   {
    "id": 50,
@@ -1310,7 +1377,20 @@
    "uses": {
     "STEEL": 261,
     "LUBRICANTS": 1800
-   }
+   },
+   "equipment": [
+    {
+     "id": "electric-drive",
+     "name": "Electric motor drive",
+     "since": "1900",
+     "ends": "STEAM",
+     "buys": {
+      "MACHINERY": 10.9
+     },
+     "work": 114,
+     "lifeMonths": 300
+    }
+   ]
   },
   {
    "id": 51,
@@ -1336,7 +1416,20 @@
    "uses": {
     "STEEL": 3150,
     "LUBRICANTS": 6000
-   }
+   },
+   "equipment": [
+    {
+     "id": "electric-drive",
+     "name": "Electric motor drive",
+     "since": "1900",
+     "ends": "STEAM",
+     "buys": {
+      "MACHINERY": 5.9
+     },
+     "work": 612,
+     "lifeMonths": 300
+    }
+   ]
   },
   {
    "id": 52,
@@ -1359,7 +1452,20 @@
     "DAIRY_EGGS": 5000,
     "MEAT": 1400
    },
-   "stock": 15000
+   "stock": 15000,
+   "equipment": [
+    {
+     "id": "tractor",
+     "name": "Tractor",
+     "since": "PE14",
+     "ends": "FARM_HORSES",
+     "buys": {
+      "MACHINERY": 0.4
+     },
+     "work": 0,
+     "lifeMonths": 180
+    }
+   ]
   },
   {
    "id": 53,
@@ -1380,7 +1486,20 @@
    "makes": {
     "CROPS": 500
    },
-   "stock": 1500
+   "stock": 1500,
+   "equipment": [
+    {
+     "id": "tractor",
+     "name": "Tractor",
+     "since": "PE14",
+     "ends": "FARM_HORSES",
+     "buys": {
+      "MACHINERY": 1.7
+     },
+     "work": 0,
+     "lifeMonths": 180
+    }
+   ]
   },
   {
    "id": 54,
@@ -1425,7 +1544,20 @@
     "DAIRY_EGGS": 210000,
     "MEAT": 30000
    },
-   "stock": 400000
+   "stock": 400000,
+   "equipment": [
+    {
+     "id": "tractor",
+     "name": "Tractor",
+     "since": "PE14",
+     "ends": "FARM_HORSES",
+     "buys": {
+      "MACHINERY": 3.6
+     },
+     "work": 0,
+     "lifeMonths": 180
+    }
+   ]
   },
   {
    "id": 56,
@@ -1452,7 +1584,20 @@
     "VEGETABLES": 3000,
     "GRAINS": 750
    },
-   "stock": 25000
+   "stock": 25000,
+   "equipment": [
+    {
+     "id": "electric-drive",
+     "name": "Electric motor drive",
+     "since": "1900",
+     "ends": "STEAM",
+     "buys": {
+      "MACHINERY": 0.1
+     },
+     "work": 10,
+     "lifeMonths": 300
+    }
+   ]
   },
   {
    "id": 57,
@@ -1477,7 +1622,20 @@
    "uses": {
     "CROPS": 54
    },
-   "stock": 48000
+   "stock": 48000,
+   "equipment": [
+    {
+     "id": "electric-drive",
+     "name": "Electric motor drive",
+     "since": "1900",
+     "ends": "STEAM",
+     "buys": {
+      "MACHINERY": 0.2
+     },
+     "work": 12,
+     "lifeMonths": 300
+    }
+   ]
   },
   {
    "id": 58,
@@ -1501,7 +1659,20 @@
    "uses": {
     "CROPS": 8
    },
-   "stock": 162000
+   "stock": 162000,
+   "equipment": [
+    {
+     "id": "electric-drive",
+     "name": "Electric motor drive",
+     "since": "1900",
+     "ends": "STEAM",
+     "buys": {
+      "MACHINERY": 0.1
+     },
+     "work": 8,
+     "lifeMonths": 300
+    }
+   ]
   },
   {
    "id": 59,
@@ -1641,7 +1812,20 @@
     "MACHINERY": 48,
     "LUBRICANTS": 960
    },
-   "stock": 360
+   "stock": 360,
+   "equipment": [
+    {
+     "id": "electric-drive",
+     "name": "Electric motor drive",
+     "since": "1900",
+     "ends": "STEAM",
+     "buys": {
+      "MACHINERY": 8.0
+     },
+     "work": 726,
+     "lifeMonths": 300
+    }
+   ]
   },
   {
    "id": 66,
@@ -1669,7 +1853,20 @@
     "MACHINERY": 200,
     "LUBRICANTS": 4000
    },
-   "stock": 1500
+   "stock": 1500,
+   "equipment": [
+    {
+     "id": "electric-drive",
+     "name": "Electric motor drive",
+     "since": "1900",
+     "ends": "STEAM",
+     "buys": {
+      "MACHINERY": 34.7
+     },
+     "work": 2430,
+     "lifeMonths": 300
+    }
+   ]
   },
   {
    "id": 67,
@@ -1697,7 +1894,20 @@
     "MACHINERY": 90,
     "LUBRICANTS": 1200
    },
-   "stock": 450
+   "stock": 450,
+   "equipment": [
+    {
+     "id": "electric-drive",
+     "name": "Electric motor drive",
+     "since": "1900",
+     "ends": "STEAM",
+     "buys": {
+      "MACHINERY": 16.0
+     },
+     "work": 1450,
+     "lifeMonths": 300
+    }
+   ]
   },
   {
    "id": 68,
@@ -1724,7 +1934,20 @@
     "FABRICATED_STEEL": 480,
     "MACHINERY": 80
    },
-   "stock": 12
+   "stock": 12,
+   "equipment": [
+    {
+     "id": "electric-drive",
+     "name": "Electric motor drive",
+     "since": "1900",
+     "ends": "STEAM",
+     "buys": {
+      "MACHINERY": 14.7
+     },
+     "work": 1430,
+     "lifeMonths": 300
+    }
+   ]
   },
   {
    "id": 69,
@@ -3264,7 +3487,20 @@
    "uses": {
     "COPPER_ROD": 2000
    },
-   "since": 1900
+   "since": 1900,
+   "equipment": [
+    {
+     "id": "electric-drive",
+     "name": "Electric motor drive",
+     "since": "1900",
+     "ends": "STEAM",
+     "buys": {
+      "MACHINERY": 33.3
+     },
+     "work": 4231,
+     "lifeMonths": 300
+    }
+   ]
   },
   {
    "id": 129,
@@ -3378,7 +3614,20 @@
    "uses": {
     "SAWLOGS": 4000
    },
-   "since": 1900
+   "since": 1900,
+   "equipment": [
+    {
+     "id": "electric-drive",
+     "name": "Electric motor drive",
+     "since": "1900",
+     "ends": "STEAM",
+     "buys": {
+      "MACHINERY": 3.9
+     },
+     "work": 577,
+     "lifeMonths": 300
+    }
+   ]
   },
   {
    "id": 134,
@@ -3407,7 +3656,20 @@
    "uses": {
     "SAWLOGS": 38500
    },
-   "since": 1900
+   "since": 1900,
+   "equipment": [
+    {
+     "id": "electric-drive",
+     "name": "Electric motor drive",
+     "since": "1900",
+     "ends": "STEAM",
+     "buys": {
+      "MACHINERY": 38.0
+     },
+     "work": 5769,
+     "lifeMonths": 300
+    }
+   ]
   },
   {
    "id": 135,
@@ -3494,7 +3756,20 @@
     "PULP": 5775,
     "FUEL_OIL": 850000
    },
-   "since": 1900
+   "since": 1900,
+   "equipment": [
+    {
+     "id": "electric-drive",
+     "name": "Electric motor drive",
+     "since": "1900",
+     "ends": "STEAM",
+     "buys": {
+      "MACHINERY": 65.3
+     },
+     "work": 5769,
+     "lifeMonths": 300
+    }
+   ]
   },
   {
    "id": 138,
@@ -3540,7 +3815,20 @@
     "COLLEGE_ENGINEERING": 3
    },
    "land": 430000,
-   "roadLoad": 110
+   "roadLoad": 110,
+   "equipment": [
+    {
+     "id": "motor-truck",
+     "name": "Motor truck",
+     "since": "1900",
+     "ends": "CART_HORSES",
+     "buys": {
+      "TRUCKS": 100
+     },
+     "work": 0,
+     "lifeMonths": 120
+    }
+   ]
   },
   {
    "id": 140,
@@ -3568,7 +3856,20 @@
     "MACHINERY": 12,
     "LUBRICANTS": 240
    },
-   "stock": 18
+   "stock": 18,
+   "equipment": [
+    {
+     "id": "electric-drive",
+     "name": "Electric motor drive",
+     "since": "1900",
+     "ends": "STEAM",
+     "buys": {
+      "MACHINERY": 2.0
+     },
+     "work": 183,
+     "lifeMonths": 300
+    }
+   ]
   },
   {
    "id": 141,

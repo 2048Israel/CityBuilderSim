@@ -1146,6 +1146,22 @@ public class DataSave implements Cloneable {
         this.contractValueById = contractValue;
     }
 
+    /**
+     * The buildings still WITHOUT a piece of equipment, by template id and then by the piece's id (R1; BuildingsStacks' unfitted counts), written
+     * only for the stacks that have any: null, or empty, is every building fitted. A save from before R1 has no key, which Gson leaves alone, and
+     * so reads as every building fitted, as it ran: no format bump.
+     */
+    private java.util.Map<Integer, java.util.Map<String, Integer>> unfittedById;
+
+    public void setUnfittedById(java.util.Map<Integer, java.util.Map<String, Integer>> byId) {
+        this.unfittedById = byId == null || byId.isEmpty() ? null : byId;
+    }
+
+    /** The unfitted counts the save carries by template id, or an empty map for a save with none (every building fitted). */
+    public java.util.Map<Integer, java.util.Map<String, Integer>> getUnfittedById() {
+        return unfittedById == null ? java.util.Map.of() : unfittedById;
+    }
+
     /** False on a save that kept one order book for the whole city. */
     public boolean hasContractsById() { return contractValueById != null; }
 
