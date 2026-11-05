@@ -3003,8 +3003,10 @@ final class HistoryScreen {
     /** A row that moves the chart: the pointer's hand, a ground under it, and the click. */
     void rowGoes(javafx.scene.layout.Pane row, String tipText, Runnable go) {
         String rest = "-fx-padding: 4 6 4 6; -fx-background-radius: 6; -fx-cursor: hand;";
-        row.setStyle(rest);
-        row.setOnMouseEntered(e -> row.setStyle(rest + " -fx-background-color: " + Palette.CONTROL + ";"));
+        String over = rest + " -fx-background-color: " + Palette.CONTROL + ";";
+        // Kept (KP2): the look the pointer calls for - a kept row under a still pointer is not entered afresh.
+        row.setStyle(row.isHover() ? over : rest);
+        row.setOnMouseEntered(e -> row.setStyle(over));
         row.setOnMouseExited(e -> row.setStyle(rest));
         row.setOnMouseClicked(e -> go.run());
         tip(row, tipText);

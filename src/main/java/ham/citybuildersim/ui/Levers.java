@@ -6,6 +6,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.geometry.Pos;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import ham.citybuildersim.ui.Pieces.Effect;
 import static ham.citybuildersim.ui.Money.*;
 import static ham.citybuildersim.ui.Statement.*;
@@ -73,69 +74,89 @@ public final class Levers {
      * thumb passes through while it is dragged.
      */
     public static VBox dialCard(DialCard d, double ladderWidth, boolean stacked) {
-        Label name = new Label(d.name());
+        // Kept (KP2): the card is a scope of its own, keyed by its name; what it shows only sometimes (the (i),
+        // the reading, the status, the effects' caption, the caveat, the foot) is a scope inside it.
+        return Kept.scope("dialCard:" + d.name(), () -> drawCard(d, ladderWidth, stacked));
+    }
+
+    private static VBox drawCard(DialCard d, double ladderWidth, boolean stacked) {
+        Label name = Kept.label(d.name());
         name.setWrapText(true);
         name.setMinWidth(0);
         name.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
-        HBox head = new HBox(Palette.GAP, iconSquare(d.svg(), d.colour(), 28, 15), name);
-        if (d.info() != null) head.getChildren().add(infoButton(d.info(), true));
+        HBox head = Kept.row(Palette.GAP, iconSquare(d.svg(), d.colour(), 28, 15), name);
+        if (d.info() != null) head.getChildren().add(Kept.scope("info", () -> infoButton(d.info(), true)));
         head.setAlignment(Pos.CENTER_LEFT);
-        VBox left = new VBox(6, head);
+        VBox left = Kept.column(6, head);
         if (d.reading() != null) {
-            Label big = new Label(d.reading());
-            big.setWrapText(true);
-            big.setStyle(Palette.figure(Palette.SIZE_LEAD, Palette.TEXT_HEAD));
-            left.getChildren().add(big);
+            left.getChildren().add(Kept.scope("reading", () -> {
+                Label big = Kept.label(d.reading());
+                big.setWrapText(true);
+                big.setStyle(Palette.figure(Palette.SIZE_LEAD, Palette.TEXT_HEAD));
+                return big;
+            }));
         }
         if (d.status() != null) {
-            Label status = new Label(d.status());
-            status.setWrapText(true);
-            status.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-            left.getChildren().add(status);
+            left.getChildren().add(Kept.scope("status", () -> {
+                Label status = Kept.label(d.status());
+                status.setWrapText(true);
+                status.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+                return status;
+            }));
         }
         if (d.extras() != null) for (javafx.scene.Node n : d.extras()) if (n != null) left.getChildren().add(n);
 
-        VBox effects = new VBox(8);
+        VBox effects = Kept.column(8);
         double effectsWidth = stacked ? ladderWidth : EFFECTS;
         java.util.function.DoubleConsumer fill = v -> {
             effects.getChildren().clear();
             if (d.effectsAt() == null) return;
-            for (Effect e : d.effectsAt().apply(v)) effects.getChildren().add(beforeAfter(e, effectsWidth));
+            Kept.scope("effects", () -> {
+                for (Effect e : d.effectsAt().apply(v)) effects.getChildren().add(beforeAfter(e, effectsWidth));
+            });
         };
-        fill.accept(d.at());
-        if (d.ladder() != null) {
-            left.getChildren().add(d.ladder().wide(ladderWidth).onTrack(fill).build());
-        }
+        // The ladder is built BEFORE the first fill, and the effects are drawn at the value it shows: a thumb
+        // held at this draw (a month landed mid-drag) keeps its own value, and its effects with it.
+        VBox dial = d.ladder() == null ? null : d.ladder().wide(ladderWidth).onTrack(fill).build();
+        fill.accept(d.ladder() == null ? d.at() : d.ladder().shown());
+        if (dial != null) left.getChildren().add(dial);
         left.setMinWidth(0);
 
-        VBox right = new VBox(6);
+        VBox right = Kept.column(6);
         if (d.effectsAt() != null) {
-            Label what = new Label("WHAT IT WOULD DO");
-            what.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-            right.getChildren().addAll(what, effects);
+            right.getChildren().add(Kept.scope("what", () -> {
+                Label what = Kept.label("WHAT IT WOULD DO");
+                what.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+                return what;
+            }));
+            right.getChildren().add(effects);
         }
         if (d.caveat() != null) {
-            right.getChildren().add(infoLine(d.caveat(), d.caveatWhole() != null ? d.caveatWhole() : d.caveat(), true,
-                    Palette.SIZE_LABEL, Palette.TEXT_MUTED, effectsWidth));
+            right.getChildren().add(Kept.scope("caveat", () -> infoLine(d.caveat(),
+                    d.caveatWhole() != null ? d.caveatWhole() : d.caveat(), true,
+                    Palette.SIZE_LABEL, Palette.TEXT_MUTED, effectsWidth)));
         }
 
-        VBox card = new VBox(10);
+        VBox card = Kept.column(10);
         if (stacked) {
             card.getChildren().addAll(left, right);
         } else {
-            left.setPrefWidth(ladderWidth);
-            left.setMaxWidth(ladderWidth);
-            right.setMinWidth(260);
-            HBox.setHgrow(right, Priority.ALWAYS);
-            right.setMaxWidth(Double.MAX_VALUE);
-            HBox both = new HBox(24, left, right);
+            HBox both = Kept.row(24, left, right);
             card.getChildren().add(both);
         }
+        // Both sides of the stacked/side-by-side choice.
+        left.setPrefWidth(stacked ? Region.USE_COMPUTED_SIZE : ladderWidth);
+        left.setMaxWidth(stacked ? Region.USE_COMPUTED_SIZE : ladderWidth);
+        right.setMinWidth(stacked ? Region.USE_COMPUTED_SIZE : 260);
+        HBox.setHgrow(right, stacked ? null : Priority.ALWAYS);
+        right.setMaxWidth(stacked ? Region.USE_COMPUTED_SIZE : Double.MAX_VALUE);
         if (d.foot() != null && !d.foot().isEmpty()) {
-            HBox foot = new HBox(10);
-            foot.setAlignment(Pos.CENTER_LEFT);
-            for (javafx.scene.Node n : d.foot()) if (n != null) foot.getChildren().add(n);
-            card.getChildren().add(foot);
+            card.getChildren().add(Kept.scope("foot", () -> {
+                HBox foot = Kept.row(10);
+                foot.setAlignment(Pos.CENTER_LEFT);
+                for (javafx.scene.Node n : d.foot()) if (n != null) foot.getChildren().add(n);
+                return foot;
+            }));
         }
         card.setMaxWidth(Double.MAX_VALUE);
         card.setStyle("-fx-padding: 12; -fx-background-color: " + Palette.RAISED + ";"

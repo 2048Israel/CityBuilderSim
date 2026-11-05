@@ -38,22 +38,25 @@ public final class Statement {
 
     /** @param width for the one screen wider than a statement - the graph. */
     public static VBox statementHead(String title, double width) {
+        return Kept.scope("statementHead", () -> {
 
-        Label head = new Label(title.toUpperCase());
-        head.setStyle(Palette.words(Palette.SIZE_HEADING, Palette.ACCENT)
-                + " -fx-font-weight: bold; -fx-padding: 0 0 4 0;");
+            // Kept (KP2): the statement's rows come through Kept as the rest of a kept page's nodes do.
+            Label head = Kept.label(title.toUpperCase());
+            head.setStyle(Palette.words(Palette.SIZE_HEADING, Palette.ACCENT)
+                    + " -fx-font-weight: bold; -fx-padding: 0 0 4 0;");
 
-        Region rule = new Region();
-        rule.setMinHeight(1);
-        rule.setPrefHeight(1);
-        rule.setMaxHeight(1);
-        rule.setStyle("-fx-background-color: " + Palette.EDGE + ";");
+            Region rule = Kept.region();
+            rule.setMinHeight(1);
+            rule.setPrefHeight(1);
+            rule.setMaxHeight(1);
+            rule.setStyle("-fx-background-color: " + Palette.EDGE + ";");
 
-        VBox box = new VBox(0, head, rule);
-        box.setMaxWidth(width);
-        box.setPrefWidth(width);
-        box.setStyle("-fx-padding: 18 0 6 0;");
-        return box;
+            VBox box = Kept.column(0, head, rule);
+            box.setMaxWidth(width);
+            box.setPrefWidth(width);
+            box.setStyle("-fx-padding: 18 0 6 0;");
+            return box;
+        });
     }
 
     public static HBox statementLine(String label, String value) {
@@ -66,23 +69,25 @@ public final class Statement {
      *             the news.
      */
     public static HBox statementLine(String label, String value, String tone) {
+        return Kept.scope("statementLine", () -> {
 
-        Label what = new Label(label);
-        what.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_LABEL));
+            Label what = Kept.label(label);
+            what.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_LABEL));
 
-        Region gap = new Region();
-        HBox.setHgrow(gap, Priority.ALWAYS);
+            Region gap = Kept.region();
+            HBox.setHgrow(gap, Priority.ALWAYS);
 
-        Label reads = new Label(value);
-        reads.setStyle(Palette.figure(Palette.SIZE_BODY,
-                tone == null ? Palette.TEXT_BODY : tone));
+            Label reads = Kept.label(value);
+            reads.setStyle(Palette.figure(Palette.SIZE_BODY,
+                    tone == null ? Palette.TEXT_BODY : tone));
 
-        HBox row = new HBox(Palette.GAP_LOOSE, what, gap, reads);
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.setMaxWidth(STATEMENT);
-        row.setPrefWidth(STATEMENT);
-        row.setStyle("-fx-padding: 3 0 3 0;");
-        return row;
+            HBox row = Kept.row(Palette.GAP_LOOSE, what, gap, reads);
+            row.setAlignment(Pos.CENTER_LEFT);
+            row.setMaxWidth(STATEMENT);
+            row.setPrefWidth(STATEMENT);
+            row.setStyle("-fx-padding: 3 0 3 0;");
+            return row;
+        });
     }
 
     /** The sentence under a line - what it means, or where it comes from. */
@@ -102,49 +107,53 @@ public final class Statement {
      * paragraph a player had to read past to reach the next figure.
      */
     public static HBox statementNote(String shown, String whole) {
-        Label note = new Label(shown);
-        note.setWrapText(true);
-        note.setMaxWidth(STATEMENT - 16 - INFO_SIZE - Palette.GAP_TIGHT);
-        note.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-        HBox row = new HBox(Palette.GAP_TIGHT, note, infoButton(whole, false));
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.setMaxWidth(Region.USE_PREF_SIZE);
-        row.setStyle("-fx-padding: 0 0 6 14;");
-        return row;
+        return Kept.scope("statementNote", () -> {
+            Label note = Kept.label(shown);
+            note.setWrapText(true);
+            note.setMaxWidth(STATEMENT - 16 - INFO_SIZE - Palette.GAP_TIGHT);
+            note.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+            HBox row = Kept.row(Palette.GAP_TIGHT, note, infoButton(whole, false));
+            row.setAlignment(Pos.CENTER_LEFT);
+            row.setMaxWidth(Region.USE_PREF_SIZE);
+            row.setStyle("-fx-padding: 0 0 6 14;");
+            return row;
+        });
     }
 
     /** The line a statement adds up to: a rule, then the figure in full. */
     public static VBox statementTotal(String label, String value, String tone) {
+        return Kept.scope("statementTotal", () -> {
 
-        Region rule = new Region();
-        rule.setMinHeight(1);
-        rule.setPrefHeight(1);
-        rule.setMaxHeight(1);
-        rule.setMaxWidth(STATEMENT);
-        rule.setPrefWidth(STATEMENT);
-        rule.setStyle("-fx-background-color: " + Palette.HAIRLINE + ";");
+            Region rule = Kept.region();
+            rule.setMinHeight(1);
+            rule.setPrefHeight(1);
+            rule.setMaxHeight(1);
+            rule.setMaxWidth(STATEMENT);
+            rule.setPrefWidth(STATEMENT);
+            rule.setStyle("-fx-background-color: " + Palette.HAIRLINE + ";");
 
-        Label what = new Label(label);
-        what.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_BODY)
-                + " -fx-font-weight: bold;");
+            Label what = Kept.label(label);
+            what.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_BODY)
+                    + " -fx-font-weight: bold;");
 
-        Region gap = new Region();
-        HBox.setHgrow(gap, Priority.ALWAYS);
+            Region gap = Kept.region();
+            HBox.setHgrow(gap, Priority.ALWAYS);
 
-        Label reads = new Label(value);
-        reads.setStyle(Palette.figure(Palette.SIZE_SECTION,
-                tone == null ? Palette.TEXT_HEAD : tone));
+            Label reads = Kept.label(value);
+            reads.setStyle(Palette.figure(Palette.SIZE_SECTION,
+                    tone == null ? Palette.TEXT_HEAD : tone));
 
-        HBox row = new HBox(Palette.GAP_LOOSE, what, gap, reads);
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.setMaxWidth(STATEMENT);
-        row.setPrefWidth(STATEMENT);
-        row.setStyle("-fx-padding: 5 0 3 0;");
+            HBox row = Kept.row(Palette.GAP_LOOSE, what, gap, reads);
+            row.setAlignment(Pos.CENTER_LEFT);
+            row.setMaxWidth(STATEMENT);
+            row.setPrefWidth(STATEMENT);
+            row.setStyle("-fx-padding: 5 0 3 0;");
 
-        VBox box = new VBox(0, rule, row);
-        box.setMaxWidth(STATEMENT);
-        box.setStyle("-fx-padding: 4 0 0 0;");
-        return box;
+            VBox box = Kept.column(0, rule, row);
+            box.setMaxWidth(STATEMENT);
+            box.setStyle("-fx-padding: 4 0 0 0;");
+            return box;
+        });
     }
 
     public static final double BOOK_NOW = 116;

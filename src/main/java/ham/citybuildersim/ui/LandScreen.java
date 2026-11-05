@@ -1449,7 +1449,22 @@ final class LandScreen {
             labels[i] = chips.get(i).label();
             if (chips.get(i).side() == side) current = labels[i];
         }
-        javafx.scene.layout.FlowPane strip = chipStrip(labels, current, Palette.SIZE_LABEL, label -> {
+        // Kept (KP2): a scope a side chip's graphic, by its side (0 to 3), so BEST VALUE moving from one chip to
+        // another takes its tag and nothing else with it; handed to chipStrip, which puts it where the chip is
+        // made, so a kept chip is not stripped of it and given it back every draw.
+        javafx.scene.Node[] graphics = new javafx.scene.Node[chips.size()];
+        for (int i = 0; i < graphics.length; i++) {
+            SideChip c = chips.get(i);
+            graphics[i] = Kept.scope(c.side(), () -> {
+                Label best = Kept.label(c.best());
+                best.setStyle(Palette.figureRegular(Palette.SIZE_CAPTION, c.side() == side ? Palette.TEXT_HEAD : Palette.TEXT_MUTED));
+                HBox g = Kept.row(5, best);
+                g.setAlignment(Pos.CENTER_LEFT);
+                if (c.bestValue()) g.getChildren().add(tag("BEST VALUE", Palette.GOOD));
+                return g;
+            });
+        }
+        javafx.scene.layout.FlowPane strip = chipStrip(labels, graphics, 7, current, Palette.SIZE_LABEL, label -> {
             for (SideChip c : chips) if (c.label().equals(label)) side = c.side();
             place = -1;
             showLandMenu();
@@ -1458,21 +1473,8 @@ final class LandScreen {
         strip.setPrefWrapLength(CITY_PANEL);
         for (int i = 0; i < chips.size() && i < strip.getChildren().size(); i++) {
             if (!(strip.getChildren().get(i) instanceof Button b)) continue;
-            SideChip c = chips.get(i);
-            // Kept (KP2): a scope a side chip, by its side (0 to 3), so BEST VALUE moving from one chip to another
-            // takes its tag and nothing else with it.
-            HBox graphic = Kept.scope(c.side(), () -> {
-                Label best = Kept.label(c.best());
-                best.setStyle(Palette.figureRegular(Palette.SIZE_CAPTION, c.side() == side ? Palette.TEXT_HEAD : Palette.TEXT_MUTED));
-                HBox g = Kept.row(5, best);
-                g.setAlignment(Pos.CENTER_LEFT);
-                if (c.bestValue()) g.getChildren().add(tag("BEST VALUE", Palette.GOOD));
-                return g;
-            });
-            b.setGraphic(graphic);
             b.setContentDisplay(javafx.scene.control.ContentDisplay.RIGHT);
-            b.setGraphicTextGap(7);
-            Kept.tip(b, c.tip(), 250);
+            Kept.tip(b, chips.get(i).tip(), 250);
         }
         return strip;
     }

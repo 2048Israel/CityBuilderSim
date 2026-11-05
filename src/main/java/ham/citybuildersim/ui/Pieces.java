@@ -48,7 +48,11 @@ import javafx.scene.layout.Priority;
  * Since 0.8.26 (study UP4) the helpers the People page reaches make their
  * nodes through Kept, and the pictures among them (SegmentBar, Waterfall) are
  * told their figures by set(); outside a kept draw Kept makes a new node, so
- * every other screen gets what it got before.
+ * every other screen gets what it got before. Since KP2 so do the helpers the
+ * Infrastructure, Services and Land pages reach, and the cause bar, cohort
+ * bars, effect scale and rows on one scale are told their figures by set()
+ * as the segment bar and the waterfall are; a style a hover changes is
+ * chosen from isHover() where it is set.
  *
  * Static for the same reason as Money and Statement: no state, used
  * everywhere, called unqualified through an import static. The scroller is
@@ -108,10 +112,12 @@ public final class Pieces {
         cell.setStyle(rest);
 
         if (go != null) {
-            cell.setStyle(rest + " -fx-cursor: hand;");
-            cell.setOnMouseEntered(e -> cell.setStyle(rest + " -fx-cursor: hand;"
-                    + " -fx-background-color: " + Palette.CONTROL + ";"));
-            cell.setOnMouseExited(e -> cell.setStyle(rest + " -fx-cursor: hand;"));
+            // Kept (KP2): the look the pointer calls for is chosen from isHover() where it is set.
+            String hand = rest + " -fx-cursor: hand;";
+            String over = hand + " -fx-background-color: " + Palette.CONTROL + ";";
+            cell.setStyle(cell.isHover() ? over : hand);
+            cell.setOnMouseEntered(e -> cell.setStyle(over));
+            cell.setOnMouseExited(e -> cell.setStyle(hand));
             cell.setOnMouseClicked(e -> go.run());
             Kept.tip(cell, where, 250);
         }
@@ -130,11 +136,21 @@ public final class Pieces {
      */
     public static javafx.scene.layout.FlowPane chipStrip(String[] names, String current,
                                                    int size, Consumer<String> pick) {
-        return chipStrip(names, null, current, size, pick, Pos.CENTER);
+        return chipStrip(names, null, null, 0, current, size, pick, Pos.CENTER);
     }
 
-    private static javafx.scene.layout.FlowPane chipStrip(String[] names, String[] icons, String current,
-                                                          int size, Consumer<String> pick, Pos align) {
+    /**
+     * ...with a graphic of the caller's own on each chip, `gap` from its name (KP2: the land office's sides,
+     * each its cheapest ground and BEST VALUE): handed over where the chip is made, as the icons are.
+     */
+    public static javafx.scene.layout.FlowPane chipStrip(String[] names, javafx.scene.Node[] graphics, double gap,
+                                                         String current, int size, Consumer<String> pick) {
+        return chipStrip(names, null, graphics, gap, current, size, pick, Pos.CENTER);
+    }
+
+    private static javafx.scene.layout.FlowPane chipStrip(String[] names, String[] icons, javafx.scene.Node[] graphics,
+                                                          double gap, String current, int size, Consumer<String> pick,
+                                                          Pos align) {
 
         javafx.scene.layout.FlowPane strip = Kept.flow(6, 6);
         strip.setAlignment(align);
@@ -149,9 +165,11 @@ public final class Pieces {
             // a kept chip handed its own icon again is not stripped of it and given it back, which would
             // take the icon off the scene and put it on every draw.
             boolean hasIcon = icons != null && i < icons.length && icons[i] != null;
-            javafx.scene.Node graphic = hasIcon ? icon(icons[i], on ? Palette.ACCENT : Palette.TEXT_LABEL, size + 3) : null;
+            boolean given = graphics != null && i < graphics.length && graphics[i] != null;
+            javafx.scene.Node graphic = given ? graphics[i]
+                    : hasIcon ? icon(icons[i], on ? Palette.ACCENT : Palette.TEXT_LABEL, size + 3) : null;
             if (chip.getGraphic() != graphic) chip.setGraphic(graphic);
-            chip.setGraphicTextGap(hasIcon ? 6 : 4);
+            chip.setGraphicTextGap(given ? gap : hasIcon ? 6 : 4);
             chip.setStyle(Palette.words(size, on ? Palette.TEXT_HEAD : Palette.TEXT_BODY)
                     + " -fx-background-color: " + (on ? Palette.RAISED : Palette.CONTROL) + ";"
                     + " -fx-background-radius: " + Palette.RADIUS_TIGHT + ";"
@@ -171,7 +189,7 @@ public final class Pieces {
      */
     public static javafx.scene.layout.FlowPane chipStrip(String[] names, String[] icons, String current,
                                                          int size, Consumer<String> pick) {
-        return chipStrip(names, icons, current, size, pick, Pos.CENTER_LEFT);
+        return chipStrip(names, icons, null, 0, current, size, pick, Pos.CENTER_LEFT);
     }
 
     /** The bar itself: its cells - four, and People's five since 0.7.27 - the last one without its dividing rule. */
@@ -187,8 +205,9 @@ public final class Pieces {
              */
             if (last.getOnMouseClicked() != null) {
                 String plain = "-fx-padding: 0 14 0 14; -fx-cursor: hand;";
-                last.setStyle(plain);
-                last.setOnMouseEntered(e -> last.setStyle(plain + " -fx-background-color: " + Palette.CONTROL + ";"));
+                String over = plain + " -fx-background-color: " + Palette.CONTROL + ";";
+                last.setStyle(last.isHover() ? over : plain);
+                last.setOnMouseEntered(e -> last.setStyle(over));
                 last.setOnMouseExited(e -> last.setStyle(plain));
             }
         }
@@ -211,10 +230,12 @@ public final class Pieces {
 
     /** A heading inside a section, for a table that needs naming. */
     public static Label subHead(String text) {
-        Label head = new Label(text);
-        head.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED)
-                + " -fx-font-weight: bold; -fx-padding: 12 0 2 0;");
-        return head;
+        return Kept.scope("subHead", () -> {
+            Label head = Kept.label(text);
+            head.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED)
+                    + " -fx-font-weight: bold; -fx-padding: 12 0 2 0;");
+            return head;
+        });
     }
 
     /**
@@ -314,30 +335,34 @@ public final class Pieces {
      */
     public static VBox stackedBar(java.util.List<Slice> parts, double width,
                                   java.util.function.DoubleFunction<String> figure) {
+        return Kept.scope("stackedBar", () -> {
 
-        double total = 0;
-        for (Slice s : parts) total += Math.abs(s.amount());
+            double total = 0;
+            for (Slice s : parts) total += Math.abs(s.amount());
 
-        HBox bar = new HBox(2);
-        bar.setMaxWidth(width);
-        for (Slice s : parts) {
-            double wide = total > 0 ? Math.abs(s.amount()) / total * (width - 2 * parts.size()) : 0;
-            Region block = new Region();
-            block.setMinSize(Math.max(1, wide), 18);
-            block.setPrefSize(Math.max(1, wide), 18);
-            block.setMaxSize(Math.max(1, wide), 18);
-            block.setStyle("-fx-background-color: " + s.colour() + ";"
-                    + " -fx-background-radius: 2;");
-            Tooltip tip = new Tooltip(s.name() + "\n" + figure.apply(s.amount()));
-            tip.setShowDelay(Duration.millis(200));
-            Tooltip.install(block, tip);
-            bar.getChildren().add(block);
-        }
+            HBox bar = Kept.row(2);
+            bar.setMaxWidth(width);
+            final double sum = total;
+            // Kept (KP2): the parts, however many, are a scope of their own.
+            Kept.scope("parts", () -> {
+                for (Slice s : parts) {
+                    double wide = sum > 0 ? Math.abs(s.amount()) / sum * (width - 2 * parts.size()) : 0;
+                    Region block = Kept.region();
+                    block.setMinSize(Math.max(1, wide), 18);
+                    block.setPrefSize(Math.max(1, wide), 18);
+                    block.setMaxSize(Math.max(1, wide), 18);
+                    block.setStyle("-fx-background-color: " + s.colour() + ";"
+                            + " -fx-background-radius: 2;");
+                    Kept.tip(block, s.name() + "\n" + figure.apply(s.amount()), 200);
+                    bar.getChildren().add(block);
+                }
+            });
 
-        VBox box = new VBox(4, bar);
-        box.setMaxWidth(width);
-        box.setStyle("-fx-padding: 4 0 6 0;");
-        return box;
+            VBox box = Kept.column(4, bar);
+            box.setMaxWidth(width);
+            box.setStyle("-fx-padding: 4 0 6 0;");
+            return box;
+        });
     }
 
     /* ---------------------------------------------------------------------
@@ -350,6 +375,26 @@ public final class Pieces {
         if (node == null) return;
         node.setVisible(visible);
         node.setManaged(visible);
+    }
+
+    /**
+     * A tooltip on a node with this text (null: none) - the node's own with its text set when it has one, else a
+     * new one installed, or the node's taken off. For the parts a picture owns (KP2), which Kept's draw does not
+     * hand back and whose tooltips must not pile up month on month. A negative delay leaves the tooltip's own.
+     */
+    static void tipFor(javafx.scene.Node on, String text, double delayMillis) {
+        Tooltip had = Kept.tipOf(on);
+        if (text == null) {
+            if (had != null) Tooltip.uninstall(on, had);
+            return;
+        }
+        if (had == null) {
+            had = new Tooltip(text);
+            if (delayMillis >= 0) had.setShowDelay(Duration.millis(delayMillis));
+            Tooltip.install(on, had);
+        } else if (!text.equals(had.getText())) {
+            had.setText(text);
+        }
     }
 
     /**
@@ -442,169 +487,188 @@ public final class Pieces {
      */
     public static VBox trendChart(List<Integer> axis, String[] names, double[][] series, String[] colours,
                                   java.util.function.DoubleFunction<String> figure) {
+        return Kept.scope("trendChart", () -> {
 
-        final double WIDE = STATEMENT - 40;
-        final double TALL = 130;
+            final double WIDE = STATEMENT - 40;
+            final double TALL = 130;
 
-        /* --------------------- where the recording starts ---------------------
-         *
-         * A SERIES ADDED LATER IS NOT A SERIES THAT WAS ZERO, and drawing it
-         * from the beginning of the city says it was. HistorySave.aligned()
-         * pads the front with NaN for exactly that reason, and the first build
-         * of this chart then spread five recorded months across two hundred
-         * and eighty of axis - three invisible dashes hard against the right
-         * edge, on a chart that looked simply broken.
-         *
-         * So the axis starts where the recording does. What is lost is the
-         * ability to see that the series is younger than the city, and the
-         * caption under the chart says so instead.
-         * --------------------------------------------------------------------- */
-        int months = 0;
-        int from = Integer.MAX_VALUE;
-        for (double[] one : series) {
-            months = Math.max(months, one.length);
-            for (int i = 0; i < one.length; i++) {
-                if (!Double.isNaN(one[i])) { from = Math.min(from, i); break; }
+            /* --------------------- where the recording starts ---------------------
+             *
+             * A SERIES ADDED LATER IS NOT A SERIES THAT WAS ZERO, and drawing it
+             * from the beginning of the city says it was. HistorySave.aligned()
+             * pads the front with NaN for exactly that reason, and the first build
+             * of this chart then spread five recorded months across two hundred
+             * and eighty of axis - three invisible dashes hard against the right
+             * edge, on a chart that looked simply broken.
+             *
+             * So the axis starts where the recording does. What is lost is the
+             * ability to see that the series is younger than the city, and the
+             * caption under the chart says so instead.
+             * --------------------------------------------------------------------- */
+            int months = 0;
+            int from = Integer.MAX_VALUE;
+            for (double[] one : series) {
+                months = Math.max(months, one.length);
+                for (int i = 0; i < one.length; i++) {
+                    if (!Double.isNaN(one[i])) { from = Math.min(from, i); break; }
+                }
             }
-        }
-        if (from == Integer.MAX_VALUE) {
-            return new VBox(statementNote("Nothing recorded for this yet."));
-        }
-        int points = months - from;
-
-        /* ----------------------------- the scale ----------------------------- */
-        double lo = Double.MAX_VALUE, hi = -Double.MAX_VALUE;
-        for (double[] one : series) {
-            for (int i = from; i < one.length; i++) {
-                if (Double.isNaN(one[i])) continue;
-                lo = Math.min(lo, one[i]);
-                hi = Math.max(hi, one[i]);
+            // Kept (KP2): the chart's nodes come through Kept as the rest of the page's; the canvas is cleared
+            // before it is drawn on, and a line's points are set, not added to.
+            if (from == Integer.MAX_VALUE) {
+                return Kept.column(0, statementNote("Nothing recorded for this yet."));
             }
-        }
-        if (points < 2 || hi <= -Double.MAX_VALUE) {
-            return new VBox(statementNote(String.format(
-                    "Only %d month%s of this has been recorded. A line needs two points.",
-                    points, points == 1 ? "" : "s")));
-        }
-        // Zero belongs on a money chart: a book that halved should look halved,
-        // and it does not on an axis that starts at its own minimum.
-        lo = Math.min(0, lo);
-        if (hi <= lo) hi = lo + 1;
-        // ...AND A LITTLE AIR ABOVE THE PEAK, so the line never runs along the
-        // top edge and a spike is not half-clipped by it. It also leaves the
-        // corner free for the axis label, which was otherwise drawn straight
-        // through whichever series happened to be highest on the left.
-        double peak = hi;
-        hi = lo + (hi - lo) * 1.12;
+            int points = months - from;
 
-        javafx.scene.layout.Pane plot = new javafx.scene.layout.Pane();
-        plot.setPrefSize(WIDE, TALL);
-        plot.setMinSize(WIDE, TALL);
-        plot.setMaxSize(WIDE, TALL);
-        plot.setStyle(Palette.block(Palette.PANEL));
-
-        /* ------------------------------ the grid ------------------------------ */
-        for (int g = 1; g <= 3; g++) {
-            javafx.scene.shape.Line rule = new javafx.scene.shape.Line(
-                    0, TALL * g / 4.0, WIDE, TALL * g / 4.0);
-            rule.setStroke(javafx.scene.paint.Color.web(Palette.CONTROL));
-            rule.setStrokeWidth(1);
-            plot.getChildren().add(rule);
-        }
-
-        /* ------------------------ the years (0.7.23) ------------------------ */
-        // The months the drawn part covers, first to last; a point's x is its
-        // place between them, as the lines below put it.
-        int firstMonth = axis != null && from < axis.size() ? axis.get(from) : from;
-        int lastMonth = axis != null && axis.size() >= points + from ? axis.get(from + points - 1)
-                : firstMonth + points - 1;
-        javafx.scene.canvas.Canvas years = new javafx.scene.canvas.Canvas(WIDE, 15);
-        javafx.scene.canvas.GraphicsContext yg = years.getGraphicsContext2D();
-        yg.setFont(Palette.Fonts.monoFont(9.5));
-        yg.setTextAlign(javafx.scene.text.TextAlignment.CENTER);
-        double labelEnd = -1e9;
-        for (ChartModel.Tick t : ChartModel.timeTicks(firstMonth, lastMonth, WIDE)) {
-            double x = ChartModel.x(t.month(), firstMonth, lastMonth, 0, WIDE);
-            if (t.year()) {
-                javafx.scene.shape.Line up = new javafx.scene.shape.Line(Math.floor(x) + .5, 0, Math.floor(x) + .5, TALL);
-                up.setStroke(javafx.scene.paint.Color.web(Palette.CONTROL));
-                up.setStrokeWidth(1);
-                plot.getChildren().add(up);
+            /* ----------------------------- the scale ----------------------------- */
+            double lo = Double.MAX_VALUE, hi = -Double.MAX_VALUE;
+            for (double[] one : series) {
+                for (int i = from; i < one.length; i++) {
+                    if (Double.isNaN(one[i])) continue;
+                    lo = Math.min(lo, one[i]);
+                    hi = Math.max(hi, one[i]);
+                }
             }
-            double w = TimeChart.textWidth(t.label(), yg.getFont());
-            double left = Math.max(0, Math.min(x - w / 2, WIDE - w));
-            if (left < labelEnd + 6) continue;
-            yg.setFill(javafx.scene.paint.Color.web(t.year() ? Palette.TEXT_2 : Palette.TEXT_3));
-            yg.fillText(t.label(), left + w / 2, 11);
-            labelEnd = left + w;
-        }
-
-        /* ------------------------------ the lines ------------------------------ */
-        for (int s = 0; s < series.length; s++) {
-
-            double[] one = series[s];
-            javafx.scene.shape.Polyline line = new javafx.scene.shape.Polyline();
-            /*
-             * FILL NULL. A JavaFX Polyline is a Shape and a Shape's default
-             * fill is BLACK, so an unfilled-looking line paints the whole area
-             * under itself. On the dark panel (Palette.PANEL) that is invisible
-             * and wrong at the same time.
-             */
-            line.setFill(null);
-            line.setStroke(javafx.scene.paint.Color.web(colours[s]));
-            line.setStrokeWidth(2);
-            line.setStrokeLineJoin(javafx.scene.shape.StrokeLineJoin.ROUND);
-
-            // One point per pixel column at most - a five-thousand-month city
-            // would otherwise put four thousand vertices on a six-hundred-pixel
-            // line, which is slower and no more legible.
-            int step = Math.max(1, points / (int) WIDE);
-            for (int i = from; i < one.length; i += step) {
-                if (Double.isNaN(one[i])) continue;
-                double x = points > 1 ? (double) (i - from) / (points - 1) * WIDE : 0;
-                double y = TALL - (one[i] - lo) / (hi - lo) * TALL;
-                line.getPoints().addAll(x, Math.max(0, Math.min(TALL, y)));
+            if (points < 2 || hi <= -Double.MAX_VALUE) {
+                return Kept.column(0, statementNote(String.format(
+                        "Only %d month%s of this has been recorded. A line needs two points.",
+                        points, points == 1 ? "" : "s")));
             }
-            if (line.getPoints().size() >= 4) plot.getChildren().add(line);
-        }
+            // Zero belongs on a money chart: a book that halved should look halved,
+            // and it does not on an axis that starts at its own minimum.
+            lo = Math.min(0, lo);
+            if (hi <= lo) hi = lo + 1;
+            // ...AND A LITTLE AIR ABOVE THE PEAK, so the line never runs along the
+            // top edge and a spike is not half-clipped by it. It also leaves the
+            // corner free for the axis label, which was otherwise drawn straight
+            // through whichever series happened to be highest on the left.
+            double peak = hi;
+            hi = lo + (hi - lo) * 1.12;
 
-        /* ------------------------------ the labels ------------------------------ */
-        String unit = names.length > 0 ? names[0] : null;
+            javafx.scene.layout.Pane plot = Kept.plain();
+            plot.setPrefSize(WIDE, TALL);
+            plot.setMinSize(WIDE, TALL);
+            plot.setMaxSize(WIDE, TALL);
+            plot.setStyle(Palette.block(Palette.PANEL));
 
-        // THE REAL PEAK, not the padded top of the axis - the air above the
-        // line is for the label to sit in, not a value anything reached.
-        Label top = new Label(figure == null ? chartFigure(peak, unit) : figure.apply(peak));
-        top.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-        top.setLayoutX(4);
-        top.setLayoutY(2);
-        plot.getChildren().add(top);
+            /* ------------------------------ the grid ------------------------------ */
+            for (int g = 1; g <= 3; g++) {
+                javafx.scene.shape.Line rule = Kept.of(javafx.scene.shape.Line.class, javafx.scene.shape.Line::new);
+                rule.setStartX(0);
+                rule.setStartY(TALL * g / 4.0);
+                rule.setEndX(WIDE);
+                rule.setEndY(TALL * g / 4.0);
+                rule.setStroke(javafx.scene.paint.Color.web(Palette.CONTROL));
+                rule.setStrokeWidth(1);
+                plot.getChildren().add(rule);
+            }
 
-        Label bottom = new Label(figure == null ? chartFigure(lo, unit) : figure.apply(lo));
-        bottom.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-        bottom.setLayoutX(4);
-        bottom.setLayoutY(TALL - 16);
-        plot.getChildren().add(bottom);
+            /* ------------------------ the years (0.7.23) ------------------------ */
+            // The months the drawn part covers, first to last; a point's x is its
+            // place between them, as the lines below put it.
+            int firstMonth = axis != null && from < axis.size() ? axis.get(from) : from;
+            int lastMonth = axis != null && axis.size() >= points + from ? axis.get(from + points - 1)
+                    : firstMonth + points - 1;
+            javafx.scene.canvas.Canvas years = Kept.of(javafx.scene.canvas.Canvas.class,
+                    () -> new javafx.scene.canvas.Canvas(WIDE, 15));
+            years.setWidth(WIDE);
+            years.setHeight(15);
+            javafx.scene.canvas.GraphicsContext yg = years.getGraphicsContext2D();
+            yg.clearRect(0, 0, WIDE, 15);
+            yg.setFont(Palette.Fonts.monoFont(9.5));
+            yg.setTextAlign(javafx.scene.text.TextAlignment.CENTER);
+            double labelEnd = -1e9;
+            for (ChartModel.Tick t : ChartModel.timeTicks(firstMonth, lastMonth, WIDE)) {
+                double x = ChartModel.x(t.month(), firstMonth, lastMonth, 0, WIDE);
+                if (t.year()) {
+                    javafx.scene.shape.Line up = Kept.of(javafx.scene.shape.Line.class, javafx.scene.shape.Line::new);
+                    up.setStartX(Math.floor(x) + .5);
+                    up.setStartY(0);
+                    up.setEndX(Math.floor(x) + .5);
+                    up.setEndY(TALL);
+                    up.setStroke(javafx.scene.paint.Color.web(Palette.CONTROL));
+                    up.setStrokeWidth(1);
+                    plot.getChildren().add(up);
+                }
+                double w = TimeChart.textWidth(t.label(), yg.getFont());
+                double left = Math.max(0, Math.min(x - w / 2, WIDE - w));
+                if (left < labelEnd + 6) continue;
+                yg.setFill(javafx.scene.paint.Color.web(t.year() ? Palette.TEXT_2 : Palette.TEXT_3));
+                yg.fillText(t.label(), left + w / 2, 11);
+                labelEnd = left + w;
+            }
 
-        /* ------------------------------- the key ------------------------------- */
-        javafx.scene.layout.FlowPane key = new javafx.scene.layout.FlowPane(14, 4);
-        key.setStyle("-fx-padding: 6 0 0 0;");
-        for (int s = 0; s < names.length; s++) {
-            double last = latest(series[s]);
-            key.getChildren().add(keySwatch(colours[s],
-                    names[s] + (Double.isNaN(last) ? ""
-                            : "  " + (figure == null ? chartFigure(last, names[s]) : figure.apply(last)))));
-        }
+            /* ------------------------------ the lines ------------------------------ */
+            for (int s = 0; s < series.length; s++) {
 
-        Label span = new Label(from > 0
-                ? String.format("the last %d months of a %d-month city — this was not "
-                        + "recorded before that", points, months)
-                : String.format("%d months, oldest on the left", points));
-        span.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_SPENT));
+                double[] one = series[s];
+                javafx.scene.shape.Polyline line = Kept.of(javafx.scene.shape.Polyline.class, javafx.scene.shape.Polyline::new);
+                /*
+                 * FILL NULL. A JavaFX Polyline is a Shape and a Shape's default
+                 * fill is BLACK, so an unfilled-looking line paints the whole area
+                 * under itself. On the dark panel (Palette.PANEL) that is invisible
+                 * and wrong at the same time.
+                 */
+                line.setFill(null);
+                line.setStroke(javafx.scene.paint.Color.web(colours[s]));
+                line.setStrokeWidth(2);
+                line.setStrokeLineJoin(javafx.scene.shape.StrokeLineJoin.ROUND);
 
-        VBox box = new VBox(2, plot, years, key, span);
-        box.setMaxWidth(STATEMENT);
-        box.setStyle("-fx-padding: 6 0 12 0;");
-        return box;
+                // One point per pixel column at most - a five-thousand-month city
+                // would otherwise put four thousand vertices on a six-hundred-pixel
+                // line, which is slower and no more legible.
+                int step = Math.max(1, points / (int) WIDE);
+                // The points are set (Kept): a line handed back is not added to.
+                List<Double> drawn = new java.util.ArrayList<>();
+                for (int i = from; i < one.length; i += step) {
+                    if (Double.isNaN(one[i])) continue;
+                    double x = points > 1 ? (double) (i - from) / (points - 1) * WIDE : 0;
+                    double y = TALL - (one[i] - lo) / (hi - lo) * TALL;
+                    drawn.add(x);
+                    drawn.add(Math.max(0, Math.min(TALL, y)));
+                }
+                line.getPoints().setAll(drawn);
+                if (line.getPoints().size() >= 4) plot.getChildren().add(line);
+            }
+
+            /* ------------------------------ the labels ------------------------------ */
+            String unit = names.length > 0 ? names[0] : null;
+
+            // THE REAL PEAK, not the padded top of the axis - the air above the
+            // line is for the label to sit in, not a value anything reached.
+            Label top = Kept.label(figure == null ? chartFigure(peak, unit) : figure.apply(peak));
+            top.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+            top.setLayoutX(4);
+            top.setLayoutY(2);
+            plot.getChildren().add(top);
+
+            Label bottom = Kept.label(figure == null ? chartFigure(lo, unit) : figure.apply(lo));
+            bottom.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+            bottom.setLayoutX(4);
+            bottom.setLayoutY(TALL - 16);
+            plot.getChildren().add(bottom);
+
+            /* ------------------------------- the key ------------------------------- */
+            javafx.scene.layout.FlowPane key = Kept.flow(14, 4);
+            key.setStyle("-fx-padding: 6 0 0 0;");
+            for (int s = 0; s < names.length; s++) {
+                double last = latest(series[s]);
+                key.getChildren().add(keySwatch(colours[s],
+                        names[s] + (Double.isNaN(last) ? ""
+                                : "  " + (figure == null ? chartFigure(last, names[s]) : figure.apply(last)))));
+            }
+
+            Label span = Kept.label(from > 0
+                    ? String.format("the last %d months of a %d-month city — this was not "
+                            + "recorded before that", points, months)
+                    : String.format("%d months, oldest on the left", points));
+            span.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_SPENT));
+
+            VBox box = Kept.column(2, plot, years, key, span);
+            box.setMaxWidth(STATEMENT);
+            box.setStyle("-fx-padding: 6 0 12 0;");
+            return box;
+        });
     }
 
     /** The last recorded value of a series, or NaN if there is none. */
@@ -673,26 +737,31 @@ public final class Pieces {
     /** ...with its tooltips' figures written by `figure` (0.7.27), as stackedBar's. */
     public static VBox keyedBar(java.util.List<Slice> parts, double width,
                                 java.util.function.DoubleFunction<String> figure) {
+        return Kept.scope("keyedBar", () -> {
 
-        VBox box = stackedBar(parts, width, figure);
+            VBox box = stackedBar(parts, width, figure);
 
-        HBox key = new HBox(Palette.GAP_LOOSE);
-        key.setAlignment(Pos.CENTER_LEFT);
-        for (Slice s : parts) {
-            Region swatch = new Region();
-            swatch.setMinSize(9, 9);
-            swatch.setPrefSize(9, 9);
-            swatch.setMaxSize(9, 9);
-            swatch.setStyle("-fx-background-color: " + s.colour()
-                    + "; -fx-background-radius: 2;");
-            Label what = new Label(s.name());
-            what.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-            HBox one = new HBox(4, swatch, what);
-            one.setAlignment(Pos.CENTER_LEFT);
-            key.getChildren().add(one);
-        }
-        box.getChildren().add(key);
-        return box;
+            HBox key = Kept.row(Palette.GAP_LOOSE);
+            key.setAlignment(Pos.CENTER_LEFT);
+            // Kept (KP2): the key's entries, however many, are a scope of their own.
+            Kept.scope("key", () -> {
+                for (Slice s : parts) {
+                    Region swatch = Kept.region();
+                    swatch.setMinSize(9, 9);
+                    swatch.setPrefSize(9, 9);
+                    swatch.setMaxSize(9, 9);
+                    swatch.setStyle("-fx-background-color: " + s.colour()
+                            + "; -fx-background-radius: 2;");
+                    Label what = Kept.label(s.name());
+                    what.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+                    HBox one = Kept.row(4, swatch, what);
+                    one.setAlignment(Pos.CENTER_LEFT);
+                    key.getChildren().add(one);
+                }
+            });
+            box.getChildren().add(key);
+            return box;
+        });
     }
 
     /**
@@ -791,19 +860,29 @@ public final class Pieces {
      * @param manual whether the popover ends "More in the manual"
      */
     public static javafx.scene.Node infoButton(String whole, boolean manual) {
-        javafx.scene.shape.SVGPath mark = Kept.of(javafx.scene.shape.SVGPath.class, javafx.scene.shape.SVGPath::new);
+        return makeInfo(whole, manual, true);
+    }
+
+    /**
+     * ...made through Kept where `kept` (a page's own (i), handed back each redraw), with new where not (an (i) a
+     * picture owns, as the rows-on-one-scale's: Kept's pool is the page's and a picture's parts are its own).
+     */
+    static javafx.scene.Node makeInfo(String whole, boolean manual, boolean kept) {
+        javafx.scene.shape.SVGPath mark = kept
+                ? Kept.of(javafx.scene.shape.SVGPath.class, javafx.scene.shape.SVGPath::new)
+                : new javafx.scene.shape.SVGPath();
         mark.setContent(Icons.INFO);
         mark.setFill(null);
         mark.setStrokeWidth(2);
         mark.setStrokeLineCap(javafx.scene.shape.StrokeLineCap.ROUND);
         mark.setStrokeLineJoin(javafx.scene.shape.StrokeLineJoin.ROUND);
-        javafx.scene.layout.Pane box = Kept.plain(mark);
+        javafx.scene.layout.Pane box = kept ? Kept.plain(mark) : new javafx.scene.layout.Pane(mark);
         box.setPrefSize(24, 24);
         box.setMinSize(24, 24);
         box.setMaxSize(24, 24);
         box.setScaleX(INFO_SIZE / 24);
         box.setScaleY(INFO_SIZE / 24);
-        javafx.scene.layout.StackPane button = Kept.stack(box);
+        javafx.scene.layout.StackPane button = kept ? Kept.stack(box) : new javafx.scene.layout.StackPane(box);
         button.setMinSize(INFO_SIZE, INFO_SIZE);
         button.setPrefSize(INFO_SIZE, INFO_SIZE);
         button.setMaxSize(INFO_SIZE, INFO_SIZE);
@@ -1182,26 +1261,30 @@ public final class Pieces {
 
     /** A small square button in a quantity stepper: Build's "−", "+", "+10", "+100" and "↺", the land office's "−" and "+". */
     public static Button stepper(String glyph, double width, Runnable go) {
-        Button b = new Button(glyph);
-        b.setMinSize(width, 22);
-        b.setPrefSize(width, 22);
-        /*
-         * -fx-padding: 0 IN THE STYLE, not just setPadding.
-         *
-         * The theme's .button rule carries "-fx-padding: 6 14 6 14", and on a
-         * button pinned to 24px wide that leaves the label a content box 4px
-         * narrower than nothing - so JavaFX drew three empty grey squares where
-         * the minus, the plus and the +10 should have been. Play-tested.
-         *
-         * An inline style beats a stylesheet, which setPadding did not.
-         */
-        b.setPadding(javafx.geometry.Insets.EMPTY);
-        b.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_BODY)
-                + " -fx-padding: 0; -fx-background-color: " + Palette.FIELD + ";"
-                + " -fx-border-color: transparent;"
-                + " -fx-background-radius: " + Palette.RADIUS_TIGHT + "; -fx-cursor: hand;");
-        b.setOnAction(e -> go.run());
-        return b;
+        return Kept.scope("stepper", () -> {
+            // Kept (KP2): the button handed back, its text set; its action set at every draw, since Kept clears it.
+            Button b = Kept.of(Button.class, Button::new);
+            b.setText(glyph);
+            b.setMinSize(width, 22);
+            b.setPrefSize(width, 22);
+            /*
+             * -fx-padding: 0 IN THE STYLE, not just setPadding.
+             *
+             * The theme's .button rule carries "-fx-padding: 6 14 6 14", and on a
+             * button pinned to 24px wide that leaves the label a content box 4px
+             * narrower than nothing - so JavaFX drew three empty grey squares where
+             * the minus, the plus and the +10 should have been. Play-tested.
+             *
+             * An inline style beats a stylesheet, which setPadding did not.
+             */
+            b.setPadding(javafx.geometry.Insets.EMPTY);
+            b.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_BODY)
+                    + " -fx-padding: 0; -fx-background-color: " + Palette.FIELD + ";"
+                    + " -fx-border-color: transparent;"
+                    + " -fx-background-radius: " + Palette.RADIUS_TIGHT + "; -fx-cursor: hand;");
+            b.setOnAction(e -> go.run());
+            return b;
+        });
     }
 
     /* ----------------------------- a bar of segments ----------------------------- */
@@ -1512,7 +1595,9 @@ public final class Pieces {
     public static VBox offerCard(String name, String info, DebtQuote quote, String rate, String tone,
                                  String ending, String action, Runnable issue,
                                  java.util.function.DoubleFunction<String> written) {
-        Button go = new Button(action);
+        // Kept (KP2): the offer cards, their lines and their button come through Kept.
+        Button go = Kept.of(Button.class, Button::new);
+        go.setText(action);
         go.setWrapText(true);
         go.setMaxWidth(Double.MAX_VALUE);
         go.setStyle(Palette.words(Palette.SIZE_LABEL, "white")
@@ -1535,41 +1620,43 @@ public final class Pieces {
 
     static VBox offerCard(String name, String info, DebtQuote quote, String rate, String tone,
                           String ending, javafx.scene.Node go, java.util.function.DoubleFunction<String> written) {
-        Label title = new Label(name);
-        title.setWrapText(true);
-        title.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
-        HBox head = new HBox(Palette.GAP_TIGHT, title);
-        if (info != null) head.getChildren().add(infoButton(info, false));
-        head.setAlignment(Pos.CENTER_LEFT);
+        return Kept.scope("offerCard", () -> {
+            Label title = Kept.label(name);
+            title.setWrapText(true);
+            title.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
+            HBox head = Kept.row(Palette.GAP_TIGHT, title);
+            if (info != null) head.getChildren().add(Kept.scope("info", () -> infoButton(info, false)));
+            head.setAlignment(Pos.CENTER_LEFT);
 
-        Label rateLine = new Label(rate);
-        rateLine.setWrapText(true);
-        rateLine.setStyle(Palette.figure(Palette.SIZE_BODY, tone));
+            Label rateLine = Kept.label(rate);
+            rateLine.setWrapText(true);
+            rateLine.setStyle(Palette.figure(Palette.SIZE_BODY, tone));
 
-        VBox figures = new VBox(3,
-                offerLine("Face - what the city owes", written.apply(quote.faceValue()), Palette.TEXT_BODY),
-                offerLine("Cash it brings", written.apply(quote.cashReceived()), Palette.GOOD),
-                offerLine("Monthly cost", quote.monthlyInterest() > 0
-                        ? written.apply(quote.monthlyInterest()) + " a month"
-                        : "none - it pays no coupon", Palette.TEXT_BODY),
-                offerLine("Cost of the credit, all in", written.apply(quote.totalCost()), Palette.TEXT_BODY));
+            VBox figures = Kept.column(3,
+                    offerLine("Face - what the city owes", written.apply(quote.faceValue()), Palette.TEXT_BODY),
+                    offerLine("Cash it brings", written.apply(quote.cashReceived()), Palette.GOOD),
+                    offerLine("Monthly cost", quote.monthlyInterest() > 0
+                            ? written.apply(quote.monthlyInterest()) + " a month"
+                            : "none - it pays no coupon", Palette.TEXT_BODY),
+                    offerLine("Cost of the credit, all in", written.apply(quote.totalCost()), Palette.TEXT_BODY));
 
-        Label end = new Label(ending);
-        end.setWrapText(true);
-        end.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-        Label impact = new Label(quote.creditImpact());
-        impact.setWrapText(true);
-        impact.setStyle(Palette.words(Palette.SIZE_LABEL, tone) + " -fx-font-weight: bold;");
+            Label end = Kept.label(ending);
+            end.setWrapText(true);
+            end.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+            Label impact = Kept.label(quote.creditImpact());
+            impact.setWrapText(true);
+            impact.setStyle(Palette.words(Palette.SIZE_LABEL, tone) + " -fx-font-weight: bold;");
 
-        Region push = new Region();
-        VBox.setVgrow(push, Priority.ALWAYS);
+            Region push = Kept.region();
+            VBox.setVgrow(push, Priority.ALWAYS);
 
-        VBox card = new VBox(6, head, rateLine, figures, end, impact, push, go);
-        card.setMaxWidth(Double.MAX_VALUE);
-        card.setMaxHeight(Double.MAX_VALUE);
-        card.setStyle("-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.RAISED + ";"
-                + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + Palette.EDGE + ";");
-        return card;
+            VBox card = Kept.column(6, head, rateLine, figures, end, impact, push, go);
+            card.setMaxWidth(Double.MAX_VALUE);
+            card.setMaxHeight(Double.MAX_VALUE);
+            card.setStyle("-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.RAISED + ";"
+                    + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + Palette.EDGE + ";");
+            return card;
+        });
     }
 
     /**
@@ -1583,11 +1670,15 @@ public final class Pieces {
      */
     public static VBox coverCash(VBox card, DebtQuote quote) {
         if (quote == null || !quote.isShort() || card.getChildren().size() < 2) return card;
-        Label short_ = new Label(String.format("Sells %s of the %s it needs at the highest yield the city takes (%s): "
-                + "not enough to pay for it.", Money.money(quote.cashReceived()),
-                Money.money(quote.requested()), String.format("%.2f%%", quote.auction().ceiling() * 100)));
-        short_.setWrapText(true);
-        short_.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.BAD_TEXT) + " -fx-font-weight: bold;");
+        // Kept (KP2): what a card shows only sometimes is a scope of its own.
+        Label short_ = Kept.scope("coverCash", () -> {
+            Label l = Kept.label(String.format("Sells %s of the %s it needs at the highest yield the city takes (%s): "
+                    + "not enough to pay for it.", Money.money(quote.cashReceived()),
+                    Money.money(quote.requested()), String.format("%.2f%%", quote.auction().ceiling() * 100)));
+            l.setWrapText(true);
+            l.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.BAD_TEXT) + " -fx-font-weight: bold;");
+            return l;
+        });
         int foot = card.getChildren().size() - 1;
         card.getChildren().add(foot, short_);
         card.getChildren().get(card.getChildren().size() - 1).setDisable(true);
@@ -1596,18 +1687,20 @@ public final class Pieces {
 
     /** One figure on an offer card: what it is at the left, wrapping, and the figure at the right. */
     static HBox offerLine(String label, String value, String tone) {
-        Label what = new Label(label);
-        what.setWrapText(true);
-        what.setMinWidth(0);
-        what.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
-        HBox.setHgrow(what, Priority.ALWAYS);
-        what.setMaxWidth(Double.MAX_VALUE);
-        Label figure = new Label(value);
-        figure.setMinWidth(Region.USE_PREF_SIZE);
-        figure.setStyle(Palette.figure(Palette.SIZE_BODY, tone));
-        HBox row = new HBox(Palette.GAP, what, figure);
-        row.setAlignment(Pos.CENTER_LEFT);
-        return row;
+        return Kept.scope("offerLine", () -> {
+            Label what = Kept.label(label);
+            what.setWrapText(true);
+            what.setMinWidth(0);
+            what.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+            HBox.setHgrow(what, Priority.ALWAYS);
+            what.setMaxWidth(Double.MAX_VALUE);
+            Label figure = Kept.label(value);
+            figure.setMinWidth(Region.USE_PREF_SIZE);
+            figure.setStyle(Palette.figure(Palette.SIZE_BODY, tone));
+            HBox row = Kept.row(Palette.GAP, what, figure);
+            row.setAlignment(Pos.CENTER_LEFT);
+            return row;
+        });
     }
 
     /* =====================================================================
@@ -1774,9 +1867,11 @@ public final class Pieces {
                 + (onClick != null ? " -fx-cursor: hand;" : "")
                 + " -fx-background-color: " + (picked ? Palette.PINNED : Palette.RAISED) + "; -fx-border-color: ";
         String edge = picked ? Palette.BUILDING : Palette.EDGE;
-        card.setStyle(rest + edge + ";");
+        String over = picked ? Palette.BUILDING : Palette.ACCENT;
+        // Kept (KP2): the look the pointer calls for is chosen from isHover() where it is set.
+        card.setStyle(rest + (onClick != null && card.isHover() ? over : edge) + ";");
         if (onClick != null) {
-            card.setOnMouseEntered(e -> card.setStyle(rest + (picked ? Palette.BUILDING : Palette.ACCENT) + ";"));
+            card.setOnMouseEntered(e -> card.setStyle(rest + over + ";"));
             card.setOnMouseExited(e -> card.setStyle(rest + edge + ";"));
             card.setOnMouseClicked(e -> onClick.run());
         }
@@ -2160,70 +2255,115 @@ public final class Pieces {
      */
     public static CauseBar causeBar(List<Part> parts, double width, double band,
                                     java.util.function.DoubleFunction<String> figure) {
-        return new CauseBar(parts, width, band, figure);
+        // Kept (KP2): the bar is told its parts by set(); anywhere else this is a new picture, as it was.
+        CauseBar bar = Kept.of(CauseBar.class, CauseBar::new);
+        bar.set(parts, width, band, figure);
+        return bar;
     }
 
-    /** The bar causeBar() draws: a Pane that lays its parts, their names and its key out at whatever width it is given. */
+    /**
+     * The bar causeBar() draws: a Pane that lays its parts, their names and its key out at whatever width it is
+     * given. A picture (KP2): set() keeps its blocks, names and keys while there are as many parts as there were,
+     * builds them anew when the count changes, and asks for a layout only when a figure or a word the layout
+     * reads moved.
+     */
     public static final class CauseBar extends javafx.scene.layout.Pane {
-        private final List<Part> parts;
-        private final double band, total;
+        private List<Part> parts = List.of();
+        private double band, total;
         private final List<Region> blocks = new java.util.ArrayList<>();
         private final List<VBox> names = new java.util.ArrayList<>();
         private final List<HBox> keys = new java.util.ArrayList<>();
+        /** What each part drew at the last set(), its figures and words in one string: the layout reads exactly these. */
+        private String laidOut;
         /** Between the parts, under the bar, and between the key's entries and rows. */
         private static final double GAP = 2, UNDER = 3, KEY_GAP = 12, KEY_ROW = 3;
 
-        CauseBar(List<Part> parts, double width, double band, java.util.function.DoubleFunction<String> figure) {
+        CauseBar() { }
+
+        /** The parts drawn now, the width (0 or less: what holds it), the band and the figures' words. */
+        void set(List<Part> parts, double width, double band, java.util.function.DoubleFunction<String> figure) {
+            List<Part> was = this.parts;
             this.parts = parts == null ? List.of() : parts;
+            double bandWas = this.band;
             this.band = band;
             double sum = 0;
             for (Part p : this.parts) sum += Math.max(0, finite(p.amount()));
             this.total = sum;
-            for (Part p : this.parts) {
+            // The parts: kept while the bar has as many as it had, else made anew.
+            boolean built = false;
+            if (blocks.size() != this.parts.size()) {
+                built = true;
+                blocks.clear();
+                names.clear();
+                keys.clear();
+                List<javafx.scene.Node> all = new java.util.ArrayList<>();
+                for (int i = 0; i < this.parts.size(); i++) {
+                    Region r = new Region();
+                    Label name = new Label();
+                    name.setWrapText(true);
+                    name.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+                    Label fig = new Label();
+                    fig.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_HEAD));
+                    VBox under = new VBox(0, name, fig);
+                    Region swatch = new Region();
+                    swatch.setMinSize(10, 10);
+                    swatch.setPrefSize(10, 10);
+                    swatch.setMaxSize(10, 10);
+                    Label keyed = new Label();
+                    keyed.setMinWidth(Region.USE_PREF_SIZE);
+                    HBox key = new HBox(5, swatch, keyed);
+                    key.setAlignment(Pos.CENTER_LEFT);
+                    blocks.add(r);
+                    names.add(under);
+                    keys.add(key);
+                    all.add(r);
+                    all.add(under);
+                    all.add(key);
+                }
+                getChildren().setAll(all);
+            }
+            StringBuilder drawn = new StringBuilder();
+            for (int i = 0; i < this.parts.size(); i++) {
+                Part p = this.parts.get(i);
                 double a = finite(p.amount());
-                Region r = new Region();
+                Region r = blocks.get(i);
                 r.setStyle(p.hatched()
                         ? "-fx-background-color: linear-gradient(from 0px 0px to 6px 6px, repeat, " + p.colour()
                           + " 0%, " + p.colour() + " 40%, transparent 40%, transparent 100%);"
                           + " -fx-border-color: " + p.colour() + "; -fx-border-width: 1; -fx-background-radius: 2; -fx-border-radius: 2;"
                         : "-fx-background-color: " + p.colour() + "; -fx-background-radius: 2;");
                 String says = p.tip() != null ? p.tip() : p.name() + "\n" + (a > 0 ? figure.apply(a) : "none");
-                Tooltip tip = new Tooltip(says);
-                tip.setShowDelay(Duration.millis(200));
-                Tooltip.install(r, tip);
-                Label name = new Label(p.name());
-                name.setWrapText(true);
-                name.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-                Label fig = new Label(figure.apply(a));
-                fig.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_HEAD));
-                VBox under = new VBox(0, name, fig);
-                Region swatch = new Region();
-                swatch.setMinSize(10, 10);
-                swatch.setPrefSize(10, 10);
-                swatch.setMaxSize(10, 10);
+                VBox under = names.get(i);
+                HBox key = keys.get(i);
+                Label name = (Label) under.getChildren().get(0), fig = (Label) under.getChildren().get(1);
+                Region swatch = (Region) key.getChildren().get(0);
+                Label keyed = (Label) key.getChildren().get(1);
+                name.setText(p.name());
+                fig.setText(figure.apply(a));
                 swatch.setStyle("-fx-background-color: " + (a > 0 ? p.colour() : Palette.EDGE) + "; -fx-background-radius: 2;");
-                Label keyed = new Label(p.name() + "  " + (a > 0 ? figure.apply(a) : "none"));
+                keyed.setText(p.name() + "  " + (a > 0 ? figure.apply(a) : "none"));
                 keyed.setStyle(Palette.words(Palette.SIZE_CAPTION, a > 0 ? Palette.TEXT_MUTED : Palette.TEXT_SPENT));
-                keyed.setMinWidth(Region.USE_PREF_SIZE);
-                HBox key = new HBox(5, swatch, keyed);
-                key.setAlignment(Pos.CENTER_LEFT);
-                Tooltip.install(key, new Tooltip(says));
-                if (p.go() != null) {
-                    for (javafx.scene.Node n : List.of(r, under, key)) {
-                        n.setCursor(javafx.scene.Cursor.HAND);
-                        n.setOnMouseClicked(e -> p.go().run());
-                    }
-                    r.setOnMouseEntered(e -> r.setOpacity(.8));
-                    r.setOnMouseExited(e -> r.setOpacity(1));
+                tipFor(r, says, 200);
+                tipFor(key, says, -1);
+                // Handlers and cursor on both sides, set and never added: a kept part may have had a door last month.
+                // The block's look under the pointer is chosen from isHover() (a kept block under a still pointer is not entered afresh).
+                boolean door = p.go() != null;
+                for (javafx.scene.Node n : List.of(r, under, key)) {
+                    n.setCursor(door ? javafx.scene.Cursor.HAND : null);
+                    n.setOnMouseClicked(door ? e -> p.go().run() : null);
                 }
-                blocks.add(r);
-                names.add(under);
-                keys.add(key);
-                getChildren().addAll(r, under, key);
+                r.setOnMouseEntered(door ? e -> r.setOpacity(.8) : null);
+                r.setOnMouseExited(door ? e -> r.setOpacity(1) : null);
+                r.setOpacity(door && r.isHover() ? .8 : 1);
+                drawn.append(a).append('\u0001').append(p.name()).append('\u0001').append(fig.getText()).append('\u0001')
+                        .append(keyed.getText()).append('\u0002');
             }
             setMinWidth(width > 0 ? width : 0);
             setPrefWidth(width > 0 ? width : 400);
             setMaxWidth(width > 0 ? width : Double.MAX_VALUE);
+            boolean moved = built || band != bandWas || !drawn.toString().equals(laidOut) || was.size() != this.parts.size();
+            laidOut = drawn.toString();
+            if (moved) requestLayout();
         }
 
         private static double finite(double v) { return Double.isFinite(v) ? v : 0; }
@@ -2321,6 +2461,7 @@ public final class Pieces {
      */
     public static SegmentBar supplyBar(double need, double built, double working, String colour,
                                        String needName, List<Tick> more, String tip, double width, double band) {
+        // Kept (KP2): the bar is the segment bar's, kept; its tooltip is the node's own, its text set (or taken off).
         double w = Double.isFinite(working) ? Math.max(0, working) : 0;
         double b = Math.max(w, Double.isFinite(built) ? built : 0);
         double n = Double.isFinite(need) ? Math.max(0, need) : 0;
@@ -2330,11 +2471,7 @@ public final class Pieces {
         if (more != null) ticks.addAll(more);
         SegmentBar bar = segmentBar(List.of(Segment.of(w, colour), Segment.of(b - w, colour + "59")),
                 scale > 0 ? scale : 1, ticks, width, band);
-        if (tip != null) {
-            Tooltip t = new Tooltip(tip);
-            t.setShowDelay(Duration.millis(200));
-            Tooltip.install(bar, t);
-        }
+        if (tip != null) Kept.tip(bar, tip, 200);
         return bar;
     }
 
@@ -2353,49 +2490,52 @@ public final class Pieces {
      * 3,109 is still there. `width` 0 or less fills what holds it.
      */
     public static VBox funnel(List<FunnelStep> steps, double width, int binding, String colour) {
-        double most = 0;
-        for (FunnelStep s : steps) if (Double.isFinite(s.amount())) most = Math.max(most, s.amount());
-        VBox box = new VBox(5);
-        for (int i = 0; i < steps.size(); i++) {
-            FunnelStep s = steps.get(i);
-            boolean binds = i == binding;
-            Label name = new Label(s.name());
-            name.setWrapText(true);
-            name.setMinWidth(120);
-            name.setPrefWidth(120);
-            name.setMaxWidth(120);
-            name.setStyle(binds ? Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_HEAD)
-                                : Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
-            double share = most > 0 && Double.isFinite(s.amount()) ? Math.max(0, s.amount()) / most : 0;
-            Region fill = new Region();
-            fill.setMinWidth(share > 0 ? 3 : 0);
-            fill.setMinHeight(12);
-            fill.setMaxHeight(12);
-            fill.setMaxWidth(Region.USE_PREF_SIZE);
-            fill.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: 2;"
-                    + (binds ? " -fx-border-color: " + Palette.TEXT_HEAD + "; -fx-border-width: 1.5; -fx-border-radius: 2;" : ""));
-            javafx.scene.layout.StackPane holder = new javafx.scene.layout.StackPane(fill);
-            holder.setAlignment(Pos.CENTER_LEFT);
-            holder.setMinWidth(10);
-            holder.setPrefWidth(10);
-            holder.setMaxWidth(Double.MAX_VALUE);
-            fill.prefWidthProperty().bind(holder.widthProperty().multiply(share));
-            HBox.setHgrow(holder, Priority.ALWAYS);
-            Label figure = new Label(s.figure());
-            figure.setMinWidth(Region.USE_PREF_SIZE);
-            figure.setStyle(Palette.figure(Palette.SIZE_LABEL, binds ? Palette.TEXT_HEAD : Palette.TEXT_BODY));
-            HBox row = new HBox(Palette.GAP, name, holder, figure);
-            row.setAlignment(Pos.CENTER_LEFT);
-            if (s.tip() != null) {
-                Tooltip t = new Tooltip(s.tip());
-                t.setShowDelay(Duration.millis(200));
-                Tooltip.install(row, t);
-            }
-            box.getChildren().add(row);
-        }
-        box.setMaxWidth(width > 0 ? width : Double.MAX_VALUE);
-        if (width > 0) box.setPrefWidth(width);
-        return box;
+        return Kept.scope("funnel", () -> {
+            double most = 0;
+            for (FunnelStep s : steps) if (Double.isFinite(s.amount())) most = Math.max(most, s.amount());
+            // Kept (KP2): the steps, however many, are a scope of their own; a bar's width is bound to its
+            // holder's - bound again at each draw, which replaces the binding the node had.
+            final double largest = most;
+            VBox box = Kept.column(5);
+            Kept.scope("steps", () -> {
+                for (int i = 0; i < steps.size(); i++) {
+                    FunnelStep s = steps.get(i);
+                    boolean binds = i == binding;
+                    Label name = Kept.label(s.name());
+                    name.setWrapText(true);
+                    name.setMinWidth(120);
+                    name.setPrefWidth(120);
+                    name.setMaxWidth(120);
+                    name.setStyle(binds ? Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_HEAD)
+                                        : Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+                    double share = largest > 0 && Double.isFinite(s.amount()) ? Math.max(0, s.amount()) / largest : 0;
+                    Region fill = Kept.region();
+                    fill.setMinWidth(share > 0 ? 3 : 0);
+                    fill.setMinHeight(12);
+                    fill.setMaxHeight(12);
+                    fill.setMaxWidth(Region.USE_PREF_SIZE);
+                    fill.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: 2;"
+                            + (binds ? " -fx-border-color: " + Palette.TEXT_HEAD + "; -fx-border-width: 1.5; -fx-border-radius: 2;" : ""));
+                    javafx.scene.layout.StackPane holder = Kept.stack(fill);
+                    holder.setAlignment(Pos.CENTER_LEFT);
+                    holder.setMinWidth(10);
+                    holder.setPrefWidth(10);
+                    holder.setMaxWidth(Double.MAX_VALUE);
+                    fill.prefWidthProperty().bind(holder.widthProperty().multiply(share));
+                    HBox.setHgrow(holder, Priority.ALWAYS);
+                    Label figure = Kept.label(s.figure());
+                    figure.setMinWidth(Region.USE_PREF_SIZE);
+                    figure.setStyle(Palette.figure(Palette.SIZE_LABEL, binds ? Palette.TEXT_HEAD : Palette.TEXT_BODY));
+                    HBox row = Kept.row(Palette.GAP, name, holder, figure);
+                    row.setAlignment(Pos.CENTER_LEFT);
+                    if (s.tip() != null) Kept.tip(row, s.tip(), 200);
+                    box.getChildren().add(row);
+                }
+            });
+            box.setMaxWidth(width > 0 ? width : Double.MAX_VALUE);
+            box.setPrefWidth(width > 0 ? width : Region.USE_COMPUTED_SIZE);
+            return box;
+        });
     }
 
     /* ------------------------------ an effect scale ------------------------------ */
@@ -2414,69 +2554,89 @@ public final class Pieces {
     public static HBox effectScale(String label, double now, double atNone, double atAll, boolean log,
                                    java.util.function.DoubleFunction<String> figure, String colour,
                                    double labelWidth, javafx.scene.Node words, double wordsWidth) {
-        EffectScale scale = new EffectScale(now, atNone, atAll, log, figure, colour);
-        HBox.setHgrow(scale, Priority.ALWAYS);
-        HBox row = new HBox(Palette.GAP_LOOSE);
-        row.setAlignment(Pos.CENTER_LEFT);
-        if (labelWidth > 0) {
-            Label l = new Label(label);
-            l.setWrapText(true);
-            l.setMinWidth(labelWidth);
-            l.setPrefWidth(labelWidth);
-            l.setMaxWidth(labelWidth);
-            l.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_HEAD));
-            row.getChildren().add(l);
-        }
-        row.getChildren().add(scale);
-        if (words != null) {
-            if (words instanceof Region r && wordsWidth > 0) {
-                r.setMinWidth(wordsWidth);
-                r.setPrefWidth(wordsWidth);
-                r.setMaxWidth(wordsWidth);
+        return Kept.scope("effectScale", () -> {
+            // Kept (KP2): the scale is told its figures by set(); the label, drawn only sometimes, is a scope of its own.
+            EffectScale scale = Kept.of(EffectScale.class, EffectScale::new);
+            scale.set(now, atNone, atAll, log, figure, colour);
+            HBox.setHgrow(scale, Priority.ALWAYS);
+            HBox row = Kept.row(Palette.GAP_LOOSE);
+            row.setAlignment(Pos.CENTER_LEFT);
+            if (labelWidth > 0) {
+                row.getChildren().add(Kept.scope("label", () -> {
+                    Label l = Kept.label(label);
+                    l.setWrapText(true);
+                    l.setMinWidth(labelWidth);
+                    l.setPrefWidth(labelWidth);
+                    l.setMaxWidth(labelWidth);
+                    l.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_HEAD));
+                    return l;
+                }));
             }
-            row.getChildren().add(words);
-        }
-        Tooltip tip = new Tooltip("at nobody covered " + figure.apply(atNone) + "\nnow " + figure.apply(now)
-                + "\nat everyone covered " + figure.apply(atAll));
-        tip.setShowDelay(Duration.millis(200));
-        Tooltip.install(scale, tip);
-        return row;
+            row.getChildren().add(scale);
+            if (words != null) {
+                if (words instanceof Region r && wordsWidth > 0) {
+                    r.setMinWidth(wordsWidth);
+                    r.setPrefWidth(wordsWidth);
+                    r.setMaxWidth(wordsWidth);
+                }
+                row.getChildren().add(words);
+            }
+            Kept.tip(scale, "at nobody covered " + figure.apply(atNone) + "\nnow " + figure.apply(now)
+                    + "\nat everyone covered " + figure.apply(atAll), 200);
+            return row;
+        });
     }
 
-    /** The line effectScale() draws: a Pane that lays its ends and today's mark out at whatever width it is given. */
+    /**
+     * The line effectScale() draws: a Pane that lays its ends and today's mark out at whatever width it is given.
+     * Kept (KP2): it makes its parts once and is told each month's figures by set(), which asks for a layout
+     * only when the mark's place or a word moved.
+     */
     public static final class EffectScale extends javafx.scene.layout.Pane {
-        private final double at;
+        private double at;
         private final Region line = new Region(), mark = new Region(), left = new Region(), right = new Region();
-        private final Label now, none, all;
+        private final Label now = new Label(), none = new Label(), all = new Label();
+        private boolean told;
         /** Its height, how far down it the line runs, and the mark's size. */
         private static final double TALL = 44, Y = 22, DOT = 10;
 
-        EffectScale(double now, double atNone, double atAll, boolean log,
-                    java.util.function.DoubleFunction<String> figure, String colour) {
-            double t;
-            if (log && now > 0 && atNone > 0 && atAll > 0 && atNone != atAll) {
-                t = (Math.log(now) - Math.log(atNone)) / (Math.log(atAll) - Math.log(atNone));
-            } else {
-                t = atAll != atNone ? (now - atNone) / (atAll - atNone) : 0;
-            }
-            this.at = Double.isFinite(t) ? Math.max(0, Math.min(1, t)) : 0;
+        EffectScale() {
             line.setStyle("-fx-background-color: " + Palette.EDGE + "; -fx-background-radius: 1;");
             left.setStyle("-fx-background-color: " + Palette.TEXT_SPENT + ";");
             right.setStyle("-fx-background-color: " + Palette.TEXT_SPENT + ";");
-            mark.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: " + DOT / 2 + ";"
-                    + " -fx-border-color: " + Palette.TEXT_HEAD + "; -fx-border-radius: " + DOT / 2 + "; -fx-border-width: 1.5;");
-            this.now = new Label(figure.apply(now));
-            this.now.setStyle(Palette.figure(Palette.SIZE_LABEL, Palette.TEXT_HEAD));
-            this.none = new Label("nobody " + figure.apply(atNone));
-            this.none.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-            this.all = new Label("everybody " + figure.apply(atAll));
-            this.all.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-            getChildren().addAll(line, left, right, mark, this.now, none, all);
+            now.setStyle(Palette.figure(Palette.SIZE_LABEL, Palette.TEXT_HEAD));
+            none.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+            all.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+            getChildren().addAll(line, left, right, mark, now, none, all);
             setMinWidth(120);
             setPrefWidth(400);
             setMaxWidth(Double.MAX_VALUE);
             setMinHeight(TALL);
             setPrefHeight(TALL);
+        }
+
+        /** What the scale shows now: today's figure between the two ends, in a colour. */
+        void set(double today, double atNone, double atAll, boolean log,
+                 java.util.function.DoubleFunction<String> figure, String colour) {
+            double t;
+            if (log && today > 0 && atNone > 0 && atAll > 0 && atNone != atAll) {
+                t = (Math.log(today) - Math.log(atNone)) / (Math.log(atAll) - Math.log(atNone));
+            } else {
+                t = atAll != atNone ? (today - atNone) / (atAll - atNone) : 0;
+            }
+            double place = Double.isFinite(t) ? Math.max(0, Math.min(1, t)) : 0;
+            mark.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: " + DOT / 2 + ";"
+                    + " -fx-border-color: " + Palette.TEXT_HEAD + "; -fx-border-radius: " + DOT / 2 + "; -fx-border-width: 1.5;");
+            String words = figure.apply(today), none = "nobody " + figure.apply(atNone),
+                    all = "everybody " + figure.apply(atAll);
+            boolean moved = !told || place != at || !words.equals(now.getText())
+                    || !none.equals(this.none.getText()) || !all.equals(this.all.getText());
+            told = true;
+            at = place;
+            now.setText(words);
+            this.none.setText(none);
+            this.all.setText(all);
+            if (moved) requestLayout();
         }
 
         @Override protected void layoutChildren() {
@@ -2513,57 +2673,90 @@ public final class Pieces {
                                         int dangerFrom, String danger, String dangerName, String near, String far,
                                         java.util.function.DoubleFunction<String> figure,
                                         java.util.function.IntFunction<String> slotName) {
-        return new CohortBars(counts, width, height, colour, dangerFrom, danger, dangerName, near, far, figure, slotName);
+        // Kept (KP2): the bars are told their counts by set(); anywhere else this is a new picture, as it was.
+        CohortBars bars = Kept.of(CohortBars.class, CohortBars::new);
+        bars.set(counts, width, height, colour, dangerFrom, danger, dangerName, near, far, figure, slotName);
+        return bars;
     }
 
-    /** The bars cohortBars() draws: a Pane that lays them out at whatever width it is given. */
+    /**
+     * The bars cohortBars() draws: a Pane that lays them out at whatever width it is given. A picture (KP2): its
+     * divider and its names are made once; set() keeps the bars while there are as many as there were and builds
+     * them anew when the count changes, and asks for a layout only when a figure the layout reads moved.
+     */
     public static final class CohortBars extends javafx.scene.layout.Pane {
-        private final double[] counts;
-        private final double peak;
-        private final int dangerFrom;
+        private double[] counts = new double[0];
+        private double peak;
+        private int dangerFrom;
+        private double height = Double.NaN;
+        private boolean told;
         private final List<Region> bars = new java.util.ArrayList<>();
         private final javafx.scene.shape.Line divider = new javafx.scene.shape.Line();
-        private final Label dividerName, near, far;
+        private final Label dividerName = new Label(), near = new Label(), far = new Label();
         /** Room under the bars for the near and far names. */
         private static final double AXIS = 15;
 
-        CohortBars(double[] counts, double width, double height, String colour, int dangerFrom, String danger,
-                   String dangerName, String near, String far, java.util.function.DoubleFunction<String> figure,
-                   java.util.function.IntFunction<String> slotName) {
-            this.counts = counts == null ? new double[0] : counts;
+        CohortBars() {
+            divider.setStroke(javafx.scene.paint.Color.web(Palette.TEXT_MUTED));
+            divider.getStrokeDashArray().addAll(3.0, 3.0);
+            dividerName.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+            near.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+            far.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+            getChildren().addAll(divider, dividerName, near, far);
+        }
+
+        /** The bars drawn now; see cohortBars() for what each is. */
+        void set(double[] counts, double width, double height, String colour, int dangerFrom, String danger,
+                 String dangerName, String near, String far, java.util.function.DoubleFunction<String> figure,
+                 java.util.function.IntFunction<String> slotName) {
+            double[] now = counts == null ? new double[0] : counts;
+            boolean moved = !told || !java.util.Arrays.equals(now, this.counts) || dangerFrom != this.dangerFrom
+                    || height != this.height || !java.util.Objects.equals(dangerName == null ? "" : dangerName, this.dividerName.getText())
+                    || !java.util.Objects.equals(near == null ? "" : near, this.near.getText())
+                    || !java.util.Objects.equals(far == null ? "" : far, this.far.getText());
+            told = true;
+            this.counts = now.clone();
             this.dangerFrom = dangerFrom;
+            this.height = height;
             double top = 0;
             for (double c : this.counts) if (Double.isFinite(c)) top = Math.max(top, c);
             this.peak = top;
+            // The bars: kept while there are as many as there were, else made anew.
+            if (bars.size() != this.counts.length) {
+                moved = true;
+                bars.clear();
+                List<javafx.scene.Node> all = new java.util.ArrayList<>();
+                for (int i = 0; i < this.counts.length; i++) {
+                    Region r = new Region();
+                    bars.add(r);
+                    all.add(r);
+                }
+                all.add(divider);
+                all.add(dividerName);
+                all.add(this.near);
+                all.add(this.far);
+                getChildren().setAll(all);
+            }
             for (int i = 0; i < this.counts.length; i++) {
                 double c = this.counts[i];
-                Region r = new Region();
+                Region r = bars.get(i);
                 boolean late = dangerFrom >= 0 && i >= dangerFrom;
                 r.setStyle("-fx-background-color: " + (c > 0 ? (late ? danger : colour) : Palette.HAIRLINE) + ";"
                         + " -fx-background-radius: 2 2 0 0;");
-                Tooltip tip = new Tooltip((slotName == null ? "" : slotName.apply(i) + "\n")
-                        + (Double.isFinite(c) ? figure.apply(c) : "—"));
-                tip.setShowDelay(Duration.millis(150));
-                Tooltip.install(r, tip);
-                bars.add(r);
-                getChildren().add(r);
+                tipFor(r, (slotName == null ? "" : slotName.apply(i) + "\n")
+                        + (Double.isFinite(c) ? figure.apply(c) : "—"), 150);
             }
-            divider.setStroke(javafx.scene.paint.Color.web(Palette.TEXT_MUTED));
-            divider.getStrokeDashArray().addAll(3.0, 3.0);
             divider.setVisible(dangerFrom > 0 && dangerFrom < this.counts.length);
-            this.dividerName = new Label(dangerName == null ? "" : dangerName);
-            this.dividerName.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+            this.dividerName.setText(dangerName == null ? "" : dangerName);
             this.dividerName.setVisible(divider.isVisible() && dangerName != null);
-            this.near = new Label(near == null ? "" : near);
-            this.near.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-            this.far = new Label(far == null ? "" : far);
-            this.far.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-            getChildren().addAll(divider, dividerName, this.near, this.far);
+            this.near.setText(near == null ? "" : near);
+            this.far.setText(far == null ? "" : far);
             setMinWidth(width > 0 ? width : 0);
             setPrefWidth(width > 0 ? width : 400);
             setMaxWidth(width > 0 ? width : Double.MAX_VALUE);
             setMinHeight(height);
             setPrefHeight(height);
+            if (moved) requestLayout();
         }
 
         @Override protected void layoutChildren() {
@@ -2605,9 +2798,11 @@ public final class Pieces {
     public static Label door(String text, String colour, Runnable go) {
         Label l = Kept.label(text + " ›");
         String rest = Palette.words(Palette.SIZE_LABEL, colour) + " -fx-cursor: hand;";
-        l.setStyle(rest);
+        String over = rest + " -fx-underline: true;";
+        // Kept (KP2): the look the pointer calls for is chosen from isHover() where it is set.
+        l.setStyle(l.isHover() ? over : rest);
         l.setMinWidth(Region.USE_PREF_SIZE);
-        l.setOnMouseEntered(e -> l.setStyle(rest + " -fx-underline: true;"));
+        l.setOnMouseEntered(e -> l.setStyle(over));
         l.setOnMouseExited(e -> l.setStyle(rest));
         // Set, not added: a kept door is handed back with none (Kept), and the click is this draw's.
         l.setOnMouseClicked(e -> {
@@ -2624,7 +2819,9 @@ public final class Pieces {
      * cells' 64 x 16.
      */
     public static Region sparkline(double[] series, List<Integer> months, String colour, double width, double height) {
-        UserInterface.Sparkline line = new UserInterface.Sparkline(series, months, colour);
+        // Kept (KP2): the line the last draw made, told its series by set() (which leaves a series it already draws alone).
+        UserInterface.Sparkline line = Kept.of(UserInterface.Sparkline.class, UserInterface.Sparkline::new);
+        line.set(series, months, colour);
         line.setMinSize(width, height);
         line.setPrefSize(width, height);
         line.setMaxSize(width, height);
@@ -2651,25 +2848,27 @@ public final class Pieces {
 
     /** A page's lead picture as a card (0.7.29): `left`, `leftWidth` wide, its words; `right`, taking the rest, the picture. */
     public static HBox heroCard(javafx.scene.Node left, double leftWidth, javafx.scene.Node right) {
-        if (left instanceof Region r) {
-            r.setMinWidth(leftWidth);
-            r.setPrefWidth(leftWidth);
-            r.setMaxWidth(leftWidth);
-        }
-        HBox card = new HBox(24, left);
-        if (right != null) {
-            HBox.setHgrow(right, Priority.ALWAYS);
-            if (right instanceof Region r) {
-                r.setMinWidth(0);
-                r.setMaxWidth(Double.MAX_VALUE);
+        return Kept.scope("heroCard", () -> {
+            if (left instanceof Region r) {
+                r.setMinWidth(leftWidth);
+                r.setPrefWidth(leftWidth);
+                r.setMaxWidth(leftWidth);
             }
-            card.getChildren().add(right);
-        }
-        card.setAlignment(Pos.TOP_LEFT);
-        card.setMaxWidth(Double.MAX_VALUE);
-        card.setStyle("-fx-padding: 14 16 14 16; -fx-background-color: " + Palette.RAISED + ";"
-                + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + Palette.EDGE + ";");
-        return card;
+            HBox card = Kept.row(24, left);
+            if (right != null) {
+                HBox.setHgrow(right, Priority.ALWAYS);
+                if (right instanceof Region r) {
+                    r.setMinWidth(0);
+                    r.setMaxWidth(Double.MAX_VALUE);
+                }
+                card.getChildren().add(right);
+            }
+            card.setAlignment(Pos.TOP_LEFT);
+            card.setMaxWidth(Double.MAX_VALUE);
+            card.setStyle("-fx-padding: 14 16 14 16; -fx-background-color: " + Palette.RAISED + ";"
+                    + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + Palette.EDGE + ";");
+            return card;
+        });
     }
 
     /**
@@ -2781,16 +2980,25 @@ public final class Pieces {
      */
     public static ScaleRows scaleRows(List<ScaleRow> rows, double scale, List<Rule> rules,
                                       double nameWidth, double figureWidth, double band) {
-        return new ScaleRows(rows, scale, rules, nameWidth, figureWidth, band);
+        // Kept (KP2): the stack is told its rows by set(); anywhere else this is a new picture, as it was.
+        ScaleRows stack = Kept.of(ScaleRows.class, ScaleRows::new);
+        stack.set(rows, scale, rules, nameWidth, figureWidth, band);
+        return stack;
     }
 
-    /** The stack scaleRows() draws: a Pane that lays its rows, their runs and its rules out at whatever width it is given. */
+    /**
+     * The stack scaleRows() draws: a Pane that lays its rows, their runs and its rules out at whatever width it is
+     * given. A picture (KP2): its parts are its own, made with new (a picture owns its children); set() keeps them
+     * while the rows and rules have the shape they had (the same rows with the same optional parts and as many runs
+     * and marks, as many rules) and makes them afresh when it changes, so the common month - the figures moved, the
+     * rows the same - makes no node; it asks for a layout only when a figure or a word the layout reads moved.
+     */
     public static final class ScaleRows extends javafx.scene.layout.Pane {
         /** A row's least height, the gap either side of the bar, the room the rules' names take over the rows, the gap before a tag, and an icon's size. */
         private static final double ROW = 26, GAP = 10, RULE_NAMES = 16, TAG_GAP = 6, ICON = 12;
-        private final List<ScaleRow> rows;
-        private final List<Rule> rules;
-        private final double scale, nameWidth, figureWidth, band;
+        private List<ScaleRow> rows = List.of();
+        private List<Rule> rules = List.of();
+        private double scale = 1, nameWidth, figureWidth, band;
         private final List<Label> names = new java.util.ArrayList<>(), figures = new java.util.ArrayList<>();
         private final List<Label> empties = new java.util.ArrayList<>(), tags = new java.util.ArrayList<>();
         private final List<Label> overs = new java.util.ArrayList<>();
@@ -2799,133 +3007,223 @@ public final class Pieces {
         private final List<List<Region>> drawn = new java.util.ArrayList<>(), marked = new java.util.ArrayList<>();
         private final List<javafx.scene.shape.Line> lines = new java.util.ArrayList<>();
         private final List<Label> ruleNames = new java.util.ArrayList<>();
+        /** What the parts were made for at the last set(): see shapeOf(). Null before the first. */
+        private String shape;
+        /** What the layout read at the last set(): see layoutKey(). */
+        private String laidOut;
 
-        ScaleRows(List<ScaleRow> rows, double scale, List<Rule> rules, double nameWidth, double figureWidth,
-                  double band) {
+        ScaleRows() { }
+
+        /** The rows and rules drawn now; see scaleRows() for what each is. */
+        void set(List<ScaleRow> rows, double scale, List<Rule> rules, double nameWidth, double figureWidth,
+                 double band) {
             this.rows = rows == null ? List.of() : rows;
             this.rules = rules == null ? List.of() : rules;
             this.scale = scale > 0 && Double.isFinite(scale) ? scale : 1;
             this.nameWidth = nameWidth;
             this.figureWidth = figureWidth;
             this.band = band;
-            for (ScaleRow row : this.rows) {
-                Label name = new Label(row.name() == null ? "" : row.name());
+            String now = shapeOf();
+            boolean built = !now.equals(shape);
+            if (built) {
+                shape = now;
+                build();
+            }
+            fill();
+            setMinWidth(nameWidth + figureWidth + 2 * GAP + 60);
+            setPrefWidth(nameWidth + figureWidth + 2 * GAP + 400);
+            setMaxWidth(Double.MAX_VALUE);
+            String key = layoutKey();
+            boolean moved = built || !key.equals(laidOut);
+            laidOut = key;
+            if (moved) requestLayout();
+        }
+
+        /** What the parts depend on: per row, whether it is a caption, has an (i), its icon, and how many runs and marks; and how many rules. */
+        private String shapeOf() {
+            StringBuilder s = new StringBuilder();
+            for (ScaleRow row : rows) {
+                s.append(row.caption() ? 'c' : 'r').append(row.info() != null ? 'i' : '-').append('|').append(row.icon())
+                        .append('|').append(row.runs() == null ? 0 : row.runs().size())
+                        .append('|').append(row.marks() == null ? 0 : row.marks().size()).append(';');
+            }
+            return s.append('#').append(rules.size()).toString();
+        }
+
+        /** Every figure and word the layout reads, in one string: laid out again only when it differs. */
+        private String layoutKey() {
+            StringBuilder s = new StringBuilder();
+            s.append(scale).append(',').append(nameWidth).append(',').append(figureWidth).append(',').append(band).append(';');
+            for (ScaleRow row : rows) {
+                s.append(row.caption()).append(',').append(row.name()).append(',').append(row.figure()).append(',')
+                        .append(row.tag()).append(',').append(row.empty()).append(',').append(row.bold()).append(';');
+                if (row.runs() != null) for (Run run : row.runs()) s.append(run.from()).append(',').append(run.amount()).append(';');
+                if (row.marks() != null) for (Tick t : row.marks()) s.append(t.at()).append(',').append(t.width()).append(';');
+            }
+            for (Rule rule : rules) s.append(rule.at()).append(',').append(rule.name()).append(';');
+            return s.toString();
+        }
+
+        /** The parts made afresh, in the order a row's and a rule's are drawn (later ones over earlier). */
+        private void build() {
+            names.clear();
+            figures.clear();
+            empties.clear();
+            tags.clear();
+            overs.clear();
+            infos.clear();
+            icons.clear();
+            tracks.clear();
+            drawn.clear();
+            marked.clear();
+            lines.clear();
+            ruleNames.clear();
+            List<javafx.scene.Node> all = new java.util.ArrayList<>();
+            for (ScaleRow row : rows) {
+                Label name = new Label();
                 name.setWrapText(true);
-                name.setStyle(row.caption() ? Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL)
-                        : row.bold() ? Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_HEAD)
-                        : Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
                 names.add(name);
-                getChildren().add(name);
-                javafx.scene.Node info = row.info() == null ? null : infoButton(row.info(), true);
+                all.add(name);
+                javafx.scene.Node info = row.info() == null ? null : makeInfo(row.info(), true, false);
                 infos.add(info);
-                if (info != null) getChildren().add(info);
-                javafx.scene.Node mark = row.icon() == null ? null : icon(row.icon(), Palette.TEXT_MUTED, ICON);
+                if (info != null) all.add(info);
+                javafx.scene.Node mark = row.icon() == null ? null : makeIcon(row.icon(), Palette.TEXT_MUTED, ICON, false);
                 icons.add(mark);
-                if (mark != null) getChildren().add(mark);
+                if (mark != null) all.add(mark);
 
                 Region track = new Region();
-                track.setStyle("-fx-background-color: " + Palette.CONTROL + "; -fx-background-radius: " + band / 2 + ";");
                 tracks.add(track);
-                getChildren().add(track);
+                all.add(track);
                 List<Region> parts = new java.util.ArrayList<>();
-                for (Run run : row.runs() == null ? List.<Run>of() : row.runs()) {
+                for (int k = 0; k < (row.runs() == null ? 0 : row.runs().size()); k++) {
                     Region r = new Region();
-                    r.setStyle(run.hollow()
-                            ? "-fx-background-color: " + run.colour() + "33; -fx-border-color: " + run.colour() + ";"
-                              + " -fx-border-width: 1.5; -fx-background-radius: " + band / 2 + "; -fx-border-radius: " + band / 2 + ";"
-                            : "-fx-background-color: " + run.colour() + "; -fx-background-radius: " + band / 2 + ";");
-                    if (run.tip() != null || row.tip() != null) {
-                        Tooltip t = new Tooltip(run.tip() != null ? run.tip() : row.tip());
-                        t.setShowDelay(Duration.millis(200));
-                        Tooltip.install(r, t);
-                    }
-                    if (run.go() != null) {
-                        r.setCursor(javafx.scene.Cursor.HAND);
-                        r.setOnMouseClicked(e -> run.go().run());
-                    }
                     parts.add(r);
-                    getChildren().add(r);
+                    all.add(r);
                 }
                 drawn.add(parts);
                 List<Region> ticks = new java.util.ArrayList<>();
-                for (Tick t : row.marks() == null ? List.<Tick>of() : row.marks()) {
+                for (int k = 0; k < (row.marks() == null ? 0 : row.marks().size()); k++) {
                     Region m = new Region();
-                    m.setStyle("-fx-background-color: " + t.colour() + ";");
-                    if (t.tip() != null) {
-                        Tooltip tip = new Tooltip(t.tip());
-                        tip.setShowDelay(Duration.millis(200));
-                        Tooltip.install(m, tip);
-                    }
                     ticks.add(m);
-                    getChildren().add(m);
+                    all.add(m);
                 }
                 marked.add(ticks);
                 Label over = new Label("›");
                 over.setStyle(Palette.strong(Palette.SIZE_BODY, Palette.TEXT_LABEL));
                 over.setMouseTransparent(true);
                 overs.add(over);
-                getChildren().add(over);
-                Label empty = new Label(row.empty() == null ? "" : row.empty());
+                all.add(over);
+                Label empty = new Label();
                 empty.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
                 empties.add(empty);
-                getChildren().add(empty);
-                Label tag = new Label(row.tag() == null ? "" : row.tag());
-                if (row.tag() != null) {
-                    String c = row.tagColour() == null ? Palette.TEXT_LABEL : row.tagColour();
-                    tag.setStyle(Palette.words(Palette.SIZE_CAPTION, c) + " -fx-background-color: " + tint(c, .16) + ";"
-                            + " -fx-background-radius: 9; -fx-padding: 1 7 1 7;");
-                }
+                all.add(empty);
+                Label tag = new Label();
                 tag.setMinWidth(Region.USE_PREF_SIZE);
                 tags.add(tag);
-                getChildren().add(tag);
-                Label figure = new Label(row.figure() == null ? "" : row.figure());
+                all.add(tag);
+                Label figure = new Label();
                 figure.setMinWidth(Region.USE_PREF_SIZE);
-                figure.setStyle(Palette.figure(Palette.SIZE_LABEL, row.bold() ? Palette.TEXT_HEAD : Palette.TEXT_BODY));
                 figures.add(figure);
-                getChildren().add(figure);
-                if (row.tip() != null) {
-                    for (javafx.scene.Node n : new javafx.scene.Node[] {name, track, figure}) {
-                        Tooltip t = new Tooltip(row.tip());
-                        t.setShowDelay(Duration.millis(200));
-                        Tooltip.install(n, t);
-                    }
-                }
-                if (row.go() != null) {
-                    for (Label l : new Label[] {name, figure}) {
-                        l.setCursor(javafx.scene.Cursor.HAND);
-                        l.setOnMouseClicked(e -> row.go().run());
-                    }
-                }
+                all.add(figure);
             }
-            for (Rule rule : this.rules) {
+            for (int k = 0; k < rules.size(); k++) {
                 javafx.scene.shape.Line line = new javafx.scene.shape.Line();
-                line.setStroke(javafx.scene.paint.Color.web(rule.colour()));
-                line.setStrokeWidth(rule.dashed() ? 1 : 1.5);
-                if (rule.dashed()) line.getStrokeDashArray().addAll(4.0, 3.0);
                 line.setMouseTransparent(true);
                 lines.add(line);
-                getChildren().add(line);
-                Label name = new Label(rule.name() == null ? "" : rule.name());
-                name.setStyle(Palette.words(Palette.SIZE_CAPTION, rule.go() != null ? Palette.ACCENT : Palette.TEXT_LABEL));
+                all.add(line);
+                Label name = new Label();
                 name.setMinWidth(Region.USE_PREF_SIZE);
-                if (rule.tip() != null) {
-                    Tooltip t = new Tooltip(rule.tip());
-                    t.setShowDelay(Duration.millis(200));
-                    Tooltip.install(name, t);
+                ruleNames.add(name);
+                all.add(name);
+            }
+            getChildren().setAll(all);
+        }
+
+        /**
+         * What the parts say and do now: their words, styles, tooltips and clicks, each set and never added
+         * to, and on both sides of every condition (a kept row may have had a tooltip or a click last month).
+         */
+        private void fill() {
+            for (int i = 0; i < rows.size(); i++) {
+                ScaleRow row = rows.get(i);
+                Label name = names.get(i);
+                name.setText(row.name() == null ? "" : row.name());
+                name.setStyle(row.caption() ? Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL)
+                        : row.bold() ? Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_HEAD)
+                        : Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+                javafx.scene.Node info = infos.get(i);
+                if (info != null) {
+                    info.setOnMouseClicked(e -> {
+                        e.consume();
+                        openPopover(info, row.info(), true);
+                    });
                 }
+                Region track = tracks.get(i);
+                track.setStyle("-fx-background-color: " + Palette.CONTROL + "; -fx-background-radius: " + band / 2 + ";");
+                List<Run> runs = row.runs() == null ? List.of() : row.runs();
+                List<Region> parts = drawn.get(i);
+                for (int k = 0; k < runs.size(); k++) {
+                    Run run = runs.get(k);
+                    Region r = parts.get(k);
+                    r.setStyle(run.hollow()
+                            ? "-fx-background-color: " + run.colour() + "33; -fx-border-color: " + run.colour() + ";"
+                              + " -fx-border-width: 1.5; -fx-background-radius: " + band / 2 + "; -fx-border-radius: " + band / 2 + ";"
+                            : "-fx-background-color: " + run.colour() + "; -fx-background-radius: " + band / 2 + ";");
+                    tipFor(r, run.tip() != null ? run.tip() : row.tip(), 200);
+                    r.setCursor(run.go() != null ? javafx.scene.Cursor.HAND : null);
+                    r.setOnMouseClicked(run.go() != null ? e -> run.go().run() : null);
+                }
+                List<Tick> marks = row.marks() == null ? List.of() : row.marks();
+                List<Region> ticks = marked.get(i);
+                for (int k = 0; k < marks.size(); k++) {
+                    Tick t = marks.get(k);
+                    Region m = ticks.get(k);
+                    m.setStyle("-fx-background-color: " + t.colour() + ";");
+                    tipFor(m, t.tip(), 200);
+                }
+                empties.get(i).setText(row.empty() == null ? "" : row.empty());
+                Label tag = tags.get(i);
+                tag.setText(row.tag() == null ? "" : row.tag());
+                String c = row.tagColour() == null ? Palette.TEXT_LABEL : row.tagColour();
+                tag.setStyle(row.tag() != null
+                        ? Palette.words(Palette.SIZE_CAPTION, c) + " -fx-background-color: " + tint(c, .16) + ";"
+                          + " -fx-background-radius: 9; -fx-padding: 1 7 1 7;"
+                        : "");
+                Label figure = figures.get(i);
+                figure.setText(row.figure() == null ? "" : row.figure());
+                figure.setStyle(Palette.figure(Palette.SIZE_LABEL, row.bold() ? Palette.TEXT_HEAD : Palette.TEXT_BODY));
+                for (javafx.scene.Node n : new javafx.scene.Node[] {name, track, figure}) tipFor(n, row.tip(), 200);
+                for (Label l : new Label[] {name, figure}) {
+                    l.setCursor(row.go() != null ? javafx.scene.Cursor.HAND : null);
+                    l.setOnMouseClicked(row.go() != null ? e -> row.go().run() : null);
+                }
+            }
+            for (int k = 0; k < rules.size(); k++) {
+                Rule rule = rules.get(k);
+                javafx.scene.shape.Line line = lines.get(k);
+                line.setStroke(javafx.scene.paint.Color.web(rule.colour()));
+                line.setStrokeWidth(rule.dashed() ? 1 : 1.5);
+                if (rule.dashed()) line.getStrokeDashArray().setAll(4.0, 3.0);
+                else line.getStrokeDashArray().clear();
+                Label name = ruleNames.get(k);
+                name.setText(rule.name() == null ? "" : rule.name());
+                String base = Palette.words(Palette.SIZE_CAPTION, rule.go() != null ? Palette.ACCENT : Palette.TEXT_LABEL);
+                tipFor(name, rule.tip(), 200);
                 if (rule.go() != null) {
-                    String rest = name.getStyle() + " -fx-cursor: hand;";
-                    name.setStyle(rest);
-                    name.setOnMouseEntered(e -> name.setStyle(rest + " -fx-underline: true;"));
+                    // The look the pointer calls for is chosen from isHover() where it is set (a kept name under a still pointer is not entered afresh).
+                    String rest = base + " -fx-cursor: hand;";
+                    String over = rest + " -fx-underline: true;";
+                    name.setStyle(name.isHover() ? over : rest);
+                    name.setOnMouseEntered(e -> name.setStyle(over));
                     name.setOnMouseExited(e -> name.setStyle(rest));
                     name.setOnMouseClicked(e -> rule.go().run());
+                } else {
+                    name.setStyle(base);
+                    name.setOnMouseEntered(null);
+                    name.setOnMouseExited(null);
+                    name.setOnMouseClicked(null);
                 }
-                ruleNames.add(name);
-                getChildren().add(name);
             }
-            setMinWidth(nameWidth + figureWidth + 2 * GAP + 60);
-            setPrefWidth(nameWidth + figureWidth + 2 * GAP + 400);
-            setMaxWidth(Double.MAX_VALUE);
         }
 
         /**
@@ -5189,54 +5487,65 @@ public final class Pieces {
      * figure below nothing draws no bar: the words carry it.
      */
     public static VBox beforeAfter(Effect e, double width) {
-        Label words = new Label(e.label());
-        words.setWrapText(true);
-        words.setMinWidth(0);
-        words.setStyle(Palette.words(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
-        HBox left = new HBox(Palette.GAP_TIGHT, words);
-        left.setAlignment(Pos.CENTER_LEFT);
-        if (e.info() != null) left.getChildren().add(infoButton(e.info(), true));
-        HBox.setHgrow(left, Priority.ALWAYS);
-        left.setMinWidth(0);
-        left.setMaxWidth(Double.MAX_VALUE);
+        return Kept.scope("beforeAfter", () -> {
+            // Kept (KP2): what a row shows only sometimes - the (i), the move, its chip, its bars - is a scope of its own.
+            Label words = Kept.label(e.label());
+            words.setWrapText(true);
+            words.setMinWidth(0);
+            words.setStyle(Palette.words(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
+            HBox left = Kept.row(Palette.GAP_TIGHT, words);
+            left.setAlignment(Pos.CENTER_LEFT);
+            if (e.info() != null) left.getChildren().add(Kept.scope("info", () -> infoButton(e.info(), true)));
+            HBox.setHgrow(left, Priority.ALWAYS);
+            left.setMinWidth(0);
+            left.setMaxWidth(Double.MAX_VALUE);
 
-        boolean moved = e.moved();
-        Label before = new Label(e.fmt().apply(e.before()));
-        before.setMinWidth(Region.USE_PREF_SIZE);
-        before.setStyle(Palette.figure(Palette.SIZE_LABEL + 1, moved ? Palette.TEXT_MUTED : Palette.TEXT_HEAD));
-        HBox right = new HBox(Palette.GAP_TIGHT, before);
-        right.setAlignment(Pos.CENTER_RIGHT);
-        right.setMinWidth(Region.USE_PREF_SIZE);
-        if (moved) {
-            Label arrow = new Label("→");
-            arrow.setStyle(Palette.words(Palette.SIZE_LABEL + 1, Palette.TEXT_MUTED));
-            Label after = new Label(e.fmt().apply(e.after()));
-            after.setMinWidth(Region.USE_PREF_SIZE);
-            after.setStyle(Palette.figure(Palette.SIZE_LABEL + 1, Palette.ACCENT));
-            right.getChildren().addAll(arrow, after);
-            if (e.delta() != null) {
-                Label chip = chip(e.delta().apply(e.after() - e.before()), e.verdict() != null ? e.verdict() : Palette.TEXT_LABEL);
-                chip.setMinWidth(Region.USE_PREF_SIZE);
-                right.getChildren().add(chip);
-            }
-        }
-        HBox top = new HBox(Palette.GAP, left, right);
-        top.setAlignment(Pos.CENTER_LEFT);
-        VBox row = new VBox(3, top);
-
-        boolean drawable = Double.isFinite(e.before()) && Double.isFinite(e.after()) && e.before() >= 0 && e.after() >= 0
-                && (e.before() > 0 || e.after() > 0);
-        if (drawable) {
-            double scale = e.scale() > 0 ? e.scale() : Math.max(e.before(), e.after());
-            row.getChildren().add(segmentBar(List.of(Segment.of(Math.min(e.before(), scale), e.colour())), scale,
-                    List.of(), width > 0 ? width : 0, 5));
+            boolean moved = e.moved();
+            Label before = Kept.label(e.fmt().apply(e.before()));
+            before.setMinWidth(Region.USE_PREF_SIZE);
+            before.setStyle(Palette.figure(Palette.SIZE_LABEL + 1, moved ? Palette.TEXT_MUTED : Palette.TEXT_HEAD));
+            HBox right = Kept.row(Palette.GAP_TIGHT, before);
+            right.setAlignment(Pos.CENTER_RIGHT);
+            right.setMinWidth(Region.USE_PREF_SIZE);
             if (moved) {
-                row.getChildren().add(segmentBar(List.of(new Segment(Math.min(e.after(), scale), Palette.ACCENT, true,
-                        null, null, null, null)), scale, List.of(), width > 0 ? width : 0, 5));
+                right.getChildren().addAll(Kept.scope("moved", () -> {
+                    Label arrow = Kept.label("→");
+                    arrow.setStyle(Palette.words(Palette.SIZE_LABEL + 1, Palette.TEXT_MUTED));
+                    Label after = Kept.label(e.fmt().apply(e.after()));
+                    after.setMinWidth(Region.USE_PREF_SIZE);
+                    after.setStyle(Palette.figure(Palette.SIZE_LABEL + 1, Palette.ACCENT));
+                    return List.of(arrow, after);
+                }));
+                if (e.delta() != null) {
+                    right.getChildren().add(Kept.scope("chip", () -> {
+                        Label chip = chip(e.delta().apply(e.after() - e.before()), e.verdict() != null ? e.verdict() : Palette.TEXT_LABEL);
+                        chip.setMinWidth(Region.USE_PREF_SIZE);
+                        return chip;
+                    }));
+                }
             }
-        }
-        row.setMaxWidth(width > 0 ? width : Double.MAX_VALUE);
-        return row;
+            HBox top = Kept.row(Palette.GAP, left, right);
+            top.setAlignment(Pos.CENTER_LEFT);
+            VBox row = Kept.column(3, top);
+
+            boolean drawable = Double.isFinite(e.before()) && Double.isFinite(e.after()) && e.before() >= 0 && e.after() >= 0
+                    && (e.before() > 0 || e.after() > 0);
+            if (drawable) {
+                row.getChildren().addAll(Kept.scope("bars", () -> {
+                    double scale = e.scale() > 0 ? e.scale() : Math.max(e.before(), e.after());
+                    List<javafx.scene.Node> bars = new java.util.ArrayList<>();
+                    bars.add(segmentBar(List.of(Segment.of(Math.min(e.before(), scale), e.colour())), scale,
+                            List.of(), width > 0 ? width : 0, 5));
+                    if (moved) {
+                        bars.add(segmentBar(List.of(new Segment(Math.min(e.after(), scale), Palette.ACCENT, true,
+                                null, null, null, null)), scale, List.of(), width > 0 ? width : 0, 5));
+                    }
+                    return bars;
+                }));
+            }
+            row.setMaxWidth(width > 0 ? width : Double.MAX_VALUE);
+            return row;
+        });
     }
 
     /** A staged change as a chip in the tray (0.7.36): its words in the accent, and a × that takes it back out of the set. */
@@ -5363,9 +5672,12 @@ public final class Pieces {
         String rest = Palette.words(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL);
         n.setStyle(rest);
         if (open != null) {
-            n.setStyle(rest + " -fx-cursor: hand;");
-            n.setOnMouseEntered(e -> n.setStyle(rest + " -fx-cursor: hand; -fx-underline: true;"));
-            n.setOnMouseExited(e -> n.setStyle(rest + " -fx-cursor: hand;"));
+            // Kept (KP2): the look the pointer calls for is chosen from isHover() where it is set.
+            String hand = rest + " -fx-cursor: hand;";
+            String over = hand + " -fx-underline: true;";
+            n.setStyle(n.isHover() ? over : hand);
+            n.setOnMouseEntered(e -> n.setStyle(over));
+            n.setOnMouseExited(e -> n.setStyle(hand));
             n.setOnMouseClicked(e -> open.run());
         }
         Label f = Kept.label(figure);
