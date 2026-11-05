@@ -6856,8 +6856,27 @@ public class BuildingManager {
 
     public long getTotalJobs(JobType type) {
         // ...less the posts a sector does not offer this month (0.7.17): see
-        // THE POSTS A SECTOR OFFERS.
-        return getTotalJobsAtEveryPost(type) - getPostsWithheld(type);
+        // THE POSTS A SECTOR OFFERS; and the posts it runs past its buildings' (R0c).
+        return getTotalJobsAtEveryPost(type) - getPostsWithheld(type) + getPostsPast(type);
+    }
+
+    /**
+     * The posts per job type the sectors run past their buildings' (R0c, the horse form; sectors.Agriculture): Game hands in Sectors.postsPastBuildings(),
+     * null for none. WHY HERE: the labour market reads the city's posts through getTotalJobs(), and a farm run on horses pays for more hands than its
+     * buildings have, so the count the households are offered has to add them or they would be paid for fewer posts than the sector's payroll is
+     * struck on (THE POSTS A SECTOR OFFERS, the same agreement the other way). No hook, or none past, is 0.
+     */
+    private java.util.function.Supplier<long[]> postsPast;
+
+    public void setPostsPast(java.util.function.Supplier<long[]> hook) {
+        this.postsPast = hook;
+    }
+
+    /** The posts of a job type the sectors run past their buildings' (setPostsPast()): 0 with none. */
+    public long getPostsPast(JobType type) {
+        if (postsPast == null) return 0;
+        long[] past = postsPast.get();
+        return past == null || type.ordinal() >= past.length ? 0 : past[type.ordinal()];
     }
 
     /** Every post of a job type the city's buildings have, offered this month or not (0.7.17). */

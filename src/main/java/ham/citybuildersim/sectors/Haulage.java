@@ -479,28 +479,46 @@ public final class Haulage {
      */
     void billMonth(Map<Sector, Double> legs) {
         tonnes = carried = bill = diesel = dieselImported = dieselLitres = dieselLitresImported = worn = 0;
+        truckTonnes = teamTonnes = teams = teamCapacity = feed = feedImported = feedTonnes = feedTonnesImported = 0;
         // The fleet the month was carried by: held now, before the month's wear (closeMonth()).
         capacityInForce = trucks() * TONNES_A_TRUCK_MONTH;
         for (double t : legs.values()) tonnes += t;
-        if (!(tonnes > 0) || !(capacityInForce > 0)) return;
+        // ...a city carried wholly by teams (the horse form at 1) needs no trucks to bill the month.
+        final double h = horseShare;
+        if (!(tonnes > 0) || !(capacityInForce > 0 || h >= 1)) return;
 
         // Each sector's carried is its legs at its own share (FR8), the sum never more than the trucks could carry.
-        double[] mine = new double[legs.size()];
-        double sum = 0;
+        // With the horse form on, the trucks carry (1 - h) of a sector's legs at the share the fleet was dealt it, and the teams carry h of them whole.
+        double[] mine = new double[legs.size()], theirs = h > 0 ? new double[legs.size()] : null;
+        double sum = 0, teamSum = 0;
         int i = 0;
         for (Map.Entry<Sector, Double> e : legs.entrySet()) {
-            double c = e.getValue() * getShare(e.getKey());
+            double c = h > 0 ? (1 - h) * e.getValue() * truckShareOf(e.getKey().key()) : e.getValue() * getShare(e.getKey());
             mine[i] = c > 0 && Double.isFinite(c) ? c : 0;
-            sum += mine[i++];
+            sum += mine[i];
+            if (h > 0) {
+                double t = h * e.getValue();
+                theirs[i] = t > 0 && Double.isFinite(t) ? t : 0;
+                teamSum += theirs[i];
+            }
+            i++;
         }
-        if (!(sum > 0)) return;
+        if (!(sum > 0) && !(teamSum > 0)) return;
         double fit = sum > capacityInForce ? capacityInForce / sum : 1;
-        carried = sum * fit;
+        truckTonnes = sum * fit;
+        teamTonnes = teamSum;
+        carried = truckTonnes + teamTonnes;
+        if (h > 0) {
+            // ...the teams are hired as the tonnes need them, and priced over what the teams hired could have carried (priceCapacity()).
+            teams = teamTonnes / TONNES_A_TEAM_MONTH;
+            teamCapacity = Math.max(teamTonnes, h * need);
+        }
 
         double price = getQuote();
         i = 0;
         for (Map.Entry<Sector, Double> e : legs.entrySet()) {
-            double amount = mine[i++] * fit * price;
+            double amount = (h > 0 ? mine[i] * fit + theirs[i] : mine[i] * fit) * price;
+            i++;
             if (!(amount > 0) || !Double.isFinite(amount)) continue;
             e.getKey().billForService(freight.key(), BILLED_AS, amount);
             bill += amount;
@@ -516,13 +534,27 @@ public final class Haulage {
 
         /* ---- the diesel, drawn as the railway draws its own ---- */
 
-        double litres = carried * DIESEL_LITRES_A_TONNE;
+        // ...on the tonnes the trucks carried: all of them, to the bit, unless the horse form puts a share on teams.
+        double litres = truckTonnes * DIESEL_LITRES_A_TONNE;
         if (litres > 0 && Double.isFinite(litres)) {
             Markets.Draw took = freight.drawDiesel(litres, sectors);
             diesel = took.cost();
             dieselImported = took.importCost();
             dieselLitres = took.units();
             dieselLitresImported = took.imported();
+        }
+
+        /* ---- ...and the horses' feed, drawn the same way (THE HORSE FORM) ---- */
+
+        if (horseShare > 0) {
+            double feedDue = teams * HORSES_A_TEAM * HORSE_FEED_TONNES_A_MONTH;
+            if (feedDue > 0 && Double.isFinite(feedDue)) {
+                Markets.Draw took = freight.drawFeed(feedDue, sectors);
+                feed = took.cost();
+                feedImported = took.importCost();
+                feedTonnes = took.units();
+                feedTonnesImported = took.imported();
+            }
         }
 
         /* ---- the wear: a tenth faster past the depots' room ---- */
@@ -560,15 +592,17 @@ public final class Haulage {
         Map<String, Double> needBy = new LinkedHashMap<>();
         need = nameplateNeed(sectors, needBy);
         needOnSite = nameplateNeedOnSite(sectors);
-        if (!trucksKnown && need > 0) {
-            freight.seedTrucks(need / TONNES_A_TRUCK_MONTH);
+        // ...the trucks' part of it: (1 - h) of it with the horse form on, the teams being hired for the rest (truckPart()).
+        double truckNeed = truckPart(need);
+        if (!trucksKnown && truckNeed > 0) {
+            freight.seedTrucks(truckNeed / TONNES_A_TRUCK_MONTH);
             trucksKnown = true;
         }
         double capacity = Math.max(capacityInForce, trucks() * TONNES_A_TRUCK_MONTH);
-        share = !(need > 0) || capacity >= need ? 1 : Math.max(0, capacity / need);
-        tightness = need > 0 ? Math.max(0, Math.min(1, (need - capacity) / need)) : 0;
-        // ...and, with the city's share struck, the fleet's room dealt per sector (FR8).
-        deal(needBy, capacity);
+        share = !(truckNeed > 0) || capacity >= truckNeed ? 1 : Math.max(0, capacity / truckNeed);
+        tightness = truckNeed > 0 ? Math.max(0, Math.min(1, (truckNeed - capacity) / truckNeed)) : 0;
+        // ...and, with the city's share struck, the fleet's room dealt per sector (FR8), over each sector's trucks' part of its legs.
+        deal(horseShare > 0 ? truckPart(needBy) : needBy, capacity);
 
         /* ---- the reprice: the railway's rule, on Haulage's books ---- */
 
@@ -588,7 +622,9 @@ public final class Haulage {
                 + freight.haulageShareOf(BuildingsTemplate::getWaterConsumption) * freight.getWaterCost()
                 + freight.haulageShareOf(BuildingsTemplate::getCashCost)
                         * (freight.getMaintenanceExpense() + freight.getPropertyTaxExpense())
-                + Math.max(0, diesel) + worn * p + recover;
+                + Math.max(0, diesel) + worn * p + recover
+                // ...and the horses' feed, which the carters (in the payroll above) are paid beside (THE HORSE FORM).
+                + (horseShare > 0 ? Math.max(0, feed) : 0);
         // ...the rate base on the balance sheet's own count, buildings on site included (Freight.haulageShareOfSites()).
         double rateBase = freight.haulageShareOfSites(BuildingsTemplate::getCashCost) * Math.max(0, freight.getBuildingsValue())
                 + freight.haulageShareOfSites(BuildingsTemplate::getLandSqFt) * Math.max(0, freight.getLandValue())
@@ -606,7 +642,7 @@ public final class Haulage {
          * buying fewer (bid()). The bill was capped at the same capacity, so the
          * two are the same figure whenever the trucks were full.
          */
-        if (carried > 0 && capacityInForce > 0) {
+        if (carried > 0 && priceCapacity() > 0) {
             double target = rawTarget();
             if (Double.isFinite(target)) {
                 target = Math.max(0, target);
@@ -617,7 +653,7 @@ public final class Haulage {
                     quote += (target - quote) * Freight.REPRICE_SPEED;
                 }
             }
-            double steady = steadyAllowed / capacityInForce;
+            double steady = steadyAllowed / priceCapacity();
             if (Double.isFinite(steady)) {
                 steady = Math.max(0, steady);
                 if (!steadyKnown) {
@@ -728,7 +764,7 @@ public final class Haulage {
     public double trucks() { return freight.trucksHeld(); }
 
     /** ...and how many the coming month's need asks for. */
-    public double trucksNeeded() { return need / TONNES_A_TRUCK_MONTH; }
+    public double trucksNeeded() { return truckPart(need) / TONNES_A_TRUCK_MONTH; }
 
     /** Trucks the depots standing keep: the room of Freight's finished buildings. */
     public double depotRoom() {
@@ -763,7 +799,7 @@ public final class Haulage {
      * little as .69; FR2's notes). A haulier hires for a contract before the
      * works it serves opens; the share still reads the plant standing.
      */
-    public double trucksAsked() { return (need + needOnSite) / TONNES_A_TRUCK_MONTH; }
+    public double trucksAsked() { return truckPart(need + needOnSite) / TONNES_A_TRUCK_MONTH; }
 
     /** The legs at nameplate the city's works on site will ask when they stand: nameplateNeed()'s weights, over Freight's every other sector's buildings on site. */
     public double nameplateNeedOnSite(Sectors sectors) {
@@ -843,6 +879,122 @@ public final class Haulage {
     /** The share of Freight's posts of a job type on offer this month: the drivers' tier's as struck, every other's whole. */
     public double offeredShare(JobType type) { return type == JobType.DIPLOMA ? diplomaOffered : 1; }
 
+    /* ===== THE HORSE FORM (R0c, 2026-11-05; research-1900 section 4, section 2.3)
+     *
+     * Road freight's 1900 form was the horse and wagon, not the motor truck: a city leg was carted at a horse's
+     * rate a tonne-km, paid in feed and in carters. A share of the tonnes Haulage carries, 0..1, runs that way
+     * (setHorseShare()). At 0, the default and every played city in R0c, nothing in this block runs and the month
+     * is today's, to the bit.
+     *
+     * At share h:
+     *
+     *   - THE TRUCKS CARRY (1 - h) of each sector's legs, at the share the fleet was dealt it (FR8): the diesel is
+     *     drawn on those tonnes alone (truckTonnes), and the fleet is seeded, bid for and priced toward (1 - h) of
+     *     the need (truckPart()): a horse city buys fewer trucks, and the depots and drivers that follow them.
+     *   - THE TEAMS CARRY h, whole: teams are hired, not bought (the horses' and wagons' capital is left out of
+     *     R0c), so there are always as many as the share needs, h x carried / TONNES_A_TEAM_MONTH for the month's
+     *     bill and h x need / TONNES_A_TEAM_MONTH for the posts. A team is HORSES_A_TEAM horses.
+     *   - THE HORSES EAT CROPS: teams x HORSES_A_TEAM x HORSE_FEED_TONNES_A_MONTH tonnes a month, drawn through
+     *     the market on Freight's books exactly as the diesel is (Freight.drawFeed(): the farms' shelf first, the
+     *     world for the rest) and counted in the running cost the quote is struck on.
+     *   - THE CARTERS ARE POSTS: getCarters() = round(h x need / TONNES_A_TEAM_MONTH x CARTERS_A_TEAM) NO_DIPLOMA
+     *     posts, which Freight offers beside the depots' (Freight.postsPerTier()), the city counts and the labour
+     *     market fills (Freight.postsPastBuildings(), BuildingManager.setPostsPast()), and its payroll pays and
+     *     books to Haulage and not to the Rail division (Freight.haulagePayroll()).
+     *   - THE QUOTE before there is a history is the blend of today's estimate and the teams' (estimate()); after
+     *     it the reprice is the same rule over what the trucks AND the teams hired could carry (priceCapacity()).
+     *
+     * WHY A SHARE: research-1900 section 3 says the truck spread "when it paid", and nothing in the game needs to
+     * schedule that; R1 sets the share from each building's recipe, so the form is built here and off. Only a
+     * harness sets it in R0c, and it is not saved (nothing sets it in a played city yet).
+     * =================================================================== */
+
+    /** Horses in a team: a dray's pair (research-1900 section 2.3, est.). */
+    public static final double HORSES_A_TEAM = 2;
+
+    /** What a city horse ate a month, in tonnes: 1.3 t of oats and 2.2 t of hay a year (research-1900 section 2.3, [P1.19], est.). */
+    public static final double HORSE_FEED_TONNES_A_MONTH = 0.29;
+
+    /** Tonnes a team and wagon carries a month over the city leg: about a tonne a load at 20 km a day loaded over 25 working days, the haul behind the 1895 wagon rate of about $0.17 a tonne-km (research-1900 section 2.3, [P1.21], est.). */
+    public static final double TONNES_A_TEAM_MONTH = 10;
+
+    /** Carters a team employs: one (a carter needed no diploma; Montreal had 1,429 carters heading households in 1901, research-1900 section 2.3). */
+    public static final double CARTERS_A_TEAM = 1;
+
+    /** The share of the city-leg tonnes carried by horse and wagon, 0 to 1: 0 until a harness or R1 sets it; not saved. */
+    private double horseShare;
+
+    /* The month billed, for the teams: the tonnes the trucks carried and the tonnes the teams did, the teams that took them, the tonnes a month the teams hired could have carried, and the feed drawn (as the diesel's four). Not saved. */
+    private double truckTonnes, teamTonnes, teams, teamCapacity, feed, feedImported, feedTonnes, feedTonnesImported;
+
+    /** Sets the horse share, clamped to [0, 1] (not a number reads 0): from the next bill, the next haul and the next wage pass. */
+    public void setHorseShare(double h) {
+        horseShare = Double.isFinite(h) ? Math.min(1, Math.max(0, h)) : 0;
+    }
+
+    public double getHorseShare() { return horseShare; }
+
+    /** The teams the month billed was carried by: its tonnes by horse over TONNES_A_TEAM_MONTH; 0 with no share set. */
+    public double getTeams() { return teams; }
+
+    /** The carters Freight offers as posts this month: the teams the need at nameplate asks for, at CARTERS_A_TEAM each, rounded (the need as struck at the last haul); 0 with no share set. */
+    public long getCarters() {
+        if (!(horseShare > 0) || !(need > 0)) return 0;
+        double c = horseShare * need / TONNES_A_TEAM_MONTH * CARTERS_A_TEAM;
+        return Double.isFinite(c) ? Math.round(Math.max(0, c)) : 0;
+    }
+
+    /** The tonnes of the month billed the trucks carried, and the teams did: together getCarried(). */
+    public double getTruckTonnes() { return truckTonnes; }
+
+    public double getTeamTonnes() { return teamTonnes; }
+
+    /** The horses' feed drawn in the last haul, in tonnes of CROPS: none after a load until the next, as the diesel's litres. */
+    public double getFeedTonnes() { return feedTonnes; }
+
+    /** ...the tonnes of it the world sold (the farms' shelf having none left). */
+    public double getFeedTonnesImported() { return feedTonnesImported; }
+
+    /** ...what it cost, and what of that was bought abroad. */
+    public double getFeed() { return feed; }
+
+    public double getFeedImported() { return feedImported; }
+
+    /** x as the trucks' part of it: (1 - h) of it with the horse form on, and x itself, to the bit, without. */
+    private double truckPart(double x) { return horseShare > 0 ? (1 - horseShare) * x : x; }
+
+    /** ...each of a map's values likewise, in a copy. */
+    private Map<String, Double> truckPart(Map<String, Double> by) {
+        Map<String, Double> out = new LinkedHashMap<>();
+        for (Map.Entry<String, Double> e : by.entrySet()) out.put(e.getKey(), truckPart(e.getValue()));
+        return out;
+    }
+
+    /** A share the trucks were dealt of their part of the legs as a share of all the legs: the teams' h carried whole, the trucks' (1 - h) at the share dealt. A literal 1 stays 1, and without the form it is the share itself. */
+    private double withTeams(double s) {
+        return horseShare > 0 && s < 1 ? horseShare + (1 - horseShare) * s : s;
+    }
+
+    /** What a month's price is struck over: the tonnes the trucks could carry plus the tonnes the hired teams could (getCapacityInForce() alone without the form). */
+    private double priceCapacity() { return capacityInForce + teamCapacity; }
+
+    /**
+     * What a tonne's city leg costs by horse and wagon at today's prices with no history behind it: a team's feed
+     * and its carters' month over the tonnes a team carries. The crops' price is the market's landed price, else
+     * the world's; the carters' wage is the NO_DIPLOMA tier's. Finite and not below zero whatever the markets say.
+     */
+    public double horseEstimate() {
+        double c = Good.CROPS.worldImportPrice();
+        Markets m = freight.markets();
+        if (m != null) {
+            GoodsMarket cropsMarket = m.get(Good.CROPS);
+            if (cropsMarket != null) c = cropsMarket.landedPrice();
+        }
+        c = Double.isFinite(c) ? Math.max(0, c) : 0;
+        double e = (HORSES_A_TEAM * HORSE_FEED_TONNES_A_MONTH * c + CARTERS_A_TEAM * freight.noDiplomaWage()) / TONNES_A_TEAM_MONTH;
+        return Double.isFinite(e) ? Math.max(0, e) : 0;
+    }
+
     /* ------------------------------------------------------------ the price */
 
     /**
@@ -868,7 +1020,11 @@ public final class Haulage {
         double w = freight.diplomaWage();
         double e = (p * (1 / Sector.VAN_LIFE_MONTHS + Freight.TARGET_RETURN)
                 + TONNES_A_TRUCK_MONTH * DIESEL_LITRES_A_TONNE * d + w) / TONNES_A_TRUCK_MONTH;
-        return Double.isFinite(e) ? Math.max(0, e) : 0;
+        double today = Double.isFinite(e) ? Math.max(0, e) : 0;
+        if (!(horseShare > 0)) return today;
+        // ...with the horse form on, the blend of the trucks' price and the teams' (THE HORSE FORM).
+        double blend = (1 - horseShare) * today + horseShare * horseEstimate();
+        return Double.isFinite(blend) ? Math.max(0, blend) : 0;
     }
 
     /* ------------------------------------------------------------ what it is doing */
@@ -888,7 +1044,7 @@ public final class Haulage {
      * harnesses; since FR8 a sector's operating rate and the bill read the
      * share its own industry was dealt (getShare(Sector)).
      */
-    public double getShare() { return share; }
+    public double getShare() { return withTeams(share); }
 
     /**
      * The share of its own need that the sector's industry was dealt at the last
@@ -901,7 +1057,12 @@ public final class Haulage {
 
     /** The same by sector key: the share dealt it at the last haul, the newest demand's if it was dealt none (a save from before FR8), the city's for no key. */
     public double shareOf(String key) {
-        if (key == null) return share;
+        if (key == null) return withTeams(share);
+        return withTeams(truckShareOf(key));
+    }
+
+    /** The share of the trucks' part of its legs the fleet was dealt a sector at the last haul (shareOf() before the teams, which carry theirs whole); the newest demand's if it was dealt none. */
+    private double truckShareOf(String key) {
         Double dealt = sectorShare.get(key);
         return dealt != null ? dealt : newestShare;
     }
@@ -958,14 +1119,14 @@ public final class Haulage {
      * quote is the estimate.
      */
     public double getTarget() {
-        if (!(carried > 0) || !(capacityInForce > 0)) return 0;
+        if (!(carried > 0) || !(priceCapacity() > 0)) return 0;
         double t = rawTarget();
         return Double.isFinite(t) ? Math.max(0, t) : 0;
     }
 
     /** The rule's target a tonne before its guards: what the month had to bring in over the trucks' capacity, at the scarcity (closeMonth(), getTarget()). */
     private double rawTarget() {
-        return allowed / capacityInForce * (1 + tightness * (Freight.MAX_SCARCITY_MULTIPLE - 1));
+        return allowed / priceCapacity() * (1 + tightness * (Freight.MAX_SCARCITY_MULTIPLE - 1));
     }
 
     /* ------------------------------------------------------------ the month's moves */
@@ -1236,6 +1397,7 @@ public final class Haulage {
         diplomaOffered = 1;
         trucksKnown = false;
         tonnes = carried = bill = diesel = dieselImported = dieselLitres = dieselLitresImported = worn = allowed = tightness = 0;
+        truckTonnes = teamTonnes = teams = teamCapacity = feed = feedImported = feedTonnes = feedTonnesImported = 0;
         moves.clear();
     }
 
@@ -1247,6 +1409,8 @@ public final class Haulage {
         bill *= scale;
         diesel *= scale;
         dieselImported *= scale;
+        feed *= scale;
+        feedImported *= scale;
         allowed *= scale;
     }
 }

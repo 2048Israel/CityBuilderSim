@@ -189,6 +189,18 @@ public final class Sectors {
     /** The sector with this saved name, or null - a name from a save this build does not have loses that line, not the load. */
     public Sector byKey(String key) { return key == null ? null : byKey.get(key); }
 
+    /** The posts per job type the sectors run past their buildings' (R0c, the horse form; Sector.postsPastBuildings()), summed: null while none does. */
+    public long[] postsPastBuildings() {
+        long[] total = null;
+        for (Sector s : all) {
+            long[] past = s.postsPastBuildings();
+            if (past == null) continue;
+            if (total == null) total = new long[past.length];
+            for (int i = 0; i < past.length && i < total.length; i++) total[i] += past[i];
+        }
+        return total;
+    }
+
     public int indexOf(String key) {
         for (int i = 0; i < all.size(); i++) if (all.get(i).key().equals(key)) return i;
         return -1;

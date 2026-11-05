@@ -29,7 +29,6 @@ stuff".
 | batch | what | brief |
 |---|---|---|
 | BA1 | Every business may build ahead (Jerus, 2026-11-01: "letting the market build more than that, even years ahead"): no cap on orders (one on site at a time and the landlords' months both go): a sector orders whenever an order clears its test at FC1's price of a point, which rises with all the work queued, and the interest on the wait counts; a horizon that grows with how long its buildings take (Jerus: "why bounded? why not let contracts flow?"); after FC1 | [BA1](docs/queue/BA1.md) |
-| R0c | Research: the 1900 mechanics - horses on farms and road freight, lamp oil and heat as goods, steam recipes | [research-1900 §4](docs/studies/research-1900.md#4-new-mechanics-a-1900-city-needs) |
 | R1 | Research: recipes and equipment as data | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
 | R2 | Research: the catalogue and the world | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
 | R3 | Research: posts and discoveries | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
@@ -133,6 +132,7 @@ stuff".
 | R0f | Research: Money on Canada's dates - the D$ on gold to Aug 1914 and Jul 1926-1931, the Advance Rate opening the policy rate in Aug 1914, the Bank of Canada the rest of Money in Mar 1935 (`PolicyDates.POLICY_RATE`, `CENTRAL_BANK`); after GD2 and FM1 | [research-1900 §7.2](docs/studies/research-1900.md#72-the-recommendation), [GD0](docs/studies/spec-gold-money.md) |
 | OH1 | The orphans' shares in a move: `HouseholdBalance.moveStock()` (lines 1535-1544) puts a shrinking cell's stock in its row's pool but weighs its loss by `abs(delta) x grownUps()`, 0 for a cell of orphans, so their shares go to no cell and are not counted as leaving - the register short (ShortSellingCheck 7 on R0b's city: Real Estate 0.004616 shares at m83); weigh an orphan cell by its people, or hand its stock on as the cell that holds them, mending R0b-S | [R0b notes §6](docs/queue/R0b-notes.md) |
 | R0g | The causes of death, R0b's review follow-ups: a reload mid-influenza played on against an unbroken run; the fixtures' influenza hold lost on load (`loadGameSave` makes a new `Health`); CentralBankCheck's very strict twin at -4.28% on 1900's deaths measured over CB1's shapes | [R0g](docs/queue/R0g.md) |
+| PD1 | The drivers' petrol counted twice in the households' spending: `Retail.sellFuel()` books each litre as a sale to the households, so it is in Retail's `salesToHouseholds`, which `Game.syncHouseholdAccounts()` hands them as `shopping`, and it is again their `fuel` line (`HouseholdAccounts.getSpending()`, the rows' fees); settle whether the cells' cash pays it twice, and take it out of the shopping as R0c's slice 3 does the homes' fuel | [R0c notes §3](docs/queue/R0c-notes.md) |
 
 ## Pending
 
@@ -140,6 +140,8 @@ Not done, and waiting on Jerus.
 
 | item | what is left | why it waits | brief |
 |---|---|---|---|
+| R0c-O | The Bus Network's horse omnibus, its 1900 form (research-1900 §4) (0.9.14) | the bus is a city building that buys nothing, and the city has no path to buy its horses' feed | [R0c notes](docs/queue/R0c-notes.md) ★9 |
+| R0c-R | R0c's forms, for R1 to switch on (0.9.14): Agriculture's, Haulage's and each factory's steam share set from the buildings' recipes; the tractor's PETROL in today's farm recipe; a team and wagon's price; the carters' sizing (on nameplate, as the trucks') judged on a 1900 city; the steam share in the brownout ratio | R0c built the forms off (★1) and left these to the recipes | [R0c notes](docs/queue/R0c-notes.md) ★1-8 |
 | R0b-M | MapCheck 2h on R0b's city (0.9.13): its played city's interchange reserve is never laid (month -1, 0 plots), so every line after the fixture's fails - DM2's class, which DM2's row names ("found by DM1: MapCheck 2h, 2d"); R0b's diff touches no map code; passed by name at R0b's gate | DM2 mends it | [R0b notes](docs/queue/R0b-notes.md) ★9 |
 | R0b-S | ShortSellingCheck 7 on R0b's city (0.9.13): Real Estate's register 0.004616 shares short at m83 (1.15e-6 of its issue, against 1e-6) - the orphans' shares `HouseholdBalance.moveStock()` hands to no one, which R0b's city reaches first (more adults die, more orphans hold shares); passed by name at R0b's gate | OH1 mends it | [R0b notes](docs/queue/R0b-notes.md) ★10 |
 | R0-S | SlopeCheck 9's layout watcher on R0's city (0.9.12): "a building on the map moved" once, m612, district (-1,0), 58 of its 145 boxes with the carry log unchanged - DM2's fault (the wall ways), which the 1900 city reaches inside the watcher's window; passed by name at R0's gate | DM2 mends it | [R0 notes](docs/queue/R0-notes.md) ★20 |
