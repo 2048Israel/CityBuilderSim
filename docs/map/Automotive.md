@@ -1,4 +1,4 @@
-# Automotive.java - 307 lines · 7 methods · 3 constants · sectors
+# Automotive.java - 312 lines · 7 methods · 3 constants · sectors
 
 `ham/citybuildersim/sectors/Automotive.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
 
@@ -63,7 +63,7 @@
 > short of vans cannot move what it makes, and a railway with track and no
 > locomotives carries nothing. See claude/the-railway.md for where that goes.
 
-**Uses:** [Good](Good.md) (21), [BusinessInvestment](BusinessInvestment.md) (10), [Game](Game.md) (5), [Formats](Formats.md) (4), [Sector](Sector.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [BuildingType](BuildingType.md) (1)
+**Uses:** [Good](Good.md) (22), [BusinessInvestment](BusinessInvestment.md) (8), [Game](Game.md) (5), [Formats](Formats.md) (4), [Sector](Sector.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [BuildingType](BuildingType.md) (1)
 
 **Used by (4):** [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [CarCheck](CarCheck.md), [Sectors](Sectors.md)
 
@@ -72,7 +72,7 @@
 | line | section |
 |---:|---|
 | 149 | PLANNING - can the city supply it, and then is it worth it |
-| 260 | · the screen |
+| 265 | · the screen |
 
 ## Constants
 
@@ -86,22 +86,22 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 76 | 232 | **type** `public final class Automotive extends Sector` | The automobile industry. |
+| 76 | 237 | **type** `public final class Automotive extends Sector` | The automobile industry. |
 | 133 | 15 | `public Automotive()` |  |
 
-### PLANNING - can the city supply it, and then is it worth it (lines 149-259)
+### PLANNING - can the city supply it, and then is it worth it (lines 149-264)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 154 | 3 | `public double localSupplyOf(Good g, Game game)` | What the city can fabricate a month, whoever is currently buying it. |
 | 159 | 3 | `public double biggestDrawAllowed(Good g, Game game)` | The largest draw a new plant may have on that supply. |
-| 172 | 71 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Manufacturing's shape - the best template by profit over cost, floored on staffing - with a supply gate in front of it, the mills' shape to 0.7.119. |
-| 258 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with nobody at home to sell to - YET. |
+| 172 | 76 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Manufacturing's shape - the best template by profit over cost, floored on staffing - with a supply gate in front of it, the mills' shape to 0.7.119. |
+| 263 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with nobody at home to sell to - YET. |
 
-### the screen (lines 260-307)
+### the screen (lines 265-312)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 263 | 1 | `public boolean hasPlantBlock()` |  |
-| 266 | 41 | `public List<Sector.Line> ownLines(Game game)` |  |
+| 268 | 1 | `public boolean hasPlantBlock()` |  |
+| 271 | 41 | `public List<Sector.Line> ownLines(Game game)` |  |
 

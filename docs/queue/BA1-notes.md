@@ -1,40 +1,59 @@
 # BA1 - Every business may build ahead ({next}, 2026-11-03)
 
-**WHERE IT STANDS (2026-11-04, 14:40; no ship file yet):**
-0. **Cut off at about 14:45 (the PC went offline). Not finished, rerun both:** the ensemble BA1c on b4d24000 (the final model, 80 runs) and the Sonnet slice mending ScaleCheck 9 (the copies read from the grown city with its sites empty) and MapCheck 2h. The slice's ScaleCheck edit is unreviewed and uncommitted in the worktree cm1-8dea2f, and nothing of MapCheck. Main (CM1, 0.9.11) is merged in at 9202a56f.
-1. On main at 7cfcb666 (WN5b 0.9.10 merged in). The brake is dear contracts, as the ensemble of the morning measured it
-   (c0c7afaa; section 1, ★). Since then the model has changed by three rounding edges only (item 3).
-2. **★ calls (the orchestrator took both as recommended at 11:58):**
+**WHERE IT STANDS (2026-11-04, 21:00): done but for one call; no ship file. Its text is item 6, ready to push.**
+1. On main at 52b19f18 (CM1 0.9.11 merged in). The brake is dear contracts (section 1, ★), with three rounding edges
+   closed since the morning (item 3). The model is final.
+2. **The ensemble on the final model** (`docs/ensemble/BA1.md`, run BA1d on ab5f3f41): **24/26 against 0.9.6's 22/26**.
+   Only A2 and S1 fail, both failed on 0.9.6 too. AUTO2's busts are 19 in 13 seeds (25 without the brake), and the
+   queue's p90 is 45 months (58 without it). Section 4 has the rest.
+3. **★ calls (the orchestrator took both as recommended at 11:58):**
    - **NewGameCheck 11: built.** It asserts what the solver keeps: the face one granule down does not cover. It prints
-     the overshoot as a known property of the solver: 52.43k over a gap of 3,770.17k, 1.39%.
+     the overshoot as a known property of the solver: 52.43k over a gap of 3,770.17k, 1.39%. Not queued: the player
+     borrows a little more cash than the plant needs, which stays in the treasury.
    - **Each building priced at its span's mean: built, measured, withdrawn.** It made ScaleCheck worse (people 3.72e-2
-     apart against 1.59e-2), and the 5-billion copy's "an order of more than a million buildings" fixture failed. The
-     cause of ScaleCheck's miss was never the price (item 4): its miss is the same to the digit with the brake reading
-     the queue's premium instead of the order's own. So BuildersShort and ConstructionTrapCheck 12 are as they were.
-     Withdrawn on that evidence; one building is still priced as FC1 priced it.
-3. **PriceLevelCheck traced to its edges, three of them, each a hair of rounding that one price level read and the
-   other did not. All three are fixed and no months were moved; the four twins hold to 1e-9 (worst 7e-14):**
+     apart against 1.59e-2), and the 5-billion copy's "an order of more than a million buildings" fixture failed.
+     ScaleCheck's miss was its scaler (item 5), not the price. One building is still priced as FC1 priced it.
+4. **PriceLevelCheck traced to three edges, each a hair of rounding one price level read and the other did not; all
+   closed, no months moved, the four twins to 1e-9 (worst 7e-14):**
    - Section 8, month 23: a staffing share of 1.3e-18 at today's prices and 0 at the factor. Manufacturing keeps the held
      template with the largest share, so it held a Machine Works at one level and a Fabrication Shop at the other. Now
-     a spare within `Sector.SPARE_ROUNDING` (1e-12) of the band's posts is none.
+     a share at or under `Sector.SHARE_ROUNDING` (1e-12) is none. Snapping the bands' spares instead, the first try,
+     moved more cities: other code reads a spare's sign.
    - Section 9, month 26: one cell's debt of 1.1e-16 since month 4 at today's prices, 0 at the factor. `Exchange.mayBuy()`
      read any debt above nothing, so the cell sat out a share offering at one level only (the mechanism the harness's
      own note describes at month 56). Now it reads a debt as `HouseholdBalance.owes()` does, above the balance's floor.
-   - Section 9, month 29: the household waterfall's tail a hair above zero (3e-21), borrowed as a debt. It was a draw of
-     the level exactly 1: the factor, the factor nudged by 1e-12 and today's nudged by 1e-12 ran equal through month 33,
-     and only 1.0 parted. Now a remainder within `Household.SHORT_ROUNDING` (1e-12) of the month's gap is covered, the
-     twin of the clamp `fundShortfall()` already had for a hair below zero.
-4. **ScaleCheck 9 is its scaler, not the brake.** `scale()` multiplies `constructionProgressById` by K, but a stack's
-   progress is held against its current unit only. So the copy's one current unit holds K units' worth and finishes
-   hundreds at once (1,000 roads on site fall to 547 in month 1, against the city's 1). Build-ahead saves the grown
-   city with far more on site. The fixture mend: read the copies from the grown city once its sites are empty, every
-   sector held (Sonnet slice, with MapCheck 2h).
-5. **`--pick` on 8d1659f8 (the morning's model, main merged; 13:53, 95 of 170 harnesses, LongPlaytest for Game.java), red only in:**
-   NewGameCheck and PriceLevelCheck (mended since), ScaleCheck (item 4), and MapCheck 2h, whose second scenario no
-   longer makes the crossing a cloverleaf site (a moved path; the same slice). LongPlaytest is green; on 11-03 a map
-   building moved at month 1809.
-6. Next: the ensemble on the final model (run BA1c, which replaces `docs/ensemble/BA1.md`), the slice's two mends
-   reviewed, `--pick` again, the ship file.
+   - Section 9, month 29: the household waterfall's tail a hair above zero (3e-21), borrowed as a debt. It was a draw
+     of the level exactly 1: the factor, the factor nudged by 1e-12 and today's nudged by 1e-12 ran equal through month
+     33, and only 1.0 parted. Now a remainder within `Household.SHORT_ROUNDING` (1e-12) of the month's gap is covered,
+     the twin of the clamp `fundShortfall()` already had for a hair below zero.
+5. **`--pick` on b08dae6f (20:30, 111 of 170 harnesses, LongPlaytest for Game.java and Sector.java): exit 4,
+   red only in two known-class findings.** The fixes for the rest are in section 3. They come from moving the cities
+   off rounding draws:
+   - SlopeCheck: "a building on the map moved". This is DM1's class (the district plan moves standing boxes), which
+     waits on DM2.
+   - LongPlaytest, its one finding: "industry stands farther out than the homes", once, at m2400 (industry 1.32 km
+     out, the homes' band 0.95 km). It is the layout ring finding that main's own m4000 runs have ended on (WN5's and
+     FC1b's notes).
+   - Both pass with the staffing-share edge left open, but then PriceLevelCheck 8 is red. Asked of the orchestrator
+     (20:05): pass both by name at the gate, as LD2-D was, and keep the fix (recommended), or hold BA1.
+6. **The ship file, to push as `docs/queue/BA1-ship.md` on the call's yes** (no eye-check row; its one pending row is the
+   bug the two findings are):
+
+```
+## changelog
+### {next} — BA1, every business may build ahead — 2026-11-04, ready, see docs/queue/BA1-notes.md
+No business is held to one order on site, nor the landlords to twelve months of the builders' work (Jerus: "why
+bounded? why not let contracts flow?"). A sector orders whenever an order clears its test at the price of a point it
+would pay: each building of an order priced on the queue the ones before it leave, its cost grown by the interest
+over its whole wait and, while contracts are dear, once more by its own multiple on the builders' price, since a
+business can wait for them to be cheap ("stop trying to place orders until contracts arent so expensive"). An order
+plans its demand to a horizon that grows with its lead, up to the trend window. The builders keep one depot on site,
+the refiners one crude unit. The 16-seed ensemble scores 24/26 against 0.9.6's 22/26: busts 19 in 13 seeds (25 without
+dear contracts), the queue's p90 45 months, the final city 605,524 people against 335,674. Three rounding edges the
+price-level twins found are closed. Each sector's planner line says how many orders it has on site.
+## pending
+| BA1-D | Two known-class findings on BA1's path, passed by name at the gate: SlopeCheck's `a building on the map moved` (DM1's class) and LongPlaytest's one, `industry stands farther out than the homes` at m2400. Both come from the cities moving off a rounding draw once PriceLevelCheck 8's staffing-share edge was closed ({next}) | DM2 (the map move); the layout ring for whoever takes the district plan next | [BA1 notes](docs/queue/BA1-notes.md) |
+```
 
 Jerus, 2026-11-01: "why bounded? why not let contracts flow? market after is efficient, too much and contracts get
 expensive thus business stop trying to place orders until contracts arent so expensive". The brief is
@@ -115,7 +134,19 @@ expensive thus business stop trying to place orders until contracts arent so exp
 
 ## 3. The checks
 
-- `--pick`: (filled in below when it finishes).
+- `--pick` on the world files, b08dae6f: 111 of 170 harnesses, exit 4. Red only in SlopeCheck and LongPlaytest, the two
+  known-class findings of WHERE IT STANDS 5. Stale 0 firm, the maps regenerated.
+- Mended on the evening of 2026-11-04, each a fixture on BA1's path (Sonnet slices, reviewed):
+  - ScaleCheck 9: the copies are read from the grown city once its sites are empty (`emptySites()`, 11 months). People
+    are within 1.9e-3 (1.59e-2 before) and unemployment within 1.6e-3.
+  - MapCheck 2h: the block left out is the one of the reserve's box the city owns least of. The build-ahead city owned
+    the corner block it took.
+  - FloatLinkCheck: the town plays on until the bank has room for its sales (its loans weighed 7,870 on equity of 592
+    at month 61).
+  - FundCheck 3: the second branch is funded. The fund is kept off the market (as 9b), so its dividend does not buy the
+    new issue's shares.
+  - HoldersCheck 13c: the bill is sized to the discount the bank carries.
+  - NewGameCheck 11: restated by the ★ call.
 - Mended, with the cap's assertions replaced by what replaced them and the fixtures kept:
   - InvestCheck: order sizing, land, the landlords' months and smaller home.
   - OrderSearchCheck: the orderSize twin went with the search, replaced by section 6's sizes. The interest and lender

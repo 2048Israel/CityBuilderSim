@@ -1,4 +1,4 @@
-# Household.java - 1,413 lines · 122 methods · 8 constants · model
+# Household.java - 1,427 lines · 122 methods · 9 constants · model
 
 `ham/citybuildersim/Household.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
 
@@ -76,9 +76,9 @@
 | 849 | · · what the lender charges this one |
 | 860 | · · the bills, in order |
 | 869 | · · settle what they actually spent |
-| 1039 | · AND WHAT IT SPENDS ANSWERS THE REAL RATE (0.7.3) |
-| 1067 | · AND THE FORTUNE ALSO ASKS FOR WATCHES (2026-09-17) |
-| 1102 | · AND WHAT IT WOULD SPEND EATING OUT (2026-09-18) |
+| 1050 | · AND WHAT IT SPENDS ANSWERS THE REAL RATE (0.7.3) |
+| 1078 | · AND THE FORTUNE ALSO ASKS FOR WATCHES (2026-09-17) |
+| 1113 | · AND WHAT IT WOULD SPEND EATING OUT (2026-09-18) |
 
 ## Constants
 
@@ -92,6 +92,7 @@
 | 83 | `Household.ROWS` | `RETIRED_ROW + 5` | Every row: the six tiers, the retired, and the four above. |
 | 85 | `Household.ROWS_BEFORE_PRISON` | `ROWS - 1` | The rows a save from before the prisons carries. |
 | 94 | `Household.STUDENT_LOAN_MONTHS` | `114` | How long a graduate takes to repay a student loan, in months: nine and a half years, the Canada Student Loan standard term (Alberta Student Aid's repayment page; the six-month grace is not modelled). |
+| 1186 | `Household.SHORT_ROUNDING` | `1e-12` | The share of a month's gap under which what is still short after savings, the paper, the money abroad, the bonds and the shares is the subtractions' rounding, and nothing is borrowed for it (settle(), A HAIR STILL SHO... |
 
 ## Fields (state)
 
@@ -157,7 +158,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 58 | 1356 | **type** `public abstract class Household` | Every household of one shape at one pay tier, as one ledger. |
+| 58 | 1370 | **type** `public abstract class Household` | Every household of one shape at one pay tier, as one ledger. |
 
 ### THE LOAN'S RATE (2026-09-21) (lines 96-132)
 
@@ -293,31 +294,31 @@
 | 807 | 1 | `public double totalWant()` |  |
 | 813 | 1 | `public double netWorth()` | Net worth of one of these households: what it has less what it owes. |
 
-### the month (lines 815-1413)
+### the month (lines 815-1427)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 834 | 4 | `void settle(double disposablePer, double rentPerHome, double feesPer, double spentPer, double foodPricePerHead, double riskFree...` | Settles a month: the bills in order, the shop against what was actually spent, and savings, then credit, then going without. |
-| 843 | 123 | `void settle(double disposablePer, double rentPerHome, double feesPer, double spentPer, double foodPricePerHead, double riskFree...` |  |
-| 972 | 3 | `double plan(double localPerUsd)` | Plans the next month, without settling one. |
-| 980 | 3 | `double plan(double localPerUsd, double paperRatio)` | (0.7.1): the households' book at the curve over its face |
-| 991 | 3 | `double plan(double localPerUsd, double paperRatio, double spendFactor)` | household plans (0.7.3): HouseholdBalance .spendFactor() on the month's real deposit rate, 1 at no real return - see AND WHAT IT SPENDS ANSWERS THE REAL RATE below |
-| 1002 | 157 | `double plan(double localPerUsd, double paperRatio, double spendFactor, double bondRatio)` | this month (0.7.12): every cell's holdings together at the bonds' value over their face - in the net worth the wealth term reads, and not in what can be spent, because a bond sells only when somebody buys it |
-| 1161 | 12 | `void restrike(double disposablePer, double rentPerHome, double feesPer, double foodPricePerHead, double riskFreeAnnual)` | Re-strikes the fixed part of the month for the plan alone: the load path. |
-| 1182 | 44 | `protected double fundShortfall(double still, double disposablePer)` | What is still short after savings, the city's paper, the paper abroad and the shares: the revolving credit line, up to its ceiling. |
-| 1234 | 1 | `protected double planningRoom()` | What the plan may count on borrowing: the credit room, less the fee drawing it would add (0.7.7), for everyone but a student. |
-| 1237 | 4 | `public double capitalRoom()` | What the bank's capital lets this cell draw this month, per household: up to its capitalCeiling. |
-| 1243 | 3 | `public double lendableRoom(double disposablePer)` | What the bank will actually lend one of these this month: its credit room, and no more than its capital allows (0.7.8). |
-| 1248 | 3 | `public double monthsOwed()` | Months of income this household owes - and with a debt and no income at all, past any ceiling, as discharge() reads it. |
-| 1253 | 4 | `public double lossAllowance()` | What the bank sets aside against this cell's debt, in total (0.7.8): Bank.householdAllowance() on its months owed - a year's loss on a frozen debt, which nothing discharges while it is frozen. |
-| 1259 | 3 | `public double debtInTrouble()` | This cell's debt, in total, when it is in trouble (Bank.householdWatched()); nothing when it is not. |
-| 1264 | 1 | `protected double studentRepayment()` | The month's student-loan instalment (principal), per household. |
-| 1267 | 1 | `protected double studentInterestDue()` | The month's interest on the student loan at the city's rate, per household. |
-| 1274 | 1 | `public double studentInterestAt(double annualRate)` | What a month's interest on the loan would be at an annual rate - the same figure studentInterestDue() charges, for a screen previewing a rate the city has not set. |
-| 1277 | 5 | `public double creditRoom(double disposablePer)` | What the bank will still lend one of these: the ceiling less what is owed, or nothing. |
-| 1292 | 30 | `double discharge()` | Whoever cannot carry it any more: a share of the cell discharges. |
-| 1324 | 12 | `void clearWorking()` | Nothing to strike: the working is blank, the position stands. |
-| 1338 | 9 | `void clearAll()` | The cell is empty: no position either. |
-| 1349 | 59 | `void redenominate(double scale)` | Everything in money, in the new unit. |
-| 1410 | 3 | `public String toString()` |  |
+| 843 | 134 | `void settle(double disposablePer, double rentPerHome, double feesPer, double spentPer, double foodPricePerHead, double riskFree...` |  |
+| 983 | 3 | `double plan(double localPerUsd)` | Plans the next month, without settling one. |
+| 991 | 3 | `double plan(double localPerUsd, double paperRatio)` | (0.7.1): the households' book at the curve over its face |
+| 1002 | 3 | `double plan(double localPerUsd, double paperRatio, double spendFactor)` | household plans (0.7.3): HouseholdBalance .spendFactor() on the month's real deposit rate, 1 at no real return - see AND WHAT IT SPENDS ANSWERS THE REAL RATE below |
+| 1013 | 157 | `double plan(double localPerUsd, double paperRatio, double spendFactor, double bondRatio)` | this month (0.7.12): every cell's holdings together at the bonds' value over their face - in the net worth the wealth term reads, and not in what can be spent, because a bond sells only when somebody buys it |
+| 1172 | 12 | `void restrike(double disposablePer, double rentPerHome, double feesPer, double foodPricePerHead, double riskFreeAnnual)` | Re-strikes the fixed part of the month for the plan alone: the load path. |
+| 1196 | 44 | `protected double fundShortfall(double still, double disposablePer)` | What is still short after savings, the city's paper, the paper abroad and the shares: the revolving credit line, up to its ceiling. |
+| 1248 | 1 | `protected double planningRoom()` | What the plan may count on borrowing: the credit room, less the fee drawing it would add (0.7.7), for everyone but a student. |
+| 1251 | 4 | `public double capitalRoom()` | What the bank's capital lets this cell draw this month, per household: up to its capitalCeiling. |
+| 1257 | 3 | `public double lendableRoom(double disposablePer)` | What the bank will actually lend one of these this month: its credit room, and no more than its capital allows (0.7.8). |
+| 1262 | 3 | `public double monthsOwed()` | Months of income this household owes - and with a debt and no income at all, past any ceiling, as discharge() reads it. |
+| 1267 | 4 | `public double lossAllowance()` | What the bank sets aside against this cell's debt, in total (0.7.8): Bank.householdAllowance() on its months owed - a year's loss on a frozen debt, which nothing discharges while it is frozen. |
+| 1273 | 3 | `public double debtInTrouble()` | This cell's debt, in total, when it is in trouble (Bank.householdWatched()); nothing when it is not. |
+| 1278 | 1 | `protected double studentRepayment()` | The month's student-loan instalment (principal), per household. |
+| 1281 | 1 | `protected double studentInterestDue()` | The month's interest on the student loan at the city's rate, per household. |
+| 1288 | 1 | `public double studentInterestAt(double annualRate)` | What a month's interest on the loan would be at an annual rate - the same figure studentInterestDue() charges, for a screen previewing a rate the city has not set. |
+| 1291 | 5 | `public double creditRoom(double disposablePer)` | What the bank will still lend one of these: the ceiling less what is owed, or nothing. |
+| 1306 | 30 | `double discharge()` | Whoever cannot carry it any more: a share of the cell discharges. |
+| 1338 | 12 | `void clearWorking()` | Nothing to strike: the working is blank, the position stands. |
+| 1352 | 9 | `void clearAll()` | The cell is empty: no position either. |
+| 1363 | 59 | `void redenominate(double scale)` | Everything in money, in the new unit. |
+| 1424 | 3 | `public String toString()` |  |
 

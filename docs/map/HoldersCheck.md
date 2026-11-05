@@ -1,4 +1,4 @@
-# HoldersCheck.java - 2,089 lines · 36 methods · 3 constants · harnesses
+# HoldersCheck.java - 2,103 lines · 37 methods · 3 constants · harnesses
 
 `ham/citybuildersim/HoldersCheck.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >     the hot money departs and PANIC_EXIT of it in a run, when it also bids
 > ... (41 more lines in the source)
 
-**Uses:** [MoneyAudit](MoneyAudit.md) (60), [Game](Game.md) (53), [Debt](Debt.md) (39), [Bank](Bank.md) (30), [DebtManager](DebtManager.md) (29), [PriceLevel](PriceLevel.md) (25), [CapitalFlows](CapitalFlows.md) (18), [Sectors](Sectors.md) (15), [GameFiles](GameFiles.md) (10), [HouseholdBalance](HouseholdBalance.md) (8), [OutwardInvestment](OutwardInvestment.md) (8), [CentralBank](CentralBank.md) (7), [Founding](Founding.md) (5), [Household](Household.md) (5), [Buyback](Buyback.md) (4), [Auction](Auction.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [WorkingHousehold](WorkingHousehold.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [BuildingManager](BuildingManager.md) (1), [WantedPosts](WantedPosts.md) (1), [FamilyStructure](FamilyStructure.md) (1), [PayTier](PayTier.md) (1), [SectorBooks](SectorBooks.md) (1), [EconomyManager](EconomyManager.md) (1)
+**Uses:** [MoneyAudit](MoneyAudit.md) (60), [Game](Game.md) (54), [Debt](Debt.md) (39), [Bank](Bank.md) (30), [DebtManager](DebtManager.md) (29), [PriceLevel](PriceLevel.md) (26), [CapitalFlows](CapitalFlows.md) (18), [Sectors](Sectors.md) (15), [GameFiles](GameFiles.md) (10), [HouseholdBalance](HouseholdBalance.md) (8), [OutwardInvestment](OutwardInvestment.md) (8), [CentralBank](CentralBank.md) (7), [Founding](Founding.md) (5), [Household](Household.md) (5), [Buyback](Buyback.md) (4), [Auction](Auction.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [WorkingHousehold](WorkingHousehold.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [BuildingManager](BuildingManager.md) (1), [WantedPosts](WantedPosts.md) (1), [FamilyStructure](FamilyStructure.md) (1), [PayTier](PayTier.md) (1), [SectorBooks](SectorBooks.md) (1), [EconomyManager](EconomyManager.md) (1), [DebtQuote](DebtQuote.md) (1)
 
 ## Sections
 
@@ -105,7 +105,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 112 | 1978 | **type** `public class HoldersCheck` | Proves who holds the city's own paper (0.7.1): that the households buy it at the settle, are paid on it, sell it back, and are paid when it is bought back - every crossing declared, and every holding exactly where the... |
+| 112 | 1992 | **type** `public class HoldersCheck` | Proves who holds the city's own paper (0.7.1): that the households buy it at the settle, are paid on it, sell it back, and are paid when it is bought back - every crossing declared, and every holding exactly where the... |
 | 118 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 123 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 133 | 4 | `static void quietly(Runnable r)` |  |
@@ -155,7 +155,7 @@
 | 1709 | 6 | `static String firstDifference(double[] city, double[] twin)` | The first figure of the two that is not the same, bit for bit, as a sentence; empty when every one is. |
 | 1716 | 93 | `static void theReopening() throws Exception` |  |
 
-### 13. the discount released at an issue or a trade (BD1) (lines 1810-2089)
+### 13. the discount released at an issue or a trade (BD1) (lines 1810-2103)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -170,6 +170,7 @@
 | 1866 | 71 | `static void thePremium() throws Exception` | 13a: the same line reopened at a premium between the presses releases the bank's share of its discount. |
 | 1939 | 81 | `static void theDeskOnAnUnsettledLine() throws Exception` | 13b: the desk buying the households' paper of a line with a sale unsettled is handed more or less discount than the book moves by. |
 | 2022 | 2 | **type** `record UnsettledBuyback(boolean fresh, double face, double discount, double book, double carried, double ta...` | What 13c's round trip did: whether the piece was new and all unsettled, its face and discount, the bank's book and carried discount going into the buyback, what the buyback took and the bank's share of it, and whether... |
-| 2026 | 15 | `static UnsettledBuyback sellAndBuyBackBeforeTheSettle(Game city)` | 13c's round trip, done the same way to the city and to its twin: a year's bill of a fifth of the bank's book sold between the presses and bought straight back whole, before its settle. |
-| 2048 | 41 | `static void theBuybackBeforeTheSettle() throws Exception` | 13c, the gate's finding on BD1: a piece bought back whole before its settle is re-struck by nothing. |
+| 2026 | 4 | `static double billDiscount(Game city, double cash)` | BA1: the discount a year's bill raising this cash would carry, as the quote has it: its face less the cash it brings, the fixed fee of the issue in it. |
+| 2032 | 23 | `static UnsettledBuyback sellAndBuyBackBeforeTheSettle(Game city)` | 13c's round trip, done the same way to the city and to its twin: a year's bill of a fifth of the bank's book sold between the presses and bought straight back whole, before its settle. |
+| 2062 | 41 | `static void theBuybackBeforeTheSettle() throws Exception` | 13c, the gate's finding on BD1: a piece bought back whole before its settle is re-struck by nothing. |
 

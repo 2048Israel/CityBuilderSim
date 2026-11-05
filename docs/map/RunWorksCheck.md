@@ -1,4 +1,4 @@
-# RunWorksCheck.java - 1,303 lines · 40 methods · 8 constants · harnesses
+# RunWorksCheck.java - 1,310 lines · 40 methods · 8 constants · harnesses
 
 `ham/citybuildersim/RunWorksCheck.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
 
@@ -58,7 +58,7 @@
 > highway, a building of the pool, could therefore never stand on a steep slope; the spec says it does (4.3). Each
 > section works its figure out from the getters, never from a number copied from a run.
 
-**Uses:** [Game](Game.md) (95), [LandManager](LandManager.md) (83), [RunWorks](RunWorks.md) (73), [World](World.md) (61), [TileRaster](TileRaster.md) (40), [TilePainter](TilePainter.md) (28), [BuildingsTemplate](BuildingsTemplate.md) (24), [SlopeCheck](SlopeCheck.md) (19), [Sectors](Sectors.md) (18), [BuildingVisual](BuildingVisual.md) (11), [BuildingManager](BuildingManager.md) (9), [BuildingType](BuildingType.md) (6), [LandMap](LandMap.md) (6), [EconomyManager](EconomyManager.md) (4), [SitePreparation](SitePreparation.md) (4), [GameFiles](GameFiles.md) (3), [Sector](Sector.md) (2), [Mining](Mining.md) (2), [CityLand](CityLand.md) (2), [SectorStatementCheck](SectorStatementCheck.md) (2), [Construction](Construction.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [BuildingsStacks](BuildingsStacks.md) (2), [LandClassCheck](LandClassCheck.md) (1), [BuildCard](BuildCard.md) (1), [Money](Money.md) (1), [DistrictPlan](DistrictPlan.md) (1)
+**Uses:** [Game](Game.md) (95), [LandManager](LandManager.md) (83), [RunWorks](RunWorks.md) (73), [World](World.md) (61), [TileRaster](TileRaster.md) (40), [TilePainter](TilePainter.md) (28), [BuildingsTemplate](BuildingsTemplate.md) (24), [SlopeCheck](SlopeCheck.md) (19), [Sectors](Sectors.md) (18), [BuildingVisual](BuildingVisual.md) (11), [BuildingManager](BuildingManager.md) (10), [BuildingType](BuildingType.md) (6), [LandMap](LandMap.md) (6), [EconomyManager](EconomyManager.md) (4), [SitePreparation](SitePreparation.md) (4), [GameFiles](GameFiles.md) (3), [Sector](Sector.md) (2), [Mining](Mining.md) (2), [CityLand](CityLand.md) (2), [SectorStatementCheck](SectorStatementCheck.md) (2), [Construction](Construction.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [BuildingsStacks](BuildingsStacks.md) (2), [LandClassCheck](LandClassCheck.md) (1), [BuildCard](BuildCard.md) (1), [Money](Money.md) (1), [DistrictPlan](DistrictPlan.md) (1)
 
 **Used by (1):** [RunRenders](RunRenders.md)
 
@@ -66,21 +66,21 @@
 
 | line | section |
 |---:|---|
-| 154 | fixtures |
-| 220 | 1. WHICH TEMPLATES ARE RUNS |
-| 263 | 2. A RUN'S GROUND OVER THE CLASSES IN THE CITY'S PROPORTIONS |
-| 335 | 3. THE ROOM FOR A RUN |
-| 424 | 4. THE PRICE AND THE BOOKS |
-| 524 | 5. A FLAT CITY TO THE BIT |
-| 594 | 6. SAVED |
-| 640 | slice B: the price of the cuts, the viaducts and the tunnels |
-| 670 | 7. THE RATES |
-| 743 | 8. A RUN OVER EACH CLASS OF GROUND |
-| 809 | 9. THE CITY'S MIX OF GROUND |
-| 882 | 10. BUILDERS' WORK IN THE BOOKS |
-| 980 | 11. A FLAT CITY TO THE BIT |
-| 1038 | 12. THE SCREEN'S WORDS |
-| 1099 | 13. ON THE MAP, AND 14. THE STREETS' RULE (slice C; spec-earth2-terrain 4.3: "a run on very steep ground is drawn as a |
+| 161 | fixtures |
+| 227 | 1. WHICH TEMPLATES ARE RUNS |
+| 270 | 2. A RUN'S GROUND OVER THE CLASSES IN THE CITY'S PROPORTIONS |
+| 342 | 3. THE ROOM FOR A RUN |
+| 431 | 4. THE PRICE AND THE BOOKS |
+| 531 | 5. A FLAT CITY TO THE BIT |
+| 601 | 6. SAVED |
+| 647 | slice B: the price of the cuts, the viaducts and the tunnels |
+| 677 | 7. THE RATES |
+| 750 | 8. A RUN OVER EACH CLASS OF GROUND |
+| 816 | 9. THE CITY'S MIX OF GROUND |
+| 889 | 10. BUILDERS' WORK IN THE BOOKS |
+| 987 | 11. A FLAT CITY TO THE BIT |
+| 1045 | 12. THE SCREEN'S WORDS |
+| 1106 | 13. ON THE MAP, AND 14. THE STREETS' RULE (slice C; spec-earth2-terrain 4.3: "a run on very steep ground is drawn as a |
 
 ## Constants
 
@@ -90,10 +90,10 @@
 | 117 | `RunWorksCheck.TOL` | `1e-9` | What a fixture of figures near one another can be told apart by: a rounding, not ground. |
 | 120 | `RunWorksCheck.OWNED` | `24_000_000` | The ground a fixture city owns, square feet: a Freight Line (2.4 million) and the buildings beside it fit in it. |
 | 122 | `RunWorksCheck.HOUSE` | `"House", HIGHWAY = "Elevated Highway", SPUR = "Rail Spur", LINE = "Freight Line"` |  |
-| 645 | `RunWorksCheck.BUSINESS_CASH` | `4e6` | The cash a business is given to pay a run's order from by fiat, thousands: the Freight Line's price and more, in a figure small enough for the sectors' statements to be exact to the cent. |
-| 887 | `RunWorksCheck.HIGHWAY_DEPOTS` | `20, FREIGHT_DEPOTS = 100` | The depots a fixture's builders are given for 10: enough that a few highways (a Freight Line) take them some years, not centuries. |
-| 1104 | `RunWorksCheck.T` | `TilePainter.TILE` |  |
-| 1107 | `RunWorksCheck.HY` | `6, HX0 = 8, TX = 4, BARE = 20` | The fixture's rows and columns: the highway along row HY from column HX0, the track down column TX, and row BARE with no run. |
+| 652 | `RunWorksCheck.BUSINESS_CASH` | `4e6` | The cash a business is given to pay a run's order from by fiat, thousands: the Freight Line's price and more, in a figure small enough for the sectors' statements to be exact to the cent. |
+| 894 | `RunWorksCheck.HIGHWAY_DEPOTS` | `20, FREIGHT_DEPOTS = 100` | The depots a fixture's builders are given for 10: enough that a few highways (a Freight Line) take them some years, not centuries. |
+| 1111 | `RunWorksCheck.T` | `TilePainter.TILE` |  |
+| 1114 | `RunWorksCheck.HY` | `6, HX0 = 8, TX = 4, BARE = 20` | The fixture's rows and columns: the highway along row HY from column HX0, the track down column TX, and row BARE with no run. |
 
 ## Fields (state)
 
@@ -108,7 +108,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 69 | 1235 | **type** `public class RunWorksCheck` | Highways and rail on the slopes (ET4, slices A and B; docs/studies/spec-earth2-terrain.md 4.3, decision D10): a highway's or a railway line's ground comes from every class of ground in the city's proportions, not from... |
+| 69 | 1242 | **type** `public class RunWorksCheck` | Highways and rail on the slopes (ET4, slices A and B; docs/studies/spec-earth2-terrain.md 4.3, decision D10): a highway's or a railway line's ground comes from every class of ground in the city's proportions, not from... |
 | 75 | 4 | `static void check(String label, boolean ok)` |  |
 | 80 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 85 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
@@ -116,112 +116,112 @@
 | 98 | 3 | `static boolean near(double a, double b)` | The two figures agree to a rounding of the split's arithmetic, relative to the larger. |
 | 102 | 5 | `static boolean near(double[] a, double[] b)` |  |
 | 109 | 3 | `static boolean same(double a, double b)` | The two figures are the same double, to the bit. |
-| 127 | 26 | `public static void main(String[] args) throws Exception` |  |
+| 127 | 33 | `public static void main(String[] args) throws Exception` |  |
 
-### fixtures (lines 154-219)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 158 | 5 | `static BuildingsTemplate template(Game g, String name)` |  |
-| 171 | 18 | `static Game hills(String label, double owned, double flat, double foothill, double steep, double veryStep)` | A city founded as a harness founds one, OWNED square feet of dry ground (its founded size where `owned` is 0, which is what a save keeps the ground by relief of: the relief must add up to the centre's own) of the shar... |
-| 191 | 5 | `static Game.BuildResult order(Game g, BuildingsTemplate t, int n)` | The city's own order, as the build screen places it. |
-| 198 | 6 | `static boolean businessOrder(Game g, String sector, BuildingsTemplate t, int n)` | A business's order, built by hand from cash it is given. |
-| 206 | 7 | `static void closeBooks(Game g)` | The books as a month's close leaves them (Game.recordMonth(): the land's price and its classes pushed, the sheets pushed, the books taken), without playing the month. |
-| 215 | 4 | `static double[] shares(LandManager lm)` | The share of the city's owned dry ground that is flat, foothill and steep (steep and very steep together): what a run's ground is spread by. |
-
-### 1. WHICH TEMPLATES ARE RUNS (lines 220-262)
+### fixtures (lines 161-226)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 224 | 38 | `static void whichAreRuns()` |  |
+| 165 | 5 | `static BuildingsTemplate template(Game g, String name)` |  |
+| 178 | 18 | `static Game hills(String label, double owned, double flat, double foothill, double steep, double veryStep)` | A city founded as a harness founds one, OWNED square feet of dry ground (its founded size where `owned` is 0, which is what a save keeps the ground by relief of: the relief must add up to the centre's own) of the shar... |
+| 198 | 5 | `static Game.BuildResult order(Game g, BuildingsTemplate t, int n)` | The city's own order, as the build screen places it. |
+| 205 | 6 | `static boolean businessOrder(Game g, String sector, BuildingsTemplate t, int n)` | A business's order, built by hand from cash it is given. |
+| 213 | 7 | `static void closeBooks(Game g)` | The books as a month's close leaves them (Game.recordMonth(): the land's price and its classes pushed, the sheets pushed, the books taken), without playing the month. |
+| 222 | 4 | `static double[] shares(LandManager lm)` | The share of the city's owned dry ground that is flat, foothill and steep (steep and very steep together): what a run's ground is spread by. |
 
-### 2. A RUN'S GROUND OVER THE CLASSES IN THE CITY'S PROPORTIONS (lines 263-334)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 267 | 67 | `static void spreadOverTheClasses()` |  |
-
-### 3. THE ROOM FOR A RUN (lines 335-423)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 339 | 84 | `static void theRoomForARun()` |  |
-
-### 4. THE PRICE AND THE BOOKS (lines 424-523)
+### 1. WHICH TEMPLATES ARE RUNS (lines 227-269)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 428 | 95 | `static void thePriceAndTheBooks()` |  |
+| 231 | 38 | `static void whichAreRuns()` |  |
 
-### 5. A FLAT CITY TO THE BIT (lines 524-593)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 528 | 65 | `static void aFlatCityToTheBit()` |  |
-
-### 6. SAVED (lines 594-639)
+### 2. A RUN'S GROUND OVER THE CLASSES IN THE CITY'S PROPORTIONS (lines 270-341)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 598 | 41 | `static void saved() throws Exception` |  |
+| 274 | 67 | `static void spreadOverTheClasses()` |  |
 
-### slice B: the price of the cuts, the viaducts and the tunnels (lines 640-669)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 648 | 4 | `static void flatten(Game g)` | The city's ground made all flat, as SlopeCheck 4 does it: the relief is read live, so the same order can be asked again as a flat city's. |
-| 654 | 5 | `static double[] reliefOf(Game g)` | The city's own dry ground by relief (CityLand.setCentreRelief()'s five figures, km2), to put back after a fixture has been flattened. |
-| 661 | 3 | `static double perPoint(BuildingsTemplate t)` | The founding cash a point of a template's own work, thousands: what RunWorks.points() is struck at. |
-| 666 | 3 | `static double usdPerM2Of(Game.BuildQuote q, BuildingsTemplate t)` | The dollars a m2 of the run's land that a quote's works come to: its points at the founding price a point, over the land it priced. |
-
-### 7. THE RATES (lines 670-742)
+### 3. THE ROOM FOR A RUN (lines 342-430)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 674 | 68 | `static void theRates()` |  |
+| 346 | 84 | `static void theRoomForARun()` |  |
 
-### 8. A RUN OVER EACH CLASS OF GROUND (lines 743-808)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 747 | 61 | `static void overEachClass()` |  |
-
-### 9. THE CITY'S MIX OF GROUND (lines 809-881)
+### 4. THE PRICE AND THE BOOKS (lines 431-530)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 813 | 68 | `static void theMix()` |  |
+| 435 | 95 | `static void thePriceAndTheBooks()` |  |
 
-### 10. BUILDERS' WORK IN THE BOOKS (lines 882-979)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 889 | 90 | `static void inTheBooks()` |  |
-
-### 11. A FLAT CITY TO THE BIT (lines 980-1037)
+### 5. A FLAT CITY TO THE BIT (lines 531-600)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 984 | 53 | `static void aFlatCityPaysNoWorks()` |  |
+| 535 | 65 | `static void aFlatCityToTheBit()` |  |
 
-### 12. THE SCREEN'S WORDS (lines 1038-1098)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1043 | 10 | `static String worksWords(Game.BuildQuote q)` | BuildScreen.worksWords(), a package-private static of the build screen, read through reflection: it must not need a toolkit. |
-| 1054 | 44 | `static void theScreensWords()` |  |
-
-### 13. ON THE MAP, AND 14. THE STREETS' RULE (slice C; spec-earth2-terrain 4.3: "a run on very steep ground is drawn as a (lines 1099-1303)
+### 6. SAVED (lines 601-646)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1110 | 3 | `static byte band(int k)` | A fixture's relief at k along an axis: flat to 9, steep 10 to 15, very steep 16 to 23, flat from 24. |
-| 1115 | 8 | `public static TilePainter.Input mapTile()` | One owned tile of dry grass: relief in bands along x (and, down the track's column, along y), an east-west highway on row HY and a north-south track on column TX. |
-| 1124 | 5 | `static TilePainter.Painted paintTile(TilePainter.Input in)` |  |
-| 1130 | 5 | `static int[] rasterAt(TilePainter.Input in, TilePainter.Painted p, int px)` |  |
-| 1137 | 3 | `static int pixel(int[] img, int px, int plotX, int plotY, int dx, int dy)` | One pixel of plot (plotX, plotY), local (dx, dy), at px pixels a plot. |
-| 1142 | 5 | `static int portals(int[] img, int px, int plotX, int plotY)` | How many pixels of plot (plotX, plotY) are TUNNEL_PORTAL. |
-| 1149 | 5 | `static int portals(int[] img)` | How many pixels of the whole image are TUNNEL_PORTAL. |
-| 1155 | 113 | `static void onTheMap()` |  |
-| 1269 | 34 | `static void theStreetsRuleDidNotMove()` |  |
+| 605 | 41 | `static void saved() throws Exception` |  |
+
+### slice B: the price of the cuts, the viaducts and the tunnels (lines 647-676)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 655 | 4 | `static void flatten(Game g)` | The city's ground made all flat, as SlopeCheck 4 does it: the relief is read live, so the same order can be asked again as a flat city's. |
+| 661 | 5 | `static double[] reliefOf(Game g)` | The city's own dry ground by relief (CityLand.setCentreRelief()'s five figures, km2), to put back after a fixture has been flattened. |
+| 668 | 3 | `static double perPoint(BuildingsTemplate t)` | The founding cash a point of a template's own work, thousands: what RunWorks.points() is struck at. |
+| 673 | 3 | `static double usdPerM2Of(Game.BuildQuote q, BuildingsTemplate t)` | The dollars a m2 of the run's land that a quote's works come to: its points at the founding price a point, over the land it priced. |
+
+### 7. THE RATES (lines 677-749)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 681 | 68 | `static void theRates()` |  |
+
+### 8. A RUN OVER EACH CLASS OF GROUND (lines 750-815)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 754 | 61 | `static void overEachClass()` |  |
+
+### 9. THE CITY'S MIX OF GROUND (lines 816-888)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 820 | 68 | `static void theMix()` |  |
+
+### 10. BUILDERS' WORK IN THE BOOKS (lines 889-986)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 896 | 90 | `static void inTheBooks()` |  |
+
+### 11. A FLAT CITY TO THE BIT (lines 987-1044)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 991 | 53 | `static void aFlatCityPaysNoWorks()` |  |
+
+### 12. THE SCREEN'S WORDS (lines 1045-1105)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1050 | 10 | `static String worksWords(Game.BuildQuote q)` | BuildScreen.worksWords(), a package-private static of the build screen, read through reflection: it must not need a toolkit. |
+| 1061 | 44 | `static void theScreensWords()` |  |
+
+### 13. ON THE MAP, AND 14. THE STREETS' RULE (slice C; spec-earth2-terrain 4.3: "a run on very steep ground is drawn as a (lines 1106-1310)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1117 | 3 | `static byte band(int k)` | A fixture's relief at k along an axis: flat to 9, steep 10 to 15, very steep 16 to 23, flat from 24. |
+| 1122 | 8 | `public static TilePainter.Input mapTile()` | One owned tile of dry grass: relief in bands along x (and, down the track's column, along y), an east-west highway on row HY and a north-south track on column TX. |
+| 1131 | 5 | `static TilePainter.Painted paintTile(TilePainter.Input in)` |  |
+| 1137 | 5 | `static int[] rasterAt(TilePainter.Input in, TilePainter.Painted p, int px)` |  |
+| 1144 | 3 | `static int pixel(int[] img, int px, int plotX, int plotY, int dx, int dy)` | One pixel of plot (plotX, plotY), local (dx, dy), at px pixels a plot. |
+| 1149 | 5 | `static int portals(int[] img, int px, int plotX, int plotY)` | How many pixels of plot (plotX, plotY) are TUNNEL_PORTAL. |
+| 1156 | 5 | `static int portals(int[] img)` | How many pixels of the whole image are TUNNEL_PORTAL. |
+| 1162 | 113 | `static void onTheMap()` |  |
+| 1276 | 34 | `static void theStreetsRuleDidNotMove()` |  |
 

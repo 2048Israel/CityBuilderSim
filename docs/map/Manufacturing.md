@@ -1,4 +1,4 @@
-# Manufacturing.java - 366 lines · 14 methods · 3 constants · sectors
+# Manufacturing.java - 371 lines · 14 methods · 3 constants · sectors
 
 `ham/citybuildersim/sectors/Manufacturing.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 > 
 > ... (1 more lines in the source)
 
-**Uses:** [Good](Good.md) (12), [BusinessInvestment](BusinessInvestment.md) (10), [BuildingsTemplate](BuildingsTemplate.md) (4), [Game](Game.md) (3), [Formats](Formats.md) (3), [SpreadPlanner](SpreadPlanner.md) (3), [Sector](Sector.md) (2), [ProcessingSector](ProcessingSector.md) (2), [BuildingType](BuildingType.md) (1)
+**Uses:** [Good](Good.md) (12), [BusinessInvestment](BusinessInvestment.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (4), [Game](Game.md) (3), [Formats](Formats.md) (3), [SpreadPlanner](SpreadPlanner.md) (3), [Sector](Sector.md) (2), [ProcessingSector](ProcessingSector.md) (2), [BuildingType](BuildingType.md) (1)
 
 **Used by (5):** [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [CopperRefiningCheck](CopperRefiningCheck.md), [ManufacturingCheck](ManufacturingCheck.md), [Sectors](Sectors.md)
 
@@ -74,7 +74,7 @@
 |---:|---|
 | 133 | · reading |
 | 184 | · plan |
-| 314 | · the screen |
+| 319 | · the screen |
 
 ## Constants
 
@@ -88,7 +88,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 76 | 291 | **type** `public final class Manufacturing extends Sector` | What the city makes out of its own steel, and ships. |
+| 76 | 296 | **type** `public final class Manufacturing extends Sector` | What the city makes out of its own steel, and ships. |
 | 110 | 15 | `public Manufacturing()` |  |
 | 128 | 4 | `public void produceFlow(Good g)` | What it makes of a flow good, and since 0.7.123 (batch I4) the offcuts of its fabricated steel to the city's old steel, its own to sell (OldMetal). |
 
@@ -104,18 +104,18 @@
 | 176 | 4 | `public double payrollShare()` | ...and the wage bill, the same way. |
 | 182 | 1 | `public double costShare()` | Both together, which is what has to stay under one. |
 
-### plan (lines 184-313)
+### plan (lines 184-318)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 216 | 53 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Overridden for the reason Business Services and Heavy Industry override it: the generic planner forecasts from LOCAL demand, and BusinessInvestment says so in its own header - "the world is not demand". |
-| 289 | 8 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more of its buildings would clear a month (0.7.133, batch I8): the maker's estimate (Sector's) - and for the Wire & Cable Works, the materials chains' row, less what it buys abroad that is not a good, its ins... |
-| 299 | 3 | `double fleetCapital(BuildingsTemplate t)` | The vans one of `t` must buy, at what a van costs here (ProcessingSector.fleetCapital()); none with no markets. |
-| 312 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with no stock: it shrinks on distress, not on a demand reading. |
+| 224 | 50 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Overridden for the reason Business Services and Heavy Industry override it: the generic planner forecasts from LOCAL demand, and BusinessInvestment says so in its own header - "the world is not demand". |
+| 294 | 8 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more of its buildings would clear a month (0.7.133, batch I8): the maker's estimate (Sector's) - and for the Wire & Cable Works, the materials chains' row, less what it buys abroad that is not a good, its ins... |
+| 304 | 3 | `double fleetCapital(BuildingsTemplate t)` | The vans one of `t` must buy, at what a van costs here (ProcessingSector.fleetCapital()); none with no markets. |
+| 317 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with no stock: it shrinks on distress, not on a demand reading. |
 
-### the screen (lines 314-366)
+### the screen (lines 319-371)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 317 | 49 | `public List<Sector.Line> ownLines(Game game)` |  |
+| 322 | 49 | `public List<Sector.Line> ownLines(Game game)` |  |
 

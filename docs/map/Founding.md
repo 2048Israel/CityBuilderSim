@@ -1,4 +1,4 @@
-# Founding.java - 610 lines · 55 methods · 16 constants · model
+# Founding.java - 621 lines · 56 methods · 16 constants · model
 
 `ham/citybuildersim/Founding.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
 
@@ -131,7 +131,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 72 | 539 | **type** `public final class Founding` | How a city was founded: its name, its money's name, and the treasury and the vault the founders left it. |
+| 72 | 550 | **type** `public final class Founding` | How a city was founded: its name, its money's name, and the treasury and the vault the founders left it. |
 
 ### THE PRESETS (0.7.10) (lines 74-173)
 
@@ -203,7 +203,7 @@
 | 437 | 6 | `public static String reserveProblem(double reserveUsd)` | Why a vault will not do, or null. |
 | 452 | 18 | `public String problem()` | Why this founding cannot found a city, or null when it can: the first of the city's name, its money (a typed pair that did not pass leaves no currency - the screen says which half), the two amounts and the world - and... |
 
-### WHAT IT BUYS (0.7.10) (lines 471-610)
+### WHAT IT BUYS (0.7.10) (lines 471-621)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -216,7 +216,9 @@
 | 550 | 3 | `public static double orderCost(BuildingsTemplate t, int quantity, double yard)` | An order's invoice on a new city with `yard` units of material in the yard: its cash cost - no wage has been paid yet, so its labour is at the founding ladder - and whatever material the yard does not hold at founding... |
 | 555 | 5 | `public static double orderCost(BuildingsTemplate t, int quantity, double yard, double multiple)` | ...with its work at the builders' multiple (FC1; BuildingManager.orderPriceMultiplier()): the cash cost times it, the material not. |
 | 562 | 3 | `public static Buys whatItBuys(List<BuildingsTemplate> catalogue, double cash, double reserveUsd)` | What these two figures buy, over this catalogue. |
-| 571 | 22 | `public static Buys whatItBuys(List<BuildingsTemplate> catalogue, double cash, double reserveUsd, java.util.function.DoubleUnary...` | ...on a founded city's builders (FC1): `multiple` is their price's multiple with that many points ordered ahead of an order on its queue (BuildingManager.orderPriceMultiplier(double)), so the village is priced order b... |
-| 595 | 10 | `public static String vaultSays(double reserveUsd)` | The vault, in words: what it is for. |
-| 606 | 4 | `private static BuildingsTemplate find(List<BuildingsTemplate> catalogue, String name)` |  |
+| 572 | 3 | **type** `public interface OrderMultiple` | The builders' price multiple of an order (FC1; BA1): with `pointsAhead` ordered before it on the queue, for `n` buildings of `pointsEach` points, each on the queue the ones before it leave (BuildingManager.orderPriceM... |
+| 573 | 1 | `double of(double pointsAhead, double pointsEach, long n)` _(in Founding.OrderMultiple)_ |  |
+| 582 | 22 | `public static Buys whatItBuys(List<BuildingsTemplate> catalogue, double cash, double reserveUsd, OrderMultiple multiple)` | ...on a founded city's builders (FC1): `multiple` is their price's multiple with that many points ordered ahead of an order on its queue (BuildingManager.orderPriceMultiplier(double, double, long)), so the village is ... |
+| 606 | 10 | `public static String vaultSays(double reserveUsd)` | The vault, in words: what it is for. |
+| 617 | 4 | `private static BuildingsTemplate find(List<BuildingsTemplate> catalogue, String name)` |  |
 
