@@ -71,6 +71,14 @@ final class FinancesScreen {
     /** The city's fund's pages and a security's (0.7.39): the area is drawn by its own class. */
     final FundScreen fundScreen;
 
+    /** The nodes this screen made at its last draw, handed back to it at the next (KP5; study UP4, docs/studies/spec-screens-in-place.md). */
+    final Kept.Pool pool = new Kept.Pool();
+
+    /** Every node is made new at the next draw - the pictures on the pages with them: another city opened (UserInterface.anotherCity()). */
+    void forget() {
+        pool.forget();
+    }
+
     /* =====================================================================
        FINANCES
 
@@ -364,11 +372,11 @@ final class FinancesScreen {
     private boolean askTyping;
 
     /** The piece the Close it now page is on (CD4), by identity: the page is open while it is on the books. */
-    private Debt closing;
+    Debt closing;
     /** What is typed in the Close it now page's two boxes and not yet drawn on (CD4), kept through a month's redraw: the face to buy back, and the most to pay per 100. Empty reads as everything on offer, and no limit. */
-    private String closeFaceText = "", closeMaxText = "";
+    String closeFaceText = "", closeMaxText = "";
     /** The two boxes, and which had the focus when the page was last redrawn (0 neither, 1 the face, 2 the most to pay) - a month landing rebuilds them under the typing. */
-    private javafx.scene.control.TextField closeFaceField, closeMaxField;
+    javafx.scene.control.TextField closeFaceField, closeMaxField;
     private int closeTyping;
 
     /**
@@ -376,7 +384,7 @@ final class FinancesScreen {
      * rather than on the fold, because the panel is rebuilt under the player
      * every month the clock ticks (GovernmentScreen's, 0.7.31).
      */
-    private final java.util.Set<String> open = new java.util.HashSet<>();
+    final java.util.Set<String> open = new java.util.HashSet<>();
 
     /** Where the page is to be scrolled to once it is drawn: LADDER or RESCUE on the hub, a piece of paper or a calendar year on The book; null for the top. */
     private Object scrollTarget;
@@ -411,7 +419,18 @@ final class FinancesScreen {
         scrollTarget = anchor;
         fundScreen.security = null;
         ui.innerScrollAt.remove("showFinanceMenu:body");
+        // Kept (KP5): a page opened at no anchor is drawn from its top, the one already on show too.
+        if (anchor == null) toTop();
         showFinanceMenu();
+    }
+
+    /**
+     * The page on show scrolled to its top (KP5): a chip or a door picked draws its page from the top, and another page is a
+     * scope of its own with a scroller of its own, which opens there; but the page the pick names may be the one already on
+     * show, whose kept scroller stays where the player left it unless it is put back.
+     */
+    private void toTop() {
+        if (body != null && body.getVvalue() != 0) body.setVvalue(0);
     }
 
     void showFinanceMenu() {
@@ -419,15 +438,54 @@ final class FinancesScreen {
         fundScreen.here = ui.isShowing("showFinanceMenu");
         // ...and whether the player was typing an ask, so the new box takes the focus back (0.7.40).
         askTyping = askField != null && askField.isFocused();
-        // ...and in the Close it now page's boxes (CD4).
-        closeTyping = closeFaceField != null && closeFaceField.isFocused() ? 1
-                : closeMaxField != null && closeMaxField.isFocused() ? 2 : 0;
+        // Kept (KP5): on a redraw of the page on show the Close it now page's two boxes and the rollover's yield box are the ones
+        // already there, which keep the focus and the caret across it (KP2 *A): nothing is noted for a refocus, and none is made.
+        boolean kept = pool.holds() && fundScreen.here;
+        if (kept) {
+            closeTyping = 0;
+        } else {
+            // ...and in the Close it now page's boxes (CD4).
+            closeTyping = closeFaceField != null && closeFaceField.isFocused() ? 1
+                    : closeMaxField != null && closeMaxField.isFocused() ? 2 : 0;
+            rolloverChips.noteFocus();
+        }
         closeFaceField = null;
         closeMaxField = null;
         borrowChips.noteFocus();
-        rolloverChips.noteFocus();
-        ui.clearMenu("showFinanceMenu", () -> showFinanceMenu());
+        // Kept (KP5): the page is drawn over last time's nodes when the same screen is redrawn; the rail's own tab arrives afresh.
+        ui.keepMenu("showFinanceMenu", () -> showFinanceMenu(), pool, this::drawPage);
 
+        if (scrollTarget != null) {
+            Object target = scrollTarget;
+            scrollTarget = null;
+            javafx.application.Platform.runLater(() -> {
+                Node n = targets.get(target);
+                // A calendar year with no piece maturing in it: the next that has one.
+                if (n == null && target instanceof Integer y) {
+                    for (int later = y + 1; n == null && later <= y + 60; later++) n = targets.get(later);
+                }
+                if (n == null || body == null) return;
+                body.applyCss();
+                body.layout();
+                scrollTo(n);
+            });
+        }
+    }
+
+    /**
+     * What a page is, for the kept scope it is drawn in (KP5): the area, the page, and what is open on it - the piece a line's
+     * page or Close it now is on, a security of the fund. A move to another page shares no node with the last and opens at its
+     * top; a month's redraw of the same page keeps every node and the scroll.
+     */
+    private record PageKey(String area, String page, Object open) { }
+
+    /**
+     * The page itself, put in the window through setPage(): what keepMenu runs as a kept draw from the pool, and what KeptBench
+     * runs kept and built new for KeptCheck - the hub, or the area's page `financePage` names, on what is open on it. What the
+     * show method did before the draw (the area and the page known, the fund's security dropped, the doors' targets cleared,
+     * NEEDS YOU measured) is done here, in the draw, so the bench's draw has it too.
+     */
+    void drawPage() {
         boolean known = financeArea == null;
         for (String a : AREAS) if (a.equals(financeArea)) known = true;
         if (!known) financeArea = null;
@@ -451,59 +509,55 @@ final class FinancesScreen {
         List<CityNeeds.Need> all = CityNeeds.measure(ui.game, SummaryScreen.WORDS);
         targets.clear();
 
-        VBox page = widePage();
-        if (financeArea == null) {
-            hubPage(page, all);
-        } else {
-            switch (financeArea) {
-                case "The book" -> {
-                    if (closeOpen())        closePage(page);
-                    else if (lineOpenNow()) linePage(page);
-                    else                    bookPage(page);
-                }
-                case "Borrow"   -> borrowPage(page, "Abroad".equals(financePage));
-                case "Money"    -> moneyPage(page);
-                case "The bond market" -> {
-                    if ("A bond's book".equals(financePage)) bondBookPage(page);
-                    else                                     bondMarketPage(page);
-                }
-                case "The city's fund" -> fundScreen.draw(page, financePage);
-                default -> {
-                    switch (financePage) {
-                        case "Debt service"  -> debtServicePage(page);
-                        case "Home & abroad" -> homeAndAbroadPage(page);
-                        case "Your rate"     -> yourRatePage(page);
-                        default              -> positionPage(page, all);
+        // What is open on the page, which with the area and the page is the scope its nodes are kept in.
+        Object openOn = "The book".equals(financeArea) ? (closeOpen() ? closing : lineOpenNow() ? lineOpen : null)
+                : FundScreen.AREA.equals(financeArea) ? fundScreen.security : null;
+        // Kept (KP5): the whole page - its frame, its scroller and its page - is a scope keyed by the area, the page and what is open
+        // on it, so another page shares no node with the last and opens at its top; a month's redraw of the same page keeps every
+        // node and the scroll.
+        Kept.scope(new PageKey(financeArea, financeArea == null ? null : financePage, openOn), () -> {
+            // ...the page itself in a scope of its own, so what its sections make shifts none of the frame's nodes.
+            VBox page = Kept.scope("page", () -> {
+                VBox p = widePage();
+                if (financeArea == null) {
+                    hubPage(p, all);
+                } else {
+                    switch (financeArea) {
+                        case "The book" -> {
+                            if (closeOpen())        closePage(p);
+                            else if (lineOpenNow()) linePage(p);
+                            else                    bookPage(p);
+                        }
+                        case "Borrow"   -> borrowPage(p, "Abroad".equals(financePage));
+                        case "Money"    -> moneyPage(p);
+                        case "The bond market" -> {
+                            if ("A bond's book".equals(financePage)) bondBookPage(p);
+                            else                                     bondMarketPage(p);
+                        }
+                        case "The city's fund" -> fundScreen.draw(p, financePage);
+                        default -> {
+                            switch (financePage) {
+                                case "Debt service"  -> debtServicePage(p);
+                                case "Home & abroad" -> homeAndAbroadPage(p);
+                                case "Your rate"     -> yourRatePage(p);
+                                default              -> positionPage(p, all);
+                            }
+                        }
                     }
                 }
-            }
-        }
-
-        VBox frame = new VBox(Palette.GAP, head(), vitals(all));
-        frame.getChildren().addAll(alertBands());
-        if (pages.length > 1) {
-            String area = financeArea;
-            // A security's page is none of the area's chips (0.7.39), so none is lit on it.
-            frame.getChildren().add(chipStrip(pages, iconsOf(area), fundScreen.security != null ? null : financePage,
-                    Palette.SIZE_LABEL, name -> open(area, name, null)));
-        }
-        frameOver(frame, page);
-
-        if (scrollTarget != null) {
-            Object target = scrollTarget;
-            scrollTarget = null;
-            javafx.application.Platform.runLater(() -> {
-                Node n = targets.get(target);
-                // A calendar year with no piece maturing in it: the next that has one.
-                if (n == null && target instanceof Integer y) {
-                    for (int later = y + 1; n == null && later <= y + 60; later++) n = targets.get(later);
-                }
-                if (n == null || body == null) return;
-                body.applyCss();
-                body.layout();
-                scrollTo(n);
+                return p;
             });
-        }
+
+            VBox frame = Kept.column(Palette.GAP, Kept.scope("head", this::head), Kept.scope("vitals", () -> vitals(all)));
+            frame.getChildren().addAll(alertBands());
+            if (pages.length > 1) {
+                String area = financeArea;
+                // A security's page is none of the area's chips (0.7.39), so none is lit on it.
+                frame.getChildren().add(Kept.scope("pages", () -> chipStrip(pages, iconsOf(area),
+                        fundScreen.security != null ? null : financePage, Palette.SIZE_LABEL, name -> open(area, name, null))));
+            }
+            frameOver(frame, page);
+        });
     }
 
     /** The fixed frame over a scrolling page, at the page's width, the page as tall as what is left under the frame as laid out (GovernmentScreen's, 0.7.31). */
@@ -512,17 +566,29 @@ final class FinancesScreen {
         frame.setFillWidth(true);
         frame.setPadding(new javafx.geometry.Insets(0, 18, 4, 18));
         body = ui.scrolled(page, FRAME_CHROME);
-        body.prefHeightProperty().unbind();
-        body.prefHeightProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
-                () -> Math.max(260, ui.menuScroller.getHeight()
-                        - (frame.getHeight() > 0 ? frame.getHeight() + STAGE_REST : FRAME_CHROME)),
-                ui.menuScroller.heightProperty(), frame.heightProperty()));
         final javafx.scene.control.ScrollPane scroller = body;
-        page.prefWidthProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
-                () -> Math.min(PAGE_WIDE, Math.max(320, scroller.getViewportBounds().getWidth())),
-                scroller.viewportBoundsProperty()));
-        ui.rootMenu.getChildren().addAll(frame, body);
+        // Kept (KP5): both bindings are made once per scroller, since a kept page is handed back each draw with the scroller and
+        // frame it is already bound to; a draw never unbinds and binds again.
+        if (scroller.getProperties().get(BOUND_TO_FRAME) != frame) {
+            scroller.prefHeightProperty().unbind();
+            scroller.prefHeightProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
+                    () -> Math.max(260, ui.menuScroller.getHeight()
+                            - (frame.getHeight() > 0 ? frame.getHeight() + STAGE_REST : FRAME_CHROME)),
+                    ui.menuScroller.heightProperty(), frame.heightProperty()));
+            scroller.getProperties().put(BOUND_TO_FRAME, frame);
+        }
+        if (page.getProperties().get(BOUND_TO_SCROLLER) != scroller) {
+            page.prefWidthProperty().unbind();
+            page.prefWidthProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
+                    () -> Math.min(PAGE_WIDE, Math.max(320, scroller.getViewportBounds().getWidth())),
+                    scroller.viewportBoundsProperty()));
+            page.getProperties().put(BOUND_TO_SCROLLER, scroller);
+        }
+        ui.setPage(frame, scroller);
     }
+
+    /** The key in a kept scroller's properties for the frame its height is bound to, and in a kept page's for the scroller its width is bound to (frameOver()). */
+    private static final String BOUND_TO_FRAME = "finances.frame", BOUND_TO_SCROLLER = "finances.scroller";
 
     /** Scroll the page to a node on it (InfrastructureScreen's). */
     void scrollTo(Node target) {
@@ -588,13 +654,14 @@ final class FinancesScreen {
 
     /** A door back: "‹ Finances", in the accent, underlined under the pointer (Pieces.door()'s, pointing the other way). */
     static Label backDoor(String text, Runnable go) {
-        Label l = new Label("‹ " + text);
+        // Kept (KP5): through Kept; the look the pointer calls for is chosen from isHover() where it is set, and the click is set, not added.
+        Label l = Kept.label("‹ " + text);
         String rest = Palette.words(Palette.SIZE_LABEL, Palette.ACCENT) + " -fx-cursor: hand;";
-        l.setStyle(rest);
+        l.setStyle(l.isHover() ? rest + " -fx-underline: true;" : rest);
         l.setMinWidth(Region.USE_PREF_SIZE);
         l.setOnMouseEntered(e -> l.setStyle(rest + " -fx-underline: true;"));
         l.setOnMouseExited(e -> l.setStyle(rest));
-        l.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, e -> {
+        l.setOnMouseClicked(e -> {
             e.consume();
             go.run();
         });
@@ -701,11 +768,14 @@ final class FinancesScreen {
             Kpi c = k.get(i);
             cells[i] = limitCell(c.label(), c.value(), c.note(), c.tone(), c.where(), go[i]);
             if (c.alarm() != null) {
-                Label red = new Label(c.alarm());
-                red.setWrapText(true);
-                red.setMaxWidth(LIMIT_CELL - 28);
-                red.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.BAD));
-                cells[i].getChildren().add(red);
+                // Kept (KP5): drawn only sometimes, so a scope of its own: it shifts no label after it.
+                cells[i].getChildren().add(Kept.scope("alarm", () -> {
+                    Label red = Kept.label(c.alarm());
+                    red.setWrapText(true);
+                    red.setMaxWidth(LIMIT_CELL - 28);
+                    red.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.BAD));
+                    return red;
+                }));
             }
         }
         withSpark(cells[0], "cash", null);
@@ -724,17 +794,20 @@ final class FinancesScreen {
         List<Integer> when = months.size() == all.length ? months.subList(from, all.length) : null;
         Node figure = cell.getChildren().get(1);
         cell.getChildren().remove(1);
-        Region gap = new Region();
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
-        HBox top = new HBox(6, figure, gap, sparkline(year, when, Palette.MONEY, 52, 16));
+        HBox top = Kept.row(6, figure, gap, sparkline(year, when, Palette.MONEY, 52, 16));
         top.setAlignment(Pos.CENTER_LEFT);
         cell.getChildren().add(1, top);
         if (change != null) {
-            Label moved = new Label(change);
-            moved.setWrapText(true);
-            moved.setMaxWidth(LIMIT_CELL - 28);
-            moved.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-            cell.getChildren().add(moved);
+            // Kept (KP5): drawn only sometimes, so a scope of its own.
+            cell.getChildren().add(Kept.scope("change", () -> {
+                Label moved = Kept.label(change);
+                moved.setWrapText(true);
+                moved.setMaxWidth(LIMIT_CELL - 28);
+                moved.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+                return moved;
+            }));
         }
     }
 
@@ -785,36 +858,37 @@ final class FinancesScreen {
         Game g = ui.game;
         DebtManager ledger = g.getDebtManager();
         List<Node> out = new ArrayList<>();
+        // Kept (KP5): each band is a scope of its own, since they come and go with the city's state.
         if (ledger.getOverdraft() > 0) {
-            out.add(alertBand("Overdrawn by " + d(ledger.getOverdraft()) + ": the central bank advances it next month",
+            out.add(Kept.scope("overdrawn", () -> alertBand("Overdrawn by " + d(ledger.getOverdraft()) + ": the central bank advances it next month",
                     String.format("%s of it. At the top of next month the central bank advances it, at the policy "
                             + "rate, in money it makes. Past %.0f months of revenue owed, only the city's promises are "
                             + "still paid that way; the rest waits for cash, and what waits is owed as arrears. The "
                             + "market prices it as principal meanwhile - it is already in the rate.",
                             d(ledger.getOverdraft()), g.getCentralBank().getAdvancesCeilingMonths()),
-                    null));
+                    null)));
         }
         if (ledger.atCeiling()) {
-            out.add(alertBand("The rate is pinned at the top of the curve",
+            out.add(Kept.scope("pinned", () -> alertBand("The rate is pinned at the top of the curve",
                     "Both measures the market prices on - debt against output and debt against what the city can "
                             + "collect - have said everything they have to say. Borrowing more will not make it dearer, "
                             + "because it cannot get dearer. That is not good news.",
-                    door("Your rate", Palette.BAD_SOFT, () -> open("The position", "Your rate", null))));
+                    door("Your rate", Palette.BAD_SOFT, () -> open("The position", "Your rate", null)))));
         }
         if (ledger.getDefaultScar() > 0) {
-            out.add(alertBand(String.format("A default abroad is still charged for: %.1f points on what the world lends at",
+            out.add(Kept.scope("default", () -> alertBand(String.format("A default abroad is still charged for: %.1f points on what the world lends at",
                             ledger.getDefaultScar() * 100),
                     String.format("%.1f points on the city's premium abroad, %d months after it happened, fading over "
                             + "about five years from when it happened. The world charges it on every dollar the city "
                             + "borrows; the city's own paper at home does not carry it.",
                             ledger.getDefaultScar() * 100, Math.max(0, ledger.getMonthsSinceForeignDefault())),
-                    door("Abroad", Palette.BAD_SOFT, () -> open("Borrow", "Abroad", null))));
+                    door("Abroad", Palette.BAD_SOFT, () -> open("Borrow", "Abroad", null)))));
         }
         if (g.canResolveBank()) {
-            out.add(alertBand("The bank has failed and waits for the city: resolving it costs "
+            out.add(Kept.scope("failed", () -> alertBand("The bank has failed and waits for the city: resolving it costs "
                             + d(g.bankRecapitalisationNeeded()),
                     RESOLVE_INFO,
-                    door("Resolve", Palette.BAD_SOFT, () -> showOnHub(RESCUE))));
+                    door("Resolve", Palette.BAD_SOFT, () -> showOnHub(RESCUE)))));
         }
         return out;
     }
@@ -826,12 +900,12 @@ final class FinancesScreen {
 
     /** One alert band: a red ground, the alert icon, one line, its (i), and a door at the right (null: none). */
     static HBox alertBand(String line, String whole, Node door) {
-        Label says = new Label(line);
+        Label says = Kept.label(line);
         says.setWrapText(true);
         says.setMinWidth(0);
         says.setStyle(Palette.words(Palette.SIZE_BODY, Palette.BAD_TEXT));
-        HBox row = new HBox(Palette.GAP, icon(Icons.ALERT, Palette.BAD, 14), says, infoButton(whole, true));
-        Region gap = new Region();
+        HBox row = Kept.row(Palette.GAP, icon(Icons.ALERT, Palette.BAD, 14), says, infoButton(whole, true));
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
         row.getChildren().add(gap);
         if (door != null) row.getChildren().add(door);
@@ -975,7 +1049,7 @@ final class FinancesScreen {
 
     /** A figure that is never cut, at a size, in a colour. */
     static Label figure(String text, double size, String tone) {
-        Label l = new Label(text);
+        Label l = Kept.label(text);
         l.setMinWidth(Region.USE_PREF_SIZE);
         l.setStyle(BuildScreen.figureAt(size, tone));
         return l;
@@ -1005,7 +1079,7 @@ final class FinancesScreen {
 
     /** A card on Build's ground: RAISED, radius 8, a 1 px edge, padding 14. */
     static VBox card(Node... rows) {
-        VBox c = new VBox(8);
+        VBox c = Kept.column(8);
         for (Node n : rows) if (n != null) c.getChildren().add(n);
         c.setMaxWidth(Double.MAX_VALUE);
         c.setStyle(cardStyle(Palette.EDGE));
@@ -1029,7 +1103,7 @@ final class FinancesScreen {
         HBox.setHgrow(what, Priority.ALWAYS);
         what.setMaxWidth(Double.MAX_VALUE);
         Label v = figure(value, Palette.SIZE_LABEL + 1, tone == null ? Palette.TEXT_HEAD : tone);
-        HBox row = new HBox(Palette.GAP, what, v);
+        HBox row = Kept.row(Palette.GAP, what, v);
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
     }
@@ -1054,7 +1128,7 @@ final class FinancesScreen {
 
     /** A statement column, for a fold: the old rows at their old width (the spec's D10). */
     static VBox column(Node... rows) {
-        VBox c = new VBox(0);
+        VBox c = Kept.column(0);
         for (Node n : rows) if (n != null) c.getChildren().add(n);
         c.setMaxWidth(STATEMENT);
         return c;
@@ -1096,7 +1170,7 @@ final class FinancesScreen {
 
     /** A row of a key: entries with a gap, wrapping. */
     static javafx.scene.layout.FlowPane keyRow(Node... entries) {
-        javafx.scene.layout.FlowPane key = new javafx.scene.layout.FlowPane(14, 4);
+        javafx.scene.layout.FlowPane key = Kept.flow(14, 4);
         for (Node n : entries) if (n != null) key.getChildren().add(n);
         return key;
     }
@@ -1138,14 +1212,15 @@ final class FinancesScreen {
        ===================================================================== */
 
     void hubPage(VBox page, List<CityNeeds.Need> all) {
-        VBox ladder = ladderCard();
+        // Kept (KP5): each card is a scope of its own, keyed by what it is, so what one makes shifts none of the others' nodes.
+        VBox ladder = Kept.scope("ladder", this::ladderCard);
         targets.put(LADDER, ladder);
         page.getChildren().add(ladder);
-        VBox rescue = rescueCard();
+        VBox rescue = Kept.scope("rescue", this::rescueCard);
         targets.put(RESCUE, rescue);
-        page.getChildren().add(pair(rolloverCard(), rescue));
-        page.getChildren().add(sectionHead("FINANCES, OPENED", hint("tap one")));
-        page.getChildren().add(areaCards());
+        page.getChildren().add(pair(Kept.scope("rollover", this::rolloverCard), rescue));
+        page.getChildren().add(Kept.scope("opened", () -> sectionHead("FINANCES, OPENED", hint("tap one"))));
+        page.getChildren().add(Kept.scope("areas", this::areaCards));
     }
 
     /* ------------------------------ when it falls due ------------------------------ */
@@ -1179,17 +1254,18 @@ final class FinancesScreen {
         Game g = ui.game;
         DebtManager ledger = g.getDebtManager();
         DebtManager.Ladder ladder = ledger.ladder(g.getMonth());
-        VBox left = new VBox(8, caption("WHEN IT FALLS DUE", LADDER_INFO, hint("coupons and principal, a column a year")));
+        VBox left = Kept.column(8, caption("WHEN IT FALLS DUE", LADDER_INFO, hint("coupons and principal, a column a year")));
+        // Kept (KP5): the words and the chart with its key are alternatives, a scope each.
         if (ledger.getDebt().isEmpty()) {
-            left.getChildren().add(words(NOTHING_DUE, Palette.SIZE_BODY + 1, Palette.TEXT_MUTED));
+            left.getChildren().add(Kept.scope("nothing", () -> words(NOTHING_DUE, Palette.SIZE_BODY + 1, Palette.TEXT_MUTED)));
         } else {
-            left.getChildren().add(ladderChart(ladder, null, null, 220));
-            left.getChildren().add(ladderKey(ladder, null, null));
+            left.getChildren().add(Kept.scope("chart", () -> ladderChart(ladder, null, null, 220)));
+            left.getChildren().add(Kept.scope("key", () -> ladderKey(ladder, null, null)));
         }
         left.setMinWidth(0);
         left.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(left, Priority.ALWAYS);
-        HBox inner = new HBox(20, left, nextDueCard());
+        HBox inner = Kept.row(20, left, Kept.scope("next due", this::nextDueCard));
         return card(inner);
     }
 
@@ -1302,16 +1378,22 @@ final class FinancesScreen {
             abroad += r.abroad();
         }
         javafx.scene.layout.FlowPane key = keyRow();
-        for (int k = 0; k < 3; k++) if (any[k] > 0) key.getChildren().add(keySwatch(Palette.LADDER[k], KIND_NAMES[k]));
-        if (abroad > 0) key.getChildren().add(keySwatch(Palette.BUSINESS, "the edge: abroad"));
-        if (extraColour != null && ladder.proposed() > 0) key.getChildren().add(swatch(extraColour, extraName, true));
+        // Kept (KP5): each entry comes and goes with the paper, a scope of its own.
+        for (int k = 0; k < 3; k++) {
+            int kind = k;
+            if (any[k] > 0) key.getChildren().add(Kept.scope("kind " + k, () -> keySwatch(Palette.LADDER[kind], KIND_NAMES[kind])));
+        }
+        if (abroad > 0) key.getChildren().add(Kept.scope("abroad", () -> keySwatch(Palette.BUSINESS, "the edge: abroad")));
+        if (extraColour != null && ladder.proposed() > 0) {
+            key.getChildren().add(Kept.scope("proposed", () -> swatch(extraColour, extraName, true)));
+        }
         HBox.setHgrow(key, Priority.ALWAYS);
         key.setMaxWidth(Double.MAX_VALUE);
         Label total = words("everything still to pay " + d(ladder.owed())
                 + (ladder.proposed() > 0 ? " · with it " + d(ladder.total()) : ""),
                 Palette.SIZE_LABEL, Palette.TEXT_LABEL);
         total.setMinWidth(Region.USE_PREF_SIZE);
-        HBox row = new HBox(Palette.GAP, key, total);
+        HBox row = Kept.row(Palette.GAP, key, total);
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
     }
@@ -1340,18 +1422,22 @@ final class FinancesScreen {
         debts.sort(java.util.Comparator.comparingInt(Debt::getMaturityMonth));
 
         // In the money area's colour since 0.7.21, as the mockups' status bar has it.
-        Label heading = new Label("NEXT DUE");
+        Label heading = Kept.label("NEXT DUE");
         heading.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.MONEY));
-        VBox box = new VBox(6, heading);
+        VBox box = Kept.column(6, heading);
         String fell = fellDueWords();
-        if (fell != null) box.getChildren().add(chip(fell, Palette.TEXT_LABEL));
+        // Kept (KP5): what comes and goes is a scope each: the chip, the empty words with their door, a piece of paper (by what it is), the "more" door.
+        if (fell != null) box.getChildren().add(Kept.scope("fell", () -> chip(fell, Palette.TEXT_LABEL)));
         if (debts.isEmpty()) {
-            box.getChildren().add(words("No city debt outstanding.", Palette.SIZE_LABEL + 1, Palette.TEXT_MUTED));
-            box.getChildren().add(door("Borrow", Palette.ACCENT, () -> open("Borrow", "At home", null)));
+            box.getChildren().add(Kept.scope("none", () -> words("No city debt outstanding.", Palette.SIZE_LABEL + 1, Palette.TEXT_MUTED)));
+            box.getChildren().add(Kept.scope("borrow", () -> door("Borrow", Palette.ACCENT, () -> open("Borrow", "At home", null))));
         } else {
-            for (int i = 0; i < Math.min(5, debts.size()); i++) box.getChildren().add(nextDueRow(debts.get(i), month));
+            for (int i = 0; i < Math.min(5, debts.size()); i++) {
+                Debt next = debts.get(i);
+                box.getChildren().add(Kept.scope(next, () -> nextDueRow(next, month)));
+            }
             if (debts.size() > 5) {
-                box.getChildren().add(door("+" + (debts.size() - 5) + " more", Palette.ACCENT, () -> open("The book", null, null)));
+                box.getChildren().add(Kept.scope("more", () -> door("+" + (debts.size() - 5) + " more", Palette.ACCENT, () -> open("The book", null, null))));
             }
         }
         box.setMinWidth(214);
@@ -1367,14 +1453,15 @@ final class FinancesScreen {
         Label kind = tag(pieceTag(debt), instrumentColour(debt.getType()));
         Label when = words(CityCalendar.formatShort(due) + " · " + CityCalendar.until(month, due),
                 Palette.SIZE_CAPTION + 1, Palette.TEXT_LABEL);
-        HBox under = new HBox(6, kind, when);
+        HBox under = Kept.row(6, kind, when);
         under.setAlignment(Pos.CENTER_LEFT);
-        VBox both = new VBox(1, amount, under);
-        HBox row = new HBox(both);
+        VBox both = Kept.column(1, amount, under);
+        HBox row = Kept.row(0, both);
         row.setMinHeight(36);
         row.setAlignment(Pos.CENTER_LEFT);
         String rest = "-fx-padding: 2 4 2 4; -fx-background-radius: 4; -fx-cursor: hand;";
-        row.setStyle(rest);
+        // Kept (KP5): the look the pointer calls for is chosen from isHover() where it is set.
+        row.setStyle(row.isHover() ? rest + " -fx-background-color: " + Palette.CONTROL + ";" : rest);
         row.setOnMouseEntered(e -> row.setStyle(rest + " -fx-background-color: " + Palette.CONTROL + ";"));
         row.setOnMouseExited(e -> row.setStyle(rest));
         row.setOnMouseClicked(e -> openLine(debt));
@@ -1494,8 +1581,9 @@ final class FinancesScreen {
         // THE CAP (CD2, D28): the same three chips as Borrow, on the rollover's own cap, and what a short sale does (D29).
         card.getChildren().addAll(rolloverChips.controls(ROLLOVER_CAP_TITLE, ROLLOVER_CAP_INFO, rolloverFair(), false));
         card.getChildren().add(muted(rolloverCapWords(mode)));
+        // Kept (KP5): what comes and goes is a scope each.
         if (!(plan.due() > 0)) {
-            card.getChildren().add(line("Next month: nothing falls due."));
+            card.getChildren().add(Kept.scope("nothing falls", () -> line("Next month: nothing falls due.")));
         } else {
             List<Segment> parts = new ArrayList<>();
             if (plan.netted() > 0) parts.add(seg(plan.netted(), Palette.MONEY,
@@ -1509,11 +1597,11 @@ final class FinancesScreen {
             }
             if (plan.fromCash() > 0) parts.add(seg(plan.fromCash(), Palette.MONEY_DARK,
                     "paid from the treasury's cash " + d(plan.fromCash())));
-            card.getChildren().add(segmentBar(parts, plan.due(), null, 0, 12));
-            card.getChildren().add(noteLine(planWords(plan), surplusWords(plan), 560));
+            card.getChildren().add(Kept.scope("bar", () -> segmentBar(parts, plan.due(), null, 0, 12)));
+            card.getChildren().add(Kept.scope("plan", () -> noteLine(planWords(plan), surplusWords(plan), 560)));
         }
         String last = lastRollWords();
-        if (last != null) card.getChildren().add(muted(last));
+        if (last != null) card.getChildren().add(Kept.scope("last", () -> muted(last)));
         return card;
     }
 
@@ -1609,33 +1697,37 @@ final class FinancesScreen {
                     }
                     showFinanceMenu();
                 }));
+        // Kept (KP5): what comes and goes is a scope each, and a tooltip is the node's own (Kept.tip), its text set.
         if (g.canResolveBank()) {
             card.setStyle(cardStyle(Palette.BAD));
             double cost = g.bankRecapitalisationNeeded();
-            card.getChildren().add(infoLine("The bank has failed and waits for the city: resolving it costs " + d(cost)
-                    + ".", RESOLVE_INFO, true, Palette.SIZE_BODY, Palette.BAD_TEXT, 560));
-            Button resolve = new Button("Resolve the bank – " + d(cost));
-            resolve.setStyle("-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;"
-                    + " -fx-padding: 6 16 6 16;");
-            resolve.setOnAction(e -> {
-                g.resolveBank();
-                showFinanceMenu();
-            });
-            card.getChildren().add(resolve);
+            card.getChildren().add(Kept.scope("failed", () -> infoLine("The bank has failed and waits for the city: resolving it costs " + d(cost)
+                    + ".", RESOLVE_INFO, true, Palette.SIZE_BODY, Palette.BAD_TEXT, 560)));
+            card.getChildren().add(Kept.scope("resolve", () -> {
+                Button resolve = Kept.of(Button.class, Button::new);
+                resolve.setText("Resolve the bank – " + d(cost));
+                resolve.setStyle("-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;"
+                        + " -fx-padding: 6 16 6 16;");
+                resolve.setOnAction(e -> {
+                    g.resolveBank();
+                    showFinanceMenu();
+                });
+                return resolve;
+            }));
         }
         TreasuryFund.Resolution last = g.getLastResolution();
         if (last != null) {
-            Label foot = muted(String.format("Last: %s - the city put in %s.", CityCalendar.format(last.month()),
-                    d(last.paid())));
-            Tooltip whole = new Tooltip(String.format("The last, in %s: the city put in %s, %s from the treasury's cash "
-                            + "and %s advanced by the central bank; the old owners lost %s at the last price.",
-                    CityCalendar.format(last.month()), d(last.paid()), d(last.fromCash()), d(last.advanced()),
-                    d(last.ownersLost())));
-            whole.setWrapText(true);
-            whole.setMaxWidth(POPOVER_WIDTH);
-            whole.setShowDelay(Duration.millis(250));
-            foot.setTooltip(whole);
-            card.getChildren().add(foot);
+            card.getChildren().add(Kept.scope("last", () -> {
+                Label foot = muted(String.format("Last: %s - the city put in %s.", CityCalendar.format(last.month()),
+                        d(last.paid())));
+                Tooltip whole = Kept.tip(foot, String.format("The last, in %s: the city put in %s, %s from the treasury's cash "
+                                + "and %s advanced by the central bank; the old owners lost %s at the last price.",
+                        CityCalendar.format(last.month()), d(last.paid()), d(last.fromCash()), d(last.advanced()),
+                        d(last.ownersLost())), 250);
+                whole.setWrapText(true);
+                whole.setMaxWidth(POPOVER_WIDTH);
+                return foot;
+            }));
         }
         return card;
     }
@@ -1656,7 +1748,7 @@ final class FinancesScreen {
     /** ...as a line with its door to the hub's two cards. */
     HBox settingsPointer() {
         Label says = words(settingsWords(), Palette.SIZE_LABEL + 1, Palette.TEXT_MUTED);
-        HBox row = new HBox(Palette.GAP, says, door("Change on Finances", Palette.ACCENT, () -> showOnHub(RESCUE)));
+        HBox row = Kept.row(Palette.GAP, says, door("Change on Finances", Palette.ACCENT, () -> showOnHub(RESCUE)));
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
     }
@@ -1713,7 +1805,9 @@ final class FinancesScreen {
         List<AreaCard> words = areaWords();
         GridPane row = equalColumns(AREAS.length, TILE_GAP);
         for (int i = 0; i < AREAS.length; i++) {
-            VBox c = areaCard(i, words.get(i), areaBar(i));
+            // Kept (KP5): a card is a scope of its own, keyed by its area, with its bar.
+            int at = i;
+            VBox c = Kept.scope(AREAS[i], () -> areaCard(at, words.get(at), areaBar(at)));
             GridPane.setFillHeight(c, true);
             row.add(c, i, 0);
         }
@@ -1758,21 +1852,21 @@ final class FinancesScreen {
     VBox areaCard(int i, AreaCard w, Node bar) {
         String area = AREAS[i];
         String tint = i == 4 ? Palette.BUSINESS : Palette.MONEY;
-        Label name = new Label(area);
+        Label name = Kept.label(area);
         name.setWrapText(true);
         name.setMinWidth(0);
         name.setStyle(Palette.strong(Palette.SIZE_HEADING, Palette.TEXT_HEAD));
-        Label more = new Label("›");
+        Label more = Kept.label("›");
         more.setStyle(Palette.words(Palette.SIZE_HEADING, Palette.TEXT_MUTED));
         more.setMinWidth(Region.USE_PREF_SIZE);
-        Region gap = new Region();
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
-        HBox top = new HBox(6, iconSquare(AREA_ICONS[i], tint, 24, 13), name, infoButton(AREA_INFO[i], true), gap, more);
+        HBox top = Kept.row(6, iconSquare(AREA_ICONS[i], tint, 24, 13), name, infoButton(AREA_INFO[i], true), gap, more);
         top.setAlignment(Pos.CENTER_LEFT);
-        VBox c = new VBox(5, top, figure(w.figure(), 17, Palette.TEXT_HEAD),
+        VBox c = Kept.column(5, top, figure(w.figure(), 17, Palette.TEXT_HEAD),
                 words(w.line(), Palette.SIZE_LABEL, w.lineTone()));
-        if (w.chip() != null) c.getChildren().add(chip(w.chip(), Palette.WARN));
-        Region push = new Region();
+        if (w.chip() != null) c.getChildren().add(Kept.scope("chip", () -> chip(w.chip(), Palette.WARN)));
+        Region push = Kept.region();
         VBox.setVgrow(push, Priority.ALWAYS);
         c.getChildren().addAll(push, bar);
         c.setMinHeight(104);
@@ -1780,7 +1874,8 @@ final class FinancesScreen {
         c.setMaxHeight(Double.MAX_VALUE);
         String rest = "-fx-padding: 10 12 12 12; -fx-background-color: " + Palette.RAISED + ";"
                 + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-cursor: hand; -fx-border-color: ";
-        c.setStyle(rest + Palette.EDGE + ";");
+        // Kept (KP5): the edge the pointer calls for is chosen from isHover() where it is set.
+        c.setStyle(rest + (c.isHover() ? Palette.ACCENT : Palette.EDGE) + ";");
         c.setOnMouseEntered(e -> c.setStyle(rest + Palette.ACCENT + ";"));
         c.setOnMouseExited(e -> c.setStyle(rest + Palette.EDGE + ";"));
         c.setOnMouseClicked(e -> open(area, null, null));
@@ -1804,9 +1899,10 @@ final class FinancesScreen {
        ===================================================================== */
 
     void positionPage(VBox page, List<CityNeeds.Need> all) {
-        page.getChildren().add(pair(balanceCard(), creditBandCard()));
-        page.getChildren().add(economyCard());
-        page.getChildren().add(owedChartCard());
+        // Kept (KP5): each card is a scope of its own, keyed by what it is, so what one makes shifts none of the others' nodes.
+        page.getChildren().add(pair(Kept.scope("balance", this::balanceCard), Kept.scope("credit band", this::creditBandCard)));
+        page.getChildren().add(Kept.scope("economy", this::economyCard));
+        page.getChildren().add(Kept.scope("owed chart", this::owedChartCard));
     }
 
     /** THE BALANCE's (i): the spec's T7. */
@@ -1845,18 +1941,19 @@ final class FinancesScreen {
                         seg(overdraft, Palette.BAD, "overdrawn " + dFull(overdraft)),
                         seg(advanced, Palette.BAD, "advanced by the central bank " + dFull(advanced))),
                 scale > 0 ? scale : 1, null, 0, 16));
+        // Kept (KP5): what comes and goes is a scope each.
         if (overdraft > 0 || advanced > 0) {
-            card.getChildren().add(words((overdraft > 0 ? "+ " + d(overdraft) + " overdrawn  " : "")
+            card.getChildren().add(Kept.scope("owed more", () -> words((overdraft > 0 ? "+ " + d(overdraft) + " overdrawn  " : "")
                     + (advanced > 0 ? "+ " + d(advanced) + " advanced by the central bank" : ""),
-                    Palette.SIZE_LABEL + 1, Palette.BAD));
+                    Palette.SIZE_LABEL + 1, Palette.BAD)));
         }
         // ...the face, the carrying value and the market's worth in one line (spec-city-debt.md 5.4): the last
         // is a note a government discloses and does not book, so it is said not to be on the books.
         if (face > 0 || principal > 0) {
-            card.getChildren().add(noteLine("at face " + d(face) + " · carried " + d(principal) + " · worth today "
-                            + d(worth) + " (a note: what the market would pay; not on the books)", PAPER_VALUES_INFO, 440));
+            card.getChildren().add(Kept.scope("values", () -> noteLine("at face " + d(face) + " · carried " + d(principal) + " · worth today "
+                            + d(worth) + " (a note: what the market would pay; not on the books)", PAPER_VALUES_INFO, 440)));
         }
-        HBox net = new HBox(Palette.GAP, figure(signedD(g.getNetPositionAtCarrying()), 22, Palette.TEXT_HEAD),
+        HBox net = Kept.row(Palette.GAP, figure(signedD(g.getNetPositionAtCarrying()), 22, Palette.TEXT_HEAD),
                 words("net", Palette.SIZE_BODY + 1, Palette.TEXT_LABEL));
         net.setAlignment(Pos.BASELINE_LEFT);
         card.getChildren().add(net);
@@ -1870,7 +1967,7 @@ final class FinancesScreen {
         double floor = ledger.floorRate(), rate = g.getInterestRate(), ceiling = ledger.ceilingRate();
         VBox card = card(caption("THE CREDIT BAND", null, door("taken apart", Palette.ACCENT,
                 () -> open("The position", "Your rate", null))));
-        card.getChildren().add(new HBox(Palette.GAP, figure(pct2(rate), 22, ledger.atCeiling() ? Palette.BAD : Palette.TEXT_HEAD),
+        card.getChildren().add(Kept.row(Palette.GAP, figure(pct2(rate), 22, ledger.atCeiling() ? Palette.BAD : Palette.TEXT_HEAD),
                 words("rated " + g.getCreditRating(), Palette.SIZE_BODY + 1, Palette.TEXT_LABEL)));
         card.getChildren().add(segmentBar(List.of(
                         seg(ledger.baseComponent(), Palette.MONEY_DARK, "the floor " + pct2(ledger.baseComponent())),
@@ -1881,10 +1978,10 @@ final class FinancesScreen {
         Label spotless = words("spotless " + pct2(floor), Palette.SIZE_LABEL, Palette.TEXT_MUTED);
         Label you = words("you " + pct2(rate), Palette.SIZE_LABEL, Palette.TEXT_HEAD);
         Label hopeless = words("hopeless " + pct2(ceiling), Palette.SIZE_LABEL, Palette.TEXT_MUTED);
-        Region a = new Region(), b = new Region();
+        Region a = Kept.region(), b = Kept.region();
         HBox.setHgrow(a, Priority.ALWAYS);
         HBox.setHgrow(b, Priority.ALWAYS);
-        card.getChildren().add(new HBox(Palette.GAP, spotless, a, you, b, hopeless));
+        card.getChildren().add(Kept.row(Palette.GAP, spotless, a, you, b, hopeless));
         card.getChildren().add(keyRow(keySwatch(Palette.MONEY_DARK, "the floor"), keySwatch(Palette.MONEY, "debt vs output"),
                 keySwatch(Palette.MONEY_LIGHT, "debt vs tax")));
         return card;
@@ -1909,8 +2006,9 @@ final class FinancesScreen {
         double annual = annualGdp(na);
         double principal = ledger.getAllPrincipal();
         if (!(annual > 0)) {
-            return card(caption("AGAINST THE ECONOMY", null),
-                    line("There is no output recorded yet, so nothing here can be put in proportion."));
+            // Kept (KP5): the short card is an alternative to the whole one, a scope of its own.
+            return Kept.scope("no output", () -> card(caption("AGAINST THE ECONOMY", null),
+                    line("There is no output recorded yet, so nothing here can be put in proportion.")));
         }
         double[] amounts = {principal, ledger.getMonthlyCoupon() * 12, na.getTotalRevenue() * 12};
         String[] names = {"Debt outstanding", "A year of coupon", "A year of revenue"};
@@ -1929,14 +2027,14 @@ final class FinancesScreen {
             Label share = figure(pc1(amounts[i] / annual), Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD);
             share.setMinWidth(64);
             share.setAlignment(Pos.CENTER_RIGHT);
-            HBox row = new HBox(Palette.GAP, name, bar, share);
+            HBox row = Kept.row(Palette.GAP, name, bar, share);
             row.setAlignment(Pos.CENTER_LEFT);
             card.getChildren().add(row);
         }
         if (gdpEstimated(na)) {
-            card.getChildren().add(noteLine("a year scaled up from " + na.getMonthsRecorded() + " months",
+            card.getChildren().add(Kept.scope("estimated", () -> noteLine("a year scaled up from " + na.getMonthsRecorded() + " months",
                     String.format("This city has only %d months of output recorded, so the year is scaled up from "
-                            + "those rather than measured.", na.getMonthsRecorded()), 560));
+                            + "those rather than measured.", na.getMonthsRecorded()), 560)));
         }
         return card;
     }
@@ -1949,12 +2047,13 @@ final class FinancesScreen {
                         + "a default abroad. City History has every line, over the whole of the city's life.",
                 door("Over the years", Palette.ACCENT, () -> ui.historyScreen.openOn("debt", "interestRate"))));
         if (h.months() < 2) {
-            card.getChildren().add(line("Not enough months recorded yet."));
+            card.getChildren().add(Kept.scope("short", () -> line("Not enough months recorded yet.")));
             return card;
         }
         HistoryScreen.Trace debt = ui.historyScreen.traceFor("debt");
         HistoryScreen.Trace rate = ui.historyScreen.traceFor("interestRate");
-        TimeChart chart = new TimeChart(new ChartModel(), java.util.Set.of(), false);
+        // Kept (KP5), as the Bank's charts are: made once in its scope, told its data and its size at every draw.
+        TimeChart chart = Kept.of(TimeChart.class, () -> new TimeChart(new ChartModel(), java.util.Set.of(), false));
         chart.setData(h.getMonth(), List.of(
                         new TimeChart.Line("debt", debt.label(), Palette.MONEY, 0, ui.historyScreen.historyValues(h, "debt"),
                                 v -> HistoryScreen.plotScale(debt.unit(), v), v -> ui.historyScreen.fmtUnit(debt.unit(), v), ""),
@@ -1988,8 +2087,10 @@ final class FinancesScreen {
        ===================================================================== */
 
     void debtServicePage(VBox page) {
-        page.getChildren().add(serviceCard());
-        page.getChildren().add(pair(lastMonthCard(), ui.game.getDebtManager().hasForeignDebt() ? foreignCard() : null));
+        // Kept (KP5): each card is a scope of its own; the foreign card comes and goes with the dollar debt.
+        page.getChildren().add(Kept.scope("service", this::serviceCard));
+        page.getChildren().add(pair(Kept.scope("last month", this::lastMonthCard),
+                ui.game.getDebtManager().hasForeignDebt() ? Kept.scope("foreign", this::foreignCard) : null));
     }
 
     /** The band words, by CityNeeds.serviceLevel(). */
@@ -2010,14 +2111,15 @@ final class FinancesScreen {
         double coupon = ledger.getMonthlyCoupon();
         double next12 = ledger.dueWithin(12);
         if (!(revenue > 0)) {
-            return card(caption("THE NEXT TWELVE MONTHS", SERVICE_INFO),
-                    line("Nothing came in this month, so nothing can be put against it."));
+            // Kept (KP5): the short card is an alternative to the whole one, a scope of its own.
+            return Kept.scope("no take", () -> card(caption("THE NEXT TWELVE MONTHS", SERVICE_INFO),
+                    line("Nothing came in this month, so nothing can be put against it.")));
         }
         double month = coupon / revenue, year = next12 / (revenue * 12);
         double lead = Math.max(month, year);
         int level = CityNeeds.serviceLevel(lead);
         String tone = BuildScreen.verdict(level);
-        VBox left = new VBox(4, words(year >= month ? "THE NEXT 12 MONTHS" : "A MONTH'S COUPON, IN CASH", Palette.SIZE_LABEL + 1,
+        VBox left = Kept.column(4, words(year >= month ? "THE NEXT 12 MONTHS" : "A MONTH'S COUPON, IN CASH", Palette.SIZE_LABEL + 1,
                         Palette.TEXT_LABEL),
                 figure(pc1(lead), 28, tone), words(SERVICE_WORDS[level], Palette.SIZE_BODY + 1, tone),
                 words("of the take", Palette.SIZE_LABEL, Palette.TEXT_MUTED));
@@ -2035,7 +2137,7 @@ final class FinancesScreen {
                 keySwatch(Palette.ACCENT, "the next 12 months " + pc1(year) + (year > top ? " (past the end)" : "")),
                 words("comfortable to " + pc(CityNeeds.SERVICE_FELT) + " · felt to " + pc(CityNeeds.SERVICE_CONSTRAINED)
                         + " · constrained past it, to " + pc(top) + " drawn", Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-        VBox right = new VBox(8, caption("WHAT THE PAPER ASKS, AGAINST THE TAKE", SERVICE_INFO), gauge, marks,
+        VBox right = Kept.column(8, caption("WHAT THE PAPER ASKS, AGAINST THE TAKE", SERVICE_INFO), gauge, marks,
                 line(String.format("%s due in the next twelve months, coupons and principal, against twelve months of "
                         + "this month's take, %s a month; the coupon alone is %s a month, in cash. The budget charged %s of "
                         + "interest last month: the coupons and the discount wearing off (LAST MONTH, below).",
@@ -2069,32 +2171,33 @@ final class FinancesScreen {
         VBox card = card(caption("LAST MONTH", LAST_MONTH_INFO));
         card.getChildren().add(cardLine("Interest on the city's paper", d(na.getInterestExpense()), null));
         card.getChildren().add(cardLine("...the coupon paid", d(na.getInterestPaidInCash()), Palette.TEXT_LABEL));
+        // Kept (KP5): what comes and goes is a scope each.
         if (Math.abs(na.getInterestNotCash()) >= .5) {
-            card.getChildren().add(cardLine(na.getInterestNotCash() > 0 ? "...the discount wearing off (no cash)"
-                    : "...less the premium wearing off (no cash)", d(na.getInterestNotCash()), Palette.TEXT_LABEL));
+            card.getChildren().add(Kept.scope("not cash", () -> cardLine(na.getInterestNotCash() > 0 ? "...the discount wearing off (no cash)"
+                    : "...less the premium wearing off (no cash)", d(na.getInterestNotCash()), Palette.TEXT_LABEL)));
         }
         // The linked bonds' indexation (CD5): an expense beside the interest and not part of it, mostly not cash.
         if (Math.abs(na.getInflationUplift()) >= .5) {
-            card.getChildren().add(cardLine("Inflation uplift on linked bonds", d(na.getInflationUplift()), null, UPLIFT_INFO));
+            card.getChildren().add(Kept.scope("uplift", () -> cardLine("Inflation uplift on linked bonds", d(na.getInflationUplift()), null, UPLIFT_INFO)));
             if (na.getUpliftPaidInCash() >= .5) {
-                card.getChildren().add(cardLine("...paid in cash at maturity (earlier months' too)", d(na.getUpliftPaidInCash()), Palette.TEXT_LABEL));
+                card.getChildren().add(Kept.scope("uplift cash", () -> cardLine("...paid in cash at maturity (earlier months' too)", d(na.getUpliftPaidInCash()), Palette.TEXT_LABEL)));
             }
         }
         double repaid = g.hasTreasuryMonth() ? g.getTreasuryRepaid() : 0;
         card.getChildren().add(cardLine("Principal that fell due last month", d(repaid), null));
         if (r.getLastMonth() == g.getMonth() - 1 && r.getLastDue() >= .5) {
-            card.getChildren().add(segmentBar(List.of(
+            card.getChildren().add(Kept.scope("rolled", () -> segmentBar(List.of(
                             seg(r.getLastNetted(), Palette.MONEY, "netted from last year's surplus " + d(r.getLastNetted())),
                             seg(r.getLastRaised(), Palette.MONEY_LIGHT, "re-borrowed as new paper " + d(r.getLastRaised()))),
-                    r.getLastDue(), null, 0, 10));
-            card.getChildren().add(line(String.format("%s fell due: %s paid from last year's surplus, %s.",
+                    r.getLastDue(), null, 0, 10)));
+            card.getChildren().add(Kept.scope("rolled words", () -> line(String.format("%s fell due: %s paid from last year's surplus, %s.",
                     d(r.getLastDue()), d(r.getLastNetted()), r.getLastRaised() >= .5
                             ? d(r.getLastRaised()) + " re-borrowed (" + d(r.getLastIssued()) + " of new face)"
-                            : "none re-borrowed")));
+                            : "none re-borrowed"))));
         } else if (repaid >= .5) {
-            card.getChildren().add(line(d(repaid) + " of principal fell due and was repaid; the rollover did not run on it."));
+            card.getChildren().add(Kept.scope("repaid", () -> line(d(repaid) + " of principal fell due and was repaid; the rollover did not run on it.")));
         } else {
-            card.getChildren().add(line("No principal fell due last month."));
+            card.getChildren().add(Kept.scope("none fell", () -> line("No principal fell due last month.")));
         }
         return card;
     }
@@ -2149,19 +2252,20 @@ final class FinancesScreen {
         DebtManager ledger = ui.game.getDebtManager();
         double away = ledger.getForeignPrincipal();
         double all = ledger.getDomesticPrincipal() + away;
+        // Kept (KP5): each card is a scope of its own, and the alternatives are scopes apart.
         if (!(all > 0)) {
-            page.getChildren().add(card(caption("WHO HOLDS IT", HOLDERS_INFO),
-                    line("The city owes nothing, at home or abroad.")));
+            page.getChildren().add(Kept.scope("nothing owed", () -> card(caption("WHO HOLDS IT", HOLDERS_INFO),
+                    line("The city owes nothing, at home or abroad."))));
             return;
         }
-        page.getChildren().add(holdersCard(all));
+        page.getChildren().add(Kept.scope("holders", () -> holdersCard(all)));
         if (away > 0) {
-            page.getChildren().add(pair(dollarDebtCard(), behindCard()));
+            page.getChildren().add(pair(Kept.scope("dollar debt", this::dollarDebtCard), Kept.scope("behind", this::behindCard)));
         } else {
-            page.getChildren().add(card(caption("ABROAD", null), noteLine("Nothing is owed abroad.",
+            page.getChildren().add(Kept.scope("nothing abroad", () -> card(caption("ABROAD", null), noteLine("Nothing is owed abroad.",
                     "Every piece of the city's paper is held at home, so its debt cannot be made bigger by the exchange "
                             + "rate - which is a real form of safety, and one that is easy to give up for a lower "
-                            + "headline coupon.", 560)));
+                            + "headline coupon.", 560))));
         }
     }
 
@@ -2209,8 +2313,8 @@ final class FinancesScreen {
                 + " = " + d(ledger.getForeignPrincipal()), Palette.SIZE_BODY + 2, Palette.TEXT_HEAD));
         double moved = fx.getLastRevaluation();
         if (Math.abs(moved) > .005) {
-            card.getChildren().add(chip("the currency moved it " + signedD(moved) + " last month",
-                    moved > 0 ? Palette.BAD : Palette.GOOD));
+            card.getChildren().add(Kept.scope("moved", () -> chip("the currency moved it " + signedD(moved) + " last month",
+                    moved > 0 ? Palette.BAD : Palette.GOOD)));
         }
         return card;
     }
@@ -2293,15 +2397,16 @@ final class FinancesScreen {
         DebtManager ledger = g.getDebtManager();
         page.getChildren().add(line(String.format("%s · the dial %s · credibility %s", CityCalendar.format(g.getMonth()),
                 pct2(ledger.getPolicyRate()), trust(g.getCredibility()))));
-        page.getChildren().add(wideAndNarrow(curveCard(), expectCard()));
-        page.getChildren().add(pair(partsCard(), realCard()));
-        page.getChildren().add(sectionHead("THE SHORT END", hint("the floor, and what the city's own debt adds to it")));
-        page.getChildren().add(wideAndNarrow(builtUpCard(), measuresCard()));
+        // Kept (KP5): each card is a scope of its own, keyed by what it is.
+        page.getChildren().add(wideAndNarrow(Kept.scope("curve", this::curveCard), Kept.scope("expect", this::expectCard)));
+        page.getChildren().add(pair(Kept.scope("parts", this::partsCard), Kept.scope("real", this::realCard)));
+        page.getChildren().add(Kept.scope("short end", () -> sectionHead("THE SHORT END", hint("the floor, and what the city's own debt adds to it"))));
+        page.getChildren().add(wideAndNarrow(Kept.scope("built up", this::builtUpCard), Kept.scope("measures", this::measuresCard)));
     }
 
     /** Two cards in the page's wide and narrow columns, two thirds and one third, each as tall as the taller. */
     static GridPane wideAndNarrow(Node left, Node right) {
-        GridPane two = new GridPane();
+        GridPane two = Kept.grid();
         two.setHgap(TILE_GAP);
         javafx.scene.layout.ColumnConstraints wide = new javafx.scene.layout.ColumnConstraints();
         wide.setPercentWidth(66);
@@ -2368,9 +2473,9 @@ final class FinancesScreen {
 
     /** One part of the rate: its swatch and name, its figure, what moves it, and its door. */
     static VBox rateCell(String name, String value, String moves, Node door, String colour) {
-        HBox head = new HBox(6, keySwatch(colour, ""), words(name, Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+        HBox head = Kept.row(6, keySwatch(colour, ""), words(name, Palette.SIZE_LABEL, Palette.TEXT_LABEL));
         head.setAlignment(Pos.CENTER_LEFT);
-        VBox c = new VBox(4, head, figure(value, Palette.SIZE_LEAD, Palette.TEXT_HEAD),
+        VBox c = Kept.column(4, head, figure(value, Palette.SIZE_LEAD, Palette.TEXT_HEAD),
                 words(moves, Palette.SIZE_LABEL, Palette.TEXT_MUTED), door);
         c.setStyle("-fx-padding: 8 10 8 10; -fx-background-color: " + Palette.PANEL + "; -fx-background-radius: 6;");
         c.setMaxWidth(Double.MAX_VALUE);
@@ -2418,51 +2523,64 @@ final class FinancesScreen {
         lines.add(new CurveChart.Series("the dial the market expects", months, dial, Palette.WARN, 1.6, dashed, null, false));
         lines.add(new CurveChart.Series("today", tenors, now, Palette.MONEY, 2.6, solid, "today", true));
 
+        // Kept (KP5): an entry that comes and goes is a scope of its own, keyed by what it says.
         List<Node> key = new ArrayList<>();
         key.add(lineKey(Palette.MONEY, 2.6, solid, "today"));
-        if (yearAgo != null) key.add(lineKey(Palette.MONEY_DARK, 1.8, solid, "a year ago"));
-        if (twoAgo != null) key.add(lineKey(Palette.TEXT_SPENT, 1.6, solid, "two years ago"));
-        if (yearAgo == null && twoAgo == null) key.add(captionWords("a year ago and two years ago: not yet recorded"));
-        else if (yearAgo == null) key.add(captionWords("a year ago: not yet recorded"));
-        else if (twoAgo == null) key.add(captionWords("two years ago: not yet recorded"));
+        if (yearAgo != null) key.add(Kept.scope("a year ago", () -> lineKey(Palette.MONEY_DARK, 1.8, solid, "a year ago")));
+        if (twoAgo != null) key.add(Kept.scope("two years ago", () -> lineKey(Palette.TEXT_SPENT, 1.6, solid, "two years ago")));
+        if (yearAgo == null && twoAgo == null) key.add(Kept.scope("not yet", () -> captionWords("a year ago and two years ago: not yet recorded")));
+        else if (yearAgo == null) key.add(Kept.scope("not yet", () -> captionWords("a year ago: not yet recorded")));
+        else if (twoAgo == null) key.add(Kept.scope("not yet", () -> captionWords("two years ago: not yet recorded")));
         key.add(lineKey(Palette.WARN, 1.6, dashed, "the dial the market expects"));
-        if (world != null) key.add(lineKey(Palette.ORE, 1.5, dotted, "the world's, for dollar paper"));
+        if (world != null) key.add(Kept.scope("the world's", () -> lineKey(Palette.ORE, 1.5, dotted, "the world's, for dollar paper")));
+        // ...and the chart is the one the last draw made, told its lines.
+        CurveChart chart = Kept.of(CurveChart.class, () -> new CurveChart(250));
+        chart.set(tenors, lines, List.of());
         return card(caption("THE CITY'S CURVE", CURVE_INFO), muted("zero rates by maturity · and the dial the market expects"),
-                new CurveChart(tenors, lines, List.of(), 250), keyRow(key.toArray(new Node[0])));
+                chart, keyRow(key.toArray(new Node[0])));
     }
 
     /** A caption-sized muted line of words that does not wrap: an entry of a key. */
     static Label captionWords(String text) {
-        Label l = new Label(text);
+        Label l = Kept.label(text);
         l.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
         return l;
     }
 
     /** A key's entry for a line: a short stroke in the line's colour, width and dash, and its name. */
     static HBox lineKey(String colour, double width, double[] dash, String name) {
-        javafx.scene.shape.Line sample = new javafx.scene.shape.Line(0, 5, 22, 5);
+        // Kept (KP5): the stroke is the one the last draw made, its ends and its dashes set, not added to.
+        javafx.scene.shape.Line sample = Kept.of(javafx.scene.shape.Line.class, javafx.scene.shape.Line::new);
+        sample.setStartX(0);
+        sample.setStartY(5);
+        sample.setEndX(22);
+        sample.setEndY(5);
         sample.setStroke(javafx.scene.paint.Color.web(colour));
         sample.setStrokeWidth(width);
-        for (double d : dash) sample.getStrokeDashArray().add(d);
-        javafx.scene.layout.Pane holder = new javafx.scene.layout.Pane(sample);
+        sample.getStrokeDashArray().setAll(java.util.Arrays.stream(dash).boxed().toList());
+        javafx.scene.layout.Pane holder = Kept.plain(sample);
         holder.setMinSize(22, 10);
         holder.setPrefSize(22, 10);
         holder.setMaxSize(22, 10);
-        HBox row = new HBox(5, holder, captionWords(name));
+        HBox row = Kept.row(5, holder, captionWords(name));
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
     }
 
     /** A key's entry for a dot off the lines: a dot in the colour, as the chart draws it, and its name. */
     static HBox dotKey(String colour, String name) {
-        javafx.scene.shape.Circle dot = new javafx.scene.shape.Circle(5, 5, 4.5, javafx.scene.paint.Color.web(colour));
+        javafx.scene.shape.Circle dot = Kept.of(javafx.scene.shape.Circle.class, javafx.scene.shape.Circle::new);
+        dot.setCenterX(5);
+        dot.setCenterY(5);
+        dot.setRadius(4.5);
+        dot.setFill(javafx.scene.paint.Color.web(colour));
         dot.setStroke(javafx.scene.paint.Color.web(Palette.RAISED));
         dot.setStrokeWidth(1.5);
-        javafx.scene.layout.Pane holder = new javafx.scene.layout.Pane(dot);
+        javafx.scene.layout.Pane holder = Kept.plain(dot);
         holder.setMinSize(10, 10);
         holder.setPrefSize(10, 10);
         holder.setMaxSize(10, 10);
-        HBox row = new HBox(5, holder, captionWords(name));
+        HBox row = Kept.row(5, holder, captionWords(name));
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
     }
@@ -2485,19 +2603,30 @@ final class FinancesScreen {
 
         static final double LEFT = 46, RIGHT = 14, TOP = 18, FOOT = 26;
 
-        private final int[] axis;
-        private final List<Series> series;
-        private final List<Dot> dots;
+        private int[] axis = {0};
+        private List<Series> series = List.of();
+        private List<Dot> dots = List.of();
         private final double height;
 
-        /** The chart of these lines on an axis that ends at the last of `axis`' tenors, `height` px tall. */
-        CurveChart(int[] axis, List<Series> series, List<Dot> dots, double height) {
+        /** A chart `height` px tall, with its lines to come from set() (Kept, KP5: a kept chart is told each month's lines and draws again only where they moved). */
+        CurveChart(double height) {
             super(300, 560, height);
+            this.height = height;
+        }
+
+        /** The chart of these lines on an axis that ends at the last of `axis`' tenors: drawn again only when a figure of them moved. */
+        void set(int[] axis, List<Series> series, List<Dot> dots) {
+            // A series holds arrays, which a record compares by identity: each is told as the nested arrays it is.
+            Object[] lines = new Object[series.size()];
+            for (int i = 0; i < lines.length; i++) {
+                Series s = series.get(i);
+                lines[i] = new Object[] {s.name(), s.months(), s.values(), s.colour(), s.width(), s.dash(), s.end(), s.dots()};
+            }
+            if (!moved(axis, lines, dots)) return;
             this.axis = axis;
             this.series = series;
             this.dots = dots;
-            this.height = height;
-            drawFirst();
+            drawAgain();
         }
 
         @Override void draw(double w) {
@@ -2616,7 +2745,7 @@ final class FinancesScreen {
 
     /** A note on a card: words on a ground a step off the card's, with an edge. */
     static VBox flag(String text, String ground) {
-        VBox box = new VBox(words(text, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
+        VBox box = Kept.column(0, words(text, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
         box.setStyle("-fx-padding: 8 10 8 10;" + Palette.block(ground, Palette.EDGE));
         box.setMaxWidth(Double.MAX_VALUE);
         return box;
@@ -2700,7 +2829,7 @@ final class FinancesScreen {
         key.add(lineKey(Palette.MONEY_LIGHT, 2, solid, "the real rate a linked bond would sell at"));
         key.add(lineKey(Palette.PEOPLE, 2, solid, "the inflation priced"));
         key.add(lineKey(Palette.TEXT_MUTED, 1, dashed, "the " + pct2(target) + " target"));
-        if (!dots.isEmpty()) key.add(dotKey(Palette.MONEY_LIGHT, "a linked line on the book, at its real yield"));
+        if (!dots.isEmpty()) key.add(Kept.scope("dot", () -> dotKey(Palette.MONEY_LIGHT, "a linked line on the book, at its real yield")));
         double real10 = ledger.fairRealCoupon(120, 0), priced10 = ledger.breakevenInflation(120, 0), nominal10 = ledger.parYield(120, 0);
         String words = String.format("A new ten-year linked bond would sell at a real %s, plus the inflation the city actually has. "
                         + "A nominal ten-year would sell at %s, which prices about %s a year of inflation.",
@@ -2709,8 +2838,10 @@ final class FinancesScreen {
             words += String.format(" A city that holds inflation at its %s target pays less on the linked line than the "
                     + "nominal line prices in.", pct2(target));
         }
+        CurveChart chart = Kept.of(CurveChart.class, () -> new CurveChart(210));
+        chart.set(tenors, lines, dots);
         return card(caption("REAL RATES, AND THE INFLATION THE MARKET PRICES", REAL_INFO), muted("from the linked bonds"),
-                new CurveChart(tenors, lines, dots, 210), keyRow(key.toArray(new Node[0])),
+                chart, keyRow(key.toArray(new Node[0])),
                 flag(words, Palette.PINNED));
     }
 
@@ -2729,12 +2860,12 @@ final class FinancesScreen {
         card.getChildren().add(stressRow("Debt against output", ledger.gdpStress()));
         card.getChildren().add(stressRow("Debt against revenue", ledger.revenueStress()));
         if (ledger.getDefaultScar() > 0) {
-            card.getChildren().add(infoLine(String.format("A default abroad: +%.1f points on what the world charges",
+            card.getChildren().add(Kept.scope("default", () -> infoLine(String.format("A default abroad: +%.1f points on what the world charges",
                             ledger.getDefaultScar() * 100),
                     String.format("%.1f points on the city's premium abroad, %d months after it happened. It fades over "
                                     + "about five years; the city's own paper at home does not carry it.",
                             ledger.getDefaultScar() * 100, Math.max(0, ledger.getMonthsSinceForeignDefault())),
-                    true, Palette.SIZE_LABEL + 1, Palette.BAD, 380));
+                    true, Palette.SIZE_LABEL + 1, Palette.BAD, 380)));
         }
         return card;
     }
@@ -2744,11 +2875,11 @@ final class FinancesScreen {
         double used = Math.max(0, Math.min(1, stress));
         Region bar = segmentBar(List.of(seg(used, Palette.MONEY, label + ": " + pc(used) + " of its worst case")), 1,
                 null, 0, 8);
-        HBox head = new HBox(Palette.GAP, words(label, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
-        Region gap = new Region();
+        HBox head = Kept.row(Palette.GAP, words(label, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
         head.getChildren().addAll(gap, figure(pc(used), Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD));
-        return new VBox(3, head, bar);
+        return Kept.column(3, head, bar);
     }
 
     /* =====================================================================
@@ -2924,9 +3055,10 @@ final class FinancesScreen {
     void bookPage(VBox page) {
         Game g = ui.game;
         DebtManager ledger = g.getDebtManager();
+        // Kept (KP5): each part of the page is a scope of its own, keyed by what it is; the empty book is an alternative to the whole.
         if (ledger.getDebt().isEmpty()) {
-            page.getChildren().add(card(caption("EVERY LINE", null), line("Nothing outstanding."),
-                    door("Borrow", Palette.ACCENT, () -> open("Borrow", "At home", null))));
+            page.getChildren().add(Kept.scope("nothing", () -> card(caption("EVERY LINE", null), line("Nothing outstanding."),
+                    door("Borrow", Palette.ACCENT, () -> open("Borrow", "At home", null)))));
             return;
         }
         BookDesk desk = g.bookDesk();
@@ -2934,21 +3066,22 @@ final class FinancesScreen {
         int month = g.getMonth();
         int n = lines.size();
         Gain closing = gainOf(desk.ifClosedNow(), desk.ifClosedNowShare());
-        page.getChildren().add(figureStrip(new String[][] {
+        page.getChildren().add(Kept.scope("figures", () -> figureStrip(new String[][] {
                 {"OWED, AT FACE", d(desk.face()), n + (n == 1 ? " line" : " lines")},
                 {"CARRIED", d(desk.carried()), "what the books say"},
                 {"WORTH TODAY", d(desk.worth()), "on today's curve"},
                 // Green or red (Jerus, 2026-10-23): what closing the whole book now would book.
                 {"IF CLOSED NOW", closing.money(), closing.percent().isEmpty() ? "carried less worth" : closing.percent() + " of what is carried", closing.tone()},
                 {"COUPON", d(desk.coupon()), "a month, in cash"},
-                {"A POINT ON THE CURVE", d(desk.valueOfAPoint()), "moves what it is worth"}}));
+                {"A POINT ON THE CURVE", d(desk.valueOfAPoint()), "moves what it is worth"}})));
         // The lines are sorted by when they fall due: the first is the nearest.
         int nearest = lines.get(0).debt().getMaturityMonth();
         String head = String.format("%d %s · %s in the treasury · the nearest falls due %s, %s", n, n == 1 ? "line" : "lines",
                 d(g.getCash()), CityCalendar.formatShort(nearest), CityCalendar.until(month, nearest));
-        page.getChildren().add(infoLine(head, bookInfo(), true, Palette.SIZE_BODY + 1, Palette.TEXT_LABEL, 1200));
-        page.getChildren().add(pair(deskCurveCard(desk, ledger), deskBarsCard(desk)));
-        page.getChildren().add(deskCard(desk));
+        page.getChildren().add(Kept.scope("head", () -> infoLine(head, bookInfo(), true, Palette.SIZE_BODY + 1, Palette.TEXT_LABEL, 1200)));
+        page.getChildren().add(pair(Kept.scope("curve", () -> deskCurveCard(desk, ledger)), Kept.scope("bars", () -> deskBarsCard(desk))));
+        // ...the desk's columns are twelve or thirteen as the book holds dollar paper, a scope for each.
+        page.getChildren().add(Kept.scope(holdsDollars(desk) ? "desk in dollars" : "desk", () -> deskCard(desk)));
     }
 
     /**
@@ -2962,7 +3095,7 @@ final class FinancesScreen {
         for (int i = 0; i < cells.length; i++) {
             // An optional fourth entry is the colour of the figure and of its note: green or red for a gain or a loss (CD6).
             String tone = cells[i].length > 3 ? cells[i][3] : null;
-            VBox cell = new VBox(0, words(cells[i][0], Palette.SIZE_CAPTION, Palette.TEXT_LABEL),
+            VBox cell = Kept.column(0, words(cells[i][0], Palette.SIZE_CAPTION, Palette.TEXT_LABEL),
                     figure(cells[i][1], Palette.SIZE_SECTION, tone == null ? Palette.TEXT_HEAD : tone),
                     words(cells[i][2], Palette.SIZE_CAPTION, tone == null ? Palette.TEXT_MUTED : tone));
             cell.setAlignment(Pos.CENTER_LEFT);
@@ -2996,7 +3129,9 @@ final class FinancesScreen {
     static List<Node> kindKey(boolean[] present) {
         List<Node> key = new ArrayList<>();
         for (int k = 0; k < present.length; k++) {
-            if (present[k]) key.add(swatch(bookKindColour(DebtManager.BOOK_KINDS[k]), BOOK_KIND_NAMES[k], false));
+            // Kept (KP5): an entry that comes and goes is a scope of its own, keyed by its kind.
+            int kind = k;
+            if (present[k]) key.add(Kept.scope("kind " + k, () -> swatch(bookKindColour(DebtManager.BOOK_KINDS[kind]), BOOK_KIND_NAMES[kind], false)));
         }
         return key;
     }
@@ -3027,11 +3162,14 @@ final class FinancesScreen {
         key.add(swatch(Palette.TEXT_LABEL, "today's curve", false));
         List<Node> kinds = kindKey(present);
         key.addAll(kinds);
-        if (present[3]) key.add(muted("floating: off the chart, no fixed yield"));
-        if (present[4]) key.add(muted("linked: off the chart, its yield is real"));
-        if (dollars) key.add(swatch(Palette.TEXT_MUTED, "hollow: paper abroad, priced on its money's curve", true));
+        if (present[3]) key.add(Kept.scope("floating", () -> muted("floating: off the chart, no fixed yield")));
+        if (present[4]) key.add(Kept.scope("linked", () -> muted("linked: off the chart, its yield is real")));
+        if (dollars) key.add(Kept.scope("hollow", () -> swatch(Palette.TEXT_MUTED, "hollow: paper abroad, priced on its money's curve", true)));
+        // ...and the picture is the one the last draw made, told its figures.
+        DeskCurve picture = Kept.of(DeskCurve.class, DeskCurve::new);
+        picture.set(tenors, zero, dots);
         return card(caption("WHERE EACH LINE SITS ON THE CURVE", DESK_CURVE_INFO), muted("today's yield, by what it has left"),
-                new DeskCurve(tenors, zero, dots), keyRow(key.toArray(new Node[0])));
+                picture, keyRow(key.toArray(new Node[0])));
     }
 
     /** AT FACE, CARRIED, AND WORTH TODAY: three bars on one scale, each stacked by kind, and what the book is worth across all three. */
@@ -3046,16 +3184,19 @@ final class FinancesScreen {
             by[2][k] = desk.worthOf(kind);
             present[k] = by[0][k] > 0 || by[1][k] > 0 || by[2][k] > 0;
         }
+        DeskBars picture = Kept.of(DeskBars.class, DeskBars::new);
+        picture.set(by, desk.worth(), this::d);
         VBox card = card(caption("AT FACE, CARRIED, AND WORTH TODAY", DESK_BARS_INFO),
                 muted("one scale · each bar by kind · the dashed line is the book's worth"),
-                new DeskBars(by, desk.worth(), this::d), keyRow(kindKey(present).toArray(new Node[0])),
+                picture, keyRow(kindKey(present).toArray(new Node[0])),
                 gainLine("Carried less worth · what closing the book at fair would book", gainOf(desk.ifClosedNow(), desk.ifClosedNowShare()), GAIN_INFO),
                 cardLine("Face less worth · what the market's price saves against what is owed", signedD(desk.vsFace()), null));
         // CD7: with dollar paper in the book, the D$'s move since the sales, and what the budget booked of it this month.
         if (holdsDollars(desk)) {
-            card.getChildren().addAll(
-                    gainLine("The D$'s move since the paper abroad was sold", gainOf(desk.exchangeSinceSold(), desk.exchangeShare()), EXCHANGE_INFO),
-                    cardLine("...this month, in the budget's result", signedD(ui.game.getEconomyManager().getNationalAccounts().getDebtExchangeGain()), null));
+            card.getChildren().add(Kept.scope("exchange", () -> gainLine("The D$'s move since the paper abroad was sold",
+                    gainOf(desk.exchangeSinceSold(), desk.exchangeShare()), EXCHANGE_INFO)));
+            card.getChildren().add(Kept.scope("exchange month", () -> cardLine("...this month, in the budget's result",
+                    signedD(ui.game.getEconomyManager().getNationalAccounts().getDebtExchangeGain()), null)));
         }
         return card;
     }
@@ -3094,57 +3235,66 @@ final class FinancesScreen {
         final String lit = resting + " -fx-background-color: " + Palette.CONTROL + ";";
         int row = 1;
         for (BookDesk.Line l : desk.lines()) {
-            Debt debt = l.debt();
-            String type = debt.getType();
-            boolean linker = debt instanceof InflationLinkedBond, floater = debt instanceof FloatingRateNote;
-            Region bg = new Region();
-            bg.setStyle(resting);
-            GridPane.setColumnSpan(bg, cols);
-            t.add(bg, 0, row);
-            targets.put(debt, bg);
-            targets.putIfAbsent(CityCalendar.yearOf(debt.getMaturityMonth()), bg);
+            // Kept (KP5): a line of paper is a scope of its own, keyed by the piece, so a line that falls away or comes in takes
+            // its own nodes with it and shifts none of the others'.
+            final int at = row;
+            Kept.scope(l.debt(), () -> {
+                Debt debt = l.debt();
+                String type = debt.getType();
+                boolean linker = debt instanceof InflationLinkedBond, floater = debt instanceof FloatingRateNote;
+                Region bg = Kept.region();
+                bg.setStyle(resting);
+                GridPane.setColumnSpan(bg, cols);
+                t.add(bg, 0, at);
+                targets.put(debt, bg);
+                targets.putIfAbsent(CityCalendar.yearOf(debt.getMaturityMonth()), bg);
 
-            List<Node> cells = new ArrayList<>();
-            cells.add(lineCell(l));
-            // What closing it now would book, green or red, with the door that closes it beside it (Jerus, 2026-10-23).
-            cells.add(closeCell(l));
-            // CD7: the D$'s move since it was sold on a dollar line, green or red; a home line has none.
-            if (dollars) cells.add(debt.isForeign() ? gainFigure(gainOf(l.exchangeSinceSold(), l.exchangeShare()), Palette.SIZE_CAPTION)
-                    : gridCell("—", Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true));
-            cells.add(gridCell(d(l.face()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true));
-            cells.add(gridCell(lineCoupon(l), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true));
-            cells.add(stacked(pct2(l.bookedRate()), linker ? "real" : null));
-            cells.add(gridCell(String.format("%.2f", l.pricePer100()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true));
-            Node yieldCell = linker ? stacked(pct2(l.realYield()), "real") : floater ? stacked(pct2(l.yield()), "expected")
-                    : gridCell(pct2(l.yield()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true);
-            if (floater || linker) Tooltip.install(yieldCell, new Tooltip(floater
-                    ? "A floater has no fixed yield: this is the return on the payments the market expects of it at today's price, the dial following its expected path."
-                    : "A linked bond's real yield: the return over the price index. Its nominal yield is in its page."));
-            cells.add(yieldCell);
-            cells.add(gridCell(d(l.worth()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true));
-            cells.add(gridCell(d(l.carried()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true));
-            cells.add(gridCell(signedD(l.vsFace()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true));
-            cells.add(gridCell(String.format("%.1f", l.duration()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true));
-            cells.add(segmentBar(holderParts(l), 1, null, 76, 6));
-            for (int c = 0; c < cells.size(); c++) {
-                Node cell = cells.get(c);
-                GridPane.setMargin(cell, new javafx.geometry.Insets(5, 0, 5, 0));
-                GridPane.setValignment(cell, javafx.geometry.VPos.CENTER);
-                t.add(cell, c, row);
-            }
-            // The whole row is the door: every cell, and the ground under them, opens the line.
-            List<Node> hot = new ArrayList<>(cells);
-            hot.add(bg);
-            for (Node h : hot) {
-                h.setCursor(javafx.scene.Cursor.HAND);
-                h.setOnMouseClicked(e -> openLine(debt));
-                h.setOnMouseEntered(e -> bg.setStyle(lit));
-                h.setOnMouseExited(e -> bg.setStyle(resting));
-            }
+                List<Node> cells = new ArrayList<>();
+                cells.add(lineCell(l));
+                // What closing it now would book, green or red, with the door that closes it beside it (Jerus, 2026-10-23).
+                cells.add(closeCell(l));
+                // CD7: the D$'s move since it was sold on a dollar line, green or red; a home line has none.
+                if (dollars) cells.add(debt.isForeign() ? gainFigure(gainOf(l.exchangeSinceSold(), l.exchangeShare()), Palette.SIZE_CAPTION)
+                        : gridCell("—", Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true));
+                cells.add(gridCell(d(l.face()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true));
+                cells.add(gridCell(lineCoupon(l), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true));
+                cells.add(stacked(pct2(l.bookedRate()), linker ? "real" : null));
+                cells.add(gridCell(String.format("%.2f", l.pricePer100()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true));
+                Node yieldCell = linker ? stacked(pct2(l.realYield()), "real") : floater ? stacked(pct2(l.yield()), "expected")
+                        : gridCell(pct2(l.yield()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true);
+                if (floater || linker) Kept.tip(yieldCell, floater
+                        ? "A floater has no fixed yield: this is the return on the payments the market expects of it at today's price, the dial following its expected path."
+                        : "A linked bond's real yield: the return over the price index. Its nominal yield is in its page.", 1000);
+                cells.add(yieldCell);
+                cells.add(gridCell(d(l.worth()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true));
+                cells.add(gridCell(d(l.carried()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true));
+                cells.add(gridCell(signedD(l.vsFace()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true));
+                cells.add(gridCell(String.format("%.1f", l.duration()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true));
+                cells.add(segmentBar(holderParts(l), 1, null, 76, 6));
+                for (int c = 0; c < cells.size(); c++) {
+                    Node cell = cells.get(c);
+                    GridPane.setMargin(cell, new javafx.geometry.Insets(5, 0, 5, 0));
+                    GridPane.setValignment(cell, javafx.geometry.VPos.CENTER);
+                    t.add(cell, c, at);
+                }
+                // The whole row is the door: every cell, and the ground under them, opens the line.
+                List<Node> hot = new ArrayList<>(cells);
+                hot.add(bg);
+                boolean over = false;
+                for (Node h : hot) {
+                    over |= h.isHover();
+                    h.setCursor(javafx.scene.Cursor.HAND);
+                    h.setOnMouseClicked(e -> openLine(debt));
+                    h.setOnMouseEntered(e -> bg.setStyle(lit));
+                    h.setOnMouseExited(e -> bg.setStyle(resting));
+                }
+                // The look the pointer calls for is chosen from isHover() where it is set: a pointer that has not moved stays over a kept row.
+                bg.setStyle(over ? lit : resting);
+            });
             row++;
         }
         // The foot: the book, and its totals.
-        Region rule = new Region();
+        Region rule = Kept.region();
         rule.setMinHeight(1);
         rule.setPrefHeight(1);
         rule.setMaxHeight(1);
@@ -3203,20 +3353,21 @@ final class FinancesScreen {
      * line themselves; the column's heading and the foot's total stand over and under the figures.
      */
     Node closeCell(BookDesk.Line l) {
-        Button close = new Button("Close it now");
+        Button close = Kept.of(Button.class, Button::new);
+        close.setText("Close it now");
         close.setMinWidth(CLOSE_BUTTON);
         close.setPrefWidth(CLOSE_BUTTON);
         close.setMaxWidth(CLOSE_BUTTON);
         close.setFocusTraversable(false);
         close.setStyle("-fx-font-size: 9px; -fx-padding: 2 4 2 4; -fx-background-radius: 6;");
-        close.setTooltip(new Tooltip("Close " + pieceName(l.debt()) + " now: the page for buying it back, in whole or in part."));
+        Kept.tip(close, "Close " + pieceName(l.debt()) + " now: the page for buying it back, in whole or in part.", 1000);
         close.setOnAction(e -> openClose(l.debt()));
         // The click is the button's, not the row's: the rest of the row opens the line's page.
         close.setOnMouseClicked(javafx.scene.input.MouseEvent::consume);
         Label figure = gainFigure(gainOf(l.ifClosedNow(), l.ifClosedNowShare()), Palette.SIZE_BODY);
         figure.setMinWidth(CLOSE_FIGURE);
         figure.setPrefWidth(CLOSE_FIGURE);
-        HBox cell = new HBox(CLOSE_GAP, figure, close);
+        HBox cell = Kept.row(CLOSE_GAP, figure, close);
         cell.setAlignment(Pos.CENTER_RIGHT);
         return cell;
     }
@@ -3227,31 +3378,48 @@ final class FinancesScreen {
      * table laid out at (and room for its bar when it scrolls) and a wrapped row is never cut off the foot.
      */
     static Node acrossWhenNarrow(javafx.scene.layout.Region table) {
-        javafx.scene.control.ScrollPane across = new javafx.scene.control.ScrollPane(table);
+        // Kept (KP5): the scroller is the one the last draw made, told the table it holds; the listeners are added once, to the
+        // scroller and the table when each is new, and read the pair from their properties when they fire.
+        javafx.scene.control.ScrollPane across = Kept.of(javafx.scene.control.ScrollPane.class, javafx.scene.control.ScrollPane::new);
+        across.setContent(table);
         across.setFitToWidth(true);
         across.setFitToHeight(true);
         across.setHbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.AS_NEEDED);
         across.setVbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER);
         across.setStyle("-fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0;");
-        Runnable fit = () -> {
-            double bar = table.getWidth() > across.getViewportBounds().getWidth() + 1 ? 16 : 0;
-            if (table.getHeight() > 0) across.setPrefHeight(table.getHeight() + bar + 2);
-        };
-        table.heightProperty().addListener((o, was, now) -> fit.run());
-        table.widthProperty().addListener((o, was, now) -> fit.run());
-        across.viewportBoundsProperty().addListener((o, was, now) -> fit.run());
+        across.getProperties().put(ACROSS_TABLE, table);
+        table.getProperties().put(TABLE_ACROSS, across);
+        if (Kept.isNew(table)) {
+            table.heightProperty().addListener((o, was, now) -> fitAcross(table.getProperties().get(TABLE_ACROSS)));
+            table.widthProperty().addListener((o, was, now) -> fitAcross(table.getProperties().get(TABLE_ACROSS)));
+        }
+        if (Kept.isNew(across)) across.viewportBoundsProperty().addListener((o, was, now) -> fitAcross(across));
         return across;
+    }
+
+    /** The keys a scroller keeps the table it holds under, and a table the scroller that holds it (acrossWhenNarrow()). */
+    private static final String ACROSS_TABLE = "finances.table", TABLE_ACROSS = "finances.across";
+
+    /** The scroller told the height its table laid out at, and room for its bar when the table is wider than it (the pair as the last draw left it). */
+    private static void fitAcross(Object scroller) {
+        if (!(scroller instanceof javafx.scene.control.ScrollPane across)
+                || !(across.getProperties().get(ACROSS_TABLE) instanceof javafx.scene.layout.Region table)) return;
+        double bar = table.getWidth() > across.getViewportBounds().getWidth() + 1 ? 16 : 0;
+        // Kept (KP5): the height the table WANTS at the width it has, not the height it was laid out at: a scroller that fits its
+        // table to its height lays the table out as tall as the scroller, so the laid-out height of a kept table (one that is
+        // laid out again after its scroller was told) would only ever grow.
+        if (table.getHeight() > 0) across.setPrefHeight(table.prefHeight(table.getWidth()) + bar + 2);
     }
 
     /** The desk's first cell: the kind's tag, the line's name and, muted under them, its term, when it was sold, what it has left, and whether it was reopened or can be called. */
     Node lineCell(BookDesk.Line l) {
         Debt debt = l.debt();
-        Label name = new Label(pieceName(debt));
+        Label name = Kept.label(pieceName(debt));
         name.setStyle(Palette.strong(Palette.SIZE_BODY, Palette.TEXT_HEAD));
         name.setMinWidth(Region.USE_PREF_SIZE);
         // The tag and the name wrap, the name to a second line where they do not fit the column together.
-        javafx.scene.layout.FlowPane top = new javafx.scene.layout.FlowPane(Palette.GAP, 2,
-                tag(pieceTag(debt), bookKindColour(debt.getType())), name);
+        javafx.scene.layout.FlowPane top = Kept.flow(Palette.GAP, 2);
+        top.getChildren().addAll(tag(pieceTag(debt), bookKindColour(debt.getType())), name);
         top.setAlignment(Pos.CENTER_LEFT);
         List<String> parts = new ArrayList<>();
         parts.add(termWords(debt.getDuration()));
@@ -3262,14 +3430,14 @@ final class FinancesScreen {
             parts.add("call from " + CityCalendar.formatShort(bond.getFirstCallMonth()));
         }
         // A phrase at a time, so the line wraps between phrases and never inside one.
-        javafx.scene.layout.FlowPane sub = new javafx.scene.layout.FlowPane(0, 0);
+        javafx.scene.layout.FlowPane sub = Kept.flow(0, 0);
         for (int i = 0; i < parts.size(); i++) {
-            Label part = new Label(parts.get(i) + (i < parts.size() - 1 ? " · " : ""));
+            Label part = Kept.label(parts.get(i) + (i < parts.size() - 1 ? " · " : ""));
             part.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
             part.setMinWidth(Region.USE_PREF_SIZE);
             sub.getChildren().add(part);
         }
-        return new VBox(2, top, sub);
+        return Kept.column(2, top, sub);
     }
 
     /** A line's coupon in words (CD6): a bill "discount", a floater "policy + 18 bp", a linker "1⅝% real", anything else its coupon in eighths. */
@@ -3286,9 +3454,9 @@ final class FinancesScreen {
     static Node stacked(String figure, String under) {
         Label top = gridCell(figure, Palette.TEXT_BODY, Palette.SIZE_CAPTION, true);
         if (under == null) return top;
-        Label low = new Label(under);
+        Label low = Kept.label(under);
         low.setStyle(Palette.words(Palette.SIZE_CAPTION - 1, Palette.TEXT_MUTED));
-        VBox both = new VBox(0, top, low);
+        VBox both = Kept.column(0, top, low);
         both.setAlignment(Pos.CENTER_RIGHT);
         return both;
     }
@@ -3423,10 +3591,10 @@ final class FinancesScreen {
     static final String LINE_PAGE = "A line";
 
     /** The line a line's page is open on (CD6), by identity; null while none has been. */
-    private Debt lineOpen;
+    Debt lineOpen;
 
     /** Whether Close it now was opened from the line's page, so its back door returns there. */
-    private boolean closeFromLine;
+    boolean closeFromLine;
 
     /** True while a line's page is open on a line that is still on the books; else the book is drawn in its place. */
     boolean lineOpenNow() {
@@ -3485,139 +3653,170 @@ final class FinancesScreen {
         boolean linker = debt instanceof InflationLinkedBond, floater = debt instanceof FloatingRateNote;
         String colour = bookKindColour(debt.getType());
 
+        // Kept (KP5): each section is a scope of its own, since what a line is decides what its sections hold.
         // ----- the head -----
-        Label name = words(pieceName(debt), Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD);
-        name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
-        HBox top = new HBox(Palette.GAP, tag(pieceTag(debt), colour), name);
-        top.setAlignment(Pos.CENTER_LEFT);
-        Label dueOn = new Label(CityCalendar.formatShort(due));
-        dueOn.setStyle(Palette.words(Palette.SIZE_LABEL, urgency(due - month)));
-        dueOn.setMinWidth(Region.USE_PREF_SIZE);
-        HBox when = new HBox(0, muted(kindNoun(debt) + " · sold " + CityCalendar.formatShort(started) + " · falls due "), dueOn,
-                muted(" · " + l.monthsLeft() + (l.monthsLeft() == 1 ? " month left" : " months left")));
-        when.setAlignment(Pos.CENTER_LEFT);
-        page.getChildren().add(card(backDoor("The book", () -> open("The book", null, lineOpen)), top, when));
+        page.getChildren().add(Kept.scope("head", () -> {
+            Label name = words(pieceName(debt), Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD);
+            name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
+            HBox top = Kept.row(Palette.GAP, tag(pieceTag(debt), colour), name);
+            top.setAlignment(Pos.CENTER_LEFT);
+            Label dueOn = Kept.label(CityCalendar.formatShort(due));
+            dueOn.setStyle(Palette.words(Palette.SIZE_LABEL, urgency(due - month)));
+            dueOn.setMinWidth(Region.USE_PREF_SIZE);
+            HBox when = Kept.row(0, muted(kindNoun(debt) + " · sold " + CityCalendar.formatShort(started) + " · falls due "), dueOn,
+                    muted(" · " + l.monthsLeft() + (l.monthsLeft() == 1 ? " month left" : " months left")));
+            when.setAlignment(Pos.CENTER_LEFT);
+            return card(backDoor("The book", () -> open("The book", null, lineOpen)), top, when);
+        }));
 
         // ----- its five figures -----
         double coupon = debt.getMonthlyCoupon();
         String yieldNote = linker ? "real yield today" : floater ? "yield today, as the market expects" : "yield today";
         String yieldNow = linker ? pct2(l.realYield()) : pct2(l.yield());
-        page.getChildren().add(figureStrip(new String[][] {
+        page.getChildren().add(Kept.scope("figures", () -> figureStrip(new String[][] {
                 {"COUPON", lineCoupon(l), coupon >= .5 ? d(coupon) + " a month" : "none: the discount wears off as interest"},
                 {"ISSUE YIELD", pct2(l.bookedRate()) + (linker ? " real" : ""), "the effective rate the books charge"},
                 {"PRICE · YIELD", String.format("%.2f", l.pricePer100()) + " · " + yieldNow, "per 100 of face · " + yieldNote},
                 {"WORTH TODAY", d(l.worth()), "on today's curve"},
-                {"CARRIED", d(l.carried()), String.format("%.2f", l.carriedPer100()) + " per 100"}}));
+                {"CARRIED", d(l.carried()), String.format("%.2f", l.carriedPer100()) + " per 100"}})));
 
         // ----- the paper's own lines: the coupon's, the books', the call's -----
-        VBox terms = new VBox(4);
-        terms.setStyle("-fx-padding: 0 4 0 4;");
-        if (debt instanceof FloatingRateNote note) {
-            terms.getChildren().add(infoLine("coupon " + d(coupon) + " a month · the policy rate " + dialPlusMargin(note.getIndex(), note.getMargin())
-                    + ", reset monthly", FLOATING_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 560));
-        } else if (debt instanceof InflationLinkedBond linked) {
-            terms.getChildren().add(infoLine("coupon " + d(coupon) + " a month · real " + couponWords(linked.getRealCoupon()) + " on "
-                    + d(linked.getIndexedPrincipal()) + " indexed (the index ×" + String.format("%.3f", linked.getRatio())
-                    + " since the sale)", INDEXED_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 560));
-            terms.getChildren().add(line("uplift last month " + d(linked.getLastUplift()) + " · repays " + d(linked.owedAtMaturity())
-                    + " at today's index"
-                    + (linked.getUpliftDue() >= .5 ? " · next month pays the uplift, " + d(linked.getUpliftDue()) + ", with the face" : "")));
-        } else if (coupon < .5) {
-            terms.getChildren().add(noteLine("no coupon - the discount wears off as interest", NOTE_INFO, 560));
-        }
-        terms.getChildren().add(linker
-                ? infoLine("carried " + d(l.carried()) + " · effective " + pct2(debt.getEffectiveRate()) + " real",
-                        LINKED_BOOKS_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 560)
-                : infoLine("carried " + d(l.carried()) + " · effective " + pct2(debt.getEffectiveRate()),
-                        CARRIED_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 560));
-        if (debt instanceof LongTermBond bond && bond.isCallable()) {
-            terms.getChildren().add(infoLine("callable at " + String.format("%.0f", CallTree.CALL_PRICE) + " from "
-                            + CityCalendar.formatShort(bond.getFirstCallMonth()) + (g.canCall(debt) ? " · callable now" : ""),
-                    CALLABLE_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 560));
-            if (g.worthCalling(debt)) {
-                terms.getChildren().add(infoLine("Worth calling: saves " + d(g.callSaving(debt)),
-                        WORTH_CALLING_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 560));
+        page.getChildren().add(Kept.scope("terms", () -> {
+            VBox terms = Kept.column(4);
+            terms.setStyle("-fx-padding: 0 4 0 4;");
+            if (debt instanceof FloatingRateNote note) {
+                terms.getChildren().add(infoLine("coupon " + d(coupon) + " a month · the policy rate " + dialPlusMargin(note.getIndex(), note.getMargin())
+                        + ", reset monthly", FLOATING_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 560));
+            } else if (debt instanceof InflationLinkedBond linked) {
+                terms.getChildren().add(infoLine("coupon " + d(coupon) + " a month · real " + couponWords(linked.getRealCoupon()) + " on "
+                        + d(linked.getIndexedPrincipal()) + " indexed (the index ×" + String.format("%.3f", linked.getRatio())
+                        + " since the sale)", INDEXED_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 560));
+                terms.getChildren().add(line("uplift last month " + d(linked.getLastUplift()) + " · repays " + d(linked.owedAtMaturity())
+                        + " at today's index"
+                        + (linked.getUpliftDue() >= .5 ? " · next month pays the uplift, " + d(linked.getUpliftDue()) + ", with the face" : "")));
+            } else if (coupon < .5) {
+                terms.getChildren().add(Kept.scope("no coupon", () -> noteLine("no coupon - the discount wears off as interest", NOTE_INFO, 560)));
             }
-        }
-        page.getChildren().add(terms);
+            terms.getChildren().add(linker
+                    ? infoLine("carried " + d(l.carried()) + " · effective " + pct2(debt.getEffectiveRate()) + " real",
+                            LINKED_BOOKS_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 560)
+                    : infoLine("carried " + d(l.carried()) + " · effective " + pct2(debt.getEffectiveRate()),
+                            CARRIED_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 560));
+            if (debt instanceof LongTermBond bond && bond.isCallable()) {
+                terms.getChildren().add(infoLine("callable at " + String.format("%.0f", CallTree.CALL_PRICE) + " from "
+                                + CityCalendar.formatShort(bond.getFirstCallMonth()) + (g.canCall(debt) ? " · callable now" : ""),
+                        CALLABLE_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 560));
+                if (g.worthCalling(debt)) {
+                    terms.getChildren().add(Kept.scope("worth calling", () -> infoLine("Worth calling: saves " + d(g.callSaving(debt)),
+                            WORTH_CALLING_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 560)));
+                }
+            }
+            return terms;
+        }));
 
         // ----- its price since it was sold, and what closing it today would book -----
         double[] price = debt.getPricePath(), carried = debt.getCarriedPath();
-        VBox priceCard = card(caption("ITS PRICE SINCE IT WAS SOLD", LINE_PRICE_INFO), muted("per 100 of face · and what it is carried at"));
-        if (price.length >= 2) {
-            priceCard.getChildren().addAll(new PathChart(price, carried, debt.getPathFirstMonth()),
-                    keyRow(swatch(Palette.MONEY, "price, at the curve each month", false),
-                            swatch(Palette.TEXT_LABEL, "carried, per 100", false),
-                            swatch(Palette.TEXT_SPENT, "par, 100", false)));
-        } else {
-            priceCard.getChildren().add(line(price.length == 0
-                    ? "Sold this month: nothing is recorded yet. The first point comes when the month closes."
-                    : "One month on the books so far."));
-        }
-        priceCard.getChildren().add(muted("The price is drawn from the line's second month on the books: a month closes before it is recorded."
-                + (price.length >= 2 ? "" : " Two points make a line.")));
-
-        Buyback.Result whole = g.quoteBuyback(debt, g.buybackOfferable(debt), Double.NaN);
-        boolean taken = whole.takenFace() > 0 && whole.paid() > 0;
-        double against = l.vsFace();
-        String againstWords = Math.abs(against) < .5 ? "at its face" : against > 0 ? d(against) + " under face" : "a premium of " + d(-against);
-        VBox close = new VBox(8, caption("IF YOU CLOSED IT TODAY", LINE_CLOSE_INFO),
-                cardLine("Worth today · the fair price", d(l.worth()), null),
-                cardLine("Carried · what the books hold it at", d(l.carried()), null),
-                gainLine("Carried less worth · what the books would show at fair", gainOf(l.ifClosedNow(), l.ifClosedNowShare()), GAIN_INFO),
-                cardLine("Against its face of " + d(l.face()), againstWords, null, PREMIUM_INFO));
-        // CD7: a dollar line's own exchange, since it was sold - the D$'s move on what is carried - and the rates it spans.
-        if (debt.isForeign()) {
-            close.getChildren().add(gainLine("The D$'s move since it was sold · on what is carried",
-                    gainOf(l.exchangeSinceSold(), l.exchangeShare()), EXCHANGE_INFO));
-            if (debt.soldAtRate() > 0) {
-                close.getChildren().add(cardLine("Sold with the D$ at", perMoney(debt.getMoney(), debt.soldAtRate()) + ", now " + perMoney(debt.getMoney(), debt.getExchangeRate()), null));
+        VBox priceCard = Kept.scope("price", () -> {
+            VBox card = card(caption("ITS PRICE SINCE IT WAS SOLD", LINE_PRICE_INFO), muted("per 100 of face · and what it is carried at"));
+            if (price.length >= 2) {
+                // Kept (KP5): the chart and its key come once the line has two months on the books, a scope of their own, so the
+                // note after them does not change places; the chart is the one the last draw made, told its two paths.
+                card.getChildren().addAll(Kept.scope("chart", () -> {
+                    PathChart path = Kept.of(PathChart.class, PathChart::new);
+                    path.set(price, carried, debt.getPathFirstMonth());
+                    return List.<Node>of(path,
+                            keyRow(swatch(Palette.MONEY, "price, at the curve each month", false),
+                                    swatch(Palette.TEXT_LABEL, "carried, per 100", false),
+                                    swatch(Palette.TEXT_SPENT, "par, 100", false)));
+                }));
+            } else {
+                card.getChildren().add(Kept.scope("short", () -> line(price.length == 0
+                        ? "Sold this month: nothing is recorded yet. The first point comes when the month closes."
+                        : "One month on the books so far.")));
             }
-        }
-        if (taken) {
-            close.getChildren().addAll(
-                    cardLine("All of it on offer, " + d(whole.takenFace()) + ", at the reverse auction now", d(whole.paid()), null),
-                    gainLine("...what the auction itself books against carrying", gainOf(whole.gainOnCarrying(), whole.gainOnCarryingShare()), null),
-                    words(honestSentence(debt, whole), Palette.SIZE_LABEL + 1, Palette.TEXT_BODY));
-        } else {
-            close.getChildren().add(muted("Nothing is on offer now: the central bank does not sell (D18), and a line sold lately can only be bought back whole."));
-        }
-        boolean affordable = taken && whole.paid() <= g.getCash();
-        Button closeIt = new Button("Close it now…");
-        closeIt.setMinWidth(Region.USE_PREF_SIZE);
-        if (affordable) closeIt.setStyle("-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;");
-        else if (taken) closeIt.setTooltip(new Tooltip("Closing all of it costs " + d(whole.paid()) + "; the treasury has " + d(g.getCash())
-                + ". The page can close part of it."));
-        closeIt.setOnAction(e -> openClose(debt));
-        boolean callable = debt instanceof LongTermBond bond && bond.isCallable();
-        Button callIt = new Button(callable ? "Call it…" : "Call it · not callable");
-        callIt.setMinWidth(Region.USE_PREF_SIZE);
-        callIt.setDisable(!callable);
-        // Close it now is where the call is: the page that holds the call card.
-        callIt.setOnAction(e -> openClose(debt));
-        HBox buttons = new HBox(Palette.GAP, closeIt, callIt);
-        buttons.setAlignment(Pos.CENTER_LEFT);
-        close.getChildren().add(buttons);
-        close.setStyle("-fx-padding: 14; -fx-background-color: " + Palette.PINNED + ";"
-                + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + Palette.ACCENT_FILL + ";");
+            card.getChildren().add(muted("The price is drawn from the line's second month on the books: a month closes before it is recorded."
+                    + (price.length >= 2 ? "" : " Two points make a line.")));
+            return card;
+        });
+
+        VBox close = Kept.scope("close", () -> {
+            Buyback.Result whole = g.quoteBuyback(debt, g.buybackOfferable(debt), Double.NaN);
+            boolean taken = whole.takenFace() > 0 && whole.paid() > 0;
+            double against = l.vsFace();
+            String againstWords = Math.abs(against) < .5 ? "at its face" : against > 0 ? d(against) + " under face" : "a premium of " + d(-against);
+            VBox card = Kept.column(8, caption("IF YOU CLOSED IT TODAY", LINE_CLOSE_INFO),
+                    cardLine("Worth today · the fair price", d(l.worth()), null),
+                    cardLine("Carried · what the books hold it at", d(l.carried()), null),
+                    gainLine("Carried less worth · what the books would show at fair", gainOf(l.ifClosedNow(), l.ifClosedNowShare()), GAIN_INFO),
+                    cardLine("Against its face of " + d(l.face()), againstWords, null, PREMIUM_INFO));
+            // CD7: a dollar line's own exchange, since it was sold - the D$'s move on what is carried - and the rates it spans.
+            if (debt.isForeign()) {
+                card.getChildren().add(Kept.scope("exchange", () -> gainLine("The D$'s move since it was sold · on what is carried",
+                        gainOf(l.exchangeSinceSold(), l.exchangeShare()), EXCHANGE_INFO)));
+                if (debt.soldAtRate() > 0) {
+                    card.getChildren().add(Kept.scope("sold at", () -> cardLine("Sold with the D$ at", perMoney(debt.getMoney(), debt.soldAtRate()) + ", now " + perMoney(debt.getMoney(), debt.getExchangeRate()), null)));
+                }
+            }
+            if (taken) {
+                card.getChildren().addAll(Kept.scope("taken", () -> List.<Node>of(
+                        cardLine("All of it on offer, " + d(whole.takenFace()) + ", at the reverse auction now", d(whole.paid()), null),
+                        gainLine("...what the auction itself books against carrying", gainOf(whole.gainOnCarrying(), whole.gainOnCarryingShare()), null),
+                        words(honestSentence(debt, whole), Palette.SIZE_LABEL + 1, Palette.TEXT_BODY))));
+            } else {
+                card.getChildren().add(Kept.scope("nothing on offer", () -> muted("Nothing is on offer now: the central bank does not sell (D18), and a line sold lately can only be bought back whole.")));
+            }
+            boolean affordable = taken && whole.paid() <= g.getCash();
+            Button closeIt = Kept.of(Button.class, Button::new);
+            closeIt.setText("Close it now…");
+            closeIt.setMinWidth(Region.USE_PREF_SIZE);
+            closeIt.setStyle(affordable ? "-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;" : "");
+            if (!affordable && taken) Kept.tip(closeIt, "Closing all of it costs " + d(whole.paid()) + "; the treasury has " + d(g.getCash())
+                    + ". The page can close part of it.", 1000);
+            closeIt.setOnAction(e -> openClose(debt));
+            boolean callable = debt instanceof LongTermBond bond && bond.isCallable();
+            Button callIt = Kept.of(Button.class, Button::new);
+            callIt.setText(callable ? "Call it…" : "Call it · not callable");
+            callIt.setMinWidth(Region.USE_PREF_SIZE);
+            callIt.setDisable(!callable);
+            // Close it now is where the call is: the page that holds the call card.
+            callIt.setOnAction(e -> openClose(debt));
+            HBox buttons = Kept.row(Palette.GAP, closeIt, callIt);
+            buttons.setAlignment(Pos.CENTER_LEFT);
+            card.getChildren().add(buttons);
+            card.setStyle("-fx-padding: 14; -fx-background-color: " + Palette.PINNED + ";"
+                    + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + Palette.ACCENT_FILL + ";");
+            return card;
+        });
         page.getChildren().add(pair(priceCard, close));
 
         // ----- the books, who holds it, its sales and its risk -----
         // Three cards side by side - the books' table the half of the row, the others a quarter each - and, in a window
         // narrower than a table of the books and two cards, the table across the top and the two under it.
         GridPane three = equalColumns(12, TILE_GAP);
-        VBox books = booksCard(debt, month, l);
-        VBox holders = holdersCard(debt, l);
-        VBox sales = salesCard(debt, l);
+        VBox books = Kept.scope("books", () -> booksCard(debt, month, l));
+        VBox holders = Kept.scope("holders", () -> holdersCard(debt, l));
+        VBox sales = Kept.scope("sales", () -> salesCard(debt, l));
         for (VBox c : List.of(books, holders, sales)) GridPane.setFillHeight(c, true);
         three.getChildren().addAll(books, holders, sales);
-        arrangeThree(books, holders, sales, false);
-        three.widthProperty().addListener((o, was, now) -> arrangeThree(books, holders, sales, now.doubleValue() < THREE_NARROW));
+        // Kept (KP5): the three are arranged as the page is wide now (a kept page is not laid out from nothing), and the width
+        // listener is added once, reading the three the last draw held.
+        three.getProperties().put(THREE_CARDS, new VBox[] {books, holders, sales});
+        arrangeThree(books, holders, sales, three.getWidth() > 0 && three.getWidth() < THREE_NARROW);
+        if (Kept.isNew(three)) {
+            three.widthProperty().addListener((o, was, now) -> {
+                if (three.getProperties().get(THREE_CARDS) instanceof VBox[] cards) {
+                    arrangeThree(cards[0], cards[1], cards[2], now.doubleValue() < THREE_NARROW);
+                }
+            });
+        }
         page.getChildren().add(three);
     }
 
     /** The width under which a line's page stacks its three cards (CD6): the books' table, then the other two side by side. */
     static final double THREE_NARROW = 1000;
+
+    /** The key a line's page keeps its three cards under on their grid, for the width listener to arrange (linePage()). */
+    private static final String THREE_CARDS = "finances.three";
 
     /** The three cards of a line's page on a grid of twelve columns: 6, 3 and 3 across, or, narrow, the first over the other two. */
     static void arrangeThree(VBox books, VBox holders, VBox sales, boolean narrow) {
@@ -3633,12 +3832,20 @@ final class FinancesScreen {
         VBox card = card(caption("THE NEXT SIX MONTHS ON THE BOOKS", LINE_BOOKS_INFO),
                 muted("effective interest at " + pct2(debt.getEffectiveRate()) + (linker ? " real" : "")
                         + (debt instanceof FloatingRateNote || linker ? " · today's " + (linker ? "index" : "dial") + " held flat" : "")));
+        // Kept (KP5): the words are an alternative to the table, a scope of their own; and the table of seven columns is another of six.
         if (ahead.isEmpty()) {
-            card.getChildren().add(muted("Nothing is left to book."));
+            card.getChildren().add(Kept.scope("nothing left", () -> muted("Nothing is left to book.")));
             return card;
         }
         boolean repaid = false;
         for (Debt.BooksMonth b : ahead) repaid |= b.repaid() >= .5;
+        final boolean withRepaid = repaid;
+        card.getChildren().add(Kept.scope(repaid ? "table with repaid" : "table", () -> booksTable(ahead, month, withRepaid)));
+        return card;
+    }
+
+    /** The books' table: a row a month, in six columns, or seven where any of the months repays principal. */
+    private Node booksTable(List<Debt.BooksMonth> ahead, int month, boolean repaid) {
         GridPane t = repaid
                 ? grid(new double[] {52, 62, 52, 52, 60, 56, 62}, rightAfterFirst(7))
                 : grid(new double[] {52, 66, 56, 56, 64, 66}, rightAfterFirst(6));
@@ -3658,16 +3865,16 @@ final class FinancesScreen {
             t.add(gridCell(d(b.closing()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), c, row);
             row++;
         }
-        card.getChildren().add(acrossWhenNarrow(t));
-        return card;
+        return acrossWhenNarrow(t);
     }
 
     /** WHO HOLDS IT: the holders bar and a line a holder with its face and its share. */
     VBox holdersCard(Debt debt, BookDesk.Line l) {
         VBox card = card(caption("WHO HOLDS IT", null), holdersBar(debt));
+        // Kept (KP5): a line a holder is a scope of its own, keyed by the holder, since a holder of nothing is no line.
         if (debt.isForeign()) {
-            card.getChildren().add(holderLine("the world", Palette.BUILDING_DARK, inPiece(debt, debt.principalInCurrency()) + " · all of it"));
-            card.getChildren().add(muted(upFirst(paperWord(debt.getMoney())) + ": nobody at home holds it."));
+            card.getChildren().add(Kept.scope("world", () -> holderLine("the world", Palette.BUILDING_DARK, inPiece(debt, debt.principalInCurrency()) + " · all of it")));
+            card.getChildren().add(Kept.scope("nobody", () -> muted(upFirst(paperWord(debt.getMoney())) + ": nobody at home holds it.")));
             return card;
         }
         Object[][] who = {
@@ -3679,10 +3886,10 @@ final class FinancesScreen {
         for (Object[] w : who) {
             // A holder with nothing of it is no line (a share that rounds to nothing is none).
             if ((double) w[2] < .5) continue;
-            card.getChildren().add(holderLine((String) w[0], (String) w[1], d((double) w[2]) + " · " + pc((double) w[3])));
+            card.getChildren().add(Kept.scope(w[0], () -> holderLine((String) w[0], (String) w[1], d((double) w[2]) + " · " + pc((double) w[3]))));
         }
         if (debt.centralBankPrincipal() > 0) {
-            card.getChildren().add(muted("The central bank's share follows its holdings dial, and it does not sell (D18)."));
+            card.getChildren().add(Kept.scope("central bank's share", () -> muted("The central bank's share follows its holdings dial, and it does not sell (D18).")));
         }
         return card;
     }
@@ -3690,9 +3897,9 @@ final class FinancesScreen {
     /** One holder's line: its swatch and name at the left, its face and its share at the right. */
     static HBox holderLine(String who, String colour, String text) {
         HBox key = swatch(colour, who, false);
-        Region gap = new Region();
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
-        HBox row = new HBox(Palette.GAP, key, gap, figure(text, Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD));
+        HBox row = Kept.row(Palette.GAP, key, gap, figure(text, Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD));
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
     }
@@ -3702,24 +3909,28 @@ final class FinancesScreen {
         VBox card = card(caption("ITS SALES, AND ITS RISK", LINE_SALES_INFO));
         boolean dollars = debt.isForeign();
         List<Debt.Sale> sales = debt.getSales();
+        // Kept (KP5): what comes and goes is a scope each: the empty words, a sale (by its place in the line's sales), the note.
         if (sales.isEmpty()) {
-            card.getChildren().add(muted("Not sold at auction: no sale is recorded for it, as the founding's bond has none."));
+            card.getChildren().add(Kept.scope("not sold", () -> muted("Not sold at auction: no sale is recorded for it, as the founding's bond has none.")));
         }
-        for (Debt.Sale s : sales) {
-            String face = dollars ? inPiece(debt, s.getFace()) : d(s.getFace());
-            String raised = dollars ? inPiece(debt, s.getProceeds()) : d(s.getProceeds());
-            card.getChildren().add(new VBox(1,
-                    words(CityCalendar.formatShort(s.getMonth()) + " · " + s.getHow() + (dollars ? " · in " + moneyWords(debt.getMoney()) : ""),
-                            Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD),
-                    muted(face + " sold, " + raised + " raised · " + String.format("%.2f", s.getPricePer100()) + " per 100 · yield "
-                            + pct2(s.getYield()))));
+        for (int i = 0; i < sales.size(); i++) {
+            Debt.Sale s = sales.get(i);
+            card.getChildren().add(Kept.scope("sale " + i, () -> {
+                String face = dollars ? inPiece(debt, s.getFace()) : d(s.getFace());
+                String raised = dollars ? inPiece(debt, s.getProceeds()) : d(s.getProceeds());
+                return Kept.column(1,
+                        words(CityCalendar.formatShort(s.getMonth()) + " · " + s.getHow() + (dollars ? " · in " + moneyWords(debt.getMoney()) : ""),
+                                Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD),
+                        muted(face + " sold, " + raised + " raised · " + String.format("%.2f", s.getPricePer100()) + " per 100 · yield "
+                                + pct2(s.getYield())));
+            }));
         }
         card.getChildren().add(cardLine("Duration", String.format("%.2f years", l.duration()), null));
         card.getChildren().add(cardLine("A point on the curve moves it", d(l.valueOfAPoint()), null));
         if (debt instanceof FloatingRateNote) {
-            card.getChildren().add(muted("A floater's coupon follows the dial, so a point moves it only until its next reset."));
+            card.getChildren().add(Kept.scope("floater", () -> muted("A floater's coupon follows the dial, so a point moves it only until its next reset.")));
         } else if (debt instanceof LongTermBond bond && bond.isCallable()) {
-            card.getChildren().add(muted("A callable line is priced as a bond that cannot be called: the right to call is not repriced."));
+            card.getChildren().add(Kept.scope("callable", () -> muted("A callable line is priced as a bond that cannot be called: the right to call is not repriced.")));
         }
         return card;
     }
@@ -3733,6 +3944,8 @@ final class FinancesScreen {
     abstract static class Drawn extends javafx.scene.layout.Pane {
         private final double first;
         private double drawnAt;
+        /** The figures it was last told (Kept, KP5): a picture on a kept page is told each month's by set(), and draws again only where they moved. */
+        private Object[] told;
 
         Drawn(double least, double first, double height) {
             this.first = first;
@@ -3744,11 +3957,21 @@ final class FinancesScreen {
         /** Everything in the picture, drawn at this width: the children have been cleared. */
         abstract void draw(double w);
 
-        /** The first drawing, at the width the picture asks for; a subclass calls it once its figures are set. */
-        final void drawFirst() {
-            drawnAt = first;
+        /**
+         * Whether these figures are other than the ones the picture was last drawn on - compared by content, arrays and nested
+         * arrays included - and remembered: the first telling is always a move. A picture's set() draws again only when this is true.
+         */
+        final boolean moved(Object... figures) {
+            if (told != null && java.util.Arrays.deepEquals(told, figures)) return false;
+            told = figures;
+            return true;
+        }
+
+        /** Everything drawn again, at the width it stands at (the first width before it has stood anywhere): its figures have moved. */
+        final void drawAgain() {
+            if (drawnAt <= 0) drawnAt = first;
             getChildren().clear();
-            draw(first);
+            draw(drawnAt);
         }
 
         @Override protected void layoutChildren() {
@@ -3850,16 +4073,22 @@ final class FinancesScreen {
 
         static final double H = 232, LEFT = 46, RIGHT = 14, TOP = 12, FOOT = 26;
 
-        private final int[] tenors;
-        private final double[] zero;
-        private final List<Dot> dots;
+        private int[] tenors = {0};
+        private double[] zero = {};
+        private List<Dot> dots = List.of();
 
-        DeskCurve(int[] tenors, double[] zero, List<Dot> dots) {
+        /** The picture, its curve and dots to come from set() (Kept, KP5). */
+        DeskCurve() {
             super(300, 560, H);
+        }
+
+        /** Today's curve at its tenors and a dot a line: drawn again only when a figure moved. */
+        void set(int[] tenors, double[] zero, List<Dot> dots) {
+            if (!moved(tenors, zero, dots)) return;
             this.tenors = tenors;
             this.zero = zero;
             this.dots = dots;
-            drawFirst();
+            drawAgain();
         }
 
         private static boolean overlaps(double[] box, List<double[]> taken) {
@@ -3946,16 +4175,22 @@ final class FinancesScreen {
         static final double H = 158, LEFT = 84, RIGHT = 76, TOP = 26, ROW = 42, BAR = 26;
         static final String[] ROWS = {"at face", "carried", "worth today"};
 
-        private final double[][] byKind;
-        private final double worth;
-        private final java.util.function.DoubleFunction<String> money;
+        private double[][] byKind = new double[ROWS.length][0];
+        private double worth;
+        private java.util.function.DoubleFunction<String> money = v -> "";
 
-        DeskBars(double[][] byKind, double worth, java.util.function.DoubleFunction<String> money) {
+        /** The picture, its bars to come from set() (Kept, KP5). */
+        DeskBars() {
             super(300, 480, H);
+        }
+
+        /** The three bars by kind and what the book is worth: drawn again only when a figure moved. */
+        void set(double[][] byKind, double worth, java.util.function.DoubleFunction<String> money) {
+            this.money = money;
+            if (!moved(byKind, worth)) return;
             this.byKind = byKind;
             this.worth = worth;
-            this.money = money;
-            drawFirst();
+            drawAgain();
         }
 
         @Override void draw(double w) {
@@ -3998,15 +4233,21 @@ final class FinancesScreen {
     static final class PathChart extends Drawn {
         static final double H = 212, LEFT = 40, RIGHT = 16, TOP = 14, FOOT = 26;
 
-        private final double[] price, carried;
-        private final int firstMonth;
+        private double[] price = {100}, carried = {100};
+        private int firstMonth;
 
-        PathChart(double[] price, double[] carried, int firstMonth) {
+        /** The picture, its two paths to come from set() (Kept, KP5). */
+        PathChart() {
             super(300, 440, H);
+        }
+
+        /** The price and what is carried, month by month from `firstMonth`: drawn again only when a figure moved. */
+        void set(double[] price, double[] carried, int firstMonth) {
+            if (!moved(price, carried, firstMonth)) return;
             this.price = price;
             this.carried = carried;
             this.firstMonth = firstMonth;
-            drawFirst();
+            drawAgain();
         }
 
         /** Whether a month carries a tick of this step: January's of the years it counts in, or the months it counts in. */
@@ -4201,8 +4442,15 @@ final class FinancesScreen {
 
     /** One of the two boxes set to this, or emptied, and the page drawn on it. */
     private void setCloseBox(int which, String text) {
+        javafx.scene.control.TextField box = which == 1 ? closeFaceField : closeMaxField;
         if (which == 1) closeFaceText = text;
         else            closeMaxText = text;
+        // Kept (KP5): a chip sets the box under the focus - a kept draw never sets a field that has it (Kept.text) - and the
+        // caret goes to the end of what it says, as the refocus of the page rebuilt did.
+        if (box != null && !text.equals(box.getText())) {
+            box.setText(text);
+            box.positionCaret(text.length());
+        }
         closeFaceField = null;
         closeMaxField = null;
         showFinanceMenu();
@@ -4222,17 +4470,25 @@ final class FinancesScreen {
             else            closeMaxText = typed;
         }, null);
         box.setOnAction(e -> showFinanceMenu());
-        box.focusedProperty().addListener((o, was, now) -> {
-            if (now) return;
-            javafx.application.Platform.runLater(() -> {
-                if (box.getScene() != null && !box.isFocused() && !(box.getText() == null ? "" : box.getText()).equals(shown)) {
-                    ui.redrawSoon();
-                }
+        // Kept (KP5): the box is the one the last draw made, so the focus listener is added once and reads at its firing what the
+        // page was last drawn on, which each draw puts in the box's properties.
+        box.getProperties().put(CLOSE_SHOWN, shown);
+        if (Kept.isNew(box)) {
+            box.focusedProperty().addListener((o, was, now) -> {
+                if (now) return;
+                javafx.application.Platform.runLater(() -> {
+                    Object drawnOn = box.getProperties().get(CLOSE_SHOWN);
+                    if (box.getScene() != null && !box.isFocused() && !(box.getText() == null ? "" : box.getText()).equals(drawnOn)) {
+                        ui.redrawSoon();
+                    }
+                });
             });
-        });
+        }
         if (closeTyping == which) {
             closeTyping = 0;
             javafx.application.Platform.runLater(() -> {
+                // A kept box keeps the focus across a redraw: it is never refocused when it has it, nor its caret moved.
+                if (box.isFocused()) return;
                 box.requestFocus();
                 box.positionCaret(box.getText().length());
             });
@@ -4241,6 +4497,9 @@ final class FinancesScreen {
         else            closeMaxField = box;
         return box;
     }
+
+    /** The key a Close it now box keeps the text the page was last drawn on under, for its focus listener (closeBox()). */
+    private static final String CLOSE_SHOWN = "finances.closeShown";
 
     /** A face as a box takes it back: whole dollars with commas ("1,250,000,000"), so a chip that fills the box says it exactly. */
     static String boxAmount(double thousands) {
@@ -4297,40 +4556,43 @@ final class FinancesScreen {
         boolean taken = q.takenFace() > 0 && q.paid() > 0;
 
         // ----- the piece -----
+        // Kept (KP5): each part of the page is a scope of its own, and what comes and goes within a part is a scope each.
         String colour = instrumentColour(debt.getType());
-        Label name = words(pieceName(debt), Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD);
-        name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
-        Region gap = new Region();
-        HBox.setHgrow(gap, Priority.ALWAYS);
-        HBox head = new HBox(Palette.GAP, tag(pieceTag(debt), colour), name, gap,
-                figure(CityCalendar.formatShort(due) + " · " + CityCalendar.until(month, due), Palette.SIZE_LABEL + 1,
-                        urgency(due - month)));
-        head.setAlignment(Pos.CENTER_LEFT);
-        double coupon = debt.getMonthlyCoupon();
-        Node facts = muted(String.format("%s owed · %s carried · %s · worth today %s · %.3f for each 100", d(principal),
-                d(debt.getCarryingValue()), coupon >= .5 ? d(coupon) + " a month of coupon" : "no coupon",
-                d(g.fairValueOf(debt)), ledger.priceOfPar(debt)));
-        Node held = holdersBar(debt);
-        Node central = debt.isForeign()
-                ? muted(upFirst(paperWord(debt.getMoney())) + ": the world holds all of it, and offers every slice at fair (D26).")
-                : debt.centralBankPrincipal() > 0
-                ? muted("The central bank holds " + d(debt.centralBankPrincipal()) + " of it and does not sell (D18): "
-                        + d(offerable) + " is on offer.")
-                : null;
-        // The way back is the line's page when Close it now was opened from there (CD6), else the book.
         final Debt back = closing;
-        page.getChildren().add(card(closeFromLine ? backDoor("The line", () -> openLine(back))
-                : backDoor("The book", () -> open("The book", null, back)), head, facts, held, central));
+        page.getChildren().add(Kept.scope("piece", () -> {
+            Label name = words(pieceName(debt), Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD);
+            name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
+            Region gap = Kept.region();
+            HBox.setHgrow(gap, Priority.ALWAYS);
+            HBox head = Kept.row(Palette.GAP, tag(pieceTag(debt), colour), name, gap,
+                    figure(CityCalendar.formatShort(due) + " · " + CityCalendar.until(month, due), Palette.SIZE_LABEL + 1,
+                            urgency(due - month)));
+            head.setAlignment(Pos.CENTER_LEFT);
+            double coupon = debt.getMonthlyCoupon();
+            Node facts = muted(String.format("%s owed · %s carried · %s · worth today %s · %.3f for each 100", d(principal),
+                    d(debt.getCarryingValue()), coupon >= .5 ? d(coupon) + " a month of coupon" : "no coupon",
+                    d(g.fairValueOf(debt)), ledger.priceOfPar(debt)));
+            Node held = holdersBar(debt);
+            Node central = Kept.scope("central", () -> debt.isForeign()
+                    ? muted(upFirst(paperWord(debt.getMoney())) + ": the world holds all of it, and offers every slice at fair (D26).")
+                    : debt.centralBankPrincipal() > 0
+                    ? muted("The central bank holds " + d(debt.centralBankPrincipal()) + " of it and does not sell (D18): "
+                            + d(offerable) + " is on offer.")
+                    : null);
+            // The way back is the line's page when Close it now was opened from there (CD6), else the book.
+            return card(closeFromLine ? backDoor("The line", () -> openLine(back))
+                    : backDoor("The book", () -> open("The book", null, back)), head, facts, held, central);
+        }));
 
         // ----- the ticket -----
         VBox ticket = card(caption("THE TICKET", CLOSE_INFO, hint("a reverse auction, struck on the city as it stands")));
         ticket.getChildren().add(caption("HOW MUCH FACE TO BUY BACK", null));
-        javafx.scene.layout.FlowPane faceChips = new javafx.scene.layout.FlowPane(6, 6);
+        javafx.scene.layout.FlowPane faceChips = Kept.flow(6, 6);
         faceChips.getChildren().addAll(
                 stepChip("everything on offer", () -> setCloseBox(1, ""), true),
                 stepChip("half", () -> setCloseBox(1, boxAmount(offerable / 2)), false),
                 stepChip("a tenth", () -> setCloseBox(1, boxAmount(offerable / 10)), false));
-        HBox faceRow = new HBox(Palette.GAP, closeBox(1, "everything on offer: " + d(offerable)),
+        HBox faceRow = Kept.row(Palette.GAP, closeBox(1, "everything on offer: " + d(offerable)),
                 words("Enter sets it", Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
         faceRow.setAlignment(Pos.CENTER_LEFT);
         ticket.getChildren().addAll(faceRow, faceChips);
@@ -4339,24 +4601,24 @@ final class FinancesScreen {
                 ? "Everything on offer is " + d(offerable) + ": " + paperWord(debt.getMoney()) + " is the world's alone (D26)."
                 : "Everything on offer is " + d(offerable) + ": the principal less the central bank's face - the central bank does not sell (D18)."));
         if (faceUnread) {
-            ticket.getChildren().add(words("“" + closeFaceText.trim() + "” is not an amount: digits, then k, M, B or T - "
-                    + "500M, 2.5B, 12,000,000. Everything on offer is asked for instead.", Palette.SIZE_LABEL, Palette.BAD));
+            ticket.getChildren().add(Kept.scope("face unread", () -> words("“" + closeFaceText.trim() + "” is not an amount: digits, then k, M, B or T - "
+                    + "500M, 2.5B, 12,000,000. Everything on offer is asked for instead.", Palette.SIZE_LABEL, Palette.BAD)));
         } else if (!Double.isNaN(typedFace) && typedFace > offerable + .5) {
-            ticket.getChildren().add(muted("Only " + d(offerable) + " is on offer; that is what the ticket asks for."));
+            ticket.getChildren().add(Kept.scope("face over", () -> muted("Only " + d(offerable) + " is on offer; that is what the ticket asks for.")));
         }
         ticket.getChildren().add(caption("THE MOST TO PAY, FOR EACH 100 OF FACE", null));
-        javafx.scene.layout.FlowPane maxChips = new javafx.scene.layout.FlowPane(6, 6);
+        javafx.scene.layout.FlowPane maxChips = Kept.flow(6, 6);
         maxChips.getChildren().add(stepChip("no limit", () -> setCloseBox(2, ""), true));
-        HBox maxRow = new HBox(Palette.GAP, closeBox(2, "no limit · type 98.5"),
+        HBox maxRow = Kept.row(Palette.GAP, closeBox(2, "no limit · type 98.5"),
                 words("Enter sets it", Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
         maxRow.setAlignment(Pos.CENTER_LEFT);
         ticket.getChildren().addAll(maxRow, maxChips);
         if (maxUnread) {
-            ticket.getChildren().add(words("“" + closeMaxText.trim() + "” is not a price: dollars for each 100 of face, "
-                    + "98.5. There is no limit instead.", Palette.SIZE_LABEL, Palette.BAD));
+            ticket.getChildren().add(Kept.scope("max unread", () -> words("“" + closeMaxText.trim() + "” is not a price: dollars for each 100 of face, "
+                    + "98.5. There is no limit instead.", Palette.SIZE_LABEL, Palette.BAD)));
         }
 
-        VBox result = new VBox(6);
+        VBox result = Kept.column(6);
         result.getChildren().add(caption("WHAT IT BUYS", null));
         result.getChildren().add(cardLine("Offered by the holders", d(q.offeredFace())
                 + (asked > 0 && q.offeredFace() > 0 ? String.format(" · %.2f× the face asked", q.cover()) : ""),
@@ -4374,22 +4636,23 @@ final class FinancesScreen {
                 case FIRMS -> q.firmPaid();
                 case WORLD -> q.worldPaid();
             };
-            if (hf > 0) result.getChildren().add(takenLine(holderName(h), holderColour(h), hf, hp));
+            if (hf > 0) result.getChildren().add(Kept.scope(h, () -> takenLine(holderName(h), holderColour(h), hf, hp)));
         }
         if (taken) {
-            result.getChildren().add(cardLine("The stop · the average, for each 100",
-                    String.format("%.3f · %.3f", q.stopPer100(), q.averagePer100()), null));
+            result.getChildren().add(Kept.scope("stop", () -> cardLine("The stop · the average, for each 100",
+                    String.format("%.3f · %.3f", q.stopPer100(), q.averagePer100()), null)));
         }
-        if (q.fairPer100() > 0) result.getChildren().add(cardLine("Fair, for each 100", String.format("%.3f", q.fairPer100()), null));
+        if (q.fairPer100() > 0) result.getChildren().add(Kept.scope("fair", () -> cardLine("Fair, for each 100", String.format("%.3f", q.fairPer100()), null)));
         result.getChildren().add(cardLine("The price", taken ? d(q.paid()) : "nothing", taken ? Palette.TEXT_HEAD : Palette.TEXT_MUTED));
         result.getChildren().add(cardLine("In the treasury", d(cash), null));
 
         String why = closeWhyNot(q, debt, offerable, asked, typedMax);
         boolean afford = q.paid() <= cash;
-        Button buy = new Button(taken ? "Buy back " + d(q.takenFace()) + " · pay " + d(q.paid()) : "Buy back");
+        Button buy = Kept.of(Button.class, Button::new);
+        buy.setText(taken ? "Buy back " + d(q.takenFace()) + " · pay " + d(q.paid()) : "Buy back");
         buy.setMinWidth(Region.USE_PREF_SIZE);
         buy.setDisable(!taken || !afford);
-        if (taken && afford) buy.setStyle("-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;");
+        buy.setStyle(taken && afford ? "-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;" : "");
         buy.setOnAction(e -> {
             ui.game.buyBack(debt, face, typedMax);
             // A freshly built page: retiring paper moves the rate, so every other card's price is now stale.
@@ -4397,64 +4660,69 @@ final class FinancesScreen {
         });
         ticket.getChildren().add(result);
         if (why != null) {
-            ticket.getChildren().add(words(why, Palette.SIZE_LABEL, Palette.BAD_SOFT));
+            ticket.getChildren().add(Kept.scope("why", () -> words(why, Palette.SIZE_LABEL, Palette.BAD_SOFT)));
         } else if (!afford) {
-            ticket.getChildren().add(words("The treasury has " + d(cash) + "; this costs " + d(q.paid())
+            ticket.getChildren().add(Kept.scope("afford", () -> words("The treasury has " + d(cash) + "; this costs " + d(q.paid())
                     + ". A buyback is paid in cash, never by borrowing: ask for less, or limit the price.",
-                    Palette.SIZE_LABEL, Palette.BAD_SOFT));
+                    Palette.SIZE_LABEL, Palette.BAD_SOFT)));
         }
         ticket.getChildren().add(buy);
         page.getChildren().add(ticket);
 
         // ----- the offers -----
-        VBox offers = card(caption("THE OFFERS", OFFERS_INFO, hint("cheapest first, a bar a slice")));
-        if (q.ladder().isEmpty()) {
-            offers.getChildren().add(muted("No offers to draw: the ticket takes none."));
-        } else {
-            offers.getChildren().add(new BuybackLadder(q, typedMax, this::d));
-            offers.getChildren().add(keyRow(swatch(holderColour(Buyback.Holder.BANK), "the bank", false),
-                    swatch(holderColour(Buyback.Holder.HOUSEHOLDS), "households", false),
-                    swatch(holderColour(Buyback.Holder.FIRMS), "the businesses", false),
-                    swatch(holderColour(Buyback.Holder.WORLD), "the world", false),
-                    swatch(Palette.TEXT_MUTED, "offered and not taken, outlined", true)));
-        }
-        page.getChildren().add(offers);
+        page.getChildren().add(Kept.scope("offers", () -> {
+            VBox offers = card(caption("THE OFFERS", OFFERS_INFO, hint("cheapest first, a bar a slice")));
+            if (q.ladder().isEmpty()) {
+                offers.getChildren().add(Kept.scope("none", () -> muted("No offers to draw: the ticket takes none.")));
+            } else {
+                // Kept (KP5): the picture is the one the last draw made, told the quote.
+                BuybackLadder ladder = Kept.of(BuybackLadder.class, BuybackLadder::new);
+                ladder.set(q, typedMax, this::d);
+                offers.getChildren().add(ladder);
+                offers.getChildren().add(keyRow(swatch(holderColour(Buyback.Holder.BANK), "the bank", false),
+                        swatch(holderColour(Buyback.Holder.HOUSEHOLDS), "households", false),
+                        swatch(holderColour(Buyback.Holder.FIRMS), "the businesses", false),
+                        swatch(holderColour(Buyback.Holder.WORLD), "the world", false),
+                        swatch(Palette.TEXT_MUTED, "offered and not taken, outlined", true)));
+            }
+            return offers;
+        }));
 
         // ----- the three comparisons, and the journal -----
         if (taken) {
-            VBox compare = card(caption("THE THREE COMPARISONS", COMPARE_INFO),
+            VBox compare = Kept.scope("compare", () -> card(caption("THE THREE COMPARISONS", COMPARE_INFO),
                     gainLine("Against carrying value · the statement's Gain (loss) on debt retired", gainOf(q.gainOnCarrying(), q.gainOnCarryingShare()), null),
                     cardLine("Against face · what the debt-to-GDP measure sees", signedD(q.gainOnFace()), null),
-                    cardLine("Over fair · what the auction cost", d(q.overFair()), null));
+                    cardLine("Over fair · what the auction cost", d(q.overFair()), null)));
             double sideways = q.unamortisedTaken();
             double gain = q.gainOnCarrying();
-            VBox journal = card(caption("THE JOURNAL", null, hint("what the first of them books")),
+            VBox journal = Kept.scope("journal", () -> card(caption("THE JOURNAL", null, hint("what the first of them books")),
                     cardLine("Dr  City paper payable", d(q.takenFace()), null),
                     sideways > .5 ? cardLine("Dr  Unamortised premium", d(sideways), null)
                                   : cardLine("Cr  Unamortised discount", d(Math.max(0, -sideways)), null),
                     cardLine("Cr  Cash", d(q.paid()), null),
                     gain >= 0 ? cardLine("Cr  Gain on debt retired", d(gain), null)
-                              : cardLine("Dr  Loss on debt retired", d(-gain), null));
+                              : cardLine("Dr  Loss on debt retired", d(-gain), null)));
             page.getChildren().add(pair(compare, journal));
 
             // ----- the honest line -----
             String honest = honestSentence(debt, q);
-            page.getChildren().add(card(caption("THE HONEST LINE", null),
+            page.getChildren().add(Kept.scope("honest", () -> card(caption("THE HONEST LINE", null),
                     words(honest, Palette.SIZE_BODY + 1, Palette.TEXT_BODY),
                     muted("A buyback at fair moves nothing in present value; it changes when the city pays and what the "
-                            + "measures say. This page says both.")));
+                            + "measures say. This page says both."))));
         }
 
         // ----- the call -----
-        if (debt instanceof LongTermBond bond && bond.isCallable()) page.getChildren().add(callCard(bond));
+        if (debt instanceof LongTermBond bond && bond.isCallable()) page.getChildren().add(Kept.scope("call", () -> callCard(bond)));
     }
 
     /** One holder's line on the ticket: its swatch and name, what was taken from it, and what it is paid. */
     HBox takenLine(String who, String colour, double face, double paid) {
         HBox name = keySwatch(colour, "Taken from " + who);
-        Region gap = new Region();
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
-        HBox row = new HBox(Palette.GAP, name, gap, figure(d(face) + " for " + d(paid), Palette.SIZE_BODY, Palette.TEXT_BODY));
+        HBox row = Kept.row(Palette.GAP, name, gap, figure(d(face) + " for " + d(paid), Palette.SIZE_BODY, Palette.TEXT_BODY));
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
     }
@@ -4492,10 +4760,11 @@ final class FinancesScreen {
 
         boolean can = g.canCall(bond);
         boolean afford = cost <= cash;
-        Button call = new Button(can ? "Call it · pay " + d(cost) : "Call it");
+        Button call = Kept.of(Button.class, Button::new);
+        call.setText(can ? "Call it · pay " + d(cost) : "Call it");
         call.setMinWidth(Region.USE_PREF_SIZE);
         call.setDisable(!can || !afford);
-        if (can && afford) call.setStyle("-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;");
+        call.setStyle(can && afford ? "-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;" : "");
         call.setOnAction(e -> {
             ui.game.callLine(bond);
             open("The book", null, null);
@@ -4507,7 +4776,7 @@ final class FinancesScreen {
                 : !afford ? "The treasury has " + d(cash) + "; the call costs " + d(cost)
                         + ". A call is paid in cash, never by borrowing."
                 : null;
-        if (why != null) card.getChildren().add(words(why, Palette.SIZE_LABEL, Palette.BAD_SOFT));
+        if (why != null) card.getChildren().add(Kept.scope("why", () -> words(why, Palette.SIZE_LABEL, Palette.BAD_SOFT)));
         card.getChildren().add(call);
         return card;
     }
@@ -4527,24 +4796,32 @@ final class FinancesScreen {
         /** The margins, in pixels: the prices at the left; at the right the room for a slice's face (FACE_ROOM) and for the marks' names (MARKS). */
         static final double LEFT = 74, FACE_ROOM = 76, MARKS = 134, TOP = 26, FOOT = 10, FIRST_W = 720, LEAST_W = 440;
 
-        private final Buyback.Result q;
-        private final double maxPer100;
-        private final java.util.function.DoubleFunction<String> money;
+        private Buyback.Result q = Buyback.Result.none(0);
+        private double maxPer100 = Double.NaN;
+        private java.util.function.DoubleFunction<String> money = v -> "";
         /** A row's pitch, and the width it is drawn at now (0 before the first). */
-        private final double row;
+        private double row = 18;
         private double drawnAt;
+        /** Whether it has been told a quote (Kept, KP5). */
+        private boolean told;
 
-        BuybackLadder(Buyback.Result q, double maxPer100, java.util.function.DoubleFunction<String> money) {
+        /** The picture, its offers to come from set() (Kept, KP5: a kept ladder is told each month's quote and draws again only where it moved). */
+        BuybackLadder() { }
+
+        /** The quote to draw and the most to pay: drawn again, and its height set to its slices, only when either moved. */
+        void set(Buyback.Result q, double maxPer100, java.util.function.DoubleFunction<String> money) {
+            this.money = money;
+            if (told && q.equals(this.q) && Double.compare(maxPer100, this.maxPer100) == 0) return;
+            told = true;
             this.q = q;
             this.maxPer100 = maxPer100;
-            this.money = money;
             int n = q.ladder().size();
             this.row = n > 24 ? 13 : 18;
             double h = TOP + n * row + FOOT;
             setMinSize(LEAST_W, h);
             setPrefSize(FIRST_W, h);
             setMaxSize(Double.MAX_VALUE, h);
-            draw(FIRST_W);
+            draw(drawnAt > 0 ? drawnAt : FIRST_W);
         }
 
         @Override protected void layoutChildren() {

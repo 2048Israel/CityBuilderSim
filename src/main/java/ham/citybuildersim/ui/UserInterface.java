@@ -3956,6 +3956,8 @@ public class UserInterface extends Application {
         sectorScreen.forget();
         // ...and the Bank (KP5): its kept page, and the charts on it, are the last city's.
         bankScreen.forget();
+        // ...and Finances (KP5): its kept page, and the pictures on it, are the last city's.
+        financesScreen.forget();
         // ...and the header and the rail hand the next city none of this one's nodes (UP2).
         forgetChrome();
     }

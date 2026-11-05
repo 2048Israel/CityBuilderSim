@@ -2018,6 +2018,126 @@ public final class KeptBench {
     }
 
     /* =====================================================================
+       FINANCES (KP5): the hub and the six areas' pages, kept and built new, the hands on what reshapes them (an area and a
+       page picked, a line's page and Close it now opened for a piece and closed, a fold, what is typed in the boxes) and the
+       real show method
+       ===================================================================== */
+
+    /** The Finances tab on its hub: nothing opened, nothing folded open. */
+    public Page finances() {
+        return finances("the Finances hub", null, null);
+    }
+
+    /**
+     * The Finances tab as a Page, as the screen draws it from its pool (the hub when `area` is null, else the area and the page `page`
+     * names, or its first page when `page` is null): it opens with nothing folded open, no line's page and no Close it now open, the
+     * boxes empty.
+     */
+    public Page finances(String name, String area, String page) {
+        FinancesScreen s = ui.financesScreen;
+        return new Page(name, "showFinanceMenu", () -> s.pool, pool -> timed(pool, s::drawPage), () -> {
+            s.forget();
+            s.open.clear();
+            s.lineOpen = null;
+            s.closing = null;
+            s.closeFromLine = false;
+            s.closeFaceText = "";
+            s.closeMaxText = "";
+            s.closeFaceField = null;
+            s.closeMaxField = null;
+            financesOpen(area, page);
+        });
+    }
+
+    /** The six areas, in the hub's order. */
+    public static List<String> financeAreas() {
+        return List.of(FinancesScreen.AREAS);
+    }
+
+    /** An area's pages, in its chip strip's order (the book's one page, Money's one, the fund's four). */
+    public static List<String> financePages(String area) {
+        return List.of(FinancesScreen.pagesOf(area));
+    }
+
+    /** The keys of the "details" folds on the area's pages: the bond market's two (every bond as tables, a bond's bids and asks). */
+    public static List<String> financeFolds() {
+        return List.of("bonds:grids", "bond:levels");
+    }
+
+    /**
+     * The screen on its hub (`area` null), or on an area and a page as a chip or a door would put it (the next draw shows it): the
+     * fund on no security, no line's page and no Close it now open.
+     */
+    public void financesOpen(String area, String page) {
+        FinancesScreen s = ui.financesScreen;
+        s.financeArea = area;
+        s.financePage = page == null ? FinancesScreen.FINANCE_HOME : page;
+        s.fundScreen.security = null;
+    }
+
+    /** The pieces of paper on the city's books, as the book lists them (the desk sorts them by when they fall due). */
+    public List<ham.citybuildersim.Debt> financesPieces() {
+        return new ArrayList<>(ui.game.getDebtManager().getDebt());
+    }
+
+    /** A piece's own page opened under The book, as its desk row would (the next draw shows it); null puts the book back. */
+    public void financesLine(ham.citybuildersim.Debt piece) {
+        FinancesScreen s = ui.financesScreen;
+        s.financeArea = "The book";
+        s.fundScreen.security = null;
+        if (piece == null) {
+            s.lineOpen = null;
+            s.financePage = FinancesScreen.BOOK_PAGES[0];
+        } else {
+            s.lineOpen = piece;
+            s.closeFromLine = false;
+            s.financePage = FinancesScreen.LINE_PAGE;
+        }
+    }
+
+    /**
+     * Close it now opened on a piece, as its Close it now button would (the next draw shows it): its two boxes empty, and the back
+     * door to the line's page when that was open on the same piece.
+     */
+    public void financesClose(ham.citybuildersim.Debt piece) {
+        FinancesScreen s = ui.financesScreen;
+        s.closeFromLine = s.lineOpenNow() && s.lineOpen == piece;
+        s.closing = piece;
+        s.closeFaceText = "";
+        s.closeMaxText = "";
+        s.financeArea = "The book";
+        s.fundScreen.security = null;
+        s.financePage = FinancesScreen.CLOSE_PAGE;
+    }
+
+    /** What is typed in Close it now's two boxes (1 the face to buy back, 2 the most to pay), as the page keeps it: the next draw puts it in the box. */
+    public void financesTyped(int which, String text) {
+        if (which == 1) ui.financesScreen.closeFaceText = text;
+        else ui.financesScreen.closeMaxText = text;
+    }
+
+    /** Close it now's two boxes as the last draw made them (null before one has drawn them). */
+    public javafx.scene.control.TextField[] financesCloseBoxes() {
+        return new javafx.scene.control.TextField[] {ui.financesScreen.closeFaceField, ui.financesScreen.closeMaxField};
+    }
+
+    /** A "details" fold on a Finances page opened or closed, by its key, as a click on it would. */
+    public void financesFold(String key, boolean open) {
+        fold(ui.financesScreen.open, key, open);
+    }
+
+    /** The Finances tab shown through its real show method, as the rail's tab or a month landing shows it (the chrome, then the page kept). */
+    public void showFinances() {
+        ensureWindow();
+        ui.financesScreen.showFinanceMenu();
+    }
+
+    /** The Finances tab forgotten, as another city opened would leave it: nothing kept, nothing just landed. */
+    public void forgetFinances() {
+        ui.financesScreen.forget();
+    }
+
+    /* =====================================================================
        SECTORS (KP4): the list and a business's five pages, kept and built new, the hands on what reshapes them, the
        pictures they hold (the refinery's, a materials industry's, a leg's bar), the count-up the clock allows and the
        pointer over a card, a door and the crumb

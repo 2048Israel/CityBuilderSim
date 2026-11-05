@@ -4190,15 +4190,21 @@ public final class Pieces {
      * across it.
      */
     public static Columns columns(List<Column> cols, double scale, double width, double height) {
-        return new Columns(cols, scale, width, height);
+        // Kept (KP5): a column chart on a kept page is the one the last draw made, told its columns by set(); anywhere else it is a new one, as it was.
+        Columns chart = Kept.of(Columns.class, Columns::new);
+        chart.set(cols, scale, width, height);
+        return chart;
     }
 
-    /** The chart columns() draws: a Pane that lays its columns out at whatever width it is given. */
+    /**
+     * The chart columns() draws: a Pane that lays its columns out at whatever width it is given. Its parts are its own, made
+     * with new (Kept: a picture owns its children): set() builds them again only when a figure of the columns moved.
+     */
     public static final class Columns extends javafx.scene.layout.Pane {
         /** The room over the plot for a tag and a figure, under it for a label and its second line, and the gap between columns. */
         static final double TOP = 34, FOOT = 30, GAP = 8;
-        private final List<Column> cols;
-        private final double scale;
+        private List<Column> cols = List.of();
+        private double scale;
         private final List<List<Region>> drawn = new java.util.ArrayList<>(), stripes = new java.util.ArrayList<>();
         private final List<Label> figures = new java.util.ArrayList<>(), labels = new java.util.ArrayList<>(),
                 subs = new java.util.ArrayList<>();
@@ -4206,17 +4212,70 @@ public final class Pieces {
         private final List<Region> hits = new java.util.ArrayList<>();
         /** A broken column's break (0.7.34): the gap, in the card's ground, and its two slashes; null for a whole column. */
         private final List<javafx.scene.shape.Shape[]> breaks = new java.util.ArrayList<>();
+        /** The figures its parts were built from, by content: set() builds them again only when these move. */
+        private Object[] built;
 
-        Columns(List<Column> cols, double scale, double width, double height) {
-            this.cols = cols == null ? List.of() : cols;
+        /** A chart to be told its columns: nothing in it until set(). */
+        Columns() { }
+
+        /**
+         * What the chart draws now: `cols` stacked on `scale` (0 or less: the largest column's total) across `width` (0 or less: what
+         * holds it), `height` tall. Its parts are built again only when a figure of the columns moved - the clicks are not figures: they
+         * are read from the columns of the latest call when they fire.
+         */
+        void set(List<Column> cols, double scale, double width, double height) {
+            List<Column> now = cols == null ? List.of() : cols;
+            this.cols = now;
+            Object[] key = key(now, scale);
+            if (built == null || !java.util.Arrays.deepEquals(built, key)) {
+                built = key;
+                build(now, scale);
+            }
+            setMinWidth(width > 0 ? width : 0);
+            setPrefWidth(width > 0 ? width : 400);
+            setMaxWidth(width > 0 ? width : Double.MAX_VALUE);
+            setMinHeight(height);
+            setPrefHeight(height);
+            setMaxHeight(height);
+        }
+
+        /** The columns as the figures they are, nested arrays that compare by content: everything a part is built from, and whether a click is there. */
+        private static Object[] key(List<Column> cols, double scale) {
+            Object[] out = new Object[cols.size() + 1];
+            out[0] = scale;
+            for (int i = 0; i < cols.size(); i++) {
+                Column c = cols.get(i);
+                Object[] parts = new Object[c.parts().size()];
+                for (int k = 0; k < parts.length; k++) {
+                    Segment s = c.parts().get(k);
+                    parts[k] = new Object[] {s.amount(), s.colour(), s.ghost(), s.stripe()};
+                }
+                out[i + 1] = new Object[] {c.label(), c.sub(), c.figure(), parts, c.ghost(), c.tag(), c.tagColour(), c.tip(),
+                        c.go() != null, c.broken()};
+            }
+            return out;
+        }
+
+        /** The parts of every column, made new. */
+        private void build(List<Column> cols, double scale) {
+            getChildren().clear();
+            drawn.clear();
+            stripes.clear();
+            figures.clear();
+            labels.clear();
+            subs.clear();
+            tags.clear();
+            hits.clear();
+            breaks.clear();
             double most = 0;
-            for (Column c : this.cols) {
+            for (Column c : cols) {
                 double t = 0;
                 for (Segment s : c.parts()) t += Math.max(0, s.amount());
                 most = Math.max(most, t);
             }
             this.scale = scale > 0 ? scale : most;
-            for (Column c : this.cols) {
+            for (Column c : cols) {
+                int at = hits.size();
                 List<Region> rs = new java.util.ArrayList<>(), st = new java.util.ArrayList<>();
                 for (Segment s : c.parts()) {
                     boolean ghost = c.ghost() || s.ghost();
@@ -4289,7 +4348,10 @@ public final class Pieces {
                 }
                 if (c.go() != null) {
                     hit.setCursor(javafx.scene.Cursor.HAND);
-                    hit.setOnMouseClicked(e -> c.go().run());
+                    // The click of the latest set(): a chart told the same figures again keeps these parts, and its clicks with them.
+                    hit.setOnMouseClicked(e -> {
+                        if (at < this.cols.size() && this.cols.get(at).go() != null) this.cols.get(at).go().run();
+                    });
                 }
                 hit.setOnMouseEntered(e -> hit.setStyle("-fx-background-color: " + tint(Palette.ACCENT, .07)
                         + "; -fx-background-radius: 4;"));
@@ -4297,12 +4359,6 @@ public final class Pieces {
                 hits.add(hit);
                 getChildren().add(0, hit);
             }
-            setMinWidth(width > 0 ? width : 0);
-            setPrefWidth(width > 0 ? width : 400);
-            setMaxWidth(width > 0 ? width : Double.MAX_VALUE);
-            setMinHeight(height);
-            setPrefHeight(height);
-            setMaxHeight(height);
         }
 
         @Override protected void layoutChildren() {
@@ -4378,12 +4434,14 @@ public final class Pieces {
      */
     public static VBox setting(String title, String info, String[] names, String current, String[] lines,
                                String[] tips, Consumer<String> pick) {
-        VBox box = new VBox(6);
+        // Kept (KP5): through Kept on a kept page - the chosen one's line a scope of its own, since it comes and goes with the
+        // choice, and a chip's tooltip the chip's own (Kept.tip); outside a draw every node is new, as it was.
+        VBox box = Kept.column(6);
         if (title != null) {
-            Label t = new Label(title);
+            Label t = Kept.label(title);
             t.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
             t.setMinWidth(Region.USE_PREF_SIZE);
-            HBox head = new HBox(Palette.GAP, t);
+            HBox head = Kept.row(Palette.GAP, t);
             if (info != null) head.getChildren().add(infoButton(info, true));
             head.setAlignment(Pos.CENTER_LEFT);
             box.getChildren().add(head);
@@ -4393,22 +4451,23 @@ public final class Pieces {
         chips.setPrefWrapLength(420);
         for (int i = 0; tips != null && i < tips.length && i < chips.getChildren().size(); i++) {
             if (tips[i] != null && chips.getChildren().get(i) instanceof Button b) {
-                Tooltip tip = new Tooltip(tips[i]);
-                tip.setShowDelay(Duration.millis(250));
+                Tooltip tip = Kept.tip(b, tips[i], 250);
                 tip.setWrapText(true);
                 tip.setMaxWidth(POPOVER_WIDTH);
-                b.setTooltip(tip);
             }
         }
         box.getChildren().add(chips);
         for (int i = 0; i < names.length && lines != null && i < lines.length; i++) {
             if (!names[i].equals(current) || lines[i] == null) continue;
-            Label line = new Label(lines[i]);
-            line.setWrapText(true);
-            line.setMinWidth(0);
-            line.setMaxWidth(Double.MAX_VALUE);
-            line.setStyle(Palette.words(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
-            box.getChildren().add(line);
+            String said = lines[i];
+            box.getChildren().add(Kept.scope("line", () -> {
+                Label line = Kept.label(said);
+                line.setWrapText(true);
+                line.setMinWidth(0);
+                line.setMaxWidth(Double.MAX_VALUE);
+                line.setStyle(Palette.words(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
+                return line;
+            }));
         }
         return box;
     }
