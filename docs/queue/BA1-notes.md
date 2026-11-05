@@ -19,12 +19,23 @@
       by 27 and 19), then decay about 1.5 a month.
     - The closing's twin had more adults at home to re-form, so more orphans. The 2026-09-15 fix keeps children with
       an adult who leaves work; an adult hired back is the case it does not cover.
-  - **CurrencyRegimeCheck (3, 5, 9, 10, 12, 13), PassThroughCheck 4, CapitalFlowCheck:** fixtures on BA1's path (red
-    from their fixture lines on). The first and the last are red with the brake off as well. A Sonnet slice is on
-    them. CurrencyRegimeCheck 9's identity (the vault's record, -117.69 against 0) is to be judged once its fixture
-    holds.
-- Next: the slice's mends reviewed, the full suite on the world files (`AllChecks -f`, not `--pick`), then the ship
-  file, its changelog naming the three lines passed by name.
+  - **CurrencyRegimeCheck (3, 5, 9, 10, 12, 13), PassThroughCheck 4, CapitalFlowCheck: mended (fixtures, Sonnet
+    slice, reviewed).**
+    - CurrencyRegimeCheck: one cause for all six. The peg towns now have 12 depots standing (9 to 15 work, 6 and 30 do
+      not) and a vault deepened by 2 x `COMFORTABLE_COVER` months of imports, bought by the treasury and forgotten by
+      the rate. Section 3's credibility search runs on a town played past its young dip.
+    - Section 9's identity (the vault's record, -117.69 against 0) holds once its fixture does. It was the fixture.
+    - PassThroughCheck 4: the base month's search now also needs the vault to hold no more than it bought (US$22.71k
+      held for US$22.52k bought at month 241). The swing's own assertion stands.
+    - CapitalFlowCheck: the 400 houses before it made the power plant dearer than the cash left (NEEDS_FUNDING, so no
+      power, and a carry worth $60 in fifteen years). Each order is now funded to its quote and asserted taken, and the
+      builders are 30 depots, not 4.
+  - **Seen on the way, for a look as model behaviour** (not isolated): in CurrencyRegimeCheck's town the sectors hold
+    their cash and send it abroad (D$355k in the first month at the peg against 0.15k on main), which is what waiting
+    for cheaper contracts does with a business's money. The same young town deflates in its first years (the index
+    -4% at month 39, -8% at 45). The ensemble's A3 holds (deflation spells 5 [0 to 10] months).
+- Next: the full suite on the world files (`./batch-check.sh`, every harness; started 23:00), then the ship file. Its
+  changelog names the three lines passed by name.
 
 **WHERE IT STOOD (2026-11-04, 21:20): ready, the ship file pushed.**
 1. On main at 52b19f18 (CM1 0.9.11 merged in). The brake is dear contracts (section 1, ★), with three rounding edges
