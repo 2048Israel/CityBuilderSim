@@ -1,4 +1,4 @@
-# R0b - causes of death in Health ({next}, 2026-11-04)
+# R0b - causes of death in Health (0.9.13, 2026-11-04)
 
 The second batch of research from 1900: its row is "causes of death in
 Health - typhoid, summer diarrhoea, outbreaks, TB, home births, pneumonia,
