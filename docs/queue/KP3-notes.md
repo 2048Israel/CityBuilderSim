@@ -1,6 +1,6 @@
 # KP3 - Screens kept: Build and the construction page ({next}, 2026-11-05)
 
-**WHERE IT STANDS** (2026-11-05, 00:35): slices A (3e46f63c) and B (114cd980) committed, each green on BuildMenuCheck, BuildCardCheck, RunWorksCheck, KeptCheck (B: ConstructionControlCheck too); slice C, the bench and the harness, running. Then `origin/main` merged once BA1 and KP2 are on it, `--pick`, the ship file.
+**WHERE IT STANDS** (2026-11-05, 01:40): the three slices are in and reviewed (A 3e46f63c, B 114cd980, C 275893a2); KeptCheck passes whole (452), with BuildMenuCheck, BuildCardCheck, RunWorksCheck and ConstructionControlCheck. Waiting for BA1 and KP2 to land on main; then `origin/main` merged, `--pick` with the world files, and the ship file last.
 
 The batch's record. The study's KP3 row (`docs/studies/spec-screens-in-place.md` §7) with §3 (the pattern and its
 rules, seven since KP2) and §6 (what checks it). Lane 2 of the night line, after KP2, built on `origin/batch/KP2` at
@@ -92,8 +92,72 @@ a draw and what a kept node carries from one draw to the next.
 
 ## 5. What checks it
 
-(Written with slice C.)
+`KeptCheck` sections 36-46, after KP2's 21-35, on its city at `CITY_MONTHS` (452 assertions in all, all pass; 276
+before). The KP3 sections run last, so their fixture - six sites kept on through the model, the city borrowing on
+Build's bond and buying ground where an order finds none (`ensureSites`, topped up after each month while the pages
+are watched) - touches no earlier section.
+
+- **36 Build kept** (6), on the Overview and on Healthcare with two orders dialled and a card's stats pinned: the top
+  nodes stay, nine in ten handed back, most months make none; a kept draw fills the order bar exactly once.
+- **37 shows** (16): signatures equal to a page built new for `MONTHS` months, the same pixels at three, the spoil
+  proof - on the Overview, Healthcare and Homes.
+- **38 reshaped** (43): fifteen pages in turn, thirteen rings on Education and Healthcare, orders dialled and cleared
+  through the cards' own steppers, a card pinned and unpinned, automatic building on and off. **For the gate's
+  review:** `Choice` gains `acts`, for a choice that makes the model act - automatic building turned on orders what
+  the Overview advises, so the next month's advice tiles are other buildings (71-76% of the page handed back). For
+  those two the share is printed, not asserted; the redraw's equality to a page built new is asserted as for every
+  choice.
+- **39 cost** (4): `KEPT_BUILD_MS` 12.
+- **40-43 the construction page** (3, 15, 11, 2): Sites kept, shows (the Timeline and Demolish tabs as pictures too),
+  reshaped (the three tabs, a pick, a buy-out pick, the find box typed and emptied), cost `KEPT_CONSTRUCTION_MS` 4.
+- **44 the stopped and funding pages** (24): each an arrival, then a month later again, equal to a page built new.
+  Caused through the model (`Game.buildRunStop`): no deposit (Iron Mine), no river (Hydro Station), no crossing
+  (Highway Bridge), no licence (Engineering Services Office), no land (10,000 Studio Apartments); the funding page by
+  1,000 Houses against the cash. Drawn for a building that only names the page: no coast (Desalination Plant; the
+  city meets no such refusal) and the two fell-short pages (the model does not reach them in this city).
+- **45 the controls** (36): automatic building's dial pressed and held across a month (the same node, its thumb, its
+  reading), released and equal to a page built new; the cap chips' yield box and the construction page's find box
+  with the focus keep node, text, caret and focus across a month through the real show methods; a stepper pressed
+  between draws and the next kept draw equal to a page built new.
+- **46 the hover** (13): the job tile, the market tile, a door, a ring card and the card's (i), whose stat cover shows
+  while it is hovered and goes when the pointer does.
+
+| dial | value | kept, five runs (median) | built new |
+|---|---:|---|---|
+| `KEPT_BUILD_MS` | 12 | Overview 3.8-6.3 ms (4.3); Healthcare with orders and a pin 3.7-9.0 ms (6.0) | 11.6-23.7; 15.0-30.0 ms |
+| `KEPT_CONSTRUCTION_MS` | 4 | 1.4-1.9 ms (1.7) | 8.5-16.5 ms |
+
+Each twice the median, rounded up (KP1's way); the gate judges them hard. Broken by hand to see them caught, one at a
+time and put back: the cover set only on a new node (37, 38), the cover never set false (46), `Kept.held` ignored in
+`Ladder` (45), the find box set while focused (45), the (i)'s click added as a handler every draw (38's pins), the
+hover ignored (46), the order bar refilled inside a draw (36's fill count). Not caught, by design: a card's or a site
+row's scope key made constant - the nodes hand back by position and every part is set again at each draw, so the
+page is the same; the key buys the nodes kept, not the page right.
+
+Also green on slice A, B and C's code: BuildMenuCheck, BuildCardCheck, RunWorksCheck, ConstructionControlCheck.
+Tonight's known-class reds, passed by name at the gates (the orchestrator, 00:40) and not chased here:
+PriceLevelCheck 8 (RT1), ReplayCheck 5d's "asks -1" under load (CM1b), MapCheck 2h and SlopeCheck's moved building
+(DM2's), ShortSellingCheck 7 (OH1).
 
 ## 6. Found in review
 
+- **By the slices:** inside a draw a card's reprice no longer refills the order bar, which it did once per card; the
+  page fills it once, after the last card (A, B). The construction page has three tabs, not two (Sites, Timeline,
+  Demolish). `CapChips`' refocus put the caret at the end of a box that already had the focus. `Statement.
+  reportSection` and `FinancesScreen.words`/`caption`, reached through `CapChips`, made new. A landed-on card already
+  scrolls after any draw (`openOnBuilding`'s `runLater`); the construction page never scrolled to a site.
+- **By Opus:** `Statement.reportSection`'s scope keyed by its heading, not a constant (two sections on one page would
+  have run on in one scope). KP2 left "whatever `BuildScreen.verdict`, `arc` and `goAhead` make" for KP3: all three
+  make no node (`verdict` is words, `arc` a figure, `goAhead` a test), so KP2-N's half that named this file has
+  nothing left in it.
+- **By the harness (slice C's mends):** the ↺ that clears an order, hidden with `showIf()`, kept the place it last
+  stood (250,0 on a kept card, 0,0 on a new one): it is in the row only while there is an order. The empty, hidden
+  order bar kept its last place and width (18,663, 1,420 wide): it rests at the origin, as a new one does.
+
 ## 7. Left
+
+- **Not exercised by a fixture:** the Overview's open asks (an order whose bond sold short at the cap waiting for its
+  money), the sea terminal's payback, the port and crossing choosers, the coast refusal and the fell-short pages as
+  the model reaches them. Each is a scope or a page drawn by the same code as the rest. Pending KP3-N.
+- **Still made new on a kept page:** the receipt's popup (made when the dot is clicked, outside a draw) and
+  `Pieces.openPopover`'s contents, both on a click and not on the clock.
