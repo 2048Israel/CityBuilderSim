@@ -32,7 +32,8 @@ import java.util.TreeMap;
  * moves. What is checkable:
  *
  *   1. THE DATA IS READ: every template the notes name carries its piece, its since, ends, buys, work and life read back from buildings.json
- *      (the file read here with Gson, its figures not typed twice), no other template carries one, the rules the figures were struck by hold
+ *      (the file read here with Gson, its figures not typed twice), no other template carries one but those whose recipes need it (R1c's pieces
+ *      end no form: each is its template's recipe piece, in the file and once read), the rules the figures were struck by hold
  *      on the template's own electricity, construction points, land and truck room, the tractor's code is never known, the drive is known
  *      from 1900; and a bad entry in the file (no id, a second of an id, an unknown form or good, no since, a life of 0) is reported and
  *      skipped, the good ones beside it read
@@ -231,9 +232,14 @@ public class EquipmentCheck {
         BuildingManager bm = new BuildingManager();
         quietly(bm::initializeTemplates);
 
-        int expectedPieces = DRIVES.length + 1 + FARMS.length, carried = 0, filePieces = 0, mismatched = 0;
+        // R1c: a piece may end no form (it enables a recipe), so "ends" may be missing from the file; the pieces that DO end one are the notes' whole.
+        int expectedPieces = DRIVES.length + 1 + FARMS.length, carried = 0, filePieces = 0, fileForms = 0, mismatched = 0;
         String firstMismatch = null;
-        for (JsonObject o : file.values()) if (o.has("equipment")) filePieces += o.getAsJsonArray("equipment").size();
+        for (JsonObject o : file.values()) {
+            if (!o.has("equipment")) continue;
+            filePieces += o.getAsJsonArray("equipment").size();
+            for (JsonElement e : o.getAsJsonArray("equipment")) if (e.getAsJsonObject().has("ends")) fileForms++;
+        }
         for (BuildingsTemplate t : bm.getTemplates()) {
             carried += t.getEquipment().size();
             JsonObject o = file.get(t.getId());
@@ -247,7 +253,7 @@ public class EquipmentCheck {
                 boolean same = j != null
                         && p.getName().equals(j.get("name").getAsString())
                         && p.getSince().equals(j.get("since").getAsString())
-                        && p.getEnds() == Equipment.Form.valueOf(j.get("ends").getAsString())
+                        && p.getEnds() == (j.has("ends") ? Equipment.Form.valueOf(j.get("ends").getAsString()) : null)
                         && p.getWork() == j.get("work").getAsDouble()
                         && p.getLifeMonths() == j.get("lifeMonths").getAsInt()
                         && p.getBuys().size() == j.getAsJsonObject("buys").size();
@@ -263,8 +269,8 @@ public class EquipmentCheck {
                 }
             }
         }
-        check("fixture: the file carries equipment, and the notes' pieces are the whole of it",
-                filePieces == expectedPieces, filePieces + " in the file, " + expectedPieces + " named");
+        check("fixture: the file carries equipment, and the pieces that end a form are the notes' whole of them (R1c's recipe pieces end none)",
+                fileForms == expectedPieces && filePieces >= fileForms, fileForms + " end a form in the file (" + filePieces + " pieces), " + expectedPieces + " named");
         check("every piece in the file is read onto its template, field for field (id, name, since, ends, buys, work, life)",
                 mismatched == 0 && carried == filePieces, firstMismatch == null ? carried + " carried" : firstMismatch);
 
@@ -308,16 +314,54 @@ public class EquipmentCheck {
         check("the tractor is on the three farms alone, ending FARM_HORSES, 3 t of machinery a hundred acres, no work, 180 months",
                 farmOk == FARMS.length, farmOk + " of " + FARMS.length);
 
+        // R1 held that equipment stands only where a 1900 form does; R1c changed it by design (R1-notes call 2: the other rows come "with their 1900
+        // recipes in R1c"): a template may carry the piece its recipes need, which ends no form. So the rule is asked of the model and of the file.
         int other = 0;
+        String firstOther = null;
         List<String> named = new ArrayList<>(List.of(DRIVES));
         named.addAll(List.of(FARMS));
         named.add("Truck Depot");
-        for (BuildingsTemplate t : bm.getTemplates()) if (!t.getEquipment().isEmpty() && !named.contains(t.getName())) other++;
-        check("no other template carries a piece", other == 0, other + " do");
+        for (BuildingsTemplate t : bm.getTemplates()) {
+            if (t.getEquipment().isEmpty() || named.contains(t.getName()) || t.recipePieceId() != null) continue;
+            other++;
+            if (firstOther == null) firstOther = t.getName();
+        }
+        check("no other template carries a piece than the drive's, the depot's, the farms' and the ones whose recipes need one", other == 0, other + " do, " + firstOther + " first");
 
         boolean everyEnds = true;
-        for (BuildingsTemplate t : bm.getTemplates()) for (Equipment p : t.getEquipment()) everyEnds &= p.getEnds() != null;
-        check("every piece ends one of the three forms", everyEnds);
+        String firstEnds = null;
+        for (BuildingsTemplate t : bm.getTemplates()) {
+            for (Equipment p : t.getEquipment()) {
+                boolean ok = p.getEnds() != null || p.getId().equals(t.recipePieceId());
+                everyEnds &= ok;
+                if (!ok && firstEnds == null) firstEnds = t.getName() + "/" + p.getId();
+            }
+        }
+        check("every piece ends one of the three forms or is its template's recipe piece, the one its recipes need", everyEnds, firstEnds);
+
+        int formless = 0, formlessWanted = 0;
+        String firstFormless = null;
+        for (JsonObject o : file.values()) {
+            if (!o.has("equipment")) continue;
+            for (JsonElement e : o.getAsJsonArray("equipment")) {
+                JsonObject piece = e.getAsJsonObject();
+                if (piece.has("ends")) continue;
+                formless++;
+                boolean wanted = false;
+                if (o.has("recipes")) {
+                    for (JsonElement r : o.getAsJsonArray("recipes")) {
+                        JsonObject recipe = r.getAsJsonObject();
+                        wanted |= recipe.has("needsEquipment") && recipe.get("needsEquipment").getAsString().equals(piece.get("id").getAsString());
+                    }
+                }
+                BuildingsTemplate t = bm.getTemplate(o.get("id").getAsInt());
+                wanted &= t != null && piece.get("id").getAsString().equals(t.recipePieceId());
+                if (wanted) formlessWanted++;
+                else if (firstFormless == null) firstFormless = o.get("name").getAsString() + "/" + piece.get("id").getAsString();
+            }
+        }
+        check("...and the file's pieces that end none (" + formless + ") are each needed by a recipe of their building, and are the template's recipe piece once read",
+                formless > 0 && formlessWanted == formless, formlessWanted + " of " + formless + ", first " + firstFormless);
 
         BuildingsTemplate grainFarm = bm.getTemplateByName("Grain Farm"), bakery = bm.getTemplateByName("Bakery");
         Equipment tractor = grainFarm == null ? null : grainFarm.getEquipment(TRACTOR);

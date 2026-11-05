@@ -1,11 +1,17 @@
 package ham.citybuildersim;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import java.io.ByteArrayOutputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -42,10 +48,18 @@ import java.util.function.DoubleUnaryOperator;
  *   7. SAVE AND LOAD: the choices are written only where a part runs other than the default and come back on a load, which ends on them and does
  *      not strike them again from the loaded prices; the next month strikes them afresh, and an unbroken town and its reloaded twin run the same
  *   8. A GAME THAT PLAYED A 1900 TOWN, then founded the default way, keeps no choice and no template off its top level
+ *   9. THE SHIPPED ROWS (R1c's data, buildings.json): in a town founded the 1900 way every template the file gives recipes has the choice read, its
+ *      unfitted part runs a recipe that needs nothing and is known in 1900 and its fitted part one that needs the piece (the farms' tractor is a
+ *      code, so theirs runs the default), each the best its part can run at the city's prices by the model's own value(), and its figures are
+ *      the mix; the Oxygen Steel Shop's unfitted part runs the Bessemer converter and its fitted part the open hearth; the Pulp Mill, with no
+ *      piece, cannot run kraft before kraft's year and can from it, and runs the best it can; the farms buy no fuel on horses and the template's
+ *      fuel times the farms standing in a default town; each recipe piece is priced (PAYS or NOT_YET, its gain Recipes.gainOf()), never
+ *      NOT_KNOWN; and a reload of the town ends on the same choices and the same figures
  *
  * Every fixture CAUSES its condition: the prices are moved across a break-even the harness solves from the model's own value function (affine in a
- * price, so two evaluations give it), the recipes are given to the town's own templates (slice A has no rows in buildings.json: a city's templates
- * are its own), the counts are set on the stacks, and each figure is asserted against the recipes' own and the model's functions.
+ * price, so two evaluations give it), the recipes of 1 to 8 are given to the town's own templates (a city's templates are its own, and the Bakery they
+ * use has no shipped row), the counts are set on the stacks, and each figure is asserted against the recipes' own and the model's functions. The towns
+ * of 1 to 8 are 1900 villages that meet the shipped rows too, so each of their fixtures asks about its own template (choiceOf()), and 9 reads the rows.
  */
 public class RecipeCheck {
 
@@ -81,6 +95,24 @@ public class RecipeCheck {
 
     static BuildingsTemplate template(Game g, String name) { return g.getBuildingManager().getTemplateByName(name); }
 
+    /**
+     * What the city chose for one template: [the fitted part's recipe id, the unfitted part's], or null when it chose nothing for it (both parts run the
+     * default). Asked of the fixture's own template: a 1900 town's other templates run the shipped rows (R1c's data), so "nothing is chosen" over the
+     * whole city is no longer a fixture's to prove.
+     */
+    static List<String> choiceOf(Game g, BuildingsTemplate t) { return g.getRecipes().forSave().get(t.getId()); }
+
+    /** What a save file holds for one template's recipe choice, or null when it holds none. */
+    static List<String> savedChoice(String json, BuildingsTemplate t) {
+        JsonObject root = JsonParser.parseString(json).getAsJsonObject();
+        if (!root.has("recipeChoices")) return null;
+        JsonElement saved = root.getAsJsonObject("recipeChoices").get(String.valueOf(t.getId()));
+        if (saved == null) return null;
+        List<String> ids = new ArrayList<>();
+        for (JsonElement id : saved.getAsJsonArray()) ids.add(id.getAsString());
+        return ids;
+    }
+
     static double cityPrice(Game g, Good good) { return EquipmentCheck.cityPrice(g, good); }
 
     public static void main(String[] args) throws Exception {
@@ -102,6 +134,7 @@ public class RecipeCheck {
         sectionSix();
         sectionSeven();
         sectionEight();
+        sectionNine();
 
         out.println(fails == 0 ? "\nAll RecipeCheck assertions passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -486,14 +519,14 @@ public class RecipeCheck {
             g.getRecipes().apply(g);
         });
         check("below it the city's choice is the richer recipe for both parts, and the Bakery's figures are its figures, to the bit",
-                g.getRecipes().forSave().equals(Map.of(bakery.getId(), List.of("rich", "rich"))) && runs(bakery, rich), String.valueOf(differs(bakery, rich)));
+                List.of("rich", "rich").equals(choiceOf(g, bakery)) && runs(bakery, rich), String.valueOf(differs(bakery, rich)));
         boolean high = EquipmentCheck.priceAt(g, Good.CROPS, even * 1.1);
         quietly(() -> {
             g.getRecipes().choose(g);
             g.getRecipes().apply(g);
         });
         check("a tenth above it the choice is the default, nothing is kept, and the figures are set back to the top level, to the bit",
-                high && g.getRecipes().forSave().isEmpty() && runs(bakery, d) && bakery.runningRecipeIds()[0].equals("default"), String.valueOf(differs(bakery, d)));
+                high && choiceOf(g, bakery) == null && runs(bakery, d) && bakery.runningRecipeIds()[0].equals("default"), String.valueOf(differs(bakery, d)));
 
         // ...and from the month itself: the Policy's top of the month chooses at the prices there.
         boolean far = EquipmentCheck.priceAt(g, Good.CROPS, even * 0.5);
@@ -502,7 +535,7 @@ public class RecipeCheck {
         step(g, 1);
         check("fixture: the crops price moved to half the break-even, where the richer recipe is the best", far && expectedRecipe == rich);
         check("a press of the month at those prices chooses it and leaves the Bakery running it (the top of the month chooses, and the sites' end applies)",
-                g.getRecipes().forSave().equals(Map.of(bakery.getId(), List.of("rich", "rich"))) && runs(bakery, rich), String.valueOf(differs(bakery, rich)));
+                List.of("rich", "rich").equals(choiceOf(g, bakery)) && runs(bakery, rich), String.valueOf(differs(bakery, rich)));
 
         // A recipe with goods its sector does not declare: the sector declares them where apply() first meets a template that knows it (every recipe of it, run or not), and not before.
         Sector industry = g.getSectors().industry();
@@ -592,7 +625,7 @@ public class RecipeCheck {
             g.getRecipes().apply(g);
         });
         check("in the city the unfitted part chose the better one and the fitted part the ovens, and nothing that is not known",
-                g.getRecipes().forSave().equals(Map.of(t.getId(), List.of("ovens", "better"))), g.getRecipes().forSave().toString());
+                List.of("ovens", "better").equals(choiceOf(g, t)), String.valueOf(choiceOf(g, t)));
         check("both buildings are without the drive, so the template runs the unfitted part's recipe alone, to the bit", runs(t, n), String.valueOf(differs(t, n)));
         stack.setUnfitted(DRIVE, 0);
         quietly(() -> g.getRecipes().apply(g));
@@ -609,7 +642,7 @@ public class RecipeCheck {
             g.getRecipes().apply(g);
         });
         check("fixture: the fitted part's recipe is the ghost, and no building is fitted to run it: the template runs the default",
-                g.getRecipes().forSave().equals(Map.of(t.getId(), List.of("ghost", "default"))) && runs(t, d), g.getRecipes().forSave().toString());
+                List.of("ghost", "default").equals(choiceOf(g, t)) && runs(t, d), String.valueOf(choiceOf(g, t)));
         check("a recipe no building runs is declared all the same: Industry declares lubricants and LPG", industry.isMaker(Good.LUBRICANTS) && industry.isUser(Good.LPG));
         stack.setUnfitted(DRIVE, 1);
         quietly(() -> g.getRecipes().apply(g));
@@ -661,7 +694,7 @@ public class RecipeCheck {
             g.getRecipes().choose(g);
             g.getRecipes().apply(g);
         });
-        check("the fitted three run the ovens and the unfitted two the default", g.getRecipes().forSave().equals(Map.of(t.getId(), List.of("ovens", "default"))), g.getRecipes().forSave().toString());
+        check("the fitted three run the ovens and the unfitted two the default", List.of("ovens", "default").equals(choiceOf(g, t)), String.valueOf(choiceOf(g, t)));
         check("the template's makes, uses, posts, draw and own power are (3 x the fitted's + 2 x the unfitted's) / 5, the posts and the draw to the nearest whole",
                 notMix(t, p, 3, d, 2) == null, notMix(t, p, 3, d, 2));
         check("...and the mix is not either recipe's alone, nor an unweighted mean (the figures are the weighted ones)", differs(t, p) != null && differs(t, d) != null
@@ -691,7 +724,7 @@ public class RecipeCheck {
             g.getRecipes().choose(g);
             g.getRecipes().apply(g);
         });
-        check("fixture: the recipe that needs the piece is not known in 1900, so both parts run the default, and nothing is chosen", g.getRecipes().forSave().isEmpty()
+        check("fixture: the recipe that needs the piece is not known in 1900, so both parts run the default, and nothing is chosen for the Bakery", choiceOf(g, t) == null
                 && !never.knownIn(year(g)));
         check("two of five unfitted and both parts on the default: the template is set back to its top level, to the bit (no mean of two equal figures)",
                 runs(t, d) && t.runningRecipeIds()[0].equals("default") && t.runningRecipeIds()[1].equals("default"), String.valueOf(differs(t, d)));
@@ -801,8 +834,8 @@ public class RecipeCheck {
         });
         GameFiles.Result none = save10(a, "recipe none");
         String noneJson = none.ok ? Files.readString(a.getGameFiles().saveFile(10)) : "";
-        check("with crops dear the default is the best for both parts: nothing is chosen, and the save has no recipe key", dear && Recipes.best(bakery, false, year(a), frozen(Recipes.pricesOf(a))) == d
-                && none.ok && a.getRecipes().forSave().isEmpty() && !noneJson.contains("recipeChoices"), none.message());
+        check("with crops dear the default is the best for both parts: nothing is chosen for the Bakery, and the save has no choice for it", dear && Recipes.best(bakery, false, year(a), frozen(Recipes.pricesOf(a))) == d
+                && none.ok && choiceOf(a, bakery) == null && savedChoice(noneJson, bakery) == null, none.message());
 
         // The choice that is saved: one Bakery fitted, one not; crops at today's price, where the alternative is the best that needs nothing.
         bakery.setRecipes(List.of(d, ovens, alt));
@@ -811,10 +844,10 @@ public class RecipeCheck {
         step(a, 1);
         Map<Integer, List<String>> chosen = a.getRecipes().forSave();
         check("fixture: after a month at today's prices the fitted Bakery runs the ovens and the unfitted one the richer alternative, and the template is their mix",
-                chosen.equals(Map.of(bakery.getId(), List.of("ovens", "alt"))) && notMix(bakery, ovens, 1, alt, 1) == null, chosen + " / " + notMix(bakery, ovens, 1, alt, 1));
+                List.of("ovens", "alt").equals(chosen.get(bakery.getId())) && notMix(bakery, ovens, 1, alt, 1) == null, chosen.get(bakery.getId()) + " / " + notMix(bakery, ovens, 1, alt, 1));
         GameFiles.Result wrote = save10(a, "recipe save");
         String json = wrote.ok ? Files.readString(a.getGameFiles().saveFile(10)) : "";
-        check("the city saved, with the choices in the file under the template's id", wrote.ok && json.contains("recipeChoices") && json.contains("\"ovens\"") && json.contains("\"alt\""), wrote.message());
+        check("the city saved, with the Bakery's choices in the file under the template's id", wrote.ok && List.of("ovens", "alt").equals(savedChoice(json, bakery)), wrote.message());
 
         // The load: the templates the catalogue gives a loaded city have no such recipes (slice A has no rows), so the harness hands them what a catalogue
         // with the rows would have: the same recipes, after the load that holds the choices, then says the month's apply.
@@ -848,7 +881,7 @@ public class RecipeCheck {
                 c.getRecipes().forSave().equals(chosen) && differs(cc, bakery) == null, c.getRecipes().forSave() + " / " + differs(cc, bakery));
         step(c, 1);
         check("the next month's top strikes them afresh at those prices: the unfitted part now runs the default, the fitted the ovens",
-                c.getRecipes().forSave().equals(Map.of(cc.getId(), List.of("ovens", "default"))) && notMix(cc, ovens, 1, d, 1) == null, c.getRecipes().forSave().toString());
+                List.of("ovens", "default").equals(choiceOf(c, cc)) && notMix(cc, ovens, 1, d, 1) == null, String.valueOf(choiceOf(c, cc)));
 
         // The twin: the unbroken city and the loaded one, one month on.
         step(a, 1);
@@ -873,7 +906,7 @@ public class RecipeCheck {
         stack(g, "Bakery").setUnfitted(DRIVE, 1);
         step(g, 1);
         check("fixture: the 1900 town chose the ovens for its fitted Bakery and runs a mix, off its top level",
-                g.getRecipes().forSave().equals(Map.of(bakery.getId(), List.of("ovens", "default"))) && differs(bakery, d) != null);
+                List.of("ovens", "default").equals(choiceOf(g, bakery)) && differs(bakery, d) != null);
 
         quietly(() -> g.newGame(Founding.defaults()));
         check("a new game founded the default way on the same object: not founded the 1900 way, and no choice kept", !g.foundedUnfitted() && g.getRecipes().forSave().isEmpty());
@@ -891,5 +924,235 @@ public class RecipeCheck {
         step(g, 3);
         check("given a recipe that earns more and three months pressed, the new city's Bakery still runs its top level and nothing is chosen",
                 runs(fresh, fd) && g.getRecipes().forSave().isEmpty() && !g.foundedUnfitted(), String.valueOf(differs(fresh, fd)));
+    }
+
+    /* ============================ 9. the shipped rows ============================ */
+
+    /** Stands at least n of the template in the town: bought without construction where the ground has room for it, else put on the books; each order that took the second way adds one to direct[0]. */
+    static void stand(Game g, BuildingsTemplate t, int n, int[] direct) {
+        BuildingsStacks have = g.getBuildingManager().getStack(t);
+        int missing = n - (have == null ? 0 : have.getQuantity());
+        if (missing <= 0) return;
+        Game.BuildResult[] result = new Game.BuildResult[1];
+        quietly(() -> result[0] = g.buildStack(t, missing, true));
+        if (result[0] == Game.BuildResult.SUCCESS) return;
+        quietly(() -> g.getBuildingManager().addStack(t, missing, true));
+        direct[0]++;
+    }
+
+    /** A recipe's value for a ranking: not a number is the worst there is, as Recipes.best() reads it. */
+    static double score(Recipe r, Recipes.Prices p) {
+        double v = Recipes.value(r, p);
+        return Double.isNaN(v) ? Double.NEGATIVE_INFINITY : v;
+    }
+
+    /**
+     * Why a part does not run the best recipe it can, by the model's own value(), or null when it does: it cannot run it (the default is run where the
+     * part can run none), or another it can run is worth more at these prices.
+     */
+    static String notBest(BuildingsTemplate t, Recipe run, boolean fitted, int year, Recipes.Prices p) {
+        boolean any = false;
+        for (Recipe r : t.getRecipes()) {
+            if (!Recipes.canRun(t, r, fitted, year)) continue;
+            any = true;
+            if (score(r, p) > score(run, p)) return r.getId() + " is worth more than " + run.getId();
+        }
+        if (!any) return run == t.defaultRecipe() ? null : run.getId() + " runs where none can";
+        return Recipes.canRun(t, run, fitted, year) ? null : run.getId() + " cannot run";
+    }
+
+    static void sectionNine() throws Exception {
+        out.println("\n--- 9. the shipped rows: every template of buildings.json with recipes runs the best each part can, the farms' fuel, the pieces priced, a reload ends alike ---");
+        JsonObject root;
+        try (InputStreamReader in = new InputStreamReader(RecipeCheck.class.getResourceAsStream("/" + BuildingCatalog.FILE_NAME), StandardCharsets.UTF_8)) {
+            root = JsonParser.parseReader(in).getAsJsonObject();
+        }
+        java.util.Set<Integer> inFile = new java.util.TreeSet<>(), pieceInFile = new java.util.TreeSet<>();
+        for (JsonElement e : root.getAsJsonArray("buildings")) {
+            JsonObject o = e.getAsJsonObject();
+            if (!o.has("recipes")) continue;
+            inFile.add(o.get("id").getAsInt());
+            for (JsonElement r : o.getAsJsonArray("recipes")) if (r.getAsJsonObject().has("needsEquipment")) pieceInFile.add(o.get("id").getAsInt());
+        }
+        Game g = town("recipe-shipped", true);
+        Game def = town("recipe-shipped-default", false);
+        List<BuildingsTemplate> shipped = new ArrayList<>(), withPiece = new ArrayList<>();
+        java.util.Set<Integer> read = new java.util.TreeSet<>(), readPiece = new java.util.TreeSet<>();
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
+            if (!t.hasRecipeChoice()) continue;
+            shipped.add(t);
+            read.add(t.getId());
+            if (t.recipePieceId() != null) {
+                withPiece.add(t);
+                readPiece.add(t.getId());
+            }
+        }
+        check("fixture: the templates with a choice are the buildings the file gives recipes, and the ones with a recipe piece those whose recipes need one (read from the file here)",
+                !inFile.isEmpty() && read.equals(inFile) && readPiece.equals(pieceInFile), read + " vs " + inFile + " / " + readPiece + " vs " + pieceInFile);
+        check("fixture: the town is founded the 1900 way, in 1900, and the default town is not", g.foundedUnfitted() && year(g) == 1900 && !def.foundedUnfitted());
+
+        // The town stands two of every template that carries a recipe piece, each wholly unfitted (the founding's way); the default town its three farms.
+        int[] direct = { 0 };
+        for (BuildingsTemplate t : withPiece) stand(g, t, 2, direct);
+        for (String farm : EquipmentCheck.FARMS) stand(def, template(def, farm), 1, new int[1]);
+        quietly(g::unfitTheFounding);
+        boolean standing = true;
+        for (BuildingsTemplate t : withPiece) {
+            BuildingsStacks st = g.getBuildingManager().getStack(t);
+            standing &= st != null && st.getQuantity() >= 2 && st.getUnfitted(t.recipePieceId()) == st.getQuantity();
+        }
+        check("fixture: at least two of every template with a recipe piece stand in the 1900 town (" + direct[0] + " of them put on the books, buildStack() having refused the order), all unfitted", standing);
+
+        // (b) the farms' fuel
+        Sector agri = g.getSectors().agriculture(), agriDef = def.getSectors().agriculture();
+        boolean farmsOk = true, horsesBuyNone = true, topBuys = true;
+        double dieselWanted = 0, petrolWanted = 0;
+        for (String farm : EquipmentCheck.FARMS) {
+            BuildingsTemplate ft = template(g, farm), fd = template(def, farm);
+            Recipe horses = ft.getRecipe("horses");
+            horsesBuyNone &= horses != null && !horses.uses().containsKey(Good.DIESEL) && !horses.uses().containsKey(Good.PETROL);
+            topBuys &= ft.defaultRecipe().uses().getOrDefault(Good.DIESEL, 0.0) > 0 && ft.defaultRecipe().uses().getOrDefault(Good.PETROL, 0.0) > 0;
+            farmsOk &= ft.runningRecipeIds()[1].equals("horses") && runs(ft, horses) && runs(fd, fd.defaultRecipe()) && stack(def, farm).getQuantity() > 0;
+            dieselWanted += stack(def, farm).getQuantity() * fd.defaultRecipe().uses().getOrDefault(Good.DIESEL, 0.0);
+            petrolWanted += stack(def, farm).getQuantity() * fd.defaultRecipe().uses().getOrDefault(Good.PETROL, 0.0);
+        }
+        check("fixture: each farm's top level (the tractor's recipe) buys diesel and petrol and its horses' recipe buys neither, and with every farm unfitted the 1900 town's farms run the horses",
+                topBuys && horsesBuyNone && farmsOk, "top buys " + topBuys + ", horses buy none " + horsesBuyNone + ", farms run horses " + farmsOk);
+        check("in the town founded the 1900 way, with every farm unfitted, the farms' input need at capacity of diesel and of petrol is 0 (the horses' recipe buys none)",
+                agri.getInputAtCapacity(Good.DIESEL) == 0 && agri.getInputAtCapacity(Good.PETROL) == 0, agri.getInputAtCapacity(Good.DIESEL) + " / " + agri.getInputAtCapacity(Good.PETROL));
+        check("...and the sector declares both as its inputs, though no farm buys them there", agri.isUser(Good.DIESEL) && agri.isUser(Good.PETROL));
+        near("in the default town the farms' input need at capacity of diesel is each farm's fuel times the farms standing, every template running its top level",
+                agriDef.getInputAtCapacity(Good.DIESEL), dieselWanted, 1e-9);
+        near("...and of petrol", agriDef.getInputAtCapacity(Good.PETROL), petrolWanted, 1e-9);
+        check("...which is more than nothing, and the default town chose nothing", dieselWanted > 0 && petrolWanted > 0 && def.getRecipes().forSave().isEmpty());
+
+        // (a) every template with a choice: both parts, the best each can run
+        for (BuildingsTemplate t : withPiece) g.getBuildingManager().getStack(t).setUnfitted(t.recipePieceId(), 1);
+        quietly(() -> {
+            g.getRecipes().choose(g);
+            g.getRecipes().apply(g);
+        });
+        int year = year(g);
+        Recipes.Prices pc = frozen(Recipes.pricesOf(g));
+        String unfittedFault = null, fittedFault = null, bestFault = null, entryFault = null, mixFault = null;
+        for (BuildingsTemplate t : withPiece) {
+            BuildingsStacks st = g.getBuildingManager().getStack(t);
+            Recipe ru = Recipes.best(t, false, year, pc), rf = Recipes.best(t, true, year, pc);
+            if (unfittedFault == null && !(ru.getNeedsEquipment() == null && ru.knownIn(year))) unfittedFault = t.getName() + ": " + ru;
+            if (fittedFault == null && !(t.recipePieceId().equals(rf.getNeedsEquipment()) && (rf.knownIn(year) || rf == t.defaultRecipe()))) fittedFault = t.getName() + ": " + rf;
+            String worse = notBest(t, ru, false, year, pc);
+            if (worse == null) worse = notBest(t, rf, true, year, pc);
+            if (bestFault == null && worse != null) bestFault = t.getName() + ": " + worse;
+            if (entryFault == null && !List.of(rf.getId(), ru.getId()).equals(choiceOf(g, t))) entryFault = t.getName() + ": " + choiceOf(g, t) + " vs " + rf.getId() + ", " + ru.getId();
+            if (mixFault == null) {
+                String mix = notMix(t, rf, st.getQuantity() - 1, ru, 1);
+                if (mix != null) mixFault = t.getName() + ": " + mix;
+            }
+        }
+        check("every template with a recipe piece: its unfitted part runs a recipe that needs nothing and is known in the city's year", unfittedFault == null && !withPiece.isEmpty(), unfittedFault);
+        check("...and its fitted part one that needs the piece, known in the year, or the default where it can run none (the farms' tractor recipe is a code)", fittedFault == null, fittedFault);
+        check("...each the best its part can run at the city's prices, by the model's own Recipes.value(): no recipe it can run is worth more", bestFault == null, bestFault);
+        check("...the city chose exactly those two for the template, [fitted, unfitted], and keeps them", entryFault == null, entryFault);
+        check("...and with one building of two or more unfitted the template's figures are the weighted mix of the two", mixFault == null, mixFault);
+
+        BuildingsTemplate oxygen = template(g, "Oxygen Steel Shop");
+        check("the Oxygen Steel Shop: its unfitted part runs the Bessemer converter (the basic-oxygen converter, its default, is a code and never known) and its fitted part the open hearth",
+                oxygen.defaultRecipe().getId().equals("basic-oxygen") && !oxygen.defaultRecipe().isYear() && List.of("open-hearth", "bessemer").equals(choiceOf(g, oxygen))
+                        && Recipes.best(oxygen, false, year, pc).getId().equals("bessemer") && Recipes.best(oxygen, true, year, pc).getId().equals("open-hearth"), String.valueOf(choiceOf(g, oxygen)));
+        double dieselFitted = 0;
+        for (String farm : EquipmentCheck.FARMS) {
+            BuildingsStacks st = stack(g, farm);
+            dieselFitted += (st.getQuantity() - st.getUnfitted(EquipmentCheck.TRACTOR)) * template(g, farm).defaultRecipe().uses().getOrDefault(Good.DIESEL, 0.0);
+        }
+        near("a farm with its tractor fitted buys the tractor's fuel and one without it none: the farms' need of diesel is the fitted farms' times the tractor recipe's",
+                agri.getInputAtCapacity(Good.DIESEL), dieselFitted, 1e-9);
+
+        // The Pulp Mill: no piece, kraft from its year, the best of what it can run.
+        BuildingsTemplate pulp = template(g, "Pulp Mill");
+        Recipe kraft = pulp.getRecipe("kraft"), sulphite = pulp.getRecipe("sulphite"), groundwood = pulp.getRecipe("groundwood");
+        Recipe pulpRun = Recipes.best(pulp, false, year, pc);
+        boolean onlyOneWithout = true;
+        for (BuildingsTemplate t : shipped) onlyOneWithout &= t.recipePieceId() != null || t == pulp;
+        check("the Pulp Mill is the one shipped template with no recipe piece, and in 1900 it cannot run kraft (its year is later) but can run sulphite and groundwood",
+                onlyOneWithout && pulp.recipePieceId() == null && pulp.recipePiece() == null && kraft.isYear() && Integer.parseInt(kraft.getSince()) > year && !Recipes.canRun(pulp, kraft, false, year)
+                        && !Recipes.canRun(pulp, kraft, true, year) && Recipes.canRun(pulp, sulphite, false, year) && Recipes.canRun(pulp, groundwood, false, year),
+                String.valueOf(kraft));
+        check("...and runs whichever of those is worth more at the city's prices, for both parts, its figures that recipe's to the bit",
+                (pulpRun == sulphite || pulpRun == groundwood) && notBest(pulp, pulpRun, false, year, pc) == null && Double.isFinite(Recipes.value(pulpRun, pc))
+                        && List.of(pulpRun.getId(), pulpRun.getId()).equals(choiceOf(g, pulp)) && runs(pulp, pulpRun), pulpRun + " / " + choiceOf(g, pulp) + " / " + differs(pulp, pulpRun));
+
+        // (c) each recipe piece is priced
+        String verdictFault = null, newFault = null;
+        int formless = 0;
+        for (BuildingsTemplate t : withPiece) {
+            Equipment piece = t.recipePiece();
+            if (piece.getEnds() != null) continue;
+            formless++;
+            EquipmentFit.Verdict v = EquipmentFit.verdict(g, g.getBuildingManager().getStack(t), piece), fresh = EquipmentFit.verdictForNew(g, t, piece);
+            double gain = Recipes.gainOf(g, t);
+            if (verdictFault == null && !((v.kind() == EquipmentFit.Kind.PAYS || v.kind() == EquipmentFit.Kind.NOT_YET) && Double.isFinite(v.gain())
+                    && Double.isFinite(gain) && Math.abs(v.gain() - gain) <= 1e-12 * Math.max(1, Math.abs(gain)))) {
+                verdictFault = t.getName() + "/" + piece.getId() + ": " + v + " vs gain " + gain;
+            }
+            if (newFault == null && !((fresh.kind() == EquipmentFit.Kind.PAYS || fresh.kind() == EquipmentFit.Kind.NOT_YET) && Double.isFinite(fresh.gain())
+                    && Math.abs(fresh.gain() - gain) <= 1e-12 * Math.max(1, Math.abs(gain)))) {
+                newFault = t.getName() + "/" + piece.getId() + ": " + fresh;
+            }
+        }
+        check("each recipe piece that ends no form (" + formless + ") has a priced verdict in the 1900 town, PAYS or NOT_YET and never NOT_KNOWN, its gain finite and Recipes.gainOf()",
+                formless > 0 && verdictFault == null, verdictFault);
+        check("...and a new building's verdict for it is priced the same way", newFault == null, newFault);
+        BuildingsTemplate grain = template(g, "Grain Farm");
+        Equipment tractor = grain.getEquipment(EquipmentCheck.TRACTOR);
+        check("the farms' tractor is their recipe piece and ends FARM_HORSES, and its verdict is NOT_KNOWN (its year is a code): the fitted farm part runs the default",
+                tractor != null && grain.recipePiece() == tractor && tractor.getEnds() == Equipment.Form.FARM_HORSES && !tractor.isYear()
+                        && EquipmentFit.verdict(g, stack(g, "Grain Farm"), tractor).kind() == EquipmentFit.Kind.NOT_KNOWN
+                        && Recipes.best(grain, true, year, pc) == grain.defaultRecipe());
+
+        // (d) a reload ends on the same choices and the same figures
+        GameFiles.Result wrote = save10(g, "recipe shipped");
+        Game back = wrote.ok ? load10(g) : null;
+        check("the 1900 town saved, and loads", wrote.ok && back != null && back.getLoadFailure() == null && back.foundedUnfitted(), wrote.message());
+        if (back == null) return;
+        String choiceFault = null, figureFault = null;
+        for (BuildingsTemplate t : shipped) {
+            BuildingsTemplate bt = template(back, t.getName());
+            if (choiceFault == null && (bt == null || !java.util.Objects.equals(choiceOf(g, t), choiceOf(back, bt))
+                    || !java.util.Arrays.equals(t.runningRecipeIds(), bt.runningRecipeIds()))) {
+                choiceFault = t.getName() + ": " + choiceOf(g, t) + " vs " + (bt == null ? "no template" : choiceOf(back, bt) + " / " + String.join(",", bt.runningRecipeIds()));
+            }
+            if (figureFault == null && bt != null && differs(bt, t) != null) figureFault = t.getName() + ": " + differs(bt, t);
+        }
+        check("a reload of the 1900 town ends on the same choices for every shipped template, and the same running recipes", choiceFault == null && back.getRecipes().forSave().equals(g.getRecipes().forSave()), choiceFault);
+        check("...and on the same template figures, to the bit: makes, uses, posts, draw, own power, water and consumables", figureFault == null, figureFault);
+
+        // From kraft's year: it can be run, and the mill runs the best of the three.
+        Game late = town("recipe-kraft", true);
+        BuildingsTemplate lp = template(late, "Pulp Mill");
+        Recipe lateKraft = lp.getRecipe("kraft");
+        int kraftYear = Integer.parseInt(lateKraft.getSince());
+        int guard = 0;
+        while (!(year(late) == kraftYear - 1 && CityCalendar.monthOfYear(late.getMonth()) == 12) && guard++ < 12 * (kraftYear - 1900) + 24) step(late, 1);
+        quietly(() -> {
+            late.getRecipes().choose(late);
+            late.getRecipes().apply(late);
+        });
+        Recipes.Prices december = frozen(Recipes.pricesOf(late));
+        Recipe runDecember = Recipes.best(lp, false, year(late), december);
+        check("fixture: pressed to the December before kraft's year, the mill cannot run kraft and runs the better of the other two, its figures that recipe's",
+                year(late) == kraftYear - 1 && CityCalendar.monthOfYear(late.getMonth()) == 12 && !Recipes.canRun(lp, lateKraft, false, year(late)) && runDecember != lateKraft
+                        && notBest(lp, runDecember, false, year(late), december) == null && runs(lp, runDecember), year(late) + " " + CityCalendar.monthOfYear(late.getMonth()) + " " + runDecember);
+        step(late, 1);
+        quietly(() -> {
+            late.getRecipes().choose(late);
+            late.getRecipes().apply(late);
+        });
+        Recipes.Prices january = frozen(Recipes.pricesOf(late));
+        Recipe runJanuary = Recipes.best(lp, false, year(late), january);
+        List<String> expectedChoice = runJanuary.isDefault() ? null : List.of(runJanuary.getId(), runJanuary.getId());
+        check("from January of kraft's year kraft is among what the mill can run", year(late) == kraftYear && Recipes.canRun(lp, lateKraft, false, year(late)) && Recipes.canRun(lp, lateKraft, true, year(late)));
+        check("...and it runs the one worth most of the three at the city's prices, by value(), kept as the city's choice (none when that is the default, kraft), its figures that recipe's",
+                notBest(lp, runJanuary, false, year(late), january) == null && Double.isFinite(Recipes.value(runJanuary, january))
+                        && java.util.Objects.equals(expectedChoice, choiceOf(late, lp)) && runs(lp, runJanuary), runJanuary + " / " + choiceOf(late, lp));
     }
 }
