@@ -1,14 +1,15 @@
-# gate of Merge batch/DT1: the same code gave another city twice under load (FloatLinkCheck's town: month 125 instead of 61, 1,067 people instead of 909; five other repeats the same): find what in a month reads the machine, if anything, or rule it out, 0.9.20
+# gate of Merge batch/KP4: screens kept: Sectors, the list and a business's five pages; and Sectors' count-up held to 1x-10x (`UserInterface.countsUp()`, KP1-N), 0.9.21
 # date: 2026-11-05
 # earth-2.bin: named
 # nightly: 2026-11-05 09:11 0.9.17 a0661fe8 4,000 months: OK in 109 s
-# suite: 175 harnesses run in 2188s: 171 passed, 4 failed
-# timing: 16 harnesses run in 568s: 13 passed, 3 failed; its red lines were judged side by side with main's, below
+# suite: 175 harnesses run in 2322s: 171 passed, 4 failed
+# timing: 16 harnesses run in 644s: 13 passed, 3 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 26.9 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 27.7 ms, batch 31.4 ms (+13.7%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 34.8 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 29.9 ms, batch 27.1 ms (-9.3%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 22.7 ms, batch 23.8 ms (+5.0%), budget 19 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | 3 FAILED   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 3.04 ms, batch 2.94 ms (-3.4%), budget 5 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 19.7 ms, batch 18.5 ms (-5.9%), budget 19 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | 4 FAILED   [the harness's own count of the timing reds above]
 CentralBankCheck | exit 1
 CentralBankCheck | ...and in at least STRICT_SHARE of them, 9 of 12 (8 hold)          FAIL
 CentralBankCheck | 1 FAILED

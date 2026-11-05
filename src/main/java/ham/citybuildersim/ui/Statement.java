@@ -167,30 +167,33 @@ public final class Statement {
 
     /** ...with the two columns named - the bank's balance sheet sets this month beside "a year ago" (0.7.13). */
     public static HBox bookHead(String left, String now, String then) {
-        Label what = new Label(left);
-        what.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+        // Kept (KP4): through Kept (a new node outside a draw), in a scope of one shape.
+        return Kept.scope("bookHead", () -> {
+            Label what = Kept.label(left);
+            what.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
 
-        Region gap = new Region();
-        HBox.setHgrow(gap, Priority.ALWAYS);
+            Region gap = Kept.region();
+            HBox.setHgrow(gap, Priority.ALWAYS);
 
-        Label a = new Label(now);
-        a.setPrefWidth(BOOK_NOW);
-        a.setMinWidth(BOOK_NOW);
-        a.setAlignment(Pos.CENTER_RIGHT);
-        a.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+            Label a = Kept.label(now);
+            a.setPrefWidth(BOOK_NOW);
+            a.setMinWidth(BOOK_NOW);
+            a.setAlignment(Pos.CENTER_RIGHT);
+            a.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
 
-        Label b = new Label(then);
-        b.setPrefWidth(BOOK_THEN);
-        b.setMinWidth(BOOK_THEN);
-        b.setAlignment(Pos.CENTER_RIGHT);
-        b.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+            Label b = Kept.label(then);
+            b.setPrefWidth(BOOK_THEN);
+            b.setMinWidth(BOOK_THEN);
+            b.setAlignment(Pos.CENTER_RIGHT);
+            b.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
 
-        HBox row = new HBox(Palette.GAP, what, gap, a, b);
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.setMaxWidth(STATEMENT);
-        row.setPrefWidth(STATEMENT);
-        row.setStyle("-fx-padding: 4 0 2 0;");
-        return row;
+            HBox row = Kept.row(Palette.GAP, what, gap, a, b);
+            row.setAlignment(Pos.CENTER_LEFT);
+            row.setMaxWidth(STATEMENT);
+            row.setPrefWidth(STATEMENT);
+            row.setStyle("-fx-padding: 4 0 2 0;");
+            return row;
+        });
     }
 
     /**
@@ -205,32 +208,34 @@ public final class Statement {
      * before it was kept (0.7.13).
      */
     public static HBox bookLine(String label, double now, double then, boolean known, String tone) {
+        return Kept.scope("bookLine", () -> {
 
-        Label what = new Label(label);
-        what.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_LABEL));
+            Label what = Kept.label(label);
+            what.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_LABEL));
 
-        Region gap = new Region();
-        HBox.setHgrow(gap, Priority.ALWAYS);
+            Region gap = Kept.region();
+            HBox.setHgrow(gap, Priority.ALWAYS);
 
-        Label a = new Label(Double.isNaN(now) ? "—" : tightMoney(toDollars(now), false));
-        a.setPrefWidth(BOOK_NOW);
-        a.setMinWidth(BOOK_NOW);
-        a.setAlignment(Pos.CENTER_RIGHT);
-        a.setStyle(Palette.figure(Palette.SIZE_BODY,
-                tone == null ? Palette.TEXT_BODY : tone));
+            Label a = Kept.label(Double.isNaN(now) ? "—" : tightMoney(toDollars(now), false));
+            a.setPrefWidth(BOOK_NOW);
+            a.setMinWidth(BOOK_NOW);
+            a.setAlignment(Pos.CENTER_RIGHT);
+            a.setStyle(Palette.figure(Palette.SIZE_BODY,
+                    tone == null ? Palette.TEXT_BODY : tone));
 
-        Label b = new Label(known && !Double.isNaN(then) ? tightMoney(toDollars(then), false) : "—");
-        b.setPrefWidth(BOOK_THEN);
-        b.setMinWidth(BOOK_THEN);
-        b.setAlignment(Pos.CENTER_RIGHT);
-        b.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_SPENT));
+            Label b = Kept.label(known && !Double.isNaN(then) ? tightMoney(toDollars(then), false) : "—");
+            b.setPrefWidth(BOOK_THEN);
+            b.setMinWidth(BOOK_THEN);
+            b.setAlignment(Pos.CENTER_RIGHT);
+            b.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_SPENT));
 
-        HBox row = new HBox(Palette.GAP, what, gap, a, b);
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.setMaxWidth(STATEMENT);
-        row.setPrefWidth(STATEMENT);
-        row.setStyle("-fx-padding: 3 0 3 0;");
-        return row;
+            HBox row = Kept.row(Palette.GAP, what, gap, a, b);
+            row.setAlignment(Pos.CENTER_LEFT);
+            row.setMaxWidth(STATEMENT);
+            row.setPrefWidth(STATEMENT);
+            row.setStyle("-fx-padding: 3 0 3 0;");
+            return row;
+        });
     }
 
     /** A statement line that opens into its parts. `word` is the one-word hint on the mark. */
@@ -245,29 +250,32 @@ public final class Statement {
      */
     public static VBox bookLine(String label, double now, double then, boolean known, String tone,
                           VBox detail, String word, java.util.Set<String> open) {
+        // Kept (KP4): a scope of one shape: the line, the box, and the mark a line with something under it has.
+        return Kept.scope("bookLine opens", () -> {
 
-        HBox row = bookLine(label, now, then, known, tone);
-        VBox box = new VBox(0, row);
-        box.setMaxWidth(STATEMENT);
-        if (detail == null || detail.getChildren().isEmpty()) return box;
+            HBox row = bookLine(label, now, then, known, tone);
+            VBox box = Kept.column(0, row);
+            box.setMaxWidth(STATEMENT);
+            if (detail == null || detail.getChildren().isEmpty()) return box;
 
-        /*
-         * THE MARK GOES NEXT TO THE LABEL, NOT AT THE END OF THE ROW. The two
-         * money columns are right-aligned to fixed widths so that every figure
-         * on the statement lines up; a caret after them would push the whole
-         * line out of that grid, and a statement whose columns do not line up
-         * is not a statement. Same reason the Government's budget lines put
-         * their mark beside the label (budgetLine, until 0.7.31's ranked bars).
-         */
-        Label mark = new Label(CLOSED + " " + word);
-        mark.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.ACCENT));
-        row.getChildren().add(1, mark);
-        row.setStyle("-fx-padding: 3 0 3 0; -fx-cursor: hand;");
+            /*
+             * THE MARK GOES NEXT TO THE LABEL, NOT AT THE END OF THE ROW. The two
+             * money columns are right-aligned to fixed widths so that every figure
+             * on the statement lines up; a caret after them would push the whole
+             * line out of that grid, and a statement whose columns do not line up
+             * is not a statement. Same reason the Government's budget lines put
+             * their mark beside the label (budgetLine, until 0.7.31's ranked bars).
+             */
+            Label mark = Kept.label(CLOSED + " " + word);
+            mark.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.ACCENT));
+            row.getChildren().add(1, mark);
+            row.setStyle("-fx-padding: 3 0 3 0; -fx-cursor: hand;");
 
-        detail.setStyle("-fx-padding: 1 0 6 16;");
-        opens(row, mark, word, detail, label, open);
-        box.getChildren().add(detail);
-        return box;
+            detail.setStyle("-fx-padding: 1 0 6 16;");
+            opens(row, mark, word, detail, label, open);
+            box.getChildren().add(detail);
+            return box;
+        });
     }
 
     /**
@@ -283,9 +291,11 @@ public final class Statement {
     static void opens(javafx.scene.Node row, Label mark, String word, VBox detail,
                       String key, java.util.Set<String> open) {
         boolean shown = open != null && open.contains(key);
+        // Kept (KP4): set on both sides, so a detail kept from a draw that had it open is closed again by one that has not.
         detail.setVisible(shown);
         detail.setManaged(shown);
         mark.setText((shown ? OPENED : CLOSED) + " " + word);
+        // Set, not added: a kept row is handed back with no handler (Kept), and given this draw's.
         row.setOnMouseClicked(e -> {
             boolean now = !detail.isVisible();
             detail.setVisible(now);
@@ -304,44 +314,46 @@ public final class Statement {
      * the toolkit since the bank's income statement wanted it too (0.7.9).
      */
     public static VBox bookTotal(String label, double now, double then, boolean known, String tone) {
+        return Kept.scope("bookTotal", () -> {
 
-        Region rule = new Region();
-        rule.setMinHeight(1);
-        rule.setPrefHeight(1);
-        rule.setMaxHeight(1);
-        rule.setMaxWidth(STATEMENT);
-        rule.setPrefWidth(STATEMENT);
-        rule.setStyle("-fx-background-color: " + Palette.HAIRLINE + ";");
+            Region rule = Kept.region();
+            rule.setMinHeight(1);
+            rule.setPrefHeight(1);
+            rule.setMaxHeight(1);
+            rule.setMaxWidth(STATEMENT);
+            rule.setPrefWidth(STATEMENT);
+            rule.setStyle("-fx-background-color: " + Palette.HAIRLINE + ";");
 
-        Label what = new Label(label);
-        what.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_BODY)
-                + " -fx-font-weight: bold;");
+            Label what = Kept.label(label);
+            what.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_BODY)
+                    + " -fx-font-weight: bold;");
 
-        Region gap = new Region();
-        HBox.setHgrow(gap, Priority.ALWAYS);
+            Region gap = Kept.region();
+            HBox.setHgrow(gap, Priority.ALWAYS);
 
-        Label a = new Label(tightMoney(toDollars(now), false));
-        a.setPrefWidth(BOOK_NOW);
-        a.setMinWidth(BOOK_NOW);
-        a.setAlignment(Pos.CENTER_RIGHT);
-        a.setStyle(Palette.figure(Palette.SIZE_LEAD,
-                tone == null ? Palette.TEXT_HEAD : tone));
+            Label a = Kept.label(tightMoney(toDollars(now), false));
+            a.setPrefWidth(BOOK_NOW);
+            a.setMinWidth(BOOK_NOW);
+            a.setAlignment(Pos.CENTER_RIGHT);
+            a.setStyle(Palette.figure(Palette.SIZE_LEAD,
+                    tone == null ? Palette.TEXT_HEAD : tone));
 
-        Label b = new Label(known ? tightMoney(toDollars(then), false) : "—");
-        b.setPrefWidth(BOOK_THEN);
-        b.setMinWidth(BOOK_THEN);
-        b.setAlignment(Pos.CENTER_RIGHT);
-        b.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_SPENT));
+            Label b = Kept.label(known ? tightMoney(toDollars(then), false) : "—");
+            b.setPrefWidth(BOOK_THEN);
+            b.setMinWidth(BOOK_THEN);
+            b.setAlignment(Pos.CENTER_RIGHT);
+            b.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_SPENT));
 
-        HBox row = new HBox(Palette.GAP, what, gap, a, b);
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.setMaxWidth(STATEMENT);
-        row.setPrefWidth(STATEMENT);
-        row.setStyle("-fx-padding: 4 0 6 0;");
+            HBox row = Kept.row(Palette.GAP, what, gap, a, b);
+            row.setAlignment(Pos.CENTER_LEFT);
+            row.setMaxWidth(STATEMENT);
+            row.setPrefWidth(STATEMENT);
+            row.setStyle("-fx-padding: 4 0 6 0;");
 
-        VBox box = new VBox(0, rule, row);
-        box.setMaxWidth(STATEMENT);
-        return box;
+            VBox box = Kept.column(0, rule, row);
+            box.setMaxWidth(STATEMENT);
+            return box;
+        });
     }
 
     /**
@@ -366,27 +378,29 @@ public final class Statement {
     /** ...and remembering whether it was open: see opens(). */
     public static VBox statementDisclosure(String label, String value, VBox detail, String hint,
                                            java.util.Set<String> open) {
+        return Kept.scope("statementDisclosure", () -> {
 
-        Label what = new Label(label);
-        what.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_LABEL));
+            Label what = Kept.label(label);
+            what.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_LABEL));
 
-        Label mark = new Label(CLOSED + " " + hint);
-        mark.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.ACCENT));
+            Label mark = Kept.label(CLOSED + " " + hint);
+            mark.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.ACCENT));
 
-        Region gap = new Region();
-        HBox.setHgrow(gap, Priority.ALWAYS);
+            Region gap = Kept.region();
+            HBox.setHgrow(gap, Priority.ALWAYS);
 
-        Label reads = new Label(value);
-        reads.setStyle(Palette.figure(Palette.SIZE_BODY, Palette.TEXT_BODY));
+            Label reads = Kept.label(value);
+            reads.setStyle(Palette.figure(Palette.SIZE_BODY, Palette.TEXT_BODY));
 
-        HBox row = new HBox(Palette.GAP, what, mark, gap, reads);
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.setMaxWidth(STATEMENT);
-        row.setPrefWidth(STATEMENT);
-        row.setStyle("-fx-padding: 3 0 3 0; -fx-cursor: hand;");
-        opens(row, mark, hint, detail, label, open);
+            HBox row = Kept.row(Palette.GAP, what, mark, gap, reads);
+            row.setAlignment(Pos.CENTER_LEFT);
+            row.setMaxWidth(STATEMENT);
+            row.setPrefWidth(STATEMENT);
+            row.setStyle("-fx-padding: 3 0 3 0; -fx-cursor: hand;");
+            opens(row, mark, hint, detail, label, open);
 
-        return new VBox(0, row, detail);
+            return Kept.column(0, row, detail);
+        });
     }
 
     /** A statement line: label left, figure right, in one fixed-width column. */
@@ -445,7 +459,7 @@ public final class Statement {
             head.setText(line + "   " + (open ? OPENED : CLOSED) + " " + hint);
         });
 
-        VBox box = new VBox(1, head, detail);
+        VBox box = Kept.column(1, head, detail);
         return box;
     }
 

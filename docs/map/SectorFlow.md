@@ -33,7 +33,7 @@
 
 **Uses:** [Good](Good.md) (10), [Sector](Sector.md) (8), [BuildCard](BuildCard.md) (4), [GoodsMarket](GoodsMarket.md) (2), [Game](Game.md) (1), [Statement](Statement.md) (1), [Markets](Markets.md) (1), [Construction](Construction.md) (1), [RealEstate](RealEstate.md) (1)
 
-**Used by (4):** [IndustryViewCheck](IndustryViewCheck.md), [ReadPathCheck](ReadPathCheck.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorScreen](SectorScreen.md)
+**Used by (5):** [IndustryViewCheck](IndustryViewCheck.md), [KeptCheck](KeptCheck.md), [ReadPathCheck](ReadPathCheck.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorScreen](SectorScreen.md)
 
 ## Sections
 

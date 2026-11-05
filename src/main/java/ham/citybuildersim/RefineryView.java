@@ -898,6 +898,9 @@ public final class RefineryView {
         y = s2Top;
         Map<Kind, Node> unitNodes = new EnumMap<>(Kind.class);
         Map<Link, Node> bandOf = new java.util.IdentityHashMap<>();
+        // ...and the bands in the slots' order (KP4): an identity map's order differs from call to call, so the boxes came
+        // out in another order every month and a kept picture (SectorScreen.RefineryPicture) painted itself again each draw.
+        List<Link> bandOrder = new ArrayList<>();
         Node furnaces = null;
         for (int i = 0; i < slots.size(); i++) {
             Slot s = slots.get(i);
@@ -911,7 +914,7 @@ public final class RefineryView {
                 double h = s.pass().litres() * k;
                 Node n = s.pass().to().furnaces() ? new Node(x1, y, UNIT_W, h) : new Node(x1, y, x2 + UNIT_W - x1, h);
                 if (s.pass().to().furnaces()) furnaces = n;
-                bandOf.put(s.pass(), n);
+                if (bandOf.put(s.pass(), n) == null) bandOrder.add(s.pass());
                 places.add(new Place(s.pass().to().furnaces() ? "furnaces" : "band:" + s.pass().from().cut() + ">"
                         + s.pass().to().product(), n.x, n.y, n.w, n.h));
                 y += h;
@@ -1077,9 +1080,8 @@ public final class RefineryView {
         boxes.add(new Box(cx + 10, colY + colH, cw - 20, 8, CAP, 1, FRAME, false, false, 0, null));
 
         // The bands through the units' columns, and the furnaces.
-        for (Map.Entry<Link, Node> e : bandOf.entrySet()) {
-            Link l = e.getKey();
-            Node n = e.getValue();
+        for (Link l : bandOrder) {
+            Node n = bandOf.get(l);
             if (l.to().furnaces()) continue;
             boxes.add(new Box(n.x, n.y, n.w, Math.max(n.h, .5), colour(l.from().cut()), .5, null, false, false, 0,
                     cutName(l.from().cut()) + " to " + l.to().product().label().toLowerCase() + ", no unit between: "
