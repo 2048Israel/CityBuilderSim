@@ -66,7 +66,7 @@
 
 **Uses:** [Oil](Oil.md) (227), [Game](Game.md) (88), [Good](Good.md) (42), [LandManager](LandManager.md) (40), [Resource](Resource.md) (39), [OilView](OilView.md) (20), [BuildingsTemplate](BuildingsTemplate.md) (19), [Sector](Sector.md) (14), [Sectors](Sectors.md) (12), [Deposit](Deposit.md) (11), [BuildCard](BuildCard.md) (11), [OilCheck](OilCheck.md) (9), [BusinessInvestment](BusinessInvestment.md) (9), [GameFiles](GameFiles.md) (7), [Founding](Founding.md) (7), [World](World.md) (7), [BuildingManager](BuildingManager.md) (4), [LandParcel](LandParcel.md) (2), [MiningCheck](MiningCheck.md) (2), [Statement](Statement.md) (2), [Formats](Formats.md) (2), [GameVersion](GameVersion.md) (2), [BuildingsStacks](BuildingsStacks.md) (2), [LongPlaytest](LongPlaytest.md) (1), [Mining](Mining.md) (1), [BuildingCatalog](BuildingCatalog.md) (1), [JobType](JobType.md) (1), [GoodsMarket](GoodsMarket.md) (1), [SaveFileCheck](SaveFileCheck.md) (1), [EconomyManager](EconomyManager.md) (1)
 
-**Used by (2):** [MapCheck](MapCheck.md), [OilViewCheck](OilViewCheck.md)
+**Used by (3):** [KeptCheck](KeptCheck.md), [MapCheck](MapCheck.md), [OilViewCheck](OilViewCheck.md)
 
 ## Sections
 

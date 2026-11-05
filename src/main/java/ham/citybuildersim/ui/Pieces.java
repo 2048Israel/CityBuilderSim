@@ -1078,6 +1078,10 @@ public final class Pieces {
         track.setStrokeWidth(stroke);
         double s = Double.isFinite(share) ? Math.max(0, Math.min(1, share)) : 0;
         javafx.scene.shape.Arc arc = Kept.of(javafx.scene.shape.Arc.class, javafx.scene.shape.Arc::new);
+        // Kept (KP4): a sweep SectorScreen.sweep() gave this arc at the last draw is stopped here, so a ring that does not sweep
+        // at this draw is left at the length set below (a ring that does is swept again after, from this length).
+        javafx.animation.Animation sweeping = Kept.animationOf(arc);
+        if (sweeping != null) sweeping.stop();
         arc.setCenterX(size / 2);
         arc.setCenterY(size / 2);
         arc.setRadiusX(r);
@@ -2091,6 +2095,17 @@ public final class Pieces {
             layoutKey = now;
             layoutText = text.toString();
             if (moved) requestLayout();
+        }
+
+        /**
+         * The bars standing at this month's figures (KP4): a growth still running from the last draw stopped and the bars
+         * all the way out of the zero line, for a draw that does not animate - a month that lands past the clock speed
+         * the figures can follow (UserInterface.countsUp()), or a redraw in the same month.
+         */
+        public void stand() {
+            javafx.animation.Animation running = Kept.animationOf(this);
+            if (running != null) running.stop();
+            grown.set(1);
         }
 
         /** The bars grow out of the zero line over `millis` - the People page's month landing. */
@@ -3441,20 +3456,23 @@ public final class Pieces {
      * writes the count out.
      */
     public static HBox pips(int n, int of, String colour, double size) {
-        HBox row = new HBox(Math.max(2, size / 2));
-        for (int i = 0; i < of; i++) {
-            Region dot = new Region();
-            dot.setMinSize(size, size);
-            dot.setPrefSize(size, size);
-            dot.setMaxSize(size, size);
-            boolean on = i < n;
-            dot.setStyle("-fx-background-radius: " + size / 2 + "; -fx-border-radius: " + size / 2 + ";"
-                    + " -fx-background-color: " + (on ? colour : "transparent") + ";"
-                    + " -fx-border-color: " + (on ? colour : Palette.CONTROL_EDGE) + "; -fx-border-width: 1.2;");
-            row.getChildren().add(dot);
-        }
-        row.setAlignment(Pos.CENTER_LEFT);
-        return row;
+        // Kept (KP4): a scope of its own, so its dots are handed back to it and to nothing else.
+        return Kept.scope("pips", () -> {
+            HBox row = Kept.row(Math.max(2, size / 2));
+            for (int i = 0; i < of; i++) {
+                Region dot = Kept.region();
+                dot.setMinSize(size, size);
+                dot.setPrefSize(size, size);
+                dot.setMaxSize(size, size);
+                boolean on = i < n;
+                dot.setStyle("-fx-background-radius: " + size / 2 + "; -fx-border-radius: " + size / 2 + ";"
+                        + " -fx-background-color: " + (on ? colour : "transparent") + ";"
+                        + " -fx-border-color: " + (on ? colour : Palette.CONTROL_EDGE) + "; -fx-border-width: 1.2;");
+                row.getChildren().add(dot);
+            }
+            row.setAlignment(Pos.CENTER_LEFT);
+            return row;
+        });
     }
 
     /**
@@ -3469,71 +3487,91 @@ public final class Pieces {
      */
     public static javafx.scene.layout.GridPane factGrid(List<ham.citybuildersim.Sector.Line> lines, int columns,
                                                         java.util.function.Function<ham.citybuildersim.Sector.Line.Tone, String> tone) {
-        List<VBox> groups = new java.util.ArrayList<>();
-        VBox group = null;
-        HBox last = null;
-        for (ham.citybuildersim.Sector.Line l : lines) {
-            switch (l.kind()) {
-                case HEAD -> {
-                    group = new VBox(2);
-                    Label h = new Label(l.label().toUpperCase());
-                    h.setWrapText(true);
-                    h.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL) + " -fx-padding: 0 0 2 0;");
-                    group.getChildren().add(h);
-                    groups.add(group);
-                    last = null;
-                }
-                case NOTE -> {
-                    if (group == null) { group = new VBox(2); groups.add(group); }
-                    boolean layered = !l.value().isEmpty();
-                    if (last != null && !layered) {
-                        javafx.scene.Node dot = infoButton(l.label(), false);
-                        last.getChildren().add(1, dot);
-                        continue;
+        // Kept (KP4): a scope of its own; a group is a scope keyed by its heading and a line one keyed by its label inside it,
+        // so a line that comes and goes with the month takes its own nodes and shifts no other's.
+        return Kept.scope("factGrid", () -> {
+            List<VBox> groups = new java.util.ArrayList<>();
+            VBox group = null;
+            String groupKey = "";
+            HBox last = null;
+            for (ham.citybuildersim.Sector.Line l : lines) {
+                switch (l.kind()) {
+                    case HEAD -> {
+                        groupKey = "group:" + l.label();
+                        group = Kept.scope(groupKey, () -> Kept.column(2));
+                        Label h = Kept.scope(groupKey + "/head", () -> {
+                            Label t = Kept.label(l.label().toUpperCase());
+                            t.setWrapText(true);
+                            t.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL) + " -fx-padding: 0 0 2 0;");
+                            return t;
+                        });
+                        group.getChildren().add(h);
+                        groups.add(group);
+                        last = null;
                     }
-                    HBox note = infoLine(layered ? l.label() : firstWords(l.label()), layered ? l.value() : l.label(),
-                            false, Palette.SIZE_CAPTION, Palette.TEXT_MUTED, STATEMENT);
-                    group.getChildren().add(note);
-                }
-                default -> {
-                    if (group == null) { group = new VBox(2); groups.add(group); }
-                    Label what = new Label(l.label());
-                    what.setWrapText(true);
-                    what.setMinWidth(0);
-                    what.setStyle(Palette.words(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
-                    Region gap = new Region();
-                    HBox.setHgrow(gap, Priority.ALWAYS);
-                    Label figure = new Label(l.value());
-                    figure.setWrapText(true);
-                    figure.setTextAlignment(javafx.scene.text.TextAlignment.RIGHT);
-                    figure.setAlignment(Pos.CENTER_RIGHT);
-                    figure.setMinWidth(Region.USE_PREF_SIZE);
-                    String colour = tone == null ? null : tone.apply(l.tone());
-                    figure.setStyle(Palette.figure(Palette.SIZE_LABEL + 1, colour == null ? Palette.TEXT_HEAD : colour));
-                    HBox row = new HBox(Palette.GAP_TIGHT, what, gap, figure);
-                    row.setAlignment(Pos.CENTER_LEFT);
-                    row.setStyle("-fx-padding: 2 0 2 0; -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 0 1 0;");
-                    HBox.setHgrow(what, Priority.SOMETIMES);
-                    group.getChildren().add(row);
-                    last = row;
+                    case NOTE -> {
+                        if (group == null) {
+                            groupKey = "group:" + groups.size();
+                            group = Kept.scope(groupKey, () -> Kept.column(2));
+                            groups.add(group);
+                        }
+                        boolean layered = !l.value().isEmpty();
+                        if (last != null && !layered) {
+                            javafx.scene.Node dot = Kept.scope("info", () -> infoButton(l.label(), false));
+                            last.getChildren().add(1, dot);
+                            continue;
+                        }
+                        HBox note = Kept.scope("note:" + l.label(), () -> infoLine(layered ? l.label() : firstWords(l.label()),
+                                layered ? l.value() : l.label(), false, Palette.SIZE_CAPTION, Palette.TEXT_MUTED, STATEMENT));
+                        group.getChildren().add(note);
+                    }
+                    default -> {
+                        if (group == null) {
+                            groupKey = "group:" + groups.size();
+                            group = Kept.scope(groupKey, () -> Kept.column(2));
+                            groups.add(group);
+                        }
+                        HBox row = Kept.scope(groupKey + "/line:" + l.label(), () -> {
+                            Label what = Kept.label(l.label());
+                            what.setWrapText(true);
+                            what.setMinWidth(0);
+                            what.setStyle(Palette.words(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
+                            Region gap = Kept.region();
+                            HBox.setHgrow(gap, Priority.ALWAYS);
+                            Label figure = Kept.label(l.value());
+                            figure.setWrapText(true);
+                            figure.setTextAlignment(javafx.scene.text.TextAlignment.RIGHT);
+                            figure.setAlignment(Pos.CENTER_RIGHT);
+                            figure.setMinWidth(Region.USE_PREF_SIZE);
+                            String colour = tone == null ? null : tone.apply(l.tone());
+                            figure.setStyle(Palette.figure(Palette.SIZE_LABEL + 1, colour == null ? Palette.TEXT_HEAD : colour));
+                            HBox r = Kept.row(Palette.GAP_TIGHT, what, gap, figure);
+                            r.setAlignment(Pos.CENTER_LEFT);
+                            r.setStyle("-fx-padding: 2 0 2 0; -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 0 1 0;");
+                            HBox.setHgrow(what, Priority.SOMETIMES);
+                            return r;
+                        });
+                        group.getChildren().add(row);
+                        last = row;
+                    }
                 }
             }
-        }
-        javafx.scene.layout.GridPane grid = equalColumns(Math.max(1, columns), 24);
-        int[] used = new int[Math.max(1, columns)];
-        VBox[] col = new VBox[Math.max(1, columns)];
-        for (int c = 0; c < col.length; c++) {
-            col[c] = new VBox(Palette.GAP_LOOSE);
-            grid.add(col[c], c, 0);
-            javafx.scene.layout.GridPane.setValignment(col[c], javafx.geometry.VPos.TOP);
-        }
-        for (VBox g : groups) {
-            int at = 0;
-            for (int c = 1; c < col.length; c++) if (used[c] < used[at]) at = c;
-            col[at].getChildren().add(g);
-            used[at] += g.getChildren().size() + 1;
-        }
-        return grid;
+            javafx.scene.layout.GridPane grid = equalColumns(Math.max(1, columns), 24);
+            int[] used = new int[Math.max(1, columns)];
+            VBox[] col = new VBox[Math.max(1, columns)];
+            for (int c = 0; c < col.length; c++) {
+                col[c] = Kept.scope("column:" + c, () -> Kept.column(Palette.GAP_LOOSE));
+                grid.add(col[c], c, 0);
+                javafx.scene.layout.GridPane.setValignment(col[c], javafx.geometry.VPos.TOP);
+            }
+            for (VBox g : groups) {
+                int at = 0;
+                for (int c = 1; c < col.length; c++) if (used[c] < used[at]) at = c;
+                col[at].getChildren().add(g);
+                used[at] += g.getChildren().size() + 1;
+            }
+            return grid;
+        });
     }
 
     /** A note's first sentence, for a note shown on its own line with the whole of it behind the (i). */

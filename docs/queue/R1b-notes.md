@@ -2,9 +2,12 @@
 
 ## WHERE IT STANDS
 
-**Ready.** Branch `batch/R1b` from `batch/DT1`'s ship file (RL1); main with
-DT1 in (0.9.20, 239a5e60) merged at 584a3027. Slice A is 00bfd107, slice B
-f64b5916. `--pick` exit 3 and the full suite main's recorded reds only (§4).
+**Ready** again after the gate's send-back (a conflict with KP4 in
+`ui/SectorScreen.java`): main with KP4 in (0.9.21) merged at a180752d, the
+Fit pill put back the kept way (§3). Branch `batch/R1b` from `batch/DT1`'s
+ship file (RL1); main with DT1 in (0.9.20, 239a5e60) merged at 584a3027.
+Slice A is 00bfd107, slice B f64b5916. `--pick` exit 3 and the full suite
+main's recorded reds only (§4).
 The default playtest is main's to the byte but for its run times, so no
 ensemble. What R1d takes from here is R1b-R in the ship file's `## pending`.
 
@@ -122,14 +125,23 @@ and the reviews changed:
   (`Freight.seedTrucks()` takes the larger of the two): a 1900 city may fit a
   depot's trucks while every depot is on teams and the fleet has never been
   seeded, and the seed replaced the trucks held.
-- **`ui/` lines touched** (for KP4, which keeps the Sectors pages):
-  `SectorScreen.buildingsList()`, three lines adding the pill in the row's
-  "you have N" cell, and the new `fitPill()` (about 28 lines) after it; no
-  CSS. Checked by compile only: no city a player founds has a building
+- **`ui/` lines touched**: `SectorScreen.buildingsList()`, three lines adding
+  the pill inside the row's kept "have" scope, and the new `fitPill()` with
+  its three fields after it; no CSS. Since the send-back it is drawn the
+  kept way (KP4, 0.9.21): a `Kept.scope` keyed by the piece, its words this
+  draw's, its click set each draw by `doorPill()` on this draw's template,
+  and a refusal a field the draw reads (shown under the pill in the month it
+  was said), so a kept pill is the pill a page built new draws. Checked by
+  compile and KeptCheck only: no city a player founds has a building
   unfitted, so the pill never shows until R1d.
 
 ## 4. Checks
 
+- **After the send-back**, `--pick` with `KeptCheck` named (`pick.sh` finds
+  no harness reading `SectorScreen`) on the merge with KP4 (a180752d; 69
+  harnesses, LongPlaytest and KeptCheck): **exit 3**, "known red only -
+  CentralBankCheck, ScaleCheck, MapCheck"; KeptCheck all OK; one timing line
+  SOFT (SaveSlotCheck 1).
 - **`--pick`** on the tree before DT1 landed (773df2d8; 69 of 176 harnesses
   and LongPlaytest, for 53 files changed since DT1's tip), the gate's world
   files named: **exit 3**, "known red only - CentralBankCheck, ScaleCheck,

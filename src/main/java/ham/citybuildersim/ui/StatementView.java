@@ -75,15 +75,19 @@ final class StatementView {
      * segments, the one shown lit. A pick redraws through `pick`.
      */
     static HBox viewSwitch(boolean statement, Consumer<Boolean> pick) {
-        HBox box = new HBox(0, segment(SUMMARY, !statement, true, () -> pick.accept(false)),
-                segment(STATEMENT, statement, false, () -> pick.accept(true)));
-        box.setAlignment(Pos.CENTER_RIGHT);
-        box.setMinWidth(Region.USE_PREF_SIZE);
-        return box;
+        // Kept (KP4): every node of this class is made through Kept (a new one outside a kept draw), in a scope of one shape.
+        return Kept.scope("viewSwitch", () -> {
+            HBox box = Kept.row(0, segment(SUMMARY, !statement, true, () -> pick.accept(false)),
+                    segment(STATEMENT, statement, false, () -> pick.accept(true)));
+            box.setAlignment(Pos.CENTER_RIGHT);
+            box.setMinWidth(Region.USE_PREF_SIZE);
+            return box;
+        });
     }
 
     private static Button segment(String word, boolean on, boolean left, Runnable go) {
-        Button b = new Button(word);
+        Button b = Kept.of(Button.class, Button::new);
+        b.setText(word);
         String radius = left ? Palette.RADIUS_TIGHT + " 0 0 " + Palette.RADIUS_TIGHT : "0 " + Palette.RADIUS_TIGHT + " " + Palette.RADIUS_TIGHT + " 0";
         b.setStyle(Palette.words(Palette.SIZE_LABEL, on ? Palette.TEXT_HEAD : Palette.TEXT_LABEL)
                 + " -fx-background-color: " + (on ? Palette.RAISED : Palette.CONTROL) + ";"
@@ -97,7 +101,7 @@ final class StatementView {
 
     /** A page strip with the switch at its right end; `statement` null leaves the switch off (Operations, a bank page without one). */
     static HBox stripWithSwitch(Node strip, Boolean statement, Consumer<Boolean> pick) {
-        HBox row = new HBox(Palette.GAP_LOOSE, strip);
+        HBox row = Kept.row(Palette.GAP_LOOSE, strip);
         HBox.setHgrow(strip, Priority.ALWAYS);
         if (statement != null) row.getChildren().add(viewSwitch(statement, pick));
         row.setAlignment(Pos.CENTER_LEFT);
@@ -140,15 +144,18 @@ final class StatementView {
 
     /** ...for a report whose figures are not all money in one unit (the investor report): the period alone. */
     static VBox titleBlock(String company, String title, String period) {
-        Label who = new Label(company);
-        who.setStyle(Palette.strong(Palette.SIZE_SECTION, Palette.TEXT_HEAD));
-        Label what = new Label(title);
-        what.setStyle(Palette.strong(Palette.SIZE_BODY, Palette.TEXT_BODY));
-        Label when = new Label(period);
-        when.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-        VBox box = new VBox(1, who, what, when);
-        box.setStyle("-fx-padding: 0 0 6 0;");
-        return box;
+        // Kept (KP4): every builder here is a scope of its own, so what one sets on a node is handed to no other builder's.
+        return Kept.scope("titleBlock", () -> {
+            Label who = Kept.label(company);
+            who.setStyle(Palette.strong(Palette.SIZE_SECTION, Palette.TEXT_HEAD));
+            Label what = Kept.label(title);
+            what.setStyle(Palette.strong(Palette.SIZE_BODY, Palette.TEXT_BODY));
+            Label when = Kept.label(period);
+            when.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+            VBox box = Kept.column(1, who, what, when);
+            box.setStyle("-fx-padding: 0 0 6 0;");
+            return box;
+        });
     }
 
     /* --------------------------------------------------------------- the toolbar */
@@ -159,17 +166,21 @@ final class StatementView {
      * null action leaves its control off.
      */
     static HBox toolbar(Columns c, Runnable change, Runnable share, Runnable openAll, Runnable closeAll) {
-        HBox bar = new HBox(6);
-        bar.setAlignment(Pos.CENTER_LEFT);
-        if (change != null) bar.getChildren().add(toggle("change", c.change(), change));
-        if (share != null && c.shareWord() != null) bar.getChildren().add(toggle("% " + c.shareWord(), c.share(), share));
-        if (openAll != null) bar.getChildren().add(action("open every note", openAll));
-        if (closeAll != null) bar.getChildren().add(action("close them", closeAll));
-        return bar;
+        return Kept.scope("toolbar", () -> {
+            HBox bar = Kept.row(6);
+            bar.setAlignment(Pos.CENTER_LEFT);
+            // Each control is a scope of its own, since a toolbar has the ones it was handed an action for.
+            if (change != null) bar.getChildren().add(Kept.scope("change", () -> toggle("change", c.change(), change)));
+            if (share != null && c.shareWord() != null) bar.getChildren().add(Kept.scope("share", () -> toggle("% " + c.shareWord(), c.share(), share)));
+            if (openAll != null) bar.getChildren().add(Kept.scope("open", () -> action("open every note", openAll)));
+            if (closeAll != null) bar.getChildren().add(Kept.scope("close", () -> action("close them", closeAll)));
+            return bar;
+        });
     }
 
     private static Button toggle(String word, boolean on, Runnable go) {
-        Button b = new Button((on ? "✓ " : "") + word);
+        Button b = Kept.of(Button.class, Button::new);
+        b.setText((on ? "✓ " : "") + word);
         b.setStyle(Palette.words(Palette.SIZE_CAPTION, on ? Palette.TEXT_HEAD : Palette.TEXT_LABEL)
                 + " -fx-background-color: " + (on ? Palette.RAISED : Palette.CONTROL) + ";"
                 + " -fx-background-radius: " + Palette.RADIUS_TIGHT + "; -fx-padding: 2 8 2 8; -fx-cursor: hand;"
@@ -180,7 +191,8 @@ final class StatementView {
     }
 
     private static Button action(String word, Runnable go) {
-        Button b = new Button(word);
+        Button b = Kept.of(Button.class, Button::new);
+        b.setText(word);
         b.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.ACCENT) + " -fx-background-color: transparent;"
                 + " -fx-padding: 2 6 2 6; -fx-cursor: hand;");
         b.setMinWidth(Region.USE_PREF_SIZE);
@@ -224,27 +236,36 @@ final class StatementView {
     static VBox table(SectorStatements.Table t, String table, String nowWord, String thenWord, Columns c,
                       double base, double baseThen, Set<String> open, IntFunction<Node> notes,
                       Function<String, String> info, Runnable redraw) {
+        // Kept (KP4): a scope of its own, keyed by the table, since two tables on a page share no node.
+        return Kept.scope("table:" + table, () -> tableOf(t, table, nowWord, thenWord, c, base, baseThen, open, notes, info, redraw));
+    }
+
+    private static VBox tableOf(SectorStatements.Table t, String table, String nowWord, String thenWord, Columns c,
+                      double base, double baseThen, Set<String> open, IntFunction<Node> notes,
+                      Function<String, String> info, Runnable redraw) {
         boolean millions = SectorStatements.inMillions(t);
-        VBox box = new VBox(0);
+        VBox box = Kept.column(0);
         box.setMinWidth(TABLE);
         box.setPrefWidth(TABLE);
         box.setMaxWidth(TABLE);
-        box.getChildren().add(heads(nowWord, thenWord, c));
+        box.getChildren().add(Kept.scope("heads", () -> heads(nowWord, thenWord, c)));
         for (SectorStatements.Row r : t.rows()) {
             if (!r.shown() || nil(r, t, c, millions)) continue;
-            Node detail = r.note() > 0 && notes != null ? notes.apply(r.note()) : null;
-            if (detail instanceof javafx.scene.layout.Pane p && p.getChildren().isEmpty()) detail = null;
-            boolean opened = detail != null && open.contains(noteKey(table, r.note()));
-            box.getChildren().add(row(r, t.thenKnown(), millions, c, base, baseThen, detail != null, opened,
-                    () -> {
-                        String k = noteKey(table, r.note());
-                        if (!open.remove(k)) open.add(k);
-                        redraw.run();
-                    }, info == null ? null : info.apply(r.id())));
-            if (opened) {
-                VBox.setMargin(detail, new javafx.geometry.Insets(2, 0, 8, NOTE_COLUMN + GAP + INDENT));
-                box.getChildren().add(detail);
-            }
+            // Kept (KP4): a row is a scope keyed by its id, and the note it opens is made in a scope of its own whether or
+            // not it is open, so a line that comes and goes takes its own nodes and shifts no other's.
+            Kept.scope("row:" + r.id(), () -> {
+                Node detail = r.note() > 0 && notes != null ? Kept.scope("note", () -> notes.apply(r.note())) : null;
+                if (detail instanceof javafx.scene.layout.Pane p && p.getChildren().isEmpty()) detail = null;
+                boolean opened = detail != null && open.contains(noteKey(table, r.note()));
+                box.getChildren().add(row(r, t.thenKnown(), millions, c, base, baseThen, detail != null, opened,
+                        () -> {
+                            String k = noteKey(table, r.note());
+                            if (!open.remove(k)) open.add(k);
+                            redraw.run();
+                        }, info == null ? null : info.apply(r.id())));
+                if (detail != null) VBox.setMargin(detail, new javafx.geometry.Insets(2, 0, 8, NOTE_COLUMN + GAP + INDENT));
+                if (opened) box.getChildren().add(detail);
+            });
         }
         return box;
     }
@@ -267,9 +288,9 @@ final class StatementView {
 
     /** The column heads. */
     static HBox heads(String nowWord, String thenWord, Columns c) {
-        HBox row = new HBox(GAP);
+        HBox row = Kept.row(GAP);
         row.getChildren().add(cell("note", NOTE_COLUMN, headStyle(), Pos.CENTER_LEFT));
-        Region label = new Region();
+        Region label = Kept.region();
         HBox.setHgrow(label, Priority.ALWAYS);
         row.getChildren().add(label);
         row.getChildren().add(cell(nowWord, FIGURE_COLUMN, headStyle(), Pos.CENTER_RIGHT));
@@ -284,7 +305,7 @@ final class StatementView {
     private static String headStyle() { return Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL); }
 
     private static Label cell(String text, double width, String style, Pos at) {
-        Label l = new Label(text);
+        Label l = Kept.label(text);
         l.setMinWidth(width);
         l.setPrefWidth(width);
         l.setMaxWidth(width);
@@ -335,7 +356,7 @@ final class StatementView {
         boolean sub = k == SectorStatements.Kind.SUBTOTAL, total = k == SectorStatements.Kind.TOTAL;
         boolean memo = k == SectorStatements.Kind.MEMO;
 
-        HBox row = new HBox(GAP);
+        HBox row = Kept.row(GAP);
         row.setAlignment(Pos.CENTER_LEFT);
 
         // The note number: a door when it opens something.
@@ -344,24 +365,24 @@ final class StatementView {
         if (hasNote) {
             note.setText((opened ? Statement.OPENED : Statement.CLOSED) + " " + r.note());
             note.setStyle(note.getStyle() + " -fx-cursor: hand;");
+            // Set, not added: a kept number is handed back with no handler (Kept), and given this draw's.
             note.setOnMouseClicked(e -> toggle.run());
         }
         row.getChildren().add(note);
 
-        Label label = new Label(r.label());
+        Label label = Kept.label(r.label());
         label.setMinWidth(0);
         label.setStyle(head ? (top ? Palette.strong(Palette.SIZE_BODY, Palette.TEXT_HEAD)
                         : Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL))
                 : sub || total ? Palette.strong(Palette.SIZE_BODY, Palette.TEXT_HEAD)
                 : Palette.words(Palette.SIZE_BODY, memo ? Palette.TEXT_MUTED : Palette.TEXT_LABEL));
-        HBox labelled = new HBox(Palette.GAP_TIGHT, label);
+        HBox labelled = Kept.row(Palette.GAP_TIGHT, label);
         labelled.setAlignment(Pos.CENTER_LEFT);
-        if (info != null) labelled.getChildren().add(infoButton(info, true));
-        if (!head && !sub && !total) labelled.setPadding(new javafx.geometry.Insets(0, 0, 0, INDENT));
-        if (hasNote) {
-            labelled.setStyle("-fx-cursor: hand;");
-            label.setOnMouseClicked(e -> toggle.run());
-        }
+        if (info != null) labelled.getChildren().add(Kept.scope("info", () -> infoButton(info, true)));
+        // Kept (KP4): the indent and the hand are set on both sides, since a row kept from a draw that had them is handed back as it was.
+        labelled.setPadding(!head && !sub && !total ? new javafx.geometry.Insets(0, 0, 0, INDENT) : javafx.geometry.Insets.EMPTY);
+        labelled.setStyle(hasNote ? "-fx-cursor: hand;" : "");
+        if (hasNote) label.setOnMouseClicked(e -> toggle.run());
         HBox.setHgrow(labelled, Priority.ALWAYS);
         labelled.setMaxWidth(Double.MAX_VALUE);
         row.getChildren().add(labelled);
@@ -379,34 +400,43 @@ final class StatementView {
      */
     static VBox columnsTable(SectorStatements.Table t, String table, String[] heads, Set<String> open,
                              IntFunction<Node> notes, Function<String, String> info, Runnable redraw) {
+        // Kept (KP4): a scope of its own, keyed by the table, since two tables on a page share no node.
+        return Kept.scope("columnsTable:" + table, () -> columnsTableOf(t, table, heads, open, notes, info, redraw));
+    }
+
+    private static VBox columnsTableOf(SectorStatements.Table t, String table, String[] heads, Set<String> open,
+                             IntFunction<Node> notes, Function<String, String> info, Runnable redraw) {
         boolean millions = SectorStatements.inMillions(t);
-        VBox box = new VBox(0);
+        VBox box = Kept.column(0);
         box.setMinWidth(TABLE);
         box.setPrefWidth(TABLE);
         box.setMaxWidth(TABLE);
-        HBox top = new HBox(GAP);
-        top.getChildren().add(cell("note", NOTE_COLUMN, headStyle(), Pos.CENTER_LEFT));
-        Region gap = new Region();
-        HBox.setHgrow(gap, Priority.ALWAYS);
-        top.getChildren().add(gap);
-        for (String h : heads) top.getChildren().add(cell(h, FIGURE_COLUMN, headStyle(), Pos.CENTER_RIGHT));
-        top.setAlignment(Pos.BOTTOM_LEFT);
-        top.setStyle("-fx-padding: 0 0 4 0; -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 0 1 0;");
-        box.getChildren().add(top);
+        box.getChildren().add(Kept.scope("heads", () -> {
+            HBox top = Kept.row(GAP);
+            top.getChildren().add(cell("note", NOTE_COLUMN, headStyle(), Pos.CENTER_LEFT));
+            Region gap = Kept.region();
+            HBox.setHgrow(gap, Priority.ALWAYS);
+            top.getChildren().add(gap);
+            for (String h : heads) top.getChildren().add(cell(h, FIGURE_COLUMN, headStyle(), Pos.CENTER_RIGHT));
+            top.setAlignment(Pos.BOTTOM_LEFT);
+            top.setStyle("-fx-padding: 0 0 4 0; -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 0 1 0;");
+            return top;
+        }));
         for (SectorStatements.Row r : t.rows()) {
             if (!r.shown() || nilColumns(r, millions)) continue;
-            Node detail = r.note() > 0 && notes != null ? notes.apply(r.note()) : null;
-            if (detail instanceof javafx.scene.layout.Pane p && p.getChildren().isEmpty()) detail = null;
-            boolean opened = detail != null && open.contains(noteKey(table, r.note()));
-            box.getChildren().add(columnsRow(r, millions, detail != null, opened, () -> {
-                String k = noteKey(table, r.note());
-                if (!open.remove(k)) open.add(k);
-                redraw.run();
-            }, info == null ? null : info.apply(r.id())));
-            if (opened) {
-                VBox.setMargin(detail, new javafx.geometry.Insets(2, 0, 8, NOTE_COLUMN + GAP + INDENT));
-                box.getChildren().add(detail);
-            }
+            // Kept (KP4): as table()'s - a row a scope keyed by its id, the note it opens a scope of its own.
+            Kept.scope("row:" + r.id(), () -> {
+                Node detail = r.note() > 0 && notes != null ? Kept.scope("note", () -> notes.apply(r.note())) : null;
+                if (detail instanceof javafx.scene.layout.Pane p && p.getChildren().isEmpty()) detail = null;
+                boolean opened = detail != null && open.contains(noteKey(table, r.note()));
+                box.getChildren().add(columnsRow(r, millions, detail != null, opened, () -> {
+                    String k = noteKey(table, r.note());
+                    if (!open.remove(k)) open.add(k);
+                    redraw.run();
+                }, info == null ? null : info.apply(r.id())));
+                if (detail != null) VBox.setMargin(detail, new javafx.geometry.Insets(2, 0, 8, NOTE_COLUMN + GAP + INDENT));
+                if (opened) box.getChildren().add(detail);
+            });
         }
         return box;
     }
@@ -446,26 +476,31 @@ final class StatementView {
 
     /** A figure in its column, with a rule over it (a subtotal), or over it and two under it (a bottom line). */
     private static Node ruled(String text, double width, String style, String rule) {
-        Label l = cell(text, width, style, Pos.CENTER_RIGHT);
-        if ("none".equals(rule)) return l;
-        VBox v = new VBox(1);
-        v.setMinWidth(width);
-        v.setMaxWidth(width);
-        v.getChildren().add(line());
-        v.getChildren().add(l);
-        if ("both".equals(rule)) {
+        // Kept (KP4): a scope of its own, the spacer under a bottom line's first rule a scope inside it, so no rule is handed the spacer's place.
+        return Kept.scope("ruled", () -> {
+            Label l = cell(text, width, style, Pos.CENTER_RIGHT);
+            if ("none".equals(rule)) return l;
+            VBox v = Kept.column(1);
+            v.setMinWidth(width);
+            v.setMaxWidth(width);
             v.getChildren().add(line());
-            Region gap = new Region();
-            gap.setMinHeight(1);
-            gap.setPrefHeight(1);
-            v.getChildren().add(gap);
-            v.getChildren().add(line());
-        }
-        return v;
+            v.getChildren().add(l);
+            if ("both".equals(rule)) {
+                v.getChildren().add(line());
+                v.getChildren().add(Kept.scope("gap", () -> {
+                    Region gap = Kept.region();
+                    gap.setMinHeight(1);
+                    gap.setPrefHeight(1);
+                    return gap;
+                }));
+                v.getChildren().add(line());
+            }
+            return v;
+        });
     }
 
     private static Region line() {
-        Region r = new Region();
+        Region r = Kept.region();
         r.setMinHeight(1);
         r.setPrefHeight(1);
         r.setMaxHeight(1);
@@ -480,7 +515,8 @@ final class StatementView {
      * statement's single column).
      */
     static VBox card(VBox title, HBox toolbar, VBox table) {
-        VBox c = new VBox(Palette.GAP, title);
+        // Kept (KP4): the column in a scope of its own, so a card's style is handed to no other column (the title block, toolbar and table are made before it).
+        VBox c = Kept.scope("card", () -> Kept.column(Palette.GAP, title));
         if (toolbar != null) c.getChildren().add(toolbar);
         c.getChildren().add(table);
         c.setMinWidth(TABLE + 32);
@@ -492,7 +528,7 @@ final class StatementView {
 
     /** A statement card beside its ratios, wrapping the ratios under it on a window too narrow for both. */
     static javafx.scene.layout.FlowPane beside(Node statement, Node ratios) {
-        javafx.scene.layout.FlowPane f = new javafx.scene.layout.FlowPane(24, 16);
+        javafx.scene.layout.FlowPane f = Kept.scope("beside", () -> Kept.flow(24, 16));
         if (statement != null) f.getChildren().add(statement);
         if (ratios != null) f.getChildren().add(ratios);
         f.setAlignment(Pos.TOP_LEFT);
@@ -502,26 +538,33 @@ final class StatementView {
 
     /** A note's rows, this month: a small list under the line it opens (D12: this month only). */
     static VBox noteRows(List<SectorStatements.Row> rows, boolean millions, String sentence) {
-        VBox box = new VBox(1);
-        for (SectorStatements.Row r : rows) {
-            if (!r.shown()) continue;
-            Label what = new Label(r.label());
-            what.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-            Region gap = new Region();
-            HBox.setHgrow(gap, Priority.ALWAYS);
-            HBox line = new HBox(GAP, what, gap, cell(figure(r.now(), millions), FIGURE_COLUMN,
-                    Palette.figureRegular(Palette.SIZE_CAPTION, Palette.TEXT_MUTED), Pos.CENTER_RIGHT));
-            line.setMaxWidth(TABLE - NOTE_COLUMN - GAP - INDENT - FIGURE_COLUMN * 1 - GAP);
-            box.getChildren().add(line);
-        }
-        if (sentence != null) {
-            Label s = new Label(sentence);
-            s.setWrapText(true);
-            s.setMaxWidth(TABLE - NOTE_COLUMN - GAP - INDENT - 40);
-            s.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED) + " -fx-padding: 2 0 0 0;");
-            box.getChildren().add(s);
-        }
-        return box;
+        // Kept (KP4): a scope of its own, each row a scope keyed by its id, and the sentence (drawn only sometimes) a scope of its own.
+        return Kept.scope("noteRows", () -> {
+            VBox box = Kept.column(1);
+            for (SectorStatements.Row r : rows) {
+                if (!r.shown()) continue;
+                box.getChildren().add(Kept.scope("row:" + r.id(), () -> {
+                    Label what = Kept.label(r.label());
+                    what.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+                    Region gap = Kept.region();
+                    HBox.setHgrow(gap, Priority.ALWAYS);
+                    HBox line = Kept.row(GAP, what, gap, cell(figure(r.now(), millions), FIGURE_COLUMN,
+                            Palette.figureRegular(Palette.SIZE_CAPTION, Palette.TEXT_MUTED), Pos.CENTER_RIGHT));
+                    line.setMaxWidth(TABLE - NOTE_COLUMN - GAP - INDENT - FIGURE_COLUMN * 1 - GAP);
+                    return line;
+                }));
+            }
+            if (sentence != null) {
+                box.getChildren().add(Kept.scope("sentence", () -> {
+                    Label s = Kept.label(sentence);
+                    s.setWrapText(true);
+                    s.setMaxWidth(TABLE - NOTE_COLUMN - GAP - INDENT - 40);
+                    s.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED) + " -fx-padding: 2 0 0 0;");
+                    return s;
+                }));
+            }
+            return box;
+        });
     }
 
     /** A sentence as a note: what a line is, when it has no parts to list. */
@@ -540,21 +583,29 @@ final class StatementView {
      * summary and the statement say the same thing in two sizes.
      */
     static VBox inShort(String[] labels, double[] now, double[] then, boolean known, String info) {
-        VBox c = new VBox(4, SectorScreen.head("IN SHORT", info, null));
-        HBox heads = new HBox(GAP, cell("$ millions", SHORT_LABEL, headStyle(), Pos.CENTER_LEFT),
+        // Kept (KP4): a scope of its own.
+        return Kept.scope("inShort", () -> inShortOf(labels, now, then, known, info));
+    }
+
+    private static VBox inShortOf(String[] labels, double[] now, double[] then, boolean known, String info) {
+        VBox c = Kept.column(4, SectorScreen.head("IN SHORT", info, null));
+        HBox heads = Kept.scope("heads", () -> Kept.row(GAP, cell("$ millions", SHORT_LABEL, headStyle(), Pos.CENTER_LEFT),
                 cell("this month", SHORT_FIGURE, headStyle(), Pos.CENTER_RIGHT),
                 cell("last month", SHORT_FIGURE, headStyle(), Pos.CENTER_RIGHT),
-                cell("change", SHORT_FIGURE, headStyle(), Pos.CENTER_RIGHT));
+                cell("change", SHORT_FIGURE, headStyle(), Pos.CENTER_RIGHT)));
         c.getChildren().add(heads);
         for (int i = 0; i < labels.length; i++) {
-            double t = known ? then[i] : Double.NaN;
-            double move = Double.isFinite(now[i]) && Double.isFinite(t) ? now[i] - t : Double.NaN;
-            HBox row = new HBox(GAP, cell(labels[i], SHORT_LABEL, Palette.words(Palette.SIZE_BODY, Palette.TEXT_LABEL), Pos.CENTER_LEFT),
-                    cell(millions(now[i]), SHORT_FIGURE, Palette.figure(Palette.SIZE_BODY, Palette.TEXT_HEAD), Pos.CENTER_RIGHT),
-                    cell(millions(t), SHORT_FIGURE, Palette.figureRegular(Palette.SIZE_BODY, Palette.TEXT_MUTED), Pos.CENTER_RIGHT),
-                    cell(Double.isNaN(move) ? "—" : signedMillions(move), SHORT_FIGURE,
-                            Palette.figureRegular(Palette.SIZE_BODY, Palette.TEXT_MUTED), Pos.CENTER_RIGHT));
-            c.getChildren().add(row);
+            final int at = i;
+            // Kept (KP4): a line a scope keyed by its label.
+            c.getChildren().add(Kept.scope("line:" + labels[i], () -> {
+                double t = known ? then[at] : Double.NaN;
+                double move = Double.isFinite(now[at]) && Double.isFinite(t) ? now[at] - t : Double.NaN;
+                return Kept.row(GAP, cell(labels[at], SHORT_LABEL, Palette.words(Palette.SIZE_BODY, Palette.TEXT_LABEL), Pos.CENTER_LEFT),
+                        cell(millions(now[at]), SHORT_FIGURE, Palette.figure(Palette.SIZE_BODY, Palette.TEXT_HEAD), Pos.CENTER_RIGHT),
+                        cell(millions(t), SHORT_FIGURE, Palette.figureRegular(Palette.SIZE_BODY, Palette.TEXT_MUTED), Pos.CENTER_RIGHT),
+                        cell(Double.isNaN(move) ? "—" : signedMillions(move), SHORT_FIGURE,
+                                Palette.figureRegular(Palette.SIZE_BODY, Palette.TEXT_MUTED), Pos.CENTER_RIGHT));
+            }));
         }
         c.setMinWidth(SHORT_LABEL + 3 * SHORT_FIGURE + 3 * GAP + 32);
         c.setMaxWidth(SHORT_LABEL + 3 * SHORT_FIGURE + 3 * GAP + 32);

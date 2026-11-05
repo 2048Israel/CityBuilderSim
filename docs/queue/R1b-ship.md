@@ -7,7 +7,7 @@ sector; the goods are drawn at the city's market by the builders and the work pr
 and earned by the builders on the investment line; a job on site (`Fittings`, saved) is worked by their crews
 after the repairs and before the sites, and the building counts fitted when its points are done. A depot's motor
 trucks join the fleet. New buildings come without each piece that does not pay at their finish. The player's Fit
-(the city pays) is a pill on a business's Investors page. R1's review: the 1900 forms said again after the sites
+(the city pays) is a pill on a business's kept Investors page. R1's review: the 1900 forms said again after the sites
 advance, so a reloaded twin keeps step, and cleared on New Game and a load. FittingCheck holds all of it; the
 default playtest is main's to the byte.
 ## pending
