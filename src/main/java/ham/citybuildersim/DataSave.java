@@ -1173,6 +1173,21 @@ public class DataSave implements Cloneable {
         return unfittedById == null ? java.util.Map.of() : unfittedById;
     }
 
+    /**
+     * The fittings on site (R1b; Fittings), in the order placed, each with the template, the piece, who ordered it and the points still owed: written
+     * only while there is a job, so a city with none writes no key and a save without one reads as none on site. No format bump: Gson leaves a
+     * missing key alone, and a city saved before R1b had none.
+     */
+    private java.util.List<Fittings.Job> fittings;
+
+    /** The jobs to write: a list of the caller's own copies (Fittings.view()), or none. */
+    public void setFittings(java.util.List<Fittings.Job> jobs) {
+        this.fittings = jobs == null || jobs.isEmpty() ? null : new java.util.ArrayList<>(jobs);
+    }
+
+    /** The fittings the save carries, or null for a save with none. */
+    public java.util.List<Fittings.Job> getFittings() { return fittings; }
+
     /** False on a save that kept one order book for the whole city. */
     public boolean hasContractsById() { return contractValueById != null; }
 

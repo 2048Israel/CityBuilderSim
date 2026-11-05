@@ -3840,6 +3840,9 @@ final class SectorScreen {
             int owned = bm.getQuantity(t.getId());
             VBox have = new VBox(0, caption("you have " + String.format("%,d", owned), Palette.TEXT_BODY));
             if (inv.onSite() > 0) have.getChildren().add(caption(String.format("%,d on site", inv.onSite()), Palette.BUILDING));
+            // ...and the player's Fit, where a piece is known and a building is left to fit (R1b).
+            Node fit = fitPill(template);
+            if (fit != null) have.getChildren().add(fit);
             BuildCard.Kind kind = BuildCard.kindOf(t);
             boolean measured = kind == BuildCard.Kind.MAKER || kind == BuildCard.Kind.OFFICE;
             double va = measured ? BuildCard.valueAdded(ui.game, t) : Double.NaN;
@@ -3884,6 +3887,33 @@ final class SectorScreen {
         VBox box = new VBox(grid);
         box.setStyle("-fx-padding: 8 14 8 14; -fx-background-color: " + Palette.RAISED + "; -fx-background-radius: 8;");
         return box;
+    }
+
+    /**
+     * The player's Fit (R1b): one small pill on a building's row, "Fit <piece> - <cost>" at the verdict's cost, for the first piece known in the city's year
+     * with a building of the stack left to fit (unfitted, less the fittings on site); null when there is none. The city pays whatever the verdict says
+     * (Game.fitForCity()); a refusal is written under the pill, and the page is drawn again on success, as the clock draws it.
+     */
+    private Node fitPill(BuildingsTemplate t) {
+        BuildingsStacks stack = ui.game.getBuildingManager().getStack(t);
+        if (stack == null || !stack.hasUnfitted()) return null;
+        int year = CityCalendar.yearOf(ui.game.getMonth());
+        for (Equipment piece : t.getEquipment()) {
+            if (!piece.knownIn(year) || stack.getUnfitted(piece.getId()) - ui.game.getFittings().onSite(t.getId(), piece.getId()) <= 0) continue;
+            double cost = EquipmentFit.verdict(ui.game, stack, piece).cost();
+            Label why = caption("", Palette.WARN);
+            why.setManaged(false);
+            why.setVisible(false);
+            HBox pill = doorPill("Fit " + piece.getName() + (Double.isFinite(cost) ? " - " + m(cost) : ""), Icons.BUILD, Palette.BUILDING, () -> {
+                String refused = ui.game.fitForCity(t, piece.getId());
+                if (refused == null) { showSectorMenu(); return; }
+                why.setText(refused);
+                why.setManaged(true);
+                why.setVisible(true);
+            });
+            return new VBox(2, pill, why);
+        }
+        return null;
     }
 
     /** A gate's icon: the deposit's pick, the licence's cap, the staffing test's person, the land, the money - and the bank for the interest on its whole cost (0.7.122). */

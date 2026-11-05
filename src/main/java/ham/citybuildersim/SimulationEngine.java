@@ -63,7 +63,8 @@ public class SimulationEngine {
          * advance by exactly the work the sector is paid for. See
          * Game.getBuildingOutput().
          */
-        int siteOutput = game.getBuildingOutput();
+        // ...less the fittings the crews work first (R1b; Game.workTheFittings()): after the repairs, before the sites, struck here once and used for the advance and for the work the sector is paid for below. With no job on site it is getBuildingOutput(), to the bit.
+        int siteOutput = game.workTheFittings();
         // The foreign contractor's month beside the city's own (FC1): nothing unless the repairs took the
         // builders' points and left the sites none - see Game, THE FOREIGN CREWS.
         Game.ForeignOffer foreign = game.foreignCrewsOffer();

@@ -1277,7 +1277,20 @@ public final class Freight extends Sector {
     double trucksHeld() { return getPantry(Good.TRUCKS); }
 
     /** The first fleet, free, the month there is a city leg to carry (Haulage.closeMonth(); Sector.vansKnown's reason). */
-    void seedTrucks(double trucks) { setPantry(Good.TRUCKS, trucks); }
+    void seedTrucks(double trucks) {
+        // ...topping up what a fitting delivered before it (R1b; deliverTrucks()), never taking it away: a city founded the 1900 way may fit a
+        // depot's motor trucks while every depot is on teams and the fleet has never been seeded. Nothing held, as in every played city: as it was.
+        setPantry(Good.TRUCKS, Math.max(getPantry(Good.TRUCKS), trucks));
+    }
+
+    /**
+     * Trucks delivered to the fleet by a fitting (R1b; Game.fit() for a piece that ends CART_HORSES): ADDED to the trucks held, never replacing
+     * them. WHY: the motor trucks a depot is fitted with are Haulage's trucks, bought by the builders at the city's market and paid by the
+     * depot's owner at the order; delivered here, the fleet is not bought a second time by its own replacement rule. Nothing for no trucks.
+     */
+    public void deliverTrucks(double trucks) {
+        if (trucks > 0 && Double.isFinite(trucks)) setPantry(Good.TRUCKS, getPantry(Good.TRUCKS) + trucks);
+    }
 
     /** What the month's trucks cost it, bought at home and abroad: the statement in progress's TRUCKS, before the strike banks it (Haulage's running cost). */
     double trucksBought() {

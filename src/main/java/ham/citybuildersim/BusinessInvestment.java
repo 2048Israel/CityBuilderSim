@@ -240,8 +240,19 @@ public class BusinessInvestment {
             this(sector, template, quantity, reason, build, landBlocked, null);
         }
 
+        /**
+         * The piece of equipment this decision FITS to a standing building of `template` instead of building one (R1b; EquipmentFit.choose()); null for
+         * every decision that builds or holds. Game.consider() sends a decision with a piece to Game.fit().
+         */
+        public final Equipment piece;
+
         private Decision(String sector, BuildingsTemplate template, int quantity,
                          String reason, boolean build, boolean landBlocked, Sector.Staffing heldForStaff) {
+            this(sector, template, quantity, reason, build, landBlocked, heldForStaff, null);
+        }
+
+        private Decision(String sector, BuildingsTemplate template, int quantity,
+                         String reason, boolean build, boolean landBlocked, Sector.Staffing heldForStaff, Equipment piece) {
             this.sector = sector;
             this.template = template;
             this.quantity = quantity;
@@ -249,6 +260,12 @@ public class BusinessInvestment {
             this.build = build;
             this.landBlocked = landBlocked;
             this.heldForStaff = heldForStaff;
+            this.piece = piece;
+        }
+
+        /** The month's decision is to fit one building of `t` with `piece` (R1b; quantity 1, and `build` is true: it spends); the reason in the planner's words. */
+        public static Decision fit(String sector, BuildingsTemplate t, Equipment piece, String reason) {
+            return new Decision(sector, t, 1, reason, true, false, null, piece);
         }
 
         public static Decision no(String sector, String reason) {
