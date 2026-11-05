@@ -407,6 +407,20 @@ public class CausesOfDeath {
     /** The people sick of TB for a year or more: the long sick of TB, from the month's rates. */
     private double lastTbSick;
 
+    /**
+     * Held off: no cause kills, and the babies' and children's swing stays
+     * whole - the deaths of today, as before R0b. Only for a harness fixture
+     * whose condition was sized on those deaths and that a 1900 city's do not
+     * give (R0b call 7, R0's call 18's class); the game never sets it, and it
+     * is not saved, so a fixture that loads a held-off city holds it off again.
+     * Game.holdCausesOfDeathOff() also holds off the influenza's sick.
+     */
+    private boolean heldOff;
+
+    public void holdOff() { heldOff = true; }
+
+    public boolean isHeldOff() { return heldOff; }
+
     /* ---------------------------- the month ---------------------------- */
 
     /**
@@ -435,6 +449,7 @@ public class CausesOfDeath {
                             double outbreakSeverity, double lastBirths) {
         double[][] out = new double[CAUSES.length][BANDS.length];
         lastTbSick = 0;
+        if (heldOff) return out;
         if (people == null || people.length != BANDS.length
                 || mortalityFactor == null || mortalityFactor.length != BANDS.length) return out;
 

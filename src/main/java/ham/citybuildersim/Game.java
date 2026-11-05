@@ -14218,7 +14218,9 @@ public class Game {
                 getWaterRatio(), householdBalance.getHungerRate(), generalCoverage,
                 health.getOutbreakSeverity(), cohorts.getLastBirths());
         double[] causeTotals = CausesOfDeath.bandTotals(causeRates);
+        // ...held off for a harness fixture (R0b call 7): no cause, and the swing whole.
         for (AgeBand b : AgeBand.values()) {
+            if (causesOfDeath.isHeldOff()) break;
             mortalityFactors[b.ordinal()] =
                     CausesOfDeath.keptFactor(b, mortalityFactors[b.ordinal()]);
         }
@@ -14806,6 +14808,17 @@ public class Game {
     /** What people die of: the causes of 1900 and how history takes them away (R0b). See CausesOfDeath. */
     private final CausesOfDeath causesOfDeath = new CausesOfDeath();
     public CausesOfDeath getCausesOfDeath() { return causesOfDeath; }
+
+    /**
+     * Today's deaths, as before R0b: no cause of 1900 kills, the swing stays
+     * whole and the influenza takes nobody off work. Only for a harness fixture
+     * whose condition was sized on them (R0b call 7); not saved, so a fixture
+     * that loads the city calls it again on the loaded one, before its first month.
+     */
+    public void holdCausesOfDeathOff() {
+        causesOfDeath.holdOff();
+        health.holdInfluenzaOff();
+    }
 
     /**
      * Crime, the police and the prisons (2026-09-11). Jerus: "crime is a

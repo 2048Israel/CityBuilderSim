@@ -274,7 +274,7 @@ public class Health {
          * 5): the others are deaths only, because this rate kills through
          * Sickness's ring and a cause on it would count its dead twice.
          */
-        influenzaRate = CausesOfDeath.influenzaSick(month);
+        influenzaRate = influenzaHeldOff ? 0 : CausesOfDeath.influenzaSick(month);
 
         sickRate = Math.min(MAX_SICK_RATE,
                 baselineRate + outbreakSeverity + unburiedRate + hungerRate + unhousedRate
@@ -284,6 +284,10 @@ public class Health {
     /** What the 1918 influenza is adding on top: its sick, in its months only (R0b). */
     private double influenzaRate;
     public double getInfluenzaRate() { return influenzaRate; }
+
+    /** The influenza held off, for a harness fixture sized on today's deaths: see CausesOfDeath.holdOff(). Not saved. */
+    private boolean influenzaHeldOff;
+    public void holdInfluenzaOff() { influenzaHeldOff = true; }
 
     private double unhousedRate;
 
