@@ -1,4 +1,4 @@
-# KP3 - Screens kept: Build and the construction page ({next}, 2026-11-05)
+# KP3 - Screens kept: Build and the construction page (0.9.18, 2026-11-05)
 
 **WHERE IT STANDS** (2026-11-05, 09:57): ready, see the ship file. The three slices are in and reviewed (A 3e46f63c, B 114cd980, C 275893a2); main at 0.9.17 merged in (04956676); `--pick` with the world files exit 3 and the full suite 170 of 174, every red main's recorded one (§5). Its gate wants a threading review (§4).
 
