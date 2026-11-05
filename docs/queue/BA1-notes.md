@@ -53,7 +53,25 @@
     The bond search's stop (BS1, above) is a second source of the same size.
   - SlopeCheck and DeathRecordCheck pass on this tree.
 - The ensemble on b4bf96f4 (run BA1e): 22/26 against 0.9.12's 24/26. Section 4 has the comparison.
-- Next: the slices' mends brought here, the full suite once more, alone, then the ship file.
+- **The four mended** (Sonnet slices, reviewed):
+  - FloatLinkCheck, and DeskCheck through it: the town holds every sector, so its households' spare makes a sale big
+    enough for the fee (318 against main's 6,177 when free). The 5 bp bound stands, named `EFFECTIVE_OFF_COUPON`.
+    DeskCheck's dial and its five-point rise are searched to their conditions.
+  - SaveFileCheck: its twenty depots' order is funded (NEEDS_FUNDING before) and asserted.
+  - CurrencyRegimeCheck 3 pegs once smoothed inflation is back within tolerance of the target; the dent holds with its
+    fixture holding. 9 takes the first depot count in `SURPLUS_DEPOTS` whose first month at the peg is a surplus (18).
+  - ScaleCheck 6: `FREE_FIXTURE_MONTHS` 488 (717), with R0's levers shut, where every line holds. With them open no
+    month from 20 to 2,400 holds every line. The best, 166-167, misses one line: the copy's bank closes 970 of its 1,000
+    branches in month 1 where the city's one branch cannot close, 8% of a small treasury. A scale finding, for whoever
+    takes the scaler.
+- **Found on the way, for Jerus (not BA1's to settle):**
+  - **A young town's bank under build-ahead:** in FloatLinkCheck's free town the firms borrowed 8,100 to 10,600 on the
+    bank's equity of 1,246, and the bank's equity went from 1,246 at month 61 to -500 at 63 and -3,200 at 75, its room
+    for city paper nothing to month 183. Uncapped orders let a young town's firms out-borrow its bank.
+  - **The same code gave another city twice under load** (month 125 instead of 61, 1,067 people instead of 909), and
+    the same in five other repeats. A model that is not deterministic under load would make every twin and fixture a
+    draw. Not traced.
+- Next: the full suite once more, alone (03:11), then the ship file.
 
 **WHERE IT STOOD (2026-11-04, 22:45): the gate stopped at 22:00; the ship file is off.**
 - **The gate's five NEW reds** (lines `--pick` did not run; Jerus's two named lines passed). Each was switched for the
