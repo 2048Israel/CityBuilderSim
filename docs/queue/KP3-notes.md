@@ -1,6 +1,6 @@
 # KP3 - Screens kept: Build and the construction page ({next}, 2026-11-05)
 
-**WHERE IT STANDS** (2026-11-05, 01:40): the three slices are in and reviewed (A 3e46f63c, B 114cd980, C 275893a2); KeptCheck passes whole (452), with BuildMenuCheck, BuildCardCheck, RunWorksCheck and ConstructionControlCheck. Waiting for BA1 and KP2 to land on main; then `origin/main` merged, `--pick` with the world files, and the ship file last.
+**WHERE IT STANDS** (2026-11-05, 07:32): ready but for the ship file. The three slices are in and reviewed (A 3e46f63c, B 114cd980, C 275893a2); KP2's mended tip (217f5dc9, which carries main with BA1 and R1) merged in; `--pick` on it with the world files exit 3, MapCheck and LongPlaytest main's recorded reds, as at KP2's. KP2 is not on main yet, so the ship file waits (docs/batch.md 7): once KP2 lands, `origin/main` merged and the ship file pushed last; its text is drafted in the night line's shared notes, `KP3-2026-11-05.md`.
 
 The batch's record. The study's KP3 row (`docs/studies/spec-screens-in-place.md` §7) with §3 (the pattern and its
 rules, seven since KP2) and §6 (what checks it). Lane 2 of the night line, after KP2, built on `origin/batch/KP2` at
