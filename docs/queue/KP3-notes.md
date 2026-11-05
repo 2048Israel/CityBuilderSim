@@ -1,6 +1,6 @@
 # KP3 - Screens kept: Build and the construction page ({next}, 2026-11-05)
 
-**WHERE IT STANDS** (2026-11-05, 08:12): ready but for `--pick` on the merge with main and the ship file. The three slices are in and reviewed (A 3e46f63c, B 114cd980, C 275893a2); KP2 landed on main as 0.9.17 and `origin/main` is merged in (81fd9bd8, `docs/map/README.md` taken from main). `--pick` on KP2's tip before it landed: exit 3, MapCheck and LongPlaytest main's recorded reds. When the PC is back: `--pick` with the world files on this merge, the maps committed, then `docs/queue/KP3-ship.md` pushed last, its text drafted in the night line's shared notes, `KP3-2026-11-05.md`. Its gate wants a threading review (§4).
+**WHERE IT STANDS** (2026-11-05, 09:57): ready, see the ship file. The three slices are in and reviewed (A 3e46f63c, B 114cd980, C 275893a2); main at 0.9.17 merged in (04956676); `--pick` with the world files exit 3 and the full suite 170 of 174, every red main's recorded one (§5). Its gate wants a threading review (§4).
 
 The batch's record. The study's KP3 row (`docs/studies/spec-screens-in-place.md` §7) with §3 (the pattern and its
 rules, seven since KP2) and §6 (what checks it). Lane 2 of the night line, after KP2, built on `origin/batch/KP2` at
@@ -135,6 +135,10 @@ row's scope key made constant - the nodes hand back by position and every part i
 page is the same; the key buys the nodes kept, not the page right.
 
 Also green on slice A, B and C's code: BuildMenuCheck, BuildCardCheck, RunWorksCheck, ConstructionControlCheck.
+On the merge with main at 0.9.17 (04956676), with the world files: `--pick` exit 3 (23 harnesses; MapCheck and
+LongPlaytest main's recorded reds), and the full suite, `AllChecks -f`, 170 of 174 in 39 minutes, its four reds all
+`[known]` by `docs/notes/gate.txt` and none NEW: DenominationCheck's twins (OB1), PriceLevelCheck 8 (RT1, BS1),
+MapCheck's moved boxes and LongPlaytest's finding (DM2's). None reads a screen; KP3 changed nothing they run.
 Tonight's known-class reds, passed by name at the gates (the orchestrator, 00:40) and not chased here:
 PriceLevelCheck 8 (RT1), ReplayCheck 5d's "asks -1" under load (CM1b), MapCheck 2h and SlopeCheck's moved building
 (DM2's), ShortSellingCheck 7 (OH1).
