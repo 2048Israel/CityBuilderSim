@@ -37,7 +37,6 @@ stuff".
 | R3 | Research: posts and discoveries | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
 | R4 | Research: prizes and the Research Lab | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
 | R5 | Research: the screens | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
-| KP3 | Screens kept: Build and the construction page (after KP2) | [study §7](docs/studies/spec-screens-in-place.md#7-the-batches) |
 | KP4 | Screens kept: Sectors, the list and a business's five pages; and Sectors' count-up held to 1x-10x (`UserInterface.countsUp()`, KP1-N) | [study §7](docs/studies/spec-screens-in-place.md#7-the-batches), [KP1-notes §6](docs/queue/KP1-notes.md) |
 | KP5 | Screens kept: Bank, Finances and the fund | [study §7](docs/studies/spec-screens-in-place.md#7-the-batches) |
 | KP6 | Screens kept: Government, Trade, Policy and zoning (after KP2) | [study §7](docs/studies/spec-screens-in-place.md#7-the-batches) |
@@ -145,6 +144,7 @@ Not done, and waiting on Jerus.
 
 | item | what is left | why it waits | brief |
 |---|---|---|---|
+| KP3-N | Parts of Build's pages kept but reached by no fixture (0.9.18): the Overview's open asks (an order whose bond sold short at the cap, waiting for its money), the sea terminal's payback, the port and crossing choosers, the coast refusal and the fell-short pages as the model reaches them; and two pieces still made new on a click, not on the clock (the receipt's popup, `Pieces.openPopover`'s contents). Recommended: a fixture for each when a harness city reaches it | Drawn by the same code as the kept pages around them, so correct now, only not proven kept | [KP3-notes §7](docs/queue/KP3-notes.md) |
 | KP2-N | Two pieces of other screens still made new each month on KP2's kept pages (0.9.17): the land office's landmass table's cells (`SectorScreen`'s oil helpers; only on a city with ground on two landmasses), in KP4; and whatever `BuildScreen.verdict`, `arc` and `goAhead` make where the three pages call them, in KP3. Recommended: each in the batch that keeps its file | Correct now, only not kept; the files are KP4's and KP3's | [KP2-notes §7](docs/queue/KP2-notes.md) |
 | BA1-D | The known-class lines passed by name at BA1's gate: LongPlaytest's one finding (`a building on the map moved`, or `industry stands farther out than the homes`, by the path: Jerus, 2026-11-04, "Ship it, pass both"); MapCheck's moved boxes (2d and 2h, DM1's class); PriceLevelCheck 8's drift at months 97 to 105 (RT1's class, and the bond search's stop, BS1); DenominationCheck's reformed twin (a price tie in the bond book, OB1) (0.9.16) | DM2 (the boxes); RT1, BS1 and OB1 (the twins) | [BA1 notes](docs/queue/BA1-notes.md) |
 | BA1-B | A young town's bank under build-ahead: with orders uncapped, FloatLinkCheck's free town's firms borrowed 8,100 to 10,600 on the bank's equity of 1,246, which went to -500 at month 63 and -3,200 at 75 (0.9.16) | Jerus: whether lending to orders on site wants a brake of its own | [BA1 notes](docs/queue/BA1-notes.md) |

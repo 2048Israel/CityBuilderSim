@@ -1,5 +1,8 @@
 package ham.citybuildersim.ui;
 
+import ham.citybuildersim.BuildAdvice;
+import ham.citybuildersim.BuildingType;
+import ham.citybuildersim.BuildingsTemplate;
 import ham.citybuildersim.Game;
 import javafx.css.CssMetaData;
 import javafx.css.StyleOrigin;
@@ -19,6 +22,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
@@ -46,6 +50,9 @@ import java.util.Locale;
  * Since KP2 Infrastructure, Services and the land office too, as {@link Page}s: one small shape for the three, each drawn
  * kept from its screen's pool and built new from an empty one, with the hands on what reshapes them, on the fare dial and
  * City History's filter box (the controls) and on the nodes a pointer styles (the hover).
+ * Since KP3 the Build screen (the Overview and every category, with the hands on a ring, an order dialled by a card's
+ * stepper, a stat card pinned and automatic building), the pages a build is stopped on, the funding and fell-short pages,
+ * and the construction page (its tabs, a building picked to demolish, the find box), as Pages of the same shape.
  *
  * <p>WHY. A kept page is right only if every month's redraw over last month's nodes ends where
  * a page built new from the same city would; the one way to know is to build both and compare
@@ -1417,6 +1424,422 @@ public final class KeptBench {
         return box.getText();
     }
 
+    /* =====================================================================
+       BUILD AND THE CONSTRUCTION PAGE (KP3): the Build screen's pages and the construction page, kept and built new,
+       the hands on what reshapes them, the controls on them and the pointer over them
+       ===================================================================== */
+
+    /** The pages the Build tab has: the Overview, then the categories in the strip's order. */
+    public static List<String> buildPages() {
+        List<String> out = new ArrayList<>();
+        out.add(BuildAdvice.OVERVIEW);
+        for (BuildAdvice.Category c : BuildAdvice.categories()) out.add(c.name());
+        return out;
+    }
+
+    /** Whether a Build page is one of the city's five (rings, and a card on each), else the Overview or a market category. */
+    public static boolean buildIsCity(String name) {
+        BuildAdvice.Category c = BuildAdvice.category(name);
+        return c != null && c.cityBuilds();
+    }
+
+    /** The rings a city category has, by their labels in the page's order (none for the Overview and the market's). */
+    public static List<String> buildRings(String category) {
+        List<String> out = new ArrayList<>();
+        for (BuildAdvice.Measure m : BuildAdvice.measuresOf(category)) out.add(m.label());
+        return out;
+    }
+
+    /**
+     * The Build screen as BuildScreen has it: whichever page `buildCategory` names, the Overview or a category, set up as its
+     * show method sets it up and drawn by its draw; a page other than the one the pool last drew is the arrival that forgets
+     * the pool, as keepBuild() makes it (BuildScreen.arrival(): a page built new has a pool of its own and forgets nothing).
+     * It opens on `start` with `orders` (a building's name to the count dialled up on its card), the stat cards of `pins` (building names)
+     * pinned open, and no ring picked. The shared state a page leaves on the screen (the order bar, the keyboard's cards) is the last
+     * page drawn's: a kept draw sets it right before a stepper is used.
+     */
+    public Page build(String name, String start, java.util.Map<String, Integer> orders) {
+        return build(name, start, orders, java.util.Set.of());
+    }
+
+    /** ...with the stat cards of these buildings pinned open. */
+    public Page build(String name, String start, java.util.Map<String, Integer> orders, java.util.Set<String> pins) {
+        BuildScreen s = ui.buildScreen;
+        return new Page(name, "handleAllBuildingMenus", () -> s.pool, pool -> {
+            String at = BuildAdvice.category(s.buildCategory) == null ? BuildAdvice.OVERVIEW : s.buildCategory;
+            Runnable draw = s.drawOf(at);
+            if (pool == s.pool) s.arrival(at);
+            return timed(pool, draw);
+        }, () -> {
+            s.forget();
+            s.buildCategory = start;
+            s.measurePicked.clear();
+            s.orderQty.clear();
+            s.orderQty.putAll(orders);
+            s.pinnedStats.clear();
+            s.pinnedStats.addAll(pins);
+        });
+    }
+
+    /** The Build screen on a page, as a tile or the strip's chip opens it (the next draw is the arrival). */
+    public void buildOpen(String name) {
+        ui.buildScreen.buildCategory = name;
+    }
+
+    /** The page the Build screen is on. */
+    public String buildPage() {
+        return ui.buildScreen.buildCategory;
+    }
+
+    /** The ring at a place on a city category picked, as its card's click does (the click then draws the page again). */
+    public void buildRing(String category, int i) {
+        ui.buildScreen.measurePicked.put(category, BuildAdvice.measuresOf(category).get(i));
+    }
+
+    /** Automatic building turned on or off through the model, as its switch does. */
+    public void buildAuto(boolean on) {
+        ui.game.getAutoBuilder().setOn(on, ui.game.getDecisions());
+    }
+
+    /** Whether automatic building is on. */
+    public boolean buildAuto() {
+        return ui.game.getAutoBuilder().isOn();
+    }
+
+    /** The names of the buildings with a card on the page as the last draw laid it, in the page's order (the keyboard's list). */
+    public List<String> buildCardNames() {
+        List<String> out = new ArrayList<>();
+        for (BuildScreen.PageCard c : ui.buildScreen.pageCards) out.add(c.template().getName());
+        return out;
+    }
+
+    /** The card nodes on the page now, in the order the page laid them out. */
+    private List<javafx.scene.layout.StackPane> cardNodes() {
+        List<javafx.scene.layout.StackPane> out = new ArrayList<>();
+        each(column, n -> {
+            if (n instanceof javafx.scene.layout.StackPane sp && sp.getPrefWidth() == BuildScreen.NEED_CARD) out.add(sp);
+        });
+        return out;
+    }
+
+    /** The first node of a class under a root that passes a test, or null. */
+    private static <T extends Node> T find(Node root, Class<T> type, java.util.function.Predicate<T> test) {
+        List<T> found = new ArrayList<>();
+        each(root, n -> {
+            if (found.isEmpty() && type.isInstance(n) && test.test(type.cast(n))) found.add(type.cast(n));
+        });
+        return found.isEmpty() ? null : found.get(0);
+    }
+
+    /** How many cards the page now shows. */
+    public int buildCards() {
+        return cardNodes().size();
+    }
+
+    /** A press on a card's stepper ("+", "+10", "+100", "−" or "↺"), as the pointer's: its order repriced and the order bar refilled in place, outside any draw. False when there is no such card or button. */
+    public boolean buildStep(int card, String glyph) {
+        List<javafx.scene.layout.StackPane> cards = cardNodes();
+        if (card >= cards.size()) return false;
+        javafx.scene.control.Button b = find(cards.get(card), javafx.scene.control.Button.class, x -> glyph.equals(x.getText()));
+        if (b == null) return false;
+        b.fire();
+        return true;
+    }
+
+    /** The count a building has dialled up on its card. */
+    public int buildOrdered(String building) {
+        return ui.buildScreen.orderQty.getOrDefault(building, 0);
+    }
+
+    /** The count on the face of a card's stepper, as the page shows it now; null when the page has no such card. */
+    public String buildCount(int card) {
+        List<javafx.scene.layout.StackPane> cards = cardNodes();
+        if (card >= cards.size()) return null;
+        Label l = find(cards.get(card), Label.class, x -> x.getText() != null && x.getText().matches("[0-9]+") && x.getMinWidth() == 30);
+        return l == null ? null : l.getText();
+    }
+
+    /** Whether the page shows a label with exactly these words (the order bar's line of the order, "3 × Walk-in Clinic"). */
+    public boolean buildBarShows(String words) {
+        return find(column, Label.class, x -> words.equals(x.getText())) != null;
+    }
+
+    /** A click on a card's (i), as the pointer's: its stat card pinned open, or let go. False when the page has no such card. */
+    public boolean buildPin(int card) {
+        List<javafx.scene.layout.StackPane> cards = cardNodes();
+        if (card >= cards.size()) return false;
+        Label info = find(cards.get(card), Label.class, x -> "i".equals(x.getText()) && x.getOnMouseClicked() != null);
+        if (info == null) return false;
+        fireMouse(info, javafx.scene.input.MouseEvent.MOUSE_CLICKED, 5, 5, javafx.scene.input.MouseButton.PRIMARY, 1);
+        return true;
+    }
+
+    /** How many times the order bar has been filled since the screen was made (BuildScreen.barFills). */
+    public int buildBarFills() {
+        return ui.buildScreen.barFills;
+    }
+
+    /** Whether the stat card of a building is pinned open. */
+    public boolean buildPinned(String building) {
+        return ui.buildScreen.pinnedStats.contains(building);
+    }
+
+    /**
+     * The pointer over the first card's (i): its stat cover shown by the (i)'s own mouse-entered, the page drawn kept again
+     * (`redraw`) and the cover looked at; then the pointer gone with its mouse-exited run, the page drawn again; then the pointer
+     * gone without one (a pointer that left while the page was being drawn is told nothing) and the page drawn again. Null when
+     * card, (i) and cover were the same nodes each time and the cover was shown while the pointer was over the (i) and hidden
+     * once it was gone; else what differed. ABSENT when the page has no card.
+     */
+    public String hoverCover(Runnable redraw) throws Exception {
+        List<javafx.scene.layout.StackPane> cards = cardNodes();
+        if (cards.isEmpty()) return ABSENT;
+        javafx.scene.layout.StackPane card = cards.get(0);
+        Label info = find(card, Label.class, x -> "i".equals(x.getText()) && x.getOnMouseEntered() != null);
+        Node cover = card.getChildren().size() > 1 ? card.getChildren().get(1) : null;
+        if (info == null || cover == null) return "the first card has no (i) and cover to hover";
+        if (cover.isVisible()) return "the cover was shown before the pointer came (a pinned stat card)";
+        hover(info, true);
+        info.getOnMouseEntered().handle(mouse(javafx.scene.input.MouseEvent.MOUSE_ENTERED, 5, 5, javafx.scene.input.MouseButton.NONE, 0));
+        if (!cover.isVisible()) return "the (i)'s own mouse-entered did not show the cover";
+        redraw.run();
+        passes();
+        if (cardNodes().isEmpty() || cardNodes().get(0) != card) return "the card under the pointer was handed away or made new by the redraw";
+        if (card.getChildren().get(1) != cover || card.getChildren().get(2) != info) return "the cover or the (i) was made new by the redraw";
+        if (!cover.isVisible()) return "the pointer over the (i) and the draw hid the cover";
+        hover(info, false);
+        info.getOnMouseExited().handle(mouse(javafx.scene.input.MouseEvent.MOUSE_EXITED, 5, 5, javafx.scene.input.MouseButton.NONE, 0));
+        redraw.run();
+        passes();
+        if (cover.isVisible()) return "the pointer gone with a mouse-exited, the draw left the cover shown";
+        hover(info, true);
+        info.getOnMouseEntered().handle(mouse(javafx.scene.input.MouseEvent.MOUSE_ENTERED, 5, 5, javafx.scene.input.MouseButton.NONE, 0));
+        hover(info, false);
+        redraw.run();
+        passes();
+        if (card.getChildren().get(1) != cover) return "the cover was made new by the redraw";
+        if (cover.isVisible()) return "the pointer gone with no mouse-exited, the draw left the cover shown";
+        return null;
+    }
+
+    /** The Build screen shown through its real show method, as the rail's tab or a month landing shows it (the chrome, then the page kept). */
+    public void showBuild() {
+        ensureWindow();
+        BuildScreen s = ui.buildScreen;
+        BuildAdvice.Category c = BuildAdvice.category(s.buildCategory);
+        if (c == null) s.showOverview();
+        else if (c.cityBuilds()) s.showCityCategory(c);
+        else s.showMarketCategory(c);
+    }
+
+    /** The stopped pages' kinds, by the way the model refuses an order. */
+    public static final List<String> STOPPED = List.of("deposit", "coast", "river", "bridge", "licence", "land");
+
+    private static Game.BuildResult refusalOf(String kind) {
+        return switch (kind) {
+            case "deposit" -> Game.BuildResult.NO_DEPOSIT;
+            case "coast" -> Game.BuildResult.NO_COAST;
+            case "river" -> Game.BuildResult.NO_RIVER;
+            case "bridge" -> Game.BuildResult.NO_BRIDGE;
+            case "licence" -> Game.BuildResult.NO_LICENCE;
+            case "land" -> Game.BuildResult.NO_LAND;
+            default -> throw new IllegalArgumentException(kind);
+        };
+    }
+
+    /** Whether a building is of the kind that can meet this refusal at all (it names the page): a mine for ore, a plant or terminal for the sea... */
+    private boolean namesRefusal(String kind, BuildingsTemplate t) {
+        return switch (kind) {
+            case "deposit" -> Game.siteOf(t) != null;
+            case "coast" -> ham.citybuildersim.Ports.isPort(t) || t.getName().equals("Desalination Plant");
+            case "river" -> ham.citybuildersim.BuildCard.hydro(ui.game, t) != null;
+            case "bridge" -> t.isBridge();
+            case "licence" -> t.getRequiresLicence() != null;
+            default -> true;
+        };
+    }
+
+    /**
+     * A building and a count the model refuses for this reason (Game.buildRunStop(), the check an order passes before money),
+     * found by trying every building at a few counts: {the building, the count, true}. Where the city has none it is a building
+     * that merely names the page (a mine for the deposit, a plant for the coast...) at a count of one: {the building, 1, false};
+     * null when no building names it either.
+     */
+    public Object[] stoppedFor(String kind) {
+        Game g = ui.game;
+        Game.BuildResult want = refusalOf(kind);
+        BuildingsTemplate named = null;
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
+            if (t == null) continue;
+            if (named == null && namesRefusal(kind, t)) named = t;
+            for (int q : new int[]{1, 100, 10_000}) {
+                if (g.buildRunStop(BuildScreen.runOf(t, q)) == want) return new Object[]{t, q, true};
+            }
+        }
+        return named == null ? null : new Object[]{named, 1, false};
+    }
+
+    /** The page a build is stopped on, for this kind (STOPPED), this building and count, as it is drawn when the order came from the building's own category. */
+    public Page buildStopped(String kind, BuildingsTemplate t, int quantity) {
+        BuildScreen s = ui.buildScreen;
+        BuildAdvice.Category from = BuildAdvice.categoryOf(t);
+        String title = from == null ? BuildAdvice.OVERVIEW : from.name();
+        java.util.EnumSet<BuildingType> types = from == null ? java.util.EnumSet.noneOf(BuildingType.class) : from.types();
+        String screen = switch (kind) {
+            case "deposit" -> "showNoDepositMenu";
+            case "coast" -> "showNoCoastMenu";
+            case "river" -> "showNoRiverMenu";
+            case "bridge" -> "showNoBridgeMenu";
+            case "licence" -> "showNoLicenceMenu";
+            case "land" -> "showNoLandMenu";
+            default -> throw new IllegalArgumentException(kind);
+        };
+        return new Page("the no-" + kind + " page (" + quantity + " x " + t.getName() + ")", screen, () -> s.pool, pool -> timed(pool, switch (kind) {
+            case "deposit" -> () -> s.drawNoDeposit(t, quantity, title, types);
+            case "coast" -> () -> s.drawNoCoast(t, quantity, title, types);
+            case "river" -> () -> s.drawNoRiver(t, quantity, title, types);
+            case "bridge" -> () -> s.drawNoBridge(t, quantity, title, types);
+            case "licence" -> () -> s.drawNoLicence(t, quantity, title, types);
+            default -> () -> s.drawNoLand(t, quantity, title, types);
+        }), s::forget);
+    }
+
+    /**
+     * A run the city cannot pay for, for the funding page: the first building and count (a few, the smallest first) such that
+     * the model lets some of it ahead and the part it funds costs more than the cash; {the building, the count}, or null when
+     * the city can pay for every one of them.
+     */
+    public Object[] fundingRun() {
+        Game g = ui.game;
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
+            if (t == null) continue;
+            for (int q : new int[]{1, 10, 100, 1_000, 10_000}) {
+                java.util.LinkedHashMap<BuildingsTemplate, Integer> run = BuildScreen.runOf(t, q);
+                int ahead = g.buildRunAhead(run);
+                if (ahead > 0 && g.buildFundingGap(BuildScreen.firstOf(run, ahead)) > 0) return new Object[]{t, q};
+            }
+        }
+        return null;
+    }
+
+    /** The build funding page for a run of one order (the run must have a gap: fundingRun() finds one). */
+    public Page buildFunding(BuildingsTemplate t, int quantity) {
+        BuildScreen s = ui.buildScreen;
+        BuildAdvice.Category from = BuildAdvice.categoryOf(t);
+        BuildScreen.RunFrom where = new BuildScreen.RunFrom(from == null ? BuildAdvice.OVERVIEW : from.name(),
+                from == null ? java.util.EnumSet.noneOf(BuildingType.class) : from.types(), true);
+        return new Page("the build funding page (" + quantity + " x " + t.getName() + ")", "showBuildFunding", () -> s.pool, pool -> {
+            s.fundChips.noteFocus();
+            return timed(pool, () -> s.drawFunding(BuildScreen.runOf(t, quantity), where));
+        }, () -> {
+            s.forget();
+            s.fundCap = null;
+        });
+    }
+
+    /** The page for when the loan went through and an order was still not built: `built` of one building and `left` of another, the loan `paper` ("20-year bond"). */
+    public Page buildFellShort(BuildingsTemplate built, int builtCount, BuildingsTemplate left, int leftCount, String paper) {
+        BuildScreen s = ui.buildScreen;
+        BuildAdvice.Category from = BuildAdvice.categoryOf(left);
+        BuildScreen.RunFrom where = new BuildScreen.RunFrom(from == null ? BuildAdvice.OVERVIEW : from.name(),
+                from == null ? java.util.EnumSet.noneOf(BuildingType.class) : from.types(), true);
+        return new Page("the build fell-short page (" + (builtCount > 0 ? builtCount + " x " + built.getName() + " built, " : "none built, ")
+                + leftCount + " x " + left.getName() + " left)", "showBuildFellShort", () -> s.pool, pool -> timed(pool, () -> s.drawFellShort(
+                builtCount > 0 ? BuildScreen.runOf(built, builtCount) : new java.util.LinkedHashMap<>(),
+                BuildScreen.runOf(left, leftCount), where, paper)), s::forget);
+    }
+
+    /* ----- the construction page ----- */
+
+    /** The construction page, on the tab the screen is on; it opens on Sites with nothing picked and the find box empty. */
+    public Page construction() {
+        return construction("Sites");
+    }
+
+    /** ...opening on a tab ("Sites", "Timeline" or "Demolish"), with nothing picked and the find box empty. */
+    public Page construction(String opensOn) {
+        ConstructionScreen s = ui.constructionScreen;
+        return new Page(opensOn.equals("Sites") ? "the construction page" : "the construction page, " + opensOn + " tab", ConstructionScreen.SCREEN,
+                () -> s.pool, pool -> timed(pool, s::drawPage), () -> {
+            s.forget();
+            s.tab = opensOn;
+            s.focus = null;
+            s.pick = null;
+            s.pickShell = false;
+            s.count = 1;
+            s.filter = "";
+        });
+    }
+
+    /** The construction page on a tab ("Sites", "Timeline" or "Demolish"), as its tab chip opens it (the next draw is the page). */
+    public void constructionTab(String tab) {
+        ui.constructionScreen.tab = tab;
+        ui.constructionScreen.focus = null;
+    }
+
+    /** A building on the Demolish tab picked, as its row's click picks it, and how many of it to bring down. */
+    public void constructionPick(String name, boolean shell, int count) {
+        ConstructionScreen s = ui.constructionScreen;
+        s.pick = name;
+        s.pickShell = shell;
+        s.count = count;
+    }
+
+    /** The screen's own find filter set, as a change that is not the player's typing (the box is then set by the next draw, never while it has the focus). */
+    public void constructionFilter(String filter) {
+        ui.constructionScreen.filter = filter;
+    }
+
+    /** The first building the city may demolish (buyOut false) or must buy out first (buyOut true) and has standing, by name; null when it has none. */
+    public String constructionPickable(boolean buyOut) {
+        Game g = ui.game;
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
+            if (t == null || g.demolishable(t) <= 0) continue;
+            if (buyOut ? g.isBuyOutable(t) && !g.isCitysToDemolish(t) : g.isCitysToDemolish(t)) return t.getName();
+        }
+        return null;
+    }
+
+    /** The construction page shown through its real show method, on its tab (the chrome, then the page kept). */
+    public void showConstruction() {
+        ensureWindow();
+        ui.constructionScreen.show();
+    }
+
+    /** How many sites the city has on (the rows of the Sites tab and the bars of the timeline). */
+    public int sitesOn() {
+        return ui.game.getBuildingManager().siteKeysOnSite().size();
+    }
+
+    /* ----- the first text field on a page: the yield box on the Overview, the find box on Demolish ----- */
+
+    /** Text typed into the page's first text field and the box given the focus (see historyFilterFocus()): how it got the focus. */
+    public String fieldFocus(String text) throws ReflectiveOperationException {
+        return historyFilterFocus(text);
+    }
+
+    /** The focus taken off the page's first text field. */
+    public void fieldBlur() throws ReflectiveOperationException {
+        historyFilterBlur();
+    }
+
+    /** The page's first text field: the node, its text, its caret and whether it has the focus; null when it has none. */
+    public Object[] fieldState() {
+        return historyFilterState();
+    }
+
+    /** Text typed into the page's first text field as keys would, its listener running (outside a draw); the text it holds after. */
+    public String fieldType(String text) {
+        javafx.scene.control.TextField box = filter();
+        box.setText(text);
+        return box.getText();
+    }
+
+    /** Kept.text on the page's first text field: the text it holds after. */
+    public String fieldSet(String text) {
+        return historyFilterSet(text);
+    }
+
     /* ----- the pointer over what a hover styles ----- */
 
     /** What hoverKept() says when the page has no node of the kind asked for. */
@@ -1426,7 +1849,8 @@ public final class KeptBench {
      * The first node of a kind on the page, or null: "rowGoes" (City History's row that moves the chart), "door"
      * (Pieces.door: words and a "›"), "limitCell" (a vitals cell that is a door), "chartCardHead" (a chart card's name,
      * a click on it opens the chart), "landRow" (an offer's row), "oreCard" (the land office's ore card), "doorCard"
-     * (Services' card made a door).
+     * (Services' card made a door), and since KP3 Build's "jobTile" (the Overview's tile for a city category), "marketTile" (its row's tile for a market
+     * category) and "ringCard" (a small ring card that is not the one picked, on a category with many rings: Education's).
      */
     public Node hoverTarget(String kind) {
         List<Node> found = new ArrayList<>();
@@ -1442,6 +1866,10 @@ public final class KeptBench {
                 case "oreCard" -> n instanceof Pane && Kept.tipOf(n) != null && Kept.tipOf(n).getText().startsWith("Mines are built under Build");
                 case "doorCard" -> n instanceof VBox && n.getOnMouseClicked() != null && style.contains("-fx-background-radius: 8")
                         && style.contains("-fx-cursor: hand");
+                case "jobTile" -> n instanceof VBox && n.getOnMouseClicked() != null && style.contains("-fx-border-width: 3 1 1 1");
+                case "marketTile" -> n instanceof HBox && n.getOnMouseClicked() != null && style.contains("-fx-padding: 8 8 8 8; -fx-background-color: " + Palette.PANEL);
+                case "ringCard" -> n instanceof HBox && n.getOnMouseClicked() != null && style.contains("-fx-padding: 8 8 8 8; -fx-background-radius: 8")
+                        && style.contains("-fx-background-color: " + Palette.RAISED);
                 default -> throw new IllegalArgumentException(kind);
             };
             if (it) found.add(n);

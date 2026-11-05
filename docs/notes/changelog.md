@@ -18,6 +18,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.18 — KP3, Screens kept: Build and the construction page — 2026-11-05, ready, see docs/queue/KP3-notes.md
+Build and the construction page are drawn over last month's nodes instead of rebuilt (study UP4's KP3): Build's
+Overview, every category and market page, the stopped pages (no land, deposit, coast, river, crossing or licence),
+the funding and fell-short pages, each building's card and each part of it that comes and goes, a scope keyed by
+what it shows; the construction page's Sites, Timeline and Demolish tabs the same, the timeline a picture told its
+figures. The order bar is filled once a draw, not once a card. A kept control keeps the player's hand: automatic
+building's dial held across a month, the cap chips' yield box and the construction page's find box keep their
+focus, text and caret; a tile, door or card's (i) under a still pointer keeps its hover look. A move between Build's
+pages is an arrival, as before. KeptCheck 36-46 compare each kept page with one built new through every page, ring,
+order, pin and tab; Build's months fell from 15-30 ms to 4-6 ms, the construction page's from 8-17 ms to under 2
+(KEPT_BUILD_MS 12, KEPT_CONSTRUCTION_MS 4). No ensemble: the model is untouched.
+
 ### 0.9.17 — KP2, Screens kept: Land, Services and Infrastructure; the controls' rule; KP1's hover kept — 2026-11-05, ready, see docs/queue/KP2-notes.md
 Infrastructure, Services and the land office (with its funding and fell-short pages) are drawn over last month's
 nodes instead of rebuilt (study UP4's KP2): every page, sub-page, card, offer and row a scope keyed by what it

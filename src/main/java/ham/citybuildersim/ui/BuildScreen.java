@@ -62,13 +62,70 @@ final class BuildScreen {
     private final CapChips autoChips;
 
     /** The funding page's cap chips (CD2, D30): the cap its previews are quoted at, which starts as the builder's. */
-    private final CapChips fundChips;
+    final CapChips fundChips;
 
     /** The cap the funding page's previews were last set to by its chips; null until the player moves them, and then the builder's cap is the one used. */
-    private Auction.Cap fundCap;
+    Auction.Cap fundCap;
 
     /** Draws the funding page again as it stands, for its chips; set as the page is drawn. */
     private Runnable fundingAgain;
+
+    /**
+     * The Build tab's kept nodes (Kept; study UP4, KP3): the Overview, the category pages and the stopped and funding
+     * pages are one screen's pages, so one pool serves them. The Overview and every category share the screen name
+     * "handleAllBuildingMenus", so a move from one to another is made an arrival by hand (keepBuild()), as the stopped
+     * and funding pages are by their screen names of their own.
+     */
+    final Kept.Pool pool = new Kept.Pool();
+
+    /** The page the pool last drew under "handleAllBuildingMenus" (the Overview, or a category's name): a different page is an arrival, the same one a kept redraw. */
+    private String drawnPage;
+
+    /** A new city or a load: nothing of the last city's page is kept. */
+    void forget() {
+        pool.forget();
+        drawnPage = null;
+    }
+
+    /**
+     * A Build page of the shared screen name drawn through the window's keepMenu(): the page the pool last drew redrawn
+     * (a month landing, a stepper, a click on the same page) is kept over its nodes; another page (the Overview to
+     * Residential, one category to another) forgets the pool first, so keepMenu() takes it as the arrival it was when
+     * every page was rebuilt - scroll behaviour and all.
+     */
+    private void keepBuild(String page, Runnable again, Runnable draw) {
+        arrival(page);
+        ui.keepMenu("handleAllBuildingMenus", again, pool, draw);
+    }
+
+    /** Another page than the one the pool last drew forgets the pool (the arrival keepBuild() makes of it), and the page is noted as the one drawn. */
+    void arrival(String page) {
+        if (!page.equals(drawnPage)) pool.forget();
+        drawnPage = page;
+    }
+
+    /**
+     * The page the Build tab shows for a name - the Overview, or a category (a name that is none is the Overview) - set up as its
+     * show method sets it up before its draw, and the draw: the seam KeptBench draws the screen kept and built new through
+     * (KP3). The arrival (arrival()) is the caller's, since a page built new takes a pool of its own.
+     */
+    Runnable drawOf(String name) {
+        BuildAdvice.Category c = BuildAdvice.category(name);
+        if (c == null) {
+            autoChips.noteFocus();
+            onPage(BuildAdvice.OVERVIEW, EnumSet.noneOf(BuildingType.class));
+            return this::drawOverview;
+        }
+        onPage(c.name(), c.types());
+        return c.cityBuilds() ? () -> drawCityCategory(c) : () -> drawMarketCategory(c);
+    }
+
+    /** Which page the Build tab is on, for the rail and the keyboard: what every show method sets first. */
+    private void onPage(String name, EnumSet<BuildingType> types) {
+        buildCategory = name;
+        pageTitle = name;
+        pageCategories = types;
+    }
 
     /** The cap the funding page quotes at: the player's if they moved the chips on this page, otherwise automatic building's. */
     Auction.Cap fundingCap() {
@@ -238,7 +295,9 @@ final class BuildScreen {
      * Shops while the bank's card is the last on the page, two scrolls down. Opened as openCategory() opens it, then
      * the page is scrolled so the card sits at the top, once the page has been laid out (the clock's settle in
      * UserInterface.clearMenu() queues its own run first, so this one runs after it and the position it leaves is the
-     * one the monthly redraws keep). A building no card on the page is named for leaves the page where it opened.
+     * one the monthly redraws keep). Kept (KP3): a category already on show is redrawn over its own nodes, where no settle runs
+     * and no position is clamped, and the card (the kept one, which card() files in landCard as it does a new one) is brought to
+     * the top by this same call, which lays the page out itself. A building no card on the page is named for leaves the page where it opened.
      */
     void openOnBuilding(String category, String buildingName) {
         landOn = buildingName;
@@ -326,32 +385,38 @@ final class BuildScreen {
      */
     javafx.scene.layout.FlowPane buildStrip(String current) {
 
-        javafx.scene.layout.FlowPane strip = new javafx.scene.layout.FlowPane(6, 6);
+        // Kept (KP3): every node through Kept; the tabs are a scope each, keyed by the category.
+        javafx.scene.layout.FlowPane strip = Kept.flow(6, 6);
         strip.setAlignment(Pos.CENTER_LEFT);
-        strip.prefWrapLengthProperty().bind(ui.menuScroller.widthProperty().subtract(60));
+        wrapToScroller(strip);
         strip.setStyle("-fx-padding: 0 18 4 18;");
 
-        Button overview = new Button("‹ Overview");
-        overview.setGraphic(icon(Icons.OVERVIEW, Palette.TEXT_LABEL, 13));
-        overview.setGraphicTextGap(6);
-        overview.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_LABEL)
-                + " -fx-background-color: transparent; -fx-border-color: transparent;"
-                + " -fx-padding: 6 10 6 6; -fx-cursor: hand;");
-        overview.setTooltip(new Tooltip("The city's job, what would help most, and what the market builds"));
-        overview.setOnAction(e -> showOverview());
-        strip.getChildren().add(overview);
+        strip.getChildren().add(Kept.scope("overview", () -> {
+            Button overview = Kept.of(Button.class, Button::new);
+            overview.setText("‹ Overview");
+            overview.setGraphic(icon(Icons.OVERVIEW, Palette.TEXT_LABEL, 13));
+            overview.setGraphicTextGap(6);
+            overview.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_LABEL)
+                    + " -fx-background-color: transparent; -fx-border-color: transparent;"
+                    + " -fx-padding: 6 10 6 6; -fx-cursor: hand;");
+            Kept.tip(overview, "The city's job, what would help most, and what the market builds", 1000);
+            overview.setOnAction(e -> showOverview());
+            return overview;
+        }));
 
         boolean ruled = false;
         for (BuildCategory category : buildCategories()) {
             boolean on = category.name().equals(current);
             if (investorBuilt(category.types()) && !ruled) {
                 // The rule between the city's five and the market's nine.
-                Region rule = new Region();
-                rule.setMinSize(1, 18);
-                rule.setPrefSize(1, 18);
-                rule.setMaxSize(1, 18);
-                rule.setStyle("-fx-background-color: " + Palette.EDGE + ";");
-                strip.getChildren().add(rule);
+                strip.getChildren().add(Kept.scope("rule", () -> {
+                    Region rule = Kept.region();
+                    rule.setMinSize(1, 18);
+                    rule.setPrefSize(1, 18);
+                    rule.setMaxSize(1, 18);
+                    rule.setStyle("-fx-background-color: " + Palette.EDGE + ";");
+                    return rule;
+                }));
                 ruled = true;
             }
             /*
@@ -360,23 +425,40 @@ final class BuildScreen {
              * "which of these do I actually have to do".
              */
             boolean theirs = investorBuilt(category.types());
-            Button tab = new Button(category.name());
-            tab.setGraphic(whoDot(theirs));
-            tab.setGraphicTextGap(6);
-            tab.setStyle(Palette.words(Palette.SIZE_BODY, on ? Palette.TEXT_HEAD : Palette.TEXT_LABEL)
-                    + " -fx-background-color: " + (on ? Palette.PINNED : "transparent") + ";"
-                    + " -fx-background-radius: " + Palette.RADIUS + ";"
-                    + " -fx-border-color: " + (on ? Palette.BUILDING : "transparent") + ";"
-                    + " -fx-border-width: 0 0 2 0; -fx-padding: 6 10 6 10; -fx-cursor: hand;");
-            Tooltip tip = new Tooltip(theirs
-                    ? "Investors build these themselves. You can build them too."
-                    : "Nobody builds these but the city.");
-            tip.setShowDelay(Duration.millis(250));
-            tab.setTooltip(tip);
-            tab.setOnAction(e -> openCategory(category.name()));
-            strip.getChildren().add(tab);
+            strip.getChildren().add(Kept.scope(category.name(), () -> {
+                Button tab = Kept.of(Button.class, Button::new);
+                tab.setText(category.name());
+                tab.setGraphic(whoDot(theirs));
+                tab.setGraphicTextGap(6);
+                tab.setStyle(Palette.words(Palette.SIZE_BODY, on ? Palette.TEXT_HEAD : Palette.TEXT_LABEL)
+                        + " -fx-background-color: " + (on ? Palette.PINNED : "transparent") + ";"
+                        + " -fx-background-radius: " + Palette.RADIUS + ";"
+                        + " -fx-border-color: " + (on ? Palette.BUILDING : "transparent") + ";"
+                        + " -fx-border-width: 0 0 2 0; -fx-padding: 6 10 6 10; -fx-cursor: hand;");
+                Kept.tip(tab, theirs
+                        ? "Investors build these themselves. You can build them too."
+                        : "Nobody builds these but the city.", 250);
+                tab.setOnAction(e -> openCategory(category.name()));
+                return tab;
+            }));
         }
         return strip;
+    }
+
+    /** The key in a kept flow's properties for the scroller its wrap length is bound to (wrapToScroller()). */
+    private static final String WRAPPED_TO_SCROLLER = "build.scroller";
+
+    /**
+     * A flow's wrap length bound to the menu scroller's width less the page's margins: the strip's, and a category page's
+     * rows of cards. Bound once for each scroller, since a flow handed back by a kept draw is bound already and a bind
+     * made every month would only churn a listener on the scroller.
+     */
+    void wrapToScroller(javafx.scene.layout.FlowPane flow) {
+        javafx.scene.control.ScrollPane scroller = ui.menuScroller;
+        if (flow.getProperties().get(WRAPPED_TO_SCROLLER) == scroller) return;
+        flow.prefWrapLengthProperty().unbind();
+        flow.prefWrapLengthProperty().bind(scroller.widthProperty().subtract(60));
+        flow.getProperties().put(WRAPPED_TO_SCROLLER, scroller);
     }
 
     /** The colour of "only the city builds these": the money blue - the city's own account. */
@@ -387,7 +469,7 @@ final class BuildScreen {
 
     /** A tab's dot: who builds what is behind it (0.7.21). */
     static Region whoDot(boolean investors) {
-        Region dot = new Region();
+        Region dot = Kept.region();
         dot.setMinSize(6, 6);
         dot.setPrefSize(6, 6);
         dot.setMaxSize(6, 6);
@@ -398,15 +480,13 @@ final class BuildScreen {
 
     /** The key to the dots, at the right of the page's title: "● only the city builds  ● investors build too". */
     HBox keyLine() {
-        Label city = new Label("only the city builds");
-        city.setGraphic(whoDot(false));
+        Label city = Kept.label("only the city builds", whoDot(false));
         city.setGraphicTextGap(6);
         city.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-        Label them = new Label("investors build too");
-        them.setGraphic(whoDot(true));
+        Label them = Kept.label("investors build too", whoDot(true));
         them.setGraphicTextGap(6);
         them.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-        HBox key = new HBox(Palette.GAP_LOOSE, city, them);
+        HBox key = Kept.row(Palette.GAP_LOOSE, city, them);
         key.setAlignment(Pos.CENTER_RIGHT);
         key.setMinWidth(Region.USE_PREF_SIZE);
         return key;
@@ -422,27 +502,34 @@ final class BuildScreen {
      * mockups' title - "Build" a way back to the Overview.
      */
     HBox buildHead(String menuTitle, EnumSet<BuildingType> categories) {
+        // Kept (KP3): the way back to the Overview (the crumb) and automatic building's chip come and go, so each is a scope.
         Label title = ui.pageTitle("Build");
-        HBox titled = new HBox(10, title);
+        HBox titled = Kept.row(10, title);
         titled.setAlignment(Pos.CENTER_LEFT);
         if (!BuildAdvice.OVERVIEW.equals(menuTitle)) {
             title.setStyle(title.getStyle() + " -fx-cursor: hand;");
             title.setOnMouseClicked(e -> showOverview());
-            Label sep = new Label("›");
-            sep.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_MUTED) + " -fx-padding: 8 0 2 0;");
-            Label where = new Label(menuTitle);
-            where.setStyle(Palette.strong(Palette.SIZE_TITLE, Palette.TEXT_HEAD) + " -fx-padding: 8 0 2 0;");
-            titled.getChildren().addAll(sep, where);
+            titled.getChildren().addAll(Kept.scope("crumb", () -> {
+                Label sep = Kept.label("›");
+                sep.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_MUTED) + " -fx-padding: 8 0 2 0;");
+                Label where = Kept.label(menuTitle);
+                where.setStyle(Palette.strong(Palette.SIZE_TITLE, Palette.TEXT_HEAD) + " -fx-padding: 8 0 2 0;");
+                return List.<javafx.scene.Node>of(sep, where);
+            }));
         }
-        Region gap = new Region();
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
         // ...and the way to the construction page (0.7.22): what is on site, and the hand on it.
         Label sites = stepChip("Construction ›", () -> ui.constructionScreen.show(), true);
-        HBox head = new HBox(Palette.GAP_LOOSE, titled, gap, keyLine(), sites, receiptCorner(menuTitle, categories));
+        HBox head = Kept.row(Palette.GAP_LOOSE, titled, gap, Kept.scope("key", this::keyLine), sites,
+                Kept.scope("receipt", () -> receiptCorner(menuTitle, categories)));
         // ...and, while it is on, automatic building's chip (0.7.73): the way to its cards on the Overview.
         if (ui.game.getAutoBuilder().isOn() && !BuildAdvice.OVERVIEW.equals(menuTitle)) {
-            Label auto = stepChip(AUTO_CHIP, this::showOverview, true);
-            auto.setStyle(auto.getStyle() + " -fx-text-fill: " + Palette.GOOD + ";");
+            Label auto = Kept.scope("auto", () -> {
+                Label chip = stepChip(AUTO_CHIP, this::showOverview, true);
+                chip.setStyle(chip.getStyle() + " -fx-text-fill: " + Palette.GOOD + ";");
+                return chip;
+            });
             head.getChildren().add(head.getChildren().indexOf(sites), auto);
         }
         head.setAlignment(Pos.CENTER_LEFT);
@@ -561,7 +648,7 @@ final class BuildScreen {
         int output = ui.game.getConstructionOutput();
         int sites = buildings.getUnderConstruction();
 
-        HBox bar = new HBox(0);
+        HBox bar = Kept.row(0);
         bar.setAlignment(Pos.CENTER);
         bar.setMaxWidth(Region.USE_PREF_SIZE);
         bar.setStyle("-fx-padding: 8 6 8 6;" + Palette.block(Palette.PANEL));
@@ -623,37 +710,38 @@ final class BuildScreen {
                 (zoned == null ? "" : "free for anyone · ") + String.format("%.0f%% of the city used", used * 100),
                 groundTone(CityNeeds.ground(ui.game, SummaryScreen.WORDS).level()),
                 "Go to the land office and buy more", () -> ui.landScreen.showLandMenu());
+        // Kept (KP3): the zoned door and the shortcut come and go, so each is a scope of its own.
         if (zoned != null) {
-            Label door = new Label(zoned);
-            door.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.ACCENT) + " -fx-cursor: hand; -fx-padding: 2 0 0 0;");
-            door.setMaxWidth(LAND_FREE_CELL - 28);
-            List<Zoning.Zone> zones = ui.game.getZoning().zones();
-            String page = zones.size() == 1 ? ZoningScreen.zonePage(zones.get(0).sector()) : ZoningScreen.THE_GROUND;
-            door.setOnMouseClicked(e -> {
-                e.consume();
-                ui.policyScreen.open(PolicyScreen.ZONING, page);
-            });
-            Tooltip tip = new Tooltip("Ground the zones hold for their sectors: no other business may take it.\n"
-                    + "Click for Policy › Zoning.");
-            tip.setShowDelay(Duration.millis(250));
-            Tooltip.install(door, tip);
-            cell.getChildren().add(door);
+            cell.getChildren().add(Kept.scope("zoned", () -> {
+                Label door = Kept.label(zoned);
+                door.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.ACCENT) + " -fx-cursor: hand; -fx-padding: 2 0 0 0;");
+                door.setMaxWidth(LAND_FREE_CELL - 28);
+                List<Zoning.Zone> zones = ui.game.getZoning().zones();
+                String page = zones.size() == 1 ? ZoningScreen.zonePage(zones.get(0).sector()) : ZoningScreen.THE_GROUND;
+                door.setOnMouseClicked(e -> {
+                    e.consume();
+                    ui.policyScreen.open(PolicyScreen.ZONING, page);
+                });
+                Kept.tip(door, "Ground the zones hold for their sectors: no other business may take it.\n"
+                        + "Click for Policy › Zoning.", 250);
+                return door;
+            }));
             cell.setPrefWidth(LAND_FREE_CELL);
         }
         LandParcel best = ui.game.bestOffer(Game.LandNeed.room());
         if (best == null) return cell;
         boolean funding = ui.game.landNeedsFunding(List.of(best.getId()));
-        Label shortcut = new Label(bestLandWords(best));
-        shortcut.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.BUILDING) + " -fx-cursor: hand; -fx-padding: 2 0 0 0;");
-        shortcut.setMaxWidth(LAND_FREE_CELL - 28);
-        shortcut.setOnMouseClicked(e -> {
-            e.consume();
-            buyBestLand(best, this::showBuildMenu);
-        });
-        Tooltip tip = new Tooltip(bestLandTip(best, funding));
-        tip.setShowDelay(Duration.millis(250));
-        Tooltip.install(shortcut, tip);
-        cell.getChildren().add(shortcut);
+        cell.getChildren().add(Kept.scope("best", () -> {
+            Label shortcut = Kept.label(bestLandWords(best));
+            shortcut.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.BUILDING) + " -fx-cursor: hand; -fx-padding: 2 0 0 0;");
+            shortcut.setMaxWidth(LAND_FREE_CELL - 28);
+            shortcut.setOnMouseClicked(e -> {
+                e.consume();
+                buyBestLand(best, this::showBuildMenu);
+            });
+            Kept.tip(shortcut, bestLandTip(best, funding), 250);
+            return shortcut;
+        }));
         cell.setPrefWidth(LAND_FREE_CELL);
         return cell;
     }
@@ -776,67 +864,79 @@ final class BuildScreen {
      * @param m     the picked ring on a city page; null on a market page
      */
     StackPane card(BuildCard.Figures f, BuildCard.Group group, BuildAdvice.Category c, BuildAdvice.Measure m) {
+        // Kept (KP3): a card is a scope keyed by its building, so a card that appears on a page does not shift its
+        // neighbours onto each other's nodes; each part that comes and goes inside it is a scope of its own.
+        return Kept.scope("card:" + f.template().getName(), () -> cardOf(f, group, c, m));
+    }
+
+    /** ...the card's body, drawn inside its scope. */
+    private StackPane cardOf(BuildCard.Figures f, BuildCard.Group group, BuildAdvice.Category c, BuildAdvice.Measure m) {
         BuildingsTemplate template = f.template();
         String key = template.getName();
         boolean afford = f.price() <= ui.game.getCash();
 
-        VBox face = new VBox(6);
+        VBox face = Kept.column(6);
         face.setStyle("-fx-padding: 10 12 10 12;");
-        face.getChildren().add(cardHead(f, Icons.ofCategory(c.name()), f.market() ? INVESTOR_DOT : CITY_DOT, afford));
-        javafx.scene.layout.FlowPane tags = cardTags(f, group);
+        face.getChildren().add(Kept.scope("head", () -> cardHead(f, Icons.ofCategory(c.name()), f.market() ? INVESTOR_DOT : CITY_DOT, afford)));
+        javafx.scene.layout.FlowPane tags = Kept.scope("tags", () -> cardTags(f, group));
         if (!tags.getChildren().isEmpty()) face.getChildren().add(tags);
-        face.getChildren().addAll(heroRow(f), priceRow(f, afford));
+        face.getChildren().addAll(Kept.scope("hero", () -> heroRow(f)), Kept.scope("price", () -> priceRow(f, afford)));
         // ...and (FC1), while the builders are short, why the work costs more than it did.
-        Label buildersShort = shortLine();
+        Label buildersShort = Kept.scope("builders short", this::shortLine);
         if (buildersShort != null) face.getChildren().add(buildersShort);
-        face.getChildren().addAll(cardBars(f, group, m));
+        face.getChildren().addAll(Kept.scope("bars", () -> cardBars(f, group, m)));
         // ...a sea terminal's payback, which ports never had (FR4; the advice's own read, BuildAdvice.berthPayback()).
-        if (f.kind() == BuildCard.Kind.BERTHS) face.getChildren().add(paybackLine(BuildCard.payback(ui.game, template)));
+        if (f.kind() == BuildCard.Kind.BERTHS) {
+            face.getChildren().add(Kept.scope("payback", () -> paybackLine(BuildCard.payback(ui.game, template))));
+        }
         // ...and (ET5), once the city owns shore on more than one landmass, where it stands: a chip for each, and what that links.
         Runnable[] repriced = new Runnable[1];
         if (f.kind() == BuildCard.Kind.BERTHS) {
-            VBox where = portChooser(template, () -> { if (repriced[0] != null) repriced[0].run(); });
+            VBox where = Kept.scope("port", () -> portChooser(template, () -> { if (repriced[0] != null) repriced[0].run(); }));
             if (where != null) face.getChildren().add(where);
         }
-        if (f.market()) face.getChildren().add(investorsLine(template));
+        if (f.market()) face.getChildren().add(Kept.scope("investors", () -> investorsLine(template)));
         // ...and a materials building's own lines (0.7.142, batch I13): where it stands, how its sector weighs it, its power,
         // its old metal and who buys what it makes (THE MATERIALS' LINES).
-        if (BuildCard.materials(ui.game, template)) face.getChildren().add(materialsBlock(template));
+        if (BuildCard.materials(ui.game, template)) face.getChildren().add(Kept.scope("materials", () -> materialsBlock(template)));
         // ...and a hydro station's river (HY1): the slots free of the city's, and the best site's width and head.
         BuildCard.Hydro river = BuildCard.hydro(ui.game, template);
         if (river != null) {
-            String[] words = hydroWords(river);
-            Label line = new Label(words[0]);
-            line.setWrapText(true);
-            line.setMinHeight(Region.USE_PREF_SIZE);
-            line.setStyle(wordsAt(9.5, words[1]));
-            face.getChildren().add(line);
+            face.getChildren().add(Kept.scope("river", () -> {
+                String[] words = hydroWords(river);
+                Label line = Kept.label(words[0]);
+                line.setWrapText(true);
+                line.setMinHeight(Region.USE_PREF_SIZE);
+                line.setStyle(wordsAt(9.5, words[1]));
+                return line;
+            }));
         }
         // ...and a long bridge's crossing (ET6): where it goes (a chip for each landmass), and what the survey finds - the length and
         // the depth, what the span and the landings cost, or why there is no way across.
         if (template.isBridge()) {
-            VBox crossing = bridgeBlock(template, () -> { if (repriced[0] != null) repriced[0].run(); });
+            VBox crossing = Kept.scope("crossing", () -> bridgeBlock(template, () -> { if (repriced[0] != null) repriced[0].run(); }));
             if (crossing != null) face.getChildren().add(crossing);
         }
-        face.getChildren().add(needsLine(f));
+        face.getChildren().add(Kept.scope("needs", () -> needsLine(f)));
 
-        StackPane card = new StackPane();
+        StackPane card = Kept.stack();
         // The border turns the building colour while an order is pending.
         Runnable dress = () -> card.setStyle("-fx-background-color: " + Palette.RAISED + ";"
                 + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: "
                 + (orderQty.getOrDefault(key, 0) > 0 ? Palette.BUILDING : Palette.EDGE) + ";");
-        Order order = orderControls(template, key, c.name(), c.types(), dress);
+        Order order = Kept.scope("order", () -> orderControls(template, key, c.name(), c.types(), dress));
         repriced[0] = order.reprice();
         face.getChildren().addAll(order.steps(), order.build(), order.quoted());
         // ...and on the Gravel Road's, paving them (0.7.70; ConstructionControl, F).
         if (m != null && m.kind() == BuildAdvice.Kind.ROADS && ConstructionControl.paves(template) && f.owned() > 0) {
-            VBox pave = pavingBlock(template, c.name(), c.types());
+            VBox pave = Kept.scope("paving", () -> pavingBlock(template, c.name(), c.types()));
             if (pave != null) face.getChildren().add(pave);
         }
 
-        VBox cover = statCover(template, f);
-        cover.setVisible(pinnedStats.contains(key));
-        Label info = infoDot(key, cover);
+        VBox cover = Kept.scope("cover", () -> statCover(template, f));
+        Label info = Kept.scope("info", () -> infoDot(key, cover));
+        // A pointer left over the (i) across a redraw has kept the cover open, but sends no mouse-entered to a kept node.
+        cover.setVisible(pinnedStats.contains(key) || info.isHover());
         card.getChildren().addAll(face, cover, info);
         StackPane.setAlignment(info, Pos.TOP_RIGHT);
         StackPane.setMargin(info, new javafx.geometry.Insets(8, 8, 0, 0));
@@ -872,26 +972,27 @@ final class BuildScreen {
         BuildCard.Paving p0 = BuildCard.paving(ui.game, gravel);
         if (p0 == null) return null;
         paveQty = Math.max(0, Math.min(paveQty, p0.paveable()));
-        Label head = new Label(PAVE_HEAD);
+        Label head = Kept.label(PAVE_HEAD);
         head.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.ACCENT) + " -fx-font-weight: bold; -fx-padding: 6 0 0 0;");
         String[] said = pavingWords(p0, paveQty);
-        Label what = new Label(said[0]);
+        Label what = Kept.label(said[0]);
         what.setWrapText(true);
         what.setStyle(wordsAt(9.5, Palette.TEXT_LABEL));
-        Label against = new Label(said[1]);
+        Label against = Kept.label(said[1]);
         against.setWrapText(true);
         against.setStyle(wordsAt(9.5, Palette.TEXT_MUTED));
-        Tooltip.install(against, new Tooltip(PAVE_INFO));
-        VBox block = new VBox(4, head);
-        if (p0.beatsPaved()) block.getChildren().add(tag(PAVE_TAG, Palette.GOOD));
+        Kept.tip(against, PAVE_INFO, 1000);
+        VBox block = Kept.column(4, head);
+        // Kept (KP3): the tag comes and goes, so it is a scope of its own.
+        if (p0.beatsPaved()) block.getChildren().add(Kept.scope("beats", () -> tag(PAVE_TAG, Palette.GOOD)));
         block.getChildren().addAll(what, against);
 
-        Label count = new Label("0");
+        Label count = Kept.label("0");
         count.setMinWidth(30);
         count.setAlignment(Pos.CENTER);
-        Label of = new Label(said[3]);
+        Label of = Kept.label(said[3]);
         of.setStyle(wordsAt(9.5, Palette.TEXT_MUTED));
-        Label quoted = new Label(" ");
+        Label quoted = Kept.label(" ");
         quoted.setWrapText(true);
         quoted.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
         Pieces.ActionButton pave = actionButton(Icons.BUILD, Palette.BUILDING, ACTION_TALL, pavePress(p0, 0), null);
@@ -909,7 +1010,7 @@ final class BuildScreen {
         Button more = stepper("+", 26, () -> { paveQty++; reprice.run(); });
         Button ten = stepper("+10", 36, () -> { paveQty += 10; reprice.run(); });
         Button all = stepper("all", 30, () -> { paveQty = Integer.MAX_VALUE; reprice.run(); });
-        HBox steps = new HBox(4, less, count, more, ten, all, of);
+        HBox steps = Kept.row(4, less, count, more, ten, all, of);
         steps.setAlignment(Pos.CENTER_LEFT);
         pave.onPress(() -> {
             if (paveQty <= 0) { paveQty = 1; reprice.run(); return; }
@@ -980,15 +1081,20 @@ final class BuildScreen {
 
     /** A run of words in a TextFlow, at a size and in a colour - so a line wraps where it must and never ends in "...". */
     static javafx.scene.text.Text textRun(String s, String font, double size, String colour) {
-        javafx.scene.text.Text run = new javafx.scene.text.Text(s);
+        // Kept (KP3): the run handed back, its words, style and fill set again; underlined only where a caller says so.
+        javafx.scene.text.Text run = Kept.of(javafx.scene.text.Text.class, javafx.scene.text.Text::new);
+        run.setText(s);
         run.setStyle((font == null ? "" : font + " ") + "-fx-font-size: " + size + "px;");
         run.setFill(javafx.scene.paint.Color.web(colour));
+        run.setUnderline(false);
         return run;
     }
 
     /** ...and a TextFlow of them, as wide as a card's face. */
     static javafx.scene.text.TextFlow flow(javafx.scene.Node... runs) {
-        javafx.scene.text.TextFlow line = new javafx.scene.text.TextFlow(runs);
+        // A TextFlow is not one of Kept's boxes, so its runs are set where they differ (Kept.set).
+        javafx.scene.text.TextFlow line = Kept.of(javafx.scene.text.TextFlow.class, javafx.scene.text.TextFlow::new);
+        Kept.set(line.getChildren(), java.util.Arrays.asList(runs));
         line.setMinWidth(0);
         line.setPrefWidth(NEED_CARD - 24);
         line.setMaxWidth(NEED_CARD - 24);
@@ -1006,27 +1112,29 @@ final class BuildScreen {
     HBox cardHead(BuildCard.Figures f, String svg, String dot, boolean afford) {
         BuildingsTemplate t = f.template();
         int owned = f.owned();
-        Label name = new Label(t.getName());
+        Label name = Kept.label(t.getName());
         name.setWrapText(true);
         name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, afford ? Palette.TEXT_HEAD : Palette.TEXT_FAINT));
         javafx.scene.text.Text have = textRun(owned > 0 ? "you have " + formatter.format(owned) : "none built",
                 null, Palette.SIZE_LABEL, owned > 0 ? Palette.ACCENT : Palette.TEXT_LABEL);
         int onSite = f.onSite();
-        javafx.scene.text.TextFlow haveLine = new javafx.scene.text.TextFlow(have);
+        javafx.scene.text.TextFlow haveLine = Kept.of(javafx.scene.text.TextFlow.class, javafx.scene.text.TextFlow::new);
         if (onSite > 0) {
             javafx.scene.text.Text coming = textRun(" · " + formatter.format(onSite) + " on site · "
                     + atTodaysQueue(f.siteMonths()), null, Palette.SIZE_LABEL, Palette.BUILDING);
             coming.setUnderline(true);
             coming.setCursor(javafx.scene.Cursor.HAND);
             coming.setOnMouseClicked(e -> ui.constructionScreen.showSite(ConstructionControl.keyOf(t)));
-            haveLine.getChildren().add(coming);
+            Kept.set(haveLine.getChildren(), List.of(have, coming));
+        } else {
+            Kept.set(haveLine.getChildren(), List.of(have));
         }
         haveLine.setMinWidth(0);
-        VBox who = new VBox(1, name, haveLine);
+        VBox who = Kept.column(1, name, haveLine);
         HBox.setHgrow(who, Priority.ALWAYS);
         who.setMinWidth(0);
         who.setPadding(new javafx.geometry.Insets(0, 20, 0, 0));
-        HBox top = new HBox(10, iconSquare(svg, dot, 34, 18), who);
+        HBox top = Kept.row(10, iconSquare(svg, dot, 34, 18), who);
         top.setAlignment(Pos.TOP_LEFT);
         return top;
     }
@@ -1036,9 +1144,10 @@ final class BuildScreen {
      * and best2()), in a flow so two never cut each other.
      */
     javafx.scene.layout.FlowPane cardTags(BuildCard.Figures f, BuildCard.Group group) {
-        javafx.scene.layout.FlowPane tags = new javafx.scene.layout.FlowPane(6, 4);
+        javafx.scene.layout.FlowPane tags = Kept.flow(6, 4);
         tags.setPrefWrapLength(NEED_CARD - 24);
-        for (String words : tagWords(f, group)) tags.getChildren().add(tag(words, Palette.GOOD));
+        // Kept (KP3): a tag is a scope keyed by its words, so one that comes or goes shifts none of the others.
+        for (String words : tagWords(f, group)) tags.getChildren().add(Kept.scope(words, () -> tag(words, Palette.GOOD)));
         return tags;
     }
 
@@ -1075,21 +1184,25 @@ final class BuildScreen {
     VBox heroRow(BuildCard.Figures f) {
         // A power plant's figure is kilowatts, written scaled with its unit (0.7.28).
         boolean kw = BuildCard.KILOWATTS.equals(f.words());
-        javafx.scene.text.TextFlow line = flow(
+        List<javafx.scene.Node> runs = new ArrayList<>(List.of(
                 textRun(f.verb(), null, Palette.SIZE_LABEL, Palette.TEXT_MUTED),
                 textRun(kw ? power(f.figure()) : shortOrWhole(f.figure()), Palette.Fonts.monoSemiBold(), Palette.SIZE_SECTION + 2, Palette.TEXT_HEAD),
-                textRun(kw ? "" : f.words(), null, Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+                textRun(kw ? "" : f.words(), null, Palette.SIZE_LABEL, Palette.TEXT_MUTED)));
         if (f.kind() == BuildCard.Kind.CITY && f.unit() < f.built() - .5) {
-            line.getChildren().add(textRun(" · " + (kw ? power(f.built()) : shortOrWhole(f.built())) + " fully staffed", null,
+            runs.add(textRun(" · " + (kw ? power(f.built()) : shortOrWhole(f.built())) + " fully staffed", null,
                     Palette.SIZE_LABEL, Palette.TEXT_MUTED));
         }
-        VBox hero = new VBox(2, line);
+        javafx.scene.text.TextFlow line = flow(runs.toArray(new javafx.scene.Node[0]));
+        VBox hero = Kept.column(2, line);
         String detail = heroDetail(f);
+        // Kept (KP3): the smaller line comes and goes, so it is a scope of its own.
         if (!detail.isEmpty()) {
-            Label more = new Label(detail);
-            more.setWrapText(true);
-            more.setStyle(wordsAt(9.5, Palette.TEXT_MUTED));
-            hero.getChildren().add(more);
+            hero.getChildren().add(Kept.scope("detail", () -> {
+                Label more = Kept.label(detail);
+                more.setWrapText(true);
+                more.setStyle(wordsAt(9.5, Palette.TEXT_MUTED));
+                return more;
+            }));
         }
         return hero;
     }
@@ -1254,14 +1367,14 @@ final class BuildScreen {
 
     /** The price all in, green when the cash covers it and red when it does not, with the sticker smaller. */
     HBox priceRow(BuildCard.Figures f, boolean afford) {
-        Label price = new Label(money(f.price()));
+        Label price = Kept.label(money(f.price()));
         price.setStyle(Palette.figure(Palette.SIZE_SECTION, afford ? Palette.GOOD : Palette.BAD));
         price.setMinWidth(Region.USE_PREF_SIZE);
-        Label allIn = new Label(" all in · sticker " + money(f.sticker()));
+        Label allIn = Kept.label(" all in · sticker " + money(f.sticker()));
         allIn.setStyle(wordsAt(9.5, Palette.TEXT_MUTED));
         allIn.setWrapText(true);
         allIn.setMinWidth(0);
-        HBox row = new HBox(0, price, allIn);
+        HBox row = Kept.row(0, price, allIn);
         row.setAlignment(Pos.BASELINE_LEFT);
         return row;
     }
@@ -1280,7 +1393,7 @@ final class BuildScreen {
         boolean foreign = bm.foreignCrewsTakeOrders();
         double premium = bm.scarcityPremium();
         if (!foreign && Math.round(premium * 100) == 0) return null;
-        Label line = new Label(foreign
+        Label line = Kept.label(foreign
                 ? String.format("foreign crews: ×%.1f on the work, paid abroad · the city's crews are all on repairs",
                         BuildersShort.FOREIGN_PRICE)
                 : String.format("builders short: +%d%% on the work · ≈ %.1f months queued",
@@ -1288,10 +1401,9 @@ final class BuildScreen {
         line.setStyle(wordsAt(9.5, foreign ? Palette.BAD : Palette.WARN));
         line.setWrapText(true);
         line.setMinWidth(0);
-        Tooltip tip = new Tooltip(buildersShortInfo());
+        Tooltip tip = Kept.tip(line, buildersShortInfo(), 1000);
         tip.setWrapText(true);
         tip.setMaxWidth(320);
-        Tooltip.install(line, tip);
         return line;
     }
 
@@ -1323,18 +1435,19 @@ final class BuildScreen {
         boolean track = group.track() && !f.addsNothing();
         String[] words = barWords(f, m);
         List<javafx.scene.Node> out = new ArrayList<>();
-        VBox money = barRow(words[0], words[1], group.share1(f), Palette.MONEY, wide, null, track);
+        // Kept (KP3): each bar is a scope of its own, since the second comes and goes.
+        VBox money = Kept.scope("money", () -> barRow(words[0], words[1], group.share1(f), Palette.MONEY, wide, null, track));
         // ...and what its money is struck at (0.7.45; the UI spec's 2.10), behind an (i) after its words.
         if (!money.getChildren().isEmpty() && money.getChildren().get(0) instanceof HBox head) {
             boolean road = f.kind() == BuildCard.Kind.CITY && f.bar2Kind() == BuildCard.Bar2.LAND;
-            head.getChildren().add(1, infoButton(road ? roadBarInfo() : moneyBarInfo(), false));
+            head.getChildren().add(1, Kept.scope("info", () -> infoButton(road ? roadBarInfo() : moneyBarInfo(), false)));
         }
         out.add(money);
         // None for a city building with no posts: its needs line says so.
         if (words[2] == null) return out;
         boolean land = f.bar2Kind() == BuildCard.Bar2.LAND;
-        out.add(barRow(words[2], words[3], group.share2(f), land ? Palette.BUILDING : Palette.PEOPLE, wide,
-                land ? Icons.LAND : Icons.STAFF, track));
+        out.add(Kept.scope("second", () -> barRow(words[2], words[3], group.share2(f), land ? Palette.BUILDING : Palette.PEOPLE, wide,
+                land ? Icons.LAND : Icons.STAFF, track)));
         return out;
     }
 
@@ -1391,22 +1504,22 @@ final class BuildScreen {
         String who = depot == null ? "Investors" : inv.owner().key();
         if (depot != null) said = new String[] {depotWords(depot, inv), said[1]};
         double size = 9.5;
-        javafx.scene.text.TextFlow line = new javafx.scene.text.TextFlow(
+        javafx.scene.text.TextFlow line = Kept.of(javafx.scene.text.TextFlow.class, javafx.scene.text.TextFlow::new);
+        List<javafx.scene.Node> runs = new ArrayList<>(List.of(
                 textRun(who, Palette.Fonts.sansSemiBold(), size, Palette.BUSINESS),
-                textRun(said[0], null, size, Palette.TEXT_MUTED));
-        if (said[1] != null) line.getChildren().add(textRun(said[1], null, size, Palette.WARN));
+                textRun(said[0], null, size, Palette.TEXT_MUTED)));
+        if (said[1] != null) runs.add(textRun(said[1], null, size, Palette.WARN));
+        Kept.set(line.getChildren(), runs);
         line.setMinWidth(0);
         HBox.setHgrow(line, Priority.ALWAYS);
-        HBox row = new HBox(5, icon(Icons.SECTOR, Palette.BUSINESS, 12), line);
+        HBox row = Kept.row(5, icon(Icons.SECTOR, Palette.BUSINESS, 12), line);
         row.setAlignment(Pos.TOP_LEFT);
         row.setStyle("-fx-cursor: hand;");
-        Tooltip tip = new Tooltip((word.isEmpty() ? "Nothing recorded since the city was loaded or founded: a month has to run."
+        Tooltip tip = Kept.tip(row, (word.isEmpty() ? "Nothing recorded since the city was loaded or founded: a month has to run."
                 : word) + "\nInvestors' estimate: " + money(inv.estimate()) + " a month to its owner."
-                + "\nClick for " + inv.owner().key() + "'s Investors page.");
+                + "\nClick for " + inv.owner().key() + "'s Investors page.", 300);
         tip.setWrapText(true);
         tip.setMaxWidth(420);
-        tip.setShowDelay(Duration.millis(300));
-        Tooltip.install(row, tip);
         row.setOnMouseClicked(e -> ui.sectorScreen.openSectorBooks(inv.owner(), "Investors"));
         return row;
     }
@@ -1482,22 +1595,21 @@ final class BuildScreen {
                 rest = ": no cargo of this kind (" + kind + ") crosses the boundary yet";
                 break;
         }
-        javafx.scene.text.TextFlow line = new javafx.scene.text.TextFlow(
-                textRun(lead, Palette.Fonts.sansSemiBold(), 9.5, tone), textRun(rest, null, 9.5, Palette.TEXT_MUTED));
+        javafx.scene.text.TextFlow line = Kept.of(javafx.scene.text.TextFlow.class, javafx.scene.text.TextFlow::new);
+        Kept.set(line.getChildren(), List.of(
+                textRun(lead, Palette.Fonts.sansSemiBold(), 9.5, tone), textRun(rest, null, 9.5, Palette.TEXT_MUTED)));
         line.setMinWidth(0);
         HBox.setHgrow(line, Priority.ALWAYS);
-        HBox row = new HBox(5, icon(Icons.COIN, tone, 12), line);
+        HBox row = Kept.row(5, icon(Icons.COIN, tone, 12), line);
         row.setAlignment(Pos.TOP_LEFT);
-        Tooltip tip = new Tooltip(String.format("What one more %s would earn the city as landlord: %s a tonne in dues at the dial in"
+        Tooltip tip = Kept.tip(row, String.format("What one more %s would earn the city as landlord: %s a tonne in dues at the dial in"
                 + " force, on the %s it would carry of the %s with no berth, against a price of %s%s. The advice orders it at %s"
                 + " with no berth (Policy > Taxes > Port dues sets the dial).",
                 p.terminal().getName(), money(p.duesRate()), tonnesAYear(p.carriedAYear()), tonnesAYear(p.uncovered() * 12),
                 money(p.price()), p.upkeep() > 0 ? " and " + money(p.upkeep()) + " a month to keep" : "",
-                Double.isFinite(p.needed()) ? tonnesAYear(p.needed() * 12) : "never"));
+                Double.isFinite(p.needed()) ? tonnesAYear(p.needed() * 12) : "never"), 300);
         tip.setWrapText(true);
         tip.setMaxWidth(420);
-        tip.setShowDelay(Duration.millis(300));
-        Tooltip.install(row, tip);
         return row;
     }
 
@@ -1514,12 +1626,12 @@ final class BuildScreen {
         List<Landmasses.Row> choices = ui.game.portLandmassChoices(template);
         if (!LandmassView.chooserShown(choices)) return null;
         Landmasses lms = ui.game.getLandManager().getLandmasses();
-        VBox box = new VBox(3);
+        VBox box = Kept.column(3);
         Runnable[] draw = new Runnable[1];
         draw[0] = () -> {
             box.getChildren().clear();
             int at = lms.portLandmass(template.getId(), Landmasses.CHOSEN);
-            Label where = new Label(LandmassView.CHOOSER_LABEL);
+            Label where = Kept.label(LandmassView.CHOOSER_LABEL);
             where.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
             String[] names = LandmassView.choiceNames(choices);
             javafx.scene.layout.FlowPane chips = Pieces.chipStrip(names, LandmassView.currentChoice(choices, at), Palette.SIZE_CAPTION, name -> {
@@ -1533,10 +1645,13 @@ final class BuildScreen {
             box.getChildren().addAll(where, chips);
             String links = LandmassView.linkWords(lms, at);
             if (!links.isEmpty()) {
-                Label words = new Label(links.substring(0, 1).toUpperCase() + links.substring(1) + ".");
-                words.setWrapText(true);
-                words.setStyle(Palette.words(Palette.SIZE_CAPTION, lms.linked(at) ? Palette.GOOD : Palette.WARN));
-                box.getChildren().add(words);
+                // Kept (KP3): what a terminal there links comes and goes, so it is a scope of its own.
+                box.getChildren().add(Kept.scope("links", () -> {
+                    Label words = Kept.label(links.substring(0, 1).toUpperCase() + links.substring(1) + ".");
+                    words.setWrapText(true);
+                    words.setStyle(Palette.words(Palette.SIZE_CAPTION, lms.linked(at) ? Palette.GOOD : Palette.WARN));
+                    return words;
+                }));
             }
         };
         draw[0].run();
@@ -1552,33 +1667,38 @@ final class BuildScreen {
      */
     VBox bridgeBlock(BuildingsTemplate template, Runnable after) {
         if (BuildCard.bridge(ui.game, template) == null) return null;
-        VBox box = new VBox(3);
+        VBox box = Kept.column(3);
         Runnable[] draw = new Runnable[1];
         draw[0] = () -> {
             box.getChildren().clear();
             List<Landmasses.Row> choices = ui.game.bridgeChoices(template);
+            // Kept (KP3): the chips come and go with the landmasses the city owns, so they are a scope; so is the survey's line.
             if (LandmassView.chooserShown(choices)) {
-                Label to = new Label("Toward");
-                to.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-                String[] names = LandmassView.choiceNames(choices);
-                javafx.scene.layout.FlowPane chips = Pieces.chipStrip(names, LandmassView.currentChoice(choices, ui.game.bridgeLandmass(template)), Palette.SIZE_CAPTION, name -> {
-                    for (int i = 0; i < names.length; i++) {
-                        if (names[i].equals(name)) ui.game.chooseBridgeLandmass(template, choices.get(i).id());
-                    }
-                    draw[0].run();
-                    after.run();
-                });
-                chips.setAlignment(Pos.CENTER_LEFT);
-                box.getChildren().addAll(to, chips);
+                box.getChildren().addAll(Kept.scope("toward", () -> {
+                    Label to = Kept.label("Toward");
+                    to.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+                    String[] names = LandmassView.choiceNames(choices);
+                    javafx.scene.layout.FlowPane chips = Pieces.chipStrip(names, LandmassView.currentChoice(choices, ui.game.bridgeLandmass(template)), Palette.SIZE_CAPTION, name -> {
+                        for (int i = 0; i < names.length; i++) {
+                            if (names[i].equals(name)) ui.game.chooseBridgeLandmass(template, choices.get(i).id());
+                        }
+                        draw[0].run();
+                        after.run();
+                    });
+                    chips.setAlignment(Pos.CENTER_LEFT);
+                    return List.<javafx.scene.Node>of(to, chips);
+                }));
             }
             BuildCard.Bridge b = BuildCard.bridge(ui.game, template);
             if (b != null) {
-                String[] words = bridgeWords(b);
-                Label line = new Label(words[0]);
-                line.setWrapText(true);
-                line.setMinHeight(Region.USE_PREF_SIZE);
-                line.setStyle(wordsAt(9.5, words[1]));
-                box.getChildren().add(line);
+                box.getChildren().add(Kept.scope("survey", () -> {
+                    String[] words = bridgeWords(b);
+                    Label line = Kept.label(words[0]);
+                    line.setWrapText(true);
+                    line.setMinHeight(Region.USE_PREF_SIZE);
+                    line.setStyle(wordsAt(9.5, words[1]));
+                    return line;
+                }));
             }
         };
         draw[0].run();
@@ -1736,34 +1856,37 @@ final class BuildScreen {
 
     /** The block: one label a line, each {words, colour} of materialsWords(). */
     VBox materialsBlock(BuildingsTemplate t) {
-        VBox box = new VBox(2);
+        VBox box = Kept.column(2);
+        // Kept (KP3): a line is a scope keyed by what it says of the building (w[2]), so one that comes or goes shifts none of the rest.
         for (String[] w : materialsWords(t)) {
-            Label line = new Label(w[0]);
-            line.setWrapText(true);
-            line.setMinHeight(Region.USE_PREF_SIZE);
-            line.setStyle(wordsAt(9.5, w[1]));
-            box.getChildren().add(line);
+            box.getChildren().add(Kept.scope(w[2], () -> {
+                Label line = Kept.label(w[0]);
+                line.setWrapText(true);
+                line.setMinHeight(Region.USE_PREF_SIZE);
+                line.setStyle(wordsAt(9.5, w[1]));
+                return line;
+            }));
         }
         return box;
     }
 
-    /** A materials building's lines, worked out without drawing them (a probe reads them): each {words, colour}, in the block's order. */
+    /** A materials building's lines, worked out without drawing them (a probe reads them): each {words, colour, key}, in the block's order; the key says which line it is, for the scope that draws it. */
     List<String[]> materialsWords(BuildingsTemplate t) {
         Game g = ui.game;
         List<String[]> out = new ArrayList<>();
         BuildCard.Stands at = BuildCard.stands(g, t);
-        if (at != null) out.add(standsWords(at));
+        if (at != null) { String[] stands = standsWords(at); out.add(new String[] {stands[0], stands[1], "stands"}); }
         BuildCard.Weighed w = BuildCard.weighed(g, t);
-        if (w != null) out.add(new String[] {weighedWords(w), Palette.TEXT_MUTED});
+        if (w != null) out.add(new String[] {weighedWords(w), Palette.TEXT_MUTED, "weighed"});
         BuildCard.Power p = BuildCard.power(g, t);
-        if (p != null) out.add(new String[] {powerWords(p), Palette.TEXT_MUTED});
+        if (p != null) out.add(new String[] {powerWords(p), Palette.TEXT_MUTED, "power"});
         BuildCard.OldMetalBought o = BuildCard.oldMetal(g, t);
-        if (o != null) out.add(new String[] {oldMetalWords(o), o.spare() < o.intake() ? Palette.WARN : Palette.TEXT_MUTED});
+        if (o != null) out.add(new String[] {oldMetalWords(o), o.spare() < o.intake() ? Palette.WARN : Palette.TEXT_MUTED, "old metal"});
         String goes = outletWords(BuildCard.outlets(g, t));
-        if (!goes.isEmpty()) out.add(new String[] {goes, Palette.TEXT_MUTED});
+        if (!goes.isEmpty()) out.add(new String[] {goes, Palette.TEXT_MUTED, "outlets"});
         if (ham.citybuildersim.sectors.Forestry.isCrew(t)) {
             BuildCard.CrewRule rule = BuildCard.crewRule(g, t);
-            out.add(new String[] {crewWords(rule, t), rule.room() ? Palette.TEXT_MUTED : Palette.WARN});
+            out.add(new String[] {crewWords(rule, t), rule.room() ? Palette.TEXT_MUTED : Palette.WARN, "crew"});
         }
         return out;
     }
@@ -1919,7 +2042,7 @@ final class BuildScreen {
      * which for a city building is the treasury's bill.
      */
     Label needsLine(BuildCard.Figures f) {
-        Label needs = new Label(needsWords(f));
+        Label needs = Kept.label(needsWords(f));
         needs.setWrapText(true);
         needs.setStyle(wordsAt(9.5, f.template().getLandSqFt() > f.landFree() ? Palette.BAD : Palette.TEXT_MUTED));
         return needs;
@@ -1980,25 +2103,33 @@ final class BuildScreen {
      * @param after run after every reprice: the card's border
      */
     Order orderControls(BuildingsTemplate template, String key, String page, EnumSet<BuildingType> types, Runnable after) {
-        Label quoted = new Label(" ");
+        Label quoted = Kept.label(" ");
         quoted.setWrapText(true);
         quoted.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-        Label count = new Label("0");
+        Label count = Kept.label("0");
         count.setMinWidth(30);
         count.setAlignment(Pos.CENTER);
         count.setStyle(Palette.figure(Palette.SIZE_BODY, Palette.TEXT_HEAD));
         Pieces.ActionButton build = actionButton(Icons.BUILD, Palette.BUILDING, ACTION_TALL, orderPress(null, 0), null);
         /*
          * The reset button is built below but referenced above, because
-         * reprice is what decides whether it is on screen. One-element array:
+         * reprice is what decides whether it is in the row. One-element arrays:
          * a lambda can only close over something final.
          */
         final javafx.scene.Node[] resetHolder = new javafx.scene.Node[1];
+        final HBox[] stepsHolder = new HBox[1];
         Runnable reprice = () -> {
             int n = orderQty.getOrDefault(key, 0);
             count.setText(String.valueOf(n));
             count.setStyle(Palette.figure(Palette.SIZE_BODY, n > 0 ? Palette.BUILDING : Palette.TEXT_HEAD));
-            showIf(resetHolder[0], n > 0);
+            // Kept (KP3): the ↺ is in the row only while there is an order to clear. A button hidden with showIf() keeps the
+            // place it last stood, which a button never shown has not (KeptCheck 38 saw it at 250,0 on a kept card, 0,0 on a new one).
+            List<javafx.scene.Node> row = stepsHolder[0].getChildren();
+            if (n > 0) {
+                if (!row.contains(resetHolder[0])) row.add(resetHolder[0]);
+            } else {
+                row.remove(resetHolder[0]);
+            }
             showPendingHint();
             if (n <= 0) {
                 build.show(orderPress(null, 0));
@@ -2023,7 +2154,9 @@ final class BuildScreen {
                         + (deep == null ? "" : "\n" + deep));
                 quoted.setStyle(Palette.words(Palette.SIZE_CAPTION, said[1]));
             }
-            refreshOrderBar();
+            // Kept (KP3): a card drawn inside a kept draw leaves the order bar to the page, which refills it once, last; a
+            // stepper pressed between draws reprices into it here, with plain new nodes, as it always did.
+            if (!Kept.drawing()) refreshOrderBar();
             after.run();
         };
         Button less = stepper("−", 26, () -> {
@@ -2059,9 +2192,7 @@ final class BuildScreen {
             orderQty.remove(key);
             reprice.run();
         });
-        Tooltip clear = new Tooltip("Back to none");
-        clear.setShowDelay(Duration.millis(300));
-        reset.setTooltip(clear);
+        Kept.tip(reset, "Back to none", 300);
         resetHolder[0] = reset;
         build.onPress(() -> {
             int n = orderQty.getOrDefault(key, 0);
@@ -2075,13 +2206,12 @@ final class BuildScreen {
             placeRun(runOf(template, n), new RunFrom(page, types, true));
         });
         // The shortcut, said on the button it stands in for.
-        Tooltip keys = new Tooltip("Enter builds every pending order on this page; Backspace clears them");
-        keys.setShowDelay(Duration.millis(300));
-        Tooltip.install(build, keys);
-        Region spread = new Region();
+        Kept.tip(build, "Enter builds every pending order on this page; Backspace clears them", 300);
+        Region spread = Kept.region();
         HBox.setHgrow(spread, Priority.ALWAYS);
-        HBox steps = new HBox(4, less, count, more, ten, hundred, spread, reset);
+        HBox steps = Kept.row(4, less, count, more, ten, hundred, spread);
         steps.setAlignment(Pos.CENTER_LEFT);
+        stepsHolder[0] = steps;
         return new Order(steps, build, quoted, reprice);
     }
 
@@ -2193,7 +2323,7 @@ final class BuildScreen {
 
     /** The (i): hover shows the stat cover over the whole card, a click keeps it there (the dot turns blue), a second puts it away. */
     Label infoDot(String key, VBox cover) {
-        Label info = new Label("i");
+        Label info = Kept.label("i");
         info.setAlignment(Pos.CENTER);
         info.setMinSize(18, 18);
         info.setPrefSize(18, 18);
@@ -2211,9 +2341,7 @@ final class BuildScreen {
             dress.run();
             cover.setVisible(true);
         });
-        Tooltip pin = new Tooltip("Hover to read, click to keep it open");
-        pin.setShowDelay(Duration.millis(400));
-        Tooltip.install(info, pin);
+        Kept.tip(info, "Hover to read, click to keep it open", 400);
         return info;
     }
 
@@ -2233,23 +2361,30 @@ final class BuildScreen {
      */
     VBox statCover(BuildingsTemplate t, BuildCard.Figures f) {
 
-        VBox body = new VBox(1);
+        // Kept (KP3): the sentences, the figures, the wages and the investors' estimate are a scope each (the sentences
+        // vary in number, the wages and the estimate come and go), and a figure is a scope keyed by its label.
+        VBox body = Kept.column(1);
         body.setStyle("-fx-padding: 8 10 8 10;");
 
-        Label title = new Label(t.getName().toUpperCase());
+        Label title = Kept.label(t.getName().toUpperCase());
         title.setWrapText(true);
         title.setMaxWidth(NEED_CARD - 46);
         title.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.ACCENT) + " -fx-font-weight: bold;");
         body.getChildren().add(title);
 
-        for (String line : whatItDoes(t)) {
-            Label l = new Label(line);
-            l.setWrapText(true);
-            l.setMaxWidth(NEED_CARD - 28);
-            l.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_BODY)
-                    + " -fx-padding: 3 0 0 0;");
-            body.getChildren().add(l);
-        }
+        List<String> does = whatItDoes(t);
+        body.getChildren().addAll(Kept.scope("does", () -> {
+            List<javafx.scene.Node> lines = new ArrayList<>();
+            for (String line : does) {
+                Label l = Kept.label(line);
+                l.setWrapText(true);
+                l.setMaxWidth(NEED_CARD - 28);
+                l.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_BODY)
+                        + " -fx-padding: 3 0 0 0;");
+                lines.add(l);
+            }
+            return lines;
+        }));
 
         /*
          * WHAT THE FACE DOES NOT ALREADY SAY. The cash cost, the land and the
@@ -2257,13 +2392,12 @@ final class BuildScreen {
          * them would tell the player three things they had just read. A cover
          * that repeats the face is a cover that wastes the space it took.
          */
-        body.getChildren().add(cardGap());
-        body.getChildren().addAll(
+        body.getChildren().addAll(Kept.scope("figures", () -> List.<javafx.scene.Node>of(cardGap(),
                 statPair("Materials", formatter.format(t.getConstructionMaterials())),
                 statPair("Build points", formatter.format(t.getConstructionPoints())),
                 statPair("Road load", formatter.format(t.getRoadLoad())),
                 statPair("Electricity", power(t.getElectricityConsumption())),
-                statPair("Water", formatter.format(t.getWaterConsumption())));
+                statPair("Water", formatter.format(t.getWaterConsumption())))));
 
         double[] wages = ui.game.getPopulationManager().getWagesPerType();
         StringBuilder mix = new StringBuilder();
@@ -2278,37 +2412,40 @@ final class BuildScreen {
             mix.append(n).append(" ").append(jobLabel(job));
         }
         if (staff > 0) {
-            body.getChildren().add(cardGap());
-            body.getChildren().add(statPair("Wages", money(bill) + "/mo"));
-            Label who = new Label(mix.toString());
-            who.setWrapText(true);
-            who.setMaxWidth(NEED_CARD - 28);
-            who.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-            body.getChildren().add(who);
+            final double wageBill = bill;
+            body.getChildren().addAll(Kept.scope("wages", () -> {
+                Label who = Kept.label(mix.toString());
+                who.setWrapText(true);
+                who.setMaxWidth(NEED_CARD - 28);
+                who.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+                return List.<javafx.scene.Node>of(cardGap(), statPair("Wages", money(wageBill) + "/mo"), who);
+            }));
         }
 
         // ...and on a market card, what the investors reckon one would make
         // its owner a month (BusinessInvestment.estimatedMonthlyProfit()):
         // after its wages, so it can be a loss where the value added is not.
         if (f.market()) {
-            body.getChildren().add(cardGap());
-            Label est = new Label("Investors' estimate: " + money(BuildCard.investors(ui.game, t).estimate())
-                    + " a month to its owner.");
-            est.setWrapText(true);
-            est.setMaxWidth(NEED_CARD - 28);
-            est.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_BODY));
-            body.getChildren().add(est);
+            body.getChildren().addAll(Kept.scope("estimate", () -> {
+                Label est = Kept.label("Investors' estimate: " + money(BuildCard.investors(ui.game, t).estimate())
+                        + " a month to its owner.");
+                est.setWrapText(true);
+                est.setMaxWidth(NEED_CARD - 28);
+                est.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_BODY));
+                return List.<javafx.scene.Node>of(cardGap(), est);
+            }));
         }
 
-        javafx.scene.control.ScrollPane scroller =
-                new javafx.scene.control.ScrollPane(body);
+        javafx.scene.control.ScrollPane scroller = Kept.of(javafx.scene.control.ScrollPane.class,
+                javafx.scene.control.ScrollPane::new);
+        if (scroller.getContent() != body) scroller.setContent(body);
         scroller.setFitToWidth(true);
         scroller.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
         scroller.setHbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER);
         scroller.setMinHeight(0);
         VBox.setVgrow(scroller, Priority.ALWAYS);
 
-        VBox cover = new VBox(scroller);
+        VBox cover = Kept.column(0, scroller);
         cover.setMinSize(0, 0);
         cover.setPrefSize(NEED_CARD, 0);
         cover.setMaxSize(NEED_CARD, Double.MAX_VALUE);
@@ -2318,15 +2455,18 @@ final class BuildScreen {
 
     /** A label and a figure, on one line, inside a stat cover. */
     HBox statPair(String label, String value) {
-        Label what = new Label(label);
-        what.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-        Region gap = new Region();
-        HBox.setHgrow(gap, Priority.ALWAYS);
-        Label figure = new Label(value);
-        figure.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_BODY));
-        HBox row = new HBox(6, what, gap, figure);
-        row.setAlignment(Pos.CENTER_LEFT);
-        return row;
+        // Kept (KP3): a stat row is a scope keyed by its label.
+        return Kept.scope(label, () -> {
+            Label what = Kept.label(label);
+            what.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+            Region gap = Kept.region();
+            HBox.setHgrow(gap, Priority.ALWAYS);
+            Label figure = Kept.label(value);
+            figure.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_BODY));
+            HBox row = Kept.row(6, what, gap, figure);
+            row.setAlignment(Pos.CENTER_LEFT);
+            return row;
+        });
     }
 
     /**
@@ -2478,47 +2618,60 @@ final class BuildScreen {
     /** The Build tab's front page. */
     void showOverview() {
         autoChips.noteFocus();
-        ui.clearMenu("handleAllBuildingMenus", this::showOverview);
-        buildCategory = BuildAdvice.OVERVIEW;
-        // The keyboard's page: nothing on it to build or clear.
-        pageCards.clear();
-        pageTitle = BuildAdvice.OVERVIEW;
-        pageCategories = EnumSet.noneOf(BuildingType.class);
-        pendingHint = null;
+        onPage(BuildAdvice.OVERVIEW, EnumSet.noneOf(BuildingType.class));
+        // Kept (KP3): a redraw of the Overview (a month landing, a dial moved, the switch) is drawn over last time's nodes;
+        // another page is an arrival (keepBuild()).
+        keepBuild(BuildAdvice.OVERVIEW, this::showOverview, this::drawOverview);
+    }
 
-        List<CityNeeds.Need> all = CityNeeds.measure(ui.game, SummaryScreen.WORDS);
-        List<BuildAdvice.Suggestion> advice = BuildAdvice.suggest(ui.game, all);
+    /**
+     * The Overview itself, put in the window through setPage(): what keepMenu runs as a kept draw from the pool, and
+     * what KeptBench runs kept and built new for KeptCheck. Kept (KP3): every section is a scope of its own - the city's
+     * job's tiles each keyed by its category, each advice tile by what it advises, each open ask by its order, the
+     * market row's tiles by category - so a section that comes and goes (the total, the open asks) slides nothing.
+     */
+    void drawOverview() {
+        Kept.scope(BuildAdvice.OVERVIEW, () -> {
+            // The keyboard's page: nothing on it to build or clear.
+            pageCards.clear();
+            pendingHint = null;
 
-        VBox page = widePage();
-        HBox head = buildHead(BuildAdvice.OVERVIEW, EnumSet.noneOf(BuildingType.class));
-        head.setStyle("-fx-padding: 0 0 4 0;");
-        page.getChildren().addAll(head, overviewLead(),
-                sectionHead("THE CITY'S JOB", hint("tap one to build for it")),
-                cityJob(all),
-                sectionHead("WHAT WOULD HELP MOST", adviceTotal(advice)),
-                adviceRow(advice),
-                sectionHead("AUTOMATIC BUILDING", AUTO_INFO, hint(autoHint(ui.game.getAutoBuilder()))),
-                autoRow());
-        // THE OPEN ASKS (CD2, D30): only while some order waits for its money - with none, nothing, not an empty card.
-        page.getChildren().addAll(autoAsks());
-        page.getChildren().addAll(
-                sectionHead("THE MARKET BUILDS THESE", hint("investors decide; you can add")),
-                marketRow());
-        ui.rootMenu.getChildren().add(page);
+            List<CityNeeds.Need> all = CityNeeds.measure(ui.game, SummaryScreen.WORDS);
+            List<BuildAdvice.Suggestion> advice = BuildAdvice.suggest(ui.game, all);
+
+            VBox page = widePage();
+            page.getChildren().add(Kept.scope("head", () -> {
+                HBox head = buildHead(BuildAdvice.OVERVIEW, EnumSet.noneOf(BuildingType.class));
+                head.setStyle("-fx-padding: 0 0 4 0;");
+                return head;
+            }));
+            page.getChildren().addAll(Kept.scope("lead", this::overviewLead),
+                    Kept.scope("job head", () -> sectionHead("THE CITY'S JOB", hint("tap one to build for it"))),
+                    Kept.scope("job", () -> cityJob(all)),
+                    Kept.scope("advice head", () -> sectionHead("WHAT WOULD HELP MOST",
+                            Kept.scope("total", () -> adviceTotal(advice)))),
+                    Kept.scope("advice", () -> adviceRow(advice)),
+                    Kept.scope("auto head", () -> sectionHead("AUTOMATIC BUILDING", AUTO_INFO, hint(autoHint(ui.game.getAutoBuilder())))),
+                    Kept.scope("auto", this::autoRow));
+            // THE OPEN ASKS (CD2, D30): only while some order waits for its money - with none, nothing, not an empty card.
+            page.getChildren().addAll(Kept.scope("asks", this::autoAsks));
+            page.getChildren().addAll(
+                    Kept.scope("market head", () -> sectionHead("THE MARKET BUILDS THESE", hint("investors decide; you can add"))),
+                    Kept.scope("market", this::marketRow));
+            ui.setPage(page);
+        });
     }
 
     /** The one line: whose job the city's works are. */
     HBox overviewLead() {
-        javafx.scene.text.Text first = new javafx.scene.text.Text("Your job is the city's own works. ");
-        first.setStyle(Palette.Fonts.sansSemiBold() + " -fx-font-size: 12.5px;");
-        first.setFill(javafx.scene.paint.Color.web(Palette.TEXT_HEAD));
-        javafx.scene.text.Text rest = new javafx.scene.text.Text(
-                "Investors build homes, shops and industry by themselves; you can add to theirs.");
-        rest.setStyle("-fx-font-size: 12.5px;");
-        rest.setFill(javafx.scene.paint.Color.web(Palette.TEXT_LABEL));
-        javafx.scene.text.TextFlow words = new javafx.scene.text.TextFlow(first, rest);
+        javafx.scene.text.Text first = textRun("Your job is the city's own works. ", Palette.Fonts.sansSemiBold(), 12.5, Palette.TEXT_HEAD);
+        javafx.scene.text.Text rest = textRun("Investors build homes, shops and industry by themselves; you can add to theirs.",
+                null, 12.5, Palette.TEXT_LABEL);
+        // A TextFlow is not one of Kept's boxes, so its runs are set where they differ (Kept.set).
+        javafx.scene.text.TextFlow words = Kept.of(javafx.scene.text.TextFlow.class, javafx.scene.text.TextFlow::new);
+        Kept.set(words.getChildren(), List.of(first, rest));
         HBox.setHgrow(words, Priority.ALWAYS);
-        HBox line = new HBox(10, icon(Icons.OVERVIEW, Palette.ACCENT, 16), words);
+        HBox line = Kept.row(10, icon(Icons.OVERVIEW, Palette.ACCENT, 16), words);
         line.setAlignment(Pos.CENTER_LEFT);
         line.setStyle("-fx-padding: 9 12 9 12; -fx-background-color: " + Palette.RAISED + ";"
                 + " -fx-background-radius: 6; -fx-border-radius: 6; -fx-border-color: " + Palette.EDGE + ";"
@@ -2540,7 +2693,11 @@ final class BuildScreen {
         List<BuildAdvice.Category> mine = new ArrayList<>();
         for (BuildAdvice.Category c : BuildAdvice.categories()) if (c.cityBuilds()) mine.add(c);
         javafx.scene.layout.GridPane grid = equalColumns(mine.size(), 10);
-        for (int i = 0; i < mine.size(); i++) grid.add(jobTile(mine.get(i), all), i, 0);
+        // Kept (KP3): a tile is a scope keyed by its category (whatever need is its worst today).
+        for (int i = 0; i < mine.size(); i++) {
+            BuildAdvice.Category c = mine.get(i);
+            grid.add(Kept.scope(c.name(), () -> jobTile(c, all)), i, 0);
+        }
         return grid;
     }
 
@@ -2689,10 +2846,11 @@ final class BuildScreen {
 
     /** A crane and "N on site", in the building colour, or a quiet word when there is nothing. */
     HBox onSiteLine(int n, String none) {
-        Label words = new Label(n > 0 ? formatter.format(n) + " on site" : none);
+        Label words = Kept.label(n > 0 ? formatter.format(n) + " on site" : none);
         words.setStyle(Palette.words(Palette.SIZE_LABEL, n > 0 ? Palette.BUILDING : Palette.TEXT_MUTED));
-        HBox line = new HBox(5);
-        if (n > 0) line.getChildren().add(icon(Icons.CRANE, Palette.BUILDING, 13));
+        HBox line = Kept.row(5);
+        // Kept (KP3): the crane comes and goes, so it is a scope of its own.
+        if (n > 0) line.getChildren().add(Kept.scope("crane", () -> icon(Icons.CRANE, Palette.BUILDING, 13)));
         line.getChildren().add(words);
         line.setAlignment(Pos.CENTER_LEFT);
         return line;
@@ -2712,42 +2870,45 @@ final class BuildScreen {
         String tone = verdict(worst == null ? 0 : worst.verdictLevel());
         Shown s = worst == null ? fine(c.name(), all) : shown(worst);
 
-        Label name = new Label(c.name());
+        Label name = Kept.label(c.name());
         name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
-        Region gap = new Region();
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
-        Label go = new Label("›");
+        Label go = Kept.label("›");
         go.setStyle(Palette.words(13, Palette.TEXT_MUTED));
-        HBox top = new HBox(8, iconSquare(Icons.ofCategory(c.name()), CITY_DOT, 28, 15), name, gap, go);
+        HBox top = Kept.row(8, iconSquare(Icons.ofCategory(c.name()), CITY_DOT, 28, 15), name, gap, go);
         top.setAlignment(Pos.CENTER_LEFT);
 
-        Label caption = new Label(s.caption());
+        Label caption = Kept.label(s.caption());
         caption.setWrapText(true);
         caption.setStyle(Palette.words(12, Palette.TEXT_HEAD));
-        Label detail = new Label(s.detail());
+        Label detail = Kept.label(s.detail());
         detail.setWrapText(true);
         detail.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-        VBox words = new VBox(2, caption, detail);
+        VBox words = Kept.column(2, caption, detail);
         words.setAlignment(Pos.CENTER_LEFT);
         HBox.setHgrow(words, Priority.ALWAYS);
         words.setMinWidth(0);
-        HBox middle = new HBox(10, ring(s.arc(), tone, JOB_RING, 6, s.figure(), 13), words);
+        HBox middle = Kept.row(10, ring(s.arc(), tone, JOB_RING, 6, s.figure(), 13), words);
         middle.setAlignment(Pos.CENTER_LEFT);
 
         int onSite = onSiteIn(c);
-        VBox tile = new VBox(10, top, middle, onSiteLine(onSite, worst == null ? "nothing needed" : "nothing on site"));
+        String none = worst == null ? "nothing needed" : "nothing on site";
+        VBox tile = Kept.column(10, top, middle,
+                Kept.scope("on site", () -> onSiteLine(onSite, none)));
         tile.setMaxWidth(Double.MAX_VALUE);
         tile.setMinHeight(150);
         String rest = "-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.RAISED + ";"
                 + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-width: 3 1 1 1; -fx-cursor: hand;"
                 + " -fx-border-color: " + tone + " ";
-        tile.setStyle(rest + Palette.EDGE + " " + Palette.EDGE + " " + Palette.EDGE + ";");
-        tile.setOnMouseEntered(e -> tile.setStyle(rest + Palette.ACCENT + " " + Palette.ACCENT + " " + Palette.ACCENT + ";"));
-        tile.setOnMouseExited(e -> tile.setStyle(rest + Palette.EDGE + " " + Palette.EDGE + " " + Palette.EDGE + ";"));
-        Tooltip tip = new Tooltip(worst == null ? c.name() + ": nothing near its line. Click to build for it."
-                : c.name() + ": " + worst.label().toLowerCase() + " · " + worst.reading() + ". Click to build for it.");
-        tip.setShowDelay(Duration.millis(300));
-        Tooltip.install(tile, tip);
+        String edge = Palette.EDGE + " " + Palette.EDGE + " " + Palette.EDGE + ";";
+        String over = Palette.ACCENT + " " + Palette.ACCENT + " " + Palette.ACCENT + ";";
+        // The look the pointer calls for is chosen from isHover(), where it is set (a kept tile sends no mouse-entered to a pointer that has not moved).
+        tile.setStyle(rest + (tile.isHover() ? over : edge));
+        tile.setOnMouseEntered(e -> tile.setStyle(rest + over));
+        tile.setOnMouseExited(e -> tile.setStyle(rest + edge));
+        Kept.tip(tile, worst == null ? c.name() + ": nothing near its line. Click to build for it."
+                : c.name() + ": " + worst.label().toLowerCase() + " · " + worst.reading() + ". Click to build for it.", 300);
         tile.setOnMouseClicked(e -> openCategory(c.name()));
         return tile;
     }
@@ -2768,26 +2929,28 @@ final class BuildScreen {
         if (advice.isEmpty()) return null;
         double sum = ui.game.buildRunInvoice(BuildAdvice.run(advice));
         String all = advice.size() == 3 ? "all three" : advice.size() == 2 ? "both" : "it";
-        Label what = new Label(all + " ≈ ");
+        Label what = Kept.label(all + " ≈ ");
         what.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-        Label total = new Label(money(sum));
+        Label total = Kept.label(money(sum));
         total.setStyle(Palette.figure(Palette.SIZE_BODY, sum > ui.game.getCash() ? Palette.WARN : Palette.TEXT_HEAD));
-        Label of = new Label(" of your ");
+        Label of = Kept.label(" of your ");
         of.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-        Label cash = new Label(money(ui.game.getCash()));
+        Label cash = Kept.label(money(ui.game.getCash()));
         cash.setStyle(Palette.figure(Palette.SIZE_BODY, ui.game.getCash() < 0 ? Palette.BAD : Palette.TEXT_HEAD));
-        HBox row = new HBox(0, what, total, of, cash);
+        HBox row = Kept.row(0, what, total, of, cash);
         row.setAlignment(Pos.CENTER_RIGHT);
         if (advice.size() > 1) {
             // The cards' button, inline (0.7.34): it orders every suggestion, as each card's would.
-            Pieces.ActionButton order = actionButton(Icons.BUILD, Palette.BUILDING, ACTION_INLINE,
-                    allPress(advice), () -> orderAll(advice));
-            order.setMinWidth(Region.USE_PREF_SIZE);
-            HBox.setMargin(order, new javafx.geometry.Insets(0, 0, 0, 10));
-            row.getChildren().add(order);
+            row.getChildren().add(Kept.scope("all", () -> {
+                Pieces.ActionButton order = actionButton(Icons.BUILD, Palette.BUILDING, ACTION_INLINE,
+                        allPress(advice), () -> orderAll(advice));
+                order.setMinWidth(Region.USE_PREF_SIZE);
+                HBox.setMargin(order, new javafx.geometry.Insets(0, 0, 0, 10));
+                return order;
+            }));
         }
-        Tooltip.install(row, new Tooltip("What placing them in this order charges now, each on the yard the ones "
-                + "before it leave. Land is not in it: the city builds on its own ground."));
+        Kept.tip(row, "What placing them in this order charges now, each on the yard the ones "
+                + "before it leave. Land is not in it: the city builds on its own ground.", 1000);
         return row;
     }
 
@@ -2839,13 +3002,18 @@ final class BuildScreen {
     /** Up to three cards, or a line saying there is nothing to suggest. */
     javafx.scene.Node adviceRow(List<BuildAdvice.Suggestion> advice) {
         if (advice.isEmpty()) {
-            Label none = new Label("Nothing the city builds is past its line, or what is on site already answers it, or no building can move it: nothing to suggest.");
+            Label none = Kept.label("Nothing the city builds is past its line, or what is on site already answers it, or no building can move it: nothing to suggest.");
             none.setWrapText(true);
             none.setStyle(Palette.words(12, Palette.TEXT_LABEL) + " -fx-padding: 4 0 4 0;");
             return none;
         }
         javafx.scene.layout.GridPane grid = equalColumns(3, 10);
-        for (int i = 0; i < advice.size(); i++) grid.add(suggestionCard(advice.get(i)), i, 0);
+        // Kept (KP3): a card is a scope keyed by what it advises (the measure it keeps ahead and the building), so a card that
+        // goes takes its nodes with it and the others keep theirs.
+        for (int i = 0; i < advice.size(); i++) {
+            BuildAdvice.Suggestion s = advice.get(i);
+            grid.add(Kept.scope(List.of(s.measure(), suggestionName(s)), () -> suggestionCard(s)), i, 0);
+        }
         return grid;
     }
 
@@ -2919,68 +3087,70 @@ final class BuildScreen {
         CityNeeds.Served afterServed = BuildAdvice.verdictAfter(ui.game, s);
         String now = afterServed != null ? CityNeeds.servedPct(need.served().share()) : figureText(s.measure(), s.before());
         String tone = verdict(need.verdictLevel());
-        Label chip = new Label(need.label().charAt(0) + need.label().substring(1).toLowerCase() + " "
+        Label chip = Kept.label(need.label().charAt(0) + need.label().substring(1).toLowerCase() + " "
                 + now + (afterServed != null ? " " + CityNeeds.SERVED : ""));
         chip.setStyle(Palette.words(Palette.SIZE_LABEL, tone) + " -fx-padding: 1 7 1 7; -fx-border-color: " + tone + ";"
                 + " -fx-border-radius: 9; -fx-background-radius: 9; -fx-background-color: " + tone + "22;");
-        Label before = new Label(now + " → ");
+        Label before = Kept.label(now + " → ");
         before.setStyle(Palette.figure(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
         boolean clears = BuildAdvice.clear(s.measure(), s.after());
-        Label after = new Label(afterServed != null ? CityNeeds.servedPct(afterServed.share()) : figureText(s.measure(), s.after()));
+        Label after = Kept.label(afterServed != null ? CityNeeds.servedPct(afterServed.share()) : figureText(s.measure(), s.after()));
         after.setStyle(Palette.figure(Palette.SIZE_LABEL, afterServed != null ? servedTone(afterServed)
                 : clears ? Palette.GOOD : Palette.WARN));
-        Region gap = new Region();
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
-        HBox top = new HBox(0, chip, gap, before, after);
+        HBox top = Kept.row(0, chip, gap, before, after);
         top.setAlignment(Pos.CENTER_LEFT);
 
-        Label count = new Label(formatter.format(s.count()) + " × ");
+        Label count = Kept.label(formatter.format(s.count()) + " × ");
         count.setStyle(Palette.figure(Palette.SIZE_HEADING + 1, Palette.BUILDING));
-        Label name = new Label(suggestionName(s));
+        Label name = Kept.label(suggestionName(s));
         name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
-        HBox what = new HBox(0, count, name);
+        HBox what = Kept.row(0, count, name);
         what.setAlignment(Pos.BASELINE_LEFT);
         CardWords cw = cardWords(s);
-        Label line = new Label(cw.does());
+        Label line = Kept.label(cw.does());
         line.setWrapText(true);
         line.setStyle(wordsAt(10.5, Palette.TEXT_LABEL));
-        Label sized = new Label(cw.sized());
+        Label sized = Kept.label(cw.sized());
         sized.setWrapText(true);
         sized.setStyle(wordsAt(10.5, Palette.TEXT_LABEL));
-        Label land = new Label(cw.land());
+        Label land = Kept.label(cw.land());
         land.setWrapText(true);
         land.setStyle(wordsAt(10.5, s.landShort() > 0 ? Palette.WARN : Palette.TEXT_LABEL));
-        Tooltip.install(land, new Tooltip(cw.landTip()));
-        VBox words = new VBox(2, what, line, sized, land);
+        Kept.tip(land, cw.landTip(), 1000);
+        VBox words = Kept.column(2, what, line, sized, land);
         // AUTOMATIC BUILDING'S VERDICT (PT1-M3, Jerus 2026-10-12: "yes do rec"): a building its last pass held back as
         // not paying back says so under the card, in the inbox's words - the model's line, never worked out here.
         if (cw.heldBack() != null) {
-            Label held = new Label(cw.heldBack());
-            held.setWrapText(true);
-            held.setMinWidth(0);
-            held.setStyle(wordsAt(10.5, Palette.WARN));
-            HBox.setHgrow(held, Priority.ALWAYS);
-            HBox heldRow = new HBox(5, icon(Icons.COIN, Palette.WARN, 12), held);
-            heldRow.setAlignment(Pos.TOP_LEFT);
-            heldRow.setStyle("-fx-padding: 3 0 0 0;");
-            Tooltip.install(heldRow, new Tooltip("Automatic building orders a school, a police station, a prison or a"
-                    + " transit line only as far as it pays back over its life. The advice ranks by the cheapest per "
-                    + BuildCard.perWords(s.measure()) + "; the order is still yours to place, and the inbox has the same"
-                    + " line."));
-            words.getChildren().add(heldRow);
+            words.getChildren().add(Kept.scope("held back", () -> {
+                Label held = Kept.label(cw.heldBack());
+                held.setWrapText(true);
+                held.setMinWidth(0);
+                held.setStyle(wordsAt(10.5, Palette.WARN));
+                HBox.setHgrow(held, Priority.ALWAYS);
+                HBox heldRow = Kept.row(5, icon(Icons.COIN, Palette.WARN, 12), held);
+                heldRow.setAlignment(Pos.TOP_LEFT);
+                heldRow.setStyle("-fx-padding: 3 0 0 0;");
+                Kept.tip(heldRow, "Automatic building orders a school, a police station, a prison or a"
+                        + " transit line only as far as it pays back over its life. The advice ranks by the cheapest per "
+                        + BuildCard.perWords(s.measure()) + "; the order is still yours to place, and the inbox has the same"
+                        + " line.", 1000);
+                return heldRow;
+            }));
         }
         HBox.setHgrow(words, Priority.ALWAYS);
         words.setMinWidth(0);
-        HBox middle = new HBox(10, iconSquare(Icons.ofCategory(s.measure().category()), CITY_DOT, 34, 18), words);
+        HBox middle = Kept.row(10, iconSquare(Icons.ofCategory(s.measure().category()), CITY_DOT, 34, 18), words);
         middle.setAlignment(Pos.TOP_LEFT);
 
-        Label price = new Label(money(s.price()));
+        Label price = Kept.label(money(s.price()));
         price.setStyle(Palette.figure(Palette.SIZE_SECTION, s.needsCredit() ? Palette.WARN : Palette.TEXT_HEAD));
-        Label allIn = new Label(" all in");
+        Label allIn = Kept.label(" all in");
         allIn.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-        HBox cost = new HBox(0, price, allIn);
+        HBox cost = Kept.row(0, price, allIn);
         cost.setAlignment(Pos.BASELINE_LEFT);
-        Region spread = new Region();
+        Region spread = Kept.region();
         HBox.setHgrow(spread, Priority.ALWAYS);
         // A door to the category (0.7.34: a pill), and the order itself as the card's button under it.
         HBox show = doorPill("Show", Icons.BUILD, Palette.BUILDING, () -> {
@@ -2991,22 +3161,21 @@ final class BuildScreen {
             measurePicked.put(c.name(), showOn(s));
             handleAllBuildingMenus(c.name(), c.types());
         });
-        Tooltip.install(show, new Tooltip("Open " + s.measure().category() + " with " + formatter.format(s.count()) + " dialled up"));
+        Kept.tip(show, "Open " + s.measure().category() + " with " + formatter.format(s.count()) + " dialled up", 1000);
         Pieces.ActionButton order = actionButton(Icons.BUILD, Palette.BUILDING, ACTION_TALL, suggestionPress(s),
                 () -> {
                     if (!s.paving()) placeOrder(s.template(), s.count(), BuildAdvice.OVERVIEW, EnumSet.noneOf(BuildingType.class));
                     else if (ui.game.paveRoads(s.count())) showOverview();
                 });
-        Tooltip orderTip = new Tooltip(s.paving()
+        Kept.tip(order, s.paving()
                 ? "Paves " + formatter.format(s.count()) + " " + ConstructionControl.PAVE_FROM + "s, as the Gravel Road card's Pave would"
                 : s.needsCredit()
                 ? "short " + money(s.price() - ui.game.getCash()) + " — you will be offered a bill"
-                : "Orders " + formatter.format(s.count()) + " × " + s.template().getName() + " as its Build button would");
-        Tooltip.install(order, orderTip);
-        HBox bottom = new HBox(6, cost, spread, show);
+                : "Orders " + formatter.format(s.count()) + " × " + s.template().getName() + " as its Build button would", 1000);
+        HBox bottom = Kept.row(6, cost, spread, show);
         bottom.setAlignment(Pos.CENTER_LEFT);
 
-        VBox card = new VBox(10, top, middle, bottom, order);
+        VBox card = Kept.column(10, top, middle, bottom, order);
         card.setMaxWidth(Double.MAX_VALUE);
         card.setStyle("-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.RAISED + ";"
                 + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + Palette.EDGE + ";");
@@ -3163,9 +3332,10 @@ final class BuildScreen {
     javafx.scene.layout.GridPane autoRow() {
         AutoBuilder ab = ui.game.getAutoBuilder();
         javafx.scene.layout.GridPane grid = equalColumns(3, 10);
-        grid.add(autoMarginCard(ab), 0, 0);
-        grid.add(autoLimitCard(ab), 1, 0);
-        grid.add(autoStatusCard(ab), 2, 0);
+        // Kept (KP3): a card is a scope each, so the dials and the chips are the ones the last draw made.
+        grid.add(Kept.scope("margin", () -> autoMarginCard(ab)), 0, 0);
+        grid.add(Kept.scope("limit", () -> autoLimitCard(ab)), 1, 0);
+        grid.add(Kept.scope("status", () -> autoStatusCard(ab)), 2, 0);
         return grid;
     }
 
@@ -3246,23 +3416,25 @@ final class BuildScreen {
 
     /** A card in the row: its title, a dial and its words. */
     VBox autoCard(String title, javafx.scene.Node dial, String words) {
-        Label head = new Label(title);
+        Label head = Kept.label(title);
         head.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
-        Label line = new Label(words);
+        Label line = Kept.label(words);
         line.setWrapText(true);
         line.setStyle(wordsAt(10.5, Palette.TEXT_LABEL));
-        VBox card = new VBox(4, head, dial, line);
+        VBox card = Kept.column(4, head, dial, line);
         card.setMaxWidth(Double.MAX_VALUE);
         card.setStyle("-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.RAISED + ";"
                 + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + Palette.EDGE + ";");
         return card;
     }
 
+    // Kept (KP3): the two dials are Ladders (kept-safe since KP2): their callbacks read the automatic builder of the game
+    // as it stands when they fire, never the one the draw held, and a redraw does not set a slider the player is holding.
     VBox autoMarginCard(AutoBuilder ab) {
         String[] w = autoMarginWords(ab.getSlack());
         VBox dial = Ladder.of(0, AutoBuilder.SLACK_MOST * 100, AutoBuilder.STEP * 100, v -> String.format("%.0f%%", v))
                 .current(ab.getSlack() * 100)
-                .appliesAtOnce(v -> { ab.setSlack(v / 100, ui.game.getDecisions()); showOverview(); })
+                .appliesAtOnce(v -> { ui.game.getAutoBuilder().setSlack(v / 100, ui.game.getDecisions()); showOverview(); })
                 .wide(AUTO_DIAL).build();
         return autoCard(w[0], dial, w[1]);
     }
@@ -3272,7 +3444,7 @@ final class BuildScreen {
         double now = AutoBuilder.ratio(ui.game);
         Ladder ladder = Ladder.of(0, AutoBuilder.DEBT_LIMIT_MOST * 100, AutoBuilder.DEBT_STEP * 100, v -> String.format("%.0f%%", v))
                 .current(ab.getDebtLimit() * 100)
-                .appliesAtOnce(v -> { ab.setDebtLimit(v / 100, ui.game.getDecisions()); showOverview(); })
+                .appliesAtOnce(v -> { ui.game.getAutoBuilder().setDebtLimit(v / 100, ui.game.getDecisions()); showOverview(); })
                 .wide(AUTO_DIAL);
         if (w[2] != null && now * 100 <= AutoBuilder.DEBT_LIMIT_MOST * 100) {
             ladder.marks(new double[] { now * 100 }, new String[] { w[2] });
@@ -3280,28 +3452,31 @@ final class BuildScreen {
         VBox card = autoCard(w[0], ladder.build(), w[1]);
         // ...and Build from cash anyway (0.7.81), under the words: two chips, applied at once.
         String[] c = autoCashWords();
-        javafx.scene.layout.FlowPane chips = chipStrip(new String[] { c[1], c[2] }, ab.isCashAnyway() ? c[2] : c[1],
-                Palette.SIZE_LABEL, name -> { ab.setCashAnyway(c[2].equals(name), ui.game.getDecisions()); showOverview(); });
-        chips.setAlignment(Pos.CENTER_LEFT);
-        for (int i = 0; i < chips.getChildren().size(); i++) {
-            if (chips.getChildren().get(i) instanceof Button b) {
-                Tooltip tip = new Tooltip(c[3 + i]);
-                tip.setShowDelay(Duration.millis(300));
-                b.setTooltip(tip);
+        card.getChildren().add(Kept.scope("cash", () -> {
+            javafx.scene.layout.FlowPane chips = chipStrip(new String[] { c[1], c[2] }, ab.isCashAnyway() ? c[2] : c[1],
+                    Palette.SIZE_LABEL, name -> {
+                        ui.game.getAutoBuilder().setCashAnyway(c[2].equals(name), ui.game.getDecisions());
+                        showOverview();
+                    });
+            chips.setAlignment(Pos.CENTER_LEFT);
+            for (int i = 0; i < chips.getChildren().size(); i++) {
+                if (chips.getChildren().get(i) instanceof Button b) Kept.tip(b, c[3 + i], 300);
             }
-        }
-        Label lead = new Label(c[0]);
-        lead.setStyle(wordsAt(10.5, Palette.TEXT_MUTED));
-        lead.setMinWidth(Region.USE_PREF_SIZE);
-        HBox row = new HBox(8, lead, chips);
-        row.setAlignment(Pos.CENTER_LEFT);
-        card.getChildren().add(row);
+            Label lead = Kept.label(c[0]);
+            lead.setStyle(wordsAt(10.5, Palette.TEXT_MUTED));
+            lead.setMinWidth(Region.USE_PREF_SIZE);
+            HBox row = Kept.row(8, lead, chips);
+            row.setAlignment(Pos.CENTER_LEFT);
+            return row;
+        }));
         // ...and the highest yield its bond sells at (CD2, D28), the same three chips as Borrow, on the builder's own cap.
-        card.getChildren().addAll(autoChips.controls(AUTO_CAP_TITLE, AUTO_CAP_INFO, autoFair(), false));
-        Label capLine = new Label(AUTO_CAP_LINE);
-        capLine.setWrapText(true);
-        capLine.setStyle(wordsAt(10.5, Palette.TEXT_MUTED));
-        card.getChildren().add(capLine);
+        card.getChildren().addAll(Kept.scope("cap", () -> autoChips.controls(AUTO_CAP_TITLE, AUTO_CAP_INFO, autoFair(), false)));
+        card.getChildren().add(Kept.scope("cap line", () -> {
+            Label capLine = Kept.label(AUTO_CAP_LINE);
+            capLine.setWrapText(true);
+            capLine.setStyle(wordsAt(10.5, Palette.TEXT_MUTED));
+            return capLine;
+        }));
         return card;
     }
 
@@ -3361,37 +3536,41 @@ final class BuildScreen {
         List<javafx.scene.Node> out = new ArrayList<>();
         List<AutoBuilder.OpenAsk> asks = ab.asks();
         if (asks.isEmpty()) return out;
-        out.add(sectionHead("OPEN ASKS", ASKS_INFO,
+        out.add(Kept.scope("head", () -> sectionHead("OPEN ASKS", ASKS_INFO,
                 hint(asks.size() + (asks.size() == 1 ? " order waits" : " orders wait") + " for money · "
-                        + money(ab.askedRaised()) + " raised for them, held in the treasury")));
-        VBox rows = new VBox(8);
+                        + money(ab.askedRaised()) + " raised for them, held in the treasury"))));
+        VBox rows = Kept.column(8);
+        // Kept (KP3): a row is a scope keyed by its order (the building and the measure it keeps ahead), so an ask withdrawn
+        // takes its row's nodes with it and the rows after it keep theirs.
         for (int i = 0; i < asks.size(); i++) {
             final int index = i;
-            String[] w = askWords(asks.get(i), ui.game.getMonth());
-            Label order = new Label(w[0]);
-            order.setStyle(Palette.strong(Palette.SIZE_HEADING, Palette.TEXT_HEAD));
-            Label keeps = new Label(w[1]);
-            keeps.setWrapText(true);
-            keeps.setStyle(wordsAt(10.5, Palette.TEXT_MUTED));
-            VBox name = new VBox(2, order, keeps);
-            name.setMinWidth(180);
-            HBox.setHgrow(name, Priority.ALWAYS);
-            HBox figures = new HBox(18, askFigure("Order", w[2], Palette.TEXT_BODY),
-                    askFigure("Raised so far", w[3], Palette.GOOD),
-                    askFigure("Still to raise", w[4], Palette.WARN),
-                    askFigure("Open", w[5], Palette.TEXT_BODY));
-            figures.setAlignment(Pos.CENTER_LEFT);
-            Button withdraw = new Button("Withdraw");
-            Tooltip tip = new Tooltip("Stop asking for this one. What it raised stays in the treasury: the paper is "
-                    + "sold and cannot be unsold.");
-            tip.setShowDelay(Duration.millis(300));
-            withdraw.setTooltip(tip);
-            withdraw.setOnAction(e -> { ab.withdraw(index, ui.game.getDecisions()); showOverview(); });
-            HBox row = new HBox(16, name, figures, withdraw);
-            row.setAlignment(Pos.CENTER_LEFT);
-            row.setStyle("-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.RAISED + ";"
-                    + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + Palette.EDGE + ";");
-            rows.getChildren().add(row);
+            AutoBuilder.OpenAsk ask = asks.get(i);
+            rows.getChildren().add(Kept.scope(ask.building() + "/" + ask.measure(), () -> {
+                String[] w = askWords(ask, ui.game.getMonth());
+                Label order = Kept.label(w[0]);
+                order.setStyle(Palette.strong(Palette.SIZE_HEADING, Palette.TEXT_HEAD));
+                Label keeps = Kept.label(w[1]);
+                keeps.setWrapText(true);
+                keeps.setStyle(wordsAt(10.5, Palette.TEXT_MUTED));
+                VBox name = Kept.column(2, order, keeps);
+                name.setMinWidth(180);
+                HBox.setHgrow(name, Priority.ALWAYS);
+                HBox figures = Kept.row(18, askFigure("Order", w[2], Palette.TEXT_BODY),
+                        askFigure("Raised so far", w[3], Palette.GOOD),
+                        askFigure("Still to raise", w[4], Palette.WARN),
+                        askFigure("Open", w[5], Palette.TEXT_BODY));
+                figures.setAlignment(Pos.CENTER_LEFT);
+                Button withdraw = Kept.of(Button.class, Button::new);
+                withdraw.setText("Withdraw");
+                Kept.tip(withdraw, "Stop asking for this one. What it raised stays in the treasury: the paper is "
+                        + "sold and cannot be unsold.", 300);
+                withdraw.setOnAction(e -> { ui.game.getAutoBuilder().withdraw(index, ui.game.getDecisions()); showOverview(); });
+                HBox row = Kept.row(16, name, figures, withdraw);
+                row.setAlignment(Pos.CENTER_LEFT);
+                row.setStyle("-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.RAISED + ";"
+                        + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + Palette.EDGE + ";");
+                return row;
+            }));
         }
         out.add(rows);
         return out;
@@ -3399,48 +3578,50 @@ final class BuildScreen {
 
     /** One figure of an open ask's row: its small label over its value. */
     private VBox askFigure(String label, String value, String tone) {
-        Label what = new Label(label);
+        Label what = Kept.label(label);
         what.setStyle(wordsAt(10, Palette.TEXT_MUTED));
         what.setMinWidth(Region.USE_PREF_SIZE);
-        Label figure = new Label(value);
+        Label figure = Kept.label(value);
         figure.setStyle(Palette.figure(Palette.SIZE_BODY, tone));
         figure.setMinWidth(Region.USE_PREF_SIZE);
-        return new VBox(2, what, figure);
+        return Kept.column(2, what, figure);
     }
 
     VBox autoStatusCard(AutoBuilder ab) {
         List<String> w = autoStatusWords(ab, ui.game.getMonth());
-        Label state = new Label(w.get(0));
+        Label state = Kept.label(w.get(0));
         state.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, ab.isOn() ? Palette.GOOD : Palette.TEXT_MUTED));
-        Label line = new Label(w.get(1));
+        Label line = Kept.label(w.get(1));
         line.setWrapText(true);
         line.setStyle(wordsAt(10.5, Palette.TEXT_LABEL));
-        Label totals = new Label(w.get(2));
+        Label totals = Kept.label(w.get(2));
         totals.setWrapText(true);
         totals.setStyle(wordsAt(10.5, Palette.TEXT_LABEL));
-        VBox card = new VBox(4, state, line, totals);
+        VBox card = Kept.column(4, state, line, totals);
+        // What it held back, and its latest orders, come and go: each is a scope of its own.
         if (w.get(3) != null) {
-            Label held = new Label(w.get(3));
-            held.setWrapText(true);
-            held.setStyle(wordsAt(10.5, Palette.WARN));
-            Tooltip tip = new Tooltip(w.get(4));
-            tip.setShowDelay(Duration.millis(300));
-            Tooltip.install(held, tip);
-            card.getChildren().add(held);
+            card.getChildren().add(Kept.scope("held", () -> {
+                Label held = Kept.label(w.get(3));
+                held.setWrapText(true);
+                held.setStyle(wordsAt(10.5, Palette.WARN));
+                Kept.tip(held, w.get(4), 300);
+                return held;
+            }));
         }
         for (int i = 5; i + 1 < w.size(); i += 2) {
-            Label order = new Label(w.get(i));
-            order.setWrapText(true);
-            order.setStyle(wordsAt(10, Palette.TEXT_BODY));
-            Tooltip tip = new Tooltip(w.get(i + 1));
-            tip.setShowDelay(Duration.millis(300));
-            Tooltip.install(order, tip);
-            card.getChildren().add(order);
+            final int at = i;
+            card.getChildren().add(Kept.scope("latest " + i, () -> {
+                Label order = Kept.label(w.get(at));
+                order.setWrapText(true);
+                order.setStyle(wordsAt(10, Palette.TEXT_BODY));
+                Kept.tip(order, w.get(at + 1), 300);
+                return order;
+            }));
         }
-        Region push = new Region();
+        Region push = Kept.region();
         VBox.setVgrow(push, Priority.ALWAYS);
         Pieces.ActionButton toggle = actionButton(Icons.BUILD, Palette.BUILDING, ACTION_TALL, autoPress(ab.isOn()),
-                () -> { ab.setOn(!ab.isOn(), ui.game.getDecisions()); showOverview(); });
+                () -> { AutoBuilder now = ui.game.getAutoBuilder(); now.setOn(!now.isOn(), ui.game.getDecisions()); showOverview(); });
         card.getChildren().addAll(push, toggle);
         card.setMaxWidth(Double.MAX_VALUE);
         card.setMaxHeight(Double.MAX_VALUE);
@@ -3457,7 +3638,11 @@ final class BuildScreen {
         List<BuildAdvice.Category> theirs = new ArrayList<>();
         for (BuildAdvice.Category c : BuildAdvice.categories()) if (!c.cityBuilds()) theirs.add(c);
         javafx.scene.layout.GridPane grid = equalColumns(theirs.size(), 8);
-        for (int i = 0; i < theirs.size(); i++) grid.add(marketTile(theirs.get(i)), i, 0);
+        // Kept (KP3): a tile is a scope keyed by its category.
+        for (int i = 0; i < theirs.size(); i++) {
+            BuildAdvice.Category c = theirs.get(i);
+            grid.add(Kept.scope(c.name(), () -> marketTile(c)), i, 0);
+        }
         return grid;
     }
 
@@ -3465,27 +3650,28 @@ final class BuildScreen {
     HBox marketTile(BuildAdvice.Category c) {
         // Nine to a row: at 1,280 a column is about 118 px, and "Luxury shops"
         // wraps to two lines there rather than running into its neighbour.
-        Label name = new Label(c.name());
+        Label name = Kept.label(c.name());
         name.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_LABEL));
         name.setWrapText(true);
         name.setMinWidth(0);
-        Label standing = new Label(formatter.format(standingIn(c)));
+        Label standing = Kept.label(formatter.format(standingIn(c)));
         standing.setStyle(Palette.figure(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
         int onSite = onSiteIn(c);
-        Label under = new Label(onSite > 0 ? formatter.format(onSite) + " on site" : "standing");
+        Label under = Kept.label(onSite > 0 ? formatter.format(onSite) + " on site" : "standing");
         under.setStyle(wordsAt(9.5, onSite > 0 ? Palette.BUILDING : Palette.TEXT_MUTED));
-        VBox words = new VBox(0, name, standing, under);
+        VBox words = Kept.column(0, name, standing, under);
         words.setMinWidth(0);
         HBox.setHgrow(words, Priority.ALWAYS);
-        HBox tile = new HBox(8, iconSquare(Icons.ofCategory(c.name()), INVESTOR_DOT, 28, 15), words);
+        HBox tile = Kept.row(8, iconSquare(Icons.ofCategory(c.name()), INVESTOR_DOT, 28, 15), words);
         tile.setAlignment(Pos.CENTER_LEFT);
         tile.setMaxWidth(Double.MAX_VALUE);
         String rest = "-fx-padding: 8 8 8 8; -fx-background-color: " + Palette.PANEL + ";"
                 + " -fx-background-radius: 6; -fx-border-radius: 6; -fx-cursor: hand; -fx-border-color: ";
-        tile.setStyle(rest + Palette.EDGE + ";");
+        // The look the pointer calls for is chosen from isHover(), where it is set (a kept tile sends no mouse-entered to a pointer that has not moved).
+        tile.setStyle(rest + (tile.isHover() ? Palette.BUSINESS : Palette.EDGE) + ";");
         tile.setOnMouseEntered(e -> tile.setStyle(rest + Palette.BUSINESS + ";"));
         tile.setOnMouseExited(e -> tile.setStyle(rest + Palette.EDGE + ";"));
-        Tooltip.install(tile, new Tooltip(c.name() + ": investors build these themselves. You can build them too."));
+        Kept.tip(tile, c.name() + ": investors build these themselves. You can build them too.", 1000);
         tile.setOnMouseClicked(e -> openCategory(c.name()));
         return tile;
     }
@@ -3566,85 +3752,106 @@ final class BuildScreen {
 
     /** A city category's page. */
     void showCityCategory(BuildAdvice.Category c) {
-        ui.clearMenu("handleAllBuildingMenus", () -> showCityCategory(c));
-        buildCategory = c.name();
-        pageCards.clear();
-        pageTitle = c.name();
-        pageCategories = c.types();
-        pendingHint = new Label("↵ builds what is pending · ⌫ clears it");
-        pendingHint.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED) + " -fx-padding: 6 0 0 0;");
+        onPage(c.name(), c.types());
+        // Kept (KP3): a redraw of this category (a month landing, a ring picked, a stepper's page) is drawn over last time's
+        // nodes; another page is an arrival (keepBuild()).
+        keepBuild(c.name(), () -> showCityCategory(c), () -> drawCityCategory(c));
+    }
 
-        List<CityNeeds.Need> all = CityNeeds.measure(ui.game, SummaryScreen.WORDS);
-        List<BuildAdvice.Measure> measures = BuildAdvice.measuresOf(c.name());
-        BuildAdvice.Measure picked = measurePicked.get(c.name());
-        if (picked == null || !measures.contains(picked)) picked = worstMeasure(c, measures, all);
-        final BuildAdvice.Measure on = picked;
-        orderMeasure = on;
-        orderMarket = false;
+    /**
+     * A city category's page itself, put in the window through setPage(): what keepMenu runs as a kept draw from the
+     * pool, and what KeptBench runs kept and built new for KeptCheck. The ring it opens on is the one picked
+     * (measurePicked), else the worst. Kept (KP3): every section is a scope of its own, each ring one keyed by its
+     * measure, each group of cards one keyed by its title and each card one keyed by its building (card()); the page
+     * remakes what the keyboard reads (pageCards, pendingHint) and refills the order bar once, after the last card.
+     */
+    void drawCityCategory(BuildAdvice.Category c) {
+        Kept.scope("city:" + c.name(), () -> {
+            pageCards.clear();
+            pendingHint = Kept.scope("hint", this::pendingHintLabel);
 
-        VBox page = widePage();
-        HBox head = buildHead(c.name(), c.types());
-        head.setStyle("-fx-padding: 0 0 4 0;");
-        javafx.scene.layout.FlowPane strip = buildStrip(c.name());
-        strip.setStyle("-fx-padding: 0;");
+            List<CityNeeds.Need> all = CityNeeds.measure(ui.game, SummaryScreen.WORDS);
+            List<BuildAdvice.Measure> measures = BuildAdvice.measuresOf(c.name());
+            BuildAdvice.Measure picked = measurePicked.get(c.name());
+            if (picked == null || !measures.contains(picked)) picked = worstMeasure(c, measures, all);
+            final BuildAdvice.Measure on = picked;
+            orderMeasure = on;
+            orderMarket = false;
 
-        // The rings: one per measure; Education's nine smaller, in one row.
-        boolean small = measures.size() > 4;
-        javafx.scene.layout.GridPane rings = equalColumns(measures.size(), small ? 6 : 10);
-        for (int i = 0; i < measures.size(); i++) rings.add(measureCard(c, measures.get(i), all, measures.get(i).equals(on), small), i, 0);
+            VBox page = widePage();
+            HBox head = Kept.scope("head", () -> categoryHead(c));
+            javafx.scene.layout.FlowPane strip = Kept.scope("strip", () -> categoryStrip(c));
 
-        // The picked measure's buildings, as BuildCard groups them: one group,
-        // the ring's, its bars scaled and tagged within it (0.7.25).
-        List<BuildCard.Group> groups = BuildCard.groups(ui.game, c.name(), on);
-        BuildCard.Group group = groups.get(0);
-        List<BuildingsTemplate> shown = new ArrayList<>();
-        for (BuildCard.Figures f : group.cards()) shown.add(f.template());
-        double[] fill = ui.game.getPopulationManager().getJobFillRate();
-        // The order bar first: each card reprices into it as it is drawn.
-        orderBar = new VBox();
-        javafx.scene.layout.FlowPane cards = new javafx.scene.layout.FlowPane(TILE_GAP, TILE_GAP);
-        cards.setAlignment(Pos.TOP_LEFT);
-        cards.prefWrapLengthProperty().bind(ui.menuScroller.widthProperty().subtract(60));
-        for (BuildCard.Figures f : group.cards()) cards.getChildren().add(card(f, group, c, on));
+            // The rings: one per measure; Education's nine smaller, in one row.
+            boolean small = measures.size() > 4;
+            javafx.scene.layout.GridPane rings = Kept.scope("rings", () -> {
+                javafx.scene.layout.GridPane grid = equalColumns(measures.size(), small ? 6 : 10);
+                for (int i = 0; i < measures.size(); i++) {
+                    BuildAdvice.Measure ring = measures.get(i);
+                    boolean isPicked = ring.equals(on);
+                    grid.add(Kept.scope(ring, () -> measureCard(c, ring, all, isPicked, small)), i, 0);
+                }
+                return grid;
+            });
 
-        // ...then the groups after the ring's (FR4): Infrastructure's Ports and Reserve, which have no ring, each under the
-        // market's group heading, on the page whichever ring is picked.
-        List<javafx.scene.Node> beyond = new ArrayList<>();
-        for (BuildCard.Group extra : groups.subList(1, groups.size())) {
-            beyond.add(groupHead(extra));
-            javafx.scene.layout.FlowPane more = new javafx.scene.layout.FlowPane(TILE_GAP, TILE_GAP);
-            more.setAlignment(Pos.TOP_LEFT);
-            more.prefWrapLengthProperty().bind(ui.menuScroller.widthProperty().subtract(60));
-            for (BuildCard.Figures f : extra.cards()) more.getChildren().add(card(f, extra, c, null));
-            beyond.add(more);
-        }
+            // The picked measure's buildings, as BuildCard groups them: one group,
+            // the ring's, its bars scaled and tagged within it (0.7.25).
+            List<BuildCard.Group> groups = BuildCard.groups(ui.game, c.name(), on);
+            BuildCard.Group group = groups.get(0);
+            List<BuildingsTemplate> shown = new ArrayList<>();
+            for (BuildCard.Figures f : group.cards()) shown.add(f.template());
+            double[] fill = ui.game.getPopulationManager().getJobFillRate();
+            // The order bar first: each card reprices into it as it is drawn (between draws; in one the page refills it once, below).
+            orderBar = Kept.scope("order bar", () -> Kept.column(0));
+            javafx.scene.layout.FlowPane cards = Kept.scope("cards", () -> {
+                javafx.scene.layout.FlowPane flow = cardsFlow();
+                for (BuildCard.Figures f : group.cards()) flow.getChildren().add(card(f, group, c, on));
+                return flow;
+            });
 
-        // The four limits every category page has shown (constraintsBar()):
-        // the materials in the yard, their import price, the land free and the
-        // builders - the states a card's warnings come from.
-        HBox limits = constraintsBar();
+            // ...then the groups after the ring's (FR4): Infrastructure's Ports and Reserve, which have no ring, each under the
+            // market's group heading, on the page whichever ring is picked.
+            List<javafx.scene.Node> beyond = new ArrayList<>();
+            for (BuildCard.Group extra : groups.subList(1, groups.size())) {
+                beyond.addAll(Kept.scope("group:" + extra.title(), () -> {
+                    javafx.scene.layout.FlowPane more = cardsFlow();
+                    for (BuildCard.Figures f : extra.cards()) more.getChildren().add(card(f, extra, c, null));
+                    return List.<javafx.scene.Node>of(groupHead(extra), more);
+                }));
+            }
 
-        // ...and at the heading's right, the way to the why (0.7.28): the Services page behind this ring -
-        // for the road and transit, Infrastructure's, said for what it shows (0.7.29). A road has no
-        // posts, so its "these need no staff" gives way to the door.
-        HBox headRight = new HBox(Palette.GAP_LOOSE);
-        if (BuildAdvice.roadKind(on)) {
-            headRight.getChildren().add(door("what is on the road: Infrastructure", Palette.PEOPLE, () -> why(on)));
-        } else if (on.kind() == BuildAdvice.Kind.TRANSIT) {
-            headRight.getChildren().addAll(scarceNote(shown, fill),
-                    door("who rides: Infrastructure", Palette.PEOPLE, () -> why(on)));
-        } else {
-            headRight.getChildren().addAll(scarceNote(shown, fill), door("why", Palette.PEOPLE, () -> why(on)));
-        }
-        headRight.setAlignment(Pos.CENTER_RIGHT);
-        page.getChildren().addAll(head, strip, limits, rings,
-                sectionHead(on.label().toUpperCase() + " · " + measureSubtitle(on), headRight),
-                cards);
-        page.getChildren().addAll(beyond);
-        page.getChildren().addAll(orderBar, pendingHint);
-        showPendingHint();
-        refreshOrderBar();
-        ui.rootMenu.getChildren().add(page);
+            // The four limits every category page has shown (constraintsBar()):
+            // the materials in the yard, their import price, the land free and the
+            // builders - the states a card's warnings come from.
+            HBox limits = Kept.scope("limits", this::constraintsBar);
+
+            // ...and at the heading's right, the way to the why (0.7.28): the Services page behind this ring -
+            // for the road and transit, Infrastructure's, said for what it shows (0.7.29). A road has no
+            // posts, so its "these need no staff" gives way to the door.
+            HBox headRight = Kept.scope("head right", () -> {
+                HBox right = Kept.row(Palette.GAP_LOOSE);
+                if (BuildAdvice.roadKind(on)) {
+                    right.getChildren().add(Kept.scope("door", () -> door("what is on the road: Infrastructure", Palette.PEOPLE, () -> why(on))));
+                } else if (on.kind() == BuildAdvice.Kind.TRANSIT) {
+                    right.getChildren().addAll(Kept.scope("note", () -> scarceNote(shown, fill)),
+                            Kept.scope("door", () -> door("who rides: Infrastructure", Palette.PEOPLE, () -> why(on))));
+                } else {
+                    right.getChildren().addAll(Kept.scope("note", () -> scarceNote(shown, fill)),
+                            Kept.scope("door", () -> door("why", Palette.PEOPLE, () -> why(on))));
+                }
+                right.setAlignment(Pos.CENTER_RIGHT);
+                return right;
+            });
+            page.getChildren().addAll(head, strip, limits, rings,
+                    Kept.scope("ring head", () -> sectionHead(on.label().toUpperCase() + " · " + measureSubtitle(on), headRight)),
+                    cards);
+            page.getChildren().addAll(beyond);
+            page.getChildren().addAll(orderBar, pendingHint);
+            showPendingHint();
+            // ONCE, after the last card (inside a draw a card's reprice leaves the bar to the page).
+            Kept.scope("order", this::refreshOrderBar);
+            ui.setPage(page);
+        });
     }
 
     /** A few words on what a measure is for, beside its heading. */
@@ -3670,7 +3877,7 @@ final class BuildScreen {
 
     /** At the heading's right: which of these buildings' staff the city fills worst. */
     Label scarceNote(List<BuildingsTemplate> shown, double[] fill) {
-        Label note = new Label(scarceWords(shown, fill));
+        Label note = Kept.label(scarceWords(shown, fill));
         note.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
         return note;
     }
@@ -3865,45 +4072,37 @@ final class BuildScreen {
                         showCityCategory(c);
                     }, tip);
         }
-        Label name = new Label(m.label());
-        name.setStyle(Palette.strong(small ? Palette.SIZE_BODY : Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
+        // Nine in a row: the ring above its words. (Kept, KP3: only this form is made here, so its words are not built
+        // in a box first and moved into another, as the unkept page's code did.)
+        Label name = Kept.label(m.label());
+        name.setStyle(Palette.strong(Palette.SIZE_BODY, Palette.TEXT_HEAD));
         name.setWrapText(true);
-        Label sl = new Label(shortLine);
+        Label sl = Kept.label(shortLine);
         sl.setWrapText(true);
-        sl.setStyle(wordsAt(small ? 9 : 10.5, Palette.TEXT_LABEL));
-        Label os = new Label(onSite);
+        sl.setStyle(wordsAt(9, Palette.TEXT_LABEL));
+        Label os = Kept.label(onSite);
         os.setWrapText(true);
-        os.setStyle(Palette.words(small ? Palette.SIZE_CAPTION : Palette.SIZE_LABEL,
-                units > 0 ? Palette.BUILDING : Palette.TEXT_MUTED));
-        VBox words = new VBox(1, name, sl, os);
-        words.setMinWidth(0);
-        HBox.setHgrow(words, Priority.ALWAYS);
-        double size = small ? 42 : 56;
-        HBox card = new HBox(small ? 6 : 10, ring(arc, tone, size, small ? 5 : 6, figure, small ? 10.5 : 12.5), words);
-        if (small) {
-            // Nine in a row: the ring above its words.
-            card = new HBox(0);
-            VBox stacked = new VBox(4, ring(arc, tone, size, 5, figure, 10.5), name, sl, os);
-            stacked.setAlignment(Pos.TOP_LEFT);
-            card.getChildren().add(stacked);
-        }
+        os.setStyle(Palette.words(Palette.SIZE_CAPTION, units > 0 ? Palette.BUILDING : Palette.TEXT_MUTED));
+        double size = 42;
+        VBox stacked = Kept.column(4, ring(arc, tone, size, 5, figure, 10.5), name, sl, os);
+        stacked.setAlignment(Pos.TOP_LEFT);
+        HBox card = Kept.row(0, stacked);
         card.setAlignment(Pos.CENTER_LEFT);
         card.setMaxWidth(Double.MAX_VALUE);
-        String rest = "-fx-padding: " + (small ? "8 8 8 8" : "10 12 10 12") + "; -fx-background-radius: 8; -fx-border-radius: 8;"
+        String rest = "-fx-padding: 8 8 8 8; -fx-background-radius: 8; -fx-border-radius: 8;"
                 + " -fx-cursor: hand; -fx-background-color: " + (picked ? Palette.PINNED : Palette.RAISED) + "; -fx-border-color: ";
         String edge = picked ? Palette.BUILDING : Palette.EDGE;
-        final HBox shownCard = card;
-        shownCard.setStyle(rest + edge + ";");
-        shownCard.setOnMouseEntered(e -> shownCard.setStyle(rest + (picked ? Palette.BUILDING : Palette.ACCENT) + ";"));
-        shownCard.setOnMouseExited(e -> shownCard.setStyle(rest + edge + ";"));
-        Tooltip tipped = new Tooltip(tip);
-        tipped.setShowDelay(Duration.millis(300));
-        Tooltip.install(shownCard, tipped);
-        shownCard.setOnMouseClicked(e -> {
+        String over = picked ? Palette.BUILDING : Palette.ACCENT;
+        // The look the pointer calls for is chosen from isHover(), where it is set (a kept card sends no mouse-entered to a pointer that has not moved).
+        card.setStyle(rest + (card.isHover() ? over : edge) + ";");
+        card.setOnMouseEntered(e -> card.setStyle(rest + over + ";"));
+        card.setOnMouseExited(e -> card.setStyle(rest + edge + ";"));
+        Kept.tip(card, tip, 300);
+        card.setOnMouseClicked(e -> {
             measurePicked.put(c.name(), m);
             showCityCategory(c);
         });
-        return shownCard;
+        return card;
     }
 
     /** Words at a size between Palette's steps (0.7.24's cards and rings), in a colour. */
@@ -3946,25 +4145,27 @@ final class BuildScreen {
      * nothing to price against.
      */
     VBox barRow(String label, String value, double share, String colour, double wide, String svg, boolean track) {
-        Label what = new Label(label);
+        // Kept (KP3): the card reaches this, so it is converted with the card; the icon is set on both sides of its
+        // condition (the gap is the Label's own 4 either way), the track is a scope for it comes and goes.
+        Label what = Kept.label(label, svg == null ? null : icon(svg, colour, 11));
         what.setStyle(wordsAt(9.5, Palette.TEXT_LABEL));
         // "posts the city can't fill, per 10,000 patients" nearly fills the
         // card: it wraps to a second line rather than losing its end.
         what.setWrapText(true);
         what.setMinWidth(0);
-        if (svg != null) {
-            what.setGraphic(icon(svg, colour, 11));
-            what.setGraphicTextGap(4);
-        }
-        Region gap = new Region();
+        what.setGraphicTextGap(4);
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
-        Label figure = new Label(value);
+        Label figure = Kept.label(value);
         figure.setStyle(figureAt(9.5, Palette.TEXT_HEAD));
         figure.setMinWidth(Region.USE_PREF_SIZE);
-        HBox row = new HBox(4, what, gap, figure);
+        HBox row = Kept.row(4, what, gap, figure);
         row.setAlignment(Pos.CENTER_LEFT);
-        return track ? new VBox(2, row, bar(share, colour, wide, 4)) : new VBox(row);
+        return track ? Kept.column(2, row, Kept.scope("track", () -> bar(share, colour, wide, 4))) : Kept.column(0, row);
     }
+
+    /** How many times the order bar has been filled (KeptCheck 36 and 45 count them: a kept draw fills it once, after the last card; a stepper's press, between draws, once). */
+    int barFills;
 
     /**
      * The order bar: what the page's steppers add up to, its price against
@@ -3976,15 +4177,22 @@ final class BuildScreen {
      */
     void refreshOrderBar() {
         if (orderBar == null || (orderMeasure == null && !orderMarket)) return;
+        barFills++;
         Game game = ui.game;
         java.util.Map<BuildingsTemplate, Integer> order = new java.util.LinkedHashMap<>();
         for (PageCard card : pageCards) {
             int n = orderQty.getOrDefault(card.template().getName(), 0);
             if (n > 0) order.put(card.template(), n);
         }
+        // Kept (KP3): drawn by a page, the bar's parts are its scope's (the page calls this once, after the last card); called by
+        // a stepper, between draws, the bar is refilled in place with plain new nodes, as it always was (the next draw hands the
+        // bar the nodes its own last draw made).
         orderBar.getChildren().clear();
         if (order.isEmpty()) {
             showIf(orderBar, false);
+            // Kept (KP3): an unmanaged box is laid out by nobody, so it rests where a new one does, not where the bar last stood
+            // (KeptCheck 38: 18,663 and 1420 wide on the kept page, the origin and nothing on a page built new).
+            orderBar.resizeRelocate(0, 0, 0, 0);
             return;
         }
         showIf(orderBar, true);
@@ -4002,10 +4210,10 @@ final class BuildScreen {
             names.append(formatter.format(e.getValue())).append(" × ").append(e.getKey().getName());
         }
         double total = BuildAdvice.quoteTotal(game, order);
-        Label what = new Label(names.toString());
+        Label what = Kept.label(names.toString());
         what.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
         what.setWrapText(true);
-        Label price = new Label(money(total) + " all in, of your " + money(game.getCash()));
+        Label price = Kept.label(money(total) + " all in, of your " + money(game.getCash()));
         price.setStyle(Palette.figure(Palette.SIZE_LABEL, total > game.getCash() ? Palette.WARN : Palette.TEXT_LABEL));
         double[] needs = BuildAdvice.needs(order);
         StringBuilder staff = new StringBuilder();
@@ -4018,11 +4226,11 @@ final class BuildScreen {
         if (staff.length() > 0) staff.append(" · ");
         double land = needs[needs.length - 1];
         staff.append(LandManager.areaWords(land));
-        Label wants = new Label(staff.toString());
+        Label wants = Kept.label(staff.toString());
         wants.setWrapText(true);
         wants.setStyle(wordsAt(9.5,
                 land > game.getLandManager().getAvailableSqFt() ? Palette.BAD : Palette.TEXT_MUTED));
-        VBox left = new VBox(2, what, price, wants);
+        VBox left = Kept.column(2, what, price, wants);
         left.setPrefWidth(300);
         left.setMinWidth(220);
 
@@ -4031,62 +4239,70 @@ final class BuildScreen {
         Pieces.ActionButton go = actionButton(Icons.BUILD, Palette.BUILDING, ACTION_TALL,
                 orderBarPress(units, total, game.getCash()), this::buildPending);
         go.setMinWidth(Region.USE_PREF_SIZE);
-        Tooltip.install(go, new Tooltip("Places every order on this page, as each card's Build would (Enter does the same)"));
+        Kept.tip(go, "Places every order on this page, as each card's Build would (Enter does the same)", 1000);
 
-        // A market page (0.7.25): the order and Build, no measure between them.
+        // A market page (0.7.25): the order and Build, no measure between them. (Each bar is a scope of its own, so
+        // the market's and a ring's never hand each other a node; `left` is set on both sides of the difference.)
         if (m == null) {
             HBox.setHgrow(left, Priority.ALWAYS);
             left.setMaxWidth(Double.MAX_VALUE);
-            HBox bar = new HBox(18, left, go);
+            orderBar.getChildren().add(Kept.scope("market bar", () -> {
+                HBox bar = Kept.row(18, left, go);
+                bar.setAlignment(Pos.CENTER_LEFT);
+                bar.setStyle("-fx-padding: 12 14 12 14; -fx-background-color: " + Palette.RAISED + ";"
+                        + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + Palette.BUILDING + ";");
+                VBox.setMargin(bar, new javafx.geometry.Insets(4, 0, 0, 0));
+                return bar;
+            }));
+            return;
+        }
+        HBox.setHgrow(left, null);
+        left.setMaxWidth(Region.USE_COMPUTED_SIZE);
+        final BuildAdvice.Measure ring = m;
+        final int ordered = units;
+        orderBar.getChildren().add(Kept.scope("ring bar", () -> {
+            java.util.Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(game, ring);
+            java.util.Map<BuildingsTemplate, Integer> withOrder = BuildAdvice.plus(site, order);
+            double now = BuildAdvice.cover(game, ring, java.util.Map.of());
+            double whenOpen = BuildAdvice.cover(game, ring, site);
+            double with = BuildAdvice.cover(game, ring, withOrder);
+            Label measure = Kept.label(ring.label().toLowerCase());
+            measure.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+            int onSiteUnits = BuildAdvice.units(site);
+            // SERVED (0.7.41): a served measure's three figures are what it serves, "served 92% now · ...", and
+            // they turn green when the order leaves it enough (the one verdict) - not merely off NEEDS YOU's list.
+            CityNeeds.Served withServed = BuildAdvice.verdict(game, ring, withOrder);
+            Label figures = Kept.label((withServed != null ? CityNeeds.SERVED + " " : "")
+                    + gaugeText(ring, java.util.Map.of()) + " now · "
+                    + (onSiteUnits > 0 ? gaugeText(ring, site) + " when the "
+                            + formatter.format(onSiteUnits) + " on site open · " : "")
+                    + gaugeText(ring, withOrder) + " with " + (ordered == 1 ? "this" : "these"));
+            figures.setStyle(Palette.figure(Palette.SIZE_LABEL, (withServed != null ? withServed.enough()
+                    : BuildAdvice.clear(ring, BuildAdvice.figure(game, ring, withOrder))) ? Palette.GOOD : Palette.TEXT_HEAD));
+            Region gap = Kept.region();
+            HBox.setHgrow(gap, Priority.ALWAYS);
+            HBox labels = Kept.row(6, measure, gap, figures);
+            labels.setAlignment(Pos.CENTER_LEFT);
+            // The stacked bar is the house's segment bar (0.7.40): a Pane that lays its parts out at the width
+            // it is given, its minimum nothing. It was an HBox of three Regions whose minimum widths were bound
+            // to a share of the HBox's own width, so rounding up made them add to more than it - the bar
+            // widened, the shares followed, and the order bar crept right while nothing moved (Jerus).
+            SegmentBar stacked = segmentBar(List.of(Segment.of(Math.max(0, Math.min(1, now)), Palette.MONEY),
+                    Segment.of(Math.max(0, Math.min(1, whenOpen - now)), Palette.BUILDING_DARK),
+                    Segment.of(Math.max(0, Math.min(1, with - Math.max(now, whenOpen))), Palette.BUILDING)),
+                    1, List.of(), 0, 10);
+            HBox key = Kept.row(Palette.GAP_LOOSE, keySwatch(Palette.MONEY, withServed != null ? "served" : "covered"),
+                    keySwatch(Palette.BUILDING_DARK, "on site"), keySwatch(Palette.BUILDING, "this order"));
+            VBox middle = Kept.column(4, labels, stacked, key);
+            HBox.setHgrow(middle, Priority.ALWAYS);
+
+            HBox bar = Kept.row(18, left, middle, go);
             bar.setAlignment(Pos.CENTER_LEFT);
             bar.setStyle("-fx-padding: 12 14 12 14; -fx-background-color: " + Palette.RAISED + ";"
                     + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + Palette.BUILDING + ";");
             VBox.setMargin(bar, new javafx.geometry.Insets(4, 0, 0, 0));
-            orderBar.getChildren().add(bar);
-            return;
-        }
-
-        java.util.Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(game, m);
-        java.util.Map<BuildingsTemplate, Integer> withOrder = BuildAdvice.plus(site, order);
-        double now = BuildAdvice.cover(game, m, java.util.Map.of());
-        double whenOpen = BuildAdvice.cover(game, m, site);
-        double with = BuildAdvice.cover(game, m, withOrder);
-        Label measure = new Label(m.label().toLowerCase());
-        measure.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-        int onSiteUnits = BuildAdvice.units(site);
-        // SERVED (0.7.41): a served measure's three figures are what it serves, "served 92% now · ...", and
-        // they turn green when the order leaves it enough (the one verdict) - not merely off NEEDS YOU's list.
-        CityNeeds.Served withServed = BuildAdvice.verdict(game, m, withOrder);
-        Label figures = new Label((withServed != null ? CityNeeds.SERVED + " " : "")
-                + gaugeText(m, java.util.Map.of()) + " now · "
-                + (onSiteUnits > 0 ? gaugeText(m, site) + " when the "
-                        + formatter.format(onSiteUnits) + " on site open · " : "")
-                + gaugeText(m, withOrder) + " with " + (units == 1 ? "this" : "these"));
-        figures.setStyle(Palette.figure(Palette.SIZE_LABEL, (withServed != null ? withServed.enough()
-                : BuildAdvice.clear(m, BuildAdvice.figure(game, m, withOrder))) ? Palette.GOOD : Palette.TEXT_HEAD));
-        Region gap = new Region();
-        HBox.setHgrow(gap, Priority.ALWAYS);
-        HBox labels = new HBox(6, measure, gap, figures);
-        labels.setAlignment(Pos.CENTER_LEFT);
-        // The stacked bar is the house's segment bar (0.7.40): a Pane that lays its parts out at the width
-        // it is given, its minimum nothing. It was an HBox of three Regions whose minimum widths were bound
-        // to a share of the HBox's own width, so rounding up made them add to more than it - the bar
-        // widened, the shares followed, and the order bar crept right while nothing moved (Jerus).
-        SegmentBar stacked = segmentBar(List.of(Segment.of(Math.max(0, Math.min(1, now)), Palette.MONEY),
-                Segment.of(Math.max(0, Math.min(1, whenOpen - now)), Palette.BUILDING_DARK),
-                Segment.of(Math.max(0, Math.min(1, with - Math.max(now, whenOpen))), Palette.BUILDING)),
-                1, List.of(), 0, 10);
-        HBox key = new HBox(Palette.GAP_LOOSE, keySwatch(Palette.MONEY, withServed != null ? "served" : "covered"),
-                keySwatch(Palette.BUILDING_DARK, "on site"), keySwatch(Palette.BUILDING, "this order"));
-        VBox middle = new VBox(4, labels, stacked, key);
-        HBox.setHgrow(middle, Priority.ALWAYS);
-
-        HBox bar = new HBox(18, left, middle, go);
-        bar.setAlignment(Pos.CENTER_LEFT);
-        bar.setStyle("-fx-padding: 12 14 12 14; -fx-background-color: " + Palette.RAISED + ";"
-                + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + Palette.BUILDING + ";");
-        VBox.setMargin(bar, new javafx.geometry.Insets(4, 0, 0, 0));
-        orderBar.getChildren().add(bar);
+            return bar;
+        }));
     }
 
     /** The order bar's Build (0.7.34): "Build 5 · $X" with the order's total, or "Build 5 on credit · $X" past the cash. */
@@ -4126,51 +4342,85 @@ final class BuildScreen {
 
     /** A market category's page. */
     void showMarketCategory(BuildAdvice.Category c) {
-        ui.clearMenu("handleAllBuildingMenus", () -> showMarketCategory(c));
-
         /*
          * WHICH CATEGORY THIS IS, remembered for the Build tab - set here
          * rather than only in the strip's own handler, because the inbox's
          * "go and build" lands here directly too.
          */
-        buildCategory = c.name();
+        onPage(c.name(), c.types());
+        // Kept (KP3): a redraw of this category is drawn over last time's nodes; another page is an arrival (keepBuild()).
+        keepBuild(c.name(), () -> showMarketCategory(c), () -> drawMarketCategory(c));
+    }
 
-        /*
-         * AND WHICH CARDS ARE ON IT, for the keyboard (see "the keyboard",
-         * after placeOrder). Started again before a card is drawn, so each
-         * card files itself in the order it is laid out.
-         */
-        pageCards.clear();
-        pageTitle = c.name();
-        pageCategories = c.types();
-        pendingHint = new Label("↵ builds what is pending · ⌫ clears it");
-        pendingHint.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED) + " -fx-padding: 6 0 0 0;");
-        orderMeasure = null;
-        orderMarket = true;
+    /**
+     * A market category's page itself, put in the window through setPage(): what keepMenu runs as a kept draw from
+     * the pool, and what KeptBench runs kept and built new for KeptCheck. Kept (KP3): every section is a scope of its
+     * own, each group of cards a scope keyed by its title and each card one keyed by its building (card()); the page
+     * remakes what the keyboard reads (pageCards, pendingHint) and refills the order bar once, after the last card.
+     */
+    void drawMarketCategory(BuildAdvice.Category c) {
+        Kept.scope("market:" + c.name(), () -> {
+            /*
+             * AND WHICH CARDS ARE ON IT, for the keyboard (see "the keyboard",
+             * after placeOrder). Started again before a card is drawn, so each
+             * card files itself in the order it is laid out.
+             */
+            pageCards.clear();
+            pendingHint = Kept.scope("hint", this::pendingHintLabel);
+            orderMeasure = null;
+            orderMarket = true;
 
-        VBox page = widePage();
+            VBox page = widePage();
+            HBox head = Kept.scope("head", () -> categoryHead(c));
+            javafx.scene.layout.FlowPane strip = Kept.scope("strip", () -> categoryStrip(c));
+            HBox who = Kept.scope("who", () -> whoBuildsThis(c.name(), c.types()));
+            page.getChildren().addAll(head, strip, Kept.scope("limits", this::constraintsBar), who);
+
+            // The order bar first: each card reprices into it as it is drawn.
+            orderBar = Kept.scope("order bar", () -> Kept.column(0));
+            for (BuildCard.Group group : BuildCard.groups(ui.game, c.name(), null)) {
+                page.getChildren().addAll(Kept.scope("group:" + group.title(), () -> {
+                    javafx.scene.layout.FlowPane cards = cardsFlow();
+                    for (BuildCard.Figures f : group.cards()) cards.getChildren().add(card(f, group, c, null));
+                    return List.<javafx.scene.Node>of(groupHead(group), cards);
+                }));
+            }
+
+            page.getChildren().addAll(orderBar, pendingHint);
+            showPendingHint();
+            // ONCE, after the last card (inside a draw a card's reprice leaves the bar to the page).
+            Kept.scope("order", this::refreshOrderBar);
+            ui.setPage(page);
+        });
+    }
+
+    /** A category page's head: the title, the dots' key, the way to the construction page; the Overview's padding. */
+    private HBox categoryHead(BuildAdvice.Category c) {
         HBox head = buildHead(c.name(), c.types());
         head.setStyle("-fx-padding: 0 0 4 0;");
+        return head;
+    }
+
+    /** A category page's strip of categories, without the padding the Overview's has. */
+    private javafx.scene.layout.FlowPane categoryStrip(BuildAdvice.Category c) {
         javafx.scene.layout.FlowPane strip = buildStrip(c.name());
         strip.setStyle("-fx-padding: 0;");
-        HBox who = whoBuildsThis(c.name(), c.types());
-        page.getChildren().addAll(head, strip, constraintsBar(), who);
+        return strip;
+    }
 
-        // The order bar first: each card reprices into it as it is drawn.
-        orderBar = new VBox();
-        for (BuildCard.Group group : BuildCard.groups(ui.game, c.name(), null)) {
-            page.getChildren().add(groupHead(group));
-            javafx.scene.layout.FlowPane cards = new javafx.scene.layout.FlowPane(TILE_GAP, TILE_GAP);
-            cards.setAlignment(Pos.TOP_LEFT);
-            cards.prefWrapLengthProperty().bind(ui.menuScroller.widthProperty().subtract(60));
-            for (BuildCard.Figures f : group.cards()) cards.getChildren().add(card(f, group, c, null));
-            page.getChildren().add(cards);
-        }
+    /** A row of cards, wrapping at the page's width: kept, so its wrap length is bound once for the scroller (wrapToScroller()). */
+    private javafx.scene.layout.FlowPane cardsFlow() {
+        javafx.scene.layout.FlowPane cards = Kept.flow(TILE_GAP, TILE_GAP);
+        cards.setAlignment(Pos.TOP_LEFT);
+        wrapToScroller(cards);
+        return cards;
+    }
 
-        page.getChildren().addAll(orderBar, pendingHint);
-        showPendingHint();
-        refreshOrderBar();
-        ui.rootMenu.getChildren().add(page);
+    /** The caption under the grid that says the two keys, made for the page's scope. */
+    private Label pendingHintLabel() {
+        Label hint = Kept.label("↵ builds what is pending · ⌫ clears it");
+        hint.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED) + " -fx-padding: 6 0 0 0;");
+        return hint;
     }
 
     /**
@@ -4181,18 +4431,18 @@ final class BuildScreen {
      */
     HBox groupHead(BuildCard.Group group) {
         String about = groupSubtitle(group);
-        Label head = new Label(group.title().toUpperCase() + (about.isEmpty() ? "" : " · " + about));
+        Label head = Kept.label(group.title().toUpperCase() + (about.isEmpty() ? "" : " · " + about));
         head.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
         head.setWrapText(true);
         head.setMinWidth(0);
-        Label note = new Label(groupNote(group.note()));
+        Label note = Kept.label(groupNote(group.note()));
         note.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
         note.setWrapText(true);
         note.setMinWidth(0);
         note.setTextAlignment(javafx.scene.text.TextAlignment.RIGHT);
-        Region gap = new Region();
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
-        HBox row = new HBox(Palette.GAP, head, gap, note);
+        HBox row = Kept.row(Palette.GAP, head, gap, note);
         row.setAlignment(Pos.CENTER_LEFT);
         row.setStyle("-fx-padding: 6 0 0 0;");
         return row;
@@ -4297,7 +4547,7 @@ final class BuildScreen {
 
     /** A hairline of space, used where a blank line would be too much. */
     Region cardGap() {
-        Region r = new Region();
+        Region r = Kept.region();
         r.setMinHeight(7);
         return r;
     }
@@ -4841,7 +5091,7 @@ final class BuildScreen {
      */
     HBox receiptCorner(String menuTitle, EnumSet<BuildingType> categories) {
 
-        HBox corner = new HBox();
+        HBox corner = Kept.row(0);
         corner.setAlignment(Pos.CENTER_RIGHT);
         // At the end of the page's head since 0.7.21 (buildHead()): the inbox's
         // envelope that shared this corner is the header's now. Its room is
@@ -4849,22 +5099,28 @@ final class BuildScreen {
         // moves nothing.
         corner.setMinSize(18, 18);
         corner.setPrefSize(18, 18);
-        if (receipts.isEmpty()) return corner;
+        if (receipts.isEmpty()) {
+            // Kept (KP3): a pulse that outlived its dot (another city's receipts forgotten) goes with it.
+            if (ui.receiptPulse != null) {
+                ui.receiptPulse.stop();
+                ui.receiptPulse = null;
+            }
+            return corner;
+        }
 
         boolean unseen = ui.game.getReceiptSerial() != ui.receiptSeen;
 
-        Button dot = new Button();
+        // Kept (KP3): the dot is a scope of its own, since a corner with no receipt has none.
+        Button dot = Kept.scope("dot", () -> Kept.of(Button.class, Button::new));
         dot.setMinSize(18, 18);
         dot.setPrefSize(18, 18);
         dot.setMaxSize(18, 18);
         dot.setStyle("-fx-background-color: " + Palette.CONFIRM + "; -fx-background-radius: 50%;"
                 + " -fx-border-color: " + Palette.CONFIRM + "; -fx-border-width: 1;"
                 + " -fx-border-radius: 50%; -fx-cursor: hand; -fx-padding: 0;");
-        Tooltip dotTip = new Tooltip(unseen
+        Kept.tip(dot, unseen
                 ? "A purchase went through - click for the receipts"
-                : "Click for the last purchases");
-        dotTip.setShowDelay(Duration.millis(200));
-        Tooltip.install(dot, dotTip);
+                : "Click for the last purchases", 200);
 
         /*
          * A POPOVER, NOT A ROW (0.7.20). The receipt card used to open in the
@@ -4886,15 +5142,23 @@ final class BuildScreen {
         });
 
         if (unseen && receiptPopup == null) {
+            // Kept (KP3): through Kept.play, so a dot kept across the month is not given a second pulse over the first.
             ui.receiptPulse = new FadeTransition(Duration.millis(600), dot);
             ui.receiptPulse.setFromValue(1.0);
             ui.receiptPulse.setToValue(.15);
             ui.receiptPulse.setAutoReverse(true);
             ui.receiptPulse.setCycleCount(Animation.INDEFINITE);
-            ui.receiptPulse.play();
+            Kept.play(dot, ui.receiptPulse);
+        } else {
+            // ...and a dot seen since stops pulsing: the pulse its last draw gave it would go on over the kept node.
+            Animation was = Kept.animationOf(dot);
+            if (was != null) {
+                was.stop();
+                dot.setOpacity(1);
+            }
         }
         // A redraw while it is open shows the newest purchases in it.
-        if (receiptPopup != null) receiptPopup.getContent().setAll(receiptCard());
+        if (receiptPopup != null) Kept.set(receiptPopup.getContent(), List.of(Kept.scope("receipt card", this::receiptCard)));
 
         corner.getChildren().add(dot);
         return corner;
@@ -4973,28 +5237,31 @@ final class BuildScreen {
 
     /** The card in the popover: the last purchases, newest first, each with its total and the tax in it. */
     private VBox receiptCard() {
-        VBox card = new VBox(4);
+        VBox card = Kept.column(4);
         card.setStyle("-fx-background-color: " + Palette.CONFIRM_GROUND + "; -fx-border-color: " + Palette.CONFIRM + ";"
                 + " -fx-border-width: 1; -fx-background-radius: 4;"
                 + " -fx-border-radius: 4; -fx-padding: 8 12 9 12;"
                 + " -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.55), 12, 0, 0, 3);");
 
-        Label head = new Label(receipts.size() == 1 ? "LAST PURCHASE" : "LAST " + receipts.size() + " PURCHASES");
+        Label head = Kept.label(receipts.size() == 1 ? "LAST PURCHASE" : "LAST " + receipts.size() + " PURCHASES");
         head.setStyle("-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: " + Palette.GOOD + ";");
         card.getChildren().add(head);
 
+        // Kept (KP3): a purchase is a scope keyed by its receipt, so a new one at the top shifts none of the others.
         for (Receipt r : receipts) {
-            Label what = new Label(formatter.format(r.quantity()) + " \u00d7  " + r.name());
-            what.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: " + Palette.GOOD + ";");
-            Label paid = receiptLine(money(r.total()) + "  with " + money(r.salesTax()) + " sales tax",
-                    CityCalendar.format(r.month()));
-            card.getChildren().add(new VBox(0, what, paid));
+            card.getChildren().add(Kept.scope(r.serial(), () -> {
+                Label what = Kept.label(formatter.format(r.quantity()) + " \u00d7  " + r.name());
+                what.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: " + Palette.GOOD + ";");
+                Label paid = receiptLine(money(r.total()) + "  with " + money(r.salesTax()) + " sales tax",
+                        CityCalendar.format(r.month()));
+                return Kept.column(0, what, paid);
+            }));
         }
         return card;
     }
 
     Label receiptLine(String label, String value) {
-        Label l = new Label(String.format("%-30s %s", label, value));
+        Label l = Kept.label(String.format("%-30s %s", label, value));
         l.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 10px;"
                 + " -fx-text-fill: #8bc34a;");
         return l;
@@ -5122,47 +5389,55 @@ final class BuildScreen {
      */
     void showNoDepositMenu(BuildingsTemplate selected, int quantity,
                                    String menuTitle, EnumSet<BuildingType> categories) {
-        ui.clearMenu("showNoDepositMenu", () -> showNoDepositMenu(selected, quantity, menuTitle, categories));
+        ui.keepMenu("showNoDepositMenu", () -> showNoDepositMenu(selected, quantity, menuTitle, categories), pool,
+                () -> drawNoDeposit(selected, quantity, menuTitle, categories));
+    }
 
-        Resource site = Game.siteOf(selected) == null ? Resource.IRON : Game.siteOf(selected);
-        // ...counted against its own kind (0.7.91, Game.committedFor()): a land well the land wells, a platform's well the slots;
-        // the tonnes its own pool's (0.7.93, Game.remainingFor()): a land well the ground's, the sea's buildings the sea's.
-        String[] words = selected.standsAtSea()
-                ? noDepositAtSea(selected.isPlatform(), selected.getName(), quantity, ui.game.sitesFor(selected),
-                        ui.game.committedFor(selected), ui.game.remainingFor(selected))
-                : noDepositPage(site, selected.getName(), quantity, ui.game.sitesFor(selected),
-                        ui.game.committedFor(selected), ui.game.remainingFor(selected));
+    /** The no-deposit page itself, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs. */
+    void drawNoDeposit(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories) {
+        Kept.scope("showNoDepositMenu", () -> {
+            Resource site = Game.siteOf(selected) == null ? Resource.IRON : Game.siteOf(selected);
+            // ...counted against its own kind (0.7.91, Game.committedFor()): a land well the land wells, a platform's well the slots;
+            // the tonnes its own pool's (0.7.93, Game.remainingFor()): a land well the ground's, the sea's buildings the sea's.
+            String[] words = selected.standsAtSea()
+                    ? noDepositAtSea(selected.isPlatform(), selected.getName(), quantity, ui.game.sitesFor(selected),
+                            ui.game.committedFor(selected), ui.game.remainingFor(selected))
+                    : noDepositPage(site, selected.getName(), quantity, ui.game.sitesFor(selected),
+                            ui.game.committedFor(selected), ui.game.remainingFor(selected));
 
-        Label title = new Label(words[0]);
-        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
+            Label title = refusalTitle(words[0]);
 
-        VBox explanation = reportSection("WHY", words[1], words[2], "", words[3], words[4], words[5]);
+            VBox explanation = Kept.scope("why", () -> reportSection("WHY", words[1], words[2], "", words[3], words[4], words[5]));
 
-        Label reserves = monoLabel(words[6]);
-        reserves.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-padding: 6 0 0 0;");
+            Label reserves = monoLabel(words[6]);
+            reserves.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-padding: 6 0 0 0;");
 
-        HBox toLand = doorPill("Go to the Land Office", Icons.LAND, Palette.BUILDING, () -> ui.landScreen.showLandMenu());
+            HBox toLand = doorPill("Go to the Land Office", Icons.LAND, Palette.BUILDING, () -> ui.landScreen.showLandMenu());
 
-        Button back = new Button("Back");
-        back.setOnAction(e -> handleAllBuildingMenus(menuTitle, categories));
+            Button back = pageButton("Back", () -> handleAllBuildingMenus(menuTitle, categories));
 
-        ui.rootMenu.getChildren().addAll(title, explanation, reserves);
-        // The Build shortcut (0.7.61, star 14): since 0.7.64 the cheapest offer holding the resource, then back to the order.
-        LandParcel cheapest = ui.game.bestOffer(Game.LandNeed.deposit(site));
-        if (cheapest != null) {
-            ui.rootMenu.getChildren().add(bestLandButton(cheapest, noDepositWords(cheapest, site), words[7],
-                    () -> handleAllBuildingMenus(menuTitle, categories)));
-            // ...and whether an iron field pays back here (0.7.101, Jerus's decision B): the test player's own rule.
-            if (site == Resource.IRON && !selected.standsAtSea()) {
-                BuildAdvice.Payback field = BuildAdvice.ironPayback(ui.game, cheapest);
-                Label pays = new Label(ironPaybackWords(field));
-                pays.setWrapText(true);
-                pays.setMaxWidth(PAYBACK_LINE);
-                pays.setStyle(wordsAt(10.5, field.pays() ? Palette.TEXT_LABEL : Palette.WARN) + " -fx-padding: 2 0 6 0;");
-                ui.rootMenu.getChildren().add(pays);
+            List<javafx.scene.Node> shown = new ArrayList<>(List.of(title, explanation, reserves));
+            // The Build shortcut (0.7.61, star 14): since 0.7.64 the cheapest offer holding the resource, then back to the order.
+            LandParcel cheapest = ui.game.bestOffer(Game.LandNeed.deposit(site));
+            if (cheapest != null) {
+                shown.add(Kept.scope("buy", () -> bestLandButton(cheapest, noDepositWords(cheapest, site), words[7],
+                        () -> handleAllBuildingMenus(menuTitle, categories))));
+                // ...and whether an iron field pays back here (0.7.101, Jerus's decision B): the test player's own rule.
+                if (site == Resource.IRON && !selected.standsAtSea()) {
+                    BuildAdvice.Payback field = BuildAdvice.ironPayback(ui.game, cheapest);
+                    shown.add(Kept.scope("pays", () -> {
+                        Label pays = Kept.label(ironPaybackWords(field));
+                        pays.setWrapText(true);
+                        pays.setMaxWidth(PAYBACK_LINE);
+                        pays.setStyle(wordsAt(10.5, field.pays() ? Palette.TEXT_LABEL : Palette.WARN) + " -fx-padding: 2 0 6 0;");
+                        return pays;
+                    }));
+                }
             }
-        }
-        ui.rootMenu.getChildren().addAll(toLand, back);
+            shown.add(toLand);
+            shown.add(back);
+            ui.setPage(shown.toArray(new javafx.scene.Node[0]));
+        });
     }
 
     /**
@@ -5252,56 +5527,64 @@ final class BuildScreen {
      */
     void showNoCoastMenu(BuildingsTemplate selected, int quantity,
                          String menuTitle, EnumSet<BuildingType> categories) {
-        ui.clearMenu("showNoCoastMenu", () -> showNoCoastMenu(selected, quantity, menuTitle, categories));
+        ui.keepMenu("showNoCoastMenu", () -> showNoCoastMenu(selected, quantity, menuTitle, categories), pool,
+                () -> drawNoCoast(selected, quantity, menuTitle, categories));
+    }
 
-        LandParcel coast = ui.game.bestOffer(Game.LandNeed.coast());
+    /** The no-coast page itself, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs. */
+    void drawNoCoast(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories) {
+        Kept.scope("showNoCoastMenu", () -> {
+            LandParcel coast = ui.game.bestOffer(Game.LandNeed.coast());
 
-        Label title = new Label("NO COAST");
-        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
+            Label title = refusalTitle("NO COAST");
 
-        // ...or a sea terminal's quay (0.7.86): the same refusal, its own why.
-        boolean port = ham.citybuildersim.Ports.isPort(selected);
-        VBox explanation = reportSection("WHY",
-                quantity + " x " + selected.getName() + (port ? " needs the sea for its quay." : " needs the sea to draw."),
-                "The city owns none: its land is all dry ground, lake and river.",
-                "",
-                port ? "A terminal's berth stands on the coast, and its ships come in" : "A desalination plant stands on the coast and draws seawater, so",
-                port ? "from the open sea. Offers in the land office" : "the fresh water limit does not reach it. Offers in the land office",
-                "that run out to the sea carry some, its square kilometre priced",
-                String.format("at %.0f%% of dry ground's.", LandMarket.SEA_PRICE_SHARE * 100));
+            // ...or a sea terminal's quay (0.7.86): the same refusal, its own why.
+            boolean port = ham.citybuildersim.Ports.isPort(selected);
+            VBox explanation = Kept.scope("why", () -> reportSection("WHY",
+                    quantity + " x " + selected.getName() + (port ? " needs the sea for its quay." : " needs the sea to draw."),
+                    "The city owns none: its land is all dry ground, lake and river.",
+                    "",
+                    port ? "A terminal's berth stands on the coast, and its ships come in" : "A desalination plant stands on the coast and draws seawater, so",
+                    port ? "from the open sea. Offers in the land office" : "the fresh water limit does not reach it. Offers in the land office",
+                    "that run out to the sea carry some, its square kilometre priced",
+                    String.format("at %.0f%% of dry ground's.", LandMarket.SEA_PRICE_SHARE * 100)));
 
-        // ...and (ET5), once the city owns ground on more than one landmass, that the shore is the landmass's own.
-        String shore = LandmassView.noCoastParagraph(ui.game.getLandManager().getLandmasses());
+            // ...and (ET5), once the city owns ground on more than one landmass, that the shore is the landmass's own.
+            String shore = LandmassView.noCoastParagraph(ui.game.getLandManager().getLandmasses());
 
-        Label cheapest = monoLabel(coast == null
-                ? "No offer standing reaches the sea."
-                : String.format("Cheapest with sea: %s, %s of sea for %s",
-                        coast.where(), LandManager.areaWords(LandManager.sqFt(coast.getKm2(CityLand.SEA))),
-                        usd(coast.getPriceUsd())));
-        cheapest.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-padding: 6 0 0 0;");
+            Label cheapest = monoLabel(coast == null
+                    ? "No offer standing reaches the sea."
+                    : String.format("Cheapest with sea: %s, %s of sea for %s",
+                            coast.where(), LandManager.areaWords(LandManager.sqFt(coast.getKm2(CityLand.SEA))),
+                            usd(coast.getPriceUsd())));
+            cheapest.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-padding: 6 0 0 0;");
 
-        HBox toLand = doorPill("Go to the Land Office", Icons.LAND, Palette.BUILDING, () -> ui.landScreen.showLandMenu());
+            HBox toLand = doorPill("Go to the Land Office", Icons.LAND, Palette.BUILDING, () -> ui.landScreen.showLandMenu());
 
-        Button back = new Button("Back");
-        back.setOnAction(e -> handleAllBuildingMenus(menuTitle, categories));
+            Button back = pageButton("Back", () -> handleAllBuildingMenus(menuTitle, categories));
 
-        ui.rootMenu.getChildren().addAll(title, explanation);
-        if (shore != null) {
-            Label landmasses = new Label(shore);
-            landmasses.setWrapText(true);
-            landmasses.setMaxWidth(560);
-            landmasses.setStyle(Palette.words(Palette.SIZE_BODY, Palette.WARN) + " -fx-padding: 6 0 0 0;");
-            ui.rootMenu.getChildren().add(landmasses);
-        }
-        ui.rootMenu.getChildren().add(cheapest);
-        // The Build shortcut (0.7.61, star 14): the cheapest offer with sea, then back to the order.
-        if (coast != null) {
-            ui.rootMenu.getChildren().add(bestLandButton(coast, "Buy the cheapest with sea: " + coast.where() + " for "
-                            + usd(coast.getPriceUsd()), LandManager.areaWords(LandManager.sqFt(coast.getKm2(CityLand.SEA)))
-                            + (port ? " of sea for the quay" : " of sea for the plant to draw"),
-                    () -> handleAllBuildingMenus(menuTitle, categories)));
-        }
-        ui.rootMenu.getChildren().addAll(toLand, back);
+            List<javafx.scene.Node> shown = new ArrayList<>(List.of(title, explanation));
+            if (shore != null) {
+                shown.add(Kept.scope("shore", () -> {
+                    Label landmasses = Kept.label(shore);
+                    landmasses.setWrapText(true);
+                    landmasses.setMaxWidth(560);
+                    landmasses.setStyle(Palette.words(Palette.SIZE_BODY, Palette.WARN) + " -fx-padding: 6 0 0 0;");
+                    return landmasses;
+                }));
+            }
+            shown.add(cheapest);
+            // The Build shortcut (0.7.61, star 14): the cheapest offer with sea, then back to the order.
+            if (coast != null) {
+                shown.add(Kept.scope("buy", () -> bestLandButton(coast, "Buy the cheapest with sea: " + coast.where() + " for "
+                                + usd(coast.getPriceUsd()), LandManager.areaWords(LandManager.sqFt(coast.getKm2(CityLand.SEA)))
+                                + (port ? " of sea for the quay" : " of sea for the plant to draw"),
+                        () -> handleAllBuildingMenus(menuTitle, categories))));
+            }
+            shown.add(toLand);
+            shown.add(back);
+            ui.setPage(shown.toArray(new javafx.scene.Node[0]));
+        });
     }
 
     /**
@@ -5313,30 +5596,34 @@ final class BuildScreen {
      */
     void showNoRiverMenu(BuildingsTemplate selected, int quantity,
                          String menuTitle, EnumSet<BuildingType> categories) {
-        ui.clearMenu("showNoRiverMenu", () -> showNoRiverMenu(selected, quantity, menuTitle, categories));
+        ui.keepMenu("showNoRiverMenu", () -> showNoRiverMenu(selected, quantity, menuTitle, categories), pool,
+                () -> drawNoRiver(selected, quantity, menuTitle, categories));
+    }
 
-        BuildCard.Hydro h = BuildCard.hydro(ui.game, selected);
-        Label title = new Label("NO RIVER WITH A DROP");
-        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
+    /** The no-river page itself, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs. */
+    void drawNoRiver(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories) {
+        Kept.scope("showNoRiverMenu", () -> {
+            BuildCard.Hydro h = BuildCard.hydro(ui.game, selected);
+            Label title = refusalTitle("NO RIVER WITH A DROP");
 
-        VBox explanation = reportSection("WHY",
-                quantity + " x " + selected.getName() + " needs a river with a drop on the ground the city owns.",
-                h == null || h.slots() == 0
-                        ? "The city owns none: no river it owns falls between banks that rise."
-                        : "The city's rivers hold " + formatter.format(h.slots()) + " of them, " + formatter.format(h.free()) + " free.",
-                "",
-                "A drop is read from a river's banks: a dam backs the water up no higher",
-                "than its lower side, so a river needs rising ground on both. A site holds",
-                "as many stations as the river's flow allows, and the ground has to be linked.",
-                "",
-                "This is not a funding problem. A bond would not fix it.");
+            VBox explanation = Kept.scope("why", () -> reportSection("WHY",
+                    quantity + " x " + selected.getName() + " needs a river with a drop on the ground the city owns.",
+                    h == null || h.slots() == 0
+                            ? "The city owns none: no river it owns falls between banks that rise."
+                            : "The city's rivers hold " + formatter.format(h.slots()) + " of them, " + formatter.format(h.free()) + " free.",
+                    "",
+                    "A drop is read from a river's banks: a dam backs the water up no higher",
+                    "than its lower side, so a river needs rising ground on both. A site holds",
+                    "as many stations as the river's flow allows, and the ground has to be linked.",
+                    "",
+                    "This is not a funding problem. A bond would not fix it."));
 
-        HBox toLand = doorPill("Go to the Land Office", Icons.LAND, Palette.BUILDING, () -> ui.landScreen.showLandMenu());
+            HBox toLand = doorPill("Go to the Land Office", Icons.LAND, Palette.BUILDING, () -> ui.landScreen.showLandMenu());
 
-        Button back = new Button("Back");
-        back.setOnAction(e -> handleAllBuildingMenus(menuTitle, categories));
+            Button back = pageButton("Back", () -> handleAllBuildingMenus(menuTitle, categories));
 
-        ui.rootMenu.getChildren().addAll(title, explanation, toLand, back);
+            ui.setPage(title, explanation, toLand, back);
+        });
     }
 
     /**
@@ -5349,27 +5636,31 @@ final class BuildScreen {
      */
     void showNoBridgeMenu(BuildingsTemplate selected, int quantity,
                           String menuTitle, EnumSet<BuildingType> categories) {
-        ui.clearMenu("showNoBridgeMenu", () -> showNoBridgeMenu(selected, quantity, menuTitle, categories));
+        ui.keepMenu("showNoBridgeMenu", () -> showNoBridgeMenu(selected, quantity, menuTitle, categories), pool,
+                () -> drawNoBridge(selected, quantity, menuTitle, categories));
+    }
 
-        Label title = new Label("NO WAY ACROSS THE WATER");
-        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
+    /** The no-way-across page itself, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs. */
+    void drawNoBridge(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories) {
+        Kept.scope("showNoBridgeMenu", () -> {
+            Label title = refusalTitle("NO WAY ACROSS THE WATER");
 
-        VBox explanation = reportSection("WHY",
-                quantity + " x " + selected.getName() + " needs a crossing the model can find.",
-                noBridgeWhy(selected, "No crossing was found."),
-                "",
-                "A bridge runs from ground the city owns across the far landmass's water to flat or",
-                "foothill ground it owns on a landmass it has linked, over fresh water or shallow sea",
-                "(" + BridgeView.shallowWords() + " or less) all the way, and no longer than " + BridgeView.capWords() + ".",
-                "",
-                "This is not a funding problem. A bond would not fix it.");
+            VBox explanation = Kept.scope("why", () -> reportSection("WHY",
+                    quantity + " x " + selected.getName() + " needs a crossing the model can find.",
+                    noBridgeWhy(selected, "No crossing was found."),
+                    "",
+                    "A bridge runs from ground the city owns across the far landmass's water to flat or",
+                    "foothill ground it owns on a landmass it has linked, over fresh water or shallow sea",
+                    "(" + BridgeView.shallowWords() + " or less) all the way, and no longer than " + BridgeView.capWords() + ".",
+                    "",
+                    "This is not a funding problem. A bond would not fix it."));
 
-        HBox toLand = doorPill("Go to the Land Office", Icons.LAND, Palette.BUILDING, () -> ui.landScreen.showLandMenu());
+            HBox toLand = doorPill("Go to the Land Office", Icons.LAND, Palette.BUILDING, () -> ui.landScreen.showLandMenu());
 
-        Button back = new Button("Back");
-        back.setOnAction(e -> handleAllBuildingMenus(menuTitle, categories));
+            Button back = pageButton("Back", () -> handleAllBuildingMenus(menuTitle, categories));
 
-        ui.rootMenu.getChildren().addAll(title, explanation, toLand, back);
+            ui.setPage(title, explanation, toLand, back);
+        });
     }
 
     /**
@@ -5381,44 +5672,54 @@ final class BuildScreen {
      */
     void showNoLicenceMenu(BuildingsTemplate selected, int quantity,
                                    String menuTitle, EnumSet<BuildingType> categories) {
-        ui.clearMenu("showNoLicenceMenu", () -> showNoLicenceMenu(selected, quantity, menuTitle, categories));
+        ui.keepMenu("showNoLicenceMenu", () -> showNoLicenceMenu(selected, quantity, menuTitle, categories), pool,
+                () -> drawNoLicence(selected, quantity, menuTitle, categories));
+    }
 
-        JobType licence = selected.getRequiresLicence();
-        double need = ui.game.licencesNeededFor(selected, quantity);
-        double have = ui.game.getPopulationManager().spareLicences(licence);
-        String what = licence == null ? "licences" : jobLabel(licence);
+    /** The no-licence page itself, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs. */
+    void drawNoLicence(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories) {
+        Kept.scope("showNoLicenceMenu", () -> {
+            JobType licence = selected.getRequiresLicence();
+            double need = ui.game.licencesNeededFor(selected, quantity);
+            double have = ui.game.getPopulationManager().spareLicences(licence);
+            String what = licence == null ? "licences" : jobLabel(licence);
 
-        Label title = new Label("NOBODY QUALIFIED TO WORK IN IT");
-        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
+            Label title = refusalTitle("NOBODY QUALIFIED TO WORK IN IT");
 
-        VBox explanation = reportSection("WHY",
-                quantity + " x " + selected.getName() + " needs "
-                        + String.format("%,.0f", Math.ceil(need)) + " " + what
-                        + " not already at work.",
-                "The city has " + String.format("%,.0f", Math.floor(have)) + " spare.",
-                "",
-                "A practice opens when it can staff its core and hire the rest.",
-                "Half the licensed posts is the bar - the other half can arrive",
-                "or graduate later.",
-                "",
-                "Two ways to get them: a school that licenses this profession,",
-                "or migration, which brings a few already qualified when the city",
-                "pays over the going rate for them.",
-                "",
-                "This is not a funding problem. A bond would not fix it.");
+            VBox explanation = Kept.scope("why", () -> reportSection("WHY",
+                    quantity + " x " + selected.getName() + " needs "
+                            + String.format("%,.0f", Math.ceil(need)) + " " + what
+                            + " not already at work.",
+                    "The city has " + String.format("%,.0f", Math.floor(have)) + " spare.",
+                    "",
+                    "A practice opens when it can staff its core and hire the rest.",
+                    "Half the licensed posts is the bar - the other half can arrive",
+                    "or graduate later.",
+                    "",
+                    "Two ways to get them: a school that licenses this profession,",
+                    "or migration, which brings a few already qualified when the city",
+                    "pays over the going rate for them.",
+                    "",
+                    "This is not a funding problem. A bond would not fix it."));
 
-        HBox toSchools = doorPill("Go to Build · Education", Icons.BUILD, Palette.BUILDING, () -> {
-            buildCategory = "Education";
-            showBuildMenu();
+            HBox toSchools = doorPill("Go to Build · Education", Icons.BUILD, Palette.BUILDING, () -> {
+                buildCategory = "Education";
+                showBuildMenu();
+            });
+
+            Button toPeople = pageButton("Who the city has", () -> ui.peopleScreen.showPopulationInfoMenu());
+
+            Button back = pageButton("Back", () -> handleAllBuildingMenus(menuTitle, categories));
+
+            ui.setPage(title, explanation, toSchools, toPeople, back);
         });
+    }
 
-        Button toPeople = new Button("Who the city has");
-        toPeople.setOnAction(e -> ui.peopleScreen.showPopulationInfoMenu());
-
-        Button back = new Button("Back");
-        back.setOnAction(e -> handleAllBuildingMenus(menuTitle, categories));
-
-        ui.rootMenu.getChildren().addAll(title, explanation, toSchools, toPeople, back);
+    /** A refusal page's title, kept. */
+    private Label refusalTitle(String text) {
+        Label title = Kept.label(text);
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
+        return title;
     }
 
     /**
@@ -5434,76 +5735,97 @@ final class BuildScreen {
      */
     void showNoLandMenu(BuildingsTemplate selected, int quantity,
                                 String prevTitle, EnumSet<BuildingType> prevCats) {
-        ui.clearMenu("showNoLandMenu", () -> showNoLandMenu(selected, quantity, prevTitle, prevCats));
+        // Kept (KP3): the refusal pages are drawn over last time's nodes on a redraw (a month landing), each in a scope of its own.
+        ui.keepMenu("showNoLandMenu", () -> showNoLandMenu(selected, quantity, prevTitle, prevCats), pool,
+                () -> drawNoLand(selected, quantity, prevTitle, prevCats));
+    }
 
-        LandManager land = ui.game.getLandManager();
-        double needed = ui.game.landNeededFor(selected, quantity);
-        // A sea terminal ordered for an island no port links takes that island's own room, not the linked pool's (ET5): its figure,
-        // and none of the island lines below, which would point the player back at the very terminal that was refused.
-        Landmasses lms = land.getLandmasses();
-        boolean islandPort = ui.game.isIslandPortOrder(selected);
-        double have = islandPort ? ui.game.freeGroundFor(selected) : land.getAvailableSqFt();
-        double short_ = Math.max(needed - have, 0);
+    /** The no-land page itself, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs. */
+    void drawNoLand(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats) {
+        Kept.scope("showNoLandMenu", () -> {
+            LandManager land = ui.game.getLandManager();
+            double needed = ui.game.landNeededFor(selected, quantity);
+            // A sea terminal ordered for an island no port links takes that island's own room, not the linked pool's (ET5): its figure,
+            // and none of the island lines below, which would point the player back at the very terminal that was refused.
+            Landmasses lms = land.getLandmasses();
+            boolean islandPort = ui.game.isIslandPortOrder(selected);
+            double have = islandPort ? ui.game.freeGroundFor(selected) : land.getAvailableSqFt();
+            double short_ = Math.max(needed - have, 0);
 
-        Label warning = new Label("NOT ENOUGH LAND");
-        warning.setStyle("-fx-text-fill: " + Palette.BAD + "; -fx-font-weight: bold; -fx-font-size: 14px;");
+            Label warning = Kept.label("NOT ENOUGH LAND");
+            warning.setStyle("-fx-text-fill: " + Palette.BAD + "; -fx-font-weight: bold; -fx-font-size: 14px;");
 
-        Label details = new Label(String.format(
-                "%,d x %s needs %s%n"
-                        + "The city has %s free%n"
-                        + "Short by %s",
-                quantity, selected.getName(), LandManager.areaWords(needed),
-                LandManager.areaWords(have), LandManager.areaWords(short_)));
+            Label details = Kept.label(String.format(
+                    "%,d x %s needs %s%n"
+                            + "The city has %s free%n"
+                            + "Short by %s",
+                    quantity, selected.getName(), LandManager.areaWords(needed),
+                    LandManager.areaWords(have), LandManager.areaWords(short_)));
 
-        HBox toLand = doorPill("Go to the Land Office", Icons.LAND, Palette.BUILDING, () -> ui.landScreen.showLandMenu());
+            HBox toLand = doorPill("Go to the Land Office", Icons.LAND, Palette.BUILDING, () -> ui.landScreen.showLandMenu());
 
-        Button back = new Button("Back");
-        back.setOnAction(e -> handleAllBuildingMenus(prevTitle, prevCats));
+            Button back = pageButton("Back", () -> handleAllBuildingMenus(prevTitle, prevCats));
 
-        ui.rootMenu.getChildren().addAll(warning, details);
-        // The ground the city owns that no port links (ET5): free, and no room for this, with the door to the port that would link it.
-        List<String> islands = islandPort ? List.of() : LandmassView.noLandLines(land);
-        for (String line : islands) {
-            Label island = new Label(line);
-            island.setWrapText(true);
-            island.setMaxWidth(560);
-            island.setStyle(Palette.words(Palette.SIZE_BODY, Palette.WARN));
-            ui.rootMenu.getChildren().add(island);
-        }
-        if (!islands.isEmpty()) {
-            // ...to the first of them with shore the city owns: a terminal can stand on no other (the Land office's door below is theirs).
-            int first = -1;
-            for (int id : lms.unlinkedIds()) {
-                if (lms.shorePlots(id) > 0) {
-                    first = id;
-                    break;
-                }
+            List<javafx.scene.Node> shown = new ArrayList<>(List.of(warning, details));
+            // The ground the city owns that no port links (ET5): free, and no room for this, with the door to the port that would link it.
+            List<String> islands = islandPort ? List.of() : LandmassView.noLandLines(land);
+            for (int i = 0; i < islands.size(); i++) {
+                String line = islands.get(i);
+                shown.add(Kept.scope("island " + i, () -> {
+                    Label island = Kept.label(line);
+                    island.setWrapText(true);
+                    island.setMaxWidth(560);
+                    island.setStyle(Palette.words(Palette.SIZE_BODY, Palette.WARN));
+                    return island;
+                }));
             }
-            int at = first;
-            if (at >= 0) ui.rootMenu.getChildren().add(doorPill(LandmassView.PORT_DOOR, Icons.BUILD, Palette.BUILDING, () -> openPortCardFor(at)));
-        }
-        // The Build shortcut (0.7.61, star 14): the cheapest bare ground that covers the shortfall - back to the
-        // order once it is covered, this page again (its next best) while it is not. Not for a terminal on an unlinked island (ET5):
-        // the shelf's offers are measured on the linked ground and the island's room is its own, so a purchase here could not
-        // cover the shortfall and the page would send the player back to the menus with the order refused again; its ground is the Land office's.
-        if (islandPort) {
-            Label own = new Label("This terminal is for the island you chose, and only ground bought on that island is room for it: the Land office has it.");
-            own.setWrapText(true);
-            own.setMaxWidth(560);
-            own.setStyle(Palette.words(Palette.SIZE_BODY, Palette.WARN));
-            ui.rootMenu.getChildren().add(own);
-        }
-        LandParcel best = islandPort ? null : ui.game.bestOffer(Game.LandNeed.shortfall(short_));
-        if (best != null) {
-            ui.rootMenu.getChildren().add(bestLandButton(best, noLandWords(best), noLandSub(best, short_), () -> {
-                if (ui.game.landNeededFor(selected, quantity) <= ui.game.getLandManager().getAvailableSqFt()) {
-                    handleAllBuildingMenus(prevTitle, prevCats);
-                } else {
-                    showNoLandMenu(selected, quantity, prevTitle, prevCats);
+            if (!islands.isEmpty()) {
+                // ...to the first of them with shore the city owns: a terminal can stand on no other (the Land office's door below is theirs).
+                int first = -1;
+                for (int id : lms.unlinkedIds()) {
+                    if (lms.shorePlots(id) > 0) {
+                        first = id;
+                        break;
+                    }
                 }
-            }));
-        }
-        ui.rootMenu.getChildren().addAll(toLand, back);
+                int at = first;
+                if (at >= 0) shown.add(Kept.scope("port door", () -> doorPill(LandmassView.PORT_DOOR, Icons.BUILD, Palette.BUILDING, () -> openPortCardFor(at))));
+            }
+            // The Build shortcut (0.7.61, star 14): the cheapest bare ground that covers the shortfall - back to the
+            // order once it is covered, this page again (its next best) while it is not. Not for a terminal on an unlinked island (ET5):
+            // the shelf's offers are measured on the linked ground and the island's room is its own, so a purchase here could not
+            // cover the shortfall and the page would send the player back to the menus with the order refused again; its ground is the Land office's.
+            if (islandPort) {
+                shown.add(Kept.scope("own", () -> {
+                    Label own = Kept.label("This terminal is for the island you chose, and only ground bought on that island is room for it: the Land office has it.");
+                    own.setWrapText(true);
+                    own.setMaxWidth(560);
+                    own.setStyle(Palette.words(Palette.SIZE_BODY, Palette.WARN));
+                    return own;
+                }));
+            }
+            LandParcel best = islandPort ? null : ui.game.bestOffer(Game.LandNeed.shortfall(short_));
+            if (best != null) {
+                shown.add(Kept.scope("buy", () -> bestLandButton(best, noLandWords(best), noLandSub(best, short_), () -> {
+                    if (ui.game.landNeededFor(selected, quantity) <= ui.game.getLandManager().getAvailableSqFt()) {
+                        handleAllBuildingMenus(prevTitle, prevCats);
+                    } else {
+                        showNoLandMenu(selected, quantity, prevTitle, prevCats);
+                    }
+                })));
+            }
+            shown.add(toLand);
+            shown.add(back);
+            ui.setPage(shown.toArray(new javafx.scene.Node[0]));
+        });
+    }
+
+    /** A button on a refusal page, kept: the one the last draw made, its words set and its action set at every draw. */
+    private Button pageButton(String text, Runnable go) {
+        Button b = Kept.of(Button.class, Button::new);
+        b.setText(text);
+        b.setOnAction(e -> go.run());
+        return b;
     }
 
     /** The no-land page's Buy: "Buy the best: 3.4 km² for US$12.1M" (spec-land 2.8). */
@@ -5834,34 +6156,42 @@ final class BuildScreen {
     javafx.scene.Node shortAnswers(List<RunOffer> loans) {
         List<String> w = shortWords(loans);
         if (w.isEmpty() && fundCap == null) return null;
-        VBox box = new VBox(8);
+        // Kept (KP3): the red lines (or the one quiet line) and the chips are a scope each; the chips' nodes are the cap block's own.
+        VBox box = Kept.column(8);
         boolean red = !w.isEmpty();
         if (red) {
-            Label head = new Label(w.get(0));
-            head.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.BAD_TEXT));
-            box.getChildren().add(head);
-            for (int i = 1; i < w.size(); i++) {
-                Label line = new Label(w.get(i));
+            box.getChildren().addAll(Kept.scope("red", () -> {
+                List<javafx.scene.Node> lines = new ArrayList<>();
+                Label head = Kept.label(w.get(0));
+                head.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.BAD_TEXT));
+                lines.add(head);
+                for (int i = 1; i < w.size(); i++) {
+                    Label line = Kept.label(w.get(i));
+                    line.setWrapText(true);
+                    line.setMinWidth(0);
+                    line.setStyle(Palette.words(i == w.size() - 1 ? Palette.SIZE_LABEL : Palette.SIZE_BODY,
+                            i == w.size() - 1 ? Palette.BAD_SOFT : Palette.BAD_TEXT));
+                    lines.add(line);
+                }
+                return lines;
+            }));
+        } else {
+            box.getChildren().add(Kept.scope("quoted", () -> {
+                Label line = Kept.label("Quoted at the highest yield you set here, not automatic building's ("
+                        + CapSetting.words(ui.game.getAutoBuilder().getCap()) + ").");
                 line.setWrapText(true);
                 line.setMinWidth(0);
-                line.setStyle(Palette.words(i == w.size() - 1 ? Palette.SIZE_LABEL : Palette.SIZE_BODY,
-                        i == w.size() - 1 ? Palette.BAD_SOFT : Palette.BAD_TEXT));
-                box.getChildren().add(line);
-            }
-        } else {
-            Label line = new Label("Quoted at the highest yield you set here, not automatic building's ("
-                    + CapSetting.words(ui.game.getAutoBuilder().getCap()) + ").");
-            line.setWrapText(true);
-            line.setMinWidth(0);
-            line.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-            box.getChildren().add(line);
+                line.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+                return line;
+            }));
         }
         double fair = autoFair();
         for (RunOffer o : loans) {
             Auction.Result r = o.quote().auction();
             if (o.name().startsWith(Game.BUILD_BOND_YEARS + "-year") && r != null && !r.isEmpty()) fair = r.ask().fair();
         }
-        box.getChildren().addAll(fundChips.controls("THE HIGHEST YIELD YOU WILL TAKE", FUND_CAP_INFO, fair, false));
+        final double fairNow = fair;
+        box.getChildren().addAll(Kept.scope("cap", () -> fundChips.controls("THE HIGHEST YIELD YOU WILL TAKE", FUND_CAP_INFO, fairNow, false)));
         box.setMaxWidth(Double.MAX_VALUE);
         box.setStyle(FinancesScreen.cardStyle(red ? Palette.BAD : Palette.EDGE));
         return box;
@@ -5873,15 +6203,15 @@ final class BuildScreen {
         Label title = ui.pageTitle("Build");
         title.setStyle(title.getStyle() + " -fx-cursor: hand;");
         title.setOnMouseClicked(e -> handleAllBuildingMenus(from.title(), from.categories()));
-        Label sep = new Label("›");
+        Label sep = Kept.label("›");
         sep.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_MUTED) + " -fx-padding: 8 0 2 0;");
-        Label where = new Label(sub);
+        Label where = Kept.label(sub);
         where.setStyle(Palette.strong(Palette.SIZE_TITLE, Palette.TEXT_HEAD) + " -fx-padding: 8 0 2 0;");
-        HBox titled = new HBox(10, title, sep, where);
+        HBox titled = Kept.row(10, title, sep, where);
         titled.setAlignment(Pos.CENTER_LEFT);
-        Region gap = new Region();
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
-        HBox head = new HBox(Palette.GAP_LOOSE, titled, gap,
+        HBox head = Kept.row(Palette.GAP_LOOSE, titled, gap,
                 stepChip("‹ " + back, () -> handleAllBuildingMenus(from.title(), from.categories()), true));
         head.setAlignment(Pos.CENTER_LEFT);
         head.setMaxWidth(Double.MAX_VALUE);
@@ -5903,64 +6233,85 @@ final class BuildScreen {
         }
         fundChips.noteFocus();
         fundingAgain = () -> showBuildFunding(run, from);
-        ui.clearMenu("showBuildFunding", fundingAgain);
+        // Kept (KP3): drawn over last time's nodes on a redraw (a month landing), as the land office's funding page is.
+        ui.keepMenu("showBuildFunding", fundingAgain, pool, () -> drawFunding(run, from));
+    }
 
-        VBox page = widePage();
-        page.getChildren().add(runHead("Funding", from));
+    /**
+     * The funding page itself, put in the window through setPage(): what keepMenu runs as a kept draw from the
+     * pool, and what KeptBench runs kept and built new for KeptCheck. `run` is the run to fund and `from` where
+     * it came from; the run must have something to fund (showBuildFunding() sends a run with none back to its
+     * page). The cap chips (fundChips) redraw through fundingAgain, which the entry sets.
+     */
+    void drawFunding(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from) {
+        Kept.scope("showBuildFunding", () -> {
+            RunWords w = runWords(run);
+            VBox page = widePage();
+            page.getChildren().add(Kept.scope("head", () -> runHead("Funding", from)));
 
-        Label shortChip = tag("short by " + w.shortBy(), Palette.BAD);
-        shortChip.setMinWidth(Region.USE_PREF_SIZE);
-        Label title = new Label(w.priceLine());
-        title.setWrapText(true);
-        title.setMinWidth(0);
-        title.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
-        HBox.setHgrow(title, Priority.ALWAYS);
-        HBox top = new HBox(Palette.GAP, title, shortChip);
-        top.setAlignment(Pos.CENTER_LEFT);
-        SegmentBar bar = segmentBar(List.of(
-                new Segment(w.held(), Palette.MONEY, false, null, null, w.heldWords(), null),
-                new Segment(w.gap(), Palette.BAD, true, null, null, "short " + w.shortBy(), null)), 0, null, 0, 14);
-        Label held = new Label(w.heldWords());
-        held.setWrapText(true);
-        held.setMinWidth(0);
-        held.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
-        Label gapWords = new Label("short " + w.shortBy());
-        gapWords.setMinWidth(Region.USE_PREF_SIZE);
-        gapWords.setStyle(Palette.figure(Palette.SIZE_BODY, Palette.BAD));
-        Region spread = new Region();
-        HBox.setHgrow(spread, Priority.ALWAYS);
-        HBox under = new HBox(6, held, spread, gapWords);
-        under.setAlignment(Pos.CENTER_LEFT);
-        VBox summary = new VBox(8, top, bar, under);
-        if (w.stops() != null) {
-            Label stops = new Label(w.stops());
-            stops.setWrapText(true);
-            stops.setMinWidth(0);
-            stops.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.BAD));
-            summary.getChildren().add(stops);
-        }
-        summary.setStyle("-fx-padding: 12 14 12 14;" + Palette.block(Palette.PANEL, Palette.EDGE));
-        summary.setMaxWidth(Double.MAX_VALUE);
-        page.getChildren().addAll(summary, sectionHead("TWO WAYS TO BORROW IT",
-                hint("each books exactly the quote on its card, then builds")));
+            VBox summary = Kept.scope("summary", () -> {
+                Label shortChip = tag("short by " + w.shortBy(), Palette.BAD);
+                shortChip.setMinWidth(Region.USE_PREF_SIZE);
+                Label title = Kept.label(w.priceLine());
+                title.setWrapText(true);
+                title.setMinWidth(0);
+                title.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
+                HBox.setHgrow(title, Priority.ALWAYS);
+                HBox top = Kept.row(Palette.GAP, title, shortChip);
+                top.setAlignment(Pos.CENTER_LEFT);
+                SegmentBar bar = segmentBar(List.of(
+                        new Segment(w.held(), Palette.MONEY, false, null, null, w.heldWords(), null),
+                        new Segment(w.gap(), Palette.BAD, true, null, null, "short " + w.shortBy(), null)), 0, null, 0, 14);
+                Label held = Kept.label(w.heldWords());
+                held.setWrapText(true);
+                held.setMinWidth(0);
+                held.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+                Label gapWords = Kept.label("short " + w.shortBy());
+                gapWords.setMinWidth(Region.USE_PREF_SIZE);
+                gapWords.setStyle(Palette.figure(Palette.SIZE_BODY, Palette.BAD));
+                Region spread = Kept.region();
+                HBox.setHgrow(spread, Priority.ALWAYS);
+                HBox under = Kept.row(6, held, spread, gapWords);
+                under.setAlignment(Pos.CENTER_LEFT);
+                VBox box = Kept.column(8, top, bar, under);
+                if (w.stops() != null) {
+                    box.getChildren().add(Kept.scope("stops", () -> {
+                        Label stops = Kept.label(w.stops());
+                        stops.setWrapText(true);
+                        stops.setMinWidth(0);
+                        stops.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.BAD));
+                        return stops;
+                    }));
+                }
+                box.setStyle("-fx-padding: 12 14 12 14;" + Palette.block(Palette.PANEL, Palette.EDGE));
+                box.setMaxWidth(Double.MAX_VALUE);
+                return box;
+            });
+            page.getChildren().addAll(summary, Kept.scope("ways head", () -> sectionHead("TWO WAYS TO BORROW IT",
+                    hint("each books exactly the quote on its card, then builds"))));
 
-        javafx.scene.layout.GridPane offers = equalColumns(3, TILE_GAP);
-        List<RunOffer> loans = runOffers(run, from);
-        for (int i = 0; i < loans.size(); i++) {
-            RunOffer o = loans.get(i);
-            offers.add(coverCash(offerCard(o.name(), null, o.quote(), o.rate(), o.tone(), o.ending(), o.action(),
-                    Icons.BUILD, Palette.BUILDING, o.issue(), Money::money), o.quote()), i, 0);
-        }
-        page.getChildren().add(offers);
+            List<RunOffer> loans = runOffers(run, from);
+            javafx.scene.layout.GridPane offers = Kept.scope("offers", () -> {
+                javafx.scene.layout.GridPane grid = equalColumns(3, TILE_GAP);
+                for (int i = 0; i < loans.size(); i++) {
+                    RunOffer o = loans.get(i);
+                    grid.add(Kept.scope(o.name(), () -> coverCash(offerCard(o.name(), null, o.quote(), o.rate(), o.tone(), o.ending(),
+                            o.action(), Icons.BUILD, Palette.BUILDING, o.issue(), Money::money), o.quote())), i, 0);
+                }
+                return grid;
+            });
+            page.getChildren().add(offers);
 
-        // A preview that does not cover the gap says so and offers its answers (CD2, D30); the chips stay once moved, so the player can move them back.
-        javafx.scene.Node answers = shortAnswers(loans);
-        if (answers != null) page.getChildren().add(answers);
+            // A preview that does not cover the gap says so and offers its answers (CD2, D30); the chips stay once moved, so the player can move them back.
+            javafx.scene.Node answers = Kept.scope("answers", () -> shortAnswers(loans));
+            if (answers != null) page.getChildren().add(answers);
 
-        Button cancel = new Button("Cancel");
-        cancel.setOnAction(e -> handleAllBuildingMenus(from.title(), from.categories()));
-        page.getChildren().add(cancel);
-        ui.rootMenu.getChildren().add(page);
+            Button cancel = Kept.of(Button.class, Button::new);
+            cancel.setText("Cancel");
+            cancel.setOnAction(e -> handleAllBuildingMenus(from.title(), from.categories()));
+            page.getChildren().add(cancel);
+            ui.setPage(page);
+        });
     }
 
     /**
@@ -5994,13 +6345,26 @@ final class BuildScreen {
      */
     void showBuildFellShort(java.util.Map<BuildingsTemplate, Integer> built, java.util.Map<BuildingsTemplate, Integer> left,
                             RunFrom from, String paper) {
-        ui.clearMenu("showBuildFellShort", () -> showBuildFellShort(built, left, from, paper));
-        String[] w = fellShortWords(built, left, from, paper);
-        VBox page = widePage();
-        page.getChildren().add(runHead("Not built", from));
-        Button back = new Button("Back to " + (from.title() == null ? BuildAdvice.OVERVIEW : from.title()));
-        back.setOnAction(e -> handleAllBuildingMenus(from.title(), from.categories()));
-        page.getChildren().addAll(alert(w[0], w[1]), back);
-        ui.rootMenu.getChildren().add(page);
+        // Kept (KP3): drawn over last time's nodes on a redraw (a month landing), as the land office's "Not bought" is.
+        ui.keepMenu("showBuildFellShort", () -> showBuildFellShort(built, left, from, paper), pool,
+                () -> drawFellShort(built, left, from, paper));
+    }
+
+    /**
+     * The fell-short card itself, put in the window through setPage(): what keepMenu runs as a kept draw from the
+     * pool, and what KeptBench runs kept and built new for KeptCheck.
+     */
+    void drawFellShort(java.util.Map<BuildingsTemplate, Integer> built, java.util.Map<BuildingsTemplate, Integer> left,
+                       RunFrom from, String paper) {
+        Kept.scope("showBuildFellShort", () -> {
+            String[] w = fellShortWords(built, left, from, paper);
+            VBox page = widePage();
+            page.getChildren().add(Kept.scope("head", () -> runHead("Not built", from)));
+            Button back = Kept.of(Button.class, Button::new);
+            back.setText("Back to " + (from.title() == null ? BuildAdvice.OVERVIEW : from.title()));
+            back.setOnAction(e -> handleAllBuildingMenus(from.title(), from.categories()));
+            page.getChildren().addAll(Kept.scope("card", () -> alert(w[0], w[1])), back);
+            ui.setPage(page);
+        });
     }
 }

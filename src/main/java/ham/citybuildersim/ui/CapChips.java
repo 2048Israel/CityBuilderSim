@@ -88,46 +88,62 @@ final class CapChips {
             case YIELD -> names[1];
             case FILL  -> names[2];
         };
-        FlowPane chips = chipStrip(names, current, Palette.SIZE_LABEL, pick -> {
-            typed = null;
-            refused = null;
-            field = null;
-            if (pick.equals(names[0])) setCap.accept(Auction.Cap.DEFAULT);
-            else if (pick.equals(names[2])) setCap.accept(Auction.Cap.FILL);
-            else if (cap.get().mode() != Auction.Mode.YIELD) setCap.accept(Auction.Cap.at(seed));
-            redraw.run();
+        // Kept (KP3): on a kept page every node comes through Kept, the parts that come and go (the refusal, the note
+        // that a yield reads as fair) are a scope each, and the yield box is the one the last draw made: its text set
+        // only where it differs and never while it has the focus (searchBox, Kept.text), its action set at every draw,
+        // its focus listener added once and reading the box and these fields when it fires. Outside a draw all of it is
+        // new, as it was.
+        FlowPane chips = Kept.scope("chips", () -> {
+            FlowPane strip = chipStrip(names, current, Palette.SIZE_LABEL, pick -> {
+                typed = null;
+                refused = null;
+                field = null;
+                if (pick.equals(names[0])) setCap.accept(Auction.Cap.DEFAULT);
+                else if (pick.equals(names[2])) setCap.accept(Auction.Cap.FILL);
+                else if (cap.get().mode() != Auction.Mode.YIELD) setCap.accept(Auction.Cap.at(seed));
+                redraw.run();
+            });
+            strip.setAlignment(Pos.CENTER_LEFT);
+            return strip;
         });
-        chips.setAlignment(Pos.CENTER_LEFT);
 
-        String shown = typed != null ? typed : now.mode() == Auction.Mode.YIELD ? yieldText(now) : "";
-        TextField box = searchBox(shown, "type a yield, 4.5", 150, t -> typed = t, null);
-        box.setOnAction(e -> commit(box, true));
-        box.focusedProperty().addListener((o, was, isNow) -> {
-            if (isNow) return;
-            javafx.application.Platform.runLater(() -> {
-                if (box.getScene() != null && !box.isFocused()) commit(box, false);
-            });
+        HBox entry = Kept.scope("entry", () -> {
+            String shown = typed != null ? typed : now.mode() == Auction.Mode.YIELD ? yieldText(now) : "";
+            TextField box = searchBox(shown, "type a yield, 4.5", 150, t -> typed = t, null);
+            box.setOnAction(e -> commit(box, true));
+            if (Kept.isNew(box)) {
+                box.focusedProperty().addListener((o, was, isNow) -> {
+                    if (isNow) return;
+                    javafx.application.Platform.runLater(() -> {
+                        if (box.getScene() != null && !box.isFocused()) commit(box, false);
+                    });
+                });
+            }
+            boolean again = typing;
+            typing = false;
+            field = box;
+            if (again) {
+                javafx.application.Platform.runLater(() -> {
+                    // A kept box keeps the focus across a redraw: it is never refocused when it has it, nor its caret moved.
+                    if (box.isFocused()) return;
+                    box.requestFocus();
+                    box.positionCaret(box.getText().length());
+                });
+            }
+            HBox row = Kept.row(Palette.GAP, box,
+                    FinancesScreen.words("% a year · Enter sets it", Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+            row.setAlignment(Pos.CENTER_LEFT);
+            return row;
         });
-        boolean again = typing;
-        typing = false;
-        field = box;
-        if (again) {
-            javafx.application.Platform.runLater(() -> {
-                box.requestFocus();
-                box.positionCaret(box.getText().length());
-            });
-        }
-        HBox entry = new HBox(Palette.GAP, box,
-                FinancesScreen.words("% a year · Enter sets it", Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-        entry.setAlignment(Pos.CENTER_LEFT);
 
         List<Node> out = new ArrayList<>();
-        out.add(FinancesScreen.caption(title, info));
+        out.add(Kept.scope("caption", () -> FinancesScreen.caption(title, info)));
         out.add(chips);
         out.add(entry);
-        if (refused != null) out.add(FinancesScreen.words(refused, Palette.SIZE_LABEL, Palette.BAD));
+        if (refused != null) out.add(Kept.scope("refused", () -> FinancesScreen.words(refused, Palette.SIZE_LABEL, Palette.BAD)));
         if (exact && now.mode() == Auction.Mode.YIELD && now.value() < fair - 1e-9) {
-            out.add(FinancesScreen.muted("Nobody bids under fair (" + FinancesScreen.pct3(fair) + "), so this reads as fair."));
+            out.add(Kept.scope("fair", () -> FinancesScreen.muted("Nobody bids under fair (" + FinancesScreen.pct3(fair)
+                    + "), so this reads as fair.")));
         }
         return out;
     }

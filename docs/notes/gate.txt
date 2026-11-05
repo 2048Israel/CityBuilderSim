@@ -1,12 +1,15 @@
-# gate of Merge batch/KP2: screens kept: Land, Services and Infrastructure, and the controls' rule (sliders and fields on a kept page); and KP1's hover kept: a kept row, door, strip cell or pin name under a still pointer loses its hover look at each month's draw (HistoryScreen `rowGoes`, Pieces `limitCell`, `door`, `chartCardHead`: the draw resets the style and no mouse-entered comes), so the style is chosen from `isHover()` where it is set (KP1's gate review, 2026-10-31); and `Pieces.ScaleRows` a picture told its rows, as KP1 left it (KP1-N), 0.9.17
+# gate of Merge batch/KP3: screens kept: Build and the construction page (after KP2), 0.9.18
 # date: 2026-11-05
 # earth-2.bin: named
-# nightly: 2026-11-05 01:27 0.9.12 b52be80a 4,000 months: OK in 96 s
-# suite: 174 harnesses run in 1915s: 170 passed, 4 failed
-# timing: 16 harnesses run in 482s: 14 passed, 2 failed; its red lines were judged side by side with main's, below
+# nightly: 2026-11-05 09:11 0.9.17 a0661fe8 4,000 months: OK in 109 s
+# suite: 174 harnesses run in 2298s: 170 passed, 4 failed
+# timing: 16 harnesses run in 727s: 13 passed, 3 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 27.2 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 27.0 ms, batch 27.2 ms (+0.9%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 51.5 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 48.5 ms, batch 40.3 ms (-16.9%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): KeptCheck | exit 1   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): KeptCheck | the whole kept chrome's month is within KEPT_ALL_CHROME_MS (8.0 ms)      FAIL   [main 8.02 ms, batch 9.34 ms (+16.6%), budget 8 ms: main over the budget too]
+# timing red not the batch's (paired): KeptCheck | 1 FAILED   [the harness's own count of the timing reds above]
 DenominationCheck | exit 1
 DenominationCheck | the same output                                                FAIL  16.3871627943 != 16.3871628238  (1.80e-09 apart)
 DenominationCheck | ...and the same year of it                                     FAIL  178.0274716763 != 178.0274723045  (3.53e-09 apart)
