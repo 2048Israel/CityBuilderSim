@@ -835,8 +835,23 @@ public class DeskCheck {
         check("...and the path goes on as it was until the month closes", line.getPricePath().length == 4);
 
         // The rates rise and the month closes: a fifth entry, trading under what it is carried at.
-        dm.setPolicyRate(Math.min(DebtManager.MAX_POLICY_RATE, dm.getPolicyRate() + .05));
-        g.strikeTheCurve();
+        // BA1, 2026-11-05: FIVE POINTS, AND FIVE MORE WHILE THE LINE STANDS WITHIN A MONTH'S DRIFT OF WHAT IT IS CARRIED AT. The expected
+        // path closes its gap to the rule in YieldCurve.DRIFT_MONTHS, so a ten-year yield moves a fraction of the dial: five points moved
+        // the ten-year par yield four tenths (7.4% to 7.8%) where the month's own drift, in a city whose inflation is coming down from
+        // a spike (FloatLinkCheck.playedCity()), took two tenths a month off it. The line the rise was to put under its carrying value
+        // stood at 100.04 against 99.78 once the month had closed. The rise goes on, five points at a time, until the struck curve prices
+        // the line under its carrying value by more than the most its price moved in a month of the four before (price[]), so that the
+        // month that closes cannot undo it.
+        double monthlyMove = 0;
+        for (int i = 1; i < price.length; i++) monthlyMove = Math.max(monthlyMove, Math.abs(price[i] - price[i - 1]));
+        int fives = 0;
+        do {
+            dm.setPolicyRate(Math.min(DebtManager.MAX_POLICY_RATE, dm.getPolicyRate() + .05));
+            g.strikeTheCurve();
+            fives++;
+        } while (fives < 20 && dm.getPolicyRate() < DebtManager.MAX_POLICY_RATE
+                && dm.priceOfPar(line) > line.getCarryingValue() / line.getOustandingPrincipal() * 100 - monthlyMove);
+        out.printf("   the dial up %d times five points, to %.0f%%, before the month closed%n", fives, dm.getPolicyRate() * 100);
         press(g);
         check("a fifth month, the rates up: a fifth entry, and the line trades under what it is carried at ("
                 + String.format("%.2f against %.2f per 100", line.getPricePath()[4], line.getCarriedPath()[4]) + ")",
@@ -1165,8 +1180,32 @@ public class DeskCheck {
          * expected path back up (the two-year yield fell 0.6 points for a four-point cut), and read at once the line stood at
          * 99.97 per 100 against the 100 it is carried at; to the floor it is 101.2.
          */
+        /*
+         * ...TO THE DIAL THAT PUTS THE CURVE BETWEEN THE TWO COUPONS (BA1, 2026-11-05), not to the floor. The floor does it when the
+         * month's own drift is up, as it was in main's city (inflation 7% rising to 14%, the two-year par yield 4.6% to 8.3% in four
+         * months with the dial held at 8%). In BA1's city (FloatLinkCheck.playedCity()) inflation is coming down from a spike (5.3% at
+         * month 64, 3.7% at month 68) and the two-year par yield falls by itself, 7.57% when the loss line was sold and 7.0% a month on:
+         * the floor took it to 5.28%, under the first line's 6.44% coupon, and the line it sold at par before the rise traded over what
+         * it was carried at, so the fixture was not one. What the two lines need is a curve between their coupons, the gain line's
+         * below it and the loss line's above, which the cut is made to cause: the dial is found by bisection between the floor and the
+         * dial now, the curve struck at each, and the one that lands the two-year par yield midway between the coupons is left standing.
+         */
+        final double between = (gain.getCouponRate() + loss.getCouponRate()) / 2;
+        final double dialNow = dm.getPolicyRate();
         dm.setPolicyRate(DebtManager.MIN_POLICY_RATE);
         g.strikeTheCurve();
+        final double atFloor = dm.curve().parYield(24);
+        double dialLow = DebtManager.MIN_POLICY_RATE, dialHigh = dialNow;
+        for (int i = 0; i < 40; i++) {
+            double dial = (dialLow + dialHigh) / 2;
+            dm.setPolicyRate(dial);
+            g.strikeTheCurve();
+            if (dm.curve().parYield(24) > between) dialHigh = dial; else dialLow = dial;
+        }
+        dm.setPolicyRate(dialLow);
+        g.strikeTheCurve();
+        out.printf("   the cut: the first line sold at %.3f%%, the loss line at %.3f%%; the two-year par yield %.3f%% at the floor, %.3f%% at the dial of %.2f%% it was cut to (it stood at %.2f%%)%n",
+                gain.getCouponRate() * 100, loss.getCouponRate() * 100, atFloor * 100, dm.curve().parYield(24) * 100, dialLow * 100, dialNow * 100);
         g.setCashForTest(Founding.WEALTHY_CASH);
         if (usd == null) return;
 

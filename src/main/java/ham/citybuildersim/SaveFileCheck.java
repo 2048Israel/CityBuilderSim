@@ -528,8 +528,18 @@ public class SaveFileCheck {
 
         // Started now and deliberately NOT finished, so the save is taken with
         // real work in progress.
-        city.buildStack(depot, depotsOrdered, false);
-        city.buildStack(store, 4, false);
+        // BA1, 2026-11-05: THE ORDER FUNDED BY ITS QUOTE. Under BA1 the builders' queue prices a contract by what is waiting on it: this
+        // city, 909 people and D$1,977 at month 91 on the path the harness plays, was quoted D$2,435 for twenty depots (D$837 at list), and
+        // the order came back NEEDS_FUNDING, nothing started, nothing mid-build to save (on a run of the same code that left it with 1,067
+        // people and D$1,690 the quote was D$1,256 and the order took). The cash is topped up by the two orders' quotes, as this harness
+        // funds its rail haul's orders further on (the money is no part of what a save has to carry), and the order is asserted.
+        final int storesOrdered = 4;
+        city.setCashForTest(city.getCash()
+                + city.quoteBuildOn(depot, depotsOrdered, Landmasses.CHOSEN).total
+                + city.quoteBuildOn(store, storesOrdered, Landmasses.CHOSEN).total);
+        Game.BuildResult depotOrder = city.buildStack(depot, depotsOrdered, false);
+        city.buildStack(store, storesOrdered, false);
+        assertTrue("fixture: the twenty depots were ordered (" + depotOrder + ")", depotOrder == Game.BuildResult.SUCCESS);
         city.simulateMonths(1);
 
         int depotsUnderWay = city.getBuildingManager().getUnderConstructionById()[depot.getId()];
