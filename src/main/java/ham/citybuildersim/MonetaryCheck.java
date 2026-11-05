@@ -512,6 +512,12 @@ public class MonetaryCheck {
         System.setOut(quiet);
         try {
             city.run();
+            // THE LEVERS OPENED IN THE FIXTURE (R0, a fixture condition): "the city based its basket" below needs a city that shops and pays
+            // rent for 24 months (PriceIndex.SETTLING_MONTHS), and the town this was written against taxes from month 1; a 1900 town has no
+            // income tax to 1916-17 and no sales tax to 1920, and this one ended its eleven years at index 1.000, its basket never based.
+            // Every lever opened and the defaults put back, before a month has run.
+            city.getEconomyManager().getTaxPolicy().reset();
+            city.getEconomyManager().getTaxPolicy().openAll();
             // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
             // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
             // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
@@ -752,9 +758,24 @@ public class MonetaryCheck {
      * the one whose plant on a bank loan the bank cannot carry (WN3 held Cement & Concrete in PolicyPreviewCheck).
      */
     static Game founding(Path root, String label, boolean onLiterals, String... held) {
+        return founding(root, label, onLiterals, false, held);
+    }
+
+    /**
+     * ...with the causes of 1900 held off from the first month where asked (R0b call 7): only heldRun() asks, the three harnesses that
+     * borrow this founding (CurveCheck, ExpectationsCheck, HouseholdCheck) keep the deaths of 1900.
+     */
+    static Game founding(Path root, String label, boolean onLiterals, boolean causesHeldOff, String... held) {
         Game g = new Game(new GameFiles(root.resolve(label), root.resolve("no-legacy")));
         if (onLiterals) g.playOnLiterals();
+        if (causesHeldOff) g.holdCausesOfDeathOff();
         g.run();
+        // THE LEVERS OPENED IN THE FIXTURE (BA1, 2026-11-05; R0 dates a 1900 city on Canada's policy): the premise is a steady town, and the founding this was written
+        // against taxes from month 1 (as section 5's city below has it opened). A 1900 town has no income tax to 1916-17 and no sales tax to 1920, and with BA1's uncapped orders
+        // the held runs took another way (the dates are the cause found; no further): inflation 9.6% a year at the founding's 3% dial, and holding the dial a month late moved the
+        // 20% row 0.125 points against the 0.100 allowance. Opened, and the defaults put back, before a month has run: 6.5%, and the largest move 0.087.
+        g.getEconomyManager().getTaxPolicy().reset();
+        g.getEconomyManager().getTaxPolicy().openAll();
         for (String sector : held) g.getBusinessInvestment().holdSector(sector);
         LongPlaytest.build(g, "House", 40);
         LongPlaytest.build(g, "Convenience Store", 3);
@@ -841,7 +862,11 @@ public class MonetaryCheck {
     static double heldRun(Path root, String label, double rate, int heldFrom, double[] print, Game[] city) {
         System.setOut(quiet);
         try {
-            Game g = founding(root, label, true);   // WN3: on the literals, see founding()
+            // WN3: on the literals, see founding(). R0b call 7: and the causes of 1900 held off, before a month: the rows' premise is a steady
+            // town (the founding's builders and its hospital keep every crew on, MEASUREMENT_NOISE is how far two readings of it can differ),
+            // sized on today's deaths; on 1900's causes the town was not steady: the same rows held a month late differed by 0.498 and 0.618
+            // points at 20% and 40% (0.100 allowed), with the crews all on.
+            Game g = founding(root, label, true, true);
             if (print != null) System.arraycopy(fingerprint(g), 0, print, 0, print.length);
             double indexFrom = g.getPriceIndex().getIndex();
             while (g.getMonth() <= MEASURED_MONTHS) {

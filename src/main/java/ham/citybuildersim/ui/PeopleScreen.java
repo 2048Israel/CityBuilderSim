@@ -470,6 +470,8 @@ final class PeopleScreen {
         List<Slice> deaths = new ArrayList<>();
         deaths.add(new Slice("of age", cohorts.getLastDeathsOfAge(), DIED_OF_AGE));
         deaths.add(new Slice("of illness they did not get over", sickness.getLastDeaths(), DIED_OF_ILLNESS));
+        // R0b: typhoid, TB, childbirth and the rest, the cohorts' count; CausesOfDeath names each cause apart.
+        deaths.add(new Slice("of typhoid, TB, childbirth and the like", cohorts.getLastCauseDeaths(), DIED_OF_CAUSES));
         deaths.add(new Slice("killed", cohorts.getLastKilled(), DIED_KILLED));
         deaths.add(new Slice("aged out at 120", cohorts.getLastAgedOut(), DIED_AGED_OUT));
         unsplit(deaths, cohorts.getLastDeaths());
@@ -510,9 +512,13 @@ final class PeopleScreen {
     /** The born and the arrived: the people teal's light step and the teal. */
     static final String BORN = Palette.PEOPLE_LIGHT, MOVED_IN = Palette.PEOPLE;
 
-    /** The dead by cause: of age the dark teal, of illness the violet, the killed the pink, the aged out a light blue. */
+    /**
+     * The dead by cause: of age the dark teal, of illness the violet, the killed the pink, the aged out a light blue,
+     * and since R0b the causes of 1900 (typhoid, TB, childbirth and the rest) CATEGORIES' sand, the fifth colour that is
+     * neither an area nor a verdict.
+     */
     static final String DIED_OF_AGE = Palette.PEOPLE_DARK, DIED_OF_ILLNESS = Palette.BUSINESS,
-            DIED_KILLED = Palette.BUILDING, DIED_AGED_OUT = Palette.MONEY_LIGHT;
+            DIED_KILLED = Palette.BUILDING, DIED_AGED_OUT = Palette.MONEY_LIGHT, DIED_OF_CAUSES = Palette.ORE;
 
     /** The leavers by why: for want of work the dark teal, broke the blue, driven out by crime the pink. */
     static final String LEFT_WORK = Palette.PEOPLE_DARK, LEFT_BROKE = Palette.MONEY, LEFT_CRIME = Palette.BUILDING;

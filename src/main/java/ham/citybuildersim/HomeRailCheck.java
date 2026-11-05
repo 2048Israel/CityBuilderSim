@@ -120,6 +120,15 @@ public class HomeRailCheck {
     static Game railed(GameFiles files, int depots, int spurs, int lines, String berth, int months, boolean pelletsPay) {
         Game g = pelletsPay ? HaulageCheck.base(files, true) : HaulageCheck.played(files, BASE_MONTHS);
         if (pelletsPay) {
+            // THE LEVERS OPENED IN THE FIXTURE (R0, diagnostic - see the batch notes): these cities' premise is a plant that buys at home and lands every
+            // month, a boundary that fills the track in the month read and in the one before it (the home bill is struck at last month's share), and
+            // they need the pre-R0 city, one that taxes and pays its wage floor from its first month; a 1900 city on history's dates has neither until
+            // 1916-1918, and in the suite's first read of `tight` the three clauses its line prints held (the offer, the boundary filling the track,
+            // a share of nought) and the one it does not, a home bill of nought, did not: last month's share was not nought. Every lever
+            // opened and the defaults put back, before a month. The cities that do not pay pellets (HaulageCheck.played(), which plays its months
+            // inside) are left as they were: their sections held.
+            g.getEconomyManager().getTaxPolicy().reset();
+            g.getEconomyManager().getTaxPolicy().openAll();
             g.playOnLiterals();
             g.getMarkets().get(Good.PELLETS).setWorldPrices(Good.PELLETS.worldImportPrice() * 2, Good.PELLETS.worldExportPrice() * 2);
             quietly(() -> { for (int i = 0; i < BASE_MONTHS; i++) g.toggleNextMonth(); });

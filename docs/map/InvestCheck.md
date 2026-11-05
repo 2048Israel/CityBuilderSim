@@ -1,6 +1,6 @@
-# InvestCheck.java - 2,062 lines · 20 methods · 1 constants · harnesses
+# InvestCheck.java - 2,067 lines · 20 methods · 1 constants · harnesses
 
-`ham/citybuildersim/InvestCheck.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/InvestCheck.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
 > Verifies the private investment engine: forecasting, the demand tests, and
 > the brake. Not part of the game.
@@ -41,19 +41,19 @@
 | 1053 | · 17. the builders keep what their repairs and queue need |
 | 1102 | · 18. a band nobody can fill (0.7.18) |
 | 1165 | · 19. the builders' price (0.7.19) |
-| 1638 | EVERY BUSINESS MAY BUILD AHEAD (BA1, 2026-11-02) |
-| 1674 | · (a) a sector with its own order on site orders again, and counts it as supply |
-| 1746 | · (b) the order's size and (c) the horizon |
-| 1819 | · (d) the interest on the wait |
-| 1895 | · (e) the wait counts |
-| 1948 | · (f) the sector's own posts on site are spoken for |
-| 2001 | · (h) how often it happens in a real run |
+| 1643 | EVERY BUSINESS MAY BUILD AHEAD (BA1, 2026-11-02) |
+| 1679 | · (a) a sector with its own order on site orders again, and counts it as supply |
+| 1751 | · (b) the order's size and (c) the horizon |
+| 1824 | · (d) the interest on the wait |
+| 1900 | · (e) the wait counts |
+| 1953 | · (f) the sector's own posts on site are spoken for |
+| 2006 | · (h) how often it happens in a real run |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 2004 | `InvestCheck.AHEAD_MONTHS` | `360` | Months the playtest's city is played with every order watched. |
+| 2009 | `InvestCheck.AHEAD_MONTHS` | `360` | Months the playtest's city is played with every order watched. |
 
 ## Fields (state)
 
@@ -61,72 +61,72 @@
 |---:|---|---|
 | 26 | `static int fails` |  |
 | 27 | `static PrintStream out, quiet` |  |
-| 2007 | `final Game g` |  |
-| 2008 | `int judged, cleared, clearedAhead` |  |
-| 2009 | `int largestCleared` |  |
-| 2010 | `String largestSector` |  |
-| 2011 | `final java.util.Set<Integer> monthsJudged` |  |
-| 2012 | `final java.util.Map<String, Integer> aheadBySector` |  |
+| 2012 | `final Game g` |  |
+| 2013 | `int judged, cleared, clearedAhead` |  |
+| 2014 | `int largestCleared` |  |
+| 2015 | `String largestSector` |  |
+| 2016 | `final java.util.Set<Integer> monthsJudged` |  |
+| 2017 | `final java.util.Map<String, Integer> aheadBySector` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 24 | 2039 | **type** `public class InvestCheck` | Verifies the private investment engine: forecasting, the demand tests, and the brake. |
+| 24 | 2044 | **type** `public class InvestCheck` | Verifies the private investment engine: forecasting, the demand tests, and the brake. |
 | 29 | 6 | `static void check(String label, double actual, double expected)` |  |
 | 37 | 6 | `static void check(String label, double actual, double expected, double tolerance)` | The same, within a stated tolerance - for sums of shares, whose rounding scales with the output. |
 | 44 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 49 | 3 | `static BuildingsTemplate template(Game g, String name)` |  |
 | 54 | 14 | `static Game city(Path root, String name)` | A fresh city, currency and world pinned, land by fiat. |
 | 70 | 4 | `static void month(Game g)` | One month, quietly. |
-| 75 | 1436 | `public static void main(String[] args) throws Exception` |  |
-| 1531 | 106 | `static void wholeCost(Path root)` | ON ITS WHOLE COST (0.7.113, batch I2b; Jerus's decisions A and A13, "test every order on its whole cost, whoever pays"). |
+| 75 | 1441 | `public static void main(String[] args) throws Exception` |  |
+| 1536 | 106 | `static void wholeCost(Path root)` | ON ITS WHOLE COST (0.7.113, batch I2b; Jerus's decisions A and A13, "test every order on its whole cost, whoever pays"). |
 
-### EVERY BUSINESS MAY BUILD AHEAD (BA1, 2026-11-02) (lines 1638-1673)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1657 | 8 | `static void buildAhead(Path root)` |  |
-| 1667 | 6 | `static void clearSite(BuildingManager bm, BuildingsTemplate t)` | A fixture's site taken off the queue: its buildings under construction and their progress both nothing (the order is gone, as if cancelled). |
-
-### (a) a sector with its own order on site orders again, and counts it as supply (lines 1674-1745)
+### EVERY BUSINESS MAY BUILD AHEAD (BA1, 2026-11-02) (lines 1643-1678)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1676 | 69 | `static void shopsOnSite(Path root)` |  |
+| 1662 | 8 | `static void buildAhead(Path root)` |  |
+| 1672 | 6 | `static void clearSite(BuildingManager bm, BuildingsTemplate t)` | A fixture's site taken off the queue: its buildings under construction and their progress both nothing (the order is gone, as if cancelled). |
 
-### (b) the order's size and (c) the horizon (lines 1746-1818)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1748 | 70 | `static void sizeAndHorizon(Path root)` |  |
-
-### (d) the interest on the wait (lines 1819-1894)
+### (a) a sector with its own order on site orders again, and counts it as supply (lines 1679-1750)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1821 | 73 | `static void waitCarries()` |  |
+| 1681 | 69 | `static void shopsOnSite(Path root)` |  |
 
-### (e) the wait counts (lines 1895-1947)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1897 | 50 | `static void theWaitCounts(Path root)` |  |
-
-### (f) the sector's own posts on site are spoken for (lines 1948-2000)
+### (b) the order's size and (c) the horizon (lines 1751-1823)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1950 | 50 | `static void postsOnSite(Path root)` |  |
+| 1753 | 70 | `static void sizeAndHorizon(Path root)` |  |
 
-### (h) how often it happens in a real run (lines 2001-2062)
+### (d) the interest on the wait (lines 1824-1899)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2006 | 38 | **type** `static final class AheadWatch implements BusinessInvestment.OrderWatch` |  |
-| 2014 | 1 | `AheadWatch(Game g)` _(in InvestCheck.AheadWatch)_ |  |
-| 2016 | 16 | `void saw(String sector, int quantity, int built, boolean mortgage)` _(in InvestCheck.AheadWatch)_ |  |
-| 2034 | 3 | `public void invested(BusinessInvestment.Decision d, double cash, double perUnitProfit, Game.Afford found)` _(in InvestCheck.AheadWatch)_ |  |
-| 2039 | 4 | `public void mortgaged(int asked, java.util.function.IntToDoubleFunction costOf, double cash, double noiPerUnit, double annualRa...` _(in InvestCheck.AheadWatch)_ |  |
-| 2045 | 17 | `static void howOftenInARun(Path root)` |  |
+| 1826 | 73 | `static void waitCarries()` |  |
+
+### (e) the wait counts (lines 1900-1952)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1902 | 50 | `static void theWaitCounts(Path root)` |  |
+
+### (f) the sector's own posts on site are spoken for (lines 1953-2005)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1955 | 50 | `static void postsOnSite(Path root)` |  |
+
+### (h) how often it happens in a real run (lines 2006-2067)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2011 | 38 | **type** `static final class AheadWatch implements BusinessInvestment.OrderWatch` |  |
+| 2019 | 1 | `AheadWatch(Game g)` _(in InvestCheck.AheadWatch)_ |  |
+| 2021 | 16 | `void saw(String sector, int quantity, int built, boolean mortgage)` _(in InvestCheck.AheadWatch)_ |  |
+| 2039 | 3 | `public void invested(BusinessInvestment.Decision d, double cash, double perUnitProfit, Game.Afford found)` _(in InvestCheck.AheadWatch)_ |  |
+| 2044 | 4 | `public void mortgaged(int asked, java.util.function.IntToDoubleFunction costOf, double cash, double noiPerUnit, double annualRa...` _(in InvestCheck.AheadWatch)_ |  |
+| 2050 | 17 | `static void howOftenInARun(Path root)` |  |
 

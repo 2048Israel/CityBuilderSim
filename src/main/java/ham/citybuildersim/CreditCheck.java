@@ -930,6 +930,10 @@ public class CreditCheck {
         System.out.println("\n--- a borrowing ban also stops the investment advisor ---");
 
         Game banned = new Game(GameFiles.scratch("creditcheck"));
+        // R0b call 7: the causes of 1900 held off, before a month. The fixture grows its city into 2,500 houses so that retail wants shops it
+        // may not borrow for, sized on today's deaths; on 1900's causes the passes read "Holding: already building" (nothing raised, no
+        // refusal in the ban's words), the third reason the fixture exists to keep out.
+        banned.holdCausesOfDeathOff();
         banned.run();
         /* -------------------------------------------------------------------
            MORE PEOPLE THAN THE SHOPS CAN COVER, AND IT HAS TO STAY THAT WAY.

@@ -251,6 +251,11 @@ public class RailCheck {
 
         quietly(() -> {
             game.newGame();
+            // THE LEVERS OPENED IN THE FIXTURE (BA1, 2026-11-05; R0 dates a 1900 city on Canada's policy): the town below was written against one that taxes from month 1.
+            game.getEconomyManager().getTaxPolicy().reset();
+            game.getEconomyManager().getTaxPolicy().openAll();
+            // ...and 1900's causes of death held off (R0b), as ScaleCheck's city is: the freight this town ships is its people's, and the railway's net is read against it.
+            game.holdCausesOfDeathOff();
             // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
             // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
             // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
@@ -635,6 +640,7 @@ public class RailCheck {
          */
         assertTrue("fixture: the railway hauled in the month the city was saved",
                 rail.getHauledTonnes() > 0 && rail.getHaulageBilled() > 0);
+        reloaded.holdCausesOfDeathOff();   // BA1, 2026-11-05 (R0b call 7): as the live city is held; the hold is not saved
         quietly(() -> { game.toggleNextMonth(); reloaded.toggleNextMonth(); });
         Freight onward = reloaded.getSectors().freight();
         report("a reloaded railway bills the month the live one bills",

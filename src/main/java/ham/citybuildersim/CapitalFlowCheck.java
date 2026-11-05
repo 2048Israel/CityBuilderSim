@@ -283,19 +283,40 @@ public class CapitalFlowCheck {
         System.setOut(quiet);
         try {
             city.run();
+            // THE LEVERS OPENED IN THE FIXTURE (R0, a fixture condition): "hot money actually arrives... in real money" below was found against a
+            // city that taxes from month 1, and a 1900 city has no income tax to 1916-17 and no sales tax to 1920: its carry draws a smaller
+            // stock (a peak of $692 in fifteen years against the 1,000 asked), though the spread and the arrivals are there. Every lever opened
+            // and the defaults put back, before a month has run.
+            city.getEconomyManager().getTaxPolicy().reset();
+            city.getEconomyManager().getTaxPolicy().openAll();
             // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
             // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
             // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
             city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(30_000_000);
-            city.buildStack(template(city, "House"), 400, false);
-            city.buildStack(template(city, "Convenience Store"), 6, false);
-            city.buildStack(template(city, "Construction Depot"), 4, false);
-            city.buildStack(template(city, "Coal Power Plant"), 1, false);
-            city.buildStack(template(city, "Water Treatment Plant"), 1, false);
-            city.buildStack(template(city, "Industrial Bakery"), 2, false);
-            city.buildStack(template(city, "Paved Road"), 30, false);
-            city.buildStack(template(city, "Commercial Bank"), 3, false);
+            /*
+             * BA1, 2026-11-04: THE FIXTURE NO LONGER CAUSED ITS CONDITION. The build
+             * list is priced by the builders' queue now, and every business may queue
+             * as many orders as the price allows (the caps are gone), so two things
+             * moved. (1) 400 houses ahead of it made the power plant dearer than what
+             * the Wealthy treasury had left: the order came back NEEDS_FUNDING and the
+             * city never had power - the treasury is topped up to each order's quote
+             * and every order is asserted taken. (2) Four depots are the whole of the
+             * city's builders, and a queue the businesses may now fill ranks the work
+             * behind the houses for years: the city took off in month 200 instead of
+             * month 100, and fifteen years brought a carry worth $60, not $1,000.
+             * Builders are what the queue is rationed by, so the city is given thirty.
+             */
+            boolean listBuilt = true;
+            listBuilt &= order(city, "House", 400);
+            listBuilt &= order(city, "Convenience Store", 6);
+            listBuilt &= order(city, "Construction Depot", 30);
+            listBuilt &= order(city, "Coal Power Plant", 1);
+            listBuilt &= order(city, "Water Treatment Plant", 1);
+            listBuilt &= order(city, "Industrial Bakery", 2);
+            listBuilt &= order(city, "Paved Road", 30);
+            listBuilt &= order(city, "Commercial Bank", 3);
+            fixtureListBuilt = listBuilt;
             /*
              * THE FIXTURE HAS TO CAUSE THE CONDITION. Nineteenth sighting, and
              * the cleanest yet. Hot money comes for a carry: the city's rate
@@ -328,6 +349,8 @@ public class CapitalFlowCheck {
                 flows.getPeakStock(), flows.getPeakSpread() * 100,
                 flows.getStopsSuffered(), worst);
 
+        assertTrue("fixture: every order of the build list was taken, the power plant among them",
+                fixtureListBuilt);
         assertTrue("fixture: the city actually offered a carry over the world",
                 flows.getPeakSpread() > 0.005);
 
@@ -718,7 +741,14 @@ public class CapitalFlowCheck {
         // difference is the coupon, with no carry in either. Its premise unmoved.
         g.quietTheWorldForTheD();
         System.setOut(quiet);
-        try { g.run(); g.simulateMonths(24); } finally { System.setOut(out); }
+        try {
+            g.run();
+            // THE PROFIT TAX OPENED IN THE FIXTURE (R0): this twin's premise is a profit tax with something to take, and a 1900 city has
+            // none until 1916 (its sectors read a tax rate of 0%). Every lever opened and the defaults put back, before a month has run.
+            g.getEconomyManager().getTaxPolicy().reset();
+            g.getEconomyManager().getTaxPolicy().openAll();
+            g.simulateMonths(24);
+        } finally { System.setOut(out); }
         return g;
     }
 
@@ -735,6 +765,17 @@ public class CapitalFlowCheck {
         f[1] = imports;
         f[5] = investedAbroad;
         return new MoneyAudit.Result(0, 0, 0, exports, imports + investedAbroad, 0, "", f);
+    }
+
+    /** BA1, 2026-11-04: whether section 7's whole build list was taken (see the comment where it is ordered). */
+    static boolean fixtureListBuilt;
+
+    /** An order paid out of cash: the treasury is raised to the order's quote if the queue's price outran it; true if the order was taken. */
+    static boolean order(Game game, String name, int quantity) {
+        BuildingsTemplate t = template(game, name);
+        double quote = game.quoteBuildOn(t, quantity, Landmasses.CHOSEN).total;
+        if (quote > game.getCash()) game.setCashForTest(quote);
+        return game.buildStack(t, quantity, false) == Game.BuildResult.SUCCESS;
     }
 
     static BuildingsTemplate template(Game game, String name) {

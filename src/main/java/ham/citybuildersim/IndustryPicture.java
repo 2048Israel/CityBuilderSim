@@ -1306,7 +1306,9 @@ public final class IndustryPicture {
         String[] p = key.split(":");
         Origin o = Origin.valueOf(p[2]);
         if (o == Origin.WORLD) return "imported";
-        if (o == Origin.OLD_METAL) return "the city's " + (v.sector() instanceof HeavyIndustry ? "old steel" : "old copper");
+        // "the city's own" under the name "Old steel" (R0): "the city's old steel" said the name twice, and with a yard's 1,000 t or more beside
+        // it the line ran 2 px past its 178 px slot (IndustryViewCheck's frame bound, first reached by a 1900 city's busier yard).
+        if (o == Origin.OLD_METAL) return "the city's own";
         Feed f = v.feed(Good.valueOf(p[1]));
         List<String> names = new ArrayList<>();
         if (f != null) for (Part s : f.sellers()) if (s.units() >= LEAST_PART) names.add(IndustryView.partyWords(s.party(), game));

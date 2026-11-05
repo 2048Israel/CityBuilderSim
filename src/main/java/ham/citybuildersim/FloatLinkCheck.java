@@ -546,12 +546,38 @@ public class FloatLinkCheck {
     static Game playedCity(String label) {
         GameFiles files = GameFiles.scratch(label);
         Game city = new Game(files);
+        // R0b call 7: the causes of 1900 held off, before a month (for every caller of this town, DeskCheck's among them, and the twins loaded
+        // from it). The curve this town's lines are sold on, and so what they trade at against what they are carried at, is sized on today's
+        // deaths; on 1900's causes DeskCheck's second line (sold at par at the higher rates, the dial then cut to the floor) was worth 510.6
+        // against the 517.7 it is carried at, where its fixture needs it worth more.
+        city.holdCausesOfDeathOff();
         quietly(() -> {
             city.run();
+            // THE LEVERS OPENED IN THE FIXTURE (R0, a fixture condition): this town, and DeskCheck's through readyCity() (the only other
+            // caller), was written against a city that taxes from month 1: its households' spare for paper sizes every sale, and the near-par
+            // assertions read the sale's fixed fee against that size ("the asks were too small for the fixed fee" below). A 1900 town has no
+            // income tax to 1916-17 and no sales tax to 1920, and plays another: the 2-year floater's effective rate stands 17 basis points
+            // off its coupon and the fee's share, a linker's quote for the cash it must bring does not cover it, and a five-point rise of
+            // the dial leaves a line worth more than the books carry it at (DeskCheck's fixture). Every lever opened and the defaults put
+            // back, before a month has run.
+            city.getEconomyManager().getTaxPolicy().reset();
+            city.getEconomyManager().getTaxPolicy().openAll();
             city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 50_000_000L);
             city.getForeignAccounts().pinRate(1.0);
             city.getBusinessInvestment().holdSector(Sectors.CONSTRUCTION);
+            // BA1, 2026-11-05: EVERY SECTOR HELD FROM ORDERING. This town is built by hand and the harness reads the sales, not the
+            // businesses' building. With no cap on orders (BA1) the free town's businesses borrowed for all they could order: by month 61
+            // the bank's business loans stood at 8,100 on equity of 1,246 (Wood Products 3,800, Materials 1,300, Manufacturing 1,500,
+            // Heavy Industry 1,100), 10,600 a month on, and in month 63 it lost 1,600 of equity (loans to Wood Products and Manufacturing
+            // down 1,900) and ran at -500 and then -3,200 by month 75, its room for city paper nothing from month 63 on for the 120
+            // months watched. The households' whole spare, which sizes the sales, was 318 to 1,160 (main's city: 6,200). Two things
+            // failed by it: the bank could not cover a section's sales, and a sale that small carried the fixed fee as 5.2 basis points a
+            // year on a 2-year floater (5 allowed). Held, the same town stands at 1,250 people with a spare of 7,300, a room of 50,000
+            // and a third of a year's tax of 970 (saleOf), the fee 1.7 basis points. It goes quiet in month 72 (sales tax 142 to 17,
+            // profit tax 83 to 12), with the sections reading months 63 to 80. (The model's, for BA1's review: a bank that lends into
+            // every order the businesses may place lost its equity within two months of the town's sixtieth.)
+            for (Sector s : city.getSectors().all()) city.getBusinessInvestment().holdSector(s.key());
             city.buildStack(template(city, "Gravel Road"), 6, true);
             // ...and two depots standing (PT1-M4), as CallCheck's played city stands its own: the works department that
             // built for nobody is retired, and the founding yard alone raised this town to 256 people by month 62, whose
@@ -565,13 +591,11 @@ public class FloatLinkCheck {
             city.buildStack(template(city, "Commercial Bank"), 1, false);
             city.simulateMonths(60);
             for (int i = 0; i < 36 && city.getMigration().getLastDecliningShare() > 0; i++) city.simulateMonths(1);
-            // BA1, 2026-11-04: the sales of this harness are covered at fair by the bank's capital room (the households' bid at fair is a
-            // few points of an issue; the firms' nothing, for fair is under the world's rate). Under BA1 every sector may hold many orders
-            // on site, and the town's businesses borrow for them at once: at month 61 the bank's loans weigh 7,870 on equity of 592, its
-            // room for city paper is nothing (it was 22,000 on main), and it opens and shuts month to month. The town is played on, month
-            // by month, until the room is ROOM_FOR_SALES times the largest sale any section makes (section 2 sells six of them in one city, each
-            // taking its face from the room until it settles); readyCity() asserts that it is.
-            for (int i = 0; i < ROOM_WAIT_MONTHS && bankRoomOf(city) < ROOM_FOR_SALES * askOf(city, 1); i++) city.simulateMonths(1);
+            // BA1, 2026-11-04 (numbers 2026-11-05): the sales of this harness are covered at fair by the bank's capital room (the households'
+            // bid at fair is a few points of an issue; the firms' nothing, for fair is under the world's rate). The town is played on,
+            // month by month, until the room is ROOM_FOR_SALES times the sale section 2 makes, saleOf(city, 1) (six of them in one city, each
+            // taking its face from the room until it settles); readyCity() asserts that it is. With every sector held it is from the start.
+            for (int i = 0; i < ROOM_WAIT_MONTHS && bankRoomOf(city) < ROOM_FOR_SALES * saleOf(city, 1); i++) city.simulateMonths(1);
         });
         return city;
     }
@@ -579,8 +603,11 @@ public class FloatLinkCheck {
     /** BA1: the most months the played city is given past its settling for the bank to have room for its sales. */
     static final int ROOM_WAIT_MONTHS = 60;
 
-    /** BA1: the bank's room for the sales of a section, as a multiple of the largest one (the households' whole spare): section 2 sells six of them in one city and section 3 a quarter of one more, and each takes its face from the room. */
+    /** BA1: the bank's room for the sales of a section, as a multiple of the one section 2 makes (saleOf(city, 1): the households' whole spare, no more than a third of a year of tax): that section sells six of them in one city and section 3 a quarter of one more, and each takes its face from the room. */
     static final double ROOM_FOR_SALES = 8;
+
+    /** BA1: the most a floater's effective rate may stand off its coupon, the fixed fee of the sale's share of it included (5 basis points): SALE_EFF's and section 3's bound, and what readyCity() sizes the sale's fee against. */
+    static final double EFFECTIVE_OFF_COUPON = 5e-4;
 
     /** BA1: the bank's room for the city's paper, as the auction counts it (Game.auctionBidders(): equity over Bank.CAPITAL_RATIO less the weighted book, over Bank.RISK_CITY). */
     static double bankRoomOf(Game city) {
@@ -607,8 +634,14 @@ public class FloatLinkCheck {
         // The cash just set is no flow: the treasury bridge opens a month with last month's closing, so it takes a month
         // to forget the difference, and the months that follow are the ones the harness holds to the bridge.
         press(city, "a month for the bridge to forget the cash set");
-        check("fixture (BA1): the bank has the room for the sales of a section, " + ROOM_FOR_SALES + " times the households' whole spare, at fair ("
-                + String.format("%,.0f for %,.0f", bankRoomOf(city), askOf(city, 1)) + ")", bankRoomOf(city) >= ROOM_FOR_SALES * askOf(city, 1));
+        // BA1, 2026-11-05: the sale is the one section 2 makes (saleOf: the households' whole spare, no more than a third of a year of tax).
+        double sale = saleOf(city, 1);
+        check("fixture (BA1): the bank has the room for the sales of a section, " + ROOM_FOR_SALES + " times section 2's sale, at fair ("
+                + String.format("%,.0f for %,.0f", bankRoomOf(city), sale) + ")", bankRoomOf(city) >= ROOM_FOR_SALES * sale);
+        double feeShare = city.costOfIssuance(sale) / sale / FloatingRateNote.MATURITIES[0];
+        check("fixture (BA1): section 2's sale is big enough for the fixed fee: its share of a " + FloatingRateNote.MATURITIES[0] + "-year floater's rate is "
+                + String.format("%.1f", feeShare * 1e4) + " basis points, under half of the " + String.format("%.0f", EFFECTIVE_OFF_COUPON * 1e4)
+                + " its effective rate may stand off the coupon", feeShare <= EFFECTIVE_OFF_COUPON / 2);
         return city;
     }
 
@@ -937,7 +970,7 @@ public class FloatLinkCheck {
         SALE_RATIO.report("...a linker is sold at a ratio of 1", 0);
         SALE_CASH.report("...the treasury received what the quote said", 1e-6);
         SALE_BOOKS.report("...the books opened with what it raised, on the face it sold", 1e-6);
-        SALE_EFF.report("...a floater's effective rate is its coupon's, plus the fee's share (under 5 basis points)", 5e-4);
+        SALE_EFF.report("...a floater's effective rate is its coupon's, plus the fee's share (under 5 basis points)", EFFECTIVE_OFF_COUPON);
         SALE_PRICE.report("...a sale with no tail is worth what the buyback values it at (per 100)", 5e-3);
         for (FloatingRateNote f : floaters) {
             out.printf("   %d-year floater: margin %+.3f%%, coupon %.3f%% at the dial %.2f%%, sold at %.4f%% of par%n",
@@ -1062,7 +1095,7 @@ public class FloatLinkCheck {
         for (FloatingRateNote f : floaters) {
             check(f.getDuration() / 12 + "-year floater: the effective rate " + String.format("%.4f%%", f.getEffectiveRate() * 100)
                             + " is within 5 basis points of the coupon " + String.format("%.4f%%", f.couponRate() * 100) + " and its fee's share",
-                    Math.abs(f.getEffectiveRate() - f.couponRate()) < 5e-4);
+                    Math.abs(f.getEffectiveRate() - f.couponRate()) < EFFECTIVE_OFF_COUPON);
         }
         out.printf("   the books held with the dial's moves (%d piece-months), the holders as the central bank's dial left them:%n", b.expense.n);
         for (FloatingRateNote f : floaters) {
@@ -1798,6 +1831,7 @@ public class FloatLinkCheck {
         quietly(() -> ok[0] = g.saveGame(10, "floatlink").ok);
         check("fixture: the city saved to slot 10 of its scratch root", ok[0]);
         Game back = new Game(g.getGameFiles());
+        back.holdCausesOfDeathOff();   // R0b call 7: as the city (playedCity()); the hold is not saved
         quietly(() -> back.loadGameSave(10));
         DebtManager loaded = back.getDebtManager();
         check("the loaded manager is handed the city's price index, not nothing", !Double.isNaN(loaded.priceIndexLevel()));

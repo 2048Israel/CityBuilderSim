@@ -1,6 +1,6 @@
-# LabourCheck.java - 1,213 lines · 14 methods · 4 constants · harnesses
+# LabourCheck.java - 1,216 lines · 14 methods · 4 constants · harnesses
 
-`ham/citybuildersim/LabourCheck.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LabourCheck.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
 > Verifies the labour market: who can hold a job, and what it costs. Not part
 > of the game.
@@ -38,13 +38,13 @@
 | 212 | · 5. NOBODY IS A DOCTOR WHO IS NOT A DOCTOR |
 | 289 | · 6. AND IT SURVIVES A SAVE |
 | 351 | · · RENT NO LONGER FOLLOWS THE UNSKILLED WAGE (2026-09-07). |
-| 423 | · · ARRIVING CHILDREN ARE NOT GRADUATES (2026-09-06). |
-| 450 | · · HUNTED FOR, NOT ASSUMED. |
-| 525 | · · A DOCTOR SHORTAGE IS PRICED ON DOCTORS (2026-09-06). |
-| 592 | · · WHO MOVES IN, AND WHY (2026-09-07). |
-| 635 | · · SOME ARRIVE WITHOUT A DIPLOMA, FOR THE WAGE (0.7.18). |
-| 738 | · WAGES AGAINST THE INDEX (2026-09-21). |
-| 987 | 13. PAYROLL BY JOB TYPE (0.7.17) |
+| 426 | · · ARRIVING CHILDREN ARE NOT GRADUATES (2026-09-06). |
+| 453 | · · HUNTED FOR, NOT ASSUMED. |
+| 528 | · · A DOCTOR SHORTAGE IS PRICED ON DOCTORS (2026-09-06). |
+| 595 | · · WHO MOVES IN, AND WHY (2026-09-07). |
+| 638 | · · SOME ARRIVE WITHOUT A DIPLOMA, FOR THE WAGE (0.7.18). |
+| 741 | · WAGES AGAINST THE INDEX (2026-09-21). |
+| 990 | 13. PAYROLL BY JOB TYPE (0.7.17) |
 
 ## Constants
 
@@ -52,46 +52,46 @@
 |---:|---|---|---|
 | 35 | `LabourCheck.OUT` | `System.out` |  |
 | 36 | `LabourCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } })` |  |
-| 770 | `LabourCheck.CRAWL` | `.005` | How fast the fixture's currency is walked weaker: half a percent a month. |
-| 773 | `LabourCheck.INFLATION_MONTHS` | `240` | Months of steady inflation, which is the twenty years the 2026-09-15 city had lived. |
+| 773 | `LabourCheck.CRAWL` | `.005` | How fast the fixture's currency is walked weaker: half a percent a month. |
+| 776 | `LabourCheck.INFLATION_MONTHS` | `240` | Months of steady inflation, which is the twenty years the 2026-09-15 city had lived. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
 | 34 | `static int fails` |  |
-| 777 | `final java.util.List<Double> index` |  |
-| 778 | `double worstTarget, worstStep` |  |
-| 779 | `int outsideWindow, windowMonths` |  |
+| 780 | `final java.util.List<Double> index` |  |
+| 781 | `double worstTarget, worstStep` |  |
+| 782 | `int outsideWindow, windowMonths` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 32 | 1182 | **type** `public class LabourCheck` | Verifies the labour market: who can hold a job, and what it costs. |
+| 32 | 1185 | **type** `public class LabourCheck` | Verifies the labour market: who can hold a job, and what it costs. |
 | 40 | 4 | `static void quietly(Runnable work)` |  |
 | 45 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 50 | 6 | `static void close(String label, double a, double b, double tol)` |  |
 | 57 | 6 | `static BuildingsTemplate t(Game g, String name)` |  |
-| 64 | 673 | `public static void main(String[] args) throws Exception` |  |
+| 64 | 676 | `public static void main(String[] args) throws Exception` |  |
 
-### WAGES AGAINST THE INDEX (2026-09-21). (lines 738-986)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 776 | 40 | **type** `static final class LagWatch` | The recurrence, checked month by month on one city: what it was handed and what it did. |
-| 782 | 33 | `void month(Game g, Runnable play)` _(in LabourCheck.LagWatch)_ | One month, played; the index and the expectation the month was handed are the ones it read at its top. |
-| 818 | 4 | `static void crawl(Game g)` | The currency one CRAWL weaker, and held there for the month. |
-| 823 | 163 | `static void wagesAgainstTheIndex()` |  |
-
-### 13. PAYROLL BY JOB TYPE (0.7.17) (lines 987-1213)
+### WAGES AGAINST THE INDEX (2026-09-21). (lines 741-989)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1007 | 165 | `static void payrollByJobType()` |  |
-| 1174 | 12 | `static double everyOtherEmployer(Game g)` | Every payroll that is not a sector's: the bank, the utilities, and the four services the city staffs. |
-| 1187 | 5 | `static double sum(double[] a)` |  |
-| 1193 | 3 | `static double pct(double[] mix, WageBand band, double total)` |  |
-| 1197 | 8 | `static double staffed(long[] jobs, long[] vacancy, WageBand band)` |  |
-| 1206 | 7 | `static void cleanUp(Path root)` |  |
+| 779 | 40 | **type** `static final class LagWatch` | The recurrence, checked month by month on one city: what it was handed and what it did. |
+| 785 | 33 | `void month(Game g, Runnable play)` _(in LabourCheck.LagWatch)_ | One month, played; the index and the expectation the month was handed are the ones it read at its top. |
+| 821 | 4 | `static void crawl(Game g)` | The currency one CRAWL weaker, and held there for the month. |
+| 826 | 163 | `static void wagesAgainstTheIndex()` |  |
+
+### 13. PAYROLL BY JOB TYPE (0.7.17) (lines 990-1216)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1010 | 165 | `static void payrollByJobType()` |  |
+| 1177 | 12 | `static double everyOtherEmployer(Game g)` | Every payroll that is not a sector's: the bank, the utilities, and the four services the city staffs. |
+| 1190 | 5 | `static double sum(double[] a)` |  |
+| 1196 | 3 | `static double pct(double[] mix, WageBand band, double total)` |  |
+| 1200 | 8 | `static double staffed(long[] jobs, long[] vacancy, WageBand band)` |  |
+| 1209 | 7 | `static void cleanUp(Path root)` |  |
 

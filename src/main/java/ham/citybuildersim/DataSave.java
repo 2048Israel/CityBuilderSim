@@ -1464,6 +1464,15 @@ public class DataSave implements Cloneable {
     public void setTaxPolicyState(double[] state)  { this.taxPolicyState = state; }
     public double[] getTaxPolicyState()            { return taxPolicyState; }
 
+    /**
+     * The month each Policy lever opens in this city, by the lever's NAME (R0; TaxPolicy.openingsForSave()). Null on a save from before R0,
+     * which loads with every lever open: its taxes were set before there was a gate.
+     */
+    private java.util.Map<String, Integer> leverOpenings;
+
+    public void setLeverOpenings(java.util.Map<String, Integer> openings) { this.leverOpenings = openings; }
+    public java.util.Map<String, Integer> getLeverOpenings()              { return leverOpenings; }
+
     public void setHouseholdBalance(double[] state) { this.householdBalance = state; }
     public double[] getHouseholdBalance()           { return householdBalance; }
 
@@ -2373,6 +2382,17 @@ public class DataSave implements Cloneable {
     private double[] health;
 
     /**
+     * The causes of death of 1900 (R0b; CausesOfDeath.getState()): last
+     * month's dead of each of the seven, the dead of each since the city
+     * began, the last twelve months' dead of each, one slot to a month, and
+     * the people sick of TB. FLOWS AND RUNNING TOTALS a screen reads next
+     * month - what a city died of last month and over the year cannot be
+     * reconstructed from the people who are alive now. Null in a save from
+     * before, which CausesOfDeath takes as a city with nobody dead of them.
+     */
+    private double[] causesOfDeath;
+
+    /**
      * The health service: plots used, the unburied backlog, and the month's
      * bill.
      *
@@ -2493,6 +2513,8 @@ public class DataSave implements Cloneable {
     public double[] getCrime()              { return crime; }
     public void setHealth(double[] a)   { this.health = a; }
     public double[] getHealth()         { return health; }
+    public void setCausesOfDeath(double[] a) { this.causesOfDeath = a; }
+    public double[] getCausesOfDeath()       { return causesOfDeath; }
     public void setHealthcare(double[] a){ this.healthcare = a; }
     public double[] getHealthcare()      { return healthcare; }
 

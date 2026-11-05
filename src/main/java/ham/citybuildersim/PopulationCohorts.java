@@ -72,6 +72,8 @@ public class PopulationCohorts {
     private final double[] lastDyingByBand = new double[AgeBand.values().length];
     /** ...and of which violence: the killed. See Crime. */
     private final double[] lastKilledByBand = new double[AgeBand.values().length];
+    /** ...and of which the causes of death of 1900: typhoid, TB and the rest. See CausesOfDeath. */
+    private final double[] lastCauseDeathsByBand = new double[AgeBand.values().length];
 
     /*
      * THE MONTH'S DEAD BY CAUSE, SUMMED AND SAVED (0.7.27). The by-band
@@ -86,6 +88,12 @@ public class PopulationCohorts {
     private double lastKilled;
     private double lastDeathsOfAge;
     private double lastAgedOut;
+    /**
+     * ...and a fourth since R0b: the dead of the causes of 1900 (CausesOfDeath),
+     * every band together, saved like the killed. The People page's waterfall
+     * gains a slice for it, and the five still add up to getLastDeaths().
+     */
+    private double lastCauses;
 
     public PopulationCohorts() { }
 
@@ -111,6 +119,11 @@ public class PopulationCohorts {
     public double getLastDeathsOfAge()   { return lastDeathsOfAge; }
     /** Last month's deaths out of the top of the pyramid at 120: the deaths that are not dying (0.7.27). */
     public double getLastAgedOut()       { return lastAgedOut; }
+    /** Last month's deaths in a band that were a cause of 1900's: typhoid, TB and the rest (R0b). */
+    public double getCauseDeaths(AgeBand b) { return lastCauseDeathsByBand[b.ordinal()]; }
+    public double[] getCauseDeaths()     { return lastCauseDeathsByBand.clone(); }
+    /** Last month's deaths of the causes of 1900, every band together - saved, unlike the bands (R0b). */
+    public double getLastCauseDeaths()   { return lastCauses; }
 
     public double total() {
         double sum = 0;
@@ -229,6 +242,20 @@ public class PopulationCohorts {
      */
     public void advanceMonth(double[] mortalityFactor, double[] illness, double[] violence,
                              double birthFactor) {
+        advanceMonth(mortalityFactor, illness, violence, null, birthFactor);
+    }
+
+    /**
+     * ...and the people the causes of death of 1900 took (R0b).
+     *
+     * @param causes each band's MONTHLY chance of dying of typhoid, TB and the
+     *               rest - CausesOfDeath.bandTotals() - or null for none. The
+     *               same competing risk as sickness and violence, off the same
+     *               opening balance, capped with the rest. A wrong-length array
+     *               is no causes, as the others are.
+     */
+    public void advanceMonth(double[] mortalityFactor, double[] illness, double[] violence,
+                             double[] causes, double birthFactor) {
 
         double[] factor = (mortalityFactor != null
                 && mortalityFactor.length == AgeBand.values().length)
@@ -237,16 +264,20 @@ public class PopulationCohorts {
                 ? illness : null;
         double[] killing = (violence != null && violence.length == AgeBand.values().length)
                 ? violence : null;
+        double[] causing = (causes != null && causes.length == AgeBand.values().length)
+                ? causes : null;
 
         java.util.Arrays.fill(lastPromoted, 0);
         java.util.Arrays.fill(lastDeathsByBand, 0);
         java.util.Arrays.fill(lastIllnessDeathsByBand, 0);
         java.util.Arrays.fill(lastDyingByBand, 0);
         java.util.Arrays.fill(lastKilledByBand, 0);
+        java.util.Arrays.fill(lastCauseDeathsByBand, 0);
         lastBirths = 0;
         lastDeaths = 0;
         lastMigration = 0;
         lastKilled = 0;
+        lastCauses = 0;
         lastDeathsOfAge = 0;
         lastAgedOut = 0;
 
@@ -274,11 +305,13 @@ public class PopulationCohorts {
                     : AgeBand.monthlyFromAnnual(b.getAnnualMortality() * Math.max(0, factor[i]));
             double ill = sick == null ? 0 : Math.max(0, sick[i]);
             double kill = killing == null ? 0 : Math.max(0, killing[i]);
-            double all = rate + ill + kill;
+            double cause = causing == null ? 0 : Math.max(0, causing[i]);
+            double all = rate + ill + kill + cause;
             double both = Math.min(AgeBand.MAX_MONTHLY_MORTALITY, all);
-            // The cap scales every part alike, so sickness and violence keep their shares of the dead.
+            // The cap scales every part alike, so sickness, violence and the causes keep their shares of the dead.
             double illShare = all > 0 ? ill / all : 0;
             double killShare = all > 0 ? kill / all : 0;
+            double causeShare = all > 0 ? cause / all : 0;
             rate = both;
 
             double dying  = opening * rate;
@@ -301,9 +334,12 @@ public class PopulationCohorts {
             lastDyingByBand[i] = dying;
             lastIllnessDeathsByBand[i] = dying * illShare;
             lastKilledByBand[i] = dying * killShare;
+            lastCauseDeathsByBand[i] = dying * causeShare;
             lastDeaths += dying;
             lastKilled += lastKilledByBand[i];
-            lastDeathsOfAge += dying - lastIllnessDeathsByBand[i] - lastKilledByBand[i];
+            lastCauses += lastCauseDeathsByBand[i];
+            lastDeathsOfAge += dying - lastIllnessDeathsByBand[i] - lastKilledByBand[i]
+                    - lastCauseDeathsByBand[i];
 
             AgeBand next = b.next();
             if (next != null) {
@@ -496,7 +532,7 @@ public class PopulationCohorts {
     }
 
     public double[] toSaveArray() {
-        double[] out = new double[band.length + 6];
+        double[] out = new double[band.length + 7];
         System.arraycopy(band, 0, out, 0, band.length);
         out[band.length]     = lastBirths;
         out[band.length + 1] = lastDeaths;
@@ -505,6 +541,8 @@ public class PopulationCohorts {
         out[band.length + 3] = lastKilled;
         out[band.length + 4] = lastDeathsOfAge;
         out[band.length + 5] = lastAgedOut;
+        // ...and the dead of the causes of 1900 (R0b).
+        out[band.length + 6] = lastCauses;
         return out;
     }
 
@@ -519,7 +557,8 @@ public class PopulationCohorts {
      * @param bands the names the save was written with; null or empty means a
      *              file from before they travelled, which is always LEGACY_BANDS
      * @param saved those bands in that order, then births, deaths and migration
-     *              - and since 0.7.27 the killed, the dead of age and the aged out
+     *              - and since 0.7.27 the killed, the dead of age and the aged out,
+     *              and since R0b the dead of the causes of 1900
      *
      * Refused whole on a length mismatch rather than padded, which is this
      * codebase's standing rule for state arrays: a pyramid read at the wrong
@@ -545,7 +584,13 @@ public class PopulationCohorts {
          * flows (SAVE_FORMAT 30). A save from before them reads its causes
          * as 0, which is what a reloaded People page showed before.
          */
-        boolean withCauses = saved.length == names.length + 6;
+        /*
+         * ...AND A FOURTH SINCE R0b: the dead of the causes of 1900 after those
+         * (CausesOfDeath). A save of the three reads its causes as 0, which is
+         * what a city before them had: nobody died of them.
+         */
+        boolean withFourth = saved.length == names.length + 7;
+        boolean withCauses = withFourth || saved.length == names.length + 6;
         boolean withMigration = withCauses || saved.length == names.length + 3;
         if (!withMigration && saved.length != names.length + 2) {
             return;   // any other shape is refused whole, per the standing rule
@@ -579,6 +624,7 @@ public class PopulationCohorts {
         lastKilled      = withCauses ? saved[names.length + 3] : 0;
         lastDeathsOfAge = withCauses ? saved[names.length + 4] : 0;
         lastAgedOut     = withCauses ? saved[names.length + 5] : 0;
+        lastCauses      = withFourth ? saved[names.length + 6] : 0;
     }
 
     /** The band of that name, or null if this build has no such band. */
@@ -595,9 +641,11 @@ public class PopulationCohorts {
         java.util.Arrays.fill(lastIllnessDeathsByBand, 0);
         java.util.Arrays.fill(lastDyingByBand, 0);
         java.util.Arrays.fill(lastKilledByBand, 0);
+        java.util.Arrays.fill(lastCauseDeathsByBand, 0);
         lastBirths = 0;
         lastDeaths = 0;
         lastKilled = 0;
+        lastCauses = 0;
         lastDeathsOfAge = 0;
         lastAgedOut = 0;
     }

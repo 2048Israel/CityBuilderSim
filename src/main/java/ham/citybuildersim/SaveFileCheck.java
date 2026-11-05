@@ -496,6 +496,11 @@ public class SaveFileCheck {
 
         Game city = new Game(cityFiles);
         city.run();
+        // THE LEVERS OPENED IN THE FIXTURE (R0, diagnostic - see the batch notes): the depots' ordered size below was found against a city
+        // that taxes and pays its wage floor from its first month (WN3: its builders' capacity at month 91), and a city on history's dates
+        // does neither until 1916-1918, so its investors have built more. Every lever opened and the defaults put back, before a month.
+        city.getEconomyManager().getTaxPolicy().reset();
+        city.getEconomyManager().getTaxPolicy().openAll();
 
         BuildingsTemplate house = template(city, "House");
         BuildingsTemplate store = template(city, "Convenience Store");
@@ -523,8 +528,18 @@ public class SaveFileCheck {
 
         // Started now and deliberately NOT finished, so the save is taken with
         // real work in progress.
-        city.buildStack(depot, depotsOrdered, false);
-        city.buildStack(store, 4, false);
+        // BA1, 2026-11-05: THE ORDER FUNDED BY ITS QUOTE. Under BA1 the builders' queue prices a contract by what is waiting on it: this
+        // city, 909 people and D$1,977 at month 91 on the path the harness plays, was quoted D$2,435 for twenty depots (D$837 at list), and
+        // the order came back NEEDS_FUNDING, nothing started, nothing mid-build to save (on a run of the same code that left it with 1,067
+        // people and D$1,690 the quote was D$1,256 and the order took). The cash is topped up by the two orders' quotes, as this harness
+        // funds its rail haul's orders further on (the money is no part of what a save has to carry), and the order is asserted.
+        final int storesOrdered = 4;
+        city.setCashForTest(city.getCash()
+                + city.quoteBuildOn(depot, depotsOrdered, Landmasses.CHOSEN).total
+                + city.quoteBuildOn(store, storesOrdered, Landmasses.CHOSEN).total);
+        Game.BuildResult depotOrder = city.buildStack(depot, depotsOrdered, false);
+        city.buildStack(store, storesOrdered, false);
+        assertTrue("fixture: the twenty depots were ordered (" + depotOrder + ")", depotOrder == Game.BuildResult.SUCCESS);
         city.simulateMonths(1);
 
         int depotsUnderWay = city.getBuildingManager().getUnderConstructionById()[depot.getId()];
@@ -1266,6 +1281,11 @@ public class SaveFileCheck {
         Game full = new Game(new GameFiles(root.resolve("everything"), root.resolve("no-legacy")),
                 Founding.defaults().withPath(OTHER_PATH, 2_026_102_8L));
         full.run();
+        // THE LEVERS OPENED IN THE FIXTURE (R0): this city's premise is a city with its dials set - taxes paying for the repairs and the
+        // subsidies, a health premium collected, an income-tax squeeze below - and a city on history's dates has none of them in 1900-1912
+        // (every lever is held at zero and its setter refuses). Every lever is opened and the defaults put back before a month has run.
+        full.getEconomyManager().getTaxPolicy().reset();
+        full.getEconomyManager().getTaxPolicy().openAll();
         // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
         // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
         // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
@@ -2134,9 +2154,21 @@ public class SaveFileCheck {
         same("the dead of age", diedAgain.getLastDeathsOfAge(), died.getLastDeathsOfAge());
         same("...the killed", diedAgain.getLastKilled(), died.getLastKilled());
         same("...and the ones who aged out at 120", diedAgain.getLastAgedOut(), died.getLastAgedOut());
+        // THE CAUSES OF DEATH OF 1900 (R0b): the cohorts' count of them, and the causes' own book of the month, the year and the city.
+        assertTrue("fixture: people died of the causes of 1900 this month", died.getLastCauseDeaths() > 0);
+        same("...the dead of the causes of 1900", diedAgain.getLastCauseDeaths(), died.getLastCauseDeaths());
+        CausesOfDeath bookKept = full.getCausesOfDeath(), bookBack = back.getCausesOfDeath();
+        for (CausesOfDeath.Cause cause : CausesOfDeath.Cause.values()) {
+            same("...the dead of " + cause.label() + " last month", bookBack.getLastDeaths(cause), bookKept.getLastDeaths(cause));
+            same("...and in the last twelve months", bookBack.getYearDeaths(cause), bookKept.getYearDeaths(cause));
+            same("...and since the city began", bookBack.getTotalDeaths(cause), bookKept.getTotalDeaths(cause));
+        }
+        assertTrue("fixture: the causes' book holds the month's dead", bookKept.getLastDeaths() > 0);
+        same("...the people sick of TB", bookBack.getTbSick(), bookKept.getTbSick());
+        same("the people off sick with the influenza", back.getHealth().getInfluenzaRate(), full.getHealth().getInfluenzaRate());
         double causes = died.getLastDeathsOfAge() + died.getLastKilled() + died.getLastAgedOut()
-                + full.getSickness().getLastDeaths();
-        assertTrue("...which with illness's are the month's dead",
+                + died.getLastCauseDeaths() + full.getSickness().getLastDeaths();
+        assertTrue("...which with illness's and the causes' are the month's dead",
                 Math.abs(causes - died.getLastDeaths()) <= 1e-9 * Math.max(1, died.getLastDeaths()));
 
         HouseholdBalance fed = full.getHouseholdBalance(), fedAgain = back.getHouseholdBalance();
@@ -2177,7 +2209,7 @@ public class SaveFileCheck {
         same("a format-29 pyramid loads its people", olderPyramid.total(), died.total());
         same("...and its dead", olderPyramid.getLastDeaths(), died.getLastDeaths());
         same("...with no cause under them", olderPyramid.getLastDeathsOfAge() + olderPyramid.getLastAgedOut()
-                + olderPyramid.getLastKilled(), 0);
+                + olderPyramid.getLastKilled() + olderPyramid.getLastCauseDeaths(), 0);
         double[] rowsNow = fed.toSaveArray();
         HouseholdBalance olderRows = new HouseholdBalance();
         olderRows.restore(java.util.Arrays.copyOf(rowsNow, Household.ROWS * 8 + 3));
@@ -2340,6 +2372,10 @@ public class SaveFileCheck {
          */
         Game early = new Game(new GameFiles(root.resolve("early"), root.resolve("no-legacy")));
         early.run();
+        // THE LEVERS OPENED IN THE FIXTURE (R0, diagnostic - see the batch notes): the price index bases on the 24th month with a household's
+        // rent and groceries in it, and the fixture runs it 26 months; on history's dates the city has no taxes or wage floor to 1916-1918.
+        early.getEconomyManager().getTaxPolicy().reset();
+        early.getEconomyManager().getTaxPolicy().openAll();
         early.setCashForTest(Founding.WEALTHY_CASH);
         /*
          * TWO SHOPS, AND THE SHOPS' PLANNER HELD (0.7.43). Twelve stood here,
@@ -2528,6 +2564,10 @@ public class SaveFileCheck {
          */
         Game college = new Game(new GameFiles(root.resolve("college"), root.resolve("no-legacy")));
         college.run();
+        // THE LEVERS OPENED IN THE FIXTURE (R0): the students' loans are what this section carries across a save, and the treasury makes
+        // none before student aid opens (1939). Every lever opened and the defaults put back, before a month has run.
+        college.getEconomyManager().getTaxPolicy().reset();
+        college.getEconomyManager().getTaxPolicy().openAll();
         college.setCashForTest(Founding.WEALTHY_CASH);
         college.getLandManager().setOwnedSqFt(college.getLandManager().getOwnedSqFt() + 100_000_000L);
         for (String[] order : new String[][] {

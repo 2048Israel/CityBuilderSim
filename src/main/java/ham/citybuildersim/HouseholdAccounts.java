@@ -245,6 +245,40 @@ public class HouseholdAccounts {
     /** ...and the fuel. */
     public double rowFuelPerHead(int row) { return rowPeople[row] > 0 ? rowFuel[row] / rowPeople[row] : 0; }
 
+    /* ---------------------- THE HOMES' LAMP OIL AND COAL (R0c, 2026-11-05) ----------------------
+     * What the homes paid Retail for the lamp oil and the coal stove's coal (HomeFuel, Retail.sellHomeFuel()):
+     * a line of its own beside the drivers' fuel, in the expenses and paid out of the cells' cash where the
+     * fuel is (Game.syncHouseholdAccounts(): the row's fees). It follows the DOORS the rent is split by
+     * (rowDoors; a flat two families share has one stove), so the rows' parts add to the bill and an
+     * orphan's or a prisoner's row, with no door, pays none. Told by Game before update() or refresh(), and
+     * only while a share is set or a held sale or bill remains; it is 0 in every played city in R0c and the
+     * expenses' sum is then the old sum to the bit (every term is added only when above 0). NOT SAVED:
+     * nothing sets it in a played city yet, and R0e saves it when the form goes on.
+     */
+    private double homeFuel;
+    private final double[] rowHomeFuel = new double[Household.ROWS];
+
+    /** ...and the part of it Retail paid the world (Retail's own import, on its own books; the money audit's household import lines read none of it). Never more than the bill. */
+    private double homeFuelImports;
+
+    /** The month's home fuel bill and the part of it the world was paid, before update() or refresh(); a bill that is not above 0 (or not a number) reads 0. */
+    public void setHomeFuel(double bill, double imported) {
+        this.homeFuel = Double.isFinite(bill) ? Math.max(0, bill) : 0;
+        this.homeFuelImports = Double.isFinite(imported) ? Math.max(0, Math.min(homeFuel, imported)) : 0;
+    }
+
+    /** What the households paid for lamp oil and coal this month. */
+    public double getHomeFuel() { return homeFuel; }
+
+    /** ...and what of it Retail paid the world. */
+    public double getHomeFuelImports() { return homeFuelImports; }
+
+    /** ...and what this row paid of it. */
+    public double getRowHomeFuel(int row) { return rowHomeFuel[row]; }
+
+    /** ...and what one door of the row paid of it (statementFor()). */
+    public double rowHomeFuelPerDoor(int row) { return rowDoors[row] > 0 ? rowHomeFuel[row] / rowDoors[row] : 0; }
+
     /* ---------------------- THE BANK'S ACCOUNT FEE (0.7.7) ----------------------
      * A month's fee on every housed household (Bank, FEES), its own line on
      * these books beside the fees above. Set by row, from
@@ -410,7 +444,9 @@ public class HouseholdAccounts {
      * were paying school fees out of savings they did not have.
      */
     public double getSpending() {
-        return rent + shopping + healthcare + tuition + fares + fuel + interest + accountFees;
+        double spending = rent + shopping + healthcare + tuition + fares + fuel + interest + accountFees;
+        // ...and the homes' lamp oil and coal (R0c), added only when there is one: with none this is the old sum to the bit.
+        return homeFuel > 0 ? spending + homeFuel : spending;
     }
 
     /** Income less tax less everything paid out, and the food assistance in (0.7.43). Negative means living beyond it. */
@@ -654,6 +690,7 @@ public class HouseholdAccounts {
         java.util.Arrays.fill(rowTuition, 0);
         java.util.Arrays.fill(rowFares, 0);
         java.util.Arrays.fill(rowFuel, 0);
+        java.util.Arrays.fill(rowHomeFuel, 0);
         java.util.Arrays.fill(rowInterest, 0);
         java.util.Arrays.fill(rowEiPremiums, 0);
         java.util.Arrays.fill(rowBenefits, 0);
@@ -784,6 +821,13 @@ public class HouseholdAccounts {
         for (int r = 0; r < ROWS; r++) {
             if (riding > 0) rowFares[r] = fares * riderWeight[r] / riding;
             rowFuel[r] = driving > 0 ? fuel * driverWeight[r] / driving : 0;
+        }
+        /*
+         * ...AND THE HOMES' LAMP OIL AND COAL (R0c, the home form; HomeFuel) follow the DOORS, as the rent does
+         * (setHomeFuel()): each row's share of the doors, and none where there is no door. Only with a bill.
+         */
+        if (homeFuel > 0 && doors > 0) {
+            for (int r = 0; r < ROWS; r++) rowHomeFuel[r] = homeFuel * rowDoors[r] / doors;
         }
 
         /*
@@ -1021,6 +1065,8 @@ public class HouseholdAccounts {
                 + (rowHouseholds[tier.ordinal()] > 0
                         ? (rowInterest[tier.ordinal()] + rowAccountFees[tier.ordinal()])
                                 / rowHouseholds[tier.ordinal()] : 0);
+        // ...and the homes' lamp oil and coal, one door's share of the row's (R0c), only when the row paid any.
+        if (rowHomeFuel[t] > 0) feesDue += rowHomeFuelPerDoor(t);
         double shop = people * shoppingPerHead();
 
         return new Statement(homes, people, income, tax, rentDue, feesDue, shop,
@@ -1194,6 +1240,10 @@ public class HouseholdAccounts {
         }
         // Imported, until the load re-tells the month (0.7.62): see fuelImports.
         fuelImports = fuel;
+        // ...and the homes' lamp oil and coal are not saved (R0c): nothing sets them in a played city yet.
+        homeFuel = 0;
+        homeFuelImports = 0;
+        java.util.Arrays.fill(rowHomeFuel, 0);
         double[][] arrays = !current
                 ? new double[][] { rowWages, rowTax, rowRent, rowShopping, rowPeople, rowHouseholds,
                         rowContributions, rowPensions, rowHealthcare, rowTuition, rowInterest }
@@ -1329,6 +1379,9 @@ public class HouseholdAccounts {
         fares = 0;
         fuel = 0;
         fuelImports = 0;
+        homeFuel = 0;
+        homeFuelImports = 0;
+        java.util.Arrays.fill(rowHomeFuel, 0);
         interest = 0;
         healthPremiums = 0;
         careBilled = 0;
@@ -1345,6 +1398,8 @@ public class HouseholdAccounts {
         fares *= scale;
         fuel *= scale;
         fuelImports *= scale;
+        homeFuel *= scale;
+        homeFuelImports *= scale;
         healthPremiums *= scale;  careBilled *= scale;  careFull *= scale;
         accountFees *= scale;
         foodAssistance *= scale;
@@ -1355,7 +1410,7 @@ public class HouseholdAccounts {
             rowWages[r] *= scale;  rowTax[r] *= scale;  rowRent[r] *= scale;
             rowShopping[r] *= scale;  rowContributions[r] *= scale;
             rowPensions[r] *= scale;  rowHealthcare[r] *= scale;
-            rowTuition[r] *= scale;  rowFares[r] *= scale;  rowFuel[r] *= scale;  rowInterest[r] *= scale;
+            rowTuition[r] *= scale;  rowFares[r] *= scale;  rowFuel[r] *= scale;  rowHomeFuel[r] *= scale;  rowInterest[r] *= scale;
             rowEiPremiums[r] *= scale;  rowBenefits[r] *= scale;
             rowHealthPremiums[r] *= scale;  rowCareBilled[r] *= scale;  rowCareFull[r] *= scale;
             rowAccountFees[r] *= scale;

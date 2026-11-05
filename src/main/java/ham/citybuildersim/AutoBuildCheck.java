@@ -320,6 +320,11 @@ public class AutoBuildCheck {
         LongPlaytest.out = quiet;
         LongPlaytest.AUTOBUILD = true;
         Game g = new Game(files, LongPlaytest.founding());
+        // R0b call 7: the causes of 1900 held off, before a month, here and in the copies loaded from the decades' city (section 4's twin,
+        // the two copies below). Section 4 reads the 36 months after the city's save and needs the pass to have an order to place (the
+        // fixture gives both cities ground and room), sized on today's deaths; on 1900's causes the city (5,930 people at month 600, 28
+        // orders in the run) placed none in the 36 months, with or without the deaths held off from the save on. Section 3 passes on both.
+        g.holdCausesOfDeathOff();
         // WN3: the decades' town, its twin and its copies play on the goods' literals. On the world's band the test player's town does
         // not take off (2,098 people at month 600 where the literals' has 21,729; about 2,000 from month 84 on, its debt over the
         // limit from month 200 and 550% of a year's GDP by 600): 387 passes began over the limit and ordered nothing, 16 orders in
@@ -388,6 +393,7 @@ public class AutoBuildCheck {
         quietly(() -> g.saveGame(11, "autobuildcheck, a pass that borrows"));
         Game copy = new Game(files);
         copy.playOnLiterals();   // WN3, as g
+        copy.holdCausesOfDeathOff();   // R0b call 7: as g; the hold is not saved
         quietly(() -> copy.loadGameSave(11));
         copy.getAutoBuilder().setDebtLimit(AutoBuilder.DEBT_LIMIT_MOST, null);
         copy.setCashForTest(AutoBuilder.reserve(copy));
@@ -397,6 +403,7 @@ public class AutoBuildCheck {
         int paybackInTheDecades = paybackOrders;
         Game roomy = new Game(files);
         roomy.playOnLiterals();   // WN3, as g
+        roomy.holdCausesOfDeathOff();   // R0b call 7: as g; the hold is not saved
         quietly(() -> roomy.loadGameSave(11));
         withRoom(roomy);
         // ...and its limit at the most, as the first copy's (0.7.106): with a quarter of a scrapped plant's material
@@ -704,6 +711,7 @@ public class AutoBuildCheck {
         GameFiles files = new GameFiles(root.resolve("decades").resolve("data"), root.resolve("decades").resolve("no-legacy"));
         Game back = new Game(files);
         back.playOnLiterals();   // WN3, as g (decades())
+        back.holdCausesOfDeathOff();   // R0b call 7: as g (decades()); the hold is not saved
         quietly(() -> back.loadGameSave(slot));
         // XR1 (2026-10-21): the decades' city is held at its rate (decades()), and a pin is a fixture's, not the save's:
         // the twin is held at the same rate, or it floats alone and the two are two cities.
@@ -1099,6 +1107,13 @@ public class AutoBuildCheck {
         AutoBuilder ab = g.getAutoBuilder();
         quietly(() -> {
             g.run();
+            // THE LEVERS OPENED IN THE FIXTURE (R0): section 7 needs a young city that has outgrown its founding care by month 60 (the
+            // pass then has an order to place), and the test player's town founded in 1900 holds its income taxes, wage floor and the rest
+            // shut for 16 to 20 years: at month 60 it had 1,154 people (2,618 before R0) and its general care, retired, still gave 1,185
+            // places against a demand of 1,154. Every lever opened and the defaults put back, before a month. Section 3's decades() town
+            // is left on history's dates: it is the builder's own long run and passes there.
+            g.getEconomyManager().getTaxPolicy().reset();
+            g.getEconomyManager().getTaxPolicy().openAll();
             // As decades() (XR1): the rate is held where the founding leaves it, this harness measures the builder.
             g.getForeignAccounts().pinRate(g.getForeignAccounts().getRate());
             g.getDebtManager().setAutopilot(LongPlaytest.AUTOPILOT);

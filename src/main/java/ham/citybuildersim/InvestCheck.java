@@ -1180,6 +1180,11 @@ public class InvestCheck {
            struck at the next strike, and an order booked with it. */
         System.out.println("\n--- the builders' price: labour at today's wages, the tax passed on, material at the price it is drawn (0.7.19) ---");
         Game priced19 = city(root, "builders-price");
+        // THE LEVERS OPENED IN THE FIXTURE (R0): this section's premise is the sales tax the builders quote and the rebates that tax pays
+        // the landlords, and a city founded in 1900 charges no sales tax until 1920 (and no wage floor, no profit or wage tax, before
+        // 1916-1918), so its builders quote none and the rebate is nothing. Every lever opened and the defaults put back, before a month.
+        priced19.getEconomyManager().getTaxPolicy().reset();
+        priced19.getEconomyManager().getTaxPolicy().openAll();
         // WN3: this town (and its two reloads below) stand on the goods' literals: the rule an older save's contract is read by has a
         // House's value (structure and land over its dwellings) falling to nothing at 450 founding dollars (NRRP_NONE_FROM), and on the
         // world's band the town's materials come cheap enough (1.8 a unit) that a House stands at 44.6 against the line's 45.0:

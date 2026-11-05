@@ -41,6 +41,25 @@ public class ServicesManager {
         this.freshCapSource = source;
     }
 
+    /**
+     * The steam share of a sector, by its key (R0c, the steam form; Sector.setSteamShare()): Game hands in the sectors' own. A factory that turns
+     * its shafts with a steam engine draws that share of its power from no grid, so the grid's demand is its draw less the share - the same draw
+     * the sector's bill is struck on. Null, as a bare fixture leaves it, and a share of 0 are no steam: the draw is the building's, to the bit.
+     */
+    private java.util.function.ToDoubleFunction<String> steamShareSource;
+
+    public void setSteamShareSource(java.util.function.ToDoubleFunction<String> source) {
+        this.steamShareSource = source;
+    }
+
+    /** What a building draws from the grid (BuildingsTemplate.powerBought()), less the part its sector turns with steam (R0c): the building's own draw while no share is set. */
+    private double gridDraw(BuildingsTemplate t) {
+        double draw = t.powerBought();
+        if (steamShareSource == null || !(draw > 0) || !BuildingsTemplate.isBilledForUtilities(t)) return draw;
+        double steam = steamShareSource.applyAsDouble(t.getSector());
+        return steam > 0 ? draw * (1 - steam) : draw;
+    }
+
     // ===============================
     // MAIN UPDATE
     // ===============================
@@ -72,9 +91,10 @@ public class ServicesManager {
         // own draws, sold to the grid (0.7.112, batch I2; UtilitiesHandler, THE POWER THE WORKS MAKE):
         // every building's whole draw, and none sold, while no works that makes power stands (since 0.7.123
         // the Coke Ovens, the Blast Furnace and the Oxygen Steel Shop make some).
+        // ...less what a sector turns with steam on site (R0c, the steam form): the grid is sized and rationed for the power drawn from it.
         updateHandlerDouble(
                 utilitiesHandler::setWattsConsumption,
-                BuildingsTemplate::powerBought);
+                this::gridDraw);
         updateHandlerDouble(
                 utilitiesHandler::setWorksPower,
                 BuildingsTemplate::powerSold);
@@ -119,7 +139,7 @@ public class ServicesManager {
         // utilities screen shows as "invoiced to somebody".
         utilitiesHandler.setBilledElectricityDraw(
                 buildingManager.getTotalDouble(
-                        t -> BuildingsTemplate.isBilledForUtilities(t) ? t.powerBought() : 0));
+                        t -> BuildingsTemplate.isBilledForUtilities(t) ? gridDraw(t) : 0));
 
         utilitiesHandler.setBilledWaterDraw(
                 buildingManager.getTotalDouble(

@@ -1,6 +1,162 @@
 # BA1 - Every business may build ahead ({next}, 2026-11-03)
 
-**WHERE IT STANDS (2026-11-04, 21:20): ready, the ship file pushed.**
+**WHERE IT STANDS (2026-11-05, 05:35): ready, the ship file pushed. Main's R0, R0b and R0c (0.9.14) merged in; the full suite red only in known classes passed by name.**
+- **The full suite on the merged tree** (67fe6cc7 + the maps, `./batch-check.sh`, all 171 harnesses, 00:02-00:36, run
+  alone): 161 passed, 10 failed. (A first run at 23:20 was void. The suite of a run stopped at 23:18 had not died, ran
+  beside it, and lost classes to the merge's recompile.) SlopeCheck, LongPlaytest and DeathRecordCheck pass on the
+  merged tree: R0's dates moved their cities again.
+- **Two pass by name, causes outside BA1's diff:**
+  - **MapCheck, four lines**, the three checks DM2's brief lists: 2d "every box stands four months on" (4 moved), 2d "a
+    yard that goes moves none of the buildings" (155 moved), and 2h scenario 1, "the highways reaching a street"
+    (9 moved). DM1's class: the district plan moves standing boxes, waiting on DM2. `MapCheck.main` keeps the builders'
+    price off through 2h for them, and on the merged tree's path they show with it off too.
+  - **PriceLevelCheck 8, two lines:** "FAIL sector.Manufacturing.cash (nominal) month 97 ..." and "every live nominal
+    series equal over the factor within 1.0E-9 (worst 1.1e-08 in sector.Manufacturing.cash)". Not a price the factor
+    missed: the factor nudged by 1e-12 parts from the factor by as much (1.04e-8 against 1.08e-8).
+    - The source is `BondMarket`'s corporate issue search (`s = filled` until `filled >= s * (1 - 1e-9)`). It stops
+      within 1e-9 of a fixed point, so two runs can settle on bonds up to that apart: at month 94 the bonds issued
+      differ by 4.6e-9 of the issue.
+    - Manufacturing rolls 150,000k of bonds on this path, and the gap grows tenfold every fourteen months (months 68,
+      82, 96) to 1.1e-8 of its cash.
+    - BS1 is queued: search to a fixed point well inside the twins' tolerance.
+- **Seven are fixtures on the merged path, mended** (two Sonnet slices in worktrees of their own, reviewed):
+  - MortgageCheck 12, HoldersCheck 13a, CurrencyRegimeCheck's peg town, PassThroughCheck's ring town, MonetaryCheck's
+    founding and CentralBankCheck 20's city: all open R0's levers before a month runs (`reset()`, `openAll()`), as
+    main's R0 fixtures do. The towns were written against a city that taxes from month 1. Untaxed until 1916-20, BA1's
+    town ran a deficit main's does not: the treasury held D$190k for PassThroughCheck's swing, and the peg town's
+    inflow was US$124k against a US$212k current-account deficit. MonetaryCheck's delay line and PassThroughCheck's
+    groceries sign hold once their fixtures do, so neither is a finding.
+  - BankCheck 15: retail is held from ordering before its second sale, as the first sale's loop holds it. With no cap
+    it ordered a shop, and the distress rule does not shrink a sector that is building.
+- **One was BA1's own bug, fixed: FoundingYardCheck 4** ("every building of the village stood at once by month 44"):
+  the village's depot opened in month 49 against main's 22.
+  - `BuildingManager.goesFirst()` asks whether the builders could staff the depots on site and one more, and BA1's
+    rule (THE POSTS OF ITS OWN SITES ARE SPOKEN FOR) counted those same depots' posts as taken, so each was counted
+    twice. Its share read 0.00 in months 8 to 10 (0.46 to 0.76 before BA1), and the builders-first rule stayed off.
+  - `Sector.staffingWithOwnSites()` asks the test for a count that includes the template's own units on site;
+    `goesFirst()` is its one caller. The village now stands in month 36 (main 34).
+- **Seen on the way, for a look as model behaviour:** MonetaryCheck's largest delay move is 0.087 against an allowance of
+  0.100 (main's 0.049): BA1's lumpier building may make a town noisier. Not isolated.
+- **OR1 stays queued.** DeathRecordCheck passes on the merged tree, but its cause (below) is real.
+- **The full suite on b4bf96f4** (the staffing fix, 01:23-02:02, alone): 163 of 171 passed, 8 red. The young towns build
+  their depots first again, which moved four fixtures once more. Two Sonnet slices are on them:
+  - FloatLinkCheck, with DeskCheck, which reads its town: the bank's room is not there within ROOM_WAIT_MONTHS. The
+    effective-rate lines, 5.2 bp against 5, are to be judged once the fixture holds.
+  - CurrencyRegimeCheck 3: the credibility search finds no twin.
+  - SaveFileCheck: "something is genuinely mid-build".
+  - ScaleCheck 6: the grown city's rents price migrants out.
+- **The rest pass by name, all known classes:**
+  - LongPlaytest's one finding, "industry stands farther out than the homes" at m2400: Jerus's word, 2026-11-04.
+  - MapCheck 2d's "a yard that goes moves none of the buildings" (54 moved): DM2's class.
+  - PriceLevelCheck 8's drifts (months 101 to 105, 1e-9 to 2e-7: "at today's prices", "every real series equal
+    within", "is the same to the person"): the class the orchestrator names R0's farm retirement at 1900 prices (RT1).
+    The bond search's stop (BS1, above) is a second source of the same size.
+  - SlopeCheck and DeathRecordCheck pass on this tree.
+- The ensemble on b4bf96f4 (run BA1e): 22/26 against 0.9.12's 24/26. Section 4 has the comparison.
+- **The four mended** (Sonnet slices, reviewed):
+  - FloatLinkCheck, and DeskCheck through it: the town holds every sector, so its households' spare makes a sale big
+    enough for the fee (318 against main's 6,177 when free). The 5 bp bound stands, named `EFFECTIVE_OFF_COUPON`.
+    DeskCheck's dial and its five-point rise are searched to their conditions.
+  - SaveFileCheck: its twenty depots' order is funded (NEEDS_FUNDING before) and asserted.
+  - CurrencyRegimeCheck 3 pegs once smoothed inflation is back within tolerance of the target; the dent holds with its
+    fixture holding. 9 takes the first depot count in `SURPLUS_DEPOTS` whose first month at the peg is a surplus (18).
+  - ScaleCheck 6: `FREE_FIXTURE_MONTHS` 488 (717), with R0's levers shut, where every line holds. With them open no
+    month from 20 to 2,400 holds every line. The best, 166-167, misses one line: the copy's bank closes 970 of its 1,000
+    branches in month 1 where the city's one branch cannot close, 8% of a small treasury. A scale finding, for whoever
+    takes the scaler.
+- **Found on the way, for Jerus (not BA1's to settle):**
+  - **A young town's bank under build-ahead:** in FloatLinkCheck's free town the firms borrowed 8,100 to 10,600 on the
+    bank's equity of 1,246, and the bank's equity went from 1,246 at month 61 to -500 at 63 and -3,200 at 75, its room
+    for city paper nothing to month 183. Uncapped orders let a young town's firms out-borrow its bank.
+  - **The same code gave another city twice under load** (month 125 instead of 61, 1,067 people instead of 909), and
+    the same in five other repeats. A model that is not deterministic under load would make every twin and fixture a
+    draw. Not traced.
+- **The full suite on dff58326** (03:11-03:48, alone): 168 of 171 passed. The three reds are all known classes passing
+  by name: PriceLevelCheck 8's drift (months 101 to 105, the farms' food series and Manufacturing's cash: RT1's class,
+  BS1 beside it), MapCheck 2d's "a yard that goes moves none of the buildings" (54 moved, DM2's class), and
+  LongPlaytest's one finding, "industry stands farther out than the homes" at m2400 (Jerus's word).
+- **Main's R0b (0.9.13, the causes of death) merged in afterwards**, with two conflicts combined:
+  - CurrencyRegimeCheck: `doubtTown()` and `pegTown()` take both `climbing` (BA1's section 3) and `causesHeldOff`
+    (R0b's savedMidPeg()).
+  - ScaleCheck 6: R0b's causes held off, with BA1's levers shut at month 488; `emptySites()` holds them off too, as
+    every copy loaded from the save does.
+  - Both green alone. R0b changes main's model, not BA1's, so BA1e stands as the batch's ensemble.
+- **The full suite on the merged tree** (12190401, 03:52-04:28, alone): 163 of 172 passed, 9 red. R0b's causes of
+  death moved the paths once more.
+  - Known classes passing by name:
+    - PriceLevelCheck 8's drift (worst 5.8e-9).
+    - MapCheck's moved boxes (2d's yard laid across a district: 81 of 500; 2h's reserve: 11 and 21; DM2's class).
+    - LongPlaytest's one finding, "a building on the map moved", twice at months 2390-2393 (DM1's class, as LD2-D and
+      SlopeCheck's under Jerus's word).
+  - DenominationCheck: a city and its reformed twin part by 1e-9 to 6e-8 in eight lines, likely the same rounding
+    draw as PriceLevelCheck's. A slice traces it.
+  - Fixtures, with two Sonnet slices to 06:00: CallCheck, RailCheck, RefineryCheck, HealthCheck and OrderSearchCheck.
+- **The five mended** (Sonnet slices, reviewed):
+  - CallCheck and RailCheck open the levers, and RailCheck, RefineryCheck 14 and HealthCheck's twins hold 1900's causes
+    of death off (the reloaded city too).
+  - CallCheck asserts both sales clear within a coupon step of fair.
+  - OrderSearchCheck 6 hands its long-run city ground (`ROOM_GIVEN_PLOTS`): BA1's builders had left it 67 sq ft free at
+    month 1320.
+- **DenominationCheck, traced; outside BA1's diff, to pass by name** ("the same output", "...and the same year of it",
+  "the same rent", "the same price level", "the same currency", "the same treasury", "the same shops' till", "the same
+  bank", 1e-9 to 6e-8 apart). A price tie in the bond order book:
+  - Construction, Luxury Retail and Restaurants hold none of bond 3 and bid for it at a price that is mathematically the
+    same. `after` in `BondMarket.postCompanies` reduces to OUT_SPEED x share / APPETITE (0.0009) whatever a firm's
+    wealth.
+  - The computed value differs by 1e-19 between firms, so price priority takes Restaurants first in the plain city and
+    arrival order in the reformed one. 28 trades go to other firms from month 133.
+  - Not a missed constant: reforms by 10, 100, 1000 and 100.0000000001 all part from the plain city alike, and a reform
+    by 100 and one by 100(1+1e-12) never part.
+  - Rounding bid prices to 1e-12 in `submit()`, in a scratch copy, holds the twins within 1.4e-13 for 120 months.
+    BondMarket, OrderBook and OutwardInvestment are main's as they are. OB1 is queued: a price tick on bond bids.
+- **Main's R0c (0.9.14) merged in** (d29d1cbc), only the generated docs in conflict.
+- **The full suite on it** (04:53-05:30, alone, every harness, on the world files): **169 of 173 passed.** The four reds
+  are the known classes, passed by name at the gate:
+  - DenominationCheck's reformed twin ("...and the same year of it", 3.5e-9 apart: OB1).
+  - PriceLevelCheck 8's drift (worst 5.8e-9: RT1, BS1).
+  - MapCheck's moved boxes (2d's yard laid across a district, 2h's reserve months: DM2).
+  - LongPlaytest's one finding, "a building on the map moved", twice at months 2390-2393 (DM1's class, LD2-D's and
+    Jerus's word).
+- **The ship file is pushed** (05:35), last.
+
+**WHERE IT STOOD (2026-11-04, 22:45): the gate stopped at 22:00; the ship file is off.**
+- **The gate's five NEW reds** (lines `--pick` did not run; Jerus's two named lines passed). Each was switched for the
+  three rounding edges and the brake:
+  - **HouseholdMemoryCheck 7, mended (fixture):** "the month after, both cities hold the same households", 4.03
+    against 0. Its city is founded by `addStack()`, which allocates no land, and a load derives the allocation from
+    the buildings. So the loaded twin had 6,290,000 sq ft (the fixture's buildings, exactly) less free ground: 525,192
+    free live, none loaded. On BA1's path the city is short of ground by month 36, and the twins' planners parted on it
+    ("no land - 0 m2 free" in the loaded one only). The fixture now hands the city that ground and allocates it.
+  - **DeathRecordCheck, the cause traced; outside BA1's diff, to pass by name** under Jerus's standing word, with OR1
+    queued. The line is "the orphan section does not fill behind it, in any month of the two years": 52.35 against
+    the mill-open twin's 41.41, with an allowance of 1.
+    - The cause is not the closing itself. On BA1's path build-ahead's plants open within the two years: jobs rise
+      by 372 at month 1 and 464 at month 4, in both twins. Each time, the adults at home are hired and their
+      households re-form, and the family builder's throttle leaves about one child in seven out (FamilyModel, "AND
+      THE CHILDREN THE BUILDER LEAVES OUT"; Jerus: "they're the orphans").
+    - The outside dependants fall from 434 to 256 and from 246 to 24, and the orphans jump by 27 and 26 (the twin's
+      by 27 and 19), then decay about 1.5 a month.
+    - The closing's twin had more adults at home to re-form, so more orphans. The 2026-09-15 fix keeps children with
+      an adult who leaves work; an adult hired back is the case it does not cover.
+  - **CurrencyRegimeCheck (3, 5, 9, 10, 12, 13), PassThroughCheck 4, CapitalFlowCheck: mended (fixtures, Sonnet
+    slice, reviewed).**
+    - CurrencyRegimeCheck: one cause for all six. The peg towns now have 12 depots standing (9 to 15 work, 6 and 30 do
+      not) and a vault deepened by 2 x `COMFORTABLE_COVER` months of imports, bought by the treasury and forgotten by
+      the rate. Section 3's credibility search runs on a town played past its young dip.
+    - Section 9's identity (the vault's record, -117.69 against 0) holds once its fixture does. It was the fixture.
+    - PassThroughCheck 4: the base month's search now also needs the vault to hold no more than it bought (US$22.71k
+      held for US$22.52k bought at month 241). The swing's own assertion stands.
+    - CapitalFlowCheck: the 400 houses before it made the power plant dearer than the cash left (NEEDS_FUNDING, so no
+      power, and a carry worth $60 in fifteen years). Each order is now funded to its quote and asserted taken, and the
+      builders are 30 depots, not 4.
+  - **Seen on the way, for a look as model behaviour** (not isolated): in CurrencyRegimeCheck's town the sectors hold
+    their cash and send it abroad (D$355k in the first month at the peg against 0.15k on main), which is what waiting
+    for cheaper contracts does with a business's money. The same young town deflates in its first years (the index
+    -4% at month 39, -8% at 45). The ensemble's A3 holds (deflation spells 5 [0 to 10] months).
+- Next: the full suite on the world files (`./batch-check.sh`, every harness; started 23:00), then the ship file. Its
+  changelog names the three lines passed by name.
+
+**WHERE IT STOOD (2026-11-04, 21:20): ready, the ship file pushed.**
 1. On main at 52b19f18 (CM1 0.9.11 merged in). The brake is dear contracts (section 1, ★), with three rounding edges
    closed since the morning (item 3). The model is final.
 2. **The ensemble on the final model** (`docs/ensemble/BA1.md`, run BA1d on ab5f3f41): **24/26 against 0.9.6's 22/26**.
@@ -187,7 +343,19 @@ A bust is people 15%+ under a running peak from m120, and a new one only after a
 gives 25 for BA1 without it). Once is taken. Squared shortened the queue but busted more, and with 16 seeds the two
 are within each other's noise.
 
-### The run on the final model: `docs/ensemble/BA1.md` (2026-11-04 evening)
+### The run on the final model: `docs/ensemble/BA1.md` (2026-11-05, 02:08)
+
+Run `BA1e` on b4bf96f4: the brake, the rounding edges, the builders-first fix, and main at 0.9.12 (R0's 1900 dates)
+merged in. 80 of 80 runs in 26.3 minutes, two at a time, against `docs/ensemble/0.9.12.md` (24/26). **22/26.**
+
+- Better than 0.9.12: A2's longest spell of yoy over 10% is 14 [12 to 35] months against 27 [12 to 36] (still a FAIL,
+  as on 0.9.12). A1 is 2.14% with 16/16 in band (2.54% on 0.9.12). T1 reaches 40,000 people at m878 against m1,038, and
+  T2 ends at 572,286 against 323,765.
+- Worse than 0.9.12, two near-misses: A3, one seed's deflation spell of 13 months against a bar of 12 (median 5), and
+  R3, four HIGH seeds more than a point above (as on 0.9.6). S1 fails as on 0.9.12.
+- AUTO2: busts 12 in 11 seeds, the fewest of BA1's runs. People at m240 / m600 / m1200 are 3,646 / 14,107 / 88,778.
+
+### The evening's run on ab5f3f41, before R0 and the staffing fix (replaced)
 
 Run `BA1d` on ab5f3f41: the brake, the three rounding edges, main at 0.9.11 merged in, the world files named. 80 of 80
 runs in 26.5 minutes, two at a time, against `docs/ensemble/0.9.6.md`. **24/26, against the baseline's 22/26.**

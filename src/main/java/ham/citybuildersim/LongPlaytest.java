@@ -6429,6 +6429,17 @@ public class LongPlaytest {
                     illTotal, allDeaths, allDeaths > 0 ? illTotal / allDeaths * 100 : 0,
                     illnessDeathsByBand[0], illnessDeathsByBand[1], illnessDeathsByBand[2],
                     illnessDeathsByBand[3], illnessDeathsByBand[4]);
+            // R0b: how often the causes of 1900 fired over the run, each cause's dead from the causes' own book
+            double causesTotal = 0;
+            StringBuilder causeLine = new StringBuilder();
+            for (CausesOfDeath.Cause cause : CausesOfDeath.Cause.values()) {
+                double dead = g.getCausesOfDeath().getTotalDeaths(cause);
+                causesTotal += dead;
+                causeLine.append(causeLine.length() == 0 ? "" : ", ").append(cause.label())
+                        .append(String.format(" %,.0f", dead));
+            }
+            out.printf("  died of the causes of 1900 over the run: %s (%.1f%% of deaths)%n",
+                    causeLine, allDeaths > 0 ? causesTotal / allDeaths * 100 : 0);
             out.printf("  everyone who died over the run: babies %,.0f  children %,.0f  teens %,.0f  adults %,.0f"
                     + "  seniors %,.0f  - of whom orphans %,.0f and with no home %,.0f%n",
                     deathsByBandRun[0], deathsByBandRun[1], deathsByBandRun[2], deathsByBandRun[3],

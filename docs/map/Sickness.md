@@ -1,6 +1,6 @@
 # Sickness.java - 357 lines · 24 methods · 6 constants · model
 
-`ham/citybuildersim/Sickness.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Sickness.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
 > Who has been sick, and for how long - and the ones it kills.
 > 
@@ -35,7 +35,7 @@
 
 **Uses:** [AgeBand](AgeBand.md) (29), [PopulationCohorts](PopulationCohorts.md) (4), [Health](Health.md) (1)
 
-**Used by (11):** [BuildScreen](BuildScreen.md), [Game](Game.md), [HistorySave](HistorySave.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [PeopleScreen](PeopleScreen.md), [PopulationCheck](PopulationCheck.md), [ReadPathCheck](ReadPathCheck.md), [ScaleCheck](ScaleCheck.md), [ServicesScreen](ServicesScreen.md), [SicknessCheck](SicknessCheck.md)
+**Used by (13):** [BuildScreen](BuildScreen.md), [CausesOfDeath](CausesOfDeath.md), [CausesOfDeathCheck](CausesOfDeathCheck.md), [Game](Game.md), [HistorySave](HistorySave.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [PeopleScreen](PeopleScreen.md), [PopulationCheck](PopulationCheck.md), [ReadPathCheck](ReadPathCheck.md), [ScaleCheck](ScaleCheck.md), [ServicesScreen](ServicesScreen.md), [SicknessCheck](SicknessCheck.md)
 
 ## Sections
 

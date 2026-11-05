@@ -1,6 +1,6 @@
-# IndustryPicture.java - 1,615 lines · 85 methods · 35 constants · model
+# IndustryPicture.java - 1,617 lines · 85 methods · 35 constants · model
 
-`ham/citybuildersim/IndustryPicture.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/IndustryPicture.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
 > Each materials industry's month drawn as a picture, laid out to scale
 > (0.7.143, batch I12; docs/studies/spec-materials.md 2.13, the study's
@@ -47,7 +47,7 @@
 > Pure: it reads a View (and picture() the Game, for the parties' names) and
 > builds nothing in the city.
 
-**Uses:** [IndustryView](IndustryView.md) (89), [Good](Good.md) (82), [RefineryView](RefineryView.md) (59), [Sectors](Sectors.md) (14), [Resource](Resource.md) (13), [CoalMining](CoalMining.md) (12), [Deposit](Deposit.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (6), [Trade](Trade.md) (6), [HeavyIndustry](HeavyIndustry.md) (5), [Game](Game.md) (5), [Forestry](Forestry.md) (3), [Quarrying](Quarrying.md) (1), [SpreadPlanner](SpreadPlanner.md) (1)
+**Uses:** [IndustryView](IndustryView.md) (89), [Good](Good.md) (82), [RefineryView](RefineryView.md) (59), [Sectors](Sectors.md) (14), [Resource](Resource.md) (13), [CoalMining](CoalMining.md) (12), [Deposit](Deposit.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (6), [Trade](Trade.md) (6), [Game](Game.md) (5), [HeavyIndustry](HeavyIndustry.md) (4), [Forestry](Forestry.md) (3), [Quarrying](Quarrying.md) (1), [SpreadPlanner](SpreadPlanner.md) (1)
 
 **Used by (2):** [IndustryViewCheck](IndustryViewCheck.md), [SectorScreen](SectorScreen.md)
 
@@ -74,7 +74,7 @@
 | 1105 | · the colours |
 | 1141 | · the roofs (the spec's 2.13, the mockups' roof()) |
 | 1203 | THE WORDS |
-| 1504 | THE STRIP: THE FIELDS AND THE PRODUCTS, A CELL EACH (O11's strip) |
+| 1506 | THE STRIP: THE FIELDS AND THE PRODUCTS, A CELL EACH (O11's strip) |
 
 ## Enum constants
 
@@ -130,9 +130,9 @@
 | 550 | `IndustryPicture.LEAST_NODE` | `1.5, ON_SITE_NODE = 6` | The least a node is drawn, so a trickle shows; and a kind only on site, drawn dashed with nothing through it. |
 | 553 | `IndustryPicture.ICON_ROOM` | `22` | The least a box is drawn with an icon in it (the mockups' 22). |
 | 556 | `IndustryPicture.RIBBON` | `.5, HATCHED =.95` | The opacity of a ribbon, and of an imported one, hatched (the mockups' .5 and .95). |
-| 1509 | `IndustryPicture.STRIP_MOST` | `6` | The most cells the strip holds: six at about 200 px each at 1,389 x 868. |
-| 1512 | `IndustryPicture.STRIP_HEAD` | `"THIS MONTH, CELL BY CELL"` | The strip's heading. |
-| 1524 | `IndustryPicture.STRIP_WORDS` | `"a field's bar what is left of it · a product's: used here, shipped(pale), in...` | The strip's line: what its bars show. |
+| 1511 | `IndustryPicture.STRIP_MOST` | `6` | The most cells the strip holds: six at about 200 px each at 1,389 x 868. |
+| 1514 | `IndustryPicture.STRIP_HEAD` | `"THIS MONTH, CELL BY CELL"` | The strip's heading. |
+| 1526 | `IndustryPicture.STRIP_WORDS` | `"a field's bar what is left of it · a product's: used here, shipped(pale), in...` | The strip's line: what its bars show. |
 
 ## Fields (state)
 
@@ -146,7 +146,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 78 | 1538 | **type** `public final class IndustryPicture` | Each materials industry's month drawn as a picture, laid out to scale (0.7.143, batch I12; docs/studies/spec-materials.md 2.13, the study's mockups 1 to 5): the fields as vessels filled to what remains, or the feeds b... |
+| 78 | 1540 | **type** `public final class IndustryPicture` | Each materials industry's month drawn as a picture, laid out to scale (0.7.143, batch I12; docs/studies/spec-materials.md 2.13, the study's mockups 1 to 5): the fields as vessels filled to what remains, or the feeds b... |
 | 80 | 1 | `private IndustryPicture()` |  |
 
 ### THE FLOW, TRACED (lines 82-412)
@@ -230,7 +230,7 @@
 | 1188 | 8 | `static String path(Object...parts)` | An outline's path: commands and coordinates, two decimals (RefineryView's). |
 | 1198 | 4 | `static String circle(double cx, double cy, double r)` | A circle as four quadratic curves. |
 
-### THE WORDS (lines 1203-1503)
+### THE WORDS (lines 1203-1505)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -245,34 +245,34 @@
 | 1282 | 6 | `static String vesselLine(View v, Vessel f)` | A vessel's line under its name: its sites worked, or the forest the crews may cut. |
 | 1290 | 4 | `static String vesselFigure(Vessel f)` | ...and its figure: what remains of it and the share. |
 | 1296 | 6 | `static String sourceName(View v, String key)` | A source's name: the good, or the city's old steel. |
-| 1304 | 12 | `static String sourceLine(Game game, View v, String key)` | ...its line: who sold it - the first seller here and how many more ("Coal Mining +1") - imported, the city's old metal, the forest cleared for building. |
-| 1318 | 12 | `static String sourceTip(Game game, View v, String key)` | Under the pointer, a source: its name, every seller here with what each sold, or where it came from, and its figure. |
-| 1332 | 12 | `static String sourceFigure(View v, String key)` | ...and its figure, in its good's own unit. |
-| 1345 | 6 | `static Icon sourceIcon(String key)` |  |
-| 1353 | 6 | `static String sellerKey(View v, String key)` | The first seller of a source bought here, for its icon; null for any other. |
-| 1361 | 4 | `public static String unitName(Unit u)` | A kind's name over its box: "Coke Ovens ×2"; a kind only on site its name alone. |
-| 1367 | 9 | `public static String runLine(Unit u)` | ...its run: "runs 87%", "idle", "worked out", "grows 500 m³ a month", "2 on site" - and those on site beside it, "+1 on site". |
-| 1378 | 5 | `public static String gateLine(Unit u)` | ...and one more in a word: "one more pays 1.20% a month", or the first gate it fails - "one more: the money"; "" for a kind the plan does not weigh. |
-| 1385 | 3 | `static String lorriesLine(View v)` | The lorries' line: the diesel they burned. |
-| 1390 | 3 | `static boolean idle(Unit u)` | Whether a kind standing ran at nothing. |
-| 1395 | 8 | `public static String unitTip(Unit u)` | Under the pointer, a kind: its line, what the last one earns, and one more in the plan's words. |
-| 1405 | 11 | `public static String bandName(Good g)` | A band's name in the tank: the good's, short where the label would not fit. |
-| 1418 | 13 | `static String productTip(View v, Product p)` | Under the pointer, a product's band: made, kept, sold here, shipped, into or out of its warehouse. |
-| 1433 | 10 | `static String takerName(Game game, View v, String who)` | A taker's name: a sector's label, "Households", "The city", "Abroad", "Into the warehouse", "Lost". |
-| 1444 | 10 | `static Icon takerIcon(String who)` |  |
-| 1456 | 13 | `static Map<Good, Double> took(List<Flow> flows, String key)` | What a taker took, by good, in the goods' own units, largest drawn first. |
-| 1471 | 10 | `static String takerFigure(View v, List<Flow> flows, String key)` | A taker's figure: its one good in its own unit, or all it took in the picture's. |
-| 1483 | 8 | `static String takerLine(View v, List<Flow> flows, String key)` | ...its line: what it took, largest first, at most three - "pig iron, scrap"; the warehouse's and the lost's what they are. |
-| 1493 | 10 | `static String takerTip(Game game, View v, List<Flow> flows, String key)` | Under the pointer, a taker: each good it took. |
+| 1304 | 14 | `static String sourceLine(Game game, View v, String key)` | ...its line: who sold it - the first seller here and how many more ("Coal Mining +1") - imported, the city's old metal, the forest cleared for building. |
+| 1320 | 12 | `static String sourceTip(Game game, View v, String key)` | Under the pointer, a source: its name, every seller here with what each sold, or where it came from, and its figure. |
+| 1334 | 12 | `static String sourceFigure(View v, String key)` | ...and its figure, in its good's own unit. |
+| 1347 | 6 | `static Icon sourceIcon(String key)` |  |
+| 1355 | 6 | `static String sellerKey(View v, String key)` | The first seller of a source bought here, for its icon; null for any other. |
+| 1363 | 4 | `public static String unitName(Unit u)` | A kind's name over its box: "Coke Ovens ×2"; a kind only on site its name alone. |
+| 1369 | 9 | `public static String runLine(Unit u)` | ...its run: "runs 87%", "idle", "worked out", "grows 500 m³ a month", "2 on site" - and those on site beside it, "+1 on site". |
+| 1380 | 5 | `public static String gateLine(Unit u)` | ...and one more in a word: "one more pays 1.20% a month", or the first gate it fails - "one more: the money"; "" for a kind the plan does not weigh. |
+| 1387 | 3 | `static String lorriesLine(View v)` | The lorries' line: the diesel they burned. |
+| 1392 | 3 | `static boolean idle(Unit u)` | Whether a kind standing ran at nothing. |
+| 1397 | 8 | `public static String unitTip(Unit u)` | Under the pointer, a kind: its line, what the last one earns, and one more in the plan's words. |
+| 1407 | 11 | `public static String bandName(Good g)` | A band's name in the tank: the good's, short where the label would not fit. |
+| 1420 | 13 | `static String productTip(View v, Product p)` | Under the pointer, a product's band: made, kept, sold here, shipped, into or out of its warehouse. |
+| 1435 | 10 | `static String takerName(Game game, View v, String who)` | A taker's name: a sector's label, "Households", "The city", "Abroad", "Into the warehouse", "Lost". |
+| 1446 | 10 | `static Icon takerIcon(String who)` |  |
+| 1458 | 13 | `static Map<Good, Double> took(List<Flow> flows, String key)` | What a taker took, by good, in the goods' own units, largest drawn first. |
+| 1473 | 10 | `static String takerFigure(View v, List<Flow> flows, String key)` | A taker's figure: its one good in its own unit, or all it took in the picture's. |
+| 1485 | 8 | `static String takerLine(View v, List<Flow> flows, String key)` | ...its line: what it took, largest first, at most three - "pig iron, scrap"; the warehouse's and the lost's what they are. |
+| 1495 | 10 | `static String takerTip(Game game, View v, List<Flow> flows, String key)` | Under the pointer, a taker: each good it took. |
 
-### THE STRIP: THE FIELDS AND THE PRODUCTS, A CELL EACH (O11's strip) (lines 1504-1615)
+### THE STRIP: THE FIELDS AND THE PRODUCTS, A CELL EACH (O11's strip) (lines 1506-1617)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1515 | 1 | **type** `public record Segment(double share, String colour, double opacity, boolean hatched)` | A part of a cell's bar: its share, its colour, and whether it is pale or hatched. |
-| 1518 | 1 | **type** `public record Row(String label, String figure, boolean hot)` | A line of a cell: its words, its figure, and whether the figure is a warning's colour. |
-| 1521 | 1 | **type** `public record Cell(String name, String colour, List<Segment> bar, List<Row> rows)` | One cell under the picture: a field, the forest, a product, the old metal, the power. |
-| 1527 | 74 | `public static List<Cell> strip(View v)` | The strip's cells (pure): the fields or the forest first, then the products by tonnes, then the old metal and the power - at most STRIP_MOST. |
-| 1603 | 4 | `public static String fieldName(Vessel f)` | A field type's cell's name: "Hematite fields", "Coking fields"; the forest "Forest" - apart from a product's cell of the same good ("Limestone"). |
-| 1609 | 6 | `public static String lastsWords(double remaining, double dugAMonth)` | How long a field lasts at this month's dig: "38 years", "11 months", "—" with nothing dug. |
+| 1517 | 1 | **type** `public record Segment(double share, String colour, double opacity, boolean hatched)` | A part of a cell's bar: its share, its colour, and whether it is pale or hatched. |
+| 1520 | 1 | **type** `public record Row(String label, String figure, boolean hot)` | A line of a cell: its words, its figure, and whether the figure is a warning's colour. |
+| 1523 | 1 | **type** `public record Cell(String name, String colour, List<Segment> bar, List<Row> rows)` | One cell under the picture: a field, the forest, a product, the old metal, the power. |
+| 1529 | 74 | `public static List<Cell> strip(View v)` | The strip's cells (pure): the fields or the forest first, then the products by tonnes, then the old metal and the power - at most STRIP_MOST. |
+| 1605 | 4 | `public static String fieldName(Vessel f)` | A field type's cell's name: "Hematite fields", "Coking fields"; the forest "Forest" - apart from a product's cell of the same good ("Limestone"). |
+| 1611 | 6 | `public static String lastsWords(double remaining, double dugAMonth)` | How long a field lasts at this month's dig: "38 years", "11 months", "—" with nothing dug. |
 

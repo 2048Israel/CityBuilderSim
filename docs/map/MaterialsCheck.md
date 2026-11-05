@@ -1,6 +1,6 @@
 # MaterialsCheck.java - 1,541 lines · 31 methods · 27 constants · harnesses
 
-`ham/citybuildersim/MaterialsCheck.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MaterialsCheck.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
 > The materials chains, checked: the shared machinery every chain stands on
 > (0.7.112, batch I2; docs/studies/spec-materials.md 2.1, 2.5-2.8 and 4), and
@@ -66,7 +66,7 @@
 
 **Uses:** [Good](Good.md) (210), [SpreadPlanner](SpreadPlanner.md) (95), [BuildingsTemplate](BuildingsTemplate.md) (46), [OldMetal](OldMetal.md) (45), [Game](Game.md) (40), [HeavyIndustry](HeavyIndustry.md) (32), [Sector](Sector.md) (31), [Sectors](Sectors.md) (30), [ProcessingSector](ProcessingSector.md) (27), [BuildingManager](BuildingManager.md) (27), [Mining](Mining.md) (22), [Resource](Resource.md) (20), [GameFiles](GameFiles.md) (19), [BusinessInvestment](BusinessInvestment.md) (14), [Deposit](Deposit.md) (12), [Trade](Trade.md) (11), [GameVersion](GameVersion.md) (11), [Markets](Markets.md) (8), [GoodsMarket](GoodsMarket.md) (8), [UtilitiesHandler](UtilitiesHandler.md) (8), [PriceLevel](PriceLevel.md) (8), [JobType](JobType.md) (8), [MoneyAudit](MoneyAudit.md) (7), [BuildingType](BuildingType.md) (7), [PriceLevelCheck](PriceLevelCheck.md) (7), [LandManager](LandManager.md) (5), [Statement](Statement.md) (4), [PayTier](PayTier.md) (4), [LandCheck](LandCheck.md) (4), [Traffic](Traffic.md) (3)... and 8 more
 
-**Used by (10):** [BuildCardCheck](BuildCardCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [ForestryCheck](ForestryCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [QuarryingCheck](QuarryingCheck.md), [WoodProductsCheck](WoodProductsCheck.md), [ZoningCheck](ZoningCheck.md)
+**Used by (11):** [BuildCardCheck](BuildCardCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [ForestryCheck](ForestryCheck.md), [Forms1900Check](Forms1900Check.md), [IndustryViewCheck](IndustryViewCheck.md), [QuarryingCheck](QuarryingCheck.md), [WoodProductsCheck](WoodProductsCheck.md), [ZoningCheck](ZoningCheck.md)
 
 ## Sections
 

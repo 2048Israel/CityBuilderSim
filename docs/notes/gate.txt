@@ -1,12 +1,57 @@
-# gate of Merge batch/CM1: the replay's camera loads its whole move first (Jerus, 2026-11-02, for the trailer: no half-black screen on a zoom out; "Top, after tonight"): in replay mode only, every scale, tile and month a zoom, glide or fly will show is loaded with no time cap behind a "Loading the move... N s" line, then it runs on a click; the normal game untouched, 0.9.11
-# date: 2026-11-04
+# gate of Merge batch/R0c: research: the 1900 mechanics - horses on farms and road freight, lamp oil and heat as goods, steam recipes, 0.9.14
+# date: 2026-11-05
 # earth-2.bin: named
-# nightly: 2026-11-03 01:35 0.9.5 31f675b6 4,000 months: RED, exit 1 in 88 s: a building on the map moved 4 time(s), months 3010-3013
-# suite: 170 harnesses run in 7415s: 170 passed, 0 failed
-# timing: 16 harnesses run in 574s: 14 passed, 2 failed; its red lines were judged side by side with main's, below
-# timing red not the batch's (paired): EarthTerrainCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): EarthTerrainCheck | the cells pass in no more than CELLS_PASS_MS of the wall clock, its tiles read from the file the first time FAIL  1006 ms of the wall clock (this JVM cannot read a thread's CPU finely enough) the first time (1006 on the wall clock), 985 again (985 on the wall clock); the study 370-450 on the wall clock   [main 675 ms, batch 891 ms (+32.0%), budget 1000 ms: the batch within the budget]
-# timing red not the batch's (paired): EarthTerrainCheck | 1 FAILED   [the harness's own count of the timing reds above]
+# nightly: 2026-11-05 01:27 0.9.12 b52be80a 4,000 months: OK in 96 s
+# suite: 173 harnesses run in 2209s: 170 passed, 3 failed
+# timing: 16 harnesses run in 566s: 14 passed, 2 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 31.4 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 57.2 ms, batch 39.9 ms (-30.2%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 32.9 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 34.4 ms, batch 41.0 ms (+19.1%), budget 25 ms: main over the budget too]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 27.0 ms, batch 27.0 ms (+0.0%), budget 19 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | 8 FAILED   [the harness's own count of the timing reds above]
+ShortSellingCheck | exit 1
+ShortSellingCheck | every company's holdings were the shares in issue plus what the world was short, every month: worst drift 1.15e-06 of the shares in issue (Real Estate m83) FAIL
+ShortSellingCheck | ...and that city passed the audit and kept its register whole too                                FAIL
+ShortSellingCheck | 2 FAILED
+PriceLevelCheck | exit 1
+PriceLevelCheck | FAIL cash (nominal) month 99: -1350.159848 at the factor over the factor, -48081.64774 at today's prices (0.585 apart)
+PriceLevelCheck | FAIL gdp.month (nominal) month 98: 22186.68564 at the factor over the factor, 15994.22176 at today's prices (0.207 apart)
+PriceLevelCheck | FAIL bank.deposits (nominal) month 74: 440941.1630 at the factor over the factor, 346604.5515 at today's prices (0.214 apart)
+PriceLevelCheck | FAIL retail.shelf (nominal) month 94: 0.4921301898 at the factor over the factor, 0.5103913551 at today's prices (0.0323 apart)
+PriceLevelCheck | FAIL rent (nominal) month 105: 0.6874589554 at the factor over the factor, 0.7578195026 at today's prices (0.0928 apart)
+PriceLevelCheck | FAIL rate (real) month 75: 1.213482743 at the factor , 1.412432496 at today's prices (0.141 apart)
+PriceLevelCheck | FAIL priceIndex (real) month 102: 2.393586963 at the factor , 2.507847425 at today's prices (0.0456 apart)
+PriceLevelCheck | FAIL pop (real) month 96: 2816.000000 at the factor , 2932.000000 at today's prices (0.0396 apart)
+PriceLevelCheck | FAIL workforce (real) month 97: 1552.000000 at the factor , 1616.000000 at today's prices (0.0396 apart)
+PriceLevelCheck | FAIL unemployed (real) month 72: 0.000000000 at the factor , 1.000000000 at today's prices (1.00 apart)
+PriceLevelCheck | FAIL homes (real) month 102: 693.0000000 at the factor , 799.0000000 at today's prices (0.133 apart)
+PriceLevelCheck | FAIL stores (real) month 82: 5760.000000 at the factor , 7680.000000 at today's prices (0.250 apart)
+PriceLevelCheck | FAIL jobs.0 (real) month 74: 664.0000000 at the factor , 800.0000000 at today's prices (0.170 apart)
+PriceLevelCheck | FAIL jobs.1 (real) month 74: 328.0000000 at the factor , 386.0000000 at today's prices (0.150 apart)
+PriceLevelCheck | FAIL jobs.2 (real) month 85: 35.00000000 at the factor , 30.00000000 at today's prices (0.143 apart)
+PriceLevelCheck | FAIL jobs.4 (real) month 90: 8.000000000 at the factor , 11.00000000 at today's prices (0.273 apart)
+PriceLevelCheck | FAIL jobs.5 (real) month 85: 14.00000000 at the factor , 12.00000000 at today's prices (0.143 apart)
+PriceLevelCheck | FAIL jobs.8 (real) month 90: 0.000000000 at the factor , 1.000000000 at today's prices (1.00 apart)
+PriceLevelCheck | FAIL mkt.CROPS.supply (real) month 105: 1071.068628 at the factor , 718.5066976 at today's prices (0.329 apart)
+PriceLevelCheck | FAIL mkt.CROPS.local (nominal) month 83: 0.7932415299 at the factor over the factor, 0.8253617807 at today's prices (0.0389 apart)
+PriceLevelCheck | FAIL mkt.CROPS.import (nominal) month 83: 1.009136792 at the factor over the factor, 1.049999159 at today's prices (0.0389 apart)
+PriceLevelCheck | FAIL mkt.CROPS.export (nominal) month 83: 0.7932415299 at the factor over the factor, 0.8253617807 at today's prices (0.0389 apart)
+PriceLevelCheck | FAIL stock.CROPS (real) month 105: 6054.052199 at the factor , 4123.641276 at today's prices (0.319 apart)
+PriceLevelCheck | FAIL mkt.GRAINS.demand (real) month 75: 1897.531722 at the factor , 2663.355050 at today's prices (0.288 apart)
+PriceLevelCheck | every real series equal within 1.0E-9 (worst 1.7 in h.bankReturnOnEquity)              FAIL
+PriceLevelCheck | the history's 88 money series equal over the factor to the rounding they were recorded at FAIL
+PriceLevelCheck | every live nominal series equal over the factor within 1.0E-9 (worst 1.0 in sector.Heavy Industry.cash) FAIL
+PriceLevelCheck | ...the pop is the same to the person in every month                                    FAIL
+PriceLevelCheck | ...the workforce is the same to the person in every month                              FAIL
+PriceLevelCheck | ...the homes is the same to the person in every month                                  FAIL
+PriceLevelCheck | ...the stores is the same to the person in every month                                 FAIL
+PriceLevelCheck | 453 FAILED
+MapCheck | exit 1
+MapCheck | a block of the box bought in a month the runs do not change: the fixture - the crossing is a cloverleaf site and its reserve is laid in a month (-1), none the month before (324 plots), the highways among buildings that stand (0 of 478 boxes lie across the reserve or beside the highways) FAIL
+MapCheck | a block of the box bought in a month the runs do not change: the fixture - the month the block is bought the runs change not at all: the highways and the railway of the month before are the month's, the witness told of nothing FAIL
+MapCheck | a block of the box bought in a month the runs do not change: the reserve is journalled in the month it appears - every one of its 0 plots has a record from nothing to the reserve in month -1 (0) FAIL
+MapCheck | a block of the box bought in a month the runs do not change: a reserve that appears in a district already built moves off it the boxes it lies across or beside the highways laid with it and no others: 0 of the plan before's 478 boxes lie across, -1 are not in the plan after FAIL
+MapCheck | ...where the reserve is undated (the journal as it was before UP5: the plots without a record) the plan moves more (-1 against 0), the fault this section stands against FAIL
+MapCheck | ...none of the boxes of the month the reserve came stands on it four months on, the arrivals included (0), and none of those boxes has moved (-1) FAIL
+MapCheck | ...the journal worked back from today's reserve is the fixed ground the plan's input held in the months before and in the month it came (-1 plots differ), and no plot's records were left out (0) FAIL
+MapCheck | 7 FAILED

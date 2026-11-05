@@ -216,6 +216,10 @@ public class ChartCheck {
         assertTrue("a city built, ordered and played two years by the fixture's hand records nothing - "
                 + "ordinary build orders are not decisions", g.getDecisions().size() == 0 && g.getMonth() > 20);
         TaxPolicy tax = g.getEconomyManager().getTaxPolicy();
+        // THE LEVERS OPENED IN THE FIXTURE (R0): this section is about what a decision writes to the log, and the taxes, the pension and the
+        // student grant below are decisions only on a city whose levers are open - on history's dates they are shut until 1916-1939 and
+        // their setters refuse. Opened here, so the decisions are the player's.
+        tax.openAll();
 
         // A tax, a promise, the central bank, the money, the paper, the bank, the fund and the queue.
         decides(g, "every tax at once", DecisionLog.TAX, "Taxes to 17%", () -> tax.setIncomeTaxRate(.17));

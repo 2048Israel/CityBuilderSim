@@ -1463,6 +1463,12 @@ public class CentralBankCheck {
         Game city = new Game(files);
         quietly(() -> {
             city.run();
+            // THE LEVERS OPENED IN THE FIXTURE (BA1, 2026-11-05; R0 dates a 1900 city on Canada's policy): this fixture's premise is a surplus over the last year
+            // to pay a slice with, and the town it was written against taxes from month 1. A 1900 town has no income tax to 1916-17 and no sales tax to 1920: its
+            // treasury ran D$135.7k under over months 61 to 72 (against the slice of D$5.2k), where main's path ran D$250.6k over. Every lever open and the defaults
+            // put back, before a month has run (MonetaryCheck 5).
+            city.getEconomyManager().getTaxPolicy().reset();
+            city.getEconomyManager().getTaxPolicy().openAll();
             city.getForeignAccounts().pinRate(1.0);
             // Six depots stand beside the four ordered (PT1-M4): the works department that built 400 points a month for a
             // city nobody staffed is retired, and the founding yard's 160 points built this city's houses so slowly that it
@@ -1830,6 +1836,7 @@ public class CentralBankCheck {
             final int i = e;
             quietly(() -> {
                 twins[i] = new Game(files);
+                twins[i].holdCausesOfDeathOff();   // R0b call 7: as the probe city; the hold is not saved
                 twins[i].loadGameSave(9);
                 twins[i].getDebtManager().setStrictness(ends[i]);
             });
@@ -1873,6 +1880,7 @@ public class CentralBankCheck {
         Game[] fallen = new Game[1];
         quietly(() -> {
             fallen[0] = new Game(files);
+            fallen[0].holdCausesOfDeathOff();   // R0b call 7: as the probe city; the hold is not saved
             fallen[0].loadGameSave(9);
             fallen[0].getDebtManager().setStrictness(loosest);
         });
@@ -2117,7 +2125,11 @@ public class CentralBankCheck {
      * a batch that moves its path may still re-pick it for those.
      */
     static Game probeCity(GameFiles files) {
-        return shapedCity(files, PROBE_HOUSES, PROBE_MONTHS);
+        // R0b call 7: the probe city's causes of 1900 held off, before a month, as are its twins and the fourth game (loaded from its save:
+        // the hold is not saved). Its premise is a calm path (see above, re-picked six times), sized on today's deaths; on 1900's causes its
+        // very strict twin read -4.28% in the last year where the target is 2%, and "within a full miss of the target, no spiral" failed.
+        // The eleven other shapes of the set keep the deaths of 1900: they are the policy's claim read over many cities.
+        return shapedCity(files, PROBE_HOUSES, PROBE_MONTHS, true);
     }
 
     /**
@@ -2125,7 +2137,13 @@ public class CentralBankCheck {
      * the probe city is (probeCity()) to STRICT_BRANCH.
      */
     static Game shapedCity(GameFiles files, int houses, int months) {
+        return shapedCity(files, houses, months, false);
+    }
+
+    /** ...with the causes of 1900 held off from the first month where asked (probeCity()). */
+    static Game shapedCity(GameFiles files, int houses, int months, boolean causesHeldOff) {
         Game g = new Game(files, LongPlaytest.founding());
+        if (causesHeldOff) g.holdCausesOfDeathOff();
         PrintStream was = LongPlaytest.out;
         LongPlaytest.out = quiet;
         try {

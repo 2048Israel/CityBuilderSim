@@ -139,6 +139,14 @@ public class Inbox {
                 "Crime is running above Canada's",
                 crime);
 
+        // The 1918 influenza (R0b): standing for as long as it is killing, October 1918 to March 1920 in the three waves
+        // CausesOfDeath gives it, and settled the month the deaths stop, like any condition.
+        boolean fluKilling = game.getCausesOfDeath().getLastDeaths(CausesOfDeath.Cause.INFLUENZA) > 0;
+        take(game, month, "influenza",
+                fluKilling,
+                "Influenza is in the city",
+                fluKilling ? influenzaBody(game) : new ArrayList<>());
+
         // The player's hand on the queue (0.7.22): a rushed site going into
         // its third month on overtime, when a month on it starts to do LESS
         // than a normal month for more pay - said the month before, while it
@@ -195,7 +203,56 @@ public class Inbox {
 
         takeIslands(game, month);
 
+        takeLevers(game, month);
+
         cull(month);
+    }
+
+    /** The influenza's notice (R0b): its dead last month and in the last twelve, and the share of the workforce off sick with it. */
+    private static List<String> influenzaBody(Game game) {
+        CausesOfDeath book = game.getCausesOfDeath();
+        return wrapped(String.format("The 1918 influenza killed %s last month and %s in the last twelve months; %.1f%% of the workforce is off sick with it.",
+                people(book.getLastDeaths(CausesOfDeath.Cause.INFLUENZA)),
+                people(book.getYearDeaths(CausesOfDeath.Cause.INFLUENZA)),
+                game.getHealth().getInfluenzaRate() * 100), BODY_COLUMNS);
+    }
+
+    /** "1 person", "41 people": a count of the dead, rounded to a whole one. */
+    private static String people(double count) {
+        long n = Math.round(count);
+        return n == 1 ? "1 person" : String.format("%,d people", n);
+    }
+
+    /** The levers whose opening is told: the ones TaxPolicy holds, the minimum wage (LabourMarket's floor, which TaxPolicy dates but does not hold) and zoning (Game.setZone's gate). */
+    private static final PolicyDates.Lever[] NOTICED = noticed();
+
+    private static PolicyDates.Lever[] noticed() {
+        PolicyDates.Lever[] all = java.util.Arrays.copyOf(TaxPolicy.GATED, TaxPolicy.GATED.length + 2);
+        all[TaxPolicy.GATED.length] = PolicyDates.Lever.MINIMUM_WAGE;
+        all[TaxPolicy.GATED.length + 1] = PolicyDates.Lever.ZONING;
+        return all;
+    }
+
+    /**
+     * The Policy levers history opens (R0): in the month a lever opens, one notice of Canada's first terms for it, titled "An income
+     * tax: 1917", keyed "lever:" and its name so it is raised once. The month of a city's first day raises none (a lever open from the
+     * start has no first day to report), and nor does a save from before R0, whose levers are all open from month 1. It is settled the
+     * month after, like any one-off, and kept two years. Only the levers TaxPolicy holds, the minimum wage and zoning; the others are raised by their own batches.
+     */
+    private void takeLevers(Game game, int month) {
+        for (PolicyDates.Lever lever : NOTICED) {
+            boolean opensNow = month > 1 && month == game.leverOpeningMonth(lever);
+            take(game, month, "lever:" + lever.name(),
+                    opensNow,
+                    leverTitle(lever),
+                    opensNow ? wrapped(PolicyDates.notice(lever), BODY_COLUMNS) : new ArrayList<>());
+        }
+    }
+
+    /** "An income tax: 1917", "A profit tax: 1916", "Student aid: 1939", "Zoning: 1924": the lever as the player reads it (PolicyDates.named(), the rule the Policy screen's shut card shares), and the date it opened. */
+    static String leverTitle(PolicyDates.Lever lever) {
+        String named = PolicyDates.named(lever);
+        return Character.toUpperCase(named.charAt(0)) + named.substring(1) + ": " + PolicyDates.openingDate(lever);
     }
 
     /**

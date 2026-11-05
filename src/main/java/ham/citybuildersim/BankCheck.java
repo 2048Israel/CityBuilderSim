@@ -2517,6 +2517,25 @@ public class BankCheck {
        nothing as it always was.
        ======================================================================= */
 
+    /**
+     * Retail held from ordering a shop, as the first sale's loop holds it (BA1, 2026-11-05): credit shut for twelve months, the
+     * register's twelve losing months so the owners raise nothing, and the till overdrawn by `overdraft` so a banned sector
+     * builds only what its cash covers. Called before each month played after that sale: while orders were capped retail
+     * ordered nothing in those months; with no cap (BA1) it ordered a shop in the first of them (4 standing, 1 on site), the
+     * distress rule does not shrink a sector with an order in flight ("building, not shrinking"), and the second sale
+     * below never came in thirty-six months. Held, retail comes to the second sale as it did on main: 3 shops, none on site.
+     */
+    static void holdFromOrdering(Game city, String sector, double overdraft) {
+        BusinessDebtManager credit = city.getEconomyManager().getBusinessDebtManager();
+        java.util.Map<String, Integer> shut = new java.util.LinkedHashMap<>(credit.getBlockedMonthsAll());
+        shut.put(sector, 12);
+        credit.restoreCreditRecord(credit.getRestructureCounts(), shut);
+        int row = Equity.indexOf(sector);
+        for (int k = 0; k < Equity.RECORD_MONTHS; k++) city.getEquity().recordMonth(row, -1, 0);
+        EconomyManager econ = city.getEconomyManager();
+        if (overdraft > 0) econ.setSectorCash(sector, Math.min(econ.getSectorCash(sector), -overdraft));
+    }
+
     static void aFailingSectorsPlantIsSoldToTheBuilders() throws Exception {
 
         out.println("\n--- (15) a failing sector's plant is sold to the builders, as its materials ---");
@@ -2666,11 +2685,13 @@ public class BankCheck {
             ordered = city.buildStack(template(city, "Paved Road"), 4, false);
             while (drawnUnits <= 0 && waited < 12) {
                 double costAtOpen = builders.getSalvageCost();
+                holdFromOrdering(city, RET, 2 * shop.getCashCost());
                 city.simulateMonths(1);
                 waited++;
                 drawnUnits = city.getSalvageUsedThisMonth();
                 drawnCost = costAtOpen + city.getSalvageThisMonth(builders.key()) - builders.getSalvageCost();
             }
+            holdFromOrdering(city, RET, 2 * shop.getCashCost());
             city.simulateMonths(1);
             nextAudit = city.getLastMoneyAudit();
         } finally {
@@ -2716,6 +2737,8 @@ public class BankCheck {
         assertTrue("fixture: retail owns a shop of its own to retire",
                 spareShop == Game.BuildResult.SUCCESS && city.getBuildingManager().getQuantity(shop.getId()) > 0);
 
+        assertTrue("fixture: retail has no order in flight (the distress rule does not shrink a sector that is building)",
+                city.getBuildingManager().getUnderConstructionBySector(RET) == 0);
         // A builder that cannot pay buys nothing: the building is scrapped
         // for nothing, as it always was.
         Game.Salvage broke = null;

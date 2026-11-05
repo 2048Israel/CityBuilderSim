@@ -551,6 +551,16 @@ public class HouseholdBalance {
         studentLoanRate = Math.max(0, Math.min(TaxPolicy.MAX_STUDENT_LOAN_RATE, annual));
     }
 
+    /** Whether the treasury lends to students this month (R0): false before the student-aid lever opens, and then no new loan is made. */
+    private boolean studentLoansOpen = true;
+
+    /** Told with the rate, by Game, every month and after a load. A harness that never says gets the loan it always had. */
+    public void setStudentLoansOpen(boolean open) {
+        studentLoansOpen = open;
+    }
+
+    public boolean isStudentLoansOpen() { return studentLoansOpen; }
+
     /* ---------------------- the bank's account fee (0.7.7) ----------------------
      * A month's fee on every housed household, in today's money - Game sets
      * it from Bank.accountFee() at the month's price index before the cells
@@ -983,6 +993,7 @@ public class HouseholdBalance {
             c.rentShare = Math.max(0, rentShares.applyAsDouble(c));
             double rentDue = rentPerHousehold * c.rentShare;
             c.studentLoanRate = studentLoanRate;
+            c.studentLoansOpen = studentLoansOpen;
             // ...and the bank's account fee with the other fixed bills (0.7.7).
             double accountDue = accountFeeFor(c, c.households);
             double feesDue = feesPer[i] + accountDue;
@@ -3792,6 +3803,7 @@ public class HouseholdBalance {
             if (c.isEmpty()) { c.clearWorking(); continue; }
             c.rentShare = Math.max(0, rentShares.applyAsDouble(c));
             c.studentLoanRate = studentLoanRate;
+            c.studentLoansOpen = studentLoansOpen;
             c.restrike(disposablePer[i], rentPerHousehold * c.rentShare,
                     feesPer[i] + accountFeeFor(c, c.households),
                     foodPricePerHead, riskFreeAnnual);

@@ -1,6 +1,6 @@
-# PassThroughCheck.java - 633 lines · 19 methods · 10 constants · harnesses
+# PassThroughCheck.java - 688 lines · 20 methods · 10 constants · harnesses
 
-`ham/citybuildersim/PassThroughCheck.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PassThroughCheck.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
 > Proves the city's goods are struck at a D$ that follows the D$ slowly (AN1,
 > 2026-10-22): each month the goods' D$ closes EconomyManager.PASS_THROUGH of
@@ -64,19 +64,19 @@
 >      the bit and strikes the next month as the live city does; a loaded city
 > ... (8 more lines in the source)
 
-**Uses:** [Game](Game.md) (16), [PriceIndex](PriceIndex.md) (16), [EconomyManager](EconomyManager.md) (9), [ForeignCheck](ForeignCheck.md) (8), [ForeignAccounts](ForeignAccounts.md) (5), [GameFiles](GameFiles.md) (2), [Founding](Founding.md) (2), [TempDirs](TempDirs.md) (1)
+**Uses:** [Game](Game.md) (17), [PriceIndex](PriceIndex.md) (16), [EconomyManager](EconomyManager.md) (9), [ForeignCheck](ForeignCheck.md) (8), [ForeignAccounts](ForeignAccounts.md) (7), [GameFiles](GameFiles.md) (2), [Founding](Founding.md) (2), [TempDirs](TempDirs.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
 | 158 | the fixtures every section borrows |
-| 220 | 1. the rule on the bench |
-| 257 | 2. the wiring, every month in a real city |
-| 322 | 3. a step in the D$ reaches the goods at PASS_THROUGH a month |
-| 385 | 4. the ring settles |
-| 558 | 5. a save carries it |
-| 608 | 6. how often it matters in a real city |
+| 230 | 1. the rule on the bench |
+| 267 | 2. the wiring, every month in a real city |
+| 349 | 3. a step in the D$ reaches the goods at PASS_THROUGH a month |
+| 412 | 4. the ring settles |
+| 613 | 5. a save carries it |
+| 663 | 6. how often it matters in a real city |
 
 ## Constants
 
@@ -87,11 +87,11 @@
 | 132 | `PassThroughCheck.APART` | `.01` | The gap, in logs, between the D$ and the goods' D$ that sections 3 and 5 need the saved city to stand at (they assert more than this). |
 | 135 | `PassThroughCheck.APART_LOOK_MONTHS` | `24` | The most months section 2 plays on past MONTHS to find the saved city apart by APART (IC1): the D$ and the goods' D$ are apart in nearly every month. |
 | 138 | `PassThroughCheck.STEP` | `1.10` | The size of the step in sections 1 and 3: the D$ 10% weaker. |
-| 215 | `PassThroughCheck.BASE_SLOT` | `1` | The slot, in this harness's own folder (TempDirs), the base city is saved to and its twins are loaded from. |
-| 260 | `PassThroughCheck.seen` | `new double [ MONTHS ], struck = new double [ MONTHS ]` | The D$ the strike saw, and the goods' D$ it struck, for each of section 2's months: section 6 reads them. |
-| 388 | `PassThroughCheck.SWING` | `.05` | The size of the treasury's swing: dollars worth this share of a year's GDP. |
-| 391 | `PassThroughCheck.HELD` | `12, FOLLOWED = 120` | The months the swing is bought, held and sold in, and the months it is followed for after: a year held, ten years in all. |
-| 394 | `PassThroughCheck.HORIZON` | `HELD +(int) Math.ceil(Math.log(.5) / Math.log(1 - K))` | The swing's own horizon, from the model's constants: the round trip (HELD) and the months the goods take to feel half of it (their half-life, rounded up). |
+| 225 | `PassThroughCheck.BASE_SLOT` | `1` | The slot, in this harness's own folder (TempDirs), the base city is saved to and its twins are loaded from. |
+| 270 | `PassThroughCheck.seen` | `new double [ MONTHS ], struck = new double [ MONTHS ]` | The D$ the strike saw, and the goods' D$ it struck, for each of section 2's months: section 6 reads them. |
+| 415 | `PassThroughCheck.SWING` | `.05` | The size of the treasury's swing: dollars worth this share of a year's GDP. |
+| 418 | `PassThroughCheck.HELD` | `12, FOLLOWED = 120` | The months the swing is bought, held and sold in, and the months it is followed for after: a year held, ten years in all. |
+| 421 | `PassThroughCheck.HORIZON` | `HELD +(int) Math.ceil(Math.log(.5) / Math.log(1 - K))` | The swing's own horizon, from the model's constants: the round trip (HELD) and the months the goods take to feel half of it (their half-life, rounded up). |
 
 ## Fields (state)
 
@@ -101,17 +101,17 @@
 | 83 | `static PrintStream out` |  |
 | 84 | `static PrintStream quiet` |  |
 | 87 | `static Path root` | This run's folder: every city here saves under it, none under the real save folder. |
-| 218 | `static Game city` | Section 2's city, and the save sections 3 to 5 load from; set by section 2. |
-| 398 | `double dollarWidest, goodsWidest, indexWidest, dollarEnd, goodsEnd, indexEnd, boughtLocal, boughtUsd, soldL...` |  |
-| 399 | `int widestAt, excessMonths` |  |
-| 400 | `boolean purchaseMoved` |  |
-| 402 | `final double[] dollarSeries` | The gaps, in logs, month by month after the purchase (index 0 is the day of it: none): the D$, the goods' D$ and the price index. |
+| 228 | `static Game city` | Section 2's city, and the save sections 3 to 5 load from; set by section 2. |
+| 425 | `double dollarWidest, goodsWidest, indexWidest, dollarEnd, goodsEnd, indexEnd, boughtLocal, boughtUsd, soldL...` |  |
+| 426 | `int widestAt, excessMonths` |  |
+| 427 | `boolean purchaseMoved` |  |
+| 429 | `final double[] dollarSeries` | The gaps, in logs, month by month after the purchase (index 0 is the day of it: none): the D$, the goods' D$ and the price index. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 80 | 554 | **type** `public class PassThroughCheck` | Proves the city's goods are struck at a D$ that follows the D$ slowly (AN1, 2026-10-22): each month the goods' D$ closes EconomyManager.PASS_THROUGH of its gap to the D$, in logs, and every world price is struck at it... |
+| 80 | 609 | **type** `public class PassThroughCheck` | Proves the city's goods are struck at a D$ that follows the D$ slowly (AN1, 2026-10-22): each month the goods' D$ closes EconomyManager.PASS_THROUGH of its gap to the D$, in logs, and every world price is struck at it... |
 | 89 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 94 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 105 | 9 | `static void closeRelative(String label, double actual, double expected, double tol)` | ...to a relative tolerance: the two figures' gap over the expected one's size. |
@@ -119,52 +119,53 @@
 | 126 | 1 | `static double reached(double speed, int n)` | The share of a step in the D$ that has reached the goods after n months. |
 | 140 | 17 | `public static void main(String[] args) throws Exception` |  |
 
-### the fixtures every section borrows (lines 158-219)
+### the fixtures every section borrows (lines 158-229)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 161 | 3 | `static GameFiles files(String label)` | A save folder of this run's own, one per city that saves. |
-| 176 | 24 | `static Game town(String label)` | A trading town on the default founding, as ExchangeRateCheck builds it; its D$ is what the founding's seed makes it. |
-| 202 | 3 | `static void month(Game g)` | One month, with nothing built or decided by anyone: the twins differ only in what the harness does to them. |
-| 207 | 6 | `static Game load(Game base)` | A city loaded from the base city's slot 1 (BASE_SLOT), into a city of its own. |
+| 176 | 33 | `static Game town(String label)` | A trading town on the default founding, as ExchangeRateCheck builds it; its D$ is what the founding's seed makes it. |
+| 211 | 3 | `static void month(Game g)` | One month, with nothing built or decided by anyone: the twins differ only in what the harness does to them. |
+| 216 | 7 | `static Game load(Game base)` | A city loaded from the base city's slot 1 (BASE_SLOT), into a city of its own. |
 
-### 1. the rule on the bench (lines 220-256)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 222 | 34 | `static void theRuleOnTheBench()` |  |
-
-### 2. the wiring, every month in a real city (lines 257-321)
+### 1. the rule on the bench (lines 230-266)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 262 | 59 | `static void theWiring()` |  |
+| 232 | 34 | `static void theRuleOnTheBench()` |  |
 
-### 3. a step in the D$ reaches the goods at PASS_THROUGH a month (lines 322-384)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 324 | 60 | `static void aStepReachesTheGoods()` |  |
-
-### 4. the ring settles (lines 385-557)
+### 2. the wiring, every month in a real city (lines 267-348)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 397 | 7 | **type** `static final class Swing` | One pair of twins' swing: the figures the section prints and asserts. |
-| 406 | 84 | `static Swing swing(double speed, String name)` | The twins of the base city, one buying dollars worth SWING of a year's GDP and selling them back HELD months later, played FOLLOWED months, goods following the D$ at `speed`. |
-| 491 | 13 | `static void printSwing(String name, Swing s)` |  |
-| 506 | 5 | `static double meanGap(double[] series, int from, int to)` | The mean of the gaps' sizes over months `from` to `to`. |
-| 512 | 45 | `static void theRingSettles()` |  |
+| 272 | 76 | `static void theWiring()` |  |
 
-### 5. a save carries it (lines 558-607)
+### 3. a step in the D$ reaches the goods at PASS_THROUGH a month (lines 349-411)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 560 | 47 | `static void aSaveCarriesIt()` |  |
+| 351 | 60 | `static void aStepReachesTheGoods()` |  |
 
-### 6. how often it matters in a real city (lines 608-633)
+### 4. the ring settles (lines 412-612)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 610 | 23 | `static void howOftenItMatters()` |  |
+| 424 | 7 | **type** `static final class Swing` | One pair of twins' swing: the figures the section prints and asserts. |
+| 437 | 22 | `static boolean vaultHoldsNoMoreThanBought(double speed)` | BA1, 2026-11-04: whether, from the base city in its slot, a twin that buys dollars worth SWING of a year's GDP holds HELD months on no more dollars over its twin's than it bought (and some): the premise of swing()'s s... |
+| 461 | 84 | `static Swing swing(double speed, String name)` | The twins of the base city, one buying dollars worth SWING of a year's GDP and selling them back HELD months later, played FOLLOWED months, goods following the D$ at `speed`. |
+| 546 | 13 | `static void printSwing(String name, Swing s)` |  |
+| 561 | 5 | `static double meanGap(double[] series, int from, int to)` | The mean of the gaps' sizes over months `from` to `to`. |
+| 567 | 45 | `static void theRingSettles()` |  |
+
+### 5. a save carries it (lines 613-662)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 615 | 47 | `static void aSaveCarriesIt()` |  |
+
+### 6. how often it matters in a real city (lines 663-688)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 665 | 23 | `static void howOftenItMatters()` |  |
 

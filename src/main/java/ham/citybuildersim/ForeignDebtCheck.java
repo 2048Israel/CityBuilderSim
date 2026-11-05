@@ -120,8 +120,17 @@ public class ForeignDebtCheck {
      * people and 962 a month earned abroad, a premium of 1.0% that a quarter of the exports raises to 4.2%.
      */
     static Game tradingCity(Path dir, int depotsStanding) throws Exception {
+        return tradingCity(dir, depotsStanding, false);
+    }
+
+    /** ...the one builder of both: `levers` opens every lever and puts the defaults back before a month (tradingCityTaxed()). */
+    private static Game tradingCity(Path dir, int depotsStanding, boolean levers) throws Exception {
         Game g = new Game(new GameFiles(dir.resolve("data"), dir.resolve("no-legacy")));
         g.run();
+        if (levers) {
+            g.getEconomyManager().getTaxPolicy().reset();
+            g.getEconomyManager().getTaxPolicy().openAll();
+        }
         // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
         // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
         // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
@@ -134,6 +143,17 @@ public class ForeignDebtCheck {
         g.buildStack(template(g, "Paved Road"), 30, false);
         g.simulateMonths(60);
         return g;
+    }
+
+    /**
+     * ...THE SAME CITY WITH EVERY LEVER OPEN (R0), for section 10 alone: tradingCity() is BuybackCheck's, CurveCheck's and RestructureCheck's
+     * as well and is left as it was. Section 10 sizes its two sales by the city's tax ("a month's tax", "two years' tax") and reads the
+     * spread the quotes put on that debt, and a 1900 city has no income tax to 1916-17 and no sales tax to 1920, so its tax is the property
+     * tax alone (a month's was D$10k here) and the big sale is quoted cheaper abroad than the share of home (8.09% against 14.60% at home)
+     * where the premise needs it at or above. Every lever opened and the defaults put back, before a month has run.
+     */
+    static Game tradingCityTaxed(Path dir, int depotsStanding) throws Exception {
+        return tradingCity(dir, depotsStanding, true);
     }
 
     public static void main(String[] args) throws Exception {
@@ -937,8 +957,8 @@ public class ForeignDebtCheck {
         Game city;
         System.setOut(quiet);
         try {
-            // Two depots stand beside the plant's (PT1-M4): see tradingCity().
-            city = tradingCity(dir, 2);
+            // Two depots stand beside the plant's (PT1-M4): see tradingCity(). Every lever open: see tradingCityTaxed() (R0).
+            city = tradingCityTaxed(dir, 2);
         } finally {
             System.setOut(out);
         }

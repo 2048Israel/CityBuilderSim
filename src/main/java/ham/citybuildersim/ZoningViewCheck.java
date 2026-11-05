@@ -109,6 +109,11 @@ public class ZoningViewCheck {
         Game g = new Game(new GameFiles(root.resolve(name), root.resolve(name + "-no-legacy")));
         quietly(() -> {
             g.run();
+            // The premise is a zone's mechanics, and a 1900 city has no zoning until 1924 (R0): zoning opened in the fixture. A zone's tax rows
+            // (sections 4 and 7) are the sector's own profit and sales offsets, which their taxes' levers refuse until 1916 and 1920: those two opened too.
+            g.getEconomyManager().getTaxPolicy().openNow(PolicyDates.Lever.ZONING);
+            g.getEconomyManager().getTaxPolicy().openNow(PolicyDates.Lever.PROFIT_TAX);
+            g.getEconomyManager().getTaxPolicy().openNow(PolicyDates.Lever.SALES_TAX);
             g.setCashForTest(Founding.WEALTHY_CASH);
             g.getGovernmentInvestor().spend(-2_000_000 * PriceLevel.FACTOR);
             g.getLandManager().setOwnedSqFt(LandManager.sqFt(CITY_KM2));
