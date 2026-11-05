@@ -1,6 +1,6 @@
 # DT1 - The same code, another city: what in a month reads the machine ({next}, 2026-11-05)
 
-**WHERE IT STANDS (2026-11-05): investigation done; DeterminismCheck and the world file's notice in review.**
+**WHERE IT STANDS (2026-11-05): done; waiting for RT1 to land, then main merged in and `--pick` again.**
 
 ## The finding: not the machine, the world file
 
@@ -76,10 +76,40 @@ three at once, compared with an unflagged JVM bit for bit (`Double.toHexString`)
   town after another in one JVM agrees with the first. 4, without the world file it is another city, and it says
   so.
 
+  DeterminismCheck takes 25-29 s: A 12 s, B 13 s, C 3 s, one after the other. In the suite's run it passed its 27
+  lines, and C's town parts from A's at month 2 (its cash 14,255.87 against 14,303.39). It also passes with the
+  Earth file alone (section 4 says it did not run) and with neither (the Earth city says so).
+- **The review** (Sonnet wrote the slice, from a brief). The diff was read whole as a stranger's. `pick.sh` asked
+  for a threading review. The `AtomicBoolean` is a once-only flag set by `compareAndSet`, with no other state
+  shared. Two departures, both right. B's soft reference needs two collections, because the soft-reference clock
+  moves at a collection's end. Three assertions were added: both machines played the Earth city, A's second town
+  wrote as many autosaves as its first, and every child exits 0 with its file.
+
 ## The checks
 
-(to be filled: --pick, the full suite where the path moves)
+- **`./batch-check.sh --pick`** (on 8edd98fd, built on RT1's tip): 20 of 175 harnesses, exit 4 on MapCheck alone.
+  Two lines: 2d "every box stands four months on (500 of them, 7 moved)" and "a yard that goes moves none of the
+  buildings ... (698 of them, 70 moved)". They are RT1's two lines word for word, passed by name at its gate (RT1's
+  notes, MapCheck 2d, DM1's class). They are not this batch's. With the properties set, `WorldData.locate()`
+  returns before the new code, so no path in any harness moved. The run after RT1 lands and main is merged in is
+  below.
+- **The full suite: not run.** No harness's path moved. The model's one new line runs only when no world file is
+  found, and the gate always names it.
 
 ## The ensemble
 
 Not run. The month did not change: the model's one new line is a notice on stderr.
+
+## Found on the way
+
+- BA1's notes and the DT1 row join two cities into one: month 125 is FloatLinkCheck's town, and 1,067 people is
+  SaveFileCheck's city at month 91.
+- DT1's research agent exported BA1's two transcripts to read them. The zips are in Jerus's Downloads:
+  `session-export-1793894032578.zip` and `session-export-1793894034723.zip`. Nothing else needs them; they can
+  be deleted.
+
+## The calls
+
+- **★1 Should a check refuse to run without the world file?** Recommended: no, keep the notice. The gate names
+  both files, the cloud workbench may have neither, and the Earth harnesses already work the same way (a note,
+  not a refusal). A refusal would make every harness city depend on a 9 MB file that is not in git.
