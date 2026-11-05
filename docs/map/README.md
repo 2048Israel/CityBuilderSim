@@ -4,7 +4,7 @@ Generated 2026-11-05 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 504 files, 542,672 lines, 23,439 methods, 5,311 constants. `GameVersion.VERSION` is "0.9.14", `SAVE_FORMAT` 50.
+**The tree:** 504 files, 542,675 lines, 23,439 methods, 5,311 constants. `GameVersion.VERSION` is "0.9.14", `SAVE_FORMAT` 50.
 
 ## model (238 files)
 
@@ -392,7 +392,7 @@ Generated 2026-11-05 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [EarthTerrainCheck.java](EarthTerrainCheck.md) | 2,524 | 60 | The Earth's ground (0.7.115, batch E2; the project's spec-earth.md 3 and 8): EarthTerrain's plots held to the data they are drawn from on the three... | 4 |
 | [EducationCheck.java](EducationCheck.md) | 1,484 | 11 | Verifies the schools: who gets taught, who is allowed to practise, and what it costs. | 2 |
 | [EnsembleCheck.java](EnsembleCheck.md) | 509 | 24 | The inflation ensemble is in the tree and still runs: its driver compiles against this tree, its two halves name the same policies, and the stored ... | 0 |
-| [EquipmentCheck.java](EquipmentCheck.md) | 1,087 | 44 | Equipment as data, the count of buildings still without it on each stack, R0c's 1900 forms set from that count, and (slice B) what a piece would ea... | 0 |
+| [EquipmentCheck.java](EquipmentCheck.md) | 1,090 | 44 | Equipment as data, the count of buildings still without it on each stack, R0c's 1900 forms set from that count, and (slice B) what a piece would ea... | 0 |
 | [EquityCheck.java](EquityCheck.md) | 386 | 5 | Verifies the share register: who buys, at what price, what they are paid, and that a month with owners in it still adds up. | 0 |
 | [ExchangeCheck.java](ExchangeCheck.md) | 1,076 | 27 | Verifies the exchange on the order book (0.7.12 round 2): what the desk posts and what it is not obliged to take, who trades with whom and at what ... | 3 |
 | [ExchangeRateCheck.java](ExchangeRateCheck.md) | 1,449 | 48 | Proves the D$ is a float that follows its parity and swings like a real currency (XR1, 2026-10-21): parity is the basket with rent held to a third,... | 1 |

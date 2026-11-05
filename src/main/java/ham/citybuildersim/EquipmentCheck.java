@@ -555,9 +555,12 @@ public class EquipmentCheck {
                 noneJson.substring(0, Math.min(80, noneJson.length())));
 
         // The counts: one of two Bakeries, the Industrial Bakery stack and the Grain Farm stack whole; then a month, so the shares stand as the city has them.
+        // The counts as set are kept: the month may put up another building on a stack (the investors build), which comes fitted and moves the
+        // quantity, not the count.
+        final int industrialSet = stack(g, "Industrial Bakery").getQuantity(), grainSet = stack(g, "Grain Farm").getQuantity();
         stack(g, "Bakery").setUnfitted(DRIVE, 1);
-        stack(g, "Industrial Bakery").setUnfitted(DRIVE, stack(g, "Industrial Bakery").getQuantity());
-        stack(g, "Grain Farm").setUnfitted(TRACTOR, stack(g, "Grain Farm").getQuantity());
+        stack(g, "Industrial Bakery").setUnfitted(DRIVE, industrialSet);
+        stack(g, "Grain Farm").setUnfitted(TRACTOR, grainSet);
         play(g, 1);
         // ...and the forms said once more from the stacks as they stand now, so that the saved city's shares are its counts' and not the month's top's.
         g.getEquipmentForms().apply(g);
@@ -566,8 +569,8 @@ public class EquipmentCheck {
         Map<Integer, Map<String, Integer>> saved = g.getBuildingManager().getUnfittedById();
         check("the save's view is each template's id and its counts, only where a stack has any", saved.size() == 3
                 && saved.get(stack(g, "Bakery").getBuilding().getId()).equals(Map.of(DRIVE, 1))
-                && saved.get(stack(g, "Industrial Bakery").getBuilding().getId()).equals(Map.of(DRIVE, stack(g, "Industrial Bakery").getQuantity()))
-                && saved.get(stack(g, "Grain Farm").getBuilding().getId()).equals(Map.of(TRACTOR, stack(g, "Grain Farm").getQuantity())), saved.toString());
+                && saved.get(stack(g, "Industrial Bakery").getBuilding().getId()).equals(Map.of(DRIVE, industrialSet))
+                && saved.get(stack(g, "Grain Farm").getBuilding().getId()).equals(Map.of(TRACTOR, grainSet)), saved.toString());
 
         GameFiles.Result wrote = save(g, "equipment counted");
         check("the city with counts saved", wrote.ok, wrote.message());

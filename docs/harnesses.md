@@ -7499,105 +7499,105 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L544 7. the save: none unfitted writes no key; the counts are saved by template id and drive the forms again after a load**
   - L553 fixture: the city with none unfitted saved
   - L554 a save with no building unfitted has no unfittedById key
-  - L564 fixture: the counts stand after the month and the forms are up
-  - L567 the save's view is each template's id and its counts, only where a stack has any
-  - L573 the city with counts saved
-  - L576 ...and loaded without a failure
-  - L577 the loaded city has the same counts by template id
-  - L584 ...and every stack stands as many and counts as many unfitted as the saved city's
-  - L585 before any month is played the loaded city's steam share is the saved city's, and what the counts say
-  - L590 ...and the farms' horse share too
-  - L593 ...with no other sector's steam set, nor Haulage's horses
-  - L599 a save with no key loads without a failure, as every building fitted, and every form at 0
-- **L621 8. the rule's arithmetic: the annuity, both steps either side of the line, a gain of nothing, the cost and the steam gain**
-  - L622 the annuity factor at a rate of 0 is the months, and for a rate less than 0 or not a number or not finite too
-  - L625 ...and no months is no factor
-  - L640 at a positive rate it is the closed form (1 - (1 + i)^-n) / i, i the rate over 12, for lives of 1 to 1200 months
-  - L641 ...and the sum of 1 / (1 + i)^t over the months
-  - L642 ...a month is worth 1 / (1 + i); more months are worth more and a higher rate less, but never as much as the months themselves
-  - L646 ...and it is BuildAdvice's own factor: over LIFE_MONTHS at the rate lifeRate() gives, to the bit
-  - L660 a gain a millionth over cost / factor pays: over its life it earns back its cost
-  - L662 ...a millionth under does not: it earns back less than its cost, with no hurdle in the way
-  - L664 the verdict carries the figures it was struck on: ids, life, rate, factor, earns back (gain x factor), earnings on cost (gain over cost)
-  - L672 a gain a millionth over the hurdle passes the gate
-  - L673 ...a millionth under does not, though it earns back many times its cost over its life: the gate alone decides
-  - L676 a gain exactly at both lines pays (at least: g x factor >= C and g >= the hurdle)
-  - L686 a gain of nothing, less than nothing or not a number never pays, whatever the cost, the hurdle or the rate
-  - L687 a cost that is not a number never pays
-  - L690 a piece that costs nothing and adds something pays, its earnings on cost infinite; one that adds nothing earns 0 on it
-  - L693 at a rate of 0 a life is worth its months: g x the life is what it earns back, and a hurdle of 0 asks nothing more
-  - L700 no building unfitted is FITTED however much it would add, and prices nothing
-  - L703 ...and FITTED comes before NOT_KNOWN: a fitted piece before its year is fitted
-  - L705 a piece not yet known in the city's year is NOT_KNOWN, in 1899 and not in 1900; and prices nothing
-  - L710 the tractor, whose since is a code, is NOT_KNOWN in every year and whatever it would add
-  - L718 the cost is each good's units at its price, plus the work at the point's price
-  - L719 ...nothing bought and no work costs nothing, and a price that is not a number makes the cost one
-  - L726 a building's steam coal a month is its draw in kWh at the engine's kilogrammes a kWh, in tonnes
-  - L728 the steam gain is the coal at its price less the power at its price
-  - L729 ...it is nothing at the price of coal where the two cost the same, more above it and less below
-  - L733 ...a building no utility bills (a House) burns no coal and draws no billed power: it adds nothing at any price
-  - L738 the carts' gain is the room's tonnes a month at the teams' price a tonne less the trucks' running price
-  - L740 ...less than nothing where the trucks cost more to run than the teams
-- **L772 9. the steam verdict at the city's prices: the gain, the cost, the rate and the hurdle from the model's getters, and the coal price that ...**
-  - L779 fixture: a Bakery is unfitted, a month is played, and it is 1900
-  - L783 fixture: the prices are real (coal, power, machinery and a building point all more than nothing)
-  - L785 the verdict is for this building and this piece, with the piece's life, and is priced (PAYS or NOT_YET)
-  - L788 its gain is steamGain() at the city's coal price and the grid's price a unit, to the bit
-  - L791 ...which is the coal its engine would burn at nameplate at the coal price less the power it would draw instead
-  - L796 its cost is step 2's: the goods it buys at the city's prices plus its work at the builders' price a point, to the bit
-  - L798 ...and the same written out here
-  - L799 fixture: the fitting buys machinery and has work, so both halves of the cost are in it
-  - L806 fixture: the gate tests the whole cost, whatever the sector holds
-  - L807 the rate is the real rate of what a loan of the whole cost is written at for the sector, to the bit
-  - L809 the factor is the annuity of the life at that rate
-  - L810 the hurdle is the investment's on the whole cost at that loan rate, and PROFIT_OVER_INTEREST times a month's interest at the real rate
-  - L813 ...and the same hurdle SpreadPlanner strikes for an order of that cost by that sector
-  - L816 the kind follows the four steps from those figures (pays: g x factor >= C and g >= the hurdle)
-  - L818 ...and judge() on them says the same verdict
-  - L830 steamCoalTonnes() added over Industry's stacks is the coal Industry's own steam form buys at a share of 1
-  - L831 fixture: that share was put back, and the form buys some coal
-  - L835 fixture: the break-even price of coal is a price
-  - L838 in the pure core a coal price a thousandth above the break-even pays
-  - L839 ...and one a thousandth below does not
-  - L840 ...the gain crossing its line there: at the break-even the gain is the greater of cost / factor and the hurdle
-  - L848 fixture: the city's price of coal moves to a hundredth above and then below the break-even
-  - L850 in the city, coal a hundredth above the break-even pays, and the gain is that price's
-  - L853 ...and a hundredth below it does not, and its cost, rate and hurdle are the same as before (they do not read the coal)
-- **L875 10. the truck's, the tractor's and the rank: the carts' gain from the teams less the trucks, NOT_KNOWN for a tractor, FITTED for none unf...**
-  - L882 fixture: two depots stand, one lacks its trucks, a month is played
-  - L884 the depot's verdict is priced (PAYS or NOT_YET) with finite figures
-  - L892 a tonne's city leg by team costs the feed of the team's horses and its carter over the tonnes a team carries
-  - L893 ...by truck, to run: the diesel a tonne and a driver's month over the tonnes a truck carries
-  - L898 ...and with the horse form off, Haulage's whole estimate() is that plus the trucks' wear and return on their price over the tonnes a truck carries
-  - L902 fixture: the teams cost more a tonne than the trucks to run, so the gain is above nothing
-  - L904 the depot's gain is the truck room's tonnes a month at the teams' price less the trucks', to the bit
-  - L906 ...which is the room x the tonnes a truck carries x (teams - trucks) written out
-  - L908 the motor truck buys the depot's truck room in TRUCKS and has no work
-  - L910 the depot's cost is its trucks at the city's price of TRUCKS, to the bit, and nothing for work
-  - L912 its life is the truck's and its rate is struck for Freight on the whole cost
-  - L916 ...and the kind follows the four steps
-  - L922 an unfitted Grain Farm's tractor is NOT_KNOWN: its since is a code, and nothing is priced
-  - L926 a stack with none unfitted is FITTED, for a tractor and for a drive
-  - L939 fixture: two drives are unfitted in Industry, and the two stacks need different coal prices to pay
-  - L945 fixture: the city's price of coal moves
-  - L946 coal under both break-evens: both drives are NOT_YET and the rank is empty
-  - L950 coal between them: only the drive that pays is ranked, the other (NOT_YET) is left out
-  - L956 coal over both: both are ranked, the same pieces as the verdicts that pay
-  - L957 ...best earnings on cost first, as sorted here from the verdicts alone
-  - L959 ...each entry is a PAYS verdict whose gain x factor covers its cost and whose gain clears its hurdle
-  - L961 a sector with nothing unfitted ranks none, and so does one whose only unfitted piece is NOT_KNOWN (Agriculture's tractor)
-  - L965 the depot's truck is ranked when it pays and not when it does not, alone in the cart town's Freight
-  - L967 ...and nothing else in the cart town is ranked
-  - L969 with the depots' count at 0 the piece is FITTED and Freight ranks none
-  - L983 the ranking is best earnings on cost first, equal earnings by template id and then piece id, whatever order they come in (all 120 orders)
-  - L986 ...and an unbounded earning (a free piece) is first
-- **L1064 11. the verdict changes nothing: twin cities with the same counts, one asked everything every month for six months, are equal to the bit**
-  - L1071 fixture: the twins start equal, with the same counts and nothing asked
-  - L1074 six months, asked every verdict and every rank before and after each: the treasury, every sector's books and rates, the shares and the counts are equal
-  - L1076 ...and the forms were set from the counts the whole time (the question did not stop the month): Industry's steam share is up in both
-  - L1081 fixture: the cart twins start equal with a depot unfitted
-  - L1083 ...and six months of the same, on the depot's truck: equal to the bit, the trucks, the quote and the carts' share included
-  - L1084 ...with the carts' horse share up in both
+  - L567 fixture: the counts stand after the month and the forms are up
+  - L570 the save's view is each template's id and its counts, only where a stack has any
+  - L576 the city with counts saved
+  - L579 ...and loaded without a failure
+  - L580 the loaded city has the same counts by template id
+  - L587 ...and every stack stands as many and counts as many unfitted as the saved city's
+  - L588 before any month is played the loaded city's steam share is the saved city's, and what the counts say
+  - L593 ...and the farms' horse share too
+  - L596 ...with no other sector's steam set, nor Haulage's horses
+  - L602 a save with no key loads without a failure, as every building fitted, and every form at 0
+- **L624 8. the rule's arithmetic: the annuity, both steps either side of the line, a gain of nothing, the cost and the steam gain**
+  - L625 the annuity factor at a rate of 0 is the months, and for a rate less than 0 or not a number or not finite too
+  - L628 ...and no months is no factor
+  - L643 at a positive rate it is the closed form (1 - (1 + i)^-n) / i, i the rate over 12, for lives of 1 to 1200 months
+  - L644 ...and the sum of 1 / (1 + i)^t over the months
+  - L645 ...a month is worth 1 / (1 + i); more months are worth more and a higher rate less, but never as much as the months themselves
+  - L649 ...and it is BuildAdvice's own factor: over LIFE_MONTHS at the rate lifeRate() gives, to the bit
+  - L663 a gain a millionth over cost / factor pays: over its life it earns back its cost
+  - L665 ...a millionth under does not: it earns back less than its cost, with no hurdle in the way
+  - L667 the verdict carries the figures it was struck on: ids, life, rate, factor, earns back (gain x factor), earnings on cost (gain over cost)
+  - L675 a gain a millionth over the hurdle passes the gate
+  - L676 ...a millionth under does not, though it earns back many times its cost over its life: the gate alone decides
+  - L679 a gain exactly at both lines pays (at least: g x factor >= C and g >= the hurdle)
+  - L689 a gain of nothing, less than nothing or not a number never pays, whatever the cost, the hurdle or the rate
+  - L690 a cost that is not a number never pays
+  - L693 a piece that costs nothing and adds something pays, its earnings on cost infinite; one that adds nothing earns 0 on it
+  - L696 at a rate of 0 a life is worth its months: g x the life is what it earns back, and a hurdle of 0 asks nothing more
+  - L703 no building unfitted is FITTED however much it would add, and prices nothing
+  - L706 ...and FITTED comes before NOT_KNOWN: a fitted piece before its year is fitted
+  - L708 a piece not yet known in the city's year is NOT_KNOWN, in 1899 and not in 1900; and prices nothing
+  - L713 the tractor, whose since is a code, is NOT_KNOWN in every year and whatever it would add
+  - L721 the cost is each good's units at its price, plus the work at the point's price
+  - L722 ...nothing bought and no work costs nothing, and a price that is not a number makes the cost one
+  - L729 a building's steam coal a month is its draw in kWh at the engine's kilogrammes a kWh, in tonnes
+  - L731 the steam gain is the coal at its price less the power at its price
+  - L732 ...it is nothing at the price of coal where the two cost the same, more above it and less below
+  - L736 ...a building no utility bills (a House) burns no coal and draws no billed power: it adds nothing at any price
+  - L741 the carts' gain is the room's tonnes a month at the teams' price a tonne less the trucks' running price
+  - L743 ...less than nothing where the trucks cost more to run than the teams
+- **L775 9. the steam verdict at the city's prices: the gain, the cost, the rate and the hurdle from the model's getters, and the coal price that ...**
+  - L782 fixture: a Bakery is unfitted, a month is played, and it is 1900
+  - L786 fixture: the prices are real (coal, power, machinery and a building point all more than nothing)
+  - L788 the verdict is for this building and this piece, with the piece's life, and is priced (PAYS or NOT_YET)
+  - L791 its gain is steamGain() at the city's coal price and the grid's price a unit, to the bit
+  - L794 ...which is the coal its engine would burn at nameplate at the coal price less the power it would draw instead
+  - L799 its cost is step 2's: the goods it buys at the city's prices plus its work at the builders' price a point, to the bit
+  - L801 ...and the same written out here
+  - L802 fixture: the fitting buys machinery and has work, so both halves of the cost are in it
+  - L809 fixture: the gate tests the whole cost, whatever the sector holds
+  - L810 the rate is the real rate of what a loan of the whole cost is written at for the sector, to the bit
+  - L812 the factor is the annuity of the life at that rate
+  - L813 the hurdle is the investment's on the whole cost at that loan rate, and PROFIT_OVER_INTEREST times a month's interest at the real rate
+  - L816 ...and the same hurdle SpreadPlanner strikes for an order of that cost by that sector
+  - L819 the kind follows the four steps from those figures (pays: g x factor >= C and g >= the hurdle)
+  - L821 ...and judge() on them says the same verdict
+  - L833 steamCoalTonnes() added over Industry's stacks is the coal Industry's own steam form buys at a share of 1
+  - L834 fixture: that share was put back, and the form buys some coal
+  - L838 fixture: the break-even price of coal is a price
+  - L841 in the pure core a coal price a thousandth above the break-even pays
+  - L842 ...and one a thousandth below does not
+  - L843 ...the gain crossing its line there: at the break-even the gain is the greater of cost / factor and the hurdle
+  - L851 fixture: the city's price of coal moves to a hundredth above and then below the break-even
+  - L853 in the city, coal a hundredth above the break-even pays, and the gain is that price's
+  - L856 ...and a hundredth below it does not, and its cost, rate and hurdle are the same as before (they do not read the coal)
+- **L878 10. the truck's, the tractor's and the rank: the carts' gain from the teams less the trucks, NOT_KNOWN for a tractor, FITTED for none unf...**
+  - L885 fixture: two depots stand, one lacks its trucks, a month is played
+  - L887 the depot's verdict is priced (PAYS or NOT_YET) with finite figures
+  - L895 a tonne's city leg by team costs the feed of the team's horses and its carter over the tonnes a team carries
+  - L896 ...by truck, to run: the diesel a tonne and a driver's month over the tonnes a truck carries
+  - L901 ...and with the horse form off, Haulage's whole estimate() is that plus the trucks' wear and return on their price over the tonnes a truck carries
+  - L905 fixture: the teams cost more a tonne than the trucks to run, so the gain is above nothing
+  - L907 the depot's gain is the truck room's tonnes a month at the teams' price less the trucks', to the bit
+  - L909 ...which is the room x the tonnes a truck carries x (teams - trucks) written out
+  - L911 the motor truck buys the depot's truck room in TRUCKS and has no work
+  - L913 the depot's cost is its trucks at the city's price of TRUCKS, to the bit, and nothing for work
+  - L915 its life is the truck's and its rate is struck for Freight on the whole cost
+  - L919 ...and the kind follows the four steps
+  - L925 an unfitted Grain Farm's tractor is NOT_KNOWN: its since is a code, and nothing is priced
+  - L929 a stack with none unfitted is FITTED, for a tractor and for a drive
+  - L942 fixture: two drives are unfitted in Industry, and the two stacks need different coal prices to pay
+  - L948 fixture: the city's price of coal moves
+  - L949 coal under both break-evens: both drives are NOT_YET and the rank is empty
+  - L953 coal between them: only the drive that pays is ranked, the other (NOT_YET) is left out
+  - L959 coal over both: both are ranked, the same pieces as the verdicts that pay
+  - L960 ...best earnings on cost first, as sorted here from the verdicts alone
+  - L962 ...each entry is a PAYS verdict whose gain x factor covers its cost and whose gain clears its hurdle
+  - L964 a sector with nothing unfitted ranks none, and so does one whose only unfitted piece is NOT_KNOWN (Agriculture's tractor)
+  - L968 the depot's truck is ranked when it pays and not when it does not, alone in the cart town's Freight
+  - L970 ...and nothing else in the cart town is ranked
+  - L972 with the depots' count at 0 the piece is FITTED and Freight ranks none
+  - L986 the ranking is best earnings on cost first, equal earnings by template id and then piece id, whatever order they come in (all 120 orders)
+  - L989 ...and an unbounded earning (a free piece) is first
+- **L1067 11. the verdict changes nothing: twin cities with the same counts, one asked everything every month for six months, are equal to the bit**
+  - L1074 fixture: the twins start equal, with the same counts and nothing asked
+  - L1077 six months, asked every verdict and every rank before and after each: the treasury, every sector's books and rates, the shares and the counts are equal
+  - L1079 ...and the forms were set from the counts the whole time (the question did not stop the month): Industry's steam share is up in both
+  - L1084 fixture: the cart twins start equal with a depot unfitted
+  - L1086 ...and six months of the same, on the depot's truck: equal to the bit, the trucks, the quote and the carts' share included
+  - L1087 ...with the carts' horse share up in both
 
 ## EquityCheck.java - 65 labelled assertions
 

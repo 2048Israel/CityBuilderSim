@@ -2,11 +2,13 @@
 
 ## WHERE IT STANDS
 
-**Both slices built** (04:15). Branch `batch/R1` from `batch/R0c`'s ship
-file; main (0.9.14, R0c in, e668e9cf) merged at 7e98567a. Slice A (the
-data, the count on each building, the forms set from it, the save) is
-bfd75c17, slice B (the payback rule's verdicts) 5ccd06ef. `--pick` on the
-merge is running; §4 has the result.
+**Ready** (04:45). Branch `batch/R1` from `batch/R0c`'s ship file; main
+(0.9.14, R0c in, e668e9cf) merged at 7e98567a. Slice A (the data, the count
+on each building, the forms set from it, the save) is bfd75c17, slice B (the
+payback rule's verdicts) 5ccd06ef. `--pick` on the merge: exit 3, known reds
+only (PriceLevelCheck, MapCheck). The default playtest is main's to the byte
+but for its run times, so no ensemble. R1b, R1c and R1d go in the ship
+file's `## queued` (§1).
 
 ## 1. What R1 is, and where it splits
 
@@ -146,4 +148,21 @@ first figure to look at.
 
 ## 4. Checks
 
-(as they run)
+`--pick` on the merge with main (7e98567a; 104 of 174 harnesses and
+LongPlaytest, for 14 files changed since e668e9cf), the gate's world files
+named: **exit 3**, "known red only - PriceLevelCheck, MapCheck"
+(`docs/notes/gate.txt`: RT1's twin parting, DM2's 2h); two timing lines
+SOFT, not counted (SaveSlotCheck 1, MapCheck 1). `pick.sh` asks for the
+gate's stranger's review of the saves (`DataSave`: the unfitted counts by
+template id, no format bump, ★5).
+
+The default playtest (2,405 months) on R1's tip against main's e668e9cf,
+both run here back to back with the world files: byte-identical but for
+"in 62s"/"in 60s" and the layout windows' "1.8 s"/"1.6 s". No ensemble
+(batch.md 6): nothing in a played city is unfitted, so no form is set and no
+verdict is read.
+
+Found after the run: EquipmentCheck 7 compared the saved counts with the
+stacks' quantities after a month, which a month without the world files
+moves (the investors put up a building, which comes fitted). The fixture now
+keeps the counts as set; EquipmentCheck is green with and without the files.
