@@ -326,32 +326,38 @@ final class BuildScreen {
      */
     javafx.scene.layout.FlowPane buildStrip(String current) {
 
-        javafx.scene.layout.FlowPane strip = new javafx.scene.layout.FlowPane(6, 6);
+        // Kept (KP3): every node through Kept; the tabs are a scope each, keyed by the category.
+        javafx.scene.layout.FlowPane strip = Kept.flow(6, 6);
         strip.setAlignment(Pos.CENTER_LEFT);
-        strip.prefWrapLengthProperty().bind(ui.menuScroller.widthProperty().subtract(60));
+        wrapToScroller(strip);
         strip.setStyle("-fx-padding: 0 18 4 18;");
 
-        Button overview = new Button("‹ Overview");
-        overview.setGraphic(icon(Icons.OVERVIEW, Palette.TEXT_LABEL, 13));
-        overview.setGraphicTextGap(6);
-        overview.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_LABEL)
-                + " -fx-background-color: transparent; -fx-border-color: transparent;"
-                + " -fx-padding: 6 10 6 6; -fx-cursor: hand;");
-        overview.setTooltip(new Tooltip("The city's job, what would help most, and what the market builds"));
-        overview.setOnAction(e -> showOverview());
-        strip.getChildren().add(overview);
+        strip.getChildren().add(Kept.scope("overview", () -> {
+            Button overview = Kept.of(Button.class, Button::new);
+            overview.setText("‹ Overview");
+            overview.setGraphic(icon(Icons.OVERVIEW, Palette.TEXT_LABEL, 13));
+            overview.setGraphicTextGap(6);
+            overview.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_LABEL)
+                    + " -fx-background-color: transparent; -fx-border-color: transparent;"
+                    + " -fx-padding: 6 10 6 6; -fx-cursor: hand;");
+            Kept.tip(overview, "The city's job, what would help most, and what the market builds", 1000);
+            overview.setOnAction(e -> showOverview());
+            return overview;
+        }));
 
         boolean ruled = false;
         for (BuildCategory category : buildCategories()) {
             boolean on = category.name().equals(current);
             if (investorBuilt(category.types()) && !ruled) {
                 // The rule between the city's five and the market's nine.
-                Region rule = new Region();
-                rule.setMinSize(1, 18);
-                rule.setPrefSize(1, 18);
-                rule.setMaxSize(1, 18);
-                rule.setStyle("-fx-background-color: " + Palette.EDGE + ";");
-                strip.getChildren().add(rule);
+                strip.getChildren().add(Kept.scope("rule", () -> {
+                    Region rule = Kept.region();
+                    rule.setMinSize(1, 18);
+                    rule.setPrefSize(1, 18);
+                    rule.setMaxSize(1, 18);
+                    rule.setStyle("-fx-background-color: " + Palette.EDGE + ";");
+                    return rule;
+                }));
                 ruled = true;
             }
             /*
@@ -360,23 +366,40 @@ final class BuildScreen {
              * "which of these do I actually have to do".
              */
             boolean theirs = investorBuilt(category.types());
-            Button tab = new Button(category.name());
-            tab.setGraphic(whoDot(theirs));
-            tab.setGraphicTextGap(6);
-            tab.setStyle(Palette.words(Palette.SIZE_BODY, on ? Palette.TEXT_HEAD : Palette.TEXT_LABEL)
-                    + " -fx-background-color: " + (on ? Palette.PINNED : "transparent") + ";"
-                    + " -fx-background-radius: " + Palette.RADIUS + ";"
-                    + " -fx-border-color: " + (on ? Palette.BUILDING : "transparent") + ";"
-                    + " -fx-border-width: 0 0 2 0; -fx-padding: 6 10 6 10; -fx-cursor: hand;");
-            Tooltip tip = new Tooltip(theirs
-                    ? "Investors build these themselves. You can build them too."
-                    : "Nobody builds these but the city.");
-            tip.setShowDelay(Duration.millis(250));
-            tab.setTooltip(tip);
-            tab.setOnAction(e -> openCategory(category.name()));
-            strip.getChildren().add(tab);
+            strip.getChildren().add(Kept.scope(category.name(), () -> {
+                Button tab = Kept.of(Button.class, Button::new);
+                tab.setText(category.name());
+                tab.setGraphic(whoDot(theirs));
+                tab.setGraphicTextGap(6);
+                tab.setStyle(Palette.words(Palette.SIZE_BODY, on ? Palette.TEXT_HEAD : Palette.TEXT_LABEL)
+                        + " -fx-background-color: " + (on ? Palette.PINNED : "transparent") + ";"
+                        + " -fx-background-radius: " + Palette.RADIUS + ";"
+                        + " -fx-border-color: " + (on ? Palette.BUILDING : "transparent") + ";"
+                        + " -fx-border-width: 0 0 2 0; -fx-padding: 6 10 6 10; -fx-cursor: hand;");
+                Kept.tip(tab, theirs
+                        ? "Investors build these themselves. You can build them too."
+                        : "Nobody builds these but the city.", 250);
+                tab.setOnAction(e -> openCategory(category.name()));
+                return tab;
+            }));
         }
         return strip;
+    }
+
+    /** The key in a kept flow's properties for the scroller its wrap length is bound to (wrapToScroller()). */
+    private static final String WRAPPED_TO_SCROLLER = "build.scroller";
+
+    /**
+     * A flow's wrap length bound to the menu scroller's width less the page's margins: the strip's, and a category page's
+     * rows of cards. Bound once for each scroller, since a flow handed back by a kept draw is bound already and a bind
+     * made every month would only churn a listener on the scroller.
+     */
+    void wrapToScroller(javafx.scene.layout.FlowPane flow) {
+        javafx.scene.control.ScrollPane scroller = ui.menuScroller;
+        if (flow.getProperties().get(WRAPPED_TO_SCROLLER) == scroller) return;
+        flow.prefWrapLengthProperty().unbind();
+        flow.prefWrapLengthProperty().bind(scroller.widthProperty().subtract(60));
+        flow.getProperties().put(WRAPPED_TO_SCROLLER, scroller);
     }
 
     /** The colour of "only the city builds these": the money blue - the city's own account. */
@@ -387,7 +410,7 @@ final class BuildScreen {
 
     /** A tab's dot: who builds what is behind it (0.7.21). */
     static Region whoDot(boolean investors) {
-        Region dot = new Region();
+        Region dot = Kept.region();
         dot.setMinSize(6, 6);
         dot.setPrefSize(6, 6);
         dot.setMaxSize(6, 6);
@@ -398,15 +421,13 @@ final class BuildScreen {
 
     /** The key to the dots, at the right of the page's title: "● only the city builds  ● investors build too". */
     HBox keyLine() {
-        Label city = new Label("only the city builds");
-        city.setGraphic(whoDot(false));
+        Label city = Kept.label("only the city builds", whoDot(false));
         city.setGraphicTextGap(6);
         city.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-        Label them = new Label("investors build too");
-        them.setGraphic(whoDot(true));
+        Label them = Kept.label("investors build too", whoDot(true));
         them.setGraphicTextGap(6);
         them.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-        HBox key = new HBox(Palette.GAP_LOOSE, city, them);
+        HBox key = Kept.row(Palette.GAP_LOOSE, city, them);
         key.setAlignment(Pos.CENTER_RIGHT);
         key.setMinWidth(Region.USE_PREF_SIZE);
         return key;
@@ -422,27 +443,34 @@ final class BuildScreen {
      * mockups' title - "Build" a way back to the Overview.
      */
     HBox buildHead(String menuTitle, EnumSet<BuildingType> categories) {
+        // Kept (KP3): the way back to the Overview (the crumb) and automatic building's chip come and go, so each is a scope.
         Label title = ui.pageTitle("Build");
-        HBox titled = new HBox(10, title);
+        HBox titled = Kept.row(10, title);
         titled.setAlignment(Pos.CENTER_LEFT);
         if (!BuildAdvice.OVERVIEW.equals(menuTitle)) {
             title.setStyle(title.getStyle() + " -fx-cursor: hand;");
             title.setOnMouseClicked(e -> showOverview());
-            Label sep = new Label("›");
-            sep.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_MUTED) + " -fx-padding: 8 0 2 0;");
-            Label where = new Label(menuTitle);
-            where.setStyle(Palette.strong(Palette.SIZE_TITLE, Palette.TEXT_HEAD) + " -fx-padding: 8 0 2 0;");
-            titled.getChildren().addAll(sep, where);
+            titled.getChildren().addAll(Kept.scope("crumb", () -> {
+                Label sep = Kept.label("›");
+                sep.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_MUTED) + " -fx-padding: 8 0 2 0;");
+                Label where = Kept.label(menuTitle);
+                where.setStyle(Palette.strong(Palette.SIZE_TITLE, Palette.TEXT_HEAD) + " -fx-padding: 8 0 2 0;");
+                return List.<javafx.scene.Node>of(sep, where);
+            }));
         }
-        Region gap = new Region();
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
         // ...and the way to the construction page (0.7.22): what is on site, and the hand on it.
         Label sites = stepChip("Construction ›", () -> ui.constructionScreen.show(), true);
-        HBox head = new HBox(Palette.GAP_LOOSE, titled, gap, keyLine(), sites, receiptCorner(menuTitle, categories));
+        HBox head = Kept.row(Palette.GAP_LOOSE, titled, gap, Kept.scope("key", this::keyLine), sites,
+                Kept.scope("receipt", () -> receiptCorner(menuTitle, categories)));
         // ...and, while it is on, automatic building's chip (0.7.73): the way to its cards on the Overview.
         if (ui.game.getAutoBuilder().isOn() && !BuildAdvice.OVERVIEW.equals(menuTitle)) {
-            Label auto = stepChip(AUTO_CHIP, this::showOverview, true);
-            auto.setStyle(auto.getStyle() + " -fx-text-fill: " + Palette.GOOD + ";");
+            Label auto = Kept.scope("auto", () -> {
+                Label chip = stepChip(AUTO_CHIP, this::showOverview, true);
+                chip.setStyle(chip.getStyle() + " -fx-text-fill: " + Palette.GOOD + ";");
+                return chip;
+            });
             head.getChildren().add(head.getChildren().indexOf(sites), auto);
         }
         head.setAlignment(Pos.CENTER_LEFT);
@@ -561,7 +589,7 @@ final class BuildScreen {
         int output = ui.game.getConstructionOutput();
         int sites = buildings.getUnderConstruction();
 
-        HBox bar = new HBox(0);
+        HBox bar = Kept.row(0);
         bar.setAlignment(Pos.CENTER);
         bar.setMaxWidth(Region.USE_PREF_SIZE);
         bar.setStyle("-fx-padding: 8 6 8 6;" + Palette.block(Palette.PANEL));
@@ -623,37 +651,38 @@ final class BuildScreen {
                 (zoned == null ? "" : "free for anyone · ") + String.format("%.0f%% of the city used", used * 100),
                 groundTone(CityNeeds.ground(ui.game, SummaryScreen.WORDS).level()),
                 "Go to the land office and buy more", () -> ui.landScreen.showLandMenu());
+        // Kept (KP3): the zoned door and the shortcut come and go, so each is a scope of its own.
         if (zoned != null) {
-            Label door = new Label(zoned);
-            door.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.ACCENT) + " -fx-cursor: hand; -fx-padding: 2 0 0 0;");
-            door.setMaxWidth(LAND_FREE_CELL - 28);
-            List<Zoning.Zone> zones = ui.game.getZoning().zones();
-            String page = zones.size() == 1 ? ZoningScreen.zonePage(zones.get(0).sector()) : ZoningScreen.THE_GROUND;
-            door.setOnMouseClicked(e -> {
-                e.consume();
-                ui.policyScreen.open(PolicyScreen.ZONING, page);
-            });
-            Tooltip tip = new Tooltip("Ground the zones hold for their sectors: no other business may take it.\n"
-                    + "Click for Policy › Zoning.");
-            tip.setShowDelay(Duration.millis(250));
-            Tooltip.install(door, tip);
-            cell.getChildren().add(door);
+            cell.getChildren().add(Kept.scope("zoned", () -> {
+                Label door = Kept.label(zoned);
+                door.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.ACCENT) + " -fx-cursor: hand; -fx-padding: 2 0 0 0;");
+                door.setMaxWidth(LAND_FREE_CELL - 28);
+                List<Zoning.Zone> zones = ui.game.getZoning().zones();
+                String page = zones.size() == 1 ? ZoningScreen.zonePage(zones.get(0).sector()) : ZoningScreen.THE_GROUND;
+                door.setOnMouseClicked(e -> {
+                    e.consume();
+                    ui.policyScreen.open(PolicyScreen.ZONING, page);
+                });
+                Kept.tip(door, "Ground the zones hold for their sectors: no other business may take it.\n"
+                        + "Click for Policy › Zoning.", 250);
+                return door;
+            }));
             cell.setPrefWidth(LAND_FREE_CELL);
         }
         LandParcel best = ui.game.bestOffer(Game.LandNeed.room());
         if (best == null) return cell;
         boolean funding = ui.game.landNeedsFunding(List.of(best.getId()));
-        Label shortcut = new Label(bestLandWords(best));
-        shortcut.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.BUILDING) + " -fx-cursor: hand; -fx-padding: 2 0 0 0;");
-        shortcut.setMaxWidth(LAND_FREE_CELL - 28);
-        shortcut.setOnMouseClicked(e -> {
-            e.consume();
-            buyBestLand(best, this::showBuildMenu);
-        });
-        Tooltip tip = new Tooltip(bestLandTip(best, funding));
-        tip.setShowDelay(Duration.millis(250));
-        Tooltip.install(shortcut, tip);
-        cell.getChildren().add(shortcut);
+        cell.getChildren().add(Kept.scope("best", () -> {
+            Label shortcut = Kept.label(bestLandWords(best));
+            shortcut.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.BUILDING) + " -fx-cursor: hand; -fx-padding: 2 0 0 0;");
+            shortcut.setMaxWidth(LAND_FREE_CELL - 28);
+            shortcut.setOnMouseClicked(e -> {
+                e.consume();
+                buyBestLand(best, this::showBuildMenu);
+            });
+            Kept.tip(shortcut, bestLandTip(best, funding), 250);
+            return shortcut;
+        }));
         cell.setPrefWidth(LAND_FREE_CELL);
         return cell;
     }
@@ -776,67 +805,79 @@ final class BuildScreen {
      * @param m     the picked ring on a city page; null on a market page
      */
     StackPane card(BuildCard.Figures f, BuildCard.Group group, BuildAdvice.Category c, BuildAdvice.Measure m) {
+        // Kept (KP3): a card is a scope keyed by its building, so a card that appears on a page does not shift its
+        // neighbours onto each other's nodes; each part that comes and goes inside it is a scope of its own.
+        return Kept.scope("card:" + f.template().getName(), () -> cardOf(f, group, c, m));
+    }
+
+    /** ...the card's body, drawn inside its scope. */
+    private StackPane cardOf(BuildCard.Figures f, BuildCard.Group group, BuildAdvice.Category c, BuildAdvice.Measure m) {
         BuildingsTemplate template = f.template();
         String key = template.getName();
         boolean afford = f.price() <= ui.game.getCash();
 
-        VBox face = new VBox(6);
+        VBox face = Kept.column(6);
         face.setStyle("-fx-padding: 10 12 10 12;");
-        face.getChildren().add(cardHead(f, Icons.ofCategory(c.name()), f.market() ? INVESTOR_DOT : CITY_DOT, afford));
-        javafx.scene.layout.FlowPane tags = cardTags(f, group);
+        face.getChildren().add(Kept.scope("head", () -> cardHead(f, Icons.ofCategory(c.name()), f.market() ? INVESTOR_DOT : CITY_DOT, afford)));
+        javafx.scene.layout.FlowPane tags = Kept.scope("tags", () -> cardTags(f, group));
         if (!tags.getChildren().isEmpty()) face.getChildren().add(tags);
-        face.getChildren().addAll(heroRow(f), priceRow(f, afford));
+        face.getChildren().addAll(Kept.scope("hero", () -> heroRow(f)), Kept.scope("price", () -> priceRow(f, afford)));
         // ...and (FC1), while the builders are short, why the work costs more than it did.
-        Label buildersShort = shortLine();
+        Label buildersShort = Kept.scope("builders short", this::shortLine);
         if (buildersShort != null) face.getChildren().add(buildersShort);
-        face.getChildren().addAll(cardBars(f, group, m));
+        face.getChildren().addAll(Kept.scope("bars", () -> cardBars(f, group, m)));
         // ...a sea terminal's payback, which ports never had (FR4; the advice's own read, BuildAdvice.berthPayback()).
-        if (f.kind() == BuildCard.Kind.BERTHS) face.getChildren().add(paybackLine(BuildCard.payback(ui.game, template)));
+        if (f.kind() == BuildCard.Kind.BERTHS) {
+            face.getChildren().add(Kept.scope("payback", () -> paybackLine(BuildCard.payback(ui.game, template))));
+        }
         // ...and (ET5), once the city owns shore on more than one landmass, where it stands: a chip for each, and what that links.
         Runnable[] repriced = new Runnable[1];
         if (f.kind() == BuildCard.Kind.BERTHS) {
-            VBox where = portChooser(template, () -> { if (repriced[0] != null) repriced[0].run(); });
+            VBox where = Kept.scope("port", () -> portChooser(template, () -> { if (repriced[0] != null) repriced[0].run(); }));
             if (where != null) face.getChildren().add(where);
         }
-        if (f.market()) face.getChildren().add(investorsLine(template));
+        if (f.market()) face.getChildren().add(Kept.scope("investors", () -> investorsLine(template)));
         // ...and a materials building's own lines (0.7.142, batch I13): where it stands, how its sector weighs it, its power,
         // its old metal and who buys what it makes (THE MATERIALS' LINES).
-        if (BuildCard.materials(ui.game, template)) face.getChildren().add(materialsBlock(template));
+        if (BuildCard.materials(ui.game, template)) face.getChildren().add(Kept.scope("materials", () -> materialsBlock(template)));
         // ...and a hydro station's river (HY1): the slots free of the city's, and the best site's width and head.
         BuildCard.Hydro river = BuildCard.hydro(ui.game, template);
         if (river != null) {
-            String[] words = hydroWords(river);
-            Label line = new Label(words[0]);
-            line.setWrapText(true);
-            line.setMinHeight(Region.USE_PREF_SIZE);
-            line.setStyle(wordsAt(9.5, words[1]));
-            face.getChildren().add(line);
+            face.getChildren().add(Kept.scope("river", () -> {
+                String[] words = hydroWords(river);
+                Label line = Kept.label(words[0]);
+                line.setWrapText(true);
+                line.setMinHeight(Region.USE_PREF_SIZE);
+                line.setStyle(wordsAt(9.5, words[1]));
+                return line;
+            }));
         }
         // ...and a long bridge's crossing (ET6): where it goes (a chip for each landmass), and what the survey finds - the length and
         // the depth, what the span and the landings cost, or why there is no way across.
         if (template.isBridge()) {
-            VBox crossing = bridgeBlock(template, () -> { if (repriced[0] != null) repriced[0].run(); });
+            VBox crossing = Kept.scope("crossing", () -> bridgeBlock(template, () -> { if (repriced[0] != null) repriced[0].run(); }));
             if (crossing != null) face.getChildren().add(crossing);
         }
-        face.getChildren().add(needsLine(f));
+        face.getChildren().add(Kept.scope("needs", () -> needsLine(f)));
 
-        StackPane card = new StackPane();
+        StackPane card = Kept.stack();
         // The border turns the building colour while an order is pending.
         Runnable dress = () -> card.setStyle("-fx-background-color: " + Palette.RAISED + ";"
                 + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: "
                 + (orderQty.getOrDefault(key, 0) > 0 ? Palette.BUILDING : Palette.EDGE) + ";");
-        Order order = orderControls(template, key, c.name(), c.types(), dress);
+        Order order = Kept.scope("order", () -> orderControls(template, key, c.name(), c.types(), dress));
         repriced[0] = order.reprice();
         face.getChildren().addAll(order.steps(), order.build(), order.quoted());
         // ...and on the Gravel Road's, paving them (0.7.70; ConstructionControl, F).
         if (m != null && m.kind() == BuildAdvice.Kind.ROADS && ConstructionControl.paves(template) && f.owned() > 0) {
-            VBox pave = pavingBlock(template, c.name(), c.types());
+            VBox pave = Kept.scope("paving", () -> pavingBlock(template, c.name(), c.types()));
             if (pave != null) face.getChildren().add(pave);
         }
 
-        VBox cover = statCover(template, f);
-        cover.setVisible(pinnedStats.contains(key));
-        Label info = infoDot(key, cover);
+        VBox cover = Kept.scope("cover", () -> statCover(template, f));
+        Label info = Kept.scope("info", () -> infoDot(key, cover));
+        // A pointer left over the (i) across a redraw has kept the cover open, but sends no mouse-entered to a kept node.
+        cover.setVisible(pinnedStats.contains(key) || info.isHover());
         card.getChildren().addAll(face, cover, info);
         StackPane.setAlignment(info, Pos.TOP_RIGHT);
         StackPane.setMargin(info, new javafx.geometry.Insets(8, 8, 0, 0));
@@ -872,26 +913,27 @@ final class BuildScreen {
         BuildCard.Paving p0 = BuildCard.paving(ui.game, gravel);
         if (p0 == null) return null;
         paveQty = Math.max(0, Math.min(paveQty, p0.paveable()));
-        Label head = new Label(PAVE_HEAD);
+        Label head = Kept.label(PAVE_HEAD);
         head.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.ACCENT) + " -fx-font-weight: bold; -fx-padding: 6 0 0 0;");
         String[] said = pavingWords(p0, paveQty);
-        Label what = new Label(said[0]);
+        Label what = Kept.label(said[0]);
         what.setWrapText(true);
         what.setStyle(wordsAt(9.5, Palette.TEXT_LABEL));
-        Label against = new Label(said[1]);
+        Label against = Kept.label(said[1]);
         against.setWrapText(true);
         against.setStyle(wordsAt(9.5, Palette.TEXT_MUTED));
-        Tooltip.install(against, new Tooltip(PAVE_INFO));
-        VBox block = new VBox(4, head);
-        if (p0.beatsPaved()) block.getChildren().add(tag(PAVE_TAG, Palette.GOOD));
+        Kept.tip(against, PAVE_INFO, 1000);
+        VBox block = Kept.column(4, head);
+        // Kept (KP3): the tag comes and goes, so it is a scope of its own.
+        if (p0.beatsPaved()) block.getChildren().add(Kept.scope("beats", () -> tag(PAVE_TAG, Palette.GOOD)));
         block.getChildren().addAll(what, against);
 
-        Label count = new Label("0");
+        Label count = Kept.label("0");
         count.setMinWidth(30);
         count.setAlignment(Pos.CENTER);
-        Label of = new Label(said[3]);
+        Label of = Kept.label(said[3]);
         of.setStyle(wordsAt(9.5, Palette.TEXT_MUTED));
-        Label quoted = new Label(" ");
+        Label quoted = Kept.label(" ");
         quoted.setWrapText(true);
         quoted.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
         Pieces.ActionButton pave = actionButton(Icons.BUILD, Palette.BUILDING, ACTION_TALL, pavePress(p0, 0), null);
@@ -909,7 +951,7 @@ final class BuildScreen {
         Button more = stepper("+", 26, () -> { paveQty++; reprice.run(); });
         Button ten = stepper("+10", 36, () -> { paveQty += 10; reprice.run(); });
         Button all = stepper("all", 30, () -> { paveQty = Integer.MAX_VALUE; reprice.run(); });
-        HBox steps = new HBox(4, less, count, more, ten, all, of);
+        HBox steps = Kept.row(4, less, count, more, ten, all, of);
         steps.setAlignment(Pos.CENTER_LEFT);
         pave.onPress(() -> {
             if (paveQty <= 0) { paveQty = 1; reprice.run(); return; }
@@ -980,15 +1022,20 @@ final class BuildScreen {
 
     /** A run of words in a TextFlow, at a size and in a colour - so a line wraps where it must and never ends in "...". */
     static javafx.scene.text.Text textRun(String s, String font, double size, String colour) {
-        javafx.scene.text.Text run = new javafx.scene.text.Text(s);
+        // Kept (KP3): the run handed back, its words, style and fill set again; underlined only where a caller says so.
+        javafx.scene.text.Text run = Kept.of(javafx.scene.text.Text.class, javafx.scene.text.Text::new);
+        run.setText(s);
         run.setStyle((font == null ? "" : font + " ") + "-fx-font-size: " + size + "px;");
         run.setFill(javafx.scene.paint.Color.web(colour));
+        run.setUnderline(false);
         return run;
     }
 
     /** ...and a TextFlow of them, as wide as a card's face. */
     static javafx.scene.text.TextFlow flow(javafx.scene.Node... runs) {
-        javafx.scene.text.TextFlow line = new javafx.scene.text.TextFlow(runs);
+        // A TextFlow is not one of Kept's boxes, so its runs are set where they differ (Kept.set).
+        javafx.scene.text.TextFlow line = Kept.of(javafx.scene.text.TextFlow.class, javafx.scene.text.TextFlow::new);
+        Kept.set(line.getChildren(), java.util.Arrays.asList(runs));
         line.setMinWidth(0);
         line.setPrefWidth(NEED_CARD - 24);
         line.setMaxWidth(NEED_CARD - 24);
@@ -1006,27 +1053,29 @@ final class BuildScreen {
     HBox cardHead(BuildCard.Figures f, String svg, String dot, boolean afford) {
         BuildingsTemplate t = f.template();
         int owned = f.owned();
-        Label name = new Label(t.getName());
+        Label name = Kept.label(t.getName());
         name.setWrapText(true);
         name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, afford ? Palette.TEXT_HEAD : Palette.TEXT_FAINT));
         javafx.scene.text.Text have = textRun(owned > 0 ? "you have " + formatter.format(owned) : "none built",
                 null, Palette.SIZE_LABEL, owned > 0 ? Palette.ACCENT : Palette.TEXT_LABEL);
         int onSite = f.onSite();
-        javafx.scene.text.TextFlow haveLine = new javafx.scene.text.TextFlow(have);
+        javafx.scene.text.TextFlow haveLine = Kept.of(javafx.scene.text.TextFlow.class, javafx.scene.text.TextFlow::new);
         if (onSite > 0) {
             javafx.scene.text.Text coming = textRun(" · " + formatter.format(onSite) + " on site · "
                     + atTodaysQueue(f.siteMonths()), null, Palette.SIZE_LABEL, Palette.BUILDING);
             coming.setUnderline(true);
             coming.setCursor(javafx.scene.Cursor.HAND);
             coming.setOnMouseClicked(e -> ui.constructionScreen.showSite(ConstructionControl.keyOf(t)));
-            haveLine.getChildren().add(coming);
+            Kept.set(haveLine.getChildren(), List.of(have, coming));
+        } else {
+            Kept.set(haveLine.getChildren(), List.of(have));
         }
         haveLine.setMinWidth(0);
-        VBox who = new VBox(1, name, haveLine);
+        VBox who = Kept.column(1, name, haveLine);
         HBox.setHgrow(who, Priority.ALWAYS);
         who.setMinWidth(0);
         who.setPadding(new javafx.geometry.Insets(0, 20, 0, 0));
-        HBox top = new HBox(10, iconSquare(svg, dot, 34, 18), who);
+        HBox top = Kept.row(10, iconSquare(svg, dot, 34, 18), who);
         top.setAlignment(Pos.TOP_LEFT);
         return top;
     }
@@ -1036,9 +1085,10 @@ final class BuildScreen {
      * and best2()), in a flow so two never cut each other.
      */
     javafx.scene.layout.FlowPane cardTags(BuildCard.Figures f, BuildCard.Group group) {
-        javafx.scene.layout.FlowPane tags = new javafx.scene.layout.FlowPane(6, 4);
+        javafx.scene.layout.FlowPane tags = Kept.flow(6, 4);
         tags.setPrefWrapLength(NEED_CARD - 24);
-        for (String words : tagWords(f, group)) tags.getChildren().add(tag(words, Palette.GOOD));
+        // Kept (KP3): a tag is a scope keyed by its words, so one that comes or goes shifts none of the others.
+        for (String words : tagWords(f, group)) tags.getChildren().add(Kept.scope(words, () -> tag(words, Palette.GOOD)));
         return tags;
     }
 
@@ -1075,21 +1125,25 @@ final class BuildScreen {
     VBox heroRow(BuildCard.Figures f) {
         // A power plant's figure is kilowatts, written scaled with its unit (0.7.28).
         boolean kw = BuildCard.KILOWATTS.equals(f.words());
-        javafx.scene.text.TextFlow line = flow(
+        List<javafx.scene.Node> runs = new ArrayList<>(List.of(
                 textRun(f.verb(), null, Palette.SIZE_LABEL, Palette.TEXT_MUTED),
                 textRun(kw ? power(f.figure()) : shortOrWhole(f.figure()), Palette.Fonts.monoSemiBold(), Palette.SIZE_SECTION + 2, Palette.TEXT_HEAD),
-                textRun(kw ? "" : f.words(), null, Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+                textRun(kw ? "" : f.words(), null, Palette.SIZE_LABEL, Palette.TEXT_MUTED)));
         if (f.kind() == BuildCard.Kind.CITY && f.unit() < f.built() - .5) {
-            line.getChildren().add(textRun(" · " + (kw ? power(f.built()) : shortOrWhole(f.built())) + " fully staffed", null,
+            runs.add(textRun(" · " + (kw ? power(f.built()) : shortOrWhole(f.built())) + " fully staffed", null,
                     Palette.SIZE_LABEL, Palette.TEXT_MUTED));
         }
-        VBox hero = new VBox(2, line);
+        javafx.scene.text.TextFlow line = flow(runs.toArray(new javafx.scene.Node[0]));
+        VBox hero = Kept.column(2, line);
         String detail = heroDetail(f);
+        // Kept (KP3): the smaller line comes and goes, so it is a scope of its own.
         if (!detail.isEmpty()) {
-            Label more = new Label(detail);
-            more.setWrapText(true);
-            more.setStyle(wordsAt(9.5, Palette.TEXT_MUTED));
-            hero.getChildren().add(more);
+            hero.getChildren().add(Kept.scope("detail", () -> {
+                Label more = Kept.label(detail);
+                more.setWrapText(true);
+                more.setStyle(wordsAt(9.5, Palette.TEXT_MUTED));
+                return more;
+            }));
         }
         return hero;
     }
@@ -1254,14 +1308,14 @@ final class BuildScreen {
 
     /** The price all in, green when the cash covers it and red when it does not, with the sticker smaller. */
     HBox priceRow(BuildCard.Figures f, boolean afford) {
-        Label price = new Label(money(f.price()));
+        Label price = Kept.label(money(f.price()));
         price.setStyle(Palette.figure(Palette.SIZE_SECTION, afford ? Palette.GOOD : Palette.BAD));
         price.setMinWidth(Region.USE_PREF_SIZE);
-        Label allIn = new Label(" all in · sticker " + money(f.sticker()));
+        Label allIn = Kept.label(" all in · sticker " + money(f.sticker()));
         allIn.setStyle(wordsAt(9.5, Palette.TEXT_MUTED));
         allIn.setWrapText(true);
         allIn.setMinWidth(0);
-        HBox row = new HBox(0, price, allIn);
+        HBox row = Kept.row(0, price, allIn);
         row.setAlignment(Pos.BASELINE_LEFT);
         return row;
     }
@@ -1280,7 +1334,7 @@ final class BuildScreen {
         boolean foreign = bm.foreignCrewsTakeOrders();
         double premium = bm.scarcityPremium();
         if (!foreign && Math.round(premium * 100) == 0) return null;
-        Label line = new Label(foreign
+        Label line = Kept.label(foreign
                 ? String.format("foreign crews: ×%.1f on the work, paid abroad · the city's crews are all on repairs",
                         BuildersShort.FOREIGN_PRICE)
                 : String.format("builders short: +%d%% on the work · ≈ %.1f months queued",
@@ -1288,10 +1342,9 @@ final class BuildScreen {
         line.setStyle(wordsAt(9.5, foreign ? Palette.BAD : Palette.WARN));
         line.setWrapText(true);
         line.setMinWidth(0);
-        Tooltip tip = new Tooltip(buildersShortInfo());
+        Tooltip tip = Kept.tip(line, buildersShortInfo(), 1000);
         tip.setWrapText(true);
         tip.setMaxWidth(320);
-        Tooltip.install(line, tip);
         return line;
     }
 
@@ -1323,18 +1376,19 @@ final class BuildScreen {
         boolean track = group.track() && !f.addsNothing();
         String[] words = barWords(f, m);
         List<javafx.scene.Node> out = new ArrayList<>();
-        VBox money = barRow(words[0], words[1], group.share1(f), Palette.MONEY, wide, null, track);
+        // Kept (KP3): each bar is a scope of its own, since the second comes and goes.
+        VBox money = Kept.scope("money", () -> barRow(words[0], words[1], group.share1(f), Palette.MONEY, wide, null, track));
         // ...and what its money is struck at (0.7.45; the UI spec's 2.10), behind an (i) after its words.
         if (!money.getChildren().isEmpty() && money.getChildren().get(0) instanceof HBox head) {
             boolean road = f.kind() == BuildCard.Kind.CITY && f.bar2Kind() == BuildCard.Bar2.LAND;
-            head.getChildren().add(1, infoButton(road ? roadBarInfo() : moneyBarInfo(), false));
+            head.getChildren().add(1, Kept.scope("info", () -> infoButton(road ? roadBarInfo() : moneyBarInfo(), false)));
         }
         out.add(money);
         // None for a city building with no posts: its needs line says so.
         if (words[2] == null) return out;
         boolean land = f.bar2Kind() == BuildCard.Bar2.LAND;
-        out.add(barRow(words[2], words[3], group.share2(f), land ? Palette.BUILDING : Palette.PEOPLE, wide,
-                land ? Icons.LAND : Icons.STAFF, track));
+        out.add(Kept.scope("second", () -> barRow(words[2], words[3], group.share2(f), land ? Palette.BUILDING : Palette.PEOPLE, wide,
+                land ? Icons.LAND : Icons.STAFF, track)));
         return out;
     }
 
@@ -1391,22 +1445,22 @@ final class BuildScreen {
         String who = depot == null ? "Investors" : inv.owner().key();
         if (depot != null) said = new String[] {depotWords(depot, inv), said[1]};
         double size = 9.5;
-        javafx.scene.text.TextFlow line = new javafx.scene.text.TextFlow(
+        javafx.scene.text.TextFlow line = Kept.of(javafx.scene.text.TextFlow.class, javafx.scene.text.TextFlow::new);
+        List<javafx.scene.Node> runs = new ArrayList<>(List.of(
                 textRun(who, Palette.Fonts.sansSemiBold(), size, Palette.BUSINESS),
-                textRun(said[0], null, size, Palette.TEXT_MUTED));
-        if (said[1] != null) line.getChildren().add(textRun(said[1], null, size, Palette.WARN));
+                textRun(said[0], null, size, Palette.TEXT_MUTED)));
+        if (said[1] != null) runs.add(textRun(said[1], null, size, Palette.WARN));
+        Kept.set(line.getChildren(), runs);
         line.setMinWidth(0);
         HBox.setHgrow(line, Priority.ALWAYS);
-        HBox row = new HBox(5, icon(Icons.SECTOR, Palette.BUSINESS, 12), line);
+        HBox row = Kept.row(5, icon(Icons.SECTOR, Palette.BUSINESS, 12), line);
         row.setAlignment(Pos.TOP_LEFT);
         row.setStyle("-fx-cursor: hand;");
-        Tooltip tip = new Tooltip((word.isEmpty() ? "Nothing recorded since the city was loaded or founded: a month has to run."
+        Tooltip tip = Kept.tip(row, (word.isEmpty() ? "Nothing recorded since the city was loaded or founded: a month has to run."
                 : word) + "\nInvestors' estimate: " + money(inv.estimate()) + " a month to its owner."
-                + "\nClick for " + inv.owner().key() + "'s Investors page.");
+                + "\nClick for " + inv.owner().key() + "'s Investors page.", 300);
         tip.setWrapText(true);
         tip.setMaxWidth(420);
-        tip.setShowDelay(Duration.millis(300));
-        Tooltip.install(row, tip);
         row.setOnMouseClicked(e -> ui.sectorScreen.openSectorBooks(inv.owner(), "Investors"));
         return row;
     }
@@ -1482,22 +1536,21 @@ final class BuildScreen {
                 rest = ": no cargo of this kind (" + kind + ") crosses the boundary yet";
                 break;
         }
-        javafx.scene.text.TextFlow line = new javafx.scene.text.TextFlow(
-                textRun(lead, Palette.Fonts.sansSemiBold(), 9.5, tone), textRun(rest, null, 9.5, Palette.TEXT_MUTED));
+        javafx.scene.text.TextFlow line = Kept.of(javafx.scene.text.TextFlow.class, javafx.scene.text.TextFlow::new);
+        Kept.set(line.getChildren(), List.of(
+                textRun(lead, Palette.Fonts.sansSemiBold(), 9.5, tone), textRun(rest, null, 9.5, Palette.TEXT_MUTED)));
         line.setMinWidth(0);
         HBox.setHgrow(line, Priority.ALWAYS);
-        HBox row = new HBox(5, icon(Icons.COIN, tone, 12), line);
+        HBox row = Kept.row(5, icon(Icons.COIN, tone, 12), line);
         row.setAlignment(Pos.TOP_LEFT);
-        Tooltip tip = new Tooltip(String.format("What one more %s would earn the city as landlord: %s a tonne in dues at the dial in"
+        Tooltip tip = Kept.tip(row, String.format("What one more %s would earn the city as landlord: %s a tonne in dues at the dial in"
                 + " force, on the %s it would carry of the %s with no berth, against a price of %s%s. The advice orders it at %s"
                 + " with no berth (Policy > Taxes > Port dues sets the dial).",
                 p.terminal().getName(), money(p.duesRate()), tonnesAYear(p.carriedAYear()), tonnesAYear(p.uncovered() * 12),
                 money(p.price()), p.upkeep() > 0 ? " and " + money(p.upkeep()) + " a month to keep" : "",
-                Double.isFinite(p.needed()) ? tonnesAYear(p.needed() * 12) : "never"));
+                Double.isFinite(p.needed()) ? tonnesAYear(p.needed() * 12) : "never"), 300);
         tip.setWrapText(true);
         tip.setMaxWidth(420);
-        tip.setShowDelay(Duration.millis(300));
-        Tooltip.install(row, tip);
         return row;
     }
 
@@ -1514,12 +1567,12 @@ final class BuildScreen {
         List<Landmasses.Row> choices = ui.game.portLandmassChoices(template);
         if (!LandmassView.chooserShown(choices)) return null;
         Landmasses lms = ui.game.getLandManager().getLandmasses();
-        VBox box = new VBox(3);
+        VBox box = Kept.column(3);
         Runnable[] draw = new Runnable[1];
         draw[0] = () -> {
             box.getChildren().clear();
             int at = lms.portLandmass(template.getId(), Landmasses.CHOSEN);
-            Label where = new Label(LandmassView.CHOOSER_LABEL);
+            Label where = Kept.label(LandmassView.CHOOSER_LABEL);
             where.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
             String[] names = LandmassView.choiceNames(choices);
             javafx.scene.layout.FlowPane chips = Pieces.chipStrip(names, LandmassView.currentChoice(choices, at), Palette.SIZE_CAPTION, name -> {
@@ -1533,10 +1586,13 @@ final class BuildScreen {
             box.getChildren().addAll(where, chips);
             String links = LandmassView.linkWords(lms, at);
             if (!links.isEmpty()) {
-                Label words = new Label(links.substring(0, 1).toUpperCase() + links.substring(1) + ".");
-                words.setWrapText(true);
-                words.setStyle(Palette.words(Palette.SIZE_CAPTION, lms.linked(at) ? Palette.GOOD : Palette.WARN));
-                box.getChildren().add(words);
+                // Kept (KP3): what a terminal there links comes and goes, so it is a scope of its own.
+                box.getChildren().add(Kept.scope("links", () -> {
+                    Label words = Kept.label(links.substring(0, 1).toUpperCase() + links.substring(1) + ".");
+                    words.setWrapText(true);
+                    words.setStyle(Palette.words(Palette.SIZE_CAPTION, lms.linked(at) ? Palette.GOOD : Palette.WARN));
+                    return words;
+                }));
             }
         };
         draw[0].run();
@@ -1552,33 +1608,38 @@ final class BuildScreen {
      */
     VBox bridgeBlock(BuildingsTemplate template, Runnable after) {
         if (BuildCard.bridge(ui.game, template) == null) return null;
-        VBox box = new VBox(3);
+        VBox box = Kept.column(3);
         Runnable[] draw = new Runnable[1];
         draw[0] = () -> {
             box.getChildren().clear();
             List<Landmasses.Row> choices = ui.game.bridgeChoices(template);
+            // Kept (KP3): the chips come and go with the landmasses the city owns, so they are a scope; so is the survey's line.
             if (LandmassView.chooserShown(choices)) {
-                Label to = new Label("Toward");
-                to.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-                String[] names = LandmassView.choiceNames(choices);
-                javafx.scene.layout.FlowPane chips = Pieces.chipStrip(names, LandmassView.currentChoice(choices, ui.game.bridgeLandmass(template)), Palette.SIZE_CAPTION, name -> {
-                    for (int i = 0; i < names.length; i++) {
-                        if (names[i].equals(name)) ui.game.chooseBridgeLandmass(template, choices.get(i).id());
-                    }
-                    draw[0].run();
-                    after.run();
-                });
-                chips.setAlignment(Pos.CENTER_LEFT);
-                box.getChildren().addAll(to, chips);
+                box.getChildren().addAll(Kept.scope("toward", () -> {
+                    Label to = Kept.label("Toward");
+                    to.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+                    String[] names = LandmassView.choiceNames(choices);
+                    javafx.scene.layout.FlowPane chips = Pieces.chipStrip(names, LandmassView.currentChoice(choices, ui.game.bridgeLandmass(template)), Palette.SIZE_CAPTION, name -> {
+                        for (int i = 0; i < names.length; i++) {
+                            if (names[i].equals(name)) ui.game.chooseBridgeLandmass(template, choices.get(i).id());
+                        }
+                        draw[0].run();
+                        after.run();
+                    });
+                    chips.setAlignment(Pos.CENTER_LEFT);
+                    return List.<javafx.scene.Node>of(to, chips);
+                }));
             }
             BuildCard.Bridge b = BuildCard.bridge(ui.game, template);
             if (b != null) {
-                String[] words = bridgeWords(b);
-                Label line = new Label(words[0]);
-                line.setWrapText(true);
-                line.setMinHeight(Region.USE_PREF_SIZE);
-                line.setStyle(wordsAt(9.5, words[1]));
-                box.getChildren().add(line);
+                box.getChildren().add(Kept.scope("survey", () -> {
+                    String[] words = bridgeWords(b);
+                    Label line = Kept.label(words[0]);
+                    line.setWrapText(true);
+                    line.setMinHeight(Region.USE_PREF_SIZE);
+                    line.setStyle(wordsAt(9.5, words[1]));
+                    return line;
+                }));
             }
         };
         draw[0].run();
@@ -1736,34 +1797,37 @@ final class BuildScreen {
 
     /** The block: one label a line, each {words, colour} of materialsWords(). */
     VBox materialsBlock(BuildingsTemplate t) {
-        VBox box = new VBox(2);
+        VBox box = Kept.column(2);
+        // Kept (KP3): a line is a scope keyed by what it says of the building (w[2]), so one that comes or goes shifts none of the rest.
         for (String[] w : materialsWords(t)) {
-            Label line = new Label(w[0]);
-            line.setWrapText(true);
-            line.setMinHeight(Region.USE_PREF_SIZE);
-            line.setStyle(wordsAt(9.5, w[1]));
-            box.getChildren().add(line);
+            box.getChildren().add(Kept.scope(w[2], () -> {
+                Label line = Kept.label(w[0]);
+                line.setWrapText(true);
+                line.setMinHeight(Region.USE_PREF_SIZE);
+                line.setStyle(wordsAt(9.5, w[1]));
+                return line;
+            }));
         }
         return box;
     }
 
-    /** A materials building's lines, worked out without drawing them (a probe reads them): each {words, colour}, in the block's order. */
+    /** A materials building's lines, worked out without drawing them (a probe reads them): each {words, colour, key}, in the block's order; the key says which line it is, for the scope that draws it. */
     List<String[]> materialsWords(BuildingsTemplate t) {
         Game g = ui.game;
         List<String[]> out = new ArrayList<>();
         BuildCard.Stands at = BuildCard.stands(g, t);
-        if (at != null) out.add(standsWords(at));
+        if (at != null) { String[] stands = standsWords(at); out.add(new String[] {stands[0], stands[1], "stands"}); }
         BuildCard.Weighed w = BuildCard.weighed(g, t);
-        if (w != null) out.add(new String[] {weighedWords(w), Palette.TEXT_MUTED});
+        if (w != null) out.add(new String[] {weighedWords(w), Palette.TEXT_MUTED, "weighed"});
         BuildCard.Power p = BuildCard.power(g, t);
-        if (p != null) out.add(new String[] {powerWords(p), Palette.TEXT_MUTED});
+        if (p != null) out.add(new String[] {powerWords(p), Palette.TEXT_MUTED, "power"});
         BuildCard.OldMetalBought o = BuildCard.oldMetal(g, t);
-        if (o != null) out.add(new String[] {oldMetalWords(o), o.spare() < o.intake() ? Palette.WARN : Palette.TEXT_MUTED});
+        if (o != null) out.add(new String[] {oldMetalWords(o), o.spare() < o.intake() ? Palette.WARN : Palette.TEXT_MUTED, "old metal"});
         String goes = outletWords(BuildCard.outlets(g, t));
-        if (!goes.isEmpty()) out.add(new String[] {goes, Palette.TEXT_MUTED});
+        if (!goes.isEmpty()) out.add(new String[] {goes, Palette.TEXT_MUTED, "outlets"});
         if (ham.citybuildersim.sectors.Forestry.isCrew(t)) {
             BuildCard.CrewRule rule = BuildCard.crewRule(g, t);
-            out.add(new String[] {crewWords(rule, t), rule.room() ? Palette.TEXT_MUTED : Palette.WARN});
+            out.add(new String[] {crewWords(rule, t), rule.room() ? Palette.TEXT_MUTED : Palette.WARN, "crew"});
         }
         return out;
     }
@@ -1919,7 +1983,7 @@ final class BuildScreen {
      * which for a city building is the treasury's bill.
      */
     Label needsLine(BuildCard.Figures f) {
-        Label needs = new Label(needsWords(f));
+        Label needs = Kept.label(needsWords(f));
         needs.setWrapText(true);
         needs.setStyle(wordsAt(9.5, f.template().getLandSqFt() > f.landFree() ? Palette.BAD : Palette.TEXT_MUTED));
         return needs;
@@ -1980,10 +2044,10 @@ final class BuildScreen {
      * @param after run after every reprice: the card's border
      */
     Order orderControls(BuildingsTemplate template, String key, String page, EnumSet<BuildingType> types, Runnable after) {
-        Label quoted = new Label(" ");
+        Label quoted = Kept.label(" ");
         quoted.setWrapText(true);
         quoted.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-        Label count = new Label("0");
+        Label count = Kept.label("0");
         count.setMinWidth(30);
         count.setAlignment(Pos.CENTER);
         count.setStyle(Palette.figure(Palette.SIZE_BODY, Palette.TEXT_HEAD));
@@ -2023,7 +2087,9 @@ final class BuildScreen {
                         + (deep == null ? "" : "\n" + deep));
                 quoted.setStyle(Palette.words(Palette.SIZE_CAPTION, said[1]));
             }
-            refreshOrderBar();
+            // Kept (KP3): a card drawn inside a kept draw leaves the order bar to the page, which refills it once, last; a
+            // stepper pressed between draws reprices into it here, with plain new nodes, as it always did.
+            if (!Kept.drawing()) refreshOrderBar();
             after.run();
         };
         Button less = stepper("−", 26, () -> {
@@ -2059,9 +2125,7 @@ final class BuildScreen {
             orderQty.remove(key);
             reprice.run();
         });
-        Tooltip clear = new Tooltip("Back to none");
-        clear.setShowDelay(Duration.millis(300));
-        reset.setTooltip(clear);
+        Kept.tip(reset, "Back to none", 300);
         resetHolder[0] = reset;
         build.onPress(() -> {
             int n = orderQty.getOrDefault(key, 0);
@@ -2075,12 +2139,10 @@ final class BuildScreen {
             placeRun(runOf(template, n), new RunFrom(page, types, true));
         });
         // The shortcut, said on the button it stands in for.
-        Tooltip keys = new Tooltip("Enter builds every pending order on this page; Backspace clears them");
-        keys.setShowDelay(Duration.millis(300));
-        Tooltip.install(build, keys);
-        Region spread = new Region();
+        Kept.tip(build, "Enter builds every pending order on this page; Backspace clears them", 300);
+        Region spread = Kept.region();
         HBox.setHgrow(spread, Priority.ALWAYS);
-        HBox steps = new HBox(4, less, count, more, ten, hundred, spread, reset);
+        HBox steps = Kept.row(4, less, count, more, ten, hundred, spread, reset);
         steps.setAlignment(Pos.CENTER_LEFT);
         return new Order(steps, build, quoted, reprice);
     }
@@ -2193,7 +2255,7 @@ final class BuildScreen {
 
     /** The (i): hover shows the stat cover over the whole card, a click keeps it there (the dot turns blue), a second puts it away. */
     Label infoDot(String key, VBox cover) {
-        Label info = new Label("i");
+        Label info = Kept.label("i");
         info.setAlignment(Pos.CENTER);
         info.setMinSize(18, 18);
         info.setPrefSize(18, 18);
@@ -2211,9 +2273,7 @@ final class BuildScreen {
             dress.run();
             cover.setVisible(true);
         });
-        Tooltip pin = new Tooltip("Hover to read, click to keep it open");
-        pin.setShowDelay(Duration.millis(400));
-        Tooltip.install(info, pin);
+        Kept.tip(info, "Hover to read, click to keep it open", 400);
         return info;
     }
 
@@ -2233,23 +2293,30 @@ final class BuildScreen {
      */
     VBox statCover(BuildingsTemplate t, BuildCard.Figures f) {
 
-        VBox body = new VBox(1);
+        // Kept (KP3): the sentences, the figures, the wages and the investors' estimate are a scope each (the sentences
+        // vary in number, the wages and the estimate come and go), and a figure is a scope keyed by its label.
+        VBox body = Kept.column(1);
         body.setStyle("-fx-padding: 8 10 8 10;");
 
-        Label title = new Label(t.getName().toUpperCase());
+        Label title = Kept.label(t.getName().toUpperCase());
         title.setWrapText(true);
         title.setMaxWidth(NEED_CARD - 46);
         title.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.ACCENT) + " -fx-font-weight: bold;");
         body.getChildren().add(title);
 
-        for (String line : whatItDoes(t)) {
-            Label l = new Label(line);
-            l.setWrapText(true);
-            l.setMaxWidth(NEED_CARD - 28);
-            l.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_BODY)
-                    + " -fx-padding: 3 0 0 0;");
-            body.getChildren().add(l);
-        }
+        List<String> does = whatItDoes(t);
+        body.getChildren().addAll(Kept.scope("does", () -> {
+            List<javafx.scene.Node> lines = new ArrayList<>();
+            for (String line : does) {
+                Label l = Kept.label(line);
+                l.setWrapText(true);
+                l.setMaxWidth(NEED_CARD - 28);
+                l.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_BODY)
+                        + " -fx-padding: 3 0 0 0;");
+                lines.add(l);
+            }
+            return lines;
+        }));
 
         /*
          * WHAT THE FACE DOES NOT ALREADY SAY. The cash cost, the land and the
@@ -2257,13 +2324,12 @@ final class BuildScreen {
          * them would tell the player three things they had just read. A cover
          * that repeats the face is a cover that wastes the space it took.
          */
-        body.getChildren().add(cardGap());
-        body.getChildren().addAll(
+        body.getChildren().addAll(Kept.scope("figures", () -> List.<javafx.scene.Node>of(cardGap(),
                 statPair("Materials", formatter.format(t.getConstructionMaterials())),
                 statPair("Build points", formatter.format(t.getConstructionPoints())),
                 statPair("Road load", formatter.format(t.getRoadLoad())),
                 statPair("Electricity", power(t.getElectricityConsumption())),
-                statPair("Water", formatter.format(t.getWaterConsumption())));
+                statPair("Water", formatter.format(t.getWaterConsumption())))));
 
         double[] wages = ui.game.getPopulationManager().getWagesPerType();
         StringBuilder mix = new StringBuilder();
@@ -2278,37 +2344,40 @@ final class BuildScreen {
             mix.append(n).append(" ").append(jobLabel(job));
         }
         if (staff > 0) {
-            body.getChildren().add(cardGap());
-            body.getChildren().add(statPair("Wages", money(bill) + "/mo"));
-            Label who = new Label(mix.toString());
-            who.setWrapText(true);
-            who.setMaxWidth(NEED_CARD - 28);
-            who.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-            body.getChildren().add(who);
+            final double wageBill = bill;
+            body.getChildren().addAll(Kept.scope("wages", () -> {
+                Label who = Kept.label(mix.toString());
+                who.setWrapText(true);
+                who.setMaxWidth(NEED_CARD - 28);
+                who.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+                return List.<javafx.scene.Node>of(cardGap(), statPair("Wages", money(wageBill) + "/mo"), who);
+            }));
         }
 
         // ...and on a market card, what the investors reckon one would make
         // its owner a month (BusinessInvestment.estimatedMonthlyProfit()):
         // after its wages, so it can be a loss where the value added is not.
         if (f.market()) {
-            body.getChildren().add(cardGap());
-            Label est = new Label("Investors' estimate: " + money(BuildCard.investors(ui.game, t).estimate())
-                    + " a month to its owner.");
-            est.setWrapText(true);
-            est.setMaxWidth(NEED_CARD - 28);
-            est.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_BODY));
-            body.getChildren().add(est);
+            body.getChildren().addAll(Kept.scope("estimate", () -> {
+                Label est = Kept.label("Investors' estimate: " + money(BuildCard.investors(ui.game, t).estimate())
+                        + " a month to its owner.");
+                est.setWrapText(true);
+                est.setMaxWidth(NEED_CARD - 28);
+                est.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_BODY));
+                return List.<javafx.scene.Node>of(cardGap(), est);
+            }));
         }
 
-        javafx.scene.control.ScrollPane scroller =
-                new javafx.scene.control.ScrollPane(body);
+        javafx.scene.control.ScrollPane scroller = Kept.of(javafx.scene.control.ScrollPane.class,
+                javafx.scene.control.ScrollPane::new);
+        if (scroller.getContent() != body) scroller.setContent(body);
         scroller.setFitToWidth(true);
         scroller.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
         scroller.setHbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER);
         scroller.setMinHeight(0);
         VBox.setVgrow(scroller, Priority.ALWAYS);
 
-        VBox cover = new VBox(scroller);
+        VBox cover = Kept.column(0, scroller);
         cover.setMinSize(0, 0);
         cover.setPrefSize(NEED_CARD, 0);
         cover.setMaxSize(NEED_CARD, Double.MAX_VALUE);
@@ -2318,15 +2387,18 @@ final class BuildScreen {
 
     /** A label and a figure, on one line, inside a stat cover. */
     HBox statPair(String label, String value) {
-        Label what = new Label(label);
-        what.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-        Region gap = new Region();
-        HBox.setHgrow(gap, Priority.ALWAYS);
-        Label figure = new Label(value);
-        figure.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_BODY));
-        HBox row = new HBox(6, what, gap, figure);
-        row.setAlignment(Pos.CENTER_LEFT);
-        return row;
+        // Kept (KP3): a stat row is a scope keyed by its label.
+        return Kept.scope(label, () -> {
+            Label what = Kept.label(label);
+            what.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+            Region gap = Kept.region();
+            HBox.setHgrow(gap, Priority.ALWAYS);
+            Label figure = Kept.label(value);
+            figure.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_BODY));
+            HBox row = Kept.row(6, what, gap, figure);
+            row.setAlignment(Pos.CENTER_LEFT);
+            return row;
+        });
     }
 
     /**
@@ -3946,24 +4018,23 @@ final class BuildScreen {
      * nothing to price against.
      */
     VBox barRow(String label, String value, double share, String colour, double wide, String svg, boolean track) {
-        Label what = new Label(label);
+        // Kept (KP3): the card reaches this, so it is converted with the card; the icon is set on both sides of its
+        // condition (the gap is the Label's own 4 either way), the track is a scope for it comes and goes.
+        Label what = Kept.label(label, svg == null ? null : icon(svg, colour, 11));
         what.setStyle(wordsAt(9.5, Palette.TEXT_LABEL));
         // "posts the city can't fill, per 10,000 patients" nearly fills the
         // card: it wraps to a second line rather than losing its end.
         what.setWrapText(true);
         what.setMinWidth(0);
-        if (svg != null) {
-            what.setGraphic(icon(svg, colour, 11));
-            what.setGraphicTextGap(4);
-        }
-        Region gap = new Region();
+        what.setGraphicTextGap(4);
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
-        Label figure = new Label(value);
+        Label figure = Kept.label(value);
         figure.setStyle(figureAt(9.5, Palette.TEXT_HEAD));
         figure.setMinWidth(Region.USE_PREF_SIZE);
-        HBox row = new HBox(4, what, gap, figure);
+        HBox row = Kept.row(4, what, gap, figure);
         row.setAlignment(Pos.CENTER_LEFT);
-        return track ? new VBox(2, row, bar(share, colour, wide, 4)) : new VBox(row);
+        return track ? Kept.column(2, row, Kept.scope("track", () -> bar(share, colour, wide, 4))) : Kept.column(0, row);
     }
 
     /**
@@ -4297,7 +4368,7 @@ final class BuildScreen {
 
     /** A hairline of space, used where a blank line would be too much. */
     Region cardGap() {
-        Region r = new Region();
+        Region r = Kept.region();
         r.setMinHeight(7);
         return r;
     }
@@ -4841,7 +4912,7 @@ final class BuildScreen {
      */
     HBox receiptCorner(String menuTitle, EnumSet<BuildingType> categories) {
 
-        HBox corner = new HBox();
+        HBox corner = Kept.row(0);
         corner.setAlignment(Pos.CENTER_RIGHT);
         // At the end of the page's head since 0.7.21 (buildHead()): the inbox's
         // envelope that shared this corner is the header's now. Its room is
@@ -4849,22 +4920,28 @@ final class BuildScreen {
         // moves nothing.
         corner.setMinSize(18, 18);
         corner.setPrefSize(18, 18);
-        if (receipts.isEmpty()) return corner;
+        if (receipts.isEmpty()) {
+            // Kept (KP3): a pulse that outlived its dot (another city's receipts forgotten) goes with it.
+            if (ui.receiptPulse != null) {
+                ui.receiptPulse.stop();
+                ui.receiptPulse = null;
+            }
+            return corner;
+        }
 
         boolean unseen = ui.game.getReceiptSerial() != ui.receiptSeen;
 
-        Button dot = new Button();
+        // Kept (KP3): the dot is a scope of its own, since a corner with no receipt has none.
+        Button dot = Kept.scope("dot", () -> Kept.of(Button.class, Button::new));
         dot.setMinSize(18, 18);
         dot.setPrefSize(18, 18);
         dot.setMaxSize(18, 18);
         dot.setStyle("-fx-background-color: " + Palette.CONFIRM + "; -fx-background-radius: 50%;"
                 + " -fx-border-color: " + Palette.CONFIRM + "; -fx-border-width: 1;"
                 + " -fx-border-radius: 50%; -fx-cursor: hand; -fx-padding: 0;");
-        Tooltip dotTip = new Tooltip(unseen
+        Kept.tip(dot, unseen
                 ? "A purchase went through - click for the receipts"
-                : "Click for the last purchases");
-        dotTip.setShowDelay(Duration.millis(200));
-        Tooltip.install(dot, dotTip);
+                : "Click for the last purchases", 200);
 
         /*
          * A POPOVER, NOT A ROW (0.7.20). The receipt card used to open in the
@@ -4886,15 +4963,23 @@ final class BuildScreen {
         });
 
         if (unseen && receiptPopup == null) {
+            // Kept (KP3): through Kept.play, so a dot kept across the month is not given a second pulse over the first.
             ui.receiptPulse = new FadeTransition(Duration.millis(600), dot);
             ui.receiptPulse.setFromValue(1.0);
             ui.receiptPulse.setToValue(.15);
             ui.receiptPulse.setAutoReverse(true);
             ui.receiptPulse.setCycleCount(Animation.INDEFINITE);
-            ui.receiptPulse.play();
+            Kept.play(dot, ui.receiptPulse);
+        } else {
+            // ...and a dot seen since stops pulsing: the pulse its last draw gave it would go on over the kept node.
+            Animation was = Kept.animationOf(dot);
+            if (was != null) {
+                was.stop();
+                dot.setOpacity(1);
+            }
         }
         // A redraw while it is open shows the newest purchases in it.
-        if (receiptPopup != null) receiptPopup.getContent().setAll(receiptCard());
+        if (receiptPopup != null) Kept.set(receiptPopup.getContent(), List.of(Kept.scope("receipt card", this::receiptCard)));
 
         corner.getChildren().add(dot);
         return corner;
@@ -4973,28 +5058,31 @@ final class BuildScreen {
 
     /** The card in the popover: the last purchases, newest first, each with its total and the tax in it. */
     private VBox receiptCard() {
-        VBox card = new VBox(4);
+        VBox card = Kept.column(4);
         card.setStyle("-fx-background-color: " + Palette.CONFIRM_GROUND + "; -fx-border-color: " + Palette.CONFIRM + ";"
                 + " -fx-border-width: 1; -fx-background-radius: 4;"
                 + " -fx-border-radius: 4; -fx-padding: 8 12 9 12;"
                 + " -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.55), 12, 0, 0, 3);");
 
-        Label head = new Label(receipts.size() == 1 ? "LAST PURCHASE" : "LAST " + receipts.size() + " PURCHASES");
+        Label head = Kept.label(receipts.size() == 1 ? "LAST PURCHASE" : "LAST " + receipts.size() + " PURCHASES");
         head.setStyle("-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: " + Palette.GOOD + ";");
         card.getChildren().add(head);
 
+        // Kept (KP3): a purchase is a scope keyed by its receipt, so a new one at the top shifts none of the others.
         for (Receipt r : receipts) {
-            Label what = new Label(formatter.format(r.quantity()) + " \u00d7  " + r.name());
-            what.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: " + Palette.GOOD + ";");
-            Label paid = receiptLine(money(r.total()) + "  with " + money(r.salesTax()) + " sales tax",
-                    CityCalendar.format(r.month()));
-            card.getChildren().add(new VBox(0, what, paid));
+            card.getChildren().add(Kept.scope(r.serial(), () -> {
+                Label what = Kept.label(formatter.format(r.quantity()) + " \u00d7  " + r.name());
+                what.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: " + Palette.GOOD + ";");
+                Label paid = receiptLine(money(r.total()) + "  with " + money(r.salesTax()) + " sales tax",
+                        CityCalendar.format(r.month()));
+                return Kept.column(0, what, paid);
+            }));
         }
         return card;
     }
 
     Label receiptLine(String label, String value) {
-        Label l = new Label(String.format("%-30s %s", label, value));
+        Label l = Kept.label(String.format("%-30s %s", label, value));
         l.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 10px;"
                 + " -fx-text-fill: #8bc34a;");
         return l;

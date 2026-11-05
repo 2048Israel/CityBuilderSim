@@ -965,7 +965,8 @@ final class FinancesScreen {
 
     /** Words that wrap, at a size, in a colour. */
     static Label words(String text, double size, String tone) {
-        Label l = new Label(text);
+        // Kept (KP3): through Kept, as CapChips draws it on Build's kept pages; outside a draw it is a new label.
+        Label l = Kept.label(text);
         l.setWrapText(true);
         l.setMinWidth(0);
         l.setStyle(BuildScreen.wordsAt(size, tone));
@@ -982,10 +983,10 @@ final class FinancesScreen {
 
     /** A picture's caption: a few words in capitals, with an (i) after them when `info` is not null. */
     static HBox caption(String text, String info) {
-        Label l = new Label(text);
+        Label l = Kept.label(text);
         l.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
         l.setMinWidth(Region.USE_PREF_SIZE);
-        HBox row = new HBox(Palette.GAP, l);
+        HBox row = Kept.row(Palette.GAP, l);
         if (info != null) row.getChildren().add(infoButton(info, true));
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
@@ -995,7 +996,7 @@ final class FinancesScreen {
     static HBox caption(String text, String info, Node right) {
         HBox row = caption(text, info);
         if (right != null) {
-            Region gap = new Region();
+            Region gap = Kept.region();
             HBox.setHgrow(gap, Priority.ALWAYS);
             row.getChildren().addAll(gap, right);
         }
