@@ -315,6 +315,7 @@ public class DeskCheck {
         quietly(() -> ok[0] = g.saveGame(10, "desk").ok);
         check("fixture: the city saved to slot 10 of its scratch root", ok[0]);
         Game back = new Game(g.getGameFiles());
+        back.holdCausesOfDeathOff();   // R0b call 7: as the city (FloatLinkCheck.playedCity()); the hold is not saved
         quietly(() -> back.loadGameSave(10));
         DebtManager loaded = back.getDebtManager();
         NationalAccounts naBack = back.getEconomyManager().getNationalAccounts();
@@ -931,6 +932,7 @@ public class DeskCheck {
         quietly(() -> ok[0] = g.saveGame(10, "desk").ok);
         check("fixture: the city saved to slot 10 of its scratch root", ok[0]);
         Game back = new Game(g.getGameFiles());
+        back.holdCausesOfDeathOff();   // R0b call 7: as the city (FloatLinkCheck.playedCity()); the hold is not saved
         quietly(() -> back.loadGameSave(10));
         int at = dm.getDebt().indexOf(line);
         Debt loaded = at >= 0 && at < back.getDebtManager().getDebt().size() ? back.getDebtManager().getDebt().get(at) : null;
@@ -1096,6 +1098,7 @@ public class DeskCheck {
         quietly(() -> ok[0] = a.saveGame(10, "desk").ok);
         check("fixture: the city saved to slot 10 of its scratch root", ok[0]);
         Game back = new Game(a.getGameFiles());
+        back.holdCausesOfDeathOff();   // R0b call 7: as the city (FloatLinkCheck.playedCity()); the hold is not saved
         quietly(() -> back.loadGameSave(10));
         DebtManager loaded = back.getDebtManager();
         check("saved and loaded, the curve book is the same: a year ago, two years ago, the world's, the dial, and nothing beyond",
