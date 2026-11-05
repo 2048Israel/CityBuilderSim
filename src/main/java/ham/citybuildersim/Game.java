@@ -14773,6 +14773,10 @@ public class Game {
     private final Sickness sickness = new Sickness();
     public Sickness getSickness() { return sickness; }
 
+    /** What people die of: the causes of 1900 and how history takes them away (R0b). See CausesOfDeath. */
+    private final CausesOfDeath causesOfDeath = new CausesOfDeath();
+    public CausesOfDeath getCausesOfDeath() { return causesOfDeath; }
+
     /**
      * Crime, the police and the prisons (2026-09-11). Jerus: "crime is a
      * function of unemployment, and tight or under households, we need police,
