@@ -2,12 +2,14 @@
 
 ## WHERE IT STANDS
 
-Started 00:41 from `batch/R0b` (R0b's ship file up, at its gate). All three
-slices committed: the farm's horses and the factory's steam (895927ac), road
+**Ready** (02:55). Built from `batch/R0b`, main (0.9.13, R0b in) merged.
+Three slices: the farm's horses and the factory's steam (895927ac), road
 freight's horse and wagon (d3d781c1), the homes' lamp oil and coal
-(4123ae7a). The default playtest's trace is identical to R0b's tip
-(67def243) but for its run-time figures, so no ensemble (batch.md 6). Then
-`--pick`, R0b's merge once it is on main, the ship file.
+(4123ae7a). `--pick` on the merge: exit 3, MapCheck 2h alone, main's
+recorded red (DM2). The default playtest's trace is identical to R0b's tip
+but for its run-time figures, so no ensemble (batch.md 6). The whole of
+§4's tech is built; the split is only what waits on R1 (Pending R0c-R) and
+the horse omnibus (R0c-O).
 
 ## 1. What it builds
 
@@ -118,7 +120,8 @@ Queued as PD1.
 exit 4, MapCheck alone, its section 2h's seven lines ("its reserve is laid in
 a month (-1)", 0 plots) - R0b-M word for word, DM2's, passed by name at R0b's
 gate and NEW here only while R0b is not on main; R0c's diff touches no map
-code, and at its shares of 0 no figure of the month. The default playtest (2,405 months) on R0c's tip against
+code, and at its shares of 0 no figure of the month. Rerun on the merge with
+main (4773fce8, R0b in): exit 3, "known red only - MapCheck". The default playtest (2,405 months) on R0c's tip against
 R0b's tip: byte-identical but for "in 65s/66s" and the layout windows' "1.7
 s/2.1 s" (both runs on the PC, 01:36 and 01:55).
 
