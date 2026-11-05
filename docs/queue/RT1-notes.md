@@ -2,7 +2,15 @@
 
 ## WHERE IT STANDS
 
-@@STANDS@@
+**Ready** (2026-11-05, 11:40). Branch `batch/RT1` from main a0661fe8 (0.9.17). **PriceLevelCheck 8 is green on
+the branch** (§2): section 8 to month 103, every real series within 1e-9 (worst 5.1e-13), every live nominal
+one (worst 3.9e-10). The slices: a farm and a food plant counted in money (a4aa060e), the bond holder's floor
+`Debt.moved()` and the horizon (93b11638), HoldersCheck 14 (5f5f6e22), two fixtures re-caused (fff5ad9f).
+**`--pick` (35 of 174): exit 4, red only in the two harnesses passed by name**, CentralBankCheck 21 (call 4)
+and ScaleCheck's nine lines (ST3's class, §3); the whole suite (174) adds MapCheck 2d's two lines (DM1's
+class, DM2) and DenominationCheck as main's. The trace moves: the ensemble, 24 of 26 criteria (§5). Money
+changes (`Debt`): the gate's stranger's review. Calls 1-4 (★) each with a recommendation; RT2 and CB2 in the
+ship file's `## queued`.
 
 ## 1. What RT1 is
 
