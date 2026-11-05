@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.17 — KP2, Screens kept: Land, Services and Infrastructure; the controls' rule; KP1's hover kept — 2026-11-05, ready, see docs/queue/KP2-notes.md
+Infrastructure, Services and the land office (with its funding and fell-short pages) are drawn over last month's
+nodes instead of rebuilt (study UP4's KP2): every page, sub-page, card, offer and row a scope keyed by what it
+shows; FlowCurve, ScaleRows, CauseBar, EffectScale and CohortBars pictures told their figures. A kept control keeps
+the player's hand: the transit fare's slider is never set while held, so a month landing mid-drag leaves the thumb,
+its reading and "what it would do" where the hand is; a field with the focus keeps it, its text and caret. A row,
+door or card under a still pointer keeps its hover look across a month (KP1's gate review). A closed fold on
+Services builds nothing. KeptCheck 21-35 compare each kept page with one built new through every page, division and
+fold, hold the slider and the hover across months; the three pages' months fell from 9-20 ms to 2-7 ms
+(KEPT_INFRASTRUCTURE_MS 9, KEPT_SERVICES_MS 13, KEPT_LAND_MS 5). No ensemble: nothing outside ui/ changed.
+
 ### 0.9.16 — BA1, every business may build ahead — 2026-11-05, ready, see docs/queue/BA1-notes.md
 No business is held to one order on site, nor the landlords to twelve months of the builders' work (Jerus: "why
 bounded? why not let contracts flow?"). A sector orders whenever an order clears its test at the price of a point it

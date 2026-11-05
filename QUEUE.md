@@ -32,7 +32,6 @@ stuff".
 | R3 | Research: posts and discoveries | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
 | R4 | Research: prizes and the Research Lab | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
 | R5 | Research: the screens | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
-| KP2 | Screens kept: Land, Services and Infrastructure, and the controls' rule (sliders and fields on a kept page); and KP1's hover kept: a kept row, door, strip cell or pin name under a still pointer loses its hover look at each month's draw (HistoryScreen `rowGoes`, Pieces `limitCell`, `door`, `chartCardHead`: the draw resets the style and no mouse-entered comes), so the style is chosen from `isHover()` where it is set (KP1's gate review, 2026-10-31); and `Pieces.ScaleRows` a picture told its rows, as KP1 left it (KP1-N) | [study §7](docs/studies/spec-screens-in-place.md#7-the-batches), [KP1-notes §6](docs/queue/KP1-notes.md) |
 | KP3 | Screens kept: Build and the construction page (after KP2) | [study §7](docs/studies/spec-screens-in-place.md#7-the-batches) |
 | KP4 | Screens kept: Sectors, the list and a business's five pages; and Sectors' count-up held to 1x-10x (`UserInterface.countsUp()`, KP1-N) | [study §7](docs/studies/spec-screens-in-place.md#7-the-batches), [KP1-notes §6](docs/queue/KP1-notes.md) |
 | KP5 | Screens kept: Bank, Finances and the fund | [study §7](docs/studies/spec-screens-in-place.md#7-the-batches) |
@@ -138,6 +137,7 @@ stuff".
 | BS1 | The corporate issue search (`BondMarket`, `s = filled` until `filled >= s * (1 - 1e-9)`) to a fixed point well inside the price-level twins' tolerance: it stops within 1e-9, so two runs settle bonds up to that apart (4.6e-9 of an issue at month 94 of PriceLevelCheck 8), which a sector's rolled bonds carry to 1.1e-8 of its cash | [BA1 notes](docs/queue/BA1-notes.md) |
 | OB1 | A price tick on bond bids: firms that hold none of a bond bid one price mathematically (`BondMarket.postCompanies`, OUT_SPEED x share / APPETITE), a 1e-19 rounding orders them by price priority in one city and by arrival in its twin, and 28 trades go elsewhere (DenominationCheck on BA1's path, month 133); bids rounded to 1e-12 hold the twins to 1.4e-13 | [BA1 notes](docs/queue/BA1-notes.md) |
 | DT1 | The same code gave another city twice under load (FloatLinkCheck's town: month 125 instead of 61, 1,067 people instead of 909; five other repeats the same): find what in a month reads the machine, if anything, or rule it out | [BA1 notes](docs/queue/BA1-notes.md) |
+| KP2b | KP2's review follow-ups (screens kept): `ui/Pieces.java`'s funnel re-binds its fill's width to the holder every kept draw (bind once, the share a property); `ui/Ladder.java` sets a reading's text twice a draw (`Kept.label("")` then `read()`); `ui/Kept.java`: a slider greyed mid-press can keep `held` set, so its thumb stops following (clear it when disabled) | [KP2 notes](docs/queue/KP2-notes.md) |
 
 ## Pending
 
@@ -145,6 +145,7 @@ Not done, and waiting on Jerus.
 
 | item | what is left | why it waits | brief |
 |---|---|---|---|
+| KP2-N | Two pieces of other screens still made new each month on KP2's kept pages (0.9.17): the land office's landmass table's cells (`SectorScreen`'s oil helpers; only on a city with ground on two landmasses), in KP4; and whatever `BuildScreen.verdict`, `arc` and `goAhead` make where the three pages call them, in KP3. Recommended: each in the batch that keeps its file | Correct now, only not kept; the files are KP4's and KP3's | [KP2-notes §7](docs/queue/KP2-notes.md) |
 | BA1-D | The known-class lines passed by name at BA1's gate: LongPlaytest's one finding (`a building on the map moved`, or `industry stands farther out than the homes`, by the path: Jerus, 2026-11-04, "Ship it, pass both"); MapCheck's moved boxes (2d and 2h, DM1's class); PriceLevelCheck 8's drift at months 97 to 105 (RT1's class, and the bond search's stop, BS1); DenominationCheck's reformed twin (a price tie in the bond book, OB1) (0.9.16) | DM2 (the boxes); RT1, BS1 and OB1 (the twins) | [BA1 notes](docs/queue/BA1-notes.md) |
 | BA1-B | A young town's bank under build-ahead: with orders uncapped, FloatLinkCheck's free town's firms borrowed 8,100 to 10,600 on the bank's equity of 1,246, which went to -500 at month 63 and -3,200 at 75 (0.9.16) | Jerus: whether lending to orders on site wants a brake of its own | [BA1 notes](docs/queue/BA1-notes.md) |
 | R0c-O | The Bus Network's horse omnibus, its 1900 form (research-1900 §4) (0.9.14) | the bus is a city building that buys nothing, and the city has no path to buy its horses' feed | [R0c notes](docs/queue/R0c-notes.md) ★9 |

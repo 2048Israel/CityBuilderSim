@@ -1,4 +1,4 @@
-# KP2 - Screens kept: Land, Services and Infrastructure; the controls' rule; KP1's hover kept ({next}, 2026-11-04)
+# KP2 - Screens kept: Land, Services and Infrastructure; the controls' rule; KP1's hover kept (0.9.17, 2026-11-04)
 
 **WHERE IT STANDS** (2026-11-05, 07:20): ready, see the ship file. The five slices are in and reviewed; BA1's
 mended tip and then `origin/main` at 0.9.16 (97413aec) are merged in, R0b's new causes-of-death section on Services'
