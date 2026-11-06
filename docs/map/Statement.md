@@ -1,4 +1,4 @@
-# Statement.java - 510 lines · 24 methods · 5 constants · interface
+# Statement.java - 517 lines · 25 methods · 5 constants · interface
 
 `ham/citybuildersim/ui/Statement.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
@@ -28,16 +28,16 @@
 | 34 | `Statement.STATEMENT` | `560` | How wide a statement is. |
 | 159 | `Statement.BOOK_NOW` | `116` |  |
 | 161 | `Statement.BOOK_THEN` | `104` |  |
-| 466 | `Statement.CLOSED` | `"\u25b8"` |  |
-| 468 | `Statement.OPENED` | `"\u25be"` |  |
+| 473 | `Statement.CLOSED` | `"\u25b8"` |  |
+| 475 | `Statement.OPENED` | `"\u25be"` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 24 | 487 | **type** `public final class Statement` | The rows a statement is built from: a head, a line, a note, a total, a disclosure that opens, and the two-column book the sector pages and the bank's income statement use - its lines able to stay open through the cloc... |
+| 24 | 494 | **type** `public final class Statement` | The rows a statement is built from: a head, a line, a note, a total, a disclosure that opens, and the two-column book the sector pages and the bank's income statement use - its lines able to stay open through the cloc... |
 
-### A STATEMENT WITH TWO COLUMNS. (lines 26-510)
+### A STATEMENT WITH TWO COLUMNS. (lines 26-517)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -50,19 +50,20 @@
 | 124 | 34 | `public static VBox statementTotal(String label, String value, String tone)` | The line a statement adds up to: a rule, then the figure in full. |
 | 164 | 3 | `public static HBox bookHead(String left)` | The column headings, once, at the top of a statement. |
 | 169 | 29 | `public static HBox bookHead(String left, String now, String then)` | ...with the two columns named - the bank's balance sheet sets this month beside "a year ago" (0.7.13). |
-| 210 | 30 | `public static HBox bookLine(String label, double now, double then, boolean known, String tone)` | One line of a set of books: what it is, this month, and last month. |
-| 242 | 4 | `public static VBox bookLine(String label, double now, double then, boolean known, String tone, VBox detail, String word)` | A statement line that opens into its parts. |
-| 251 | 29 | `public static VBox bookLine(String label, double now, double then, boolean known, String tone, VBox detail, String word, java.u...` | ...and remembers whether it was open: see opens(). |
-| 291 | 19 | `static void opens(javafx.scene.Node row, Label mark, String word, VBox detail, String key, java.util.Set<String> open)` | A row that opens its detail - DRAWN AS THE SCREEN LAST LEFT IT (0.7.9). |
-| 316 | 42 | `public static VBox bookTotal(String label, double now, double then, boolean known, String tone)` | The line a section adds up to: a rule, then this month's figure at full weight and last month's quieter beside it. |
-| 369 | 3 | `public static VBox statementDisclosure(String label, String value, VBox detail)` | A statement line that opens something underneath it. |
-| 374 | 3 | `public static VBox statementDisclosure(String label, String value, VBox detail, String hint)` | As above, naming what opening it shows. |
-| 379 | 26 | `public static VBox statementDisclosure(String label, String value, VBox detail, String hint, java.util.Set<String> open)` | ...and remembering whether it was open: see opens(). |
-| 407 | 7 | `public static Label bookLine(String label, double value, boolean bold, String colour)` | A statement line: label left, figure right, in one fixed-width column. |
-| 415 | 6 | `public static Label bookRule()` |  |
-| 423 | 6 | `public static Label bookNote(String text)` | A short grey line under a figure, for the one sentence it needs. |
-| 442 | 5 | `public static VBox disclosure(String line, String hint, VBox detail)` | A line you can click to open the working behind it. |
-| 449 | 16 | `public static VBox disclosure(String line, String hint, VBox detail, String style)` | As above, keeping a row's own styling - used by the tier table. |
-| 470 | 4 | `public static VBox reportSection(String heading, String...rows)` |  |
-| 475 | 35 | `private static VBox reportSectionOf(String heading, String[] rows)` |  |
+| 210 | 3 | `public static HBox bookLine(String label, double now, double then, boolean known, String tone)` | One line of a set of books: what it is, this month, and last month. |
+| 215 | 30 | `private static HBox bookLine(String label, double now, double then, boolean known, String tone, String style)` | ...in a style of its own (KP2b: the hand, for a line that opens), given where the line is made and not set again after it. |
+| 247 | 4 | `public static VBox bookLine(String label, double now, double then, boolean known, String tone, VBox detail, String word)` | A statement line that opens into its parts. |
+| 256 | 30 | `public static VBox bookLine(String label, double now, double then, boolean known, String tone, VBox detail, String word, java.u...` | ...and remembers whether it was open: see opens(). |
+| 297 | 19 | `static void opens(javafx.scene.Node row, Label mark, String word, VBox detail, String key, java.util.Set<String> open)` | A row that opens its detail - DRAWN AS THE SCREEN LAST LEFT IT (0.7.9). |
+| 322 | 42 | `public static VBox bookTotal(String label, double now, double then, boolean known, String tone)` | The line a section adds up to: a rule, then this month's figure at full weight and last month's quieter beside it. |
+| 375 | 3 | `public static VBox statementDisclosure(String label, String value, VBox detail)` | A statement line that opens something underneath it. |
+| 380 | 3 | `public static VBox statementDisclosure(String label, String value, VBox detail, String hint)` | As above, naming what opening it shows. |
+| 385 | 27 | `public static VBox statementDisclosure(String label, String value, VBox detail, String hint, java.util.Set<String> open)` | ...and remembering whether it was open: see opens(). |
+| 414 | 7 | `public static Label bookLine(String label, double value, boolean bold, String colour)` | A statement line: label left, figure right, in one fixed-width column. |
+| 422 | 6 | `public static Label bookRule()` |  |
+| 430 | 6 | `public static Label bookNote(String text)` | A short grey line under a figure, for the one sentence it needs. |
+| 449 | 5 | `public static VBox disclosure(String line, String hint, VBox detail)` | A line you can click to open the working behind it. |
+| 456 | 16 | `public static VBox disclosure(String line, String hint, VBox detail, String style)` | As above, keeping a row's own styling - used by the tier table. |
+| 477 | 4 | `public static VBox reportSection(String heading, String...rows)` |  |
+| 482 | 35 | `private static VBox reportSectionOf(String heading, String[] rows)` |  |
 

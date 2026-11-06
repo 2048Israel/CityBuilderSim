@@ -1,4 +1,4 @@
-# Kept.java - 678 lines · 66 methods · 4 constants · interface
+# Kept.java - 687 lines · 66 methods · 4 constants · interface
 
 `ham/citybuildersim/ui/Kept.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
@@ -107,7 +107,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 92 | 587 | **type** `public final class Kept` | A page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): the nodes a screen's code made at its last draw, handed back to the same code, in the order it asks for them, at the next - so a month th... |
+| 92 | 596 | **type** `public final class Kept` | A page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): the nodes a screen's code made at its last draw, handed back to the same code, in the order it asks for them, at the next - so a month th... |
 | 94 | 1 | `private Kept()` |  |
 
 ### THE POOL, THE DRAW AND THE SCOPES (lines 96-327)
@@ -202,11 +202,11 @@
 | 616 | 3 | `static Animation animationOf(Node n)` | The animation a node was last given through {@link #play}, or null. |
 | 624 | 5 | `static void play(Node owner, Animation a)` | An animation on a node, played: the one this node was last given stopped first, so a month that lands while the last month's count-up still runs does not leave two counting one label. |
 
-### THE PLAYER'S HAND (KP2): a control on a kept page is not set under it (lines 630-678)
+### THE PLAYER'S HAND (KP2): a control on a kept page is not set under it (lines 630-687)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 645 | 13 | `static void grip(Node n)` | Makes {@link #held} true for this node between a primary-button press on it and the release that ends the press. |
-| 664 | 4 | `static boolean held(Node n)` | Whether the player holds this node now (see {@link #grip}); a slider also counts as held while its value is changing. |
-| 673 | 5 | `static void text(TextInputControl f, String text)` | A field's text set only where it differs and never while the field has the focus: a set marks the field edited and moves its caret, and the player typing owns it. |
+| 647 | 20 | `static void grip(Node n)` | Makes {@link #held} true for this node between a primary-button press on it and the release that ends the press. |
+| 673 | 4 | `static boolean held(Node n)` | Whether the player holds this node now (see {@link #grip}); a slider also counts as held while its value is changing. |
+| 682 | 5 | `static void text(TextInputControl f, String text)` | A field's text set only where it differs and never while the field has the focus: a set marks the field edited and moves its caret, and the player typing owns it. |
 
