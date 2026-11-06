@@ -28,7 +28,7 @@
 
 **Uses:** [Research](Research.md) (18), [ResearchCatalog](ResearchCatalog.md) (1)
 
-**Used by (3):** [ResearchPreviewCheck](ResearchPreviewCheck.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md)
+**Used by (5):** [KeptCheck](KeptCheck.md), [ResearchPreviewCheck](ResearchPreviewCheck.md), [ResearchScreen](ResearchScreen.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md)
 
 ## Sections
 

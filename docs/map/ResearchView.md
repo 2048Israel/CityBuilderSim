@@ -1,4 +1,4 @@
-# ResearchView.java - 789 lines · 65 methods · 5 constants · model
+# ResearchView.java - 1,046 lines · 87 methods · 10 constants · model
 
 `ham/citybuildersim/ResearchView.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
@@ -21,9 +21,9 @@
 > TWO LAYERS, as EquipmentFit and Recipes are: the cores that take a catalogue, a research and a month (package-private) let a harness put the city at
 > any month and the catalogue at any shape; the public reads take the game and pass its own.
 
-**Uses:** [Research](Research.md) (34), [Game](Game.md) (17), [ResearchCatalog](ResearchCatalog.md) (14), [BuildingsTemplate](BuildingsTemplate.md) (14), [ResearchPreview](ResearchPreview.md) (10), [Pieces](Pieces.md) (8), [Equipment](Equipment.md) (4), [BuildingsStacks](BuildingsStacks.md) (4), [Dials](Dials.md) (4), [DecisionLog](DecisionLog.md) (3), [EquipmentFit](EquipmentFit.md) (2), [BuildingManager](BuildingManager.md) (2), [Recipe](Recipe.md) (2), [PolicyDates](PolicyDates.md) (1), [EducationType](EducationType.md) (1)
+**Uses:** [Research](Research.md) (43), [Game](Game.md) (22), [BuildingsTemplate](BuildingsTemplate.md) (15), [ResearchCatalog](ResearchCatalog.md) (14), [ResearchPreview](ResearchPreview.md) (12), [Pieces](Pieces.md) (11), [EducationType](EducationType.md) (7), [BuildingsStacks](BuildingsStacks.md) (6), [Equipment](Equipment.md) (4), [Dials](Dials.md) (4), [DecisionLog](DecisionLog.md) (3), [JobType](JobType.md) (3), [EquipmentFit](EquipmentFit.md) (2), [BuildingManager](BuildingManager.md) (2), [Recipe](Recipe.md) (2), [PolicyDates](PolicyDates.md) (1)
 
-**Used by (9):** [BuildScreen](BuildScreen.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [KeptCheck](KeptCheck.md), [ResearchPreviewCheck](ResearchPreviewCheck.md), [ResearchScreen](ResearchScreen.md), [ResearchViewCheck](ResearchViewCheck.md), [SectorScreen](SectorScreen.md), [TimeChart](TimeChart.md)
+**Used by (11):** [BuildScreen](BuildScreen.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [ResearchPreviewCheck](ResearchPreviewCheck.md), [ResearchScreen](ResearchScreen.md), [ResearchViewCheck](ResearchViewCheck.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [TimeChart](TimeChart.md)
 
 ## Sections
 
@@ -36,9 +36,11 @@
 | 318 | WHERE A BUILDING CAME FROM |
 | 384 | THE LAID-ON AXIS AND WHAT IS STILL TO COME (R3b, from R5's gate review: the Found page worked these out itself) |
 | 417 | THE OVERVIEW (R3b; docs/studies/research-design.md 5.5, 6.2) |
-| 560 | THE FUNDING PAGE (R3b; docs/studies/research-design.md 5.1, 5.4) |
-| 693 | · the preview |
-| 767 | · the preview's words |
+| 574 | THE FUNDING PAGE (R3b; docs/studies/research-design.md 5.1, 5.4) |
+| 712 | · the preview |
+| 786 | · the preview's words |
+| 809 | WHAT THE SCREENS' CARDS ARE DRAWN FROM (R3b, slice B: "no arithmetic on model figures in ui/") |
+| 980 | · the schools |
 
 ## Enum constants
 
@@ -54,14 +56,19 @@
 | 42 | `ResearchView.FIRST_MONTH` | `1` | The month every city is founded in. |
 | 49 | `ResearchView.NEW_MONTHS` | `12` | How many months a building is NEW on its card after it became known in the city: it is new while its age (the city's month less the month it became known) is under this. |
 | 52 | `ResearchView.FLAG_KIND` | `"discovery"` | The kind of the flags a discovery puts on City History's decision lane (flagEntries()); a discovery is not a decision, so it is no DecisionLog kind. |
-| 720 | `ResearchView.CACHE_SIZE` | `32` | The preview's answers kept, the least recently read dropped first: a card's dials are read again at every redraw of the screen, and the answer does not change until a dial or the month does. |
-| 721 | `ResearchView.CACHE` | `new java.util.LinkedHashMap<>(16, 0.75f, true) { @ Override protected boolean...` |  |
+| 739 | `ResearchView.CACHE_SIZE` | `32` | The preview's answers kept, the least recently read dropped first: a card's dials are read again at every redraw of the screen, and the answer does not change until a dial or the month does. |
+| 740 | `ResearchView.CACHE` | `new java.util.LinkedHashMap<>(16, 0.75f, true) { @ Override protected boolean...` |  |
+| 834 | `ResearchView.GRANT_REACH` | `1.2` | How far past the room the grant dial reaches, as a share of the room, and the least number of posts it reaches past it (a grant past the room buys nothing, and the player may try one). |
+| 835 | `ResearchView.GRANT_REACH_POSTS` | `3` |  |
+| 861 | `ResearchView.PRIZE_DIAL_YEARS` | `1000` | The researcher-years of work a prize dial reaches for, at the least: a problem of that size, paid at a post's cost a month, is its top. |
+| 864 | `ResearchView.PRIZE_REACH` | `2` | How many times the least prize that brings a lab the prize dial reaches, at the least. |
+| 867 | `ResearchView.PRIZE_STEPS` | `100` | The steps a prize dial is divided into. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 34 | 756 | **type** `public final class ResearchView` | What the research screens draw (R5): every discovery on a timeline by field (found here, or from abroad on history's date), the equipment each sector's stacks carry with the verdict on it, the recipes in use, how a bu... |
+| 34 | 1013 | **type** `public final class ResearchView` | What the research screens draw (R5): every discovery on a timeline by field (found here, or from abroad on history's date), the equipment each sector's stacks carry with the verdict on it, the recipes in use, how a bu... |
 | 36 | 1 | `private ResearchView()` |  |
 | 39 | 1 | **type** `public enum Source` | How a discovery reached the city: found here by its own researchers before history's date, or from abroad on history's date. |
 
@@ -131,7 +138,7 @@
 | 407 | 3 | `public static int stillToCome(int all, int knownAtFounding, int here, int abroad)` | How many discoveries are still to come (the core): the catalogue's `all` less those known at the founding, found here and come from abroad, never below none. |
 | 412 | 4 | `public static int stillToCome(Game game)` | How many of the catalogue's discoveries are still to come in the city: those history has not yet dated and the city has not found, in a city founded the 1900 way; none in any other. |
 
-### THE OVERVIEW (R3b; docs/studies/research-design.md 5.5, 6.2) (lines 417-559)
+### THE OVERVIEW (R3b; docs/studies/research-design.md 5.5, 6.2) (lines 417-573)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -141,55 +148,92 @@
 | 437 | 3 | `public double working()` _(in ResearchView.FieldReach)_ | The people at work on a problem: everyone less the idle. |
 | 442 | 3 | `public String reachWords()` _(in ResearchView.FieldReach)_ | "1 in reach: rail", or "nothing in reach" (reachWords()). |
 | 447 | 3 | `public String schoolsWords()` _(in ResearchView.FieldReach)_ | "2 Institutes of Technology, 2 Universities" (schoolsWords()). |
-| 456 | 16 | **type** `public record Overview(List<FieldReach> fields, double researchBill, double prizesPaid, int foundHere, int ...` | The Overview page: a row for each field in the enum's order, the month's research bill and the prizes the treasury paid the labs, the discoveries found here and come from abroad since the founding, and the researchers... |
+| 456 | 30 | **type** `public record Overview(List<FieldReach> fields, double researchBill, double prizesPaid, int foundHere, int ...` | The Overview page: a row for each field in the enum's order, the month's research bill and the prizes the treasury paid the labs, the discoveries found here and come from abroad since the founding, and the researchers... |
 | 459 | 5 | `public double researchers()` _(in ResearchView.Overview)_ | The people at research in all the fields, the labs' too. |
 | 466 | 5 | `public double idle()` _(in ResearchView.Overview)_ | The idle among them. |
-| 474 | 4 | `public static String reachWords(int inReach, List<String> touches)` | The words for what is in reach: "nothing in reach" for none, else "2 in reach: Wind Farm; Coal Power Plant", the distinct things the problems touch, in the catalogue's order. |
-| 480 | 8 | `static List<String> touchesOf(List<Entry> problems)` | What a list of problems touches, as the catalogue words it (Entry.touches()): each distinct text once, in the order of the problems. |
-| 490 | 6 | `public static String schoolsWords(List<SchoolCount> schools)` | The words for the schools that host a field: "2 Institutes of Technology, 2 Universities", or "no school" where none stands. |
-| 498 | 6 | `static String plural(String name)` | A school's name in the plural: "University" to "Universities", "Institute of Technology" to "Institutes of Technology", "Law School" to "Law Schools". |
-| 506 | 10 | `static List<SchoolCount> schoolsOf(Game game, Field f)` | The standing schools that host a field, the field's own kind first and the Universities after, each by its template's name and how many stand. |
-| 522 | 11 | `static FieldReach reach(Research research, int month, Field f, List<Discovery> timeline, List<SchoolCount> schools, boolean res...` | One field's row of the Overview (the core): the research as the last month left it, the problems open to the field at `month` and what they touch, and the field's part of the timeline. |
-| 535 | 3 | `public static double perThousandWorkers(double researchers, long workers)` | Researchers to each 1,000 people at work (the core): NaN where nobody works. |
-| 545 | 14 | `public static Overview overview(Game game)` | The Overview page of the city: each field's researchers (the city's own and the labs'), the idle, the problems in reach and what they touch, the discoveries here and from abroad, and the schools that host it; the mont... |
+| 473 | 5 | `public double working()` _(in ResearchView.Overview)_ | The people at work on a problem in all the fields: everyone less the idle (R3b's Overview shows it, so the screen adds nothing up). |
+| 480 | 5 | `public int inReach()` _(in ResearchView.Overview)_ | The problems open to the city in all the fields. |
+| 488 | 4 | `public static String reachWords(int inReach, List<String> touches)` | The words for what is in reach: "nothing in reach" for none, else "2 in reach: Wind Farm; Coal Power Plant", the distinct things the problems touch, in the catalogue's order. |
+| 494 | 8 | `static List<String> touchesOf(List<Entry> problems)` | What a list of problems touches, as the catalogue words it (Entry.touches()): each distinct text once, in the order of the problems. |
+| 504 | 6 | `public static String schoolsWords(List<SchoolCount> schools)` | The words for the schools that host a field: "2 Institutes of Technology, 2 Universities", or "no school" where none stands. |
+| 512 | 6 | `static String plural(String name)` | A school's name in the plural: "University" to "Universities", "Institute of Technology" to "Institutes of Technology", "Law School" to "Law Schools". |
+| 520 | 10 | `static List<SchoolCount> schoolsOf(Game game, Field f)` | The standing schools that host a field, the field's own kind first and the Universities after, each by its template's name and how many stand. |
+| 536 | 11 | `static FieldReach reach(Research research, int month, Field f, List<Discovery> timeline, List<SchoolCount> schools, boolean res...` | One field's row of the Overview (the core): the research as the last month left it, the problems open to the field at `month` and what they touch, and the field's part of the timeline. |
+| 549 | 3 | `public static double perThousandWorkers(double researchers, long workers)` | Researchers to each 1,000 people at work (the core): NaN where nobody works. |
+| 559 | 14 | `public static Overview overview(Game game)` | The Overview page of the city: each field's researchers (the city's own and the labs'), the idle, the problems in reach and what they touch, the discoveries here and from abroad, and the schools that host it; the mont... |
 
-### THE FUNDING PAGE (R3b; docs/studies/research-design.md 5.1, 5.4) (lines 560-692)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 569 | 13 | **type** `public record Funding(Field field, double grant, double prize, int posts, int grantPosts, double room, doub...` | One field's dial card as it stands: the grant and the prize, the posts struck this month (the grant's own and the pot's), the room the schools have for posts and the grant that would fill it, the researchers the facul... |
-| 573 | 3 | `public int potPosts()` _(in ResearchView.Funding)_ | The posts the field's pot bought beyond the grant (Research.strikePosts()). |
-| 578 | 3 | `public double researchers()` _(in ResearchView.Funding)_ | Everyone at the field's own research at these dials: the faculty and the posts' researchers. |
-| 584 | 1 | **type** `public record AtGrant(double grant, int posts, int grantPosts, double postResearchers, double researchers, ...` | What a grant would do, staged and not applied: the posts it buys, the researchers they and the faculty give and what the posts cost a month. |
-| 590 | 26 | **type** `public record Staged(Map<Field, Double> grants, Map<Field, Double> prizes)` | The dials a player has staged and not applied: a grant and a prize for the fields the player has moved. |
-| 592 | 4 | `{ ... }` _(in ResearchView.Staged)_ |  |
-| 598 | 3 | `public static Staged none()` _(in ResearchView.Staged)_ | Nothing staged: every dial as it is. |
-| 603 | 5 | `public Staged withGrant(Field f, double grant)` _(in ResearchView.Staged)_ | The same with a field's grant staged. |
-| 610 | 5 | `public Staged withPrize(Field f, double prize)` _(in ResearchView.Staged)_ | The same with a field's prize staged. |
-| 621 | 2 | **type** `record Pieces(Research research, int month, boolean researching, double[] wages, double[] fill, Map<Field, ...` | Everything the funding reads of a city, taken once: the research, the month, the wages and the fill the posts were struck at (null before any month: every post then counts as filled), whether the city researches at al... |
-| 624 | 4 | `static Pieces piecesOf(Game game)` |  |
-| 630 | 3 | `static double roomOf(Pieces p, Field f)` | The posts a field's schools have room for (Research.room() of their university-band staff), and nothing where none stands. |
-| 635 | 3 | `static double facultyOf(Pieces p, Field f)` | The researcher-FTE a field's faculty give this month (Research.faculty() of the staffed staff). |
-| 644 | 11 | `static double labThreshold(Research research, int month, Field f, double[] wages)` | The least prize that would bring a lab to a field (the core): the least remaining work of an open problem that a team at its limit could finish before the world, times twelve researcher-years and a post's cost (the pu... |
-| 657 | 10 | `static Funding funding(Pieces p, Field f, int labsStanding, int labsOnSite)` | One field's dial card as it stands (the core), the labs being the ones standing and on site. |
-| 669 | 3 | `public static Funding funding(Game game, Field f)` | One field's dial card as it stands in the city. |
-| 679 | 8 | `static AtGrant atGrant(Pieces p, Field f, double grant)` | What a grant in a field would do (the core): the posts Research.posts() says it and the field's pot buy at the wages now within the room, those the grant alone buys, the researchers the filled ones give at the fill th... |
-| 689 | 3 | `public static AtGrant atGrant(Game game, Field f, double grant)` | What a staged grant in a field would do in the city. |
-
-### the preview (lines 693-766)
+### THE FUNDING PAGE (R3b; docs/studies/research-design.md 5.1, 5.4) (lines 574-711)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 700 | 1 | **type** `record Dials(double[] researchers, double[] prize, double[] labFill, double[] wages)` | The dials a preview is made at, field by field (by Field.ordinal()): the researchers held fixed (the faculty and the filled posts of the grant), the prize and the share of a lab's posts filled; and the wages. |
-| 702 | 16 | `static Dials dialsOf(Pieces p, Staged staged)` |  |
-| 728 | 5 | `private static List<Double> boxed(double[]...arrays)` |  |
-| 739 | 17 | `static ResearchPreview.Result preview(Research research, int month, Dials dials, int draws, long seed)` | The preview at some dials (the core): ResearchPreview.preview() of the research at the month, CACHED. |
-| 762 | 4 | `public static ResearchPreview.Result preview(Game game, Staged staged)` | What the city's research would find here over the next ResearchPreview.YEARS years at the dials as they are, or with some staged (null or none: as they are): ResearchPreview.DRAWS draws from ResearchPreview.SEED, cached. |
+| 583 | 18 | **type** `public record Funding(Field field, double grant, double prize, int posts, int grantPosts, double room, doub...` | One field's dial card as it stands: the grant and the prize, the posts struck this month (the grant's own and the pot's), the room the schools have for posts and the grant that would fill it, the researchers the facul... |
+| 587 | 3 | `public int potPosts()` _(in ResearchView.Funding)_ | The posts the field's pot bought beyond the grant (Research.strikePosts()). |
+| 592 | 3 | `public double researchers()` _(in ResearchView.Funding)_ | Everyone at the field's own research at these dials: the faculty and the posts' researchers. |
+| 597 | 3 | `public int roomPosts()` _(in ResearchView.Funding)_ | The whole posts the schools have room for (Research.posts() buys whole posts and never past the room): "room for 59 posts". |
+| 603 | 1 | **type** `public record AtGrant(double grant, int posts, int grantPosts, double postResearchers, double researchers, ...` | What a grant would do, staged and not applied: the posts it buys, the researchers they and the faculty give and what the posts cost a month. |
+| 609 | 26 | **type** `public record Staged(Map<Field, Double> grants, Map<Field, Double> prizes)` | The dials a player has staged and not applied: a grant and a prize for the fields the player has moved. |
+| 611 | 4 | `{ ... }` _(in ResearchView.Staged)_ |  |
+| 617 | 3 | `public static Staged none()` _(in ResearchView.Staged)_ | Nothing staged: every dial as it is. |
+| 622 | 5 | `public Staged withGrant(Field f, double grant)` _(in ResearchView.Staged)_ | The same with a field's grant staged. |
+| 629 | 5 | `public Staged withPrize(Field f, double prize)` _(in ResearchView.Staged)_ | The same with a field's prize staged. |
+| 640 | 2 | **type** `record Pieces(Research research, int month, boolean researching, double[] wages, double[] fill, Map<Field, ...` | Everything the funding reads of a city, taken once: the research, the month, the wages and the fill the posts were struck at (null before any month: every post then counts as filled), whether the city researches at al... |
+| 643 | 4 | `static Pieces piecesOf(Game game)` |  |
+| 649 | 3 | `static double roomOf(Pieces p, Field f)` | The posts a field's schools have room for (Research.room() of their university-band staff), and nothing where none stands. |
+| 654 | 3 | `static double facultyOf(Pieces p, Field f)` | The researcher-FTE a field's faculty give this month (Research.faculty() of the staffed staff). |
+| 663 | 11 | `static double labThreshold(Research research, int month, Field f, double[] wages)` | The least prize that would bring a lab to a field (the core): the least remaining work of an open problem that a team at its limit could finish before the world, times twelve researcher-years and a post's cost (the pu... |
+| 676 | 10 | `static Funding funding(Pieces p, Field f, int labsStanding, int labsOnSite)` | One field's dial card as it stands (the core), the labs being the ones standing and on site. |
+| 688 | 3 | `public static Funding funding(Game game, Field f)` | One field's dial card as it stands in the city. |
+| 698 | 8 | `static AtGrant atGrant(Pieces p, Field f, double grant)` | What a grant in a field would do (the core): the posts Research.posts() says it and the field's pot buy at the wages now within the room, those the grant alone buys, the researchers the filled ones give at the fill th... |
+| 708 | 3 | `public static AtGrant atGrant(Game game, Field f, double grant)` | What a staged grant in a field would do in the city. |
 
-### the preview's words (lines 767-789)
+### the preview (lines 712-785)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 773 | 3 | `public static boolean asChance(double before, double after)` | Whether a card shows its preview as a chance and not a count: when the larger of the expected finds before and after the staged dials is under 1, a chance of at least one is what is worth saying ("0.2% to 25%"); from ... |
-| 781 | 8 | `public static String previewWords(double finds, double chance, boolean asChance)` | The preview in words: the chance of at least one find as a whole percent when `asChance`, else the expected finds to two places. |
+| 719 | 1 | **type** `record Dials(double[] researchers, double[] prize, double[] labFill, double[] wages)` | The dials a preview is made at, field by field (by Field.ordinal()): the researchers held fixed (the faculty and the filled posts of the grant), the prize and the share of a lab's posts filled; and the wages. |
+| 721 | 16 | `static Dials dialsOf(Pieces p, Staged staged)` |  |
+| 747 | 5 | `private static List<Double> boxed(double[]...arrays)` |  |
+| 758 | 17 | `static ResearchPreview.Result preview(Research research, int month, Dials dials, int draws, long seed)` | The preview at some dials (the core): ResearchPreview.preview() of the research at the month, CACHED. |
+| 781 | 4 | `public static ResearchPreview.Result preview(Game game, Staged staged)` | What the city's research would find here over the next ResearchPreview.YEARS years at the dials as they are, or with some staged (null or none: as they are): ResearchPreview.DRAWS draws from ResearchPreview.SEED, cached. |
+
+### the preview's words (lines 786-808)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 792 | 3 | `public static boolean asChance(double before, double after)` | Whether a card shows its preview as a chance and not a count: when the larger of the expected finds before and after the staged dials is under 1, a chance of at least one is what is worth saying ("0.2% to 25%"); from ... |
+| 800 | 8 | `public static String previewWords(double finds, double chance, boolean asChance)` | The preview in words: the chance of at least one find as a whole percent when `asChance`, else the expected finds to two places. |
+
+### WHAT THE SCREENS' CARDS ARE DRAWN FROM (R3b, slice B: "no arithmetic on model figures in ui/") (lines 809-979)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 817 | 12 | `public static String reachByFieldWords(List<FieldReach> fields)` | "engineering 6 · medicine 2 · business and law none": the problems in reach by field, the fields with none named together at the end. |
+| 831 | 1 | **type** `public record Dial(double min, double max, double step)` | A dial's range: from `min` to `max` in steps of `step`. |
+| 843 | 8 | `public static Dial grantDial(Funding f)` | The grant dial of a field: from nothing in steps of a round figure (1, 2 or 5 times a power of ten) not above a post's cost, to a little past the grant that fills the room (GRANT_REACH) - and past the grant in force, ... |
+| 853 | 6 | `static double niceFloor(double x)` | The greatest of 1, 2 and 5 times a power of ten that is not above `x` (0 for x not above nothing). |
+| 870 | 6 | `static double niceCeil(double x)` | The least of 1, 2 and 5 times a power of ten that is not below `x` (0 for x not above nothing). |
+| 881 | 7 | `public static Dial prizeDial(Funding f)` | The prize dial of a field: from nothing to a round number (1, 2 or 5 times a power of ten) that reaches PRIZE_DIAL_YEARS researcher-years of a post's cost, twice the least prize that brings a lab (PRIZE_REACH) and the... |
+| 890 | 3 | `public static int labPosts(int labs)` | The researchers that `labs` Research Labs give once they are staffed: Research.LAB_POSTS posts each. |
+| 895 | 5 | **type** `public record Budget(double before, double after)` | THE BUDGET a month before and after what is staged: the balance as the accounts booked it and the same less what the staged grants' posts would add to the research bill. |
+| 896 | 3 | `public double change()` _(in ResearchView.Budget)_ |  |
+| 905 | 12 | `public static Budget budget(Game game, Staged staged)` | The balance with the staged grants in place of the ones in force: a staged grant buys the posts atGrant() says, and their bill replaces the bill of the posts struck. |
+| 925 | 35 | **type** `public record Card(Field field, FieldReach reach, Funding funding, AtGrant at, boolean researching, double ...` | One field's dial card as the Funding page draws it, at the dials shown on it (the grant and prize in force, or staged ones): the researchers the field has now and with them, in grant posts and in labs, what the posts ... |
+| 931 | 3 | `public boolean moved()` _(in ResearchView.Card)_ | Whether something is staged on the card. |
+| 936 | 3 | `public boolean asChance()` _(in ResearchView.Card)_ | Whether the card shows its preview as a chance and not a count (asChance() of the two figures). |
+| 941 | 3 | `public String findsNowWords()` _(in ResearchView.Card)_ | "none", "0.2%", "1.10": the preview at the dials in force. |
+| 946 | 3 | `public String findsAfterWords()` _(in ResearchView.Card)_ | ...and at the dials shown. |
+| 951 | 3 | `public boolean roomFull()` _(in ResearchView.Card)_ | Whether the shown grant buys every post the room has: more money buys nothing. |
+| 956 | 3 | `public boolean unspends()` _(in ResearchView.Card)_ | Whether some of the shown grant goes unspent: at least half a dollar of it (the money is counted in thousands). |
+| 962 | 17 | `public static Card card(Game game, Field f, Staged staged, FieldReach reach, ResearchPreview.Result nowResult, ResearchPreview....` | The field's card at the dials `staged` names (a dial it does not name is as it is in force): see Card. |
+
+### the schools (lines 980-1046)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 983 | 1 | **type** `public record SchoolPosts(Field field, double posts, double filled, double room)` | The posts of a field that a kind of school carries: the posts struck in the field by this kind's share of its room, the researchers they give, and the room this kind has. |
+| 986 | 3 | `public static boolean hostsResearch(EducationType kind)` | Whether a kind of school hosts research in any field (the University, and the Institute of technology, Medical, Business and Law schools). |
+| 991 | 14 | `static EnumMap<Field, Double> staffOfKind(Game game, EducationType kind)` | The nominal university-band staff a kind of school stands up in each field, as Game.researchStaff(null) sums them over every kind. |
+| 1011 | 15 | `public static List<SchoolPosts> schoolPosts(Game game, EducationType kind)` | What a kind of school carries of the city's research posts: posts are struck by field and not by school, so a kind has its share of each field it hosts - the posts struck there and the researchers they give, by the ki... |
+| 1028 | 1 | **type** `public record SchoolRow(EducationType kind, String name, int count, List<SchoolPosts> posts)` | A hosting kind of school standing in the city, as the Overview lists it: its name, how many stand and what it carries. |
+| 1031 | 15 | `public static List<SchoolRow> schoolRows(Game game)` | The kinds of school that host research and stand in the city, in the education kinds' order. |
 

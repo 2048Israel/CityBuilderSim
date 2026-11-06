@@ -329,7 +329,7 @@ adds its line here, not in `CLAUDE.md`.
                                    its card, a staged grant - and the cached preview with its words)
         ResearchViewCheck.java     R5's reads on a default city and a 1900 one, the series kept, and
                                    researchTown(), the 1900 city the research screens' KeptCheck shares
-                                   (R3b: sections 11-15, the Overview, the Funding card, the preview, R5's
+                                   (R3b: sections 11-19, the Overview, the Funding card, the preview, the dials, the schools, R5's
                                    gate-review reads and a default city, held to the model's own reads)
         ResearchPreview.java       what a set of research dials would find here over ten years (R3b,
                                    2026-11-06; research-design 5.4, 6.2): Research.month() on arrays over
@@ -827,7 +827,7 @@ adds its line here, not in `CLAUDE.md`.
                                    and ZoningScreen.java (Policy's fifth
                                    area, Zoning, 0.7.109: PolicyScreen dispatches the area to it and keeps
                                    the staged set and the tray), and ResearchScreen.java (Policy's sixth,
-                                   Research, R5: the Found page, its timeline a picture of kept dots), and MiniMap.java (the minimap, 0.7.134: a
+                                   Research, R5: the Found page, its timeline a picture of kept dots; R3b: the Overview and Funding pages, the hub's sixth card), and MiniMap.java (the minimap, 0.7.134: a
                                    stamp of the city at the rail's foot above Menu, its preview on hover,
                                    the land office's map over the window on a click; MiniMapFrame's
                                    arithmetic; since 0.8.27, batch UP3, the stamp and the preview from

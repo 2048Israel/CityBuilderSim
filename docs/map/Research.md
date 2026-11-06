@@ -38,7 +38,7 @@
 
 **Uses:** [JobType](JobType.md) (17), [ResearchCatalog](ResearchCatalog.md) (7), [World](World.md) (2), [EducationType](EducationType.md) (2), [BusinessInvestment](BusinessInvestment.md) (1)
 
-**Used by (18):** [BuildScreen](BuildScreen.md), [BuildingsTemplate](BuildingsTemplate.md), [DataSave](DataSave.md), [DiscoveryCheck](DiscoveryCheck.md), [Equipment](Equipment.md), [EquipmentFit](EquipmentFit.md), [Game](Game.md), [HistorySave](HistorySave.md), [Inbox](Inbox.md), [KeptCheck](KeptCheck.md), [LandCheck](LandCheck.md), [PrizeCheck](PrizeCheck.md), [Recipe](Recipe.md), [Recipes](Recipes.md), [ResearchPreview](ResearchPreview.md), [ResearchPreviewCheck](ResearchPreviewCheck.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md)
+**Used by (19):** [BuildScreen](BuildScreen.md), [BuildingsTemplate](BuildingsTemplate.md), [DataSave](DataSave.md), [DiscoveryCheck](DiscoveryCheck.md), [Equipment](Equipment.md), [EquipmentFit](EquipmentFit.md), [Game](Game.md), [HistorySave](HistorySave.md), [Inbox](Inbox.md), [KeptCheck](KeptCheck.md), [LandCheck](LandCheck.md), [PrizeCheck](PrizeCheck.md), [Recipe](Recipe.md), [Recipes](Recipes.md), [ResearchPreview](ResearchPreview.md), [ResearchPreviewCheck](ResearchPreviewCheck.md), [ResearchScreen](ResearchScreen.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md)
 
 ## Sections
 

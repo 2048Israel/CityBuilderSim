@@ -468,6 +468,20 @@ public final class ResearchView {
             for (FieldReach r : fields) sum += r.idle();
             return sum;
         }
+
+        /** The people at work on a problem in all the fields: everyone less the idle (R3b's Overview shows it, so the screen adds nothing up). */
+        public double working() {
+            double sum = 0;
+            for (FieldReach r : fields) sum += r.working();
+            return sum;
+        }
+
+        /** The problems open to the city in all the fields. */
+        public int inReach() {
+            int sum = 0;
+            for (FieldReach r : fields) sum += r.inReach();
+            return sum;
+        }
     }
 
     /** The words for what is in reach: "nothing in reach" for none, else "2 in reach: Wind Farm; Coal Power Plant", the distinct things the problems touch, in the catalogue's order. */
@@ -577,6 +591,11 @@ public final class ResearchView {
         /** Everyone at the field's own research at these dials: the faculty and the posts' researchers. */
         public double researchers() {
             return faculty + postResearchers;
+        }
+
+        /** The whole posts the schools have room for (Research.posts() buys whole posts and never past the room): "room for 59 posts". */
+        public int roomPosts() {
+            return room > 0 && Double.isFinite(room) ? (int) Math.min(Integer.MAX_VALUE, Math.floor(room)) : 0;
         }
     }
 
@@ -785,5 +804,243 @@ public final class ResearchView {
         }
         if (!(finds > 0)) return "none";
         return finds < 0.005 ? "under 0.01" : String.format(Locale.ROOT, "%.2f", finds);
+    }
+
+    /* =====================================================================
+       WHAT THE SCREENS' CARDS ARE DRAWN FROM (R3b, slice B: "no arithmetic on model figures in ui/")
+
+       The Overview's four figures, the Funding page's dials and the rows of a field's card each need a figure that is a sum, a rounding or a choice
+       among the reads above; the screen does not make them, because a harness can hold them here to the model's own numbers.
+       ===================================================================== */
+
+    /** "engineering 6 · medicine 2 · business and law none": the problems in reach by field, the fields with none named together at the end. */
+    public static String reachByFieldWords(List<FieldReach> fields) {
+        List<String> some = new ArrayList<>(), none = new ArrayList<>();
+        for (FieldReach r : fields) {
+            String name = r.field().name().toLowerCase(Locale.ROOT);
+            if (r.inReach() > 0) some.add(name + " " + r.inReach());
+            else none.add(name);
+        }
+        if (some.isEmpty()) return "nothing in reach in any field";
+        if (none.isEmpty()) return String.join(" · ", some);
+        String last = none.get(none.size() - 1), rest = String.join(", ", none.subList(0, none.size() - 1));
+        return String.join(" · ", some) + " · " + (rest.isEmpty() ? last : rest + " and " + last) + " none";
+    }
+
+    /** A dial's range: from `min` to `max` in steps of `step`. */
+    public record Dial(double min, double max, double step) { }
+
+    /** How far past the room the grant dial reaches, as a share of the room, and the least number of posts it reaches past it (a grant past the room buys nothing, and the player may try one). */
+    public static final double GRANT_REACH = 1.2;
+    public static final int GRANT_REACH_POSTS = 3;
+
+    /**
+     * The grant dial of a field: from nothing in steps of a round figure (1, 2 or 5 times a power of ten) not above a post's cost, to a little past the
+     * grant that fills the room (GRANT_REACH) - and past the grant in force, whatever the room has become. A step of a post's cost itself would have been
+     * a post a step, but the cost walks with the wages and a month landing under a held thumb would move every step of the dial under it; a round step
+     * stays put until the cost passes one. Where a post has no cost (no wages to read) a plain dial of a hundred steps.
+     */
+    public static Dial grantDial(Funding f) {
+        double cost = f.postCost();
+        if (!(cost > 0) || !Double.isFinite(cost)) return new Dial(0, Math.max(100, Math.ceil(f.grant())), 1);
+        int room = f.roomPosts();
+        double posts = Math.max(Math.max(room + GRANT_REACH_POSTS, Math.ceil(room * GRANT_REACH)), Math.ceil(f.grant() / cost));
+        double step = niceFloor(cost);
+        return new Dial(0, Math.ceil(posts * cost / step - 1e-9) * step, step);
+    }
+
+    /** The greatest of 1, 2 and 5 times a power of ten that is not above `x` (0 for x not above nothing). */
+    static double niceFloor(double x) {
+        if (!(x > 0) || !Double.isFinite(x)) return 0;
+        double power = Math.pow(10, Math.floor(Math.log10(x)));
+        for (double m : new double[] {5, 2, 1}) if (m * power <= x * (1 + 1e-12)) return m * power;
+        return power;
+    }
+
+    /** The researcher-years of work a prize dial reaches for, at the least: a problem of that size, paid at a post's cost a month, is its top. */
+    public static final double PRIZE_DIAL_YEARS = 1000;
+
+    /** How many times the least prize that brings a lab the prize dial reaches, at the least. */
+    public static final double PRIZE_REACH = 2;
+
+    /** The steps a prize dial is divided into. */
+    public static final int PRIZE_STEPS = 100;
+
+    /** The least of 1, 2 and 5 times a power of ten that is not below `x` (0 for x not above nothing). */
+    static double niceCeil(double x) {
+        if (!(x > 0) || !Double.isFinite(x)) return 0;
+        double power = Math.pow(10, Math.floor(Math.log10(x)));
+        for (double m : new double[] {1, 2, 5, 10}) if (m * power >= x * (1 - 1e-12)) return m * power;
+        return 10 * power;
+    }
+
+    /**
+     * The prize dial of a field: from nothing to a round number (1, 2 or 5 times a power of ten) that reaches PRIZE_DIAL_YEARS researcher-years of a post's
+     * cost, twice the least prize that brings a lab (PRIZE_REACH) and the prize in force; in PRIZE_STEPS steps. Where a post has no cost a plain dial.
+     */
+    public static Dial prizeDial(Funding f) {
+        double cost = f.postCost();
+        double base = cost > 0 && Double.isFinite(cost) ? PRIZE_DIAL_YEARS * Research.MONTHS_A_YEAR * cost : 1000;
+        double lab = Double.isNaN(f.labThreshold()) ? 0 : PRIZE_REACH * f.labThreshold();
+        double max = niceCeil(Math.max(Math.max(base, lab), f.prize()));
+        return new Dial(0, max, max / PRIZE_STEPS);
+    }
+
+    /** The researchers that `labs` Research Labs give once they are staffed: Research.LAB_POSTS posts each. */
+    public static int labPosts(int labs) {
+        return Math.max(0, labs) * Research.LAB_POSTS;
+    }
+
+    /** THE BUDGET a month before and after what is staged: the balance as the accounts booked it and the same less what the staged grants' posts would add to the research bill. */
+    public record Budget(double before, double after) {
+        public double change() {
+            return after - before;
+        }
+    }
+
+    /**
+     * The balance with the staged grants in place of the ones in force: a staged grant buys the posts atGrant() says, and their bill replaces the bill of the
+     * posts struck. A prize is paid on a find and not a month, so it moves nothing here.
+     */
+    public static Budget budget(Game game, Staged staged) {
+        double before = game.getEconomyManager().getNationalAccounts().getBalance();
+        Pieces p = piecesOf(game);
+        double now = 0, then = 0;
+        if (staged != null) {
+            for (Map.Entry<Field, Double> e : staged.grants().entrySet()) {
+                now += atGrant(p, e.getKey(), p.research().grant(e.getKey())).bill();
+                then += atGrant(p, e.getKey(), e.getValue()).bill();
+            }
+        }
+        return new Budget(before, before - (then - now));
+    }
+
+    /**
+     * One field's dial card as the Funding page draws it, at the dials shown on it (the grant and prize in force, or staged ones): the researchers the
+     * field has now and with them, in grant posts and in labs, what the posts cost a month, the part of the grant they leave unspent, and what the field
+     * would find here before the world over the next ResearchPreview.YEARS years. `nowResult` and `afterResult` are the previews at the dials in force and
+     * at the dials shown (the same Result where nothing is staged): a screen reads each once for all its cards. A field not moved has the same figure
+     * on both sides.
+     */
+    public record Card(Field field, FieldReach reach, Funding funding, AtGrant at, boolean researching, double grant, double prize, boolean grantMoved,
+                       boolean prizeMoved, int roomPosts, double researchersNow, double researchersAfter, int grantPostsNow, int grantPostsAfter,
+                       double labResearchersNow, double labResearchersAfter, int labsNow, int labsAfter, double billNow, double billAfter,
+                       double unspentNow, double unspentAfter, double findsNow, double findsAfter, double chanceNow, double chanceAfter) {
+
+        /** Whether something is staged on the card. */
+        public boolean moved() {
+            return grantMoved || prizeMoved;
+        }
+
+        /** Whether the card shows its preview as a chance and not a count (asChance() of the two figures). */
+        public boolean asChance() {
+            return ResearchView.asChance(findsNow, findsAfter);
+        }
+
+        /** "none", "0.2%", "1.10": the preview at the dials in force. */
+        public String findsNowWords() {
+            return previewWords(findsNow, chanceNow, asChance());
+        }
+
+        /** ...and at the dials shown. */
+        public String findsAfterWords() {
+            return previewWords(findsAfter, chanceAfter, asChance());
+        }
+
+        /** Whether the shown grant buys every post the room has: more money buys nothing. */
+        public boolean roomFull() {
+            return roomPosts > 0 && grantPostsAfter >= roomPosts;
+        }
+
+        /** Whether some of the shown grant goes unspent: at least half a dollar of it (the money is counted in thousands). */
+        public boolean unspends() {
+            return unspentAfter >= 0.0005;
+        }
+    }
+
+    /** The field's card at the dials `staged` names (a dial it does not name is as it is in force): see Card. */
+    public static Card card(Game game, Field f, Staged staged, FieldReach reach, ResearchPreview.Result nowResult, ResearchPreview.Result afterResult) {
+        Pieces p = piecesOf(game);
+        Research r = p.research();
+        Funding fu = funding(p, f, game.labsStanding(f), game.labsOnSite(f));
+        Staged s = staged == null ? Staged.none() : staged;
+        Double stagedGrant = s.grants().get(f), stagedPrize = s.prizes().get(f);
+        double grant = stagedGrant == null ? r.grant(f) : stagedGrant, prize = stagedPrize == null ? r.prize(f) : stagedPrize;
+        boolean grantMoved = stagedGrant != null && stagedGrant != r.grant(f), prizeMoved = stagedPrize != null && stagedPrize != r.prize(f);
+        AtGrant at = atGrant(p, f, grant);
+        int labsAfter = prizeMoved ? afterResult.labsFirstMonth(f) : fu.labsStanding();
+        double labsNowResearchers = reach.labResearchers();
+        double labsAfterResearchers = labsAfter == fu.labsStanding() ? labsNowResearchers : labPosts(labsAfter);
+        double unspentAfter = Math.max(0, grant - Research.bill(f, at.grantPosts(), p.wages(), p.fill()));
+        return new Card(f, reach, fu, at, p.researching(), grant, prize, grantMoved, prizeMoved, fu.roomPosts(), fu.researchers() + labsNowResearchers,
+                at.researchers() + labsAfterResearchers, fu.grantPosts(), at.grantPosts(), labsNowResearchers, labsAfterResearchers, fu.labsStanding(),
+                labsAfter, fu.bill(), at.bill(), fu.unspent(), unspentAfter, nowResult.finds(f), afterResult.finds(f), nowResult.chance(f), afterResult.chance(f));
+    }
+
+    /* ----- the schools ----- */
+
+    /** The posts of a field that a kind of school carries: the posts struck in the field by this kind's share of its room, the researchers they give, and the room this kind has. */
+    public record SchoolPosts(Field field, double posts, double filled, double room) { }
+
+    /** Whether a kind of school hosts research in any field (the University, and the Institute of technology, Medical, Business and Law schools). */
+    public static boolean hostsResearch(EducationType kind) {
+        return kind != null && !Research.staffByField(kind, null).isEmpty();
+    }
+
+    /** The nominal university-band staff a kind of school stands up in each field, as Game.researchStaff(null) sums them over every kind. */
+    static EnumMap<Field, Double> staffOfKind(Game game, EducationType kind) {
+        EnumMap<Field, Double> out = new EnumMap<>(Field.class);
+        for (BuildingsStacks stack : game.getBuildingManager().getStacksView()) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (t.getTeaches() != kind || stack.getQuantity() <= 0) continue;
+            double[] staff = new double[JobType.values().length];
+            for (JobType type : JobType.values()) {
+                if (Research.servedBy(type).isEmpty()) continue;
+                staff[type.ordinal()] = (double) t.getJobs(type) * stack.getQuantity();
+            }
+            for (Map.Entry<Field, Double> share : Research.staffByField(kind, staff).entrySet()) out.merge(share.getKey(), share.getValue(), Double::sum);
+        }
+        return out;
+    }
+
+    /**
+     * What a kind of school carries of the city's research posts: posts are struck by field and not by school, so a kind has its share of each field it
+     * hosts - the posts struck there and the researchers they give, by the kind's share of the field's room - and the room it has itself. A field a
+     * kind hosts but has no staff in (none of it stands) is left out; a kind that hosts none, or of which none stands, has an empty list.
+     */
+    public static List<SchoolPosts> schoolPosts(Game game, EducationType kind) {
+        List<SchoolPosts> out = new ArrayList<>();
+        if (!hostsResearch(kind)) return out;
+        Pieces p = piecesOf(game);
+        EnumMap<Field, Double> mine = staffOfKind(game, kind);
+        for (Field f : Field.values()) {
+            double staff = mine.getOrDefault(f, 0.0);
+            if (!(staff > 0)) continue;
+            double whole = p.nominalStaff().getOrDefault(f, 0.0);
+            double share = whole > 0 ? staff / whole : 0;
+            int posts = p.research().posts(f);
+            out.add(new SchoolPosts(f, share * posts, share * Research.filledResearchers(f, posts, p.fill()), Research.room(staff)));
+        }
+        return out;
+    }
+
+    /** A hosting kind of school standing in the city, as the Overview lists it: its name, how many stand and what it carries. */
+    public record SchoolRow(EducationType kind, String name, int count, List<SchoolPosts> posts) { }
+
+    /** The kinds of school that host research and stand in the city, in the education kinds' order. */
+    public static List<SchoolRow> schoolRows(Game game) {
+        List<SchoolRow> out = new ArrayList<>();
+        for (EducationType kind : EducationType.values()) {
+            if (!hostsResearch(kind)) continue;
+            int count = 0;
+            String name = null;
+            for (BuildingsStacks stack : game.getBuildingManager().getStacksView()) {
+                if (stack.getBuilding().getTeaches() != kind || stack.getQuantity() <= 0) continue;
+                count += stack.getQuantity();
+                name = stack.getBuilding().getName();
+            }
+            if (count > 0) out.add(new SchoolRow(kind, name, count, schoolPosts(game, kind)));
+        }
+        return out;
     }
 }

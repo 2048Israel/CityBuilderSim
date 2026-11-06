@@ -64,6 +64,18 @@ import java.util.Map;
  *      to the one in force is the answer already kept.
  *  14. R5'S GATE REVIEW. The found-here and abroad counts laid on History's months, what is still to come, and the bars' shares.
  *  15. A CITY FOUNDED THE DEFAULT WAY. Nothing in reach, nothing to find, no lab to come, whatever the catalogue's dates say of the month.
+ *
+ * The screens' own reads (R3b, slice B: what the Overview's four figures, the Funding dials, a field card's rows and a school's research line are drawn from, so that
+ * the screens add up nothing):
+ *
+ *  16. THE FIGURES AND THE DIALS. The researchers at work and the problems in reach added up; the words of the problems by field; the room in whole posts; a grant
+ *      dial in steps of a post, past the room and the grant in force; a prize dial to a round number past 1,000 researcher-years, twice the least prize that
+ *      brings a lab and the prize in force; a lab's posts.
+ *  17. THE CARD. Nothing staged is one figure on both sides; a staged grant is atGrant's posts, researchers, bill and unspent, the preview the staged one's; a
+ *      grant past the room buys the room and says it is full; a staged prize brings the labs the staged preview wants, at a lab's posts each.
+ *  18. THE SCHOOLS AND THE BUDGET. The kinds of school stand up the game's own staff and room; a kind has its share of each field's posts; a kind that hosts none, or of
+ *      which none stands, carries nothing; THE BUDGET moves by the staged grants' posts and not by a prize.
+ *  19. A LAB STANDING. The card counts the lab and its researchers with the field's, and the same lab is on both sides of a card that moves a grant.
  */
 public class ResearchViewCheck {
 
@@ -200,6 +212,10 @@ public class ResearchViewCheck {
         sectionThirteen(funded);
         sectionFourteen(funded);
         sectionFifteen();
+        sectionSixteen(funded);
+        sectionSeventeen(funded);
+        sectionEighteen(funded);
+        sectionNineteen(funded);
         System.out.println(fails == 0 ? "ResearchViewCheck: all " + passes + " ok" : "ResearchViewCheck: " + fails + " FAILED of " + (passes + fails));
         System.exit(fails);
     }
@@ -1374,5 +1390,280 @@ public class ResearchViewCheck {
         check("the preview has nothing to find, as is and staged", ResearchView.preview(d, ResearchView.Staged.none()) == ResearchPreview.NOTHING
                 && ResearchView.preview(d, ResearchView.Staged.none().withGrant(Field.ENGINEERING, 1e9)) == ResearchPreview.NOTHING && ResearchPreview.NOTHING.total() == 0);
         check("what is still to come is none, the city having known them all at its founding", ResearchView.stillToCome(d) == 0, "" + ResearchView.stillToCome(d));
+    }
+
+    /* =====================================================================
+       R3b, slice B: the reads the Overview and Funding screens draw their figures, dials, rows and school lines from (sections 16 to 18)
+       ===================================================================== */
+
+    /* ==================== 16. the Overview's figures and the dials' ranges ==================== */
+
+    static void sectionSixteen(Game g) {
+        System.out.println("\n--- 16. the figures across the top and the dials' ranges: the sums, the words, the posts the room holds, and a range that reaches past what it marks ---");
+        ResearchView.Overview o = ResearchView.overview(g);
+        double working = 0;
+        int inReach = 0;
+        for (ResearchView.FieldReach row : o.fields()) {
+            working += row.total() - row.idle();
+            inReach += row.inReach();
+        }
+        near("the researchers at work are everyone less the idle, field by field", o.working(), working, 1e-9);
+        check("...and no more than all of them, and above nothing in the town", o.working() <= o.researchers() + 1e-9 && o.working() > 0, "" + o.working());
+        check("the problems in reach are the fields' added (" + inReach + ")", o.inReach() == inReach && inReach > 0);
+
+        // The words of the lead's last figure, on synthetic rows so that every shape is caused.
+        ResearchView.FieldReach none = new ResearchView.FieldReach(Field.LAW, 0, 0, 0, 0, List.of(), 0, 0, List.of());
+        List<ResearchView.FieldReach> mixed = new ArrayList<>();
+        for (Field f : Field.values()) {
+            mixed.add(new ResearchView.FieldReach(f, 0, 0, 0, f == Field.ENGINEERING ? 6 : f == Field.MEDICINE ? 2 : 0, List.of(), 0, 0, List.of()));
+        }
+        check("in reach by field: \"engineering 6 · medicine 2 · business and law none\" for two with some", ResearchView.reachByFieldWords(mixed).equals("engineering 6 · medicine 2 · business and law none"),
+                ResearchView.reachByFieldWords(mixed));
+        List<ResearchView.FieldReach> three = new ArrayList<>(mixed);
+        three.set(2, new ResearchView.FieldReach(Field.BUSINESS, 0, 0, 0, 1, List.of(), 0, 0, List.of()));
+        List<ResearchView.FieldReach> all = new ArrayList<>(), nothing = new ArrayList<>();
+        for (Field f : Field.values()) {
+            all.add(new ResearchView.FieldReach(f, 0, 0, 0, 1, List.of(), 0, 0, List.of()));
+            nothing.add(new ResearchView.FieldReach(f, 0, 0, 0, 0, List.of(), 0, 0, List.of()));
+        }
+        check("...\"law none\" for one with none, no \"none\" for all with some, \"nothing in reach in any field\" for none",
+                ResearchView.reachByFieldWords(three).equals("engineering 6 · medicine 2 · business 1 · law none") && ResearchView.reachByFieldWords(all).equals("engineering 1 · medicine 1 · business 1 · law 1")
+                        && ResearchView.reachByFieldWords(nothing).equals("nothing in reach in any field") && ResearchView.reachByFieldWords(List.of(none)).equals("nothing in reach in any field"),
+                ResearchView.reachByFieldWords(three) + " / " + ResearchView.reachByFieldWords(all));
+        check("...and the town's own: it names the fields with something in reach with their counts", ResearchView.reachByFieldWords(o.fields()).contains("engineering " + o.fields().get(0).inReach()),
+                ResearchView.reachByFieldWords(o.fields()));
+
+        // The room, in whole posts.
+        boolean roomOk = true;
+        for (Field f : Field.values()) {
+            ResearchView.Funding fu = ResearchView.funding(g, f);
+            roomOk &= fu.roomPosts() == (int) Math.floor(fu.room()) && fu.roomPosts() >= 0;
+        }
+        check("the room in whole posts is the room floored, field by field", roomOk);
+        ResearchView.Funding some = ResearchView.funding(g, Field.ENGINEERING);
+        ResearchView.Funding odd = new ResearchView.Funding(Field.LAW, 0, 0, 0, 0, 58.7, 1, 58.7, 0, 0, 0, 0, 0, 0, Double.NaN);
+        ResearchView.Funding noRoom = new ResearchView.Funding(Field.LAW, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, Double.NaN);
+        ResearchView.Funding strange = new ResearchView.Funding(Field.LAW, 0, 0, 0, 0, Double.NaN, 1, Double.NaN, 0, 0, 0, 0, 0, 0, Double.NaN);
+        check("...58.7 is 58 whole posts (Research.posts() floors, so a grant that fills the room buys 58), none is none, and what is not a number is none",
+                odd.roomPosts() == 58 && Research.posts(odd.grantToFillRoom(), 1, odd.room()) == 58 && noRoom.roomPosts() == 0 && strange.roomPosts() == 0);
+
+        // The grant dial.
+        boolean grantOk = true;
+        String grantOff = "";
+        for (Field f : Field.values()) {
+            ResearchView.Funding fu = ResearchView.funding(g, f);
+            ResearchView.Dial d = ResearchView.grantDial(fu);
+            double cost = fu.postCost();
+            boolean ok = d.min() == 0 && d.step() == ResearchView.niceFloor(cost) && d.step() <= cost && d.step() * 2.5 > cost && d.max() > fu.grantToFillRoom() && d.max() >= fu.grant()
+                    && d.max() >= fu.grantToFillRoom() + ResearchView.GRANT_REACH_POSTS * cost - 1e-9 && Math.abs(d.max() / d.step() - Math.rint(d.max() / d.step())) < 1e-9;
+            if (!ok) grantOff += f + " " + d + " room " + fu.grantToFillRoom() + " grant " + fu.grant() + "; ";
+            grantOk &= ok;
+        }
+        check("the grant dial runs from nothing in round steps (1, 2 or 5 times a power of ten, not above a post's cost and over two fifths of it), a whole number of them, past the grant that fills the room by at least "
+                + ResearchView.GRANT_REACH_POSTS + " posts and past the grant in force", grantOk, grantOff);
+        ResearchView.Funding big = new ResearchView.Funding(Field.LAW, 5000, 0, 0, 0, 100, 2, 200, 0, 0, 0, 0, 0, 0, Double.NaN);
+        ResearchView.Funding free = new ResearchView.Funding(Field.LAW, 7, 0, 0, 0, 40, Double.NaN, Double.NaN, 0, 0, 0, 0, 0, 0, Double.NaN);
+        check("...a grant in force beyond what the room asks for is still on the dial (2,500 posts), 20% past the room otherwise (100 posts: 120), and a post with no cost is a plain dial of a hundred",
+                ResearchView.grantDial(big).max() == 5000 && ResearchView.grantDial(new ResearchView.Funding(Field.LAW, 0, 0, 0, 0, 100, 2, 200, 0, 0, 0, 0, 0, 0, Double.NaN)).max() == 240
+                        && ResearchView.grantDial(free).step() == 1 && ResearchView.grantDial(free).max() == 100,
+                ResearchView.grantDial(big) + " " + ResearchView.grantDial(free));
+        check("niceFloor: the greatest of 1, 2 and 5 times a power of ten not above the figure; a step stays put while the cost walks (0.5158 and 0.53 are both 0.5; 0.99 is 0.5, 1 is 1, 4.9 is 2, 5 is 5)",
+                ResearchView.niceFloor(0.5158) == 0.5 && ResearchView.niceFloor(0.53) == 0.5 && ResearchView.niceFloor(0.99) == 0.5 && ResearchView.niceFloor(1) == 1 && ResearchView.niceFloor(4.9) == 2
+                        && ResearchView.niceFloor(5) == 5 && ResearchView.niceFloor(0.0123) == 0.01 && ResearchView.niceFloor(0) == 0 && ResearchView.niceFloor(Double.NaN) == 0);
+        ResearchView.Funding walked = new ResearchView.Funding(Field.LAW, 0, 0, 0, 0, 100, 0.5158, 51.58, 0, 0, 0, 0, 0, 0, Double.NaN);
+        ResearchView.Funding later = new ResearchView.Funding(Field.LAW, 0, 0, 0, 0, 100, 0.5191, 51.91, 0, 0, 0, 0, 0, 0, Double.NaN);
+        check("...so a month's wages moving a post's cost by a little leave the grant dial's step where it was (" + ResearchView.grantDial(walked).step() + " and " + ResearchView.grantDial(later).step() + ")",
+                ResearchView.grantDial(walked).step() == 0.5 && ResearchView.grantDial(later).step() == 0.5);
+
+        // The prize dial.
+        check("niceCeil: the least of 1, 2 and 5 times a power of ten not below the figure",
+                ResearchView.niceCeil(1) == 1 && ResearchView.niceCeil(1.0001) == 2 && ResearchView.niceCeil(2) == 2 && ResearchView.niceCeil(3) == 5 && ResearchView.niceCeil(5.1) == 10
+                        && ResearchView.niceCeil(70) == 100 && ResearchView.niceCeil(0.03) == 0.05 && ResearchView.niceCeil(0) == 0 && ResearchView.niceCeil(Double.NaN) == 0);
+        boolean prizeOk = true;
+        String prizeOff = "";
+        for (Field f : Field.values()) {
+            ResearchView.Funding fu = ResearchView.funding(g, f);
+            ResearchView.Dial d = ResearchView.prizeDial(fu);
+            double reach = Math.max(ResearchView.PRIZE_DIAL_YEARS * Research.MONTHS_A_YEAR * fu.postCost(), Double.isNaN(fu.labThreshold()) ? 0 : ResearchView.PRIZE_REACH * fu.labThreshold());
+            boolean ok = d.min() == 0 && d.max() >= reach && d.max() >= fu.prize() && ResearchView.niceCeil(d.max()) == d.max() && Math.abs(d.step() * ResearchView.PRIZE_STEPS - d.max()) <= 1e-9 * d.max();
+            if (!ok) prizeOff += f + " " + d + " reach " + reach + "; ";
+            prizeOk &= ok;
+        }
+        check("the prize dial runs from nothing to a round number that reaches " + ResearchView.PRIZE_DIAL_YEARS + " researcher-years of posts, " + ResearchView.PRIZE_REACH
+                + " times the least prize that brings a lab and the prize in force, in " + ResearchView.PRIZE_STEPS + " steps", prizeOk, prizeOff);
+        ResearchView.Funding paid = new ResearchView.Funding(Field.LAW, 0, 9e9, 0, 0, 10, 1, 10, 0, 0, 0, 0, 0, 0, 1e9);
+        ResearchView.Funding lab = new ResearchView.Funding(Field.LAW, 0, 0, 0, 0, 10, 1, 10, 0, 0, 0, 0, 0, 0, 3e9);
+        check("...a prize in force past it, and a threshold past it, are on the dial",
+                ResearchView.prizeDial(paid).max() >= 9e9 && ResearchView.prizeDial(lab).max() >= 6e9, ResearchView.prizeDial(paid) + " " + ResearchView.prizeDial(lab));
+        check("the researchers in labs are the posts of a lab for each, none for none or fewer", ResearchView.labPosts(2) == 2 * Research.LAB_POSTS && ResearchView.labPosts(0) == 0 && ResearchView.labPosts(-1) == 0
+                && some.postCost() > 0);
+    }
+
+    /* ==================== 17. the card's rows ==================== */
+
+    static void sectionSeventeen(Game g) {
+        System.out.println("\n--- 17. the card: nothing staged is the same figure on both sides; a staged grant and prize are the model's posts, bill, labs and preview ---");
+        Research r = g.getResearch();
+        ResearchView.Overview o = ResearchView.overview(g);
+        ResearchPreview.Result asIs = ResearchView.preview(g, ResearchView.Staged.none());
+        boolean same = true, words = true;
+        String off = "";
+        for (ResearchView.FieldReach row : o.fields()) {
+            ResearchView.Card c = ResearchView.card(g, row.field(), ResearchView.Staged.none(), row, asIs, asIs);
+            boolean ok = !c.moved() && c.researchersNow() == c.researchersAfter() && c.grantPostsNow() == c.grantPostsAfter() && c.labsNow() == c.labsAfter()
+                    && c.labResearchersNow() == c.labResearchersAfter() && c.billNow() == c.billAfter() && c.unspentNow() == c.unspentAfter() && c.findsNow() == c.findsAfter()
+                    && c.chanceNow() == c.chanceAfter() && c.grant() == r.grant(row.field()) && c.prize() == r.prize(row.field());
+            if (!ok) off += row.field() + "; ";
+            same &= ok;
+            words &= c.findsNowWords().equals(c.findsAfterWords());
+        }
+        check("nothing staged: every row has the same figure on both sides, the grant and the prize are the ones in force", same, off);
+        check("...and the preview's words are one on both sides", words);
+
+        // The reads of one field, by hand: engineering's card at its own grant is the funding's.
+        ResearchView.FieldReach eng = o.fields().get(0);
+        ResearchView.Funding fu = ResearchView.funding(g, Field.ENGINEERING);
+        ResearchView.Card now = ResearchView.card(g, Field.ENGINEERING, ResearchView.Staged.none(), eng, asIs, asIs);
+        check("the card's \"now\" is the Funding read and the Overview's: researchers = the faculty and the posts' (" + fu.researchers() + ") and the labs' (" + eng.labResearchers() + "), the posts, the bill, the unspent, the room in posts",
+                now.researchersNow() == fu.researchers() + eng.labResearchers() && now.grantPostsNow() == fu.grantPosts() && now.billNow() == fu.bill() && now.unspentNow() == fu.unspent()
+                        && now.roomPosts() == fu.roomPosts() && now.labsNow() == fu.labsStanding() && now.funding().equals(fu) && now.researching());
+        check("...and the preview's figures for the field are the Result's: finds " + now.findsNow() + ", chance " + now.chanceNow(), now.findsNow() == asIs.finds(Field.ENGINEERING) && now.chanceNow() == asIs.chance(Field.ENGINEERING));
+
+        // A staged grant, two posts more.
+        double cost = fu.postCost();
+        // ...two posts above the posts struck: the wages walk, so the grant in force plus two posts' cost can buy fewer than the posts already struck.
+        double grant = (fu.grantPosts() + 2) * cost;
+        ResearchView.Staged grantStaged = ResearchView.Staged.none().withGrant(Field.ENGINEERING, grant);
+        ResearchPreview.Result grantResult = ResearchView.preview(g, grantStaged);
+        ResearchView.Card more = ResearchView.card(g, Field.ENGINEERING, grantStaged, eng, asIs, grantResult);
+        ResearchView.AtGrant at = ResearchView.atGrant(g, Field.ENGINEERING, grant);
+        check("a staged grant: the card is moved, the grant shown is the staged one, the prize is not", more.moved() && more.grantMoved() && !more.prizeMoved() && more.grant() == grant && more.prize() == r.prize(Field.ENGINEERING));
+        check("...its posts, researchers and bill are atGrant()'s (" + at.grantPosts() + " posts, " + at.researchers() + " researchers, " + at.bill() + " a month), the labs' researchers unmoved",
+                more.grantPostsAfter() == at.grantPosts() && more.researchersAfter() == at.researchers() + eng.labResearchers() && more.billAfter() == at.bill() && more.labsAfter() == more.labsNow()
+                        && more.grantPostsAfter() > more.grantPostsNow(), more.grantPostsNow() + " -> " + more.grantPostsAfter() + " posts of " + more.roomPosts() + ", researchers " + more.researchersAfter() + " against " + (at.researchers() + eng.labResearchers()) + ", bill " + more.billAfter() + " against " + at.bill() + ", labs " + more.labsNow() + "/" + more.labsAfter());
+        near("...the unspent is what the grant leaves of the posts' pay (the grant less the grant's posts' bill, never below none)", more.unspentAfter(),
+                Math.max(0, grant - Research.bill(Field.ENGINEERING, at.grantPosts(), g.getPopulationManager().getWagesPerType(), g.getResearchFill())), 1e-9);
+        check("...and the preview is the staged Result's, the \"now\" the one in force", more.findsAfter() == grantResult.finds(Field.ENGINEERING) && more.chanceAfter() == grantResult.chance(Field.ENGINEERING)
+                && more.findsNow() == asIs.finds(Field.ENGINEERING) && more.asChance() == ResearchView.asChance(asIs.finds(Field.ENGINEERING), grantResult.finds(Field.ENGINEERING)));
+        check("...and the grant in force staged is no change (nothing is moved by staging what is set)",
+                !ResearchView.card(g, Field.ENGINEERING, ResearchView.Staged.none().withGrant(Field.ENGINEERING, r.grant(Field.ENGINEERING)), eng, asIs, asIs).moved());
+
+        // The room full: a grant far past it buys the room's posts and no more, and says so.
+        double past = fu.grantToFillRoom() + 10 * cost;
+        ResearchView.Staged pastStaged = ResearchView.Staged.none().withGrant(Field.ENGINEERING, past);
+        ResearchView.Card full = ResearchView.card(g, Field.ENGINEERING, pastStaged, eng, asIs, ResearchView.preview(g, pastStaged));
+        check("a grant past the room buys the room's posts (" + full.grantPostsAfter() + " of " + full.roomPosts() + ") and the card says the room is full; the one in force does not",
+                full.grantPostsAfter() == fu.roomPosts() && full.roomFull() && !now.roomFull(), full.grantPostsAfter() + " of " + fu.roomPosts());
+        check("...and what it leaves unspent is above nothing (the grant over the posts' pay), the card says so", full.unspentAfter() > 0 && full.unspends());
+        check("...and a card with a hundredth of a dollar unspent says nothing of it", !new ResearchView.Card(Field.LAW, null, null, null, true, 0, 0, false, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0.00001, 0, 0, 0, 0).unspends());
+
+        // A prize past the least that brings a lab.
+        double threshold = fu.labThreshold();
+        check("fixture: engineering has a least prize that brings a lab in this town (" + threshold + ")", !Double.isNaN(threshold) && threshold > 0);
+        double bigPrize = Double.isNaN(threshold) ? 1e9 : 4 * threshold;
+        ResearchView.Staged prizeStaged = ResearchView.Staged.none().withPrize(Field.ENGINEERING, bigPrize);
+        ResearchPreview.Result prizeResult = ResearchView.preview(g, prizeStaged);
+        ResearchView.Card paying = ResearchView.card(g, Field.ENGINEERING, prizeStaged, eng, asIs, prizeResult);
+        check("a staged prize: the card is moved by the prize alone, the labs are the staged preview's first month (" + prizeResult.labsFirstMonth(Field.ENGINEERING) + "), not the grant's posts",
+                paying.moved() && paying.prizeMoved() && !paying.grantMoved() && paying.prize() == bigPrize && paying.labsAfter() == prizeResult.labsFirstMonth(Field.ENGINEERING)
+                        && paying.grantPostsAfter() == paying.grantPostsNow() && paying.billAfter() == paying.billNow());
+        check("...whatever labs it brings are a lab's posts each (" + ResearchView.labPosts(paying.labsAfter()) + " researchers for " + paying.labsAfter() + "), and the card's researchers are the field's and the labs' (a lab set going by the dial that stands as it did: the town's own)",
+                paying.labResearchersAfter() == (paying.labsAfter() == paying.labsNow() ? paying.labResearchersNow() : ResearchView.labPosts(paying.labsAfter()))
+                        && paying.researchersAfter() == fu.researchers() + paying.labResearchersAfter());
+        check("...and the card without a prize move keeps the labs the town has (" + now.labsNow() + ") and their researchers as the model counts them (" + now.labResearchersNow() + ")",
+                now.labResearchersAfter() == eng.labResearchers() && now.labsAfter() == fu.labsStanding());
+
+        // The words of the preview, on both sides.
+        check("a chance under one is a percent and a count from one up: asChance() of the pair, and previewWords() says \"none\", \"under 1%\", \"25%\", \"1.10\"",
+                ResearchView.asChance(0.2, 0.9) && !ResearchView.asChance(0.2, 1.1) && ResearchView.previewWords(0, 0, true).equals("none") && ResearchView.previewWords(0.001, 0.001, true).equals("under 1%")
+                        && ResearchView.previewWords(0.3, 0.25, true).equals("25%") && ResearchView.previewWords(1.1, 0.7, false).equals("1.10"));
+    }
+
+    /* ==================== 18. the schools' lines, and THE BUDGET ==================== */
+
+    static void sectionEighteen(Game g) {
+        System.out.println("\n--- 18. the schools' research posts: a kind's share of each field's posts by its share of the room, and THE BUDGET with the staged grants' posts ---");
+        Research r = g.getResearch();
+        ResearchView.Pieces p = ResearchView.piecesOf(g);
+        EnumMap<Field, Double> room = new EnumMap<>(Field.class), kinds = new EnumMap<>(Field.class), filledSum = new EnumMap<>(Field.class);
+        double postsSum = 0;
+        for (EducationType kind : EducationType.values()) {
+            // The kinds' staffs together are the game's own.
+            for (Map.Entry<Field, Double> e : ResearchView.staffOfKind(g, kind).entrySet()) kinds.merge(e.getKey(), e.getValue(), Double::sum);
+            for (ResearchView.SchoolPosts sp : ResearchView.schoolPosts(g, kind)) {
+                room.merge(sp.field(), sp.room(), Double::sum);
+                filledSum.merge(sp.field(), sp.filled(), Double::sum);
+                postsSum += sp.posts();
+            }
+        }
+        boolean staffOk = true, roomOk = true, filledOk = true;
+        double posts = 0;
+        for (Field f : Field.values()) {
+            staffOk &= Math.abs(kinds.getOrDefault(f, 0.0) - p.nominalStaff().getOrDefault(f, 0.0)) <= 1e-9;
+            roomOk &= Math.abs(room.getOrDefault(f, 0.0) - ResearchView.funding(g, f).room()) <= 1e-9;
+            filledOk &= Math.abs(filledSum.getOrDefault(f, 0.0) - Research.filledResearchers(f, r.posts(f), p.fill())) <= 1e-9;
+            posts += r.posts(f);
+        }
+        check("the kinds of school together stand up the game's own staff in each field (Game.researchStaff()), and give it their rooms' sum as the field's room", staffOk && roomOk);
+        check("...the posts struck, over the kinds that carry them, are the research's own (" + posts + "), and the researchers they give each field's", Math.abs(postsSum - posts) <= 1e-9 && filledOk,
+                postsSum + " against " + posts);
+        List<ResearchView.SchoolPosts> uni = ResearchView.schoolPosts(g, EducationType.UNIVERSITY), medical = ResearchView.schoolPosts(g, EducationType.MEDICAL);
+        check("the University hosts all four fields (" + uni.size() + " lines), the Medical School medicine alone, its room the staff there times Research.room()",
+                uni.size() == 4 && medical.size() == 1 && medical.get(0).field() == Field.MEDICINE
+                        && Math.abs(medical.get(0).room() - Research.room(ResearchView.staffOfKind(g, EducationType.MEDICAL).get(Field.MEDICINE))) <= 1e-9);
+        check("...the Medical School, with the Universities, carries medicine's posts between them: its share is its room over the field's",
+                Math.abs(medical.get(0).posts() - r.posts(Field.MEDICINE) * medical.get(0).room() / ResearchView.funding(g, Field.MEDICINE).room()) <= 1e-6, medical.get(0).toString());
+        check("a kind of school that hosts none (a high school, a college), and one of which none stands (a Law school), carries nothing",
+                ResearchView.schoolPosts(g, EducationType.HIGH).isEmpty() && ResearchView.schoolPosts(g, EducationType.COLLEGE).isEmpty() && ResearchView.schoolPosts(g, EducationType.LAW).isEmpty()
+                        && ResearchView.schoolPosts(g, null).isEmpty());
+        check("the kinds that host research are the University, the Institute of technology and the Medical, Business and Law schools, and no other",
+                ResearchView.hostsResearch(EducationType.UNIVERSITY) && ResearchView.hostsResearch(EducationType.ENGINEERING) && ResearchView.hostsResearch(EducationType.MEDICAL)
+                        && ResearchView.hostsResearch(EducationType.BUSINESS) && ResearchView.hostsResearch(EducationType.LAW) && !ResearchView.hostsResearch(EducationType.HIGH)
+                        && !ResearchView.hostsResearch(EducationType.COLLEGE) && !ResearchView.hostsResearch(null));
+        List<ResearchView.SchoolRow> rows = ResearchView.schoolRows(g);
+        check("the Overview's schools are the hosting kinds that stand, with how many: the University (2), the Medical School (1) and the Institute of technology (1) - in the kinds' order",
+                rows.size() == 3 && rows.get(0).kind() == EducationType.UNIVERSITY && rows.get(0).count() == 2 && rows.get(1).kind() == EducationType.MEDICAL && rows.get(1).count() == 1
+                        && rows.get(2).kind() == EducationType.ENGINEERING && rows.get(2).count() == 1 && rows.get(0).posts().equals(uni), rows.toString());
+
+        // THE BUDGET.
+        double balance = g.getEconomyManager().getNationalAccounts().getBalance();
+        ResearchView.Budget none = ResearchView.budget(g, ResearchView.Staged.none());
+        check("THE BUDGET with nothing staged is the books' balance on both sides (" + balance + ")", none.before() == balance && none.after() == balance && none.change() == 0);
+        double cost = ResearchView.funding(g, Field.BUSINESS).postCost();
+        double more = (ResearchView.funding(g, Field.BUSINESS).grantPosts() + 3) * cost;
+        ResearchView.AtGrant atMore = ResearchView.atGrant(g, Field.BUSINESS, more), atNow = ResearchView.atGrant(g, Field.BUSINESS, r.grant(Field.BUSINESS));
+        ResearchView.Budget staged = ResearchView.budget(g, ResearchView.Staged.none().withGrant(Field.BUSINESS, more));
+        check("a staged grant adds its posts' bill to the research bill and takes it off the balance: " + (atMore.bill() - atNow.bill()) + " a month more",
+                staged.before() == balance && Math.abs(staged.change() + (atMore.bill() - atNow.bill())) <= 1e-9 && atMore.bill() > atNow.bill(), staged.toString());
+        check("...a prize moves nothing (it is paid on a find), and two grants together move it by the two bills",
+                ResearchView.budget(g, ResearchView.Staged.none().withPrize(Field.BUSINESS, 1e6)).change() == 0
+                        && Math.abs(ResearchView.budget(g, ResearchView.Staged.none().withGrant(Field.BUSINESS, more).withGrant(Field.ENGINEERING, 0)).change()
+                        + (atMore.bill() - atNow.bill()) + ResearchView.atGrant(g, Field.ENGINEERING, 0).bill() - ResearchView.atGrant(g, Field.ENGINEERING, r.grant(Field.ENGINEERING)).bill()) <= 1e-9);
+    }
+
+    /* ==================== 19. a lab standing ==================== */
+
+    static void sectionNineteen(Game g) {
+        System.out.println("\n--- 19. a lab standing: the card counts it and its researchers, and the same lab is on both sides of a card that moves a grant ---");
+        quietly(() -> g.buildStack(template(g, "Engineering Research Lab"), 1, true));
+        quietly(() -> MaterialsCheck.handWorkers(g));
+        play(g, 2);
+        Research r = g.getResearch();
+        ResearchView.Overview o = ResearchView.overview(g);
+        ResearchView.FieldReach eng = o.fields().get(0);
+        ResearchPreview.Result asIs = ResearchView.preview(g, ResearchView.Staged.none());
+        ResearchView.Funding fu = ResearchView.funding(g, Field.ENGINEERING);
+        check("fixture: an Engineering Research Lab stands and its researchers are counted (" + fu.labsStanding() + " lab, " + eng.labResearchers() + " researchers)", fu.labsStanding() == 1 && eng.labResearchers() > 0);
+        ResearchView.Card now = ResearchView.card(g, Field.ENGINEERING, ResearchView.Staged.none(), eng, asIs, asIs);
+        check("the card counts the lab and its researchers with the field's: researchers " + now.researchersNow() + " = the field's " + fu.researchers() + " and the lab's " + eng.labResearchers(),
+                now.labsNow() == 1 && now.labsAfter() == 1 && now.labResearchersNow() == eng.labResearchers() && now.labResearchersAfter() == eng.labResearchers()
+                        && now.researchersNow() == fu.researchers() + eng.labResearchers());
+        double grant = (fu.grantPosts() - 2) * fu.postCost();
+        ResearchView.Staged less = ResearchView.Staged.none().withGrant(Field.ENGINEERING, grant);
+        ResearchView.Card fewer = ResearchView.card(g, Field.ENGINEERING, less, eng, asIs, ResearchView.preview(g, less));
+        check("a grant staged lower moves the field's researchers and not the lab's: the lab is on both sides (" + fewer.researchersNow() + " -> " + fewer.researchersAfter() + ")",
+                fewer.labResearchersAfter() == eng.labResearchers() && fewer.labsAfter() == 1 && fewer.researchersAfter() == ResearchView.atGrant(g, Field.ENGINEERING, grant).researchers() + eng.labResearchers()
+                        && fewer.researchersAfter() < fewer.researchersNow());
     }
 }

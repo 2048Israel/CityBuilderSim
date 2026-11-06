@@ -1956,6 +1956,12 @@ final class ServicesScreen {
         VBox c = card(head, words(n.line1(), Palette.SIZE_LABEL, Palette.TEXT_LABEL),
                 words(n.line2(), Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
         c.setSpacing(4);
+        // R3b: a school that hosts research says the posts the city's grants have there and the room it has (ResearchView.schoolPosts(): the kind's share
+        // of each field it hosts, struck by field and not by school); a kind that hosts none, or of which none stands, says nothing.
+        String research = ResearchScreen.postsWords(ResearchView.schoolPosts(ui.game, n.type()));
+        if (research != null) {
+            c.getChildren().add(Kept.scope("research", () -> words("Research posts · " + research, Palette.SIZE_CAPTION, Palette.TEXT_MUTED)));
+        }
         if (n.gate() != null) {
             // Since 0.7.51 a school not built says the posts for its graduates too, past the node's
             // 228 with a five-figure intake ("not built: 24,395 would come, 133 posts for them"): it wraps.

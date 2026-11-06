@@ -3614,7 +3614,7 @@ public final class KeptBench {
             case "Revenue" -> List.of("Business tax", "Sales tax", "Wage tax", "Property tax", "Pension contributions",
                     "Healthcare fees", "School fees", "Mortgage insurance premiums", "Transfer from the fund");
             case "Spending" -> List.of("Healthcare", "Education", "Pensions", "Interest on the city's paper", "Land bought",
-                    "Mortgage insurance claims", "Food assistance");
+                    "Mortgage insurance claims", "Food assistance", "Research");
             default -> List.of();
         };
     }
@@ -3837,6 +3837,72 @@ public final class KeptBench {
        THE RESEARCH AREA AND CITY HISTORY'S FLAGS (R5, slice B1): the pure helpers the Found page and the History flags are made of, reached
        from the harness (the screens are package-private)
        ===================================================================== */
+
+    /* ----- the Overview, Funding and the schools' lines (R3b, slice B) ----- */
+
+    /** The key a field's grant is staged under on Policy > Research > Funding. */
+    public static String researchGrantKey(ham.citybuildersim.ResearchCatalog.Field f) {
+        return ResearchScreen.grantKey(f);
+    }
+
+    /** ...and its prize. */
+    public static String researchPrizeKey(ham.citybuildersim.ResearchCatalog.Field f) {
+        return ResearchScreen.prizeKey(f);
+    }
+
+    /** What a kind of school's card says of the research posts it carries (ResearchScreen.postsWords()), or null for none. */
+    public static String researchPostsWords(List<ham.citybuildersim.ResearchView.SchoolPosts> posts) {
+        return ResearchScreen.postsWords(posts);
+    }
+
+    /** The sentence a Funding card ends in for this read of the field (ResearchScreen.sayWords()). */
+    public static String researchSay(ham.citybuildersim.ResearchView.Card card) {
+        return ResearchScreen.sayWords(card);
+    }
+
+    /** A door card of the page (policyDoors()) that has a label with these words, clicked as a press on it would: false if there is none. */
+    public boolean policyDoorClick(String title) {
+        for (VBox door : policyDoors()) {
+            if (find(door, Label.class, l -> title.equals(l.getText())) != null && door.getOnMouseClicked() != null) {
+                door.getOnMouseClicked().handle(null);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Where Policy is: the area and page the screen has open, "Research/Overview" (the hub: "/"). */
+    public String policyWhere() {
+        PolicyScreen s = ui.policyScreen;
+        return (s.policyArea == null ? "" : s.policyArea) + "/" + (s.policyArea == null ? "" : s.policyPage);
+    }
+
+    /** Everything staged applied through the tray's own path (PolicyScreen.applyStaged()), as Apply does; the next draw shows it. */
+    public void policyApplyStaged() {
+        ui.policyScreen.applyStaged();
+    }
+
+    /** The tray's chips as the tray words them ("Engineering grant $1.2M → $1.4M"), in the order staged. */
+    public List<String> policyTrayWords() {
+        List<String> out = new ArrayList<>();
+        for (PolicyScreen.TrayItem item : ui.policyScreen.trayItems()) out.add(item.words());
+        return out;
+    }
+
+    /** The names of the lines of the Government tab's Spending list, in order (GovernmentScreen.spendingNames()). */
+    public static List<String> governmentSpendingNames() {
+        return GovernmentScreen.spendingNames();
+    }
+
+    /** The amounts of those lines in this month's accounts, in the same order (GovernmentScreen.spendingAmounts()). */
+    public List<Double> governmentSpendingAmounts() {
+        return ui.governmentScreen.spendingAmounts(ui.game.getEconomyManager().getNationalAccounts());
+    }
+
+    /** Where a budget line of the Government tab is decided on Policy, {area, page}, or null (GovernmentScreen.policyPlace()). */
+    public static String[] governmentPlace(String line) {
+        return GovernmentScreen.policyPlace(line);
+    }
 
     /** How high each dot of a timeline row stands (ResearchScreen.levels()) for the months given, at the width a plot is given: the dot and its gap are the screen's. */
     public static int[] researchLevels(int[] months, int first, int last, double plotWidth) {
