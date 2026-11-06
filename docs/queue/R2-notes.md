@@ -2,7 +2,10 @@
 
 ## WHERE IT STANDS
 
-(filled at the end)
+**Built, waiting on R1c.** Branch `batch/R2` from `batch/R1c`'s ship file
+(RL1). Slice A is c77d716b, slice B 29262966. The default trace is R1c's to
+the byte, so no ensemble. `--pick` on R1c's tip: exit 4, R1c's own reds only
+(§4). The ship file goes on once R1c is on main and merged in.
 
 ## 1. What R2 is, and where it splits
 
@@ -107,4 +110,16 @@ city, writes it; until then a 1900 city's farms stay on horses past 1917.
 
 ## 4. Checks
 
-(filled)
+- **The trace.** The default playtest (2,405 months) traced on R1c's tip
+  (eb4fbd30) and on slice B (29262966), each built apart and run back to
+  back: all eight CSVs byte-identical, the log but for "in 93s"/"in 80s"
+  and the layout windows' "4.1 s"/"4.4 s". So no ensemble (`docs/batch.md`
+  6): a city founded the default way reads none of R2.
+- **`--pick` on R1c's tip** (103 of 178 harnesses and LongPlaytest, for 40
+  files; BuildingsTemplate, BuildingManager, Game and Sector left to the
+  gate): exit 4, and every red line is one R1c's ship file names on its moved
+  path, not on main's record until R1c lands: SlopeCheck's "a building on the
+  map moved", DenominationCheck's twins 1e-9 apart, ScaleCheck, MapCheck's
+  yard. R2 moves nothing on that path (the trace above). Slice B's thirteen
+  harnesses, the 1900 town's among them, are green.
+- Not a process batch: no scripts, checks' machinery or rules changed.
