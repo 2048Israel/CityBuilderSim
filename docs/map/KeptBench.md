@@ -1,4 +1,4 @@
-# KeptBench.java - 3,689 lines · 410 methods · 9 constants · interface
+# KeptBench.java - 4,186 lines · 466 methods · 9 constants · interface
 
 `ham/citybuildersim/ui/KeptBench.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
@@ -27,7 +27,7 @@
 > a snapshot all the same, so the bench lays the page out there, at the menu column's width.
 > The FX toolkit must be up and every call made on its thread; KeptCheck sees to both.
 
-**Uses:** [Kept](Kept.md) (63), [FinancesScreen](FinancesScreen.md) (31), [Pieces](Pieces.md) (22), [BuildAdvice](BuildAdvice.md) (21), [SectorScreen](SectorScreen.md) (21), [FundScreen](FundScreen.md) (19), [BuildScreen](BuildScreen.md) (17), [Game](Game.md) (14), [TimeChart](TimeChart.md) (14), [TradeScreen](TradeScreen.md) (13), [UserInterface](UserInterface.md) (10), [Palette](Palette.md) (10), [BuildingsTemplate](BuildingsTemplate.md) (10), [PartnersView](PartnersView.md) (9), [PolicyScreen](PolicyScreen.md) (8), [ServicesScreen](ServicesScreen.md) (6), [Auction](Auction.md) (6), [HistoryScreen](HistoryScreen.md) (5), [BankScreen](BankScreen.md) (5), [Sector](Sector.md) (5), [FreightView](FreightView.md) (5), [CityNeeds](CityNeeds.md) (4), [LandScreen](LandScreen.md) (4), [BuildingType](BuildingType.md) (4), [CorporateBond](CorporateBond.md) (4), [StatementView](StatementView.md) (4), [GovernmentScreen](GovernmentScreen.md) (4), [SummaryScreen](SummaryScreen.md) (3), [ConstructionScreen](ConstructionScreen.md) (3), [Debt](Debt.md) (3)... and 18 more
+**Uses:** [Kept](Kept.md) (65), [FinancesScreen](FinancesScreen.md) (31), [Pieces](Pieces.md) (22), [BuildAdvice](BuildAdvice.md) (21), [SectorScreen](SectorScreen.md) (21), [FundScreen](FundScreen.md) (19), [BuildScreen](BuildScreen.md) (17), [Rankings](Rankings.md) (15), [Game](Game.md) (14), [TimeChart](TimeChart.md) (14), [TradeScreen](TradeScreen.md) (13), [RankingsScreen](RankingsScreen.md) (13), [UserInterface](UserInterface.md) (10), [Palette](Palette.md) (10), [BuildingsTemplate](BuildingsTemplate.md) (10), [PartnersView](PartnersView.md) (9), [WorldMeasures](WorldMeasures.md) (9), [PolicyScreen](PolicyScreen.md) (8), [ServicesScreen](ServicesScreen.md) (6), [Auction](Auction.md) (6), [HistoryScreen](HistoryScreen.md) (5), [BankScreen](BankScreen.md) (5), [Sector](Sector.md) (5), [FreightView](FreightView.md) (5), [CityNeeds](CityNeeds.md) (4), [LandScreen](LandScreen.md) (4), [BuildingType](BuildingType.md) (4), [ConstructionScreen](ConstructionScreen.md) (4), [CorporateBond](CorporateBond.md) (4), [StatementView](StatementView.md) (4)... and 31 more
 
 **Used by (1):** [KeptCheck](KeptCheck.md)
 
@@ -64,6 +64,9 @@
 | 3365 | THE GOVERNMENT TAB (KP6, slice A): its four pages, kept and built new, the hands on what reshapes them (a page picked, a |
 | 3445 | POLICY AND ZONING (KP6, slice C): the hub and every page of the five areas, kept and built new, the hands on what res... |
 | 3599 | THE HANDS THE KP6 HARNESS ADDS (KP6, slice D): what Trade counts up, and the width of its charts |
+| 3690 | THE CLOCK ON EVERY RAIL SCREEN (KP7, slice D): the window's count of screens rebuilt in place, what the clock does after |
+| 3893 | THE RANKINGS TAB (KP7, slice B): the tab as it opens, kept and built new, the hands on what reshapes it (a board, the... |
+| 4088 | HOUSEHOLD MONEY (KP7, slice A): People's second page, kept and built new, the hands on what reshapes it (the view, a ... |
 
 ## Constants
 
@@ -119,7 +122,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 69 | 3621 | **type** `public final class KeptBench` | The People page on a scene of its own - no stage, no window - drawn kept and built new, for KeptCheck (study UP4): the harness's hands on the page, since what it reaches is the ui package's own. |
+| 69 | 4118 | **type** `public final class KeptBench` | The People page on a scene of its own - no stage, no window - drawn kept and built new, for KeptCheck (study UP4): the harness's hands on the page, since what it reaches is the ui package's own. |
 | 96 | 29 | `public KeptBench(Game game)` | The bench on a city: the window's object with no stage, its menu column in a scene of its own. |
 | 127 | 5 | `public double drawKept()` | People's page drawn kept from its pool (the first draw makes every node): the draw's own milliseconds. |
 | 134 | 3 | `public int lastMade()` | The nodes the last kept draw made new. |
@@ -676,4 +679,75 @@
 | 3667 | 7 | `public List<String> policyPayers(String tax)` | The keys of a tax's payers that show a row with a dial of their own (a payer's fold is "payer:" and its key), in the ranking's order: the first is the row at the top. |
 | 3676 | 4 | `public String[] hunger()` | What WHO GOES WITHOUT (Pieces.whoGoesWithout) says now: {its figure's words, whether the door to the shops is "drawn" or "not drawn"}. |
 | 3682 | 7 | `public List<double[]> chartWidths()` | Every time chart on the page with the width of the box it sits in: {the chart's width, the box's width}, in the page's order. |
+
+### THE CLOCK ON EVERY RAIL SCREEN (KP7, slice D): the window's count of screens rebuilt in place, what the clock does after (lines 3690-3892)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3696 | 3 | `public int rebuiltInPlace()` | How many draws rebuilt the screen on show in place - the same screen drawn again with its page emptied - since the window was made (UserInterface.rebuiltInPlace). |
+| 3701 | 3 | `public void clockRedraw()` | What the clock does after a month lands: the screen on show drawn again by its own redraw (UserInterface.redraw(), the call the clock's drawPaced() makes). |
+| 3706 | 3 | `public String screenShowing()` | The name the screen on show gives the window: the one its show method passes to clearMenu() or keepMenu(). |
+| 3715 | 11 | `public int[] rebuildProbe()` | The condition that moves rebuiltInPlace, caused: a page drawn the old way (clearMenu() and a page put in the menu column) twice under one name, then People shown through its real show method, an arrival from that name. |
+| 3728 | 20 | `private Kept.Pool poolOnShow()` | The pool of the screen on show, by the name it gives the window, or null for a screen this does not know (a page drawn the old way, a menu). |
+| 3753 | 4 | `public int[] drawnOnShow()` | The nodes the last kept draw of the screen on show made new and handed back: {made, kept}, or null where the screen on show draws through no pool this knows. |
+| 3759 | 4 | `public void showLand()` | The land office shown through its real show method, as the rail's tab or a month landing shows it (the chrome, then the page kept). |
+| 3765 | 4 | `public void showServices()` | The Services tab shown through its real show method, as the rail's tab or a month landing shows it (the chrome, then the page kept). |
+| 3771 | 6 | `public Page withHome(Page p, String name, Runnable more)` | The page `p` under a name of the harness's own, with `more` run after its home as well: the harness's state on top of what the page opens on (a cell open, the measures column unfolded). |
+| 3783 | 20 | `private String hoverLook(java.util.function.Supplier<Node> target, Runnable redraw) throws Exception` | The pointer put over the node `target` finds, the page drawn kept again (`redraw`), and the node looked at; then the pointer taken off and the page drawn again (the same as hoverKept(), for a node the kinds there do n... |
+| 3811 | 29 | `public int[] canvasPixels()` | The page's canvases as one picture, in the order the page holds them, one under another ({width, height, then the pixels}, KeptCheck.alike()'s form; the empty part of a narrower canvas's row is nought): what no signat... |
+| 3842 | 4 | `private Node rankingsLine()` | The first measure line on the Rankings tab's measures column that is not the one shown (the shown one is lit and has no hover): an HBox with a mouse-entered and a mouse-exited. |
+| 3848 | 3 | `public String hoverRankingsLine(Runnable redraw) throws Exception` | The Rankings tab's measure line under the pointer: hoverKept()'s test, on the first line that is not lit (see hoverLook()). |
+| 3853 | 3 | `private Pane rankingsRows()` | The table's picture (the rows are painted on canvases, with one region under them for the row the pointer is over), or null. |
+| 3863 | 29 | `public String hoverRankingsRows(Runnable redraw) throws Exception` | The pointer moved over the first row of the Rankings table that lights under it, the page drawn kept again (`redraw`): the picture is the same node and the same row is lit, with no mouse-moved sent (a pointer that has... |
+
+### THE RANKINGS TAB (KP7, slice B): the tab as it opens, kept and built new, the hands on what reshapes it (a board, the... (lines 3893-4087)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3904 | 15 | `public Page rankings()` | The Rankings tab as a Page, as the screen draws it from its pool: it opens on GDP and the full list, Real world 2025 in the real US dollar, per year and at this month's rate, the first six measures pinned, nothing fol... |
+| 3921 | 5 | `public static List<String> rankingsMeasures()` | The measures of the file, by their key, in the file's order: the ones the tab can show. |
+| 3928 | 4 | `public static boolean rankingsSourced(String key)` | Whether the measure ranks on Real world 2025 against real places (false: only the player's cities rank on it). |
+| 3934 | 3 | `public static List<String> rankingsBoards()` | The boards, by name: Real world 2025 and Your world. |
+| 3939 | 3 | `public static List<String> rankingsMoneys()` | The moneys, by name: the city's, the game's US dollar and the real one. |
+| 3944 | 3 | `public static List<String> rankingsPrices()` | The prices, by name: per year and static. |
+| 3949 | 3 | `public static List<String> rankingsConverts()` | The conversions, by name: this month's rate, constant 2015 and PPP. |
+| 3954 | 3 | `public static List<String> rankingsFilters()` | The filters of the table, by name: All, Nations, Cities, Your size and Your cities. |
+| 3958 | 5 | `private static List<String> enumNames(Enum<?>[] values)` |  |
+| 3965 | 3 | `public boolean rankingsHasNations()` | Whether the city has nations of its own, so that Your world is a board it can show (else the screen draws Real world 2025 in its place). |
+| 3970 | 3 | `public void rankingsMeasure(String key)` | The measure shown, by its key, as a line on the measures column or a pinned rank on the card would show it. |
+| 3975 | 4 | `public void rankingsBoard(String board)` | The board picked, by name, as its chip would (the money, the prices and the conversion as they are). |
+| 3981 | 4 | `public void rankingsMoney(String money)` | The money picked, by name, as its chip would. |
+| 3987 | 4 | `public void rankingsPrice(String prices)` | The prices picked, by name, as its chip would (they move only the saved cities' rows, and are locked in other cases). |
+| 3993 | 4 | `public void rankingsConvert(String convert)` | The conversion picked, by name, as its chip would. |
+| 3999 | 3 | `public void rankingsFilter(String filter)` | The filter picked, by name, as its chip would. |
+| 4004 | 3 | `public void rankingsAround(boolean around)` | Full list or Around you, as its chip would put it. |
+| 4009 | 3 | `public void rankingsAtAge(boolean atAge)` | Your cities at Now (false) or Your age (true), as its chip would put it. |
+| 4014 | 3 | `public void rankingsBrowseAll(boolean all)` | The measures column folded to the pinned and the group shown (false) or opened on every group (true), as "Browse all" would put it. |
+| 4019 | 4 | `public void rankingsPin(String key, boolean on)` | A measure pinned or unpinned, by its key, as the pin on its line would. |
+| 4025 | 3 | `public void rankingsDrawer(String place)` | A place's drawer opened, by its id (a nation's or a region's in the file, "city", or a saved city's "saved:" and its slot), as its row or a neighbour on the card would; null closes it. |
+| 4030 | 14 | `public List<String> rankingsDrawers()` | The ids a drawer can be opened on: the city, the file's first nation and first region, and the saved cities the screen has read. |
+| 4049 | 5 | `public boolean rankingsSaveSlot10()` | The city saved into slot 10 of the folder it plays in, so that the Your cities board has a row to read. |
+| 4056 | 3 | `public void rankingsRead()` | A read of the saved cities started on the screen's worker, as an entry to the tab starts one: its answer comes back through the FX thread (see rankingsReadLanded()). |
+| 4061 | 4 | `public boolean rankingsReadLanded()` | Whether a read has landed: none is on the worker and the screen holds a snapshot. |
+| 4067 | 4 | `public int rankingsSavedOnBoard()` | How many saved cities the screen's snapshot puts on the board (0 before the first read has landed). |
+| 4073 | 3 | `public void rankingsUnread()` | The snapshot of the saved cities let go, as a tab not yet entered has it ("Your cities (reading...)" and no saved row). |
+| 4078 | 4 | `public void showRankings()` | The Rankings tab shown through its real show method, as the rail's tab or a month landing shows it (the chrome, then the page kept). |
+| 4084 | 3 | `public void forgetRankings()` | The Rankings tab forgotten, as another city opened would leave it: nothing kept, nothing just landed. |
+
+### HOUSEHOLD MONEY (KP7, slice A): People's second page, kept and built new, the hands on what reshapes it (the view, a ... (lines 4088-4186)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4095 | 3 | `public Page householdMoney()` | Household money as it opens: no cell open, the view "One household", the city's month's statement folded. |
+| 4100 | 11 | `public Page householdMoney(String name)` | ...under a name of the harness's own. |
+| 4113 | 3 | `public static List<String> householdViews()` | The page's two views, in the strip's order. |
+| 4118 | 3 | `public void householdView(String view)` | The view picked, as the strip's chip would put it (the next draw shows it). |
+| 4127 | 14 | `public List<String> householdCells()` | The cells of the grid that can be opened on the city as it is, by the key the grid opens them under, in the grid's order: a family's cell with anybody in it ("tier:SHAPE", the tier's number), then the rows below the r... |
+| 4143 | 4 | `public void householdCell(String key)` | A cell of the grid opened by its key (see householdCells()), or none ("" - the quiet books), as a click on it would (the next draw shows it). |
+| 4149 | 3 | `public String householdOpenCell()` | The cell the grid has open now: a draw closes one whose households have gone, so this is the answer after a draw. |
+| 4154 | 3 | `public void householdStatement(boolean open)` | The city's month's statement ("the month as a statement") opened or closed, as a click on its toggle would. |
+| 4162 | 4 | `public void householdColumnWidth(double width)` | The menu column laid out `width` wide (its side padding takes the rest of WIDTH) or, for 0 or less, at WIDTH again: the books sit beside the grid from PeopleScreen.BESIDE and stack under it below that. |
+| 4168 | 7 | `public Boolean householdBeside()` | Whether the open cell's books sit beside the grid on the page as laid out, or null when the page has no books pane. |
+| 4177 | 4 | `public void showHousehold()` | Household money shown through its real show method, as the rail's tab or a month landing shows it (the chrome, then the page kept). |
+| 4183 | 3 | `public void forgetHousehold()` | Household money forgotten, as another city opened would leave it: nothing kept (People's page too, which shares the screen's forget()). |
 
