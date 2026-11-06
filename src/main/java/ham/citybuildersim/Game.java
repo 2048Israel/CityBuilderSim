@@ -709,6 +709,7 @@ public class Game {
         // ...and the city's research (R3): the last city's grants, posts, work piled and discoveries. This Game's Research outlives buildWorld() (the field is final), as the forms do.
         research.reset();
         economyManager.setResearch(0, 0);
+        prizePaid = 0;
         // ...and the levers history has not opened yet are held at zero (R0): the city is in its first month.
         policyHearsTheMonth();
         economyManager.getSalesTaxLedger().reset();
@@ -1307,6 +1308,36 @@ public class Game {
 
     public double[] getResearchFill() { return researchFill == null ? null : researchFill.clone(); }
 
+    /**
+     * The prize the treasury paid the Research Labs this month (finalUpdateEconomy(), TreasuryLine.PRIZES), the labs' part of the finds' purses
+     * less what the ceiling refused (that is owed as arrears). 0 in a month with no find or no prize. Saved with the research (DataSave.ResearchRecord):
+     * a flow cannot be reconstructed from the state a month ended in.
+     */
+    private double prizePaid;
+
+    /** The prize the treasury paid the Research Labs this month, which Business Services' till received in full (R4). */
+    public double getPrizePaid() { return prizePaid; }
+
+    /** The Research Lab template of a field (R4): the building whose getResearches() is the field, or null for a catalogue without one. */
+    public BuildingsTemplate labTemplate(ResearchCatalog.Field f) {
+        for (BuildingsTemplate t : buildingManager.getTemplates()) if (t.getResearches() == f) return t;
+        return null;
+    }
+
+    /** The Research Labs of a field standing: the quantity of every stack whose template researches it, several stacks adding up (R4). */
+    public int labsStanding(ResearchCatalog.Field f) {
+        int n = 0;
+        for (BuildingsStacks stack : buildingManager.getStacksView()) if (stack.getBuilding().getResearches() == f) n += stack.getQuantity();
+        return n;
+    }
+
+    /** The Research Labs of a field on site, not yet standing (R4). */
+    public int labsOnSite(ResearchCatalog.Field f) {
+        int n = 0;
+        for (BuildingsStacks stack : buildingManager.getStacksView()) if (stack.getBuilding().getResearches() == f) n += stack.getUnderConstruction();
+        return n;
+    }
+
     /** Adds the jobs the month's research posts are to `jobs`, by JobType ordinal: a city with none held adds nothing (getJobs(), refreshJobs() and the load path's rebuild all count the posts through here). */
     private void addResearchPosts(long[] jobs) {
         if (research.isEmpty()) return;
@@ -1318,6 +1349,7 @@ public class Game {
      * What the posts cost this month, struck beside the schools' bill at the same wages and fill (R3; advanceDemographics()): the pay of the filled
      * posts, and the laboratories' other costs on top of it (Research.bill() less Research.payroll()). Nothing for a city with no post. The load path
      * does not strike it again: a flow cannot be reconstructed from the state a month ended in, so the save carries it (DataSave.ResearchRecord).
+     * R4: the fields' pots are then drawn for the posts they bought beyond the grant (Research.drawPots()).
      */
     private void settleResearchBill(double[] fill) {
         researchFill = fill == null ? null : fill.clone();
@@ -1330,12 +1362,16 @@ public class Game {
             bill += Research.bill(f, posts, wages, fill);
         }
         economyManager.setResearch(payroll, bill - payroll);
+        // ...and the pots (R4) pay for the posts the grants did not: the bill above already holds every post the strike bought, so a pot is a promise of
+        // the treasury's money and no money moves for it; it only comes down by what its posts cost this month.
+        research.drawPots(wages, fill);
     }
 
     /**
      * The research's month (R3), after the schools' (their staff are the faculty): the researchers the faculty and the filled posts give each
      * field work the open problems in a city founded the 1900 way, and have nothing to work on in any other (Research.idleMonth()). What was found
-     * that is a Policy lever's key brings the lever forward, to the first month the policy hears after the find (TaxPolicy.bringForward()).
+     * that is a Policy lever's key brings the lever forward, to the first month the policy hears after the find (TaxPolicy.bringForward()). With the
+     * Research Labs (R4): the labs standing in each field give it their own researchers, who go for the problems the field's prize pays for.
      */
     private void workTheResearch(double[] fill) {
         java.util.EnumMap<ResearchCatalog.Field, Double> staffed = researchStaff(fill);
@@ -1343,8 +1379,16 @@ public class Game {
         for (ResearchCatalog.Field f : ResearchCatalog.Field.values()) {
             researchers.put(f, Research.faculty(staffed.getOrDefault(f, 0.0)) + Research.filledResearchers(f, research.posts(f), fill));
         }
-        if (foundedUnfitted()) research.month(month, getWorldSeed(), researchers);
-        else research.idleMonth(researchers);
+        // ...and the Research Labs' (R4): the labs standing in each field and the researchers their posts give at the month's fill.
+        java.util.EnumMap<ResearchCatalog.Field, Integer> labs = new java.util.EnumMap<>(ResearchCatalog.Field.class);
+        java.util.EnumMap<ResearchCatalog.Field, Double> labResearchers = new java.util.EnumMap<>(ResearchCatalog.Field.class);
+        for (ResearchCatalog.Field f : ResearchCatalog.Field.values()) {
+            int standing = labsStanding(f);
+            labs.put(f, standing);
+            labResearchers.put(f, Research.filledResearchers(f, standing * Research.LAB_POSTS, fill));
+        }
+        if (foundedUnfitted()) research.month(month, getWorldSeed(), researchers, labs, labResearchers, populationManager.getWagesPerType());
+        else research.idleMonth(researchers, labs, labResearchers);
         for (String code : research.foundThisMonth()) {
             PolicyDates.Lever lever = PolicyDates.leverOf(code);
             if (lever != null) economyManager.getTaxPolicy().bringForward(lever, month + 1);
@@ -2728,6 +2772,11 @@ public class Game {
     public double getSubsidyPaid(Sector sector){ return getSubsidyPaid(sector.key()); }
     public double getSubsidyPaid(String key)   { return subsidyPaid.getOrDefault(key, 0.0); }
 
+    /** What the treasury paid this sector this month of the research prizes (R4): the month's prizePaid for Business Services, whose Research Labs earned it; 0 for every other. */
+    public double getPrizePaidTo(String key) {
+        return getSectors().businessServices().key().equals(key) ? prizePaid : 0;
+    }
+
     public double getTotalSubsidyPaid(){
         double total = 0;
         for (double d : subsidyPaid.values()) total += d;
@@ -3673,6 +3722,15 @@ public class Game {
                 consider(getSectors().retail().planStations(businessInvestment, this),
                         sectorInvestor(sector.key()), STATIONS_SLOT);
             }
+            /*
+             * ...AND THE RESEARCH LABS, right after Business Services' own (R4): the same sector's money and investor, its own question as the
+             * forecourts' is, because a lab's income is a prize the plan's profit test cannot see (BusinessServices.plan() keeps out of it). Only in
+             * a city founded the 1900 way, where anything is left to find. See considerLabs().
+             */
+            if (sector == getSectors().businessServices()) {
+                refreshLand();
+                considerLabs();
+            }
         }
         // ...and the month's refusals for want of workers settled into the posts the labour market prices in this
         // same month's reprice (LD1; SimulationEngine.updatePopulation() runs it later in this nextMonth()).
@@ -3734,6 +3792,106 @@ public class Game {
 
     /** Where the forecourts' word is filed among the month's investment lines (0.7.83): apart from the shops', as the bank's is. */
     public static final String STATIONS_SLOT = "Filling stations";
+
+    /** Where the Research Labs' word is filed among the month's investment lines (R4): apart from Business Services' own, as the forecourts' is. */
+    public static final String LABS_SLOT = "Research labs";
+
+    /**
+     * THE INVESTORS BUILD A LAB (R4; research-design 5.3: "Investors build one while the purse pays its posts"). In a city founded the 1900 way, for each
+     * field with a prize above 0 that wants more labs than it has standing and on site (Research.labsWanted()), Business Services orders ONE lab a
+     * month (orderLab()); in any other city nothing is open to find and nothing is asked. The month's word is filed under LABS_SLOT, and not at all
+     * (the key is dropped) in a month when no field wants a lab, so that a city that never sets a prize carries no trace of it.
+     */
+    private void considerLabs() {
+        if (!foundedUnfitted()) return;
+        double[] wages = populationManager.getWagesPerType();
+        java.util.List<String> said = new java.util.ArrayList<>();
+        for (ResearchCatalog.Field f : ResearchCatalog.Field.values()) {
+            if (!(research.prize(f) > 0)) continue;
+            if (research.labsWanted(f, month, wages) <= labsStanding(f) + labsOnSite(f)) continue;
+            BuildingsTemplate lab = labTemplate(f);
+            ResearchCatalog.Entry target = research.labTarget(f, month, wages);
+            if (lab == null || target == null) continue;
+            said.add(orderLab(lab, target, research.labStake(f, month, wages)));
+        }
+        if (said.isEmpty()) lastInvestment.remove(LABS_SLOT);
+        else lastInvestment.put(LABS_SLOT, String.join("; ", said));
+    }
+
+    /**
+     * One lab ordered for Business Services, and the word on it. The investors need its cost and the stake that carries its posts to the find
+     * (Research.labStake()); the OWNERS are asked for what the till lacks of the two, households first and then the world at the book's price, and not
+     * when the quote does not support an issue, as consider()'s owners-first block asks; what they put up goes into the sector's cash and is recorded
+     * as equity raised. NEVER A LOAN: a lab has no income a lender could judge until a find, so the order is made with a payer that cannot borrow, and only
+     * when the till covers the cost. The same staffing test the sector's planner asks (staffing(t).passes()) holds it first, without a staffing hold noted:
+     * a lab the city cannot staff is not a want the labour market should price.
+     */
+    private String orderLab(BuildingsTemplate lab, ResearchCatalog.Entry target, double stake) {
+        ham.citybuildersim.sectors.BusinessServices sector = getSectors().businessServices();
+        String key = sector.key();
+        Sector.Staffing staffing = sector.staffing(lab);
+        if (!staffing.passes()) return "Holding: " + staffing.why(lab.getName());
+
+        final Investor till = sectorInvestor(key);
+        Investor owners = new Investor() {
+            @Override public String getName() { return till.getName(); }
+            @Override public double getCash() { return till.getCash(); }
+            @Override public void spend(double amount) { till.spend(amount); }
+            @Override public boolean canBorrow(double amount) { return false; }
+            @Override public void borrow(double amount, int month) { }
+        };
+        double cost = businessInvestment.getCostOf(lab, 1);
+        double need = cost + (stake > 0 ? stake : 0);
+        double lacking = need - till.getCash();
+        double raised = 0;
+        int company = Equity.indexOf(key);
+        if (lacking > 0 && company >= 0 && exchange.quoteSupportsIssue(company)) {
+            SectorBooks.SectorMonth books = sectorBooks.get(key);
+            raised = equity.offer(company, lacking, books.equity(), householdBalance, DebtManager.WORLD_BASE_RATE,
+                    exchange.hasTraded(company) ? exchange.price(company) : 0);
+            if (raised > 0) {
+                economyManager.setSectorCash(key, economyManager.getSectorCash(key) + raised);
+                economyManager.recordEquityRaised(key, raised);
+            }
+        }
+        if (till.getCash() < cost) {
+            return String.format("Holding: the owners put up %s of the %s %s needs",
+                    DecisionLog.money(Math.max(0, raised)), DecisionLog.money(need), lab.getName());
+        }
+        if (buildFor(owners, lab, 1)) {
+            return String.format("Built %s - the purse pays for %s", lab.getName(), target.name());
+        }
+        // The order was refused with the till covering its cost (getCostOf()): the price moved between the reckoning and the quote, or the ground went, as consider() says it.
+        if (landManager.canAllocate(lab.getLandSqFt(), lab.getSector(), groundUse(lab))) {
+            return String.format("Holding: the owners put up %s of the %s %s needs",
+                    DecisionLog.money(Math.max(0, raised)), DecisionLog.money(need), lab.getName());
+        }
+        double others = landManager.heldByZones() - landManager.heldBy(lab.getSector());
+        String needs = String.format("needs %s, %s free%s%s",
+                LandManager.areaWords(lab.getLandSqFt()),
+                LandManager.areaWords(landManager.freeFor(lab.getSector(), groundUse(lab))),
+                others > 0 ? "; " + BusinessInvestment.zonedForOthersWords(others) : "", unlinkedClause());
+        blockOnLand(key, needs);
+        return "Could not build " + lab.getName() + " - " + needs;
+    }
+
+    /**
+     * THE LABS NOTHING IS LEFT FOR ARE SHED (R4; runRetirement()): a field that has had a lab too many for Research.LAB_IDLE_MONTHS months running
+     * (Research.labTooMany()) sells one lab back, through the path the distress rule sells a building by (retire()), and the count starts again
+     * (Research.labShed()). Not for Business Services while a harness holds it, as the rest of the retirement is not.
+     */
+    private void shedIdleLabs() {
+        String key = getSectors().businessServices().key();
+        if (businessInvestment.isHeld(key)) return;
+        for (ResearchCatalog.Field f : ResearchCatalog.Field.values()) {
+            if (!research.labTooMany(f) || labsStanding(f) <= 0) continue;
+            BuildingsTemplate lab = labTemplate(f);
+            if (lab == null) continue;
+            BusinessInvestment.Decision shed = new BusinessInvestment.Decision(key, lab, 1,
+                    String.format("%d months with nothing left to chase", research.labIdleMonths(f)), true);
+            if (retire(shed, sectorInvestor(key), true) > 0) research.labShed(f);
+        }
+    }
 
     /**
      * The residents' side of the month.
@@ -5936,6 +6094,9 @@ public class Game {
             double covered = paySubsidyIfOwed(sector, net);
             businessInvestment.recordSectorResult(sector.key(), net + covered);
         }
+
+        // ...and the Research Labs a field has had too many of for too long are sold back (R4), before the sectors below plan their month.
+        shedIdleLabs();
 
         /*
          * The spare-capacity rule, for every sector that has a measure for it
@@ -14235,7 +14396,8 @@ public class Game {
         // What the dial cost the city this month, handed over before the strike
         // reads it. Paid inside paySubsidyIfOwed(), which moved the cash then
         // and there; this is the books catching up with it.
-        economyManager.setSubsidiesPaid(getTotalSubsidyPaid());
+        // ...and the labs' share of the month's prizes (R4), a transfer to a firm as a subsidy is: paid in finalUpdateEconomy().
+        economyManager.setSubsidiesPaid(getTotalSubsidyPaid() + prizePaid);
 
         /*
          * THE CITY'S PAPER ON AMORTISED COST (CD3). The interest is the cash
@@ -14285,6 +14447,8 @@ public class Game {
 
     private void finalUpdateEconomy(){
         economyManager.setDebt(debtManager.getAllPrincipal());
+        // ...the month's prize to the Research Labs is paid below, if any (R4); none until then.
+        prizePaid = 0;
         /*
          * THE MONTH'S BUDGET, LINE BY LINE (0.7.0). This was one figure -
          * getTotalIncome(), the tax take less everything the city pays out -
@@ -14355,6 +14519,13 @@ public class Game {
             treasuryPays(TreasuryLine.TRANSIT, transitOut);
             treasuryPays(TreasuryLine.CITY_SERVICES, Math.max(0, -servicesNet));
             /*
+             * ...AND THE LABS' SHARE OF THE MONTH'S PRIZES (R4), right after the research bill and the promises: what a find in a field with a prize owes
+             * the Research Labs that worked it (Research.toLabs(), struck in advanceDemographics()). A discretionary line, as the subsidy is: refused past
+             * the ceiling it is owed to Business Services as arrears. A plain add into the sector's till, as paySubsidyIfOwed() does: the money the city
+             * spent and the money the sector got are one figure (prizePaid). A transfer between two pools, so the audit needs no line for it.
+             */
+            payPrizes();
+            /*
              * THE FARES ARE A BUDGET LINE SINCE 0.7.49 (B9). They arrive in the
              * cash a line above, inside getTaxIncome(), and were journalled
              * here as "Took in transit fares" because
@@ -14382,6 +14553,18 @@ public class Game {
     }
     
     
+    /** The labs' share of the month's prizes, paid to Business Services' till (finalUpdateEconomy(); R4): the sum of Research.toLabs() over the fields, through the prizes' line. Sets prizePaid. */
+    private void payPrizes() {
+        double owed = 0;
+        for (ResearchCatalog.Field f : ResearchCatalog.Field.values()) owed += research.toLabs(f);
+        if (!(owed > 0)) return;
+        ham.citybuildersim.sectors.BusinessServices labs = getSectors().businessServices();
+        double paid = treasuryPays(TreasuryLine.PRIZES, owed, labs.key());
+        // A plain add: nothing here may compute an amount, or the money the city spent and the money the sector received could differ.
+        labs.addCash(paid);
+        prizePaid = paid;
+    }
+
     private void updateConstructionCost(){
         buildingManager.finalUpdateBuildings();
         
@@ -16432,7 +16615,7 @@ public class Game {
         // ...and the fittings on site, only where there is a job (R1b).
         dataSave.setFittings(fittings.view());
         // ...and the city's research with the month's bill, only where it holds anything (R3; none in a city that never funded any).
-        dataSave.setResearch(research, economyManager.getResearchPayroll(), economyManager.getResearchCosts());
+        dataSave.setResearch(research, economyManager.getResearchPayroll(), economyManager.getResearchCosts(), prizePaid);
         // ...and how many founding endowments of household places, care and police it holds (FW9).
         dataSave.setFoundingEndowments(buildingManager.getFoundingEndowments());
         // ...and the order the stacks stand in (0.7.43; DataSave.getStackOrder()).
@@ -20492,9 +20675,13 @@ public class Game {
             if (savedResearch == null) {
                 research.reset();
                 economyManager.setResearch(0, 0);
+                prizePaid = 0;
             } else {
                 research.restore(savedResearch.grants, savedResearch.posts, savedResearch.piles, savedResearch.found);
+                // ...and the prizes, the pots, the labs' piles, the city's shares and the idle counts (R4), AFTER the piles they sit within, with the month's prize paid.
+                research.restorePrizes(savedResearch.prizes, savedResearch.pots, savedResearch.labPiles, savedResearch.cityShares, savedResearch.labIdleMonths);
                 economyManager.setResearch(savedResearch.payroll, savedResearch.costs);
+                prizePaid = Double.isFinite(savedResearch.prizePaid) ? Math.max(0, savedResearch.prizePaid) : 0;
             }
             // ...and the recipes the parts of a stack run (R1c): the SAVED choices, put back and applied, never struck again from the loaded prices
             // (the next month's top does that), and before the forms, which weigh each building by the electricity its recipe leaves it.
@@ -21645,6 +21832,8 @@ public class Game {
         education.redenominate(scale);
         // ...and the research grants, which are money; the posts, the work piled and the finds are not (R3).
         research.redenominate(scale);
+        // ...and the prize the treasury paid the labs this month, which is money too (R4).
+        prizePaid *= scale;
         crime.redenominate(scale);
         if (servicesManager != null && servicesManager.getUtilitiesHandler() != null) {
             servicesManager.getUtilitiesHandler().redenominate(scale);

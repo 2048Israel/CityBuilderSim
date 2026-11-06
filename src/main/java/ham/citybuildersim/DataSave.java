@@ -1219,12 +1219,25 @@ public class DataSave implements Cloneable {
         public java.util.Map<String, Double> piles = new java.util.LinkedHashMap<>();
         public java.util.Map<String, Integer> found = new java.util.LinkedHashMap<>();
         public double payroll, costs;
+        // R4: the prize dials, the pots, the labs' part of the piles, the city's own researchers on each problem last month, the months in a row a
+        // field has had a lab too many, and the prize the treasury paid the labs that month (a flow, kept as the bill is). A save from before R4 has none.
+        public java.util.Map<String, Double> prizes = new java.util.LinkedHashMap<>();
+        public java.util.Map<String, Double> pots = new java.util.LinkedHashMap<>();
+        public java.util.Map<String, Double> labPiles = new java.util.LinkedHashMap<>();
+        public java.util.Map<String, Double> cityShares = new java.util.LinkedHashMap<>();
+        public java.util.Map<String, Integer> labIdleMonths = new java.util.LinkedHashMap<>();
+        public double prizePaid;
     }
 
     private ResearchRecord research;
 
     /** The research to write with the month's bill (EconomyManager.getResearchPayroll(), getResearchCosts()), or none: a city that has no grant, post, pile or find writes no key. */
     public void setResearch(Research r, double payroll, double costs) {
+        setResearch(r, payroll, costs, 0);
+    }
+
+    /** ...and with the prize the treasury paid the labs that month (R4), after the prize dials, the pots, the labs' piles, the city's shares and the idle counts, which Research gives. */
+    public void setResearch(Research r, double payroll, double costs, double prizePaid) {
         if (r == null || r.isEmpty()) {
             this.research = null;
             return;
@@ -1236,6 +1249,12 @@ public class DataSave implements Cloneable {
         record.found.putAll(r.foundHere());
         record.payroll = payroll;
         record.costs = costs;
+        record.prizes.putAll(r.prizesForSave());
+        record.pots.putAll(r.potsForSave());
+        record.labPiles.putAll(r.labPilesForSave());
+        record.cityShares.putAll(r.citySharesForSave());
+        record.labIdleMonths.putAll(r.labIdleMonthsForSave());
+        record.prizePaid = prizePaid;
         this.research = record;
     }
 

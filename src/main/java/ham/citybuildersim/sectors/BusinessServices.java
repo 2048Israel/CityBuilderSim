@@ -156,6 +156,9 @@ public final class BusinessServices extends Sector {
 
         for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
 
+            // A Research Lab's income is a prize, which the profit test below cannot see: investors order labs on their own (Game.considerLabs(), R4), never here.
+            if (t.getResearches() != null) continue;
+
             JobType licence = t.getRequiresLicence();
             double need = licence == null ? 0
                     : game.licencesNeededFor(t, 1) + licencesOnSite(licence, game);

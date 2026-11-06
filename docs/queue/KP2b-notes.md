@@ -1,4 +1,4 @@
-# KP2b - The kept screens' review follow-ups ({next}, 2026-11-06)
+# KP2b - The kept screens' review follow-ups (0.9.31, 2026-11-06)
 
 **WHERE IT STANDS** (2026-11-06, 09:40): ready, see the ship file. The three slices are in and reviewed (B 322ec4fa,
 A 6f62f1c2 with Opus's forest law card, C 01516d88 with Opus's matrix columns and section 92's letting go); KP7 0.9.29

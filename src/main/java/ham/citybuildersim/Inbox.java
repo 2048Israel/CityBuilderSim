@@ -267,8 +267,11 @@ public class Inbox {
             ResearchCatalog.Entry entry = catalogue.entry(code);
             if (entry == null) continue;
             double years = (entry.worldMonth() - month) / 12.0;
+            // ...and where the field's prize went, when it has one (R4): the part to the labs that did the work and the part to the schools' grants.
+            Research.Purse purse = research.purses().get(code);
             take(game, month, "found:" + code, true, "Found here: " + entry.name(),
-                    wrapped(String.format("%s found it, %.1f years ahead of the world. It touches: %s.", capital(entry.field().school()), years, entry.touches()), BODY_COLUMNS));
+                    wrapped(String.format("%s found it, %.1f years ahead of the world. It touches: %s.", capital(entry.field().school()), years, entry.touches())
+                            + (purse == null ? "" : " " + prizeSentence(purse)), BODY_COLUMNS));
         }
         for (String code : arrived) {
             ResearchCatalog.Entry entry = catalogue.entry(code);
@@ -284,6 +287,17 @@ public class Inbox {
             String code = key.substring(key.indexOf(':') + 1);
             if (!(here ? found : arrived).contains(code)) notice.markResolved(month);
         }
+    }
+
+    /**
+     * Where a find's prize went (R4): "The $12.0M prize: $9.1M to the Research Labs, $2.9M to the schools' grants." A part of nothing is left out
+     * ("The $12.0M prize: $12.0M to the schools' grants."). The prize is the two parts, which Research.month() splits it into.
+     */
+    static String prizeSentence(Research.Purse purse) {
+        List<String> parts = new ArrayList<>();
+        if (purse.toLabs() > 0) parts.add(money(purse.toLabs()) + " to the Research Labs");
+        if (purse.toSchools() > 0) parts.add(money(purse.toSchools()) + " to the schools' grants");
+        return "The " + money(purse.toLabs() + purse.toSchools()) + " prize: " + String.join(", ", parts) + ".";
     }
 
     /** "the Medical school" as a sentence starts it: "The Medical school". */

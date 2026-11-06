@@ -18,6 +18,27 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.31 — KP2b, The kept screens' review follow-ups — 2026-11-06, ready, see docs/queue/KP2b-notes.md
+The stranger's reviews at KP2-KP7's gates, mended: a kept page redrawn with nothing new now writes nothing on its nodes,
+where every page wrote 15 to 100 styles, texts, paddings and widths a month (a plain style then the full one, a `new
+Insets` each draw, a binding or a cursor made again), so CSS and layout no longer run for nothing (KeptCheck 92, about
+160 pages of Sectors, the statements, Bank, Finances, the fund, Trade, Policy and Zoning, Rankings and Household money).
+A slider greyed under the player's hand lets go (91); HOW STRICT's line says the held step's words when a month lands;
+Rankings' hover band follows the pointer after a wheel scroll (93); the yield box after Enter has its fixture (KP5 had
+mended it). The last door cell of a vitals strip no longer takes a dividing rule after the pointer has passed. The
+whole kept chrome's month, measured quiet ABBA against 0.9.17: about 3 ms both ways (KP3's gate's 9.34 was its load).
+No ensemble: the model is untouched.
+
+### 0.9.30 — R4, research: prizes and the Research Lab — 2026-11-06, ready, see docs/queue/R4-notes.md
+A city founded the 1900 way can now pay for results as well as for work (research-design §5.3). Four prize dials, one a
+field, pay D$ for a discovery made here, and only then. A prize draws Research Labs, four new Business Services buildings
+of 100 research posts of one field (ids 148-151): investors build one while the purse covers the cheapest open problem's
+remaining work at the post's cost and a team could finish it before the world, on the owners' money alone, never a loan.
+Labs work their target after the city's own even spread; at a find the purse is split by the work each did, the labs'
+share paid by the treasury into their owners' till (`TreasuryLine.PRIZES`, a transfer as a subsidy is), the schools' a
+pot that buys posts beyond the grant. A field with half a lab idle for six months sheds one. Nothing moves in a city
+founded the default way or with every prize at 0: the default playtest's trace is R3's to the byte. The prize cards are R3b's.
+
 ### 0.9.29 — KP7, Screens kept: the rest (Household money, Rankings), and the rebuild path retired from the clock — 2026-11-06, ready, see docs/queue/KP7-notes.md
 People's Household money and the Rankings tab are drawn over last month's nodes instead of rebuilt (study UP4's KP7,
 the last KP batch): Household money's grid keyed by household shape, ledger and tier, the open cell's books by the
