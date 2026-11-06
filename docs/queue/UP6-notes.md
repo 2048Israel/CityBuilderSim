@@ -1,4 +1,4 @@
-# UP6 - the autosave: a skip's end, the window's close, the player's Save off the clock ({next}, 2026-11-06)
+# UP6 - the autosave: a skip's end, the window's close, the player's Save off the clock (0.9.32, 2026-11-06)
 
 **WHERE IT STANDS** (2026-11-06, 13:10): ready, see the ship file. The slice in and reviewed (cf683672); the full suite
 exit 3 on the batch (§4); KP2b and R4 (0.9.30) merged in from main (55150026) and `--pick` on the merge exit 3, main's
