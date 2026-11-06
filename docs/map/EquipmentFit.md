@@ -1,6 +1,6 @@
 # EquipmentFit.java - 280 lines · 15 methods · 1 constants · model
 
-`ham/citybuildersim/EquipmentFit.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EquipmentFit.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
 > What a piece of equipment would earn a building and what it would cost, and whether that pays: research-design 2.2's rule, steps 1 to 4, and
 > each piece's verdict, read on demand and never in the month.

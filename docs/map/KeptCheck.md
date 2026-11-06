@@ -1,6 +1,6 @@
-# KeptCheck.java - 4,644 lines · 107 methods · 30 constants · harnesses
+# KeptCheck.java - 4,665 lines · 109 methods · 31 constants · harnesses
 
-`ham/citybuildersim/KeptCheck.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/KeptCheck.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
 > The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each
 > month's redraw run over last month's nodes ends exactly where a page built new would, and costs
@@ -64,7 +64,7 @@
 >      site, a month's draw keeps their top nodes, hands back nine in ten of the first draw's nodes
 > ... (138 more lines in the source)
 
-**Uses:** [KeptBench](KeptBench.md) (282), [Game](Game.md) (79), [Sectors](Sectors.md) (31), [Debt](Debt.md) (16), [Notice](Notice.md) (12), [BuildAdvice](BuildAdvice.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (11), [Timing](Timing.md) (10), [WellCheck](WellCheck.md) (6), [OilCheck](OilCheck.md) (6), [ChartModel](ChartModel.md) (4), [RefineryViewCheck](RefineryViewCheck.md) (4), [OilViewCheck](OilViewCheck.md) (4), [BuildingManager](BuildingManager.md) (3), [IndustryView](IndustryView.md) (3), [RefineryView](RefineryView.md) (3), [MiningCheck](MiningCheck.md) (3), [Auction](Auction.md) (2), [SectorFlow](SectorFlow.md) (2), [Bank](Bank.md) (2), [GameFiles](GameFiles.md) (2), [LongPlaytest](LongPlaytest.md) (2), [InfrastructureManager](InfrastructureManager.md) (1), [LandParcel](LandParcel.md) (1), [AutoBuilder](AutoBuilder.md) (1), [Sector](Sector.md) (1), [LongTermBond](LongTermBond.md) (1), [CorporateBond](CorporateBond.md) (1)
+**Uses:** [KeptBench](KeptBench.md) (284), [Game](Game.md) (79), [Sectors](Sectors.md) (31), [Debt](Debt.md) (16), [Notice](Notice.md) (12), [BuildAdvice](BuildAdvice.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (11), [Timing](Timing.md) (10), [WellCheck](WellCheck.md) (6), [OilCheck](OilCheck.md) (6), [ChartModel](ChartModel.md) (4), [RefineryViewCheck](RefineryViewCheck.md) (4), [OilViewCheck](OilViewCheck.md) (4), [BuildingManager](BuildingManager.md) (3), [IndustryView](IndustryView.md) (3), [RefineryView](RefineryView.md) (3), [MiningCheck](MiningCheck.md) (3), [Auction](Auction.md) (2), [SectorFlow](SectorFlow.md) (2), [Bank](Bank.md) (2), [GameFiles](GameFiles.md) (2), [LongPlaytest](LongPlaytest.md) (2), [InfrastructureManager](InfrastructureManager.md) (1), [LandParcel](LandParcel.md) (1), [AutoBuilder](AutoBuilder.md) (1), [Sector](Sector.md) (1), [LongTermBond](LongTermBond.md) (1), [CorporateBond](CorporateBond.md) (1)
 
 **Used by (1):** [ChartFitCheck](ChartFitCheck.md)
 
@@ -79,9 +79,9 @@
 | 3413 | · Finances |
 | 3641 | · the city's fund |
 | 3816 | · the pictures (64) |
-| 3996 | · the count-up (65) |
-| 4222 | · the boxes (66) |
-| 4323 | · the hover (67) and the cost (68) |
+| 4017 | · the count-up (65) |
+| 4243 | · the boxes (66) |
+| 4344 | · the hover (67) and the cost (68) |
 
 ## Constants
 
@@ -117,6 +117,7 @@
 | 3202 | `KeptCheck.KEPT_FUND_MS` | `321` | The budget for the kept month on the fund's heaviest page (Search and Activity, the two costed, weigh most; their size follows the city's age: the bonds it has issued are the rows of Search, its months of events the r... |
 | 3218 | `KeptCheck.BANK_FOLDS` | `{ { "Profit", "profit:statement", "Interest earned", "Fees", "Provisions for ...` | What the Bank's folds hold, by page: the fold's key, then the lines a player opens inside it (each a key the page's own bookLine opens by). |
 | 3416 | `KeptCheck.PAPER` | `{ { "Note", "12", "" }, { "Float", "5", "" }, { "Serial", "10", "" }, { "Term...` | The paper the money sections sell, one of each kind the Borrow page offers (and a callable bond too): {kind, term, "callable" or ""}. |
+| 3834 | `KeptCheck.MOST_TO_PAY` | `{ "98.5", "101.5" }` | The most to pay typed on Close it now in the odd months of the watch, by turns (Spot's month hand). |
 
 ## Fields (state)
 
@@ -130,7 +131,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 218 | 4427 | **type** `public class KeptCheck` | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exactly where a page built new would, and costs a fraction of it. |
+| 218 | 4448 | **type** `public class KeptCheck` | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exactly where a page built new would, and costs a fraction of it. |
 | 222 | 4 | `static void check(String label, boolean ok)` |  |
 | 239 | 5 | `static<T> T fx(Callable<T> c) throws Exception` |  |
 | 246 | 13 | `static String startJavaFx()` | The toolkit started, or why not (then this harness has nothing to run on). |
@@ -250,46 +251,49 @@
 | 3668 | 4 | `static String lotOf(List<String> from, String prefix, List<String> not, boolean rescue)` | The first lot key in `from` that starts with `prefix` and is not in `not` (and has no ":rescue" in it unless `rescue`), or null. |
 | 3674 | 141 | `static void fund(Game g, KeptBench bench) throws Exception` | Sections 61 to 63: the city's fund kept. |
 
-### the pictures (64) (lines 3816-3995)
+### the pictures (64) (lines 3816-4016)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3819 | 1 | **type** `record Spot(String label, KeptBench.Page page, Hand setup)` | A place a picture is seen: its label, the page, and the hand that sets the page for it after the page's home. |
-| 3822 | 5 | `static Debt longestPiece(KeptBench bench) throws Exception` | The piece of paper on the books that falls due last: the one a line's page and Close it now are drawn on (null when the city has none). |
-| 3829 | 38 | `static List<Spot> pictureSpots(Game g, KeptBench bench, Debt piece) throws Exception` | The places the money screens' pictures are: one page of each tab that holds some, and the pages behind them. |
-| 3874 | 28 | `static void moneyPictures(Game g, KeptBench bench) throws Exception` | Section 64: the pictures the money screens hold are kept. |
-| 3904 | 91 | `static void pictureKept(Game g, KeptBench bench, Spot spot, String kind) throws Exception` | One kind of picture on one page, watched for PICTURE_MONTHS months. |
+| 3822 | 5 | **type** `record Spot(String label, KeptBench.Page page, Hand setup, MonthHand month)` | A place a picture is seen: its label, the page, the hand that sets the page for it after the page's home, and what the player does on the page in each month it is watched, after the month and before the draw (null: no... |
+| 3823 | 3 | `Spot(String label, KeptBench.Page page, Hand setup)` _(in KeptCheck.Spot)_ |  |
+| 3829 | 3 | **type** `interface MonthHand` | What the player does on a page in a month of the watch (the first month is 1). |
+| 3830 | 1 | `void on(KeptBench bench, int month) throws Exception` _(in KeptCheck.MonthHand)_ |  |
+| 3837 | 5 | `static Debt longestPiece(KeptBench bench) throws Exception` | The piece of paper on the books that falls due last: the one a line's page and Close it now are drawn on (null when the city has none). |
+| 3844 | 42 | `static List<Spot> pictureSpots(Game g, KeptBench bench, Debt piece) throws Exception` | The places the money screens' pictures are: one page of each tab that holds some, and the pages behind them. |
+| 3893 | 28 | `static void moneyPictures(Game g, KeptBench bench) throws Exception` | Section 64: the pictures the money screens hold are kept. |
+| 3923 | 93 | `static void pictureKept(Game g, KeptBench bench, Spot spot, String kind) throws Exception` | One kind of picture on one page, watched for PICTURE_MONTHS months. |
 
-### the count-up (65) (lines 3996-4221)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3999 | 10 | `static int[] started(KeptBench bench, java.util.Set<Animation> before)` | The animations a draw has started since `before` that are running now: {pops, counts and growths, others}. |
-| 4011 | 5 | `static java.util.Set<Animation> animationsNow(KeptBench bench)` | The animations on the page now, as a set by identity. |
-| 4018 | 5 | `static int running(KeptBench bench, Class<? extends Animation> kind)` | How many animations of a kind run on the page now. |
-| 4025 | 7 | `static String stillOrNot(KeptBench bench)` | What is wrong with a page on which nothing may animate: a running animation, a figure not at rest. |
-| 4038 | 29 | `static String bankRung(Game g, KeptBench bench, String page, int at, boolean paused, boolean expect) throws Exception` | One clock speed of section 65 on the Bank tab (the Overview when `page` is null): the page is shown, a month lands (one that moved the capital ratio, on the Overview) and it is shown again; the PROFIT figure pops and ... |
-| 4069 | 4 | `static void steerGauge(Game g)` | The Bank's risk-weighted ratio made the one that binds (see bankRung()): the book weighed for risk set to twenty times what the bank holds. |
-| 4075 | 15 | `private static String bankRungChecks(Game g, KeptBench bench, String page, int at, boolean paused, boolean expect, java.util.Se...` | ...what the month that landed started, once shown (the weighted book still steered on the Overview, so that the page built new beside it is drawn on the same bank). |
-| 4092 | 41 | `static String fundRung(Game g, KeptBench bench, int at, boolean paused, boolean expect) throws Exception` | ...and the fund's Portfolio, through the tab's real show method: the worth counts on and a payment pops. |
-| 4140 | 81 | `static void moneyCountUp(Game g, KeptBench bench) throws Exception` | Section 65: the count-up only at 1x-10x, on the Bank (the PROFIT figure's pop on the Overview and on a page's status strip, the capital gauge's growth) and the fund (the worth's count and a payment's pop). |
-
-### the boxes (66) (lines 4222-4322)
+### the count-up (65) (lines 4017-4242)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4229 | 59 | `static void boxHeld(Game g, KeptBench bench, String name, KeptBench.Page page, Hand setup, Runnable show, java.util.function.Su...` | One box on a page, given the focus and typed into (a node's `setFocused` when this scene has no window to give the focus: the line says which): a month landed through the real show method twice - the same node, its te... |
-| 4290 | 32 | `static void moneyControls(Game g, KeptBench bench) throws Exception` | Section 66: the boxes keep the player's hand - Close it now's two, the ask's, the yield boxes of Borrow's and the rollover's chips, the fund's search box. |
+| 4020 | 10 | `static int[] started(KeptBench bench, java.util.Set<Animation> before)` | The animations a draw has started since `before` that are running now: {pops, counts and growths, others}. |
+| 4032 | 5 | `static java.util.Set<Animation> animationsNow(KeptBench bench)` | The animations on the page now, as a set by identity. |
+| 4039 | 5 | `static int running(KeptBench bench, Class<? extends Animation> kind)` | How many animations of a kind run on the page now. |
+| 4046 | 7 | `static String stillOrNot(KeptBench bench)` | What is wrong with a page on which nothing may animate: a running animation, a figure not at rest. |
+| 4059 | 29 | `static String bankRung(Game g, KeptBench bench, String page, int at, boolean paused, boolean expect) throws Exception` | One clock speed of section 65 on the Bank tab (the Overview when `page` is null): the page is shown, a month lands (one that moved the capital ratio, on the Overview) and it is shown again; the PROFIT figure pops and ... |
+| 4090 | 4 | `static void steerGauge(Game g)` | The Bank's risk-weighted ratio made the one that binds (see bankRung()): the book weighed for risk set to twenty times what the bank holds. |
+| 4096 | 15 | `private static String bankRungChecks(Game g, KeptBench bench, String page, int at, boolean paused, boolean expect, java.util.Se...` | ...what the month that landed started, once shown (the weighted book still steered on the Overview, so that the page built new beside it is drawn on the same bank). |
+| 4113 | 41 | `static String fundRung(Game g, KeptBench bench, int at, boolean paused, boolean expect) throws Exception` | ...and the fund's Portfolio, through the tab's real show method: the worth counts on and a payment pops. |
+| 4161 | 81 | `static void moneyCountUp(Game g, KeptBench bench) throws Exception` | Section 65: the count-up only at 1x-10x, on the Bank (the PROFIT figure's pop on the Overview and on a page's status strip, the capital gauge's growth) and the fund (the worth's count and a payment's pop). |
 
-### the hover (67) and the cost (68) (lines 4323-4644)
+### the boxes (66) (lines 4243-4343)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4326 | 29 | `static void moneyHover(Game g, KeptBench bench) throws Exception` | Section 67: the hover. |
-| 4357 | 20 | `static KeptBench.Page heaviest(KeptBench bench, String tab, List<KeptBench.Page> pages) throws Exception` | The page of a tab that weighs most (the nodes its first draw makes), by name: printed with the others. |
-| 4379 | 45 | `static void moneyCost(Game g, KeptBench bench) throws Exception` | Section 68: what the kept month costs on the heaviest page of the Bank, of Finances and of the fund (and the fund's Activity and Search). |
-| 4426 | 19 | `static void money(Game g, KeptBench bench) throws Exception` | Sections 55 to 68: the money screens kept. |
-| 4447 | 5 | `private static long took(String what, long since)` | What a stretch of the money sections took, in a line; the clock's reading for the next. |
-| 4454 | 5 | `private static Notice add(Game g, String key, String title)` | A notice raised now, unread, in the inbox. |
-| 4460 | 184 | `public static void main(String[] args) throws Exception` |  |
+| 4250 | 59 | `static void boxHeld(Game g, KeptBench bench, String name, KeptBench.Page page, Hand setup, Runnable show, java.util.function.Su...` | One box on a page, given the focus and typed into (a node's `setFocused` when this scene has no window to give the focus: the line says which): a month landed through the real show method twice - the same node, its te... |
+| 4311 | 32 | `static void moneyControls(Game g, KeptBench bench) throws Exception` | Section 66: the boxes keep the player's hand - Close it now's two, the ask's, the yield boxes of Borrow's and the rollover's chips, the fund's search box. |
+
+### the hover (67) and the cost (68) (lines 4344-4665)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4347 | 29 | `static void moneyHover(Game g, KeptBench bench) throws Exception` | Section 67: the hover. |
+| 4378 | 20 | `static KeptBench.Page heaviest(KeptBench bench, String tab, List<KeptBench.Page> pages) throws Exception` | The page of a tab that weighs most (the nodes its first draw makes), by name: printed with the others. |
+| 4400 | 45 | `static void moneyCost(Game g, KeptBench bench) throws Exception` | Section 68: what the kept month costs on the heaviest page of the Bank, of Finances and of the fund (and the fund's Activity and Search). |
+| 4447 | 19 | `static void money(Game g, KeptBench bench) throws Exception` | Sections 55 to 68: the money screens kept. |
+| 4468 | 5 | `private static long took(String what, long since)` | What a stretch of the money sections took, in a line; the clock's reading for the next. |
+| 4475 | 5 | `private static Notice add(Game g, String key, String title)` | A notice raised now, unread, in the inbox. |
+| 4481 | 184 | `public static void main(String[] args) throws Exception` |  |
 

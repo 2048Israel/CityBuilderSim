@@ -1,6 +1,6 @@
 # CurrencyRegimeCheck.java - 1,797 lines · 55 methods · 11 constants · harnesses
 
-`ham/citybuildersim/CurrencyRegimeCheck.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CurrencyRegimeCheck.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
 > Proves the D$'s four regimes - Float, Lean against falls (the default), Band
 > and Peg to the US$ - hold the currency where they say and cost what they

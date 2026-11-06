@@ -1,6 +1,6 @@
 # Recipe.java - 175 lines · 20 methods · 2 constants · model
 
-`ham/citybuildersim/Recipe.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Recipe.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
 > A way a building runs: what it uses, what it makes, who it needs and what it draws, and when it is known and what piece of equipment it needs.
 > Immutable; read from buildings.json's "recipes" (BuildingCatalog.readRecipes()) and held by the template (BuildingsTemplate.getRecipes()).

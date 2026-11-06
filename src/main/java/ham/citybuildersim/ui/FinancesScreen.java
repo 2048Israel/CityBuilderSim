@@ -4819,7 +4819,10 @@ final class FinancesScreen {
         /** The quote to draw and the most to pay: drawn again, and its height set to its slices, only when either moved. */
         void set(Buyback.Result q, double maxPer100, java.util.function.DoubleFunction<String> money) {
             this.money = money;
-            if (told && q.equals(this.q) && Double.compare(maxPer100, this.maxPer100) == 0) return;
+            if (told && drawsAlike(q, this.q) && Double.compare(maxPer100, this.maxPer100) == 0) {
+                this.q = q;
+                return;
+            }
             told = true;
             this.q = q;
             this.maxPer100 = maxPer100;
@@ -4830,6 +4833,17 @@ final class FinancesScreen {
             setPrefSize(FIRST_W, h);
             setMaxSize(Double.MAX_VALUE, h);
             draw(drawnAt > 0 ? drawnAt : FIRST_W);
+        }
+
+        /**
+         * Whether two quotes draw the same ladder: the offers, the face taken and the fair price, all the picture reads.
+         * Not the whole quote: what the books carry of the face taken grows a little every month (a bond's discount
+         * accreting) and is not drawn, so a quote compared whole moved every month and drew the ladder again for nothing
+         * (KP5's gate, on R1c's city).
+         */
+        static boolean drawsAlike(Buyback.Result a, Buyback.Result b) {
+            return a.ladder().equals(b.ladder()) && Double.compare(a.takenFace(), b.takenFace()) == 0
+                    && Double.compare(a.fairPer100(), b.fairPer100()) == 0;
         }
 
         @Override protected void layoutChildren() {

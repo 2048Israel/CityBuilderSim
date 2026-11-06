@@ -3815,8 +3815,23 @@ public class KeptCheck {
 
     /* ----- the pictures (64) ----- */
 
-    /** A place a picture is seen: its label, the page, and the hand that sets the page for it after the page's home. */
-    record Spot(String label, KeptBench.Page page, Hand setup) { }
+    /**
+     * A place a picture is seen: its label, the page, the hand that sets the page for it after the page's home, and what
+     * the player does on the page in each month it is watched, after the month and before the draw (null: nothing).
+     */
+    record Spot(String label, KeptBench.Page page, Hand setup, MonthHand month) {
+        Spot(String label, KeptBench.Page page, Hand setup) {
+            this(label, page, setup, null);
+        }
+    }
+
+    /** What the player does on a page in a month of the watch (the first month is 1). */
+    interface MonthHand {
+        void on(KeptBench bench, int month) throws Exception;
+    }
+
+    /** The most to pay typed on Close it now in the odd months of the watch, by turns (Spot's month hand). */
+    static final String[] MOST_TO_PAY = { "98.5", "101.5" };
 
     /** The piece of paper on the books that falls due last: the one a line's page and Close it now are drawn on (null when the city has none). */
     static Debt longestPiece(KeptBench bench) throws Exception {
@@ -3841,7 +3856,11 @@ public class KeptCheck {
         spots.add(new Spot("The book", fx(() -> bench.finances("The book", "The book", "Every piece")), b -> null));
         if (piece != null) {
             spots.add(new Spot("a line's page", fx(() -> bench.finances("a line's page", "The book", "Every piece")), lineOf(piece)));
-            spots.add(new Spot("Close it now", fx(() -> bench.finances("Close it now", "The book", "Every piece")), closeOf(piece)));
+            // The ladder's offers and fair price can stand still for months (R1c's city: six, with not a figure of them moved), so the
+            // player types a most to pay in the odd months and leaves it in the even ones: months that move what it draws, and months
+            // that move only what it does not (the books' carrying value of the face taken), which must draw nothing.
+            spots.add(new Spot("Close it now", fx(() -> bench.finances("Close it now", "The book", "Every piece")), closeOf(piece),
+                    (b, m) -> { if (m % 2 == 1) b.financesTyped(2, MOST_TO_PAY[m / 2 % 2]); }));
         }
         spots.add(new Spot("Borrow at home, asking for a sixth of the cash", fx(() -> bench.finances("Borrow at home", "Borrow", "At home")), b -> {
             b.financesBorrow("Term", 10, moneys.get(0), ask, false, false);
@@ -3919,6 +3938,7 @@ public class KeptCheck {
         long kept = 0, had = 0;
         String firstDiffer = null, whyLoud = null;
         for (int m = 1; m <= PICTURE_MONTHS; m++) {
+            final int at = m;
             Object[] r = fx(() -> {
                 java.util.Map<Pane, Object[]> before = new java.util.IdentityHashMap<>();
                 java.util.Map<Pane, Boolean> dirtyBefore = new java.util.IdentityHashMap<>();
@@ -3927,6 +3947,7 @@ public class KeptCheck {
                     dirtyBefore.put(p, KeptBench.layoutRequested(p));
                 }
                 month(g);
+                if (spot.month() != null) spot.month().on(bench, at);
                 bench.drawKept(page);
                 java.util.Map<Pane, Boolean> asked = new java.util.IdentityHashMap<>();
                 // (A bar asks for a layout when the draw makes it dirty: one that was dirty already - in a part of the page nobody lays out - asks nothing new.)

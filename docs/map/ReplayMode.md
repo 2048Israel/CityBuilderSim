@@ -1,6 +1,6 @@
 # ReplayMode.java - 988 lines · 46 methods · 6 constants · interface
 
-`ham/citybuildersim/ui/ReplayMode.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/ReplayMode.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
 > Replay mode (TR1, 2026-10-31): a recorded city (Recording) shown on a throwaway copy of it (ReplayCity) in the game's own
 > window, with a time bar across the bottom to move through the months - play either way, step, drag, at 1 to 16 months a

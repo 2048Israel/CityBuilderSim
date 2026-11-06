@@ -1,6 +1,6 @@
 # CityMeasures.java - 468 lines · 23 methods · 8 constants · model
 
-`ham/citybuildersim/CityMeasures.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CityMeasures.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
 > The city's figure for each of the Rankings' 70 measures (spec-leaderboards 6,
 > "Where the game's side comes from"), worked out of its HistorySave and the
