@@ -1,6 +1,6 @@
 # DeskCheck.java - 1,286 lines · 31 methods · 0 constants · harnesses
 
-`ham/citybuildersim/DeskCheck.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DeskCheck.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
 > The debt desk's figures (CD6, spec-city-debt.md sections 7 and 8): the figures the
 > debt screens used to work out for themselves, held to the model that now gives

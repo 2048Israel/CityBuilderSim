@@ -1,4 +1,4 @@
-# R2 - research: the catalogue and the world's dates ({next}, 2026-11-05)
+# R2 - research: the catalogue and the world's dates (0.9.24, 2026-11-05)
 
 ## WHERE IT STANDS
 

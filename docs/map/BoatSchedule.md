@@ -1,6 +1,6 @@
 # BoatSchedule.java - 847 lines · 50 methods · 15 constants · model
 
-`ham/citybuildersim/BoatSchedule.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BoatSchedule.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
 > The month's ships, as a pure function of time: which calls the city's sea
 > trade makes, when each arrives, and where each boat is at any moment
