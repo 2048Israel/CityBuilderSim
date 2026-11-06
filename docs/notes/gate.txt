@@ -1,12 +1,14 @@
-# gate of Merge batch/R2: research: the catalogue and the world, 0.9.24
+# gate of Merge batch/XI1: a purchase or sale of dollars moves the D$ a bounded amount: `INTERVENTION_IMPACT` linear to 10% of a year's GDP and logarithmic past it, byte-identical below; Trade's reserves warn past it (Jerus's Rotterdam, slot 3: one purchase of 4.5 years' output moved the D$ x11,600 in a month; GD0, Jerus, 2026-11-02: "Rate running away (Recommended)"), 0.9.26
 # date: 2026-11-06
 # earth-2.bin: named
-# nightly: 2026-11-05 09:11 0.9.17 a0661fe8 4,000 months: OK in 109 s
-# suite: 178 harnesses run in 2448s: 172 passed, 6 failed
-# timing: 16 harnesses run in 535s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
+# nightly: 2026-11-06 01:09 0.9.24 f33540a0 4,000 months: RED, exit 1 in 89 s: a building on the map moved 1 time(s), months 3012-3012
+# suite: 179 harnesses run in 2306s: 173 passed, 6 failed
+# timing: 16 harnesses run in 723s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 30.7 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 30.9 ms, batch 30.8 ms (-0.5%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 30.4 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 46.5 ms, batch 36.0 ms (-22.7%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 18.6 ms, batch 20.9 ms (+12.4%), budget 19 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | 3 FAILED   [the harness's own count of the timing reds above]
 SlopeCheck | exit 1
 SlopeCheck | the run played its months and found nothing: every month passed the playtest's audit and the layout watcher, [a building on the map moved] FAIL
 SlopeCheck | 1 FAILED

@@ -18,6 +18,28 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.26 — XI1, the intervention bounded — 2026-11-06, ready, see docs/queue/XI1-notes.md
+A purchase or sale of dollars now moves the D$ a bounded amount: 2% for each 1% of a year's output up to a tenth of a
+year's output (`ForeignAccounts.INTERVENTION_LINEAR`), and logarithmically past it, so each further dollar moves the
+rate less (`interventionMove()`; GD0 §4.5, Jerus 2026-11-02). Jerus's Rotterdam bought 4.5 years of its output in a
+month and its D$ went ×11,600. The same purchase now moves it ×2.6, where the old rule gave ×8,100 (`InterventionCheck`,
+on a bare currency and on a played town). Under the bound every figure is the old one to the bit. Past it, the central
+bank's defence still takes back its share of a fall, and sells more dollars to do it. Trade's buy-or-sell card warns past
+the bound: "This purchase is 4.5 years of the city's output". The default playtest is the same to the byte until month
+2,119, where its war chest bought 11% of a year's output. The ensemble scores 23 of 26, as 0.9.23 did.
+
+### 0.9.25 — KP5, Screens kept: Bank, Finances and the fund — 2026-11-05, ready, see docs/queue/KP5-notes.md
+The Bank tab, the Finances tab and the city's fund are drawn over last month's nodes instead of rebuilt (study UP4's
+KP5): the Bank's Overview and six pages in both views; Finances' hub and every area and page - the position, the book
+with a line's page and Close it now, Borrow at home and abroad with the ask and the auction, Money, the bond market and
+a bond's book, the foreign default and debt result pages; the fund's Portfolio, Search, Activity, Rules & cash and a
+security with its ticket - each page keyed by what is open on it, each row that comes and goes by what it shows. The
+curves, the desk's pictures, the buyback ladder, the auction and the column charts are told their figures and drawn
+again only where one moved; the boxes keep the player's typing, caret and focus across a month; Bank's pops and gauge
+and the fund's count run only at 1x-10x, as on People, History and Sectors. KeptCheck 55-68 compare each kept page with
+one built new through every page, view, choice, fold and box; a month on the Bank's Overview fell from 16-19 ms to 5-8,
+Borrow's from 17-24 to 8-10, the fund's Search from 106-173 to 58-71 (its long lists: FP1). No ensemble: model untouched.
+
 ### 0.9.24 — R2, Research: the catalogue and the world's dates — 2026-11-05, ready, see docs/queue/R2-notes.md
 Research has its catalogue: `research.json`'s 89 discoveries (the first study's 40, the 1900 study's 48 and L5, the
 Canada Pension Plan), each with its field, kind, history's month, what it needs first, whether it carries a licence fee

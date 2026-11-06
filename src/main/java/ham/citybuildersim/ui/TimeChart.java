@@ -749,9 +749,13 @@ final class TimeChart extends VBox {
         };
     }
 
+    /** How many frames this chart has painted (KeptCheck counts them: a chart on a kept page is told its data at every draw). */
+    int paints;
+
     /** One frame: draw()'s, which catches what it throws. */
     private void paint() {
         if (!(width > 0)) return;
+        paints++;
         plotRight = width - (anyOnRight() ? AXIS_W : NO_AXIS_W);
         GraphicsContext g = plot.getGraphicsContext2D();
         g.clearRect(0, 0, plot.getWidth(), plot.getHeight());

@@ -1,4 +1,4 @@
-# XI1 - the intervention bounded ({next}, 2026-11-06)
+# XI1 - the intervention bounded (0.9.26, 2026-11-06)
 
 ## WHERE IT STANDS
 
