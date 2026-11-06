@@ -1,4 +1,4 @@
-# R1b - research: the fit acted on ({next}, 2026-11-05)
+# R1b - research: the fit acted on (0.9.22, 2026-11-05)
 
 ## WHERE IT STANDS
 
