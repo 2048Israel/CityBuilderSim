@@ -3767,4 +3767,199 @@ public final class KeptBench {
     }
 
     // (KP7, part 2: the show hands of Household money and the Rankings tab, slices A and B's, are added here by the harness's second half.)
+
+    /* =====================================================================
+       THE RANKINGS TAB (KP7, slice B): the tab as it opens, kept and built new, the hands on what reshapes it (a board, the money, the
+       prices and the conversion, Now / Your age, a measure, a filter and a view, a pin, a place's drawer), the read of the saved
+       cities and the real show method
+       ===================================================================== */
+
+    /**
+     * The Rankings tab as a Page, as the screen draws it from its pool: it opens on GDP and the full list, Real world 2025 in the real
+     * US dollar, per year and at this month's rate, the first six measures pinned, nothing folded open and no drawer. The saved cities
+     * the screen has read stay (they are the folder's, not the page's).
+     */
+    public Page rankings() {
+        RankingsScreen s = ui.rankingsScreen;
+        return new Page("the Rankings tab", "showRankingsMenu", () -> s.pool, pool -> timed(pool, s::drawPage), () -> {
+            s.forget();
+            s.settings = ham.citybuildersim.Rankings.Settings.OPENING;
+            s.measure = RankingsScreen.OPENS_ON;
+            s.aroundYou = false;
+            s.filter = RankingsScreen.Filter.ALL;
+            s.pinned.clear();
+            s.pinned.addAll(RankingsScreen.PINNED_AT_FIRST);
+            s.drawer = null;
+            s.browseAll = false;
+            s.atAge = false;
+        });
+    }
+
+    /** The measures of the file, by their key, in the file's order: the ones the tab can show. */
+    public static List<String> rankingsMeasures() {
+        List<String> out = new ArrayList<>();
+        for (ham.citybuildersim.WorldMeasures.Measure m : ham.citybuildersim.WorldMeasures.load().measures()) out.add(m.key());
+        return out;
+    }
+
+    /** Whether the measure ranks on Real world 2025 against real places (false: only the player's cities rank on it). */
+    public static boolean rankingsSourced(String key) {
+        ham.citybuildersim.WorldMeasures.Measure m = ham.citybuildersim.WorldMeasures.load().measure(key);
+        return m != null && m.sourced();
+    }
+
+    /** The boards, by name: Real world 2025 and Your world. */
+    public static List<String> rankingsBoards() {
+        return enumNames(ham.citybuildersim.Rankings.Board.values());
+    }
+
+    /** The moneys, by name: the city's, the game's US dollar and the real one. */
+    public static List<String> rankingsMoneys() {
+        return enumNames(ham.citybuildersim.Rankings.Money.values());
+    }
+
+    /** The prices, by name: per year and static. */
+    public static List<String> rankingsPrices() {
+        return enumNames(ham.citybuildersim.Rankings.Prices.values());
+    }
+
+    /** The conversions, by name: this month's rate, constant 2015 and PPP. */
+    public static List<String> rankingsConverts() {
+        return enumNames(ham.citybuildersim.Rankings.Convert.values());
+    }
+
+    /** The filters of the table, by name: All, Nations, Cities, Your size and Your cities. */
+    public static List<String> rankingsFilters() {
+        return enumNames(RankingsScreen.Filter.values());
+    }
+
+    private static List<String> enumNames(Enum<?>[] values) {
+        List<String> out = new ArrayList<>();
+        for (Enum<?> e : values) out.add(e.name());
+        return out;
+    }
+
+    /** Whether the city has nations of its own, so that Your world is a board it can show (else the screen draws Real world 2025 in its place). */
+    public boolean rankingsHasNations() {
+        return ui.game.getNations() != null;
+    }
+
+    /** The measure shown, by its key, as a line on the measures column or a pinned rank on the card would show it. */
+    public void rankingsMeasure(String key) {
+        ui.rankingsScreen.measure = key;
+    }
+
+    /** The board picked, by name, as its chip would (the money, the prices and the conversion as they are). */
+    public void rankingsBoard(String board) {
+        RankingsScreen s = ui.rankingsScreen;
+        s.settings = new ham.citybuildersim.Rankings.Settings(ham.citybuildersim.Rankings.Board.valueOf(board), s.settings.money(), s.settings.prices(), s.settings.convert());
+    }
+
+    /** The money picked, by name, as its chip would. */
+    public void rankingsMoney(String money) {
+        RankingsScreen s = ui.rankingsScreen;
+        s.settings = new ham.citybuildersim.Rankings.Settings(s.settings.board(), ham.citybuildersim.Rankings.Money.valueOf(money), s.settings.prices(), s.settings.convert());
+    }
+
+    /** The prices picked, by name, as its chip would (they move only the saved cities' rows, and are locked in other cases). */
+    public void rankingsPrice(String prices) {
+        RankingsScreen s = ui.rankingsScreen;
+        s.settings = new ham.citybuildersim.Rankings.Settings(s.settings.board(), s.settings.money(), ham.citybuildersim.Rankings.Prices.valueOf(prices), s.settings.convert());
+    }
+
+    /** The conversion picked, by name, as its chip would. */
+    public void rankingsConvert(String convert) {
+        RankingsScreen s = ui.rankingsScreen;
+        s.settings = new ham.citybuildersim.Rankings.Settings(s.settings.board(), s.settings.money(), s.settings.prices(), ham.citybuildersim.Rankings.Convert.valueOf(convert));
+    }
+
+    /** The filter picked, by name, as its chip would. */
+    public void rankingsFilter(String filter) {
+        ui.rankingsScreen.filter = RankingsScreen.Filter.valueOf(filter);
+    }
+
+    /** Full list or Around you, as its chip would put it. */
+    public void rankingsAround(boolean around) {
+        ui.rankingsScreen.aroundYou = around;
+    }
+
+    /** Your cities at Now (false) or Your age (true), as its chip would put it. */
+    public void rankingsAtAge(boolean atAge) {
+        ui.rankingsScreen.atAge = atAge;
+    }
+
+    /** The measures column folded to the pinned and the group shown (false) or opened on every group (true), as "Browse all" would put it. */
+    public void rankingsBrowseAll(boolean all) {
+        ui.rankingsScreen.browseAll = all;
+    }
+
+    /** A measure pinned or unpinned, by its key, as the pin on its line would. */
+    public void rankingsPin(String key, boolean on) {
+        if (on) ui.rankingsScreen.pinned.add(key);
+        else ui.rankingsScreen.pinned.remove(key);
+    }
+
+    /** A place's drawer opened, by its id (a nation's or a region's in the file, "city", or a saved city's "saved:" and its slot), as its row or a neighbour on the card would; null closes it. */
+    public void rankingsDrawer(String place) {
+        ui.rankingsScreen.drawer = place;
+    }
+
+    /** The ids a drawer can be opened on: the city, the file's first nation and first region, and the saved cities the screen has read. */
+    public List<String> rankingsDrawers() {
+        List<String> out = new ArrayList<>();
+        out.add(ham.citybuildersim.Rankings.PLACE_CITY);
+        ham.citybuildersim.WorldMeasures.Place nation = null, region = null;
+        for (ham.citybuildersim.WorldMeasures.Place p : ham.citybuildersim.WorldMeasures.load().places()) {
+            if (p.kind() == ham.citybuildersim.WorldMeasures.Kind.NATION && nation == null) nation = p;
+            if (p.kind() != ham.citybuildersim.WorldMeasures.Kind.NATION && region == null) region = p;
+        }
+        if (nation != null) out.add(nation.id());
+        if (region != null) out.add(region.id());
+        ham.citybuildersim.SavedCities saved = ui.rankingsScreen.saved;
+        if (saved != null) for (ham.citybuildersim.Rankings.Saved sv : saved.now()) out.add(sv.id());
+        return out;
+    }
+
+    /**
+     * The city saved into slot 10 of the folder it plays in, so that the Your cities board has a row to read. Refused (false) for the player's own
+     * save folder: only a scratch folder (GameFiles.scratch) is ever written, and only its slot 10.
+     */
+    public boolean rankingsSaveSlot10() {
+        ham.citybuildersim.GameFiles files = ui.game.getGameFiles();
+        if (files.getDirectory().equals(ham.citybuildersim.GameFiles.defaultDirectory())) return false;
+        return ui.game.saveGame(10, "KP7 bench").ok;
+    }
+
+    /** A read of the saved cities started on the screen's worker, as an entry to the tab starts one: its answer comes back through the FX thread (see rankingsReadLanded()). */
+    public void rankingsRead() {
+        ui.rankingsScreen.readSaved();
+    }
+
+    /** Whether a read has landed: none is on the worker and the screen holds a snapshot. Asked from the FX thread, between sleeps of the caller's, never waited for on it. */
+    public boolean rankingsReadLanded() {
+        RankingsScreen s = ui.rankingsScreen;
+        return !s.reading && s.saved != null;
+    }
+
+    /** How many saved cities the screen's snapshot puts on the board (0 before the first read has landed). */
+    public int rankingsSavedOnBoard() {
+        ham.citybuildersim.SavedCities saved = ui.rankingsScreen.saved;
+        return saved == null ? 0 : saved.now().size();
+    }
+
+    /** The snapshot of the saved cities let go, as a tab not yet entered has it ("Your cities (reading...)" and no saved row). */
+    public void rankingsUnread() {
+        ui.rankingsScreen.saved = null;
+    }
+
+    /** The Rankings tab shown through its real show method, as the rail's tab or a month landing shows it (the chrome, then the page kept). */
+    public void showRankings() {
+        ensureWindow();
+        ui.rankingsScreen.showRankingsMenu();
+    }
+
+    /** The Rankings tab forgotten, as another city opened would leave it: nothing kept, nothing just landed. */
+    public void forgetRankings() {
+        ui.rankingsScreen.forget();
+    }
 }
