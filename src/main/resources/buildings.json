@@ -4447,6 +4447,90 @@
    "land": 19375,
    "repairs": 0.0125,
    "since": 1900
+  },
+  {
+   "id": 148,
+   "name": "Engineering Research Lab",
+   "category": "BUSINESS_SERVICES",
+   "sector": "Business Services",
+   "researches": "ENGINEERING",
+   "capacity": 100,
+   "cashCost": 7193,
+   "constructionPoints": 1431,
+   "constructionMaterials": 266,
+   "upkeep": 0,
+   "electricity": 106,
+   "water": 2,
+   "jobs": {
+    "COLLEGE_ENGINEERING": 43,
+    "UNIV_SCIENCE": 50,
+    "UNIV_HIGHTECH_ENG": 50
+   },
+   "land": 33000,
+   "roadLoad": 106
+  },
+  {
+   "id": 149,
+   "name": "Medical Research Lab",
+   "category": "BUSINESS_SERVICES",
+   "sector": "Business Services",
+   "researches": "MEDICINE",
+   "capacity": 100,
+   "cashCost": 7193,
+   "constructionPoints": 1431,
+   "constructionMaterials": 266,
+   "upkeep": 0,
+   "electricity": 106,
+   "water": 2,
+   "jobs": {
+    "COLLEGE_HEALTH": 43,
+    "UNIV_DOCTOR": 50,
+    "UNIV_SCIENCE": 50
+   },
+   "land": 33000,
+   "roadLoad": 106
+  },
+  {
+   "id": 150,
+   "name": "Business Research Lab",
+   "category": "BUSINESS_SERVICES",
+   "sector": "Business Services",
+   "researches": "BUSINESS",
+   "capacity": 100,
+   "cashCost": 7193,
+   "constructionPoints": 1431,
+   "constructionMaterials": 266,
+   "upkeep": 0,
+   "electricity": 106,
+   "water": 2,
+   "jobs": {
+    "DIPLOMA": 20,
+    "UNIV_FINANCE": 50,
+    "UNIV_POLICY": 50
+   },
+   "land": 33000,
+   "roadLoad": 106
+  },
+  {
+   "id": 151,
+   "name": "Law Research Lab",
+   "category": "BUSINESS_SERVICES",
+   "sector": "Business Services",
+   "researches": "LAW",
+   "capacity": 100,
+   "cashCost": 7193,
+   "constructionPoints": 1431,
+   "constructionMaterials": 266,
+   "upkeep": 0,
+   "electricity": 106,
+   "water": 2,
+   "jobs": {
+    "DIPLOMA": 20,
+    "UNIV_LAW": 50,
+    "UNIV_POLICY": 50
+   },
+   "land": 33000,
+   "roadLoad": 106
   }
  ]
 }

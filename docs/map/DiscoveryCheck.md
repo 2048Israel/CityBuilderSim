@@ -1,4 +1,4 @@
-# DiscoveryCheck.java - 1,306 lines · 42 methods · 4 constants · harnesses
+# DiscoveryCheck.java - 1,308 lines · 42 methods · 4 constants · harnesses
 
 `ham/citybuildersim/DiscoveryCheck.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
@@ -50,7 +50,9 @@
 >      a city with none writes no key.
 >  18. A REFORM OF THE MONEY scales the grants and the bill and nothing else of the research.
 
-**Uses:** [Research](Research.md) (214), [Recipes](Recipes.md) (34), [BuildingsTemplate](BuildingsTemplate.md) (24), [Game](Game.md) (24), [JobType](JobType.md) (23), [PolicyDates](PolicyDates.md) (21), [EquipmentFit](EquipmentFit.md) (17), [TaxPolicy](TaxPolicy.md) (11), [Notice](Notice.md) (9), [TreasuryLine](TreasuryLine.md) (9), [EducationType](EducationType.md) (8), [PayTier](PayTier.md) (5), [Recipe](Recipe.md) (5), [Equipment](Equipment.md) (5), [MoneyAudit](MoneyAudit.md) (5), [GameFiles](GameFiles.md) (4), [EquipmentCheck](EquipmentCheck.md) (4), [EconomyManager](EconomyManager.md) (4), [ResearchCatalog](ResearchCatalog.md) (2), [PriceLevel](PriceLevel.md) (2), [BuildingCatalog](BuildingCatalog.md) (2), [FittingCheck](FittingCheck.md) (2), [Founding](Founding.md) (2), [MaterialsCheck](MaterialsCheck.md) (2), [Good](Good.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [BuildingManager](BuildingManager.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [NationalAccounts](NationalAccounts.md) (1), [Inbox](Inbox.md) (1)
+**Uses:** [Research](Research.md) (214), [Recipes](Recipes.md) (34), [BuildingsTemplate](BuildingsTemplate.md) (24), [Game](Game.md) (24), [JobType](JobType.md) (23), [PolicyDates](PolicyDates.md) (21), [EquipmentFit](EquipmentFit.md) (17), [TreasuryLine](TreasuryLine.md) (11), [TaxPolicy](TaxPolicy.md) (11), [Notice](Notice.md) (9), [EducationType](EducationType.md) (8), [PayTier](PayTier.md) (5), [Recipe](Recipe.md) (5), [Equipment](Equipment.md) (5), [MoneyAudit](MoneyAudit.md) (5), [GameFiles](GameFiles.md) (4), [EquipmentCheck](EquipmentCheck.md) (4), [EconomyManager](EconomyManager.md) (4), [ResearchCatalog](ResearchCatalog.md) (2), [PriceLevel](PriceLevel.md) (2), [BuildingCatalog](BuildingCatalog.md) (2), [FittingCheck](FittingCheck.md) (2), [Founding](Founding.md) (2), [MaterialsCheck](MaterialsCheck.md) (2), [Good](Good.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [BuildingManager](BuildingManager.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [NationalAccounts](NationalAccounts.md) (1), [Inbox](Inbox.md) (1)
+
+**Used by (1):** [PrizeCheck](PrizeCheck.md)
 
 ## Sections
 
@@ -70,11 +72,11 @@
 | 857 | R3 SLICE B: THE RESEARCH IN THE CITY'S MONTH (sections 12 to 18). A city founded the 1900 way, a University (and a La... |
 | 935 | 12. the posts are jobs the labour market sees |
 | 985 | 13. the bill |
-| 1044 | 14. a city founded the default way |
-| 1095 | 15. the inbox |
-| 1147 | 16. a law find brings its lever forward |
-| 1214 | 17. the save |
-| 1277 | 18. a reform of the money |
+| 1046 | 14. a city founded the default way |
+| 1097 | 15. the inbox |
+| 1149 | 16. a law find brings its lever forward |
+| 1216 | 17. the save |
+| 1279 | 18. a reform of the money |
 
 ## Constants
 
@@ -97,7 +99,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 68 | 1239 | **type** `public class DiscoveryCheck` | The city finds discoveries of its own, and a discovery found here is known here from the month it was found (R3, slice A: Research, and the seam in Recipe, Equipment, BuildingsTemplate, Recipes and EquipmentFit; docs/... |
+| 68 | 1241 | **type** `public class DiscoveryCheck` | The city finds discoveries of its own, and a discovery found here is known here from the month it was found (R3, slice A: Research, and the seam in Recipe, Equipment, BuildingsTemplate, Recipes and EquipmentFit; docs/... |
 | 73 | 4 | `static void check(String label, boolean ok)` |  |
 | 79 | 4 | `static void check(String label, boolean ok, String found)` | The same, with what was found printed under a failure. |
 | 84 | 3 | `static void near(String label, double actual, double expected, double tolerance)` |  |
@@ -201,39 +203,39 @@
 |---:|---:|---|---|
 | 937 | 47 | `static void sectionTwelve()` |  |
 
-### 13. the bill (lines 985-1043)
+### 13. the bill (lines 985-1045)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 987 | 56 | `static void sectionThirteen()` |  |
+| 987 | 58 | `static void sectionThirteen()` |  |
 
-### 14. a city founded the default way (lines 1044-1094)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1046 | 48 | `static void sectionFourteen()` |  |
-
-### 15. the inbox (lines 1095-1146)
+### 14. a city founded the default way (lines 1046-1096)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1097 | 49 | `static void sectionFifteen()` |  |
+| 1048 | 48 | `static void sectionFourteen()` |  |
 
-### 16. a law find brings its lever forward (lines 1147-1213)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1149 | 64 | `static void sectionSixteen() throws Exception` |  |
-
-### 17. the save (lines 1214-1276)
+### 15. the inbox (lines 1097-1148)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1216 | 60 | `static void sectionSeventeen() throws Exception` |  |
+| 1099 | 49 | `static void sectionFifteen()` |  |
 
-### 18. a reform of the money (lines 1277-1306)
+### 16. a law find brings its lever forward (lines 1149-1215)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1279 | 27 | `static void sectionEighteen()` |  |
+| 1151 | 64 | `static void sectionSixteen() throws Exception` |  |
+
+### 17. the save (lines 1216-1278)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1218 | 60 | `static void sectionSeventeen() throws Exception` |  |
+
+### 18. a reform of the money (lines 1279-1308)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1281 | 27 | `static void sectionEighteen()` |  |
 

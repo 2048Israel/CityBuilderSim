@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.30 — R4, research: prizes and the Research Lab — 2026-11-06, ready, see docs/queue/R4-notes.md
+A city founded the 1900 way can now pay for results as well as for work (research-design §5.3). Four prize dials, one a
+field, pay D$ for a discovery made here, and only then. A prize draws Research Labs, four new Business Services buildings
+of 100 research posts of one field (ids 148-151): investors build one while the purse covers the cheapest open problem's
+remaining work at the post's cost and a team could finish it before the world, on the owners' money alone, never a loan.
+Labs work their target after the city's own even spread; at a find the purse is split by the work each did, the labs'
+share paid by the treasury into their owners' till (`TreasuryLine.PRIZES`, a transfer as a subsidy is), the schools' a
+pot that buys posts beyond the grant. A field with half a lab idle for six months sheds one. Nothing moves in a city
+founded the default way or with every prize at 0: the default playtest's trace is R3's to the byte. The prize cards are R3b's.
+
 ### 0.9.29 — KP7, Screens kept: the rest (Household money, Rankings), and the rebuild path retired from the clock — 2026-11-06, ready, see docs/queue/KP7-notes.md
 People's Household money and the Rankings tab are drawn over last month's nodes instead of rebuilt (study UP4's KP7,
 the last KP batch): Household money's grid keyed by household shape, ledger and tier, the open cell's books by the

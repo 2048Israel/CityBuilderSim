@@ -110,6 +110,12 @@ public class BuildingDataCheck {
                 System.out.println("  FAIL " + who + ": teaches " + actual.getTeaches()
                         + " != " + expected.getTeaches());
             }
+            // The field a Research Lab researches (R4): a lab that lost its line is a Business Services building no investor orders and no prize reaches.
+            if (actual.getResearches() != expected.getResearches()) {
+                fails++;
+                System.out.println("  FAIL " + who + ": researches " + actual.getResearches()
+                        + " != " + expected.getResearches());
+            }
             if (actual.getSafety() != expected.getSafety()) {
                 fails++;
                 System.out.println("  FAIL " + who + ": safety " + actual.getSafety()
@@ -434,12 +440,12 @@ public class BuildingDataCheck {
                         + " Highway 1.25% - and so do ET6's three long bridges, the Elevated Highway's rate (ids 145 to 147), and no other building: " + repairs,
                 repairs.equals(java.util.Map.of("Gravel Road", .03, "Paved Road", .02, "Elevated Highway", .0125,
                         "Highway Bridge", .0125, "Rail Bridge", .0125, "Road Bridge", .0125)));
-        assertTrue("...and 148 buildings in all (ET6: the Highway, Rail and Road Bridge, ids 145 to 147; 145 from HY1: the Hydro Station, id 144; 144 from PT1-M4: the Builders' Yard, id 143, the founding's own; 143 from FR3, the Bulk Berth, id 142; 142 from FR7, the Rail Depot; 141 from FR2, the Truck Depot and the Heavy Truck Plant; 139 from 0.7.140, Wood Products' six; 133 from 0.7.138, Forestry's two crews and two planted"
+        assertTrue("...and 152 buildings in all (R4: the four Research Labs, ids 148 to 151; 148 until then: ET6: the Highway, Rail and Road Bridge, ids 145 to 147; 145 from HY1: the Hydro Station, id 144; 144 from PT1-M4: the Builders' Yard, id 143, the founding's own; 143 from FR3, the Bulk Berth, id 142; 142 from FR7, the Rail Depot; 141 from FR2, the Truck Depot and the Heavy Truck Plant; 139 from 0.7.140, Wood Products' six; 133 from 0.7.138, Forestry's two crews and two planted"
                         + " stands; 129 from 0.7.133, Copper"
                         + " Mining's three, Copper Refining's four and Manufacturing's Wire & Cable Works; 121 from 0.7.131, Quarrying's three and Cement & Concrete's three; 115 from 0.7.126, Coal Mining's four;"
                         + " 111 from 0.7.124, Iron Mining's three; 108 from 0.7.123, the integrated route's seven; 101 from 0.7.91, 98 from"
                         + " 0.7.86, 94 from 0.7.85, 92 from 0.7.83, 91 from 0.7.80, 76 until then)",
-                data.size() == 148);
+                data.size() == 152);
 
         /* ---------- the oil storage (0.7.85, batch O8; spec-oil 2.8) ----------
 

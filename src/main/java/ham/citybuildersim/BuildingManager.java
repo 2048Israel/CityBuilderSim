@@ -4889,6 +4889,79 @@ public class BuildingManager {
                 .setRepairsPerYear(.0125)
                 .setSince(1900)
                 .setId(147));
+
+        /* ------------------------------------------------------------------
+           THE RESEARCH LABS (R4, ids 148 to 151; docs/studies/research-design.md 5.3). A Business Services building of Research.LAB_POSTS (100)
+           research posts of one field, one template a field, that investors order while a field's prize pays for its posts (Game.considerLabs())
+           and shed when it has nothing left to chase; no ordinary planner offers one (BusinessServices.plan() keeps out of getResearches()).
+           Its income is a prize, so it makes no good and needs no licence. Its jobs are Research.labJobs(field) (the two researcher types and the
+           field's support staff); the rest is the Engineering Services Office's (id 48) times the study's 12 / 10.9, the lab's D$ 12M against
+           that office's D$ 10.9M for 120 staff.
+           ------------------------------------------------------------------ */
+        templates.add(new BuildingsTemplate("Engineering Research Lab", BuildingType.BUSINESS_SERVICES)
+                .setSector("Business Services")
+                .setResearches(ResearchCatalog.Field.ENGINEERING)
+                .setCapacity(100)                   // research posts: Research.LAB_POSTS
+                .setCashCost(7193)                  // the Engineering Services Office's 6,534 x 12 / 10.9
+                .setConstructionPoints(1431)
+                .setConstructionMaterials(266)
+                .setUpkeep(0)
+                .setElectricityConsumption(106)
+                .setWaterConsumption(2)
+                .setLandSqFt(33000)
+                .setRoadLoad(106)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 43)
+                .setJobs(JobType.UNIV_SCIENCE, 50)
+                .setJobs(JobType.UNIV_HIGHTECH_ENG, 50)
+                .setId(148));
+        templates.add(new BuildingsTemplate("Medical Research Lab", BuildingType.BUSINESS_SERVICES)
+                .setSector("Business Services")
+                .setResearches(ResearchCatalog.Field.MEDICINE)
+                .setCapacity(100)                   // research posts: Research.LAB_POSTS
+                .setCashCost(7193)                  // the Engineering Services Office's 6,534 x 12 / 10.9
+                .setConstructionPoints(1431)
+                .setConstructionMaterials(266)
+                .setUpkeep(0)
+                .setElectricityConsumption(106)
+                .setWaterConsumption(2)
+                .setLandSqFt(33000)
+                .setRoadLoad(106)
+                .setJobs(JobType.COLLEGE_HEALTH, 43)
+                .setJobs(JobType.UNIV_DOCTOR, 50)
+                .setJobs(JobType.UNIV_SCIENCE, 50)
+                .setId(149));
+        templates.add(new BuildingsTemplate("Business Research Lab", BuildingType.BUSINESS_SERVICES)
+                .setSector("Business Services")
+                .setResearches(ResearchCatalog.Field.BUSINESS)
+                .setCapacity(100)                   // research posts: Research.LAB_POSTS
+                .setCashCost(7193)                  // the Engineering Services Office's 6,534 x 12 / 10.9
+                .setConstructionPoints(1431)
+                .setConstructionMaterials(266)
+                .setUpkeep(0)
+                .setElectricityConsumption(106)
+                .setWaterConsumption(2)
+                .setLandSqFt(33000)
+                .setRoadLoad(106)
+                .setJobs(JobType.DIPLOMA, 20)
+                .setJobs(JobType.UNIV_FINANCE, 50)
+                .setJobs(JobType.UNIV_POLICY, 50)
+                .setId(150));
+        templates.add(new BuildingsTemplate("Law Research Lab", BuildingType.BUSINESS_SERVICES)
+                .setSector("Business Services")
+                .setResearches(ResearchCatalog.Field.LAW)
+                .setCapacity(100)                   // research posts: Research.LAB_POSTS
+                .setCashCost(7193)                  // the Engineering Services Office's 6,534 x 12 / 10.9
+                .setConstructionPoints(1431)
+                .setConstructionMaterials(266)
+                .setUpkeep(0)
+                .setElectricityConsumption(106)
+                .setWaterConsumption(2)
+                .setLandSqFt(33000)
+                .setRoadLoad(106)
+                .setJobs(JobType.DIPLOMA, 20)
+                .setJobs(JobType.UNIV_LAW, 50)
+                .setJobs(JobType.UNIV_POLICY, 50)
+                .setId(151));
         //add more buildings; next Building ID is 62
         for (int i = firstBuiltIn; i < templates.size(); i++) templates.get(i).pricedAtFoundingLevel();
     }

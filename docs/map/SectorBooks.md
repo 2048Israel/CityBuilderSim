@@ -1,4 +1,4 @@
-# SectorBooks.java - 1,029 lines · 60 methods · 3 constants · model
+# SectorBooks.java - 1,030 lines · 60 methods · 3 constants · model
 
 `ham/citybuildersim/SectorBooks.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
@@ -26,7 +26,7 @@
 
 **Uses:** [Debt](Debt.md) (18), [Good](Good.md) (11), [Equity](Equity.md) (8), [BusinessDebtManager](BusinessDebtManager.md) (7), [Sector](Sector.md) (5), [Game](Game.md) (4), [EconomyManager](EconomyManager.md) (2), [Exchange](Exchange.md) (1), [Statement](Statement.md) (1), [BalanceSheet](BalanceSheet.md) (1)
 
-**Used by (28):** [BankCheck](BankCheck.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CentralBankCheck](CentralBankCheck.md), [CreditCheck](CreditCheck.md), [CrimeCheck](CrimeCheck.md), [DataSave](DataSave.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HistoryCheck](HistoryCheck.md), [HoldersCheck](HoldersCheck.md), [KeptBench](KeptBench.md), [LandClassCheck](LandClassCheck.md), [LandClassRenders](LandClassRenders.md), [LandClassView](LandClassView.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MortgageCheck](MortgageCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [ReloadCheck](ReloadCheck.md), [ScaleCheck](ScaleCheck.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorScreen](SectorScreen.md), [SectorStatementCheck](SectorStatementCheck.md), [SectorStatements](SectorStatements.md), [SupplierCreditCheck](SupplierCreditCheck.md)
+**Used by (29):** [BankCheck](BankCheck.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CentralBankCheck](CentralBankCheck.md), [CreditCheck](CreditCheck.md), [CrimeCheck](CrimeCheck.md), [DataSave](DataSave.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HistoryCheck](HistoryCheck.md), [HoldersCheck](HoldersCheck.md), [KeptBench](KeptBench.md), [LandClassCheck](LandClassCheck.md), [LandClassRenders](LandClassRenders.md), [LandClassView](LandClassView.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MortgageCheck](MortgageCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [PrizeCheck](PrizeCheck.md), [ReloadCheck](ReloadCheck.md), [ScaleCheck](ScaleCheck.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorScreen](SectorScreen.md), [SectorStatementCheck](SectorStatementCheck.md), [SectorStatements](SectorStatements.md), [SupplierCreditCheck](SupplierCreditCheck.md)
 
 ## Sections
 
@@ -34,16 +34,16 @@
 |---:|---|
 | 547 | THE TWO MONTHS |
 | 593 | THE MONTH |
-| 787 | SAVE AND RESTORE |
-| 975 | A REFORM |
+| 788 | SAVE AND RESTORE |
+| 976 | A REFORM |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 496 | `SectorBooks.Debt.KINDS` | `BusinessDebtManager.DEBT_KINDS` | The four kinds, as the statements name them: BusinessDebtManager.DEBT_KINDS. |
-| 828 | `SectorBooks.DEBT_ROWS` | `12` | The rows a saved Debt is written as: six arrays, then moved's three and movedAtClose's three. |
-| 873 | `SectorBooks.SHARES_SLOTS` | `7` | The slots a saved Shares is written as: shares, outstanding, price, fair value, traded (1 or 0), dividend, dividend a year. |
+| 829 | `SectorBooks.DEBT_ROWS` | `12` | The rows a saved Debt is written as: six arrays, then moved's three and movedAtClose's three. |
+| 874 | `SectorBooks.SHARES_SLOTS` | `7` | The slots a saved Shares is written as: shares, outstanding, price, fair value, traded (1 or 0), dividend, dividend a year. |
 
 ## Fields (state)
 
@@ -60,7 +60,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 31 | 999 | **type** `public final class SectorBooks` | A month of books for every business in the city, and last month's too. |
+| 31 | 1000 | **type** `public final class SectorBooks` | A month of books for every business in the city, and last month's too. |
 | 40 | 427 | **type** `public record SectorMonth(String sector, int month, double revenue, double inputs, double payroll, double e...` | One sector's month. |
 | 316 | 3 | `public double equity()` _(in SectorBooks.SectorMonth)_ | What the sheet says the owners have. |
 | 321 | 3 | `public double totalLiabilities()` _(in SectorBooks.SectorMonth)_ | What it owes: its loans and bonds, and since 0.7.44 its suppliers. |
@@ -107,7 +107,7 @@
 | 584 | 4 | `public boolean hasComparatives()` |  |
 | 589 | 3 | `public boolean isEmpty()` |  |
 
-### THE MONTH (lines 593-786)
+### THE MONTH (lines 593-787)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -115,33 +115,33 @@
 | 628 | 15 | `private static Debt readDebt(Game game, String key)` | R1 and R2 as the month's books read them (0.7.74): EconomyManager's splits, copied - null when it kept neither. |
 | 644 | 5 | `private static double[][] copy(double[][] a)` |  |
 | 651 | 8 | `private static Shares readShares(Game game, String key)` | A company's share as the month closes (0.7.74): null for one that is not listed or has no shares. |
-| 670 | 91 | `private SectorMonth read(Game game, Sector sector)` | One sector's figures, off the statement it struck this month and the flows the city recorded against its name. |
-| 771 | 15 | `public void derivePaidIn(Equity register)` | A SAVE FROM BEFORE 0.7.75 KEPT NO SHARE CAPITAL (R3): its two months read nothing there. |
+| 670 | 92 | `private SectorMonth read(Game game, Sector sector)` | One sector's figures, off the statement it struck this month and the flows the city recorded against its name. |
+| 772 | 15 | `public void derivePaidIn(Equity register)` | A SAVE FROM BEFORE 0.7.75 KEPT NO SHARE CAPITAL (R3): its two months read nothing there. |
 
-### SAVE AND RESTORE (lines 787-974)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 800 | 1 | `public java.util.List<SectorMonth> thisMonth()` |  |
-| 801 | 1 | `public java.util.List<SectorMonth> lastMonth()` |  |
-| 803 | 3 | `private static java.util.List<SectorMonth> list(Map<String, SectorMonth> from)` |  |
-| 818 | 8 | `public Map<String, double[][]> debtToSave(boolean thisMonth)` | R1 and R2 as the books took them, this month's or last month's (FW2, 2026-10-24), for the save: each sector's record as DEBT_ROWS rows of fresh arrays - interest, owed, within a year, within five, rate, runs to, then ... |
-| 830 | 12 | `private static double[][] rowsOf(Debt d)` |  |
-| 843 | 10 | `private static Debt debtOf(double[][] rows)` |  |
-| 854 | 4 | `private static boolean finite(double[][] rows)` |  |
-| 865 | 6 | `public void restoreDebt(Map<String, double[][]> saved, Map<String, double[][]> savedBefore)` | ...and put back by the load path after restoreFrom() (FW2): a loaded city's sheets split their debt, and its income statements their interest, as the saved city's did. |
-| 880 | 12 | `public Map<String, double[]> sharesToSave(boolean thisMonth)` | Each company's share as the books took it, this month's or last month's (FW6, 2026-10-25), for the save: the record's figures in SHARES_SLOTS slots, as fresh arrays. |
-| 897 | 6 | `public void restoreShares(Map<String, double[]> saved, Map<String, double[]> savedBefore)` | ...and put back by the load path after restoreFrom() (FW6): the Sectors screen's share report reads this month and last as the saved city's did, not "not counted" for two months. |
-| 904 | 4 | `private static Shares sharesOf(double[] a)` |  |
-| 915 | 12 | `public Map<String, Map<String, double[]>> stockToSave()` | Each business's stock by good as the month closed, for the save (FW6, 2026-10-25): {units, price} by the good's name, as fresh arrays, a business with no stock as an empty map (it was counted: its next revaluation is ... |
-| 933 | 14 | `public void restoreStock(Map<String, Map<String, double[]>> saved)` | ...and put back by the load path after restoreFrom() (FW6): the month after a load counts its revaluation, last month's units at this month's prices, as the city that kept running does. |
-| 948 | 26 | `public void restoreFrom(java.util.List<SectorMonth> saved, java.util.List<SectorMonth> savedBefore)` |  |
-
-### A REFORM (lines 975-1029)
+### SAVE AND RESTORE (lines 788-975)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 986 | 10 | `public void redenominate(double scale)` |  |
-| 997 | 24 | `private static SectorMonth scaled(SectorMonth m, double s)` |  |
-| 1023 | 6 | `private static double[] scaledByRelief(double[] v, double s)` | The land by class with its three prices rescaled and its three areas left (ET3); null stays null. |
+| 801 | 1 | `public java.util.List<SectorMonth> thisMonth()` |  |
+| 802 | 1 | `public java.util.List<SectorMonth> lastMonth()` |  |
+| 804 | 3 | `private static java.util.List<SectorMonth> list(Map<String, SectorMonth> from)` |  |
+| 819 | 8 | `public Map<String, double[][]> debtToSave(boolean thisMonth)` | R1 and R2 as the books took them, this month's or last month's (FW2, 2026-10-24), for the save: each sector's record as DEBT_ROWS rows of fresh arrays - interest, owed, within a year, within five, rate, runs to, then ... |
+| 831 | 12 | `private static double[][] rowsOf(Debt d)` |  |
+| 844 | 10 | `private static Debt debtOf(double[][] rows)` |  |
+| 855 | 4 | `private static boolean finite(double[][] rows)` |  |
+| 866 | 6 | `public void restoreDebt(Map<String, double[][]> saved, Map<String, double[][]> savedBefore)` | ...and put back by the load path after restoreFrom() (FW2): a loaded city's sheets split their debt, and its income statements their interest, as the saved city's did. |
+| 881 | 12 | `public Map<String, double[]> sharesToSave(boolean thisMonth)` | Each company's share as the books took it, this month's or last month's (FW6, 2026-10-25), for the save: the record's figures in SHARES_SLOTS slots, as fresh arrays. |
+| 898 | 6 | `public void restoreShares(Map<String, double[]> saved, Map<String, double[]> savedBefore)` | ...and put back by the load path after restoreFrom() (FW6): the Sectors screen's share report reads this month and last as the saved city's did, not "not counted" for two months. |
+| 905 | 4 | `private static Shares sharesOf(double[] a)` |  |
+| 916 | 12 | `public Map<String, Map<String, double[]>> stockToSave()` | Each business's stock by good as the month closed, for the save (FW6, 2026-10-25): {units, price} by the good's name, as fresh arrays, a business with no stock as an empty map (it was counted: its next revaluation is ... |
+| 934 | 14 | `public void restoreStock(Map<String, Map<String, double[]>> saved)` | ...and put back by the load path after restoreFrom() (FW6): the month after a load counts its revaluation, last month's units at this month's prices, as the city that kept running does. |
+| 949 | 26 | `public void restoreFrom(java.util.List<SectorMonth> saved, java.util.List<SectorMonth> savedBefore)` |  |
+
+### A REFORM (lines 976-1030)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 987 | 10 | `public void redenominate(double scale)` |  |
+| 998 | 24 | `private static SectorMonth scaled(SectorMonth m, double s)` |  |
+| 1024 | 6 | `private static double[] scaledByRelief(double[] v, double s)` | The land by class with its three prices rescaled and its three areas left (ET3); null stays null. |
 
