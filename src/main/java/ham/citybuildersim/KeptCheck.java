@@ -211,7 +211,8 @@ import java.util.concurrent.TimeUnit;
  *  65. the count-up only at 1x-10x: at each rung of the speed ladder and paused a month that lands pops Bank's PROFIT figure, grows its capital gauge and
  *      counts the fund's worth and pops a payment, exactly at the rungs countsUp() allows; past it nothing animates and a running animation is stopped;
  *  66. the boxes keep the player's hand: Close it now's two, the ask's, the yield boxes of Borrow's and the rollover's chips and the fund's search box, with the
- *      focus and typed into, a month landed through the real show method - the same node, text, caret and focus - and a chip pressed under the focus;
+ *      focus and typed into, a month landed through the real show method - the same node, text, caret and focus - and a chip pressed under the focus; and
+ *      (KP2b) Enter fired in each yield box with "4.5" typed: the same node, the text a page built new shows ("4.500"), the caret at the end, the focus kept;
  *  67. the hover: a Bank door card, a rung's name on the ladder, a Finances card and a row of the book, a fund holding's row;
  *  68. it is cheap: the kept month on the heaviest page of each within KEPT_BANK_MS, KEPT_FINANCES_MS and KEPT_FUND_MS through Timing, built new beside it.
  *
@@ -233,9 +234,11 @@ import java.util.concurrent.TimeUnit;
  *      own move, the zero payers, the floor's table, the rate's history, a course's own price, the food rows), a change staged on every page that takes
  *      one and dropped (the tray, and the dial cards drawn at the thumb), and the currency page and the reform page under every regime; and People's WHO
  *      GOES SHORT card, which Policy's Food page shares, with people short of food;
- *  78. the controls on Policy keep the player's hand: on a tax page, the policy rate and a zone's ground dial, through the real show method, a slider
+ *  78. the controls on Policy keep the player's hand: on a tax page, the policy rate and a zone's ground dial, and (KP2b) the policy rate page's target
+ *      ladder and HOW STRICT (which apply at once: the model put back) and a zone's ITS TAXES second dial, through the real show method, a slider
  *      pressed and dragged two steps and a month landed is the same node, still held, the thumb where the hand left it, the reading and the dial card's
- *      effects at the thumb; released, the change is staged at the thumb, the tray shows it and the page equals a page built new; dropped, equal again;
+ *      effects at the thumb (HOW STRICT's line under it the held step's words, not the city's); a draw with nothing changed sets no reading's text or
+ *      style; released, the change is staged at the thumb, the tray shows it and the page equals a page built new; dropped, equal again;
  *      and a dial card that comes in front of a held dial (a course's own price on the Schools page, a payer's own move on Profit) leaves the held slider
  *      the same node, at its thumb, with no dial in front of it carrying the thumb;
  *  79. the count-up only at 1x-10x: at each rung of the speed ladder and paused a month that lands counts Trade's SOLD ABROAD and BOUGHT ABROAD up from last
@@ -269,6 +272,9 @@ import java.util.concurrent.TimeUnit;
  *      once it has gone; and a node a month's redraw keeps keeps its own Tooltip (Kept.tip) on both pages, with a cell open, a drawer open and every measure open;
  *  90. it is cheap: the kept month on Household money (as it opens and with a cell's books open) within KEPT_HOUSEHOLD_MS and on the Rankings tab (as it opens
  *      and with every measure unfolded) within KEPT_RANKINGS_MS through Timing, built new beside it;
+ *  91. (KP2b) a slider greyed while held lets go: the policy rate's dial pressed (and, the second time, dragged a step), then greyed, is not held; ungreyed,
+ *      a draw with another value staged under it puts the thumb on that value and the page equals a page built new, and dropped the thumb is back;
+ *      and a door card's style is set once a draw: on the Policy hub and the Taxes page, a draw with nothing changed hears no change of it;
  *  92. a redraw with nothing new sets nothing (KP2b): a second kept draw of a page in the same month writes no style, text, graphic, padding or width on a
  *      node it hands back - the condition caused (a style set to what it is moves no listener, and set to another and back moves it twice), a berth kind
  *      gone to none drawn as a row built new (a hand-made berth: no city has the page), then the Sectors list and a business's five pages, the statements
@@ -4393,7 +4399,66 @@ public class KeptCheck {
         if (r[8] != null) System.out.println("  " + r[8]);
     }
 
-    /** Section 66: the boxes keep the player's hand - Close it now's two, the ask's, the yield boxes of Borrow's and the rollover's chips, the fund's search box. */
+    /**
+     * Section 66's Enter (KP2b, for KP5's mend in CapChips): a yield box given the focus, "4.5" typed and Enter fired on it. Enter sets the cap and draws the
+     * page at once, and the box - the same node, kept - has to show what a page built new shows ("4.500", the cap's own yieldText), its caret at the end
+     * and the focus still on it; a kept draw never sets a field under the player's typing, so it is CapChips that sets this one, because it differs from
+     * what the page shows. `putBack` returns the cap Enter set to what the page opens with, before and after.
+     */
+    static void boxEnter(Game g, KeptBench bench, String name, KeptBench.Page page, Hand setup, Runnable show,
+                         java.util.function.Supplier<javafx.scene.control.TextField> find, java.util.function.Supplier<Auction.Cap> capNow,
+                         Runnable putBack, String typed) throws Exception {
+        Object[] r = fx(() -> {
+            putBack.run();
+            bench.home(page);
+            String refused = setup.on(bench);
+            if (refused != null) return new Object[]{refused};
+            show.run();
+            bench.passes();
+            bench.settle();
+            javafx.scene.control.TextField box = find.get();
+            if (box == null) return new Object[]{"the page has no such box"};
+            String how = KeptBench.boxFocus(box, typed);
+            Object[] s0 = KeptBench.boxState(box);
+            // Enter: the box's own action, as the key fires it.
+            box.fireEvent(new javafx.event.ActionEvent());
+            bench.passes();
+            Object[] s1 = KeptBench.boxState(find.get());
+            Auction.Cap cap = capNow.get();
+            // What a page built new shows in the box (the cap Enter set), and whether the page is equal to it (the box let go first).
+            bench.showFresh(page);
+            String freshText = find.get() == null ? null : find.get().getText();
+            bench.restoreKeptPage();
+            show.run();
+            bench.passes();
+            KeptBench.boxBlur(find.get());
+            String d = againstNew(bench, page);
+            putBack.run();
+            return new Object[]{null, how, s0, s1, cap, freshText, d};
+        });
+        if (r[0] != null) {
+            System.out.println("  " + name + ": " + r[0]);
+            check(name + ": the box can be reached for Enter (" + r[0] + ")", false);
+            return;
+        }
+        String how = (String) r[1];
+        Object[] s0 = (Object[]) r[2], s1 = (Object[]) r[3];
+        Auction.Cap cap = (Auction.Cap) r[4], named = KeptBench.yieldCapOf(typed);
+        String shows = KeptBench.yieldText(cap);
+        System.out.printf("  %s took the focus by: %s; typed \"%s\", Enter: \"%s\" (caret %s), the cap now %s, a page built new says \"%s\"%n",
+                name, how, typed, s1[1], s1[2], shows, r[5]);
+        check(name + ": takes the focus for Enter (" + how + ")", how.equals("requestFocus") || how.equals("setFocused by reflection"));
+        check(name + ": Enter sets the cap to the yield typed (" + shows + ")", cap.mode() == Auction.Mode.YIELD && Math.abs(cap.value() - named.value()) < 1e-12);
+        check(name + ": what was typed is not what the page shows for it (\"" + typed + "\", \"" + shows + "\"): the box has something to change", !typed.equals(shows));
+        check(name + ": Enter leaves the same node", s1[0] == s0[0]);
+        check(name + ": ...its text what the cap reads on a page built new (\"" + s1[1] + "\")", shows.equals(s1[1]) && shows.equals(r[5]));
+        check(name + ": ...the caret at the end (" + s1[2] + ")", s1[1] != null && (int) s1[2] == ((String) s1[1]).length());
+        check(name + ": ...the focus still on it", (boolean) s1[3]);
+        check(name + ": ...and the page is equal to a page built new", r[6] == null);
+        if (r[6] != null) System.out.println("  " + r[6]);
+    }
+
+    /** Section 66: the boxes keep the player's hand - Close it now's two, the ask's, the yield boxes of Borrow's and the rollover's chips (typed into, a chip pressed, and Enter), the fund's search box. */
     static void moneyControls(Game g, KeptBench bench) throws Exception {
         System.out.println("\n--- 66: the boxes keep the player's hand ---");
         Debt piece = longestPiece(bench);
@@ -4416,6 +4481,8 @@ public class KeptCheck {
         boxHeld(g, bench, "Borrow's yield box", home, borrow, bench::showFinances, bench::yieldBox, "4.5", 2, "Fill it");
         KeptBench.Page hub = fx(bench::finances);
         boxHeld(g, bench, "the rollover's yield box", hub, b -> null, bench::showFinances, bench::yieldBox, "4.5", 2, "Fill it");
+        boxEnter(g, bench, "Borrow's yield box", home, borrow, bench::showFinances, bench::yieldBox, bench::borrowCap, bench::financesCapDefault, "4.5");
+        boxEnter(g, bench, "the rollover's yield box", hub, b -> null, bench::showFinances, bench::yieldBox, g::getRolloverCap, () -> g.setRolloverCap(rollover), "4.5");
         KeptBench.Page search = fx(() -> bench.finances("the fund's Search", "The city's fund", "Search"));
         boxHeld(g, bench, "the fund's search box", search, fundOn("Search"), bench::showFinances, bench::fundSearchBox, "auto", 2, "Shares");
         // What the chips set on the model and the screen is put back.
@@ -5275,80 +5342,215 @@ public class KeptCheck {
     /* ----- the controls (78) ----- */
 
     /**
-     * Section 78: a dial of Policy keeps the player's hand, through the screen's real show method. The slider is pressed and dragged two steps and a
-     * month lands: the same slider node, still held, the thumb where the hand left it, the reading and the dial card's effects (the arrows of what
-     * moves) at the thumb. Released, the change is staged at the thumb, the tray shows it (a dial with its own Apply has none) and the page equals a
-     * page built new; then dropped, and the page is equal again.
+     * A dial that applies at once and stages nothing (the policy rate page's target and HOW STRICT): what the model reads at the dial now, and how it is put
+     * back (KP2b: the held dials were all staged ones).
      */
-    static void policyDial(Game g, KeptBench bench, String what, String area, String page, String key, boolean trayShows) throws Exception {
+    record AtOnce(java.util.function.Supplier<Double> now, Runnable putBack) { }
+
+    /** The slider at a place in a page's sliders, when it has these ends - else null (the page is not the page this expects). */
+    static java.util.function.Function<List<javafx.scene.control.Slider>, javafx.scene.control.Slider> sliderAt(int index, double min, double max) {
+        return all -> index < all.size() && Math.abs(all.get(index).getMin() - min) < 1e-12 && Math.abs(all.get(index).getMax() - max) < 1e-12
+                ? all.get(index) : null;
+    }
+
+    /** The slider at a place among a page's sliders that run under nothing (a tax offset's dial, which reaches below zero), else null. */
+    static java.util.function.Function<List<javafx.scene.control.Slider>, javafx.scene.control.Slider> offsetDial(int index) {
+        return all -> {
+            List<javafx.scene.control.Slider> offsets = new ArrayList<>();
+            for (javafx.scene.control.Slider s : all) if (s.getMin() < 0) offsets.add(s);
+            return index < offsets.size() ? offsets.get(index) : null;
+        };
+    }
+
+    /** The few frames of the code that made a change just heard by a listener (skipping this harness and the listener's own plumbing): who set it. */
+    static String whoSet() {
+        StringBuilder who = new StringBuilder();
+        int taken = 0;
+        for (StackTraceElement e : new Throwable().getStackTrace()) {
+            String c = e.getClassName();
+            if (taken < 6 && !c.startsWith("com.sun.javafx.binding") && !c.startsWith("javafx.beans") && !c.contains("KeptCheck")) {
+                who.append(who.length() == 0 ? "" : " < ").append(c.substring(c.lastIndexOf('.') + 1)).append('.').append(e.getMethodName()).append(':').append(e.getLineNumber());
+                taken++;
+            }
+        }
+        return who.toString();
+    }
+
+    /**
+     * The first sector whose zone page has a tax dial (the `index`th that runs under nothing) that moves what the ITS TAXES card says it would do when it
+     * is dragged two steps, the dial put back after - or null. Not every sector pays every tax in the city as it has become.
+     */
+    static String taxDialMoving(KeptBench bench, int index) throws Exception {
+        return fx(() -> {
+            for (String sector : KeptBench.policySectors()) {
+                bench.home(bench.policy("a probe of " + sector + "'s ITS TAXES", "Zoning", KeptBench.policyZonePage(sector)));
+                bench.showPolicy();
+                bench.passes();
+                javafx.scene.control.Slider bar = offsetDial(index).apply(bench.policySliders());
+                if (bar == null || bar.isDisabled()) continue;
+                int before = bench.policyArrows();
+                double was = bar.getValue(), step = bar.getBlockIncrement();
+                bar.setValue(was + 2 * step <= bar.getMax() + 1e-9 ? was + 2 * step : was - 2 * step);
+                boolean moves = bench.policyArrows() > before;
+                bar.setValue(was);
+                if (moves) return sector;
+            }
+            return null;
+        });
+    }
+
+    /** What one held dial did, for holdDial to judge. */
+    static final class Held {
+        String none, reading0, dragged, kept, differs, dropped, firstHeard;
+        boolean sameReading, sameBar, heldPressed, heldStill, heldAfter, same, tray, trayGone, stagedMid, saysDragged, saysHeld, saysCity;
+        int heardText, heardStyle, control, arrowsBefore, arrowsDragged, arrowsMid;
+        double shown, valueNow, thumb, cityAt, cityMid, cityAfter, cityBack, step, min;
+        Double stagedAt;
+    }
+
+    /**
+     * Section 78: a dial of Policy keeps the player's hand, through the screen's real show method. A draw with nothing changed first leaves the reading's
+     * text and style alone (KP2b: it was set to nothing and then to its words, twice a draw). The slider is pressed and dragged two steps and a month
+     * lands: the same slider node, still held, the thumb where the hand left it, the reading and the dial card's effects (the arrows of what moves) at the
+     * thumb. Released, the change is staged at the thumb, the tray shows it (a dial with its own Apply has none) and the page equals a page built new; then
+     * dropped, and the page is equal again. A dial that applies at once (`atOnce`) is released into the model instead and the model put back; a line
+     * under the dial that says something about its step (`says`: HOW STRICT's) says it for the held step, not the city's (KP2b).
+     */
+    static void holdDial(Game g, KeptBench bench, String what, String area, String page,
+                         java.util.function.Function<List<javafx.scene.control.Slider>, javafx.scene.control.Slider> pick,
+                         String key, boolean trayShows, boolean cardEffects, AtOnce atOnce,
+                         java.util.function.DoubleFunction<String> says) throws Exception {
         System.out.println("\n--- 78: the controls: " + what + " ---");
         KeptBench.Page p = fx(() -> bench.policy(what, area, page));
-        Object[] dial = fx(() -> {
+        Held h = fx(() -> {
+            Held r = new Held();
             bench.home(p);
             bench.showPolicy();
             bench.passes();
-            javafx.scene.control.Slider bar = bench.policySliders().isEmpty() ? null : bench.policySliders().get(0);
-            if (bar == null) return null;
-            double step = bar.getBlockIncrement();
-            double snapped = bar.getMin() + Math.round((bar.getValue() - bar.getMin()) / step) * step;
-            double thumb = snapped + 2 * step <= bar.getMax() + 1e-9 ? snapped + 2 * step : snapped - 2 * step;
-            String before = KeptBench.readingOf(bar).getText();
-            int arrowsBefore = bench.policyArrows();
+            javafx.scene.control.Slider bar = pick.apply(bench.policySliders());
+            if (bar == null) {
+                StringBuilder ends = new StringBuilder();
+                for (javafx.scene.control.Slider s : bench.policySliders()) ends.append(" [").append(s.getMin()).append(" to ").append(s.getMax()).append("]");
+                r.none = ends.toString();
+                return r;
+            }
+            r.step = bar.getBlockIncrement();
+            double snapped = bar.getMin() + Math.round((bar.getValue() - bar.getMin()) / r.step) * r.step;
+            r.thumb = snapped + 2 * r.step <= bar.getMax() + 1e-9 ? snapped + 2 * r.step : snapped - 2 * r.step;
+            r.min = bar.getMin();
+            r.cityAt = atOnce == null ? Double.NaN : atOnce.now().get();
+            r.reading0 = KeptBench.readingOf(bar).getText();
+            r.arrowsBefore = bench.policyArrows();
+            // (0) a draw with nothing changed: the reading's text and style are heard no more (each is re-read in the listener, or only the first set is heard).
+            javafx.scene.control.Label reading = KeptBench.readingOf(bar);
+            int[] heard = {0, 0};
+            javafx.beans.InvalidationListener hearText = o -> {
+                if (heard[0]++ == 0) r.firstHeard = whoSet();
+                ((javafx.beans.value.ObservableValue<?>) o).getValue();
+            };
+            javafx.beans.InvalidationListener hearStyle = o -> {
+                if (heard[1]++ == 0 && r.firstHeard == null) r.firstHeard = whoSet();
+                ((javafx.beans.value.ObservableValue<?>) o).getValue();
+            };
+            reading.textProperty().addListener(hearText);
+            reading.styleProperty().addListener(hearStyle);
+            bench.showPolicy();
+            bench.passes();
+            r.sameReading = KeptBench.readingOf(pick.apply(bench.policySliders())) == reading;
+            // The counter is not deaf: a text set by hand is heard.
+            r.heardText = heard[0];
+            r.heardStyle = heard[1];
+            reading.setText(reading.getText() + "!");
+            r.control = heard[0] - r.heardText;
+            reading.textProperty().removeListener(hearText);
+            reading.styleProperty().removeListener(hearStyle);
+            bench.showPolicy();
+            bench.passes();
             // (a) pressed, dragged two steps, a month lands.
             KeptBench.press(bar);
-            boolean heldPressed = KeptBench.held(bar);
+            r.heldPressed = KeptBench.held(bar);
             bar.setValueChanging(true);
-            bar.setValue(thumb);
-            String dragged = KeptBench.readingOf(bar).getText();
-            int arrowsDragged = bench.policyArrows();
+            bar.setValue(r.thumb);
+            r.dragged = KeptBench.readingOf(bar).getText();
+            r.arrowsDragged = bench.policyArrows();
+            r.saysDragged = says == null || bench.pageSays(says.apply(r.thumb));
             month(g);
             bench.showPolicy();
             bench.passes();
-            boolean sameBar = bench.policySliders().get(0) == bar;
-            String kept = KeptBench.readingOf(bar).getText();
-            double shown = KeptBench.shownBy(bar);
-            boolean heldStill = KeptBench.held(bar);
-            double valueNow = bar.getValue();
-            int arrowsMid = bench.policyArrows();
-            boolean stagedMid = bench.policyStaged().containsKey(key);
-            // (b) released: the change staged at the thumb, the tray shows it, the page equals one built new.
+            r.sameBar = pick.apply(bench.policySliders()) == bar;
+            r.kept = KeptBench.readingOf(bar).getText();
+            r.shown = KeptBench.shownBy(bar);
+            r.heldStill = KeptBench.held(bar);
+            r.valueNow = bar.getValue();
+            r.arrowsMid = bench.policyArrows();
+            r.stagedMid = key != null && bench.policyStaged().containsKey(key);
+            r.cityMid = atOnce == null ? Double.NaN : atOnce.now().get();
+            r.saysHeld = says == null || bench.pageSays(says.apply(r.thumb));
+            r.saysCity = says != null && bench.pageSays(says.apply(snapped));
+            // (b) released: the change staged at the thumb (or applied at once), the tray shows it, the page equals one built new.
             bar.setValueChanging(false);
             KeptBench.release(bar);
             bench.passes();
-            boolean heldAfter = KeptBench.held(bar);
-            boolean same = bench.policySliders().get(0) == bar;
-            Double stagedAt = bench.policyStaged().get(key);
-            boolean tray = bench.policyTray() != null;
-            String differs = againstNew(bench, p);
-            // (c) the staged change dropped: the page equal again.
-            bench.policyDrop();
+            r.heldAfter = KeptBench.held(bar);
+            r.same = pick.apply(bench.policySliders()) == bar;
+            r.stagedAt = key == null ? null : bench.policyStaged().get(key);
+            r.cityAfter = atOnce == null ? Double.NaN : atOnce.now().get();
+            r.tray = bench.policyTray() != null;
+            r.differs = againstNew(bench, p);
+            // (c) the staged change dropped (or the model put back): the page equal again.
+            if (atOnce == null) bench.policyDrop();
+            else atOnce.putBack().run();
             bench.showPolicy();
             bench.passes();
-            String dropped = againstNew(bench, p);
-            boolean trayGone = bench.policyTray() == null;
-            return new Object[]{heldPressed, sameBar, valueNow, thumb, kept, dragged, before, shown, heldStill, stagedMid, heldAfter, same, stagedAt, tray, differs,
-                    dropped, trayGone, arrowsBefore, arrowsDragged, arrowsMid, step, bar.getMin()};
+            r.dropped = againstNew(bench, p);
+            r.trayGone = bench.policyTray() == null;
+            r.cityBack = atOnce == null ? Double.NaN : atOnce.now().get();
+            return r;
         });
-        if (dial == null) {
+        if (h.none != null) {
+            System.out.println("  the page's sliders:" + h.none);
             check(what + ": the page has a dial (a slider) to hold", false);
             return;
         }
         System.out.printf("  dragged two steps: reading \"%s\" -> \"%s\"; a month later \"%s\", the ladder shows %.5f for a thumb at %.5f; effects' arrows %d -> %d -> %d%n",
-                dial[6], dial[5], dial[4], (double) dial[7], (double) dial[3], (int) dial[17], (int) dial[18], (int) dial[19]);
-        check("a slider pressed is held", (boolean) dial[0]);
-        check("a month landing on a held slider leaves the same slider node, still held", (boolean) dial[1] && (boolean) dial[8]);
-        check("...its value still the thumb's (" + dial[2] + ")", Math.abs((double) dial[2] - (double) dial[3]) < 1e-9);
-        check("...the reading the thumb's words (\"" + dial[4] + "\", was \"" + dial[5] + "\")", dial[4].equals(dial[5]));
-        check("...Ladder.shown() the thumb's value", Math.abs((double) dial[7] - (double) dial[3]) < 1e-9);
-        check("...the card's effects drawn at the thumb (" + dial[19] + " moved rows, " + dial[18] + " while dragged)", (int) dial[19] > 0);
-        check("...and nothing staged before the release", !(boolean) dial[9]);
-        check("a slider released is not held", !(boolean) dial[10]);
-        check("...the change is staged at the thumb (" + dial[12] + ")", dial[12] != null && Math.abs((double) dial[12] - (double) dial[3]) < 1e-6);
-        check(trayShows ? "...the tray shows it" : "...(this dial keeps its own Apply: no tray, the bar on its card)", (boolean) dial[13] == trayShows);
-        check("...and the page is the same slider, kept, equal to a page built new", (boolean) dial[11] && dial[14] == null);
-        if (dial[14] != null) System.out.println("  " + dial[14]);
-        check("the staged change dropped: the tray is gone and the page equal to a page built new", (boolean) dial[16] && dial[15] == null);
-        if (dial[15] != null) System.out.println("  " + dial[15]);
+                h.reading0, h.dragged, h.kept, h.shown, h.thumb, h.arrowsBefore, h.arrowsDragged, h.arrowsMid);
+        check("a draw with nothing changed sets the reading's text and style no more (" + h.heardText + " of the text and " + h.heardStyle + " of the style heard, the same label: " + h.sameReading + ")",
+                h.heardText == 0 && h.heardStyle == 0 && h.sameReading);
+        if (h.firstHeard != null && h.heardText + h.heardStyle > 0) System.out.println("  the first change heard was set by: " + h.firstHeard);
+        check("...and the counter hears a text set by hand (" + h.control + ")", h.control == 1);
+        check("a slider pressed is held", h.heldPressed);
+        check("a month landing on a held slider leaves the same slider node, still held", h.sameBar && h.heldStill);
+        check("...its value still the thumb's (" + h.valueNow + ")", Math.abs(h.valueNow - h.thumb) < 1e-9);
+        check("...the reading the thumb's words (\"" + h.kept + "\", was \"" + h.dragged + "\")", h.kept.equals(h.dragged));
+        check("...Ladder.shown() the thumb's value", Math.abs(h.shown - h.thumb) < 1e-9);
+        if (cardEffects) check("...the card's effects drawn at the thumb (" + h.arrowsMid + " moved rows, " + h.arrowsDragged + " while dragged)", h.arrowsMid > 0);
+        if (says != null) {
+            check("...the line under the dial followed the thumb while it was dragged (it says the held step's words)", h.saysDragged);
+            check("...and a month landing under the hand leaves the held step's words under the thumb, not the city's step's", h.saysHeld && !h.saysCity);
+        }
+        if (atOnce == null) {
+            check("...and nothing staged before the release", !h.stagedMid);
+        } else {
+            check("...and nothing applied before the release (the model at " + h.cityMid + ", was " + h.cityAt + ")", Math.abs(h.cityMid - h.cityAt) < 1e-9);
+        }
+        check("a slider released is not held", !h.heldAfter);
+        if (atOnce == null) {
+            check("...the change is staged at the thumb (" + h.stagedAt + ")", h.stagedAt != null && Math.abs(h.stagedAt - h.thumb) < 1e-6);
+        } else {
+            check("...the change is applied at once, the model at the thumb (" + h.cityAfter + ")", Math.abs(h.cityAfter - h.thumb) < 1e-6);
+        }
+        check(trayShows ? "...the tray shows it" : "...(this dial keeps its own Apply, or applies at once: no tray)", h.tray == trayShows);
+        check("...and the page is the same slider, kept, equal to a page built new", h.same && h.differs == null);
+        if (h.differs != null) System.out.println("  " + h.differs);
+        check(atOnce == null ? "the staged change dropped: the tray is gone and the page equal to a page built new"
+                : "the model put back (" + h.cityBack + "): the page equal to a page built new", h.trayGone && h.dropped == null
+                && (atOnce == null || Math.abs(h.cityBack - h.cityAt) < 1e-9));
+        if (h.dropped != null) System.out.println("  " + h.dropped);
+    }
+
+    /** Section 78's dial, held, the first slider of a page: see holdDial. */
+    static void policyDial(Game g, KeptBench bench, String what, String area, String page, String key, boolean trayShows) throws Exception {
+        holdDial(g, bench, what, area, page, all -> all.isEmpty() ? null : all.get(0), key, trayShows, true, null, null);
     }
 
     /**
@@ -5449,9 +5651,31 @@ public class KeptCheck {
     static void kp6Controls(Game g, KeptBench bench) throws Exception {
         policyDial(g, bench, "a tax page's rate dial", "Taxes", "Profit", "base:profit", true);
         policyDial(g, bench, "the policy rate's dial", "Money", "The policy rate", "policy", false);
+        // KP2b: the dials that apply at once, on the policy rate page after its own (the target's ladder, then HOW STRICT's, whose line under it says what
+        // the rule would set at the step under the thumb), held and released into the model, which is put back after.
+        double[] was = fx(() -> new double[]{g.getDebtManager().getInflationTarget(), g.getDebtManager().getStrictness().ordinal()});
+        int strictTop = DebtManager.Strictness.values().length - 1;
+        holdDial(g, bench, "the policy rate page's target ladder", "Money", "The policy rate",
+                sliderAt(1, DebtManager.MIN_INFLATION_TARGET, DebtManager.MAX_INFLATION_TARGET), null, false, false,
+                new AtOnce(() -> g.getDebtManager().getInflationTarget(), () -> g.getDebtManager().setInflationTarget(was[0])), null);
+        holdDial(g, bench, "HOW STRICT on the policy rate page", "Money", "The policy rate", sliderAt(2, 0, strictTop), null, false, false,
+                new AtOnce(() -> (double) g.getDebtManager().getStrictness().ordinal(),
+                        () -> g.getDebtManager().setStrictness(DebtManager.Strictness.at((int) was[1]))),
+                v -> KeptBench.strictLine(g, v));
         boolean zoningOpen = fx(() -> g.isLeverOpen(PolicyDates.Lever.ZONING));
         if (zoningOpen) {
             policyDial(g, bench, "a zone's ground dial", "Zoning", KeptBench.policyZonePage(Sectors.AGRICULTURE), "zone:" + Sectors.AGRICULTURE + ":size", true);
+            // KP2b: a card of several dials, a dial that is not its first - ITS TAXES, whose second dial is the sales tax's while that lever is open
+            // (the property tax's, the third, when not), on the first sector whose card says something would move when it is dragged (a sector that
+            // pays no sales tax in this city moves nothing, and a held dial with nothing to show proves nothing about the card).
+            boolean salesOpen = fx(() -> g.isLeverOpen(PolicyDates.Lever.SALES_TAX));
+            Zoning.Tax tax = salesOpen ? Zoning.Tax.SALES : Zoning.Tax.PROPERTY;
+            String sector = taxDialMoving(bench, tax.ordinal());
+            check("a sector's ITS TAXES card has a " + tax.name().toLowerCase() + " dial that moves what it would do (" + sector + ")", sector != null);
+            if (sector != null) {
+                holdDial(g, bench, "a zone's ITS TAXES (" + sector + "), its " + (salesOpen ? "second dial (sales)" : "third dial (property; sales is shut)"), "Zoning",
+                        KeptBench.policyZonePage(sector), offsetDial(tax.ordinal()), KeptBench.policyZoneTaxKey(tax, sector), true, true, null, null);
+            }
         } else {
             System.out.println("  zoning is shut in this city: a zone's dial is greyed and stages nothing (not reached by a fixture)");
         }
@@ -6242,6 +6466,122 @@ public class KeptCheck {
         tookWith("the cost (90)", t, c);
     }
 
+    /* ----- a slider greyed while held (91) ----- */
+
+    /** What one greying of a held slider did, for greyedWhileHeld to judge. */
+    static final class Greyed {
+        String none, differs, dropped, reading;
+        boolean heldPressed, heldGreyed, changingGreyed, sameBar, heldAfter;
+        double value, want, back, city;
+    }
+
+    /**
+     * Section 91 (KP2b): a slider greyed while the player holds it lets go. A disabled node hears no mouse event, so a slider greyed with the button down
+     * never hears its release: its held flag (and a drag's valueChanging) would stay set, a kept draw never sets the value of a held slider, and the thumb
+     * would stop following the city for good. The fixture that causes it, twice on the policy rate's dial: pressed, and pressed and dragged a step
+     * (the value changing), then greyed by hand - it is not held; ungreyed, a draw with another value staged under it puts the thumb on that value (and the
+     * reading with it), the page equal to a page built new, and the staged value dropped, the thumb is back at the city's.
+     */
+    static void greyedWhileHeld(Game g, KeptBench bench) throws Exception {
+        System.out.println("\n--- 91: a slider greyed while held lets go ---");
+        KeptBench.Page p = fx(() -> bench.policy("Policy, Money's policy rate page", "Money", "The policy rate"));
+        for (boolean dragged : new boolean[]{false, true}) {
+            String how = dragged ? "pressed and dragged a step" : "pressed";
+            Greyed r = fx(() -> {
+                Greyed x = new Greyed();
+                bench.home(p);
+                bench.showPolicy();
+                bench.passes();
+                javafx.scene.control.Slider bar = bench.policySliders().isEmpty() ? null : bench.policySliders().get(0);
+                if (bar == null) {
+                    x.none = "the page has no slider";
+                    return x;
+                }
+                double step = bar.getBlockIncrement();
+                x.city = bar.getValue();
+                double snapped = bar.getMin() + Math.round((bar.getValue() - bar.getMin()) / step) * step;
+                x.want = snapped + 2 * step <= bar.getMax() + 1e-9 ? snapped + 2 * step : snapped - 2 * step;
+                KeptBench.press(bar);
+                x.heldPressed = KeptBench.held(bar);
+                if (dragged) {
+                    bar.setValueChanging(true);
+                    bar.setValue(snapped + (x.want > snapped ? step : -step));
+                }
+                // Greyed with the button down: the release can no longer be heard.
+                bar.setDisable(true);
+                x.heldGreyed = KeptBench.held(bar);
+                x.changingGreyed = bar.isValueChanging();
+                bar.setDisable(false);
+                // The city's value (what the page is asked to show) elsewhere: a draw puts the thumb on it.
+                bench.policyStage("policy", x.want);
+                bench.showPolicy();
+                bench.passes();
+                x.sameBar = bench.policySliders().get(0) == bar;
+                x.value = bar.getValue();
+                x.reading = KeptBench.readingOf(bar).getText();
+                x.heldAfter = KeptBench.held(bar);
+                x.differs = againstNew(bench, p);
+                bench.policyDrop();
+                bench.showPolicy();
+                bench.passes();
+                x.back = bar.getValue();
+                x.dropped = againstNew(bench, p);
+                return x;
+            });
+            if (r.none != null) {
+                check("a slider " + how + " then greyed: " + r.none, false);
+                continue;
+            }
+            check("a slider " + how + " is held", r.heldPressed);
+            check("...greyed while held it lets go (held " + r.heldGreyed + (dragged ? ", value changing " + r.changingGreyed : "") + ")", !r.heldGreyed && !r.changingGreyed);
+            check("...ungreyed, a draw with another value staged puts the thumb on it (" + r.value + ", asked for " + r.want + ")",
+                    r.sameBar && !r.heldAfter && Math.abs(r.value - r.want) < 1e-9);
+            check("...and the page is equal to a page built new", r.differs == null);
+            if (r.differs != null) System.out.println("  " + r.differs);
+            check("...the staged value dropped, the thumb is back at the city's (" + r.back + ", was " + r.city + ")", Math.abs(r.back - r.city) < 1e-9 && r.dropped == null);
+            if (r.dropped != null) System.out.println("  " + r.dropped);
+        }
+    }
+
+    /**
+     * Section 91's door cards (KP2b): a door card's hand style is set once a draw, whole. It was set to the plain card's and then to the door's (built on
+     * what getStyle() said), so every card asked the CSS twice a month. The fixture: on the Policy hub (the area cards) and on the Taxes page (a tax's
+     * card), a draw with nothing changed hears no change of any door card's style; and the counter hears a style set by hand.
+     */
+    static void doorsStyledOnce(Game g, KeptBench bench) throws Exception {
+        for (Object[] where : new Object[][]{{"the Policy hub's area cards", null, null}, {"the Taxes page's tax cards (Everything)", "Taxes", "Everything"}}) {
+            String name = (String) where[0];
+            KeptBench.Page p = fx(() -> bench.policy("Policy, " + name, (String) where[1], (String) where[2]));
+            String[] first = {null};
+            int[] n = fx(() -> {
+                bench.home(p);
+                bench.showPolicy();
+                bench.passes();
+                List<javafx.scene.layout.VBox> doors = bench.policyDoors();
+                int[] heard = {0};
+                javafx.beans.InvalidationListener hear = o -> {
+                    if (heard[0]++ == 0) first[0] = whoSet();
+                    ((javafx.beans.value.ObservableValue<?>) o).getValue();
+                };
+                for (javafx.scene.layout.VBox d : doors) d.styleProperty().addListener(hear);
+                bench.showPolicy();
+                bench.passes();
+                boolean same = bench.policyDoors().equals(doors);
+                int quiet = heard[0];
+                if (!doors.isEmpty()) doors.get(0).setStyle(doors.get(0).getStyle() + " ");
+                int control = heard[0] - quiet;
+                for (javafx.scene.layout.VBox d : doors) d.styleProperty().removeListener(hear);
+                bench.showPolicy();
+                bench.passes();
+                return new int[]{doors.size(), quiet, control, same ? 1 : 0};
+            });
+            check(name + ": the page has door cards (" + n[0] + ") and a draw hands back the same ones", n[0] > 0 && n[3] == 1);
+            check("...a draw with nothing changed sets no door card's style (" + n[1] + " heard)", n[1] == 0);
+            if (n[1] > 0) System.out.println("  the first change heard was set by: " + first[0]);
+            check("...and the counter hears a style set by hand (" + n[2] + ")", n[2] == 1);
+        }
+    }
+
     /** A notice raised now, unread, in the inbox. */
     private static Notice add(Game g, String key, String title) {
         Notice n = new Notice(key, title, List.of("first line of " + key, "", "third line"), g.getMonth());
@@ -6615,6 +6955,8 @@ public class KeptCheck {
         money(g, bench);
         screensKP6(g, bench);
         screensKP7(g, bench);
+        greyedWhileHeld(g, bench);
+        doorsStyledOnce(g, bench);
         kp2bSets(g, bench);
 
         System.out.println("\n" + (fails == 0 ? "ALL OK" : fails + " FAILED"));

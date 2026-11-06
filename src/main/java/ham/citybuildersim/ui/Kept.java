@@ -640,7 +640,9 @@ public final class Kept {
      * that ends the press. Two event filters, added once in the node's life (a marker in its
      * properties, not {@link #isNew}, so it works outside a draw too): filters run before the node's
      * own handlers, so the release clears the flag before the release handler commits the value
-     * and redraws - and that redraw is free to set the value.
+     * and redraws - and that redraw is free to set the value. A node that cannot hear its release lets go
+     * (the scene listener, and the disabled one below): a node taken off the scene, or greyed with the
+     * button down, would otherwise stay held, and a kept draw would never set its value again.
      */
     static void grip(Node n) {
         if (n.getProperties().putIfAbsent(GRIP, Boolean.TRUE) != null) return;
@@ -653,6 +655,13 @@ public final class Kept {
         // A node taken off the scene mid-press never hears its release: it is let go with the scene.
         n.sceneProperty().addListener((o, was, now) -> {
             if (now == null) n.getProperties().remove(HELD);
+        });
+        // ...and so does a node greyed mid-press (KP2b): a disabled node gets no mouse event, so it never hears its release. A slider's own
+        // drag (valueChanging, which counts as held) ends with it, for the same reason.
+        n.disabledProperty().addListener((o, was, now) -> {
+            if (!now) return;
+            n.getProperties().remove(HELD);
+            if (n instanceof Slider s && s.isValueChanging()) s.setValueChanging(false);
         });
     }
 

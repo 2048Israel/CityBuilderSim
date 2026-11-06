@@ -940,10 +940,16 @@ final class PolicyScreen {
 
     /** A card on Build's ground: RAISED, radius 8, a 1 px edge, padding 12. */
     static VBox card(Node... rows) {
+        VBox c = cardBody(rows);
+        c.setStyle(cardStyle(Palette.EDGE));
+        return c;
+    }
+
+    /** A card's rows, and no style yet: card() sets the plain one, doorCard(go, rows) the door's, each once. */
+    private static VBox cardBody(Node... rows) {
         VBox c = Kept.column(8);
         for (Node n : rows) if (n != null) c.getChildren().add(n);
         c.setMaxWidth(Double.MAX_VALUE);
-        c.setStyle(cardStyle(Palette.EDGE));
         return c;
     }
 
@@ -953,12 +959,19 @@ final class PolicyScreen {
                 + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + edge + ";";
     }
 
-    /** A card that opens somewhere: the accent edge under the pointer, and a click goes. A door inside it opens itself. */
-    static VBox doorCard(VBox c, Runnable go) {
-        if (go == null) return c;
-        // Kept (KP6): the card's style is set whole by card() just before, so what it is now is this draw's; the look the
-        // pointer calls for is chosen from isHover() where it is set, since a kept card under a still pointer hears no mouse-entered.
-        String rest = c.getStyle() + " -fx-cursor: hand;";
+    /**
+     * A card that opens somewhere: the accent edge under the pointer, and a click goes; a door inside it opens itself. Its rows, and its
+     * style set once, whole - the card's own with the hand (KP2b: it was card()'s plain style and then the door's, each draw). Without a
+     * way to go, a plain card.
+     */
+    static VBox doorCard(Runnable go, Node... rows) {
+        return go == null ? card(rows) : door(cardBody(rows), cardStyle(Palette.EDGE), go);
+    }
+
+    /** A card made a door: `own` its style without the hand, set as the hand's here (lit under the pointer). */
+    private static VBox door(VBox c, String own, Runnable go) {
+        // The look the pointer calls for is chosen from isHover() where it is set (KP6), since a kept card under a still pointer hears no mouse-entered.
+        String rest = own + " -fx-cursor: hand;";
         String lit = rest.replace(Palette.EDGE + ";", Palette.ACCENT + ";");
         c.setStyle(c.isHover() ? lit : rest);
         c.setOnMouseEntered(e -> c.setStyle(lit));
@@ -1013,7 +1026,8 @@ final class PolicyScreen {
 
     /** A shut lever's card, on a warning edge: one or two lines of words, the second muted (null: none). */
     static VBox shutBox(String first, String second) {
-        VBox c = card(words(first, Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD),
+        // The card without card()'s plain style (KP2b): its warning one is set here, once, and not over the plain one in the same draw.
+        VBox c = cardBody(words(first, Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD),
                 second == null ? null : Kept.scope("second", () -> muted(second)));
         c.setStyle(cardStyle(Palette.WARN));
         return c;
@@ -1256,11 +1270,10 @@ final class PolicyScreen {
     VBox areaCard(String svg, String title, String figure, Node picture, String line, String foot, Runnable go) {
         Label arrow = Kept.label("›");
         arrow.setStyle(Palette.strong(Palette.SIZE_HEADING + 2, Palette.TEXT_MUTED));
-        VBox c = card(cardHead(svg, Palette.MONEY, title, null, arrow),
+        return doorCard(go, cardHead(svg, Palette.MONEY, title, null, arrow),
                 figure(figure, Palette.SIZE_LEAD, Palette.TEXT_HEAD), picture,
                 words(line, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL),
                 foot == null ? null : Kept.scope("foot", () -> muted(foot)));
-        return doorCard(c, go);
     }
 
     /** The money ramp the four taxes are drawn in, profit to property (the spec's 3.1): darker to lighter, then the rest. */
@@ -1720,14 +1733,13 @@ final class PolicyScreen {
     VBox taxCard(int i, double raised, double all, String rate, double[] history, boolean atStop, String info) {
         Label arrow = Kept.label("›");
         arrow.setStyle(Palette.strong(Palette.SIZE_HEADING + 2, Palette.TEXT_MUTED));
-        VBox c = card(cardHead(TAX_ICONS[i + 1], Palette.MONEY, TAX_NAMES[i].toUpperCase() + " TAX", info, arrow),
+        final String page = TAX_NAMES[i];
+        return doorCard(() -> open(TAXES, page), cardHead(TAX_ICONS[i + 1], Palette.MONEY, TAX_NAMES[i].toUpperCase() + " TAX", info, arrow),
                 figure(rate, Palette.SIZE_LEAD, Palette.TEXT_HEAD),
                 words(money(raised) + (all > 0 ? " · " + pct0(raised / all) + " of the take" : ""),
                         Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL),
-                spark(history, 120, Palette.MONEY, 240, 26));
-        if (atStop) c.getChildren().add(Kept.scope("stop", () -> tag("at its legal maximum", Palette.WARN)));
-        final String page = TAX_NAMES[i];
-        return doorCard(c, () -> open(TAXES, page));
+                spark(history, 120, Palette.MONEY, 240, 26),
+                atStop ? Kept.scope("stop", () -> tag("at its legal maximum", Palette.WARN)) : null);
     }
 
     /** P5: every tax at once, its (i). */
@@ -3136,16 +3148,21 @@ final class PolicyScreen {
      */
     VBox strictPart(DebtManager market) {
         DebtManager.Strictness now = market.getStrictness();
-        Label says = words(strictWords(PolicyPreview.ruleAt(ui.game, now)), Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL);
-        VBox ladder = Kept.scope("strictness", () -> Ladder.of(0, DebtManager.Strictness.values().length - 1, 1, v -> strictAt(v).words)
+        // The line under the dial says what the step under the thumb would do (KP2b): the thumb the dial shows - the held one when a month lands
+        // under the player's hand, as a dial card's effects are drawn at Ladder.shown() - not the city's setting. So the dial is built first and
+        // the line made after it; the drag reaches the line through this cell.
+        Label[] says = new Label[1];
+        Ladder dial = Ladder.of(0, DebtManager.Strictness.values().length - 1, 1, v -> strictAt(v).words)
                 .current(now.ordinal())
                 .stepReads(v -> "one setting")
-                .onTrack(v -> says.setText(strictWords(PolicyPreview.ruleAt(ui.game, strictAt(v)))))
+                .onTrack(v -> says[0].setText(strictWords(PolicyPreview.ruleAt(ui.game, strictAt(v)))))
                 .appliesAtOnce(v -> { market.setStrictness(strictAt(v)); showPolicyMenu(); })
-                .wide(360).build());
+                .wide(360);
+        VBox ladder = Kept.scope("strictness", () -> dial.build());
+        says[0] = words(strictWords(PolicyPreview.ruleAt(ui.game, strictAt(dial.shown()))), Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL);
         HBox head = Kept.row(Palette.GAP_TIGHT, muted("how strictly it holds it · set at once"), infoButton(strictInfo(), true));
         head.setAlignment(Pos.CENTER_LEFT);
-        return Kept.column(4, head, ladder, says);
+        return Kept.column(4, head, ladder, says[0]);
     }
 
     /** P35, both layers. */

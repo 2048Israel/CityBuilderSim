@@ -378,7 +378,7 @@ final class ZoningScreen {
 
         page.getChildren().add(sectionHead("THE FOREST LAW", LAW_INFO,
                 doorPill("The forest law", Icons.TREES, Palette.ACCENT, () -> policy.open(PolicyScreen.ZONING, THE_FOREST))));
-        page.getChildren().add(Kept.scope("law", () -> PolicyScreen.doorCard(lawCard(ZoningView.forest(g, g.getZoning()), g.getZoning()),
+        page.getChildren().add(Kept.scope("law", () -> lawCard(ZoningView.forest(g, g.getZoning()), g.getZoning(),
                 () -> policy.open(PolicyScreen.ZONING, THE_FOREST))));
     }
 
@@ -488,13 +488,16 @@ final class ZoningScreen {
                 + (r.isShort() ? " of " + LandManager.areaWords(r.wantSqFt()) + " it wants" : "");
     }
 
-    /** The forest law's card: the forest as a bar of its kinds, cleared ground grey, and what the law means. */
-    VBox lawCard(ZoningView.Forest f, Zoning z) {
+    /**
+     * The forest law's card: the forest as a bar of its kinds, cleared ground grey, and what the law means; a door to the law's page when `go`
+     * is not null, its style set once, whole (KP2b: it was the plain card's and then the door's, each draw).
+     */
+    VBox lawCard(ZoningView.Forest f, Zoning z, Runnable go) {
         if (!(f.forestSqFt() > 0)) {
-            return Kept.scope("noForest", () -> PolicyScreen.card(PolicyScreen.cardHead(Icons.TREES, FOREST_PROTECTED, "THE CITY OWNS NO FOREST", null, null),
+            return Kept.scope("noForest", () -> PolicyScreen.doorCard(go, PolicyScreen.cardHead(Icons.TREES, FOREST_PROTECTED, "THE CITY OWNS NO FOREST", null, null),
                     PolicyScreen.muted("A law here keeps nothing until the city buys forest ground.")));
         }
-        return Kept.scope("forest", () -> PolicyScreen.card(PolicyScreen.cardHead(Icons.TREES, FOREST_PROTECTED, lawTitle(z), null,
+        return Kept.scope("forest", () -> PolicyScreen.doorCard(go, PolicyScreen.cardHead(Icons.TREES, FOREST_PROTECTED, lawTitle(z), null,
                         PolicyScreen.quiet(LandManager.areaWords(f.forestSqFt()) + " of forest")),
                 forestBar(f, 14), PolicyScreen.words(lawWords(f, z), Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL)));
     }

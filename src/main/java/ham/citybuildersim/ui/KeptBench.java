@@ -2898,6 +2898,21 @@ public final class KeptBench {
         return l == null ? null : l.getText();
     }
 
+    /** The yield box's text for a cap, as a page built new shows it (CapChips.yieldText): 0.045 is "4.500" (KP2b). */
+    public static String yieldText(Auction.Cap cap) {
+        return CapChips.yieldText(cap);
+    }
+
+    /** The cap a typed yield names, as Enter in the yield box sets it (CapChips.fromWords, in per cent): "4.5" is the cap at 4.5% (KP2b). */
+    public static Auction.Cap yieldCapOf(String typed) {
+        return Auction.Cap.at(CapChips.fromWords(typed));
+    }
+
+    /** The highest yield Borrow's sale will take, as the page keeps it (KP2b). */
+    public Auction.Cap borrowCap() {
+        return ui.financesScreen.borrowCap;
+    }
+
     /** The highest yield the sale will take put back to what Borrow opens with (fair and the tail). */
     public void financesCapDefault() {
         ui.financesScreen.borrowCap = Auction.Cap.DEFAULT;
@@ -3707,6 +3722,30 @@ public final class KeptBench {
             if (node instanceof Label l && "→".equals(l.getText())) n[0]++;
         });
         return n[0];
+    }
+
+    /** The cards of the page that are doors - a card's ground, a hand and a click: the hub's area cards, a tax's card on Taxes (KP2b); not the vitals strip's cells (Pieces.limitCell), which have no ground. */
+    public List<VBox> policyDoors() {
+        List<VBox> out = new ArrayList<>();
+        each(column, n -> {
+            if (n instanceof VBox v && v.getOnMouseClicked() != null && v.getStyle().contains("-fx-cursor: hand") && v.getStyle().contains("-fx-background-radius: 8")) out.add(v);
+        });
+        return out;
+    }
+
+    /** What HOW STRICT's line says for a thumb at a place on the dial (KP2b): the words under the dial at that step, as the screen's own function makes them. */
+    public static String strictLine(Game g, double thumb) {
+        return PolicyScreen.strictWords(ham.citybuildersim.PolicyPreview.ruleAt(g, PolicyScreen.strictAt(thumb)));
+    }
+
+    /** Whether a label on the page says exactly these words (KP2b). */
+    public boolean pageSays(String words) {
+        return find(column, Label.class, l -> words.equals(l.getText())) != null;
+    }
+
+    /** The key a zone's tax dial stages under, as Policy's Taxes rows have it: the same dial, the sector's own offset (KP2b). */
+    public static String policyZoneTaxKey(ham.citybuildersim.Zoning.Tax tax, String sector) {
+        return ZoningScreen.taxKey(tax, sector);
     }
 
     /** A sector zoned through the model (a share of the dry ground, at the going price), as the zone's page applies it; false while zoning is shut. */
