@@ -6,6 +6,7 @@ import ham.citybuildersim.ResearchCatalog.Size;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -48,11 +49,26 @@ import java.util.Set;
  *  10. REPRODUCIBLE. The same months, researchers and seed find the same codes in the same months; another seed does not; a run saved, restored
  *      and continued finds what the uninterrupted one does; a malformed save entry is skipped.
  *  11. A NEW GAME CLEARS IT. Grants, posts, piles and finds are gone after newGame().
+ *
+ * Slice B, the research in the city's month (Game.nextMonth() strikes the posts, getJobs() counts them, advanceDemographics() pays and works them,
+ * finalUpdateEconomy() settles the treasury's line; DataSave, Inbox, TaxPolicy.bringForward()); each section plays a village with a University:
+ *
+ *  12. POSTS IN THE LABOUR MARKET. A grant buys the posts Research.posts() says at the strike's wages, never above the room; the city's jobs are
+ *      the buildings' plus Research.jobs() exactly; with every grant at 0 they are the buildings' alone.
+ *  13. THE BILL. The month's research payroll and costs are the sums of Research.payroll() and bill() at the month's wages and fill; the treasury's
+ *      line is a promise and the last of its constants; getExpenses() and the national accounts carry it; the month's money audit closes.
+ *  14. A CITY FOUNDED THE DEFAULT WAY. No grant, no change (no job, no bill, no notice); a grant buys posts that are paid, and every researcher is idle.
+ *  15. THE INBOX. A find raises one "found:" notice in its month and an arrival one "abroad:" notice, neither twice, none in the first month.
+ *  16. A LAW FIND OPENS ITS LEVER EARLY. The lever of a found PL entry opens the month after the find, never before its earliest, never later than
+ *      it was; a code that is no lever's key moves nothing; the openings are saved.
+ *  17. THE SAVE. A city with research writes it and a load restores grants, posts, piles, finds, jobs and the bill, and plays on as the city saved;
+ *      a city with none writes no key.
+ *  18. A REFORM OF THE MONEY scales the grants and the bill and nothing else of the research.
  */
 public class DiscoveryCheck {
 
-    private static int fails;
-    private static int passes;
+    static int fails;
+    static int passes;
 
     static void check(String label, boolean ok) {
         System.out.println((ok ? "  PASS " : "  FAIL ") + label);
@@ -141,6 +157,13 @@ public class DiscoveryCheck {
         sectionEightAndNine();
         sectionTen();
         sectionEleven();
+        sectionTwelve();
+        sectionThirteen();
+        sectionFourteen();
+        sectionFifteen();
+        sectionSixteen();
+        sectionSeventeen();
+        sectionEighteen();
         System.out.println(fails == 0 ? "DiscoveryCheck: all " + passes + " ok" : "DiscoveryCheck: " + fails + " FAILED of " + (passes + fails));
         System.exit(fails);
     }
@@ -829,5 +852,455 @@ public class DiscoveryCheck {
         BuildingsTemplate brickAgain = g.getBuildingManager().getTemplate(79), grainAgain = g.getBuildingManager().getTemplateByName("Grain Farm");
         check("...and the city is back to history's reading: the Small Cracking Unit is unknown and the tractor NOT_KNOWN again",
                 !g.knows(brickAgain) && EquipmentFit.verdictForNew(g, grainAgain, grainAgain.getEquipment("tractor")).kind() == EquipmentFit.Kind.NOT_KNOWN);
+    }
+
+    /* ============================================================================================================================================
+       R3 SLICE B: THE RESEARCH IN THE CITY'S MONTH (sections 12 to 18). A city founded the 1900 way, a University (and a Law School where a section
+       needs one) standing, the staff handed it as MaterialsCheck does; every figure asserted against Research's and the model's own functions.
+       ============================================================================================================================================ */
+
+    /** One press of the clock, quietly (the player's button: the auto-builder's pass first). */
+    static void play(Game g, int months) {
+        quietly(() -> { for (int i = 0; i < months; i++) g.toggleNextMonth(); });
+    }
+
+    /** A village (FittingCheck.village) with a University standing, and a Law School if asked, and the staff handed; founded the 1900 way or the default way. */
+    static Game cityWithSchools(String label, boolean the1900Way, boolean lawSchool) {
+        FittingCheck.quiet = quiet;
+        EquipmentCheck.quiet = quiet;
+        Game g = FittingCheck.village(label, the1900Way ? Founding.defaults().withUnfitted(true) : Founding.defaults(), false, false);
+        quietly(() -> {
+            BuildingManager b = g.getBuildingManager();
+            g.buildStack(b.getTemplateByName("University"), 1, true);
+            if (lawSchool) g.buildStack(b.getTemplateByName("Law School"), 1, true);
+            MaterialsCheck.handWorkers(g);
+        });
+        return g;
+    }
+
+    /** The posts the standing schools have room for in each field, written from each stack's template and quantity (Research.staffByField(), Research.room()). */
+    static EnumMap<Field, Double> roomOf(Game g) {
+        EnumMap<Field, Double> room = new EnumMap<>(Field.class);
+        for (BuildingsStacks s : g.getBuildingManager().getStacksView()) {
+            double[] staff = staffOf(s.getBuilding());
+            for (int i = 0; i < staff.length; i++) staff[i] *= s.getQuantity();
+            for (Map.Entry<Field, Double> share : Research.staffByField(s.getBuilding().getTeaches(), staff).entrySet()) room.merge(share.getKey(), Research.room(share.getValue()), Double::sum);
+        }
+        return room;
+    }
+
+    /** The notices in a city's inbox whose key starts as given, in the order raised. */
+    static List<Notice> noticesKeyed(Game g, String prefix) {
+        List<Notice> out = new ArrayList<>();
+        for (Notice n : g.getInbox().all()) if (n.getKey().startsWith(prefix)) out.add(n);
+        return out;
+    }
+
+    /** Whether two long arrays are equal, entry by entry. */
+    static boolean same(long[] a, long[] b) {
+        return java.util.Arrays.equals(a, b);
+    }
+
+    /** Whether a research holds no post in any field (it may hold work piled and finds: the faculty of a school research with no grant at all). */
+    static boolean noPosts(Research r) {
+        for (Field f : Field.values()) if (r.posts(f) != 0) return false;
+        return true;
+    }
+
+    /** The buildings' jobs plus the research posts' of a field, by JobType ordinal: what the labour market is to see. */
+    static long[] plus(long[] buildings, long[] posts) {
+        long[] sum = buildings.clone();
+        for (int i = 0; i < sum.length; i++) sum[i] += posts[i];
+        return sum;
+    }
+
+    /** The money bill of a research the way the model prices it: the sums of Research.payroll() and Research.bill() over the fields at the wages and fill. */
+    static double[] billOf(Research research, double[] wages, double[] fill) {
+        double payroll = 0, bill = 0;
+        for (Field f : Field.values()) {
+            payroll += Research.payroll(f, research.posts(f), wages, fill);
+            bill += Research.bill(f, research.posts(f), wages, fill);
+        }
+        return new double[] {payroll, bill - payroll};
+    }
+
+    /** Sets a pile just under the size of an entry in a city's research (and keeps the rest), so that one month of researchers in its field finds it. */
+    static void pileJustUnder(Game g, Entry e) {
+        Research r = g.getResearch();
+        Map<String, Double> piles = r.piles();
+        piles.put(e.code(), Research.hiddenSize(g.getWorldSeed(), e) - 1e-6);
+        r.restore(r.grantsForSave(), r.postsForSave(), piles, r.foundHere());
+    }
+
+    /* ==================== 12. the posts are jobs the labour market sees ==================== */
+
+    static void sectionTwelve() {
+        System.out.println("\n--- 12. a grant buys posts at the top of the month, and they are among the city's jobs ---");
+        Game g = cityWithSchools("discovery-posts", true, false);
+        Research r = g.getResearch();
+        check("fixture: a city founded the 1900 way with a University standing and no grant", g.foundedUnfitted() && r.isEmpty() && roomOf(g).get(Field.ENGINEERING) > 0);
+        play(g, 2);
+        long[] nothing = new long[JobType.values().length];
+        check("with every grant at 0 a month adds no post: the labour market's jobs are the buildings' jobs, and the city's getJobs() too",
+                noPosts(r) && same(r.jobs(), nothing) && same(g.getPopulationManager().getJobs(), g.getBuildingManager().getTotalJobs()) && same(g.getJobs(), g.getBuildingManager().getTotalJobs()));
+
+        EnumMap<Field, Double> room = roomOf(g);
+        double[] wages = g.getPopulationManager().getWagesPerType().clone();
+        double cost = Research.postCost(Field.ENGINEERING, wages);
+        check("fixture: the city's wages give an engineering post a cost, and the University gives room for more than five posts", cost > 0 && room.get(Field.ENGINEERING) > 5);
+        double grant = 5.5 * cost;
+        check("a grant is refused if it is not an amount, and taken if it is", !r.setGrant(Field.ENGINEERING, -1) && !r.setGrant(Field.ENGINEERING, Double.NaN) && r.setGrant(Field.ENGINEERING, grant));
+        play(g, 1);
+        int posts = r.posts(Field.ENGINEERING);
+        check("one month on, the engineering grant has bought the posts Research.posts() says at the strike's wages: five whole posts (" + posts + "), within the room",
+                posts == Research.posts(grant, cost, room.get(Field.ENGINEERING)) && posts == 5 && posts <= room.get(Field.ENGINEERING));
+        check("...and no other field has any: no grant there", r.posts(Field.MEDICINE) == 0 && r.posts(Field.BUSINESS) == 0 && r.posts(Field.LAW) == 0);
+        long[] expected = plus(g.getBuildingManager().getTotalJobs(), Research.jobs(Field.ENGINEERING, posts));
+        check("the labour market's jobs this month are the buildings' jobs plus the posts' (Research.jobs()): " + posts + " posts add " + java.util.Arrays.stream(Research.jobs(Field.ENGINEERING, posts)).sum() + " jobs",
+                same(g.getPopulationManager().getJobs(), expected) && same(g.getJobs(), expected) && !same(expected, g.getBuildingManager().getTotalJobs()));
+        long[] added = Research.jobs(Field.ENGINEERING, posts);
+        check("...the larger half of the researchers in the licence-holding band, the smaller in science, and the support in the college's engineers",
+                added[JobType.UNIV_HIGHTECH_ENG.ordinal()] == posts - posts / 2 && added[JobType.UNIV_SCIENCE.ordinal()] == posts / 2
+                        && added[JobType.COLLEGE_ENGINEERING.ordinal()] == Math.round(posts * Research.supportPerPost(Field.ENGINEERING)));
+        long[] buildingsOnly = g.getBuildingManager().getTotalJobs();
+        long[] withPosts = g.getJobs();
+        check("the buildings' own figure is not written into: asking the city for its jobs leaves what the buildings count as it was",
+                same(g.getBuildingManager().getTotalJobs(), buildingsOnly) && !same(withPosts, buildingsOnly) && same(g.getJobs(), withPosts));
+
+        // A grant past the room buys only the room.
+        r.setGrant(Field.ENGINEERING, 1000 * cost);
+        double[] wages2 = g.getPopulationManager().getWagesPerType().clone();
+        play(g, 1);
+        int most = r.posts(Field.ENGINEERING);
+        check("a grant far past the room buys the room and no more: " + most + " posts of room for " + String.format("%.1f", room.get(Field.ENGINEERING)),
+                most == Research.posts(1000 * cost, Research.postCost(Field.ENGINEERING, wages2), room.get(Field.ENGINEERING)) && most == (int) Math.floor(room.get(Field.ENGINEERING)) && most <= room.get(Field.ENGINEERING));
+
+        // The grant dialled back to nothing: the posts go at the next strike, and the jobs with them.
+        r.setGrant(Field.ENGINEERING, 0);
+        play(g, 1);
+        check("the grant put back to 0 buys no post the next month, and the jobs are the buildings' again",
+                noPosts(r) && r.grantsForSave().isEmpty() && same(g.getPopulationManager().getJobs(), g.getBuildingManager().getTotalJobs()));
+    }
+
+    /* ==================== 13. the bill ==================== */
+
+    static void sectionThirteen() {
+        System.out.println("\n--- 13. the posts' bill is the pay of the filled posts and the labs' other costs, a promise the treasury pays and the audit counts ---");
+        Game g = cityWithSchools("discovery-bill", true, true);
+        Research r = g.getResearch();
+        EconomyManager e = g.getEconomyManager();
+        play(g, 2);
+        check("fixture: no grant, no post, no bill", noPosts(r) && r.grantsForSave().isEmpty() && e.getResearchPayroll() == 0 && e.getResearchCosts() == 0 && e.getResearchBill() == 0);
+        double[] wages = g.getPopulationManager().getWagesPerType().clone();
+        r.setGrant(Field.ENGINEERING, 8.5 * Research.postCost(Field.ENGINEERING, wages));
+        r.setGrant(Field.LAW, 6.5 * Research.postCost(Field.LAW, wages));
+        play(g, 1);
+        double[] now = g.getPopulationManager().getWagesPerType(), fill = g.getResearchFill();
+        check("fixture: the grants bought posts in two fields", r.posts(Field.ENGINEERING) == 8 && r.posts(Field.LAW) == 6 && fill != null, r.posts(Field.ENGINEERING) + "/" + r.posts(Field.LAW));
+        double[] bill = billOf(r, now, fill);
+        check("fixture: some of the posts are filled, so the bill is above nothing", bill[0] > 0 && bill[1] > 0, java.util.Arrays.toString(bill));
+        near("the month's research payroll is the sum of Research.payroll() over the fields at the month's wages and fill", e.getResearchPayroll(), bill[0], 1e-9 * bill[0]);
+        near("...its other costs the sum of Research.bill() less that pay", e.getResearchCosts(), bill[1], 1e-9 * bill[1]);
+        near("...and the bill is the two", e.getResearchBill(), bill[0] + bill[1], 1e-9 * (bill[0] + bill[1]));
+        double nominal = 0;
+        for (Field f : Field.values()) nominal += Research.bill(f, r.posts(f), now, null);
+        check("the bill is at most the bill of every post filled: a post nobody fills costs nothing", e.getResearchBill() <= nominal + 1e-9 * nominal);
+
+        check("the treasury's line is a promise, not a purchase, and named for the grants", TreasuryLine.RESEARCH.promise && !TreasuryLine.RESEARCH.purchase && TreasuryLine.RESEARCH.label.equals("Research grants")
+                && !TreasuryLine.RESEARCH.accruesArrears() && TreasuryLine.valueOf("RESEARCH") == TreasuryLine.RESEARCH);
+        check("...and the last of the lines, so that no saved name moved: every other line is before it", TreasuryLine.values()[TreasuryLine.values().length - 1] == TreasuryLine.RESEARCH);
+
+        MoneyAudit.Result audit = g.getLastMoneyAudit();
+        check("the month's money audit lists both research lines and closes: the treasury paid what the audit counted as leaving",
+                audit.detail.contains("- research Payroll") && audit.detail.contains("- research Costs") && Math.abs(audit.residual) <= MoneyAudit.tolerance(audit.moved()),
+                "residual " + audit.residual + " of " + audit.moved());
+
+        // getExpenses() carries it: take the bill away and the difference is the bill.
+        double withBill = e.getExpenses(), payroll = e.getResearchPayroll(), costs = e.getResearchCosts();
+        e.setResearch(0, 0);
+        double without = e.getExpenses();
+        e.setResearch(payroll, costs);
+        near("getExpenses() includes the bill: without it the city pays out exactly that much less", withBill - without, payroll + costs, 1e-9 * (payroll + costs));
+        NationalAccounts na = e.getNationalAccounts();
+        near("the national accounts carry the bill as the government's spending (the month's books were struck from the bill)", na.getResearchSpending(), payroll + costs, 1e-6 * (payroll + costs));
+        double totalWith = na.getTotalExpenses(), spending = na.getResearchSpending();
+        na.setResearchSpending(0);
+        double totalWithout = na.getTotalExpenses();
+        na.setResearchSpending(spending);
+        near("...and in the government's total expenses: without the line the total is that much less", totalWith - totalWithout, spending, 1e-9 * spending);
+
+        // Setters refuse what is not an amount.
+        e.setResearch(Double.NaN, -5);
+        check("a bill that is not a number or below nothing is none", e.getResearchPayroll() == 0 && e.getResearchCosts() == 0);
+        e.setResearch(payroll, costs);
+
+        // A second month with the grants kept: the bill is struck afresh and the audit closes again.
+        play(g, 1);
+        MoneyAudit.Result second = g.getLastMoneyAudit();
+        check("the next month's audit closes too, with the bill struck again at that month's wages", second.detail.contains("- research Payroll") && Math.abs(second.residual) <= MoneyAudit.tolerance(second.moved()),
+                "residual " + second.residual + " of " + second.moved());
+    }
+
+    /* ==================== 14. a city founded the default way ==================== */
+
+    static void sectionFourteen() {
+        System.out.println("\n--- 14. a city founded the default way: no grant, no change; a grant buys posts that are paid and whose researchers have nothing to work on ---");
+        Game g = cityWithSchools("discovery-default", false, true);
+        Research r = g.getResearch();
+        EconomyManager e = g.getEconomyManager();
+        check("fixture: a city founded the default way with a University and a Law School standing", !g.foundedUnfitted() && roomOf(g).get(Field.ENGINEERING) > 0 && roomOf(g).get(Field.LAW) > 0);
+        play(g, 1);
+        check("with no grant a month adds no job, no bill and no research notice, and the research stays empty",
+                r.isEmpty() && same(g.getPopulationManager().getJobs(), g.getBuildingManager().getTotalJobs()) && e.getResearchBill() == 0
+                        && noticesKeyed(g, "found:").isEmpty() && noticesKeyed(g, "abroad:").isEmpty() && r.foundHere().isEmpty() && r.piles().isEmpty());
+        check("...and its faculty are recorded as researchers who are all idle, with no problem open and nothing found or arrived",
+                r.researchers(Field.ENGINEERING) > 0 && r.researchers(Field.LAW) > 0 && r.foundThisMonth().isEmpty() && r.arrivedThisMonth().isEmpty());
+        boolean idle = true, none = true;
+        for (Field f : Field.values()) {
+            idle &= r.idle(f) == r.researchers(f);
+            none &= r.open(f) == 0;
+        }
+        check("...for every field the idle researchers are all the researchers, and no problem is open", idle && none);
+
+        // A month on, before the grants: the labour market's fill is not yet steady in a village's first two months, and the bill is struck off it.
+        play(g, 1);
+        double[] wages = g.getPopulationManager().getWagesPerType().clone();
+        EnumMap<Field, Double> room = roomOf(g);
+        double grantE = 6.5 * Research.postCost(Field.ENGINEERING, wages), grantL = 4.5 * Research.postCost(Field.LAW, wages);
+        r.setGrant(Field.ENGINEERING, grantE);
+        r.setGrant(Field.LAW, grantL);
+        play(g, 1);
+        double[] now = g.getPopulationManager().getWagesPerType(), fill = g.getResearchFill();
+        check("with a grant the posts are hired in a city founded the default way, as the model says: " + r.posts(Field.ENGINEERING) + " engineering and " + r.posts(Field.LAW) + " law, among the city's jobs",
+                r.posts(Field.ENGINEERING) == Research.posts(grantE, Research.postCost(Field.ENGINEERING, wages), room.get(Field.ENGINEERING)) && r.posts(Field.ENGINEERING) == 6
+                        && r.posts(Field.LAW) == Research.posts(grantL, Research.postCost(Field.LAW, wages), room.get(Field.LAW)) && r.posts(Field.LAW) == 4
+                        && same(g.getPopulationManager().getJobs(), plus(g.getBuildingManager().getTotalJobs(), r.jobs())));
+        double[] bill = billOf(r, now, fill);
+        check("...and they are paid: the bill is the model's, above nothing, and the audit closes",
+                bill[0] > 0 && Math.abs(e.getResearchPayroll() - bill[0]) <= 1e-9 * bill[0] && Math.abs(e.getResearchCosts() - bill[1]) <= 1e-9 * bill[1]
+                        && Math.abs(g.getLastMoneyAudit().residual) <= MoneyAudit.tolerance(g.getLastMoneyAudit().moved()), "residual " + g.getLastMoneyAudit().residual);
+        boolean allIdle = true, noneOpen = true, counted = true;
+        for (Field f : Field.values()) {
+            allIdle &= r.idle(f) == r.researchers(f);
+            noneOpen &= r.open(f) == 0;
+            counted &= Math.abs(r.researchers(f) - (Research.faculty(g.researchStaff(fill).getOrDefault(f, 0.0)) + Research.filledResearchers(f, r.posts(f), fill))) <= 1e-9;
+        }
+        check("every researcher is idle and no problem is open; the researchers are the faculty's 40% of the staffed staff and the filled posts', and nothing is found",
+                allIdle && noneOpen && counted && r.foundHere().isEmpty() && r.piles().isEmpty() && r.foundThisMonth().isEmpty() && noticesKeyed(g, "found:").isEmpty());
+        play(g, 5);
+        check("through to month " + g.getMonth() + ", past the day the world gets its first discovery (month " + CAT.entry("PE2").worldMonth() + "), no notice of one arriving from abroad is raised in a city founded the default way",
+                g.getMonth() > CAT.entry("PE2").worldMonth() && noticesKeyed(g, "abroad:").isEmpty() && r.arrivedThisMonth().isEmpty() && r.foundHere().isEmpty());
+    }
+
+    /* ==================== 15. the inbox ==================== */
+
+    static void sectionFifteen() {
+        System.out.println("\n--- 15. the inbox tells what the city found and what reached it from abroad, once ---");
+        Game g = cityWithSchools("discovery-inbox", true, false);
+        Research r = g.getResearch();
+        int next = g.getMonth() + 1;
+        List<Entry> open = r.openProblems(Field.ENGINEERING, next);
+        check("fixture: engineering has problems open in the first month a press makes, which the University's faculty work on", open.size() >= 2);
+        Entry found = open.get(open.size() - 1);
+        // The earliest world date after now that is not the one the city will find: what arrives from abroad.
+        Entry arrives = null;
+        for (Entry e : CAT.entries()) if (e.worldMonth() > next && !e.code().equals(found.code()) && (arrives == null || e.worldMonth() < arrives.worldMonth())) arrives = e;
+        final Entry arrival = arrives;
+        check("fixture: a discovery of the world's is dated within the next dozen months, and is not the one found", arrives != null && arrives.worldMonth() <= next + 12);
+        check("fixture: neither is in the inbox yet", noticesKeyed(g, "found:").isEmpty() && noticesKeyed(g, "abroad:").isEmpty());
+        pileJustUnder(g, found);
+        play(g, 1);
+        check("fixture: the University's faculty were researchers in engineering that month, and the discovery was found in it", r.researchers(Field.ENGINEERING) > 0 && r.foundThisMonth().contains(found.code()), String.valueOf(r.researchers(Field.ENGINEERING)));
+        List<Notice> notices = noticesKeyed(g, "found:");
+        check("a find raises one notice in its month, keyed by the code: " + found.code() + " found in month " + g.getMonth(),
+                r.foundMonth(found.code()) == g.getMonth() && notices.size() == 1 && notices.get(0).getKey().equals("found:" + found.code()) && notices.get(0).getRaised() == g.getMonth());
+        Notice n = notices.isEmpty() ? null : notices.get(0);
+        String body = n == null ? "" : String.join(" ", n.getBody());
+        double years = (found.worldMonth() - g.getMonth()) / 12.0;
+        check("...titled for the discovery, and naming the school that researched it, how far ahead of the world to a tenth of a year, and what it touches",
+                n != null && n.getTitle().equals("Found here: " + found.name()) && body.contains(Field.ENGINEERING.school().substring(1)) && body.contains(String.format("%.1f years ahead", years))
+                        && body.contains(found.touches()), n == null ? "no notice" : n.getTitle() + " | " + body);
+        check("...and the lines of its body are no wider than the inbox's measure", n != null && n.getBody().stream().allMatch(line -> line.length() <= Inbox.BODY_COLUMNS));
+        check("nothing from abroad yet: the world's date has not come", noticesKeyed(g, "abroad:").isEmpty());
+        play(g, 1);
+        List<Notice> later = noticesKeyed(g, "found:");
+        check("the month after, the notice is settled and not raised again", later.size() == 1 && later.get(0).isResolved() && r.foundThisMonth().isEmpty());
+
+        // Play to the world's date.
+        int to = arrives == null ? 0 : arrives.worldMonth() - g.getMonth();
+        if (to > 0) play(g, to);
+        List<Notice> abroad = noticesKeyed(g, "abroad:");
+        boolean one = arrives != null && g.getMonth() == arrives.worldMonth() && r.foundMonth(arrives.code()) == Integer.MAX_VALUE;
+        check("on history's date " + (arrives == null ? "" : arrives.code() + " (month " + arrives.worldMonth() + ")") + " the discovery reaches the city from abroad: one notice, in that month",
+                one && abroad.size() == 1 && abroad.get(0).getKey().equals("abroad:" + arrives.code()) && abroad.get(0).getRaised() == g.getMonth() && r.arrivedThisMonth().contains(arrives.code()));
+        Notice a = abroad.isEmpty() ? null : abroad.get(0);
+        String aboard = a == null ? "" : String.join(" ", a.getBody());
+        check("...titled \"From abroad\" with the world's own words and what it touches", a != null && a.getTitle().equals("From abroad: " + arrives.name()) && aboard.contains(arrives.touches())
+                && aboard.replace("\n", " ").contains(arrives.world().split(" ")[0]), a == null ? "no notice" : a.getTitle() + " | " + aboard);
+        play(g, 1);
+        check("...settled the month after, and neither kind is raised twice: still one of each", noticesKeyed(g, "abroad:").stream().filter(x -> x.getKey().equals("abroad:" + arrival.code())).count() == 1
+                && noticesKeyed(g, "found:").stream().filter(x -> x.getKey().equals("found:" + found.code())).count() == 1
+                && noticesKeyed(g, "abroad:").stream().filter(x -> x.getKey().equals("abroad:" + arrival.code())).allMatch(Notice::isResolved));
+        check("the month a city is founded raises none: no research notice dated month 1", g.getInbox().all().stream().filter(x -> x.getKey().startsWith("found:") || x.getKey().startsWith("abroad:")).allMatch(x -> x.getRaised() > 1));
+    }
+
+    /* ==================== 16. a law find brings its lever forward ==================== */
+
+    static void sectionSixteen() throws Exception {
+        System.out.println("\n--- 16. a law discovery found here brings its Policy lever forward, never before its earliest and never later than it was ---");
+        TaxPolicy p = new TaxPolicy();
+        PolicyDates.Lever tax = PolicyDates.Lever.WAGE_TAX;
+        int history = PolicyDates.openingMonth(tax), earliest = PolicyDates.earliestOpening(tax);
+        check("fixture: the income tax's entry is PL3, history opens it in month " + history + ", the earliest a find may bring it is " + earliest + ", and the lookup finds the lever by its key",
+                tax.entry().equals("PL3") && PolicyDates.leverOf("PL3") == tax && PolicyDates.leverOf(" PL3 ") == tax && earliest == history - PolicyDates.MAX_EARLY_MONTHS && earliest > 2);
+        check("a code that is no lever's key finds none: a blank, an unknown code, a lever with no key (the policy rate) and a discovery of another kind",
+                PolicyDates.leverOf("") == null && PolicyDates.leverOf(null) == null && PolicyDates.leverOf("ZZ99") == null && PolicyDates.leverOf("PL1") == null && PolicyDates.leverOf("E1") == null
+                        && PolicyDates.Lever.POLICY_RATE.entry().isEmpty());
+        check("every lever that carries a key is found by it, and the key is a law discovery of the catalogue",
+                java.util.Arrays.stream(PolicyDates.Lever.values()).filter(l -> !l.entry().isEmpty()).allMatch(l -> PolicyDates.leverOf(l.entry()) == l && CAT.entry(l.entry()) != null && CAT.entry(l.entry()).field() == Field.LAW));
+
+        check("a find before the earliest month brings the lever to the earliest and no sooner", p.bringForward(tax, 3) && p.openingMonth(tax) == earliest);
+        check("...a second find, in a later month, does not move it later", !p.bringForward(tax, earliest + 5) && p.openingMonth(tax) == earliest);
+        TaxPolicy q = new TaxPolicy();
+        check("a find in a month between the earliest and history brings the lever to that month", q.bringForward(tax, earliest + 10) && q.openingMonth(tax) == earliest + 10);
+        check("...a find in a month after history's, or in one that leaves the lever open, moves nothing", !q.bringForward(tax, history + 30) && !q.bringForward(tax, history) && q.openingMonth(tax) == earliest + 10);
+        check("a lever open from founding has nothing to bring forward, and nor does a null lever", !q.bringForward(PolicyDates.Lever.PROPERTY_TAX, 1) && !q.bringForward(null, 1) && q.openingMonth(PolicyDates.Lever.PROPERTY_TAX) == 1);
+        TaxPolicy opened = new TaxPolicy();
+        opened.openAll();
+        check("a lever already open (openAll()) is untouched", !opened.bringForward(tax, 200) && opened.openingMonth(tax) == 1);
+        TaxPolicy saved = new TaxPolicy();
+        saved.bringForward(tax, earliest + 10);
+        TaxPolicy back = new TaxPolicy();
+        back.restoreOpenings(saved.openingsForSave());
+        check("a lever brought forward is saved with the other openings and comes back", back.openingMonth(tax) == earliest + 10 && back.openingMonth(PolicyDates.Lever.PROFIT_TAX) == PolicyDates.openingMonth(PolicyDates.Lever.PROFIT_TAX));
+
+        // The city: a Law School's faculty find PL3 and PL1 (no lever) in the same month; only the income tax moves. The save is carried to month 156 by its file.
+        Game start = cityWithSchools("discovery-lever", true, true);
+        play(start, 1);
+        GameFiles.Result wrote = EquipmentCheck.save(start, "lever start");
+        String json = Files.readString(start.getGameFiles().saveFile(1));
+        int month = earliest - 1;
+        String moved = json.replaceFirst("\"month\": *\\d+", "\"month\": " + month);
+        check("fixture: the city's save carries its month and is carried to month " + month + ", the one before the income tax's earliest", wrote.ok && !moved.equals(json) && moved.contains("\"month\": " + month));
+        Files.writeString(start.getGameFiles().saveFile(1), moved);
+        Game g = new Game(start.getGameFiles());
+        quietly(() -> g.loadGameSave(1));
+        check("fixture: the carried city loads in month " + month + " with a Law School and a 1900 founding", g.getLoadFailure() == null && g.getMonth() == month && g.foundedUnfitted(), String.valueOf(g.getLoadFailure()));
+        if (g.getLoadFailure() != null || g.getMonth() != month) return;
+        // The staff handed again: a loaded village starts its first month with the workforce it had, as the village's own first month does with the staff handed.
+        quietly(() -> MaterialsCheck.handWorkers(g));
+        Research r = g.getResearch();
+        TaxPolicy policy = g.getEconomyManager().getTaxPolicy();
+        Entry pl3 = CAT.entry("PL3"), pl1 = CAT.entry("PL1");
+        check("fixture: both laws are open to the law faculty next month, and the income tax opens in history's month in this city",
+                r.isOpen(pl3, month + 1) && r.isOpen(pl1, month + 1) && g.leverOpeningMonth(tax) == history && !g.isLeverOpen(tax));
+        Map<String, Integer> openings = policy.openingsForSave();
+        pileJustUnder(g, pl3);
+        pileJustUnder(g, pl1);
+        play(g, 1);
+        check("both are found in month " + g.getMonth() + ", the first month the law faculty could", r.foundMonth("PL3") == month + 1 && r.foundMonth("PL1") == month + 1 && r.foundThisMonth().containsAll(List.of("PL3", "PL1")));
+        Map<String, Integer> after = policy.openingsForSave();
+        int expected = Math.max(month + 2, earliest);
+        check("the income tax now opens in month " + g.leverOpeningMonth(tax) + ", the month after the find (the first the policy hears), and no other lever's opening moved",
+                g.leverOpeningMonth(tax) == expected && after.get(tax.name()) == expected && after.entrySet().stream().allMatch(en -> en.getKey().equals(tax.name()) || en.getValue().equals(openings.get(en.getKey()))),
+                openings + " -> " + after);
+        check("...so it is still shut in the month of the find, the policy having held it at the top of the month",
+                !g.isLeverOpen(tax) && g.leverOpeningMonth(tax) == g.getMonth() + 1);
+        play(g, 1);
+        check("the month after the find the lever is open and its own notice is raised, as for a lever history opens",
+                g.isLeverOpen(tax) && g.getMonth() == g.leverOpeningMonth(tax) && noticesKeyed(g, "lever:WAGE_TAX").size() == 1 && noticesKeyed(g, "found:PL3").size() == 1);
+    }
+
+    /* ==================== 17. the save ==================== */
+
+    static void sectionSeventeen() throws Exception {
+        System.out.println("\n--- 17. the save: a city with research writes it, a load restores it whole and plays on as the city saved; a city with none writes no key ---");
+        Game none = cityWithSchools("discovery-save-none", false, false);
+        play(none, 2);
+        GameFiles.Result wroteNone = EquipmentCheck.save(none, "research none");
+        String noneJson = Files.readString(none.getGameFiles().saveFile(1));
+        check("a city founded the default way, with a University and no grant, writes no research key: its researchers are idle and pile nothing",
+                wroteNone.ok && !noneJson.contains("\"research\"") && none.getResearch().isEmpty());
+        Game noneBack = new Game(none.getGameFiles());
+        quietly(() -> noneBack.loadGameSave(1));
+        check("...a save with no key restores an empty research, even in a Game that held another city's", noneBack.getLoadFailure() == null && noneBack.getResearch().isEmpty());
+        Game held = new Game(none.getGameFiles());
+        held.getResearch().setGrant(Field.LAW, 10);
+        held.getResearch().restore(held.getResearch().grantsForSave(), Map.of("LAW", 3), Map.of("PL1", 1.5), Map.of("PE2", 4));
+        held.getEconomyManager().setResearch(7, 9);
+        quietly(() -> held.loadGameSave(1));
+        check("...and a Game that held a city's research and loads that save keeps none of it: no grant, no post, no pile, no find and no bill",
+                held.getLoadFailure() == null && held.getResearch().isEmpty() && held.getEconomyManager().getResearchBill() == 0);
+
+        Game g = cityWithSchools("discovery-save", true, true);
+        Research r = g.getResearch();
+        EconomyManager e = g.getEconomyManager();
+        play(g, 2);
+        double[] wages = g.getPopulationManager().getWagesPerType().clone();
+        r.setGrant(Field.ENGINEERING, 7.5 * Research.postCost(Field.ENGINEERING, wages));
+        r.setGrant(Field.LAW, 5.5 * Research.postCost(Field.LAW, wages));
+        List<Entry> open = r.openProblems(Field.ENGINEERING, g.getMonth() + 1);
+        Entry found = open.get(open.size() - 1);
+        pileJustUnder(g, found);
+        play(g, 2);
+        check("fixture: the city has grants, posts, work piled and a find, and a bill",
+                r.grant(Field.ENGINEERING) > 0 && r.posts(Field.ENGINEERING) > 0 && r.posts(Field.LAW) > 0 && !r.piles().isEmpty() && r.foundHere().containsKey(found.code()) && e.getResearchBill() > 0,
+                r.postsForSave() + " " + r.piles().keySet() + " " + r.foundHere());
+        GameFiles.Result wrote = EquipmentCheck.save(g, "research kept");
+        check("the city is saved", wrote.ok, wrote.message());
+        String json = Files.readString(g.getGameFiles().saveFile(1));
+        check("...with a research key, keyed by field name and by code", json.contains("\"research\"") && json.contains("\"ENGINEERING\"") && json.contains("\"" + found.code() + "\""));
+        Game back = new Game(g.getGameFiles());
+        quietly(() -> back.loadGameSave(1));
+        Research b = back.getResearch();
+        check("loaded without a failure", back.getLoadFailure() == null, String.valueOf(back.getLoadFailure()));
+        check("the grants, the posts, the piles and the finds (in their order) come back equal",
+                b.grantsForSave().equals(r.grantsForSave()) && b.postsForSave().equals(r.postsForSave()) && b.piles().equals(r.piles()) && b.foundHere().equals(r.foundHere())
+                        && new ArrayList<>(b.foundHere().keySet()).equals(new ArrayList<>(r.foundHere().keySet())));
+        check("...the loaded city's jobs include its posts, and equal the saved city's", same(back.getJobs(), g.getJobs()) && same(back.getPopulationManager().getJobs(), g.getPopulationManager().getJobs())
+                && same(back.getJobs(), plus(back.getBuildingManager().getTotalJobs(), b.jobs())));
+        near("...and the month's bill comes back: payroll and costs", back.getEconomyManager().getResearchPayroll(), e.getResearchPayroll(), 1e-9 * e.getResearchPayroll());
+        near("...the costs too", back.getEconomyManager().getResearchCosts(), e.getResearchCosts(), 1e-9 * e.getResearchCosts());
+        near("...and the national accounts' spending on it", back.getEconomyManager().getNationalAccounts().getResearchSpending(), e.getNationalAccounts().getResearchSpending(), 1e-9 * e.getResearchBill());
+        check("a find known before the save is known after it: the discovery's code is among the finds and is known from its month", back.getResearch().known(found.code(), back.getMonth()) && back.getResearch().foundMonth(found.code()) == r.foundMonth(found.code()));
+        play(g, 1);
+        play(back, 1);
+        check("one month played on the saved city and on the loaded one gives the same piles and the same finds",
+                b.piles().keySet().equals(r.piles().keySet()) && b.foundHere().equals(r.foundHere()), r.piles() + " vs " + b.piles());
+        boolean closePiles = true;
+        for (Map.Entry<String, Double> en : r.piles().entrySet()) closePiles &= Math.abs(en.getValue() - b.piles().getOrDefault(en.getKey(), -1.0)) <= 1e-9 * Math.max(1, en.getValue());
+        check("...to the piles' last digits, and the same posts", closePiles && b.postsForSave().equals(r.postsForSave()), r.piles() + " vs " + b.piles());
+        near("...and the same research bill", back.getEconomyManager().getResearchBill(), e.getResearchBill(), 1e-9 * e.getResearchBill());
+        check("...and the same jobs", same(back.getJobs(), g.getJobs()));
+    }
+
+    /* ==================== 18. a reform of the money ==================== */
+
+    static void sectionEighteen() {
+        System.out.println("\n--- 18. a reform of the money scales the grants and the bill, and nothing else of the research ---");
+        Game g = cityWithSchools("discovery-reform", true, false);
+        Research r = g.getResearch();
+        EconomyManager e = g.getEconomyManager();
+        play(g, 2);
+        double[] wages = g.getPopulationManager().getWagesPerType().clone();
+        r.setGrant(Field.ENGINEERING, 5.5 * Research.postCost(Field.ENGINEERING, wages));
+        r.setGrant(Field.MEDICINE, 3.5 * Research.postCost(Field.MEDICINE, wages));
+        List<Entry> open = r.openProblems(Field.ENGINEERING, g.getMonth() + 1);
+        pileJustUnder(g, open.get(open.size() - 1));
+        play(g, 2);
+        double grantE = r.grant(Field.ENGINEERING), grantM = r.grant(Field.MEDICINE), bill = e.getResearchBill(), payroll = e.getResearchPayroll(), spending = e.getNationalAccounts().getResearchSpending();
+        Map<String, Integer> posts = r.postsForSave(), found = r.foundHere();
+        Map<String, Double> piles = r.piles();
+        check("fixture: grants in two fields, posts, work piled, a find and a bill", grantE > 0 && grantM > 0 && !posts.isEmpty() && !piles.isEmpty() && !found.isEmpty() && bill > 0 && spending > 0);
+        boolean[] ok = new boolean[1];
+        quietly(() -> ok[0] = g.reformCurrencyForTest(100));
+        double scale = e.getResearchBill() / bill;
+        check("fixture: the reform went through and moved the money: the research bill is " + scale + " of what it was", ok[0] && scale != 1 && scale > 0);
+        near("the grants are scaled as the bill is: the engineering grant", r.grant(Field.ENGINEERING), grantE * scale, 1e-9 * grantE * scale);
+        near("...and the medical grant", r.grant(Field.MEDICINE), grantM * scale, 1e-9 * grantM * scale);
+        near("...the pay of the posts too", e.getResearchPayroll(), payroll * scale, 1e-9 * payroll * scale);
+        near("...and the national accounts' spending on them", e.getNationalAccounts().getResearchSpending(), spending * scale, 1e-9 * spending * scale);
+        check("the posts, the piles and the finds are not money and are as they were", r.postsForSave().equals(posts) && r.piles().equals(piles) && r.foundHere().equals(found));
+        check("a grant of 0 stays 0 and the other fields stay without one", r.grant(Field.LAW) == 0 && r.grant(Field.BUSINESS) == 0);
     }
 }

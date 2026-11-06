@@ -708,6 +708,7 @@ public class Game {
         fittings.clear();
         // ...and the city's research (R3): the last city's grants, posts, work piled and discoveries. This Game's Research outlives buildWorld() (the field is final), as the forms do.
         research.reset();
+        economyManager.setResearch(0, 0);
         // ...and the levers history has not opened yet are held at zero (R0): the city is in its first month.
         policyHearsTheMonth();
         economyManager.getSalesTaxLedger().reset();
@@ -1239,12 +1240,106 @@ public class Game {
 
     /**
      * The city's research (R3): the grants, the posts, the work piled on each open problem and the discoveries found here. Empty in a city nobody
-     * has funded, where every reading of "known" is history's. Reset with the other per-city state (buildWorld()). Not saved yet: the next slice.
+     * has funded, where every reading of "known" is history's. Reset with the other per-city state (buildWorld()). Saved only while it holds
+     * something (DataSave.setResearch()); restored before rebuildSimulationState() counts the jobs, which include the month's posts.
      */
     private final Research research = new Research();
 
     /** The city's research, for the planners' and the screens' reading of what is known, and for the harnesses (R3). */
     public Research getResearch() { return research; }
+
+    /* ===== THE CITY'S RESEARCH IN THE MONTH (R3, 2026-11-06; docs/studies/research-design.md 5.1, 5.2) =====
+     *
+     * The month's steps, in the order they run: the posts are STRUCK at the top (nextMonth(), after the policy hears the month: they are jobs
+     * the labour market fills, so they are counted before the posts are, and getJobs() adds them to the buildings'); the researchers WORK, the
+     * bill is struck and a law find brings its lever forward in advanceDemographics(), beside the schools (their staff are the faculty and the room);
+     * the treasury pays the bill in finalUpdateEconomy() (TreasuryLine.RESEARCH) and the inbox tells what was found (Inbox.takeResearch()).
+     * Research runs only in a city founded the 1900 way (foundedUnfitted()): in one founded the default way every discovery is known from the
+     * start, so nothing is open and nothing is found (Research.idleMonth()), though a grant still buys posts there, which are jobs and are paid.
+     * With every grant at 0 nothing in the month moves: no post, no job, no bill, no line in the log.
+     */
+
+    /**
+     * The university-band staff of the standing schools by field (R3): each school's UNIV_* jobs times the stack's standing quantity, split over
+     * the fields as Research.staffByField() says. `fill` is the job fill by JobType ordinal for the STAFFED staff, who are the faculty (Research.faculty());
+     * null for the NOMINAL staff, which are the room for posts (Research.room()). Empty in a city with no school that hosts research.
+     */
+    java.util.EnumMap<ResearchCatalog.Field, Double> researchStaff(double[] fill) {
+        java.util.EnumMap<ResearchCatalog.Field, Double> out = new java.util.EnumMap<>(ResearchCatalog.Field.class);
+        for (BuildingsStacks stack : buildingManager.getStacksView()) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (t.getTeaches() == null || t.getTeaches() == EducationType.NONE || stack.getQuantity() <= 0) continue;
+            double[] staff = new double[JobType.values().length];
+            for (JobType type : JobType.values()) {
+                if (Research.servedBy(type).isEmpty()) continue;
+                double standing = (double) t.getJobs(type) * stack.getQuantity();
+                staff[type.ordinal()] = fill == null || type.ordinal() >= fill.length ? standing : standing * fill[type.ordinal()];
+            }
+            for (java.util.Map.Entry<ResearchCatalog.Field, Double> share : Research.staffByField(t.getTeaches(), staff).entrySet()) {
+                out.merge(share.getKey(), share.getValue(), Double::sum);
+            }
+        }
+        return out;
+    }
+
+    /** The posts the month's grants buy are struck at the top of the month (nextMonth()), at the wages the labour market has now. Nothing to strike while no grant is set and no post is held. */
+    private void strikeResearchPosts() {
+        if (research.isEmpty()) return;
+        java.util.EnumMap<ResearchCatalog.Field, Double> room = new java.util.EnumMap<>(ResearchCatalog.Field.class);
+        for (java.util.Map.Entry<ResearchCatalog.Field, Double> staff : researchStaff(null).entrySet()) {
+            room.put(staff.getKey(), Research.room(staff.getValue()));
+        }
+        research.strikePosts(room, populationManager.getWagesPerType());
+    }
+
+    /** The job fill by JobType ordinal the month's research bill was struck at (settleResearchBill()), or null before any month; for the harnesses and the screens that show the posts filled. Not saved. */
+    private double[] researchFill;
+
+    public double[] getResearchFill() { return researchFill == null ? null : researchFill.clone(); }
+
+    /** Adds the jobs the month's research posts are to `jobs`, by JobType ordinal: a city with none held adds nothing (getJobs(), refreshJobs() and the load path's rebuild all count the posts through here). */
+    private void addResearchPosts(long[] jobs) {
+        if (research.isEmpty()) return;
+        long[] posts = research.jobs();
+        for (int i = 0; i < jobs.length && i < posts.length; i++) jobs[i] += posts[i];
+    }
+
+    /**
+     * What the posts cost this month, struck beside the schools' bill at the same wages and fill (R3; advanceDemographics()): the pay of the filled
+     * posts, and the laboratories' other costs on top of it (Research.bill() less Research.payroll()). Nothing for a city with no post. The load path
+     * does not strike it again: a flow cannot be reconstructed from the state a month ended in, so the save carries it (DataSave.ResearchRecord).
+     */
+    private void settleResearchBill(double[] fill) {
+        researchFill = fill == null ? null : fill.clone();
+        double[] wages = populationManager.getWagesPerType();
+        double payroll = 0, bill = 0;
+        for (ResearchCatalog.Field f : ResearchCatalog.Field.values()) {
+            int posts = research.posts(f);
+            if (posts <= 0) continue;
+            payroll += Research.payroll(f, posts, wages, fill);
+            bill += Research.bill(f, posts, wages, fill);
+        }
+        economyManager.setResearch(payroll, bill - payroll);
+    }
+
+    /**
+     * The research's month (R3), after the schools' (their staff are the faculty): the researchers the faculty and the filled posts give each
+     * field work the open problems in a city founded the 1900 way, and have nothing to work on in any other (Research.idleMonth()). What was found
+     * that is a Policy lever's key brings the lever forward, to the first month the policy hears after the find (TaxPolicy.bringForward()).
+     */
+    private void workTheResearch(double[] fill) {
+        java.util.EnumMap<ResearchCatalog.Field, Double> staffed = researchStaff(fill);
+        java.util.EnumMap<ResearchCatalog.Field, Double> researchers = new java.util.EnumMap<>(ResearchCatalog.Field.class);
+        for (ResearchCatalog.Field f : ResearchCatalog.Field.values()) {
+            researchers.put(f, Research.faculty(staffed.getOrDefault(f, 0.0)) + Research.filledResearchers(f, research.posts(f), fill));
+        }
+        if (foundedUnfitted()) research.month(month, getWorldSeed(), researchers);
+        else research.idleMonth(researchers);
+        for (String code : research.foundThisMonth()) {
+            PolicyDates.Lever lever = PolicyDates.leverOf(code);
+            if (lever != null) economyManager.getTaxPolicy().bringForward(lever, month + 1);
+        }
+    }
 
     /**
      * Whether a building is known in this city this month (R3): history's month for its "since", or the month the city found its code. For R2b,
@@ -12692,6 +12787,9 @@ public class Game {
          * ON HISTORY'S DATES.
          */
         policyHearsTheMonth();
+        // THE RESEARCH POSTS ARE STRUCK NEXT (R3): what the month's grants buy within the schools' room, at the wages the labour market has now.
+        // They are jobs, so they are struck before the posts are counted (getJobs()); none while no grant is set and no post is held.
+        strikeResearchPosts();
         // The buildings the player ordered demolished between the presses
         // close now, as the month after the order starts - the first it is
         // in force for - before anything in it reads the city (0.7.22; THE
@@ -13783,6 +13881,8 @@ public class Game {
                         // were left out from the start, and transit's bill was
                         // paid by nobody until this batch.
                         + education.getGrossCost()
+                        // ...and the research grants' posts and laboratories (R3), valued at what they cost: none at a grant of 0.
+                        + economyManager.getResearchBill()
                         + economyManager.getTransitBill(),
                 // The full interest bill, foreign coupons included - the
                 // government's books should show what it paid, not only the
@@ -14187,8 +14287,10 @@ public class Game {
         double safetyOut   = economyManager.getSafetyBill();
         // ...and transit's wages and upkeep (0.7.49, B9), struck at 6d and paid by nobody until now.
         double transitOut  = economyManager.getTransitBill();
+        // ...and the research grants' posts and laboratories (R3), struck beside the schools'; 0 at a grant of 0.
+        double researchOut = economyManager.getResearchBill();
         double tempCash = cash + taxIn - (interestOut + pensionsOut
-                + careOut + schoolsOut + safetyOut + transitOut);
+                + careOut + schoolsOut + researchOut + safetyOut + transitOut);
         // The utility books what its customers were charged - see
         // UtilitiesHandler.setBilledRevenue() - and since 0.7.112 what the
         // works sold it of their own power, which it pays them.
@@ -14228,6 +14330,7 @@ public class Game {
             treasuryPays(TreasuryLine.PENSIONS, pensionsOut);
             treasuryPays(TreasuryLine.HEALTHCARE, careOut);
             treasuryPays(TreasuryLine.SCHOOLS, schoolsOut);
+            treasuryPays(TreasuryLine.RESEARCH, researchOut);
             treasuryPays(TreasuryLine.SAFETY, safetyOut);
             treasuryPays(TreasuryLine.TRANSIT, transitOut);
             treasuryPays(TreasuryLine.CITY_SERVICES, Math.max(0, -servicesNet));
@@ -14274,6 +14377,8 @@ public class Game {
         for (JobType job : JobType.values()) {
             jobs[job.ordinal()] = buildingManager.getTotalJobs(job);
         }
+        // ...and the research posts the month struck (R3), which are jobs like the rest.
+        addResearchPosts(jobs);
     }
 
     /**
@@ -14293,8 +14398,11 @@ public class Game {
         return buildingManager.getTotalStoreCoverage();
 
     }
+    /** Every job the city offers this month by JobType ordinal: its buildings' and the research posts' (R3). A fresh array, as getTotalJobs() returns. */
     public long[] getJobs(){
-        return buildingManager.getTotalJobs();
+        long[] jobs = buildingManager.getTotalJobs();
+        addResearchPosts(jobs);
+        return jobs;
     }
    
     
@@ -14883,6 +14991,16 @@ public class Game {
         populationManager.trimLicencesToBand();
 
         economyManager.setEducation(education.getGrossCost(), education.getFees());
+
+        /*
+         * ...AND THE RESEARCH (R3): beside the schools because their staff are its faculty and its room, at the same wages and fill they were
+         * paid at. The posts the month struck were counted among the jobs and are paid with the households' wages already; their bill (the
+         * pay, and the laboratories' other costs on top of it) is struck here for the treasury (finalUpdateEconomy(), TreasuryLine.RESEARCH).
+         * The researchers (the faculty's 40% and the filled posts) then work the open problems, and a law find brings its lever forward.
+         * Nothing at all with no post and no school that hosts research; the default city's researchers are all idle.
+         */
+        settleResearchBill(fill);
+        workTheResearch(fill);
 
         /*
          * 6c. AND THE POLICE AND THE PRISONS: what they cost, charged to the
@@ -16228,6 +16346,8 @@ public class Game {
         dataSave.setRecipeChoices(recipes.forSave());
         // ...and the fittings on site, only where there is a job (R1b).
         dataSave.setFittings(fittings.view());
+        // ...and the city's research with the month's bill, only where it holds anything (R3; none in a city that never funded any).
+        dataSave.setResearch(research, economyManager.getResearchPayroll(), economyManager.getResearchCosts());
         // ...and how many founding endowments of household places, care and police it holds (FW9).
         dataSave.setFoundingEndowments(buildingManager.getFoundingEndowments());
         // ...and the order the stacks stand in (0.7.43; DataSave.getStackOrder()).
@@ -19173,6 +19293,8 @@ public class Game {
     for (JobType job : JobType.values()) {
         jobs[job.ordinal()] = buildingManager.getTotalJobs(job);
     }
+    // ...and the research posts the saved city held (R3; restored before this runs): jobs like the rest.
+    addResearchPosts(jobs);
 
     // population sync
     // NOTE: this line used to be setPopulation(getPopulation()) - a no-op that
@@ -20278,6 +20400,17 @@ public class Game {
             buildingManager.restoreUnfitted(loaded.getUnfittedById());
             // ...and the fittings on site, with them (R1b): a save with none has none.
             fittings.restore(loaded.getFittings());
+            // ...and the city's research (R3): its grants, the posts the month struck, the work piled and the finds, with the bill that month paid.
+            // BEFORE rebuildSimulationState(), which counts the jobs and so counts the posts. A save with no key restores an empty research and
+            // no bill: a load never keeps the last city's.
+            DataSave.ResearchRecord savedResearch = loaded.getResearch();
+            if (savedResearch == null) {
+                research.reset();
+                economyManager.setResearch(0, 0);
+            } else {
+                research.restore(savedResearch.grants, savedResearch.posts, savedResearch.piles, savedResearch.found);
+                economyManager.setResearch(savedResearch.payroll, savedResearch.costs);
+            }
             // ...and the recipes the parts of a stack run (R1c): the SAVED choices, put back and applied, never struck again from the loaded prices
             // (the next month's top does that), and before the forms, which weigh each building by the electricity its recipe leaves it.
             recipes.restore(loaded.getRecipeChoices());
@@ -21425,6 +21558,8 @@ public class Game {
         buildingManager.redenominate(scale);
         healthcare.redenominate(scale);
         education.redenominate(scale);
+        // ...and the research grants, which are money; the posts, the work piled and the finds are not (R3).
+        research.redenominate(scale);
         crime.redenominate(scale);
         if (servicesManager != null && servicesManager.getUtilitiesHandler() != null) {
             servicesManager.getUtilitiesHandler().redenominate(scale);

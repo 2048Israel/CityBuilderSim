@@ -30,8 +30,9 @@ import java.util.TreeMap;
  * are OPEN (not known; its science exists, which is history's month less the field's lag; every code it needs known, here or abroad), the
  * field's researchers spread over them evenly with none past its team cap, each pile gaining its researchers over twelve researcher-years a month,
  * and a pile that reaches the problem's HIDDEN SIZE is found here that month. The size is drawn once from the city's seed and the code
- * (hiddenSize()), is a fact about the city and is never saved. Not here: calling the step from the month, striking posts into the labour market,
- * paying for them, the save, the inbox (the next slice; this class gives it the getters and restore() it saves through).
+ * (hiddenSize()), is a fact about the city and is never saved. Not here, and in Game: striking the posts at the top of the month (nextMonth()),
+ * counting them among the city's jobs (getJobs()), paying for them and calling the step (advanceDemographics(), beside the schools), saving them
+ * (DataSave) and the inbox's notices (Inbox.takeResearch()); this class gives them the getters, idleMonth() and restore().
  */
 public final class Research {
 
@@ -535,6 +536,26 @@ public final class Research {
         }
     }
 
+    /**
+     * The month of a city founded the default way (Game.advanceDemographics()): every discovery is known from the start, so nothing is open and
+     * nothing is found or arrives, and the researchers its faculty and posts give have nothing to work on. Records them as the month's, every one
+     * idle, with no open problem, find or arrival, and moves no pile. A grant still buys posts in such a city (they are jobs and are paid); this
+     * is what the screens read of them.
+     */
+    public void idleMonth(EnumMap<Field, Double> researchers) {
+        foundThisMonth.clear();
+        arrivedThisMonth.clear();
+        researchersNow.clear();
+        idleNow.clear();
+        openNow.clear();
+        for (Field f : Field.values()) {
+            double people = sane(researchers == null ? null : researchers.get(f));
+            researchersNow.put(f, people);
+            idleNow.put(f, people);
+            openNow.put(f, 0);
+        }
+    }
+
     /** The codes found here this month (month()), in the order found. Unmodifiable. */
     public List<String> foundThisMonth() {
         return Collections.unmodifiableList(foundThisMonth);
@@ -636,6 +657,11 @@ public final class Research {
         } catch (IllegalArgumentException notAField) {
             return null;
         }
+    }
+
+    /** A reform of the money (Game.redenominate()): every grant times `scale`. The posts, the work piled and the finds are not money and stay as they are. */
+    public void redenominate(double scale) {
+        grants.replaceAll((field, grant) -> grant * scale);
     }
 
     /** A new game: no grant, no post, no work piled, nothing found and no event (Game.buildWorld()). */

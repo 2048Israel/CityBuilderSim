@@ -1048,7 +1048,8 @@ public final class CityNeeds {
         if (type == EducationType.NONE || type.isBasic()) return 0;
         BuildingManager bm = game.getBuildingManager();
         PopulationManager pm = game.getPopulationManager();
-        long[] posts = bm.getTotalJobs();
+        // ...the research posts among them (R3): a graduate takes a post a grant bought as one a building offers (Game.getJobs()).
+        long[] posts = game.getJobs();
         double[] coming = new double[JobType.values().length];
         for (BuildingsStacks site : bm.getStacksUnderConstruction()) {
             for (JobType j : JobType.values()) coming[j.ordinal()] += site.getUnderConstruction() * (double) site.getBuilding().getJobs(j);

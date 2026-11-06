@@ -216,6 +216,23 @@ public class TaxPolicy {
         opening.put(lever, 1);
     }
 
+    /**
+     * A law discovery found here brings its lever forward (R3): the lever opens in `month` or at the earliest the discovery allows
+     * (PolicyDates.earliestOpening(): MAX_EARLY_MONTHS before its date), whichever is later, and never later than it was. A lever already open
+     * by then, or one that history opens at founding, is untouched. Game says the first month the policy will hear after the find (the month
+     * after it), because setMonth() has already held the lever shut at the top of the find's month: an opening in that month itself would leave
+     * the lever open in name with its base rate held at zero, and the founding rate (setMonth()) would overwrite one the player set in between.
+     * Returns whether the opening moved. Saved with the other openings (openingsForSave()).
+     */
+    public boolean bringForward(PolicyDates.Lever lever, int month) {
+        if (lever == null || PolicyDates.openAtFounding(lever)) return false;
+        int now = opening.get(lever);
+        int earlier = Math.min(now, Math.max(month, PolicyDates.earliestOpening(lever)));
+        if (earlier >= now) return false;
+        opening.put(lever, earlier);
+        return true;
+    }
+
     /** Every lever back to history's date: a new city. */
     private void resetOpenings() {
         opening.putAll(historyOpenings());
