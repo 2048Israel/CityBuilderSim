@@ -1,4 +1,4 @@
-# R3 - research: posts and discoveries ({next}, 2026-11-06)
+# R3 - research: posts and discoveries (0.9.28, 2026-11-06)
 
 ## WHERE IT STANDS
 
