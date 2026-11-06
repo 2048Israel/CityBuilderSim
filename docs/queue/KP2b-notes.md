@@ -1,9 +1,9 @@
 # KP2b - The kept screens' review follow-ups ({next}, 2026-11-06)
 
-**WHERE IT STANDS** (2026-11-06, 09:10): the three slices are in and reviewed (B 322ec4fa, A 6f62f1c2 with Opus's
-forest law card, C 01516d88 with Opus's matrix columns and section 92's letting go); KeptCheck on A and B exit 3 and on C
-exit 3, main's recorded red only. Left: KP7 onto main and merged in, `--pick` on that merge, the quiet chrome measure
-(§5), then the ship file. The PC stays on until about 15:00 (the orchestrator, 07:00).
+**WHERE IT STANDS** (2026-11-06, 09:40): ready, see the ship file. The three slices are in and reviewed (B 322ec4fa,
+A 6f62f1c2 with Opus's forest law card, C 01516d88 with Opus's matrix columns and section 92's letting go); KP7 0.9.29
+and R3 0.9.28 merged in (2b3bcf74); `--pick` on the merge exit 3, main's recorded KeptCheck red only (§5); the chrome
+measured quiet, ABBA against 0.9.17 (§5).
 
 The batch's record. `QUEUE.md`'s KP2b row: the stranger's threading reviews at the gates of KP2, KP3, KP4, KP5 and KP6
 (and KP6's notes §7, the sweep it left for this row). Lane 2 (screens), after KP7, built on `origin/batch/KP7` at its
@@ -92,11 +92,27 @@ the harness thread as `sectors()` already reads the model, and 93's wait for the
 - KeptCheck on A and B together: exit 3, main's recorded red only ("a month's redraw after each choice hands back nine
   in ten..."); with Policy counted in 92 it was 22 reds, Policy's last writes, which slice C mended. On C: exit 3, the
   same red alone.
-- **The chrome measure** (the row: 9.34 ms on KP3's merge against 8.02, `KEPT_ALL_CHROME_MS` 8.0): not run yet. The
-  driver is section 13's body alone over the city KeptCheck makes, six rounds, compiled against each tree; 0.9.17 is built
-  in a worktree of its own (`.claude/worktrees/kp2b-m17`). It needs a PC with no gate on it: one ran its hard timing
-  from 06:40. No budget moves either way.
-- `--pick`: not run yet (the top).
+- **The chrome measure** (the row: 9.34 ms on KP3's merge against main's 8.02, `KEPT_ALL_CHROME_MS` 8.0): KeptCheck
+  section 13's body alone over the city KeptCheck makes (month 605), 20 rounds a run, the median of rounds 11-20 (the
+  JIT still settles to about round 10), compiled against each tree, ABBA, 09:29-09:31 with no gate on the PC (one other
+  batch's suite running; slice C's hung KeptCheck, below, stopped first):
+
+  | run | kept, median ms (min-max) | built new, median ms |
+  |---|---|---|
+  | A 0.9.17 | 2.46 (2.05-3.71) | 12.73 |
+  | B KP2b | 3.03 (2.55-4.58) | 13.28 |
+  | B KP2b | 3.02 (2.62-5.72) | 13.41 |
+  | A 0.9.17 | 3.48 (2.49-4.72) | 16.20 |
+
+  About 3 ms both ways (A 2.97, B 3.03 on average, the A runs either side of B's): no cost from KP3 to here. The 9.34
+  and 8.02 were the gate's load and section 13's place in the whole KeptCheck, where it runs warm but beside 12
+  sections' garbage. No budget moved.
+- `--pick` on the merge with main (KP7 0.9.29, R3 0.9.28): 20 harnesses, exit 3, main's recorded KeptCheck red alone.
+  It asks a money review (`ui/BankScreen.java`, `ui/FundScreen.java`): their change is look only - door cards made with
+  their style set once, a key swatch's ghost look made where it is made, constant paddings, the fund's name a way back
+  through `pageHeadTo` - no figure, no model call.
+- **A hung run, mine:** slice C's first KeptCheck (07:51), out of memory in 92, never exited: its JVM held 2.9 GB and
+  this worktree's log until 09:26, beside two gates. Stopped by hand (Opus).
 
 ## 6. Found in review, left
 
