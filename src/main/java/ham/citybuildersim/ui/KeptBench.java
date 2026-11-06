@@ -1912,7 +1912,8 @@ public final class KeptBench {
      * a click on it opens the chart), "landRow" (an offer's row), "oreCard" (the land office's ore card), "doorCard"
      * (Services' card made a door), and since KP3 Build's "jobTile" (the Overview's tile for a city category), "marketTile" (its row's tile for a market
      * category) and "ringCard" (a small ring card that is not the one picked, on a category with many rings: Education's), and since KP4 the
-     * Sectors list's "sectorCard" (a business's card).
+     * Sectors list's "sectorCard" (a business's card), since KP5 the money screens' "bankCard", "rungName", "financeCard", "bookRow" and "holdingRow",
+     * and since KP6 "ringKeyRow", "bridgeRow", "rankRow", "mirrorGround" and "policyRow".
      */
     public Node hoverTarget(String kind) {
         List<Node> found = new ArrayList<>();
@@ -1946,6 +1947,17 @@ public final class KeptBench {
                         && style.contains("-fx-padding: 2 4 2 4; -fx-background-radius: 4; -fx-cursor: hand");
                 case "holdingRow" -> n instanceof HBox && n.getOnMouseClicked() != null
                         && style.contains("-fx-background-radius: 6; -fx-cursor: hand");
+                // KP6: the key rows of the Government tab's split ring (Pieces.ringKey), its bridge's rows (Pieces.bridgeRow), the rows of its ranked bars
+                // (Pieces.rankBars, which carry their line's key), the grounds of Trade's mirror rows (Pieces.MirrorRows), and the tall rows of Policy that
+                // are clicked (a payer's, a course's, a zone's).
+                case "ringKeyRow" -> n instanceof HBox && n.getOnMouseClicked() != null
+                        && style.contains("-fx-padding: 1 4 1 4; -fx-background-radius: 4; -fx-cursor: hand");
+                case "bridgeRow" -> n instanceof HBox && n.getOnMouseClicked() != null && style.startsWith("-fx-background-radius: 4; -fx-cursor: hand");
+                case "rankRow" -> n instanceof HBox && n.getOnMouseClicked() != null && n.getProperties().containsKey(Pieces.RANK_KEY);
+                case "mirrorGround" -> n instanceof Region && !(n instanceof Pane) && n.getCursor() == javafx.scene.Cursor.HAND
+                        && n.getOnMouseClicked() != null && style.startsWith("-fx-background-radius: 4;");
+                case "policyRow" -> n instanceof HBox && n.getOnMouseClicked() != null && !n.getProperties().containsKey(Pieces.RANK_KEY)
+                        && style.contains("-fx-padding: 4 6 4 6; -fx-background-radius: 6;") && style.contains("-fx-cursor: hand");
                 default -> throw new IllegalArgumentException(kind);
             };
             if (it) found.add(n);
@@ -3563,5 +3575,96 @@ public final class KeptBench {
     /** The Policy tab forgotten, as another city opened would leave it: nothing kept. */
     public void forgetPolicy() {
         ui.policyScreen.forget();
+    }
+
+    /* =====================================================================
+       THE HANDS THE KP6 HARNESS ADDS (KP6, slice D): what Trade counts up, and the width of its charts
+       ===================================================================== */
+
+    /** The head word of a limit cell (Pieces.limitCell): its first child's words, whether that is a label or a row that starts with one. */
+    private static String headOf(VBox cell) {
+        if (cell.getChildren().isEmpty()) return "";
+        Node first = cell.getChildren().get(0);
+        if (first instanceof Label l) return l.getText() == null ? "" : l.getText();
+        if (first instanceof HBox row && !row.getChildren().isEmpty() && row.getChildren().get(0) instanceof Label l) return l.getText() == null ? "" : l.getText();
+        return "";
+    }
+
+    /** The two figures of Trade's strip that count up from last month's when a month lands: SOLD ABROAD's and BOUGHT ABROAD's, in that order (empty when the page has no such cells). */
+    public List<Label> tradeFigures() {
+        List<Label> out = new ArrayList<>();
+        for (String head : List.of("SOLD ABROAD", "BOUGHT ABROAD")) {
+            VBox cell = find(column, VBox.class, v -> v.getChildren().size() > 1 && v.getChildren().get(1) instanceof Label && headOf(v).startsWith(head));
+            if (cell != null) out.add((Label) cell.getChildren().get(1));
+        }
+        return out;
+    }
+
+    /**
+     * The words the strip's two counted figures read, from the model as the screen reads them (TradeScreen.countFrom): {SOLD ABROAD, BOUGHT ABROAD},
+     * each {last month's, this month's}; last month's is null while History holds fewer than two points.
+     */
+    public String[][] tradeWords() {
+        ham.citybuildersim.ForeignAccounts fx = ui.game.getForeignAccounts();
+        ham.citybuildersim.HistorySave h = ui.game.getHistorySave();
+        String[][] out = new String[2][];
+        String[] series = {"exportsAbroad", "importsAbroad"};
+        double[] now = {fx.getExports(), fx.tradeImports()};
+        for (int i = 0; i < 2; i++) {
+            double[] s = h.aligned(series[i]);
+            String before = s.length < 2 || !Double.isFinite(s[s.length - 2]) ? null : ui.tradeScreen.d(s[s.length - 2]);
+            out[i] = new String[]{before, ui.tradeScreen.d(now[i])};
+        }
+        return out;
+    }
+
+    /** The mirror-row pictures on the page (the bars of what the city bought and sold abroad), in the page's order: the ones that grow out of their axis when a month lands. */
+    public List<Pieces.MirrorRows> tradeBars() {
+        List<Pieces.MirrorRows> out = new ArrayList<>();
+        each(column, n -> {
+            if (n instanceof Pieces.MirrorRows m) out.add(m);
+        });
+        return out;
+    }
+
+    /** Every tooltip on the page by the node that carries it, by identity: Kept.tip keeps a node's own tooltip from draw to draw, Tooltip.install on a draw's node makes a new one each time. */
+    public java.util.Map<Node, Tooltip> tooltips() {
+        java.util.Map<Node, Tooltip> out = new java.util.IdentityHashMap<>();
+        each(column, n -> {
+            Tooltip t = Kept.tipOf(n);
+            if (t != null) out.put(n, t);
+        });
+        return out;
+    }
+
+    /** Every node on the page, by identity. */
+    public java.util.Set<Node> nodesOnPage() {
+        java.util.Set<Node> out = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        each(column, out::add);
+        return out;
+    }
+
+    /** The keys of a tax's payers that show a row with a dial of their own (a payer's fold is "payer:" and its key), in the ranking's order: the first is the row at the top. */
+    public List<String> policyPayers(String tax) {
+        List<String> out = new ArrayList<>();
+        for (PolicyScreen.Payer p : ui.policyScreen.payersOf(tax, ui.game.getEconomyManager().getTaxPolicy())) {
+            if (p.lever() != null && !PolicyScreen.paidNothing(p)) out.add(p.key());
+        }
+        return out;
+    }
+
+    /** What WHO GOES WITHOUT (Pieces.whoGoesWithout) says now: {its figure's words, whether the door to the shops is "drawn" or "not drawn"}. */
+    public String[] hunger() {
+        Pieces.Hunger h = Pieces.hunger(ui.game);
+        return new String[]{h.figure(), h.shortLarger() ? "drawn" : "not drawn"};
+    }
+
+    /** Every time chart on the page with the width of the box it sits in: {the chart's width, the box's width}, in the page's order. */
+    public List<double[]> chartWidths() {
+        List<double[]> out = new ArrayList<>();
+        each(column, n -> {
+            if (n instanceof TimeChart c) out.add(new double[]{c.getWidth(), c.getParent() instanceof Region box ? box.getWidth() : Double.NaN});
+        });
+        return out;
     }
 }

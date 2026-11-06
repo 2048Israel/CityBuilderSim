@@ -3472,7 +3472,15 @@ public final class Pieces {
                 boolean on = Double.isFinite(rule.at()) && rule.at() >= 0 && rule.at() <= scale;
                 line.setVisible(on);
                 name.setVisible(on && rule.name() != null);
-                if (!on) continue;
+                if (!on) {
+                    // A rule off the scale keeps nothing of the month it was last on (a page built new has none): its line and name where nothing laid them out.
+                    line.setStartX(0);
+                    line.setEndX(0);
+                    line.setStartY(0);
+                    line.setEndY(0);
+                    name.resizeRelocate(0, 0, 0, 0);
+                    continue;
+                }
                 double x = Math.floor(x0 + barW * rule.at() / scale) + .5;
                 line.setStartX(x);
                 line.setEndX(x);

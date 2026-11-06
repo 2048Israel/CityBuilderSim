@@ -214,12 +214,47 @@ import java.util.concurrent.TimeUnit;
  *      focus and typed into, a month landed through the real show method - the same node, text, caret and focus - and a chip pressed under the focus;
  *  67. the hover: a Bank door card, a rung's name on the ladder, a Finances card and a row of the book, a fund holding's row;
  *  68. it is cheap: the kept month on the heaviest page of each within KEPT_BANK_MS, KEPT_FINANCES_MS and KEPT_FUND_MS through Timing, built new beside it.
+ *
+ * ...and the Government tab, Trade & the World with its partners page and Policy with zoning's pages (KP6), each page drawn kept from the
+ * screen's pool and built new from an empty one, the clock paused so that every month counts up:
+ *  69. Government is kept: each of its four pages, the top nodes stay, nine in ten handed back, most months make none (the Overview's lists show a line in
+ *      the months it took in or paid out something, so there no month may make more than a tenth of the page);
+ *  70. it shows what a page built new shows, for MONTHS months with the pixels at three and the spoil proof, on every page;
+ *  71. what reshapes it keeps it right: every page, every fold (the treasury's month, the paper, the output's months, the bridge's two columns' "N more")
+ *      and every line that opens into who pays, each opened and closed, and a door's target - each redraw, and the one after a month lands, equal to a page
+ *      built new - in the city as it is, owing paper of every kind (the debt fold and the paper's lines have to add), and in a deficit made by hand with the
+ *      central bank printing for the treasury and arrears owed (the cards the Overview draws only then; the dials put back after);
+ *  72 to 74. the same three for Trade & the World, on its six pages and a nation's page behind Partners: every page and sub-page, every fold and line (the
+ *      month's ledger and the eight moneys over the years have to add), the river and the steps, what we trade by good and by business, the table of the month
+ *      and of the year, a good's board, three nations' pages and back to the table, the exchange's ask and buying and selling, each of the eight moneys, the
+ *      vault's mix, and a door's target; the eight over the years' two charts are as wide as the card they sit in, on the kept draw and the month after;
+ *  75 to 77. the same three for Policy, on the hub, Taxes' Profit page, Money's policy rate, Promises' Schools and Food, zoning's ground and a zone's page:
+ *      every fixed page of the five areas and a zone's page for every sector, zoned or not, the forest law, every fold and line (a tax's table, a payer's
+ *      own move, the zero payers, the floor's table, the rate's history, a course's own price, the food rows), a change staged on every page that takes
+ *      one and dropped (the tray, and the dial cards drawn at the thumb), and the currency page and the reform page under every regime; and People's WHO
+ *      GOES SHORT card, which Policy's Food page shares, with people short of food;
+ *  78. the controls on Policy keep the player's hand: on a tax page, the policy rate and a zone's ground dial, through the real show method, a slider
+ *      pressed and dragged two steps and a month landed is the same node, still held, the thumb where the hand left it, the reading and the dial card's
+ *      effects at the thumb; released, the change is staged at the thumb, the tray shows it and the page equals a page built new; dropped, equal again;
+ *      and a dial card that comes in front of a held dial (a course's own price on the Schools page, a payer's own move on Profit) leaves the held slider
+ *      the same node, at its thumb, with no dial in front of it carrying the thumb;
+ *  79. the count-up only at 1x-10x: at each rung of the speed ladder and paused a month that lands counts Trade's SOLD ABROAD and BOUGHT ABROAD up from last
+ *      month's and grows the bars of the Overview and of What we trade exactly at the rungs countsUp() allows; past it nothing animates, each figure reads
+ *      this month's words and the page is the page built new, and a count still running is stopped; the Government and Policy pages start no animation at
+ *      any rung (they have none);
+ *  80. the hover: on Government a door, a status cell, a key row of the split ring, a bridge row and a ranked bar's row; on Trade a door card, a mirror
+ *      row's ground and a status cell; on Policy an area card and the tall rows of a payer, a course and a zone - each keeps the look its own mouse-entered
+ *      gives it under a still pointer across a kept redraw, and loses it with the pointer; and the tooltips are kept: a node a month's redraw keeps keeps
+ *      its own Tooltip (Kept.tip) on every page of the three screens;
+ *  81. it is cheap: the kept month on Government's Overview within KEPT_GOVERNMENT_MS, on Trade's Overview and its heaviest page within KEPT_TRADE_MS and
+ *      on Policy's hub and its dial-heavy pages within KEPT_POLICY_MS through Timing, built new beside it.
  */
 public class KeptCheck {
 
     static int fails = 0;
 
     static void check(String label, boolean ok) {
+        checks++;
         if (!ok) fails++;
         System.out.printf("%-72s %s%n", label, ok ? "OK" : "FAIL");
     }
@@ -1507,6 +1542,11 @@ public class KeptCheck {
      * has to add to the page (the premise: the fold is on it).
      */
     static void pageReshaped(Game g, KeptBench bench, KeptBench.Page page, int n, List<Choice> choices) throws Exception {
+        pageReshaped(g, bench, page, n, choices, HANDED_BACK);
+    }
+
+    /** ...with the share of the page a month's redraw has to hand back set by the caller (KP6: KP6_HANDED_BACK). */
+    static void pageReshaped(Game g, KeptBench bench, KeptBench.Page page, int n, List<Choice> choices, double share) throws Exception {
         System.out.println("\n--- " + n + ": what reshapes " + page.name() + " ---");
         int size = fx(() -> {
             bench.home(page);
@@ -1549,7 +1589,7 @@ public class KeptCheck {
         }
         System.out.printf("  the month's redraw after a choice handed back %.1f%% of the page's nodes at the fewest (after \"%s\": %d made, %d handed back)%n",
                 worst * 100, worstAt, worstMade, worstKept);
-        check("a month's redraw after each choice hands back nine in ten of the page's nodes, or more", worst >= HANDED_BACK);
+        check("a month's redraw after each choice hands back " + (share == HANDED_BACK ? "nine in ten" : String.format("%.0f%%", share * 100)) + " of the page's nodes, or more", worst >= share);
     }
 
     /** Section n: what the kept month on the page's home costs, against the same month built new. */
@@ -4450,6 +4490,1289 @@ public class KeptCheck {
         return now;
     }
 
+    /* =====================================================================
+       GOVERNMENT, TRADE & THE WORLD AND POLICY (KP6), sections 69 to 81: the three screens KP6 keeps, each page drawn kept from the
+       screen's pool and built new from an empty one - kept, shown as a page built new shows it, kept right through what reshapes it -
+       then the controls on Policy, the count-up the clock allows, the hover, and what it costs.
+       ===================================================================== */
+
+    /**
+     * The budget for the kept Government month - its draw, then the pulse's CSS and layout - on the Overview, at month 3,500 of a played city (about
+     * where KeptCheck is when it comes to the Government tab), on the PC: twice the kept month's median, rounded up (3.1 to 4.9 ms in five runs of the
+     * KP6 sections alone, 3.4 between them; the same month built new 12.0 to 20.6 ms).
+     */
+    static final double KEPT_GOVERNMENT_MS = 7;
+
+    /**
+     * The budget for the kept Trade month - its draw, then the pulse's CSS and layout - on the Overview and on the heaviest of its pages (the reserves),
+     * the larger of the two being the figure, at month 3,500 of a played city, on the PC: twice the kept month's median, rounded up (the Overview 4.3
+     * to 9.0 ms in five runs of the KP6 sections alone, 4.7 between them, the same month built new 8.3 to 14.8 ms; the reserves page 2.7 to 4.3 ms,
+     * 3.0 between them, built new 10.6 to 13.8).
+     */
+    static final double KEPT_TRADE_MS = 10;
+
+    /**
+     * The budget for the kept Policy month - its draw, then the pulse's CSS and layout - on the hub and on the pages heavy with dials (Taxes' Profit
+     * page and the policy rate's), the largest of them being the figure, at month 3,500 of a played city, on the PC: twice the kept month's median,
+     * rounded up (the hub 4.3 to 5.2 ms in five runs of the KP6 sections alone, 4.6 between them, built new 9.7 to 14.9 ms; Profit 2.0 to 3.3 ms, 2.1
+     * between them, built new 6.9 to 8.9; the policy rate 4.2 to 7.2 ms, 4.5 between them, built new 15.9 to 26.5).
+     */
+    static final double KEPT_POLICY_MS = 10;
+
+    /**
+     * The share of a KP6 page's nodes a month's redraw has to hand back after a choice, at least: three in four. The pages of these screens rank what the
+     * model did (the partners by what they traded, the payers by what they paid, the paper by what falls due), and a month that moves a row in or out of
+     * a short table makes its nodes: at month 3,505 of a played city (441,000 people) one month made 80 of the 350 nodes of the Partners page - the
+     * ranking of its eleven partners moved - and 44 of the 397 of Spending with every line open. A page that is remade by a redraw hands back next to
+     * nothing, and sections 69, 72 and 75 hold the nine in ten (the average of 25 months, most of them making none).
+     */
+    static final double KP6_HANDED_BACK = .75;
+
+    /** The assertions made so far, for the count a stretch of the KP6 sections reports. */
+    static int checks = 0;
+
+    /** What a stretch of the KP6 sections took and how many assertions it made, in a line; the clock's reading for the next. */
+    private static long tookWith(String what, long since, int checksSince) {
+        long now = System.nanoTime();
+        System.out.printf("  [%s took %.0f s, %d assertions]%n", what, (now - since) / 1e9, checks - checksSince);
+        return now;
+    }
+
+    /** The folds the Trade sections open that have to add to their page in any city that trades: the month's ledger and the eight moneys over the years. */
+    static final java.util.Set<String> TRADE_FOLDS_THAT_ADD = java.util.Set.of("month:ledger", "reserves:eight");
+
+    /**
+     * The taxes cut to nothing, the central bank printing for the treasury and two lines of arrears owed; what the dials were. The fuel duty, the port
+     * dues and the fund's withdrawal go too: in a city as large as KeptCheck's by now the fund's transfer is most of the treasury's income, and the
+     * port dues more than it spends, so cutting the four taxes alone leaves a surplus.
+     */
+    static double[] makeDeficit(Game g) throws Exception {
+        var tax = g.getEconomyManager().getTaxPolicy();
+        double[] was = {tax.getProfitTaxRate(), tax.getSalesTaxRate(), tax.getWageTaxRate(), tax.getPropertyTaxRate(), tax.getFuelDuty(), tax.getPortDues(),
+                g.getFund().getWithdrawal()};
+        tax.setProfitTaxRate(0);
+        tax.setSalesTaxRate(0);
+        tax.setWageTaxRate(0);
+        tax.setPropertyTaxRate(0);
+        tax.setFuelDuty(0);
+        tax.setPortDues(0);
+        g.getFund().setWithdrawal(0);
+        g.getCentralBank().advanceToTreasury(50_000);
+        java.lang.reflect.Field f = Game.class.getDeclaredField("arrears");
+        f.setAccessible(true);
+        @SuppressWarnings("unchecked") java.util.Map<String, Double> arrears = (java.util.Map<String, Double>) f.get(g);
+        java.lang.reflect.Method key = Game.class.getDeclaredMethod("arrearsKey", TreasuryLine.class, String.class);
+        key.setAccessible(true);
+        arrears.put((String) key.invoke(null, TreasuryLine.INTEREST, null), 1234.0);
+        arrears.put((String) key.invoke(null, TreasuryLine.STUDENT_GRANTS, null), 567.0);
+        return was;
+    }
+
+    /** The dials put back where makeDeficit() found them. */
+    static void endDeficit(Game g, double[] was) {
+        var tax = g.getEconomyManager().getTaxPolicy();
+        tax.setProfitTaxRate(was[0]);
+        tax.setSalesTaxRate(was[1]);
+        tax.setWageTaxRate(was[2]);
+        tax.setPropertyTaxRate(was[3]);
+        tax.setFuelDuty(was[4]);
+        tax.setPortDues(was[5]);
+        g.getFund().setWithdrawal(was[6]);
+    }
+
+    /** How many lines of the page's signature hold a marker (a card the page draws only in some states). */
+    static int linesSaying(KeptBench bench, String marker) {
+        int n = 0;
+        for (String l : bench.signature()) if (l.contains(marker)) n++;
+        return n;
+    }
+
+    /**
+     * The choices made to act (see Choice.acts): for a page whose content is the model's ranking or the sign of its budget, where a month that moves
+     * a row in or out, or turns a surplus into a deficit, makes the nodes of the cards it swaps - a share of the page that says nothing of what is
+     * kept. Each redraw is still compared with a page built new; the share handed back is printed and not asserted.
+     */
+    static List<Choice> asActing(List<Choice> choices) {
+        List<Choice> out = new ArrayList<>();
+        for (Choice c : choices) out.add(new Choice(c.name(), c.hand(), c.opens(), true));
+        return out;
+    }
+
+    /** The Government tab's pages, folds and lines as choices (the folds that must add to their page only where the city has what they fold). */
+    static List<Choice> governmentChoices(boolean debt) {
+        List<Choice> c = new ArrayList<>();
+        for (String p : KeptBench.governmentPages()) {
+            c.add(choice(p + " page", b -> { b.governmentOpen(p); return null; }));
+            for (String f : KeptBench.governmentFolds()) {
+                boolean here = (f.equals("output") && p.equals("Output")) || (f.equals("treasury") && p.equals("Overview"))
+                        || (debt && f.equals("debt") && p.equals("Spending"));
+                c.add(new Choice(p + ": fold " + f + " opened", b -> { b.governmentFold(f, true); return null; }, here));
+                c.add(choice(p + ": fold " + f + " closed", b -> { b.governmentFold(f, false); return null; }));
+            }
+            for (String line : KeptBench.governmentLines(p)) {
+                c.add(choice(p + ": " + line + " opened", b -> { b.governmentLine(p, line, true); return null; }));
+                c.add(choice(p + ": " + line + " closed", b -> { b.governmentLine(p, line, false); return null; }));
+            }
+            // Everything at once, and then everything closed.
+            c.add(choice(p + ": every fold and line open", b -> {
+                for (String f : KeptBench.governmentFolds()) b.governmentFold(f, true);
+                for (String line : KeptBench.governmentLines(p)) b.governmentLine(p, line, true);
+                return null;
+            }));
+            c.add(choice(p + ": every fold and line closed", b -> {
+                for (String f : KeptBench.governmentFolds()) b.governmentFold(f, false);
+                for (String line : KeptBench.governmentLines(p)) b.governmentLine(p, line, false);
+                return null;
+            }));
+        }
+        return c;
+    }
+
+    /** How many of a Government page's lines add to it when opened into who pays: {added, tried}. */
+    static int[] linesThatAdd(KeptBench bench, KeptBench.Page tab, String page) throws Exception {
+        return fx(() -> {
+            bench.home(tab);
+            bench.governmentOpen(page);
+            bench.drawKept(tab);
+            bench.passes();
+            bench.settle();
+            int base = bench.signature().size(), added = 0, tried = 0;
+            for (String line : KeptBench.governmentLines(page)) {
+                bench.governmentLine(page, line, true);
+                bench.drawKept(tab);
+                bench.passes();
+                bench.settle();
+                tried++;
+                if (bench.signature().size() > base) added++;
+                bench.governmentLine(page, line, false);
+            }
+            bench.drawKept(tab);
+            return new int[]{added, tried};
+        });
+    }
+
+    /** Sections 69 to 71: the Government tab kept. */
+    static void kp6Government(Game g, KeptBench bench) throws Exception {
+        System.out.println("\n=== The Government tab (KP6) ===");
+        // The clock paused: a month stepped by hand counts up at any speed (the Government tab has no animation to run, but the other two do).
+        fx(() -> {
+            bench.clock(false, null);
+            bench.speed(0);
+            return null;
+        });
+        KeptBench.Page overview = fx(bench::government);
+        List<KeptBench.Page> pages = new ArrayList<>(List.of(overview));
+        for (String p : KeptBench.governmentPages()) {
+            if (!p.equals("Overview")) pages.add(fx(() -> bench.government("the Government " + p + " page", p)));
+        }
+        // (The Overview's two lists show a line in the months it took in or paid out something, so a line that comes back makes its row: in a city like
+        // KeptCheck's by now it is most months, 17 nodes of 320 at the most. No month may make more than a tenth of the page; the quiet months are printed.)
+        for (KeptBench.Page p : pages) pageKept(g, bench, p, 69, p == overview);
+        for (KeptBench.Page p : pages) {
+            arrive(bench, p);
+            pageShows(g, bench, p, 70);
+        }
+
+        // 71: what reshapes the tab. The pages in turn, the folds and the lines inside them, and a door's target.
+        KeptBench.Page tab = fx(bench::government);
+        List<Choice> pick = new ArrayList<>();
+        for (String p : KeptBench.governmentPages()) pick.add(choice(p, b -> { b.governmentOpen(p); return null; }));
+        pick.add(choice("the Overview again", b -> { b.governmentOpen("Overview"); return null; }));
+        pageReshaped(g, bench, tab, 71, pick, KP6_HANDED_BACK);
+        for (String page : List.of("Revenue", "Spending")) {
+            int[] r = linesThatAdd(bench, tab, page);
+            check(page + ": the lines that open into who pays add to the page when opened (" + r[0] + " of " + r[1] + ")", r[0] >= 1);
+        }
+        pageReshaped(g, bench, tab, 71, governmentChoices(false), KP6_HANDED_BACK);
+        List<Choice> doors = new ArrayList<>();
+        doors.add(choice("shown through showGovernmentMenu()", b -> { b.governmentOpen("Overview"); b.forgetGovernment(); b.showGovernment(); return null; }));
+        for (String p : KeptBench.governmentPages()) doors.add(choice("the chip " + p + " picked", b -> { b.governmentPick(p); return null; }));
+        doors.add(choice("a door to the bridge", b -> { b.governmentDoor("Overview", "#bridge"); return null; }));
+        doors.add(choice("a door to the balance", b -> { b.governmentDoor("Overview", "#balance"); return null; }));
+        doors.add(choice("a door to Revenue's Business tax", b -> { b.governmentDoor("Revenue", "Business tax"); return null; }));
+        doors.add(choice("a door to Spending's Pensions", b -> { b.governmentDoor("Spending", "Pensions"); return null; }));
+        doors.add(choice("a door to Spending's interest line (the paper)", b -> { b.governmentDoor("Spending", "Interest on the city's paper"); return null; }));
+        doors.add(choice("a door to the Overview", b -> { b.governmentDoor("Overview", null); return null; }));
+        pageReshaped(g, bench, tab, 71, doors, KP6_HANDED_BACK);
+
+        // The city owing: one piece of every kind of paper, then the months the notes fall due. The debt fold and the paper's lines have to add to the page.
+        int owed = fx(() -> bench.financesPieces().size());
+        if (owed < PAPER.length) {
+            System.out.println("  the city owes " + owed + " pieces of paper; selling one of every kind");
+            sellPaper(g, bench);
+        }
+        System.out.println("  the city owes " + fx(() -> bench.financesPieces().size()) + " pieces of paper");
+        pageReshaped(g, bench, tab, 71, governmentChoices(true), KP6_HANDED_BACK);
+        List<Choice> years = new ArrayList<>();
+        years.add(choice("Spending, the interest line and the debt fold open", b -> {
+            b.governmentOpen("Spending");
+            b.governmentLine("Spending", "Interest on the city's paper", true);
+            b.governmentFold("debt", true);
+            return null;
+        }));
+        for (int i = 1; i <= 14; i++) years.add(choice("a month on (" + i + ")", b -> null));
+        years.add(choice("the Overview, the bridge and the treasury open", b -> {
+            b.governmentOpen("Overview");
+            b.governmentFold("bridge:0", true);
+            b.governmentFold("bridge:1", true);
+            b.governmentFold("treasury", true);
+            return null;
+        }));
+        for (int i = 1; i <= 3; i++) years.add(choice("a month on, the Overview (" + i + ")", b -> null));
+        pageReshaped(g, bench, tab, 71, years, KP6_HANDED_BACK);
+
+        // A deficit, the central bank printing for the treasury and arrears owed: the cards the Overview draws only then.
+        double[] rates = fx(() -> makeDeficit(g));
+        for (int m = 0; m < 3; m++) fx(() -> { month(g); return null; });
+        int[] marks = fx(() -> {
+            bench.home(tab);
+            bench.drawKept(tab);
+            bench.passes();
+            return new int[]{linesSaying(bench, "CENTRAL BANK"), linesSaying(bench, "OWED AND UNPAID"), linesSaying(bench, "DEFICIT")};
+        });
+        System.out.printf("  the Overview in a deficit: CENTRAL BANK lines %d, OWED AND UNPAID lines %d, DEFICIT lines %d, arrears owed: %s%n",
+                marks[0], marks[1], marks[2], fx(g::hasArrears));
+        check("the central bank's printing and the arrears owed cause the cards they are meant to (CENTRAL BANK lines " + marks[0] + ", OWED AND UNPAID lines " + marks[1] + ")",
+                marks[0] > 0 && marks[1] > 0);
+        // (The sign of the budget turns where the treasury's income stops: in the city KeptCheck has played to by now the central bank's remittance and the
+        // fund's marks leave a surplus all the same, and the DEFICIT card is not reached by this fixture there; it is, in a city of 600 months.)
+        System.out.println("  the budget in this deficit: " + (marks[2] > 0 ? "a deficit (DEFICIT lines " + marks[2] + ")" : "still a surplus: the DEFICIT card is not reached by a fixture in this city"));
+        // (In a deficit made by hand the budget's sign turns from month to month with a lump of land sold or of paper repaid, and the cards swap.)
+        pageReshaped(g, bench, tab, 71, asActing(governmentChoices(true)), KP6_HANDED_BACK);
+        // ...and the taxes back, a few months on: the cards go, the surplus returns.
+        fx(() -> {
+            endDeficit(g, rates);
+            return null;
+        });
+        List<Choice> back = new ArrayList<>();
+        for (int i = 0; i < 6; i++) back.add(acting("a month with the taxes back, the Overview " + (i + 1), b -> { b.governmentOpen("Overview"); return null; }));
+        for (String p : KeptBench.governmentPages()) back.add(choice(p, b -> { b.governmentOpen(p); return null; }));
+        pageReshaped(g, bench, tab, 71, back, KP6_HANDED_BACK);
+        fx(() -> {
+            bench.home(tab);
+            return null;
+        });
+    }
+
+    /* ----- Trade ----- */
+
+    /** The hand that puts the Trade tab on a page. */
+    static Hand tradeOn(String page) {
+        return b -> {
+            b.tradeOpen(page);
+            return null;
+        };
+    }
+
+    /** The hand that puts the Trade tab on a nation's page behind Partners (0 is the table). */
+    static Hand tradeNationOn(int nation) {
+        return b -> {
+            b.tradeNationPick(nation);
+            return null;
+        };
+    }
+
+    /** A fold or a line of the Trade tab opened or closed. */
+    static Hand tradeFold(String key, boolean open) {
+        return b -> {
+            b.tradeLine(key, open);
+            return null;
+        };
+    }
+
+    /** Sections 72 to 74: Trade & the World kept. */
+    static void kp6Trade(Game g, KeptBench bench) throws Exception {
+        System.out.println("\n=== The Trade tab (KP6) ===");
+        // The clock paused: a month stepped by hand counts up at any speed, so the pages are drawn with the strip's figures counting and the bars
+        // growing (and finished where a signature is read), the harder case for a page kept.
+        fx(() -> {
+            bench.clock(false, null);
+            bench.speed(0);
+            return null;
+        });
+        List<String> names = KeptBench.tradePages();
+        check("the tab has its six pages (" + names.size() + ")", names.size() == 6);
+        final String overviewName = names.get(0), monthName = names.get(1), goodsName = names.get(2), partnersName = names.get(3),
+                currencyName = names.get(4), reservesName = names.get(5);
+        List<Integer> partners = fx(() -> bench.tradePartners(3));
+        List<Good> goods = fx(bench::tradeGoods);
+        ForeignAccounts.Mix mix = g.getForeignAccounts().getReserveMix();
+        System.out.println("  the city trades with nations " + partners + " and " + goods.size() + " goods are on the Partners board");
+        check("the city trades with three nations, whose pages can be opened (" + partners.size() + ")", partners.size() >= 3);
+
+        KeptBench.Page overview = fx(bench::trade);
+        List<KeptBench.Page> pages = new ArrayList<>(List.of(overview));
+        for (String p : names) if (!p.equals(overviewName)) pages.add(fx(() -> bench.trade("the Trade tab's " + p + " page", p)));
+        KeptBench.Page nationPage = partners.isEmpty() ? null : fx(() -> bench.tradeNation("a nation's page behind Partners", partners.get(0)));
+        if (nationPage != null) pages.add(nationPage);
+        for (KeptBench.Page p : pages) pageKept(g, bench, p, 72);
+        for (KeptBench.Page p : pages) {
+            arrive(bench, p);
+            pageShows(g, bench, p, 73);
+        }
+
+        // 74: what reshapes the tab.
+        KeptBench.Page tab = fx(bench::trade);
+        List<Choice> pick = new ArrayList<>();
+        for (String p : names) pick.add(choice(p, tradeOn(p)));
+        pick.add(choice(overviewName + " again", tradeOn(overviewName)));
+        pageReshaped(g, bench, tab, 74, pick, KP6_HANDED_BACK);
+
+        // Every page's folds and lines, opened outermost first and closed innermost first; the ones that must add to their page say so.
+        List<Choice> folds = new ArrayList<>();
+        for (String p : names) {
+            // (The Partners table ranks the nations by what they traded: a month that moves one into or out of it makes its row, and with a few
+            // partners left that is much of the page; its share is printed, and not asserted.)
+            boolean ranked = p.equals(partnersName);
+            folds.add(new Choice(p + " page", tradeOn(p), false, ranked));
+            List<String> keys = KeptBench.tradeFolds(p);
+            for (String key : keys) folds.add(new Choice(p + ": the fold " + key + " opened", tradeFold(key, true), TRADE_FOLDS_THAT_ADD.contains(key), ranked));
+            List<String> back = new ArrayList<>(keys);
+            Collections.reverse(back);
+            for (String key : back) folds.add(new Choice(p + ": the fold " + key + " closed", tradeFold(key, false), false, ranked));
+        }
+        pageReshaped(g, bench, tab, 74, folds, KP6_HANDED_BACK);
+
+        // The Month page on the river and on the steps; What we trade by business and by good.
+        List<Choice> toggles = new ArrayList<>();
+        toggles.add(choice(monthName + " page", tradeOn(monthName)));
+        toggles.add(choice("the river", b -> { b.tradeRiver(true); return null; }));
+        toggles.add(new Choice("the river, the ledger opened", b -> { b.tradeLine("month:ledger", true); return null; }, true));
+        toggles.add(choice("the steps again", b -> { b.tradeRiver(false); return null; }));
+        toggles.add(choice("the ledger closed", tradeFold("month:ledger", false)));
+        toggles.add(choice(goodsName + " page", tradeOn(goodsName)));
+        toggles.add(choice("by business", b -> { b.tradeByBusiness(true); return null; }));
+        toggles.add(choice("by business, every line", tradeFold("goods:all", true)));
+        toggles.add(choice("by good, every line", b -> { b.tradeByBusiness(false); return null; }));
+        toggles.add(choice("by good, the first lines", tradeFold("goods:all", false)));
+        pageReshaped(g, bench, tab, 74, toggles, KP6_HANDED_BACK);
+
+        // Partners: the span, the goods, the nations' pages and back to the table.
+        List<Choice> table = new ArrayList<>();
+        table.add(choice(partnersName + " page", tradeOn(partnersName)));
+        table.add(choice("the table of the year", b -> { b.tradeSpan(true); return null; }));
+        table.add(choice("the table of the month", b -> { b.tradeSpan(false); return null; }));
+        for (int i = 0; i < Math.min(4, goods.size()); i++) {
+            final Good good = goods.get(i);
+            table.add(choice("the board of " + good, b -> { b.tradeGood(good); return null; }));
+        }
+        table.add(choice("the board, every good open", tradeFold("partners:goods", true)));
+        if (goods.size() > 6) {
+            final Good far = goods.get(goods.size() - 1);
+            table.add(choice("the board of " + far, b -> { b.tradeGood(far); return null; }));
+        }
+        table.add(choice("the board, every good closed", tradeFold("partners:goods", false)));
+        for (int nation : partners) {
+            table.add(choice("nation " + nation + "'s page", tradeNationOn(nation)));
+            table.add(choice("nation " + nation + ", the rest of its goods", tradeFold(KeptBench.tradeNationFold(nation), true)));
+            table.add(choice("nation " + nation + ", that fold closed", tradeFold(KeptBench.tradeNationFold(nation), false)));
+            table.add(choice("back to the table", tradeNationOn(0)));
+        }
+        if (partners.size() >= 2) {
+            table.add(choice("nation " + partners.get(0) + "'s page", tradeNationOn(partners.get(0))));
+            table.add(choice("nation " + partners.get(1) + "'s page straight after", tradeNationOn(partners.get(1))));
+            table.add(choice("back to the table", tradeNationOn(0)));
+        }
+        // (The Partners table ranks the nations by what they traded: a month that moves one into or out of it makes its row, and with a few partners left that is much of the page.)
+        pageReshaped(g, bench, tab, 74, asActing(table), KP6_HANDED_BACK);
+
+        // The reserves: the exchange's ask, buying and selling, the eight moneys and the mix of the vault.
+        List<Choice> vault = new ArrayList<>();
+        vault.add(choice(reservesName + " page", tradeOn(reservesName)));
+        vault.add(choice("an ask of 1,000", b -> { b.tradeAsk(1000); return null; }));
+        vault.add(choice("an ask of 100,000", b -> { b.tradeAsk(100_000); return null; }));
+        vault.add(choice("selling", b -> { b.tradeBuying(false); return null; }));
+        vault.add(choice("selling, an ask of 1,000", b -> { b.tradeAsk(1000); return null; }));
+        vault.add(choice("buying again, nothing asked", b -> { b.tradeBuying(true); b.tradeAsk(0); return null; }));
+        vault.add(choice("the chosen mix", b -> { g.getForeignAccounts().setReserveMix(ForeignAccounts.Mix.CHOSEN); return null; }));
+        vault.add(choice("the world's mix", b -> { g.getForeignAccounts().setReserveMix(ForeignAccounts.Mix.WORLD_MIX); return null; }));
+        for (String code : WorldMoneys.EIGHT) {
+            vault.add(choice("buying the " + code + ", an ask of 5,000", b -> { b.tradeBuying(true); b.tradeMoney(code); b.tradeAsk(5000); return null; }));
+            vault.add(choice("selling the " + code + ", an ask of 5,000", b -> { b.tradeBuying(false); b.tradeMoney(code); b.tradeAsk(5000); return null; }));
+        }
+        vault.add(choice("the mix put back, buying with nothing asked", b -> {
+            b.tradeBuying(true);
+            b.tradeMoney(null);
+            b.tradeAsk(0);
+            g.getForeignAccounts().setReserveMix(mix);
+            return null;
+        }));
+        vault.add(new Choice("the eight over the years opened", tradeFold("reserves:eight", true), true));
+        vault.add(choice("the eight over the years closed", tradeFold("reserves:eight", false)));
+        pageReshaped(g, bench, tab, 74, vault, KP6_HANDED_BACK);
+
+        // The fold "the eight over the years" (VaultTable): its two charts take the card's width on a kept draw as they do on a page built new.
+        Object[] charts = fx(() -> {
+            bench.home(tab);
+            bench.tradeOpen(reservesName);
+            bench.tradeLine("reserves:eight", true);
+            bench.drawKept(tab);
+            bench.passes();
+            bench.settle();
+            List<double[]> first = bench.chartWidths();
+            month(g);
+            bench.drawKept(tab);
+            bench.passes();
+            bench.settle();
+            List<double[]> later = bench.chartWidths();
+            String d = againstNew(bench, tab);
+            bench.home(tab);
+            return new Object[]{first, later, d};
+        });
+        @SuppressWarnings("unchecked") List<double[]> first = (List<double[]>) charts[0], later = (List<double[]>) charts[1];
+        System.out.println("  the eight over the years: " + first.size() + " charts, " + String.format("%.0f", first.isEmpty() ? 0 : first.get(0)[0]) + " px wide in a box "
+                + String.format("%.0f", first.isEmpty() ? 0 : first.get(0)[1]) + " px wide");
+        check("the fold of the eight over the years holds its charts (" + first.size() + ", a month later " + later.size() + ")", !first.isEmpty() && first.size() == later.size());
+        boolean fits = !first.isEmpty(), moved = !first.isEmpty();
+        // (A chart is drawn 16 px less than its box and takes the box's width with its padding; made before it has a box it is 794 + 16 wide.)
+        for (double[] c : first) {
+            fits &= Math.abs(c[0] - c[1]) < 1.5;
+            moved &= Math.abs(c[1] - (794 + 16)) > 1;
+        }
+        for (double[] c : later) fits &= Math.abs(c[0] - c[1]) < 1.5;
+        check("...each chart as wide as the card it sits in, on the kept draw and the month after", fits);
+        check("...and the card is not as wide as a chart made before it has a card (794 px and its padding): the width is the card's", moved);
+        check("...the page equal to a page built new", charts[2] == null);
+        if (charts[2] != null) System.out.println("  " + charts[2]);
+
+        // A door's target, through the real show method.
+        List<Choice> doors = new ArrayList<>();
+        doors.add(choice(currencyName + " page", tradeOn(currencyName)));
+        doors.add(choice("a door to the debt card", b -> { b.tradeDoor(currencyName, "#debt"); return null; }));
+        doors.add(choice("a door to the forces card", b -> { b.tradeDoor(currencyName, "#forces"); return null; }));
+        doors.add(choice("a door to the leave card", b -> { b.tradeDoor(reservesName, "#leave"); return null; }));
+        doors.add(choice("a door to the cover card", b -> { b.tradeDoor(reservesName, "#cover"); return null; }));
+        doors.add(choice("a door to the eight", b -> { b.tradeDoor(reservesName, "#eight"); return null; }));
+        doors.add(choice("a door to the exchange, selling", b -> { b.tradeBuying(false); b.tradeDoor(reservesName, "#exchange"); return null; }));
+        doors.add(choice("a door to the holdings", b -> { b.tradeBuying(true); b.tradeDoor(monthName, "#holdings"); return null; }));
+        doors.add(choice("shown through showForeignMenu(), forgotten, and shown", b -> { b.showTrade(); b.forgetTrade(); b.showTrade(); return null; }));
+        pageReshaped(g, bench, tab, 74, doors, KP6_HANDED_BACK);
+        fx(() -> {
+            g.getForeignAccounts().setReserveMix(mix);
+            bench.home(tab);
+            return null;
+        });
+    }
+
+    /* ----- Policy ----- */
+
+    /** The hand that puts Policy on an area and a page (the hub when `area` is null). */
+    static Hand policyOn(String area, String page) {
+        return b -> {
+            b.policyOpen(area, page);
+            return null;
+        };
+    }
+
+    /** A choice that opens a page of Policy. */
+    static Choice policyPage(String area, String page) {
+        return choice(area + " › " + page, policyOn(area, page));
+    }
+
+    /** A choice that stages a change under a lever's key. */
+    static Choice stage(String name, String key, double value) {
+        return choice(name, b -> { b.policyStage(key, value); return null; });
+    }
+
+    /** A choice that drops everything staged. */
+    static Choice drop(String name) {
+        return choice(name, b -> { b.policyDrop(); return null; });
+    }
+
+    /** A fold or a line of Policy, opened or closed, as a choice (`opens` for a fold that has to add to its page). */
+    static Choice policyFold(String name, String key, boolean open, boolean adds) {
+        return new Choice(name, b -> { b.policyLine(key, open); return null; }, adds);
+    }
+
+    /** Every fold and line of Policy closed. */
+    static Choice policyAllClosed(String name) {
+        return choice(name, b -> {
+            for (String k : b.policyLines()) b.policyLine(k, false);
+            return null;
+        });
+    }
+
+    /** Sections 75 to 77: Policy and zoning kept. */
+    static void kp6Policy(Game g, KeptBench bench) throws Exception {
+        System.out.println("\n=== The Policy tab (KP6) ===");
+        fx(() -> {
+            bench.clock(false, null);
+            bench.speed(0);
+            return null;
+        });
+        boolean zoningOpen = fx(() -> g.isLeverOpen(PolicyDates.Lever.ZONING));
+        // Zones made through the model, so that the ground's page has zones to list and each zone's page is a zoned sector's.
+        boolean zoned = zoningOpen && fx(() -> bench.policyZone(Sectors.AGRICULTURE, .05) & bench.policyZone(Sectors.RETAIL, .02));
+        System.out.println("  zoning is " + (zoningOpen ? "open" : "shut") + "; zones made through the model: " + zoned + " (" + fx(bench::policyZoned) + ")");
+
+        KeptBench.Page hub = fx(bench::policy);
+        final String ground = "The ground";
+        final String agri = KeptBench.policyZonePage(Sectors.AGRICULTURE);
+        List<KeptBench.Page> pages = new ArrayList<>(List.of(hub));
+        pages.add(fx(() -> bench.policy("Policy, Taxes' Profit page", "Taxes", "Profit")));
+        pages.add(fx(() -> bench.policy("Policy, Money's policy rate page", "Money", "The policy rate")));
+        pages.add(fx(() -> bench.policy("Policy, Promises' Schools page", "Promises", "Schools")));
+        pages.add(fx(() -> bench.policy("Policy, Promises' Food page", "Promises", "Food")));
+        pages.add(fx(() -> bench.policy("Policy, Zoning's ground", "Zoning", ground)));
+        if (zoned) pages.add(fx(() -> bench.policy("Policy, a zone's page", "Zoning", agri)));
+        for (KeptBench.Page p : pages) pageKept(g, bench, p, 75);
+        for (KeptBench.Page p : pages) {
+            arrive(bench, p);
+            pageShows(g, bench, p, 76);
+        }
+
+        // 77: what reshapes the tab. Every fixed page of the five areas, and the hub.
+        List<Choice> every = new ArrayList<>();
+        every.add(choice("the hub", policyOn(null, null)));
+        for (String[] p : KeptBench.policyPages()) every.add(policyPage(p[0], p[1]));
+        every.add(choice("the hub again", policyOn(null, null)));
+        pageReshaped(g, bench, hub, 77, every, KP6_HANDED_BACK);
+
+        // A zone's page for every sector, zoned or not; the ground with zones, its picker; a zone staged and dropped; the forest law.
+        List<Choice> zones = new ArrayList<>();
+        for (String s : KeptBench.policySectors()) zones.add(policyPage("Zoning", KeptBench.policyZonePage(s)));
+        zones.add(policyPage("Zoning", ground));
+        zones.add(policyFold("the ground, the picker open", "zoning:pick", true, false));
+        zones.add(policyFold("the ground, the picker closed", "zoning:pick", false, false));
+        if (zoned) {
+            zones.add(policyPage("Zoning", agri));
+            zones.add(stage("a zone's size staged", "zone:" + Sectors.AGRICULTURE + ":size", .08));
+            zones.add(stage("...its price staged", "zone:" + Sectors.AGRICULTURE + ":price", .5));
+            zones.add(stage("...its unit in km2", "zone:" + Sectors.AGRICULTURE + ":unit", 1));
+            zones.add(stage("...a profit offset staged", "profit:" + Sectors.AGRICULTURE, .01));
+            zones.add(stage("...the zone taken off (staged)", "zone:" + Sectors.AGRICULTURE + ":off", 1));
+            zones.add(drop("...everything dropped"));
+        }
+        zones.add(policyPage("Zoning", "The forest law"));
+        zones.add(stage("the forest law's protected share staged", "forest:protected", .2));
+        zones.add(stage("...the kept share staged", "forest:kept", .4));
+        zones.add(drop("...dropped"));
+        pageReshaped(g, bench, hub, 77, zones, KP6_HANDED_BACK);
+
+        // Folds and lines: each tax's table, a payer's own move, the zero payers, the floor's table, the rate's history, a course's own price, the food rows.
+        List<Choice> folds = new ArrayList<>();
+        for (String which : List.of("Profit", "Sales", "Wage", "Property")) {
+            folds.add(policyPage("Taxes", which));
+            folds.add(policyFold(which + ": the table fold opened", "table:" + which, true, true));
+            String first = which.equals("Wage") ? "payer:wage:" + WageBand.values()[0].name()
+                    : which.equals("Property") ? "payer:prop:" + Sectors.KEYS[0] : "payer:" + which.toLowerCase() + ":" + Sectors.KEYS[0];
+            folds.add(policyFold(which + ": a payer's own move opened", first, true, false));
+            folds.add(policyFold(which + ": the zero payers folded open", "zero:" + which, true, false));
+            folds.add(choice(which + ": every payer's move opened", b -> {
+                for (String k : Sectors.KEYS) {
+                    b.policyLine("payer:profit:" + k, true);
+                    b.policyLine("payer:sales:" + k, true);
+                    b.policyLine("payer:prop:" + k, true);
+                }
+                for (WageBand band : WageBand.values()) b.policyLine("payer:wage:" + band.name(), true);
+                return null;
+            }));
+            folds.add(policyAllClosed(which + ": all closed"));
+        }
+        folds.add(policyPage("Wages", "The floor"));
+        folds.add(policyFold("the floor's table opened", "floor:table", true, true));
+        folds.add(policyFold("the floor's table closed", "floor:table", false, false));
+        folds.add(policyPage("Money", "The policy rate"));
+        folds.add(policyFold("the rate page's history fold opened", "rate:history", true, true));
+        folds.add(policyFold("...closed", "rate:history", false, false));
+        folds.add(policyPage("Promises", "Schools"));
+        for (EducationType kind : EducationType.values()) {
+            if (kind != EducationType.NONE) folds.add(policyFold("a course's own price opened: " + kind.name(), "course:" + kind.name(), true, false));
+        }
+        folds.add(policyAllClosed("every course closed"));
+        folds.add(policyPage("Promises", "Food"));
+        folds.add(choice("the food page's rows opened", b -> {
+            for (int r = 0; r < 12; r++) b.policyLine("aid:" + r, true);
+            return null;
+        }));
+        folds.add(policyAllClosed("...closed"));
+        pageReshaped(g, bench, hub, 77, folds, KP6_HANDED_BACK);
+
+        // A change staged on a page: the tray, and the dial cards drawn at the thumb.
+        List<Choice> staged = new ArrayList<>();
+        staged.add(policyPage("Taxes", "Everything"));
+        staged.add(stage("every tax at once staged", "income", .21));
+        staged.add(stage("...the property rate staged", "property", .012));
+        staged.add(drop("...dropped"));
+        for (String which : List.of("Profit", "Sales", "Wage", "Property")) {
+            staged.add(policyPage("Taxes", which));
+            String key = which.equals("Property") ? "property" : "base:" + which.toLowerCase();
+            staged.add(stage(which + ": the base rate staged", key, which.equals("Property") ? .013 : .27));
+            staged.add(stage(which + ": a sector's offset staged too", (which.equals("Property") ? "prop:" : which.equals("Wage") ? "wage:" : which.toLowerCase() + ":")
+                    + (which.equals("Wage") ? WageBand.values()[0].name() : Sectors.KEYS[0]), .01));
+            staged.add(drop(which + ": dropped"));
+        }
+        staged.add(policyPage("Taxes", "Fuel"));
+        staged.add(stage("the fuel duty staged", "fuelDuty", .00003));
+        staged.add(drop("...dropped"));
+        staged.add(policyPage("Taxes", "Port dues"));
+        staged.add(stage("the port dues staged", "portDues", 2.0));
+        staged.add(drop("...dropped"));
+        staged.add(policyPage("Wages", "The floor"));
+        staged.add(stage("the floor staged", "floor", 3000));
+        staged.add(drop("...dropped"));
+        staged.add(policyPage("Money", "The policy rate"));
+        staged.add(stage("the policy rate staged", "policy", .07));
+        staged.add(drop("...dropped"));
+        for (String[] pk : new String[][] {{"Pensions", "contrib", "pension"}, {"Out of work", "eiPremium", "eiBenefit"}, {"Food", "foodAssistance", "foodAssistance"},
+                {"Health", "healthFee", "healthPremium"}}) {
+            staged.add(policyPage("Promises", pk[0]));
+            staged.add(stage(pk[0] + ": " + pk[1] + " staged", pk[1], pk[1].equals("healthFee") ? 2.0 : .03));
+            staged.add(stage(pk[0] + ": " + pk[2] + " staged too", pk[2], pk[2].equals("pension") ? .5 : .03));
+            staged.add(drop(pk[0] + ": dropped"));
+        }
+        staged.add(policyPage("Promises", "Schools"));
+        staged.add(stage("the schools' share staged", "tuition", .6));
+        staged.add(stage("...every school's price staged", "tuitionScale", 1.5));
+        staged.add(choice("...a course's own price staged", b -> { b.policyLine("course:UNIVERSITY", true); b.policyStage("tuitionScale:UNIVERSITY", 2.0); return null; }));
+        staged.add(stage("...the loan rate staged", "loanRate", .03));
+        staged.add(choice("...the grant's basis staged", b -> { b.policyStage("grantBasis", 1); b.policyStage("grantAmount", .2); return null; }));
+        staged.add(choice("...dropped", b -> { b.policyDrop(); b.policyLine("course:UNIVERSITY", false); return null; }));
+        pageReshaped(g, bench, hub, 77, staged, KP6_HANDED_BACK);
+
+        // The currency page and the reform page under every regime the city can reach (the regime put back after).
+        ForeignAccounts.Regime regimeWas = g.getForeignAccounts().getRegime();
+        for (ForeignAccounts.Regime regime : ForeignAccounts.Regime.values()) {
+            fx(() -> {
+                g.setCurrencyRegime(regime);
+                return null;
+            });
+            List<Choice> money = new ArrayList<>();
+            money.add(policyPage("Money", "The currency"));
+            money.add(stage(regime + ": the regime staged", "xr:regime", (regime.ordinal() + 1) % 4));
+            money.add(stage("...the peg staged", "xr:peg", 1.4));
+            money.add(choice("...the band staged", b -> {
+                b.policyStage("xr:centre", 1.4);
+                b.policyStage("xr:slope", .01);
+                b.policyStage("xr:width", .03);
+                return null;
+            }));
+            money.add(choice("...the payer and the aim staged", b -> { b.policyStage("xr:payer", 1); b.policyStage("xr:aim", 1); return null; }));
+            money.add(stage("...the spread staged", "xr:spread", .01));
+            money.add(drop("...dropped"));
+            money.add(policyPage("Money", "The policy rate"));
+            money.add(policyPage("Money", "Currency reform"));
+            money.add(stage("the reform's factor staged", "reform", 10));
+            money.add(drop("...dropped"));
+            pageReshaped(g, bench, hub, 77, money, KP6_HANDED_BACK);
+        }
+        fx(() -> {
+            g.setCurrencyRegime(regimeWas);
+            bench.home(hub);
+            return null;
+        });
+
+        // WHO GOES WITHOUT (Pieces.whoGoesWithout) is on the Food page and on People's: with people short of food, the card, its bar and its door.
+        String[] hunger = fx(bench::hunger);
+        System.out.println("  WHO GOES WITHOUT: " + hunger[0] + "; the door to the shops is " + hunger[1]);
+        peopleShort(g, bench, hunger);
+    }
+
+    /**
+     * People's WHO GOES SHORT list and card (sections 1 to 5 draw the page): with people short of food the card says so and draws its bar, the
+     * People page kept for a stretch of months equals a page built new, and Policy's Food page, which draws the same card, equals one built new.
+     * Printed, and not asserted, where the city has nobody short (the fixture cannot make the model's hunger: it is the month's).
+     */
+    static void peopleShort(Game g, KeptBench bench, String[] hunger) throws Exception {
+        boolean short_ = !hunger[0].startsWith("nobody");
+        if (!short_) {
+            System.out.println("  nobody goes short of food in this city at this month: People's WHO GOES SHORT list is not exercised with someone short (the fixture cannot cause hunger; it is the month's)");
+            return;
+        }
+        int differ = 0;
+        String firstDiffer = null;
+        for (int m = 1; m <= 6; m++) {
+            Object[] r = fx(() -> {
+                month(g);
+                bench.drawKept();
+                bench.passes();
+                bench.finishPageAnimations();
+                bench.settle();
+                List<String> kept = bench.signature();
+                bench.showFresh();
+                bench.finishPageAnimations();
+                bench.settle();
+                List<String> fresh = bench.signature();
+                bench.restoreKept();
+                return new Object[]{firstDifference(kept, fresh), bench.hunger()[0]};
+            });
+            if (r[0] != null) {
+                differ++;
+                if (firstDiffer == null) firstDiffer = "month " + g.getMonth() + ", " + r[0];
+            }
+        }
+        if (firstDiffer != null) System.out.println("  first difference: " + firstDiffer);
+        check("People's page, with people short of food (" + hunger[0] + "), equals a page built new at six months (" + differ + " differ)", differ == 0);
+    }
+
+    /* ----- the controls (78) ----- */
+
+    /**
+     * Section 78: a dial of Policy keeps the player's hand, through the screen's real show method. The slider is pressed and dragged two steps and a
+     * month lands: the same slider node, still held, the thumb where the hand left it, the reading and the dial card's effects (the arrows of what
+     * moves) at the thumb. Released, the change is staged at the thumb, the tray shows it (a dial with its own Apply has none) and the page equals a
+     * page built new; then dropped, and the page is equal again.
+     */
+    static void policyDial(Game g, KeptBench bench, String what, String area, String page, String key, boolean trayShows) throws Exception {
+        System.out.println("\n--- 78: the controls: " + what + " ---");
+        KeptBench.Page p = fx(() -> bench.policy(what, area, page));
+        Object[] dial = fx(() -> {
+            bench.home(p);
+            bench.showPolicy();
+            bench.passes();
+            javafx.scene.control.Slider bar = bench.policySliders().isEmpty() ? null : bench.policySliders().get(0);
+            if (bar == null) return null;
+            double step = bar.getBlockIncrement();
+            double snapped = bar.getMin() + Math.round((bar.getValue() - bar.getMin()) / step) * step;
+            double thumb = snapped + 2 * step <= bar.getMax() + 1e-9 ? snapped + 2 * step : snapped - 2 * step;
+            String before = KeptBench.readingOf(bar).getText();
+            int arrowsBefore = bench.policyArrows();
+            // (a) pressed, dragged two steps, a month lands.
+            KeptBench.press(bar);
+            boolean heldPressed = KeptBench.held(bar);
+            bar.setValueChanging(true);
+            bar.setValue(thumb);
+            String dragged = KeptBench.readingOf(bar).getText();
+            int arrowsDragged = bench.policyArrows();
+            month(g);
+            bench.showPolicy();
+            bench.passes();
+            boolean sameBar = bench.policySliders().get(0) == bar;
+            String kept = KeptBench.readingOf(bar).getText();
+            double shown = KeptBench.shownBy(bar);
+            boolean heldStill = KeptBench.held(bar);
+            double valueNow = bar.getValue();
+            int arrowsMid = bench.policyArrows();
+            boolean stagedMid = bench.policyStaged().containsKey(key);
+            // (b) released: the change staged at the thumb, the tray shows it, the page equals one built new.
+            bar.setValueChanging(false);
+            KeptBench.release(bar);
+            bench.passes();
+            boolean heldAfter = KeptBench.held(bar);
+            boolean same = bench.policySliders().get(0) == bar;
+            Double stagedAt = bench.policyStaged().get(key);
+            boolean tray = bench.policyTray() != null;
+            String differs = againstNew(bench, p);
+            // (c) the staged change dropped: the page equal again.
+            bench.policyDrop();
+            bench.showPolicy();
+            bench.passes();
+            String dropped = againstNew(bench, p);
+            boolean trayGone = bench.policyTray() == null;
+            return new Object[]{heldPressed, sameBar, valueNow, thumb, kept, dragged, before, shown, heldStill, stagedMid, heldAfter, same, stagedAt, tray, differs,
+                    dropped, trayGone, arrowsBefore, arrowsDragged, arrowsMid, step, bar.getMin()};
+        });
+        if (dial == null) {
+            check(what + ": the page has a dial (a slider) to hold", false);
+            return;
+        }
+        System.out.printf("  dragged two steps: reading \"%s\" -> \"%s\"; a month later \"%s\", the ladder shows %.5f for a thumb at %.5f; effects' arrows %d -> %d -> %d%n",
+                dial[6], dial[5], dial[4], (double) dial[7], (double) dial[3], (int) dial[17], (int) dial[18], (int) dial[19]);
+        check("a slider pressed is held", (boolean) dial[0]);
+        check("a month landing on a held slider leaves the same slider node, still held", (boolean) dial[1] && (boolean) dial[8]);
+        check("...its value still the thumb's (" + dial[2] + ")", Math.abs((double) dial[2] - (double) dial[3]) < 1e-9);
+        check("...the reading the thumb's words (\"" + dial[4] + "\", was \"" + dial[5] + "\")", dial[4].equals(dial[5]));
+        check("...Ladder.shown() the thumb's value", Math.abs((double) dial[7] - (double) dial[3]) < 1e-9);
+        check("...the card's effects drawn at the thumb (" + dial[19] + " moved rows, " + dial[18] + " while dragged)", (int) dial[19] > 0);
+        check("...and nothing staged before the release", !(boolean) dial[9]);
+        check("a slider released is not held", !(boolean) dial[10]);
+        check("...the change is staged at the thumb (" + dial[12] + ")", dial[12] != null && Math.abs((double) dial[12] - (double) dial[3]) < 1e-6);
+        check(trayShows ? "...the tray shows it" : "...(this dial keeps its own Apply: no tray, the bar on its card)", (boolean) dial[13] == trayShows);
+        check("...and the page is the same slider, kept, equal to a page built new", (boolean) dial[11] && dial[14] == null);
+        if (dial[14] != null) System.out.println("  " + dial[14]);
+        check("the staged change dropped: the tray is gone and the page equal to a page built new", (boolean) dial[16] && dial[15] == null);
+        if (dial[15] != null) System.out.println("  " + dial[15]);
+    }
+
+    /**
+     * Section 78's last part: a card comes in front of a dial the player holds. Every dial card is a scope keyed by what it is for (a payer, a
+     * course), so the cards after the new one keep their nodes: the held slider is the same node, at the same thumb, with its own reading and its own
+     * ladder, and cards kept by order alone would hand its node to the card in front (the page then shows the held thumb on another lever's dial).
+     * `setup` puts the page as it is before the hold; `front` is what puts a card in front of the last dial, with a month landing as it does.
+     */
+    static void heldWithCardInFront(Game g, KeptBench bench, String what, KeptBench.Page p, Hand setup, Hand front) throws Exception {
+        Object[] r = fx(() -> {
+            bench.home(p);
+            String refused = setup.on(bench);
+            if (refused != null) return new Object[]{"the page could not be set: " + refused};
+            bench.showPolicy();
+            bench.passes();
+            List<javafx.scene.control.Slider> before = bench.policySliders();
+            if (before.size() < 2) return new Object[]{"the page has " + before.size() + " dials"};
+            javafx.scene.control.Slider bar = before.get(before.size() - 1);
+            double step = bar.getBlockIncrement();
+            double snapped = bar.getMin() + Math.round((bar.getValue() - bar.getMin()) / step) * step;
+            double thumb = snapped + 2 * step <= bar.getMax() + 1e-9 ? snapped + 2 * step : snapped - 2 * step;
+            String was = KeptBench.readingOf(bar).getText();
+            KeptBench.press(bar);
+            bar.setValueChanging(true);
+            bar.setValue(thumb);
+            String dragged = KeptBench.readingOf(bar).getText();
+            // A card comes in front of it, and a month lands.
+            refused = front.on(bench);
+            if (refused != null) return new Object[]{"the card could not be put in front: " + refused};
+            month(g);
+            bench.showPolicy();
+            bench.passes();
+            List<javafx.scene.control.Slider> after = bench.policySliders();
+            boolean grew = after.size() == before.size() + 1;
+            boolean sameBar = !after.isEmpty() && after.get(after.size() - 1) == bar;
+            boolean heldStill = KeptBench.held(bar);
+            double valueNow = bar.getValue();
+            String reading = KeptBench.readingOf(bar).getText();
+            double shown = KeptBench.shownBy(bar);
+            // The dials in front of it are theirs: none of them carries the held thumb.
+            boolean othersOwn = true;
+            for (javafx.scene.control.Slider other : after) {
+                if (other != bar && Math.abs(other.getValue() - thumb) < 1e-12 && other.getMax() == bar.getMax() && other.getMin() == bar.getMin()) othersOwn = false;
+            }
+            bar.setValueChanging(false);
+            KeptBench.release(bar);
+            bench.passes();
+            String differs = againstNew(bench, p);
+            bench.policyDrop();
+            bench.home(p);
+            bench.showPolicy();
+            bench.passes();
+            String dropped = againstNew(bench, p);
+            return new Object[]{null, grew, before.size(), after.size(), sameBar, heldStill, valueNow, thumb, reading, dragged, was, shown, differs, dropped, othersOwn};
+        });
+        if (r[0] != null) {
+            check(what + ": " + r[0], false);
+            return;
+        }
+        System.out.printf("  %s: the last dial dragged from %s to %s, a card put in front (%d dials, then %d), a month landed: it reads %s%n", what, r[10], r[9], r[2], r[3], r[8]);
+        check(what + ": a dial card comes in front of the held dial (the page has one dial more: " + r[2] + ", then " + r[3] + ")", (boolean) r[1]);
+        check("...the held slider is the same node, still held, at the thumb (" + r[6] + ")", (boolean) r[4] && (boolean) r[5] && Math.abs((double) r[6] - (double) r[7]) < 1e-9);
+        check("...its reading the thumb's (\"" + r[8] + "\", dragged to \"" + r[9] + "\") and Ladder.shown() the thumb's value", r[8].equals(r[9]) && Math.abs((double) r[11] - (double) r[7]) < 1e-9);
+        check("...and no dial in front of it carries its thumb", (boolean) r[14]);
+        check("...released, the page is equal to a page built new", r[12] == null);
+        if (r[12] != null) System.out.println("  " + r[12]);
+        check("...the card taken away and the change dropped: the page is equal to a page built new", r[13] == null);
+        if (r[13] != null) System.out.println("  " + r[13]);
+    }
+
+    /** Section 78's last part: a card in front of a held dial, on the Schools page (a course's own price in front of the loan's) and on a tax page (a payer's own move in front of another's). */
+    static void policyDialsKeep(Game g, KeptBench bench) throws Exception {
+        System.out.println("\n--- 78: a card comes in front of a held dial ---");
+        KeptBench.Page schools = fx(() -> bench.policy("Policy, Promises' Schools page", "Promises", "Schools"));
+        heldWithCardInFront(g, bench, "the Schools page", schools, b -> null, b -> { b.policyLine("course:UNIVERSITY", true); return null; });
+        // The first tax with two payers that show a row and a dial of their own (in a city where one sector pays the profit tax, the sales tax has more).
+        String found = null;
+        List<String> payers = List.of();
+        for (String tax : List.of("Profit", "Sales", "Property", "Wage")) {
+            List<String> of = fx(() -> bench.policyPayers(tax));
+            System.out.println("  " + tax + "'s payers with a row and a dial of their own, top of the ranking first: " + of);
+            if (found == null && of.size() >= 2) {
+                found = tax;
+                payers = of;
+            }
+        }
+        check("a tax has two payers with a row and a dial of their own to open (" + found + ")", found != null);
+        if (found != null) {
+            final String tax = found;
+            final List<String> two = payers;
+            KeptBench.Page page = fx(() -> bench.policy("Policy, Taxes' " + tax + " page", "Taxes", tax));
+            heldWithCardInFront(g, bench, "the " + tax + " page", page, b -> { b.policyLine("payer:" + two.get(1), true); return null; },
+                    b -> { b.policyLine("payer:" + two.get(0), true); return null; });
+        }
+    }
+
+    /** Section 78: the controls on Policy - a tax page's rate dial, the policy rate's, a zone's ground dial, and a card coming in front of a held dial. */
+    static void kp6Controls(Game g, KeptBench bench) throws Exception {
+        policyDial(g, bench, "a tax page's rate dial", "Taxes", "Profit", "base:profit", true);
+        policyDial(g, bench, "the policy rate's dial", "Money", "The policy rate", "policy", false);
+        boolean zoningOpen = fx(() -> g.isLeverOpen(PolicyDates.Lever.ZONING));
+        if (zoningOpen) {
+            policyDial(g, bench, "a zone's ground dial", "Zoning", KeptBench.policyZonePage(Sectors.AGRICULTURE), "zone:" + Sectors.AGRICULTURE + ":size", true);
+        } else {
+            System.out.println("  zoning is shut in this city: a zone's dial is greyed and stages nothing (not reached by a fixture)");
+        }
+        policyDialsKeep(g, bench);
+    }
+
+    /* ----- the count-up (79) ----- */
+
+    /** Whether a counted figure's words moved between last month and this. */
+    private static boolean moved(String[] words) {
+        return words[0] != null && !words[0].equals(words[1]);
+    }
+
+    /**
+     * One clock speed of section 79 on a Trade page: the page is shown through its real show method, a month that moved SOLD ABROAD or BOUGHT ABROAD
+     * lands and it is shown again; each of the strip's two figures that moved starts a count, and the bars (on the pages that have them) grow, exactly
+     * where `expect` says. Where nothing counts, nothing runs, each figure reads this month's words at once, and the page is the page built new.
+     * Null, or what was wrong.
+     */
+    static String tradeRung(Game g, KeptBench bench, String page, boolean bars, int at, boolean paused, boolean expect) throws Exception {
+        bench.clock(!paused, null);
+        bench.speed(at);
+        bench.tradeOpen(page);
+        bench.showTrade();
+        bench.finishPageAnimations();
+        bench.passes();
+        List<javafx.scene.control.Label> figures = bench.tradeFigures();
+        if (figures.size() != 2) return "the strip has no two figures to count (" + figures.size() + ")";
+        List<Animation> before = new ArrayList<>();
+        for (javafx.scene.control.Label f : figures) before.add(KeptBench.countOf(f));
+        List<? extends javafx.scene.Node> mirrors = bench.tradeBars();
+        List<Animation> mirrorsBefore = new ArrayList<>();
+        for (javafx.scene.Node m : mirrors) mirrorsBefore.add(KeptBench.countOf(m));
+        if (!landUntil(g, () -> {
+            String[][] w = bench.tradeWords();
+            return moved(w[0]) || moved(w[1]);
+        })) return "no month in twelve moved SOLD ABROAD or BOUGHT ABROAD";
+        bench.showTrade();
+        bench.passes();
+        String[][] words = bench.tradeWords();
+        StringBuilder bad = new StringBuilder();
+        if (!bench.tradeFigures().equals(figures)) bad.append("the strip's figures were made new; ");
+        for (int i = 0; i < 2; i++) {
+            javafx.scene.control.Label f = figures.get(i);
+            boolean started = KeptBench.countOf(f) != before.get(i) && KeptBench.counting(f);
+            boolean want = expect && moved(words[i]);
+            if (started != want) bad.append(i == 0 ? "SOLD ABROAD " : "BOUGHT ABROAD ").append(want ? "did not count" : "counted").append("; ");
+            if (!expect && !f.getText().equals(words[i][1])) bad.append("a figure reads \"").append(f.getText()).append("\" at once, not this month's; ");
+        }
+        List<? extends javafx.scene.Node> mirrorsNow = bench.tradeBars();
+        if (bars) {
+            if (mirrorsNow.isEmpty()) bad.append("the page has no bars to grow; ");
+            for (int i = 0; i < mirrorsNow.size(); i++) {
+                boolean grew = i < mirrors.size() && mirrorsNow.get(i) == mirrors.get(i) ? KeptBench.countOf(mirrorsNow.get(i)) != mirrorsBefore.get(i) && KeptBench.counting(mirrorsNow.get(i))
+                        : KeptBench.counting(mirrorsNow.get(i));
+                if (grew != expect) bad.append(expect ? "the bars did not grow" : "the bars grew").append("; ");
+            }
+        }
+        if (!expect) {
+            // Nothing counts, so the page is already the page a month's figures draw: equal to a page built new, with no animation finished first.
+            bad.append(stillOrNot(bench));
+            KeptBench.Page p = bench.trade("the page", page);
+            String d = againstNewAsIs(bench, p);
+            if (d != null) bad.append("not the page built new: ").append(d.replace('\n', ' ')).append("; ");
+        } else {
+            bench.finishPageAnimations();
+            bench.passes();
+            for (int i = 0; i < 2; i++) {
+                if (!figures.get(i).getText().equals(words[i][1])) {
+                    bad.append("a figure reads \"").append(figures.get(i).getText()).append("\" after its count, not \"").append(words[i][1]).append("\"; ");
+                }
+            }
+        }
+        return bad.length() == 0 ? null : "at " + (paused ? "a paused clock" : KeptBench.speedLadder()[at] + "x") + " on " + page + ": " + bad;
+    }
+
+    /**
+     * One clock speed on a page that has no animation to run (a Government or Policy page): a month lands and the page is shown through its real
+     * show method; nothing starts at any rung, nothing is running or off its rest, and where the clock is too fast to count, the page is the page built new.
+     */
+    static String quietRung(Game g, KeptBench bench, KeptBench.Page page, Runnable open, Runnable show, int at, boolean paused, boolean expect) throws Exception {
+        bench.clock(!paused, null);
+        bench.speed(at);
+        open.run();
+        show.run();
+        bench.finishPageAnimations();
+        bench.passes();
+        java.util.Set<Animation> before = animationsNow(bench);
+        month(g);
+        show.run();
+        bench.passes();
+        int[] s = started(bench, before);
+        StringBuilder bad = new StringBuilder();
+        if (s[0] + s[1] + s[2] > 0) bad.append(s[0] + s[1] + s[2]).append(" animations started; ");
+        bad.append(stillOrNot(bench));
+        if (!expect) {
+            String d = againstNewAsIs(bench, page);
+            if (d != null) bad.append("not the page built new: ").append(d.replace('\n', ' ')).append("; ");
+        }
+        return bad.length() == 0 ? null : "at " + (paused ? "a paused clock" : KeptBench.speedLadder()[at] + "x") + " on " + page.name() + ": " + bad;
+    }
+
+    /**
+     * Section 79: the count-up only at 1x-10x. Trade's strip counts SOLD ABROAD and BOUGHT ABROAD up from last month's and its bars (the Overview's
+     * and What we trade's) grow out of their axis when a month lands: with the clock at each rung of the speed ladder, and paused, exactly at the
+     * rungs UserInterface.countsUp() allows (COUNT_UP_TOP); past it nothing animates, each figure reads this month's words and the page is the
+     * page built new; a count still running when a month lands past it is stopped. The Government tab and Policy have no month animation: none
+     * starts at any rung.
+     */
+    static void kp6CountUp(Game g, KeptBench bench) throws Exception {
+        System.out.println("\n--- 79: the count-up only at 1x-10x (Trade; Government and Policy have none) ---");
+        double[] ladder = KeptBench.speedLadder();
+        double top = KeptBench.countUpTop();
+        int countingRungs = 0;
+        for (double speed : ladder) if (speed <= top) countingRungs++;
+        System.out.printf("  the ladder has %d rungs, %d of them at or under COUNT_UP_TOP (%.0fx)%n", ladder.length, countingRungs, top);
+        List<String> names = KeptBench.tradePages();
+        String[][] views = {{names.get(0), "bars", "the Overview's SOLD and BOUGHT counts and its bars' growth"},
+                {names.get(2), "bars", "What we trade's counts and its bars' growth"}, {names.get(1), "", "the Month page's SOLD and BOUGHT counts"}};
+        for (String[] view : views) {
+            StringBuilder wrong = new StringBuilder();
+            fx(() -> {
+                bench.forgetTrade();
+                return null;
+            });
+            for (int rung = 0; rung <= ladder.length; rung++) {
+                // The last pass is the clock stopped, at the top rung: a month stepped by hand counts at any speed.
+                boolean paused = rung == ladder.length;
+                int at = paused ? ladder.length - 1 : rung;
+                boolean expect = paused || ladder[at] <= top;
+                String result = fx(() -> tradeRung(g, bench, view[0], !view[1].isEmpty(), at, paused, expect));
+                if (result != null) wrong.append(wrong.length() == 0 ? "" : "; ").append(result);
+            }
+            if (wrong.length() > 0) System.out.println("  " + view[2] + ": " + wrong);
+            check("a month landing starts " + view[2] + " exactly at the rungs countsUp() allows, and when paused (" + (ladder.length + 1) + " clocks)", wrong.length() == 0);
+
+            // A count running when the clock has been sped past the top: the next month sets the figures at once and stops it.
+            String stopped = fx(() -> {
+                int slow = 0;
+                while (ladder[slow] > top) slow++;
+                bench.clock(true, null);
+                bench.speed(slow);
+                bench.tradeOpen(view[0]);
+                bench.showTrade();
+                bench.finishPageAnimations();
+                bench.passes();
+                if (!landUntil(g, () -> {
+                    String[][] w = bench.tradeWords();
+                    return moved(w[0]) || moved(w[1]);
+                })) return "no month in twelve moved the figures";
+                bench.showTrade();
+                bench.passes();
+                List<javafx.scene.control.Label> figures = bench.tradeFigures();
+                boolean counting = false;
+                for (javafx.scene.control.Label f : figures) counting |= KeptBench.counting(f);
+                List<? extends javafx.scene.Node> mirrors = bench.tradeBars();
+                for (javafx.scene.Node m : mirrors) counting |= KeptBench.counting(m);
+                if (!counting) return "no count or growth was running to stop";
+                List<Animation> running = new ArrayList<>(bench.pageAnimations());
+                bench.speed(ladder.length - 1);
+                if (!landUntil(g, () -> {
+                    String[][] w = bench.tradeWords();
+                    return moved(w[0]) || moved(w[1]);
+                })) return "no month in twelve moved the figures";
+                bench.showTrade();
+                bench.passes();
+                String[][] words = bench.tradeWords();
+                java.util.Set<Animation> onPage = animationsNow(bench);
+                for (Animation a : running) {
+                    if (onPage.contains(a) && a.getStatus() != Animation.Status.STOPPED) return "an animation is still " + a.getStatus();
+                }
+                String bad = stillOrNot(bench);
+                if (!bad.isEmpty()) return bad;
+                for (int i = 0; i < 2; i++) {
+                    if (!figures.get(i).getText().equals(words[i][1])) return "a figure reads \"" + figures.get(i).getText() + "\", not \"" + words[i][1] + "\"";
+                }
+                String d = againstNewAsIs(bench, bench.trade("the page", view[0]));
+                return d == null ? null : "the page is not the page built new: " + d.replace('\n', ' ');
+            });
+            if (stopped != null) System.out.println("  " + view[2] + ": " + stopped);
+            check("a count running when a month lands past COUNT_UP_TOP is stopped on " + view[2] + ", and the page is the month's", stopped == null);
+        }
+
+        // Government and Policy: no month animation. Nothing starts at any rung, and past the gate the page is the month's.
+        record Quiet(String name, KeptBench.Page page, Runnable open, Runnable show) { }
+        List<Quiet> quiet = new ArrayList<>();
+        for (String p : KeptBench.governmentPages()) {
+            quiet.add(new Quiet("the Government " + p + " page", fx(() -> bench.government("the Government " + p + " page", p)),
+                    () -> bench.governmentOpen(p), bench::showGovernment));
+        }
+        quiet.add(new Quiet("the Policy hub", fx(bench::policy), () -> bench.policyOpen(null, null), bench::showPolicy));
+        for (String[] ap : new String[][] {{"Taxes", "Profit"}, {"Money", "The policy rate"}, {"Zoning", "The ground"}}) {
+            quiet.add(new Quiet("the Policy " + ap[0] + " › " + ap[1] + " page", fx(() -> bench.policy("the Policy " + ap[0] + " › " + ap[1] + " page", ap[0], ap[1])),
+                    () -> bench.policyOpen(ap[0], ap[1]), bench::showPolicy));
+        }
+        for (Quiet q : quiet) {
+            StringBuilder wrong = new StringBuilder();
+            fx(() -> {
+                bench.forgetGovernment();
+                bench.forgetPolicy();
+                return null;
+            });
+            for (int rung = 0; rung <= ladder.length; rung++) {
+                boolean paused = rung == ladder.length;
+                int at = paused ? ladder.length - 1 : rung;
+                boolean expect = paused || ladder[at] <= top;
+                String result = fx(() -> quietRung(g, bench, q.page(), q.open(), q.show(), at, paused, expect));
+                if (result != null) wrong.append(wrong.length() == 0 ? "" : "; ").append(result);
+            }
+            if (wrong.length() > 0) System.out.println("  " + q.name() + ": " + wrong);
+            check(q.name() + ": a month landing starts no animation at any of the " + (ladder.length + 1) + " clocks, and past COUNT_UP_TOP the page is the month's", wrong.length() == 0);
+        }
+        fx(() -> {
+            bench.clock(false, null);
+            bench.speed(0);
+            return null;
+        });
+    }
+
+    /* ----- the hover (80) and the cost (81) ----- */
+
+    /** The pointer put over a node of each kind on a page (its `setup` made first), hoverLine() saying what came of it; `found` notes where a node was found. */
+    private static void hoverKP6(Game g, KeptBench bench, java.util.Map<String, Boolean> found, String where, KeptBench.Page page, Hand setup, String... kinds) throws Exception {
+        for (String kind : kinds) {
+            String d = fx(() -> {
+                bench.home(page);
+                String refused = setup.on(bench);
+                if (refused != null) return refused;
+                bench.drawKept(page);
+                bench.passes();
+                return bench.hoverKept(kind, () -> bench.drawKept(page));
+            });
+            hoverLine(found, where, kind, d);
+            found.merge(where + "|" + kind, !KeptBench.ABSENT.equals(d), Boolean::logicalOr);
+        }
+    }
+
+    /**
+     * Section 80: the hover. On the Government tab a door, a status cell, a key row of the split ring, a bridge row and a ranked bar's row; on Trade a
+     * door card, a mirror row's ground and a status cell; on Policy an area card and the tall rows of a payer, a course and a zone: a pointer put over
+     * the node and the page drawn kept again leave the same node in the look its own mouse-entered gives it, and with the pointer off, the look its
+     * mouse-exited gives it.
+     */
+    static void kp6Hover(Game g, KeptBench bench) throws Exception {
+        System.out.println("\n--- 80: the hover is kept (Government, Trade, Policy) ---");
+        java.util.Map<String, Boolean> found = new java.util.LinkedHashMap<>();
+        Hand none = b -> null;
+        List<String> trade = KeptBench.tradePages();
+        KeptBench.Page govOverview = fx(bench::government);
+        KeptBench.Page govRevenue = fx(() -> bench.government("the Government Revenue page", "Revenue"));
+        KeptBench.Page tradeOverview = fx(bench::trade);
+        KeptBench.Page tradeGoods = fx(() -> bench.trade("the Trade tab's " + trade.get(2) + " page", trade.get(2)));
+        KeptBench.Page hub = fx(bench::policy);
+        KeptBench.Page profit = fx(() -> bench.policy("Policy, Taxes' Profit page", "Taxes", "Profit"));
+        KeptBench.Page schools = fx(() -> bench.policy("Policy, Promises' Schools page", "Promises", "Schools"));
+        KeptBench.Page ground = fx(() -> bench.policy("Policy, Zoning's ground", "Zoning", "The ground"));
+        hoverKP6(g, bench, found, "the Government Overview", govOverview, none, "door", "limitCell", "ringKeyRow", "bridgeRow");
+        hoverKP6(g, bench, found, "the Government Revenue page", govRevenue, none, "rankRow");
+        hoverKP6(g, bench, found, "the Trade Overview", tradeOverview, none, "doorCard", "mirrorGround", "limitCell");
+        hoverKP6(g, bench, found, "the Trade tab's " + trade.get(2) + " page", tradeGoods, none, "mirrorGround");
+        hoverKP6(g, bench, found, "the Policy hub", hub, none, "doorCard", "limitCell");
+        hoverKP6(g, bench, found, "Policy's Taxes › Profit page", profit, none, "policyRow");
+        hoverKP6(g, bench, found, "Policy's Promises › Schools page", schools, none, "policyRow");
+        boolean zones = !fx(bench::policyZoned).isEmpty();
+        if (zones) hoverKP6(g, bench, found, "Policy's Zoning › The ground page", ground, none, "policyRow");
+        else System.out.println("  no zone stands in this city: the ground's rows are not reached by a fixture");
+        for (String where : List.of("the Government Overview|door", "the Government Overview|limitCell", "the Government Overview|ringKeyRow", "the Government Overview|bridgeRow",
+                "the Government Revenue page|rankRow", "the Trade Overview|doorCard", "the Trade Overview|mirrorGround", "the Trade Overview|limitCell",
+                "the Policy hub|doorCard", "Policy's Taxes › Profit page|policyRow", "Policy's Promises › Schools page|policyRow")) {
+            check(where.replace("|", ": a ") + " was found on the page of this city, to put the pointer on", found.getOrDefault(where, false));
+        }
+        if (zones) check("Policy's Zoning › The ground page: a policyRow was found on the page of this city, to put the pointer on", found.getOrDefault("Policy's Zoning › The ground page|policyRow", false));
+    }
+
+    /**
+     * Section 80's last part: the tooltips are kept. A node a kept draw hands back keeps its own Tooltip (Kept.tip tells it this month's words and delay);
+     * a tooltip made new by Tooltip.install on every draw would replace the one the player may be reading when a month lands. So across a month's
+     * redraw, every node that had a tooltip and still has one has the same Tooltip object, on every page of the three screens (Trade's river too).
+     */
+    static void kp6Tips(Game g, KeptBench bench) throws Exception {
+        System.out.println("\n--- 80: the tooltips are kept (Government, Trade, Policy) ---");
+        record Where(String screen, String name, KeptBench.Page page, Hand setup) { }
+        List<Where> where = new ArrayList<>();
+        for (String p : KeptBench.governmentPages()) {
+            where.add(new Where("Government", "the Government " + p + " page", fx(() -> bench.government("the Government " + p + " page", p)), b -> null));
+        }
+        List<String> trade = KeptBench.tradePages();
+        for (String p : trade) where.add(new Where("Trade", "the Trade tab's " + p + " page", fx(() -> bench.trade("the Trade tab's " + p + " page", p)), b -> null));
+        where.add(new Where("Trade", "the Trade tab's " + trade.get(1) + " page as the river", fx(() -> bench.trade("the river", trade.get(1))),
+                b -> { b.tradeRiver(true); return null; }));
+        where.add(new Where("Trade", "the Trade tab's " + trade.get(2) + " page by business", fx(() -> bench.trade("by business", trade.get(2))),
+                b -> { b.tradeByBusiness(true); return null; }));
+        where.add(new Where("Trade", "the Trade tab's " + trade.get(3) + " page", fx(() -> bench.trade("the Partners table of the year", trade.get(3))),
+                b -> { b.tradeSpan(true); return null; }));
+        where.add(new Where("Policy", "the Policy hub", fx(bench::policy), b -> null));
+        for (String[] ap : new String[][] {{"Taxes", "Profit"}, {"Money", "The policy rate"}, {"Promises", "Schools"}, {"Zoning", "The ground"}}) {
+            where.add(new Where("Policy", "Policy's " + ap[0] + " › " + ap[1] + " page", fx(() -> bench.policy("Policy's " + ap[0] + " › " + ap[1] + " page", ap[0], ap[1])), b -> null));
+        }
+        java.util.Map<String, int[]> perScreen = new java.util.LinkedHashMap<>();
+        for (Where w : where) {
+            int[] c = fx(() -> {
+                bench.home(w.page());
+                w.setup().on(bench);
+                bench.drawKept(w.page());
+                bench.passes();
+                java.util.Map<javafx.scene.Node, javafx.scene.control.Tooltip> before = bench.tooltips();
+                month(g);
+                bench.drawKept(w.page());
+                bench.passes();
+                java.util.Map<javafx.scene.Node, javafx.scene.control.Tooltip> after = bench.tooltips();
+                java.util.Set<javafx.scene.Node> still = bench.nodesOnPage();
+                int both = 0, same = 0, lost = 0;
+                for (java.util.Map.Entry<javafx.scene.Node, javafx.scene.control.Tooltip> e : before.entrySet()) {
+                    javafx.scene.control.Tooltip now = after.get(e.getKey());
+                    if (now == null) {
+                        // (A node kept on the page that has no tooltip now lost the one it had: Kept takes the tooltip off a kept node its draw does not tip.)
+                        if (still.contains(e.getKey())) lost++;
+                        continue;
+                    }
+                    both++;
+                    if (now == e.getValue()) same++;
+                }
+                return new int[]{before.size(), both, same, lost};
+            });
+            int[] sum = perScreen.computeIfAbsent(w.screen(), k -> new int[4]);
+            for (int i = 0; i < 4; i++) sum[i] += c[i];
+            System.out.printf("  %s: %d tooltips, %d of them on a node that has one after a month's redraw, %d the same Tooltip, %d on a node kept without one%n", w.name(), c[0], c[1], c[2], c[3]);
+            check(w.name() + ": every tooltip a node had and still has is the same Tooltip after a month's kept redraw (" + c[2] + " of " + c[1] + "), and none is lost from a node the page keeps (" + c[3] + ")",
+                    c[1] == c[2] && c[3] == 0);
+        }
+        for (java.util.Map.Entry<String, int[]> e : perScreen.entrySet()) {
+            check("the " + e.getKey() + " pages carry tooltips that a month leaves on their nodes, to be kept (" + e.getValue()[1] + ")", e.getValue()[1] > 0);
+        }
+    }
+
+    /** Section 81: what the kept month costs on the Government Overview, on Trade's Overview and its heaviest page, and on Policy's hub and its dial-heavy pages. */
+    static void kp6Cost(Game g, KeptBench bench) throws Exception {
+        fx(() -> {
+            bench.clock(false, null);
+            bench.speed(0);
+            return null;
+        });
+        pageCost(g, bench, fx(bench::government), 81, KEPT_GOVERNMENT_MS, "KEPT_GOVERNMENT_MS");
+
+        List<KeptBench.Page> tradePages = new ArrayList<>();
+        for (String p : KeptBench.tradePages()) tradePages.add(fx(() -> bench.trade("the Trade tab's " + p + " page", p)));
+        pageCost(g, bench, tradePages.get(0), 81, KEPT_TRADE_MS, "KEPT_TRADE_MS");
+        KeptBench.Page heavy = heaviest(bench, "Trade", tradePages);
+        if (heavy != tradePages.get(0)) pageCost(g, bench, heavy, 81, KEPT_TRADE_MS, "KEPT_TRADE_MS");
+
+        pageCost(g, bench, fx(bench::policy), 81, KEPT_POLICY_MS, "KEPT_POLICY_MS");
+        pageCost(g, bench, fx(() -> bench.policy("Policy, Taxes' Profit page", "Taxes", "Profit")), 81, KEPT_POLICY_MS, "KEPT_POLICY_MS");
+        pageCost(g, bench, fx(() -> bench.policy("Policy, Money's policy rate page", "Money", "The policy rate")), 81, KEPT_POLICY_MS, "KEPT_POLICY_MS");
+    }
+
+    /** Sections 69 to 81: Government, Trade & the World and Policy kept. */
+    static void screensKP6(Game g, KeptBench bench) throws Exception {
+        System.out.printf("%n=== Government, Trade & the World and Policy (KP6): a city at month %d ===%n", g.getMonth());
+        long t = System.nanoTime();
+        int c = checks;
+        kp6Government(g, bench);
+        t = tookWith("the Government tab (69 to 71)", t, c);
+        c = checks;
+        kp6Trade(g, bench);
+        t = tookWith("the Trade tab (72 to 74)", t, c);
+        c = checks;
+        kp6Policy(g, bench);
+        t = tookWith("the Policy tab (75 to 77)", t, c);
+        c = checks;
+        kp6Controls(g, bench);
+        t = tookWith("the controls (78)", t, c);
+        c = checks;
+        kp6CountUp(g, bench);
+        t = tookWith("the count-up (79)", t, c);
+        c = checks;
+        kp6Hover(g, bench);
+        kp6Tips(g, bench);
+        t = tookWith("the hover and the tooltips (80)", t, c);
+        c = checks;
+        kp6Cost(g, bench);
+        tookWith("the cost (81)", t, c);
+        // What the sections put in the city is taken out: the zones.
+        fx(() -> {
+            for (String s : bench.policyZoned()) bench.policyUnzone(s);
+            return null;
+        });
+    }
+
     /** A notice raised now, unread, in the inbox. */
     private static Notice add(Game g, String key, String title) {
         Notice n = new Notice(key, title, List.of("first line of " + key, "", "third line"), g.getMonth());
@@ -4458,7 +5781,7 @@ public class KeptCheck {
     }
 
     public static void main(String[] args) throws Exception {
-        System.out.println("=== KeptCheck: the People page, the chrome, City History, Infrastructure, Services, the land office, Build, the construction page, the Sectors tab, the Bank, Finances and the city's fund kept between redraws (study UP4, UP2, KP1, KP2, KP3, KP4, KP5) ===");
+        System.out.println("=== KeptCheck: the People page, the chrome, City History, Infrastructure, Services, the land office, Build, the construction page, the Sectors tab, the Bank, Finances, the city's fund, Government, Trade & the World and Policy kept between redraws (study UP4, UP2, KP1, KP2, KP3, KP4, KP5, KP6) ===");
         String down = startJavaFx();
         if (down != null) {
             System.out.println("skipped: the JavaFX toolkit cannot start here (" + down + "); the page needs it to be laid out");
@@ -4636,6 +5959,7 @@ public class KeptCheck {
         buildHover(g, bench);
         sectors(g, bench);
         money(g, bench);
+        screensKP6(g, bench);
 
         System.out.println("\n" + (fails == 0 ? "ALL OK" : fails + " FAILED"));
         Platform.exit();
