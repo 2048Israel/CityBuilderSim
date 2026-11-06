@@ -195,6 +195,17 @@ public final class PolicyDates {
         return Math.max(1, openingMonth - MAX_EARLY_MONTHS);
     }
 
+    /**
+     * The lever a discovery's code brings forward ("PL3" -> the income tax, "L5" -> the pension contribution), or null for a code that is no
+     * lever's key (a blank, a code the table does not date, and every lever that has no key: the policy rate and the open ones). Game asks it
+     * of a find (R3), so that the lever's own entry decides what a find moves and nothing else does.
+     */
+    public static Lever leverOf(String code) {
+        if (code == null || code.isBlank()) return null;
+        for (Lever lever : Lever.values()) if (!lever.entry().isEmpty() && lever.entry().equals(code.trim())) return lever;
+        return null;
+    }
+
     /* ----- what the player is told ----- */
 
     /** The date a lever opens as the Policy screen prints it: "1917", "August 1940", or "founding" for a lever open from the start. */

@@ -52,7 +52,7 @@
 
 **Uses:** [Game](Game.md) (57), [EquipmentFit](EquipmentFit.md) (54), [EquipmentCheck](EquipmentCheck.md) (48), [BuildingsStacks](BuildingsStacks.md) (20), [Founding](Founding.md) (20), [Good](Good.md) (16), [Sector](Sector.md) (13), [BusinessInvestment](BusinessInvestment.md) (13), [Equipment](Equipment.md) (12), [GameFiles](GameFiles.md) (8), [Fittings](Fittings.md) (8), [Forms1900Check](Forms1900Check.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (7), [DataSave](DataSave.md) (6), [SpreadPlanner](SpreadPlanner.md) (5), [Sectors](Sectors.md) (4), [MoneyAudit](MoneyAudit.md) (4), [GoodsMarket](GoodsMarket.md) (3), [BuildingManager](BuildingManager.md) (2), [Currency](Currency.md) (2), [World](World.md) (2), [Nations](Nations.md) (2), [Construction](Construction.md) (2), [MaterialsCheck](MaterialsCheck.md) (1), [Agriculture](Agriculture.md) (1), [Landmasses](Landmasses.md) (1), [Trade](Trade.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [Freight](Freight.md) (1)
 
-**Used by (1):** [RecipeCheck](RecipeCheck.md)
+**Used by (2):** [DiscoveryCheck](DiscoveryCheck.md), [RecipeCheck](RecipeCheck.md)
 
 ## Sections
 

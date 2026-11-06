@@ -941,6 +941,8 @@ public final class MoneyAudit {
         out += debit.apply("- utilities UtilityPayroll", utilities.getUtilityPayroll(), Scope.DOMESTIC);
         out += debit.apply("- care Payroll", care.getPayroll(), Scope.DOMESTIC);
         out += debit.apply("- schools Payroll", schools.getPayroll(), Scope.DOMESTIC);
+        // ...and the research posts' (R3): jobs the households are paid for, and the treasury pays the bill as it pays the schools'.
+        out += debit.apply("- research Payroll", e.getResearchPayroll(), Scope.DOMESTIC);
         out += debit.apply("- safety Payroll", g.getCrime().getPayroll(), Scope.DOMESTIC);
         /*
          * ...and transit's wages and upkeep (0.7.49, B9), which the treasury
@@ -1205,6 +1207,8 @@ public final class MoneyAudit {
         out += debit.apply("- treasury StudentLoansLent", g.getStudentLoansLent(), Scope.DOMESTIC);
         out += debit.apply("- care Upkeep", care.getUpkeep(), Scope.DOMESTIC);
         out += debit.apply("- schools Upkeep", schools.getUpkeep(), Scope.DOMESTIC);
+        // ...and the research laboratories' other costs (R3), which leave the audited system as the schools' upkeep does.
+        out += debit.apply("- research Costs", e.getResearchCosts(), Scope.DOMESTIC);
         out += debit.apply("- safety Upkeep", g.getCrime().getUpkeep(), Scope.DOMESTIC);
         // What thieves took from the tills, to the offenders' households -
         // out of the pools like a wage. What they took from households never

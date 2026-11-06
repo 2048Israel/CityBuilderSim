@@ -1,4 +1,4 @@
-# Recipe.java - 183 lines · 22 methods · 2 constants · model
+# Recipe.java - 192 lines · 23 methods · 2 constants · model
 
 `ham/citybuildersim/Recipe.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
@@ -22,9 +22,9 @@
 > catalogue never. needsEquipment is the id of a piece of equipment on the SAME template, or null for none;
 > which part of a stack of buildings may run the recipe (the fitted or the unfitted) follows from it (Recipes).
 
-**Uses:** [Good](Good.md) (11), [JobType](JobType.md) (5), [Equipment](Equipment.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [ResearchCatalog](ResearchCatalog.md) (1)
+**Uses:** [Good](Good.md) (11), [JobType](JobType.md) (5), [Equipment](Equipment.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [ResearchCatalog](ResearchCatalog.md) (1), [Research](Research.md) (1)
 
-**Used by (7):** [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingsTemplate](BuildingsTemplate.md), [RecipeCheck](RecipeCheck.md), [Recipes](Recipes.md), [ResearchCheck](ResearchCheck.md), [Sector](Sector.md)
+**Used by (8):** [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingsTemplate](BuildingsTemplate.md), [DiscoveryCheck](DiscoveryCheck.md), [RecipeCheck](RecipeCheck.md), [Recipes](Recipes.md), [ResearchCheck](ResearchCheck.md), [Sector](Sector.md)
 
 ## Constants
 
@@ -56,7 +56,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 28 | 156 | **type** `public final class Recipe` | A way a building runs: what it uses, what it makes, who it needs and what it draws, and when it is known and what piece of equipment it needs. |
+| 28 | 165 | **type** `public final class Recipe` | A way a building runs: what it uses, what it makes, who it needs and what it draws, and when it is known and what piece of equipment it needs. |
 | 66 | 25 | `public Recipe(String id, String name, String since, String needsEquipment, boolean isDefault, Map<Good, Double> makes, Map<Good...` |  |
 | 92 | 13 | `private static Map<Good, Double> copyOf(String id, String what, Map<Good, Double> units)` |  |
 | 110 | 3 | `public static Recipe topLevelOf(BuildingsTemplate t)` | A template's top level as a recipe: id {@link #DEFAULT_ID}, since {@link #DEFAULT_SINCE}, needing nothing, every figure the template's own now. |
@@ -68,15 +68,16 @@
 | 137 | 1 | `public boolean isYear()` | Whether "since" is a year (it parses as a whole number) and not a catalogue code. |
 | 140 | 1 | `public int knownFrom()` | The game month it is known from: a year's January, a code's entry's month (ResearchCatalog.knownFrom()); Integer.MAX_VALUE for a code not in the catalogue. |
 | 143 | 3 | `public boolean knownAt(int gameMonth)` | Whether it is known at a game month (month 1 = January 1900): from the month it is known from on. |
-| 148 | 3 | `public boolean knownIn(int calendarYear)` | Whether it is known by a calendar year's January: knownAt() of that month (Equipment.januaryOf()), so that a screen that asks by the year agrees with the model that asks by the month. |
-| 153 | 1 | `public String getNeedsEquipment()` | The id of the piece of equipment on the template it needs, or null for a recipe that needs none. |
-| 156 | 1 | `public boolean isDefault()` | Whether this is the template's top level: today's way, which the figures of the template's buildings are when nothing else is chosen. |
-| 159 | 1 | `public Map<Good, Double> makes()` | Units of each good it makes a month at nameplate; unmodifiable, only the goods it makes. |
-| 162 | 1 | `public Map<Good, Double> uses()` | Units of each good it uses a month at nameplate; unmodifiable, only the goods it uses. |
-| 165 | 1 | `public int getJobs(JobType type)` | Posts of a job type. |
-| 168 | 1 | `public int getElectricity()` | kW it draws, its whole draw (the template's electricity), of which what it makes itself (getGen()) it does not buy. |
-| 171 | 1 | `public double getGen()` | kW it makes itself. |
-| 174 | 1 | `public double getWater()` | Water units it draws. |
-| 177 | 1 | `public double getConsumables()` | Its consumables a month at nameplate, thousands of the world's money. |
-| 180 | 3 | `public String toString()` |  |
+| 152 | 3 | `public boolean knownAt(int gameMonth, Research found)` | Whether it is known at a game month in a city whose research may have found it first (R3): from history's month, or from the month the city found its code, whichever is first (Research.foundMonth()). |
+| 157 | 3 | `public boolean knownIn(int calendarYear)` | Whether it is known by a calendar year's January: knownAt() of that month (Equipment.januaryOf()), so that a screen that asks by the year agrees with the model that asks by the month. |
+| 162 | 1 | `public String getNeedsEquipment()` | The id of the piece of equipment on the template it needs, or null for a recipe that needs none. |
+| 165 | 1 | `public boolean isDefault()` | Whether this is the template's top level: today's way, which the figures of the template's buildings are when nothing else is chosen. |
+| 168 | 1 | `public Map<Good, Double> makes()` | Units of each good it makes a month at nameplate; unmodifiable, only the goods it makes. |
+| 171 | 1 | `public Map<Good, Double> uses()` | Units of each good it uses a month at nameplate; unmodifiable, only the goods it uses. |
+| 174 | 1 | `public int getJobs(JobType type)` | Posts of a job type. |
+| 177 | 1 | `public int getElectricity()` | kW it draws, its whole draw (the template's electricity), of which what it makes itself (getGen()) it does not buy. |
+| 180 | 1 | `public double getGen()` | kW it makes itself. |
+| 183 | 1 | `public double getWater()` | Water units it draws. |
+| 186 | 1 | `public double getConsumables()` | Its consumables a month at nameplate, thousands of the world's money. |
+| 189 | 3 | `public String toString()` |  |
 

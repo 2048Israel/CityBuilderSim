@@ -205,6 +205,8 @@ public class Inbox {
 
         takeLevers(game, month);
 
+        takeResearch(game, month);
+
         cull(month);
     }
 
@@ -247,6 +249,46 @@ public class Inbox {
                     leverTitle(lever),
                     opensNow ? wrapped(PolicyDates.notice(lever), BODY_COLUMNS) : new ArrayList<>());
         }
+    }
+
+    /**
+     * What the city's research found and what reached it from abroad (R3), each a one-off like a lever's: raised in the month it happened, keyed
+     * "found:" or "abroad:" and the discovery's code so that it is raised once, settled the month after and kept two years. "Found here" names the
+     * school that researched it, how far ahead of the world the city was and what the discovery touches; "From abroad" what the world did and what
+     * it touches. None in the month of a city's first day, which reports nothing that predates it, and none in a city founded the default way,
+     * whose research never runs (Research.month() is not called there, and Research.idleMonth() leaves both lists empty).
+     */
+    private void takeResearch(Game game, int month) {
+        Research research = game.getResearch();
+        ResearchCatalog catalogue = ResearchCatalog.get();
+        List<String> found = month > 1 ? research.foundThisMonth() : List.of();
+        List<String> arrived = month > 1 ? research.arrivedThisMonth() : List.of();
+        for (String code : found) {
+            ResearchCatalog.Entry entry = catalogue.entry(code);
+            if (entry == null) continue;
+            double years = (entry.worldMonth() - month) / 12.0;
+            take(game, month, "found:" + code, true, "Found here: " + entry.name(),
+                    wrapped(String.format("%s found it, %.1f years ahead of the world. It touches: %s.", capital(entry.field().school()), years, entry.touches()), BODY_COLUMNS));
+        }
+        for (String code : arrived) {
+            ResearchCatalog.Entry entry = catalogue.entry(code);
+            if (entry == null) continue;
+            take(game, month, "abroad:" + code, true, "From abroad: " + entry.name(),
+                    wrapped(String.format("The world has it now (%s). It touches: %s.", entry.world(), entry.touches()), BODY_COLUMNS));
+        }
+        // ...and the ones raised in an earlier month are settled: they were told once.
+        for (Notice notice : new ArrayList<>(notices)) {
+            String key = notice.getKey();
+            boolean here = key.startsWith("found:"), abroad = key.startsWith("abroad:");
+            if ((!here && !abroad) || notice.isResolved()) continue;
+            String code = key.substring(key.indexOf(':') + 1);
+            if (!(here ? found : arrived).contains(code)) notice.markResolved(month);
+        }
+    }
+
+    /** "the Medical school" as a sentence starts it: "The Medical school". */
+    private static String capital(String phrase) {
+        return phrase.isEmpty() ? phrase : Character.toUpperCase(phrase.charAt(0)) + phrase.substring(1);
     }
 
     /** "An income tax: 1917", "A profit tax: 1916", "Student aid: 1939", "Zoning: 1924": the lever as the player reads it (PolicyDates.named(), the rule the Policy screen's shut card shares), and the date it opened. */

@@ -1121,6 +1121,11 @@ public class NationalAccounts {
     public void setSafetySpending(double spending) { this.safetySpending = spending; }
     public double getSafetySpending() { return safetySpending; }
 
+    /** The research grants' posts and laboratories (R3): the pay of the posts and the labs' other costs. Set beside safetySpending; saved on the block's last slot. See EconomyManager.setResearch(). */
+    private double researchSpending;
+    public void setResearchSpending(double spending) { this.researchSpending = spending; }
+    public double getResearchSpending() { return researchSpending; }
+
     /**
      * Fares in, the buses' and trams' wage bill out. See EconomyManager.
      *
@@ -1231,11 +1236,13 @@ public class NationalAccounts {
             inflationUplift, upliftPaid,
             // ...and the exchange on the city's foreign debt (CD7): the month's gain, a loss below nothing. An
             // older save reads zero, which is right: its books booked none.
-            debtExchangeGain };
+            debtExchangeGain,
+            // ...and the research grants' bill (R3): an older save reads zero, which is right: it paid none.
+            researchSpending };
     }
 
     void restoreGovernment(double[] saved) {
-        // Thirty-eight since the exchange on foreign debt (CD7); thirty-seven since the linked bonds' uplift (CD5); thirty-five since the city's paper on amortised cost (CD3); thirty-three
+        // Thirty-nine since the research grants' bill (R3); thirty-eight since the exchange on foreign debt (CD7); thirty-seven since the linked bonds' uplift (CD5); thirty-five since the city's paper on amortised cost (CD3); thirty-three
         // since the repairs, the arrears and the reserve's crude (0.7.102);
         // twenty-nine since food assistance; twenty-eight since the city's fund; twenty-seven since the mortgage
         // insurance; twenty-five since the central bank; twenty-three since
@@ -1246,7 +1253,8 @@ public class NationalAccounts {
                 && saved.length != 21 && saved.length != 22 && saved.length != 23
                 && saved.length != 25 && saved.length != 27 && saved.length != 28
                 && saved.length != 29 && saved.length != 33 && saved.length != 35
-                && saved.length != 37 && saved.length != 38)) return;
+                && saved.length != 37 && saved.length != 38 && saved.length != 39)) return;
+        researchSpending      = saved.length >= 39 ? saved[38] : 0;
         debtExchangeGain      = saved.length >= 38 ? saved[37] : 0;
         inflationUplift       = saved.length >= 37 ? saved[35] : 0;
         upliftPaid            = saved.length >= 37 ? saved[36] : 0;
@@ -1446,6 +1454,8 @@ public class NationalAccounts {
         return getInterestExpense() + capitalSpending + landPurchases + pensions
                 + eiBenefits + studentGrants
                 + healthSpending + educationSpending + safetySpending + subsidies
+                // ...and the research grants' posts and laboratories (R3): none at a grant of 0.
+                + researchSpending
                 // ...and the interest on the central bank's advances (0.7.0).
                 + centralBankInterest
                 // ...and what its mortgage insurance paid the bank (0.7.11).
@@ -1554,6 +1564,7 @@ public class NationalAccounts {
         healthFees *= scale;  healthSpending *= scale;
         educationFees *= scale;  educationSpending *= scale;
         safetySpending *= scale;
+        researchSpending *= scale;
         subsidies *= scale;
     }
 

@@ -1,4 +1,4 @@
-# CityNeeds.java - 1,111 lines · 48 methods · 23 constants · model
+# CityNeeds.java - 1,112 lines · 48 methods · 23 constants · model
 
 `ham/citybuildersim/CityNeeds.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
@@ -130,7 +130,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 39 | 1073 | **type** `public final class CityNeeds` | NEEDS YOU, measured: everything with a lever, each against its own line, in the order a city is built - the list the left panel's Summary prints, the header's "Needs you" chip counts, and the Build tab's overview and ... |
+| 39 | 1074 | **type** `public final class CityNeeds` | NEEDS YOU, measured: everything with a lever, each against its own line, in the order a city is built - the list the left panel's Summary prints, the header's "Needs you" chip counts, and the Build tab's overview and ... |
 | 41 | 1 | `private CityNeeds()` |  |
 | 44 | 9 | **type** `public enum Kind` | What a need is about - the measure the Build tab's advice and rings read. |
 | 55 | 6 | **type** `public enum Go` | Where a need's fix is: the screen its row opens. |
@@ -197,7 +197,7 @@
 | 925 | 19 | `static void network(List<Need> out, String label, Kind kind, double demand, double supply, double ratio)` | One network: how much of its capacity is spoken for, and whether it is still meeting demand. |
 | 965 | 16 | `static void seatsWanted(Game game, Words w, List<Need> out)` | SEATS AGAINST WHO WOULD COME, for the schools above the basic ladder: what the schools hold, and the student body this city would sustain - so a bigger second number means another building fills. |
 
-### the student body the city would get and hire (0.7.51) (lines 982-1111)
+### the student body the city would get and hire (0.7.51) (lines 982-1112)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -206,7 +206,7 @@
 | 1008 | 3 | `public static double wanted(Game game, EducationType type, double months, double k)` | The student body the city would get and hire, `months` from now with its posts grown by k: the smaller of who would come by then (wouldComeAt()) and the posts their degree would fill (hires()). |
 | 1013 | 6 | `public static double wouldComeAt(Game game, EducationType type, double months)` | Who would come `months` from now: wouldCome()'s arithmetic with the feeder's graduates by then added to the band (feederOver()); at 0 it is wouldCome(). |
 | 1027 | 11 | `public static double feederOver(Game game, EducationType type, double months)` | The feeder's graduates over the next `months`: for a college or a university the high schools' diplomas a month at the ladder's saved coverage (Education.schoolLeavers(), advanceMonth()'s flow) times the months; for a... |
-| 1047 | 27 | `public static double hires(Game game, EducationType type, double k)` | The posts this school's graduates would take, as a student body: the posts of the band it qualifies for (a professional school: its licence's posts), standing and on site, grown by k, less the people already qualified... |
-| 1076 | 7 | `public static double wouldCome(Game game, EducationType type)` | The student body a school above the ladder would hold if seats were free: eligible x willing x the enrolment rate, times the course. |
-| 1092 | 19 | `static void fallsDue(Game game, Words w, List<Need> out)` | FALLS DUE (0.7.24). |
+| 1047 | 28 | `public static double hires(Game game, EducationType type, double k)` | The posts this school's graduates would take, as a student body: the posts of the band it qualifies for (a professional school: its licence's posts), standing and on site, grown by k, less the people already qualified... |
+| 1077 | 7 | `public static double wouldCome(Game game, EducationType type)` | The student body a school above the ladder would hold if seats were free: eligible x willing x the enrolment rate, times the course. |
+| 1093 | 19 | `static void fallsDue(Game game, Words w, List<Need> out)` | FALLS DUE (0.7.24). |
 

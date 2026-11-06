@@ -54,7 +54,7 @@
 
 **Uses:** [EquipmentFit](EquipmentFit.md) (160), [Game](Game.md) (51), [Good](Good.md) (28), [BuildingsStacks](BuildingsStacks.md) (27), [Equipment](Equipment.md) (23), [BuildingsTemplate](BuildingsTemplate.md) (18), [Sector](Sector.md) (13), [Haulage](Haulage.md) (12), [Forms1900Check](Forms1900Check.md) (11), [GameFiles](GameFiles.md) (7), [SpreadPlanner](SpreadPlanner.md) (6), [BuildAdvice](BuildAdvice.md) (5), [BuildingManager](BuildingManager.md) (4), [BuildingCatalog](BuildingCatalog.md) (2), [PolicyDates](PolicyDates.md) (2), [Agriculture](Agriculture.md) (2), [HydroSites](HydroSites.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [JobType](JobType.md) (2), [HaulageCheck](HaulageCheck.md) (1), [ResearchCatalog](ResearchCatalog.md) (1), [CityCalendar](CityCalendar.md) (1), [GoodsMarket](GoodsMarket.md) (1), [Freight](Freight.md) (1)
 
-**Used by (2):** [FittingCheck](FittingCheck.md), [RecipeCheck](RecipeCheck.md)
+**Used by (3):** [DiscoveryCheck](DiscoveryCheck.md), [FittingCheck](FittingCheck.md), [RecipeCheck](RecipeCheck.md)
 
 ## Sections
 

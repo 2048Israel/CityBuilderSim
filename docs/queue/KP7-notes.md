@@ -1,4 +1,4 @@
-# KP7 - Screens kept: the rest (Household money, Rankings), and the rebuild path retired from the clock ({next}, 2026-11-06)
+# KP7 - Screens kept: the rest (Household money, Rankings), and the rebuild path retired from the clock (0.9.29, 2026-11-06)
 
 **WHERE IT STANDS** (2026-11-06, 04:55): ready. The slices are in and reviewed (A bf5b25ad, B f7bf4f84, D 84465ec0
 and cdf53266, with Opus's bb51ecfc, 85daebd8 and 3a87945a); main merged in with KP6 0.9.27 and XI1 0.9.26 (2681657f),
