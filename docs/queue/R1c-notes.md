@@ -210,3 +210,31 @@ prices (the open hearth -355 a month): no village builds one.
   under -10% a year for 12 and 15 months (seed 5 to m738; seed 8 to m876,
   where unemployment goes from 27% to 60% in a young city's slump), against
   0.9.19's longest of 8. ★11 below.
+- **`--pick`** (102 of 177 harnesses and LongPlaytest, for 56 files changed
+  since R1b's tip; the gate's world files named) and **the full suite**
+  (`AllChecks -f`, 177 harnesses, 170 green) on 2578ab8f, before R1b
+  landed. Mended here: OilCheck 6, whose identity had the refiners' home
+  petrol all going to the forecourts; the farms now buy it too (§2 ★7), so
+  it is the forecourts' purchase and every other sector's, to the bit. The
+  reds left are none of R1c's code; the farms' fuel moves the default path,
+  and on it:
+  - **main's known classes, by name**: SlopeCheck's "a building on the map
+    moved" and MapCheck's moved boxes (DM2's), DenominationCheck's reformed
+    twin 1e-9 apart (a price tie in the bond book, OB1), ScaleCheck (main's
+    own red, ST1's class), each with other numbers than main's record;
+  - **main's margins, met on the moved path** (pass by name, follow-ups
+    queued): MonetaryCheck's "a month's delay in the hand moves them less
+    than the allowance" reads 0.100 points of its 0.100, where R1b's tip,
+    built apart and run here, reads 0.099 (`MEASUREMENT_NOISE` keeps "about
+    twice the largest reading", which main had lost already: MN1); KeptCheck
+    49's "a month's redraw after each choice hands back nine in ten of the
+    page's nodes" finds Construction's income statement handing back 89.8%
+    on R1c's city, where R1b's city's worst page is 100% (KP4's new floor; R1c
+    touches no screen, and in a default city changes nothing but the farms'
+    fuel: KS1, for the screens lane);
+  - **timing**, hard only in the direct `AllChecks -f` run (SaveSlotCheck
+    1, MapCheck's two, KeptCheck's chrome), SOFT under `batch-check.sh`.
+  `pick.sh` asks the gate's stranger's review of the saves (`DataSave`'s
+  `recipeChoices`, a key only where a part runs off its default) and the
+  threading (`volatile` on the template's live maps, §4).
+- Not a process batch: no scripts, checks' machinery or rules changed.
