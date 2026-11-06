@@ -846,6 +846,11 @@ adds its line here, not in `CLAUDE.md`.
                                    on its money's curve (its bank's policy rate, the country premium, the term premium), kept in
                                    its own money and read in D$ at the month's rate, its coupons paid, revalued, bought back,
                                    rolled and held as reserves in it, over a save and a load; US$ paper as it was, to the bit
+        InterventionCheck.java     a purchase or sale of dollars moves the D$ a bounded amount (batch XI1): ForeignAccounts'
+                                   interventionMove() and its inverse equal the old linear expressions to the bit up to
+                                   INTERVENTION_LINEAR of a year's GDP and are logarithmic past it, continuous in value and slope;
+                                   Rotterdam's 4.5 years of output in a month moves the D$ x2.6 and not x8,100, on a bare currency
+                                   and on a played town; the default run's defence never reaches the bound
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run;
                                    since TM1 it hands -Dcbs.timing to each harness and --timing runs the timing ones;
                                    since SP1 three at a time (PARALLEL), each JVM under -Xmx HEAP_MB

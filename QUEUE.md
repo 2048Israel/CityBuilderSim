@@ -28,7 +28,6 @@ stuff".
 
 | batch | what | brief |
 |---|---|---|
-| XI1 | A purchase or sale of dollars moves the D$ a bounded amount: `INTERVENTION_IMPACT` linear to 10% of a year's GDP and logarithmic past it, byte-identical below; Trade's reserves warn past it (Jerus's Rotterdam, slot 3: one purchase of 4.5 years' output moved the D$ x11,600 in a month; GD0, Jerus, 2026-11-02: "Rate running away (Recommended)") | [GD0 §4.5](docs/studies/spec-gold-money.md#45-the-intervention-bounded-xi1-a-fix) |
 | R3 | Research: posts and discoveries | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
 | R4 | Research: prizes and the Research Lab | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
 | R5 | Research: the screens | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
