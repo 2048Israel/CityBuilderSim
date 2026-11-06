@@ -4,6 +4,11 @@ import ham.citybuildersim.ResearchCatalog.Entry;
 import ham.citybuildersim.ResearchCatalog.Field;
 import ham.citybuildersim.ResearchCatalog.Size;
 
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.StringReader;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -24,8 +29,8 @@ import java.util.TreeMap;
  * purse is split by who did the work. Every claim here is a statement about a month and a threshold ("the prize is at least the remaining work
  * times a researcher-year's cost": one hair under it a lab stays away), so each threshold is caused from both sides and held to Research's own
  * constants and functions and never to a number copied from the study's formula; and a wrong order in the month (the chase computed after the
- * work, the purse read before the find) moves a find by a year and no assertion elsewhere would see it. The labs, the investors and the
- * purse's payment are later slices': this one is the pure model, which has to be right before Game meets it.
+ * work, the purse read before the find) moves a find by a year and no assertion elsewhere would see it. Sections 1 to 10 (slice A) are the
+ * pure model, which has to be right before Game meets it; sections 11 to 17 (slice B) are Game meeting it.
  *
  * What this has to prove:
  *
@@ -51,6 +56,25 @@ import java.util.TreeMap;
  *      pots, idle counts and purses, as the unbroken one; a malformed entry is skipped; reset() clears everything new; isEmpty() sees each.
  *  10. NO PRIZE, NO CHANGE. With no labs the work is the study's own R3 month (a reference written here), whatever the prize; with a prize of 0
  *      labs sit idle and change nothing; nobody wants a lab.
+ *
+ * R4, slice B: the labs in the city (Game, the templates, the treasury's prizes line, the inbox, the save), on villages founded the 1900 way with a
+ * University (DiscoveryCheck's fixtures) played to the month the model first wants a lab:
+ *
+ *  11. THE LABS ARE BUILDINGS. Four templates in the built-in definitions and in buildings.json, one a field, named, ids 148 to 151, in Business
+ *      Services, making nothing and needing no licence, with Research.labJobs() job type by job type and the Engineering Services Office's figures
+ *      times the study's 12 / 10.9; a "researches" that is no field is reported and read as none; Business Services' plan is never a lab nor held for
+ *      the staff of one, in a 1900 village, a default one and one with no hands.
+ *  12. INVESTORS BUILD A LAB. At the prize that just makes the model want one a lab is on site within a month, the owners' raise recorded and no loan;
+ *      a hair under, none; a default-way village with the same prize, none; at most one a field a month, with two wanted.
+ *  13. LABS AT WORK. The month's lab researchers are the labs' posts' filled researchers at the month's fill, and their work lands on the target.
+ *  14. THE PURSE PAID. In the month of a find the treasury's prizes line pays exactly the labs' share, Business Services' books receive the same
+ *      figure and close, the audit closes, the national accounts carry it with the subsidies, the schools' share is in the pot and the inbox's notice
+ *      tells it; past the treasury's room the rest is owed as arrears.
+ *  15. IDLE LABS ARE SHED. A lab with nothing to chase stands for exactly LAB_IDLE_MONTHS months of play and is sold back the month after; not for a
+ *      sector a harness holds.
+ *  16. THE SAVE. The new keys are written and read back; a loaded city and the one saved play two years alike; a city with only a prize writes the key.
+ *  17. A CITY FOUNDED THE DEFAULT WAY orders nothing, pays nothing and has no lab, whatever the prizes; a reform of the money scales the prize, the
+ *      pot and the month's prize paid.
  */
 public class PrizeCheck {
 
@@ -227,7 +251,8 @@ public class PrizeCheck {
         return faults;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
+        DiscoveryCheck.quiet = new PrintStream(OutputStream.nullOutputStream());
         sectionOne();
         sectionTwo();
         sectionThree();
@@ -238,6 +263,13 @@ public class PrizeCheck {
         sectionEight();
         sectionNine();
         sectionTen();
+        sectionEleven();
+        sectionTwelve();
+        sectionThirteen();
+        sectionFourteen();
+        sectionFifteen();
+        sectionSixteen();
+        sectionSeventeen();
         System.out.println(fails == 0 ? "PrizeCheck: all " + passes + " ok" : "PrizeCheck: " + fails + " FAILED of " + (passes + fails));
         System.exit(fails);
     }
@@ -1225,5 +1257,503 @@ public class PrizeCheck {
             }
         }
         check("with a prize of 0 nobody wants a lab, in any field, in any month of history: no wanted, no target, no stake, no chase", wanted.isEmpty(), wanted.size() > 3 ? wanted.subList(0, 3).toString() : wanted.toString());
+    }
+
+    /* ==========================================================================================================================================
+       R4 SLICE B: THE LABS IN THE CITY (sections 11 to 17). A village founded the 1900 way (or the default way) with a University standing, DiscoveryCheck's
+       fixtures (cityWithSchools(), play(), pileJustUnder()), played with the hands handed afresh each month (the village's own workforce is nil and
+       MaterialsCheck.handWorkers() lasts a month), to the month before the model first wants a lab: month 80 for engineering, whose first lab is the
+       earliest of the four fields' (the model's own monthWantingALab()). Every figure from Research's and the model's own functions and constants.
+       ========================================================================================================================================== */
+
+    /** The field the city sections work in: the University hosts it, and the first lab any field wants is wanted in it. */
+    static final Field F = Field.ENGINEERING;
+
+    static final String BS = Sectors.BUSINESS_SERVICES;
+
+    /** research-design 5.3: the lab's D$ 12M against the Engineering Services Office's D$ 10.9M for 120 staff, which the lab templates' figures are written from. */
+    static final double STUDY_RATIO = 12 / 10.9;
+
+    /** Hands handed to the village (MaterialsCheck.handWorkers()), which last one month. */
+    static void hand(Game g) {
+        DiscoveryCheck.quietly(() -> MaterialsCheck.handWorkers(g));
+    }
+
+    /** `months` presses of the clock, the hands handed afresh before each. */
+    static void playHanded(Game g, int months) {
+        for (int i = 0; i < months; i++) {
+            hand(g);
+            DiscoveryCheck.play(g, 1);
+        }
+    }
+
+    /** The first month in which a fresh Research with a prize no problem escapes wants `labs` labs in a field (Research.labsWanted() at the wages), or -1 for none in all of history. */
+    static int monthWantingALab(Field f, int labs) {
+        Research fresh = new Research();
+        fresh.setPrize(f, BIG);
+        for (int m = 1; m <= lastWorldMonth() + 1; m++) if (fresh.labsWanted(f, m, W) >= labs) return m;
+        return -1;
+    }
+
+    /** A village with a University and the hands, played to the month before `f` first wants `labs` labs. */
+    static Game labCity(String label, boolean the1900Way, Field f, int labs) {
+        Game g = DiscoveryCheck.cityWithSchools(label, the1900Way, false);
+        playHanded(g, monthWantingALab(f, labs) - 1 - g.getMonth());
+        return g;
+    }
+
+    /** What one more researcher-year of a problem costs the investors' reckoning in the city: the problem's remaining work times twelve times the post's cost at the city's wages now (Research's own statics). */
+    static double coverNow(Game g, Entry e) {
+        return Research.remaining(e, g.getResearch().pile(e.code())) * Research.MONTHS_A_YEAR * Research.postCost(e.field(), g.getPopulationManager().getWagesPerType());
+    }
+
+    /**
+     * The least prize at which Research wants a lab in the field in the city's next month: the least of the open problems' covers (coverNow()) at which
+     * Research.labsWanted() is one or more. NaN where none does. The field's prize is left as it was.
+     */
+    static double justWantsALab(Game g, Field f) {
+        Research r = g.getResearch();
+        double was = r.prize(f);
+        int m = g.getMonth() + 1;
+        double[] w = g.getPopulationManager().getWagesPerType().clone();
+        List<Double> covers = new ArrayList<>();
+        for (Entry e : r.openProblems(f, m)) covers.add(coverNow(g, e));
+        java.util.Collections.sort(covers);
+        double found = Double.NaN;
+        for (double c : covers) {
+            r.setPrize(f, c);
+            if (r.labsWanted(f, m, w) >= 1) { found = c; break; }
+        }
+        r.setPrize(f, was);
+        return found;
+    }
+
+    /** DiscoveryCheck.pileJustUnder() with the prizes, the pots, the labs' piles, the shares and the idle counts kept: it restores the research from its grants, posts, piles and finds alone, which clears them. */
+    static void pileJustUnder(Game g, Entry e) {
+        Research r = g.getResearch();
+        Map<String, Double> prizes = r.prizesForSave(), pots = r.potsForSave(), labPiles = r.labPilesForSave(), shares = r.citySharesForSave();
+        Map<String, Integer> idle = r.labIdleMonthsForSave();
+        DiscoveryCheck.pileJustUnder(g, e);
+        r.restorePrizes(prizes, pots, labPiles, shares, idle);
+    }
+
+    /** The labs of every field standing and on site, as one string: "ENGINEERING 1+0 MEDICINE 0+0 ...". */
+    static String labsOf(Game g) {
+        StringBuilder sb = new StringBuilder();
+        for (Field f : Field.values()) sb.append(f).append(' ').append(g.labsStanding(f)).append('+').append(g.labsOnSite(f)).append(' ');
+        return sb.toString().trim();
+    }
+
+    /** The labs the city has in all fields, standing and on site. */
+    static int labsInAll(Game g) {
+        int n = 0;
+        for (Field f : Field.values()) n += g.labsStanding(f) + g.labsOnSite(f);
+        return n;
+    }
+
+    /* ==================== 11. the labs are buildings ==================== */
+
+    static void sectionEleven() {
+        System.out.println("\n--- 11. the labs are buildings: four templates, one a field, with a lab's jobs; no planner of Business Services offers one ---");
+        BuildingManager builtIn = new BuildingManager();
+        builtIn.initializeBuiltInTemplates();
+        List<BuildingsTemplate> data = new BuildingCatalog().load();
+        check("fixture: both the built-in definitions and buildings.json are there", data != null && !builtIn.getTemplates().isEmpty());
+        Map<Field, String> names = new EnumMap<>(Map.of(Field.ENGINEERING, "Engineering Research Lab", Field.MEDICINE, "Medical Research Lab", Field.BUSINESS, "Business Research Lab", Field.LAW, "Law Research Lab"));
+        for (int source = 0; source < 2 && data != null; source++) {
+            List<BuildingsTemplate> all = source == 0 ? builtIn.getTemplates() : data;
+            String from = source == 0 ? "the built-in definitions" : "buildings.json";
+            BuildingsTemplate office = null;
+            Set<Integer> ids = new HashSet<>();
+            List<String> faults = new ArrayList<>();
+            int labs = 0;
+            for (BuildingsTemplate t : all) {
+                if (!ids.add(t.getId())) faults.add("id " + t.getId() + " twice");
+                if (t.getId() == 48) office = t;
+                if (t.getResearches() != null) labs++;
+            }
+            for (Field f : Field.values()) {
+                BuildingsTemplate lab = null;
+                int of = 0;
+                for (BuildingsTemplate t : all) if (t.getResearches() == f) { lab = t; of++; }
+                if (of != 1) { faults.add(f + " has " + of + " labs"); continue; }
+                if (!lab.getName().equals(names.get(f))) faults.add(f + " named " + lab.getName());
+                if (lab.getId() != 148 + f.ordinal()) faults.add(lab.getName() + " has id " + lab.getId());
+                if (lab.getCategory() != BuildingType.BUSINESS_SERVICES || !BS.equals(lab.getSector())) faults.add(lab.getName() + " is " + lab.getCategory() + " / " + lab.getSector());
+                if (!lab.goodsMade().isEmpty() || !lab.goodsUsed().isEmpty() || lab.getRequiresLicence() != null) faults.add(lab.getName() + " makes, uses or needs a licence");
+                if (lab.getCapacity() != Research.LAB_POSTS || lab.getUpkeep() != 0) faults.add(lab.getName() + " capacity " + lab.getCapacity() + ", upkeep " + lab.getUpkeep());
+                long[] jobs = Research.labJobs(f);
+                for (JobType type : JobType.values()) if (lab.getJobs(type) != jobs[type.ordinal()]) faults.add(lab.getName() + " " + type + " " + lab.getJobs(type) + " against " + jobs[type.ordinal()]);
+                if (office != null) {
+                    double[][] pairs = { {lab.getCashCost(), office.getCashCost()}, {lab.getConstructionPoints(), office.getConstructionPoints()}, {lab.getConstructionMaterials(), office.getConstructionMaterials()},
+                            {lab.getElectricityConsumption(), office.getElectricityConsumption()}, {lab.getWaterConsumption(), office.getWaterConsumption()}, {lab.getRoadLoad(), office.getRoadLoad()} };
+                    for (int i = 0; i < pairs.length; i++) if (Math.abs(pairs[i][0] - pairs[i][1] * STUDY_RATIO) > 0.5) faults.add(lab.getName() + " figure " + i + ": " + pairs[i][0] + " against " + pairs[i][1] * STUDY_RATIO);
+                    if (Math.abs(lab.getLandSqFt() - office.getLandSqFt() * STUDY_RATIO) > 500) faults.add(lab.getName() + " land " + lab.getLandSqFt());
+                }
+            }
+            check(from + ": four templates research a field, one each (ids 148 to 151, none reused), named, in Business Services, making nothing and needing no licence, with the jobs of Research.labJobs() job type by job type"
+                    + " and the Engineering Services Office's figures times the study's 12 / 10.9", faults.isEmpty() && labs == 4 && office != null, faults.toString());
+        }
+
+        // A name that is no field is reported and read as none, as a bad school or care type is.
+        PrintStream real = System.out;
+        ByteArrayOutputStream said = new ByteArrayOutputStream();
+        List<BuildingsTemplate> odd;
+        System.setOut(new PrintStream(said));
+        try {
+            odd = new BuildingCatalog().parse(new StringReader("{\"buildings\":[{\"id\":900,\"name\":\"Lab of Nothing\",\"category\":\"BUSINESS_SERVICES\",\"researches\":\"ASTROLOGY\"},"
+                    + "{\"id\":901,\"name\":\"Lab of Law\",\"category\":\"BUSINESS_SERVICES\",\"researches\":\"LAW\"}]}"));
+        } finally {
+            System.setOut(real);
+        }
+        check("a \"researches\" that is no field is reported by name and read as none, and one that is a field is read: the key is a Field's name",
+                odd != null && odd.size() == 2 && odd.get(0).getResearches() == null && odd.get(1).getResearches() == Field.LAW
+                        && said.toString().contains("Lab of Nothing") && said.toString().contains("ASTROLOGY"), said.toString());
+
+        // No planner of Business Services offers a lab: the plan's template and its staffing hold are never one, in a village of each founding and with and without hands.
+        int[] asked = new int[3];
+        List<String> offered = new ArrayList<>();
+        for (int variant = 0; variant < 3; variant++) {
+            Game g = DiscoveryCheck.cityWithSchools("prize-plan-" + variant, variant != 1, false);
+            ham.citybuildersim.sectors.BusinessServices bs = g.getSectors().businessServices();
+            for (int i = 0; i < 36; i++) {
+                if (variant != 2) playHanded(g, 1); else DiscoveryCheck.play(g, 1);
+                BusinessInvestment.Decision d = bs.plan(g.getBusinessInvestment(), g);
+                if (d == null) continue;
+                asked[0]++;
+                if (d.build) asked[1]++;
+                if (d.heldForStaff != null) asked[2]++;
+                if (d.template != null && d.template.getResearches() != null) offered.add("variant " + variant + " month " + g.getMonth() + ": the plan is " + d.template.getName());
+                if (d.heldForStaff != null && d.heldForStaff.template() != null && d.heldForStaff.template().getResearches() != null) offered.add("variant " + variant + " month " + g.getMonth() + ": the staffing hold is " + d.heldForStaff.template().getName());
+            }
+        }
+        check("Business Services' plan is never a lab nor held for the staff of one, over 36 months of a 1900 village, a default one and a 1900 village with no hands (" + asked[0] + " plans asked, " + asked[1] + " builds, " + asked[2] + " held for staff)",
+                offered.isEmpty() && asked[0] > 0, offered.toString());
+
+        // ...and the hazard that skip answers, caused: a village where the labs are the only templates the sector has and nobody is there to staff them. Without the skip the first lab
+        // would be the plan's staffing hold (Decision.unstaffed()), which the sector's want for posts and the labour market's price would read.
+        Game bare = DiscoveryCheck.cityWithSchools("prize-plan-bare", true, false);
+        DiscoveryCheck.play(bare, 2);
+        bare.getBuildingManager().getTemplates().removeIf(t -> BS.equals(t.getSector()) && t.getResearches() == null);
+        ham.citybuildersim.sectors.BusinessServices only = bare.getSectors().businessServices();
+        BuildingsTemplate lab = bare.labTemplate(F);
+        boolean labsOnly = bare.getBuildingManager().getTemplatesBySector(BS).size() == 4;
+        Sector.Staffing staffing = only.staffing(lab);
+        BusinessInvestment.Decision d = only.plan(bare.getBusinessInvestment(), bare);
+        check("fixture: the sector's only templates are the four labs and the city cannot staff one (" + staffing.why(lab.getName()) + ")", labsOnly && !staffing.passes());
+        check("...and the plan still offers none and holds for nobody's staff: no template, no hold, no build", d != null && !d.build && d.template == null && d.heldForStaff == null, d == null ? "null" : d.reason);
+    }
+
+    /* ==================== 12. investors build a lab ==================== */
+
+    static void sectionTwelve() {
+        System.out.println("\n--- 12. investors build a lab while the purse pays for it: owners first, never a loan, one a field a month, only in a city founded the 1900 way ---");
+        Game a = labCity("prize-order-a", true, F, 1), b = labCity("prize-order-b", true, F, 1), c = labCity("prize-order-c", false, F, 1);
+        Research ra = a.getResearch(), rb = b.getResearch(), rc = c.getResearch();
+        int m = a.getMonth() + 1;
+        double[] w = a.getPopulationManager().getWagesPerType().clone();
+        BuildingsTemplate lab = a.labTemplate(F);
+        check("fixture: three villages at month " + a.getMonth() + ", the first lab's month less one: two founded the 1900 way with the same history, one the default way, no lab and no prize",
+                a.getMonth() == b.getMonth() && a.getMonth() == c.getMonth() && Arrays.equals(w, b.getPopulationManager().getWagesPerType()) && a.foundedUnfitted() && b.foundedUnfitted() && !c.foundedUnfitted()
+                        && a.getSectors().businessServices().getCash() == b.getSectors().businessServices().getCash() && labsInAll(a) == 0 && labsInAll(b) == 0 && labsInAll(c) == 0 && ra.prizesForSave().isEmpty());
+        double prize = justWantsALab(a, F);
+        check("fixture: a prize exists at which the model wants a lab here next month: the least cover of the open problems that does (" + prize + ")", !Double.isNaN(prize));
+        ra.setPrize(F, prize);
+        boolean atPrize = ra.labsWanted(F, m, w) >= 1;
+        ra.setPrize(F, Math.nextDown(prize));
+        boolean hairUnder = ra.labsWanted(F, m, w) == 0;
+        check("...and it wants one at that prize and none a hair under it", atPrize && hairUnder);
+        ra.setPrize(F, prize);
+        rb.setPrize(F, Math.nextDown(prize));
+        rc.setPrize(F, prize);
+        check("fixture: the default-way village's model would want a lab at the same prize (its research is empty: it has not run)", rc.labsWanted(F, m, c.getPopulationManager().getWagesPerType().clone()) >= 1);
+        Entry target = ra.labTarget(F, m, w);
+        double cost = a.getBusinessInvestment().getCostOf(lab, 1), stake = ra.labStake(F, m, w);
+        check("fixture: the lab has a target, a cost and a stake above nothing", target != null && cost > 0 && stake > 0);
+
+        playHanded(a, 1);
+        playHanded(b, 1);
+        playHanded(c, 1);
+        check("within a month of play a lab is ordered: one is on site, none standing yet, and the month's word under " + Game.LABS_SLOT + " names it and the problem its purse pays for",
+                a.labsOnSite(F) == 1 && a.labsStanding(F) == 0 && a.getLastInvestment(Game.LABS_SLOT).equals(String.format("Built %s - the purse pays for %s", lab.getName(), target.name())), labsOf(a) + " | " + a.getLastInvestment(Game.LABS_SLOT));
+        double raised = a.getEconomyManager().getEquityRaised(BS) - b.getEconomyManager().getEquityRaised(BS);
+        check("...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (" + raised + " of " + (cost + stake) + ")",
+                raised > 0 && raised <= cost + stake + 1e-6);
+        near("...and no loan: Business Services borrowed this month what its twin did", a.getEconomyManager().getBusinessDebtManager().getLentThisMonth(BS), b.getEconomyManager().getBusinessDebtManager().getLentThisMonth(BS),
+                1e-9 * Math.max(1, b.getEconomyManager().getBusinessDebtManager().getLentThisMonth(BS)));
+        check("with the prize a hair under, none is ordered: nothing on site, and nothing said", labsInAll(b) == 0 && b.getLastInvestment(Game.LABS_SLOT).isEmpty(), labsOf(b) + " | " + b.getLastInvestment(Game.LABS_SLOT));
+        check("a village founded the default way with the same prize orders none and says nothing", labsInAll(c) == 0 && c.getLastInvestment(Game.LABS_SLOT).isEmpty(), labsOf(c));
+        check("...and the lab is in no other field, and no other village ordered one", labsInAll(a) == 1 && a.labsOnSite(Field.MEDICINE) + a.labsOnSite(Field.BUSINESS) + a.labsOnSite(Field.LAW) == 0);
+
+        // At most one a field a month: medicine's second lab is wanted at once with the first.
+        Game d = labCity("prize-order-med", true, Field.MEDICINE, 2);
+        Research rd = d.getResearch();
+        int md = d.getMonth() + 1;
+        double[] wd = d.getPopulationManager().getWagesPerType().clone();
+        double most = 0;
+        for (Entry e : rd.openProblems(Field.MEDICINE, md)) if (Research.beforeTheWorld(e, rd.pile(e.code()), md)) most = Math.max(most, coverNow(d, e));
+        rd.setPrize(Field.MEDICINE, most);
+        int wanted = rd.labsWanted(Field.MEDICINE, md, wd);
+        check("fixture: a prize that covers every problem the world leaves a team time for makes the model want " + wanted + " medical labs at once, with none yet", wanted >= 2 && labsInAll(d) == 0);
+        playHanded(d, 1);
+        int first = d.labsOnSite(Field.MEDICINE) + d.labsStanding(Field.MEDICINE);
+        check("...yet the investors order one that month, never two: at most one lab a field a month", first == 1, labsOf(d));
+        int wantedNext = rd.labsWanted(Field.MEDICINE, d.getMonth() + 1, d.getPopulationManager().getWagesPerType().clone());
+        playHanded(d, 1);
+        int second = d.labsOnSite(Field.MEDICINE) + d.labsStanding(Field.MEDICINE);
+        check("...and the next month one more only if the model still wants more than the one it has (wanted " + wantedNext + "): " + second + " labs", second - first <= 1 && (wantedNext > first ? second == first + 1 : second == first), labsOf(d));
+    }
+
+    /* ==================== 13. labs at work ==================== */
+
+    static void sectionThirteen() {
+        System.out.println("\n--- 13. a lab at work: its researchers are the posts' filled ones, and go for the problem the purse pays for ---");
+        Game g = labCity("prize-work", true, F, 1);
+        Research r = g.getResearch();
+        BuildingsTemplate lab = g.labTemplate(F);
+        long[] before = g.getBuildingManager().getTotalJobs();
+        DiscoveryCheck.quietly(() -> g.buildStack(lab, 2, true));
+        long[] added = new long[before.length];
+        long[] after = g.getBuildingManager().getTotalJobs();
+        for (int i = 0; i < added.length; i++) added[i] = after[i] - before[i];
+        long[] twoLabs = Research.labJobs(F);
+        for (int i = 0; i < twoLabs.length; i++) twoLabs[i] *= 2;
+        check("fixture: two labs stand, and the buildings' jobs grew by two labs' (Research.labJobs() twice), which the city's jobs count", g.labsStanding(F) == 2 && DiscoveryCheck.same(added, twoLabs) && DiscoveryCheck.same(g.getJobs(), DiscoveryCheck.plus(after, r.jobs())));
+        double prize = justWantsALab(g, F);
+        check("fixture: a prize covers a problem the world leaves time for", !Double.isNaN(prize));
+        r.setPrize(F, prize);
+        int m = g.getMonth() + 1;
+        double[] w = g.getPopulationManager().getWagesPerType().clone();
+        Entry target = r.labTarget(F, m, w);
+        check("fixture: the labs have a target on the chase list", target != null && !r.chase(F, m, w).isEmpty());
+        playHanded(g, 1);
+        double[] fill = g.getResearchFill();
+        double expected = Research.filledResearchers(F, 2 * Research.LAB_POSTS, fill);
+        near("the month's lab researchers are the filled researchers of the labs' posts at the month's fill, two labs' hundred posts each (" + expected + ")", r.labResearchers(F), expected, 1e-9 * Math.max(1, expected));
+        check("...and there are some: the posts are filled", expected > 0);
+        double onProblems = 0;
+        for (Entry e : r.openProblems(F, m)) onProblems += r.labShare(e.code());
+        check("their work lands on the target: the lab share on it is above nothing", r.labShare(target.code()) > 0, "share " + r.labShare(target.code()));
+        near("...and every lab researcher is on a problem or idle: the shares and the idle make the researchers (" + onProblems + " on problems, " + r.labsIdle(F) + " idle)", onProblems + r.labsIdle(F), r.labResearchers(F), 1e-9 * Math.max(1, expected));
+        check("...the labs' part of the target's pile is above nothing and within the pile", r.labPile(target.code()) > 0 && r.labPile(target.code()) <= r.pile(target.code()) + 1e-12);
+        check("a field with no lab has no lab researchers", r.labResearchers(Field.MEDICINE) == 0 && r.labResearchers(Field.BUSINESS) == 0 && r.labResearchers(Field.LAW) == 0);
+    }
+
+    /* ==================== 14. the purse paid ==================== */
+
+    /** A city with a lab at work, a prize and a find just made: the city, the problem found, and what the pot held before. */
+    static final class Found {
+        Game g;
+        Entry target;
+        double prize, potBefore;
+    }
+
+    /** A village at month 80 with a lab standing and a prize (`prize`, or the one that just wants a lab if 0), a month played with the lab at work, then the target's pile put just under its size and the month of the find played. */
+    static Found findCity(String label, double prize) {
+        Found f = new Found();
+        f.g = labCity(label, true, F, 1);
+        Game g = f.g;
+        Research r = g.getResearch();
+        BuildingsTemplate lab = g.labTemplate(F);
+        DiscoveryCheck.quietly(() -> g.buildStack(lab, 1, true));
+        f.prize = prize > 0 ? prize : justWantsALab(g, F);
+        r.setPrize(F, f.prize);
+        playHanded(g, 1);
+        f.target = r.labTarget(F, g.getMonth() + 1, g.getPopulationManager().getWagesPerType().clone());
+        if (f.target == null) return f;
+        pileJustUnder(g, f.target);
+        f.potBefore = r.pot(F);
+        playHanded(g, 1);
+        return f;
+    }
+
+    static void sectionFourteen() {
+        System.out.println("\n--- 14. the purse is paid: the labs' share to Business Services' till through the treasury's prizes line, the schools' to the pot, told in the inbox ---");
+        Found f = findCity("prize-paid", 0);
+        Game g = f.g;
+        Research r = g.getResearch();
+        if (f.target == null) { check("fixture: the lab has a target on the chase list after its first month at work", false); return; }
+        EconomyManager e = g.getEconomyManager();
+        Research.Purse purse = r.purses().get(f.target.code());
+        check("fixture: the lab's month found " + f.target.code() + " with the prize " + f.prize + " set, and it paid a purse with both parts above nothing",
+                r.foundThisMonth().contains(f.target.code()) && purse != null && purse.toLabs() > 0 && purse.toSchools() > 0, String.valueOf(r.purses()));
+        near("the purse is the prize, split by the work piled", purse.toLabs() + purse.toSchools(), f.prize, 1e-9 * f.prize);
+        near("the treasury's prizes line paid exactly the labs' share (" + g.getPrizePaid() + " of " + r.toLabs(F) + "), nothing owed", g.getPrizePaid(), r.toLabs(F), 1e-9 * r.toLabs(F));
+        check("...none of it refused past the ceiling: no arrears", !g.hasArrears() && g.getArrearsByLine().isEmpty());
+        SectorBooks.SectorMonth books = g.getSectorBooks().get(BS);
+        near("Business Services' cash flow statement received the same figure from the city (its cash rose by what the treasury paid)", books.fromTheCity(), g.getPrizePaid(), 1e-9 * g.getPrizePaid());
+        check("...and the statement explains the sector's till to the cent: nothing unexplained", Math.abs(books.unexplained()) <= MoneyAudit.tolerance(1e-6, books.unexplainedScale()), String.valueOf(books.unexplained()));
+        MoneyAudit.Result audit = g.getLastMoneyAudit();
+        check("the month's money audit closes with the transfer in it", Math.abs(audit.residual) <= MoneyAudit.tolerance(audit.moved()), "residual " + audit.residual + " of " + audit.moved());
+        near("the national accounts carry it where the business subsidies are (a transfer to a firm, not government consumption): the month's subsidies paid", e.getSubsidiesPaid(), g.getTotalSubsidyPaid() + g.getPrizePaid(), 1e-9 * g.getPrizePaid());
+        near("the schools' share is in the field's pot", r.pot(F), f.potBefore + purse.toSchools(), 1e-9 * Math.max(1, purse.toSchools()));
+        List<Notice> notices = DiscoveryCheck.noticesKeyed(g, "found:" + f.target.code());
+        String body = notices.isEmpty() ? "" : String.join(" ", notices.get(0).getBody());
+        check("the inbox's \"found\" notice carries the sentence: " + Inbox.prizeSentence(purse), notices.size() == 1 && body.contains(Inbox.prizeSentence(purse)), body);
+        check("the sentence names the prize and both parts, and a part of nothing would be left out",
+                Inbox.prizeSentence(purse).contains("Research Labs") && Inbox.prizeSentence(purse).contains("schools' grants")
+                        && !Inbox.prizeSentence(new Research.Purse(0, 5)).contains("Research Labs") && !Inbox.prizeSentence(new Research.Purse(5, 0)).contains("schools' grants"));
+        check("the treasury's prizes line is discretionary like the subsidies: not a promise, not a purchase, owed as arrears when refused, labelled for the prizes, and the last of the lines",
+                !TreasuryLine.PRIZES.promise && !TreasuryLine.PRIZES.purchase && TreasuryLine.PRIZES.accruesArrears() && TreasuryLine.PRIZES.label.equals("Research prizes")
+                        && TreasuryLine.values()[TreasuryLine.values().length - 1] == TreasuryLine.PRIZES);
+        playHanded(g, 1);
+        check("a month with no find pays no prize: the month's prize paid is zero again", g.getPrizePaid() == 0 && r.toLabs(F) == 0 && r.purses().isEmpty());
+
+        // A purse past what the treasury may spend: paid what it can, the rest owed to Business Services.
+        Found big = findCity("prize-paid-big", BIG);
+        Game bg = big.g;
+        if (big.target == null) { check("fixture: the lab has a target on the chase list after its first month at work, at the largest prize", false); return; }
+        Research rb = bg.getResearch();
+        double owed = rb.toLabs(F), paid = bg.getPrizePaid();
+        Double arrears = bg.getArrearsByLine().get(TreasuryLine.PRIZES);
+        check("a purse past the treasury's room is paid what the treasury may spend and the rest is owed, as arrears on the prizes' line (" + paid + " of " + owed + ")",
+                owed > 0 && paid > 0 && paid < owed && arrears != null && Math.abs(arrears - (owed - paid)) <= 1e-6 * owed, String.valueOf(arrears));
+        SectorBooks.SectorMonth bigBooks = bg.getSectorBooks().get(BS);
+        check("...and the sector's books still close on what it was paid, and the audit with them", Math.abs(bigBooks.fromTheCity() - paid) <= 1e-9 * Math.max(1, paid)
+                && Math.abs(bigBooks.unexplained()) <= MoneyAudit.tolerance(1e-6, bigBooks.unexplainedScale()) && Math.abs(bg.getLastMoneyAudit().residual) <= MoneyAudit.tolerance(bg.getLastMoneyAudit().moved()));
+    }
+
+    /* ==================== 15. idle labs are shed ==================== */
+
+    static void sectionFifteen() {
+        System.out.println("\n--- 15. a lab with nothing to chase idles for LAB_IDLE_MONTHS months and is then sold back, as any building is ---");
+        Game g = DiscoveryCheck.cityWithSchools("prize-shed", true, false);
+        Research r = g.getResearch();
+        playHanded(g, 2);
+        BuildingsTemplate lab = g.labTemplate(F);
+        DiscoveryCheck.quietly(() -> g.buildStack(lab, 1, true));
+        check("fixture: a lab stands in a village with no prize, nothing to chase and no count yet", g.labsStanding(F) == 1 && r.prize(F) == 0 && r.labIdleMonths(F) == 0 && !r.labTooMany(F));
+        List<String> early = new ArrayList<>();
+        for (int n = 1; n <= Research.LAB_IDLE_MONTHS; n++) {
+            playHanded(g, 1);
+            if (g.labsStanding(F) != 1 || r.labIdleMonths(F) != n || r.labTooMany(F) != (n == Research.LAB_IDLE_MONTHS)) early.add("month " + n + ": " + g.labsStanding(F) + " standing, " + r.labIdleMonths(F) + " idle months");
+        }
+        check("not one month before: through the first " + Research.LAB_IDLE_MONTHS + " months of play the lab stands, its idle months are counted one by one, and it is too many only at the last", early.isEmpty(), early.toString());
+        int shedFrom = g.getMonth();
+        playHanded(g, 1);
+        check("the next month it is sold back: no lab stands, the count starts again, the sale is in the demolition log under Business Services",
+                g.labsStanding(F) == 0 && r.labIdleMonths(F) == 0 && g.getDemolitionLog().recent(g.getMonth()).stream().anyMatch(en -> en.building.equals(lab.getName()) && en.quantity == 1 && en.sector.equals(BS) && en.month == g.getMonth()),
+                labsOf(g) + " " + r.labIdleMonths(F));
+        playHanded(g, 2);
+        check("...and no other lab is ordered or sold in the months after: with no prize nobody wants one", labsInAll(g) == 0);
+
+        // Held, as the rest of the sector's retirement is: a harness that holds Business Services keeps its labs.
+        Game held = DiscoveryCheck.cityWithSchools("prize-shed-held", true, false);
+        held.getBusinessInvestment().holdSector(BS);
+        playHanded(held, 2);
+        DiscoveryCheck.quietly(() -> held.buildStack(lab, 1, true));
+        playHanded(held, Research.LAB_IDLE_MONTHS + 3);
+        check("a lab of a sector a harness holds is not sold, though its idle months pass the threshold (" + held.getResearch().labIdleMonths(F) + ")",
+                held.labsStanding(F) == 1 && held.getResearch().labTooMany(F));
+    }
+
+    /* ==================== 16. the save ==================== */
+
+    static void sectionSixteen() throws Exception {
+        System.out.println("\n--- 16. the save: prizes, pots, the labs' piles, the shares, the idle counts and the month's prize paid come back, and a loaded city plays on as the one saved ---");
+        Game g = labCity("prize-save", true, F, 1);
+        Research r = g.getResearch();
+        BuildingsTemplate lab = g.labTemplate(F);
+        DiscoveryCheck.quietly(() -> g.buildStack(lab, 2, true));
+        r.setPrize(F, justWantsALab(g, F));
+        playHanded(g, 3);
+        Entry target = r.labTarget(F, g.getMonth() + 1, g.getPopulationManager().getWagesPerType().clone());
+        pileJustUnder(g, target);
+        playHanded(g, 1);
+        check("fixture: a city with a prize, two labs, a find and its purse paid, work piled by the labs, last month's shares and a lab too many",
+                !r.prizesForSave().isEmpty() && !r.potsForSave().isEmpty() && !r.labPilesForSave().isEmpty() && !r.citySharesForSave().isEmpty() && !r.labIdleMonthsForSave().isEmpty() && g.getPrizePaid() > 0,
+                r.prizesForSave() + " " + r.potsForSave() + " " + r.labPilesForSave() + " " + r.citySharesForSave() + " " + r.labIdleMonthsForSave() + " " + g.getPrizePaid());
+        GameFiles.Result wrote = EquipmentCheck.save(g, "prize kept");
+        check("the city is saved", wrote.ok, wrote.message());
+        String json = Files.readString(g.getGameFiles().saveFile(1));
+        check("...with the new keys under its research", json.contains("\"prizes\"") && json.contains("\"pots\"") && json.contains("\"labPiles\"") && json.contains("\"cityShares\"") && json.contains("\"labIdleMonths\"") && json.contains("\"prizePaid\""));
+        Game back = new Game(g.getGameFiles());
+        DiscoveryCheck.quietly(() -> back.loadGameSave(1));
+        Research b = back.getResearch();
+        check("loaded without a failure", back.getLoadFailure() == null, String.valueOf(back.getLoadFailure()));
+        check("the prizes, the pots, the labs' piles, the city's shares and the idle counts come back equal",
+                b.prizesForSave().equals(r.prizesForSave()) && b.potsForSave().equals(r.potsForSave()) && b.labPilesForSave().equals(r.labPilesForSave())
+                        && b.citySharesForSave().equals(r.citySharesForSave()) && b.labIdleMonthsForSave().equals(r.labIdleMonthsForSave()),
+                b.prizesForSave() + " " + b.potsForSave() + " " + b.labPilesForSave() + " " + b.citySharesForSave() + " " + b.labIdleMonthsForSave());
+        near("...and the month's prize paid", back.getPrizePaid(), g.getPrizePaid(), 1e-12 * g.getPrizePaid());
+        check("...the labs stand as they did and the jobs are the same", back.labsStanding(F) == 2 && DiscoveryCheck.same(back.getJobs(), g.getJobs()));
+
+        // Both play on, month by month, for two years: the same finds, labs, pots, piles and cash every month, the labs standing in some of them and a purse paid in some.
+        List<String> apart = new ArrayList<>();
+        int withLabs = 0, withPurse = 0;
+        for (int month = 1; month <= 24; month++) {
+            playHanded(g, 1);
+            playHanded(back, 1);
+            if (g.labsStanding(F) > 0) withLabs++;
+            if (g.getPrizePaid() > 0) withPurse++;
+            String why = null;
+            if (!b.foundHere().equals(r.foundHere())) why = "finds " + b.foundHere().keySet() + " vs " + r.foundHere().keySet();
+            else if (!labsOf(back).equals(labsOf(g))) why = "labs " + labsOf(back) + " vs " + labsOf(g);
+            else if (Math.abs(back.getPrizePaid() - g.getPrizePaid()) > 1e-9 * Math.max(1, g.getPrizePaid())) why = "prize paid " + back.getPrizePaid() + " vs " + g.getPrizePaid();
+            else if (Math.abs(back.getSectors().businessServices().getCash() - g.getSectors().businessServices().getCash()) > 1e-9 * Math.max(1, Math.abs(g.getSectors().businessServices().getCash()))) {
+                why = "cash " + back.getSectors().businessServices().getCash() + " vs " + g.getSectors().businessServices().getCash();
+            }
+            if (why != null && apart.isEmpty()) apart.add("month " + g.getMonth() + ": " + why);
+        }
+        check("two years on, month by month, the saved city and the loaded one have the same finds (in order, " + r.foundHere().size() + " of them), the same labs, the same prize paid and the same cash in Business Services' till"
+                + " (labs standing in " + withLabs + " of the 24 months, a purse paid in " + withPurse + ")", apart.isEmpty() && new ArrayList<>(b.foundHere().keySet()).equals(new ArrayList<>(r.foundHere().keySet())), apart.toString());
+        boolean same = b.potsForSave().keySet().equals(r.potsForSave().keySet()) && b.piles().keySet().equals(r.piles().keySet()) && b.labPilesForSave().keySet().equals(r.labPilesForSave().keySet());
+        for (Map.Entry<String, Double> en : r.potsForSave().entrySet()) same &= Math.abs(en.getValue() - b.potsForSave().getOrDefault(en.getKey(), -1.0)) <= 1e-9 * Math.max(1, en.getValue());
+        for (Map.Entry<String, Double> en : r.piles().entrySet()) same &= Math.abs(en.getValue() - b.piles().getOrDefault(en.getKey(), -1.0)) <= 1e-9 * Math.max(1, en.getValue());
+        for (Map.Entry<String, Double> en : r.labPilesForSave().entrySet()) same &= Math.abs(en.getValue() - b.labPilesForSave().getOrDefault(en.getKey(), -1.0)) <= 1e-9 * Math.max(1, en.getValue());
+        check("...and at the end the same pots, piles and labs' piles", same, r.potsForSave() + " " + r.labPilesForSave() + " vs " + b.potsForSave() + " " + b.labPilesForSave());
+
+        // A city with only a prize writes the key.
+        Game only = DiscoveryCheck.cityWithSchools("prize-save-only", false, false);
+        DiscoveryCheck.play(only, 2);
+        Research ro = only.getResearch();
+        check("fixture: a city founded the default way that has played two months holds no research at all", ro.isEmpty() && labsInAll(only) == 0);
+        ro.setPrize(Field.LAW, 12.5);
+        check("a prize alone makes it hold some", !ro.isEmpty());
+        GameFiles.Result wroteOnly = EquipmentCheck.save(only, "prize only");
+        String onlyJson = Files.readString(only.getGameFiles().saveFile(1));
+        check("...so the save has the research key, with the prize under its field", wroteOnly.ok && onlyJson.contains("\"research\"") && onlyJson.contains("\"prizes\"") && onlyJson.contains("\"LAW\""), wroteOnly.message());
+        Game onlyBack = new Game(only.getGameFiles());
+        DiscoveryCheck.quietly(() -> onlyBack.loadGameSave(1));
+        check("...and a load puts it back: the prize is 12.5 in law and nothing in the other fields",
+                onlyBack.getLoadFailure() == null && onlyBack.getResearch().prize(Field.LAW) == 12.5 && onlyBack.getResearch().prize(Field.ENGINEERING) == 0 && onlyBack.getPrizePaid() == 0);
+    }
+
+    /* ==================== 17. a city founded the default way; a reform of the money ==================== */
+
+    static void sectionSeventeen() {
+        System.out.println("\n--- 17. a city founded the default way orders nothing, pays nothing and has no lab, whatever the prizes; a reform of the money scales prizes, pots and the prize paid ---");
+        Game d = labCity("prize-default", false, F, 1);
+        Research rd = d.getResearch();
+        for (Field f : Field.values()) rd.setPrize(f, BIG);
+        int m = d.getMonth() + 1;
+        double[] w = d.getPopulationManager().getWagesPerType().clone();
+        check("fixture: a village founded the default way at month " + d.getMonth() + ", every prize set, where the model would want a lab of engineering (" + rd.labsWanted(F, m, w) + ") and nothing is in its research",
+                !d.foundedUnfitted() && rd.labsWanted(F, m, w) >= 1 && labsInAll(d) == 0 && rd.potsForSave().isEmpty() && rd.foundHere().isEmpty());
+        boolean orderedOrPaid = false;
+        for (int i = 0; i < 6; i++) {
+            playHanded(d, 1);
+            if (labsInAll(d) != 0 || !d.getLastInvestment(Game.LABS_SLOT).isEmpty() || d.getPrizePaid() != 0 || rd.toLabs(F) != 0 || !rd.purses().isEmpty() || d.hasArrears()) orderedOrPaid = true;
+        }
+        check("six months on nothing is ordered, said, paid or owed, and nothing is found, piled or potted: no lab, no prize paid, no purse",
+                !orderedOrPaid && rd.foundHere().isEmpty() && rd.potsForSave().isEmpty() && rd.labPilesForSave().isEmpty() && rd.piles().isEmpty(), labsOf(d));
+
+        // A reform of the money scales what is money.
+        Found f = findCity("prize-reform", 0);
+        Game g = f.g;
+        Research r = g.getResearch();
+        if (f.target == null) { check("fixture: the lab has a target on the chase list after its first month at work", false); return; }
+        double cash = g.getCash(), prize = r.prize(F), pot = r.pot(F), paid = g.getPrizePaid();
+        Map<String, Double> piles = r.piles();
+        Map<String, Integer> found = r.foundHere();
+        check("fixture: a prize, a pot, a prize paid this month and a find", prize > 0 && pot > 0 && paid > 0 && !found.isEmpty());
+        boolean[] ok = new boolean[1];
+        DiscoveryCheck.quietly(() -> ok[0] = g.reformCurrencyForTest(100));
+        double scale = g.getCash() / cash;
+        check("fixture: the reform went through and moved the money: the treasury's cash is " + scale + " of what it was", ok[0] && scale != 1 && scale > 0);
+        near("the prize is scaled as the cash is", r.prize(F), prize * scale, 1e-9 * prize * scale);
+        near("...the pot too", r.pot(F), pot * scale, 1e-9 * pot * scale);
+        near("...and the month's prize paid", g.getPrizePaid(), paid * scale, 1e-9 * paid * scale);
+        check("the work piled, the finds and the other fields' prizes are not money and are as they were", r.piles().equals(piles) && r.foundHere().equals(found) && r.prize(Field.LAW) == 0 && r.prize(Field.MEDICINE) == 0);
     }
 }

@@ -44,8 +44,9 @@ import java.util.TreeMap;
  * are answered here too, so that Game only acts on them. Still no screen and no Game: every rule is a static function of its arguments.
  *
  * WHY (R4). A grant pays for the work whether it finds anything or not (1.5); a prize pays only for the result, and so draws outsiders and their
- * money to the problems near enough to finish before the world does, which is what the evidence says a prize does. Not here, and in later slices:
- * the Research Lab as a building (buildings.json), the investors building and shedding them, the purse paid to their owners, the save, the screens.
+ * money to the problems near enough to finish before the world does, which is what the evidence says a prize does. Not here, and in Game (slice B):
+ * the Research Lab as a building (buildings.json "researches"), the investors building and shedding them (Game.considerLabs(), shedIdleLabs()), the
+ * purse paid to their owners (TreasuryLine.PRIZES) and the save (DataSave.ResearchRecord); in a later slice, the screens.
  */
 public final class Research {
 
@@ -873,7 +874,7 @@ public final class Research {
         return labIdleMonths(f) >= LAB_IDLE_MONTHS;
     }
 
-    /** A lab of the field has been shed (a later slice calls this): the count of months with a lab too many starts again from nothing. */
+    /** A lab of the field has been shed (Game.shedIdleLabs() calls this): the count of months with a lab too many starts again from nothing. */
     public void labShed(Field f) {
         labIdleMonths.remove(f);
     }

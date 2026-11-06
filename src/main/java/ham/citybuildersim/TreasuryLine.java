@@ -155,7 +155,15 @@ public enum TreasuryLine {
      * schools' bill is, because the posts' wages are already in the households' pay (PopulationManager.getTotalWage() counts a post as the job
      * it is) and a refusal would leave them paid by nobody. Appended last, for the food vouchers' reason.
      */
-    RESEARCH("Research grants", true, false);
+    RESEARCH("Research grants", true, false),
+
+    /**
+     * The labs' share of a research prize (R4; Game.finalUpdateEconomy()): what a find in a field with a prize owes the Research Labs that did the
+     * work, paid into Business Services' till. DISCRETIONARY, as the business subsidies are, because it is a transfer to a firm the city chose to
+     * reward, not a wage already in anyone's pay: refused past the ceiling, it is owed to Business Services as arrears and paid down first when
+     * cash returns. Appended last, for the food vouchers' reason.
+     */
+    PRIZES("Research prizes", false, false);
 
     /** The player's words for it, for the Government tab's arrears list and the playtest. */
     public final String label;

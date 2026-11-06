@@ -227,6 +227,7 @@ public class BuildingCatalog {
         readCare(o, template, name);
         readJobs(o, template, name);
         readTeaches(o, template, name);
+        readResearches(o, template, name);
         readSafety(o, template, name);
         readRequiresLicence(o, template, name);
         readSector(o, template, name);
@@ -695,6 +696,20 @@ public class BuildingCatalog {
         } catch (Exception e) {
             System.out.println(FILE_NAME + ": \"" + name + "\" has unknown education type \""
                     + teaches + "\"; treated as NONE.");
+        }
+    }
+
+    /** The field a Research Lab researches (R4): a ResearchCatalog.Field's name. Absent reads as null; a name that is no field is reported and read as null, as with teaches. */
+    private void readResearches(JsonObject o, BuildingsTemplate template, String name) {
+
+        String field = string(o, "researches");
+        if (field.isEmpty()) return;
+
+        try {
+            template.setResearches(ResearchCatalog.Field.valueOf(field));
+        } catch (Exception e) {
+            System.out.println(FILE_NAME + ": \"" + name + "\" researches \""
+                    + field + "\", which is no field in " + ResearchCatalog.FILE_NAME + "; read as none.");
         }
     }
 

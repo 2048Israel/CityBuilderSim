@@ -101,6 +101,13 @@ public class BuildingsTemplate {
      */
     private SafetyType safety = SafetyType.NONE;
 
+    /**
+     * The field a Research Lab researches (R4, buildings.json's "researches"); null for everything else. A lab is a Business Services building of
+     * Research.LAB_POSTS posts of one field whose income is a prize, not what it makes, so no ordinary planner offers it and Game.considerLabs() orders it.
+     * The same kind of field as `teaches`, for the same reason: a rule that read the name would break the first time somebody renamed a building.
+     */
+    private ResearchCatalog.Field researches = null;
+
     /* =======================================================================
        WHERE A WATER WORKS DRAWS FROM (0.7.59, batch J2; spec-land 2.3)
 
@@ -980,6 +987,12 @@ public class BuildingsTemplate {
         return this;
     }
 
+    /** The field this Research Lab researches (R4); null clears it. */
+    public BuildingsTemplate setResearches(ResearchCatalog.Field field) {
+        this.researches = field;
+        return this;
+    }
+
     public BuildingsTemplate setSource(Source source) {
         this.source = source == null ? Source.FRESH : source;
         return this;
@@ -1411,6 +1424,11 @@ public class BuildingsTemplate {
 
     public EducationType getTeaches() {
         return teaches;
+    }
+
+    /** The field this building is a Research Lab of (R4), or null for every other building. */
+    public ResearchCatalog.Field getResearches() {
+        return researches;
     }
  
    

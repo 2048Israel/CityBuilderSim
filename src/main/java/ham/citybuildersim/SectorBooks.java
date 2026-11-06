@@ -713,7 +713,8 @@ public final class SectorBooks {
                 credit.getLentThisMonth(key) - credit.getFeesThisMonth(key)
                         - credit.getPremiumsThisMonth(key),
                 credit.getRepaidThisMonth(key),
-                game.getSubsidyPaid(sector),
+                // ...and the labs' share of a research prize (R4), which the city paid Business Services as it pays a subsidy: cash in, no statement line.
+                game.getSubsidyPaid(sector) + game.getPrizePaidTo(key),
                 economy.getOverdraftForgivenThisMonth(key),
                 economy.getDepositInterestPaid(key),
                 game.getInvestedThisMonth(key),

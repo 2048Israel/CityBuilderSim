@@ -1008,7 +1008,9 @@ public class DiscoveryCheck {
 
         check("the treasury's line is a promise, not a purchase, and named for the grants", TreasuryLine.RESEARCH.promise && !TreasuryLine.RESEARCH.purchase && TreasuryLine.RESEARCH.label.equals("Research grants")
                 && !TreasuryLine.RESEARCH.accruesArrears() && TreasuryLine.valueOf("RESEARCH") == TreasuryLine.RESEARCH);
-        check("...and the last of the lines, so that no saved name moved: every other line is before it", TreasuryLine.values()[TreasuryLine.values().length - 1] == TreasuryLine.RESEARCH);
+        // R4 appended PRIZES after it: RESEARCH keeps its place, every older line is still before it, and the new one is the last.
+        check("...and the last of the lines but the prizes' (R4), so that no saved name moved: every other line is before it",
+                TreasuryLine.RESEARCH.ordinal() == TreasuryLine.values().length - 2 && TreasuryLine.values()[TreasuryLine.values().length - 1] == TreasuryLine.PRIZES);
 
         MoneyAudit.Result audit = g.getLastMoneyAudit();
         check("the month's money audit lists both research lines and closes: the treasury paid what the audit counted as leaving",
