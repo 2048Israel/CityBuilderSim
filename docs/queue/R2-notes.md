@@ -2,10 +2,12 @@
 
 ## WHERE IT STANDS
 
-**Built, waiting on R1c.** Branch `batch/R2` from `batch/R1c`'s ship file
-(RL1). Slice A is c77d716b, slice B 29262966. The default trace is R1c's to
-the byte, so no ensemble. `--pick` on R1c's tip: exit 4, R1c's own reds only
-(§4). The ship file goes on once R1c is on main and merged in.
+**Ready.** Branch `batch/R2` from `batch/R1c`'s ship file (RL1); main with
+R1c in (e0b0d17c) merged at ccbd9abb. Slice A is c77d716b, slice B
+29262966. The default trace is R1c's to the byte, so no ensemble. `--pick`
+on the merge: **exit 3**, main's recorded reds only; the full suite 172 of
+178 green, its six reds main's, none NEW (§4). R2b-R2f and R6 in the ship
+file's `## queued` (§1), R2-R (the tractor's gain, for R1d) in `## pending`.
 
 ## 1. What R2 is, and where it splits
 
@@ -122,4 +124,11 @@ city, writes it; until then a 1900 city's farms stay on horses past 1917.
   map moved", DenominationCheck's twins 1e-9 apart, ScaleCheck, MapCheck's
   yard. R2 moves nothing on that path (the trace above). Slice B's thirteen
   harnesses, the 1900 town's among them, are green.
+- **`--pick` on the merge with main** (R1c in, e0b0d17c; merged at
+  ccbd9abb): **exit 3**, main's recorded reds only, word for word
+  (SlopeCheck, DenominationCheck, ScaleCheck, MapCheck); timing SOFT.
+- **The full suite** (`AllChecks -f`, timing soft, on 853dcc17): 178
+  harnesses, 172 green; the six reds are main's recorded ones, every line
+  `[known]` and none `[NEW]` (SlopeCheck, MonetaryCheck, DenominationCheck,
+  ScaleCheck, MapCheck, KeptCheck 49).
 - Not a process batch: no scripts, checks' machinery or rules changed.
