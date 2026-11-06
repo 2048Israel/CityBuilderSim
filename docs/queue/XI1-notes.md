@@ -2,7 +2,23 @@
 
 ## WHERE IT STANDS
 
-(filled at the end)
+**Ready.**
+- **The branch.** `batch/XI1` was built on R2's ship file (RL1). Main with
+  R2 in (f33540a0, 0.9.24) was merged at 205f1eb4; past R2's tip, main
+  changed nothing but `VERSION`.
+- **The commits.** The slice is 3acf3186, drafted by Sonnet 5.5 at xhigh and
+  reviewed by Opus. The ensemble is 87d61c7b. The mend of InterestAbroadCheck
+  9 is 4ec6f65e.
+- **The trace.** Nothing below the bound moves. The trace moved at month
+  2,119 of 2,400, where the playtest's war chest bought past the bound
+  (section 2), so the ensemble ran: 23 of 26, as 0.9.23 (section 5).
+- **The checks.** `--pick` on the merge exited 4: one NEW red,
+  InterestAbroadCheck 9, which this batch caused and mended (section 6). The
+  full suite on the mend: 173 of 179 green. Its six reds are main's recorded
+  ones, none NEW, and `--judge` exits 3.
+- **Money changes**, so the gate gives it a stranger's review. Sections 1-2
+  say what moves and what does not.
+- No ★ calls.
 
 ## 1. What it builds
 
@@ -123,7 +139,36 @@ runs, 11.9 minutes, against `docs/ensemble/0.9.23.md`.
 
 ## 6. The checks
 
-(filled at the end)
+- **While building.** InterventionCheck (new, 5.8 s) and ExchangeRateCheck,
+  CurrencyCheck, ForeignCheck, PassThroughCheck, ForeignDebtCheck and
+  CurrencyRegimeCheck: all green. Two existing assertions had fixtures past
+  the bound and now read `interventionMove()`; the fixtures are unchanged:
+  - ExchangeRateCheck 5's twins buy a year's imports, 50% of a year's GDP.
+  - CurrencyCheck's `lift()`: its section 3 defence sells 10.4% of a year's
+    output. Before and after: -0.208333 against -0.208164, and 0.088105
+    against 0.088274.
+- **`--pick` on the merge** (31 of 179 harnesses) exited 4 with one NEW red:
+  InterestAbroadCheck 9, "...the audit saw it cross the edge (financial out
+  D$2.1k)".
+  - The cause is this batch. The section's town buys dollars worth **11.45
+    years of its output** to fill the eight moneys. The linear rule put 22.9
+    logs on that town's D$ (the bound puts 1.15), and the collapse that
+    followed sent so much abroad that the audit's financial out was
+    D$432,860k. Measured on this branch with `INTERVENTION_LINEAR` set to
+    1e300: green there, so the old rule passes.
+  - The assertion asked for the gross risk-off departure (D$4.3k) in the
+    audit's financial out. But Game books the hot money's net move (the
+    stock's change, `bank.returnHotMoney`). Under the bound the stock (D$81k)
+    is under its target (D$120k), so hot money still arrives that month: net
+    out is D$1.0k, against financial out of D$2.1k.
+  - Mended in the harness (4ec6f65e). The assertion now reads the net move,
+    out or in, as the audit declares it. The fixture is unchanged, and it now
+    prints its purchase's years of output.
+- **The full suite** (`AllChecks -f`, after the mend): 179 harnesses, 173
+  green. Its six reds are main's recorded ones, word for word: SlopeCheck,
+  MonetaryCheck, DenominationCheck, ScaleCheck, MapCheck and KeptCheck.
+  `--judge` on the log exits 3.
+- **No `--timing`**: the gate times hard.
 
 ## 7. Left as it is
 

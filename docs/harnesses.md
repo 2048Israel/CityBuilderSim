@@ -2,7 +2,7 @@
 
 Generated 2026-11-06 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**178 harness files, 20,152 labelled assertions.** AllChecks runs 178 of them.
+**179 harness files, 20,202 labelled assertions.** AllChecks runs 179 of them.
 
 ## Which harnesses read which class
 
@@ -111,10 +111,10 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [FloatingRateNote](map/FloatingRateNote.md) | DeskCheck, FloatLinkCheck |
 | [FoodIndustry](map/FoodIndustry.md) | BooksCheck, CreditCheck, WaterCheck |
 | [FoodProcessing](map/FoodProcessing.md) | FoodProcessingCheck |
-| [ForeignAccounts](map/ForeignAccounts.md) | CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, CurrencyRegimeCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, ExchangeRateCheck, ExpectationsCheck, ForeignCheck, ForeignDebtCheck, HoldersCheck, InterestAbroadCheck, LabourCheck, LandCheck, LandNationsCheck, LongPlaytest, MonetaryCheck, NewGameCheck, OilCheck, PartnersCheck, PassThroughCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldMoneysCheck |
+| [ForeignAccounts](map/ForeignAccounts.md) | CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, CurrencyRegimeCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, ExchangeRateCheck, ExpectationsCheck, ForeignCheck, ForeignDebtCheck, HoldersCheck, InterestAbroadCheck, InterventionCheck, LabourCheck, LandCheck, LandNationsCheck, LongPlaytest, MonetaryCheck, NewGameCheck, OilCheck, PartnersCheck, PassThroughCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldMoneysCheck |
 | [Forestry](map/Forestry.md) | BuildCardCheck, BuildingDataCheck, ForestryCheck, IndustryViewCheck, WoodProductsCheck, ZoningCheck |
 | [Formats](map/Formats.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, CarCheck, FoodProcessingCheck, LandCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck, SectorFlowCheck, TradeCostCheck, WellCheck, ZoningCheck |
-| [Founding](map/Founding.md) | AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BridgeCheck, BridgeMapCheck, BuildAdviceCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, DeathCareFirstCheck, DenominationCheck, DeskCheck, DeterminismCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ExchangeRateCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, GatewayCheck, GdpCheck, GridCheck, GroceryCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HydroCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, IslandNetCheck, JunctionCheck, LandCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OutsideCheck, PartnerCallsCheck, PartnersCheck, PassThroughCheck, PlanCheck, PolicyDatesCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDrawCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WellCheck, WorldCheck, WorldMoneysCheck, ZoningCheck, ZoningViewCheck |
+| [Founding](map/Founding.md) | AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BridgeCheck, BridgeMapCheck, BuildAdviceCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, DeathCareFirstCheck, DenominationCheck, DeskCheck, DeterminismCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ExchangeRateCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, GatewayCheck, GdpCheck, GridCheck, GroceryCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HydroCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandNetCheck, JunctionCheck, LandCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OutsideCheck, PartnerCallsCheck, PartnersCheck, PassThroughCheck, PlanCheck, PolicyDatesCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDrawCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WellCheck, WorldCheck, WorldMoneysCheck, ZoningCheck, ZoningViewCheck |
 | [FoundingName](map/FoundingName.md) | NewGameCheck |
 | [FoundingScreen](map/FoundingScreen.md) | **none** |
 | [Freight](map/Freight.md) | BuildCardCheck, EquipmentCheck, FittingCheck, Forms1900Check, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, LandlordPortCheck, LongPlaytest, MapCheck, OilCheck, PortCheck, RailCheck, RailDepotCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, TradeBandCheck, TruckCheck, TruckRouteCheck, WorldDataCheck |
@@ -123,7 +123,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [FundLedger](map/FundLedger.md) | FundLedgerCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
 | [FundScreen](map/FundScreen.md) | **none** |
 | [FundView](map/FundView.md) | FundCheck, FundLedgerCheck, LongPlaytest, ReadPathCheck |
-| [Game](map/Game.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DebtMoneysCheck, DenominationCheck, DeskCheck, DeterminismCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PartnersCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, TruckRouteCheck, VanCheck, VaultMoneysCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [Game](map/Game.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DebtMoneysCheck, DenominationCheck, DeskCheck, DeterminismCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PartnersCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, TruckRouteCheck, VanCheck, VaultMoneysCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [GameFiles](map/GameFiles.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DenominationCheck, DeterminismCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PartnersCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, TruckRouteCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [GameLog](map/GameLog.md) | RobustnessCheck |
 | [GamePrefs](map/GamePrefs.md) | TruckCheck |
@@ -8109,7 +8109,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L669 a sale the other way: INTERVENTION_IMPACT x 1%, the D$ dearer
   - L676 fixture: the twins have one seed and one vault; one has bought a year's imports of dollars, pending
   - L683 two years on the buyer's D$ is CHEAPER than the control's: the finding reversed
-  - L684 ...by exactly the intervention still felt: INTERVENTION_IMPACT x the purchase over a year's GDP, faded 23 months
+  - L684 ...by exactly the intervention still felt: the interventions' rule (XI1: bounded past INTERVENTION_LINEAR) of the purchase over a year's GDP, faded 23 months
   - L693 fixture: a deficit month of US$2M
   - L694 fixture: the vault's capacity is the most there is
   - L695 fixture: the D$ would fall by more than the deficit's cap takes back, and the vault holds that cap
@@ -12890,30 +12890,102 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1027 a reform scales what ran home (a hundredth) and not the months
   - L1028 ...the lifetime too, the count left alone
 - **L1064 9. in a city: the vault earns each bank's rate every month, a risk-off sends hot money home, and the month's money audit closes**
-  - L1077 fixture: a purchase by the world's mix puts a balance in each of the eight (
-  - L1101 the vault's interest each month is the sum over the eight of the balance before x that bank's rate / 12 at the month's cross rates,
-  - L1102 ...it earned in every one (
-  - L1104 ...the yield is the interest times twelve over the US$ it was earned on
-  - L1105 ...and the audit closed every month of it (worst residual
-  - L1111 fixture: the city holds hot money to unwind (D$
-  - L1117 the world is in a risk-off of at least the size forced (
-  - L1118 the hot money's risk-off departure the month is over zero (D$
-  - L1119 ...the share of the stock it took is the dial times the level (capped at the whole):
-  - L1121 ...inside the month's departures
-  - L1123 ...the audit saw it cross the edge (financial out D$
-  - L1125 ...the bank's foreign deposits are the stock that is left
-  - L1126 ...and the log says money ran home
-  - L1127 the risk-off is counted, with the lifetime
-  - L1135 the month after the level has faded (
-  - L1136 ...four more months, and every one's audit closed (worst
-  - L1147 fixture: the quieted city holds hot money (D$
-  - L1150 the quieted city's vault earned nothing, month or lifetime
-  - L1151 ...and the risk-off unwound none of its hot money or its carry
-  - L1157 a city on the literals (no world, no policy rates) earns nothing and unwinds nothing
-  - L1162 saved, to its scratch folder
-  - L1165 the loaded city has the vault's balances and what it earned, to the bit, so the saved month is not earned a second time
-  - L1167 ...and the hot money's unwinding as it was
-  - L1172 both play three months more and stand in the same state, the vault and the hot money to the bit
+  - L1079 fixture: a purchase by the world's mix puts a balance in each of the eight (
+  - L1103 the vault's interest each month is the sum over the eight of the balance before x that bank's rate / 12 at the month's cross rates,
+  - L1104 ...it earned in every one (
+  - L1106 ...the yield is the interest times twelve over the US$ it was earned on
+  - L1107 ...and the audit closed every month of it (worst residual
+  - L1113 fixture: the city holds hot money to unwind (D$
+  - L1119 the world is in a risk-off of at least the size forced (
+  - L1120 the hot money's risk-off departure the month is over zero (D$
+  - L1121 ...the share of the stock it took is the dial times the level (capped at the whole):
+  - L1123 ...inside the month's departures
+  - L1130 ...the audit saw the month's hot money cross the edge, net of what still came (
+  - L1133 ...the bank's foreign deposits are the stock that is left
+  - L1134 ...and the log says money ran home
+  - L1135 the risk-off is counted, with the lifetime
+  - L1143 the month after the level has faded (
+  - L1144 ...four more months, and every one's audit closed (worst
+  - L1155 fixture: the quieted city holds hot money (D$
+  - L1158 the quieted city's vault earned nothing, month or lifetime
+  - L1159 ...and the risk-off unwound none of its hot money or its carry
+  - L1165 a city on the literals (no world, no policy rates) earns nothing and unwinds nothing
+  - L1170 saved, to its scratch folder
+  - L1173 the loaded city has the vault's balances and what it earned, to the bit, so the saved month is not earned a second time
+  - L1175 ...and the hot money's unwinding as it was
+  - L1180 both play three months more and stand in the same state, the vault and the hot money to the bit
+
+## InterventionCheck.java - 50 labelled assertions
+
+> Proves a purchase or sale of dollars moves the D$ a BOUNDED amount (XI1,
+> 2026-11-06): linear up to INTERVENTION_LINEAR of a year's GDP, exactly as it
+> always was, and logarithmic past it, INTERVENTION_IMPACT x s0 x (1 + ln(s /
+> s0)), a sale the mirror. Not part of the game.
+> 
+> WHY THIS EXISTS. Jerus's Rotterdam (2026-11-02): the treasury bought dollars
+> worth 4.5 years of the city's output in one month, and ForeignAccounts, THE
+> FLOAT, step 5 added INTERVENTION_IMPACT x dealt / annual GDP to the felt
+> interventions, linear without end: 2.0 x 4.5 = 9.0 in logs, the D$ x8,100
+> from that line and x11,600 in the month. A rule fitted to the IMF's 1.7-2.0%
+> per 1% of a year's GDP (R33) was being asked about a purchase 450 times the
+> size it was fitted on. The study (docs/studies/spec-gold-money.md, 4.5) bound
+> ...
+
+- **L142 1. below the bound nothing moves, to the bit**
+  - L159 interventionMove() is INTERVENTION_IMPACT x local / annual to the bit on
+  - L175 interventionLocalFor() is lift x annual / INTERVENTION_IMPACT to the bit on
+  - L192 dealEffect() is INTERVENTION_IMPACT x local / (12 x gdpTrailing) to the bit on
+  - L199 fixture: the treasury has bought 90% of the bound in dollars, pending
+  - L203 that month's move from interventions is exactly INTERVENTION_IMPACT x the purchase over a year's GDP
+  - L205 ...and what is felt is that, nothing having been felt before
+- **L211 2. past the bound the rule is logarithmic**
+  - L225 just under the bound it is INTERVENTION_IMPACT x the bound
+  - L226 ...exactly at the bound it is that
+  - L227 ...and just over it, the same: the rule has no step
+  - L233 the slope just under the bound is INTERVENTION_IMPACT
+  - L234 ...and just over it the same: no kink
+  - L251 from a millionth of a year's output to a hundred years' the move strictly rises (
+  - L265 equal steps of
+  - L266 ...and past the bound each moves it strictly less than the step before (
+  - L276 a sale of any size moves the rate by exactly minus what the purchase does (
+  - L279 ...and dealEffect() of a sale of 4.5 years of output is minus a purchase's
+  - L280 ...which is INTERVENTION_IMPACT x s0 x (1 + ln 45) of the model's own trailing GDP
+- **L287 3. the inverse, and the defence that needs it**
+  - L302 interventionLocalFor(interventionMove(x)) returns x, to a part in 1e12, on every one
+  - L303 ...Rotterdam's 4.5 years in particular
+  - L305 with no GDP both functions say 0
+  - L309 ...and a currency with no trailing GDP deals no effect and counts no years
+  - L323 fixture: the month's own accounts show a deficit of US$4M
+  - L324 fixture: the vault is at six months' cover, so its capacity is the most there is
+  - L325 fixture: the city trades enough for the market to price it
+  - L328 fixture: the dollars that takes are more than the bound of a year's output and under the deficit's cap and the vault
+  - L330 fixture: nothing has been dealt, so nothing is felt yet
+  - L333 fixture: the month's move before the defence leans is the fixture's figures'
+  - L337 the defence sells what takes back absorption() of the fall at the bounded rule: interventionLocalFor(absorption() x fall)
+  - L339 ...which is past the bound of a year's output
+  - L340 ...and more than the linear rule would have sold, each dollar moving the rate less
+  - L341 ...at the month's rate, which is what it fetches
+  - L342 the sale lifted the D$ by interventionMove() of what it fetched, nothing having been felt before
+  - L344 ...which is exactly the share of the fall it set out to take back
+  - L345 ...so the D$ still falls, by what the defence could not take back
+- **L352 4. Rotterdam's case: 4.5 years of output in a month**
+  - L360 fixture: the twins have one seed and one vault, and one has bought 4.5 years of output in dollars, pending
+  - L367 the buyer's move from interventions less the control's is interventionMove() of the purchase
+  - L369 ...which is INTERVENTION_IMPACT x s0 x (1 + ln 45),
+  - L373 the log of the rates' ratio is that too: the rate x2.6, with nothing else apart
+  - L374 ...and far under the linear rule's x
+  - L376 dealEffect() says the same before the press
+  - L389 fixture: two towns on one founding, a year played, both on Float, alike to the bit in their rate, their felt interventions and their output
+  - L398 fixture: the buyer was handed the cash and spent all of it: 4.5 years of its output
+  - L407 the buyer's interventions felt less the control's are interventionMove() of what it spent, over the year's output the reprice used
+  - L409 ...which is INTERVENTION_IMPACT x s0 x (1 + ln 45) within the output's own month of drift
+  - L411 ...and nothing like the linear rule's
+- **L418 5. how often it fires in a real run**
+  - L422 fixture: the default town is on Lean
+  - L439 fixture: the D$ was repriced against a year of output in every month but the first (
+  - L441 fixture: nobody dealt dollars in any month (
+  - L442 fixture: the lean sold in some month, or the claim means nothing (
+  - L443 no reprice's defence passed INTERVENTION_LINEAR of a year's output: the bound changes no figure of the default run (
 
 ## InvestCheck.java - 322 labelled assertions
 
