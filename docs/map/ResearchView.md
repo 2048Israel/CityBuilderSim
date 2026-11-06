@@ -161,7 +161,7 @@
 | 573 | 3 | `public int potPosts()` _(in ResearchView.Funding)_ | The posts the field's pot bought beyond the grant (Research.strikePosts()). |
 | 578 | 3 | `public double researchers()` _(in ResearchView.Funding)_ | Everyone at the field's own research at these dials: the faculty and the posts' researchers. |
 | 584 | 1 | **type** `public record AtGrant(double grant, int posts, int grantPosts, double postResearchers, double researchers, ...` | What a grant would do, staged and not applied: the posts it buys, the researchers they and the faculty give and what the posts cost a month. |
-| 590 | 26 | **type** `public record Staged(Map<Field, Double> grants, Map<Field, Double> prizes)` | The dials a player has staged and not applied: a grant and a prize for the fields he has moved. |
+| 590 | 26 | **type** `public record Staged(Map<Field, Double> grants, Map<Field, Double> prizes)` | The dials a player has staged and not applied: a grant and a prize for the fields the player has moved. |
 | 592 | 4 | `{ ... }` _(in ResearchView.Staged)_ |  |
 | 598 | 3 | `public static Staged none()` _(in ResearchView.Staged)_ | Nothing staged: every dial as it is. |
 | 603 | 5 | `public Staged withGrant(Field f, double grant)` _(in ResearchView.Staged)_ | The same with a field's grant staged. |

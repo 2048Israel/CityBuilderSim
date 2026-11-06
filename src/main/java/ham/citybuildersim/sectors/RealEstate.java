@@ -660,10 +660,15 @@ public final class RealEstate extends Sector {
         return doorShortfall(family) < 0;
     }
 
-    /** The head shortage plan() would see if it were asked right now - for the credit check. */
-    private double latentHeadShortfall() {
+    /**
+     * The head shortage plan() would see if it were asked right now - for the credit check, and the harnesses. EVERY POST THE CITY OFFERS (R3b): the
+     * buildings' (live, as the credit check always read them) and the research posts the grants buy, which are jobs the labour market fills and which
+     * plan() counts through the population manager's jobs (Game.getJobs()); the buildings' alone left the credit check blind to them. Game.getJobs() is
+     * the buildings' array with the posts added, so in a city with no post held it is the buildings' own figure and nothing here moves.
+     */
+    public double latentHeadShortfall() {
         long standing = buildings.getPostsWithheld();   // every post, as plan() reads them (0.7.17)
-        for (long n : buildings.getTotalJobs()) standing += n;
+        for (long n : game == null ? buildings.getTotalJobs() : game.getJobs()) standing += n;
         double latent = (standing + buildings.getJobsUnderConstruction()) * 2.25;
         return latent - (buildings.getTotalHouseCapacity() + capacityOnSite())
                 * (1 + BusinessInvestment.TARGET_HEADROOM);

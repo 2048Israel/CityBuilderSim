@@ -8,7 +8,7 @@
 > WHY. The preview is the one place the game says a number about the FUTURE of a random process, and its numbers are the player's reason to move a
 > dial. A step that differs from the game's own by one rule (the labs read the city's share of this month and not the last, a find not counting at once
 > for the fields after it) would give a card that promises what the month will not deliver, and no other assertion in the model would see it; and a
-> sampler that leaked the city's own draw would show the player a size he is not to see. So: the two cities of research-design 5.4 are held to the
+> sampler that leaked the city's own draw would show the player a size they are not to see. So: the two cities of research-design 5.4 are held to the
 > study's figures, which research_model.py made with the study's own model, within their Monte Carlo error; the preview's step is held to
 > Research.month() itself, month for month, over given sizes; the answer is the same for the same inputs and is never run twice for them; and the
 > words are caused from both sides of each edge.

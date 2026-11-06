@@ -1500,16 +1500,16 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 12121 | `Game.NO_DOLLAR_FLOAT_OR_LINKED` | `"Floating-rate notes and inflation-linked bonds are issued at home only."` | What the treasury is told when it asks for a dollar floater or linker. |
 | 12160 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
 | 12321 | `Game.BUILD_NOTE_GRANULE` | `1000 * PriceLevel.FACTOR` | The granule the build screen's note's face is rounded up to, in thousands: $1M, the step the Finances tab's notes are sold in (its Note instrument's rounding). |
-| 14178 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
-| 14190 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
-| 14193 | `Game.BUILD_BOND_GRANULE` | `100 * PriceLevel.FACTOR` | The granule the build screen's bond's face is rounded up to, in thousands: $100k, what the playtest's own term bonds round to. |
-| 14210 | `Game.FIXED_ISSUE_COST` | `12 * PriceLevel.FACTOR` | Bond counsel, rating and printing. |
-| 14221 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
-| 14261 | `Game.MINIMUM_ISSUE_FLOOR` | `50 * PriceLevel.FACTOR` | The floor under minimumIssueSize(), in thousands: $50k, so a brand new city can still borrow. |
-| 15934 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
-| 16338 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
-| 16882 | `Game.RECORD_BACKLOG` | `6` | The most recording writes the writer may be behind by (months and histories not yet on disk): the clock then records nothing that month, and a skip waits. |
-| 16885 | `Game.RECORD_WAIT_MS` | `30_000` | The longest a skip waits for the writer to get inside RECORD_BACKLOG, in milliseconds, before it records nothing that month: a writer that cannot write must not hold the skip for ever. |
+| 14181 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
+| 14193 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
+| 14196 | `Game.BUILD_BOND_GRANULE` | `100 * PriceLevel.FACTOR` | The granule the build screen's bond's face is rounded up to, in thousands: $100k, what the playtest's own term bonds round to. |
+| 14213 | `Game.FIXED_ISSUE_COST` | `12 * PriceLevel.FACTOR` | Bond counsel, rating and printing. |
+| 14224 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
+| 14264 | `Game.MINIMUM_ISSUE_FLOOR` | `50 * PriceLevel.FACTOR` | The floor under minimumIssueSize(), in thousands: $50k, so a brand new city can still borrow. |
+| 15957 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
+| 16361 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
+| 16905 | `Game.RECORD_BACKLOG` | `6` | The most recording writes the writer may be behind by (months and histories not yet on disk): the clock then records nothing that month, and a skip waits. |
+| 16908 | `Game.RECORD_WAIT_MS` | `30_000` | The longest a skip waits for the writer to get inside RECORD_BACKLOG, in milliseconds, before it records nothing that month: a writer that cannot write must not hold the skip for ever. |
 
 ### GameFiles.java ([map](map/GameFiles.md))
 
@@ -5742,10 +5742,10 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 99 | `DiscoveryCheck.STUDY_POST` | `new EnumMap<>(Map.of(Field.ENGINEERING, 18.2, Field.MEDICINE, 23.8, Field.BUSINESS, 12....` | research-design 1.8: a post's cost at today's wages, D$ thousands a month, as the study prints it to a tenth (business's 12.25 is printed 12.2). |
-| 102 | `DiscoveryCheck.STUDY_ROUNDING` | `0.06` | How far from the study's figure a post may be: the study's rounding to a tenth. |
-| 105 | `DiscoveryCheck.STUDY_LAG_YEARS` | `new EnumMap<>(Map.of(Field.ENGINEERING, 7, Field.MEDICINE, 9, Field.BUSINESS, 4, Field....` | research-design 1.8: how many years before history's date the science exists. |
-| 107 | `DiscoveryCheck.CAT` | `ResearchCatalog.get()` |  |
+| 106 | `DiscoveryCheck.STUDY_POST` | `new EnumMap<>(Map.of(Field.ENGINEERING, 18.2, Field.MEDICINE, 23.8, Field.BUSINESS, 12....` | research-design 1.8: a post's cost at today's wages, D$ thousands a month, as the study prints it to a tenth (business's 12.25 is printed 12.2). |
+| 109 | `DiscoveryCheck.STUDY_ROUNDING` | `0.06` | How far from the study's figure a post may be: the study's rounding to a tenth. |
+| 112 | `DiscoveryCheck.STUDY_LAG_YEARS` | `new EnumMap<>(Map.of(Field.ENGINEERING, 7, Field.MEDICINE, 9, Field.BUSINESS, 4, Field....` | research-design 1.8: how many years before history's date the science exists. |
+| 114 | `DiscoveryCheck.CAT` | `ResearchCatalog.get()` |  |
 
 ### EarthCheck.java ([map](map/EarthCheck.md))
 
@@ -6945,14 +6945,14 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 101 | `PrizeCheck.CAT` | `ResearchCatalog.get()` |  |
-| 102 | `PrizeCheck.SEED` | `20261010L` |  |
-| 105 | `PrizeCheck.BIG` | `1e12` | A prize that covers any problem there is: the chase is then ruled by the world's date alone. |
-| 114 | `PrizeCheck.W` | `wages(1)` |  |
-| 123 | `PrizeCheck.FULL` | `fill(1)` |  |
-| 1270 | `PrizeCheck.F` | `Field.ENGINEERING` | The field the city sections work in: the University hosts it, and the first lab any field wants is wanted in it. |
-| 1272 | `PrizeCheck.BS` | `Sectors.BUSINESS_SERVICES` |  |
-| 1275 | `PrizeCheck.STUDY_RATIO` | `12 / 10.9` | research-design 5.3: the lab's D$ 12M against the Engineering Services Office's D$ 10.9M for 120 staff, which the lab templates' figures are written from. |
+| 111 | `PrizeCheck.CAT` | `ResearchCatalog.get()` |  |
+| 112 | `PrizeCheck.SEED` | `20261010L` |  |
+| 115 | `PrizeCheck.BIG` | `1e12` | A prize that covers any problem there is: the chase is then ruled by the world's date alone. |
+| 124 | `PrizeCheck.W` | `wages(1)` |  |
+| 133 | `PrizeCheck.FULL` | `fill(1)` |  |
+| 1283 | `PrizeCheck.F` | `Field.ENGINEERING` | The field the city sections work in: the University hosts it, and the first lab any field wants is wanted in it. |
+| 1285 | `PrizeCheck.BS` | `Sectors.BUSINESS_SERVICES` |  |
+| 1288 | `PrizeCheck.STUDY_RATIO` | `12 / 10.9` | research-design 5.3: the lab's D$ 12M against the Engineering Services Office's D$ 10.9M for 120 staff, which the lab templates' figures are written from. |
 
 ### QuarryingCheck.java ([map](map/QuarryingCheck.md))
 

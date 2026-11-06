@@ -1227,6 +1227,13 @@ public class DataSave implements Cloneable {
         public java.util.Map<String, Double> cityShares = new java.util.LinkedHashMap<>();
         public java.util.Map<String, Integer> labIdleMonths = new java.util.LinkedHashMap<>();
         public double prizePaid;
+        // R3b: the month's researchers, idle researchers, open problems, lab researchers and idle lab researchers by field name (only the fields above
+        // nothing), which Research.month() struck and a load would otherwise read as 0 until the next. A save from before R3b has none, and reads empty.
+        public java.util.Map<String, Double> researchers = new java.util.LinkedHashMap<>();
+        public java.util.Map<String, Double> idle = new java.util.LinkedHashMap<>();
+        public java.util.Map<String, Integer> open = new java.util.LinkedHashMap<>();
+        public java.util.Map<String, Double> labResearchers = new java.util.LinkedHashMap<>();
+        public java.util.Map<String, Double> labsIdle = new java.util.LinkedHashMap<>();
     }
 
     private ResearchRecord research;
@@ -1255,6 +1262,11 @@ public class DataSave implements Cloneable {
         record.cityShares.putAll(r.citySharesForSave());
         record.labIdleMonths.putAll(r.labIdleMonthsForSave());
         record.prizePaid = prizePaid;
+        record.researchers.putAll(r.researchersForSave());
+        record.idle.putAll(r.idleForSave());
+        record.open.putAll(r.openForSave());
+        record.labResearchers.putAll(r.labResearchersForSave());
+        record.labsIdle.putAll(r.labsIdleForSave());
         this.research = record;
     }
 
