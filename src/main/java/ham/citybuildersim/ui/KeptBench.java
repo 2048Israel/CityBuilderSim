@@ -3410,4 +3410,158 @@ public final class KeptBench {
     public void forgetGovernment() {
         ui.governmentScreen.forget();
     }
+
+    /* =====================================================================
+       POLICY AND ZONING (KP6, slice C): the hub and every page of the five areas, kept and built new, the hands on what reshapes them (an
+       area and page picked, a fold or a line opened, a zone's page, a change staged), the controls on them and the real show method
+       ===================================================================== */
+
+    /** The Policy tab on its hub: nothing opened, nothing staged. */
+    public Page policy() {
+        return policy("the Policy hub", null, null);
+    }
+
+    /**
+     * The Policy tab as a Page, as the screen draws it from its pool (the hub when `area` is null, else the area and the page `page`
+     * names, or the area's first page when `page` is null; a zone's page of Zoning is "zone:" and its sector's key): it opens with
+     * nothing folded open and nothing staged. Zoning's pages are drawn from the same pool.
+     */
+    public Page policy(String name, String area, String page) {
+        PolicyScreen s = ui.policyScreen;
+        return new Page(name, "showPolicyMenu", () -> s.pool, pool -> timed(pool, s::drawPage), () -> {
+            s.forget();
+            s.openLines.clear();
+            s.dropProposal();
+            policyOpen(area, page);
+        });
+    }
+
+    /** Every fixed page of the five areas as {area, page}, in the tabs' order (Zoning's two; its zones' pages are policyZone()'s). */
+    public static List<String[]> policyPages() {
+        List<String[]> out = new ArrayList<>();
+        for (String area : PolicyScreen.AREAS) {
+            for (String page : PolicyScreen.pagesOf(area)) out.add(new String[]{area, page});
+        }
+        return out;
+    }
+
+    /** The page of the zone of a sector, as the area's tabs name it. */
+    public static String policyZonePage(String sector) {
+        return ZoningScreen.zonePage(sector);
+    }
+
+    /** Every sector's key, in the registry's order: each has a zone's page, zoned or not. */
+    public static List<String> policySectors() {
+        return List.of(ham.citybuildersim.Sectors.KEYS);
+    }
+
+    /** Policy on an area and page (`area` null: the hub), as a door or a tab would put it; the staged set dropped (the next draw shows it). */
+    public void policyOpen(String area, String page) {
+        PolicyScreen s = ui.policyScreen;
+        s.policyArea = area;
+        s.policyPage = area == null ? PolicyScreen.POLICY_HOME : page == null ? PolicyScreen.pagesOf(area)[0] : page;
+        s.dropProposal();
+    }
+
+    /** A door of the tab pressed (PolicyScreen.open): the area and page at their top, through the real show method. */
+    public void policyPick(String area, String page) {
+        ensureWindow();
+        ui.currentScreen = "showPolicyMenu";
+        ui.policyScreen.open(area, page);
+    }
+
+    /** The hub's door pressed (PolicyScreen.openHub). */
+    public void policyPickHub() {
+        ensureWindow();
+        ui.currentScreen = "showPolicyMenu";
+        ui.policyScreen.openHub();
+    }
+
+    /** A fold, a payer's own dial, a course's own price or the folded zero payers (by its key) opened or closed, as a click on it would. */
+    public void policyLine(String key, boolean open) {
+        fold(ui.policyScreen.openLines, key, open);
+    }
+
+    /** The keys of the lines open now: what a page's folds hold. */
+    public java.util.Set<String> policyLines() {
+        return new java.util.TreeSet<>(ui.policyScreen.openLines);
+    }
+
+    /** A change staged under a lever's key, as a release on its dial stages it (the next draw shows it). */
+    public void policyStage(String key, double value) {
+        ui.policyScreen.stage(key, value);
+    }
+
+    /** A staged change taken back, as the tray's × does. */
+    public void policyUnstage(String key) {
+        ui.policyScreen.unstage(key);
+    }
+
+    /** Everything staged dropped, as "Discard" or "Leave it as it is" does. */
+    public void policyDrop() {
+        ui.policyScreen.dropProposal();
+    }
+
+    /** What is staged now, by key, in the order it was staged. */
+    public java.util.Map<String, Double> policyStaged() {
+        return new java.util.LinkedHashMap<>(ui.policyScreen.policyStaged);
+    }
+
+    /** The keys of the dials the page on show has registered, in the order drawn: what the tray can name and apply. */
+    public List<String> policyLevers() {
+        return new ArrayList<>(ui.policyScreen.policyLevers.keySet());
+    }
+
+    /** The tray under the page, or null with nothing staged to show: the page's third top node. */
+    public Node policyTray() {
+        List<Node> top = column.getChildren();
+        return top.size() > 2 ? top.get(2) : null;
+    }
+
+    /** Every slider on the page, in the page's order (the dials': the first is the first card's). */
+    public List<javafx.scene.control.Slider> policySliders() {
+        List<javafx.scene.control.Slider> out = new ArrayList<>();
+        each(column, n -> {
+            if (n instanceof javafx.scene.control.Slider s) out.add(s);
+        });
+        return out;
+    }
+
+    /** How many "→" arrows the page shows: one a dial card's effect that has moved, so a card drawn at its thumb shows its after. */
+    public int policyArrows() {
+        int[] n = {0};
+        each(column, node -> {
+            if (node instanceof Label l && "→".equals(l.getText())) n[0]++;
+        });
+        return n[0];
+    }
+
+    /** A sector zoned through the model (a share of the dry ground, at the going price), as the zone's page applies it; false while zoning is shut. */
+    public boolean policyZone(String sector, double share) {
+        ui.game.setZone(sector, ham.citybuildersim.Zoning.Size.SHARE, share, ham.citybuildersim.Zoning.MAX_PRICE_SHARE);
+        return ui.game.getZoning().zone(sector) != null;
+    }
+
+    /** A zone taken off through the model. */
+    public void policyUnzone(String sector) {
+        ui.game.removeZone(sector);
+    }
+
+    /** The sectors with a zone now. */
+    public List<String> policyZoned() {
+        List<String> out = new ArrayList<>();
+        for (ham.citybuildersim.Zoning.Zone z : ui.game.getZoning().zones()) out.add(z.sector());
+        return out;
+    }
+
+    /** The Policy tab shown through its real show method, as the rail's tab or a month landing shows it (the chrome, then the page kept). */
+    public void showPolicy() {
+        ensureWindow();
+        ui.policyScreen.showPolicyMenu();
+    }
+
+    /** The Policy tab forgotten, as another city opened would leave it: nothing kept. */
+    public void forgetPolicy() {
+        ui.policyScreen.forget();
+    }
 }

@@ -6108,21 +6108,22 @@ public final class Pieces {
 
     /** A staged change as a chip in the tray (0.7.36): its words in the accent, and a × that takes it back out of the set. */
     public static HBox stagedChip(String text, Runnable remove) {
-        Label words = new Label(text);
+        // Kept (KP6): the caller makes the chip in a scope of its own, keyed by the change it names; the × is a scope inside it.
+        Label words = Kept.label(text);
         words.setWrapText(true);
         words.setMinWidth(0);
         words.setStyle(Palette.words(Palette.SIZE_LABEL + 1, Palette.ACCENT));
-        HBox chip = new HBox(6, words);
+        HBox chip = Kept.row(6, words);
         chip.setAlignment(Pos.CENTER_LEFT);
         if (remove != null) {
-            Label x = new Label("×");
-            x.setMinWidth(Region.USE_PREF_SIZE);
-            x.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.ACCENT) + " -fx-cursor: hand;");
-            Tooltip tip = new Tooltip("Take it out of the staged set");
-            tip.setShowDelay(Duration.millis(250));
-            Tooltip.install(x, tip);
-            x.setOnMouseClicked(e -> { e.consume(); remove.run(); });
-            chip.getChildren().add(x);
+            chip.getChildren().add(Kept.scope("remove", () -> {
+                Label x = Kept.label("×");
+                x.setMinWidth(Region.USE_PREF_SIZE);
+                x.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.ACCENT) + " -fx-cursor: hand;");
+                Kept.tip(x, "Take it out of the staged set", 250);
+                x.setOnMouseClicked(e -> { e.consume(); remove.run(); });
+                return x;
+            }));
         }
         chip.setStyle("-fx-padding: 3 8 3 10; -fx-background-radius: 12; -fx-border-radius: 12;"
                 + " -fx-border-color: " + Palette.ACCENT + "; -fx-background-color: " + tint(Palette.ACCENT, .10) + ";");
@@ -6139,26 +6140,29 @@ public final class Pieces {
      */
     public static HBox stagedTray(List<? extends javafx.scene.Node> chips, Effect budget, javafx.scene.Node apply,
                                   javafx.scene.Node discard, String info) {
-        Label caption = new Label("STAGED");
+        // Kept (KP6): the tray's parts that come and go (the (i), THE BUDGET, the buttons) are a scope each.
+        Label caption = Kept.label("STAGED");
         caption.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
-        HBox head = new HBox(Palette.GAP_TIGHT, caption);
+        HBox head = Kept.row(Palette.GAP_TIGHT, caption);
         head.setAlignment(Pos.CENTER_LEFT);
-        if (info != null) head.getChildren().add(infoButton(info, true));
-        javafx.scene.layout.FlowPane list = new javafx.scene.layout.FlowPane(8, 6);
-        list.getChildren().addAll(chips);
-        VBox left = new VBox(6, head, list);
+        if (info != null) head.getChildren().add(Kept.scope("info", () -> infoButton(info, true)));
+        javafx.scene.layout.FlowPane list = Kept.flow(8, 6);
+        list.getChildren().setAll(chips);
+        VBox left = Kept.column(6, head, list);
         HBox.setHgrow(left, Priority.ALWAYS);
         left.setMinWidth(0);
         left.setMaxWidth(Double.MAX_VALUE);
-        HBox tray = new HBox(18, left);
+        HBox tray = Kept.row(18, left);
         if (budget != null) {
-            VBox money = beforeAfter(budget, 300);
-            money.setMinWidth(300);
-            money.setPrefWidth(320);
-            money.setMaxWidth(340);
-            tray.getChildren().add(money);
+            tray.getChildren().add(Kept.scope("budget", () -> {
+                VBox money = beforeAfter(budget, 300);
+                money.setMinWidth(300);
+                money.setPrefWidth(320);
+                money.setMaxWidth(340);
+                return money;
+            }));
         }
-        VBox buttons = new VBox(6);
+        VBox buttons = Kept.column(6);
         buttons.setAlignment(Pos.CENTER);
         buttons.setMinWidth(220);
         buttons.setPrefWidth(220);
@@ -6485,19 +6489,22 @@ public final class Pieces {
 
     /** WHO GOES WITHOUT as a card: the figure, the two halves on a bar of the whole city, the sentence, and a door to the shops when they are the larger half. */
     public static VBox whoGoesWithout(Game g, Runnable shops) {
-        Hunger h = hunger(g);
-        List<Segment> halves = List.of(
-                new Segment(h.pricedOut(), Palette.PEOPLE, false, null, null, h.pricedOutWords(), null),
-                new Segment(h.shortOfStock(), Palette.PEOPLE_LIGHT, false, null, null, h.shortWords(), null));
-        javafx.scene.layout.FlowPane key = new javafx.scene.layout.FlowPane(14, 4,
-                keySwatch(Palette.PEOPLE, h.pricedOutWords()), keySwatch(Palette.PEOPLE_LIGHT, h.shortWords()));
-        VBox c = PolicyScreen.card(PolicyScreen.cardHead(Icons.FOOD, Palette.PEOPLE, "WHO GOES WITHOUT", h.info(), null),
-                PolicyScreen.figure(h.figure(), Palette.SIZE_LEAD, Palette.TEXT_HEAD),
-                segmentBar(halves, 1, List.of(), 0, 12), key,
-                PolicyScreen.words(h.sentence(), Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
-        if (h.shortLarger() && shops != null) {
-            c.getChildren().add(doorPill("The shops · Sectors › Retail", Icons.SHOPS, Palette.BUSINESS, shops));
-        }
-        return c;
+        // Kept (KP6): the card is a scope of its own (People and Policy both draw it), and its door comes and goes inside it.
+        return Kept.scope("whoGoesWithout", () -> {
+            Hunger h = hunger(g);
+            List<Segment> halves = List.of(
+                    new Segment(h.pricedOut(), Palette.PEOPLE, false, null, null, h.pricedOutWords(), null),
+                    new Segment(h.shortOfStock(), Palette.PEOPLE_LIGHT, false, null, null, h.shortWords(), null));
+            javafx.scene.layout.FlowPane key = PolicyScreen.flowOf(14, 4,
+                    keySwatch(Palette.PEOPLE, h.pricedOutWords()), keySwatch(Palette.PEOPLE_LIGHT, h.shortWords()));
+            VBox c = PolicyScreen.card(PolicyScreen.cardHead(Icons.FOOD, Palette.PEOPLE, "WHO GOES WITHOUT", h.info(), null),
+                    PolicyScreen.figure(h.figure(), Palette.SIZE_LEAD, Palette.TEXT_HEAD),
+                    segmentBar(halves, 1, List.of(), 0, 12), key,
+                    PolicyScreen.words(h.sentence(), Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
+            if (h.shortLarger() && shops != null) {
+                c.getChildren().add(Kept.scope("shops", () -> doorPill("The shops · Sectors › Retail", Icons.SHOPS, Palette.BUSINESS, shops)));
+            }
+            return c;
+        });
     }
 }
