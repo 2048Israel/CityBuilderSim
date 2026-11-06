@@ -2,10 +2,11 @@
 
 ## WHERE IT STANDS
 
-**Built, waiting on R4.** Branch `batch/R5` from `batch/R4`'s ship file (RL1, 00fa589a); R4 is not on main yet, so
-no ship file. Slice A is bf2f26a6, B2 4b4de81d, B1 9785404f. The default trace is R4's to the byte, so no ensemble.
-`--pick` on R4's tip + R5 and the full suite: **exit 3**, main's recorded reds only (§3). When R4 lands: main
-merged in, `--pick` again, the ship file pushed last.
+**Ready.** Branch `batch/R5` from `batch/R4`'s ship file (RL1, 00fa589a); main with R4 in (7afdddbe) merged at
+a5c719c0 (KeptCheck's one conflict, KP7's sections 82-90 and R5's 95-97 added at the same places: both kept). Slice A
+is bf2f26a6, B2 4b4de81d, B1 9785404f. The default trace is R4's to the byte, so no ensemble. `--pick` on the merge:
+**exit 3**, main's recorded reds only; the full suite before it, the same (§3). R5-L, the card's licence line for
+R2c, in the ship file's `## pending`.
 
 ## 1. What R5 is, and where it splits
 
@@ -80,6 +81,8 @@ All drafted by Sonnet 5.5 at xhigh, reviewed here. What the reviews found:
   harness but KeptCheck: **exit 3**, main's recorded reds only (DenominationCheck, ScaleCheck, KeptCheck's "a month's
   redraw after each choice hands back nine in ten" from section 49); timing SOFT. `ResearchViewCheck` 106 ok;
   KeptCheck 95-97, 43 + 23 + 27 assertions, ok.
+- **`--pick` on the merge with main** (R4 and KP7 in, 7afdddbe; merged at a5c719c0): 27 of 182 harnesses for 64 files:
+  **exit 3**, main's recorded reds only (DenominationCheck, ScaleCheck, KeptCheck), none NEW; timing SOFT.
 - **The full suite** after it (`./batch-check.sh`, timing soft, 182 harnesses, on 9952407b's tree): **exit 3**, the six
   reds main's recorded ones and none NEW (SlopeCheck, MonetaryCheck, DenominationCheck, ScaleCheck, MapCheck, KeptCheck).
 - **The save** (`--pick`'s "review needed - saves: HistorySave.java"): one new field, `HistorySave.researchSeries`, a
