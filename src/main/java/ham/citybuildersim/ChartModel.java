@@ -555,6 +555,24 @@ public final class ChartModel {
     }
 
     /**
+     * The log's entries and `more` as flags, one a month (R5): City History's lane carries the discoveries (ResearchView.flagEntries()) beside the
+     * decisions, which the log does not hold, so a month with both is ONE flag with both in it, the month's decisions first in the log's order and then
+     * `more` in its order. Oldest month first. A null log or a null `more` reads as none.
+     */
+    public static List<Flag> flags(DecisionLog log, List<DecisionLog.Entry> more) {
+        List<Flag> out = new ArrayList<>();
+        Map<Integer, List<DecisionLog.Entry>> byMonth = new TreeMap<>();
+        if (log != null) for (DecisionLog.Entry e : log.entries()) byMonth.computeIfAbsent(e.month(), m -> new ArrayList<>()).add(e);
+        if (more != null) {
+            for (DecisionLog.Entry e : more) if (e != null) byMonth.computeIfAbsent(e.month(), m -> new ArrayList<>()).add(e);
+        }
+        for (Map.Entry<Integer, List<DecisionLog.Entry>> m : byMonth.entrySet()) {
+            out.add(new Flag(m.getKey(), Collections.unmodifiableList(m.getValue())));
+        }
+        return out;
+    }
+
+    /**
      * ...of one kind only (0.7.32): the Finances tab's chart of what the city
      * owes and its rate carries the BORROWING decisions alone - an issue, a
      * buyback, the rollover's setting, a default abroad. A kind nobody records

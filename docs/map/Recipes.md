@@ -1,4 +1,4 @@
-# Recipes.java - 240 lines · 16 methods · 0 constants · model
+# Recipes.java - 249 lines · 17 methods · 0 constants · model
 
 `ham/citybuildersim/Recipes.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
@@ -57,7 +57,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 46 | 195 | **type** `public final class Recipes` | Chooses the recipe each part of a stack runs, at the city's own prices, and sets the template's figures to what its buildings run: the driver of R1c's recipes, as EquipmentForms is of R1's forms. |
+| 46 | 204 | **type** `public final class Recipes` | Chooses the recipe each part of a stack runs, at the city's own prices, and sets the template's figures to what its buildings run: the driver of R1c's recipes, as EquipmentForms is of R1's forms. |
 | 52 | 7 | **type** `public record Prices(ToDoubleFunction<Good> good, double[] wages, double pricePerWatt, double pricePerWater...` | The prices a recipe is valued at, as the planners know them: a good's price a unit (the city's, SpreadPlanner.cityValue(); or a harness's own), the wage of each band by JobType ordinal, the three units' prices and the... |
 | 55 | 3 | `public Prices withGoods(ToDoubleFunction<Good> other)` _(in Recipes.Prices)_ | The same prices with another price for the goods. |
 
@@ -73,7 +73,7 @@
 | 130 | 3 | `public static double recipeGain(BuildingsTemplate t, int month, Prices p)` | What the template's recipe piece adds a month to one building at these prices: the value of the best recipe a fitted building could run less that of the best an unfitted one could (EquipmentFit's gain for a piece that... |
 | 135 | 4 | `public static double recipeGain(BuildingsTemplate t, int month, Prices p, Research found)` | The same in a city whose research may have found a recipe's code before history's month (R3); no research (null) reads history's. |
 
-### THE GAME LAYER: the city's prices, read on demand (lines 140-240)
+### THE GAME LAYER: the city's prices, read on demand (lines 140-249)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -83,6 +83,7 @@
 | 182 | 16 | `public void apply(Game game)` | Sets every template with a choice of recipes to what its buildings run: the recipes chosen (the default where none was, or where the template no longer has the one saved), weighted by the buildings of each part (the s... |
 | 207 | 6 | `private static void declareGoods(Game game, BuildingsTemplate t)` | The sector of a template with a choice of recipes declares the goods of EVERY recipe of it that its constructor did not (Sector.declareRecipeGoods()), as Agriculture.setHorseShare() declares CROPS once a share is set:... |
 | 215 | 3 | `public void clear()` | Forgets the choices: Game.buildWorld() calls it, so that a Game that played a 1900 city starts the next city as a fresh process does. |
-| 220 | 5 | `public Map<Integer, List<String>> forSave()` | The choices to save, by template id: [the fitted part's recipe id, the unfitted part's]; a fresh map, empty when every part runs the default (the save then has no key). |
-| 231 | 9 | `public void restore(Map<Integer, List<String>> byId)` | Puts the saved choices back, replacing all (Game's load path, then apply()): a load ends on the SAVED choices and does not strike them again from the loaded prices. |
+| 223 | 4 | `public String[] chosen(int templateId)` | The recipes a template's two parts run now (R5: what ResearchView.recipesInUse() counts): a copy of [the fitted part's recipe id, the unfitted part's], or null when both run the default (the template has no choice kept). |
+| 229 | 5 | `public Map<Integer, List<String>> forSave()` | The choices to save, by template id: [the fitted part's recipe id, the unfitted part's]; a fresh map, empty when every part runs the default (the save then has no key). |
+| 240 | 9 | `public void restore(Map<Integer, List<String>> byId)` | Puts the saved choices back, replacing all (Game's load path, then apply()): a load ends on the SAVED choices and does not strike them again from the loaded prices. |
 
