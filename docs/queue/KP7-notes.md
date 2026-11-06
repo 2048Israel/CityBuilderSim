@@ -1,8 +1,8 @@
 # KP7 - Screens kept: the rest (Household money, Rankings), and the rebuild path retired from the clock ({next}, 2026-11-06)
 
-**WHERE IT STANDS** (2026-11-06, 03:55): the slices are in and reviewed (A bf5b25ad, B f7bf4f84, D 84465ec0 and
-cdf53266, with Opus's bb51ecfc, 85daebd8 and 3a87945a); `--pick` exit 3 on the branch, main's recorded reds only (§5).
-Waiting for KP6 to land on main, to merge it in and run `--pick` again before the ship file.
+**WHERE IT STANDS** (2026-11-06, 04:55): ready. The slices are in and reviewed (A bf5b25ad, B f7bf4f84, D 84465ec0
+and cdf53266, with Opus's bb51ecfc, 85daebd8 and 3a87945a); main merged in with KP6 0.9.27 and XI1 0.9.26 (2681657f),
+`--pick` exit 3 on it, main's recorded reds only (§5).
 
 The batch's record. The study's KP7 row (`docs/studies/spec-screens-in-place.md` §7) with §3 (the pattern and its
 rules, seven since KP2) and §6 (what checks it). Lane 2 (screens), the last KP batch, after KP6, built on
@@ -138,6 +138,11 @@ the other lane: Household money 3.4 ms as it opens and 5.4 with a cell open, of 
 3.2 and 3.6 of 7 (13.1 and 20.0). One soft line not KP7's: KP4's `KEPT_SECTORS_MS`, the Sectors list at 20.1 ms of 18
 under that load. No full suite: the diff is `ui/`, `KeptCheck` and prose, and the eight picked are the harnesses that
 read it; nothing outside `ui/` changed (the gate runs the suite).
+
+On the merge with main (2681657f: KP6 0.9.27, XI1 0.9.26), with the world files: `--pick` **exit 3**, the same eight,
+the same two reds, main's recorded (MapCheck 2d; KeptCheck 49 at 89.8%, gate.txt's line); 2,234 OK, no renderer
+error, every KP7 line passes. Timed alone this time: Household money 3.0 ms as it opens and 3.6 with a cell open, of 8
+(built new 19.3 and 22.9); Rankings 3.1 and 3.3 of 7 (15.7 and 16.5).
 
 ## 6. Found in review
 
