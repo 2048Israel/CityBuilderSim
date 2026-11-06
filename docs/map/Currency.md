@@ -1,6 +1,6 @@
 # Currency.java - 263 lines · 21 methods · 10 constants · model
 
-`ham/citybuildersim/Currency.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Currency.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
 > What the city's money is called, and how it is written.
 > 
@@ -58,7 +58,7 @@
 > THE FOREIGN MONEY IS NOT A CHOICE. It stays the US dollar, US$, USD, as a
 > static: the world holds exactly one other money and no city renames it.
 
-**Used by (26):** [DataSave](DataSave.md), [Denomination](Denomination.md), [DenominationCheck](DenominationCheck.md), [FinancesScreen](FinancesScreen.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [HistoryCheck](HistoryCheck.md), [HistoryScreen](HistoryScreen.md), [LandClassCheck](LandClassCheck.md), [LandClassView](LandClassView.md), [LandMap](LandMap.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [Money](Money.md), [NewGameCheck](NewGameCheck.md), [PolicyScreen](PolicyScreen.md), [RankingsScreen](RankingsScreen.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SavedCities](SavedCities.md), [SummaryScreen](SummaryScreen.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md), [YearBook](YearBook.md), [YearBookCheck](YearBookCheck.md)
+**Used by (27):** [DataSave](DataSave.md), [Denomination](Denomination.md), [DenominationCheck](DenominationCheck.md), [FinancesScreen](FinancesScreen.md), [FittingCheck](FittingCheck.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [HistoryCheck](HistoryCheck.md), [HistoryScreen](HistoryScreen.md), [LandClassCheck](LandClassCheck.md), [LandClassView](LandClassView.md), [LandMap](LandMap.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [Money](Money.md), [NewGameCheck](NewGameCheck.md), [PolicyScreen](PolicyScreen.md), [RankingsScreen](RankingsScreen.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SavedCities](SavedCities.md), [SummaryScreen](SummaryScreen.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md), [YearBook](YearBook.md), [YearBookCheck](YearBookCheck.md)
 
 ## Sections
 

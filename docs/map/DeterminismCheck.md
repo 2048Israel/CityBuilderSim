@@ -1,6 +1,6 @@
 # DeterminismCheck.java - 447 lines · 19 methods · 5 constants · harnesses
 
-`ham/citybuildersim/DeterminismCheck.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DeterminismCheck.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
 > The month reads nothing of the machine it runs on: the same city, played in JVMs set up as opposite machines, comes out the same to the bit.
 > 

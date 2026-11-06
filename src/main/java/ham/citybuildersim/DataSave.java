@@ -84,6 +84,13 @@ public class DataSave implements Cloneable {
     private String worldPath;
     private Long pathSeed;
 
+    /*
+     * ...AND WHETHER IT WAS FOUNDED THE 1900 WAY (R1b; Founding.isUnfitted()): written only for a city that was, so a city founded the default
+     * way writes no key and a save without one reads false (getFounding()). Boxed for that reason. No format bump: Gson leaves a missing key
+     * alone, and an older save was founded the default way.
+     */
+    private Boolean foundedUnfitted;
+
     //save variables
     private double cash;
     private int[] buildings;
@@ -673,6 +680,8 @@ public class DataSave implements Cloneable {
         // ...and the path of the world beyond the city (WN1).
         worldPath = f.getPath().name();
         pathSeed = f.getPathSeed();
+        // ...and the 1900 way (R1b): a key only where it is so.
+        foundedUnfitted = f.isUnfitted() ? Boolean.TRUE : null;
     }
 
     /**
@@ -716,6 +725,8 @@ public class DataSave implements Cloneable {
             }
         }
         f = f.withPath(path, pathSeed != null ? pathSeed : Nations.DEFAULT_SEED);
+        // The 1900 way (R1b): a save without the key was founded the default way.
+        if (Boolean.TRUE.equals(foundedUnfitted)) f = f.withUnfitted(true);
         return f;
     }
 
@@ -1161,6 +1172,38 @@ public class DataSave implements Cloneable {
     public java.util.Map<Integer, java.util.Map<String, Integer>> getUnfittedById() {
         return unfittedById == null ? java.util.Map.of() : unfittedById;
     }
+
+    /**
+     * The recipes the two parts of a stack run (R1c; Recipes), by template id: [the fitted part's recipe id, the unfitted part's], written only for a
+     * template where a part runs a recipe other than the default, so only a city founded the 1900 way ever writes the key. A save without one, which
+     * is every save from before R1c and every city founded the default way, reads as every building on its default: Gson leaves a missing key alone,
+     * so no format bump.
+     */
+    private java.util.Map<Integer, java.util.List<String>> recipeChoices;
+
+    public void setRecipeChoices(java.util.Map<Integer, java.util.List<String>> byId) {
+        this.recipeChoices = byId == null || byId.isEmpty() ? null : byId;
+    }
+
+    /** The recipe choices the save carries by template id, or an empty map for a save with none (every building on its default). */
+    public java.util.Map<Integer, java.util.List<String>> getRecipeChoices() {
+        return recipeChoices == null ? java.util.Map.of() : recipeChoices;
+    }
+
+    /**
+     * The fittings on site (R1b; Fittings), in the order placed, each with the template, the piece, who ordered it and the points still owed: written
+     * only while there is a job, so a city with none writes no key and a save without one reads as none on site. No format bump: Gson leaves a
+     * missing key alone, and a city saved before R1b had none.
+     */
+    private java.util.List<Fittings.Job> fittings;
+
+    /** The jobs to write: a list of the caller's own copies (Fittings.view()), or none. */
+    public void setFittings(java.util.List<Fittings.Job> jobs) {
+        this.fittings = jobs == null || jobs.isEmpty() ? null : new java.util.ArrayList<>(jobs);
+    }
+
+    /** The fittings the save carries, or null for a save with none. */
+    public java.util.List<Fittings.Job> getFittings() { return fittings; }
 
     /** False on a save that kept one order book for the whole city. */
     public boolean hasContractsById() { return contractValueById != null; }

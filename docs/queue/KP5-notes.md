@@ -1,6 +1,6 @@
 # KP5 - Screens kept: Bank, Finances and the fund ({next}, 2026-11-05)
 
-**WHERE IT STANDS** (2026-11-05, 22:10): ready, see the ship file. The four slices are in and reviewed (A 9accb707, B 63986728, C cc20d3f2, D 33c0796e, with Opus's mend of the desk's fit); KP4 on main, merged in (ed34013c); `--pick` with the world files exit 3, the only red main's recorded MapCheck (§5). Its gate wants a stranger's review of the threading and the money screens (§4).
+**WHERE IT STANDS** (2026-11-06): ready, see the ship file. Sent back at the gate on 0.9.23 (R1c's city): the `BuybackLadder` on Close it now drew again every month for a figure it does not draw; mended, the fixture made to cause both of section 64's conditions (§6, "By the gate"). main at 0.9.23 merged in (26e22722); `--pick KeptCheck` with the world files exit 3, the reds main's recorded MapCheck and KS1's KeptCheck line (Construction's Income page at 89.8%). Before that: the four slices in and reviewed (A 9accb707, B 63986728, C cc20d3f2, D 33c0796e, with Opus's mend of the desk's fit); KP4 on main, merged in (ed34013c). Its gate wants a stranger's review of the threading and the money screens (§4).
 
 The batch's record. The study's KP5 row (`docs/studies/spec-screens-in-place.md` §7) with §3 (the pattern and its
 rules, seven since KP2) and §6 (what checks it). Lane 2 (screens), after KP4, built on `origin/batch/KP4` at d9d28326
@@ -178,6 +178,20 @@ OK). No full suite: the diff is `ui/` and `KeptCheck`, read by no harness but Ke
   scroller (`setFitToHeight(false)`), so its height moves when its rows do and its listener refits the scroller after
   the pulse has styled and laid them out, as on a page built new; the scroller is the table's height and two pixels
   either way, so the card looks as it did.
+- **By the gate (sent back on 0.9.23, R1c's city):** the `BuybackLadder` on Close it now drew again every month with
+  nothing in it changed (6 of 6). A probe of what moved between its quotes found one component alone:
+  `carriedTaken`, the books' carrying value of the face taken, growing about 0.003% a month as the bond's discount
+  accretes. The ladder does not draw it, but `set()` compared the whole `Buyback.Result`. It now compares what it
+  draws (`drawsAlike`: the offers, the face taken, the fair price), and keeps the newest quote either way.
+  That left section 64's sister line red, "a month whose figures moved draws it again (0 of 6)". On this city nothing
+  the ladder draws moves in six months, so that line had passed on the undrawn figure alone. The fixture now causes
+  both conditions (README, *The checks*). Close it now's spot carries a month hand (`Spot.month`, a
+  `MonthHand`): the player types a most to pay in the odd months, by turns from `MOST_TO_PAY`, and leaves it in the
+  even ones. Months 1, 3 and 5 move a drawn figure and must draw again. Months 2, 4 and 6 move only the carrying
+  value and must draw nothing, which proves the mend. The assertions are as they were.
+  `AuctionChart`, the other picture told a whole record, was read for the same fault and does not have it: what it
+  does not draw (the coupon, the price, the proceeds, the fills) follows from the stop, the amount sold and the
+  bidders, which it compares and draws.
 - **By the harness (slice D's mends):** `StatementView`'s optional columns (then, change, share) are scopes: a cell
   that wrapped passed its height to the cell shifted onto it (the Balance sheet with the change column off).
   `Columns`' "heaviest" tag is the picture's own part, not a `Kept.label` (it took a neighbour's wrap). `SegmentBar`'s

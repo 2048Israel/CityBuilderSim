@@ -23,7 +23,8 @@ import java.util.function.ToDoubleFunction;
  *   4. it passes the money gate as a building does: g is at least the interest hurdle on its WHOLE cost.
  *
  * Both of 3 and 4 must hold, and a gain of nothing never pays. The verdict (Verdict, Kind) is a record the screens print and R1b ranks;
- * nothing in Game's month calls any of this, and it books, buys and fits nothing (call 10). T is the piece's own life, not the lesser of that
+ * nothing in a played city's month calls any of this (since R1b only a city founded the 1900 way reads verdictForNew(), when a building opens:
+ * Game.fitWhatFinished()), and it books, buys and fits nothing (call 10). T is the piece's own life, not the lesser of that
  * and the building's remaining life, because a stack keeps no building's age (call 11).
  *
  * Two layers: a pure core (annuityFactor(), steamGain(), cartGain(), cost(), judge()) that takes its prices as arguments, so a harness can move
@@ -149,9 +150,13 @@ public final class EquipmentFit {
     /**
      * One building's gain a month from a piece, at the city's prices: the electric drive's from the coal's and the grid's price (the unit price the
      * sectors are billed, EconomyManager.getPricePerWatt()), the motor truck's from Haulage's teams and trucks. The tractor's (FARM_HORSES) is NaN:
-     * R1c writes its petrol, and its "since" is a code, so no verdict reaches it.
+     * R1c writes its petrol, and its "since" is a code, so no verdict reaches it. A piece that ends a form keeps its form's gain whether or not
+     * it is also the template's recipe piece. A piece that ends NO form (R1c) is there to enable a recipe: its gain is the value of the best recipe
+     * a fitted building of the template could run less that of the best an unfitted one could, at the city's prices (Recipes.gainOf()), and
+     * nothing for one that is not the template's recipe piece.
      */
     private static double gainOf(Game game, BuildingsTemplate t, Equipment piece) {
+        if (piece.getEnds() == null) return piece.getId().equals(t.recipePieceId()) ? Recipes.gainOf(game, t) : 0;
         switch (piece.getEnds()) {
             case STEAM:
                 return steamGain(t, cityPrice(game, Good.THERMAL_COAL), game.getEconomyManager().getPricePerWatt());
@@ -173,9 +178,22 @@ public final class EquipmentFit {
      * judged at a rate of 0. Reads, prices and books nothing; the month never calls it.
      */
     public static Verdict verdict(Game game, BuildingsStacks stack, Equipment piece) {
-        BuildingsTemplate t = stack.getBuilding();
+        return priced(game, stack.getBuilding(), piece, stack.getUnfitted(piece.getId()));
+    }
+
+    /**
+     * The verdict on a NEW building for a piece (R1b; research-design 2.2 step 6, "New buildings come with every piece that pays"): the same
+     * figures and the same judgement as verdict() for one building that lacks the piece whatever a stack holds, so FITTED never comes back,
+     * only NOT_KNOWN, PAYS or NOT_YET. Game.fitWhatFinished() reads it when a building opens in a city founded the 1900 way. Reads, prices and
+     * books nothing.
+     */
+    public static Verdict verdictForNew(Game game, BuildingsTemplate t, Equipment piece) {
+        return priced(game, t, piece, 1);
+    }
+
+    /** verdict()'s and verdictForNew()'s one pricing: the template, the piece and how many of the buildings asked about lack it (0 for none: FITTED). */
+    private static Verdict priced(Game game, BuildingsTemplate t, Equipment piece, int unfitted) {
         int year = CityCalendar.yearOf(game.getMonth());
-        int unfitted = stack.getUnfitted(piece.getId());
         if (settled(piece, year, unfitted) != null) return judge(piece, t, year, unfitted, Double.NaN, Double.NaN, 0, 0);
 
         double gain = gainOf(game, t, piece);
@@ -194,21 +212,69 @@ public final class EquipmentFit {
             .thenComparingInt(Verdict::templateId).thenComparing(Verdict::pieceId);
 
     /**
-     * Every piece that pays on the sector's stacks, best first: for each stack of the sector with a building unfitted, each such piece whose verdict()
-     * is PAYS, by earnings on cost. Only the pieces on existing buildings (R1b ranks them beside new buildings in SpreadPlanner.best()); empty for
-     * a sector with none unfitted. A fresh list.
+     * Every piece that pays on the sector's stacks, best first: for each stack of the sector with a building unfitted that is not already being fitted
+     * (the unfitted count less the fittings on site, R1b), each such piece whose verdict() is PAYS, by earnings on cost. Only the pieces on existing
+     * buildings (choose() ranks them beside new buildings in SpreadPlanner.best()); empty for a sector with none to fit. A fresh list.
      */
     public static List<Verdict> rank(Game game, Sector sector) {
         List<Verdict> pays = new ArrayList<>();
+        Fittings onSite = game.getFittings();
         for (BuildingsStacks stack : game.getBuildingManager().getStacksView()) {
             if (!stack.hasUnfitted() || !sector.key().equals(stack.getBuilding().getSector())) continue;
             for (Equipment piece : stack.getBuilding().getEquipment()) {
-                if (stack.getUnfitted(piece.getId()) <= 0) continue;
+                if (stack.getUnfitted(piece.getId()) - onSite.onSite(stack.getBuilding().getId(), piece.getId()) <= 0) continue;
                 Verdict v = verdict(game, stack, piece);
                 if (v.kind() == Kind.PAYS) pays.add(v);
             }
         }
         pays.sort(BEST_FIRST);
         return pays;
+    }
+
+    /**
+     * THE ORDER, ONE AT A TIME (R1b; research-design 2.2 step 5: "It competes with new buildings. Its earnings on cost (g / C) are ranked with the
+     * sector's other candidates in SpreadPlanner.best(), one order at a time"). Game.runPrivateInvestment() asks each sector once a month for its one
+     * Decision; this weighs that Decision against the sector's best fitting and returns the month's: the fitting (Decision.fit()) when it earns more on its
+     * cost than the building the plan would put up, or when the plan builds nothing; the plan's own Decision, unchanged, otherwise.
+     *
+     * Returns the plan at once, reading nothing else, when the sector has a fitting on site already (a sector fits one at a time) or no stack of
+     * its own has a building unfitted: every sector of a city founded the default way, so nothing in a played city moves.
+     *
+     * The two are SpreadPlanner.Candidates built by the record's constructor and not by SpreadPlanner.judge(), because every gate they would be asked is
+     * already answered: the plan asked the building its feed, ground, staff and money gates (the Decision builds), and the fitting needs none of the
+     * first three and passed the money gate as step 4 of its verdict (it PAYS). The building is listed first, so that a tie keeps the building. The
+     * building's earnings are the investors' own estimate of one (BusinessInvestment.estimatedMonthlyProfit(), what Game.consider() reads) on its cost
+     * of one (getCostOf()); the fitting's the verdict's gain on its cost. A fitting that costs nothing is not a ratio and wins outright.
+     */
+    public static BusinessInvestment.Decision choose(Game game, Sector sector, BusinessInvestment.Decision plan) {
+        if (plan == null || game.getFittings().hasOnSite(sector.key())) return plan;
+        boolean anyUnfitted = false;
+        for (BuildingsStacks stack : game.getBuildingManager().getStacksView()) {
+            if (stack.hasUnfitted() && sector.key().equals(stack.getBuilding().getSector())) { anyUnfitted = true; break; }
+        }
+        if (!anyUnfitted) return plan;
+        List<Verdict> ranked = rank(game, sector);
+        if (ranked.isEmpty()) return plan;
+
+        Verdict best = ranked.get(0);
+        BuildingsTemplate fitted = game.getBuildingManager().getTemplate(best.templateId());
+        Equipment piece = fitted == null ? null : fitted.getEquipment(best.pieceId());
+        if (piece == null) return plan;
+        BusinessInvestment plans = game.getBusinessInvestment();
+        SpreadPlanner.Candidate fitting = new SpreadPlanner.Candidate(fitted, best.gain(), best.cost(), null, null, java.util.Map.of(), List.of());
+        List<SpreadPlanner.Candidate> weighed = new ArrayList<>();
+        if (plan.build && plan.template != null && plan.piece == null) {
+            weighed.add(new SpreadPlanner.Candidate(plan.template, plans.estimatedMonthlyProfit(sector.key(), plan.template),
+                    plans.getCostOf(plan.template, 1), null, null, java.util.Map.of(), List.of()));
+        }
+        weighed.add(fitting);
+        boolean wins = best.cost() > 0 ? SpreadPlanner.best(weighed) == fitting : true;
+        if (!wins) return plan;
+        String name = fitted.getName(), what = piece.getName();
+        return BusinessInvestment.Decision.fit(sector.key(), fitted, piece, String.format(
+                "the %s on %s %s earns $%,.1fk a month on $%,.1fk at the city's prices, %.2f%% a month",
+                what.isEmpty() ? what : Character.toLowerCase(what.charAt(0)) + what.substring(1),
+                "AEIOUaeiou".indexOf(name.isEmpty() ? 'x' : name.charAt(0)) >= 0 ? "an" : "a", name,
+                best.gain(), best.cost(), best.earningsOnCost() * 100));
     }
 }

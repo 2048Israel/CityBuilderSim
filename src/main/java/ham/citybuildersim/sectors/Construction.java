@@ -530,6 +530,29 @@ public final class Construction extends Sector {
     /** ...this month's, for the screens and the strike. */
     public double getSalvageCutThisMonth() { return salvageCutThisMonth; }
 
+    /**
+     * THE FITTINGS (R1b, 2026-11-05; Game.fit(), Fittings): the builders are paid for the goods they bought and the work they will do to fit a
+     * piece of equipment to a standing building, at the order. Other revenue, named apart, and CAPITAL: Game reads getFittingThisMonth() beside
+     * getRecognisedThisMonth() for the national accounts' investment line, so a fitting is investment once, on the builders' side (the payer's
+     * spend() is its own cash flow and is not read there). No sales tax is struck on it in this batch.
+     *
+     * WHY a figure of its own, and not recognisedThisMonth: that one is cleared by recogniseWork() in the middle of the tick, and a fitting is
+     * ordered before it (the investment round at the top of the month, the player's hand between two presses), so it would be cleared
+     * before the strike that banks it. This one is cleared where the ledger it names is (beforeBank()), so it spans the window the revenue is
+     * booked in; it is also in the order book the money audit counts, as recognised work is, for the same reason.
+     */
+    public void earnFitting(double amount) {
+        if (!(amount > 0) || !Double.isFinite(amount)) return;
+        bookOtherRevenue(amount);
+        fittingThisMonth += amount;
+    }
+
+    /** ...booked since the last strike banked its ledger, named at the next strike (nameOtherRevenue()) and read once for the national accounts. */
+    private double fittingThisMonth;
+
+    /** ...for the accounts' investment line and the screens. */
+    public double getFittingThisMonth() { return fittingThisMonth; }
+
     /** Building work recognised this month - the national accounts' investment. */
     public double getRecognisedThisMonth() { return recognisedThisMonth; }
 
@@ -546,9 +569,12 @@ public final class Construction extends Sector {
      * advance (Game.recogniseSiteWork), and the cash arrives at the next
      * strike; between the two the money is a cheque in the post, and the
      * audit reads its pools at the top and bottom of a tick. Counted here
-     * so it is never in flight when the audit looks.
+     * so it is never in flight when the audit looks. And (R1b) the equipment
+     * the builders were paid to fit since the last strike banked their ledger
+     * (earnFitting()): the payer's cash left at the order and theirs arrives at
+     * the strike, so it is in the order book between the two, as the work is.
      */
-    public double getOrderBookForAudit() { return unearnedRevenue + recognisedThisMonth; }
+    public double getOrderBookForAudit() { return fittingThisMonth != 0 ? unearnedRevenue + recognisedThisMonth + fittingThisMonth : unearnedRevenue + recognisedThisMonth; }
     public double getUtilisation()      { return utilisation; }
 
     /** Materials bought from the plant in the month last struck, in units - the statement's month; NaN until a loaded older save's first strike. */
@@ -571,6 +597,8 @@ public final class Construction extends Sector {
         rDrawnLocal = unitsBoughtLocal(Good.MATERIALS);
         rDrawnImported = unitsImported(Good.MATERIALS);
         drawnKnown = true;
+        // ...and the fittings booked since the last bank are banked with it (R1b): named at the strike just before this, read by the accounts before that.
+        fittingThisMonth = 0;
     }
 
     /** The order book, put back on load. See the old ConstructionHandler.restoreOrderBook. */
@@ -936,6 +964,8 @@ public final class Construction extends Sector {
         if (Math.abs(repairsThisMonth) > 0) parts.put("Repairs billed", repairsThisMonth);
         // ...and the forest it cleared, billed to Forestry (0.7.138, earnSalvageCut()).
         if (Math.abs(salvageCutThisMonth) > 0) parts.put("Salvage cut cleared", salvageCutThisMonth);
+        // ...and the equipment it fitted to standing buildings (R1b, earnFitting()).
+        if (Math.abs(fittingThisMonth) > 0) parts.put("Equipment fitted", fittingThisMonth);
         return parts.isEmpty() ? super.nameOtherRevenue() : parts;
     }
 
@@ -1041,6 +1071,8 @@ public final class Construction extends Sector {
         if (overtimeThisMonth != 0) extras.put("overtimeThisMonth", overtimeThisMonth);
         // ...and the salvage cut's clearing (0.7.138), the same way, so its strike names it after a load.
         if (salvageCutThisMonth != 0) extras.put("salvageCutThisMonth", salvageCutThisMonth);
+        // ...and the fittings' (R1b), the same way.
+        if (fittingThisMonth != 0) extras.put("fittingThisMonth", fittingThisMonth);
         // ...and the foreign contractor's (FC1), the same way: a city that never met the trap saves what it always saved.
         if (foreignBook != 0) extras.put("foreignBook", foreignBook);
         if (foreignPointsThisMonth != 0) extras.put("foreignPointsThisMonth", foreignPointsThisMonth);
@@ -1072,6 +1104,7 @@ public final class Construction extends Sector {
         fillStruckOn = extras.getOrDefault("fillStruckOn", 1.0);
         overtimeThisMonth = extras.getOrDefault("overtimeThisMonth", 0.0);
         salvageCutThisMonth = extras.getOrDefault("salvageCutThisMonth", 0.0);
+        fittingThisMonth = extras.getOrDefault("fittingThisMonth", 0.0);
         foreignBook = extras.getOrDefault("foreignBook", 0.0);
         foreignPointsThisMonth = extras.getOrDefault("foreignPointsThisMonth", 0.0);
         foreignBillThisMonth = extras.getOrDefault("foreignBillThisMonth", 0.0);
@@ -1095,6 +1128,7 @@ public final class Construction extends Sector {
         unearnedRevenue = backlogPoints = 0;
         utilisation = 1;
         recognisedThisMonth = repairsThisMonth = salvageCost = escalationThisMonth = 0;
+        fittingThisMonth = 0;
         postsOfferedShare = crewsNeeded = fillStruckOn = 1;
         overtimeThisMonth = 0;
         overtimeWages = null;
@@ -1110,6 +1144,7 @@ public final class Construction extends Sector {
         recognisedThisMonth *= scale;
         escalationThisMonth *= scale;
         repairsThisMonth *= scale;
+        fittingThisMonth *= scale;
         salvageCost *= scale;
         overtimeThisMonth *= scale;
         foreignBillThisMonth *= scale;

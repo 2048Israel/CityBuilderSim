@@ -18,6 +18,30 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.23 — R1c, Research: recipes as data — 2026-11-05, ready, see docs/queue/R1c-notes.md
+A building can know several ways to run (`buildings.json`'s `recipes`; `Recipe`): the top level is today's, the
+default, and a recipe states only what it changes. In a city founded the 1900 way (off until R1d) each month the
+fitted and the unfitted buildings of every stack run the best recipe each can at the city's prices (`Recipes`,
+`SpreadPlanner.cityValue()`): the fitted the recipes that need the template's piece, the rest those needing none;
+the template's figures are their mix, saved by template id, and a recipe piece pays on the two recipes' difference.
+Research-1900 §3's rows with no form get their piece and their 1900 way: beehive coke, pick-and-powder coal,
+hand-loaded pits, hand-drilled quarries and copper, shaft-kiln cement, groundwood and sulphite pulp (kraft from
+1907), rope-and-tub unloading, Bessemer and open-hearth steel. A city founded the default way chooses nothing,
+but its farms now buy their tractors' diesel and petrol (R0c ★5), 4% of their output: the trace moves, and the
+ensemble scores 23/26 against 24/26, A3 short in two seeds' tails (docs/ensemble/R1c.md). RecipeCheck holds it.
+
+### 0.9.22 — R1b, Research: the fit acted on — 2026-11-05, ready, see docs/queue/R1b-notes.md
+Equipment is now bought and fitted (research-design 2.2 steps 5-6), in a city founded the 1900 way
+(`Founding.withUnfitted()`, off by default until R1d, saved). Each month a sector's next building is weighed
+against its best fitting that pays in `SpreadPlanner.best()` (`EquipmentFit.choose()`), one fitting on site a
+sector; the goods are drawn at the city's market by the builders and the work priced a point, paid by the owner
+and earned by the builders on the investment line; a job on site (`Fittings`, saved) is worked by their crews
+after the repairs and before the sites, and the building counts fitted when its points are done. A depot's motor
+trucks join the fleet. New buildings come without each piece that does not pay at their finish. The player's Fit
+(the city pays) is a pill on a business's kept Investors page. R1's review: the 1900 forms said again after the sites
+advance, so a reloaded twin keeps step, and cleared on New Game and a load. FittingCheck holds all of it; the
+default playtest is main's to the byte.
+
 ### 0.9.21 — KP4, Screens kept: Sectors, the list and a business's five pages — 2026-11-05, ready, see docs/queue/KP4-notes.md
 The Sectors tab is drawn over last month's nodes instead of rebuilt (study UP4's KP4): the list and every card, and a
 business's frame and five pages in both views - Operations of every kind (the plant, the tonnes, the refinery, the

@@ -280,6 +280,16 @@ public final class Founding {
     private final Nations.Path path;
     /** The seed that draws the path (WN1; spec-nations 7.3) - not worldSeed, which is the ground's. */
     private final long pathSeed;
+    /**
+     * The city founded the 1900 way, its buildings' equipment unfitted (R1b; Game.unfitTheFounding()): false in every constructor and preset,
+     * on only by withUnfitted().
+     *
+     * WHY (R1b, 2026-11-05; research-1900.md 3: "A 1900 building starts without them and fits them when they pay"). R1 made a piece of equipment
+     * a count of the buildings still without it (BuildingsStacks.getUnfitted()), empty in every played city; a city founded this way starts
+     * with the counts full and its new buildings come with a piece only where it pays (Game.fitWhatFinished()). Off by default until R1d
+     * switches it on with R0d's 1901 ladder, so no city a player or a harness founds moves. Saved with the founding (DataSave.foundedUnfitted).
+     */
+    private final boolean unfitted;
 
     /**
      * A founding exactly as given. The load path's door, and the one the
@@ -302,11 +312,12 @@ public final class Founding {
         this.worldKey = World.Key.generated(worldSeed);
         this.path = Nations.DEFAULT_PATH;
         this.pathSeed = Nations.DEFAULT_SEED;
+        this.unfitted = false;
     }
 
     /** A founding as given on the world a key names (0.7.115): its seed the key's. */
     private Founding(String cityName, Currency currency, double cash, double reserveUsd, double meanInflation,
-                     World.Key worldKey, Nations.Path path, long pathSeed) {
+                     World.Key worldKey, Nations.Path path, long pathSeed, boolean unfitted) {
         this.cityName = cityName;
         this.currency = currency;
         this.cash = cash;
@@ -316,6 +327,7 @@ public final class Founding {
         this.worldKey = worldKey;
         this.path = path;
         this.pathSeed = pathSeed;
+        this.unfitted = unfitted;
     }
 
     /** ...on the default world, DEFAULT_WORLD_SEED. */
@@ -342,17 +354,17 @@ public final class Founding {
 
     /** The same founding with money the player named by hand - Currency.typed(), which is null when the typed pair does not pass, and problem() then says so. */
     public Founding withCurrency(Currency typed) {
-        return new Founding(cityName, typed, cash, reserveUsd, meanInflation, worldKey, path, pathSeed);
+        return new Founding(cityName, typed, cash, reserveUsd, meanInflation, worldKey, path, pathSeed, unfitted);
     }
 
     /** The same founding on another world: the founding screen's World field and its dice (0.7.56). */
     public Founding withWorldSeed(long seed) {
-        return new Founding(cityName, currency, cash, reserveUsd, meanInflation, World.Key.generated(seed), path, pathSeed);
+        return new Founding(cityName, currency, cash, reserveUsd, meanInflation, World.Key.generated(seed), path, pathSeed, unfitted);
     }
 
     /** The same founding on the world a key names (0.7.115): an Earth world (onEarth()) or a harness's; a generated key is withWorldSeed(). */
     public Founding withWorldKey(World.Key key) {
-        return new Founding(cityName, currency, cash, reserveUsd, meanInflation, key, path, pathSeed);
+        return new Founding(cityName, currency, cash, reserveUsd, meanInflation, key, path, pathSeed, unfitted);
     }
 
     /** The same founding on the real Earth round a spot (0.7.121, batch E4): its seed this founding's, its data the game's, EarthData.EARTH_2 - the founding screen's Earth. */
@@ -362,13 +374,18 @@ public final class Founding {
 
     /** The same founding with the world's mean inflation it is handed (Game.getFounding()), on the same world. */
     public Founding withMeanInflation(double meanInflation) {
-        return new Founding(cityName, currency, cash, reserveUsd, meanInflation, worldKey, path, pathSeed);
+        return new Founding(cityName, currency, cash, reserveUsd, meanInflation, worldKey, path, pathSeed, unfitted);
     }
 
     /** The same founding on another path of the world beyond the city, drawn from this seed (WN1; spec-nations 7): the founding screen's Historical or Random and its dice. */
     public Founding withPath(Nations.Path path, long seed) {
         return new Founding(cityName, currency, cash, reserveUsd, meanInflation, worldKey,
-                Objects.requireNonNull(path, "path"), seed);
+                Objects.requireNonNull(path, "path"), seed, unfitted);
+    }
+
+    /** The same founding founded the 1900 way, its buildings' equipment unfitted, or not (R1b; isUnfitted()): every other choice kept. */
+    public Founding withUnfitted(boolean on) {
+        return new Founding(cityName, currency, cash, reserveUsd, meanInflation, worldKey, path, pathSeed, on);
     }
 
     /** What a save from before 0.7.10 was founded with. See the class header. */
@@ -396,6 +413,8 @@ public final class Founding {
     public Nations.Path getPath()      { return path; }
     /** The seed that draws the path (WN1; spec-nations 7.3) - not getWorldSeed(), the ground's. */
     public long getPathSeed()          { return pathSeed; }
+    /** Whether the city is founded the 1900 way, its buildings' equipment unfitted (R1b; Game.unfitTheFounding()): false unless withUnfitted() said so. */
+    public boolean isUnfitted()        { return unfitted; }
     /** Which world it stands on (0.7.121): GENERATED, or EARTH. */
     public World.Kind getWorldKind()   { return worldKey.kind(); }
     /** Whether it stands on the real Earth (0.7.121). */

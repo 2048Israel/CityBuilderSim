@@ -32,7 +32,8 @@ import java.util.TreeMap;
  * moves. What is checkable:
  *
  *   1. THE DATA IS READ: every template the notes name carries its piece, its since, ends, buys, work and life read back from buildings.json
- *      (the file read here with Gson, its figures not typed twice), no other template carries one, the rules the figures were struck by hold
+ *      (the file read here with Gson, its figures not typed twice), no other template carries one but those whose recipes need it (R1c's pieces
+ *      end no form: each is its template's recipe piece, in the file and once read), the rules the figures were struck by hold
  *      on the template's own electricity, construction points, land and truck room, the tractor's code is never known, the drive is known
  *      from 1900; and a bad entry in the file (no id, a second of an id, an unknown form or good, no since, a life of 0) is reported and
  *      skipped, the good ones beside it read
@@ -46,7 +47,8 @@ import java.util.TreeMap;
  *   6. THE COUNT FOLLOWS THE STACK: a count set above what stands is what stands; a scrapped building is an unfitted one first; a building
  *      finished (bought, increased, or built on site) leaves the count as it was
  *   7. THE SAVE: a city with none unfitted writes no key; a city with counts writes them by template id, and the one loaded from it has the
- *      same counts and, before any month is played, the shares the counts set, equal to the saved city's
+ *      same counts and, before any month is played, the shares the counts set, equal to the saved city's (no hand says the forms after the
+ *      saved city's month: the month does, after its sites advance, R1b), and one more month on each leaves the shares equal
  *
  * R1 slice B (EquipmentFit, research-design 2.2 steps 1 to 4: what a piece adds a month, what it costs, whether it pays over its life and
  * passes the money gate; each piece's verdict, read on demand, never in the month):
@@ -230,9 +232,14 @@ public class EquipmentCheck {
         BuildingManager bm = new BuildingManager();
         quietly(bm::initializeTemplates);
 
-        int expectedPieces = DRIVES.length + 1 + FARMS.length, carried = 0, filePieces = 0, mismatched = 0;
+        // R1c: a piece may end no form (it enables a recipe), so "ends" may be missing from the file; the pieces that DO end one are the notes' whole.
+        int expectedPieces = DRIVES.length + 1 + FARMS.length, carried = 0, filePieces = 0, fileForms = 0, mismatched = 0;
         String firstMismatch = null;
-        for (JsonObject o : file.values()) if (o.has("equipment")) filePieces += o.getAsJsonArray("equipment").size();
+        for (JsonObject o : file.values()) {
+            if (!o.has("equipment")) continue;
+            filePieces += o.getAsJsonArray("equipment").size();
+            for (JsonElement e : o.getAsJsonArray("equipment")) if (e.getAsJsonObject().has("ends")) fileForms++;
+        }
         for (BuildingsTemplate t : bm.getTemplates()) {
             carried += t.getEquipment().size();
             JsonObject o = file.get(t.getId());
@@ -246,7 +253,7 @@ public class EquipmentCheck {
                 boolean same = j != null
                         && p.getName().equals(j.get("name").getAsString())
                         && p.getSince().equals(j.get("since").getAsString())
-                        && p.getEnds() == Equipment.Form.valueOf(j.get("ends").getAsString())
+                        && p.getEnds() == (j.has("ends") ? Equipment.Form.valueOf(j.get("ends").getAsString()) : null)
                         && p.getWork() == j.get("work").getAsDouble()
                         && p.getLifeMonths() == j.get("lifeMonths").getAsInt()
                         && p.getBuys().size() == j.getAsJsonObject("buys").size();
@@ -262,8 +269,8 @@ public class EquipmentCheck {
                 }
             }
         }
-        check("fixture: the file carries equipment, and the notes' pieces are the whole of it",
-                filePieces == expectedPieces, filePieces + " in the file, " + expectedPieces + " named");
+        check("fixture: the file carries equipment, and the pieces that end a form are the notes' whole of them (R1c's recipe pieces end none)",
+                fileForms == expectedPieces && filePieces >= fileForms, fileForms + " end a form in the file (" + filePieces + " pieces), " + expectedPieces + " named");
         check("every piece in the file is read onto its template, field for field (id, name, since, ends, buys, work, life)",
                 mismatched == 0 && carried == filePieces, firstMismatch == null ? carried + " carried" : firstMismatch);
 
@@ -307,16 +314,54 @@ public class EquipmentCheck {
         check("the tractor is on the three farms alone, ending FARM_HORSES, 3 t of machinery a hundred acres, no work, 180 months",
                 farmOk == FARMS.length, farmOk + " of " + FARMS.length);
 
+        // R1 held that equipment stands only where a 1900 form does; R1c changed it by design (R1-notes call 2: the other rows come "with their 1900
+        // recipes in R1c"): a template may carry the piece its recipes need, which ends no form. So the rule is asked of the model and of the file.
         int other = 0;
+        String firstOther = null;
         List<String> named = new ArrayList<>(List.of(DRIVES));
         named.addAll(List.of(FARMS));
         named.add("Truck Depot");
-        for (BuildingsTemplate t : bm.getTemplates()) if (!t.getEquipment().isEmpty() && !named.contains(t.getName())) other++;
-        check("no other template carries a piece", other == 0, other + " do");
+        for (BuildingsTemplate t : bm.getTemplates()) {
+            if (t.getEquipment().isEmpty() || named.contains(t.getName()) || t.recipePieceId() != null) continue;
+            other++;
+            if (firstOther == null) firstOther = t.getName();
+        }
+        check("no other template carries a piece than the drive's, the depot's, the farms' and the ones whose recipes need one", other == 0, other + " do, " + firstOther + " first");
 
         boolean everyEnds = true;
-        for (BuildingsTemplate t : bm.getTemplates()) for (Equipment p : t.getEquipment()) everyEnds &= p.getEnds() != null;
-        check("every piece ends one of the three forms", everyEnds);
+        String firstEnds = null;
+        for (BuildingsTemplate t : bm.getTemplates()) {
+            for (Equipment p : t.getEquipment()) {
+                boolean ok = p.getEnds() != null || p.getId().equals(t.recipePieceId());
+                everyEnds &= ok;
+                if (!ok && firstEnds == null) firstEnds = t.getName() + "/" + p.getId();
+            }
+        }
+        check("every piece ends one of the three forms or is its template's recipe piece, the one its recipes need", everyEnds, firstEnds);
+
+        int formless = 0, formlessWanted = 0;
+        String firstFormless = null;
+        for (JsonObject o : file.values()) {
+            if (!o.has("equipment")) continue;
+            for (JsonElement e : o.getAsJsonArray("equipment")) {
+                JsonObject piece = e.getAsJsonObject();
+                if (piece.has("ends")) continue;
+                formless++;
+                boolean wanted = false;
+                if (o.has("recipes")) {
+                    for (JsonElement r : o.getAsJsonArray("recipes")) {
+                        JsonObject recipe = r.getAsJsonObject();
+                        wanted |= recipe.has("needsEquipment") && recipe.get("needsEquipment").getAsString().equals(piece.get("id").getAsString());
+                    }
+                }
+                BuildingsTemplate t = bm.getTemplate(o.get("id").getAsInt());
+                wanted &= t != null && piece.get("id").getAsString().equals(t.recipePieceId());
+                if (wanted) formlessWanted++;
+                else if (firstFormless == null) firstFormless = o.get("name").getAsString() + "/" + piece.get("id").getAsString();
+            }
+        }
+        check("...and the file's pieces that end none (" + formless + ") are each needed by a recipe of their building, and are the template's recipe piece once read",
+                formless > 0 && formlessWanted == formless, formlessWanted + " of " + formless + ", first " + firstFormless);
 
         BuildingsTemplate grainFarm = bm.getTemplateByName("Grain Farm"), bakery = bm.getTemplateByName("Bakery");
         Equipment tractor = grainFarm == null ? null : grainFarm.getEquipment(TRACTOR);
@@ -561,9 +606,9 @@ public class EquipmentCheck {
         stack(g, "Bakery").setUnfitted(DRIVE, 1);
         stack(g, "Industrial Bakery").setUnfitted(DRIVE, industrialSet);
         stack(g, "Grain Farm").setUnfitted(TRACTOR, grainSet);
+        // ...and the shares at rest are the counts' as the month ended on them: the month says the forms once more after its sites advance
+        // (SimulationEngine.simulateMonth(), R1b), so that the saved city's shares are its counts' and not the month's top's, with no hand to say it here.
         play(g, 1);
-        // ...and the forms said once more from the stacks as they stand now, so that the saved city's shares are its counts' and not the month's top's.
-        g.getEquipmentForms().apply(g);
         check("fixture: the counts stand after the month and the forms are up", anyUnfitted(g) && g.getSectors().industry().getSteamShare() > 0
                 && g.getSectors().agriculture().getHorseShare() > 0);
         Map<Integer, Map<String, Integer>> saved = g.getBuildingManager().getUnfittedById();
@@ -595,6 +640,15 @@ public class EquipmentCheck {
                 && back.getSectors().agriculture().getHorseShare() > 0);
         check("...with no other sector's steam set, nor Haulage's horses", maxSteamExcept(back, back.getSectors().industry().key()) == 0
                 && back.getSectors().freight().haulage().getHorseShare() == 0);
+        // ...and one more month on each (R1b): the saved city and the loaded one rest in the same shares after it, as before it.
+        play(g, 1);
+        play(back, 1);
+        check("one more month on the saved city and on the loaded one leaves the same steam share and the same horse shares",
+                back.getSectors().industry().getSteamShare() == g.getSectors().industry().getSteamShare()
+                        && back.getSectors().agriculture().getHorseShare() == g.getSectors().agriculture().getHorseShare()
+                        && back.getSectors().freight().haulage().getHorseShare() == g.getSectors().freight().haulage().getHorseShare(),
+                back.getSectors().industry().getSteamShare() + " vs " + g.getSectors().industry().getSteamShare() + " / "
+                        + back.getSectors().agriculture().getHorseShare() + " vs " + g.getSectors().agriculture().getHorseShare());
 
         // ...and the city that saved no key loads as every building fitted, the way an older save does (no format bump: Gson leaves the key alone).
         Game fitted = new Game(files);
@@ -747,7 +801,12 @@ public class EquipmentCheck {
 
     /** Moves the city's price of coal to `target`, by the world's prices on its market: the price planners read (cityValue()) is affine in them, found from two probes and refined; false if it will not move. */
     static boolean priceCoalAt(Game g, double target) {
-        GoodsMarket m = g.getMarkets().get(Good.THERMAL_COAL);
+        return priceAt(g, Good.THERMAL_COAL, target);
+    }
+
+    /** Moves the city's price of any good to `target`, the same way (RecipeCheck moves the crops' and the bread's). */
+    static boolean priceAt(Game g, Good good, double target) {
+        GoodsMarket m = g.getMarkets().get(good);
         m.setWorldPrices(0.05, 0.05);
         double a = SpreadPlanner.cityValue(m);
         m.setWorldPrices(0.10, 0.10);

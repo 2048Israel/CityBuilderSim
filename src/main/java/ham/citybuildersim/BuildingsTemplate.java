@@ -166,8 +166,10 @@ public class BuildingsTemplate {
        the shop's shelf - in units.
        ===================================================================== */
     private String sector = "";
-    private final java.util.Map<Good, Double> makes = new java.util.EnumMap<>(Good.class);
-    private final java.util.Map<Good, Double> uses = new java.util.EnumMap<>(Good.class);
+    // Not final since R1c: runRecipes() swaps in whole new maps (a screen's thread iterating goodsMade() keeps the map it was given), where a
+    // clear-and-fill would break its iteration. Nothing else replaces them.
+    private volatile java.util.Map<Good, Double> makes = new java.util.EnumMap<>(Good.class);
+    private volatile java.util.Map<Good, Double> uses = new java.util.EnumMap<>(Good.class);
     private double stock;
 
     public BuildingsTemplate setSector(String sector) {
@@ -568,6 +570,150 @@ public class BuildingsTemplate {
         return null;
     }
 
+    /* ----- THE WAYS IT RUNS (R1c, 2026-11-05; research-design.md 2.1) -----
+       A building may know several recipes ("recipes" in buildings.json, read by
+       BuildingCatalog.readRecipes(); Recipe): what it uses, what it makes, who
+       it needs and what it draws, each with the year it is known from and,
+       perhaps, a piece of equipment it needs. The top-level figures of the
+       template are the DEFAULT recipe, the one entry of a list that states no
+       figure; a template with no list has that one recipe alone, and is never
+       touched. In a city founded the 1900 way (Game.foundedUnfitted()) Recipes
+       chooses, for the part of a stack that has the recipe piece fitted and the
+       part that has not, the best recipe each can run at the city's prices, and
+       sets this template's LIVE figures (makes, uses, jobs, electricity, gen,
+       water, consumables) to the mix of the two weighted by their buildings
+       (runRecipes()): everything that reads a building's figures reads the
+       template, and a city's templates are its own, so the figures read are the
+       recipe the buildings run and no reader changed. The default's figures,
+       held in the list, are the top level as the file wrote it, which the live
+       figures are set back to. */
+    private java.util.List<Recipe> recipes;
+    private String recipePieceId;
+    private volatile String runsFitted, runsUnfitted;
+
+    /**
+     * Gives this building its recipes, in the order given; a copy, and null or empty is none (the one implicit default, its top level). Needs its
+     * equipment set first. Does not touch the live figures: Recipes.apply() sets them.
+     *
+     * @throws IllegalArgumentException for a list that has not exactly one default, two recipes of one id, a recipe that needs a piece the building
+     *                                  does not carry, or recipes that need two different pieces (at most one piece per template is the recipe
+     *                                  piece); the catalogue reports it and drops the list
+     */
+    public BuildingsTemplate setRecipes(java.util.List<Recipe> list) {
+        runsFitted = null;
+        runsUnfitted = null;
+        if (list == null || list.isEmpty()) {
+            this.recipes = null;
+            this.recipePieceId = null;
+            return this;
+        }
+        java.util.Set<String> ids = new java.util.HashSet<>();
+        int defaults = 0;
+        String piece = null;
+        for (Recipe r : list) {
+            if (r == null) throw new IllegalArgumentException("a recipe is missing");
+            if (!ids.add(r.getId())) throw new IllegalArgumentException("two recipes are called \"" + r.getId() + "\"");
+            if (r.isDefault()) defaults++;
+            String needs = r.getNeedsEquipment();
+            if (needs == null) continue;
+            if (getEquipment(needs) == null) throw new IllegalArgumentException("\"" + r.getId() + "\" needs \"" + needs + "\", which " + name + " does not carry");
+            if (piece != null && !piece.equals(needs)) throw new IllegalArgumentException("recipes need two pieces of equipment (" + piece + ", " + needs + ")");
+            piece = needs;
+        }
+        if (defaults != 1) throw new IllegalArgumentException("a list of recipes has " + defaults + " defaults, not one");
+        this.recipes = java.util.List.copyOf(list);
+        this.recipePieceId = piece;
+        return this;
+    }
+
+    /** Its recipes in the file's order; unmodifiable. A building with no list has one, its top level (id "default", since 1900, needing nothing), made from its figures as they stand now. */
+    public java.util.List<Recipe> getRecipes() {
+        return recipes != null ? recipes : java.util.List.of(Recipe.topLevelOf(this));
+    }
+
+    /** The recipe of this id, or null if the building knows none of it. */
+    public Recipe getRecipe(String id) {
+        if (recipes == null) return Recipe.DEFAULT_ID.equals(id) ? Recipe.topLevelOf(this) : null;
+        for (Recipe r : recipes) if (r.getId().equals(id)) return r;
+        return null;
+    }
+
+    /** The default recipe: its top level, today's way (the one entry of a list that states no figure). */
+    public Recipe defaultRecipe() {
+        if (recipes != null) for (Recipe r : recipes) if (r.isDefault()) return r;
+        return Recipe.topLevelOf(this);
+    }
+
+    /** Whether it has a choice of ways to run: a list with more than the default in it. A building with none is never touched by Recipes. */
+    public boolean hasRecipeChoice() { return recipes != null && recipes.size() > 1; }
+
+    /** The id of the piece of equipment its recipes need (at most one per template), or null where none does. */
+    public String recipePieceId() { return recipePieceId; }
+
+    /** The piece of equipment its recipes need, the template's "recipe piece": the buildings that have it run the recipes that need it, those that have not the ones that need nothing; null where no recipe needs one. */
+    public Equipment recipePiece() { return recipePieceId == null ? null : getEquipment(recipePieceId); }
+
+    /**
+     * Sets this building's live figures to the recipes its two parts run, weighted by their buildings: `fitted` for `fittedBuildings` and
+     * `unfitted` for `unfittedBuildings` (a part with no building weighs nothing; with none at all the fitted part's recipe, what a new building
+     * fitted would run). A null recipe is the default. Makes, uses, water, gen and consumables are the weighted mean; electricity and each job's
+     * posts, which are whole numbers, the weighted mean rounded to the nearest. EXACTLY a recipe's figures when one part is empty or both run the
+     * same recipe (no arithmetic: the default's are the top level to the bit). The maps are replaced, not changed (see the fields).
+     */
+    public void runRecipes(Recipe fitted, int fittedBuildings, Recipe unfitted, int unfittedBuildings) {
+        Recipe a = fitted != null ? fitted : defaultRecipe();
+        Recipe b = unfitted != null ? unfitted : defaultRecipe();
+        runsFitted = a.getId();
+        runsUnfitted = b.getId();
+        int na = Math.max(0, fittedBuildings), nb = Math.max(0, unfittedBuildings);
+        if (na + nb == 0) na = 1;
+        if (nb == 0 || a.getId().equals(b.getId())) {
+            setFigures(a);
+            return;
+        }
+        if (na == 0) {
+            setFigures(b);
+            return;
+        }
+        double all = na + nb;
+        java.util.Map<Good, Double> made = new java.util.EnumMap<>(Good.class), used = new java.util.EnumMap<>(Good.class);
+        for (Good g : Good.values()) {
+            double m = (na * a.makes().getOrDefault(g, 0.0) + nb * b.makes().getOrDefault(g, 0.0)) / all;
+            if (m > 0) made.put(g, m);
+            double u = (na * a.uses().getOrDefault(g, 0.0) + nb * b.uses().getOrDefault(g, 0.0)) / all;
+            if (u > 0) used.put(g, u);
+        }
+        this.makes = made;
+        this.uses = used;
+        for (JobType type : JobType.values()) {
+            jobsByEducation[type.ordinal()] = (int) Math.round((na * a.getJobs(type) + nb * b.getJobs(type)) / all);
+        }
+        this.electricityConsumption = (int) Math.round((na * a.getElectricity() + nb * b.getElectricity()) / all);
+        this.gen = (na * a.getGen() + nb * b.getGen()) / all;
+        this.waterConsumption = (na * a.getWater() + nb * b.getWater()) / all;
+        this.consumables = (na * a.getConsumables() + nb * b.getConsumables()) / all;
+    }
+
+    /** Sets the live figures to one recipe's, to the bit. */
+    private void setFigures(Recipe r) {
+        java.util.Map<Good, Double> made = new java.util.EnumMap<>(Good.class), used = new java.util.EnumMap<>(Good.class);
+        made.putAll(r.makes());
+        used.putAll(r.uses());
+        this.makes = made;
+        this.uses = used;
+        for (JobType type : JobType.values()) jobsByEducation[type.ordinal()] = r.getJobs(type);
+        this.electricityConsumption = r.getElectricity();
+        this.gen = r.getGen();
+        this.waterConsumption = r.getWater();
+        this.consumables = r.getConsumables();
+    }
+
+    /** The ids of the recipes the fitted part and the unfitted part last ran (runRecipes()), in that order; the default's where it has run none. A fresh array. */
+    public String[] runningRecipeIds() {
+        String fallback = defaultRecipe().getId();
+        return new String[] { runsFitted == null ? fallback : runsFitted, runsUnfitted == null ? fallback : runsUnfitted };
+    }
+
     /* ----- THE YEAR IT FIRST EXISTED (0.7.123, batch I4; research-design.md 2.1) -----
        The research study (Jerus's start year 1900, 2026-10-10) asks every
        building after the start to say when it came ("since" in
@@ -693,6 +839,12 @@ public class BuildingsTemplate {
         this.upkeep *= PriceLevel.FACTOR;
         this.consumables *= PriceLevel.FACTOR;
         this.onshoreCashPerKm *= PriceLevel.FACTOR;
+        // ...and a recipe's consumables, the same figure in the same units, once (R1c): the default's, which are the top level's, stay equal to it.
+        if (recipes != null) {
+            java.util.List<Recipe> priced = new java.util.ArrayList<>();
+            for (Recipe r : recipes) priced.add(r.withConsumablesTimes(PriceLevel.FACTOR));
+            this.recipes = java.util.List.copyOf(priced);
+        }
         return this;
     }
 
