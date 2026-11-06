@@ -3805,4 +3805,501 @@ public final class KeptBench {
         });
         return out;
     }
+
+    /* =====================================================================
+       THE CLOCK ON EVERY RAIL SCREEN (KP7, slice D): the window's count of screens rebuilt in place, what the clock does after
+       a month lands, the condition that moves the count, and the show hands of the two rail tabs the bench had none for
+       ===================================================================== */
+
+    /** How many draws rebuilt the screen on show in place - the same screen drawn again with its page emptied - since the window was made (UserInterface.rebuiltInPlace). */
+    public int rebuiltInPlace() {
+        return ui.rebuiltInPlace;
+    }
+
+    /** What the clock does after a month lands: the screen on show drawn again by its own redraw (UserInterface.redraw(), the call the clock's drawPaced() makes). */
+    public void clockRedraw() {
+        ui.redraw();
+    }
+
+    /** The name the screen on show gives the window: the one its show method passes to clearMenu() or keepMenu(). */
+    public String screenShowing() {
+        return ui.currentScreen;
+    }
+
+    /**
+     * The condition that moves rebuiltInPlace, caused: a page drawn the old way (clearMenu() and a page put in the menu column) twice
+     * under one name, then People shown through its real show method, an arrival from that name. {the moves the two old-way draws
+     * made together - one, the second being the rebuild and the first an arrival - and the moves the arrival made - none}.
+     */
+    public int[] rebuildProbe() {
+        ensureWindow();
+        int start = ui.rebuiltInPlace;
+        for (int i = 0; i < 2; i++) {
+            ui.clearMenu("keptcheck-probe", () -> { });
+            ui.rootMenu.getChildren().add(new Label("a page drawn the old way"));
+        }
+        int pair = ui.rebuiltInPlace - start;
+        ui.peopleScreen.showPopulationInfoMenu();
+        return new int[]{pair, ui.rebuiltInPlace - start - pair};
+    }
+
+    /** The pool of the screen on show, by the name it gives the window, or null for a screen this does not know (a page drawn the old way, a menu). */
+    private Kept.Pool poolOnShow() {
+        return switch (ui.currentScreen) {
+            case "handleAllBuildingMenus" -> ui.buildScreen.pool;
+            case ConstructionScreen.SCREEN -> ui.constructionScreen.pool;
+            case "showLandMenu" -> ui.landScreen.pool;
+            case "showPopulationInfoMenu" -> ui.peopleScreen.pool;
+            case "showServicesStatsMenu" -> ui.servicesScreen.pool;
+            case "showInfrastructureMenu" -> ui.infrastructureScreen.pool;
+            case "showSectorMenu" -> ui.sectorScreen.pool;
+            case "showGovernmentMenu" -> ui.governmentScreen.pool;
+            case "showFinanceMenu" -> ui.financesScreen.pool;
+            case "showBankMenu" -> ui.bankScreen.pool;
+            case "showForeignMenu" -> ui.tradeScreen.pool;
+            case "showPolicyMenu" -> ui.policyScreen.pool;
+            case "showHistoryMenu" -> ui.historyScreen.pool;
+            case "showHouseholdMenu" -> ui.peopleScreen.moneyPool;
+            case "showRankingsMenu" -> ui.rankingsScreen.pool;
+            default -> null;
+        };
+    }
+
+    /**
+     * The nodes the last kept draw of the screen on show made new and handed back: {made, kept}, or null where the screen on show draws
+     * through no pool this knows. After the clock's redraw, kept above nought is the proof that the redraw ran the screen's page over its own nodes.
+     */
+    public int[] drawnOnShow() {
+        Kept.Pool pool = poolOnShow();
+        return pool == null ? null : new int[]{pool.lastMade(), pool.lastKept()};
+    }
+
+    /** The land office shown through its real show method, as the rail's tab or a month landing shows it (the chrome, then the page kept). */
+    public void showLand() {
+        ensureWindow();
+        ui.landScreen.showLandMenu();
+    }
+
+    /** The Services tab shown through its real show method, as the rail's tab or a month landing shows it (the chrome, then the page kept). */
+    public void showServices() {
+        ensureWindow();
+        ui.servicesScreen.showServicesStatsMenu();
+    }
+
+    /** The page `p` under a name of the harness's own, with `more` run after its home as well: the harness's state on top of what the page opens on (a cell open, the measures column unfolded). */
+    public Page withHome(Page p, String name, Runnable more) {
+        return new Page(name, p.screen, p.pool, p.draw, () -> {
+            p.home.run();
+            more.run();
+        });
+    }
+
+    /**
+     * The pointer put over the node `target` finds, the page drawn kept again (`redraw`), and the node looked at; then the pointer taken off
+     * and the page drawn again (the same as hoverKept(), for a node the kinds there do not name). Null when each time the node was the same
+     * node, in the look its own handler gives, and the two looks differ; else what differed. ABSENT when the page has no such node.
+     */
+    private String hoverLook(java.util.function.Supplier<Node> target, Runnable redraw) throws Exception {
+        Node n = target.get();
+        if (n == null) return ABSENT;
+        hover(n, true);
+        redraw.run();
+        passes();
+        if (target.get() != n) return "the node under the pointer was handed away or made new by the redraw";
+        String over = n.getStyle();
+        n.getOnMouseEntered().handle(mouse(javafx.scene.input.MouseEvent.MOUSE_ENTERED, 5, 5, javafx.scene.input.MouseButton.NONE, 0));
+        if (!java.util.Objects.equals(over, n.getStyle())) return "under the pointer the draw left " + clip(over) + " where its own mouse-entered sets " + clip(n.getStyle());
+        hover(n, false);
+        redraw.run();
+        passes();
+        if (target.get() != n) return "the node the pointer left was handed away or made new by the redraw";
+        String rest = n.getStyle();
+        n.getOnMouseExited().handle(mouse(javafx.scene.input.MouseEvent.MOUSE_EXITED, 5, 5, javafx.scene.input.MouseButton.NONE, 0));
+        if (!java.util.Objects.equals(rest, n.getStyle())) return "off the pointer the draw left " + clip(rest) + " where its own mouse-exited sets " + clip(n.getStyle());
+        if (java.util.Objects.equals(over, rest)) return "the hover changes nothing in the node's style, so there is no look to keep";
+        return null;
+    }
+
+    /**
+     * The page's canvases as one picture, in the order the page holds them, one under another ({width, height, then the pixels},
+     * KeptCheck.alike()'s form; the empty part of a narrower canvas's row is nought): what no signature reads - the Rankings
+     * table's tiles and its rank line. A canvas is a few hundred pixels tall where the page is thousands, so this can be taken at
+     * every choice; a snapshot of the whole page at each of the Rankings tab's choices wore out the renderer's texture pool on its
+     * long list, and every snapshot after it failed (a NullPointerException in D3DTexture on the render thread, the run of 2026-11-06).
+     */
+    public int[] canvasPixels() {
+        List<javafx.scene.canvas.Canvas> found = new ArrayList<>();
+        each(column, n -> {
+            if (n instanceof javafx.scene.canvas.Canvas c && c.isVisible() && c.getWidth() >= 1 && c.getHeight() >= 1) found.add(c);
+        });
+        List<int[]> shots = new ArrayList<>();
+        int w = 0, h = 0;
+        for (javafx.scene.canvas.Canvas c : found) {
+            WritableImage img = c.snapshot(null, null);
+            int cw = (int) img.getWidth(), ch = (int) img.getHeight();
+            int[] px = new int[cw * ch];
+            img.getPixelReader().getPixels(0, 0, cw, ch, PixelFormat.getIntArgbInstance(), px, 0, cw);
+            shots.add(new int[]{cw, ch});
+            shots.add(px);
+            w = Math.max(w, cw);
+            h += ch;
+        }
+        int[] out = new int[2 + w * h];
+        out[0] = w;
+        out[1] = h;
+        int row = 0;
+        for (int i = 0; i < shots.size(); i += 2) {
+            int cw = shots.get(i)[0], ch = shots.get(i)[1];
+            int[] px = shots.get(i + 1);
+            for (int y = 0; y < ch; y++) System.arraycopy(px, y * cw, out, 2 + (row + y) * w, cw);
+            row += ch;
+        }
+        return out;
+    }
+
+    /** The first measure line on the Rankings tab's measures column that is not the one shown (the shown one is lit and has no hover): an HBox with a mouse-entered and a mouse-exited. */
+    private Node rankingsLine() {
+        return find(column, HBox.class, h -> h.getOnMouseEntered() != null && h.getOnMouseExited() != null && h.getOnMouseClicked() != null
+                && h.getStyle() != null && h.getStyle().contains("-fx-padding: 3 4 3 8; -fx-cursor: hand;"));
+    }
+
+    /** The Rankings tab's measure line under the pointer: hoverKept()'s test, on the first line that is not lit (see hoverLook()). ABSENT when the page has none. */
+    public String hoverRankingsLine(Runnable redraw) throws Exception {
+        return hoverLook(this::rankingsLine, redraw);
+    }
+
+    /** The table's picture (the rows are painted on canvases, with one region under them for the row the pointer is over), or null. */
+    private Pane rankingsRows() {
+        return find(column, Pane.class, p -> "RowsPicture".equals(p.getClass().getSimpleName()));
+    }
+
+    /**
+     * The pointer moved over the first row of the Rankings table that lights under it, the page drawn kept again (`redraw`): the picture is the
+     * same node and the same row is lit, with no mouse-moved sent (a pointer that has not moved sends none); then the pointer gone with no
+     * mouse-exited (a page torn down swallows the exits) and the page drawn again: no row is lit. Null when so; else what differed. ABSENT
+     * when the page has no table.
+     */
+    public String hoverRankingsRows(Runnable redraw) throws Exception {
+        Pane rows = rankingsRows();
+        if (rows == null) return ABSENT;
+        Region lit = find(rows, Region.class, r -> r != rows && r.isMouseTransparent() && !r.isManaged());
+        if (lit == null) return "the table's picture has no region for the lit row";
+        hover(rows, true);
+        double at = -1;
+        int count = (int) Math.round(rows.getPrefHeight() / RankingsScreen.ROW_H);
+        for (int i = 0; i < count && at < 0; i++) {
+            double y = (i + .5) * RankingsScreen.ROW_H;
+            fireMouse(rows, javafx.scene.input.MouseEvent.MOUSE_MOVED, 40, y, javafx.scene.input.MouseButton.NONE, 0);
+            if (lit.isVisible()) at = lit.getLayoutY();
+        }
+        if (at < 0) {
+            hover(rows, false);
+            return "no row of the table lights under the pointer in this city (" + count + " rows), so there is no look to keep";
+        }
+        redraw.run();
+        passes();
+        if (rankingsRows() != rows) return "the table's picture under the pointer was handed away or made new by the redraw";
+        if (!lit.isVisible()) return "under a still pointer the draw left the row unlit";
+        if (lit.getLayoutY() != at) return "under a still pointer the draw lit the row at " + lit.getLayoutY() + " where the pointer is, at " + at;
+        hover(rows, false);
+        redraw.run();
+        passes();
+        if (rankingsRows() != rows) return "the table's picture the pointer left was handed away or made new by the redraw";
+        if (lit.isVisible()) return "the pointer gone, the draw left a row lit";
+        return null;
+    }
+
+    /* =====================================================================
+       THE RANKINGS TAB (KP7, slice B): the tab as it opens, kept and built new, the hands on what reshapes it (a board, the money, the
+       prices and the conversion, Now / Your age, a measure, a filter and a view, a pin, a place's drawer), the read of the saved
+       cities and the real show method
+       ===================================================================== */
+
+    /**
+     * The Rankings tab as a Page, as the screen draws it from its pool: it opens on GDP and the full list, Real world 2025 in the real
+     * US dollar, per year and at this month's rate, the first six measures pinned, nothing folded open and no drawer. The saved cities
+     * the screen has read stay (they are the folder's, not the page's).
+     */
+    public Page rankings() {
+        RankingsScreen s = ui.rankingsScreen;
+        return new Page("the Rankings tab", "showRankingsMenu", () -> s.pool, pool -> timed(pool, s::drawPage), () -> {
+            s.forget();
+            s.settings = ham.citybuildersim.Rankings.Settings.OPENING;
+            s.measure = RankingsScreen.OPENS_ON;
+            s.aroundYou = false;
+            s.filter = RankingsScreen.Filter.ALL;
+            s.pinned.clear();
+            s.pinned.addAll(RankingsScreen.PINNED_AT_FIRST);
+            s.drawer = null;
+            s.browseAll = false;
+            s.atAge = false;
+        });
+    }
+
+    /** The measures of the file, by their key, in the file's order: the ones the tab can show. */
+    public static List<String> rankingsMeasures() {
+        List<String> out = new ArrayList<>();
+        for (ham.citybuildersim.WorldMeasures.Measure m : ham.citybuildersim.WorldMeasures.load().measures()) out.add(m.key());
+        return out;
+    }
+
+    /** Whether the measure ranks on Real world 2025 against real places (false: only the player's cities rank on it). */
+    public static boolean rankingsSourced(String key) {
+        ham.citybuildersim.WorldMeasures.Measure m = ham.citybuildersim.WorldMeasures.load().measure(key);
+        return m != null && m.sourced();
+    }
+
+    /** The boards, by name: Real world 2025 and Your world. */
+    public static List<String> rankingsBoards() {
+        return enumNames(ham.citybuildersim.Rankings.Board.values());
+    }
+
+    /** The moneys, by name: the city's, the game's US dollar and the real one. */
+    public static List<String> rankingsMoneys() {
+        return enumNames(ham.citybuildersim.Rankings.Money.values());
+    }
+
+    /** The prices, by name: per year and static. */
+    public static List<String> rankingsPrices() {
+        return enumNames(ham.citybuildersim.Rankings.Prices.values());
+    }
+
+    /** The conversions, by name: this month's rate, constant 2015 and PPP. */
+    public static List<String> rankingsConverts() {
+        return enumNames(ham.citybuildersim.Rankings.Convert.values());
+    }
+
+    /** The filters of the table, by name: All, Nations, Cities, Your size and Your cities. */
+    public static List<String> rankingsFilters() {
+        return enumNames(RankingsScreen.Filter.values());
+    }
+
+    private static List<String> enumNames(Enum<?>[] values) {
+        List<String> out = new ArrayList<>();
+        for (Enum<?> e : values) out.add(e.name());
+        return out;
+    }
+
+    /** Whether the city has nations of its own, so that Your world is a board it can show (else the screen draws Real world 2025 in its place). */
+    public boolean rankingsHasNations() {
+        return ui.game.getNations() != null;
+    }
+
+    /** The measure shown, by its key, as a line on the measures column or a pinned rank on the card would show it. */
+    public void rankingsMeasure(String key) {
+        ui.rankingsScreen.measure = key;
+    }
+
+    /** The board picked, by name, as its chip would (the money, the prices and the conversion as they are). */
+    public void rankingsBoard(String board) {
+        RankingsScreen s = ui.rankingsScreen;
+        s.settings = new ham.citybuildersim.Rankings.Settings(ham.citybuildersim.Rankings.Board.valueOf(board), s.settings.money(), s.settings.prices(), s.settings.convert());
+    }
+
+    /** The money picked, by name, as its chip would. */
+    public void rankingsMoney(String money) {
+        RankingsScreen s = ui.rankingsScreen;
+        s.settings = new ham.citybuildersim.Rankings.Settings(s.settings.board(), ham.citybuildersim.Rankings.Money.valueOf(money), s.settings.prices(), s.settings.convert());
+    }
+
+    /** The prices picked, by name, as its chip would (they move only the saved cities' rows, and are locked in other cases). */
+    public void rankingsPrice(String prices) {
+        RankingsScreen s = ui.rankingsScreen;
+        s.settings = new ham.citybuildersim.Rankings.Settings(s.settings.board(), s.settings.money(), ham.citybuildersim.Rankings.Prices.valueOf(prices), s.settings.convert());
+    }
+
+    /** The conversion picked, by name, as its chip would. */
+    public void rankingsConvert(String convert) {
+        RankingsScreen s = ui.rankingsScreen;
+        s.settings = new ham.citybuildersim.Rankings.Settings(s.settings.board(), s.settings.money(), s.settings.prices(), ham.citybuildersim.Rankings.Convert.valueOf(convert));
+    }
+
+    /** The filter picked, by name, as its chip would. */
+    public void rankingsFilter(String filter) {
+        ui.rankingsScreen.filter = RankingsScreen.Filter.valueOf(filter);
+    }
+
+    /** Full list or Around you, as its chip would put it. */
+    public void rankingsAround(boolean around) {
+        ui.rankingsScreen.aroundYou = around;
+    }
+
+    /** Your cities at Now (false) or Your age (true), as its chip would put it. */
+    public void rankingsAtAge(boolean atAge) {
+        ui.rankingsScreen.atAge = atAge;
+    }
+
+    /** The measures column folded to the pinned and the group shown (false) or opened on every group (true), as "Browse all" would put it. */
+    public void rankingsBrowseAll(boolean all) {
+        ui.rankingsScreen.browseAll = all;
+    }
+
+    /** A measure pinned or unpinned, by its key, as the pin on its line would. */
+    public void rankingsPin(String key, boolean on) {
+        if (on) ui.rankingsScreen.pinned.add(key);
+        else ui.rankingsScreen.pinned.remove(key);
+    }
+
+    /** A place's drawer opened, by its id (a nation's or a region's in the file, "city", or a saved city's "saved:" and its slot), as its row or a neighbour on the card would; null closes it. */
+    public void rankingsDrawer(String place) {
+        ui.rankingsScreen.drawer = place;
+    }
+
+    /** The ids a drawer can be opened on: the city, the file's first nation and first region, and the saved cities the screen has read. */
+    public List<String> rankingsDrawers() {
+        List<String> out = new ArrayList<>();
+        out.add(ham.citybuildersim.Rankings.PLACE_CITY);
+        ham.citybuildersim.WorldMeasures.Place nation = null, region = null;
+        for (ham.citybuildersim.WorldMeasures.Place p : ham.citybuildersim.WorldMeasures.load().places()) {
+            if (p.kind() == ham.citybuildersim.WorldMeasures.Kind.NATION && nation == null) nation = p;
+            if (p.kind() != ham.citybuildersim.WorldMeasures.Kind.NATION && region == null) region = p;
+        }
+        if (nation != null) out.add(nation.id());
+        if (region != null) out.add(region.id());
+        ham.citybuildersim.SavedCities saved = ui.rankingsScreen.saved;
+        if (saved != null) for (ham.citybuildersim.Rankings.Saved sv : saved.now()) out.add(sv.id());
+        return out;
+    }
+
+    /**
+     * The city saved into slot 10 of the folder it plays in, so that the Your cities board has a row to read. Refused (false) for the player's own
+     * save folder: only a scratch folder (GameFiles.scratch) is ever written, and only its slot 10.
+     */
+    public boolean rankingsSaveSlot10() {
+        ham.citybuildersim.GameFiles files = ui.game.getGameFiles();
+        if (files.getDirectory().equals(ham.citybuildersim.GameFiles.defaultDirectory())) return false;
+        return ui.game.saveGame(10, "KP7 bench").ok;
+    }
+
+    /** A read of the saved cities started on the screen's worker, as an entry to the tab starts one: its answer comes back through the FX thread (see rankingsReadLanded()). */
+    public void rankingsRead() {
+        ui.rankingsScreen.readSaved();
+    }
+
+    /** Whether a read has landed: none is on the worker and the screen holds a snapshot. Asked from the FX thread, between sleeps of the caller's, never waited for on it. */
+    public boolean rankingsReadLanded() {
+        RankingsScreen s = ui.rankingsScreen;
+        return !s.reading && s.saved != null;
+    }
+
+    /** How many saved cities the screen's snapshot puts on the board (0 before the first read has landed). */
+    public int rankingsSavedOnBoard() {
+        ham.citybuildersim.SavedCities saved = ui.rankingsScreen.saved;
+        return saved == null ? 0 : saved.now().size();
+    }
+
+    /** The snapshot of the saved cities let go, as a tab not yet entered has it ("Your cities (reading...)" and no saved row). */
+    public void rankingsUnread() {
+        ui.rankingsScreen.saved = null;
+    }
+
+    /** The Rankings tab shown through its real show method, as the rail's tab or a month landing shows it (the chrome, then the page kept). */
+    public void showRankings() {
+        ensureWindow();
+        ui.rankingsScreen.showRankingsMenu();
+    }
+
+    /** The Rankings tab forgotten, as another city opened would leave it: nothing kept, nothing just landed. */
+    public void forgetRankings() {
+        ui.rankingsScreen.forget();
+    }
+
+    /* =====================================================================
+       HOUSEHOLD MONEY (KP7, slice A): People's second page, kept and built new, the hands on what reshapes it (the view, a cell of
+       the grid opened by its key, the city's month's statement), the page laid out narrower than the books sit beside the grid at,
+       and the real show method
+       ===================================================================== */
+
+    /** Household money as it opens: no cell open, the view "One household", the city's month's statement folded. */
+    public Page householdMoney() {
+        return householdMoney("Household money");
+    }
+
+    /** ...under a name of the harness's own. */
+    public Page householdMoney(String name) {
+        PeopleScreen s = ui.peopleScreen;
+        return new Page(name, "showHouseholdMenu", () -> s.moneyPool, pool -> timed(pool, s::drawHousehold), () -> {
+            s.forget();
+            s.openCell = "";
+            s.householdPerFamily = true;
+            s.revealOpened = false;
+            s.detailsOpen.remove("statement");
+            householdColumnWidth(0);
+        });
+    }
+
+    /** The page's two views, in the strip's order. */
+    public static List<String> householdViews() {
+        return List.of("One household", "All of them");
+    }
+
+    /** The view picked, as the strip's chip would put it (the next draw shows it). */
+    public void householdView(String view) {
+        ui.peopleScreen.householdPerFamily = "One household".equals(view);
+    }
+
+    /**
+     * The cells of the grid that can be opened on the city as it is, by the key the grid opens them under, in the grid's order: a
+     * family's cell with anybody in it ("tier:SHAPE", the tier's number), then the rows below the rule ("OUT:" and the ledger's key -
+     * the retired, the out of work, the students, the orphans, the prison).
+     */
+    public List<String> householdCells() {
+        ham.citybuildersim.HouseholdAccounts hh = ui.game.getHouseholds();
+        ham.citybuildersim.HouseholdBalance bal = ui.game.getHouseholdBalance();
+        ham.citybuildersim.FamilyModel families = ui.game.getFamilies();
+        List<String> out = new ArrayList<>();
+        for (ham.citybuildersim.FamilyStructure shape : ham.citybuildersim.FamilyStructure.values()) {
+            if (shape.isRetired()) continue;
+            for (int t = 0; t < ham.citybuildersim.HouseholdAccounts.RETIRED; t++) {
+                if (hh.statementFor(families, shape, ham.citybuildersim.PayTier.values()[t]).households() >= .5) out.add(t + ":" + shape.name());
+            }
+        }
+        for (ham.citybuildersim.Household h : ui.peopleScreen.belowTheRule(bal, families)) out.add("OUT:" + h.key());
+        return out;
+    }
+
+    /** A cell of the grid opened by its key (see householdCells()), or none ("" - the quiet books), as a click on it would (the next draw shows it). */
+    public void householdCell(String key) {
+        ui.peopleScreen.openCell = key;
+        ui.peopleScreen.revealOpened = !key.isEmpty();
+    }
+
+    /** The cell the grid has open now: a draw closes one whose households have gone, so this is the answer after a draw. */
+    public String householdOpenCell() {
+        return ui.peopleScreen.openCell;
+    }
+
+    /** The city's month's statement ("the month as a statement") opened or closed, as a click on its toggle would. */
+    public void householdStatement(boolean open) {
+        fold(ui.peopleScreen.detailsOpen, "statement", open);
+    }
+
+    /**
+     * The menu column laid out `width` wide (its side padding takes the rest of WIDTH) or, for 0 or less, at WIDTH again: the books
+     * sit beside the grid from PeopleScreen.BESIDE and stack under it below that. The next pass lays the page out at it.
+     */
+    public void householdColumnWidth(double width) {
+        double side = width <= 0 ? 0 : Math.max(0, (WIDTH - width) / 2);
+        column.setPadding(new Insets(8, side, 14, side));
+    }
+
+    /** Whether the open cell's books sit beside the grid on the page as laid out, or null when the page has no books pane. */
+    public Boolean householdBeside() {
+        List<PeopleScreen.Books> found = new ArrayList<>();
+        each(column, n -> {
+            if (n instanceof PeopleScreen.Books b) found.add(b);
+        });
+        return found.isEmpty() ? null : found.get(0).beside(found.get(0).getWidth());
+    }
+
+    /** Household money shown through its real show method, as the rail's tab or a month landing shows it (the chrome, then the page kept). */
+    public void showHousehold() {
+        ensureWindow();
+        ui.peopleScreen.showHouseholdMenu();
+    }
+
+    /** Household money forgotten, as another city opened would leave it: nothing kept (People's page too, which shares the screen's forget()). */
+    public void forgetHousehold() {
+        ui.peopleScreen.forget();
+    }
 }

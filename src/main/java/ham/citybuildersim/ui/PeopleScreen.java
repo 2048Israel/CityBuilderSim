@@ -160,10 +160,18 @@ final class PeopleScreen {
     /** The People page's kept nodes (Kept; study UP4): the page is drawn over them on each redraw. */
     final Kept.Pool pool = new Kept.Pool();
 
-    /** A new city or a load: nothing has just landed, and nothing of the last city's page is kept. */
+    /**
+     * Household money's kept nodes (KP7): a pool of its own, since the two pages are two screens to keepMenu() - an
+     * arrival at either forgets the pool it draws from, and People's nodes are never handed to Household money's.
+     */
+    final Kept.Pool moneyPool = new Kept.Pool();
+
+    /** A new city or a load: nothing has just landed, and nothing of the last city's pages is kept. */
     void forget() {
         shownMonth = -1;
         pool.forget();
+        moneyPool.forget();
+        books = null;
     }
 
     void showPopulationInfoMenu() {
@@ -3106,16 +3114,64 @@ final class PeopleScreen {
      * month as a waterfall, and what the households have put by.
      */
     void showHouseholdMenu() {
-        ui.clearMenu("showHouseholdMenu", () -> showHouseholdMenu());
+        // Kept (KP7): the page is drawn over last time's nodes on a redraw, each card and section in a scope of its own;
+        // arriving from People (or the rail) draws it afresh.
+        ui.keepMenu("showHouseholdMenu", () -> showHouseholdMenu(), moneyPool, this::drawHousehold);
+        reveal();
+    }
 
+    /**
+     * The Household money page itself, put in the window through setPage(): what keepMenu runs as a kept draw from
+     * the moneyPool, and what KeptBench runs kept and built new for KeptCheck. The scroll to a cell just opened
+     * (reveal()) is the show method's, after the draw: it waits for the page to be laid out.
+     */
+    void drawHousehold() {
         HouseholdAccounts hh = ui.game.getHouseholds();
         HouseholdBalance bal = ui.game.getHouseholdBalance();
         FamilyModel families = ui.game.getFamilies();
 
         VBox page = widePage();
-        page.getChildren().add(pageHead("People", Palette.PEOPLE, this::showPopulationInfoMenu,
-                "Household money", IN_DOLLARS, pageChips(false)));
+        page.getChildren().add(Kept.scope("head", () -> pageHead("People", Palette.PEOPLE, this::showPopulationInfoMenu,
+                "Household money", IN_DOLLARS, pageChips(false))));
+        page.getChildren().add(Kept.scope("vitals", this::moneyVitals));
+        page.getChildren().add(Kept.scope("verdict", this::verdictRow));
 
+        // The grid is a scope, and the open cell's books a scope keyed by the cell: another cell opened is drawn from
+        // nodes of its own, not over the last one's (the quiet books are the key "").
+        VBox grid = Kept.scope("grid", () -> affordabilityGrid(hh, bal, families));
+        VBox[] opened = new VBox[1];
+        javafx.scene.Node panel = Kept.scope("books:" + openCell, () -> {
+            opened[0] = openStatement(hh, bal, families);
+            return opened[0] != null ? opened[0] : quietBooks();
+        });
+        books = Kept.of(Books.class, Books::new);
+        books.set(grid, panel);
+        page.getChildren().add(books);
+        hookBooks();
+        if (revealOpened) {
+            revealTop = grid;
+            revealBottom = opened[0];
+            revealOpened = false;
+        }
+
+        page.getChildren().addAll(
+                Kept.scope("short head", () -> sectionHead("WHO GOES SHORT, AND WHY",
+                        hint("the two hungers, and every kind of household's baskets"))),
+                Pieces.whoGoesWithout(ui.game,
+                        () -> ui.sectorScreen.openSectorBooks(ui.game.getSectors().retail(), "Operations")),
+                Kept.scope("short rows", this::goesShortRows),
+                Kept.scope("month head", () -> sectionHead("THE CITY'S MONTH",
+                        hint("every household together, from the wages to what was saved"))),
+                Kept.scope("month", () -> cityMonthCard(hh)),
+                Kept.scope("put by head", () -> sectionHead("WHAT THEY HAVE PUT BY", hint("every household together"))),
+                Kept.scope("put by", () -> putByCards(bal)));
+        page.getChildren().addAll(Kept.scope("put by chips", () -> putByChips(bal, families)));
+
+        ui.setPage(page);
+    }
+
+    /** The four money vitals as a bar, centred. */
+    private VBox moneyVitals() {
         Cell[] cells = moneyCells();
         VBox[] drawn = new VBox[cells.length];
         for (int i = 0; i < cells.length; i++) {
@@ -3124,52 +3180,35 @@ final class PeopleScreen {
                     : limitCell(c.label(), c.value(), c.note(), c.tone(), c.where(),
                             () -> ui.buildScreen.openCategory(BuildAdvice.SHOPS));
         }
-        VBox vitals = new VBox(vitalsBar(drawn));
+        VBox vitals = Kept.column(0, vitalsBar(drawn));
         vitals.setAlignment(Pos.CENTER);
-        page.getChildren().add(vitals);
+        return vitals;
+    }
 
+    /** The verdict over the grid, its chip and its words, and the two chips that say one household or all of them. */
+    private HBox verdictRow() {
         Verdict v = verdict();
-        HBox verdictLine = new HBox(Palette.GAP, chip(v.word(), v.tone()),
-                infoLine(v.words(), v.whole(), false, Palette.SIZE_BODY, Palette.TEXT_BODY, 760));
-        verdictLine.setAlignment(Pos.CENTER_LEFT);
+        HBox verdictLine = Kept.scope("line", () -> {
+            HBox line = Kept.row(Palette.GAP, chip(v.word(), v.tone()),
+                    infoLine(v.words(), v.whole(), false, Palette.SIZE_BODY, Palette.TEXT_BODY, 760));
+            line.setAlignment(Pos.CENTER_LEFT);
+            return line;
+        });
         HBox.setHgrow(verdictLine, Priority.ALWAYS);
-        javafx.scene.layout.FlowPane views = chipStrip(new String[] {"One household", "All of them"},
-                householdPerFamily ? "One household" : "All of them", Palette.SIZE_LABEL, name -> {
-                    householdPerFamily = "One household".equals(name);
-                    showHouseholdMenu();
-                });
-        views.setAlignment(Pos.CENTER_RIGHT);
-        views.setPrefWrapLength(240);
-        views.setMinWidth(Region.USE_PREF_SIZE);
-        HBox verdictRow = new HBox(Palette.GAP_LOOSE, verdictLine, views);
-        verdictRow.setAlignment(Pos.CENTER_LEFT);
-        page.getChildren().add(verdictRow);
-
-        VBox grid = affordabilityGrid(hh, bal, families);
-        VBox opened = openStatement(hh, bal, families);
-        javafx.scene.Node panel = opened != null ? opened : quietBooks();
-        books = new Books(grid, panel);
-        page.getChildren().add(books);
-        hookBooks();
-        if (revealOpened) {
-            revealTop = grid;
-            revealBottom = opened;
-            revealOpened = false;
-        }
-
-        page.getChildren().addAll(
-                sectionHead("WHO GOES SHORT, AND WHY", hint("the two hungers, and every kind of household's baskets")),
-                Pieces.whoGoesWithout(ui.game,
-                        () -> ui.sectorScreen.openSectorBooks(ui.game.getSectors().retail(), "Operations")),
-                goesShortRows(),
-                sectionHead("THE CITY'S MONTH", hint("every household together, from the wages to what was saved")),
-                cityMonthCard(hh),
-                sectionHead("WHAT THEY HAVE PUT BY", hint("every household together")),
-                putByCards(bal));
-        page.getChildren().addAll(putByChips(bal, families));
-
-        ui.rootMenu.getChildren().add(page);
-        reveal();
+        javafx.scene.layout.FlowPane views = Kept.scope("views", () -> {
+            javafx.scene.layout.FlowPane strip = chipStrip(new String[] {"One household", "All of them"},
+                    householdPerFamily ? "One household" : "All of them", Palette.SIZE_LABEL, name -> {
+                        householdPerFamily = "One household".equals(name);
+                        showHouseholdMenu();
+                    });
+            strip.setAlignment(Pos.CENTER_RIGHT);
+            strip.setPrefWrapLength(240);
+            strip.setMinWidth(Region.USE_PREF_SIZE);
+            return strip;
+        });
+        HBox row = Kept.row(Palette.GAP_LOOSE, verdictLine, views);
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
     }
 
     /** One kind of household's groceries at the last sale, worked out without drawing it (pure: the probe reads them). */
@@ -3202,10 +3241,11 @@ final class PeopleScreen {
                     List.of(r.gotWords(), r.chip()), r.name() + ": " + r.gotWords() + (r.gotWords().startsWith("got") ? " needed" : ""), null, null, null, null));
         }
         VBox c = card(4);
+        // Kept (KP7): the words and the bars are each a scope of their own, so one coming where the other was shifts nothing.
         if (ranked.isEmpty()) {
-            c.getChildren().add(words("Nobody needed a basket at the last sale.", Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+            c.getChildren().add(Kept.scope("nobody", () -> words("Nobody needed a basket at the last sale.", Palette.SIZE_LABEL, Palette.TEXT_MUTED)));
         } else {
-            c.getChildren().add(Pieces.rankBars(ranked, 1, new double[] {150, 200}, 0, new java.util.HashSet<>(), () -> { }));
+            c.getChildren().add(Kept.scope("bars", () -> Pieces.rankBars(ranked, 1, new double[] {150, 200}, 0, new java.util.HashSet<>(), () -> { })));
         }
         return c;
     }
@@ -3226,13 +3266,20 @@ final class PeopleScreen {
      * below that.
      */
     static final class Books extends javafx.scene.layout.Pane {
-        private final VBox grid;
-        private final javafx.scene.Node panel;
+        private VBox grid;
+        private javafx.scene.Node panel;
 
-        Books(VBox grid, javafx.scene.Node panel) {
+        /** A picture on a kept page (KP7): made empty through Kept.of, and told its two children by set(). */
+        Books() { }
+
+        /**
+         * The grid and the books it is told to lay out, put in as its children only where they differ (a layout is
+         * asked for then; a month that changes neither the nodes nor which are there lays out as its parts ask).
+         */
+        void set(VBox grid, javafx.scene.Node panel) {
             this.grid = grid;
             this.panel = panel;
-            getChildren().addAll(grid, panel);
+            if (!Kept.same(getChildren(), List.of(grid, panel))) getChildren().setAll(grid, panel);
         }
 
         boolean beside(double w) { return w >= BESIDE; }
@@ -3347,16 +3394,18 @@ final class PeopleScreen {
                 ? "Spending more than they earn — nothing in the model funds this."
                 : String.format("%s saved since founding. A record, not a pot.",
                         tightMoney(toDollars(hh.getCumulativeSaving())));
+        // Kept (KP7): a closed fold builds nothing (its statement is a scope drawn only while it is open), as People's folds.
+        VBox statement = detailsOpen.contains("statement") ? Kept.scope("statement", () -> cityStatement(hh)) : null;
         VBox c = card(6);
         c.getChildren().addAll(fall, words(end, Palette.SIZE_LABEL, Palette.TEXT_MUTED),
-                details("statement", "the month as a statement", cityStatement(hh)));
+                details("statement", "the month as a statement", statement));
         return c;
     }
 
     /** The city's month as the statement it was, with the bank's account fees on a line of their own (0.7.27). */
     VBox cityStatement(HouseholdAccounts hh) {
         TaxPolicy policy = ui.game.getEconomyManager().getTaxPolicy();
-        VBox column = new VBox(0);
+        VBox column = Kept.column(0);
         column.getChildren().add(statementLine("Wages earned",
                 tightMoney(toDollars(hh.getWages()), false)));
         column.getChildren().add(statementLine(
@@ -3426,27 +3475,27 @@ final class PeopleScreen {
     javafx.scene.layout.GridPane putByCards(HouseholdBalance bal) {
         javafx.scene.layout.GridPane row = equalColumns(4, TILE_GAP);
         double saved = bal.totalSavings(), owed = bal.totalDebt(), dividends = bal.totalDividends();
-        row.add(statCard("SAVED", tightMoney(toDollars(saved), false), saved > 0 ? Palette.GOOD : Palette.TEXT_HEAD,
-                "put by, every household together", null), 0, 0);
-        row.add(statCard("OWED", tightMoney(toDollars(owed), false), owed > 0 ? Palette.BAD : Palette.TEXT_HEAD,
-                "to lenders · interest " + tightMoney(toDollars(bal.totalInterest()), false) + " this month", null), 1, 0);
-        row.add(statCard("DIVIDENDS THIS MONTH", tightMoney(toDollars(dividends), false),
+        row.add(Kept.scope("SAVED", () -> statCard("SAVED", tightMoney(toDollars(saved), false), saved > 0 ? Palette.GOOD : Palette.TEXT_HEAD,
+                "put by, every household together", null)), 0, 0);
+        row.add(Kept.scope("OWED", () -> statCard("OWED", tightMoney(toDollars(owed), false), owed > 0 ? Palette.BAD : Palette.TEXT_HEAD,
+                "to lenders · interest " + tightMoney(toDollars(bal.totalInterest()), false) + " this month", null)), 1, 0);
+        row.add(Kept.scope("DIVIDENDS", () -> statCard("DIVIDENDS THIS MONTH", tightMoney(toDollars(dividends), false),
                 dividends > 0 ? Palette.GOOD : Palette.TEXT_HEAD,
                 "over the city's life " + tightMoney(toDollars(ui.game.getEquity().getLifetimeDividendsHome())),
-                null), 2, 0);
+                null)), 2, 0);
         double bought = ui.game.getHouseholdCarsBought();
-        row.add(statCard("CARS", formatter.format(Math.round(bal.totalCars())), Palette.TEXT_HEAD,
+        row.add(Kept.scope("CARS", () -> statCard("CARS", formatter.format(Math.round(bal.totalCars())), Palette.TEXT_HEAD,
                 String.format("%.0f%% of households", bal.carsPerHousehold() * 100)
                         + (bought > 0 ? " · " + formatter.format(Math.round(bought)) + " bought this month for "
                                 + tightMoney(toDollars(ui.game.getHouseholdCarSpend()), false) : ""),
-                CARS_INFO), 3, 0);
+                CARS_INFO)), 3, 0);
         return row;
     }
 
     /** The two chips under the cards: who is at the credit ceiling, and who flatshares because one wage won't cover a home - each opens the cell. */
     List<javafx.scene.Node> putByChips(HouseholdBalance bal, FamilyModel families) {
         List<javafx.scene.Node> out = new ArrayList<>();
-        javafx.scene.layout.FlowPane chips = new javafx.scene.layout.FlowPane(Palette.GAP, Palette.GAP_TIGHT);
+        javafx.scene.layout.FlowPane chips = Kept.flow(Palette.GAP, Palette.GAP_TIGHT);
         // Every cell keeps its own books, so this can be said by household rather than by tier:
         // who the bank has stopped lending to, and who has been discharged and is waiting out the year.
         double cutOff = 0, lockedOut = 0;
@@ -3459,9 +3508,11 @@ final class PeopleScreen {
         }
         if (cutOff + lockedOut >= .5) {
             Household open = worst;
-            chips.getChildren().add(stepChip(String.format("%s at their credit ceiling · %s discharged ›",
-                    formatter.format(Math.round(cutOff)), formatter.format(Math.round(lockedOut))),
-                    () -> toBooks(open == null ? null : gridKey(open)), true));
+            // Kept (KP7): each chip is a scope of its own, so one that comes or goes shifts nothing.
+            final double cut = cutOff, locked = lockedOut;
+            chips.getChildren().add(Kept.scope("credit", () -> stepChip(String.format("%s at their credit ceiling · %s discharged ›",
+                    formatter.format(Math.round(cut)), formatter.format(Math.round(locked))),
+                    () -> toBooks(open == null ? null : gridKey(open)), true)));
         }
         double priced = families == null ? 0 : families.getPricedOutShares();
         if (priced >= .5) {
@@ -3471,8 +3522,8 @@ final class PeopleScreen {
                         PayTier.values()[biggest])) biggest = t.ordinal();
             }
             String key = biggest + ":" + FamilyStructure.SHARED_ADULTS.name();
-            chips.getChildren().add(stepChip(String.format("%s flatsharing because one wage won't cover a home ›",
-                    formatter.format(Math.round(priced))), () -> toBooks(key), true));
+            chips.getChildren().add(Kept.scope("flatshare", () -> stepChip(String.format("%s flatsharing because one wage won't cover a home ›",
+                    formatter.format(Math.round(priced))), () -> toBooks(key), true)));
         }
         if (!chips.getChildren().isEmpty()) out.add(chips);
         return out;
@@ -3489,7 +3540,11 @@ final class PeopleScreen {
     VBox affordabilityGrid(HouseholdAccounts hh, HouseholdBalance bal,
                                    FamilyModel families) {
 
-        javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
+        // Kept (KP7): the grid hands back its column constraints on being handed back, and takes them again here, so they
+        // are set every draw; each row is a scope keyed by what it is (a family shape, the tier row, a ledger's key, a
+        // section's caption) and each cell inside it keyed by its tier, so a row that comes or goes hands nobody's
+        // cell to a neighbour.
+        javafx.scene.layout.GridPane grid = Kept.grid();
         grid.setHgap(3);
         grid.setVgap(3);
 
@@ -3504,31 +3559,13 @@ final class PeopleScreen {
             grid.getColumnConstraints().add(spec);
         }
 
-        grid.add(gridCell("household", Palette.TEXT_LABEL, Palette.SIZE_CAPTION, false), 0, 0);
-        for (int t = 0; t < HouseholdAccounts.RETIRED; t++) {
-            Label head = gridCell(hh.getRowLabel(t), Palette.TEXT_LABEL,
-                    Palette.SIZE_CAPTION, true);
-            head.setWrapText(true);
-            /*
-             * A WRAPPED LABEL ALIGNS ITS BOX, NOT ITS LINES. gridCell sets
-             * CENTER_RIGHT, which puts the label at the right of its column;
-             * the text inside it still ran left, so "Senior professional"
-             * broke over two lines flush against the column's LEFT edge and
-             * read as though it had collided with "Professional" next door.
-             */
-            head.setTextAlignment(javafx.scene.text.TextAlignment.RIGHT);
-            /*
-             * ...AND UNDER IT, WHAT ONE EARNER OF THE TIER WAS PAID (0.7.27):
-             * the wage the column's households live on, the same figure
-             * statementFor() divides each cell's wages from.
-             */
-            double paid = hh.wagePerEarner(families, PayTier.values()[t]);
-            Label wage = gridCell(paid > 0 ? tightMoney(toDollars(paid), false) + " a wage" : "no earners",
-                    Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true);
-            VBox heads = new VBox(0, head, wage);
-            heads.setAlignment(Pos.BOTTOM_RIGHT);
-            grid.add(heads, t + 1, 0);
-        }
+        Kept.scope("head", () -> {
+            grid.add(gridCell("household", Palette.TEXT_LABEL, Palette.SIZE_CAPTION, false), 0, 0);
+            for (int t = 0; t < HouseholdAccounts.RETIRED; t++) {
+                final int tier = t;
+                grid.add(Kept.scope(tier, () -> tierHead(hh, families, tier)), t + 1, 0);
+            }
+        });
 
         int line = 1;
         for (FamilyStructure shape : FamilyStructure.values()) {
@@ -3543,33 +3580,32 @@ final class PeopleScreen {
             }
             if (!lived) continue;
 
-            grid.add(gridCell(shape.getLabel(), Palette.TEXT_BODY,
-                    Palette.SIZE_CAPTION, false), 0, line);
+            final int at = line;
+            Kept.scope("shape:" + shape.name(), () -> {
+                grid.add(gridCell(shape.getLabel(), Palette.TEXT_BODY,
+                        Palette.SIZE_CAPTION, false), 0, at);
 
-            for (int t = 0; t < HouseholdAccounts.RETIRED; t++) {
-                grid.add(cashCell(hh, families, shape, PayTier.values()[t], t), t + 1, line);
-            }
+                for (int t = 0; t < HouseholdAccounts.RETIRED; t++) {
+                    final int tier = t;
+                    grid.add(Kept.scope(tier, () -> cashCell(hh, families, shape, PayTier.values()[tier], tier)),
+                            t + 1, at);
+                }
+            });
             line++;
         }
 
         /* THE TIER ITSELF, on the bottom line - the average of the column above
          * it, which is the household nobody actually lives in and the figure the
          * old screen led with. Kept, and kept last. */
-        grid.add(gridCell("every household of that tier", Palette.TEXT_LABEL,
-                Palette.SIZE_CAPTION, false), 0, line);
-        for (int t = 0; t < HouseholdAccounts.RETIRED; t++) {
-            double homes = hh.getRowHouseholds(t);
-            double per = householdPerFamily && homes >= .5 ? homes : 1;
-            double left = toDollars(hh.getRowSaving(t)) / per;
-            Label cell = gridCell(homes < .5 ? "—" : tightMoney(left, !householdPerFamily),
-                    homes < .5 ? Palette.TEXT_LABEL
-                            : left < 0 ? Palette.BAD : Palette.GOOD,
-                    Palette.SIZE_CAPTION, true);
-            cell.setStyle(cell.getStyle() + " -fx-padding: 4 4 4 4;"
-                    + (bal.isGoingShort(t) ? " -fx-border-color: " + Palette.ALERT_EDGE
-                            + "; -fx-border-width: 0 0 2 0;" : ""));
-            grid.add(cell, t + 1, line);
-        }
+        final int tierLine = line;
+        Kept.scope("tier", () -> {
+            grid.add(gridCell("every household of that tier", Palette.TEXT_LABEL,
+                    Palette.SIZE_CAPTION, false), 0, tierLine);
+            for (int t = 0; t < HouseholdAccounts.RETIRED; t++) {
+                final int tier = t;
+                grid.add(Kept.scope(tier, () -> tierCell(hh, bal, tier)), t + 1, tierLine);
+            }
+        });
         line++;
 
         /*
@@ -3589,24 +3625,78 @@ final class PeopleScreen {
          */
         line = otherRows(grid, hh, bal, families, line);
 
-        VBox box = new VBox(grid);
+        VBox box = Kept.column(0, grid);
         box.setStyle("-fx-padding: 2 0 8 0;");
         return box;
     }
 
-    /** A rule and a caption across the matrix, with the (i) that says who is below it: a different kind of household. */
-    int gridSectionRow(javafx.scene.layout.GridPane grid, String caption, int line) {
-        Label head = new Label(caption);
+    /** A tier's head over its column: its name, and under it what one earner of the tier was paid. */
+    private VBox tierHead(HouseholdAccounts hh, FamilyModel families, int t) {
+        Label head = gridCell(hh.getRowLabel(t), Palette.TEXT_LABEL,
+                Palette.SIZE_CAPTION, true);
         head.setWrapText(true);
-        head.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-        HBox row = new HBox(Palette.GAP_TIGHT, head, infoButton(BELOW_THE_RULE, false));
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.setMaxWidth(Double.MAX_VALUE);
-        row.setStyle("-fx-padding: 14 0 3 0;"
-                + " -fx-border-color: " + Palette.EDGE + " transparent transparent transparent;"
-                + " -fx-border-width: 1 0 0 0;");
-        grid.add(row, 0, line);
-        javafx.scene.layout.GridPane.setColumnSpan(row, HouseholdAccounts.RETIRED + 1);
+        /*
+         * A WRAPPED LABEL ALIGNS ITS BOX, NOT ITS LINES. gridCell sets
+         * CENTER_RIGHT, which puts the label at the right of its column;
+         * the text inside it still ran left, so "Senior professional"
+         * broke over two lines flush against the column's LEFT edge and
+         * read as though it had collided with "Professional" next door.
+         */
+        head.setTextAlignment(javafx.scene.text.TextAlignment.RIGHT);
+        /*
+         * ...AND UNDER IT, WHAT ONE EARNER OF THE TIER WAS PAID (0.7.27):
+         * the wage the column's households live on, the same figure
+         * statementFor() divides each cell's wages from.
+         */
+        double paid = hh.wagePerEarner(families, PayTier.values()[t]);
+        Label wage = gridCell(paid > 0 ? tightMoney(toDollars(paid), false) + " a wage" : "no earners",
+                Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true);
+        VBox heads = Kept.column(0, head, wage);
+        heads.setAlignment(Pos.BOTTOM_RIGHT);
+        return heads;
+    }
+
+    /** "Every household of that tier", one tier's cell: the average of the column above it, ringed when the tier is going short. */
+    private Label tierCell(HouseholdAccounts hh, HouseholdBalance bal, int t) {
+        double homes = hh.getRowHouseholds(t);
+        double per = householdPerFamily && homes >= .5 ? homes : 1;
+        double left = toDollars(hh.getRowSaving(t)) / per;
+        return moneyCell(homes < .5 ? "—" : tightMoney(left, !householdPerFamily),
+                homes < .5 ? Palette.TEXT_LABEL
+                        : left < 0 ? Palette.BAD : Palette.GOOD,
+                " -fx-padding: 4 4 4 4;"
+                + (bal.isGoingShort(t) ? " -fx-border-color: " + Palette.ALERT_EDGE
+                        + "; -fx-border-width: 0 0 2 0;" : ""));
+    }
+
+    /**
+     * A figure's cell in the grid (gridCell's, right-aligned) with a style of its own after the figure's: set whole, once,
+     * since a kept cell is never built on the style it was handed back with (KP7).
+     */
+    private static Label moneyCell(String text, String tone, String more) {
+        Label cell = Kept.label(text);
+        cell.setMaxWidth(Double.MAX_VALUE);
+        cell.setAlignment(Pos.CENTER_RIGHT);
+        cell.setStyle(Palette.figureRegular(Palette.SIZE_CAPTION, tone) + more);
+        return cell;
+    }
+
+    /** A rule and a caption across the matrix, with the (i) that says who is below it: a different kind of household. */
+    int gridSectionRow(javafx.scene.layout.GridPane grid, String key, String caption, int line) {
+        // A row of its own (Kept, KP7), keyed by which section it heads: its caption's words change with the pension.
+        Kept.scope(key, () -> {
+            Label head = Kept.label(caption);
+            head.setWrapText(true);
+            head.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+            HBox row = Kept.row(Palette.GAP_TIGHT, head, infoButton(BELOW_THE_RULE, false));
+            row.setAlignment(Pos.CENTER_LEFT);
+            row.setMaxWidth(Double.MAX_VALUE);
+            row.setStyle("-fx-padding: 14 0 3 0;"
+                    + " -fx-border-color: " + Palette.EDGE + " transparent transparent transparent;"
+                    + " -fx-border-width: 1 0 0 0;");
+            grid.add(row, 0, line);
+            javafx.scene.layout.GridPane.setColumnSpan(row, HouseholdAccounts.RETIRED + 1);
+        });
         return line + 1;
     }
 
@@ -3643,7 +3733,7 @@ final class PeopleScreen {
                     hh.statementFor(families, shape, PayTier.values()[0]);
             if (s.households() < .5) continue;
             if (!headed) {
-                line = gridSectionRow(grid, "the retired · no tier, and a pension of "
+                line = gridSectionRow(grid, "retired", "the retired · no tier, and a pension of "
                         + tightMoney(toDollars(hh.getPensionPerSenior()), false)
                         + " a head", line);
                 headed = true;
@@ -3667,7 +3757,7 @@ final class PeopleScreen {
         for (Household own : rest) {
             if (own == null || own.households() < .5) continue;
             if (!headed) {
-                line = gridSectionRow(grid,
+                line = gridSectionRow(grid, "outside",
                         "outside the families · no tier, and no wage to have one", line);
                 headed = true;
             }
@@ -3694,12 +3784,16 @@ final class PeopleScreen {
                          double perHousehold, double homes, int line) {
 
         boolean trouble = own.isCutOff() || hungry(own);
-        grid.add(gridCell(label, trouble ? Palette.BAD_SOFT : Palette.TEXT_BODY,
-                Palette.SIZE_CAPTION, false), 0, line);
+        // A row of its own (Kept, KP7), keyed by the ledger it shows - its key is the one the grid opens it under -
+        // so a household that comes or goes hands its name and its wide cell to nobody else.
+        Kept.scope("OUT:" + own.key(), () -> {
+            grid.add(gridCell(label, trouble ? Palette.BAD_SOFT : Palette.TEXT_BODY,
+                    Palette.SIZE_CAPTION, false), 0, line);
 
-        javafx.scene.Node cell = wideCell(own, perHousehold, homes);
-        grid.add(cell, 1, line);
-        javafx.scene.layout.GridPane.setColumnSpan(cell, HouseholdAccounts.RETIRED);
+            javafx.scene.Node cell = wideCell(own, perHousehold, homes);
+            grid.add(cell, 1, line);
+            javafx.scene.layout.GridPane.setColumnSpan(cell, HouseholdAccounts.RETIRED);
+        });
         return line + 1;
     }
 
@@ -3738,16 +3832,16 @@ final class PeopleScreen {
         String key = "OUT:" + own.key();
         boolean open = key.equals(openCell);
 
-        Label many = new Label(shortNumber(homes) + " of them");
+        Label many = Kept.label(shortNumber(homes) + " of them");
         many.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
 
-        Region gap = new Region();
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
 
-        Label figure = new Label(tightMoney(shown, !householdPerFamily));
+        Label figure = Kept.label(tightMoney(shown, !householdPerFamily));
         figure.setStyle(Palette.figure(Palette.SIZE_CAPTION, tone));
 
-        HBox box = new HBox(8, many, gap, figure);
+        HBox box = Kept.row(8, many, gap, figure);
         box.setAlignment(Pos.CENTER_LEFT);
         box.setMaxWidth(Double.MAX_VALUE);
         box.setStyle("-fx-padding: 4 6 4 6; -fx-cursor: hand;"
@@ -3756,14 +3850,12 @@ final class PeopleScreen {
                 + (open ? " -fx-border-color: " + Palette.ACCENT
                         + "; -fx-border-radius: " + Palette.RADIUS_TIGHT + ";" : ""));
 
-        Tooltip tip = new Tooltip(own.label()
+        Kept.tip(box, own.label()
                 + "\n" + people(own.households()) + " of them"
                 + (own.shape() != null && own.shape().isRetired()
                         ? "\nwhat the pension leaves one of them, after the rent, the fees and the shop a head"
                         : "\nwhat a month leaves one of them, against a full basket")
-                + "\nclick for the month");
-        tip.setShowDelay(Duration.millis(300));
-        Tooltip.install(box, tip);
+                + "\nclick for the month", 300);
 
         box.setOnMouseClicked(e -> {
             openCell = open ? "" : key;
@@ -3787,9 +3879,7 @@ final class PeopleScreen {
         HouseholdAccounts.Statement s = hh.statementFor(families, shape, tier);
 
         if (s.households() < .5) {
-            Label none = gridCell("—", Palette.TEXT_LABEL, Palette.SIZE_CAPTION, true);
-            none.setStyle(none.getStyle() + " -fx-padding: 4 4 4 4;");
-            return none;
+            return moneyCell("—", Palette.TEXT_LABEL, " -fx-padding: 4 4 4 4;");
         }
 
         // statementFor gives ONE household of this shape and tier; multiplied up
@@ -3802,10 +3892,9 @@ final class PeopleScreen {
         String key = tierIndex + ":" + shape.name();
         boolean open = key.equals(openCell);
 
-        Label cell = gridCell(tightMoney(left, !householdPerFamily),
-                s.left() < 0 ? Palette.BAD : Palette.GOOD, Palette.SIZE_CAPTION, true);
-        cell.setStyle(cell.getStyle()
-                + " -fx-padding: 4 4 4 4; -fx-cursor: hand;"
+        Label cell = moneyCell(tightMoney(left, !householdPerFamily),
+                s.left() < 0 ? Palette.BAD : Palette.GOOD,
+                " -fx-padding: 4 4 4 4; -fx-cursor: hand;"
                 + " -fx-background-radius: " + Palette.RADIUS_TIGHT + ";"
                 + " -fx-background-color: rgba("
                 + (s.left() < 0 ? "255,107,107," : "95,214,138,")
@@ -3813,11 +3902,9 @@ final class PeopleScreen {
                 + (open ? " -fx-border-color: " + Palette.ACCENT
                         + "; -fx-border-radius: " + Palette.RADIUS_TIGHT + ";" : ""));
 
-        Tooltip tip = new Tooltip(shape.getLabel() + ", " + hh.getRowLabel(tierIndex)
+        Kept.tip(cell, shape.getLabel() + ", " + hh.getRowLabel(tierIndex)
                 + "\n" + formatter.format(Math.round(s.households())) + " of them"
-                + "\nclick for the month");
-        tip.setShowDelay(Duration.millis(300));
-        Tooltip.install(cell, tip);
+                + "\nclick for the month", 300);
 
         cell.setOnMouseClicked(e -> {
             openCell = open ? "" : key;
@@ -3844,12 +3931,12 @@ final class PeopleScreen {
      */
     VBox basketBlock(Household cell) {
 
-        VBox block = new VBox(0);
+        VBox block = Kept.column(0);
         double wanted = toDollars(cell.want());
         double spent = toDollars(cell.planned());
         if (wanted <= .5 && spent <= .5) return block;
 
-        Label head = new Label("The shopping, and how it was paid for");
+        Label head = Kept.label("The shopping, and how it was paid for");
         head.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL)
                 + " -fx-padding: 10 0 2 0;");
         block.getChildren().add(head);
@@ -3871,7 +3958,7 @@ final class PeopleScreen {
                     tightMoney(shortBy, false), Palette.BAD));
         }
         if (spent < wanted - .5 && shortBy <= .5) {
-            block.getChildren().add(statementNote(
+            block.getChildren().add(note(
                     "Nothing funds the difference: there is no income, nothing put by and "
                     + "nobody to borrow from, so the basket is simply not bought."));
         }
@@ -3911,6 +3998,14 @@ final class PeopleScreen {
        agree because they are the same code, not because somebody kept them in
        step - the rule the rent-units bug taught this codebase.
        ===================================================================== */
+
+    /**
+     * A statement's note under a line, in a scope of its own (Kept, KP7): a note that comes and goes in a panel
+     * shifts no other label, and the notes are one kind, so any of them may be handed to any.
+     */
+    private static Label note(String text) {
+        return Kept.scope("note", () -> statementNote(text));
+    }
 
     /** A cost, printed negative - but a cost of nothing reads "$0", never "-$0". */
     String costMoney(double dollars) {
@@ -3952,10 +4047,13 @@ final class PeopleScreen {
 
     /** The small heading that divides a statement panel into blocks. */
     Label panelBlockHead(String text) {
-        Label head = new Label(text);
-        head.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL)
-                + " -fx-padding: 12 0 2 0;");
-        return head;
+        // A kind of its own (Kept, KP7): the panel's heads are one scope, whichever blocks are there.
+        return Kept.scope("blockHead", () -> {
+            Label head = Kept.label(text);
+            head.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL)
+                    + " -fx-padding: 12 0 2 0;");
+            return head;
+        });
     }
 
     /** How many of them there are, how big each one is, and how much of the city that is. */
@@ -3965,16 +4063,19 @@ final class PeopleScreen {
             allHomes += c.households();
             allPeople += c.people();
         }
-        Label many = new Label(people(cell.households()) + " of them, "
-                + (cell.size() == 1 ? "one person each" : cell.size() + " people each")
-                + "  ·  " + shareOf(cell.households(), allHomes)
-                + " of the city's households, "
-                + shareOf(cell.people(), allPeople) + " of its people");
-        many.setWrapText(true);
-        many.setMaxWidth(STATEMENT - 28);
-        many.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED)
-                + " -fx-padding: 0 0 6 0;");
-        return many;
+        final double homes = allHomes, folk = allPeople;
+        return Kept.scope("who", () -> {
+            Label many = Kept.label(people(cell.households()) + " of them, "
+                    + (cell.size() == 1 ? "one person each" : cell.size() + " people each")
+                    + "  ·  " + shareOf(cell.households(), homes)
+                    + " of the city's households, "
+                    + shareOf(cell.people(), folk) + " of its people");
+            many.setWrapText(true);
+            many.setMaxWidth(STATEMENT - 28);
+            many.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED)
+                    + " -fx-padding: 0 0 6 0;");
+            return many;
+        });
     }
 
     /**
@@ -4051,11 +4152,11 @@ final class PeopleScreen {
                     panel.getChildren().add(statementLine("...and interest on it",
                             tightMoney(toDollars(own.studentInterest()), false), Palette.WARN));
                 }
-                panel.getChildren().add(statementNote("At this month's rate it has "
+                panel.getChildren().add(note("At this month's rate it has "
                         + monthsRun(own.studentDebt() / own.studentRepaid())
                         + " left to run."));
             } else {
-                panel.getChildren().add(statementNote(
+                panel.getChildren().add(note(
                         "Nothing is coming off it: a student loan is only collected out of a wage."));
             }
         }
@@ -4105,7 +4206,7 @@ final class PeopleScreen {
              * what this line is for is WHICH companies, so once there are more
              * than a couple of them that is all it says.
              */
-            panel.getChildren().add(statementNote(
+            panel.getChildren().add(note(
                     held >= Equity.COMPANIES.length
                             ? "A slice of every company in the city."
                             : held >= 3
@@ -4190,7 +4291,7 @@ final class PeopleScreen {
         double shortfall = -toDollars(own.afterFixed() - own.subsistence());
         if (shortfall > .005) {
             double cushion = Math.max(0, put + shares + away + bonds + corporate);
-            panel.getChildren().add(statementNote(cushion > .005
+            panel.getChildren().add(note(cushion > .005
                     ? "Short " + tightMoney(shortfall, false) + " a month, with "
                             + monthsRun(cushion / shortfall) + " of cover behind it."
                     : "Short " + tightMoney(shortfall, false)
@@ -4198,19 +4299,19 @@ final class PeopleScreen {
         }
 
         if (own.isLockedOut()) {
-            panel.getChildren().add(statementNote(String.format(
+            panel.getChildren().add(note(String.format(
                     "Discharged: nothing will lend to them for another %d month%s, and what "
                     + "they cannot pay for they go without.",
                     own.lockout(), own.lockout() == 1 ? "" : "s")));
         } else if (own.isCutOff()) {
-            panel.getChildren().add(statementNote(
+            panel.getChildren().add(note(
                     "At the credit ceiling: what they cannot fund, they go without."));
         } else if (own.isGoingShort()) {
-            panel.getChildren().add(statementNote(
+            panel.getChildren().add(note(
                     "Buying less than they want this month."));
         }
         if (own.evicted() > .5) {
-            panel.getChildren().add(statementNote(people(own.evicted())
+            panel.getChildren().add(note(people(own.evicted())
                     + " of them lost their home this month: the rent went unpaid, and a "
                     + "quarter of those evicted leave the city rather than stay in it."));
         }
@@ -4273,12 +4374,12 @@ final class PeopleScreen {
         for (Household c : bal.cells()) if (c.key().equals(want)) { cell = c; break; }
         if (cell == null || cell.households() < .5) { openCell = ""; return null; }
 
-        VBox panel = new VBox(0);
+        VBox panel = Kept.column(0);
         panel.setMaxWidth(STATEMENT);
         panel.setStyle("-fx-padding: 10 14 12 14;"
                 + Palette.block(Palette.PANEL, Palette.ACCENT));
 
-        Label who = new Label(cell.label());
+        Label who = Kept.label(cell.label());
         who.setStyle(Palette.words(Palette.SIZE_HEADING, Palette.ACCENT)
                 + " -fx-font-weight: bold;");
         panel.getChildren().add(who);
@@ -4298,9 +4399,11 @@ final class PeopleScreen {
         panel.getChildren().add(statementTotal("Left for the shopping",
                 tightMoney(after, false), after < 0 ? Palette.BAD : null));
 
-        panel.getChildren().add(basketBlock(cell));
-        positionBlock(panel, bal, cell);
-        ratioBlock(panel, cell, spend, 0, "The bills take", bills, 0, ate, after - ate);
+        // Kept (KP7): each block is a scope of its own, so one with more lines than last month shifts none of the others'.
+        final Household ledger = cell;
+        panel.getChildren().add(Kept.scope("basket", () -> basketBlock(ledger)));
+        Kept.scope("position", () -> positionBlock(panel, bal, ledger));
+        Kept.scope("ratio", () -> ratioBlock(panel, ledger, spend, 0, "The bills take", bills, 0, ate, after - ate));
         return panel;
     }
 
@@ -4347,12 +4450,12 @@ final class PeopleScreen {
         Household own = bal.cell(shape, tier);
         double left = toDollars(s.left());
 
-        VBox panel = new VBox(0);
+        VBox panel = Kept.column(0);
         panel.setMaxWidth(STATEMENT);
         panel.setStyle("-fx-padding: 10 14 12 14;"
                 + Palette.block(Palette.PANEL, Palette.ACCENT));
 
-        Label who = new Label(shape.getLabel() + "  ·  " + hh.getRowLabel(tierIndex));
+        Label who = Kept.label(shape.getLabel() + "  ·  " + hh.getRowLabel(tierIndex));
         who.setStyle(Palette.words(Palette.SIZE_HEADING, Palette.ACCENT)
                 + " -fx-font-weight: bold;");
         panel.getChildren().add(who);
@@ -4452,11 +4555,11 @@ final class PeopleScreen {
         panel.getChildren().add(statementTotal(left < 0 ? "Short by" : "Left over",
                 tightMoney(left, false), left < 0 ? Palette.BAD : Palette.GOOD));
 
-        HBox bar = flowBar(toDollars(s.tax()), toDollars(s.rent()), toDollars(s.fees()),
-                toDollars(s.shopping()), left, STATEMENT - 28);
+        HBox bar = Kept.scope("bar", () -> flowBar(toDollars(s.tax()), toDollars(s.rent()), toDollars(s.fees()),
+                toDollars(s.shopping()), left, STATEMENT - 28));
         VBox.setMargin(bar, new javafx.geometry.Insets(8, 0, 0, 0));
         panel.getChildren().add(bar);
-        panel.getChildren().add(flowKey());
+        panel.getChildren().add(Kept.scope("key", this::flowKey));
 
         /*
          * ...AND THE HOUSEHOLD'S OWN BOOKS, which are its own since 2026-09-10.
@@ -4480,7 +4583,7 @@ final class PeopleScreen {
             double ledgerTakeHome = toDollars(own.disposable());
             double gap = ledgerTakeHome - (income - taxAll);
             if (Math.abs(gap) > Math.max(1, Math.abs(income - taxAll) * .01)) {
-                panel.getChildren().add(statementNote(String.format(
+                panel.getChildren().add(note(String.format(
                         "The books below are this household's own and they open on %s of "
                         + "take-home, not the %s above - %s apart. The month above is derived "
                         + "from the tier's totals; the ledger was written as the month happened.",
@@ -4488,13 +4591,13 @@ final class PeopleScreen {
                         tightMoney(income - taxAll, false),
                         tightMoney(Math.abs(gap), false))));
             }
-            panel.getChildren().add(basketBlock(own));
-            positionBlock(panel, bal, own);
-            ratioBlock(panel, own, income, taxAll, "Rent takes",
-                    toDollars(s.rent()), feesAll, toDollars(s.shopping()), left);
+            panel.getChildren().add(Kept.scope("basket", () -> basketBlock(own)));
+            Kept.scope("position", () -> positionBlock(panel, bal, own));
+            Kept.scope("ratio", () -> ratioBlock(panel, own, income, taxAll, "Rent takes",
+                    toDollars(s.rent()), feesAll, toDollars(s.shopping()), left));
         }
 
-        VBox holder = new VBox(panel);
+        VBox holder = Kept.column(0, panel);
         holder.setStyle("-fx-padding: 4 0 10 0;");
         return holder;
     }
@@ -4548,9 +4651,9 @@ final class PeopleScreen {
         double out = Math.max(0, tax) + Math.max(0, rent)
                    + Math.max(0, fees) + Math.max(0, shops);
         double span = out + Math.abs(left);
-        if (span <= 0) return new HBox();
+        if (span <= 0) return Kept.scope("none", () -> Kept.row(0));
 
-        HBox bar = new HBox(0);
+        HBox bar = Kept.row(0);
         bar.setPrefWidth(width);
         bar.setMinWidth(width);
         bar.setMaxWidth(width);
@@ -4571,19 +4674,20 @@ final class PeopleScreen {
 
     /** One segment. Zero-width segments are skipped rather than drawn as slivers. */
     Region barPart(double width, String colour, String what) {
-        Region part = new Region();
+        Region part = Kept.region();
         double w = Math.max(0, width);
         part.setPrefWidth(w);
         part.setMinWidth(w);
         part.setMaxWidth(w);
         part.setStyle("-fx-background-color: " + colour + ";");
-        if (w >= 2) Tooltip.install(part, new Tooltip(what));
+        // A tooltip only where the segment shows; Tooltip's own delay (1,000 ms) as before.
+        if (w >= 2) Kept.tip(part, what, 1000);
         return part;
     }
 
     /** The key under the bar, so the colours mean something the first time. */
     HBox flowKey() {
-        HBox key = new HBox(Palette.GAP_LOOSE);
+        HBox key = Kept.row(Palette.GAP_LOOSE);
         key.setAlignment(Pos.CENTER_LEFT);
         key.setStyle("-fx-padding: 6 0 0 0;");
         String[][] parts = {
@@ -4591,13 +4695,13 @@ final class PeopleScreen {
             {"the shops", Palette.PEOPLE}, {"what is left", Palette.GOOD},
         };
         for (String[] part : parts) {
-            Region swatch = new Region();
+            Region swatch = Kept.region();
             swatch.setPrefSize(9, 9);
             swatch.setMinSize(9, 9);
             swatch.setStyle("-fx-background-color: " + part[1] + "; -fx-background-radius: 2;");
-            Label what = new Label(part[0]);
+            Label what = Kept.label(part[0]);
             what.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-            HBox one = new HBox(4, swatch, what);
+            HBox one = Kept.row(4, swatch, what);
             one.setAlignment(Pos.CENTER_LEFT);
             key.getChildren().add(one);
         }

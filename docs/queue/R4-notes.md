@@ -1,4 +1,4 @@
-# R4 - research: prizes and the Research Lab ({next}, 2026-11-06)
+# R4 - research: prizes and the Research Lab (0.9.30, 2026-11-06)
 
 ## WHERE IT STANDS
 

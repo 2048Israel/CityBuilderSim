@@ -9,6 +9,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -97,13 +98,25 @@ final class RankingsScreen {
 
     private final UserInterface ui;
 
-    private Rankings.Settings settings = Rankings.Settings.OPENING;
-    private String measure = OPENS_ON;
-    private boolean aroundYou;
-    private Filter filter = Filter.ALL;
-    private final Set<String> pinned = new LinkedHashSet<>(PINNED_AT_FIRST);
-    private String drawer;
-    private boolean browseAll;
+    /** The nodes this screen made at its last draw, handed back to it at the next (KP7; study UP4, docs/studies/spec-screens-in-place.md). */
+    final Kept.Pool pool = new Kept.Pool();
+
+    /** Every node is made new at the next draw: another city opened (UserInterface.anotherCity()). */
+    void forget() {
+        pool.forget();
+        // The boxes the width listener lays the columns out in belong to the pool that was let go.
+        columns = measuresBox = tableBox = cardBox = null;
+        across = pair = null;
+    }
+
+    // (KP7: the choices are package-private, for KeptBench's hands: what a click on a chip, a line or a row would set.)
+    Rankings.Settings settings = Rankings.Settings.OPENING;
+    String measure = OPENS_ON;
+    boolean aroundYou;
+    Filter filter = Filter.ALL;
+    final Set<String> pinned = new LinkedHashSet<>(PINNED_AT_FIRST);
+    String drawer;
+    boolean browseAll;
 
     private Rankings.City city;
     private Game cityOf;
@@ -138,7 +151,7 @@ final class RankingsScreen {
        so the files are NEVER read on the FX thread:
 
          - SavedCities.refresh(files) runs on WORKER, one daemon thread, once
-           per ENTRY to the tab (the screen shown before clearMenu is not this
+           per ENTRY to the tab (the screen shown before keepMenu is not this
            one) and once for openSaved(). One read in flight at a time, and
            one asked for meanwhile runs when it is back (readAgain). The
            worker is handed the GameFiles and the last snapshot and hands back a
@@ -164,13 +177,13 @@ final class RankingsScreen {
     });
 
     /** The saved cities as the last read found them; null until the first read has come back. Written on the FX thread, from the worker's answer. */
-    private volatile SavedCities saved;
+    volatile SavedCities saved;
     /** A read is on WORKER (the FX thread's flag: set when it is handed over, cleared when its answer arrives). */
-    private boolean reading;
+    boolean reading;
     /** A read was asked for while one was on WORKER (an entry, Compare): it starts when that one's answer arrives, so a slot saved meanwhile is not missed. */
     private boolean readAgain;
     /** Your cities at: the saved cities as they were when the active city was as old as it is now (D3), else as last saved. */
-    private boolean atAge;
+    boolean atAge;
 
     /** The saved cities on the board, by the snapshot, the active city's month and Now / Your age they were made for; the lines about them are made with them. */
     private SavedCities onBoardOf;
@@ -186,7 +199,7 @@ final class RankingsScreen {
     private String overKey = "";
 
     /** Starts a read of the saved cities on WORKER, or, with one in flight, queues one more for when it is back; the answer redraws the tab if it is still on screen. */
-    private void readSaved() {
+    void readSaved() {
         if (reading) {
             readAgain = true;
             return;
@@ -305,15 +318,28 @@ final class RankingsScreen {
 
     private double pageWidth = FIRST_WIDTH;
     private VBox columns, measuresBox, tableBox, cardBox;
+    /** The two rows the columns go across in (KP7): made at every draw and kept, empty when not in use, so a width that moves moves the boxes between them and makes no node. */
+    private HBox across, pair;
 
     void showRankingsMenu() {
-        // Entering the tab (the screen shown is another) and a redraw of it (the clock, a click) are told apart before clearMenu records this one.
+        // Entering the tab (the screen shown is another) and a redraw of it (the clock, a click) are told apart before keepMenu records this one.
         boolean entering = !ui.isShowing("showRankingsMenu");
-        ui.clearMenu("showRankingsMenu", () -> showRankingsMenu());
         if (entering) {
             overKey = "";
             readSaved();
         }
+        // Kept (KP7): the page is drawn over last time's nodes when the same screen is redrawn (the clock, a click, a read of the saved
+        // cities landing); the rail's own tab arrives afresh.
+        ui.keepMenu("showRankingsMenu", () -> showRankingsMenu(), pool, this::drawPage);
+    }
+
+    /**
+     * The page itself, put in the window through setPage(): what keepMenu runs as a kept draw from the pool, and what KeptBench runs kept and built
+     * new for KeptCheck. What the show method did before the draw (the board and the measure known, the city and the saved cities placed) is done here,
+     * in the draw, so the bench's draw has it too; what only an entry does (the rank over the years worked out again, the read of the saved cities
+     * started) stays in the show method.
+     */
+    void drawPage() {
         WorldMeasures wm = WorldMeasures.load();
         Nations nations = ui.game.getNations();
         if (nations == null && settings.board() == Rankings.Board.YOUR_WORLD) {
@@ -325,16 +351,28 @@ final class RankingsScreen {
         WorldMeasures.Measure m = wm.measure(measure);
         Rankings.Table table = Rankings.table(wm, nations, now, onBoard, settings, measure);
 
-        VBox frame = new VBox(Palette.GAP, head(wm, now), controls(now, m, nations != null), sentenceLine(now, m, nations));
+        // Kept (KP7): the frame's three parts and the page are scopes of their own, so what one makes shifts none of another's nodes.
+        VBox frame = Kept.column(Palette.GAP, Kept.scope("head", () -> head(wm, now)),
+                Kept.scope("controls", () -> controls(now, m, nations != null)),
+                Kept.scope("sentence", () -> sentenceLine(now, m, nations)));
 
-        measuresBox = measuresColumn(wm, m);
-        tableBox = tableColumn(wm, now, table, m);
-        cardBox = cardColumn(wm, nations, now, table, m);
-        columns = new VBox(COLUMN_GAP);
-        arrange(pageWidth);
+        VBox body = Kept.scope("page", () -> {
+            measuresBox = Kept.scope("measures", () -> measuresColumn(wm, m));
+            tableBox = Kept.scope("table", () -> tableColumn(wm, now, table, m));
+            cardBox = Kept.scope("card", () -> cardColumn(wm, nations, now, table, m));
+            columns = Kept.column(COLUMN_GAP);
+            across = Kept.row(COLUMN_GAP);
+            across.setAlignment(Pos.TOP_LEFT);
+            across.setFillHeight(false);
+            pair = Kept.row(COLUMN_GAP);
+            pair.setAlignment(Pos.TOP_LEFT);
+            pair.setFillHeight(false);
+            arrange(pageWidth);
 
-        VBox body = Pieces.widePage();
-        body.getChildren().add(columns);
+            VBox page = Pieces.widePage();
+            page.getChildren().add(columns);
+            return page;
+        });
         frameOver(frame, body);
     }
 
@@ -348,26 +386,41 @@ final class RankingsScreen {
         showRankingsMenu();
     }
 
+    /** The keys in a node's properties for what frameOver() has bound it to or added to it: the scroller's height to the frame, a box's width to the scroller, the scroller's width listener. */
+    private static final String BOUND_TO_FRAME = "rankings.frame", BOUND_TO_SCROLLER = "rankings.scroller", FOLLOWS = "rankings.follows";
+
     /** The fixed frame over a scrolling page, at the page's width; the page as tall as what is left under the frame (City History's frameOver). */
     private void frameOver(VBox frame, VBox body) {
         frame.setMaxWidth(Pieces.PAGE_WIDE);
         frame.setFillWidth(true);
         frame.setPadding(new javafx.geometry.Insets(0, 18, 4, 18));
         ScrollPane scroller = ui.scrolled(body, FRAME_CHROME, false);
-        scroller.prefHeightProperty().unbind();
-        scroller.prefHeightProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
-                () -> Math.max(260, ui.menuScroller.getHeight()
-                        - (frame.getHeight() > 0 ? frame.getHeight() + STAGE_REST : FRAME_CHROME)),
-                ui.menuScroller.heightProperty(), frame.heightProperty()));
+        // Kept (KP7): the bindings and the listener are made once per node, since a kept page is handed back each draw with the scroller and
+        // the boxes it is already bound to; a draw never unbinds and binds again, or adds a second listener.
+        if (scroller.getProperties().get(BOUND_TO_FRAME) != frame) {
+            scroller.prefHeightProperty().unbind();
+            scroller.prefHeightProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
+                    () -> Math.max(260, ui.menuScroller.getHeight()
+                            - (frame.getHeight() > 0 ? frame.getHeight() + STAGE_REST : FRAME_CHROME)),
+                    ui.menuScroller.heightProperty(), frame.heightProperty()));
+            scroller.getProperties().put(BOUND_TO_FRAME, frame);
+        }
         // The frame as wide as the page under it (not as wide as its widest line): the four controls sit in one row where they fit, the sentence runs the page's width, and the head and the columns share a left edge.
-        javafx.beans.binding.DoubleBinding pageGiven = javafx.beans.binding.Bindings.createDoubleBinding(
-                () -> given(scroller.getViewportBounds().getWidth()), scroller.viewportBoundsProperty());
-        body.prefWidthProperty().bind(pageGiven);
-        frame.prefWidthProperty().bind(pageGiven);
-        scroller.viewportBoundsProperty().addListener((o, was, now) -> {
-            if (now != null && now.getWidth() > 0) follow(given(now.getWidth()) - 36);
-        });
-        ui.rootMenu.getChildren().addAll(frame, scroller);
+        for (VBox box : new VBox[] {body, frame}) {
+            if (box.getProperties().get(BOUND_TO_SCROLLER) != scroller) {
+                box.prefWidthProperty().unbind();
+                box.prefWidthProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
+                        () -> given(scroller.getViewportBounds().getWidth()), scroller.viewportBoundsProperty()));
+                box.getProperties().put(BOUND_TO_SCROLLER, scroller);
+            }
+        }
+        // The listener reads the boxes the latest draw laid the columns out in (the fields) when the viewport moves.
+        if (scroller.getProperties().putIfAbsent(FOLLOWS, Boolean.TRUE) == null) {
+            scroller.viewportBoundsProperty().addListener((o, was, now) -> {
+                if (now != null && now.getWidth() > 0) follow(given(now.getWidth()) - 36);
+            });
+        }
+        ui.setPage(frame, scroller);
     }
 
     /** The page's width for a viewport this wide: all of it, from 320 up to PAGE_WIDE. */
@@ -390,27 +443,29 @@ final class RankingsScreen {
     private void arrange(double inner) {
         if (columns == null) return;
         double gap = COLUMN_GAP;
+        // Kept (KP7): the rows are the draw's own (empty when not used), so the boxes move between them and the columns - set only where they differ,
+        // in a draw as in the width listener's call - and no node is made when the width moves.
         if (inner >= MEASURES_W + TABLE_MIN + CARD_W + 2 * gap) {
             width(measuresBox, MEASURES_W);
             width(tableBox, inner - MEASURES_W - CARD_W - 2 * gap);
             width(cardBox, CARD_W);
-            HBox across = new HBox(gap, measuresBox, tableBox, cardBox);
-            across.setAlignment(Pos.TOP_LEFT);
-            across.setFillHeight(false);
-            columns.getChildren().setAll(across);
+            Kept.set(pair.getChildren(), List.of());
+            Kept.set(across.getChildren(), List.of(measuresBox, tableBox, cardBox));
+            Kept.set(columns.getChildren(), List.of(across));
         } else if (inner >= MEASURES_W + TABLE_MIN + gap) {
             width(cardBox, Math.min(inner, CARD_W));
             width(measuresBox, MEASURES_W);
             width(tableBox, inner - MEASURES_W - gap);
-            HBox pair = new HBox(gap, measuresBox, tableBox);
-            pair.setAlignment(Pos.TOP_LEFT);
-            pair.setFillHeight(false);
-            columns.getChildren().setAll(cardBox, pair);
+            Kept.set(across.getChildren(), List.of());
+            Kept.set(pair.getChildren(), List.of(measuresBox, tableBox));
+            Kept.set(columns.getChildren(), List.of(cardBox, pair));
         } else {
             width(cardBox, inner);
             width(measuresBox, inner);
             width(tableBox, inner);
-            columns.getChildren().setAll(cardBox, measuresBox, tableBox);
+            Kept.set(across.getChildren(), List.of());
+            Kept.set(pair.getChildren(), List.of());
+            Kept.set(columns.getChildren(), List.of(cardBox, measuresBox, tableBox));
         }
     }
 
@@ -446,39 +501,49 @@ final class RankingsScreen {
         long people = ui.game.getPopulationManager().getPopulation();
         Label line = words(now.name() + " · " + CityCalendar.format(now.month()) + " · " + Money.people(people) + " people",
                 Palette.SIZE_BODY, Palette.TEXT_LABEL);
-        return new VBox(2, title, line);
+        return Kept.column(2, title, line);
     }
 
     private Node controls(Rankings.City now, WorldMeasures.Measure m, boolean haveNations) {
-        FlowPane row = new FlowPane(22, 6);
+        FlowPane row = Kept.flow(22, 6);
         row.setAlignment(Pos.CENTER_LEFT);
 
-        String[] boards = {"Real world 2025", "Your world"};
-        HBox board = strip(boards, boards[settings.board().ordinal()],
-                i -> with(Rankings.Board.values()[i], settings.money(), settings.prices(), settings.convert()));
-        if (!haveNations) {
-            grey(board, 1, "Your world needs the nations of the game's world, and this city has none to show.");
-        }
+        // Kept (KP7): each control is a scope of its own.
+        Node board = Kept.scope("board", () -> {
+            String[] boards = {"Real world 2025", "Your world"};
+            HBox strip = strip(boards, boards[settings.board().ordinal()],
+                    i -> with(Rankings.Board.values()[i], settings.money(), settings.prices(), settings.convert()));
+            if (!haveNations) {
+                grey(strip, 1, "Your world needs the nations of the game's world, and this city has none to show.");
+            }
+            return control("BOARD", strip);
+        });
 
-        String[] moneys = {now.currency(), "Game US$", "Real US$"};
-        HBox money = strip(moneys, moneys[settings.money().ordinal()],
-                i -> with(settings.board(), Rankings.Money.values()[i], settings.prices(), settings.convert()));
+        Node money = Kept.scope("money", () -> {
+            String[] moneys = {now.currency(), "Game US$", "Real US$"};
+            return control("MONEY", strip(moneys, moneys[settings.money().ordinal()],
+                    i -> with(settings.board(), Rankings.Money.values()[i], settings.prices(), settings.convert())));
+        });
 
-        String[] prices = {"Per year", "Static"};
-        HBox price = strip(prices, prices[settings.prices().ordinal()],
-                i -> with(settings.board(), settings.money(), Rankings.Prices.values()[i], settings.convert()));
-        // Prices moves only the saved rows (D2): it is open when one is on the board, locked otherwise (and by the model's other reasons).
-        if (Rankings.pricesLocked(settings, m, !onBoard.isEmpty())) {
-            String why = Rankings.pricesLockedWhy(settings, m, !onBoard.isEmpty());
-            for (int i = 0; i < prices.length; i++) grey(price, i, why);
-        }
+        Node price = Kept.scope("prices", () -> {
+            String[] prices = {"Per year", "Static"};
+            HBox strip = strip(prices, prices[settings.prices().ordinal()],
+                    i -> with(settings.board(), settings.money(), Rankings.Prices.values()[i], settings.convert()));
+            // Prices moves only the saved rows (D2): it is open when one is on the board, locked otherwise (and by the model's other reasons).
+            if (Rankings.pricesLocked(settings, m, !onBoard.isEmpty())) {
+                String why = Rankings.pricesLockedWhy(settings, m, !onBoard.isEmpty());
+                for (int i = 0; i < prices.length; i++) grey(strip, i, why);
+            }
+            return control("PRICES", strip);
+        });
 
-        String[] converts = {"This month's rate", "Constant 2015", "PPP"};
-        HBox convert = strip(converts, converts[settings.convert().ordinal()],
-                i -> with(settings.board(), settings.money(), settings.prices(), Rankings.Convert.values()[i]));
+        Node convert = Kept.scope("convert", () -> {
+            String[] converts = {"This month's rate", "Constant 2015", "PPP"};
+            return control("CONVERT AT", strip(converts, converts[settings.convert().ordinal()],
+                    i -> with(settings.board(), settings.money(), settings.prices(), Rankings.Convert.values()[i])));
+        });
 
-        row.getChildren().addAll(control("BOARD", board), control("MONEY", money), control("PRICES", price),
-                control("CONVERT AT", convert));
+        row.getChildren().addAll(board, money, price, convert);
         return row;
     }
 
@@ -497,9 +562,13 @@ final class RankingsScreen {
             }
             showRankingsMenu();
         });
-        HBox row = new HBox(6);
+        // Kept (KP7): inside a draw the strip's FlowPane stages the chips for itself, and so would the row: the chips are taken out of its
+        // list, so that they are the row's alone and are never moved between the two (taken off the scene and put back) at the draw's end.
+        List<Node> made = new ArrayList<>(chips.getChildren());
+        chips.getChildren().clear();
+        HBox row = Kept.row(6);
         row.setAlignment(Pos.CENTER_LEFT);
-        row.getChildren().addAll(new ArrayList<>(chips.getChildren()));
+        row.getChildren().setAll(made);
         return row;
     }
 
@@ -507,6 +576,7 @@ final class RankingsScreen {
     private static void grey(HBox strip, int index, String why) {
         Button chip = (Button) strip.getChildren().get(index);
         chip.setOnAction(e -> { });
+        // (chipStrip set the style whole in this draw; this one is set on top of it, as HistoryScreen.stillChip's is.)
         chip.setStyle(chip.getStyle() + " -fx-text-fill: " + Palette.TEXT_SPENT + "; -fx-cursor: default;");
         HistoryScreen.tip(chip, why);
     }
@@ -514,14 +584,14 @@ final class RankingsScreen {
     private static HBox control(String name, HBox strip) {
         Label label = words(name, Palette.SIZE_CAPTION, Palette.TEXT_MUTED);
         label.setMinWidth(Region.USE_PREF_SIZE);
-        HBox box = new HBox(8, label, strip);
+        HBox box = Kept.row(8, label, strip);
         box.setAlignment(Pos.CENTER_LEFT);
         return box;
     }
 
     /** The sentence under the controls (spec-leaderboards 3: "the most important piece of the UI"), at body size in the head's ink. */
     private Node sentenceLine(Rankings.City now, WorldMeasures.Measure m, Nations nations) {
-        Label says = new Label(Rankings.sentence(now, settings, m, nations == null ? null : nations.path(), onBoard, atAge));
+        Label says = Kept.label(Rankings.sentence(now, settings, m, nations == null ? null : nations.path(), onBoard, atAge));
         says.setWrapText(true);
         says.setMaxWidth(Double.MAX_VALUE);
         says.setMinHeight(Region.USE_PREF_SIZE);
@@ -644,13 +714,19 @@ final class RankingsScreen {
     }
 
     private static Label words(String text, int size, String colour) {
-        Label l = new Label(text);
+        Label l = Kept.label(text);
         l.setStyle(Palette.words(size, colour));
         return l;
     }
 
     private static Label wrapped(String text, int size, String colour) {
-        Label l = words(text, size, colour);
+        return wrapped(text, Palette.words(size, colour));
+    }
+
+    /** ...in a style of the caller's own (KP7: set once, whole, so that a label wanting more than the words' look builds it in one go). */
+    private static Label wrapped(String text, String style) {
+        Label l = Kept.label(text);
+        l.setStyle(style);
         l.setWrapText(true);
         l.setMaxWidth(Double.MAX_VALUE);
         l.setMinHeight(Region.USE_PREF_SIZE);
@@ -658,15 +734,15 @@ final class RankingsScreen {
     }
 
     /** A column's block: the panel ground, padded. */
-    private static VBox panel() {
-        VBox box = new VBox(Palette.GAP);
+    private static VBox panel(double spacing) {
+        VBox box = Kept.column(spacing);
         box.setStyle("-fx-padding: 10 12 12 12;" + Palette.block(Palette.PANEL));
         return box;
     }
 
     /** A small heading inside a column. */
     private static Label caption(String text) {
-        Label l = new Label(text);
+        Label l = Kept.label(text);
         l.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_MUTED) + " -fx-padding: 6 0 0 0;");
         return l;
     }
@@ -682,35 +758,38 @@ final class RankingsScreen {
        ===================================================================== */
 
     private VBox measuresColumn(WorldMeasures wm, WorldMeasures.Measure shown) {
-        VBox box = panel();
-        box.setSpacing(2);
-        box.getChildren().add(Pieces.sectionHead("Measures", null));
+        VBox box = panel(2);
+        box.getChildren().add(Kept.scope("head", () -> Pieces.sectionHead("Measures", null)));
         boolean yours = settings.board() == Rankings.Board.YOUR_WORLD;
 
+        // Kept (KP7): a caption and each line are a scope of their own, keyed by what they show - a measure's key, a group's - since the pinned
+        // lines come and go, and the groups fold and open, and a measure is in the pinned and in its group at once.
         List<WorldMeasures.Measure> pins = new ArrayList<>();
         for (String key : pinned) {
             WorldMeasures.Measure p = wm.measure(key);
             if (p != null) pins.add(p);
         }
         if (!pins.isEmpty()) {
-            box.getChildren().add(caption("PINNED"));
-            for (WorldMeasures.Measure p : pins) box.getChildren().add(measureLine(p, shown, yours));
+            box.getChildren().add(Kept.scope("caption:pinned", () -> caption("PINNED")));
+            for (WorldMeasures.Measure p : pins) box.getChildren().add(Kept.scope("pin:" + p.key(), () -> measureLine(p, shown, yours)));
         }
 
         Map<String, List<WorldMeasures.Measure>> groups = new LinkedHashMap<>();
         for (WorldMeasures.Measure p : wm.measures()) groups.computeIfAbsent(p.group(), k -> new ArrayList<>()).add(p);
         for (Map.Entry<String, List<WorldMeasures.Measure>> g : groups.entrySet()) {
             if (!browseAll && !g.getKey().equals(shown.group())) continue;
-            box.getChildren().add(caption(GROUPS.getOrDefault(g.getKey(), up(g.getKey())).toUpperCase(Locale.ROOT)));
-            for (WorldMeasures.Measure p : g.getValue()) box.getChildren().add(measureLine(p, shown, yours));
+            box.getChildren().add(Kept.scope("caption:" + g.getKey(), () -> caption(GROUPS.getOrDefault(g.getKey(), up(g.getKey())).toUpperCase(Locale.ROOT))));
+            for (WorldMeasures.Measure p : g.getValue()) box.getChildren().add(Kept.scope("line:" + p.key(), () -> measureLine(p, shown, yours)));
         }
 
-        Label browse = Pieces.stepChip(browseAll ? "Fold to the pinned" : "Browse all " + wm.measures().size(), () -> {
-            browseAll = !browseAll;
-            showRankingsMenu();
-        }, true);
-        VBox.setMargin(browse, new javafx.geometry.Insets(8, 0, 0, 0));
-        box.getChildren().add(browse);
+        box.getChildren().add(Kept.scope("browse", () -> {
+            Label browse = Pieces.stepChip(browseAll ? "Fold to the pinned" : "Browse all " + wm.measures().size(), () -> {
+                browseAll = !browseAll;
+                showRankingsMenu();
+            }, true);
+            VBox.setMargin(browse, new javafx.geometry.Insets(8, 0, 0, 0));
+            return browse;
+        }));
         return box;
     }
 
@@ -725,7 +804,7 @@ final class RankingsScreen {
         name.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(name, Priority.ALWAYS);
 
-        StackPane toggle = new StackPane(Pieces.icon(Icons.PIN, pin ? Palette.ACCENT : Palette.TEXT_SPENT, 11));
+        StackPane toggle = Kept.stack(Pieces.icon(Icons.PIN, pin ? Palette.ACCENT : Palette.TEXT_SPENT, 11));
         toggle.setPadding(new javafx.geometry.Insets(0, 2, 0, 4));
         toggle.setStyle("-fx-cursor: hand;");
         HistoryScreen.tip(toggle, pin ? "Unpin" : "Pin it to the top of the list and to your card");
@@ -735,15 +814,18 @@ final class RankingsScreen {
             showRankingsMenu();
         });
 
-        HBox line = new HBox(4, name, toggle);
+        HBox line = Kept.row(4, name, toggle);
         line.setAlignment(Pos.CENTER_LEFT);
         String base = "-fx-padding: 3 4 3 8; -fx-cursor: hand; -fx-background-radius: " + Palette.RADIUS + ";";
         String ground = lit
                 ? base + " -fx-background-color: " + Palette.RAISED + "; -fx-border-color: transparent transparent transparent " + Palette.ACCENT + "; -fx-border-width: 0 0 0 2;"
                 : base;
-        line.setStyle(ground);
+        // Kept (KP7): the look the pointer calls for is chosen from isHover() where it is set - a pointer that has not moved stays over a kept line
+        // and sends no mouse-entered.
+        String over = base + " -fx-background-color: " + Palette.HOVER + ";";
+        line.setStyle(!lit && line.isHover() ? over : ground);
         if (!lit) {
-            line.setOnMouseEntered(e -> line.setStyle(base + " -fx-background-color: " + Palette.HOVER + ";"));
+            line.setOnMouseEntered(e -> line.setStyle(over));
             line.setOnMouseExited(e -> line.setStyle(ground));
         }
         if (greyed) HistoryScreen.tip(line, "Ranked on Real world 2025 only");
@@ -780,40 +862,49 @@ final class RankingsScreen {
     static final double RANK_W = 40, KIND_W = 16, OF_W = 84, ASOF_W = 54, VALUE_W = 80, BAR_W = 52, MARK_W = 16, BAR_H = 6;
 
     private VBox tableColumn(WorldMeasures wm, Rankings.City now, Rankings.Table t, WorldMeasures.Measure m) {
-        VBox box = panel();
+        VBox box = panel(Palette.GAP);
         String note = m.note();
-        box.getChildren().add(Pieces.sectionHead(up(m.name()), note == null || note.isBlank() ? null : note, null));
-        box.getChildren().add(words(unitText(m) + " · " + arrowWords(m), Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        box.getChildren().add(Kept.scope("head", () -> Pieces.sectionHead(up(m.name()), note == null || note.isBlank() ? null : note, null)));
+        box.getChildren().add(Kept.scope("unit", () -> words(unitText(m) + " · " + arrowWords(m), Palette.SIZE_LABEL, Palette.TEXT_MUTED)));
 
+        // Kept (KP7): what the table holds is one of three shapes - a board Your world does not rank, a board with the real world's rows, a measure
+        // only the player's cities rank - and each is a scope of its own, so that a board picked reshapes nothing it shares nodes with.
         if (!t.ranked()) {
-            box.getChildren().add(wrapped("Your world ranks ten measures, the ones its nations carry; this one is on Real world 2025.",
-                    Palette.SIZE_BODY, Palette.TEXT_MUTED));
+            box.getChildren().add(Kept.scope("unranked", () -> wrapped("Your world ranks ten measures, the ones its nations carry; this one is on Real world 2025.",
+                    Palette.SIZE_BODY, Palette.TEXT_MUTED)));
             return box;
         }
 
         if (t.realFigures()) {
-            List<Rankings.Row> kept = filtered(t);
-            box.getChildren().add(filters(t, now));
-            List<Rankings.Row> shown = aroundYou ? Rankings.around(listOf(t, kept)) : kept;
-            if (shown.isEmpty()) {
-                box.getChildren().add(wrapped(filter == Filter.YOUR_CITIES ? "None of your cities has a figure for this one."
-                        : "Nothing near your size to show.", Palette.SIZE_BODY, Palette.TEXT_MUTED));
-            } else {
-                rows(box, wm, now, m, kept, shown);
-            }
+            Kept.scope("board", () -> {
+                List<Rankings.Row> kept = filtered(t);
+                box.getChildren().add(Kept.scope("filters", () -> filters(t, now)));
+                List<Rankings.Row> shown = aroundYou ? Rankings.around(listOf(t, kept)) : kept;
+                if (shown.isEmpty()) {
+                    box.getChildren().add(Kept.scope("none", () -> wrapped(filter == Filter.YOUR_CITIES ? "None of your cities has a figure for this one."
+                            : "Nothing near your size to show.", Palette.SIZE_BODY, Palette.TEXT_MUTED)));
+                } else {
+                    rows(box, wm, now, m, kept, shown);
+                }
+            });
         } else {
-            // No filters here (the real world has no rows for this one), but the saved cities are the point of it: Now / Your age stays.
-            if (savedReadable) {
-                FlowPane age = new FlowPane(22, 6, ageControl(now));
-                age.setAlignment(Pos.CENTER_LEFT);
-                box.getChildren().add(age);
-            }
-            rows(box, wm, now, m, t.rows(), t.rows());
-            box.getChildren().add(wrapped("The real world publishes no comparable figure for this one, so only your cities rank on it.",
-                    Palette.SIZE_BODY, Palette.TEXT_MUTED));
+            Kept.scope("own", () -> {
+                // No filters here (the real world has no rows for this one), but the saved cities are the point of it: Now / Your age stays.
+                if (savedReadable) {
+                    box.getChildren().add(Kept.scope("age", () -> {
+                        FlowPane age = Kept.flow(22, 6);
+                        age.getChildren().setAll(Kept.scope("control", () -> ageControl(now)));
+                        age.setAlignment(Pos.CENTER_LEFT);
+                        return age;
+                    }));
+                }
+                rows(box, wm, now, m, t.rows(), t.rows());
+                box.getChildren().add(Kept.scope("only", () -> wrapped("The real world publishes no comparable figure for this one, so only your cities rank on it.",
+                        Palette.SIZE_BODY, Palette.TEXT_MUTED)));
+            });
         }
-        savedNotes(box);
-        box.getChildren().add(legend(wm, t));
+        Kept.scope("notes", () -> savedNotes(box));
+        box.getChildren().add(Kept.scope("legend", () -> legend(wm, t)));
         return box;
     }
 
@@ -836,11 +927,14 @@ final class RankingsScreen {
 
     /** The quiet lines under the rows about the saved cities: the ones that stopped short of the active city's age, and the saves the board left out. */
     private void savedNotes(VBox box) {
-        for (String line : new String[] {notAtAge, leftOut}) {
+        // Kept (KP7): each line is a scope of its own - words present one month and absent the next.
+        String[] keys = {"notAtAge", "leftOut"};
+        String[] lines = {notAtAge, leftOut};
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i];
             if (line == null) continue;
-            Label note = wrapped(line, Palette.SIZE_LABEL, Palette.TEXT_MUTED);
-            note.setStyle(note.getStyle() + " -fx-padding: 6 8 0 8;");
-            box.getChildren().add(note);
+            box.getChildren().add(Kept.scope(keys[i], () ->
+                    wrapped(line, Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED) + " -fx-padding: 6 8 0 8;")));
         }
     }
 
@@ -868,14 +962,14 @@ final class RankingsScreen {
         for (int i = 0; i < all.length; i++) names[i] = all[i].label + " " + counts[i];
         // The first read of the saved cities is still on WORKER: no count yet, and no saved row on the board.
         if (saved == null) names[Filter.YOUR_CITIES.ordinal()] = Filter.YOUR_CITIES.label + " (reading…)";
-        HBox kinds = strip(names, names[filter.ordinal()], i -> filter = all[i]);
+        HBox kinds = Kept.scope("kinds", () -> strip(names, names[filter.ordinal()], i -> filter = all[i]));
 
         String[] views = {"Full list", "Around you"};
-        HBox view = strip(views, views[aroundYou ? 1 : 0], i -> aroundYou = i == 1);
+        HBox view = Kept.scope("view", () -> strip(views, views[aroundYou ? 1 : 0], i -> aroundYou = i == 1));
 
-        FlowPane both = new FlowPane(22, 6);
+        FlowPane both = Kept.flow(22, 6);
         both.getChildren().add(kinds);
-        if (savedReadable) both.getChildren().add(ageControl(now));
+        if (savedReadable) both.getChildren().add(Kept.scope("age", () -> ageControl(now)));
         both.getChildren().add(view);
         both.setAlignment(Pos.CENTER_LEFT);
         return both;
@@ -901,11 +995,14 @@ final class RankingsScreen {
             if (r.shown() < 0) signed = true;
         }
 
-        box.getChildren().add(header());
+        // Kept (KP7): the header, the line that says which end ranks first, and the picture of the rows are a scope each.
+        box.getChildren().add(Kept.scope("header", this::header));
         if (m.arrow() == WorldMeasures.Arrow.DOWN) {
-            Label lowest = words("lowest ranks first", Palette.SIZE_CAPTION, Palette.TEXT_MUTED);
-            lowest.setStyle(lowest.getStyle() + " -fx-padding: 0 0 2 8;");
-            box.getChildren().add(lowest);
+            box.getChildren().add(Kept.scope("lowest", () -> {
+                Label lowest = Kept.label("lowest ranks first");
+                lowest.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED) + " -fx-padding: 0 0 2 8;");
+                return lowest;
+            }));
         }
         List<Entry> entries = new ArrayList<>();
         int before = -2;
@@ -915,10 +1012,15 @@ final class RankingsScreen {
             before = at;
             entries.add(entry(wm, now, m, r, largest));
         }
-        box.getChildren().add(new RowsPicture(entries, signed, id -> {
-            drawer = id.equals(drawer) ? null : id;
-            showRankingsMenu();
-        }, drawer));
+        final boolean signedBars = signed;
+        box.getChildren().add(Kept.scope("rows", () -> {
+            RowsPicture picture = Kept.of(RowsPicture.class, RowsPicture::new);
+            picture.set(entries, signedBars, id -> {
+                drawer = id.equals(drawer) ? null : id;
+                showRankingsMenu();
+            }, drawer);
+            return picture;
+        }));
     }
 
     /** One row of the table as the picture draws it: the figures already written. */
@@ -944,7 +1046,7 @@ final class RankingsScreen {
     }
 
     private Node header() {
-        HBox head = new HBox(6);
+        HBox head = Kept.row(6);
         head.setAlignment(Pos.CENTER_LEFT);
         head.setStyle("-fx-padding: 4 8 4 8; -fx-border-color: transparent transparent " + Palette.EDGE + " transparent; -fx-border-width: 0 0 1 0;");
         Label name = words("Place", Palette.SIZE_CAPTION, Palette.TEXT_MUTED);
@@ -965,7 +1067,7 @@ final class RankingsScreen {
 
     /** A label of one width, its text clipped to it. */
     private static Label fixed(String text, double w, Pos at, String style) {
-        Label l = new Label(text);
+        Label l = Kept.label(text);
         l.setMinWidth(w);
         l.setPrefWidth(w);
         l.setMaxWidth(w);
@@ -974,15 +1076,23 @@ final class RankingsScreen {
         return l;
     }
 
+    /** ...for a cell whose words may be none: one scope while there are words, another while there are not (KP7: an emptied label keeps the height of the words it had). */
+    private static Label fixedMaybe(String role, String text, double w, Pos at, String style) {
+        return Kept.scope(role + (text.isEmpty() ? ":none" : ":words"), () -> fixed(text, w, at, style));
+    }
+
     /** The legend under the table: the marks, each a few words, and how many of the figures are the game's own estimates. */
     private Node legend(WorldMeasures wm, Rankings.Table t) {
-        FlowPane key = new FlowPane(16, 4);
+        FlowPane key = Kept.flow(16, 4);
         key.setAlignment(Pos.CENTER_LEFT);
         key.setStyle("-fx-padding: 8 8 0 8;");
-        for (int n = 3; n >= 1; n--) key.getChildren().add(words(mark(wm, n), Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        for (int n = 3; n >= 1; n--) {
+            int which = n;
+            key.getChildren().add(Kept.scope("mark:" + n, () -> words(mark(wm, which), Palette.SIZE_LABEL, Palette.TEXT_MUTED)));
+        }
         if (t.figures() > 0) {
-            key.getChildren().add(words(t.estimates() + " of " + t.figures() + " figures here are the game's estimates",
-                    Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+            key.getChildren().add(Kept.scope("estimates", () -> words(t.estimates() + " of " + t.figures() + " figures here are the game's estimates",
+                    Palette.SIZE_LABEL, Palette.TEXT_LABEL)));
         }
         return key;
     }
@@ -1029,11 +1139,14 @@ final class RankingsScreen {
         /** Measures a string against a column; one node, on the FX thread, where the drawing is. */
         private static final javafx.scene.text.Text RULER = new javafx.scene.text.Text();
 
-        private final List<Entry> entries;
-        private final boolean signed;
-        private final String open;
+        /** What it draws now, told by set() (KP7: a picture is kept and told its figures, not made again for them). */
+        private List<Entry> entries = List.of();
+        private boolean signed;
+        private String open;
         private final List<Canvas> tiles = new ArrayList<>();
         private final Region hover = new Region();
+        /** Where the pointer was last over the rows (NaN when it is not over them), so that a draw under a still pointer lights the row the pointer is over. */
+        private double pointerY = Double.NaN;
         private final javafx.scene.text.Font words = Palette.Fonts.sansFont(Palette.SIZE_BODY),
                 strong = Palette.Fonts.sansStrongFont(Palette.SIZE_BODY), small = Palette.Fonts.sansFont(Palette.SIZE_LABEL),
                 figures = Palette.Fonts.monoFont(Palette.SIZE_BODY);
@@ -1041,7 +1154,24 @@ final class RankingsScreen {
         /** The columns' left edges and the name's room, laid from the right at the width drawn. */
         private double nameX, nameW, ofX, asOfX, valueX, barX, markX;
 
-        RowsPicture(List<Entry> entries, boolean signed, Consumer<String> pick, String open) {
+        /** The hover's region and the width listener, made once in the picture's life; the rows come with set(). */
+        RowsPicture() {
+            setPrefWidth(10);
+            hover.setStyle("-fx-background-color: " + Palette.HOVER + ";");
+            hover.setMouseTransparent(true);
+            hover.setManaged(false);
+            hover.setVisible(false);
+            getChildren().add(hover);
+            widthProperty().addListener((o, was, now) -> draw(now.doubleValue()));
+        }
+
+        /**
+         * The rows it draws now, and what a click on one does. Its canvases are made again only when their number changes, and painted again
+         * only when a row, the bars' scale or the open place moved; the handlers and the cursor are set every draw, since a picture handed
+         * back has none.
+         */
+        void set(List<Entry> entries, boolean signed, Consumer<String> pick, String open) {
+            boolean moved = !entries.equals(this.entries) || signed != this.signed || !Objects.equals(open, this.open);
             this.entries = entries;
             this.signed = signed;
             this.open = open;
@@ -1049,27 +1179,41 @@ final class RankingsScreen {
             setMinHeight(total);
             setPrefHeight(total);
             setMaxHeight(total);
-            setPrefWidth(10);
             setCursor(Cursor.HAND);
-            hover.setStyle("-fx-background-color: " + Palette.HOVER + ";");
-            hover.setMouseTransparent(true);
-            hover.setManaged(false);
-            hover.setVisible(false);
-            getChildren().add(hover);
-            for (int from = 0; from < entries.size(); from += TILE_ROWS) {
-                Canvas tile = new Canvas(0, Math.min(TILE_ROWS, entries.size() - from) * ROW_H);
-                tile.setLayoutY(from * ROW_H);
-                tile.setManaged(false);
-                tiles.add(tile);
-                getChildren().add(tile);
+            int want = (entries.size() + TILE_ROWS - 1) / TILE_ROWS;
+            if (tiles.size() != want) {
+                getChildren().removeAll(tiles);
+                tiles.clear();
+                for (int from = 0; from < entries.size(); from += TILE_ROWS) {
+                    Canvas tile = new Canvas(0, Math.min(TILE_ROWS, entries.size() - from) * ROW_H);
+                    tile.setLayoutY(from * ROW_H);
+                    tile.setManaged(false);
+                    tiles.add(tile);
+                    getChildren().add(tile);
+                }
+                moved = true;
+            } else if (!tiles.isEmpty()) {
+                // The last canvas is as tall as the rows left to it; a set height clears it, and it is painted again below.
+                Canvas last = tiles.get(tiles.size() - 1);
+                double height = Math.min(TILE_ROWS, entries.size() - (tiles.size() - 1) * TILE_ROWS) * ROW_H;
+                if (last.getHeight() != height) last.setHeight(height);
             }
-            widthProperty().addListener((o, was, now) -> draw(now.doubleValue()));
-            setOnMouseMoved(e -> lightRowAt(e.getY()));
-            setOnMouseExited(e -> hover.setVisible(false));
+            setOnMouseMoved(e -> {
+                pointerY = e.getY();
+                lightRowAt(pointerY);
+            });
+            setOnMouseExited(e -> {
+                pointerY = Double.NaN;
+                hover.setVisible(false);
+            });
             setOnMouseClicked(e -> {
                 Entry at = rowAt(e.getY());
                 if (at != null && !at.gap()) pick.accept(at.id());
             });
+            if (moved) draw(getWidth());
+            // A pointer that has not moved stays over a kept picture and sends no mouse-moved: the row it is over is lit again from where it was last.
+            if (isHover() && Double.isFinite(pointerY)) lightRowAt(pointerY);
+            else hover.setVisible(false);
         }
 
         private Entry rowAt(double y) {
@@ -1210,66 +1354,69 @@ final class RankingsScreen {
     static final double D_NAME = 128, D_REAL = 66, D_MARK = 12, D_SOURCE = 66, D_YOURS = 60;
 
     private VBox cardColumn(WorldMeasures wm, Nations nations, Rankings.City now, Rankings.Table t, WorldMeasures.Measure m) {
-        VBox col = new VBox(Palette.GAP);
+        VBox col = Kept.column(Palette.GAP);
         if (drawer != null) {
-            Node open = drawerCard(wm, nations, now, t);
+            // Kept (KP7): the drawer is a scope keyed by the place it is open on, so another place shares no node with the last.
+            Node open = Kept.scope("drawer:" + drawer, () -> drawerCard(wm, nations, now, t));
             if (open != null) col.getChildren().add(open);
         }
-        col.getChildren().add(rankCard(wm, nations, now, t, m));
+        col.getChildren().add(Kept.scope("rank", () -> rankCard(wm, nations, now, t, m)));
         return col;
     }
 
     private static VBox raised() {
-        VBox card = new VBox(6);
+        VBox card = Kept.column(6);
         card.setStyle("-fx-padding: 12;" + Palette.block(Palette.RAISED, Palette.EDGE));
         return card;
     }
 
     private Node rankCard(WorldMeasures wm, Nations nations, Rankings.City now, Rankings.Table t, WorldMeasures.Measure m) {
         VBox card = raised();
-        Label title = wrapped(now.name() + " on " + m.name(), Palette.SIZE_HEADING, Palette.TEXT_HEAD);
-        title.setStyle(Palette.strong(Palette.SIZE_HEADING, Palette.TEXT_HEAD));
-        card.getChildren().add(title);
+        card.getChildren().add(wrapped(now.name() + " on " + m.name(), Palette.strong(Palette.SIZE_HEADING, Palette.TEXT_HEAD)));
 
+        // Kept (KP7): what the card says of the city's place is one of three shapes, each a scope of its own, and its lines are a scope each.
         if (t.you() < 0) {
-            card.getChildren().add(wrapped(!t.ranked() ? "Your world does not rank this measure."
-                    : now.name() + " has no figure for this one yet.", Palette.SIZE_BODY, Palette.TEXT_MUTED));
+            card.getChildren().add(Kept.scope("none", () -> wrapped(!t.ranked() ? "Your world does not rank this measure."
+                    : now.name() + " has no figure for this one yet.", Palette.SIZE_BODY, Palette.TEXT_MUTED)));
         } else if (!t.realFigures()) {
-            card.getChildren().add(wrapped("Only your cities rank on this one.", Palette.SIZE_BODY, Palette.TEXT_MUTED));
+            card.getChildren().add(Kept.scope("only", () -> wrapped("Only your cities rank on this one.", Palette.SIZE_BODY, Palette.TEXT_MUTED)));
         } else {
             Rankings.Row me = t.rows().get(t.you());
-            Label place = new Label("Rank " + me.rank() + " of " + t.rows().size());
-            place.setStyle(Palette.strong(Palette.SIZE_LEAD, Palette.TEXT_HEAD));
-            card.getChildren().addAll(place, words(withUnit(m, me.shown()), Palette.SIZE_BODY, Palette.TEXT_LABEL));
+            card.getChildren().addAll(Kept.scope("place", () -> {
+                Label place = Kept.label("Rank " + me.rank() + " of " + t.rows().size());
+                place.setStyle(Palette.strong(Palette.SIZE_LEAD, Palette.TEXT_HEAD));
+                return List.<Node>of(place, words(withUnit(m, me.shown()), Palette.SIZE_BODY, Palette.TEXT_LABEL));
+            }));
 
-            Rankings.Row above = null, below = null;
+            Rankings.Row aboveRow = null, belowRow = null;
             for (int i = t.you() - 1; i >= 0; i--) {
                 if (t.rows().get(i).rank() < me.rank()) {
-                    above = t.rows().get(i);
+                    aboveRow = t.rows().get(i);
                     break;
                 }
             }
             for (int i = t.you() + 1; i < t.rows().size(); i++) {
                 if (t.rows().get(i).rank() > me.rank()) {
-                    below = t.rows().get(i);
+                    belowRow = t.rows().get(i);
                     break;
                 }
             }
-            card.getChildren().add(neighbour("Above you", above, m, "Nobody: you lead the board."));
-            card.getChildren().add(neighbour("Below you", below, m, "Nobody: you are last."));
+            final Rankings.Row above = aboveRow, below = belowRow;
+            card.getChildren().add(Kept.scope("above:" + (above == null), () -> neighbour("Above you", above, m, "Nobody: you lead the board.")));
+            card.getChildren().add(Kept.scope("below:" + (below == null), () -> neighbour("Below you", below, m, "Nobody: you are last.")));
             if (above != null) {
                 boolean down = m.arrow() == WorldMeasures.Arrow.DOWN;
-                card.getChildren().add(wrapped("To pass " + above.name() + ", " + m.name() + " has to " + (down ? "fall" : "rise")
-                        + " by " + gapText(m, Math.abs(above.shown() - me.shown())) + ".", Palette.SIZE_BODY, Palette.TEXT_BODY));
+                card.getChildren().add(Kept.scope("toPass", () -> wrapped("To pass " + above.name() + ", " + m.name() + " has to " + (down ? "fall" : "rise")
+                        + " by " + gapText(m, Math.abs(above.shown() - me.shown())) + ".", Palette.SIZE_BODY, Palette.TEXT_BODY)));
             }
         }
 
         card.getChildren().add(caption("YOUR RANKS"));
         for (String key : pinned) {
             WorldMeasures.Measure p = wm.measure(key);
-            if (p != null) card.getChildren().add(pinnedRank(wm, nations, now, t, p));
+            if (p != null) card.getChildren().add(Kept.scope("pin:" + key, () -> pinnedRank(wm, nations, now, t, p)));
         }
-        card.getChildren().add(rankOverYears(wm, now, m));
+        card.getChildren().add(Kept.scope("years", () -> rankOverYears(wm, now, m)));
         return card;
     }
 
@@ -1280,16 +1427,16 @@ final class RankingsScreen {
         if (r == null) {
             Label nobody = words(none, Palette.SIZE_LABEL, Palette.TEXT_MUTED);
             nobody.setMinWidth(0);
-            line = new HBox(6, label, nobody);
+            line = Kept.row(6, label, nobody);
         } else {
             Label name = words(r.name(), Palette.SIZE_BODY, Palette.TEXT_BODY);
             name.setMinWidth(0);
             name.setMaxWidth(Double.MAX_VALUE);
             HBox.setHgrow(name, Priority.ALWAYS);
-            Label value = words(figure(m, r.shown()), Palette.SIZE_BODY, Palette.TEXT);
+            Label value = Kept.label(figure(m, r.shown()));
             value.setStyle(Palette.figureRegular(Palette.SIZE_BODY, Palette.TEXT));
             value.setMinWidth(Region.USE_PREF_SIZE);
-            line = new HBox(6, label, name, value);
+            line = Kept.row(6, label, name, value);
             line.setStyle("-fx-cursor: hand;");
             line.setOnMouseClicked(e -> {
                 drawer = r.id();
@@ -1315,10 +1462,10 @@ final class RankingsScreen {
         name.setMinWidth(0);
         name.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(name, Priority.ALWAYS);
-        Label rank = words(text, Palette.SIZE_BODY, why == null ? Palette.TEXT : Palette.TEXT_MUTED);
+        Label rank = Kept.label(text);
         rank.setStyle(Palette.figureRegular(Palette.SIZE_BODY, why == null ? Palette.TEXT : Palette.TEXT_MUTED));
         rank.setMinWidth(Region.USE_PREF_SIZE);
-        HBox line = new HBox(6, name, rank);
+        HBox line = Kept.row(6, name, rank);
         line.setAlignment(Pos.CENTER_LEFT);
         line.setStyle("-fx-cursor: hand;");
         if (why != null) HistoryScreen.tip(line, why);
@@ -1338,10 +1485,11 @@ final class RankingsScreen {
      * the tab and when either changes, never at the clock's monthly redraw (a December that comes while the tab is open has its point at the next entry).
      */
     private Node rankOverYears(WorldMeasures wm, Rankings.City now, WorldMeasures.Measure m) {
-        VBox box = new VBox(4);
+        VBox box = Kept.column(4);
         box.getChildren().add(caption("RANK OVER THE YEARS"));
+        // Kept (KP7): the three things it can say - nothing to rank against, too few points, the line - are a scope each.
         if (!m.sourced()) {
-            box.getChildren().add(wrapped("No real place publishes this one, so there is nothing to rank it against.", Palette.SIZE_BODY, Palette.TEXT_MUTED));
+            box.getChildren().add(Kept.scope("unsourced", () -> wrapped("No real place publishes this one, so there is nothing to rank it against.", Palette.SIZE_BODY, Palette.TEXT_MUTED)));
             return box;
         }
         String key = m.key() + "|" + settings.convert();
@@ -1350,15 +1498,18 @@ final class RankingsScreen {
             overKey = key;
         }
         if (overYears.size() < 2) {
-            box.getChildren().add(wrapped(overYears.isEmpty() ? "One point each December; none yet." : "One point each December; one so far.",
-                    Palette.SIZE_BODY, Palette.TEXT_MUTED));
+            box.getChildren().add(Kept.scope("few", () -> wrapped(overYears.isEmpty() ? "One point each December; none yet." : "One point each December; one so far.",
+                    Palette.SIZE_BODY, Palette.TEXT_MUTED)));
             return box;
         }
-        RankLine line = new RankLine(overYears);
-        Rankings.RankPoint first = overYears.get(0), last = overYears.get(overYears.size() - 1);
-        HistoryScreen.tip(line, "Rank " + first.rank() + " of " + first.of() + " in " + CityCalendar.yearOf(first.month())
-                + ", rank " + last.rank() + " of " + last.of() + " in " + CityCalendar.yearOf(last.month()) + ". One point each December.");
-        box.getChildren().addAll(line, words("Against Real world 2025, which holds still.", Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        box.getChildren().addAll(Kept.scope("line", () -> {
+            RankLine line = Kept.of(RankLine.class, RankLine::new);
+            line.set(overYears);
+            Rankings.RankPoint first = overYears.get(0), last = overYears.get(overYears.size() - 1);
+            HistoryScreen.tip(line, "Rank " + first.rank() + " of " + first.of() + " in " + CityCalendar.yearOf(first.month())
+                    + ", rank " + last.rank() + " of " + last.of() + " in " + CityCalendar.yearOf(last.month()) + ". One point each December.");
+            return List.<Node>of(line, words("Against Real world 2025, which holds still.", Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        }));
         return box;
     }
 
@@ -1370,12 +1521,13 @@ final class RankingsScreen {
         private static final Color LINE = Color.web(Palette.MONEY), FLOOR = Color.web(Palette.EDGE), RANK = Color.web(Palette.TEXT_HEAD),
                 YEAR = Color.web(Palette.TEXT_MUTED);
 
-        private final List<Rankings.RankPoint> points;
+        /** The points it draws now, told by set() (KP7: a picture is kept and told its figures). */
+        private List<Rankings.RankPoint> points = List.of();
         private final Canvas canvas = new Canvas(0, H);
         private final javafx.scene.text.Font ranks = Palette.Fonts.monoFont(Palette.SIZE_LABEL), years = Palette.Fonts.sansFont(Palette.SIZE_CAPTION);
 
-        RankLine(List<Rankings.RankPoint> points) {
-            this.points = points;
+        /** The canvas and the width listener, made once in the picture's life; the points come with set(). */
+        RankLine() {
             setMinHeight(H);
             setPrefHeight(H);
             setMaxHeight(H);
@@ -1385,8 +1537,15 @@ final class RankingsScreen {
             widthProperty().addListener((o, was, now) -> draw(now.doubleValue()));
         }
 
+        /** The points it draws now: painted again only when they are not the ones it was told last. */
+        void set(List<Rankings.RankPoint> points) {
+            if (points == this.points || points.equals(this.points)) return;
+            this.points = points;
+            draw(getWidth());
+        }
+
         private void draw(double w) {
-            if (!(w > 0)) return;
+            if (!(w > 0) || points.size() < 2) return;
             canvas.setWidth(w);
             GraphicsContext gc = canvas.getGraphicsContext2D();
             gc.clearRect(0, 0, w, H);
@@ -1455,20 +1614,20 @@ final class RankingsScreen {
         WorldMeasures.Place place = mine || opened != null ? null : wm.place(drawer);
         VBox card = raised();
 
-        Label name = new Label(placeName(wm, now, t));
+        Label name = Kept.label(placeName(wm, now, t));
         name.setStyle(Palette.strong(Palette.SIZE_HEADING, Palette.TEXT_HEAD));
         name.setMinWidth(0);
         name.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(name, Priority.ALWAYS);
-        Label close = words("×", Palette.SIZE_SECTION, Palette.TEXT_MUTED);
-        close.setStyle(close.getStyle() + " -fx-cursor: hand;");
+        Label close = Kept.label("×");
+        close.setStyle(Palette.words(Palette.SIZE_SECTION, Palette.TEXT_MUTED) + " -fx-cursor: hand;");
         close.setMinWidth(Region.USE_PREF_SIZE);
         HistoryScreen.tip(close, "Close");
         close.setOnMouseClicked(e -> {
             drawer = null;
             showRankingsMenu();
         });
-        HBox head = new HBox(8, name, close);
+        HBox head = Kept.row(8, name, close);
         head.setAlignment(Pos.CENTER_LEFT);
         card.getChildren().add(head);
 
@@ -1481,23 +1640,24 @@ final class RankingsScreen {
         card.getChildren().add(words(kind, Palette.SIZE_LABEL, Palette.TEXT_MUTED));
 
         if (owner == null && place == null) {
-            card.getChildren().add(wrapped("The real world's file has no figures for this place.", Palette.SIZE_BODY, Palette.TEXT_MUTED));
+            card.getChildren().add(Kept.scope("nofigures", () -> wrapped("The real world's file has no figures for this place.", Palette.SIZE_BODY, Palette.TEXT_MUTED)));
             return card;
         }
 
-        HBox columnsHead = new HBox(4,
+        card.getChildren().add(Kept.scope("columns", () -> Kept.row(4,
                 fixed("", D_NAME, Pos.CENTER_LEFT, ""),
                 fixed("Real world 2025", D_REAL + D_MARK + 4 + D_SOURCE, Pos.CENTER_LEFT, Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED)),
-                fixed("Your world", D_YOURS + D_MARK + 4, Pos.CENTER_LEFT, Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED)));
-        card.getChildren().add(columnsHead);
+                fixed("Your world", D_YOURS + D_MARK + 4, Pos.CENTER_LEFT, Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED)))));
 
+        // Kept (KP7): a group's caption and each measure's line are a scope of their own, keyed by what they show.
         String group = null;
         for (Rankings.Line line : Rankings.drawer(wm, nations, now, onBoard, settings, drawer)) {
             if (!line.measure().group().equals(group)) {
                 group = line.measure().group();
-                card.getChildren().add(caption(GROUPS.getOrDefault(group, up(group)).toUpperCase(Locale.ROOT)));
+                String shown = group;
+                card.getChildren().add(Kept.scope("caption:" + shown, () -> caption(GROUPS.getOrDefault(shown, up(shown)).toUpperCase(Locale.ROOT))));
             }
-            card.getChildren().add(drawerLine(wm, owner, line));
+            card.getChildren().add(Kept.scope("line:" + line.measure().key(), () -> drawerLine(wm, owner, line)));
         }
         return card;
     }
@@ -1522,19 +1682,20 @@ final class RankingsScreen {
         String quiet = Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED);
 
         Label real = fixed(figure(p, line.real2025()), D_REAL, Pos.CENTER_RIGHT, Double.isFinite(line.real2025()) ? figureStyle : quiet);
-        Label realMark = fixed(glyph(wm, line.realMark()), D_MARK, Pos.CENTER, quiet);
+        // Kept (KP7): a cell whose words may be none is a scope of its own while it has words and another while it has none.
+        Label realMark = fixedMaybe("realMark", glyph(wm, line.realMark()), D_MARK, Pos.CENTER, quiet);
         String how = null;
         if (mine) {
             CityMeasures.Figure f = owner.figures().get(p.key());
             how = f == null ? null : f.how();
         }
         String sourceText = !Double.isFinite(line.real2025()) ? "" : mine && how != null && !how.isBlank() ? how : sourceName(wm, line.realSource());
-        Label source = fixed(sourceText, D_SOURCE, Pos.CENTER_LEFT, Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        Label source = fixedMaybe("source", sourceText, D_SOURCE, Pos.CENTER_LEFT, Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
         if (!sourceText.isEmpty()) HistoryScreen.tip(source, mine && how != null ? how : sourceFull(wm, line.realSource()));
         Label yours = fixed(figure(p, line.yourWorld()), D_YOURS, Pos.CENTER_RIGHT, Double.isFinite(line.yourWorld()) ? figureStyle : quiet);
-        Label yoursMark = fixed(glyph(wm, line.yourMark()), D_MARK, Pos.CENTER, quiet);
+        Label yoursMark = fixedMaybe("yoursMark", glyph(wm, line.yourMark()), D_MARK, Pos.CENTER, quiet);
 
-        HBox row = new HBox(4, name, real, realMark, source, yours, yoursMark);
+        HBox row = Kept.row(4, name, real, realMark, source, yours, yoursMark);
         row.setAlignment(Pos.CENTER_LEFT);
         row.setStyle("-fx-cursor: hand;");
         row.setOnMouseClicked(e -> {
