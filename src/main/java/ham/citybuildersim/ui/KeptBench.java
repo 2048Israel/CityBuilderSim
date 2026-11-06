@@ -3740,7 +3740,8 @@ public final class KeptBench {
             case "showForeignMenu" -> ui.tradeScreen.pool;
             case "showPolicyMenu" -> ui.policyScreen.pool;
             case "showHistoryMenu" -> ui.historyScreen.pool;
-            // (KP7, part 2: Household money's and the Rankings tab's pools join this list.)
+            case "showHouseholdMenu" -> ui.peopleScreen.moneyPool;
+            case "showRankingsMenu" -> ui.rankingsScreen.pool;
             default -> null;
         };
     }
@@ -3766,7 +3767,91 @@ public final class KeptBench {
         ui.servicesScreen.showServicesStatsMenu();
     }
 
-    // (KP7, part 2: the show hands of Household money and the Rankings tab, slices A and B's, are added here by the harness's second half.)
+    /** The page `p` under a name of the harness's own, with `more` run after its home as well: the harness's state on top of what the page opens on (a cell open, the measures column unfolded). */
+    public Page withHome(Page p, String name, Runnable more) {
+        return new Page(name, p.screen, p.pool, p.draw, () -> {
+            p.home.run();
+            more.run();
+        });
+    }
+
+    /**
+     * The pointer put over the node `target` finds, the page drawn kept again (`redraw`), and the node looked at; then the pointer taken off
+     * and the page drawn again (the same as hoverKept(), for a node the kinds there do not name). Null when each time the node was the same
+     * node, in the look its own handler gives, and the two looks differ; else what differed. ABSENT when the page has no such node.
+     */
+    private String hoverLook(java.util.function.Supplier<Node> target, Runnable redraw) throws Exception {
+        Node n = target.get();
+        if (n == null) return ABSENT;
+        hover(n, true);
+        redraw.run();
+        passes();
+        if (target.get() != n) return "the node under the pointer was handed away or made new by the redraw";
+        String over = n.getStyle();
+        n.getOnMouseEntered().handle(mouse(javafx.scene.input.MouseEvent.MOUSE_ENTERED, 5, 5, javafx.scene.input.MouseButton.NONE, 0));
+        if (!java.util.Objects.equals(over, n.getStyle())) return "under the pointer the draw left " + clip(over) + " where its own mouse-entered sets " + clip(n.getStyle());
+        hover(n, false);
+        redraw.run();
+        passes();
+        if (target.get() != n) return "the node the pointer left was handed away or made new by the redraw";
+        String rest = n.getStyle();
+        n.getOnMouseExited().handle(mouse(javafx.scene.input.MouseEvent.MOUSE_EXITED, 5, 5, javafx.scene.input.MouseButton.NONE, 0));
+        if (!java.util.Objects.equals(rest, n.getStyle())) return "off the pointer the draw left " + clip(rest) + " where its own mouse-exited sets " + clip(n.getStyle());
+        if (java.util.Objects.equals(over, rest)) return "the hover changes nothing in the node's style, so there is no look to keep";
+        return null;
+    }
+
+    /** The first measure line on the Rankings tab's measures column that is not the one shown (the shown one is lit and has no hover): an HBox with a mouse-entered and a mouse-exited. */
+    private Node rankingsLine() {
+        return find(column, HBox.class, h -> h.getOnMouseEntered() != null && h.getOnMouseExited() != null && h.getOnMouseClicked() != null
+                && h.getStyle() != null && h.getStyle().contains("-fx-padding: 3 4 3 8; -fx-cursor: hand;"));
+    }
+
+    /** The Rankings tab's measure line under the pointer: hoverKept()'s test, on the first line that is not lit (see hoverLook()). ABSENT when the page has none. */
+    public String hoverRankingsLine(Runnable redraw) throws Exception {
+        return hoverLook(this::rankingsLine, redraw);
+    }
+
+    /** The table's picture (the rows are painted on canvases, with one region under them for the row the pointer is over), or null. */
+    private Pane rankingsRows() {
+        return find(column, Pane.class, p -> "RowsPicture".equals(p.getClass().getSimpleName()));
+    }
+
+    /**
+     * The pointer moved over the first row of the Rankings table that lights under it, the page drawn kept again (`redraw`): the picture is the
+     * same node and the same row is lit, with no mouse-moved sent (a pointer that has not moved sends none); then the pointer gone with no
+     * mouse-exited (a page torn down swallows the exits) and the page drawn again: no row is lit. Null when so; else what differed. ABSENT
+     * when the page has no table.
+     */
+    public String hoverRankingsRows(Runnable redraw) throws Exception {
+        Pane rows = rankingsRows();
+        if (rows == null) return ABSENT;
+        Region lit = find(rows, Region.class, r -> r != rows && r.isMouseTransparent() && !r.isManaged());
+        if (lit == null) return "the table's picture has no region for the lit row";
+        hover(rows, true);
+        double at = -1;
+        int count = (int) Math.round(rows.getPrefHeight() / RankingsScreen.ROW_H);
+        for (int i = 0; i < count && at < 0; i++) {
+            double y = (i + .5) * RankingsScreen.ROW_H;
+            fireMouse(rows, javafx.scene.input.MouseEvent.MOUSE_MOVED, 40, y, javafx.scene.input.MouseButton.NONE, 0);
+            if (lit.isVisible()) at = lit.getLayoutY();
+        }
+        if (at < 0) {
+            hover(rows, false);
+            return "no row of the table lights under the pointer in this city (" + count + " rows), so there is no look to keep";
+        }
+        redraw.run();
+        passes();
+        if (rankingsRows() != rows) return "the table's picture under the pointer was handed away or made new by the redraw";
+        if (!lit.isVisible()) return "under a still pointer the draw left the row unlit";
+        if (lit.getLayoutY() != at) return "under a still pointer the draw lit the row at " + lit.getLayoutY() + " where the pointer is, at " + at;
+        hover(rows, false);
+        redraw.run();
+        passes();
+        if (rankingsRows() != rows) return "the table's picture the pointer left was handed away or made new by the redraw";
+        if (lit.isVisible()) return "the pointer gone, the draw left a row lit";
+        return null;
+    }
 
     /* =====================================================================
        THE RANKINGS TAB (KP7, slice B): the tab as it opens, kept and built new, the hands on what reshapes it (a board, the money, the

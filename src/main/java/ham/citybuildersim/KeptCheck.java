@@ -249,11 +249,26 @@ import java.util.concurrent.TimeUnit;
  *  81. it is cheap: the kept month on Government's Overview within KEPT_GOVERNMENT_MS, on Trade's Overview and its heaviest page within KEPT_TRADE_MS and
  *      on Policy's hub and its dial-heavy pages within KEPT_POLICY_MS through Timing, built new beside it.
  *
- * ...and, with Household money and the Rankings tab kept (KP7), no screen on the rail is rebuilt by the clock:
+ * ...and Household money and the Rankings tab (KP7), the last two screens on the rail, so that no screen on it is rebuilt by the clock; each page drawn kept
+ * from the screen's pool and built new from an empty one, the clock paused so that every month counts up:
+ *  82. Household money is kept: the top nodes stay, nine in ten of the nodes handed back, most months make none;
+ *  83. it shows what a page built new shows, for MONTHS months with the pixels at three and the spoil proof;
+ *  84. what reshapes it keeps it right: each view, every cell of the grid opened (a family cell of each shape and tier with anybody in it, and every row below
+ *      the rule), none, the city's month as a statement opened and closed, the books stacked under the grid (the page 1000 wide) and beside it again, and the
+ *      page shown through the real show method - each redraw, and the one after a month lands (a cell stays open across it), equal to a page built new;
+ *  85 to 87. the same three for the Rankings tab, which paints its table on canvases that no signature holds, so every choice's redraw, and the one after a
+ *      month, is also the same picture as a page built new: each board (Your world where the city has nations), money, prices and conversion, every fifth
+ *      measure, each filter and Around you, Browse all, a measure pinned, a place's drawer; then the city saved into slot 10 of the harness's own folder, a
+ *      read of the saved cities waited for, and Your cities at Now and at Your age, their prices and moneys and drawers;
  *  88. the clock never rebuilds a rail screen: a page drawn the old way twice under one name moves UserInterface.rebuiltInPlace by one, and an arrival by none
- *      (the condition caused); then every tab of the rail, the construction page and the city's fund on Finances, each shown through its real show method and
- *      then given three months with the screen's own redraw after each (what the clock does), moves the count by none, keeps the page's top nodes the same
- *      nodes, keeps the same screen on show, and hands back nodes of the page it redraws over.
+ *      (the condition caused); then every tab of the rail, Household money, the construction page and the city's fund on Finances, each shown through its real
+ *      show method and then given three months with the screen's own redraw after each (what the clock does), moves the count by none, keeps the page's top
+ *      nodes the same nodes, keeps the same screen on show, and hands back nodes of the page it redraws over;
+ *  89. the hover and the tooltips: on Household money a vitals cell that is a door; on the Rankings tab a measure line, which keeps its hover look under a
+ *      still pointer across a redraw and loses it with the pointer, and the table's picture, which lights the row under a pointer that has not moved and none
+ *      once it has gone; and a node a month's redraw keeps keeps its own Tooltip (Kept.tip) on both pages, with a cell open, a drawer open and every measure open;
+ *  90. it is cheap: the kept month on Household money (as it opens and with a cell's books open) within KEPT_HOUSEHOLD_MS and on the Rankings tab (as it opens
+ *      and with every measure unfolded) within KEPT_RANKINGS_MS through Timing, built new beside it.
  */
 public class KeptCheck {
 
@@ -1409,16 +1424,28 @@ public class KeptCheck {
 
     /** The page as it stands (drawn kept, and laid out) against the same page built new: the first difference, or null. The animations a draw started are run to their ends first and the page laid out after, as the pulse does: a count-up's last word is another width. */
     static String againstNew(KeptBench bench, KeptBench.Page page) throws Exception {
+        return againstNew(bench, page, false);
+    }
+
+    /**
+     * ...and, for a page with pictures painted on canvases, which no signature holds (KP7, the Rankings table), the pixels too: the signature's difference
+     * first, else the pixels' (no pixel more than SHADE_LEVELS apart, and at most SHADED_SHARE of them apart at all).
+     */
+    static String againstNew(KeptBench bench, KeptBench.Page page, boolean pixels) throws Exception {
         bench.passes();
         bench.finishPageAnimations();
         bench.settle();
         List<String> kept = bench.signature();
+        int[] keptPx = pixels ? bench.pixels() : null;
         bench.showFresh(page);
         bench.finishPageAnimations();
         bench.settle();
         List<String> fresh = bench.signature();
+        int[] freshPx = pixels ? bench.pixels() : null;
         bench.restoreKeptPage();
-        return firstDifference(kept, fresh);
+        String d = firstDifference(kept, fresh);
+        if (d == null && pixels && !alike(keptPx, freshPx)) d = "the pixels differ: " + pixelDifference(keptPx, freshPx);
+        return d;
     }
 
     /** Section n: the page is kept - a month's redraw keeps its top nodes, hands back nine in ten of the first draw's nodes, and on most months makes none. */
@@ -1553,7 +1580,12 @@ public class KeptCheck {
 
     /** ...with the share of the page a month's redraw has to hand back set by the caller (KP6: KP6_HANDED_BACK). */
     static void pageReshaped(Game g, KeptBench bench, KeptBench.Page page, int n, List<Choice> choices, double share) throws Exception {
-        System.out.println("\n--- " + n + ": what reshapes " + page.name() + " ---");
+        pageReshaped(g, bench, page, n, choices, share, false);
+    }
+
+    /** ...and, with `pixels`, each redraw's picture against the page built new's as well (KP7: the Rankings table is painted, and no signature holds it). */
+    static void pageReshaped(Game g, KeptBench bench, KeptBench.Page page, int n, List<Choice> choices, double share, boolean pixels) throws Exception {
+        System.out.println("\n--- " + n + ": what reshapes " + page.name() + (pixels ? ", to the pixel" : "") + " ---");
         int size = fx(() -> {
             bench.home(page);
             bench.drawKept(page);
@@ -1569,12 +1601,12 @@ public class KeptCheck {
                 String premise = c.hand().on(bench);
                 if (premise != null) return new Object[]{"the choice could not be made: " + premise, 0, 1.0, 0, 0};
                 bench.drawKept(page);
-                String a = againstNew(bench, page);
+                String a = againstNew(bench, page, pixels);
                 int grown = bench.signature().size();
                 month(g);
                 bench.drawKept(page);
                 int[] counts = bench.counts(page);
-                String b = againstNew(bench, page);
+                String b = againstNew(bench, page, pixels);
                 return new Object[]{a != null ? a : b, grown, counts[1] / (double) Math.max(1, counts[0] + counts[1]), counts[0], counts[1]};
             });
             String d = (String) r[0];
@@ -5849,6 +5881,7 @@ public class KeptCheck {
         rail.add(new RailScreen("the construction page", "showConstruction", KeptBench::showConstruction));
         rail.add(new RailScreen("the land office", "showLandMenu", KeptBench::showLand));
         rail.add(new RailScreen("People", "showPopulationInfoMenu", KeptBench::showPeople));
+        rail.add(new RailScreen("Household money", "showHouseholdMenu", KeptBench::showHousehold));
         rail.add(new RailScreen("Services", "showServicesStatsMenu", KeptBench::showServices));
         rail.add(new RailScreen("Infrastructure", "showInfrastructureMenu", KeptBench::showInfrastructure));
         rail.add(new RailScreen("Sectors", "showSectorMenu", KeptBench::showSectors));
@@ -5862,8 +5895,7 @@ public class KeptCheck {
         rail.add(new RailScreen("Trade & the World", "showForeignMenu", KeptBench::showTrade));
         rail.add(new RailScreen("Policy", "showPolicyMenu", KeptBench::showPolicy));
         rail.add(new RailScreen("City History", "showHistoryMenu", KeptBench::showHistory));
-        // (KP7, part 2: the rail's last two tabs, Rankings ("showRankingsMenu") and Household money behind People ("showHouseholdMenu"), join this
-        // list as one row each when slices A and B's show hands land in the bench.)
+        rail.add(new RailScreen("Rankings", "showRankingsMenu", KeptBench::showRankings));
 
         for (RailScreen s : rail) {
             Object[] r = fx(() -> {
@@ -5898,15 +5930,308 @@ public class KeptCheck {
         });
     }
 
+    /* =====================================================================
+       HOUSEHOLD MONEY AND THE RANKINGS TAB (KP7), sections 82 to 90: the last two screens on the rail kept - each page drawn kept from the
+       screen's pool and built new from an empty one, kept, shown as a page built new shows it, kept right through what reshapes it - then the
+       clock on every rail screen (88, above), the hover and the tooltips, and what the kept month costs.
+       ===================================================================== */
+
+    /**
+     * The budget for the kept Household money month - its draw, then the pulse's CSS and layout - on the page as it opens and with the first family
+     * cell's books open (the larger of the two being the figure), at month 3,400 to 4,000 of a played city (about where KeptCheck is when it comes to
+     * this page), on the PC: twice the kept month's median, rounded up (the page as it opens 2.7 to 3.1 ms in five runs of the KP7 sections alone, 2.8
+     * between them, the same month built new 15.9 to 17.7 ms; with a cell open 3.6 to 7.0 ms, 3.8 between them, built new 19.2 to 29.7).
+     */
+    static final double KEPT_HOUSEHOLD_MS = 8;
+
+    /**
+     * The budget for the kept Rankings month - its draw, then the pulse's CSS and layout - on the tab as it opens and with every measure unfolded
+     * (Browse all: a line a measure; the larger of the two being the figure), at month 3,400 to 4,000 of a played city, on the PC: twice the kept
+     * month's median, rounded up (the tab as it opens 2.6 to 3.0 ms in five runs of the KP7 sections alone, 2.8 between them, the same month built new
+     * 9.0 to 10.9 ms; unfolded 3.1 to 3.5 ms, 3.3 between them, built new 16.8 to 20.3).
+     */
+    static final double KEPT_RANKINGS_MS = 7;
+
+    /** Sections 82 to 84: Household money kept, shown as a page built new shows it, and kept right through what reshapes it. */
+    static void kp7Household(Game g, KeptBench bench) throws Exception {
+        System.out.println("\n=== Household money (KP7) ===");
+        // The clock paused: a month stepped by hand counts up at any speed.
+        fx(() -> {
+            bench.clock(false, null);
+            bench.speed(0);
+            return null;
+        });
+        KeptBench.Page page = fx(bench::householdMoney);
+        pageKept(g, bench, page, 82);
+        arrive(bench, page);
+        pageShows(g, bench, page, 83);
+
+        // 84: the view, every cell of the grid opened (a family cell of each shape and tier with anybody in it, and every row below the rule),
+        // the statement, the books stacked under the grid, and a cell open across a month (pageReshaped lands one after every choice).
+        List<String> cells = fx(bench::householdCells);
+        long below = cells.stream().filter(c -> c.startsWith("OUT:")).count();
+        System.out.printf("  the grid has %d cells to open (%d family cells and %d rows below the rule), all of them opened here%n", cells.size(), cells.size() - below, below);
+        check("the grid has cells to open, family cells and rows below the rule (" + cells.size() + " of them, " + below + " below the rule)", below > 0 && cells.size() > below);
+        String first = cells.get(0);
+        List<Choice> reshape = new ArrayList<>();
+        for (String v : KeptBench.householdViews()) reshape.add(choice("the view " + v, b -> { b.householdView(v); return null; }));
+        reshape.add(choice("the view One household again", b -> { b.householdView("One household"); return null; }));
+        for (String key : cells) reshape.add(choice("the cell " + key + " opened", b -> { b.householdCell(key); return null; }));
+        reshape.add(choice("no cell open", b -> { b.householdCell(""); return null; }));
+        reshape.add(new Choice("the city's month as a statement opened", b -> { b.householdStatement(true); return null; }, true));
+        reshape.add(choice("...and closed", b -> { b.householdStatement(false); return null; }));
+        reshape.add(choice("the view All of them with the first cell open", b -> { b.householdView("All of them"); b.householdCell(first); return null; }));
+        reshape.add(choice("the books stacked under the grid (the page 1000 wide)", b -> { b.householdColumnWidth(1000); return null; }));
+        reshape.add(choice("...a cell of another shape opened under it", b -> { b.householdCell(cells.get(cells.size() / 2)); return null; }));
+        reshape.add(choice("...and the books beside the grid again (the page full width)", b -> { b.householdColumnWidth(0); b.householdView("One household"); return null; }));
+        reshape.add(choice("shown through showHousehold(), the cell open", b -> { b.householdCell(first); b.forgetHousehold(); b.showHousehold(); return null; }));
+        reshape.add(choice("...closed again", b -> { b.householdCell(""); return null; }));
+        pageReshaped(g, bench, page, 84, reshape);
+
+        // The premise of the stacked choices: the books sit beside the grid at the full width and under it when the page is 1000 wide.
+        Boolean[] sides = fx(() -> {
+            bench.home(page);
+            bench.householdCell(first);
+            bench.drawKept(page);
+            bench.passes();
+            Boolean beside = bench.householdBeside();
+            bench.householdColumnWidth(1000);
+            bench.drawKept(page);
+            bench.passes();
+            Boolean stacked = bench.householdBeside();
+            bench.householdColumnWidth(0);
+            bench.home(page);
+            return new Boolean[]{beside, stacked};
+        });
+        check("the open cell's books sit beside the grid at the full width and under it at 1000 wide (beside: " + sides[0] + ", at 1000: " + sides[1] + ")",
+                Boolean.TRUE.equals(sides[0]) && Boolean.FALSE.equals(sides[1]));
+        fx(() -> {
+            bench.home(page);
+            return null;
+        });
+    }
+
+    /** Sections 85 to 87: the Rankings tab kept, shown as a page built new shows it, and kept right through what reshapes it - to the pixel, since its table is painted. */
+    static void kp7Rankings(Game g, KeptBench bench) throws Exception {
+        System.out.println("\n=== The Rankings tab (KP7) ===");
+        fx(() -> {
+            bench.clock(false, null);
+            bench.speed(0);
+            return null;
+        });
+        KeptBench.Page page = fx(bench::rankings);
+        pageKept(g, bench, page, 85);
+        arrive(bench, page);
+        // (The pixels at three months are part of every page's section 86; the table is painted on canvases, which no signature holds.)
+        pageShows(g, bench, page, 86);
+
+        // 87: every choice on the tab, the pictures compared to the pixel after each. The saved cities come after: a slot written, a read waited for.
+        boolean nations = fx(bench::rankingsHasNations);
+        List<String> measures = KeptBench.rankingsMeasures();
+        java.util.Set<String> shown = new java.util.LinkedHashSet<>();
+        for (int i = 0; i < measures.size(); i += 5) shown.add(measures.get(i));
+        shown.add(measures.get(measures.size() - 1));
+        for (String k : measures) {
+            if (!KeptBench.rankingsSourced(k)) {
+                shown.add(k);
+                break;
+            }
+        }
+        System.out.printf("  the file has %d measures; %d of them are shown here (every fifth, the last and the first no real place is ranked on); Your world is %s%n",
+                measures.size(), shown.size(), nations ? "a board of this city's" : "not a board of this city's (it has no nations of its own)");
+        List<Choice> c = new ArrayList<>();
+        for (String b : KeptBench.rankingsBoards()) {
+            if (b.equals("YOUR_WORLD") && !nations) continue;
+            c.add(choice("the board " + b, x -> { x.rankingsBoard(b); return null; }));
+        }
+        c.add(choice("the board REAL_2025 again", x -> { x.rankingsBoard("REAL_2025"); return null; }));
+        for (String m : KeptBench.rankingsMoneys()) c.add(choice("the money " + m, x -> { x.rankingsMoney(m); return null; }));
+        for (String p : KeptBench.rankingsPrices()) c.add(choice("the prices " + p, x -> { x.rankingsPrice(p); return null; }));
+        for (String v : KeptBench.rankingsConverts()) c.add(choice("the conversion " + v, x -> { x.rankingsConvert(v); return null; }));
+        for (String m : shown) c.add(choice("the measure " + m, x -> { x.rankingsMeasure(m); return null; }));
+        c.add(choice("the measure gdp again", x -> { x.rankingsMeasure("gdp"); return null; }));
+        for (String f : KeptBench.rankingsFilters()) c.add(choice("the filter " + f, x -> { x.rankingsFilter(f); return null; }));
+        c.add(choice("the filter ALL again, Around you", x -> { x.rankingsFilter("ALL"); x.rankingsAround(true); return null; }));
+        c.add(choice("Around you on NATIONS", x -> { x.rankingsFilter("NATIONS"); return null; }));
+        c.add(choice("the full list again", x -> { x.rankingsFilter("ALL"); x.rankingsAround(false); return null; }));
+        c.add(choice("Browse all opened", x -> { x.rankingsBrowseAll(true); return null; }));
+        c.add(choice("a measure pinned (" + measures.get(measures.size() - 1) + ") with every measure open", x -> { x.rankingsPin(measures.get(measures.size() - 1), true); return null; }));
+        c.add(choice("...and the first unpinned (gdp)", x -> { x.rankingsPin("gdp", false); return null; }));
+        c.add(choice("...Browse all folded", x -> { x.rankingsBrowseAll(false); return null; }));
+        for (String d : fx(bench::rankingsDrawers)) c.add(choice("the drawer of " + d, x -> { x.rankingsDrawer(d); return null; }));
+        c.add(choice("the drawer closed", x -> { x.rankingsDrawer(null); return null; }));
+        pageReshaped(g, bench, page, 87, c, HANDED_BACK, true);
+
+        // The saved cities: the city saved into slot 10 of the harness's own folder, a read of the folder, the answer waited for (it comes back through the FX thread).
+        boolean wrote = quietly(() -> fx(bench::rankingsSaveSlot10));
+        check("the city is saved into slot 10 of the harness's scratch folder (the player's own folder is refused)", wrote);
+        fx(() -> {
+            bench.rankingsRead();
+            return null;
+        });
+        long deadline = System.nanoTime() + 60_000_000_000L;
+        boolean landed = fx(bench::rankingsReadLanded);
+        while (!landed && System.nanoTime() < deadline) {
+            Thread.sleep(200);
+            landed = fx(bench::rankingsReadLanded);
+        }
+        int onBoard = fx(bench::rankingsSavedOnBoard);
+        check("the read of the saved cities landed within a minute, with the saved city on the board (" + onBoard + " on it)", landed && onBoard >= 1);
+        List<Choice> y = new ArrayList<>();
+        y.add(choice("the filter YOUR_CITIES with the saved city on it, Now", x -> { x.rankingsFilter("YOUR_CITIES"); x.rankingsAtAge(false); return null; }));
+        y.add(choice("Your age", x -> { x.rankingsAtAge(true); return null; }));
+        y.add(choice("Now again", x -> { x.rankingsAtAge(false); return null; }));
+        for (String p : KeptBench.rankingsPrices()) y.add(choice("the prices " + p + " on Your cities", x -> { x.rankingsPrice(p); return null; }));
+        for (String m : KeptBench.rankingsMoneys()) y.add(choice("the money " + m + " on Your cities", x -> { x.rankingsMoney(m); return null; }));
+        for (String d : fx(bench::rankingsDrawers)) y.add(choice("the drawer of " + d + " on Your cities", x -> { x.rankingsDrawer(d); return null; }));
+        y.add(choice("Your age with a drawer open", x -> { x.rankingsAtAge(true); return null; }));
+        y.add(choice("the drawer closed, Now, the filter ALL (the saved city among the rows)", x -> { x.rankingsDrawer(null); x.rankingsAtAge(false); x.rankingsFilter("ALL"); return null; }));
+        y.add(choice("the filter YOUR_SIZE", x -> { x.rankingsFilter("YOUR_SIZE"); return null; }));
+        pageReshaped(g, bench, page, 87, y, HANDED_BACK, true);
+        fx(() -> {
+            bench.home(page);
+            return null;
+        });
+    }
+
+    /** The tooltips on a page across a month's kept redraw (setup made first): {tooltips before, on a node that has one after, the same Tooltip, on a node kept without one}. */
+    static int[] tipsAcrossMonth(Game g, KeptBench bench, KeptBench.Page page) throws Exception {
+        return fx(() -> {
+            bench.drawKept(page);
+            bench.passes();
+            java.util.Map<javafx.scene.Node, javafx.scene.control.Tooltip> before = bench.tooltips();
+            month(g);
+            bench.drawKept(page);
+            bench.passes();
+            java.util.Map<javafx.scene.Node, javafx.scene.control.Tooltip> after = bench.tooltips();
+            java.util.Set<javafx.scene.Node> still = bench.nodesOnPage();
+            int both = 0, same = 0, lost = 0;
+            for (java.util.Map.Entry<javafx.scene.Node, javafx.scene.control.Tooltip> e : before.entrySet()) {
+                javafx.scene.control.Tooltip now = after.get(e.getKey());
+                if (now == null) {
+                    // (A node kept on the page that has no tooltip now lost the one it had: Kept takes the tooltip off a kept node its draw does not tip.)
+                    if (still.contains(e.getKey())) lost++;
+                    continue;
+                }
+                both++;
+                if (now == e.getValue()) same++;
+            }
+            return new int[]{before.size(), both, same, lost};
+        });
+    }
+
+    /**
+     * Section 89: the hover and the tooltips. On Household money a vitals cell that is a door and the crumb door; on the Rankings tab a measure line
+     * and the table's rows: a pointer put over the node and the page drawn kept again leave the same node in the look its own mouse-entered gives it,
+     * and the pointer gone, the look its mouse-exited gives it (the table, whose rows are painted, lights the row under a pointer that has not moved,
+     * and none when it has gone). And the tooltips are kept: a node a month's redraw keeps keeps its own Tooltip (Kept.tip) on both pages, with a
+     * cell open, with a place's drawer open and with every measure unfolded.
+     */
+    static void kp7Hover(Game g, KeptBench bench) throws Exception {
+        System.out.println("\n--- 89: the hover is kept (Household money, the Rankings tab) ---");
+        java.util.Map<String, Boolean> found = new java.util.LinkedHashMap<>();
+        Hand none = b -> null;
+        KeptBench.Page money = fx(bench::householdMoney);
+        hoverKP6(g, bench, found, "Household money", money, none, "limitCell", "door");
+        KeptBench.Page rankings = fx(bench::rankings);
+        String line = fx(() -> {
+            bench.home(rankings);
+            bench.drawKept(rankings);
+            bench.passes();
+            return bench.hoverRankingsLine(() -> bench.drawKept(rankings));
+        });
+        hoverLine(found, "the Rankings tab", "measure line", line);
+        String rows = fx(() -> {
+            bench.home(rankings);
+            bench.drawKept(rankings);
+            bench.passes();
+            return bench.hoverRankingsRows(() -> bench.drawKept(rankings));
+        });
+        hoverLine(found, "the Rankings tab", "table row", rows);
+        check("Household money: a limitCell was found on the page of this city, to put the pointer on", found.getOrDefault("Household money|limitCell", false));
+        check("the Rankings tab: a measure line was found on the page of this city, to put the pointer on", found.getOrDefault("measure line", false));
+        check("the Rankings tab: a table row was found on the page of this city, to put the pointer on", found.getOrDefault("table row", false));
+    }
+
+    /** Section 89's last part: the tooltips are kept on Household money and the Rankings tab. */
+    static void kp7Tips(Game g, KeptBench bench) throws Exception {
+        System.out.println("\n--- 89: the tooltips are kept (Household money, the Rankings tab) ---");
+        String cell = fx(bench::householdCells).get(0);
+        String city = fx(bench::rankingsDrawers).get(0);
+        KeptBench.Page money = fx(bench::householdMoney);
+        record Where(String screen, String name, KeptBench.Page page) { }
+        List<Where> where = new ArrayList<>(List.of(
+                new Where("Household money", "Household money", money),
+                new Where("Household money", "Household money with the cell " + cell + " open", fx(() -> bench.withHome(money, "with a cell open", () -> bench.householdCell(cell)))),
+                new Where("Household money", "Household money, all of them", fx(() -> bench.withHome(money, "all of them", () -> bench.householdView("All of them"))))));
+        KeptBench.Page rankings = fx(bench::rankings);
+        where.add(new Where("the Rankings tab", "the Rankings tab", rankings));
+        where.add(new Where("the Rankings tab", "the Rankings tab with the city's drawer open", fx(() -> bench.withHome(rankings, "with a drawer open", () -> bench.rankingsDrawer(city)))));
+        where.add(new Where("the Rankings tab", "the Rankings tab with every measure open", fx(() -> bench.withHome(rankings, "with every measure open", () -> bench.rankingsBrowseAll(true)))));
+        java.util.Map<String, int[]> perScreen = new java.util.LinkedHashMap<>();
+        for (Where w : where) {
+            fx(() -> {
+                bench.home(w.page());
+                return null;
+            });
+            int[] c = tipsAcrossMonth(g, bench, w.page());
+            int[] sum = perScreen.computeIfAbsent(w.screen(), k -> new int[4]);
+            for (int i = 0; i < 4; i++) sum[i] += c[i];
+            System.out.printf("  %s: %d tooltips, %d of them on a node that has one after a month's redraw, %d the same Tooltip, %d on a node kept without one%n", w.name(), c[0], c[1], c[2], c[3]);
+            check(w.name() + ": every tooltip a node had and still has is the same Tooltip after a month's kept redraw (" + c[2] + " of " + c[1] + "), and none is lost from a node the page keeps (" + c[3] + ")",
+                    c[1] == c[2] && c[3] == 0);
+        }
+        for (java.util.Map.Entry<String, int[]> e : perScreen.entrySet()) {
+            check("the pages of " + e.getKey() + " carry tooltips that a month leaves on their nodes, to be kept (" + e.getValue()[1] + ")", e.getValue()[1] > 0);
+        }
+    }
+
+    /**
+     * Section 90: what the kept month costs on Household money - as it opens and with the first family cell's books open - and on the Rankings tab - as
+     * it opens and with every measure unfolded - against the same month built new.
+     */
+    static void kp7Cost(Game g, KeptBench bench) throws Exception {
+        fx(() -> {
+            bench.clock(false, null);
+            bench.speed(0);
+            return null;
+        });
+        String cell = fx(bench::householdCells).get(0);
+        KeptBench.Page money = fx(bench::householdMoney);
+        KeptBench.Page open = fx(() -> bench.withHome(money, "Household money with the cell " + cell + " open", () -> bench.householdCell(cell)));
+        pageCost(g, bench, money, 90, KEPT_HOUSEHOLD_MS, "KEPT_HOUSEHOLD_MS");
+        pageCost(g, bench, open, 90, KEPT_HOUSEHOLD_MS, "KEPT_HOUSEHOLD_MS");
+        KeptBench.Page rankings = fx(bench::rankings);
+        KeptBench.Page unfolded = fx(() -> bench.withHome(rankings, "the Rankings tab with every measure open", () -> bench.rankingsBrowseAll(true)));
+        pageCost(g, bench, rankings, 90, KEPT_RANKINGS_MS, "KEPT_RANKINGS_MS");
+        pageCost(g, bench, unfolded, 90, KEPT_RANKINGS_MS, "KEPT_RANKINGS_MS");
+        fx(() -> {
+            bench.home(money);
+            bench.home(rankings);
+            return null;
+        });
+    }
+
     /** Sections 82 to 90: Household money and the Rankings tab kept, and the clock never rebuilding a rail screen (88). */
     static void screensKP7(Game g, KeptBench bench) throws Exception {
         System.out.printf("%n=== Household money, the Rankings tab and the clock on every rail screen (KP7): a city at month %d ===%n", g.getMonth());
         long t = System.nanoTime();
         int c = checks;
-        // 82 to 84 (Household money) and 85 to 87 (the Rankings tab) go here, from slices A and B's bench hands; 89 (the hover and the
-        // tooltips on the two pages) and 90 (their cost) after 88. All four are written with the second half of KP7.
+        kp7Household(g, bench);
+        t = tookWith("Household money (82 to 84)", t, c);
+        c = checks;
+        kp7Rankings(g, bench);
+        t = tookWith("the Rankings tab (85 to 87)", t, c);
+        c = checks;
         kp7Clock(g, bench);
-        tookWith("the clock on every rail screen (88)", t, c);
+        t = tookWith("the clock on every rail screen (88)", t, c);
+        c = checks;
+        kp7Hover(g, bench);
+        kp7Tips(g, bench);
+        t = tookWith("the hover and the tooltips (89)", t, c);
+        c = checks;
+        kp7Cost(g, bench);
+        tookWith("the cost (90)", t, c);
     }
 
     /** A notice raised now, unread, in the inbox. */
