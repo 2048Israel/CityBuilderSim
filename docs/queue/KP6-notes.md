@@ -1,7 +1,8 @@
 # KP6 - Screens kept: Government, Trade, Policy and zoning ({next}, 2026-11-05)
 
 **WHERE IT STANDS** (2026-11-06): the four slices are in and reviewed (B bfcbf25e, A a6f7ddef, C 911af0bc, D 342f0a38,
-with Opus's mends d3edf5ff and cad44d6f); waiting on KP5 to land on main, then the merge and `--pick` (§5).
+with Opus's mends d3edf5ff and cad44d6f); KP5's mended branch merged in (183aa5d5), `--pick` exit 3 on it, main's
+recorded reds only (§5); the ship file waits for KP5 on main.
 
 The batch's record. The study's KP6 row (`docs/studies/spec-screens-in-place.md` §7) with §3 (the pattern and its
 rules, seven since KP2) and §6 (what checks it). Lane 2 (screens), after KP5, built on `origin/batch/KP5` at its ship
@@ -135,7 +136,15 @@ not asserted). The deficit's arrears are written into `Game`'s map by reflection
 model's own way, cash past the central bank's ceiling and a line refused (CentralBankCheck 6), would leave the city at
 the ceiling for every section after; a rename fails the harness loudly.
 
-{the run on the merge: to come}
+On the merge with KP5's mended branch (183aa5d5, main at 0.9.23 with R1b and R1c inside), with the world files:
+`--pick` exit 3, 9 harnesses, 7 passed (TimingCheck, ClockCheck, ZoningViewCheck, BuildMenuCheck, BridgeMapCheck,
+LandCheck, IslandNetCheck); the two reds main's recorded: MapCheck (2d, the yard's boxes) and KeptCheck's one line,
+section 49's Construction income page at 89.8% on R1c's city (KS1, queued) - every KP6 line passes on that city, 2,000
+OK in all. KP6's six timed lines, soft beside the other lane's full suite: Government's Overview 6.2 ms of 7, Trade's
+Overview 7.3 of 10 and the reserves 2.8, Policy's hub 4.4, Profit 2.1 and the policy rate 7.1 of 10. **For the gate:**
+`KEPT_GOVERNMENT_MS` is the tight one (89% of it under that load, as KP5's `KEPT_BANK_MS`, 10.6 of 12 in the same run);
+being new, a red on it would have no main to compare with. No full suite: the diff is `ui/` and `KeptCheck`, and the
+nine picked are the harnesses that read it; nothing outside `ui/` changed.
 
 ## 6. Found in review
 
