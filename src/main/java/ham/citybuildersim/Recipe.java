@@ -20,8 +20,9 @@ import java.util.Map;
  * makes and uses in units of a good a month at nameplate, jobs in posts by JobType, electricity and gen in kW, water in units, consumables in
  * thousands of the world's money (at the founding's price level once the template is priced, as the top level's are).
  *
- * "since" is a year (a whole number, as text or digits) or a catalogue code; a year is known from its January, a code never in this build
- * (Equipment's reading, shared: Equipment.yearOf()). needsEquipment is the id of a piece of equipment on the SAME template, or null for none;
+ * "since" is a year (a whole number, as text or digits) or a catalogue code; a year is known from its January, a code from its entry's month in
+ * research.json (R2: ResearchCatalog.knownFrom(), the one reading Equipment and BuildingsTemplate share), and a code that is not in the
+ * catalogue never. needsEquipment is the id of a piece of equipment on the SAME template, or null for none;
  * which part of a stack of buildings may run the recipe (the fitted or the unfitted) follows from it (Recipes).
  */
 public final class Recipe {
@@ -36,7 +37,7 @@ public final class Recipe {
     private final String name;
     private final String since;
     private final boolean year;
-    private final int sinceYear;
+    private final int knownFrom;
     private final String needsEquipment;
     private final boolean isDefault;
     private final Map<Good, Double> makes;
@@ -75,9 +76,8 @@ public final class Recipe {
         this.id = id.trim();
         this.name = name == null || name.isBlank() ? this.id : name.trim();
         this.since = since.trim();
-        Integer parsed = Equipment.yearOf(this.since);
-        this.year = parsed != null;
-        this.sinceYear = parsed == null ? 0 : parsed;
+        this.year = Equipment.yearOf(this.since) != null;
+        this.knownFrom = ResearchCatalog.knownFrom(this.since);
         this.needsEquipment = needsEquipment == null || needsEquipment.isBlank() ? null : needsEquipment.trim();
         this.isDefault = isDefault;
         this.makes = copyOf(id, "makes", makes);
@@ -130,15 +130,23 @@ public final class Recipe {
     /** What the screens call it. */
     public String getName() { return name; }
 
-    /** The year it is known from, as text, or the catalogue code that will say. */
+    /** The year it is known from, as text, or the catalogue code that says (research.json). */
     public String getSince() { return since; }
 
     /** Whether "since" is a year (it parses as a whole number) and not a catalogue code. */
     public boolean isYear() { return year; }
 
-    /** Whether it is known in a calendar year: a year since from that year on, a code never (R2's catalogue resolves codes; until then none is known). */
+    /** The game month it is known from: a year's January, a code's entry's month (ResearchCatalog.knownFrom()); Integer.MAX_VALUE for a code not in the catalogue. */
+    public int knownFrom() { return knownFrom; }
+
+    /** Whether it is known at a game month (month 1 = January 1900): from the month it is known from on. */
+    public boolean knownAt(int gameMonth) {
+        return gameMonth >= knownFrom;
+    }
+
+    /** Whether it is known by a calendar year's January: knownAt() of that month (Equipment.januaryOf()), so that a screen that asks by the year agrees with the model that asks by the month. */
     public boolean knownIn(int calendarYear) {
-        return year && calendarYear >= sinceYear;
+        return knownAt(Equipment.januaryOf(calendarYear));
     }
 
     /** The id of the piece of equipment on the template it needs, or null for a recipe that needs none. */

@@ -1,6 +1,6 @@
 # CausesOfDeathCheck.java - 755 lines · 22 methods · 7 constants · harnesses
 
-`ham/citybuildersim/CausesOfDeathCheck.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CausesOfDeathCheck.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
 > Proves the causes of death of 1900 (R0b, slice 1): the model on its own,
 > before the month hands its rates to the cohorts. Every claim below sets its

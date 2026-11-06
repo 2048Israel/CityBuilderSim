@@ -1,6 +1,6 @@
 # Freight.java - 2,126 lines · 105 methods · 13 constants · sectors
 
-`ham/citybuildersim/sectors/Freight.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Freight.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
 > The Freight sector: the city's carrier, in the railway's slot (FR2, 2026-10-18;
 > docs/studies/spec-freight-and-infrastructure.md 3.1, D1). Its Rail division is the

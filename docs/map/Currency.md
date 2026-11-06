@@ -1,6 +1,6 @@
 # Currency.java - 263 lines · 21 methods · 10 constants · model
 
-`ham/citybuildersim/Currency.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Currency.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
 > What the city's money is called, and how it is written.
 > 

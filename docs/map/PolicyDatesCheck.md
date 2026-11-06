@@ -1,6 +1,6 @@
 # PolicyDatesCheck.java - 905 lines · 10 methods · 4 constants · harnesses
 
-`ham/citybuildersim/PolicyDatesCheck.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PolicyDatesCheck.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
 > Every Policy lever opens on the date Canada first had it, and no lever may open more than the law field's four years early (R0, slice 1:
 > PolicyDates), and the levers TaxPolicy holds are held shut at zero until then and open on their date: the three income taxes at the city's

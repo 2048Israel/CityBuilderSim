@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.24 — R2, Research: the catalogue and the world's dates — 2026-11-05, ready, see docs/queue/R2-notes.md
+Research has its catalogue: `research.json`'s 89 discoveries (the first study's 40, the 1900 study's 48 and L5, the
+Canada Pension Plan), each with its field, kind, history's month, what it needs first, whether it carries a licence fee
+and the work it takes by the study's rule; the law rows carry the Policy levers' own dates (`ResearchCatalog`,
+`ResearchCheck`). Every catalogue code in `buildings.json` now resolves to history's month (`knownAt()`): in a city
+founded the 1900 way the tractor is known from June 1917 and the oxygen converter's recipe from November 1952, where a
+code was never known, and the 29 buildings that did not exist in 1900 are dated by the discovery that opens each (the
+Container Terminal by E5, the cracking units by PE11); the Oxygen Steel Shop stands from 1900. A city founded the
+default way reads none of it: the playtest's trace is unchanged. The rest of the brief is queued: buildings ordered only
+on their dates (R2b), licence fees (R2c), each entry's old way (R2d, R2e), medicine (R2f), the near-future list (R6).
+
 ### 0.9.23 — R1c, Research: recipes as data — 2026-11-05, ready, see docs/queue/R1c-notes.md
 A building can know several ways to run (`buildings.json`'s `recipes`; `Recipe`): the top level is today's, the
 default, and a recipe states only what it changes. In a city founded the 1900 way (off until R1d) each month the

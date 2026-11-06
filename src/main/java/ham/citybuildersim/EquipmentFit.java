@@ -38,7 +38,7 @@ public final class EquipmentFit {
     public enum Kind {
         /** No building of the stack lacks the piece. */
         FITTED,
-        /** Its "since" is not known in the city's year: a year not yet come, or a catalogue code (the tractor's PE14, always, in this build). */
+        /** Its "since" is not known at the city's month: a year not yet come, or a catalogue code not yet discovered (the tractor's PE14 is June 1917, research.json). */
         NOT_KNOWN,
         /** Steps 3 and 4 both hold: over its life it earns back its cost, and a month's gain carries the interest hurdle on its whole cost. */
         PAYS,
@@ -110,24 +110,24 @@ public final class EquipmentFit {
         return c;
     }
 
-    /** FITTED when no building of the stack lacks the piece, NOT_KNOWN when it is not known in the year, else null: the two verdicts that price nothing. */
-    private static Kind settled(Equipment piece, int year, int unfitted) {
+    /** FITTED when no building of the stack lacks the piece, NOT_KNOWN when it is not known at the game month, else null: the two verdicts that price nothing. */
+    private static Kind settled(Equipment piece, int month, int unfitted) {
         if (unfitted <= 0) return Kind.FITTED;
-        return piece.knownIn(year) ? null : Kind.NOT_KNOWN;
+        return piece.knownAt(month) ? null : Kind.NOT_KNOWN;
     }
 
     /**
      * The verdict from the four steps, given the figures (a harness's, or the game layer's). FITTED for no building unfitted, NOT_KNOWN for a piece not
-     * known in the year, else PAYS when the gain is more than nothing, earns its cost back over the piece's life at the real rate
-     * (gain x annuityFactor() at least the cost: step 3) and is at least the hurdle (step 4), and NOT_YET when either fails or the gain or the cost is
-     * not a number.
+     * known at the game month (a year from its January, a code from its entry's month in research.json), else PAYS when the gain is more than
+     * nothing, earns its cost back over the piece's life at the real rate (gain x annuityFactor() at least the cost: step 3) and is at least the
+     * hurdle (step 4), and NOT_YET when either fails or the gain or the cost is not a number.
      *
      * @param annualRealRate the real rate a year the annuity is struck at
      * @param hurdle         what a month's gain must reach to pass the money gate (0 for none)
      */
-    public static Verdict judge(Equipment piece, BuildingsTemplate t, int year, int unfitted, double gain, double cost,
+    public static Verdict judge(Equipment piece, BuildingsTemplate t, int month, int unfitted, double gain, double cost,
                                 double annualRealRate, double hurdle) {
-        Kind early = settled(piece, year, unfitted);
+        Kind early = settled(piece, month, unfitted);
         if (early != null) {
             return new Verdict(early, t.getId(), piece.getId(), Double.NaN, Double.NaN, piece.getLifeMonths(), 0, Double.NaN, Double.NaN, Double.NaN, Double.NaN);
         }
@@ -149,8 +149,8 @@ public final class EquipmentFit {
 
     /**
      * One building's gain a month from a piece, at the city's prices: the electric drive's from the coal's and the grid's price (the unit price the
-     * sectors are billed, EconomyManager.getPricePerWatt()), the motor truck's from Haulage's teams and trucks. The tractor's (FARM_HORSES) is NaN:
-     * R1c writes its petrol, and its "since" is a code, so no verdict reaches it. A piece that ends a form keeps its form's gain whether or not
+     * sectors are billed, EconomyManager.getPricePerWatt()), the motor truck's from Haulage's teams and trucks. The tractor's (FARM_HORSES) is NaN
+     * (so NOT_YET, never PAYS) until its petrol is written: its "since" is PE14, June 1917, and before that month no verdict reaches it. A piece that ends a form keeps its form's gain whether or not
      * it is also the template's recipe piece. A piece that ends NO form (R1c) is there to enable a recipe: its gain is the value of the best recipe
      * a fitted building of the template could run less that of the best an unfitted one could, at the city's prices (Recipes.gainOf()), and
      * nothing for one that is not the template's recipe piece.
@@ -171,7 +171,7 @@ public final class EquipmentFit {
 
     /**
      * The verdict on ONE building of a stack for a piece: FITTED when no building of the stack lacks it, NOT_KNOWN when it is not known in the
-     * city's year, else its gain and cost at the city's prices (the cost's work at what the builders are paid a point,
+     * city's month, else its gain and cost at the city's prices (the cost's work at what the builders are paid a point,
      * BuildingManager.nonMaterialPricePerPoint()) judged at the owning sector's rate: the nominal rate a loan of the whole cost is written at
      * (BusinessDebtManager.projectRate()), its real rate for the annuity, and the interest hurdle on that whole cost as the order gate strikes it
      * (Game.orderGate(): SpreadPlanner's money gate, the whole cost by default). A building with no owning sector, or a city with no lender, is
@@ -193,8 +193,8 @@ public final class EquipmentFit {
 
     /** verdict()'s and verdictForNew()'s one pricing: the template, the piece and how many of the buildings asked about lack it (0 for none: FITTED). */
     private static Verdict priced(Game game, BuildingsTemplate t, Equipment piece, int unfitted) {
-        int year = CityCalendar.yearOf(game.getMonth());
-        if (settled(piece, year, unfitted) != null) return judge(piece, t, year, unfitted, Double.NaN, Double.NaN, 0, 0);
+        int month = game.getMonth();
+        if (settled(piece, month, unfitted) != null) return judge(piece, t, month, unfitted, Double.NaN, Double.NaN, 0, 0);
 
         double gain = gainOf(game, t, piece);
         double cost = cost(piece, good -> cityPrice(game, good), game.getBuildingManager().nonMaterialPricePerPoint());
@@ -204,7 +204,7 @@ public final class EquipmentFit {
         double amount = game.orderGate().testedOn(cost, sector == null ? 0 : sector.getCash());
         double rate = amount > 0 && sector != null && credit != null ? credit.projectRate(sector.key(), amount) : 0;
         double hurdle = amount > 0 ? plans.interestHurdle(amount, rate) : 0;
-        return judge(piece, t, year, unfitted, gain, cost, plans.realTestRate(rate), hurdle);
+        return judge(piece, t, month, unfitted, gain, cost, plans.realTestRate(rate), hurdle);
     }
 
     /** How R1b orders what pays: earnings on cost, the best first; the same earnings by template id and then piece id, so that no list order biases it. */

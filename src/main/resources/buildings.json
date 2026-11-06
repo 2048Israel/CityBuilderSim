@@ -121,8 +121,10 @@
   "good: \"oldMetal\": {\"STEEL\": 10500} is the tonnes a month it takes at nameplate,",
   "paying the sellers 70% of scrap's export price (0.7.123; see OldMetal). What no yard",
   "takes goes to landfill.",
-  "\"since\" is the year a building first existed (0.7.123), 1900 - the start year - for one",
-  "that stood before it; read by nothing yet, for research (absent: not yet dated).",
+  "\"since\" says when a building first existed: a year (0.7.123), 1900 - the start year - for one",
+  "that stood before it, or (R2) a code of research.json (\"PE4\"), the discovery that opens it,",
+  "known from that entry's month in history (absent: undated, always known). Read by nothing in",
+  "a city founded the default way; R2b gates a 1900 city's orders by it.",
   "A COAL PREPARATION PLANT (\"wash\": 500000, 0.7.126) washes the raw coal Coal Mining's",
   "mines on coking fields dig, tonnes a month at nameplate, into coking coal (55%) and",
   "thermal coal (20%), the rest to spoil; raw coal no plant washes sells as thermal coal,",
@@ -155,8 +157,8 @@
   "EQUIPMENT (R1; docs/studies/research-design.md 2.1): a building may carry pieces it can be fitted",
   "with, \"equipment\": [{\"id\": \"electric-drive\", \"name\": \"Electric motor drive\", \"since\": \"1900\",",
   "\"ends\": \"STEAM\", \"buys\": {\"MACHINERY\": 10.9}, \"work\": 114, \"lifeMonths\": 300}]. \"since\" is a year",
-  "(known from its January) or a catalogue code such as \"PE14\" (unknown until the research catalogue",
-  "reads it). \"ends\" names the 1900 form the piece ends: STEAM (a factory turning its own engine,",
+  "(known from its January) or a catalogue code such as \"PE14\" (known from that entry's month in",
+  "research.json, June 1917 for the tractor). \"ends\" names the 1900 form the piece ends: STEAM (a factory turning its own engine,",
   "Sector's steam share), FARM_HORSES (Agriculture's horse share) or CART_HORSES (Haulage's). \"buys\"",
   "is the goods fitting it takes, units at nameplate; \"work\" the BUILDING_WORK points; \"lifeMonths\"",
   "its life. A city's buildings stand fitted: the count of unfitted ones is the city's own",
@@ -511,6 +513,7 @@
    "id": 41,
    "name": "Wind Farm",
    "category": "ELECTRICITY",
+   "since": "E16",
    "cashCost": 23240,
    "constructionPoints": 1800,
    "constructionMaterials": 431,
@@ -529,6 +532,7 @@
    "id": 11,
    "name": "Electric Arc Furnace",
    "category": "HEAVY_INDUSTRY",
+   "since": "PE1",
    "sector": "Heavy Industry",
    "cashCost": 22471,
    "constructionPoints": 1400,
@@ -554,6 +558,7 @@
    "id": 12,
    "name": "Steel Mini-Mill",
    "category": "HEAVY_INDUSTRY",
+   "since": "E13",
    "sector": "Heavy Industry",
    "cashCost": 89864,
    "constructionPoints": 9000,
@@ -767,6 +772,7 @@
    "id": 18,
    "name": "Walk-in Clinic",
    "category": "HEALTHCARE",
+   "since": "B4",
    "care": "GENERAL",
    "capacity": 2500,
    "cashCost": 1501,
@@ -876,6 +882,7 @@
    "id": 23,
    "name": "Assisted Living Residence",
    "category": "HEALTHCARE",
+   "since": "M8",
    "care": "SENIOR",
    "capacity": 90,
    "cashCost": 13783,
@@ -1300,6 +1307,7 @@
    "id": 46,
    "name": "Contact Centre",
    "category": "BUSINESS_SERVICES",
+   "since": "B2",
    "sector": "Business Services",
    "capacity": 300,
    "cashCost": 16335,
@@ -1323,6 +1331,7 @@
    "id": 47,
    "name": "Shared Services Centre",
    "category": "BUSINESS_SERVICES",
+   "since": "B6",
    "sector": "Business Services",
    "capacity": 300,
    "cashCost": 16335,
@@ -1936,6 +1945,7 @@
    "id": 66,
    "name": "Assembly Plant",
    "category": "AUTOMOTIVE",
+   "since": "PE13",
    "sector": "Automotive",
    "cashCost": 221000,
    "constructionPoints": 24300,
@@ -2186,6 +2196,7 @@
    "id": 73,
    "name": "Desalination Plant",
    "category": "WATER",
+   "since": "E6",
    "source": "SEA",
    "cashCost": 131568,
    "constructionPoints": 88000,
@@ -2277,6 +2288,7 @@
    "id": 77,
    "name": "Small Reformer",
    "category": "HEAVY_INDUSTRY",
+   "since": "PE27",
    "sector": "Refining",
    "cashCost": 16200,
    "constructionPoints": 8100,
@@ -2298,6 +2310,7 @@
    "id": 78,
    "name": "Reformer",
    "category": "HEAVY_INDUSTRY",
+   "since": "PE27",
    "sector": "Refining",
    "cashCost": 108000,
    "constructionPoints": 54000,
@@ -2320,6 +2333,7 @@
    "id": 79,
    "name": "Small Cracking Unit",
    "category": "HEAVY_INDUSTRY",
+   "since": "PE11",
    "sector": "Refining",
    "cashCost": 19782,
    "constructionPoints": 9891,
@@ -2341,6 +2355,7 @@
    "id": 80,
    "name": "Cracking Unit",
    "category": "HEAVY_INDUSTRY",
+   "since": "PE11",
    "sector": "Refining",
    "cashCost": 105000,
    "constructionPoints": 52500,
@@ -2363,6 +2378,7 @@
    "id": 81,
    "name": "Small Hydrocracker",
    "category": "HEAVY_INDUSTRY",
+   "since": "E7",
    "sector": "Refining",
    "cashCost": 19035,
    "constructionPoints": 9518,
@@ -2384,6 +2400,7 @@
    "id": 82,
    "name": "Hydrocracker",
    "category": "HEAVY_INDUSTRY",
+   "since": "E7",
    "sector": "Refining",
    "cashCost": 83000,
    "constructionPoints": 41500,
@@ -2406,6 +2423,7 @@
    "id": 83,
    "name": "Small Alkylation Unit",
    "category": "HEAVY_INDUSTRY",
+   "since": "PE25",
    "sector": "Refining",
    "cashCost": 18845,
    "constructionPoints": 9422,
@@ -2427,6 +2445,7 @@
    "id": 84,
    "name": "Alkylation Unit",
    "category": "HEAVY_INDUSTRY",
+   "since": "PE25",
    "sector": "Refining",
    "cashCost": 115000,
    "constructionPoints": 57500,
@@ -2449,6 +2468,7 @@
    "id": 85,
    "name": "Small Coker",
    "category": "HEAVY_INDUSTRY",
+   "since": "PE23",
    "sector": "Refining",
    "cashCost": 18671,
    "constructionPoints": 9336,
@@ -2470,6 +2490,7 @@
    "id": 86,
    "name": "Coker",
    "category": "HEAVY_INDUSTRY",
+   "since": "PE23",
    "sector": "Refining",
    "cashCost": 84000,
    "constructionPoints": 42000,
@@ -2577,6 +2598,7 @@
    "id": 91,
    "name": "Filling Station",
    "category": "COMMERCIAL",
+   "since": "PB1",
    "sector": "Retail",
    "cashCost": 302,
    "constructionPoints": 80,
@@ -2695,6 +2717,7 @@
    "id": 96,
    "name": "Container Terminal",
    "category": "PORTS",
+   "since": "E5",
    "cashCost": 1659600,
    "constructionPoints": 829800,
    "constructionMaterials": 27660,
@@ -2850,7 +2873,7 @@
     "IRON": 150000,
     "THERMAL_COAL": 4500
    },
-   "since": 1955
+   "since": "E4"
   },
   {
    "id": 103,
@@ -3004,7 +3027,7 @@
     "SCRAP": 72500,
     "LIME": 17400
    },
-   "since": 1952,
+   "since": 1900,
    "equipment": [
     {
      "id": "open-hearth",
@@ -3084,7 +3107,7 @@
    "uses": {
     "SCRAP": 137500
    },
-   "since": 1969
+   "since": "E13"
   },
   {
    "id": 108,
@@ -3181,7 +3204,7 @@
     "sites": 1,
     "dig": 3
    },
-   "since": 1955
+   "since": "E4"
   },
   {
    "id": 110,
@@ -3211,7 +3234,7 @@
     "sites": 20,
     "dig": 3
    },
-   "since": 1955
+   "since": "E4"
   },
   {
    "id": 111,
@@ -3613,7 +3636,7 @@
     "AGGREGATE": 18750,
     "THERMAL_COAL": 16750
    },
-   "since": 1902
+   "since": "PE4"
   },
   {
    "id": 120,
@@ -3733,7 +3756,7 @@
     "sites": 8,
     "dig": 0.341
    },
-   "since": 1906
+   "since": "PE8"
   },
   {
    "id": 123,
@@ -3767,7 +3790,7 @@
     "sites": 1,
     "dig": 1.4
    },
-   "since": 1968
+   "since": "E12"
   },
   {
    "id": 124,
@@ -3969,7 +3992,7 @@
     "SAWLOGS": 6250,
     "PULPWOOD": 6250
    },
-   "since": 1973
+   "since": "E14"
   },
   {
    "id": 131,

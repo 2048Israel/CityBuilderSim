@@ -1,6 +1,6 @@
 # AgeBand.java - 181 lines · 12 methods · 1 constants · model
 
-`ham/citybuildersim/AgeBand.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/AgeBand.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
 > The six ages of a resident.
 > 

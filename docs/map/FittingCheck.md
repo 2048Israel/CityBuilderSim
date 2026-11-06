@@ -1,6 +1,6 @@
 # FittingCheck.java - 1,080 lines · 33 methods · 2 constants · harnesses
 
-`ham/citybuildersim/FittingCheck.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FittingCheck.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
 > Fitting the equipment (R1b): the 1900 forms at rest between the presses, a Game's forms cleared when it founds or loads another city, the city
 > founded the 1900 way, what a building that finishes comes with, and the fitting itself - ordered, paid, bought and worked, ranked with the
@@ -25,7 +25,7 @@
 >      without construction is not hooked, and comes as placed until that is said
 >   4. WHAT A NEW BUILDING COMES WITH: in a city founded the 1900 way, bakeries ordered on site that finish come fitted with the electric
 >      drive when it pays for a new building at the city's coal price (the count unchanged) and without it when it does not (the count up by
->      what finished), a farm finishing never has its tractor (NOT_KNOWN), and the order costs what the model quotes for it in either city,
+>      what finished), a farm finishing has no tractor before PE14's June 1917 (NOT_KNOWN), and the order costs what the model quotes for it in either city,
 >      the template's whole cost at that city's builders (R1c: the two cities' queues and wages are each its own, so it is no longer the same
 >      figure in both); in a default city every building finishes fitted, at either price
 >   5. THE ORDER RANKED WITH THE BUILDINGS (slice B): at a coal price where the drive pays, the choice is the fitting when the plan builds
@@ -50,7 +50,7 @@
 > sectors build nothing on their own. Figures are asserted against the stacks' own quantities and counts, the templates' getters and the model's
 > verdicts, never numbers copied from the brief.
 
-**Uses:** [Game](Game.md) (57), [EquipmentFit](EquipmentFit.md) (54), [EquipmentCheck](EquipmentCheck.md) (48), [BuildingsStacks](BuildingsStacks.md) (20), [Founding](Founding.md) (20), [Good](Good.md) (16), [Sector](Sector.md) (13), [BusinessInvestment](BusinessInvestment.md) (13), [Equipment](Equipment.md) (12), [GameFiles](GameFiles.md) (8), [Fittings](Fittings.md) (8), [Forms1900Check](Forms1900Check.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (7), [DataSave](DataSave.md) (6), [SpreadPlanner](SpreadPlanner.md) (5), [Sectors](Sectors.md) (4), [MoneyAudit](MoneyAudit.md) (4), [GoodsMarket](GoodsMarket.md) (3), [BuildingManager](BuildingManager.md) (2), [Currency](Currency.md) (2), [World](World.md) (2), [Nations](Nations.md) (2), [Construction](Construction.md) (2), [MaterialsCheck](MaterialsCheck.md) (1), [Agriculture](Agriculture.md) (1), [CityCalendar](CityCalendar.md) (1), [Landmasses](Landmasses.md) (1), [Trade](Trade.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [Freight](Freight.md) (1)
+**Uses:** [Game](Game.md) (57), [EquipmentFit](EquipmentFit.md) (54), [EquipmentCheck](EquipmentCheck.md) (48), [BuildingsStacks](BuildingsStacks.md) (20), [Founding](Founding.md) (20), [Good](Good.md) (16), [Sector](Sector.md) (13), [BusinessInvestment](BusinessInvestment.md) (13), [Equipment](Equipment.md) (12), [GameFiles](GameFiles.md) (8), [Fittings](Fittings.md) (8), [Forms1900Check](Forms1900Check.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (7), [DataSave](DataSave.md) (6), [SpreadPlanner](SpreadPlanner.md) (5), [Sectors](Sectors.md) (4), [MoneyAudit](MoneyAudit.md) (4), [GoodsMarket](GoodsMarket.md) (3), [BuildingManager](BuildingManager.md) (2), [Currency](Currency.md) (2), [World](World.md) (2), [Nations](Nations.md) (2), [Construction](Construction.md) (2), [MaterialsCheck](MaterialsCheck.md) (1), [Agriculture](Agriculture.md) (1), [Landmasses](Landmasses.md) (1), [Trade](Trade.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [Freight](Freight.md) (1)
 
 **Used by (1):** [RecipeCheck](RecipeCheck.md)
 
