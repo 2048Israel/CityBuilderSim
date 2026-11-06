@@ -2,8 +2,14 @@
 
 ## WHERE IT STANDS
 
-**Building.** Branch `batch/R1c` from `batch/R1b`'s ship file (RL1); R1b not
-on main yet.
+**Ready.** Branch `batch/R1c` from `batch/R1b`'s ship file (RL1); main with
+R1b in (0.9.22, d460beb4) merged at 9a647d79. Slice A is 564bc2c6, the data
+6c34f632, slice B c10c6134, OilCheck's identity 2578ab8f. `--pick` on the
+merge: **exit 4**, every red line main's known class reworded by the moved
+path (§5): SlopeCheck, DenominationCheck, ScaleCheck, MapCheck; the full
+suite also meets two of main's margins (MonetaryCheck, KeptCheck 49: MN1,
+KS1 in the ship file's `## queued`). The farms' fuel moves the trace: the
+ensemble scores 23/26 against 0.9.19's 24/26 (★11). R1c-R in `## pending`.
 
 ## 1. What R1c is
 
