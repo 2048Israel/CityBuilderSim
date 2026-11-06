@@ -5,8 +5,8 @@ import java.util.EnumMap;
 import java.util.Map;
 
 /**
- * A piece of equipment a building template carries: what it is called, when it is known, which 1900 form it ends, what fitting it buys and how
- * long it lasts. Immutable; read from buildings.json's "equipment" (BuildingCatalog.readEquipment()) and held by the template
+ * A piece of equipment a building template carries: what it is called, when it is known, which 1900 form it ends (if any), what fitting it buys and
+ * how long it lasts. Immutable; read from buildings.json's "equipment" (BuildingCatalog.readEquipment()) and held by the template
  * (BuildingsTemplate.getEquipment()).
  *
  * WHY (R1, 2026-11-05; docs/studies/research-design.md 2.1-2.2, research-1900.md 3). It replaced nothing: before R1 a building had one way to run,
@@ -15,6 +15,10 @@ import java.util.Map;
  * form's share (EquipmentForms) and "the forms read one number" (R0c's call 3); and it says what fitting it costs, in goods and in
  * BUILDING_WORK, and how long it lasts, which is what R1b's payback rule weighs against what it saves. Data and not code, so that the next piece
  * is a line in the file and not a class.
+ *
+ * A PIECE MAY END NO FORM (R1c, 2026-11-05; research-design 2.1): "ends" is then null, and the piece exists to enable a recipe (Recipe's
+ * needsEquipment): the by-product ovens that replace the beehive ovens, which no 1900 form is the share of. The catalogue keeps such a piece
+ * only where a recipe of its template needs it. A piece that ends a form may be the one a recipe needs too (the tractor will be).
  *
  * "since" is a year, as text ("1900"), or a catalogue code ("PE14"). A year is known from its January (knownIn()); a code is never known in
  * this build: R2's catalogue resolves codes to their years, and until it reads one the piece is data and never pays (R1-notes call 7).
@@ -45,7 +49,7 @@ public final class Equipment {
      * @param id         the piece's permanent key on its template ("electric-drive"); never empty
      * @param name       what the screens call it; the id when blank
      * @param since      a year as text ("1900") or a catalogue code ("PE14"); never empty
-     * @param ends       the form it ends
+     * @param ends       the form it ends, or null for a piece that ends none (it exists to enable a recipe)
      * @param buys       the goods fitting one building buys, units at nameplate: finite and not negative (copied)
      * @param work       the BUILDING_WORK points to fit it: finite and not negative
      * @param lifeMonths how long it lasts, in months: more than 0
@@ -54,7 +58,6 @@ public final class Equipment {
     public Equipment(String id, String name, String since, Form ends, Map<Good, Double> buys, double work, int lifeMonths) {
         if (id == null || id.isBlank()) throw new IllegalArgumentException("a piece of equipment has no id");
         if (since == null || since.isBlank()) throw new IllegalArgumentException("\"" + id + "\" has no since");
-        if (ends == null) throw new IllegalArgumentException("\"" + id + "\" ends no form");
         if (lifeMonths <= 0) throw new IllegalArgumentException("\"" + id + "\" has a life of " + lifeMonths + " months");
         if (!Double.isFinite(work) || work < 0) throw new IllegalArgumentException("\"" + id + "\" has work " + work);
         EnumMap<Good, Double> bought = new EnumMap<>(Good.class);
@@ -70,20 +73,22 @@ public final class Equipment {
         this.id = id.trim();
         this.name = name == null || name.isBlank() ? this.id : name.trim();
         this.since = since.trim();
-        int parsed = 0;
-        boolean isYear;
-        try {
-            parsed = Integer.parseInt(this.since);
-            isYear = true;
-        } catch (NumberFormatException e) {
-            isYear = false;
-        }
-        this.year = isYear;
-        this.sinceYear = parsed;
+        Integer parsed = yearOf(this.since);
+        this.year = parsed != null;
+        this.sinceYear = parsed == null ? 0 : parsed;
         this.ends = ends;
         this.buys = Collections.unmodifiableMap(bought);
         this.work = work;
         this.lifeMonths = lifeMonths;
+    }
+
+    /** A "since" read as a year: the year when it parses as a whole number, null for a catalogue code. The one reading of "since" a piece and a Recipe share. */
+    static Integer yearOf(String since) {
+        try {
+            return Integer.parseInt(since.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     /** The piece's permanent key on its template. */
@@ -95,7 +100,7 @@ public final class Equipment {
     /** The year it is known from, as text, or the catalogue code that will say. */
     public String getSince() { return since; }
 
-    /** The 1900 form it ends. */
+    /** The 1900 form it ends, or null for a piece that ends none (it exists to enable a recipe): everything that reads it takes null. */
     public Form getEnds() { return ends; }
 
     /** The goods fitting one building buys, units at nameplate; unmodifiable, and empty for a piece that buys none. */
@@ -117,6 +122,6 @@ public final class Equipment {
 
     @Override
     public String toString() {
-        return id + " (" + since + ", ends " + ends + ")";
+        return id + " (" + since + (ends == null ? ", ends no form)" : ", ends " + ends + ")");
     }
 }

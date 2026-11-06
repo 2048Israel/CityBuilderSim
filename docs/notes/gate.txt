@@ -1,40 +1,75 @@
-# gate of Merge batch/R1b: research: the fit acted on - the fitting's goods bought at the city's market and its work, one order at a time, ranked with the sector's new buildings in `SpreadPlanner.best()` (research-design §2.2 step 5); new buildings with every piece that pays at the order (step 6); the city's buildings' Fit action; a city founded the 1900 way (the known pieces unfitted), off by default; and R1's review (2026-11-05): after a load the shares come from the month's-end counts while an unbroken run keeps the month's-top ones until `policyHearsTheMonth()`, so `AutoBuilder.pass()` may part a reloaded twin once counts exist (play a month on both; EquipmentCheck 7's hand `apply` hides it), and `EquipmentForms.driven` is never cleared on New Game or a load, 0.9.22
+# gate of Merge batch/R1c: research: recipes as data - `buildings.json`'s `recipes`, the best known recipe each month at the city's prices (`SpreadPlanner.cityValue()`), the tractor's `PETROL` in today's farm (R0c ★5), the 1900 recipes of research-1900 §3's rows with no form yet (open hearth, by-product coke, coal cutter, steam shovel, rock drill, rotary kiln, pulp, binder, Hulett unloader, X-ray, antitoxin), 0.9.23
 # date: 2026-11-05
 # earth-2.bin: named
 # nightly: 2026-11-05 09:11 0.9.17 a0661fe8 4,000 months: OK in 109 s
-# suite: 176 harnesses run in 2664s: 172 passed, 4 failed
-# timing: 16 harnesses run in 702s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
+# suite: 177 harnesses run in 2947s: 171 passed, 6 failed
+# timing: 16 harnesses run in 913s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 32.6 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 37.0 ms, batch 34.2 ms (-7.5%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 75.8 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 26.9 ms, batch 39.7 ms (+47.3%), budget 25 ms: main over the budget too]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | on the full file, every stride's far node over Rotterdam is drawn in no more than SCREEN_MS FAIL   [main 57.2 ms, batch 57.2 ms (-0.1%), budget 80 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 25.4 ms, batch 25.0 ms (-1.4%), budget 19 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | 4 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): KeptCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): KeptCheck | the whole kept chrome's month is within KEPT_ALL_CHROME_MS (8.0 ms)      FAIL   [main 6.96 ms, batch 5.64 ms (-18.9%), budget 8 ms: within 15% of main's]
-# timing red not the batch's (paired): KeptCheck | 1 FAILED   [the harness's own count of the timing reds above]
-CentralBankCheck | exit 1
-CentralBankCheck | ...and in at least STRICT_SHARE of them, 9 of 12 (8 hold)          FAIL
-CentralBankCheck | 1 FAILED
+# timing red not the batch's (paired): MapCheck | on the full file, every stride's far node over Rotterdam is drawn in no more than SCREEN_MS FAIL   [main 60.3 ms, batch 59.8 ms (-0.9%), budget 80 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 19.3 ms, batch 28.6 ms (+48.3%), budget 19 ms: main over the budget too]
+# timing red not the batch's (paired): KeptCheck | exit 4   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): KeptCheck | the kept month is within KEPT_MONTH_MS (12.0 ms)                         FAIL   [main 5.76 ms, batch 7.7 ms (+33.7%), budget 12 ms: the batch within the budget]
+# timing red not the batch's (paired): KeptCheck | the whole kept chrome's month is within KEPT_ALL_CHROME_MS (8.0 ms)      FAIL   [main 6.45 ms, batch 7.79 ms (+20.7%), budget 8 ms: the batch within the budget]
+# timing red not the batch's (paired): KeptCheck | the kept month on the construction page is within KEPT_CONSTRUCTION_MS (4.0 ms) FAIL   [main 2.21 ms, batch 2.91 ms (+31.7%), budget 4 ms: the batch within the budget]
+# timing red not the batch's (paired): KeptCheck | 4 FAILED   [the harness's own count of the timing reds above]
+# timing red passed on Jerus's word, over main's by more than 15% or not a timing red (always, if checks were not caused by its own code, then it should always pass): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [over main's by more than 15%: main 4.23 ms, batch 5.34 ms (+26.1%), budget 5 ms]
+# timing red passed on Jerus's word, over main's by more than 15% or not a timing red (always, if checks were not caused by its own code, then it should always pass): MapCheck | 5 FAILED   [the harness's own count, with a red above that is not a timing red that passes]
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): SlopeCheck | exit 1
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): SlopeCheck | the run played its months and found nothing: every month passed the playtest's audit and the layout watcher, [a building on the map moved] FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): SlopeCheck | 1 FAILED
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MonetaryCheck | exit 1
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MonetaryCheck | ...and a month's delay in the hand moves them less than the allowance FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MonetaryCheck | 1 FAILED
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DenominationCheck | the same output                                                FAIL  16.3560078665 != 16.3560078869  (1.24e-09 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DenominationCheck | ...and the same year of it                                     FAIL  177.7918172170 != 177.7918177172  (2.81e-09 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DenominationCheck | the same rent                                                  FAIL  0.0003825397 != 0.0003825397  (1.33e-09 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DenominationCheck | the same price level                                           FAIL  6.3136808832 != 6.3136808652  (2.85e-09 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DenominationCheck | the same currency                                              FAIL  0.0386046483 != 0.0386046475  (2.16e-08 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DenominationCheck | the same treasury                                              FAIL  817.9392960580 != 817.9392936034  (3.00e-09 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DenominationCheck | the same shops' till                                           FAIL  1.3182336111 != 1.3182335334  (5.90e-08 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DenominationCheck | the same bank                                                  FAIL  289.1913668310 != 289.1913693393  (8.67e-09 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): ScaleCheck | its rents pull migrants as the city's do, every month (the affordability pull within 0.01; worst 0.084) FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): ScaleCheck | its rents pull migrants as the city's do, every month (the affordability pull within 0.01; worst 0.084) FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): ScaleCheck | ...cash: the copy is K times the city's within 0.0125 in all 6 months (worst 4.93e-02) FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): ScaleCheck | ...savings: the copy is K times the city's within 0.0160 in all 6 months (worst 1.83e-01) FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): ScaleCheck | ...deposits: the copy is K times the city's within 0.0260 in all 6 months (worst 1.48e-01) FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): ScaleCheck | 10 FAILED
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MapCheck | a yard laid across a district's buildings moves off it the boxes under it and no others: 72 of the plan before's 530 boxes lie under the yard and the railway, and 78 are not in the plan after (each of the rest stands where it stood) FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MapCheck | ...and the layout watch (LongPlaytest, as the map draws the district) counts them apart and flags none: 72 boxes left a district in the yard's month because a run laid in it lies across them, 6 are counted as moved FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | exit 1
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | 1 FAILED
+SlopeCheck | exit 1
+SlopeCheck | the run played its months and found nothing: every month passed the playtest's audit and the layout watcher, [a building on the map moved] FAIL
+SlopeCheck | 1 FAILED
+MonetaryCheck | exit 1
+MonetaryCheck | ...and a month's delay in the hand moves them less than the allowance FAIL
+MonetaryCheck | 1 FAILED
 DenominationCheck | exit 1
-DenominationCheck | the same output                                                FAIL  16.3871627943 != 16.3871628238  (1.80e-09 apart)
-DenominationCheck | ...and the same year of it                                     FAIL  178.0274716763 != 178.0274723045  (3.53e-09 apart)
-DenominationCheck | the same rent                                                  FAIL  0.0003825520 != 0.0003825520  (1.75e-09 apart)
-DenominationCheck | the same price level                                           FAIL  6.3136552187 != 6.3136552018  (2.67e-09 apart)
-DenominationCheck | the same currency                                              FAIL  0.0385926452 != 0.0385926442  (2.63e-08 apart)
-DenominationCheck | the same treasury                                              FAIL  818.0252712281 != 818.0252687731  (3.00e-09 apart)
-DenominationCheck | the same shops' till                                           FAIL  1.3189259763 != 1.3189258944  (6.21e-08 apart)
-DenominationCheck | the same bank                                                  FAIL  289.4969501824 != 289.4969532124  (1.05e-08 apart)
+DenominationCheck | the same output                                                FAIL  16.3560078665 != 16.3560078869  (1.24e-09 apart)
+DenominationCheck | ...and the same year of it                                     FAIL  177.7918172170 != 177.7918177172  (2.81e-09 apart)
+DenominationCheck | the same rent                                                  FAIL  0.0003825397 != 0.0003825397  (1.33e-09 apart)
+DenominationCheck | the same price level                                           FAIL  6.3136808832 != 6.3136808652  (2.85e-09 apart)
+DenominationCheck | the same currency                                              FAIL  0.0386046483 != 0.0386046475  (2.16e-08 apart)
+DenominationCheck | the same treasury                                              FAIL  817.9392960580 != 817.9392936034  (3.00e-09 apart)
+DenominationCheck | the same shops' till                                           FAIL  1.3182336111 != 1.3182335334  (5.90e-08 apart)
+DenominationCheck | the same bank                                                  FAIL  289.1913668310 != 289.1913693393  (8.67e-09 apart)
 DenominationCheck | 8 FAILED
 ScaleCheck | exit 1
-ScaleCheck | fixture: the city is growing - more people than a year before                        FAIL
 ScaleCheck | fixture: ...and its own rents price no migrant out in the months its copies are read against (the affordability pull 1 in all 6) FAIL
-ScaleCheck | its rents pull migrants as the city's do, every month (the affordability pull within 0.01; worst 0.029) FAIL
+ScaleCheck | its rents pull migrants as the city's do, every month (the affordability pull within 0.01; worst 0.084) FAIL
 ScaleCheck | ...and it builds: more homes at the end than at the start                            FAIL
 ScaleCheck | fixture: the free copy ordered - an order of more than a million buildings decided, and one judged on its interest FAIL
-ScaleCheck | ...cash: the copy is K times the city's within 0.0125 in all 6 months (worst 3.69e-02) FAIL
-ScaleCheck | 9 FAILED
+ScaleCheck | ...cash: the copy is K times the city's within 0.0125 in all 6 months (worst 4.93e-02) FAIL
+ScaleCheck | ...savings: the copy is K times the city's within 0.0160 in all 6 months (worst 1.83e-01) FAIL
+ScaleCheck | ...deposits: the copy is K times the city's within 0.0260 in all 6 months (worst 1.48e-01) FAIL
+ScaleCheck | 10 FAILED
 MapCheck | exit 1
-MapCheck | ...and the arrivals after it go on with the yard's ground left as it is: every box stands four months on (500 of them, 7 moved) FAIL
-MapCheck | a yard that goes moves none of the buildings: every box of the plan before stands in the plan after (698 of them, 70 moved) FAIL
+MapCheck | a yard laid across a district's buildings moves off it the boxes under it and no others: 72 of the plan before's 530 boxes lie under the yard and the railway, and 78 are not in the plan after (each of the rest stands where it stood) FAIL
+MapCheck | ...and the layout watch (LongPlaytest, as the map draws the district) counts them apart and flags none: 72 boxes left a district in the yard's month because a run laid in it lies across them, 6 are counted as moved FAIL
 MapCheck | 2 FAILED
+KeptCheck | exit 1
+KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
+KeptCheck | 1 FAILED

@@ -32,8 +32,9 @@ import java.util.Set;
  *      without construction is not hooked, and comes as placed until that is said
  *   4. WHAT A NEW BUILDING COMES WITH: in a city founded the 1900 way, bakeries ordered on site that finish come fitted with the electric
  *      drive when it pays for a new building at the city's coal price (the count unchanged) and without it when it does not (the count up by
- *      what finished), a farm finishing never has its tractor (NOT_KNOWN), and the order costs what it costs in a default city; in a default
- *      city every building finishes fitted, at either price
+ *      what finished), a farm finishing never has its tractor (NOT_KNOWN), and the order costs what the model quotes for it in either city,
+ *      the template's whole cost at that city's builders (R1c: the two cities' queues and wages are each its own, so it is no longer the same
+ *      figure in both); in a default city every building finishes fitted, at either price
  *   5. THE ORDER RANKED WITH THE BUILDINGS (slice B): at a coal price where the drive pays, the choice is the fitting when the plan builds
  *      nothing, the fitting when it earns more on its cost than the building the plan would put up and the building when it earns less, and
  *      the plan's own Decision, unchanged, when the drive does not pay, when no stack is unfitted, and when the sector has a fitting on site;
@@ -392,8 +393,13 @@ public class FittingCheck {
         return opened;
     }
 
-    /** What the last order cost, by city: [the city founded the 1900 way, the default one]. */
-    static final double[] ORDER_COST = { Double.NaN, Double.NaN };
+    /**
+     * What the last order cost, by city: [the city founded the 1900 way, the default one]; what the model quoted for it just before (Game.quoteBuildOn(),
+     * which buildStack() charges); the quote's sticker, the template's whole cost at that city's builders; and the model's own sticker for it,
+     * the template's cost at the city's builders' wages times its quantity and the builders' multiple on the queue the city stands with.
+     */
+    static final double[] ORDER_COST = { Double.NaN, Double.NaN }, ORDER_QUOTED = { Double.NaN, Double.NaN },
+            ORDER_STICKER = { Double.NaN, Double.NaN }, ORDER_STICKER_MODEL = { Double.NaN, Double.NaN }, ORDER_CASH_COST = { Double.NaN, Double.NaN };
 
     /** A village on the goods' literals (the moved prices hold through the months), the builders' depots standing and the sectors that would build on their own held. */
     static Game builtVillage(String label, Founding founding) {
@@ -429,6 +435,11 @@ public class FittingCheck {
         int before = bakery.getUnfitted(DRIVE);
         double cash = g.getCash();
         Game.BuildResult[] ordered = new Game.BuildResult[1];
+        Game.BuildQuote quoted = g.quoteBuildOn(t, 2, Landmasses.CHOSEN);
+        ORDER_QUOTED[which] = quoted.total;
+        ORDER_STICKER[which] = quoted.sticker;
+        ORDER_STICKER_MODEL[which] = g.getBuildingManager().nonMaterialCost(t) * 2 * g.getBuildingManager().orderPriceMultiplier(0, t.getConstructionPoints(), 2);
+        ORDER_CASH_COST[which] = t.getCashCost();
         quietly(() -> ordered[0] = g.buildStack(t, 2, false));
         ORDER_COST[which] = cash - g.getCash();
         check("fixture: two Bakeries are on site", ordered[0] == Game.BuildResult.SUCCESS && bakery.getUnderConstruction() == 2, String.valueOf(ordered[0]));
@@ -485,8 +496,18 @@ public class FittingCheck {
         out.println("\n--- 4. what a new building comes with: the pieces that pay, at the finish; none of the others; a default city's buildings all fitted ---");
         newBuildings("fitting-new-1900", true, 0);
         newBuildings("fitting-new-default", false, 1);
-        check("the order costs what it costs: two Bakeries cost the same in a city founded the 1900 way as in a default one (decided at the finish, not the order)",
-                Double.compare(ORDER_COST[0], ORDER_COST[1]) == 0 && ORDER_COST[0] > 0, ORDER_COST[0] + " vs " + ORDER_COST[1]);
+        // The two cities are not one city at the order: what the builders' queue holds and the wages stand at are each city's own (R1c: the 1900 city's
+        // un-held sectors order what its recipes make pay, a Pulp Mill among them, and the default city's farms buy fuel), and the quote reads both. So the
+        // order is compared with what the MODEL charges for it in that city, and across the cities on what the order itself is, the template.
+        double tol = 1e-9 * Math.max(ORDER_QUOTED[0], ORDER_QUOTED[1]);
+        check("the order costs what it costs: in each city the two Bakeries are charged exactly what the model quoted for them just before, in a city founded the 1900 way as in a default one",
+                Math.abs(ORDER_COST[0] - ORDER_QUOTED[0]) <= tol && Math.abs(ORDER_COST[1] - ORDER_QUOTED[1]) <= tol && ORDER_COST[0] > 0 && ORDER_COST[1] > 0,
+                ORDER_COST[0] + " vs " + ORDER_QUOTED[0] + " / " + ORDER_COST[1] + " vs " + ORDER_QUOTED[1]);
+        check("...the template's whole cost at that city's builders: the sticker is the cash cost at the city's wages, times two, times the builders' multiple on the city's own queue, with nothing for a piece",
+                Math.abs(ORDER_STICKER[0] - ORDER_STICKER_MODEL[0]) <= 1e-9 * ORDER_STICKER[0] && Math.abs(ORDER_STICKER[1] - ORDER_STICKER_MODEL[1]) <= 1e-9 * ORDER_STICKER[1]
+                        && ORDER_STICKER[0] > 0 && ORDER_STICKER[1] > 0, ORDER_STICKER[0] + " vs " + ORDER_STICKER_MODEL[0] + " / " + ORDER_STICKER[1] + " vs " + ORDER_STICKER_MODEL[1]);
+        check("...and the template is the same in both: the Bakery's cash cost (the order's own part) is the same figure in the city founded the 1900 way and in the default one",
+                Double.compare(ORDER_CASH_COST[0], ORDER_CASH_COST[1]) == 0 && ORDER_CASH_COST[0] > 0, ORDER_CASH_COST[0] + " vs " + ORDER_CASH_COST[1]);
     }
 
     /* ============================ the fixtures of 5 to 12 ============================ */

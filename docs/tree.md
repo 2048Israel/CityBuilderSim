@@ -300,7 +300,19 @@ adds its line here, not in `CLAUDE.md`.
         Equipment.java             a piece of equipment a template carries (R1, 2026-11-05; research-design
                                    2.1-2.2): its id, since (a year, or a catalogue code unknown until R2),
                                    the 1900 form it ends (STEAM, FARM_HORSES, CART_HORSES), what fitting it
-                                   buys, its work and life; read from buildings.json's "equipment"
+                                   buys, its work and life; read from buildings.json's "equipment"; since
+                                   R1c a piece may end no form, its template's recipe piece
+        Recipe.java                a way a building runs (R1c, 2026-11-05; research-design 2.1): what it
+                                   uses and makes, its posts, draw, gen, water and consumables, its since
+                                   and the piece it needs; read from buildings.json's "recipes", the top
+                                   level the default
+        Recipes.java               the best recipe each part of a stack can run at the city's prices, only
+                                   in a city founded the 1900 way, set on the template as the mix of its
+                                   fitted and unfitted parts; chosen where the Policy hears the month,
+                                   applied again after the sites advance and on a load; saved by template id
+        RecipeCheck.java           R1c's recipes: the data read, a default city choosing nothing, the best
+                                   recipe at the city's prices, known and runnable, the mix, the piece's
+                                   gain, the save, New Game, and the shipped rows in a 1900 town
         EquipmentForms.java        R0c's shares set from the buildings still without the piece that ends
                                    each form (BuildingsStacks' unfitted counts, saved by template id),
                                    weighted by draw, land or truck room, only where a count is or was;

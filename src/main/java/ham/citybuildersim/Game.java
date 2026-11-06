@@ -702,6 +702,8 @@ public class Game {
         // buildWorld() (the field is final), and a city founded or loaded into a Game that played another city with counts must start as one in a
         // fresh process does, setting no share to 0 that it never drove.
         equipmentForms.clear();
+        // ...and the recipes chosen (R1c): the last city's choices, for templates this city does not have.
+        recipes.clear();
         // ...and the fittings on site (R1b): jobs for the last city's buildings.
         fittings.clear();
         // ...and the levers history has not opened yet are held at zero (R0): the city is in its first month.
@@ -1147,9 +1149,19 @@ public class Game {
         // ...and the households what a pensioner is paid, from the first month: HouseholdAccounts opens on the 45% default, and the month's own
         // push (where the households are told their bills) comes after anything that reads it. The pension is shut until 1927 and the dial is zero.
         households.setPensionPerSenior(economyManager.getTaxPolicy().pensionPerSenior());
+        // ...and the ways the buildings run (R1c; Recipes), chosen at the city's prices and set on the templates: before the forms, because the steam
+        // form weighs each building by its electricity. Nothing, and no price read, in a city founded the default way.
+        recipes.choose(this);
+        recipes.apply(this);
         // ...and the sectors the 1900 forms their unfitted buildings leave (R1; EquipmentForms): nothing in a city with none unfitted.
         equipmentForms.apply(this);
     }
+
+    /** The recipes each template's buildings run, chosen in a city founded the 1900 way and saved there (R1c): nothing in any other. */
+    private final Recipes recipes = new Recipes();
+
+    /** The recipes' driver, for the harnesses and the screens that read which way each template runs (R1c). */
+    public Recipes getRecipes() { return recipes; }
 
     /** The shares of the 1900 forms (steam, the farms' horses, the carts') set from the buildings still without the equipment that ends them (R1). Not saved: the counts are, and drive the shares again after a load. */
     private final EquipmentForms equipmentForms = new EquipmentForms();
@@ -1178,6 +1190,9 @@ public class Game {
         for (BuildingsStacks stack : buildingManager.getStacksView()) {
             for (Equipment piece : stack.getBuilding().getEquipment()) stack.setUnfitted(piece.getId(), stack.getQuantity());
         }
+        // ...the recipes the counts leave them (R1c), before the forms, as everywhere the two are said.
+        recipes.choose(this);
+        recipes.apply(this);
         equipmentForms.apply(this);
     }
 
@@ -16190,6 +16205,8 @@ public class Game {
         dataSave.setContractRecords(buildingManager.getContractRecords());
         // ...and the buildings still without a piece of equipment, where a stack has any (R1; none in a played city).
         dataSave.setUnfittedById(buildingManager.getUnfittedById());
+        // ...and the recipes the parts of a stack run, only where one runs other than the default (R1c; none in a city founded the default way).
+        dataSave.setRecipeChoices(recipes.forSave());
         // ...and the fittings on site, only where there is a job (R1b).
         dataSave.setFittings(fittings.view());
         // ...and how many founding endowments of household places, care and police it holds (FW9).
@@ -20242,6 +20259,10 @@ public class Game {
             buildingManager.restoreUnfitted(loaded.getUnfittedById());
             // ...and the fittings on site, with them (R1b): a save with none has none.
             fittings.restore(loaded.getFittings());
+            // ...and the recipes the parts of a stack run (R1c): the SAVED choices, put back and applied, never struck again from the loaded prices
+            // (the next month's top does that), and before the forms, which weigh each building by the electricity its recipe leaves it.
+            recipes.restore(loaded.getRecipeChoices());
+            recipes.apply(this);
             equipmentForms.apply(this);
 
             // A save that kept one order book for the whole city: spread it
