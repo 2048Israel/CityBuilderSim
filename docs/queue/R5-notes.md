@@ -4,7 +4,7 @@
 
 **Built, waiting on R4.** Branch `batch/R5` from `batch/R4`'s ship file (RL1, 00fa589a); R4 is not on main yet, so
 no ship file. Slice A is bf2f26a6, B2 4b4de81d, B1 9785404f. The default trace is R4's to the byte, so no ensemble.
-`--pick` on R4's tip + R5: **exit 3**, main's recorded reds only (§3); the full suite running. When R4 lands: main
+`--pick` on R4's tip + R5 and the full suite: **exit 3**, main's recorded reds only (§3). When R4 lands: main
 merged in, `--pick` again, the ship file pushed last.
 
 ## 1. What R5 is, and where it splits
@@ -13,7 +13,7 @@ The brief is research-design §9 item 6, "R5, the screens: Found, equipment on s
 History's flags", with §5.5, §6.2 and mockups 3-5, and what R1-R4 left it: R2 ★8 (the Sector page reads a piece's year,
 history's; the screens take the month and the city's research) and R4 ★10 (a Research Lab on the player's build list
 says what it is for). R3b (Policy › Research's Overview and Funding pages, the grant and prize cards) is queued apart
-and "best beside R5": R5 keeps to its own screens and opens the Research area with Found alone (§5).
+and "best beside R5": R5 keeps to its own screens and opens the Research area with Found alone (§4).
 
 | slice | what | state |
 |---|---|---|
@@ -80,6 +80,8 @@ All drafted by Sonnet 5.5 at xhigh, reviewed here. What the reviews found:
   harness but KeptCheck: **exit 3**, main's recorded reds only (DenominationCheck, ScaleCheck, KeptCheck's "a month's
   redraw after each choice hands back nine in ten" from section 49); timing SOFT. `ResearchViewCheck` 106 ok;
   KeptCheck 95-97, 43 + 23 + 27 assertions, ok.
+- **The full suite** after it (`./batch-check.sh`, timing soft, 182 harnesses, on 9952407b's tree): **exit 3**, the six
+  reds main's recorded ones and none NEW (SlopeCheck, MonetaryCheck, DenominationCheck, ScaleCheck, MapCheck, KeptCheck).
 - **The save** (`--pick`'s "review needed - saves: HistorySave.java"): one new field, `HistorySave.researchSeries`, a
   map by name as `worldMoney` is, written only by a city founded the 1900 way. No format bump (`docs/batch.md`'s rule):
   a history without it reads it empty (Gson leaves a missing key alone), and an older build ignores it. DataSave is
