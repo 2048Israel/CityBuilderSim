@@ -1,4 +1,4 @@
-# Equipment.java - 143 lines · 15 methods · 0 constants · model
+# Equipment.java - 152 lines · 16 methods · 0 constants · model
 
 `ham/citybuildersim/Equipment.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
@@ -21,9 +21,9 @@
 > research.json (R2: ResearchCatalog.knownFrom(); before R2 a code was never known, R1-notes call 7), so the tractor is known from PE14's month,
 > June 1917, and not before; a code that is not in the catalogue is never known. knownAt() asks by the game month, knownIn() by the year.
 
-**Uses:** [Good](Good.md) (6), [ResearchCatalog](ResearchCatalog.md) (1), [CityCalendar](CityCalendar.md) (1)
+**Uses:** [Good](Good.md) (6), [ResearchCatalog](ResearchCatalog.md) (1), [Research](Research.md) (1), [CityCalendar](CityCalendar.md) (1)
 
-**Used by (12):** [BuildingCatalog](BuildingCatalog.md), [BuildingsTemplate](BuildingsTemplate.md), [BusinessInvestment](BusinessInvestment.md), [EquipmentCheck](EquipmentCheck.md), [EquipmentFit](EquipmentFit.md), [EquipmentForms](EquipmentForms.md), [FittingCheck](FittingCheck.md), [Game](Game.md), [Recipe](Recipe.md), [RecipeCheck](RecipeCheck.md), [ResearchCheck](ResearchCheck.md), [SectorScreen](SectorScreen.md)
+**Used by (13):** [BuildingCatalog](BuildingCatalog.md), [BuildingsTemplate](BuildingsTemplate.md), [BusinessInvestment](BusinessInvestment.md), [DiscoveryCheck](DiscoveryCheck.md), [EquipmentCheck](EquipmentCheck.md), [EquipmentFit](EquipmentFit.md), [EquipmentForms](EquipmentForms.md), [FittingCheck](FittingCheck.md), [Game](Game.md), [Recipe](Recipe.md), [RecipeCheck](RecipeCheck.md), [ResearchCheck](ResearchCheck.md), [SectorScreen](SectorScreen.md)
 
 ## Enum constants
 
@@ -51,7 +51,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 27 | 117 | **type** `public final class Equipment` | A piece of equipment a building template carries: what it is called, when it is known, which 1900 form it ends (if any), what fitting it buys and how long it lasts. |
+| 27 | 126 | **type** `public final class Equipment` | A piece of equipment a building template carries: what it is called, when it is known, which 1900 form it ends (if any), what fitting it buys and how long it lasts. |
 | 30 | 8 | **type** `public enum Form` | The 1900 form a piece ends: the share of a sector (or of the carts) that still runs the old way, EquipmentForms sets it from the count of buildings unfitted. |
 | 59 | 25 | `public Equipment(String id, String name, String since, Form ends, Map<Good, Double> buys, double work, int lifeMonths)` |  |
 | 86 | 7 | `static Integer yearOf(String since)` | A "since" read as a year: the year when it parses as a whole number, null for a catalogue code. |
@@ -65,7 +65,8 @@
 | 116 | 1 | `public boolean isYear()` | Whether "since" is a year (it parses as a whole number) and not a catalogue code. |
 | 119 | 1 | `public int knownFrom()` | The game month it is known from: a year's January, a code's entry's month (ResearchCatalog.knownFrom()); Integer.MAX_VALUE for a code not in the catalogue. |
 | 122 | 3 | `public boolean knownAt(int gameMonth)` | Whether it is known at a game month (month 1 = January 1900): from the month it is known from on. |
-| 127 | 3 | `public boolean knownIn(int calendarYear)` | Whether it is known by a calendar year's January: knownAt() of that month (januaryOf()), so that a screen that asks by the year agrees with the model that asks by the month. |
-| 135 | 3 | `static int januaryOf(int calendarYear)` | The game month of a calendar year's January: PolicyDates.monthOf(year, 1), the game's one formula, but not clamped at month 1, so that the year before the start (1899) is before it and a piece dated 1900 is not known ... |
-| 140 | 3 | `public String toString()` |  |
+| 131 | 3 | `public boolean knownAt(int gameMonth, Research found)` | Whether it is known at a game month in a city whose research may have found it first (R3): from history's month, or from the month the city found its code, whichever is first (Research.foundMonth()). |
+| 136 | 3 | `public boolean knownIn(int calendarYear)` | Whether it is known by a calendar year's January: knownAt() of that month (januaryOf()), so that a screen that asks by the year agrees with the model that asks by the month. |
+| 144 | 3 | `static int januaryOf(int calendarYear)` | The game month of a calendar year's January: PolicyDates.monthOf(year, 1), the game's one formula, but not clamped at month 1, so that the year before the start (1899) is before it and a piece dated 1900 is not known ... |
+| 149 | 3 | `public String toString()` |  |
 

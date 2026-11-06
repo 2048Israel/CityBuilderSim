@@ -84,7 +84,12 @@ public final class Recipes {
      * only those that need nothing.
      */
     public static boolean canRun(BuildingsTemplate t, Recipe r, boolean fitted, int month) {
-        if (!r.knownAt(month)) return false;
+        return canRun(t, r, fitted, month, null);
+    }
+
+    /** The same in a city whose research may have found the recipe's code before history's month (R3: Recipe.knownAt(int, Research)); no research (null) reads history's. */
+    public static boolean canRun(BuildingsTemplate t, Recipe r, boolean fitted, int month, Research found) {
+        if (!r.knownAt(month, found)) return false;
         if (t.recipePieceId() == null) return true;
         return (r.getNeedsEquipment() != null) == fitted;
     }
@@ -94,6 +99,11 @@ public final class Recipes {
      * default where none can run. `fitted` is which part (it is no matter on a template with no recipe piece).
      */
     public static Recipe best(BuildingsTemplate t, boolean fitted, int month, Prices p) {
+        return best(t, fitted, month, p, null);
+    }
+
+    /** The same in a city whose research may have found a recipe's code before history's month (R3); no research (null) reads history's. */
+    public static Recipe best(BuildingsTemplate t, boolean fitted, int month, Prices p, Research found) {
         Recipe dflt = t.defaultRecipe();
         List<Recipe> order = new ArrayList<>();
         order.add(dflt);
@@ -101,7 +111,7 @@ public final class Recipes {
         Recipe best = null;
         double most = Double.NEGATIVE_INFINITY;
         for (Recipe r : order) {
-            if (!canRun(t, r, fitted, month)) continue;
+            if (!canRun(t, r, fitted, month, found)) continue;
             double v = value(r, p);
             if (Double.isNaN(v)) v = Double.NEGATIVE_INFINITY;
             if (best == null || v > most) {
@@ -118,8 +128,13 @@ public final class Recipes {
      * need no piece. Each of the two is the best of those known at the game month.
      */
     public static double recipeGain(BuildingsTemplate t, int month, Prices p) {
+        return recipeGain(t, month, p, null);
+    }
+
+    /** The same in a city whose research may have found a recipe's code before history's month (R3); no research (null) reads history's. */
+    public static double recipeGain(BuildingsTemplate t, int month, Prices p, Research found) {
         if (t.recipePieceId() == null) return 0;
-        return value(best(t, true, month, p), p) - value(best(t, false, month, p), p);
+        return value(best(t, true, month, p, found), p) - value(best(t, false, month, p, found), p);
     }
 
     /* ===== THE GAME LAYER: the city's prices, read on demand ===== */
@@ -134,7 +149,7 @@ public final class Recipes {
 
     /** The gain of the template's recipe piece at the city's prices and in the city's month (EquipmentFit.gainOf() for a piece that ends no form). */
     public static double gainOf(Game game, BuildingsTemplate t) {
-        return recipeGain(t, game.getMonth(), pricesOf(game));
+        return recipeGain(t, game.getMonth(), pricesOf(game), game.getResearch());
     }
 
     /** The recipes each template's two parts run, by template id: [the fitted part's, the unfitted part's]. Only a template where a part runs a recipe other than the default has one. */
@@ -150,9 +165,10 @@ public final class Recipes {
         chosen.clear();
         Prices prices = pricesOf(game);
         int month = game.getMonth();
+        Research found = game.getResearch();
         for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
             if (!t.hasRecipeChoice()) continue;
-            String fitted = best(t, true, month, prices).getId(), unfitted = best(t, false, month, prices).getId();
+            String fitted = best(t, true, month, prices, found).getId(), unfitted = best(t, false, month, prices, found).getId();
             String dflt = t.defaultRecipe().getId();
             if (!fitted.equals(dflt) || !unfitted.equals(dflt)) chosen.put(t.getId(), new String[] { fitted, unfitted });
         }

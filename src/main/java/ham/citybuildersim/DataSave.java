@@ -1205,6 +1205,43 @@ public class DataSave implements Cloneable {
     /** The fittings the save carries, or null for a save with none. */
     public java.util.List<Fittings.Job> getFittings() { return fittings; }
 
+    /**
+     * The city's research (R3; Research): the grants by field name, the posts the month struck by field name, the work piled by code and the
+     * discoveries found here by code with the month each was found, in the order found. Written only while the city has any (Research.isEmpty()
+     * is false), so a city with none writes no key and a save without one reads as an empty research. No format bump: Gson leaves a missing key
+     * alone, and no city before R3 had any. Keyed by name and by code and never by an ordinal. The month's bill is carried with it (the pay of the
+     * posts and the laboratories' other costs, as advanceDemographics() struck them): a flow cannot be reconstructed from the state a month ended
+     * in, and the load path would otherwise read the fill the month ended on (the transit bill's note, Game.rebuildSimulationState()).
+     */
+    public static final class ResearchRecord {
+        public java.util.Map<String, Double> grants = new java.util.LinkedHashMap<>();
+        public java.util.Map<String, Integer> posts = new java.util.LinkedHashMap<>();
+        public java.util.Map<String, Double> piles = new java.util.LinkedHashMap<>();
+        public java.util.Map<String, Integer> found = new java.util.LinkedHashMap<>();
+        public double payroll, costs;
+    }
+
+    private ResearchRecord research;
+
+    /** The research to write with the month's bill (EconomyManager.getResearchPayroll(), getResearchCosts()), or none: a city that has no grant, post, pile or find writes no key. */
+    public void setResearch(Research r, double payroll, double costs) {
+        if (r == null || r.isEmpty()) {
+            this.research = null;
+            return;
+        }
+        ResearchRecord record = new ResearchRecord();
+        record.grants.putAll(r.grantsForSave());
+        record.posts.putAll(r.postsForSave());
+        record.piles.putAll(r.piles());
+        record.found.putAll(r.foundHere());
+        record.payroll = payroll;
+        record.costs = costs;
+        this.research = record;
+    }
+
+    /** The research the save carries, or null for a save with none. */
+    public ResearchRecord getResearch() { return research; }
+
     /** False on a save that kept one order book for the whole city. */
     public boolean hasContractsById() { return contractValueById != null; }
 

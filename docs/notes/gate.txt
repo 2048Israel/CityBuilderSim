@@ -1,13 +1,13 @@
-# gate of Merge batch/KP6: screens kept: Government, Trade, Policy and zoning (after KP2), 0.9.27
+# gate of Merge batch/R3: research: posts and discoveries, 0.9.28
 # date: 2026-11-06
 # earth-2.bin: named
 # nightly: 2026-11-06 01:09 0.9.24 f33540a0 4,000 months: RED, exit 1 in 89 s: a building on the map moved 1 time(s), months 3012-3012
-# suite: 179 harnesses run in 2658s: 173 passed, 6 failed
-# timing: 16 harnesses run in 871s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
+# suite: 180 harnesses run in 2599s: 174 passed, 6 failed
+# timing: 16 harnesses run in 905s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 32.9 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 37.6 ms, batch 36.5 ms (-2.9%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 36.9 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 30.6 ms, batch 33.4 ms (+9.2%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 22.9 ms, batch 23.0 ms (+0.7%), budget 19 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 20.1 ms, batch 18.2 ms (-9.5%), budget 19 ms: within 15% of main's]
 # timing red not the batch's (paired): MapCheck | 3 FAILED   [the harness's own count of the timing reds above]
 SlopeCheck | exit 1
 SlopeCheck | the run played its months and found nothing: every month passed the playtest's audit and the layout watcher, [a building on the map moved] FAIL

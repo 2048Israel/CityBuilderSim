@@ -18,7 +18,7 @@
 
 **Uses:** [PolicyDates](PolicyDates.md) (2), [CityCalendar](CityCalendar.md) (2)
 
-**Used by (7):** [BuildingCatalog](BuildingCatalog.md), [BuildingsTemplate](BuildingsTemplate.md), [Equipment](Equipment.md), [EquipmentCheck](EquipmentCheck.md), [Recipe](Recipe.md), [RecipeCheck](RecipeCheck.md), [ResearchCheck](ResearchCheck.md)
+**Used by (11):** [BuildingCatalog](BuildingCatalog.md), [BuildingsTemplate](BuildingsTemplate.md), [DiscoveryCheck](DiscoveryCheck.md), [Equipment](Equipment.md), [EquipmentCheck](EquipmentCheck.md), [Game](Game.md), [Inbox](Inbox.md), [Recipe](Recipe.md), [RecipeCheck](RecipeCheck.md), [Research](Research.md), [ResearchCheck](ResearchCheck.md)
 
 ## Sections
 

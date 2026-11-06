@@ -28,7 +28,6 @@ stuff".
 
 | batch | what | brief |
 |---|---|---|
-| R3 | Research: posts and discoveries | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
 | R4 | Research: prizes and the Research Lab | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
 | R5 | Research: the screens | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
 | KP7 | Screens kept: the rest (People's Household money), and the rebuild path retired | [study §7](docs/studies/spec-screens-in-place.md#7-the-batches) |
@@ -143,6 +142,7 @@ stuff".
 | R6 | Research: the near-future catalogue, 2025-2060 - a study first (today's pilots and roadmaps with projected dates, marked as projections), then its rows in `research.json` (Q2, decided 2026-10-18: the catalogue ends with them) | [research-design §7](docs/studies/research-design.md#7-the-world), [R2-notes §1](docs/queue/R2-notes.md) |
 | FP1 | The fund's long lists a page at a time: Search's first rows with Show more, Activity's last year open and each earlier year a fold (KP5's ★C: 13,000 nodes on Search at month 2,100, 58-192 ms a month kept) | [FP1](docs/queue/FP1.md) |
 | XI2 | XI1's review follow-ups, Trade's texts on the bounded intervention: `ui/TradeScreen.java:2969`'s `RULE` still states the unbounded linear rule; the warning (`:3573/3581`) reads this deal alone, not what was dealt since the last reprice, so several pieces each under 10% of a year's output cross the bound unwarned and a later piece's figure overstates its move; under Band it says "would move the rate xN" while the band holds it at its edge, under Peg "moves nothing" while the deal moves the shadow rate behind the peg (`:3586`) (XI1's gate review, 2026-11-06) | [XI1 notes](docs/queue/XI1-notes.md) |
+| R3b | Research: Policy › Research - the Overview and Funding pages, the four grant cards with each card's preview of finds over ten years from the sizes' distribution (research-design §5.5, §6.2), §9's harness that the young and big cities of §5.4 reproduce the previews, and each school's posts line; in the kept way, best beside R5 and before R1d | [R3-notes §1](docs/queue/R3-notes.md) |
 
 ## Pending
 

@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.28 — R3, research: posts and discoveries — 2026-11-06, ready, see docs/queue/R3-notes.md
+A city founded the 1900 way now finds discoveries of its own (research-design §5.1-5.2). Four grant dials, one a
+field, buy research posts at the post's cost (D$ 18.2k a month in engineering at today's wages, §1.8) within the
+schools' room, 2.7 posts per university-band staff member; the posts are jobs in the labour market, and the treasury
+pays their wages and the labs' costs as a line of its own (`TreasuryLine.RESEARCH`). The schools' staff research 40%
+of their time for nothing. Each field's researchers spread evenly over its open problems; each problem's work piles up
+until it reaches a size drawn from the city's seed (`Research`), and the inbox says so, here or from abroad on
+history's date. A find is known in the city from that month (its recipes, equipment and buildings), and a law find
+opens its Policy lever up to four years early. Nothing moves in a city founded the default way or with every grant at
+0: the default playtest's trace is main's to the byte. Policy › Research, the screen, is R3b.
+
 ### 0.9.27 — KP6, Screens kept: Government, Trade, Policy and zoning — 2026-11-06, ready, see docs/queue/KP6-notes.md
 The Government tab, Trade & the World with its partners page, and Policy with zoning's pages are drawn over last
 month's nodes instead of rebuilt (study UP4's KP6): Government's Overview, books, lists with who pays each line, debt,

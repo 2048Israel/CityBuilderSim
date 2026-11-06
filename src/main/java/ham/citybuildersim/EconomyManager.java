@@ -2009,6 +2009,21 @@ public class EconomyManager {
     public void setSafety(double grossCost) { this.safetyBill = Math.max(0, grossCost); }
     public double getSafetyBill() { return safetyBill; }
 
+    /**
+     * What the city's research grants cost this month (R3; Game.settleResearchBill()): the pay of the posts they bought (inside the households'
+     * wage bill already, PopulationManager.getTotalWage() counts the posts as jobs) and the laboratories' other costs, which together are the
+     * posts' bill (Research.bill()). Nothing at a grant of 0, which is every city's default. Paid by the treasury as a promise
+     * (TreasuryLine.RESEARCH), carried by getExpenses() and the national accounts (NationalAccounts.setResearchSpending()).
+     */
+    private double researchPayroll, researchCosts;
+    public void setResearch(double payroll, double costs) {
+        this.researchPayroll = Double.isFinite(payroll) && payroll > 0 ? payroll : 0;
+        this.researchCosts = Double.isFinite(costs) && costs > 0 ? costs : 0;
+    }
+    public double getResearchPayroll() { return researchPayroll; }
+    public double getResearchCosts()   { return researchCosts; }
+    public double getResearchBill()    { return researchPayroll + researchCosts; }
+
     /* =======================================================================
        THE TRANSIT BOOKS (2026-09-16)
 
@@ -2080,6 +2095,8 @@ public class EconomyManager {
     public double getExpenses() {
         return interest + getPensionsPaid() + eiBenefits + studentGrants + healthcareBill + educationBill
                 + safetyBill
+                // ...and the research grants' posts and laboratories (R3): none at a grant of 0.
+                + getResearchBill()
                 // ...and transit's wages and upkeep (0.7.49, B9), paid by the treasury since.
                 + transitBill;
     }
@@ -2267,6 +2284,7 @@ public class EconomyManager {
         nationalAccounts.setOutsideLines(totalEiPremiums, eiBenefits, studentGrants,
                 totalHealthPremiums, studentLoanInterest);
         nationalAccounts.setSafetySpending(safetyBill);
+        nationalAccounts.setResearchSpending(getResearchBill());
         nationalAccounts.setTransitLines(transitBill, transitFares);
         nationalAccounts.setFuelDuty(getFuelDuty());
         nationalAccounts.setPortDues(getPortDues());
@@ -2350,6 +2368,7 @@ public class EconomyManager {
         nationalAccounts.setOutsideLines(totalEiPremiums, eiBenefits, studentGrants,
                 totalHealthPremiums, studentLoanInterest);
         nationalAccounts.setSafetySpending(safetyBill);
+        nationalAccounts.setResearchSpending(getResearchBill());
         nationalAccounts.setTransitLines(transitBill, transitFares);
         nationalAccounts.setFuelDuty(getFuelDuty());
         nationalAccounts.setPortDues(getPortDues());
@@ -2617,6 +2636,7 @@ public class EconomyManager {
         healthcareBill *= scale;   healthcareFees *= scale;
         educationBill  *= scale;   educationFees  *= scale;
         safetyBill     *= scale;
+        researchPayroll *= scale;  researchCosts *= scale;
         subsidiesPaid  *= scale;
         totalContributions *= scale;
         totalEiPremiums *= scale;  eiBenefits *= scale;  studentGrants *= scale;

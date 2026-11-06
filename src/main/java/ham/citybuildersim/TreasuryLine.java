@@ -148,7 +148,14 @@ public enum TreasuryLine {
      * landed by the time the bill comes, as the food vouchers have been
      * eaten. Appended last, for their reason.
      */
-    OIL_RESERVE("Crude for the strategic reserve", true, false);
+    OIL_RESERVE("Crude for the strategic reserve", true, false),
+
+    /**
+     * The research grants' bill (R3; Game.settleResearchBill()): the posts the grants bought and the laboratories they run. A promise, as the
+     * schools' bill is, because the posts' wages are already in the households' pay (PopulationManager.getTotalWage() counts a post as the job
+     * it is) and a refusal would leave them paid by nobody. Appended last, for the food vouchers' reason.
+     */
+    RESEARCH("Research grants", true, false);
 
     /** The player's words for it, for the Government tab's arrears list and the playtest. */
     public final String label;
