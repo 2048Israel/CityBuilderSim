@@ -207,9 +207,11 @@ public final class Pieces {
             if (chip.getGraphic() != graphic) chip.setGraphic(graphic);
             chip.setGraphicTextGap(given ? gap : hasIcon ? 6 : 4);
             if (spent != null && spent.test(name)) {
-                // A chip spent: the spent look, the hand off, and a click that does nothing.
-                chip.setStyle(Palette.words(size, Palette.TEXT_SPENT) + " -fx-background-color: " + Palette.CONTROL + ";"
-                        + " -fx-background-radius: " + Palette.RADIUS_TIGHT + "; -fx-border-color: transparent;"
+                // A chip spent: the spent look, the hand off, and a click that does nothing. The one chosen keeps its mark (the raised ground
+                // and the accent edge: the Rankings tab's greyed Prices strip still says which it is on), as the look set on top of the
+                // chosen one's did before KP2b.
+                chip.setStyle(Palette.words(size, Palette.TEXT_SPENT) + " -fx-background-color: " + (on ? Palette.RAISED : Palette.CONTROL) + ";"
+                        + " -fx-background-radius: " + Palette.RADIUS_TIGHT + "; -fx-border-color: " + (on ? Palette.ACCENT : "transparent") + ";"
                         + " -fx-border-width: 0 0 2 0; -fx-cursor: default;");
                 chip.setOnAction(e -> { });
                 strip.getChildren().add(chip);

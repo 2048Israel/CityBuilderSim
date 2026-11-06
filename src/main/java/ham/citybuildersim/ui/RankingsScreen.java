@@ -17,11 +17,9 @@ import java.util.function.Consumer;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
-import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.FlowPane;
@@ -393,7 +391,7 @@ final class RankingsScreen {
     private void frameOver(VBox frame, VBox body) {
         frame.setMaxWidth(Pieces.PAGE_WIDE);
         frame.setFillWidth(true);
-        frame.setPadding(new javafx.geometry.Insets(0, 18, 4, 18));
+        frame.setPadding(Pieces.FRAME_ROOM);
         ScrollPane scroller = ui.scrolled(body, FRAME_CHROME, false);
         // Kept (KP7): the bindings and the listener are made once per node, since a kept page is handed back each draw with the scroller and
         // the boxes it is already bound to; a draw never unbinds and binds again, or adds a second listener.
@@ -511,7 +509,7 @@ final class RankingsScreen {
         // Kept (KP7): each control is a scope of its own.
         Node board = Kept.scope("board", () -> {
             String[] boards = {"Real world 2025", "Your world"};
-            HBox strip = strip(boards, boards[settings.board().ordinal()],
+            HBox strip = strip(boards, boards[settings.board().ordinal()], name -> !haveNations && name.equals(boards[1]),
                     i -> with(Rankings.Board.values()[i], settings.money(), settings.prices(), settings.convert()));
             if (!haveNations) {
                 grey(strip, 1, "Your world needs the nations of the game's world, and this city has none to show.");
@@ -527,10 +525,11 @@ final class RankingsScreen {
 
         Node price = Kept.scope("prices", () -> {
             String[] prices = {"Per year", "Static"};
-            HBox strip = strip(prices, prices[settings.prices().ordinal()],
-                    i -> with(settings.board(), settings.money(), Rankings.Prices.values()[i], settings.convert()));
             // Prices moves only the saved rows (D2): it is open when one is on the board, locked otherwise (and by the model's other reasons).
-            if (Rankings.pricesLocked(settings, m, !onBoard.isEmpty())) {
+            boolean locked = Rankings.pricesLocked(settings, m, !onBoard.isEmpty());
+            HBox strip = strip(prices, prices[settings.prices().ordinal()], name -> locked,
+                    i -> with(settings.board(), settings.money(), Rankings.Prices.values()[i], settings.convert()));
+            if (locked) {
                 String why = Rankings.pricesLockedWhy(settings, m, !onBoard.isEmpty());
                 for (int i = 0; i < prices.length; i++) grey(strip, i, why);
             }
@@ -553,7 +552,15 @@ final class RankingsScreen {
      * four of them would not sit side by side where there is room.
      */
     private HBox strip(String[] names, String current, Consumer<Integer> pick) {
-        FlowPane chips = Pieces.chipStrip(names, current, Palette.SIZE_BODY, name -> {
+        return strip(names, current, name -> false, pick);
+    }
+
+    /**
+     * ...with the chips `spent` names greyed where they are made (KP2b: Pieces.chipStripSaying's spent look, whole, in the one write; a style set on top
+     * of the chip's was two writes at each draw, and the first of them took the grey off).
+     */
+    private HBox strip(String[] names, String current, java.util.function.Predicate<String> spent, Consumer<Integer> pick) {
+        FlowPane chips = Pieces.chipStripSaying(names, null, spent, current, Palette.SIZE_BODY, name -> {
             for (int i = 0; i < names.length; i++) {
                 if (names[i].equals(name)) {
                     pick.accept(i);
@@ -572,13 +579,12 @@ final class RankingsScreen {
         return row;
     }
 
-    /** A chip greyed with its reason as its tooltip: it keeps its place and its mark if it is the one chosen, and a click does nothing. */
+    /**
+     * A chip greyed (strip() made it so: the spent look, its mark kept if it is the one chosen, and a click that does nothing) says why in its tooltip.
+     * Its style is not touched here (KP2b): a style set on top of the chip's own was written twice at each draw.
+     */
     private static void grey(HBox strip, int index, String why) {
-        Button chip = (Button) strip.getChildren().get(index);
-        chip.setOnAction(e -> { });
-        // (chipStrip set the style whole in this draw; this one is set on top of it, as HistoryScreen.stillChip's is.)
-        chip.setStyle(chip.getStyle() + " -fx-text-fill: " + Palette.TEXT_SPENT + "; -fx-cursor: default;");
-        HistoryScreen.tip(chip, why);
+        HistoryScreen.tip(strip.getChildren().get(index), why);
     }
 
     private static HBox control(String name, HBox strip) {
@@ -787,11 +793,17 @@ final class RankingsScreen {
                 browseAll = !browseAll;
                 showRankingsMenu();
             }, true);
-            VBox.setMargin(browse, new javafx.geometry.Insets(8, 0, 0, 0));
+            Pieces.vMargin(browse, BROWSE_ROOM);
             return browse;
         }));
         return box;
     }
+
+    /**
+     * The room round a measure line's pin, and over Browse all: one object each (KP2b). A padding or a margin is an object that compares by reference,
+     * so a new Insets of the same figures at each draw of a kept page is a change at each, and asks for a layout.
+     */
+    private static final javafx.geometry.Insets PIN_ROOM = new javafx.geometry.Insets(0, 2, 0, 4), BROWSE_ROOM = new javafx.geometry.Insets(8, 0, 0, 0);
 
     private Node measureLine(WorldMeasures.Measure p, WorldMeasures.Measure shown, boolean yourWorldBoard) {
         boolean lit = p.key().equals(shown.key());
@@ -805,7 +817,7 @@ final class RankingsScreen {
         HBox.setHgrow(name, Priority.ALWAYS);
 
         StackPane toggle = Kept.stack(Pieces.icon(Icons.PIN, pin ? Palette.ACCENT : Palette.TEXT_SPENT, 11));
-        toggle.setPadding(new javafx.geometry.Insets(0, 2, 0, 4));
+        toggle.setPadding(PIN_ROOM);
         toggle.setStyle("-fx-cursor: hand;");
         HistoryScreen.tip(toggle, pin ? "Unpin" : "Pin it to the top of the list and to your card");
         toggle.setOnMouseClicked(e -> {
@@ -1145,8 +1157,13 @@ final class RankingsScreen {
         private String open;
         private final List<Canvas> tiles = new ArrayList<>();
         private final Region hover = new Region();
-        /** Where the pointer was last over the rows (NaN when it is not over them), so that a draw under a still pointer lights the row the pointer is over. */
-        private double pointerY = Double.NaN;
+        /**
+         * Where the pointer was last over the rows, in the scene (NaN when it is not over them), so that the row it is over is worked out from where it
+         * is and not from a place in the picture: the page scrolls under a still pointer, and no mouse-moved follows a wheel (JavaFX re-picks under a
+         * still pointer at a pulse and sends entered and exited to what changed, never moved), so a place in the picture would light the row the
+         * pointer was over before the scroll.
+         */
+        private double pointerSceneY = Double.NaN;
         private final javafx.scene.text.Font words = Palette.Fonts.sansFont(Palette.SIZE_BODY),
                 strong = Palette.Fonts.sansStrongFont(Palette.SIZE_BODY), small = Palette.Fonts.sansFont(Palette.SIZE_LABEL),
                 figures = Palette.Fonts.monoFont(Palette.SIZE_BODY);
@@ -1154,21 +1171,31 @@ final class RankingsScreen {
         /** The columns' left edges and the name's room, laid from the right at the width drawn. */
         private double nameX, nameW, ofX, asOfX, valueX, barX, markX;
 
-        /** The hover's region and the width listener, made once in the picture's life; the rows come with set(). */
+        /**
+         * The hover's region, the hand, and the width and scroll listeners, made once in the picture's life; the rows come with set(). The hand is
+         * in the picture's style (KP2b): a cursor set by code is reset when the picture is handed back and set again at each draw, and one set by
+         * a style is the style's, which Kept leaves alone.
+         */
         RowsPicture() {
             setPrefWidth(10);
+            setStyle("-fx-cursor: hand;");
             hover.setStyle("-fx-background-color: " + Palette.HOVER + ";");
             hover.setMouseTransparent(true);
             hover.setManaged(false);
             hover.setVisible(false);
             getChildren().add(hover);
             widthProperty().addListener((o, was, now) -> draw(now.doubleValue()));
+            // The page scrolls, or grows above the rows, under a still pointer: the band follows to the row the pointer is over now. The property
+            // tells its listeners once until it is read, so it is read here.
+            localToSceneTransformProperty().addListener(o -> {
+                getLocalToSceneTransform();
+                if (isHover()) lightUnderPointer();
+            });
         }
 
         /**
          * The rows it draws now, and what a click on one does. Its canvases are made again only when their number changes, and painted again
-         * only when a row, the bars' scale or the open place moved; the handlers and the cursor are set every draw, since a picture handed
-         * back has none.
+         * only when a row, the bars' scale or the open place moved; the handlers are set every draw, since a picture handed back has none.
          */
         void set(List<Entry> entries, boolean signed, Consumer<String> pick, String open) {
             boolean moved = !entries.equals(this.entries) || signed != this.signed || !Objects.equals(open, this.open);
@@ -1179,7 +1206,6 @@ final class RankingsScreen {
             setMinHeight(total);
             setPrefHeight(total);
             setMaxHeight(total);
-            setCursor(Cursor.HAND);
             int want = (entries.size() + TILE_ROWS - 1) / TILE_ROWS;
             if (tiles.size() != want) {
                 getChildren().removeAll(tiles);
@@ -1199,11 +1225,17 @@ final class RankingsScreen {
                 if (last.getHeight() != height) last.setHeight(height);
             }
             setOnMouseMoved(e -> {
-                pointerY = e.getY();
-                lightRowAt(pointerY);
+                pointerSceneY = e.getSceneY();
+                lightRowAt(e.getY());
+            });
+            // Entered is what JavaFX sends when the page moves the rows under a pointer that was elsewhere (a wheel, at the next pulse): with the
+            // pointer's place, and no mouse-moved after it.
+            setOnMouseEntered(e -> {
+                pointerSceneY = e.getSceneY();
+                lightRowAt(e.getY());
             });
             setOnMouseExited(e -> {
-                pointerY = Double.NaN;
+                pointerSceneY = Double.NaN;
                 hover.setVisible(false);
             });
             setOnMouseClicked(e -> {
@@ -1211,9 +1243,15 @@ final class RankingsScreen {
                 if (at != null && !at.gap()) pick.accept(at.id());
             });
             if (moved) draw(getWidth());
-            // A pointer that has not moved stays over a kept picture and sends no mouse-moved: the row it is over is lit again from where it was last.
-            if (isHover() && Double.isFinite(pointerY)) lightRowAt(pointerY);
-            else hover.setVisible(false);
+            // A pointer that has not moved stays over a kept picture and sends no mouse-moved: the row it is over is lit again from where it is.
+            lightUnderPointer();
+        }
+
+        /** The row the pointer is over now lit, from where it last was in the scene (the rows may have moved since), and none when it is not over them. */
+        private void lightUnderPointer() {
+            javafx.geometry.Point2D at = isHover() && Double.isFinite(pointerSceneY) && getScene() != null ? sceneToLocal(0, pointerSceneY) : null;
+            if (at == null) hover.setVisible(false);
+            else lightRowAt(at.getY());
         }
 
         private Entry rowAt(double y) {

@@ -335,7 +335,7 @@ final class PolicyScreen {
     private void frameOver(VBox frame, VBox page, Region tray) {
         frame.setMaxWidth(PAGE_WIDE);
         frame.setFillWidth(true);
-        frame.setPadding(new javafx.geometry.Insets(0, 18, 4, 18));
+        frame.setPadding(Pieces.FRAME_ROOM);
         body = ui.scrolled(page, FRAME_CHROME);
         final javafx.scene.control.ScrollPane scroller = body;
         // The height of the tray on show, or -1 with none: bound to the tray's own height while there is one.
@@ -890,10 +890,15 @@ final class PolicyScreen {
 
     /** Words that wrap, at a size, in a colour. */
     static Label words(String text, double size, String tone) {
+        return words(text, size, tone, "");
+    }
+
+    /** ...with more style after the words' own, set with it in one call (KP2b: a style set twice at a draw is written twice at each). */
+    static Label words(String text, double size, String tone, String more) {
         Label l = Kept.label(text);
         l.setWrapText(true);
         l.setMinWidth(0);
-        l.setStyle(BuildScreen.wordsAt(size, tone));
+        l.setStyle(BuildScreen.wordsAt(size, tone) + more);
         return l;
     }
 
@@ -2205,9 +2210,9 @@ final class PolicyScreen {
             StringBuilder names = new StringBuilder();
             for (Payer p : zero) names.append(names.length() == 0 ? "" : ", ").append(p.name());
             list.getChildren().add(Kept.scope("zeroFold", () -> {
-                Label fold = words((shown ? "▾ " : "▸ ") + zero.size() + " paid nothing: " + names, Palette.SIZE_LABEL + 1, Palette.TEXT_MUTED);
-                // Kept (KP6): the style set whole, not built on what it was.
-                fold.setStyle(BuildScreen.wordsAt(Palette.SIZE_LABEL + 1, Palette.TEXT_MUTED) + " -fx-cursor: hand; -fx-padding: 6 6 6 6;");
+                // Kept (KP6, KP2b): the style set once, whole, not words()' and then this one on top of it (which wrote it twice at each draw).
+                Label fold = words((shown ? "▾ " : "▸ ") + zero.size() + " paid nothing: " + names, Palette.SIZE_LABEL + 1, Palette.TEXT_MUTED,
+                        " -fx-cursor: hand; -fx-padding: 6 6 6 6;");
                 fold.setOnMouseClicked(e -> { if (!openLines.remove(key)) openLines.add(key); showPolicyMenu(); });
                 return fold;
             }));
@@ -2300,6 +2305,9 @@ final class PolicyScreen {
         return row;
     }
 
+    /** The room round a card opened in place under its row (a payer's move, a kind of school's price): one object (KP2b), set where it is not that already (Pieces.vMargin), since setMargin asks the box for a layout whatever it is given. */
+    private static final javafx.geometry.Insets OPENED_CARD_ROOM = new javafx.geometry.Insets(2, 0, 8, 34);
+
     /** A payer's own move, opened in place: its offset's dial, and that payer's tax and THE BUDGET before and after. */
     VBox offsetCard(Payer p, String which) {
         Lever lever = p.lever();
@@ -2309,7 +2317,7 @@ final class PolicyScreen {
                 OFFSET_INFO, null, "Taxed at " + p.rate().apply(p.rateNow()) + " now.", null, ladder,
                 staged(lever.key(), lever.current()), effects, CAVEAT_LINE,
                 ("Sales".equals(which) ? SALES_SCALED + " " : "") + CAVEAT, null), 460, false);
-        VBox.setMargin(c, new javafx.geometry.Insets(2, 0, 8, 34));
+        Pieces.vMargin(c, OPENED_CARD_ROOM);
         return c;
     }
 
@@ -5361,7 +5369,7 @@ final class PolicyScreen {
                 null, c.standing() ? "Its own price, against the founding table." : "No school of this kind stands; every school at once still sets its price.",
                 List.of(figures), ladder, stagedScaleOf(policy, c.kind()), effects, CAVEAT_LINE, SCHOOL_CAVEAT + " " + CAVEAT, null),
                 440, false);
-        VBox.setMargin(card, new javafx.geometry.Insets(2, 0, 8, 34));
+        Pieces.vMargin(card, OPENED_CARD_ROOM);
         return card;
     }
 

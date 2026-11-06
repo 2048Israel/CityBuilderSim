@@ -4071,6 +4071,112 @@ public final class KeptBench {
         return null;
     }
 
+    /**
+     * The table's picture drawn kept once more, the city unchanged (KP2b): how many times its cursor was written by the draw, and the cursor after
+     * it. A cursor set by code is reset by Kept when a node is handed back and set again by the draw, a change at each; one in the picture's style
+     * is the style's, which Kept leaves alone. Null when the draw wrote it none and it is the hand; else what differed. ABSENT without a table.
+     */
+    public String rankingsRowsCursor(Runnable redraw) throws Exception {
+        Pane rows = rankingsRows();
+        if (rows == null) return ABSENT;
+        passes();
+        if (rows.getCursor() != javafx.scene.Cursor.HAND) return "the table's picture has not the hand before the draw (" + rows.getCursor() + ")";
+        int[] writes = {0};
+        javafx.beans.InvalidationListener on = o -> {
+            writes[0]++;
+            rows.getCursor();
+        };
+        rows.cursorProperty().addListener(on);
+        try {
+            redraw.run();
+        } finally {
+            rows.cursorProperty().removeListener(on);
+        }
+        passes();
+        if (rankingsRows() != rows) return "the table's picture was handed away or made new by the redraw";
+        if (writes[0] != 0) return "the draw wrote the table's cursor " + writes[0] + " times";
+        if (rows.getCursor() != javafx.scene.Cursor.HAND) return "after the draw the table's cursor is " + rows.getCursor() + ", not the hand";
+        return null;
+    }
+
+    /** The scroller the table's picture sits in, or null. */
+    private ScrollPane rankingsScroller(Pane rows) {
+        for (Node n = rows; n != null; n = n.getParent()) if (n instanceof ScrollPane s) return s;
+        return null;
+    }
+
+    /**
+     * The pointer over a row of the Rankings table while the page scrolls under it (KP2b): a wheel scrolls the page, the rows move under the
+     * pointer, and JavaFX sends the table no mouse-moved (it re-picks at a pulse and sends entered and exited to what changed). Each row is tried
+     * first for whether the band lights under a pointer on it (the city's own and the open row are raised already, a gap is no row); then the
+     * pointer is put on a row that lights, a ScrollEvent is fired at the table's canvas (the scroller moves the page as a wheel does), and then the
+     * page is drawn again as a month landing draws it: after each, the band is lit if the row now under the pointer lights, and on that row, and
+     * not left on the row the pointer was over before the scroll. Null when so; else what differed. ABSENT without a table.
+     */
+    public String hoverRankingsScroll(Runnable redraw) throws Exception {
+        Pane rows = rankingsRows();
+        if (rows == null) return ABSENT;
+        Region lit = find(rows, Region.class, r -> r != rows && r.isMouseTransparent() && !r.isManaged());
+        if (lit == null) return "the table's picture has no region for the lit row";
+        ScrollPane scroller = rankingsScroller(rows);
+        javafx.scene.canvas.Canvas canvas = find(rows, javafx.scene.canvas.Canvas.class, c -> true);
+        if (scroller == null || canvas == null) return "the table's picture has no scroller or no canvas to scroll through";
+        passes();
+        hover(rows, true);
+        double vvalue = scroller.getVvalue();
+        try {
+            int count = (int) Math.round(rows.getPrefHeight() / RankingsScreen.ROW_H);
+            boolean[] lights = new boolean[count];
+            int first = -1;
+            for (int i = 0; i < count; i++) {
+                fireMouse(rows, javafx.scene.input.MouseEvent.MOUSE_MOVED, 40, rows.localToScene(0, (i + .5) * RankingsScreen.ROW_H).getY(),
+                        javafx.scene.input.MouseButton.NONE, 0);
+                lights[i] = lit.isVisible();
+                if (lights[i] && first < 0) first = i;
+            }
+            if (first < 0) return "no row of the table lights under the pointer in this city (" + count + " rows), so there is no look to keep";
+            // The pointer on that row, at its place in the scene (the synthetic event takes its coordinates as the scene's).
+            double sceneY = rows.localToScene(0, (first + .5) * RankingsScreen.ROW_H).getY();
+            fireMouse(rows, javafx.scene.input.MouseEvent.MOUSE_MOVED, 40, sceneY, javafx.scene.input.MouseButton.NONE, 0);
+            double before = lit.getLayoutY();
+            if (!lit.isVisible() || before != first * RankingsScreen.ROW_H) return "the fixture's premise failed: the pointer on row " + first + " did not light it";
+            double top = rows.localToScene(0, 0).getY();
+            // The wheel: a ScrollEvent through the canvas, bubbling to the scroller, which moves the page by the delta (down: the rows go up).
+            double by = -4 * RankingsScreen.ROW_H;
+            javafx.event.Event.fireEvent(canvas, new javafx.scene.input.ScrollEvent(javafx.scene.input.ScrollEvent.SCROLL, 40, sceneY, 40, sceneY,
+                    false, false, false, false, true, false, 0, by, 0, by, javafx.scene.input.ScrollEvent.HorizontalTextScrollUnits.NONE, 0,
+                    javafx.scene.input.ScrollEvent.VerticalTextScrollUnits.NONE, 0, 0, null));
+            passes();
+            double moved = top - rows.localToScene(0, 0).getY();
+            if (moved < 2 * RankingsScreen.ROW_H) return "the fixture's premise failed: the wheel moved the rows by " + moved + " pixels (it was " + -by + ")";
+            String scrolled = bandNow(rows, lit, sceneY, lights, before);
+            redraw.run();
+            passes();
+            if (rankingsRows() != rows) return "the table's picture was handed away or made new by the redraw";
+            String landed = bandNow(rows, lit, sceneY, lights, before);
+            if (scrolled == null && landed == null) return null;
+            return (scrolled == null ? "" : "after the wheel, with no month landed: " + scrolled)
+                    + (scrolled != null && landed != null ? "; " : "") + (landed == null ? "" : "a month landing after the wheel: " + landed);
+        } finally {
+            hover(rows, false);
+            scroller.setVvalue(vvalue);
+            redraw.run();
+            passes();
+        }
+    }
+
+    /** The band against the row under a pointer at this place in the scene: null when it is lit on that row (or not lit, where that row does not light), else the difference. */
+    private static String bandNow(Pane rows, Region lit, double sceneY, boolean[] lights, double before) {
+        int at = (int) Math.floor(rows.sceneToLocal(0, sceneY).getY() / RankingsScreen.ROW_H);
+        boolean should = at >= 0 && at < lights.length && lights[at];
+        if (!should) return lit.isVisible() ? "the band is on the row at " + lit.getLayoutY() + ", and the row under the pointer (" + at + ") does not light" : null;
+        if (!lit.isVisible()) return "the band is not lit, and the row under the pointer (" + at + ") lights";
+        if (lit.getLayoutY() == before && before != at * RankingsScreen.ROW_H) {
+            return "the band stayed on the row the pointer was over before the scroll (at " + before + "; the pointer is on row " + at + ")";
+        }
+        return lit.getLayoutY() == at * RankingsScreen.ROW_H ? null : "the band is on the row at " + lit.getLayoutY() + ", the pointer is on row " + at;
+    }
+
     /* =====================================================================
        THE RANKINGS TAB (KP7, slice B): the tab as it opens, kept and built new, the hands on what reshapes it (a board, the money, the
        prices and the conversion, Now / Your age, a measure, a filter and a view, a pin, a place's drawer), the read of the saved

@@ -279,8 +279,13 @@ import java.util.concurrent.TimeUnit;
  *      node it hands back - the condition caused (a style set to what it is moves no listener, and set to another and back moves it twice), a berth kind
  *      gone to none drawn as a row built new (a hand-made berth: no city has the page), then the Sectors list and a business's five pages, the statements
  *      with a note open, the Bank's seven pages, Finances' hub and every page of its six areas (a line's page, Close it now, the window abroad shut), the
- *      fund's security, Trade's six and a nation's, Policy's hub and pages with Zoning's, Infrastructure's four, Services' sub-pages and the land office,
- *      each with where the writes that are left come from; the writes of the screens outside the sweep (NOT_KP2B) are named and not counted.
+ *      fund's security, Trade's six and a nation's, Policy's hub and pages with Zoning's, Infrastructure's four, Services' sub-pages, the land office,
+ *      Household money (each view, every cell of the grid opened, the statement, the books stacked) and the Rankings tab (each board, money, prices and
+ *      conversion, some measures (every tenth), each filter, Around you, Browse all, a pin, a place's drawer, Your cities), each with where the writes that are left come
+ *      from; the writes of the screens outside the sweep (NOT_KP2B) are named and not counted;
+ *  93. the Rankings table's picture (KP2b): a kept draw of the page writes its cursor none (the hand is in its style, which Kept leaves alone), and the band
+ *      that lights the row under the pointer follows a pointer a wheel leaves still - a ScrollEvent through the table's canvas moves the page, no
+ *      mouse-moved follows, and after it, and after a month's draw, the band is on the row the pointer is over now and not on the one it was over before.
  */
 public class KeptCheck {
 
@@ -6596,11 +6601,10 @@ public class KeptCheck {
 
     /**
      * The files of the screens KP2b's sweep did not reach, whose writes section 92 names and does not count: the sweep was the list of
-     * screens Pieces, the statements, Sectors, Land, the Bank, the fund, Finances, Trade and Zoning make (KP4, KP5, KP6), and a write on
-     * a page from one of these is another batch's mend. Take a file out of this set as it is mended.
+     * screens Pieces, the statements, Sectors, Land, the Bank, the fund, Finances, Trade, Zoning, Policy, Household money and the Rankings tab
+     * make (KP4 to KP7), and a write on a page from one of these is another batch's mend (KP2c). Take a file out of this set as it is mended.
      */
-    static final java.util.Set<String> NOT_KP2B = java.util.Set.of("UserInterface.java", "InfrastructureScreen.java", "ServicesScreen.java",
-            "PolicyScreen.java", "Ladder.java");
+    static final java.util.Set<String> NOT_KP2B = java.util.Set.of("UserInterface.java", "InfrastructureScreen.java", "ServicesScreen.java");
 
     /** The writes from NOT_KP2B's files, over the pages of section 92 (printed at its end). */
     static int ignoredSets = 0;
@@ -6651,6 +6655,18 @@ public class KeptCheck {
                     + (pieces.isEmpty() ? "nothing came of it (" + said.split("\n")[0] + ")" : pieceWords(pieces.get(0))));
         }
         return pieces;
+    }
+
+    /**
+     * Section 92 lets one tab's pages go before it opens the next (KP2b): the tab forgotten, as another city opened leaves it, and the
+     * pages built new released (KeptBench.release). The harness JVM's heap is nearly full by section 92 (about 1.95 GB of 2 at its start).
+     */
+    static void letGo(KeptBench bench, java.util.function.Consumer<KeptBench> forget) throws Exception {
+        fx(() -> {
+            forget.accept(bench);
+            bench.release();
+            return null;
+        });
     }
 
     /** Section 92: the pages the sweep mended, each redrawn with nothing new in the city. */
@@ -6716,6 +6732,7 @@ public class KeptCheck {
         }
         System.out.println("  [the Sectors tab done]");
 
+        letGo(bench, KeptBench::forgetSectors);
         nothingSet(bench, fx(bench::bank), "the Bank Overview");
         for (String page : KeptBench.bankPages()) {
             nothingSet(bench, fx(() -> bench.bank("the page", "pages", page, false)), "the Bank's " + page + " page");
@@ -6723,21 +6740,25 @@ public class KeptCheck {
         for (String page : new String[]{"Profit", "Balance sheet"}) {
             nothingSet(bench, fx(() -> bench.bank("the page", "pages", page, true)), "the Bank's " + page + " page as a statement");
         }
+        letGo(bench, KeptBench::forgetBank);
         nothingSet(bench, fx(bench::finances), "the Finances hub");
         for (String area : KeptBench.financeAreas()) {
             for (String page : KeptBench.financePages(area)) {
                 nothingSet(bench, fx(() -> bench.finances("the page", area, page)), "Finances, " + area + ", " + page);
             }
         }
+        letGo(bench, KeptBench::forgetFinances);
         nothingSet(bench, fx(bench::trade), "the Trade Overview");
         for (String page : KeptBench.tradePages()) {
             nothingSet(bench, fx(() -> bench.trade("the page", page)), "Trade, " + page);
         }
+        letGo(bench, KeptBench::forgetTrade);
         nothingSet(bench, fx(bench::policy), "the Policy hub");
         for (String[] ap : KeptBench.policyPages()) {
             nothingSet(bench, fx(() -> bench.policy("the page", ap[0], ap[1])), "Policy, " + ap[0] + ", " + ap[1]);
         }
         nothingSet(bench, fx(() -> bench.policy("the page", "Zoning", KeptBench.policyZonePage(Sectors.RETAIL))), "Policy, Zoning, the shops' zone");
+        letGo(bench, KeptBench::forgetPolicy);
         fx(() -> ensureTransit(g));
         nothingSet(bench, fx(bench::infrastructure), "Infrastructure, Roads");
         for (String page : new String[]{"Transit", "Freight", "Ports"}) {
@@ -6771,7 +6792,157 @@ public class KeptCheck {
         });
         check("the window abroad is shut (the fixture's premise): " + g.getDebtManager().foreignWindowReason(), !g.getDebtManager().foreignWindowOpen());
         nothingSet(bench, fx(() -> bench.finances("the page", "Borrow", "Abroad")), "Finances, Borrow, Abroad, the window shut");
+        kp2bHouseholdMoney(g, bench);
+        letGo(bench, KeptBench::forgetHousehold);
+        kp2bRankings(g, bench);
         System.out.printf("  [%d writes from the files NOT_KP2B names were left uncounted over the pages above]%n", ignoredSets);
+    }
+
+    /** Section 92 on Household money (KP7, taken into KP2b): the page as it opens, each view, every cell of the grid opened, the statement and the books stacked under the grid. */
+    static void kp2bHouseholdMoney(Game g, KeptBench bench) throws Exception {
+        KeptBench.Page money = fx(bench::householdMoney);
+        nothingSet(bench, money, "Household money");
+        for (String view : KeptBench.householdViews()) {
+            nothingSet(bench, money, "Household money, the view " + view, b -> { b.householdView(view); return null; });
+        }
+        List<String> cells = fx(bench::householdCells);
+        check("the grid has a cell to open (the fixture's premise for Household money's open cells: " + cells.size() + ")", !cells.isEmpty());
+        // A cell of each kind, not all of them (section 84 opens every one and compares it to a page built new): the first, the middle and the last
+        // family cell and the first and the last row below the rule. The books under every cell are one piece of code; opening all 54 cells here held
+        // the kept pages of each in the JVM's 2 GB beside the rest of the suite's, and ran it out of heap.
+        java.util.Set<String> opened = new java.util.LinkedHashSet<>();
+        List<String> family = cells.stream().filter(c -> !c.startsWith("OUT:")).toList(), below = cells.stream().filter(c -> c.startsWith("OUT:")).toList();
+        for (List<String> kind : List.of(family, below)) {
+            if (kind.isEmpty()) continue;
+            opened.add(kind.get(0));
+            opened.add(kind.get(kind.size() / 2));
+            opened.add(kind.get(kind.size() - 1));
+        }
+        for (String key : opened) {
+            nothingSet(bench, money, "Household money, the cell " + key + " open", b -> { b.householdCell(key); return null; });
+        }
+        nothingSet(bench, money, "Household money, the city's month as a statement", b -> { b.householdStatement(true); return null; });
+        if (!cells.isEmpty()) {
+            nothingSet(bench, money, "Household money, the view All of them with the first cell open",
+                    b -> { b.householdView("All of them"); b.householdCell(cells.get(0)); return null; });
+            nothingSet(bench, money, "Household money, the books stacked under the grid (the page 1000 wide)",
+                    b -> { b.householdCell(cells.get(cells.size() / 2)); b.householdColumnWidth(1000); return null; });
+        }
+        fx(() -> {
+            bench.home(money);
+            return null;
+        });
+    }
+
+    /**
+     * The city saved into slot 10 of the harness's own folder and read back, so that the Rankings tab has a saved city on its board: section 87 does
+     * it, and does nothing here where it has run. How many saved cities the screen's snapshot puts on the board.
+     */
+    static int rankingsSavedCities(KeptBench bench) throws Exception {
+        if (fx(bench::rankingsSavedOnBoard) < 1) {
+            quietly(() -> fx(bench::rankingsSaveSlot10));
+            fx(() -> {
+                bench.rankingsRead();
+                return null;
+            });
+            long deadline = System.nanoTime() + 60_000_000_000L;
+            boolean landed = fx(bench::rankingsReadLanded);
+            while (!landed && System.nanoTime() < deadline) {
+                Thread.sleep(200);
+                landed = fx(bench::rankingsReadLanded);
+            }
+        }
+        return fx(bench::rankingsSavedOnBoard);
+    }
+
+    /**
+     * Section 93: the Rankings table's picture (KP2b), the one node on the page that paints its rows. A kept draw writes its cursor none (the hand is
+     * in its style, which Kept leaves alone; set by code it is reset when the picture is handed back and set again, a change at each draw); and the
+     * band that lights the row under the pointer follows a pointer that a wheel leaves still: the page scrolls, JavaFX sends no mouse-moved, and the
+     * row the pointer is over is another (the band was left on the old one, and a month's draw lit the old one again).
+     */
+    static void kp2bRowsPicture(Game g, KeptBench bench) throws Exception {
+        System.out.println("\n--- 93: the Rankings table keeps its hand, and its band follows a pointer a wheel leaves still ---");
+        KeptBench.Page rankings = fx(bench::rankings);
+        String hand = fx(() -> {
+            bench.home(rankings);
+            bench.drawKept(rankings);
+            bench.passes();
+            return bench.rankingsRowsCursor(() -> bench.drawKept(rankings));
+        });
+        if (hand != null) System.out.println("  the hand: " + hand);
+        check("the Rankings table's picture has the hand, and a kept draw of the page writes its cursor none", hand == null);
+        String wheel = fx(() -> {
+            bench.home(rankings);
+            bench.drawKept(rankings);
+            bench.passes();
+            return bench.hoverRankingsScroll(() -> bench.drawKept(rankings));
+        });
+        if (wheel != null) System.out.println("  the wheel: " + wheel);
+        check("the Rankings table: after a wheel scrolls the page under a still pointer, and after a month lands, the band is on the row the pointer is over now", wheel == null);
+        fx(() -> {
+            bench.home(rankings);
+            return null;
+        });
+    }
+
+    /**
+     * Section 92 on the Rankings tab (KP7, taken into KP2b): the page as it opens, each board, money, prices and conversion, some measures (every
+     * tenth, the last and the first no real place is ranked on), each filter, Around you, Browse all, a measure pinned, a place's drawer, and the
+     * saved city's board (Your cities, Your age, its drawer).
+     */
+    static void kp2bRankings(Game g, KeptBench bench) throws Exception {
+        int saved = rankingsSavedCities(bench);
+        check("the Rankings tab has a saved city on its board (the fixture's premise for Your cities: " + saved + ")", saved >= 1);
+        KeptBench.Page page = fx(bench::rankings);
+        nothingSet(bench, page, "the Rankings tab");
+        boolean nations = fx(bench::rankingsHasNations);
+        for (String board : KeptBench.rankingsBoards()) {
+            if (board.equals("YOUR_WORLD") && !nations) continue;
+            nothingSet(bench, page, "the Rankings tab, the board " + board, b -> { b.rankingsBoard(board); return null; });
+        }
+        for (String money : KeptBench.rankingsMoneys()) {
+            nothingSet(bench, page, "the Rankings tab, the money " + money, b -> { b.rankingsMoney(money); return null; });
+        }
+        for (String prices : KeptBench.rankingsPrices()) {
+            nothingSet(bench, page, "the Rankings tab, the prices " + prices, b -> { b.rankingsPrice(prices); return null; });
+        }
+        for (String convert : KeptBench.rankingsConverts()) {
+            nothingSet(bench, page, "the Rankings tab, the conversion " + convert, b -> { b.rankingsConvert(convert); return null; });
+        }
+        List<String> measures = KeptBench.rankingsMeasures();
+        java.util.Set<String> shown = new java.util.LinkedHashSet<>();
+        for (int i = 0; i < measures.size(); i += 10) shown.add(measures.get(i));
+        shown.add(measures.get(measures.size() - 1));
+        for (String k : measures) {
+            if (!KeptBench.rankingsSourced(k)) {
+                shown.add(k);
+                break;
+            }
+        }
+        for (String m : shown) {
+            nothingSet(bench, page, "the Rankings tab, the measure " + m, b -> { b.rankingsMeasure(m); return null; });
+        }
+        for (String f : KeptBench.rankingsFilters()) {
+            nothingSet(bench, page, "the Rankings tab, the filter " + f, b -> { b.rankingsFilter(f); return null; });
+        }
+        nothingSet(bench, page, "the Rankings tab, Around you", b -> { b.rankingsAround(true); return null; });
+        nothingSet(bench, page, "the Rankings tab, Browse all opened", b -> { b.rankingsBrowseAll(true); return null; });
+        String last = measures.get(measures.size() - 1);
+        nothingSet(bench, page, "the Rankings tab, " + last + " pinned with Browse all opened", b -> { b.rankingsBrowseAll(true); b.rankingsPin(last, true); return null; });
+        List<String> drawers = fx(bench::rankingsDrawers);
+        for (String d : drawers) {
+            nothingSet(bench, page, "the Rankings tab, the drawer of " + d, b -> { b.rankingsDrawer(d); return null; });
+        }
+        nothingSet(bench, page, "the Rankings tab, Your cities", b -> { b.rankingsFilter("YOUR_CITIES"); b.rankingsAtAge(false); return null; });
+        nothingSet(bench, page, "the Rankings tab, Your cities at Your age", b -> { b.rankingsFilter("YOUR_CITIES"); b.rankingsAtAge(true); return null; });
+        for (String d : drawers) {
+            nothingSet(bench, page, "the Rankings tab, Your cities with the drawer of " + d, b -> { b.rankingsFilter("YOUR_CITIES"); b.rankingsDrawer(d); return null; });
+        }
+        fx(() -> {
+            bench.home(page);
+            return null;
+        });
     }
 
     public static void main(String[] args) throws Exception {
@@ -6958,6 +7129,7 @@ public class KeptCheck {
         greyedWhileHeld(g, bench);
         doorsStyledOnce(g, bench);
         kp2bSets(g, bench);
+        kp2bRowsPicture(g, bench);
 
         System.out.println("\n" + (fails == 0 ? "ALL OK" : fails + " FAILED"));
         Platform.exit();

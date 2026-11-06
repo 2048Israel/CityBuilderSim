@@ -78,6 +78,9 @@ public final class Ladder {
     /** The gap between the buttons, the slider and the reading. */
     static final double GAP = 10;
 
+    /** The room left of the marks under a slider, as wide as the step button and the gap: one object (KP2b), since a padding made again at each draw is a change at each. */
+    private static final javafx.geometry.Insets MARKS_ROOM = new javafx.geometry.Insets(0, 0, 0, BUTTON + GAP);
+
     private final double min, max, step;
     private final DoubleFunction<String> reads;
     private DoubleFunction<String> stepReads;
@@ -236,7 +239,7 @@ public final class Ladder {
             Marks under = Kept.of(Marks.class, Marks::new);
             under.set(min, this.max, markAt, markNames, slider);
             HBox lane = Kept.row(0, under);
-            lane.setPadding(new javafx.geometry.Insets(0, 0, 0, BUTTON + GAP));
+            lane.setPadding(MARKS_ROOM);
             lane.setMaxWidth(wide);
             box.getChildren().add(lane);
         }
