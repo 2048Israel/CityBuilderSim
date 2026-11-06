@@ -473,7 +473,7 @@ public class BuildCardCheck {
         out.println("\n--- 2. the hero and the bars are the model's: the quote, the land, the staffing, the markets ---");
         double[] fill = g.getPopulationManager().getJobFillRate();
         double[] wages = g.getPopulationManager().getWagesPerType();
-        int cards = 0, makers = 0, offices = 0, cityCards = 0, landBars = 0, roadCards = 0, conversion = 0, washers = 0;
+        int cards = 0, makers = 0, offices = 0, labs = 0, cityCards = 0, landBars = 0, roadCards = 0, conversion = 0, washers = 0;
         boolean hero = true, bar1 = true, bar2 = true, va = true, run = true, sticker = true, head = true;
         for (BuildCard.Group gr : allGroups(g)) {
             for (BuildCard.Figures f : gr.cards()) {
@@ -556,6 +556,8 @@ public class BuildCardCheck {
                     }
                     if (f.valueAdded() != v || f.unit() != v) { va = false; out.println("      value added: " + t.getName()); }
                     if (f.kind() == BuildCard.Kind.OFFICE) offices++; else makers++;
+                    // ...a Research Lab (R4) is an office of Business Services that makes nothing: its value added is nothing, its income a prize.
+                    if (t.getResearches() != null) labs++;
                 }
 
                 // Bar 1: the quote at one over the unit, to the bit - and a road's (0.7.70), its life
@@ -622,7 +624,8 @@ public class BuildCardCheck {
         assertTrue("value added is what one makes less what it uses at the markets' prices, an office's at"
                 + " the price of a seat, a conversion unit's less its feed at what that makes unworked, a preparation plant's what it"
                 + " adds to coal's flow (" + makers + " makers, " + offices + " offices, " + conversion + " conversion units, " + washers
-                + " plant)", va && makers > 0 && offices == 3 && conversion == 14 && washers == 1);
+                + " plant; " + labs + " of the offices Research Labs, which make nothing)",
+                va && makers > 0 && offices - labs == 3 && labs == ResearchCatalog.Field.values().length && conversion == 14 && washers == 1);
         assertTrue("bar 1 is the quote at one over the unit, to the bit, on every card but a road's, whose is its life"
                 + " over the trips it takes off the road (0.7.70; " + roadCards + " road cards)", bar1 && roadCards > 0);
         assertTrue("bar 2 is land per unit on the market's cards and per trip off on a road's, unstaffable posts of 100"

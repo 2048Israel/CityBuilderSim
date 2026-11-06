@@ -2,7 +2,9 @@
 
 ## WHERE IT STANDS
 
-Being built. Branch `batch/R4` from `batch/R3`'s ship file (RL1, 3944a1e4).
+**Ready.** Branch `batch/R4` from `batch/R3`'s ship file (RL1, 3944a1e4); main with R3 in (b67298b2) merged at 2c8a2fe8. Slice A
+is 2216a605, slice B 4e5d86da. The default trace is R3's to the byte, so no ensemble. The full suite on the merge: **exit 3**, main's
+recorded reds only, none NEW (§4). R3b's prize cards and the purse on the screens in the ship file's `## pending` (R4-R).
 
 ## 1. What R4 is, and where it splits
 
@@ -31,8 +33,8 @@ and is shed. R3 built the mechanism R4 adds to (`Research`, the grants, posts, p
    would be finished at the team's limit; the bank lends against income and a lab has none until a find. What the owners do not put up is
    not built.
 5. **★ A purse is a transfer, as a subsidy is** (`TreasuryLine.PRIZES`, paid into the labs' sector's till, beside the business subsidies
-   in the national accounts), not a sale: no sales tax on it and no line of the sector's statement. Refused past the central bank's
-   ceiling and owed as arrears, as a subsidy is.
+   in the national accounts and in the sector's books' "Subsidy from the city"), not a sale: no sales tax on it and no revenue line of
+   the sector's statement. Refused past the central bank's ceiling and owed as arrears, as a subsidy is.
 6. **★ A lab pays its posts' wages, power, water and repairs**, as every building of its sector does. The study's other costs of a post
    (38-40% in engineering and medicine, 20% in business and law) are in the post's cost the investors judge by and the stake they put
    up, not a bill a lab pays: no flow in the game carries a private firm's laboratory supplies, and a new one would be a new line out of
@@ -54,9 +56,43 @@ and is shed. R3 built the mechanism R4 adds to (`Research`, the grants, posts, p
 
 | slice | what | state |
 |---|---|---|
-| A | `Research`: the prize dials, the chase list, labs in the month, the purse, the pot, the investors' questions, idle labs, the save's getters and `restorePrizes()`; `PrizeCheck` 1-10 | drafting |
-| B | the four lab templates, Business Services' planner keeping out of them, the labs' researchers in the month, the pot drawn, the purse paid (`TreasuryLine.PRIZES`), investors' orders, idle labs shed, the inbox, the save; `PrizeCheck` 11-17 | waiting on A |
+| A | `Research`: the prize dials, the chase list, labs in the month, the purse, the pot, the investors' questions, idle labs, the save's getters and `restorePrizes()`; `PrizeCheck` 1-10 | 2216a605 |
+| B | the four lab templates, Business Services' planner keeping out of them, the labs' researchers in the month, the pot drawn, the purse paid (`TreasuryLine.PRIZES`), investors' orders, idle labs shed, the inbox, the save; `PrizeCheck` 11-17 | 4e5d86da |
+
+Both drafted by Sonnet 5.5 at xhigh, reviewed here. What the reviews found:
+
+- **Slice A.** With no lab working, the month adds `(share + 0.0) / 12`, R3's own figure to the bit, in R3's order; the chase list
+  is taken before the month's work is added, as the study's model reads its progress. `PrizeCheck` 10 holds the new month against an
+  independent copy of R3's (the old overload now calls the new one, so comparing the two would prove nothing). The slice mutated
+  `Research` 22 ways (`>` for `>=` in the purse's rule, the chase's order reversed, the pour ignoring the city's share, `restorePrizes()`
+  leaving the grant's posts unset ...) and every one failed the harness.
+- **Slice B.** The purse is paid in `finalUpdateEconomy()` and struck in the government's books the same month
+  (`strikeGovernmentBooks()`, beside the subsidies), inside the money audit's window; the owners' raise is for what the till lacks of
+  cost and stake (the whole sum would raise again every month a lab is held), and the investor it builds through cannot borrow.
+  Business Services' own books needed the purse as cash from the city or `SectorBooks.unexplained()` failed in seven harnesses: it is
+  in the books' "Subsidy from the city" line (`getPrizePaidTo()`), which is what ★5 means by a transfer. Two premises moved with the
+  data, not to let a change through: DiscoveryCheck's "RESEARCH is the last treasury line" (now the last but PRIZES) and
+  BuildingDataCheck's count of templates (148 to 152, with the new key compared).
+- **A lab is wanted only once the chase has room for half a lab**: in the harness's village that is month 81 for engineering, so the
+  city sections play 79 months first; the investors' order is caused there, and the labs at work, the purse and the save stand a lab
+  up by hand (the village has no builders to finish one).
+- **Idle labs are shed in a city founded the default way too** (`idleMonth()` counts them): a lab a player orders there (★10) has
+  nothing to chase, ever, and goes after six months.
 
 ## 4. Checks
 
-(to be written)
+- **The trace.** The default playtest (2,405 months) traced on R3's tip (3944a1e4, built apart) and on slice B (4e5d86da), back to
+  back: all eight CSVs byte-identical, the log but for "in 62s"/"in 46s" and the layout windows' "2.2 s"/"1.6 s". So no ensemble
+  (`docs/batch.md` 6): with every prize at 0 and the default founding, R4 moves nothing; the four templates are never candidates.
+- **`--pick` on the merge with main** (R3 in, b67298b2; merged at 2c8a2fe8): 119 of 181 harnesses for 16 files, BuildingManager,
+  BuildingsTemplate, Game and Sector left to the gate with LongPlaytest in their place: **exit 4**, one NEW red, BuildCardCheck's
+  "value added is what one makes less what it uses ... (77 makers, 7 offices ...)": it counted Business Services' offices as 3, and
+  the four labs are offices too (each card's figures matched; a lab makes nothing, so its value added is nothing). The count now
+  names them apart (`offices - labs == 3`, `labs` one a field), as BuildingDataCheck's count moved with the data; BuildCardCheck green.
+  Everything else picked was green but main's recorded reds; timing SOFT.
+- **The full suite** after it (`./batch-check.sh`, timing soft, 181 harnesses): **exit 3**, the six reds main's recorded ones and
+  none NEW (SlopeCheck, MonetaryCheck, DenominationCheck, ScaleCheck, MapCheck, KeptCheck). `PrizeCheck`: 262 ok.
+- An earlier `--pick`, on R3's tip, was stopped when R3 landed so that the merge's could run; its process went on as an orphan and
+  wrote into the same log while the merge's compile replaced the classes, hence a log of ClassNotFound lines in
+  `target/checks/run.txt` that are neither run's verdict (the merge's own lines are the ones above).
+- Not a process batch: no scripts, checks' machinery or rules changed.

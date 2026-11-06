@@ -1,4 +1,4 @@
-# TreasuryLine.java - 177 lines · 2 methods · 0 constants · model
+# TreasuryLine.java - 185 lines · 2 methods · 0 constants · model
 
 `ham/citybuildersim/TreasuryLine.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
@@ -26,7 +26,7 @@
 > named in TreasuryJournal's list), which reads these two flags and nothing
 > else. A constant's sentence says why it sits on its side.
 
-**Used by (9):** [BankCheck](BankCheck.md), [CentralBankCheck](CentralBankCheck.md), [DiscoveryCheck](DiscoveryCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [GroceryCheck](GroceryCheck.md), [KeptCheck](KeptCheck.md), [LongPlaytest](LongPlaytest.md)
+**Used by (10):** [BankCheck](BankCheck.md), [CentralBankCheck](CentralBankCheck.md), [DiscoveryCheck](DiscoveryCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [GroceryCheck](GroceryCheck.md), [KeptCheck](KeptCheck.md), [LongPlaytest](LongPlaytest.md), [PrizeCheck](PrizeCheck.md)
 
 ## Enum constants
 
@@ -61,20 +61,21 @@
 | 141 | `TreasuryLine.TRANSIT` | Transit's wages and upkeep (0.7.49, B9): the buses' and trains' crews and what the lines cost to keep running, struck at advanceDemographics() 6d since 2026-09-16 and paid by nobody until now. |
 | 151 | `TreasuryLine.OIL_RESERVE` | Crude for the strategic reserve (0.7.85; StrategicReserve): bought in the month's crude market on the player's order, which the treasury could pay for when it was placed (Game.fillReserve()), and paid at the next stri... |
 | 158 | `TreasuryLine.RESEARCH` | The research grants' bill (R3; Game.settleResearchBill()): the posts the grants bought and the laboratories they run. |
+| 166 | `TreasuryLine.PRIZES` | The labs' share of a research prize (R4; Game.finalUpdateEconomy()): what a find in a field with a prize owes the Research Labs that did the work, paid into Business Services' till. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 161 | `public final String label` | The player's words for it, for the Government tab's arrears list and the playtest. |
-| 164 | `public final boolean promise` | Paid whatever the treasury holds, past the ceiling if it must be. |
-| 167 | `public final boolean purchase` | Refused, it is simply not made; nothing is owed. |
+| 169 | `public final String label` | The player's words for it, for the Government tab's arrears list and the playtest. |
+| 172 | `public final boolean promise` | Paid whatever the treasury holds, past the ceiling if it must be. |
+| 175 | `public final boolean purchase` | Refused, it is simply not made; nothing is owed. |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 28 | 150 | **type** `public enum TreasuryLine` | Every kind of payment the treasury makes, and whether it is a promise. |
-| 169 | 5 | `TreasuryLine(String label, boolean promise, boolean purchase)` |  |
-| 176 | 1 | `public boolean accruesArrears()` | True for a discretionary line whose refusal is owed as arrears. |
+| 28 | 158 | **type** `public enum TreasuryLine` | Every kind of payment the treasury makes, and whether it is a promise. |
+| 177 | 5 | `TreasuryLine(String label, boolean promise, boolean purchase)` |  |
+| 184 | 1 | `public boolean accruesArrears()` | True for a discretionary line whose refusal is owed as arrears. |
 
