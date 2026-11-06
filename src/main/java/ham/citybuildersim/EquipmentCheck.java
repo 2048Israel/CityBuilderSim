@@ -34,8 +34,8 @@ import java.util.TreeMap;
  *   1. THE DATA IS READ: every template the notes name carries its piece, its since, ends, buys, work and life read back from buildings.json
  *      (the file read here with Gson, its figures not typed twice), no other template carries one but those whose recipes need it (R1c's pieces
  *      end no form: each is its template's recipe piece, in the file and once read), the rules the figures were struck by hold
- *      on the template's own electricity, construction points, land and truck room, the tractor's code is never known, the drive is known
- *      from 1900; and a bad entry in the file (no id, a second of an id, an unknown form or good, no since, a life of 0) is reported and
+ *      on the template's own electricity, construction points, land and truck room, the tractor's code is known from PE14's month (June 1917, R2) and
+ *      not before, the drive is known from 1900; and a bad entry in the file (no id, a second of an id, an unknown form or good, no since, a life of 0) is reported and
  *      skipped, the good ones beside it read
  *   2. A PLAYED CITY HAS NONE UNFITTED: after SETTLE and twelve months no stack has an unfitted building, every steam share and both horse
  *      shares are 0 and EquipmentForms has driven none
@@ -366,9 +366,12 @@ public class EquipmentCheck {
         BuildingsTemplate grainFarm = bm.getTemplateByName("Grain Farm"), bakery = bm.getTemplateByName("Bakery");
         Equipment tractor = grainFarm == null ? null : grainFarm.getEquipment(TRACTOR);
         Equipment drive = bakery == null ? null : bakery.getEquipment(DRIVE);
-        boolean tractorNever = tractor != null;
-        for (int y = 1800; y <= 2200 && tractor != null; y++) tractorNever &= !tractor.knownIn(y);
-        check("the tractor's code is not a year and is known in no year: the piece is data, and never pays", tractor != null && !tractor.isYear() && tractorNever);
+        boolean tractorFromPe14 = tractor != null;
+        for (int y = 1800; y <= 2200 && tractor != null; y++) tractorFromPe14 &= tractor.knownIn(y) == (y >= 1918);
+        int pe14 = tractor == null ? 0 : tractor.knownFrom();
+        check("the tractor's code is not a year and is known from its entry's month, PE14's June 1917 (R2), and not the month before: by no January up to 1917's, by every one from 1918's",
+                tractor != null && !tractor.isYear() && pe14 == PolicyDates.monthOf(1917, 6) && pe14 == ResearchCatalog.get().entry("PE14").worldMonth()
+                        && tractor.knownAt(pe14) && !tractor.knownAt(pe14 - 1) && tractorFromPe14);
         check("the electric drive is known from its January 1900 and not in 1899", drive != null && drive.knownIn(1900) && !drive.knownIn(1899) && drive.knownIn(2025));
 
         // A bad entry costs that entry: it is reported and skipped, and the good ones beside it are read.
@@ -669,8 +672,14 @@ public class EquipmentCheck {
         return new Equipment("test-piece", "Test piece", since, ends, buys, work, life);
     }
 
-    /** The year a game's month is in, as the verdict reads it. */
+    /** The year a game's month is in. */
     static int yearOf(Game g) { return CityCalendar.yearOf(g.getMonth()); }
+
+    /**
+     * The game month of a calendar year's January, which the verdict is asked by since R2 (the figures API takes the month): PolicyDates.monthOf(year, 1)
+     * from 1900, and a month before the first for a year before the start (Equipment.januaryOf(): PolicyDates clamps those to month 1).
+     */
+    static int jan(int year) { return Equipment.januaryOf(year); }
 
     /* ============================ 8. the rule's arithmetic ============================ */
 
@@ -712,8 +721,8 @@ public class EquipmentCheck {
         // Step 3 alone: no hurdle, a gain either side of cost / factor.
         double r = 0.06, cost = 100;
         double factor = EquipmentFit.annuityFactor(life, r), line = cost / factor;
-        EquipmentFit.Verdict over = EquipmentFit.judge(drive, bakery, 1900, 1, line * (1 + 1e-6), cost, r, 0);
-        EquipmentFit.Verdict under = EquipmentFit.judge(drive, bakery, 1900, 1, line * (1 - 1e-6), cost, r, 0);
+        EquipmentFit.Verdict over = EquipmentFit.judge(drive, bakery, jan(1900), 1, line * (1 + 1e-6), cost, r, 0);
+        EquipmentFit.Verdict under = EquipmentFit.judge(drive, bakery, jan(1900), 1, line * (1 - 1e-6), cost, r, 0);
         check("a gain a millionth over cost / factor pays: over its life it earns back its cost", over.kind() == EquipmentFit.Kind.PAYS && over.earnsBack() >= cost,
                 over.toString());
         check("...a millionth under does not: it earns back less than its cost, with no hurdle in the way",
@@ -724,47 +733,50 @@ public class EquipmentCheck {
 
         // Step 4 alone: the cost is a unit and the hurdle ten, so the life earns its cost back many times over; a gain either side of the hurdle.
         double hurdle = 10;
-        EquipmentFit.Verdict gateOver = EquipmentFit.judge(drive, bakery, 1900, 1, hurdle * (1 + 1e-6), 1, r, hurdle);
-        EquipmentFit.Verdict gateUnder = EquipmentFit.judge(drive, bakery, 1900, 1, hurdle * (1 - 1e-6), 1, r, hurdle);
+        EquipmentFit.Verdict gateOver = EquipmentFit.judge(drive, bakery, jan(1900), 1, hurdle * (1 + 1e-6), 1, r, hurdle);
+        EquipmentFit.Verdict gateUnder = EquipmentFit.judge(drive, bakery, jan(1900), 1, hurdle * (1 - 1e-6), 1, r, hurdle);
         check("a gain a millionth over the hurdle passes the gate", gateOver.kind() == EquipmentFit.Kind.PAYS, gateOver.toString());
         check("...a millionth under does not, though it earns back many times its cost over its life: the gate alone decides",
                 gateUnder.kind() == EquipmentFit.Kind.NOT_YET && gateUnder.earnsBack() > 100 * gateUnder.cost(), gateUnder.toString());
         double exactCost = hurdle * factor;
         check("a gain exactly at both lines pays (at least: g x factor >= C and g >= the hurdle)",
-                EquipmentFit.judge(drive, bakery, 1900, 1, hurdle, exactCost, r, hurdle).kind() == EquipmentFit.Kind.PAYS);
+                EquipmentFit.judge(drive, bakery, jan(1900), 1, hurdle, exactCost, r, hurdle).kind() == EquipmentFit.Kind.PAYS);
 
         boolean never = true;
         for (double gain : new double[]{0, -1e-9, -50, Double.NEGATIVE_INFINITY, Double.NaN}) {
             for (double c : new double[]{0, 1, 100}) {
-                never &= EquipmentFit.judge(drive, bakery, 1900, 1, gain, c, r, Double.NEGATIVE_INFINITY).kind() == EquipmentFit.Kind.NOT_YET
-                        && EquipmentFit.judge(drive, bakery, 1900, 1, gain, c, 0, 0).kind() == EquipmentFit.Kind.NOT_YET;
+                never &= EquipmentFit.judge(drive, bakery, jan(1900), 1, gain, c, r, Double.NEGATIVE_INFINITY).kind() == EquipmentFit.Kind.NOT_YET
+                        && EquipmentFit.judge(drive, bakery, jan(1900), 1, gain, c, 0, 0).kind() == EquipmentFit.Kind.NOT_YET;
             }
         }
         check("a gain of nothing, less than nothing or not a number never pays, whatever the cost, the hurdle or the rate", never);
         check("a cost that is not a number never pays",
-                EquipmentFit.judge(drive, bakery, 1900, 1, 50, Double.NaN, r, 0).kind() == EquipmentFit.Kind.NOT_YET);
-        EquipmentFit.Verdict free = EquipmentFit.judge(drive, bakery, 1900, 1, 0.5, 0, r, 0);
+                EquipmentFit.judge(drive, bakery, jan(1900), 1, 50, Double.NaN, r, 0).kind() == EquipmentFit.Kind.NOT_YET);
+        EquipmentFit.Verdict free = EquipmentFit.judge(drive, bakery, jan(1900), 1, 0.5, 0, r, 0);
         check("a piece that costs nothing and adds something pays, its earnings on cost infinite; one that adds nothing earns 0 on it",
                 free.kind() == EquipmentFit.Kind.PAYS && free.earningsOnCost() == Double.POSITIVE_INFINITY
-                        && EquipmentFit.judge(drive, bakery, 1900, 1, 0, 0, r, 0).earningsOnCost() == 0);
+                        && EquipmentFit.judge(drive, bakery, jan(1900), 1, 0, 0, r, 0).earningsOnCost() == 0);
         check("at a rate of 0 a life is worth its months: g x the life is what it earns back, and a hurdle of 0 asks nothing more",
-                EquipmentFit.judge(drive, bakery, 1900, 1, 2, 2.0 * life, 0, 0).kind() == EquipmentFit.Kind.PAYS
-                        && EquipmentFit.judge(drive, bakery, 1900, 1, 2, 2.0 * life + 1e-6, 0, 0).kind() == EquipmentFit.Kind.NOT_YET);
+                EquipmentFit.judge(drive, bakery, jan(1900), 1, 2, 2.0 * life, 0, 0).kind() == EquipmentFit.Kind.PAYS
+                        && EquipmentFit.judge(drive, bakery, jan(1900), 1, 2, 2.0 * life + 1e-6, 0, 0).kind() == EquipmentFit.Kind.NOT_YET);
 
         // The two verdicts that price nothing.
-        EquipmentFit.Verdict fitted = EquipmentFit.judge(drive, bakery, 1900, 0, 99, 1, r, 0);
-        EquipmentFit.Verdict unknown = EquipmentFit.judge(drive, bakery, 1899, 3, 99, 1, r, 0);
+        EquipmentFit.Verdict fitted = EquipmentFit.judge(drive, bakery, jan(1900), 0, 99, 1, r, 0);
+        EquipmentFit.Verdict unknown = EquipmentFit.judge(drive, bakery, jan(1899), 3, 99, 1, r, 0);
         check("no building unfitted is FITTED however much it would add, and prices nothing",
                 fitted.kind() == EquipmentFit.Kind.FITTED && Double.isNaN(fitted.gain()) && Double.isNaN(fitted.cost()) && Double.isNaN(fitted.earningsOnCost())
                         && fitted.lifeMonths() == life && fitted.pieceId().equals(DRIVE) && fitted.templateId() == bakery.getId(), fitted.toString());
         check("...and FITTED comes before NOT_KNOWN: a fitted piece before its year is fitted",
-                EquipmentFit.judge(drive, bakery, 1850, 0, 99, 1, r, 0).kind() == EquipmentFit.Kind.FITTED);
-        check("a piece not yet known in the city's year is NOT_KNOWN, in 1899 and not in 1900; and prices nothing",
+                EquipmentFit.judge(drive, bakery, jan(1850), 0, 99, 1, r, 0).kind() == EquipmentFit.Kind.FITTED);
+        check("a piece not yet known at the city's month is NOT_KNOWN, in January 1899 and not in January 1900; and prices nothing",
                 unknown.kind() == EquipmentFit.Kind.NOT_KNOWN && Double.isNaN(unknown.gain()) && Double.isNaN(unknown.cost())
-                        && EquipmentFit.judge(drive, bakery, 1900, 3, 99, 1, r, 0).kind() == EquipmentFit.Kind.PAYS, unknown.toString());
-        boolean tractorNever = true;
-        for (int y : new int[]{1900, 1917, 1950, 2025, 2200}) tractorNever &= EquipmentFit.judge(tractor, farm, y, 2, 1e9, 1, 0, 0).kind() == EquipmentFit.Kind.NOT_KNOWN;
-        check("the tractor, whose since is a code, is NOT_KNOWN in every year and whatever it would add", tractorNever);
+                        && EquipmentFit.judge(drive, bakery, jan(1900), 3, 99, 1, r, 0).kind() == EquipmentFit.Kind.PAYS, unknown.toString());
+        int pe14 = tractor.knownFrom();
+        boolean tractorFromPe14 = pe14 == PolicyDates.monthOf(1917, 6);
+        for (int m : new int[]{1, jan(1917), pe14 - 1}) tractorFromPe14 &= EquipmentFit.judge(tractor, farm, m, 2, 1e9, 1, 0, 0).kind() == EquipmentFit.Kind.NOT_KNOWN;
+        for (int m : new int[]{pe14, jan(1918), jan(1950), jan(2200)}) tractorFromPe14 &= EquipmentFit.judge(tractor, farm, m, 2, 1e9, 1, 0, 0).kind() == EquipmentFit.Kind.PAYS;
+        check("the tractor, whose since is the code PE14, is NOT_KNOWN however much it would add up to the month before PE14's, June 1917, and from that month it is judged like any other piece (R2)",
+                tractorFromPe14);
 
         // Step 2: the goods at their prices and the work at a point's.
         Map<Good, Double> buys = new java.util.EnumMap<>(Good.class);
@@ -838,7 +850,7 @@ public class EquipmentCheck {
         Equipment drive = t.getEquipment(DRIVE);
         bakery.setUnfitted(DRIVE, 1);
         play(g, 1);
-        check("fixture: a Bakery is unfitted, a month is played, and it is 1900", bakery.getUnfitted(DRIVE) == 1 && yearOf(g) == 1900 && drive.knownIn(yearOf(g)), "year " + yearOf(g));
+        check("fixture: a Bakery is unfitted, a month is played, and it is 1900", bakery.getUnfitted(DRIVE) == 1 && yearOf(g) == 1900 && drive.knownAt(g.getMonth()), "year " + yearOf(g));
 
         double coal = cityPrice(g, Good.THERMAL_COAL), power = g.getEconomyManager().getPricePerWatt(), point = g.getBuildingManager().nonMaterialPricePerPoint();
         EquipmentFit.Verdict v = EquipmentFit.verdict(g, bakery, drive);
@@ -878,7 +890,7 @@ public class EquipmentCheck {
         check("the kind follows the four steps from those figures (pays: g x factor >= C and g >= the hurdle)",
                 (v.kind() == EquipmentFit.Kind.PAYS) == pays && v.earnsBack() == v.gain() * v.factor() && v.earningsOnCost() == v.gain() / v.cost(), v.toString());
         check("...and judge() on them says the same verdict",
-                EquipmentFit.judge(drive, t, yearOf(g), 1, v.gain(), v.cost(), v.realRate(), v.hurdle()).equals(v));
+                EquipmentFit.judge(drive, t, g.getMonth(), 1, v.gain(), v.cost(), v.realRate(), v.hurdle()).equals(v));
 
         // The steam coal, against the sector's own: at a share of 1 its buildings burn what the stacks' templates say.
         double tonnes = 0;
@@ -895,8 +907,8 @@ public class EquipmentCheck {
         // The break-even, solved from the verdict's own figures.
         double even = breakEvenCoal(g, t, v);
         check("fixture: the break-even price of coal is a price", even > 0 && Double.isFinite(even), "is " + even);
-        EquipmentFit.Verdict above = EquipmentFit.judge(drive, t, yearOf(g), 1, EquipmentFit.steamGain(t, even * 1.001, power), v.cost(), v.realRate(), v.hurdle());
-        EquipmentFit.Verdict below = EquipmentFit.judge(drive, t, yearOf(g), 1, EquipmentFit.steamGain(t, even * 0.999, power), v.cost(), v.realRate(), v.hurdle());
+        EquipmentFit.Verdict above = EquipmentFit.judge(drive, t, g.getMonth(), 1, EquipmentFit.steamGain(t, even * 1.001, power), v.cost(), v.realRate(), v.hurdle());
+        EquipmentFit.Verdict below = EquipmentFit.judge(drive, t, g.getMonth(), 1, EquipmentFit.steamGain(t, even * 0.999, power), v.cost(), v.realRate(), v.hurdle());
         check("in the pure core a coal price a thousandth above the break-even pays", above.kind() == EquipmentFit.Kind.PAYS, above.toString());
         check("...and one a thousandth below does not", below.kind() == EquipmentFit.Kind.NOT_YET, below.toString());
         near("...the gain crossing its line there: at the break-even the gain is the greater of cost / factor and the hurdle",
@@ -981,7 +993,7 @@ public class EquipmentCheck {
         BuildingsStacks grain = stack(g, "Grain Farm");
         grain.setUnfitted(TRACTOR, grain.getQuantity());
         EquipmentFit.Verdict tractor = EquipmentFit.verdict(g, grain, grain.getBuilding().getEquipment(TRACTOR));
-        check("an unfitted Grain Farm's tractor is NOT_KNOWN: its since is a code, and nothing is priced",
+        check("an unfitted Grain Farm's tractor is NOT_KNOWN in 1900: it is not known before PE14's June 1917, and nothing is priced",
                 tractor.kind() == EquipmentFit.Kind.NOT_KNOWN && Double.isNaN(tractor.gain()) && Double.isNaN(tractor.cost()) && tractor.pieceId().equals(TRACTOR),
                 tractor.toString());
         BuildingsStacks mixed = stack(g, "Mixed Farm"), bread = stack(g, "Industrial Bakery");

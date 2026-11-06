@@ -32,7 +32,7 @@ import java.util.Set;
  *      without construction is not hooked, and comes as placed until that is said
  *   4. WHAT A NEW BUILDING COMES WITH: in a city founded the 1900 way, bakeries ordered on site that finish come fitted with the electric
  *      drive when it pays for a new building at the city's coal price (the count unchanged) and without it when it does not (the count up by
- *      what finished), a farm finishing never has its tractor (NOT_KNOWN), and the order costs what the model quotes for it in either city,
+ *      what finished), a farm finishing has no tractor before PE14's June 1917 (NOT_KNOWN), and the order costs what the model quotes for it in either city,
  *      the template's whole cost at that city's builders (R1c: the two cities' queues and wages are each its own, so it is no longer the same
  *      figure in both); in a default city every building finishes fitted, at either price
  *   5. THE ORDER RANKED WITH THE BUILDINGS (slice B): at a coal price where the drive pays, the choice is the fitting when the plan builds
@@ -352,7 +352,7 @@ public class FittingCheck {
         String fault = unfittedWholly(g, counted);
         check("unfitTheFounding(), over that village: on every stack whose template carries a piece every building is unfitted for every piece",
                 fault == null && counted[0] > 0, fault == null ? counted[0] + " pieces looked at" : fault);
-        check("...the tractor's too: the Grain Farm's whole stack, which stays on horses (NOT_KNOWN, never paying)",
+        check("...the tractor's too: the Grain Farm's whole stack, which stays on horses (NOT_KNOWN before PE14's June 1917)",
                 stack(g, "Grain Farm").getUnfitted(TRACTOR) == stack(g, "Grain Farm").getQuantity()
                         && EquipmentFit.verdict(g, stack(g, "Grain Farm"), stack(g, "Grain Farm").getBuilding().getEquipment(TRACTOR)).kind()
                         == EquipmentFit.Kind.NOT_KNOWN);
@@ -423,7 +423,7 @@ public class FittingCheck {
         BuildingsTemplate t = bakery.getBuilding();
         Equipment drive = t.getEquipment(DRIVE);
         EquipmentFit.Verdict v = EquipmentFit.verdictForNew(g, t, drive);
-        check("a new building's verdict for the drive is priced in 1900 (PAYS or NOT_YET) and is never FITTED", drive.knownIn(CityCalendar.yearOf(g.getMonth()))
+        check("a new building's verdict for the drive is priced in 1900 (PAYS or NOT_YET) and is never FITTED", drive.knownAt(g.getMonth())
                 && (v.kind() == EquipmentFit.Kind.PAYS || v.kind() == EquipmentFit.Kind.NOT_YET), v.toString());
         double even = EquipmentCheck.breakEvenCoal(g, t, v);
         check("fixture: the break-even price of coal for the drive on a new building is a price", even > 0 && Double.isFinite(even), "is " + even);
@@ -473,14 +473,14 @@ public class FittingCheck {
                     "opened " + opened + ", count " + bakery.getUnfitted(DRIVE));
         }
 
-        // A farm finishing: the tractor is not known (a catalogue code), whatever the prices.
+        // A farm finishing: the tractor is not known before PE14's month (June 1917), whatever the prices.
         BuildingsStacks grain = stack(g, "Grain Farm");
         Equipment tractor = grain.getBuilding().getEquipment(TRACTOR);
         final int tractorBefore = grain.getUnfitted(TRACTOR);
         quietly(() -> ordered[0] = g.buildStack(grain.getBuilding(), 1, false));
         check("fixture: a Grain Farm is on site", ordered[0] == Game.BuildResult.SUCCESS && grain.getUnderConstruction() == 1, String.valueOf(ordered[0]));
         int farmsOpened = pressUntilOpen(g, grain, 36);
-        check("the verdict for a new farm's tractor is NOT_KNOWN, whatever the prices", EquipmentFit.verdictForNew(g, grain.getBuilding(), tractor).kind() == EquipmentFit.Kind.NOT_KNOWN);
+        check("the verdict for a new farm's tractor is NOT_KNOWN before PE14's June 1917, whatever the prices", EquipmentFit.verdictForNew(g, grain.getBuilding(), tractor).kind() == EquipmentFit.Kind.NOT_KNOWN);
         if (unfittedCity) {
             check("a farm that finished came without its tractor: the count of the tractor unfitted is up by what finished", farmsOpened == 1
                     && grain.getUnfitted(TRACTOR) == tractorBefore + farmsOpened, "opened " + farmsOpened + ", count " + tractorBefore + " -> " + grain.getUnfitted(TRACTOR));

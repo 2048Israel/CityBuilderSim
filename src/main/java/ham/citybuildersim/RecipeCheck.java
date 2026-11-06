@@ -36,7 +36,7 @@ import java.util.function.DoubleUnaryOperator;
  *      cost with the power a works makes and its consumables; two recipes differing in one input flip with the price of it either side of the
  *      break-even; a tie keeps the default and then the file's order; and in the city, the template's figures after the choice are the chosen
  *      recipe's, from the driver called outright and from the month
- *   4. KNOWN AND RUNNABLE: a recipe whose since is after the city's year, or a code, is never chosen; on a template with a recipe piece the unfitted
+ *   4. KNOWN AND RUNNABLE: a recipe whose since is after the city's month, or a code not in the catalogue, is never chosen; on a template with a recipe piece the unfitted
  *      part never runs a recipe that needs it, the fitted part never runs one that needs nothing (even when that earns more), and a part with
  *      none it can run runs the default
  *   5. THE MIX: of five buildings, two unfitted, the template's makes and uses are the weighted mean of the two recipes, its posts and its draw
@@ -49,8 +49,8 @@ import java.util.function.DoubleUnaryOperator;
  *      not strike them again from the loaded prices; the next month strikes them afresh, and an unbroken town and its reloaded twin run the same
  *   8. A GAME THAT PLAYED A 1900 TOWN, then founded the default way, keeps no choice and no template off its top level
  *   9. THE SHIPPED ROWS (R1c's data, buildings.json): in a town founded the 1900 way every template the file gives recipes has the choice read, its
- *      unfitted part runs a recipe that needs nothing and is known in 1900 and its fitted part one that needs the piece (the farms' tractor is a
- *      code, so theirs runs the default), each the best its part can run at the city's prices by the model's own value(), and its figures are
+ *      unfitted part runs a recipe that needs nothing and is known in 1900 and its fitted part one that needs the piece (the farms' tractor is
+ *      PE14's, June 1917, so theirs runs the default in 1900), each the best its part can run at the city's prices by the model's own value(), and its figures are
  *      the mix; the Oxygen Steel Shop's unfitted part runs the Bessemer converter and its fitted part the open hearth; the Pulp Mill, with no
  *      piece, cannot run kraft before kraft's year and can from it, and runs the best it can; the farms buy no fuel on horses and the template's
  *      fuel times the farms standing in a default town; each recipe piece is priced (PAYS or NOT_YET, its gain Recipes.gainOf()), never
@@ -249,6 +249,9 @@ public class RecipeCheck {
 
     static int year(Game g) { return CityCalendar.yearOf(g.getMonth()); }
 
+    /** The game month of a calendar year's January: the month Recipes and EquipmentFit ask by since R2 (a year since is known from it). */
+    static int jan(int year) { return PolicyDates.monthOf(year, 1); }
+
     /** A catalogue reading, with what it reported. */
     static List<BuildingsTemplate> parse(String json, String[] said) {
         ByteArrayOutputStream captured = new ByteArrayOutputStream();
@@ -342,9 +345,10 @@ public class RecipeCheck {
                 kilned.getConsumables(), 200 * PriceLevel.FACTOR, 1e-12);
         near("...and the inherited ones are the top level's (100 times the factor)", lean.getConsumables(), t.getConsumables(), 1e-12);
         near("...the top level's own 100 times the factor", t.getConsumables(), 100 * PriceLevel.FACTOR, 1e-12);
-        check("a year as a JSON number is read as text and known from its January; a catalogue code is a code and never known",
+        check("a year as a JSON number is read as text and known from its January; a catalogue code is a code, known from its entry's month (E1's, November 1952: not by that January, by the next)",
                 kilned.getSince().equals("1905") && kilned.isYear() && kilned.knownIn(1905) && !kilned.knownIn(1904)
-                        && lean.getSince().equals("E1") && !lean.isYear() && !lean.knownIn(1900) && !lean.knownIn(2200));
+                        && lean.getSince().equals("E1") && !lean.isYear() && !lean.knownIn(1900) && !lean.knownIn(1952) && lean.knownIn(1953)
+                        && lean.knownAt(PolicyDates.monthOf(1952, 11)) && !lean.knownAt(PolicyDates.monthOf(1952, 11) - 1) && lean.knownFrom() == ResearchCatalog.get().entry("E1").worldMonth());
         Equipment kiln = t.getEquipment("kiln");
         check("a piece that ends no form is read, and kept because a recipe needs it: it is the template's recipe piece",
                 kiln != null && kiln.getEnds() == null && t.getEquipment().size() == 1 && t.recipePiece() == kiln && "kiln".equals(t.recipePieceId())
@@ -426,7 +430,7 @@ public class RecipeCheck {
         Sector industry = g.getSectors().industry();
         Map<String, String> declaredBefore = declared(g);
         check("fixture: the city is founded the default way, and its Bakery knows a recipe that earns more at the city's prices",
-                !g.foundedUnfitted() && Recipes.value(rich, city) > Recipes.value(d, city) && Recipes.best(bakery, true, year(g), city) == rich,
+                !g.foundedUnfitted() && Recipes.value(rich, city) > Recipes.value(d, city) && Recipes.best(bakery, true, g.getMonth(), city) == rich,
                 Recipes.value(rich, city) + " vs " + Recipes.value(d, city));
         check("fixture: that recipe makes snacks and uses diesel, which Industry declares neither of", !industry.isMaker(Good.SNACKS) && !industry.isUser(Good.DIESEL));
         step(g, 6);
@@ -494,8 +498,8 @@ public class RecipeCheck {
         Recipes.Prices below = city.withGoods(g2 -> g2 == Good.CROPS ? even * 0.9 : city.good().applyAsDouble(g2));
         Recipes.Prices above = city.withGoods(g2 -> g2 == Good.CROPS ? even * 1.1 : city.good().applyAsDouble(g2));
         check("in the pure core a crops price a tenth below the break-even chooses the richer recipe for either part, and one a tenth above chooses the default",
-                Recipes.best(bakery, true, 1900, below) == rich && Recipes.best(bakery, false, 1900, below) == rich
-                        && Recipes.best(bakery, true, 1900, above) == d && Recipes.best(bakery, false, 1900, above) == d);
+                Recipes.best(bakery, true, jan(1900), below) == rich && Recipes.best(bakery, false, jan(1900), below) == rich
+                        && Recipes.best(bakery, true, jan(1900), above) == d && Recipes.best(bakery, false, jan(1900), above) == d);
 
         // The tie: the default, then the file's order.
         BuildingsTemplate tie = new BuildingsTemplate("Tie Works", BuildingType.INDUSTRIAL).setElectricityConsumption(5).makes(Good.BREAD, 100).uses(Good.CROPS, 10);
@@ -504,10 +508,10 @@ public class RecipeCheck {
         Recipes.Prices flat = new Recipes.Prices(good -> 2, new double[JobType.values().length], 1, 1, 1);
         tie.setRecipes(List.of(twinX, base, twinY));
         check("a tie keeps the default, though a recipe of the same value comes first in the file", Recipes.value(twinX, flat) == Recipes.value(base, flat)
-                && Recipes.best(tie, true, 1900, flat) == base);
+                && Recipes.best(tie, true, jan(1900), flat) == base);
         tie.setRecipes(List.of(better1, base, better2));
         check("...and a tie between two that earn more keeps the one earlier in the file", Recipes.value(better1, flat) > Recipes.value(base, flat)
-                && Recipes.value(better1, flat) == Recipes.value(better2, flat) && Recipes.best(tie, true, 1900, flat) == better1);
+                && Recipes.value(better1, flat) == Recipes.value(better2, flat) && Recipes.best(tie, true, jan(1900), flat) == better1);
 
         // In the city.
         check("fixture: the city is founded the 1900 way, in 1900, with the Bakery's two buildings and no recipe piece", g.foundedUnfitted() && year(g) == 1900
@@ -531,7 +535,7 @@ public class RecipeCheck {
         // ...and from the month itself: the Policy's top of the month chooses at the prices there.
         boolean far = EquipmentCheck.priceAt(g, Good.CROPS, even * 0.5);
         Recipes.Prices atTop = frozen(Recipes.pricesOf(g));
-        Recipe expectedRecipe = Recipes.best(bakery, true, year(g), atTop);
+        Recipe expectedRecipe = Recipes.best(bakery, true, g.getMonth(), atTop);
         step(g, 1);
         check("fixture: the crops price moved to half the break-even, where the richer recipe is the best", far && expectedRecipe == rich);
         check("a press of the month at those prices chooses it and leaves the Bakery running it (the top of the month chooses, and the sites' end applies)",
@@ -543,7 +547,7 @@ public class RecipeCheck {
         bakery.setRecipes(List.of(d, novel));
         Recipes.Prices now = frozen(Recipes.pricesOf(g));
         check("fixture: a recipe that makes snacks and uses diesel, which Industry declares neither of, earns more than the default at the city's prices",
-                !industry.isMaker(Good.SNACKS) && !industry.isUser(Good.DIESEL) && Recipes.best(bakery, true, year(g), now) == novel);
+                !industry.isMaker(Good.SNACKS) && !industry.isUser(Good.DIESEL) && Recipes.best(bakery, true, g.getMonth(), now) == novel);
         check("giving the template the recipe declares nothing: Industry still declares neither", !industry.isMaker(Good.SNACKS) && !industry.isUser(Good.DIESEL));
         quietly(() -> {
             g.getRecipes().choose(g);
@@ -566,7 +570,7 @@ public class RecipeCheck {
     /* ============================ 4. known and runnable ============================ */
 
     static void sectionFour() {
-        out.println("\n--- 4. known and runnable: a future year or a code is never chosen, the recipe piece splits the two parts, a part with none runs the default ---");
+        out.println("\n--- 4. known and runnable: a future year or a code not in the catalogue is never chosen, the recipe piece splits the two parts, a part with none runs the default ---");
         Game g = town("recipe-known", true);
         BuildingsTemplate t = template(g, "Industrial Bakery");
         BuildingsStacks stack = stack(g, "Industrial Bakery");
@@ -574,7 +578,8 @@ public class RecipeCheck {
         Recipe p = like(d, "ovens", "1900", DRIVE, 1.2, 1, -1, -1, -1);              // needs the piece, known
         Recipe n = like(d, "better", "1900", null, 1.5, 1, -1, -1, -1);              // needs nothing, known, worth more than p
         Recipe future = like(d, "future", "1903", DRIVE, 3, 1, -1, -1, -1);          // needs the piece, a later year
-        Recipe coded = like(d, "coded", "PE99", null, 9, 1, -1, -1, -1);             // needs nothing, a code
+        Recipe coded = like(d, "coded", "PE99", null, 9, 1, -1, -1, -1);             // needs nothing, a code that is in no catalogue (never known)
+        Recipe real = like(d, "real", "E1", null, 9, 1, -1, -1, -1);                 // a code that IS in the catalogue (E1, November 1952), outside the template's list
         Recipe later = like(d, "later", "1950", null, 5, 1, -1, -1, -1);             // needs nothing, a later year
         t.setRecipes(List.of(d, p, n, future, coded, later));
         Recipes.Prices city = frozen(Recipes.pricesOf(g));
@@ -584,15 +589,19 @@ public class RecipeCheck {
         check("fixture: the recipe that needs nothing earns more at the city's prices than the one that needs the piece, and each future or coded one earns more still",
                 Recipes.value(n, city) > Recipes.value(p, city) && Recipes.value(p, city) > Recipes.value(d, city) && Recipes.value(future, city) > Recipes.value(n, city)
                         && Recipes.value(coded, city) > Recipes.value(later, city) && Recipes.value(later, city) > Recipes.value(future, city));
-        check("a recipe is known from its January: the 1903 one in 1903 and not in 1902; a code in no year, 1800 to 2200",
-                future.knownIn(1903) && !future.knownIn(1902) && !coded.knownIn(1800) && !coded.knownIn(2200) && !coded.isYear());
+        check("a recipe is known from its January: the 1903 one in 1903 and not in 1902; a code that is in no catalogue in no year, 1800 to 2200",
+                future.knownIn(1903) && !future.knownIn(1902) && !coded.knownIn(1800) && !coded.knownIn(2200) && !coded.isYear()
+                        && coded.knownFrom() == Integer.MAX_VALUE && !coded.knownAt(Integer.MAX_VALUE - 1));
+        int e1 = ResearchCatalog.get().entry("E1").worldMonth();
+        check("...and a code that is in the catalogue is known from its entry's month (R2): E1's recipe from November 1952 and not the month before, not by that January but by the next",
+                e1 == PolicyDates.monthOf(1952, 11) && real.knownAt(e1) && !real.knownAt(e1 - 1) && !real.knownIn(1952) && real.knownIn(1953) && !real.isYear());
         check("the unfitted part runs the best that needs nothing and is known (the better one), and never the faster ones that are not",
-                Recipes.best(t, false, 1900, city) == n);
+                Recipes.best(t, false, jan(1900), city) == n);
         check("the fitted part runs the best that needs the piece and is known, though one that needs nothing earns more (the fitted part never runs one that needs nothing)",
-                Recipes.best(t, true, 1900, city) == p && Recipes.value(n, city) > Recipes.value(p, city) && Recipes.best(t, true, 1900, city).getNeedsEquipment() != null);
-        check("in 1903 the future one is known and the fitted part runs it (it was the year that kept it out); 1950's does the same for the unfitted part",
-                Recipes.best(t, true, 1903, city) == future && Recipes.best(t, false, 1950, city) == later);
-        check("a code is chosen in no year: in 2200 the unfitted part still runs the 1950 one, though the coded one earns more", Recipes.best(t, false, 2200, city) == later
+                Recipes.best(t, true, jan(1900), city) == p && Recipes.value(n, city) > Recipes.value(p, city) && Recipes.best(t, true, jan(1900), city).getNeedsEquipment() != null);
+        check("in January 1903 the future one is known and the fitted part runs it (it was the month that kept it out); 1950's does the same for the unfitted part",
+                Recipes.best(t, true, jan(1903), city) == future && Recipes.best(t, false, jan(1950), city) == later);
+        check("a code that is in no catalogue is chosen in no month: in 2200 the unfitted part still runs the 1950 one, though the coded one earns more", Recipes.best(t, false, jan(2200), city) == later
                 && Recipes.value(coded, city) > Recipes.value(later, city));
 
         // Over a spread of prices: the rule holds at every one.
@@ -604,19 +613,19 @@ public class RecipeCheck {
             double[] wages = new double[JobType.values().length];
             for (int w = 0; w < wages.length; w++) wages[w] = random.nextDouble();
             Recipes.Prices any = new Recipes.Prices(prices::get, wages, random.nextDouble(), random.nextDouble(), 0.5 + random.nextDouble());
-            Recipe u = Recipes.best(t, false, 1900, any), f = Recipes.best(t, true, 1900, any), uLate = Recipes.best(t, false, 2200, any);
+            Recipe u = Recipes.best(t, false, jan(1900), any), f = Recipes.best(t, true, jan(1900), any), uLate = Recipes.best(t, false, jan(2200), any);
             unfittedNever &= u.getNeedsEquipment() == null;
             fittedNever &= f.getNeedsEquipment() != null;
             codeNever &= u != coded && f != coded && uLate != coded;
             futureNever &= u != later && u != future && f != future;
         }
         check("400 random price sets: the unfitted part never runs a recipe that needs the piece, the fitted part never one that needs nothing", unfittedNever && fittedNever);
-        check("...a coded recipe is chosen at none, nor a recipe of a later year than 1900", codeNever && futureNever);
+        check("...a recipe whose code is in no catalogue is chosen at none, nor a recipe of a later year than 1900", codeNever && futureNever);
 
         // A part with none it can run runs the default.
         t.setRecipes(List.of(d, future, later));
         check("the fitted part with no recipe it can run (the one that needs the piece is not yet known) runs the default, which needs nothing",
-                Recipes.best(t, true, 1900, city) == d && Recipes.best(t, false, 1900, city) == d);
+                Recipes.best(t, true, jan(1900), city) == d && Recipes.best(t, false, jan(1900), city) == d);
 
         // The city's.
         t.setRecipes(List.of(d, p, n, future, coded, later));
@@ -770,7 +779,7 @@ public class RecipeCheck {
         Recipe kilned = like(d, "kilned", "1900", "kiln", 1 + more, 1, -1, -1, -1);
         t.setRecipes(List.of(d, kilned));
         check("fixture: the recipe piece is the kiln, the fitted part runs the kilned recipe and the unfitted part the default",
-                "kiln".equals(t.recipePieceId()) && Recipes.best(t, true, year(g), city) == kilned && Recipes.best(t, false, year(g), city) == d);
+                "kiln".equals(t.recipePieceId()) && Recipes.best(t, true, g.getMonth(), city) == kilned && Recipes.best(t, false, g.getMonth(), city) == d);
 
         EquipmentFit.Verdict v = EquipmentFit.verdict(g, stack, kiln);
         near("the verdict's gain is the value of the best recipe a fitted building could run less the best an unfitted one could, at the city's prices, by the model's own value()",
@@ -780,7 +789,7 @@ public class RecipeCheck {
         check("...and at that gain the kiln does not pay", v.kind() == EquipmentFit.Kind.NOT_YET, v.toString());
 
         double now = city.good().applyAsDouble(Good.BREAD);
-        double even = zeroOf(price -> Recipes.recipeGain(t, year(g), city.withGoods(g2 -> g2 == Good.BREAD ? price : city.good().applyAsDouble(g2))) - needed);
+        double even = zeroOf(price -> Recipes.recipeGain(t, g.getMonth(), city.withGoods(g2 -> g2 == Good.BREAD ? price : city.good().applyAsDouble(g2))) - needed);
         check("fixture: the break-even price of bread, solved from the model's own recipeGain() at two prices, is above today's", even > now && Double.isFinite(even), even + " vs " + now);
         boolean up = EquipmentCheck.priceAt(g, Good.BREAD, even * 1.01);
         EquipmentFit.Verdict above = EquipmentFit.verdict(g, stack, kiln);
@@ -834,7 +843,7 @@ public class RecipeCheck {
         });
         GameFiles.Result none = save10(a, "recipe none");
         String noneJson = none.ok ? Files.readString(a.getGameFiles().saveFile(10)) : "";
-        check("with crops dear the default is the best for both parts: nothing is chosen for the Bakery, and the save has no choice for it", dear && Recipes.best(bakery, false, year(a), frozen(Recipes.pricesOf(a))) == d
+        check("with crops dear the default is the best for both parts: nothing is chosen for the Bakery, and the save has no choice for it", dear && Recipes.best(bakery, false, a.getMonth(), frozen(Recipes.pricesOf(a))) == d
                 && none.ok && choiceOf(a, bakery) == null && savedChoice(noneJson, bakery) == null, none.message());
 
         // The choice that is saved: one Bakery fitted, one not; crops at today's price, where the alternative is the best that needs nothing.
@@ -875,7 +884,7 @@ public class RecipeCheck {
         check("fixture: in the loaded city the break-even price of crops between the alternative and the default is above today's", evenCrops > loaded.good().applyAsDouble(Good.CROPS));
         boolean moved = EquipmentCheck.priceAt(c, Good.CROPS, evenCrops * 2);
         check("fixture: crops moved to twice it, where a choice struck afresh would be the default for the unfitted part",
-                moved && Recipes.best(cc, false, year(c), frozen(Recipes.pricesOf(c))) == d);
+                moved && Recipes.best(cc, false, c.getMonth(), frozen(Recipes.pricesOf(c))) == d);
         quietly(() -> c.getRecipes().apply(c));
         check("the load's apply runs the SAVED choices all the same (the alternative), the choices are untouched, and the Bakery is the unbroken city's mix",
                 c.getRecipes().forSave().equals(chosen) && differs(cc, bakery) == null, c.getRecipes().forSave() + " / " + differs(cc, bakery));
@@ -950,15 +959,15 @@ public class RecipeCheck {
      * Why a part does not run the best recipe it can, by the model's own value(), or null when it does: it cannot run it (the default is run where the
      * part can run none), or another it can run is worth more at these prices.
      */
-    static String notBest(BuildingsTemplate t, Recipe run, boolean fitted, int year, Recipes.Prices p) {
+    static String notBest(BuildingsTemplate t, Recipe run, boolean fitted, int month, Recipes.Prices p) {
         boolean any = false;
         for (Recipe r : t.getRecipes()) {
-            if (!Recipes.canRun(t, r, fitted, year)) continue;
+            if (!Recipes.canRun(t, r, fitted, month)) continue;
             any = true;
             if (score(r, p) > score(run, p)) return r.getId() + " is worth more than " + run.getId();
         }
         if (!any) return run == t.defaultRecipe() ? null : run.getId() + " runs where none can";
-        return Recipes.canRun(t, run, fitted, year) ? null : run.getId() + " cannot run";
+        return Recipes.canRun(t, run, fitted, month) ? null : run.getId() + " cannot run";
     }
 
     static void sectionNine() throws Exception {
@@ -1032,16 +1041,16 @@ public class RecipeCheck {
             g.getRecipes().choose(g);
             g.getRecipes().apply(g);
         });
-        int year = year(g);
+        int year = year(g), month = g.getMonth();
         Recipes.Prices pc = frozen(Recipes.pricesOf(g));
         String unfittedFault = null, fittedFault = null, bestFault = null, entryFault = null, mixFault = null;
         for (BuildingsTemplate t : withPiece) {
             BuildingsStacks st = g.getBuildingManager().getStack(t);
-            Recipe ru = Recipes.best(t, false, year, pc), rf = Recipes.best(t, true, year, pc);
+            Recipe ru = Recipes.best(t, false, month, pc), rf = Recipes.best(t, true, month, pc);
             if (unfittedFault == null && !(ru.getNeedsEquipment() == null && ru.knownIn(year))) unfittedFault = t.getName() + ": " + ru;
             if (fittedFault == null && !(t.recipePieceId().equals(rf.getNeedsEquipment()) && (rf.knownIn(year) || rf == t.defaultRecipe()))) fittedFault = t.getName() + ": " + rf;
-            String worse = notBest(t, ru, false, year, pc);
-            if (worse == null) worse = notBest(t, rf, true, year, pc);
+            String worse = notBest(t, ru, false, month, pc);
+            if (worse == null) worse = notBest(t, rf, true, month, pc);
             if (bestFault == null && worse != null) bestFault = t.getName() + ": " + worse;
             if (entryFault == null && !List.of(rf.getId(), ru.getId()).equals(choiceOf(g, t))) entryFault = t.getName() + ": " + choiceOf(g, t) + " vs " + rf.getId() + ", " + ru.getId();
             if (mixFault == null) {
@@ -1050,15 +1059,15 @@ public class RecipeCheck {
             }
         }
         check("every template with a recipe piece: its unfitted part runs a recipe that needs nothing and is known in the city's year", unfittedFault == null && !withPiece.isEmpty(), unfittedFault);
-        check("...and its fitted part one that needs the piece, known in the year, or the default where it can run none (the farms' tractor recipe is a code)", fittedFault == null, fittedFault);
+        check("...and its fitted part one that needs the piece, known in the year, or the default where it can run none (the farms' tractor recipe is PE14's, June 1917)", fittedFault == null, fittedFault);
         check("...each the best its part can run at the city's prices, by the model's own Recipes.value(): no recipe it can run is worth more", bestFault == null, bestFault);
         check("...the city chose exactly those two for the template, [fitted, unfitted], and keeps them", entryFault == null, entryFault);
         check("...and with one building of two or more unfitted the template's figures are the weighted mix of the two", mixFault == null, mixFault);
 
         BuildingsTemplate oxygen = template(g, "Oxygen Steel Shop");
-        check("the Oxygen Steel Shop: its unfitted part runs the Bessemer converter (the basic-oxygen converter, its default, is a code and never known) and its fitted part the open hearth",
+        check("the Oxygen Steel Shop: its unfitted part runs the Bessemer converter (the basic-oxygen converter, its default, is E1's code, November 1952, and not yet known) and its fitted part the open hearth",
                 oxygen.defaultRecipe().getId().equals("basic-oxygen") && !oxygen.defaultRecipe().isYear() && List.of("open-hearth", "bessemer").equals(choiceOf(g, oxygen))
-                        && Recipes.best(oxygen, false, year, pc).getId().equals("bessemer") && Recipes.best(oxygen, true, year, pc).getId().equals("open-hearth"), String.valueOf(choiceOf(g, oxygen)));
+                        && Recipes.best(oxygen, false, month, pc).getId().equals("bessemer") && Recipes.best(oxygen, true, month, pc).getId().equals("open-hearth"), String.valueOf(choiceOf(g, oxygen)));
         double dieselFitted = 0;
         for (String farm : EquipmentCheck.FARMS) {
             BuildingsStacks st = stack(g, farm);
@@ -1070,15 +1079,15 @@ public class RecipeCheck {
         // The Pulp Mill: no piece, kraft from its year, the best of what it can run.
         BuildingsTemplate pulp = template(g, "Pulp Mill");
         Recipe kraft = pulp.getRecipe("kraft"), sulphite = pulp.getRecipe("sulphite"), groundwood = pulp.getRecipe("groundwood");
-        Recipe pulpRun = Recipes.best(pulp, false, year, pc);
+        Recipe pulpRun = Recipes.best(pulp, false, month, pc);
         boolean onlyOneWithout = true;
         for (BuildingsTemplate t : shipped) onlyOneWithout &= t.recipePieceId() != null || t == pulp;
         check("the Pulp Mill is the one shipped template with no recipe piece, and in 1900 it cannot run kraft (its year is later) but can run sulphite and groundwood",
-                onlyOneWithout && pulp.recipePieceId() == null && pulp.recipePiece() == null && kraft.isYear() && Integer.parseInt(kraft.getSince()) > year && !Recipes.canRun(pulp, kraft, false, year)
-                        && !Recipes.canRun(pulp, kraft, true, year) && Recipes.canRun(pulp, sulphite, false, year) && Recipes.canRun(pulp, groundwood, false, year),
+                onlyOneWithout && pulp.recipePieceId() == null && pulp.recipePiece() == null && kraft.isYear() && Integer.parseInt(kraft.getSince()) > year && !Recipes.canRun(pulp, kraft, false, month)
+                        && !Recipes.canRun(pulp, kraft, true, month) && Recipes.canRun(pulp, sulphite, false, month) && Recipes.canRun(pulp, groundwood, false, month),
                 String.valueOf(kraft));
         check("...and runs whichever of those is worth more at the city's prices, for both parts, its figures that recipe's to the bit",
-                (pulpRun == sulphite || pulpRun == groundwood) && notBest(pulp, pulpRun, false, year, pc) == null && Double.isFinite(Recipes.value(pulpRun, pc))
+                (pulpRun == sulphite || pulpRun == groundwood) && notBest(pulp, pulpRun, false, month, pc) == null && Double.isFinite(Recipes.value(pulpRun, pc))
                         && List.of(pulpRun.getId(), pulpRun.getId()).equals(choiceOf(g, pulp)) && runs(pulp, pulpRun), pulpRun + " / " + choiceOf(g, pulp) + " / " + differs(pulp, pulpRun));
 
         // (c) each recipe piece is priced
@@ -1104,10 +1113,11 @@ public class RecipeCheck {
         check("...and a new building's verdict for it is priced the same way", newFault == null, newFault);
         BuildingsTemplate grain = template(g, "Grain Farm");
         Equipment tractor = grain.getEquipment(EquipmentCheck.TRACTOR);
-        check("the farms' tractor is their recipe piece and ends FARM_HORSES, and its verdict is NOT_KNOWN (its year is a code): the fitted farm part runs the default",
+        check("the farms' tractor is their recipe piece and ends FARM_HORSES, and its verdict is NOT_KNOWN (it is not known before 1917, PE14's June): the fitted farm part runs the default",
                 tractor != null && grain.recipePiece() == tractor && tractor.getEnds() == Equipment.Form.FARM_HORSES && !tractor.isYear()
+                        && tractor.knownFrom() == PolicyDates.monthOf(1917, 6) && !tractor.knownAt(month)
                         && EquipmentFit.verdict(g, stack(g, "Grain Farm"), tractor).kind() == EquipmentFit.Kind.NOT_KNOWN
-                        && Recipes.best(grain, true, year, pc) == grain.defaultRecipe());
+                        && Recipes.best(grain, true, month, pc) == grain.defaultRecipe());
 
         // (d) a reload ends on the same choices and the same figures
         GameFiles.Result wrote = save10(g, "recipe shipped");
@@ -1138,21 +1148,21 @@ public class RecipeCheck {
             late.getRecipes().apply(late);
         });
         Recipes.Prices december = frozen(Recipes.pricesOf(late));
-        Recipe runDecember = Recipes.best(lp, false, year(late), december);
+        Recipe runDecember = Recipes.best(lp, false, late.getMonth(), december);
         check("fixture: pressed to the December before kraft's year, the mill cannot run kraft and runs the better of the other two, its figures that recipe's",
-                year(late) == kraftYear - 1 && CityCalendar.monthOfYear(late.getMonth()) == 12 && !Recipes.canRun(lp, lateKraft, false, year(late)) && runDecember != lateKraft
-                        && notBest(lp, runDecember, false, year(late), december) == null && runs(lp, runDecember), year(late) + " " + CityCalendar.monthOfYear(late.getMonth()) + " " + runDecember);
+                year(late) == kraftYear - 1 && CityCalendar.monthOfYear(late.getMonth()) == 12 && !Recipes.canRun(lp, lateKraft, false, late.getMonth()) && runDecember != lateKraft
+                        && notBest(lp, runDecember, false, late.getMonth(), december) == null && runs(lp, runDecember), year(late) + " " + CityCalendar.monthOfYear(late.getMonth()) + " " + runDecember);
         step(late, 1);
         quietly(() -> {
             late.getRecipes().choose(late);
             late.getRecipes().apply(late);
         });
         Recipes.Prices january = frozen(Recipes.pricesOf(late));
-        Recipe runJanuary = Recipes.best(lp, false, year(late), january);
+        Recipe runJanuary = Recipes.best(lp, false, late.getMonth(), january);
         List<String> expectedChoice = runJanuary.isDefault() ? null : List.of(runJanuary.getId(), runJanuary.getId());
-        check("from January of kraft's year kraft is among what the mill can run", year(late) == kraftYear && Recipes.canRun(lp, lateKraft, false, year(late)) && Recipes.canRun(lp, lateKraft, true, year(late)));
+        check("from January of kraft's year kraft is among what the mill can run", year(late) == kraftYear && Recipes.canRun(lp, lateKraft, false, late.getMonth()) && Recipes.canRun(lp, lateKraft, true, late.getMonth()));
         check("...and it runs the one worth most of the three at the city's prices, by value(), kept as the city's choice (none when that is the default, kraft), its figures that recipe's",
-                notBest(lp, runJanuary, false, year(late), january) == null && Double.isFinite(Recipes.value(runJanuary, january))
+                notBest(lp, runJanuary, false, late.getMonth(), january) == null && Double.isFinite(Recipes.value(runJanuary, january))
                         && java.util.Objects.equals(expectedChoice, choiceOf(late, lp)) && runs(lp, runJanuary), runJanuary + " / " + choiceOf(late, lp));
     }
 }

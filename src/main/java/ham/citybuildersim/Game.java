@@ -1182,7 +1182,7 @@ public class Game {
     /**
      * Every building standing without every piece of equipment its template carries, and the forms set from it, so that the first month opens on
      * them (R1b): on every stack, each piece's unfitted count is the stack. The tractor's too: a 1900 farm cannot have one before its discovery
-     * (its "since" is a catalogue code, NOT_KNOWN and never paying in this build), so its farms stay on horses. newGame() calls it after the
+     * (its "since" is PE14, June 1917 in research.json: NOT_KNOWN before that month, and no gain written for it yet), so its farms stay on horses. newGame() calls it after the
      * buildings the founding stands up are placed (the bank, the yard: neither carries a piece, so today it sets nothing); package-private so that a
      * harness, which places its village by hand after newGame() as the playtest does, can say it over that village.
      */
@@ -1199,7 +1199,7 @@ public class Game {
     /**
      * What a new building comes with (R1b; research-design 2.2 step 6), at the finish and not at the order, so the order's cost stays the template's:
      * in a city founded the 1900 way, each piece of equipment a finished building's template carries whose verdict for a new building is not PAYS
-     * (EquipmentFit.verdictForNew(): NOT_YET, or NOT_KNOWN like the tractor's always) is left off those buildings, and the stack's unfitted count of it
+     * (EquipmentFit.verdictForNew(): NOT_YET, or NOT_KNOWN like the tractor's before PE14's month, June 1917) is left off those buildings, and the stack's unfitted count of it
      * rises by the number that finished. The pieces that pay come with them: the count is as it was. Nothing in a city founded the default way.
      * Not hooked: a building placed without construction (buildStack(t, n, true), the harnesses' and the playtest's village), which comes as placed.
      *
@@ -1237,7 +1237,7 @@ public class Game {
 
     /**
      * Orders the fitting of ONE building of `stack` with `piece`, for `payer` (R1b): refuses with the reason in words and nothing drawn or paid, or
-     * returns null once it is ordered. Refused when the piece is not on the stack's template, not known in the city's year, or no building of the
+     * returns null once it is ordered. Refused when the piece is not on the stack's template, not known at the city's month, or no building of the
      * stack is left to fit (the unfitted count less the fittings already on site).
      *
      * The money is asked BEFORE any good is drawn, on the exact quote of each good (Markets.quote(): the split a draw makes, so the quote is what is
@@ -1252,7 +1252,7 @@ public class Game {
         BuildingsTemplate t = stack.getBuilding();
         String id = piece.getId();
         if (t.getEquipment(id) == null) return "a " + t.getName() + " carries no " + piece.getName().toLowerCase(Locale.ROOT);
-        if (!piece.knownIn(CityCalendar.yearOf(month))) return "the " + piece.getName().toLowerCase(Locale.ROOT) + " is not known yet";
+        if (!piece.knownAt(month)) return "the " + piece.getName().toLowerCase(Locale.ROOT) + " is not known yet";
         if (stack.getUnfitted(id) - fittings.onSite(t.getId(), id) <= 0) {
             return stack.getUnfitted(id) > 0
                     ? "every " + t.getName() + " that lacks the " + piece.getName().toLowerCase(Locale.ROOT) + " is already being fitted"

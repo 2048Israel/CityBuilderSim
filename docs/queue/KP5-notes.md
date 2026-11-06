@@ -1,4 +1,4 @@
-# KP5 - Screens kept: Bank, Finances and the fund ({next}, 2026-11-05)
+# KP5 - Screens kept: Bank, Finances and the fund (0.9.25, 2026-11-05)
 
 **WHERE IT STANDS** (2026-11-06): ready, see the ship file. Sent back at the gate on 0.9.23 (R1c's city): the `BuybackLadder` on Close it now drew again every month for a figure it does not draw; mended, the fixture made to cause both of section 64's conditions (§6, "By the gate"). main at 0.9.23 merged in (26e22722); `--pick KeptCheck` with the world files exit 3, the reds main's recorded MapCheck and KS1's KeptCheck line (Construction's Income page at 89.8%). Before that: the four slices in and reviewed (A 9accb707, B 63986728, C cc20d3f2, D 33c0796e, with Opus's mend of the desk's fit); KP4 on main, merged in (ed34013c). Its gate wants a stranger's review of the threading and the money screens (§4).
 

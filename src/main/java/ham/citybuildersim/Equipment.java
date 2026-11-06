@@ -20,8 +20,9 @@ import java.util.Map;
  * needsEquipment): the by-product ovens that replace the beehive ovens, which no 1900 form is the share of. The catalogue keeps such a piece
  * only where a recipe of its template needs it. A piece that ends a form may be the one a recipe needs too (the tractor will be).
  *
- * "since" is a year, as text ("1900"), or a catalogue code ("PE14"). A year is known from its January (knownIn()); a code is never known in
- * this build: R2's catalogue resolves codes to their years, and until it reads one the piece is data and never pays (R1-notes call 7).
+ * "since" is a year, as text ("1900"), or a catalogue code ("PE14"). A year is known from its January; a code from its entry's month in
+ * research.json (R2: ResearchCatalog.knownFrom(); before R2 a code was never known, R1-notes call 7), so the tractor is known from PE14's month,
+ * June 1917, and not before; a code that is not in the catalogue is never known. knownAt() asks by the game month, knownIn() by the year.
  */
 public final class Equipment {
 
@@ -39,7 +40,7 @@ public final class Equipment {
     private final String name;
     private final String since;
     private final boolean year;
-    private final int sinceYear;
+    private final int knownFrom;
     private final Form ends;
     private final Map<Good, Double> buys;
     private final double work;
@@ -73,9 +74,8 @@ public final class Equipment {
         this.id = id.trim();
         this.name = name == null || name.isBlank() ? this.id : name.trim();
         this.since = since.trim();
-        Integer parsed = yearOf(this.since);
-        this.year = parsed != null;
-        this.sinceYear = parsed == null ? 0 : parsed;
+        this.year = yearOf(this.since) != null;
+        this.knownFrom = ResearchCatalog.knownFrom(this.since);
         this.ends = ends;
         this.buys = Collections.unmodifiableMap(bought);
         this.work = work;
@@ -97,7 +97,7 @@ public final class Equipment {
     /** What the screens call it. */
     public String getName() { return name; }
 
-    /** The year it is known from, as text, or the catalogue code that will say. */
+    /** The year it is known from, as text, or the catalogue code that says (research.json). */
     public String getSince() { return since; }
 
     /** The 1900 form it ends, or null for a piece that ends none (it exists to enable a recipe): everything that reads it takes null. */
@@ -115,9 +115,25 @@ public final class Equipment {
     /** Whether "since" is a year (it parses as a whole number) and not a catalogue code. */
     public boolean isYear() { return year; }
 
-    /** Whether it is known in a calendar year: a year since from that year on, a code never (R2's catalogue resolves codes; until then none is known). */
+    /** The game month it is known from: a year's January, a code's entry's month (ResearchCatalog.knownFrom()); Integer.MAX_VALUE for a code not in the catalogue. */
+    public int knownFrom() { return knownFrom; }
+
+    /** Whether it is known at a game month (month 1 = January 1900): from the month it is known from on. */
+    public boolean knownAt(int gameMonth) {
+        return gameMonth >= knownFrom;
+    }
+
+    /** Whether it is known by a calendar year's January: knownAt() of that month (januaryOf()), so that a screen that asks by the year agrees with the model that asks by the month. */
     public boolean knownIn(int calendarYear) {
-        return year && calendarYear >= sinceYear;
+        return knownAt(januaryOf(calendarYear));
+    }
+
+    /**
+     * The game month of a calendar year's January: PolicyDates.monthOf(year, 1), the game's one formula, but not clamped at month 1, so that the
+     * year before the start (1899) is before it and a piece dated 1900 is not known in it, as it never was. Recipe.knownIn() reads it too.
+     */
+    static int januaryOf(int calendarYear) {
+        return 1 + 12 * (calendarYear - CityCalendar.EPOCH_YEAR);
     }
 
     @Override

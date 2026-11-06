@@ -18,6 +18,29 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.25 — KP5, Screens kept: Bank, Finances and the fund — 2026-11-05, ready, see docs/queue/KP5-notes.md
+The Bank tab, the Finances tab and the city's fund are drawn over last month's nodes instead of rebuilt (study UP4's
+KP5): the Bank's Overview and six pages in both views; Finances' hub and every area and page - the position, the book
+with a line's page and Close it now, Borrow at home and abroad with the ask and the auction, Money, the bond market and
+a bond's book, the foreign default and debt result pages; the fund's Portfolio, Search, Activity, Rules & cash and a
+security with its ticket - each page keyed by what is open on it, each row that comes and goes by what it shows. The
+curves, the desk's pictures, the buyback ladder, the auction and the column charts are told their figures and drawn
+again only where one moved; the boxes keep the player's typing, caret and focus across a month; Bank's pops and gauge
+and the fund's count run only at 1x-10x, as on People, History and Sectors. KeptCheck 55-68 compare each kept page with
+one built new through every page, view, choice, fold and box; a month on the Bank's Overview fell from 16-19 ms to 5-8,
+Borrow's from 17-24 to 8-10, the fund's Search from 106-173 to 58-71 (its long lists: FP1). No ensemble: model untouched.
+
+### 0.9.24 — R2, Research: the catalogue and the world's dates — 2026-11-05, ready, see docs/queue/R2-notes.md
+Research has its catalogue: `research.json`'s 89 discoveries (the first study's 40, the 1900 study's 48 and L5, the
+Canada Pension Plan), each with its field, kind, history's month, what it needs first, whether it carries a licence fee
+and the work it takes by the study's rule; the law rows carry the Policy levers' own dates (`ResearchCatalog`,
+`ResearchCheck`). Every catalogue code in `buildings.json` now resolves to history's month (`knownAt()`): in a city
+founded the 1900 way the tractor is known from June 1917 and the oxygen converter's recipe from November 1952, where a
+code was never known, and the 29 buildings that did not exist in 1900 are dated by the discovery that opens each (the
+Container Terminal by E5, the cracking units by PE11); the Oxygen Steel Shop stands from 1900. A city founded the
+default way reads none of it: the playtest's trace is unchanged. The rest of the brief is queued: buildings ordered only
+on their dates (R2b), licence fees (R2c), each entry's old way (R2d, R2e), medicine (R2f), the near-future list (R6).
+
 ### 0.9.23 — R1c, Research: recipes as data — 2026-11-05, ready, see docs/queue/R1c-notes.md
 A building can know several ways to run (`buildings.json`'s `recipes`; `Recipe`): the top level is today's, the
 default, and a recipe states only what it changes. In a city founded the 1900 way (off until R1d) each month the

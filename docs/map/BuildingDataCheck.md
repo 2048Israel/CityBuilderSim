@@ -1,4 +1,4 @@
-# BuildingDataCheck.java - 885 lines · 6 methods · 0 constants · harnesses
+# BuildingDataCheck.java - 922 lines · 6 methods · 0 constants · harnesses
 
 `ham/citybuildersim/BuildingDataCheck.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
@@ -20,22 +20,22 @@
 | 50 | · · what the code says |
 | 55 | · · what the file says |
 | 70 | · · every field of every building |
-| 218 | · · care types line up with the category |
-| 271 | · · the sea is drawn by water works, and one of them (0.7.59) |
-| 298 | · · fuel (0.7.62, batch K; spec-land 2.7) |
-| 332 | · · the refinery's units (0.7.80, batch O4; spec-oil 2.3) |
-| 381 | · · the phase-1 buyers and the forecourt (0.7.83, batch O6) |
-| 439 | · · the oil storage (0.7.85, batch O8; spec-oil 2.8) |
-| 472 | · · the ports (0.7.86, batch O9; spec-oil 2.9) |
-| 494 | · · the oil at sea (0.7.91, batch O10; spec-oil 2.7, 2.11) |
-| 538 | · · the site each stands on (0.7.110, batch I1) |
-| 652 | · · a works' own power and its consumables (0.7.112, batch I2) |
-| 708 | · · the old steel a yard takes, and the year each row first existed (0.7.123, batch I4) |
-| 785 | · · the raw coal a preparation plant washes (0.7.126, batch I6) |
-| 802 | · · and every profession has exactly one school |
-| 821 | · · every list of recipes is one the model can run (R1c) |
-| 855 | · · ids are unique, which the saves depend on |
-| 868 | · · the manager actually uses the file |
+| 223 | · · care types line up with the category |
+| 276 | · · the sea is drawn by water works, and one of them (0.7.59) |
+| 303 | · · fuel (0.7.62, batch K; spec-land 2.7) |
+| 337 | · · the refinery's units (0.7.80, batch O4; spec-oil 2.3) |
+| 386 | · · the phase-1 buyers and the forecourt (0.7.83, batch O6) |
+| 444 | · · the oil storage (0.7.85, batch O8; spec-oil 2.8) |
+| 477 | · · the ports (0.7.86, batch O9; spec-oil 2.9) |
+| 499 | · · the oil at sea (0.7.91, batch O10; spec-oil 2.7, 2.11) |
+| 543 | · · the site each stands on (0.7.110, batch I1) |
+| 657 | · · a works' own power and its consumables (0.7.112, batch I2) |
+| 713 | · · the old steel a yard takes, and the year each row first existed (0.7.123, batch I4) |
+| 822 | · · the raw coal a preparation plant washes (0.7.126, batch I6) |
+| 839 | · · and every profession has exactly one school |
+| 858 | · · every list of recipes is one the model can run (R1c) |
+| 892 | · · ids are unique, which the saves depend on |
+| 905 | · · the manager actually uses the file |
 
 ## Fields (state)
 
@@ -47,11 +47,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 15 | 871 | **type** `public class BuildingDataCheck` | The migration's safety net: buildings.json must produce exactly the templates the hardcoded definitions did. |
+| 15 | 908 | **type** `public class BuildingDataCheck` | The migration's safety net: buildings.json must produce exactly the templates the hardcoded definitions did. |
 | 19 | 7 | `static void check(String label, double actual, double expected)` |  |
 | 28 | 4 | `static BuildingsTemplate byId(List<BuildingsTemplate> data, int id)` | The building with this id in a list of templates, or null. |
 | 33 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 39 | 3 | `static boolean near(double a, double b)` | Two money figures built differently (a sum of a price and a price times units, against the study's product) are the same to a billionth: floating point only. |
 | 44 | 3 | `static double todays(double atFounding)` | A building's cash in the thousands of today's prices, as the data file writes it: the pinned figures below are the study's (EP1: priced at the founding's level, times PriceLevel.FACTOR). |
-| 48 | 837 | `public static void main(String[] args)` |  |
+| 48 | 874 | `public static void main(String[] args)` |  |
 
