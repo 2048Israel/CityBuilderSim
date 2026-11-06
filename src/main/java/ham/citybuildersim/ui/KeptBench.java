@@ -3768,7 +3768,6 @@ public final class KeptBench {
 
     // (KP7, part 2: the show hands of Household money and the Rankings tab, slices A and B's, are added here by the harness's second half.)
 
-    /* ==============================================================
     /* =====================================================================
        THE RANKINGS TAB (KP7, slice B): the tab as it opens, kept and built new, the hands on what reshapes it (a board, the money, the
        prices and the conversion, Now / Your age, a measure, a filter and a view, a pin, a place's drawer), the read of the saved
@@ -3962,7 +3961,9 @@ public final class KeptBench {
     /** The Rankings tab forgotten, as another city opened would leave it: nothing kept, nothing just landed. */
     public void forgetRankings() {
         ui.rankingsScreen.forget();
-=======
+    }
+
+    /* =====================================================================
        HOUSEHOLD MONEY (KP7, slice A): People's second page, kept and built new, the hands on what reshapes it (the view, a cell of
        the grid opened by its key, the city's month's statement), the page laid out narrower than the books sit beside the grid at,
        and the real show method
