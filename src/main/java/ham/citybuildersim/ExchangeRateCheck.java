@@ -681,9 +681,9 @@ public class ExchangeRateCheck {
         out.printf("   two years on, a year's imports bought (%.0f%% of a year's GDP): the buyer's rate %.4f against the control's %.4f,"
                 + " %+.2f%% (the old rule: the D$ 7.7%% dearer)%n", 100 * bought / annual, buyer.getRate(), control.getRate(), ratio * 100);
         assertTrue("two years on the buyer's D$ is CHEAPER than the control's: the finding reversed", buyer.getRate() > control.getRate());
-        close("...by exactly the intervention still felt: INTERVENTION_IMPACT x the purchase over a year's GDP, faded 23 months",
+        close("...by exactly the intervention still felt: the interventions' rule (XI1: bounded past INTERVENTION_LINEAR) of the purchase over a year's GDP, faded 23 months",
                 Math.log(buyer.getRate() / control.getRate()),
-                ForeignAccounts.INTERVENTION_IMPACT * bought / annual * Math.pow(.5, 23 / ForeignAccounts.INTERVENTION_HALF_LIFE), 1e-9);
+                ForeignAccounts.interventionMove(bought, annual) * Math.pow(.5, 23 / ForeignAccounts.INTERVENTION_HALF_LIFE), 1e-9);
 
         // The defence's sale goes through the same channel.
         final double vault = 10_000, imports = vault / ForeignAccounts.COMFORTABLE_COVER, exports = imports / 2, gdp = 20_000, deficit = 2_000;
