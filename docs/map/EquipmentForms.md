@@ -1,4 +1,4 @@
-# EquipmentForms.java - 114 lines · 4 methods · 0 constants · model
+# EquipmentForms.java - 124 lines · 5 methods · 0 constants · model
 
 `ham/citybuildersim/EquipmentForms.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
@@ -17,7 +17,12 @@
 > (Forms1900Check) stand and a played city's month calls nothing. Which shares this has driven is kept in memory and not saved: after a load the
 > counts, which are saved, drive them again (Game's load path).
 > 
-> Called where the Policy hears the month (Game.policyHearsTheMonth(): the founding, the top of every month, a load), before anything is made.
+> Called where the Policy hears the month (Game.policyHearsTheMonth(): the founding, the top of every month, a load), before anything is made,
+> and once more in every month right after its sites advance (R1b; SimulationEngine.simulateMonth()), the last statement of the month that changes
+> a stack's quantity or its counts and before everything the month derives from them, so that the shares a city rests in between two presses are
+> its counts' at rest and not the month's top's: a save written there and the load that reads it hold the same shares and the same derived
+> state. clear() forgets which shares were driven, where Game rebuilds its world (R1b), so a city founded or loaded into a Game that played
+> another starts as a fresh process does.
 
 **Uses:** [Equipment](Equipment.md) (9), [BuildingsStacks](BuildingsStacks.md) (4), [Game](Game.md) (1), [Sectors](Sectors.md) (1), [Agriculture](Agriculture.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [Sector](Sector.md) (1)
 
@@ -27,17 +32,18 @@
 
 | line | field | says |
 |---:|---|---|
-| 32 | `private final Set<String> driven` | The shares driven by the last apply(), each as the form's name and the sector's key ("STEAM:Industry"; "FARM_HORSES:Agriculture"; "CART_HORSES:Freight"): the ones a count that is gone still has to set back to 0. |
-| 36 | `double total, off` |  |
+| 37 | `private final Set<String> driven` | The shares driven by the last apply(), each as the form's name and the sector's key ("STEAM:Industry"; "FARM_HORSES:Agriculture"; "CART_HORSES:Freight"): the ones a count that is gone still has to set back to 0. |
+| 41 | `double total, off` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 29 | 86 | **type** `public final class EquipmentForms` | Sets R0c's 1900 forms from the buildings still without the equipment that ends them: the steam share of each sector, the farms' horse share and the carts' horse share, each the unfitted part of what it scales. |
-| 35 | 3 | **type** `private static final class Weight` | What a form scales over a set of stacks: the whole, and the part of it that lacks the equipment. |
-| 40 | 45 | `public void apply(Game game)` | Sets every form's share from the counts. |
-| 90 | 9 | `private double drive(Equipment.Form form, String sectorKey, Weight w)` | The share to set for one form of one sector, or -1 for none to set: set when some of it is unfitted or was last time (then to what the counts say, 0 when they are gone), and remembered as driven only while some is. |
-| 101 | 8 | `private static int unfitted(BuildingsStacks stack, Equipment.Form form)` | How many of a stack's buildings lack a piece that ends this form: the pieces' counts added, never more than stand (a building lacking two such pieces is counted once). |
-| 111 | 3 | `public Set<String> driven()` | The shares this has set and not yet set back to 0, as "FORM:sector key", sorted: for the harnesses. |
+| 34 | 91 | **type** `public final class EquipmentForms` | Sets R0c's 1900 forms from the buildings still without the equipment that ends them: the steam share of each sector, the farms' horse share and the carts' horse share, each the unfitted part of what it scales. |
+| 40 | 3 | **type** `private static final class Weight` | What a form scales over a set of stacks: the whole, and the part of it that lacks the equipment. |
+| 45 | 45 | `public void apply(Game game)` | Sets every form's share from the counts. |
+| 95 | 9 | `private double drive(Equipment.Form form, String sectorKey, Weight w)` | The share to set for one form of one sector, or -1 for none to set: set when some of it is unfitted or was last time (then to what the counts say, 0 when they are gone), and remembered as driven only while some is. |
+| 106 | 8 | `private static int unfitted(BuildingsStacks stack, Equipment.Form form)` | How many of a stack's buildings lack a piece that ends this form: the pieces' counts added, never more than stand (a building lacking two such pieces is counted once). |
+| 116 | 3 | `public void clear()` | Forgets which shares were driven: Game.buildWorld() calls it, so that a city founded or loaded into a Game that played another city with counts sets nothing to 0 it never drove. |
+| 121 | 3 | `public Set<String> driven()` | The shares this has set and not yet set back to 0, as "FORM:sector key", sorted: for the harnesses. |
 

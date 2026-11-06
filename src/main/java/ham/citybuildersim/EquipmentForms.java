@@ -24,7 +24,12 @@ import java.util.Set;
  * (Forms1900Check) stand and a played city's month calls nothing. Which shares this has driven is kept in memory and not saved: after a load the
  * counts, which are saved, drive them again (Game's load path).
  *
- * Called where the Policy hears the month (Game.policyHearsTheMonth(): the founding, the top of every month, a load), before anything is made.
+ * Called where the Policy hears the month (Game.policyHearsTheMonth(): the founding, the top of every month, a load), before anything is made,
+ * and once more in every month right after its sites advance (R1b; SimulationEngine.simulateMonth()), the last statement of the month that changes
+ * a stack's quantity or its counts and before everything the month derives from them, so that the shares a city rests in between two presses are
+ * its counts' at rest and not the month's top's: a save written there and the load that reads it hold the same shares and the same derived
+ * state. clear() forgets which shares were driven, where Game rebuilds its world (R1b), so a city founded or loaded into a Game that played
+ * another starts as a fresh process does.
  */
 public final class EquipmentForms {
 
@@ -105,6 +110,11 @@ public final class EquipmentForms {
             if (e.getEnds() == form) n += stack.getUnfitted(e.getId());
         }
         return Math.min(n, stack.getQuantity());
+    }
+
+    /** Forgets which shares were driven: Game.buildWorld() calls it, so that a city founded or loaded into a Game that played another city with counts sets nothing to 0 it never drove. */
+    public void clear() {
+        driven.clear();
     }
 
     /** The shares this has set and not yet set back to 0, as "FORM:sector key", sorted: for the harnesses. */

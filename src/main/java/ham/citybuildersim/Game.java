@@ -698,6 +698,12 @@ public class Game {
         autoSubsidy.clear();
         subsidyPaid.clear();
         economyManager.getTaxPolicy().reset();
+        // ...and the forms the last city's counts drove are forgotten (R1b), before the policy says the month: this Game's EquipmentForms outlives
+        // buildWorld() (the field is final), and a city founded or loaded into a Game that played another city with counts must start as one in a
+        // fresh process does, setting no share to 0 that it never drove.
+        equipmentForms.clear();
+        // ...and the fittings on site (R1b): jobs for the last city's buildings.
+        fittings.clear();
         // ...and the levers history has not opened yet are held at zero (R0): the city is in its first month.
         policyHearsTheMonth();
         economyManager.getSalesTaxLedger().reset();
@@ -800,6 +806,8 @@ public class Game {
         initialize();
         foundingBank();
         foundingYard();
+        // ...and, when the city is founded the 1900 way (R1b), every building the founding stood up without the equipment its template offers.
+        if (choices.isUnfitted()) unfitTheFounding();
 
         /*
          * A NEW GAME FOUNDS ON THE AUTOPILOT, AND ROLLS WHAT FALLS DUE (0.7.13).
@@ -1148,6 +1156,193 @@ public class Game {
 
     /** The 1900 forms' driver, for the harnesses that read which shares the counts hold (R1). */
     public EquipmentForms getEquipmentForms() { return equipmentForms; }
+
+    /* ===== THE CITY FOUNDED THE 1900 WAY, AND WHAT A NEW BUILDING COMES WITH (R1b, 2026-11-05; docs/studies/research-design.md 2.2 step 6) =====
+     *
+     * R1 made a piece of equipment a count of the buildings still without it, empty in every played city: a building that finishes came
+     * fitted. A city founded the 1900 way (Founding.isUnfitted(), off by default until R1d) starts with every piece its buildings can carry
+     * unfitted, and a building that finishes in it comes with a piece only where the piece pays for a new building. A city founded the
+     * default way calls nothing here: every building finishes fitted, as it did. */
+
+    /** Whether the city was founded the 1900 way, its buildings' equipment unfitted (R1b; Founding.isUnfitted()): false for every city a player or a harness founds until R1d. */
+    public boolean foundedUnfitted() { return founding.isUnfitted(); }
+
+    /**
+     * Every building standing without every piece of equipment its template carries, and the forms set from it, so that the first month opens on
+     * them (R1b): on every stack, each piece's unfitted count is the stack. The tractor's too: a 1900 farm cannot have one before its discovery
+     * (its "since" is a catalogue code, NOT_KNOWN and never paying in this build), so its farms stay on horses. newGame() calls it after the
+     * buildings the founding stands up are placed (the bank, the yard: neither carries a piece, so today it sets nothing); package-private so that a
+     * harness, which places its village by hand after newGame() as the playtest does, can say it over that village.
+     */
+    void unfitTheFounding() {
+        for (BuildingsStacks stack : buildingManager.getStacksView()) {
+            for (Equipment piece : stack.getBuilding().getEquipment()) stack.setUnfitted(piece.getId(), stack.getQuantity());
+        }
+        equipmentForms.apply(this);
+    }
+
+    /**
+     * What a new building comes with (R1b; research-design 2.2 step 6), at the finish and not at the order, so the order's cost stays the template's:
+     * in a city founded the 1900 way, each piece of equipment a finished building's template carries whose verdict for a new building is not PAYS
+     * (EquipmentFit.verdictForNew(): NOT_YET, or NOT_KNOWN like the tractor's always) is left off those buildings, and the stack's unfitted count of it
+     * rises by the number that finished. The pieces that pay come with them: the count is as it was. Nothing in a city founded the default way.
+     * Not hooked: a building placed without construction (buildStack(t, n, true), the harnesses' and the playtest's village), which comes as placed.
+     *
+     * Read from the month's own completions and not from the stacks' getLastFinished(), which keeps last month's number in a month that advances
+     * no site (BuildingManager.advanceConstruction() skips every stack when none is on site).
+     */
+    void fitWhatFinished(java.util.List<BuildingManager.Completion> finished) {
+        if (finished == null || !founding.isUnfitted()) return;
+        for (BuildingManager.Completion done : finished) {
+            BuildingsTemplate t = buildingManager.getTemplateByName(done.building);
+            BuildingsStacks stack = t == null || t.getEquipment().isEmpty() ? null : buildingManager.getStack(t);
+            if (stack == null || done.quantity <= 0) continue;
+            for (Equipment piece : t.getEquipment()) {
+                if (EquipmentFit.verdictForNew(this, t, piece).kind() == EquipmentFit.Kind.PAYS) continue;
+                stack.setUnfitted(piece.getId(), stack.getUnfitted(piece.getId()) + done.quantity);
+            }
+        }
+    }
+
+    /* ===== THE FITTING ORDERED, PAID, BOUGHT AND WORKED (R1b, 2026-11-05; docs/studies/research-design.md 2.2 step 5) =====
+     *
+     * A piece of equipment is fitted to ONE building of a stack at a time, as a job of work. At the order (fit()) its goods are drawn from the
+     * city's market by the builders, as a road's bitumen is (drawBitumen()), the payer pays their cost and the work's, the builders are paid it
+     * as revenue (Construction.earnFitting()), and a job goes on site (Fittings). The builders' crews then work it off the top of their month
+     * after the repairs and before the sites (workTheFittings()), and the stack's unfitted count falls by one in the month its points are done.
+     * Who orders: a sector, in the investment round, when the fitting beats its next building on earnings over cost (EquipmentFit.choose()); and
+     * the player, from a business's page (fitForCity()). In a city founded the default way no building is unfitted, so no job is ever added
+     * and nothing here is read by the month. */
+
+    /** The fittings on site: ordered and paid, not yet worked (R1b). Saved (DataSave.fittings), only where there is a job. */
+    private final Fittings fittings = new Fittings();
+
+    /** The fittings on site, for the order's rule, the screens and the harnesses (R1b). */
+    public Fittings getFittings() { return fittings; }
+
+    /**
+     * Orders the fitting of ONE building of `stack` with `piece`, for `payer` (R1b): refuses with the reason in words and nothing drawn or paid, or
+     * returns null once it is ordered. Refused when the piece is not on the stack's template, not known in the city's year, or no building of the
+     * stack is left to fit (the unfitted count less the fittings already on site).
+     *
+     * The money is asked BEFORE any good is drawn, on the exact quote of each good (Markets.quote(): the split a draw makes, so the quote is what is
+     * charged) and the work at the builders' price a point (BuildingManager.nonMaterialPricePerPoint(), what EquipmentFit.verdict() prices it at):
+     * a shortfall over the payer's cash is borrowed if the payer can (buildFor()'s rule, SHORTFALL_DUST included) and refuses the order if it
+     * cannot. The cost is what the draws came to, not the quote; the payer pays it, and the builders earn it (no sales tax in this batch).
+     * A piece that ends CART_HORSES delivers its trucks into Freight's fleet (Freight.deliverTrucks()), because they are Haulage's trucks and the
+     * fleet would otherwise buy them a second time. The count of unfitted does not move until the work is done.
+     */
+    public String fit(Investor payer, BuildingsStacks stack, Equipment piece) {
+        if (payer == null || stack == null || piece == null) return "nothing to fit";
+        BuildingsTemplate t = stack.getBuilding();
+        String id = piece.getId();
+        if (t.getEquipment(id) == null) return "a " + t.getName() + " carries no " + piece.getName().toLowerCase(Locale.ROOT);
+        if (!piece.knownIn(CityCalendar.yearOf(month))) return "the " + piece.getName().toLowerCase(Locale.ROOT) + " is not known yet";
+        if (stack.getUnfitted(id) - fittings.onSite(t.getId(), id) <= 0) {
+            return stack.getUnfitted(id) > 0
+                    ? "every " + t.getName() + " that lacks the " + piece.getName().toLowerCase(Locale.ROOT) + " is already being fitted"
+                    : "no " + t.getName() + " lacks the " + piece.getName().toLowerCase(Locale.ROOT);
+        }
+
+        ham.citybuildersim.sectors.Construction builders = getSectors().construction();
+        double work = piece.getWork() * buildingManager.nonMaterialPricePerPoint();
+        double quoted = work;
+        for (java.util.Map.Entry<Good, Double> e : piece.getBuys().entrySet()) quoted += getMarkets().quote(e.getKey(), e.getValue(), getSectors()).cost();
+        if (!(quoted >= 0) || !Double.isFinite(quoted)) return "the " + piece.getName().toLowerCase(Locale.ROOT) + " cannot be priced";
+        double short_ = quoted - payer.getCash();
+        if (short_ > SHORTFALL_DUST * Math.max(1, quoted) && !payer.canBorrow(short_)) {
+            return payer == government
+                    ? "the treasury holds " + DecisionLog.money(payer.getCash()) + " and the fitting costs " + DecisionLog.money(quoted)
+                    : payer.getName() + " could not borrow the " + DecisionLog.money(short_) + " it is short";
+        }
+
+        double goods = 0;
+        for (java.util.Map.Entry<Good, Double> e : piece.getBuys().entrySet()) {
+            Markets.Draw d = getMarkets().draw(e.getKey(), builders, null, e.getValue(), getSectors());
+            goods += d.cost();
+            if (piece.getEnds() == Equipment.Form.CART_HORSES && e.getKey() == Good.TRUCKS) getSectors().freight().deliverTrucks(d.units());
+        }
+        double total = goods + work;
+        double over = total - payer.getCash();
+        if (over > SHORTFALL_DUST * Math.max(1, total)) payer.borrow(over, month);
+        if (payer == government) {
+            // The city's own money goes out through its journal, as the player's buildings do (processBuildOrder()): a capital line.
+            treasuryPays(TreasuryLine.BUILDINGS, total);
+            cityCapitalSpending += total;
+        } else {
+            payer.spend(total);
+        }
+        builders.earnFitting(total);
+        fittings.add(t.getId(), id, payer.getName(), piece.getWork());
+        return null;
+    }
+
+    /**
+     * The player's Fit (R1b): the city pays for ONE building of the template to be fitted with the piece, whatever its verdict says (it is the player's
+     * money), through fit(); more than one may be on site at a time. Returns null once ordered, else why not: as fit() refuses, and when the treasury
+     * cannot pay the whole cost (the city does not borrow for it).
+     */
+    public String fitForCity(BuildingsTemplate t, String pieceId) {
+        BuildingsStacks stack = t == null ? null : buildingManager.getStack(t);
+        Equipment piece = t == null ? null : t.getEquipment(pieceId);
+        if (stack == null || piece == null) return "nothing like that stands to be fitted";
+        String refused = fit(government, stack, piece);
+        if (refused == null) {
+            System.out.println("The city ordered the " + piece.getName().toLowerCase(Locale.ROOT) + " fitted to a " + t.getName() + ".");
+        }
+        return refused;
+    }
+
+    /** What the builders have left of the month after the repairs, before the fittings (R1b): getBuildingOutput() as it was. */
+    private int buildingOutputAfterRepairs() {
+        return (int) Math.max(0, Math.round(getConstructionOutput() - getMaintenancePoints()));
+    }
+
+    /** The points of the builders' month the fittings on site take: what they owe, rounded up to a whole point, never more than `afterRepairs`. */
+    private int fittingPoints(int afterRepairs) {
+        return (int) Math.min(afterRepairs, Math.ceil(fittings.pointsOwed()));
+    }
+
+    /**
+     * THE FITTINGS WORKED, and the sites' output struck (R1b; SimulationEngine.simulateMonth(), where it stands in place of getBuildingOutput()):
+     * the builders' crews work the fittings on site after the repairs and before the sites, with the points the month leaves them. Strikes the
+     * month's figure ONCE and returns what is left for the sites, the very figure the advance and the work the sector is paid for use; works the
+     * jobs by the rest; and, for each that finished, brings its stack's unfitted count of the piece down by one (a stack gone, or with none
+     * unfitted left, because the building was scrapped first: nothing) and says so in the log. With no job on site this is getBuildingOutput() to
+     * the bit and changes nothing. The foreign contractor's points do not work fittings.
+     *
+     * Not a stored figure: getBuildingOutput() stays a pure function of what stands and what is on site, so a loaded city reads what the city it
+     * was saved from does (nothing is saved but the jobs), and between the presses it reads what the NEXT advance will take.
+     */
+    public int workTheFittings() {
+        int afterRepairs = buildingOutputAfterRepairs();
+        if (fittings.isEmpty()) return afterRepairs;
+        int took = fittingPoints(afterRepairs);
+        for (Fittings.Job done : fittings.work(took)) {
+            BuildingsTemplate t = buildingManager.getTemplate(done.templateId);
+            BuildingsStacks stack = t == null ? null : buildingManager.getStack(t);
+            Equipment piece = t == null ? null : t.getEquipment(done.pieceId);
+            if (stack == null || piece == null || stack.getUnfitted(done.pieceId) <= 0) continue;
+            stack.setUnfitted(done.pieceId, stack.getUnfitted(done.pieceId) - 1);
+            System.out.println(done.payer + " fitted the " + piece.getName().toLowerCase(Locale.ROOT) + " to a " + t.getName()
+                    + "; " + stack.getUnfitted(done.pieceId) + " of its " + stack.getQuantity() + " still without.");
+        }
+        return afterRepairs - took;
+    }
+
+    /**
+     * What a fitting makes of a sector's month in the round (R1b): the choice between its next building and its best fitting is EquipmentFit.choose();
+     * a decision with a piece is sent here from consider(). The outcome goes where a building's goes, into the sector's last-investment line
+     * ("Fitted ..." or "Holding: <why not>").
+     */
+    private void considerFitting(BusinessInvestment.Decision decision, Investor payer, String slot) {
+        BuildingsStacks stack = decision.template == null ? null : buildingManager.getStack(decision.template);
+        String refused = stack == null ? "no " + (decision.template == null ? "building" : decision.template.getName()) + " stands to be fitted"
+                : fit(payer, stack, decision.piece);
+        lastInvestment.put(slot, refused == null
+                ? "Fitted the " + decision.piece.getName().toLowerCase(Locale.ROOT) + " to a " + decision.template.getName() + " - " + decision.reason
+                : "Holding: " + refused);
+    }
 
     /**
      * The player's hand on the minimum-wage dial (R0): refused until the lever opens (1918 on history's dates), because the dial is also the
@@ -3317,7 +3512,16 @@ public class Game {
             // BusinessInvestment.holdSector.
             if (businessInvestment.isHeld(sector.key())) continue;
             refreshLand();
-            consider(sector.plan(businessInvestment, this), sectorInvestor(sector.key()));
+            // ...weighed against its best fitting, one order at a time (R1b; EquipmentFit.choose()): the plan's own decision, unchanged, in a city with nothing unfitted.
+            BusinessInvestment.Decision plan = sector.plan(businessInvestment, this);
+            BusinessInvestment.Decision month = EquipmentFit.choose(this, sector, plan);
+            // ...and a plan that held, put aside for a fitting, still says what held it (R1b's review): the posts it wanted priced (LD1) and the
+            // ground it wanted heard by the land office, as consider() says them for a plan that holds, so a fitting never hides a sector's want.
+            if (month != plan && plan != null && !plan.build) {
+                if (plan.heldForStaff != null) noteStaffingHold(plan.heldForStaff);
+                if (plan.landBlocked) blockOnLand(plan.sector, plan.reason);
+            }
+            consider(month, sectorInvestor(sector.key()));
             /*
              * ...AND THE GROCERS' FORECOURTS, right after their shops (0.7.83,
              * batch O6): retail's money and retail's investor, its own
@@ -6051,6 +6255,12 @@ public class Game {
             return;
         }
 
+        // ...a fitting is ordered and paid by fit(), and neither raises shares nor writes a mortgage nor slices (R1b).
+        if (decision.piece != null) {
+            considerFitting(decision, payer, slot);
+            return;
+        }
+
         BusinessDebtManager credit = economyManager.getBusinessDebtManager();
 
         double perUnitProfit = businessInvestment.estimatedMonthlyProfit(
@@ -7244,7 +7454,9 @@ public class Game {
         double atFullStaffing = servicesManager.getRoadRatio() * health.getWorkRatio();
         double capacity = buildingManager.getTotalConstructionCapacity();
         getSectors().construction().strikeCrews(
-                getMaintenancePoints() + buildingManager.getRemainingConstructionPoints(),
+                getMaintenancePoints() + buildingManager.getRemainingConstructionPoints()
+                        // ...and the points still owed on the fittings on site (R1b): work ahead of the crews like the rest; none in a city that has none.
+                        + (fittings.isEmpty() ? 0 : fittings.pointsOwed()),
                 capacity * atFullStaffing);
         // ...and Freight's drivers, a post for each truck a depot keeps (FR2), at the same moment and for the same reason.
         getSectors().freight().haulage().strikeDrivers();
@@ -7316,8 +7528,9 @@ public class Game {
      * builders would advance its sites by a negative number.
      */
     public int getBuildingOutput(){
-        return (int) Math.max(0,
-                Math.round(getConstructionOutput() - getMaintenancePoints()));
+        int afterRepairs = buildingOutputAfterRepairs();
+        // ...less the points the fittings on site will take after the repairs and before the sites (R1b; workTheFittings()): none, and today's figure to the bit, with no job on site.
+        return fittings.isEmpty() ? afterRepairs : afterRepairs - fittingPoints(afterRepairs);
     }
 
     /* ----- THE FOREIGN CREWS (FC1) -----
@@ -13492,6 +13705,8 @@ public class Game {
          */
         ham.citybuildersim.sectors.Construction construction = getSectors().construction();
         double constructionWorkDone = construction.getRecognisedThisMonth();
+        // ...and the equipment the builders were paid to fit to standing buildings since the last strike banked its ledger (R1b): capital too, on the builders' side, once.
+        if (construction.getFittingThisMonth() != 0) constructionWorkDone += construction.getFittingThisMonth();
 
         /*
          * EVERY SECTOR'S STATEMENT, STRUCK AND BANKED, and the month's VAT
@@ -15975,6 +16190,8 @@ public class Game {
         dataSave.setContractRecords(buildingManager.getContractRecords());
         // ...and the buildings still without a piece of equipment, where a stack has any (R1; none in a played city).
         dataSave.setUnfittedById(buildingManager.getUnfittedById());
+        // ...and the fittings on site, only where there is a job (R1b).
+        dataSave.setFittings(fittings.view());
         // ...and how many founding endowments of household places, care and police it holds (FW9).
         dataSave.setFoundingEndowments(buildingManager.getFoundingEndowments());
         // ...and the order the stacks stand in (0.7.43; DataSave.getStackOrder()).
@@ -20023,6 +20240,8 @@ public class Game {
             // (policyHearsTheMonth(), far above), because the stacks did not stand there yet: before rebuildSimulationState(), which re-derives
             // the factories' grid draw from the steam share.
             buildingManager.restoreUnfitted(loaded.getUnfittedById());
+            // ...and the fittings on site, with them (R1b): a save with none has none.
+            fittings.restore(loaded.getFittings());
             equipmentForms.apply(this);
 
             // A save that kept one order book for the whole city: spread it
