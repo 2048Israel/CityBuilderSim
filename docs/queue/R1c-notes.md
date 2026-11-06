@@ -1,4 +1,4 @@
-# R1c - research: recipes as data ({next}, 2026-11-05)
+# R1c - research: recipes as data (0.9.23, 2026-11-05)
 
 ## WHERE IT STANDS
 

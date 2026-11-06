@@ -18,6 +18,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.23 — R1c, Research: recipes as data — 2026-11-05, ready, see docs/queue/R1c-notes.md
+A building can know several ways to run (`buildings.json`'s `recipes`; `Recipe`): the top level is today's, the
+default, and a recipe states only what it changes. In a city founded the 1900 way (off until R1d) each month the
+fitted and the unfitted buildings of every stack run the best recipe each can at the city's prices (`Recipes`,
+`SpreadPlanner.cityValue()`): the fitted the recipes that need the template's piece, the rest those needing none;
+the template's figures are their mix, saved by template id, and a recipe piece pays on the two recipes' difference.
+Research-1900 §3's rows with no form get their piece and their 1900 way: beehive coke, pick-and-powder coal,
+hand-loaded pits, hand-drilled quarries and copper, shaft-kiln cement, groundwood and sulphite pulp (kraft from
+1907), rope-and-tub unloading, Bessemer and open-hearth steel. A city founded the default way chooses nothing,
+but its farms now buy their tractors' diesel and petrol (R0c ★5), 4% of their output: the trace moves, and the
+ensemble scores 23/26 against 24/26, A3 short in two seeds' tails (docs/ensemble/R1c.md). RecipeCheck holds it.
+
 ### 0.9.22 — R1b, Research: the fit acted on — 2026-11-05, ready, see docs/queue/R1b-notes.md
 Equipment is now bought and fitted (research-design 2.2 steps 5-6), in a city founded the 1900 way
 (`Founding.withUnfitted()`, off by default until R1d, saved). Each month a sector's next building is weighed
