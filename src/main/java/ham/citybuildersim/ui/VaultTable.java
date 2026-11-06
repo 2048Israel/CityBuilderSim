@@ -151,7 +151,17 @@ final class VaultTable {
     /** Under the fold: the seven against the US$, and the eight's policy rates. */
     private Node years() {
         HistorySave h = game().getHistorySave();
-        VBox box = new VBox(Palette.GAP_LOOSE);
+        VBox box = Kept.column(Palette.GAP_LOOSE);
+        // Kept (KP6): the charts are drawn as wide as the card they sit in. The listener is added once and sizes the charts of
+        // the latest draw (from the box's properties) when the width moves; a kept box keeps its width, so no event comes, and
+        // the draw sizes its charts itself at the width the box has (a box made new has none yet: the listener does it).
+        if (Kept.isNew(box)) {
+            box.widthProperty().addListener((o, was, now) -> {
+                if (now.doubleValue() > 0) for (TimeChart chart : chartsOf(box)) chart.setSize(now.doubleValue() - 16, CHART_HEIGHT);
+            });
+        }
+        double wide = box.getWidth() > 0 ? box.getWidth() - 16 : 794;
+        box.getProperties().put(CHARTS, List.of());
         if (h.months() < 2) {
             box.getChildren().add(muted("Two months have to be recorded before there is a line to draw."));
             return box;
@@ -173,32 +183,43 @@ final class VaultTable {
             rates.add(new TimeChart.Line(HistorySave.worldRateKey(code), name, colours[k], 0, rate, v -> v > 0 ? 100 * base / v : Double.NaN,
                     v -> String.format("%s %.4f a US$", code, v), ""));
         }
+        // Kept (KP6): each chart a scope of its own, keyed by what it shows, so the one there keeps its window, zoom and crosshair.
         if (!rates.isEmpty()) {
-            charts.add(chart("THE SEVEN AGAINST THE US$", "US$ one buys, 100 at the start", rates, rateWindow, rateHidden,
-                    new TimeChart.Axis((v, step) -> String.format("%.0f", v), false)));
+            charts.add(Kept.scope("the seven", () -> chart("THE SEVEN AGAINST THE US$", "US$ one buys, 100 at the start", rates, rateWindow, rateHidden,
+                    new TimeChart.Axis((v, step) -> String.format("%.0f", v), false), wide)));
         }
         if (!policies.isEmpty()) {
-            charts.add(chart("THE EIGHT'S POLICY RATES", "a year", policies, policyWindow, policyHidden, HistoryScreen.axisFor("percent")));
+            charts.add(Kept.scope("the eight", () -> chart("THE EIGHT'S POLICY RATES", "a year", policies, policyWindow, policyHidden,
+                    HistoryScreen.axisFor("percent"), wide)));
         }
         if (rates.isEmpty() && policies.isEmpty()) box.getChildren().add(muted("This city's history holds none of the moneys' series."));
-        // the charts are drawn as wide as the card they sit in
         box.getChildren().addAll(charts);
-        box.widthProperty().addListener((o, was, now) -> {
-            if (now.doubleValue() > 0) for (TimeChart chart : charts) chart.setSize(now.doubleValue() - 16, CHART_HEIGHT);
-        });
+        box.getProperties().put(CHARTS, List.copyOf(charts));
         return box;
     }
 
-    private TimeChart chart(String title, String unit, List<TimeChart.Line> lines, ChartModel window, Set<String> hidden, TimeChart.Axis axis) {
+    /** The key in the fold's box's properties for the charts its latest draw put in it (years()). */
+    private static final String CHARTS = "vault.charts";
+
+    /** The charts the box's latest draw put in it. */
+    @SuppressWarnings("unchecked")
+    private static List<TimeChart> chartsOf(VBox box) {
+        Object o = box.getProperties().get(CHARTS);
+        return o instanceof List<?> l ? (List<TimeChart>) l : List.of();
+    }
+
+    /** A chart of the fold, `width` wide: kept (KP6) - made once in its scope, told the month's lines each draw. */
+    private TimeChart chart(String title, String unit, List<TimeChart.Line> lines, ChartModel window, Set<String> hidden, TimeChart.Axis axis,
+                            double width) {
         HistorySave h = game().getHistorySave();
-        TimeChart chart = new TimeChart(window, hidden, true);
+        TimeChart chart = Kept.of(TimeChart.class, () -> new TimeChart(window, hidden, true));
         chart.setData(h.getMonth(), lines, axis, null, false, false, null, List.of(), List.of(), List.of(), "no months recorded yet");
-        chart.setSize(794, CHART_HEIGHT);
-        chart.withoutFullScreen();
-        Label head = new Label(title);
+        chart.setSize(width, CHART_HEIGHT);
+        if (Kept.isNew(chart)) chart.withoutFullScreen();
+        Label head = Kept.label(title);
         head.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
         head.setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
-        chart.lead().getChildren().setAll(head, quiet(unit));
+        Kept.set(chart.lead().getChildren(), List.of(head, quiet(unit)));
         return chart;
     }
 
