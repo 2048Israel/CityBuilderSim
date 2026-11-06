@@ -3183,7 +3183,26 @@ public final class KeptBench {
         if (n instanceof Rectangle r) return String.format(Locale.ROOT, " rect %.2fx%.2f", r.getWidth(), r.getHeight());
         if (n instanceof Polyline p) return " points" + p.getPoints();
         if (n instanceof SVGPath s) return " svg " + s.getContent();
+        // KP6: a kept path (Trade's river ribbons, a Sector's curve) is handed back with last month's elements unless the draw sets them.
+        if (n instanceof javafx.scene.shape.Path p) return " path" + pathOf(p);
         return "";
+    }
+
+    /** A path's elements as figures: each element's kind and its end point (and a curve's controls). */
+    private static String pathOf(javafx.scene.shape.Path p) {
+        StringBuilder b = new StringBuilder();
+        for (javafx.scene.shape.PathElement e : p.getElements()) {
+            if (e instanceof javafx.scene.shape.MoveTo m) b.append(String.format(Locale.ROOT, " M%.2f,%.2f", m.getX(), m.getY()));
+            else if (e instanceof javafx.scene.shape.LineTo l) b.append(String.format(Locale.ROOT, " L%.2f,%.2f", l.getX(), l.getY()));
+            else if (e instanceof javafx.scene.shape.CubicCurveTo c) b.append(String.format(Locale.ROOT, " C%.2f,%.2f %.2f,%.2f %.2f,%.2f",
+                    c.getControlX1(), c.getControlY1(), c.getControlX2(), c.getControlY2(), c.getX(), c.getY()));
+            else if (e instanceof javafx.scene.shape.QuadCurveTo q) b.append(String.format(Locale.ROOT, " Q%.2f,%.2f %.2f,%.2f", q.getControlX(), q.getControlY(), q.getX(), q.getY()));
+            else if (e instanceof javafx.scene.shape.HLineTo h) b.append(String.format(Locale.ROOT, " H%.2f", h.getX()));
+            else if (e instanceof javafx.scene.shape.VLineTo v) b.append(String.format(Locale.ROOT, " V%.2f", v.getY()));
+            else if (e instanceof javafx.scene.shape.ClosePath) b.append(" Z");
+            else b.append(' ').append(e.getClass().getSimpleName());
+        }
+        return b.toString();
     }
 
     /* =====================================================================
