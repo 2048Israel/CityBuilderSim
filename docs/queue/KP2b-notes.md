@@ -2,7 +2,8 @@
 
 **WHERE IT STANDS** (2026-11-06, 06:45): the two slices are in and reviewed (B 322ec4fa, A 6f62f1c2 with Opus's forest
 law card), KeptCheck on them exit 3, main's recorded red only; pushed with no ship file. Left: KP7 onto main and merged
-in, `--pick` on that merge, the quiet chrome measure (§5), then the ship file. A gate's hard timing held the PC from
+in, KP7's gate review's items (§1, after the table), `--pick` on that merge, the quiet chrome measure (§5), then the
+ship file. A gate's hard timing held the PC from
 06:40; what is not done by 07:00 the next day's orchestrator carries.
 
 The batch's record. `QUEUE.md`'s KP2b row: the stranger's threading reviews at the gates of KP2, KP3, KP4, KP5 and KP6
@@ -28,6 +29,14 @@ code, A in a worktree of its own (`kp2b-a`, the sliders and Policy) and B in thi
 | KP6's: KeptCheck 78 holds only the first slider | mended (A) | `holdDial` also holds the policy rate's target ladder, HOW STRICT and a zone's ITS TAXES' second dial (the first sector whose card moves: Retail at month 2,674; Agriculture pays no sales tax there) |
 | KP6's: `ZoningScreen:387-392` clears each picker chip's icon every draw | mended (B) | the icon handed to `stepChip` where the chip is made |
 | KP6's notes §7: `TradeScreen:703`, `PolicyScreen:961`, `ZoningScreen:827` built on `getStyle()` | mended (A: Policy's; B: Trade's and Zoning's) | set once, whole (`PolicyScreen.doorCard(go, rows...)`, `TradeScreen.doorCard(go, rows...)`, `stepChip(..., picked)`) |
+
+**Taken in from KP7's gate review** (the orchestrator, 2026-11-06, into the row after KP7's merge), **not yet done**; line
+numbers on KP7's tip: `ui/RankingsScreen.java:1215`, the hover band lit again from the last `pointerY`, so after a wheel
+scroll (no mouse-moved after it) a month landing lights the row the pointer was over before the scroll (cosmetic; whether
+JavaFX sends a move on a scroll is to be checked first); and KP7's repeats of this row's kinds: `grey()` building a style
+on a style (`:580`), a `new Insets` each draw (`:396`, `measureLine`, the browse and bar margins), `ColumnConstraints`
+each draw in People's `affordabilityGrid`, `RowsPicture`'s cursor reset when handed back and set again each draw
+(`:1182`). One Sonnet slice, after KP7's merge, with 92's pages widened to Rankings and Household money.
 
 Past the list, the same kind, in the files named: Policy's `shutBox` (A); the forest law's card (`ZoningScreen.lawCard`,
 Opus: a door made so, the old `PolicyScreen.doorCard(VBox, go)` gone with its last caller); Zoning's breadcrumb and the
