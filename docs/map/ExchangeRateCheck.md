@@ -66,7 +66,7 @@
 
 **Uses:** [ForeignAccounts](ForeignAccounts.md) (156), [LongPlaytest](LongPlaytest.md) (35), [CurrencyCheck](CurrencyCheck.md) (29), [PriceIndex](PriceIndex.md) (27), [Game](Game.md) (23), [PriceLevel](PriceLevel.md) (12), [WorldMoneys](WorldMoneys.md) (12), [ForeignCheck](ForeignCheck.md) (7), [Founding](Founding.md) (5), [GameFiles](GameFiles.md) (2), [TreasuryFund](TreasuryFund.md) (2), [MoneyAudit](MoneyAudit.md) (2)
 
-**Used by (1):** [CurrencyRegimeCheck](CurrencyRegimeCheck.md)
+**Used by (2):** [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [InterventionCheck](InterventionCheck.md)
 
 ## Sections
 

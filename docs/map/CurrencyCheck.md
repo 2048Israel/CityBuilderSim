@@ -66,7 +66,7 @@
 
 **Uses:** [ForeignAccounts](ForeignAccounts.md) (52), [ForeignCheck](ForeignCheck.md) (9), [Game](Game.md) (8), [DebtManager](DebtManager.md) (7), [CentralBank](CentralBank.md) (6), [CapitalFlows](CapitalFlows.md) (5), [MoneyAudit](MoneyAudit.md) (4), [GameFiles](GameFiles.md) (3), [PriceIndex](PriceIndex.md) (3), [TempDirs](TempDirs.md) (2), [Founding](Founding.md) (1)
 
-**Used by (5):** [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [ExpectationsCheck](ExpectationsCheck.md), [ForeignCheck](ForeignCheck.md), [VaultMoneysCheck](VaultMoneysCheck.md)
+**Used by (6):** [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [ExpectationsCheck](ExpectationsCheck.md), [ForeignCheck](ForeignCheck.md), [InterventionCheck](InterventionCheck.md), [VaultMoneysCheck](VaultMoneysCheck.md)
 
 ## Sections
 
@@ -108,7 +108,7 @@
 | 94 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 117 | 8 | `static MoneyAudit.Result month(double exports, double imports, double capitalIn, double capitalOut)` | A synthetic month: the trade and the financial account are all takeMonth() reads. |
 | 130 | 7 | `static ForeignAccounts settled(double exports, double imports, double gdp)` | A currency that has traded the same month, over and over, for TRADING_MONTHS: its market quiet (a bare ForeignAccounts is unseeded) and not yet repriced. |
-| 139 | 3 | `static double lift(ForeignAccounts fx)` | What a sale of what the defence fetched lifts the D$ by, in logs (ForeignAccounts, THE FLOAT, step 7): INTERVENTION_IMPACT x the local money over a year of the GDP the model weighs it against. |
+| 139 | 3 | `static double lift(ForeignAccounts fx)` | What a sale of what the defence fetched lifts the D$ by, in logs (ForeignAccounts, THE FLOAT, step 7): the interventions' rule (INTERVENTION_IMPACT x the local money over a year of the GDP the model weighs it against,... |
 | 143 | 14 | `public static void main(String[] args) throws Exception` |  |
 
 ### 1. the real rate holds a level; inflation arrives through parity's trend (lines 158-231)

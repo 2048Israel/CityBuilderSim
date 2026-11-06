@@ -1,4 +1,4 @@
-# KP6 - Screens kept: Government, Trade, Policy and zoning ({next}, 2026-11-05)
+# KP6 - Screens kept: Government, Trade, Policy and zoning (0.9.27, 2026-11-05)
 
 **WHERE IT STANDS** (2026-11-06): the four slices are in and reviewed (B bfcbf25e, A a6f7ddef, C 911af0bc, D 342f0a38,
 with Opus's mends d3edf5ff and cad44d6f); ready: main merged in with KP5 0.9.25 and R2 0.9.24 (cc807683), `--pick`

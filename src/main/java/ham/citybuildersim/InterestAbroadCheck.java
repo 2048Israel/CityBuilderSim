@@ -1072,6 +1072,8 @@ public class InterestAbroadCheck {
         fx.setReserveMix(ForeignAccounts.Mix.WORLD_MIX);
         double spend = g.getCash() / 10;
         g.buyForeignCurrency(spend);
+        out.printf("   the purchase is %.2f years of the town's output (INTERVENTION_LINEAR %.2f: past it XI1's bound reads it)%n",
+                fx.yearsOfOutput(spend), ForeignAccounts.INTERVENTION_LINEAR);
         int held = 0;
         for (int k = 0; k < ForeignAccounts.MONEYS; k++) if (fx.getHolding(k) > 0) held++;
         assertTrue("fixture: a purchase by the world's mix puts a balance in each of the eight (" + held + ")", held == ForeignAccounts.MONEYS);
@@ -1120,8 +1122,14 @@ public class InterestAbroadCheck {
                 ranHome / (hot.getStock() + ranHome), Math.min(1, CapitalFlows.RISK_OFF_HOT_UNWIND * level), 1e-9);
         assertTrue("...inside the month's departures", hot.getDeparted() >= ranHome - 1e-9);
         MoneyAudit.Result audit = g.getLastMoneyAudit();
-        assertTrue("...the audit saw it cross the edge (financial out D$" + String.format("%,.1fk", audit.financialOut) + ") and the month closed (residual " + String.format("%.2e", audit.relative()) + ")",
-                audit.financialOut >= ranHome - 1e-6 && Math.abs(audit.relative()) < 1e-9);
+        // The audit sees the hot money's NET move: Game books the stock's change (bank.returnHotMoney / receiveHotMoney), so in a
+        // month whose arrivals go on beside the risk-off it declares what left less what came. XI1: this read the gross departure,
+        // which held only while the linear rule collapsed this town's D$ after the fixture's purchase (financial out D$432,860k
+        // against D$4.3k run home); under the bound the hot money still arrives that month (the stock under its target).
+        double netOut = hot.getDeparted() - hot.getArrived();
+        assertTrue("...the audit saw the month's hot money cross the edge, net of what still came (" + String.format("D$%,.1fk %s; financial out D$%,.1fk, in D$%,.1fk",
+                        Math.abs(netOut), netOut >= 0 ? "out" : "in", audit.financialOut, audit.financialIn) + ") and the month closed (residual " + String.format("%.2e", audit.relative()) + ")",
+                (netOut >= 0 ? audit.financialOut >= netOut - 1e-6 : audit.financialIn >= -netOut - 1e-6) && Math.abs(audit.relative()) < 1e-9);
         close("...the bank's foreign deposits are the stock that is left", g.getBank().getForeignDeposits(), hot.getStock(), 1e-9);
         assertTrue("...and the log says money ran home", log.contains("Money ran home:") && log.contains("of hot money left"));
         assertTrue("the risk-off is counted, with the lifetime", hot.getRiskOffMonths() >= 1 && hot.getRiskOffDepartedLifetime() >= ranHome);

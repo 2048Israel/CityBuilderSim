@@ -450,6 +450,9 @@ public class ForeignAccounts {
     /** How far a purchase of dollars moves the rate: 2% per 1% of a year's GDP, a sale the other way (the IMF's 1.7-2.0%, R33; Jerus, star 7). */
     public static final double INTERVENTION_IMPACT = 2.0;
 
+    /** ...linear up to this share of a year's GDP and logarithmic past it, I x s0 x (1 + ln(s / s0)), so each further dollar moves the rate less (XI1, GD0 4.5: Jerus's Rotterdam bought 4.5 years of output in a month and the linear rule moved the D$ x11,600). */
+    public static final double INTERVENTION_LINEAR = .10;
+
     /** ...fading by half in this many months. */
     public static final double INTERVENTION_HALF_LIFE = 6;
 
@@ -940,7 +943,9 @@ public class ForeignAccounts {
 
         // 5. WHAT INTERVENTIONS STILL FEEL, fading, plus what the treasury has
         // dealt since the last reprice (buyReserves(), sellReserves()): a
-        // purchase of dollars cheapens the D$. Since the last reprice and not
+        // purchase of dollars cheapens the D$ - linearly up to INTERVENTION_LINEAR
+        // of a year's GDP and by less for each dollar past it (XI1,
+        // interventionMove()). Since the last reprice and not
         // this month, because the player deals BETWEEN months, before the
         // next month's startMonth() clears the month's bookkeeping. The
         // founders' dollars are an endowment, forgotten at founding
@@ -950,7 +955,7 @@ public class ForeignAccounts {
         // the market's swings do, and is nothing, so 0 stays 0, until a peg breaks.
         breakFelt *= Math.pow(.5, 1 / MARKET_HALF_LIFE);
         double annual = 12 * gdpTrailing;
-        if (annual > 0) interventionFelt += INTERVENTION_IMPACT * dealtSinceReprice / annual;
+        if (annual > 0) interventionFelt += interventionMove(dealtSinceReprice, annual);
         dealtSinceReprice = 0;
 
         // 5b. THE WORLD (WN4, THE WORLD REACHES THE D$): the terms of trade reach
@@ -981,7 +986,8 @@ public class ForeignAccounts {
          *
          * It takes back absorption() of that fall, the vault's capacity by its
          * cover, as the old defence damped a push by it, and sells only the
-         * dollars that takes at INTERVENTION_IMPACT - at most absorption() x
+         * dollars that takes at INTERVENTION_IMPACT (bounded past
+         * INTERVENTION_LINEAR of a year's GDP, XI1) - at most absorption() x
          * the month's deficit, the most anyone came to the window for, and at
          * most the vault. The support then fades at INTERVENTION_HALF_LIFE: a
          * fall is spread over months, and the fundamentals have the last word.
@@ -1011,13 +1017,13 @@ public class ForeignAccounts {
         if (regime == Regime.LEAN) {
             double sold = 0;
             if (fall > 0 && annual > 0 && rate > 0) {
-                double need = absorption() * fall * annual / INTERVENTION_IMPACT / rate;
+                double need = interventionLocalFor(absorption() * fall, annual) / rate;
                 sold = Math.min(need, dollarsFor(deficitUsd));
             }
             sellToDefend(sold);
             lastAbsorption = defenceUsd > 0 && deficitUsd > 0 ? defenceUsd / deficitUsd : 0;
             if (defenceLocal > 0) {
-                interventionFelt -= INTERVENTION_IMPACT * defenceLocal / annual;
+                interventionFelt -= interventionMove(defenceLocal, annual);
                 x = trendLevel + g * (fundamentals + world) + interventionFelt + breakFelt;
             }
 
@@ -1384,9 +1390,26 @@ public class ForeignAccounts {
         return Double.POSITIVE_INFINITY;
     }
 
-    /** What a purchase of dollars for this much local money would put on the float's log rate (positive weaker; a sale the other way), at the real size: the interventions' channel. 0 with no GDP. Pure. */
+    /** What a purchase of dollars for this much local money would put on the float's log rate (positive weaker; a sale the other way), at the real size: the interventions' channel, bounded past INTERVENTION_LINEAR of a year's output (XI1). 0 with no GDP. Pure. */
     public double dealEffect(double localPurchase) {
-        return gdpTrailing > 0 ? INTERVENTION_IMPACT * localPurchase / (12 * gdpTrailing) : 0;
+        return gdpTrailing > 0 ? interventionMove(localPurchase, 12 * gdpTrailing) : 0;
+    }
+
+    /** This much local money as years of the city's output (12 x gdpTrailing); 0 with no GDP. Pure. */
+    public double yearsOfOutput(double local) { return gdpTrailing > 0 ? local / (12 * gdpTrailing) : 0; }
+
+    /** What dealing this much local money puts on the float's log rate against a year's GDP (annual), a purchase positive: INTERVENTION_IMPACT x local / annual up to INTERVENTION_LINEAR of the year, and past it INTERVENTION_IMPACT x INTERVENTION_LINEAR x (1 + ln(share / INTERVENTION_LINEAR)), a sale the mirror (XI1). 0 with no GDP. Pure. */
+    public static double interventionMove(double local, double annual) {
+        if (!(annual > 0)) return 0;
+        if (Math.abs(local) <= INTERVENTION_LINEAR * annual) return INTERVENTION_IMPACT * local / annual;
+        return Math.copySign(INTERVENTION_IMPACT * INTERVENTION_LINEAR * (1 + Math.log(Math.abs(local) / annual / INTERVENTION_LINEAR)), local);
+    }
+
+    /** ...and its inverse: the local money that puts this lift (logs, either sign) on the rate against a year's GDP. 0 with no GDP. Pure. */
+    public static double interventionLocalFor(double lift, double annual) {
+        if (!(annual > 0)) return 0;
+        if (Math.abs(lift) <= INTERVENTION_IMPACT * INTERVENTION_LINEAR) return lift * annual / INTERVENTION_IMPACT;
+        return Math.copySign(INTERVENTION_LINEAR * annual * Math.exp(Math.abs(lift) / (INTERVENTION_IMPACT * INTERVENTION_LINEAR) - 1), lift);
     }
 
     /** The dollars the strong edge bought at the last reprice, and their local price at the rate before it. */

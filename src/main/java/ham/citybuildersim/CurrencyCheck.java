@@ -135,9 +135,9 @@ public class CurrencyCheck {
         return fx;
     }
 
-    /** What a sale of what the defence fetched lifts the D$ by, in logs (ForeignAccounts, THE FLOAT, step 7): INTERVENTION_IMPACT x the local money over a year of the GDP the model weighs it against. */
+    /** What a sale of what the defence fetched lifts the D$ by, in logs (ForeignAccounts, THE FLOAT, step 7): the interventions' rule (INTERVENTION_IMPACT x the local money over a year of the GDP the model weighs it against, bounded past INTERVENTION_LINEAR of it, XI1). */
     static double lift(ForeignAccounts fx) {
-        return ForeignAccounts.INTERVENTION_IMPACT * fx.getDefenceLocal() / (12 * fx.getGdpTrailing());
+        return ForeignAccounts.interventionMove(fx.getDefenceLocal(), 12 * fx.getGdpTrailing());
     }
 
     public static void main(String[] args) throws Exception {

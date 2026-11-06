@@ -2984,9 +2984,11 @@ final class TradeScreen {
             + "nothing at %.0f months of imports: the oldest rule of thumb for a safe reserve.",
             ForeignAccounts.RISK_PREMIUM * 100, ForeignAccounts.THIN_COVER);
     static final String INTERVENTION_INFO = String.format("Dollars the treasury buys cheapen the currency and dollars it "
-            + "sells make it dearer, at the real size: %.0f%% for each 1%% of a year's output, fading by half in %.0f "
+            + "sells make it dearer, at the real size: %.0f%% for each 1%% of a year's output up to %.0f%% of it, and "
+            + "less for each dollar past that, fading by half in %.0f "
             + "months. The central bank sells dollars into a fall, and that lifts the currency the same way.",
-            ForeignAccounts.INTERVENTION_IMPACT, ForeignAccounts.INTERVENTION_HALF_LIFE);
+            ForeignAccounts.INTERVENTION_IMPACT, ForeignAccounts.INTERVENTION_LINEAR * 100,
+            ForeignAccounts.INTERVENTION_HALF_LIFE);
     static final String WORLD_FORCE_INFO = String.format("The dollar's own swing against every money, money running to safety, and the "
             + "prices of what the city sells abroad. The dollar's cycle moves the currency one for one: when the dollar rises "
             + "against everything it rises against this one. About once in eight years money runs to safety for a few months; "
@@ -3800,6 +3802,28 @@ final class TradeScreen {
                             + "pricing it for a crisis. Selling reserves to defend a rate, and ending up under the line doing "
                             + "it, is the sequence every currency crisis in the literature has in common.",
                             ForeignAccounts.THIN_COVER), null)));
+        }
+        // XI1: a deal past INTERVENTION_LINEAR of a year's output moves the rate by less for each dollar (the model's interventionMove).
+        double years = fx.yearsOfOutput(tradeExchange);
+        if (years > ForeignAccounts.INTERVENTION_LINEAR) {
+            String kind = tradeBuying ? "purchase" : "sale";
+            String pastTitle = years >= 1
+                    ? String.format("This %s is %.1f years of the city's output", kind, years)
+                    : String.format("This %s is %.0f%% of a year of the city's output", kind, years * 100);
+            String pastLine = String.format("Past %.0f%% of a year's output each further dollar moves the %s less.",
+                    ForeignAccounts.INTERVENTION_LINEAR * 100, sym());
+            double effect = fx.dealEffect(tradeBuying ? tradeExchange : -tradeExchange);
+            String pastWhole = String.format("Up to %.0f%% of a year's output a deal moves the rate %.0f%% for each 1%% of it, "
+                            + "fading by half in %.0f months; past that each further dollar moves it less, so a deal many times "
+                            + "the size moves it only a few times as much. ",
+                    ForeignAccounts.INTERVENTION_LINEAR * 100, ForeignAccounts.INTERVENTION_IMPACT,
+                    ForeignAccounts.INTERVENTION_HALF_LIFE)
+                    + (fx.getRegime() == ForeignAccounts.Regime.PEG
+                    ? "Under the peg it moves nothing: the rate is held."
+                    : String.format("This one alone would move the rate about %s%.1f (%s per %s) in its month, half of that "
+                            + "gone in %.0f months.", effect >= 0 ? "×" : "÷", Math.exp(Math.abs(effect)), sym(),
+                            Currency.FOREIGN_SYMBOL, ForeignAccounts.INTERVENTION_HALF_LIFE));
+            c.getChildren().add(Kept.scope("past the bound", () -> actionCard(Icons.ALERT, Palette.WARN, pastTitle, pastLine, pastWhole, null)));
         }
         c.getChildren().add(button);
         return c;
