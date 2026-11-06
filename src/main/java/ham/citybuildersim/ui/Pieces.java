@@ -52,7 +52,8 @@ import javafx.scene.layout.Priority;
  * Infrastructure, Services and Land pages reach, and the cause bar, cohort
  * bars, effect scale and rows on one scale are told their figures by set()
  * as the segment bar and the waterfall are; a style a hover changes is
- * chosen from isHover() where it is set.
+ * chosen from isHover() where it is set. Since KP6 so do the Government tab's: the split ring and its key, the ranked bars (a scope a
+ * line, keyed by the line, so the Policy tab's list shares them), the payer rows and the bridge.
  *
  * Static for the same reason as Money and Statement: no state, used
  * everywhere, called unqualified through an import static. The scroller is
@@ -968,44 +969,48 @@ public final class Pieces {
 
     /** One payer inside an opened line: who, how much, at what rate. */
     public static HBox payerRow(String who, double amount, double total, String rate) {
+        // Kept (KP6): a payer's row is a scope of its own (its caller keys it by who), so a line opened with more or fewer payers
+        // than last month hands no other row's labels to this one.
+        return Kept.scope("payerRow", () -> {
 
-        Label name = new Label(who);
-        name.setPrefWidth(150);
-        name.setMinWidth(150);
-        name.setWrapText(true);      // never cut (0.7.31): "Principal repaid - not an expense" is wider than 150
-        name.setStyle(Palette.words(Palette.SIZE_CAPTION,
-                amount > 0 ? Palette.TEXT_BODY : Palette.TEXT_SPENT));
+            Label name = Kept.label(who);
+            name.setPrefWidth(150);
+            name.setMinWidth(150);
+            name.setWrapText(true);      // never cut (0.7.31): "Principal repaid - not an expense" is wider than 150
+            name.setStyle(Palette.words(Palette.SIZE_CAPTION,
+                    amount > 0 ? Palette.TEXT_BODY : Palette.TEXT_SPENT));
 
-        Region gap = new Region();
-        HBox.setHgrow(gap, Priority.ALWAYS);
+            Region gap = Kept.region();
+            HBox.setHgrow(gap, Priority.ALWAYS);
 
-        // A true minus (0.7.31, the Government spec's B15: tightMoney() writes a
-        // hyphen, and a refund sat under figures signed with a minus).
-        String shown = tightMoney(toDollars(Math.abs(amount)));
-        Label money = new Label(amount < 0 && !"$0".equals(shown) ? "\u2212" + shown : shown);
-        money.setPrefWidth(94);
-        money.setMinWidth(94);
-        money.setAlignment(Pos.CENTER_RIGHT);
-        money.setStyle(Palette.figure(Palette.SIZE_CAPTION,
-                amount > 0 ? Palette.TEXT_BODY : Palette.TEXT_SPENT));
+            // A true minus (0.7.31, the Government spec's B15: tightMoney() writes a
+            // hyphen, and a refund sat under figures signed with a minus).
+            String shown = tightMoney(toDollars(Math.abs(amount)));
+            Label money = Kept.label(amount < 0 && !"$0".equals(shown) ? "−" + shown : shown);
+            money.setPrefWidth(94);
+            money.setMinWidth(94);
+            money.setAlignment(Pos.CENTER_RIGHT);
+            money.setStyle(Palette.figure(Palette.SIZE_CAPTION,
+                    amount > 0 ? Palette.TEXT_BODY : Palette.TEXT_SPENT));
 
-        Label share = new Label(String.format("%.0f%%", total > 0 ? amount / total * 100 : 0).replace('-', '\u2212'));
-        share.setPrefWidth(48);
-        share.setMinWidth(48);
-        share.setAlignment(Pos.CENTER_RIGHT);
-        share.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+            Label share = Kept.label(String.format("%.0f%%", total > 0 ? amount / total * 100 : 0).replace('-', '−'));
+            share.setPrefWidth(48);
+            share.setMinWidth(48);
+            share.setAlignment(Pos.CENTER_RIGHT);
+            share.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
 
-        Label at = new Label(rate == null ? "" : rate);
-        at.setPrefWidth(80);
-        at.setMinWidth(80);
-        at.setAlignment(Pos.CENTER_RIGHT);
-        at.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_SPENT));
+            Label at = Kept.label(rate == null ? "" : rate);
+            at.setPrefWidth(80);
+            at.setMinWidth(80);
+            at.setAlignment(Pos.CENTER_RIGHT);
+            at.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_SPENT));
 
-        HBox row = new HBox(Palette.GAP_TIGHT, name, gap, money, share, at);
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.setMaxWidth(STATEMENT - 22);
-        row.setStyle("-fx-padding: 2 0 2 0;");
-        return row;
+            HBox row = Kept.row(Palette.GAP_TIGHT, name, gap, money, share, at);
+            row.setAlignment(Pos.CENTER_LEFT);
+            row.setMaxWidth(STATEMENT - 22);
+            row.setStyle("-fx-padding: 2 0 2 0;");
+            return row;
+        });
     }
 
     /** The gap between cards in a row or a grid: Build's cards in their flow, the land office's shelf. */
@@ -1819,11 +1824,23 @@ public final class Pieces {
     /** A chip: the words in a colour on a faint ground of it (Construction's, 0.7.22; here since 0.7.27). */
     public static Label chip(String text, String colour) {
         Label l = Kept.label(text);
+        chipLook(l, colour);
+        return l;
+    }
+
+    /** ...with a graphic of the caller's own before the words (KP6): handed over where the chip is made, so a kept chip is not stripped of it and given it back. */
+    public static Label chip(String text, String colour, javafx.scene.Node graphic) {
+        Label l = Kept.label(text, graphic);
+        chipLook(l, colour);
+        return l;
+    }
+
+    /** A chip's look: the words in a colour on a faint ground of it. */
+    private static void chipLook(Label l, String colour) {
         l.setStyle(Palette.words(Palette.SIZE_CAPTION, colour)
                 + " -fx-background-color: " + tint(colour, .16) + "; -fx-background-radius: 10;"
                 + " -fx-padding: 2 8 2 8;");
         l.setMinWidth(Region.USE_PREF_SIZE);
-        return l;
     }
 
     /** A colour at an opacity, for a chip's ground. */
@@ -3684,55 +3701,64 @@ public final class Pieces {
      */
     public static javafx.scene.layout.StackPane splitRing(List<Slice> slices, String top, String figure,
                                                           String tone, double size, Consumer<Slice> pick) {
-        javafx.scene.layout.Pane ring = new javafx.scene.layout.Pane();
-        ring.setPrefSize(size, size);
-        ring.setMinSize(size, size);
-        ring.setMaxSize(size, size);
+        // Kept (KP6): the ring's arcs, a scope each keyed by the slice's name, so a line that comes into the five (or leaves them)
+        // moves no other arc's tooltip or click onto the wrong line.
+        return Kept.scope("splitRing", () -> {
+            javafx.scene.layout.Pane ring = Kept.plain();
+            ring.setPrefSize(size, size);
+            ring.setMinSize(size, size);
+            ring.setMaxSize(size, size);
 
-        double total = 0;
-        for (Slice s : slices) total += s.amount();
+            double total = 0;
+            for (Slice s : slices) total += s.amount();
 
-        double radius = (size - Palette.RING) / 2;
-        double at = 90;                       // twelve o'clock, going clockwise
-        double gap = slices.size() > 1 ? 1.5 : 0;
+            double radius = (size - Palette.RING) / 2;
+            double at = 90;                       // twelve o'clock, going clockwise
+            double gap = slices.size() > 1 ? 1.5 : 0;
 
-        for (Slice s : slices) {
-            double span = total > 0 ? s.amount() / total * 360 : 0;
-            javafx.scene.shape.Arc arc = new javafx.scene.shape.Arc(
-                    size / 2, size / 2, radius, radius,
-                    at - span + gap / 2, Math.max(0, span - gap));
-            arc.setType(javafx.scene.shape.ArcType.OPEN);
-            arc.setFill(null);
-            arc.setStroke(javafx.scene.paint.Color.web(s.colour()));
-            arc.setStrokeWidth(Palette.RING);
-            arc.setStrokeLineCap(javafx.scene.shape.StrokeLineCap.BUTT);
+            for (Slice s : slices) {
+                double span = total > 0 ? s.amount() / total * 360 : 0;
+                final double from = at - span + gap / 2, length = Math.max(0, span - gap);
+                final double whole = total;
+                ring.getChildren().add(Kept.scope(s.name(), () -> {
+                    javafx.scene.shape.Arc arc = Kept.of(javafx.scene.shape.Arc.class, javafx.scene.shape.Arc::new);
+                    arc.setCenterX(size / 2);
+                    arc.setCenterY(size / 2);
+                    arc.setRadiusX(radius);
+                    arc.setRadiusY(radius);
+                    arc.setStartAngle(from);
+                    arc.setLength(length);
+                    arc.setType(javafx.scene.shape.ArcType.OPEN);
+                    arc.setFill(null);
+                    arc.setStroke(javafx.scene.paint.Color.web(s.colour()));
+                    arc.setStrokeWidth(Palette.RING);
+                    arc.setStrokeLineCap(javafx.scene.shape.StrokeLineCap.BUTT);
 
-            Tooltip tip = new Tooltip(String.format("%s%n%s   %.1f%% of the total",
-                    s.name(), money(s.amount()), total > 0 ? s.amount() / total * 100 : 0));
-            tip.setShowDelay(Duration.millis(200));
-            Tooltip.install(arc, tip);
-            if (pick != null) {
-                arc.setCursor(javafx.scene.Cursor.HAND);
-                arc.setOnMouseClicked(e -> pick.accept(s));
+                    Kept.tip(arc, String.format("%s%n%s   %.1f%% of the total",
+                            s.name(), money(s.amount()), whole > 0 ? s.amount() / whole * 100 : 0), 200);
+                    // Set on both sides of the condition: a kept arc is handed back with no click, and the cursor it had.
+                    arc.setCursor(pick != null ? javafx.scene.Cursor.HAND : null);
+                    arc.setOnMouseClicked(pick != null ? e -> pick.accept(s) : null);
+                    return arc;
+                }));
+                at -= span;
             }
-            ring.getChildren().add(arc);
-            at -= span;
-        }
 
-        Label caption = new Label(top);
-        caption.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-        Label middle = new Label(figure);
-        middle.setStyle(Palette.figure(Palette.SIZE_LEAD, tone));
-        middle.setMinWidth(Region.USE_PREF_SIZE);
-        VBox inside = new VBox(0, caption, middle);
-        inside.setAlignment(Pos.CENTER);
-        inside.setMouseTransparent(true);
+            Label caption = Kept.label(top);
+            caption.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+            Label middle = Kept.label(figure);
+            middle.setStyle(Palette.figure(Palette.SIZE_LEAD, tone));
+            middle.setMinWidth(Region.USE_PREF_SIZE);
+            VBox inside = Kept.column(0, caption, middle);
+            inside.setAlignment(Pos.CENTER);
+            inside.setMouseTransparent(true);
 
-        javafx.scene.layout.StackPane box = new javafx.scene.layout.StackPane(ring, inside);
-        box.setPrefSize(size, size);
-        box.setMinSize(size, size);
-        box.setMaxSize(size, size);
-        return box;
+            javafx.scene.layout.StackPane box = Kept.stack(ring, inside);
+            box.setPrefSize(size, size);
+            box.setMinSize(size, size);
+            box.setMaxSize(size, size);
+            return box;
+        });
     }
 
     /**
@@ -3752,49 +3778,57 @@ public final class Pieces {
     public static VBox ringKey(List<Slice> slices, double width, Consumer<Slice> pick) {
         double total = 0;
         for (Slice s : slices) total += s.amount();
-        VBox key = new VBox(2);
-        for (Slice s : slices) {
-            Region swatch = new Region();
-            swatch.setMinSize(10, 10);
-            swatch.setPrefSize(10, 10);
-            swatch.setMaxSize(10, 10);
-            swatch.setStyle("-fx-background-color: " + s.colour() + "; -fx-background-radius: 2;");
+        final double whole = total;
+        // Kept (KP6): a row a slice, a scope each keyed by the slice's name, as the ring's arcs are.
+        return Kept.scope("ringKey", () -> {
+            VBox key = Kept.column(2);
+            for (Slice s : slices) key.getChildren().add(Kept.scope(s.name(), () -> {
+                Region swatch = Kept.region();
+                swatch.setMinSize(10, 10);
+                swatch.setPrefSize(10, 10);
+                swatch.setMaxSize(10, 10);
+                swatch.setStyle("-fx-background-color: " + s.colour() + "; -fx-background-radius: 2;");
 
-            Label name = new Label(s.name());
-            name.setWrapText(true);
-            name.setMinWidth(0);
-            name.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_BODY));
-            HBox.setHgrow(name, Priority.ALWAYS);
-            name.setMaxWidth(Double.MAX_VALUE);
+                Label name = Kept.label(s.name());
+                name.setWrapText(true);
+                name.setMinWidth(0);
+                name.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_BODY));
+                HBox.setHgrow(name, Priority.ALWAYS);
+                name.setMaxWidth(Double.MAX_VALUE);
 
-            Label share = new Label(String.format("%.1f%%", total > 0 ? s.amount() / total * 100 : 0));
-            share.setMinWidth(46);
-            share.setPrefWidth(46);
-            share.setAlignment(Pos.CENTER_RIGHT);
-            share.setStyle(Palette.figure(Palette.SIZE_LABEL, Palette.TEXT_HEAD));
+                Label share = Kept.label(String.format("%.1f%%", whole > 0 ? s.amount() / whole * 100 : 0));
+                share.setMinWidth(46);
+                share.setPrefWidth(46);
+                share.setAlignment(Pos.CENTER_RIGHT);
+                share.setStyle(Palette.figure(Palette.SIZE_LABEL, Palette.TEXT_HEAD));
 
-            Label amount = new Label(money(s.amount()));
-            amount.setMinWidth(Region.USE_PREF_SIZE);
-            amount.setPrefWidth(64);
-            amount.setAlignment(Pos.CENTER_RIGHT);
-            amount.setStyle(Palette.figure(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+                Label amount = Kept.label(money(s.amount()));
+                amount.setMinWidth(Region.USE_PREF_SIZE);
+                amount.setPrefWidth(64);
+                amount.setAlignment(Pos.CENTER_RIGHT);
+                amount.setStyle(Palette.figure(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
 
-            HBox row = new HBox(Palette.GAP_TIGHT + 2, swatch, name, share, amount);
-            row.setAlignment(Pos.CENTER_LEFT);
-            row.setMinHeight(22);
-            row.setPrefWidth(width);
-            row.setMaxWidth(width);
-            String rest = "-fx-padding: 1 4 1 4; -fx-background-radius: 4;";
-            row.setStyle(rest);
-            if (pick != null) {
-                row.setStyle(rest + " -fx-cursor: hand;");
-                row.setOnMouseEntered(e -> row.setStyle(rest + " -fx-cursor: hand; -fx-background-color: " + Palette.CONTROL + ";"));
-                row.setOnMouseExited(e -> row.setStyle(rest + " -fx-cursor: hand;"));
-                row.setOnMouseClicked(e -> pick.accept(s));
-            }
-            key.getChildren().add(row);
-        }
-        return key;
+                HBox row = Kept.row(Palette.GAP_TIGHT + 2, swatch, name, share, amount);
+                row.setAlignment(Pos.CENTER_LEFT);
+                row.setMinHeight(22);
+                row.setPrefWidth(width);
+                row.setMaxWidth(width);
+                String rest = "-fx-padding: 1 4 1 4; -fx-background-radius: 4;";
+                if (pick != null) {
+                    // The look the pointer calls for is chosen from isHover() where it is set (a kept row is not entered afresh).
+                    String hand = rest + " -fx-cursor: hand;";
+                    String over = hand + " -fx-background-color: " + Palette.CONTROL + ";";
+                    row.setStyle(row.isHover() ? over : hand);
+                    row.setOnMouseEntered(e -> row.setStyle(over));
+                    row.setOnMouseExited(e -> row.setStyle(hand));
+                    row.setOnMouseClicked(e -> pick.accept(s));
+                } else {
+                    row.setStyle(rest);
+                }
+                return row;
+            }));
+            return key;
+        });
     }
 
     /* ----------------------------- ranked bars ----------------------------- */
@@ -3833,88 +3867,111 @@ public final class Pieces {
      */
     public static VBox rankBars(List<RankRow> rows, double scale, double[] columns, double doorWidth,
                                 java.util.Set<String> open, Runnable redraw) {
-        double pos = Math.max(0, scale), neg = 0;
+        double most = Math.max(0, scale), least = 0;
         for (RankRow r : rows) {
-            if (r.amount() > pos) pos = r.amount();
-            if (-r.amount() > neg) neg = -r.amount();
+            if (r.amount() > most) most = r.amount();
+            if (-r.amount() > least) least = -r.amount();
         }
-        VBox list = new VBox(0);
-        for (RankRow r : rows) {
-            boolean opens = r.opened() != null;
-            boolean shown = opens && open.contains(r.key());
+        final double pos = most, neg = least;
+        // Kept (KP6): the list is a scope, and a row a scope inside it keyed by the line it shows - so a line that comes or goes, or opens
+        // into who pays, moves no other row's nodes (the rows are in the order the caller ranked them, and rank changes month to month).
+        return Kept.scope("rankBars", () -> {
+            VBox list = Kept.column(0);
+            for (RankRow r : rows) {
+                List<javafx.scene.Node> made = Kept.scope(r.key(), () -> rankRow(r, pos, neg, columns, doorWidth, open, redraw));
+                list.getChildren().addAll(made);
+            }
+            return list;
+        });
+    }
 
-            HBox lead = new HBox(8);
-            lead.setAlignment(Pos.CENTER_LEFT);
-            lead.setMinWidth(200);
-            lead.setPrefWidth(236);
-            lead.setMaxWidth(236);
-            if (r.icon() != null) lead.getChildren().add(iconSquare(r.icon(), r.colour(), 24, 13));
-            Label name = new Label(r.name());
-            name.setWrapText(true);
-            name.setMinWidth(0);
-            name.setStyle(Palette.words(Palette.SIZE_BODY + 1, r.amount() == 0 ? Palette.TEXT_MUTED : Palette.TEXT_BODY));
-            VBox named = new VBox(0, name);
-            if (opens) {
-                Label mark = new Label((shown ? "▾ " : "▸ ") + r.openWord());
+    /** One line of rankBars(): its row, and under it what it opens into while it is open. */
+    private static List<javafx.scene.Node> rankRow(RankRow r, double pos, double neg, double[] columns, double doorWidth,
+                                                   java.util.Set<String> open, Runnable redraw) {
+        boolean opens = r.opened() != null;
+        boolean shown = opens && open.contains(r.key());
+
+        HBox lead = Kept.row(8);
+        lead.setAlignment(Pos.CENTER_LEFT);
+        lead.setMinWidth(200);
+        lead.setPrefWidth(236);
+        lead.setMaxWidth(236);
+        if (r.icon() != null) lead.getChildren().add(iconSquare(r.icon(), r.colour(), 24, 13));
+        Label name = Kept.label(r.name());
+        name.setWrapText(true);
+        name.setMinWidth(0);
+        name.setStyle(Palette.words(Palette.SIZE_BODY + 1, r.amount() == 0 ? Palette.TEXT_MUTED : Palette.TEXT_BODY));
+        VBox named = Kept.column(0, name);
+        if (opens) {
+            named.getChildren().add(Kept.scope("mark", () -> {
+                Label mark = Kept.label((shown ? "▾ " : "▸ ") + r.openWord());
                 mark.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.ACCENT));
-                named.getChildren().add(mark);
-            }
-            HBox.setHgrow(named, Priority.ALWAYS);
-            lead.getChildren().add(named);
-
-            RankBar bar = new RankBar(r.amount(), pos, neg, r.colour());
-            HBox.setHgrow(bar, Priority.ALWAYS);
-            if (r.tip() != null) {
-                Tooltip tip = new Tooltip(r.tip());
-                tip.setShowDelay(Duration.millis(200));
-                Tooltip.install(bar, tip);
-            }
-
-            HBox row = new HBox(10, lead, bar);
-            for (int c = 0; c < r.figures().size(); c++) {
-                Label f = new Label(r.figures().get(c));
-                double w = c < columns.length ? columns[c] : 70;
-                f.setMinWidth(Region.USE_PREF_SIZE);
-                f.setPrefWidth(w);
-                f.setAlignment(Pos.CENTER_RIGHT);
-                f.setStyle(Palette.figure(c == 0 ? Palette.SIZE_BODY + 1 : Palette.SIZE_LABEL,
-                        c == 0 ? Palette.TEXT_HEAD : Palette.TEXT_MUTED));
-                row.getChildren().add(f);
-            }
-            if (doorWidth > 0) {
-                javafx.scene.Node d = r.door() == null ? new Region() : door(r.doorWords(), Palette.ACCENT, r.door());
-                HBox slot = new HBox(d);
-                slot.setAlignment(Pos.CENTER_RIGHT);
-                slot.setMinWidth(doorWidth);
-                slot.setPrefWidth(doorWidth);
-                row.getChildren().add(slot);
-            }
-            row.setAlignment(Pos.CENTER_LEFT);
-            row.setMinHeight(RANK_ROW);
-            row.getProperties().put(RANK_KEY, r.key());
-            String rest = "-fx-padding: 4 6 4 6; -fx-background-radius: 6;"
-                    + " -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 0 1 0;";
-            row.setStyle(rest);
-            if (opens) {
-                row.setStyle(rest + " -fx-cursor: hand;");
-                row.setOnMouseEntered(e -> row.setStyle(rest + " -fx-cursor: hand; -fx-background-color: " + Palette.CONTROL + ";"));
-                row.setOnMouseExited(e -> row.setStyle(rest + " -fx-cursor: hand;"));
-                row.setOnMouseClicked(e -> {
-                    if (!open.remove(r.key())) open.add(r.key());
-                    redraw.run();
-                });
-            }
-            list.getChildren().add(row);
-            if (shown) {
-                javafx.scene.Node inside = r.opened().get();
-                if (inside != null) {
-                    VBox under = new VBox(inside);
-                    under.setStyle("-fx-padding: 6 0 10 46;");
-                    list.getChildren().add(under);
-                }
-            }
+                return mark;
+            }));
         }
-        return list;
+        HBox.setHgrow(named, Priority.ALWAYS);
+        lead.getChildren().add(named);
+
+        // The bar is a picture kept with its parts and told its figures (RankBar.set); its tooltip is set where it has one.
+        RankBar bar = Kept.of(RankBar.class, RankBar::new);
+        bar.set(r.amount(), pos, neg, r.colour());
+        HBox.setHgrow(bar, Priority.ALWAYS);
+        if (r.tip() != null) Kept.tip(bar, r.tip(), 200);
+
+        HBox row = Kept.row(10, lead, bar);
+        for (int c = 0; c < r.figures().size(); c++) {
+            Label f = Kept.label(r.figures().get(c));
+            double w = c < columns.length ? columns[c] : 70;
+            f.setMinWidth(Region.USE_PREF_SIZE);
+            f.setPrefWidth(w);
+            f.setAlignment(Pos.CENTER_RIGHT);
+            f.setStyle(Palette.figure(c == 0 ? Palette.SIZE_BODY + 1 : Palette.SIZE_LABEL,
+                    c == 0 ? Palette.TEXT_HEAD : Palette.TEXT_MUTED));
+            row.getChildren().add(f);
+        }
+        if (doorWidth > 0) {
+            HBox slot = Kept.scope("door", () -> {
+                javafx.scene.Node d = r.door() == null ? Kept.region() : door(r.doorWords(), Palette.ACCENT, r.door());
+                HBox s = Kept.row(0, d);
+                s.setAlignment(Pos.CENTER_RIGHT);
+                s.setMinWidth(doorWidth);
+                s.setPrefWidth(doorWidth);
+                return s;
+            });
+            row.getChildren().add(slot);
+        }
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setMinHeight(RANK_ROW);
+        row.getProperties().put(RANK_KEY, r.key());
+        String rest = "-fx-padding: 4 6 4 6; -fx-background-radius: 6;"
+                + " -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 0 1 0;";
+        if (opens) {
+            // The look the pointer calls for is chosen from isHover() where it is set (a kept row is not entered afresh).
+            String hand = rest + " -fx-cursor: hand;";
+            String over = hand + " -fx-background-color: " + Palette.CONTROL + ";";
+            row.setStyle(row.isHover() ? over : hand);
+            row.setOnMouseEntered(e -> row.setStyle(over));
+            row.setOnMouseExited(e -> row.setStyle(hand));
+            row.setOnMouseClicked(e -> {
+                if (!open.remove(r.key())) open.add(r.key());
+                redraw.run();
+            });
+        } else {
+            row.setStyle(rest);
+        }
+        List<javafx.scene.Node> out = new java.util.ArrayList<>();
+        out.add(row);
+        if (shown) {
+            javafx.scene.Node under = Kept.scope("under", () -> {
+                javafx.scene.Node inside = r.opened().get();
+                if (inside == null) return null;
+                VBox box = Kept.column(0, inside);
+                box.setStyle("-fx-padding: 6 0 10 46;");
+                return box;
+            });
+            if (under != null) out.add(under);
+        }
+        return out;
     }
 
     /** The bar rankBars() draws for one row: a Pane that lays its track, its fill and its axis out at whatever width it is given. */
@@ -4017,28 +4074,36 @@ public final class Pieces {
     public static HBox bridge(List<Anchor> anchors, List<List<BridgeStep>> steps,
                               java.util.function.DoubleFunction<String> figure, String in, String out,
                               int foldPast, java.util.Set<String> open, String key, Runnable redraw) {
-        double scale = 0;
-        for (List<BridgeStep> col : steps) for (BridgeStep s : col) scale = Math.max(scale, Math.abs(s.amount()));
+        double most = 0;
+        for (List<BridgeStep> col : steps) for (BridgeStep s : col) most = Math.max(most, Math.abs(s.amount()));
+        final double scale = most;
 
-        HBox card = new HBox(6);
-        card.setAlignment(Pos.TOP_LEFT);
-        for (int i = 0; i < anchors.size(); i++) {
-            if (i > 0) {
-                card.getChildren().add(bridgeChevron());
-                List<BridgeStep> col = i - 1 < steps.size() ? steps.get(i - 1) : List.of();
-                VBox column = bridgeColumn(col, scale, figure, in, out, foldPast, open, key + ":" + (i - 1), redraw);
-                HBox.setHgrow(column, Priority.ALWAYS);
-                card.getChildren().add(column);
-                card.getChildren().add(bridgeChevron());
+        // Kept (KP6): the tiles, the chevrons and the columns are a scope each, keyed by their place - the bridge's shape is the
+        // anchors' (three), and what changes month to month is a column's steps, which are scopes of their own.
+        return Kept.scope("bridge", () -> {
+            HBox card = Kept.row(6);
+            card.setAlignment(Pos.TOP_LEFT);
+            for (int i = 0; i < anchors.size(); i++) {
+                if (i > 0) {
+                    final int at = i;
+                    card.getChildren().add(Kept.scope("before " + i, Pieces::bridgeChevron));
+                    List<BridgeStep> col = at - 1 < steps.size() ? steps.get(at - 1) : List.of();
+                    VBox column = Kept.scope("column " + (at - 1),
+                            () -> bridgeColumn(col, scale, figure, in, out, foldPast, open, key + ":" + (at - 1), redraw));
+                    HBox.setHgrow(column, Priority.ALWAYS);
+                    card.getChildren().add(column);
+                    card.getChildren().add(Kept.scope("after " + i, Pieces::bridgeChevron));
+                }
+                final Anchor a = anchors.get(i);
+                card.getChildren().add(Kept.scope("tile " + i, () -> bridgeTile(a)));
             }
-            card.getChildren().add(bridgeTile(anchors.get(i)));
-        }
-        return card;
+            return card;
+        });
     }
 
     /** The muted "›" between a tile and a column. */
     static Label bridgeChevron() {
-        Label l = new Label("›");
+        Label l = Kept.label("›");
         l.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_SPENT) + " -fx-padding: 18 0 0 0;");
         l.setMinWidth(Region.USE_PREF_SIZE);
         return l;
@@ -4046,22 +4111,24 @@ public final class Pieces {
 
     /** One anchor as a tile: caption and icon, the figure, its line, its chips. */
     static VBox bridgeTile(Anchor a) {
-        HBox head = new HBox(6);
+        HBox head = Kept.row(6);
         head.setAlignment(Pos.CENTER_LEFT);
         if (a.icon() != null) head.getChildren().add(icon(a.icon(), Palette.TEXT_LABEL, 13));
-        Label caption = new Label(a.caption());
+        Label caption = Kept.label(a.caption());
         caption.setWrapText(true);
         caption.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
         head.getChildren().add(caption);
-        Label fig = new Label(a.figure());
+        Label fig = Kept.label(a.figure());
         fig.setMinWidth(Region.USE_PREF_SIZE);
         fig.setStyle(Fonts.monoSemiBold() + " -fx-font-size: 22px; -fx-text-fill: " + Palette.TEXT_HEAD + ";");
-        VBox tile = new VBox(2, head, fig);
+        VBox tile = Kept.column(2, head, fig);
         if (a.line() != null) {
-            Label line = new Label(a.line());
-            line.setWrapText(true);
-            line.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-            tile.getChildren().add(line);
+            tile.getChildren().add(Kept.scope("line", () -> {
+                Label line = Kept.label(a.line());
+                line.setWrapText(true);
+                line.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+                return line;
+            }));
         }
         if (a.chips() != null) {
             for (javafx.scene.Node c : a.chips()) {
@@ -4075,11 +4142,9 @@ public final class Pieces {
         tile.setMaxWidth(BRIDGE_TILE);
         String rest = "-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.PANEL + "; -fx-background-radius: 8;"
                 + " -fx-border-color: " + Palette.EDGE + "; -fx-border-radius: 8;";
-        tile.setStyle(rest);
-        if (a.go() != null) {
-            tile.setStyle(rest + " -fx-cursor: hand;");
-            tile.setOnMouseClicked(e -> a.go().run());
-        }
+        // Set on both sides of the condition: a kept tile is handed back with no click, and the style it had.
+        tile.setStyle(a.go() != null ? rest + " -fx-cursor: hand;" : rest);
+        tile.setOnMouseClicked(a.go() != null ? e -> a.go().run() : null);
         return tile;
     }
 
@@ -4096,26 +4161,36 @@ public final class Pieces {
         shown.sort((a, b) -> Double.compare(Math.abs(b.amount()), Math.abs(a.amount())));
         shown.addAll(kept);
 
-        VBox column = new VBox(2);
+        VBox column = Kept.column(2);
         column.setMinWidth(220);
         column.setStyle("-fx-padding: 6 0 0 0;");
         if (shown.isEmpty()) {
-            Label none = new Label("nothing between them");
-            none.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_SPENT));
-            column.getChildren().add(none);
+            // Words present one month and absent the next are a scope of their own (an emptied label keeps the height it had).
+            column.getChildren().add(Kept.scope("none", () -> {
+                Label none = Kept.label("nothing between them");
+                none.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_SPENT));
+                return none;
+            }));
             return column;
         }
-        boolean all = open.contains(key) || shown.size() <= foldPast;
+        final boolean all = open.contains(key) || shown.size() <= foldPast;
         int count = all ? shown.size() : Math.max(1, foldPast - 1);
-        for (int i = 0; i < count; i++) column.getChildren().add(bridgeRow(shown.get(i), scale, figure, in, out));
+        // A step is a scope keyed by its words, so a step that comes or goes, or moves up the column as the sizes change, takes its nodes with it.
+        for (int i = 0; i < count; i++) {
+            final BridgeStep step = shown.get(i);
+            column.getChildren().add(Kept.scope(step.label(), () -> bridgeRow(step, scale, figure, in, out)));
+        }
         if (shown.size() > foldPast) {
-            Label more = new Label(all ? "fewer ▴" : (shown.size() - count) + " more ▸");
-            more.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.ACCENT) + " -fx-cursor: hand;");
-            more.setOnMouseClicked(e -> {
-                if (!open.remove(key)) open.add(key);
-                redraw.run();
-            });
-            column.getChildren().add(more);
+            final int hidden = shown.size() - count;
+            column.getChildren().add(Kept.scope("more", () -> {
+                Label more = Kept.label(all ? "fewer ▴" : hidden + " more ▸");
+                more.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.ACCENT) + " -fx-cursor: hand;");
+                more.setOnMouseClicked(e -> {
+                    if (!open.remove(key)) open.add(key);
+                    redraw.run();
+                });
+                return more;
+            }));
         }
         return column;
     }
@@ -4124,12 +4199,17 @@ public final class Pieces {
     static HBox bridgeRow(BridgeStep s, double scale, java.util.function.DoubleFunction<String> figure,
                           String in, String out) {
         boolean adds = s.amount() >= 0;
-        Label sign = new Label(Math.abs(s.amount()) < BRIDGE_NOTHING ? "" : adds ? "+" : "−");
-        sign.setMinWidth(10);
-        sign.setStyle(Palette.figure(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-        HBox row = new HBox(5, sign);
+        // Words present one month and absent the next get a scope of their own (an emptied label keeps the height of the "−" it had: KP6).
+        String mark = Math.abs(s.amount()) < BRIDGE_NOTHING ? "" : adds ? "+" : "−";
+        Label sign = Kept.scope(mark.isEmpty() ? "no sign" : "sign", () -> {
+            Label l = Kept.label(mark);
+            l.setMinWidth(10);
+            l.setStyle(Palette.figure(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+            return l;
+        });
+        HBox row = Kept.row(5, sign);
         if (s.icon() != null) row.getChildren().add(icon(s.icon(), Palette.TEXT_LABEL, 12));
-        Label words = new Label(s.label());
+        Label words = Kept.label(s.label());
         words.setWrapText(true);
         words.setMinWidth(0);
         words.setStyle(Palette.words(Palette.SIZE_LABEL, s.go() == null ? Palette.TEXT_BODY : Palette.ACCENT));
@@ -4137,7 +4217,7 @@ public final class Pieces {
         words.setMaxWidth(Double.MAX_VALUE);
         row.getChildren().add(words);
         row.getChildren().add(bar(scale > 0 ? Math.abs(s.amount()) / scale : 0, adds ? in : out, BRIDGE_BAR, 6));
-        Label fig = new Label(figure.apply(s.amount()));
+        Label fig = Kept.label(figure.apply(s.amount()));
         fig.setMinWidth(Region.USE_PREF_SIZE);
         fig.setPrefWidth(BRIDGE_FIGURE);
         fig.setAlignment(Pos.CENTER_RIGHT);
@@ -4146,18 +4226,20 @@ public final class Pieces {
         row.setAlignment(Pos.CENTER_LEFT);
         row.setMinHeight(22);
         if (s.tip() != null) {
-            Tooltip tip = new Tooltip(s.tip());
-            tip.setShowDelay(Duration.millis(200));
+            Tooltip tip = Kept.tip(row, s.tip(), 200);
             tip.setWrapText(true);
             tip.setMaxWidth(POPOVER_WIDTH);
-            Tooltip.install(row, tip);
         }
         if (s.go() != null) {
+            // The look the pointer calls for is chosen from isHover() where it is set (a kept row is not entered afresh).
             String rest = "-fx-background-radius: 4; -fx-cursor: hand;";
-            row.setStyle(rest);
-            row.setOnMouseEntered(e -> row.setStyle(rest + " -fx-background-color: " + Palette.CONTROL + ";"));
+            String over = rest + " -fx-background-color: " + Palette.CONTROL + ";";
+            row.setStyle(row.isHover() ? over : rest);
+            row.setOnMouseEntered(e -> row.setStyle(over));
             row.setOnMouseExited(e -> row.setStyle(rest));
             row.setOnMouseClicked(e -> s.go().run());
+        } else {
+            row.setStyle("");
         }
         return row;
     }

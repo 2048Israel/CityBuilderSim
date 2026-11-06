@@ -3330,4 +3330,84 @@ public final class KeptBench {
     public void forgetTrade() {
         ui.tradeScreen.forget();
     }
+
+    /* =====================================================================
+       THE GOVERNMENT TAB (KP6, slice A): its four pages, kept and built new, the hands on what reshapes them (a page picked, a
+       fold or a line opened, a door's target) and the real show method
+       ===================================================================== */
+
+    /** The Government tab on its Overview: nothing folded open, no line opened. */
+    public Page government() {
+        return government("the Government Overview", "Overview");
+    }
+
+    /**
+     * The Government tab as a Page, as the screen draws it from its pool, on the page `page` names (its first page when null): it
+     * opens with nothing folded open and no line opened.
+     */
+    public Page government(String name, String page) {
+        GovernmentScreen s = ui.governmentScreen;
+        return new Page(name, "showGovernmentMenu", () -> s.pool, pool -> timed(pool, s::drawPage), () -> {
+            s.forget();
+            s.open.clear();
+            s.govPage = page == null ? GovernmentScreen.GOV_PAGES[0] : page;
+        });
+    }
+
+    /** The tab's four pages, in the chip strip's order. */
+    public static List<String> governmentPages() {
+        return List.of(GovernmentScreen.GOV_PAGES);
+    }
+
+    /** The keys of the folds the pages hold: the treasury's month, the paper, the output's months recorded, and the bridge's two columns' "N more". */
+    public static List<String> governmentFolds() {
+        return List.of("treasury", "debt", "output", "bridge:0", "bridge:1");
+    }
+
+    /** The lines of Revenue or Spending that open into who pays (the other pages have none). */
+    public static List<String> governmentLines(String page) {
+        return switch (page) {
+            case "Revenue" -> List.of("Business tax", "Sales tax", "Wage tax", "Property tax", "Pension contributions",
+                    "Healthcare fees", "School fees", "Mortgage insurance premiums", "Transfer from the fund");
+            case "Spending" -> List.of("Healthcare", "Education", "Pensions", "Interest on the city's paper", "Land bought",
+                    "Mortgage insurance claims", "Food assistance");
+            default -> List.of();
+        };
+    }
+
+    /** The screen on the page `page` names, as a chip would put it (the next draw shows it). */
+    public void governmentOpen(String page) {
+        ui.governmentScreen.govPage = page;
+    }
+
+    /** A fold ("details" or a bridge column's "N more"), by its key, opened or closed, as a click on it would. */
+    public void governmentFold(String key, boolean open) {
+        fold(ui.governmentScreen.open, key, open);
+    }
+
+    /** A line of Revenue or Spending opened or closed into who pays, by its name, as a click on its row would. */
+    public void governmentLine(String page, String line, boolean open) {
+        fold(ui.governmentScreen.open, GovernmentScreen.lineKey(page, line), open);
+    }
+
+    /** A chip of the Government tab picked, as a click on it would: the page, at its top (GovernmentScreen.open, no line). */
+    public void governmentPick(String page) {
+        ui.governmentScreen.open(page, null);
+    }
+
+    /** A door of the tab used, as its click would: the page opened with `line` opened and scrolled to (a budget line's name, or the Overview's BRIDGE or BALANCE). */
+    public void governmentDoor(String page, String line) {
+        ui.governmentScreen.open(page, line);
+    }
+
+    /** The Government tab shown through its real show method, as the rail's tab or a month landing shows it (the chrome, then the page kept). */
+    public void showGovernment() {
+        ensureWindow();
+        ui.governmentScreen.showGovernmentMenu();
+    }
+
+    /** The Government tab forgotten, as another city opened would leave it: nothing kept, nothing just landed. */
+    public void forgetGovernment() {
+        ui.governmentScreen.forget();
+    }
 }
