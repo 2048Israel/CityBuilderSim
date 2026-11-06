@@ -1,4 +1,4 @@
-# StatementView.java - 638 lines · 39 methods · 10 constants · interface
+# StatementView.java - 640 lines · 39 methods · 10 constants · interface
 
 `ham/citybuildersim/ui/StatementView.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
@@ -19,7 +19,7 @@
 > abbreviated - a statement whose column reads 13.6M over 940k does not
 > line up.
 
-**Uses:** [Palette](Palette.md) (109), [Kept](Kept.md) (59), [SectorStatements](SectorStatements.md) (36), [Statement](Statement.md) (2), [SectorScreen](SectorScreen.md) (1)
+**Uses:** [Palette](Palette.md) (109), [Kept](Kept.md) (62), [SectorStatements](SectorStatements.md) (36), [Statement](Statement.md) (2), [SectorScreen](SectorScreen.md) (1)
 
 **Used by (3):** [BankScreen](BankScreen.md), [KeptBench](KeptBench.md), [SectorScreen](SectorScreen.md)
 
@@ -32,8 +32,8 @@
 | 138 | · the title block |
 | 161 | · the toolbar |
 | 203 | · the table |
-| 392 | · a statement in columns |
-| 575 | · IN SHORT |
+| 394 | · a statement in columns |
+| 577 | · IN SHORT |
 
 ## Constants
 
@@ -48,13 +48,13 @@
 | 60 | `StatementView.INDENT` | `12` | How far a line sits in under its head. |
 | 63 | `StatementView.SHARE_MOST` | `10` | A share of the base past this many times it reads "n/m", not meaningful: an outside line against a month with almost no revenue. |
 | 66 | `StatementView.GAP` | `Palette.GAP` | The gap between columns. |
-| 578 | `StatementView.SHORT_LABEL` | `150, SHORT_FIGURE = 78` | IN SHORT's columns: a label, then this month, last month and the change. |
+| 580 | `StatementView.SHORT_LABEL` | `150, SHORT_FIGURE = 78` | IN SHORT's columns: a label, then this month, last month and the change. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 37 | 602 | **type** `final class StatementView` | A formal statement on the page (0.7.74): SectorStatements' rows set as an accountant sets them - a title block, the columns (note, this month, last month, change, common size), negatives in parentheses, one rule over ... |
+| 37 | 604 | **type** `final class StatementView` | A formal statement on the page (0.7.74): SectorStatements' rows set as an accountant sets them - a title block, the columns (note, this month, last month, change, common size), negatives in parentheses, one rule over ... |
 | 39 | 1 | `private StatementView()` |  |
 | 69 | 1 | **type** `record Columns(boolean then, boolean change, boolean share, String shareWord)` | What the columns show: last month's (off for a statement of the month's movement alone), and the change and the common-size share, each of which the toolbar turns off; `shareWord` heads the share's ("of revenue"), nul... |
 
@@ -89,7 +89,7 @@
 | 181 | 11 | `private static Button toggle(String word, boolean on, Runnable go)` |  |
 | 193 | 9 | `private static Button action(String word, Runnable go)` |  |
 
-### the table (lines 203-391)
+### the table (lines 203-393)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -103,31 +103,31 @@
 | 290 | 14 | `static HBox heads(String nowWord, String thenWord, Columns c)` | The column heads. |
 | 305 | 1 | `private static String headStyle()` |  |
 | 307 | 9 | `private static Label cell(String text, double width, String style, Pos at)` |  |
-| 318 | 32 | `static Node row(SectorStatements.Row r, boolean known, boolean millions, Columns c, double base, double baseThen, boolean hasNo...` | One row: its note number, its label, and its figures, ruled as its kind is. |
-| 352 | 39 | `private static HBox lead(SectorStatements.Row r, boolean hasNote, boolean opened, Runnable toggle, String info)` | A row's note number - a door when it opens something - and its label with its (i), set in as its kind is: what row() and columnsRow() put their figures after. |
+| 318 | 34 | `static Node row(SectorStatements.Row r, boolean known, boolean millions, Columns c, double base, double baseThen, boolean hasNo...` | One row: its note number, its label, and its figures, ruled as its kind is. |
+| 354 | 39 | `private static HBox lead(SectorStatements.Row r, boolean hasNote, boolean opened, Runnable toggle, String info)` | A row's note number - a door when it opens something - and its label with its (i), set in as its kind is: what row() and columnsRow() put their figures after. |
 
-### a statement in columns (lines 392-574)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 401 | 5 | `static VBox columnsTable(SectorStatements.Table t, String table, String[] heads, Set<String> open, IntFunction<Node> notes, Fun...` | A statement in columns, this month (0.7.75): each row's parts and its figure, under `heads` - the statement of changes in equity's share capital, what it kept and revalued, and the total (R3). |
-| 407 | 36 | `private static VBox columnsTableOf(SectorStatements.Table t, String table, String[] heads, Set<String> open, IntFunction<Node> ...` |  |
-| 445 | 7 | `static boolean nilColumns(SectorStatements.Row r, boolean millions)` | Whether a line in columns prints as nothing in every one of them (nil()'s rule); a residual never is. |
-| 454 | 22 | `static Node columnsRow(SectorStatements.Row r, boolean millions, boolean hasNote, boolean opened, Runnable toggle, String info)` | One row in columns: its parts, then its figure; ruled as its kind is, and a bottom line's negatives in the verdict's colour. |
-| 478 | 23 | `private static Node ruled(String text, double width, String style, String rule)` | A figure in its column, with a rule over it (a subtotal), or over it and two under it (a bottom line). |
-| 502 | 9 | `private static Region line()` |  |
-| 517 | 11 | `static VBox card(VBox title, HBox toolbar, VBox table)` | A formal statement as a card: its title block, the toolbar, the table. |
-| 530 | 8 | `static javafx.scene.layout.FlowPane beside(Node statement, Node ratios)` | A statement card beside its ratios, wrapping the ratios under it on a window too narrow for both. |
-| 540 | 29 | `static VBox noteRows(List<SectorStatements.Row> rows, boolean millions, String sentence)` | A note's rows, this month: a small list under the line it opens (D12: this month only). |
-| 571 | 3 | `static VBox noteSentence(String sentence)` | A sentence as a note: what a line is, when it has no parts to list. |
-
-### IN SHORT (lines 575-638)
+### a statement in columns (lines 394-576)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 585 | 4 | `static VBox inShort(String[] labels, double[] now, double[] then, boolean known, String info)` | IN SHORT (the summaries' card): five lines, this month, last month and the change, in $ millions - the statement's own subtotals (D14), so the summary and the statement say the same thing in two sizes. |
-| 590 | 26 | `private static VBox inShortOf(String[] labels, double[] now, double[] then, boolean known, String info)` |  |
-| 618 | 6 | `static String millions(double thousands)` | Thousands as millions to a tenth, a true minus below nothing (the summaries keep their signs, D3). |
-| 626 | 5 | `static String signedMillions(double thousands)` | ...with a sign either way, for a change. |
-| 633 | 5 | `static String sentence(String caps)` | "Gross profit" from "GROSS PROFIT": a statement's line as a sentence's words, for the summaries. |
+| 403 | 5 | `static VBox columnsTable(SectorStatements.Table t, String table, String[] heads, Set<String> open, IntFunction<Node> notes, Fun...` | A statement in columns, this month (0.7.75): each row's parts and its figure, under `heads` - the statement of changes in equity's share capital, what it kept and revalued, and the total (R3). |
+| 409 | 36 | `private static VBox columnsTableOf(SectorStatements.Table t, String table, String[] heads, Set<String> open, IntFunction<Node> ...` |  |
+| 447 | 7 | `static boolean nilColumns(SectorStatements.Row r, boolean millions)` | Whether a line in columns prints as nothing in every one of them (nil()'s rule); a residual never is. |
+| 456 | 22 | `static Node columnsRow(SectorStatements.Row r, boolean millions, boolean hasNote, boolean opened, Runnable toggle, String info)` | One row in columns: its parts, then its figure; ruled as its kind is, and a bottom line's negatives in the verdict's colour. |
+| 480 | 23 | `private static Node ruled(String text, double width, String style, String rule)` | A figure in its column, with a rule over it (a subtotal), or over it and two under it (a bottom line). |
+| 504 | 9 | `private static Region line()` |  |
+| 519 | 11 | `static VBox card(VBox title, HBox toolbar, VBox table)` | A formal statement as a card: its title block, the toolbar, the table. |
+| 532 | 8 | `static javafx.scene.layout.FlowPane beside(Node statement, Node ratios)` | A statement card beside its ratios, wrapping the ratios under it on a window too narrow for both. |
+| 542 | 29 | `static VBox noteRows(List<SectorStatements.Row> rows, boolean millions, String sentence)` | A note's rows, this month: a small list under the line it opens (D12: this month only). |
+| 573 | 3 | `static VBox noteSentence(String sentence)` | A sentence as a note: what a line is, when it has no parts to list. |
+
+### IN SHORT (lines 577-640)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 587 | 4 | `static VBox inShort(String[] labels, double[] now, double[] then, boolean known, String info)` | IN SHORT (the summaries' card): five lines, this month, last month and the change, in $ millions - the statement's own subtotals (D14), so the summary and the statement say the same thing in two sizes. |
+| 592 | 26 | `private static VBox inShortOf(String[] labels, double[] now, double[] then, boolean known, String info)` |  |
+| 620 | 6 | `static String millions(double thousands)` | Thousands as millions to a tenth, a true minus below nothing (the summaries keep their signs, D3). |
+| 628 | 5 | `static String signedMillions(double thousands)` | ...with a sign either way, for a change. |
+| 635 | 5 | `static String sentence(String caps)` | "Gross profit" from "GROSS PROFIT": a statement's line as a sentence's words, for the summaries. |
 

@@ -1,11 +1,11 @@
-# gate of Merge batch/R2: research: the catalogue and the world, 0.9.24
+# gate of Merge batch/KP5: screens kept: Bank, Finances and the fund, 0.9.25
 # date: 2026-11-06
 # earth-2.bin: named
-# nightly: 2026-11-05 09:11 0.9.17 a0661fe8 4,000 months: OK in 109 s
-# suite: 178 harnesses run in 2448s: 172 passed, 6 failed
-# timing: 16 harnesses run in 535s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
+# nightly: 2026-11-06 01:09 0.9.24 f33540a0 4,000 months: RED, exit 1 in 89 s: a building on the map moved 1 time(s), months 3012-3012
+# suite: 178 harnesses run in 2385s: 172 passed, 6 failed
+# timing: 16 harnesses run in 749s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 30.7 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 30.9 ms, batch 30.8 ms (-0.5%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 40.7 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 31.3 ms, batch 32.1 ms (+2.4%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
 SlopeCheck | exit 1
 SlopeCheck | the run played its months and found nothing: every month passed the playtest's audit and the layout watcher, [a building on the map moved] FAIL

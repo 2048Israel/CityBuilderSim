@@ -336,13 +336,15 @@ final class StatementView {
                 : Palette.figureRegular(Palette.SIZE_BODY, memo ? Palette.TEXT_MUTED : Palette.TEXT_BODY);
         String quiet = Palette.figureRegular(Palette.SIZE_BODY, Palette.TEXT_MUTED);
         row.getChildren().add(ruled(figure(r.now(), millions), FIGURE_COLUMN, nowStyle, rule));
-        if (c.then()) row.getChildren().add(ruled(figure(then, millions), FIGURE_COLUMN, quiet, rule));
+        // Kept (KP5): each optional column is a scope of its own, so a column that goes (the change, the share) shifts no cell after it onto its
+        // neighbour's node: a kept cell that had words and wrapped keeps its height when it is handed to a cell that has none.
+        if (c.then()) row.getChildren().add(Kept.scope("then", () -> ruled(figure(then, millions), FIGURE_COLUMN, quiet, rule)));
         if (c.then() && c.change()) {
             double move = Double.isFinite(r.now()) && Double.isFinite(then) ? r.now() - then : Double.NaN;
-            row.getChildren().add(ruled(Double.isNaN(move) ? "" : figure(move, millions), CHANGE_COLUMN, quiet, rule));
+            row.getChildren().add(Kept.scope("change", () -> ruled(Double.isNaN(move) ? "" : figure(move, millions), CHANGE_COLUMN, quiet, rule)));
         }
         if (c.share() && c.shareWord() != null) {
-            row.getChildren().add(ruled(memo ? "" : share(r.now(), base), SHARE_COLUMN, quiet, rule));
+            row.getChildren().add(Kept.scope("share", () -> ruled(memo ? "" : share(r.now(), base), SHARE_COLUMN, quiet, rule)));
         }
         row.setStyle("-fx-padding: " + (sub || total ? "2" : "1") + " 0 " + (total ? "2" : "1") + " 0;");
         return row;
