@@ -9,19 +9,21 @@ import java.util.List;
 /**
  * Proves the D$'s four regimes - Float, Lean against falls (the default), Band
  * and Peg to the US$ - hold the currency where they say and cost what they
- * should (XR2, 2026-10-22): Lean is exactly the float the city had before there
- * were regimes, a peg holds to the digit while the vault meets the month's
- * balance and gives way at the floor or by doubt at the chance the gap makes
- * it, the doubt takes the hot money home, a band's edges hold and its inside is
- * free, the dial is tied to the US's rate under a peg and the autopilot's aim
- * picks the rule, the currency aim keeps the shadow inside a band, the strong
- * edge's dollars are paid exactly by the payer chosen, and all of it is saved.
- * Not part of the game.
+ * should (XR2, 2026-10-22; XR5, 2026-11-06): Lean is exactly the float the city
+ * had before there were regimes, a peg holds to the digit while the vault pays
+ * the pressure - the dollars that lift the rate to the peg by the interventions'
+ * rule, not the month's balance - and gives way at the floor or by doubt at the
+ * chance the gap makes it, landing past the shadow on whichever side it was, the
+ * doubt takes the hot money home, a band's edges hold by the same dealing and its
+ * inside is free, the dial is tied to the US's rate under a peg and the curve is
+ * priced on that tied path, the autopilot's aim picks the rule, the currency aim
+ * keeps the shadow inside a band, the strong edge's dollars are paid exactly by
+ * the payer chosen, and all of it is saved. Not part of the game.
  *
  * WHY THIS EXISTS. Jerus, 2026-10-21 (docs/studies/spec-exchange-rates.md, 3.6;
  * his calls star 3 to 6 and 13): the city chooses what its D$ is held to. Star 3,
  * four regimes, Lean the default and the city's own history; star 4, a peg
- * breaks - when the vault cannot pay the deficit (Krugman's first generation)
+ * breaks - when the vault cannot pay for the hold (Krugman's first generation)
  * or by doubt (Obstfeld's second) - and the break costs the bank its credibility;
  * star 5, under a peg the dial is tied to the US's rate and only a spread is the
  * city's; star 6, the dollars the vault takes at the strong edge are paid for by
@@ -45,19 +47,21 @@ import java.util.List;
  *   1. FLOAT SELLS NOTHING. A vault and deficits that make Lean sell, and the
  *      Float twin on the same months: its defence is 0 every month, its vault
  *      unchanged.
- *   2. A PEG HOLDS TO THE DIGIT, AND THE VAULT PAYS THE MONTH'S BALANCE. A
- *      settled currency pegged away from its rate, then months of a deficit,
- *      then of a surplus: every held month the rate is the peg exactly; the
- *      vault falls by exactly the deficit, rises by exactly the surplus (the
- *      edge's purchase), and what is owed is that purchase at the month's rate;
- *      the seven moves add to the month's log move and the held line holds it.
+ *   2. A PEG HOLDS TO THE DIGIT, AND THE VAULT PAYS THE PRESSURE (XR5). A
+ *      settled currency pegged at its rate, then months of a deficit that
+ *      weaken its shadow, then (a twin) of a surplus that strengthens it: every
+ *      held month the rate is the peg exactly; the vault falls by exactly what
+ *      interventionLocalFor() says the lift takes (the shadow, getHoldFelt() and
+ *      the peg), and not the deficit; it rises by exactly the lift in the
+ *      surplus (the edge's purchase), and what is owed is that purchase at the
+ *      month's rate; the seven moves add to the month's log move and the held
+ *      line holds it; while held the hold is the log of the peg over the shadow.
  *   3. A VAULT AT THE FLOOR BREAKS THAT MONTH, AT THE SHADOW PLUS OVERSHOOT.
- *      A peg whose deficit would take the vault under VAULT_FLOOR months of
+ *      A peg whose hold would sell the vault under VAULT_FLOOR months of
  *      imports breaks (cause VAULT, nothing sold), its twin with a vault a
  *      little deeper holds; the rate lands at the shadow plus OVERSHOOT of its
- *      gap, no overshoot when the shadow is the stronger; the overshoot fades at
- *      MARKET_HALF_LIFE; in a city credibility falls by PEG_BREAK_DENT of its
- *      distance to KMIN.
+ *      gap; in a city credibility falls by PEG_BREAK_DENT of its distance to
+ *      KMIN. (The overshoot's two sides and its fade are section 16's.)
  *   4. THE CHANCE OF A BREAK, COUNTED OVER 1,000 SEEDED PEGS AGAINST hazard().
  *      The breaks counted are within three standard deviations of the hazards
  *      summed; the hazard's own shape; the market's path is the same pegged or
@@ -69,11 +73,13 @@ import java.util.List;
  *      array is 19 long (FX8): slot 15 the doubt's lifetime, 16 to 18 the month's
  *      arrived, departed and doubtDeparted, restored to the bit, and an array
  *      cut at 16 (as XR2 wrote it) restores with the month's three at 0.
- *   6. A BAND'S EDGES HOLD AND ITS INSIDE IS FREE. A band narrower than the
- *      market's swing, a few hundred months: past the weak edge the rate is the
- *      edge and the vault sold the deficit, past the strong edge it bought the
- *      surplus, inside the rate is the float's and nothing is dealt; the centre
- *      crawls at the slope; a vault under the floor lets the band give way.
+ *   6. A BAND'S EDGES HOLD AND ITS INSIDE IS FREE (XR5). A band narrower than
+ *      the market's swing, a few hundred months: where the rate would stand with
+ *      the hold's faded support (free) is past the weak edge the rate is the edge
+ *      and the vault sold what the lift takes, past the strong edge it bought
+ *      that, inside the rate is free and nothing is dealt; the centre crawls at
+ *      the slope; a vault the sale would take under the floor lets the band
+ *      give way.
  *   7. UNDER A PEG THE DIAL IS THE US'S RATE PLUS THE SPREAD; THE AIM. In a
  *      city: pegged, the policy rate is the US's rate (worldRate()) plus the spread, with
  *      the autopilot off or aiming at inflation; aiming at the currency it is
@@ -83,8 +89,8 @@ import java.util.List;
  *      with the dial neutral against the dial the currency aim sets: its share
  *      of months with the shadow inside is higher and its vault spends less.
  *   9. THE TOGGLE'S TWO PAYERS EACH PAY EXACTLY WHAT THE EDGE BOUGHT. Cities
- *      pegged with a large spread, a surplus at the peg: the central bank's
- *      pays in new money and the treasury's does not, the treasury's pays out of
+ *      pegged with a large spread, the shadow under the peg and the vault
+ *      buying the lift (XR5): the central bank's pays in new money and the treasury's does not, the treasury's pays out of
  *      its cash and the central bank's does not, the audit closes in both, and
  *      the central bank's equity is unmoved by the purchase once settled. FX8:
  *      the central bank keeps nothing, restated with what it paid in new money
@@ -94,8 +100,10 @@ import java.util.List;
  *      whoever paid it.
  *  10. SAVED AND LOADED MID-PEG. A pegged city with a purchase owed and a doubt
  *      share struck, saved and loaded: the next 12 months equal the twin that
- *      never saved; a bare currency restores every regime field; an array cut
- *      before the regimes restores as Lean with nothing owed.
+ *      never saved; a bare currency restores every regime field, the hold's
+ *      support (slot 147, XR5) among them, and an array cut before it restores
+ *      with none; an array cut before the regimes restores as Lean with nothing
+ *      owed.
  *  11. A REAL RUN, COUNTED. A city pegged at founding for 240 months: the months
  *      held, sold, bought, the doubt's departures and the break are counted and
  *      consistent, every figure finite and the audit closing every month; the
@@ -111,6 +119,37 @@ import java.util.List;
  *      section 12's save, one leaving the peg between two presses, the month
  *      after the one that left loses no hot money on doubt and the one that
  *      stayed does, the audit closing in both.
+ *
+ *  14. A PEG PAYS THE PRESSURE, NOT THE MONTH'S BALANCE (XR5; Jerus,
+ *      2026-10-23: "pay the pressure"). A bare currency with a GDP, pegged at
+ *      its rate, in a SURPLUS month with a WEAK shadow (the city's prices 16%
+ *      over the world's: setParity()): the vault falls - sold above 0, nothing
+ *      bought - by exactly what the lift takes, where the month's-balance rule
+ *      would have bought the surplus; the mirror, a deficit month with a strong
+ *      shadow, the vault buys; a weak gap held a year of surplus months: the vault
+ *      falls every month (the first the gap, each after it what the support's
+ *      fading takes) and its total fall is the sum of the model's own figures; a
+ *      gap past INTERVENTION_LINEAR of a year's output is sold on the bounded
+ *      rule; a devaluation is a purchase and a revaluation a sale, and repeg()
+ *      keeps the support; with no GDP the hold holds the rate and deals nothing.
+ *  15. A BAND'S EDGES PAY THE PRESSURE (XR5). The weak edge in a surplus month
+ *      sells and the strong edge in a deficit month buys, each exactly what the
+ *      lift takes; inside the band nothing is dealt and the rate is the shadow
+ *      times exp(getHoldFelt()), the hold fading by half in INTERVENTION_HALF_LIFE;
+ *      under the floor the band gives way for the month and stays a band.
+ *  16. THE OVERSHOOT BOTH WAYS (XR5). A peg broken by doubt with the shadow
+ *      STRONGER than the peg lands at the shadow times exp(OVERSHOOT x the gap),
+ *      past the shadow on the strong side, as a weak break lands past it on the
+ *      weak side; the overshoot fades at MARKET_HALF_LIFE on either side, against a
+ *      floating twin on the same market; nothing is dealt in the month of the
+ *      break and the hold goes with the peg.
+ *  17. THE TIED PATH PRICES THE CURVE (XR5). A DebtManager wired to a tied
+ *      source, struck on inflation well off the target: the curve's expected dial is
+ *      the floor's premium over the dial closing on the dial and not on the rule,
+ *      so the long yields are the curve on the tied path; moving the US's rate and
+ *      re-tying moves them; ruleNow() and settledDial() are the dial; untied (the
+ *      source false, or never set) every path is the rule's to the bit; in a city
+ *      the source is the peg.
  *
  * Numbering is the running order. Money is in thousands, as everywhere.
  *
@@ -197,6 +236,45 @@ public class CurrencyRegimeCheck {
         return (fx.currentAccount() + fx.financialAccount()) / fx.getRate();
     }
 
+    /** What a hold's support fades to by the next reprice: its log, times a half for each INTERVENTION_HALF_LIFE (the model's own constant). */
+    static double faded(ForeignAccounts fx) {
+        return fx.getHoldFelt() * Math.pow(.5, 1 / ForeignAccounts.INTERVENTION_HALF_LIFE);
+    }
+
+    /**
+     * One month of a held currency (a peg or a band), played with the harness's own sums beside it (XR5, THE HOLD PAYS THE PRESSURE): what the
+     * month stood on before the reprice, and what the hold should deal by the interventions' rule, read from the model's own getters AFTER the
+     * reprice - the shadow, the support it faded to, the peg or the band's edges - and not from the model's step 7. The deal is dollars at the
+     * rate before the reprice: negative a sale, positive a purchase. The deal of a peg that broke, or of a band that gave way, is what the
+     * hold would have needed, not what was done.
+     */
+    static final class Held {
+        double rateBefore, vaultBefore, faded, annual, balance, deal, free;
+
+        /** The vault's change over the month: negative where it sold. */
+        double vaultMoved(ForeignAccounts fx) { return fx.getReservesUsd() - vaultBefore; }
+    }
+
+    /** A month of this trade on a held currency, its parity this many logs over the world's if parityLog is a number (the lever that makes the shadow weak or strong). */
+    static Held heldMonth(ForeignAccounts fx, double exports, double imports, double parityLog) {
+        Held h = new Held();
+        h.rateBefore = fx.getRate();
+        h.vaultBefore = fx.getReservesUsd();
+        h.faded = faded(fx);
+        fx.startMonth();
+        fx.takeMonth(CurrencyCheck.month(exports, imports, 0, 0), GDP);
+        h.annual = 12 * fx.getGdpTrailing();
+        h.balance = balanceUsd(fx);
+        if (!Double.isNaN(parityLog)) fx.setParity(Math.exp(parityLog), 1.0, 0, 0);
+        fx.repriceCurrency();
+        double shadow = fx.brokeThisMonth() ? fx.getLastBreakShadow() : fx.getShadowRate();
+        h.free = Math.log(shadow) + h.faded;
+        double target = fx.getPegRate() > 0 && (fx.getRegime() == PEG || fx.brokeThisMonth()) ? Math.log(fx.getPegRate())
+                : Math.max(Math.log(fx.bandStrongEdge()), Math.min(Math.log(fx.bandWeakEdge()), h.free));
+        h.deal = ForeignAccounts.interventionLocalFor(target - h.free, h.annual) / h.rateBefore;
+        return h;
+    }
+
     /** A trading town on the default founding, as ExchangeRateCheck builds it (its own copy: that one is tied to its harness's streams). */
     static Game town(String label, Founding founding) {
         return town(label, founding, 0);
@@ -221,7 +299,7 @@ public class CurrencyRegimeCheck {
         quietly(() -> {
             city.run();
             // THE LEVERS OPENED IN THE FIXTURE (BA1, 2026-11-05; R0 dates a 1900 city on Canada's policy): the peg fixtures stand on a town that taxes from month 1, whose
-            // hot money, drawn by the dial, outruns its current account's deficit so that a month at the peg is a surplus (the vault buys dollars). A 1900 town has no income
+            // hot money, drawn by the dial, outruns its current account's deficit so that a month at the peg is a surplus (and, since XR5, strengthens the shadow under the peg: the vault buys the lift). A 1900 town has no income
             // tax until 1916-17 and no sales tax until 1920: with the merge the town's financial inflow at the peg is US$124k a month against a deficit on current account of
             // US$212k (the vault sells, 0 bought), and with every lever open it is US$326k (the vault buys US$115k the month after the peg). Opened, and the defaults put
             // back, before a month has run, as MonetaryCheck 5 and the cities of RailDepotCheck do.
@@ -269,6 +347,10 @@ public class CurrencyRegimeCheck {
         aRealRun();
         theHotMoneysMonthCrossesASave();
         leavingAPegTakesItsDoubt();
+        aPegPaysThePressure();
+        aBandsEdgesPayThePressure();
+        theOvershootBothWays();
+        theTiedPathPricesTheCurve();
 
         out.printf("%n(%.0f s)%n", (System.currentTimeMillis() - started) / 1000.0);
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -377,97 +459,104 @@ public class CurrencyRegimeCheck {
         close("...nor leaned on: the share of the deficit the vault met", flt.getLastAbsorption(), 0, 0);
     }
 
-    /* ================= 2. a peg holds to the digit, and the vault pays the month's balance ================= */
+    /* ================= 2. a peg holds to the digit, and the vault pays the pressure ================= */
 
     static void aPegHolds() {
-        out.println("\n--- 2. a peg holds to the digit, and the vault pays the month's balance ---");
+        out.println("\n--- 2. a peg holds to the digit, and the vault pays the pressure ---");
 
+        /*
+         * RESTATED FOR XR5 (Jerus, 2026-10-23: "pay the pressure"). Until it a peg met the month's whole balance - the vault sold a deficit and bought a
+         * surplus at the peg - so a surplus month with a weak shadow BOUGHT dollars. Now the vault deals what holding the rate takes: the dollars that
+         * lift the log rate from where it would stand with the hold's faded support (the shadow plus getHoldFelt() faded) to the peg, by the
+         * interventions' rule (interventionLocalFor(), XI1), at the month's rate before the reprice. The month's balance reaches the vault only
+         * through the shadow it weakens or strengthens. The sums below are the harness's own, from the model's getters after the reprice.
+         */
         final double vault0 = 40_000;
         ForeignAccounts fx = book(TRADE, TRADE, vault0, 0, PEG);
-        fx.repeg(1.6);
-        month(fx, TRADE, TRADE);   // the rate arrives at the peg; trade balanced, so nothing is dealt
-        same("fixture: a settled currency pegged away from its rate arrives at the peg", fx.getRate(), 1.6);
-        assertTrue("fixture: balanced trade dealt nothing and the vault is where it was",
-                Double.compare(fx.getReservesUsd(), vault0) == 0 && fx.getDefenceUsd() == 0 && fx.getEdgeBoughtUsd() == 0);
+        final double peg = fx.getPegRate();
+        month(fx, TRADE, TRADE);   // the peg is the rate of the day and trade is balanced: no pressure
+        same("fixture: a settled currency pegged at the rate of the day holds it", fx.getRate(), peg);
+        assertTrue("fixture: balanced trade is no pressure and dealt nothing: the vault is where it was to a millionth of a dollar, nothing sold or bought",
+                Math.abs(fx.getReservesUsd() - vault0) <= DOLLAR && fx.getDefenceUsd() <= DOLLAR && fx.getEdgeBoughtUsd() <= DOLLAR);
 
-        // Twelve months of a deficit.
-        int heldMonths = 0, deficitsMet = 0, holdMoved = 0, hazardRight = 0;
-        double worstVault = 0, worstSold = 0, worstMoves = 0, worstHold = 0, worstGap = 0, deficitSeen = 0;
+        // Twelve months of a deficit, which weakens the shadow.
+        int heldMonths = 0, weakMonths = 0, soldMonths = 0, notTheDeficit = 0, holdMoved = 0, hazardRight = 0;
+        double worstVault = 0, worstSold = 0, worstMoves = 0, worstHold = 0, worstGap = 0, worstFelt = 0, deficitSeen = 0;
         for (int i = 0; i < 12; i++) {
-            double before = fx.getReservesUsd(), rateBefore = fx.getRate();
-            fx.startMonth();
-            fx.takeMonth(CurrencyCheck.month(.8 * TRADE, TRADE, 0, 0), GDP);
-            double deficit = fx.monthDeficitUsd();   // the model's own figure: the month's net outflow in dollars at the rate it is struck at
-            fx.repriceCurrency();
+            Held h = heldMonth(fx, .8 * TRADE, TRADE, Double.NaN);
+            double deficit = -h.balance;   // the model's own figure: the month's net outflow in dollars at the rate it is struck at
             if (fx.getRegime() == PEG && Double.compare(fx.getRate(), fx.getPegRate()) == 0) heldMonths++;
-            if (deficit > 0) deficitsMet++;
+            if (fx.getLastPegGap() > 0) weakMonths++;
+            if (fx.getDefenceUsd() > 0 && fx.getEdgeBoughtUsd() == 0) soldMonths++;
             deficitSeen = deficit;
-            worstVault = Math.max(worstVault, Math.abs((before - fx.getReservesUsd()) - deficit));
-            worstSold = Math.max(worstSold, Math.abs(fx.getDefenceUsd() - deficit));
+            worstVault = Math.max(worstVault, Math.abs(h.vaultMoved(fx) - h.deal));
+            worstSold = Math.max(worstSold, Math.abs(fx.getDefenceUsd() + h.deal));
+            if (Math.abs(fx.getDefenceUsd() - deficit) > 1) notTheDeficit++;
             double six = fx.getMoveTrend() + fx.getMoveGap() + fx.getMoveBalance() + fx.getMoveCover() + fx.getMoveIntervention() + fx.getMoveMarket();
-            worstMoves = Math.max(worstMoves, Math.abs(fx.getLastMove() - Math.log(fx.getRate() / rateBefore)));
+            worstMoves = Math.max(worstMoves, Math.abs(fx.getLastMove() - Math.log(fx.getRate() / h.rateBefore)));
             worstHold = Math.max(worstHold, Math.abs(six + fx.getMoveHeld()));   // the rate did not move: the hold is minus the shadow's move
             if (Math.abs(fx.getMoveHeld()) > 1e-6) holdMoved++;
             worstGap = Math.max(worstGap, Math.abs(fx.getLastPegGap() - Math.log(fx.getShadowRate() / fx.getPegRate())));
+            worstFelt = Math.max(worstFelt, Math.abs(fx.getHoldFelt() - Math.log(fx.getPegRate() / fx.getShadowRate())));
             if (Double.compare(fx.getLastHazard(), ForeignAccounts.hazard(Math.max(0, fx.getLastPegGap()))) == 0) hazardRight++;
         }
-        close("fixture: the month's deficit is 20% of imports at the pegged rate, in dollars", deficitSeen, .2 * TRADE / 1.6, DOLLAR);
+        close("fixture: the month's deficit is 20% of imports at the pegged rate, in dollars", deficitSeen, .2 * TRADE / peg, DOLLAR);
+        assertTrue("fixture: a deficit weakens the shadow: it stands over the peg in every one of the twelve months (" + weakMonths + ")", weakMonths == 12);
         assertTrue("a deficit, twelve months: every one the rate is getPegRate() exactly and the regime is the peg", heldMonths == 12);
-        assertTrue("...the vault met the deficit every month (" + deficitsMet + " of 12)", deficitsMet == 12);
-        out.printf("   the vault: US$%,.2fk to US$%,.2fk; the worst gap from the month's deficit %.2e%n", vault0, fx.getReservesUsd(), worstVault);
-        close("...the vault's dollars fell by exactly the month's deficit, each month, to a millionth of a dollar", worstVault, 0, DOLLAR);
+        assertTrue("...the vault sold in every one and bought in none (" + soldMonths + " of 12)", soldMonths == 12);
+        out.printf("   the vault: US$%,.2fk to US$%,.2fk; the worst gap from the lift's dollars %.2e; the month's deficit US$%,.2fk, the last month's sale US$%,.2fk%n", vault0,
+                fx.getReservesUsd(), worstVault, deficitSeen, fx.getDefenceUsd());
+        close("...the vault's dollars fell by exactly what the lift takes (interventionLocalFor() over the rate), each month, to a millionth of a dollar", worstVault, 0, DOLLAR);
         close("...and the defence sold exactly that", worstSold, 0, DOLLAR);
+        assertTrue("...which is not the month's deficit: the vault paid the pressure, and the sale was never the deficit's US$" + String.format("%,.2fk", deficitSeen)
+                + " (" + notTheDeficit + " of 12 months)", notTheDeficit == 12);
+        close("...the hold is the lift: getHoldFelt() is the log of the peg over the shadow, each month (while held the rate is the shadow plus it)", worstFelt, 0, 1e-12);
         close("...the seven moves add to the month's log move in the rate, each month", worstMoves, 0, 1e-12);
         close("...the six forces and the hold add to nothing: the held line is what holds the rate where the six would take it", worstHold, 0, 1e-12);
         assertTrue("...and the hold did something: the held move was not nothing in " + holdMoved + " of 12 months", holdMoved > 6);
         close("...the gap from the peg is the log of the shadow over it", worstGap, 0, 1e-12);
         assertTrue("...and the month's chance of a break is hazard() of that gap, each month", hazardRight == 12);
 
-        // Twelve months of a surplus. The owed is taken every second month, so it adds up between.
-        int surplusMonths = 0, ownedRight = 0, heldAgain = 0, payerRight = 0, addsUp = 0;
+        // Twelve months of a surplus, a twin: it strengthens the shadow, and the vault buys the lift. The owed is taken every second month, so it adds up between.
+        ForeignAccounts su = book(TRADE, TRADE, vault0, 0, PEG);
+        month(su, TRADE, TRADE);
+        int strongMonths = 0, heldAgain = 0, boughtMonths = 0, payerRight = 0, addsUp = 0, notTheSurplus = 0;
         double worstRise = 0, worstBought = 0, worstOwed = 0, carried = 0, surplusSeen = 0;
         for (int i = 0; i < 12; i++) {
-            double before = fx.getReservesUsd(), rateBefore = fx.getRate();
-            fx.startMonth();
-            fx.takeMonth(CurrencyCheck.month(1.2 * TRADE, TRADE, 0, 0), GDP);
-            double surplus = balanceUsd(fx);
-            fx.repriceCurrency();
-            if (surplus > 0) surplusMonths++;
-            surplusSeen = surplus;
-            if (fx.getRegime() == PEG && Double.compare(fx.getRate(), fx.getPegRate()) == 0) heldAgain++;
-            worstRise = Math.max(worstRise, Math.abs((fx.getReservesUsd() - before) - surplus));
-            worstBought = Math.max(worstBought, Math.abs(fx.getEdgeBoughtUsd() - surplus));
-            worstOwed = Math.max(worstOwed, Math.abs(fx.getEdgeBoughtLocal() - surplus * rateBefore));
-            if (fx.getDefenceUsd() == 0) ownedRight++;
-            if (fx.getEdgeOwedPayer() == ForeignAccounts.EdgePayer.CENTRAL_BANK) payerRight++;
-            double owed = fx.getEdgeOwedLocal();
-            if (Math.abs(owed - (carried + surplus * rateBefore)) <= 1e-6) addsUp++;
+            Held h = heldMonth(su, 1.2 * TRADE, TRADE, Double.NaN);
+            surplusSeen = h.balance;
+            if (su.getRegime() == PEG && Double.compare(su.getRate(), su.getPegRate()) == 0) heldAgain++;
+            if (su.getLastPegGap() < 0) strongMonths++;
+            if (su.getEdgeBoughtUsd() > 0 && su.getDefenceUsd() == 0) boughtMonths++;
+            if (Math.abs(su.getEdgeBoughtUsd() - h.balance) > 1) notTheSurplus++;
+            worstRise = Math.max(worstRise, Math.abs(h.vaultMoved(su) - h.deal));
+            worstBought = Math.max(worstBought, Math.abs(su.getEdgeBoughtUsd() - h.deal));
+            worstOwed = Math.max(worstOwed, Math.abs(su.getEdgeBoughtLocal() - h.deal * h.rateBefore));
+            if (su.getEdgeOwedPayer() == ForeignAccounts.EdgePayer.CENTRAL_BANK) payerRight++;
+            double owed = su.getEdgeOwedLocal();
+            if (Math.abs(owed - (carried + h.deal * h.rateBefore)) <= 1e-6) addsUp++;
             carried = 0;
             if (i % 2 == 1) {
-                double taken = fx.takeEdgeOwed();
-                if (Math.abs(taken - owed) > 1e-9 || fx.getEdgeOwedLocal() != 0) addsUp--;
+                double taken = su.takeEdgeOwed();
+                if (Math.abs(taken - owed) > 1e-9 || su.getEdgeOwedLocal() != 0) addsUp--;
             } else {
                 carried = owed;
             }
         }
-        close("fixture: the month's surplus is 20% of imports at the pegged rate, in dollars", surplusSeen, .2 * TRADE / 1.6, DOLLAR);
-        assertTrue("a surplus, twelve months: the peg holds every one and the vault sold nothing", heldAgain == 12 && ownedRight == 12 && surplusMonths == 12);
-        close("...the vault's dollars rose by exactly the surplus (the edge's purchase), each month, to a millionth of a dollar", worstRise, 0, DOLLAR);
+        close("fixture: the month's surplus is 20% of imports at the pegged rate, in dollars", surplusSeen, .2 * TRADE / peg, DOLLAR);
+        assertTrue("fixture: a surplus strengthens the shadow: it stands under the peg in every one of the twelve months (" + strongMonths + ")", strongMonths == 12);
+        assertTrue("a surplus, twelve months: the peg holds every one, and the vault bought in each and sold in none (" + boughtMonths + " of 12)", heldAgain == 12 && boughtMonths == 12);
+        close("...the vault's dollars rose by exactly the lift (the edge's purchase), each month, to a millionth of a dollar", worstRise, 0, DOLLAR);
         close("...getEdgeBoughtUsd() is that purchase", worstBought, 0, DOLLAR);
         close("...and what is owed for it is the purchase at the month's rate", worstOwed, 0, 1e-6);
+        assertTrue("...which is not the month's surplus (US$" + String.format("%,.2fk", surplusSeen) + "): the vault paid the pressure in every month (" + notTheSurplus + " of 12)",
+                notTheSurplus == 12);
         assertTrue("...owed by the central bank, as it is unless the player says otherwise", payerRight == 12);
         assertTrue("...what is owed adds up until it is taken, and taking it clears it (" + addsUp + " of 12 months)", addsUp == 12);
-        close("...a surplus is no pressure to break: the hazard is BREAK_BASE", fx.getLastHazard(), ForeignAccounts.BREAK_BASE, 1e-15);
+        close("...a strong shadow is no pressure to break: the hazard is BREAK_BASE", su.getLastHazard(), ForeignAccounts.BREAK_BASE, 1e-15);
     }
 
     /* ================= 3. a vault at the floor breaks that month ================= */
-
-    /** A quiet peg at the rate of the day, a few balanced months old, its vault at this many dollars. */
-    static ForeignAccounts quietPeg(double vaultUsd) {
-        ForeignAccounts fx = book(.8 * TRADE, TRADE, vaultUsd, 0, PEG);
-        for (int i = 0; i < 6; i++) month(fx, TRADE, TRADE);
-        return fx;
-    }
 
     /** Two currencies, one on a peg and one floating, the same seed, trade in balance and a parity drifting weaker 5% a year: the pair a peg breaks beside. */
     static void driftMonth(ForeignAccounts fx, int m) {
@@ -551,7 +640,15 @@ public class CurrencyRegimeCheck {
         return g;
     }
 
-    /** A city on the default founding pegged with a surplus at the peg and the D$ a fifth over it: the doubt fixture, five months from its break at the peg's chance. */
+    /**
+     * A city on the default founding pegged with the peg revalued a fifth under its shadow: the doubt fixture, a few months from its break at the peg's chance.
+     * XR5 (THE HOLD PAYS THE PRESSURE): the eight months the hot money takes to gather were played at the peg of the day, a peg that held the rate a quarter over
+     * a shadow the town's surplus and the dial's carry had made strong - and a hold pays for that by buying dollars every month, building a support (getHoldFelt())
+     * the revaluation then has to sell back: the repeg a fifth under the shadow was a lift of 0.69 in logs, a sale of more than a year of the town's output, the vault
+     * broke on it in the month, by the VAULT, and no doubt was ever struck. Now the peg follows the shadow month by month (a crawling peg, repegged each month to where the float's rule has
+     * the D$), which builds no support and leaves the hot money its eight months of the dial's carry; the revaluation is then a sale of a tenth of a year's output
+     * (INTERVENTION_LINEAR) and the support it builds is paid for out of a vault PEG_VAULT_MONTHS deep.
+     */
     static Game doubtTown(String label, long reseed) {
         return doubtTown(label, reseed, false, false);
     }
@@ -563,7 +660,10 @@ public class CurrencyRegimeCheck {
             g.setCurrencyRegime(PEG);
             g.getDebtManager().setPegSpread(.30);
         });
-        play(g, 8);
+        for (int m = 0; m < 8; m++) {
+            play(g, 1);
+            quietly(() -> g.repeg(g.getForeignAccounts().getShadowRate()));   // the peg follows the shadow: the vault builds no support to sell back
+        }
         if (reseed != 0) g.getForeignAccounts().setMarketSeed(reseed);
         quietly(() -> g.repeg(g.getForeignAccounts().getShadowRate() * Math.exp(-.20)));
         return g;
@@ -586,52 +686,82 @@ public class CurrencyRegimeCheck {
         return b;
     }
 
+    /**
+     * A peg a few deficit months old, quiet, whose vault is then sold down to this many dollars by the treasury (a set-up, not a deal: forgotten by the
+     * rate). XR5: a deficit holds a hold behind it - the shadow is weak, the vault has been selling - and a thin vault weakens the shadow further (the
+     * cover's premium), so the sale its next month needs depends on the vault. (It is sold down only after the months that set the hold up: a peg with a
+     * thin vault SELLS even in a balanced month, for the cover's premium alone, and would break in the setting-up. Section 3 before XR5 set a quiet peg up
+     * with six balanced months at the vault it was to test, which dealt nothing then.)
+     */
+    static ForeignAccounts pegAtTheFloor(double vaultUsd) {
+        ForeignAccounts fx = book(.8 * TRADE, TRADE, DEEP, 0, PEG);
+        for (int i = 0; i < 3; i++) month(fx, .8 * TRADE, TRADE);
+        fx.sellReserves((fx.getReservesUsd() - vaultUsd) * fx.getRate());
+        fx.forgetDealing();
+        return fx;
+    }
+
+    /** The dollars the hold needs to sell in the peg's next deficit month at this vault, from the harness's sums (Held): the sale that month, whether the peg then held or broke. */
+    static double saleAt(double vaultUsd) {
+        return -heldMonth(pegAtTheFloor(vaultUsd), .8 * TRADE, TRADE, Double.NaN).deal;
+    }
+
     static void aVaultAtTheFloorBreaks() {
         out.println("\n--- 3. a vault at the floor breaks that month, at the shadow plus overshoot ---");
 
-        // The month's deficit and the floor, as the model reads them, from a probe with a vault too deep to matter.
-        ForeignAccounts probe = quietPeg(DEEP);
-        probe.startMonth();
-        probe.takeMonth(CurrencyCheck.month(.8 * TRADE, TRADE, 0, 0), GDP);
-        double deficit = probe.monthDeficitUsd(), floor = probe.vaultFloorUsd();
-        out.printf("   the month's deficit US$%,.2fk, the vault's floor (VAULT_FLOOR = %.0f months of imports) US$%,.2fk%n", deficit, ForeignAccounts.VAULT_FLOOR, floor);
-        assertTrue("fixture: there is a deficit and a floor", deficit > 0 && floor > 0);
+        // RESTATED FOR XR5: the peg breaks when the SALE holding it takes would leave the vault under VAULT_FLOOR months of imports, not when the month's deficit
+        // would. The sale depends on the vault (the thin cover is the very pressure it pays), so the vault at which it leaves exactly the floor is found by
+        // iterating v = floor + sale(v) from the model's own figures; a vault a dollar under it breaks, a dollar over it holds.
+        double floor = pegAtTheFloor(1e6).vaultFloorUsd();
+        double limit = floor + 1_000;
+        for (int i = 0; i < 40; i++) limit = floor + saleAt(limit);
+        double sale = saleAt(limit);
+        out.printf("   the vault's floor (VAULT_FLOOR = %.0f months of imports) US$%,.2fk; the sale the hold needs of a vault right at the limit US$%,.2fk, so the limit is US$%,.2fk%n",
+                ForeignAccounts.VAULT_FLOOR, floor, sale, limit);
+        assertTrue("fixture: there is a floor and a sale, and the iteration settled: the limit less the sale is the floor to a hundredth of a dollar",
+                floor > 0 && sale > 0 && Math.abs(limit - sale - floor) < .01);
 
-        ForeignAccounts shortOfIt = quietPeg(floor + deficit - 1);
-        ForeignAccounts deeper = quietPeg(floor + deficit + 1);
-        assertTrue("fixture: both are pegged, quiet, and the first would be a dollar under its floor after the deficit, the second a dollar over",
+        ForeignAccounts shortOfIt = pegAtTheFloor(limit - 1);
+        ForeignAccounts deeper = pegAtTheFloor(limit + 1);
+        assertTrue("fixture: both are pegged, quiet, with a deficit's hold behind them (the shadow over the rate): the first has a vault a dollar short of the limit's, the second a dollar over it",
                 shortOfIt.getRegime() == PEG && deeper.getRegime() == PEG && !shortOfIt.isMarketSeeded() && !deeper.isMarketSeeded()
-                        && Math.abs(shortOfIt.getReservesUsd() - (floor + deficit - 1)) <= DOLLAR);
+                        && Math.abs(shortOfIt.getReservesUsd() - (limit - 1)) <= DOLLAR && shortOfIt.isHeld() && shortOfIt.getShadowRate() > shortOfIt.getRate());
 
-        double vaultBefore = shortOfIt.getReservesUsd(), rateBefore = shortOfIt.getRate(), shadowBefore = shortOfIt.getShadowRate();
-        month(shortOfIt, .8 * TRADE, TRADE);
-        month(deeper, .8 * TRADE, TRADE);
+        double rateBefore = shortOfIt.getRate(), shadowBefore = shortOfIt.getShadowRate(), floorShort = shortOfIt.vaultFloorUsd(), floorDeep = deeper.vaultFloorUsd();
+        Held hs = heldMonth(shortOfIt, .8 * TRADE, TRADE, Double.NaN);
+        Held hd = heldMonth(deeper, .8 * TRADE, TRADE, Double.NaN);
 
-        assertTrue("the peg whose vault the deficit would take under its floor breaks that month", shortOfIt.brokeThisMonth() && shortOfIt.getBreaks() == 1);
+        assertTrue("fixture: the sale the hold needs would leave the first (US$" + String.format("%,.2f", hs.vaultBefore + hs.deal) + ") under its floor and the second over it",
+                hs.vaultBefore + hs.deal < floorShort && hd.vaultBefore + hd.deal > floorDeep);
+        assertTrue("the peg whose vault the hold's sale would take under its floor breaks that month", shortOfIt.brokeThisMonth() && shortOfIt.getBreaks() == 1);
         assertTrue("...by the vault, not by doubt", shortOfIt.getLastBreakCause() == ForeignAccounts.BreakCause.VAULT);
         assertTrue("...the regime is Float after it", shortOfIt.getRegime() == FLOAT);
         assertTrue("...nothing was sold that month, and the vault is where it was",
-                shortOfIt.getDefenceUsd() == 0 && Double.compare(shortOfIt.getReservesUsd(), vaultBefore) == 0);
+                shortOfIt.getDefenceUsd() == 0 && Double.compare(shortOfIt.getReservesUsd(), hs.vaultBefore) == 0);
+        assertTrue("...and the hold went with the peg: getHoldFelt() is 0", shortOfIt.getHoldFelt() == 0);
         double shadow = shortOfIt.getLastBreakShadow();
         double gap = Math.log(shadow / shortOfIt.getPegRate());
-        assertTrue("fixture: the shadow was the weaker side of the peg (" + String.format("%.4f against %.4f", shadow, shortOfIt.getPegRate()) + "), so the overshoot has something to be",
+        assertTrue("fixture: the shadow was the weaker side of the peg (" + String.format("%.4f against %.4f", shadow, shortOfIt.getPegRate()) + "), so the overshoot lands over it",
                 gap > .01);
-        double landing = shadow * Math.exp(ForeignAccounts.OVERSHOOT * Math.max(0, gap));
+        double landing = shadow * Math.exp(ForeignAccounts.OVERSHOOT * gap);
         close("...the rate it lands at is the shadow times exp(OVERSHOOT x the gap): " + String.format("%.6f", shortOfIt.getRate()),
                 shortOfIt.getRate(), landing, 1e-12 * landing);
         close("...the jump it records is the log move of the rate that month", shortOfIt.getLastBreakJump(), Math.log(shortOfIt.getRate() / rateBefore), 1e-12);
+        assertTrue("fixture: the hold had something to give way: the rate stood away from its shadow (" + String.format("%.4f against %.4f", rateBefore, shadowBefore) + ")",
+                Math.abs(Math.log(shadowBefore / rateBefore)) > 1e-4);
         close("...and the hold gave way: the held move is last month's gap of the shadow over the rate", shortOfIt.getMoveHeld(),
                 Math.log(shadowBefore / rateBefore), 1e-12);
         close("...and the seven moves add to the jump", shortOfIt.getLastMove(), shortOfIt.getLastBreakJump(), 1e-12);
-        assertTrue("its twin, a vault a dollar deeper, holds: still a peg, the rate at the peg, nothing broken",
+        assertTrue("its twin, a vault two dollars deeper, holds: still a peg, the rate at the peg, nothing broken",
                 deeper.getRegime() == PEG && !deeper.brokeThisMonth() && deeper.getBreaks() == 0 && Double.compare(deeper.getRate(), deeper.getPegRate()) == 0);
-        close("...and its vault met the deficit, to the dollar", deeper.getDefenceUsd(), deficit, DOLLAR);
-        close("...leaving it a dollar over its floor", deeper.getReservesUsd() - deeper.vaultFloorUsd(), 1, 1e-6);
+        close("...and its vault sold what the hold needed, to the dollar", deeper.getDefenceUsd(), -hd.deal, DOLLAR);
+        double over = deeper.getReservesUsd() - deeper.vaultFloorUsd();
+        assertTrue("...leaving it a dollar or so over its floor (US$" + String.format("%.2f", over) + ")", over > 0 && over < 3);
 
-        // The other side of the peg: a gap the other way lands at the shadow, no overshoot. A surplus and a parity falling by more than
+        // The other side of the peg: a gap the other way lands past the shadow too, on its strong side (XR5; the Swiss franc, 2015). A surplus and a parity falling by more than
         // half in 40 months put the shadow far under the peg for the rest of the run, where the chance of a break is BREAK_BASE a month.
         ForeignAccounts stronger = null;
-        double strongerBefore = 0, strongerRate = 0, strongerSurplus = 0;
+        double strongerBefore = 0, strongerRate = 0;
         int seedsTried = 0, monthsPlayed = 0;
         for (long s = 1; s <= 600 && stronger == null; s++) {
             seedsTried++;
@@ -640,11 +770,10 @@ public class CurrencyRegimeCheck {
                 double v = fx.getReservesUsd(), r = fx.getRate();
                 fx.startMonth();
                 fx.takeMonth(CurrencyCheck.month(1.2 * TRADE, TRADE, 0, 0), GDP);
-                double surplus = balanceUsd(fx);
                 fx.setParity(Math.exp(-.8 * Math.min(1, (m + 1) / 40.0)), 1.0, -.2, 0);
                 fx.repriceCurrency();
                 monthsPlayed++;
-                if (fx.brokeThisMonth()) { stronger = fx; strongerBefore = v; strongerRate = r; strongerSurplus = surplus; break; }
+                if (fx.brokeThisMonth()) { stronger = fx; strongerBefore = v; strongerRate = r; break; }
             }
         }
         out.printf("   a peg with a surplus and a parity falling away: the first chance break in %d seeds, %,d pegged months (BREAK_BASE a month: about one in %,.0f)%n",
@@ -652,55 +781,17 @@ public class CurrencyRegimeCheck {
         assertTrue("fixture: a peg broke by chance with the shadow stronger than the peg", stronger != null
                 && stronger.getLastBreakCause() == ForeignAccounts.BreakCause.DOUBT && stronger.getLastBreakShadow() < stronger.getPegRate());
         if (stronger != null) {
-            close("the rate lands at the shadow itself: no overshoot on a gap the other way", stronger.getRate(), stronger.getLastBreakShadow(),
+            double gapS = Math.log(stronger.getLastBreakShadow() / stronger.getPegRate());
+            double landingS = stronger.getLastBreakShadow() * Math.exp(ForeignAccounts.OVERSHOOT * gapS);
+            close("the rate lands at the shadow times exp(OVERSHOOT x the gap), the gap negative: past the shadow on the strong side", stronger.getRate(), landingS,
                     1e-12 * stronger.getRate());
-            assertTrue("fixture: the month had a surplus, which a held peg would have bought (US$" + String.format("%,.0fk", strongerSurplus) + ")", strongerSurplus > 0);
-            assertTrue("...Float after it, and nothing bought or sold that month (the vault is where it was)",
+            assertTrue("...under the shadow (" + String.format("%.4f under %.4f"  , stronger.getRate(), stronger.getLastBreakShadow()) + "), and so under the peg", stronger.getRate() < stronger.getLastBreakShadow()
+                    && stronger.getRate() < stronger.getPegRate());
+            assertTrue("...Float after it, and nothing bought or sold that month (the vault is where it was): the hold went with the peg",
                     stronger.getRegime() == FLOAT && stronger.getDefenceUsd() == 0 && stronger.getEdgeBoughtUsd() == 0
-                            && Double.compare(stronger.getReservesUsd(), strongerBefore) == 0);
+                            && Double.compare(stronger.getReservesUsd(), strongerBefore) == 0 && stronger.getHoldFelt() == 0);
             close("...the D$ jumped stronger, by the log move recorded", stronger.getLastBreakJump(), Math.log(stronger.getRate() / strongerRate), 1e-12);
             assertTrue("...and it is a jump the right way: the break let the D$ go stronger", stronger.getLastBreakJump() < 0);
-        }
-
-        // The overshoot fades as the market's swings do: against a floating twin on the same months, by half in MARKET_HALF_LIFE.
-        ForeignAccounts peg = null, flt = null;
-        int breakMonth = 0, marketApart = 0;
-        double shadowAtBreak = 0;
-        for (long s = 1; s <= 200 && peg == null; s++) {
-            ForeignAccounts p = book(TRADE, TRADE, DEEP, SEED + s, PEG), f = book(TRADE, TRADE, DEEP, SEED + s, FLOAT);
-            int apart = 0;
-            for (int m = 0; m < 400; m++) {
-                driftMonth(p, m);
-                driftMonth(f, m);
-                if (Double.compare(p.getMarket(), f.getMarket()) != 0) apart++;
-                if (p.brokeThisMonth()) {
-                    peg = p;
-                    flt = f;
-                    breakMonth = m;
-                    marketApart = apart;
-                    shadowAtBreak = p.getLastBreakShadow();
-                    break;
-                }
-            }
-        }
-        assertTrue("fixture: a peg broke by doubt on the weaker side beside its floating twin", peg != null
-                && peg.getLastBreakCause() == ForeignAccounts.BreakCause.DOUBT && peg.getLastBreakShadow() > peg.getPegRate());
-        if (peg != null) {
-            double gapAtBreak = Math.log(shadowAtBreak / peg.getPegRate());
-            double excess0 = Math.log(peg.getRate() / flt.getRate());
-            out.printf("   a peg beside a floating twin broke in month %d at a gap of %.1f%%: the rate landed %.1f%% over its twin's%n", breakMonth + 1,
-                    gapAtBreak * 100, (Math.exp(excess0) - 1) * 100);
-            close("the floating twin's rate is the shadow the peg broke from", flt.getRate(), shadowAtBreak, 1e-12 * shadowAtBreak);
-            close("...so the break left the peg's rate over it by OVERSHOOT of the gap", excess0, ForeignAccounts.OVERSHOOT * gapAtBreak, 1e-12);
-            assertTrue("fixture: the gap was past BREAK_GAP, as a doubt break must be", gapAtBreak > ForeignAccounts.BREAK_GAP);
-            int half = (int) ForeignAccounts.MARKET_HALF_LIFE;
-            assertTrue("fixture: MARKET_HALF_LIFE is a whole number of months", half == ForeignAccounts.MARKET_HALF_LIFE);
-            for (int m = breakMonth + 1; m <= breakMonth + half; m++) { driftMonth(peg, m); driftMonth(flt, m); }
-            close("MARKET_HALF_LIFE months on, half the overshoot is gone", Math.log(peg.getRate() / flt.getRate()), excess0 / 2, 1e-9);
-            for (int m = breakMonth + half + 1; m <= breakMonth + 2 * half; m++) { driftMonth(peg, m); driftMonth(flt, m); }
-            close("...and another MARKET_HALF_LIFE on, a quarter of it is left", Math.log(peg.getRate() / flt.getRate()), excess0 / 4, 1e-9);
-            assertTrue("...and the peg's market path is the floating twin's, every month of it (" + marketApart + " months apart before the break)", marketApart == 0
-                    && Double.compare(peg.getMarket(), flt.getMarket()) == 0 && peg.getMarketDraws() == flt.getMarketDraws());
         }
 
         // In a city, credibility falls by PEG_BREAK_DENT of its distance to KMIN, against a twin where nothing broke.
@@ -1009,9 +1100,31 @@ public class CurrencyRegimeCheck {
 
     /* ================= 6. a band's edges hold and its inside is free ================= */
 
+    /** A band this wide centred on the rate of the day, quiet, whose vault is sold down to this many dollars by the treasury (a set-up, not a deal: forgotten by the rate). */
+    static ForeignAccounts bandAtTheFloor(double vaultUsd, double width) {
+        ForeignAccounts fx = book(.8 * TRADE, TRADE, DEEP, 0, BAND);
+        fx.setBand(fx.getRate(), 0, width);
+        fx.sellReserves((fx.getReservesUsd() - vaultUsd) * fx.getRate());
+        fx.forgetDealing();
+        return fx;
+    }
+
+    /** The dollars the band's hold needs to sell in its first deficit month at this vault, from the harness's sums (Held): what it would sell, whether it then sold or gave way. */
+    static double bandSaleAt(double vaultUsd, double width) {
+        return -heldMonth(bandAtTheFloor(vaultUsd, width), .8 * TRADE, TRADE, Double.NaN).deal;
+    }
+
     static void aBandsEdgesHold() {
         out.println("\n--- 6. a band's edges hold and its inside is free ---");
 
+        /*
+         * RESTATED FOR XR5 (THE HOLD PAYS THE PRESSURE). The band no longer sells the month's deficit past its weak edge and buys the month's surplus past
+         * the strong one: it deals what puts the rate back at the edge. FREE is where the rate would stand with the hold's faded support and nothing new
+         * dealt (the shadow's log plus getHoldFelt() faded, by the harness's reckoning); past the weak edge the vault sells the dollars that lift it
+         * back to the edge by the interventions' rule, past the strong edge it buys those, inside it deals nothing and the rate is free - the shadow
+         * plus what the hold dealt before and has not yet faded. So a month's class is read from free and not from the shadow, and the dollars are the
+         * rule's (interventionLocalFor() at the rate before the reprice), not the month's deficit or surplus.
+         */
         final double width = 2 * ForeignAccounts.MARKET_SIGMA;
         ForeignAccounts band = book(TRADE, TRADE, DEEP, SEED, BAND);
         band.setBand(band.getRate(), 0, width);
@@ -1019,37 +1132,34 @@ public class CurrencyRegimeCheck {
         assertTrue("fixture: the band is " + String.format("%.1f%%", width * 100) + " either side of the rate of the day, narrower than the market's swing",
                 band.getRegime() == BAND && Math.abs(band.getBandWidth() - width) <= 1e-15 && Double.compare(band.getBandCentre(), band.getRate()) == 0);
 
-        int weak = 0, weakSold = 0, strong = 0, strongBought = 0, inside = 0, bad = 0, shadowApart = 0, insideApart = 0;
+        int weak = 0, weakSold = 0, strong = 0, strongBought = 0, inside = 0, bad = 0, shadowApart = 0, insideApart = 0, fadeApart = 0;
         double worstDeal = 0;
         for (int m = 0; m < 400; m++) {
             double exports = TRADE * (1 + .3 * Math.sin(m / 7.0)), imports = TRADE * (1 + .3 * Math.cos(m / 11.0));
-            double vault = band.getReservesUsd();
-            band.startMonth();
-            band.takeMonth(CurrencyCheck.month(exports, imports, 0, 0), GDP);
-            double deficit = band.monthDeficitUsd(), surplus = Math.max(0, balanceUsd(band));
-            band.repriceCurrency();
+            Held h = heldMonth(band, exports, imports, Double.NaN);
             month(flt, exports, imports);
             double weakEdge = band.bandWeakEdge(), strongEdge = band.bandStrongEdge(), shadow = band.getShadowRate();
             if (Math.abs(shadow - flt.getRate()) > 1e-12 * shadow) shadowApart++;
-            if (shadow > weakEdge) {
+            if (h.free > Math.log(weakEdge)) {
                 weak++;
                 if (band.getDefenceUsd() > 0) weakSold++;
                 boolean ok = Double.compare(band.getRate(), weakEdge) == 0 && band.getEdgeBoughtUsd() == 0;
-                worstDeal = Math.max(worstDeal, Math.abs(band.getDefenceUsd() - deficit));
-                worstDeal = Math.max(worstDeal, Math.abs((vault - band.getReservesUsd()) - deficit));
+                worstDeal = Math.max(worstDeal, Math.abs(band.getDefenceUsd() + h.deal));
+                worstDeal = Math.max(worstDeal, Math.abs(h.vaultMoved(band) - h.deal));
                 if (!ok) bad++;
-            } else if (shadow < strongEdge) {
+            } else if (h.free < Math.log(strongEdge)) {
                 strong++;
                 if (band.getEdgeBoughtUsd() > 0) strongBought++;
                 boolean ok = Double.compare(band.getRate(), strongEdge) == 0 && band.getDefenceUsd() == 0;
-                worstDeal = Math.max(worstDeal, Math.abs(band.getEdgeBoughtUsd() - surplus));
-                worstDeal = Math.max(worstDeal, Math.abs((band.getReservesUsd() - vault) - surplus));
+                worstDeal = Math.max(worstDeal, Math.abs(band.getEdgeBoughtUsd() - h.deal));
+                worstDeal = Math.max(worstDeal, Math.abs(h.vaultMoved(band) - h.deal));
                 if (!ok) bad++;
             } else {
                 inside++;
-                boolean ok = Double.compare(band.getRate(), shadow) == 0 && Double.compare(band.getRate(), flt.getRate()) == 0
-                        && band.getDefenceUsd() == 0 && band.getEdgeBoughtUsd() == 0 && Double.compare(band.getReservesUsd(), vault) == 0;
+                boolean ok = Math.abs(band.getRate() - Math.exp(h.free)) <= 1e-12 * band.getRate()
+                        && band.getDefenceUsd() == 0 && band.getEdgeBoughtUsd() == 0 && Double.compare(band.getReservesUsd(), h.vaultBefore) == 0;
                 if (!ok) insideApart++;
+                if (Double.compare(band.getHoldFelt(), h.faded) != 0) fadeApart++;
             }
             band.takeEdgeOwed();
         }
@@ -1060,8 +1170,9 @@ public class CurrencyRegimeCheck {
         assertTrue("fixture: the vault sold in months past the weak edge and bought in months past the strong one", weakSold > 10 && strongBought > 10);
         assertTrue("fixture: the band's shadow is the floating twin's rate, month by month (the hold changes nothing the float's rule says)", shadowApart == 0);
         assertTrue("past the weak edge the rate is the weak edge exactly and nothing is bought; past the strong edge the strong edge exactly and nothing is sold", bad == 0);
-        close("...the vault sold exactly the month's deficit at the weak edge and bought exactly the surplus at the strong, in dollars", worstDeal, 0, DOLLAR);
-        assertTrue("inside the band the rate is the shadow exactly (the floating twin's rate to the bit), and nothing is dealt", insideApart == 0);
+        close("...the vault sold exactly the lift's dollars at the weak edge and bought exactly the lift's at the strong, in dollars", worstDeal, 0, DOLLAR);
+        assertTrue("inside the band the rate is free - the shadow times exp(the hold faded) - and nothing is dealt: the vault, sold and bought are where they were", insideApart == 0);
+        assertTrue("...and the hold inside is exactly what it faded to: nothing new dealt, nothing added to it, to the bit", fadeApart == 0);
 
         // The centre crawls.
         ForeignAccounts crawl = book(TRADE, TRADE, DEEP, 0, BAND);
@@ -1071,27 +1182,32 @@ public class CurrencyRegimeCheck {
         close("the centre crawls at the slope: after 12 reprices it is the centre times exp(slope)", crawl.getBandCentre(), c0 * Math.exp(.06), 1e-12);
         close("...and the edges are the centre's width either side of it", crawl.bandWeakEdge() / crawl.bandStrongEdge(), (1 + .05) / (1 - .05), 1e-12);
 
-        // A vault under the floor at the weak edge: the band gives way that month, and stays a band.
-        ForeignAccounts probe = book(.8 * TRADE, TRADE, DEEP, 0, BAND);
-        probe.setBand(probe.getRate(), 0, .01);
-        probe.startMonth();
-        probe.takeMonth(CurrencyCheck.month(.8 * TRADE, TRADE, 0, 0), GDP);
-        double need = probe.monthDeficitUsd(), floor = probe.vaultFloorUsd();
-        ForeignAccounts under = book(.8 * TRADE, TRADE, floor + need - 1, 0, BAND), over = book(.8 * TRADE, TRADE, floor + need + 1, 0, BAND);
-        ForeignAccounts floating = book(.8 * TRADE, TRADE, floor + need - 1, 0, FLOAT);
-        under.setBand(under.getRate(), 0, .01);
-        over.setBand(over.getRate(), 0, .01);
-        double underVault = under.getReservesUsd();
-        month(under, .8 * TRADE, TRADE);
-        month(over, .8 * TRADE, TRADE);
+        // A vault the sale would take under the floor at the weak edge: the band gives way that month, and stays a band. The sale depends on the vault (a thin cover is
+        // part of the pressure), so the vault at which it leaves exactly the floor is found by iterating v = floor + sale(v), as section 3 does.
+        final double narrow = .01;
+        double floor = bandAtTheFloor(1e6, narrow).vaultFloorUsd();
+        double limit = floor + 1_000;
+        for (int i = 0; i < 40; i++) limit = floor + bandSaleAt(limit, narrow);
+        double need = bandSaleAt(limit, narrow);
+        assertTrue("fixture: there is a floor and a sale, and the iteration settled: the limit less the sale is the floor to a hundredth of a dollar",
+                floor > 0 && need > 0 && Math.abs(limit - need - floor) < .01);
+        ForeignAccounts under = bandAtTheFloor(limit - 1, narrow), over = bandAtTheFloor(limit + 1, narrow);
+        ForeignAccounts floating = bandAtTheFloor(limit - 1, narrow);
+        floating.setRegime(FLOAT);
+        double underVault = under.getReservesUsd(), floorUnder = under.vaultFloorUsd(), floorOver = over.vaultFloorUsd();   // the floor at the rate before the reprice, as the model reads it
+        Held hu = heldMonth(under, .8 * TRADE, TRADE, Double.NaN);
+        Held ho = heldMonth(over, .8 * TRADE, TRADE, Double.NaN);
         month(floating, .8 * TRADE, TRADE);
-        assertTrue("fixture: the shadow is past the weak edge in both", floating.getRate() > over.bandWeakEdge() && floating.getRate() > under.bandWeakEdge());
-        assertTrue("a vault a dollar under its floor after the deficit: the band gives way that month, the regime still Band, nothing sold",
+        assertTrue("fixture: the shadow is past the weak edge in both, and the sale would leave the first under its floor and the second over it",
+                floating.getRate() > over.bandWeakEdge() && floating.getRate() > under.bandWeakEdge()
+                        && hu.vaultBefore + hu.deal < floorUnder && ho.vaultBefore + ho.deal > floorOver);
+        assertTrue("a vault the hold's sale would take under its floor: the band gives way that month, the regime still Band, nothing sold",
                 under.getRegime() == BAND && !under.brokeThisMonth() && under.getDefenceUsd() == 0 && Double.compare(under.getReservesUsd(), underVault) == 0);
         same("...the rate is the shadow (the floating twin's rate), not the edge", under.getRate(), floating.getRate());
         assertTrue("...past the edge it was to hold", under.getRate() > under.bandWeakEdge());
-        same("its twin a dollar over the floor holds the weak edge", over.getRate(), over.bandWeakEdge());
-        close("...selling the deficit", over.getDefenceUsd(), need, DOLLAR);
+        close("...and the hold has no support to show for a sale never made: getHoldFelt() is left as it faded, 0", under.getHoldFelt(), 0, 0);
+        same("its twin two dollars deeper holds the weak edge", over.getRate(), over.bandWeakEdge());
+        close("...selling the lift's dollars", over.getDefenceUsd(), -ho.deal, DOLLAR);
     }
 
     /* ================= 7. under a peg the dial is the US's rate plus the spread; the aim ================= */
@@ -1266,6 +1382,11 @@ public class CurrencyRegimeCheck {
      * 12, 16, 17, 25 and 30 nothing - a surplus that comes and goes with the count, a hair either side of a deficit. The count is therefore
      * SEARCHED for: the first of these whose first month at the peg owes the edge's bill the section asserts on (more than 100 x
      * PriceLevel.FACTOR of local money), found once on a trial town and kept for the cities of the section.
+     *
+     * XR5, 2026-11-06 (THE HOLD PAYS THE PRESSURE): the vault no longer buys the month's surplus, it buys the dollars that bring the rate up to the peg
+     * when the shadow stands UNDER it. The same towns still buy, for the pressure's reason: at the first month at the peg the dial is tied to the US's
+     * rate plus the spread (30 points), the carry draws the hot money, and the shadow stands 0.7879 under a peg of 1.0292 at 12 depots - a lift of 0.267 in
+     * logs, bought as US$952k. The search still asks for the bill; the fixture assertion below now asks for its cause, the shadow under the peg.
      */
     static final int[] SURPLUS_DEPOTS = { PEG_DEPOTS, 18, 20, 22, 24, 30, 36 };
     static int surplusDepotsFound = 0;
@@ -1289,7 +1410,7 @@ public class CurrencyRegimeCheck {
         return surplusDepotsFound;
     }
 
-    /** A city pegged at 36 months with a large positive spread: the dial high, money arriving, a surplus at the peg every month. */
+    /** A city pegged at 36 months with a large positive spread: the dial high, money arriving, the shadow under the peg and the vault buying (XR5: the lift, not the month's surplus). */
     static Game surplusTown(String label, ForeignAccounts.EdgePayer payer) {
         Game g = pegTown(label, false, surplusDepots());
         quietly(() -> {
@@ -1338,9 +1459,10 @@ public class CurrencyRegimeCheck {
         tallyKept(keptTally, cb, tr);
         double owed = cbFx.getEdgeOwedLocal();
         out.printf("   the month after the peg: the vault bought US$%,.0fk, owed %,.0fk of local money%n", cbFx.getEdgeBoughtUsd(), owed);
-        assertTrue("fixture: money arrived and the vault bought dollars at the peg, the same in both cities (a surplus at the peg), and the payer is recorded with it",
+        assertTrue("fixture: money arrived and the vault bought dollars at the peg, the same in both cities (the shadow under the peg, " + String.format("%.4f under %.4f", cbFx.getShadowRate(), cbFx.getPegRate())
+                        + ": the hold bought the lift), and the payer is recorded with it",
                 owed > 100 * PriceLevel.FACTOR && Double.compare(owed, trFx.getEdgeOwedLocal()) == 0 && cbFx.getEdgeOwedPayer() == ForeignAccounts.EdgePayer.CENTRAL_BANK
-                        && trFx.getEdgeOwedPayer() == ForeignAccounts.EdgePayer.TREASURY && cbFx.getEdgeBoughtUsd() > 0);
+                        && trFx.getEdgeOwedPayer() == ForeignAccounts.EdgePayer.TREASURY && cbFx.getEdgeBoughtUsd() > 0 && cbFx.getLastPegGap() < 0);
         assertTrue("fixture: nothing was paid yet: the bill is settled the month after, and the cities are alike to the bit until it is",
                 cb.getCentralBank().getDollarsBought() == 0 && billPaid(tr) == 0 && Double.compare(cb.getCentralBank().m0(), tr.getCentralBank().m0()) == 0
                         && Double.compare(cb.getCash(), tr.getCash()) == 0);
@@ -1455,13 +1577,13 @@ public class CurrencyRegimeCheck {
 
     /* ================= 10. saved and loaded mid-peg ================= */
 
-    /** The regime's state as the getters say it: every figure XR2 added to the currency, as one row. */
+    /** The regime's state as the getters say it: every figure XR2 added to the currency, and XR5's hold, as one row. */
     static double[] regimeFields(ForeignAccounts fx) {
         return new double[] { fx.getRegime().ordinal(), fx.getEdgePayer().ordinal(), fx.getPegRate(), fx.getBandCentre(), fx.getBandSlope(),
                 fx.getBandWidth(), fx.getShadowRate(), fx.isHeld() ? 1 : 0, fx.getDoubtShare(), fx.getLastHazard(), fx.getLastPegGap(),
                 fx.getEdgeOwedLocal(), fx.getEdgeOwedPayer().ordinal(), fx.getEdgeBoughtUsd(), fx.getEdgeBoughtLocal(),
                 fx.getEdgeBoughtUsdLifetime(), fx.getBreaks(), fx.getLastBreakCause().ordinal(), fx.getLastBreakJump(),
-                fx.getLastBreakShadow(), fx.brokeThisMonth() ? 1 : 0, fx.getMoveHeld() };
+                fx.getLastBreakShadow(), fx.brokeThisMonth() ? 1 : 0, fx.getMoveHeld(), fx.getHoldFelt() };
     }
 
     static void savedMidPeg() {
@@ -1600,6 +1722,21 @@ public class CurrencyRegimeCheck {
         same("...its band is the default width, unset", old.getBandWidth(), ForeignAccounts.BAND_WIDTH);
         same("...and the rate it had is the saved one", old.getRate(), band.getRate());
         close("...and the vault is the saved vault, in dollars", Math.abs(old.getReservesUsd() - band.getReservesUsd()), 0, 1e-6 * band.getReservesUsd());
+
+        // The hold's support is slot 147, the last (XR5): a band whose edges dealt carries one, and an array cut before it restores a hold with none.
+        assertTrue("fixture: the band's edges have dealt and it carries a support (getHoldFelt() " + String.format("%.4f", band.getHoldFelt()) + "), the array 148 slots long",
+                band.getHoldFelt() != 0 && full.length == 148);
+        same("slot 147 is the hold's support, and restore() reads it back to the bit", full[147], band.getHoldFelt());
+        ForeignAccounts cut = new ForeignAccounts();
+        cut.restore(Arrays.copyOf(full, 147));
+        assertTrue("an array cut at slot 146, as XR4 wrote it, restores with no support (a hold just entered) and the rest of the regime as saved",
+                cut.getHoldFelt() == 0 && cut.getRegime() == BAND && Double.compare(cut.getBandCentre(), band.getBandCentre()) == 0
+                        && Double.compare(cut.getEdgeOwedLocal(), band.getEdgeOwedLocal()) == 0);
+        double[] garbled = full.clone();
+        garbled[147] = Double.NaN;
+        ForeignAccounts nan = new ForeignAccounts();
+        nan.restore(garbled);
+        assertTrue("a support that is not a number reads as none", nan.getHoldFelt() == 0);
     }
 
     /* ================= 11. a real run, counted ================= */
@@ -1793,5 +1930,382 @@ public class CurrencyRegimeCheck {
         assertTrue("the twin that left the peg saw none leave on doubt: getDoubtDeparted() is 0 that month", goneOnDoubt == 0);
         assertTrue("...and the audit closes in both (residuals " + String.format("%.4f and %.4f", kept.getLastMoneyAudit().residual, gone.getLastMoneyAudit().residual) + ")",
                 ExchangeRateCheck.auditCloses(kept) && ExchangeRateCheck.auditCloses(gone));
+    }
+
+    /* ================= 14. a peg pays the pressure, not the month's balance (XR5) ================= */
+
+    static void aPegPaysThePressure() {
+        out.println("\n--- 14. a peg pays the pressure, not the month's balance ---");
+
+        /*
+         * XR5, 2026-11-06 (Jerus, 2026-10-23: "pay the pressure"). Until it a peg met the month's balance, so a surplus month with a WEAK shadow bought
+         * dollars at the peg. The lever that makes the shadow weak in a month of surplus, and strong in a month of deficit: the city's prices over the
+         * world's (setParity(), a bare currency's only way to a parity), here 16% over, so the trend takes a sixth of the jump at once and the shadow stands
+         * a gap over the peg; the month's balance, a fifth of imports, moves it the other way by less. Every figure the vault is held to is the harness's
+         * own sum from the model's getters (Held): the shadow, the support faded, the peg, a year's GDP and the rate before the reprice.
+         */
+        final double weakParity = .15, vault0 = 40_000;
+
+        ForeignAccounts weak = book(1.2 * TRADE, TRADE, vault0, 0, PEG);
+        Held h = heldMonth(weak, 1.2 * TRADE, TRADE, weakParity);
+        double gap = weak.getLastPegGap();
+        out.printf("   a surplus month (US$%,.2fk) with the shadow %.1f%% over the peg: the vault sold US$%,.2fk and bought US$%,.2fk, to US$%,.2fk of US$%,.2fk%n", h.balance,
+                gap * 100, weak.getDefenceUsd(), weak.getEdgeBoughtUsd(), weak.getReservesUsd(), vault0);
+        assertTrue("fixture: the month is a SURPLUS and the shadow is WEAK, over the peg (" + String.format("%.3f", gap) + "), in a currency with a GDP to weigh a deal against",
+                h.balance > 0 && gap > 0 && h.annual > 0 && weak.getRegime() == PEG);
+        assertTrue("the vault FELL: it sold and bought nothing, where a peg that met the month's balance would have bought the surplus",
+                weak.getDefenceUsd() > 0 && weak.getEdgeBoughtUsd() == 0 && weak.getEdgeOwedLocal() == 0 && weak.getReservesUsd() < vault0);
+        close("...exactly what the lift takes: interventionLocalFor(the log of the peg over the free rate, a year's GDP) over the rate", weak.getDefenceUsd(), -h.deal, DOLLAR);
+        close("...and the vault is lower by exactly that", vault0 - weak.getReservesUsd(), -h.deal, DOLLAR);
+        assertTrue("...which is not the surplus (US$" + String.format("%,.2fk", h.balance) + "): the sale is the pressure's", Math.abs(weak.getDefenceUsd() - h.balance) > 100);
+        same("...the rate is the peg to the digit", weak.getRate(), weak.getPegRate());
+        close("...the hold is the lift, a sale's, negative: getHoldFelt() is the log of the peg over the shadow", weak.getHoldFelt(), Math.log(weak.getPegRate() / weak.getShadowRate()), 1e-12);
+        assertTrue("...and it is below 0", weak.getHoldFelt() < 0);
+
+        // The mirror: a deficit month with a strong shadow. The vault buys.
+        ForeignAccounts strong = book(.8 * TRADE, TRADE, vault0, 0, PEG);
+        Held m = heldMonth(strong, .8 * TRADE, TRADE, -weakParity);
+        double gapStrong = strong.getLastPegGap();
+        assertTrue("fixture: the month is a DEFICIT and the shadow is STRONG, under the peg (" + String.format("%.3f", gapStrong) + ")", m.balance < 0 && gapStrong < 0 && strong.getRegime() == PEG);
+        assertTrue("the vault BOUGHT: it bought and sold nothing, where a peg that met the month's balance would have sold the deficit",
+                strong.getEdgeBoughtUsd() > 0 && strong.getDefenceUsd() == 0 && strong.getReservesUsd() > vault0);
+        close("...exactly what the lift takes", strong.getEdgeBoughtUsd(), m.deal, DOLLAR);
+        close("...the vault is higher by exactly that", strong.getReservesUsd() - vault0, m.deal, DOLLAR);
+        close("...and what is owed for it is that purchase at the month's rate", strong.getEdgeOwedLocal(), m.deal * m.rateBefore, DOLLAR);
+        assertTrue("...a purchase never breaks a peg: still a peg, the rate the peg to the digit, the hold above 0 (a purchase's)",
+                strong.getRegime() == PEG && !strong.brokeThisMonth() && Double.compare(strong.getRate(), strong.getPegRate()) == 0 && strong.getHoldFelt() > 0);
+
+        // A weak gap held a year of surplus months: the vault falls every month.
+        ForeignAccounts year = book(1.2 * TRADE, TRADE, vault0, 0, PEG);
+        int soldMonths = 0, boughtMonths = 0, heldMonths = 0, smaller = 0;
+        double worst = 0, sum = 0, first = 0, largest = 0;
+        for (int i = 0; i < 12; i++) {
+            Held y = heldMonth(year, 1.2 * TRADE, TRADE, weakParity);
+            if (year.getDefenceUsd() > 0) soldMonths++;
+            if (year.getEdgeBoughtUsd() > 0) boughtMonths++;
+            if (year.getRegime() == PEG && Double.compare(year.getRate(), year.getPegRate()) == 0) heldMonths++;
+            worst = Math.max(worst, Math.abs(year.getDefenceUsd() + y.deal));
+            sum += y.deal;
+            if (i == 0) first = year.getDefenceUsd(); else if (year.getDefenceUsd() < first) smaller++;
+            largest = Math.max(largest, year.getDefenceUsd());
+        }
+        out.printf("   a weak gap held a year of surplus months: the vault from US$%,.2fk to US$%,.2fk, the first month's sale US$%,.2fk and the largest US$%,.2fk%n", vault0,
+                year.getReservesUsd(), first, largest);
+        assertTrue("a weak gap held a year of surplus months: the peg holds every month and the vault falls every month - it sold in " + soldMonths + " of 12 and bought in " + boughtMonths,
+                heldMonths == 12 && soldMonths == 12 && boughtMonths == 0);
+        close("...each month's sale is the lift's (the first the gap, each after it what the support's fading takes, less a gap that is closing), to a millionth of a dollar", worst, 0, DOLLAR);
+        close("...and the vault's total fall is the sum of the model's figures", vault0 - year.getReservesUsd(), -sum, 12 * DOLLAR);
+        assertTrue("...the first month paid the whole gap, and every month after it paid less (" + smaller + " of 11)", smaller == 11 && first == largest);
+
+        // A gap past INTERVENTION_LINEAR of a year's output is sold on the bounded rule (XI1): each further dollar moves the rate less, so the lift costs more than the linear rule would ask.
+        ForeignAccounts big = book(1.2 * TRADE, TRADE, vault0, 0, PEG);
+        Held b = heldMonth(big, 1.2 * TRADE, TRADE, 2 * weakParity);
+        double lift = -big.getHoldFelt();
+        double linear = lift * b.annual / ForeignAccounts.INTERVENTION_IMPACT / b.rateBefore;
+        assertTrue("fixture: the lift (" + String.format("%.3f", lift) + ") is past INTERVENTION_IMPACT x INTERVENTION_LINEAR, the rule's bound", lift > ForeignAccounts.INTERVENTION_IMPACT * ForeignAccounts.INTERVENTION_LINEAR
+                && big.getRegime() == PEG);
+        close("a gap past INTERVENTION_LINEAR of a year's output: the vault sold interventionLocalFor()'s dollars, on the bounded (logarithmic) branch", big.getDefenceUsd(), -b.deal, DOLLAR);
+        assertTrue("...which is more than the linear rule would ask for that lift (US$" + String.format("%,.2fk", big.getDefenceUsd()) + " against " + String.format("%,.2fk", linear)
+                + "), each further dollar moving the rate less, and more than the sale of the bound itself", big.getDefenceUsd() > linear
+                && big.getDefenceUsd() > ForeignAccounts.INTERVENTION_LINEAR * b.annual / b.rateBefore);
+
+        // A devaluation is a purchase and a revaluation a sale, the same rule; repeg() keeps the hold's support.
+        ForeignAccounts dev = book(TRADE, TRADE, vault0, 0, PEG);
+        final double oldPeg = dev.getPegRate();
+        dev.repeg(oldPeg * 1.25);
+        Held d = heldMonth(dev, TRADE, TRADE, Double.NaN);
+        assertTrue("a devaluation is a purchase: the peg moved 25% weaker on balanced trade, the vault bought the lift and sold nothing, the rate the new peg to the digit",
+                dev.getEdgeBoughtUsd() > 0 && dev.getDefenceUsd() == 0 && Double.compare(dev.getRate(), oldPeg * 1.25) == 0 && dev.getHoldFelt() > 0);
+        close("...exactly interventionLocalFor()'s dollars", dev.getEdgeBoughtUsd(), d.deal, DOLLAR);
+        final double support = dev.getHoldFelt();
+        dev.repeg(oldPeg);
+        assertTrue("repeg() keeps the hold's support: the revaluation back to the old peg leaves getHoldFelt() as it was, to the bit", Double.compare(dev.getHoldFelt(), support) == 0);
+        Held back = heldMonth(dev, TRADE, TRADE, Double.NaN);
+        assertTrue("a revaluation is a sale: the vault sold the lift back to the old peg - the support's fading and the rest of the way - and bought nothing, the rate the old peg to the digit",
+                dev.getDefenceUsd() > 0 && dev.getEdgeBoughtUsd() == 0 && Double.compare(dev.getRate(), oldPeg) == 0);
+        close("...exactly interventionLocalFor()'s dollars", dev.getDefenceUsd(), -back.deal, DOLLAR);
+
+        // With no GDP the rule gives 0: the hold holds the rate and deals nothing.
+        ForeignAccounts noGdp = CurrencyCheck.settled(1.2 * TRADE, TRADE, 0);
+        noGdp.buyReserves(vault0 * noGdp.getRate());
+        noGdp.forgetDealing();
+        noGdp.setRegime(PEG);
+        noGdp.startMonth();
+        noGdp.takeMonth(CurrencyCheck.month(1.2 * TRADE, TRADE, 0, 0), 0);
+        noGdp.setParity(Math.exp(weakParity), 1.0, 0, 0);
+        noGdp.repriceCurrency();
+        assertTrue("fixture: a currency with no GDP, pegged, its shadow over the peg (" + String.format("%.3f", noGdp.getLastPegGap()) + ")", noGdp.getGdpTrailing() == 0 && noGdp.getRegime() == PEG
+                && noGdp.getLastPegGap() > 0);
+        assertTrue("with no GDP interventionLocalFor() is 0: the hold holds the rate and deals nothing - the peg to the digit, the vault where it was, nothing sold or bought, no break",
+                Double.compare(noGdp.getRate(), noGdp.getPegRate()) == 0 && Math.abs(noGdp.getReservesUsd() - vault0) <= DOLLAR && noGdp.getDefenceUsd() == 0
+                        && noGdp.getEdgeBoughtUsd() == 0 && !noGdp.brokeThisMonth() && noGdp.getRegime() == PEG);
+    }
+
+    /* ================= 15. a band's edges pay the pressure (XR5) ================= */
+
+    static void aBandsEdgesPayThePressure() {
+        out.println("\n--- 15. a band's edges pay the pressure ---");
+
+        final double weakParity = .15, vault0 = 40_000;
+
+        // The weak edge in a surplus month sells.
+        ForeignAccounts weak = book(1.2 * TRADE, TRADE, vault0, 0, BAND);
+        weak.setBand(weak.getRate(), 0, ForeignAccounts.BAND_WIDTH);
+        Held w = heldMonth(weak, 1.2 * TRADE, TRADE, weakParity);
+        assertTrue("fixture: the month is a SURPLUS (US$" + String.format("%,.2fk", w.balance) + ") and the shadow is past the weak edge (" + String.format("%.4f over %.4f", weak.getShadowRate(), weak.bandWeakEdge()) + ")",
+                w.balance > 0 && weak.getShadowRate() > weak.bandWeakEdge() && weak.getRegime() == BAND);
+        assertTrue("the weak edge sells in a surplus month - the vault sold and bought nothing, where a band that met the month's balance would have held the edge for nothing",
+                weak.getDefenceUsd() > 0 && weak.getEdgeBoughtUsd() == 0 && weak.getReservesUsd() < vault0);
+        close("...exactly what the lift to the edge takes", weak.getDefenceUsd(), -w.deal, DOLLAR);
+        same("...and the rate is the weak edge exactly", weak.getRate(), weak.bandWeakEdge());
+        close("...the hold is the lift, a sale's: the log of the edge over the shadow", weak.getHoldFelt(), Math.log(weak.bandWeakEdge() / weak.getShadowRate()), 1e-12);
+
+        // The strong edge in a deficit month buys.
+        ForeignAccounts strong = book(.8 * TRADE, TRADE, vault0, 0, BAND);
+        strong.setBand(strong.getRate(), 0, ForeignAccounts.BAND_WIDTH);
+        Held s = heldMonth(strong, .8 * TRADE, TRADE, -weakParity);
+        assertTrue("fixture: the month is a DEFICIT (US$" + String.format("%,.2fk", -s.balance) + ") and the shadow is past the strong edge (" + String.format("%.4f under %.4f", strong.getShadowRate(), strong.bandStrongEdge()) + ")",
+                s.balance < 0 && strong.getShadowRate() < strong.bandStrongEdge() && strong.getRegime() == BAND);
+        assertTrue("the strong edge buys in a deficit month - the vault bought and sold nothing, where a band that met the month's balance would have bought nothing",
+                strong.getEdgeBoughtUsd() > 0 && strong.getDefenceUsd() == 0 && strong.getReservesUsd() > vault0);
+        close("...exactly what the lift to the edge takes", strong.getEdgeBoughtUsd(), s.deal, DOLLAR);
+        close("...what is owed for it is that purchase at the month's rate", strong.getEdgeOwedLocal(), s.deal * s.rateBefore, DOLLAR);
+        same("...and the rate is the strong edge exactly", strong.getRate(), strong.bandStrongEdge());
+
+        // Inside: a pulse of weakness that carries the rate to the edge once, then withdrawn. The hold's support then fades by half in INTERVENTION_HALF_LIFE and the rate
+        // stands inside the band at the shadow times exp(the support), nothing dealt.
+        ForeignAccounts band = book(TRADE, TRADE, vault0, 0, BAND);
+        band.setBand(band.getRate(), 0, ForeignAccounts.BAND_WIDTH);
+        Held pulse = heldMonth(band, TRADE, TRADE, .06);
+        assertTrue("fixture: the pulse took the rate to the weak edge and sold (US$" + String.format("%,.2fk", band.getDefenceUsd()) + "), leaving a support of " + String.format("%.4f", band.getHoldFelt()),
+                Double.compare(band.getRate(), band.bandWeakEdge()) == 0 && band.getDefenceUsd() > 0 && band.getHoldFelt() < 0);
+        final double support = band.getHoldFelt();
+        final int half = (int) ForeignAccounts.INTERVENTION_HALF_LIFE;
+        assertTrue("fixture: INTERVENTION_HALF_LIFE is a whole number of months", half == ForeignAccounts.INTERVENTION_HALF_LIFE);
+        int inside = 0, rateRight = 0, dealtNothing = 0, fadedRight = 0;
+        double vaultAfterPulse = band.getReservesUsd();
+        double worstRate = 0;
+        for (int i = 1; i <= half; i++) {
+            Held in = heldMonth(band, TRADE, TRADE, 0);
+            if (in.free < Math.log(band.bandWeakEdge()) && in.free > Math.log(band.bandStrongEdge())) inside++;
+            worstRate = Math.max(worstRate, Math.abs(band.getRate() / (band.getShadowRate() * Math.exp(band.getHoldFelt())) - 1));
+            if (band.getDefenceUsd() == 0 && band.getEdgeBoughtUsd() == 0 && Double.compare(band.getReservesUsd(), vaultAfterPulse) == 0) dealtNothing++;
+            if (Double.compare(band.getHoldFelt(), in.faded) == 0) fadedRight++;
+        }
+        out.printf("   a pulse to the edge, then %d months inside: the support %.4f to %.4f; the worst miss of the rate against the shadow times exp(the support) %.2e%n", half, support,
+                band.getHoldFelt(), worstRate);
+        assertTrue("inside the band, " + half + " months on from the edge, the rate was inside the edges in every one (" + inside + " of " + half + ")", inside == half);
+        close("...the rate is the shadow times exp(getHoldFelt()), every month", worstRate, 0, 1e-12);
+        assertTrue("...nothing is dealt inside: sold, bought and the vault are where they were, every month (" + dealtNothing + " of " + half + ")", dealtNothing == half);
+        assertTrue("...and the hold is exactly what the support faded to, every month, to the bit (" + fadedRight + " of " + half + ")", fadedRight == half);
+        close("...INTERVENTION_HALF_LIFE months on, half the support is left", band.getHoldFelt(), support / 2, 1e-12);
+
+        // Under the floor the band gives way for the month, and stays a band: section 6 finds the vault the sale would take just under its floor; here it is the weak
+        // edge of a surplus month, with a vault only a third over its floor against a sale of more than the whole vault's cover.
+        ForeignAccounts thin = book(1.2 * TRADE, TRADE, 4_000, 0, BAND);
+        thin.setBand(thin.getRate(), 0, ForeignAccounts.BAND_WIDTH);
+        ForeignAccounts floating = book(1.2 * TRADE, TRADE, 4_000, 0, BAND);
+        floating.setBand(floating.getRate(), 0, ForeignAccounts.BAND_WIDTH);
+        floating.setRegime(FLOAT);
+        double thinVault = thin.getReservesUsd();
+        Held t = heldMonth(thin, 1.2 * TRADE, TRADE, weakParity);
+        heldMonth(floating, 1.2 * TRADE, TRADE, weakParity);
+        assertTrue("fixture: the sale the weak edge needs (US$" + String.format("%,.2fk", -t.deal) + ") is more than the vault holds over its floor (US$" + String.format("%,.2f", thinVault - thin.vaultFloorUsd()) + ")",
+                t.deal < 0 && thinVault + t.deal < thin.vaultFloorUsd());
+        assertTrue("under its floor the band gives way for the month - nothing sold, the vault where it was, the regime still Band, no break",
+                thin.getRegime() == BAND && !thin.brokeThisMonth() && thin.getDefenceUsd() == 0 && Double.compare(thin.getReservesUsd(), thinVault) == 0);
+        same("...the rate stands where it would with nothing dealt: the shadow, the floating twin's rate", thin.getRate(), floating.getRate());
+        assertTrue("...past the edge it was to hold, and the hold is 0: it dealt nothing to show for", thin.getRate() > thin.bandWeakEdge() && thin.getHoldFelt() == 0);
+    }
+
+    /* ================= 16. the overshoot both ways (XR5) ================= */
+
+    /** A month of balanced trade and a parity falling away by 60% over 30 months and staying there: the shadow far under the peg, where the chance of a break is BREAK_BASE a month. */
+    static void fallMonth(ForeignAccounts fx, int m) {
+        fx.startMonth();
+        fx.takeMonth(CurrencyCheck.month(TRADE, TRADE, 0, 0), GDP);
+        fx.setParity(Math.exp(-.6 * Math.min(1, (m + 1) / 30.0)), 1.0, -.2, 0);
+        fx.repriceCurrency();
+    }
+
+    static void theOvershootBothWays() {
+        out.println("\n--- 16. the overshoot both ways ---");
+
+        /*
+         * XR5 (Jerus, 2026-10-23: "overshoot both ways"; the Swiss franc, 2015). A peg that breaks lands OVERSHOOT of its gap past the shadow, on whichever side
+         * the shadow was: the weak break, as it always did, over the shadow; and now the strong one, where the shadow was the stronger, under it. Before, a gap
+         * the other way was "no overshoot" and the rate landed at the shadow. Each side is found by searching seeds of a bare seeded currency for one whose peg
+         * broke by doubt, beside a floating twin on the same market (the chance of a break is BREAK_BASE a month with the shadow on the strong side, about one in a thousand).
+         */
+        for (int side = 0; side < 2; side++) {
+            final boolean strong = side == 1;
+            final String name = strong ? "stronger" : "weaker";
+            ForeignAccounts peg = null, flt = null;
+            int breakMonth = 0, marketApart = 0, seedsTried = 0, monthsPlayed = 0;
+            double shadowAtBreak = 0, vaultBefore = 0;
+            for (long s = 1; s <= 600 && peg == null; s++) {
+                seedsTried++;
+                ForeignAccounts p = book(TRADE, TRADE, DEEP, SEED + s, PEG), f = book(TRADE, TRADE, DEEP, SEED + s, FLOAT);
+                int apart = 0;
+                for (int m = 0; m < 400; m++) {
+                    double v = p.getReservesUsd();
+                    if (strong) { fallMonth(p, m); fallMonth(f, m); } else { driftMonth(p, m); driftMonth(f, m); }
+                    monthsPlayed++;
+                    if (Double.compare(p.getMarket(), f.getMarket()) != 0) apart++;
+                    if (p.brokeThisMonth()) {
+                        peg = p;
+                        flt = f;
+                        breakMonth = m;
+                        marketApart = apart;
+                        shadowAtBreak = p.getLastBreakShadow();
+                        vaultBefore = v;
+                        break;
+                    }
+                }
+            }
+            out.printf("   a peg broke by doubt with the shadow %s beside a floating twin: the first in %d seeds, %,d pegged months%n", name, seedsTried, monthsPlayed);
+            assertTrue("fixture: a peg broke by doubt with the shadow on the " + name + " side of the peg, beside its floating twin", peg != null
+                    && peg.getLastBreakCause() == ForeignAccounts.BreakCause.DOUBT && (strong ? peg.getLastBreakShadow() < peg.getPegRate() : peg.getLastBreakShadow() > peg.getPegRate()));
+            if (peg == null) continue;
+            final double gapAtBreak = Math.log(shadowAtBreak / peg.getPegRate());
+            final double excess0 = Math.log(peg.getRate() / flt.getRate());
+            out.printf("   month %d, a gap of %+.1f%%: the rate landed %+.1f%% from its twin's%n", breakMonth + 1, gapAtBreak * 100, (Math.exp(excess0) - 1) * 100);
+            close("the " + name + " break lands at the shadow times exp(OVERSHOOT x the gap): past the shadow", peg.getRate(), shadowAtBreak * Math.exp(ForeignAccounts.OVERSHOOT * gapAtBreak),
+                    1e-12 * peg.getRate());
+            assertTrue("...on the " + name + " side: " + (strong ? "under the shadow, so under the peg" : "over the shadow, so over the peg"),
+                    strong ? peg.getRate() < shadowAtBreak && peg.getRate() < peg.getPegRate() : peg.getRate() > shadowAtBreak && peg.getRate() > peg.getPegRate());
+            close("the floating twin's rate is the shadow the peg broke from", flt.getRate(), shadowAtBreak, 1e-12 * shadowAtBreak);
+            close("...so the break left the peg's rate off it by OVERSHOOT of the gap, in logs", excess0, ForeignAccounts.OVERSHOOT * gapAtBreak, 1e-12);
+            assertTrue("fixture: the gap was " + (strong ? "negative" : "past BREAK_GAP, as a doubt break must be"),
+                    strong ? gapAtBreak < 0 : gapAtBreak > ForeignAccounts.BREAK_GAP);
+            assertTrue("nothing is dealt in the month of the break and the hold goes with the peg: the vault is where it was, getHoldFelt() is 0, Float after it",
+                    peg.getDefenceUsd() == 0 && peg.getEdgeBoughtUsd() == 0 && Double.compare(peg.getReservesUsd(), vaultBefore) == 0 && peg.getHoldFelt() == 0 && peg.getRegime() == FLOAT);
+            final int half = (int) ForeignAccounts.MARKET_HALF_LIFE;
+            assertTrue("fixture: MARKET_HALF_LIFE is a whole number of months", half == ForeignAccounts.MARKET_HALF_LIFE);
+            for (int m = breakMonth + 1; m <= breakMonth + half; m++) {
+                if (strong) { fallMonth(peg, m); fallMonth(flt, m); } else { driftMonth(peg, m); driftMonth(flt, m); }
+            }
+            close("MARKET_HALF_LIFE months on, half the overshoot is gone, on the " + name + " side as on the other", Math.log(peg.getRate() / flt.getRate()), excess0 / 2, 1e-9);
+            for (int m = breakMonth + half + 1; m <= breakMonth + 2 * half; m++) {
+                if (strong) { fallMonth(peg, m); fallMonth(flt, m); } else { driftMonth(peg, m); driftMonth(flt, m); }
+            }
+            close("...and another MARKET_HALF_LIFE on, a quarter of it is left", Math.log(peg.getRate() / flt.getRate()), excess0 / 4, 1e-9);
+            assertTrue("...and the peg's market path is the floating twin's, every month of it (" + marketApart + " months apart before the break)", marketApart == 0
+                    && Double.compare(peg.getMarket(), flt.getMarket()) == 0 && peg.getMarketDraws() == flt.getMarketDraws());
+        }
+    }
+
+    /* ================= 17. the tied path prices the curve (XR5) ================= */
+
+    /** A bare debt manager on a dial and a world rate, struck on inflation well off its target, its tie read from this switch (null: never handed one). */
+    static DebtManager tiedManager(boolean[] tie, double world) {
+        DebtManager dm = new DebtManager();
+        if (tie != null) dm.setTiedSource(() -> tie[0]);
+        dm.setWorldRate(world);
+        dm.strikeExpectations(.10, .06);
+        dm.setPolicyRate(dm.tiedRate(0));
+        return dm;
+    }
+
+    /** How many of the manager's paths and rates differ from another's by a bit: the curve's expected dial 600 months out, the floater's path, the long yields, the rule and where it settles. */
+    static int pathsApart(DebtManager a, DebtManager b) {
+        int apart = 0;
+        for (int t = 0; t < YieldCurve.HORIZON; t++) if (Double.compare(a.expectedDialIn(t), b.expectedDialIn(t)) != 0) apart++;
+        if (!Arrays.equals(a.expectedPolicyPath(), b.expectedPolicyPath())) apart++;
+        for (int months : new int[] { 120, 360 }) if (Double.compare(a.curveRate(months), b.curveRate(months)) != 0) apart++;
+        if (Double.compare(a.ruleNow(), b.ruleNow()) != 0) apart++;
+        if (Double.compare(a.settledDial(), b.settledDial()) != 0) apart++;
+        return apart;
+    }
+
+    static void theTiedPathPricesTheCurve() {
+        out.println("\n--- 17. the tied path prices the curve ---");
+
+        /*
+         * XR5 (Jerus, 2026-10-23: "price on the tied path"). Under a peg Game sets the dial to the US's rate plus the spread every month (tiedRate()), but
+         * pathFor() still priced the curve's expected dial on the inflation rule, so the long end followed a rule the dial no longer followed. Now a
+         * tied manager's path closes the floor's premium over the dial on the dial itself; the tie (the dial when tied, NaN when not) is in the caches'
+         * keys, so an untied manager's paths are built exactly as before. The fixture is a bare manager struck on a 10% inflation with 6% expected, far
+         * off its target, so the rule's path is visibly not the dial's.
+         */
+        final double world = .03;
+        boolean[] tie = { false };
+        DebtManager wired = tiedManager(tie, world), never = tiedManager(null, world), off = tiedManager(new boolean[] { false }, world);
+        double dial = wired.getPolicyRate();
+        assertTrue("fixture: three managers on the same dial (" + String.format("%.4f", dial) + "), one wired to a switch that is off, one to a source that is always off, one never handed any", dial > 0
+                && Double.compare(never.getPolicyRate(), dial) == 0 && Double.compare(off.getPolicyRate(), dial) == 0 && wired.isStruck() && !wired.isTied() && !never.isTied() && !off.isTied());
+        assertTrue("fixture: the inflation rule is not the dial (the rule at today's inflation " + String.format("%.4f", never.ruleNow()) + ", settling at " + String.format("%.4f", never.settledDial())
+                + "), so its path and the tied one are visibly apart", Math.abs(never.ruleNow() - dial) > .01 && Math.abs(never.settledDial() - dial) > .01);
+        assertTrue("untied - the source off, or none handed - every path is the rule's to the bit: the curve's expected dial 600 months out, the floater's path, the long yields, the rule and where it settles",
+                pathsApart(wired, never) == 0 && pathsApart(off, never) == 0);
+        double untied120 = wired.curveRate(120), untied360 = wired.curveRate(360);
+        double dialUntied = Math.abs(wired.expectedDialOver(360) - dial);
+
+        // Tied.
+        tie[0] = true;
+        assertTrue("tied (the switch on): isTied() says so", wired.isTied());
+        same("ruleNow() is the dial when tied: the market expects the dial to stay where the US's rate keeps it", wired.ruleNow(), dial);
+        same("settledDial() is the dial when tied", wired.settledDial(), dial);
+        int flat = 0;
+        for (double p : wired.expectedPolicyPath()) if (Double.compare(p, dial) == 0) flat++;
+        assertTrue("the floater's expected path is flat at the dial, every month (" + flat + " of " + YieldCurve.HORIZON + ")", flat == YieldCurve.HORIZON);
+        double worst = 0;
+        for (int t = 0; t < YieldCurve.HORIZON; t++) {
+            double expected = dial + (wired.floorRate() - dial) * Math.exp(-(double) t / YieldCurve.DRIFT_MONTHS);
+            worst = Math.max(worst, Math.abs(wired.expectedDialIn(t) - expected));
+        }
+        close("the curve's expected dial is the floor's premium over the dial closing on the dial (DRIFT_MONTHS), every month for fifty years, not on the rule", worst, 0, 1e-12);
+        same("...it starts at the floor, to the bit", wired.expectedDialIn(0), wired.floorRate());
+        double tied120 = wired.curveRate(120), tied360 = wired.curveRate(360);
+        double dialTied = Math.abs(wired.expectedDialOver(360) - dial);
+        out.printf("   struck on 10%% inflation, 6%% expected, the dial %.2f%%: the 10-year yield %.2f%% untied and %.2f%% tied; the 30-year %.2f%% and %.2f%%%n", dial * 100, untied120 * 100,
+                tied120 * 100, untied360 * 100, tied360 * 100);
+        assertTrue("the long yields are the curve on the tied path, not the rule's: the 10-year and the 30-year differ from the untied manager's by more than a point",
+                Math.abs(tied120 - untied120) > .01 && Math.abs(tied360 - untied360) > .01);
+        assertTrue("...the dial expected over 30 years is nearer the dial than the rule's path put it (" + String.format("%.4f against %.4f", dialTied, dialUntied) + ")", dialTied < dialUntied);
+        close("...and the long yield is still the curve taken apart: the dial expected, the credit spread, the term premium less the compression", tied360,
+                wired.expectedDialOver(360) + wired.creditSpread() + DebtManager.termPremium(360) - wired.compression(360), 1e-9);
+
+        // Moving the US's rate and re-tying moves the long yields with it; untied they hardly move.
+        final double move = .03;
+        DebtManager rule = tiedManager(null, world);
+        wired.setWorldRate(world + move);
+        wired.setPolicyRate(wired.tiedRate(0));
+        rule.setWorldRate(world + move);
+        rule.setPolicyRate(rule.tiedRate(0));
+        double rose120 = wired.curveRate(120) - tied120, rose360 = wired.curveRate(360) - tied360;
+        double ruleRose360 = rule.curveRate(360) - untied360;
+        out.printf("   the US's rate up %.0f points and the dial re-tied: the tied 10-year yield up %.2f points, the 30-year %.2f; untied manager's 30-year up %.2f%n", move * 100, rose120 * 100,
+                rose360 * 100, ruleRose360 * 100);
+        assertTrue("the US's rate up " + String.format("%.0f", move * 100) + " points and the dial re-tied: the tied long yields rise with it (by " + String.format("%.2f and %.2f", rose120 * 100, rose360 * 100) + " points)",
+                rose120 > .5 * move && rose360 > .5 * move && rose120 < 1.5 * move && rose360 < 1.5 * move);
+        assertTrue("...where the untied manager's 30-year, the rule's path under a dial that moved the same, hardly moves (" + String.format("%.2f", ruleRose360 * 100) + " points)", ruleRose360 < .25 * move);
+        same("...ruleNow() and settledDial() follow the dial", wired.ruleNow() + wired.settledDial(), 2 * wired.getPolicyRate());
+
+        // Untied again: the key honours the tie, so a manager that was tied is the rule's to the bit once the switch is off.
+        tie[0] = false;
+        assertTrue("untied again, a manager that was tied prices the rule's path to the bit - the caches' keys carry the tie - exactly as the one never handed a source on the same dial",
+                pathsApart(wired, rule) == 0 && !wired.isTied());
+
+        // In a city the source is the peg.
+        Game city = town("xr5-tied", steady());
+        DebtManager dm = city.getDebtManager();
+        ForeignAccounts fx = city.getForeignAccounts();
+        assertTrue("in a city the manager is tied under a peg and under nothing else: Lean no, Peg yes, Band no, Float no",
+                tiedIn(city, dm, LEAN) == false && tiedIn(city, dm, PEG) && !tiedIn(city, dm, BAND) && !tiedIn(city, dm, FLOAT));
+        quietly(() -> city.setCurrencyRegime(PEG));
+        play(city, 2);
+        assertTrue("fixture: the city is pegged and has struck its expectations", fx.getRegime() == PEG && dm.isStruck() && dm.isTied());
+        same("a pegged city: ruleNow() is the dial the peg ties", dm.ruleNow(), dm.getPolicyRate());
+        same("...and settledDial() is", dm.settledDial(), dm.getPolicyRate());
+        quietly(() -> city.setCurrencyRegime(LEAN));
+        assertTrue("left for Lean, the same city's rule is the inflation rule again: ruleNow() is advisedPolicyRate() at the inflation the month struck",
+                !dm.isTied() && Double.compare(dm.ruleNow(), dm.advisedPolicyRate(dm.getStruckInflation())) == 0);
+    }
+
+    /** Whether the city's debt manager is tied with the city in this regime. */
+    static boolean tiedIn(Game city, DebtManager dm, ForeignAccounts.Regime regime) {
+        quietly(() -> city.setCurrencyRegime(regime));
+        return dm.isTied();
     }
 }

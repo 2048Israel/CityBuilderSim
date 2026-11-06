@@ -35,8 +35,11 @@ import java.util.Arrays;
  *      never touches the mix holds only US$ with no cross move; a purchase of euros and one by the world's mix put balances where they
  *      say; and the month's revaluation in local money is the vault's dollars at the rate's move plus the cross move at the last rate.
  *
- * Every fixture causes its condition: a settled currency on a peg whose month is a deficit (the defence sells) or a surplus (the edge
- * buys), holdings built by named purchases at known rates, and rates handed by hand.
+ * Every fixture causes its condition: a settled currency on a peg that the hold has to sell for (the peg revalued under the rate it
+ * stands at, so the lift is a sale: the defence sells) or buy for (devalued, or a surplus: the edge buys), holdings built by named
+ * purchases at known rates, and rates handed by hand. XR5 (THE HOLD PAYS THE PRESSURE, 2026-11-06): until it the peg met the month's
+ * balance, so a deficit month sold and a surplus month bought and a peg moved to 1.6 on balanced trade dealt nothing; now the hold
+ * deals the lift the peg and the shadow ask, so the fixtures move the peg to cause the sale or the purchase they stand on.
  */
 public class VaultMoneysCheck {
 
@@ -46,8 +49,8 @@ public class VaultMoneysCheck {
     /** The cross rates the sections hand: US$ per unit of the US$, euro, yen, pound, yuan, Canadian and Australian dollar and franc. */
     static final double[] R = {1, 1.10, 0.0070, 1.27, 0.14, 0.73, 0.65, 1.12};
 
-    /** The length of the foreign accounts' array: slots 0 to 141 and, after them, what the vault earned (142-146, XR4; InterestAbroadCheck's section 7 asserts them). */
-    static final int SLOTS = 147;
+    /** The length of the foreign accounts' array: slots 0 to 141 and, after them, what the vault earned (142-146, XR4; InterestAbroadCheck's section 7 asserts them) and the hold's support (147, XR5; CurrencyRegimeCheck 10). */
+    static final int SLOTS = 148;
 
     static final ForeignAccounts.Mix ALL_USD = ForeignAccounts.Mix.ALL_USD, MATCH_TRADE = ForeignAccounts.Mix.MATCH_TRADE,
             WORLD_MIX = ForeignAccounts.Mix.WORLD_MIX, CHOSEN = ForeignAccounts.Mix.CHOSEN;
@@ -134,7 +137,10 @@ public class VaultMoneysCheck {
         fx.repeg(1.6);
         CurrencyRegimeCheck.month(fx, CurrencyRegimeCheck.TRADE, CurrencyRegimeCheck.TRADE);
         rate = fx.getRate();
-        assertTrue("fixture: the peg holds at 1.6 on balanced trade, so nothing is dealt in the month", rate == 1.6 && Double.compare(fx.getReservesUsd(), old) == 0);
+        double devaluing = fx.getEdgeBoughtUsd();   // XR5: devaluing a peg is a purchase of dollars (the hold buys the lift), which the vault then holds
+        old += devaluing;
+        assertTrue("fixture: the peg holds at 1.6 on balanced trade, the vault having bought the lift to it (" + String.format("%.4f", devaluing) + ")",
+                rate == 1.6 && devaluing > 0 && Double.compare(fx.getReservesUsd(), old) == 0);
         fx.buyReserves(48_000);
         old += 48_000 / rate;
         same("...and again at the peg's rate", fx.getReservesUsd(), old);
@@ -142,17 +148,22 @@ public class VaultMoneysCheck {
         old += 48_000 / rate;
         same("...a purchase named \"USD\" is the same arithmetic (the founders' dollars are bought so)", fx.getReservesUsd(), old);
 
-        // THE DEFENCE (old: reservesUsd = usd >= reservesUsd ? 0 : reservesUsd - usd).
+        // THE DEFENCE (old: reservesUsd = usd >= reservesUsd ? 0 : reservesUsd - usd). Revalued under the rate the hold has been buying up to, in a deficit month: the lift is a sale.
+        // The treasury's purchases above are set-ups and not deals (a purchase of dollars weakens the D$, and a hold would have to sell against it): forgotten by the rate.
+        fx.forgetDealing();
+        fx.repeg(1.3);
         pegMonth(fx, .8);
+        rate = fx.getRate();
         double sold = fx.getDefenceUsd();
-        assertTrue("fixture: the month is a deficit and the peg's vault met it (sold " + String.format("%.4f", sold) + ")", sold > 0 && fx.getRegime() == ForeignAccounts.Regime.PEG);
+        assertTrue("fixture: the peg is revalued to 1.3 in a deficit month and the peg's vault sold the lift (sold " + String.format("%.4f", sold) + ")",
+                sold > 0 && fx.getRegime() == ForeignAccounts.Regime.PEG && rate == 1.3);
         old = sold >= old ? 0 : old - sold;
         same("a defence sale takes the dollars sold off the dollars", fx.getReservesUsd(), old);
 
         // THE STRONG EDGE'S BUY (old: reservesUsd += usd).
         pegMonth(fx, 1.2);
         double bought = fx.getEdgeBoughtUsd();
-        assertTrue("fixture: the month is a surplus and the peg's vault bought it (" + String.format("%.4f", bought) + ")", bought > 0);
+        assertTrue("fixture: the month is a surplus and the peg's vault bought the lift (" + String.format("%.4f", bought) + ")", bought > 0);
         old += bought;
         same("an edge buy adds the dollars bought", fx.getReservesUsd(), old);
 
@@ -419,9 +430,10 @@ public class VaultMoneysCheck {
         defence.buyReserves(24_000, "EUR");   // 15,000 US$ more: the euros are the larger by far
         defence.forgetDealing();
         double eurBefore = defence.getHoldingUsd(1), gbpBefore = defence.getHolding(3);
+        defence.repeg(1.3);   // revalued under the rate the hold bought up to (XR5): the lift is a sale
         pegMonth(defence, .8);
         double sold = defence.getDefenceUsd();
-        assertTrue("fixture: the peg's vault met a deficit by selling (" + String.format("%.4f", sold) + ")", sold > 0);
+        assertTrue("fixture: the peg's vault sold the lift to a revalued peg in a deficit month (" + String.format("%.4f", sold) + ")", sold > 0);
         near("the defence sold from the euros, the largest", defence.getHoldingUsd(1), eurBefore - sold, 1e-9);
         same("...and the pounds gave up nothing", defence.getHolding(3), gbpBefore);
 
@@ -597,7 +609,7 @@ public class VaultMoneysCheck {
         a.revalueVault();
 
         double[] saved = a.toSaveArray();
-        assertTrue("the array runs to slot 146, the vault's (105-141) and what it earned (142-146) (" + saved.length + " slots)", saved.length == SLOTS);
+        assertTrue("the array runs to slot 147, the vault's (105-141), what it earned (142-146) and the hold's support (147) (" + saved.length + " slots)", saved.length == SLOTS);
         same("slot 22 is still the vault's dollars, the total", saved[22], a.getReservesUsd());
         same("...and slot 19 its worth at home", saved[19], a.getReserves());
         boolean eight = true;
