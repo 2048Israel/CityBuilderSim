@@ -106,7 +106,11 @@ public final class SaveWriter {
             return files.saveFile(slot);
         }
 
-        /** Writes all three files and returns the save's outcome; the map's and the history's failures are printed. */
+        /**
+         * Writes all three files and returns the save's outcome with the history's beside it (UP6, LB3-S): a history that could
+         * not be written is printed and carried in the result's historyError, so a new save beside an old history is never told
+         * "Saved" alone. The map's failure is printed only.
+         */
         @Override
         public GameFiles.Result write() {
 
@@ -122,14 +126,15 @@ public final class SaveWriter {
 
             // The history is written even when the save failed, on purpose: the two
             // files are independent, and one of them landing is strictly better
-            // than neither. The reported outcome is the save's, because that is the
-            // file the player would actually mourn.
+            // than neither. The outcome is the save's with the history's beside it
+            // (UP6, LB3-S): a slot can hold a new save beside an old history, and the
+            // game must not say "Saved" alone when it does.
             GameFiles.Result historyResult = toWrite.saveHistory(files, slot);
             if (!historyResult.ok) {
                 System.out.println(historyResult.message());
             }
 
-            return result;
+            return result.withHistory(historyResult);
         }
     }
 
