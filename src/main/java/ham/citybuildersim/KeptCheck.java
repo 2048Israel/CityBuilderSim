@@ -248,6 +248,17 @@ import java.util.concurrent.TimeUnit;
  *      its own Tooltip (Kept.tip) on every page of the three screens;
  *  81. it is cheap: the kept month on Government's Overview within KEPT_GOVERNMENT_MS, on Trade's Overview and its heaviest page within KEPT_TRADE_MS and
  *      on Policy's hub and its dial-heavy pages within KEPT_POLICY_MS through Timing, built new beside it.
+ *
+ * ...and the research screens on the Sectors and Build tabs (R5, slice B2), on ResearchViewCheck.researchTown(), a city founded the 1900 way (a played
+ * city has nothing of either to draw, and says so):
+ *  96. a sector's Investors page with its equipment, kept: the sector of the fixture's unfitted stack has ITS EQUIPMENT with the piece's card, the
+ *      stack's row, how many carry it and the model's verdict; the page kept over last month's nodes is the page built new for R5_MONTHS months and hands
+ *      back nine in ten of its nodes; the farms' page has none until the tractor is found here, then a card with its origin, what it does and "its gain
+ *      cannot be had yet", and the find lost and found again reshapes it as a page built new is reshaped; a played city has no ITS EQUIPMENT;
+ *  97. a NEW build card, kept: the category page holding the fixture's new furnace shows the chip and the violet edge, where it came from, the strip
+ *      under the head and the dot on the category's chip; the seen rule from both sides (NEW the month the card is first drawn, a redraw in that month
+ *      too, and not the month after while the model alone still says NEW; the dot on another page follows it; a reload shows NEW again; the rule alone
+ *      on a seen map and two months); a lab's card says what a lab is for, in either kind of city; a played city has no NEW anywhere.
  */
 public class KeptCheck {
 
@@ -2680,6 +2691,280 @@ public class KeptCheck {
     /** A name's possessive as the lines say it: "Retail's", "Wood Products'". */
     static String possessive(String name) {
         return name.endsWith("s") ? name + "'" : name + "'s";
+    }
+
+    /* =====================================================================
+       THE RESEARCH SCREENS ON THE SECTORS AND BUILD TABS (R5, slice B2): sections 96 and 97
+       ===================================================================== */
+
+    /** The months each of the research sections plays on its page, kept over last month's nodes against a page built new. */
+    static final int R5_MONTHS = 6;
+
+    /** How many times `part` is in `whole`. */
+    static int occurrences(String whole, String part) {
+        int n = 0;
+        for (int at = whole.indexOf(part); at >= 0; at = whole.indexOf(part, at + part.length())) n++;
+        return n;
+    }
+
+    /**
+     * Sections 96 and 97: a sector's Investors page with its equipment, and the Build tab's NEW, each drawn kept over last month's nodes and built new in
+     * a city founded the 1900 way (ResearchViewCheck.researchTown(): the fixture the research screens share), and in the played city, which has
+     * nothing of either to draw.
+     */
+    static void researchScreens(Game g, KeptBench played) throws Exception {
+        System.out.println("\n=== The research screens on Sectors and Build (R5, slice B2): a city founded the 1900 way ===");
+        long t = System.nanoTime();
+        int c = checks;
+        researchEquipment(g, played);
+        t = tookWith("the Investors page's equipment (96)", t, c);
+        c = checks;
+        researchBuild(g, played);
+        tookWith("the build cards' NEW (97)", t, c);
+    }
+
+    /**
+     * Section 96: a sector's Investors page with its equipment, kept. The sector of the fixture's unfitted stack has ITS EQUIPMENT on its page - the
+     * piece's card with the stack's row, how many carry it and the model's verdict, in the words the model's figures give - and the page drawn kept over
+     * last month's nodes is the page built new, month after month; the farms' page, which has none until the tractor is found here, then has a card with
+     * where it came from, what it does and "its gain cannot be had yet", and comes and goes with the find as a page built new does; and a city founded
+     * the default way has no ITS EQUIPMENT on any Investors page.
+     */
+    static void researchEquipment(Game g, KeptBench played) throws Exception {
+        System.out.println("\n--- 96: a sector's Investors page with its equipment, kept ---");
+        Game town = ResearchViewCheck.researchTown();
+        KeptBench bench = fx(() -> new KeptBench(town));
+        ResearchView.PieceRow stack = null;
+        for (ResearchView.PieceRow r : ResearchView.equipment(town, null)) {
+            if (r.unfitted() > 0) { stack = r; break; }
+        }
+        check("the town has a stack that lacks a piece the city knows (the page's premise)", stack != null);
+        if (stack == null) return;
+        final ResearchView.PieceRow row = stack;
+        String key = row.template().getSector();
+        KeptBench.Page page = fx(() -> bench.sectors(possessive(called(town, key)) + " Investors page", key, "Investors", false));
+        arrive(bench, page);
+        String shown = String.join("\n", fx(bench::signature));
+        check("ITS EQUIPMENT is on " + page.name() + ", once", occurrences(shown, "\"ITS EQUIPMENT\"") == 1);
+        check("...with the piece's card (" + row.piece().getName() + ") and the stack's row (" + row.template().getName() + ")",
+                shown.contains("\"" + row.piece().getName() + "\"") && shown.contains("\"" + row.template().getName() + "\""));
+        check("...saying how many carry it, as the model counts them (" + row.fitted() + " of " + row.buildings() + " fitted)",
+                shown.contains(String.format("\"%,d of %,d fitted\"", row.fitted(), row.buildings())));
+        String verdict = switch (row.verdict().kind()) {
+            case FITTED -> "all fitted";
+            case PAYS -> "next: it pays";
+            case NOT_YET -> "not worth it yet";
+            default -> "not known yet";
+        };
+        check("...and the model's verdict on the next one (" + row.verdict().kind() + ": \"" + verdict + "\")", shown.contains("\"" + verdict + "\""));
+        check("...and where it came from (known since the founding, or from abroad)",
+                shown.contains("\"known since the founding\"") || shown.contains("\"from abroad, "));
+
+        // The page drawn kept over last month's nodes is the page built new, month after month.
+        String first = null;
+        double handed = 0;
+        for (int m = 0; m < R5_MONTHS; m++) {
+            Object[] r = fx(() -> {
+                month(town);
+                bench.drawKept(page);
+                int[] counts = bench.counts(page);
+                return new Object[]{againstNew(bench, page), counts[1] / (double) Math.max(1, counts[0] + counts[1])};
+            });
+            if (r[0] != null && first == null) first = "month " + town.getMonth() + ", " + r[0];
+            handed += (double) r[1];
+        }
+        if (first != null) System.out.println("  first difference: " + first);
+        check("the kept page's signature equals the new page's for " + R5_MONTHS + " months", first == null);
+        System.out.printf("  %d months: %.1f%% of the page's nodes handed back a month on average%n", R5_MONTHS, handed / R5_MONTHS * 100);
+        check("each month hands back nine in ten of the nodes, or more", handed / R5_MONTHS >= HANDED_BACK);
+
+        // The farms have no row until the tractor is found here; then they have a card with its origin and what it does.
+        BuildingsTemplate farm = ResearchViewCheck.template(town, "Mixed Farm");
+        String farmKey = farm.getSector();
+        java.util.Map<String, Integer> without = new java.util.HashMap<>(town.getResearch().foundHere());
+        without.remove("PE14");
+        java.util.Map<String, Integer> with = new java.util.HashMap<>(without);
+        with.put("PE14", 5);
+        Hand lose = b -> {
+            ResearchViewCheck.setFinds(town, without);
+            return null;
+        };
+        Hand find = b -> {
+            ResearchViewCheck.setFinds(town, with);
+            return ResearchView.equipment(town, farmKey).isEmpty() ? "the tractor found gives the farms no row" : null;
+        };
+        KeptBench.Page farms = fx(() -> bench.sectors(possessive(called(town, farmKey)) + " Investors page", farmKey, "Investors", false));
+        fx(() -> lose.on(bench));
+        check("before the tractor is found the farms have no equipment to show (the model's rows)", ResearchView.equipment(town, farmKey).isEmpty());
+        arrive(bench, farms);
+        check("...and no ITS EQUIPMENT on their page", !String.join("\n", fx(bench::signature)).contains("\"ITS EQUIPMENT\""));
+        fx(() -> find.on(bench));
+        arrive(bench, farms);
+        String farmsShown = String.join("\n", fx(bench::signature));
+        List<ResearchView.PieceRow> farmRows = ResearchView.equipment(town, farmKey);
+        ResearchView.PieceRow tractor = farmRows.isEmpty() ? null : farmRows.get(0);
+        check("the tractor found here gives the farms a row in the model", tractor != null && tractor.from() != null
+                && tractor.from().source() == ResearchView.Source.HERE);
+        if (tractor != null && tractor.from() != null) {
+            ResearchView.Discovery d = tractor.from();
+            check("...ITS EQUIPMENT is on their page with the piece (" + tractor.piece().getName() + ")",
+                    farmsShown.contains("\"ITS EQUIPMENT\"") && farmsShown.contains("\"" + tractor.piece().getName() + "\""));
+            check("...where it came from, the month and the years ahead as the discovery says them", farmsShown.contains(String.format(java.util.Locale.ROOT,
+                    "\"found here, %s · %.1f years before the world\"", CityCalendar.format(d.month()), d.yearsAhead())));
+            check("...what it does, in the entry's words", d.entry().effect().isBlank() || farmsShown.contains(d.entry().effect()));
+            boolean cannot = !Double.isFinite(tractor.verdict().earnsBack()) || !Double.isFinite(tractor.verdict().cost());
+            check("...and, as the model prices it (" + tractor.verdict().kind() + (cannot ? ", no gain to be had" : "")
+                            + "), what it earns back or that its gain cannot be had",
+                    cannot ? farmsShown.contains("\"its gain cannot be had yet\"") : farmsShown.contains("earns back"));
+        }
+        fx(() -> lose.on(bench));
+        pageReshaped(town, bench, farms, 96, List.of(
+                new Choice("the tractor found here (the farms' ITS EQUIPMENT comes)", find, true),
+                choice("...and lost again (it goes)", lose),
+                new Choice("...and found again", find, true)));
+
+        // A city founded the default way has none of it.
+        check("a city founded the default way has no equipment rows in the model", ResearchView.equipment(g, null).isEmpty());
+        KeptBench.Page shops = fx(() -> played.sectors(possessive(called(g, Sectors.RETAIL)) + " Investors page in the played city", Sectors.RETAIL,
+                "Investors", false));
+        arrive(played, shops);
+        check("...and no ITS EQUIPMENT on an Investors page (" + shops.name() + ")", !String.join("\n", fx(played::signature)).contains("\"ITS EQUIPMENT\""));
+    }
+
+    /**
+     * Section 97: a NEW build card, kept. The category page holding the fixture's new template (the Electric Arc Furnace, found here, Iron & Steel's)
+     * shows NEW on its card - the chip in the head, the violet edge - and where it came from, the strip under the page's head says what is new and the
+     * category's chip carries a dot, on its own page and on every other; and the page kept over last month's nodes is the page built new. The seen
+     * rule from both sides: NEW the month the card is first drawn (a redraw in that month too), and not the month after while the model alone still says
+     * NEW - the find put back to month 9, so that the fixture's furnace is five months old when first drawn and six the month after, and the model's
+     * rule (a year) has nothing to do with it - and the dot follows the one helper. The lab's card says what a lab is for, a played city's pages have
+     * no NEW at all.
+     */
+    static void researchBuild(Game g, KeptBench played) throws Exception {
+        System.out.println("\n--- 97: a NEW build card, kept ---");
+        Game town = ResearchViewCheck.researchTown();
+        java.util.Map<String, Integer> finds = new java.util.HashMap<>(town.getResearch().foundHere());
+        finds.put("PE1", 9);
+        ResearchViewCheck.setFinds(town, finds);
+        KeptBench bench = fx(() -> new KeptBench(town));
+        BuildingsTemplate furnace = ResearchViewCheck.template(town, "Electric Arc Furnace");
+        ResearchView.Origin origin = ResearchView.origin(town, furnace);
+        List<BuildingsTemplate> fresh = ResearchView.newTemplates(town);
+        check("the town's furnace is NEW, found here in month 9, five months old (the page's premise)", fresh.contains(furnace) && origin != null
+                && origin.source() == ResearchView.Source.HERE && origin.month() == 9 && town.getMonth() - origin.month() == 5);
+        if (!fresh.contains(furnace) || origin == null) return;
+        String cat = BuildAdvice.categoryOf(furnace).name();
+        java.util.Set<String> holding = new java.util.HashSet<>();
+        for (BuildingsTemplate t : fresh) holding.add(BuildAdvice.categoryOf(t).name());
+        String other = null;
+        for (BuildAdvice.Category c : BuildAdvice.categories()) {
+            if (!c.cityBuilds() && !holding.contains(c.name())) { other = c.name(); break; }
+        }
+        final String away = other;
+        check("the town has a market category with nothing new on it (" + away + "), to look at the dot from", away != null);
+        if (away == null) return;
+        KeptBench.Page page = fx(() -> bench.build("Build, a category of the town", away, java.util.Map.of()));
+        int month = town.getMonth();
+
+        // The month the page is first drawn, from a page with nothing new: the furnace's category carries the dot, and nobody has seen its card.
+        check("no card has been drawn: the furnace shows NEW and was seen in no month", bench.buildShowsNew(furnace) && bench.buildNewSeen(furnace) == null);
+        arrive(bench, page);
+        check("on " + away + "'s page (nothing new on it) " + cat + "'s chip carries the dot, and no strip says what is new",
+                fx(bench::buildNewDots).contains(cat) && fx(bench::buildNewStrip) == null);
+        check("...and the furnace is still unseen (its card has not been drawn)", bench.buildNewSeen(furnace) == null && bench.buildShowsNew(furnace));
+
+        // The category's page, the month the card is first drawn.
+        fx(() -> {
+            bench.buildOpen(cat);
+            bench.drawKept(page);
+            bench.passes();
+            return null;
+        });
+        check("the card is drawn in month " + month + ": the screen notes that month for it", Integer.valueOf(month).equals(bench.buildNewSeen(furnace)));
+        check("...it shows NEW: the chip in its head and the violet edge", bench.buildShowsNew(furnace) && fx(bench::buildNewChips) >= 1
+                && fx(bench::buildNewEdges) >= 1);
+        String strip = fx(bench::buildNewStrip);
+        String place = "the " + furnace.getName() + " (" + (origin.source() == ResearchView.Source.HERE ? "found here, " : "from abroad, ")
+                + CityCalendar.format(origin.month()) + ")";
+        check("...the strip under the head says what is new (" + place + ")", strip != null && strip.startsWith("New: ") && strip.contains(place));
+        check("...the chip of " + cat + " carries the dot", fx(bench::buildNewDots).contains(cat));
+        String shown = String.join("\n", fx(bench::signature));
+        String line = String.format(java.util.Locale.ROOT, "\"Found here, %s · %s found it, %.1f years before the world\"", CityCalendar.format(origin.month()),
+                origin.entry().field().school(), origin.yearsAhead());
+        check("...and the card says where it came from (" + line + ")", shown.contains(line));
+        String d1 = fx(() -> againstNew(bench, page));
+        if (d1 != null) System.out.println("  first difference: " + d1);
+        check("the kept page of " + cat + " in month " + month + " equals a page built new", d1 == null);
+
+        // A redraw in the same month still shows NEW: seen this month is not seen in an earlier one.
+        fx(() -> {
+            bench.drawKept(page);
+            bench.passes();
+            return null;
+        });
+        check("drawn again in the same month the card still shows NEW (a month's own redraws are the same month)", bench.buildShowsNew(furnace)
+                && fx(bench::buildNewChips) >= 1);
+
+        // The month after: the model alone still says NEW (a year is the bound), and the card was seen in an earlier month.
+        Object[] next = fx(() -> {
+            month(town);
+            bench.drawKept(page);
+            bench.passes();
+            return new Object[]{ResearchView.isNew(town, furnace), againstNew(bench, page)};
+        });
+        check("the month after, the model alone still says NEW (the premise of the seen rule)", (boolean) next[0]);
+        check("...and the screen does not: the card was first drawn in month " + month + ", an earlier month", !bench.buildShowsNew(furnace));
+        check("...no NEW chip, no violet edge and no strip on " + cat + "'s page", fx(bench::buildNewChips) == 0 && fx(bench::buildNewEdges) == 0
+                && fx(bench::buildNewStrip) == null);
+        check("...and no dot on its chip, which follows the same rule", !fx(bench::buildNewDots).contains(cat));
+        if (next[1] != null) System.out.println("  first difference: " + next[1]);
+        check("the kept page the month after equals a page built new", next[1] == null);
+        check("...the same on the page of " + away + ", whose chip for " + cat + " has lost its dot too", fx(() -> {
+            bench.buildOpen(away);
+            bench.drawKept(page);
+            bench.passes();
+            return !bench.buildNewDots().contains(cat) && againstNew(bench, page) == null;
+        }));
+
+        // A reload is a new city: nothing is remembered, and what is within the year shows NEW again.
+        check("a reload (the screen forgotten) shows NEW again on what became known within the year", fx(() -> {
+            bench.home(page);
+            return bench.buildShowsNew(furnace);
+        }));
+
+        // The rule on its own, with a seen map and two months.
+        check("the rule alone: NEW for a card never drawn, and for one drawn this month", KeptBench.buildShowsNew(true, null, 14)
+                && KeptBench.buildShowsNew(true, 14, 14));
+        check("...and not for one drawn in an earlier month, nor for what the model says is not new", !KeptBench.buildShowsNew(true, 13, 14)
+                && !KeptBench.buildShowsNew(false, null, 14) && !KeptBench.buildShowsNew(false, 14, 14));
+
+        // A lab's card says what a lab is for.
+        BuildingsTemplate lab = ResearchViewCheck.template(town, "Engineering Research Lab");
+        String labCat = BuildAdvice.categoryOf(lab).name();
+        fx(() -> {
+            bench.buildOpen(labCat);
+            bench.drawKept(page);
+            bench.passes();
+            return null;
+        });
+        String labs = String.join("\n", fx(bench::signature));
+        String about = "A lab is the investors' building for a prize: " + Research.LAB_POSTS + " researchers of one field";
+        check("a lab's card (" + labCat + ") says what a lab is for, its numbers from the model's constants (" + Research.LAB_POSTS + " posts, "
+                + Research.LAB_IDLE_MONTHS + " months idle)", labs.contains(about) && labs.contains(Research.LAB_IDLE_MONTHS + " months idle."));
+        check("...and in a city founded the 1900 way says no more than that", !labs.contains("founded the default way"));
+        String d2 = fx(() -> againstNew(bench, page));
+        if (d2 != null) System.out.println("  first difference: " + d2);
+        check("the lab's page kept equals a page built new", d2 == null);
+
+        // The played city: no NEW anywhere, and a lab there says it only idles.
+        check("a city founded the default way has no NEW in the model", ResearchView.newTemplates(g).isEmpty());
+        KeptBench.Page labPage = fx(() -> played.build("Build, " + labCat + " in the played city", labCat, java.util.Map.of()));
+        arrive(played, labPage);
+        String playedLabs = String.join("\n", fx(played::signature));
+        check("...no NEW chip, edge, strip or dot on " + labCat + "'s page", fx(played::buildNewChips) == 0 && fx(played::buildNewEdges) == 0
+                && fx(played::buildNewStrip) == null && fx(played::buildNewDots).isEmpty());
+        check("...and a lab's card there says that nothing is ever on the chase in such a city", playedLabs.contains(about)
+                && playedLabs.contains("founded the default way"));
     }
 
     /** Sections 47 to 54: the Sectors tab kept. */
@@ -5979,6 +6264,7 @@ public class KeptCheck {
         buildControls(g, bench);
         buildHover(g, bench);
         sectors(g, bench);
+        researchScreens(g, bench);
         money(g, bench);
         screensKP6(g, bench);
 

@@ -39,6 +39,8 @@
 
 **Uses:** [ResearchView](ResearchView.md) (199), [HistorySave](HistorySave.md) (47), [Game](Game.md) (24), [DecisionLog](DecisionLog.md) (24), [Research](Research.md) (18), [BuildingsTemplate](BuildingsTemplate.md) (17), [FittingCheck](FittingCheck.md) (12), [ChartModel](ChartModel.md) (11), [YearBook](YearBook.md) (10), [BuildingsStacks](BuildingsStacks.md) (7), [ResearchCatalog](ResearchCatalog.md) (6), [EquipmentFit](EquipmentFit.md) (6), [EquipmentCheck](EquipmentCheck.md) (4), [Founding](Founding.md) (4), [PrizeCheck](PrizeCheck.md) (4), [DiscoveryCheck](DiscoveryCheck.md) (3), [Equipment](Equipment.md) (2), [Recipe](Recipe.md) (1), [BuildingType](BuildingType.md) (1), [PolicyDates](PolicyDates.md) (1), [EconomyManager](EconomyManager.md) (1), [GameFiles](GameFiles.md) (1), [BuildingManager](BuildingManager.md) (1)
 
+**Used by (1):** [KeptCheck](KeptCheck.md)
+
 ## Sections
 
 | line | section |

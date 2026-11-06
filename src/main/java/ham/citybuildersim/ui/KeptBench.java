@@ -1597,6 +1597,62 @@ public final class KeptBench {
         return cardNodes().size();
     }
 
+    /** Whether the Build screen shows NEW on a template's card now (R5): its one rule, which the card, the category's dot and the strip all ask. */
+    public boolean buildShowsNew(BuildingsTemplate t) {
+        return ui.buildScreen.showsNew(t);
+    }
+
+    /** The rule alone (R5): NEW while the model says so and the card was not first drawn in an earlier month than `month`. */
+    public static boolean buildShowsNew(boolean modelNew, Integer firstDrawn, int month) {
+        return BuildScreen.showsNew(modelNew, firstDrawn, month);
+    }
+
+    /** The month a template's card was first drawn in while it was NEW (R5), or null for one the screen has not drawn. */
+    public Integer buildNewSeen(BuildingsTemplate t) {
+        return ui.buildScreen.newSeen.get(t.getId());
+    }
+
+    /** The templates that show NEW on the Build screen now (R5), in the templates' order. */
+    public List<BuildingsTemplate> buildShownNew() {
+        return ui.buildScreen.shownNew();
+    }
+
+    /** How many NEW chips the Build page shows (R5): the cards that say NEW in their heads. */
+    public int buildNewChips() {
+        int[] n = {0};
+        each(column, node -> {
+            if (node instanceof Label l && "NEW".equals(l.getText())) n[0]++;
+        });
+        return n[0];
+    }
+
+    /** The words of the strip under the Build page's head that says what is new on the page (R5), or null when there is none. */
+    public String buildNewStrip() {
+        Label l = find(column, Label.class, x -> x.getText() != null && x.getText().startsWith("New: "));
+        return l == null ? null : l.getText();
+    }
+
+    /** The category chips on the Build page's strip that carry the discovery's dot (R5): the buttons whose graphic is the pair of dots, one of them the discovery's violet ringed, by their names. */
+    public List<String> buildNewDots() {
+        List<String> out = new ArrayList<>();
+        each(column, node -> {
+            if (node instanceof javafx.scene.control.Button b && b.getGraphic() instanceof HBox pair
+                    && pair.getChildren().stream().anyMatch(k -> k.getStyle() != null && k.getStyle().contains("-fx-border-color: " + Palette.TEXT_HEAD))) {
+                out.add(b.getText());
+            }
+        });
+        return out;
+    }
+
+    /** How many cards on the Build page have the discovery's violet for their edge (R5). */
+    public int buildNewEdges() {
+        int[] n = {0};
+        for (javafx.scene.layout.StackPane card : cardNodes()) {
+            if (card.getStyle() != null && card.getStyle().contains("-fx-border-color: " + Palette.DISCOVERY)) n[0]++;
+        }
+        return n[0];
+    }
+
     /** A press on a card's stepper ("+", "+10", "+100", "−" or "↺"), as the pointer's: its order repriced and the order bar refilled in place, outside any draw. False when there is no such card or button. */
     public boolean buildStep(int card, String glyph) {
         List<javafx.scene.layout.StackPane> cards = cardNodes();

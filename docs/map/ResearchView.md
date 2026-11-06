@@ -23,7 +23,7 @@
 
 **Uses:** [ResearchCatalog](ResearchCatalog.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (13), [Game](Game.md) (10), [Research](Research.md) (7), [Equipment](Equipment.md) (4), [DecisionLog](DecisionLog.md) (3), [BuildingsStacks](BuildingsStacks.md) (3), [EquipmentFit](EquipmentFit.md) (2), [BuildingManager](BuildingManager.md) (2), [Recipe](Recipe.md) (2), [PolicyDates](PolicyDates.md) (1)
 
-**Used by (2):** [HistorySave](HistorySave.md), [ResearchViewCheck](ResearchViewCheck.md)
+**Used by (5):** [BuildScreen](BuildScreen.md), [HistorySave](HistorySave.md), [KeptCheck](KeptCheck.md), [ResearchViewCheck](ResearchViewCheck.md), [SectorScreen](SectorScreen.md)
 
 ## Sections
 
