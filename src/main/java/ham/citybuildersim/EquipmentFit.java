@@ -111,9 +111,9 @@ public final class EquipmentFit {
     }
 
     /** FITTED when no building of the stack lacks the piece, NOT_KNOWN when it is not known at the game month, else null: the two verdicts that price nothing. */
-    private static Kind settled(Equipment piece, int month, int unfitted) {
+    private static Kind settled(Equipment piece, int month, int unfitted, Research found) {
         if (unfitted <= 0) return Kind.FITTED;
-        return piece.knownAt(month) ? null : Kind.NOT_KNOWN;
+        return piece.knownAt(month, found) ? null : Kind.NOT_KNOWN;
     }
 
     /**
@@ -127,7 +127,13 @@ public final class EquipmentFit {
      */
     public static Verdict judge(Equipment piece, BuildingsTemplate t, int month, int unfitted, double gain, double cost,
                                 double annualRealRate, double hurdle) {
-        Kind early = settled(piece, month, unfitted);
+        return judge(piece, t, month, unfitted, gain, cost, annualRealRate, hurdle, null);
+    }
+
+    /** The same in a city whose research may have found the piece's code before history's month (R3: Equipment.knownAt(int, Research)); no research (null) reads history's. */
+    public static Verdict judge(Equipment piece, BuildingsTemplate t, int month, int unfitted, double gain, double cost,
+                                double annualRealRate, double hurdle, Research found) {
+        Kind early = settled(piece, month, unfitted, found);
         if (early != null) {
             return new Verdict(early, t.getId(), piece.getId(), Double.NaN, Double.NaN, piece.getLifeMonths(), 0, Double.NaN, Double.NaN, Double.NaN, Double.NaN);
         }
@@ -194,7 +200,8 @@ public final class EquipmentFit {
     /** verdict()'s and verdictForNew()'s one pricing: the template, the piece and how many of the buildings asked about lack it (0 for none: FITTED). */
     private static Verdict priced(Game game, BuildingsTemplate t, Equipment piece, int unfitted) {
         int month = game.getMonth();
-        if (settled(piece, month, unfitted) != null) return judge(piece, t, month, unfitted, Double.NaN, Double.NaN, 0, 0);
+        Research found = game.getResearch();
+        if (settled(piece, month, unfitted, found) != null) return judge(piece, t, month, unfitted, Double.NaN, Double.NaN, 0, 0, found);
 
         double gain = gainOf(game, t, piece);
         double cost = cost(piece, good -> cityPrice(game, good), game.getBuildingManager().nonMaterialPricePerPoint());
@@ -204,7 +211,7 @@ public final class EquipmentFit {
         double amount = game.orderGate().testedOn(cost, sector == null ? 0 : sector.getCash());
         double rate = amount > 0 && sector != null && credit != null ? credit.projectRate(sector.key(), amount) : 0;
         double hurdle = amount > 0 ? plans.interestHurdle(amount, rate) : 0;
-        return judge(piece, t, month, unfitted, gain, cost, plans.realTestRate(rate), hurdle);
+        return judge(piece, t, month, unfitted, gain, cost, plans.realTestRate(rate), hurdle, found);
     }
 
     /** How R1b orders what pays: earnings on cost, the best first; the same earnings by template id and then piece id, so that no list order biases it. */

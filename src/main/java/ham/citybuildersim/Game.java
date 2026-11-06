@@ -706,6 +706,8 @@ public class Game {
         recipes.clear();
         // ...and the fittings on site (R1b): jobs for the last city's buildings.
         fittings.clear();
+        // ...and the city's research (R3): the last city's grants, posts, work piled and discoveries. This Game's Research outlives buildWorld() (the field is final), as the forms do.
+        research.reset();
         // ...and the levers history has not opened yet are held at zero (R0): the city is in its first month.
         policyHearsTheMonth();
         economyManager.getSalesTaxLedger().reset();
@@ -1236,6 +1238,23 @@ public class Game {
     public Fittings getFittings() { return fittings; }
 
     /**
+     * The city's research (R3): the grants, the posts, the work piled on each open problem and the discoveries found here. Empty in a city nobody
+     * has funded, where every reading of "known" is history's. Reset with the other per-city state (buildWorld()). Not saved yet: the next slice.
+     */
+    private final Research research = new Research();
+
+    /** The city's research, for the planners' and the screens' reading of what is known, and for the harnesses (R3). */
+    public Research getResearch() { return research; }
+
+    /**
+     * Whether a building is known in this city this month (R3): history's month for its "since", or the month the city found its code. For R2b,
+     * which gates the planners by it; nothing asks yet.
+     */
+    public boolean knows(BuildingsTemplate t) {
+        return t.knownAt(month, research);
+    }
+
+    /**
      * Orders the fitting of ONE building of `stack` with `piece`, for `payer` (R1b): refuses with the reason in words and nothing drawn or paid, or
      * returns null once it is ordered. Refused when the piece is not on the stack's template, not known at the city's month, or no building of the
      * stack is left to fit (the unfitted count less the fittings already on site).
@@ -1252,7 +1271,7 @@ public class Game {
         BuildingsTemplate t = stack.getBuilding();
         String id = piece.getId();
         if (t.getEquipment(id) == null) return "a " + t.getName() + " carries no " + piece.getName().toLowerCase(Locale.ROOT);
-        if (!piece.knownAt(month)) return "the " + piece.getName().toLowerCase(Locale.ROOT) + " is not known yet";
+        if (!piece.knownAt(month, research)) return "the " + piece.getName().toLowerCase(Locale.ROOT) + " is not known yet";
         if (stack.getUnfitted(id) - fittings.onSite(t.getId(), id) <= 0) {
             return stack.getUnfitted(id) > 0
                     ? "every " + t.getName() + " that lacks the " + piece.getName().toLowerCase(Locale.ROOT) + " is already being fitted"

@@ -144,6 +144,15 @@ public final class Recipe {
         return gameMonth >= knownFrom;
     }
 
+    /**
+     * Whether it is known at a game month in a city whose research may have found it first (R3): from history's month, or from the month the
+     * city found its code, whichever is first (Research.foundMonth()). No research reads history's (knownAt(int)); a year or a blank "since" is
+     * never found, so it reads history's too.
+     */
+    public boolean knownAt(int gameMonth, Research found) {
+        return found == null ? knownAt(gameMonth) : gameMonth >= Math.min(knownFrom, found.foundMonth(since));
+    }
+
     /** Whether it is known by a calendar year's January: knownAt() of that month (Equipment.januaryOf()), so that a screen that asks by the year agrees with the model that asks by the month. */
     public boolean knownIn(int calendarYear) {
         return knownAt(Equipment.januaryOf(calendarYear));

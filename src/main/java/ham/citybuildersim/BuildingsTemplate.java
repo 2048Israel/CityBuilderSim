@@ -768,6 +768,14 @@ public class BuildingsTemplate {
         return sinceText.isEmpty() || gameMonth >= ResearchCatalog.knownFrom(sinceText);
     }
 
+    /**
+     * Whether it is known at a game month in a city whose research may have found its code first (R3): knownAt(int), or from the month the city
+     * found the code (Research.knownFrom()). No research reads history's; an undated row is always known and a year is never found.
+     */
+    public boolean knownAt(int gameMonth, Research found) {
+        return found == null ? knownAt(gameMonth) : sinceText.isEmpty() || gameMonth >= found.knownFrom(sinceText);
+    }
+
     /* ----- THE RAW COAL A PREPARATION PLANT WASHES (0.7.126, batch I6; docs/studies/spec-materials.md 2.5, 2.10) -----
        A coking field's coal comes out of the ground raw - run-of-mine, ash
        and rock in it - and sells as thermal coal, tonne for tonne, until a
