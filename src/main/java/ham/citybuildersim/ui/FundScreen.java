@@ -216,17 +216,10 @@ final class FundScreen {
      */
     HBox head(Node history) {
         Game g = ui.game;
-        HBox head = pageHead("Finances", Palette.MONEY, () -> fin.open(null, null, null), AREA, null,
+        // Kept (KP5, KP2b): the fund's name is a way back, made so (pageHeadTo), not given a hand after.
+        HBox head = pageHeadTo("Finances", Palette.MONEY, () -> fin.open(null, null, null), AREA, this::back, null,
                 history, FinancesScreen.backDoor(cameFrom, this::back));
         if (!head.getChildren().isEmpty() && head.getChildren().get(0) instanceof HBox titled) {
-            for (Node n : titled.getChildren()) {
-                if (n instanceof Label l && AREA.equals(l.getText())) {
-                    // Kept (KP5): the cursor is added once to a style that has it not, never built on again - a style from getStyle() + ...
-                    // grows every month on a node kept between draws.
-                    handStyle(l);
-                    l.setOnMouseClicked(e -> back());
-                }
-            }
             titled.getChildren().addAll(Kept.scope("security", () -> {
                 Label sep = Kept.label("›");
                 sep.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_MUTED) + " -fx-padding: 8 0 2 0;");
@@ -240,13 +233,6 @@ final class FundScreen {
         return head;
     }
 
-    /** The pointing hand added to a node's style, once: a style the node already has with it is left as it is (Kept, KP5). */
-    static void handStyle(Node n) {
-        String own = n.getStyle();
-        if (!own.contains(HAND)) n.setStyle(own + HAND);
-    }
-
-    private static final String HAND = " -fx-cursor: hand;";
 
     /* =====================================================================
        WORDS - every figure and sentence the pages compose, worked out
@@ -2227,16 +2213,13 @@ final class FundScreen {
 
     /** One line of the record: what, by whom, units, money, realized, and "›" to its security; a grouped line opens. `extra` is more style for the row (an inner line's deeper padding). */
     HBox actRow(Game g, Act a, boolean dated, String extra) {
-        Label what = words(a.what(), Palette.SIZE_LABEL + 1, Palette.TEXT_BODY);
+        // Kept (KP5, KP2b): a grouped line is made with its caret and its hand, once, not made plain and then given them.
+        boolean opens = !a.inside().isEmpty();
+        String k = "fund:act:" + a.month() + ":" + a.what();
+        Label what = words((opens ? (open.contains(k) ? "▾ " : "▸ ") : "") + a.what(), Palette.SIZE_LABEL + 1, Palette.TEXT_BODY, opens);
         HBox.setHgrow(what, Priority.ALWAYS);
         what.setMaxWidth(Double.MAX_VALUE);
-        if (!a.inside().isEmpty()) {
-            String k = "fund:act:" + a.month() + ":" + a.what();
-            what.setText((open.contains(k) ? "▾ " : "▸ ") + a.what());
-            // Kept (KP5): the cursor is added once to a style words() set whole a moment ago, never built on again.
-            handStyle(what);
-            what.setOnMouseClicked(e -> { if (!open.remove(k)) open.add(k); redraw(); });
-        }
+        if (opens) what.setOnMouseClicked(e -> { if (!open.remove(k)) open.add(k); redraw(); });
         Label by = words(a.by(), Palette.SIZE_CAPTION, Palette.TEXT_MUTED);
         by.setMinWidth(80);
         by.setPrefWidth(80);

@@ -1,4 +1,4 @@
-# PartnersPage.java - 1,174 lines · 56 methods · 16 constants · interface
+# PartnersPage.java - 1,173 lines · 56 methods · 16 constants · interface
 
 `ham/citybuildersim/ui/PartnersPage.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
@@ -29,8 +29,8 @@
 | 573 | · THE BAND THIS MONTH |
 | 613 | · WHAT MOVES IT |
 | 652 | THE OVERVIEW'S STRIP |
-| 690 | A NATION'S PAGE |
-| 902 | THE CHART - drawn as shapes in a Pane |
+| 689 | A NATION'S PAGE |
+| 901 | THE CHART - drawn as shapes in a Pane |
 
 ## Constants
 
@@ -46,12 +46,12 @@
 | 304 | `PartnersPage.BAND_INFO` | `"The floor is what the world would net the city for the next unit at the volu...` |  |
 | 308 | `PartnersPage.MOVES_INFO` | `"Three things take from what the next unit nets.The city's own selling pushes...` |  |
 | 656 | `PartnersPage.STRIP_INFO` | `"The five nations the city traded most with in the month last counted, sold a...` |  |
-| 694 | `PartnersPage.FIGURES_INFO` | `"The nation's own measures for this year, from the world file the game was bu...` |  |
-| 698 | `PartnersPage.OURS_INFO` | `"What the city sold this nation and bought from it, in D$ and in tonnes, this...` |  |
-| 701 | `PartnersPage.MONEY_INFO` | `"What this nation's money is worth against the US$ and in D$, its central ban...` |  |
-| 704 | `PartnersPage.LAND_INFO` | `"Land is bought from the nation it lies in, at that nation's land price, in i...` |  |
-| 707 | `PartnersPage.BESIDE_INFO` | `"For comparison only: the city's GDP converted to real 2015 US$, the unit the...` |  |
-| 922 | `PartnersPage.CurveChart.HEIGHT` | `250, LEFT = 74, RIGHT = 18, TOP = 22, BOTTOM = 44` |  |
+| 693 | `PartnersPage.FIGURES_INFO` | `"The nation's own measures for this year, from the world file the game was bu...` |  |
+| 697 | `PartnersPage.OURS_INFO` | `"What the city sold this nation and bought from it, in D$ and in tonnes, this...` |  |
+| 700 | `PartnersPage.MONEY_INFO` | `"What this nation's money is worth against the US$ and in D$, its central ban...` |  |
+| 703 | `PartnersPage.LAND_INFO` | `"Land is bought from the nation it lies in, at that nation's land price, in i...` |  |
+| 706 | `PartnersPage.BESIDE_INFO` | `"For comparison only: the city's GDP converted to real 2015 US$, the unit the...` |  |
+| 921 | `PartnersPage.CurveChart.HEIGHT` | `250, LEFT = 74, RIGHT = 18, TOP = 22, BOTTOM = 44` |  |
 
 ## Fields (state)
 
@@ -62,27 +62,27 @@
 | 76 | `int nation` | The nation shown: its number from 1, or 0 for the table. |
 | 79 | `PartnersView.Span span` | The span the table is of, and the good the board is of (null: the largest sold). |
 | 80 | `Good good` |  |
-| 924 | `private double xLo, xHi, yHi` |  |
-| 925 | `private double[] xs` |  |
-| 926 | `private Dot dot` |  |
-| 927 | `private List<Join> joins` |  |
-| 928 | `private final List<Line> yGrid` |  |
-| 929 | `private final List<Label> yLabels` |  |
-| 930 | `private final List<Line> joinLines` |  |
-| 931 | `private final List<Polygon> joinMarks` |  |
-| 932 | `private final List<Double> yTicks` |  |
-| 933 | `private final Polyline netLine` |  |
-| 934 | `private final Line axis` |  |
-| 935 | `private final Circle mark` |  |
-| 936 | `private final Line drop` |  |
-| 937 | `private final Label dotLabel` |  |
-| 939 | `private String shape, laidOut` | What the parts were made for at the last set() (see shapeOf()), and what the layout read (see layoutKey()): null before the first. |
+| 923 | `private double xLo, xHi, yHi` |  |
+| 924 | `private double[] xs` |  |
+| 925 | `private Dot dot` |  |
+| 926 | `private List<Join> joins` |  |
+| 927 | `private final List<Line> yGrid` |  |
+| 928 | `private final List<Label> yLabels` |  |
+| 929 | `private final List<Line> joinLines` |  |
+| 930 | `private final List<Polygon> joinMarks` |  |
+| 931 | `private final List<Double> yTicks` |  |
+| 932 | `private final Polyline netLine` |  |
+| 933 | `private final Line axis` |  |
+| 934 | `private final Circle mark` |  |
+| 935 | `private final Line drop` |  |
+| 936 | `private final Label dotLabel` |  |
+| 938 | `private String shape, laidOut` | What the parts were made for at the last set() (see shapeOf()), and what the layout read (see layoutKey()): null before the first. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 70 | 1105 | **type** `final class PartnersPage` | Trade &gt; Partners (WN6; docs/studies/spec-nations.md 8, board 2) and a nation's page behind it: who the city trades with, nation by nation; for a chosen good, where the next unit goes and what it nets there; the goo... |
+| 70 | 1104 | **type** `final class PartnersPage` | Trade &gt; Partners (WN6; docs/studies/spec-nations.md 8, board 2) and a nation's page behind it: who the city trades with, nation by nation; for a chosen good, where the next unit goes and what it nets there; the goo... |
 | 88 | 4 | `PartnersPage(UserInterface ui, TradeScreen trade)` |  |
 | 93 | 1 | `private Game game()` |  |
 
@@ -146,45 +146,45 @@
 | 639 | 5 | `private static double add(List<Pieces.Force> rows, double scale, String name, double value, String sentence)` |  |
 | 646 | 5 | `private String signedUnit(double thousands)` | A difference in D$ a unit, signed, with a true minus. |
 
-### THE OVERVIEW'S STRIP (lines 652-689)
+### THE OVERVIEW'S STRIP (lines 652-688)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 660 | 21 | `Node strip()` | OUR PARTNERS THIS MONTH: the top five of the month's table as small door cards, and a door to the page; null where there is no table or no partner. |
-| 683 | 6 | `String reachWords(boolean sold)` | "to 38 nations" / "from 24 nations" for the five figures' notes, or null where the month's table has none. |
+| 660 | 20 | `Node strip()` | OUR PARTNERS THIS MONTH: the top five of the month's table as small door cards, and a door to the page; null where there is no table or no partner. |
+| 682 | 6 | `String reachWords(boolean sold)` | "to 38 nations" / "from 24 nations" for the five figures' notes, or null where the month's table has none. |
 
-### A NATION'S PAGE (lines 690-901)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 710 | 17 | `private void nationPage(VBox page, PartnersView.Page p)` |  |
-| 729 | 22 | `private Node nationHead(PartnersView.Page p)` | The head: a way back, the nation's name, and its money. |
-| 753 | 37 | `private VBox figuresCard(PartnersView.Page p)` | ITS FIGURES: label · value · rank, the map card's rows. |
-| 792 | 28 | `private VBox oursCard(PartnersView.Page p)` | OUR TRADE WITH IT: the month, the year so far, by good, and the finished years. |
-| 821 | 9 | `private Node goodBars(List<PartnerTrade.Cell> cells, double scale, boolean heads)` |  |
-| 831 | 11 | `private Node yearBars(List<PartnersView.YearRow> years)` |  |
-| 844 | 25 | `private VBox moneyCard(PartnersView.Page p)` | ITS MONEY: the rate, what one is worth in D$, the policy rate, the vault's holding and what the city owes in it. |
-| 871 | 9 | `private VBox landCard(PartnersView.Page p)` | ITS LAND: its factor and mark, the published price a hectare, and what the city bought from it. |
-| 882 | 9 | `private VBox besideCard(PartnersView.Page p)` | THE CITY BESIDE IT: the city's GDP in real 2015 US$ a year beside its output, and the share. |
-| 893 | 8 | `static String sharePercent(double share)` | A small share of an output: "0.04%", "12%", "<0.001%". |
-
-### THE CHART - drawn as shapes in a Pane (lines 902-1174)
+### A NATION'S PAGE (lines 689-900)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 915 | 259 | **type** `static final class CurveChart extends Pane` | What the next unit nets (up, D$ a unit) against how much the city sells (across, the share of the world's use a year, on a log scale): the month's line solid in the export violet, the world's dashed, a dot where the c... |
-| 917 | 1 | **type** `record Dot(double share, double value, String words)` _(in PartnersPage.CurveChart)_ | The dot: where the city sold, its share of the world's use, what the next one nets there, its words. |
-| 920 | 1 | **type** `record Join(double share, String name)` _(in PartnersPage.CurveChart)_ | A tick: where a buyer joins (a share of the world's use) and its name. |
-| 942 | 25 | `CurveChart()` _(in PartnersPage.CurveChart)_ | The lines, the dot and the captions, made once in its life; the gridlines, ticks and joins come with set(). |
-| 969 | 34 | `void set(double[] xs, double[] net, double[] world, Dot dot, List<Join> joins, DoubleFunction<String> money, DoubleFunction<Str...` _(in PartnersPage.CurveChart)_ | What the chart draws now: the line's points, the dot (null: none), the buyers that join, and how its two axes write their ticks. |
-| 1005 | 3 | `private String shapeOf()` _(in PartnersPage.CurveChart)_ | What the parts depend on: how many gridlines, ticks and joins there are, and whether there is a dot. |
-| 1010 | 9 | `private String layoutKey()` _(in PartnersPage.CurveChart)_ | Every figure and word the layout reads, in one string: laid out again only when it differs. |
-| 1021 | 44 | `private void build()` _(in PartnersPage.CurveChart)_ | The parts made afresh, in the order they are drawn. |
-| 1067 | 6 | `private void fill(DoubleFunction<String> money, DoubleFunction<String> share)` _(in PartnersPage.CurveChart)_ | What the labels say now: the axes' ticks, the first three joins' names and the dot's words. |
-| 1074 | 5 | `private static Label small()` _(in PartnersPage.CurveChart)_ |  |
-| 1081 | 5 | `static double niceStep(double v)` _(in PartnersPage.CurveChart)_ | A step of 1, 2, 2.5 or 5 times a power of ten that is at least v (nothing: 1). |
-| 1087 | 4 | `private double px(double share, double plotL, double plotW)` _(in PartnersPage.CurveChart)_ |  |
-| 1092 | 3 | `private double py(double v, double plotT, double plotH)` _(in PartnersPage.CurveChart)_ |  |
-| 1096 | 4 | `private static void place(Label l, double x, double y)` _(in PartnersPage.CurveChart)_ |  |
-| 1101 | 72 | `protected void layoutChildren()` _(in PartnersPage.CurveChart)_ |  |
+| 709 | 17 | `private void nationPage(VBox page, PartnersView.Page p)` |  |
+| 728 | 22 | `private Node nationHead(PartnersView.Page p)` | The head: a way back, the nation's name, and its money. |
+| 752 | 37 | `private VBox figuresCard(PartnersView.Page p)` | ITS FIGURES: label · value · rank, the map card's rows. |
+| 791 | 28 | `private VBox oursCard(PartnersView.Page p)` | OUR TRADE WITH IT: the month, the year so far, by good, and the finished years. |
+| 820 | 9 | `private Node goodBars(List<PartnerTrade.Cell> cells, double scale, boolean heads)` |  |
+| 830 | 11 | `private Node yearBars(List<PartnersView.YearRow> years)` |  |
+| 843 | 25 | `private VBox moneyCard(PartnersView.Page p)` | ITS MONEY: the rate, what one is worth in D$, the policy rate, the vault's holding and what the city owes in it. |
+| 870 | 9 | `private VBox landCard(PartnersView.Page p)` | ITS LAND: its factor and mark, the published price a hectare, and what the city bought from it. |
+| 881 | 9 | `private VBox besideCard(PartnersView.Page p)` | THE CITY BESIDE IT: the city's GDP in real 2015 US$ a year beside its output, and the share. |
+| 892 | 8 | `static String sharePercent(double share)` | A small share of an output: "0.04%", "12%", "<0.001%". |
+
+### THE CHART - drawn as shapes in a Pane (lines 901-1173)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 914 | 259 | **type** `static final class CurveChart extends Pane` | What the next unit nets (up, D$ a unit) against how much the city sells (across, the share of the world's use a year, on a log scale): the month's line solid in the export violet, the world's dashed, a dot where the c... |
+| 916 | 1 | **type** `record Dot(double share, double value, String words)` _(in PartnersPage.CurveChart)_ | The dot: where the city sold, its share of the world's use, what the next one nets there, its words. |
+| 919 | 1 | **type** `record Join(double share, String name)` _(in PartnersPage.CurveChart)_ | A tick: where a buyer joins (a share of the world's use) and its name. |
+| 941 | 25 | `CurveChart()` _(in PartnersPage.CurveChart)_ | The lines, the dot and the captions, made once in its life; the gridlines, ticks and joins come with set(). |
+| 968 | 34 | `void set(double[] xs, double[] net, double[] world, Dot dot, List<Join> joins, DoubleFunction<String> money, DoubleFunction<Str...` _(in PartnersPage.CurveChart)_ | What the chart draws now: the line's points, the dot (null: none), the buyers that join, and how its two axes write their ticks. |
+| 1004 | 3 | `private String shapeOf()` _(in PartnersPage.CurveChart)_ | What the parts depend on: how many gridlines, ticks and joins there are, and whether there is a dot. |
+| 1009 | 9 | `private String layoutKey()` _(in PartnersPage.CurveChart)_ | Every figure and word the layout reads, in one string: laid out again only when it differs. |
+| 1020 | 44 | `private void build()` _(in PartnersPage.CurveChart)_ | The parts made afresh, in the order they are drawn. |
+| 1066 | 6 | `private void fill(DoubleFunction<String> money, DoubleFunction<String> share)` _(in PartnersPage.CurveChart)_ | What the labels say now: the axes' ticks, the first three joins' names and the dot's words. |
+| 1073 | 5 | `private static Label small()` _(in PartnersPage.CurveChart)_ |  |
+| 1080 | 5 | `static double niceStep(double v)` _(in PartnersPage.CurveChart)_ | A step of 1, 2, 2.5 or 5 times a power of ten that is at least v (nothing: 1). |
+| 1086 | 4 | `private double px(double share, double plotL, double plotW)` _(in PartnersPage.CurveChart)_ |  |
+| 1091 | 3 | `private double py(double v, double plotT, double plotH)` _(in PartnersPage.CurveChart)_ |  |
+| 1095 | 4 | `private static void place(Label l, double x, double y)` _(in PartnersPage.CurveChart)_ |  |
+| 1100 | 72 | `protected void layoutChildren()` _(in PartnersPage.CurveChart)_ |  |
 

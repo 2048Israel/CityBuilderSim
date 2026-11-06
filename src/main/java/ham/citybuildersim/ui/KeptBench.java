@@ -4,6 +4,7 @@ import ham.citybuildersim.Auction;
 import ham.citybuildersim.BuildAdvice;
 import ham.citybuildersim.BuildingType;
 import ham.citybuildersim.BuildingsTemplate;
+import ham.citybuildersim.FreightView;
 import ham.citybuildersim.Game;
 import javafx.css.CssMetaData;
 import javafx.css.StyleOrigin;
@@ -1184,6 +1185,147 @@ public final class KeptBench {
     /** A page back on the page it opens on, nothing kept: the next draw makes every node. */
     public void home(Page p) {
         p.home.run();
+    }
+
+    /**
+     * What one kept draw set on the nodes it handed back (KP2b): how many times a style, a text, a graphic, a padding or a preferred width
+     * was written on a node that was on the page before the draw (`count`), those written from a file the caller names as not yet mended
+     * (`ignored`, not in the count), and the sources of the first, most first (each once, with how often and the first node it wrote:
+     * "x14 Pieces.java:132 < Kept.java:61 style: Column .style [...] -> [...]").
+     */
+    public record Sets(int count, int ignored, List<String> first) { }
+
+    /**
+     * One more kept draw of a page, the city unchanged (no month between), with a listener on every node of the page before it: on its style;
+     * on a label's or a text's words and a label's graphic; on a region's padding and preferred width. Each listener counts and reads its
+     * property again, so the next write is seen too: a value set to what it already is sets nothing (a String property compares by value),
+     * and a value set to another and back, or an Insets made again (an object property compares by reference), is counted at each write.
+     * The page is drawn and laid out before this is called, and no CSS or layout pass runs inside it (a pass writes properties of its own).
+     * It does not see what moves no property: a size or a margin set to what it is (Region.setPrefSize, HBox.setMargin) asks its parent for a
+     * layout all the same, whatever it is given.
+     * The listeners are taken off before it returns. A write whose nearest line of the game's code is in one of the files `unmended` names
+     * is counted apart: a screen outside the sweep's list, named by the check that asks, with its reason.
+     */
+    public Sets redrawSets(Page p, java.util.Set<String> unmended) {
+        int[] count = {0, 0};
+        java.util.Map<String, Object[]> sources = new java.util.LinkedHashMap<>();
+        List<Runnable> off = new ArrayList<>();
+        each(column, n -> {
+            watchSets(n, "style", n.styleProperty(), count, sources, unmended, off);
+            if (n instanceof Labeled l) {
+                watchSets(n, "text", l.textProperty(), count, sources, unmended, off);
+                watchSets(n, "graphic", l.graphicProperty(), count, sources, unmended, off);
+            } else if (n instanceof Text t) {
+                watchSets(n, "text", t.textProperty(), count, sources, unmended, off);
+            }
+            if (n instanceof Region r) {
+                watchSets(n, "padding", r.paddingProperty(), count, sources, unmended, off);
+                watchSets(n, "prefWidth", r.prefWidthProperty(), count, sources, unmended, off);
+            }
+        });
+        try {
+            drawKept(p);
+        } finally {
+            for (Runnable r : off) r.run();
+        }
+        List<String> first = new ArrayList<>();
+        sources.entrySet().stream().sorted((a, b) -> (int) b.getValue()[0] - (int) a.getValue()[0]).limit(SETS_NAMED)
+                .forEach(e -> first.add("x" + e.getValue()[0] + " " + e.getKey() + ": " + e.getValue()[1]));
+        return new Sets(count[0], count[1], first);
+    }
+
+    /** ...with nothing unmended. */
+    public Sets redrawSets(Page p) {
+        return redrawSets(p, java.util.Set.of());
+    }
+
+    /** The most sources redrawSets names. */
+    private static final int SETS_NAMED = Integer.getInteger("keptbench.named", 12);
+
+    private static void watchSets(Node n, String what, javafx.beans.value.ObservableValue<?> property, int[] count,
+                                  java.util.Map<String, Object[]> sources, java.util.Set<String> unmended, List<Runnable> off) {
+        Object[] was = {property.getValue()};
+        javafx.beans.InvalidationListener l = o -> {
+            Object now = property.getValue();
+            String[] at2 = whereSet();
+            String where = at2[0];
+            if (unmended.contains(at2[1])) {
+                count[1]++;
+            } else {
+                count[0]++;
+                Object[] at = sources.computeIfAbsent(where + " " + what, k -> new Object[]{0, describeSet(n) + " ." + what + differ(was[0], now)});
+                at[0] = (int) at[0] + 1;
+            }
+            was[0] = now;
+        };
+        property.addListener(l);
+        off.add(() -> property.removeListener(l));
+    }
+
+    /**
+     * Where the write that is being counted comes from: {the two nearest lines of the game's own code on the stack that are not the bench's,
+     * "Pieces.java:132 < Kept.java:61"; the file of the nearest that is not Kept's, the plumbing every make and every label goes through}.
+     */
+    private static String[] whereSet() {
+        StringBuilder b = new StringBuilder();
+        String owner = "";
+        int found = 0;
+        for (StackTraceElement e : new Throwable().getStackTrace()) {
+            if (!e.getClassName().startsWith("ham.citybuildersim") || e.getClassName().startsWith("ham.citybuildersim.ui.KeptBench")) continue;
+            if (owner.isEmpty() && !e.getClassName().equals("ham.citybuildersim.ui.Kept")) owner = e.getFileName();
+            if (found < 2) b.append(found++ == 0 ? "" : " < ").append(e.getFileName()).append(':').append(e.getLineNumber());
+            if (found == 2 && !owner.isEmpty()) break;
+        }
+        return new String[]{b.length() == 0 ? "(no line of the game's)" : b.toString(), owner};
+    }
+
+    /** What changed between two values, as the report writes it: from where they part, each cut. A graphic says only what it was and is. */
+    private static String differ(Object was, Object now) {
+        String a = String.valueOf(was), b = String.valueOf(now);
+        if (was instanceof Node || now instanceof Node) return " " + (was == null ? "none" : was.getClass().getSimpleName()) + " -> "
+                + (now == null ? "none" : now.getClass().getSimpleName());
+        // From a little before the place they part: a style built on another shows its tail, a text its words.
+        int start = 0;
+        while (start < a.length() && start < b.length() && a.charAt(start) == b.charAt(start)) start++;
+        int at = Math.max(0, start - 12);
+        String x = a.substring(at), y = b.substring(at);
+        return " [" + (at > 0 ? "..." : "") + (x.length() > 70 ? x.substring(0, 70) + "..." : x) + "] -> ["
+                + (at > 0 ? "..." : "") + (y.length() > 70 ? y.substring(0, 70) + "..." : y) + "]";
+    }
+
+    /** A node as the report of redrawSets names it: its class, its words (cut) and its first style class. */
+    private static String describeSet(Node n) {
+        StringBuilder b = new StringBuilder(n.getClass().getSimpleName());
+        String words = n instanceof Labeled l ? l.getText() : n instanceof Text t ? t.getText() : null;
+        if (words != null) b.append(" \"").append(words.length() > 24 ? words.substring(0, 24) + "..." : words).append('"');
+        if (!n.getStyleClass().isEmpty()) b.append(" .").append(n.getStyleClass().get(0));
+        return b.toString();
+    }
+
+    /**
+     * A berth kind's row, as the Ports page draws it (SectorScreen.berthRow in the scope berthScope() names), drawn kept with two berths
+     * standing and then with none, and the same row built new with none (KP2b): the signature of each, the kept row's and the new one's,
+     * with where layout put them. The city has no Ports page with a kind gone to none, so the rows are drawn from a berth made by hand; the
+     * code is the page's own.
+     */
+    public List<List<String>> berthRowGoesToNone() throws Exception {
+        ensureWindow();
+        SectorScreen s = ui.sectorScreen;
+        FreightView.Quote quoted = new FreightView.Quote(FreightView.Unit.PER_TONNE, 4.2, true, java.util.OptionalDouble.of(.5), java.util.OptionalDouble.of(.7));
+        FreightView.Quote unquoted = new FreightView.Quote(FreightView.Unit.PER_TONNE, 0, false, java.util.OptionalDouble.empty(), java.util.OptionalDouble.empty());
+        FreightView.Berth standing = new FreightView.Berth(ham.citybuildersim.Ports.Cargo.CONTAINER, 2, 1200, 1200, 1000, .83, 0, 0, 3, 10, .4, 40, 60, quoted);
+        FreightView.Berth none = new FreightView.Berth(ham.citybuildersim.Ports.Cargo.CONTAINER, 0, 0, 0, 0, 0, 0, 0, 0, 0, .4, 0, 0, unquoted);
+        Kept.Pool pool = new Kept.Pool();
+        List<List<String>> out = new ArrayList<>();
+        for (Object[] draw : new Object[][]{{pool, standing, false}, {pool, none, true}, {new Kept.Pool(), none, true}}) {
+            Node[] row = new Node[1];
+            FreightView.Berth b = (FreightView.Berth) draw[1];
+            Kept.draw((Kept.Pool) draw[0], () -> row[0] = Kept.scope(SectorScreen.berthScope(b), () -> s.berthRow(b)));
+            ui.setPage(row[0]);
+            passes();
+            if ((boolean) draw[2]) out.add(signature());
+        }
+        return out;
     }
 
     /** The nodes the last kept draw of the page made new and handed back: {made, kept}. */
@@ -2812,6 +2954,21 @@ public final class KeptBench {
         return l == null ? null : l.getText();
     }
 
+    /** The yield box's text for a cap, as a page built new shows it (CapChips.yieldText): 0.045 is "4.500" (KP2b). */
+    public static String yieldText(Auction.Cap cap) {
+        return CapChips.yieldText(cap);
+    }
+
+    /** The cap a typed yield names, as Enter in the yield box sets it (CapChips.fromWords, in per cent): "4.5" is the cap at 4.5% (KP2b). */
+    public static Auction.Cap yieldCapOf(String typed) {
+        return Auction.Cap.at(CapChips.fromWords(typed));
+    }
+
+    /** The highest yield Borrow's sale will take, as the page keeps it (KP2b). */
+    public Auction.Cap borrowCap() {
+        return ui.financesScreen.borrowCap;
+    }
+
     /** The highest yield the sale will take put back to what Borrow opens with (fair and the tail). */
     public void financesCapDefault() {
         ui.financesScreen.borrowCap = Auction.Cap.DEFAULT;
@@ -3623,6 +3780,30 @@ public final class KeptBench {
         return n[0];
     }
 
+    /** The cards of the page that are doors - a card's ground, a hand and a click: the hub's area cards, a tax's card on Taxes (KP2b); not the vitals strip's cells (Pieces.limitCell), which have no ground. */
+    public List<VBox> policyDoors() {
+        List<VBox> out = new ArrayList<>();
+        each(column, n -> {
+            if (n instanceof VBox v && v.getOnMouseClicked() != null && v.getStyle().contains("-fx-cursor: hand") && v.getStyle().contains("-fx-background-radius: 8")) out.add(v);
+        });
+        return out;
+    }
+
+    /** What HOW STRICT's line says for a thumb at a place on the dial (KP2b): the words under the dial at that step, as the screen's own function makes them. */
+    public static String strictLine(Game g, double thumb) {
+        return PolicyScreen.strictWords(ham.citybuildersim.PolicyPreview.ruleAt(g, PolicyScreen.strictAt(thumb)));
+    }
+
+    /** Whether a label on the page says exactly these words (KP2b). */
+    public boolean pageSays(String words) {
+        return find(column, Label.class, l -> words.equals(l.getText())) != null;
+    }
+
+    /** The key a zone's tax dial stages under, as Policy's Taxes rows have it: the same dial, the sector's own offset (KP2b). */
+    public static String policyZoneTaxKey(ham.citybuildersim.Zoning.Tax tax, String sector) {
+        return ZoningScreen.taxKey(tax, sector);
+    }
+
     /** A sector zoned through the model (a share of the dry ground, at the going price), as the zone's page applies it; false while zoning is shut. */
     public boolean policyZone(String sector, double share) {
         ui.game.setZone(sector, ham.citybuildersim.Zoning.Size.SHARE, share, ham.citybuildersim.Zoning.MAX_PRICE_SHARE);
@@ -4007,6 +4188,112 @@ public final class KeptBench {
         if (rankingsRows() != rows) return "the table's picture the pointer left was handed away or made new by the redraw";
         if (lit.isVisible()) return "the pointer gone, the draw left a row lit";
         return null;
+    }
+
+    /**
+     * The table's picture drawn kept once more, the city unchanged (KP2b): how many times its cursor was written by the draw, and the cursor after
+     * it. A cursor set by code is reset by Kept when a node is handed back and set again by the draw, a change at each; one in the picture's style
+     * is the style's, which Kept leaves alone. Null when the draw wrote it none and it is the hand; else what differed. ABSENT without a table.
+     */
+    public String rankingsRowsCursor(Runnable redraw) throws Exception {
+        Pane rows = rankingsRows();
+        if (rows == null) return ABSENT;
+        passes();
+        if (rows.getCursor() != javafx.scene.Cursor.HAND) return "the table's picture has not the hand before the draw (" + rows.getCursor() + ")";
+        int[] writes = {0};
+        javafx.beans.InvalidationListener on = o -> {
+            writes[0]++;
+            rows.getCursor();
+        };
+        rows.cursorProperty().addListener(on);
+        try {
+            redraw.run();
+        } finally {
+            rows.cursorProperty().removeListener(on);
+        }
+        passes();
+        if (rankingsRows() != rows) return "the table's picture was handed away or made new by the redraw";
+        if (writes[0] != 0) return "the draw wrote the table's cursor " + writes[0] + " times";
+        if (rows.getCursor() != javafx.scene.Cursor.HAND) return "after the draw the table's cursor is " + rows.getCursor() + ", not the hand";
+        return null;
+    }
+
+    /** The scroller the table's picture sits in, or null. */
+    private ScrollPane rankingsScroller(Pane rows) {
+        for (Node n = rows; n != null; n = n.getParent()) if (n instanceof ScrollPane s) return s;
+        return null;
+    }
+
+    /**
+     * The pointer over a row of the Rankings table while the page scrolls under it (KP2b): a wheel scrolls the page, the rows move under the
+     * pointer, and JavaFX sends the table no mouse-moved (it re-picks at a pulse and sends entered and exited to what changed). Each row is tried
+     * first for whether the band lights under a pointer on it (the city's own and the open row are raised already, a gap is no row); then the
+     * pointer is put on a row that lights, a ScrollEvent is fired at the table's canvas (the scroller moves the page as a wheel does), and then the
+     * page is drawn again as a month landing draws it: after each, the band is lit if the row now under the pointer lights, and on that row, and
+     * not left on the row the pointer was over before the scroll. Null when so; else what differed. ABSENT without a table.
+     */
+    public String hoverRankingsScroll(Runnable redraw) throws Exception {
+        Pane rows = rankingsRows();
+        if (rows == null) return ABSENT;
+        Region lit = find(rows, Region.class, r -> r != rows && r.isMouseTransparent() && !r.isManaged());
+        if (lit == null) return "the table's picture has no region for the lit row";
+        ScrollPane scroller = rankingsScroller(rows);
+        javafx.scene.canvas.Canvas canvas = find(rows, javafx.scene.canvas.Canvas.class, c -> true);
+        if (scroller == null || canvas == null) return "the table's picture has no scroller or no canvas to scroll through";
+        passes();
+        hover(rows, true);
+        double vvalue = scroller.getVvalue();
+        try {
+            int count = (int) Math.round(rows.getPrefHeight() / RankingsScreen.ROW_H);
+            boolean[] lights = new boolean[count];
+            int first = -1;
+            for (int i = 0; i < count; i++) {
+                fireMouse(rows, javafx.scene.input.MouseEvent.MOUSE_MOVED, 40, rows.localToScene(0, (i + .5) * RankingsScreen.ROW_H).getY(),
+                        javafx.scene.input.MouseButton.NONE, 0);
+                lights[i] = lit.isVisible();
+                if (lights[i] && first < 0) first = i;
+            }
+            if (first < 0) return "no row of the table lights under the pointer in this city (" + count + " rows), so there is no look to keep";
+            // The pointer on that row, at its place in the scene (the synthetic event takes its coordinates as the scene's).
+            double sceneY = rows.localToScene(0, (first + .5) * RankingsScreen.ROW_H).getY();
+            fireMouse(rows, javafx.scene.input.MouseEvent.MOUSE_MOVED, 40, sceneY, javafx.scene.input.MouseButton.NONE, 0);
+            double before = lit.getLayoutY();
+            if (!lit.isVisible() || before != first * RankingsScreen.ROW_H) return "the fixture's premise failed: the pointer on row " + first + " did not light it";
+            double top = rows.localToScene(0, 0).getY();
+            // The wheel: a ScrollEvent through the canvas, bubbling to the scroller, which moves the page by the delta (down: the rows go up).
+            double by = -4 * RankingsScreen.ROW_H;
+            javafx.event.Event.fireEvent(canvas, new javafx.scene.input.ScrollEvent(javafx.scene.input.ScrollEvent.SCROLL, 40, sceneY, 40, sceneY,
+                    false, false, false, false, true, false, 0, by, 0, by, javafx.scene.input.ScrollEvent.HorizontalTextScrollUnits.NONE, 0,
+                    javafx.scene.input.ScrollEvent.VerticalTextScrollUnits.NONE, 0, 0, null));
+            passes();
+            double moved = top - rows.localToScene(0, 0).getY();
+            if (moved < 2 * RankingsScreen.ROW_H) return "the fixture's premise failed: the wheel moved the rows by " + moved + " pixels (it was " + -by + ")";
+            String scrolled = bandNow(rows, lit, sceneY, lights, before);
+            redraw.run();
+            passes();
+            if (rankingsRows() != rows) return "the table's picture was handed away or made new by the redraw";
+            String landed = bandNow(rows, lit, sceneY, lights, before);
+            if (scrolled == null && landed == null) return null;
+            return (scrolled == null ? "" : "after the wheel, with no month landed: " + scrolled)
+                    + (scrolled != null && landed != null ? "; " : "") + (landed == null ? "" : "a month landing after the wheel: " + landed);
+        } finally {
+            hover(rows, false);
+            scroller.setVvalue(vvalue);
+            redraw.run();
+            passes();
+        }
+    }
+
+    /** The band against the row under a pointer at this place in the scene: null when it is lit on that row (or not lit, where that row does not light), else the difference. */
+    private static String bandNow(Pane rows, Region lit, double sceneY, boolean[] lights, double before) {
+        int at = (int) Math.floor(rows.sceneToLocal(0, sceneY).getY() / RankingsScreen.ROW_H);
+        boolean should = at >= 0 && at < lights.length && lights[at];
+        if (!should) return lit.isVisible() ? "the band is on the row at " + lit.getLayoutY() + ", and the row under the pointer (" + at + ") does not light" : null;
+        if (!lit.isVisible()) return "the band is not lit, and the row under the pointer (" + at + ") lights";
+        if (lit.getLayoutY() == before && before != at * RankingsScreen.ROW_H) {
+            return "the band stayed on the row the pointer was over before the scroll (at " + before + "; the pointer is on row " + at + ")";
+        }
+        return lit.getLayoutY() == at * RankingsScreen.ROW_H ? null : "the band is on the row at " + lit.getLayoutY() + ", the pointer is on row " + at;
     }
 
     /* =====================================================================

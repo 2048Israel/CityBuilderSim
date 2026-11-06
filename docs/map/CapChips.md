@@ -20,7 +20,7 @@
 
 **Uses:** [Auction](Auction.md) (19), [Kept](Kept.md) (7), [FinancesScreen](FinancesScreen.md) (6), [Palette](Palette.md) (6)
 
-**Used by (2):** [BuildScreen](BuildScreen.md), [FinancesScreen](FinancesScreen.md)
+**Used by (3):** [BuildScreen](BuildScreen.md), [FinancesScreen](FinancesScreen.md), [KeptBench](KeptBench.md)
 
 ## Fields (state)
 

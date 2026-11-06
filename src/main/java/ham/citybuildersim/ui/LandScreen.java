@@ -1013,6 +1013,25 @@ final class LandScreen {
        ===================================================================== */
 
     /**
+     * UserInterface.pageTitle()'s title - the building area's swatch before it (the land office is on the building tab), strong, padded - with
+     * the hand a way back has, written once.
+     */
+    private Label doorTitle(String text) {
+        Region swatch = Kept.scope("pageTitle.swatch", () -> {
+            Region s = Kept.region();
+            s.setMinSize(10, 10);
+            s.setPrefSize(10, 10);
+            s.setMaxSize(10, 10);
+            s.setStyle("-fx-background-color: " + Palette.BUILDING + "; -fx-background-radius: 3;");
+            return s;
+        });
+        Label title = Kept.label(text, swatch);
+        title.setStyle(Palette.strong(Palette.SIZE_TITLE, Palette.TEXT_HEAD) + " -fx-padding: 8 0 2 0; -fx-cursor: hand;");
+        title.setGraphicTextGap(10);
+        return title;
+    }
+
+    /**
      * The head: "Land office" with the building area's swatch and the page's
      * (i), and at the right the pay toggle with its line, and "‹ Build". On
      * the office's own pages - "Land office › Funding", "Land office › Not
@@ -1020,12 +1039,12 @@ final class LandScreen {
      * the right.
      */
     HBox head(String sub) {
-        Label title = ui.pageTitle("Land office");
+        // Kept (KP2, KP2b): on the office's own pages the title is a way back, made with its hand - UserInterface.pageTitle() sets its style
+        // afresh at every draw, and a hand added to that is a second write to the style of a node a kept page hands back.
+        Label title = sub == null ? ui.pageTitle("Land office") : doorTitle("Land office");
         HBox titled = Kept.row(10, title);
         titled.setAlignment(Pos.CENTER_LEFT);
         if (sub != null) {
-            // Kept (KP2): pageTitle sets the title's style afresh every draw, so this appends to the base and never to last time's.
-            title.setStyle(title.getStyle() + " -fx-cursor: hand;");
             title.setOnMouseClicked(e -> showLandMenu());
             Label sep = Kept.label("›");
             sep.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_MUTED) + " -fx-padding: 8 0 2 0;");
@@ -1034,7 +1053,7 @@ final class LandScreen {
             titled.getChildren().addAll(sep, where);
         }
         javafx.scene.Node info = infoButton(WHO_PAYS, false);
-        HBox.setMargin(info, new javafx.geometry.Insets(6, 0, 0, 0));
+        Pieces.hMargin(info, new javafx.geometry.Insets(6, 0, 0, 0));
         titled.getChildren().add(info);
         Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
@@ -1116,7 +1135,7 @@ final class LandScreen {
                 Label afterRoom = Kept.label(f[3]);
                 afterRoom.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
                 afterRoom.setWrapText(true);
-                VBox.setMargin(after, new javafx.geometry.Insets(4, 0, 0, 0));
+                Pieces.vMargin(after, new javafx.geometry.Insets(4, 0, 0, 0));
                 figures.getChildren().addAll(after, afterRoom);
             });
         }
@@ -1127,7 +1146,7 @@ final class LandScreen {
                 Label relief = Kept.label(line);
                 relief.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
                 relief.setWrapText(true);
-                VBox.setMargin(relief, new javafx.geometry.Insets(4, 0, 0, 0));
+                Pieces.vMargin(relief, new javafx.geometry.Insets(4, 0, 0, 0));
                 figures.getChildren().add(relief);
             }
         });
@@ -1137,7 +1156,7 @@ final class LandScreen {
                 Label island = Kept.label(line);
                 island.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.WARN));
                 island.setWrapText(true);
-                VBox.setMargin(island, new javafx.geometry.Insets(4, 0, 0, 0));
+                Pieces.vMargin(island, new javafx.geometry.Insets(4, 0, 0, 0));
                 figures.getChildren().add(island);
             }
         });
@@ -1222,8 +1241,9 @@ final class LandScreen {
         javafx.scene.layout.GridPane t = SectorScreen.oilTable(LandmassView.WIDTHS, LandmassView.HEADS, LandmassView.RIGHT);
         int row = 1;
         for (LandmassView.Line l : LandmassView.rows(land)) {
-            // Kept (KP2): a scope a landmass, by its id. SectorScreen's oil helpers (the table, rule, cell and tip) make
-            // their nodes with new, whoever calls them, so what is kept here is the name's label alone.
+            // Kept (KP2): a scope a landmass, by its id. SectorScreen's oil helpers (the table, rule, cell, words, figure and tip)
+            // make their nodes through Kept since KP4, each in a scope of its own, so the row's cells and its rule are this
+            // landmass's nodes, handed back to it; and the name's label here, in the row's scope, the same.
             final int at = row;
             Kept.scope(l.id(), () -> landmassRow(t, l, at));
             row += 2;
@@ -1299,8 +1319,8 @@ final class LandScreen {
         Kept.tip(buy, next.buttonTip(), 250);
 
         HBox row = Kept.row(6, fewer, count, more, total, other, buy);
-        HBox.setMargin(total, new javafx.geometry.Insets(0, 0, 0, 8));
-        HBox.setMargin(buy, new javafx.geometry.Insets(0, 0, 0, 6));
+        Pieces.hMargin(total, new javafx.geometry.Insets(0, 0, 0, 8));
+        Pieces.hMargin(buy, new javafx.geometry.Insets(0, 0, 0, 6));
         row.setAlignment(Pos.CENTER_RIGHT);
         return row;
     }
@@ -1641,6 +1661,12 @@ final class LandScreen {
 
     /** A worth card's frame: its icon square, its name and its (i), then what it says. */
     VBox worthCard(String svg, String colour, String name, String info, javafx.scene.Node... body) {
+        return worthCardIn(card -> WORTH_CARD + Palette.EDGE + ";", svg, colour, name, info, body);
+    }
+
+    /** ...in the style `style` gives once the card is made (KP2b: the ore card's, a door's look, chosen from its hover): written once, not written plain and then again. */
+    VBox worthCardIn(java.util.function.Function<VBox, String> style, String svg, String colour, String name, String info,
+                     javafx.scene.Node... body) {
         Label title = Kept.label(name);
         title.setWrapText(true);
         title.setMinWidth(0);
@@ -1654,7 +1680,7 @@ final class LandScreen {
         card.setMaxWidth(Double.MAX_VALUE);
         card.setMaxHeight(Double.MAX_VALUE);
         card.setMinHeight(140);
-        card.setStyle(WORTH_CARD + Palette.EDGE + ";");
+        card.setStyle(style.apply(card));
         return card;
     }
 
@@ -1750,7 +1776,11 @@ final class LandScreen {
         Label oil = Kept.label(o.oil());
         oil.setWrapText(true);
         oil.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-        VBox card = worthCard(Icons.ORE, Palette.ORE, "Ore and oil", ORE_INFO, top, tonnes, mines);
+        String rested = WORTH_CARD + Palette.EDGE + "; -fx-cursor: hand;";
+        String lit = WORTH_CARD + Palette.ACCENT + "; -fx-cursor: hand;";
+        // Kept (KP2, rule 6): a card under a still pointer stays hovered across a draw and is not entered again; its look is chosen from
+        // isHover() where the card is made (KP2b), so its style is written once.
+        VBox card = worthCardIn(c -> c.isHover() ? lit : rested, Icons.ORE, Palette.ORE, "Ore and oil", ORE_INFO, top, tonnes, mines);
         if (o.undug()) {
             card.getChildren().add(Kept.scope("undug", () -> {
                 Label undug = Kept.label("ore that nothing is digging");
@@ -1762,11 +1792,6 @@ final class LandScreen {
         // ...then the other ores the city's ground holds (I13-L), a scope each by its name, and the oil last.
         for (OreLine line : otherOres()) card.getChildren().add(Kept.scope(line.name(), () -> oreBlock(line)));
         card.getChildren().add(oil);
-        String rest = WORTH_CARD;
-        String rested = rest + Palette.EDGE + "; -fx-cursor: hand;";
-        String lit = rest + Palette.ACCENT + "; -fx-cursor: hand;";
-        // Kept (KP2, rule 6): a card under a still pointer stays hovered across a draw and is not entered again.
-        card.setStyle(card.isHover() ? lit : rested);
         card.setOnMouseEntered(e -> card.setStyle(lit));
         card.setOnMouseExited(e -> card.setStyle(rested));
         Kept.tip(card, "Mines are built under Build › Industry. Click to go there.", 300);

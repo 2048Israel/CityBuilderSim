@@ -378,7 +378,7 @@ final class TradeScreen {
     private void frameOver(VBox frame, VBox page) {
         frame.setMaxWidth(PAGE_WIDE);
         frame.setFillWidth(true);
-        frame.setPadding(new javafx.geometry.Insets(0, 18, 4, 18));
+        frame.setPadding(Pieces.FRAME_ROOM);
         body = ui.scrolled(page, FRAME_CHROME);
         final javafx.scene.control.ScrollPane scroller = body;
         // Kept (KP6): both bindings are made once per scroller, since a kept page is handed back each draw with the
@@ -645,10 +645,15 @@ final class TradeScreen {
 
     /** Words that wrap, at a size, in a colour. */
     static Label words(String text, double size, String tone) {
+        return wordsIn(text, BuildScreen.wordsAt(size, tone));
+    }
+
+    /** Words that wrap, in a style of their own (KP2b: a total's, strong): made so, not made in the plain style and set again. */
+    static Label wordsIn(String text, String style) {
         Label l = Kept.label(text);
         l.setWrapText(true);
         l.setMinWidth(0);
-        l.setStyle(BuildScreen.wordsAt(size, tone));
+        l.setStyle(style);
         return l;
     }
 
@@ -695,12 +700,16 @@ final class TradeScreen {
                 + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + edge + ";";
     }
 
-    /** A card that opens somewhere: the accent edge under the pointer, and a click goes. A door inside it opens itself. */
-    static VBox doorCard(VBox c, Runnable go) {
-        if (go == null) return c;
-        // Kept (KP6): card() has just set the ground this draw, so this is not built on last month's; the look the pointer calls
-        // for is chosen from isHover() where it is set, and the handlers are set, not added.
-        String rest = c.getStyle() + " -fx-cursor: hand;";
+    /**
+     * A card that opens somewhere: the accent edge under the pointer, and a click goes. A door inside it opens itself. Made as a door, in its
+     * look (KP2b): it was made by card() in the plain look and then set again, two writes to the style of a node a kept page hands back, at
+     * each draw. The look the pointer calls for is chosen from isHover() where it is set (KP6), and the handlers are set, not added.
+     */
+    static VBox doorCard(Runnable go, Node... rows) {
+        VBox c = Kept.column(8);
+        for (Node n : rows) if (n != null) c.getChildren().add(n);
+        c.setMaxWidth(Double.MAX_VALUE);
+        String rest = cardStyle(Palette.EDGE) + " -fx-cursor: hand;";
         String over = rest.replace(Palette.EDGE + ";", Palette.ACCENT + ";");
         c.setStyle(c.isHover() ? over : rest);
         c.setOnMouseEntered(e -> c.setStyle(over));
@@ -1000,10 +1009,12 @@ final class TradeScreen {
         List<GoodRow> all = goodRows(t);
         String hint = fx.isMonthCounted() ? "this month · bought left, sold right"
                 : "the month the city was saved in · bought left, sold right";
-        VBox c = card(cardHead(Icons.LORRY, Palette.BUSINESS, "WHAT WE TRADE", TRADE_INFO, quiet(hint)));
+        // Made as a door (KP2b) unless it is the page's own and has nothing to show.
+        Node head = cardHead(Icons.LORRY, Palette.BUSINESS, "WHAT WE TRADE", TRADE_INFO, quiet(hint));
+        VBox c = page && all.isEmpty() ? card(head) : doorCard(() -> open(GOODS), head);
         if (all.isEmpty()) {
             c.getChildren().add(Kept.scope("nothing", () -> line("Nothing crossed the city's edge this month.", NOTHING_CROSSED)));
-            return page ? c : doorCard(c, () -> open(GOODS));
+            return c;
         }
         List<GoodRow> top = all.subList(0, Math.min(shown, all.size()));
         MirrorRows bars = Kept.scope("bars", () -> mirror(top, "BOUGHT ABROAD " + d(t.bought()), "SOLD ABROAD " + d(t.sold()), false, true));
@@ -1022,7 +1033,7 @@ final class TradeScreen {
                     + " · " + d(sold) + " sold · " + d(bought) + " bought";
             c.getChildren().add(Kept.scope("more", () -> door(more, Palette.ACCENT, () -> open(GOODS))));
         }
-        return doorCard(c, () -> open(GOODS));
+        return c;
     }
 
     /** WHAT WE TRADE's (i). */
@@ -1129,7 +1140,7 @@ final class TradeScreen {
         Label per = words("per " + Currency.FOREIGN_SYMBOL, 13, Palette.TEXT_LABEL);
         HBox big = Kept.row(6, rate, per);
         big.setAlignment(Pos.BASELINE_LEFT);
-        VBox c = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "THE CURRENCY", RATE_INFO, null), big,
+        VBox c = doorCard(() -> open(CURRENCY), cardHead(Icons.EXCHANGE, Palette.MONEY, "THE CURRENCY", RATE_INFO, null), big,
                 muted(oneOfOurs() + " · parity " + sym() + fxRate(fx.getParity())));
         addRegimeLine(c);
         int level = fx.isPinned() ? 0 : ForeignAccounts.parityLevel(fx.deviationFromParity());
@@ -1141,7 +1152,7 @@ final class TradeScreen {
         c.getChildren().add(Kept.scope("year", () -> muted(Double.isFinite(year)
                 ? (Math.abs(year) < .0005 ? "no move in a year" : share1(Math.abs(year)) + (year > 0 ? " weaker" : " stronger") + " than a year ago")
                 : "not a year recorded yet")));
-        return doorCard(c, () -> open(CURRENCY));
+        return c;
     }
 
     /**
@@ -3126,8 +3137,8 @@ final class TradeScreen {
             // span: GridPane.add() does not set it back), so a step that gains or loses its words is made afresh.
             Kept.scope("step:" + (row - 1) + (r.what() == null ? "/span" : ""), () -> {
                 String tone = r.total() ? Palette.TEXT_HEAD : Palette.TEXT_LABEL;
-                Label step = words(r.name(), Palette.SIZE_LABEL + 1, tone);
-                if (r.total()) step.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD));
+                Label step = r.total() ? wordsIn(r.name(), Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD))
+                        : words(r.name(), Palette.SIZE_LABEL + 1, tone);
                 if (r.what() == null) {
                     g.add(step, 0, at, 2, 1);
                 } else {

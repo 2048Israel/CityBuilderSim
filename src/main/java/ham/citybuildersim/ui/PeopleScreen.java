@@ -3529,9 +3529,32 @@ final class PeopleScreen {
         return out;
     }
 
+    /** The room over the flow bar in a cell's statement: one object (KP2b), set where it is not that already (Pieces.vMargin). */
+    private static final javafx.geometry.Insets BAR_ROOM = new javafx.geometry.Insets(8, 0, 0, 0);
+
     /** How wide a tier column is. Six of them, plus the household name. */
     static final double TIER_COL = 88;
     static final double SHAPE_COL = 168;
+
+    /**
+     * The key a matrix grid keeps its columns under - the household's name, then the six tiers - made once in the grid's life (KP2b) and
+     * added to it at each draw as one list. One list per grid, not one for every grid: a constraint holds each grid it is added to, so a
+     * shared one would hold every grid ever made.
+     */
+    private static final String MATRIX_COLUMNS = "people.matrixColumns";
+
+    private static List<javafx.scene.layout.ColumnConstraints> matrixColumns() {
+        List<javafx.scene.layout.ColumnConstraints> columns = new ArrayList<>();
+        javafx.scene.layout.ColumnConstraints nameCol = new javafx.scene.layout.ColumnConstraints(SHAPE_COL);
+        nameCol.setHalignment(javafx.geometry.HPos.LEFT);
+        columns.add(nameCol);
+        for (int t = 0; t < HouseholdAccounts.RETIRED; t++) {
+            javafx.scene.layout.ColumnConstraints spec = new javafx.scene.layout.ColumnConstraints(TIER_COL);
+            spec.setHalignment(javafx.geometry.HPos.RIGHT);
+            columns.add(spec);
+        }
+        return List.copyOf(columns);
+    }
 
     /**
      * Household shape down the side, pay tier across the top, and in every cell
@@ -3540,24 +3563,18 @@ final class PeopleScreen {
     VBox affordabilityGrid(HouseholdAccounts hh, HouseholdBalance bal,
                                    FamilyModel families) {
 
-        // Kept (KP7): the grid hands back its column constraints on being handed back, and takes them again here, so they
-        // are set every draw; each row is a scope keyed by what it is (a family shape, the tier row, a ledger's key, a
-        // section's caption) and each cell inside it keyed by its tier, so a row that comes or goes hands nobody's
-        // cell to a neighbour.
+        // Kept (KP7): the grid hands back its column constraints on being handed back (Kept.Grid.stage clears them), and takes them again here,
+        // so they are set every draw - as the grid's one list of columns, made once (KP2b), not seven made again and added one by one. Each row is a
+        // scope keyed by what it is (a family shape, the tier row, a ledger's key, a section's caption) and each cell inside it keyed by its
+        // tier, so a row that comes or goes hands nobody's cell to a neighbour.
         javafx.scene.layout.GridPane grid = Kept.grid();
         grid.setHgap(3);
         grid.setVgap(3);
 
-        javafx.scene.layout.ColumnConstraints nameCol =
-                new javafx.scene.layout.ColumnConstraints(SHAPE_COL);
-        nameCol.setHalignment(javafx.geometry.HPos.LEFT);
-        grid.getColumnConstraints().add(nameCol);
-        for (int t = 0; t < HouseholdAccounts.RETIRED; t++) {
-            javafx.scene.layout.ColumnConstraints spec =
-                    new javafx.scene.layout.ColumnConstraints(TIER_COL);
-            spec.setHalignment(javafx.geometry.HPos.RIGHT);
-            grid.getColumnConstraints().add(spec);
-        }
+        @SuppressWarnings("unchecked")
+        List<javafx.scene.layout.ColumnConstraints> columns =
+                (List<javafx.scene.layout.ColumnConstraints>) grid.getProperties().computeIfAbsent(MATRIX_COLUMNS, k -> matrixColumns());
+        grid.getColumnConstraints().addAll(columns);
 
         Kept.scope("head", () -> {
             grid.add(gridCell("household", Palette.TEXT_LABEL, Palette.SIZE_CAPTION, false), 0, 0);
@@ -4557,7 +4574,7 @@ final class PeopleScreen {
 
         HBox bar = Kept.scope("bar", () -> flowBar(toDollars(s.tax()), toDollars(s.rent()), toDollars(s.fees()),
                 toDollars(s.shopping()), left, STATEMENT - 28));
-        VBox.setMargin(bar, new javafx.geometry.Insets(8, 0, 0, 0));
+        vMargin(bar, BAR_ROOM);
         panel.getChildren().add(bar);
         panel.getChildren().add(Kept.scope("key", this::flowKey));
 

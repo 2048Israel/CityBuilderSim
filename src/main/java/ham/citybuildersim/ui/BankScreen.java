@@ -449,7 +449,7 @@ final class BankScreen {
     private void frameOver(VBox frame, VBox page) {
         frame.setMaxWidth(PAGE_WIDE);
         frame.setFillWidth(true);
-        frame.setPadding(new javafx.geometry.Insets(0, 18, 4, 18));
+        frame.setPadding(Pieces.FRAME_ROOM);
         body = ui.scrolled(page, FRAME_CHROME);
         final javafx.scene.control.ScrollPane scroller = body;
         // Kept (KP5): both bindings are made once per scroller, since a kept page is handed back each draw with the
@@ -776,10 +776,15 @@ final class BankScreen {
 
     /** Words that wrap, at a size, in a colour. */
     static Label words(String text, double size, String tone) {
+        return words(text, size, tone, false);
+    }
+
+    /** ...with the hand when it is a door (KP2b: made so, not made without it and set again). */
+    static Label words(String text, double size, String tone, boolean hand) {
         Label l = Kept.label(text);
         l.setWrapText(true);
         l.setMinWidth(0);
-        l.setStyle(BuildScreen.wordsAt(size, tone));
+        l.setStyle(BuildScreen.wordsAt(size, tone) + (hand ? " -fx-cursor: hand;" : ""));
         return l;
     }
 
@@ -826,12 +831,16 @@ final class BankScreen {
                 + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + edge + ";";
     }
 
-    /** A card that opens somewhere: the accent edge under the pointer, and a click goes. A door inside it opens itself. */
-    static VBox doorCard(VBox c, Runnable go) {
-        if (go == null) return c;
-        // Kept (KP5): card() has just set the ground this draw, so this is not built on last month's; the look the pointer calls
-        // for is chosen from isHover() where it is set, and the handlers are set, not added.
-        String rest = c.getStyle() + " -fx-cursor: hand;";
+    /**
+     * A card that opens somewhere: the accent edge under the pointer, and a click goes. A door inside it opens itself. Made as a door, in its
+     * look (KP2b): it was made by card() in the plain look and then set again, two writes to the style of a node a kept page hands back, at
+     * each draw. The look the pointer calls for is chosen from isHover() where it is set, and the handlers are set, not added.
+     */
+    static VBox doorCard(Runnable go, Node... rows) {
+        VBox c = Kept.column(8);
+        for (Node n : rows) if (n != null) c.getChildren().add(n);
+        c.setMaxWidth(Double.MAX_VALUE);
+        String rest = cardStyle(Palette.EDGE) + " -fx-cursor: hand;";
         String over = rest.replace(Palette.EDGE + ";", Palette.ACCENT + ";");
         c.setStyle(c.isHover() ? over : rest);
         c.setOnMouseEntered(e -> c.setStyle(over));
@@ -919,11 +928,7 @@ final class BankScreen {
 
     /** A key's entry: a swatch and a name, the swatch outlined when `ghost`. */
     static HBox swatch(String colour, String name, boolean ghost) {
-        HBox s = keySwatch(colour, name);
-        if (ghost && !s.getChildren().isEmpty() && s.getChildren().get(0) instanceof Region r) {
-            r.setStyle("-fx-background-color: " + colour + "33; -fx-border-color: " + colour + "; -fx-border-width: 1;");
-        }
-        return s;
+        return keySwatch(colour, name, ghost);
     }
 
     /** A row of a key: entries with a gap, wrapping. */
@@ -1092,9 +1097,9 @@ final class BankScreen {
             }
             if (Double.isFinite(before)) bar.animateFirst(Math.min(before, g.top() * BAND_SCALE), 600);
         }
-        VBox c = card(cap, fig, line(g.line()), bar, muted(g.key()), muted(g.other()));
+        VBox c = doorCard(() -> openPage("Capital & owners"), cap, fig, line(g.line()), bar, muted(g.key()), muted(g.other()));
         Kept.tip(c, "Capital & owners: both ratios on their bands", 300);
-        return doorCard(c, () -> openPage("Capital & owners"));
+        return c;
     }
 
     /* ------------------------------ the scorecard ------------------------------ */
@@ -1531,7 +1536,7 @@ final class BankScreen {
                 spark(p.series(), 12, Palette.MONEY, 120, 28));
         top.setAlignment(Pos.TOP_LEFT);
         String page = p.name();
-        return doorCard(card(top), () -> openPage(page));
+        return doorCard(() -> openPage(page), top);
     }
 
     /* =====================================================================
@@ -2350,11 +2355,10 @@ final class BankScreen {
         String key = "sheet:" + p.line().name();
         boolean opens = detail != null;
         boolean open = opens && openLines.contains(key);
+        // Kept (KP5, KP2b): the style built whole, once, with the hand when it opens; the click set, not added.
         Label name = words((opens ? (open ? "▾ " : "▸ ") : "") + p.name(), Palette.SIZE_LABEL + 1,
-                opens ? Palette.ACCENT : Palette.TEXT_LABEL);
+                opens ? Palette.ACCENT : Palette.TEXT_LABEL, opens);
         if (opens) {
-            // Kept (KP5): the style built whole, not from the label's own; the click set, not added.
-            name.setStyle(BuildScreen.wordsAt(Palette.SIZE_LABEL + 1, Palette.ACCENT) + " -fx-cursor: hand;");
             name.setOnMouseClicked(e -> {
                 if (!openLines.remove(key)) openLines.add(key);
                 showBankMenu();
@@ -2374,7 +2378,7 @@ final class BankScreen {
         VBox both = Kept.column(2, row);
         if (open) {
             both.getChildren().add(detail);
-            VBox.setMargin(detail, new javafx.geometry.Insets(0, 0, 4, 18));
+            vMargin(detail, new javafx.geometry.Insets(0, 0, 4, 18));
         }
         return both;
     }
@@ -2924,7 +2928,7 @@ final class BankScreen {
                 0, 10);
 
         // Kept (KP5): what a card shows only sometimes is a scope of its own, so it shifts no node after it.
-        VBox c = card(head,
+        VBox c = doorCard(() -> openSector(b.key(), "Cash & debt"), head,
                 line("owes the bank " + m(b.owesBank())),
                 b.bonds() > 0 ? Kept.scope("bonds", () -> muted("its bonds " + m(b.bonds()) + " · the bank holds " + m(b.bankHolds()))) : null,
                 lev,
@@ -2958,7 +2962,7 @@ final class BankScreen {
                         Palette.SIZE_LABEL, b.news() ? Palette.BAD : Palette.TEXT_MUTED));
         lost.setAlignment(Pos.CENTER_LEFT);
         c.getChildren().add(lost);
-        return doorCard(c, () -> openSector(b.key(), "Cash & debt"));
+        return c;
     }
 
     /** THE LANDLORDS: their insured mortgages (Lending 1309-1344), part of what the businesses owe. */
