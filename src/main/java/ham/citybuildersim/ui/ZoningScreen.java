@@ -158,9 +158,16 @@ final class ZoningScreen {
         String sector = sectorOf(policy.policyPage);
         if (sector == null || head.getChildren().isEmpty() || !(head.getChildren().get(0) instanceof HBox titled)) return head;
         if (titled.getChildren().size() < 3 || !(titled.getChildren().get(2) instanceof Label where)) return head;
-        // Kept (KP6): the style set whole (PolicyScreen.head() draws this label strong, as pageHead() does), not built on what it was.
-        where.setStyle(Palette.strong(Palette.SIZE_TITLE, Palette.TEXT_HEAD) + " -fx-padding: 8 0 2 0; -fx-cursor: hand;");
-        where.setOnMouseClicked(e -> policy.open(PolicyScreen.ZONING, THE_GROUND));
+        // Kept (KP6, KP2b): the way back is a label of its own, made with its hand in a scope of its own, and it takes the place of the plain one
+        // pageHead() drew - a style set whole on that one, and again on this, was written twice at each draw of a kept page.
+        Label back = Kept.scope("back", () -> {
+            Label w = Kept.label(where.getText());
+            w.setStyle(Palette.strong(Palette.SIZE_TITLE, Palette.TEXT_HEAD) + " -fx-padding: 8 0 2 0; -fx-cursor: hand;");
+            w.setMinWidth(Region.USE_PREF_SIZE);
+            return w;
+        });
+        back.setOnMouseClicked(e -> policy.open(PolicyScreen.ZONING, THE_GROUND));
+        titled.getChildren().set(2, back);
         titled.getChildren().addAll(3, Kept.scope("zone", () -> {
             Label sep = Kept.label("›");
             sep.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_MUTED) + " -fx-padding: 8 0 2 0;");
@@ -384,11 +391,11 @@ final class ZoningScreen {
         for (String key : Sectors.KEYS) {
             if (ui.game.getZoning().zone(key) != null || ui.game.getSectors().byKey(key) == null) continue;
             chips.getChildren().add(Kept.scope("pick:" + key, () -> {
+                // Kept (KP2b): the icon is handed over where the chip is made - Kept.label(text) clears one, and set after it is a second write.
                 Label chip = stepChip(nameOf(key), () -> {
                     policy.openLines.remove(PICK);
                     policy.open(PolicyScreen.ZONING, zonePage(key));
-                }, false);
-                chip.setGraphic(icon(Icons.ofSector(ui.game.getSectors().byKey(key)), Palette.TEXT_LABEL, 13));
+                }, false, false, icon(Icons.ofSector(ui.game.getSectors().byKey(key)), Palette.TEXT_LABEL, 13));
                 chip.setGraphicTextGap(6);
                 return chip;
             }));
@@ -822,9 +829,7 @@ final class ZoningScreen {
                 if (moved(size, sizeAs(s, to), step)) policy.stage(sizeKey(s), size); else policy.unstage(sizeKey(s));
             }
             policy.showPolicyMenu();
-        }, to != kind);
-        // The chip's style was set whole by stepChip() just above, in this draw, so this adds to nothing a past draw left.
-        if (to == kind) c.setStyle(c.getStyle() + " -fx-border-color: " + Palette.ACCENT + "; -fx-border-width: 0 0 2 0;");
+        }, to != kind, to == kind);
         return c;
     }
 
@@ -886,8 +891,13 @@ final class ZoningScreen {
     /** A dial card of several dials (ITS TAXES, the forest law): their words and ladders down the left, what they would do at the right, following whichever thumb moves. */
     static VBox multiDialCard(String svg, String title, String info, String status, List<Dial> dials,
                               BiFunction<String, Double, List<Effect>> effectsAt, String caveat, String caveatWhole) {
-        HBox head = Kept.row(Palette.GAP, iconSquare(svg, Palette.MONEY, 28, 15), PolicyScreen.words(title, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
-        ((Label) head.getChildren().get(1)).setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
+        // Kept (KP2b): the title strong where it is made - not made as words and set strong after.
+        Node square = iconSquare(svg, Palette.MONEY, 28, 15);
+        Label name = Kept.label(title);
+        name.setWrapText(true);
+        name.setMinWidth(0);
+        name.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
+        HBox head = Kept.row(Palette.GAP, square, name);
         if (info != null) head.getChildren().add(Kept.scope("info", () -> infoButton(info, true)));
         head.setAlignment(Pos.CENTER_LEFT);
         VBox left = Kept.column(6, head);

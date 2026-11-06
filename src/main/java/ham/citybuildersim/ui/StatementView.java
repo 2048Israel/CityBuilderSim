@@ -65,6 +65,13 @@ final class StatementView {
     /** The gap between columns. */
     static final double GAP = Palette.GAP;
 
+    /**
+     * The room round an indented label, and under a note's detail (KP2b): one object each. A padding is an object property that compares by reference, and a
+     * margin asks its parent for a layout whatever it is given: made again and set at each draw of a kept page they are a change and a layout at each.
+     */
+    private static final javafx.geometry.Insets INDENTED = new javafx.geometry.Insets(0, 0, 0, INDENT),
+            NOTE_ROOM = new javafx.geometry.Insets(2, 0, 8, NOTE_COLUMN + GAP + INDENT);
+
     /** What the columns show: last month's (off for a statement of the month's movement alone), and the change and the common-size share, each of which the toolbar turns off; `shareWord` heads the share's ("of revenue"), null for a statement with none. */
     record Columns(boolean then, boolean change, boolean share, String shareWord) { }
 
@@ -263,7 +270,7 @@ final class StatementView {
                             if (!open.remove(k)) open.add(k);
                             redraw.run();
                         }, info == null ? null : info.apply(r.id())));
-                if (detail != null) VBox.setMargin(detail, new javafx.geometry.Insets(2, 0, 8, NOTE_COLUMN + GAP + INDENT));
+                if (detail != null && !NOTE_ROOM.equals(VBox.getMargin(detail))) VBox.setMargin(detail, NOTE_ROOM);
                 if (opened) box.getChildren().add(detail);
             });
         }
@@ -362,14 +369,13 @@ final class StatementView {
         row.setAlignment(Pos.CENTER_LEFT);
 
         // The note number: a door when it opens something.
-        Label note = cell(r.note() > 0 ? String.valueOf(r.note()) : "", NOTE_COLUMN,
-                Palette.words(Palette.SIZE_CAPTION, hasNote ? Palette.ACCENT : Palette.TEXT_MUTED), Pos.CENTER_LEFT);
-        if (hasNote) {
-            note.setText((opened ? Statement.OPENED : Statement.CLOSED) + " " + r.note());
-            note.setStyle(note.getStyle() + " -fx-cursor: hand;");
-            // Set, not added: a kept number is handed back with no handler (Kept), and given this draw's.
-            note.setOnMouseClicked(e -> toggle.run());
-        }
+        // Kept (KP2b): the number made with its caret and its hand, once - not made plain and then given them, which wrote its words and its
+        // style twice at each draw of a kept page.
+        Label note = cell(hasNote ? (opened ? Statement.OPENED : Statement.CLOSED) + " " + r.note() : r.note() > 0 ? String.valueOf(r.note()) : "",
+                NOTE_COLUMN, Palette.words(Palette.SIZE_CAPTION, hasNote ? Palette.ACCENT : Palette.TEXT_MUTED) + (hasNote ? " -fx-cursor: hand;" : ""),
+                Pos.CENTER_LEFT);
+        // Set, not added: a kept number is handed back with no handler (Kept), and given this draw's.
+        if (hasNote) note.setOnMouseClicked(e -> toggle.run());
         row.getChildren().add(note);
 
         Label label = Kept.label(r.label());
@@ -382,7 +388,7 @@ final class StatementView {
         labelled.setAlignment(Pos.CENTER_LEFT);
         if (info != null) labelled.getChildren().add(Kept.scope("info", () -> infoButton(info, true)));
         // Kept (KP4): the indent and the hand are set on both sides, since a row kept from a draw that had them is handed back as it was.
-        labelled.setPadding(!head && !sub && !total ? new javafx.geometry.Insets(0, 0, 0, INDENT) : javafx.geometry.Insets.EMPTY);
+        labelled.setPadding(!head && !sub && !total ? INDENTED : javafx.geometry.Insets.EMPTY);
         labelled.setStyle(hasNote ? "-fx-cursor: hand;" : "");
         if (hasNote) label.setOnMouseClicked(e -> toggle.run());
         HBox.setHgrow(labelled, Priority.ALWAYS);
@@ -436,7 +442,7 @@ final class StatementView {
                     if (!open.remove(k)) open.add(k);
                     redraw.run();
                 }, info == null ? null : info.apply(r.id())));
-                if (detail != null) VBox.setMargin(detail, new javafx.geometry.Insets(2, 0, 8, NOTE_COLUMN + GAP + INDENT));
+                if (detail != null && !NOTE_ROOM.equals(VBox.getMargin(detail))) VBox.setMargin(detail, NOTE_ROOM);
                 if (opened) box.getChildren().add(detail);
             });
         }

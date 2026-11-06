@@ -88,6 +88,15 @@ public final class Pieces {
        ===================================================================== */
     public static VBox limitCell(String label, String value, String note, String tone,
                            String where, Runnable go) {
+        return limitCell(label, value, note, tone, Palette.TEXT_MUTED, where, go);
+    }
+
+    /**
+     * ...with the note in a colour of its own (a move on last month, up or down). KP2b: it was set after the cell was made, which wrote the note's
+     * style twice at every draw of a kept page; it is given here, where the note is made.
+     */
+    public static VBox limitCell(String label, String value, String note, String tone, String noteTone,
+                                 String where, Runnable go) {
 
         Label what = Kept.label(go == null ? label : label + "  \u203a");
         what.setStyle(Palette.words(Palette.SIZE_CAPTION,
@@ -100,7 +109,7 @@ public final class Pieces {
         // its owners want 12.0%" ended "its owners wan..." at the cell's edge.
         // The cell keeps its width; a long note takes a second line.
         Label says = Kept.label(note);
-        says.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        says.setStyle(Palette.words(Palette.SIZE_CAPTION, noteTone));
         says.setWrapText(true);
         says.setMaxWidth(LIMIT_CELL - 28);
 
@@ -108,21 +117,37 @@ public final class Pieces {
         cell.setAlignment(Pos.CENTER_LEFT);
         cell.setPrefWidth(LIMIT_CELL);
 
-        String rest = "-fx-padding: 0 14 0 14;"
-                + " -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 1 0 0;";
-        cell.setStyle(rest);
+        cellLook(cell, Boolean.TRUE.equals(cell.getProperties().get(LAST_CELL)), go != null);
 
         if (go != null) {
-            // Kept (KP2): the look the pointer calls for is chosen from isHover() where it is set.
-            String hand = rest + " -fx-cursor: hand;";
-            String over = hand + " -fx-background-color: " + Palette.CONTROL + ";";
-            cell.setStyle(cell.isHover() ? over : hand);
-            cell.setOnMouseEntered(e -> cell.setStyle(over));
-            cell.setOnMouseExited(e -> cell.setStyle(hand));
             cell.setOnMouseClicked(e -> go.run());
             Kept.tip(cell, where, 250);
         }
         return cell;
+    }
+
+    /** What vitalsBar leaves on its last cell, so that the cell is made at the next draw in the look the bar gives it (KP2b). */
+    private static final String LAST_CELL = "pieces.lastCell";
+
+    /**
+     * A limit cell's look: its padding and the rule at its right (the last cell of a bar has none), and for a door the hand and the look the
+     * pointer calls for. Written once at a draw (KP2b): the last cell was made with its rule and then set again by vitalsBar, two writes to the
+     * style of a node a kept page hands back at every draw; now it is made as the bar made it last time, and vitalsBar writes only when a cell
+     * has moved into or out of the last place.
+     */
+    private static void cellLook(VBox cell, boolean last, boolean door) {
+        String rest = last ? "-fx-padding: 0 14 0 14;"
+                : "-fx-padding: 0 14 0 14;" + " -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 1 0 0;";
+        if (!door) {
+            cell.setStyle(rest);
+            return;
+        }
+        // Kept (KP2): the look the pointer calls for is chosen from isHover() where it is set.
+        String hand = rest + " -fx-cursor: hand;";
+        String over = hand + " -fx-background-color: " + Palette.CONTROL + ";";
+        cell.setStyle(cell.isHover() ? over : hand);
+        cell.setOnMouseEntered(e -> cell.setStyle(over));
+        cell.setOnMouseExited(e -> cell.setStyle(hand));
     }
 
     /** How wide a limit cell is, its padding included; its note wraps inside it. */
@@ -137,7 +162,7 @@ public final class Pieces {
      */
     public static javafx.scene.layout.FlowPane chipStrip(String[] names, String current,
                                                    int size, Consumer<String> pick) {
-        return chipStrip(names, null, null, 0, current, size, pick, Pos.CENTER);
+        return chipStrip(names, null, null, 0, current, size, pick, Pos.CENTER, null, null);
     }
 
     /**
@@ -146,12 +171,22 @@ public final class Pieces {
      */
     public static javafx.scene.layout.FlowPane chipStrip(String[] names, javafx.scene.Node[] graphics, double gap,
                                                          String current, int size, Consumer<String> pick) {
-        return chipStrip(names, null, graphics, gap, current, size, pick, Pos.CENTER);
+        return chipStrip(names, null, graphics, gap, current, size, pick, Pos.CENTER, null, null);
+    }
+
+    /**
+     * ...with words on each chip that are not its name (KP2b: the Borrow page's moneys, each with the yield it would pay under its code) and,
+     * for a chip `spent` names, the spent look and no action: given where the chip is made and not set after it, which wrote the text and the
+     * style of a node a kept page hands back twice at each draw.
+     */
+    public static javafx.scene.layout.FlowPane chipStripSaying(String[] names, String[] says, java.util.function.Predicate<String> spent,
+                                                               String current, int size, Consumer<String> pick) {
+        return chipStrip(names, null, null, 0, current, size, pick, Pos.CENTER_LEFT, says, spent);
     }
 
     private static javafx.scene.layout.FlowPane chipStrip(String[] names, String[] icons, javafx.scene.Node[] graphics,
                                                           double gap, String current, int size, Consumer<String> pick,
-                                                          Pos align) {
+                                                          Pos align, String[] says, java.util.function.Predicate<String> spent) {
 
         javafx.scene.layout.FlowPane strip = Kept.flow(6, 6);
         strip.setAlignment(align);
@@ -161,7 +196,7 @@ public final class Pieces {
             String name = names[i];
             boolean on = name.equals(current);
             Button chip = Kept.of(Button.class, Button::new);
-            chip.setText(name);
+            chip.setText(says != null ? says[i] : name);
             // The icon form gives some chips a graphic. It is handed over here, where the chip is made (KP1):
             // a kept chip handed its own icon again is not stripped of it and given it back, which would
             // take the icon off the scene and put it on every draw.
@@ -171,6 +206,15 @@ public final class Pieces {
                     : hasIcon ? icon(icons[i], on ? Palette.ACCENT : Palette.TEXT_LABEL, size + 3) : null;
             if (chip.getGraphic() != graphic) chip.setGraphic(graphic);
             chip.setGraphicTextGap(given ? gap : hasIcon ? 6 : 4);
+            if (spent != null && spent.test(name)) {
+                // A chip spent: the spent look, the hand off, and a click that does nothing.
+                chip.setStyle(Palette.words(size, Palette.TEXT_SPENT) + " -fx-background-color: " + Palette.CONTROL + ";"
+                        + " -fx-background-radius: " + Palette.RADIUS_TIGHT + "; -fx-border-color: transparent;"
+                        + " -fx-border-width: 0 0 2 0; -fx-cursor: default;");
+                chip.setOnAction(e -> { });
+                strip.getChildren().add(chip);
+                continue;
+            }
             chip.setStyle(Palette.words(size, on ? Palette.TEXT_HEAD : Palette.TEXT_BODY)
                     + " -fx-background-color: " + (on ? Palette.RAISED : Palette.CONTROL) + ";"
                     + " -fx-background-radius: " + Palette.RADIUS_TIGHT + ";"
@@ -190,27 +234,26 @@ public final class Pieces {
      */
     public static javafx.scene.layout.FlowPane chipStrip(String[] names, String[] icons, String current,
                                                          int size, Consumer<String> pick) {
-        return chipStrip(names, icons, null, 0, current, size, pick, Pos.CENTER_LEFT);
+        return chipStrip(names, icons, null, 0, current, size, pick, Pos.CENTER_LEFT, null, null);
     }
 
     /** The bar itself: its cells - four, and People's five since 0.7.27 - the last one without its dividing rule. */
     public static HBox vitalsBar(VBox... cells) {
-        if (cells.length > 0) {
-            VBox last = cells[cells.length - 1];
-            last.setStyle("-fx-padding: 0 14 0 14;");
-            /*
-             * ...AND A DOOR AT THE END KEEPS IT (0.7.27): limitCell's hover
-             * put the rule back on the way out, and its hand only came with
-             * the hover - the People page's GOING SHORT is the first door
-             * that is the last cell.
-             */
-            if (last.getOnMouseClicked() != null) {
-                String plain = "-fx-padding: 0 14 0 14; -fx-cursor: hand;";
-                String over = plain + " -fx-background-color: " + Palette.CONTROL + ";";
-                last.setStyle(last.isHover() ? over : plain);
-                last.setOnMouseEntered(e -> last.setStyle(over));
-                last.setOnMouseExited(e -> last.setStyle(plain));
-            }
+        /*
+         * ...AND A DOOR AT THE END KEEPS IT (0.7.27): limitCell's hover
+         * put the rule back on the way out, and its hand only came with
+         * the hover - the People page's GOING SHORT is the first door
+         * that is the last cell.
+         *
+         * KP2b: a cell is marked when it is last (LAST_CELL), limitCell makes it in the look the mark says, and the look is written here only for
+         * a cell that has moved into or out of the last place - or was not made by limitCell, which knows nothing of the mark.
+         */
+        for (int i = 0; i < cells.length; i++) {
+            boolean last = i == cells.length - 1;
+            if (Boolean.TRUE.equals(cells[i].getProperties().get(LAST_CELL)) == last) continue;
+            if (last) cells[i].getProperties().put(LAST_CELL, Boolean.TRUE);
+            else cells[i].getProperties().remove(LAST_CELL);
+            cellLook(cells[i], last, cells[i].getOnMouseClicked() != null);
         }
         HBox bar = Kept.row(0, cells);
         bar.setAlignment(Pos.CENTER);
@@ -282,11 +325,16 @@ public final class Pieces {
 
     /** Row zero: the column names, in the label grey, aligned as their column is. */
     public static void gridHead(javafx.scene.layout.GridPane table, String... names) {
+        gridHead(table, false, names);
+    }
+
+    /** ...the headings in the words' face on both sides when `words` (KP2b: see gridCell). */
+    public static void gridHead(javafx.scene.layout.GridPane table, boolean words, String... names) {
         for (int i = 0; i < names.length; i++) {
             boolean right = table.getColumnConstraints().get(i).getHalignment()
                     == javafx.geometry.HPos.RIGHT;
             table.add(gridCell(names[i], Palette.TEXT_LABEL,
-                    Palette.SIZE_CAPTION, right), i, 0);
+                    Palette.SIZE_CAPTION, right, words), i, 0);
         }
     }
 
@@ -300,8 +348,16 @@ public final class Pieces {
 
     /** One cell of a table: a figure right, a name left. */
     public static Label gridCell(String text, String tone, int size, boolean rightAlign) {
+        return gridCell(text, tone, size, rightAlign, false);
+    }
+
+    /**
+     * ...in the words' face on whichever side it sits when `words` (KP2b: the desk's headings, which were made in the figures' face on the right
+     * and set again in the words' - two writes to the style of a node a kept page hands back).
+     */
+    public static Label gridCell(String text, String tone, int size, boolean rightAlign, boolean words) {
         Label cell = Kept.label(text);
-        cell.setStyle(rightAlign
+        cell.setStyle(rightAlign && !words
                 ? Palette.figureRegular(size, tone)
                 : Palette.words(size, tone));
         cell.setMaxWidth(Double.MAX_VALUE);
@@ -701,11 +757,17 @@ public final class Pieces {
     }
 
     public static HBox keySwatch(String colour, String name) {
+        return keySwatch(colour, name, false);
+    }
+
+    /** ...the swatch outlined when `ghost` (KP2b: set so where it is made, not made solid and set again). */
+    public static HBox keySwatch(String colour, String name, boolean ghost) {
         Region dot = Kept.region();
         dot.setMinSize(10, 10);
         dot.setPrefSize(10, 10);
         dot.setMaxSize(10, 10);
-        dot.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: 2;");
+        dot.setStyle(ghost ? "-fx-background-color: " + colour + "33; -fx-border-color: " + colour + "; -fx-border-width: 1;"
+                : "-fx-background-color: " + colour + "; -fx-background-radius: 2;");
         Label text = Kept.label(name);
         text.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
         HBox row = Kept.row(5, dot, text);
@@ -715,11 +777,22 @@ public final class Pieces {
 
     /** A small clickable chip that does something rather than picking a page. */
     public static Label stepChip(String text, Runnable act, boolean quiet) {
-        Label chip = Kept.label(text);
+        return stepChip(text, act, quiet, false);
+    }
+
+    /** ...underlined in the accent when it is the one picked (KP2b: in the style where it is made, not added to it after). */
+    public static Label stepChip(String text, Runnable act, boolean quiet, boolean picked) {
+        return stepChip(text, act, quiet, picked, null);
+    }
+
+    /** ...with a graphic of the caller's own before the words, handed over where the chip is made (KP2b: Kept.label(text) clears one, and set after it is a second write). */
+    public static Label stepChip(String text, Runnable act, boolean quiet, boolean picked, javafx.scene.Node graphic) {
+        Label chip = graphic == null ? Kept.label(text) : Kept.label(text, graphic);
         chip.setStyle("-fx-padding: 4 10 4 10; -fx-cursor: hand;"
                 + Palette.block(quiet ? Palette.PANEL : Palette.CONTROL)
                 + Palette.words(Palette.SIZE_CAPTION,
-                        quiet ? Palette.TEXT_LABEL : Palette.TEXT_BODY));
+                        quiet ? Palette.TEXT_LABEL : Palette.TEXT_BODY)
+                + (picked ? " -fx-border-color: " + Palette.ACCENT + "; -fx-border-width: 0 0 2 0;" : ""));
         chip.setOnMouseClicked(e -> act.run());
         return chip;
     }
@@ -1188,13 +1261,47 @@ public final class Pieces {
     /** The widest a redrawn page is laid out - Build's Overview and categories since 0.7.24, the land office since 0.7.26 - so a 1,920 window does not stretch a row of cards across the glass. */
     public static final double PAGE_WIDE = 1480;
 
+    /**
+     * The room a wide page keeps around it: one object (KP2b). A padding is an object property that compares by reference, so a new Insets
+     * of the same figures at each draw of a kept page is a change at each, and asks for a layout.
+     */
+    private static final javafx.geometry.Insets PAGE_ROOM = new javafx.geometry.Insets(0, 18, UserInterface.PAGE_FOOT, 18);
+
     /** A page as wide as the stage, up to PAGE_WIDE, with the room under it every page keeps. */
     public static VBox widePage() {
         VBox page = Kept.column(Palette.GAP_LOOSE);
         page.setMaxWidth(PAGE_WIDE);
         page.setFillWidth(true);
-        page.setPadding(new javafx.geometry.Insets(0, 18, UserInterface.PAGE_FOOT, 18));
+        page.setPadding(PAGE_ROOM);
         return page;
+    }
+
+    /** The room round the fixed frame over a scrolling page (KP2b: one object, for the frames of Sectors, the Bank, Finances and Trade). */
+    public static final javafx.geometry.Insets FRAME_ROOM = new javafx.geometry.Insets(0, 18, 4, 18);
+
+    /**
+     * A grid cell's margin set where it is not that already (KP2b): setMargin asks the grid for a layout whatever it is given, so a margin set
+     * at each draw of a kept page is a layout asked for at each.
+     */
+    public static void gridMargin(javafx.scene.Node cell, javafx.geometry.Insets room) {
+        if (!room.equals(javafx.scene.layout.GridPane.getMargin(cell))) javafx.scene.layout.GridPane.setMargin(cell, room);
+    }
+
+    /** A node's margin in an HBox, and in a VBox, set where it is not that already (KP2b): setMargin asks the box for a layout whatever it is given. */
+    public static void hMargin(javafx.scene.Node cell, javafx.geometry.Insets room) {
+        if (!room.equals(HBox.getMargin(cell))) HBox.setMargin(cell, room);
+    }
+
+    public static void vMargin(javafx.scene.Node cell, javafx.geometry.Insets room) {
+        if (!room.equals(VBox.getMargin(cell))) VBox.setMargin(cell, room);
+    }
+
+    /**
+     * A padding set where it is not that already (KP2b): for a padding worked out at the draw, which is a new object at each. The figures compare
+     * equal, the objects do not, and a node handed back by a kept draw is changed by the one and not by the other.
+     */
+    public static void pad(Region node, javafx.geometry.Insets room) {
+        if (!room.equals(node.getPadding())) node.setPadding(room);
     }
 
     /** A section's heading, and whatever sits at its right. */
@@ -1299,7 +1406,9 @@ public final class Pieces {
              *
              * An inline style beats a stylesheet, which setPadding did not.
              */
-            b.setPadding(javafx.geometry.Insets.EMPTY);
+            // Kept (KP2b): set where it is not that already - the style's own -fx-padding: 0 below makes it empty, and an Insets set at each draw
+            // over the one the style made is a change at each.
+            pad(b, javafx.geometry.Insets.EMPTY);
             b.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_BODY)
                     + " -fx-padding: 0; -fx-background-color: " + Palette.FIELD + ";"
                     + " -fx-border-color: transparent;"
@@ -1774,6 +1883,16 @@ public final class Pieces {
      */
     public static HBox pageHead(String title, String areaColour, Runnable back, String sub, String info,
                                 javafx.scene.Node... right) {
+        return pageHeadTo(title, areaColour, back, sub, null, info, right);
+    }
+
+    /**
+     * ...with the sub-page's name a way back too when `subBack` is not null (KP2b: "Finances › The city's fund › Automotive", the fund's name a
+     * door to the fund): the hand and the click are given where the name is made, not added to it after, which wrote its style twice at each
+     * draw of a kept page.
+     */
+    public static HBox pageHeadTo(String title, String areaColour, Runnable back, String sub, Runnable subBack, String info,
+                                  javafx.scene.Node... right) {
         // Kept: what is drawn only sometimes is a scope of its own, and the label is handed its swatch
         // where it is made, so a kept title is not stripped of it and given it back (KP1).
         Region swatch = areaColour == null ? null : Kept.scope("swatch", () -> {
@@ -1785,29 +1904,32 @@ public final class Pieces {
             return s;
         });
         Label t = Kept.label(title, swatch);
-        t.setStyle(Palette.strong(Palette.SIZE_TITLE, Palette.TEXT_HEAD) + " -fx-padding: 8 0 2 0;");
+        // Kept (KP2b): the style set whole, once - with the hand when the title is a way back - not set and then built on.
+        t.setStyle(Palette.strong(Palette.SIZE_TITLE, Palette.TEXT_HEAD) + " -fx-padding: 8 0 2 0;"
+                + (sub != null && back != null ? " -fx-cursor: hand;" : ""));
         t.setMinWidth(Region.USE_PREF_SIZE);
         t.setGraphicTextGap(areaColour != null ? 10 : 4);
         HBox titled = Kept.row(10, t);
         titled.setAlignment(Pos.CENTER_LEFT);
         if (sub != null) {
             if (back != null) {
-                t.setStyle(t.getStyle() + " -fx-cursor: hand;");
                 t.setOnMouseClicked(e -> back.run());
             }
             titled.getChildren().addAll(Kept.scope("sub", () -> {
                 Label sep = Kept.label("›");
                 sep.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_MUTED) + " -fx-padding: 8 0 2 0;");
                 Label where = Kept.label(sub);
-                where.setStyle(Palette.strong(Palette.SIZE_TITLE, Palette.TEXT_HEAD) + " -fx-padding: 8 0 2 0;");
+                where.setStyle(Palette.strong(Palette.SIZE_TITLE, Palette.TEXT_HEAD) + " -fx-padding: 8 0 2 0;"
+                        + (subBack != null ? " -fx-cursor: hand;" : ""));
                 where.setMinWidth(Region.USE_PREF_SIZE);
+                if (subBack != null) where.setOnMouseClicked(e -> subBack.run());
                 return List.of(sep, where);
             }));
         }
         if (info != null) {
             titled.getChildren().add(Kept.scope("info", () -> {
                 javafx.scene.Node dot = infoButton(info, false);
-                HBox.setMargin(dot, new javafx.geometry.Insets(6, 0, 0, 0));
+                hMargin(dot, new javafx.geometry.Insets(6, 0, 0, 0));
                 return dot;
             }));
         }
@@ -1835,9 +1957,20 @@ public final class Pieces {
         return l;
     }
 
+    /** ...in a size of its own (KP2b: a ratio's chip, a rule's), given where the chip is made and not added to its style after. */
+    public static Label chip(String text, String colour, int size) {
+        Label l = Kept.label(text);
+        chipLook(l, colour, size);
+        return l;
+    }
+
     /** A chip's look: the words in a colour on a faint ground of it. */
     private static void chipLook(Label l, String colour) {
-        l.setStyle(Palette.words(Palette.SIZE_CAPTION, colour)
+        chipLook(l, colour, Palette.SIZE_CAPTION);
+    }
+
+    private static void chipLook(Label l, String colour, int size) {
+        l.setStyle(Palette.words(size, colour)
                 + " -fx-background-color: " + tint(colour, .16) + "; -fx-background-radius: 10;"
                 + " -fx-padding: 2 8 2 8;");
         l.setMinWidth(Region.USE_PREF_SIZE);
@@ -2552,6 +2685,9 @@ public final class Pieces {
     /** One step of a funnel: its name, its amount on the funnel's scale, its figure as written, and its tooltip (null: none). */
     public record FunnelStep(String name, double amount, String figure, String tip) { }
 
+    /** What a funnel's bar keeps on itself (KP2b): the share of its holder's width it is bound to, and the holder it is bound to. */
+    private static final String FUNNEL_SHARE = "pieces.funnelShare", FUNNEL_HOLDER = "pieces.funnelHolder";
+
     /**
      * A funnel (0.7.28): the steps a figure narrows through, a row each -
      * its name at the left, a bar on the scale of the largest step, its
@@ -2566,7 +2702,7 @@ public final class Pieces {
             double most = 0;
             for (FunnelStep s : steps) if (Double.isFinite(s.amount())) most = Math.max(most, s.amount());
             // Kept (KP2): the steps, however many, are a scope of their own; a bar's width is bound to its
-            // holder's - bound again at each draw, which replaces the binding the node had.
+            // holder's - once, below.
             final double largest = most;
             VBox box = Kept.column(5);
             Kept.scope("steps", () -> {
@@ -2593,7 +2729,14 @@ public final class Pieces {
                     holder.setMinWidth(10);
                     holder.setPrefWidth(10);
                     holder.setMaxWidth(Double.MAX_VALUE);
-                    fill.prefWidthProperty().bind(holder.widthProperty().multiply(share));
+                    // Kept (KP2b): bound once - to its holder's width times a share the fill keeps - and the draw sets the share. A binding made
+                    // again at each draw of a kept page replaced the one the fill had, a change of its width at each.
+                    javafx.beans.property.DoubleProperty shown = (javafx.beans.property.DoubleProperty) fill.getProperties()
+                            .computeIfAbsent(FUNNEL_SHARE, k -> new javafx.beans.property.SimpleDoubleProperty());
+                    if (fill.getProperties().put(FUNNEL_HOLDER, holder) != holder) {
+                        fill.prefWidthProperty().bind(holder.widthProperty().multiply(shown));
+                    }
+                    shown.set(share);
                     HBox.setHgrow(holder, Priority.ALWAYS);
                     Label figure = Kept.label(s.figure());
                     figure.setMinWidth(Region.USE_PREF_SIZE);
@@ -4141,7 +4284,7 @@ public final class Pieces {
         if (a.chips() != null) {
             for (javafx.scene.Node c : a.chips()) {
                 if (c == null) continue;
-                VBox.setMargin(c, new javafx.geometry.Insets(4, 0, 0, 0));
+                vMargin(c, new javafx.geometry.Insets(4, 0, 0, 0));
                 tile.getChildren().add(c);
             }
         }
@@ -4689,7 +4832,7 @@ public final class Pieces {
         head.setMinWidth(Region.USE_PREF_SIZE);
         HBox headRow = Kept.row(0, head);
         headRow.setAlignment(Pos.CENTER_RIGHT);
-        headRow.setPadding(new javafx.geometry.Insets(0, stepWidth + 24 + 2 * Palette.GAP, 0, 0));
+        pad(headRow, new javafx.geometry.Insets(0, stepWidth + 24 + 2 * Palette.GAP, 0, 0));
         ladder.getChildren().add(headRow);
         for (Rung r : rungs) {
             ladder.getChildren().add(Kept.scope((r.caption() ? "caption:" : "rung:") + r.name(),
@@ -4718,7 +4861,7 @@ public final class Pieces {
         box.setMinSize(20, 20);
         box.setPrefSize(20, 20);
         box.setMaxSize(20, 20);
-        HBox.setMargin(box, new javafx.geometry.Insets(0, 0, 0, indent));
+        hMargin(box, new javafx.geometry.Insets(0, 0, 0, indent));
         Label name = Kept.label(r.go() == null ? r.name() : r.name() + " \u203a");
         name.setWrapText(true);
         name.setMinWidth(0);

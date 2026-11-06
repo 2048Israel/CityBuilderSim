@@ -4,6 +4,7 @@ import ham.citybuildersim.Auction;
 import ham.citybuildersim.BuildAdvice;
 import ham.citybuildersim.BuildingType;
 import ham.citybuildersim.BuildingsTemplate;
+import ham.citybuildersim.FreightView;
 import ham.citybuildersim.Game;
 import javafx.css.CssMetaData;
 import javafx.css.StyleOrigin;
@@ -1184,6 +1185,147 @@ public final class KeptBench {
     /** A page back on the page it opens on, nothing kept: the next draw makes every node. */
     public void home(Page p) {
         p.home.run();
+    }
+
+    /**
+     * What one kept draw set on the nodes it handed back (KP2b): how many times a style, a text, a graphic, a padding or a preferred width
+     * was written on a node that was on the page before the draw (`count`), those written from a file the caller names as not yet mended
+     * (`ignored`, not in the count), and the sources of the first, most first (each once, with how often and the first node it wrote:
+     * "x14 Pieces.java:132 < Kept.java:61 style: Column .style [...] -> [...]").
+     */
+    public record Sets(int count, int ignored, List<String> first) { }
+
+    /**
+     * One more kept draw of a page, the city unchanged (no month between), with a listener on every node of the page before it: on its style;
+     * on a label's or a text's words and a label's graphic; on a region's padding and preferred width. Each listener counts and reads its
+     * property again, so the next write is seen too: a value set to what it already is sets nothing (a String property compares by value),
+     * and a value set to another and back, or an Insets made again (an object property compares by reference), is counted at each write.
+     * The page is drawn and laid out before this is called, and no CSS or layout pass runs inside it (a pass writes properties of its own).
+     * It does not see what moves no property: a size or a margin set to what it is (Region.setPrefSize, HBox.setMargin) asks its parent for a
+     * layout all the same, whatever it is given.
+     * The listeners are taken off before it returns. A write whose nearest line of the game's code is in one of the files `unmended` names
+     * is counted apart: a screen outside the sweep's list, named by the check that asks, with its reason.
+     */
+    public Sets redrawSets(Page p, java.util.Set<String> unmended) {
+        int[] count = {0, 0};
+        java.util.Map<String, Object[]> sources = new java.util.LinkedHashMap<>();
+        List<Runnable> off = new ArrayList<>();
+        each(column, n -> {
+            watchSets(n, "style", n.styleProperty(), count, sources, unmended, off);
+            if (n instanceof Labeled l) {
+                watchSets(n, "text", l.textProperty(), count, sources, unmended, off);
+                watchSets(n, "graphic", l.graphicProperty(), count, sources, unmended, off);
+            } else if (n instanceof Text t) {
+                watchSets(n, "text", t.textProperty(), count, sources, unmended, off);
+            }
+            if (n instanceof Region r) {
+                watchSets(n, "padding", r.paddingProperty(), count, sources, unmended, off);
+                watchSets(n, "prefWidth", r.prefWidthProperty(), count, sources, unmended, off);
+            }
+        });
+        try {
+            drawKept(p);
+        } finally {
+            for (Runnable r : off) r.run();
+        }
+        List<String> first = new ArrayList<>();
+        sources.entrySet().stream().sorted((a, b) -> (int) b.getValue()[0] - (int) a.getValue()[0]).limit(SETS_NAMED)
+                .forEach(e -> first.add("x" + e.getValue()[0] + " " + e.getKey() + ": " + e.getValue()[1]));
+        return new Sets(count[0], count[1], first);
+    }
+
+    /** ...with nothing unmended. */
+    public Sets redrawSets(Page p) {
+        return redrawSets(p, java.util.Set.of());
+    }
+
+    /** The most sources redrawSets names. */
+    private static final int SETS_NAMED = Integer.getInteger("keptbench.named", 12);
+
+    private static void watchSets(Node n, String what, javafx.beans.value.ObservableValue<?> property, int[] count,
+                                  java.util.Map<String, Object[]> sources, java.util.Set<String> unmended, List<Runnable> off) {
+        Object[] was = {property.getValue()};
+        javafx.beans.InvalidationListener l = o -> {
+            Object now = property.getValue();
+            String[] at2 = whereSet();
+            String where = at2[0];
+            if (unmended.contains(at2[1])) {
+                count[1]++;
+            } else {
+                count[0]++;
+                Object[] at = sources.computeIfAbsent(where + " " + what, k -> new Object[]{0, describeSet(n) + " ." + what + differ(was[0], now)});
+                at[0] = (int) at[0] + 1;
+            }
+            was[0] = now;
+        };
+        property.addListener(l);
+        off.add(() -> property.removeListener(l));
+    }
+
+    /**
+     * Where the write that is being counted comes from: {the two nearest lines of the game's own code on the stack that are not the bench's,
+     * "Pieces.java:132 < Kept.java:61"; the file of the nearest that is not Kept's, the plumbing every make and every label goes through}.
+     */
+    private static String[] whereSet() {
+        StringBuilder b = new StringBuilder();
+        String owner = "";
+        int found = 0;
+        for (StackTraceElement e : new Throwable().getStackTrace()) {
+            if (!e.getClassName().startsWith("ham.citybuildersim") || e.getClassName().startsWith("ham.citybuildersim.ui.KeptBench")) continue;
+            if (owner.isEmpty() && !e.getClassName().equals("ham.citybuildersim.ui.Kept")) owner = e.getFileName();
+            if (found < 2) b.append(found++ == 0 ? "" : " < ").append(e.getFileName()).append(':').append(e.getLineNumber());
+            if (found == 2 && !owner.isEmpty()) break;
+        }
+        return new String[]{b.length() == 0 ? "(no line of the game's)" : b.toString(), owner};
+    }
+
+    /** What changed between two values, as the report writes it: from where they part, each cut. A graphic says only what it was and is. */
+    private static String differ(Object was, Object now) {
+        String a = String.valueOf(was), b = String.valueOf(now);
+        if (was instanceof Node || now instanceof Node) return " " + (was == null ? "none" : was.getClass().getSimpleName()) + " -> "
+                + (now == null ? "none" : now.getClass().getSimpleName());
+        // From a little before the place they part: a style built on another shows its tail, a text its words.
+        int start = 0;
+        while (start < a.length() && start < b.length() && a.charAt(start) == b.charAt(start)) start++;
+        int at = Math.max(0, start - 12);
+        String x = a.substring(at), y = b.substring(at);
+        return " [" + (at > 0 ? "..." : "") + (x.length() > 70 ? x.substring(0, 70) + "..." : x) + "] -> ["
+                + (at > 0 ? "..." : "") + (y.length() > 70 ? y.substring(0, 70) + "..." : y) + "]";
+    }
+
+    /** A node as the report of redrawSets names it: its class, its words (cut) and its first style class. */
+    private static String describeSet(Node n) {
+        StringBuilder b = new StringBuilder(n.getClass().getSimpleName());
+        String words = n instanceof Labeled l ? l.getText() : n instanceof Text t ? t.getText() : null;
+        if (words != null) b.append(" \"").append(words.length() > 24 ? words.substring(0, 24) + "..." : words).append('"');
+        if (!n.getStyleClass().isEmpty()) b.append(" .").append(n.getStyleClass().get(0));
+        return b.toString();
+    }
+
+    /**
+     * A berth kind's row, as the Ports page draws it (SectorScreen.berthRow in the scope berthScope() names), drawn kept with two berths
+     * standing and then with none, and the same row built new with none (KP2b): the signature of each, the kept row's and the new one's,
+     * with where layout put them. The city has no Ports page with a kind gone to none, so the rows are drawn from a berth made by hand; the
+     * code is the page's own.
+     */
+    public List<List<String>> berthRowGoesToNone() throws Exception {
+        ensureWindow();
+        SectorScreen s = ui.sectorScreen;
+        FreightView.Quote quoted = new FreightView.Quote(FreightView.Unit.PER_TONNE, 4.2, true, java.util.OptionalDouble.of(.5), java.util.OptionalDouble.of(.7));
+        FreightView.Quote unquoted = new FreightView.Quote(FreightView.Unit.PER_TONNE, 0, false, java.util.OptionalDouble.empty(), java.util.OptionalDouble.empty());
+        FreightView.Berth standing = new FreightView.Berth(ham.citybuildersim.Ports.Cargo.CONTAINER, 2, 1200, 1200, 1000, .83, 0, 0, 3, 10, .4, 40, 60, quoted);
+        FreightView.Berth none = new FreightView.Berth(ham.citybuildersim.Ports.Cargo.CONTAINER, 0, 0, 0, 0, 0, 0, 0, 0, 0, .4, 0, 0, unquoted);
+        Kept.Pool pool = new Kept.Pool();
+        List<List<String>> out = new ArrayList<>();
+        for (Object[] draw : new Object[][]{{pool, standing, false}, {pool, none, true}, {new Kept.Pool(), none, true}}) {
+            Node[] row = new Node[1];
+            FreightView.Berth b = (FreightView.Berth) draw[1];
+            Kept.draw((Kept.Pool) draw[0], () -> row[0] = Kept.scope(SectorScreen.berthScope(b), () -> s.berthRow(b)));
+            ui.setPage(row[0]);
+            passes();
+            if ((boolean) draw[2]) out.add(signature());
+        }
+        return out;
     }
 
     /** The nodes the last kept draw of the page made new and handed back: {made, kept}. */

@@ -185,7 +185,7 @@ final class SectorScreen {
     private void frameOver(VBox frame, VBox page, double chrome) {
         frame.setMaxWidth(PAGE_WIDE);
         frame.setFillWidth(true);
-        frame.setPadding(new javafx.geometry.Insets(0, 18, 4, 18));
+        frame.setPadding(Pieces.FRAME_ROOM);
         body = ui.scrolled(page, chrome);
         final javafx.scene.control.ScrollPane scroller = body;
         // Kept (KP4): both bindings are made once per scroller, since a kept page is handed back each draw with the
@@ -316,8 +316,7 @@ final class SectorScreen {
 
         // KEPT, counted up from last month's on a new month.
         VBox keptCell = kpi("KEPT", m(l.kept()) + "/mo", l.moved(), l.kept() < 0 ? Palette.BAD : Palette.TEXT_HEAD,
-                l.keptInfo(), null, null);
-        noteTone(keptCell, l.moveTone());
+                l.moveTone(), l.keptInfo(), null, null);
         if (animate && l.compared()) countUp(figureOf(keptCell), l.before(), l.kept(), v -> m(v) + "/mo");
         else stopCounting(figureOf(keptCell));
 
@@ -534,11 +533,16 @@ final class SectorScreen {
 
     /** A line of caption that wraps, in a colour. */
     static Label caption(String text, String tone) {
+        return caption(text, tone, "");
+    }
+
+    /** ...with more style (KP2b: a table's note, with its room), given where the caption is made and not added to its style after. */
+    static Label caption(String text, String tone, String more) {
         // Kept (KP4): a scope of its own, so a label that wraps is handed only to another caption (the page's other labels do not set it back).
         return Kept.scope("caption", () -> {
             Label l = Kept.label(text);
             l.setWrapText(true);
-            l.setStyle(Palette.words(Palette.SIZE_CAPTION, tone));
+            l.setStyle(Palette.words(Palette.SIZE_CAPTION, tone) + more);
             return l;
         });
     }
@@ -826,6 +830,11 @@ final class SectorScreen {
      * branches, asked separately, are a second line.
      */
     VBox investorsLine(BuildCard.SectorInvestors si, boolean animate, double iconBox) {
+        return investorsLine(si, animate, iconBox, "6 12 6 10");
+    }
+
+    /** ...with the room round it (the decision card's is more: KP2b, given where the line is made, not replaced in its style after). */
+    VBox investorsLine(BuildCard.SectorInvestors si, boolean animate, double iconBox, String room) {
         BuildCard.WordKind k = si.kind();
         // Kept (KP4): the first row, the built tag and the bank's line are each a scope, so a word that comes and goes shifts no node.
         HBox first = Kept.scope("first", () -> kindRow(k, sectorWords(si), iconBox));
@@ -848,7 +857,7 @@ final class SectorScreen {
         lines.setMinHeight(iconBox + 14);
         lines.setMaxWidth(Double.MAX_VALUE);
         lines.setAlignment(Pos.CENTER_LEFT);
-        lines.setStyle("-fx-padding: 6 12 6 10; -fx-background-color: " + Palette.RAISED + "; -fx-background-radius: 6;"
+        lines.setStyle("-fx-padding: " + room + "; -fx-background-color: " + Palette.RAISED + "; -fx-background-radius: 6;"
                 + " -fx-border-color: transparent transparent transparent " + kindColour(k) + ";"
                 + " -fx-border-width: 0 0 0 3; -fx-border-radius: 6;");
         Region gap = Kept.region();
@@ -993,10 +1002,10 @@ final class SectorScreen {
         name.setStyle(Palette.strong(Palette.SIZE_TITLE, Palette.TEXT_HEAD) + " -fx-padding: 8 0 2 0;");
         name.setMinWidth(Region.USE_PREF_SIZE);
         javafx.scene.Node square = iconSquare(Icons.ofSector(sector), Palette.BUSINESS, 30, 16);
-        HBox.setMargin(square, new javafx.geometry.Insets(6, 0, 0, 0));
+        hMargin(square, new javafx.geometry.Insets(6, 0, 0, 0));
         javafx.scene.Node dot = infoButton((sector.blurb() == null || sector.blurb().isBlank() ? sector.label() : sector.blurb())
                 + "\n\nIts buildings are on Build, under " + groupWords(sector) + ".", false);
-        HBox.setMargin(dot, new javafx.geometry.Insets(6, 0, 0, 0));
+        hMargin(dot, new javafx.geometry.Insets(6, 0, 0, 0));
         HBox titled = Kept.row(10, crumb, sep, square, name, dot);
         titled.setAlignment(Pos.CENTER_LEFT);
         Region gap = Kept.region();
@@ -1029,9 +1038,9 @@ final class SectorScreen {
                 then.isEmpty() ? "after tax"
                         : Math.abs(toDollars(move)) < .5 ? "no change on last month"
                         : String.format("%s%s on last month", move >= 0 ? "+" : "-", m(Math.abs(move))),
-                now.netIncome() < 0 ? Palette.BAD : Palette.TEXT_HEAD, null,
+                now.netIncome() < 0 ? Palette.BAD : Palette.TEXT_HEAD,
+                then.isEmpty() || Math.abs(toDollars(move)) < .5 ? Palette.TEXT_MUTED : move > 0 ? Palette.GOOD : Palette.BAD, null,
                 "Income: what it kept, and where the rest went", () -> open("Income"));
-        noteTone(kept, then.isEmpty() || Math.abs(toDollars(move)) < .5 ? Palette.TEXT_MUTED : move > 0 ? Palette.GOOD : Palette.BAD);
         if (animate && !then.isEmpty()) countUp(figureOf(kept), then.netIncome(), now.netIncome(), SectorScreen::m);
         else stopCounting(figureOf(kept));
 
@@ -1103,7 +1112,12 @@ final class SectorScreen {
 
     /** A limit cell with an (i) after its label when `info` is not null. */
     static VBox kpi(String label, String value, String note, String tone, String info, String where, Runnable go) {
-        VBox cell = limitCell(label, value, note, tone, where, go);
+        return kpi(label, value, note, tone, Palette.TEXT_MUTED, info, where, go);
+    }
+
+    /** ...with the note in a colour of its own (a move on last month, up or down), given where the cell is made (KP2b: it was set after). */
+    static VBox kpi(String label, String value, String note, String tone, String noteTone, String info, String where, Runnable go) {
+        VBox cell = limitCell(label, value, note, tone, noteTone, where, go);
         if (info != null && !cell.getChildren().isEmpty() && cell.getChildren().get(0) instanceof Label what) {
             cell.getChildren().remove(0);
             // Kept (KP4): the label's row is a scope of its own, since a cell has one only while it has an (i) to show.
@@ -1120,12 +1134,6 @@ final class SectorScreen {
     /** A limit cell's figure, for its count-up. */
     static Label figureOf(VBox cell) { return (Label) cell.getChildren().get(1); }
 
-    /** A limit cell's note in a colour of its own: a move on last month, up or down. */
-    static void noteTone(VBox cell, String tone) {
-        if (cell.getChildren().size() > 2 && cell.getChildren().get(2) instanceof Label says) {
-            says.setStyle(Palette.words(Palette.SIZE_CAPTION, tone));
-        }
-    }
 
     /** A figure counted from last month's to this month's over COUNT_MILLIS, ending on this month's exactly (0.7.30). */
     static void countUp(Label label, double from, double to, java.util.function.DoubleFunction<String> words) {
@@ -1262,8 +1270,8 @@ final class SectorScreen {
             what.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_LABEL));
             Region gap = Kept.region();
             HBox.setHgrow(gap, Priority.ALWAYS);
-            Label chip = chip(value, colour);
-            chip.setStyle(chip.getStyle() + " -fx-font-size: " + Palette.SIZE_BODY + "px;");
+            // Kept (KP2b): the chip made at its size, not made at the chip's and given another after.
+            Label chip = chip(value, colour, Palette.SIZE_BODY);
             HBox row = Kept.row(Palette.GAP, what, gap, chip);
             if (info != null) row.getChildren().add(Kept.scope("info", () -> infoButton(info, true)));
             row.setAlignment(Pos.CENTER_LEFT);
@@ -1273,12 +1281,17 @@ final class SectorScreen {
 
     /** A ratio column, 300 wide, beside a statement. */
     static VBox ratioColumn(String title, Node... rows) {
+        return ratioColumn(300, 340, title, rows);
+    }
+
+    /** ...at a width of its own (KP2b: the borrowing and financing columns', given where the column is made, not set again after it). */
+    static VBox ratioColumn(double pref, double max, String title, Node... rows) {
         return Kept.scope("ratioColumn", () -> {
             VBox c = Kept.column(8, head(title, null, null));
             for (Node n : rows) if (n != null) c.getChildren().add(n);
             c.setMinWidth(260);
-            c.setPrefWidth(300);
-            c.setMaxWidth(340);
+            c.setPrefWidth(pref);
+            c.setMaxWidth(max);
             c.setStyle("-fx-padding: 12 14 12 14; -fx-background-color: " + Palette.PANEL + "; -fx-background-radius: 8;");
             return c;
         });
@@ -2273,7 +2286,7 @@ final class SectorScreen {
             HBox row = Kept.row(Palette.GAP_LOOSE, n, bar, t);
             row.setAlignment(Pos.CENTER_LEFT);
             javafx.scene.layout.FlowPane k = key(keyParts);
-            VBox.setMargin(k, new javafx.geometry.Insets(0, 0, 0, 122));
+            vMargin(k, new javafx.geometry.Insets(0, 0, 0, 122));
             return Kept.column(4, row, k);
         });
     }
@@ -2846,7 +2859,7 @@ final class SectorScreen {
                 + (now.tradePayables() > 0 ? "\n\nIts suppliers wait a month for the stock they let it have: what it owes"
                         + " them is beside its borrowing, at no interest, and paid out of the sale that stock goes to." : "");
 
-        VBox c = ratioColumn("WHAT ITS BORROWING COSTS",
+        VBox c = ratioColumn(320, 360, "WHAT ITS BORROWING COSTS",
                 head("NEW BORROWING COSTS", spreadInfo(key), rateFigure), rateBar, caption(rateWords, Palette.TEXT_MUTED),
                 head("LEVERAGE", "What it owes over what it owns, to the default point at "
                         + String.format("%.2f", BusinessDebtManager.INSOLVENCY_TRIGGER) + " - past it the bank lends it "
@@ -2857,8 +2870,6 @@ final class SectorScreen {
                         : credit.getPrincipal(key)), Palette.SIZE_BODY + 3, Palette.TEXT_HEAD)),
                 Kept.scope("mix", () -> mix.isEmpty() ? caption("it owes nothing", Palette.TEXT_MUTED) : segmentBar(mix, 0, List.of(), 0, 10)),
                 mix.isEmpty() ? null : Kept.scope("mix key", () -> key(mixKey)));
-        c.setPrefWidth(320);
-        c.setMaxWidth(360);
         return c;
     }
 
@@ -3585,9 +3596,7 @@ final class SectorScreen {
                     });
                     grid.add(cell, i, at);
                 }
-                Label so = caption(soWords(a), a.failures().isEmpty() ? Palette.TEXT_MUTED : Palette.TEXT_LABEL);
-                so.setWrapText(true);
-                so.setStyle(so.getStyle() + " -fx-padding: 0 0 6 24;");
+                Label so = caption(soWords(a), a.failures().isEmpty() ? Palette.TEXT_MUTED : Palette.TEXT_LABEL, " -fx-padding: 0 0 6 24;");
                 grid.add(so, 0, at + 1, widths.length, 1);
             });
             row += 2;
@@ -3800,11 +3809,9 @@ final class SectorScreen {
                 new Segment(owed, Palette.MONEY, false, null, null, "its lenders and suppliers  " + BuildScreen.pct(owed), null));
         List<Tick> ticks = Double.isFinite(target) ? List.of(new Tick(target, Palette.TEXT_HEAD, 2, "aims for "
                 + BuildScreen.pct(target), "The equity share its register aims for, which moves with how profitable it is.")) : List.of();
-        VBox c = ratioColumn("HOW IT IS FINANCED", segmentBar(parts, Math.max(1, owners + owed), ticks, 0, 12),
+        VBox c = ratioColumn(320, 360, "HOW IT IS FINANCED", segmentBar(parts, Math.max(1, owners + owed), ticks, 0, 12),
                 key(List.of(keyPart(Palette.BUSINESS, "its owners", BuildScreen.pct(owners)),
                         keyPart(Palette.MONEY, "its lenders and suppliers", BuildScreen.pct(owed)))));
-        c.setPrefWidth(320);
-        c.setMaxWidth(360);
         return c;
     }
 
@@ -4059,12 +4066,11 @@ final class SectorScreen {
      * a "Built" month flashing once with what it built.
      */
     VBox decisionCard(BuildCard.SectorInvestors si, boolean animate) {
-        VBox card = investorsLine(si, animate, 30);
+        VBox card = investorsLine(si, animate, 30, "10 14 10 12");
         // The decision card has no door to itself.
         HBox first = (HBox) card.getChildren().get(0);
         first.getChildren().remove(first.getChildren().size() - 1);
         card.setMinHeight(56);
-        card.setStyle(card.getStyle().replace("-fx-padding: 6 12 6 10;", "-fx-padding: 10 14 10 12;"));
         if (si.word().isEmpty()) {
             // Kept (KP4): a note that comes and goes is a scope of its own.
             card.getChildren().add(Kept.scope("no word", () -> caption("Every month each business decides whether to expand; the word is filed when a "
@@ -4245,8 +4251,7 @@ final class SectorScreen {
     static HBox rule(String text, String info) {
         // Kept (KP4): the row in a scope of its own, and its (i), which a rule has only sometimes, in another.
         return Kept.scope("rule", () -> {
-            Label c = chip(text, Palette.TEXT_LABEL);
-            c.setStyle(c.getStyle() + " -fx-font-size: " + Palette.SIZE_LABEL + "px;");
+            Label c = chip(text, Palette.TEXT_LABEL, Palette.SIZE_LABEL);
             HBox r = Kept.row(Palette.GAP_TIGHT, c);
             if (info != null) r.getChildren().add(Kept.scope("info", () -> infoButton(info, true)));
             r.setAlignment(Pos.CENTER_LEFT);
@@ -6382,7 +6387,7 @@ final class SectorScreen {
         // Kept (KP4): the two cards are a scope each, and a berth kind's row one more, by its kind.
         VBox berths = Kept.scope("berths", () -> {
             VBox rows = Kept.column(Palette.GAP_LOOSE);
-            for (FreightView.Berth b : p.kinds()) rows.getChildren().add(Kept.scope(b.kind(), () -> berthRow(b)));
+            for (FreightView.Berth b : p.kinds()) rows.getChildren().add(Kept.scope(berthScope(b), () -> berthRow(b)));
             return card(head("BERTHS BY KIND", FREIGHT_PORTS_INFO, hint("the city's quays, worked by Freight")), rows,
                     factGrid(lines, 2, SectorScreen::toneColour));
         });
@@ -6394,6 +6399,15 @@ final class SectorScreen {
             + "against what its berths can handle (a bar, amber over nine tenths), the handling a tonne costs the "
             + "shipper and the due a tonne pays the city, which the Policy dial scales. Dues are the floor of the "
             + "handling; the target is what the rule would charge.";
+
+    /**
+     * The scope a berth kind's row is made in (KP2b): its kind, and another for a kind with no berth standing - its quote's second line says
+     * nothing, and a wrapped label that had words and is emptied keeps the wrapping width of the words it had (billRow's mend, KP4), so a row
+     * that goes to none is made new, and one that stands again is made new from it.
+     */
+    static Object berthScope(FreightView.Berth b) {
+        return b.berths() > 0 ? b.kind() : b.kind() + ":none";
+    }
 
     /** One kind of berth: its name, the berths, the fill bar with its tonnes, and the handling quote. */
     HBox berthRow(FreightView.Berth b) {
@@ -6687,7 +6701,7 @@ final class SectorScreen {
             c.setPrefWidth(22);
             c.setAlignment(Pos.CENTER);
             c.setMaxHeight(Double.MAX_VALUE);
-            HBox.setMargin(c, new javafx.geometry.Insets(80, 0, 0, 0));
+            hMargin(c, new javafx.geometry.Insets(80, 0, 0, 0));
             return c;
         });
     }

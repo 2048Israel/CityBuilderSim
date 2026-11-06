@@ -268,7 +268,13 @@ import java.util.concurrent.TimeUnit;
  *      still pointer across a redraw and loses it with the pointer, and the table's picture, which lights the row under a pointer that has not moved and none
  *      once it has gone; and a node a month's redraw keeps keeps its own Tooltip (Kept.tip) on both pages, with a cell open, a drawer open and every measure open;
  *  90. it is cheap: the kept month on Household money (as it opens and with a cell's books open) within KEPT_HOUSEHOLD_MS and on the Rankings tab (as it opens
- *      and with every measure unfolded) within KEPT_RANKINGS_MS through Timing, built new beside it.
+ *      and with every measure unfolded) within KEPT_RANKINGS_MS through Timing, built new beside it;
+ *  92. a redraw with nothing new sets nothing (KP2b): a second kept draw of a page in the same month writes no style, text, graphic, padding or width on a
+ *      node it hands back - the condition caused (a style set to what it is moves no listener, and set to another and back moves it twice), a berth kind
+ *      gone to none drawn as a row built new (a hand-made berth: no city has the page), then the Sectors list and a business's five pages, the statements
+ *      with a note open, the Bank's seven pages, Finances' hub and every page of its six areas (a line's page, Close it now, the window abroad shut), the
+ *      fund's security, Trade's six and a nation's, Policy's hub and pages with Zoning's, Infrastructure's four, Services' sub-pages and the land office,
+ *      each with where the writes that are left come from; the writes of the screens outside the sweep (NOT_KP2B) are named and not counted.
  */
 public class KeptCheck {
 
@@ -6243,6 +6249,191 @@ public class KeptCheck {
         return n;
     }
 
+    /* =====================================================================
+       THE KEPT SCREENS' COST SWEEP (KP2b), section 92: a style, a text, a graphic, a padding or a width set again on a node a draw hands
+       back is a change CSS and layout are asked to look at every draw, and every month, for nothing
+       ===================================================================== */
+
+    /**
+     * The files of the screens KP2b's sweep did not reach, whose writes section 92 names and does not count: the sweep was the list of
+     * screens Pieces, the statements, Sectors, Land, the Bank, the fund, Finances, Trade and Zoning make (KP4, KP5, KP6), and a write on
+     * a page from one of these is another batch's mend. Take a file out of this set as it is mended.
+     */
+    static final java.util.Set<String> NOT_KP2B = java.util.Set.of("UserInterface.java", "InfrastructureScreen.java", "ServicesScreen.java",
+            "PolicyScreen.java", "Ladder.java");
+
+    /** The writes from NOT_KP2B's files, over the pages of section 92 (printed at its end). */
+    static int ignoredSets = 0;
+
+    /**
+     * A page home, a hand on it, drawn and laid out, drawn once more with a listener on every style, text, graphic, padding and width on
+     * it (KeptBench.redrawSets), no month between: how many of them the second draw wrote, and which were the first. The conditions that
+     * make it a test are the draw's own: the nodes it hands back are the first draw's, with the values the first set.
+     */
+    static void nothingSet(KeptBench bench, KeptBench.Page page, String name, Hand hand) throws Exception {
+        KeptBench.Sets sets = fx(() -> {
+            bench.home(page);
+            if (hand != null) hand.on(bench);
+            bench.drawKept(page);
+            // ...a count-up the first draw started (a figure counted up from last month's) run to its end, as a second draw some seconds later
+            // would find it; a draw in the middle of one writes its figure, and that is its work.
+            bench.finishPageAnimations();
+            bench.passes();
+            KeptBench.Sets s = bench.redrawSets(page, NOT_KP2B);
+            bench.passes();
+            return s;
+        });
+        if (sets.count() > 0) {
+            System.out.println("  " + name + ": " + sets.count() + " written, from:");
+            for (String mover : sets.first()) System.out.println("      " + mover);
+        }
+        ignoredSets += sets.ignored();
+        check("a second kept draw of " + name + " in the same month sets no style, text, graphic, padding or width (" + sets.count() + ")",
+                sets.count() == 0);
+    }
+
+    static void nothingSet(KeptBench bench, KeptBench.Page page, String name) throws Exception {
+        nothingSet(bench, page, name, null);
+    }
+
+    /**
+     * The pieces of paper on the city's books; where there are none (the months the sections before this played let every maturity pass) one
+     * sold through the model, as the Borrow page's own button sells it, the first of a Term, a Note and a Serial the auction takes.
+     */
+    static List<Debt> piecesOnTheBooks(Game g, KeptBench bench) throws Exception {
+        List<Debt> pieces = fx(bench::financesPieces);
+        double ask = fx(() -> Math.max(g.minimumIssueSize() * 3, g.getCash() / 40));
+        for (String[] kind : new String[][]{{"Term", "10"}, {"Note", "12"}, {"Serial", "10"}}) {
+            if (!pieces.isEmpty()) break;
+            String said = fx(() -> quietly(() -> bench.financesSell(kind[0], Integer.parseInt(kind[1]), ask, false)));
+            pieces = fx(bench::financesPieces);
+            System.out.println("  the books held no paper; " + kind[0] + " " + kind[1] + " sold through the model: "
+                    + (pieces.isEmpty() ? "nothing came of it (" + said.split("\n")[0] + ")" : pieceWords(pieces.get(0))));
+        }
+        return pieces;
+    }
+
+    /** Section 92: the pages the sweep mended, each redrawn with nothing new in the city. */
+    static void kp2bSets(Game g, KeptBench bench) throws Exception {
+        System.out.printf("%n=== The kept screens' cost sweep (KP2b): a city at month %d ===%n", g.getMonth());
+        System.out.println("\n--- 92: a redraw with nothing new sets nothing ---");
+        fx(() -> {
+            bench.clock(false, null);
+            bench.speed(0);
+            return null;
+        });
+        // The premise: a node written twice is counted as often as it is written. A style made to change under the listener is counted
+        // once for each change, and one set to what it is counted none.
+        int[] twice = fx(() -> {
+            javafx.scene.control.Label l = new javafx.scene.control.Label("x");
+            l.setStyle("-fx-text-fill: red;");
+            int[] n = {0};
+            javafx.beans.InvalidationListener on = o -> {
+                n[0]++;
+                l.getStyle();
+            };
+            l.styleProperty().addListener(on);
+            l.setStyle("-fx-text-fill: red;");
+            int same = n[0];
+            String before = l.getStyle();
+            l.setStyle(before + " -fx-cursor: hand;");
+            l.setStyle(before);
+            return new int[]{same, n[0]};
+        });
+        check("a style set to what it is moves no listener, and set to another and back moves it twice (" + twice[0] + ", " + twice[1] + ")",
+                twice[0] == 0 && twice[1] == 2);
+
+        // The Ports page's berth row going to none: no city here has a Ports page with a kind gone to none, so the row is drawn from a berth
+        // made by hand, by the page's own code, kept with berths and then with none against one built new with none.
+        List<List<String>> berths = fx(bench::berthRowGoesToNone);
+        String berthsDiffer = firstDifference(berths.get(0), berths.get(1));
+        if (berthsDiffer != null) System.out.println("  first difference: " + berthsDiffer);
+        check("a berth kind that goes to none is drawn as a row built new with none, bounds and all", berthsDiffer == null);
+
+        fx(() -> ensureWorks(g));
+        SectorKinds kinds = fx(() -> sectorKinds(g));
+        String plain = kinds.plain(), works = kinds.materials();
+        check("the city has a plain business and a materials industry with works to draw (" + plain + ", " + works + ")", plain != null && works != null);
+        if (plain != null && works != null) {
+            g.getBusinessInvestment().holdSector(works);
+            String ops = KeptBench.sectorPages().get(0);
+            nothingSet(bench, fx(bench::sectors), "the Sectors list");
+            for (String key : new String[]{plain, Sectors.RETAIL, Sectors.REAL_ESTATE, works, Sectors.FREIGHT}) {
+                for (String page : KeptBench.sectorPages()) {
+                    nothingSet(bench, fx(() -> bench.sectors("the page", key, page, false)), possessive(called(g, key)) + " " + page + " page");
+                }
+            }
+            for (String page : new String[]{"Income", "Balance sheet", "Cash & debt"}) {
+                nothingSet(bench, fx(() -> bench.sectors("the page", plain, page, true)), possessive(called(g, plain)) + " " + page + " page as a statement");
+            }
+            int note = fx(() -> bench.sectorsNoteOf(plain));
+            check("the first note on " + possessive(called(g, plain)) + " income statement opens on lines this month (the fixture's premise)", note > 0);
+            nothingSet(bench, fx(() -> bench.sectors("the page", plain, "Income", true)),
+                    possessive(called(g, plain)) + " income statement with note " + note + " open",
+                    b -> { b.sectorsNote(plain, "income", note, true); return null; });
+            nothingSet(bench, fx(() -> bench.sectors("the page", plain, ops, false)), possessive(called(g, plain)) + " Operations page with every line open",
+                    b -> { b.sectorsFold("every", plain, true); return null; });
+        }
+        System.out.println("  [the Sectors tab done]");
+
+        nothingSet(bench, fx(bench::bank), "the Bank Overview");
+        for (String page : KeptBench.bankPages()) {
+            nothingSet(bench, fx(() -> bench.bank("the page", "pages", page, false)), "the Bank's " + page + " page");
+        }
+        for (String page : new String[]{"Profit", "Balance sheet"}) {
+            nothingSet(bench, fx(() -> bench.bank("the page", "pages", page, true)), "the Bank's " + page + " page as a statement");
+        }
+        nothingSet(bench, fx(bench::finances), "the Finances hub");
+        for (String area : KeptBench.financeAreas()) {
+            for (String page : KeptBench.financePages(area)) {
+                nothingSet(bench, fx(() -> bench.finances("the page", area, page)), "Finances, " + area + ", " + page);
+            }
+        }
+        nothingSet(bench, fx(bench::trade), "the Trade Overview");
+        for (String page : KeptBench.tradePages()) {
+            nothingSet(bench, fx(() -> bench.trade("the page", page)), "Trade, " + page);
+        }
+        nothingSet(bench, fx(bench::policy), "the Policy hub");
+        for (String[] ap : KeptBench.policyPages()) {
+            nothingSet(bench, fx(() -> bench.policy("the page", ap[0], ap[1])), "Policy, " + ap[0] + ", " + ap[1]);
+        }
+        nothingSet(bench, fx(() -> bench.policy("the page", "Zoning", KeptBench.policyZonePage(Sectors.RETAIL))), "Policy, Zoning, the shops' zone");
+        fx(() -> ensureTransit(g));
+        nothingSet(bench, fx(bench::infrastructure), "Infrastructure, Roads");
+        for (String page : new String[]{"Transit", "Freight", "Ports"}) {
+            nothingSet(bench, fx(bench::infrastructure), "Infrastructure, " + page, b -> { b.infraOpen(page, "All"); return null; });
+        }
+        for (String[] ap : KeptBench.servicesPages()) {
+            nothingSet(bench, fx(bench::services), "Services, " + ap[0] + ", " + ap[1], b -> { b.servicesOpen(ap[0], ap[1]); return null; });
+        }
+        // Pages with something picked or opened: a line of paper and Close it now, a security, a nation, the land office with its details.
+        List<Debt> pieces = piecesOnTheBooks(g, bench);
+        check("the city's books hold a piece of paper (the fixture's premise for a line's page and Close it now: " + pieces.size() + ")", !pieces.isEmpty());
+        if (!pieces.isEmpty()) {
+            Debt first = pieces.get(0);
+            nothingSet(bench, fx(() -> bench.finances("the page", "The book", "Every piece")), "Finances, a line's page", b -> { b.financesLine(first); return null; });
+            nothingSet(bench, fx(() -> bench.finances("the page", "The book", "Every piece")), "Finances, Close it now", b -> { b.financesClose(first); return null; });
+        }
+        List<String> securities = fx(bench::fundSecurities);
+        check("the fund lists a security (the fixture's premise for a security's page: " + securities.size() + ")", !securities.isEmpty());
+        if (!securities.isEmpty()) {
+            nothingSet(bench, fx(() -> bench.finances("the page", "The city's fund", "Portfolio")), "the fund, a security's page",
+                    b -> { b.fundOpen(securities.get(0), "Portfolio"); return null; });
+        }
+        List<Integer> nations = fx(() -> bench.tradePartners(1));
+        check("the city trades with a nation (the fixture's premise for a nation's page: " + nations.size() + ")", !nations.isEmpty());
+        if (!nations.isEmpty()) nothingSet(bench, fx(() -> bench.tradeNation("the page", nations.get(0))), "Trade, a nation's page");
+        nothingSet(bench, fx(bench::land), "the land office", b -> { b.landDetails(true); return null; });
+        // The window abroad shut, last: a default abroad, as the model marks it, stays on the city for what is left of the run.
+        fx(() -> {
+            g.getDebtManager().markForeignDefault();
+            return null;
+        });
+        check("the window abroad is shut (the fixture's premise): " + g.getDebtManager().foreignWindowReason(), !g.getDebtManager().foreignWindowOpen());
+        nothingSet(bench, fx(() -> bench.finances("the page", "Borrow", "Abroad")), "Finances, Borrow, Abroad, the window shut");
+        System.out.printf("  [%d writes from the files NOT_KP2B names were left uncounted over the pages above]%n", ignoredSets);
+    }
+
     public static void main(String[] args) throws Exception {
         System.out.println("=== KeptCheck: the People page, the chrome, City History, Infrastructure, Services, the land office, Build, the construction page, the Sectors tab, the Bank, Finances, the city's fund, Government, Trade & the World and Policy kept between redraws, and the clock never rebuilding a rail screen (study UP4, UP2, KP1, KP2, KP3, KP4, KP5, KP6, KP7) ===");
         String down = startJavaFx();
@@ -6424,6 +6615,7 @@ public class KeptCheck {
         money(g, bench);
         screensKP6(g, bench);
         screensKP7(g, bench);
+        kp2bSets(g, bench);
 
         System.out.println("\n" + (fails == 0 ? "ALL OK" : fails + " FAILED"));
         Platform.exit();

@@ -566,7 +566,7 @@ final class FinancesScreen {
     private void frameOver(VBox frame, VBox page) {
         frame.setMaxWidth(PAGE_WIDE);
         frame.setFillWidth(true);
-        frame.setPadding(new javafx.geometry.Insets(0, 18, 4, 18));
+        frame.setPadding(Pieces.FRAME_ROOM);
         body = ui.scrolled(page, FRAME_CHROME);
         final javafx.scene.control.ScrollPane scroller = body;
         // Kept (KP5): both bindings are made once per scroller, since a kept page is handed back each draw with the scroller and
@@ -973,8 +973,8 @@ final class FinancesScreen {
 
     /** A line of a card whose figure is a gain or a loss: the words at the left, the figure bold and in its colour at the right, an (i) after the words when `info` is not null. */
     HBox gainLine(String label, Gain gain, String info) {
-        HBox row = cardLine(label, gain.both(), gain.tone(), info);
-        row.getChildren().get(row.getChildren().size() - 1).setStyle(BuildScreen.figureAt(Palette.SIZE_BODY + 2, gain.tone()));
+        HBox row = cardLine(label, gain.both(), gain.tone(), Palette.SIZE_BODY + 2.0);
+        if (info != null) row.getChildren().add(1, infoButton(info, true));
         return row;
     }
 
@@ -1041,11 +1041,25 @@ final class FinancesScreen {
 
     /** Words that wrap, at a size, in a colour. */
     static Label words(String text, double size, String tone) {
+        return words(text, size, tone, false);
+    }
+
+    /** Words that wrap, in a style of their own (KP2b: a piece's name, strong): made so, not made as words and set again. */
+    static Label wordsStyled(String text, String style) {
+        Label l = Kept.label(text);
+        l.setWrapText(true);
+        l.setMinWidth(0);
+        l.setStyle(style);
+        return l;
+    }
+
+    /** ...with the hand when it is a door (KP2b: made so, not made without it and given it after). */
+    static Label words(String text, double size, String tone, boolean hand) {
         // Kept (KP3): through Kept, as CapChips draws it on Build's kept pages; outside a draw it is a new label.
         Label l = Kept.label(text);
         l.setWrapText(true);
         l.setMinWidth(0);
-        l.setStyle(BuildScreen.wordsAt(size, tone));
+        l.setStyle(BuildScreen.wordsAt(size, tone) + (hand ? " -fx-cursor: hand;" : ""));
         return l;
     }
 
@@ -1081,10 +1095,15 @@ final class FinancesScreen {
 
     /** A card on Build's ground: RAISED, radius 8, a 1 px edge, padding 14. */
     static VBox card(Node... rows) {
+        return cardOn(cardStyle(Palette.EDGE), rows);
+    }
+
+    /** ...in a style of its own (KP2b: the alarm's, the raised one): made so, not made in the plain style and set again. */
+    static VBox cardOn(String style, Node... rows) {
         VBox c = Kept.column(8);
         for (Node n : rows) if (n != null) c.getChildren().add(n);
         c.setMaxWidth(Double.MAX_VALUE);
-        c.setStyle(cardStyle(Palette.EDGE));
+        c.setStyle(style);
         return c;
     }
 
@@ -1101,10 +1120,15 @@ final class FinancesScreen {
 
     /** A line of a card: words at the left, wrapping, and a figure at the right. */
     static HBox cardLine(String label, String value, String tone) {
+        return cardLine(label, value, tone, Palette.SIZE_LABEL + 1.0);
+    }
+
+    /** ...its figure at a size of its own (KP2b: a gain's, bolder than the words), made so and not set again. */
+    static HBox cardLine(String label, String value, String tone, double size) {
         Label what = words(label, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL);
         HBox.setHgrow(what, Priority.ALWAYS);
         what.setMaxWidth(Double.MAX_VALUE);
-        Label v = figure(value, Palette.SIZE_LABEL + 1, tone == null ? Palette.TEXT_HEAD : tone);
+        Label v = figure(value, size, tone == null ? Palette.TEXT_HEAD : tone);
         HBox row = Kept.row(Palette.GAP, what, v);
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
@@ -1154,11 +1178,7 @@ final class FinancesScreen {
 
     /** A key's entry: a swatch and a name, the swatch outlined when `ghost`. */
     static HBox swatch(String colour, String name, boolean ghost) {
-        HBox s = keySwatch(colour, name);
-        if (ghost && !s.getChildren().isEmpty() && s.getChildren().get(0) instanceof Region r) {
-            r.setStyle("-fx-background-color: " + colour + "33; -fx-border-color: " + colour + "; -fx-border-width: 1;");
-        }
-        return s;
+        return keySwatch(colour, name, ghost);
     }
 
     /** A stretch of a segment bar with its tooltip. */
@@ -1693,7 +1713,7 @@ final class FinancesScreen {
     VBox rescueCard() {
         Game g = ui.game;
         TreasuryFund.RescueMode mode = g.getRescueMode();
-        VBox card = card(setting("WHEN THE BANK FAILS", RESCUE_INFO, RESCUE_CHIPS, RESCUE_CHIPS[mode.ordinal()],
+        VBox card = cardOn(cardStyle(g.canResolveBank() ? Palette.BAD : Palette.EDGE), setting("WHEN THE BANK FAILS", RESCUE_INFO, RESCUE_CHIPS, RESCUE_CHIPS[mode.ordinal()],
                 RESCUE_LINES, RESCUE_LINES, picked -> {
                     for (int i = 0; i < RESCUE_CHIPS.length; i++) {
                         if (RESCUE_CHIPS[i].equals(picked)) g.setRescueMode(TreasuryFund.RescueMode.values()[i]);
@@ -1702,7 +1722,6 @@ final class FinancesScreen {
                 }));
         // Kept (KP5): what comes and goes is a scope each, and a tooltip is the node's own (Kept.tip), its text set.
         if (g.canResolveBank()) {
-            card.setStyle(cardStyle(Palette.BAD));
             double cost = g.bankRecapitalisationNeeded();
             card.getChildren().add(Kept.scope("failed", () -> infoLine("The bank has failed and waits for the city: resolving it costs " + d(cost)
                     + ".", RESOLVE_INFO, true, Palette.SIZE_BODY, Palette.BAD_TEXT, 560)));
@@ -2704,7 +2723,8 @@ final class FinancesScreen {
     /** WHAT THE MARKET EXPECTS THE DIAL TO DO: the dial, the rule, and where the market expects the dial in a year, in five and at last, and what that says. */
     VBox expectCard() {
         DebtManager ledger = ui.game.getDebtManager();
-        VBox card = card(caption("WHAT THE MARKET EXPECTS THE DIAL TO DO", EXPECT_INFO),
+        // The board's raised card: a step lighter than the others.
+        VBox card = cardOn(cardStyle(Palette.PINNED, Palette.EDGE), caption("WHAT THE MARKET EXPECTS THE DIAL TO DO", EXPECT_INFO),
                 cardLine("The dial today", pct2(ledger.getPolicyRate()), null),
                 cardLine("The rule, at today's inflation", pct2(ledger.ruleNow()), null),
                 cardLine("Expected in a year", pct2(ledger.expectedDialIn(12)), null),
@@ -2713,8 +2733,6 @@ final class FinancesScreen {
                 flag(expectWords(ledger, ui.game.getCredibility()), Palette.RAISED),
                 muted("By hand or on autopilot, the market prices the same path: a dial held off the rule is expected to come "
                         + "back to it over about " + YieldCurve.DRIFT_MONTHS + " months."));
-        // The board's raised card: a step lighter than the others.
-        card.setStyle(cardStyle(Palette.PINNED, Palette.EDGE));
         return card;
     }
 
@@ -3225,14 +3243,13 @@ final class FinancesScreen {
         // The first column takes what a wide window leaves; a narrow one scrolls the table across (acrossWhenNarrow()).
         t.getColumnConstraints().get(0).setMaxWidth(Double.MAX_VALUE);
         t.getColumnConstraints().get(0).setHgrow(Priority.ALWAYS);
-        if (dollars) gridHead(t, "Line", "If closed now", "D$'s move since sold", "Face", "Coupon", "Issue yield", "Price", "Yield", "Worth", "Carried", "vs face", "Duration", "Holders");
-        else gridHead(t, "Line", "If closed now", "Face", "Coupon", "Issue yield", "Price", "Yield", "Worth", "Carried", "vs face", "Duration", "Holders");
-        // The headings are words, in the words' face: the figures' face is wider than a heading's column.
+        // The headings are words, in the words' face: the figures' face is wider than a heading's column (KP2b: made so, not made in the
+        // figures' face and set again).
+        if (dollars) gridHead(t, true, "Line", "If closed now", "D$'s move since sold", "Face", "Coupon", "Issue yield", "Price", "Yield", "Worth", "Carried", "vs face", "Duration", "Holders");
+        else gridHead(t, true, "Line", "If closed now", "Face", "Coupon", "Issue yield", "Price", "Yield", "Worth", "Carried", "vs face", "Duration", "Holders");
         for (Node head : t.getChildren()) {
-            if (!(head instanceof Label h)) continue;
-            h.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
             // The heading of the gain's column stands over the gains, not over the doors beside them.
-            if (Integer.valueOf(1).equals(GridPane.getColumnIndex(head))) h.setPadding(new javafx.geometry.Insets(0, CLOSE_BUTTON + CLOSE_GAP, 0, 0));
+            if (head instanceof Label h && Integer.valueOf(1).equals(GridPane.getColumnIndex(head))) pad(h, CLOSE_HEAD);
         }
         final String resting = "-fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 0 1 0;";
         final String lit = resting + " -fx-background-color: " + Palette.CONTROL + ";";
@@ -3276,7 +3293,7 @@ final class FinancesScreen {
                 cells.add(segmentBar(holderParts(l), 1, null, 76, 6));
                 for (int c = 0; c < cells.size(); c++) {
                     Node cell = cells.get(c);
-                    GridPane.setMargin(cell, new javafx.geometry.Insets(5, 0, 5, 0));
+                    gridMargin(cell, DESK_ROOM);
                     GridPane.setValignment(cell, javafx.geometry.VPos.CENTER);
                     t.add(cell, c, at);
                 }
@@ -3323,8 +3340,8 @@ final class FinancesScreen {
                     : foot[c].isEmpty() ? null : gridCell(foot[c], Palette.TEXT_HEAD, Palette.SIZE_CAPTION, c > 0);
             if (cell == null) continue;
             // The total stands under the gains, not under the doors beside them.
-            if (c == 1) cell.setPadding(new javafx.geometry.Insets(0, CLOSE_BUTTON + CLOSE_GAP, 0, 0));
-            GridPane.setMargin(cell, new javafx.geometry.Insets(5, 0, 2, 0));
+            if (c == 1) pad(cell, CLOSE_HEAD);
+            gridMargin(cell, DESK_FOOT_ROOM);
             t.add(cell, c, row);
         }
         Node holdersKey = keyRow(muted("Holders:"), swatch(Palette.PEOPLE, "households", false), swatch(Palette.MONEY, "the bank", false),
@@ -3347,6 +3364,12 @@ final class FinancesScreen {
 
     /** The Close it now button's width, and the gap between it and the figure. */
     private static final double CLOSE_BUTTON = 66, CLOSE_GAP = 6;
+
+    /** The room at the right of the desk's "If closed now" heading (KP2b: one object, not one at each draw). */
+    private static final javafx.geometry.Insets CLOSE_HEAD = new javafx.geometry.Insets(0, CLOSE_BUTTON + CLOSE_GAP, 0, 0);
+
+    /** The room round a cell of the desk's lines, and of its foot (KP2b: one object each). */
+    private static final javafx.geometry.Insets DESK_ROOM = new javafx.geometry.Insets(5, 0, 5, 0), DESK_FOOT_ROOM = new javafx.geometry.Insets(5, 0, 2, 0);
 
     /**
      * The desk's If closed now cell (CD6, Jerus 2026-10-23: "make it juicy to buyback"): what closing the line now would book
@@ -3664,8 +3687,7 @@ final class FinancesScreen {
         // Kept (KP5): each section is a scope of its own, since what a line is decides what its sections hold.
         // ----- the head -----
         page.getChildren().add(Kept.scope("head", () -> {
-            Label name = words(pieceName(debt), Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD);
-            name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
+            Label name = wordsStyled(pieceName(debt), Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
             HBox top = Kept.row(Palette.GAP, tag(pieceTag(debt), colour), name);
             top.setAlignment(Pos.CENTER_LEFT);
             Label dueOn = Kept.label(CityCalendar.formatShort(due));
@@ -3858,9 +3880,9 @@ final class FinancesScreen {
                 ? grid(new double[] {52, 62, 52, 52, 60, 56, 62}, rightAfterFirst(7))
                 : grid(new double[] {52, 66, 56, 56, 64, 66}, rightAfterFirst(6));
         t.setHgap(4);
-        if (repaid) gridHead(t, "Month", "Opening", "Interest", "Coupon", "Amortised", "Repaid", "Closing");
-        else gridHead(t, "Month", "Opening", "Interest", "Coupon", "Amortised", "Closing");
-        for (Node head : t.getChildren()) if (head instanceof Label h) h.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+        // Kept (KP2b): the headings made in the words' face, not made in the figures' and set again.
+        if (repaid) gridHead(t, true, "Month", "Opening", "Interest", "Coupon", "Amortised", "Repaid", "Closing");
+        else gridHead(t, true, "Month", "Opening", "Interest", "Coupon", "Amortised", "Closing");
         int row = 1;
         for (Debt.BooksMonth b : ahead) {
             int c = 0;
@@ -4568,8 +4590,7 @@ final class FinancesScreen {
         String colour = instrumentColour(debt.getType());
         final Debt back = closing;
         page.getChildren().add(Kept.scope("piece", () -> {
-            Label name = words(pieceName(debt), Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD);
-            name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
+            Label name = wordsStyled(pieceName(debt), Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
             Region gap = Kept.region();
             HBox.setHgrow(gap, Priority.ALWAYS);
             HBox head = Kept.row(Palette.GAP, tag(pieceTag(debt), colour), name, gap,
@@ -5055,11 +5076,9 @@ final class FinancesScreen {
 
         if (foreign && !ledger.foreignWindowOpen()) {
             page.getChildren().add(Kept.scope("shut", () -> {
-                VBox shut = card(caption("THE WINDOW ABROAD IS SHUT", null),
+                return cardOn(cardStyle(Palette.BAD), caption("THE WINDOW ABROAD IS SHUT", null),
                         words(ledger.foreignWindowReason() + ". Everything already borrowed still falls due on schedule - a "
                                 + "shut window stops new lending, not old obligations.", Palette.SIZE_BODY + 1, Palette.BAD_TEXT));
-                shut.setStyle(cardStyle(Palette.BAD));
-                return shut;
             }));
             if (ledger.hasForeignDebt()) page.getChildren().add(Kept.scope("door", this::foreignDoor));
             return;
@@ -5146,15 +5165,20 @@ final class FinancesScreen {
         for (String code : WorldMoneys.EIGHT) if (world || ForeignAccounts.moneyIndex(code) == 0) codes.add(code);
         String[] labels = new String[codes.size()];
         for (int i = 0; i < labels.length; i++) labels[i] = moneyChip(codes.get(i));
-        javafx.scene.layout.FlowPane chips = chipStrip(labels, moneyChip(borrowMoney), Palette.SIZE_LABEL,
+        // Kept (KP2b): each chip is made with its words (the code and under it the yield) and, for a money the world has not priced, spent -
+        // not made with its name and set again.
+        String[] says = new String[labels.length];
+        for (int i = 0; i < labels.length; i++) {
+            says[i] = labels[i] + "\n" + (ledger.offers(codes.get(i)) ? pct2(ledger.foreignCurveRate(codes.get(i), months)) : "no rate");
+        }
+        javafx.scene.layout.FlowPane chips = chipStripSaying(labels, says,
+                label -> !ledger.offers(codes.get(java.util.Arrays.asList(labels).indexOf(label))), moneyChip(borrowMoney), Palette.SIZE_LABEL,
                 pick -> { for (int i = 0; i < labels.length; i++) if (labels[i].equals(pick)) pickMoney(codes.get(i)); });
-        chips.setAlignment(Pos.CENTER_LEFT);
         for (int i = 0; i < labels.length && i < chips.getChildren().size(); i++) {
             if (!(chips.getChildren().get(i) instanceof Button b)) continue;
             String code = codes.get(i);
             boolean offered = ledger.offers(code);
             String name = ForeignAccounts.MONEY_NAME[ForeignAccounts.moneyIndex(code)];
-            b.setText(labels[i] + "\n" + (offered ? pct2(ledger.foreignCurveRate(code, months)) : "no rate"));
             b.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
             // Kept (KP5): the chip's tooltip is the node's own (Kept.tip), the words set each draw - a Tooltip.install or a setTooltip on a
             // kept chip is uninstalled at the draw's end.
@@ -5164,12 +5188,6 @@ final class FinancesScreen {
                     : "No rate for " + name + " this month: the world has not priced it, so the city cannot sell paper in it.", 200);
             tip.setWrapText(true);
             tip.setMaxWidth(POPOVER_WIDTH);
-            if (!offered) {
-                b.setOnAction(e -> { });
-                b.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_SPENT) + " -fx-background-color: " + Palette.CONTROL + ";"
-                        + " -fx-background-radius: " + Palette.RADIUS_TIGHT + "; -fx-border-color: transparent;"
-                        + " -fx-border-width: 0 0 2 0; -fx-cursor: default;");
-            }
         }
         VBox card = card(caption("IN WHICH MONEY", MONEY_INFO), chips);
         if (!world) card.getChildren().add(Kept.scope("noWorld", () -> muted("The other seven moneys come with the world; this city has none, so its paper abroad is in US dollars.")));
@@ -5751,13 +5769,11 @@ final class FinancesScreen {
             if (sale != null && !sale.isEmpty()) {
                 // Asked, and not a dollar sold: the bids do not reach any of it at the highest yield taken.
                 return Kept.scope("none", () -> {
-                    VBox none = card(caption("THE QUOTE", null), words(sale.cap().fill()
+                    return cardOn(cardStyle(Palette.BAD), caption("THE QUOTE", null), words(sale.cap().fill()
                             ? "No bidder's rule takes any of this at any yield: nothing would be sold."
                             : String.format("No bidder bids anything at or under %s, the highest yield you will take: "
                                     + "nothing would be sold. Raise it, or choose Fill it.", pct3(sale.ceiling())),
                             Palette.SIZE_BODY + 1, Palette.BAD_TEXT));
-                    none.setStyle(cardStyle(Palette.BAD));
-                    return none;
                 });
             }
             return Kept.scope("nothing", () -> card(caption("THE QUOTE", null), words(NO_ASK, Palette.SIZE_BODY + 1, Palette.TEXT_MUTED)));
