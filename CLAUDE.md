@@ -249,9 +249,10 @@ rules above bind both.
   a series, and the reader in `Game`'s load path; then `SaveFileCheck`. A
   format bump only if an old save would now read wrongly (the rule above).
 - **A screen section:** a banner in the tab's own class in `ui/`
-  (`UserInterface` is the window), the panel rebuilt on the clock so it must
-  restore its own scroll position; every model figure through a public
-  getter, never recomputed in the screen.
+  (`UserInterface` is the window), drawn through `Kept` (`ui/Kept.java`'s
+  rules), so the clock's redraw sets the month on the nodes on show and the
+  scroll never moves; every model figure through a public getter, never
+  recomputed in the screen.
 - **A dial:** `static final`, in the class that owns the mechanic, one
   sentence above it; the harness asserts against the constant, not the
   number.
