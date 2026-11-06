@@ -667,11 +667,10 @@ final class PartnersPage {
                 Label name = Kept.label(r.name());
                 name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
                 name.setMinWidth(0);
-                VBox c = card(name,
+                return doorCard(() -> open(r.nation()), name,
                         muted("sold " + (r.sold() > 0 ? trade.d(r.sold()) : "–") + " · bought " + (r.bought() > 0 ? trade.d(r.bought()) : "–")),
                         muted("its money " + (r.mark().isEmpty() ? "–" : r.mark())
                                 + (Double.isFinite(r.dollarsPerUnit()) ? " · 1 = " + trade.sym() + fxRate(r.dollarsPerUnit()) : "")));
-                return doorCard(c, () -> open(r.nation()));
             }));
         }
         VBox box = Kept.column(Palette.GAP, sectionHead("OUR PARTNERS THIS MONTH", STRIP_INFO,

@@ -208,6 +208,11 @@ public final class Statement {
      * before it was kept (0.7.13).
      */
     public static HBox bookLine(String label, double now, double then, boolean known, String tone) {
+        return bookLine(label, now, then, known, tone, "-fx-padding: 3 0 3 0;");
+    }
+
+    /** ...in a style of its own (KP2b: the hand, for a line that opens), given where the line is made and not set again after it. */
+    private static HBox bookLine(String label, double now, double then, boolean known, String tone, String style) {
         return Kept.scope("bookLine", () -> {
 
             Label what = Kept.label(label);
@@ -233,7 +238,7 @@ public final class Statement {
             row.setAlignment(Pos.CENTER_LEFT);
             row.setMaxWidth(STATEMENT);
             row.setPrefWidth(STATEMENT);
-            row.setStyle("-fx-padding: 3 0 3 0;");
+            row.setStyle(style);
             return row;
         });
     }
@@ -253,7 +258,8 @@ public final class Statement {
         // Kept (KP4): a scope of one shape: the line, the box, and the mark a line with something under it has.
         return Kept.scope("bookLine opens", () -> {
 
-            HBox row = bookLine(label, now, then, known, tone);
+            HBox row = bookLine(label, now, then, known, tone, detail == null || detail.getChildren().isEmpty() ? "-fx-padding: 3 0 3 0;"
+                    : "-fx-padding: 3 0 3 0; -fx-cursor: hand;");
             VBox box = Kept.column(0, row);
             box.setMaxWidth(STATEMENT);
             if (detail == null || detail.getChildren().isEmpty()) return box;
@@ -266,10 +272,10 @@ public final class Statement {
              * is not a statement. Same reason the Government's budget lines put
              * their mark beside the label (budgetLine, until 0.7.31's ranked bars).
              */
-            Label mark = Kept.label(CLOSED + " " + word);
+            // Kept (KP2b): the mark made as opens() will set it - open or closed - and the row made with its hand, not set again after.
+            Label mark = Kept.label((open != null && open.contains(label) ? OPENED : CLOSED) + " " + word);
             mark.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.ACCENT));
             row.getChildren().add(1, mark);
-            row.setStyle("-fx-padding: 3 0 3 0; -fx-cursor: hand;");
 
             detail.setStyle("-fx-padding: 1 0 6 16;");
             opens(row, mark, word, detail, label, open);
@@ -383,7 +389,8 @@ public final class Statement {
             Label what = Kept.label(label);
             what.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_LABEL));
 
-            Label mark = Kept.label(CLOSED + " " + hint);
+            // Kept (KP2b): made as opens() will set it - open or closed.
+            Label mark = Kept.label((open != null && open.contains(label) ? OPENED : CLOSED) + " " + hint);
             mark.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.ACCENT));
 
             Region gap = Kept.region();

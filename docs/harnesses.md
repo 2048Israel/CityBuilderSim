@@ -2,7 +2,7 @@
 
 Generated 2026-11-06 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**181 harness files, 20,672 labelled assertions.** AllChecks runs 181 of them.
+**181 harness files, 20,699 labelled assertions.** AllChecks runs 181 of them.
 
 ## Which harnesses read which class
 
@@ -81,7 +81,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Currency](map/Currency.md) | DenominationCheck, FittingCheck, HistoryCheck, LandClassCheck, LongPlaytest, NewGameCheck, ReadPathCheck, SaveFileCheck, YearBookCheck |
 | [DataSave](map/DataSave.md) | EarthTerrainCheck, FittingCheck, LandmassCheck, MapCheck, PopulationCheck, ReplayCheck, SaveFileCheck, SaveSlotCheck |
 | [Debt](map/Debt.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CentralBankCheck, ChartCheck, CreditCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, GdpCheck, HoldersCheck, KeptCheck, LongPlaytest, MoneyCheck, NewGameCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, SectorStatementCheck, TreasuryCheck |
-| [DebtManager](map/DebtManager.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarryTradeCheck, CentralBankCheck, CreditCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FloatLinkCheck, ForeignDebtCheck, HoldersCheck, InterestAbroadCheck, LongPlaytest, MonetaryCheck, MoneyCheck, MortgageCheck, PartnersCheck, PolicyPreviewCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, TreasuryCheck |
+| [DebtManager](map/DebtManager.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarryTradeCheck, CentralBankCheck, CreditCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FloatLinkCheck, ForeignDebtCheck, HoldersCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, MonetaryCheck, MoneyCheck, MortgageCheck, PartnersCheck, PolicyPreviewCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, TreasuryCheck |
 | [DebtQuote](map/DebtQuote.md) | AuctionCheck, AutoBuildCheck, CallCheck, CreditCheck, CurveCheck, DebtMoneysCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, HoldersCheck, LandCheck, LongPlaytest, MapCheck, NewGameCheck, RestructureCheck |
 | [DecisionLog](map/DecisionLog.md) | AutoBuildCheck, BankCheck, CentralBankCheck, ChartCheck, ForeignDebtCheck, FundCheck, LongPlaytest, OilCheck, PolicyDatesCheck, ReadPathCheck, SaveFileCheck, YearBookCheck, ZoningViewCheck |
 | [DemolitionLog](map/DemolitionLog.md) | CalendarCheck, HouseholdCheck, MortgageCheck |
@@ -341,7 +341,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [WorldMoneys](map/WorldMoneys.md) | DebtMoneysCheck, ExchangeRateCheck, GlobeCheck, InterestAbroadCheck, KeptCheck, PartnersCheck, PriceLevelCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldMoneysCheck |
 | [YearBook](map/YearBook.md) | ChartCheck, ClockCheck, HistoryCheck, InterestAbroadCheck, RankingsCheck, ReadPathCheck, ScaleCheck, WorldMoneysCheck, YearBookCheck |
 | [YieldCurve](map/YieldCurve.md) | AuctionCheck, CallCheck, CurveCheck, DeskCheck, FloatLinkCheck, LongPlaytest |
-| [Zoning](map/Zoning.md) | ForestryCheck, LandCheck, LandClassCheck, LandmassCheck, PolicyDatesCheck, PolicyPreviewCheck, ZoningCheck, ZoningViewCheck |
+| [Zoning](map/Zoning.md) | ForestryCheck, KeptCheck, LandCheck, LandClassCheck, LandmassCheck, PolicyDatesCheck, PolicyPreviewCheck, ZoningCheck, ZoningViewCheck |
 | [ZoningScreen](map/ZoningScreen.md) | **none** |
 | [ZoningView](map/ZoningView.md) | LandmassCheck, ZoningViewCheck |
 
@@ -13924,7 +13924,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2150 21d. a + of two one-plot streets keeps its four corners of verge: nothing is filled between single bars
   - L2161 21e. a band across the corner of four tiles is one carriageway too: every pixel between its edges paved, across the seam
 
-## KeptCheck.java - 200 labelled assertions
+## KeptCheck.java - 227 labelled assertions
 
 > The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each
 > month's redraw run over last month's nodes ends exactly where a page built new would, and costs
@@ -13940,263 +13940,293 @@ _(this harness does not label its checks through a helper - it prints its findin
 > times the kept month.
 > ...
 
-- **L446 6: the chrome is kept**
-  - L479 each month's redraw keeps the nodes the header and the rail drew (the same top nodes,
-  - L481 each month hands back nine in ten of the nodes the first draw made, or more (
-  - L483 most months make no node at all (
-- **L486 7 and 8: the kept chrome against a chrome built new, in every state**
-  - L546 the kept chrome's signature equals the new chrome's at every month, through every state (
-- **L548 8: and its pixels**
-  - L550 the kept header and rail are the same pictures as the new ones at
-  - L572 one figure made wrong in the kept header (\"
-  - L574 ...and its picture
-  - L575 ...and the next kept draw sets it right again
-  - L585 a header node that had the focus loses it at the next kept draw, as the rebuild took it
-  - L610 a rail button drawn again under the pointer keeps its hover look, and loses it when the pointer goes
-  - L612 ...and so does a header tile
-- **L614 9: a city opened forgets the chrome**
-  - L627 before the forgetting a draw makes few nodes, after it every node is new (
-  - L631 a draw within another pool's draw gives each pool its own nodes (the envelope inside the header)
-- **L633 10: what the kept chrome costs**
-- **L688 11: the panels are kept**
-  - L738 each month's redraw keeps the nodes the three panels drew (the same top nodes,
-  - L740 each month hands back nine in ten of the nodes the first draw made, or more (
-  - L744 the nodes made in a month are few (
-- **L747 12: the kept panels against panels built new, in every state**
-  - L805 the kept panels' signatures equal the new panels' at every month, through every state (
-  - L807 the kept panels are the same pictures as the new ones at
-  - L829 one figure made wrong in the kept city panel (\"
-  - L831 ...and its picture
-  - L832 ...and the next kept draw sets it right again
-  - L849 the city panel's scroller is kept and stays where it was put (
-  - L869 a summary row drawn again under the pointer keeps its hover look, and loses it when the pointer goes
-  - L885 an inbox button that had the focus loses it at the next kept draw, as the rebuild took it
-- **L887 13: what the whole chrome costs, kept**
-- **L966 14: City History is kept**
-  - L982 the page holds the big chart and the two pins' (
-  - L1010 each month's redraw keeps the page it drew (the same top nodes,
-  - L1011 each month hands back nine in ten of the nodes the first draw made, or more (
-  - L1013 most months make no node at all (
-  - L1014 the big chart and both pins' stay in the scene, in the same box, after every redraw (
-  - L1016 the legend's chips and the range buttons are the same nodes after every redraw (
-  - L1018 no label's graphic is taken off the scene and put back by a kept redraw (
-- **L1021 15 and 16: the kept page, month after month, against a page built new, and its pixels**
-  - L1062 the kept page's signature equals the new page's at every month (
-  - L1064 the kept page and the new page are the same picture at
-  - L1085 one figure made wrong on the kept page (\"
-  - L1087 ...and its picture
-  - L1088 ...and the next kept draw sets it right again
-- **L1090 17: what reshapes the page**
-- **L1205 18: the crosshair and the window survive a month**
-  - L1233 a month landed (the history grew by one)
-  - L1234 a window on the newest month follows it across a kept redraw
-  - L1235 a window put by hand, ending before the newest month, stays where it was across a kept redraw
-  - L1253 the pointer over the big chart's plot shows its crosshair
-  - L1254 the crosshair is still there after a kept redraw
-  - L1255 ...and a page built new, which takes the chart off the scene, clears it
-  - L1276 a legend chip has a tooltip to keep
-  - L1277 a legend chip under the pointer is still the same chip, still under it, with the same tooltip, after a kept redraw
-  - L1279 ...and a page built new has a chip of its own, with no pointer on it
-- **L1289 19: the count-up only at 1x-10x**
-  - L1327 a month landing on People starts the headcount's count-up exactly at the rungs countsUp() allows, and when paused (
-  - L1359 a month landing on City History starts the pin's count-up exactly at the rungs countsUp() allows, and when paused (
-  - L1382 a count-up running when a month lands past COUNT_UP_TOP is stopped, and the figure is the month's
-- **L1387 20: what the kept City History month costs**
-  - L1490 each month's redraw keeps the page it drew (the same top nodes,
-  - L1491 each month hands back nine in ten of the nodes the first draw made, or more (
-  - L1494 no month makes more than a tenth of the nodes the first draw made (the most made in one:
-  - L1497 most months make no node at all (
-  - L1545 the kept page's signature equals the new page's at every month (
-  - L1547 the kept page and the new page are the same picture at
-  - L1568 one figure made wrong on the kept page (\"
-  - L1570 ...and its picture
-  - L1571 ...and the next kept draw sets it right again
-  - L1632 a month's redraw after each choice hands back
-- **L1709 Infrastructure (KP2)**
-- **L1747 Services (KP2)**
-- **L1770 The land office (KP2)**
-- **L1803 33: the land office's other pages**
-- **L1826 34: a control keeps the player's hand**
-  - L1889 the Transit page has a fare dial (a slider) to hold
-  - L1894 a slider pressed is held
-  - L1895 a month landing on a held slider leaves the same slider node, still held
-  - L1896 ...its value still the thumb's (
-  - L1897 ...the reading the thumb's words in the month's money (\"
-  - L1899 ...Ladder.shown() the thumb's value, not the staged one
-  - L1900 ...and nothing is staged before the release
-  - L1901 a slider released is not held
-  - L1902 ...the fare is staged at the thumb (
-  - L1903 ...and the page is the same slider, kept, equal to a page built new
-  - L1905 after several kept months the one slider node still carries the dial
-  - L1906 a value set outside any draw updates the reading of the latest draw (\"
-  - L1908 ...and it is the reading on the page
-  - L1909 the fare is unstaged at the end of the section
-  - L1920 City History's filter box takes the focus (
-  - L1930 a month landing keeps the filter box (the same node)
-  - L1931 ...its text (\"
-  - L1932 ...its caret (
-  - L1934 ...and its focus
-  - L1945 Kept.text leaves a field with the focus as the player typed it (\"
-  - L1946 ...and sets a field that has none (\"
-- **L1951 35: the hover is kept**
-  - L2011 a
-- **L2118 Build (KP3)**
-  - L2121 the city has
-  - L2132 a city category has cards to dial an order on (
-  - L2144 the order bar shows the order dialled up (\"
-  - L2151 a kept draw fills the order bar once, after the last card (
-  - L2168 a market category has cards to dial an order on (
-  - L2252 the sites were held through the months:
-- **L2257 The construction page (KP3)**
-  - L2260 the city has
-  - L2320 the sites were held through the months:
-- **L2331 44: the pages a build is stopped on, and the funding and fell-short pages**
-  - L2336 a building names the no-
-- **L2373 45: a control keeps the player's hand**
-  - L2429 the Overview has a dial (a slider) to hold
-  - L2434 a slider pressed is held
-  - L2435 a month landing on a held slider leaves the same slider node, still held
-  - L2436 ...its value still the thumb's (
-  - L2437 ...the reading the thumb's words (\"
-  - L2438 ...Ladder.shown() the thumb's value
-  - L2439 ...and the margin is not set before the release (
-  - L2440 a slider released is not held
-  - L2441 ...the margin is set at the thumb (
-  - L2442 ...and the page is the same slider, kept, equal to a page built new
-  - L2444 after several kept months the one slider node still carries the dial
-  - L2445 a value set outside any draw updates the reading of the latest draw (\"
-  - L2446 the margin is put back at the end of the section
-  - L2457 the Overview's yield box takes the focus (
-  - L2476 the box found is the cap chips' yield box
-  - L2477 a month landing keeps the yield box (the same node)
-  - L2478 ...its text (\"
-  - L2479 ...its caret (
-  - L2480 ...and its focus
-  - L2481 Kept.text leaves a yield box with the focus as the player typed it (\"
-  - L2482 ...and sets one that has none (\"
-  - L2483 the builder's cap is as it was (nothing typed was set)
-  - L2495 the construction page's find box takes the focus (
-  - L2520 the box found is the find box
-  - L2521 a month landing keeps the find box (the same node)
-  - L2522 ...its text (\"
-  - L2523 ...its caret (
-  - L2524 ...and its focus
-  - L2525 Kept.text leaves a find box with the focus as the player typed it (\"
-  - L2526 ...and sets one that has none (\"
-  - L2528 the screen's own filter changed under the hand leaves the focused find box as typed (\"
-  - L2530 ...and the next draw, once the focus is gone, sets the box to it (\"
-  - L2570 a card's + pressed between draws is a press on the card (the count reads \"
-  - L2571 ...the order bar is refilled in place at once, outside any draw, once (
-  - L2572 ...and the next kept draw keeps the bar and equals a page built new
-  - L2574 +100, a month and a kept draw equal a page built new
-  - L2576 the card's own ↺ clears the order, the bar goes, and the next kept draw equals a page built new
-- **L2582 46: the hover is kept (Build)**
-  - L2611 a
-- **L2727 Sectors (KP4)**
-  - L2732 the city has a plain business with a plant standing (
-  - L2733 ...and a materials industry with works standing (
-- **L2838 50: the pictures on a business's page are kept**
-  - L2854 the refinery's town has a refinery that runs, so that its picture is drawn (
-- **L3051 51: the count-up only at 1x-10x (Sectors)**
-  - L3074 a month landing starts
-  - L3112 a count running when a month lands past COUNT_UP_TOP is stopped on
-- **L3144 53: a control keeps the player's hand (the oil reserve's dials)**
-  - L3146 the sea town has a Strategic Reserve with oil in it, to draw its two dials (
-  - L3162 the oil industry's page has the reserve's two dials to hold (
-- **L3240 54: the hover is kept (Sectors)**
-  - L3251 a
-- **L3306 The Bank tab (KP5)**
-- **L3420 57: a chip picked lands at the top of its page**
-  - L3453 the Bank's
-  - L3460 ...a month landing leaves the kept scroller where the player left it
-  - L3461 ...its own chip picked leaves the same scroller (the page is kept) at the top (
-  - L3462 ...and the page is equal to a page built new
-  - L3488 the Overview's chip picked from a scrolled Profit page lands at its top (
-  - L3489 the Statement view picked from a scrolled page lands at its top (
-  - L3490 ...and the Summary view picked again, scrolled, at its top (
-- **L3555 The Finances tab (KP5)**
-- **L3603 60: the book, a line's page and Close it now**
-- **L3693 60: the foreign default menu and the debt result menu**
-- **L3755 The city's fund (KP5)**
-  - L3781 the fund holds something to draw (
-- **L3974 64: the pictures on the money screens are kept**
-  - L3997 a
-- **L4242 65: the count-up only at 1x-10x (Bank and the fund)**
-  - L4266 a month landing starts
-  - L4314 an animation running when a month lands past COUNT_UP_TOP is stopped on
-- **L4392 66: the boxes keep the player's hand**
-  - L4402 the city has a piece of paper to close
-- **L4428 67: the hover is kept (Bank, Finances, the fund)**
-  - L4453 a
-  - L4519 the fund's heaviest page is Search or Activity, the two costed (
-- **L4717 The Government tab (KP6)**
-  - L4796 the central bank's printing and the arrears owed cause the cards they are meant to (CENTRAL BANK lines
-- **L4846 The Trade tab (KP6)**
-  - L4855 the tab has its six pages (
-  - L4862 the city trades with three nations, whose pages can be opened (
-  - L4986 the fold of the eight over the years holds its charts (
-  - L4994 ...each chart as wide as the card it sits in, on the kept draw and the month after
-  - L4995 ...and the card is not as wide as a chart made before it has a card (794 px and its padding): the width is the card's
-  - L4996 ...the page equal to a page built new
-- **L5058 The Policy tab (KP6)**
-  - L5266 People's page, with people short of food (
-  - L5332 a slider pressed is held
-  - L5333 a month landing on a held slider leaves the same slider node, still held
-  - L5334 ...its value still the thumb's (
-  - L5335 ...the reading the thumb's words (\"
-  - L5336 ...Ladder.shown() the thumb's value
-  - L5337 ...the card's effects drawn at the thumb (
-  - L5338 ...and nothing staged before the release
-  - L5339 a slider released is not held
-  - L5340 ...the change is staged at the thumb (
-  - L5342 ...and the page is the same slider, kept, equal to a page built new
-  - L5344 the staged change dropped: the tray is gone and the page equal to a page built new
-  - L5407 ...the held slider is the same node, still held, at the thumb (
-  - L5408 ...its reading the thumb's (\"
-  - L5409 ...and no dial in front of it carries its thumb
-  - L5410 ...released, the page is equal to a page built new
-  - L5412 ...the card taken away and the change dropped: the page is equal to a page built new
-- **L5418 78: a card comes in front of a held dial**
-  - L5432 a tax has two payers with a row and a dial of their own to open (
-- **L5559 79: the count-up only at 1x-10x (Trade; Government and Policy have none)**
-  - L5583 a month landing starts
-  - L5629 a count running when a month lands past COUNT_UP_TOP is stopped on
-- **L5693 80: the hover is kept (Government, Trade, Policy)**
-  - L5720 Policy's Zoning › The ground page: a policyRow was found on the page of this city, to put the pointer on
-- **L5729 80: the tooltips are kept (Government, Trade, Policy)**
-  - L5780 the
-- **L5852 88: the clock never rebuilds a rail screen**
-  - L5859 a page drawn the old way twice under one name moves the in-place count by one (it moved
-  - L5860 ...and the next real screen shown, an arrival, does not move it (it moved
-  - L5921 the clock's redraw of
-  - L5922 ...and left its page's top nodes the same nodes (
-  - L5923 ...and the screen on show is still
-  - L5924 ...and the redraw ran over the screen's own nodes (
-- **L5959 Household money (KP7)**
-  - L5976 the grid has cells to open, family cells and rows below the rule (
-  - L6008 the open cell's books sit beside the grid at the full width and under it at 1000 wide (beside:
-- **L6018 The Rankings tab (KP7)**
-  - L6069 the city is saved into slot 10 of the harness's scratch folder (the player's own folder is refused)
-  - L6081 the read of the saved cities landed within a minute, with the saved city on the board (
-- **L6133 89: the hover is kept (Household money, the Rankings tab)**
-  - L6153 Household money: a limitCell was found on the page of this city, to put the pointer on
-  - L6154 the Rankings tab: a measure line was found on the page of this city, to put the pointer on
-  - L6155 the Rankings tab: a table row was found on the page of this city, to put the pointer on
-- **L6160 89: the tooltips are kept (Household money, the Rankings tab)**
-  - L6187 the pages of
-- **L6247 KeptCheck: the People page, the chrome, City History, Infrastructure, Services, the land office, Build, the construction page, the Sector...**
-- **L6262 1 and 2: the kept page, month after month, against a page built new**
-  - L6317 each month's redraw keeps the page it drew (the same top node,
-  - L6318 each month hands back nine in ten of the nodes the first draw made, or more (
-  - L6320 most months make no node at all (
-  - L6322 the kept page's signature equals the new page's at every month (
-- **L6324 3: and its pixels**
-  - L6326 the kept page and the new page are the same picture at
-  - L6346 one figure made wrong on the kept page (\"
-  - L6348 ...and its picture
-  - L6349 ...and the next kept draw sets it right again
-- **L6351 4: what reshapes the page**
-- **L6386 5: what the kept month costs**
+- **L463 6: the chrome is kept**
+  - L496 each month's redraw keeps the nodes the header and the rail drew (the same top nodes,
+  - L498 each month hands back nine in ten of the nodes the first draw made, or more (
+  - L500 most months make no node at all (
+- **L503 7 and 8: the kept chrome against a chrome built new, in every state**
+  - L563 the kept chrome's signature equals the new chrome's at every month, through every state (
+- **L565 8: and its pixels**
+  - L567 the kept header and rail are the same pictures as the new ones at
+  - L589 one figure made wrong in the kept header (\"
+  - L591 ...and its picture
+  - L592 ...and the next kept draw sets it right again
+  - L602 a header node that had the focus loses it at the next kept draw, as the rebuild took it
+  - L627 a rail button drawn again under the pointer keeps its hover look, and loses it when the pointer goes
+  - L629 ...and so does a header tile
+- **L631 9: a city opened forgets the chrome**
+  - L644 before the forgetting a draw makes few nodes, after it every node is new (
+  - L648 a draw within another pool's draw gives each pool its own nodes (the envelope inside the header)
+- **L650 10: what the kept chrome costs**
+- **L705 11: the panels are kept**
+  - L755 each month's redraw keeps the nodes the three panels drew (the same top nodes,
+  - L757 each month hands back nine in ten of the nodes the first draw made, or more (
+  - L761 the nodes made in a month are few (
+- **L764 12: the kept panels against panels built new, in every state**
+  - L822 the kept panels' signatures equal the new panels' at every month, through every state (
+  - L824 the kept panels are the same pictures as the new ones at
+  - L846 one figure made wrong in the kept city panel (\"
+  - L848 ...and its picture
+  - L849 ...and the next kept draw sets it right again
+  - L866 the city panel's scroller is kept and stays where it was put (
+  - L886 a summary row drawn again under the pointer keeps its hover look, and loses it when the pointer goes
+  - L902 an inbox button that had the focus loses it at the next kept draw, as the rebuild took it
+- **L904 13: what the whole chrome costs, kept**
+- **L983 14: City History is kept**
+  - L999 the page holds the big chart and the two pins' (
+  - L1027 each month's redraw keeps the page it drew (the same top nodes,
+  - L1028 each month hands back nine in ten of the nodes the first draw made, or more (
+  - L1030 most months make no node at all (
+  - L1031 the big chart and both pins' stay in the scene, in the same box, after every redraw (
+  - L1033 the legend's chips and the range buttons are the same nodes after every redraw (
+  - L1035 no label's graphic is taken off the scene and put back by a kept redraw (
+- **L1038 15 and 16: the kept page, month after month, against a page built new, and its pixels**
+  - L1079 the kept page's signature equals the new page's at every month (
+  - L1081 the kept page and the new page are the same picture at
+  - L1102 one figure made wrong on the kept page (\"
+  - L1104 ...and its picture
+  - L1105 ...and the next kept draw sets it right again
+- **L1107 17: what reshapes the page**
+- **L1222 18: the crosshair and the window survive a month**
+  - L1250 a month landed (the history grew by one)
+  - L1251 a window on the newest month follows it across a kept redraw
+  - L1252 a window put by hand, ending before the newest month, stays where it was across a kept redraw
+  - L1270 the pointer over the big chart's plot shows its crosshair
+  - L1271 the crosshair is still there after a kept redraw
+  - L1272 ...and a page built new, which takes the chart off the scene, clears it
+  - L1293 a legend chip has a tooltip to keep
+  - L1294 a legend chip under the pointer is still the same chip, still under it, with the same tooltip, after a kept redraw
+  - L1296 ...and a page built new has a chip of its own, with no pointer on it
+- **L1306 19: the count-up only at 1x-10x**
+  - L1344 a month landing on People starts the headcount's count-up exactly at the rungs countsUp() allows, and when paused (
+  - L1376 a month landing on City History starts the pin's count-up exactly at the rungs countsUp() allows, and when paused (
+  - L1399 a count-up running when a month lands past COUNT_UP_TOP is stopped, and the figure is the month's
+- **L1404 20: what the kept City History month costs**
+  - L1507 each month's redraw keeps the page it drew (the same top nodes,
+  - L1508 each month hands back nine in ten of the nodes the first draw made, or more (
+  - L1511 no month makes more than a tenth of the nodes the first draw made (the most made in one:
+  - L1514 most months make no node at all (
+  - L1562 the kept page's signature equals the new page's at every month (
+  - L1564 the kept page and the new page are the same picture at
+  - L1585 one figure made wrong on the kept page (\"
+  - L1587 ...and its picture
+  - L1588 ...and the next kept draw sets it right again
+  - L1649 a month's redraw after each choice hands back
+- **L1726 Infrastructure (KP2)**
+- **L1764 Services (KP2)**
+- **L1787 The land office (KP2)**
+- **L1820 33: the land office's other pages**
+- **L1843 34: a control keeps the player's hand**
+  - L1906 the Transit page has a fare dial (a slider) to hold
+  - L1911 a slider pressed is held
+  - L1912 a month landing on a held slider leaves the same slider node, still held
+  - L1913 ...its value still the thumb's (
+  - L1914 ...the reading the thumb's words in the month's money (\"
+  - L1916 ...Ladder.shown() the thumb's value, not the staged one
+  - L1917 ...and nothing is staged before the release
+  - L1918 a slider released is not held
+  - L1919 ...the fare is staged at the thumb (
+  - L1920 ...and the page is the same slider, kept, equal to a page built new
+  - L1922 after several kept months the one slider node still carries the dial
+  - L1923 a value set outside any draw updates the reading of the latest draw (\"
+  - L1925 ...and it is the reading on the page
+  - L1926 the fare is unstaged at the end of the section
+  - L1937 City History's filter box takes the focus (
+  - L1947 a month landing keeps the filter box (the same node)
+  - L1948 ...its text (\"
+  - L1949 ...its caret (
+  - L1951 ...and its focus
+  - L1962 Kept.text leaves a field with the focus as the player typed it (\"
+  - L1963 ...and sets a field that has none (\"
+- **L1968 35: the hover is kept**
+  - L2028 a
+- **L2135 Build (KP3)**
+  - L2138 the city has
+  - L2149 a city category has cards to dial an order on (
+  - L2161 the order bar shows the order dialled up (\"
+  - L2168 a kept draw fills the order bar once, after the last card (
+  - L2185 a market category has cards to dial an order on (
+  - L2269 the sites were held through the months:
+- **L2274 The construction page (KP3)**
+  - L2277 the city has
+  - L2337 the sites were held through the months:
+- **L2348 44: the pages a build is stopped on, and the funding and fell-short pages**
+  - L2353 a building names the no-
+- **L2390 45: a control keeps the player's hand**
+  - L2446 the Overview has a dial (a slider) to hold
+  - L2451 a slider pressed is held
+  - L2452 a month landing on a held slider leaves the same slider node, still held
+  - L2453 ...its value still the thumb's (
+  - L2454 ...the reading the thumb's words (\"
+  - L2455 ...Ladder.shown() the thumb's value
+  - L2456 ...and the margin is not set before the release (
+  - L2457 a slider released is not held
+  - L2458 ...the margin is set at the thumb (
+  - L2459 ...and the page is the same slider, kept, equal to a page built new
+  - L2461 after several kept months the one slider node still carries the dial
+  - L2462 a value set outside any draw updates the reading of the latest draw (\"
+  - L2463 the margin is put back at the end of the section
+  - L2474 the Overview's yield box takes the focus (
+  - L2493 the box found is the cap chips' yield box
+  - L2494 a month landing keeps the yield box (the same node)
+  - L2495 ...its text (\"
+  - L2496 ...its caret (
+  - L2497 ...and its focus
+  - L2498 Kept.text leaves a yield box with the focus as the player typed it (\"
+  - L2499 ...and sets one that has none (\"
+  - L2500 the builder's cap is as it was (nothing typed was set)
+  - L2512 the construction page's find box takes the focus (
+  - L2537 the box found is the find box
+  - L2538 a month landing keeps the find box (the same node)
+  - L2539 ...its text (\"
+  - L2540 ...its caret (
+  - L2541 ...and its focus
+  - L2542 Kept.text leaves a find box with the focus as the player typed it (\"
+  - L2543 ...and sets one that has none (\"
+  - L2545 the screen's own filter changed under the hand leaves the focused find box as typed (\"
+  - L2547 ...and the next draw, once the focus is gone, sets the box to it (\"
+  - L2587 a card's + pressed between draws is a press on the card (the count reads \"
+  - L2588 ...the order bar is refilled in place at once, outside any draw, once (
+  - L2589 ...and the next kept draw keeps the bar and equals a page built new
+  - L2591 +100, a month and a kept draw equal a page built new
+  - L2593 the card's own ↺ clears the order, the bar goes, and the next kept draw equals a page built new
+- **L2599 46: the hover is kept (Build)**
+  - L2628 a
+- **L2744 Sectors (KP4)**
+  - L2749 the city has a plain business with a plant standing (
+  - L2750 ...and a materials industry with works standing (
+- **L2855 50: the pictures on a business's page are kept**
+  - L2871 the refinery's town has a refinery that runs, so that its picture is drawn (
+- **L3068 51: the count-up only at 1x-10x (Sectors)**
+  - L3091 a month landing starts
+  - L3129 a count running when a month lands past COUNT_UP_TOP is stopped on
+- **L3161 53: a control keeps the player's hand (the oil reserve's dials)**
+  - L3163 the sea town has a Strategic Reserve with oil in it, to draw its two dials (
+  - L3179 the oil industry's page has the reserve's two dials to hold (
+- **L3257 54: the hover is kept (Sectors)**
+  - L3268 a
+- **L3323 The Bank tab (KP5)**
+- **L3437 57: a chip picked lands at the top of its page**
+  - L3470 the Bank's
+  - L3477 ...a month landing leaves the kept scroller where the player left it
+  - L3478 ...its own chip picked leaves the same scroller (the page is kept) at the top (
+  - L3479 ...and the page is equal to a page built new
+  - L3505 the Overview's chip picked from a scrolled Profit page lands at its top (
+  - L3506 the Statement view picked from a scrolled page lands at its top (
+  - L3507 ...and the Summary view picked again, scrolled, at its top (
+- **L3572 The Finances tab (KP5)**
+- **L3620 60: the book, a line's page and Close it now**
+- **L3710 60: the foreign default menu and the debt result menu**
+- **L3772 The city's fund (KP5)**
+  - L3798 the fund holds something to draw (
+- **L3991 64: the pictures on the money screens are kept**
+  - L4014 a
+- **L4259 65: the count-up only at 1x-10x (Bank and the fund)**
+  - L4283 a month landing starts
+  - L4331 an animation running when a month lands past COUNT_UP_TOP is stopped on
+- **L4468 66: the boxes keep the player's hand**
+  - L4478 the city has a piece of paper to close
+- **L4506 67: the hover is kept (Bank, Finances, the fund)**
+  - L4531 a
+  - L4597 the fund's heaviest page is Search or Activity, the two costed (
+- **L4795 The Government tab (KP6)**
+  - L4874 the central bank's printing and the arrears owed cause the cards they are meant to (CENTRAL BANK lines
+- **L4924 The Trade tab (KP6)**
+  - L4933 the tab has its six pages (
+  - L4940 the city trades with three nations, whose pages can be opened (
+  - L5064 the fold of the eight over the years holds its charts (
+  - L5072 ...each chart as wide as the card it sits in, on the kept draw and the month after
+  - L5073 ...and the card is not as wide as a chart made before it has a card (794 px and its padding): the width is the card's
+  - L5074 ...the page equal to a page built new
+- **L5136 The Policy tab (KP6)**
+  - L5344 People's page, with people short of food (
+  - L5522 a draw with nothing changed sets the reading's text and style no more (
+  - L5525 ...and the counter hears a text set by hand (
+  - L5526 a slider pressed is held
+  - L5527 a month landing on a held slider leaves the same slider node, still held
+  - L5528 ...its value still the thumb's (
+  - L5529 ...the reading the thumb's words (\"
+  - L5530 ...Ladder.shown() the thumb's value
+  - L5531 ...the card's effects drawn at the thumb (
+  - L5533 ...the line under the dial followed the thumb while it was dragged (it says the held step's words)
+  - L5534 ...and a month landing under the hand leaves the held step's words under the thumb, not the city's step's
+  - L5537 ...and nothing staged before the release
+  - L5539 ...and nothing applied before the release (the model at
+  - L5541 a slider released is not held
+  - L5543 ...the change is staged at the thumb (
+  - L5545 ...the change is applied at once, the model at the thumb (
+  - L5548 ...and the page is the same slider, kept, equal to a page built new
+  - L5620 ...the held slider is the same node, still held, at the thumb (
+  - L5621 ...its reading the thumb's (\"
+  - L5622 ...and no dial in front of it carries its thumb
+  - L5623 ...released, the page is equal to a page built new
+  - L5625 ...the card taken away and the change dropped: the page is equal to a page built new
+- **L5631 78: a card comes in front of a held dial**
+  - L5645 a tax has two payers with a row and a dial of their own to open (
+  - L5679 a sector's ITS TAXES card has a
+- **L5794 79: the count-up only at 1x-10x (Trade; Government and Policy have none)**
+  - L5818 a month landing starts
+  - L5864 a count running when a month lands past COUNT_UP_TOP is stopped on
+- **L5928 80: the hover is kept (Government, Trade, Policy)**
+  - L5955 Policy's Zoning › The ground page: a policyRow was found on the page of this city, to put the pointer on
+- **L5964 80: the tooltips are kept (Government, Trade, Policy)**
+  - L6015 the
+- **L6087 88: the clock never rebuilds a rail screen**
+  - L6094 a page drawn the old way twice under one name moves the in-place count by one (it moved
+  - L6095 ...and the next real screen shown, an arrival, does not move it (it moved
+  - L6156 the clock's redraw of
+  - L6157 ...and left its page's top nodes the same nodes (
+  - L6158 ...and the screen on show is still
+  - L6159 ...and the redraw ran over the screen's own nodes (
+- **L6194 Household money (KP7)**
+  - L6211 the grid has cells to open, family cells and rows below the rule (
+  - L6243 the open cell's books sit beside the grid at the full width and under it at 1000 wide (beside:
+- **L6253 The Rankings tab (KP7)**
+  - L6304 the city is saved into slot 10 of the harness's scratch folder (the player's own folder is refused)
+  - L6316 the read of the saved cities landed within a minute, with the saved city on the board (
+- **L6368 89: the hover is kept (Household money, the Rankings tab)**
+  - L6388 Household money: a limitCell was found on the page of this city, to put the pointer on
+  - L6389 the Rankings tab: a measure line was found on the page of this city, to put the pointer on
+  - L6390 the Rankings tab: a table row was found on the page of this city, to put the pointer on
+- **L6395 89: the tooltips are kept (Household money, the Rankings tab)**
+  - L6422 the pages of
+- **L6491 91: a slider greyed while held lets go**
+  - L6537 a slider
+  - L6540 a slider
+  - L6541 ...greyed while held it lets go (held
+  - L6542 ...ungreyed, a draw with another value staged puts the thumb on it (
+  - L6544 ...and the page is equal to a page built new
+  - L6546 ...the staged value dropped, the thumb is back at the city's (
+  - L6584 ...a draw with nothing changed sets no door card's style (
+  - L6586 ...and the counter hears a style set by hand (
+  - L6635 a second kept draw of
+- **L6675 92: a redraw with nothing new sets nothing**
+  - L6699 a style set to what it is moves no listener, and set to another and back moves it twice (
+  - L6707 a berth kind that goes to none is drawn as a row built new with none, bounds and all
+  - L6712 the city has a plain business and a materials industry with works to draw (
+  - L6726 the first note on
+  - L6772 the city's books hold a piece of paper (the fixture's premise for a line's page and Close it now:
+  - L6779 the fund lists a security (the fixture's premise for a security's page:
+  - L6785 the city trades with a nation (the fixture's premise for a nation's page:
+  - L6793 the window abroad is shut (the fixture's premise):
+  - L6809 the grid has a cell to open (the fixture's premise for Household money's open cells:
+- **L6865 93: the Rankings table keeps its hand, and its band follows a pointer a wheel leaves still**
+  - L6874 the Rankings table's picture has the hand, and a kept draw of the page writes its cursor none
+  - L6882 the Rankings table: after a wheel scrolls the page under a still pointer, and after a month lands, the band is on the row the pointer is over now
+  - L6896 the Rankings tab has a saved city on its board (the fixture's premise for Your cities:
+- **L6949 KeptCheck: the People page, the chrome, City History, Infrastructure, Services, the land office, Build, the construction page, the Sector...**
+- **L6964 1 and 2: the kept page, month after month, against a page built new**
+  - L7019 each month's redraw keeps the page it drew (the same top node,
+  - L7020 each month hands back nine in ten of the nodes the first draw made, or more (
+  - L7022 most months make no node at all (
+  - L7024 the kept page's signature equals the new page's at every month (
+- **L7026 3: and its pixels**
+  - L7028 the kept page and the new page are the same picture at
+  - L7048 one figure made wrong on the kept page (\"
+  - L7050 ...and its picture
+  - L7051 ...and the next kept draw sets it right again
+- **L7053 4: what reshapes the page**
+- **L7088 5: what the kept month costs**
 
 ## KnownRedsCheck.java - 43 labelled assertions
 

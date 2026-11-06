@@ -1,4 +1,4 @@
-# PeopleScreen.java - 4,715 lines · 166 methods · 25 constants · interface
+# PeopleScreen.java - 4,732 lines · 167 methods · 27 constants · interface
 
 `ham/citybuildersim/ui/PeopleScreen.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
@@ -68,12 +68,12 @@
 | 2485 | THE TABLES BEHIND "details", and the pieces they share with the |
 | 2833 | HOUSEHOLD MONEY: CAN THE PEOPLE OF THIS CITY AFFORD TO LIVE IN IT? |
 | 3094 | HOUSEHOLD MONEY, DRAWN |
-| 3728 | · · the retired |
-| 3745 | · · and outside the families |
-| 3984 | THE MONEY BLOCKS BOTH PANELS SHARE |
-| 4388 | · · the month |
-| 4605 | THE TIER TABLE, AS A TABLE. |
-| 4711 | · Small helpers so the report screens stay readable. Shared by the sector |
+| 3745 | · · the retired |
+| 3762 | · · and outside the families |
+| 4001 | THE MONEY BLOCKS BOTH PANELS SHARE |
+| 4405 | · · the month |
+| 4622 | THE TIER TABLE, AS A TABLE. |
+| 4728 | · Small helpers so the report screens stay readable. Shared by the sector |
 
 ## Constants
 
@@ -101,9 +101,11 @@
 | 2895 | `PeopleScreen.PAID_IN_ORDER` | `"The order is fixed: the payslip first, then rent, then the fees, and " + "th...` | The order a household pays in, and what happens when it comes up short: the verdict's (i). |
 | 3099 | `PeopleScreen.BESIDE` | `1200` | The narrowest page that sets the open cell's books beside the grid; under it they stack. |
 | 3461 | `PeopleScreen.CARS_INFO` | `"Bought out of savings past the same cushion a share is, so income " + "decid...` | The cars' (i): the old note. |
-| 3533 | `PeopleScreen.TIER_COL` | `88` | How wide a tier column is. |
-| 3534 | `PeopleScreen.SHAPE_COL` | `168` |  |
-| 3704 | `PeopleScreen.BELOW_THE_RULE` | `"Below the rule: the retired, on a pension and no wage; the out of work, " + ...` | The section captions' (i): who is below the rule, and what their one cell says. |
+| 3533 | `PeopleScreen.BAR_ROOM` | `new javafx.geometry.Insets(8, 0, 0, 0)` | The room over the flow bar in a cell's statement: one object (KP2b), set where it is not that already (Pieces.vMargin). |
+| 3536 | `PeopleScreen.TIER_COL` | `88` | How wide a tier column is. |
+| 3537 | `PeopleScreen.SHAPE_COL` | `168` |  |
+| 3544 | `PeopleScreen.MATRIX_COLUMNS` | `"people.matrixColumns"` | The key a matrix grid keeps its columns under - the household's name, then the six tiers - made once in the grid's life (KP2b) and added to it at each draw as one list. |
+| 3721 | `PeopleScreen.BELOW_THE_RULE` | `"Below the rule: the retired, on a pension and no wage; the out of work, " + ...` | The section captions' (i): who is below the rule, and what their one cell says. |
 
 ## Fields (state)
 
@@ -146,7 +148,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 57 | 4659 | **type** `final class PeopleScreen` | The People tab and its second page, Household money. |
+| 57 | 4676 | **type** `final class PeopleScreen` | The People tab and its second page, Household money. |
 | 62 | 1 | `PeopleScreen(UserInterface ui)` |  |
 
 ### PEOPLE (0.7.27) (lines 64-141)
@@ -384,7 +386,7 @@
 | 3048 | 39 | `List<Pieces.Step> cityMonth()` | The city's month, as the waterfall's steps, in dollars: the wages, what comes off them and what is added, take-home, what it is spent on - the bank's account fees a step of their own (0.7.27; the statement left them o... |
 | 3089 | 4 | `static String signedMoney(double dollars)` | Money on the waterfall, signed and compact: "−$36.8M". |
 
-### HOUSEHOLD MONEY, DRAWN (lines 3094-3983)
+### HOUSEHOLD MONEY, DRAWN (lines 3094-4000)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -414,38 +416,39 @@
 | 3467 | 6 | `static VBox statCard(String caption, String value, String tone, String line, String info)` | A small figure card: a caption, the figure, a line, and its (i). |
 | 3475 | 19 | `javafx.scene.layout.GridPane putByCards(HouseholdBalance bal)` | WHAT THEY HAVE PUT BY: saved, owed, the month's dividends, and the cars. |
 | 3496 | 35 | `List<javafx.scene.Node> putByChips(HouseholdBalance bal, FamilyModel families)` | The two chips under the cards: who is at the credit ceiling, and who flatshares because one wage won't cover a home - each opens the cell. |
-| 3540 | 92 | `VBox affordabilityGrid(HouseholdAccounts hh, HouseholdBalance bal, FamilyModel families)` | Household shape down the side, pay tier across the top, and in every cell what that household has left at the end of the month. |
-| 3634 | 24 | `private VBox tierHead(HouseholdAccounts hh, FamilyModel families, int t)` | A tier's head over its column: its name, and under it what one earner of the tier was paid. |
-| 3660 | 11 | `private Label tierCell(HouseholdAccounts hh, HouseholdBalance bal, int t)` | "Every household of that tier", one tier's cell: the average of the column above it, ringed when the tier is going short. |
-| 3676 | 7 | `private static Label moneyCell(String text, String tone, String more)` | A figure's cell in the grid (gridCell's, right-aligned) with a style of its own after the figure's: set whole, once, since a kept cell is never built on the style it was handed back with (KP7). |
-| 3685 | 17 | `int gridSectionRow(javafx.scene.layout.GridPane grid, String key, String caption, int line)` | A rule and a caption across the matrix, with the (i) that says who is below it: a different kind of household. |
-| 3723 | 58 | `int otherRows(javafx.scene.layout.GridPane grid, HouseholdAccounts hh, HouseholdBalance bal, FamilyModel families, int line)` | The retired, the out of work, the students, the orphans and the prison, as rows of the same matrix. |
-| 3783 | 16 | `int otherRow(javafx.scene.layout.GridPane grid, String label, Household own, double perHousehold, double homes, int line)` | One matrix row for a household with no tier: a name, then one wide cell. |
-| 3818 | 49 | `javafx.scene.Node wideCell(Household own, double perHousehold, double homes)` | cashCell's cell, one row wide: the same tint, the same ring, the same click - with the headcount inside it, because the six tier columns it spans have nothing of their own to say about this household. |
-| 3876 | 40 | `Label cashCell(HouseholdAccounts hh, FamilyModel families, FamilyStructure shape, PayTier tier, int tierIndex)` | One cell: what this household has left, and how badly. |
-| 3932 | 51 | `VBox basketBlock(Household cell)` | What a full basket would have been, what they planned to spend, and where the difference came from. |
+| 3546 | 12 | `private static List<javafx.scene.layout.ColumnConstraints> matrixColumns()` |  |
+| 3563 | 86 | `VBox affordabilityGrid(HouseholdAccounts hh, HouseholdBalance bal, FamilyModel families)` | Household shape down the side, pay tier across the top, and in every cell what that household has left at the end of the month. |
+| 3651 | 24 | `private VBox tierHead(HouseholdAccounts hh, FamilyModel families, int t)` | A tier's head over its column: its name, and under it what one earner of the tier was paid. |
+| 3677 | 11 | `private Label tierCell(HouseholdAccounts hh, HouseholdBalance bal, int t)` | "Every household of that tier", one tier's cell: the average of the column above it, ringed when the tier is going short. |
+| 3693 | 7 | `private static Label moneyCell(String text, String tone, String more)` | A figure's cell in the grid (gridCell's, right-aligned) with a style of its own after the figure's: set whole, once, since a kept cell is never built on the style it was handed back with (KP7). |
+| 3702 | 17 | `int gridSectionRow(javafx.scene.layout.GridPane grid, String key, String caption, int line)` | A rule and a caption across the matrix, with the (i) that says who is below it: a different kind of household. |
+| 3740 | 58 | `int otherRows(javafx.scene.layout.GridPane grid, HouseholdAccounts hh, HouseholdBalance bal, FamilyModel families, int line)` | The retired, the out of work, the students, the orphans and the prison, as rows of the same matrix. |
+| 3800 | 16 | `int otherRow(javafx.scene.layout.GridPane grid, String label, Household own, double perHousehold, double homes, int line)` | One matrix row for a household with no tier: a name, then one wide cell. |
+| 3835 | 49 | `javafx.scene.Node wideCell(Household own, double perHousehold, double homes)` | cashCell's cell, one row wide: the same tint, the same ring, the same click - with the headcount inside it, because the six tier columns it spans have nothing of their own to say about this household. |
+| 3893 | 40 | `Label cashCell(HouseholdAccounts hh, FamilyModel families, FamilyStructure shape, PayTier tier, int tierIndex)` | One cell: what this household has left, and how badly. |
+| 3949 | 51 | `VBox basketBlock(Household cell)` | What a full basket would have been, what they planned to spend, and where the difference came from. |
 
-### THE MONEY BLOCKS BOTH PANELS SHARE (lines 3984-4604)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 4006 | 3 | `private static Label note(String text)` | A statement's note under a line, in a scope of its own (Kept, KP7): a note that comes and goes in a panel shifts no other label, and the notes are one kind, so any of them may be handed to any. |
-| 4011 | 4 | `String costMoney(double dollars)` | A cost, printed negative - but a cost of nothing reads "$0", never "-$0". |
-| 4017 | 7 | `static String stakePct(double share)` | A stake, with enough decimals left on it to still say something. |
-| 4032 | 7 | `static String shareOf(double part, double whole)` | What part is of whole - or a dash, when there is no whole to be part of. |
-| 4041 | 6 | `static String monthsRun(double months)` | A run of months, said the way a person would say it. |
-| 4049 | 9 | `Label panelBlockHead(String text)` | The small heading that divides a statement panel into blocks. |
-| 4060 | 20 | `Label panelWho(HouseholdBalance bal, Household cell)` | How many of them there are, how big each one is, and how much of the city that is. |
-| 4090 | 229 | `void positionBlock(VBox panel, HouseholdBalance bal, Household own)` | What one of these households HAS, what it OWES, what it OWNS and what all of that leaves it worth. |
-| 4328 | 31 | `void ratioBlock(VBox panel, Household own, double income, double tax, String billsLabel, double bills, double fees, double shop...` | The same month again, as shares rather than figures. |
-| 4369 | 40 | `VBox outsideStatement(HouseholdBalance bal)` | One of the people outside the families, and what a month does to them. |
-| 4418 | 186 | `VBox openStatement(HouseholdAccounts hh, HouseholdBalance bal, FamilyModel families)` | The month of whichever cell is open, in full. |
-
-### THE TIER TABLE, AS A TABLE. (lines 4605-4710)
+### THE MONEY BLOCKS BOTH PANELS SHARE (lines 4001-4621)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4648 | 26 | `HBox flowBar(double tax, double rent, double fees, double shops, double left, double width)` | Where a household's month went, as one bar. |
-| 4676 | 11 | `Region barPart(double width, String colour, String what)` | One segment. |
-| 4689 | 21 | `HBox flowKey()` | The key under the bar, so the colours mean something the first time. |
+| 4023 | 3 | `private static Label note(String text)` | A statement's note under a line, in a scope of its own (Kept, KP7): a note that comes and goes in a panel shifts no other label, and the notes are one kind, so any of them may be handed to any. |
+| 4028 | 4 | `String costMoney(double dollars)` | A cost, printed negative - but a cost of nothing reads "$0", never "-$0". |
+| 4034 | 7 | `static String stakePct(double share)` | A stake, with enough decimals left on it to still say something. |
+| 4049 | 7 | `static String shareOf(double part, double whole)` | What part is of whole - or a dash, when there is no whole to be part of. |
+| 4058 | 6 | `static String monthsRun(double months)` | A run of months, said the way a person would say it. |
+| 4066 | 9 | `Label panelBlockHead(String text)` | The small heading that divides a statement panel into blocks. |
+| 4077 | 20 | `Label panelWho(HouseholdBalance bal, Household cell)` | How many of them there are, how big each one is, and how much of the city that is. |
+| 4107 | 229 | `void positionBlock(VBox panel, HouseholdBalance bal, Household own)` | What one of these households HAS, what it OWES, what it OWNS and what all of that leaves it worth. |
+| 4345 | 31 | `void ratioBlock(VBox panel, Household own, double income, double tax, String billsLabel, double bills, double fees, double shop...` | The same month again, as shares rather than figures. |
+| 4386 | 40 | `VBox outsideStatement(HouseholdBalance bal)` | One of the people outside the families, and what a month does to them. |
+| 4435 | 186 | `VBox openStatement(HouseholdAccounts hh, HouseholdBalance bal, FamilyModel families)` | The month of whichever cell is open, in full. |
+
+### THE TIER TABLE, AS A TABLE. (lines 4622-4727)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4665 | 26 | `HBox flowBar(double tax, double rent, double fees, double shops, double left, double width)` | Where a household's month went, as one bar. |
+| 4693 | 11 | `Region barPart(double width, String colour, String what)` | One segment. |
+| 4706 | 21 | `HBox flowKey()` | The key under the bar, so the colours mean something the first time. |
 

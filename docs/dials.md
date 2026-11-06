@@ -2,7 +2,7 @@
 
 Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**5,452 constants in 516 files.**
+**5,465 constants in 516 files.**
 
 ## model (2660 constants)
 
@@ -1550,7 +1550,7 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.30"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.9.31"` | Bump on release. |
 | 8253 | `GameVersion.SAVE_FORMAT` | `50` | The save shape. |
 | 8300 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `50` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
 | 8308 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
@@ -3952,7 +3952,7 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 77 | `WoodProducts.PAPER_MILL` | `137` | The Paper Mill's (0.7.140): 5,500 t of paper a month from 5,775 t of pulp and 850,000 litres of fuel oil. |
 | 80 | `WoodProducts.PELLET_MILL` | `138` | The Wood Pellet Mill's (0.7.140): 6,000 t of pellets a month from 13,200 m3 of residues. |
 
-## interface (1091 constants)
+## interface (1103 constants)
 
 ### BankScreen.java ([map](map/BankScreen.md))
 
@@ -3970,19 +3970,19 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 476 | `BankScreen.BOUND_TO_FRAME` | `"bank.frame", BOUND_TO_SCROLLER = "bank.scroller"` | The key in a kept scroller's properties for the frame its height is bound to, and in a kept page's for the scroller its width is bound to (frameOver()). |
 | 492 | `BankScreen.LEAD_INFO` | `"Every loan in the city is its money, priced from what it costs the bank to make." + "T...` | The tab's (i): the Overview's lead (the spec's L2), with what the Overview shows. |
 | 499 | `BankScreen.PAGE_INFO` | `{ "Its income statement, and what it did with the profit: a walk from the interest it e...` | Each page's (i), in BANK_PAGE_NAMES' order: what it holds (the landing's row blurbs until 0.7.33). |
-| 1177 | `BankScreen.LADDER_INFO` | `"From the price of money to what each borrower pays.Every step up is a cost " + "the ba...` | THE LADDER's (i): the landing's note (the spec's L10), with what the parts are. |
-| 1572 | `BankScreen.NOTHING` | `.0005` | A step under half a dollar is nothing: it is left off the walk and named under it. |
-| 1680 | `BankScreen.PROVISIONS_INFO` | `"A provision is money set aside for loans expected to go bad: a year's " + "expected lo...` | The provisions' note (the spec's T, Profit 790), behind the step's tooltip and the statement's line. |
-| 1720 | `BankScreen.RATIOS_INFO` | `"The margin is what it charges less what it pays for its money, on everything that earn...` | The ratios' note (Profit 874), behind MARGIN's and COSTS' (i). |
-| 2192 | `BankScreen.OWNS` | `List.of(new SheetPart(Bank.Sheet.BUSINESS_LOANS, "Loans to the businesses", Palette.BUS...` | What it owns, in the bars' order (the spec's section 3): the businesses' loans first, its reserves last; the allowance is the net tick. |
-| 2204 | `BankScreen.OWES` | `List.of(new SheetPart(Bank.Sheet.DEPOSIT_FUNDING, "Lent past its own cash, on its depos...` | ...and what it owes, then its owners' (equity last). |
-| 2478 | `BankScreen.BESIDE_INFO` | `"Counted for what it can lend and not held on its sheet in full: the families' " + "sav...` | BESIDE THE SHEET's (i) (Balance sheet 1161). |
-| 2788 | `BankScreen.BOOK_INFO` | `"Everything it has lent, by who owes it: the businesses' loans and the bonds of theirs ...` | Who-owes-it note (Lending 1225), behind THE BOOK's (i). |
-| 3449 | `BankScreen.LEND_AGAINST_INFO` | `"Savings reach the bank wherever its branches are - online - so it lends " + "against e...` | What it can lend against (Funding 1681), behind the banked bar's (i). |
-| 3926 | `BankScreen.STAKE_INFO` | `"A resolution makes every share the city's, in its fund's rescue book, which its rule "...` | The city's stake's note (Capital 2002). |
-| 4021 | `BankScreen.MOVED_INFO` | `"Equity moves by what it earned, what it was given and what it paid out, and by " + "no...` | The equity's note (Capital 1990): Jerus's rule on a plug. |
-| 4077 | `BankScreen.RESCUES_INFO` | `"When a bank loses more than it owns, the city resolves it: the old owners lose " + "ev...` | The rescues' note (Capital 2027). |
-| 4303 | `BankScreen.RESCUE_INFO` | `"Its owners lose everything: the households' shares and the world's pass to the city " ...` | The rescue's note (Rescue 2119). |
+| 1182 | `BankScreen.LADDER_INFO` | `"From the price of money to what each borrower pays.Every step up is a cost " + "the ba...` | THE LADDER's (i): the landing's note (the spec's L10), with what the parts are. |
+| 1577 | `BankScreen.NOTHING` | `.0005` | A step under half a dollar is nothing: it is left off the walk and named under it. |
+| 1685 | `BankScreen.PROVISIONS_INFO` | `"A provision is money set aside for loans expected to go bad: a year's " + "expected lo...` | The provisions' note (the spec's T, Profit 790), behind the step's tooltip and the statement's line. |
+| 1725 | `BankScreen.RATIOS_INFO` | `"The margin is what it charges less what it pays for its money, on everything that earn...` | The ratios' note (Profit 874), behind MARGIN's and COSTS' (i). |
+| 2197 | `BankScreen.OWNS` | `List.of(new SheetPart(Bank.Sheet.BUSINESS_LOANS, "Loans to the businesses", Palette.BUS...` | What it owns, in the bars' order (the spec's section 3): the businesses' loans first, its reserves last; the allowance is the net tick. |
+| 2209 | `BankScreen.OWES` | `List.of(new SheetPart(Bank.Sheet.DEPOSIT_FUNDING, "Lent past its own cash, on its depos...` | ...and what it owes, then its owners' (equity last). |
+| 2482 | `BankScreen.BESIDE_INFO` | `"Counted for what it can lend and not held on its sheet in full: the families' " + "sav...` | BESIDE THE SHEET's (i) (Balance sheet 1161). |
+| 2792 | `BankScreen.BOOK_INFO` | `"Everything it has lent, by who owes it: the businesses' loans and the bonds of theirs ...` | Who-owes-it note (Lending 1225), behind THE BOOK's (i). |
+| 3453 | `BankScreen.LEND_AGAINST_INFO` | `"Savings reach the bank wherever its branches are - online - so it lends " + "against e...` | What it can lend against (Funding 1681), behind the banked bar's (i). |
+| 3930 | `BankScreen.STAKE_INFO` | `"A resolution makes every share the city's, in its fund's rescue book, which its rule "...` | The city's stake's note (Capital 2002). |
+| 4025 | `BankScreen.MOVED_INFO` | `"Equity moves by what it earned, what it was given and what it paid out, and by " + "no...` | The equity's note (Capital 1990): Jerus's rule on a plug. |
+| 4081 | `BankScreen.RESCUES_INFO` | `"When a bank loses more than it owns, the city resolves it: the old owners lose " + "ev...` | The rescues' note (Capital 2027). |
+| 4307 | `BankScreen.RESCUE_INFO` | `"Its owners lose everything: the households' shares and the world's pass to the city " ...` | The rescue's note (Rescue 2119). |
 
 ### Branding.java ([map](map/Branding.md))
 
@@ -4070,98 +4070,100 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 615 | `FinancesScreen.HEAD_INFO` | `"What the city owes, when it falls due, and what it does when it does." + "The ladder i...` | The tab's (i): what the hub is, in a breath. |
 | 621 | `FinancesScreen.AREA_INFO` | `{ "What the city holds, what it owes, and why the rate is the rate: the balance and the...` | Each area's (i), in AREAS' order: the landing's blurbs until 0.7.32 (the spec's T2), with what the card shows. |
 | 899 | `FinancesScreen.RESOLVE_INFO` | `"Resolving it costs the hole and the capital to reopen it.Its owners lose " + "everythi...` | What resolving a failed bank does (the spec's T41). |
-| 1232 | `FinancesScreen.LADDER_INFO` | `"Every payment the city's paper still asks, coupons and principal together, " + "becaus...` | The ladder's (i): the spec's T12, and why a column is a calendar year. |
-| 1242 | `FinancesScreen.NOTHING_DUE` | `"The city owes nothing, so nothing falls due.The Borrow page is where that " + "changes."` | The ladder with nothing on it (the spec's T11). |
-| 1246 | `FinancesScreen.WALL_WORDS` | `"more than half a year of revenue - a city meets a wall like that by " + "refinancing i...` | A wall on the ladder (the spec's T13), in the heaviest year's tooltip. |
-| 1251 | `FinancesScreen.LATER_BREAK` | `2` | How many times the tallest year "later" may be before it is drawn broken (0.7.34): past it, on one scale, the twelve would be slivers. |
-| 1254 | `FinancesScreen.LATER_CAP` | `1.2` | ...and how tall a broken "later" stands, in tallest years: a little above the tallest, so it still reads as the most. |
-| 1507 | `FinancesScreen.ROLLOVER_CHIPS` | `{ "By hand", "Same structure", Rollover.BILL_MONTHS + "-month bills" }` | The rollover's three settings as chips, in Rollover.Mode's order. |
-| 1510 | `FinancesScreen.ROLLOVER_LINES` | `{ "Nothing automatic: what falls due is paid from the cash, and what it can't cover the...` | Each setting's one line (the spec's T35). |
-| 1518 | `FinancesScreen.ROLLOVER_TIPS` | `{ "Nothing automatic: what falls due is paid out of the treasury's cash, and what the c...` | ...and each in full, on its chip (the old block's sentences). |
-| 1529 | `FinancesScreen.ROLLOVER_INFO` | `"By hand, nothing is automatic: what falls due is paid out of the treasury's " + "cash,...` | The rollover's (i): the three settings, the central bank's own roll (T36) and the new paper's size (T39). |
-| 1549 | `FinancesScreen.ROLLOVER_CAP_TITLE` | `"THE HIGHEST YIELD IT WILL TAKE"` | The rollover's cap block: its caption, and its (i), which says what the cap is and what a short sale does (D28, D29). |
-| 1550 | `FinancesScreen.ROLLOVER_CAP_INFO` | `"The most the rollover will pay to sell what it refinances: fair plus a " + "point(the ...` |  |
-| 1677 | `FinancesScreen.RESCUE_CHIPS` | `{ "Automatic", "Wait for my button" }` | The rescue's two settings as chips, in TreasuryFund.RescueMode's order. |
-| 1680 | `FinancesScreen.RESCUE_LINES` | `{ "The month it fails, the city resolves it and it reopens.", "It stays frozen until yo...` | Each setting's one line (the spec's T40). |
-| 1686 | `FinancesScreen.RESCUE_INFO` | `"Automatic: the month the bank fails, the city resolves it - its owners lose " + "every...` | The rescue's (i): both settings in full (the old block's T40). |
-| 1912 | `FinancesScreen.BALANCE_INFO` | `"A negative net position is not by itself a problem - a city that borrows to " + "build...` | THE BALANCE's (i): the spec's T7. |
-| 1921 | `FinancesScreen.PAPER_VALUES_INFO` | `"The same paper three ways.Its face is what falls due.What the books " + "carry it at i...` | The line under THE BALANCE's bars: three readings of the same paper. |
-| 2100 | `FinancesScreen.SERVICE_WORDS` | `{ "comfortable", "felt", "constrained" }` | The band words, by CityNeeds.serviceLevel(). |
-| 2103 | `FinancesScreen.SERVICE_INFO` | `"What the city pays its lenders against what it collects, because a lender is " + "repa...` | The gauge's (i): the spec's T15 and T17, on two marks. |
-| 2153 | `FinancesScreen.LAST_MONTH_INFO` | `"Only the interest is an expense; the principal is a balance-sheet movement." + "The in...` | LAST MONTH's (i): the spec's T14. |
-| 2161 | `FinancesScreen.UPLIFT_INFO` | `"A linked bond's principal follows the price index, and the books catch up with " + "it...` | The inflation uplift line's (i) on LAST MONTH (CD5, spec-city-debt.md 5.4). |
-| 2209 | `FinancesScreen.FOREIGN_INFO` | `"Foreign paper is repaid in somebody else's money, and the only way the city " + "earns...` | FOREIGN's (i): the spec's T16. |
-| 2240 | `FinancesScreen.HOLDERS_INFO` | `"Domestic paper is bought at home, so its coupon is income at home and none of " + "it ...` | WHO HOLDS IT's (i): the spec's T19 and T29. |
-| 2295 | `FinancesScreen.DOLLAR_INFO` | `"Owed in dollars, which do not move; worth in the city's money whatever the " + "exchan...` | THE DOLLAR DEBT's (i): the spec's T20, both ways. |
-| 2301 | `FinancesScreen.ABROAD_INFO` | `"Owed abroad in US$ and the other moneys the city has sold paper in, each of which " + ...` | ...and once the city owes in another of the eight (CD8): the same card, every money counted in US$. |
-| 2326 | `FinancesScreen.BEHIND_INFO` | `"Reserves are the city's dollars.Import cover is how many months of imports " + "they w...` | WHAT IS BEHIND IT's (i): the spec's T21 and T22, as the model reads cover (ForeignAccounts.COMFORTABLE_COVER). |
-| 2489 | `FinancesScreen.CURVE_INFO` | `"Each point is what the city pays to borrow for that term: the zero rate.The short end ...` | THE CITY'S CURVE's (i): the spec's T24, and what each line on the chart is (CD6, board 5). |
-| 2607 | `FinancesScreen.CurveChart.LEFT` | `46, RIGHT = 14, TOP = 18, FOOT = 26` |  |
-| 2695 | `FinancesScreen.EXPECT_INFO` | `"The dial the market expects, month by month, is the path the whole curve is built on."...` | WHAT THE MARKET EXPECTS THE DIAL TO DO's (i): the path the curve is built on (CD6, board 5, note A). |
-| 2702 | `FinancesScreen.LEAN` | `.0005` | The gap under which two rates are the same to the eye in the page's sentences: a twentieth of a point. |
-| 2758 | `FinancesScreen.PARTS_INFO` | `"The ten-year zero rate is the sum of its parts, to rounding: the dial the market expec...` | THE 10-YEAR RATE's (i): what the bar is made of. |
-| 2800 | `FinancesScreen.REAL_INFO` | `"A linked bond pays a real coupon on a principal that grows with the price index, so wh...` | REAL RATES's (i): what the two lines are and what the dots are. |
-| 2956 | `FinancesScreen.NOTE_INFO` | `"No coupon.The lender's return was the discount, taken out of the proceeds at " + "issu...` | A bill's (i): the spec's T28. |
-| 2963 | `FinancesScreen.CARRIED_INFO` | `"What the books hold the piece at, and the rate they charge it at.It starts " + "at wha...` | The "carried · effective" line on a line's page: its (i). |
-| 2970 | `FinancesScreen.LINKED_BOOKS_INFO` | `"What the books hold the piece at, and the rate they charge it at.The books " + "follow...` | The same line on an inflation-linked bond's card (CD6): its rate is a real rate. |
-| 2977 | `FinancesScreen.PREMIUM_INFO` | `"Buying a piece back pays its holders what it is worth today.Under its face, " + "the c...` | A price against face, in words (the spec's T33, D16). |
-| 2984 | `FinancesScreen.CALLABLE_INFO` | `"The city sold this line with the right to call it: from its first call date " + "it ca...` | A callable line's (i) on its card (CD4, spec-city-debt.md 2.6 and 6.4). |
-| 2989 | `FinancesScreen.FLOATING_INFO` | `"The coupon is the policy rate plus the margin the sale fixed, a twelfth of it " + "eve...` | A floating-rate note's coupon line's (i) on its card (CD5, spec-city-debt.md 2.4). |
-| 2996 | `FinancesScreen.INDEXED_INFO` | `"The real coupon is paid every month on the principal as the price index has " + "moved...` | An inflation-linked bond's coupon line's (i) on its card (CD5, spec-city-debt.md 2.5). |
-| 3003 | `FinancesScreen.WORTH_CALLING_INFO` | `"The present value the call would save: what this line's remaining payments " + "are wo...` | "Worth calling"'s (i) (D24). |
-| 3009 | `FinancesScreen.DESK_CURVE_INFO` | `"Today's zero curve is the line: what the city pays to borrow for each term.Each " + "l...` | THE CURVE card's (i) (CD6, board 1): what the dots are and what is left off. |
-| 3016 | `FinancesScreen.DESK_BARS_INFO` | `"Carried is what the books say the city owes: what it raised, plus the discount " + "am...` | THE THREE BARS' (i): the board's paragraph. |
-| 3025 | `FinancesScreen.GAIN_INFO` | `"Green is a gain and red a loss.It is what the books carry the line at less what " + "c...` | The (i) beside a gain or a loss on a line's page (CD6, Jerus 2026-10-23): what the colours mean. |
-| 3033 | `FinancesScreen.EXCHANGE_INFO` | `"Paper abroad is owed in its own money - the US$ or another of the eight - and what it ...` | The (i) beside the D$'s move since a dollar piece was sold, on the desk's card and a line's page (CD7): what the figure and its colours mean. |
-| 3041 | `FinancesScreen.DESK_INFO` | `"If closed now: the carrying value less the worth, in D$ and as a share of the " + "car...` | THE DESK's (i): the two readings under the table. |
-| 3123 | `FinancesScreen.BOOK_KIND_NAMES` | `{ "bills", "amortizing bonds", "bonds", "floating-rate notes", "inflation-linked bonds" }` | The kinds of paper as the desk names them, in DebtManager.BOOK_KINDS' order. |
-| 3340 | `FinancesScreen.CLOSE_CELL` | `206` | The width of the desk's If closed now column (CD6): the gain or loss, and the Close it now button beside it. |
-| 3343 | `FinancesScreen.EXCHANGE_CELL` | `128` | The width of the desk's exchange column (CD7), shown only when the book holds dollar paper: "−D$725.3M · −10.0%" at the caption's size, and its heading on two lines. |
-| 3346 | `FinancesScreen.CLOSE_FIGURE` | `134` | The width of the gain or loss in that cell: "−D$725.3M · −100.0%" at the figure's size. |
-| 3349 | `FinancesScreen.CLOSE_BUTTON` | `66, CLOSE_GAP = 6` | The Close it now button's width, and the gap between it and the figure. |
-| 3409 | `FinancesScreen.ACROSS_TABLE` | `"finances.table", TABLE_ACROSS = "finances.across"` | The keys a scroller keeps the table it holds under, and a table the scroller that holds it (acrossWhenNarrow()). |
-| 3570 | `FinancesScreen.LINE_PRICE_INFO` | `"The price is the market's: what the line's remaining payments are worth on " + "each m...` | THE PRICE card's (i): board 2, note A. |
-| 3577 | `FinancesScreen.LINE_CLOSE_INFO` | `"Worth is what closing the line would cost at its fair price; a buyback pays " + "more,...` | IF YOU CLOSED IT TODAY's (i): board 2, note B. |
-| 3586 | `FinancesScreen.LINE_BOOKS_INFO` | `"The books in full: what the line is carried at when the month opens, the " + "interest...` | THE NEXT SIX MONTHS' (i): board 2, note C. |
-| 3593 | `FinancesScreen.LINE_SALES_INFO` | `"Each sale into the line: when, how much face, what it raised, the price it " + "made f...` | ITS SALES, AND ITS RISK's (i). |
-| 3599 | `FinancesScreen.LINE_PAGE` | `"A line"` | The name of a line's page, under The book: no chip's, open while its line is on the books (lineOpenNow()). |
-| 3824 | `FinancesScreen.THREE_NARROW` | `1000` | The width under which a line's page stacks its three cards (CD6): the books' table, then the other two side by side. |
-| 3827 | `FinancesScreen.THREE_CARDS` | `"finances.three"` | The key a line's page keeps its three cards under on their grid, for the width listener to arrange (linePage()). |
-| 4082 | `FinancesScreen.DeskCurve.H` | `232, LEFT = 46, RIGHT = 14, TOP = 12, FOOT = 26` |  |
-| 4183 | `FinancesScreen.DeskBars.H` | `158, LEFT = 84, RIGHT = 76, TOP = 26, ROW = 42, BAR = 26` |  |
-| 4184 | `FinancesScreen.DeskBars.ROWS` | `{ "at face", "carried", "worth today" }` |  |
-| 4242 | `FinancesScreen.PathChart.H` | `212, LEFT = 40, RIGHT = 16, TOP = 14, FOOT = 26` |  |
-| 4370 | `FinancesScreen.CLOSE_INFO` | `"Closing a piece early is a reverse auction, not one price.Name the face you want " + "...` | THE TICKET's (i): the spec's 6.2. |
-| 4379 | `FinancesScreen.OFFERS_INFO` | `"Each bar is one slice a holder offers: its length is the slice's face, the number " + ...` | THE OFFERS' (i). |
-| 4385 | `FinancesScreen.COMPARE_INFO` | `"One buyback, read three ways.Against carrying value is the figure the books keep, " + ...` | THE THREE COMPARISONS' (i): the spec's 6.3. |
-| 4393 | `FinancesScreen.CALL_INFO` | `"From its first call date the city can pay every holder 100 for each 100 of face, " + "...` | THE CALL's (i): the spec's 6.4 and D22 to D24. |
-| 4510 | `FinancesScreen.CLOSE_SHOWN` | `"finances.closeShown"` | The key a Close it now box keeps the text the page was last drawn on under, for its focus listener (closeBox()). |
-| 4805 | `FinancesScreen.BuybackLadder.LEFT` | `74, FACE_ROOM = 76, MARKS = 134, TOP = 26, FOOT = 10, FIRST_W = 720, LEAST_W = 440` | The margins, in pixels: the prices at the left; at the right the room for a slice's face (FACE_ROOM) and for the marks' names (MARKS). |
-| 4992 | `FinancesScreen.TERMS_INFO` | `"Each column is today's fair yield for this paper at that term: what the curve " + "say...` | The terms' (i): the spec's T55, on the auction's fair yield (CD2). |
-| 5002 | `FinancesScreen.CAP_INFO` | `"The most the city will pay to sell this: fair plus a point, a yield you name, or " + "...` | THE HIGHEST YIELD's (i): the spec's 4.1 and 4.3 in two sentences. |
-| 5010 | `FinancesScreen.LOTS_INFO` | `"Issues round to a lot, and the market will not arrange anything under the " + "smalles...` | The ask's (i): the spec's T56. |
-| 5014 | `FinancesScreen.NO_ASK` | `"Ask for something and the quote appears here - at home the auction itself, run on " + ...` | The quote's empty state: the spec's T57. |
-| 5019 | `FinancesScreen.PROCEEDS_INFO` | `"A bill's ask is the cash it should raise, and its face is the lot that brings " + "it,...` | Why a bill's proceeds are not the ask: the spec's T58 (a bill's ask is the cash; a bond's is the face). |
-| 5025 | `FinancesScreen.BUYERS_INFO` | `"Each bidder bids by the rule it follows elsewhere in the game.The households " + "firs...` | Who bids: the spec's T61 and 4.2 (CD2). |
-| 5035 | `FinancesScreen.DOLLARS_INFO` | `"Spending it leaves a dollar debt with nothing behind it, and the next " + "devaluation...` | Where the dollars go: the spec's T62. |
-| 5120 | `FinancesScreen.MONEY_INFO` | `"The city can sell its paper abroad in any of the eight moneys, each priced on its own ...` | IN WHICH MONEY's (i): what the figure under a money is, and what owing in it risks. |
-| 5325 | `FinancesScreen.CALLABLE_SALE_INFO` | `"A bond of ten years or more can be sold callable: from its first call date " + "(five ...` | The CALLABLE switch's (i) (CD4, spec-city-debt.md 2.6 and D22 to D24). |
-| 5385 | `FinancesScreen.ASK_TYPED_INFO` | `"Type an amount in dollars: digits, with or without commas, a decimal " + "point if you...` | HOW MUCH's (i): what the box takes - the case rules - and what the buttons do. |
-| 5400 | `FinancesScreen.ASK_WORDS` | `java.util.regex.Pattern.compile("(?:[A-Za-z]{0,3}[$€¥£]\|(?i:chf))?\\s*((?:\\d{1,3}(?:,\...` | A typed amount: an optional mark (D$, US$, $, or one of the eight's - €, ¥, £, CN¥, C$, A$, CHF), digits (grouped by commas or not), an optional fraction, an optional unit. |
-| 5944 | `FinancesScreen.STOP_INFO` | `"The one yield at which the bids first cover the issue - never under fair, never " + "o...` | STOPS AT's (i): the stop and the tail (the spec's 4.3). |
-| 5949 | `FinancesScreen.COVER_INFO` | `"What was bid up to your highest yield, each bidder counted at most the issue, " + "ove...` | BIDS' (i): the cover. |
-| 6122 | `FinancesScreen.AuctionChart.WHO_COLOURS` | `{ Palette.PEOPLE, Palette.BUSINESS, Palette.ORE, Palette.MONEY }` | The bidders' colours in Auction.Fill's order, as the holders' bar has them. |
-| 6124 | `FinancesScreen.AuctionChart.WHO` | `{ "households", "the firms", "the world", "the bank" }` | ...and their names, in the same order. |
-| 6126 | `FinancesScreen.AuctionChart.H` | `240, LEFT = 62, RIGHT = 16, TOP = 16, FOOT = 26, FIRST_W = 720, LEAST_W = 420` | Its height and its margins, in pixels; the width it is first drawn at, and the least it is drawn at. |
-| 6128 | `FinancesScreen.AuctionChart.SAMPLES` | `60` | How many yields the bids are read at across the axis. |
-| 6317 | `FinancesScreen.DEFAULT_INFO` | `"Walking away from every dollar the city owes abroad.The gain is immediate and " + "eno...` | The default page's (i). |
-| 6472 | `FinancesScreen.M2_INFO` | `"M2 is the bank's deposits - the households', the businesses' and the world's - plus " ...` | M2's (i): the spec's T69. |
-| 6565 | `FinancesScreen.NO_BONDS` | `"None outstanding.A business sells a bond when the book would take it for no more " + "...` | No bond outstanding: the spec's T70. |
-| 6570 | `FinancesScreen.PRICES_INFO` | `"The price is per 100 of face, at the last trade on its book; * where it has not " + "t...` | The prices' (i): the spec's T71. |
-| 6575 | `FinancesScreen.BOOKS_INFO` | `"Everybody posts buy and sell orders at prices, and an order fills only when it " + "me...` | The order books' (i): the spec's T74. |
-| 6583 | `FinancesScreen.BOND_HOLDERS` | `{ "households", "the bank", "companies", "the world", "the city's fund" }` | The bonds' holders, in a bar's order: the households, the bank, the companies, the world, the city's fund. |
-| 6585 | `FinancesScreen.BOND_HOLDER_COLOURS` | `{ Palette.PEOPLE, Palette.MONEY, Palette.BUSINESS, Palette.ORE, Palette.MONEY_DARK }` | ...and their colours on it. |
-| 6766 | `FinancesScreen.DEPTH_INFO` | `"What rests on the book after the month's step: a bid under every ask, since " + "whate...` | A bond's book's (i): the spec's T75, T77 and T78. |
+| 1252 | `FinancesScreen.LADDER_INFO` | `"Every payment the city's paper still asks, coupons and principal together, " + "becaus...` | The ladder's (i): the spec's T12, and why a column is a calendar year. |
+| 1262 | `FinancesScreen.NOTHING_DUE` | `"The city owes nothing, so nothing falls due.The Borrow page is where that " + "changes."` | The ladder with nothing on it (the spec's T11). |
+| 1266 | `FinancesScreen.WALL_WORDS` | `"more than half a year of revenue - a city meets a wall like that by " + "refinancing i...` | A wall on the ladder (the spec's T13), in the heaviest year's tooltip. |
+| 1271 | `FinancesScreen.LATER_BREAK` | `2` | How many times the tallest year "later" may be before it is drawn broken (0.7.34): past it, on one scale, the twelve would be slivers. |
+| 1274 | `FinancesScreen.LATER_CAP` | `1.2` | ...and how tall a broken "later" stands, in tallest years: a little above the tallest, so it still reads as the most. |
+| 1527 | `FinancesScreen.ROLLOVER_CHIPS` | `{ "By hand", "Same structure", Rollover.BILL_MONTHS + "-month bills" }` | The rollover's three settings as chips, in Rollover.Mode's order. |
+| 1530 | `FinancesScreen.ROLLOVER_LINES` | `{ "Nothing automatic: what falls due is paid from the cash, and what it can't cover the...` | Each setting's one line (the spec's T35). |
+| 1538 | `FinancesScreen.ROLLOVER_TIPS` | `{ "Nothing automatic: what falls due is paid out of the treasury's cash, and what the c...` | ...and each in full, on its chip (the old block's sentences). |
+| 1549 | `FinancesScreen.ROLLOVER_INFO` | `"By hand, nothing is automatic: what falls due is paid out of the treasury's " + "cash,...` | The rollover's (i): the three settings, the central bank's own roll (T36) and the new paper's size (T39). |
+| 1569 | `FinancesScreen.ROLLOVER_CAP_TITLE` | `"THE HIGHEST YIELD IT WILL TAKE"` | The rollover's cap block: its caption, and its (i), which says what the cap is and what a short sale does (D28, D29). |
+| 1570 | `FinancesScreen.ROLLOVER_CAP_INFO` | `"The most the rollover will pay to sell what it refinances: fair plus a " + "point(the ...` |  |
+| 1697 | `FinancesScreen.RESCUE_CHIPS` | `{ "Automatic", "Wait for my button" }` | The rescue's two settings as chips, in TreasuryFund.RescueMode's order. |
+| 1700 | `FinancesScreen.RESCUE_LINES` | `{ "The month it fails, the city resolves it and it reopens.", "It stays frozen until yo...` | Each setting's one line (the spec's T40). |
+| 1706 | `FinancesScreen.RESCUE_INFO` | `"Automatic: the month the bank fails, the city resolves it - its owners lose " + "every...` | The rescue's (i): both settings in full (the old block's T40). |
+| 1931 | `FinancesScreen.BALANCE_INFO` | `"A negative net position is not by itself a problem - a city that borrows to " + "build...` | THE BALANCE's (i): the spec's T7. |
+| 1940 | `FinancesScreen.PAPER_VALUES_INFO` | `"The same paper three ways.Its face is what falls due.What the books " + "carry it at i...` | The line under THE BALANCE's bars: three readings of the same paper. |
+| 2119 | `FinancesScreen.SERVICE_WORDS` | `{ "comfortable", "felt", "constrained" }` | The band words, by CityNeeds.serviceLevel(). |
+| 2122 | `FinancesScreen.SERVICE_INFO` | `"What the city pays its lenders against what it collects, because a lender is " + "repa...` | The gauge's (i): the spec's T15 and T17, on two marks. |
+| 2172 | `FinancesScreen.LAST_MONTH_INFO` | `"Only the interest is an expense; the principal is a balance-sheet movement." + "The in...` | LAST MONTH's (i): the spec's T14. |
+| 2180 | `FinancesScreen.UPLIFT_INFO` | `"A linked bond's principal follows the price index, and the books catch up with " + "it...` | The inflation uplift line's (i) on LAST MONTH (CD5, spec-city-debt.md 5.4). |
+| 2228 | `FinancesScreen.FOREIGN_INFO` | `"Foreign paper is repaid in somebody else's money, and the only way the city " + "earns...` | FOREIGN's (i): the spec's T16. |
+| 2259 | `FinancesScreen.HOLDERS_INFO` | `"Domestic paper is bought at home, so its coupon is income at home and none of " + "it ...` | WHO HOLDS IT's (i): the spec's T19 and T29. |
+| 2314 | `FinancesScreen.DOLLAR_INFO` | `"Owed in dollars, which do not move; worth in the city's money whatever the " + "exchan...` | THE DOLLAR DEBT's (i): the spec's T20, both ways. |
+| 2320 | `FinancesScreen.ABROAD_INFO` | `"Owed abroad in US$ and the other moneys the city has sold paper in, each of which " + ...` | ...and once the city owes in another of the eight (CD8): the same card, every money counted in US$. |
+| 2345 | `FinancesScreen.BEHIND_INFO` | `"Reserves are the city's dollars.Import cover is how many months of imports " + "they w...` | WHAT IS BEHIND IT's (i): the spec's T21 and T22, as the model reads cover (ForeignAccounts.COMFORTABLE_COVER). |
+| 2508 | `FinancesScreen.CURVE_INFO` | `"Each point is what the city pays to borrow for that term: the zero rate.The short end ...` | THE CITY'S CURVE's (i): the spec's T24, and what each line on the chart is (CD6, board 5). |
+| 2626 | `FinancesScreen.CurveChart.LEFT` | `46, RIGHT = 14, TOP = 18, FOOT = 26` |  |
+| 2714 | `FinancesScreen.EXPECT_INFO` | `"The dial the market expects, month by month, is the path the whole curve is built on."...` | WHAT THE MARKET EXPECTS THE DIAL TO DO's (i): the path the curve is built on (CD6, board 5, note A). |
+| 2721 | `FinancesScreen.LEAN` | `.0005` | The gap under which two rates are the same to the eye in the page's sentences: a twentieth of a point. |
+| 2776 | `FinancesScreen.PARTS_INFO` | `"The ten-year zero rate is the sum of its parts, to rounding: the dial the market expec...` | THE 10-YEAR RATE's (i): what the bar is made of. |
+| 2818 | `FinancesScreen.REAL_INFO` | `"A linked bond pays a real coupon on a principal that grows with the price index, so wh...` | REAL RATES's (i): what the two lines are and what the dots are. |
+| 2974 | `FinancesScreen.NOTE_INFO` | `"No coupon.The lender's return was the discount, taken out of the proceeds at " + "issu...` | A bill's (i): the spec's T28. |
+| 2981 | `FinancesScreen.CARRIED_INFO` | `"What the books hold the piece at, and the rate they charge it at.It starts " + "at wha...` | The "carried · effective" line on a line's page: its (i). |
+| 2988 | `FinancesScreen.LINKED_BOOKS_INFO` | `"What the books hold the piece at, and the rate they charge it at.The books " + "follow...` | The same line on an inflation-linked bond's card (CD6): its rate is a real rate. |
+| 2995 | `FinancesScreen.PREMIUM_INFO` | `"Buying a piece back pays its holders what it is worth today.Under its face, " + "the c...` | A price against face, in words (the spec's T33, D16). |
+| 3002 | `FinancesScreen.CALLABLE_INFO` | `"The city sold this line with the right to call it: from its first call date " + "it ca...` | A callable line's (i) on its card (CD4, spec-city-debt.md 2.6 and 6.4). |
+| 3007 | `FinancesScreen.FLOATING_INFO` | `"The coupon is the policy rate plus the margin the sale fixed, a twelfth of it " + "eve...` | A floating-rate note's coupon line's (i) on its card (CD5, spec-city-debt.md 2.4). |
+| 3014 | `FinancesScreen.INDEXED_INFO` | `"The real coupon is paid every month on the principal as the price index has " + "moved...` | An inflation-linked bond's coupon line's (i) on its card (CD5, spec-city-debt.md 2.5). |
+| 3021 | `FinancesScreen.WORTH_CALLING_INFO` | `"The present value the call would save: what this line's remaining payments " + "are wo...` | "Worth calling"'s (i) (D24). |
+| 3027 | `FinancesScreen.DESK_CURVE_INFO` | `"Today's zero curve is the line: what the city pays to borrow for each term.Each " + "l...` | THE CURVE card's (i) (CD6, board 1): what the dots are and what is left off. |
+| 3034 | `FinancesScreen.DESK_BARS_INFO` | `"Carried is what the books say the city owes: what it raised, plus the discount " + "am...` | THE THREE BARS' (i): the board's paragraph. |
+| 3043 | `FinancesScreen.GAIN_INFO` | `"Green is a gain and red a loss.It is what the books carry the line at less what " + "c...` | The (i) beside a gain or a loss on a line's page (CD6, Jerus 2026-10-23): what the colours mean. |
+| 3051 | `FinancesScreen.EXCHANGE_INFO` | `"Paper abroad is owed in its own money - the US$ or another of the eight - and what it ...` | The (i) beside the D$'s move since a dollar piece was sold, on the desk's card and a line's page (CD7): what the figure and its colours mean. |
+| 3059 | `FinancesScreen.DESK_INFO` | `"If closed now: the carrying value less the worth, in D$ and as a share of the " + "car...` | THE DESK's (i): the two readings under the table. |
+| 3141 | `FinancesScreen.BOOK_KIND_NAMES` | `{ "bills", "amortizing bonds", "bonds", "floating-rate notes", "inflation-linked bonds" }` | The kinds of paper as the desk names them, in DebtManager.BOOK_KINDS' order. |
+| 3357 | `FinancesScreen.CLOSE_CELL` | `206` | The width of the desk's If closed now column (CD6): the gain or loss, and the Close it now button beside it. |
+| 3360 | `FinancesScreen.EXCHANGE_CELL` | `128` | The width of the desk's exchange column (CD7), shown only when the book holds dollar paper: "−D$725.3M · −10.0%" at the caption's size, and its heading on two lines. |
+| 3363 | `FinancesScreen.CLOSE_FIGURE` | `134` | The width of the gain or loss in that cell: "−D$725.3M · −100.0%" at the figure's size. |
+| 3366 | `FinancesScreen.CLOSE_BUTTON` | `66, CLOSE_GAP = 6` | The Close it now button's width, and the gap between it and the figure. |
+| 3369 | `FinancesScreen.CLOSE_HEAD` | `new javafx.geometry.Insets(0, CLOSE_BUTTON + CLOSE_GAP, 0, 0)` | The room at the right of the desk's "If closed now" heading (KP2b: one object, not one at each draw). |
+| 3372 | `FinancesScreen.DESK_ROOM` | `new javafx.geometry.Insets(5, 0, 5, 0), DESK_FOOT_ROOM = new javafx.geometry.Insets(5, ...` | The room round a cell of the desk's lines, and of its foot (KP2b: one object each). |
+| 3432 | `FinancesScreen.ACROSS_TABLE` | `"finances.table", TABLE_ACROSS = "finances.across"` | The keys a scroller keeps the table it holds under, and a table the scroller that holds it (acrossWhenNarrow()). |
+| 3593 | `FinancesScreen.LINE_PRICE_INFO` | `"The price is the market's: what the line's remaining payments are worth on " + "each m...` | THE PRICE card's (i): board 2, note A. |
+| 3600 | `FinancesScreen.LINE_CLOSE_INFO` | `"Worth is what closing the line would cost at its fair price; a buyback pays " + "more,...` | IF YOU CLOSED IT TODAY's (i): board 2, note B. |
+| 3609 | `FinancesScreen.LINE_BOOKS_INFO` | `"The books in full: what the line is carried at when the month opens, the " + "interest...` | THE NEXT SIX MONTHS' (i): board 2, note C. |
+| 3616 | `FinancesScreen.LINE_SALES_INFO` | `"Each sale into the line: when, how much face, what it raised, the price it " + "made f...` | ITS SALES, AND ITS RISK's (i). |
+| 3622 | `FinancesScreen.LINE_PAGE` | `"A line"` | The name of a line's page, under The book: no chip's, open while its line is on the books (lineOpenNow()). |
+| 3846 | `FinancesScreen.THREE_NARROW` | `1000` | The width under which a line's page stacks its three cards (CD6): the books' table, then the other two side by side. |
+| 3849 | `FinancesScreen.THREE_CARDS` | `"finances.three"` | The key a line's page keeps its three cards under on their grid, for the width listener to arrange (linePage()). |
+| 4104 | `FinancesScreen.DeskCurve.H` | `232, LEFT = 46, RIGHT = 14, TOP = 12, FOOT = 26` |  |
+| 4205 | `FinancesScreen.DeskBars.H` | `158, LEFT = 84, RIGHT = 76, TOP = 26, ROW = 42, BAR = 26` |  |
+| 4206 | `FinancesScreen.DeskBars.ROWS` | `{ "at face", "carried", "worth today" }` |  |
+| 4264 | `FinancesScreen.PathChart.H` | `212, LEFT = 40, RIGHT = 16, TOP = 14, FOOT = 26` |  |
+| 4392 | `FinancesScreen.CLOSE_INFO` | `"Closing a piece early is a reverse auction, not one price.Name the face you want " + "...` | THE TICKET's (i): the spec's 6.2. |
+| 4401 | `FinancesScreen.OFFERS_INFO` | `"Each bar is one slice a holder offers: its length is the slice's face, the number " + ...` | THE OFFERS' (i). |
+| 4407 | `FinancesScreen.COMPARE_INFO` | `"One buyback, read three ways.Against carrying value is the figure the books keep, " + ...` | THE THREE COMPARISONS' (i): the spec's 6.3. |
+| 4415 | `FinancesScreen.CALL_INFO` | `"From its first call date the city can pay every holder 100 for each 100 of face, " + "...` | THE CALL's (i): the spec's 6.4 and D22 to D24. |
+| 4532 | `FinancesScreen.CLOSE_SHOWN` | `"finances.closeShown"` | The key a Close it now box keeps the text the page was last drawn on under, for its focus listener (closeBox()). |
+| 4826 | `FinancesScreen.BuybackLadder.LEFT` | `74, FACE_ROOM = 76, MARKS = 134, TOP = 26, FOOT = 10, FIRST_W = 720, LEAST_W = 440` | The margins, in pixels: the prices at the left; at the right the room for a slice's face (FACE_ROOM) and for the marks' names (MARKS). |
+| 5013 | `FinancesScreen.TERMS_INFO` | `"Each column is today's fair yield for this paper at that term: what the curve " + "say...` | The terms' (i): the spec's T55, on the auction's fair yield (CD2). |
+| 5023 | `FinancesScreen.CAP_INFO` | `"The most the city will pay to sell this: fair plus a point, a yield you name, or " + "...` | THE HIGHEST YIELD's (i): the spec's 4.1 and 4.3 in two sentences. |
+| 5031 | `FinancesScreen.LOTS_INFO` | `"Issues round to a lot, and the market will not arrange anything under the " + "smalles...` | The ask's (i): the spec's T56. |
+| 5035 | `FinancesScreen.NO_ASK` | `"Ask for something and the quote appears here - at home the auction itself, run on " + ...` | The quote's empty state: the spec's T57. |
+| 5040 | `FinancesScreen.PROCEEDS_INFO` | `"A bill's ask is the cash it should raise, and its face is the lot that brings " + "it,...` | Why a bill's proceeds are not the ask: the spec's T58 (a bill's ask is the cash; a bond's is the face). |
+| 5046 | `FinancesScreen.BUYERS_INFO` | `"Each bidder bids by the rule it follows elsewhere in the game.The households " + "firs...` | Who bids: the spec's T61 and 4.2 (CD2). |
+| 5056 | `FinancesScreen.DOLLARS_INFO` | `"Spending it leaves a dollar debt with nothing behind it, and the next " + "devaluation...` | Where the dollars go: the spec's T62. |
+| 5139 | `FinancesScreen.MONEY_INFO` | `"The city can sell its paper abroad in any of the eight moneys, each priced on its own ...` | IN WHICH MONEY's (i): what the figure under a money is, and what owing in it risks. |
+| 5343 | `FinancesScreen.CALLABLE_SALE_INFO` | `"A bond of ten years or more can be sold callable: from its first call date " + "(five ...` | The CALLABLE switch's (i) (CD4, spec-city-debt.md 2.6 and D22 to D24). |
+| 5403 | `FinancesScreen.ASK_TYPED_INFO` | `"Type an amount in dollars: digits, with or without commas, a decimal " + "point if you...` | HOW MUCH's (i): what the box takes - the case rules - and what the buttons do. |
+| 5418 | `FinancesScreen.ASK_WORDS` | `java.util.regex.Pattern.compile("(?:[A-Za-z]{0,3}[$€¥£]\|(?i:chf))?\\s*((?:\\d{1,3}(?:,\...` | A typed amount: an optional mark (D$, US$, $, or one of the eight's - €, ¥, £, CN¥, C$, A$, CHF), digits (grouped by commas or not), an optional fraction, an optional unit. |
+| 5960 | `FinancesScreen.STOP_INFO` | `"The one yield at which the bids first cover the issue - never under fair, never " + "o...` | STOPS AT's (i): the stop and the tail (the spec's 4.3). |
+| 5965 | `FinancesScreen.COVER_INFO` | `"What was bid up to your highest yield, each bidder counted at most the issue, " + "ove...` | BIDS' (i): the cover. |
+| 6138 | `FinancesScreen.AuctionChart.WHO_COLOURS` | `{ Palette.PEOPLE, Palette.BUSINESS, Palette.ORE, Palette.MONEY }` | The bidders' colours in Auction.Fill's order, as the holders' bar has them. |
+| 6140 | `FinancesScreen.AuctionChart.WHO` | `{ "households", "the firms", "the world", "the bank" }` | ...and their names, in the same order. |
+| 6142 | `FinancesScreen.AuctionChart.H` | `240, LEFT = 62, RIGHT = 16, TOP = 16, FOOT = 26, FIRST_W = 720, LEAST_W = 420` | Its height and its margins, in pixels; the width it is first drawn at, and the least it is drawn at. |
+| 6144 | `FinancesScreen.AuctionChart.SAMPLES` | `60` | How many yields the bids are read at across the axis. |
+| 6333 | `FinancesScreen.DEFAULT_INFO` | `"Walking away from every dollar the city owes abroad.The gain is immediate and " + "eno...` | The default page's (i). |
+| 6488 | `FinancesScreen.M2_INFO` | `"M2 is the bank's deposits - the households', the businesses' and the world's - plus " ...` | M2's (i): the spec's T69. |
+| 6581 | `FinancesScreen.NO_BONDS` | `"None outstanding.A business sells a bond when the book would take it for no more " + "...` | No bond outstanding: the spec's T70. |
+| 6586 | `FinancesScreen.PRICES_INFO` | `"The price is per 100 of face, at the last trade on its book; * where it has not " + "t...` | The prices' (i): the spec's T71. |
+| 6591 | `FinancesScreen.BOOKS_INFO` | `"Everybody posts buy and sell orders at prices, and an order fills only when it " + "me...` | The order books' (i): the spec's T74. |
+| 6599 | `FinancesScreen.BOND_HOLDERS` | `{ "households", "the bank", "companies", "the world", "the city's fund" }` | The bonds' holders, in a bar's order: the households, the bank, the companies, the world, the city's fund. |
+| 6601 | `FinancesScreen.BOND_HOLDER_COLOURS` | `{ Palette.PEOPLE, Palette.MONEY, Palette.BUSINESS, Palette.ORE, Palette.MONEY_DARK }` | ...and their colours on it. |
+| 6782 | `FinancesScreen.DEPTH_INFO` | `"What rests on the book after the month's step: a bid under every ask, since " + "whate...` | A bond's book's (i): the spec's T75, T77 and T78. |
 
 ### FoundingScreen.java ([map](map/FoundingScreen.md))
 
@@ -4200,21 +4202,20 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 113 | `FundScreen.MONEY_STEPS` | `{ 1_000, 10_000, 100_000, 1_000_000 }` | The money steps: the ticket's on a buy by amount and on a bond's face, and PAY IN, DRAW OUT's; a quantity of shares steps by 1, 10, 100 and 1,000 instead. |
 | 116 | `FundScreen.LEFT` | `812, RIGHT = 412` | The security page's two columns at the 1,389 window: the picture and its facts, then the position and the ticket. |
 | 156 | `FundScreen.FAIR` | `"fair", BID = "bid", ASK = "ask", LAST = "last", OWN = "own"` | The ticket's prices. |
-| 249 | `FundScreen.HAND` | `" -fx-cursor: hand;"` |  |
-| 429 | `FundScreen.SHARES` | `"COMPANY SHARES", RESCUE = "THE RESCUE BOOK", BONDS = "BONDS"` | The holdings' groups, in the page's order. |
-| 990 | `FundScreen.HERO_INFO` | `"Everything the fund holds at the marks every other holder uses, and its cash.The " + "...` | THE CITY'S FUND's (i). |
-| 1117 | `FundScreen.COL_NAME` | `250, COL_UNITS = 120, COL_PRICE = 110, COL_VALUE = 110, COL_AVG = 110, COL_PNL = 160` | HOLDINGS' columns: the name, units, price, worth, average cost, unrealized, and the share of the fund's bar. |
-| 1120 | `FundScreen.HOLDINGS_INFO` | `"Every lot the fund holds, at its mark, with what it cost by the average-cost " + "meth...` | HOLDINGS' (i). |
-| 1330 | `FundScreen.POP_MILLIS` | `220` | How long a payment's pop takes each way. |
-| 1357 | `FundScreen.KINDS_INFO` | `"Each kind of holding since the fund began: what the city put into it(bought on " + "th...` | SINCE IT BEGAN, BY KIND's (i). |
-| 1463 | `FundScreen.FILTERS` | `{ "All", "Shares", "Bonds", "Held" }` | Search's chips. |
-| 1466 | `FundScreen.SEARCH_INFO` | `"Every company listed on the exchange, every business's bond still outstanding, and " +...` | Search's (i): the spec's D1. |
-| 1921 | `FundScreen.TICKET_INFO` | `"An order goes on the book at the next month's step, after every other participant " + ...` | THE ORDER TICKET's (i). |
-| 2172 | `FundScreen.GROUPS` | `{ "All", FundView.TRADES, FundView.INCOME, FundView.MONEY, FundView.EVENTS }` | Activity's chips: every row, or one group of them (FundView.groupOf()). |
-| 2343 | `FundScreen.WITHDRAWAL_LADDER` | `520` | The withdrawal's ladder: the card runs the page's width, the dial at the left and what it would do beside it. |
-| 2361 | `FundScreen.WITHDRAWAL_CAVEAT` | `"next month's on the fund as it stands - its prices and what the book takes will move it"` | The withdrawal's caveat, under what it would do. |
-| 2363 | `FundScreen.WITHDRAWAL_CAVEAT_INFO` | `"Next month's withdrawal is struck on what the fund is worth at the top of " + "next mo...` | ...and the sentence behind it, its (i). |
-| 2472 | `FundScreen.RESCUE_BOOK_INFO` | `"What the city holds from rescuing its bank: the shares it took when it " + "resolved i...` | The rescue book's (i). |
+| 415 | `FundScreen.SHARES` | `"COMPANY SHARES", RESCUE = "THE RESCUE BOOK", BONDS = "BONDS"` | The holdings' groups, in the page's order. |
+| 976 | `FundScreen.HERO_INFO` | `"Everything the fund holds at the marks every other holder uses, and its cash.The " + "...` | THE CITY'S FUND's (i). |
+| 1103 | `FundScreen.COL_NAME` | `250, COL_UNITS = 120, COL_PRICE = 110, COL_VALUE = 110, COL_AVG = 110, COL_PNL = 160` | HOLDINGS' columns: the name, units, price, worth, average cost, unrealized, and the share of the fund's bar. |
+| 1106 | `FundScreen.HOLDINGS_INFO` | `"Every lot the fund holds, at its mark, with what it cost by the average-cost " + "meth...` | HOLDINGS' (i). |
+| 1316 | `FundScreen.POP_MILLIS` | `220` | How long a payment's pop takes each way. |
+| 1343 | `FundScreen.KINDS_INFO` | `"Each kind of holding since the fund began: what the city put into it(bought on " + "th...` | SINCE IT BEGAN, BY KIND's (i). |
+| 1449 | `FundScreen.FILTERS` | `{ "All", "Shares", "Bonds", "Held" }` | Search's chips. |
+| 1452 | `FundScreen.SEARCH_INFO` | `"Every company listed on the exchange, every business's bond still outstanding, and " +...` | Search's (i): the spec's D1. |
+| 1907 | `FundScreen.TICKET_INFO` | `"An order goes on the book at the next month's step, after every other participant " + ...` | THE ORDER TICKET's (i). |
+| 2158 | `FundScreen.GROUPS` | `{ "All", FundView.TRADES, FundView.INCOME, FundView.MONEY, FundView.EVENTS }` | Activity's chips: every row, or one group of them (FundView.groupOf()). |
+| 2326 | `FundScreen.WITHDRAWAL_LADDER` | `520` | The withdrawal's ladder: the card runs the page's width, the dial at the left and what it would do beside it. |
+| 2344 | `FundScreen.WITHDRAWAL_CAVEAT` | `"next month's on the fund as it stands - its prices and what the book takes will move it"` | The withdrawal's caveat, under what it would do. |
+| 2346 | `FundScreen.WITHDRAWAL_CAVEAT_INFO` | `"Next month's withdrawal is struck on what the fund is worth at the top of " + "next mo...` | ...and the sentence behind it, its (i). |
+| 2455 | `FundScreen.RESCUE_BOOK_INFO` | `"What the city holds from rescuing its bank: the shares it took when it " + "resolved i...` | The rescue book's (i). |
 
 ### GovernmentScreen.java ([map](map/GovernmentScreen.md))
 
@@ -4430,15 +4431,16 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 72 | `KeptBench.WIDTH` | `1456` | The width the page is laid out at: the menu column's in a 1600-pixel window (the study's renders). |
-| 80 | `KeptBench.HEADER_WIDTH` | `1600` | The window's width in KeptCheck's pictures: the header is laid out across it. |
-| 83 | `KeptBench.RAIL_HEIGHT` | `900` | The window's height: the rail is laid out down it. |
-| 90 | `KeptBench.PANEL_HEIGHT` | `900` | The three panels' scenes (UP2, slice 2b): the city panel's 290 wide, the construction panel's 280, the inbox list's. |
-| 732 | `KeptBench.SETTLED_HEIGHT` | `"keptbench.settledHeight"` | The key a scroller keeps the height its content had when the page was last settled, in its properties. |
-| 761 | `KeptBench.SETTLE_PASSES` | `10, QUIET_PASSES = 2` | The most layout passes settle() runs, and the quiet ones in a row it takes to stop. |
-| 1697 | `KeptBench.STOPPED` | `List.of("deposit", "coast", "river", "bridge", "licence", "land")` | The stopped pages' kinds, by the way the model refuses an order. |
-| 1907 | `KeptBench.ABSENT` | `"absent"` | What hoverKept() says when the page has no node of the kind asked for. |
-| 3114 | `KeptBench.PRECISE` | `Boolean.getBoolean("keptbench.precise")` | Whether a signature writes a node's place and size to four decimals instead of one (-Dkeptbench.precise=true). |
+| 73 | `KeptBench.WIDTH` | `1456` | The width the page is laid out at: the menu column's in a 1600-pixel window (the study's renders). |
+| 81 | `KeptBench.HEADER_WIDTH` | `1600` | The window's width in KeptCheck's pictures: the header is laid out across it. |
+| 84 | `KeptBench.RAIL_HEIGHT` | `900` | The window's height: the rail is laid out down it. |
+| 91 | `KeptBench.PANEL_HEIGHT` | `900` | The three panels' scenes (UP2, slice 2b): the city panel's 290 wide, the construction panel's 280, the inbox list's. |
+| 733 | `KeptBench.SETTLED_HEIGHT` | `"keptbench.settledHeight"` | The key a scroller keeps the height its content had when the page was last settled, in its properties. |
+| 762 | `KeptBench.SETTLE_PASSES` | `10, QUIET_PASSES = 2` | The most layout passes settle() runs, and the quiet ones in a row it takes to stop. |
+| 1243 | `KeptBench.SETS_NAMED` | `Integer.getInteger("keptbench.named", 12)` | The most sources redrawSets names. |
+| 1839 | `KeptBench.STOPPED` | `List.of("deposit", "coast", "river", "bridge", "licence", "land")` | The stopped pages' kinds, by the way the model refuses an order. |
+| 2049 | `KeptBench.ABSENT` | `"absent"` | What hoverKept() says when the page has no node of the kind asked for. |
+| 3271 | `KeptBench.PRECISE` | `Boolean.getBoolean("keptbench.precise")` | Whether a signature writes a node's place and size to four decimals instead of one (-Dkeptbench.precise=true). |
 
 ### Ladder.java ([map](map/Ladder.md))
 
@@ -4447,8 +4449,9 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 73 | `Ladder.READING` | `118` | How wide the reading is held, so the slider does not shift as the figure's width does. |
 | 76 | `Ladder.BUTTON` | `28` | How wide and tall each step button is: square, and room for the glyph. |
 | 79 | `Ladder.GAP` | `10` | The gap between the buttons, the slider and the reading. |
-| 163 | `Ladder.LADDER` | `"kept.ladder", READING_LABEL = "kept.reading"` | The keys a slider keeps the latest build's ladder and reading label under, for the listener added once to read. |
-| 293 | `Ladder.Marks.INSET` | `8` | Half the slider's thumb: the track's travel starts and ends this far in. |
+| 82 | `Ladder.MARKS_ROOM` | `new javafx.geometry.Insets(0, 0, 0, BUTTON + GAP)` | The room left of the marks under a slider, as wide as the step button and the gap: one object (KP2b), since a padding made again at each draw is a change at each. |
+| 166 | `Ladder.LADDER` | `"kept.ladder", READING_LABEL = "kept.reading"` | The keys a slider keeps the latest build's ladder and reading label under, for the listener added once to read. |
+| 304 | `Ladder.Marks.INSET` | `8` | Half the slider's thumb: the track's travel starts and ends this far in. |
 
 ### LandScreen.java ([map](map/LandScreen.md))
 
@@ -4465,17 +4468,17 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 973 | `LandScreen.ORE_INFO` | `"A mine stands on one deposit, a large one on twenty of one field, and each draws on th...` | The Ore card's (i). |
 | 993 | `LandScreen.WAITING_INFO` | `"As of last month — the sectors decide once a month, so ground bought" + " now shows up...` | The Waiting card's (i), the 0.7.6 note word for word. |
 | 1006 | `LandScreen.DETAILS_INFO` | `"What the world asks for a square metre of ground, as each month recorded" + " it - in ...` | The chart's (i). |
-| 1364 | `LandScreen.MAP_W` | `MapView.SMALL_W, HERO_H = MapView.SMALL_H` | The map's width and the hero row's height (spec-land 2.8). |
-| 1367 | `LandScreen.HERO_GAP` | `16` | The gap between the map and THE CITY... |
-| 1370 | `LandScreen.CITY_PANEL` | `657` | ...and THE CITY's width: what the content area's 1,273 px leave at 1,389 x 868 (spec-land 2.8's 657). |
-| 1373 | `LandScreen.ROW_H` | `28` | A row's height: 28 px (spec-land 2.8), six of them, their heads and THE CITY's inside HERO_H. |
-| 1376 | `LandScreen.ROW_COLUMNS` | `{ 24, 74, 64, 158, 82, 78, 76, 58 }` | The rows' columns, in pixels: the place (#), size, ground and water, deposits, price, a dry km2, tag, button - with the gaps, CITY_PANEL. |
-| 1379 | `LandScreen.ROW_GAP` | `4` | The gap between a row's columns. |
-| 1382 | `LandScreen.ROW_HEADS` | `{ "#", "size", "dry · fresh · sea", "deposits", "price", "a dry km²", "", "" }` | The rows' column names. |
-| 1662 | `LandScreen.WORTH_CARD` | `"-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.RAISED + ";" + " -fx-backg...` | A worth card's style, its edge's colour last. |
-| 1925 | `LandScreen.ABROAD_INFO` | `"Issued abroad; the dollars are in reserve, and the " + "vault pays for the land.On the...` | The dollar offers' (i), the 0.7.13 note word for word. |
-| 2216 | `LandScreen.MAP_CARD_W` | `320` | The map's card, its width: 320 px, the pay toggle's wrap (payToggle()), so the toggle lies on one line in it. |
-| 2219 | `LandScreen.MAP_CARD_PAD` | `12` | The map's card's padding, a side: the hover card's 9 px, and 3 more for the buttons' edges. |
+| 1384 | `LandScreen.MAP_W` | `MapView.SMALL_W, HERO_H = MapView.SMALL_H` | The map's width and the hero row's height (spec-land 2.8). |
+| 1387 | `LandScreen.HERO_GAP` | `16` | The gap between the map and THE CITY... |
+| 1390 | `LandScreen.CITY_PANEL` | `657` | ...and THE CITY's width: what the content area's 1,273 px leave at 1,389 x 868 (spec-land 2.8's 657). |
+| 1393 | `LandScreen.ROW_H` | `28` | A row's height: 28 px (spec-land 2.8), six of them, their heads and THE CITY's inside HERO_H. |
+| 1396 | `LandScreen.ROW_COLUMNS` | `{ 24, 74, 64, 158, 82, 78, 76, 58 }` | The rows' columns, in pixels: the place (#), size, ground and water, deposits, price, a dry km2, tag, button - with the gaps, CITY_PANEL. |
+| 1399 | `LandScreen.ROW_GAP` | `4` | The gap between a row's columns. |
+| 1402 | `LandScreen.ROW_HEADS` | `{ "#", "size", "dry · fresh · sea", "deposits", "price", "a dry km²", "", "" }` | The rows' column names. |
+| 1688 | `LandScreen.WORTH_CARD` | `"-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.RAISED + ";" + " -fx-backg...` | A worth card's style, its edge's colour last. |
+| 1950 | `LandScreen.ABROAD_INFO` | `"Issued abroad; the dollars are in reserve, and the " + "vault pays for the land.On the...` | The dollar offers' (i), the 0.7.13 note word for word. |
+| 2241 | `LandScreen.MAP_CARD_W` | `320` | The map's card, its width: 320 px, the pay toggle's wrap (payToggle()), so the toggle lies on one line in it. |
+| 2244 | `LandScreen.MAP_CARD_PAD` | `12` | The map's card's padding, a side: the hover card's 9 px, and 3 more for the buttons' edges. |
 
 ### Levers.java ([map](map/Levers.md))
 
@@ -4671,12 +4674,12 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 304 | `PartnersPage.BAND_INFO` | `"The floor is what the world would net the city for the next unit at the volume it sold...` |  |
 | 308 | `PartnersPage.MOVES_INFO` | `"Three things take from what the next unit nets.The city's own selling pushes the neare...` |  |
 | 656 | `PartnersPage.STRIP_INFO` | `"The five nations the city traded most with in the month last counted, sold and bought ...` |  |
-| 694 | `PartnersPage.FIGURES_INFO` | `"The nation's own measures for this year, from the world file the game was built on: it...` |  |
-| 698 | `PartnersPage.OURS_INFO` | `"What the city sold this nation and bought from it, in D$ and in tonnes, this month and...` |  |
-| 701 | `PartnersPage.MONEY_INFO` | `"What this nation's money is worth against the US$ and in D$, its central bank's policy...` |  |
-| 704 | `PartnersPage.LAND_INFO` | `"Land is bought from the nation it lies in, at that nation's land price, in its money.T...` |  |
-| 707 | `PartnersPage.BESIDE_INFO` | `"For comparison only: the city's GDP converted to real 2015 US$, the unit the nations' ...` |  |
-| 922 | `PartnersPage.CurveChart.HEIGHT` | `250, LEFT = 74, RIGHT = 18, TOP = 22, BOTTOM = 44` |  |
+| 693 | `PartnersPage.FIGURES_INFO` | `"The nation's own measures for this year, from the world file the game was built on: it...` |  |
+| 697 | `PartnersPage.OURS_INFO` | `"What the city sold this nation and bought from it, in D$ and in tonnes, this month and...` |  |
+| 700 | `PartnersPage.MONEY_INFO` | `"What this nation's money is worth against the US$ and in D$, its central bank's policy...` |  |
+| 703 | `PartnersPage.LAND_INFO` | `"Land is bought from the nation it lies in, at that nation's land price, in its money.T...` |  |
+| 706 | `PartnersPage.BESIDE_INFO` | `"For comparison only: the city's GDP converted to real 2015 US$, the unit the nations' ...` |  |
+| 921 | `PartnersPage.CurveChart.HEIGHT` | `250, LEFT = 74, RIGHT = 18, TOP = 22, BOTTOM = 44` |  |
 
 ### PeopleScreen.java ([map](map/PeopleScreen.md))
 
@@ -4704,43 +4707,49 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 2895 | `PeopleScreen.PAID_IN_ORDER` | `"The order is fixed: the payslip first, then rent, then the fees, and " + "the shop tak...` | The order a household pays in, and what happens when it comes up short: the verdict's (i). |
 | 3099 | `PeopleScreen.BESIDE` | `1200` | The narrowest page that sets the open cell's books beside the grid; under it they stack. |
 | 3461 | `PeopleScreen.CARS_INFO` | `"Bought out of savings past the same cushion a share is, so income " + "decides who can...` | The cars' (i): the old note. |
-| 3533 | `PeopleScreen.TIER_COL` | `88` | How wide a tier column is. |
-| 3534 | `PeopleScreen.SHAPE_COL` | `168` |  |
-| 3704 | `PeopleScreen.BELOW_THE_RULE` | `"Below the rule: the retired, on a pension and no wage; the out of work, " + "on EI for...` | The section captions' (i): who is below the rule, and what their one cell says. |
+| 3533 | `PeopleScreen.BAR_ROOM` | `new javafx.geometry.Insets(8, 0, 0, 0)` | The room over the flow bar in a cell's statement: one object (KP2b), set where it is not that already (Pieces.vMargin). |
+| 3536 | `PeopleScreen.TIER_COL` | `88` | How wide a tier column is. |
+| 3537 | `PeopleScreen.SHAPE_COL` | `168` |  |
+| 3544 | `PeopleScreen.MATRIX_COLUMNS` | `"people.matrixColumns"` | The key a matrix grid keeps its columns under - the household's name, then the six tiers - made once in the grid's life (KP2b) and added to it at each draw as one list. |
+| 3721 | `PeopleScreen.BELOW_THE_RULE` | `"Below the rule: the retired, on a pension and no wage; the out of work, " + "on EI for...` | The section captions' (i): who is below the rule, and what their one cell says. |
 
 ### Pieces.java ([map](map/Pieces.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 129 | `Pieces.LIMIT_CELL` | `190` | How wide a limit cell is, its padding included; its note wraps inside it. |
-| 848 | `Pieces.POPOVER_WIDTH` | `360` | How wide a popover's text wraps. |
-| 851 | `Pieces.MORE_IN_THE_MANUAL` | `"More in the manual"` | The line a popover may end with: the third layer's door, with no link until the manual has one. |
-| 905 | `Pieces.INFO_SIZE` | `16` | How big the (i) is drawn: its 24-unit grid at this many pixels. |
-| 1017 | `Pieces.TILE_GAP` | `10` | The gap between cards in a row or a grid: Build's cards in their flow, the land office's shelf. |
-| 1189 | `Pieces.PAGE_WIDE` | `1480` | The widest a redrawn page is laid out - Build's Overview and categories since 0.7.24, the land office since 0.7.26 - so a 1,920 window does not stretch a row of cards across the glass. |
-| 2001 | `Pieces.Waterfall.FIGURE_ROOM` | `16, NAME_ROOM = 12, ICON = 13` | The figures' line over the plot, the least the names under it take, and an icon's size. |
-| 2308 | `Pieces.CAUSE_LABEL_ROOM` | `70` | How wide a part must be drawn to carry its name and figure under it; a narrower one is keyed. |
-| 2344 | `Pieces.CauseBar.GAP` | `2, UNDER = 3, KEY_GAP = 12, KEY_ROW = 3` | Between the parts, under the bar, and between the key's entries and rows. |
-| 2673 | `Pieces.EffectScale.TALL` | `44, Y = 22, DOT = 10` | Its height, how far down it the line runs, and the mark's size. |
-| 2769 | `Pieces.CohortBars.AXIS` | `15` | Room under the bars for the near and far names. |
-| 3070 | `Pieces.ScaleRows.ROW` | `26, GAP = 10, RULE_NAMES = 16, TAG_GAP = 6, ICON = 12` | A row's least height, the gap either side of the bar, the room the rules' names take over the rows, the gap before a tag, and an icon's size. |
-| 3695 | `Pieces.EVERYTHING_ELSE` | `"Everything else"` | What topSlices() calls the slices past its ramp, folded into one. |
-| 3859 | `Pieces.RANK_BAND` | `12, RANK_ROW = 36` | How tall a ranked bar's band is, and the least a row takes. |
-| 3862 | `Pieces.RANK_KEY` | `"rankBars.key"` | The property a ranked bar's row carries its line's key under, so a screen can find the row to scroll to. |
-| 4065 | `Pieces.BRIDGE_TILE` | `200, BRIDGE_BAR = 56, BRIDGE_FIGURE = 64` | A bridge's tiles' width, its step bars' and its figures' (0.7.31). |
-| 4068 | `Pieces.BRIDGE_NOTHING` | `.5` | A step under this, in the model's thousands, is nothing: half a thousand, below which signedTight() writes "$0". |
-| 4318 | `Pieces.Columns.TOP` | `34, FOOT = 30, GAP = 8` | The room over the plot for a tag and a figure, under it for a label and its second line, and the gap between columns. |
-| 4607 | `Pieces.BAND_SCALE` | `1.6` | How far past the top of its band a ratio's bar runs, as a multiple of the top: the band sits in the left of it, so a ratio well over its band reads as full (BankScreen's capital band's since 0.7.9). |
-| 4671 | `Pieces.RUNG_ROW` | `30, RUNG_BAND = 12` | A rung's least height, and its bar's band. |
-| 4880 | `Pieces.ACTION_TALL` | `40` | An action button's height on a card, where it is the thing the card is for. |
-| 4883 | `Pieces.ACTION_INLINE` | `32` | ...beside a heading, where it shares a row with words: Build's "Build all three", the land office's "Buy the next 5". |
-| 4886 | `Pieces.DOOR_TALL` | `30` | A door pill's height. |
-| 5089 | `Pieces.DOOR_ACCENT` | `"pieces.doorAccent"` | The key under which a door pill carries its accent, for the listeners added once to read. |
-| 5467 | `Pieces.MirrorRows.ROW` | `28, BAR = 12, ICON = 18, GAP = 8` | A row's least height, its bar's thickness, an icon's size and the gaps between the columns. |
-| 5809 | `Pieces.DivergingBars.ROW` | `30, BAR = 12` | A row's least height and its bar's thickness. |
-| 6297 | `Pieces.RangeBar.TRACK` | `6, DOT = 10, TICK_W = 5, TICK_H = 14, PAD = 6` | The track's height, the dot's size, the tick's width and height, and the room either end so the dot is never cut. |
-| 6415 | `Pieces.TYPED` | `"pieces.typed"` | The key under which a search box carries the consumer of what is typed in it, for the listener added once to call. |
-| 6475 | `Pieces.HUNGER_INFO` | `"The measure is struck at the top of the month on the last sale: what each " + "househo...` | The (i): when the measure is struck, and what each half means. |
+| 130 | `Pieces.LAST_CELL` | `"pieces.lastCell"` | What vitalsBar leaves on its last cell, so that the cell is made at the next draw in the look the bar gives it (KP2b). |
+| 154 | `Pieces.LIMIT_CELL` | `190` | How wide a limit cell is, its padding included; its note wraps inside it. |
+| 923 | `Pieces.POPOVER_WIDTH` | `360` | How wide a popover's text wraps. |
+| 926 | `Pieces.MORE_IN_THE_MANUAL` | `"More in the manual"` | The line a popover may end with: the third layer's door, with no link until the manual has one. |
+| 980 | `Pieces.INFO_SIZE` | `16` | How big the (i) is drawn: its 24-unit grid at this many pixels. |
+| 1092 | `Pieces.TILE_GAP` | `10` | The gap between cards in a row or a grid: Build's cards in their flow, the land office's shelf. |
+| 1264 | `Pieces.PAGE_WIDE` | `1480` | The widest a redrawn page is laid out - Build's Overview and categories since 0.7.24, the land office since 0.7.26 - so a 1,920 window does not stretch a row of cards across the glass. |
+| 1270 | `Pieces.PAGE_ROOM` | `new javafx.geometry.Insets(0, 18, UserInterface.PAGE_FOOT, 18)` | The room a wide page keeps around it: one object (KP2b). |
+| 1282 | `Pieces.FRAME_ROOM` | `new javafx.geometry.Insets(0, 18, 4, 18)` | The room round the fixed frame over a scrolling page (KP2b: one object, for the frames of Sectors, the Bank, Finances and Trade). |
+| 2136 | `Pieces.Waterfall.FIGURE_ROOM` | `16, NAME_ROOM = 12, ICON = 13` | The figures' line over the plot, the least the names under it take, and an icon's size. |
+| 2443 | `Pieces.CAUSE_LABEL_ROOM` | `70` | How wide a part must be drawn to carry its name and figure under it; a narrower one is keyed. |
+| 2479 | `Pieces.CauseBar.GAP` | `2, UNDER = 3, KEY_GAP = 12, KEY_ROW = 3` | Between the parts, under the bar, and between the key's entries and rows. |
+| 2691 | `Pieces.FUNNEL_SHARE` | `"pieces.funnelShare", FUNNEL_HOLDER = "pieces.funnelHolder"` | What a funnel's bar keeps on itself (KP2b): the share of its holder's width it is bound to, and the holder it is bound to. |
+| 2818 | `Pieces.EffectScale.TALL` | `44, Y = 22, DOT = 10` | Its height, how far down it the line runs, and the mark's size. |
+| 2914 | `Pieces.CohortBars.AXIS` | `15` | Room under the bars for the near and far names. |
+| 3215 | `Pieces.ScaleRows.ROW` | `26, GAP = 10, RULE_NAMES = 16, TAG_GAP = 6, ICON = 12` | A row's least height, the gap either side of the bar, the room the rules' names take over the rows, the gap before a tag, and an icon's size. |
+| 3840 | `Pieces.EVERYTHING_ELSE` | `"Everything else"` | What topSlices() calls the slices past its ramp, folded into one. |
+| 4004 | `Pieces.RANK_BAND` | `12, RANK_ROW = 36` | How tall a ranked bar's band is, and the least a row takes. |
+| 4007 | `Pieces.RANK_KEY` | `"rankBars.key"` | The property a ranked bar's row carries its line's key under, so a screen can find the row to scroll to. |
+| 4210 | `Pieces.BRIDGE_TILE` | `200, BRIDGE_BAR = 56, BRIDGE_FIGURE = 64` | A bridge's tiles' width, its step bars' and its figures' (0.7.31). |
+| 4213 | `Pieces.BRIDGE_NOTHING` | `.5` | A step under this, in the model's thousands, is nothing: half a thousand, below which signedTight() writes "$0". |
+| 4463 | `Pieces.Columns.TOP` | `34, FOOT = 30, GAP = 8` | The room over the plot for a tag and a figure, under it for a label and its second line, and the gap between columns. |
+| 4752 | `Pieces.BAND_SCALE` | `1.6` | How far past the top of its band a ratio's bar runs, as a multiple of the top: the band sits in the left of it, so a ratio well over its band reads as full (BankScreen's capital band's since 0.7.9). |
+| 4816 | `Pieces.RUNG_ROW` | `30, RUNG_BAND = 12` | A rung's least height, and its bar's band. |
+| 5025 | `Pieces.ACTION_TALL` | `40` | An action button's height on a card, where it is the thing the card is for. |
+| 5028 | `Pieces.ACTION_INLINE` | `32` | ...beside a heading, where it shares a row with words: Build's "Build all three", the land office's "Buy the next 5". |
+| 5031 | `Pieces.DOOR_TALL` | `30` | A door pill's height. |
+| 5234 | `Pieces.DOOR_ACCENT` | `"pieces.doorAccent"` | The key under which a door pill carries its accent, for the listeners added once to read. |
+| 5612 | `Pieces.MirrorRows.ROW` | `28, BAR = 12, ICON = 18, GAP = 8` | A row's least height, its bar's thickness, an icon's size and the gaps between the columns. |
+| 5954 | `Pieces.DivergingBars.ROW` | `30, BAR = 12` | A row's least height and its bar's thickness. |
+| 6442 | `Pieces.RangeBar.TRACK` | `6, DOT = 10, TICK_W = 5, TICK_H = 14, PAD = 6` | The track's height, the dot's size, the tick's width and height, and the room either end so the dot is never cut. |
+| 6560 | `Pieces.TYPED` | `"pieces.typed"` | The key under which a search box carries the consumer of what is typed in it, for the listener added once to call. |
+| 6620 | `Pieces.HUNGER_INFO` | `"The measure is struck at the top of the month on the last sale: what each " + "househo...` | The (i): when the measure is struck, and what each half means. |
 
 ### PolicyScreen.java ([map](map/PolicyScreen.md))
 
@@ -4770,101 +4779,103 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 589 | `PolicyScreen.EVERY_TAX` | `"income"` | The staged key of "Every tax at once" on the Everything page - the one city rate's key, which is what that rate became in 0.7.4. |
 | 754 | `PolicyScreen.BUDGET_INFO` | `"Last month's surplus or deficit, and what it would be with this change: every " + "lin...` | THE BUDGET's (i). |
 | 763 | `PolicyScreen.TRAY_INFO` | `"Everything staged on this page, applied together by one press.THE BUDGET is " + "struc...` | P20, the tray's (i). |
-| 1094 | `PolicyScreen.SPLIT_OF` | `"policy.split"` | The key in a node's properties for the box and share its width is bound to (split()). |
-| 1221 | `PolicyScreen.NOTHING_BINDING_INFO` | `"Nothing is binding.Every lever has room to move, no sector is shut " + "out of credit,...` | P2: what the hub says when nothing is binding. |
-| 1267 | `PolicyScreen.TAX_RAMP` | `{ Palette.MONEY_DARK, Palette.MONEY, Palette.MONEY_LIGHT, Palette.RAMP_REST }` | The money ramp the four taxes are drawn in, profit to property (the spec's 3.1): darker to lighter, then the rest. |
-| 1276 | `PolicyScreen.TAX_NAMES` | `{ "Profit", "Sales", "Wage", "Property" }` | The four taxes by name, profit to property: their cards, the bar's parts and their pages. |
-| 1611 | `PolicyScreen.CAVEAT` | `"Nothing here knows that the new rate changes what anybody does next month - a " + "bus...` | What every preview on the tab owes the player, in one sentence (P21, the one every preview ended with until 0.7.36): behind each card's (i), once. |
-| 1615 | `PolicyScreen.CAVEAT_LINE` | `"Struck on this month's books; behaviour is not projected."` | The caveat's line on a card. |
-| 1626 | `PolicyScreen.TAKE_INFO` | `"Last month, by tax.Each has a rate of its own, and three of the four a " + "move off i...` | P3, THE TAX TAKE's (i). |
-| 1734 | `PolicyScreen.EVERY_TAX_INFO` | `"Moves all three rates to one number.A sector or wage band you've set apart " + "keeps ...` | P5: every tax at once, its (i). |
-| 1742 | `PolicyScreen.FUEL_DUTY` | `"fuelDuty"` | The staged key of the fuel duty dial (0.7.103, batch P4; Jerus's A7). |
-| 1745 | `PolicyScreen.FUEL_DUTY_STEP` | `.00001` | One step of the fuel duty's ladder: a cent a litre at founding prices, in thousands. |
-| 1748 | `PolicyScreen.FUEL_INFO` | `"A duty a litre on the petrol the drivers buy at the pump, paid to the treasury as a li...` | The fuel duty's (i). |
-| 1755 | `PolicyScreen.FUEL_CAVEAT` | `"Struck on last month's litres at the pump: the owners who would take the bus at a" + "...` | The fuel duty's caveat, whole. |
-| 1799 | `PolicyScreen.PORT_DUES_PAGE` | `"Port dues"` | The Taxes area's page of the port dues dial (FR4; the dial and its collection are FR3's, TaxPolicy.getPortDues() and sectors.PortDivision). |
-| 1802 | `PolicyScreen.PORT_DUES` | `"portDues"` | The staged key of the port dues dial (FR4). |
-| 1805 | `PolicyScreen.PORT_DUES_STEP` | `TaxPolicy.MAX_PORT_DUES / 40` | One step of the port dues' ladder: a fortieth of the dial's top, so the default (1) and the top are both on a step. |
-| 1819 | `PolicyScreen.PORT_DUES_CAVEAT` | `"Struck on last month's tonnes across the berths.The handling charge carries a dearer d...` | The port dues' caveat, whole. |
-| 1873 | `PolicyScreen.PROPERTY_NOT` | `"Property is not on this dial: it is charged on value rather than on income, " + "and t...` | P6. |
-| 1922 | `PolicyScreen.PROFIT_INFO` | `"Charged on what each sector earned before tax.A sector that lost money " + "pays nothi...` | P8, the profit tax's head. |
-| 1927 | `PolicyScreen.LOSS_INFO` | `"A sector that lost money paid no profit tax at all, which is why the " + "first line f...` | P4. |
-| 1931 | `PolicyScreen.SALES_INFO` | `"Charged on VALUE ADDED - what a sector sells, less the tax it already " + "paid on wha...` | P10, the sales tax's head. |
-| 1937 | `PolicyScreen.WAGE_INFO` | `"Taken off every payroll in the city before the household sees it.The " + "jobs are gro...` | P12, the wage tax's head. |
-| 1942 | `PolicyScreen.PROPERTY_INFO` | `"Charged on what land and buildings are assessed at, whether or not the " + "owner earn...` | P14, the property tax's head. |
-| 1947 | `PolicyScreen.PROPERTY_STEP_INFO` | `"A twentieth of a point a step rather than the quarter the other three " + "get, becaus...` | P15. |
-| 1952 | `PolicyScreen.REFUND_INFO` | `"\"In refund\" means a sector's credits on what it bought exceed the tax " + "on what i...` | P11. |
-| 1958 | `PolicyScreen.ROLL_INFO` | `"The power and water plants are the city's own and exempt.Raising what " + "land sells ...` | P16. |
-| 1963 | `PolicyScreen.SALES_SCALED` | `"Scaled, not recomputed: each sector's net remittance moves by the ratio of its " + "ne...` | The sales tax's preview, scaled (the spec's D11, B6). |
-| 2011 | `PolicyScreen.OFFSET_INFO` | `"A move is in POINTS off the tax's own rate, so a row left at zero is taxed " + "at exa...` | P9, the offsets' note. |
-| 2081 | `PolicyScreen.BANK_INFO` | `"The commercial bank's profit is taxed at Retail's rate - a Commercial Bank is a " + "c...` | The bank's line (B5, D12). |
-| 2335 | `PolicyScreen.PAYSLIP_INFO` | `"Only the first is a tax and only the first is set here - the other three " + "are prom...` | P13. |
-| 2366 | `PolicyScreen.FARMLAND_INFO` | `"A field is worth what a developer would pay for it and grows what a " + "farmer can gr...` | P17. |
-| 2373 | `PolicyScreen.FARMLAND_CAVEAT` | `"Exact against today's land price.What it actually decides is whether " + "the next fie...` | P19. |
-| 2528 | `PolicyScreen.FLOOR_INFO` | `"Every wage in the city is a multiple of this number, so moving it moves " + "all of th...` | P22, the floor's (i). |
-| 2534 | `PolicyScreen.PINNED_WORDS` | `"At least one skill level is oversupplied AND cannot get any cheaper, so " + "those wor...` | P23, both forms. |
-| 2539 | `PolicyScreen.FREE_WORDS` | `"No skill level is pinned against the floor, so the labour market is " + "clearing on p...` | ...the other: no band pinned. |
-| 2544 | `PolicyScreen.FLOOR_CAVEAT` | `"Once wages have walked there, which takes about a year.Nothing about " + "this preview...` | P24. |
-| 2695 | `PolicyScreen.DIAL_STEPS` | `{ 0, 1, 2, 3, 5, 8, 10, 15, 20, 30, 50, 75, 100 }` | The policy rates the dial's chips stage, in percent (0.7.2): the everyday range finely, the spiral's coarsely. |
-| 2698 | `PolicyScreen.CEILING_STEPS` | `{ 3, 6, 12, 24, 36 }` | The advances ceiling's settings, in months of revenue (0.7.2), up to CentralBank.MAX_ADVANCES_CEILING. |
-| 2701 | `PolicyScreen.TARGET_STEPS` | `{ 0, 1, 2, 3, 4, 5 }` | The inflation targets the chips set at once, in percent (0.7.4): the everyday range, the ladder beside them reaching the rest. |
-| 2704 | `PolicyScreen.TARGET_STEP` | `.005` | One step of the target's ladder (0.7.4): half a point. |
-| 2707 | `PolicyScreen.HOLDINGS_STEP` | `.10` | One step of the holdings' ladder (0.7.6): ten points of the term paper, the chips' own spacing. |
-| 2710 | `PolicyScreen.CEILING_STEP` | `1` | One step of the ceiling's ladder (0.7.6): a month of revenue, the unit the chips are in. |
-| 2736 | `PolicyScreen.OVER_INFO` | `"Hot money follows this difference in, and leaves the day it closes." + "It is also wha...` | P28. |
-| 2742 | `PolicyScreen.REAL_INFO` | `"The currency follows this one: a dial under the inflation people expect is a " + "real...` | P28's second half: the real differential - against the inflation people expect since 0.7.42 (the UI spec's B9). |
-| 2748 | `PolicyScreen.REAL_DIAL_INFO` | `"The dial less the inflation people expect: what saving at the dial earns " + "in what ...` | The dial's own real rate (0.7.45): REAL_INFO's first half, for the dial alone. |
-| 2905 | `PolicyScreen.HAND_INFO` | `"Jerus's autopilot: the rule can hold the dial.Every month, before anything is " + "pri...` | P32. |
-| 2909 | `PolicyScreen.REPRICE_INFO` | `"This does not reprice a single bond the city has already sold - every " + "coupon on t...` | P34: the dial card's caveat. |
-| 3171 | `PolicyScreen.QE_LINE` | `"Buys term paper only: it reaches prices through what people own and through the " + "c...` | How QE reaches prices, in one plain line on the holdings card (0.7.45; the UI spec's D20). |
-| 3204 | `PolicyScreen.CEILING_INFO` | `String.format("When the treasury runs dry the central bank advances the gap in money it...` | P36. |
-| 3251 | `PolicyScreen.ANCHOR_INFO` | `"What people expect prices to do decides what they do next.Wages are asked " + "for hal...` | THE ANCHOR's (i): Expectations, in a player's words. |
-| 3262 | `PolicyScreen.STRUCK_INFO` | `"Fees, build costs and upkeep, land, the shelf's floor, the pension's wage base, " + "t...` | The struck level's (i). |
-| 3267 | `PolicyScreen.GAP_INFO` | `"A real rate over the world's brings money here and holds the currency dearer than " + ...` | THE CURRENCY'S LEVEL's (i). |
-| 3405 | `PolicyScreen.BASKET_RAMP` | `{ Palette.MONEY_DARK, Palette.MONEY, Palette.MONEY_LIGHT, Palette.RAMP_REST, Palette.TE...` | The basket's five parts' colours, groceries to services: the money ramp, then the rest - areas, not verdicts. |
-| 3451 | `PolicyScreen.SWING_INFO` | `"Prices here have more than doubled and come back at some point." + "Wages, rents and e...` | P30. |
-| 3456 | `PolicyScreen.REFORMED_INFO` | `"The index is measured against the city's first basket in founding money, " + "chained ...` | P31, once the money has been reformed. |
-| 3550 | `PolicyScreen.XR_REGIME` | `"xr:regime", XR_PAYER = "xr:payer", XR_AIM = "xr:aim", XR_PEG = "xr:peg", XR_CENTRE = "...` | The staged keys of the currency page: the regime, who pays at the strong edge and what the dial aims at by ordinal; the peg; the band's centre, slope and width; the spread over the US's rate under ... |
-| 3554 | `PolicyScreen.PEG_STEP` | `.01` | One step of the peg's chips: a hundredth of the peg, up to devalue and down to revalue. |
-| 3557 | `PolicyScreen.CENTRE_STEP` | `.01` | One step of the band's centre: a hundredth of it. |
-| 3560 | `PolicyScreen.SLOPE_STEP` | `.005, WIDTH_STEP =.005` | One step of the band's slope and of its width: half a point. |
-| 3563 | `PolicyScreen.SPREAD_STEP` | `.0025` | One step of the spread over the US's rate: a quarter of a point. |
-| 3566 | `PolicyScreen.CURRENCY_CHART_MONTHS` | `60` | The months the currency page's charts show: five years. |
-| 3569 | `PolicyScreen.COVER_CHART_TOP` | `12` | The most months of import cover the vault's chart draws: a year. |
-| 3572 | `PolicyScreen.DEAL_SHARE` | `.01` | The size of a deal the BUY OR SELL card weighs, a share of a year's output. |
-| 4473 | `PolicyScreen.COVER_INFO` | `"The rest is general revenue - the same pot the schools and the hospitals " + "come out...` | P41 and P47. |
-| 4647 | `PolicyScreen.EI_INFO` | `"EI only pays the first twelve months, so a long bust costs less in EI than " + "a shor...` | P57. |
-| 5096 | `PolicyScreen.EVERY_SCHOOL` | `"tuitionScale"` | The staged key of "Every school at once" on the Schools page - the one tuition scale's key, which is what that scale became in 0.7.6. |
-| 5099 | `PolicyScreen.TUITION_STEP` | `.05` | One step of every price-of-a-place ladder: a twentieth of the founding table. |
-| 5139 | `PolicyScreen.SHARE_INFO` | `"The city's share of every course fee.Households pay the rest out of a " + "month's wag...` | P48. |
-| 5146 | `PolicyScreen.BURDEN_INFO` | `String.format("At %.0f%% of a month's wage nobody enrols at all: a red bar is a " + "co...` | P49. |
-| 5152 | `PolicyScreen.PRICE_INFO` | `"The founding tuition table times this, before the city's share comes off." + "The tabl...` | P50. |
-| 5160 | `PolicyScreen.SCHOOL_CAVEAT` | `"Against the courses being taken now, each kind's students at its own " + "price - and ...` | P51/P52: the schools' preview caveat. |
-| 5529 | `PolicyScreen.LOAN_INFO` | `"Charged on a graduate's balance while they repay it, and on nothing while " + "they st...` | P55. |
-| 5535 | `PolicyScreen.LOAN_CAVEAT` | `"Against the balances the graduates owe today.The instalment itself does " + "not chang...` | P56. |
-| 5580 | `PolicyScreen.SUBSIDY_INFO` | `"A protected sector is topped up to break-even every month it loses money, " + "so it n...` | P69. |
+| 1113 | `PolicyScreen.SPLIT_OF` | `"policy.split"` | The key in a node's properties for the box and share its width is bound to (split()). |
+| 1240 | `PolicyScreen.NOTHING_BINDING_INFO` | `"Nothing is binding.Every lever has room to move, no sector is shut " + "out of credit,...` | P2: what the hub says when nothing is binding. |
+| 1285 | `PolicyScreen.TAX_RAMP` | `{ Palette.MONEY_DARK, Palette.MONEY, Palette.MONEY_LIGHT, Palette.RAMP_REST }` | The money ramp the four taxes are drawn in, profit to property (the spec's 3.1): darker to lighter, then the rest. |
+| 1294 | `PolicyScreen.TAX_NAMES` | `{ "Profit", "Sales", "Wage", "Property" }` | The four taxes by name, profit to property: their cards, the bar's parts and their pages. |
+| 1629 | `PolicyScreen.CAVEAT` | `"Nothing here knows that the new rate changes what anybody does next month - a " + "bus...` | What every preview on the tab owes the player, in one sentence (P21, the one every preview ended with until 0.7.36): behind each card's (i), once. |
+| 1633 | `PolicyScreen.CAVEAT_LINE` | `"Struck on this month's books; behaviour is not projected."` | The caveat's line on a card. |
+| 1644 | `PolicyScreen.TAKE_INFO` | `"Last month, by tax.Each has a rate of its own, and three of the four a " + "move off i...` | P3, THE TAX TAKE's (i). |
+| 1751 | `PolicyScreen.EVERY_TAX_INFO` | `"Moves all three rates to one number.A sector or wage band you've set apart " + "keeps ...` | P5: every tax at once, its (i). |
+| 1759 | `PolicyScreen.FUEL_DUTY` | `"fuelDuty"` | The staged key of the fuel duty dial (0.7.103, batch P4; Jerus's A7). |
+| 1762 | `PolicyScreen.FUEL_DUTY_STEP` | `.00001` | One step of the fuel duty's ladder: a cent a litre at founding prices, in thousands. |
+| 1765 | `PolicyScreen.FUEL_INFO` | `"A duty a litre on the petrol the drivers buy at the pump, paid to the treasury as a li...` | The fuel duty's (i). |
+| 1772 | `PolicyScreen.FUEL_CAVEAT` | `"Struck on last month's litres at the pump: the owners who would take the bus at a" + "...` | The fuel duty's caveat, whole. |
+| 1816 | `PolicyScreen.PORT_DUES_PAGE` | `"Port dues"` | The Taxes area's page of the port dues dial (FR4; the dial and its collection are FR3's, TaxPolicy.getPortDues() and sectors.PortDivision). |
+| 1819 | `PolicyScreen.PORT_DUES` | `"portDues"` | The staged key of the port dues dial (FR4). |
+| 1822 | `PolicyScreen.PORT_DUES_STEP` | `TaxPolicy.MAX_PORT_DUES / 40` | One step of the port dues' ladder: a fortieth of the dial's top, so the default (1) and the top are both on a step. |
+| 1836 | `PolicyScreen.PORT_DUES_CAVEAT` | `"Struck on last month's tonnes across the berths.The handling charge carries a dearer d...` | The port dues' caveat, whole. |
+| 1890 | `PolicyScreen.PROPERTY_NOT` | `"Property is not on this dial: it is charged on value rather than on income, " + "and t...` | P6. |
+| 1939 | `PolicyScreen.PROFIT_INFO` | `"Charged on what each sector earned before tax.A sector that lost money " + "pays nothi...` | P8, the profit tax's head. |
+| 1944 | `PolicyScreen.LOSS_INFO` | `"A sector that lost money paid no profit tax at all, which is why the " + "first line f...` | P4. |
+| 1948 | `PolicyScreen.SALES_INFO` | `"Charged on VALUE ADDED - what a sector sells, less the tax it already " + "paid on wha...` | P10, the sales tax's head. |
+| 1954 | `PolicyScreen.WAGE_INFO` | `"Taken off every payroll in the city before the household sees it.The " + "jobs are gro...` | P12, the wage tax's head. |
+| 1959 | `PolicyScreen.PROPERTY_INFO` | `"Charged on what land and buildings are assessed at, whether or not the " + "owner earn...` | P14, the property tax's head. |
+| 1964 | `PolicyScreen.PROPERTY_STEP_INFO` | `"A twentieth of a point a step rather than the quarter the other three " + "get, becaus...` | P15. |
+| 1969 | `PolicyScreen.REFUND_INFO` | `"\"In refund\" means a sector's credits on what it bought exceed the tax " + "on what i...` | P11. |
+| 1975 | `PolicyScreen.ROLL_INFO` | `"The power and water plants are the city's own and exempt.Raising what " + "land sells ...` | P16. |
+| 1980 | `PolicyScreen.SALES_SCALED` | `"Scaled, not recomputed: each sector's net remittance moves by the ratio of its " + "ne...` | The sales tax's preview, scaled (the spec's D11, B6). |
+| 2028 | `PolicyScreen.OFFSET_INFO` | `"A move is in POINTS off the tax's own rate, so a row left at zero is taxed " + "at exa...` | P9, the offsets' note. |
+| 2098 | `PolicyScreen.BANK_INFO` | `"The commercial bank's profit is taxed at Retail's rate - a Commercial Bank is a " + "c...` | The bank's line (B5, D12). |
+| 2309 | `PolicyScreen.OPENED_CARD_ROOM` | `new javafx.geometry.Insets(2, 0, 8, 34)` | The room round a card opened in place under its row (a payer's move, a kind of school's price): one object (KP2b), set where it is not that already (Pieces.vMargin), since setMargin asks the box fo... |
+| 2355 | `PolicyScreen.PAYSLIP_INFO` | `"Only the first is a tax and only the first is set here - the other three " + "are prom...` | P13. |
+| 2386 | `PolicyScreen.FARMLAND_INFO` | `"A field is worth what a developer would pay for it and grows what a " + "farmer can gr...` | P17. |
+| 2393 | `PolicyScreen.FARMLAND_CAVEAT` | `"Exact against today's land price.What it actually decides is whether " + "the next fie...` | P19. |
+| 2548 | `PolicyScreen.FLOOR_INFO` | `"Every wage in the city is a multiple of this number, so moving it moves " + "all of th...` | P22, the floor's (i). |
+| 2554 | `PolicyScreen.PINNED_WORDS` | `"At least one skill level is oversupplied AND cannot get any cheaper, so " + "those wor...` | P23, both forms. |
+| 2559 | `PolicyScreen.FREE_WORDS` | `"No skill level is pinned against the floor, so the labour market is " + "clearing on p...` | ...the other: no band pinned. |
+| 2564 | `PolicyScreen.FLOOR_CAVEAT` | `"Once wages have walked there, which takes about a year.Nothing about " + "this preview...` | P24. |
+| 2715 | `PolicyScreen.DIAL_STEPS` | `{ 0, 1, 2, 3, 5, 8, 10, 15, 20, 30, 50, 75, 100 }` | The policy rates the dial's chips stage, in percent (0.7.2): the everyday range finely, the spiral's coarsely. |
+| 2718 | `PolicyScreen.CEILING_STEPS` | `{ 3, 6, 12, 24, 36 }` | The advances ceiling's settings, in months of revenue (0.7.2), up to CentralBank.MAX_ADVANCES_CEILING. |
+| 2721 | `PolicyScreen.TARGET_STEPS` | `{ 0, 1, 2, 3, 4, 5 }` | The inflation targets the chips set at once, in percent (0.7.4): the everyday range, the ladder beside them reaching the rest. |
+| 2724 | `PolicyScreen.TARGET_STEP` | `.005` | One step of the target's ladder (0.7.4): half a point. |
+| 2727 | `PolicyScreen.HOLDINGS_STEP` | `.10` | One step of the holdings' ladder (0.7.6): ten points of the term paper, the chips' own spacing. |
+| 2730 | `PolicyScreen.CEILING_STEP` | `1` | One step of the ceiling's ladder (0.7.6): a month of revenue, the unit the chips are in. |
+| 2756 | `PolicyScreen.OVER_INFO` | `"Hot money follows this difference in, and leaves the day it closes." + "It is also wha...` | P28. |
+| 2762 | `PolicyScreen.REAL_INFO` | `"The currency follows this one: a dial under the inflation people expect is a " + "real...` | P28's second half: the real differential - against the inflation people expect since 0.7.42 (the UI spec's B9). |
+| 2768 | `PolicyScreen.REAL_DIAL_INFO` | `"The dial less the inflation people expect: what saving at the dial earns " + "in what ...` | The dial's own real rate (0.7.45): REAL_INFO's first half, for the dial alone. |
+| 2925 | `PolicyScreen.HAND_INFO` | `"Jerus's autopilot: the rule can hold the dial.Every month, before anything is " + "pri...` | P32. |
+| 2929 | `PolicyScreen.REPRICE_INFO` | `"This does not reprice a single bond the city has already sold - every " + "coupon on t...` | P34: the dial card's caveat. |
+| 3196 | `PolicyScreen.QE_LINE` | `"Buys term paper only: it reaches prices through what people own and through the " + "c...` | How QE reaches prices, in one plain line on the holdings card (0.7.45; the UI spec's D20). |
+| 3229 | `PolicyScreen.CEILING_INFO` | `String.format("When the treasury runs dry the central bank advances the gap in money it...` | P36. |
+| 3276 | `PolicyScreen.ANCHOR_INFO` | `"What people expect prices to do decides what they do next.Wages are asked " + "for hal...` | THE ANCHOR's (i): Expectations, in a player's words. |
+| 3287 | `PolicyScreen.STRUCK_INFO` | `"Fees, build costs and upkeep, land, the shelf's floor, the pension's wage base, " + "t...` | The struck level's (i). |
+| 3292 | `PolicyScreen.GAP_INFO` | `"A real rate over the world's brings money here and holds the currency dearer than " + ...` | THE CURRENCY'S LEVEL's (i). |
+| 3430 | `PolicyScreen.BASKET_RAMP` | `{ Palette.MONEY_DARK, Palette.MONEY, Palette.MONEY_LIGHT, Palette.RAMP_REST, Palette.TE...` | The basket's five parts' colours, groceries to services: the money ramp, then the rest - areas, not verdicts. |
+| 3476 | `PolicyScreen.SWING_INFO` | `"Prices here have more than doubled and come back at some point." + "Wages, rents and e...` | P30. |
+| 3481 | `PolicyScreen.REFORMED_INFO` | `"The index is measured against the city's first basket in founding money, " + "chained ...` | P31, once the money has been reformed. |
+| 3575 | `PolicyScreen.XR_REGIME` | `"xr:regime", XR_PAYER = "xr:payer", XR_AIM = "xr:aim", XR_PEG = "xr:peg", XR_CENTRE = "...` | The staged keys of the currency page: the regime, who pays at the strong edge and what the dial aims at by ordinal; the peg; the band's centre, slope and width; the spread over the US's rate under ... |
+| 3579 | `PolicyScreen.PEG_STEP` | `.01` | One step of the peg's chips: a hundredth of the peg, up to devalue and down to revalue. |
+| 3582 | `PolicyScreen.CENTRE_STEP` | `.01` | One step of the band's centre: a hundredth of it. |
+| 3585 | `PolicyScreen.SLOPE_STEP` | `.005, WIDTH_STEP =.005` | One step of the band's slope and of its width: half a point. |
+| 3588 | `PolicyScreen.SPREAD_STEP` | `.0025` | One step of the spread over the US's rate: a quarter of a point. |
+| 3591 | `PolicyScreen.CURRENCY_CHART_MONTHS` | `60` | The months the currency page's charts show: five years. |
+| 3594 | `PolicyScreen.COVER_CHART_TOP` | `12` | The most months of import cover the vault's chart draws: a year. |
+| 3597 | `PolicyScreen.DEAL_SHARE` | `.01` | The size of a deal the BUY OR SELL card weighs, a share of a year's output. |
+| 4498 | `PolicyScreen.COVER_INFO` | `"The rest is general revenue - the same pot the schools and the hospitals " + "come out...` | P41 and P47. |
+| 4672 | `PolicyScreen.EI_INFO` | `"EI only pays the first twelve months, so a long bust costs less in EI than " + "a shor...` | P57. |
+| 5121 | `PolicyScreen.EVERY_SCHOOL` | `"tuitionScale"` | The staged key of "Every school at once" on the Schools page - the one tuition scale's key, which is what that scale became in 0.7.6. |
+| 5124 | `PolicyScreen.TUITION_STEP` | `.05` | One step of every price-of-a-place ladder: a twentieth of the founding table. |
+| 5164 | `PolicyScreen.SHARE_INFO` | `"The city's share of every course fee.Households pay the rest out of a " + "month's wag...` | P48. |
+| 5171 | `PolicyScreen.BURDEN_INFO` | `String.format("At %.0f%% of a month's wage nobody enrols at all: a red bar is a " + "co...` | P49. |
+| 5177 | `PolicyScreen.PRICE_INFO` | `"The founding tuition table times this, before the city's share comes off." + "The tabl...` | P50. |
+| 5185 | `PolicyScreen.SCHOOL_CAVEAT` | `"Against the courses being taken now, each kind's students at its own " + "price - and ...` | P51/P52: the schools' preview caveat. |
+| 5554 | `PolicyScreen.LOAN_INFO` | `"Charged on a graduate's balance while they repay it, and on nothing while " + "they st...` | P55. |
+| 5560 | `PolicyScreen.LOAN_CAVEAT` | `"Against the balances the graduates owe today.The instalment itself does " + "not chang...` | P56. |
+| 5605 | `PolicyScreen.SUBSIDY_INFO` | `"A protected sector is topped up to break-even every month it loses money, " + "so it n...` | P69. |
 
 ### RankingsScreen.java ([map](map/RankingsScreen.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 75 | `RankingsScreen.OPENS_ON` | `"gdp"` | The measure the tab opens on (D9): GDP. |
-| 78 | `RankingsScreen.PINNED_AT_FIRST` | `List.of("gdp", "gdp_pp", "growth_real", "people", "unemployment", "inflation")` | The measures pinned the first time the tab opens: the six a player most often asks of a city. |
-| 81 | `RankingsScreen.GROUPS` | `Map.of("economy", "Economy", "work", "Work & pay", "prices", "Prices & money", "public"...` | The ten groups of the file, by their key, as the spec's table names them (spec-leaderboards 6). |
-| 172 | `RankingsScreen.WORKER` | `Executors.newSingleThreadExecutor(r -> { Thread t = new Thread(r, "rankings-saved-citie...` | The one thread the saved cities are read on, away from the screen; it dies with the window. |
-| 311 | `RankingsScreen.FRAME_CHROME` | `210` | The frame's height before it is laid out, for the scroller's first guess at what is left of the stage. |
-| 314 | `RankingsScreen.STAGE_REST` | `36` | What the stage keeps under the scroller once the frame is laid out: City History's. |
-| 317 | `RankingsScreen.FIRST_WIDTH` | `1100, MEASURES_W = 250, CARD_W = 400, TABLE_MIN = 560, COLUMN_GAP = 16` | The page's width before the scroller says it, and the widths of the columns. |
-| 390 | `RankingsScreen.BOUND_TO_FRAME` | `"rankings.frame", BOUND_TO_SCROLLER = "rankings.scroller", FOLLOWS = "rankings.follows"` | The keys in a node's properties for what frameOver() has bound it to or added to it: the scroller's height to the frame, a box's width to the scroller, the scroller's width listener. |
-| 862 | `RankingsScreen.RANK_W` | `40, KIND_W = 16, OF_W = 84, ASOF_W = 54, VALUE_W = 80, BAR_W = 52, MARK_W = 16, BAR_H = 6` |  |
-| 1119 | `RankingsScreen.ROW_H` | `24, PAD = 8, SPACE = 6` |  |
-| 1122 | `RankingsScreen.TILE_ROWS` | `40` | Rows to a canvas: 40 of 24 pixels is under a thousand, well inside any texture. |
-| 1127 | `RankingsScreen.Entry.GAP` | `new Entry(null, "", "", false, "", "", "", "", Double.NaN, "")` |  |
-| 1134 | `RankingsScreen.RowsPicture.TEXT` | `Color.web(Palette.TEXT), HEAD = Color.web(Palette.TEXT_HEAD), BODY = Color.web(Palette....` |  |
-| 1140 | `RankingsScreen.RowsPicture.RULER` | `new javafx.scene.text.Text()` | Measures a string against a column; one node, on the FX thread, where the drawing is. |
-| 1354 | `RankingsScreen.D_NAME` | `128, D_REAL = 66, D_MARK = 12, D_SOURCE = 66, D_YOURS = 60` | The drawer's columns: the measure, the real figure and its mark and source, Your world's figure and its mark. |
-| 1519 | `RankingsScreen.RankLine.H` | `76, SIDE = 36, TOP = 12, BOTTOM = 18, YEAR_GAP = 40` |  |
-| 1521 | `RankingsScreen.RankLine.LINE` | `Color.web(Palette.MONEY), FLOOR = Color.web(Palette.EDGE), RANK = Color.web(Palette.TEX...` |  |
+| 73 | `RankingsScreen.OPENS_ON` | `"gdp"` | The measure the tab opens on (D9): GDP. |
+| 76 | `RankingsScreen.PINNED_AT_FIRST` | `List.of("gdp", "gdp_pp", "growth_real", "people", "unemployment", "inflation")` | The measures pinned the first time the tab opens: the six a player most often asks of a city. |
+| 79 | `RankingsScreen.GROUPS` | `Map.of("economy", "Economy", "work", "Work & pay", "prices", "Prices & money", "public"...` | The ten groups of the file, by their key, as the spec's table names them (spec-leaderboards 6). |
+| 170 | `RankingsScreen.WORKER` | `Executors.newSingleThreadExecutor(r -> { Thread t = new Thread(r, "rankings-saved-citie...` | The one thread the saved cities are read on, away from the screen; it dies with the window. |
+| 309 | `RankingsScreen.FRAME_CHROME` | `210` | The frame's height before it is laid out, for the scroller's first guess at what is left of the stage. |
+| 312 | `RankingsScreen.STAGE_REST` | `36` | What the stage keeps under the scroller once the frame is laid out: City History's. |
+| 315 | `RankingsScreen.FIRST_WIDTH` | `1100, MEASURES_W = 250, CARD_W = 400, TABLE_MIN = 560, COLUMN_GAP = 16` | The page's width before the scroller says it, and the widths of the columns. |
+| 388 | `RankingsScreen.BOUND_TO_FRAME` | `"rankings.frame", BOUND_TO_SCROLLER = "rankings.scroller", FOLLOWS = "rankings.follows"` | The keys in a node's properties for what frameOver() has bound it to or added to it: the scroller's height to the frame, a box's width to the scroller, the scroller's width listener. |
+| 806 | `RankingsScreen.PIN_ROOM` | `new javafx.geometry.Insets(0, 2, 0, 4), BROWSE_ROOM = new javafx.geometry.Insets(8, 0, ...` | The room round a measure line's pin, and over Browse all: one object each (KP2b). |
+| 874 | `RankingsScreen.RANK_W` | `40, KIND_W = 16, OF_W = 84, ASOF_W = 54, VALUE_W = 80, BAR_W = 52, MARK_W = 16, BAR_H = 6` |  |
+| 1131 | `RankingsScreen.ROW_H` | `24, PAD = 8, SPACE = 6` |  |
+| 1134 | `RankingsScreen.TILE_ROWS` | `40` | Rows to a canvas: 40 of 24 pixels is under a thousand, well inside any texture. |
+| 1139 | `RankingsScreen.Entry.GAP` | `new Entry(null, "", "", false, "", "", "", "", Double.NaN, "")` |  |
+| 1146 | `RankingsScreen.RowsPicture.TEXT` | `Color.web(Palette.TEXT), HEAD = Color.web(Palette.TEXT_HEAD), BODY = Color.web(Palette....` |  |
+| 1152 | `RankingsScreen.RowsPicture.RULER` | `new javafx.scene.text.Text()` | Measures a string against a column; one node, on the FX thread, where the drawing is. |
+| 1392 | `RankingsScreen.D_NAME` | `128, D_REAL = 66, D_MARK = 12, D_SOURCE = 66, D_YOURS = 60` | The drawer's columns: the measure, the real figure and its mark and source, Your world's figure and its mark. |
+| 1557 | `RankingsScreen.RankLine.H` | `76, SIDE = 36, TOP = 12, BOTTOM = 18, YEAR_GAP = 40` |  |
+| 1559 | `RankingsScreen.RankLine.LINE` | `Color.web(Palette.MONEY), FLOOR = Color.web(Palette.EDGE), RANK = Color.web(Palette.TEX...` |  |
 
 ### ReplayCamera.java ([map](map/ReplayCamera.md))
 
@@ -4932,66 +4943,66 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 233 | `SectorScreen.NOTHING_YET_LIST` | `"The sector books are written when a month closes.This city has not " + "closed one sin...` | The empty books' sentence (the old list's alert). |
 | 237 | `SectorScreen.NOTHING_YET_SECTOR` | `"This city has not closed a month since it was loaded, so there is no " + "statement to...` | ...and a business's (the old page's alert). |
 | 241 | `SectorScreen.NO_WORD_YET_LIST` | `"Nothing recorded since the city was loaded or founded: a month on, each " + "card says...` | The list's one line while no business has a word for the month (0.7.34), in place of each card's own. |
-| 420 | `SectorScreen.RUNNING_INFO` | `"How much of what its plants could make each business made this month: its " + "posts f...` | RUNNING AT's (i). |
-| 547 | `SectorScreen.SPARK_WIDTH` | `120` | The width the sparkline takes on a card (0.7.30; 90 on the old list). |
-| 550 | `SectorScreen.SPARK_HEIGHT` | `28` | ...and its height (0.7.30; 22 on the old list). |
-| 553 | `SectorScreen.SPARK_MONTHS` | `24` | How many months of net income the sparkline draws (0.7.4): two years. |
-| 1517 | `SectorScreen.SHIPPER_COLUMN` | `80` | The width of one figure column of the shippers table. |
-| 1520 | `SectorScreen.SHIPPER_HEADS` | `{ ham.citybuildersim.sectors.Haulage.BILLED_AS, FreightView.RAIL_BILLED_AS, ham.citybui...` | The shippers table's column heads: the lines the bills are raised under, then the sum. |
-| 1870 | `SectorScreen.OPERATING_INFO` | `"What the business made from trading, after its sales tax and the ground it " + "stands...` | The operating line's (i): what it is, and the model's own operating income, which is before the ground and the sales tax (D4, D5). |
-| 1874 | `SectorScreen.REFUND_INFO` | `"The sales tax line is a REFUND this month: the credit on what this sector " + "bought ...` | The sales tax refund's (i). |
-| 1879 | `SectorScreen.FALL_INFO` | `"Revenue at the left, less the sales tax it remitted and what it bought, to its " + "gr...` | The waterfall's (i). |
-| 2186 | `SectorScreen.OWNERS_DOOR` | `"its owners, its share's price and what it pays: Investors"` | The Balance sheet's door to its owners' card (D7). |
-| 3008 | `SectorScreen.INCOME` | `"income", SHEET = "sheet", EQUITY = "equity", CASH = "cash"` | Each statement's key in a business's open set: an open note on one is "income:note:5" in linesOpen(). |
-| 3011 | `SectorScreen.OUTSIDE_INFO` | `"Money that reached its books outside its trading: the city's subsidy and the " + "arre...` | Note 6, and the equity statement's outside line: what the outside lines are (F1). |
-| 3020 | `SectorScreen.DERIVED_INFO` | `"Derived when the city was loaded: its save was made before share capital was " + "kept...` | Share capital's line and note, when a save from before 0.7.75 was loaded (R3). |
-| 3026 | `SectorScreen.CAPITAL_INFO` | `"What its owners put in: the book its founders' shares were issued against, and " + "ev...` | Share capital's line and note (R3). |
-| 3031 | `SectorScreen.STOCK_WORDS` | `"Stock is held at what it would fetch today, so a price collapse shrinks this " + "busi...` | Note 7: the stock. |
-| 3035 | `SectorScreen.LAND_WORDS` | `"Its land at today's prices, by the ground it stands on: a share of the city's flat " +...` | Note 11 (ET3, spec-earth2-terrain 5.3): its land by the ground it stands on. |
-| 3053 | `SectorScreen.ABROAD_WORDS` | `"What it has sent abroad for the world's rate, in the city's money at the rate it " + "...` | Note 9: what it holds abroad. |
-| 3058 | `SectorScreen.DUE_WORDS` | `"What its loans, bonds and mortgages ask at the twelve settles ahead: a loan whole in "...` | What falls due within a year (R2), behind its line's and its card's (i). |
-| 3063 | `SectorScreen.NOT_SPLIT_WORDS` | `"When it falls due is counted at the next month's books: a load keeps the debt, " + "no...` | The month after a load, R2's line. |
-| 3208 | `SectorScreen.EQUITY_HEADS` | `{ "share capital", "kept, revalued", "total" }` | The equity statement's columns (R3). |
-| 3211 | `SectorScreen.REVALUED_INFO` | `"Whatever else moved its equity, worked out as what is left: a building bought " + "for...` | The equity statement's remainder's (i). |
-| 3279 | `SectorScreen.SCHEDULE_RATE` | `70, SCHEDULE_RUNS = 80` | The debt schedule's columns (R7): the kind (DEBT_KIND), five figures (DEBT_FIGURE), the rate and when the last of it falls due. |
-| 3282 | `SectorScreen.SCHEDULE_INFO` | `"What it owed of each kind at last month's sheet, what it borrowed, repaid and had " + ...` | The schedule's (i). |
-| 3400 | `SectorScreen.DEBT_KIND` | `130, DEBT_FIGURE = 100` | The debt card's columns: the kind, then owed, within a year, in one to five, after five, and the month's interest. |
-| 3493 | `SectorScreen.EVERY_GATE_INFO` | `"Each building it can put up at every gate investors ask - ore, a licence, " + "staff, ...` | EVERY BUILDING AT EVERY GATE's (i): since 0.7.122 the last gate the interest on its whole cost, consider()'s brake (batch C1). |
-| 3504 | `SectorScreen.GATE_NAME` | `200, GATE_MARK = 44, GATE_FIGURE = 96, GATE_PAYBACK = 84, GATE_PAYS = 210` | The grid's columns: the building, a gate's mark, a figure, the payback, how it would pay. |
-| 3507 | `SectorScreen.GATE_HEADS` | `{ "ore", "licence", "staff", "land", "pays", "interest", "lender" }` | The gates' heads, in BuildCard.GateKind's order: the sixth, since 0.7.122, the interest on its whole cost, and the seventh (I13-L) the mortgage lender's test - a column only where a building of the... |
-| 3699 | `SectorScreen.SHARE_ROWS` | `{ { "Shares", "n" }, { "Earnings a share, the month", "$" }, { "Dividend a share, the m...` | The report's rows: {label, kind} - "n" a count, "$" money a share, "%" a share, "x" times, "M" money. |
-| 3743 | `SectorScreen.SHARE_LABEL` | `220, SHARE_FIGURE = 120` | The report's columns. |
-| 3861 | `SectorScreen.CONTROL_INFO` | `"None of this is yours to set.These are private companies deciding for " + "themselves ...` | WHAT YOU CONTROL's (i): the old page's last paragraph. |
-| 3866 | `SectorScreen.WAITING_INFO` | `"This business wants to build and there is nowhere to put it.It is the one " + "refusal...` | The waiting-on-ground alert's (i). |
-| 4300 | `SectorScreen.FLOW_INFO` | `"Each row's money is the month the books closed on - the Income page's - and its " + "u...` | The flow's money and units: which month each is (SectorFlow's two months). |
-| 4386 | `SectorScreen.TONNES_INFO` | `"How this business's freight went in the month billed, good by good.Tonnes it " + "boug...` | What the strip's (i) says. |
-| 4396 | `SectorScreen.PELLET_INFO` | `"The Pelletising Plant's city legs at nameplate - every tonne of the bulk goods it uses...` | The siding line's (i) is its own sentence; the plant card's. |
-| 4403 | `SectorScreen.MOVE_NAME` | `150` | The width of a line's name column. |
-| 4695 | `SectorScreen.REFINERY_HEAD` | `"THE REFINERY THIS MONTH"` | The card's heading, its line, and what its (i) says. |
-| 4697 | `SectorScreen.REFINERY_SUB` | `"where the crude went · ribbons to scale"` | ...the line beside the heading... |
-| 4699 | `SectorScreen.REFINERY_INFO` | `"The month's crude comes in on the left, from the wells, the reserve or the world." + "...` | ...and the (i)'s words: the picture read from left to right. |
-| 4977 | `SectorScreen.HATCHES` | `new java.util.HashMap<>()` | The hatchings made so far, by colour and opacity (hatch()'s cache). |
-| 5074 | `SectorScreen.INDUSTRY_INFO` | `"On the left is what the month worked: a mine's fields, each a vessel filled to " + "wh...` | What the materials card's (i) says: the picture read from left to right. |
-| 5294 | `SectorScreen.OIL_WELLS_INFO` | `"The city's wells by kind.A land well lifts the ground pool - the oil under the city's ...` | What the oil industry's (i)s say. |
-| 5300 | `SectorScreen.OIL_UNITS_INFO` | `"Every kind of refinery unit.Its spread is what it makes of a litre of its feed, less" ...` | ...THE REFINERY's, its units' table... |
-| 5305 | `SectorScreen.OIL_PRODUCTS_INFO` | `"Every product of the refinery, and crude: its price here and the world's, the" + " wor...` | ...PRODUCTS', crude's and the nine products' table... |
-| 5309 | `SectorScreen.OIL_RESERVE_INFO` | `"The city's own crude, in its Strategic Reserves' tanks.Fill orders crude for the next"...` | ...and THE STRATEGIC RESERVE's, which the Fill and Release cards' (i)s say too. |
-| 5315 | `SectorScreen.RESERVE_CAVEAT` | `"bought at the next clearing at what crude then costs; what the room cannot take lapses"` | The Fill card's caveat under its effects... |
-| 5317 | `SectorScreen.RESERVE_CAVEAT_INFO` | `"A fill is an order for the next clearing: the wells' crude pro rata with the" + " refi...` | ...and what its (i) says: an order for the next clearing, paid at the next strike. |
-| 5321 | `SectorScreen.RELEASE_CAVEAT` | `"offered to the refiners; what they do not take stays in the tanks"` | The Release card's caveat; its (i) is OIL_RESERVE_INFO. |
-| 5324 | `SectorScreen.RESERVE_LADDER` | `380` | The lever's ladder width on its dial card. |
-| 5800 | `SectorScreen.FREIGHT_STRIP_INFO` | `"Freight is three businesses in one set of books: Haulage's trucks, the " + "railway an...` | What the division strip's (i) says. |
-| 5806 | `SectorScreen.FREIGHT_LEGS_INFO` | `"Every tonne that crossed the city's boundary went the long haul by the " + "world's lo...` | The legs card's (i). |
-| 5814 | `SectorScreen.FREIGHT_SHIPPERS_INFO` | `"The sectors billed by this division this month, largest bill first: the " + "line each...` | The shippers card's (i). |
-| 6020 | `SectorScreen.LEG_NAME` | `120` | The width of a leg's name column. |
-| 6059 | `SectorScreen.LegBar.BAND` | `26` | The bar's height, in pixels: 26. |
-| 6208 | `SectorScreen.FREIGHT_TRUCKS_INFO` | `"The trucks Haulage owns against the trucks the plant standing asks for to " + "carry t...` | Haulage's fleet card's (i). |
-| 6213 | `SectorScreen.FREIGHT_HAULAGE_QUOTE_INFO` | `"What a tonne's city leg costs the shipper.The rule: Haulage's running " + "cost plus a...` | Haulage's price card's (i). |
-| 6356 | `SectorScreen.FREIGHT_RAIL_INFO` | `"The wagon sets the railway owns against the sets its track standing needs." + "The tra...` | The railway's fleet card's (i). |
-| 6363 | `SectorScreen.FREIGHT_RAIL_QUOTE_INFO` | `"What the railway charges a tonne, as a share of what a lorry charges the " + "same ton...` | The railway's price card's (i). |
-| 6393 | `SectorScreen.FREIGHT_PORTS_INFO` | `"The terminals standing by kind, the tonnes each kind handled this month " + "against w...` | The berths card's (i). |
-| 6528 | `SectorScreen.SHELF_INFO` | `"A basket is one person's groceries for a month.The shelf moves a sixth of the way " + ...` | THE SHELF's (i). |
-| 6696 | `SectorScreen.FOLD_PAST` | `6` | The goods a column folds into one row past this many (the shops' and the kitchens' thirteen foods). |
+| 419 | `SectorScreen.RUNNING_INFO` | `"How much of what its plants could make each business made this month: its " + "posts f...` | RUNNING AT's (i). |
+| 551 | `SectorScreen.SPARK_WIDTH` | `120` | The width the sparkline takes on a card (0.7.30; 90 on the old list). |
+| 554 | `SectorScreen.SPARK_HEIGHT` | `28` | ...and its height (0.7.30; 22 on the old list). |
+| 557 | `SectorScreen.SPARK_MONTHS` | `24` | How many months of net income the sparkline draws (0.7.4): two years. |
+| 1530 | `SectorScreen.SHIPPER_COLUMN` | `80` | The width of one figure column of the shippers table. |
+| 1533 | `SectorScreen.SHIPPER_HEADS` | `{ ham.citybuildersim.sectors.Haulage.BILLED_AS, FreightView.RAIL_BILLED_AS, ham.citybui...` | The shippers table's column heads: the lines the bills are raised under, then the sum. |
+| 1883 | `SectorScreen.OPERATING_INFO` | `"What the business made from trading, after its sales tax and the ground it " + "stands...` | The operating line's (i): what it is, and the model's own operating income, which is before the ground and the sales tax (D4, D5). |
+| 1887 | `SectorScreen.REFUND_INFO` | `"The sales tax line is a REFUND this month: the credit on what this sector " + "bought ...` | The sales tax refund's (i). |
+| 1892 | `SectorScreen.FALL_INFO` | `"Revenue at the left, less the sales tax it remitted and what it bought, to its " + "gr...` | The waterfall's (i). |
+| 2199 | `SectorScreen.OWNERS_DOOR` | `"its owners, its share's price and what it pays: Investors"` | The Balance sheet's door to its owners' card (D7). |
+| 3019 | `SectorScreen.INCOME` | `"income", SHEET = "sheet", EQUITY = "equity", CASH = "cash"` | Each statement's key in a business's open set: an open note on one is "income:note:5" in linesOpen(). |
+| 3022 | `SectorScreen.OUTSIDE_INFO` | `"Money that reached its books outside its trading: the city's subsidy and the " + "arre...` | Note 6, and the equity statement's outside line: what the outside lines are (F1). |
+| 3031 | `SectorScreen.DERIVED_INFO` | `"Derived when the city was loaded: its save was made before share capital was " + "kept...` | Share capital's line and note, when a save from before 0.7.75 was loaded (R3). |
+| 3037 | `SectorScreen.CAPITAL_INFO` | `"What its owners put in: the book its founders' shares were issued against, and " + "ev...` | Share capital's line and note (R3). |
+| 3042 | `SectorScreen.STOCK_WORDS` | `"Stock is held at what it would fetch today, so a price collapse shrinks this " + "busi...` | Note 7: the stock. |
+| 3046 | `SectorScreen.LAND_WORDS` | `"Its land at today's prices, by the ground it stands on: a share of the city's flat " +...` | Note 11 (ET3, spec-earth2-terrain 5.3): its land by the ground it stands on. |
+| 3064 | `SectorScreen.ABROAD_WORDS` | `"What it has sent abroad for the world's rate, in the city's money at the rate it " + "...` | Note 9: what it holds abroad. |
+| 3069 | `SectorScreen.DUE_WORDS` | `"What its loans, bonds and mortgages ask at the twelve settles ahead: a loan whole in "...` | What falls due within a year (R2), behind its line's and its card's (i). |
+| 3074 | `SectorScreen.NOT_SPLIT_WORDS` | `"When it falls due is counted at the next month's books: a load keeps the debt, " + "no...` | The month after a load, R2's line. |
+| 3219 | `SectorScreen.EQUITY_HEADS` | `{ "share capital", "kept, revalued", "total" }` | The equity statement's columns (R3). |
+| 3222 | `SectorScreen.REVALUED_INFO` | `"Whatever else moved its equity, worked out as what is left: a building bought " + "for...` | The equity statement's remainder's (i). |
+| 3290 | `SectorScreen.SCHEDULE_RATE` | `70, SCHEDULE_RUNS = 80` | The debt schedule's columns (R7): the kind (DEBT_KIND), five figures (DEBT_FIGURE), the rate and when the last of it falls due. |
+| 3293 | `SectorScreen.SCHEDULE_INFO` | `"What it owed of each kind at last month's sheet, what it borrowed, repaid and had " + ...` | The schedule's (i). |
+| 3411 | `SectorScreen.DEBT_KIND` | `130, DEBT_FIGURE = 100` | The debt card's columns: the kind, then owed, within a year, in one to five, after five, and the month's interest. |
+| 3504 | `SectorScreen.EVERY_GATE_INFO` | `"Each building it can put up at every gate investors ask - ore, a licence, " + "staff, ...` | EVERY BUILDING AT EVERY GATE's (i): since 0.7.122 the last gate the interest on its whole cost, consider()'s brake (batch C1). |
+| 3515 | `SectorScreen.GATE_NAME` | `200, GATE_MARK = 44, GATE_FIGURE = 96, GATE_PAYBACK = 84, GATE_PAYS = 210` | The grid's columns: the building, a gate's mark, a figure, the payback, how it would pay. |
+| 3518 | `SectorScreen.GATE_HEADS` | `{ "ore", "licence", "staff", "land", "pays", "interest", "lender" }` | The gates' heads, in BuildCard.GateKind's order: the sixth, since 0.7.122, the interest on its whole cost, and the seventh (I13-L) the mortgage lender's test - a column only where a building of the... |
+| 3708 | `SectorScreen.SHARE_ROWS` | `{ { "Shares", "n" }, { "Earnings a share, the month", "$" }, { "Dividend a share, the m...` | The report's rows: {label, kind} - "n" a count, "$" money a share, "%" a share, "x" times, "M" money. |
+| 3752 | `SectorScreen.SHARE_LABEL` | `220, SHARE_FIGURE = 120` | The report's columns. |
+| 3868 | `SectorScreen.CONTROL_INFO` | `"None of this is yours to set.These are private companies deciding for " + "themselves ...` | WHAT YOU CONTROL's (i): the old page's last paragraph. |
+| 3873 | `SectorScreen.WAITING_INFO` | `"This business wants to build and there is nowhere to put it.It is the one " + "refusal...` | The waiting-on-ground alert's (i). |
+| 4305 | `SectorScreen.FLOW_INFO` | `"Each row's money is the month the books closed on - the Income page's - and its " + "u...` | The flow's money and units: which month each is (SectorFlow's two months). |
+| 4391 | `SectorScreen.TONNES_INFO` | `"How this business's freight went in the month billed, good by good.Tonnes it " + "boug...` | What the strip's (i) says. |
+| 4401 | `SectorScreen.PELLET_INFO` | `"The Pelletising Plant's city legs at nameplate - every tonne of the bulk goods it uses...` | The siding line's (i) is its own sentence; the plant card's. |
+| 4408 | `SectorScreen.MOVE_NAME` | `150` | The width of a line's name column. |
+| 4700 | `SectorScreen.REFINERY_HEAD` | `"THE REFINERY THIS MONTH"` | The card's heading, its line, and what its (i) says. |
+| 4702 | `SectorScreen.REFINERY_SUB` | `"where the crude went · ribbons to scale"` | ...the line beside the heading... |
+| 4704 | `SectorScreen.REFINERY_INFO` | `"The month's crude comes in on the left, from the wells, the reserve or the world." + "...` | ...and the (i)'s words: the picture read from left to right. |
+| 4982 | `SectorScreen.HATCHES` | `new java.util.HashMap<>()` | The hatchings made so far, by colour and opacity (hatch()'s cache). |
+| 5079 | `SectorScreen.INDUSTRY_INFO` | `"On the left is what the month worked: a mine's fields, each a vessel filled to " + "wh...` | What the materials card's (i) says: the picture read from left to right. |
+| 5299 | `SectorScreen.OIL_WELLS_INFO` | `"The city's wells by kind.A land well lifts the ground pool - the oil under the city's ...` | What the oil industry's (i)s say. |
+| 5305 | `SectorScreen.OIL_UNITS_INFO` | `"Every kind of refinery unit.Its spread is what it makes of a litre of its feed, less" ...` | ...THE REFINERY's, its units' table... |
+| 5310 | `SectorScreen.OIL_PRODUCTS_INFO` | `"Every product of the refinery, and crude: its price here and the world's, the" + " wor...` | ...PRODUCTS', crude's and the nine products' table... |
+| 5314 | `SectorScreen.OIL_RESERVE_INFO` | `"The city's own crude, in its Strategic Reserves' tanks.Fill orders crude for the next"...` | ...and THE STRATEGIC RESERVE's, which the Fill and Release cards' (i)s say too. |
+| 5320 | `SectorScreen.RESERVE_CAVEAT` | `"bought at the next clearing at what crude then costs; what the room cannot take lapses"` | The Fill card's caveat under its effects... |
+| 5322 | `SectorScreen.RESERVE_CAVEAT_INFO` | `"A fill is an order for the next clearing: the wells' crude pro rata with the" + " refi...` | ...and what its (i) says: an order for the next clearing, paid at the next strike. |
+| 5326 | `SectorScreen.RELEASE_CAVEAT` | `"offered to the refiners; what they do not take stays in the tanks"` | The Release card's caveat; its (i) is OIL_RESERVE_INFO. |
+| 5329 | `SectorScreen.RESERVE_LADDER` | `380` | The lever's ladder width on its dial card. |
+| 5805 | `SectorScreen.FREIGHT_STRIP_INFO` | `"Freight is three businesses in one set of books: Haulage's trucks, the " + "railway an...` | What the division strip's (i) says. |
+| 5811 | `SectorScreen.FREIGHT_LEGS_INFO` | `"Every tonne that crossed the city's boundary went the long haul by the " + "world's lo...` | The legs card's (i). |
+| 5819 | `SectorScreen.FREIGHT_SHIPPERS_INFO` | `"The sectors billed by this division this month, largest bill first: the " + "line each...` | The shippers card's (i). |
+| 6025 | `SectorScreen.LEG_NAME` | `120` | The width of a leg's name column. |
+| 6064 | `SectorScreen.LegBar.BAND` | `26` | The bar's height, in pixels: 26. |
+| 6213 | `SectorScreen.FREIGHT_TRUCKS_INFO` | `"The trucks Haulage owns against the trucks the plant standing asks for to " + "carry t...` | Haulage's fleet card's (i). |
+| 6218 | `SectorScreen.FREIGHT_HAULAGE_QUOTE_INFO` | `"What a tonne's city leg costs the shipper.The rule: Haulage's running " + "cost plus a...` | Haulage's price card's (i). |
+| 6361 | `SectorScreen.FREIGHT_RAIL_INFO` | `"The wagon sets the railway owns against the sets its track standing needs." + "The tra...` | The railway's fleet card's (i). |
+| 6368 | `SectorScreen.FREIGHT_RAIL_QUOTE_INFO` | `"What the railway charges a tonne, as a share of what a lorry charges the " + "same ton...` | The railway's price card's (i). |
+| 6398 | `SectorScreen.FREIGHT_PORTS_INFO` | `"The terminals standing by kind, the tonnes each kind handled this month " + "against w...` | The berths card's (i). |
+| 6542 | `SectorScreen.SHELF_INFO` | `"A basket is one person's groceries for a month.The shelf moves a sixth of the way " + ...` | THE SHELF's (i). |
+| 6710 | `SectorScreen.FOLD_PAST` | `6` | The goods a column folds into one row past this many (the shops' and the kitchens' thirteen foods). |
 
 ### ServicesScreen.java ([map](map/ServicesScreen.md))
 
@@ -5030,8 +5041,8 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 34 | `Statement.STATEMENT` | `560` | How wide a statement is. |
 | 159 | `Statement.BOOK_NOW` | `116` |  |
 | 161 | `Statement.BOOK_THEN` | `104` |  |
-| 466 | `Statement.CLOSED` | `"\u25b8"` |  |
-| 468 | `Statement.OPENED` | `"\u25be"` |  |
+| 473 | `Statement.CLOSED` | `"\u25b8"` |  |
+| 475 | `Statement.OPENED` | `"\u25be"` |  |
 
 ### StatementView.java ([map](map/StatementView.md))
 
@@ -5046,7 +5057,8 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 60 | `StatementView.INDENT` | `12` | How far a line sits in under its head. |
 | 63 | `StatementView.SHARE_MOST` | `10` | A share of the base past this many times it reads "n/m", not meaningful: an outside line against a month with almost no revenue. |
 | 66 | `StatementView.GAP` | `Palette.GAP` | The gap between columns. |
-| 580 | `StatementView.SHORT_LABEL` | `150, SHORT_FIGURE = 78` | IN SHORT's columns: a label, then this month, last month and the change. |
+| 72 | `StatementView.INDENTED` | `new javafx.geometry.Insets(0, 0, 0, INDENT), NOTE_ROOM = new javafx.geometry.Insets(2, ...` | The room round an indented label, and under a note's detail (KP2b): one object each. |
+| 586 | `StatementView.SHORT_LABEL` | `150, SHORT_FIGURE = 78` | IN SHORT's columns: a label, then this month, last month and the change. |
 
 ### SummaryScreen.java ([map](map/SummaryScreen.md))
 
@@ -5106,56 +5118,56 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 426 | `TradeScreen.PAGE_INFO` | `{ "Every dollar that crossed the city's edge this month, and which way: a walk from wha...` | Each page's (i), in PAGES' order after the Overview: what it holds (the landing's row blurbs until 0.7.35). |
 | 474 | `TradeScreen.NOT_COUNTED` | `"not counted yet"` | What a figure of the month says until a month has turned since the city was loaded or founded (ForeignAccounts.isMonthCounted()). |
 | 477 | `TradeScreen.NOT_COUNTED_NOTE` | `"since the city was founded, or loaded from a save before 0.7.46: a month on, it is"` | ...and its note. |
-| 867 | `TradeScreen.GAUGES_INFO` | `"Always here, deliberately understated, and the same three every month - so a " + "play...` | The section's (i): the banner's reason (the spec's L8). |
-| 1029 | `TradeScreen.TRADE_INFO` | `"Every good the city's businesses sold abroad and bought abroad this month, from " + "t...` | WHAT WE TRADE's (i). |
-| 1037 | `TradeScreen.NOTHING_CROSSED` | `"Nothing crossed the city's edge this month.No exports, no imports, nothing " + "borrow...` | The empty month's whole (the spec's M2). |
-| 1107 | `TradeScreen.PUMP_WORDS` | `String.format("The grocers' filling stations buy the drivers' petrol at wholesale - the...` | Petrol's popover, under the pump price (0.7.83): where it comes from - the fuel duty on the sign since 0.7.103. |
-| 1113 | `TradeScreen.FREIGHT_AFTER_LOAD` | `"Not counted yet: the railway's freight on each good is struck when the month " + "turn...` | The prices before a month is counted - a city just founded, or loaded from a save before 0.7.46 (the spec's B14; a newer save carries the month's trade the freight is struck on, A1). |
-| 1173 | `TradeScreen.RATE_INFO` | `"How many of the city's dollars one US dollar costs.Higher is a weaker currency: " + "i...` | THE CURRENCY's (i): the unit, and parity (the spec's Q1, Q3). |
-| 1180 | `TradeScreen.REAL_USD_INFO` | `"The game has two US dollars.The one above is the in-game one, whose prices move with t...` | The real 2015 US$'s (i) (D29): the game has two US dollars, and this is the one the nations' output is counted in. |
-| 1186 | `TradeScreen.REAL_EFFECTIVE_INFO` | `"The city's dollar against the moneys of the nations it trades with, each weighted by h...` | The real effective rate's (i) (D29). |
-| 1192 | `TradeScreen.WEIGHS_NAMED` | `4` | How many partners the line under the real effective rate names before it says how many more there are (WN5b). |
-| 1273 | `TradeScreen.COVER_SCALE` | `ForeignAccounts.COMFORTABLE_COVER * 2` | The cover gauge's scale: twice the comfortable line, a year of imports. |
-| 1300 | `TradeScreen.PARITY_SCALE` | `ForeignAccounts.PARITY_FAR * 1.5` | The parity gauge's scale either side: half as far again as PARITY_FAR, so the red band shows. |
-| 1334 | `TradeScreen.COVER_INFO` | `String.format("Import cover is the oldest test there is: if every dollar of " + "earnin...` | The gauges' (i)s: what each one measures (the cover sentence, the spec's C1; the others the landing's notes). |
-| 1340 | `TradeScreen.BACKING_INFO` | `String.format("The vault against the foreign money parked in the city's bank, " + "whic...` | ...the backing gauge's: the vault against the money that can leave, and where a run becomes likely. |
-| 1344 | `TradeScreen.PARITY_INFO` | `String.format("How far the rate sits from parity - where a basket costs the same " + "h...` | ...and the parity gauge's: the one parity rule's two lines, and where else they are read. |
-| 1378 | `TradeScreen.NOTHING` | `.0005` | Under half a dollar is nothing: a step that small is named, not drawn. |
-| 1450 | `TradeScreen.CURRENT_INFO` | `"What the city earned from the world by selling it things, less what it spent buying " ...` | The current account's note (the spec's A1). |
-| 1455 | `TradeScreen.FINANCIAL_INFO` | `"Borrowing abroad and foreign money parking here are both inflows, and neither is " + "...` | The financial account's note (A2). |
-| 1460 | `TradeScreen.INCOME_INFO` | `"Interest and dividends: what the businesses' and the households' paper abroad paid " +...` | The income line's note (B3). |
-| 1465 | `TradeScreen.SURPLUS_INFO` | `"A surplus month: the world owes the city a little more than it did, and that is what "...` | The month's closing words (the spec's D17). |
-| 1469 | `TradeScreen.DEFICIT_INFO` | `"A deficit month has to be settled in somebody else's money: out of the vault, or by " ...` | ...and a deficit month's. |
-| 1536 | `TradeScreen.MONTH_INFO` | `"Every dollar that crossed the city's edge this month, and which way.Steps: each " + "c...` | The hero's (i). |
-| 1542 | `TradeScreen.NOT_SAVED_INFO` | `"The month's flows across the edge - what was sold and bought abroad, the income, " + "...` | Why a city reads nothing yet (the spec's B1): founded, or loaded from a save before 0.7.46, which did not carry the month's flows (D4, built as A2). |
-| 1548 | `TradeScreen.HAND_INFO` | `"Below the line, and deliberately: an intervention does not earn or spend anything " + ...` | The treasury's hand (the spec's A6). |
-| 1553 | `TradeScreen.VALUATION_INFO` | `"%s of foreign claims were written off this month.It improves what the city owes " + "t...` | The valuation change (M5, A4; D15: a chip, not an alert). |
-| 1696 | `TradeScreen.RIVER_INFO` | `"Band width is money.The two sides balance because they must: what came in and what " +...` | The river's foot (the spec's section 4: one line, the rest in the (i), no colour named). |
-| 1717 | `TradeScreen.DEFAULT_TIP_MILLIS` | `1000` | How long a tooltip waits before it shows when the code names no delay: JavaFX's own default, a second (what Tooltip.install gave the river's bars). |
-| 1829 | `TradeScreen.HOLDINGS_INFO` | `"The stocks the flows add up to - the rough shape of an international investment " + "p...` | The holdings' (i) (the spec's A5). |
-| 2071 | `TradeScreen.RECORD_INFO` | `"One month says whether a mill was staffed.The run says whether the city earns its " + ...` | The record's sentence (the spec's H1). |
-| 2134 | `TradeScreen.WORLD_INFO` | `"Every world price is quoted in the world's money and converted at the rate.So a " + "w...` | The world prices' note (the spec's G3). |
-| 2195 | `TradeScreen.BAND_LEGS_INFO` | `"Between what the world pays for a good and what it charges to bring one in " + "there ...` | The card's (i): the legs, who each is paid to, and the two readings. |
-| 2206 | `TradeScreen.NO_BAND` | `"No good the city trades has both a world buyer and a world seller yet, so there is no ...` | The card's line while no good has a band: the world will not both buy and sell anything the city makes. |
-| 2210 | `TradeScreen.NO_BAND_TRADE` | `"Nothing has crossed the edge in the month the books last struck, so there is no " + "t...` | ...and while the books have no trade to weigh it by (a city just founded, or a month with nothing across the edge). |
-| 2366 | `TradeScreen.BandBar.BAND` | `26` | The bar's height, in pixels: 26, the Freight page's LegBar's. |
-| 2695 | `TradeScreen.FAIR_INFO` | `String.format("The fair level is where the fundamentals alone put the currency: parity'...` | The fair-level gauge's (i): what the level is and why its gauge has no verdict. |
-| 2943 | `TradeScreen.HOLD_INFO` | `"The part of the month's move the vault's hold made: under a peg the rate stays at the ...` | THE HOLD's (i): what it is, why the six do not stand on their own under it, and what it is outside a band and a peg. |
-| 2961 | `TradeScreen.FORCES_INFO` | `"These parts add to the month's move, in log points of the rate.Parity's trend: the " +...` | The forces card's (i): the parts and what each is, the world's among them, and under a band or a peg the hold. |
-| 2971 | `TradeScreen.TREND_INFO` | `"The city's price level against the world's, on the basket with rent held to a third " ...` | ...and each force's own (i): what it is, and the dials behind it. |
-| 2974 | `TradeScreen.REAL_RATE_INFO` | `String.format("A real rate over the world's brings money here and holds the " + "curren...` |  |
-| 2979 | `TradeScreen.BALANCE_INFO` | `String.format("A year of the current and the financial account together, against a " + ...` |  |
-| 2983 | `TradeScreen.COVER_FORCE_INFO` | `String.format("An empty vault costs the currency a %.0f%% discount, falling to " + "not...` |  |
-| 2986 | `TradeScreen.INTERVENTION_INFO` | `String.format("Dollars the treasury buys cheapen the currency and dollars it " + "sells...` |  |
-| 2992 | `TradeScreen.WORLD_FORCE_INFO` | `String.format("The dollar's own swing against every money, money running to safety, and...` |  |
-| 3003 | `TradeScreen.MARKET_INFO` | `String.format("The currency's own swing, drawn from the city's seed so the same seed " ...` |  |
-| 3008 | `TradeScreen.GATE_INFO` | `String.format("How much of the market's swing and of the fundamentals - the real rate, ...` | The gate's (i): what it lets through, and what it does not gate. |
-| 3167 | `TradeScreen.FUNDAMENTALS_INFO` | `"The rate built up from parity, one step at a time, each row the rate after " + "its st...` | The steps card's (i): how to read the table. |
-| 3175 | `TradeScreen.RULE` | `String.format("The rate is parity's trend, times where the fundamentals put the currenc...` | THE RULE, folded at the page's foot: the board's paragraph in the model's words and dials. |
-| 3247 | `TradeScreen.VAULT_MOVED_INFO` | `"The vault is kept in dollars, so its dollar figure stays put and its local figure " + ...` | What the currency does to the vault (the spec's E2 note, both ways). |
-| 3328 | `TradeScreen.ONE_POT_INFO` | `"The vault is one pot — the game does not tag a dollar as borrowed or earned, and it " ...` | WHOSE IT IS's (i) (the spec's R4, and B11: the method's name is out of it). |
-| 3571 | `TradeScreen.MONEY_CHIP` | `{ "US$", "Euro", "Yen", "Pound", "Yuan", "Canadian $", "Australian $", "Franc" }` | The eight's names on the exchange's chips, and the mark each money's amounts carry (WN4), in WorldMoneys.EIGHT's order. |
-| 3572 | `TradeScreen.MONEY_MARK` | `{ "US$", "€", "¥", "£", "CN¥", "C$", "A$", "CHF " }` |  |
+| 876 | `TradeScreen.GAUGES_INFO` | `"Always here, deliberately understated, and the same three every month - so a " + "play...` | The section's (i): the banner's reason (the spec's L8). |
+| 1040 | `TradeScreen.TRADE_INFO` | `"Every good the city's businesses sold abroad and bought abroad this month, from " + "t...` | WHAT WE TRADE's (i). |
+| 1048 | `TradeScreen.NOTHING_CROSSED` | `"Nothing crossed the city's edge this month.No exports, no imports, nothing " + "borrow...` | The empty month's whole (the spec's M2). |
+| 1118 | `TradeScreen.PUMP_WORDS` | `String.format("The grocers' filling stations buy the drivers' petrol at wholesale - the...` | Petrol's popover, under the pump price (0.7.83): where it comes from - the fuel duty on the sign since 0.7.103. |
+| 1124 | `TradeScreen.FREIGHT_AFTER_LOAD` | `"Not counted yet: the railway's freight on each good is struck when the month " + "turn...` | The prices before a month is counted - a city just founded, or loaded from a save before 0.7.46 (the spec's B14; a newer save carries the month's trade the freight is struck on, A1). |
+| 1184 | `TradeScreen.RATE_INFO` | `"How many of the city's dollars one US dollar costs.Higher is a weaker currency: " + "i...` | THE CURRENCY's (i): the unit, and parity (the spec's Q1, Q3). |
+| 1191 | `TradeScreen.REAL_USD_INFO` | `"The game has two US dollars.The one above is the in-game one, whose prices move with t...` | The real 2015 US$'s (i) (D29): the game has two US dollars, and this is the one the nations' output is counted in. |
+| 1197 | `TradeScreen.REAL_EFFECTIVE_INFO` | `"The city's dollar against the moneys of the nations it trades with, each weighted by h...` | The real effective rate's (i) (D29). |
+| 1203 | `TradeScreen.WEIGHS_NAMED` | `4` | How many partners the line under the real effective rate names before it says how many more there are (WN5b). |
+| 1284 | `TradeScreen.COVER_SCALE` | `ForeignAccounts.COMFORTABLE_COVER * 2` | The cover gauge's scale: twice the comfortable line, a year of imports. |
+| 1311 | `TradeScreen.PARITY_SCALE` | `ForeignAccounts.PARITY_FAR * 1.5` | The parity gauge's scale either side: half as far again as PARITY_FAR, so the red band shows. |
+| 1345 | `TradeScreen.COVER_INFO` | `String.format("Import cover is the oldest test there is: if every dollar of " + "earnin...` | The gauges' (i)s: what each one measures (the cover sentence, the spec's C1; the others the landing's notes). |
+| 1351 | `TradeScreen.BACKING_INFO` | `String.format("The vault against the foreign money parked in the city's bank, " + "whic...` | ...the backing gauge's: the vault against the money that can leave, and where a run becomes likely. |
+| 1355 | `TradeScreen.PARITY_INFO` | `String.format("How far the rate sits from parity - where a basket costs the same " + "h...` | ...and the parity gauge's: the one parity rule's two lines, and where else they are read. |
+| 1389 | `TradeScreen.NOTHING` | `.0005` | Under half a dollar is nothing: a step that small is named, not drawn. |
+| 1461 | `TradeScreen.CURRENT_INFO` | `"What the city earned from the world by selling it things, less what it spent buying " ...` | The current account's note (the spec's A1). |
+| 1466 | `TradeScreen.FINANCIAL_INFO` | `"Borrowing abroad and foreign money parking here are both inflows, and neither is " + "...` | The financial account's note (A2). |
+| 1471 | `TradeScreen.INCOME_INFO` | `"Interest and dividends: what the businesses' and the households' paper abroad paid " +...` | The income line's note (B3). |
+| 1476 | `TradeScreen.SURPLUS_INFO` | `"A surplus month: the world owes the city a little more than it did, and that is what "...` | The month's closing words (the spec's D17). |
+| 1480 | `TradeScreen.DEFICIT_INFO` | `"A deficit month has to be settled in somebody else's money: out of the vault, or by " ...` | ...and a deficit month's. |
+| 1547 | `TradeScreen.MONTH_INFO` | `"Every dollar that crossed the city's edge this month, and which way.Steps: each " + "c...` | The hero's (i). |
+| 1553 | `TradeScreen.NOT_SAVED_INFO` | `"The month's flows across the edge - what was sold and bought abroad, the income, " + "...` | Why a city reads nothing yet (the spec's B1): founded, or loaded from a save before 0.7.46, which did not carry the month's flows (D4, built as A2). |
+| 1559 | `TradeScreen.HAND_INFO` | `"Below the line, and deliberately: an intervention does not earn or spend anything " + ...` | The treasury's hand (the spec's A6). |
+| 1564 | `TradeScreen.VALUATION_INFO` | `"%s of foreign claims were written off this month.It improves what the city owes " + "t...` | The valuation change (M5, A4; D15: a chip, not an alert). |
+| 1707 | `TradeScreen.RIVER_INFO` | `"Band width is money.The two sides balance because they must: what came in and what " +...` | The river's foot (the spec's section 4: one line, the rest in the (i), no colour named). |
+| 1728 | `TradeScreen.DEFAULT_TIP_MILLIS` | `1000` | How long a tooltip waits before it shows when the code names no delay: JavaFX's own default, a second (what Tooltip.install gave the river's bars). |
+| 1840 | `TradeScreen.HOLDINGS_INFO` | `"The stocks the flows add up to - the rough shape of an international investment " + "p...` | The holdings' (i) (the spec's A5). |
+| 2082 | `TradeScreen.RECORD_INFO` | `"One month says whether a mill was staffed.The run says whether the city earns its " + ...` | The record's sentence (the spec's H1). |
+| 2145 | `TradeScreen.WORLD_INFO` | `"Every world price is quoted in the world's money and converted at the rate.So a " + "w...` | The world prices' note (the spec's G3). |
+| 2206 | `TradeScreen.BAND_LEGS_INFO` | `"Between what the world pays for a good and what it charges to bring one in " + "there ...` | The card's (i): the legs, who each is paid to, and the two readings. |
+| 2217 | `TradeScreen.NO_BAND` | `"No good the city trades has both a world buyer and a world seller yet, so there is no ...` | The card's line while no good has a band: the world will not both buy and sell anything the city makes. |
+| 2221 | `TradeScreen.NO_BAND_TRADE` | `"Nothing has crossed the edge in the month the books last struck, so there is no " + "t...` | ...and while the books have no trade to weigh it by (a city just founded, or a month with nothing across the edge). |
+| 2377 | `TradeScreen.BandBar.BAND` | `26` | The bar's height, in pixels: 26, the Freight page's LegBar's. |
+| 2706 | `TradeScreen.FAIR_INFO` | `String.format("The fair level is where the fundamentals alone put the currency: parity'...` | The fair-level gauge's (i): what the level is and why its gauge has no verdict. |
+| 2954 | `TradeScreen.HOLD_INFO` | `"The part of the month's move the vault's hold made: under a peg the rate stays at the ...` | THE HOLD's (i): what it is, why the six do not stand on their own under it, and what it is outside a band and a peg. |
+| 2972 | `TradeScreen.FORCES_INFO` | `"These parts add to the month's move, in log points of the rate.Parity's trend: the " +...` | The forces card's (i): the parts and what each is, the world's among them, and under a band or a peg the hold. |
+| 2982 | `TradeScreen.TREND_INFO` | `"The city's price level against the world's, on the basket with rent held to a third " ...` | ...and each force's own (i): what it is, and the dials behind it. |
+| 2985 | `TradeScreen.REAL_RATE_INFO` | `String.format("A real rate over the world's brings money here and holds the " + "curren...` |  |
+| 2990 | `TradeScreen.BALANCE_INFO` | `String.format("A year of the current and the financial account together, against a " + ...` |  |
+| 2994 | `TradeScreen.COVER_FORCE_INFO` | `String.format("An empty vault costs the currency a %.0f%% discount, falling to " + "not...` |  |
+| 2997 | `TradeScreen.INTERVENTION_INFO` | `String.format("Dollars the treasury buys cheapen the currency and dollars it " + "sells...` |  |
+| 3003 | `TradeScreen.WORLD_FORCE_INFO` | `String.format("The dollar's own swing against every money, money running to safety, and...` |  |
+| 3014 | `TradeScreen.MARKET_INFO` | `String.format("The currency's own swing, drawn from the city's seed so the same seed " ...` |  |
+| 3019 | `TradeScreen.GATE_INFO` | `String.format("How much of the market's swing and of the fundamentals - the real rate, ...` | The gate's (i): what it lets through, and what it does not gate. |
+| 3178 | `TradeScreen.FUNDAMENTALS_INFO` | `"The rate built up from parity, one step at a time, each row the rate after " + "its st...` | The steps card's (i): how to read the table. |
+| 3186 | `TradeScreen.RULE` | `String.format("The rate is parity's trend, times where the fundamentals put the currenc...` | THE RULE, folded at the page's foot: the board's paragraph in the model's words and dials. |
+| 3258 | `TradeScreen.VAULT_MOVED_INFO` | `"The vault is kept in dollars, so its dollar figure stays put and its local figure " + ...` | What the currency does to the vault (the spec's E2 note, both ways). |
+| 3339 | `TradeScreen.ONE_POT_INFO` | `"The vault is one pot — the game does not tag a dollar as borrowed or earned, and it " ...` | WHOSE IT IS's (i) (the spec's R4, and B11: the method's name is out of it). |
+| 3582 | `TradeScreen.MONEY_CHIP` | `{ "US$", "Euro", "Yen", "Pound", "Yuan", "Canadian $", "Australian $", "Franc" }` | The eight's names on the exchange's chips, and the mark each money's amounts carry (WN4), in WorldMoneys.EIGHT's order. |
+| 3583 | `TradeScreen.MONEY_MARK` | `{ "US$", "€", "¥", "£", "CN¥", "C$", "A$", "CHF " }` |  |
 
 ### UiProbe.java ([map](map/UiProbe.md))
 
@@ -5234,28 +5246,28 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 87 | `ZoningScreen.PAGES` | `{ THE_GROUND, THE_FOREST }` | ...as the tabs list them, before each zone's own. |
 | 90 | `ZoningScreen.PAGE_ICONS` | `{ Icons.ZONING, Icons.TREES }` | ...and their icons: the plot, the trees. |
 | 93 | `ZoningScreen.ZONE_PAGE` | `"zone:"` | A sector's zone's page is this and its key: "zone:Agriculture". |
-| 176 | `ZoningScreen.AREA_INFO` | `"Ground held for one industry: a share of the city's dry ground or a size in km², " + "...` | The area's (i). |
-| 232 | `ZoningScreen.BUILT_COLOUR` | `Palette.RAMP_REST` | Built ground: the rest's grey - ground nobody can have. |
-| 235 | `ZoningScreen.FREE_COLOUR` | `Palette.BUILDING` | Bare ground free for anyone: the land office's free ground, solid pink. |
-| 238 | `ZoningScreen.FOREST_OPEN` | `"#9cc48a", FOREST_WORKING = "#6f9a5e", FOREST_PROTECTED = "#527c45"` | The forest's three, open to protected: two lighter steps of the map's forest green, and the map's own. |
-| 308 | `ZoningScreen.GROUND_INFO` | `"The city's dry ground, all of it: what is built on; each zone's ground - built on " + ...` | THE CITY'S GROUND's (i). |
-| 315 | `ZoningScreen.ZONES_INFO` | `"A zone holds its size, less what its sector has built in it, out of the free " + "grou...` | THE ZONES' (i). |
-| 321 | `ZoningScreen.LAW_INFO` | `"Of the city's forest ground, a protected share is never cut nor built on and a kept " ...` | THE FOREST LAW's (i) on the hub. |
-| 379 | `ZoningScreen.PICK` | `"zoning:pick"` | The open line of the sector picker. |
-| 554 | `ZoningScreen.PROTECTED_KEY` | `"forest:protected", KEPT_KEY = "forest:kept"` | The forest law's two staged keys: its protected share and its kept share. |
-| 557 | `ZoningScreen.SHARE_STEP` | `.005` | A share of the dry ground's step: half a point. |
-| 560 | `ZoningScreen.PRICE_STEP` | `.05` | A price share's step: five points of the going price, a twentieth (PolicyScreen's TUITION_STEP's). |
-| 563 | `ZoningScreen.LAW_STEP` | `.01` | The forest law's step: a point of the forest. |
-| 566 | `ZoningScreen.KM2_STEPS` | `200` | How many steps a km² dial is cut into across the city's dry ground, before its step is rounded to 1, 2 or 5 of a power of ten. |
-| 681 | `ZoningScreen.BUDGET_INFO` | `PolicyScreen.BUDGET_INFO + " On a zone's page it adds the property tax its staged " + "...` | THE BUDGET's (i) on these pages. |
-| 685 | `ZoningScreen.TRAY_INFO` | `"Everything staged on this page, applied together by one press: the zone's size and " +...` | The tray's (i). |
-| 722 | `ZoningScreen.SIZE_INFO` | `"A share of the city's dry ground - re-read as the city buys land, so 2% stays 2% - or ...` | HOW MUCH GROUND's (i). |
-| 728 | `ZoningScreen.PRICE_INFO` | `"What the city sells the zone's ground at, as a share of the going business price - " +...` | ITS PRICE's (i). |
-| 733 | `ZoningScreen.TAXES_INFO` | `"A zone's taxes are its sector's own rates: the city's rate and the sector's move off "...` | ITS TAXES' (i). |
-| 738 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
-| 1015 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
+| 183 | `ZoningScreen.AREA_INFO` | `"Ground held for one industry: a share of the city's dry ground or a size in km², " + "...` | The area's (i). |
+| 239 | `ZoningScreen.BUILT_COLOUR` | `Palette.RAMP_REST` | Built ground: the rest's grey - ground nobody can have. |
+| 242 | `ZoningScreen.FREE_COLOUR` | `Palette.BUILDING` | Bare ground free for anyone: the land office's free ground, solid pink. |
+| 245 | `ZoningScreen.FOREST_OPEN` | `"#9cc48a", FOREST_WORKING = "#6f9a5e", FOREST_PROTECTED = "#527c45"` | The forest's three, open to protected: two lighter steps of the map's forest green, and the map's own. |
+| 315 | `ZoningScreen.GROUND_INFO` | `"The city's dry ground, all of it: what is built on; each zone's ground - built on " + ...` | THE CITY'S GROUND's (i). |
+| 322 | `ZoningScreen.ZONES_INFO` | `"A zone holds its size, less what its sector has built in it, out of the free " + "grou...` | THE ZONES' (i). |
+| 328 | `ZoningScreen.LAW_INFO` | `"Of the city's forest ground, a protected share is never cut nor built on and a kept " ...` | THE FOREST LAW's (i) on the hub. |
+| 386 | `ZoningScreen.PICK` | `"zoning:pick"` | The open line of the sector picker. |
+| 564 | `ZoningScreen.PROTECTED_KEY` | `"forest:protected", KEPT_KEY = "forest:kept"` | The forest law's two staged keys: its protected share and its kept share. |
+| 567 | `ZoningScreen.SHARE_STEP` | `.005` | A share of the dry ground's step: half a point. |
+| 570 | `ZoningScreen.PRICE_STEP` | `.05` | A price share's step: five points of the going price, a twentieth (PolicyScreen's TUITION_STEP's). |
+| 573 | `ZoningScreen.LAW_STEP` | `.01` | The forest law's step: a point of the forest. |
+| 576 | `ZoningScreen.KM2_STEPS` | `200` | How many steps a km² dial is cut into across the city's dry ground, before its step is rounded to 1, 2 or 5 of a power of ten. |
+| 691 | `ZoningScreen.BUDGET_INFO` | `PolicyScreen.BUDGET_INFO + " On a zone's page it adds the property tax its staged " + "...` | THE BUDGET's (i) on these pages. |
+| 695 | `ZoningScreen.TRAY_INFO` | `"Everything staged on this page, applied together by one press: the zone's size and " +...` | The tray's (i). |
+| 732 | `ZoningScreen.SIZE_INFO` | `"A share of the city's dry ground - re-read as the city buys land, so 2% stays 2% - or ...` | HOW MUCH GROUND's (i). |
+| 738 | `ZoningScreen.PRICE_INFO` | `"What the city sells the zone's ground at, as a share of the going business price - " +...` | ITS PRICE's (i). |
+| 743 | `ZoningScreen.TAXES_INFO` | `"A zone's taxes are its sector's own rates: the city's rate and the sector's move off "...` | ITS TAXES' (i). |
+| 748 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
+| 1028 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1453 constants)
+## harnesses (1454 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -6193,45 +6205,46 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 284 | `KeptCheck.CITY_MONTHS` | `600` | The months the city is played to before the page is watched: a city with a history, households of every shape, a full ladder. |
-| 287 | `KeptCheck.MONTHS` | `25` | The months watched, kept against new: two years and a month, so a January and a year's turn are among them. |
-| 290 | `KeptCheck.KEPT_MONTH_MS` | `12` | The budget for the kept People page's month - its draw, then the pulse's CSS and layout - at CITY_MONTHS, on the PC. |
-| 293 | `KeptCheck.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` | Where a month's log goes while month() runs it: nowhere. |
-| 388 | `KeptCheck.SHADE_LEVELS` | `64` | The most a pixel of the kept page may differ from the new page's, in any channel, out of 255: the edge of a small shape a kept picture moved to another place on the page is shaded by the renderer's... |
-| 391 | `KeptCheck.SHADED_SHARE` | `0.001` | ...and at most this share of the page's pixels may differ at all (114 and 110 of 2.8 million measured). |
-| 434 | `KeptCheck.KEPT_CHROME_MS` | `4` | The budget for the kept chrome's month - the header's and the rail's draw, then the pulse's CSS and layout over both - at CITY_MONTHS, on the PC. |
-| 437 | `KeptCheck.CHROME_SCREENS` | `{ "showPopulationInfoMenu", "showLandMenu", "showSectorMenu", "showBankMenu", "showHist...` | The screens the chrome is shown on, one a month: the tab lit on the rail follows, and the last is a game menu (no clock, no rail). |
-| 659 | `KeptCheck.KEPT_ALL_CHROME_MS` | `8` | The budget for the whole chrome kept, in one month: the header, the rail and the three panels, drawn and laid out. |
-| 929 | `KeptCheck.KEPT_HISTORY_MS` | `13` | The budget for the kept City History month - its draw, then the pulse's CSS and layout - at CITY_MONTHS, on the PC: twice the kept month's median, rounded up (5.0 to 8.2 ms in five runs, 6.2 betwee... |
-| 959 | `KeptCheck.TICKED` | `"unemployment"` | The first of these lines picked and not in the preset the page opens on: a line to tick and untick. |
-| 1423 | `KeptCheck.HANDED_BACK` | `0.9` | The share of a page's nodes a month's redraw hands back, at least: nine in ten (the People page's rule). |
-| 1680 | `KeptCheck.KEPT_INFRASTRUCTURE_MS` | `9` | The budget for the kept Infrastructure month - its draw, then the pulse's CSS and layout, on the Roads page - at CITY_MONTHS, on the PC: twice the kept month's median, rounded up (2.7 to 6.3 ms in ... |
-| 1687 | `KeptCheck.KEPT_SERVICES_MS` | `13` | The budget for the kept Services month - its draw, then the pulse's CSS and layout, on the Health overview - at CITY_MONTHS, on the PC: twice the kept month's median, rounded up (4.8 to 10.5 ms in ... |
-| 1694 | `KeptCheck.KEPT_LAND_MS` | `5` | The budget for the kept land office month - its draw, then the pulse's CSS and layout, on the office as it opens - at CITY_MONTHS, on the PC: twice the kept month's median, rounded up (2.1 to 3.3 m... |
-| 1734 | `KeptCheck.SERVICES_FOLDS` | `{ { "Health/Overview", "health:sick" }, { "Health/General care", "health:general" }, { ...` | The folds each sub-page of Services has, by "system/page" (a page not named has none). |
-| 2037 | `KeptCheck.KEPT_BUILD_MS` | `12` | The budget for the kept Build month - its draw, then the pulse's CSS and layout - at CITY_MONTHS, on the PC, on the Overview and on a city category with two orders dialled up and a card's stats pin... |
-| 2044 | `KeptCheck.KEPT_CONSTRUCTION_MS` | `4` | The budget for the kept construction page's month - its draw, then the pulse's CSS and layout, on the Sites tab with the city's sites on - at CITY_MONTHS, on the PC: twice the kept month's median, ... |
-| 2047 | `KeptCheck.SITE_ROWS` | `6` | The rows the Sites tab and the timeline are kept at while Build and the construction page are watched: a site each. |
-| 2050 | `KeptCheck.SITE_ORDER` | `{ "Gravel Road", "Walk-in Clinic", "Paved Road", "Bus Network", "Elementary School", "P...` | What is ordered, in turn, to put a site on: the cheap, quick works first. |
-| 2626 | `KeptCheck.KEPT_SECTORS_MS` | `18` | The budget for the kept Sectors list month - its draw, then the pulse's CSS and layout - at CITY_MONTHS, on the PC: twice the kept month's median, rounded up (8.3 to 9.2 ms in five runs, 8.8 betwee... |
-| 2635 | `KeptCheck.KEPT_SECTOR_MS` | `15` | The budget for the kept month on a business's page - its draw, then the pulse's CSS and layout - at CITY_MONTHS, on the PC, the heaviest of the three pages costed (the shops' Operations; a plain bu... |
-| 2638 | `KeptCheck.PICTURE_MONTHS` | `6` | The months the pictures are watched through (section 50): each month a repaint or not, and a page built new beside it. |
-| 2644 | `KeptCheck.NOT_PLAIN` | `java.util.Set.of(Sectors.RETAIL, Sectors.RESTAURANTS, Sectors.LUXURY_RETAIL, Sectors.RE...` | The keys a plain business is not taken from: the shops, the kitchens, the counters, the landlords, the haulier and the fuel's two. |
-| 2661 | `KeptCheck.WORKS_ORDER` | `{ "Sawmill", "Scrap Yard", "Wood Pellet Mill", "Panel Mill" }` | What a materials industry's works are made of, in turn, for a city that has none standing: a sawmill first, the rest if it cannot. |
-| 3266 | `KeptCheck.KEPT_BANK_MS` | `12` | The budget for the kept Bank month - its draw, then the pulse's CSS and layout - on the Bank's heaviest page (the Overview), on the PC: twice the kept month's median, rounded up (5.2 to 8.3 ms in f... |
-| 3273 | `KeptCheck.KEPT_FINANCES_MS` | `18` | The budget for the kept Finances month on the heaviest of the two pages costed (Borrow at home, the page the auction draws, and the page with the most nodes), on the PC: twice the kept month's medi... |
-| 3282 | `KeptCheck.KEPT_FUND_MS` | `321` | The budget for the kept month on the fund's heaviest page (Search and Activity, the two costed, weigh most; their size follows the city's age: the bonds it has issued are the rows of Search, its mo... |
-| 3298 | `KeptCheck.BANK_FOLDS` | `{ { "Profit", "profit:statement", "Interest earned", "Fees", "Provisions for loans expe...` | What the Bank's folds hold, by page: the fold's key, then the lines a player opens inside it (each a key the page's own bookLine opens by). |
-| 3496 | `KeptCheck.PAPER` | `{ { "Note", "12", "" }, { "Float", "5", "" }, { "Serial", "10", "" }, { "Term", "10", "...` | The paper the money sections sell, one of each kind the Borrow page offers (and a callable bond too): {kind, term, "callable" or ""}. |
-| 3914 | `KeptCheck.MOST_TO_PAY` | `{ "98.5", "101.5" }` | The most to pay typed on Close it now in the odd months of the watch, by turns (Spot's month hand). |
-| 4565 | `KeptCheck.KEPT_GOVERNMENT_MS` | `7` | The budget for the kept Government month - its draw, then the pulse's CSS and layout - on the Overview, at month 3,500 of a played city (about where KeptCheck is when it comes to the Government tab... |
-| 4573 | `KeptCheck.KEPT_TRADE_MS` | `10` | The budget for the kept Trade month - its draw, then the pulse's CSS and layout - on the Overview and on the heaviest of its pages (the reserves), the larger of the two being the figure, at month 3... |
-| 4581 | `KeptCheck.KEPT_POLICY_MS` | `10` | The budget for the kept Policy month - its draw, then the pulse's CSS and layout - on the hub and on the pages heavy with dials (Taxes' Profit page and the policy rate's), the largest of them being... |
-| 4590 | `KeptCheck.KP6_HANDED_BACK` | `.75` | The share of a KP6 page's nodes a month's redraw has to hand back after a choice, at least: three in four. |
-| 4603 | `KeptCheck.TRADE_FOLDS_THAT_ADD` | `java.util.Set.of("month:ledger", "reserves:eight")` | The folds the Trade sections open that have to add to their page in any city that trades: the month's ledger and the eight moneys over the years. |
-| 5841 | `KeptCheck.CLOCK_MONTHS` | `3` | The months landed, each followed by the clock's redraw, on every screen in section 88. |
-| 5947 | `KeptCheck.KEPT_HOUSEHOLD_MS` | `8` | The budget for the kept Household money month - its draw, then the pulse's CSS and layout - on the page as it opens and with the first family cell's books open (the larger of the two being the figu... |
-| 5955 | `KeptCheck.KEPT_RANKINGS_MS` | `7` | The budget for the kept Rankings month - its draw, then the pulse's CSS and layout - on the tab as it opens and with every measure unfolded (Browse all: a line a measure; the larger of the two bein... |
+| 301 | `KeptCheck.CITY_MONTHS` | `600` | The months the city is played to before the page is watched: a city with a history, households of every shape, a full ladder. |
+| 304 | `KeptCheck.MONTHS` | `25` | The months watched, kept against new: two years and a month, so a January and a year's turn are among them. |
+| 307 | `KeptCheck.KEPT_MONTH_MS` | `12` | The budget for the kept People page's month - its draw, then the pulse's CSS and layout - at CITY_MONTHS, on the PC. |
+| 310 | `KeptCheck.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` | Where a month's log goes while month() runs it: nowhere. |
+| 405 | `KeptCheck.SHADE_LEVELS` | `64` | The most a pixel of the kept page may differ from the new page's, in any channel, out of 255: the edge of a small shape a kept picture moved to another place on the page is shaded by the renderer's... |
+| 408 | `KeptCheck.SHADED_SHARE` | `0.001` | ...and at most this share of the page's pixels may differ at all (114 and 110 of 2.8 million measured). |
+| 451 | `KeptCheck.KEPT_CHROME_MS` | `4` | The budget for the kept chrome's month - the header's and the rail's draw, then the pulse's CSS and layout over both - at CITY_MONTHS, on the PC. |
+| 454 | `KeptCheck.CHROME_SCREENS` | `{ "showPopulationInfoMenu", "showLandMenu", "showSectorMenu", "showBankMenu", "showHist...` | The screens the chrome is shown on, one a month: the tab lit on the rail follows, and the last is a game menu (no clock, no rail). |
+| 676 | `KeptCheck.KEPT_ALL_CHROME_MS` | `8` | The budget for the whole chrome kept, in one month: the header, the rail and the three panels, drawn and laid out. |
+| 946 | `KeptCheck.KEPT_HISTORY_MS` | `13` | The budget for the kept City History month - its draw, then the pulse's CSS and layout - at CITY_MONTHS, on the PC: twice the kept month's median, rounded up (5.0 to 8.2 ms in five runs, 6.2 betwee... |
+| 976 | `KeptCheck.TICKED` | `"unemployment"` | The first of these lines picked and not in the preset the page opens on: a line to tick and untick. |
+| 1440 | `KeptCheck.HANDED_BACK` | `0.9` | The share of a page's nodes a month's redraw hands back, at least: nine in ten (the People page's rule). |
+| 1697 | `KeptCheck.KEPT_INFRASTRUCTURE_MS` | `9` | The budget for the kept Infrastructure month - its draw, then the pulse's CSS and layout, on the Roads page - at CITY_MONTHS, on the PC: twice the kept month's median, rounded up (2.7 to 6.3 ms in ... |
+| 1704 | `KeptCheck.KEPT_SERVICES_MS` | `13` | The budget for the kept Services month - its draw, then the pulse's CSS and layout, on the Health overview - at CITY_MONTHS, on the PC: twice the kept month's median, rounded up (4.8 to 10.5 ms in ... |
+| 1711 | `KeptCheck.KEPT_LAND_MS` | `5` | The budget for the kept land office month - its draw, then the pulse's CSS and layout, on the office as it opens - at CITY_MONTHS, on the PC: twice the kept month's median, rounded up (2.1 to 3.3 m... |
+| 1751 | `KeptCheck.SERVICES_FOLDS` | `{ { "Health/Overview", "health:sick" }, { "Health/General care", "health:general" }, { ...` | The folds each sub-page of Services has, by "system/page" (a page not named has none). |
+| 2054 | `KeptCheck.KEPT_BUILD_MS` | `12` | The budget for the kept Build month - its draw, then the pulse's CSS and layout - at CITY_MONTHS, on the PC, on the Overview and on a city category with two orders dialled up and a card's stats pin... |
+| 2061 | `KeptCheck.KEPT_CONSTRUCTION_MS` | `4` | The budget for the kept construction page's month - its draw, then the pulse's CSS and layout, on the Sites tab with the city's sites on - at CITY_MONTHS, on the PC: twice the kept month's median, ... |
+| 2064 | `KeptCheck.SITE_ROWS` | `6` | The rows the Sites tab and the timeline are kept at while Build and the construction page are watched: a site each. |
+| 2067 | `KeptCheck.SITE_ORDER` | `{ "Gravel Road", "Walk-in Clinic", "Paved Road", "Bus Network", "Elementary School", "P...` | What is ordered, in turn, to put a site on: the cheap, quick works first. |
+| 2643 | `KeptCheck.KEPT_SECTORS_MS` | `18` | The budget for the kept Sectors list month - its draw, then the pulse's CSS and layout - at CITY_MONTHS, on the PC: twice the kept month's median, rounded up (8.3 to 9.2 ms in five runs, 8.8 betwee... |
+| 2652 | `KeptCheck.KEPT_SECTOR_MS` | `15` | The budget for the kept month on a business's page - its draw, then the pulse's CSS and layout - at CITY_MONTHS, on the PC, the heaviest of the three pages costed (the shops' Operations; a plain bu... |
+| 2655 | `KeptCheck.PICTURE_MONTHS` | `6` | The months the pictures are watched through (section 50): each month a repaint or not, and a page built new beside it. |
+| 2661 | `KeptCheck.NOT_PLAIN` | `java.util.Set.of(Sectors.RETAIL, Sectors.RESTAURANTS, Sectors.LUXURY_RETAIL, Sectors.RE...` | The keys a plain business is not taken from: the shops, the kitchens, the counters, the landlords, the haulier and the fuel's two. |
+| 2678 | `KeptCheck.WORKS_ORDER` | `{ "Sawmill", "Scrap Yard", "Wood Pellet Mill", "Panel Mill" }` | What a materials industry's works are made of, in turn, for a city that has none standing: a sawmill first, the rest if it cannot. |
+| 3283 | `KeptCheck.KEPT_BANK_MS` | `12` | The budget for the kept Bank month - its draw, then the pulse's CSS and layout - on the Bank's heaviest page (the Overview), on the PC: twice the kept month's median, rounded up (5.2 to 8.3 ms in f... |
+| 3290 | `KeptCheck.KEPT_FINANCES_MS` | `18` | The budget for the kept Finances month on the heaviest of the two pages costed (Borrow at home, the page the auction draws, and the page with the most nodes), on the PC: twice the kept month's medi... |
+| 3299 | `KeptCheck.KEPT_FUND_MS` | `321` | The budget for the kept month on the fund's heaviest page (Search and Activity, the two costed, weigh most; their size follows the city's age: the bonds it has issued are the rows of Search, its mo... |
+| 3315 | `KeptCheck.BANK_FOLDS` | `{ { "Profit", "profit:statement", "Interest earned", "Fees", "Provisions for loans expe...` | What the Bank's folds hold, by page: the fold's key, then the lines a player opens inside it (each a key the page's own bookLine opens by). |
+| 3513 | `KeptCheck.PAPER` | `{ { "Note", "12", "" }, { "Float", "5", "" }, { "Serial", "10", "" }, { "Term", "10", "...` | The paper the money sections sell, one of each kind the Borrow page offers (and a callable bond too): {kind, term, "callable" or ""}. |
+| 3931 | `KeptCheck.MOST_TO_PAY` | `{ "98.5", "101.5" }` | The most to pay typed on Close it now in the odd months of the watch, by turns (Spot's month hand). |
+| 4643 | `KeptCheck.KEPT_GOVERNMENT_MS` | `7` | The budget for the kept Government month - its draw, then the pulse's CSS and layout - on the Overview, at month 3,500 of a played city (about where KeptCheck is when it comes to the Government tab... |
+| 4651 | `KeptCheck.KEPT_TRADE_MS` | `10` | The budget for the kept Trade month - its draw, then the pulse's CSS and layout - on the Overview and on the heaviest of its pages (the reserves), the larger of the two being the figure, at month 3... |
+| 4659 | `KeptCheck.KEPT_POLICY_MS` | `10` | The budget for the kept Policy month - its draw, then the pulse's CSS and layout - on the hub and on the pages heavy with dials (Taxes' Profit page and the policy rate's), the largest of them being... |
+| 4668 | `KeptCheck.KP6_HANDED_BACK` | `.75` | The share of a KP6 page's nodes a month's redraw has to hand back after a choice, at least: three in four. |
+| 4681 | `KeptCheck.TRADE_FOLDS_THAT_ADD` | `java.util.Set.of("month:ledger", "reserves:eight")` | The folds the Trade sections open that have to add to their page in any city that trades: the month's ledger and the eight moneys over the years. |
+| 6076 | `KeptCheck.CLOCK_MONTHS` | `3` | The months landed, each followed by the clock's redraw, on every screen in section 88. |
+| 6182 | `KeptCheck.KEPT_HOUSEHOLD_MS` | `8` | The budget for the kept Household money month - its draw, then the pulse's CSS and layout - on the page as it opens and with the first family cell's books open (the larger of the two being the figu... |
+| 6190 | `KeptCheck.KEPT_RANKINGS_MS` | `7` | The budget for the kept Rankings month - its draw, then the pulse's CSS and layout - on the tab as it opens and with every measure unfolded (Browse all: a line a measure; the larger of the two bein... |
+| 6607 | `KeptCheck.NOT_KP2B` | `java.util.Set.of("UserInterface.java", "InfrastructureScreen.java", "ServicesScreen.java")` | The files of the screens KP2b's sweep did not reach, whose writes section 92 names and does not count: the sweep was the list of screens Pieces, the statements, Sectors, Land, the Bank, the fund, F... |
 
 ### KnownRedsCheck.java ([map](map/KnownRedsCheck.md))
 

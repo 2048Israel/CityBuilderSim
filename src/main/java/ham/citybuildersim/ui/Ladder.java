@@ -78,6 +78,9 @@ public final class Ladder {
     /** The gap between the buttons, the slider and the reading. */
     static final double GAP = 10;
 
+    /** The room left of the marks under a slider, as wide as the step button and the gap: one object (KP2b), since a padding made again at each draw is a change at each. */
+    private static final javafx.geometry.Insets MARKS_ROOM = new javafx.geometry.Insets(0, 0, 0, BUTTON + GAP);
+
     private final double min, max, step;
     private final DoubleFunction<String> reads;
     private DoubleFunction<String> stepReads;
@@ -190,13 +193,16 @@ public final class Ladder {
         if (!held) settle(bar, min, max, at);
         drawn = thumb;
 
-        Label reading = Kept.label("");
+        // The reading's words and style are worked out first and set once each (KP2b): a label made empty and then told its words is two
+        // changes of its text a draw, and the CSS and layout they ask for run every month.
+        Said says = said(thumb, held ? moved(thumb, current, step) : off);
+        Label reading = Kept.label(says.text());
+        reading.setStyle(says.style());
         reading.setPrefWidth(READING);
         reading.setMinWidth(READING);
         reading.setAlignment(Pos.CENTER_RIGHT);
         reading.setWrapText(true);
         bar.getProperties().put(READING_LABEL, reading);
-        read(reading, thumb, held ? moved(thumb, current, step) : off);
 
         // Added once, and it reads the ladder and the reading of the latest build: what the first build
         // captured is last month's. The ladder's own sets at a draw are not the player's, and say nothing.
@@ -233,7 +239,7 @@ public final class Ladder {
             Marks under = Kept.of(Marks.class, Marks::new);
             under.set(min, this.max, markAt, markNames, slider);
             HBox lane = Kept.row(0, under);
-            lane.setPadding(new javafx.geometry.Insets(0, 0, 0, BUTTON + GAP));
+            lane.setPadding(MARKS_ROOM);
             lane.setMaxWidth(wide);
             box.getChildren().add(lane);
         }
@@ -253,15 +259,20 @@ public final class Ladder {
         return Double.isNaN(drawn) ? bounded(Double.isNaN(placed) ? current : placed) : drawn;
     }
 
+    /** What a reading shows: its words and its style. */
+    private record Said(String text, String style) { }
+
     /** What the reading says for a thumb at v: the figure, in accent off the city's value, or the idle words in grey. */
+    private Said said(double v, boolean away) {
+        if (!away && idle != null) return new Said(idle, Palette.words(Palette.SIZE_BODY, Palette.TEXT_MUTED));
+        return new Said(reads.apply(v), Palette.figure(Palette.SIZE_BODY, tone(away)));
+    }
+
+    /** The reading told what it says for a thumb at v (the listener's, between draws; a draw sets the same two once, in build()). */
     private void read(Label reading, double v, boolean away) {
-        if (!away && idle != null) {
-            reading.setText(idle);
-            reading.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_MUTED));
-        } else {
-            reading.setText(reads.apply(v));
-            reading.setStyle(Palette.figure(Palette.SIZE_BODY, tone(away)));
-        }
+        Said says = said(v, away);
+        reading.setText(says.text());
+        reading.setStyle(says.style());
     }
 
     /**
