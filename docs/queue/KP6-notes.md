@@ -1,8 +1,8 @@
 # KP6 - Screens kept: Government, Trade, Policy and zoning ({next}, 2026-11-05)
 
 **WHERE IT STANDS** (2026-11-06): the four slices are in and reviewed (B bfcbf25e, A a6f7ddef, C 911af0bc, D 342f0a38,
-with Opus's mends d3edf5ff and cad44d6f); KP5's mended branch merged in (183aa5d5), `--pick` exit 3 on it, main's
-recorded reds only (§5); the ship file waits for KP5 on main.
+with Opus's mends d3edf5ff and cad44d6f); ready: main merged in with KP5 0.9.25 and R2 0.9.24 (cc807683), `--pick`
+exit 3 on it, main's recorded reds only (§5).
 
 The batch's record. The study's KP6 row (`docs/studies/spec-screens-in-place.md` §7) with §3 (the pattern and its
 rules, seven since KP2) and §6 (what checks it). Lane 2 (screens), after KP5, built on `origin/batch/KP5` at its ship
@@ -145,6 +145,11 @@ Overview 7.3 of 10 and the reserves 2.8, Policy's hub 4.4, Profit 2.1 and the po
 `KEPT_GOVERNMENT_MS` is the tight one (89% of it under that load, as KP5's `KEPT_BANK_MS`, 10.6 of 12 in the same run);
 being new, a red on it would have no main to compare with. No full suite: the diff is `ui/` and `KeptCheck`, and the
 nine picked are the harnesses that read it; nothing outside `ui/` changed.
+
+On the merge with main (cc807683: KP5 0.9.25, R2 0.9.24's research catalogue), with the world files: `--pick` exit 3,
+the same nine, the same two reds, main's recorded (MapCheck 2d; KeptCheck 49 at 89.8%, gate.txt's line); every KP6
+line passes, 2,000 OK. Timed alone this time: Government's Overview 3.8 ms of 7, Trade's Overview 5.8 of 10 and the
+reserves 2.8, Policy's hub 4.1, Profit 2.0, the policy rate 4.4 of 10.
 
 ## 6. Found in review
 
