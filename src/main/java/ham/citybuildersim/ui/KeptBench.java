@@ -3686,4 +3686,85 @@ public final class KeptBench {
         });
         return out;
     }
+
+    /* =====================================================================
+       THE CLOCK ON EVERY RAIL SCREEN (KP7, slice D): the window's count of screens rebuilt in place, what the clock does after
+       a month lands, the condition that moves the count, and the show hands of the two rail tabs the bench had none for
+       ===================================================================== */
+
+    /** How many draws rebuilt the screen on show in place - the same screen drawn again with its page emptied - since the window was made (UserInterface.rebuiltInPlace). */
+    public int rebuiltInPlace() {
+        return ui.rebuiltInPlace;
+    }
+
+    /** What the clock does after a month lands: the screen on show drawn again by its own redraw (UserInterface.redraw(), the call the clock's drawPaced() makes). */
+    public void clockRedraw() {
+        ui.redraw();
+    }
+
+    /** The name the screen on show gives the window: the one its show method passes to clearMenu() or keepMenu(). */
+    public String screenShowing() {
+        return ui.currentScreen;
+    }
+
+    /**
+     * The condition that moves rebuiltInPlace, caused: a page drawn the old way (clearMenu() and a page put in the menu column) twice
+     * under one name, then People shown through its real show method, an arrival from that name. {the moves the two old-way draws
+     * made together - one, the second being the rebuild and the first an arrival - and the moves the arrival made - none}.
+     */
+    public int[] rebuildProbe() {
+        ensureWindow();
+        int start = ui.rebuiltInPlace;
+        for (int i = 0; i < 2; i++) {
+            ui.clearMenu("keptcheck-probe", () -> { });
+            ui.rootMenu.getChildren().add(new Label("a page drawn the old way"));
+        }
+        int pair = ui.rebuiltInPlace - start;
+        ui.peopleScreen.showPopulationInfoMenu();
+        return new int[]{pair, ui.rebuiltInPlace - start - pair};
+    }
+
+    /** The pool of the screen on show, by the name it gives the window, or null for a screen this does not know (a page drawn the old way, a menu). */
+    private Kept.Pool poolOnShow() {
+        return switch (ui.currentScreen) {
+            case "handleAllBuildingMenus" -> ui.buildScreen.pool;
+            case ConstructionScreen.SCREEN -> ui.constructionScreen.pool;
+            case "showLandMenu" -> ui.landScreen.pool;
+            case "showPopulationInfoMenu" -> ui.peopleScreen.pool;
+            case "showServicesStatsMenu" -> ui.servicesScreen.pool;
+            case "showInfrastructureMenu" -> ui.infrastructureScreen.pool;
+            case "showSectorMenu" -> ui.sectorScreen.pool;
+            case "showGovernmentMenu" -> ui.governmentScreen.pool;
+            case "showFinanceMenu" -> ui.financesScreen.pool;
+            case "showBankMenu" -> ui.bankScreen.pool;
+            case "showForeignMenu" -> ui.tradeScreen.pool;
+            case "showPolicyMenu" -> ui.policyScreen.pool;
+            case "showHistoryMenu" -> ui.historyScreen.pool;
+            // (KP7, part 2: Household money's and the Rankings tab's pools join this list.)
+            default -> null;
+        };
+    }
+
+    /**
+     * The nodes the last kept draw of the screen on show made new and handed back: {made, kept}, or null where the screen on show draws
+     * through no pool this knows. After the clock's redraw, kept above nought is the proof that the redraw ran the screen's page over its own nodes.
+     */
+    public int[] drawnOnShow() {
+        Kept.Pool pool = poolOnShow();
+        return pool == null ? null : new int[]{pool.lastMade(), pool.lastKept()};
+    }
+
+    /** The land office shown through its real show method, as the rail's tab or a month landing shows it (the chrome, then the page kept). */
+    public void showLand() {
+        ensureWindow();
+        ui.landScreen.showLandMenu();
+    }
+
+    /** The Services tab shown through its real show method, as the rail's tab or a month landing shows it (the chrome, then the page kept). */
+    public void showServices() {
+        ensureWindow();
+        ui.servicesScreen.showServicesStatsMenu();
+    }
+
+    // (KP7, part 2: the show hands of Household money and the Rankings tab, slices A and B's, are added here by the harness's second half.)
 }

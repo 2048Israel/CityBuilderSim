@@ -248,6 +248,12 @@ import java.util.concurrent.TimeUnit;
  *      its own Tooltip (Kept.tip) on every page of the three screens;
  *  81. it is cheap: the kept month on Government's Overview within KEPT_GOVERNMENT_MS, on Trade's Overview and its heaviest page within KEPT_TRADE_MS and
  *      on Policy's hub and its dial-heavy pages within KEPT_POLICY_MS through Timing, built new beside it.
+ *
+ * ...and, with Household money and the Rankings tab kept (KP7), no screen on the rail is rebuilt by the clock:
+ *  88. the clock never rebuilds a rail screen: a page drawn the old way twice under one name moves UserInterface.rebuiltInPlace by one, and an arrival by none
+ *      (the condition caused); then every tab of the rail, the construction page and the city's fund on Finances, each shown through its real show method and
+ *      then given three months with the screen's own redraw after each (what the clock does), moves the count by none, keeps the page's top nodes the same
+ *      nodes, keeps the same screen on show, and hands back nodes of the page it redraws over.
  */
 public class KeptCheck {
 
@@ -5794,6 +5800,115 @@ public class KeptCheck {
         });
     }
 
+    /** A rail screen the clock is held to in section 88: how it is called here, the name its show method gives the window, and the call that shows it. */
+    private record RailScreen(String label, String name, java.util.function.Consumer<KeptBench> show) { }
+
+    /** The months landed, each followed by the clock's redraw, on every screen in section 88. */
+    static final int CLOCK_MONTHS = 3;
+
+    /**
+     * Section 88: the clock never rebuilds a rail screen. UserInterface.rebuiltInPlace counts the draws that rebuilt the screen on show in place - the
+     * page emptied, the height held and the scroll settled, as every redraw was before the screens were kept. The fixture that causes it: a page drawn
+     * the old way twice under one name moves the count by one, and the next screen shown, an arrival, by none. Then every tab of the rail (and the
+     * Build tab's construction page, and the city's fund on Finances) is shown through its real show method, and CLOCK_MONTHS months land, each followed
+     * by what the clock does (the screen's own redraw): the count has not moved, the page's top nodes are the same nodes, the screen on show is the
+     * same screen, and the redraw ran over the screen's own nodes (it handed some back - without that the others would hold for a redraw that did nothing).
+     */
+    static void kp7Clock(Game g, KeptBench bench) throws Exception {
+        System.out.println("\n--- 88: the clock never rebuilds a rail screen ---");
+        fx(() -> {
+            bench.clock(false, null);
+            bench.speed(0);
+            return null;
+        });
+        int[] probe = fx(bench::rebuildProbe);
+        check("a page drawn the old way twice under one name moves the in-place count by one (it moved " + probe[0] + ")", probe[0] == 1);
+        check("...and the next real screen shown, an arrival, does not move it (it moved " + probe[1] + ")", probe[1] == 0);
+
+        List<String> buildPages = KeptBench.buildPages();
+        String cityPage = null, marketPage = null;
+        for (String p : buildPages.subList(1, buildPages.size())) {
+            if (KeptBench.buildIsCity(p)) {
+                if (cityPage == null) cityPage = p;
+            } else if (marketPage == null) marketPage = p;
+        }
+        final String city = cityPage, market = marketPage;
+        List<RailScreen> rail = new ArrayList<>();
+        rail.add(new RailScreen("Build, the Overview", "handleAllBuildingMenus", b -> {
+            b.buildOpen(buildPages.get(0));
+            b.showBuild();
+        }));
+        if (city != null) rail.add(new RailScreen("Build, " + city, "handleAllBuildingMenus", b -> {
+            b.buildOpen(city);
+            b.showBuild();
+        }));
+        if (market != null) rail.add(new RailScreen("Build, " + market, "handleAllBuildingMenus", b -> {
+            b.buildOpen(market);
+            b.showBuild();
+        }));
+        rail.add(new RailScreen("the construction page", "showConstruction", KeptBench::showConstruction));
+        rail.add(new RailScreen("the land office", "showLandMenu", KeptBench::showLand));
+        rail.add(new RailScreen("People", "showPopulationInfoMenu", KeptBench::showPeople));
+        rail.add(new RailScreen("Services", "showServicesStatsMenu", KeptBench::showServices));
+        rail.add(new RailScreen("Infrastructure", "showInfrastructureMenu", KeptBench::showInfrastructure));
+        rail.add(new RailScreen("Sectors", "showSectorMenu", KeptBench::showSectors));
+        rail.add(new RailScreen("Government", "showGovernmentMenu", KeptBench::showGovernment));
+        rail.add(new RailScreen("Finances", "showFinanceMenu", KeptBench::showFinances));
+        rail.add(new RailScreen("Finances, the city's fund", "showFinanceMenu", b -> {
+            b.financesOpen("The city's fund", "Portfolio");
+            b.showFinances();
+        }));
+        rail.add(new RailScreen("the Bank", "showBankMenu", KeptBench::showBank));
+        rail.add(new RailScreen("Trade & the World", "showForeignMenu", KeptBench::showTrade));
+        rail.add(new RailScreen("Policy", "showPolicyMenu", KeptBench::showPolicy));
+        rail.add(new RailScreen("City History", "showHistoryMenu", KeptBench::showHistory));
+        // (KP7, part 2: the rail's last two tabs, Rankings ("showRankingsMenu") and Household money behind People ("showHouseholdMenu"), join this
+        // list as one row each when slices A and B's show hands land in the bench.)
+
+        for (RailScreen s : rail) {
+            Object[] r = fx(() -> {
+                s.show().accept(bench);
+                List<javafx.scene.Node> top = bench.pageTop();
+                String shown = bench.screenShowing();
+                int before = bench.rebuiltInPlace();
+                for (int m = 0; m < CLOCK_MONTHS; m++) {
+                    month(g);
+                    bench.clockRedraw();
+                }
+                List<javafx.scene.Node> after = bench.pageTop();
+                boolean same = !top.isEmpty() && after.size() == top.size();
+                for (int i = 0; same && i < top.size(); i++) same = after.get(i) == top.get(i);
+                return new Object[]{bench.rebuiltInPlace() - before, same, top.size(), shown, bench.screenShowing(), bench.drawnOnShow()};
+            });
+            int moved = (int) r[0];
+            int[] drawn = (int[]) r[5];
+            System.out.printf("  %-28s rebuilt in place %d over %d months; %d top nodes; the last redraw made %s and handed back %s%n", s.label(), moved, CLOCK_MONTHS,
+                    (int) r[2], drawn == null ? "?" : String.valueOf(drawn[0]), drawn == null ? "?" : String.valueOf(drawn[1]));
+            check("the clock's redraw of " + s.label() + " rebuilt nothing in place (" + moved + " in " + CLOCK_MONTHS + " months)", moved == 0);
+            check("...and left its page's top nodes the same nodes (" + r[2] + " of them)", (boolean) r[1]);
+            check("...and the screen on show is still " + s.name() + " (it was " + r[3] + ", it is " + r[4] + ")", s.name().equals(r[3]) && s.name().equals(r[4]));
+            check("...and the redraw ran over the screen's own nodes (" + (drawn == null ? "no pool" : drawn[1] + " handed back, " + drawn[0] + " made") + ")",
+                    drawn != null && drawn[1] > 0);
+        }
+        // What the section opened is put back: Finances on its hub, Build on its Overview.
+        fx(() -> {
+            bench.financesOpen(null, null);
+            bench.buildOpen(buildPages.get(0));
+            return null;
+        });
+    }
+
+    /** Sections 82 to 90: Household money and the Rankings tab kept, and the clock never rebuilding a rail screen (88). */
+    static void screensKP7(Game g, KeptBench bench) throws Exception {
+        System.out.printf("%n=== Household money, the Rankings tab and the clock on every rail screen (KP7): a city at month %d ===%n", g.getMonth());
+        long t = System.nanoTime();
+        int c = checks;
+        // 82 to 84 (Household money) and 85 to 87 (the Rankings tab) go here, from slices A and B's bench hands; 89 (the hover and the
+        // tooltips on the two pages) and 90 (their cost) after 88. All four are written with the second half of KP7.
+        kp7Clock(g, bench);
+        tookWith("the clock on every rail screen (88)", t, c);
+    }
+
     /** A notice raised now, unread, in the inbox. */
     private static Notice add(Game g, String key, String title) {
         Notice n = new Notice(key, title, List.of("first line of " + key, "", "third line"), g.getMonth());
@@ -5802,7 +5917,7 @@ public class KeptCheck {
     }
 
     public static void main(String[] args) throws Exception {
-        System.out.println("=== KeptCheck: the People page, the chrome, City History, Infrastructure, Services, the land office, Build, the construction page, the Sectors tab, the Bank, Finances, the city's fund, Government, Trade & the World and Policy kept between redraws (study UP4, UP2, KP1, KP2, KP3, KP4, KP5, KP6) ===");
+        System.out.println("=== KeptCheck: the People page, the chrome, City History, Infrastructure, Services, the land office, Build, the construction page, the Sectors tab, the Bank, Finances, the city's fund, Government, Trade & the World and Policy kept between redraws, and the clock never rebuilding a rail screen (study UP4, UP2, KP1, KP2, KP3, KP4, KP5, KP6, KP7) ===");
         String down = startJavaFx();
         if (down != null) {
             System.out.println("skipped: the JavaFX toolkit cannot start here (" + down + "); the page needs it to be laid out");
@@ -5981,6 +6096,7 @@ public class KeptCheck {
         sectors(g, bench);
         money(g, bench);
         screensKP6(g, bench);
+        screensKP7(g, bench);
 
         System.out.println("\n" + (fails == 0 ? "ALL OK" : fails + " FAILED"));
         Platform.exit();
