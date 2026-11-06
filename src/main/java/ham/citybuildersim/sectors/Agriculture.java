@@ -83,6 +83,10 @@ public final class Agriculture extends Sector {
         makes(Good.DAIRY_EGGS);
         makes(Good.VEGETABLES);
         makes(Good.FRUIT);
+        // ...and the tractors' fuel (R1c; R0c call 5): today's farms buy diesel and some petrol, 4% of what they grow (buildings.json's readme,
+        // RECIPES). The horses' recipe, which a city founded the 1900 way runs, buys none.
+        uses(Good.DIESEL);
+        uses(Good.PETROL);
         blurb("Grows the city's dinner, and the grain its bakeries turn into bread. "
                 + "It needs almost no people and almost no power - what it needs is "
                 + "ground, more of it than anything else the city builds, and ground "

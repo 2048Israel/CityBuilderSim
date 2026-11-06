@@ -120,6 +120,18 @@ public abstract class Sector {
     protected final void makes(Good good)  { makes.add(good); }
     protected final void uses(Good good)   { uses.add(good); }
 
+    /**
+     * Declares every good a recipe makes and uses that the constructor did not (R1c; Recipes.apply() calls it where a template of this sector first
+     * runs the recipe): the sector then sells what it makes and buys what it uses. Once, and not undone, as Agriculture.setHorseShare() declares
+     * CROPS only once a share is set, so that a city that never runs a recipe off its top level (every city founded the default way) has this
+     * sector as it always was. Nothing for a null recipe.
+     */
+    public final void declareRecipeGoods(Recipe recipe) {
+        if (recipe == null) return;
+        for (Good good : recipe.makes().keySet()) makes(good);
+        for (Good good : recipe.uses().keySet()) uses(good);
+    }
+
     /** It keeps this many months of use of an input on hand, buying the difference each month. */
     protected final void pantry(Good good, double coverMonths) {
         uses.add(good);

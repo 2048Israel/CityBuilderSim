@@ -66,7 +66,7 @@
 
 **Uses:** [SpreadPlanner](SpreadPlanner.md) (53), [BuildingsTemplate](BuildingsTemplate.md) (29), [Good](Good.md) (24), [BusinessInvestment](BusinessInvestment.md) (10), [Game](Game.md) (5), [Sector](Sector.md) (4), [Traffic](Traffic.md) (4), [Haulage](Haulage.md) (2), [BuildingType](BuildingType.md) (1), [GoodsMarket](GoodsMarket.md) (1)
 
-**Used by (17):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [CementConcrete](CementConcrete.md), [CementConcreteCheck](CementConcreteCheck.md), [CopperRefining](CopperRefining.md), [CopperRefiningCheck](CopperRefiningCheck.md), [ExtractionSector](ExtractionSector.md), [Forestry](Forestry.md), [HaulageCheck](HaulageCheck.md), [HeavyIndustry](HeavyIndustry.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [Manufacturing](Manufacturing.md), [MaterialsCheck](MaterialsCheck.md), [Sector](Sector.md), [WoodProducts](WoodProducts.md), [WoodProductsCheck](WoodProductsCheck.md)
+**Used by (18):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [CementConcrete](CementConcrete.md), [CementConcreteCheck](CementConcreteCheck.md), [CopperRefining](CopperRefining.md), [CopperRefiningCheck](CopperRefiningCheck.md), [ExtractionSector](ExtractionSector.md), [Forestry](Forestry.md), [HaulageCheck](HaulageCheck.md), [HeavyIndustry](HeavyIndustry.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [Manufacturing](Manufacturing.md), [MaterialsCheck](MaterialsCheck.md), [RecipeCheck](RecipeCheck.md), [Sector](Sector.md), [WoodProducts](WoodProducts.md), [WoodProductsCheck](WoodProductsCheck.md)
 
 ## Sections
 

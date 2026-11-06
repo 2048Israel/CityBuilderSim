@@ -4130,6 +4130,9 @@ final class SectorScreen {
                         if (inv.onSite() > 0) {
                             h.getChildren().add(Kept.scope("on site", () -> caption(String.format("%,d on site", inv.onSite()), Palette.BUILDING)));
                         }
+                        // ...and the player's Fit, where a piece is known and a building is left to fit (R1b): a scope of its own (fitPill()).
+                        Node fit = fitPill(template);
+                        if (fit != null) h.getChildren().add(fit);
                         return h;
                     });
                     BuildCard.Kind kind = BuildCard.kindOf(template);
@@ -4171,6 +4174,44 @@ final class SectorScreen {
             box.setStyle("-fx-padding: 8 14 8 14; -fx-background-color: " + Palette.RAISED + "; -fx-background-radius: 8;");
             return box;
         });
+    }
+
+    /** The player's Fit last refused (R1b): the building and piece it was asked of ("template id:piece id"), the words, and the month, shown under its pill in that month only. */
+    private String fitRefusedKey, fitRefused;
+    private int fitRefusedMonth = -1;
+
+    /**
+     * The player's Fit (R1b): one small pill on a building's row, "Fit <piece> - <cost>" at the verdict's cost, for the first piece known in the city's
+     * year with a building of the stack left to fit (unfitted, less the fittings on site); null when there is none, which is every row of a city
+     * founded the default way. The city pays whatever the verdict says (Game.fitForCity()); the page is drawn again after the click, with a refusal
+     * written under the pill for the rest of that month.
+     *
+     * Kept (KP4): a scope keyed by the piece, its words this draw's, its click set at every draw on this draw's template (doorPill() sets, never adds),
+     * and the refusal a field read by the draw, so a kept pill is the pill a page built new would draw.
+     */
+    private Node fitPill(BuildingsTemplate t) {
+        BuildingsStacks stack = ui.game.getBuildingManager().getStack(t);
+        if (stack == null || !stack.hasUnfitted()) return null;
+        int year = CityCalendar.yearOf(ui.game.getMonth());
+        for (Equipment piece : t.getEquipment()) {
+            if (!piece.knownIn(year) || stack.getUnfitted(piece.getId()) - ui.game.getFittings().onSite(t.getId(), piece.getId()) <= 0) continue;
+            double cost = EquipmentFit.verdict(ui.game, stack, piece).cost();
+            String key = t.getId() + ":" + piece.getId();
+            String refused = key.equals(fitRefusedKey) && fitRefusedMonth == ui.game.getMonth() ? fitRefused : null;
+            return Kept.scope("fit:" + piece.getId(), () -> {
+                HBox pill = doorPill("Fit " + piece.getName() + (Double.isFinite(cost) ? " - " + m(cost) : ""), Icons.BUILD, Palette.BUILDING, () -> {
+                    String why = ui.game.fitForCity(t, piece.getId());
+                    fitRefusedKey = why == null ? null : key;
+                    fitRefused = why;
+                    fitRefusedMonth = ui.game.getMonth();
+                    showSectorMenu();
+                });
+                VBox box = Kept.column(2, pill);
+                if (refused != null) box.getChildren().add(Kept.scope("refused", () -> caption(refused, Palette.WARN)));
+                return box;
+            });
+        }
+        return null;
     }
 
     /** A gate's icon: the deposit's pick, the licence's cap, the staffing test's person, the land, the money - and the bank for the interest on its whole cost (0.7.122). */

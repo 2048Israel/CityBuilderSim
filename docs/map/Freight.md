@@ -1,4 +1,4 @@
-# Freight.java - 2,113 lines · 104 methods · 13 constants · sectors
+# Freight.java - 2,126 lines · 105 methods · 13 constants · sectors
 
 `ham/citybuildersim/sectors/Freight.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
@@ -64,9 +64,9 @@
 > =======================================================================
 > ... (58 more lines in the source)
 
-**Uses:** [Traffic](Traffic.md) (35), [Ports](Ports.md) (31), [Good](Good.md) (30), [BuildingsTemplate](BuildingsTemplate.md) (25), [BusinessInvestment](BusinessInvestment.md) (15), [JobType](JobType.md) (12), [Formats](Formats.md) (8), [Sector](Sector.md) (7), [Haulage](Haulage.md) (6), [PortDivision](PortDivision.md) (6), [Sectors](Sectors.md) (5), [Markets](Markets.md) (5), [Game](Game.md) (5), [InfrastructureManager](InfrastructureManager.md) (4), [BuildingManager](BuildingManager.md) (3), [GoodsMarket](GoodsMarket.md) (2), [SectorStatements](SectorStatements.md) (2), [PriceLevel](PriceLevel.md) (1), [BuildingType](BuildingType.md) (1)
+**Uses:** [Traffic](Traffic.md) (35), [Good](Good.md) (33), [Ports](Ports.md) (31), [BuildingsTemplate](BuildingsTemplate.md) (25), [BusinessInvestment](BusinessInvestment.md) (15), [JobType](JobType.md) (12), [Formats](Formats.md) (8), [Sector](Sector.md) (7), [Haulage](Haulage.md) (6), [PortDivision](PortDivision.md) (6), [Sectors](Sectors.md) (5), [Markets](Markets.md) (5), [Game](Game.md) (5), [InfrastructureManager](InfrastructureManager.md) (4), [BuildingManager](BuildingManager.md) (3), [GoodsMarket](GoodsMarket.md) (2), [SectorStatements](SectorStatements.md) (2), [PriceLevel](PriceLevel.md) (1), [BuildingType](BuildingType.md) (1)
 
-**Used by (43):** [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingVisual](BuildingVisual.md), [EconomyManager](EconomyManager.md), [EquipmentCheck](EquipmentCheck.md), [Forms1900Check](Forms1900Check.md), [FreightView](FreightView.md), [FreightViewCheck](FreightViewCheck.md), [FuelSplit](FuelSplit.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [Haulage](Haulage.md), [HaulageCheck](HaulageCheck.md), [HealthCheck](HealthCheck.md), [HomeRailCheck](HomeRailCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [LandlordPortCheck](LandlordPortCheck.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [OilCheck](OilCheck.md), [PolicyPreview](PolicyPreview.md), [PortCheck](PortCheck.md), [PortDivision](PortDivision.md), [Ports](Ports.md), [RailCheck](RailCheck.md), [RailDepotCheck](RailDepotCheck.md), [RefineryCheck](RefineryCheck.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [SectorScreen](SectorScreen.md), [Sectors](Sectors.md), [SpreadPlanner](SpreadPlanner.md), [TradeBand](TradeBand.md), [TradeBandCheck](TradeBandCheck.md), [TrainSchedule](TrainSchedule.md), [TruckCheck](TruckCheck.md), [TruckRouteCheck](TruckRouteCheck.md), [TruckSchedule](TruckSchedule.md), [WorldData](WorldData.md), [WorldDataCheck](WorldDataCheck.md), [WorldMarket](WorldMarket.md)
+**Used by (44):** [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingVisual](BuildingVisual.md), [EconomyManager](EconomyManager.md), [EquipmentCheck](EquipmentCheck.md), [FittingCheck](FittingCheck.md), [Forms1900Check](Forms1900Check.md), [FreightView](FreightView.md), [FreightViewCheck](FreightViewCheck.md), [FuelSplit](FuelSplit.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [Haulage](Haulage.md), [HaulageCheck](HaulageCheck.md), [HealthCheck](HealthCheck.md), [HomeRailCheck](HomeRailCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [LandlordPortCheck](LandlordPortCheck.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [OilCheck](OilCheck.md), [PolicyPreview](PolicyPreview.md), [PortCheck](PortCheck.md), [PortDivision](PortDivision.md), [Ports](Ports.md), [RailCheck](RailCheck.md), [RailDepotCheck](RailDepotCheck.md), [RefineryCheck](RefineryCheck.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [SectorScreen](SectorScreen.md), [Sectors](Sectors.md), [SpreadPlanner](SpreadPlanner.md), [TradeBand](TradeBand.md), [TradeBandCheck](TradeBandCheck.md), [TrainSchedule](TrainSchedule.md), [TruckCheck](TruckCheck.md), [TruckRouteCheck](TruckRouteCheck.md), [TruckSchedule](TruckSchedule.md), [WorldData](WorldData.md), [WorldDataCheck](WorldDataCheck.md), [WorldMarket](WorldMarket.md)
 
 ## Sections
 
@@ -76,12 +76,12 @@
 | 893 | · the fleet |
 | 939 | · the stations (FR7) |
 | 1140 | · the Haulage division's seam (FR2) |
-| 1310 | · the Ports division's seam (FR3) |
-| 1401 | · what it is doing, for everyone else |
-| 1557 | PLANNING - the freight nobody is carrying |
-| 1837 | · the books |
-| 1872 | · the screen |
-| 1968 | · save/load |
+| 1323 | · the Ports division's seam (FR3) |
+| 1414 | · what it is doing, for everyone else |
+| 1570 | PLANNING - the freight nobody is carrying |
+| 1850 | · the books |
+| 1885 | · the screen |
+| 1981 | · save/load |
 
 ## Constants
 
@@ -134,7 +134,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 144 | 1970 | **type** `public final class Freight extends Sector` | The Freight sector: the city's carrier, in the railway's slot (FR2, 2026-10-18; docs/studies/spec-freight-and-infrastructure.md 3.1, D1). |
+| 144 | 1983 | **type** `public final class Freight extends Sector` | The Freight sector: the city's carrier, in the railway's slot (FR2, 2026-10-18; docs/studies/spec-freight-and-infrastructure.md 3.1, D1). |
 | 454 | 20 | `public Freight()` |  |
 
 ### THE MONTH (lines 475-892)
@@ -177,7 +177,7 @@
 | 1123 | 1 | `public double getBulkOffered()` | The bulk the railway was offered in the month billed (FR7): rTonnes less the goods; none after a load until the next haul. |
 | 1132 | 7 | `public void setMonthForTest(double bulkOffered, double goodsOffered, double lorryPerTonne)` | Hands the planner a month it did not run (FR7's harness): the bulk and the goods offered the railway, and what a lorry charges for a tonne of them. |
 
-### the Haulage division's seam (FR2) (lines 1140-1309)
+### the Haulage division's seam (FR2) (lines 1140-1322)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -193,101 +193,102 @@
 | 1251 | 6 | `public double portsPayrollShare()` | The berths' crews' share of the payroll it pays (FR3): portsPayroll() over getPayroll(); 0 with no terminal or no payroll. |
 | 1264 | 11 | `public double[] portsCrewByKind()` | The month's crew wages by kind of cargo, in Ports.Cargo order (FR3): each kind's terminals' posts at the wage of each tier and its fill - what the city paid for them before the crews moved - for the Ports division to ... |
 | 1277 | 1 | `double trucksHeld()` | Trucks owned: the TRUCKS pantry. |
-| 1280 | 1 | `void seedTrucks(double trucks)` | The first fleet, free, the month there is a city leg to carry (Haulage.closeMonth(); Sector.vansKnown's reason). |
-| 1283 | 4 | `double trucksBought()` | What the month's trucks cost it, bought at home and abroad: the statement in progress's TRUCKS, before the strike banks it (Haulage's running cost). |
-| 1289 | 1 | `void wearTrucks(double trucks)` | A month of the trucks' wear, out of the pantry. |
-| 1292 | 4 | `double truckPrice()` | What a truck is worth on this sector's books: the market's price as getInventoryValue() reads it. |
-| 1298 | 3 | `Markets.Draw drawDiesel(double litres, Sectors sectors)` | The trucks' diesel, drawn as a buyer as the railway's is: the refiners' shelf first, the world for the rest. |
-| 1303 | 3 | `Markets.Draw drawFeed(double tonnes, Sectors sectors)` | The horses' feed, drawn as a buyer as the diesel is (Haulage's horse form, R0c): the farms' shelf first, the world for the rest - crops. |
-| 1308 | 1 | `void bookHaulage(double amount)` | Haulage's bill, as this sector's other revenue; named "Haulage billed" (nameOtherRevenue()). |
+| 1280 | 5 | `void seedTrucks(double trucks)` | The first fleet, free, the month there is a city leg to carry (Haulage.closeMonth(); Sector.vansKnown's reason). |
+| 1291 | 3 | `public void deliverTrucks(double trucks)` | Trucks delivered to the fleet by a fitting (R1b; Game.fit() for a piece that ends CART_HORSES): ADDED to the trucks held, never replacing them. |
+| 1296 | 4 | `double trucksBought()` | What the month's trucks cost it, bought at home and abroad: the statement in progress's TRUCKS, before the strike banks it (Haulage's running cost). |
+| 1302 | 1 | `void wearTrucks(double trucks)` | A month of the trucks' wear, out of the pantry. |
+| 1305 | 4 | `double truckPrice()` | What a truck is worth on this sector's books: the market's price as getInventoryValue() reads it. |
+| 1311 | 3 | `Markets.Draw drawDiesel(double litres, Sectors sectors)` | The trucks' diesel, drawn as a buyer as the railway's is: the refiners' shelf first, the world for the rest. |
+| 1316 | 3 | `Markets.Draw drawFeed(double tonnes, Sectors sectors)` | The horses' feed, drawn as a buyer as the diesel is (Haulage's horse form, R0c): the farms' shelf first, the world for the rest - crops. |
+| 1321 | 1 | `void bookHaulage(double amount)` | Haulage's bill, as this sector's other revenue; named "Haulage billed" (nameOtherRevenue()). |
 
-### the Ports division's seam (FR3) (lines 1310-1400)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1313 | 1 | `public PortDivision portDivision()` | The Ports division: the crews of the city's berths, who bill the handling and pay the city its dues (FR3). |
-| 1316 | 1 | `Game gameOf()` | The game this sector plays in, for the division's rate and dial; null in a bare fixture. |
-| 1319 | 1 | `ham.citybuildersim.BuildingManager buildingsOf()` | The city's buildings, for the division's berths and their book value. |
-| 1322 | 1 | `void bookPortHandling(double amount)` | The Ports division's handling bill, as this sector's other revenue; named "Port handling billed" (nameOtherRevenue()). |
-| 1325 | 1 | `void payPortDues(double amount)` | ...and the dues it pays the city, an operating cost named "Port dues": its cash falls by them at the strike and the treasury takes them in the same month (Sector.payTheCity()). |
-| 1328 | 1 | `double diplomaWage()` | What a post on the DIPLOMA tier costs a month, the drivers' tier; nothing with no game to ask. |
-| 1331 | 1 | `double noDiplomaWage()` | ...and on the NO_DIPLOMA tier, a carter's (Haulage's horse form, R0c). |
-| 1333 | 6 | `private double wageOf(JobType tier)` |  |
-| 1353 | 6 | `double haulageShareOf(ToDoubleFunction<BuildingsTemplate> f)` | The Truck Depots' share of one of this sector's cost lines, by a figure of their buildings: the finished depots' sum of it over every finished building's, or 0 when there is none to share (no buildings, or none that h... |
-| 1372 | 9 | `public double haulagePayrollShare()` | ...and its payroll's share by the posts OFFERED (FR2, ★2): a depot's drivers for the places no truck fills are laid off and paid by nobody (Haulage.strikeDrivers()), so they are in neither side of the ratio. |
-| 1393 | 7 | `double haulageShareOfSites(ToDoubleFunction<BuildingsTemplate> f)` | ...and the same share for the BALANCE SHEET's lines, the buildings' value and the ground under them, which count the buildings on site as well as the finished (EconomyManager.pushBalanceSheetInputs(): "Buildings finis... |
-
-### what it is doing, for everyone else (lines 1401-1556)
+### the Ports division's seam (FR3) (lines 1323-1413)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1403 | 1 | `public double getQuote()` |  |
-| 1404 | 1 | `public double getCapacityTonnes()` |  |
-| 1406 | 1 | `public double getTradeTonnes()` | Every tonne that crossed the boundary in the month, by sea as well (0.7.86). |
-| 1409 | 1 | `public double getOfferedTonnes()` | ...and what of it the railway was offered: all of it, less what the berths that go before it took (0.7.86). |
-| 1410 | 1 | `public double getHauledTonnes()` |  |
-| 1413 | 1 | `public double railedIn(ham.citybuildersim.Ports.Cargo k)` | Tonnes of a kind the railway landed, the month billed (0.8.2, batch FR1): the map's trains' to count, read by nothing in the model. |
-| 1415 | 1 | `public double railedOut(ham.citybuildersim.Ports.Cargo k)` | ...and shipped. |
-| 1418 | 1 | `public double truckedIn()` | Tonnes the city's trucks carried from the gates to their buyers, the month billed (0.8.8, batch FR5): imports less the siding's relief, the map's trucks' to count, read by nothing in the model. |
-| 1420 | 1 | `public double truckedOut()` | ...and from their makers to the gates, less the same relief. |
-| 1422 | 1 | `public double truckedHome()` | ...and between two firms of the city, bought at home: they cross no edge. |
-| 1423 | 1 | `public double getTightness()` |  |
-| 1424 | 1 | `public double getTruckBill()` |  |
-| 1425 | 1 | `public double getHaulageBilled()` |  |
-| 1426 | 1 | `public double getFuelBill()` |  |
-| 1429 | 1 | `public double getFuelImported()` | ...and the part of it bought from the world (0.7.62): all of it with no refinery in the city. |
-| 1432 | 1 | `public double getHomeShare()` | The share of the city's own bulk the railway carries, in force now (FR6): of the siding's part of what was bought at home. |
-| 1435 | 1 | `public double getQuayShare()` | ...and of the quay bulk's yard part (FR6, D7); zero with no port yard. |
-| 1438 | 1 | `public double getHomeOffered()` | The city tonnes the railway was offered in the month billed (FR6): the home tonnes' siding part, and the quay's yard part when a yard stood. |
-| 1441 | 1 | `public double getHomeRailed()` | The home tonnes the railway carried in the month billed (FR6), at the share in force while they moved. |
-| 1444 | 1 | `public double getQuayRailed()` | ...and the quay's, the port yard's (FR6, D7). |
-| 1447 | 1 | `public double getHomeBill()` | What the railway billed on the home and the quay tonnes in the month billed (FR6): the city leg's rate, the railway's quote on Haulage's. |
-| 1450 | 1 | `public double getCityLitres()` | The litres of diesel the month billed's city tonnes burned (FR6): CITY_LITRES_A_TONNE each; part of getFuelLitres(), none after a load until the next haul. |
-| 1453 | 1 | `public double getFuelLitres()` | The litres of diesel the last haul drew (0.7.95): its tonnes at FUEL_LITRES_PER_TONNE, and the city tonnes at CITY_LITRES_A_TONNE (FR6); none after a load until the next. |
-| 1456 | 1 | `public double getFuelLitresImported()` | ...and the litres of it the world sold, the refiners' tanks having none left (Markets.draw()). |
-| 1465 | 1 | `public double getAllowedRevenue()` | What a month has to bring in: everything it costs to run, plus the return on the track. |
-| 1468 | 1 | `public double getRunningCost()` | The railway's running cost in the month billed (FR2): the Rail division's share of the sector's lines and its fuel - what its bill is measured against now that the sector's net income holds the trucks' as well. |
-| 1486 | 1 | `public double getPaidAbroad()` | THE MONTH'S LORRY BILL, THREE WAYS (0.7.29). |
-| 1489 | 1 | `public double getKept()` | ...and what the shippers kept: the lorry bill less what was billed at home and what was paid abroad, never below zero (NaN while the split is not known). |
-| 1492 | 1 | `public double getScarcity()` | The multiple a network that cannot reach the city's freight can charge on top. |
-| 1495 | 1 | `public double[] getCarried()` | The share of each stream the railway is carrying, for the road relief. |
-| 1503 | 6 | `public double railShareInForce(Good g)` | The railway's share of one good's crossing tonnes in force now (FR2): its stream's carried share, less what the city's berths take first (Ports.railShareOf()); 0 for a good with no freight stream. |
-| 1516 | 6 | `public double seaShareInForce(Good g)` | The berths' share of one good's crossing tonnes in force now (FR6): its stream's carried share through Ports.seaShareOf(); 0 for a good with no freight stream and with no ports. |
-| 1537 | 1 | `public void reapplyBand()` | Puts the band back where the saved month left it. |
-| 1540 | 13 | `public void reapplyBand(ham.citybuildersim.Ports ports)` | ...with the city's ports' shares in force (0.7.86): step 5's lines, as haul() leaves them. |
-| 1555 | 1 | `public double lorryRatePerTonne()` | What a tonne of the city's own freight costs by lorry, this month - of the freight the railway was offered, the berths that go before it having taken theirs (0.7.86). |
+| 1326 | 1 | `public PortDivision portDivision()` | The Ports division: the crews of the city's berths, who bill the handling and pay the city its dues (FR3). |
+| 1329 | 1 | `Game gameOf()` | The game this sector plays in, for the division's rate and dial; null in a bare fixture. |
+| 1332 | 1 | `ham.citybuildersim.BuildingManager buildingsOf()` | The city's buildings, for the division's berths and their book value. |
+| 1335 | 1 | `void bookPortHandling(double amount)` | The Ports division's handling bill, as this sector's other revenue; named "Port handling billed" (nameOtherRevenue()). |
+| 1338 | 1 | `void payPortDues(double amount)` | ...and the dues it pays the city, an operating cost named "Port dues": its cash falls by them at the strike and the treasury takes them in the same month (Sector.payTheCity()). |
+| 1341 | 1 | `double diplomaWage()` | What a post on the DIPLOMA tier costs a month, the drivers' tier; nothing with no game to ask. |
+| 1344 | 1 | `double noDiplomaWage()` | ...and on the NO_DIPLOMA tier, a carter's (Haulage's horse form, R0c). |
+| 1346 | 6 | `private double wageOf(JobType tier)` |  |
+| 1366 | 6 | `double haulageShareOf(ToDoubleFunction<BuildingsTemplate> f)` | The Truck Depots' share of one of this sector's cost lines, by a figure of their buildings: the finished depots' sum of it over every finished building's, or 0 when there is none to share (no buildings, or none that h... |
+| 1385 | 9 | `public double haulagePayrollShare()` | ...and its payroll's share by the posts OFFERED (FR2, ★2): a depot's drivers for the places no truck fills are laid off and paid by nobody (Haulage.strikeDrivers()), so they are in neither side of the ratio. |
+| 1406 | 7 | `double haulageShareOfSites(ToDoubleFunction<BuildingsTemplate> f)` | ...and the same share for the BALANCE SHEET's lines, the buildings' value and the ground under them, which count the buildings on site as well as the finished (EconomyManager.pushBalanceSheetInputs(): "Buildings finis... |
 
-### PLANNING - the freight nobody is carrying (lines 1557-1836)
+### what it is doing, for everyone else (lines 1414-1569)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1577 | 34 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more line would earn: the freight it could pick up, at today's quote, less what it costs to run and to stand. |
-| 1621 | 181 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Manufacturing's shape: the best template by profit over cost, floored on staffing. |
-| 1809 | 3 | `public double[] retirementDemandAndCapacity(Game game)` | Tonnes against nameplate: a city whose trade collapses should sell the track, and this is the one sector in the game whose demand series is neither a good nor a headcount. |
-| 1814 | 1 | `public double unitsOf(BuildingsTemplate t)` |  |
-| 1827 | 9 | `public boolean mayRetire(BuildingsTemplate t)` | A Truck Depot is never retired by the railway's measure (FR2): the retirement rule weighs track against the tonnes offered it, and a depot has no track to weigh. |
+| 1416 | 1 | `public double getQuote()` |  |
+| 1417 | 1 | `public double getCapacityTonnes()` |  |
+| 1419 | 1 | `public double getTradeTonnes()` | Every tonne that crossed the boundary in the month, by sea as well (0.7.86). |
+| 1422 | 1 | `public double getOfferedTonnes()` | ...and what of it the railway was offered: all of it, less what the berths that go before it took (0.7.86). |
+| 1423 | 1 | `public double getHauledTonnes()` |  |
+| 1426 | 1 | `public double railedIn(ham.citybuildersim.Ports.Cargo k)` | Tonnes of a kind the railway landed, the month billed (0.8.2, batch FR1): the map's trains' to count, read by nothing in the model. |
+| 1428 | 1 | `public double railedOut(ham.citybuildersim.Ports.Cargo k)` | ...and shipped. |
+| 1431 | 1 | `public double truckedIn()` | Tonnes the city's trucks carried from the gates to their buyers, the month billed (0.8.8, batch FR5): imports less the siding's relief, the map's trucks' to count, read by nothing in the model. |
+| 1433 | 1 | `public double truckedOut()` | ...and from their makers to the gates, less the same relief. |
+| 1435 | 1 | `public double truckedHome()` | ...and between two firms of the city, bought at home: they cross no edge. |
+| 1436 | 1 | `public double getTightness()` |  |
+| 1437 | 1 | `public double getTruckBill()` |  |
+| 1438 | 1 | `public double getHaulageBilled()` |  |
+| 1439 | 1 | `public double getFuelBill()` |  |
+| 1442 | 1 | `public double getFuelImported()` | ...and the part of it bought from the world (0.7.62): all of it with no refinery in the city. |
+| 1445 | 1 | `public double getHomeShare()` | The share of the city's own bulk the railway carries, in force now (FR6): of the siding's part of what was bought at home. |
+| 1448 | 1 | `public double getQuayShare()` | ...and of the quay bulk's yard part (FR6, D7); zero with no port yard. |
+| 1451 | 1 | `public double getHomeOffered()` | The city tonnes the railway was offered in the month billed (FR6): the home tonnes' siding part, and the quay's yard part when a yard stood. |
+| 1454 | 1 | `public double getHomeRailed()` | The home tonnes the railway carried in the month billed (FR6), at the share in force while they moved. |
+| 1457 | 1 | `public double getQuayRailed()` | ...and the quay's, the port yard's (FR6, D7). |
+| 1460 | 1 | `public double getHomeBill()` | What the railway billed on the home and the quay tonnes in the month billed (FR6): the city leg's rate, the railway's quote on Haulage's. |
+| 1463 | 1 | `public double getCityLitres()` | The litres of diesel the month billed's city tonnes burned (FR6): CITY_LITRES_A_TONNE each; part of getFuelLitres(), none after a load until the next haul. |
+| 1466 | 1 | `public double getFuelLitres()` | The litres of diesel the last haul drew (0.7.95): its tonnes at FUEL_LITRES_PER_TONNE, and the city tonnes at CITY_LITRES_A_TONNE (FR6); none after a load until the next. |
+| 1469 | 1 | `public double getFuelLitresImported()` | ...and the litres of it the world sold, the refiners' tanks having none left (Markets.draw()). |
+| 1478 | 1 | `public double getAllowedRevenue()` | What a month has to bring in: everything it costs to run, plus the return on the track. |
+| 1481 | 1 | `public double getRunningCost()` | The railway's running cost in the month billed (FR2): the Rail division's share of the sector's lines and its fuel - what its bill is measured against now that the sector's net income holds the trucks' as well. |
+| 1499 | 1 | `public double getPaidAbroad()` | THE MONTH'S LORRY BILL, THREE WAYS (0.7.29). |
+| 1502 | 1 | `public double getKept()` | ...and what the shippers kept: the lorry bill less what was billed at home and what was paid abroad, never below zero (NaN while the split is not known). |
+| 1505 | 1 | `public double getScarcity()` | The multiple a network that cannot reach the city's freight can charge on top. |
+| 1508 | 1 | `public double[] getCarried()` | The share of each stream the railway is carrying, for the road relief. |
+| 1516 | 6 | `public double railShareInForce(Good g)` | The railway's share of one good's crossing tonnes in force now (FR2): its stream's carried share, less what the city's berths take first (Ports.railShareOf()); 0 for a good with no freight stream. |
+| 1529 | 6 | `public double seaShareInForce(Good g)` | The berths' share of one good's crossing tonnes in force now (FR6): its stream's carried share through Ports.seaShareOf(); 0 for a good with no freight stream and with no ports. |
+| 1550 | 1 | `public void reapplyBand()` | Puts the band back where the saved month left it. |
+| 1553 | 13 | `public void reapplyBand(ham.citybuildersim.Ports ports)` | ...with the city's ports' shares in force (0.7.86): step 5's lines, as haul() leaves them. |
+| 1568 | 1 | `public double lorryRatePerTonne()` | What a tonne of the city's own freight costs by lorry, this month - of the freight the railway was offered, the berths that go before it having taken theirs (0.7.86). |
 
-### the books (lines 1837-1871)
+### PLANNING - the freight nobody is carrying (lines 1570-1849)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1845 | 19 | `protected Map<String, Double> nameOtherRevenue()` | ITS WHOLE REVENUE HAS A NAME, because none of it is the sale of a good. |
-| 1867 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a carrier, read by its revenue a worker. |
-| 1870 | 1 | `public String inputLabel()` |  |
+| 1590 | 34 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more line would earn: the freight it could pick up, at today's quote, less what it costs to run and to stand. |
+| 1634 | 181 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Manufacturing's shape: the best template by profit over cost, floored on staffing. |
+| 1822 | 3 | `public double[] retirementDemandAndCapacity(Game game)` | Tonnes against nameplate: a city whose trade collapses should sell the track, and this is the one sector in the game whose demand series is neither a good nor a headcount. |
+| 1827 | 1 | `public double unitsOf(BuildingsTemplate t)` |  |
+| 1840 | 9 | `public boolean mayRetire(BuildingsTemplate t)` | A Truck Depot is never retired by the railway's measure (FR2): the retirement rule weighs track against the tonnes offered it, and a depot has no track to weigh. |
 
-### the screen (lines 1872-1967)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1875 | 1 | `public boolean hasPlantBlock()` |  |
-| 1878 | 89 | `public List<Sector.Line> ownLines(Game game)` |  |
-
-### save/load (lines 1968-2113)
+### the books (lines 1850-1884)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1971 | 43 | `protected void saveExtras(Map<String, Double> extras)` |  |
-| 2016 | 45 | `protected void restoreExtras(Map<String, Double> extras)` |  |
-| 2063 | 23 | `protected void resetExtras()` |  |
-| 2096 | 17 | `protected void redenominateExtras(double scale)` | THE QUOTE IS NOT MONEY AND DOES NOT MOVE, which is the whole reason it was written as a share of the lorry rate. |
+| 1858 | 19 | `protected Map<String, Double> nameOtherRevenue()` | ITS WHOLE REVENUE HAS A NAME, because none of it is the sale of a good. |
+| 1880 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a carrier, read by its revenue a worker. |
+| 1883 | 1 | `public String inputLabel()` |  |
+
+### the screen (lines 1885-1980)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1888 | 1 | `public boolean hasPlantBlock()` |  |
+| 1891 | 89 | `public List<Sector.Line> ownLines(Game game)` |  |
+
+### save/load (lines 1981-2126)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1984 | 43 | `protected void saveExtras(Map<String, Double> extras)` |  |
+| 2029 | 45 | `protected void restoreExtras(Map<String, Double> extras)` |  |
+| 2076 | 23 | `protected void resetExtras()` |  |
+| 2109 | 17 | `protected void redenominateExtras(double scale)` | THE QUOTE IS NOT MONEY AND DOES NOT MOVE, which is the whole reason it was written as a share of the lorry rate. |
 
