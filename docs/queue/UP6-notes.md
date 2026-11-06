@@ -1,6 +1,8 @@
 # UP6 - the autosave: a skip's end, the window's close, the player's Save off the clock ({next}, 2026-11-06)
 
-**WHERE IT STANDS** (2026-11-06): the slice in and reviewed (cf683672); `--pick` exit 3 and the full suite exit 3, main's recorded reds only (§4). Waiting for KP2b to reach main (RL1), then main merged in, `--pick` again and the ship file.
+**WHERE IT STANDS** (2026-11-06, 13:10): ready, see the ship file. The slice in and reviewed (cf683672); the full suite
+exit 3 on the batch (§4); KP2b and R4 (0.9.30) merged in from main (55150026) and `--pick` on the merge exit 3, main's
+recorded MapCheck red only.
 
 The batch's record. `QUEUE.md`'s UP6 row and [UP6.md](UP6.md): Jerus's calls on UP1's ★4, ★1 and ★2 (2026-10-23:
 "Autosave at the skip's end", "Yes, autosave on close", "Background + 'Saving...'") and LB3-S (2026-10-31, "Take all
@@ -90,6 +92,8 @@ SaveSlotCheck, UP1's section 7, holds each of the brief's fixtures on a young ci
 `./batch-check.sh --pick` on cf683672: exit 3, 14 harnesses, main's recorded MapCheck red only (`docs/notes/gate.txt`);
 SaveSlotCheck 253 OK, SaveFileCheck 974, InboxCheck 43, ReplayCheck 118, no FAIL; SaveSlotCheck's and MapCheck's timing
 lines SOFT (side by side). The full suite (`./batch-check.sh`, all 180 harnesses, on 61dfcfa7): exit 3, nothing red but main's six recorded reds (SlopeCheck, MonetaryCheck, DenominationCheck, ScaleCheck, MapCheck, KeptCheck), each word for word by the suite's judge.
+
+On the merge with main (55150026: KP2b, R4 0.9.30), `--pick` exit 3, 15 harnesses, main's recorded MapCheck red only.
 
 Not run in a window: the Save page's "Saving..." line and the close. **To look at, if anything seems off:** Save to a
 slot in a long city (the page says "Saving..." for a moment, then "Saved." and the path); close the window with the X
