@@ -8,8 +8,8 @@
 > throwing the page away and building another.
 > 
 > <p>WHY. Before 0.8.26 every screen was drawn by emptying the page and building it afresh
-> (UserInterface.clearMenu()), on every month the clock redraws, and every screen but People
-> still is. A node new to the scene is
+> (UserInterface.clearMenu()), on every month the clock redraws; since KP7 every rail screen is
+> kept, and only the menu's own screens are still built that way. A node new to the scene is
 > styled from nothing - its skin made, every CSS property looked up - then laid out with its
 > text measured, then given a peer for the renderer; a node kept in place pays none of that,
 > and a label whose text is unchanged is not even laid out again. At month 4,000 of the
@@ -55,7 +55,7 @@
 > hand ({@link #held}, {@link #text}): a slider's value is set only where it differs and never
 > while the player holds it, a field's text only where it differs and never while it has the focus.
 
-**Used by (28):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [CapChips](CapChips.md), [ConstructionScreen](ConstructionScreen.md), [FinancesScreen](FinancesScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [KeptBench](KeptBench.md), [Ladder](Ladder.md), [LandScreen](LandScreen.md), [Levers](Levers.md), [MapTiles](MapTiles.md), [PartnersPage](PartnersPage.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [Statement](Statement.md), [StatementView](StatementView.md), [SummaryScreen](SummaryScreen.md), [TimeChart](TimeChart.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md), [VaultTable](VaultTable.md), [ZoningScreen](ZoningScreen.md)
+**Used by (29):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [CapChips](CapChips.md), [ConstructionScreen](ConstructionScreen.md), [FinancesScreen](FinancesScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [KeptBench](KeptBench.md), [Ladder](Ladder.md), [LandScreen](LandScreen.md), [Levers](Levers.md), [MapTiles](MapTiles.md), [PartnersPage](PartnersPage.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [RankingsScreen](RankingsScreen.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [Statement](Statement.md), [StatementView](StatementView.md), [SummaryScreen](SummaryScreen.md), [TimeChart](TimeChart.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md), [VaultTable](VaultTable.md), [ZoningScreen](ZoningScreen.md)
 
 ## Sections
 

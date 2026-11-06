@@ -1150,9 +1150,12 @@ public class UserInterface extends Application {
     }
 
     /**
-     * Clears the menu area and refreshes the construction panel. Every screen
-     * calls this instead of rootMenu.getChildren().clear() directly, so the panel
-     * is always showing current data no matter which screen you're on.
+     * Clears the menu area and refreshes the construction panel, for a screen
+     * that is built afresh at every draw: since KP7 only the menu's own screens
+     * (isGameMenu(): the main menu, Save, Load, Settings, the founding screen,
+     * the replay list), which the clock never redraws, and the two simulate-
+     * months pages, which nothing has opened since 2026-09-18. Every screen in
+     * a city draws through keepMenu() instead.
      */
     void clearMenu(String screen, Runnable again) {
         clearMenu(screen, again, false);
@@ -1259,6 +1262,7 @@ public class UserInterface extends Application {
         if ("showHistoryMenu".equals(currentScreen) && !"showHistoryMenu".equals(screen)) historyScreen.leaving();
         boolean sameScreen = screen.equals(currentScreen) && !railJump;
         railJump = false;
+        if (!keepPage && sameScreen) rebuiltInPlace++;
         // Anything vvalue does from here until the settle below is the rebuild
         // clamping, not the player. (A kept page is not rebuilt, so nothing clamps.)
         if (!keepPage) settlingScroll = true;
@@ -1321,6 +1325,13 @@ public class UserInterface extends Application {
            ONLY ON A REDRAW OF THE SAME SCREEN. A real screen change is supposed
            to go to the top, and holding a short new screen at a tall old one's
            height would leave the player looking at blank space.
+
+           AND SINCE KP7 NEVER ON THE CLOCK. Every rail screen is kept, so a
+           month redraws it over its own nodes (keepPage) and none of this
+           runs: the hold, the settle and the scrollers' three attempts are left
+           to the menu's own screens redrawn by a click, and to a kept screen's
+           new page under the same name (Build's categories). rebuiltInPlace
+           counts them; KeptCheck holds the clock to none.
            ================================================================= */
         boolean heldPage = false;
         // Guarded on the scroller too: the release lives inside its block, so a
@@ -1401,6 +1412,13 @@ public class UserInterface extends Application {
             });
         }
     }
+
+    /**
+     * How many draws rebuilt the screen on show in place - the same screen drawn again with its page emptied,
+     * the hold and the settle above (KP7): a menu screen's redraw, a kept screen's new page under one name. Never
+     * the clock's: KeptCheck reads it across months on every rail screen.
+     */
+    int rebuiltInPlace;
 
     /** Where the player has scrolled the page to. Written only by them. */
     private double pageScrollAt;
@@ -3962,6 +3980,8 @@ public class UserInterface extends Application {
         governmentScreen.forget();
         tradeScreen.forget();
         policyScreen.forget();
+        // ...and Rankings (KP7): its kept page is the last city's (Household money's pool is forgotten with People's, above).
+        rankingsScreen.forget();
         // ...and the header and the rail hand the next city none of this one's nodes (UP2).
         forgetChrome();
     }

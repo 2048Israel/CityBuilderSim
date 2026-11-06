@@ -309,9 +309,11 @@ done on 2026-09-18; `splitting-the-interface.md` in the design notes says how.
 **The month now arrives on a clock, not on a click.** `UserInterface` runs an
 `AnimationTimer` at `SECONDS_PER_MONTH = 5.0` and a speed multiplier, paints the
 day inside the month, and calls the same `nextMonth()` the button used to. Two
-consequences for anything on screen: a panel is rebuilt while the player is
-still looking at it, so it must restore its own scroll position rather than
-assume a fresh page; and the timer keeps running under whatever page is open —
+consequences for anything on screen: a panel is redrawn while the player is
+still looking at it, so it draws through `ui/Kept` - the month set on the nodes
+on show, never a fresh page, and the scroll left where it was (every rail
+screen since KP7; the menu's own screens are still rebuilt and hold their
+place); and the timer keeps running under whatever page is open —
 only a pause, the menu's own screens and, since 0.7.22, an open dialog (Quit's,
 or a confirmation's) stop it.
 

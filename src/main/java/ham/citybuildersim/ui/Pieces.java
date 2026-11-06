@@ -5134,17 +5134,18 @@ public final class Pieces {
 
         final double WIDE = STATEMENT - 230;
 
-        Label name = new Label(label);
+        // Kept (KP7): made through Kept like every helper a kept page may reach, though nothing draws with it now.
+        Label name = Kept.label(label);
         name.setPrefWidth(200);
         name.setMinWidth(200);
         name.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_BODY));
 
-        HBox track = new HBox(0);
+        HBox track = Kept.row(0);
         track.setAlignment(Pos.CENTER_LEFT);
         double from = 0;
         for (int i = 0; i < edges.length; i++) {
             double w = Math.max(2, (edges[i] - from) * WIDE);
-            Region band = new Region();
+            Region band = Kept.region();
             band.setPrefSize(w, 10);
             band.setMinSize(w, 10);
             band.setMaxSize(w, 10);
@@ -5153,38 +5154,38 @@ public final class Pieces {
             from = edges[i];
         }
 
-        Region mark = new Region();
+        Region mark = Kept.region();
         mark.setPrefSize(3, 18);
         mark.setMinSize(3, 18);
         mark.setStyle("-fx-background-color: " + Palette.TEXT_MAX + ";");
         showIf(mark, !muted);
-        javafx.scene.layout.Pane over = new javafx.scene.layout.Pane(mark);
+        javafx.scene.layout.Pane over = Kept.plain(mark);
         over.setPrefSize(WIDE, 18);
         over.setMinSize(WIDE, 18);
         over.setMaxSize(WIDE, 18);
         mark.setLayoutX(Math.max(0, Math.min(WIDE - 3, at * WIDE)));
         mark.setLayoutY(-4);
 
-        javafx.scene.layout.StackPane bar = new javafx.scene.layout.StackPane(track, over);
+        javafx.scene.layout.StackPane bar = Kept.stack(track, over);
         javafx.scene.layout.StackPane.setAlignment(track, Pos.CENTER_LEFT);
         javafx.scene.layout.StackPane.setAlignment(over, Pos.CENTER_LEFT);
         bar.setMaxWidth(WIDE);
 
-        Label figure = new Label(reading);
+        Label figure = Kept.label(reading);
         figure.setPrefWidth(140);
         figure.setMinWidth(140);
         figure.setAlignment(Pos.CENTER_RIGHT);
         figure.setStyle(Palette.figure(Palette.SIZE_CAPTION,
                 muted ? Palette.TEXT_SPENT : Palette.TEXT_HEAD));
 
-        HBox row = new HBox(Palette.GAP_TIGHT, name, bar, figure);
+        HBox row = Kept.row(Palette.GAP_TIGHT, name, bar, figure);
         row.setAlignment(Pos.CENTER_LEFT);
         row.setMaxWidth(STATEMENT);
 
-        Label under = new Label("      " + note);
+        Label under = Kept.label("      " + note);
         under.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_SPENT));
 
-        VBox box = new VBox(1, row, under);
+        VBox box = Kept.column(1, row, under);
         box.setMaxWidth(STATEMENT);
         box.setStyle("-fx-padding: 5 0 8 0;");
         return box;
@@ -6447,7 +6448,7 @@ public final class Pieces {
     /** ...as a figure that is never cut, at a size. */
     public static Label pnlLabel(String sym, double amount, double share, double size) {
         Pnl p = pnl(sym, amount, share);
-        Label l = new Label(p.text());
+        Label l = Kept.label(p.text());
         l.setMinWidth(Region.USE_PREF_SIZE);
         l.setStyle(BuildScreen.figureAt(size, p.tone()));
         return l;

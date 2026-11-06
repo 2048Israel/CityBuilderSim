@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.29 — KP7, Screens kept: the rest (Household money, Rankings), and the rebuild path retired from the clock — 2026-11-06, ready, see docs/queue/KP7-notes.md
+People's Household money and the Rankings tab are drawn over last month's nodes instead of rebuilt (study UP4's KP7,
+the last KP batch): Household money's grid keyed by household shape, ledger and tier, the open cell's books by the
+cell; Rankings' controls, measures, rows, card and drawer by what they show, its table's canvases painted again only
+when a row moves. With them every rail screen is kept, so the clock never empties a page, holds its height or settles
+its scroll: that path is left to the menu's own screens, which the clock never redraws (`UserInterface.rebuiltInPlace`
+counts it; KeptCheck 88 holds 17 screens to none over three months each). KeptCheck 82-90 compare both pages with
+pages built new through every view, cell, board, measure and a read of the saved cities landing; a month on Household
+money fell from 16-18 ms to about 3, on Rankings from 9-11 to about 3. CLAUDE.md: a screen section draws through Kept.
+No ensemble: model untouched.
+
 ### 0.9.28 — R3, research: posts and discoveries — 2026-11-06, ready, see docs/queue/R3-notes.md
 A city founded the 1900 way now finds discoveries of its own (research-design §5.1-5.2). Four grant dials, one a
 field, buy research posts at the post's cost (D$ 18.2k a month in engineering at today's wages, §1.8) within the
