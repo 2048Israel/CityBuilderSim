@@ -263,14 +263,14 @@ public final class ClockPace {
 
     /** A speed reached in words: whole from 1 up, one decimal under 1, then the times sign ("39×", "0.4×"). */
     private static String reachedText(double achieved) {
-        return (achieved >= 1
-                ? Long.toString(Math.round(achieved))
-                : String.format(Locale.ROOT, "%.1f", achieved)) + "×";
+        String tenths = String.format(Locale.ROOT, "%.1f", achieved);
+        // A speed just under 1 that rounds up to it is written as the ladder writes 1x: "1×", never "1.0×" beside it (UP7).
+        return (achieved >= 1 || tenths.equals("1.0") ? Long.toString(Math.round(achieved)) : tenths) + "×";
     }
 
     /**
      * Every text reached() can return under this top rung (UP7), by the formatter reached() uses: the
-     * tenths from 0.0 up to 1.0 (a speed of .96 prints "1.0"), and the whole numbers from 1 up to the
+     * tenths from 0.0 up to 0.9 (a speed of .96 is written "1×", as the ladder writes 1x), and the whole numbers from 1 up to the
      * most a speed under SHORT_BY below the rung can round to. The header measures the widest of these
      * and of its rung labels once, to give the reading one width for ever.
      *

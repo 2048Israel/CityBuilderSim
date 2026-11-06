@@ -543,6 +543,18 @@ public class ClockCheck {
         while (apart.elapsed < ClockPace.SHORT_WINDOW + 1) apart.step();
         check(String.format("a rung of 50 run at %.2f (rounds apart): the reading is \"%d×\", the speed reached", apart.speed, Math.round(apart.speed)),
                 readsReached(apart.pace, TOP_LABEL, TOP) && apart.pace.reading(TOP_LABEL, TOP).equals(Math.round(apart.speed) + "×"));
+        // A speed just under 1 that rounds to it at one decimal: written as the ladder writes 1x, not "1.0×" (and, from the other side, one that does not round up keeps its decimal).
+        Sim justUnder = new Sim();
+        justUnder.spm = .5;
+        justUnder.speed = .97;
+        while (justUnder.elapsed < ClockPace.SHORT_WINDOW + 1) justUnder.step();
+        Sim under = new Sim();
+        under.spm = .5;
+        under.speed = .92;
+        while (under.elapsed < ClockPace.SHORT_WINDOW + 1) under.step();
+        check(String.format("a rung of 2 run at %.2f reads \"1×\", as the ladder writes 1x, never \"1.0×\"; at %.2f, \"0.9×\"", justUnder.speed, under.speed),
+                readsReached(justUnder.pace, "2×", 2) && justUnder.pace.reading("2×", 2).equals("1×")
+                        && readsReached(under.pace, "2×", 2) && under.pace.reading("2×", 2).equals("0.9×"));
 
         // (c) The list: every text seen above and in section 4 is one reachedTexts() gives, and a sweep of speeds finds none outside it.
         java.util.List<String> list = ClockPace.reachedTexts(TOP);
@@ -553,7 +565,7 @@ public class ClockCheck {
             while (s.elapsed < ClockPace.SHORT_WINDOW + .5) s.step();
             reachedOf(s.pace, TOP_LABEL, TOP);
         }
-        for (int k = 1; k <= 40; k++) {          // a rung of 2 under 1.8, in steps of a twentieth: the decimals, and "1.0"
+        for (int k = 1; k <= 40; k++) {          // a rung of 2 under 1.8, in steps of a twentieth: the decimals, and 1x
             Sim s = new Sim();
             s.spm = .5;
             s.speed = k / 20.0;
@@ -563,8 +575,8 @@ public class ClockCheck {
         System.out.printf("  %d texts in the list (%s ... %s); %d seen in this run%n", list.size(), list.get(0), list.get(list.size() - 1), SEEN.size());
         check("every text the pace reached in this run is in reachedTexts() (" + SEEN.size() + " seen, " + list.size() + " listed)",
                 list.containsAll(SEEN) && SEEN.size() > 40);
-        check("...the list holds a text once, the tenths from 0.0× to 1.0× and the wholes up to a tenth under the top rung",
-                new java.util.HashSet<>(list).size() == list.size() && list.contains("0.0×") && list.contains("0.4×") && list.contains("1.0×")
+        check("...the list holds a text once, the tenths from 0.0× to 0.9× (no 1.0×) and the wholes up to a tenth under the top rung",
+                new java.util.HashSet<>(list).size() == list.size() && list.contains("0.0×") && list.contains("0.9×") && !list.contains("1.0×")
                         && list.contains("1×") && list.contains(Math.round(TOP * (1 - ClockPace.SHORT_BY)) + "×")
                         && !list.contains(TOP_LABEL));
     }
