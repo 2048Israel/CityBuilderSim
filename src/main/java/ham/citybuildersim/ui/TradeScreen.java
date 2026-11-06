@@ -89,6 +89,14 @@ final class TradeScreen {
         this.vault = new VaultTable(ui, this);
     }
 
+    /** The nodes this screen made at its last draw, handed back to it at the next (KP6; study UP4, docs/studies/spec-screens-in-place.md). */
+    final Kept.Pool pool = new Kept.Pool();
+
+    /** Every node is made new at the next draw: another city opened (UserInterface.anotherCity()). */
+    void forget() {
+        pool.forget();
+    }
+
     /* =====================================================================
        TRADE & THE WORLD (0.7.35): THE FRAME
 
@@ -254,34 +262,8 @@ final class TradeScreen {
      * THE CURRENCY row calls open(), since 0.7.35).
      */
     void showForeignMenu() {
-        ui.clearMenu("showForeignMenu", () -> showForeignMenu());
-
-        if (tradeArea != null) {
-            tradePage = tradeArea;
-            tradeArea = null;
-        }
-        boolean known = false;
-        for (String p : PAGES) known |= p.equals(tradePage);
-        if (!known) tradePage = TRADE_HOME;
-        targets.clear();
-
-        boolean fresh = ui.game.getMonth() != drawnMonth;
-        drawnMonth = ui.game.getMonth();
-
-        VBox page = widePage();
-        page.getChildren().addAll(actionCards());
-        switch (tradePage) {
-            case MONTH    -> monthPage(page);
-            case GOODS    -> goodsPage(page, fresh);
-            case PARTNERS -> partners.page(page);
-            case CURRENCY -> currencyPage(page);
-            case RESERVES -> reservesPage(page);
-            default       -> overviewPage(page, fresh);
-        }
-
-        VBox frame = new VBox(Palette.GAP, head(),
-                chipStrip(PAGES, PAGE_ICONS, tradePage, Palette.SIZE_LABEL, this::open), kpiStrip(fresh));
-        frameOver(frame, page);
+        // Kept (KP6): the page is drawn over last time's nodes when the same screen is redrawn; the rail's own tab arrives afresh.
+        ui.keepMenu("showForeignMenu", () -> showForeignMenu(), pool, this::drawPage);
 
         if (scrollTarget != null || popGood != null) {
             String target = scrollTarget;
@@ -302,6 +284,55 @@ final class TradeScreen {
         }
     }
 
+    /**
+     * The page itself, put in the window through setPage(): what keepMenu runs as a kept draw from the pool, and what
+     * KeptBench runs kept and built new for KeptCheck - the page `tradePage` names (a nation's, on Partners, when
+     * `partners.nation` names one), in the view the river's and the goods' toggles name. What the show method did
+     * before the draw (a door's page taken, the page known, the door targets cleared, the month's first draw told) is
+     * done here, in the draw, so the bench's draw has it too.
+     */
+    void drawPage() {
+        if (tradeArea != null) {
+            tradePage = tradeArea;
+            tradeArea = null;
+        }
+        boolean known = false;
+        for (String p : PAGES) known |= p.equals(tradePage);
+        if (!known) tradePage = TRADE_HOME;
+        targets.clear();
+
+        // The figures count up and the bars grow on the first draw of a month and no other, and only at a clock speed
+        // a figure can follow (UserInterface.countsUp(), KP1's rule): at 50x a month lands every 100 ms.
+        boolean fresh = ui.game.getMonth() != drawnMonth && ui.countsUp();
+        drawnMonth = ui.game.getMonth();
+
+        // Kept (KP6): the whole page - its frame, its scroller and its page - is a scope keyed by the page (and on Partners the
+        // nation, 0 for its table), so another page or another nation shares no node with the last and opens at its top; the
+        // river's and the goods' toggles are scopes of their own on their pages, so a toggle keeps the scroll. A month's
+        // redraw of the same page keeps every node and the scroll.
+        Kept.scope(tradePage + (PARTNERS.equals(tradePage) ? "/" + partners.nation : ""), () -> {
+            // ...the page itself in a scope of its own, so what its sections make shifts none of the frame's nodes.
+            VBox page = Kept.scope("page", () -> {
+                VBox p = widePage();
+                p.getChildren().addAll(actionCards());
+                switch (tradePage) {
+                    case MONTH    -> monthPage(p);
+                    case GOODS    -> goodsPage(p, fresh);
+                    case PARTNERS -> partners.page(p);
+                    case CURRENCY -> currencyPage(p);
+                    case RESERVES -> reservesPage(p);
+                    default       -> overviewPage(p, fresh);
+                }
+                return p;
+            });
+            FlowPane strip = Kept.scope("strip",
+                    () -> chipStrip(PAGES, PAGE_ICONS, tradePage, Palette.SIZE_LABEL, this::open));
+            VBox frame = Kept.column(Palette.GAP, Kept.scope("head", this::head), strip,
+                    Kept.scope("five", () -> kpiStrip(fresh)));
+            frameOver(frame, page);
+        });
+    }
+
     /** One of the six pages, at its top: a chip picked, or a door. Partners opens on its table, not on the nation last looked at. */
     void open(String page) {
         if (PARTNERS.equals(page)) partners.nation = 0;
@@ -320,7 +351,17 @@ final class TradeScreen {
         tradePage = page;
         scrollTarget = target;
         ui.innerScrollAt.remove("showForeignMenu:body");
+        if (target == null) toTop();
         showForeignMenu();
+    }
+
+    /**
+     * The page on show scrolled to its top (KP6): a chip or a door picked draws its page from the top, and another page is a
+     * scope of its own with a scroller of its own, which opens there; but the page the pick names may be the one already on
+     * show, whose kept scroller stays where the player left it unless it is put back.
+     */
+    private void toTop() {
+        if (body != null && body.getVvalue() != 0) body.setVvalue(0);
     }
 
     /** The Overview, at its top. */
@@ -339,17 +380,29 @@ final class TradeScreen {
         frame.setFillWidth(true);
         frame.setPadding(new javafx.geometry.Insets(0, 18, 4, 18));
         body = ui.scrolled(page, FRAME_CHROME);
-        body.prefHeightProperty().unbind();
-        body.prefHeightProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
-                () -> Math.max(260, ui.menuScroller.getHeight()
-                        - (frame.getHeight() > 0 ? frame.getHeight() + STAGE_REST : FRAME_CHROME)),
-                ui.menuScroller.heightProperty(), frame.heightProperty()));
         final javafx.scene.control.ScrollPane scroller = body;
-        page.prefWidthProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
-                () -> Math.min(PAGE_WIDE, Math.max(320, scroller.getViewportBounds().getWidth())),
-                scroller.viewportBoundsProperty()));
-        ui.rootMenu.getChildren().addAll(frame, body);
+        // Kept (KP6): both bindings are made once per scroller, since a kept page is handed back each draw with the
+        // scroller and frame it is already bound to; a draw never unbinds and binds again.
+        if (scroller.getProperties().get(BOUND_TO_FRAME) != frame) {
+            scroller.prefHeightProperty().unbind();
+            scroller.prefHeightProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
+                    () -> Math.max(260, ui.menuScroller.getHeight()
+                            - (frame.getHeight() > 0 ? frame.getHeight() + STAGE_REST : FRAME_CHROME)),
+                    ui.menuScroller.heightProperty(), frame.heightProperty()));
+            scroller.getProperties().put(BOUND_TO_FRAME, frame);
+        }
+        if (page.getProperties().get(BOUND_TO_SCROLLER) != scroller) {
+            page.prefWidthProperty().unbind();
+            page.prefWidthProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
+                    () -> Math.min(PAGE_WIDE, Math.max(320, scroller.getViewportBounds().getWidth())),
+                    scroller.viewportBoundsProperty()));
+            page.getProperties().put(BOUND_TO_SCROLLER, scroller);
+        }
+        ui.setPage(frame, scroller);
     }
+
+    /** The key in a kept scroller's properties for the frame its height is bound to, and in a kept page's for the scroller its width is bound to (frameOver()). */
+    private static final String BOUND_TO_FRAME = "trade.frame", BOUND_TO_SCROLLER = "trade.scroller";
 
     /** Scroll the page to a node on it (InfrastructureScreen's). */
     void scrollTo(Node target) {
@@ -479,24 +532,35 @@ final class TradeScreen {
         ForeignAccounts fx = ui.game.getForeignAccounts();
         String moved = rateMove();
         if (moved != null) {
-            Label l = new Label(moved);
-            l.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-            cells[3].getChildren().add(l);
+            // Kept (KP6): drawn only sometimes, so a scope of its own: it shifts no label after it.
+            cells[3].getChildren().add(Kept.scope("moved", () -> {
+                Label l = Kept.label(moved);
+                l.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+                return l;
+            }));
         }
-        if (fresh && fx.isMonthCounted()) {
-            HistorySave h = ui.game.getHistorySave();
-            countFrom(cells[0], h, "exportsAbroad", fx.getExports());
-            countFrom(cells[1], h, "importsAbroad", fx.tradeImports());
-        }
+        HistorySave h = ui.game.getHistorySave();
+        boolean counts = fresh && fx.isMonthCounted();
+        countFrom(cells[0], h, "exportsAbroad", fx.getExports(), counts);
+        countFrom(cells[1], h, "importsAbroad", fx.tradeImports(), counts);
         return vitalsBar(cells);
     }
 
-    /** A cell's figure counted up from the month before's, History's second-last point (SectorScreen.countUp()). */
-    private void countFrom(VBox cell, HistorySave h, String series, double now) {
-        double[] s = h.aligned(series);
-        if (s.length < 2 || !(cell.getChildren().size() > 1) || !(cell.getChildren().get(1) instanceof Label figure)) return;
+    /**
+     * A cell's figure counted up from the month before's, History's second-last point (SectorScreen.countUp()) when `counts`;
+     * else (KP6) the count the last draw gave the figure stopped, for a draw that does not count - a clock too fast to follow,
+     * a redraw in the same month, a month not counted - or it would write that month's figure over this one's.
+     */
+    private void countFrom(VBox cell, HistorySave h, String series, double now, boolean counts) {
+        if (!(cell.getChildren().size() > 1) || !(cell.getChildren().get(1) instanceof Label figure)) return;
+        double[] s = counts ? h.aligned(series) : new double[0];
+        if (s.length < 2) {
+            SectorScreen.stopCounting(figure);
+            return;
+        }
         double before = s[s.length - 2];
         if (Double.isFinite(before)) SectorScreen.countUp(figure, before, now, this::d);
+        else SectorScreen.stopCounting(figure);
     }
 
     /** The rate's move on last month, from History's last two points: "▲ 0.100% weaker this month"; null with fewer than two or no move to three places (the spec's section 5). */
@@ -519,54 +583,55 @@ final class TradeScreen {
         ForeignAccounts fx = ui.game.getForeignAccounts();
         CapitalFlows hot = ui.game.getCapitalFlows();
         List<Node> out = new ArrayList<>();
+        // Kept (KP6): each card is a scope of its own, since they come and go with the city's state.
         if (hot.isStopped()) {
             int left = hot.stopMonthsLeft();
             String months = left + " month" + (left == 1 ? "" : "s");
-            out.add(actionCard(Icons.ALERT, Palette.BAD, "The money is leaving",
+            out.add(Kept.scope("leaving", () -> actionCard(Icons.ALERT, Palette.BAD, "The money is leaving",
                     String.format("%s · %s before anybody abroad looks at this city again.", hot.getStopReason(), months),
                     String.format("%s. %s before anybody abroad looks at this city again. Nothing new will be lent here "
                             + "and what is here is going home.", hot.getStopReason(), months),
-                    doorPill("The money that can leave", Icons.SAFE, Palette.MONEY, () -> open(RESERVES, LEAVE))));
+                    doorPill("The money that can leave", Icons.SAFE, Palette.MONEY, () -> open(RESERVES, LEAVE)))));
         }
         if (fx.monthlyImports() > 0 && fx.importCover() < ForeignAccounts.THIN_COVER) {
-            out.add(actionCard(Icons.ALERT, Palette.BAD,
+            out.add(Kept.scope("thin cover", () -> actionCard(Icons.ALERT, Palette.BAD,
                     String.format("Under %.0f months of import cover", ForeignAccounts.THIN_COVER),
                     String.format("The vault holds %s against %s a month of imports.",
                             d(fx.getReserves()), d(fx.monthlyImports())),
                     String.format("The vault holds %s against %s a month of buying abroad. %.0f months is the line below "
                             + "which the world stops pricing a currency on its trade balance and starts pricing it for a "
                             + "crisis.", d(fx.getReserves()), d(fx.monthlyImports()), ForeignAccounts.THIN_COVER),
-                    doorPill("Buy reserves", Icons.EXCHANGE, Palette.MONEY, () -> openExchange(true))));
+                    doorPill("Buy reserves", Icons.EXCHANGE, Palette.MONEY, () -> openExchange(true)))));
         }
         if (hot.getStock() > 0 && fx.getReserves() / hot.getStock() < CapitalFlows.PANIC_BACKING) {
             double backing = fx.getReserves() / hot.getStock();
-            out.add(actionCard(Icons.ALERT, Palette.BAD, "The hot money is barely backed",
+            out.add(Kept.scope("barely backed", () -> actionCard(Icons.ALERT, Palette.BAD, "The hot money is barely backed",
                     String.format("%s parked here against %s in the vault: %.0f%% cover.",
                             d(hot.getStock()), d(fx.getReserves()), backing * 100),
                     String.format("%s of foreign money is parked in this city's bank and the vault holds %s against it — "
                             + "%.0f%% cover. Under %.0f%% the next shock stops being a wobble and becomes a run.",
                             d(hot.getStock()), d(fx.getReserves()), backing * 100, CapitalFlows.PANIC_BACKING * 100),
-                    doorPill("The money that can leave", Icons.SAFE, Palette.MONEY, () -> open(RESERVES, LEAVE))));
+                    doorPill("The money that can leave", Icons.SAFE, Palette.MONEY, () -> open(RESERVES, LEAVE)))));
         }
         if (fx.netForeignPosition() < 0 && fx.getForeignDebt() > 0) {
-            out.add(actionCard(Icons.ALERT, Palette.WARN, "The city owes the world more than it holds",
+            out.add(Kept.scope("owes more", () -> actionCard(Icons.ALERT, Palette.WARN, "The city owes the world more than it holds",
                     String.format("%s of dollar paper against %s of reserves.", d(fx.getForeignDebt()), d(fx.getReserves())),
                     String.format("%s of dollar paper against %s of reserves. A city with deep reserves and deeper dollar "
                             + "debt is not rich, and the reserve line on its own says it is.",
                             d(fx.getForeignDebt()), d(fx.getReserves())),
-                    doorPill("The dollar debt", Icons.EXCHANGE, Palette.MONEY, () -> open(CURRENCY, DEBT))));
+                    doorPill("The dollar debt", Icons.EXCHANGE, Palette.MONEY, () -> open(CURRENCY, DEBT)))));
         }
         return out;
     }
 
     /** One action card: its icon square, its title, one line with the whole behind an (i), and its door (null: none), on the raised ground with a 3 px top edge in `tone` (BankScreen's). */
     static VBox actionCard(String svg, String tone, String title, String line, String whole, Node act) {
-        Label t = new Label(title);
+        Label t = Kept.label(title);
         t.setWrapText(true);
         t.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
-        HBox head = new HBox(Palette.GAP, iconSquare(svg, tone, 28, 15), t);
+        HBox head = Kept.row(Palette.GAP, iconSquare(svg, tone, 28, 15), t);
         head.setAlignment(Pos.CENTER_LEFT);
-        VBox c = new VBox(8, head);
+        VBox c = Kept.column(8, head);
         if (line != null) c.getChildren().add(noteLine(line, whole, 1100));
         if (act != null) c.getChildren().add(act);
         c.setMaxWidth(Double.MAX_VALUE);
@@ -580,7 +645,7 @@ final class TradeScreen {
 
     /** Words that wrap, at a size, in a colour. */
     static Label words(String text, double size, String tone) {
-        Label l = new Label(text);
+        Label l = Kept.label(text);
         l.setWrapText(true);
         l.setMinWidth(0);
         l.setStyle(BuildScreen.wordsAt(size, tone));
@@ -589,7 +654,8 @@ final class TradeScreen {
 
     /** A figure that is never cut, at a size, in a colour. */
     static Label figure(String text, double size, String tone) {
-        Label l = new Label(text);
+        Label l = Kept.label(text);
+        l.setWrapText(false);
         l.setMinWidth(Region.USE_PREF_SIZE);
         l.setStyle(BuildScreen.figureAt(size, tone));
         return l;
@@ -597,16 +663,16 @@ final class TradeScreen {
 
     /** A card's head: its icon in a square tinted in its colour, its title in capitals, an (i) when `info` is not null, and at its right `right` (null: nothing) - BankScreen's. */
     static HBox cardHead(String svg, String colour, String title, String info, Node right) {
-        Label t = new Label(title);
+        Label t = Kept.label(title);
         t.setWrapText(true);
         t.setMinWidth(0);
         t.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
-        HBox row = new HBox(Palette.GAP);
+        HBox row = Kept.row(Palette.GAP);
         if (svg != null) row.getChildren().add(iconSquare(svg, colour, 28, 15));
         row.getChildren().add(t);
         if (info != null) row.getChildren().add(infoButton(info, true));
         if (right != null) {
-            Region gap = new Region();
+            Region gap = Kept.region();
             HBox.setHgrow(gap, Priority.ALWAYS);
             row.getChildren().addAll(gap, right);
         }
@@ -616,7 +682,7 @@ final class TradeScreen {
 
     /** A card on Build's ground: RAISED, radius 8, a 1 px edge, padding 12. */
     static VBox card(Node... rows) {
-        VBox c = new VBox(8);
+        VBox c = Kept.column(8);
         for (Node n : rows) if (n != null) c.getChildren().add(n);
         c.setMaxWidth(Double.MAX_VALUE);
         c.setStyle(cardStyle(Palette.EDGE));
@@ -632,9 +698,12 @@ final class TradeScreen {
     /** A card that opens somewhere: the accent edge under the pointer, and a click goes. A door inside it opens itself. */
     static VBox doorCard(VBox c, Runnable go) {
         if (go == null) return c;
+        // Kept (KP6): card() has just set the ground this draw, so this is not built on last month's; the look the pointer calls
+        // for is chosen from isHover() where it is set, and the handlers are set, not added.
         String rest = c.getStyle() + " -fx-cursor: hand;";
-        c.setStyle(rest);
-        c.setOnMouseEntered(e -> c.setStyle(rest.replace(Palette.EDGE + ";", Palette.ACCENT + ";")));
+        String over = rest.replace(Palette.EDGE + ";", Palette.ACCENT + ";");
+        c.setStyle(c.isHover() ? over : rest);
+        c.setOnMouseEntered(e -> c.setStyle(over));
         c.setOnMouseExited(e -> c.setStyle(rest));
         c.setOnMouseClicked(e -> go.run());
         return c;
@@ -642,20 +711,23 @@ final class TradeScreen {
 
     /** A line of a card: words at the left, wrapping, and a figure at the right. */
     static HBox cardLine(String label, String value, String tone) {
-        Label what = words(label, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL);
-        HBox.setHgrow(what, Priority.ALWAYS);
-        what.setMaxWidth(Double.MAX_VALUE);
-        Label v = figure(value, Palette.SIZE_LABEL + 1, tone == null ? Palette.TEXT_HEAD : tone);
-        HBox row = new HBox(Palette.GAP, what, v);
-        row.setAlignment(Pos.CENTER_LEFT);
-        return row;
+        return cardLine(label, value, tone, null);
     }
 
     /** ...with an (i) after its words. */
     static HBox cardLine(String label, String value, String tone, String info) {
-        HBox row = cardLine(label, value, tone);
-        if (info != null) row.getChildren().add(1, infoButton(info, true));
-        return row;
+        // Kept (KP6): a scope of its own, so the words that take the row's room (and the (i) some have) are always a card line's; a line
+        // whose figure says nothing in a scope of its own again, since a label that had words and has none keeps the height of them.
+        return Kept.scope(value.isEmpty() ? "cardLine/-" : "cardLine", () -> {
+            Label what = words(label, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL);
+            HBox.setHgrow(what, Priority.ALWAYS);
+            what.setMaxWidth(Double.MAX_VALUE);
+            Label v = figure(value, Palette.SIZE_LABEL + 1, tone == null ? Palette.TEXT_HEAD : tone);
+            HBox row = Kept.row(Palette.GAP, what, v);
+            if (info != null) row.getChildren().add(1, infoButton(info, true));
+            row.setAlignment(Pos.CENTER_LEFT);
+            return row;
+        });
     }
 
     /** A muted line with its whole behind an (i), wrapping at `wide`. */
@@ -681,30 +753,39 @@ final class TradeScreen {
 
     /** A chip, and after it an (i) holding `whole` when that is not null. */
     static HBox chipInfo(String text, String colour, String whole) {
-        HBox row = new HBox(Palette.GAP_TIGHT, chip(text, colour));
-        if (whole != null) row.getChildren().add(infoButton(whole, true));
-        row.setAlignment(Pos.CENTER_LEFT);
-        return row;
+        // Kept (KP6): a scope of its own, so the (i) some have shifts no node of a chip after it.
+        return Kept.scope("chipInfo", () -> {
+            HBox row = Kept.row(Palette.GAP_TIGHT, chip(text, colour));
+            if (whole != null) row.getChildren().add(infoButton(whole, true));
+            row.setAlignment(Pos.CENTER_LEFT);
+            return row;
+        });
     }
 
     /** A row of chips, wrapping. */
     static FlowPane chips(Node... cs) {
-        FlowPane row = new FlowPane(8, 6);
+        FlowPane row = Kept.flow(8, 6);
         for (Node n : cs) if (n != null) row.getChildren().add(n);
         return row;
     }
 
     /** A statement column, for a fold: the old rows at their old width. */
     static VBox column(Node... rows) {
-        VBox c = new VBox(0);
+        VBox c = Kept.column(0);
         for (Node n : rows) if (n != null) c.getChildren().add(n);
         c.setMaxWidth(STATEMENT);
         return c;
     }
 
+    /** A statement's note in a scope of its own (KP6): a note drawn only sometimes, or a table's rows in a number that changes, shifts no label after it. */
+    static Label statementNote(String text) {
+        return Kept.scope("note", () -> Statement.statementNote(text));
+    }
+
     /** A fold kept on this screen: "details ▸ caption". */
     VBox fold(String key, String caption, java.util.function.Supplier<Node> inside) {
-        return details(key, caption, openLines, this::showForeignMenu, inside);
+        // Kept (KP6): a fold is a scope keyed by its own key, its insides built only while it is open - they shift no node after it.
+        return Kept.scope(key, () -> details(key, caption, openLines, this::showForeignMenu, inside));
     }
 
     /** Cards side by side in equal columns, each as tall as the tallest. */
@@ -726,7 +807,7 @@ final class TradeScreen {
 
     /** A row of a key: entries with a gap, wrapping. */
     static FlowPane keyRow(Node... entries) {
-        FlowPane key = new FlowPane(14, 4);
+        FlowPane key = Kept.flow(14, 4);
         for (Node n : entries) if (n != null) key.getChildren().add(n);
         return key;
     }
@@ -763,21 +844,23 @@ final class TradeScreen {
        ===================================================================== */
 
     void overviewPage(VBox page, boolean fresh) {
-        VBox trade = tradeCard(OVERVIEW_GOODS, fresh, false);
-        VBox money = currencyCard();
+        // Kept (KP6): each section a scope of its own, so what one draws only sometimes shifts no node of another.
+        VBox trade = Kept.scope("trade", () -> tradeCard(OVERVIEW_GOODS, fresh, false));
+        VBox money = Kept.scope("currency", this::currencyCard);
         money.setMinWidth(400);
         money.setPrefWidth(458);
         money.setMaxWidth(458);
         HBox.setHgrow(trade, Priority.ALWAYS);
-        HBox hero = new HBox(TILE_GAP, trade, money);
+        HBox hero = Kept.row(TILE_GAP, trade, money);
         hero.setAlignment(Pos.TOP_LEFT);
         page.getChildren().add(hero);
         // ...and under it who the month's trade was with, the top five nations as doors to their pages (WN6); nothing where there is no partner.
-        Node strip = partners.strip();
+        Node strip = Kept.scope("partners", partners::strip);
         if (strip != null) page.getChildren().add(strip);
-        page.getChildren().add(sectionHead("WHAT DECIDES WHETHER A SHOCK IS SURVIVABLE", GAUGES_INFO,
-                quiet("the same three every month")));
-        page.getChildren().add(row(coverGauge(), backingGauge(), parityGauge()));
+        page.getChildren().add(Kept.scope("gauges head", () -> sectionHead("WHAT DECIDES WHETHER A SHOCK IS SURVIVABLE",
+                GAUGES_INFO, quiet("the same three every month"))));
+        page.getChildren().add(row(Kept.scope("cover", this::coverGauge), Kept.scope("backing", this::backingGauge),
+                Kept.scope("parity", this::parityGauge)));
     }
 
     /** The section's (i): the banner's reason (the spec's L8). */
@@ -919,12 +1002,14 @@ final class TradeScreen {
                 : "the month the city was saved in · bought left, sold right";
         VBox c = card(cardHead(Icons.LORRY, Palette.BUSINESS, "WHAT WE TRADE", TRADE_INFO, quiet(hint)));
         if (all.isEmpty()) {
-            c.getChildren().add(line("Nothing crossed the city's edge this month.", NOTHING_CROSSED));
+            c.getChildren().add(Kept.scope("nothing", () -> line("Nothing crossed the city's edge this month.", NOTHING_CROSSED)));
             return page ? c : doorCard(c, () -> open(GOODS));
         }
         List<GoodRow> top = all.subList(0, Math.min(shown, all.size()));
-        MirrorRows bars = mirror(top, "BOUGHT ABROAD " + d(t.bought()), "SOLD ABROAD " + d(t.sold()), false, true);
+        MirrorRows bars = Kept.scope("bars", () -> mirror(top, "BOUGHT ABROAD " + d(t.bought()), "SOLD ABROAD " + d(t.sold()), false, true));
+        // The bars grow out of their axis on the month's first draw (fresh: UserInterface.countsUp() held); any other draw stands them at rest.
         if (fresh && fx.isMonthCounted()) bars.grow(GROW_MILLIS);
+        else bars.stand();
         c.getChildren().add(bars);
         if (all.size() > shown) {
             double sold = 0, bought = 0;
@@ -935,7 +1020,7 @@ final class TradeScreen {
             int goods = all.size() - shown;
             String more = "+" + goods + " more good" + (goods == 1 ? "" : "s")
                     + " · " + d(sold) + " sold · " + d(bought) + " bought";
-            c.getChildren().add(door(more, Palette.ACCENT, () -> open(GOODS)));
+            c.getChildren().add(Kept.scope("more", () -> door(more, Palette.ACCENT, () -> open(GOODS))));
         }
         return doorCard(c, () -> open(GOODS));
     }
@@ -963,8 +1048,8 @@ final class TradeScreen {
         Sectors.GoodTrade g = ui.game.getTradeByGood().goods().get(good);
         ForeignAccounts fx = ui.game.getForeignAccounts();
         GoodsMarket market = ui.game.getMarkets().get(good);
-        VBox box = new VBox(6);
-        Label title = new Label(good.label());
+        VBox box = Kept.column(6);
+        Label title = Kept.label(good.label());
         title.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
         box.getChildren().add(title);
         String main = null;
@@ -1042,7 +1127,7 @@ final class TradeScreen {
         HistorySave h = ui.game.getHistorySave();
         Label rate = figure(sym() + fxRate(fx.getRate()), 28, Palette.TEXT_HEAD);
         Label per = words("per " + Currency.FOREIGN_SYMBOL, 13, Palette.TEXT_LABEL);
-        HBox big = new HBox(6, rate, per);
+        HBox big = Kept.row(6, rate, per);
         big.setAlignment(Pos.BASELINE_LEFT);
         VBox c = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "THE CURRENCY", RATE_INFO, null), big,
                 muted(oneOfOurs() + " · parity " + sym() + fxRate(fx.getParity())));
@@ -1050,12 +1135,12 @@ final class TradeScreen {
         int level = fx.isPinned() ? 0 : ForeignAccounts.parityLevel(fx.deviationFromParity());
         c.getChildren().add(chips(chip(parityWords(fx), level == 0 ? Palette.TEXT_MUTED : parityTone(level))));
         if (h.months() >= 2) {
-            c.getChildren().add(rateChart(h, new ChartModel(), false, 426, 140));
+            c.getChildren().add(Kept.scope("chart", () -> rateChart(h, null, false, 426, 140)));
         }
         double year = h.changeOver("fxRate", 12);
-        c.getChildren().add(muted(Double.isFinite(year)
+        c.getChildren().add(Kept.scope("year", () -> muted(Double.isFinite(year)
                 ? (Math.abs(year) < .0005 ? "no move in a year" : share1(Math.abs(year)) + (year > 0 ? " weaker" : " stronger") + " than a year ago")
-                : "not a year recorded yet"));
+                : "not a year recorded yet")));
         return doorCard(c, () -> open(CURRENCY));
     }
 
@@ -1078,9 +1163,10 @@ final class TradeScreen {
     void addRegimeLine(VBox card) {
         String regime = regimeLine();
         if (regime == null) return;
-        card.getChildren().add(muted(regime));
-        card.getChildren().add(doorPill("Policy › The currency", Icons.POLICY, Palette.MONEY,
-                () -> ui.policyScreen.open(PolicyScreen.MONEY, PolicyScreen.CURRENCY_PAGE)));
+        // Kept (KP6): drawn only sometimes, so a scope of its own each: they shift no node after them.
+        card.getChildren().add(Kept.scope("regime", () -> muted(regime)));
+        card.getChildren().add(Kept.scope("regime door", () -> doorPill("Policy › The currency", Icons.POLICY, Palette.MONEY,
+                () -> ui.policyScreen.open(PolicyScreen.MONEY, PolicyScreen.CURRENCY_PAGE))));
     }
 
     /** THE CURRENCY's (i): the unit, and parity (the spec's Q1, Q3). */
@@ -1146,7 +1232,11 @@ final class TradeScreen {
             lines.add(new TimeChart.Line("fxFair", "the fair level", Palette.MONEY_LIGHT, 0, h.aligned("fxFair"),
                     v -> HistoryScreen.plotScale("rate", v), v -> perUsd(v), "").asDashed());
         }
-        TimeChart chart = new TimeChart(window, main ? rateHidden : Set.of(), main);
+        // Kept (KP6), as City History's and the Bank's are: made once in its scope, told its data and its size at every draw. The big
+        // chart is on the tab's own window and legend (rateWindow, rateHidden); the small one on a window of its own, made with it
+        // (`window` null), since a small TimeChart does not pan.
+        TimeChart chart = Kept.of(TimeChart.class, () -> new TimeChart(window == null ? new ChartModel() : window,
+                main ? rateHidden : Set.of(), main));
         List<YearBook.Episode> crises = new ArrayList<>();
         if (main) for (YearBook.Episode e : ChartModel.episodes(h)) if ("currency".equals(e.kind())) crises.add(e);
         chart.setData(h.getMonth(), lines, HistoryScreen.axisFor("rate"), null, false, false, null, List.of(),
@@ -1272,8 +1362,9 @@ final class TradeScreen {
        ===================================================================== */
 
     void monthPage(VBox page) {
-        page.getChildren().add(monthHero());
-        VBox holdings = holdingsCard();
+        // Kept (KP6): each section a scope of its own.
+        page.getChildren().add(Kept.scope("hero", this::monthHero));
+        VBox holdings = Kept.scope("holdings", this::holdingsCard);
         targets.put(HOLDINGS, holdings);
         page.getChildren().add(holdings);
         page.getChildren().add(fold("month:ledger", "the balance of payments, as the statement it was",
@@ -1386,13 +1477,13 @@ final class TradeScreen {
      */
     VBox monthHero() {
         ForeignAccounts fx = ui.game.getForeignAccounts();
-        FlowPane toggle = chipStrip(new String[] {"steps", "river"}, showRiver ? "river" : "steps", Palette.SIZE_LABEL,
-                pick -> {
+        FlowPane toggle = Kept.scope("toggle", () -> chipStrip(new String[] {"steps", "river"}, showRiver ? "river" : "steps",
+                Palette.SIZE_LABEL, pick -> {
                     showRiver = "river".equals(pick);
                     showForeignMenu();
-                });
+                }));
         toggle.setAlignment(Pos.CENTER_RIGHT);
-        HBox right = new HBox(Palette.GAP);
+        HBox right = Kept.row(Palette.GAP);
         right.setAlignment(Pos.CENTER_RIGHT);
         if (fx.isMonthCounted()) {
             right.getChildren().addAll(
@@ -1402,39 +1493,42 @@ final class TradeScreen {
         right.getChildren().add(toggle);
         VBox c = card(cardHead(Icons.COIN, Palette.MONEY, "THE MONTH ACROSS THE EDGE", MONTH_INFO, right));
         if (!fx.isMonthCounted()) {
-            c.getChildren().add(line("Not counted yet: the balance of payments is struck when a month ends, and none "
-                    + "has ended since the city was founded or loaded from a save before 0.7.46.", NOT_SAVED_INFO));
+            c.getChildren().add(Kept.scope("not counted", () -> line("Not counted yet: the balance of payments is struck when a month ends, and none "
+                    + "has ended since the city was founded or loaded from a save before 0.7.46.", NOT_SAVED_INFO)));
             return c;
         }
+        // Kept (KP6): the steps and the river are scopes of their own, so the toggle shifts no node of the page.
         if (showRiver) {
             River r = river();
             if (r.in().isEmpty() && r.out().isEmpty()) {
-                c.getChildren().add(line("Nothing crossed the city's edge this month.", NOTHING_CROSSED));
+                c.getChildren().add(Kept.scope("nothing crossed", () -> line("Nothing crossed the city's edge this month.", NOTHING_CROSSED)));
                 return c;
             }
-            c.getChildren().add(bopRiver(r.in(), r.out(), 1180, 260, 160));
+            c.getChildren().add(Kept.scope("river", () -> bopRiver(r.in(), r.out(), 1180, 260, 160)));
         } else {
             Walk w = monthWalk();
-            c.getChildren().add(waterfall(w.steps(), this::signedD, 0, 250));
-            if (!w.nothing().isEmpty()) c.getChildren().add(muted("nothing this month: " + String.join(" · ", w.nothing())));
+            c.getChildren().add(Kept.scope("steps", () -> waterfall(w.steps(), this::signedD, 0, 250)));
+            if (!w.nothing().isEmpty()) {
+                c.getChildren().add(Kept.scope("nothing", () -> muted("nothing this month: " + String.join(" · ", w.nothing()))));
+            }
         }
         double balance = fx.balance();
-        c.getChildren().add(line(balance >= 0
+        c.getChildren().add(Kept.scope("balance", () -> line(balance >= 0
                         ? String.format("The city took in %s more than it paid out.", d(balance))
                         : String.format("The city paid out %s more than it took in.", d(-balance)),
-                balance >= 0 ? SURPLUS_INFO : DEFICIT_INFO));
+                balance >= 0 ? SURPLUS_INFO : DEFICIT_INFO)));
         List<Node> hand = new ArrayList<>();
         if (fx.getBoughtThisMonth() > 0) {
-            hand.add(chipInfo("the treasury bought " + d(fx.getBoughtThisMonth()) + " of foreign money", Palette.MONEY, HAND_INFO));
+            hand.add(Kept.scope("bought", () -> chipInfo("the treasury bought " + d(fx.getBoughtThisMonth()) + " of foreign money", Palette.MONEY, HAND_INFO)));
         }
         if (fx.getSoldThisMonth() > 0) {
-            hand.add(chipInfo("the treasury sold " + d(fx.getSoldThisMonth()) + " of foreign money", Palette.MONEY, HAND_INFO));
+            hand.add(Kept.scope("sold", () -> chipInfo("the treasury sold " + d(fx.getSoldThisMonth()) + " of foreign money", Palette.MONEY, HAND_INFO)));
         }
         if (Math.abs(fx.valuationChange()) > .005) {
-            hand.add(chipInfo("claims written off " + d(Math.abs(fx.valuationChange())), Palette.TEXT_LABEL,
-                    String.format(VALUATION_INFO, d(Math.abs(fx.valuationChange())))));
+            hand.add(Kept.scope("written off", () -> chipInfo("claims written off " + d(Math.abs(fx.valuationChange())), Palette.TEXT_LABEL,
+                    String.format(VALUATION_INFO, d(Math.abs(fx.valuationChange()))))));
         }
-        if (!hand.isEmpty()) c.getChildren().add(chips(hand.toArray(new Node[0])));
+        if (!hand.isEmpty()) c.getChildren().add(Kept.scope("hand", () -> chips(hand.toArray(new Node[0]))));
         return c;
     }
 
@@ -1520,7 +1614,7 @@ final class TradeScreen {
 
         double sum = 0;
         for (Flow f : in) sum += f.amount();
-        if (sum <= 0) return new VBox();
+        if (sum <= 0) return Kept.column(0);
 
         int bands = Math.max(in.size(), out.size());
         double usable = H - GAP * Math.max(0, bands - 1);
@@ -1531,12 +1625,12 @@ final class TradeScreen {
         double trunkX1   = W / 2 + TRUNK / 2;
         double rightBarX = W - LABEL - BAR;
 
-        javafx.scene.layout.Pane face = new javafx.scene.layout.Pane();
+        javafx.scene.layout.Pane face = Kept.plain();
         face.setPrefSize(W, H);
         face.setMinSize(W, H);
         face.setMaxSize(W, H);
 
-        Region trunk = new Region();
+        Region trunk = Kept.region();
         trunk.setPrefSize(TRUNK, H);
         trunk.setMinSize(TRUNK, H);
         trunk.setStyle("-fx-background-color: " + Palette.PINNED + "; -fx-background-radius: 3;");
@@ -1546,13 +1640,17 @@ final class TradeScreen {
 
         // A LABEL PER BAND, PUSHED APART: a band worth $347k beside one worth
         // $46M is two pixels tall, and its name would land on its neighbour's.
+        // Kept (KP6): each band is a scope keyed by its side and its name, which the bands that come and go leave alone.
         double sourceY = 0, trunkInY = 0, labelFloor = 0;
         for (Flow f : in) {
             double h = Math.max(2, f.amount() * scale);
-            face.getChildren().add(ribbon(leftBarX + BAR, sourceY, trunkX0, trunkInY, h, f.colour()));
-            face.getChildren().add(riverBar(f, leftBarX, sourceY, BAR, h));
             double at = Math.max(labelFloor, sourceY + h / 2 - 14);
-            face.getChildren().add(bandLabel(f, 0, at, LABEL - 8, true));
+            double y0 = sourceY, y1 = trunkInY;
+            Kept.scope("in:" + f.name(), () -> {
+                face.getChildren().add(ribbon(leftBarX + BAR, y0, trunkX0, y1, h, f.colour()));
+                face.getChildren().add(riverBar(f, leftBarX, y0, BAR, h));
+                face.getChildren().add(bandLabel(f, 0, at, LABEL - 8, true));
+            });
             labelFloor = at + 28;
             sourceY += h + GAP;
             trunkInY += h + GAP;
@@ -1561,32 +1659,35 @@ final class TradeScreen {
         labelFloor = 0;
         for (Flow f : out) {
             double h = Math.max(2, f.amount() * scale);
-            face.getChildren().add(ribbon(trunkX1, trunkOutY, rightBarX, useY, h, f.colour()));
-            face.getChildren().add(riverBar(f, rightBarX, useY, BAR, h));
             double at = Math.max(labelFloor, useY + h / 2 - 14);
-            face.getChildren().add(bandLabel(f, rightBarX + BAR + 8, at, LABEL - 8, false));
+            double y0 = trunkOutY, y1 = useY;
+            Kept.scope("out:" + f.name(), () -> {
+                face.getChildren().add(ribbon(trunkX1, y0, rightBarX, y1, h, f.colour()));
+                face.getChildren().add(riverBar(f, rightBarX, y1, BAR, h));
+                face.getChildren().add(bandLabel(f, rightBarX + BAR + 8, at, LABEL - 8, false));
+            });
             labelFloor = at + 28;
             useY += h + GAP;
             trunkOutY += h + GAP;
         }
 
-        Label here = new Label("THE\nCITY");
+        Label here = Kept.label("THE\nCITY");
         here.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED) + " -fx-text-alignment: center;");
         here.setLayoutX(trunkX0 + 6);
         here.setLayoutY(H / 2 - 14);
         face.getChildren().add(here);
 
-        Label inHead = new Label("CAME IN   " + d(sum));
+        Label inHead = Kept.label("CAME IN   " + d(sum));
         inHead.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-        Region spread = new Region();
+        Region spread = Kept.region();
         HBox.setHgrow(spread, Priority.ALWAYS);
-        Label outHead = new Label(d(sum) + "   WENT OUT");
+        Label outHead = Kept.label(d(sum) + "   WENT OUT");
         outHead.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-        HBox heads = new HBox(inHead, spread, outHead);
+        HBox heads = Kept.row(0, inHead, spread, outHead);
         heads.setMaxWidth(W);
         heads.setPrefWidth(W);
 
-        VBox box = new VBox(4, heads, face, noteLine("Band width is money; the two sides balance.", RIVER_INFO, W));
+        VBox box = Kept.column(4, heads, face, noteLine("Band width is money; the two sides balance.", RIVER_INFO, W));
         box.setMaxWidth(W);
         return box;
     }
@@ -1598,7 +1699,7 @@ final class TradeScreen {
 
     /** One source or use bar, with its tooltip; the closing band outlined. */
     Region riverBar(Flow f, double x, double y, double w, double h) {
-        Region bar = new Region();
+        Region bar = Kept.region();
         bar.setPrefSize(w, h);
         bar.setMinSize(w, h);
         boolean closing = Palette.TEXT_SPENT.equals(f.colour());
@@ -1607,9 +1708,13 @@ final class TradeScreen {
                 : "-fx-background-color: " + f.colour() + ";");
         bar.setLayoutX(x);
         bar.setLayoutY(y);
-        Tooltip.install(bar, new Tooltip(f.name() + "\n" + dFull(f.amount()) + "\n" + f.note()));
+        // Kept (KP6): the tooltip the bar has is told this month's words (the default delay, as Tooltip.install gave it).
+        Kept.tip(bar, f.name() + "\n" + dFull(f.amount()) + "\n" + f.note(), DEFAULT_TIP_MILLIS);
         return bar;
     }
+
+    /** How long a tooltip waits before it shows when the code names no delay: JavaFX's own default, a second (what Tooltip.install gave the river's bars). */
+    static final double DEFAULT_TIP_MILLIS = 1000;
 
     /**
      * One ribbon: a filled cubic band of constant height between two columns.
@@ -1618,8 +1723,9 @@ final class TradeScreen {
      */
     javafx.scene.shape.Path ribbon(double x0, double y0, double x1, double y1, double h, String colour) {
         double mid = (x0 + x1) / 2;
-        javafx.scene.shape.Path band = new javafx.scene.shape.Path();
-        band.getElements().addAll(
+        javafx.scene.shape.Path band = Kept.of(javafx.scene.shape.Path.class, javafx.scene.shape.Path::new);
+        // Set, not added to (KP6): a kept ribbon is handed back with last month's path.
+        band.getElements().setAll(
                 new javafx.scene.shape.MoveTo(x0, y0),
                 new javafx.scene.shape.CubicCurveTo(mid, y0, mid, y1, x1, y1),
                 new javafx.scene.shape.LineTo(x1, y1 + h),
@@ -1634,15 +1740,15 @@ final class TradeScreen {
 
     /** A band's name and figure, beside its bar; the name wraps rather than end in "…". */
     VBox bandLabel(Flow f, double x, double y, double width, boolean rightAlign) {
-        Label name = new Label(f.name());
+        Label name = Kept.label(f.name());
         name.setWrapText(true);
         name.setMaxWidth(width);
         name.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_BODY)
                 + (rightAlign ? " -fx-text-alignment: right;" : ""));
-        Label figure = new Label(d(f.amount()));
+        Label figure = Kept.label(d(f.amount()));
         figure.setStyle(Palette.figure(Palette.SIZE_CAPTION,
                 Palette.TEXT_SPENT.equals(f.colour()) ? Palette.TEXT_LABEL : f.colour()));
-        VBox box = new VBox(-2, name, figure);
+        VBox box = Kept.column(-2, name, figure);
         box.setPrefWidth(width);
         box.setMinWidth(width);
         box.setMaxWidth(width);
@@ -1685,17 +1791,17 @@ final class TradeScreen {
         VBox c = card(cardHead(Icons.TRADE, Palette.MONEY, "WHAT THE CITY HOLDS ABROAD · WHAT THE WORLD HOLDS HERE",
                 HOLDINGS_INFO, null));
         if (!(scale > 0)) {
-            c.getChildren().add(line("Nothing is held abroad and the world holds nothing here.", null));
+            c.getChildren().add(Kept.scope("nothing held", () -> line("Nothing is held abroad and the world holds nothing here.", null)));
             return c;
         }
-        c.getChildren().add(balanceBars("Held abroad " + d(abroad), top, null, "Held here by the world " + d(here), under,
-                null, scale, 200, 18));
+        c.getChildren().add(Kept.scope("bars", () -> balanceBars("Held abroad " + d(abroad), top, null,
+                "Held here by the world " + d(here), under, null, scale, 200, 18)));
         GridPane key = equalColumns(2, TILE_GAP);
-        VBox left = new VBox(4,
+        VBox left = Kept.column(4,
                 keyLine(Palette.BUSINESS, "the businesses' paper", d(firms.totalLocalValue()) + " · " + usd(firms.totalUsd())),
                 keyLine(Palette.PEOPLE, "the households' paper", d(savers.totalAbroadValue()) + " · " + usd(savers.totalAbroadUsd())),
                 keyLine(Palette.MONEY, "the vault", d(fx.getReserves()) + " · " + usd(fx.getReservesUsd())));
-        VBox right = new VBox(4,
+        VBox right = Kept.column(4,
                 keyLine(Palette.BUSINESS_LIGHT, "the city's shares", d(shares)),
                 keyLine(Palette.BUSINESS_DARK, "the businesses' bonds", d(bonds)),
                 keyLine(sand, "money parked in the bank", d(parked)),
@@ -1708,12 +1814,15 @@ final class TradeScreen {
 
     /** A key's row: its swatch, its name, and its figures at the right. */
     static HBox keyLine(String colour, String name, String figures) {
-        HBox sw = swatch(colour, name);
-        HBox.setHgrow(sw, Priority.ALWAYS);
-        sw.setMaxWidth(Double.MAX_VALUE);
-        HBox row = new HBox(Palette.GAP, sw, figure(figures, Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD));
-        row.setAlignment(Pos.CENTER_LEFT);
-        return row;
+        // Kept (KP6): a scope of its own, so the swatch that takes the row's room is always a key line's.
+        return Kept.scope("keyLine", () -> {
+            HBox sw = swatch(colour, name);
+            HBox.setHgrow(sw, Priority.ALWAYS);
+            sw.setMaxWidth(Double.MAX_VALUE);
+            HBox row = Kept.row(Palette.GAP, sw, figure(figures, Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD));
+            row.setAlignment(Pos.CENTER_LEFT);
+            return row;
+        });
     }
 
     /** The holdings' (i) (the spec's A5). */
@@ -1847,58 +1956,64 @@ final class TradeScreen {
        ===================================================================== */
 
     void goodsPage(VBox page, boolean fresh) {
-        VBox hero = goodsHero(fresh);
+        // Kept (KP6): each section a scope of its own.
+        VBox hero = Kept.scope("hero", () -> goodsHero(fresh));
         targets.put(GOODS_CARD, hero);
         page.getChildren().add(hero);
-        page.getChildren().add(row(tenYearsCard(), sinceFoundingCard()));
-        page.getChildren().add(bandInLegsCard());
-        page.getChildren().add(worldPrices());
+        page.getChildren().add(row(Kept.scope("ten years", this::tenYearsCard), Kept.scope("since founding", this::sinceFoundingCard)));
+        page.getChildren().add(Kept.scope("band", this::bandInLegsCard));
+        page.getChildren().add(Kept.scope("prices", this::worldPrices));
     }
 
     /** The hero: the head with the toggle and its three figures, the bars, and the rest folded. */
     VBox goodsHero(boolean fresh) {
         ForeignAccounts fx = ui.game.getForeignAccounts();
         Sectors.TradeByGood t = ui.game.getTradeByGood();
-        FlowPane toggle = chipStrip(new String[] {"by good", "by business"}, byBusiness ? "by business" : "by good",
-                Palette.SIZE_LABEL, pick -> {
+        FlowPane toggle = Kept.scope("toggle", () -> chipStrip(new String[] {"by good", "by business"},
+                byBusiness ? "by business" : "by good", Palette.SIZE_LABEL, pick -> {
                     byBusiness = "by business".equals(pick);
                     showForeignMenu();
-                });
+                }));
         toggle.setAlignment(Pos.CENTER_RIGHT);
         VBox c = card(cardHead(Icons.LORRY, Palette.BUSINESS, fx.isMonthCounted() ? "WHAT WE TRADE THIS MONTH"
                 : "WHAT WE TRADE, THE MONTH THE CITY WAS SAVED IN", TRADE_INFO, toggle));
-        c.getChildren().add(figure("sold " + d(t.sold()) + " · bought " + d(t.bought()) + " · balance " + signedD(t.balance()),
-                Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
-        if (!fx.isMonthCounted()) c.getChildren().add(noteLine("From the businesses' saved books: the balance of payments "
-                + "counts again a month on.", NOT_SAVED_INFO + " The households' own imports - their cars, and from 0.7.49 to "
-                + "0.7.82 their petrol - are counted from the next month.", 1100));
+        c.getChildren().add(Kept.scope("sold and bought", () -> figure("sold " + d(t.sold()) + " · bought " + d(t.bought())
+                + " · balance " + signedD(t.balance()), Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD)));
+        if (!fx.isMonthCounted()) {
+            c.getChildren().add(Kept.scope("saved books", () -> noteLine("From the businesses' saved books: the balance of payments "
+                    + "counts again a month on.", NOT_SAVED_INFO + " The households' own imports - their cars, and from 0.7.49 to "
+                    + "0.7.82 their petrol - are counted from the next month.", 1100)));
+        }
         List<GoodRow> rows = byBusiness ? businessRows(t) : goodRows(t);
         if (rows.isEmpty()) {
-            c.getChildren().add(line("Nothing crossed the city's edge this month.", NOTHING_CROSSED));
+            c.getChildren().add(Kept.scope("nothing crossed", () -> line("Nothing crossed the city's edge this month.", NOTHING_CROSSED)));
             return c;
         }
         boolean all = openLines.contains("goods:all");
         List<GoodRow> shown = all || rows.size() <= PAGE_GOODS + 1 ? rows : rows.subList(0, PAGE_GOODS);
-        MirrorRows bars = mirror(shown, "BOUGHT ABROAD", "SOLD ABROAD", !byBusiness, false);
+        // Kept (KP6): the bars of a good and of a business are scopes of their own, so the toggle shifts no node of the page.
+        MirrorRows bars = Kept.scope(byBusiness ? "businesses" : "goods", () -> mirror(shown, "BOUGHT ABROAD", "SOLD ABROAD", !byBusiness, false));
+        // The bars grow on the month's first draw (fresh: UserInterface.countsUp() held); any other draw stands them at rest.
         if (fresh && fx.isMonthCounted()) bars.grow(GROW_MILLIS);
+        else bars.stand();
         for (int i = 0; i < shown.size(); i++) {
             if (shown.get(i).good() != null) targets.put("#good:" + shown.get(i).good().name(), bars.row(i));
         }
         c.getChildren().add(bars);
         if (shown.size() < rows.size()) {
             int more = rows.size() - shown.size();
-            c.getChildren().add(door("+" + more + " more", Palette.ACCENT, () -> {
+            c.getChildren().add(Kept.scope("more", () -> door("+" + more + " more", Palette.ACCENT, () -> {
                 openLines.add("goods:all");
                 showForeignMenu();
-            }));
+            })));
         } else if (all && rows.size() > PAGE_GOODS + 1) {
-            c.getChildren().add(door("the first " + PAGE_GOODS + " only", Palette.ACCENT, () -> {
+            c.getChildren().add(Kept.scope("fewer", () -> door("the first " + PAGE_GOODS + " only", Palette.ACCENT, () -> {
                 openLines.remove("goods:all");
                 showForeignMenu();
-            }));
+            })));
         }
-        c.getChildren().add(muted(byBusiness ? "a row a business: tap one for its books"
-                : "a row a good, largest side first: tap one for who sold it, who bought it and what the world pays"));
+        c.getChildren().add(Kept.scope("hint", () -> muted(byBusiness ? "a row a business: tap one for its books"
+                : "a row a good, largest side first: tap one for who sold it, who bought it and what the world pays")));
         return c;
     }
 
@@ -1909,10 +2024,11 @@ final class TradeScreen {
                 + "bought abroad each month, the last ten years. One month says whether a mill was staffed; ten years say "
                 + "whether the city earns its living.", null));
         if (h.months() < 2) {
-            c.getChildren().add(line("A line needs two months; come back next month.", null));
+            c.getChildren().add(Kept.scope("short", () -> line("A line needs two months; come back next month.", null)));
             return c;
         }
-        TimeChart chart = new TimeChart(new ChartModel(), Set.of(), false);
+        // Kept (KP6): made once in its scope (a small chart does not pan, so its window is its own), told its data and size at every draw.
+        TimeChart chart = Kept.of(TimeChart.class, () -> new TimeChart(new ChartModel(), Set.of(), false));
         chart.setData(h.getMonth(), List.of(
                         new TimeChart.Line("exportsAbroad", "sold abroad", Palette.BUSINESS, 0, h.aligned("exportsAbroad"),
                                 v -> HistoryScreen.plotScale("money", v), this::d, ""),
@@ -1959,7 +2075,7 @@ final class TradeScreen {
         ForeignAccounts fx = ui.game.getForeignAccounts();
         VBox c = card(cardHead(Icons.COIN, Palette.BUSINESS, "SINCE FOUNDING", RECORD_INFO, null));
         Walk w = recordWalk();
-        c.getChildren().add(waterfall(w.steps(), this::signedD, 0, 170));
+        c.getChildren().add(Kept.scope("steps", () -> waterfall(w.steps(), this::signedD, 0, 170)));
         double trade = fx.getLifetimeTradeBalance();
         c.getChildren().add(chips(chip("on trade alone " + signedD(trade), Palette.TEXT_LABEL)));
         c.getChildren().add(line(trade >= 0
@@ -1988,7 +2104,7 @@ final class TradeScreen {
                     "What the city refused to pay abroad, since founding. It flatters every ratio for a year and costs "
                             + "the city the window abroad for five."));
         }
-        if (!also.isEmpty()) c.getChildren().add(chips(also.toArray(new Node[0])));
+        if (!also.isEmpty()) c.getChildren().add(Kept.scope("also", () -> chips(also.toArray(new Node[0]))));
         return c;
     }
 
@@ -2005,10 +2121,10 @@ final class TradeScreen {
         VBox c = card();
         if (world != null) {
             // Where the city has the nations' moneys the dollar's prices are the US's own, on its path (WN4, D29).
-            c.getChildren().add(line(String.format("%s %.3f× their founding level, %s %.2f%% a year.",
+            c.getChildren().add(Kept.scope("world", () -> line(String.format("%s %.3f× their founding level, %s %.2f%% a year.",
                     world.isOnUsPath() ? "US prices are" : "The world's prices are",
                     world.getPriceLevel(), world.getInflation() >= 0 ? "rising" : "falling",
-                    Math.abs(world.getInflation()) * 100), WORLD_INFO));
+                    Math.abs(world.getInflation()) * 100), WORLD_INFO)));
         }
         c.getChildren().add(fold("goods:prices", "what the world pays and charges, good by good", this::priceGrid));
         return c;
@@ -2032,19 +2148,24 @@ final class TradeScreen {
             double pays = m.exportPrice(), charges = m.importPrice();
             Sectors.GoodTrade crossed = t.goods().get(g);
             boolean sold = crossed != null && crossed.sold() > 0, bought = crossed != null && crossed.bought() > 0;
-            grid.add(gridCell(g.label() + " · a " + g.unit(),
-                    Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, line);
-            grid.add(gridCell(Double.isFinite(pays) ? unitD(pays) : "—", Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 1, line);
-            grid.add(gridCell(Double.isFinite(pays) ? marked(Currency.FOREIGN_SYMBOL, unitPrice(fx.toUsd(pays))) : "",
-                    Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, line);
-            grid.add(gridCell(Double.isFinite(charges) ? unitD(charges) : "—", Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 3, line);
-            grid.add(gridCell(Double.isFinite(charges) ? marked(Currency.FOREIGN_SYMBOL, unitPrice(fx.toUsd(charges))) : "",
-                    Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 4, line);
-            grid.add(gridCell(sold && bought ? "both ways" : sold ? "sold to it" : bought ? "bought from it" : "·",
-                    Palette.TEXT_LABEL, Palette.SIZE_CAPTION, true), 5, line);
+            // Kept (KP6): a row a good, its cells in a scope keyed by the good and by which of its two US$ cells say anything - a cell
+            // that had words and has none keeps the Text node's bounds of the words it had, so it is made afresh.
+            String usdPays = Double.isFinite(pays) ? marked(Currency.FOREIGN_SYMBOL, unitPrice(fx.toUsd(pays))) : "";
+            String usdCharges = Double.isFinite(charges) ? marked(Currency.FOREIGN_SYMBOL, unitPrice(fx.toUsd(charges))) : "";
+            int row = line;
+            Kept.scope("price:" + g.name() + (usdPays.isEmpty() ? "/-" : "/p") + (usdCharges.isEmpty() ? "/-" : "/c"), () -> {
+                grid.add(gridCell(g.label() + " · a " + g.unit(),
+                        Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, row);
+                grid.add(gridCell(Double.isFinite(pays) ? unitD(pays) : "—", Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 1, row);
+                grid.add(gridCell(usdPays, Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, row);
+                grid.add(gridCell(Double.isFinite(charges) ? unitD(charges) : "—", Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 3, row);
+                grid.add(gridCell(usdCharges, Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 4, row);
+                grid.add(gridCell(sold && bought ? "both ways" : sold ? "sold to it" : bought ? "bought from it" : "·",
+                        Palette.TEXT_LABEL, Palette.SIZE_CAPTION, true), 5, row);
+            });
             line++;
         }
-        VBox box = new VBox(6, grid);
+        VBox box = Kept.column(6, grid);
         box.getChildren().add(statementNote("\"It pays\" is what the world pays the city for one, delivered there; \"it "
                 + "charges\" what it charges to bring one in. Both are the markets' own prices, at today's rate and with "
                 + "the railway's freight in them, so they are what a trade this month clears at; the US$ is the same price "
@@ -2106,25 +2227,32 @@ final class TradeScreen {
         TradeBand.Whole whole = band.whole();
         VBox c = card(cardHead(Icons.LORRY, Palette.ORE, "THE BAND IN LEGS", BAND_LEGS_INFO, null));
         if (band.rows().isEmpty()) {
-            c.getChildren().add(muted(NO_BAND));
+            c.getChildren().add(Kept.scope("no band", () -> muted(NO_BAND)));
             return c;
         }
         if (whole.crossed() > 0 && whole.total() > 0) {
-            c.getChildren().add(figure(d(whole.total()) + " · " + BuildScreen.pct1(whole.shareOfTrade()) + " of the "
-                    + d(whole.crossed()) + " that crossed", Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
+            // Kept (KP6): the whole's picture, its key and its words are scopes of their own, since the band has none of them in a month with no trade.
+            c.getChildren().add(Kept.scope("total", () -> figure(d(whole.total()) + " · " + BuildScreen.pct1(whole.shareOfTrade()) + " of the "
+                    + d(whole.crossed()) + " that crossed", Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD)));
             List<String> tips = new ArrayList<>();
             for (TradeBand.Piece p : whole.pieces()) tips.add(wholeTip(whole, p));
-            BandBar bar = new BandBar(whole.pieces(), tips, 0, true);
-            c.getChildren().add(bar);
-            c.getChildren().add(bandKey(whole));
-            c.getChildren().add(muted("What the world's margin, the long haul and the city leg came to on the month's trade, at "
-                    + "today's prices. Hatched: paid abroad, with the cargo."));
+            c.getChildren().add(Kept.scope("bar", () -> bandBar(whole.pieces(), tips, 0, true)));
+            c.getChildren().add(Kept.scope("key", () -> bandKey(whole)));
+            c.getChildren().add(Kept.scope("what", () -> muted("What the world's margin, the long haul and the city leg came to on the month's trade, at "
+                    + "today's prices. Hatched: paid abroad, with the cargo.")));
         } else {
-            c.getChildren().add(muted(NO_BAND_TRADE));
+            c.getChildren().add(Kept.scope("no trade", () -> muted(NO_BAND_TRADE)));
         }
-        if (!ui.game.getForeignAccounts().isMonthCounted()) c.getChildren().add(muted(FREIGHT_AFTER_LOAD));
+        if (!ui.game.getForeignAccounts().isMonthCounted()) c.getChildren().add(Kept.scope("after load", () -> muted(FREIGHT_AFTER_LOAD)));
         c.getChildren().add(fold("goods:band", "each good's gap in legs", () -> bandGoods(band)));
         return c;
+    }
+
+    /** A band's bar (KP6): a picture on a kept page is told its pieces by set(); anywhere else this is a new bar, as it was. */
+    static BandBar bandBar(List<TradeBand.Piece> pieces, List<String> tips, double scale, boolean named) {
+        BandBar bar = Kept.of(BandBar.class, BandBar::new);
+        bar.set(pieces, tips, scale, named);
+        return bar;
     }
 
     /** One leg's tooltip on the whole's bar: its name, its money, its share of the gap, and who is paid. */
@@ -2135,71 +2263,86 @@ final class TradeScreen {
 
     /** The bar's key: a swatch a leg - hatched where it is paid abroad - with its name, its money and its share of the band. */
     FlowPane bandKey(TradeBand.Whole whole) {
-        FlowPane key = new FlowPane(16, 6);
+        FlowPane key = Kept.flow(16, 6);
         for (TradeBand.Piece p : whole.pieces()) {
-            Label name = new Label(p.part().label());
-            name.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
-            HBox item = new HBox(6, legSwatch(p.part()), name, figure(d(p.amount()), Palette.SIZE_LABEL, Palette.TEXT_HEAD),
-                    muted(BuildScreen.pct1(whole.shareOfGap(p.part()))));
-            item.setAlignment(Pos.CENTER_LEFT);
-            Tooltip tip = new Tooltip(p.part().leg() + ": " + p.part().paidTo());
-            tip.setShowDelay(javafx.util.Duration.millis(200));
-            Tooltip.install(item, tip);
-            key.getChildren().add(item);
+            // Kept (KP6): an item a scope keyed by its leg, which the legs that come and go leave alone.
+            key.getChildren().add(Kept.scope("leg:" + p.part(), () -> {
+                Label name = Kept.label(p.part().label());
+                name.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+                HBox item = Kept.row(6, legSwatch(p.part()), name, figure(d(p.amount()), Palette.SIZE_LABEL, Palette.TEXT_HEAD),
+                        muted(BuildScreen.pct1(whole.shareOfGap(p.part()))));
+                item.setAlignment(Pos.CENTER_LEFT);
+                Kept.tip(item, p.part().leg() + ": " + p.part().paidTo(), 200);
+                return item;
+            }));
         }
         return key;
     }
 
     /** A leg's key swatch: its colour, hatched over where the money is paid abroad (the Freight page's key). */
     static javafx.scene.layout.StackPane legSwatch(TradeBand.Part part) {
-        javafx.scene.layout.StackPane swatch = new javafx.scene.layout.StackPane();
-        swatch.getChildren().add(new javafx.scene.shape.Rectangle(14, 10, javafx.scene.paint.Color.web(legColour(part))));
-        if (part.abroad()) swatch.getChildren().add(new javafx.scene.shape.Rectangle(14, 10, SectorScreen.hatch(Palette.STAGE, .6)));
+        javafx.scene.layout.StackPane swatch = Kept.stack();
+        javafx.scene.shape.Rectangle fill = Kept.of(javafx.scene.shape.Rectangle.class, javafx.scene.shape.Rectangle::new);
+        fill.setWidth(14);
+        fill.setHeight(10);
+        fill.setFill(javafx.scene.paint.Color.web(legColour(part)));
+        swatch.getChildren().add(fill);
+        if (part.abroad()) {
+            javafx.scene.shape.Rectangle hatch = Kept.of(javafx.scene.shape.Rectangle.class, javafx.scene.shape.Rectangle::new);
+            hatch.setWidth(14);
+            hatch.setHeight(10);
+            hatch.setFill(SectorScreen.hatch(Palette.STAGE, .6));
+            swatch.getChildren().add(hatch);
+        }
         return swatch;
     }
 
     /** Under details: a row a good - those that crossed first - its gap in legs as a share of what the world charges to bring one in, all on one scale. */
     Node bandGoods(TradeBand.Band band) {
-        VBox box = new VBox(6);
+        VBox box = Kept.column(6);
         boolean all = openLines.contains("band:all");
         List<TradeBand.Row> rows = band.rows();
         List<TradeBand.Row> shown = all || rows.size() <= PAGE_GOODS + 1 ? rows : rows.subList(0, PAGE_GOODS);
         double scale = 0;
         for (TradeBand.Row r : shown) scale = Math.max(scale, r.shareToTheDoor());
+        final double barScale = scale;
         for (TradeBand.Row r : shown) {
             Good g = r.good();
-            Label name = words(g.label() + " · a " + g.unit(), Palette.SIZE_CAPTION, Palette.TEXT_BODY);
-            name.setMinWidth(170);
-            name.setPrefWidth(170);
-            name.setMaxWidth(170);
-            List<TradeBand.Piece> shares = new ArrayList<>();
-            List<String> tips = new ArrayList<>();
-            for (TradeBand.Piece p : r.pieces()) {
-                shares.add(new TradeBand.Piece(p.part(), r.share(p.part())));
-                tips.add(g.label() + " · " + p.part().label() + " " + unitD(p.amount()) + " a " + g.unit() + " · "
-                        + BuildScreen.pct1(r.share(p.part())) + " of the " + unitD(r.importPrice()) + " it costs to bring one in"
-                        + "\n" + p.part().leg() + ": " + p.part().paidTo() + (p.part().abroad() ? " · paid abroad" : ""));
-            }
-            BandBar bar = new BandBar(shares, tips, scale, false);
-            HBox.setHgrow(bar, Priority.ALWAYS);
-            Label at = figure(BuildScreen.pct1(r.shareToTheDoor()) + " · " + unitD(r.toTheDoor()), Palette.SIZE_CAPTION,
-                    r.crossed() > 0 ? Palette.TEXT_HEAD : Palette.TEXT_MUTED);
-            at.setMinWidth(110);
-            at.setAlignment(Pos.CENTER_RIGHT);
-            HBox line = new HBox(Palette.GAP, name, bar, at);
-            line.setAlignment(Pos.CENTER_LEFT);
-            box.getChildren().add(line);
+            // Kept (KP6): a row a good, a scope keyed by the good, which the goods that come and go (the first twelve, or all) leave alone.
+            box.getChildren().add(Kept.scope("good:" + g.name(), () -> {
+                Label name = words(g.label() + " · a " + g.unit(), Palette.SIZE_CAPTION, Palette.TEXT_BODY);
+                name.setMinWidth(170);
+                name.setPrefWidth(170);
+                name.setMaxWidth(170);
+                List<TradeBand.Piece> shares = new ArrayList<>();
+                List<String> tips = new ArrayList<>();
+                for (TradeBand.Piece p : r.pieces()) {
+                    shares.add(new TradeBand.Piece(p.part(), r.share(p.part())));
+                    tips.add(g.label() + " · " + p.part().label() + " " + unitD(p.amount()) + " a " + g.unit() + " · "
+                            + BuildScreen.pct1(r.share(p.part())) + " of the " + unitD(r.importPrice()) + " it costs to bring one in"
+                            + "\n" + p.part().leg() + ": " + p.part().paidTo() + (p.part().abroad() ? " · paid abroad" : ""));
+                }
+                BandBar bar = bandBar(shares, tips, barScale, false);
+                HBox.setHgrow(bar, Priority.ALWAYS);
+                Label at = figure(BuildScreen.pct1(r.shareToTheDoor()) + " · " + unitD(r.toTheDoor()), Palette.SIZE_CAPTION,
+                        r.crossed() > 0 ? Palette.TEXT_HEAD : Palette.TEXT_MUTED);
+                at.setMinWidth(110);
+                at.setAlignment(Pos.CENTER_RIGHT);
+                HBox line = Kept.row(Palette.GAP, name, bar, at);
+                line.setAlignment(Pos.CENTER_LEFT);
+                return line;
+            }));
         }
         if (shown.size() < rows.size()) {
-            box.getChildren().add(door("+" + (rows.size() - shown.size()) + " more", Palette.ACCENT, () -> {
+            box.getChildren().add(Kept.scope("more", () -> door("+" + (rows.size() - shown.size()) + " more", Palette.ACCENT, () -> {
                 openLines.add("band:all");
                 showForeignMenu();
-            }));
+            })));
         } else if (all && rows.size() > PAGE_GOODS + 1) {
-            box.getChildren().add(door("the first " + PAGE_GOODS + " only", Palette.ACCENT, () -> {
+            box.getChildren().add(Kept.scope("fewer", () -> door("the first " + PAGE_GOODS + " only", Palette.ACCENT, () -> {
                 openLines.remove("band:all");
                 showForeignMenu();
-            }));
+            })));
         }
         box.getChildren().add(statementNote("A row is one good's gap to the door a unit, as a share of what the world charges to "
                 + "bring one in and in the city's money: the goods that crossed in the month first, then the widest. It is "
@@ -2212,38 +2355,92 @@ final class TradeScreen {
      * sum), each in its leg's colour and hatched where the money is paid
      * abroad, each with a tooltip and, when asked, its name inside where it
      * fits - the Freight page's LegBar, for money.
+     *
+     * <p>A picture (KP6): made through Kept (bandBar()), told its pieces by set(). Its parts are its own, made with new (a
+     * picture owns its children); set() keeps them while the bar has the pieces' legs it had and makes them afresh when
+     * they change, so the common month - the figures moved, the legs the same - makes no node, and asks for a layout only
+     * when a figure the layout reads moved.
      */
     static final class BandBar extends javafx.scene.layout.Pane {
         /** The bar's height, in pixels: 26, the Freight page's LegBar's. */
         static final double BAND = 26;
-        private final List<TradeBand.Piece> pieces;
-        private final double scale;
+        private List<TradeBand.Piece> pieces = List.of();
+        private double scale;
+        private boolean named;
+        /** What the parts were made for at the last set() (see shapeOf()), and what the layout read (see layoutKey()): null before the first. */
+        private String shape, laidOut;
         private final Region track = new Region();
         private final List<javafx.scene.shape.Rectangle> blocks = new ArrayList<>(), stripes = new ArrayList<>();
         private final List<Label> labels = new ArrayList<>();
 
-        BandBar(List<TradeBand.Piece> pieces, List<String> tips, double scale, boolean named) {
+        /** The track and the bar's own size, made once in its life; the pieces come with set(). */
+        BandBar() {
+            track.setStyle("-fx-background-color: " + Palette.CONTROL + ";");
+            getChildren().add(track);
+            setMinHeight(BAND);
+            setPrefHeight(BAND);
+            setMaxHeight(BAND);
+            setMinWidth(0);
+            setPrefWidth(200);
+            setMaxWidth(Double.MAX_VALUE);
+        }
+
+        /** What the bar draws now: the pieces and each one's tooltip, the scale (0 or less: their sum), and whether the legs are named inside. */
+        void set(List<TradeBand.Piece> pieces, List<String> tips, double scale, boolean named) {
             this.pieces = pieces;
+            this.named = named;
             double sum = 0;
             for (TradeBand.Piece p : pieces) sum += Math.max(0, p.amount());
             this.scale = scale > 0 ? scale : sum;
-            track.setStyle("-fx-background-color: " + Palette.CONTROL + ";");
-            getChildren().add(track);
+            String now = shapeOf();
+            boolean built = !now.equals(shape);
+            if (built) {
+                shape = now;
+                build();
+            }
             for (int i = 0; i < pieces.size(); i++) {
-                TradeBand.Piece p = pieces.get(i);
+                javafx.scene.shape.Rectangle block = blocks.get(i);
+                block.setFill(javafx.scene.paint.Color.web(legColour(pieces.get(i).part())));
+                tipFor(block, tips.get(i), 200);
+            }
+            String key = layoutKey();
+            if (built || !key.equals(laidOut)) {
+                laidOut = key;
+                requestLayout();
+            }
+        }
+
+        /** What the parts depend on: whether the legs are named inside, and which leg each piece is. */
+        private String shapeOf() {
+            StringBuilder s = new StringBuilder(named ? "named" : "plain");
+            for (TradeBand.Piece p : pieces) s.append('|').append(p.part());
+            return s.toString();
+        }
+
+        /** Every figure the layout reads, in one string: laid out again only when it differs. */
+        private String layoutKey() {
+            StringBuilder s = new StringBuilder().append(scale);
+            for (TradeBand.Piece p : pieces) s.append('|').append(p.amount());
+            return s.toString();
+        }
+
+        /** The parts made afresh, a block, a hatched stripe and (when named) a label a piece. */
+        private void build() {
+            blocks.clear();
+            stripes.clear();
+            labels.clear();
+            List<javafx.scene.Node> all = new ArrayList<>();
+            all.add(track);
+            for (TradeBand.Piece p : pieces) {
                 javafx.scene.shape.Rectangle block = new javafx.scene.shape.Rectangle();
-                block.setFill(javafx.scene.paint.Color.web(legColour(p.part())));
-                Tooltip tip = new Tooltip(tips.get(i));
-                tip.setShowDelay(javafx.util.Duration.millis(200));
-                Tooltip.install(block, tip);
                 blocks.add(block);
-                getChildren().add(block);
+                all.add(block);
                 javafx.scene.shape.Rectangle stripe = new javafx.scene.shape.Rectangle();
                 stripe.setMouseTransparent(true);
                 stripe.setVisible(p.part().abroad());
                 stripe.setFill(SectorScreen.hatch(Palette.STAGE, .6));
                 stripes.add(stripe);
-                getChildren().add(stripe);
+                all.add(stripe);
                 Label label = new Label(p.part().label());
                 label.setMouseTransparent(true);
                 label.setVisible(false);
@@ -2251,17 +2448,12 @@ final class TradeScreen {
                         + tint(Palette.STAGE, .55) + "; -fx-background-radius: 2; -fx-padding: 1 4 1 4;");
                 if (named) {
                     labels.add(label);
-                    getChildren().add(label);
+                    all.add(label);
                 } else {
                     labels.add(null);
                 }
             }
-            setMinHeight(BAND);
-            setPrefHeight(BAND);
-            setMaxHeight(BAND);
-            setMinWidth(0);
-            setPrefWidth(200);
-            setMaxWidth(Double.MAX_VALUE);
+            getChildren().setAll(all);
         }
 
         @Override protected void layoutChildren() {
@@ -2330,53 +2522,60 @@ final class TradeScreen {
     void currencyPage(VBox page) {
         ForeignAccounts fx = ui.game.getForeignAccounts();
         HistorySave h = ui.game.getHistorySave();
-        VBox rate = rateCard();
+        // Kept (KP6): each section a scope of its own.
+        VBox rate = Kept.scope("rate", this::rateCard);
         rate.setMinWidth(360);
         rate.setPrefWidth(400);
         rate.setMaxWidth(400);
-        HBox hero = new HBox(TILE_GAP, rate);
+        HBox hero = Kept.row(TILE_GAP, rate);
         hero.setAlignment(Pos.TOP_LEFT);
         if (h.months() >= 2) {
-            TimeChart chart = rateChart(h, rateWindow, true, 794, 230);
-            Label title = new Label("THE RATE OVER TIME");
-            title.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
-            title.setMinWidth(Region.USE_PREF_SIZE);
-            chart.lead().getChildren().setAll(title);
-            VBox right = new VBox(6, chart);
-            int parity = h.monthsRecorded("fxParity");
-            if (parity < h.months()) {
-                right.getChildren().add(noteLine(parity == 0
-                                ? "Parity is recorded from 0.7.35 on: none yet in this city's history - today's is "
-                                  + sym() + fxRate(ui.game.getForeignAccounts().getParity()) + "."
-                                : "Parity is recorded from 0.7.35 on: " + parity + " month" + (parity == 1 ? "" : "s") + " so far.",
-                        "Parity is where a basket costs the same here and abroad. History kept the rate from the "
-                                + "founding and parity only since 0.7.35, so an older city's parity line starts the "
-                                + "month it was first played in this build.", 790));
-            }
-            int fair = h.monthsRecorded("fxFair");
-            if (fair < h.months()) {
-                right.getChildren().add(noteLine(fair == 0
-                                ? "The fair level is recorded from 0.8.19 on: none yet in this city's history - today's is "
-                                  + sym() + fxRate(fx.getFairLevel()) + "."
-                                : "The fair level is recorded from 0.8.19 on: " + fair + " month" + (fair == 1 ? "" : "s") + " so far.",
-                        "The fair level is where the fundamentals alone put the currency: parity's trend, the real rate, the "
-                                + "vault's cover and the balance, with nothing for the market's swing or any dealing. History "
-                                + "kept the rate from the founding and the fair level only from the float on, so an older city's "
-                                + "fair line starts the month it was first played in this build.", 790));
-            }
-            hero.getChildren().add(right);
+            hero.getChildren().add(Kept.scope("over time", () -> overTime(h, fx)));
         }
         page.getChildren().add(hero);
-        VBox forces = forcesCard();
+        VBox forces = Kept.scope("forces", this::forcesCard);
         targets.put(FORCES, forces);
         page.getChildren().add(forces);
-        page.getChildren().add(fundamentalsCard());
-        page.getChildren().add(sectionHead("WHAT THE RATE IS DOING TO THE CITY", null, null));
-        VBox debt = dollarDebtCard();
+        page.getChildren().add(Kept.scope("fundamentals", this::fundamentalsCard));
+        page.getChildren().add(Kept.scope("doing head", () -> sectionHead("WHAT THE RATE IS DOING TO THE CITY", null, null)));
+        VBox debt = Kept.scope("debt", this::dollarDebtCard);
         targets.put(DEBT, debt);
-        page.getChildren().add(row(debt, vaultCard()));
+        page.getChildren().add(row(debt, Kept.scope("vault", this::vaultCard)));
         page.getChildren().add(fold("currency:rule", "the rule the rate follows",
                 () -> words(RULE, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL)));
+    }
+
+    /** The rate over time, beside THE RATE: the big chart on the tab's own window, with the notes on what History recorded since which build. */
+    private VBox overTime(HistorySave h, ForeignAccounts fx) {
+        TimeChart chart = rateChart(h, rateWindow, true, 794, 230);
+        Label title = Kept.label("THE RATE OVER TIME");
+        title.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
+        title.setMinWidth(Region.USE_PREF_SIZE);
+        // Set where it differs: the chart is kept, and its lead already holds this month's title.
+        Kept.set(chart.lead().getChildren(), List.of(title));
+        VBox right = Kept.column(6, chart);
+        int parity = h.monthsRecorded("fxParity");
+        if (parity < h.months()) {
+            right.getChildren().add(Kept.scope("parity note", () -> noteLine(parity == 0
+                            ? "Parity is recorded from 0.7.35 on: none yet in this city's history - today's is "
+                              + sym() + fxRate(ui.game.getForeignAccounts().getParity()) + "."
+                            : "Parity is recorded from 0.7.35 on: " + parity + " month" + (parity == 1 ? "" : "s") + " so far.",
+                    "Parity is where a basket costs the same here and abroad. History kept the rate from the "
+                            + "founding and parity only since 0.7.35, so an older city's parity line starts the "
+                            + "month it was first played in this build.", 790)));
+        }
+        int fair = h.monthsRecorded("fxFair");
+        if (fair < h.months()) {
+            right.getChildren().add(Kept.scope("fair note", () -> noteLine(fair == 0
+                            ? "The fair level is recorded from 0.8.19 on: none yet in this city's history - today's is "
+                              + sym() + fxRate(fx.getFairLevel()) + "."
+                            : "The fair level is recorded from 0.8.19 on: " + fair + " month" + (fair == 1 ? "" : "s") + " so far.",
+                    "The fair level is where the fundamentals alone put the currency: parity's trend, the real rate, the "
+                            + "vault's cover and the balance, with nothing for the market's swing or any dealing. History "
+                            + "kept the rate from the founding and the fair level only from the float on, so an older city's "
+                            + "fair line starts the month it was first played in this build.", 790)));
+        }
+        return right;
     }
 
     /**
@@ -2392,25 +2591,26 @@ final class TradeScreen {
         ForeignAccounts fx = ui.game.getForeignAccounts();
         Label rate = figure(sym() + fxRate(fx.getRate()), 28, Palette.TEXT_HEAD);
         Label per = words("per " + Currency.FOREIGN_SYMBOL, 13, Palette.TEXT_LABEL);
-        HBox big = new HBox(6, rate, per);
+        HBox big = Kept.row(6, rate, per);
         big.setAlignment(Pos.BASELINE_LEFT);
         VBox c = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "THE RATE", RATE_INFO, null), big, muted(oneOfOurs()));
+        // Kept (KP6): what is drawn only sometimes is a scope of its own, so it shifts no node after it.
         String moved = rateMove();
-        if (moved != null) c.getChildren().add(muted(moved));
+        if (moved != null) c.getChildren().add(Kept.scope("moved", () -> muted(moved)));
         addRegimeLine(c);
-        c.getChildren().add(muted("A rising figure is a cheaper " + sym() + ": " + Currency.FOREIGN_SYMBOL + "1 costs more of it."));
+        c.getChildren().add(Kept.scope("rising", () -> muted("A rising figure is a cheaper " + sym() + ": " + Currency.FOREIGN_SYMBOL + "1 costs more of it.")));
         // D29 (WN6): the other US dollar, the real 2015 one the nations' output is counted in, and the D$'s real effective rate against the partners'.
         double real = ui.game.dollarsPer2015Usd(), effective = ui.game.realEffectiveRate();
         if (Double.isFinite(real)) {
-            c.getChildren().add(cardLine("A real 2015 " + Currency.FOREIGN_SYMBOL + " costs", sym() + fxRate(real), null, REAL_USD_INFO));
+            c.getChildren().add(Kept.scope("real", () -> cardLine("A real 2015 " + Currency.FOREIGN_SYMBOL + " costs", sym() + fxRate(real), null, REAL_USD_INFO)));
         }
         if (Double.isFinite(effective)) {
-            c.getChildren().add(cardLine("The real effective rate", String.format("%.1f", effective) + " (100 at founding)", null, REAL_EFFECTIVE_INFO));
+            c.getChildren().add(Kept.scope("effective", () -> cardLine("The real effective rate", String.format("%.1f", effective) + " (100 at founding)", null, REAL_EFFECTIVE_INFO)));
             // ...and (WN5b) the partners it weighs, from the getter the rate is made from.
-            c.getChildren().add(muted(weighsWords(ui.game.realEffectivePartners(), ui.game.getNations(), ui.game.getWorldMoneys() != null)));
+            c.getChildren().add(Kept.scope("weighs", () -> muted(weighsWords(ui.game.realEffectivePartners(), ui.game.getNations(), ui.game.getWorldMoneys() != null))));
         }
         if (fx.isPinned()) {
-            c.getChildren().add(chips(chip("held fixed", Palette.TEXT_LABEL)));
+            c.getChildren().add(Kept.scope("held fixed", () -> chips(chip("held fixed", Palette.TEXT_LABEL))));
             return c;
         }
         double dev = fx.deviationFromParity();
@@ -2418,18 +2618,23 @@ final class TradeScreen {
         double s = PARITY_SCALE, w = ForeignAccounts.PARITY_WATCH, f = ForeignAccounts.PARITY_FAR;
         double[] edges = {(s - f) / (2 * s), (s - w) / (2 * s), (s + w) / (2 * s), (s + f) / (2 * s), 1};
         String[] tones = {Palette.BAD, Palette.WARN, Palette.TEXT_SPENT, Palette.WARN, Palette.BAD};
-        c.getChildren().add(cardLine("Against parity (rent held to a third)", "", null, parityLineInfo(fx)));
-        c.getChildren().add(bandTrack(gaugeAt(dev), edges, tones,
-                List.of(new Tick(.5, Palette.TEXT_LABEL, 1, "parity", "parity " + perUsd(fx.getParity()))), 0, 12, false));
-        c.getChildren().add(gaugeEnds());
-        c.getChildren().add(chips(chip(parityWords(fx), level == 0 ? Palette.TEXT_MUTED : parityTone(level))));
+        // ...the two gauges, each a scope of its own: their lines say nothing ("") where the card line elsewhere says a figure.
+        Kept.scope("against parity", () -> {
+            c.getChildren().add(cardLine("Against parity (rent held to a third)", "", null, parityLineInfo(fx)));
+            c.getChildren().add(bandTrack(gaugeAt(dev), edges, tones,
+                    List.of(new Tick(.5, Palette.TEXT_LABEL, 1, "parity", "parity " + perUsd(fx.getParity()))), 0, 12, false));
+            c.getChildren().add(gaugeEnds());
+            c.getChildren().add(chips(chip(parityWords(fx), level == 0 ? Palette.TEXT_MUTED : parityTone(level))));
+        });
         double off = fx.deviationFromFair();
-        c.getChildren().add(cardLine("Against the fair level", "", null, FAIR_INFO));
-        c.getChildren().add(bandTrack(gaugeAt(off), new double[] {1}, new String[] {Palette.TEXT_SPENT},
-                List.of(new Tick(.5, Palette.TEXT_LABEL, 1, "fair level", "the fair level " + perUsd(fx.getFairLevel()))),
-                0, 12, false));
-        c.getChildren().add(gaugeEnds());
-        c.getChildren().add(chips(chip(farFrom(off, "the fair level"), Palette.TEXT_MUTED)));
+        Kept.scope("against fair", () -> {
+            c.getChildren().add(cardLine("Against the fair level", "", null, FAIR_INFO));
+            c.getChildren().add(bandTrack(gaugeAt(off), new double[] {1}, new String[] {Palette.TEXT_SPENT},
+                    List.of(new Tick(.5, Palette.TEXT_LABEL, 1, "fair level", "the fair level " + perUsd(fx.getFairLevel()))),
+                    0, 12, false));
+            c.getChildren().add(gaugeEnds());
+            c.getChildren().add(chips(chip(farFrom(off, "the fair level"), Palette.TEXT_MUTED)));
+        });
         return c;
     }
 
@@ -2442,10 +2647,12 @@ final class TradeScreen {
     /** The two gauges' ends, named in the scale they share: "‹ 75% stronger" and "75% weaker ›". */
     static HBox gaugeEnds() {
         String scale = String.format("%.0f%%", PARITY_SCALE * 100);
-        Label stronger = muted("‹ " + scale + " stronger"), weaker = muted(scale + " weaker ›");
-        Region gap = new Region();
-        HBox.setHgrow(gap, Priority.ALWAYS);
-        return new HBox(stronger, gap, weaker);
+        return Kept.scope("gaugeEnds", () -> {
+            Label stronger = muted("‹ " + scale + " stronger"), weaker = muted(scale + " weaker ›");
+            Region gap = Kept.region();
+            HBox.setHgrow(gap, Priority.ALWAYS);
+            return Kept.row(0, stronger, gap, weaker);
+        });
     }
 
     /** A number past a thousand written short, so a currency at its guard fits a card: "1,234.5", "12,346", "1.2M", "1.0B". */
@@ -2508,16 +2715,17 @@ final class TradeScreen {
         VBox c = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "WHAT MOVED IT THIS MONTH", FORCES_INFO,
                 quiet("percentage points of the rate")));
         if (fx.isPinned()) {
-            c.getChildren().add(line("The rate is pinned: nothing moved it.", "Nothing moved it, because the treasury has "
-                    + "promised it will not move. While the pin holds there is no market, no dealing and no trend to feel."));
+            c.getChildren().add(Kept.scope("pinned", () -> line("The rate is pinned: nothing moved it.", "Nothing moved it, because the treasury has "
+                    + "promised it will not move. While the pin holds there is no market, no dealing and no trend to feel.")));
             return c;
         }
         List<Force> rows = moveForces();
         double scale = .005;
         for (Force f : rows) if (Double.isFinite(f.value())) scale = Math.max(scale, Math.abs(f.value()));
-        c.getChildren().add(divergingBars(rows, scale * 1.05, 420, 96, Palette.MONEY_LIGHT, Palette.MONEY,
-                "‹ the " + sym() + " stronger", "the " + sym() + " weaker ›", TradeScreen::pointsOfRate));
-        c.getChildren().add(chips(chipInfo(gateWords(fx), Palette.TEXT_LABEL, GATE_INFO)));
+        final double barScale = scale;
+        c.getChildren().add(Kept.scope("bars", () -> divergingBars(rows, barScale * 1.05, 420, 96, Palette.MONEY_LIGHT, Palette.MONEY,
+                "‹ the " + sym() + " stronger", "the " + sym() + " weaker ›", TradeScreen::pointsOfRate)));
+        c.getChildren().add(Kept.scope("gate", () -> chips(chipInfo(gateWords(fx), Palette.TEXT_LABEL, GATE_INFO))));
         return c;
     }
 
@@ -2821,17 +3029,17 @@ final class TradeScreen {
         VBox c = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "WHERE THE FUNDAMENTALS HOLD IT", FUNDAMENTALS_INFO,
                 quiet(Currency.FOREIGN_SYMBOL + "1 in " + sym() + ", built up step by step")));
         if (fx.isPinned()) {
-            c.getChildren().add(line("The rate is pinned: these steps are not driving it. Left to the fundamentals the "
+            c.getChildren().add(Kept.scope("pinned", () -> line("The rate is pinned: these steps are not driving it. Left to the fundamentals the "
                     + sym() + " would stand at " + sym() + fxRate(fx.getFairLevel()) + " per " + Currency.FOREIGN_SYMBOL + ".",
-                    null));
+                    null)));
             return c;
         }
         List<FairStep> steps = fairSteps();
         double base = fairBase(steps);
-        c.getChildren().add(fairTable(steps, base));
-        c.getChildren().add(muted("Bars start at " + sym() + fxRate(base) + ", on a log scale: a cheaper " + sym()
-                + " is a longer bar."));
-        c.getChildren().add(line(fadeSentence(), null));
+        c.getChildren().add(Kept.scope("table", () -> fairTable(steps, base)));
+        c.getChildren().add(Kept.scope("bars start", () -> muted("Bars start at " + sym() + fxRate(base) + ", on a log scale: a cheaper " + sym()
+                + " is a longer bar.")));
+        c.getChildren().add(Kept.scope("fade", () -> line(fadeSentence(), null)));
         return c;
     }
 
@@ -2893,7 +3101,7 @@ final class TradeScreen {
 
     /** The steps as a table: step, what it does, a thin bar from `base` on a log scale, and the rate after it. */
     Node fairTable(List<FairStep> steps, double base) {
-        GridPane g = new GridPane();
+        GridPane g = Kept.grid();
         g.setHgap(14);
         g.setVgap(8);
         javafx.scene.layout.ColumnConstraints stepCol = new javafx.scene.layout.ColumnConstraints(190, 250, 320);
@@ -2912,23 +3120,29 @@ final class TradeScreen {
         double span = Math.log(hi / base);
         int row = 1;
         for (FairStep r : steps) {
-            String tone = r.total() ? Palette.TEXT_HEAD : Palette.TEXT_LABEL;
-            Label step = words(r.name(), Palette.SIZE_LABEL + 1, tone);
-            if (r.total()) step.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD));
-            if (r.what() == null) {
-                g.add(step, 0, row, 2, 1);
-            } else {
-                g.add(step, 0, row);
-                g.add(words(r.what(), Palette.SIZE_LABEL, Palette.TEXT_MUTED), 1, row);
-            }
-            double len = r.after() > 0 && span > 0 ? Math.max(0, Math.log(r.after() / base)) : 0;
-            Node bar = segmentBar(List.of(Segment.of(len, r.total() ? Palette.MONEY : Palette.MONEY_LIGHT)),
-                    span > 0 ? span : 1, null, 0, 8);
-            GridPane.setValignment(bar, javafx.geometry.VPos.CENTER);
-            g.add(bar, 2, row);
-            Label after = figure(sym() + fxRate(r.after()), Palette.SIZE_LABEL + 1, r.total() ? Palette.TEXT_HEAD : Palette.TEXT_LABEL);
-            GridPane.setHalignment(after, javafx.geometry.HPos.RIGHT);
-            g.add(after, 3, row);
+            int at = row;
+            final double barSpan = span;
+            // Kept (KP6): a row a step, a scope keyed by its place and whether its name spans the "what" column (a spanning label keeps its
+            // span: GridPane.add() does not set it back), so a step that gains or loses its words is made afresh.
+            Kept.scope("step:" + (row - 1) + (r.what() == null ? "/span" : ""), () -> {
+                String tone = r.total() ? Palette.TEXT_HEAD : Palette.TEXT_LABEL;
+                Label step = words(r.name(), Palette.SIZE_LABEL + 1, tone);
+                if (r.total()) step.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD));
+                if (r.what() == null) {
+                    g.add(step, 0, at, 2, 1);
+                } else {
+                    g.add(step, 0, at);
+                    g.add(words(r.what(), Palette.SIZE_LABEL, Palette.TEXT_MUTED), 1, at);
+                }
+                double len = r.after() > 0 && barSpan > 0 ? Math.max(0, Math.log(r.after() / base)) : 0;
+                Node bar = segmentBar(List.of(Segment.of(len, r.total() ? Palette.MONEY : Palette.MONEY_LIGHT)),
+                        barSpan > 0 ? barSpan : 1, null, 0, 8);
+                GridPane.setValignment(bar, javafx.geometry.VPos.CENTER);
+                g.add(bar, 2, at);
+                Label after = figure(sym() + fxRate(r.after()), Palette.SIZE_LABEL + 1, r.total() ? Palette.TEXT_HEAD : Palette.TEXT_LABEL);
+                GridPane.setHalignment(after, javafx.geometry.HPos.RIGHT);
+                g.add(after, 3, at);
+            });
             row++;
         }
         return g;
@@ -2988,9 +3202,9 @@ final class TradeScreen {
         ForeignAccounts fx = ui.game.getForeignAccounts();
         VBox c = card(cardHead(Icons.PAPER, Palette.MONEY, "THE DOLLAR DEBT", null, null));
         if (!(fx.getForeignDebt() > 0)) {
-            c.getChildren().add(line("Nothing is owed abroad, so the rate cannot make the city's debt bigger.",
+            c.getChildren().add(Kept.scope("nothing owed", () -> line("Nothing is owed abroad, so the rate cannot make the city's debt bigger.",
                     "Nothing is owed abroad, so the rate cannot make the city's debt bigger. It still decides what imports "
-                            + "cost and what exports earn."));
+                            + "cost and what exports earn.")));
             return c;
         }
         c.getChildren().add(cardLine("owed abroad", usdFull(fx.getForeignDebtUsd()), null));
@@ -3050,19 +3264,20 @@ final class TradeScreen {
        ===================================================================== */
 
     void reservesPage(VBox page) {
+        // Kept (KP6): each card a scope of its own.
         // The vault in eight (WN6, board 3): first, where it holds or can hold more than the dollar.
-        VBox eight = vault.eightCard();
+        VBox eight = Kept.scope("eight", vault::eightCard);
         if (eight != null) {
             targets.put(EIGHT_CARD, eight);
             page.getChildren().add(eight);
         }
-        VBox cover = coverCard();
+        VBox cover = Kept.scope("cover", this::coverCard);
         targets.put(COVER, cover);
-        page.getChildren().add(row(whoseCard(), cover));
-        VBox leave = leaveCard();
+        page.getChildren().add(row(Kept.scope("whose", this::whoseCard), cover));
+        VBox leave = Kept.scope("leave", this::leaveCard);
         targets.put(LEAVE, leave);
-        page.getChildren().add(row(leave, movedCard()));
-        VBox exchange = exchangeCard();
+        page.getChildren().add(row(leave, Kept.scope("moved", this::movedCard)));
+        VBox exchange = Kept.scope("exchange", this::exchangeCard);
         targets.put(EXCHANGE_CARD, exchange);
         page.getChildren().add(exchange);
         page.getChildren().add(fold("reserves:claims", "the two claims on the vault, side by side", this::claimsGrid));
@@ -3083,12 +3298,12 @@ final class TradeScreen {
         double own = ui.game.getOwnReserves();
         VBox c = card(cardHead(Icons.SAFE, Palette.MONEY, "WHOSE IT IS", ONE_POT_INFO, null));
         if (gross <= 0 && debt <= 0 && parked <= 0) {
-            c.getChildren().add(line("The vault is empty and nothing is owed abroad.",
+            c.getChildren().add(Kept.scope("empty", () -> line("The vault is empty and nothing is owed abroad.",
                     "The vault is empty and nothing is owed abroad. Export earnings go to the firms that earned them — a "
-                            + "treasury holds foreign money only if it has bought some, or borrowed it abroad."));
+                            + "treasury holds foreign money only if it has bought some, or borrowed it abroad.")));
             return c;
         }
-        c.getChildren().add(claimBar(gross, debt, parked, own));
+        c.getChildren().add(Kept.scope("claims", () -> claimBar(gross, debt, parked, own)));
         c.getChildren().add(cardLine("in the vault", usd(fx.getReservesUsd()) + " · " + d(gross), null));
         c.getChildren().add(cardLine("owed abroad on paper", d(debt) + (debt > 0 ? " · " + usd(fx.getForeignDebtUsd()) : ""), null));
         c.getChildren().add(cardLine("parked in the bank, free to leave", d(parked), null));
@@ -3103,8 +3318,8 @@ final class TradeScreen {
         }
         double elsewhere = ui.game.getHeldAbroadPrivately();
         if (elsewhere > 0) {
-            c.getChildren().add(doorPill(d(elsewhere) + " more is held abroad by the firms and households", Icons.TRADE,
-                    Palette.MONEY, () -> open(MONTH, HOLDINGS)));
+            c.getChildren().add(Kept.scope("elsewhere", () -> doorPill(d(elsewhere) + " more is held abroad by the firms and households",
+                    Icons.TRADE, Palette.MONEY, () -> open(MONTH, HOLDINGS))));
         }
         return c;
     }
@@ -3126,14 +3341,14 @@ final class TradeScreen {
      */
     VBox claimBar(double gross, double debt, double parked, double own) {
         double scale = Math.max(gross, debt + parked);
-        if (!(scale > 0)) return new VBox();
+        if (!(scale > 0)) return Kept.column(0);
         String sand = Palette.CATEGORIES[4];
         List<Segment> parts = new ArrayList<>();
         if (debt > 0) parts.add(seg(debt, Palette.MONEY_DARK, "owed abroad on paper\n" + dFull(debt)));
         if (parked > 0) parts.add(seg(parked, sand, "parked here and free to leave\n" + dFull(parked)));
         if (own > 0) parts.add(seg(own, Palette.MONEY, "the city's own\n" + dFull(own)));
         List<Tick> ticks = List.of(new Tick(gross, Palette.TEXT_MAX, 2, "the vault ends here", "the vault ends here: " + dFull(gross)));
-        VBox box = new VBox(4, segmentBar(parts, scale, ticks, 0, 22),
+        VBox box = Kept.column(4, segmentBar(parts, scale, ticks, 0, 22),
                 keyRow(debt > 0 ? swatch(Palette.MONEY_DARK, "dollar paper") : null,
                         parked > 0 ? swatch(sand, "parked money") : null,
                         own > 0 ? swatch(Palette.MONEY, "the city's own") : null));
@@ -3150,27 +3365,28 @@ final class TradeScreen {
         ForeignAccounts fx = ui.game.getForeignAccounts();
         VBox c = card(cardHead(Icons.SAFE, Palette.MONEY, "HOW LONG IT WOULD LAST", COVER_INFO, null));
         if (!(fx.monthlyImports() > 0)) {
-            c.getChildren().add(line("Nothing is bought abroad yet, so there is nothing to cover.", null));
+            c.getChildren().add(Kept.scope("nothing bought", () -> line("Nothing is bought abroad yet, so there is nothing to cover.", null)));
             return c;
         }
         double months = fx.importCover();
         int level = ForeignAccounts.coverLevel(months);
-        c.getChildren().add(figure(coverMonths(months), 28, coverTone(level)));
-        c.getChildren().add(bandTrack(Math.min(1, months / COVER_SCALE),
+        c.getChildren().add(Kept.scope("reading", () -> figure(coverMonths(months), 28, coverTone(level))));
+        c.getChildren().add(Kept.scope("track", () -> bandTrack(Math.min(1, months / COVER_SCALE),
                 new double[] {ForeignAccounts.THIN_COVER / COVER_SCALE, ForeignAccounts.COMFORTABLE_COVER / COVER_SCALE, 1},
                 new String[] {Palette.BAD, Palette.WARN, Palette.GOOD},
                 List.of(new Tick(ForeignAccounts.THIN_COVER / COVER_SCALE, Palette.TEXT_LABEL, 1,
                                 String.format("%.0f", ForeignAccounts.THIN_COVER), null),
                         new Tick(ForeignAccounts.COMFORTABLE_COVER / COVER_SCALE, Palette.TEXT_LABEL, 1,
                                 String.format("%.0f months", ForeignAccounts.COMFORTABLE_COVER), null)),
-                0, 12, false));
-        c.getChildren().add(line(usd(fx.getReservesUsd()) + " against " + d(fx.monthlyImports()) + " a month of imports", null));
+                0, 12, false)));
+        c.getChildren().add(Kept.scope("against", () -> line(usd(fx.getReservesUsd()) + " against " + d(fx.monthlyImports())
+                + " a month of imports", null)));
         double toThin = fx.toCover(ForeignAccounts.THIN_COVER);
         if (toThin > 0) {
-            c.getChildren().add(line(String.format("%.0f months would need %s more", ForeignAccounts.THIN_COVER, d(toThin))
+            c.getChildren().add(Kept.scope("would need", () -> line(String.format("%.0f months would need %s more", ForeignAccounts.THIN_COVER, d(toThin))
                     + " · " + String.format("%.0f months %s", ForeignAccounts.COMFORTABLE_COVER,
-                    d(fx.toCover(ForeignAccounts.COMFORTABLE_COVER))), null));
-            c.getChildren().add(doorPill("Buy reserves", Icons.EXCHANGE, Palette.MONEY, () -> openExchange(true)));
+                    d(fx.toCover(ForeignAccounts.COMFORTABLE_COVER))), null)));
+            c.getChildren().add(Kept.scope("buy", () -> doorPill("Buy reserves", Icons.EXCHANGE, Palette.MONEY, () -> openExchange(true))));
         }
         return c;
     }
@@ -3182,26 +3398,31 @@ final class TradeScreen {
         Gauge g = backing();
         VBox c = card(cardHead(Icons.BANKNOTE, Palette.MONEY, "THE MONEY THAT CAN LEAVE", BACKING_INFO, null));
         if (!(hot.getStock() > 0)) {
-            c.getChildren().add(line("Nothing is parked here: nothing can leave on no notice.",
+            c.getChildren().add(Kept.scope("nothing parked", () -> line("Nothing is parked here: nothing can leave on no notice.",
                     "No foreign money is parked in this city's bank. Nothing can leave on no notice, which is a real form "
-                            + "of safety and one that a high policy rate gives away."));
+                            + "of safety and one that a high policy rate gives away.")));
         } else {
-            HBox reading = new HBox(Palette.GAP, figure(g.reading(), 22, Palette.TEXT_HEAD), chip(g.chip(), g.chipTone()),
-                    muted("backed by the vault"));
-            reading.setAlignment(Pos.CENTER_LEFT);
-            c.getChildren().add(reading);
-            c.getChildren().add(cardLine("parked in the bank", dFull(hot.getStock()), null));
-            c.getChildren().add(cardLine("as a share of the bank's funding", share1(bank.hotFundingShare()), null));
-            c.getChildren().add(cardLine("the excess return pulling it", points(hot.getSpread()), null,
-                    "What the city pays over the world rate, less what the world charges it for its own risk. Only the rest "
-                            + "is a reason to come — and the same money leaves the moment it stops being one."));
-            c.getChildren().add(cardLine("what would come at that rate", dFull(hot.getTarget()), null));
+            // Kept (KP6): the parked money's lines are a scope of their own, which a city with none parked has not.
+            Kept.scope("parked", () -> {
+                HBox reading = Kept.row(Palette.GAP, figure(g.reading(), 22, Palette.TEXT_HEAD), chip(g.chip(), g.chipTone()),
+                        muted("backed by the vault"));
+                reading.setAlignment(Pos.CENTER_LEFT);
+                c.getChildren().add(reading);
+                c.getChildren().add(cardLine("parked in the bank", dFull(hot.getStock()), null));
+                c.getChildren().add(cardLine("as a share of the bank's funding", share1(bank.hotFundingShare()), null));
+                c.getChildren().add(cardLine("the excess return pulling it", points(hot.getSpread()), null,
+                        "What the city pays over the world rate, less what the world charges it for its own risk. Only the rest "
+                                + "is a reason to come — and the same money leaves the moment it stops being one."));
+                c.getChildren().add(cardLine("what would come at that rate", dFull(hot.getTarget()), null));
+            });
         }
-        if (hot.getStopsSuffered() > 0) {
-            c.getChildren().add(cardLine("sudden stops since founding", String.valueOf(hot.getStopsSuffered()), null));
-        }
-        if (hot.getPeakStock() > 0) c.getChildren().add(cardLine("the most that was ever here", dFull(hot.getPeakStock()), null));
-        c.getChildren().addAll(riskOffLines(hot));
+        Kept.scope("history", () -> {
+            if (hot.getStopsSuffered() > 0) {
+                c.getChildren().add(cardLine("sudden stops since founding", String.valueOf(hot.getStopsSuffered()), null));
+            }
+            if (hot.getPeakStock() > 0) c.getChildren().add(cardLine("the most that was ever here", dFull(hot.getPeakStock()), null));
+            c.getChildren().addAll(riskOffLines(hot));
+        });
         return c;
     }
 
@@ -3320,10 +3541,10 @@ final class TradeScreen {
                 + "and the land office, when land is paid for out of it.", null));
         List<Moved> all = moved();
         if (all.isEmpty()) {
-            c.getChildren().add(line("Nothing else moved it this month.", null));
+            c.getChildren().add(Kept.scope("nothing else", () -> line("Nothing else moved it this month.", null)));
             return c;
         }
-        VBox list = new VBox(6);
+        VBox list = Kept.column(6);
         for (Moved m : all) list.getChildren().add(chipInfo(m.words(), m.tone(), m.info()));
         c.getChildren().add(list);
         return c;
@@ -3363,11 +3584,12 @@ final class TradeScreen {
         names.add(first);
         for (int k = 0; k < ForeignAccounts.MONEYS; k++) if (fx.hasRate(k)) names.add(MONEY_CHIP[k]);
         int now = ForeignAccounts.moneyIndex(tradeMoney);
-        FlowPane strip = chipStrip(names.toArray(new String[0]), now < 0 ? first : MONEY_CHIP[now], Palette.SIZE_LABEL, pick -> {
-            tradeMoney = null;
-            for (int k = 0; k < ForeignAccounts.MONEYS; k++) if (MONEY_CHIP[k].equals(pick)) tradeMoney = WorldMoneys.EIGHT.get(k);
-            showForeignMenu();
-        });
+        FlowPane strip = Kept.scope("money picker", () -> chipStrip(names.toArray(new String[0]), now < 0 ? first : MONEY_CHIP[now],
+                Palette.SIZE_LABEL, pick -> {
+                    tradeMoney = null;
+                    for (int k = 0; k < ForeignAccounts.MONEYS; k++) if (MONEY_CHIP[k].equals(pick)) tradeMoney = WorldMoneys.EIGHT.get(k);
+                    showForeignMenu();
+                }));
         strip.setAlignment(Pos.CENTER_LEFT);
         return strip;
     }
@@ -3381,37 +3603,40 @@ final class TradeScreen {
     VBox reserveMix(ForeignAccounts fx) {
         boolean others = false;
         for (int k = 1; k < ForeignAccounts.MONEYS; k++) others |= fx.hasRate(k) || fx.getHolding(k) > 0;
-        VBox box = new VBox(6);
+        VBox box = Kept.column(6);
         if (!others) return box;
         box.getChildren().add(words("WHERE A PURCHASE GOES", Palette.SIZE_LABEL, Palette.TEXT_LABEL));
         ForeignAccounts.Mix[] mixes = ForeignAccounts.Mix.values();
         String[] names = new String[mixes.length];
         for (int i = 0; i < names.length; i++) names[i] = mixes[i].words;
-        FlowPane strip = chipStrip(names, fx.getReserveMix().words, Palette.SIZE_LABEL, pick -> {
+        FlowPane strip = Kept.scope("mixes", () -> chipStrip(names, fx.getReserveMix().words, Palette.SIZE_LABEL, pick -> {
             for (ForeignAccounts.Mix m : mixes) if (m.words.equals(pick)) fx.setReserveMix(m);
             showForeignMenu();
-        });
+        }));
         strip.setAlignment(Pos.CENTER_LEFT);
         box.getChildren().add(strip);
         if (fx.getReserveMix() == ForeignAccounts.Mix.CHOSEN) {
             double[] shares = fx.getChosenShares();
             for (int k = 0; k < ForeignAccounts.MONEYS; k++) {
                 final int money = k;
-                Label name = words(ForeignAccounts.MONEY_PLURAL[k].substring(0, 1).toUpperCase() + ForeignAccounts.MONEY_PLURAL[k].substring(1)
-                        + (fx.hasRate(k) ? "" : " (no rate yet)"), Palette.SIZE_LABEL, fx.hasRate(k) ? Palette.TEXT_LABEL : Palette.TEXT_MUTED);
-                HBox.setHgrow(name, Priority.ALWAYS);
-                name.setMaxWidth(Double.MAX_VALUE);
-                HBox row = new HBox(Palette.GAP, name, figure(String.format("%.0f%%", shares[k] * 100), Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD),
-                        stepChip("−5", () -> {
-                            fx.shiftChosen(money, -.05);
-                            showForeignMenu();
-                        }, true),
-                        stepChip("+5", () -> {
-                            fx.shiftChosen(money, .05);
-                            showForeignMenu();
-                        }, false));
-                row.setAlignment(Pos.CENTER_LEFT);
-                box.getChildren().add(row);
+                // Kept (KP6): a row a money, a scope keyed by it.
+                box.getChildren().add(Kept.scope("mix:" + k, () -> {
+                    Label name = words(ForeignAccounts.MONEY_PLURAL[money].substring(0, 1).toUpperCase() + ForeignAccounts.MONEY_PLURAL[money].substring(1)
+                            + (fx.hasRate(money) ? "" : " (no rate yet)"), Palette.SIZE_LABEL, fx.hasRate(money) ? Palette.TEXT_LABEL : Palette.TEXT_MUTED);
+                    HBox.setHgrow(name, Priority.ALWAYS);
+                    name.setMaxWidth(Double.MAX_VALUE);
+                    HBox row = Kept.row(Palette.GAP, name, figure(String.format("%.0f%%", shares[money] * 100), Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD),
+                            stepChip("−5", () -> {
+                                fx.shiftChosen(money, -.05);
+                                showForeignMenu();
+                            }, true),
+                            stepChip("+5", () -> {
+                                fx.shiftChosen(money, .05);
+                                showForeignMenu();
+                            }, false));
+                    row.setAlignment(Pos.CENTER_LEFT);
+                    return row;
+                }));
             }
         }
         // The "held: ..." line this ended with is IN THE VAULT, IN EIGHT MONEYS' table now (WN6, VaultTable).
@@ -3440,16 +3665,16 @@ final class TradeScreen {
      */
     VBox exchangeCard() {
         ForeignAccounts fx = ui.game.getForeignAccounts();
-        FlowPane toggle = chipStrip(new String[] {"Buy — cash into the vault", "Sell — the vault into cash"},
+        FlowPane toggle = Kept.scope("toggle", () -> chipStrip(new String[] {"Buy — cash into the vault", "Sell — the vault into cash"},
                 tradeBuying ? "Buy — cash into the vault" : "Sell — the vault into cash", Palette.SIZE_LABEL, pick -> {
                     boolean nowBuying = pick.startsWith("Buy");
                     if (nowBuying != tradeBuying) { tradeExchange = 0; tradeMoney = null; }
                     tradeBuying = nowBuying;
                     showForeignMenu();
-                });
+                }));
         toggle.setAlignment(Pos.CENTER_RIGHT);
         VBox c = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "BUY OR SELL FOREIGN MONEY", null, toggle));
-        c.getChildren().add(line(tradeBuying
+        c.getChildren().add(Kept.scope("lead", () -> line(tradeBuying
                         ? "Local money out of the treasury, foreign money into the vault."
                         : "Foreign money out of the vault, local money into the treasury.",
                 tradeBuying
@@ -3458,11 +3683,11 @@ final class TradeScreen {
                           + "central bank sells to meet a push against the currency."
                         : "Foreign money out of the vault, local money into the treasury. This is how a treasury gets at "
                           + "money it holds abroad, AND it is everything a central bank has ever been able to do about an "
-                          + "exchange rate. Both are true at once."));
+                          + "exchange rate. Both are true at once.")));
         if (fx.getBoughtThisMonth() > 0 || fx.getSoldThisMonth() > 0) {
-            c.getChildren().add(chips(
-                    fx.getBoughtThisMonth() > 0 ? chip("bought " + d(fx.getBoughtThisMonth()) + " this month", Palette.MONEY) : null,
-                    fx.getSoldThisMonth() > 0 ? chip("sold " + d(fx.getSoldThisMonth()) + " this month", Palette.MONEY) : null));
+            c.getChildren().add(Kept.scope("this month", () -> chips(
+                    fx.getBoughtThisMonth() > 0 ? Kept.scope("bought", () -> chip("bought " + d(fx.getBoughtThisMonth()) + " this month", Palette.MONEY)) : null,
+                    fx.getSoldThisMonth() > 0 ? Kept.scope("sold", () -> chip("sold " + d(fx.getSoldThisMonth()) + " this month", Palette.MONEY)) : null)));
         }
         // THE MONEY AND THE MIX (WN4): a money that has lost its rate is no longer the one dealt in.
         int money = ForeignAccounts.moneyIndex(tradeMoney);
@@ -3471,50 +3696,55 @@ final class TradeScreen {
             money = -1;
         }
         c.getChildren().add(moneyPicker(fx));
-        VBox mixBox = reserveMix(fx);
+        VBox mixBox = Kept.scope("mix", () -> reserveMix(fx));
         if (!mixBox.getChildren().isEmpty()) c.getChildren().add(mixBox);
         double ceiling = tradeBuying ? Math.max(0, ui.game.getCash())
                 : money < 0 ? fx.sellableReserves() : fx.sellableReserves(tradeMoney);
         tradeExchange = Math.max(0, Math.min(tradeExchange, ceiling));
+        final int moneyAt = money;
         c.getChildren().add(cardLine(tradeBuying ? "the treasury holds"
                 : money < 0 ? "the vault holds" : "the vault holds in " + ForeignAccounts.MONEY_PLURAL[money], dFull(ceiling), null));
         if (ceiling <= 0) {
-            c.getChildren().add(line(tradeBuying ? "There is no cash to buy with." : money < 0 ? "There is nothing in the vault to sell."
-                            : "The vault holds no " + ForeignAccounts.MONEY_PLURAL[money] + " to sell.",
+            c.getChildren().add(Kept.scope("nothing to deal", () -> line(tradeBuying ? "There is no cash to buy with." : moneyAt < 0 ? "There is nothing in the vault to sell."
+                            : "The vault holds no " + ForeignAccounts.MONEY_PLURAL[moneyAt] + " to sell.",
                     tradeBuying
                             ? "The treasury is empty. Buying reserves is spending money the city does not have."
                             : "You cannot sell what you do not hold. A city that needs foreign money and has none has to "
-                              + "earn it, borrow it abroad, or let the currency do the work."));
+                              + "earn it, borrow it abroad, or let the currency do the work.")));
             return c;
         }
 
-        Label asking = words(tradeBuying ? "HOW MUCH TO BUY" : "HOW MUCH TO SELL", Palette.SIZE_LABEL, Palette.TEXT_LABEL);
-        Label ask = figure(tradeExchange <= 0 ? "nothing yet" : dFull(tradeExchange), 20,
-                tradeExchange > 0 ? Palette.TEXT_HEAD : Palette.TEXT_SPENT);
-        FlowPane pick = new FlowPane(6, 6);
-        for (double share : new double[] {.05, .25, .5}) {
-            double step = ceiling * share;
-            if (step <= 0) continue;
-            pick.getChildren().add(stepChip("+" + d(step), () -> {
-                tradeExchange = Math.min(ceiling, tradeExchange + step);
+        // Kept (KP6): the ask is a scope of its own, since the card has it (and the steps that follow it) only while there is something to deal.
+        final double reach = ceiling;
+        VBox askBox = Kept.scope("ask", () -> {
+            Label asking = words(tradeBuying ? "HOW MUCH TO BUY" : "HOW MUCH TO SELL", Palette.SIZE_LABEL, Palette.TEXT_LABEL);
+            Label ask = figure(tradeExchange <= 0 ? "nothing yet" : dFull(tradeExchange), 20,
+                    tradeExchange > 0 ? Palette.TEXT_HEAD : Palette.TEXT_SPENT);
+            FlowPane pick = Kept.flow(6, 6);
+            for (double share : new double[] {.05, .25, .5}) {
+                double step = reach * share;
+                if (step <= 0) continue;
+                pick.getChildren().add(stepChip("+" + d(step), () -> {
+                    tradeExchange = Math.min(reach, tradeExchange + step);
+                    showForeignMenu();
+                }, false));
+            }
+            for (double[] to : exchangeSteps(reach)) {
+                pick.getChildren().add(stepChip(String.format("to %.0f months (%s)", to[0], d(to[1])), () -> {
+                    tradeExchange = Math.min(reach, to[1]);
+                    showForeignMenu();
+                }, false));
+            }
+            pick.getChildren().add(stepChip("all of it", () -> {
+                tradeExchange = reach;
                 showForeignMenu();
             }, false));
-        }
-        for (double[] to : exchangeSteps(ceiling)) {
-            pick.getChildren().add(stepChip(String.format("to %.0f months (%s)", to[0], d(to[1])), () -> {
-                tradeExchange = Math.min(ceiling, to[1]);
+            pick.getChildren().add(stepChip("clear", () -> {
+                tradeExchange = 0;
                 showForeignMenu();
-            }, false));
-        }
-        pick.getChildren().add(stepChip("all of it", () -> {
-            tradeExchange = ceiling;
-            showForeignMenu();
-        }, false));
-        pick.getChildren().add(stepChip("clear", () -> {
-            tradeExchange = 0;
-            showForeignMenu();
-        }, true));
-        VBox askBox = new VBox(4, asking, ask, pick);
+            }, true));
+            return Kept.column(4, asking, ask, pick);
+        });
 
         ActionButton button = actionButton(Icons.EXCHANGE, Palette.MONEY, ACTION_TALL, exchangePress(), null);
         button.onPress(() -> {
@@ -3538,36 +3768,40 @@ final class TradeScreen {
         double sign = tradeBuying ? 1 : -1;
         double coverNow = fx.importCover(), coverAfter = fx.coverWith(sign * tradeExchange);
         boolean imports = fx.monthlyImports() > 0;
-        VBox after = new VBox(6, words("WHAT IT WOULD DO", Palette.SIZE_LABEL, Palette.TEXT_LABEL),
-                cardLine("in the vault", d(fx.getReserves()) + "  →  " + d(fx.getReserves() + sign * tradeExchange), null),
-                cardLine("in the treasury", d(ui.game.getCash()) + "  →  " + d(ui.game.getCash() - sign * tradeExchange), null),
-                cardLine("import cover", imports ? coverMonths(coverNow) + "  →  " + coverMonths(coverAfter) : "nothing to cover",
-                        imports ? coverTone(ForeignAccounts.coverLevel(coverAfter)) : Palette.TEXT_SPENT),
-                cardLine("in " + Currency.FOREIGN_CODE, usdFull(fx.toUsd(tradeExchange)) + " at " + perUsd(fx.getRate()), null));
-        if (money >= 0 && fx.getMoneyUsd(money) > 0) {
-            // A named money: its own balance, in its own units, before and after.
-            double ownChange = fx.toUsd(tradeExchange) / fx.getMoneyUsd(money);
-            after.getChildren().add(2, cardLine("of which " + ForeignAccounts.MONEY_PLURAL[money], ownMoney(money, fx.getHolding(money)) + "  →  "
-                    + ownMoney(money, Math.max(0, fx.getHolding(money) + sign * ownChange)), null));
-        }
-        if (imports) {
-            after.getChildren().add(bulletBar(Math.min(COVER_SCALE, coverAfter), ForeignAccounts.THIN_COVER, Palette.MONEY, 0,
-                    String.format("the cover after it, against the %.0f-month line", ForeignAccounts.THIN_COVER)));
-        }
-        after.getChildren().add(noteLine("The cost of a defence is not the cash.", "The cost of a defence is not the cash. "
-                + "It is the cover you no longer have — which is why the two figures are shown before and after.", 560));
+        // Kept (KP6): what it would do is a scope of its own, since the card has it only once something is asked.
+        VBox after = Kept.scope("would do", () -> {
+            VBox box = Kept.column(6, words("WHAT IT WOULD DO", Palette.SIZE_LABEL, Palette.TEXT_LABEL),
+                    cardLine("in the vault", d(fx.getReserves()) + "  →  " + d(fx.getReserves() + sign * tradeExchange), null),
+                    cardLine("in the treasury", d(ui.game.getCash()) + "  →  " + d(ui.game.getCash() - sign * tradeExchange), null),
+                    cardLine("import cover", imports ? coverMonths(coverNow) + "  →  " + coverMonths(coverAfter) : "nothing to cover",
+                            imports ? coverTone(ForeignAccounts.coverLevel(coverAfter)) : Palette.TEXT_SPENT),
+                    cardLine("in " + Currency.FOREIGN_CODE, usdFull(fx.toUsd(tradeExchange)) + " at " + perUsd(fx.getRate()), null));
+            if (moneyAt >= 0 && fx.getMoneyUsd(moneyAt) > 0) {
+                // A named money: its own balance, in its own units, before and after.
+                double ownChange = fx.toUsd(tradeExchange) / fx.getMoneyUsd(moneyAt);
+                box.getChildren().add(2, cardLine("of which " + ForeignAccounts.MONEY_PLURAL[moneyAt], ownMoney(moneyAt, fx.getHolding(moneyAt)) + "  →  "
+                        + ownMoney(moneyAt, Math.max(0, fx.getHolding(moneyAt) + sign * ownChange)), null));
+            }
+            if (imports) {
+                box.getChildren().add(Kept.scope("cover bar", () -> bulletBar(Math.min(COVER_SCALE, coverAfter), ForeignAccounts.THIN_COVER, Palette.MONEY, 0,
+                        String.format("the cover after it, against the %.0f-month line", ForeignAccounts.THIN_COVER))));
+            }
+            box.getChildren().add(noteLine("The cost of a defence is not the cash.", "The cost of a defence is not the cash. "
+                    + "It is the cover you no longer have — which is why the two figures are shown before and after.", 560));
+            return box;
+        });
         GridPane two = equalColumns(2, 24);
         two.add(askBox, 0, 0);
         two.add(after, 1, 0);
         c.getChildren().add(two);
         if (!tradeBuying && imports && coverAfter < ForeignAccounts.THIN_COVER && coverNow >= ForeignAccounts.THIN_COVER) {
-            c.getChildren().add(actionCard(Icons.ALERT, Palette.BAD,
+            c.getChildren().add(Kept.scope("under the line", () -> actionCard(Icons.ALERT, Palette.BAD,
                     String.format("This would take the city under %.0f months of cover", ForeignAccounts.THIN_COVER),
                     "Below the line the world prices the currency for a crisis.",
                     String.format("Below %.0f months the world stops pricing the currency on the trade balance and starts "
                             + "pricing it for a crisis. Selling reserves to defend a rate, and ending up under the line doing "
                             + "it, is the sequence every currency crisis in the literature has in common.",
-                            ForeignAccounts.THIN_COVER), null));
+                            ForeignAccounts.THIN_COVER), null)));
         }
         // XI1: a deal past INTERVENTION_LINEAR of a year's output moves the rate by less for each dollar (the model's interventionMove).
         double years = fx.yearsOfOutput(tradeExchange);
@@ -3616,8 +3850,10 @@ final class TradeScreen {
                 + "nothing else. This tab takes off the parked money too, and that is the right addition: a claim that can "
                 + "be exercised at no notice is a heavier claim than a bond with a date on it, not a lighter one."));
         if (fx.getRepudiated() > 0) {
-            column.getChildren().add(statementHead("...and what was walked away from"));
-            column.getChildren().add(statementLine("Repudiated", moneyFull(fx.getRepudiated()), Palette.BAD));
+            Kept.scope("walked away", () -> {
+                column.getChildren().add(statementHead("...and what was walked away from"));
+                column.getChildren().add(statementLine("Repudiated", moneyFull(fx.getRepudiated()), Palette.BAD));
+            });
         }
         return column;
     }

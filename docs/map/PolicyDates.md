@@ -1,4 +1,4 @@
-# PolicyDates.java - 295 lines · 31 methods · 3 constants · model
+# PolicyDates.java - 284 lines · 30 methods · 3 constants · model
 
 `ham/citybuildersim/PolicyDates.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
@@ -19,7 +19,7 @@
 
 **Uses:** [CityCalendar](CityCalendar.md) (4), [DecisionLog](DecisionLog.md) (1), [TaxPolicy](TaxPolicy.md) (1)
 
-**Used by (14):** [DiscoveryCheck](DiscoveryCheck.md), [EquipmentCheck](EquipmentCheck.md), [ForestryCheck](ForestryCheck.md), [Game](Game.md), [Inbox](Inbox.md), [LandmassCheck](LandmassCheck.md), [PolicyDatesCheck](PolicyDatesCheck.md), [PolicyScreen](PolicyScreen.md), [RecipeCheck](RecipeCheck.md), [ResearchCatalog](ResearchCatalog.md), [ResearchCheck](ResearchCheck.md), [TaxPolicy](TaxPolicy.md), [ZoningScreen](ZoningScreen.md), [ZoningViewCheck](ZoningViewCheck.md)
+**Used by (14):** [EquipmentCheck](EquipmentCheck.md), [ForestryCheck](ForestryCheck.md), [Game](Game.md), [Inbox](Inbox.md), [KeptCheck](KeptCheck.md), [LandmassCheck](LandmassCheck.md), [PolicyDatesCheck](PolicyDatesCheck.md), [PolicyScreen](PolicyScreen.md), [RecipeCheck](RecipeCheck.md), [ResearchCatalog](ResearchCatalog.md), [ResearchCheck](ResearchCheck.md), [TaxPolicy](TaxPolicy.md), [ZoningScreen](ZoningScreen.md), [ZoningViewCheck](ZoningViewCheck.md)
 
 ## Sections
 
@@ -27,7 +27,7 @@
 |---:|---|
 | 23 | THE LEVERS AND THEIR DATES (R0, 2026-11-04; docs/studies/research-1900.md 7.1) |
 | 157 | · the dates as game months |
-| 209 | · what the player is told |
+| 198 | · what the player is told |
 
 ## Enum constants
 
@@ -80,7 +80,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 19 | 277 | **type** `public final class PolicyDates` | When Canada first had each of the Policy tab's levers, as pure data: the game month each one opens in a city founded in January 1900, the study's entry for it, what Canada first did and on what terms, and how far a la... |
+| 19 | 266 | **type** `public final class PolicyDates` | When Canada first had each of the Policy tab's levers, as pure data: the game month each one opens in a city founded in January 1900, the study's entry for it, what Canada first did and on what terms, and how far a la... |
 | 21 | 1 | `private PolicyDates()` |  |
 
 ### THE LEVERS AND THEIR DATES (R0, 2026-11-04; docs/studies/research-1900.md 7.1) (lines 23-156)
@@ -101,7 +101,7 @@
 | 138 | 1 | `public String terms()` _(in PolicyDates.Lever)_ | Its first terms in a phrase with no full stop; for an open lever, the reason it is open. |
 | 140 | 1 | `public String sources()` _(in PolicyDates.Lever)_ | The sources the terms rest on: SOURCES for a dated lever, OPEN_SOURCES for an open one. |
 
-### the dates as game months (lines 157-208)
+### the dates as game months (lines 157-197)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -112,20 +112,19 @@
 | 184 | 3 | `public static boolean opensAtFoundingRate(Lever lever)` | Whether a lever opens at the city's founding rate (TaxPolicy.DEFAULT_INCOME_TAX) and not at zero: the three income taxes, which fund the city, where a promise (a pension, EI, the health premium, student aid) costs it ... |
 | 189 | 3 | `public static int earliestOpening(Lever lever)` | The earliest month a law discovery may bring a lever to: MAX_EARLY_MONTHS before its opening month, never before month 1. |
 | 194 | 3 | `static int earliestFor(int openingMonth)` | MAX_EARLY_MONTHS before an opening month, floored at month 1 (separate from the lever so the floor can be held on fixtures). |
-| 203 | 5 | `public static Lever leverOf(String code)` | The lever a discovery's code brings forward ("PL3" -> the income tax, "L5" -> the pension contribution), or null for a code that is no lever's key (a blank, a code the table does not date, and every lever that has no ... |
 
-### what the player is told (lines 209-295)
+### what the player is told (lines 198-284)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 212 | 3 | `public static String openingDate(Lever lever)` | The date a lever opens as the Policy screen prints it: "1917", "August 1940", or "founding" for a lever open from the start. |
-| 217 | 4 | `private static String dateOf(Lever lever, int openingMonth)` | A lever's opening month as a date: "founding" for month 1 or earlier, the month and year where the study dates it to a month, else the year alone. |
-| 226 | 6 | `public static String named(Lever lever)` | The lever as a player reads it, with its article, lower case: "an income tax", "a profit tax", "student aid", "zoning" (the three that take none: EI, student aid and zoning). |
-| 237 | 3 | `public static String shutLine(Lever lever)` | What a shut lever's card says first, on Canada's date: "Opens 1917 - an income tax: 4% above $1,500 (single) or $3,000; a supertax of 2% to 25%": when it opens, what it is, and Canada's first terms for it. |
-| 242 | 3 | `public static String shutLine(Lever lever, int cityOpeningMonth)` | The same on the city's own opening month (R3's finds move it earlier): the month and year where the study dates it to a month, else the year. |
-| 247 | 3 | `public static String shutWhy(Lever lever)` | What a shut lever's card says second, on Canada's date: "Canada had none until then; the tax opens at the city's founding rate, 15%." |
-| 252 | 6 | `public static String shutWhy(Lever lever, int cityOpeningMonth)` | The same for a city whose opening month a find has moved earlier: then "then" would name the wrong date, so it says history's and the find. |
-| 265 | 6 | `public static String notice(Lever lever)` | The inbox sentence for the month a lever opens: when Canada first had it, under what, on what terms, where it opens (an income tax at the founding rate, the minimum wage's floor at the going unskilled wage, zoning wit... |
-| 277 | 8 | `public static String stillShut(java.util.List<Lever> shut, java.util.function.ToIntFunction<Lever> cityOpeningMonth)` | The one line under a dial that sets several levers at once ("every tax") naming the ones still shut, which it leaves alone: "Still shut, so this dial leaves them alone: profit tax (opens 1916) and sales tax (opens 192... |
-| 287 | 8 | `static String opensAt(Lever lever)` | Where a dated lever opens, as a sentence the notice finishes: the founding rate, the going unskilled wage, or zero. |
+| 201 | 3 | `public static String openingDate(Lever lever)` | The date a lever opens as the Policy screen prints it: "1917", "August 1940", or "founding" for a lever open from the start. |
+| 206 | 4 | `private static String dateOf(Lever lever, int openingMonth)` | A lever's opening month as a date: "founding" for month 1 or earlier, the month and year where the study dates it to a month, else the year alone. |
+| 215 | 6 | `public static String named(Lever lever)` | The lever as a player reads it, with its article, lower case: "an income tax", "a profit tax", "student aid", "zoning" (the three that take none: EI, student aid and zoning). |
+| 226 | 3 | `public static String shutLine(Lever lever)` | What a shut lever's card says first, on Canada's date: "Opens 1917 - an income tax: 4% above $1,500 (single) or $3,000; a supertax of 2% to 25%": when it opens, what it is, and Canada's first terms for it. |
+| 231 | 3 | `public static String shutLine(Lever lever, int cityOpeningMonth)` | The same on the city's own opening month (R3's finds move it earlier): the month and year where the study dates it to a month, else the year. |
+| 236 | 3 | `public static String shutWhy(Lever lever)` | What a shut lever's card says second, on Canada's date: "Canada had none until then; the tax opens at the city's founding rate, 15%." |
+| 241 | 6 | `public static String shutWhy(Lever lever, int cityOpeningMonth)` | The same for a city whose opening month a find has moved earlier: then "then" would name the wrong date, so it says history's and the find. |
+| 254 | 6 | `public static String notice(Lever lever)` | The inbox sentence for the month a lever opens: when Canada first had it, under what, on what terms, where it opens (an income tax at the founding rate, the minimum wage's floor at the going unskilled wage, zoning wit... |
+| 266 | 8 | `public static String stillShut(java.util.List<Lever> shut, java.util.function.ToIntFunction<Lever> cityOpeningMonth)` | The one line under a dial that sets several levers at once ("every tax") naming the ones still shut, which it leaves alone: "Still shut, so this dial leaves them alone: profit tax (opens 1916) and sales tax (opens 192... |
+| 276 | 8 | `static String opensAt(Lever lever)` | Where a dated lever opens, as a sentence the notice finishes: the founding rate, the going unskilled wage, or zero. |
 

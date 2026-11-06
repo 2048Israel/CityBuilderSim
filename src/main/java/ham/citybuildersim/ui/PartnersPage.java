@@ -75,9 +75,9 @@ final class PartnersPage {
     /** The nation shown: its number from 1, or 0 for the table. */
     int nation = 0;
 
-    /** The span the table is of, and the good the board is of (null: the largest sold). */
-    private PartnersView.Span span = PartnersView.Span.MONTH;
-    private Good good;
+    /** The span the table is of, and the good the board is of (null: the largest sold). Not private (KP6): KeptBench puts them where a chip would. */
+    PartnersView.Span span = PartnersView.Span.MONTH;
+    Good good;
 
     /** How many rows the table shows before "+ N more nations". */
     static final int FIRST_ROWS = 12;
@@ -99,20 +99,22 @@ final class PartnersPage {
     /** The page: a nation's, or the table with the good's board under it. */
     void page(VBox page) {
         // the trade first: getNations() opens the world file whenever it holds no nations, and this page is drawn on the clock
+        // Kept (KP6): the table, a nation's page and the page of a city with no nations are scopes of their own (TradeScreen keys the
+        // page's scope by the nation, so a nation picked opens at its top; these keep the three apart if the nation goes).
         if (game().getPartnerTrade() == null || game().getWorldMarket() == null || game().getNations() == null) {
-            page.getChildren().add(card(cardHead(Icons.FLAG, Palette.BUSINESS, "WHO WE TRADE WITH", NONE_INFO, null),
-                    line("There are no nations in this city.", NONE_INFO)));
+            page.getChildren().add(Kept.scope("none", () -> card(cardHead(Icons.FLAG, Palette.BUSINESS, "WHO WE TRADE WITH", NONE_INFO, null),
+                    line("There are no nations in this city.", NONE_INFO))));
             return;
         }
         if (nation > 0) {
             PartnersView.Page p = PartnersView.nation(game(), nation);
             if (p != null) {
-                nationPage(page, p);
+                Kept.scope("nation", () -> nationPage(page, p));
                 return;
             }
             nation = 0;
         }
-        tablePage(page);
+        Kept.scope("table", () -> tablePage(page));
     }
 
     static final String NONE_INFO = "This city's world has no nations in it: it was founded without the world file, so it trades on the "
@@ -129,8 +131,8 @@ final class PartnersPage {
 
     private void tablePage(VBox page) {
         PartnersView.Table table = PartnersView.table(game(), span);
-        page.getChildren().add(whoCard(table));
-        nextSection(page);
+        page.getChildren().add(Kept.scope("who", () -> whoCard(table)));
+        Kept.scope("next", () -> nextSection(page));
     }
 
     static final String WHO_INFO = "Every nation the city sold to or bought from, ranked by the two together. Money is the city's own, "
@@ -140,38 +142,39 @@ final class PartnersPage {
     /** WHO WE TRADE WITH: the table, the month or the year so far, twelve rows and then the rest. */
     private VBox whoCard(PartnersView.Table table) {
         boolean month = table.span() == PartnersView.Span.MONTH;
-        FlowPane pick = chipStrip(new String[] {"Month", "This year"}, month ? "Month" : "This year", Palette.SIZE_LABEL, name -> {
+        FlowPane pick = Kept.scope("span", () -> chipStrip(new String[] {"Month", "This year"}, month ? "Month" : "This year", Palette.SIZE_LABEL, name -> {
             span = "Month".equals(name) ? PartnersView.Span.MONTH : PartnersView.Span.YEAR;
             trade.showForeignMenu();
-        });
+        }));
         pick.setAlignment(Pos.CENTER_RIGHT);
         pick.setPrefWrapLength(180);
-        HBox right = new HBox(Palette.GAP, quiet(month ? "the month last counted" : "the year so far, " + table.year()), pick);
+        HBox right = Kept.row(Palette.GAP, quiet(month ? "the month last counted" : "the year so far, " + table.year()), pick);
         right.setAlignment(Pos.CENTER_RIGHT);
         VBox c = card(cardHead(Icons.FLAG, Palette.BUSINESS, "WHO WE TRADE WITH", WHO_INFO, right));
         List<PartnersView.Row> rows = table.rows();
         if (rows.isEmpty()) {
-            c.getChildren().add(line(month ? "Nothing crossed the city's edge to a nation in the month last counted."
-                    : "Nothing has crossed the city's edge to a nation yet this year.", null));
+            c.getChildren().add(Kept.scope("nothing crossed", () -> line(month ? "Nothing crossed the city's edge to a nation in the month last counted."
+                    : "Nothing has crossed the city's edge to a nation yet this year.", null)));
             return c;
         }
         boolean all = trade.openLines.contains("partners:all");
         List<PartnersView.Row> shown = all || rows.size() <= FIRST_ROWS + 1 ? rows : rows.subList(0, FIRST_ROWS);
         boolean land = false;
         for (PartnersView.Row r : rows) land |= Double.isFinite(r.landFactor());
-        c.getChildren().add(table(shown, land));
+        final boolean withLand = land;
+        c.getChildren().add(Kept.scope("rows", () -> table(shown, withLand)));
         if (shown.size() < rows.size()) {
-            c.getChildren().add(door("+ " + (rows.size() - shown.size()) + " more nations", Palette.ACCENT, () -> {
+            c.getChildren().add(Kept.scope("more", () -> door("+ " + (rows.size() - shown.size()) + " more nations", Palette.ACCENT, () -> {
                 trade.openLines.add("partners:all");
                 trade.showForeignMenu();
-            }));
+            })));
         } else if (all && rows.size() > FIRST_ROWS + 1) {
-            c.getChildren().add(door("the first " + FIRST_ROWS + " only", Palette.ACCENT, () -> {
+            c.getChildren().add(Kept.scope("fewer", () -> door("the first " + FIRST_ROWS + " only", Palette.ACCENT, () -> {
                 trade.openLines.remove("partners:all");
                 trade.showForeignMenu();
-            }));
+            })));
         }
-        c.getChildren().add(muted(totals(table, month)));
+        c.getChildren().add(Kept.scope("totals", () -> muted(totals(table, month))));
         return c;
     }
 
@@ -193,22 +196,27 @@ final class PartnersPage {
         gridHead(table, head.toArray(new String[0]));
         int at = 1;
         for (PartnersView.Row r : rows) {
-            int col = 0;
-            table.add(gridCell(String.valueOf(r.rank()), Palette.TEXT_MUTED, Palette.SIZE_LABEL, true), col++, at);
-            table.add(nationLink(r.name(), r.nation()), col++, at);
-            table.add(gridCell(r.sold() > 0 ? trade.d(r.sold()) : "–", r.sold() > 0 ? Palette.TEXT_HEAD : Palette.TEXT_MUTED, Palette.SIZE_LABEL, true), col++, at);
-            table.add(gridCell(r.bought() > 0 ? trade.d(r.bought()) : "–", r.bought() > 0 ? Palette.TEXT_HEAD : Palette.TEXT_MUTED, Palette.SIZE_LABEL, true), col++, at);
-            table.add(gridCell(r.mark().isEmpty() ? "–" : r.mark(), Palette.TEXT_LABEL, Palette.SIZE_LABEL, true), col++, at);
-            table.add(gridCell(Double.isFinite(r.dollarsPerUnit()) ? trade.sym() + fxRate(r.dollarsPerUnit()) : "–", Palette.TEXT_LABEL, Palette.SIZE_LABEL, true), col++, at);
-            table.add(gridCell(Double.isFinite(r.policyRate()) ? ratePct(r.policyRate()) : "·", Palette.TEXT_LABEL, Palette.SIZE_LABEL, true), col++, at);
-            table.add(gridCell(tonnes(r.tonnesOut()) + " · " + tonnes(r.tonnesIn()), Palette.TEXT_LABEL, Palette.SIZE_LABEL, true), col++, at);
-            table.add(gridCell(Double.isFinite(r.distanceKm()) ? String.format("%,.0f km", r.distanceKm()) : "–", Palette.TEXT_LABEL, Palette.SIZE_LABEL, true), col++, at);
-            if (land) {
-                table.add(gridCell(Double.isFinite(r.landFactor()) ? String.format("%.2f×", r.landFactor()) + markWords(r.landMark()) : "–",
-                        Palette.TEXT_LABEL, Palette.SIZE_LABEL, true), col++, at);
-                table.add(gridCell(r.landKm2() > 0 ? String.format("%.2f km² · ", r.landKm2()) + NationsMap.usd(r.landUsd()) : "–",
-                        r.landKm2() > 0 ? Palette.TEXT_HEAD : Palette.TEXT_MUTED, Palette.SIZE_LABEL, true), col++, at);
-            }
+            final int line = at;
+            // Kept (KP6): a row a nation, a scope keyed by the nation, which the nations that come and go (the first twelve, or all; a
+            // new one in the ranking) leave alone; and by whether the land columns are there, since a row's cells are of that many.
+            Kept.scope("nation:" + r.nation() + (land ? "/land" : ""), () -> {
+                int col = 0;
+                table.add(gridCell(String.valueOf(r.rank()), Palette.TEXT_MUTED, Palette.SIZE_LABEL, true), col++, line);
+                table.add(nationLink(r.name(), r.nation()), col++, line);
+                table.add(gridCell(r.sold() > 0 ? trade.d(r.sold()) : "–", r.sold() > 0 ? Palette.TEXT_HEAD : Palette.TEXT_MUTED, Palette.SIZE_LABEL, true), col++, line);
+                table.add(gridCell(r.bought() > 0 ? trade.d(r.bought()) : "–", r.bought() > 0 ? Palette.TEXT_HEAD : Palette.TEXT_MUTED, Palette.SIZE_LABEL, true), col++, line);
+                table.add(gridCell(r.mark().isEmpty() ? "–" : r.mark(), Palette.TEXT_LABEL, Palette.SIZE_LABEL, true), col++, line);
+                table.add(gridCell(Double.isFinite(r.dollarsPerUnit()) ? trade.sym() + fxRate(r.dollarsPerUnit()) : "–", Palette.TEXT_LABEL, Palette.SIZE_LABEL, true), col++, line);
+                table.add(gridCell(Double.isFinite(r.policyRate()) ? ratePct(r.policyRate()) : "·", Palette.TEXT_LABEL, Palette.SIZE_LABEL, true), col++, line);
+                table.add(gridCell(tonnes(r.tonnesOut()) + " · " + tonnes(r.tonnesIn()), Palette.TEXT_LABEL, Palette.SIZE_LABEL, true), col++, line);
+                table.add(gridCell(Double.isFinite(r.distanceKm()) ? String.format("%,.0f km", r.distanceKm()) : "–", Palette.TEXT_LABEL, Palette.SIZE_LABEL, true), col++, line);
+                if (land) {
+                    table.add(gridCell(Double.isFinite(r.landFactor()) ? String.format("%.2f×", r.landFactor()) + markWords(r.landMark()) : "–",
+                            Palette.TEXT_LABEL, Palette.SIZE_LABEL, true), col++, line);
+                    table.add(gridCell(r.landKm2() > 0 ? String.format("%.2f km² · ", r.landKm2()) + NationsMap.usd(r.landUsd()) : "–",
+                            r.landKm2() > 0 ? Palette.TEXT_HEAD : Palette.TEXT_MUTED, Palette.SIZE_LABEL, true), col++, line);
+                }
+            });
             at++;
         }
         return table;
@@ -231,18 +239,20 @@ final class PartnersPage {
 
     /** A nation's name as a door to its page. */
     private Label nationLink(String name, int number) {
-        Label l = new Label(name);
+        Label l = Kept.label(name);
         String rest = Palette.words(Palette.SIZE_LABEL + 1, Palette.ACCENT) + " -fx-cursor: hand;";
-        l.setStyle(rest);
+        String over = rest + " -fx-underline: true;";
+        // Kept (KP6): the look the pointer calls for is chosen from isHover() where it is set; handlers set, not added; the tooltip told.
+        l.setStyle(l.isHover() ? over : rest);
         l.setMinWidth(0);
         l.setMaxWidth(Double.MAX_VALUE);
-        l.setOnMouseEntered(e -> l.setStyle(rest + " -fx-underline: true;"));
+        l.setOnMouseEntered(e -> l.setStyle(over));
         l.setOnMouseExited(e -> l.setStyle(rest));
         l.setOnMouseClicked(e -> {
             e.consume();
             open(number);
         });
-        Tooltip.install(l, new Tooltip(name));
+        Kept.tip(l, name, TradeScreen.DEFAULT_TIP_MILLIS);
         return l;
     }
 
@@ -308,8 +318,13 @@ final class PartnersPage {
         if (good == null || !all.contains(good)) good = goods.sold().isEmpty() ? goods.others().get(0) : goods.sold().get(0);
         PartnersView.GoodBoard board = PartnersView.good(game(), good);
         if (board == null) return;
-        page.getChildren().add(nextCard(goods, board));
-        page.getChildren().add(row(sellNowCard(board), bandCard(board), movesCard(board)));
+        // Kept (KP6): the board of a good is a scope keyed by the good - another good picked is another set of cards (a seller's card or a
+        // buyer's, a chart or none) - and each card a scope of its own within it.
+        Kept.scope("good:" + good.name(), () -> {
+            page.getChildren().add(Kept.scope("next", () -> nextCard(goods, board)));
+            page.getChildren().add(row(Kept.scope("sell now", () -> sellNowCard(board)), Kept.scope("band", () -> bandCard(board)),
+                    Kept.scope("moves", () -> movesCard(board))));
+        });
     }
 
     /** WHERE THE NEXT UNIT GOES: the good's chips, the chart, its key. */
@@ -317,13 +332,13 @@ final class PartnersPage {
         Good g = board.good();
         VBox c = card(cardHead(Icons.ofGood(g), Palette.BUSINESS, "WHERE THE NEXT " + g.unit().toUpperCase() + " GOES", NEXT_INFO,
                 quiet(g.label() + " · what the next one nets here, by how much we sell")));
-        c.getChildren().add(goodChips(goods, g));
+        c.getChildren().add(Kept.scope("chips", () -> goodChips(goods, g)));
         WorldMarket.Curve curve = board.curve();
         List<WorldMarket.Curve.Point> pts = curve.points();
         if (pts.size() < 2) {
-            c.getChildren().add(muted(curve.sinks().isEmpty() || !g.exportable()
+            c.getChildren().add(Kept.scope("no line", () -> muted(curve.sinks().isEmpty() || !g.exportable()
                     ? "Nobody abroad buys " + g.label().toLowerCase() + " from this city, so there is no line of what the next one nets. Who sells it to us is below."
-                    : "The buyers are too few to draw a line."));
+                    : "The buyers are too few to draw a line.")));
             return c;
         }
         double[] xs = new double[pts.size()], net = new double[pts.size()], world = new double[pts.size()];
@@ -341,9 +356,11 @@ final class PartnersPage {
         List<CurveChart.Join> joins = new ArrayList<>();
         Nations nations = game().getNations();
         for (WorldMarket.Curve.Sink s : curve.nextBuyers(sold, 12)) joins.add(new CurveChart.Join(s.joinsAtShare(), nations.name(s.buyer())));
-        CurveChart chart = new CurveChart(xs, net, world, city, joins, trade::unitD, PartnersPage::tickWords);
+        // Kept (KP6): the chart is made once in its scope and told its figures at every draw (set()), laid out again only where one moved.
+        CurveChart chart = Kept.of(CurveChart.class, CurveChart::new);
+        chart.set(xs, net, world, city, joins, trade::unitD, PartnersPage::tickWords);
         c.getChildren().add(chart);
-        c.getChildren().add(chartKey());
+        c.getChildren().add(Kept.scope("key", this::chartKey));
         return c;
     }
 
@@ -351,18 +368,19 @@ final class PartnersPage {
     private Node goodChips(PartnersView.Goods goods, Good chosen) {
         List<Good> first = new ArrayList<>(goods.sold().subList(0, Math.min(GOOD_CHIPS, goods.sold().size())));
         if (!first.contains(chosen)) first.add(chosen);
-        VBox box = new VBox(6);
-        box.getChildren().add(goodStrip(first, chosen, true));
+        VBox box = Kept.column(6);
+        box.getChildren().add(Kept.scope("first", () -> goodStrip(first, chosen, true)));
         boolean open = trade.openLines.contains("partners:goods");
         List<Good> rest = new ArrayList<>();
         for (Good g : goods.sold()) if (!first.contains(g)) rest.add(g);
         for (Good g : goods.others()) if (!first.contains(g)) rest.add(g);
         if (!rest.isEmpty()) {
-            if (open) box.getChildren().add(goodStrip(rest, chosen, false));
-            box.getChildren().add(door(open ? "fewer goods" : "every good (" + rest.size() + " more)", Palette.ACCENT, () -> {
+            // Kept (KP6): the rest of the goods, when the fold is open, and the door that opens it are scopes of their own.
+            if (open) box.getChildren().add(Kept.scope("rest", () -> goodStrip(rest, chosen, false)));
+            box.getChildren().add(Kept.scope("every good", () -> door(open ? "fewer goods" : "every good (" + rest.size() + " more)", Palette.ACCENT, () -> {
                 if (!trade.openLines.remove("partners:goods")) trade.openLines.add("partners:goods");
                 trade.showForeignMenu();
-            }));
+            })));
         }
         return box;
     }
@@ -387,19 +405,28 @@ final class PartnersPage {
     }
 
     private static HBox lineKey(String colour, boolean dashed, String name) {
-        Line l = new Line(0, 6, 22, 6);
-        l.setStroke(Color.web(colour));
-        l.setStrokeWidth(2.5);
-        if (dashed) l.getStrokeDashArray().setAll(5.0, 3.0);
-        Label n = new Label(name);
-        n.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
-        Pane sample = new Pane(l);
-        sample.setMinSize(22, 12);
-        sample.setPrefSize(22, 12);
-        sample.setMaxSize(22, 12);
-        HBox item = new HBox(6, sample, n);
-        item.setAlignment(Pos.CENTER_LEFT);
-        return item;
+        // Kept (KP6): a scope keyed by the entry, so the line that is dashed and the one that is not are each always the same node.
+        return Kept.scope("lineKey:" + name, () -> {
+            Line l = Kept.of(Line.class, Line::new);
+            l.setStartX(0);
+            l.setStartY(6);
+            l.setEndX(22);
+            l.setEndY(6);
+            l.setStroke(Color.web(colour));
+            l.setStrokeWidth(2.5);
+            // Set, not added to: a kept line is handed back with last month's dashes.
+            if (dashed) l.getStrokeDashArray().setAll(5.0, 3.0);
+            else l.getStrokeDashArray().clear();
+            Label n = Kept.label(name);
+            n.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+            Pane sample = Kept.plain(l);
+            sample.setMinSize(22, 12);
+            sample.setPrefSize(22, 12);
+            sample.setMaxSize(22, 12);
+            HBox item = Kept.row(6, sample, n);
+            item.setAlignment(Pos.CENTER_LEFT);
+            return item;
+        });
     }
 
     /* ----- AT WHAT WE SELL NOW ----- */
@@ -407,18 +434,25 @@ final class PartnersPage {
     /** AT WHAT WE SELL NOW (or, for a good the city only buys, WHO SELLS IT TO US). */
     private VBox sellNowCard(PartnersView.GoodBoard b) {
         WorldMarket.Curve curve = b.curve();
-        Nations nations = game().getNations();
         Good g = b.good();
         boolean sells = g.exportable() && !curve.sinks().isEmpty();
-        if (!sells) return sellersCard(b);
+        // Kept (KP6): the buyers' card and the sellers' are scopes of their own, since a good has one or the other.
+        return sells ? Kept.scope("buyers", () -> buyersCard(b)) : Kept.scope("sellers", () -> sellersCard(b));
+    }
+
+    /** AT WHAT WE SELL NOW, for a good the city can sell: the buyers that took what it sold, or the first it would find. */
+    private VBox buyersCard(PartnersView.GoodBoard b) {
+        WorldMarket.Curve curve = b.curve();
+        Nations nations = game().getNations();
+        Good g = b.good();
         VBox c = card(cardHead(Icons.ofGood(g), Palette.BUSINESS, "AT WHAT WE SELL NOW", SELL_INFO,
                 quiet(b.exportUnits() > 0 ? volume(b.exportUnits(), g) + " a month" : "nothing sold last month")));
         double x = b.exportUnits();
         if (!(x > 0)) {
             WorldMarket.Curve.Sink first = curve.sinks().get(0);
-            c.getChildren().add(line("The city sold none of it last month.", null));
-            c.getChildren().add(line("The first buyer would be " + nations.name(first.buyer()) + ", netting " + trade.unitD(b.inCityMoney(first.netback()))
-                    + " a " + g.unit() + ", then " + joinedWords(curve, 0, 3) + ".", null));
+            c.getChildren().add(Kept.scope("none sold", () -> line("The city sold none of it last month.", null)));
+            c.getChildren().add(Kept.scope("first buyer", () -> line("The first buyer would be " + nations.name(first.buyer()) + ", netting " + trade.unitD(b.inCityMoney(first.netback()))
+                    + " a " + g.unit() + ", then " + joinedWords(curve, 0, 3) + ".", null)));
             addBought(c, b);
             return c;
         }
@@ -428,14 +462,16 @@ final class PartnersPage {
         int shown = Math.min(LIST_ROWS, taking.size());
         for (int i = 0; i < shown; i++) {
             PartnersView.Part p = taking.get(i);
-            c.getChildren().add(cardLine(nations.name(p.nation()) + " · " + shareOfSale(p.share()), "nets " + nets, null));
+            // Kept (KP6): a row a buyer, a scope keyed by the nation.
+            c.getChildren().add(Kept.scope("buyer:" + p.nation(), () -> cardLine(nations.name(p.nation()) + " · " + shareOfSale(p.share()), "nets " + nets, null)));
         }
         if (taking.size() > shown) {
             double rest = 0;
             for (PartnersView.Part p : taking.subList(shown, taking.size())) rest += p.share();
-            c.getChildren().add(muted("+ " + (taking.size() - shown) + " more buyers, " + shareOfSale(rest) + " between them, netting the same."));
+            final double restShare = rest;
+            c.getChildren().add(Kept.scope("more buyers", () -> muted("+ " + (taking.size() - shown) + " more buyers, " + shareOfSale(restShare) + " between them, netting the same.")));
         }
-        c.getChildren().add(line("Every buyer nets the same: we sell to each until the next unit would net more somewhere else.", null));
+        c.getChildren().add(Kept.scope("same", () -> line("Every buyer nets the same: we sell to each until the next unit would net more somewhere else.", null)));
         List<WorldMarket.Curve.Sink> next = curve.nextBuyers(x, 3);
         if (!next.isEmpty()) {
             StringBuilder s = new StringBuilder("Next to buy: ");
@@ -443,7 +479,7 @@ final class PartnersPage {
                 if (i > 0) s.append(", ");
                 s.append(nations.name(next.get(i).buyer())).append(" at ").append(shareWords(next.get(i).joinsAtShare())).append(" of the world's use");
             }
-            c.getChildren().add(muted(s.append('.').toString()));
+            c.getChildren().add(Kept.scope("next to buy", () -> muted(s.append('.').toString())));
         }
         addBought(c, b);
         return c;
@@ -488,7 +524,7 @@ final class PartnersPage {
         }
         if (from.size() > 3) s.append(" and ").append(from.size() - 3).append(" more");
         s.append(", landed at ").append(trade.unitD(b.inCityMoney(curve.costLevelAt(b.importUnits()).level()))).append('.');
-        c.getChildren().add(muted(s.toString()));
+        c.getChildren().add(Kept.scope("bought", () -> muted(s.toString())));
     }
 
     /** WHO SELLS IT TO US: for a good the city only buys, the sellers at what it buys now, and the next to sell. */
@@ -499,15 +535,15 @@ final class PartnersPage {
         VBox c = card(cardHead(Icons.ofGood(g), Palette.BUSINESS_DARK, "WHO SELLS IT TO US", BUY_INFO,
                 quiet(b.importUnits() > 0 ? volume(b.importUnits(), g) + " a month" : "nothing bought last month")));
         if (curve.sellers().isEmpty()) {
-            c.getChildren().add(line("Nobody abroad sells it to this city, and the city sells none abroad.", null));
+            c.getChildren().add(Kept.scope("nobody", () -> line("Nobody abroad sells it to this city, and the city sells none abroad.", null)));
             return c;
         }
         double m = b.importUnits();
         if (!(m > 0)) {
             WorldMarket.Curve.Seller first = curve.sellers().get(0);
-            c.getChildren().add(line("The city bought none of it last month.", null));
-            c.getChildren().add(line("The cheapest seller is " + nations.name(first.nation()) + ", landed here at "
-                    + trade.unitD(b.inCityMoney(first.landed())) + " a " + g.unit() + ".", null));
+            c.getChildren().add(Kept.scope("none bought", () -> line("The city bought none of it last month.", null)));
+            c.getChildren().add(Kept.scope("cheapest", () -> line("The cheapest seller is " + nations.name(first.nation()) + ", landed here at "
+                    + trade.unitD(b.inCityMoney(first.landed())) + " a " + g.unit() + ".", null)));
             return c;
         }
         WorldMarket.Curve.Level level = curve.costLevelAt(m);
@@ -516,10 +552,11 @@ final class PartnersPage {
         int shown = Math.min(LIST_ROWS, from.size());
         for (int i = 0; i < shown; i++) {
             PartnersView.Part p = from.get(i);
-            c.getChildren().add(cardLine(nations.name(p.nation()) + " · " + shareOfSale(p.share()), "lands at " + cost, null));
+            // Kept (KP6): a row a seller, a scope keyed by the nation.
+            c.getChildren().add(Kept.scope("seller:" + p.nation(), () -> cardLine(nations.name(p.nation()) + " · " + shareOfSale(p.share()), "lands at " + cost, null)));
         }
-        if (from.size() > shown) c.getChildren().add(muted("+ " + (from.size() - shown) + " more sellers at the same landed cost."));
-        c.getChildren().add(line("Every seller asks the same landed: we buy from each until the next unit would cost less somewhere else.", null));
+        if (from.size() > shown) c.getChildren().add(Kept.scope("more sellers", () -> muted("+ " + (from.size() - shown) + " more sellers at the same landed cost.")));
+        c.getChildren().add(Kept.scope("same", () -> line("Every seller asks the same landed: we buy from each until the next unit would cost less somewhere else.", null)));
         int taking = level.taking();
         if (taking < curve.sellers().size()) {
             StringBuilder s = new StringBuilder("Next to sell: ");
@@ -528,7 +565,7 @@ final class PartnersPage {
                 if (i > 0) s.append(", ");
                 s.append(nations.name(next.get(i).nation())).append(" at ").append(shareWords(next.get(i).joinsAtShare())).append(" of the world's use");
             }
-            c.getChildren().add(muted(s.append('.').toString()));
+            c.getChildren().add(Kept.scope("next to sell", () -> muted(s.append('.').toString())));
         }
         return c;
     }
@@ -541,6 +578,7 @@ final class PartnersPage {
         Good g = b.good();
         VBox c = card(cardHead(Icons.ofGood(g), Palette.ORE, "THE BAND THIS MONTH", BAND_INFO, quiet("D$ a " + g.unit())));
         boolean any = false;
+        // Kept (KP6): a row a figure the market has, a scope keyed by its name, which the rows that come and go leave alone.
         if (Double.isFinite(b.floor())) {
             any = true;
             c.getChildren().add(bandRow("The floor", trade.unitD(b.inCityMoney(b.floor())),
@@ -561,13 +599,15 @@ final class PartnersPage {
             c.getChildren().add(bandRow("The ceiling", trade.unitD(b.inCityMoney(b.ceiling())),
                     "set by " + nations.name(b.ceilingNation()) + ": what the cheapest seller abroad would ask to land one here."));
         }
-        if (!any) c.getChildren().add(muted("The world neither buys nor sells this from the city: there is no band."));
+        if (!any) c.getChildren().add(Kept.scope("no band", () -> muted("The world neither buys nor sells this from the city: there is no band.")));
         return c;
     }
 
     private static VBox bandRow(String name, String figure, String reason) {
-        HBox top = cardLine(name, figure, null);
-        return new VBox(1, top, muted(reason));
+        return Kept.scope("band:" + name, () -> {
+            HBox top = cardLine(name, figure, null);
+            return Kept.column(1, top, muted(reason));
+        });
     }
 
     /* ----- WHAT MOVES IT ----- */
@@ -583,11 +623,12 @@ final class PartnersPage {
         scale = add(rows, scale, "The world's answer", b.inCityMoney(m.world()), "how far its prices answer by January to what we sell, less what we buy");
         scale = add(rows, scale, "Freight to the first buyer", b.inCityMoney(m.freight()), "the haul to " + firstBuyer(b) + ", paid on every unit");
         if (rows.isEmpty()) {
-            c.getChildren().add(muted("Nothing moves it: the world has no buyer for this from the city."));
+            c.getChildren().add(Kept.scope("nothing moves", () -> muted("Nothing moves it: the world has no buyer for this from the city.")));
             return c;
         }
-        c.getChildren().add(divergingBars(rows, scale * 1.05, 150, 82, Palette.BUSINESS_LIGHT, Palette.BUSINESS, "‹ takes off", "adds ›",
-                this::signedUnit));
+        final double barScale = scale;
+        c.getChildren().add(Kept.scope("bars", () -> divergingBars(rows, barScale * 1.05, 150, 82, Palette.BUSINESS_LIGHT, Palette.BUSINESS,
+                "‹ takes off", "adds ›", this::signedUnit)));
         return c;
     }
 
@@ -621,16 +662,19 @@ final class PartnersPage {
         if (table == null || table.rows().isEmpty()) return null;
         List<Node> cards = new ArrayList<>();
         for (PartnersView.Row r : table.rows().subList(0, Math.min(5, table.rows().size()))) {
-            Label name = new Label(r.name());
-            name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
-            name.setMinWidth(0);
-            VBox c = card(name,
-                    muted("sold " + (r.sold() > 0 ? trade.d(r.sold()) : "–") + " · bought " + (r.bought() > 0 ? trade.d(r.bought()) : "–")),
-                    muted("its money " + (r.mark().isEmpty() ? "–" : r.mark())
-                            + (Double.isFinite(r.dollarsPerUnit()) ? " · 1 = " + trade.sym() + fxRate(r.dollarsPerUnit()) : "")));
-            cards.add(doorCard(c, () -> open(r.nation())));
+            // Kept (KP6): a card a nation, a scope keyed by it, which the nations that come into the five and leave it leave alone.
+            cards.add(Kept.scope("partner:" + r.nation(), () -> {
+                Label name = Kept.label(r.name());
+                name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
+                name.setMinWidth(0);
+                VBox c = card(name,
+                        muted("sold " + (r.sold() > 0 ? trade.d(r.sold()) : "–") + " · bought " + (r.bought() > 0 ? trade.d(r.bought()) : "–")),
+                        muted("its money " + (r.mark().isEmpty() ? "–" : r.mark())
+                                + (Double.isFinite(r.dollarsPerUnit()) ? " · 1 = " + trade.sym() + fxRate(r.dollarsPerUnit()) : "")));
+                return doorCard(c, () -> open(r.nation()));
+            }));
         }
-        VBox box = new VBox(Palette.GAP, sectionHead("OUR PARTNERS THIS MONTH", STRIP_INFO,
+        VBox box = Kept.column(Palette.GAP, sectionHead("OUR PARTNERS THIS MONTH", STRIP_INFO,
                 door("All the partners", Palette.ACCENT, () -> trade.open(TradeScreen.PARTNERS))), row(cards.toArray(new Node[0])));
         return box;
     }
@@ -664,13 +708,14 @@ final class PartnersPage {
             + "set beside the nation's. Nothing in the city's economy reads it.";
 
     private void nationPage(VBox page, PartnersView.Page p) {
-        page.getChildren().add(nationHead(p));
+        // Kept (KP6): each card a scope of its own.
+        page.getChildren().add(Kept.scope("head", () -> nationHead(p)));
         // the nation's own figures, money, land and the city beside it down the left; our trade with it, which is long, on the right
-        VBox left = new VBox(Palette.GAP_LOOSE, figuresCard(p), moneyCard(p));
-        if (Double.isFinite(p.landFactor())) left.getChildren().add(landCard(p));
-        left.getChildren().add(besideCard(p));
-        page.getChildren().add(row(left, oursCard(p)));
-        HBox doors = new HBox(Palette.GAP_LOOSE, door("All its measures", Palette.MONEY, () -> ui.rankingsScreen.openOn(p.iso3())),
+        VBox left = Kept.column(Palette.GAP_LOOSE, Kept.scope("figures", () -> figuresCard(p)), Kept.scope("money", () -> moneyCard(p)));
+        if (Double.isFinite(p.landFactor())) left.getChildren().add(Kept.scope("land", () -> landCard(p)));
+        left.getChildren().add(Kept.scope("beside", () -> besideCard(p)));
+        page.getChildren().add(row(left, Kept.scope("ours", () -> oursCard(p))));
+        HBox doors = Kept.row(Palette.GAP_LOOSE, door("All its measures", Palette.MONEY, () -> ui.rankingsScreen.openOn(p.iso3())),
                 door("All partners", Palette.ACCENT, () -> {
                     nation = 0;
                     ui.innerScrollAt.remove("showForeignMenu:body");
@@ -682,30 +727,32 @@ final class PartnersPage {
 
     /** The head: a way back, the nation's name, and its money. */
     private Node nationHead(PartnersView.Page p) {
-        Label back = new Label("‹ All partners");
+        Label back = Kept.label("‹ All partners");
         String rest = Palette.words(Palette.SIZE_LABEL + 1, Palette.ACCENT) + " -fx-cursor: hand;";
-        back.setStyle(rest);
+        String over = rest + " -fx-underline: true;";
+        // Kept (KP6): the look the pointer calls for is chosen from isHover() where it is set; handlers set, not added.
+        back.setStyle(back.isHover() ? over : rest);
         back.setMinWidth(Region.USE_PREF_SIZE);
-        back.setOnMouseEntered(e -> back.setStyle(rest + " -fx-underline: true;"));
+        back.setOnMouseEntered(e -> back.setStyle(over));
         back.setOnMouseExited(e -> back.setStyle(rest));
         back.setOnMouseClicked(e -> {
             nation = 0;
             ui.innerScrollAt.remove("showForeignMenu:body");
             trade.showForeignMenu();
         });
-        Label name = new Label(p.name());
+        Label name = Kept.label(p.name());
         name.setStyle(Palette.strong(Palette.SIZE_TITLE, Palette.TEXT_HEAD));
         name.setMinWidth(Region.USE_PREF_SIZE);
-        HBox head = new HBox(Palette.GAP_LOOSE, back, name);
+        HBox head = Kept.row(Palette.GAP_LOOSE, back, name);
         head.setAlignment(Pos.BASELINE_LEFT);
-        if (p.money() != null) head.getChildren().add(chip(p.money() + (p.mark().equals(p.money()) ? "" : " · " + p.mark().trim()), Palette.BUSINESS));
+        if (p.money() != null) head.getChildren().add(Kept.scope("money", () -> chip(p.money() + (p.mark().equals(p.money()) ? "" : " · " + p.mark().trim()), Palette.BUSINESS)));
         return head;
     }
 
     /** ITS FIGURES: label · value · rank, the map card's rows. */
     private VBox figuresCard(PartnersView.Page p) {
         VBox c = card(cardHead(Icons.FLAG, Palette.BUSINESS, "ITS FIGURES", FIGURES_INFO, quiet(String.valueOf(p.year()))));
-        GridPane g = new GridPane();
+        GridPane g = Kept.grid();
         g.setHgap(Palette.GAP + 6);
         g.setVgap(5);
         javafx.scene.layout.ColumnConstraints labels = new javafx.scene.layout.ColumnConstraints(),
@@ -716,23 +763,28 @@ final class PartnersPage {
         g.getColumnConstraints().addAll(labels, values, ranks);
         int at = 0;
         for (NationsMap.Row r : p.figureRows()) {
-            Label k = new Label(r.label());
-            k.setStyle(Palette.words(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
-            k.setMinWidth(Region.USE_PREF_SIZE);
-            Label v = new Label(r.value());
-            v.setStyle(Palette.figureRegular(Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD));
-            v.setWrapText(true);
-            v.setMinWidth(0);
-            Label rank = new Label(r.rank());
-            rank.setStyle(Palette.figureRegular(Palette.SIZE_LABEL + 1, Palette.TEXT_MUTED));
-            rank.setMinWidth(Region.USE_PREF_SIZE);
-            g.add(k, 0, at);
-            g.add(v, 1, at);
-            g.add(rank, 2, at);
+            final int line = at;
+            // Kept (KP6): a row a figure, a scope keyed by its label and by which of its words say anything - a label that had words and
+            // has none keeps the height of them, so a row whose value or rank gains or loses its words is made afresh.
+            Kept.scope("figure:" + r.label() + (r.value().isEmpty() ? "/-" : "") + (r.rank().isEmpty() ? "/_" : ""), () -> {
+                Label k = Kept.label(r.label());
+                k.setStyle(Palette.words(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
+                k.setMinWidth(Region.USE_PREF_SIZE);
+                Label v = Kept.label(r.value());
+                v.setStyle(Palette.figureRegular(Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD));
+                v.setWrapText(true);
+                v.setMinWidth(0);
+                Label rank = Kept.label(r.rank());
+                rank.setStyle(Palette.figureRegular(Palette.SIZE_LABEL + 1, Palette.TEXT_MUTED));
+                rank.setMinWidth(Region.USE_PREF_SIZE);
+                g.add(k, 0, line);
+                g.add(v, 1, line);
+                g.add(rank, 2, line);
+            });
             at++;
         }
         c.getChildren().add(g);
-        if (Double.isFinite(p.distanceKm())) c.getChildren().add(muted(String.format("%,.0f km from the city.", p.distanceKm())));
+        if (Double.isFinite(p.distanceKm())) c.getChildren().add(Kept.scope("distance", () -> muted(String.format("%,.0f km from the city.", p.distanceKm()))));
         return c;
     }
 
@@ -742,21 +794,26 @@ final class PartnersPage {
         c.getChildren().add(cardLine("this month", "sold " + trade.d(p.monthSold()) + " · bought " + trade.d(p.monthBought()), null));
         c.getChildren().add(cardLine("this year so far", "sold " + trade.d(p.yearSold()) + " · bought " + trade.d(p.yearBought()), null));
         c.getChildren().add(cardLine("the haul this year", tonnes(p.yearTonnesOut()) + " out · " + tonnes(p.yearTonnesIn()) + " in", null));
+        // Kept (KP6): the goods' bars and the finished years' are scopes of their own, each there only while it has something to say.
         if (!p.goods().isEmpty()) {
-            c.getChildren().add(words("THIS YEAR, BY GOOD", Palette.SIZE_LABEL, Palette.TEXT_LABEL));
-            List<PartnerTrade.Cell> top = p.goods().subList(0, Math.min(GOODS_SHOWN, p.goods().size()));
-            double scale = 0;
-            for (PartnerTrade.Cell cell : p.goods()) scale = Math.max(scale, Math.max(cell.valueIn(), cell.valueOut()));
-            final double shared = scale;
-            c.getChildren().add(goodBars(top, shared, true));
-            if (p.goods().size() > top.size()) {
-                List<PartnerTrade.Cell> rest = p.goods().subList(top.size(), p.goods().size());
-                c.getChildren().add(trade.fold("partners:goods:" + p.nation(), rest.size() + " more goods", () -> goodBars(rest, shared, false)));
-            }
+            Kept.scope("by good", () -> {
+                c.getChildren().add(words("THIS YEAR, BY GOOD", Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+                List<PartnerTrade.Cell> top = p.goods().subList(0, Math.min(GOODS_SHOWN, p.goods().size()));
+                double scale = 0;
+                for (PartnerTrade.Cell cell : p.goods()) scale = Math.max(scale, Math.max(cell.valueIn(), cell.valueOut()));
+                final double shared = scale;
+                c.getChildren().add(Kept.scope("top", () -> goodBars(top, shared, true)));
+                if (p.goods().size() > top.size()) {
+                    List<PartnerTrade.Cell> rest = p.goods().subList(top.size(), p.goods().size());
+                    c.getChildren().add(trade.fold("partners:goods:" + p.nation(), rest.size() + " more goods", () -> goodBars(rest, shared, false)));
+                }
+            });
         }
         if (p.years().stream().anyMatch(y -> y.valueOut() > 0 || y.valueIn() > 0)) {
-            c.getChildren().add(words("ITS FINISHED YEARS", Palette.SIZE_LABEL, Palette.TEXT_LABEL));
-            c.getChildren().add(yearBars(p.years()));
+            Kept.scope("years", () -> {
+                c.getChildren().add(words("ITS FINISHED YEARS", Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+                c.getChildren().add(yearBars(p.years()));
+            });
         }
         return c;
     }
@@ -787,7 +844,7 @@ final class PartnersPage {
     private VBox moneyCard(PartnersView.Page p) {
         VBox c = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "ITS MONEY", MONEY_INFO, quiet(p.money() == null ? "" : p.money())));
         if (p.money() == null) {
-            c.getChildren().add(line("The file names no money for this nation this year.", null));
+            c.getChildren().add(Kept.scope("no money", () -> line("The file names no money for this nation this year.", null)));
             return c;
         }
         if (Nations.DOLLAR.equals(p.money())) {
@@ -805,7 +862,7 @@ final class PartnersPage {
             c.getChildren().add(cardLine("the vault holds", p.vaultHeld() > 0 ? (p.vaultIndex() == 0 ? "" : TradeScreen.ownMoney(p.vaultIndex(), p.vaultHeld()) + " · ") + usd(p.vaultHeldUsd()) : "none", null));
             c.getChildren().add(cardLine("the city owes in it", p.owedOwn() > 0 ? (p.vaultIndex() == 0 ? "" : TradeScreen.ownMoney(p.vaultIndex(), p.owedOwn()) + " · ") + usd(p.owedUsd()) : "nothing", null));
         } else {
-            c.getChildren().add(muted("Not one of the eight moneys the vault can hold."));
+            c.getChildren().add(Kept.scope("not held", () -> muted("Not one of the eight moneys the vault can hold.")));
         }
         return c;
     }
@@ -827,7 +884,7 @@ final class PartnersPage {
         c.getChildren().add(cardLine("the city's GDP", NationsMap.usd(p.cityGdpUsd()), null));
         c.getChildren().add(cardLine("its output", NationsMap.usd(p.output()) + markWords(p.outputMark()), null));
         if (Double.isFinite(p.gdpShare())) {
-            c.getChildren().add(line("For comparison: the city's output is " + sharePercent(p.gdpShare()) + " of " + p.name() + (p.name().endsWith("s") ? "'" : "'s") + ".", null));
+            c.getChildren().add(Kept.scope("comparison", () -> line("For comparison: the city's output is " + sharePercent(p.gdpShare()) + " of " + p.name() + (p.name().endsWith("s") ? "'" : "'s") + ".", null)));
         }
         return c;
     }
@@ -850,6 +907,10 @@ final class PartnersPage {
      * What the next unit nets (up, D$ a unit) against how much the city sells (across, the share of the world's use a year, on a log scale): the
      * month's line solid in the export violet, the world's dashed, a dot where the city sold last month, and ticks where the next buyers join, the first
      * three named. It is handed arrays and laid out at whatever width it is given; the shapes are made once and only moved.
+     *
+     * <p>A picture (KP6): made through Kept, told its figures by set(). Its parts are its own, made with new (a picture owns its children); set() keeps
+     * them while the chart has as many gridlines, ticks and joins, and a dot or none, as it had, and makes them afresh when that changes, so the common
+     * month - the figures moved, the parts the same - makes no node; it asks for a layout only when a figure the layout reads moved.
      */
     static final class CurveChart extends Pane {
         /** The dot: where the city sold, its share of the world's use, what the next one nets there, its words. */
@@ -860,57 +921,30 @@ final class PartnersPage {
 
         static final double HEIGHT = 250, LEFT = 74, RIGHT = 18, TOP = 22, BOTTOM = 44;
 
-        private final double xLo, xHi, yHi;
-        private final double[] xs, net, world;
-        private final Dot dot;
-        private final List<Join> joins;
+        private double xLo, xHi, yHi;
+        private double[] xs = new double[0], net = new double[0], world = new double[0];
+        private Dot dot;
+        private List<Join> joins = new ArrayList<>();
         private final List<Line> yGrid = new ArrayList<>(), xGrid = new ArrayList<>();
         private final List<Label> yLabels = new ArrayList<>(), xLabels = new ArrayList<>(), joinLabels = new ArrayList<>();
         private final List<Line> joinLines = new ArrayList<>();
         private final List<Polygon> joinMarks = new ArrayList<>();
-        private final List<Join> drawnJoins = new ArrayList<>();
         private final List<Double> yTicks = new ArrayList<>(), xTicks = new ArrayList<>();
         private final Polyline netLine = new Polyline(), worldLine = new Polyline();
         private final Line axis = new Line();
         private final Circle mark = new Circle(5.5);
         private final Line drop = new Line();
         private final Label dotLabel = new Label(), xCaption = new Label("share of the world's use a year · a log scale"), yCaption = new Label();
+        /** What the parts were made for at the last set() (see shapeOf()), and what the layout read (see layoutKey()): null before the first. */
+        private String shape, laidOut;
 
-        CurveChart(double[] xs, double[] net, double[] world, Dot dot, List<Join> joins, DoubleFunction<String> money, DoubleFunction<String> share) {
-            this.xs = xs;
-            this.net = net;
-            this.world = world;
-            this.dot = dot;
+        /** The lines, the dot and the captions, made once in its life; the gridlines, ticks and joins come with set(). */
+        CurveChart() {
             setMinHeight(HEIGHT);
             setPrefHeight(HEIGHT);
             setMaxHeight(HEIGHT);
             setMinWidth(0);
             setMaxWidth(Double.MAX_VALUE);
-            xLo = xs[0];
-            xHi = xs[xs.length - 1];
-            double top = 0;
-            for (int i = 0; i < xs.length; i++) top = Math.max(top, Math.max(net[i], world[i]));
-            if (dot != null) top = Math.max(top, dot.value());
-            // y: from nothing to a nice figure over the top
-            double step = niceStep(top / 4);
-            double hi = Math.ceil(top / step) * step;
-            yHi = hi > 0 ? hi : 1;
-            for (double v = 0; v <= yHi + step * .01; v += step) yTicks.add(v);
-            // x: a tick at each power of ten inside the range
-            for (double t = Math.pow(10, Math.ceil(Math.log10(xLo) - 1e-9)); t <= xHi * (1 + 1e-9); t *= 10) xTicks.add(t);
-            Color faint = Color.web(Palette.EDGE), text = Color.web(Palette.TEXT_MUTED);
-            for (double v : yTicks) {
-                Line l = new Line();
-                l.setStroke(faint);
-                yGrid.add(l);
-                yLabels.add(small(money.apply(v), Palette.TEXT_MUTED));
-            }
-            for (double t : xTicks) {
-                Line l = new Line();
-                l.setStroke(faint);
-                xGrid.add(l);
-                xLabels.add(small(share.apply(t), Palette.TEXT_MUTED));
-            }
             axis.setStroke(Color.web(Palette.CONTROL_EDGE));
             netLine.setStroke(Color.web(Palette.BUSINESS));
             netLine.setStrokeWidth(2.5);
@@ -924,16 +958,88 @@ final class PartnersPage {
             mark.setStrokeWidth(2.5);
             drop.setStroke(Color.web(Palette.TEXT_MUTED));
             drop.getStrokeDashArray().setAll(2.0, 3.0);
-            dotLabel.setText(dot == null ? "" : dot.words());
             dotLabel.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_HEAD) + " -fx-background-color: " + Pieces.tint(Palette.RAISED, .92)
                     + "; -fx-background-radius: 3; -fx-padding: 1 5 1 5;");
             xCaption.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
             yCaption.setText("what the next one nets, D$ a unit");
             yCaption.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        }
+
+        /** What the chart draws now: the line's points, the dot (null: none), the buyers that join, and how its two axes write their ticks. */
+        void set(double[] xs, double[] net, double[] world, Dot dot, List<Join> joins, DoubleFunction<String> money, DoubleFunction<String> share) {
+            this.xs = xs;
+            this.net = net;
+            this.world = world;
+            this.dot = dot;
+            xLo = xs[0];
+            xHi = xs[xs.length - 1];
+            double top = 0;
+            for (int i = 0; i < xs.length; i++) top = Math.max(top, Math.max(net[i], world[i]));
+            if (dot != null) top = Math.max(top, dot.value());
+            // y: from nothing to a nice figure over the top
+            double step = niceStep(top / 4);
+            double hi = Math.ceil(top / step) * step;
+            yHi = hi > 0 ? hi : 1;
+            yTicks.clear();
+            for (double v = 0; v <= yHi + step * .01; v += step) yTicks.add(v);
+            // x: a tick at each power of ten inside the range
+            xTicks.clear();
+            for (double t = Math.pow(10, Math.ceil(Math.log10(xLo) - 1e-9)); t <= xHi * (1 + 1e-9); t *= 10) xTicks.add(t);
             this.joins = new ArrayList<>();
-            for (Join j : joins) {
-                if (j.share() <= xLo || j.share() > xHi) continue;
-                this.joins.add(j);
+            for (Join j : joins) if (j.share() > xLo && j.share() <= xHi) this.joins.add(j);
+            String now = shapeOf();
+            boolean built = !now.equals(shape);
+            if (built) {
+                shape = now;
+                build();
+            }
+            fill(money, share);
+            String key = layoutKey();
+            if (built || !key.equals(laidOut)) {
+                laidOut = key;
+                requestLayout();
+            }
+        }
+
+        /** What the parts depend on: how many gridlines, ticks and joins there are, and whether there is a dot. */
+        private String shapeOf() {
+            return yTicks.size() + "," + xTicks.size() + "," + joins.size() + "," + (dot != null);
+        }
+
+        /** Every figure and word the layout reads, in one string: laid out again only when it differs. */
+        private String layoutKey() {
+            StringBuilder s = new StringBuilder().append(xLo).append(',').append(xHi).append(',').append(yHi).append(';');
+            for (int i = 0; i < xs.length; i++) s.append(xs[i]).append(',').append(net[i]).append(',').append(world[i]).append(';');
+            for (double t : yTicks) s.append(t).append(',');
+            for (double t : xTicks) s.append(t).append(',');
+            for (Join j : joins) s.append(j.share()).append(',').append(j.name()).append(';');
+            if (dot != null) s.append(dot.share()).append(',').append(dot.value()).append(',').append(dot.words());
+            return s.toString();
+        }
+
+        /** The parts made afresh, in the order they are drawn. */
+        private void build() {
+            yGrid.clear();
+            xGrid.clear();
+            yLabels.clear();
+            xLabels.clear();
+            joinLabels.clear();
+            joinLines.clear();
+            joinMarks.clear();
+            Color faint = Color.web(Palette.EDGE), text = Color.web(Palette.TEXT_MUTED);
+            for (int i = 0; i < yTicks.size(); i++) {
+                Line l = new Line();
+                l.setStroke(faint);
+                yGrid.add(l);
+                yLabels.add(small());
+            }
+            for (int i = 0; i < xTicks.size(); i++) {
+                Line l = new Line();
+                l.setStroke(faint);
+                xGrid.add(l);
+                xLabels.add(small());
+            }
+            for (int i = 0; i < joins.size(); i++) {
                 Line l = new Line();
                 l.setStroke(text);
                 l.getStrokeDashArray().setAll(2.0, 3.0);
@@ -941,23 +1047,33 @@ final class PartnersPage {
                 Polygon tri = new Polygon(-4.0, 0.0, 4.0, 0.0, 0.0, -6.0);
                 tri.setFill(text);
                 joinMarks.add(tri);
-                if (joinLabels.size() < 3) joinLabels.add(small(j.name(), Palette.TEXT_LABEL));
+                if (joinLabels.size() < 3) joinLabels.add(small());
             }
-            getChildren().addAll(yGrid);
-            getChildren().addAll(xGrid);
-            getChildren().addAll(axis, worldLine, netLine);
-            getChildren().addAll(joinLines);
-            getChildren().addAll(joinMarks);
-            getChildren().addAll(yLabels);
-            getChildren().addAll(xLabels);
-            getChildren().addAll(joinLabels);
-            getChildren().addAll(xCaption, yCaption);
-            if (dot != null) getChildren().addAll(drop, mark, dotLabel);
+            List<Node> all = new ArrayList<>();
+            all.addAll(yGrid);
+            all.addAll(xGrid);
+            all.addAll(List.of(axis, worldLine, netLine));
+            all.addAll(joinLines);
+            all.addAll(joinMarks);
+            all.addAll(yLabels);
+            all.addAll(xLabels);
+            all.addAll(joinLabels);
+            all.addAll(List.of(xCaption, yCaption));
+            if (dot != null) all.addAll(List.of(drop, mark, dotLabel));
+            getChildren().setAll(all);
         }
 
-        private static Label small(String text, String tone) {
-            Label l = new Label(text);
-            l.setStyle(Palette.words(Palette.SIZE_CAPTION, tone));
+        /** What the labels say now: the axes' ticks, the first three joins' names and the dot's words. */
+        private void fill(DoubleFunction<String> money, DoubleFunction<String> share) {
+            for (int i = 0; i < yTicks.size(); i++) yLabels.get(i).setText(money.apply(yTicks.get(i)));
+            for (int i = 0; i < xTicks.size(); i++) xLabels.get(i).setText(share.apply(xTicks.get(i)));
+            for (int i = 0; i < joinLabels.size(); i++) joinLabels.get(i).setText(joins.get(i).name());
+            dotLabel.setText(dot == null ? "" : dot.words());
+        }
+
+        private static Label small() {
+            Label l = new Label();
+            l.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
             return l;
         }
 
@@ -1011,13 +1127,17 @@ final class PartnersPage {
             axis.setEndX(plotR);
             axis.setStartY(plotB);
             axis.setEndY(plotB);
-            netLine.getPoints().clear();
-            worldLine.getPoints().clear();
+            // Set in one call each, not cleared and added to (KP6).
+            List<Double> netPoints = new ArrayList<>(), worldPoints = new ArrayList<>();
             for (int i = 0; i < xs.length; i++) {
                 double x = px(xs[i], plotL, plotW);
-                netLine.getPoints().addAll(x, py(net[i], plotT, plotH));
-                worldLine.getPoints().addAll(x, py(world[i], plotT, plotH));
+                netPoints.add(x);
+                netPoints.add(py(net[i], plotT, plotH));
+                worldPoints.add(x);
+                worldPoints.add(py(world[i], plotT, plotH));
             }
+            netLine.getPoints().setAll(netPoints);
+            worldLine.getPoints().setAll(worldPoints);
             for (int i = 0; i < joins.size(); i++) {
                 double x = px(joins.get(i).share(), plotL, plotW);
                 Line l = joinLines.get(i);

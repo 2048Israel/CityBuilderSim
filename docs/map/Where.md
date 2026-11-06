@@ -20,6 +20,8 @@
 
 **Uses:** [SourceTree](SourceTree.md) (4), [JavaScan](JavaScan.md) (3)
 
+**Used by (1):** [KeptCheck](KeptCheck.md)
+
 ## Methods, in file order
 
 | line | len | member | says |

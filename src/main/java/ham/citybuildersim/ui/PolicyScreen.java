@@ -95,6 +95,14 @@ final class PolicyScreen {
         this.zoning = new ZoningScreen(this, ui);
     }
 
+    /** The nodes this screen made at its last draw, handed back to it at the next - zoning's pages too, which draw from it (KP6; study UP4, docs/studies/spec-screens-in-place.md). */
+    final Kept.Pool pool = new Kept.Pool();
+
+    /** Every node is made new at the next draw: another city opened (UserInterface.anotherCity()). */
+    void forget() {
+        pool.forget();
+    }
+
     /* =====================================================================
        POLICY (0.7.36): THE FRAME
 
@@ -202,8 +210,17 @@ final class PolicyScreen {
      * door sets policyArea and policyPage first.
      */
     void showPolicyMenu() {
-        ui.clearMenu("showPolicyMenu", () -> showPolicyMenu());
+        // Kept (KP6): the page is drawn over last time's nodes when the same screen is redrawn; the rail's own tab arrives afresh.
+        ui.keepMenu("showPolicyMenu", () -> showPolicyMenu(), pool, this::drawPage);
+    }
 
+    /**
+     * The page itself, put in the window through setPage(): what keepMenu runs as a kept draw from the pool, and what
+     * KeptBench runs kept and built new for KeptCheck - the hub, or the area and page `policyArea` and `policyPage`
+     * name (zoning's too). What the show method did before the draw (the register of dials cleared, the area and page
+     * known) is done here, in the draw, so the bench's draw has it too.
+     */
+    void drawPage() {
         // Redrawn from scratch every pass, so the register of what is on
         // screen is too - a lever from the page before is not one to apply.
         policyLevers.clear();
@@ -219,49 +236,61 @@ final class PolicyScreen {
             if (!page) policyPage = pages[0];
         }
 
-        VBox page = widePage();
-        if (policyArea == null) {
-            hubPage(page);
-        } else {
-            switch (policyArea) {
-                case WAGES -> floorPage(page);
-                case MONEY -> {
-                    if ("Currency reform".equals(policyPage)) reformPage(page);
-                    else if (CURRENCY_PAGE.equals(policyPage)) currencyPage(page);
-                    else                                      ratePage(page);
-                }
-                case ZONING -> zoning.page(page);
-                case PROMISES -> {
-                    switch (policyPage) {
-                        case "Schools"     -> schoolsPage(page);
-                        case "Subsidies"   -> subsidyPage(page);
-                        case "Out of work" -> outOfWorkPage(page);
-                        case "Food"        -> foodPage(page);
-                        case "Health"      -> healthPage(page);
-                        default            -> pensionPage(page);
+        // Kept (KP6): the whole page - its frame, its scroller, its page and its tray - is a scope keyed by the area and the page,
+        // so another page or area shares no node with the last, and opens at its top; a month's redraw of the same page keeps
+        // every node and the scroll.
+        Kept.scope(policyArea == null ? "hub" : policyArea + "/" + policyPage, () -> {
+            // ...the page itself in a scope of its own, so what its sections make shifts none of the frame's nodes.
+            VBox page = Kept.scope("page", () -> {
+                VBox p = widePage();
+                if (policyArea == null) {
+                    hubPage(p);
+                } else {
+                    switch (policyArea) {
+                        case WAGES -> floorPage(p);
+                        case MONEY -> {
+                            if ("Currency reform".equals(policyPage)) reformPage(p);
+                            else if (CURRENCY_PAGE.equals(policyPage)) currencyPage(p);
+                            else                                      ratePage(p);
+                        }
+                        case ZONING -> zoning.page(p);
+                        case PROMISES -> {
+                            switch (policyPage) {
+                                case "Schools"     -> schoolsPage(p);
+                                case "Subsidies"   -> subsidyPage(p);
+                                case "Out of work" -> outOfWorkPage(p);
+                                case "Food"        -> foodPage(p);
+                                case "Health"      -> healthPage(p);
+                                default            -> pensionPage(p);
+                            }
+                        }
+                        default -> {
+                            switch (policyPage) {
+                                case "Profit", "Sales", "Wage", "Property" -> taxPage(p, policyPage);
+                                case "Fuel" -> fuelPage(p);
+                                case PORT_DUES_PAGE -> portDuesPage(p);
+                                default -> everythingPage(p);
+                            }
+                        }
                     }
                 }
-                default -> {
-                    switch (policyPage) {
-                        case "Profit", "Sales", "Wage", "Property" -> taxPage(page, policyPage);
-                        case "Fuel" -> fuelPage(page);
-                        case PORT_DUES_PAGE -> portDuesPage(page);
-                        default -> everythingPage(page);
-                    }
-                }
-            }
-        }
+                return p;
+            });
 
-        VBox frame = new VBox(Palette.GAP, head());
-        String[] pages = pagesOf(policyArea);
-        // A strip of one tab is a tab that does nothing, so Wages has none; Zoning's adds a tab a zone.
-        if (ZONING.equals(policyArea)) {
-            frame.getChildren().add(zoning.tabs());
-        } else if (pages.length > 1) {
-            frame.getChildren().add(chipStrip(pages, iconsOf(policyArea), policyPage, Palette.SIZE_LABEL, this::openPage));
-        }
-        frame.getChildren().add(ZONING.equals(policyArea) ? zoning.vitals() : vitals());
-        frameOver(frame, page, ZONING.equals(policyArea) ? zoning.tray() : tray());
+            VBox frame = Kept.column(Palette.GAP, Kept.scope("head", this::head));
+            String[] pages = pagesOf(policyArea);
+            // A strip of one tab is a tab that does nothing, so Wages has none; Zoning's adds a tab a zone.
+            if (ZONING.equals(policyArea)) {
+                frame.getChildren().add(Kept.scope("tabs", () -> zoning.tabs()));
+            } else if (pages.length > 1) {
+                frame.getChildren().add(Kept.scope("tabs",
+                        () -> chipStrip(pages, iconsOf(policyArea), policyPage, Palette.SIZE_LABEL, this::openPage)));
+            }
+            frame.getChildren().add(Kept.scope("vitals", () -> ZONING.equals(policyArea) ? zoning.vitals() : vitals()));
+            // ...the tray last, after the page, since it names the dials the page registered.
+            Region tray = Kept.scope("tray", () -> ZONING.equals(policyArea) ? zoning.tray() : tray());
+            frameOver(frame, page, tray);
+        });
     }
 
     /** The hub, at its top. */
@@ -269,6 +298,7 @@ final class PolicyScreen {
         policyArea = null;
         dropProposal();
         ui.innerScrollAt.remove("showPolicyMenu:body");
+        toTop();
         showPolicyMenu();
     }
 
@@ -278,6 +308,7 @@ final class PolicyScreen {
         policyPage = page == null ? pagesOf(area)[0] : page;
         dropProposal();
         ui.innerScrollAt.remove("showPolicyMenu:body");
+        toTop();
         showPolicyMenu();
     }
 
@@ -287,29 +318,71 @@ final class PolicyScreen {
     /** A page of the open area: a tab. A proposal is about the page it was made on, so it goes. */
     void openPage(String page) { open(policyArea == null ? TAXES : policyArea, page); }
 
-    /** The fixed frame over a scrolling page and, when one is given, the tray under it: the page as tall as what is left between them (BankScreen's frame, with a foot). */
+    /**
+     * The page on show scrolled to its top (KP6): a door or a chip draws its page from the top, and another page is a scope
+     * of its own with a scroller of its own, which opens there; but the page a door names may be the one already on show,
+     * whose kept scroller stays where the player left it unless it is put back.
+     */
+    private void toTop() {
+        if (body != null && body.getVvalue() != 0) body.setVvalue(0);
+    }
+
+    /**
+     * The fixed frame over a scrolling page and, when one is given, the tray under it: the page as tall as what is left between them (BankScreen's frame, with a foot).
+     * Kept (KP6): the bindings are made once per scroller, since a kept page is handed back each draw with the scroller and frame it is
+     * already bound to; the tray comes and goes, so the scroller's height reads the latest tray's height through a property of its own.
+     */
     private void frameOver(VBox frame, VBox page, Region tray) {
         frame.setMaxWidth(PAGE_WIDE);
         frame.setFillWidth(true);
         frame.setPadding(new javafx.geometry.Insets(0, 18, 4, 18));
         body = ui.scrolled(page, FRAME_CHROME);
-        body.prefHeightProperty().unbind();
-        javafx.beans.value.ObservableValue<?> trayHeight = tray == null ? frame.heightProperty() : tray.heightProperty();
-        body.prefHeightProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
-                () -> Math.max(220, ui.menuScroller.getHeight()
-                        - (frame.getHeight() > 0 ? frame.getHeight() + STAGE_REST : FRAME_CHROME)
-                        - (tray == null ? 0 : (tray.getHeight() > 0 ? tray.getHeight() : TRAY_CHROME) + 10)),
-                ui.menuScroller.heightProperty(), frame.heightProperty(), trayHeight));
         final javafx.scene.control.ScrollPane scroller = body;
-        page.prefWidthProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
-                () -> Math.min(PAGE_WIDE, Math.max(320, scroller.getViewportBounds().getWidth())),
-                scroller.viewportBoundsProperty()));
-        ui.rootMenu.getChildren().addAll(frame, body);
+        // The height of the tray on show, or -1 with none: bound to the tray's own height while there is one.
+        javafx.beans.property.DoubleProperty trayHeight;
+        if (scroller.getProperties().get(BOUND_TO_FRAME) != frame) {
+            final javafx.beans.property.DoubleProperty height = new javafx.beans.property.SimpleDoubleProperty(-1);
+            trayHeight = height;
+            scroller.getProperties().put(TRAY_HEIGHT, height);
+            scroller.getProperties().remove(TRAY_NODE);
+            scroller.prefHeightProperty().unbind();
+            scroller.prefHeightProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
+                    () -> Math.max(220, ui.menuScroller.getHeight()
+                            - (frame.getHeight() > 0 ? frame.getHeight() + STAGE_REST : FRAME_CHROME)
+                            - (height.get() < 0 ? 0 : (height.get() > 0 ? height.get() : TRAY_CHROME) + 10)),
+                    ui.menuScroller.heightProperty(), frame.heightProperty(), height));
+            scroller.getProperties().put(BOUND_TO_FRAME, frame);
+        } else {
+            trayHeight = (javafx.beans.property.DoubleProperty) scroller.getProperties().get(TRAY_HEIGHT);
+        }
+        Object shown = tray == null ? NO_TRAY : tray;
+        if (scroller.getProperties().get(TRAY_NODE) != shown) {
+            trayHeight.unbind();
+            if (tray == null) trayHeight.set(-1);
+            else trayHeight.bind(tray.heightProperty());
+            scroller.getProperties().put(TRAY_NODE, shown);
+        }
+        if (page.getProperties().get(BOUND_TO_SCROLLER) != scroller) {
+            page.prefWidthProperty().unbind();
+            page.prefWidthProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
+                    () -> Math.min(PAGE_WIDE, Math.max(320, scroller.getViewportBounds().getWidth())),
+                    scroller.viewportBoundsProperty()));
+            page.getProperties().put(BOUND_TO_SCROLLER, scroller);
+        }
         if (tray != null) {
             tray.setMaxWidth(PAGE_WIDE);
-            ui.rootMenu.getChildren().add(tray);
+            ui.setPage(frame, scroller, tray);
+        } else {
+            ui.setPage(frame, scroller);
         }
     }
+
+    /** The keys in a kept scroller's properties for the frame its height is bound to, the tray on show and its height, and in a kept page's for the scroller its width is bound to (frameOver()). */
+    private static final String BOUND_TO_FRAME = "policy.frame", BOUND_TO_SCROLLER = "policy.scroller",
+            TRAY_NODE = "policy.tray", TRAY_HEIGHT = "policy.trayHeight";
+
+    /** Stands in the scroller's properties for "no tray" (a properties map takes no null). */
+    private static final Object NO_TRAY = new Object();
 
     /** The tab's (i): the landing's lead, and the banner's line that every dial is a proposal (P1). */
     static final String LEAD_INFO = "Every number the city sets for itself, and what each one is doing this month. "
@@ -706,11 +779,12 @@ final class PolicyScreen {
         if (!batches) return null;
         List<Node> chips = new ArrayList<>();
         for (TrayItem item : trayItems()) {
-            chips.add(stagedChip(item.words(), () -> {
+            // Kept (KP6): a staged change comes and goes, so its chip is a scope of its own, keyed by the lever.
+            chips.add(Kept.scope("staged:" + item.key(), () -> stagedChip(item.words(), () -> {
                 unstage(item.key());
                 if ("grantBasis".equals(item.key())) unstage("grantAmount");
                 showPolicyMenu();
-            }));
+            })));
         }
         if (chips.isEmpty()) return null;
         int count = chips.size();
@@ -816,7 +890,7 @@ final class PolicyScreen {
 
     /** Words that wrap, at a size, in a colour. */
     static Label words(String text, double size, String tone) {
-        Label l = new Label(text);
+        Label l = Kept.label(text);
         l.setWrapText(true);
         l.setMinWidth(0);
         l.setStyle(BuildScreen.wordsAt(size, tone));
@@ -825,7 +899,7 @@ final class PolicyScreen {
 
     /** A figure that is never cut, at a size, in a colour. */
     static Label figure(String text, double size, String tone) {
-        Label l = new Label(text);
+        Label l = Kept.label(text);
         l.setMinWidth(Region.USE_PREF_SIZE);
         l.setStyle(BuildScreen.figureAt(size, tone));
         return l;
@@ -844,17 +918,20 @@ final class PolicyScreen {
 
     /** A card's head: its icon in a square tinted in its colour, its title in capitals, an (i) when `info` is not null, and at its right `right` (null: nothing) - BankScreen's. */
     static HBox cardHead(String svg, String colour, String title, String info, Node right) {
-        Label t = new Label(title);
+        Label t = Kept.label(title);
         t.setWrapText(true);
         t.setMinWidth(0);
         t.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
-        HBox row = new HBox(Palette.GAP);
-        if (svg != null) row.getChildren().add(iconSquare(svg, colour, 28, 15));
+        HBox row = Kept.row(Palette.GAP);
+        if (svg != null) row.getChildren().add(Kept.scope("icon", () -> iconSquare(svg, colour, 28, 15)));
         row.getChildren().add(t);
-        if (info != null) row.getChildren().add(infoButton(info, true));
+        if (info != null) row.getChildren().add(Kept.scope("info", () -> infoButton(info, true)));
         if (right != null) {
-            Region gap = new Region();
-            HBox.setHgrow(gap, Priority.ALWAYS);
+            Region gap = Kept.scope("gap", () -> {
+                Region g = Kept.region();
+                HBox.setHgrow(g, Priority.ALWAYS);
+                return g;
+            });
             row.getChildren().addAll(gap, right);
         }
         row.setAlignment(Pos.CENTER_LEFT);
@@ -863,7 +940,7 @@ final class PolicyScreen {
 
     /** A card on Build's ground: RAISED, radius 8, a 1 px edge, padding 12. */
     static VBox card(Node... rows) {
-        VBox c = new VBox(8);
+        VBox c = Kept.column(8);
         for (Node n : rows) if (n != null) c.getChildren().add(n);
         c.setMaxWidth(Double.MAX_VALUE);
         c.setStyle(cardStyle(Palette.EDGE));
@@ -879,9 +956,12 @@ final class PolicyScreen {
     /** A card that opens somewhere: the accent edge under the pointer, and a click goes. A door inside it opens itself. */
     static VBox doorCard(VBox c, Runnable go) {
         if (go == null) return c;
+        // Kept (KP6): the card's style is set whole by card() just before, so what it is now is this draw's; the look the
+        // pointer calls for is chosen from isHover() where it is set, since a kept card under a still pointer hears no mouse-entered.
         String rest = c.getStyle() + " -fx-cursor: hand;";
-        c.setStyle(rest);
-        c.setOnMouseEntered(e -> c.setStyle(rest.replace(Palette.EDGE + ";", Palette.ACCENT + ";")));
+        String lit = rest.replace(Palette.EDGE + ";", Palette.ACCENT + ";");
+        c.setStyle(c.isHover() ? lit : rest);
+        c.setOnMouseEntered(e -> c.setStyle(lit));
         c.setOnMouseExited(e -> c.setStyle(rest));
         c.setOnMouseClicked(e -> go.run());
         return c;
@@ -893,7 +973,7 @@ final class PolicyScreen {
         HBox.setHgrow(what, Priority.ALWAYS);
         what.setMaxWidth(Double.MAX_VALUE);
         Label v = figure(value, Palette.SIZE_LABEL + 1, tone == null ? Palette.TEXT_HEAD : tone);
-        HBox row = new HBox(Palette.GAP, what, v);
+        HBox row = Kept.row(Palette.GAP, what, v);
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
     }
@@ -901,7 +981,7 @@ final class PolicyScreen {
     /** ...with an (i) after its words. */
     static HBox cardLine(String label, String value, String tone, String info) {
         HBox row = cardLine(label, value, tone);
-        if (info != null) row.getChildren().add(1, infoButton(info, true));
+        if (info != null) row.getChildren().add(1, Kept.scope("info", () -> infoButton(info, true)));
         return row;
     }
 
@@ -933,16 +1013,17 @@ final class PolicyScreen {
 
     /** A shut lever's card, on a warning edge: one or two lines of words, the second muted (null: none). */
     static VBox shutBox(String first, String second) {
-        VBox c = card(words(first, Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD), second == null ? null : muted(second));
+        VBox c = card(words(first, Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD),
+                second == null ? null : Kept.scope("second", () -> muted(second)));
         c.setStyle(cardStyle(Palette.WARN));
         return c;
     }
 
-    /** A shut lever's card in this city (its own opening month, which a find may have moved), or null while it is open. */
+    /** A shut lever's card in this city (its own opening month, which a find may have moved), or null while it is open: a scope of its own, since it comes and goes (KP6). */
     VBox shutCard(PolicyDates.Lever lever) {
         if (!isShut(lever)) return null;
         int opens = ui.game.leverOpeningMonth(lever);
-        return shutBox(PolicyDates.shutLine(lever, opens), PolicyDates.shutWhy(lever, opens));
+        return Kept.scope("shut:" + lever, () -> shutBox(PolicyDates.shutLine(lever, opens), PolicyDates.shutWhy(lever, opens)));
     }
 
     /** A shut lever's card, if it is shut, as the next child of a page. */
@@ -955,7 +1036,7 @@ final class PolicyScreen {
     Node withShutCard(PolicyDates.Lever lever, VBox dial) {
         VBox shut = shutCard(lever);
         if (shut == null) return dial;
-        VBox both = new VBox(TILE_GAP, shut, dial);
+        VBox both = Kept.column(TILE_GAP, shut, dial);
         both.setMinWidth(0);
         return both;
     }
@@ -969,14 +1050,21 @@ final class PolicyScreen {
 
     /** A row of chips, wrapping. */
     static FlowPane chips(Node... cs) {
-        FlowPane row = new FlowPane(8, 6);
+        FlowPane row = Kept.flow(8, 6);
         for (Node n : cs) if (n != null) row.getChildren().add(n);
+        return row;
+    }
+
+    /** A wrapping row with these gaps and these children (the kept FlowPane takes none in its constructor). */
+    static FlowPane flowOf(double hgap, double vgap, Node... kids) {
+        FlowPane row = Kept.flow(hgap, vgap);
+        row.getChildren().setAll(kids);
         return row;
     }
 
     /** A statement column, for a fold: the old rows at their old width. */
     static VBox column(Node... rows) {
-        VBox c = new VBox(0);
+        VBox c = Kept.column(0);
         for (Node n : rows) if (n != null) c.getChildren().add(n);
         c.setMaxWidth(STATEMENT);
         return c;
@@ -984,7 +1072,8 @@ final class PolicyScreen {
 
     /** A fold kept on this screen: "details ▸ caption". */
     VBox fold(String key, String caption, java.util.function.Supplier<Node> inside) {
-        return details(key, caption, openLines, this::showPolicyMenu, inside);
+        // Kept (KP6): a fold is a scope of its own, keyed by its key, so what an open one holds shifts none of the page's nodes.
+        return Kept.scope("fold:" + key, () -> details(key, caption, openLines, this::showPolicyMenu, inside));
     }
 
     /** Cards side by side in equal columns, each as tall as the tallest. */
@@ -1001,16 +1090,30 @@ final class PolicyScreen {
         return g;
     }
 
-    /** Two cards side by side, the first `share` of the width (the floor's dial and the city's payroll). */
+    /** The key in a node's properties for the box and share its width is bound to (split()). */
+    private static final String SPLIT_OF = "policy.split";
+
+    /**
+     * Two cards side by side, the first `share` of the width (the floor's dial and the city's payroll). Kept (KP6): each card's
+     * width is bound to the box once (a marker in its properties), since a kept card is handed back to the same box each draw.
+     */
     static HBox split(Region first, Region second, double share) {
-        HBox both = new HBox(TILE_GAP, first, second);
-        first.prefWidthProperty().bind(both.widthProperty().subtract(TILE_GAP).multiply(share));
-        second.prefWidthProperty().bind(both.widthProperty().subtract(TILE_GAP).multiply(1 - share));
+        HBox both = Kept.row(TILE_GAP, first, second);
+        splitWidth(first, both, share);
+        splitWidth(second, both, 1 - share);
         first.setMinWidth(0);
         second.setMinWidth(0);
         HBox.setHgrow(second, Priority.ALWAYS);
         both.setFillHeight(true);
         return both;
+    }
+
+    /** A card's preferred width bound to a share of the box it sits in, where it is not already. */
+    private static void splitWidth(Region card, HBox both, double share) {
+        Object want = Map.entry(both, share);
+        if (want.equals(card.getProperties().get(SPLIT_OF))) return;
+        card.prefWidthProperty().bind(both.widthProperty().subtract(TILE_GAP).multiply(share));
+        card.getProperties().put(SPLIT_OF, want);
     }
 
     /** The last `n` months of a History series, for a sparkline - BankScreen's. */
@@ -1066,25 +1169,34 @@ final class PolicyScreen {
        ===================================================================== */
 
     void hubPage(VBox page) {
-        page.getChildren().add(row(taxesCard(), wagesCard(), moneyCard(), promisesCard(), zoning.areaCard()));
+        // Kept (KP6): each area card is a scope of its own; the alerts that come and go a scope each, keyed by their heading; the
+        // decisions lately made a scope each, keyed by their words.
+        page.getChildren().add(row(Kept.scope("taxes", this::taxesCard), Kept.scope("wages", this::wagesCard),
+                Kept.scope("money", this::moneyCard), Kept.scope("promises", this::promisesCard),
+                Kept.scope("zoning", zoning::areaCard)));
 
-        page.getChildren().add(sectionHead("WHAT IS BITING", null, quiet("the dials that are forcing someone's hand")));
+        page.getChildren().add(Kept.scope("biting", () -> sectionHead("WHAT IS BITING", null, quiet("the dials that are forcing someone's hand"))));
         List<Flag> flags = policyFlags();
         if (flags.isEmpty()) {
-            page.getChildren().add(ringCard(null, 1, Palette.GOOD, "Nothing is binding", NOTHING_BINDING_INFO,
-                    firstWords(NOTHING_BINDING_INFO), null, Palette.TEXT_MUTED, 56, false, null, null, null));
+            page.getChildren().add(Kept.scope("nothing", () -> ringCard(null, 1, Palette.GOOD, "Nothing is binding", NOTHING_BINDING_INFO,
+                    firstWords(NOTHING_BINDING_INFO), null, Palette.TEXT_MUTED, 56, false, null, null, null)));
         } else {
-            GridPane grid = equalColumns(2, TILE_GAP);
-            int month = ui.game.getMonth();
-            for (int i = 0; i < flags.size(); i++) {
-                Flag f = flags.get(i);
-                int seen = flagSeen.computeIfAbsent(f.heading(), k -> month);
-                VBox c = flagCard(f, seen == month);
-                GridPane.setFillHeight(c, true);
-                c.setMaxHeight(Double.MAX_VALUE);
-                grid.add(c, i % 2, i / 2);
-            }
-            page.getChildren().add(grid);
+            page.getChildren().add(Kept.scope("flags", () -> {
+                GridPane grid = equalColumns(2, TILE_GAP);
+                int month = ui.game.getMonth();
+                for (int i = 0; i < flags.size(); i++) {
+                    Flag f = flags.get(i);
+                    int seen = flagSeen.computeIfAbsent(f.heading(), k -> month);
+                    final int at = i;
+                    Kept.scope("flag:" + f.heading(), () -> {
+                        VBox c = flagCard(f, seen == month);
+                        GridPane.setFillHeight(c, true);
+                        c.setMaxHeight(Double.MAX_VALUE);
+                        grid.add(c, at % 2, at / 2);
+                    });
+                }
+                return grid;
+            }));
         }
         // A flag that stopped biting is forgotten, so it is NEW again if it comes back.
         java.util.Set<String> now = new HashSet<>();
@@ -1092,13 +1204,15 @@ final class PolicyScreen {
         flagSeen.keySet().retainAll(now);
 
         List<DecisionLog.Entry> recent = recentDecisions(5);
-        page.getChildren().add(sectionHead("RECENT DECISIONS", null,
-                doorPill("History", Icons.REPORTS, Palette.ACCENT, () -> ui.historyScreen.openOn("revenue", "surplus"))));
+        page.getChildren().add(Kept.scope("decisions", () -> sectionHead("RECENT DECISIONS", null,
+                doorPill("History", Icons.REPORTS, Palette.ACCENT, () -> ui.historyScreen.openOn("revenue", "surplus")))));
         if (recent.isEmpty()) {
-            page.getChildren().add(muted("No tax, promise, central bank, currency or zoning decision yet: every dial is as the city was founded."));
+            page.getChildren().add(Kept.scope("none", () -> muted("No tax, promise, central bank, currency or zoning decision yet: every dial is as the city was founded.")));
         } else {
-            FlowPane row = new FlowPane(8, 6);
-            for (DecisionLog.Entry e : recent) row.getChildren().add(chip(decisionWords(e), Palette.TEXT_LABEL));
+            FlowPane row = Kept.flow(8, 6);
+            for (DecisionLog.Entry e : recent) {
+                row.getChildren().add(Kept.scope("decision:" + decisionWords(e), () -> chip(decisionWords(e), Palette.TEXT_LABEL)));
+            }
             page.getChildren().add(row);
         }
     }
@@ -1140,12 +1254,12 @@ final class PolicyScreen {
 
     /** One area card: its icon and title with "›", its figure, a small picture, one line and a foot - the whole a door. */
     VBox areaCard(String svg, String title, String figure, Node picture, String line, String foot, Runnable go) {
-        Label arrow = new Label("›");
+        Label arrow = Kept.label("›");
         arrow.setStyle(Palette.strong(Palette.SIZE_HEADING + 2, Palette.TEXT_MUTED));
         VBox c = card(cardHead(svg, Palette.MONEY, title, null, arrow),
                 figure(figure, Palette.SIZE_LEAD, Palette.TEXT_HEAD), picture,
                 words(line, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL),
-                foot == null ? null : muted(foot));
+                foot == null ? null : Kept.scope("foot", () -> muted(foot)));
         return doorCard(c, go);
     }
 
@@ -1195,7 +1309,7 @@ final class PolicyScreen {
         ticks.add(new Tick(city, Palette.TEXT_LABEL, 2, null, "the city borrows at " + pct2(city)));
         if (Double.isFinite(rule)) ticks.add(new Tick(rule, Palette.TEXT_MUTED, 2, null, "the rule says " + pct2(rule)));
         ticks.add(new Tick(dial, Palette.MONEY, 3, null, "the dial " + pct2(dial)));
-        VBox picture = new VBox(3, segmentBar(List.of(), top, ticks, 0, 6),
+        VBox picture = Kept.column(3, segmentBar(List.of(), top, ticks, 0, 6),
                 muted("dial " + pct2(dial) + (Double.isFinite(rule) ? " · rule " + pct2(rule) : "")
                         + " · city " + pct2(city) + " · " + worldName() + " " + pct2(world)));
         // ...and the anchor (0.7.45): what people expect, and how far they trust the bank.
@@ -1455,14 +1569,14 @@ final class PolicyScreen {
 
     /** A biting lever as a card: its alert in its verdict's colour, its heading (NEW the month it is first seen), its first sentence with the rest behind an (i), and a door to where it is undone. */
     VBox flagCard(Flag f, boolean isNew) {
-        Label t = new Label(f.heading());
+        Label t = Kept.label(f.heading());
         t.setWrapText(true);
         t.setMinWidth(0);
         t.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
-        HBox head = new HBox(Palette.GAP, iconSquare(Icons.ALERT, f.tone(), 28, 15), t);
-        if (isNew) head.getChildren().add(tag("NEW", Palette.BUILDING));
+        HBox head = Kept.row(Palette.GAP, iconSquare(Icons.ALERT, f.tone(), 28, 15), t);
+        if (isNew) head.getChildren().add(Kept.scope("new", () -> tag("NEW", Palette.BUILDING)));
         head.setAlignment(Pos.CENTER_LEFT);
-        VBox c = new VBox(8, head, noteLine(firstWords(f.body()), f.body(), 560),
+        VBox c = Kept.column(8, head, noteLine(firstWords(f.body()), f.body(), 560),
                 doorPill(f.door(), areaIcon(f.area()), Palette.MONEY, () -> open(f.area(), f.page())));
         c.setMaxWidth(Double.MAX_VALUE);
         c.setStyle("-fx-padding: 12 14 12 14; -fx-background-color: " + Palette.RAISED + ";"
@@ -1524,7 +1638,8 @@ final class PolicyScreen {
         double annual = annualGdp(na);
         String share = annual > 0 ? String.format("%.1f%% %s", all * 12 / annual * 100, ofAnnualGdp(na))
                                   : "no output to compare";
-        page.getChildren().add(sectionHead("THE TAX TAKE", TAKE_INFO, quiet(money(all) + " last month · " + share)));
+        final double total = all;
+        page.getChildren().add(sectionHead("THE TAX TAKE", TAKE_INFO, quiet(money(total) + " last month · " + share)));
         page.getChildren().add(takeCard(booked, live));
 
         double[][] history = taxHistory();
@@ -1535,16 +1650,21 @@ final class PolicyScreen {
                 pct2(live.getPropertyTaxRate()) + " a year"};
         String[] infos = {PROFIT_INFO + " " + LOSS_INFO, SALES_INFO, WAGE_INFO, PROPERTY_INFO};
         Node[] cards = new Node[4];
-        for (int i = 0; i < 4; i++) cards[i] = taxCard(i, booked[i], all, rates[i], history[i], stop[i], infos[i]);
+        for (int i = 0; i < 4; i++) {
+            final int at = i;
+            cards[i] = Kept.scope("tax:" + TAX_NAMES[i], () -> taxCard(at, booked[at], total, rates[at], history[at], stop[at], infos[at]));
+        }
         page.getChildren().add(row(cards));
 
-        page.getChildren().add(everyTaxCard(live));
+        page.getChildren().add(Kept.scope(EVERY_TAX, () -> everyTaxCard(live)));
         // The dial stays open: it sets only the open taxes (TaxPolicy does that). One line names the income taxes still shut and when each opens.
         List<PolicyDates.Lever> shutTaxes = new ArrayList<>();
         for (PolicyDates.Lever l : List.of(PolicyDates.Lever.PROFIT_TAX, PolicyDates.Lever.WAGE_TAX, PolicyDates.Lever.SALES_TAX)) {
             if (isShut(l)) shutTaxes.add(l);
         }
-        if (!shutTaxes.isEmpty()) page.getChildren().add(shutBox(PolicyDates.stillShut(shutTaxes, ui.game::leverOpeningMonth), null));
+        if (!shutTaxes.isEmpty()) {
+            page.getChildren().add(Kept.scope("shutTaxes", () -> shutBox(PolicyDates.stillShut(shutTaxes, ui.game::leverOpeningMonth), null)));
+        }
     }
 
     /** THE TAX TAKE: last month's four as one bar, a click on a part its page; and once anything is staged, the four at the staged rates, a moved part a ghost with its move over it. */
@@ -1573,9 +1693,9 @@ final class PolicyScreen {
                         TAX_NAMES[i] + " tax at the staged rates " + money(b[i])
                                 + (moved ? " (" + moneyMove(b[i] - a[i]) + ")" : ""), null));
             }
-            c.getChildren().addAll(muted("at the staged rates"), segmentBar(next, scale, List.of(), 0, 18));
+            c.getChildren().addAll(Kept.scope("staged", () -> List.<Node>of(muted("at the staged rates"), segmentBar(next, scale, List.of(), 0, 18))));
         }
-        FlowPane key = new FlowPane(16, 4);
+        FlowPane key = Kept.flow(16, 4);
         for (int i = 0; i < 4; i++) {
             key.getChildren().add(keySwatch(TAX_RAMP[i], TAX_NAMES[i] + " " + money(booked[i])
                     + (all > 0 ? " · " + pct0(booked[i] / all) : "")));
@@ -1598,14 +1718,14 @@ final class PolicyScreen {
 
     /** One tax as a card: its icon and name, its rate, what it raised and its share, its ten years, a chip at its legal stop - the whole a door to its page. */
     VBox taxCard(int i, double raised, double all, String rate, double[] history, boolean atStop, String info) {
-        Label arrow = new Label("›");
+        Label arrow = Kept.label("›");
         arrow.setStyle(Palette.strong(Palette.SIZE_HEADING + 2, Palette.TEXT_MUTED));
         VBox c = card(cardHead(TAX_ICONS[i + 1], Palette.MONEY, TAX_NAMES[i].toUpperCase() + " TAX", info, arrow),
                 figure(rate, Palette.SIZE_LEAD, Palette.TEXT_HEAD),
                 words(money(raised) + (all > 0 ? " · " + pct0(raised / all) + " of the take" : ""),
                         Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL),
                 spark(history, 120, Palette.MONEY, 240, 26));
-        if (atStop) c.getChildren().add(tag("at its legal maximum", Palette.WARN));
+        if (atStop) c.getChildren().add(Kept.scope("stop", () -> tag("at its legal maximum", Palette.WARN)));
         final String page = TAX_NAMES[i];
         return doorCard(c, () -> open(TAXES, page));
     }
@@ -1641,7 +1761,7 @@ final class PolicyScreen {
         double litres = PolicyPreview.fuelLitres(ui.game), took = ui.game.getEconomyManager().getFuelDuty();
         page.getChildren().add(sectionHead("THE FUEL DUTY", FUEL_INFO, quiet(money(took) + " last month on "
                 + shortNumber(litres) + " L of petrol at the pump")));
-        page.getChildren().add(fuelDutyCard(live));
+        page.getChildren().add(Kept.scope(FUEL_DUTY, () -> fuelDutyCard(live)));
     }
 
     /** The fuel duty's dial card: the duty a litre in today's money, what it would raise, the pump's litre and THE BUDGET. */
@@ -1707,7 +1827,7 @@ final class PolicyScreen {
         page.getChildren().add(sectionHead("THE PORT DUES", portDuesInfo(), quiet(tonnes > 0
                 ? money(took) + " last month on " + shortNumber(tonnes) + " t across the berths"
                 : "no cargo crossed a berth last month")));
-        page.getChildren().add(portDuesCard(live));
+        page.getChildren().add(Kept.scope(PORT_DUES, () -> portDuesCard(live)));
     }
 
     /** The port dues' dial card: the multiple of the default due, what the month's tonnes would pay, the handling charge a tonne by kind and THE BUDGET. */
@@ -1856,7 +1976,7 @@ final class PolicyScreen {
     void taxPage(VBox page, String which) {
         TaxPolicy live = policy();
         addShutCard(page, taxLever(which));
-        page.getChildren().add(baseCard(which, live));
+        page.getChildren().add(Kept.scope("base:" + which, () -> baseCard(which, live)));
         String info = switch (which) {
             case "Profit" -> PROFIT_INFO + " " + LOSS_INFO + " " + OFFSET_INFO;
             case "Sales" -> SALES_INFO + " " + REFUND_INFO + " " + OFFSET_INFO;
@@ -1868,10 +1988,10 @@ final class PolicyScreen {
             case "Property" -> "WHO PAYS: EVERY SECTOR, AND WHAT IT IS ON THE ROLL FOR";
             default -> "WHO PAYS";
         }, info, quiet("click a row for its own move")));
-        page.getChildren().add(payers(which, live));
-        if ("Wage".equals(which)) page.getChildren().add(payslipCard(live));
+        page.getChildren().add(Kept.scope("payers", () -> payers(which, live)));
+        if ("Wage".equals(which)) page.getChildren().add(Kept.scope("payslip", () -> payslipCard(live)));
         if ("Property".equals(which)) {
-            VBox farm = farmlandCard(live);
+            VBox farm = Kept.scope("farmland", () -> farmlandCard(live));
             if (farm != null) page.getChildren().add(farm);
         }
         page.getChildren().add(fold("table:" + which, "the table, as it was", () -> taxTable(which, live)));
@@ -2072,10 +2192,13 @@ final class PolicyScreen {
             boolean shown = openLines.contains(key);
             StringBuilder names = new StringBuilder();
             for (Payer p : zero) names.append(names.length() == 0 ? "" : ", ").append(p.name());
-            Label fold = words((shown ? "▾ " : "▸ ") + zero.size() + " paid nothing: " + names, Palette.SIZE_LABEL + 1, Palette.TEXT_MUTED);
-            fold.setStyle(fold.getStyle() + " -fx-cursor: hand; -fx-padding: 6 6 6 6;");
-            fold.setOnMouseClicked(e -> { if (!openLines.remove(key)) openLines.add(key); showPolicyMenu(); });
-            list.getChildren().add(fold);
+            list.getChildren().add(Kept.scope("zeroFold", () -> {
+                Label fold = words((shown ? "▾ " : "▸ ") + zero.size() + " paid nothing: " + names, Palette.SIZE_LABEL + 1, Palette.TEXT_MUTED);
+                // Kept (KP6): the style set whole, not built on what it was.
+                fold.setStyle(BuildScreen.wordsAt(Palette.SIZE_LABEL + 1, Palette.TEXT_MUTED) + " -fx-cursor: hand; -fx-padding: 6 6 6 6;");
+                fold.setOnMouseClicked(e -> { if (!openLines.remove(key)) openLines.add(key); showPolicyMenu(); });
+                return fold;
+            }));
             if (shown) for (Payer p : zero) addPayer(list, p, scale, which);
         }
         return list;
@@ -2084,10 +2207,13 @@ final class PolicyScreen {
     /** A payer's row, and its own dial under it while it is open. */
     void addPayer(VBox list, Payer p, double scale, String which) {
         String open = "payer:" + p.key();
-        boolean shown = p.lever() != null && openLines.contains(open);
-        list.getChildren().add(payerRow(p, scale, shown, p.lever() == null ? null
-                : () -> { if (!openLines.remove(open)) openLines.add(open); showPolicyMenu(); }));
-        if (shown) list.getChildren().add(offsetCard(p, which));
+        // Kept (KP6): a payer is a scope of its own, keyed by its key, so a row that moves up or down the ranking takes its nodes with it.
+        Kept.scope(open, () -> {
+            boolean shown = p.lever() != null && openLines.contains(open);
+            list.getChildren().add(payerRow(p, scale, shown, p.lever() == null ? null
+                    : () -> { if (!openLines.remove(open)) openLines.add(open); showPolicyMenu(); }));
+            if (shown) list.getChildren().add(offsetCard(p, which));
+        });
     }
 
     /**
@@ -2098,13 +2224,15 @@ final class PolicyScreen {
      * offset (neutral: a discount is not good news nor a surcharge bad, B14).
      */
     HBox payerRow(Payer p, double scale, boolean shown, Runnable toggle) {
-        HBox lead = new HBox(8, iconSquare(p.svg(), Palette.MONEY, 24, 13));
+        HBox lead = Kept.row(8, iconSquare(p.svg(), Palette.MONEY, 24, 13));
         Label name = words(p.name(), Palette.SIZE_BODY + 1, p.paid() == 0 ? Palette.TEXT_MUTED : Palette.TEXT_BODY);
-        VBox named = new VBox(0, name);
+        VBox named = Kept.column(0, name);
         if (toggle != null) {
-            Label mark = new Label((shown ? "▾ " : "▸ ") + "its own move");
-            mark.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.ACCENT));
-            named.getChildren().add(mark);
+            named.getChildren().add(Kept.scope("mark", () -> {
+                Label mark = Kept.label((shown ? "▾ " : "▸ ") + "its own move");
+                mark.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.ACCENT));
+                return mark;
+            }));
         }
         HBox.setHgrow(named, Priority.ALWAYS);
         lead.getChildren().add(named);
@@ -2114,12 +2242,12 @@ final class PolicyScreen {
         lead.setMaxWidth(220);
 
         boolean moved = !money(p.before()).equals(money(p.after()));
-        VBox bars = new VBox(2, segmentBar(List.of(Segment.of(Math.max(0, p.paid()), Palette.MONEY)), scale > 0 ? scale : 1,
+        VBox bars = Kept.column(2, segmentBar(List.of(Segment.of(Math.max(0, p.paid()), Palette.MONEY)), scale > 0 ? scale : 1,
                 List.of(), 0, 8));
         if (moved) {
-            bars.getChildren().add(segmentBar(List.of(new Segment(Math.max(0, p.after()), Palette.ACCENT, true, null, null,
+            bars.getChildren().add(Kept.scope("ghost", () -> segmentBar(List.of(new Segment(Math.max(0, p.after()), Palette.ACCENT, true, null, null,
                     "at the staged rates " + money(p.after()) + " (" + moneyMove(p.after() - p.before()) + ")", null)),
-                    scale > 0 ? scale : 1, List.of(), 0, 6));
+                    scale > 0 ? scale : 1, List.of(), 0, 6)));
         }
         bars.setAlignment(Pos.CENTER_LEFT);
         bars.setMinWidth(120);
@@ -2131,27 +2259,31 @@ final class PolicyScreen {
         figure.setMaxWidth(230);
 
         boolean rateMoved = !p.rate().apply(p.rateNow()).equals(p.rate().apply(p.rateThen()));
-        FlowPane chipRow = new FlowPane(6, 4);
+        FlowPane chipRow = Kept.flow(6, 4);
         chipRow.setPrefWrapLength(190);
         chipRow.setMinWidth(150);
         chipRow.setPrefWidth(190);
         chipRow.setMaxWidth(190);
         chipRow.getChildren().add(chip(rateMoved ? p.rate().apply(p.rateNow()) + " → " + p.rate().apply(p.rateThen())
                 : p.rate().apply(p.rateNow()), rateMoved ? Palette.ACCENT : Palette.TEXT_LABEL));
-        if (Math.abs(p.offset()) > 1e-12) chipRow.getChildren().add(chip(p.offsetWords().apply(p.offset()), Palette.TEXT_LABEL));
-        if (p.chip() != null) chipRow.getChildren().add(chip(p.chip(), Palette.TEXT_MUTED));
+        if (Math.abs(p.offset()) > 1e-12) chipRow.getChildren().add(Kept.scope("offset", () -> chip(p.offsetWords().apply(p.offset()), Palette.TEXT_LABEL)));
+        if (p.chip() != null) chipRow.getChildren().add(Kept.scope("tag", () -> chip(p.chip(), Palette.TEXT_MUTED)));
 
-        HBox row = new HBox(10, lead, bars, figure, chipRow);
+        HBox row = Kept.row(10, lead, bars, figure, chipRow);
         row.setAlignment(Pos.CENTER_LEFT);
         row.setMinHeight(40);
         String rest = "-fx-padding: 4 6 4 6; -fx-background-radius: 6;"
                 + " -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 0 1 0;";
-        row.setStyle(rest);
         if (toggle != null) {
-            row.setStyle(rest + " -fx-cursor: hand;");
-            row.setOnMouseEntered(e -> row.setStyle(rest + " -fx-cursor: hand; -fx-background-color: " + Palette.CONTROL + ";"));
-            row.setOnMouseExited(e -> row.setStyle(rest + " -fx-cursor: hand;"));
+            // Kept (KP6): the look the pointer calls for is chosen from isHover() where it is set.
+            String hand = rest + " -fx-cursor: hand;";
+            String over = hand + " -fx-background-color: " + Palette.CONTROL + ";";
+            row.setStyle(row.isHover() ? over : hand);
+            row.setOnMouseEntered(e -> row.setStyle(over));
+            row.setOnMouseExited(e -> row.setStyle(hand));
             row.setOnMouseClicked(e -> toggle.run());
+        } else {
+            row.setStyle(rest);
         }
         return row;
     }
@@ -2216,7 +2348,7 @@ final class PolicyScreen {
                         figure(pct2(live.payslipShare(null)), Palette.SIZE_LEAD, Palette.TEXT_HEAD)),
                 segmentBar(segs, 1, List.of(), 0, 14),
                 muted("of a wage taxed at the wage rate: the bar is the whole wage"));
-        FlowPane key = new FlowPane(16, 4);
+        FlowPane key = Kept.flow(16, 4);
         for (int i = 0; i < 4; i++) key.getChildren().add(keySwatch(TAX_RAMP[i], names[i] + " " + pct2(parts[i])));
         c.getChildren().add(key);
         StringBuilder bands = new StringBuilder();
@@ -2224,7 +2356,7 @@ final class PolicyScreen {
             if (Math.abs(live.getWageOffset(band)) < 1e-12) continue;
             bands.append(bands.length() == 0 ? "" : " · ").append(band.label()).append(" ").append(pct2(live.payslipShare(band)));
         }
-        if (bands.length() > 0) c.getChildren().add(muted("A band moved off the wage rate loses its own: " + bands + "."));
+        if (bands.length() > 0) c.getChildren().add(Kept.scope("bands", () -> muted("A band moved off the wage rate loses its own: " + bands + ".")));
         c.getChildren().add(doorPill("Set the pension contribution and the premiums", Icons.CANE, Palette.MONEY,
                 () -> open(PROMISES, "Pensions")));
         return c;
@@ -2297,40 +2429,46 @@ final class PolicyScreen {
             case "Profit" -> {
                 gridHead(table, "", "pre-tax income", "taxed at", "paid");
                 for (Sector sector : ui.game.getSectors().all()) {
-                    SectorBooks.SectorMonth month = ui.game.getSectorBooks().get(sector);
-                    double bearing = Math.max(0, month.preTaxIncome());
-                    table.add(gridCell(sector.label(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, line);
-                    table.add(gridCell(bearing > 0 ? money(bearing) : "—", bearing > 0 ? Palette.TEXT_MUTED : Palette.TEXT_SPENT,
-                            Palette.SIZE_CAPTION, true), 1, line);
-                    table.add(gridCell(pct2(policy.effectiveProfitRate(sector)), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 2, line);
-                    table.add(gridCell(money(month.tax()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 3, line);
-                    line++;
+                    final int at = line++;
+                    Kept.scope("row:" + sector.key(), () -> {
+                        SectorBooks.SectorMonth month = ui.game.getSectorBooks().get(sector);
+                        double bearing = Math.max(0, month.preTaxIncome());
+                        table.add(gridCell(sector.label(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, at);
+                        table.add(gridCell(bearing > 0 ? money(bearing) : "—", bearing > 0 ? Palette.TEXT_MUTED : Palette.TEXT_SPENT,
+                                Palette.SIZE_CAPTION, true), 1, at);
+                        table.add(gridCell(pct2(policy.effectiveProfitRate(sector)), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 2, at);
+                        table.add(gridCell(money(month.tax()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 3, at);
+                    });
                 }
             }
             case "Sales" -> {
                 gridHead(table, "", "taxable sales", "charged at", "net");
                 for (Sector sector : ui.game.getSectors().all()) {
-                    double sold = vat.getTaxableSales(sector.key());
-                    table.add(gridCell(sector.label(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, line);
-                    table.add(gridCell(sold > 0 ? money(sold) : "—", sold > 0 ? Palette.TEXT_MUTED : Palette.TEXT_SPENT,
-                            Palette.SIZE_CAPTION, true), 1, line);
-                    table.add(gridCell(pct2(policy.effectiveSalesRate(sector)), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 2, line);
-                    table.add(gridCell(vat.isInRefund(sector.key()) ? "in refund" : money(vat.getNet(sector.key())),
-                            vat.isInRefund(sector.key()) ? Palette.TEXT_MUTED : Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 3, line);
-                    line++;
+                    final int at = line++;
+                    Kept.scope("row:" + sector.key(), () -> {
+                        double sold = vat.getTaxableSales(sector.key());
+                        table.add(gridCell(sector.label(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, at);
+                        table.add(gridCell(sold > 0 ? money(sold) : "—", sold > 0 ? Palette.TEXT_MUTED : Palette.TEXT_SPENT,
+                                Palette.SIZE_CAPTION, true), 1, at);
+                        table.add(gridCell(pct2(policy.effectiveSalesRate(sector)), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 2, at);
+                        table.add(gridCell(vat.isInRefund(sector.key()) ? "in refund" : money(vat.getNet(sector.key())),
+                                vat.isInRefund(sector.key()) ? Palette.TEXT_MUTED : Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 3, at);
+                    });
                 }
             }
             case "Wage" -> {
                 gridHead(table, "", "payroll", "taxed at", "raised");
                 for (WageBand band : WageBand.values()) {
-                    double payroll = em.payrollIn(band);
-                    table.add(gridCell(band.label(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, line);
-                    table.add(gridCell(payroll > 0 ? money(payroll) : "—", payroll > 0 ? Palette.TEXT_MUTED : Palette.TEXT_SPENT,
-                            Palette.SIZE_CAPTION, true), 1, line);
-                    table.add(gridCell(pct2(policy.effectiveWageRate(band)), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 2, line);
-                    table.add(gridCell(payroll > 0 ? money(em.wageTaxUnder(band, policy)) : "—", Palette.TEXT_HEAD,
-                            Palette.SIZE_CAPTION, true), 3, line);
-                    line++;
+                    final int at = line++;
+                    Kept.scope("row:" + band.name(), () -> {
+                        double payroll = em.payrollIn(band);
+                        table.add(gridCell(band.label(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, at);
+                        table.add(gridCell(payroll > 0 ? money(payroll) : "—", payroll > 0 ? Palette.TEXT_MUTED : Palette.TEXT_SPENT,
+                                Palette.SIZE_CAPTION, true), 1, at);
+                        table.add(gridCell(pct2(policy.effectiveWageRate(band)), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 2, at);
+                        table.add(gridCell(payroll > 0 ? money(em.wageTaxUnder(band, policy)) : "—", Palette.TEXT_HEAD,
+                                Palette.SIZE_CAPTION, true), 3, at);
+                    });
                 }
             }
             default -> {
@@ -2338,12 +2476,14 @@ final class PolicyScreen {
                 for (Sector sector : ui.game.getSectors().all()) {
                     double value = em.getAssessedValue(sector);
                     if (value <= 0) continue;
-                    table.add(gridCell(sector.label(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, line);
-                    table.add(gridCell(money(value), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 1, line);
-                    table.add(gridCell(String.format("%.2f%%", policy.effectivePropertyRate(sector) * 100), Palette.TEXT_HEAD,
-                            Palette.SIZE_CAPTION, true), 2, line);
-                    table.add(gridCell(money(em.getPropertyTaxFor(sector)), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 3, line);
-                    line++;
+                    final int at = line++;
+                    Kept.scope("row:" + sector.key(), () -> {
+                        table.add(gridCell(sector.label(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, at);
+                        table.add(gridCell(money(value), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 1, at);
+                        table.add(gridCell(String.format("%.2f%%", policy.effectivePropertyRate(sector) * 100), Palette.TEXT_HEAD,
+                                Palette.SIZE_CAPTION, true), 2, at);
+                        table.add(gridCell(money(em.getPropertyTaxFor(sector)), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 3, at);
+                    });
                 }
             }
         }
@@ -2351,8 +2491,8 @@ final class PolicyScreen {
         if ("Property".equals(which)) {
             // The column bills at TODAY'S roll and the take's head is history, so the two differ the moment the
             // rate or the roll moves. Footing the column makes that a comparison rather than a contradiction.
-            c.getChildren().add(statementTotal("Which comes to at today's rate",
-                    money(PolicyPreview.taxTake(ui.game, policy).propertyTotal()), Palette.TEXT_HEAD));
+            c.getChildren().add(Kept.scope("total", () -> statementTotal("Which comes to at today's rate",
+                    money(PolicyPreview.taxTake(ui.game, policy).propertyTotal()), Palette.TEXT_HEAD)));
         }
         return c;
     }
@@ -2420,7 +2560,7 @@ final class PolicyScreen {
         page.getChildren().add(sectionHead("THE WAGE LADDER", FLOOR_INFO, quiet(moved
                 ? "the ghosts: once wages have walked there (about a year)" : "what every job pays, against the floor in today's money")));
         page.getChildren().add(card(wageLadder(market, people, floor, want, moved), noteLine(firstWords(says), says, 1100)));
-        page.getChildren().add(split(floorCard(market, floor), cityPayrollCard(), 2.0 / 3));
+        page.getChildren().add(split(Kept.scope("floor", () -> floorCard(market, floor)), Kept.scope("payroll", this::cityPayrollCard), 2.0 / 3));
         page.getChildren().add(fold("floor:table", "the ladder as a table, in today's money", () -> floorTable(market, want, moved)));
     }
 
@@ -2508,11 +2648,13 @@ final class PolicyScreen {
         gridHead(ladder, "", "multiple", "paid", moved ? "heads for" : "");
         int line = 1;
         for (JobType job : JobType.values()) {
-            ladder.add(gridCell(ui.buildScreen.jobLabel(job), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, line);
-            ladder.add(gridCell(String.format("%.2fx", LabourMarket.ratioOf(job)), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 1, line);
-            ladder.add(gridCell(moneyFull(market.getWage(job)), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 2, line);
-            if (moved) ladder.add(gridCell(moneyFull(market.targetWageAt(job, want)), Palette.ACCENT, Palette.SIZE_CAPTION, true), 3, line);
-            line++;
+            final int at = line++;
+            Kept.scope("row:" + job.name(), () -> {
+                ladder.add(gridCell(ui.buildScreen.jobLabel(job), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, at);
+                ladder.add(gridCell(String.format("%.2fx", LabourMarket.ratioOf(job)), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 1, at);
+                ladder.add(gridCell(moneyFull(market.getWage(job)), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 2, at);
+                if (moved) ladder.add(Kept.scope("heads", () -> gridCell(moneyFull(market.targetWageAt(job, want)), Palette.ACCENT, Palette.SIZE_CAPTION, true)), 3, at);
+            });
         }
         return column(ladder);
     }
@@ -2617,23 +2759,25 @@ final class PolicyScreen {
 
         page.getChildren().add(sectionHead("THE RATE LINE", rateInfo(), quiet(moved
                 ? "the ghosts: at the staged dial, from next month" : "every rate in the city on one scale")));
-        page.getChildren().add(card(rateLine(rate, want, moved), row(
-                rateCell("OVER THE WORLD", points(market.overTheWorld()), moved
-                        ? "→ " + points(market.overTheWorldAt(want)) + " at the staged dial" : "the city's rate less " + (hasUsRate() ? "the US's " : "the world's ") + pct2(market.worldRate()), OVER_INFO),
-                rateCell("REAL, AGAINST THE WORLD", points(ui.game.realRateDifferential()),
-                        "the dial less expected inflation, against " + (hasUsRate() ? "the US's rate less the US's inflation" : "the world's"), REAL_INFO),
-                rateCell("REAL, THE DIAL", points(ui.game.realPolicyRate()),
-                        "the dial less the " + pct2(ui.game.getExpectedInflation()) + " people expect", REAL_DIAL_INFO))));
+        page.getChildren().add(card(Kept.scope("line", () -> rateLine(rate, want, moved)), row(
+                Kept.scope("over", () -> rateCell("OVER THE WORLD", points(market.overTheWorld()), moved
+                        ? "→ " + points(market.overTheWorldAt(want)) + " at the staged dial" : "the city's rate less " + (hasUsRate() ? "the US's " : "the world's ") + pct2(market.worldRate()), OVER_INFO)),
+                Kept.scope("real", () -> rateCell("REAL, AGAINST THE WORLD", points(ui.game.realRateDifferential()),
+                        "the dial less expected inflation, against " + (hasUsRate() ? "the US's rate less the US's inflation" : "the world's"), REAL_INFO)),
+                Kept.scope("realDial", () -> rateCell("REAL, THE DIAL", points(ui.game.realPolicyRate()),
+                        "the dial less the " + pct2(ui.game.getExpectedInflation()) + " people expect", REAL_DIAL_INFO)))));
 
         // Will people believe it (0.7.45): the anchor, and the level the real rate holds the currency at (XR1).
-        page.getChildren().add(split(anchorCard(), gapCard(), 2.0 / 3));
+        // Kept (KP6): every card is a scope of its own; the dial's is keyed by the regime, since a peg draws another card.
+        page.getChildren().add(split(Kept.scope("anchor", this::anchorCard), Kept.scope("gap", this::gapCard), 2.0 / 3));
 
-        VBox dial = theDialCard(market, px, rate, want);
-        VBox rule = ruleCard(market, px);
-        VBox bank = new VBox(TILE_GAP, holdingsCard(market), ceilingCard());
+        boolean peg = ui.game.getForeignAccounts().getRegime() == ForeignAccounts.Regime.PEG;
+        VBox dial = Kept.scope(peg ? "tiedDial" : "dial", () -> theDialCard(market, px, rate, want));
+        VBox rule = Kept.scope("rule", () -> ruleCard(market, px));
+        VBox bank = Kept.column(TILE_GAP, Kept.scope("holdings", () -> holdingsCard(market)), Kept.scope("ceiling", this::ceilingCard));
         page.getChildren().add(row(dial, rule, bank));
 
-        page.getChildren().add(pricesCard(px));
+        page.getChildren().add(Kept.scope("prices", () -> pricesCard(px)));
         page.getChildren().add(fold("rate:history", "the price level and the policy rate, since founding", this::priceRateChart));
     }
 
@@ -2646,8 +2790,9 @@ final class PolicyScreen {
      */
     Node priceRateChart() {
         HistorySave h = ui.game.getHistorySave();
-        if (h.months() < 2) return quiet("A line needs two months; come back next month.");
-        TimeChart chart = new TimeChart(new ChartModel(), Set.of(), false);
+        if (h.months() < 2) return Kept.scope("short", () -> quiet("A line needs two months; come back next month."));
+        // Kept (KP6): the chart is made once in its scope, told its data and its size at every draw.
+        TimeChart chart = Kept.of(TimeChart.class, () -> new TimeChart(new ChartModel(), Set.of(), false));
         chart.setData(h.getMonth(), List.of(
                         new TimeChart.Line("priceIndex", "price level", Palette.MONEY_LIGHT, 0, h.aligned("priceIndex"),
                                 v -> HistoryScreen.plotScale("index", v), v -> ui.historyScreen.fmtUnit("index", v), ""),
@@ -2660,19 +2805,19 @@ final class PolicyScreen {
                 HistoryScreen.axisFor("index"), HistoryScreen.axisFor("percent"), false, false, null, List.of(),
                 List.of(), List.of(), "no months recorded yet");
         chart.setSize(1100, 180);
-        FlowPane key = new FlowPane(14, 4, keySwatch(Palette.MONEY_LIGHT, "the price level, founding = 1 (left)"),
+        FlowPane key = flowOf(14, 4, keySwatch(Palette.MONEY_LIGHT, "the price level, founding = 1 (left)"),
                 keySwatch(Palette.MONEY, "the policy rate (right)"),
                 keySwatch(Palette.TEXT_2, "expected inflation, dashed (right; recorded since 0.7.42)"));
-        return new VBox(4, chart, key);
+        return Kept.column(4, chart, key);
     }
 
     /** A cell under the rate line: its label, its figure, a line, and the paragraph behind an (i). */
     static VBox rateCell(String label, String value, String line, String info) {
-        Label l = new Label(label);
+        Label l = Kept.label(label);
         l.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
-        HBox head = new HBox(Palette.GAP_TIGHT, l, infoButton(info, true));
+        HBox head = Kept.row(Palette.GAP_TIGHT, l, infoButton(info, true));
         head.setAlignment(Pos.CENTER_LEFT);
-        VBox c = new VBox(2, head, figure(value, Palette.SIZE_HEADING + 2, Palette.TEXT_HEAD), muted(line));
+        VBox c = Kept.column(2, head, figure(value, Palette.SIZE_HEADING + 2, Palette.TEXT_HEAD), muted(line));
         c.setStyle("-fx-padding: 8 10 8 10; -fx-background-color: " + Palette.PANEL + "; -fx-background-radius: 6;");
         return c;
     }
@@ -2748,10 +2893,10 @@ final class PolicyScreen {
         runs.add(Run.of(0, rate, Palette.MONEY).tip("The policy rate " + pct2(rate)));
         if (moved) runs.add(Run.of(0, want, Palette.ACCENT).outlined().tip("Staged " + pct2(want)));
         List<ScaleRow> rows = List.of(ScaleRow.of("the dial", moved ? pct2(rate) + " → " + pct2(want) : pct2(rate), runs));
-        VBox line = new VBox(4, scaleRows(rows, scale, rules, 90, 140, 14));
+        VBox line = Kept.column(4, scaleRows(rows, scale, rules, 90, 140, 14));
         if (ui.game.getPriceIndex().hasRate() && ui.game.getPriceIndex().inflation() < 0) {
-            line.getChildren().add(muted("Prices are falling, " + signedPct1(ui.game.getPriceIndex().inflation())
-                    + " a year: under the line's nothing, so not drawn on it."));
+            line.getChildren().add(Kept.scope("falling", () -> muted("Prices are falling, " + signedPct1(ui.game.getPriceIndex().inflation())
+                    + " a year: under the line's nothing, so not drawn on it.")));
         }
         return line;
     }
@@ -2795,19 +2940,19 @@ final class PolicyScreen {
         Ladder ladder = ownLadder("policy", rate, DebtManager.MIN_POLICY_RATE, DebtManager.MAX_POLICY_RATE, .0005, Money::pct2);
         double advised = px.hasRate() ? market.advisedPolicyRate(px.inflation()) : Double.NaN;
         if (Double.isFinite(advised)) ladder.marks(new double[] {advised}, new String[] {"rule"});
-        FlowPane steps = new FlowPane(6, 6);
+        FlowPane steps = Kept.flow(6, 6);
         for (int pct : DIAL_STEPS) {
             final double at = pct / 100.0;
-            steps.getChildren().add(stepChip(pct + "%", () -> {
+            steps.getChildren().add(Kept.scope("step:" + pct, () -> stepChip(pct + "%", () -> {
                 if (moved(at, rate, .0005)) stage("policy", at); else unstage("policy");
                 showPolicyMenu();
-            }, Math.abs(want - at) > 1e-9));
+            }, Math.abs(want - at) > 1e-9)));
         }
         if (Double.isFinite(advised) && Math.abs(advised - rate) > 1e-9) {
-            steps.getChildren().add(stepChip("do what the rule says", () -> { stage("policy", advised); showPolicyMenu(); }, true));
+            steps.getChildren().add(Kept.scope("rule", () -> stepChip("do what the rule says", () -> { stage("policy", advised); showPolicyMenu(); }, true)));
         }
         boolean ruleHasIt = market.isAutopilot();
-        HBox hand = new HBox(8, words(ruleHasIt ? "In the rule's hand: it sets " + pct2(Double.isFinite(advised) ? advised : rate)
+        HBox hand = Kept.row(8, words(ruleHasIt ? "In the rule's hand: it sets " + pct2(Double.isFinite(advised) ? advised : rate)
                         + " every month." : "In your hand." + (Double.isFinite(advised) ? " The rule would set " + pct2(advised) + "." : ""),
                 Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL),
                 stepChip(ruleHasIt ? "take the dial back" : "hand the dial to the rule",
@@ -2833,7 +2978,7 @@ final class PolicyScreen {
         boolean ruleSetsSpread = market.isAutopilot() && market.getAim() != DebtManager.Aim.INFLATION;
         double spread = ruleSetsSpread ? tied - market.worldRate() : market.getPegSpread();
         boolean ruleHasIt = market.isAutopilot();
-        HBox hand = new HBox(8, words(ruleHasIt
+        HBox hand = Kept.row(8, words(ruleHasIt
                         ? "In the rule's hand: aiming at " + market.getAim().words.toLowerCase() + "."
                         : "In your hand: the spread is yours.", Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL),
                 stepChip(ruleHasIt ? "take the dial back" : "hand the dial to the rule",
@@ -2878,11 +3023,12 @@ final class PolicyScreen {
             market.setInflationTarget(Integer.parseInt(picked.replace("%", "")) / 100.0);
             showPolicyMenu();
         });
-        VBox ladder = Ladder.of(DebtManager.MIN_INFLATION_TARGET, DebtManager.MAX_INFLATION_TARGET, TARGET_STEP,
+        // Kept (KP6): a dial built outside a dial card is a scope of its own, keyed by its lever, so its slider is its own.
+        VBox ladder = Kept.scope("target", () -> Ladder.of(DebtManager.MIN_INFLATION_TARGET, DebtManager.MAX_INFLATION_TARGET, TARGET_STEP,
                         DebtManager::targetWords)
                 .current(target)
                 .appliesAtOnce(v -> { market.setInflationTarget(halfPoint(v)); showPolicyMenu(); })
-                .wide(360).build();
+                .wide(360).build());
         // Struck from the rule at both targets - DebtManager.ruleRate(inflation, target) - on this month's
         // inflation once there is a year of it, and on 5% as the example until there is.
         double example = px.hasRate() ? inflation : .05;
@@ -2923,22 +3069,26 @@ final class PolicyScreen {
                 line(firstWords(reason), reason));
         c.getChildren().add(cardLine("On target it sets", pct2(market.ruleRate(target)), null));
         if (px.hasRate()) {
-            double advised = market.advisedPolicyRate(inflation), ruleSays = market.ruleRate(inflation);
-            c.getChildren().add(cardLine("What the rule would set", pct2(ruleSays), null));
-            if (Math.abs(ruleSays - advised) > 1e-9) {
-                c.getChildren().add(cardLine(ruleSays > advised ? "...but the dial stops at" : "...but the dial cannot go below",
-                        pct2(advised), null));
-            }
-            c.getChildren().add(cardLine("Inflation, year on year", signedPct1(inflation), null));
-            // The band reads what trust is judged on (0.7.45; the UI spec's D4): the year's rate smoothed,
-            // a TOLERANCE either side of the target.
-            Expectations e = ui.game.getExpectations();
-            double smoothed = e.getSmoothedInflation();
-            c.getChildren().add(cardLine("...smoothed over a year", signedPct1(smoothed), null));
-            c.getChildren().add(bandBar(smoothed, target - Expectations.TOLERANCE, target, target + Expectations.TOLERANCE,
-                    offTarget(e, target) ? Palette.WARN : Palette.MONEY, 0, 10, true,
-                    "Inflation smoothed over a year, " + signedPct1(smoothed) + ", against the target "
-                    + DebtManager.targetWords(target) + " and the point either side of it that trust counts as on target"));
+            c.getChildren().addAll(Kept.scope("inflation", () -> {
+                List<Node> lines = new ArrayList<>();
+                double advised = market.advisedPolicyRate(inflation), ruleSays = market.ruleRate(inflation);
+                lines.add(cardLine("What the rule would set", pct2(ruleSays), null));
+                if (Math.abs(ruleSays - advised) > 1e-9) {
+                    lines.add(Kept.scope("stops", () -> cardLine(ruleSays > advised ? "...but the dial stops at" : "...but the dial cannot go below",
+                            pct2(advised), null)));
+                }
+                lines.add(cardLine("Inflation, year on year", signedPct1(inflation), null));
+                // The band reads what trust is judged on (0.7.45; the UI spec's D4): the year's rate smoothed,
+                // a TOLERANCE either side of the target.
+                Expectations e = ui.game.getExpectations();
+                double smoothed = e.getSmoothedInflation();
+                lines.add(cardLine("...smoothed over a year", signedPct1(smoothed), null));
+                lines.add(bandBar(smoothed, target - Expectations.TOLERANCE, target, target + Expectations.TOLERANCE,
+                        offTarget(e, target) ? Palette.WARN : Palette.MONEY, 0, 10, true,
+                        "Inflation smoothed over a year, " + signedPct1(smoothed) + ", against the target "
+                        + DebtManager.targetWords(target) + " and the point either side of it that trust counts as on target"));
+                return lines;
+            }));
         }
         c.getChildren().add(muted(String.format("at %s it sets %s · at %s %s", DebtManager.targetWords(target),
                 pct2(market.ruleRate(example)), DebtManager.targetWords(otherTarget), pct2(market.ruleRate(example, otherTarget)))
@@ -2987,15 +3137,15 @@ final class PolicyScreen {
     VBox strictPart(DebtManager market) {
         DebtManager.Strictness now = market.getStrictness();
         Label says = words(strictWords(PolicyPreview.ruleAt(ui.game, now)), Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL);
-        VBox ladder = Ladder.of(0, DebtManager.Strictness.values().length - 1, 1, v -> strictAt(v).words)
+        VBox ladder = Kept.scope("strictness", () -> Ladder.of(0, DebtManager.Strictness.values().length - 1, 1, v -> strictAt(v).words)
                 .current(now.ordinal())
                 .stepReads(v -> "one setting")
                 .onTrack(v -> says.setText(strictWords(PolicyPreview.ruleAt(ui.game, strictAt(v)))))
                 .appliesAtOnce(v -> { market.setStrictness(strictAt(v)); showPolicyMenu(); })
-                .wide(360).build();
-        HBox head = new HBox(Palette.GAP_TIGHT, muted("how strictly it holds it · set at once"), infoButton(strictInfo(), true));
+                .wide(360).build());
+        HBox head = Kept.row(Palette.GAP_TIGHT, muted("how strictly it holds it · set at once"), infoButton(strictInfo(), true));
         head.setAlignment(Pos.CENTER_LEFT);
-        return new VBox(4, head, ladder, says);
+        return Kept.column(4, head, ladder, says);
     }
 
     /** P35, both layers. */
@@ -3327,10 +3477,11 @@ final class PolicyScreen {
                     new Tick(px.getTrough(), Palette.TEXT_MUTED, 2, String.format("cheapest %.3f, m%,d", px.getTrough(), px.getTroughMonth()), null),
                     new Tick(px.getIndex(), Palette.MONEY, 3, null, "today " + String.format("%.3f", px.getIndex())),
                     new Tick(px.getPeak(), Palette.TEXT_MUTED, 2, String.format("dearest %.3f, m%,d", px.getPeak(), px.getPeakMonth()), null));
-            c.getChildren().add(segmentBar(List.of(Segment.of(px.getIndex(), Palette.MONEY_LIGHT)), px.getPeak() * 1.1, ticks, 0, 8));
-            c.getChildren().add(muted(String.format("swung %.2fx between its cheapest and its dearest", px.swing())));
+            c.getChildren().addAll(Kept.scope("swing", () -> List.<Node>of(
+                    segmentBar(List.of(Segment.of(px.getIndex(), Palette.MONEY_LIGHT)), px.getPeak() * 1.1, ticks, 0, 8),
+                    muted(String.format("swung %.2fx between its cheapest and its dearest", px.swing())))));
         } else {
-            c.getChildren().add(muted("The dearest and the cheapest it has been are still today's: no range yet."));
+            c.getChildren().add(Kept.scope("noRange", () -> muted("The dearest and the cheapest it has been are still today's: no range yet.")));
         }
         /*
          * THE BASKET (0.7.45): the weights it is struck on, one bar, each part
@@ -3338,24 +3489,27 @@ final class PolicyScreen {
          * price is moving the index, and that a link re-weighs it.
          */
         if (px.isBased() && !px.isLinkPending()) {
-            List<BasketPart> parts = basketParts();
-            List<Segment> segs = new ArrayList<>();
-            FlowPane key = new FlowPane(14, 4);
-            for (BasketPart p : parts) {
-                if (!(p.weight() > 0)) continue;
-                segs.add(new Segment(p.weight(), p.colour(), false, null, null, p.words(), null));
-                key.getChildren().add(keySwatch(p.colour(), p.words()));
-            }
-            c.getChildren().addAll(words("THE BASKET", Palette.SIZE_LABEL, Palette.TEXT_LABEL),
-                    segmentBar(segs, 1, List.of(), 0, 12), key);
+            c.getChildren().addAll(Kept.scope("basket", () -> {
+                List<BasketPart> parts = basketParts();
+                List<Segment> segs = new ArrayList<>();
+                FlowPane key = Kept.flow(14, 4);
+                for (BasketPart p : parts) {
+                    if (!(p.weight() > 0)) continue;
+                    segs.add(new Segment(p.weight(), p.colour(), false, null, null, p.words(), null));
+                    key.getChildren().add(Kept.scope("part:" + p.name(), () -> keySwatch(p.colour(), p.words())));
+                }
+                return List.<Node>of(words("THE BASKET", Palette.SIZE_LABEL, Palette.TEXT_LABEL),
+                        segmentBar(segs, 1, List.of(), 0, 12), key);
+            }));
         }
         List<Node> lines = new ArrayList<>();
         // ...the US's where the dollar's prices follow its path (WN4, D29), the world's on the walk.
-        if (world != null) lines.add(cardLine(world.isOnUsPath() ? "The US's, likewise" : "The world's, likewise",
-                String.format("%.3f", world.getPriceLevel()), null));
+        if (world != null) lines.add(Kept.scope("world", () -> cardLine(world.isOnUsPath() ? "The US's, likewise" : "The world's, likewise",
+                String.format("%.3f", world.getPriceLevel()), null)));
         if (unit.getReforms() > 0) {
-            lines.add(cardLine("The money is the", unit.name(ui.game.getCurrency()), null));
-            lines.add(cardLine("...one of which is", String.format("%,.0f founding", unit.getUnit()), null));
+            lines.addAll(Kept.scope("reformed", () -> List.<Node>of(
+                    cardLine("The money is the", unit.name(ui.game.getCurrency()), null),
+                    cardLine("...one of which is", String.format("%,.0f founding", unit.getUnit()), null))));
         }
         c.getChildren().addAll(lines);
         return c;
@@ -3467,18 +3621,20 @@ final class PolicyScreen {
     void currencyPage(VBox page) {
         ForeignAccounts fx = ui.game.getForeignAccounts();
         ForeignAccounts.Regime now = fx.getRegime(), want = stagedRegime(now);
-        page.getChildren().add(regimeCard(fx, now, want));
+        // Kept (KP6): every card is a scope of its own; the peg's and the band's are keyed by whether it is in force, since a note is another card.
+        page.getChildren().add(Kept.scope("regime", () -> regimeCard(fx, now, want)));
         if (now == ForeignAccounts.Regime.PEG || want == ForeignAccounts.Regime.PEG) {
-            page.getChildren().add(pegCard(fx, now));
+            page.getChildren().add(Kept.scope(now == ForeignAccounts.Regime.PEG ? "peg" : "pegNote", () -> pegCard(fx, now)));
         }
         if (now == ForeignAccounts.Regime.BAND || want == ForeignAccounts.Regime.BAND) {
-            page.getChildren().add(bandCard(fx, now));
+            page.getChildren().add(Kept.scope(now == ForeignAccounts.Regime.BAND ? "band" : "bandNote", () -> bandCard(fx, now)));
         }
-        page.getChildren().add(row(payerCard(fx), aimCard(fx)));
+        page.getChildren().add(row(Kept.scope("payer", () -> payerCard(fx)), Kept.scope("aim", () -> aimCard(fx))));
+        // ...the deal card's scope is keyed by whether a row holds it (a row sets its card's height, and a peg that breaks takes the row away).
         if (now == ForeignAccounts.Regime.PEG) {
-            page.getChildren().add(row(pegDialCard(fx), dealCard(fx)));
+            page.getChildren().add(row(Kept.scope("pegDial", () -> pegDialCard(fx)), Kept.scope("dealInRow", () -> dealCard(fx))));
         } else {
-            page.getChildren().add(dealCard(fx));
+            page.getChildren().add(Kept.scope("deal", () -> dealCard(fx)));
         }
     }
 
@@ -3486,30 +3642,30 @@ final class PolicyScreen {
 
     /** One option of a choice: its chip (lit when it is the one staged or in force), "in force" beside it when it is, and what it does underneath. */
     private VBox option(String name, String says, boolean lit, boolean inForce, Runnable pick) {
-        Label choice = new Label(name);
+        Label choice = Kept.label(name);
         choice.setMinWidth(Region.USE_PREF_SIZE);
         // A chosen chip has the money blue's edge, so the one picked is told from the rest at a glance.
         choice.setStyle("-fx-padding: 4 10 4 10; -fx-cursor: hand;"
                 + (lit ? Palette.block(Palette.CONTROL, Palette.ACCENT) + Palette.strong(Palette.SIZE_CAPTION + 1, Palette.TEXT_HEAD)
                         : Palette.block(Palette.PANEL) + Palette.words(Palette.SIZE_CAPTION + 1, Palette.TEXT_LABEL)));
         choice.setOnMouseClicked(e -> pick.run());
-        FlowPane head = new FlowPane(6, 4, choice);
-        if (inForce) head.getChildren().add(chip("in force", Palette.MONEY));
+        FlowPane head = flowOf(6, 4, choice);
+        if (inForce) head.getChildren().add(Kept.scope("inForce", () -> chip("in force", Palette.MONEY)));
         head.setAlignment(Pos.CENTER_LEFT);
-        VBox col = new VBox(6, head, words(says, Palette.SIZE_LABEL, lit ? Palette.TEXT_BODY : Palette.TEXT_MUTED));
+        VBox col = Kept.column(6, head, words(says, Palette.SIZE_LABEL, lit ? Palette.TEXT_BODY : Palette.TEXT_MUTED));
         col.setMinWidth(0);
         return col;
     }
 
     /** One figure on a panel, as the rate line's cells are: its label (with an (i) when `info` is given), its figure and a line under it. */
     private static VBox fxCell(String label, String value, String line, String info) {
-        Label l = new Label(label);
+        Label l = Kept.label(label);
         l.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
         l.setMinWidth(Region.USE_PREF_SIZE);
-        HBox head = new HBox(Palette.GAP_TIGHT, l);
-        if (info != null) head.getChildren().add(infoButton(info, true));
+        HBox head = Kept.row(Palette.GAP_TIGHT, l);
+        if (info != null) head.getChildren().add(Kept.scope("info", () -> infoButton(info, true)));
         head.setAlignment(Pos.CENTER_LEFT);
-        VBox c = new VBox(2, head, figure(value, Palette.SIZE_HEADING + 2, Palette.TEXT_HEAD), muted(line));
+        VBox c = Kept.column(2, head, figure(value, Palette.SIZE_HEADING + 2, Palette.TEXT_HEAD), muted(line));
         c.setStyle("-fx-padding: 8 10 8 10; -fx-background-color: " + Palette.PANEL + "; -fx-background-radius: 6;");
         c.setMinWidth(0);
         return c;
@@ -3518,7 +3674,7 @@ final class PolicyScreen {
     /** A figure's − and + steps, staged under `key` against what it is now; `down` and `up` say what each does. */
     private HBox stepper(String key, double now, double step, double lo, double hi, String down, String up) {
         double want = staged(key, now);
-        HBox row = new HBox(6,
+        HBox row = Kept.row(6,
                 stepChip("− " + down, () -> restage(key, now, want - step, step, lo, hi), false),
                 stepChip("+ " + up, () -> restage(key, now, want + step, step, lo, hi), false));
         row.setAlignment(Pos.CENTER_LEFT);
@@ -3542,23 +3698,26 @@ final class PolicyScreen {
         boolean any = false;
         for (String k : keys) any |= isStaged(k);
         if (!any) return List.of();
-        Pieces.ActionButton go = actionButton(Icons.TICK, Palette.MONEY, ACTION_INLINE,
-                new Press(Look.GO, label, null), () -> {
-                    apply.run();
-                    for (String k : keys) unstage(k);
-                    showPolicyMenu();
-                });
-        go.setMinWidth(240);
-        Pieces.ActionButton no = actionButton(Icons.CLOSE, Palette.TEXT_LABEL, ACTION_INLINE,
-                new Press(Look.CHOOSE, "Leave it as it is", null), () -> {
-                    for (String k : keys) unstage(k);
-                    showPolicyMenu();
-                });
-        no.setMinWidth(170);
-        HBox bar = new HBox(8, go, no);
-        bar.setAlignment(Pos.CENTER_LEFT);
-        bar.setStyle("-fx-padding: 6 0 2 0;");
-        return List.of(bar);
+        // Kept (KP6): the bar comes and goes, so it is a scope of its own, keyed by the keys it answers for.
+        return Kept.scope("currencyFoot:" + String.join(",", keys), () -> {
+            Pieces.ActionButton go = actionButton(Icons.TICK, Palette.MONEY, ACTION_INLINE,
+                    new Press(Look.GO, label, null), () -> {
+                        apply.run();
+                        for (String k : keys) unstage(k);
+                        showPolicyMenu();
+                    });
+            go.setMinWidth(240);
+            Pieces.ActionButton no = actionButton(Icons.CLOSE, Palette.TEXT_LABEL, ACTION_INLINE,
+                    new Press(Look.CHOOSE, "Leave it as it is", null), () -> {
+                        for (String k : keys) unstage(k);
+                        showPolicyMenu();
+                    });
+            no.setMinWidth(170);
+            HBox bar = Kept.row(8, go, no);
+            bar.setAlignment(Pos.CENTER_LEFT);
+            bar.setStyle("-fx-padding: 6 0 2 0;");
+            return List.<Node>of(bar);
+        });
     }
 
     /* ----- HOW THE D$ IS SET ----- */
@@ -3652,7 +3811,7 @@ final class PolicyScreen {
                 quiet("what each way does, before it is chosen")), row(cols));
         c.getChildren().add(line(want == now ? regimeNow(fx) : regimeEntering(fx, want), null));
         String broke = breakLine(fx);
-        if (broke != null && now != ForeignAccounts.Regime.PEG) c.getChildren().add(muted(broke));
+        if (broke != null && now != ForeignAccounts.Regime.PEG) c.getChildren().add(Kept.scope("broke", () -> muted(broke)));
         c.getChildren().addAll(currencyFoot(regimeApplies(fx, want), () -> {
             ui.game.setCurrencyRegime(want);
             // A peg or a band staged for the regime that just left has nothing to apply to.
@@ -3710,13 +3869,13 @@ final class PolicyScreen {
         double doubtUsd = fx.toUsd(ui.game.getCapitalFlows().getDoubtDeparted());
         VBox dealt;
         if (fx.getDefenceUsd() > 0) {
-            dealt = fxCell("THIS MONTH THE VAULT PAID", usd(fx.getDefenceUsd()), "to hold " + curRate(peg)
-                    + (doubtUsd > 0 ? ", of which " + usd(doubtUsd) + " was hot money leaving on doubt" : ""), null);
+            dealt = Kept.scope("paid", () -> fxCell("THIS MONTH THE VAULT PAID", usd(fx.getDefenceUsd()), "to hold " + curRate(peg)
+                    + (doubtUsd > 0 ? ", of which " + usd(doubtUsd) + " was hot money leaving on doubt" : ""), null));
         } else if (fx.getEdgeBoughtUsd() > 0) {
-            dealt = fxCell("THIS MONTH THE VAULT BOUGHT", usd(fx.getEdgeBoughtUsd()), "at the peg, paid by "
-                    + fx.getEdgeOwedPayer().words.toLowerCase() + " at the top of next month", null);
+            dealt = Kept.scope("bought", () -> fxCell("THIS MONTH THE VAULT BOUGHT", usd(fx.getEdgeBoughtUsd()), "at the peg, paid by "
+                    + fx.getEdgeOwedPayer().words.toLowerCase() + " at the top of next month", null));
         } else {
-            dealt = fxCell("THIS MONTH THE VAULT DEALT", "nothing", "the float's rule and the peg were in step", null);
+            dealt = Kept.scope("dealt", () -> fxCell("THIS MONTH THE VAULT DEALT", "nothing", "the float's rule and the peg were in step", null));
         }
         VBox vault = fxCell("THE VAULT", coverMonths(fx.importCover()), "of imports (" + usd(fx.getReservesUsd()) + ")", null);
         VBox pace = fxCell("AT THIS PACE", floorWords(fx.monthsToFloor()),
@@ -3740,21 +3899,21 @@ final class PolicyScreen {
                             + "what the vault pays to hold it, how long its dollars last and the chance the peg breaks.", null));
         }
         double peg = fx.getPegRate(), want = staged(XR_PEG, peg), step = peg * PEG_STEP;
-        HBox big = new HBox(8, figure(curRate(want), Palette.SIZE_LEAD, Palette.TEXT_HEAD),
+        HBox big = Kept.row(8, figure(curRate(want), Palette.SIZE_LEAD, Palette.TEXT_HEAD),
                 words("per " + Currency.FOREIGN_SYMBOL, Palette.SIZE_BODY, Palette.TEXT_LABEL),
                 stepper(XR_PEG, peg, step, step, Double.MAX_VALUE, pct0(PEG_STEP) + " · revalue", pct0(PEG_STEP) + " · devalue"));
         big.setAlignment(Pos.CENTER_LEFT);
         VBox c = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "THE PEG", pegInfo(),
                 quiet("a higher rate is a weaker " + sym())), big);
         if (isStaged(XR_PEG)) {
-            c.getChildren().add(muted("Staged: " + (want > peg ? "devalue" : "revalue") + " to " + curRate(want) + " from "
-                    + curRate(peg) + ". The rate follows at the next reprice."));
+            c.getChildren().add(Kept.scope("staged", () -> muted("Staged: " + (want > peg ? "devalue" : "revalue") + " to " + curRate(want) + " from "
+                    + curRate(peg) + ". The rate follows at the next reprice.")));
         }
         c.getChildren().add(row(pegCells(fx, peg)));
         c.getChildren().add(line(pegBreakWords(fx), null));
         String broke = breakLine(fx);
-        if (broke != null) c.getChildren().add(muted(broke));
-        c.getChildren().add(pegCharts());
+        if (broke != null) c.getChildren().add(Kept.scope("broke", () -> muted(broke)));
+        c.getChildren().add(Kept.scope("charts", this::pegCharts));
         c.getChildren().addAll(currencyFoot((want > peg ? "Devalue" : "Revalue") + " the peg to " + curRate(want),
                 () -> ui.game.repeg(want), XR_PEG));
         return c;
@@ -3774,7 +3933,8 @@ final class PolicyScreen {
 
     /** A small chart of the given lines over `months`, on the left axis given. */
     private TimeChart curChart(List<Integer> months, List<TimeChart.Line> lines, TimeChart.Axis axis, double width, double height) {
-        TimeChart chart = new TimeChart(new ChartModel(), Set.of(), false);
+        // Kept (KP6): the chart is made once in its scope, told its data and its size at every draw.
+        TimeChart chart = Kept.of(TimeChart.class, () -> new TimeChart(new ChartModel(), Set.of(), false));
         chart.setData(months, lines, axis, null, false, false, null, List.of(), List.of(), List.of(),
                 "no months recorded yet");
         chart.setSize(width, height);
@@ -3806,15 +3966,15 @@ final class PolicyScreen {
                 curLine("fxFloor", "the floor", Palette.TEXT_LABEL, curFlat(n, ForeignAccounts.VAULT_FLOOR),
                         v -> curMonths(v)).asDashed()),
                 new TimeChart.Axis((v, step) -> String.format("%.0f", v), true), 520, 150);
-        VBox left = new VBox(4, words("THE RATE AND THE SHADOW · " + sym() + " per " + Currency.FOREIGN_SYMBOL,
+        VBox left = Kept.column(4, words("THE RATE AND THE SHADOW · " + sym() + " per " + Currency.FOREIGN_SYMBOL,
                         Palette.SIZE_LABEL, Palette.TEXT_LABEL), rates,
-                new FlowPane(14, 4, keySwatch(Palette.MONEY, "the rate (the peg, while it holds)"),
+                flowOf(14, 4, keySwatch(Palette.MONEY, "the rate (the peg, while it holds)"),
                         keySwatch(Palette.MONEY_LIGHT, "the shadow rate, dashed")));
-        VBox right = new VBox(4, words("THE VAULT'S COVER · months of imports, drawn at most to " + plain(COVER_CHART_TOP),
+        VBox right = Kept.column(4, words("THE VAULT'S COVER · months of imports, drawn at most to " + plain(COVER_CHART_TOP),
                         Palette.SIZE_LABEL, Palette.TEXT_LABEL), cover,
-                new FlowPane(14, 4, keySwatch(Palette.MONEY, "the vault's cover"),
+                flowOf(14, 4, keySwatch(Palette.MONEY, "the vault's cover"),
                         keySwatch(Palette.TEXT_LABEL, "the floor: " + curMonths(ForeignAccounts.VAULT_FLOOR) + ", dashed")));
-        return new FlowPane(18, 10, left, right);
+        return flowOf(18, 10, left, right);
     }
 
     /* ----- THE BAND ----- */
@@ -3877,12 +4037,12 @@ final class PolicyScreen {
         VBox c = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "THE BAND", bandInfo(), quiet("a higher rate is a weaker " + sym())),
                 row(cCentre, cSlope, cWidth, weak, strong));
         if (isStaged(XR_CENTRE) || isStaged(XR_SLOPE) || isStaged(XR_WIDTH)) {
-            c.getChildren().add(muted("The edges above are the band now; the staged settings take hold at the next reprice."));
+            c.getChildren().add(Kept.scope("staged", () -> muted("The edges above are the band now; the staged settings take hold at the next reprice.")));
         }
         c.getChildren().add(line(bandMonthWords(fx), null));
         c.getChildren().add(line("The shadow rate, where the float would be, " + curRate(fx.getShadowRate()) + ", sits "
                 + curGap(fx.currencyGap(), "the centre") + ".", null));
-        c.getChildren().add(bandChart(fx));
+        c.getChildren().add(Kept.scope("chart", () -> bandChart(fx)));
         c.getChildren().addAll(currencyFoot("Set the band at " + curRate(wc) + ", ±" + share1(ww) + ", " + signedPct1(ws) + " a year",
                 () -> ui.game.setBand(wc, ws, ww), XR_CENTRE, XR_SLOPE, XR_WIDTH));
         return c;
@@ -3901,9 +4061,9 @@ final class PolicyScreen {
                 curLine("bandWeak", "the weak edge now", Palette.TEXT_LABEL, curFlat(n, fx.bandWeakEdge()), v -> curRate(v)).asDashed(),
                 curLine("bandStrong", "the strong edge now", Palette.TEXT_LABEL, curFlat(n, fx.bandStrongEdge()),
                         v -> curRate(v)).asDashed()), HistoryScreen.axisFor("rate"), 1000, 170);
-        return new VBox(4, words("THE RATE AND THE BAND · " + sym() + " per " + Currency.FOREIGN_SYMBOL + ", the last "
+        return Kept.column(4, words("THE RATE AND THE BAND · " + sym() + " per " + Currency.FOREIGN_SYMBOL + ", the last "
                         + Math.min(n, CURRENCY_CHART_MONTHS) + " months", Palette.SIZE_LABEL, Palette.TEXT_LABEL), chart,
-                new FlowPane(14, 4, keySwatch(Palette.MONEY, "the rate"), keySwatch(Palette.MONEY_LIGHT, "the shadow rate, dashed"),
+                flowOf(14, 4, keySwatch(Palette.MONEY, "the rate"), keySwatch(Palette.MONEY_LIGHT, "the shadow rate, dashed"),
                         keySwatch(Palette.TEXT_LABEL, "the band as set now: the weak edge above, the strong below")));
     }
 
@@ -3938,16 +4098,17 @@ final class PolicyScreen {
     /** WHO BUYS AT THE STRONG EDGE (star 6): the two payers as chips, the default marked, what is owed now and what has been bought since founding. */
     VBox payerCard(ForeignAccounts fx) {
         ForeignAccounts.EdgePayer now = fx.getEdgePayer(), want = stagedChoice(XR_PAYER, now, ForeignAccounts.EdgePayer.values());
-        VBox options = new VBox(10);
+        VBox options = Kept.column(10);
         for (ForeignAccounts.EdgePayer p : ForeignAccounts.EdgePayer.values()) {
-            options.getChildren().add(option(p.words, payerSays(p), p == want, p == now, () -> choose(XR_PAYER, now, p)));
+            options.getChildren().add(Kept.scope("option:" + p.name(),
+                    () -> option(p.words, payerSays(p), p == want, p == now, () -> choose(XR_PAYER, now, p))));
         }
         VBox c = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "WHO BUYS AT THE STRONG EDGE", payerInfo(), null), options);
         ForeignAccounts.Regime regime = fx.getRegime();
         if (regime == ForeignAccounts.Regime.FLOAT || regime == ForeignAccounts.Regime.LEAN) {
-            c.getChildren().add(muted("It acts only under a band or a peg: under "
+            c.getChildren().add(Kept.scope("acts", () -> muted("It acts only under a band or a peg: under "
                     + (regime == ForeignAccounts.Regime.FLOAT ? "a float" : "leaning against falls")
-                    + " the vault buys nothing at an edge."));
+                    + " the vault buys nothing at an edge.")));
         }
         c.getChildren().add(cardLine(fx.getEdgeOwedLocal() > 0
                         ? "Owed now, by " + fx.getEdgeOwedPayer().words.toLowerCase() + ", paid at the top of next month"
@@ -4036,21 +4197,21 @@ final class PolicyScreen {
         // Under a band each aim sets its own dial, so each says what it would set now; under a float, a lean or a peg
         // one rule sets it whatever is chosen, and it is said once under the chips.
         boolean eachSets = regime == ForeignAccounts.Regime.BAND;
-        VBox options = new VBox(10);
+        VBox options = Kept.column(10);
         for (DebtManager.Aim a : DebtManager.Aim.values()) {
-            options.getChildren().add(option(a.words, aimSays(a) + (eachSets ? " " + aimWouldSet(a, fx) : ""),
-                    a == want, a == now, () -> choose(XR_AIM, now, a)));
+            options.getChildren().add(Kept.scope("option:" + a.name(), () -> option(a.words, aimSays(a) + (eachSets ? " " + aimWouldSet(a, fx) : ""),
+                    a == want, a == now, () -> choose(XR_AIM, now, a))));
         }
         VBox c = card(cardHead(Icons.POLICY, Palette.MONEY, "WHAT THE DIAL AIMS AT", aimInfo(), null), options);
         if (regime == ForeignAccounts.Regime.FLOAT || regime == ForeignAccounts.Regime.LEAN) {
-            c.getChildren().add(muted("A float has no target for the currency to aim at: the dial follows inflation "
+            c.getChildren().add(Kept.scope("float", () -> muted("A float has no target for the currency to aim at: the dial follows inflation "
                     + "whatever is chosen. " + aimWouldSet(DebtManager.Aim.INFLATION, fx).replace("It would", "The rule would")
-                    + " The aim waits for a band or a peg."));
+                    + " The aim waits for a band or a peg.")));
         } else if (regime == ForeignAccounts.Regime.PEG) {
-            c.getChildren().add(muted("Under the peg the dial is tied to the US's rate whatever is chosen: "
-                    + aimWouldSet(now, fx).replace("It would", "it would") + " The aim only decides who sets the spread, you or the rule."));
+            c.getChildren().add(Kept.scope("peg", () -> muted("Under the peg the dial is tied to the US's rate whatever is chosen: "
+                    + aimWouldSet(now, fx).replace("It would", "it would") + " The aim only decides who sets the spread, you or the rule.")));
         }
-        HBox hand = new HBox(8, words(market.isAutopilot()
+        HBox hand = Kept.row(8, words(market.isAutopilot()
                         ? "The autopilot is on: the dial follows the aim."
                         : "The autopilot is off, so the dial is in your hand and the aim waits.",
                         Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL),
@@ -4095,21 +4256,26 @@ final class PolicyScreen {
         VBox c = card(cardHead(Icons.BANK, Palette.MONEY, "THE DIAL UNDER A PEG", pegDialInfo(), null),
                 words(tiedWords(tied, spread, " + ", " − "), Palette.SIZE_HEADING + 3, Palette.TEXT_HEAD));
         if (Math.abs(market.getPolicyRate() - tied) > 1e-9) {
-            c.getChildren().add(muted("The dial stands at " + pct2(market.getPolicyRate())
-                    + " until the month turns, then goes to " + pct2(tied) + "."));
+            c.getChildren().add(Kept.scope("standing", () -> muted("The dial stands at " + pct2(market.getPolicyRate())
+                    + " until the month turns, then goes to " + pct2(tied) + ".")));
         }
         if (ruleHas) {
-            c.getChildren().add(line("The rule sets the spread: " + plain(DebtManager.CURRENCY_WEIGHT) + " × the gap (the "
-                    + "shadow rate " + curGap(gap, "the peg") + ") = " + points(spread) + ".", null));
-            c.getChildren().add(stepChip("the rule has it", () -> { }, true));
+            c.getChildren().addAll(Kept.scope("ruleSets", () -> List.<Node>of(
+                    line("The rule sets the spread: " + plain(DebtManager.CURRENCY_WEIGHT) + " × the gap (the "
+                            + "shadow rate " + curGap(gap, "the peg") + ") = " + points(spread) + ".", null),
+                    stepChip("the rule has it", () -> { }, true))));
         } else {
-            double want = staged(XR_SPREAD, spread);
-            c.getChildren().add(cardLine("The spread over the US's rate", points(want) + (isStaged(XR_SPREAD) ? " · staged" : ""), null));
-            c.getChildren().add(stepper(XR_SPREAD, spread, SPREAD_STEP, DebtManager.MIN_POLICY_RATE - market.worldRate(),
-                    DebtManager.MAX_POLICY_RATE - market.worldRate(),
-                    pointsOf(SPREAD_STEP * 100), pointsOf(SPREAD_STEP * 100)));
-            c.getChildren().add(muted("Raise it against money leaving, lower it against money arriving."));
-            c.getChildren().addAll(currencyFoot("Set the spread to " + points(want), () -> market.setPegSpread(want), XR_SPREAD));
+            c.getChildren().addAll(Kept.scope("spread", () -> {
+                double want = staged(XR_SPREAD, spread);
+                List<Node> out = new ArrayList<>();
+                out.add(cardLine("The spread over the US's rate", points(want) + (isStaged(XR_SPREAD) ? " · staged" : ""), null));
+                out.add(stepper(XR_SPREAD, spread, SPREAD_STEP, DebtManager.MIN_POLICY_RATE - market.worldRate(),
+                        DebtManager.MAX_POLICY_RATE - market.worldRate(),
+                        pointsOf(SPREAD_STEP * 100), pointsOf(SPREAD_STEP * 100)));
+                out.add(muted("Raise it against money leaving, lower it against money arriving."));
+                out.addAll(currencyFoot("Set the spread to " + points(want), () -> market.setPegSpread(want), XR_SPREAD));
+                return out;
+            }));
         }
         c.getChildren().add(line("A free dial, an open border and a fixed rate cannot all hold at once: under the peg the "
                 + "city gives up the first.", null));
@@ -4200,25 +4366,25 @@ final class PolicyScreen {
             String notYet = String.format("The numbers are not hard to read yet. At %.0f times "
                     + "founding prices this becomes available, and until then a reform "
                     + "would be a change of units nobody asked for.", Denomination.UNLOCK_AT);
-            head.getChildren().add(noteLine("Not yet: " + firstWords(notYet), notYet, 1100));
+            head.getChildren().add(Kept.scope("notYet", () -> noteLine("Not yet: " + firstWords(notYet), notYet, 1100)));
             return;
         }
 
         double factor = staged("reform", 0);
-        FlowPane pick = new FlowPane(6, 6);
+        FlowPane pick = Kept.flow(6, 6);
         for (double f : Denomination.FACTORS) {
             boolean can = unit.canLop(f);
             final double chosen = f;
-            pick.getChildren().add(stepChip(String.format("%,.0f to 1", f),
+            pick.getChildren().add(Kept.scope("factor:" + f, () -> stepChip(String.format("%,.0f to 1", chosen),
                     () -> { if (can) { stage("reform", chosen); showPolicyMenu(); } },
-                    !can || factor != f));
+                    !can || factor != chosen)));
         }
         page.getChildren().add(sectionHead("HOW MANY OLD FOR ONE NEW", foreignInfo(), quiet(factor > 0
                 ? "one new one for " + String.format("%,.0f", factor) + " of today's" : "pick one; nothing happens until you do")));
         page.getChildren().add(pick);
         if (factor <= 0) {
-            page.getChildren().add(muted("Pick how many of today's " + ui.game.getCurrency().plural() + " one new one should "
-                    + "be worth. Nothing happens until you do."));
+            page.getChildren().add(Kept.scope("pickOne", () -> muted("Pick how many of today's " + ui.game.getCurrency().plural() + " one new one should "
+                    + "be worth. Nothing happens until you do.")));
             return;
         }
         ham.citybuildersim.sectors.Retail shops = ui.game.getSectors().retail();
@@ -4226,32 +4392,34 @@ final class PolicyScreen {
         LabourMarket labour = ui.game.getLabourMarket();
         ForeignAccounts fx = ui.game.getForeignAccounts();
         page.getChildren().add(row(
-                priceTag("A unit on the shelf", unitPrice(shops.getStoreSellPrice()), unitPrice(shops.getStoreSellPrice() / factor)),
-                priceTag("Rent, per person housed", unitPrice(landlords.getRentPrice()), unitPrice(landlords.getRentPrice() / factor)),
-                priceTag("The minimum wage", unitPrice(labour.cashMinimumWage()), unitPrice(labour.cashMinimumWage() / factor)),
-                priceTag("The city's cash", money(ui.game.getCash()), money(ui.game.getCash() / factor)),
+                Kept.scope("shelf", () -> priceTag("A unit on the shelf", unitPrice(shops.getStoreSellPrice()), unitPrice(shops.getStoreSellPrice() / factor))),
+                Kept.scope("rent", () -> priceTag("Rent, per person housed", unitPrice(landlords.getRentPrice()), unitPrice(landlords.getRentPrice() / factor))),
+                Kept.scope("wage", () -> priceTag("The minimum wage", unitPrice(labour.cashMinimumWage()), unitPrice(labour.cashMinimumWage() / factor))),
+                Kept.scope("cash", () -> priceTag("The city's cash", money(ui.game.getCash()), money(ui.game.getCash() / factor))),
                 // A RATE, NOT A SUM: local money per US dollar, so it is divided, never multiplied into dollars.
-                priceTag("US$1 costs", fxRate(fx.getRate()), fxRate(fx.getRate() / factor)),
-                priceTag("One new one is", "1 of today's", String.format("%,.0f of today's", factor))));
+                Kept.scope("dollar", () -> priceTag("US$1 costs", fxRate(fx.getRate()), fxRate(fx.getRate() / factor))),
+                Kept.scope("one", () -> priceTag("One new one is", "1 of today's", String.format("%,.0f of today's", factor)))));
         String now = unit.name(ui.game.getCurrency()), then = afterName(unit, factor, ui.game.getCurrency());
-        Pieces.ActionButton go = actionButton(Icons.BANKNOTE, Palette.MONEY, ACTION_TALL,
-                new Press(Look.GO, "Issue the new " + ui.game.getCurrency().name(),
-                        "the " + now + " becomes the " + then + ": one for " + String.format("%,.0f", factor)),
-                () -> {
-                    if (ui.game.reformCurrency(factor)) {
-                        GameLog.note(String.format("Currency reform: one new %s for %,.0f old ones.",
-                                ui.game.getCurrency().name(), factor));
-                    }
-                    dropProposal();
-                    ui.redraw();
-                });
-        go.setMaxWidth(420);
-        Pieces.ActionButton no = actionButton(Icons.CLOSE, Palette.TEXT_LABEL, ACTION_INLINE,
-                new Press(Look.CHOOSE, "Leave it as it is", null), () -> { dropProposal(); ui.redraw(); });
-        no.setMaxWidth(200);
-        HBox foot = new HBox(10, go, no);
-        foot.setAlignment(Pos.CENTER_LEFT);
-        page.getChildren().add(foot);
+        page.getChildren().add(Kept.scope("foot", () -> {
+            Pieces.ActionButton go = actionButton(Icons.BANKNOTE, Palette.MONEY, ACTION_TALL,
+                    new Press(Look.GO, "Issue the new " + ui.game.getCurrency().name(),
+                            "the " + now + " becomes the " + then + ": one for " + String.format("%,.0f", factor)),
+                    () -> {
+                        if (ui.game.reformCurrency(factor)) {
+                            GameLog.note(String.format("Currency reform: one new %s for %,.0f old ones.",
+                                    ui.game.getCurrency().name(), factor));
+                        }
+                        dropProposal();
+                        ui.redraw();
+                    });
+            go.setMaxWidth(420);
+            Pieces.ActionButton no = actionButton(Icons.CLOSE, Palette.TEXT_LABEL, ACTION_INLINE,
+                    new Press(Look.CHOOSE, "Leave it as it is", null), () -> { dropProposal(); ui.redraw(); });
+            no.setMaxWidth(200);
+            HBox foot = Kept.row(10, go, no);
+            foot.setAlignment(Pos.CENTER_LEFT);
+            return foot;
+        }));
     }
 
     /** P40. */
@@ -4337,12 +4505,13 @@ final class PolicyScreen {
         HouseholdBalance bal = ui.game.getHouseholdBalance();
         double collected = em.getContributions(), paid = em.getPensionsPaid();
 
-        VBox cover = card(cardHead(Icons.CANE, Palette.MONEY, "THE PENSION COVER", COVER_INFO, null),
+        // Kept (KP6): every card is a scope of its own; the pensioner household's is keyed by which card it is, since there may be none.
+        VBox cover = Kept.scope("cover", () -> card(cardHead(Icons.CANE, Palette.MONEY, "THE PENSION COVER", COVER_INFO, null),
                 figure(paid > 0 ? "covered " + pct0(em.getPensionCoverage()) : "no pension paid", Palette.SIZE_LEAD, Palette.TEXT_HEAD),
                 bulletBar(collected, paid, Palette.MONEY, 0, "contributions " + money(collected) + " against pensions paid "
                         + money(paid) + " (the tick)"),
                 cardLine("From general revenue, a month", money(em.getPensionShortfall()), null),
-                cardLine(people(em.getSeniors()) + " seniors, each", moneyFull(policy.pensionPerSenior()) + " a month", null));
+                cardLine(people(em.getSeniors()) + " seniors, each", moneyFull(policy.pensionPerSenior()) + " a month", null)));
 
         int retired = HouseholdAccounts.RETIRED;
         VBox household;
@@ -4361,22 +4530,22 @@ final class PolicyScreen {
                     Step.total("has to spend", has, Palette.MONEY),
                     Step.of("rent and bills", -fixed, Palette.RAMP_REST),
                     Step.total("left for the shop", left, Palette.MONEY_DARK));
-            household = card(cardHead(Icons.HOMES, Palette.MONEY, "A PENSIONER HOUSEHOLD",
+            household = Kept.scope("household", () -> card(cardHead(Icons.HOMES, Palette.MONEY, "A PENSIONER HOUSEHOLD",
                             "One household of the retired row, from its own ledger: what it had to spend this month, what "
                             + "its rent, fees and interest took, and what was left for the shop - against a basket for "
                             + "everybody in it. " + m.says(), chip(m.word(), m.tone())),
                     waterfall(steps, Money::moneyFull, 0, 120),
                     bulletBar(left, basket, Palette.MONEY_DARK, 0, "left " + moneyFull(left) + " against a basket costing "
                             + moneyFull(basket) + " (the tick)"),
-                    words(m.says(), Palette.SIZE_LABEL + 1, m.tone()));
+                    words(m.says(), Palette.SIZE_LABEL + 1, m.tone())));
         } else {
-            household = card(cardHead(Icons.HOMES, Palette.MONEY, "A PENSIONER HOUSEHOLD", null, null),
-                    muted("No pensioner household in the city this month."));
+            household = Kept.scope("noHousehold", () -> card(cardHead(Icons.HOMES, Palette.MONEY, "A PENSIONER HOUSEHOLD", null, null),
+                    muted("No pensioner household in the city this month.")));
         }
         page.getChildren().add(row(cover, household));
         // Two dials, two dates (R0): each card's own shut card above it.
-        page.getChildren().add(row(withShutCard(PolicyDates.Lever.PENSION_CONTRIBUTION, contributionCard(em, policy)),
-                withShutCard(PolicyDates.Lever.PENSION_REPLACEMENT, pensionDialCard(em, policy, bal))));
+        page.getChildren().add(row(Kept.scope("contribution", () -> withShutCard(PolicyDates.Lever.PENSION_CONTRIBUTION, contributionCard(em, policy))),
+                Kept.scope("pension", () -> withShutCard(PolicyDates.Lever.PENSION_REPLACEMENT, pensionDialCard(em, policy, bal)))));
     }
 
     /** WHAT WORKERS PAY IN (P-4): the contribution, its own Apply; collected, covered, out of the treasury and a payslip before and after (M3: struck on the wage bill, so a dial at nothing previews something - B9). */
@@ -4495,7 +4664,7 @@ final class PolicyScreen {
         double students = families.getSeekers(FamilyModel.Seeker.STUDENT);
 
         addShutCard(page, PolicyDates.Lever.EI);
-        VBox cover = card(cardHead(Icons.STAFF, Palette.MONEY, "THE EI COVER", EI_INFO, null),
+        VBox cover = Kept.scope("cover", () -> card(cardHead(Icons.STAFF, Palette.MONEY, "THE EI COVER", EI_INFO, null),
                 figure(paid > 0 ? "premiums cover " + pct0(em.getEiCoverage()) : "nobody drew EI", Palette.SIZE_LEAD, Palette.TEXT_HEAD),
                 bulletBar(collected, paid, Palette.MONEY, 0, "premiums " + money(collected) + " against EI paid "
                         + money(paid) + " (the tick)"),
@@ -4505,9 +4674,9 @@ final class PolicyScreen {
                 cardLine("Grants to " + people(students) + " students", money(p.grants()), null),
                 doorPill("A student is granted " + grantWords(policy.getGrantBasis(), policy.getGrantAmount(),
                         ui.game.getExpectations().getExpectedLevel()) + " · Schools",
-                        Icons.EDUCATION, Palette.MONEY, () -> open(PROMISES, "Schools")));
+                        Icons.EDUCATION, Palette.MONEY, () -> open(PROMISES, "Schools"))));
         page.getChildren().add(cover);
-        page.getChildren().add(row(eiPremiumCard(em, policy), eiBenefitCard(em, policy, u)));
+        page.getChildren().add(row(Kept.scope("eiPremium", () -> eiPremiumCard(em, policy)), Kept.scope("eiBenefit", () -> eiBenefitCard(em, policy, u))));
         // Food assistance has its own tab since 0.7.45 (the UI spec's D6): a door to it stays here.
         page.getChildren().add(doorPill("Food assistance " + pct0(policy.getFoodAssistance()) + " · Promises › Food",
                 Icons.FOOD, Palette.MONEY, () -> open(PROMISES, "Food")));
@@ -4527,10 +4696,10 @@ final class PolicyScreen {
 
     void foodPage(VBox page) {
         TaxPolicy policy = policy();
-        page.getChildren().add(Pieces.whoGoesWithout(ui.game,
-                () -> ui.sectorScreen.openSectorBooks(ui.game.getSectors().retail(), "Operations")));
-        page.getChildren().add(foodAssistanceCard(policy));
-        page.getChildren().add(whoWouldGetIt());
+        page.getChildren().add(Kept.scope("without", () -> Pieces.whoGoesWithout(ui.game,
+                () -> ui.sectorScreen.openSectorBooks(ui.game.getSectors().retail(), "Operations"))));
+        page.getChildren().add(Kept.scope("assistance", () -> foodAssistanceCard(policy)));
+        page.getChildren().add(Kept.scope("who", this::whoWouldGetIt));
     }
 
     /** The dial card's status (pure: the probe reads it): who a voucher would go to at the last sale's price. */
@@ -4615,7 +4784,7 @@ final class PolicyScreen {
                 + " at that sale - the bar, a basket a head the whole of it - how many of them its means test lets in,"
                 + " and how many were paid one. Before the dial is on, nobody was paid.", null));
         if (rows.isEmpty()) {
-            c.getChildren().add(muted("Nobody: every household's baskets take less than half of what it has after its bills."));
+            c.getChildren().add(Kept.scope("nobody", () -> muted("Nobody: every household's baskets take less than half of what it has after its bills.")));
             return c;
         }
         List<RankRow> ranked = new ArrayList<>();
@@ -4623,7 +4792,7 @@ final class PolicyScreen {
             ranked.add(new RankRow("aid:" + r.row(), Icons.FOOD, r.name(), r.got(), Palette.PEOPLE,
                     List.of(r.gotWords(), r.figures()), r.name() + ": " + r.gotWords() + (r.gotWords().startsWith("got") ? " needed" : ""), null, null, null, null));
         }
-        c.getChildren().add(rankBars(ranked, 1, new double[] {150, 300}, 0, openLines, this::showPolicyMenu));
+        c.getChildren().add(Kept.scope("ranked", () -> rankBars(ranked, 1, new double[] {150, 300}, 0, openLines, this::showPolicyMenu)));
         return c;
     }
 
@@ -4755,16 +4924,16 @@ final class PolicyScreen {
                 new Slice("The treasury", Math.max(0, treasury), Palette.RAMP_REST));
         String whole = coverWords() + " A ward is paid for whether or not its patients "
                 + "are, so the cost does not move with the price; only who pays it does.";
-        HBox cornerChip = new HBox(Palette.GAP_TIGHT, chip(corner.word(), Palette.TEXT_LABEL), infoButton(corner.says(), true));
+        HBox cornerChip = Kept.row(Palette.GAP_TIGHT, chip(corner.word(), Palette.TEXT_LABEL), infoButton(corner.says(), true));
         cornerChip.setAlignment(Pos.CENTER_LEFT);
-        FlowPane key = new FlowPane(16, 4);
-        for (Slice s : parts) key.getChildren().add(keySwatch(s.colour(), s.name() + " " + money(s.amount())));
-        page.getChildren().add(card(cardHead(Icons.HEALTH, Palette.MONEY, "WHO PAYS FOR CARE", whole, cornerChip),
+        FlowPane key = Kept.flow(16, 4);
+        for (Slice s : parts) key.getChildren().add(Kept.scope("slice:" + s.name(), () -> keySwatch(s.colour(), s.name() + " " + money(s.amount()))));
+        page.getChildren().add(Kept.scope("pays", () -> card(cardHead(Icons.HEALTH, Palette.MONEY, "WHO PAYS FOR CARE", whole, cornerChip),
                 figure(money(gross) + " a month", Palette.SIZE_LEAD, Palette.TEXT_HEAD),
                 muted("what the clinics' staff and buildings cost this month"),
                 sliceBar(parts), key,
                 cardLine("The treasury's share", cost(treasury), null),
-                noteLine(coverWords(), whole, 1100)));
+                noteLine(coverWords(), whole, 1100))));
 
         page.getChildren().add(sectionHead("WHO WAS TURNED AWAY AT THE DOOR", turnedAwayInfo(), quiet(
                 care.getPricedOutTotal() > 0 ? people(care.getPricedOutTotal()) + " priced out of care this month"
@@ -4772,14 +4941,15 @@ final class PolicyScreen {
         List<Node> cells = new ArrayList<>();
         for (CareType kind : new CareType[] {CareType.GENERAL, CareType.CHILDCARE, CareType.SENIOR}) {
             double out = care.getPricedOut(kind);
-            cells.add(card(words(kind.getLabel(), Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL),
+            cells.add(Kept.scope("turned:" + kind.name(), () -> card(words(kind.getLabel(), Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL),
                     figure(people(out), Palette.SIZE_LEAD, out > 0 ? Palette.BAD : Palette.TEXT_HEAD),
                     muted(out > 0 ? String.format("priced out - coverage cut to %.0f%% of what the beds could do",
-                            care.getAffordability(kind) * 100) : "nobody priced out")));
+                            care.getAffordability(kind) * 100) : "nobody priced out"))));
         }
         page.getChildren().add(row(cells.toArray(new Node[0])));
         // The fee scale is open from founding; only the premium is dated (R0), so its shut card sits above its own dial.
-        page.getChildren().add(row(feeCard(care, policy), withShutCard(PolicyDates.Lever.HEALTH_PREMIUM, healthPremiumCard(em, care, policy))));
+        page.getChildren().add(row(Kept.scope("fee", () -> feeCard(care, policy)),
+                Kept.scope("premium", () -> withShutCard(PolicyDates.Lever.HEALTH_PREMIUM, healthPremiumCard(em, care, policy)))));
     }
 
     /** P64, both layers. */
@@ -5014,24 +5184,28 @@ final class PolicyScreen {
         Lever loanLever = register(new Lever("loanRate", "Interest on student loans", policy.getStudentLoanRate(),
                 0, TaxPolicy.MAX_STUDENT_LOAN_RATE, .0025, Money::pct2, policy::setStudentLoanRate));
 
+        // Kept (KP6): every card is a scope of its own; the banner comes and goes.
         if (!anyStanding) {
-            HBox banner = statusBanner("No school yet", Palette.TEXT_LABEL,
-                    "No school is standing yet. The dials still set the price, the share and the grant for the first one.",
-                    Icons.EDUCATION);
-            banner.getChildren().add(doorPill("Build · Education", Icons.BUILD, Palette.BUILDING,
-                    () -> ui.buildScreen.openCategory(BuildAdvice.EDUCATION)));
-            page.getChildren().add(banner);
+            page.getChildren().add(Kept.scope("noSchool", () -> {
+                HBox banner = statusBanner("No school yet", Palette.TEXT_LABEL,
+                        "No school is standing yet. The dials still set the price, the share and the grant for the first one.",
+                        Icons.EDUCATION);
+                banner.getChildren().add(doorPill("Build · Education", Icons.BUILD, Palette.BUILDING,
+                        () -> ui.buildScreen.openCategory(BuildAdvice.EDUCATION)));
+                return banner;
+            }));
         }
 
         page.getChildren().add(sectionHead("WHO CAN AFFORD A PLACE", BURDEN_INFO,
                 quiet("a place's fee after the city's share, against a month's wage · click a row for its price")));
-        page.getChildren().add(burdenRows(schools, policy, places));
+        page.getChildren().add(Kept.scope("burden", () -> burdenRows(schools, policy, places)));
 
-        page.getChildren().add(row(shareCard(shareLever, schools, policy), schoolsMonthCard(schools),
-                everySchoolCard(everySchool, policy)));
+        page.getChildren().add(row(Kept.scope("share", () -> shareCard(shareLever, schools, policy)),
+                Kept.scope("month", () -> schoolsMonthCard(schools)),
+                Kept.scope(EVERY_SCHOOL, () -> everySchoolCard(everySchool, policy))));
         // The grant and the loan rate are one lever, student aid (R0): its shut card above the two dials; tuition above is open from founding.
         addShutCard(page, PolicyDates.Lever.STUDENT_AID);
-        page.getChildren().add(row(grantCard(policy), loanCard(loanLever, policy)));
+        page.getChildren().add(row(Kept.scope("grant", () -> grantCard(policy)), Kept.scope("loan", () -> loanCard(loanLever, policy))));
     }
 
     /** The nine kinds a school can be, in EducationType order: everything bar NONE (TaxPolicy's own list, which it keeps to itself). */
@@ -5077,11 +5251,15 @@ final class PolicyScreen {
         for (Course c : all) scale = Math.max(scale, Math.max(c.now(), c.then()) * 1.05);
         VBox list = card();
         list.setSpacing(2);
+        final double top = scale;
         for (Course c : all) {
             String key = "course:" + c.kind().name();
-            boolean shown = openLines.contains(key);
-            list.getChildren().add(courseRow(c, scale, shown, () -> { if (!openLines.remove(key)) openLines.add(key); showPolicyMenu(); }));
-            if (shown) list.getChildren().add(kindCard(c, policy));
+            // Kept (KP6): a course is a scope of its own, keyed by its kind, with its own price opened in it.
+            Kept.scope(key, () -> {
+                boolean shown = openLines.contains(key);
+                list.getChildren().add(courseRow(c, top, shown, () -> { if (!openLines.remove(key)) openLines.add(key); showPolicyMenu(); }));
+                if (shown) list.getChildren().add(kindCard(c, policy));
+            });
         }
         return list;
     }
@@ -5089,10 +5267,10 @@ final class PolicyScreen {
     /** One course: its name ("▸ its price"), its bar - red past the line where nobody enrols - with the staged burden a ghost, its figure, and "no school" when none stands. */
     HBox courseRow(Course c, double scale, boolean shown, Runnable toggle) {
         Label name = words(c.kind().getLabel(), Palette.SIZE_BODY + 1, c.standing() ? Palette.TEXT_BODY : Palette.TEXT_MUTED);
-        Label mark = new Label((shown ? "▾ " : "▸ ") + "its price");
+        Label mark = Kept.label((shown ? "▾ " : "▸ ") + "its price");
         mark.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.ACCENT));
-        VBox named = new VBox(0, name, mark);
-        HBox lead = new HBox(8, iconSquare(Icons.EDUCATION, Palette.MONEY, 24, 13), named);
+        VBox named = Kept.column(0, name, mark);
+        HBox lead = Kept.row(8, iconSquare(Icons.EDUCATION, Palette.MONEY, 24, 13), named);
         HBox.setHgrow(named, Priority.ALWAYS);
         lead.setAlignment(Pos.CENTER_LEFT);
         lead.setMinWidth(180);
@@ -5101,12 +5279,12 @@ final class PolicyScreen {
         boolean over = c.now() >= Education.MAX_BURDEN, overThen = c.then() >= Education.MAX_BURDEN;
         List<Tick> line = List.of(new Tick(Education.MAX_BURDEN, Palette.BAD, 2, null,
                 String.format("%.0f%% of a month's wage: nobody enrols", Education.MAX_BURDEN * 100)));
-        VBox bars = new VBox(2, segmentBar(List.of(Segment.of(Math.min(c.now(), scale), over ? Palette.BAD : Palette.MONEY)),
+        VBox bars = Kept.column(2, segmentBar(List.of(Segment.of(Math.min(c.now(), scale), over ? Palette.BAD : Palette.MONEY)),
                 scale, line, 0, 8));
         boolean moved = !pct0(c.now()).equals(pct0(c.then()));
         if (moved) {
-            bars.getChildren().add(segmentBar(List.of(new Segment(Math.min(c.then(), scale), overThen ? Palette.BAD : Palette.ACCENT,
-                    true, null, null, "at the staged price and share " + pct0(c.then()), null)), scale, List.of(), 0, 6));
+            bars.getChildren().add(Kept.scope("ghost", () -> segmentBar(List.of(new Segment(Math.min(c.then(), scale), overThen ? Palette.BAD : Palette.ACCENT,
+                    true, null, null, "at the staged price and share " + pct0(c.then()), null)), scale, List.of(), 0, 6)));
         }
         bars.setMinWidth(120);
         HBox.setHgrow(bars, Priority.ALWAYS);
@@ -5120,13 +5298,15 @@ final class PolicyScreen {
         status.setPrefWidth(190);
         status.setMinWidth(140);
         status.setMaxWidth(190);
-        HBox row = new HBox(10, lead, bars, figure, status);
+        HBox row = Kept.row(10, lead, bars, figure, status);
         row.setAlignment(Pos.CENTER_LEFT);
         row.setMinHeight(40);
         String rest = "-fx-padding: 4 6 4 6; -fx-background-radius: 6; -fx-cursor: hand;"
                 + " -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 0 1 0;";
-        row.setStyle(rest);
-        row.setOnMouseEntered(e -> row.setStyle(rest + " -fx-background-color: " + Palette.CONTROL + ";"));
+        // Kept (KP6): the look the pointer calls for is chosen from isHover() where it is set.
+        String lit = rest + " -fx-background-color: " + Palette.CONTROL + ";";
+        row.setStyle(row.isHover() ? lit : rest);
+        row.setOnMouseEntered(e -> row.setStyle(lit));
         row.setOnMouseExited(e -> row.setStyle(rest));
         row.setOnMouseClicked(e -> toggle.run());
         return row;
@@ -5294,9 +5474,9 @@ final class PolicyScreen {
         register(new Lever("grantBasis", "The grant is", basis.ordinal(), 0, TaxPolicy.GrantBasis.values().length - 1, 1,
                 v -> basisName(TaxPolicy.GrantBasis.values()[(int) Math.round(v)]),
                 v -> { if (!isStaged("grantAmount")) policy.setGrantBasis(TaxPolicy.GrantBasis.values()[(int) Math.round(v)]); }));
-        FlowPane pick = new FlowPane(6, 6);
+        FlowPane pick = Kept.flow(6, 6);
         for (TaxPolicy.GrantBasis b : TaxPolicy.GrantBasis.values()) {
-            pick.getChildren().add(stepChip(basisName(b), () -> {
+            pick.getChildren().add(Kept.scope("basis:" + b.name(), () -> stepChip(basisName(b), () -> {
                 unstage("grantBasis");
                 unstage("grantAmount");
                 if (b != basis) {
@@ -5304,7 +5484,7 @@ final class PolicyScreen {
                     stage("grantAmount", ui.game.grantAmountAs(b));
                 }
                 showPolicyMenu();
-            }, b != wantBasis));
+            }, b != wantBasis)));
         }
         // The amount, in the staged basis's unit: the same dial re-ranged. Its "current" is what today's grant IS
         // in that unit, so a thumb put back is a grant unchanged; applied WITH the basis it was read in.
@@ -5412,23 +5592,26 @@ final class PolicyScreen {
         GridPane grid = equalColumns(5, TILE_GAP);
         int i = 0;
         for (Sector sector : ui.game.getSectors().all()) {
-            boolean on = ui.game.isAutoSubsidised(sector);
-            double paid = ui.game.getSubsidyPaid(sector);
-            boolean blocked = credit.isBorrowingBlocked(sector.key());
-            VBox c = card(cardHead(Icons.ofSector(sector), Palette.BUSINESS, sector.label(), null, null),
-                    words(on ? (paid > 0 ? "protected · " + money(paid) + " paid last month"
-                                         : "protected, and it did not need it last month")
-                             : "not protected", Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
-            if (blocked) c.getChildren().add(tag("cannot borrow", Palette.BAD));
-            c.getChildren().add(actionButton(Icons.SECTOR, Palette.MONEY, ACTION_INLINE,
-                    new Press(Look.CHOOSE, on ? "Stop protecting" : "Protect it", null), () -> {
-                        ui.game.setAutoSubsidised(sector, !ui.game.isAutoSubsidised(sector));
-                        showPolicyMenu();
-                    }));
-            GridPane.setFillHeight(c, true);
-            c.setMaxHeight(Double.MAX_VALUE);
-            grid.add(c, i % 5, i / 5);
-            i++;
+            final int at = i++;
+            // Kept (KP6): a sector's card is a scope of its own, keyed by the sector; the lockout's tag comes and goes inside it.
+            Kept.scope("sector:" + sector.key(), () -> {
+                boolean on = ui.game.isAutoSubsidised(sector);
+                double paid = ui.game.getSubsidyPaid(sector);
+                boolean blocked = credit.isBorrowingBlocked(sector.key());
+                VBox c = card(cardHead(Icons.ofSector(sector), Palette.BUSINESS, sector.label(), null, null),
+                        words(on ? (paid > 0 ? "protected · " + money(paid) + " paid last month"
+                                             : "protected, and it did not need it last month")
+                                 : "not protected", Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
+                if (blocked) c.getChildren().add(Kept.scope("blocked", () -> tag("cannot borrow", Palette.BAD)));
+                c.getChildren().add(actionButton(Icons.SECTOR, Palette.MONEY, ACTION_INLINE,
+                        new Press(Look.CHOOSE, on ? "Stop protecting" : "Protect it", null), () -> {
+                            ui.game.setAutoSubsidised(sector, !ui.game.isAutoSubsidised(sector));
+                            showPolicyMenu();
+                        }));
+                GridPane.setFillHeight(c, true);
+                c.setMaxHeight(Double.MAX_VALUE);
+                grid.add(c, at % 5, at / 5);
+            });
         }
         page.getChildren().add(grid);
     }

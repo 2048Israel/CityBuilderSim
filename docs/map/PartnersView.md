@@ -17,7 +17,7 @@
 
 **Uses:** [WorldMarket](WorldMarket.md) (12), [PartnerTrade](PartnerTrade.md) (10), [Good](Good.md) (10), [Nations](Nations.md) (9), [Game](Game.md) (6), [NationsMap](NationsMap.md) (5), [ForeignAccounts](ForeignAccounts.md) (4), [WorldData](WorldData.md) (2), [Sectors](Sectors.md) (2), [WorldMoneys](WorldMoneys.md) (1), [PolicyRates](PolicyRates.md) (1), [LandFactors](LandFactors.md) (1), [LandSellers](LandSellers.md) (1), [EarthProj](EarthProj.md) (1), [GoodsMarket](GoodsMarket.md) (1)
 
-**Used by (2):** [PartnersCheck](PartnersCheck.md), [PartnersPage](PartnersPage.md)
+**Used by (3):** [KeptBench](KeptBench.md), [PartnersCheck](PartnersCheck.md), [PartnersPage](PartnersPage.md)
 
 ## Sections
 
