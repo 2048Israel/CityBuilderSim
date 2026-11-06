@@ -4,6 +4,7 @@ import ham.citybuildersim.Auction;
 import ham.citybuildersim.BuildAdvice;
 import ham.citybuildersim.BuildingType;
 import ham.citybuildersim.BuildingsTemplate;
+import ham.citybuildersim.ClockPace;
 import ham.citybuildersim.FreightView;
 import ham.citybuildersim.Game;
 import javafx.css.CssMetaData;
@@ -59,6 +60,9 @@ import java.util.Locale;
  * the view, Show more, Freight's divisions, the folds and a statement's notes and columns, the pictures the pages hold (the refinery's,
  * a materials industry's, a leg's bar), the figures that count up and the waterfall and ring that grow and sweep, the oil reserve's
  * dials, and the card, the door and the crumb the pointer rests on.
+ * Since UP7 the drawer's pinned bar and the construction tab too, each a box made once on a scene of its own and drawn by the real
+ * refreshDrawerBar() and refreshConstructionTab() (kept, and built new), and the header's speed reading, its pace swapped for one on a
+ * clock the harness moves by hand.
  *
  * <p>WHY. A kept page is right only if every month's redraw over last month's nodes ends where
  * a page built new from the same city would; the one way to know is to build both and compare
@@ -93,6 +97,12 @@ public final class KeptBench {
     private List<Node> keptCity = List.of(), keptSites = List.of(), keptList = List.of();
     private Kept.Pool[] keptPanelPools;
 
+    /** The drawer's bar (the drawer's width) and the construction tab (its own width, the window's height), on scenes of their own (UP7). */
+    public static final double BAR_WIDTH = 290, BAR_HEIGHT = 40;
+    private final Scene barScene, tabScene;
+    private List<Node> keptBar = List.of(), keptTab = List.of();
+    private Kept.Pool[] keptFramePools;
+
     /** The bench on a city: the window's object with no stage, its menu column in a scene of its own. */
     public KeptBench(Game game) {
         Palette.Fonts.load();
@@ -122,6 +132,13 @@ public final class KeptBench {
         ui.applyTheme(cityScene);
         ui.applyTheme(sitesScene);
         ui.applyTheme(listScene);
+        // ...and the drawer's bar and the construction tab (UserInterface.drawerBarBox() and constructionTabBox()).
+        ui.drawerBar = UserInterface.drawerBarBox();
+        ui.constructionTab = UserInterface.constructionTabBox();
+        barScene = new Scene(ui.drawerBar, BAR_WIDTH, BAR_HEIGHT);
+        tabScene = new Scene(ui.constructionTab, UserInterface.CONSTRUCTION_TAB, RAIL_HEIGHT);
+        ui.applyTheme(barScene);
+        ui.applyTheme(tabScene);
     }
 
     /** People's page drawn kept from its pool (the first draw makes every node): the draw's own milliseconds. */
@@ -1207,10 +1224,18 @@ public final class KeptBench {
      * is counted apart: a screen outside the sweep's list, named by the check that asks, with its reason.
      */
     public Sets redrawSets(Page p, java.util.Set<String> unmended) {
+        return redrawSets(column, () -> drawKept(p), unmended);
+    }
+
+    /**
+     * ...the same for any root and any draw (UP7): the listeners go on `root` and everything under it (a label, a box and its children), `draw`
+     * runs - a screen's refresh, the header's, the speed's repaint - and they come off. redrawSets(Page, ...) is this over the page's column.
+     */
+    public Sets redrawSets(Node root, Runnable draw, java.util.Set<String> unmended) {
         int[] count = {0, 0};
         java.util.Map<String, Object[]> sources = new java.util.LinkedHashMap<>();
         List<Runnable> off = new ArrayList<>();
-        each(column, n -> {
+        each(root, n -> {
             watchSets(n, "style", n.styleProperty(), count, sources, unmended, off);
             if (n instanceof Labeled l) {
                 watchSets(n, "text", l.textProperty(), count, sources, unmended, off);
@@ -1224,7 +1249,7 @@ public final class KeptBench {
             }
         });
         try {
-            drawKept(p);
+            draw.run();
         } finally {
             for (Runnable r : off) r.run();
         }
@@ -4469,5 +4494,210 @@ public final class KeptBench {
     /** Household money forgotten, as another city opened would leave it: nothing kept (People's page too, which shares the screen's forget()). */
     public void forgetHousehold() {
         ui.peopleScreen.forget();
+    }
+
+    /* =====================================================================
+       THE DRAWER'S BAR, THE CONSTRUCTION TAB AND THE SPEED'S READING (UP7)
+
+       The bar and the tab are two boxes made once (UserInterface.drawerBarBox() and constructionTabBox()), each on a scene of its
+       own, drawn by the real refreshDrawerBar() and refreshConstructionTab(inCity, open) - kept, or with every node new (the
+       pools swapped for empty ones). The speed's reading is the header's label, put in a known state by swapping the pace
+       the window reads for one KeptCheck drives on a clock it moves by hand.
+       ===================================================================== */
+
+    /**
+     * The bar and the tab drawn kept, from their pools (the first draw makes every node): the draws' own milliseconds. The
+     * construction panel is set open or folded as the tab's click leaves it, and the tab is drawn for a city on show or a game menu.
+     */
+    public double drawFrameKept(boolean inCity, boolean open) {
+        ui.prefs.setConstructionOpen(open);
+        long t = System.nanoTime();
+        ui.refreshDrawerBar();
+        ui.refreshConstructionTab(inCity, open);
+        return (System.nanoTime() - t) / 1e6;
+    }
+
+    /** The drawer pinned or not, as its pin's click leaves it (the bar's look follows at the next draw). */
+    public void framePinned(boolean pinned) {
+        ui.prefs.setDrawerPinned(pinned);
+    }
+
+    /** Whether the drawer is pinned now. */
+    public boolean framePinned() {
+        return ui.prefs.isDrawerPinned();
+    }
+
+    /** Whether the construction panel is open now, as the tab's click leaves it. */
+    public boolean frameOpen() {
+        return ui.prefs.isConstructionOpen();
+    }
+
+    /** The nodes the last draws made new and handed back: {bar made, kept, tab made, kept}. */
+    public int[] frameCounts() {
+        return new int[]{ui.barPool.lastMade(), ui.barPool.lastKept(), ui.tabPool.lastMade(), ui.tabPool.lastKept()};
+    }
+
+    /** The bar's boxed nodes and the tab's, in order: the same objects from one kept draw to the next. */
+    public List<Node> frameKids() {
+        List<Node> out = new ArrayList<>(ui.drawerBar.getChildren());
+        out.addAll(ui.constructionTab.getChildren());
+        return out;
+    }
+
+    /** The drawer's bar, made once. */
+    public Node bar() {
+        return ui.drawerBar;
+    }
+
+    /** The construction tab, made once. */
+    public Node tab() {
+        return ui.constructionTab;
+    }
+
+    /** The bar's pin and its close, in order. */
+    public Label pinLabel() {
+        return (Label) ui.drawerBar.getChildren().get(0);
+    }
+
+    public Label closeLabel() {
+        return (Label) ui.drawerBar.getChildren().get(1);
+    }
+
+    /** The tab's count (the kinds of building on site). */
+    public Label tabCount() {
+        return (Label) ui.constructionTab.getChildren().get(2);
+    }
+
+    /**
+     * The bar and the tab built new in place of the kept ones - the pools swapped for empty ones, so every node is made again, as every
+     * redraw did before UP7 - and laid out. restoreKeptFrame() puts the kept nodes and pools back.
+     */
+    public void showFreshFrame(boolean inCity, boolean open) throws Exception {
+        keptBar = new ArrayList<>(ui.drawerBar.getChildren());
+        keptTab = new ArrayList<>(ui.constructionTab.getChildren());
+        keptFramePools = new Kept.Pool[]{ui.barPool, ui.tabPool};
+        ui.barPool = new Kept.Pool();
+        ui.tabPool = new Kept.Pool();
+        ui.refreshDrawerBar();
+        ui.refreshConstructionTab(inCity, open);
+        framePasses();
+    }
+
+    /** The kept nodes and pools back where they were, and laid out. */
+    public void restoreKeptFrame() throws Exception {
+        ui.barPool = keptFramePools[0];
+        ui.tabPool = keptFramePools[1];
+        ui.drawerBar.getChildren().setAll(keptBar);
+        ui.constructionTab.getChildren().setAll(keptTab);
+        framePasses();
+    }
+
+    /** Both scenes' CSS and layout, as a frame's pulse runs them: {CSS ms, layout ms}, summed. */
+    public double[] framePasses() throws Exception {
+        double[] a = passes(barScene, ui.drawerBar), b = passes(tabScene, ui.constructionTab);
+        return new double[]{a[0] + b[0], a[1] + b[1]};
+    }
+
+    /** The bar's signature, then the tab's, a line a node (see signature()); each box itself is signed too: its style, its tooltip, its handlers. */
+    public List<String> frameSignature() {
+        List<String> out = new ArrayList<>();
+        out.add("--- bar ---");
+        sign(ui.drawerBar, "", out);
+        out.add("--- tab ---");
+        sign(ui.constructionTab, "", out);
+        return out;
+    }
+
+    /** The bar's pixels and the tab's, each as pixels() gives them: {bar, tab}. */
+    public int[][] framePixels() {
+        return new int[][]{pixelsOf(ui.drawerBar), pixelsOf(ui.constructionTab)};
+    }
+
+    /** The tab's count made wrong by hand: the first label with a digit gets a "9" in front (see spoil()); what it said, or null. */
+    public String spoilFrame() {
+        return spoil(new ArrayList<>(ui.constructionTab.getChildren()));
+    }
+
+    /**
+     * A second draw of the bar and then of the tab, the city unchanged, each with a listener on every node of it (redrawSets): what
+     * they wrote. The draws are laid out before this is called.
+     */
+    public Sets[] frameSets(boolean inCity, boolean open) {
+        Sets bar = redrawSets(ui.drawerBar, ui::refreshDrawerBar, java.util.Set.of());
+        Sets tab = redrawSets(ui.constructionTab, () -> ui.refreshConstructionTab(inCity, open), java.util.Set.of());
+        return new Sets[]{bar, tab};
+    }
+
+    /** The header's pace swapped for this one: a ClockPace on a clock KeptCheck moves by hand puts the speed's reading in a known state. */
+    public void pace(ClockPace pace) {
+        ui.pace = pace;
+    }
+
+    /** The speed ladder's rungs, in times real speed, lowest first: the index speed(int) takes. */
+    public static double[] speedRungs() {
+        return UserInterface.SPEEDS.clone();
+    }
+
+    /** A rung's words as the header writes them ("0.25×", "50×"). */
+    public static String speedWords(int rung) {
+        return UserInterface.speedLabel(rung);
+    }
+
+    /** The header's speed reading, kept: the same label from one draw to the next. */
+    public Label speedLabel() {
+        return ui.speedReading;
+    }
+
+    /** The one width the reading holds, as the window measures it. */
+    public double speedWidth() {
+        return ui.speedWidth();
+    }
+
+    /** The reading repainted in place, as the clock does between redraws. */
+    public void paintSpeed() {
+        ui.paintSpeed();
+    }
+
+    /** A string's width in the reading's own font (the figures' face, 11 px), as the window measures the reading's widest text. */
+    public static double speedTextWidth(String text) {
+        return TimeChart.textWidth(text, Palette.Fonts.monoFont(11));
+    }
+
+    /** Whether the reading's words are cut short: the text its skin draws is not the text it was given. Laid out first. */
+    public boolean speedClipped() {
+        Label label = ui.speedReading;
+        return !(label.lookup(".text") instanceof Text drawn) || !drawn.getText().equals(label.getText());
+    }
+
+    /**
+     * A label made as the reading was before UP7 - min width 34, the same style, this text - laid out alone on a scene of its own, as a
+     * row lays it out: {its width, its preferred height}.
+     */
+    public double[] speedOldWay(String text) throws Exception {
+        Label old = new Label(text);
+        old.setMinWidth(34);
+        old.setAlignment(Pos.CENTER);
+        old.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11px;"
+                + " -fx-text-fill: " + Palette.TEXT_HEAD + ";");
+        HBox row = new HBox(old);
+        Scene sc = new Scene(row, 200, 40);
+        ui.applyTheme(sc);
+        passes(sc, row);
+        return new double[]{old.getWidth(), old.prefHeight(-1)};
+    }
+
+    /** The reading's preferred height, as laid out. */
+    public double speedHeight() {
+        return ui.speedReading.prefHeight(-1);
+    }
+
+    /** What the reading and the nodes round it wrote while `draw` ran, by redrawSets (the header's second draw, or paintSpeed()). */
+    public Sets speedSets(Runnable draw) {
+        return redrawSets(ui.speedReading, draw, java.util.Set.of());
+    }
+
+    /** The x of the header's i-th child, as laid out. */
+    public double headerChildX(int i) {
+        return ui.header.getChildren().get(i).getBoundsInParent().getMinX();
     }
 }
