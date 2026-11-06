@@ -356,30 +356,56 @@ public final class GameFiles {
         public final Path file;
         public final String error;
 
-        private Result(boolean ok, Path file, String error) {
+        /**
+         * Why the history beside this save could not be written (UP6, LB3-S), or null when it was or none was written. WHY: the
+         * save and its history are two files, and a slot could hold a new save beside an old history while the game said "Saved".
+         */
+        public final String historyError;
+
+        private Result(boolean ok, Path file, String error, String historyError) {
             this.ok = ok;
             this.file = file;
             this.error = error;
+            this.historyError = historyError;
         }
 
-        static Result succeeded(Path file) { return new Result(true, file, null); }
+        static Result succeeded(Path file) { return new Result(true, file, null, null); }
 
         /** For a failure that is not an exception - see DataSave.saveGame(). */
         static Result failed(Path file, String reason) {
-            return new Result(false, file, reason);
+            return new Result(false, file, reason, null);
         }
 
         static Result failed(Path file, Throwable cause) {
             String detail = (cause.getMessage() == null)
                     ? cause.getClass().getSimpleName()
                     : cause.getMessage();
-            return new Result(false, file, detail);
+            return new Result(false, file, detail, null);
+        }
+
+        /** This save's result with its history's beside it (UP6): this one when the history landed or none was written. */
+        Result withHistory(Result history) {
+            if (history == null || history.ok) return this;
+            return new Result(ok, file, error, history.error);
+        }
+
+        /** The save landed, and so did its history (or none was written). */
+        public boolean whole() {
+            return ok && historyError == null;
         }
 
         /** One line, fit to show a player. */
         public String message() {
-            return ok ? "Saved to " + file
-                      : "Could not save to " + file + " - " + error;
+            if (!ok) return "Could not save to " + file + " - " + error;
+            if (historyError == null) return "Saved to " + file;
+            return "Saved to " + file + ", but its history could not be written: " + historyError;
+        }
+
+        /** The player's headline on the Save page (UP6): the screen reads it, never builds it. */
+        public String outcome() {
+            if (!ok) return "Save failed.";
+            if (historyError == null) return "Saved.";
+            return "Saved, but its history could not be written: " + historyError;
         }
     }
 

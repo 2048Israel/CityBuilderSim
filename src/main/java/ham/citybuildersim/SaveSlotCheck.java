@@ -37,8 +37,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * month's autosave was written near the top of Game.nextMonth(), after the
  * calendar had turned and before the month ran: the file said month N, its
  * history ended at N - 1, and a city loaded from it never ran N. Each of the
- * three autosaves - the twelfth month's, the one before a skip and the one on
- * quit - is loaded here and played on: its month is its history's last, and
+ * four autosaves - the twelfth month's, the one before a skip, the skip's end (UP6)
+ * and the one on quit - is loaded here and played on: its month is its history's last, and
  * the history has no gap and no month twice.
  *
  * AND THE AUTOSAVE IS WRITTEN OFF THE CLOCK (UP1, 2026-10-22). The autosave
@@ -61,6 +61,17 @@ import java.util.concurrent.atomic.AtomicLong;
  * a write swaps over it, as the Rankings board's read and an antivirus scan do on
  * Windows: the write waits for the handle (GameFiles.SWAP_RETRIES) and lands, one
  * held past every retry fails whole and says so, and the next lands.
+ *
+ * AND THE SKIP'S END, THE CLOSE AND THE PLAYER'S SAVE (UP6, 2026-11-06). Section 7e holds
+ * what UP6 added, on a young city whose save clock stands still: 7e.1 that a skip inside
+ * the floor ends with its own last month on disk, named for the skip, and the running
+ * clock keeps its floor after it; 7e.2 that the window's close autosaves like Quit and
+ * waits for the writer; 7e.3 that the player's Save returns with the writer held and its
+ * files are whole when its result comes; 7e.3b that a second Save while the first is in
+ * the writer waits for it, so both are written; 7e.3c that the writer touches no slot but
+ * the one the player saved to, and refuses the autosave's slot and one past the last; and
+ * 7e.4 that a history which could not be written is told beside the save's result - to the
+ * player (the sync way too) and, for an autosave, in the inbox - with the .bak kept.
  */
 public class SaveSlotCheck {
 
@@ -279,6 +290,7 @@ public class SaveSlotCheck {
         // A skip is one click that can undo a century, so it saves first.
         int beforeSkip = autoFiles.readHeader(GameFiles.AUTOSAVE_SLOT).getMonth();
         auto.simulateMonths(30);
+        auto.awaitSaves();      // UP6: the skip's end autosave is asked for, not waited for; the file is read once it has landed
         int afterSkip = autoFiles.readHeader(GameFiles.AUTOSAVE_SLOT).getMonth();
         assertTrue("a multi-month skip autosaves on the way in", afterSkip != beforeSkip);
 
@@ -298,9 +310,33 @@ public class SaveSlotCheck {
         while (auto.getMonthsUntilAutosave() > 1) auto.simulateMonths(1);
         auto.simulateMonths(1);
         wholeMonth("the twelfth month's", auto, autoFiles);
-        // A skip writes it on the way in, before its first month...
+        // A skip writes it on the way in, before its first month, and (UP6) on the way out, where the city stands: the
+        // end's replaces the one before it, which is then the autosave's .bak (GameFiles.swapIn copies the file it replaces).
+        // No twelve-monthly autosave falls inside these five months: the twelfth month's, just above, started the counter
+        // again, and a skip's own autosaves start it again at its first month.
         auto.simulateMonths(5);
-        wholeMonth("the one before a skip", auto, autoFiles, auto.getMonth() - 5);
+        auto.awaitSaves();      // the end's is asked for, not waited for
+        wholeMonth("the one at a skip's end", auto, autoFiles);
+        GameFiles beforeFiles = GameFiles.scratch("saveslot-7b-before");
+        try {
+            Path autosaveFile = autoFiles.saveFile(GameFiles.AUTOSAVE_SLOT);
+            Path[][] trio = {
+                { autosaveFile, beforeFiles.saveFile(GameFiles.AUTOSAVE_SLOT) },
+                { autoFiles.historyFile(GameFiles.AUTOSAVE_SLOT), beforeFiles.historyFile(GameFiles.AUTOSAVE_SLOT) },
+                { autoFiles.mapFile(GameFiles.AUTOSAVE_SLOT), beforeFiles.mapFile(GameFiles.AUTOSAVE_SLOT) } };
+            Files.createDirectories(beforeFiles.savesDirectory());
+            for (Path[] pair : trio) {
+                Path bak = pair[0].resolveSibling(pair[0].getFileName() + ".bak");
+                if (Files.exists(bak)) Files.copy(bak, pair[1]);
+            }
+            assertEquals("fixture: the autosave's .bak is the one before the skip, named for it",
+                    beforeFiles.readHeader(GameFiles.AUTOSAVE_SLOT) == null ? null
+                            : beforeFiles.readHeader(GameFiles.AUTOSAVE_SLOT).getSlotName(),
+                    "Autosave - before skipping 5 months");
+            wholeMonth("the one before a skip (now the end's .bak)", auto, beforeFiles, auto.getMonth() - 5);
+        } finally {
+            cleanUp(beforeFiles.getDirectory().getParent());
+        }
         // ...and quitting writes it where the city stands (toggleQuit() then exits).
         auto.saveForQuit();
         wholeMonth("the one on quit", auto, autoFiles);
@@ -310,6 +346,9 @@ public class SaveSlotCheck {
 
         /* ============ 7d. a file held open while a write swaps over it (LB3) ============ */
         heldOpen();
+
+        /* ============ 7e. the skip's end, the close and the player's Save (UP6, 2026-11-06) ============ */
+        skipEndCloseAndSave();
 
         /* ==================== 8. histories are per slot ==================== */
         System.out.println("\n--- and each city keeps its own past ---");
@@ -421,6 +460,296 @@ public class SaveSlotCheck {
         GameFiles.Result after = files.write(target, out -> out.write("newest"));
         assertTrue("...and once it is let go the next write lands", after.ok && Files.readString(target).equals("newest"));
         cleanUp(root);
+    }
+
+    /* ===== 7e. THE SKIP'S END, THE CLOSE AND THE PLAYER'S SAVE (UP6, 2026-11-06) =======
+     *
+     * What UP6 added to the autosave's writer, on a young city whose save clock stands
+     * still (so no month is ever due by itself): a skip ends with its own last month
+     * asked for and not waited for (7e.1), the window's close waits like Quit (7e.2),
+     * the player's own Save is filled here and written on the writer's thread and a
+     * second waits for the first (7e.3, 7e.3b), the writer touches only the slot it was
+     * asked for (7e.3c), and a history that could not be written is told beside the
+     * save's result, to the player and to the inbox (7e.4). Every hold of the writer is
+     * let go in a finally, and a result is waited for 10 s: a failure is a FAIL line,
+     * not a hang.
+     * ====================================================================== */
+
+    /** How long a Save's result is waited for before the check calls it lost. */
+    static final long LANDS_WITHIN_SECONDS = 10;
+
+    /** A Save's result, or null after a FAIL line when none came within LANDS_WITHIN_SECONDS. */
+    static GameFiles.Result landed(String label, java.util.concurrent.CompletableFuture<GameFiles.Result> future) {
+        try {
+            return future.get(LANDS_WITHIN_SECONDS, java.util.concurrent.TimeUnit.SECONDS);
+        } catch (java.util.concurrent.TimeoutException | java.util.concurrent.ExecutionException e) {
+            assertTrue(label + ": its result landed within " + LANDS_WITHIN_SECONDS + " s (" + e.getClass().getSimpleName() + ")", false);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            assertTrue(label + ": its result landed (interrupted)", false);
+        }
+        return null;
+    }
+
+    /** Runs {@code call} on a thread of its own and says whether it came back within five seconds: a Save that waits for a held writer never does. */
+    static boolean returnsAtOnce(Runnable call) throws InterruptedException {
+        Thread thread = new Thread(call, "7e-call");
+        thread.setDaemon(true);
+        thread.start();
+        thread.join(5000);
+        return !thread.isAlive();
+    }
+
+    /** A folder with a file in it where the write streams its .tmp: no write can open it (a read-only folder would not stop one on Windows), as 7c.6. */
+    static void makeObstacle(Path tmp) throws IOException {
+        Files.createDirectories(tmp);
+        Files.writeString(tmp.resolve("in-the-way.txt"), "a folder with something in it cannot be replaced by a file");
+    }
+
+    /** Every regular file in a folder by name, with its bytes' SHA-256. */
+    static Map<String, String> hashed(Path folder) throws Exception {
+        Map<String, String> out = new java.util.TreeMap<>();
+        try (var list = Files.list(folder)) {
+            for (Path p : (Iterable<Path>) list::iterator) {
+                if (!Files.isRegularFile(p)) continue;
+                out.put(p.getFileName().toString(), java.util.HexFormat.of().formatHex(
+                        java.security.MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(p))));
+            }
+        }
+        return out;
+    }
+
+    /** True when {@code call} throws an IllegalArgumentException. */
+    static boolean refuses(Runnable call) {
+        try {
+            call.run();
+            return false;
+        } catch (IllegalArgumentException e) {
+            return true;
+        }
+    }
+
+    /** The last month a history file's axis runs to, or -1 when it is not whole JSON. */
+    static int lastMonthOf(Path historyFile) {
+        JsonObject history = parsed(historyFile);
+        if (history == null || !history.has("month") || history.getAsJsonArray("month").size() == 0) return -1;
+        JsonArray months = history.getAsJsonArray("month");
+        return months.get(months.size() - 1).getAsInt();
+    }
+
+    /** The result of {@code call} with the model's printing swallowed. */
+    static GameFiles.Result quietlyResult(java.util.function.Supplier<GameFiles.Result> call) {
+        GameFiles.Result[] out = new GameFiles.Result[1];
+        quietly(() -> out[0] = call.get());
+        return out[0];
+    }
+
+    static void skipEndCloseAndSave() throws Exception {
+        System.out.println("\n--- 7e. the skip's end, the close and the player's Save (UP6) ---");
+
+        GameFiles files = GameFiles.scratch("saveslot-7e");
+        SaveWriter writer = SaveWriter.shared();
+        try {
+            Game city = new Game(files);
+            city.useSaveClockForChecks(() -> 0L);      // still: no month is due by itself, so every write below is one asked for
+            quietly(() -> {
+                city.run();
+                city.buildStack(template(city, "House"), 10, false);
+            });
+
+            /* ---- 7e.1 a skip inside the floor ends with its own last month on disk ---- */
+            System.out.println("--- 7e.1 a skip inside the floor ends with its own last month on disk ---");
+            quietly(() -> city.autosave("7e first"));
+            city.awaitSaves();
+            quietly(() -> city.simulateMonths(3));
+            city.awaitSaves();
+            assertEquals("the autosave is the skip's end, named for it", autosaveName(files), "Autosave - after skipping 3 months");
+            wholeOnDisk("the skip's end", city, files);
+            assertEquals("...and its counter is back at " + Game.AUTOSAVE_MONTHS, city.getMonthsUntilAutosave(), Game.AUTOSAVE_MONTHS);
+            int writesBefore = writer.writes();
+            for (int i = 0; i < Game.AUTOSAVE_MONTHS; i++) step(city);
+            city.awaitSaves();
+            assertEquals("...and " + Game.AUTOSAVE_MONTHS + " single months with the clock still write nothing: the running clock keeps its floor",
+                    writer.writes() - writesBefore, 0);
+
+            /* ---- 7e.2 a short skip and then the close leave the skip's last month on disk, and the close waits ---- */
+            System.out.println("--- 7e.2 the close autosaves like Quit, and waits for it ---");
+            quietly(() -> city.simulateMonths(2));
+            quietly(city::saveForClose);
+            assertEquals("a skip and at once the close: the autosave is the close's", autosaveName(files), "Autosave - on close");
+            wholeOnDisk("the close", city, files);
+            step(city);
+            city.awaitSaves();
+            int diskMonth = files.readHeader(GameFiles.AUTOSAVE_SLOT).getMonth();
+            assertTrue("fixture: the autosave on disk (month " + diskMonth + ") is earlier than the city (month " + city.getMonth() + ")", diskMonth < city.getMonth());
+            AtomicLong releasedAt = new AtomicLong();
+            long returnedAt;
+            writer.hold();
+            try {
+                quietly(() -> city.autosave("7e before close"));
+                assertEquals("fixture: the held autosave is not on disk yet", files.readHeader(GameFiles.AUTOSAVE_SLOT).getMonth(), diskMonth);
+                Thread letGo = releaseLater(300, releasedAt);
+                quietly(city::saveForClose);
+                returnedAt = System.nanoTime();
+                letGo.join();
+            } finally {
+                writer.release();
+            }
+            assertTrue("held, the close returns after the writer was released", releasedAt.get() != 0 && returnedAt >= releasedAt.get());
+            assertEquals("...with its autosave on disk, named for the close", autosaveName(files), "Autosave - on close");
+            assertEquals("...at the city's month", files.readHeader(GameFiles.AUTOSAVE_SLOT).getMonth(), city.getMonth());
+
+            /* ---- 7e.3 the player's Save returns at once and its files are whole when the line clears ---- */
+            System.out.println("--- 7e.3 the player's Save returns at once, and its files are whole when its line clears ---");
+            step(city);
+            city.awaitSaves();
+            assertTrue("fixture: slot 4 is empty", files.slotIsEmpty(4));
+            java.util.concurrent.CompletableFuture<GameFiles.Result> asked = new java.util.concurrent.CompletableFuture<>();
+            writer.hold();
+            try {
+                boolean returned = returnsAtOnce(() -> quietly(() -> city.saveInBackground(4, "7e", asked::complete)));
+                assertTrue("with the writer held, the Save returns", returned);
+                assertTrue("...slot 4 is still empty and its result has not come", files.slotIsEmpty(4) && !asked.isDone());
+            } finally {
+                writer.release();
+            }
+            GameFiles.Result result = landed("7e.3", asked);
+            assertTrue("released, it lands ok and whole", result != null && result.ok && result.whole() && result.historyError == null);
+            city.awaitSaves();
+            SaveHeader header = files.readHeader(4);
+            assertTrue("...slot 4 is named 7e, at the city's month " + city.getMonth(),
+                    header != null && "7e".equals(header.getSlotName()) && header.getMonth() == city.getMonth());
+            JsonObject history = parsed(files.historyFile(4));
+            assertTrue("...with its history of all the city's " + city.getHistorySave().months() + " months",
+                    history != null && history.has("month") && history.getAsJsonArray("month").size() == city.getHistorySave().months());
+            assertTrue("...and the last save result is that one, for slot 4",
+                    result != null && city.getLastSaveResult() == result && result.file.equals(files.saveFile(4)));
+
+            /* ---- 7e.3b a second Save while the first is in the writer waits for it ---- */
+            System.out.println("--- 7e.3b a second Save while the first is in the writer waits for it ---");
+            java.util.concurrent.CompletableFuture<GameFiles.Result> first = new java.util.concurrent.CompletableFuture<>();
+            java.util.concurrent.CompletableFuture<GameFiles.Result> second = new java.util.concurrent.CompletableFuture<>();
+            releasedAt.set(0);
+            writesBefore = writer.writes();
+            writer.hold();
+            try {
+                assertTrue("with the writer held, the first of two Saves returns",
+                        returnsAtOnce(() -> quietly(() -> city.saveInBackground(4, "7e first of two", first::complete))));
+                Thread letGo = releaseLater(300, releasedAt);
+                quietly(() -> city.saveInBackground(4, "7e second of two", second::complete));
+                returnedAt = System.nanoTime();
+                letGo.join();
+            } finally {
+                writer.release();
+            }
+            assertTrue("the second returns after the writer was released: it waited for the first", releasedAt.get() != 0 && returnedAt >= releasedAt.get());
+            GameFiles.Result firstResult = first.isDone() ? landed("7e.3b first", first) : null;
+            assertTrue("...and the first was written by then, not replaced unwritten", firstResult != null && firstResult.ok);
+            GameFiles.Result secondResult = landed("7e.3b second", second);
+            assertTrue("...the second lands ok", secondResult != null && secondResult.ok);
+            city.awaitSaves();
+            assertEquals("...slot 4 is named for the second", files.readHeader(4).getSlotName(), "7e second of two");
+            assertEquals("...and the writer wrote both", writer.writes() - writesBefore, 2);
+
+            /* ---- 7e.3c the writer touches only the slot the player saved to ---- */
+            System.out.println("--- 7e.3c the writer touches only the slot the player saved to ---");
+            city.awaitSaves();
+            Map<String, String> before = hashed(files.savesDirectory());
+            java.util.concurrent.CompletableFuture<GameFiles.Result> five = new java.util.concurrent.CompletableFuture<>();
+            quietly(() -> city.saveInBackground(5, "7e slot five", five::complete));
+            GameFiles.Result fiveResult = landed("7e.3c", five);
+            city.awaitSaves();
+            Map<String, String> after = hashed(files.savesDirectory());
+            String stem = files.saveFile(5).getFileName().toString().replace(".json", "");
+            List<String> changed = new ArrayList<>(), added = new ArrayList<>();
+            for (Map.Entry<String, String> e : before.entrySet()) {
+                if (!e.getKey().startsWith(stem) && !e.getValue().equals(after.get(e.getKey()))) changed.add(e.getKey());
+            }
+            for (String name : after.keySet()) {
+                if (!before.containsKey(name) && !name.startsWith(stem)) added.add(name);
+            }
+            assertTrue("a Save to slot 5 lands, with its save and its history beside it",
+                    fiveResult != null && fiveResult.ok && Files.exists(files.saveFile(5)) && Files.exists(files.historyFile(5)));
+            assertTrue("...and no other file in the saves folder changed (" + changed + ")", !before.isEmpty() && changed.isEmpty());
+            assertTrue("...and no file but slot 5's is new (" + added + ")", added.isEmpty());
+            assertTrue("a player's Save to the autosave's slot is refused",
+                    refuses(() -> city.saveInBackground(GameFiles.AUTOSAVE_SLOT, "7e no", r -> { })));
+            assertTrue("...and so is one past the last slot",
+                    refuses(() -> city.saveInBackground(GameFiles.SLOT_COUNT + 1, "7e no", r -> { })));
+
+            /* ---- 7e.4 a history that could not be written is told beside the save's result ---- */
+            System.out.println("--- 7e.4 a history that could not be written is told beside the save's result ---");
+            assertTrue("slot 6 is saved whole first", quietlyResult(() -> city.saveGame(6, "7e before")).whole());
+            int monthBefore = city.getMonth();
+            step(city);
+            Path historyTmp6 = files.historyFile(6).resolveSibling(files.historyFile(6).getFileName() + ".tmp");
+            try {
+                makeObstacle(historyTmp6);
+                assertTrue("fixture: slot 6's history .tmp is a folder with a file in it", Files.isDirectory(historyTmp6));
+                java.util.concurrent.CompletableFuture<GameFiles.Result> six = new java.util.concurrent.CompletableFuture<>();
+                quietly(() -> city.saveInBackground(6, "7e history fails", six::complete));
+                GameFiles.Result sixResult = landed("7e.4", six);
+                city.awaitSaves();
+                assertTrue("the Save's result is ok and not whole, and carries why the history failed",
+                        sixResult != null && sixResult.ok && !sixResult.whole() && sixResult.historyError != null);
+                String why = sixResult == null ? "?" : sixResult.historyError;
+                assertTrue("...the player's headline says it: " + (sixResult == null ? "?" : sixResult.outcome()),
+                        sixResult != null && sixResult.outcome().startsWith("Saved, but its history could not be written: ") && sixResult.outcome().endsWith(why));
+                assertTrue("...and the log line says it",
+                        sixResult != null && sixResult.message().contains("but its history could not be written: " + why));
+                SaveHeader six6 = files.readHeader(6);
+                assertTrue("the slot holds the new save, named, at the city's month " + city.getMonth(),
+                        six6 != null && "7e history fails".equals(six6.getSlotName()) && six6.getMonth() == city.getMonth());
+                assertEquals("...beside the old history, whose last month is the earlier one's", lastMonthOf(files.historyFile(6)), monthBefore);
+                JsonObject bak = parsed(files.saveFile(6).resolveSibling(files.saveFile(6).getFileName() + ".bak"));
+                assertTrue("...and the save from before is kept beside it as the .bak",
+                        bak != null && bak.has("slotName") && "7e before".equals(bak.get("slotName").getAsString()));
+                GameFiles.Result sync = quietlyResult(() -> city.saveGame(6, "7e sync"));
+                assertTrue("the sync way says it too: ok, not whole, and why", sync.ok && !sync.whole() && sync.historyError != null);
+            } finally {
+                cleanUp(historyTmp6);
+            }
+
+            Path autosaveFile = files.saveFile(GameFiles.AUTOSAVE_SLOT);
+            Path autosaveHistory = files.historyFile(GameFiles.AUTOSAVE_SLOT);
+            Path autoHistoryTmp = autosaveHistory.resolveSibling(autosaveHistory.getFileName() + ".tmp");
+            Path autoSaveTmp = autosaveFile.resolveSibling(autosaveFile.getFileName() + ".tmp");
+            city.awaitSaves();
+            try {
+                makeObstacle(autoHistoryTmp);
+                quietly(() -> city.autosave("7e history fails"));
+                city.awaitSaves();
+                GameFiles.Result told = city.getLastSaveResult();
+                assertTrue("an autosave whose history failed is ok and not whole", told != null && told.ok && !told.whole() && told.historyError != null);
+                Notice notice = city.getInbox().live("autosave");
+                assertTrue("...the inbox holds a notice titled \"The autosave's history could not be written\"",
+                        notice != null && "The autosave's history could not be written".equals(notice.getTitle()));
+                assertTrue("...whose body gives the reason",
+                        notice != null && told != null && String.join(" ", notice.getBody()).contains(told.historyError));
+                cleanUp(autoHistoryTmp);
+
+                makeObstacle(autoSaveTmp);
+                quietly(() -> city.autosave("7e save fails"));
+                city.awaitSaves();
+                told = city.getLastSaveResult();
+                notice = city.getInbox().live("autosave");
+                assertTrue("an autosave that could not be written is not ok", told != null && !told.ok);
+                assertTrue("...and the same standing notice is now titled \"The autosave could not be written\"",
+                        notice != null && "The autosave could not be written".equals(notice.getTitle()));
+                cleanUp(autoSaveTmp);
+
+                quietly(() -> city.autosave("7e lands whole"));
+                city.awaitSaves();
+                assertTrue("with the obstacles gone, an autosave lands whole", city.getLastSaveResult() != null && city.getLastSaveResult().whole());
+                assertTrue("...and settles the notice: none is standing", city.getInbox().live("autosave") == null);
+            } finally {
+                cleanUp(autoHistoryTmp);
+                cleanUp(autoSaveTmp);
+            }
+        } finally {
+            writer.release();
+            cleanUp(files.getDirectory().getParent());
+        }
     }
 
     /**
@@ -1008,7 +1337,9 @@ public class SaveSlotCheck {
      * autosave still in the writer. Each case holds the writer, asks for an
      * autosave, and starts a thread that lets it go 300 ms later; the case
      * then runs on this thread. One that did not wait would see the slot
-     * before the held autosave, or return before the release.
+     * before the held autosave, or return before the release. The skip case counts
+     * the writes: the held autosave, the skip's before and, since UP6, its end (asked for, not waited
+     * for, so the case waits for it); the before replaces the held one if the skip does not wait.
      */
     static void theWaits(Game city, GameFiles files) throws Exception {
         System.out.println("\n--- the autosave off the clock: a load, a numbered save, a skip and Quit each wait for it ---");
@@ -1055,7 +1386,7 @@ public class SaveSlotCheck {
 
         /* ---- a skip ---- */
         // The save clock stands still and a skip's counter starts at its own autosave: no month of the
-        // three is due, so the only writes are the held autosave and the skip's own.
+        // three is due, so the only writes are the held autosave and the skip's own two (UP6: before and at its end).
         releasedAt.set(0);
         int writesBefore = writer.writes();
         writer.hold();
@@ -1065,9 +1396,10 @@ public class SaveSlotCheck {
         returnedAt = System.nanoTime();
         letGo.join();
         assertTrue("a skip returns after the writer was released", releasedAt.get() != 0 && returnedAt >= releasedAt.get());
-        assertEquals("...the held autosave and the skip's own were both written (without the wait the skip's replaces the held)",
-                writer.writes() - writesBefore, 2);
-        assertEquals("...and the file holds the skip's", autosaveName(files), "Autosave - before skipping 3 months");
+        city.awaitSaves();      // the skip's end autosave is asked for, not waited for (UP6)
+        assertEquals("...the held autosave and the skip's before and end were all written (without the wait the skip's before replaces the held)",
+                writer.writes() - writesBefore, 3);
+        assertEquals("...and the file holds the skip's end", autosaveName(files), "Autosave - after skipping 3 months");
 
         /* ---- Quit ---- */
         releasedAt.set(0);

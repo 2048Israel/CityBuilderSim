@@ -571,7 +571,7 @@ public final class UiProbe {
                         + " save %.1f MB, history %.1f MB, map %.1f MB%n",
                 autosaveMs, writeMs, megabytes(files.saveFile(GameFiles.AUTOSAVE_SLOT)),
                 megabytes(files.historyFile(GameFiles.AUTOSAVE_SLOT)), megabytes(files.mapFile(GameFiles.AUTOSAVE_SLOT)));
-        report.printf("numbered save %.0f ms on the FX thread (slot 3 of the scratch folder; the Save button)%s%n", numberedMs,
+        report.printf("numbered save %.0f ms on the FX thread (Game.saveGame(), the sync way, slot 3 of the scratch folder; since UP6 the Save button is saveInBackground(), whose cost on the clock is the autosave's fill)%s%n", numberedMs,
                 g.getLastSaveResult().ok ? "" : " - FAILED: " + g.getLastSaveResult().error);
 
         long l0 = System.nanoTime();

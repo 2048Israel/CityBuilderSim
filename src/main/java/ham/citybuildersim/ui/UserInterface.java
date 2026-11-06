@@ -3794,6 +3794,8 @@ public class UserInterface extends Application {
     }
 
     private void showSavingMenu() {
+        // UP6: the slots as on disk, the player's last Save included, as the Load menu waits; so a Save asked for again waits for the one before.
+        game.awaitSaves();
         clearMenu("showSavingMenu", () -> showSavingMenu());
         VBox page = menuPage();
 
@@ -3858,8 +3860,7 @@ public class UserInterface extends Application {
 
         confirm.setOnAction(e -> {
             String typed = name.getText();
-            showSaveResult(game.saveGame(slot,
-                    (typed == null || typed.isBlank()) ? null : typed.trim()));
+            saveInBackground(slot, (typed == null || typed.isBlank()) ? null : typed.trim());
         });
         cancel.setOnAction(e -> showSavingMenu());
 
@@ -3993,39 +3994,126 @@ public class UserInterface extends Application {
         openCity();
     }
 
-    private void showSaveResult(GameFiles.Result result) {
-        clearMenu("showSaveResult", () -> showSaveResult(result));
+    /* ===== THE PLAYER'S SAVE OFF THE CLOCK (UP6, 2026-11-06) ================
+     *
+     * The Save button hands the city to the writer (Game.saveInBackground()) and
+     * opens the result page at once, saying "Saving..." until the write lands;
+     * the window no longer freezes for the write (Jerus, 2026-10-23, on UP1's
+     * star 2: "Background + 'Saving...'"). The menu's own screens are built
+     * afresh by clearMenu() and the clock never redraws a game menu, so the page
+     * is built once on arrival and, when the Save lands, its three lines are set
+     * in place by fillSaveResult(), the one method the build also calls: there
+     * is one code path for what the page shows. A Save that failed, or that
+     * saved without its history (LB3-S), is shown even to a player who has left
+     * the page; one that landed whole is not forced on him.
+     * ====================================================================== */
+
+    /** How many Saves this session has asked for: tells the last one's landing from an older one's. */
+    private int savesAsked;
+
+    /** Where the last Save goes, for the "Saving..." line. */
+    private java.nio.file.Path savingFile;
+
+    /** The last Save's result, or null while it is in the writer. */
+    private GameFiles.Result saveLanded;
+
+    /** The result page's three lines, set in place when the Save lands. */
+    private Label saveOutcome, saveDetail, saveAdvice;
+
+    private void saveInBackground(int slot, String slotName) {
+        int ticket = ++savesAsked;
+        savingFile = game.getGameFiles().saveFile(slot);
+        saveLanded = null;
+        game.saveInBackground(slot, slotName,
+                result -> javafx.application.Platform.runLater(() -> saveLanded(ticket, result)));
+        showSaveResult();
+    }
+
+    /** The writer's report, on the FX thread: an older Save's is ignored; the page, if it is showing, is filled in place. */
+    private void saveLanded(int ticket, GameFiles.Result result) {
+        if (ticket != savesAsked) return;
+        saveLanded = result;
+        if ("showSaveResult".equals(currentScreen) && saveOutcome != null) {
+            fillSaveResult();
+        } else if (!result.whole()) {
+            showSaveResult();
+        }
+    }
+
+    private void showSaveResult() {
+        clearMenu("showSaveResult", this::showSaveResult);
         VBox page = menuPage();
 
-        Label outcome = new Label(result.ok ? "Saved." : "Save failed.");
-        outcome.setStyle("-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: "
-                + (result.ok ? Palette.GOOD : Palette.BAD) + ";");
+        saveOutcome = new Label();
+        saveOutcome.setWrapText(true);
+        saveOutcome.setMaxWidth(320);
 
-        Label detail = new Label(result.ok
-                ? result.file.toString()
-                : result.error);
-        detail.setStyle("-fx-font-size: 10px; -fx-text-fill: "
-                + (result.ok ? Palette.TEXT_MUTED : Palette.BAD) + ";");
-        detail.setWrapText(true);
-        detail.setMaxWidth(320);
+        saveDetail = new Label();
+        saveDetail.setWrapText(true);
+        saveDetail.setMaxWidth(320);
+
+        // Worth saying out loud when it fails: the usual causes are a full disk or a
+        // folder the player has no permission to write to, and neither is something
+        // the game can fix for them.
+        saveAdvice = new Label();
+        saveAdvice.setWrapText(true);
+        saveAdvice.setMaxWidth(320);
 
         Button back = new Button("Back");
         back.setOnAction(e -> showMainMenu());
 
-        page.getChildren().addAll(outcome, detail, back);
+        page.getChildren().addAll(saveOutcome, saveDetail, saveAdvice, back);
 
-        if (!result.ok) {
-            // Worth saying out loud: the usual causes are a full disk or a
-            // folder the player has no permission to write to, and neither is
-            // something the game can fix for them.
-            Label advice = new Label(
-                    "The city is still running - nothing has been lost yet. "
-                    + "Check there is free disk space, then try again.");
-            advice.setStyle("-fx-font-size: 10px; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
-            advice.setWrapText(true);
-            advice.setMaxWidth(320);
-            page.getChildren().add(2, advice);
+        fillSaveResult();
+    }
+
+    /** Sets the three lines from saveLanded (null while the Save is in the writer); every value is set on both sides. */
+    private void fillSaveResult() {
+        GameFiles.Result result = saveLanded;
+
+        String outcomeText;
+        String outcomeColour;
+        String detailText;
+        String detailColour;
+        String adviceText = null;
+
+        if (result == null) {
+            outcomeText = "Saving...";
+            outcomeColour = Palette.TEXT_MUTED;
+            detailText = "To " + savingFile;
+            detailColour = Palette.TEXT_MUTED;
+        } else if (result.whole()) {
+            outcomeText = result.outcome();
+            outcomeColour = Palette.GOOD;
+            detailText = result.file.toString();
+            detailColour = Palette.TEXT_MUTED;
+        } else if (result.ok) {
+            outcomeText = result.outcome();
+            outcomeColour = Palette.WARN;
+            detailText = result.file.toString();
+            detailColour = Palette.TEXT_MUTED;
+            adviceText = "The city is still running. The slot holds this save beside an older history; "
+                    + "the save that history belongs to is kept beside it as " + result.file.getFileName()
+                    + ".bak. Check there is free disk space, then save again.";
+        } else {
+            outcomeText = result.outcome();
+            outcomeColour = Palette.BAD;
+            detailText = result.error;
+            detailColour = Palette.BAD;
+            adviceText = "The city is still running - nothing has been lost yet. "
+                    + "Check there is free disk space, then try again.";
         }
+
+        saveOutcome.setText(outcomeText);
+        saveOutcome.setStyle("-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: " + outcomeColour + ";");
+
+        saveDetail.setText(detailText);
+        saveDetail.setStyle("-fx-font-size: 10px; -fx-text-fill: " + detailColour + ";");
+
+        saveAdvice.setText(adviceText == null ? "" : adviceText);
+        saveAdvice.setStyle("-fx-font-size: 10px; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
+        saveAdvice.setVisible(adviceText != null);
+        saveAdvice.setManaged(adviceText != null);
     }
 
     /** How the player likes the window. Loaded once in start(). */
@@ -6879,10 +6967,17 @@ public class UserInterface extends Application {
         inputRecorder.install(scene);
     }
 
-    /** The platform calls this as the last window goes: the input log is closed (flushed) with it. */
+    /**
+     * The platform calls this as the last window goes: the input log is closed (flushed) with it, and the city is autosaved
+     * as Quit autosaves it (UP6), written before this returns - the JVM ends once it has.
+     */
     @Override
     public void stop() {
         stopRecorder();
+        // The window's close autosaves like Quit (UP6; Jerus, 2026-10-23, on UP1's star 1: "Yes, autosave on close"): the real
+        // city, never a replay's throwaway copy (Quit leaves the replay first, ReplayMode). Nothing is written before a city is in play.
+        Game city = replayOn() ? replayMode.realGame() : game;
+        if (city != null) city.saveForClose();
     }
 
     /** The input log closed, if one is open: before Quit's System.exit, and when the window closes. */

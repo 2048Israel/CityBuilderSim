@@ -29,7 +29,6 @@ stuff".
 | batch | what | brief |
 |---|---|---|
 | R5 | Research: the screens | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
-| UP6 | The autosave: an unfloored save at a multi-month skip's end, the window's close autosaves like Quit, the player's own Save off the clock with a "Saving..." line (Jerus, 2026-10-23, on UP1's ★4, ★1, ★2: "Autosave at the skip's end", "Yes, autosave on close", "Background + 'Saving...'"); and a history that could not be written told to the player, not "Saved" alone (LB3-S; Jerus, 2026-10-31: "Take all (Recommended)") | [UP6](docs/queue/UP6.md) |
 | UP7 | The speed reading as the reached speed alone in amber at a fixed width, a stall counted clamped, no "2x · 2x"; the drawer's bar and the construction tab kept (Jerus, 2026-10-23, on UP2's ★1: "Reached speed alone, amber") | [UP7](docs/queue/UP7.md) |
 | XR5 | The currency regimes' rest: a peg pays the pressure, not the month's balance; the tied path prices the curve under a peg; the overshoot both ways; a warning when a thin vault pegs (Jerus, 2026-10-23, on XR2's ★4, ★5 and the review's two: "Pay the pressure", "Price on the tied path") | [XR5](docs/queue/XR5.md) |
 | AN2 | AN1's leftovers: the D$ the goods are struck at on Trade › The currency, and the Earth playtest (Rotterdam) with the anchor (Jerus, 2026-10-23: "Queue both, small") | [AN2](docs/queue/AN2.md) |
