@@ -19,8 +19,8 @@ import java.util.function.ToDoubleFunction;
  * its recipes need, is on the fitted buildings of a stack (the quantity less BuildingsStacks.getUnfitted()) and not on the rest, so a stack is two
  * parts, and each part runs the best recipe it can: the FITTED part only the recipes that need the piece (the piece replaces the old way once it
  * is in: by-product ovens replace the beehive ovens, a farm with its tractor has sold its horses), the UNFITTED part only the recipes that need
- * nothing; a template with no recipe piece is all one part and runs the best of all it knows. A part with no recipe it can run (none known in the
- * city's year, a catalogue code never) runs the default.
+ * nothing; a template with no recipe piece is all one part and runs the best of all it knows. A part with no recipe it can run (none known at
+ * the city's month: a year from its January, a code from its entry's month in research.json, R2) runs the default.
  *
  * WHAT RUNS IS THE TEMPLATE'S FIGURES (R1c-notes call 3). Every reader of a building's figures (well over a hundred) reads the template, and a city's templates
  * are its own (Game.buildWorld() makes a BuildingManager for every city), so apply() sets each template's live makes, uses, jobs, electricity, gen,
@@ -79,11 +79,12 @@ public final class Recipes {
     }
 
     /**
-     * Whether a part of a stack can run a recipe in a calendar year: it is known (a year from its January; a catalogue code never), and, on a
-     * template with a recipe piece, the fitted part runs only the recipes that need it and the unfitted part only those that need nothing.
+     * Whether a part of a stack can run a recipe at a game month: it is known at the month (a year from its January, a code from its entry's
+     * month in research.json), and, on a template with a recipe piece, the fitted part runs only the recipes that need it and the unfitted part
+     * only those that need nothing.
      */
-    public static boolean canRun(BuildingsTemplate t, Recipe r, boolean fitted, int year) {
-        if (!r.knownIn(year)) return false;
+    public static boolean canRun(BuildingsTemplate t, Recipe r, boolean fitted, int month) {
+        if (!r.knownAt(month)) return false;
         if (t.recipePieceId() == null) return true;
         return (r.getNeedsEquipment() != null) == fitted;
     }
@@ -92,7 +93,7 @@ public final class Recipes {
      * The best recipe a part can run at these prices: the highest value() of those it canRun(); a tie keeps the default, then the file's order; the
      * default where none can run. `fitted` is which part (it is no matter on a template with no recipe piece).
      */
-    public static Recipe best(BuildingsTemplate t, boolean fitted, int year, Prices p) {
+    public static Recipe best(BuildingsTemplate t, boolean fitted, int month, Prices p) {
         Recipe dflt = t.defaultRecipe();
         List<Recipe> order = new ArrayList<>();
         order.add(dflt);
@@ -100,7 +101,7 @@ public final class Recipes {
         Recipe best = null;
         double most = Double.NEGATIVE_INFINITY;
         for (Recipe r : order) {
-            if (!canRun(t, r, fitted, year)) continue;
+            if (!canRun(t, r, fitted, month)) continue;
             double v = value(r, p);
             if (Double.isNaN(v)) v = Double.NEGATIVE_INFINITY;
             if (best == null || v > most) {
@@ -114,11 +115,11 @@ public final class Recipes {
     /**
      * What the template's recipe piece adds a month to one building at these prices: the value of the best recipe a fitted building could run
      * less that of the best an unfitted one could (EquipmentFit's gain for a piece that ends no form). Nothing on a template whose recipes
-     * need no piece.
+     * need no piece. Each of the two is the best of those known at the game month.
      */
-    public static double recipeGain(BuildingsTemplate t, int year, Prices p) {
+    public static double recipeGain(BuildingsTemplate t, int month, Prices p) {
         if (t.recipePieceId() == null) return 0;
-        return value(best(t, true, year, p), p) - value(best(t, false, year, p), p);
+        return value(best(t, true, month, p), p) - value(best(t, false, month, p), p);
     }
 
     /* ===== THE GAME LAYER: the city's prices, read on demand ===== */
@@ -131,16 +132,16 @@ public final class Recipes {
                 economy.getPricePerWatt(), economy.getPricePerWaterUnit(), markets == null ? 1 : markets.getExchangeRate());
     }
 
-    /** The gain of the template's recipe piece at the city's prices and in the city's year (EquipmentFit.gainOf() for a piece that ends no form). */
+    /** The gain of the template's recipe piece at the city's prices and in the city's month (EquipmentFit.gainOf() for a piece that ends no form). */
     public static double gainOf(Game game, BuildingsTemplate t) {
-        return recipeGain(t, CityCalendar.yearOf(game.getMonth()), pricesOf(game));
+        return recipeGain(t, game.getMonth(), pricesOf(game));
     }
 
     /** The recipes each template's two parts run, by template id: [the fitted part's, the unfitted part's]. Only a template where a part runs a recipe other than the default has one. */
     private final Map<Integer, String[]> chosen = new TreeMap<>();
 
     /**
-     * Chooses, for every template with a choice of recipes, the best each part can run at the city's prices in the city's year, and keeps it (a
+     * Chooses, for every template with a choice of recipes, the best each part can run at the city's prices in the city's month, and keeps it (a
      * template whose parts both run the default keeps nothing). Does nothing, and reads no price, in a city founded the default way. The choices are
      * struck afresh each time: what the last month chose is no part of this month's.
      */
@@ -148,10 +149,10 @@ public final class Recipes {
         if (!game.foundedUnfitted()) return;
         chosen.clear();
         Prices prices = pricesOf(game);
-        int year = CityCalendar.yearOf(game.getMonth());
+        int month = game.getMonth();
         for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
             if (!t.hasRecipeChoice()) continue;
-            String fitted = best(t, true, year, prices).getId(), unfitted = best(t, false, year, prices).getId();
+            String fitted = best(t, true, month, prices).getId(), unfitted = best(t, false, month, prices).getId();
             String dflt = t.defaultRecipe().getId();
             if (!fitted.equals(dflt) || !unfitted.equals(dflt)) chosen.put(t.getId(), new String[] { fitted, unfitted });
         }

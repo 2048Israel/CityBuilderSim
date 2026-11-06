@@ -10,6 +10,7 @@ import com.google.gson.JsonParser;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,6 +18,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -47,6 +49,18 @@ import java.util.regex.Pattern;
  *      before 1900, a negative work and a blank code are skipped and reported; a need that is not in the catalogue and one dated after its entry
  *      are reported and the entry stays; a text that is not JSON gives an empty catalogue. And the fees: no law entry carries one but L4 (the DNA lab, equipment), and the tables'
  *      yes and no of a few engineering, medicine and business entries are as typed.
+ *   7. BUILDINGS.JSON'S CODES (slice B). Every "since" that is not a year, on a template, a recipe or a piece, is a code in the catalogue: a
+ *      template's one that unlocks a building, a piece's one that unlocks equipment, a recipe's one that is not a building alone. The
+ *      code-dated templates are exactly research-1900.md 1.2's list typed out by id (29), the Oxygen Steel Shop is dated 1900, the Panel Mill 1980
+ *      and the Wood Pellet Mill 1970, every other row undated or 1900; every building entry opens a template but PE12 and B8; a template's year
+ *      is its entry's. A building file read from text keeps a code as written, reports one the catalogue lacks and never knows it.
+ *   8. KNOWN FROM HISTORY'S MONTH. The tractor's piece and recipe are known from PE14's month and not the month before, the oxygen converter's
+ *      recipe from E1's (November 1952), the Container Terminal from E5's, the Electric Arc Furnace from PE1's December 1900, the Pulp Mill's kraft
+ *      recipe from January 1907; an undated row, and one dated 1900, from the first month; and asking by the year (knownIn) agrees with asking
+ *      by the month of that year's January, 1900 to 1960, and nothing dated 1900 is known the year before the start.
+ *   9. THE VERDICT AND THE CHOICE ON HISTORY'S MONTH. EquipmentFit.judge() for the tractor with figures that pay is NOT_KNOWN the month before
+ *      PE14's and PAYS at it (and figures a thousandth short of paying are NOT_YET at it, so the rule runs), and Recipes.canRun() for the
+ *      oxygen converter's recipe is false the month before E1's and true at it, for the part that may run it (the one without the open hearth).
  */
 public class ResearchCheck {
 
@@ -56,6 +70,12 @@ public class ResearchCheck {
     static void check(String label, boolean ok) {
         System.out.println((ok ? "  PASS " : "  FAIL ") + label);
         if (ok) passes++; else fails++;
+    }
+
+    /** The same, with what was found printed under a failure. */
+    static void check(String label, boolean ok, String found) {
+        check(label, ok);
+        if (!ok && found != null) System.out.println("       found: " + found);
     }
 
     /* ----- the specification, typed from the studies' tables ----- */
@@ -489,8 +509,210 @@ public class ResearchCheck {
         check("the business methods are free: B7 lean production, B8 the online shop, PB2 the self-service grocery, PB3 the supermarket",
                 !of("B7").fee() && !of("B8").fee() && !of("PB2").fee() && !of("PB3").fee() && !of("PB2").feeNote().isEmpty());
 
+        sectionSeven();
+        sectionEightAndNine();
+
         System.out.println(fails == 0 ? "ResearchCheck: all " + passes + " ok" : "ResearchCheck: " + fails + " FAILED of " + (passes + fails));
         System.exit(fails);
+    }
+
+    /* ==================== 7. buildings.json's codes (R2, slice B) ==================== */
+
+    /** research-1900.md 1.2 and the R2 brief: the templates dated by a code, id to the entry that opens each; typed here as the specification. */
+    static final Map<Integer, String> CODED = new TreeMap<>(Map.ofEntries(
+            Map.entry(11, "PE1"), Map.entry(119, "PE4"), Map.entry(91, "PB1"), Map.entry(122, "PE8"),
+            Map.entry(79, "PE11"), Map.entry(80, "PE11"), Map.entry(66, "PE13"), Map.entry(85, "PE23"), Map.entry(86, "PE23"),
+            Map.entry(83, "PE25"), Map.entry(84, "PE25"), Map.entry(77, "PE27"), Map.entry(78, "PE27"),
+            Map.entry(102, "E4"), Map.entry(109, "E4"), Map.entry(110, "E4"), Map.entry(96, "E5"), Map.entry(73, "E6"),
+            Map.entry(81, "E7"), Map.entry(82, "E7"), Map.entry(46, "B2"), Map.entry(123, "E12"), Map.entry(12, "E13"),
+            Map.entry(107, "E13"), Map.entry(130, "E14"), Map.entry(18, "B4"), Map.entry(41, "E16"), Map.entry(23, "M8"),
+            Map.entry(47, "B6")));
+
+    static BuildingsTemplate byId(List<BuildingsTemplate> templates, int id) {
+        for (BuildingsTemplate t : templates) if (t.getId() == id) return t;
+        return null;
+    }
+
+    static void sectionSeven() {
+        System.out.println("\n--- every code buildings.json carries is the right kind of discovery, and the dated rows are the studies' ---");
+        List<BuildingsTemplate> shipped = new BuildingCatalog().load();
+        check("fixture: buildings.json loads", shipped != null && !shipped.isEmpty());
+        if (shipped == null) return;
+
+        Map<Integer, String> codeDated = new TreeMap<>();
+        String templateFault = null, pieceFault = null, recipeFault = null;
+        int pieces = 0, recipes = 0;
+        for (BuildingsTemplate t : shipped) {
+            String text = t.getSinceText();
+            if (!text.isEmpty() && Equipment.yearOf(text) == null) {
+                codeDated.put(t.getId(), text);
+                Entry e = of(text);
+                if (templateFault == null && (e == null || !e.is("building"))) templateFault = t.getName() + " " + text;
+                if (templateFault == null && t.getSince() != e.year()) templateFault = t.getName() + " " + text + " year " + t.getSince();
+            }
+            for (Equipment piece : t.getEquipment()) {
+                if (piece.isYear()) continue;
+                pieces++;
+                Entry e = of(piece.getSince());
+                if (pieceFault == null && (e == null || !e.is("equipment"))) pieceFault = t.getName() + "/" + piece.getId() + " " + piece.getSince();
+            }
+            for (Recipe r : t.getRecipes()) {
+                if (r.isYear()) continue;
+                recipes++;
+                Entry e = of(r.getSince());
+                if (recipeFault == null && (e == null || e.kinds().equals(List.of("building")))) recipeFault = t.getName() + "/" + r.getId() + " " + r.getSince();
+            }
+        }
+        check("every template whose since is not a year has a code that is a discovery in the catalogue unlocking a building, and the template's year is the entry's ("
+                + codeDated.size() + " of them)", templateFault == null && !codeDated.isEmpty(), templateFault);
+        check("...every piece of equipment whose since is a code has one that unlocks equipment (" + pieces + " of them)", pieceFault == null && pieces > 0, pieceFault);
+        check("...and every recipe whose since is a code has one that is not a building alone (" + recipes + " of them)", recipeFault == null && recipes > 0, recipeFault);
+        check("the templates dated by a code are exactly research-1900.md 1.2's list, 29 of them, each by the entry that opens it",
+                codeDated.equals(CODED) && CODED.size() == 29, codeDated + " vs " + CODED);
+
+        BuildingsTemplate oxygen = byId(shipped, 106), panel = byId(shipped, 135), pellets = byId(shipped, 138);
+        check("the Oxygen Steel Shop is dated 1900 (its Bessemer and open-hearth recipes are its 1900 ways; E1 dates its recipe, not the building)",
+                oxygen != null && oxygen.getSinceText().equals("1900") && oxygen.getSince() == 1900);
+        check("the Panel Mill stays 1980 and the Wood Pellet Mill 1970, years: research-1900.md's words, no entry yet (Q13)",
+                panel != null && panel.getSinceText().equals("1980") && panel.getSince() == 1980
+                        && pellets != null && pellets.getSinceText().equals("1970") && pellets.getSince() == 1970);
+        List<String> odd = new ArrayList<>();
+        for (BuildingsTemplate t : shipped) {
+            if (CODED.containsKey(t.getId()) || t == panel || t == pellets) continue;
+            if (!t.getSinceText().isEmpty() && !t.getSinceText().equals("1900")) odd.add(t.getName() + " " + t.getSinceText());
+        }
+        check("every other template is undated or 1900", odd.isEmpty(), odd.toString());
+
+        List<String> unopened = new ArrayList<>();
+        int buildingEntries = 0;
+        for (Entry e : ResearchCatalog.get().entries()) {
+            if (!e.is("building")) continue;
+            buildingEntries++;
+            if (!codeDated.containsValue(e.code())) unopened.add(e.code());
+        }
+        check("every discovery that unlocks a building (" + buildingEntries + ") opens at least one template but PE12 (no fertiliser works: no FERTILISER good yet) and B8 (the Fulfilment Centre, not built yet)",
+                buildingEntries == 23 && new HashSet<>(unopened).equals(Set.of("PE12", "B8")) && unopened.size() == 2, unopened.toString());
+
+        // A file read from text: a year, a code, nothing, and a code the catalogue lacks.
+        String json = "{\"buildings\": [{\"id\": 1, \"name\": \"Coded Works\", \"category\": \"INDUSTRIAL\", \"since\": \"PE4\"},"
+                + "{\"id\": 2, \"name\": \"Year Works\", \"category\": \"INDUSTRIAL\", \"since\": 1902},"
+                + "{\"id\": 3, \"name\": \"Undated Works\", \"category\": \"INDUSTRIAL\"},"
+                + "{\"id\": 4, \"name\": \"Ghost Works\", \"category\": \"INDUSTRIAL\", \"since\": \"ZZ9\"}]}";
+        PrintStream real = System.out;
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        List<BuildingsTemplate> read;
+        System.setOut(new PrintStream(bytes, true, StandardCharsets.UTF_8));
+        try {
+            read = new BuildingCatalog().parse(new StringReader(json));
+        } finally {
+            System.setOut(real);
+        }
+        String said = bytes.toString(StandardCharsets.UTF_8);
+        check("fixture: a file of four buildings, a code, a year, none and a ghost code, reads all four", read != null && read.size() == 4);
+        if (read == null || read.size() != 4) return;
+        BuildingsTemplate coded = read.get(0), year = read.get(1), none = read.get(2), ghost = read.get(3);
+        int pe4 = of("PE4").worldMonth();
+        check("a code is kept as written, its year is the entry's, and it is known from the entry's month (PE4, June 1902) and not the month before",
+                coded.getSinceText().equals("PE4") && coded.getSince() == 1902 && coded.knownAt(pe4) && !coded.knownAt(pe4 - 1) && pe4 == PolicyDates.monthOf(1902, 6));
+        check("a year is its digits, and is known from its January (the file's \"since\": 1902 and the code's year are the same year, not the same month)",
+                year.getSinceText().equals("1902") && year.getSince() == 1902 && year.knownAt(PolicyDates.monthOf(1902, 1)) && !year.knownAt(PolicyDates.monthOf(1902, 1) - 1));
+        check("no since is undated: empty text, year 0, known from the first month", none.getSinceText().isEmpty() && none.getSince() == 0 && none.knownAt(1));
+        check("a code the catalogue lacks is reported by name, kept as written, year 0, and never known",
+                ghost.getSinceText().equals("ZZ9") && ghost.getSince() == 0 && !ghost.knownAt(Integer.MAX_VALUE - 1) && said.contains("ZZ9") && said.contains(ResearchCatalog.FILE_NAME)
+                        && !said.contains("PE4") && !said.contains("Coded Works") && !said.contains("Year Works"), said);
+        BuildingsTemplate by = new BuildingsTemplate("By hand", BuildingType.INDUSTRIAL);
+        check("setSince(int) is setSince(String) of the digits, and 0 or less is undated; setSince(String) takes a code, trims, and blank or null is undated",
+                by.setSince(1902).getSinceText().equals("1902") && by.getSince() == 1902 && by.setSince(0).getSinceText().isEmpty() && by.getSince() == 0
+                        && by.setSince(-5).getSinceText().isEmpty() && by.setSince(" E5 ").getSinceText().equals("E5") && by.getSince() == 1956
+                        && by.setSince("  ").getSinceText().isEmpty() && by.setSince((String) null).getSinceText().isEmpty() && by.getSince() == 0);
+    }
+
+    /* ==================== 8. known from history's month, 9. the verdict and the choice on it (R2, slice B) ==================== */
+
+    static void sectionEightAndNine() {
+        System.out.println("\n--- a piece, a recipe and a building are known from history's month, and asking by the year agrees ---");
+        List<BuildingsTemplate> shipped = new BuildingCatalog().load();
+        if (shipped == null) return;
+        BuildingsTemplate grain = byId(shipped, 53), shop = byId(shipped, 106), terminal = byId(shipped, 96), house = byId(shipped, 0),
+                pulp = byId(shipped, 136), furnace = byId(shipped, 11), yard = byId(shipped, 101), bakery = byId(shipped, 7);
+        check("fixture: the Grain Farm, the Oxygen Steel Shop, the Container Terminal, the House, the Pulp Mill, the Electric Arc Furnace, the Scrap Yard and the Bakery are in the file",
+                grain != null && shop != null && terminal != null && house != null && pulp != null && furnace != null && yard != null && bakery != null);
+        if (grain == null || shop == null || terminal == null || house == null || pulp == null || furnace == null || yard == null || bakery == null) return;
+
+        Equipment tractor = grain.getEquipment("tractor"), drive = bakery.getEquipment("electric-drive");
+        Recipe tractorRecipe = grain.getRecipe("tractor"), e1Recipe = shop.getRecipe("basic-oxygen"), kraft = pulp.getRecipe("kraft"), horses = grain.getRecipe("horses");
+        check("fixture: the tractor piece and recipe, the oxygen converter's recipe, kraft, the horses' recipe and the drive are read",
+                tractor != null && tractorRecipe != null && e1Recipe != null && kraft != null && horses != null && drive != null);
+        if (tractor == null || tractorRecipe == null || e1Recipe == null || kraft == null || horses == null || drive == null) return;
+
+        int pe14 = of("PE14").worldMonth(), e1 = of("E1").worldMonth(), e5 = of("E5").worldMonth(), pe1 = of("PE1").worldMonth();
+        check("the Grain Farm's tractor piece is known from PE14's month, June 1917, and not the month before; its tractor recipe the same",
+                pe14 == PolicyDates.monthOf(1917, 6) && tractor.knownFrom() == pe14 && tractor.knownAt(pe14) && !tractor.knownAt(pe14 - 1)
+                        && tractorRecipe.knownFrom() == pe14 && tractorRecipe.knownAt(pe14) && !tractorRecipe.knownAt(pe14 - 1));
+        check("the Oxygen Steel Shop's recipe dated \"E1\" is known from E1's month, November 1952, and not the month before",
+                e1 == PolicyDates.monthOf(1952, 11) && e1Recipe.knownAt(e1) && !e1Recipe.knownAt(e1 - 1));
+        check("the Container Terminal (96) is known from E5's month, April 1956, and not before; its year is 1956 and its text \"E5\"",
+                e5 == PolicyDates.monthOf(1956, 4) && terminal.knownAt(e5) && !terminal.knownAt(e5 - 1) && terminal.getSince() == 1956 && terminal.getSinceText().equals("E5"));
+        check("the Electric Arc Furnace (11) is known from PE1's month, December 1900, and not the month before: a building a first-year discovery opens",
+                pe1 == PolicyDates.monthOf(1900, 12) && furnace.knownAt(pe1) && !furnace.knownAt(pe1 - 1) && furnace.getSince() == 1900 && furnace.getSinceText().equals("PE1"));
+        check("the Pulp Mill's kraft recipe (\"1907\") is known from January 1907 and not the month before",
+                kraft.knownAt(PolicyDates.monthOf(1907, 1)) && !kraft.knownAt(PolicyDates.monthOf(1907, 1) - 1) && kraft.knownFrom() == PolicyDates.monthOf(1907, 1));
+        List<String> undatedFault = new ArrayList<>();
+        int undated = 0;
+        for (BuildingsTemplate t : shipped) {
+            if (!t.getSinceText().isEmpty()) continue;
+            undated++;
+            if (!t.knownAt(1) || t.getSince() != 0) undatedFault.add(t.getName());
+        }
+        check("an undated template (a House, and each of the " + undated + " the file leaves undated) is known from the first month", undated > 0 && undatedFault.isEmpty() && house.knownAt(1), undatedFault.toString());
+        check("a template dated 1900 (the Scrap Yard) is known from the first month too", yard.getSince() == 1900 && yard.knownAt(1));
+
+        // Asking by the year is asking by the month of that year's January.
+        record Asked(String what, java.util.function.IntPredicate byYear, java.util.function.IntPredicate byMonth) { }
+        List<Asked> askers = List.of(new Asked("the tractor piece", tractor::knownIn, tractor::knownAt), new Asked("the tractor recipe", tractorRecipe::knownIn, tractorRecipe::knownAt),
+                new Asked("the oxygen recipe", e1Recipe::knownIn, e1Recipe::knownAt), new Asked("kraft", kraft::knownIn, kraft::knownAt),
+                new Asked("the horses' recipe", horses::knownIn, horses::knownAt), new Asked("the drive", drive::knownIn, drive::knownAt));
+        String disagree = null, beforeStart = null;
+        for (Asked a : askers) {
+            for (int y = 1900; y <= 1960; y++) {
+                if (Equipment.januaryOf(y) != PolicyDates.monthOf(y, 1)) disagree = "januaryOf(" + y + ")";
+                if (a.byYear().test(y) != a.byMonth().test(PolicyDates.monthOf(y, 1)) && disagree == null) disagree = a.what() + " " + y;
+            }
+            if (a.byYear().test(1899) || a.byMonth().test(Equipment.januaryOf(1899))) beforeStart = a.what();
+        }
+        check("knownIn(y) is knownAt(PolicyDates.monthOf(y, 1)) for each of these, 1900 to 1960", disagree == null, disagree);
+        check("...and none of them, dated 1900 or later, is known in 1899, the year before the start (PolicyDates.monthOf clamps 1899 to month 1; Equipment.januaryOf does not)", beforeStart == null, beforeStart);
+        check("a year since reads the same way at the boundary: the 1907 recipe is known in 1907 and not in 1906; the tractor in 1918 and not in 1917 (its June is after that January)",
+                kraft.knownIn(1907) && !kraft.knownIn(1906) && tractor.knownIn(1918) && !tractor.knownIn(1917) && e1Recipe.knownIn(1953) && !e1Recipe.knownIn(1952));
+
+        System.out.println("\n--- the verdict and the choice are made on history's month ---");
+        // Figures that pay, from the model's own functions as EquipmentCheck's rule section builds them: a gain a thousandth over both lines, and under.
+        double r = 0.06, cost = 100;
+        double factor = EquipmentFit.annuityFactor(tractor.getLifeMonths(), r);
+        double hurdle = cost * r / 12 * BusinessInvestment.PROFIT_OVER_INTEREST;
+        double line = Math.max(cost / factor, hurdle);
+        EquipmentFit.Verdict before = EquipmentFit.judge(tractor, grain, pe14 - 1, 1, line * 1.001, cost, r, hurdle);
+        EquipmentFit.Verdict at = EquipmentFit.judge(tractor, grain, pe14, 1, line * 1.001, cost, r, hurdle);
+        EquipmentFit.Verdict short_ = EquipmentFit.judge(tractor, grain, pe14, 1, line * 0.999, cost, r, hurdle);
+        check("fixture: a gain a thousandth over both lines (the annuity's and the hurdle) earns back the cost and passes the gate", line * 1.001 * factor >= cost && line * 1.001 >= hurdle
+                && (line * 0.999 * factor < cost || line * 0.999 < hurdle));
+        check("the tractor with figures that pay is NOT_KNOWN the month before PE14's, pricing nothing", before.kind() == EquipmentFit.Kind.NOT_KNOWN && Double.isNaN(before.gain()), before.toString());
+        check("...and PAYS at PE14's month, with one building unfitted", at.kind() == EquipmentFit.Kind.PAYS && at.gain() == line * 1.001 && at.pieceId().equals("tractor"), at.toString());
+        check("...while figures a thousandth short of paying are NOT_YET at that month: the rule runs once the piece is known", short_.kind() == EquipmentFit.Kind.NOT_YET, short_.toString());
+        check("...and with no building unfitted it is FITTED before it is known, as it always was",
+                EquipmentFit.judge(tractor, grain, pe14 - 1, 0, line * 1.001, cost, r, hurdle).kind() == EquipmentFit.Kind.FITTED);
+
+        // The part that may run the oxygen converter's recipe: the oxygen shop's recipe piece is the open hearth, which the recipe does not need, so the part without it.
+        check("fixture: the Oxygen Steel Shop's recipe piece is the open hearth, which the basic-oxygen recipe does not need, and the open-hearth recipe does",
+                "open-hearth".equals(shop.recipePieceId()) && e1Recipe.getNeedsEquipment() == null && "open-hearth".equals(shop.getRecipe("open-hearth").getNeedsEquipment()));
+        check("the basic-oxygen recipe cannot be run by the part without the open hearth the month before E1's, and can at it",
+                !Recipes.canRun(shop, e1Recipe, false, e1 - 1) && Recipes.canRun(shop, e1Recipe, false, e1));
+        check("...and the part with the open hearth never runs it, known or not; the open-hearth recipe is the fitted part's from the first month",
+                !Recipes.canRun(shop, e1Recipe, true, e1 - 1) && !Recipes.canRun(shop, e1Recipe, true, e1)
+                        && Recipes.canRun(shop, shop.getRecipe("open-hearth"), true, 1) && !Recipes.canRun(shop, shop.getRecipe("open-hearth"), false, e1));
+        check("the Grain Farm's tractor recipe is the fitted part's, from PE14's month and not before, and the horses' recipe is the unfitted part's throughout",
+                !Recipes.canRun(grain, tractorRecipe, true, pe14 - 1) && Recipes.canRun(grain, tractorRecipe, true, pe14) && !Recipes.canRun(grain, tractorRecipe, false, pe14)
+                        && Recipes.canRun(grain, horses, false, 1) && Recipes.canRun(grain, horses, false, pe14));
     }
 
     /* ----- helpers ----- */

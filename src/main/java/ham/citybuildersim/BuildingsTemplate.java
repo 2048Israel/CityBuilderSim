@@ -714,27 +714,59 @@ public class BuildingsTemplate {
         return new String[] { runsFitted == null ? fallback : runsFitted, runsUnfitted == null ? fallback : runsUnfitted };
     }
 
-    /* ----- THE YEAR IT FIRST EXISTED (0.7.123, batch I4; research-design.md 2.1) -----
+    /* ----- WHEN IT FIRST EXISTED (0.7.123, batch I4; R2, 2026-11-05; research-design.md 2.1, 7) -----
        The research study (Jerus's start year 1900, 2026-10-10) asks every
        building after the start to say when it came ("since" in
-       buildings.json): a building whose year is past the city's calendar
-       will be one research or the world brings, later. Read by nothing yet:
-       written now, on the rows the materials chains add, so the catalogue
-       carries its dates before research needs them (the orchestrator's
-       recommendation on the study's Q3, unanswered: today's row shape, and
-       "since" on each new row - not the study's recipes list). A row that
-       stood before 1900 carries the start year itself; 0 is a row not yet
-       dated - every row before batch I4. */
+       buildings.json): a building whose date is past the city's calendar
+       will be one research or the world brings, later. Written at first on
+       the rows the materials chains add, as a YEAR, so the catalogue
+       carried its dates before research needed them (the orchestrator's
+       recommendation on the study's Q3: today's row shape, and "since" on
+       each new row - not the study's recipes list). A row that stood before
+       1900 carries the start year itself; an undated row (nothing says when
+       it came) is always known - every row before batch I4, and the ones R2
+       left. Since R2 (slice B) the date may also be a CODE of the research
+       catalogue ("PE4", research.json): the discovery that opens the
+       building, known from its entry's month, history's (knownAt()); the
+       year (getSince()) is then its entry's. WHAT READS IT: nothing in a
+       city founded the default way, which has every building fitted and
+       chooses none; R2b gates a 1900 city's orders by knownAt(). */
     private int since;
+    private String sinceText = "";
 
-    /** Dates this building: the year it first existed, the start year (1900) for one that stood before it; 0 or less is undated. */
+    /** Dates this building by a year: the year it first existed, the start year (1900) for one that stood before it; 0 or less is undated. */
     public BuildingsTemplate setSince(int year) {
-        this.since = Math.max(0, year);
+        return setSince(year > 0 ? Integer.toString(year) : "");
+    }
+
+    /**
+     * Dates this building by a year ("1902") or a research catalogue code ("PE4"): blank, null or a year of 0 or less is undated. A code that is
+     * not in the catalogue is kept as written, reads as year 0 and is never known (BuildingCatalog reports it).
+     */
+    public BuildingsTemplate setSince(String text) {
+        String s = text == null ? "" : text.trim();
+        Integer asYear = s.isEmpty() ? null : Equipment.yearOf(s);
+        if (asYear != null) {
+            this.since = Math.max(0, asYear);
+            this.sinceText = this.since > 0 ? Integer.toString(this.since) : "";
+        } else {
+            ResearchCatalog.Entry entry = s.isEmpty() ? null : ResearchCatalog.get().entry(s);
+            this.since = entry == null ? 0 : entry.year();
+            this.sinceText = s;
+        }
         return this;
     }
 
-    /** The year it first existed, or 0 for a row not yet dated. */
+    /** The year it first existed (a code's entry's year; 0 for a code that is not in the catalogue), or 0 for a row not yet dated. */
     public int getSince() { return since; }
+
+    /** What the row says, as written: "" undated, "1902" a year, "PE4" a catalogue code. */
+    public String getSinceText() { return sinceText; }
+
+    /** Whether it is known at a game month (month 1 = January 1900): an undated row always; a dated one from the month its year or its code's entry gives (ResearchCatalog.knownFrom()). */
+    public boolean knownAt(int gameMonth) {
+        return sinceText.isEmpty() || gameMonth >= ResearchCatalog.knownFrom(sinceText);
+    }
 
     /* ----- THE RAW COAL A PREPARATION PLANT WASHES (0.7.126, batch I6; docs/studies/spec-materials.md 2.5, 2.10) -----
        A coking field's coal comes out of the ground raw - run-of-mine, ash

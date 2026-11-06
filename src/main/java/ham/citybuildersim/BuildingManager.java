@@ -586,6 +586,7 @@ public class BuildingManager {
         templates.add(largeChildcare);
 
         BuildingsTemplate walkInClinic = new BuildingsTemplate("Walk-in Clinic", BuildingType.HEALTHCARE)
+                .setSince("B4")
                 .setCapacity(2500)
                 .setCashCost(1501)
                 .setConstructionPoints(1200)
@@ -680,6 +681,7 @@ public class BuildingManager {
         templates.add(homeCareService);
 
         BuildingsTemplate assistedLivingResidence = new BuildingsTemplate("Assisted Living Residence", BuildingType.HEALTHCARE)
+                .setSince("M8")
                 .setCapacity(90)
                 .setCashCost(13783)
                 .setConstructionPoints(5000)
@@ -1160,6 +1162,7 @@ public class BuildingManager {
            different game.
            ------------------------------------------------------------------ */
         BuildingsTemplate windFarm = new BuildingsTemplate("Wind Farm", BuildingType.ELECTRICITY)
+                .setSince("E16")
                 .setCashCost(23240)                 // $31.8M all-in at $1,590/kW
                 .setConstructionPoints(1800)        // months, not years
                 .setConstructionMaterials(431)
@@ -1219,6 +1222,7 @@ public class BuildingManager {
          * 0.29 kWh a m3, a real conventional figure.
          */
         BuildingsTemplate desalinationPlant = new BuildingsTemplate("Desalination Plant", BuildingType.WATER)
+                .setSince("E6")
                 .setSource(BuildingsTemplate.Source.SEA)
                 .setCashCost(131568)
                 .setConstructionPoints(88000)
@@ -1260,6 +1264,7 @@ public class BuildingManager {
            tax on it, and everything those wages buy.
            ------------------------------------------------------------------ */
         BuildingsTemplate steelFoundry = new BuildingsTemplate("Electric Arc Furnace", BuildingType.HEAVY_INDUSTRY)
+                .setSince("PE1")
                 .setCashCost(22471)
                 .setConstructionPoints(1400)
                 .setConstructionMaterials(416)
@@ -1279,6 +1284,7 @@ public class BuildingManager {
         templates.add(steelFoundry);
 
         BuildingsTemplate steelMiniMill = new BuildingsTemplate("Steel Mini-Mill", BuildingType.HEAVY_INDUSTRY)
+                .setSince("E13")
                 .setCashCost(89864)
                 .setConstructionPoints(9000)
                 .setConstructionMaterials(1664)
@@ -1872,6 +1878,7 @@ public class BuildingManager {
          * size can carry.
          */
         BuildingsTemplate assemblyPlant = new BuildingsTemplate("Assembly Plant", BuildingType.AUTOMOTIVE)
+                .setSince("PE13")
                 .setSector("Automotive")
                 .makes(Good.CARS, 500)
                 .uses(Good.FABRICATED_STEEL, 1750)
@@ -2132,6 +2139,7 @@ public class BuildingManager {
         templates.add(crudeUnit);
 
         BuildingsTemplate smallReformer = new BuildingsTemplate("Small Reformer", BuildingType.HEAVY_INDUSTRY)
+                .setSince("PE27")
                 .setCashCost(16200)
                 .setConstructionPoints(8100)
                 .setConstructionMaterials(270)
@@ -2147,6 +2155,7 @@ public class BuildingManager {
         templates.add(smallReformer);
 
         BuildingsTemplate reformer = new BuildingsTemplate("Reformer", BuildingType.HEAVY_INDUSTRY)
+                .setSince("PE27")
                 .setCashCost(108000)
                 .setConstructionPoints(54000)
                 .setConstructionMaterials(1800)
@@ -2163,6 +2172,7 @@ public class BuildingManager {
         templates.add(reformer);
 
         BuildingsTemplate smallCrackingUnit = new BuildingsTemplate("Small Cracking Unit", BuildingType.HEAVY_INDUSTRY)
+                .setSince("PE11")
                 .setCashCost(19782)
                 .setConstructionPoints(9891)
                 .setConstructionMaterials(330)
@@ -2178,6 +2188,7 @@ public class BuildingManager {
         templates.add(smallCrackingUnit);
 
         BuildingsTemplate crackingUnit = new BuildingsTemplate("Cracking Unit", BuildingType.HEAVY_INDUSTRY)
+                .setSince("PE11")
                 .setCashCost(105000)
                 .setConstructionPoints(52500)
                 .setConstructionMaterials(1750)
@@ -2194,6 +2205,7 @@ public class BuildingManager {
         templates.add(crackingUnit);
 
         BuildingsTemplate smallHydrocracker = new BuildingsTemplate("Small Hydrocracker", BuildingType.HEAVY_INDUSTRY)
+                .setSince("E7")
                 .setCashCost(19035)
                 .setConstructionPoints(9518)
                 .setConstructionMaterials(317)
@@ -2209,6 +2221,7 @@ public class BuildingManager {
         templates.add(smallHydrocracker);
 
         BuildingsTemplate hydrocracker = new BuildingsTemplate("Hydrocracker", BuildingType.HEAVY_INDUSTRY)
+                .setSince("E7")
                 .setCashCost(83000)
                 .setConstructionPoints(41500)
                 .setConstructionMaterials(1383)
@@ -2225,6 +2238,7 @@ public class BuildingManager {
         templates.add(hydrocracker);
 
         BuildingsTemplate smallAlkylationUnit = new BuildingsTemplate("Small Alkylation Unit", BuildingType.HEAVY_INDUSTRY)
+                .setSince("PE25")
                 .setCashCost(18845)
                 .setConstructionPoints(9422)
                 .setConstructionMaterials(314)
@@ -2240,6 +2254,7 @@ public class BuildingManager {
         templates.add(smallAlkylationUnit);
 
         BuildingsTemplate alkylationUnit = new BuildingsTemplate("Alkylation Unit", BuildingType.HEAVY_INDUSTRY)
+                .setSince("PE25")
                 .setCashCost(115000)
                 .setConstructionPoints(57500)
                 .setConstructionMaterials(1917)
@@ -2256,6 +2271,7 @@ public class BuildingManager {
         templates.add(alkylationUnit);
 
         BuildingsTemplate smallCoker = new BuildingsTemplate("Small Coker", BuildingType.HEAVY_INDUSTRY)
+                .setSince("PE23")
                 .setCashCost(18671)
                 .setConstructionPoints(9336)
                 .setConstructionMaterials(311)
@@ -2271,6 +2287,7 @@ public class BuildingManager {
         templates.add(smallCoker);
 
         BuildingsTemplate coker = new BuildingsTemplate("Coker", BuildingType.HEAVY_INDUSTRY)
+                .setSince("PE23")
                 .setCashCost(84000)
                 .setConstructionPoints(42000)
                 .setConstructionMaterials(1400)
@@ -2362,6 +2379,7 @@ public class BuildingManager {
            draws at wholesale; see sectors.Retail, THE FORECOURTS.
            ---------------------------------------------------------------------------- */
         BuildingsTemplate fillingStation = new BuildingsTemplate("Filling Station", BuildingType.COMMERCIAL)
+                .setSince("PB1")
                 .setSector("Retail")
                 .setCashCost(302)
                 .setConstructionPoints(80)
@@ -2504,6 +2522,7 @@ public class BuildingManager {
                 .setBerthShips(Ports.BULK_TERMINAL_SHIPS)
                 .setId(95));
         templates.add(new BuildingsTemplate("Container Terminal", BuildingType.PORTS)
+                .setSince("E5")
                 .setCashCost(1659600)
                 .setConstructionPoints(829800)
                 .setConstructionMaterials(27660)
@@ -2662,7 +2681,7 @@ public class BuildingManager {
                 .setJobs(JobType.DIPLOMA, 53)
                 .setJobs(JobType.COLLEGE_ENGINEERING, 13)
                 .setJobs(JobType.UNIV_SCIENCE, 3)
-                .setSince(1955)
+                .setSince("E4")
                 .setId(102));
         templates.add(new BuildingsTemplate("Coke Ovens", BuildingType.HEAVY_INDUSTRY)   // coking coal into coke, its gas its own power
                 .setCashCost(203070)
@@ -2745,7 +2764,7 @@ public class BuildingManager {
                 .setJobs(JobType.DIPLOMA, 630)
                 .setJobs(JobType.COLLEGE_ENGINEERING, 162)
                 .setJobs(JobType.UNIV_SCIENCE, 36)
-                .setSince(1952)
+                .setSince(1900)
                 .setId(106));
         templates.add(new BuildingsTemplate("Large Mini-Mill", BuildingType.HEAVY_INDUSTRY)   // scrap into steel, a modern arc-furnace plant
                 .setCashCost(923070)
@@ -2763,7 +2782,7 @@ public class BuildingManager {
                 .setJobs(JobType.DIPLOMA, 140)
                 .setJobs(JobType.COLLEGE_ENGINEERING, 36)
                 .setJobs(JobType.UNIV_SCIENCE, 8)
-                .setSince(1969)
+                .setSince("E13")
                 .setId(107));
 
         /* ------------------- IRON MINING BY TYPE AND SIZE (0.7.124, batch I5) -------------------
@@ -2833,7 +2852,7 @@ public class BuildingManager {
                 .setJobs(JobType.COLLEGE_ENGINEERING, 15)
                 .setJobs(JobType.UNIV_SCIENCE, 5)
                 .setSite(Resource.IRON, Deposit.FieldType.MAGNETITE, 1, 3)
-                .setSince(1955)
+                .setSince("E4")
                 .setId(109));
         templates.add(new BuildingsTemplate("Large Magnetite Complex", BuildingType.MINING)   // 1.2 Mt of rock a month on 20 sites of one field
                 .setCashCost(846146)
@@ -2851,7 +2870,7 @@ public class BuildingManager {
                 .setJobs(JobType.COLLEGE_ENGINEERING, 55)
                 .setJobs(JobType.UNIV_SCIENCE, 15)
                 .setSite(Resource.IRON, Deposit.FieldType.MAGNETITE, 20, 3)
-                .setSince(1955)
+                .setSince("E4")
                 .setId(110));
 
         /* ------------------------- COAL MINING (0.7.126, batch I6) -------------------------
@@ -3101,7 +3120,7 @@ public class BuildingManager {
                 .setJobs(JobType.DIPLOMA, 53)
                 .setJobs(JobType.COLLEGE_ENGINEERING, 13)
                 .setJobs(JobType.UNIV_SCIENCE, 3)
-                .setSince(1902)
+                .setSince("PE4")
                 .setId(119));
         templates.add(new BuildingsTemplate("Lime Kiln", BuildingType.HEAVY_INDUSTRY)   // limestone and coal into quicklime
                 .setCashCost(57684)
@@ -3200,7 +3219,7 @@ public class BuildingManager {
                 .setJobs(JobType.COLLEGE_ENGINEERING, 45)
                 .setJobs(JobType.UNIV_SCIENCE, 11)
                 .setSite(Resource.COPPER, Deposit.FieldType.SULPHIDE, 8, 0.341)
-                .setSince(1906)
+                .setSince("PE8")
                 .setId(122));
         templates.add(new BuildingsTemplate("Leach & SX-EW Plant", BuildingType.MINING)   // one oxide site: ore leached with acid to cathode at the mine, 1968
                 .setCashCost(192310)
@@ -3220,7 +3239,7 @@ public class BuildingManager {
                 .setJobs(JobType.COLLEGE_ENGINEERING, 15)
                 .setJobs(JobType.UNIV_SCIENCE, 4)
                 .setSite(Resource.COPPER, Deposit.FieldType.OXIDE, 1, 1.4)
-                .setSince(1968)
+                .setSince("E12")
                 .setId(123));
         templates.add(new BuildingsTemplate("Copper Smelter", BuildingType.HEAVY_INDUSTRY)   // concentrate into anode, and acid from its gas
                 .setCashCost(384620)
@@ -3372,7 +3391,7 @@ public class BuildingManager {
                 .setJobs(JobType.NO_DIPLOMA, 13)
                 .setJobs(JobType.DIPLOMA, 4)
                 .setJobs(JobType.COLLEGE_ENGINEERING, 1)
-                .setSince(1973)
+                .setSince("E14")
                 .setId(130));
         templates.add(new BuildingsTemplate("Tree Plantation", BuildingType.MINING)   // 1,000 ha planted on Forestry's zone, 20 m3 a ha a year
                 .setCashCost(1532)
@@ -4113,6 +4132,7 @@ public class BuildingManager {
            other building pays, and upkeep is the city's own line.
            ===================================================================== */
         BuildingsTemplate contactCentre = new BuildingsTemplate("Contact Centre", BuildingType.BUSINESS_SERVICES)
+                .setSince("B2")
                 .setCapacity(300)                   // seats
                 .setCashCost(16335)
                 .setConstructionPoints(3240)
@@ -4132,6 +4152,7 @@ public class BuildingManager {
         templates.add(contactCentre);
 
         BuildingsTemplate sharedServices = new BuildingsTemplate("Shared Services Centre", BuildingType.BUSINESS_SERVICES)
+                .setSince("B6")
                 .setCapacity(300)                   // seats
                 .setCashCost(16335)
                 .setConstructionPoints(3240)

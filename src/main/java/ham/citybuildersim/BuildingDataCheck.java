@@ -200,6 +200,11 @@ public class BuildingDataCheck {
                 System.out.println("  FAIL " + who + ": old metal " + actual.oldMetalTaken() + " != " + expected.oldMetalTaken());
             }
             check(who + " since", actual.getSince(), expected.getSince());
+            // ...and as written (R2): a year or a research.json code, which the year alone cannot tell (PE4 and 1902 are both 1902).
+            if (!actual.getSinceText().equals(expected.getSinceText())) {
+                fails++;
+                System.out.println("  FAIL " + who + ": since as written \"" + actual.getSinceText() + "\" != \"" + expected.getSinceText() + "\"");
+            }
             // ...and the raw coal a preparation plant washes (0.7.126, batch I6): a plant that lost its line would wash
             // nothing, and every coking mine's coal would sell raw.
             check(who + " wash", actual.getWash(), expected.getWash());
@@ -713,7 +718,10 @@ public class BuildingDataCheck {
            orchestrator's recommendation on its Q3): "since" is the year a row
            first existed, written on every row the materials chains add - the
            start year for one that stood before it - and on none before them,
-           which read as undated (0). Read by nothing yet. */
+           which read as undated (0). R2 (2026-11-05): a code of research.json
+           ("PE4") may stand for the year, and getSince() is then its entry's
+           year; the buildings research-1900.md 1.2 says did not exist in 1900
+           are dated by the entry that opens each. */
         System.out.println("\n--- the old steel a yard takes, and the year each new row first existed (0.7.123) ---");
         java.util.Map<Integer, Double> takers = new java.util.TreeMap<>(), copperTakers = new java.util.TreeMap<>();
         java.util.Map<Integer, Integer> dated = new java.util.TreeMap<>();
@@ -738,7 +746,7 @@ public class BuildingDataCheck {
         years.put(ham.citybuildersim.sectors.HeavyIndustry.COKE_OVENS, 1900);
         years.put(ham.citybuildersim.sectors.HeavyIndustry.MINI_BLAST_FURNACE, 1900);
         years.put(ham.citybuildersim.sectors.HeavyIndustry.BLAST_FURNACE, 1900);
-        years.put(ham.citybuildersim.sectors.HeavyIndustry.OXYGEN_STEEL_SHOP, 1952);
+        years.put(ham.citybuildersim.sectors.HeavyIndustry.OXYGEN_STEEL_SHOP, 1900);   // R2: its Bessemer and open-hearth recipes are its 1900 ways; E1 dates the recipe, not the building
         years.put(ham.citybuildersim.sectors.HeavyIndustry.LARGE_MINI_MILL, 1969);
         years.put(ham.citybuildersim.sectors.Mining.LARGE_OPEN_PIT, 1900);
         years.put(ham.citybuildersim.sectors.Mining.MAGNETITE_MINE, 1955);
@@ -764,11 +772,34 @@ public class BuildingDataCheck {
         }
         years.put(ham.citybuildersim.sectors.WoodProducts.PANEL_MILL, 1980);
         years.put(ham.citybuildersim.sectors.WoodProducts.PELLET_MILL, 1970);
+        // R2: the rows research-1900.md 1.2 says did not exist in 1900, dated by the entry that opens each (its year here; the codes are ResearchCheck 7's)
+        years.put(11, 1900);    // PE1 Electric Arc Furnace, December 1900
+        years.put(12, 1969);    // E13 Steel Mini-Mill
+        years.put(18, 1973);    // B4 Walk-in Clinic
+        years.put(23, 1981);    // M8 Assisted Living Residence
+        years.put(41, 1980);    // E16 Wind Farm
+        years.put(46, 1965);    // B2 Contact Centre
+        years.put(47, 1982);    // B6 Shared Services Centre
+        years.put(66, 1913);    // PE13 Assembly Plant
+        years.put(73, 1957);    // E6 Desalination Plant
+        years.put(77, 1949);    // PE27 Small Reformer
+        years.put(78, 1949);    // PE27 Reformer
+        years.put(79, 1913);    // PE11 Small Cracking Unit
+        years.put(80, 1913);    // PE11 Cracking Unit
+        years.put(81, 1959);    // E7 Small Hydrocracker
+        years.put(82, 1959);    // E7 Hydrocracker
+        years.put(83, 1938);    // PE25 Small Alkylation Unit
+        years.put(84, 1938);    // PE25 Alkylation Unit
+        years.put(85, 1929);    // PE23 Small Coker
+        years.put(86, 1929);    // PE23 Coker
+        years.put(91, 1905);    // PB1 Filling Station
+        years.put(96, 1956);    // E5 Container Terminal
         years.put(144, 1900);   // HY1's Hydro Station: it stood before the start (Appleton 1882, Niagara 1895)
         years.put(146, 1900);   // ET6's Rail Bridge and Road Bridge: they stood before the start (the Forth Bridge, 1890); the Highway Bridge is undated, as the Elevated Highway is
         years.put(147, 1900);
         assertTrue("the seven rows of batch I4 are dated, research-design.md's years - the Pelletising Plant 1955 (E4, Silver Bay), the"
-                        + " Oxygen Steel Shop 1952 (E1, Linz), the Large Mini-Mill 1969 (E13) and the other four 1900, the start year,"
+                        + " Oxygen Steel Shop 1900 since R2 (its Bessemer and open-hearth recipes are its 1900 ways, E1 dates its oxygen-converter recipe"
+                        + " and not the building; it was 1952, Linz), the Large Mini-Mill 1969 (E13) and the other four 1900, the start year,"
                         + " as standing before it - and batch I5's three: the Large Open-Pit Mine 1900, the two magnetite works 1955 (E4,"
                         + " taconite concentrated at Silver Bay); and batch I6's four 1900, coal's mines and washeries standing before"
                         + " the start (the longwall's shields, E15 1975, equipment on the mine); and batch I7's six 1900 but the Large"
@@ -778,7 +809,13 @@ public class BuildingDataCheck {
                         + " available from the start (research-1900.md 12); and batch I10's six 1900 but the Panel Mill, 1980 (OSB about"
                         + " 1980), and the Wood Pellet Mill, 1970 (the 1970s) - research-1900.md 1.2's words, both unverified; and HY1's"
                         + " Hydro Station, 1900 (standing before it: Appleton 1882, Niagara 1895); and ET6's Rail and Road Bridge, 1900 (the Forth Bridge,"
-                        + " 1890), the Highway Bridge undated as the Elevated Highway is; no row"
+                        + " 1890), the Highway Bridge undated as the Elevated Highway is; and R2's twenty-one more, undated before, dated by the entry that opens each (the Electric Arc Furnace PE1 1900, the Filling Station PB1 1905,"
+                        + " the cracking units PE11 1913, the Assembly Plant PE13 1913, the cokers PE23 1929, the alkylation units PE25 1938, the reformers PE27"
+                        + " 1949, the Container Terminal E5 1956, the Desalination Plant E6 1957, the hydrocrackers E7 1959, the Contact Centre B2 1965, the"
+                        + " Steel Mini-Mill E13 1969, the Walk-in Clinic B4 1973, the Wind Farm E16 1980, the Assisted Living Residence M8 1981 and the Shared"
+                        + " Services Centre B6 1982); the Large Cement Plant, the Large Copper Mine, the pelletising and two magnetite works, the Large"
+                        + " Mini-Mill, the Leach & SX-EW Plant and the Harvesting Operation keep their years, now as the codes PE4, PE8, E4, E13, E12 and E14,"
+                        + " their years here being their entries'; no row"
                         + " before them: " + dated,
                 dated.equals(years));
 

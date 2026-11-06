@@ -219,8 +219,8 @@ public class BuildingCatalog {
                 // ...and a works' own power, kW, and its consumables, world thousands a month (0.7.112): absent, none.
                 .setGen(number(o, "gen"))
                 .setConsumables(number(o, "consumables"))
-                // ...and the year it first existed (0.7.123): absent, undated.
-                .setSince((int) number(o, "since"))
+                // ...and when it first existed (0.7.123; R2): a year or a research.json code, absent undated.
+                .setSince(sinceText(o))
                 // ...and the raw coal a preparation plant washes, t a month (0.7.126): absent, none.
                 .setWash(number(o, "wash"));
 
@@ -236,6 +236,7 @@ public class BuildingCatalog {
         readOffshore(o, template, name);
         readSite(o, template, name);
         readOldMetal(o, template, name);
+        readSince(template, name);
         readEquipment(o, template, name);
         // ...and the ways it runs (R1c), which need the pieces read: and then the pieces that end no form and that no recipe needs go.
         readRecipes(o, template, name);
@@ -243,6 +244,17 @@ public class BuildingCatalog {
 
         // The file's money is today's; the template is priced at the founding's, once, here (EP1).
         return template.pricedAtFoundingLevel();
+    }
+
+    /**
+     * When a building first existed (R2): "since" is a year (1902) or a code of research.json ("PE4"), read by BuildingsTemplate.setSince(). A code
+     * that is not in the catalogue is reported here and kept as written: the building is then never known (BuildingsTemplate.knownAt()).
+     */
+    private void readSince(BuildingsTemplate template, String name) {
+        String since = template.getSinceText();
+        if (since.isEmpty() || Equipment.yearOf(since) != null || ResearchCatalog.get().entry(since) != null) return;
+        System.out.println(FILE_NAME + ": \"" + name + "\" since \"" + since + "\" is not a code in " + ResearchCatalog.FILE_NAME
+                + "; kept as written, and never known.");
     }
 
     /**
@@ -340,7 +352,7 @@ public class BuildingCatalog {
         template.setEquipment(pieces);
     }
 
-    /** An equipment piece's "since" as text: a whole JSON number is its digits ("1900"), a string as written ("PE14"), absent or anything else empty. */
+    /** A "since" (a building's, a piece's or a recipe's) as text: a whole JSON number is its digits ("1900"), a string as written ("PE14"), absent or anything else empty. */
     private String sinceText(JsonObject p) {
         try {
             if (!p.has("since") || p.get("since").isJsonNull()) return "";
