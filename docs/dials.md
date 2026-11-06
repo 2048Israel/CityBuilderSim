@@ -2,9 +2,9 @@
 
 Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**5,497 constants in 519 files.**
+**5,509 constants in 521 files.**
 
-## model (2665 constants)
+## model (2674 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -2740,13 +2740,27 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 91 | `ResearchCatalog.KINDS` | `List.of("building", "equipment", "recipe", "drug")` | What a discovery can unlock, as the file spells it; an entry names one or two. |
 | 129 | `ResearchCatalog.Holder.INSTANCE` | `load()` |  |
 
+### ResearchPreview.java ([map](map/ResearchPreview.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 43 | `ResearchPreview.YEARS` | `10` | The years a preview plays ahead: ten, the study's horizon (research-design 5.4). |
+| 46 | `ResearchPreview.DRAWS` | `400` | The draws a card's preview is made from: 400, which puts the standard error of a field's expected finds near 0.04 where it finds about one (the study's runs used 1,000, the harness 20,000). |
+| 49 | `ResearchPreview.SEED` | `0x5EED_C0FFEE_1001L` | The seed the draws are made from: fixed, so that the same dials always say the same, and never the city's own (Game.getWorldSeed()), which would show the player the hidden sizes. |
+| 52 | `ResearchPreview.RUNS` | `new AtomicInteger()` | The preview's runs since the program began, for a harness to see that a cached answer did not run again. |
+| 60 | `ResearchPreview.NEVER` | `Integer.MAX_VALUE` | A month nothing was found in. |
+| 153 | `ResearchPreview.FIELDS` | `Field.values().length` |  |
+| 156 | `ResearchPreview.NOTHING` | `new Result(DRAWS, new double [ FIELDS ], new double [ FIELDS ], new double [ FIELDS ], ...` | The answer where there is nothing to find (a city founded the default way knows every discovery from the start): nothing anywhere, from DRAWS draws. |
+
 ### ResearchView.java ([map](map/ResearchView.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 41 | `ResearchView.FIRST_MONTH` | `1` | The month every city is founded in. |
-| 48 | `ResearchView.NEW_MONTHS` | `12` | How many months a building is NEW on its card after it became known in the city: it is new while its age (the city's month less the month it became known) is under this. |
-| 51 | `ResearchView.FLAG_KIND` | `"discovery"` | The kind of the flags a discovery puts on City History's decision lane (flagEntries()); a discovery is not a decision, so it is no DecisionLog kind. |
+| 42 | `ResearchView.FIRST_MONTH` | `1` | The month every city is founded in. |
+| 49 | `ResearchView.NEW_MONTHS` | `12` | How many months a building is NEW on its card after it became known in the city: it is new while its age (the city's month less the month it became known) is under this. |
+| 52 | `ResearchView.FLAG_KIND` | `"discovery"` | The kind of the flags a discovery puts on City History's decision lane (flagEntries()); a discovery is not a decision, so it is no DecisionLog kind. |
+| 720 | `ResearchView.CACHE_SIZE` | `32` | The preview's answers kept, the least recently read dropped first: a card's dials are read again at every redraw of the screen, and the answer does not change until a dial or the month does. |
+| 721 | `ResearchView.CACHE` | `new java.util.LinkedHashMap<>(16, 0.75f, true) { @ Override protected boolean removeEld...` |  |
 
 ### Resource.java ([map](map/Resource.md))
 
@@ -5304,7 +5318,7 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 748 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1028 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1459 constants)
+## harnesses (1462 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -7074,14 +7088,22 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 139 | `ResearchCheck.WORK` | `{ { "E1", 444 }, { "E5", 545 }, { "E12", 1013 }, { "E18", 2998 }, { "M3", 594 }, { "M10...` | Work typed from the tables (researcher-years at the date); PL1 and PL12 are the 8.4 text's, L5 the 8.6 rule's. |
 | 522 | `ResearchCheck.CODED` | `new TreeMap<>(Map.ofEntries(Map.entry(11, "PE1"), Map.entry(119, "PE4"), Map.entry(91, ...` | research-1900.md 1.2 and the R2 brief: the templates dated by a code, id to the entry that opens each; typed here as the specification. |
 
+### ResearchPreviewCheck.java ([map](map/ResearchPreviewCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 71 | `ResearchPreviewCheck.DRAWS` | `20_000` | The draws the harness makes the game's preview from (the screen uses ResearchPreview.DRAWS): enough that the game's error is a quarter of the study's. |
+| 74 | `ResearchPreviewCheck.STUDY_DRAWS` | `1000` | The draws the study's figures were made from, for the binomial error of a chance it quotes without one. |
+| 76 | `ResearchPreviewCheck.ENG` | `Field.ENGINEERING, MED = Field.MEDICINE, BUS = Field.BUSINESS, LAW = Field.LAW` |  |
+
 ### ResearchViewCheck.java ([map](map/ResearchViewCheck.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 93 | `ResearchViewCheck.CAT` | `ResearchCatalog.get()` |  |
-| 247 | `ResearchViewCheck.NOW_SECTION_TWO` | `50` | A month well past the first discoveries, for the cores of section 2. |
-| 294 | `ResearchViewCheck.FINDS` | `Map.of("PE1", 4, "PE14", 150, "PE2", 20, "PE3", ResearchView.FIRST_MONTH, "PL5", Resear...` | The finds of section 3's research: PE1 and PE14 before history's date, PE2 after it, PE3 at the founding month and PL5 the month after it. |
-| 302 | `ResearchViewCheck.NOW` | `400` |  |
+| 109 | `ResearchViewCheck.CAT` | `ResearchCatalog.get()` |  |
+| 269 | `ResearchViewCheck.NOW_SECTION_TWO` | `50` | A month well past the first discoveries, for the cores of section 2. |
+| 316 | `ResearchViewCheck.FINDS` | `Map.of("PE1", 4, "PE14", 150, "PE2", 20, "PE3", ResearchView.FIRST_MONTH, "PL5", Resear...` | The finds of section 3's research: PE1 and PE14 before history's date, PE2 after it, PE3 at the founding month and PL5 the month after it. |
+| 324 | `ResearchViewCheck.NOW` | `400` |  |
 
 ### RestaurantsCheck.java ([map](map/RestaurantsCheck.md))
 

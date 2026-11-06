@@ -2,7 +2,7 @@
 
 Generated 2026-11-06 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**182 harness files, 20,880 labelled assertions.** AllChecks runs 182 of them.
+**183 harness files, 21,019 labelled assertions.** AllChecks runs 183 of them.
 
 ## Which harnesses read which class
 
@@ -87,7 +87,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [DemolitionLog](map/DemolitionLog.md) | CalendarCheck, HouseholdCheck, MortgageCheck |
 | [Denomination](map/Denomination.md) | DenominationCheck, NewGameCheck |
 | [Deposit](map/Deposit.md) | BuildCardCheck, CementConcreteCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, IndustryViewCheck, LandCheck, LandmassCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, QuarryingCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, WellCheck, WorldCheck |
-| [Dials](map/Dials.md) | **none** |
+| [Dials](map/Dials.md) | ResearchPreviewCheck |
 | [DistrictPicture](map/DistrictPicture.md) | MapCheck |
 | [DistrictPlan](map/DistrictPlan.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, JunctionCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, RunWorksCheck, SlopeCheck, TruckRouteCheck |
 | [EarthData](map/EarthData.md) | BridgeCheck, EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, GatewayCheck, GlobeCheck, HydroCheck, LandCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, NewGameCheck, PartnerCallsCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, SlopeCheck, WorldDataCheck |
@@ -163,7 +163,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [InterimLoan](map/InterimLoan.md) | CreditCheck, LongPlaytest |
 | [Investor](map/Investor.md) | CreditCheck |
 | [JavaScan](map/JavaScan.md) | **none** |
-| [JobType](map/JobType.md) | AgricultureCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, BusinessServicesCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, DiscoveryCheck, EducationCheck, EquipmentCheck, FoodProcessingCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FundCheck, HaulageCheck, HealthCheck, HouseholdCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RestaurantsCheck, ScaleCheck, SectorStatementCheck, WantedPostsCheck, WellCheck, WoodProductsCheck |
+| [JobType](map/JobType.md) | AgricultureCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, BusinessServicesCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, DiscoveryCheck, EducationCheck, EquipmentCheck, FoodProcessingCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FundCheck, HaulageCheck, HealthCheck, HouseholdCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, ResearchPreviewCheck, RestaurantsCheck, ScaleCheck, SectorStatementCheck, WantedPostsCheck, WellCheck, WoodProductsCheck |
 | [Kept](map/Kept.md) | **none** |
 | [KeptBench](map/KeptBench.md) | KeptCheck |
 | [LabourMarket](map/LabourMarket.md) | ExpectationsCheck, LabourCheck, LongPlaytest, PolicyDatesCheck, PolicyPreviewCheck, PriceLevelCheck, WantedPostsCheck |
@@ -225,8 +225,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [PartnersView](map/PartnersView.md) | PartnersCheck |
 | [PayTier](map/PayTier.md) | AgricultureCheck, BankCheck, BondCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, DiscoveryCheck, EducationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MarketCheck, MaterialsCheck, MiningCheck, OutsideCheck, PopulationCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, TradeCostCheck, WoodProductsCheck |
 | [PeopleScreen](map/PeopleScreen.md) | **none** |
-| [Pieces](map/Pieces.md) | IslandNetCheck |
-| [PolicyDates](map/PolicyDates.md) | DiscoveryCheck, EquipmentCheck, ForestryCheck, KeptCheck, LandmassCheck, PolicyDatesCheck, RecipeCheck, ResearchCheck, ResearchViewCheck, ZoningViewCheck |
+| [Pieces](map/Pieces.md) | IslandNetCheck, ResearchViewCheck |
+| [PolicyDates](map/PolicyDates.md) | DiscoveryCheck, EquipmentCheck, ForestryCheck, KeptCheck, LandmassCheck, PolicyDatesCheck, RecipeCheck, ResearchCheck, ResearchPreviewCheck, ResearchViewCheck, ZoningViewCheck |
 | [PolicyPreview](map/PolicyPreview.md) | CentralBankCheck, GroceryCheck, PolicyPreviewCheck, ReadPathCheck, ZoningViewCheck |
 | [PolicyRates](map/PolicyRates.md) | DebtMoneysCheck, GlobeCheck, InterestAbroadCheck, PartnersCheck, ReadPathCheck, SaveFileCheck |
 | [PolicyScreen](map/PolicyScreen.md) | **none** |
@@ -256,10 +256,11 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ReplayGraphs](map/ReplayGraphs.md) | ReplayCheck |
 | [ReplayMode](map/ReplayMode.md) | **none** |
 | [ReplayMoveProbe](map/ReplayMoveProbe.md) | ReplayCheck |
-| [Research](map/Research.md) | DiscoveryCheck, KeptCheck, LandCheck, PrizeCheck, ResearchViewCheck |
-| [ResearchCatalog](map/ResearchCatalog.md) | BuildCardCheck, DiscoveryCheck, EquipmentCheck, PrizeCheck, RecipeCheck, ResearchCheck, ResearchViewCheck |
+| [Research](map/Research.md) | DiscoveryCheck, KeptCheck, LandCheck, PrizeCheck, ResearchPreviewCheck, ResearchViewCheck |
+| [ResearchCatalog](map/ResearchCatalog.md) | BuildCardCheck, DiscoveryCheck, EquipmentCheck, PrizeCheck, RecipeCheck, ResearchCheck, ResearchPreviewCheck, ResearchViewCheck |
+| [ResearchPreview](map/ResearchPreview.md) | ResearchPreviewCheck, ResearchViewCheck |
 | [ResearchScreen](map/ResearchScreen.md) | **none** |
-| [ResearchView](map/ResearchView.md) | KeptCheck, ResearchViewCheck |
+| [ResearchView](map/ResearchView.md) | KeptCheck, ResearchPreviewCheck, ResearchViewCheck |
 | [Resource](map/Resource.md) | AutoBuildCheck, BridgeMapCheck, BuildCardCheck, BuildingDataCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, HaulageCheck, IndustryViewCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, OilCheck, OilViewCheck, PlanCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, ScaleCheck, SlopeCheck, WellCheck, WorldCheck, ZoningCheck, ZoningViewCheck |
 | [Restaurants](map/Restaurants.md) | InvestCheck, LongPlaytest, RestaurantsCheck |
 | [Retail](map/Retail.md) | BondCheck, BuildCardCheck, BuildingDataCheck, CarCheck, ExpectationsCheck, ForeignCheck, Forms1900Check, GdpCheck, GroceryCheck, HealthCheck, InfrastructureCheck, InvestCheck, LongPlaytest, MonetaryCheck, NewGameCheck, OilCheck, ReadPathCheck, RefineryViewCheck, RestaurantsCheck, SaveFileCheck, SupplierCreditCheck, WaterCheck |
@@ -21711,7 +21712,116 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L710 ...and the part with the open hearth never runs it, known or not; the open-hearth recipe is the fitted part's from the first month
   - L713 the Grain Farm's tractor recipe is the fitted part's, from PE14's month and not before, and the horses' recipe is the unfitted part's throughout
 
-## ResearchViewCheck.java - 106 labelled assertions
+## ResearchPreviewCheck.java - 82 labelled assertions
+
+> The preview each dial card on Policy > Research shows: what a set of dials would find here over ten years (R3b, slice A: ResearchPreview, and the
+> words and the cache in ResearchView; docs/studies/research-design.md 5.4, 6.2, 9).
+> 
+> WHY. The preview is the one place the game says a number about the FUTURE of a random process, and its numbers are the player's reason to move a
+> dial. A step that differs from the game's own by one rule (the labs read the city's share of this month and not the last, a find not counting at once
+> for the fields after it) would give a card that promises what the month will not deliver, and no other assertion in the model would see it; and a
+> sampler that leaked the city's own draw would show the player a size he is not to see. So: the two cities of research-design 5.4 are held to the
+> study's figures, which research_model.py made with the study's own model, within their Monte Carlo error; the preview's step is held to
+> Research.month() itself, month for month, over given sizes; the answer is the same for the same inputs and is never run twice for them; and the
+> words are caused from both sides of each edge.
+> 
+> What this has to prove:
+> ...
+
+- **L240 1. the wages of the study's cities make a post cost what the study's does**
+  - L242 an engineering post costs D$ 18,169.4 a month
+  - L243 a medical post costs D$ 23,775
+  - L244 a business post costs D$ 12,250
+  - L245 a law post costs D$ 16,000
+- **L251 2. the young city, June 1955: 5.4's previews against the study's run of them**
+  - L259 fixture: engineering has six open problems (E5 to E10), medicine two (M4, M5), business and law none (5.4)
+  - L265 as is
+  - L266 as is
+  - L270 engineering grant
+  - L274 medical grant
+  - L275 medical grant
+  - L286 the chase is E10 and E7 (the cheapest the purse pays for and a team could finish before the world), cheapest first
+  - L287 ...its room is the study's 395.13 researchers
+  - L288 ...so the investors want 4 labs in the first month, in the model's own question and in the preview's
+  - L290 ...and no other field wants one (no prize there)
+  - L291 engineering prize
+  - L292 engineering prize
+  - L293 engineering prize expected purse (D$ M)
+  - L294 ...and the purse is the prize times the finds
+- **L305 3. the big city, June 1979: 5.4's table against the study's run of it**
+  - L312 fixture: engineering has one open problem (E17, rail), medicine two (M9, M10), business one (B6) and law one (L3) (5.4)
+  - L315 fixture: the four finds are known here and nothing else of the piles is
+  - L319 as is
+  - L320 as is
+  - L321 as is
+  - L322 as is
+  - L323 as is
+  - L327 medicine +63, business to room
+  - L328 medicine +63, business to room
+  - L329 medicine +63, business to room
+  - L333 law grant
+  - L337 engineering cut
+  - L338 engineering cut
+  - L349 the chase is M9 alone (keyhole surgery)
+  - L350 ...its room is the study's 362.7 researchers
+  - L351 ...so the investors want 4 labs in the first month, in the model's own question and in the preview's
+  - L353 medical prize
+  - L354 medical prize expected purse (D$ M)
+- **L444 3b. the preview and the study's model written again (research_model.py forward(), no prize), many draws of each**
+- **L525 4. the step: the preview's path and Research.month(), over the same sizes**
+  - L527 young city, researchers in every field, no prize
+  - L528 young city, the same with an engineering prize and a medical one
+  - L529 young city as is with the engineering prize (the labs do the finding)
+  - L530 big city, researchers four times as is, no prize
+  - L531 big city, as is, with a medical prize and an engineering one
+  - L532 big city, a prize in every field and half the researchers
+- **L539 5. a size is drawn above the pile on it, from the same distribution as plain redrawing**
+  - L551 every size drawn is above its pile, from a pile of nothing to twelve times the work
+  - L562 with no pile the mean size is the typical work (the draw has mean 1)
+- **L589 6. the same inputs give the same answer, another seed another, and ResearchView does not run it twice**
+  - L597 the same inputs and seed give exactly the same finds, errors, chances and purses
+  - L599 another seed gives other draws (the medical finds differ)
+  - L605 the first read runs the preview once
+  - L607 the same month and inputs again return the very same Result without running
+  - L609 ...a copy of the research in the same state is the same inputs
+  - L611 a new month runs again
+  - L613 a researcher more runs again
+  - L615 a prize runs again
+  - L619 a change of wage runs again
+  - L625 a pile that moved runs again
+  - L627 another seed runs again
+  - L628 ...and the first inputs are still kept: no run
+  - L633 a small cache: after forty others the first is run again
+  - L634 ...and the last of them is still kept
+- **L640 7. the answer: purse = prize x finds, a chance is a share, the fields add up, nothing to find gives nothing**
+  - L653 a chance is between 0 and 1 and never above the expected finds (a find is a whole one)
+  - L654 the purse of a field is its prize times its finds, and of the city the sum
+  - L655 the fields' finds add to the city's
+  - L656 the draws are the draws asked for
+  - L660 a city that has every discovery to its name (month 5000) has nothing to find and nothing to ask of the investors
+  - L663 no researchers and no prize find nothing in ten years
+  - L665 researchers that are not a number, below nothing or not finite count as none (as Research.month() reads them)
+  - L667 no wages, no cost of a post, no chase: the prize brings no lab (as Research.month() with none)
+  - L669 labs nobody works in still are wanted, and do no work
+  - L675 the labs wanted in the first month are what Research.labsWanted() answers for the month, field by field
+- **L681 8. the words: a chance below one expected find, a count above**
+  - L682 a chance when both expected counts are under 1
+  - L683 the larger of the two decides: one at 1 makes it a count, whichever side it is on
+  - L685 ...and just under 1 on both sides is still a chance
+  - L686 a chance of exactly nothing is \"none\", NaN too
+  - L687 a chance above nothing that rounds to 0% is \"under 1%\", up to 0.4999%
+  - L690 ...and one that rounds to 1% is \"1%\", from 0.5%
+  - L691 a chance is a whole percent: 25.4% is \"25%\", 25.5% \"26%\"
+  - L692 a certain chance is \"100%\"
+  - L693 a count of exactly nothing is \"none\", NaN too
+  - L694 a count above nothing that shows as 0.00 is \"under 0.01\", up to 0.00499
+  - L696 ...and one that rounds to 0.01 is \"0.01\", from 0.005
+  - L697 a count is to two places: 1.102 is \"1.10\", 1.053 \"1.05\", 2.739 \"2.74\", 1 \"1.00\"
+  - L700 the count is used whatever the chance when the card says so (a count of 0.6 is \"0.60\", not a percent)
+- **L706 9. what 400 draws take**
+  - L724 the preview of 400 draws is made, as is and with a prize, in well under a second (timing is printed, not judged)
+
+## ResearchViewCheck.java - 163 labelled assertions
 
 > What the research screens read (R5, slice A: ResearchView, three series in HistorySave, ChartModel.flags(log, more), Recipes.chosen()).
 > 
@@ -21727,122 +21837,184 @@ _(this harness does not label its checks through a helper - it prints its findin
 >   1. A CITY FOUNDED THE DEFAULT WAY. The timeline, the equipment, the recipes in use, the new templates and the flags are all empty, every origin is null
 > ...
 
-- **L188 1. a city founded the default way: nothing new on any read, and the history has none of the series**
-  - L191 fixture: founded the default way, and the village stands: a Bakery carrying a piece, a Mixed Farm with a choice of recipes
-  - L194 the timeline is empty
-  - L195 ...the equipment (whole city and a sector) and the recipes in use are empty though the stacks stand
-  - L197 ...no flag, no new template, and the share of the equipment fitted is not a number
-  - L204 ...every template's origin is null and none is new
-  - L205 ...and it knew every discovery at its founding: knownAtFounding() is the catalogue's
-  - L212 with a find in its research (PE1 in month
-  - L214 ...and read as the city it is, still nothing: no discovery, no origin, not new, no flag
-  - L229 its history has none of the
-- **L250 2. a city founded the 1900 way, at its founding: no discovery yet, and FIRST_MONTH is where the line is**
-  - L254 fixture: founded the 1900 way, in the founding month
-  - L255 the timeline is empty
-  - L256 knownAtFounding() counts exactly the entries history dates at FIRST_MONTH or before (
-  - L261 fixture: the harness's catalogue has three entries in months 1, 2 and 3
-  - L265 an entry history dates AT FIRST_MONTH was known at the founding: counted by knownAtFounding(), never on the timeline
-  - L268 ...the entry of the month AFTER it is a discovery, from abroad, when the clock gets there and not before
-  - L275 a find AT FIRST_MONTH is known at the founding too: PE3 found in month
-  - L280 ...found the month after, it is one: HERE in month
-  - L287 its equipment stands:
-- **L305 3. the timeline: found here at the month found, from abroad on history's date, none after now, in order**
-  - L312 fixture: the finds are before history's date, but PE2's is after it (found in month 20, history's month
-  - L315 a find here is HERE at the month it was found, and years ahead by (worldMonth - found) / 12
-  - L318 ...a find the month after FIRST_MONTH counts (PL5 in month
-  - L320 ...a find after history's date is the world's: PE2 is ABROAD at history's month
-  - L341 every other entry history dates after FIRST_MONTH and by month
-  - L343 ...the one found at the founding month (PE3) is counted as known at the founding instead:
-  - L353 none is after the city's month, and they are ordered by month and, inside a month, by the catalogue's order
-  - L356 fixture: some two share a month, so the tie-break was caused
-  - L360 at an earlier month the timeline is the shorter run of the same: month 100 has
-  - L375 byField() partitions the timeline: every discovery in its field's list (
-  - L378 ...and an empty timeline still has all four fields, each with an empty list
-- **L384 4. cumulative(): monotone, ending at the counts, the first entry the first month and all before it, the length rule**
-  - L390 over months 1 to
-  - L391 ...the last entries are the counts:
-  - L397 starting at the first discovery's month (
-  - L399 ...starting one month before it, entry 0 does not and entry 1 does
-  - L406 starting after some, entry 0 holds every discovery of that month and before it (
-  - L410 a window that ends early leaves the later ones out: months 1 to 100 total
-  - L412 one month is one entry
-  - L414 a window that ends before it starts is empty, two empty arrays
-  - L416 an empty timeline counts nothing in any month
-- **L422 5. the flags: one a discovery in the words of its source, never in the decision log, and one flag a month with the decisions**
-  - L434 one entry for each of the
-  - L437 the finds here say \"Found here: ... 0.8 years before the world\" (nine months is 0.75: one decimal, and always \"years\"); the world's say \"From abroad: ...\"
-  - L442 none of them is in the decision log: a discovery is not a decision
-  - L456 the decisions and the discoveries make one flag a month, oldest month first: months 2, 3, 4, 6 and 9
-  - L458 ...a decision and a discovery of month 3 are ONE flag of four, the month's decisions first in the log's order, then the discoveries in theirs
-  - L460 ...other months are kept apart: 2 and 4 only a discovery, 6 only a decision, 9 the decision first and then the discovery
-  - L467 no discoveries (null, or empty) reads as the log's own flags
-  - L469 no log (null) reads as the discoveries alone, one flag a month, and nothing at all as no flag
-  - L477 a flag's entries are read-only, as the log's flags' are
-- **L489 6. the equipment: what stands and is known, with the Fit pill's verdict, from both sides of a piece being known**
-  - L492 the town's equipment has rows
-  - L507 every row is a stack that stands, with fitted + unfitted = buildings, unfitted the stack's count (at most its buildings) and on site what the fittings hold
-  - L509 ...its verdict is EquipmentFit.verdict() on that stack and piece - the Fit pill's call - and every piece is known at the city's month
-  - L510 ...in the templates' order
-  - L516 the share fitted is the rows' fitted buildings over their buildings (
-  - L521 a piece not known at the month is not shown: the farms' tractor (
-  - L524 ...the Bakery's electric drive (known from a year) is, with no discovery behind it
-  - L538 ...found here (PE14 in month
-  - L552 the sector filter keeps only its sector's templates (
-  - L554 ...a sector with no stack, or no sector at all, has none
-  - L561 a fitting on site is counted on its row: one Bakery drive being fitted
-- **L568 7. the recipes in use: non-default, known, and running as Recipes.chosen() and the parts' sizes say**
-  - L581 the town has recipes in use:
-  - L582 ...each listed recipe is not its template's default and is known at the city's month
-  - L583 ...running is the buildings of the parts that chose it (Recipes.chosen()): the fitted part is the stack less its unfitted count of the recipe piece, the unfi...
-  - L589 fixture: the Mixed Farm's choice is kept - the tractor (its default, not known yet) for the fitted part, the horses for the unfitted - and its recipe piece i...
-  - L591 the horses run on every farm of the stack: each lacks its tractor, so the unfitted part is the whole stack (
-  - L598 with one farm of
-  - L611 a template with no recipe piece is all one part: the Pulp Mill (
-  - L614 ...a way known and not chosen is listed with nothing running
-  - L620 a template with a choice of recipes and no stack lists nothing: the Iron Mine has
-  - L627 a listed recipe carries the discovery of its code where that is on the timeline, and none where it is a year (no shipped non-default recipe is dated by a cod...
-- **L633 8. origin and the NEW mark: found here or from abroad, a year is its January, new for NEW_MONTHS - 1 months and not at NEW_MONTHS**
-  - L638 fixture: the furnace is opened by PE1, found here in month
-  - L641 a template opened by a code found here is HERE at the month found, with the entry and the years ahead of the world
-  - L643 ...and NEW,
-  - L648 one month older, at NEW_MONTHS, it is not new - and it still has its origin: HERE in month
-  - L653 found by no one, the world's month is the origin: ABROAD at history's month
-  - L661 newTemplates() is every template that isNew(), in the templates' order (
-  - L665 a template known at the founding has no origin: an undated House, and a Quarry dated 1900, the founding's January
-  - L668 ...nor one not known yet: the Large Cement Plant (PE4, history's month
-  - L675 a code history has not reached is not an origin yet, and is on the month it does: T2 in month
-  - L679 ...a code history dates AT FIRST_MONTH (T1) was known at the founding: no origin in any month
-  - L681 a code the catalogue lacks is never known, so never an origin
-  - L683 an undated row has none either
-  - L689 a since that is a year is ABROAD at its January: the Panel Mill (1980) none in month
-  - L691 ...and new for NEW_MONTHS - 1 months after it and not at NEW_MONTHS
-  - L694 a year of the founding's January (1900) is known at the founding: none
-  - L699 the four labs are labs, and a school (the University), a house and nothing at all are not
-- **L732 9. the series: the researchers, the spend and the share fitted, every month as the model says, through a save, the year book and a reform**
-  - L768 fixture:
-  - L779 each field's researchers are recorded every month, the same length as the axis (
-  - L782 ...the lab's are in them: in the month the lab first worked, engineering's
-  - L787 researchSpend is every month's own figure, the month's research bill and prize paid, in each of the
-  - L788 ...in the find's month it is the bill and the prize together,
-  - L793 equipmentFitted is the share of the equipment fitted, between 0 and 1, in each month, as the stacks say (the last
-  - L800 a load restores the history whole: the three kinds of series, the same length and the same figures
-  - L803 ...and a month recorded on it follows: every series is still the axis' length
-  - L809 the year book rules each: the researchers are levels, the spend a flow, the share fitted a rate, each with a note, and nothing in the history is left without...
-  - L821 a reform of the money halves the spend and leaves the researchers and the share fitted alone
-  - L859 fixture: no equipment stands, so the share fitted is not a number
-  - L864 two months with nothing to count: the share fitted has not begun (no series), while the researchers and the spend have, month for month
-  - L875 a bakery built, it begins at the first month with equipment: NaN (not counting) in the
-  - L881 a cut at a month before the series began leaves no such series (not an empty one), the others kept; a cut at the end keeps it whole
-  - L889 through a save it comes back as it began: the same months blank, the same figures
-  - L897 every bakery pulled down, the month after records 0 on the series that has begun (a gap cannot be kept: the series lines up with the axis' end)
-- **L905 10. researchTown(): each of its guarantees**
-  - L907 founded the 1900 way, in month
-  - L911 (a) a discovery found HERE and at least two from ABROAD are on the timeline:
-  - L913 ...the find is PE1 at month 3, the world's are PE2 (month 6) and PE3 (month 13), in that order of months
-  - L925 (b) a stack stands with a known piece some of its buildings lack, and its sector's equipment lists it with a verdict that is not FITTED:
-  - L936 (c) a template is NEW, its origin within NEW_MONTHS of the month:
-  - L945 (d) a recipe is in use on a template with a recipe piece (the farms' horses) and on one with none (the Pulp Mill's):
+- **L210 1. a city founded the default way: nothing new on any read, and the history has none of the series**
+  - L213 fixture: founded the default way, and the village stands: a Bakery carrying a piece, a Mixed Farm with a choice of recipes
+  - L216 the timeline is empty
+  - L217 ...the equipment (whole city and a sector) and the recipes in use are empty though the stacks stand
+  - L219 ...no flag, no new template, and the share of the equipment fitted is not a number
+  - L226 ...every template's origin is null and none is new
+  - L227 ...and it knew every discovery at its founding: knownAtFounding() is the catalogue's
+  - L234 with a find in its research (PE1 in month
+  - L236 ...and read as the city it is, still nothing: no discovery, no origin, not new, no flag
+  - L251 its history has none of the
+- **L272 2. a city founded the 1900 way, at its founding: no discovery yet, and FIRST_MONTH is where the line is**
+  - L276 fixture: founded the 1900 way, in the founding month
+  - L277 the timeline is empty
+  - L278 knownAtFounding() counts exactly the entries history dates at FIRST_MONTH or before (
+  - L283 fixture: the harness's catalogue has three entries in months 1, 2 and 3
+  - L287 an entry history dates AT FIRST_MONTH was known at the founding: counted by knownAtFounding(), never on the timeline
+  - L290 ...the entry of the month AFTER it is a discovery, from abroad, when the clock gets there and not before
+  - L297 a find AT FIRST_MONTH is known at the founding too: PE3 found in month
+  - L302 ...found the month after, it is one: HERE in month
+  - L309 its equipment stands:
+- **L327 3. the timeline: found here at the month found, from abroad on history's date, none after now, in order**
+  - L334 fixture: the finds are before history's date, but PE2's is after it (found in month 20, history's month
+  - L337 a find here is HERE at the month it was found, and years ahead by (worldMonth - found) / 12
+  - L340 ...a find the month after FIRST_MONTH counts (PL5 in month
+  - L342 ...a find after history's date is the world's: PE2 is ABROAD at history's month
+  - L363 every other entry history dates after FIRST_MONTH and by month
+  - L365 ...the one found at the founding month (PE3) is counted as known at the founding instead:
+  - L375 none is after the city's month, and they are ordered by month and, inside a month, by the catalogue's order
+  - L378 fixture: some two share a month, so the tie-break was caused
+  - L382 at an earlier month the timeline is the shorter run of the same: month 100 has
+  - L397 byField() partitions the timeline: every discovery in its field's list (
+  - L400 ...and an empty timeline still has all four fields, each with an empty list
+- **L406 4. cumulative(): monotone, ending at the counts, the first entry the first month and all before it, the length rule**
+  - L412 over months 1 to
+  - L413 ...the last entries are the counts:
+  - L419 starting at the first discovery's month (
+  - L421 ...starting one month before it, entry 0 does not and entry 1 does
+  - L428 starting after some, entry 0 holds every discovery of that month and before it (
+  - L432 a window that ends early leaves the later ones out: months 1 to 100 total
+  - L434 one month is one entry
+  - L436 a window that ends before it starts is empty, two empty arrays
+  - L438 an empty timeline counts nothing in any month
+- **L444 5. the flags: one a discovery in the words of its source, never in the decision log, and one flag a month with the decisions**
+  - L456 one entry for each of the
+  - L459 the finds here say \"Found here: ... 0.8 years before the world\" (nine months is 0.75: one decimal, and always \"years\"); the world's say \"From abroad: ...\"
+  - L464 none of them is in the decision log: a discovery is not a decision
+  - L478 the decisions and the discoveries make one flag a month, oldest month first: months 2, 3, 4, 6 and 9
+  - L480 ...a decision and a discovery of month 3 are ONE flag of four, the month's decisions first in the log's order, then the discoveries in theirs
+  - L482 ...other months are kept apart: 2 and 4 only a discovery, 6 only a decision, 9 the decision first and then the discovery
+  - L489 no discoveries (null, or empty) reads as the log's own flags
+  - L491 no log (null) reads as the discoveries alone, one flag a month, and nothing at all as no flag
+  - L499 a flag's entries are read-only, as the log's flags' are
+- **L511 6. the equipment: what stands and is known, with the Fit pill's verdict, from both sides of a piece being known**
+  - L514 the town's equipment has rows
+  - L529 every row is a stack that stands, with fitted + unfitted = buildings, unfitted the stack's count (at most its buildings) and on site what the fittings hold
+  - L531 ...its verdict is EquipmentFit.verdict() on that stack and piece - the Fit pill's call - and every piece is known at the city's month
+  - L532 ...in the templates' order
+  - L538 the share fitted is the rows' fitted buildings over their buildings (
+  - L543 a piece not known at the month is not shown: the farms' tractor (
+  - L546 ...the Bakery's electric drive (known from a year) is, with no discovery behind it
+  - L560 ...found here (PE14 in month
+  - L574 the sector filter keeps only its sector's templates (
+  - L576 ...a sector with no stack, or no sector at all, has none
+  - L583 a fitting on site is counted on its row: one Bakery drive being fitted
+- **L590 7. the recipes in use: non-default, known, and running as Recipes.chosen() and the parts' sizes say**
+  - L603 the town has recipes in use:
+  - L604 ...each listed recipe is not its template's default and is known at the city's month
+  - L605 ...running is the buildings of the parts that chose it (Recipes.chosen()): the fitted part is the stack less its unfitted count of the recipe piece, the unfi...
+  - L611 fixture: the Mixed Farm's choice is kept - the tractor (its default, not known yet) for the fitted part, the horses for the unfitted - and its recipe piece i...
+  - L613 the horses run on every farm of the stack: each lacks its tractor, so the unfitted part is the whole stack (
+  - L620 with one farm of
+  - L633 a template with no recipe piece is all one part: the Pulp Mill (
+  - L636 ...a way known and not chosen is listed with nothing running
+  - L642 a template with a choice of recipes and no stack lists nothing: the Iron Mine has
+  - L649 a listed recipe carries the discovery of its code where that is on the timeline, and none where it is a year (no shipped non-default recipe is dated by a cod...
+- **L655 8. origin and the NEW mark: found here or from abroad, a year is its January, new for NEW_MONTHS - 1 months and not at NEW_MONTHS**
+  - L660 fixture: the furnace is opened by PE1, found here in month
+  - L663 a template opened by a code found here is HERE at the month found, with the entry and the years ahead of the world
+  - L665 ...and NEW,
+  - L670 one month older, at NEW_MONTHS, it is not new - and it still has its origin: HERE in month
+  - L675 found by no one, the world's month is the origin: ABROAD at history's month
+  - L683 newTemplates() is every template that isNew(), in the templates' order (
+  - L687 a template known at the founding has no origin: an undated House, and a Quarry dated 1900, the founding's January
+  - L690 ...nor one not known yet: the Large Cement Plant (PE4, history's month
+  - L697 a code history has not reached is not an origin yet, and is on the month it does: T2 in month
+  - L701 ...a code history dates AT FIRST_MONTH (T1) was known at the founding: no origin in any month
+  - L703 a code the catalogue lacks is never known, so never an origin
+  - L705 an undated row has none either
+  - L711 a since that is a year is ABROAD at its January: the Panel Mill (1980) none in month
+  - L713 ...and new for NEW_MONTHS - 1 months after it and not at NEW_MONTHS
+  - L716 a year of the founding's January (1900) is known at the founding: none
+  - L721 the four labs are labs, and a school (the University), a house and nothing at all are not
+- **L754 9. the series: the researchers, the spend and the share fitted, every month as the model says, through a save, the year book and a reform**
+  - L790 fixture:
+  - L801 each field's researchers are recorded every month, the same length as the axis (
+  - L804 ...the lab's are in them: in the month the lab first worked, engineering's
+  - L809 researchSpend is every month's own figure, the month's research bill and prize paid, in each of the
+  - L810 ...in the find's month it is the bill and the prize together,
+  - L815 equipmentFitted is the share of the equipment fitted, between 0 and 1, in each month, as the stacks say (the last
+  - L822 a load restores the history whole: the three kinds of series, the same length and the same figures
+  - L825 ...and a month recorded on it follows: every series is still the axis' length
+  - L831 the year book rules each: the researchers are levels, the spend a flow, the share fitted a rate, each with a note, and nothing in the history is left without...
+  - L843 a reform of the money halves the spend and leaves the researchers and the share fitted alone
+  - L881 fixture: no equipment stands, so the share fitted is not a number
+  - L886 two months with nothing to count: the share fitted has not begun (no series), while the researchers and the spend have, month for month
+  - L897 a bakery built, it begins at the first month with equipment: NaN (not counting) in the
+  - L903 a cut at a month before the series began leaves no such series (not an empty one), the others kept; a cut at the end keeps it whole
+  - L911 through a save it comes back as it began: the same months blank, the same figures
+  - L919 every bakery pulled down, the month after records 0 on the series that has begun (a gap cannot be kept: the series lines up with the axis' end)
+- **L927 10. researchTown(): each of its guarantees**
+  - L929 founded the 1900 way, in month
+  - L933 (a) a discovery found HERE and at least two from ABROAD are on the timeline:
+  - L935 ...the find is PE1 at month 3, the world's are PE2 (month 6) and PE3 (month 13), in that order of months
+  - L947 (b) a stack stands with a known piece some of its buildings lack, and its sector's equipment lists it with a verdict that is not FITTED:
+  - L958 (c) a template is NEW, its origin within NEW_MONTHS of the month:
+  - L967 (d) a recipe is in use on a template with a recipe piece (the farms' horses) and on one with none (the Pulp Mill's):
+- **L1018 11. the Overview: each field's row is the model's own reads, and the words say them**
+  - L1021 fixture: a 1900 city with schools and grants that bought posts in engineering, medicine and business, none in law, and the posts struck at a fill
+  - L1026 a row for each field, in the enum's order
+  - L1052 each field's researchers, lab researchers, idle (the city's and the labs'), problems in reach, what they touch, and finds here and from abroad are the model'...
+  - L1054 fixture: some field has problems in reach and some has none, so \"nothing in reach\" and \"N in reach\" are both on the page
+  - L1055 the page's totals: found here and from abroad are the timeline's, and the rows add up
+  - L1065 the researchers of all the fields are the model's (the city's and the labs')
+  - L1066 ...and the idle among them
+  - L1067 ...the researchers at work are above nothing (the faculty and the filled posts)
+  - L1068 the money a month: the research bill is the economy's
+  - L1069 ...and is above nothing, the grants having bought posts the labour market filled
+  - L1070 ...the prizes paid the labs are Game.getPrizePaid() (none: no prize is set)
+  - L1072 researchers to each 1,000 at work: the researchers over the jobs filled, times 1,000 (
+  - L1074 ...and none where nobody works, whatever the researchers
+  - L1078 engineering is hosted by an Institute of Technology and two Universities: \"
+  - L1081 medicine by a Medical School and the Universities, business and law by the Universities alone (a school of the field first, the Universities after)
+  - L1088 ...the engineering count is every standing school the model's staffByField() gives it a share of:
+  - L1092 \"nothing in reach\" for none, \"1 in reach: rail\" for one, \"2 in reach: a; b\" for two, the count alone where the texts are blank
+  - L1096 the schools' words: none is \"no school\", one is singular, many plural (\"Universities\", \"Institutes of Technology\", \"Law Schools\")
+- **L1107 12. the Funding card: grant, prize, posts, room, researchers, bill, unspent grant, labs and the least prize that brings one, at the grant...**
+  - L1133 each field's card is the model's: grant, prize, posts struck and the grant's own (no pot here), room, post cost, the grant that fills the room, researchers
+  - L1135 the cards' bills add to the economy's research bill: the whole month's bill is the posts'
+  - L1136 some of a grant is unspent: a grant of half a post over its whole posts leaves most of that half unspent, never more than the grant
+  - L1139 law has no grant and the card says so: no posts, nothing unspent, and the room its Universities give it
+  - L1149 a field whose pot bought posts beyond the grant says so: the posts are the grant's and the pot's, the potPosts the difference, and the unspent grant is the g...
+  - L1177 the least prize that brings a lab to a field: at it the field's chase has a problem, a unit under it none, and none where no open problem could be finished b...
+  - L1179 fixture: some field has such a prize and some has none (
+  - L1180 no wages, no cost of a post, no threshold
+  - L1203 a staged grant buys the posts Research.posts() says within the room (none for none, the room's whole posts for a grant past it), gives the faculty and the fi...
+  - L1208 fixture: the catalogue has a Research Lab for medicine
+  - L1212 a lab built is a lab standing in its field's card, and only there:
+- **L1234 13. the preview through the game: the model's researchers, ResearchPreview's draws, cached, and a staged dial equal to the one in force i...**
+  - L1239 the first read of the preview runs it once
+  - L1240 the as-is preview is ResearchPreview's over the researchers the model has now and the prizes set, from ResearchPreview.DRAWS draws of ResearchPreview.SEED
+  - L1242 ...and finds something to say: the small problems of a young century are found in a good share of its draws (
+  - L1244 read again with nothing staged, or a null stage: the very same Result, no run
+  - L1254 a staged grant runs the preview once, with that field's researchers the faculty and the filled posts it buys (
+  - L1256 ...and the as-is is still kept: no run
+  - L1257 ...and the same stage read again is kept too
+  - L1261 a staged grant of nothing leaves the faculty alone to research (
+  - L1264 more researchers in a field find no less in it, fewer no more, from the same draws, and the three differ
+  - L1270 a staged grant equal to the grant in force is the as-is answer itself, kept, with no run
+  - L1277 a staged prize is the field's prize in the model's question, and runs once more
+  - L1279 ...and a prize pays: the field's purse is the prize times its finds
+  - L1285 a new month runs the preview again
+- **L1291 14. R5's gate review: the found-here and abroad counts laid on History's months, what is still to come, the bars' shares**
+  - L1296 fixture: the history has an axis of at least two months and the timeline has finds both ways
+  - L1308 the counts laid on History's months are, at each month of its axis, the discoveries at or before it, here and from abroad (
+  - L1309 ...and the last of them is the timeline's counts
+  - L1311 an axis with gaps is read at each of its own months: 3, 5, 6 and 40 (PE1 found in 3, PE2 abroad in 6, PE3 abroad in 13)
+  - L1315 an empty axis is empty, one month is one entry, and an axis that runs backwards is not a number throughout
+  - L1321 what is still to come is the catalogue's entries the city does not yet know (
+  - L1323 ...and the pure core subtracts and never goes below none
+  - L1339 the equipment bars' share is the fitted buildings over the buildings, 0 to 1, for each of the
+  - L1341 ...and a stack of no buildings has the share 0 on either bar, and a whole one 1
+- **L1350 15. a city founded the default way: nothing in reach, nothing to find, no lab to come, though the catalogue's dates say otherwise of the ...**
+  - L1360 fixture: founded the default way, with a University and a grant that bought posts; the catalogue, read by the date, would have problems open in engineering
+  - L1368 the Overview has nothing in reach, nothing found and nothing from abroad, and every researcher idle (the posts are jobs and the faculty is there, with nothin...
+  - L1370 ...and the Funding cards have no lab threshold
+  - L1372 ...the posts a grant buys are still the model's (the grant is paid and the posts are jobs)
+  - L1374 the preview has nothing to find, as is and staged
+  - L1376 what is still to come is none, the city having known them all at its founding
 
 ## RestaurantsCheck.java - 36 labelled assertions
 

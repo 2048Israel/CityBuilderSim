@@ -17,7 +17,7 @@
 
 **Uses:** [SourceTree](SourceTree.md) (8), [JavaScan](JavaScan.md) (5)
 
-**Used by (1):** [Maps](Maps.md)
+**Used by (3):** [Maps](Maps.md), [ResearchPreviewCheck](ResearchPreviewCheck.md), [ResearchView](ResearchView.md)
 
 ## Methods, in file order
 
