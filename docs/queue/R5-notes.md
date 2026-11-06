@@ -18,7 +18,7 @@ and "best beside R5": R5 keeps to its own screens and opens the Research area wi
 | slice | what | state |
 |---|---|---|
 | A | `ResearchView` (the timeline, the recipes in use, the equipment rows, a building's origin and NEW, the discovery flags), `ChartModel.flags(log, more)`, `Recipes.chosen()`, three history series (the researchers by field, the research money, the share fitted); `ResearchViewCheck` 1-10 and its `researchTown()`, the 1900 city the screens' KeptCheck sections share | bf2f26a6 |
-| B1 | `ui/ResearchScreen` (Policy's sixth area, Found), `PolicyScreen`'s area, City History's discovery flags; KeptCheck 95 | drafting |
+| B1 | `ui/ResearchScreen` (Policy's sixth area, Found), `PolicyScreen`'s area, City History's discovery flags; KeptCheck 95 | (with the checks) |
 | B2 | `SectorScreen`'s ITS EQUIPMENT and the Fit pill by the month, `BuildScreen`'s NEW, origin and the lab's line, the category's dot and strip; KeptCheck 96-97 | (this commit) |
 
 All drafted by Sonnet 5.5 at xhigh, reviewed here. What the reviews found:
@@ -33,6 +33,18 @@ All drafted by Sonnet 5.5 at xhigh, reviewed here. What the reviews found:
   10 holds each thing it promises. Found in passing: no shipped entry is dated at or before month 1, so a 1900 city
   knows none "at the founding"; no non-default recipe's since is a catalogue code, so a recipe's origin is never a
   discovery yet.
+- **Slice B2.** One rule says NEW (`BuildScreen.showsNew`), asked by the card, the category's dot and the strip, so the
+  three never disagree; the card notes the month it is first drawn in, and the strip and dots drawn before it in the
+  same draw still read that month as unseen. The edge stays the building colour while an order is pending. A piece
+  known by a year after the founding says "from abroad" and its January, not "known since the founding". KeptCheck 97
+  causes the seen rule apart from the model's year (the find restored so the furnace is five months old, not at its
+  last NEW month) and holds both sides. A javadoc's "he" for the player mended here.
+- **Slice B1.** The timeline is kept nodes, not a canvas: each dot a scope keyed by its code with its tooltip, placed
+  when the pane is laid out (the one width a draw cannot know), the lines, ticks and rules on a canvas of the pane's
+  own; dots closer than their width stack upward (`levels()`, pure, held in KeptCheck 95). City History's decisions
+  list, its YOUR DECISIONS count and the hard times' decision ticks stay decisions (`isDecision()`). The lead said
+  "knew 0 of 89" in every 1900 city (no entry is dated at or before month 1): mended here to say how many are still to
+  come. `docs/tree.md` has the three new files; `CLAUDE.md`'s count of interface files is forty-four (Stale's finding).
 
 ## 2. The calls (★)
 

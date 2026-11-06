@@ -3653,6 +3653,69 @@ public final class KeptBench {
     }
 
     /* =====================================================================
+       THE RESEARCH AREA AND CITY HISTORY'S FLAGS (R5, slice B1): the pure helpers the Found page and the History flags are made of, reached
+       from the harness (the screens are package-private)
+       ===================================================================== */
+
+    /** How high each dot of a timeline row stands (ResearchScreen.levels()) for the months given, at the width a plot is given: the dot and its gap are the screen's. */
+    public static int[] researchLevels(int[] months, int first, int last, double plotWidth) {
+        return ResearchScreen.levels(months, first, last, plotWidth, ResearchScreen.DOT + ResearchScreen.DOT_GAP);
+    }
+
+    /** What two dots must be apart not to stack, in pixels (the dot and its gap). */
+    public static double researchSlot() {
+        return ResearchScreen.DOT + ResearchScreen.DOT_GAP;
+    }
+
+    /** The months the timeline's year ticks stand at (ResearchScreen.yearTicks()), and the least width between two of them. */
+    public static int[] researchTicks(int first, int last, double plotWidth) {
+        return ResearchScreen.yearTicks(first, last, plotWidth);
+    }
+
+    /** The least width between two year ticks of the timeline, in pixels. */
+    public static double researchTickRoom() {
+        return ResearchScreen.TICK_ROOM;
+    }
+
+    /** Where a month stands across a plot (ResearchScreen.xOf()). */
+    public static double researchX(int month, int first, int last, double plotWidth) {
+        return ResearchScreen.xOf(month, first, last, plotWidth);
+    }
+
+    /** Every dot of the Found page's timeline, in the order drawn: {its left, top, width and height in its pane, then the pane's width and height}. */
+    public List<double[]> researchDots() {
+        List<double[]> out = new ArrayList<>();
+        each(column, n -> {
+            if (!(n instanceof ResearchScreen.Timeline t)) return;
+            for (Node d : t.dots()) {
+                Bounds b = d.getBoundsInParent();
+                out.add(new double[]{b.getMinX(), b.getMinY(), b.getWidth(), b.getHeight(), t.getWidth(), t.getHeight()});
+            }
+        });
+        return out;
+    }
+
+    /** A flag's head counts, decisions and discoveries apart (TimeChart.flagCounts()). */
+    public static String flagCounts(int decisions, int discoveries) {
+        return TimeChart.flagCounts(decisions, discoveries);
+    }
+
+    /** The colour a flag of this kind is drawn in (TimeChart.flagColour()). */
+    public static String flagColour(String kind) {
+        return TimeChart.flagColour(kind);
+    }
+
+    /** The decisions of a window of flags, newest first, a discovery's left out (HistoryScreen.decisionsInView()). */
+    public static List<ham.citybuildersim.DecisionLog.Entry> decisionsInView(List<ham.citybuildersim.ChartModel.Flag> flags, int from, int to) {
+        return HistoryScreen.decisionsInView(flags, from, to);
+    }
+
+    /** How many decisions a flag holds, its discoveries left out (HistoryScreen.decisionsIn()). */
+    public static int decisionsIn(ham.citybuildersim.ChartModel.Flag flag) {
+        return HistoryScreen.decisionsIn(flag);
+    }
+
+    /* =====================================================================
        THE HANDS THE KP6 HARNESS ADDS (KP6, slice D): what Trade counts up, and the width of its charts
        ===================================================================== */
 

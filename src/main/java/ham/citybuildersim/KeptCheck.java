@@ -6079,6 +6079,225 @@ public class KeptCheck {
         });
     }
 
+    /* =====================================================================
+       THE RESEARCH AREA (R5, slice B1), section 95: the Found page kept, and what City History's flags and the stacking of the timeline are made of
+       ===================================================================== */
+
+    /** Whether some line of a signature has all of these words in it. */
+    static boolean has(List<String> signature, String... words) {
+        for (String line : signature) {
+            boolean all = true;
+            for (String w : words) all &= line.contains(w);
+            if (all) return true;
+        }
+        return false;
+    }
+
+    /** A label's line in a signature: `Label "text"`. */
+    static String label(String text) {
+        return "Label \"" + text + "\"";
+    }
+
+    /**
+     * Section 95: Policy > Research > Found, the sixth Policy area's page, kept (R5, slice B1). In a city founded the default way it is one quiet card;
+     * on ResearchViewCheck.researchTown() (a find here, two from abroad, an unfitted known piece, a new template, a recipe in use) the page drawn kept
+     * over last month's nodes is the page built new, month after month and after what reshapes it, and it shows the lead, a FOUND HERE row, a recipe's
+     * row, a piece's row (a door to its sector's Investors page) and four charts. Then the pure helpers its timeline and City History's flags are made
+     * of: two dots a pixel apart stack and two far apart do not, the year ticks, the flag's counts, the discovery's own colour and the lists of
+     * decisions that leave the discoveries out.
+     */
+    static void researchFound(Game g, KeptBench defaultBench) throws Exception {
+        System.out.printf("%n=== The Research area's Found page (R5): the default city at month %d and a city founded the 1900 way ===%n", g.getMonth());
+        long t = System.nanoTime();
+        int c = checks;
+
+        System.out.println("\n--- 95: in a city founded the default way the page is one quiet card ---");
+        boolean walked = false;
+        for (String[] p : KeptBench.policyPages()) walked |= "Research".equals(p[0]) && "Found".equals(p[1]);
+        check("the Research area's Found page is one of the fixed pages section 77's default bench walks (KeptBench.policyPages())", walked);
+        KeptBench.Page quiet = fx(() -> defaultBench.policy("Policy, Research's Found page in a default city", "Research", "Found"));
+        List<String> quietPage = fx(() -> {
+            defaultBench.home(quiet);
+            defaultBench.drawKept(quiet);
+            defaultBench.passes();
+            defaultBench.settle();
+            return defaultBench.signature();
+        });
+        check("the default city's page is the one card that says nothing is found (" + ResearchView.knownAtFounding(g) + " known at the founding)",
+                has(quietPage, label("NOTHING TO FIND")) && has(quietPage, "discoveries in the catalogue, so nothing arrives from abroad")
+                        && !has(quietPage, label("THE TIMELINE")) && !has(quietPage, label("FOUND HERE")));
+        check("...and City History draws no discovery flag there", ResearchView.flagEntries(g).isEmpty());
+
+        Game town = fx(ResearchViewCheck::researchTown);
+        KeptBench bench = fx(() -> new KeptBench(town));
+        fx(() -> {
+            bench.clock(false, null);
+            bench.speed(0);
+            return null;
+        });
+        KeptBench.Page found = fx(() -> bench.policy("Policy, Research's Found page", "Research", "Found"));
+        pageKept(town, bench, found, 95);
+        arrive(bench, found);
+        pageShows(town, bench, found, 95);
+
+        System.out.println("\n--- 95: what the page shows, from the model's own reads ---");
+        Object[] seen = fx(() -> {
+            bench.home(found);
+            bench.drawKept(found);
+            bench.passes();
+            bench.settle();
+            return new Object[]{bench.signature(), ResearchView.timeline(town), ResearchView.recipesInUse(town), ResearchView.equipment(town, null),
+                    bench.researchDots()};
+        });
+        @SuppressWarnings("unchecked") List<String> sig = (List<String>) seen[0];
+        @SuppressWarnings("unchecked") List<ResearchView.Discovery> timeline = (List<ResearchView.Discovery>) seen[1];
+        @SuppressWarnings("unchecked") List<ResearchView.RecipeUse> recipes = (List<ResearchView.RecipeUse>) seen[2];
+        @SuppressWarnings("unchecked") List<ResearchView.PieceRow> pieces = (List<ResearchView.PieceRow>) seen[3];
+        @SuppressWarnings("unchecked") List<double[]> dots = (List<double[]>) seen[4];
+        int here = ResearchView.count(timeline, ResearchView.Source.HERE), abroad = ResearchView.count(timeline, ResearchView.Source.ABROAD);
+        check("fixture: the town has a find here, discoveries from abroad, a recipe in use and a piece of equipment (" + here + " here, " + abroad
+                + " abroad, " + recipes.size() + " recipes, " + pieces.size() + " pieces)", here >= 1 && abroad >= 2 && !recipes.isEmpty() && !pieces.isEmpty());
+        check("the lead counts them: \"" + here + " found here, " + abroad + " from abroad since the founding\"",
+                has(sig, label(here + " found here, " + abroad + " from abroad since the founding")));
+
+        boolean rows = true, tips = true;
+        for (ResearchView.Discovery d : timeline) {
+            String years = String.format(java.util.Locale.ROOT, "%.1f", d.yearsAhead());
+            String when = d.source() == ResearchView.Source.HERE
+                    ? "found here in " + CityCalendar.format(d.month()) + ", " + years + " years before the world"
+                    : "from abroad, " + CityCalendar.format(d.month());
+            tips &= has(sig, "tip{" + d.entry().name() + "\n", when);
+            if (d.source() == ResearchView.Source.HERE) rows &= has(sig, label(d.entry().name())) && has(sig, label(years + " years before the world"));
+        }
+        check("every discovery is a dot whose tooltip names it and says how the city came to know it, in the model's own month and years ahead", tips);
+        check("a FOUND HERE row for each find: its name and how many years before the world", rows);
+
+        boolean recipeRows = true;
+        for (ResearchView.RecipeUse u : recipes) {
+            String from = u.from() == null ? "known since the founding"
+                    : u.from().source() == ResearchView.Source.HERE
+                    ? String.format(java.util.Locale.ROOT, "found here in %s, %.1f years before the world", CityCalendar.format(u.from().month()), u.from().yearsAhead())
+                    : "from abroad, " + CityCalendar.format(u.from().month());
+            recipeRows &= has(sig, label(u.recipe().getName())) && has(sig, label(u.running() + " of " + u.buildings() + " building"
+                    + (u.buildings() == 1 ? "" : "s"))) && has(sig, label(from));
+        }
+        check("a RECIPES IN USE row for each way: its name, how many of the building's stack run it, and where it came from", recipeRows);
+
+        boolean pieceRows = true, words = true;
+        for (ResearchView.PieceRow r : pieces) {
+            String verdict = switch (r.verdict().kind()) {
+                case FITTED -> "all fitted";
+                case PAYS -> "the next fit pays";
+                case NOT_YET -> "not worth fitting yet";
+                case NOT_KNOWN -> "not known yet";
+            };
+            pieceRows &= has(sig, label(r.piece().getName())) && has(sig, label(r.fitted() + " of " + r.buildings() + " fitted"));
+            words &= has(sig, label(verdict));
+        }
+        check("an EQUIPMENT FITTED row for each piece: its name, how many of its buildings carry it", pieceRows);
+        check("...with the sector's own verdict in words (" + pieces.get(0).verdict().kind() + " on the first)", words);
+        check("...each row a door to its sector's Investors page (a click, and the tooltip that says so)",
+                has(sig, " click", "tip{" + pieces.get(0).piece().getName() + " on ", "Investors page."));
+        // A signature line is its path (spaces, and "content: " or "graphic: " where it went through a scroller or a label) and then the node's class.
+        long charts = sig.stream().filter(l -> l.replaceFirst("^[ a-z:]*", "").startsWith("TimeChart ")).count();
+        long timelines = sig.stream().filter(l -> l.replaceFirst("^[ a-z:]*", "").startsWith("Timeline ")).count();
+        check("the timeline is one pane with four charts under it (a researchers, a money, a found-against-abroad and a spread chart): "
+                + timelines + " timeline, " + charts + " charts", timelines == 1 && charts == 4);
+
+        // Where layout put the dots: all inside the pane, no two on each other.
+        boolean inside = !dots.isEmpty() && dots.size() == timeline.size(), apart = true;
+        for (double[] d : dots) inside &= d[0] >= 0 && d[1] >= 0 && d[0] + d[2] <= d[4] + .5 && d[1] + d[3] <= d[5] + .5;
+        for (int i = 0; i < dots.size(); i++) {
+            for (int j = i + 1; j < dots.size(); j++) {
+                double[] a = dots.get(i), b = dots.get(j);
+                apart &= !(Math.abs(a[0] - b[0]) < a[2] - .5 && Math.abs(a[1] - b[1]) < a[3] - .5);
+            }
+        }
+        check("laid out, there is a dot for each of the " + timeline.size() + " discoveries, each inside the timeline's pane (" + dots.size() + " dots)", inside);
+        check("...and no two dots stand on each other", apart);
+
+        // What reshapes the page: another page and back, and a month on either side.
+        List<Choice> choices = new ArrayList<>();
+        choices.add(choice("the hub", policyOn(null, null)));
+        choices.add(policyPage("Research", "Found"));
+        choices.add(policyPage("Taxes", "Everything"));
+        choices.add(policyPage("Research", "Found"));
+        pageReshaped(town, bench, found, 95, choices, KP6_HANDED_BACK);
+
+        System.out.println("\n--- 95: the timeline's stacking, its year ticks and City History's flags, as pure helpers ---");
+        final int first = 1, last = 1201;
+        final double plot = 1200, slot = KeptBench.researchSlot();
+        check("the slot is the dot's width and its gap (" + slot + " px), and a month stands where its share of the span puts it",
+                slot > 0 && KeptBench.researchX(first, first, last, plot) == 0 && KeptBench.researchX(last, first, last, plot) == plot
+                        && KeptBench.researchX(601, first, last, plot) == 600);
+        check("two dots a pixel apart stack: the second stands one above the first",
+                java.util.Arrays.equals(KeptBench.researchLevels(new int[]{100, 101}, first, last, plot), new int[]{0, 1}));
+        check("two dots far apart share the floor",
+                java.util.Arrays.equals(KeptBench.researchLevels(new int[]{100, 500}, first, last, plot), new int[]{0, 0}));
+        int apartBy = (int) slot;
+        check("exactly the slot apart they do not stack, one pixel less they do",
+                java.util.Arrays.equals(KeptBench.researchLevels(new int[]{100, 100 + apartBy}, first, last, plot), new int[]{0, 0})
+                        && java.util.Arrays.equals(KeptBench.researchLevels(new int[]{100, 100 + apartBy - 1}, first, last, plot), new int[]{0, 1}));
+        check("a bunch of three climbs, and a dot with room again goes back to the floor",
+                java.util.Arrays.equals(KeptBench.researchLevels(new int[]{100, 101, 102, 400}, first, last, plot), new int[]{0, 1, 2, 0})
+                        && java.util.Arrays.equals(KeptBench.researchLevels(new int[]{100, 101, 140}, first, last, plot), new int[]{0, 1, 0}));
+        check("dots of one month stack one on another, no level past the count",
+                java.util.Arrays.equals(KeptBench.researchLevels(new int[]{50, 50, 50, 50}, first, last, plot), new int[]{0, 1, 2, 3}));
+        check("a wider plot parts dots that a narrow one stacked, and a narrower one stacks dots that were apart",
+                java.util.Arrays.equals(KeptBench.researchLevels(new int[]{100, 101}, first, last, plot * 20), new int[]{0, 0})
+                        && java.util.Arrays.equals(KeptBench.researchLevels(new int[]{100, 120}, first, last, plot / 2), new int[]{0, 1}));
+        check("and the same row at the same width stacks the same way twice",
+                java.util.Arrays.equals(KeptBench.researchLevels(new int[]{10, 11, 12, 30, 31}, first, last, plot),
+                        KeptBench.researchLevels(new int[]{10, 11, 12, 30, 31}, first, last, plot)));
+
+        int[] ticks = KeptBench.researchTicks(first, last, plot);
+        boolean januaries = ticks.length > 1, spaced = true, within = true;
+        for (int i = 0; i < ticks.length; i++) {
+            januaries &= CityCalendar.monthOfYear(ticks[i]) == 1;
+            within &= ticks[i] >= first && ticks[i] <= last;
+            if (i > 0) spaced &= KeptBench.researchX(ticks[i], first, last, plot) - KeptBench.researchX(ticks[i - 1], first, last, plot)
+                    >= KeptBench.researchTickRoom() - 1e-6;
+        }
+        check("the year ticks are Januaries inside the axis, at least " + KeptBench.researchTickRoom() + " px apart (" + ticks.length + " over 100 years)",
+                januaries && within && spaced);
+        check("a narrower plot has fewer ticks, a wider one more", KeptBench.researchTicks(first, last, plot / 4).length < ticks.length
+                && KeptBench.researchTicks(first, last, plot * 4).length > ticks.length);
+
+        check("a flag's head counts its decisions and its discoveries apart, singular and plural right",
+                "1 decision".equals(KeptBench.flagCounts(1, 0)) && "2 decisions".equals(KeptBench.flagCounts(2, 0))
+                        && "1 discovery".equals(KeptBench.flagCounts(0, 1)) && "3 discoveries".equals(KeptBench.flagCounts(0, 3))
+                        && "2 decisions · 1 discovery".equals(KeptBench.flagCounts(2, 1))
+                        && "1 decision · 2 discoveries".equals(KeptBench.flagCounts(1, 2)));
+        String violet = KeptBench.flagColour(ResearchView.FLAG_KIND);
+        boolean own = true;
+        for (String kind : new String[]{DecisionLog.TAX, DecisionLog.PROMISE, DecisionLog.CENTRAL_BANK, DecisionLog.CURRENCY, DecisionLog.BORROWING,
+                DecisionLog.BANK, DecisionLog.FUND, DecisionLog.CONSTRUCTION, DecisionLog.RESERVE, DecisionLog.ZONING}) {
+            own &= !violet.equals(KeptBench.flagColour(kind));
+        }
+        check("a discovery's flag has the research violet (" + violet + "), which no kind of decision has", own && violet.equalsIgnoreCase(ham.citybuildersim.ui.Palette.DISCOVERY));
+
+        DecisionLog.Entry decision = new DecisionLog.Entry(5, DecisionLog.TAX, "Profit tax to 15%");
+        DecisionLog.Entry later = new DecisionLog.Entry(8, DecisionLog.ZONING, "Zoned Agriculture");
+        DecisionLog.Entry find = new DecisionLog.Entry(5, ResearchView.FLAG_KIND, "Found here: Test, 1.0 years before the world");
+        List<ChartModel.Flag> flags = List.of(new ChartModel.Flag(5, List.of(decision, find)), new ChartModel.Flag(6, List.of(find)),
+                new ChartModel.Flag(8, List.of(later)));
+        List<DecisionLog.Entry> listed = KeptBench.decisionsInView(flags, 1, 10);
+        check("YOUR DECISIONS lists the decisions, newest first, and leaves the discoveries out",
+                listed.size() == 2 && listed.get(0) == later && listed.get(1) == decision);
+        check("...and only those in the window: 6 to 7 holds a discovery and no decision", KeptBench.decisionsInView(flags, 6, 7).isEmpty()
+                && KeptBench.decisionsInView(flags, 5, 5).size() == 1);
+        check("a flag counts its decisions alone (a month of one decision and a find counts one; a find alone, none)",
+                KeptBench.decisionsIn(flags.get(0)) == 1 && KeptBench.decisionsIn(flags.get(1)) == 0 && KeptBench.decisionsIn(flags.get(2)) == 1);
+        // (The months played since the page was read have brought discoveries: the timeline is read again.)
+        int now = ResearchView.timeline(town).size();
+        List<ChartModel.Flag> real = ChartModel.flags(town.getDecisions(), ResearchView.flagEntries(town));
+        int carried = 0;
+        for (ChartModel.Flag f : real) carried += f.count() - KeptBench.decisionsIn(f);
+        check("the flags City History is handed carry each of the town's " + now + " discoveries once beside its decisions (" + carried + ")",
+                carried == now);
+        tookWith("the Research area's Found page (95)", t, c);
+    }
+
     /** A notice raised now, unread, in the inbox. */
     private static Notice add(Game g, String key, String title) {
         Notice n = new Notice(key, title, List.of("first line of " + key, "", "third line"), g.getMonth());
@@ -6087,7 +6306,7 @@ public class KeptCheck {
     }
 
     public static void main(String[] args) throws Exception {
-        System.out.println("=== KeptCheck: the People page, the chrome, City History, Infrastructure, Services, the land office, Build, the construction page, the Sectors tab, the Bank, Finances, the city's fund, Government, Trade & the World and Policy kept between redraws (study UP4, UP2, KP1, KP2, KP3, KP4, KP5, KP6) ===");
+        System.out.println("=== KeptCheck: the People page, the chrome, City History, Infrastructure, Services, the land office, Build, the construction page, the Sectors tab, the Bank, Finances, the city's fund, Government, Trade & the World and Policy kept between redraws, and the Research area's Found page (study UP4, UP2, KP1, KP2, KP3, KP4, KP5, KP6, R5) ===");
         String down = startJavaFx();
         if (down != null) {
             System.out.println("skipped: the JavaFX toolkit cannot start here (" + down + "); the page needs it to be laid out");
@@ -6267,6 +6486,7 @@ public class KeptCheck {
         researchScreens(g, bench);
         money(g, bench);
         screensKP6(g, bench);
+        researchFound(g, bench);
 
         System.out.println("\n" + (fails == 0 ? "ALL OK" : fails + " FAILED"));
         Platform.exit();

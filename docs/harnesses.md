@@ -2,7 +2,7 @@
 
 Generated 2026-11-06 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**182 harness files, 20,808 labelled assertions.** AllChecks runs 182 of them.
+**182 harness files, 20,838 labelled assertions.** AllChecks runs 182 of them.
 
 ## Which harnesses read which class
 
@@ -83,7 +83,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Debt](map/Debt.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CentralBankCheck, ChartCheck, CreditCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, GdpCheck, HoldersCheck, KeptCheck, LongPlaytest, MoneyCheck, NewGameCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, SectorStatementCheck, TreasuryCheck |
 | [DebtManager](map/DebtManager.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarryTradeCheck, CentralBankCheck, CreditCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FloatLinkCheck, ForeignDebtCheck, HoldersCheck, InterestAbroadCheck, LongPlaytest, MonetaryCheck, MoneyCheck, MortgageCheck, PartnersCheck, PolicyPreviewCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, TreasuryCheck |
 | [DebtQuote](map/DebtQuote.md) | AuctionCheck, AutoBuildCheck, CallCheck, CreditCheck, CurveCheck, DebtMoneysCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, HoldersCheck, LandCheck, LongPlaytest, MapCheck, NewGameCheck, RestructureCheck |
-| [DecisionLog](map/DecisionLog.md) | AutoBuildCheck, BankCheck, CentralBankCheck, ChartCheck, ForeignDebtCheck, FundCheck, LongPlaytest, OilCheck, PolicyDatesCheck, ReadPathCheck, ResearchViewCheck, SaveFileCheck, YearBookCheck, ZoningViewCheck |
+| [DecisionLog](map/DecisionLog.md) | AutoBuildCheck, BankCheck, CentralBankCheck, ChartCheck, ForeignDebtCheck, FundCheck, KeptCheck, LongPlaytest, OilCheck, PolicyDatesCheck, ReadPathCheck, ResearchViewCheck, SaveFileCheck, YearBookCheck, ZoningViewCheck |
 | [DemolitionLog](map/DemolitionLog.md) | CalendarCheck, HouseholdCheck, MortgageCheck |
 | [Denomination](map/Denomination.md) | DenominationCheck, NewGameCheck |
 | [Deposit](map/Deposit.md) | BuildCardCheck, CementConcreteCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, IndustryViewCheck, LandCheck, LandmassCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, QuarryingCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, WellCheck, WorldCheck |
@@ -219,7 +219,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [OreView](map/OreView.md) | LandCheck |
 | [OrphanHousehold](map/OrphanHousehold.md) | OutsideCheck |
 | [OutwardInvestment](map/OutwardInvestment.md) | AuctionCheck, BondCheck, BuybackCheck, CapitalFlowCheck, ExchangeCheck, HoldersCheck, LongPlaytest, MarketCheck |
-| [Palette](map/Palette.md) | **none** |
+| [Palette](map/Palette.md) | KeptCheck |
 | [PartnerTrade](map/PartnerTrade.md) | DenominationCheck, PartnerCallsCheck, PartnersCheck, ReadPathCheck, RealDollarCheck, ReplayCheck, SaveFileCheck, VaultMoneysCheck, WorldMoneysCheck |
 | [PartnersPage](map/PartnersPage.md) | **none** |
 | [PartnersView](map/PartnersView.md) | PartnersCheck |
@@ -258,6 +258,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ReplayMoveProbe](map/ReplayMoveProbe.md) | ReplayCheck |
 | [Research](map/Research.md) | DiscoveryCheck, KeptCheck, LandCheck, PrizeCheck, ResearchViewCheck |
 | [ResearchCatalog](map/ResearchCatalog.md) | BuildCardCheck, DiscoveryCheck, EquipmentCheck, PrizeCheck, RecipeCheck, ResearchCheck, ResearchViewCheck |
+| [ResearchScreen](map/ResearchScreen.md) | **none** |
 | [ResearchView](map/ResearchView.md) | KeptCheck, ResearchViewCheck |
 | [Resource](map/Resource.md) | AutoBuildCheck, BridgeMapCheck, BuildCardCheck, BuildingDataCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, HaulageCheck, IndustryViewCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, OilCheck, OilViewCheck, PlanCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, ScaleCheck, SlopeCheck, WellCheck, WorldCheck, ZoningCheck, ZoningViewCheck |
 | [Restaurants](map/Restaurants.md) | InvestCheck, LongPlaytest, RestaurantsCheck |
@@ -13925,7 +13926,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2150 21d. a + of two one-plot streets keeps its four corners of verge: nothing is filled between single bars
   - L2161 21e. a band across the corner of four tiles is one carriageway too: every pixel between its edges paved, across the seam
 
-## KeptCheck.java - 230 labelled assertions
+## KeptCheck.java - 260 labelled assertions
 
 > The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each
 > month's redraw run over last month's nodes ends exactly where a page built new would, and costs
@@ -14213,19 +14214,52 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L5965 Policy's Zoning › The ground page: a policyRow was found on the page of this city, to put the pointer on
 - **L5974 80: the tooltips are kept (Government, Trade, Policy)**
   - L6025 the
-- **L6090 KeptCheck: the People page, the chrome, City History, Infrastructure, Services, the land office, Build, the construction page, the Sector...**
-- **L6105 1 and 2: the kept page, month after month, against a page built new**
-  - L6160 each month's redraw keeps the page it drew (the same top node,
-  - L6161 each month hands back nine in ten of the nodes the first draw made, or more (
-  - L6163 most months make no node at all (
-  - L6165 the kept page's signature equals the new page's at every month (
-- **L6167 3: and its pixels**
-  - L6169 the kept page and the new page are the same picture at
-  - L6189 one figure made wrong on the kept page (\"
-  - L6191 ...and its picture
-  - L6192 ...and the next kept draw sets it right again
-- **L6194 4: what reshapes the page**
-- **L6229 5: what the kept month costs**
+- **L6114 95: in a city founded the default way the page is one quiet card**
+  - L6117 the Research area's Found page is one of the fixed pages section 77's default bench walks (KeptBench.policyPages())
+  - L6126 the default city's page is the one card that says nothing is found (
+  - L6129 ...and City History draws no discovery flag there
+- **L6143 95: what the page shows, from the model's own reads**
+  - L6158 fixture: the town has a find here, discoveries from abroad, a recipe in use and a piece of equipment (
+  - L6160 the lead counts them: \"
+  - L6172 every discovery is a dot whose tooltip names it and says how the city came to know it, in the model's own month and years ahead
+  - L6173 a FOUND HERE row for each find: its name and how many years before the world
+  - L6184 a RECIPES IN USE row for each way: its name, how many of the building's stack run it, and where it came from
+  - L6197 an EQUIPMENT FITTED row for each piece: its name, how many of its buildings carry it
+  - L6198 ...with the sector's own verdict in words (
+  - L6199 ...each row a door to its sector's Investors page (a click, and the tooltip that says so)
+  - L6204 the timeline is one pane with four charts under it (a researchers, a money, a found-against-abroad and a spread chart):
+  - L6216 laid out, there is a dot for each of the
+  - L6217 ...and no two dots stand on each other
+- **L6227 95: the timeline's stacking, its year ticks and City History's flags, as pure helpers**
+  - L6230 the slot is the dot's width and its gap (
+  - L6233 two dots a pixel apart stack: the second stands one above the first
+  - L6235 two dots far apart share the floor
+  - L6238 exactly the slot apart they do not stack, one pixel less they do
+  - L6241 a bunch of three climbs, and a dot with room again goes back to the floor
+  - L6244 dots of one month stack one on another, no level past the count
+  - L6246 a wider plot parts dots that a narrow one stacked, and a narrower one stacks dots that were apart
+  - L6249 and the same row at the same width stacks the same way twice
+  - L6261 the year ticks are Januaries inside the axis, at least
+  - L6263 a narrower plot has fewer ticks, a wider one more
+  - L6266 a flag's head counts its decisions and its discoveries apart, singular and plural right
+  - L6277 a discovery's flag has the research violet (
+  - L6285 YOUR DECISIONS lists the decisions, newest first, and leaves the discoveries out
+  - L6287 ...and only those in the window: 6 to 7 holds a discovery and no decision
+  - L6289 a flag counts its decisions alone (a month of one decision and a find counts one; a find alone, none)
+  - L6296 the flags City History is handed carry each of the town's
+- **L6309 KeptCheck: the People page, the chrome, City History, Infrastructure, Services, the land office, Build, the construction page, the Sector...**
+- **L6324 1 and 2: the kept page, month after month, against a page built new**
+  - L6379 each month's redraw keeps the page it drew (the same top node,
+  - L6380 each month hands back nine in ten of the nodes the first draw made, or more (
+  - L6382 most months make no node at all (
+  - L6384 the kept page's signature equals the new page's at every month (
+- **L6386 3: and its pixels**
+  - L6388 the kept page and the new page are the same picture at
+  - L6408 one figure made wrong on the kept page (\"
+  - L6410 ...and its picture
+  - L6411 ...and the next kept draw sets it right again
+- **L6413 4: what reshapes the page**
+- **L6448 5: what the kept month costs**
 
 ## KnownRedsCheck.java - 43 labelled assertions
 

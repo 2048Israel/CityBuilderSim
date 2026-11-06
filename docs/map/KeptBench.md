@@ -1,4 +1,4 @@
-# KeptBench.java - 3,745 lines · 418 methods · 9 constants · interface
+# KeptBench.java - 3,808 lines · 428 methods · 9 constants · interface
 
 `ham/citybuildersim/ui/KeptBench.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
@@ -27,7 +27,7 @@
 > a snapshot all the same, so the bench lays the page out there, at the menu column's width.
 > The FX toolkit must be up and every call made on its thread; KeptCheck sees to both.
 
-**Uses:** [Kept](Kept.md) (63), [FinancesScreen](FinancesScreen.md) (31), [Pieces](Pieces.md) (22), [BuildAdvice](BuildAdvice.md) (21), [SectorScreen](SectorScreen.md) (21), [FundScreen](FundScreen.md) (19), [BuildScreen](BuildScreen.md) (18), [Game](Game.md) (14), [TimeChart](TimeChart.md) (14), [BuildingsTemplate](BuildingsTemplate.md) (13), [TradeScreen](TradeScreen.md) (13), [Palette](Palette.md) (12), [UserInterface](UserInterface.md) (10), [PartnersView](PartnersView.md) (9), [PolicyScreen](PolicyScreen.md) (8), [ServicesScreen](ServicesScreen.md) (6), [Auction](Auction.md) (6), [HistoryScreen](HistoryScreen.md) (5), [BankScreen](BankScreen.md) (5), [Sector](Sector.md) (5), [FreightView](FreightView.md) (5), [CityNeeds](CityNeeds.md) (4), [LandScreen](LandScreen.md) (4), [BuildingType](BuildingType.md) (4), [CorporateBond](CorporateBond.md) (4), [StatementView](StatementView.md) (4), [GovernmentScreen](GovernmentScreen.md) (4), [SummaryScreen](SummaryScreen.md) (3), [ConstructionScreen](ConstructionScreen.md) (3), [Debt](Debt.md) (3)... and 18 more
+**Uses:** [Kept](Kept.md) (63), [FinancesScreen](FinancesScreen.md) (31), [Pieces](Pieces.md) (22), [BuildAdvice](BuildAdvice.md) (21), [SectorScreen](SectorScreen.md) (21), [FundScreen](FundScreen.md) (19), [BuildScreen](BuildScreen.md) (18), [TimeChart](TimeChart.md) (16), [Game](Game.md) (14), [BuildingsTemplate](BuildingsTemplate.md) (13), [TradeScreen](TradeScreen.md) (13), [Palette](Palette.md) (12), [UserInterface](UserInterface.md) (10), [PartnersView](PartnersView.md) (9), [ResearchScreen](ResearchScreen.md) (9), [PolicyScreen](PolicyScreen.md) (8), [HistoryScreen](HistoryScreen.md) (7), [ServicesScreen](ServicesScreen.md) (6), [Auction](Auction.md) (6), [BankScreen](BankScreen.md) (5), [Sector](Sector.md) (5), [FreightView](FreightView.md) (5), [CityNeeds](CityNeeds.md) (4), [LandScreen](LandScreen.md) (4), [BuildingType](BuildingType.md) (4), [CorporateBond](CorporateBond.md) (4), [StatementView](StatementView.md) (4), [GovernmentScreen](GovernmentScreen.md) (4), [SummaryScreen](SummaryScreen.md) (3), [ChartModel](ChartModel.md) (3)... and 20 more
 
 **Used by (1):** [KeptCheck](KeptCheck.md)
 
@@ -63,7 +63,8 @@
 | 3264 | TRADE & THE WORLD (KP6, slice B): the six pages and a nation's page behind Partners, kept and built new, the hands on |
 | 3421 | THE GOVERNMENT TAB (KP6, slice A): its four pages, kept and built new, the hands on what reshapes them (a page picked, a |
 | 3501 | POLICY AND ZONING (KP6, slice C): the hub and every page of the five areas, kept and built new, the hands on what res... |
-| 3655 | THE HANDS THE KP6 HARNESS ADDS (KP6, slice D): what Trade counts up, and the width of its charts |
+| 3655 | THE RESEARCH AREA AND CITY HISTORY'S FLAGS (R5, slice B1): the pure helpers the Found page and the History flags are ... |
+| 3718 | THE HANDS THE KP6 HARNESS ADDS (KP6, slice D): what Trade counts up, and the width of its charts |
 
 ## Constants
 
@@ -119,7 +120,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 69 | 3677 | **type** `public final class KeptBench` | The People page on a scene of its own - no stage, no window - drawn kept and built new, for KeptCheck (study UP4): the harness's hands on the page, since what it reaches is the ui package's own. |
+| 69 | 3740 | **type** `public final class KeptBench` | The People page on a scene of its own - no stage, no window - drawn kept and built new, for KeptCheck (study UP4): the harness's hands on the page, since what it reaches is the ui package's own. |
 | 96 | 29 | `public KeptBench(Game game)` | The bench on a city: the window's object with no stage, its menu column in a scene of its own. |
 | 127 | 5 | `public double drawKept()` | People's page drawn kept from its pool (the first draw makes every node): the draw's own milliseconds. |
 | 134 | 3 | `public int lastMade()` | The nodes the last kept draw made new. |
@@ -671,17 +672,32 @@
 | 3645 | 4 | `public void showPolicy()` | The Policy tab shown through its real show method, as the rail's tab or a month landing shows it (the chrome, then the page kept). |
 | 3651 | 3 | `public void forgetPolicy()` | The Policy tab forgotten, as another city opened would leave it: nothing kept. |
 
-### THE HANDS THE KP6 HARNESS ADDS (KP6, slice D): what Trade counts up, and the width of its charts (lines 3655-3745)
+### THE RESEARCH AREA AND CITY HISTORY'S FLAGS (R5, slice B1): the pure helpers the Found page and the History flags are ... (lines 3655-3717)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3660 | 7 | `private static String headOf(VBox cell)` | The head word of a limit cell (Pieces.limitCell): its first child's words, whether that is a label or a row that starts with one. |
-| 3669 | 8 | `public List<Label> tradeFigures()` | The two figures of Trade's strip that count up from last month's when a month lands: SOLD ABROAD's and BOUGHT ABROAD's, in that order (empty when the page has no such cells). |
-| 3682 | 13 | `public String[][] tradeWords()` | The words the strip's two counted figures read, from the model as the screen reads them (TradeScreen.countFrom): {SOLD ABROAD, BOUGHT ABROAD}, each {last month's, this month's}; last month's is null while History hold... |
-| 3697 | 7 | `public List<Pieces.MirrorRows> tradeBars()` | The mirror-row pictures on the page (the bars of what the city bought and sold abroad), in the page's order: the ones that grow out of their axis when a month lands. |
-| 3706 | 8 | `public java.util.Map<Node, Tooltip> tooltips()` | Every tooltip on the page by the node that carries it, by identity: Kept.tip keeps a node's own tooltip from draw to draw, Tooltip.install on a draw's node makes a new one each time. |
-| 3716 | 5 | `public java.util.Set<Node> nodesOnPage()` | Every node on the page, by identity. |
-| 3723 | 7 | `public List<String> policyPayers(String tax)` | The keys of a tax's payers that show a row with a dial of their own (a payer's fold is "payer:" and its key), in the ranking's order: the first is the row at the top. |
-| 3732 | 4 | `public String[] hunger()` | What WHO GOES WITHOUT (Pieces.whoGoesWithout) says now: {its figure's words, whether the door to the shops is "drawn" or "not drawn"}. |
-| 3738 | 7 | `public List<double[]> chartWidths()` | Every time chart on the page with the width of the box it sits in: {the chart's width, the box's width}, in the page's order. |
+| 3661 | 3 | `public static int[] researchLevels(int[] months, int first, int last, double plotWidth)` | How high each dot of a timeline row stands (ResearchScreen.levels()) for the months given, at the width a plot is given: the dot and its gap are the screen's. |
+| 3666 | 3 | `public static double researchSlot()` | What two dots must be apart not to stack, in pixels (the dot and its gap). |
+| 3671 | 3 | `public static int[] researchTicks(int first, int last, double plotWidth)` | The months the timeline's year ticks stand at (ResearchScreen.yearTicks()), and the least width between two of them. |
+| 3676 | 3 | `public static double researchTickRoom()` | The least width between two year ticks of the timeline, in pixels. |
+| 3681 | 3 | `public static double researchX(int month, int first, int last, double plotWidth)` | Where a month stands across a plot (ResearchScreen.xOf()). |
+| 3686 | 11 | `public List<double[]> researchDots()` | Every dot of the Found page's timeline, in the order drawn: {its left, top, width and height in its pane, then the pane's width and height}. |
+| 3699 | 3 | `public static String flagCounts(int decisions, int discoveries)` | A flag's head counts, decisions and discoveries apart (TimeChart.flagCounts()). |
+| 3704 | 3 | `public static String flagColour(String kind)` | The colour a flag of this kind is drawn in (TimeChart.flagColour()). |
+| 3709 | 3 | `public static List<ham.citybuildersim.DecisionLog.Entry> decisionsInView(List<ham.citybuildersim.ChartModel.Flag> flags, int fr...` | The decisions of a window of flags, newest first, a discovery's left out (HistoryScreen.decisionsInView()). |
+| 3714 | 3 | `public static int decisionsIn(ham.citybuildersim.ChartModel.Flag flag)` | How many decisions a flag holds, its discoveries left out (HistoryScreen.decisionsIn()). |
+
+### THE HANDS THE KP6 HARNESS ADDS (KP6, slice D): what Trade counts up, and the width of its charts (lines 3718-3808)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3723 | 7 | `private static String headOf(VBox cell)` | The head word of a limit cell (Pieces.limitCell): its first child's words, whether that is a label or a row that starts with one. |
+| 3732 | 8 | `public List<Label> tradeFigures()` | The two figures of Trade's strip that count up from last month's when a month lands: SOLD ABROAD's and BOUGHT ABROAD's, in that order (empty when the page has no such cells). |
+| 3745 | 13 | `public String[][] tradeWords()` | The words the strip's two counted figures read, from the model as the screen reads them (TradeScreen.countFrom): {SOLD ABROAD, BOUGHT ABROAD}, each {last month's, this month's}; last month's is null while History hold... |
+| 3760 | 7 | `public List<Pieces.MirrorRows> tradeBars()` | The mirror-row pictures on the page (the bars of what the city bought and sold abroad), in the page's order: the ones that grow out of their axis when a month lands. |
+| 3769 | 8 | `public java.util.Map<Node, Tooltip> tooltips()` | Every tooltip on the page by the node that carries it, by identity: Kept.tip keeps a node's own tooltip from draw to draw, Tooltip.install on a draw's node makes a new one each time. |
+| 3779 | 5 | `public java.util.Set<Node> nodesOnPage()` | Every node on the page, by identity. |
+| 3786 | 7 | `public List<String> policyPayers(String tax)` | The keys of a tax's payers that show a row with a dial of their own (a payer's fold is "payer:" and its key), in the ranking's order: the first is the row at the top. |
+| 3795 | 4 | `public String[] hunger()` | What WHO GOES WITHOUT (Pieces.whoGoesWithout) says now: {its figure's words, whether the door to the shops is "drawn" or "not drawn"}. |
+| 3801 | 7 | `public List<double[]> chartWidths()` | Every time chart on the page with the width of the box it sits in: {the chart's width, the box's width}, in the page's order. |
 

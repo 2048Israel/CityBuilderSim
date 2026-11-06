@@ -1,4 +1,4 @@
-# KeptCheck.java - 6,275 lines · 147 methods · 37 constants · harnesses
+# KeptCheck.java - 6,495 lines · 150 methods · 37 constants · harnesses
 
 `ham/citybuildersim/KeptCheck.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      site, a month's draw keeps their top nodes, hands back nine in ten of the first draw's nodes
 > ... (183 more lines in the source)
 
-**Uses:** [KeptBench](KeptBench.md) (413), [Game](Game.md) (105), [Sectors](Sectors.md) (47), [ResearchView](ResearchView.md) (19), [BuildAdvice](BuildAdvice.md) (17), [BuildingsTemplate](BuildingsTemplate.md) (16), [Debt](Debt.md) (16), [Notice](Notice.md) (12), [Timing](Timing.md) (10), [Where](Where.md) (10), [ResearchViewCheck](ResearchViewCheck.md) (8), [WellCheck](WellCheck.md) (6), [OilCheck](OilCheck.md) (6), [ForeignAccounts](ForeignAccounts.md) (6), [ChartModel](ChartModel.md) (4), [Research](Research.md) (4), [RefineryViewCheck](RefineryViewCheck.md) (4), [OilViewCheck](OilViewCheck.md) (4), [WageBand](WageBand.md) (4), [BuildingManager](BuildingManager.md) (3), [IndustryView](IndustryView.md) (3), [CityCalendar](CityCalendar.md) (3), [RefineryView](RefineryView.md) (3), [MiningCheck](MiningCheck.md) (3), [TreasuryLine](TreasuryLine.md) (3), [Good](Good.md) (3), [EducationType](EducationType.md) (3), [Auction](Auction.md) (2), [SectorFlow](SectorFlow.md) (2), [Bank](Bank.md) (2)... and 10 more
+**Uses:** [KeptBench](KeptBench.md) (456), [Game](Game.md) (107), [Sectors](Sectors.md) (47), [ResearchView](ResearchView.md) (44), [DecisionLog](DecisionLog.md) (19), [BuildAdvice](BuildAdvice.md) (17), [BuildingsTemplate](BuildingsTemplate.md) (16), [Debt](Debt.md) (16), [Notice](Notice.md) (12), [ChartModel](ChartModel.md) (11), [Timing](Timing.md) (10), [Where](Where.md) (10), [ResearchViewCheck](ResearchViewCheck.md) (9), [CityCalendar](CityCalendar.md) (8), [WellCheck](WellCheck.md) (6), [OilCheck](OilCheck.md) (6), [ForeignAccounts](ForeignAccounts.md) (6), [Research](Research.md) (4), [RefineryViewCheck](RefineryViewCheck.md) (4), [OilViewCheck](OilViewCheck.md) (4), [WageBand](WageBand.md) (4), [BuildingManager](BuildingManager.md) (3), [IndustryView](IndustryView.md) (3), [RefineryView](RefineryView.md) (3), [MiningCheck](MiningCheck.md) (3), [TreasuryLine](TreasuryLine.md) (3), [Good](Good.md) (3), [EducationType](EducationType.md) (3), [Auction](Auction.md) (2), [SectorFlow](SectorFlow.md) (2)... and 12 more
 
 **Used by (1):** [ChartFitCheck](ChartFitCheck.md)
 
@@ -89,6 +89,7 @@
 | 5514 | · the controls (78) |
 | 5700 | · the count-up (79) |
 | 5913 | · the hover (80) and the cost (81) |
+| 6082 | THE RESEARCH AREA (R5, slice B1), section 95: the Found page kept, and what City History's flags and the stacking of ... |
 
 ## Constants
 
@@ -145,7 +146,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 263 | 6013 | **type** `public class KeptCheck` | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exactly where a page built new would, and costs a fraction of it. |
+| 263 | 6233 | **type** `public class KeptCheck` | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exactly where a page built new would, and costs a fraction of it. |
 | 267 | 5 | `static void check(String label, boolean ok)` |  |
 | 285 | 5 | `static<T> T fx(Callable<T> c) throws Exception` |  |
 | 292 | 13 | `static String startJavaFx()` | The toolkit started, or why not (then this harness has nothing to run on). |
@@ -372,7 +373,7 @@
 | 5774 | 21 | `static String quietRung(Game g, KeptBench bench, KeptBench.Page page, Runnable open, Runnable show, int at, boolean paused, boo...` | One clock speed on a page that has no animation to run (a Government or Policy page): a month lands and the page is shown through its real show method; nothing starts at any rung, nothing is running or off its rest, a... |
 | 5803 | 109 | `static void kp6CountUp(Game g, KeptBench bench) throws Exception` | Section 79: the count-up only at 1x-10x. |
 
-### the hover (80) and the cost (81) (lines 5913-6275)
+### the hover (80) and the cost (81) (lines 5913-6081)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -381,6 +382,14 @@
 | 5973 | 55 | `static void kp6Tips(Game g, KeptBench bench) throws Exception` | Section 80's last part: the tooltips are kept. |
 | 6030 | 18 | `static void kp6Cost(Game g, KeptBench bench) throws Exception` | Section 81: what the kept month costs on the Government Overview, on Trade's Overview and its heaviest page, and on Policy's hub and its dial-heavy pages. |
 | 6050 | 31 | `static void screensKP6(Game g, KeptBench bench) throws Exception` | Sections 69 to 81: Government, Trade & the World and Policy kept. |
-| 6083 | 5 | `private static Notice add(Game g, String key, String title)` | A notice raised now, unread, in the inbox. |
-| 6089 | 186 | `public static void main(String[] args) throws Exception` |  |
+
+### THE RESEARCH AREA (R5, slice B1), section 95: the Found page kept, and what City History's flags and the stacking of ... (lines 6082-6495)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 6087 | 8 | `static boolean has(List<String> signature, String...words)` | Whether some line of a signature has all of these words in it. |
+| 6097 | 3 | `static String label(String text)` | A label's line in a signature: `Label "text"`. |
+| 6109 | 191 | `static void researchFound(Game g, KeptBench defaultBench) throws Exception` | Section 95: Policy > Research > Found, the sixth Policy area's page, kept (R5, slice B1). |
+| 6302 | 5 | `private static Notice add(Game g, String key, String title)` | A notice raised now, unread, in the inbox. |
+| 6308 | 187 | `public static void main(String[] args) throws Exception` |  |
 
