@@ -3386,7 +3386,12 @@ final class FinancesScreen {
         javafx.scene.control.ScrollPane across = Kept.of(javafx.scene.control.ScrollPane.class, javafx.scene.control.ScrollPane::new);
         across.setContent(table);
         across.setFitToWidth(true);
-        across.setFitToHeight(true);
+        // Kept (KP5): the table at its own height, not stretched to the scroller's: a kept table whose rows come or go (a piece fell
+        // due) then changes height, and its listener refits the scroller after the pulse has styled and laid out its rows. Stretched,
+        // its height never moved and nothing refit it (slice D: 44 px too tall on The book); and a refit inside the draw would read
+        // the rows the table held before the draw, since a kept box's children are set when the draw ends. The scroller is the
+        // table's height and two pixels either way, so the card looks as it did.
+        across.setFitToHeight(false);
         across.setHbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.AS_NEEDED);
         across.setVbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER);
         across.setStyle("-fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0;");

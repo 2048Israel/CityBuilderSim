@@ -712,17 +712,53 @@ public final class KeptBench {
      * label's height settles over a pass or two, and the scroller's under the frame a pass after that.
      */
     public void settle() throws Exception {
+        settlePasses();
+        // A scroller works out its bars when it is laid out, and a bar that comes or goes narrows or widens everything in it: a kept scroller whose page
+        // has grown or shrunk by hundreds of pixels since it was last settled was left a layout behind a new one (its page 13 px too wide, or too
+        // narrow). Such a scroller is laid out again, and the page settled again (KP5, slice D).
+        boolean kicked = false;
+        for (ScrollPane sp : scrollersOnPage()) {
+            double h = sp.getContent() == null ? 0 : sp.getContent().getLayoutBounds().getHeight();
+            Object was = sp.getProperties().put(SETTLED_HEIGHT, h);
+            if (was instanceof Double d && Math.abs(d - h) > 400) {
+                sp.requestLayout();
+                kicked = true;
+            }
+        }
+        if (kicked) settlePasses();
+    }
+
+    /** The key a scroller keeps the height its content had when the page was last settled, in its properties. */
+    private static final String SETTLED_HEIGHT = "keptbench.settledHeight";
+
+    private List<ScrollPane> scrollersOnPage() {
+        List<ScrollPane> out = new ArrayList<>();
+        each(column, n -> {
+            if (n instanceof ScrollPane sp) out.add(sp);
+        });
+        return out;
+    }
+
+    private void settlePasses() throws Exception {
         int was = signature().hashCode();
+        int quiet = 0;
         for (int i = 0; i < SETTLE_PASSES; i++) {
             passes();
             int now = signature().hashCode();
-            if (now == was) return;
+            // Two quiet passes in a row (KP5, slice D): the scroller under a frame takes its height from the frame's, and a frame whose
+            // height moves a pass after its children stop moving was read as settled at the first quiet pass - a first draw, and now
+            // and then a month, then differed by a few pixels in the frame's column from a page that had been through one pass more.
+            if (now == was) {
+                if (++quiet >= QUIET_PASSES) return;
+            } else {
+                quiet = 0;
+            }
             was = now;
         }
     }
 
-    /** The most layout passes settle() runs. */
-    private static final int SETTLE_PASSES = 8;
+    /** The most layout passes settle() runs, and the quiet ones in a row it takes to stop. */
+    private static final int SETTLE_PASSES = 10, QUIET_PASSES = 2;
 
     /** One figure on City History made wrong: the first label whose words hold a digit gets a "9" in front (see spoil()). */
     public String spoilHistory() {
@@ -1186,6 +1222,21 @@ public final class KeptBench {
         ui.setPage(keptPage.toArray(new Node[0]));
         for (java.util.Map.Entry<Pane, List<Node>> e : keptBoxes.entrySet()) Kept.set(e.getKey().getChildren(), e.getValue());
         passes();
+        release();
+    }
+
+    private final WritableImage tiny = new WritableImage(1, 1);
+    private final javafx.scene.SnapshotParameters tinyView = new javafx.scene.SnapshotParameters();
+
+    /**
+     * What a scene with no window never lets go: a scene is synchronised to its renderer by a pulse, and the nodes that changed wait in its dirty list
+     * (strongly held) until one comes - so every page built new and taken off the scene again stayed in memory, about 5 MB a page, until the next
+     * snapshot (KP5, slice D: the Bank's reshaping alone built 200 and took the 2 GB a harness JVM has). A snapshot of one pixel does the
+     * synchronising and costs nothing to draw.
+     */
+    public void release() {
+        tinyView.setViewport(new javafx.geometry.Rectangle2D(0, 0, 1, 1));
+        column.snapshot(tinyView, tiny);
     }
 
     /** Every box (Pane) under a node and the children it holds now. */
@@ -1883,6 +1934,18 @@ public final class KeptBench {
                         && style.contains("-fx-background-color: " + Palette.RAISED);
                 case "sectorCard" -> n instanceof VBox && n.getOnMouseClicked() != null
                         && style.contains("-fx-padding: 12; -fx-cursor: hand; -fx-background-color: " + Palette.RAISED);
+                // KP5: the Bank's door cards (BankScreen.doorCard), a rung's name on the rate ladder (a door with " ›", in a row of the ladder),
+                // Finances' area and issuer cards and the book's rows, and the fund's holding, issuer and result rows.
+                case "bankCard" -> n instanceof VBox && n.getOnMouseClicked() != null
+                        && style.contains("-fx-padding: 12; -fx-background-color: " + Palette.RAISED) && style.contains("-fx-cursor: hand");
+                case "rungName" -> n instanceof Label l && l.getText() != null && l.getText().endsWith(" ›") && style.contains("-fx-cursor: hand")
+                        && l.getParent() instanceof HBox named && named.getParent() instanceof HBox row && row.getMinHeight() == Pieces.RUNG_ROW;
+                case "financeCard" -> n instanceof VBox && n.getOnMouseClicked() != null
+                        && style.contains("-fx-padding: 10 12 12 12; -fx-background-color: " + Palette.RAISED) && style.contains("-fx-cursor: hand");
+                case "bookRow" -> n instanceof HBox && n.getOnMouseClicked() != null
+                        && style.contains("-fx-padding: 2 4 2 4; -fx-background-radius: 4; -fx-cursor: hand");
+                case "holdingRow" -> n instanceof HBox && n.getOnMouseClicked() != null
+                        && style.contains("-fx-background-radius: 6; -fx-cursor: hand");
                 default -> throw new IllegalArgumentException(kind);
             };
             if (it) found.add(n);
@@ -2367,6 +2430,341 @@ public final class KeptBench {
     }
 
     /* =====================================================================
+       THE MONEY SCREENS' HANDS (KP5, slice D): what KeptCheck's sections 55 to 68 reach that the slices' hands did not - the
+       scroller a chip lands at the top of, paper sold of every kind, the boxes given the focus and the chips pressed under
+       it, the pictures and how often they draw, the animations a month starts on the page, and the nodes a pointer rests on
+       ===================================================================== */
+
+    /** The page's scroller (a Bank, Finances or fund page is a frame over a scroller), or null. */
+    public ScrollPane pageScroller() {
+        for (Node n : column.getChildren()) if (n instanceof ScrollPane sp) return sp;
+        return null;
+    }
+
+    /** A chip of the Bank tab picked, as a click on it would: "Overview" or one of the six pages, at its top (BankScreen.pick). */
+    public void bankPick(String chip) {
+        ui.bankScreen.pick(chip);
+    }
+
+    /** The Bank's Summary | Statement switch picked, as a click on it would (BankScreen.pickView). */
+    public void bankPickView(boolean statement) {
+        ui.bankScreen.pickView(statement);
+    }
+
+    /** A chip of the Finances tab picked, as a click on it would: the area's page at its top (FinancesScreen.open, no anchor). */
+    public void financesPick(String area, String page) {
+        ui.financesScreen.open(area, page, null);
+    }
+
+    /**
+     * Paper sold at home as the Borrow page's own button sells it (the same executeDebtLogic call, at the default highest yield):
+     * what the booking said. A callable bond is `callable` on a Term. Nothing is kept for the debt result menu (financesBook does that).
+     */
+    public String financesSell(String kind, int term, double ask, boolean callable) {
+        FinancesScreen.Instrument kit = FinancesScreen.instrument(kind);
+        return ui.financesScreen.executeDebtLogic(kit.key(), ask, term, kit.rounding(), Auction.Cap.DEFAULT, callable);
+    }
+
+    /* ----- the boxes, given the focus and pressed under ----- */
+
+    /** Every text field on the page, in the page's order. */
+    public List<javafx.scene.control.TextField> textFields() {
+        List<javafx.scene.control.TextField> out = new ArrayList<>();
+        each(column, n -> {
+            if (n instanceof javafx.scene.control.TextField f) out.add(f);
+        });
+        return out;
+    }
+
+    /** The yield box of a cap's chips ("type a yield, 4.5": the rollover's on the hub, Borrow's at home) on the page now, or null. */
+    public javafx.scene.control.TextField yieldBox() {
+        return find(column, javafx.scene.control.TextField.class, t -> t.getPromptText() != null && t.getPromptText().startsWith("type a yield"));
+    }
+
+    /**
+     * Words typed into a box and the box given the focus (see historyFilterFocus()): how it got it - "requestFocus" when the scene
+     * took it, "setFocused by reflection" when this scene has no window to give it, or why it could not be given.
+     */
+    public static String boxFocus(javafx.scene.control.TextField box, String text) throws ReflectiveOperationException {
+        if (box == null) return "the page has no such box";
+        box.setText(text);
+        box.requestFocus();
+        String how = "requestFocus";
+        if (!box.isFocused()) {
+            Method m = Node.class.getDeclaredMethod("setFocused", boolean.class);
+            m.setAccessible(true);
+            m.invoke(box, true);
+            how = box.isFocused() ? "setFocused by reflection" : "the box would not take the focus";
+        }
+        // The caret at the end of what was typed, as typing leaves it (taking the focus may have moved it).
+        box.positionCaret(text.length());
+        return how;
+    }
+
+    /** The focus taken off a box, as another click would. */
+    public static void boxBlur(javafx.scene.control.TextField box) throws ReflectiveOperationException {
+        Method m = Node.class.getDeclaredMethod("setFocused", boolean.class);
+        m.setAccessible(true);
+        m.invoke(box, false);
+    }
+
+    /** A box: the node, its text, its caret and whether it has the focus. */
+    public static Object[] boxState(javafx.scene.control.TextField box) {
+        return box == null ? null : new Object[]{box, box.getText(), box.getCaretPosition(), box.isFocused()};
+    }
+
+    /** Text typed into a box as keys would, its listener running (outside a draw); the text it holds after. */
+    public static String boxType(javafx.scene.control.TextField box, String text) {
+        box.setText(text);
+        return box.getText();
+    }
+
+    /** Kept.text on a box: the text it holds after. */
+    public static String boxSet(javafx.scene.control.TextField box, String text) {
+        Kept.text(box, text);
+        return box.getText();
+    }
+
+    /**
+     * A chip pressed on the page, as the pointer would press it: the first button or label with exactly these words that can be
+     * pressed (a chip strip's Button is fired, a step chip's Label is clicked). False when the page has none.
+     */
+    public boolean pressChip(String words) {
+        Labeled chip = find(column, Labeled.class, l -> words.equals(l.getText()) && (l instanceof ButtonBase || l.getOnMouseClicked() != null));
+        if (chip == null) return false;
+        if (chip instanceof ButtonBase b) b.fire();
+        else fireMouse(chip, javafx.scene.input.MouseEvent.MOUSE_CLICKED, 5, 5, javafx.scene.input.MouseButton.PRIMARY, 1);
+        return true;
+    }
+
+    /** The words of the first chip or step on the page that pass a test (its label), or null. */
+    public String chipWith(java.util.function.Predicate<String> test) {
+        Labeled chip = find(column, Labeled.class, l -> l.getText() != null && test.test(l.getText())
+                && (l instanceof ButtonBase || l.getOnMouseClicked() != null));
+        return chip == null ? null : chip.getText();
+    }
+
+    /**
+     * Every foldable row of the fund's page clicked open, as the pointer would (a holding's bond issuer "▸ ...", the "and N more
+     * under ..." row, an activity line that groups): how many were opened. A click redraws the tab through its real show method.
+     */
+    public int fundUnfold() {
+        int opened = 0;
+        for (int i = 0; i < 40; i++) {
+            Labeled row = find(column, Labeled.class, l -> l.getText() != null && (l.getText().startsWith("▸ ")
+                    || (l.getText().startsWith("and ") && l.getText().contains(" more under "))));
+            if (row == null) break;
+            fireMouse(row, javafx.scene.input.MouseEvent.MOUSE_CLICKED, 5, 5, javafx.scene.input.MouseButton.PRIMARY, 1);
+            opened++;
+        }
+        return opened;
+    }
+
+    /** Every fold and row the fund has opened closed again (its page drawn on the next draw). */
+    public void fundFoldsClosed() {
+        ui.financesScreen.fundScreen.open.clear();
+    }
+
+    /* ----- the pictures, and how often they draw ----- */
+
+    /** The kinds of picture KeptCheck's section 64 watches. */
+    public static List<String> pictureKinds() {
+        return List.of("CurveChart", "DeskCurve", "DeskBars", "PathChart", "BuybackLadder", "AuctionChart", "Columns", "RankBar", "TimeChart");
+    }
+
+    private static boolean isPicture(String kind, Node n) {
+        return switch (kind) {
+            case "CurveChart" -> n instanceof FinancesScreen.CurveChart;
+            case "DeskCurve" -> n instanceof FinancesScreen.DeskCurve;
+            case "DeskBars" -> n instanceof FinancesScreen.DeskBars;
+            case "PathChart" -> n instanceof FinancesScreen.PathChart;
+            case "BuybackLadder" -> n instanceof FinancesScreen.BuybackLadder;
+            case "AuctionChart" -> n instanceof FinancesScreen.AuctionChart;
+            case "Columns" -> n instanceof Pieces.Columns;
+            case "RankBar" -> n instanceof Pieces.RankBar;
+            case "TimeChart" -> n instanceof TimeChart;
+            default -> throw new IllegalArgumentException(kind);
+        };
+    }
+
+    /** Every picture of a kind on the page now, in the page's order. */
+    public List<Pane> pictures(String kind) {
+        List<Pane> out = new ArrayList<>();
+        each(column, n -> {
+            if (n instanceof Pane p && isPicture(kind, n)) out.add(p);
+        });
+        return out;
+    }
+
+    private final java.util.Map<Pane, int[]> repaintCounts = new java.util.IdentityHashMap<>();
+
+    /**
+     * How many times a picture has drawn itself since the bench first asked about it (0 at that first asking): a chart counts its
+     * frames (TimeChart.paints); a picture that clears its children and builds them again when it draws (a Drawn, the ladder, the
+     * columns) counts those clearings, which the bench listens to from the first asking on; a bar that keeps its parts
+     * (RankBar) counts nothing, and layoutRequested() is its draw.
+     */
+    public int repaints(Pane picture) {
+        if (picture instanceof TimeChart t) return t.paints;
+        int[] c = repaintCounts.get(picture);
+        if (c == null) {
+            int[] counter = new int[1];
+            picture.getChildren().addListener((javafx.collections.ListChangeListener<Node>) change -> {
+                while (change.next()) {
+                    if (change.wasRemoved()) {
+                        counter[0]++;
+                        break;
+                    }
+                }
+            });
+            repaintCounts.put(picture, counter);
+            return 0;
+        }
+        return c[0];
+    }
+
+    /** What a bar was last told (RankBar): its figures, for comparing one month with the next; the picture's signature for any other. */
+    public static String figuresOf(Pane picture) {
+        if (picture instanceof Pieces.RankBar r) return r.amount + "," + r.pos + "," + r.neg;
+        return pictureSignature(picture);
+    }
+
+    /** Why a picture is waiting for a layout: itself, or which of its parts, and the figures it was last told. */
+    public static String layoutReason(Pane picture) {
+        StringBuilder b = new StringBuilder(picture.isNeedsLayout() ? "itself" : "not itself");
+        for (Node k : picture.getChildrenUnmodifiable()) if (k instanceof javafx.scene.Parent p && p.isNeedsLayout()) b.append(", ").append(k.getClass().getSimpleName());
+        return b + "; told " + figuresOf(picture) + "; managed " + picture.isManaged() + ", visible " + picture.isVisible() + ", parent " + (picture.getParent() == null ? null : picture.getParent().getClass().getSimpleName());
+    }
+
+    /** Whether a picture has asked to be laid out again (a bar told a figure that moved: RankBar.set). */
+    public static boolean layoutRequested(Pane picture) {
+        return picture.isNeedsLayout();
+    }
+
+    /**
+     * What a picture and everything in it show now, a line a node: two pictures with the same lines draw the same. A chart that paints on
+     * a canvas (TimeChart) is also its pixels, which no node of it records.
+     */
+    public static String pictureSignature(Node picture) {
+        List<String> out = new ArrayList<>();
+        preciseNow = true;
+        try {
+            sign(picture, "", out);
+        } finally {
+            preciseNow = false;
+        }
+        if (picture instanceof TimeChart) out.add("pixels " + java.util.Arrays.hashCode(pixelsOf(picture)));
+        return String.join("\n", out);
+    }
+
+    /* ----- the animations a month starts ----- */
+
+    /** Every animation a kept draw has played (Kept.play) on a node of the page: the last on each node. */
+    public List<javafx.animation.Animation> pageAnimations() {
+        List<javafx.animation.Animation> out = new ArrayList<>();
+        each(column, n -> {
+            javafx.animation.Animation a = Kept.animationOf(n);
+            if (a != null) out.add(a);
+        });
+        return out;
+    }
+
+    /** Whether any animation of the page is running. */
+    public boolean animating() {
+        for (javafx.animation.Animation a : pageAnimations()) if (a.getStatus() != javafx.animation.Animation.Status.STOPPED) return true;
+        return false;
+    }
+
+    /** How many nodes of the page that were popped are not at rest (a scale other than 1). */
+    public int notAtRest() {
+        int[] n = {0};
+        each(column, node -> {
+            if (Kept.animationOf(node) != null && (node.getScaleX() != 1 || node.getScaleY() != 1)) n[0]++;
+        });
+        return n[0];
+    }
+
+    /** The PROFIT figure on the page (the Overview's scorecard, or a page's status strip): the node under the word, or null. */
+    public Node bankProfitFigure() {
+        VBox cell = find(column, VBox.class, v -> v.getChildren().size() > 1 && saysProfit(v.getChildren().get(0)));
+        return cell == null ? null : cell.getChildren().get(1);
+    }
+
+    private static boolean saysProfit(Node first) {
+        if (first instanceof Label l) return l.getText() != null && l.getText().startsWith("PROFIT");
+        return first instanceof HBox row && !row.getChildren().isEmpty() && row.getChildren().get(0) instanceof Label l
+                && l.getText() != null && l.getText().startsWith("PROFIT");
+    }
+
+    /** The Overview's capital gauge: the bar in the card that opens "CAPITAL", or null. */
+    public Pieces.SegmentBar bankGauge() {
+        VBox card = find(column, VBox.class, v -> !v.getChildren().isEmpty() && v.getChildren().get(0) instanceof Label l
+                && l.getText() != null && l.getText().startsWith("CAPITAL"));
+        return card == null ? null : find(card, Pieces.SegmentBar.class, b -> true);
+    }
+
+    /**
+     * Whether the capital gauge would grow on the month that has just landed, by the screen's own reading: the measure that binds is
+     * the risk-weighted one, it is finite, and the ratio of the month before (the history's last two) differs from this month's.
+     */
+    public boolean bankGaugeMoved() {
+        ham.citybuildersim.Bank bank = ui.game.getBank();
+        if (bank.leverageBinds()) return false;
+        double[] g = gaugeNumbers();
+        double now = g[0], before = g[1], scale = g[2];
+        if (!Double.isFinite(now) || !(now > 0)) return false;
+        return Double.isFinite(before) && Math.abs(Math.min(before, scale) - Math.min(now, scale)) > 0;
+    }
+
+    /** The gauge's figure now, the risk-weighted ratio of the month before it (the history's second last), and the scale the bar is drawn on: for a failure to say what it saw. */
+    public double[] gaugeNumbers() {
+        double now = ui.bankScreen.gauge().value();
+        double[] s = ui.game.getHistorySave().aligned("bankCapitalRatio");
+        double before = Double.NaN;
+        int seen = 0;
+        for (int i = s.length - 1; i >= 0 && seen < 2; i--) {
+            if (!Double.isFinite(s[i])) continue;
+            if (++seen == 2) before = s[i];
+        }
+        return new double[]{now, before, ui.bankScreen.gauge().top() * Pieces.BAND_SCALE};
+    }
+
+    /** The numbers of the businesses' bonds outstanding, the ones that fall due last first (the largest first among those): books that outlast a long section. */
+    public List<Integer> bondIdsLasting() {
+        List<ham.citybuildersim.CorporateBond> bonds = new ArrayList<>(ui.game.getBondMarket().getBonds());
+        bonds.sort((a, b) -> a.maturityMonth() != b.maturityMonth() ? Integer.compare(b.maturityMonth(), a.maturityMonth()) : Double.compare(b.face(), a.face()));
+        List<Integer> out = new ArrayList<>();
+        for (ham.citybuildersim.CorporateBond b : bonds) out.add(b.id());
+        return out;
+    }
+
+    /** The fund's worth as the hero says it (the page's one 28-point figure), or null. */
+    public String fundWorth() {
+        Label l = find(column, Label.class, x -> x.getStyle() != null && x.getStyle().contains("-fx-font-size: 28.0px"));
+        return l == null ? null : l.getText();
+    }
+
+    /** The highest yield the sale will take put back to what Borrow opens with (fair and the tail). */
+    public void financesCapDefault() {
+        ui.financesScreen.borrowCap = Auction.Cap.DEFAULT;
+    }
+
+    /** How many holdings the fund's page says paid something in the month just landed ("paid +D$26k this month"). */
+    public int paidLines() {
+        int[] n = {0};
+        each(column, node -> {
+            if (node instanceof Label l && l.getText() != null && l.getText().startsWith("paid +")) n[0]++;
+        });
+        return n[0];
+    }
+
+    /** The Bank tab forgotten and the Finances tab forgotten, as another city opened would leave them. */
+    public void forgetMoney() {
+        ui.bankScreen.forget();
+        ui.financesScreen.forget();
+    }
+
+    /* =====================================================================
        SECTORS (KP4): the list and a business's five pages, kept and built new, the hands on what reshapes them, the
        pictures they hold (the refinery's, a materials industry's, a leg's bar), the count-up the clock allows and the
        pointer over a card, a door and the crumb
@@ -2703,7 +3101,20 @@ public final class KeptBench {
     /** Whether a signature writes a node's place and size to four decimals instead of one (-Dkeptbench.precise=true). */
     static final boolean PRECISE = Boolean.getBoolean("keptbench.precise");
 
+    /** Whether a picture's signature is being written (KeptCheck 64): to four decimals, so that a bar that moved by a hair is told from one that did not. */
+    private static boolean preciseNow;
+
     private static void sign(Node n, String path, List<String> out) {
+        sign(n, path, out, false);
+    }
+
+    /**
+     * One node and what is under it. `unlaid` is true inside a node that is hidden and unmanaged: nobody lays it out and nobody sees it, so
+     * where it sits is what it was last laid out at (a kept fold's detail, closed after it was open) or its default (the same fold built
+     * new), and neither is the page's. Its words, style, handlers and values are still compared; only its place and size are not (KP5, slice D).
+     */
+    private static void sign(Node n, String path, List<String> out, boolean unlaid) {
+        unlaid |= !n.isVisible() && !n.isManaged();
         StringBuilder b = new StringBuilder(path).append(n.getClass().getSimpleName());
         if (n instanceof Labeled l) b.append(" \"").append(l.getText()).append('"');
         if (n instanceof Text t) b.append(" \"").append(t.getText()).append('"');
@@ -2718,15 +3129,19 @@ public final class KeptBench {
         Tooltip tip = Kept.tipOf(n);
         if (tip != null) b.append(" tip{").append(tip.getText()).append('}');
         if (n instanceof Control c && c.getTooltip() != null) b.append(" ctip{").append(c.getTooltip().getText()).append('}');
-        Bounds at = n.getBoundsInParent();
-        b.append(String.format(Locale.ROOT, PRECISE ? " at %.4f,%.4f %.4fx%.4f" : " at %.1f,%.1f %.1fx%.1f", at.getMinX(), at.getMinY(), at.getWidth(), at.getHeight()));
+        if (unlaid) {
+            b.append(" (not laid out)");
+        } else {
+            Bounds at = n.getBoundsInParent();
+            b.append(String.format(Locale.ROOT, PRECISE || preciseNow ? " at %.4f,%.4f %.4fx%.4f" : " at %.1f,%.1f %.1fx%.1f", at.getMinX(), at.getMinY(), at.getWidth(), at.getHeight()));
+        }
         out.add(b.toString());
         String inner = path + "  ";
-        if (n instanceof Labeled l && l.getGraphic() != null) sign(l.getGraphic(), inner + "graphic: ", out);
+        if (n instanceof Labeled l && l.getGraphic() != null) sign(l.getGraphic(), inner + "graphic: ", out, unlaid);
         // A Pane's children, and those of the game's own pictures that are a Region and no Pane (the header's tile).
-        if (n instanceof Region r && !(n instanceof Control)) for (Node k : r.getChildrenUnmodifiable()) sign(k, inner, out);
-        if (n instanceof ScrollPane sp && sp.getContent() != null) sign(sp.getContent(), inner + "content: ", out);
-        if (n instanceof Group g) for (Node k : g.getChildren()) sign(k, inner, out);
+        if (n instanceof Region r && !(n instanceof Control)) for (Node k : r.getChildrenUnmodifiable()) sign(k, inner, out, unlaid);
+        if (n instanceof ScrollPane sp && sp.getContent() != null) sign(sp.getContent(), inner + "content: ", out, unlaid);
+        if (n instanceof Group g) for (Node k : g.getChildren()) sign(k, inner, out, unlaid);
     }
 
     /**

@@ -1255,7 +1255,18 @@ public final class Pieces {
      * (the building pink).
      */
     public static Label tag(String text, String colour) {
-        Label l = Kept.label(text);
+        return tagged(Kept.label(text), colour);
+    }
+
+    /**
+     * ...on a label of the caller's own: a picture's parts are its own, made with new (Kept.label would take the next label of the page's
+     * scope, which the next draw hands to someone else - KP5, slice D: Columns' tag took the wrap of the label it was handed).
+     */
+    static Label ownTag(String text, String colour) {
+        return tagged(new Label(text), colour);
+    }
+
+    private static Label tagged(Label l, String colour) {
         l.setStyle("-fx-font-size: 9.5px; -fx-text-fill: " + colour + "; -fx-padding: 1 7 1 7;"
                 + " -fx-border-color: " + colour + "; -fx-border-radius: 9; -fx-background-radius: 9;"
                 + " -fx-background-color: " + colour + "1f;");
@@ -1546,8 +1557,16 @@ public final class Pieces {
                 double stripe = Math.max(2, Math.round(band / 5));
                 stripes.get(i).resizeRelocate(left + 2, y + band - stripe - 1, Math.max(0, shown - 4), stripe);
                 Label label = labels.get(i);
+                if (s.label() == null || s.label().isEmpty()) {
+                    // Kept (KP5, slice D): no words, nothing to size - a label emptied after it had words kept the height of them (13 px against 0 for a
+                    // label that never had any), though nobody sees it.
+                    label.setVisible(false);
+                    label.resizeRelocate(left, y, 0, 0);
+                    x += wide;
+                    continue;
+                }
                 double lw = label.prefWidth(-1), lh = label.prefHeight(-1);
-                label.setVisible(s.label() != null && shown >= lw + 4 && band >= lh - 2);
+                label.setVisible(shown >= lw + 4 && band >= lh - 2);
                 label.resizeRelocate(left + (shown - lw) / 2, y + (band - lh) / 2, lw, lh);
                 x += wide;
             }
@@ -3898,7 +3917,8 @@ public final class Pieces {
 
     /** The bar rankBars() draws for one row: a Pane that lays its track, its fill and its axis out at whatever width it is given. */
     static final class RankBar extends javafx.scene.layout.Pane {
-        private double amount, pos, neg;
+        /** The figures it was last told: KeptCheck reads them to tell a bar told other figures from one told the same. */
+        double amount, pos, neg;
         private boolean told;
         private final Region track = new Region(), fill = new Region(), axis = new Region();
 
@@ -3918,7 +3938,8 @@ public final class Pieces {
 
         /** What the bar draws now; laid out again only where a figure the layout reads moved. */
         void set(double amount, double pos, double neg, String colour) {
-            boolean moved = !told || amount != this.amount || pos != this.pos || neg != this.neg;
+            // (Compared as numbers are compared for equality, NaN with NaN: a figure that is not a number - a year ago not on file - is not a figure that moved.)
+            boolean moved = !told || Double.compare(amount, this.amount) != 0 || Double.compare(pos, this.pos) != 0 || Double.compare(neg, this.neg) != 0;
             told = true;
             this.amount = amount;
             this.pos = pos;
@@ -4320,7 +4341,7 @@ public final class Pieces {
                 f.setVisible(c.figure() != null);
                 figures.add(f);
                 getChildren().add(f);
-                javafx.scene.Node tg = c.tag() == null ? new Region() : tag(c.tag(), c.tagColour() == null
+                javafx.scene.Node tg = c.tag() == null ? new Region() : ownTag(c.tag(), c.tagColour() == null
                         ? Palette.TEXT_LABEL : c.tagColour());
                 tg.setMouseTransparent(true);
                 tg.setVisible(c.tag() != null);
