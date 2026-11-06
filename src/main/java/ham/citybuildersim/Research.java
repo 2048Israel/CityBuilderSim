@@ -5,6 +5,7 @@ import ham.citybuildersim.ResearchCatalog.Field;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -33,6 +34,18 @@ import java.util.TreeMap;
  * (hiddenSize()), is a fact about the city and is never saved. Not here, and in Game: striking the posts at the top of the month (nextMonth()),
  * counting them among the city's jobs (getJobs()), paying for them and calling the step (advanceDemographics(), beside the schools), saving them
  * (DataSave) and the inbox's notices (Inbox.takeResearch()); this class gives them the getters, idleMonth() and restore().
+ *
+ * R4, the prize and the Research Lab (research-design 5.3, 1.5, 5.4): a PRIZE dial per field is the D$ paid for each discovery made HERE in that field,
+ * and only on a find; and a Research Lab is a private building of LAB_POSTS posts of one field whose researchers, unlike the city's own, do not spread
+ * evenly but go for the cheapest open problem the purse pays for (the "chase", chase()). The month() with labs spreads the city's researchers exactly
+ * as before and then pours the labs' on the chase list, cheapest first, each problem taking what its team cap leaves; a find splits the purse by the
+ * work piled, the labs' part going (in a later slice) to the labs' owners and the schools' part into the field's POT, which buys posts beyond the grant
+ * (strikePosts(), drawPots()). The investors' questions (labsWanted(), labTarget(), labStake()) and the labs a field has too many of (labTooMany())
+ * are answered here too, so that Game only acts on them. Still no screen and no Game: every rule is a static function of its arguments.
+ *
+ * WHY (R4). A grant pays for the work whether it finds anything or not (1.5); a prize pays only for the result, and so draws outsiders and their
+ * money to the problems near enough to finish before the world does, which is what the evidence says a prize does. Not here, and in later slices:
+ * the Research Lab as a building (buildings.json), the investors building and shedding them, the purse paid to their owners, the save, the screens.
  */
 public final class Research {
 
@@ -93,6 +106,18 @@ public final class Research {
 
     /** The fewest years of work a drug dated before DRUG_RULE_YEAR takes: 2, there being no phased trials to wait on (research-1900 Q6, decided). */
     public static final int MIN_YEARS_DRUG_BEFORE_RULE = 2;
+
+    /** A Research Lab's research posts, all of one field (research-design 5.3, est.: a building of 100, the Engineering Services Office's 120 staff being the study's yardstick). */
+    public static final int LAB_POSTS = 100;
+
+    /** The share of a lab's researchers that must have work for investors to build it, and that a field's idle lab researchers may reach, as one lab's, before the field has a lab too many (est.). */
+    public static final double LAB_ROOM_SHARE = 0.5;
+
+    /** The least remaining work a problem is judged by, so that a pile past its typical work still costs something (research_model.py: 1e-6). */
+    public static final double REMAINING_DUST = 1e-6;
+
+    /** The months in a row a field has a lab too many before one is shed: a building's retirement months (BusinessInvestment.RETIREMENT_LOSS_MONTHS), "then is shed, as any building is" (5.3). */
+    public static final int LAB_IDLE_MONTHS = BusinessInvestment.RETIREMENT_LOSS_MONTHS;
 
     /** Months in a year: a pile gains its researchers over this many each month. */
     static final int MONTHS_A_YEAR = 12;
@@ -364,6 +389,60 @@ public final class Research {
     }
 
     /* =====================================================================
+       THE PRIZE: what the purse pays for, and the labs (pure)
+       ===================================================================== */
+
+    /**
+     * The work left on a problem, in researcher-years: its typical work (Entry.work(), never the hidden size, which nobody sees) less the pile, but
+     * never less than REMAINING_DUST (research_model.py: max(effort - progress, 1e-6)).
+     */
+    public static double remaining(Entry e, double pile) {
+        return Math.max(e.work() - pile, REMAINING_DUST);
+    }
+
+    /** The months a team at its limit (teamCap()) takes to finish a problem with that pile: its remaining work over the team, twelve researcher-years a year each. */
+    public static double monthsToFinish(Entry e, double pile) {
+        return MONTHS_A_YEAR * remaining(e, pile) / teamCap(e);
+    }
+
+    /**
+     * Whether a purse pays for a problem ("on the chase"): the prize is at least the remaining typical work times a researcher-year's cost,
+     * `prize >= remaining * 12 * cost`, `cost` being a post's cost a month (postCost()). Never for a prize that is not above nothing or a cost that is not a finite number above nothing.
+     */
+    public static boolean purseCovers(double prize, double cost, Entry e, double pile) {
+        if (!(prize > 0) || !Double.isFinite(cost) || !(cost > 0)) return false;
+        return prize >= remaining(e, pile) * MONTHS_A_YEAR * cost;
+    }
+
+    /** Whether a team at its limit could finish a problem with that pile before the world does: this month plus monthsToFinish() falls before history's month. */
+    public static boolean beforeTheWorld(Entry e, double pile, int month) {
+        return month + monthsToFinish(e, pile) < e.worldMonth();
+    }
+
+    /** What investors put up for a lab on a problem: LAB_POSTS researchers at `cost` a post a month, for the months it takes to finish. */
+    public static double stake(double cost, Entry e, double pile) {
+        return LAB_POSTS * cost * monthsToFinish(e, pile);
+    }
+
+    /**
+     * The labs investors want for that much room (researchers the chase list could still take): while the n-th would keep at least LAB_ROOM_SHARE of
+     * its researchers at work, n = floor(room / LAB_POSTS + 1 - LAB_ROOM_SHARE). None for no room, a room below nothing or not a number.
+     */
+    public static int labsFor(double room) {
+        if (!(room > 0)) return 0;
+        double n = Math.floor(room / LAB_POSTS + 1 - LAB_ROOM_SHARE);
+        return n >= Integer.MAX_VALUE ? Integer.MAX_VALUE : n > 0 ? (int) n : 0;
+    }
+
+    /** The jobs one Research Lab is: jobs() of LAB_POSTS posts of the field (the lab templates in buildings.json are written to equal it). */
+    public static long[] labJobs(Field f) {
+        return jobs(f, LAB_POSTS);
+    }
+
+    /** What a find here pays out: the labs' part, owed to their owners, and the schools' part, which joins the field's pot. */
+    public record Purse(double toLabs, double toSchools) { }
+
+    /* =====================================================================
        THE CITY'S RESEARCH: what a city adds to the catalogue
        ===================================================================== */
 
@@ -390,6 +469,31 @@ public final class Research {
     private final Map<String, Double> sizes = new HashMap<>();
     private long sizesSeed;
 
+    /** The prize dials, D$ paid for each discovery made here in a field, in the game's money unit; a field with none is 0. */
+    private final EnumMap<Field, Double> prizes = new EnumMap<>(Field.class);
+
+    /** Each field's pot: the schools' share of the purses, not yet spent on posts beyond the grant (strikePosts(), drawPots()). */
+    private final EnumMap<Field, Double> pots = new EnumMap<>(Field.class);
+
+    /** The posts the grant alone bought at the last strike, so that drawPots() knows which posts the pot pays for. */
+    private final EnumMap<Field, Integer> grantPosts = new EnumMap<>(Field.class);
+
+    /** The part of each pile that the labs' researchers worked, in researcher-years, by code: kept apart so that a find knows who did the work. */
+    private final Map<String, Double> labPiles = new TreeMap<>();
+
+    /** The city's own researchers on each open problem in the last month() (not the labs'), by code; what labsWanted() reads, so it is saved. */
+    private final Map<String, Double> cityShares = new TreeMap<>();
+
+    /** The consecutive months a field has had a lab too many, by field; none is not in the map. Saved. */
+    private final EnumMap<Field, Integer> labIdleMonths = new EnumMap<>(Field.class);
+
+    /** This month's labs (month()): the labs' researchers on each problem, each field's lab researchers and idle ones, the purse owed to the labs and each find's purse. */
+    private final Map<String, Double> labShares = new TreeMap<>();
+    private final EnumMap<Field, Double> labResearchersNow = new EnumMap<>(Field.class);
+    private final EnumMap<Field, Double> labsIdleNow = new EnumMap<>(Field.class);
+    private final EnumMap<Field, Double> toLabsNow = new EnumMap<>(Field.class);
+    private final Map<String, Purse> purses = new LinkedHashMap<>();
+
     /* ----- the grants ----- */
 
     /** A field's grant, a month's money: 0 where none is set. */
@@ -404,6 +508,25 @@ public final class Research {
         return true;
     }
 
+    /* ----- the prizes ----- */
+
+    /** A field's prize, D$ for each discovery made here: 0 where none is set. */
+    public double prize(Field f) {
+        return prizes.getOrDefault(f, 0.0);
+    }
+
+    /** Sets a field's prize. A negative amount, one that is not a finite number or no field is refused: the prize stays as it was, and false is returned. */
+    public boolean setPrize(Field f, double amount) {
+        if (f == null || !Double.isFinite(amount) || amount < 0) return false;
+        prizes.put(f, amount);
+        return true;
+    }
+
+    /** A field's pot: the schools' share of the purses paid out here, not yet spent on posts. */
+    public double pot(Field f) {
+        return pots.getOrDefault(f, 0.0);
+    }
+
     /* ----- the posts ----- */
 
     /** The posts struck this month for a field (strikePosts()); 0 before any. */
@@ -412,14 +535,40 @@ public final class Research {
     }
 
     /**
-     * Strikes the month's posts: for each field the whole posts its grant buys at the post's cost (postCost() at these wages) within the room it
-     * has (posts()). `room` is the posts the field's schools have room for; a field missing from it has none.
+     * Strikes the month's posts: for each field the whole posts its grant and its pot buy at the post's cost (postCost() at these wages) within the
+     * room it has (posts()); the posts the grant alone buys are remembered (grantPosts()), the rest being the pot's to pay for (drawPots()). `room`
+     * is the posts the field's schools have room for; a field missing from it has none.
      */
     public void strikePosts(EnumMap<Field, Double> room, double[] wagePerType) {
         for (Field f : Field.values()) {
             Double r = room == null ? null : room.get(f);
-            posts.put(f, posts(grant(f), postCost(f, wagePerType), r == null ? 0 : r));
+            double cost = postCost(f, wagePerType), space = r == null ? 0 : r;
+            posts.put(f, posts(grant(f) + pot(f), cost, space));
+            grantPosts.put(f, posts(grant(f), cost, space));
         }
+    }
+
+    /** The posts the grant alone bought at the last strike (strikePosts()); the posts above them are the pot's. */
+    public int grantPosts(Field f) {
+        return grantPosts.getOrDefault(f, 0);
+    }
+
+    /**
+     * Pays for the pots' posts at the month's bill and lowers the pots by it: each field's draw is the bill of all its posts less the bill of the
+     * grant's (bill() at this month's wages and fill, so a post nobody fills draws nothing), never more than the pot. Returns the total drawn.
+     */
+    public double drawPots(double[] wagePerType, double[] fillPerType) {
+        double total = 0;
+        for (Field f : Field.values()) {
+            double pot = pot(f);
+            if (!(pot > 0)) continue;
+            double owed = bill(f, posts(f), wagePerType, fillPerType) - bill(f, grantPosts(f), wagePerType, fillPerType);
+            double draw = Math.min(pot, Math.max(owed, 0));
+            if (!(draw > 0)) continue;
+            if (pot - draw > 0) pots.put(f, pot - draw); else pots.remove(f);
+            total += draw;
+        }
+        return total;
     }
 
     /** The jobs the month's posts are, all fields together, by JobType ordinal (jobs() of each field's posts). */
@@ -489,48 +638,90 @@ public final class Research {
     }
 
     /**
-     * The month's step (research_model.py run(), one month). First the world's own dates: a discovery history dates in this month or before that
-     * the city has not found is the city's from abroad, the work on it stops (its pile is dropped), and one dated this month is listed as arrived.
-     * Then each field in turn (the enum's order): its open problems, its researchers (`researchers`, a field missing from it has none) spread over
-     * them (waterFill() over the team caps), each pile gaining its share over twelve researcher-years, and a pile that has reached the problem's
-     * hiddenSize() found here this month. A find counts at once for the fields after it, as in the model, and for the same field the next month.
-     * Idle researchers, open problems and the finds and arrivals are kept for the month (idle(), openProblems(), foundThisMonth(), arrivedThisMonth()).
+     * The month's step with no labs: month() with none and no wages, so that nothing is on the chase (the city's own researchers alone; a find
+     * with a prize set then pays the whole purse to the schools).
      */
     public void month(int month, long seed, EnumMap<Field, Double> researchers) {
+        month(month, seed, researchers, null, null, null);
+    }
+
+    /**
+     * The month's step (research_model.py run(), one month). First the world's own dates: a discovery history dates in this month or before that
+     * the city has not found is the city's from abroad, the work on it stops (its pile and the labs' part of it are dropped), and one dated this
+     * month is listed as arrived. Then each field in turn (the enum's order): its open problems, its researchers (`researchers`, a field missing
+     * from it has none) spread over them (waterFill() over the team caps; the labs never change it) and the city's share of each kept
+     * (cityShare()). Then the field's labs: `labResearchers` of them are poured onto the chase list (chase(), at `wagePerType`; no wages, no chase),
+     * cheapest first, each problem taking at most what its team cap leaves of the city's share; what is left over is the labs' idle (labsIdle()).
+     * Each pile gains its city share and its lab share over twelve researcher-years (the labs' part also kept apart, labPile()), and a pile that has
+     * reached the problem's hiddenSize() is found here this month, and pays its purse if the field has a prize (purses()). A field with `labs` labs
+     * (a field missing from it has none) in which the labs' idle researchers are LAB_ROOM_SHARE of one lab's has a lab too many this month
+     * (labIdleMonths()). A find counts at once for the fields after it, as in the model, and for the same field the next month. Idle researchers,
+     * open problems and the finds and arrivals are kept for the month (idle(), openProblems(), foundThisMonth(), arrivedThisMonth()).
+     */
+    public void month(int month, long seed, EnumMap<Field, Double> researchers, EnumMap<Field, Integer> labs, EnumMap<Field, Double> labResearchers,
+                      double[] wagePerType) {
         foundThisMonth.clear();
         arrivedThisMonth.clear();
         researchersNow.clear();
         idleNow.clear();
         openNow.clear();
+        clearLabMonth();
+        cityShares.clear();
 
         for (Entry e : ResearchCatalog.get().entries()) {
             if (e.worldMonth() > month || found.containsKey(e.code())) continue;
             piles.remove(e.code());
+            labPiles.remove(e.code());
             if (e.worldMonth() == month) arrivedThisMonth.add(e.code());
         }
 
         for (Field f : Field.values()) {
             double people = sane(researchers == null ? null : researchers.get(f));
+            double labPeople = sane(labResearchers == null ? null : labResearchers.get(f));
+            Integer labCount = labs == null ? null : labs.get(f);
             List<Entry> open = openProblems(f, month);
             researchersNow.put(f, people);
             openNow.put(f, open.size());
             if (open.isEmpty()) {
                 idleNow.put(f, people);
+                recordLabs(f, labCount, labPeople, labPeople);
                 continue;
             }
             double[] caps = new double[open.size()];
             for (int i = 0; i < caps.length; i++) caps[i] = teamCap(open.get(i));
             Fill fill = waterFill(people, caps);
             idleNow.put(f, fill.idle());
-            for (int i = 0; i < caps.length; i++) {
-                double add = fill.share()[i] / MONTHS_A_YEAR;
+            for (int i = 0; i < caps.length; i++) if (fill.share()[i] > 0) cityShares.put(open.get(i).code(), fill.share()[i]);
+
+            double labsLeft = labPeople;
+            double prize = prize(f), cost = postCost(f, wagePerType);
+            if (labPeople > 0 && prize > 0 && cost > 0) {
+                for (Entry e : chaseOf(open, month, prize, cost)) {
+                    double take = Math.min(labsLeft, Math.max(0, teamCap(e) - cityShare(e.code())));
+                    if (!(take > 0)) continue;
+                    labShares.put(e.code(), take);
+                    labsLeft -= take;
+                }
+            }
+            recordLabs(f, labCount, labPeople, labsLeft > IDLE_DUST ? labsLeft : 0);
+
+            for (Entry e : open) {
+                double lab = labShare(e.code());
+                double add = (cityShare(e.code()) + lab) / MONTHS_A_YEAR;
                 if (!(add > 0)) continue;
-                Entry e = open.get(i);
                 double pile = piles.merge(e.code(), add, Double::sum);
+                double labPile = lab > 0 ? labPiles.merge(e.code(), lab / MONTHS_A_YEAR, Double::sum) : labPile(e.code());
                 if (pile >= sizeOf(seed, e)) {
                     found.put(e.code(), month);
                     piles.remove(e.code());
+                    labPiles.remove(e.code());
                     foundThisMonth.add(e.code());
+                    if (prize > 0) {
+                        double toLabs = prize * Math.min(1, labPile / pile);
+                        purses.put(e.code(), new Purse(toLabs, prize - toLabs));
+                        toLabsNow.merge(f, toLabs, Double::sum);
+                        pots.merge(f, prize - toLabs, Double::sum);
+                    }
                 }
             }
         }
@@ -543,17 +734,71 @@ public final class Research {
      * is what the screens read of them.
      */
     public void idleMonth(EnumMap<Field, Double> researchers) {
+        idleMonth(researchers, null, null);
+    }
+
+    /** The same with labs: every lab researcher is idle too, and a field with labs has a lab too many this month as month() counts it (labIdleMonths()). */
+    public void idleMonth(EnumMap<Field, Double> researchers, EnumMap<Field, Integer> labs, EnumMap<Field, Double> labResearchers) {
         foundThisMonth.clear();
         arrivedThisMonth.clear();
         researchersNow.clear();
         idleNow.clear();
         openNow.clear();
+        clearLabMonth();
+        cityShares.clear();
         for (Field f : Field.values()) {
             double people = sane(researchers == null ? null : researchers.get(f));
+            double labPeople = sane(labResearchers == null ? null : labResearchers.get(f));
             researchersNow.put(f, people);
             idleNow.put(f, people);
             openNow.put(f, 0);
+            recordLabs(f, labs == null ? null : labs.get(f), labPeople, labPeople);
         }
+    }
+
+    /** Forgets the labs' month: the shares, the researchers, the idle, the purses owed. */
+    private void clearLabMonth() {
+        labShares.clear();
+        labResearchersNow.clear();
+        labsIdleNow.clear();
+        toLabsNow.clear();
+        purses.clear();
+    }
+
+    /**
+     * Records a field's labs for the month: the researchers in them and the idle ones, and the count of consecutive months with a lab too many. A
+     * field has one when it has labs and the idle labs' researchers are at least LAB_ROOM_SHARE of one lab's (a lab nobody works in counts); a
+     * month without one, or a field without labs, zeroes the count.
+     */
+    private void recordLabs(Field f, Integer labCount, double labPeople, double labIdle) {
+        labResearchersNow.put(f, labPeople);
+        labsIdleNow.put(f, labIdle);
+        int n = labCount == null ? 0 : labCount;
+        if (n > 0 && labIdle >= LAB_ROOM_SHARE * labPeople / n) labIdleMonths.merge(f, 1, Integer::sum);
+        else labIdleMonths.remove(f);
+    }
+
+    /**
+     * A field's chase in a month: its open problems that the field's prize pays for (purseCovers(), at the post's cost at these wages) and that a
+     * team at its limit could finish before the world (beforeTheWorld()), with today's piles, least remaining work first, ties in the catalogue's
+     * order. A fresh list; empty for a prize of nothing, no wages (a post then costs nothing a number) and no field.
+     */
+    public List<Entry> chase(Field f, int month, double[] wagePerType) {
+        if (f == null) return new ArrayList<>();
+        double prize = prize(f), cost = postCost(f, wagePerType);
+        if (!(prize > 0) || !(cost > 0)) return new ArrayList<>();
+        return chaseOf(openProblems(f, month), month, prize, cost);
+    }
+
+    /** The chase among problems already open, in the catalogue's order (the sort is stable, so equal remaining work keeps that order). */
+    private List<Entry> chaseOf(List<Entry> open, int month, double prize, double cost) {
+        List<Entry> out = new ArrayList<>();
+        for (Entry e : open) {
+            double pile = pile(e.code());
+            if (purseCovers(prize, cost, e, pile) && beforeTheWorld(e, pile, month)) out.add(e);
+        }
+        out.sort(Comparator.comparingDouble(e -> remaining(e, pile(e.code()))));
+        return out;
     }
 
     /** The codes found here this month (month()), in the order found. Unmodifiable. */
@@ -581,6 +826,82 @@ public final class Research {
         return openNow.getOrDefault(f, 0);
     }
 
+    /* ----- the labs' month ----- */
+
+    /** The labs' researchers on a problem this month (month()): 0 where none worked on it. */
+    public double labShare(String code) {
+        return labShares.getOrDefault(code, 0.0);
+    }
+
+    /** The city's own researchers on a problem in the last month() (not the labs'): 0 where none worked on it. What labsWanted() reads. */
+    public double cityShare(String code) {
+        return cityShares.getOrDefault(code, 0.0);
+    }
+
+    /** A field's lab researchers this month, as month() was given them. */
+    public double labResearchers(Field f) {
+        return labResearchersNow.getOrDefault(f, 0.0);
+    }
+
+    /** A field's lab researchers this month that had nothing to chase: all of them when the chase was empty, else what the pour left over. */
+    public double labsIdle(Field f) {
+        return labsIdleNow.getOrDefault(f, 0.0);
+    }
+
+    /** The purse this month's finds in a field owed to the labs, all together (month()): the sum of the field's purses' labs' parts. */
+    public double toLabs(Field f) {
+        return toLabsNow.getOrDefault(f, 0.0);
+    }
+
+    /** This month's purses by the code found (month()), in the order found: only the finds made with a prize set. Unmodifiable. */
+    public Map<String, Purse> purses() {
+        return Collections.unmodifiableMap(purses);
+    }
+
+    /** The work the labs' researchers have piled on a problem, in researcher-years: 0 where none is worked on, it is known, or no lab worked on it. Never above pile(). */
+    public double labPile(String code) {
+        return labPiles.getOrDefault(code, 0.0);
+    }
+
+    /** The consecutive months a field has had a lab too many (month(), idleMonth()); 0 for a field that has not, and for one with no lab. */
+    public int labIdleMonths(Field f) {
+        return labIdleMonths.getOrDefault(f, 0);
+    }
+
+    /** Whether a field has had a lab too many for LAB_IDLE_MONTHS months running, so that one lab is to be shed. */
+    public boolean labTooMany(Field f) {
+        return labIdleMonths(f) >= LAB_IDLE_MONTHS;
+    }
+
+    /** A lab of the field has been shed (a later slice calls this): the count of months with a lab too many starts again from nothing. */
+    public void labShed(Field f) {
+        labIdleMonths.remove(f);
+    }
+
+    /* ----- the investors' questions ----- */
+
+    /**
+     * The labs investors want in a field in a month: labsFor() of the room on the chase list, the sum of what each problem on it can still take of
+     * its team cap, less the city's share of it in the last month(). The total wanted, not the ones to build.
+     */
+    public int labsWanted(Field f, int month, double[] wagePerType) {
+        double room = 0;
+        for (Entry e : chase(f, month, wagePerType)) room += Math.max(0, teamCap(e) - cityShare(e.code()));
+        return labsFor(room);
+    }
+
+    /** The problem a new lab would go for: the chase list's first, or null where there is none. */
+    public Entry labTarget(Field f, int month, double[] wagePerType) {
+        List<Entry> chase = chase(f, month, wagePerType);
+        return chase.isEmpty() ? null : chase.get(0);
+    }
+
+    /** What investors put up for one lab at the target (stake() of it at the field's post cost and its pile now): NaN where there is no target. */
+    public double labStake(Field f, int month, double[] wagePerType) {
+        Entry target = labTarget(f, month, wagePerType);
+        return target == null ? Double.NaN : stake(postCost(f, wagePerType), target, pile(target.code()));
+    }
+
     /* ----- what is kept ----- */
 
     /** The work piled on a problem, in researcher-years: 0 where none is worked on or it is known. */
@@ -598,9 +919,11 @@ public final class Research {
         return new LinkedHashMap<>(found);
     }
 
-    /** Whether the city has nothing of its own: no grant, no post, no work piled and nothing found (a city founded the default way, always). */
+    /** Whether the city has nothing of its own: no grant, no prize, no pot, no post, no work piled (the labs' either), no lab too many and nothing found (a city founded the default way, always). */
     public boolean isEmpty() {
-        return grants.values().stream().allMatch(g -> g == 0) && posts.values().stream().allMatch(p -> p == 0) && piles.isEmpty() && found.isEmpty();
+        return grants.values().stream().allMatch(g -> g == 0) && posts.values().stream().allMatch(p -> p == 0) && piles.isEmpty() && found.isEmpty()
+                && prizes.values().stream().allMatch(p -> p == 0) && pots.values().stream().allMatch(p -> p == 0) && labPiles.isEmpty()
+                && labIdleMonths.values().stream().allMatch(n -> n == 0);
     }
 
     /** The grants to save, by Field.name(); only those above nothing. A fresh map. */
@@ -615,6 +938,87 @@ public final class Research {
         Map<String, Integer> out = new LinkedHashMap<>();
         for (Field f : Field.values()) if (posts(f) > 0) out.put(f.name(), posts(f));
         return out;
+    }
+
+    /** The prizes to save, by Field.name(); only those above nothing. A fresh map. */
+    public Map<String, Double> prizesForSave() {
+        Map<String, Double> out = new LinkedHashMap<>();
+        for (Field f : Field.values()) if (prize(f) > 0) out.put(f.name(), prize(f));
+        return out;
+    }
+
+    /** The pots to save, by Field.name(); only those above nothing. A fresh map. */
+    public Map<String, Double> potsForSave() {
+        Map<String, Double> out = new LinkedHashMap<>();
+        for (Field f : Field.values()) if (pot(f) > 0) out.put(f.name(), pot(f));
+        return out;
+    }
+
+    /** The labs' part of the piles to save, by code. A fresh map. */
+    public Map<String, Double> labPilesForSave() {
+        return new TreeMap<>(labPiles);
+    }
+
+    /** The city's own researchers on each problem in the last month(), to save, by code (what labsWanted() reads after a reload). A fresh map. */
+    public Map<String, Double> citySharesForSave() {
+        return new TreeMap<>(cityShares);
+    }
+
+    /** The months in a row each field has had a lab too many, to save, by Field.name(); only those above nothing. A fresh map. */
+    public Map<String, Integer> labIdleMonthsForSave() {
+        Map<String, Integer> out = new LinkedHashMap<>();
+        for (Field f : Field.values()) if (labIdleMonths(f) > 0) out.put(f.name(), labIdleMonths(f));
+        return out;
+    }
+
+    /**
+     * Puts the prizes, the pots, the labs' piles, the city's shares and the counts of months with a lab too many back, replacing what there was
+     * (the load path, called AFTER restore(), whose piles the labs' part must sit within). An entry that is malformed is skipped, as restore() skips
+     * them: a field that is not one, an amount not finite or below nothing, a code the catalogue lacks, a lab's pile where no pile is, a count
+     * below one; a lab's pile above its pile is cut to it. The grant's posts are taken to be the posts restored, so that a draw before the next
+     * strike takes nothing. restore() alone leaves all of these as reset() does.
+     */
+    public void restorePrizes(Map<String, Double> prizes, Map<String, Double> pots, Map<String, Double> labPiles, Map<String, Double> cityShares,
+                              Map<String, Integer> labIdleMonths) {
+        this.prizes.clear();
+        this.pots.clear();
+        this.labPiles.clear();
+        this.cityShares.clear();
+        this.labIdleMonths.clear();
+        this.grantPosts.clear();
+        if (prizes != null) {
+            for (Map.Entry<String, Double> e : prizes.entrySet()) {
+                Field f = fieldOf(e.getKey());
+                if (f != null && e.getValue() != null) setPrize(f, e.getValue());
+            }
+        }
+        if (pots != null) {
+            for (Map.Entry<String, Double> e : pots.entrySet()) {
+                Field f = fieldOf(e.getKey());
+                if (f != null && e.getValue() != null && Double.isFinite(e.getValue()) && e.getValue() > 0) this.pots.put(f, e.getValue());
+            }
+        }
+        ResearchCatalog catalogue = ResearchCatalog.get();
+        if (labPiles != null) {
+            for (Map.Entry<String, Double> e : labPiles.entrySet()) {
+                if (e.getKey() == null || e.getValue() == null || catalogue.entry(e.getKey()) == null) continue;
+                Double pile = this.piles.get(e.getKey());
+                if (pile != null && Double.isFinite(e.getValue()) && e.getValue() > 0) this.labPiles.put(e.getKey(), Math.min(e.getValue(), pile));
+            }
+        }
+        if (cityShares != null) {
+            for (Map.Entry<String, Double> e : cityShares.entrySet()) {
+                if (e.getKey() == null || e.getValue() == null || catalogue.entry(e.getKey()) == null) continue;
+                if (Double.isFinite(e.getValue()) && e.getValue() > 0) this.cityShares.put(e.getKey(), e.getValue());
+            }
+        }
+        if (labIdleMonths != null) {
+            for (Map.Entry<String, Integer> e : labIdleMonths.entrySet()) {
+                Field f = fieldOf(e.getKey());
+                if (f != null && e.getValue() != null && e.getValue() > 0) this.labIdleMonths.put(f, e.getValue());
+            }
+        }
+        for (Field f : Field.values()) if (posts(f) > 0) grantPosts.put(f, posts(f));
     }
 
     /**
@@ -659,16 +1063,25 @@ public final class Research {
         }
     }
 
-    /** A reform of the money (Game.redenominate()): every grant times `scale`. The posts, the work piled and the finds are not money and stay as they are. */
+    /** A reform of the money (Game.redenominate()): every grant, prize and pot times `scale`. The posts, the work piled and the finds are not money and stay as they are. */
     public void redenominate(double scale) {
         grants.replaceAll((field, grant) -> grant * scale);
+        prizes.replaceAll((field, prize) -> prize * scale);
+        pots.replaceAll((field, pot) -> pot * scale);
     }
 
-    /** A new game: no grant, no post, no work piled, nothing found and no event (Game.buildWorld()). */
+    /** A new game: no grant, no prize, no pot, no post, no work piled, nothing found, no lab too many and no event (Game.buildWorld()). */
     public void reset() {
         grants.clear();
+        prizes.clear();
+        pots.clear();
         posts.clear();
+        grantPosts.clear();
         piles.clear();
+        labPiles.clear();
+        cityShares.clear();
+        labIdleMonths.clear();
+        clearLabMonth();
         found.clear();
         foundThisMonth.clear();
         arrivedThisMonth.clear();
