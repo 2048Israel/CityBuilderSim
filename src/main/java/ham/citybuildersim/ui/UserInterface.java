@@ -3980,6 +3980,8 @@ public class UserInterface extends Application {
         governmentScreen.forget();
         tradeScreen.forget();
         policyScreen.forget();
+        // ...and Rankings (KP7): its kept page is the last city's (Household money's pool is forgotten with People's, above).
+        rankingsScreen.forget();
         // ...and the header and the rail hand the next city none of this one's nodes (UP2).
         forgetChrome();
     }

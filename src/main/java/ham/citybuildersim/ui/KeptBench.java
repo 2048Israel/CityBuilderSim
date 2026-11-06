@@ -3768,6 +3768,7 @@ public final class KeptBench {
 
     // (KP7, part 2: the show hands of Household money and the Rankings tab, slices A and B's, are added here by the harness's second half.)
 
+    /* ==============================================================
     /* =====================================================================
        THE RANKINGS TAB (KP7, slice B): the tab as it opens, kept and built new, the hands on what reshapes it (a board, the money, the
        prices and the conversion, Now / Your age, a measure, a filter and a view, a pin, a place's drawer), the read of the saved
@@ -3961,5 +3962,102 @@ public final class KeptBench {
     /** The Rankings tab forgotten, as another city opened would leave it: nothing kept, nothing just landed. */
     public void forgetRankings() {
         ui.rankingsScreen.forget();
+=======
+       HOUSEHOLD MONEY (KP7, slice A): People's second page, kept and built new, the hands on what reshapes it (the view, a cell of
+       the grid opened by its key, the city's month's statement), the page laid out narrower than the books sit beside the grid at,
+       and the real show method
+       ===================================================================== */
+
+    /** Household money as it opens: no cell open, the view "One household", the city's month's statement folded. */
+    public Page householdMoney() {
+        return householdMoney("Household money");
+    }
+
+    /** ...under a name of the harness's own. */
+    public Page householdMoney(String name) {
+        PeopleScreen s = ui.peopleScreen;
+        return new Page(name, "showHouseholdMenu", () -> s.moneyPool, pool -> timed(pool, s::drawHousehold), () -> {
+            s.forget();
+            s.openCell = "";
+            s.householdPerFamily = true;
+            s.revealOpened = false;
+            s.detailsOpen.remove("statement");
+            householdColumnWidth(0);
+        });
+    }
+
+    /** The page's two views, in the strip's order. */
+    public static List<String> householdViews() {
+        return List.of("One household", "All of them");
+    }
+
+    /** The view picked, as the strip's chip would put it (the next draw shows it). */
+    public void householdView(String view) {
+        ui.peopleScreen.householdPerFamily = "One household".equals(view);
+    }
+
+    /**
+     * The cells of the grid that can be opened on the city as it is, by the key the grid opens them under, in the grid's order: a
+     * family's cell with anybody in it ("tier:SHAPE", the tier's number), then the rows below the rule ("OUT:" and the ledger's key -
+     * the retired, the out of work, the students, the orphans, the prison).
+     */
+    public List<String> householdCells() {
+        ham.citybuildersim.HouseholdAccounts hh = ui.game.getHouseholds();
+        ham.citybuildersim.HouseholdBalance bal = ui.game.getHouseholdBalance();
+        ham.citybuildersim.FamilyModel families = ui.game.getFamilies();
+        List<String> out = new ArrayList<>();
+        for (ham.citybuildersim.FamilyStructure shape : ham.citybuildersim.FamilyStructure.values()) {
+            if (shape.isRetired()) continue;
+            for (int t = 0; t < ham.citybuildersim.HouseholdAccounts.RETIRED; t++) {
+                if (hh.statementFor(families, shape, ham.citybuildersim.PayTier.values()[t]).households() >= .5) out.add(t + ":" + shape.name());
+            }
+        }
+        for (ham.citybuildersim.Household h : ui.peopleScreen.belowTheRule(bal, families)) out.add("OUT:" + h.key());
+        return out;
+    }
+
+    /** A cell of the grid opened by its key (see householdCells()), or none ("" - the quiet books), as a click on it would (the next draw shows it). */
+    public void householdCell(String key) {
+        ui.peopleScreen.openCell = key;
+        ui.peopleScreen.revealOpened = !key.isEmpty();
+    }
+
+    /** The cell the grid has open now: a draw closes one whose households have gone, so this is the answer after a draw. */
+    public String householdOpenCell() {
+        return ui.peopleScreen.openCell;
+    }
+
+    /** The city's month's statement ("the month as a statement") opened or closed, as a click on its toggle would. */
+    public void householdStatement(boolean open) {
+        fold(ui.peopleScreen.detailsOpen, "statement", open);
+    }
+
+    /**
+     * The menu column laid out `width` wide (its side padding takes the rest of WIDTH) or, for 0 or less, at WIDTH again: the books
+     * sit beside the grid from PeopleScreen.BESIDE and stack under it below that. The next pass lays the page out at it.
+     */
+    public void householdColumnWidth(double width) {
+        double side = width <= 0 ? 0 : Math.max(0, (WIDTH - width) / 2);
+        column.setPadding(new Insets(8, side, 14, side));
+    }
+
+    /** Whether the open cell's books sit beside the grid on the page as laid out, or null when the page has no books pane. */
+    public Boolean householdBeside() {
+        List<PeopleScreen.Books> found = new ArrayList<>();
+        each(column, n -> {
+            if (n instanceof PeopleScreen.Books b) found.add(b);
+        });
+        return found.isEmpty() ? null : found.get(0).beside(found.get(0).getWidth());
+    }
+
+    /** Household money shown through its real show method, as the rail's tab or a month landing shows it (the chrome, then the page kept). */
+    public void showHousehold() {
+        ensureWindow();
+        ui.peopleScreen.showHouseholdMenu();
+    }
+
+    /** Household money forgotten, as another city opened would leave it: nothing kept (People's page too, which shares the screen's forget()). */
+    public void forgetHousehold() {
+        ui.peopleScreen.forget();
     }
 }
