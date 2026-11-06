@@ -1428,20 +1428,22 @@ public class KeptCheck {
     }
 
     /**
-     * ...and, for a page with pictures painted on canvases, which no signature holds (KP7, the Rankings table), the pixels too: the signature's difference
-     * first, else the pixels' (no pixel more than SHADE_LEVELS apart, and at most SHADED_SHARE of them apart at all).
+     * ...and, for a page with pictures painted on canvases, which no signature holds (KP7, the Rankings table), the canvases' pixels too: the signature's
+     * difference first, else the canvases' (no pixel more than SHADE_LEVELS apart, and at most SHADED_SHARE of them apart at all). The canvases alone
+     * (KeptBench.canvasPixels()): the rest of the page is the signature's, and a snapshot of the whole page at every choice wore out the renderer's
+     * texture pool on the Rankings tab's long list.
      */
     static String againstNew(KeptBench bench, KeptBench.Page page, boolean pixels) throws Exception {
         bench.passes();
         bench.finishPageAnimations();
         bench.settle();
         List<String> kept = bench.signature();
-        int[] keptPx = pixels ? bench.pixels() : null;
+        int[] keptPx = pixels ? bench.canvasPixels() : null;
         bench.showFresh(page);
         bench.finishPageAnimations();
         bench.settle();
         List<String> fresh = bench.signature();
-        int[] freshPx = pixels ? bench.pixels() : null;
+        int[] freshPx = pixels ? bench.canvasPixels() : null;
         bench.restoreKeptPage();
         String d = firstDifference(kept, fresh);
         if (d == null && pixels && !alike(keptPx, freshPx)) d = "the pixels differ: " + pixelDifference(keptPx, freshPx);

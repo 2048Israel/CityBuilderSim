@@ -3801,6 +3801,43 @@ public final class KeptBench {
         return null;
     }
 
+    /**
+     * The page's canvases as one picture, in the order the page holds them, one under another ({width, height, then the pixels},
+     * KeptCheck.alike()'s form; the empty part of a narrower canvas's row is nought): what no signature reads - the Rankings
+     * table's tiles and its rank line. A canvas is a few hundred pixels tall where the page is thousands, so this can be taken at
+     * every choice; a snapshot of the whole page at each of the Rankings tab's choices wore out the renderer's texture pool on its
+     * long list, and every snapshot after it failed (a NullPointerException in D3DTexture on the render thread, the run of 2026-11-06).
+     */
+    public int[] canvasPixels() {
+        List<javafx.scene.canvas.Canvas> found = new ArrayList<>();
+        each(column, n -> {
+            if (n instanceof javafx.scene.canvas.Canvas c && c.isVisible() && c.getWidth() >= 1 && c.getHeight() >= 1) found.add(c);
+        });
+        List<int[]> shots = new ArrayList<>();
+        int w = 0, h = 0;
+        for (javafx.scene.canvas.Canvas c : found) {
+            WritableImage img = c.snapshot(null, null);
+            int cw = (int) img.getWidth(), ch = (int) img.getHeight();
+            int[] px = new int[cw * ch];
+            img.getPixelReader().getPixels(0, 0, cw, ch, PixelFormat.getIntArgbInstance(), px, 0, cw);
+            shots.add(new int[]{cw, ch});
+            shots.add(px);
+            w = Math.max(w, cw);
+            h += ch;
+        }
+        int[] out = new int[2 + w * h];
+        out[0] = w;
+        out[1] = h;
+        int row = 0;
+        for (int i = 0; i < shots.size(); i += 2) {
+            int cw = shots.get(i)[0], ch = shots.get(i)[1];
+            int[] px = shots.get(i + 1);
+            for (int y = 0; y < ch; y++) System.arraycopy(px, y * cw, out, 2 + (row + y) * w, cw);
+            row += ch;
+        }
+        return out;
+    }
+
     /** The first measure line on the Rankings tab's measures column that is not the one shown (the shown one is lit and has no hover): an HBox with a mouse-entered and a mouse-exited. */
     private Node rankingsLine() {
         return find(column, HBox.class, h -> h.getOnMouseEntered() != null && h.getOnMouseExited() != null && h.getOnMouseClicked() != null
