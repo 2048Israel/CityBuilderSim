@@ -1,8 +1,8 @@
 # UP7 - the speed reading as the reached speed alone; the drawer's bar and the construction tab kept ({next}, 2026-11-06)
 
-**WHERE IT STANDS** (2026-11-06): the code in and reviewed (b1f1470d, 7babacf3); `--pick` on the branch (§4).
-Built on `origin/batch/UP6` at its ship file (2c8040a9, RL1); the ship file goes last, once UP6 is on main and
-merged in.
+**WHERE IT STANDS** (2026-11-06): ready, see the ship file. The code in and reviewed (b1f1470d, 7babacf3). Built on
+`origin/batch/UP6` at its ship file (2c8040a9, RL1); UP6 landed and main (c7ad4d9a) merged in (9be237da); `--pick`
+on the merge exit 3, main's recorded MapCheck and KeptCheck reds only; `git merge-tree` with origin/main clean.
 
 The batch's record. `QUEUE.md`'s UP7 row and [UP7.md](UP7.md): Jerus's call on UP2's ★1 (2026-10-23, "Reached
 speed alone, amber"); UP2's ★2-★4 stay as built. Lane 2 (screens). Opus wrote the brief, reviewed the diff and
@@ -54,7 +54,10 @@ writes into the scratch folder.
   red only ("a month's redraw after each choice hands back nine in ten...", `docs/notes/gate.txt`, not this
   batch's). `KEPT_ALL_CHROME_MS` read 9.0 ms (soft) on one run and 7.8 on the other; that section does not draw the
   bar or the tab.
-- **`--pick`** on the branch: see WHERE IT STANDS.
+- **`--pick`** on the merge with main c7ad4d9a: 7 of 181 harnesses (BuildMenuCheck, ClockCheck, KeptCheck,
+  LandCheck, MapCheck, TimingCheck, ZoningViewCheck), exit 3: known red only, MapCheck and KeptCheck as
+  `docs/notes/gate.txt` records them (not this batch's code: MapCheck's yard and its timing, KeptCheck's
+  nine-in-ten on a page this batch does not draw); two timing assertions soft. Stale 0 firm.
 
 ## 5. For Jerus
 
