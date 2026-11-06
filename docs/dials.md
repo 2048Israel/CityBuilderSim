@@ -2,9 +2,9 @@
 
 Generated 2026-11-05 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**5,364 constants in 510 files.**
+**5,380 constants in 512 files.**
 
-## model (2624 constants)
+## model (2634 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -249,11 +249,11 @@ Generated 2026-11-05 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 71 | `BuildingManager.MATERIALS_WORLD_PRICE` | `Good.MATERIALS.worldImportPrice()` | What a unit of construction material costs, in the city's money. |
-| 5073 | `BuildingManager.CREW_SCALE_EXPONENT` | `0.70` | The power of a building's construction points its crew grows by: 1 - Bromilow's B. |
-| 5742 | `BuildingManager.DEATH_CARE_FIRST` | `"Death care first while the dead wait"` | The page's words for the rule, which Plan.line() opens with: what it does and when. |
-| 5924 | `BuildingManager.BUILDERS_FIRST` | `"The builders' own depots first"` | The page's words for the rule, which Plan.line() opens with when a depot is on site. |
-| 7090 | `BuildingManager.BASE_MATERIALS` | `36` | The public works yard: it produces this many units of materials a month on its own. |
-| 8326 | `BuildingManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 5094 | `BuildingManager.CREW_SCALE_EXPONENT` | `0.70` | The power of a building's construction points its crew grows by: 1 - Bromilow's B. |
+| 5763 | `BuildingManager.DEATH_CARE_FIRST` | `"Death care first while the dead wait"` | The page's words for the rule, which Plan.line() opens with: what it does and when. |
+| 5945 | `BuildingManager.BUILDERS_FIRST` | `"The builders' own depots first"` | The page's words for the rule, which Plan.line() opens with when a depot is on site. |
+| 7111 | `BuildingManager.BASE_MATERIALS` | `36` | The public works yard: it produces this many units of materials a month on its own. |
+| 8347 | `BuildingManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### BuildingVisual.java ([map](map/BuildingVisual.md))
 
@@ -325,8 +325,8 @@ Generated 2026-11-05 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 1255 | `BuildingsTemplate.TONNES_PER_WORKER` | `20` | One worker's monthly travel, as tonnes of freight. |
-| 1258 | `BuildingsTemplate.WORKERS_PER_HOME` | `1.2` | A home's monthly travel, as workers. |
+| 1287 | `BuildingsTemplate.TONNES_PER_WORKER` | `20` | One worker's monthly travel, as tonnes of freight. |
+| 1290 | `BuildingsTemplate.WORKERS_PER_HOME` | `1.2` | A home's monthly travel, as workers. |
 
 ### BusinessDebtManager.java ([map](map/BusinessDebtManager.md))
 
@@ -2613,8 +2613,8 @@ Generated 2026-11-05 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 30 | `Recipe.DEFAULT_ID` | `"default"` | The id of the recipe a template with no list has: its top level. |
-| 33 | `Recipe.DEFAULT_SINCE` | `"1900"` | The year a template's own top level is known from: the start (Equipment's "1900"). |
+| 31 | `Recipe.DEFAULT_ID` | `"default"` | The id of the recipe a template with no list has: its top level. |
+| 34 | `Recipe.DEFAULT_SINCE` | `"1900"` | The year a template's own top level is known from: the start (Equipment's "1900"). |
 
 ### Recording.java ([map](map/Recording.md))
 
@@ -2691,6 +2691,21 @@ Generated 2026-11-05 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 21 | `ReplayGraphs.YEAR` | `12` | The months a year of output is taken over: 12 - the header's own "a year", and it takes the month-to-month wobble out of a line that is meant to be soft. |
+
+### ResearchCatalog.java ([map](map/ResearchCatalog.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 36 | `ResearchCatalog.FILE_NAME` | `"research.json"` |  |
+| 47 | `ResearchCatalog.WORK_RULE_YEAR` | `1950` | The year the work rule is stated for: 1950, where the first study's catalogue begins. |
+| 50 | `ResearchCatalog.WORK_BUILDING` | `400` | Researcher-years a building took at WORK_RULE_YEAR (est.; [BJVW]). |
+| 53 | `ResearchCatalog.WORK_EQUIPMENT` | `400` | Researcher-years a piece of equipment took at WORK_RULE_YEAR (est.; [BJVW]). |
+| 56 | `ResearchCatalog.WORK_RECIPE` | `200` | Researcher-years a recipe took at WORK_RULE_YEAR (est.; [BJVW]). |
+| 59 | `ResearchCatalog.WORK_DRUG` | `500` | Researcher-years a drug took at WORK_RULE_YEAR, clinical trials included (est.; [BJVW]). |
+| 62 | `ResearchCatalog.WORK_GROWTH` | `0.053` | How much more research costs each year, as a fraction, in every field but medicine: 5.3% (the US aggregate, [BJVW]). |
+| 65 | `ResearchCatalog.MEDICINE_WORK_GROWTH` | `0.035` | The same in medicine, where a drug's trials make the cost grow more slowly: 3.5% a year ([BJVW]). |
+| 91 | `ResearchCatalog.KINDS` | `List.of("building", "equipment", "recipe", "drug")` | What a discovery can unlock, as the file spells it; an entry names one or two. |
+| 129 | `ResearchCatalog.Holder.INSTANCE` | `load()` |  |
 
 ### Resource.java ([map](map/Resource.md))
 
@@ -5194,7 +5209,7 @@ Generated 2026-11-05 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 723 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 988 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1416 constants)
+## harnesses (1422 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -6847,8 +6862,8 @@ Generated 2026-11-05 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 70 | `RecipeCheck.DRIVE` | `EquipmentCheck.DRIVE` |  |
-| 269 | `RecipeCheck.WORKS` | `""" {"buildings": [ {"id": 1, "name": "Test Works", "category": "INDUSTRIAL", "sector":...` |  |
-| 283 | `RecipeCheck.BAD` | `""" {"buildings": [ {"id": 1, "name": "Bad Works", "category": "INDUSTRIAL", "sector": ...` |  |
+| 272 | `RecipeCheck.WORKS` | `""" {"buildings": [ {"id": 1, "name": "Test Works", "category": "INDUSTRIAL", "sector":...` |  |
+| 286 | `RecipeCheck.BAD` | `""" {"buildings": [ {"id": 1, "name": "Bad Works", "category": "INDUSTRIAL", "sector": ...` |  |
 
 ### RefineryCheck.java ([map](map/RefineryCheck.md))
 
@@ -6904,6 +6919,17 @@ Generated 2026-11-05 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 61 | `ReplayCheck.GROWN` | `48` | The month the section 1 to 4 city is grown to before it is recorded. |
 | 64 | `ReplayCheck.GROWN_SIX` | `36` | The month the section 6 cities are grown to. |
+
+### ResearchCheck.java ([map](map/ResearchCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 87 | `ResearchCheck.DATES` | `List.of(new Spot("E1", 1952, 11, true), new Spot("E5", 1956, 4, true), new Spot("E12", ...` | research-design.md 4 and research-1900.md 8: the World column's month where it names one, the prototype's where it does not. |
+| 132 | `ResearchCheck.MONTH_KNOWN` | `30` | The entries whose World column names a month: the table's count. |
+| 135 | `ResearchCheck.PREFIXES` | `{ "E", "M", "B", "L", "PE", "PM", "PB", "PL" }` | The prefixes in the studies' order, and how many entries each has. |
+| 136 | `ResearchCheck.PREFIX_COUNTS` | `{ 18, 10, 8, 5, 27, 6, 3, 12 }` |  |
+| 139 | `ResearchCheck.WORK` | `{ { "E1", 444 }, { "E5", 545 }, { "E12", 1013 }, { "E18", 2998 }, { "M3", 594 }, { "M10...` | Work typed from the tables (researcher-years at the date); PL1 and PL12 are the 8.4 text's, L5 the 8.6 rule's. |
+| 522 | `ResearchCheck.CODED` | `new TreeMap<>(Map.ofEntries(Map.entry(11, "PE1"), Map.entry(119, "PE4"), Map.entry(91, ...` | research-1900.md 1.2 and the R2 brief: the templates dated by a code, id to the entry that opens each; typed here as the specification. |
 
 ### RestaurantsCheck.java ([map](map/RestaurantsCheck.md))
 

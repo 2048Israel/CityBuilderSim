@@ -298,7 +298,8 @@ adds its line here, not in `CLAUDE.md`.
                                    trucks, the quote), the homes' lamp oil and coal, and the money's audit
                                    with each on
         Equipment.java             a piece of equipment a template carries (R1, 2026-11-05; research-design
-                                   2.1-2.2): its id, since (a year, or a catalogue code unknown until R2),
+                                   2.1-2.2): its id, since (a year, or a catalogue code: since R2 known
+                                   from its entry's month in research.json),
                                    the 1900 form it ends (STEAM, FARM_HORSES, CART_HORSES), what fitting it
                                    buys, its work and life; read from buildings.json's "equipment"; since
                                    R1c a piece may end no form, its template's recipe piece
@@ -313,6 +314,13 @@ adds its line here, not in `CLAUDE.md`.
         RecipeCheck.java           R1c's recipes: the data read, a default city choosing nothing, the best
                                    recipe at the city's prices, known and runnable, the mix, the piece's
                                    gain, the save, New Game, and the shipped rows in a 1900 town
+        ResearchCatalog.java       the research catalogue (R2, 2026-11-05; research-design 4, research-1900
+                                   8): research.json's 89 discoveries, each with its field, kind, history's
+                                   month (the law rows PolicyDates' own), what it needs, its fee and its
+                                   work by the study's rule; knownFrom() the one reading of a "since"
+        ResearchCheck.java         R2's catalogue: the file read whole, the needs dated no later, history's
+                                   months against the tables and PolicyDates, the work rule, the reader's
+                                   refusals, buildings.json's codes and each known from its entry's month
         EquipmentForms.java        R0c's shares set from the buildings still without the piece that ends
                                    each form (BuildingsStacks' unfitted counts, saved by template id),
                                    weighted by draw, land or truck room, only where a count is or was;
@@ -875,6 +883,7 @@ adds its line here, not in `CLAUDE.md`.
                                    between month pairs, and where industry and the homes stand
         tools/                     the index generators, the two look-up tools, Stale (the prose check), Names (a branch's names checked, RV1), ManualToMarkdown (the manual into docs/) and LandTable (world/land-2024.json from tools/world/land.tsv, WN5); nothing in the game uses them
     src/main/resources/buildings.json    the balance file (ids permanent); consumption.json the basket;
+                                         research.json the research catalogue (R2; codes permanent);
                                          fonts/ the eight IBM Plex files and their licence, OFL.txt (0.7.21);
                                          conversion-saves.json the five saves' land ConversionCheck converts (0.7.66);
                                          icons/ the game's icon (BR1, 2026-10-27): icon.svg and icon-small.svg,

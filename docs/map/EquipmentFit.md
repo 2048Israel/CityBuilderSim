@@ -23,9 +23,9 @@
 > Two layers: a pure core (annuityFactor(), steamGain(), cartGain(), cost(), judge()) that takes its prices as arguments, so a harness can move
 > one across the break-even, and the game layer (verdict(), rank()) that reads the city's.
 
-**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (9), [Equipment](Equipment.md) (9), [Game](Game.md) (7), [SpreadPlanner](SpreadPlanner.md) (6), [BusinessInvestment](BusinessInvestment.md) (5), [Sector](Sector.md) (4), [Good](Good.md) (4), [BuildingsStacks](BuildingsStacks.md) (3), [Haulage](Haulage.md) (2), [HydroSites](HydroSites.md) (1), [Markets](Markets.md) (1), [Recipes](Recipes.md) (1), [CityCalendar](CityCalendar.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [Fittings](Fittings.md) (1)
+**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (9), [Equipment](Equipment.md) (9), [Game](Game.md) (7), [SpreadPlanner](SpreadPlanner.md) (6), [BusinessInvestment](BusinessInvestment.md) (5), [Sector](Sector.md) (4), [Good](Good.md) (4), [BuildingsStacks](BuildingsStacks.md) (3), [Haulage](Haulage.md) (2), [HydroSites](HydroSites.md) (1), [Markets](Markets.md) (1), [Recipes](Recipes.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [Fittings](Fittings.md) (1)
 
-**Used by (5):** [EquipmentCheck](EquipmentCheck.md), [FittingCheck](FittingCheck.md), [Game](Game.md), [RecipeCheck](RecipeCheck.md), [SectorScreen](SectorScreen.md)
+**Used by (6):** [EquipmentCheck](EquipmentCheck.md), [FittingCheck](FittingCheck.md), [Game](Game.md), [RecipeCheck](RecipeCheck.md), [ResearchCheck](ResearchCheck.md), [SectorScreen](SectorScreen.md)
 
 ## Sections
 
@@ -39,7 +39,7 @@
 | line | constant | says |
 |---:|---|---|
 | 40 | `EquipmentFit.Kind.FITTED` | No building of the stack lacks the piece. |
-| 42 | `EquipmentFit.Kind.NOT_KNOWN` | Its "since" is not known in the city's year: a year not yet come, or a catalogue code (the tractor's PE14, always, in this build). |
+| 42 | `EquipmentFit.Kind.NOT_KNOWN` | Its "since" is not known at the city's month: a year not yet come, or a catalogue code not yet discovered (the tractor's PE14 is June 1917, research.json). |
 | 44 | `EquipmentFit.Kind.PAYS` | Steps 3 and 4 both hold: over its life it earns back its cost, and a month's gain carries the interest hurdle on its whole cost. |
 | 46 | `EquipmentFit.Kind.NOT_YET` | Either step fails (or its gain or cost cannot be had): earnsBack, over the cost, says how far short. |
 
@@ -67,8 +67,8 @@
 | 92 | 4 | `public static double steamGain(BuildingsTemplate t, double coalPrice, double powerPrice)` | The electric drive's gain a month on one building (step 1): the steam coal its engine would burn at nameplate (steamCoalTonnes()) at the price of a tonne, less the grid power it would draw instead (the same units) at ... |
 | 102 | 3 | `public static double cartGain(double truckRoom, double teamsPerTonne, double trucksPerTonne)` | The motor truck's gain a month on one depot (step 1): the tonnes its truck room carries a month at Haulage's own tonnes a truck, at what a tonne's city leg costs to run on teams (Haulage.horseEstimate()) less on truck... |
 | 107 | 5 | `public static double cost(Equipment piece, ToDoubleFunction<Good> price, double pointPrice)` | What fitting one building costs (step 2): each good the piece buys at its price, plus the piece's work at the price of a point. |
-| 114 | 4 | `private static Kind settled(Equipment piece, int year, int unfitted)` | FITTED when no building of the stack lacks the piece, NOT_KNOWN when it is not known in the year, else null: the two verdicts that price nothing. |
-| 128 | 13 | `public static Verdict judge(Equipment piece, BuildingsTemplate t, int year, int unfitted, double gain, double cost, double annu...` | The verdict from the four steps, given the figures (a harness's, or the game layer's). |
+| 114 | 4 | `private static Kind settled(Equipment piece, int month, int unfitted)` | FITTED when no building of the stack lacks the piece, NOT_KNOWN when it is not known at the game month, else null: the two verdicts that price nothing. |
+| 128 | 13 | `public static Verdict judge(Equipment piece, BuildingsTemplate t, int month, int unfitted, double gain, double cost, double ann...` | The verdict from the four steps, given the figures (a harness's, or the game layer's). |
 
 ### THE GAME LAYER: the city's prices, read on demand (lines 142-280)
 
@@ -76,7 +76,7 @@
 |---:|---:|---|---|
 | 145 | 4 | `private static double cityPrice(Game game, Good good)` | The city's price of a good: what the planners weigh it at (SpreadPlanner.cityValue() of its market); 0 for none. |
 | 158 | 13 | `private static double gainOf(Game game, BuildingsTemplate t, Equipment piece)` | One building's gain a month from a piece, at the city's prices: the electric drive's from the coal's and the grid's price (the unit price the sectors are billed, EconomyManager.getPricePerWatt()), the motor truck's fr... |
-| 180 | 3 | `public static Verdict verdict(Game game, BuildingsStacks stack, Equipment piece)` | The verdict on ONE building of a stack for a piece: FITTED when no building of the stack lacks it, NOT_KNOWN when it is not known in the city's year, else its gain and cost at the city's prices (the cost's work at wha... |
+| 180 | 3 | `public static Verdict verdict(Game game, BuildingsStacks stack, Equipment piece)` | The verdict on ONE building of a stack for a piece: FITTED when no building of the stack lacks it, NOT_KNOWN when it is not known in the city's month, else its gain and cost at the city's prices (the cost's work at wh... |
 | 190 | 3 | `public static Verdict verdictForNew(Game game, BuildingsTemplate t, Equipment piece)` | The verdict on a NEW building for a piece (R1b; research-design 2.2 step 6, "New buildings come with every piece that pays"): the same figures and the same judgement as verdict() for one building that lacks the piece ... |
 | 195 | 14 | `private static Verdict priced(Game game, BuildingsTemplate t, Equipment piece, int unfitted)` | verdict()'s and verdictForNew()'s one pricing: the template, the piece and how many of the buildings asked about lack it (0 for none: FITTED). |
 | 219 | 14 | `public static List<Verdict> rank(Game game, Sector sector)` | Every piece that pays on the sector's stacks, best first: for each stack of the sector with a building unfitted that is not already being fitted (the unfitted count less the fittings on site, R1b), each such piece who... |

@@ -1,4 +1,4 @@
-# RecipeCheck.java - 1,158 lines · 40 methods · 3 constants · harnesses
+# RecipeCheck.java - 1,168 lines · 41 methods · 3 constants · harnesses
 
 `ham/citybuildersim/RecipeCheck.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
@@ -19,7 +19,7 @@
 >      cost with the power a works makes and its consumables; two recipes differing in one input flip with the price of it either side of the
 >      break-even; a tie keeps the default and then the file's order; and in the city, the template's figures after the choice are the chosen
 >      recipe's, from the driver called outright and from the month
->   4. KNOWN AND RUNNABLE: a recipe whose since is after the city's year, or a code, is never chosen; on a template with a recipe piece the unfitted
+>   4. KNOWN AND RUNNABLE: a recipe whose since is after the city's month, or a code not in the catalogue, is never chosen; on a template with a recipe piece the unfitted
 >      part never runs a recipe that needs it, the fitted part never runs one that needs nothing (even when that earns more), and a part with
 >      none it can run runs the default
 >   5. THE MIX: of five buildings, two unfitted, the template's makes and uses are the weighted mean of the two recipes, its posts and its draw
@@ -32,8 +32,8 @@
 >      not strike them again from the loaded prices; the next month strikes them afresh, and an unbroken town and its reloaded twin run the same
 >   8. A GAME THAT PLAYED A 1900 TOWN, then founded the default way, keeps no choice and no template off its top level
 >   9. THE SHIPPED ROWS (R1c's data, buildings.json): in a town founded the 1900 way every template the file gives recipes has the choice read, its
->      unfitted part runs a recipe that needs nothing and is known in 1900 and its fitted part one that needs the piece (the farms' tractor is a
->      code, so theirs runs the default), each the best its part can run at the city's prices by the model's own value(), and its figures are
+>      unfitted part runs a recipe that needs nothing and is known in 1900 and its fitted part one that needs the piece (the farms' tractor is
+>      PE14's, June 1917, so theirs runs the default in 1900), each the best its part can run at the city's prices by the model's own value(), and its figures are
 >      the mix; the Oxygen Steel Shop's unfitted part runs the Bessemer converter and its fitted part the open hearth; the Pulp Mill, with no
 >      piece, cannot run kraft before kraft's year and can from it, and runs the best it can; the farms buy no fuel on horses and the template's
 >      fuel times the farms standing in a default town; each recipe piece is priced (PAYS or NOT_YET, its gain Recipes.gainOf()), never
@@ -44,30 +44,30 @@
 > use has no shipped row), the counts are set on the stacks, and each figure is asserted against the recipes' own and the model's functions. The towns
 > of 1 to 8 are 1900 villages that meet the shipped rows too, so each of their fixtures asks about its own template (choiceOf()), and 9 reads the rows.
 
-**Uses:** [Recipes](Recipes.md) (115), [Good](Good.md) (106), [Recipe](Recipe.md) (75), [BuildingsTemplate](BuildingsTemplate.md) (55), [EquipmentFit](EquipmentFit.md) (33), [Game](Game.md) (32), [JobType](JobType.md) (25), [EquipmentCheck](EquipmentCheck.md) (20), [Equipment](Equipment.md) (12), [BuildingsStacks](BuildingsStacks.md) (9), [FittingCheck](FittingCheck.md) (7), [Sector](Sector.md) (7), [GameFiles](GameFiles.md) (7), [Founding](Founding.md) (4), [CityCalendar](CityCalendar.md) (4), [PriceLevel](PriceLevel.md) (3), [BuildingType](BuildingType.md) (3), [Forms1900Check](Forms1900Check.md) (2), [BuildingCatalog](BuildingCatalog.md) (2), [ProcessingSector](ProcessingSector.md) (1), [ExtractionSector](ExtractionSector.md) (1)
+**Uses:** [Recipes](Recipes.md) (115), [Good](Good.md) (106), [Recipe](Recipe.md) (76), [BuildingsTemplate](BuildingsTemplate.md) (55), [EquipmentFit](EquipmentFit.md) (33), [Game](Game.md) (32), [JobType](JobType.md) (25), [EquipmentCheck](EquipmentCheck.md) (20), [Equipment](Equipment.md) (12), [BuildingsStacks](BuildingsStacks.md) (9), [FittingCheck](FittingCheck.md) (7), [Sector](Sector.md) (7), [GameFiles](GameFiles.md) (7), [PolicyDates](PolicyDates.md) (5), [Founding](Founding.md) (4), [CityCalendar](CityCalendar.md) (4), [PriceLevel](PriceLevel.md) (3), [BuildingType](BuildingType.md) (3), [Forms1900Check](Forms1900Check.md) (2), [BuildingCatalog](BuildingCatalog.md) (2), [ResearchCatalog](ResearchCatalog.md) (2), [ProcessingSector](ProcessingSector.md) (1), [ExtractionSector](ExtractionSector.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
 | 143 | · helpers |
-| 267 | 1. the catalog reads recipes |
-| 415 | 2. a city founded the default way chooses nothing |
-| 456 | 3. a city founded the 1900 way runs the best recipe at its prices |
-| 566 | 4. known and runnable |
-| 652 | 5. the mix |
-| 745 | 6. the fit's gain for a recipe piece |
-| 816 | 7. save and load |
-| 897 | 8. a Game that played a 1900 town, then founded the default way |
-| 929 | 9. the shipped rows |
+| 270 | 1. the catalog reads recipes |
+| 419 | 2. a city founded the default way chooses nothing |
+| 460 | 3. a city founded the 1900 way runs the best recipe at its prices |
+| 570 | 4. known and runnable |
+| 661 | 5. the mix |
+| 754 | 6. the fit's gain for a recipe piece |
+| 825 | 7. save and load |
+| 906 | 8. a Game that played a 1900 town, then founded the default way |
+| 938 | 9. the shipped rows |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 70 | `RecipeCheck.DRIVE` | `EquipmentCheck.DRIVE` |  |
-| 269 | `RecipeCheck.WORKS` | `""" {"buildings": [ {"id": 1, "name": "Test Works", "category": "INDUSTRIAL",...` |  |
-| 283 | `RecipeCheck.BAD` | `""" {"buildings": [ {"id": 1, "name": "Bad Works", "category": "INDUSTRIAL", ...` |  |
+| 272 | `RecipeCheck.WORKS` | `""" {"buildings": [ {"id": 1, "name": "Test Works", "category": "INDUSTRIAL",...` |  |
+| 286 | `RecipeCheck.BAD` | `""" {"buildings": [ {"id": 1, "name": "Bad Works", "category": "INDUSTRIAL", ...` |  |
 
 ## Fields (state)
 
@@ -81,7 +81,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 64 | 1095 | **type** `public class RecipeCheck` | Recipes (R1c): the ways a building runs, as data on its template, chosen at the city's prices in a city founded the 1900 way, set on the template's figures weighted by the buildings of each part of a stack, and saved. |
+| 64 | 1105 | **type** `public class RecipeCheck` | Recipes (R1c): the ways a building runs, as data on its template, chosen at the city's prices in a city founded the 1900 way, set on the template's figures weighted by the buildings of each part of a stack, and saved. |
 | 72 | 4 | `static void check(String label, boolean ok, String detail)` |  |
 | 77 | 1 | `static void check(String label, boolean ok)` |  |
 | 80 | 4 | `static void near(String label, double actual, double expected, double rel)` | A figure against the harness's own, to a relative tolerance (and an absolute floor for a figure that is nothing). |
@@ -94,7 +94,7 @@
 | 116 | 1 | `static double cityPrice(Game g, Good good)` |  |
 | 118 | 24 | `public static void main(String[] args) throws Exception` |  |
 
-### helpers (lines 143-266)
+### helpers (lines 143-269)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -112,64 +112,65 @@
 | 235 | 5 | `static GameFiles.Result save10(Game g, String name)` |  |
 | 241 | 8 | `static Game load10(Game from)` |  |
 | 250 | 1 | `static int year(Game g)` |  |
-| 253 | 13 | `static List<BuildingsTemplate> parse(String json, String[] said)` | A catalogue reading, with what it reported. |
+| 253 | 1 | `static int jan(int year)` | The game month of a calendar year's January: the month Recipes and EquipmentFit ask by since R2 (a year since is known from it). |
+| 256 | 13 | `static List<BuildingsTemplate> parse(String json, String[] said)` | A catalogue reading, with what it reported. |
 
-### 1. the catalog reads recipes (lines 267-414)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 315 | 90 | `static void sectionOne()` |  |
-| 406 | 8 | `static boolean throwsOnSet(BuildingsTemplate t, List<Recipe> list)` |  |
-
-### 2. a city founded the default way chooses nothing (lines 415-455)
+### 1. the catalog reads recipes (lines 270-418)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 417 | 38 | `static void sectionTwo() throws Exception` |  |
+| 318 | 91 | `static void sectionOne()` |  |
+| 410 | 8 | `static boolean throwsOnSet(BuildingsTemplate t, List<Recipe> list)` |  |
 
-### 3. a city founded the 1900 way runs the best recipe at its prices (lines 456-565)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 458 | 107 | `static void sectionThree()` |  |
-
-### 4. known and runnable (lines 566-651)
+### 2. a city founded the default way chooses nothing (lines 419-459)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 568 | 83 | `static void sectionFour()` |  |
+| 421 | 38 | `static void sectionTwo() throws Exception` |  |
 
-### 5. the mix (lines 652-744)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 655 | 18 | `static String notMix(BuildingsTemplate t, Recipe a, int na, Recipe b, int nb)` | Whether a template's live figures are the mean of two recipes weighted na and nb, the posts and the draw rounded; the first thing that is not, or null. |
-| 674 | 70 | `static void sectionFive()` |  |
-
-### 6. the fit's gain for a recipe piece (lines 745-815)
+### 3. a city founded the 1900 way runs the best recipe at its prices (lines 460-569)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 747 | 68 | `static void sectionSix()` |  |
+| 462 | 107 | `static void sectionThree()` |  |
 
-### 7. save and load (lines 816-896)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 818 | 78 | `static void sectionSeven() throws Exception` |  |
-
-### 8. a Game that played a 1900 town, then founded the default way (lines 897-928)
+### 4. known and runnable (lines 570-660)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 899 | 29 | `static void sectionEight()` |  |
+| 572 | 88 | `static void sectionFour()` |  |
 
-### 9. the shipped rows (lines 929-1158)
+### 5. the mix (lines 661-753)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 932 | 10 | `static void stand(Game g, BuildingsTemplate t, int n, int[] direct)` | Stands at least n of the template in the town: bought without construction where the ground has room for it, else put on the books; each order that took the second way adds one to direct[0]. |
-| 944 | 4 | `static double score(Recipe r, Recipes.Prices p)` | A recipe's value for a ranking: not a number is the worst there is, as Recipes.best() reads it. |
-| 953 | 10 | `static String notBest(BuildingsTemplate t, Recipe run, boolean fitted, int year, Recipes.Prices p)` | Why a part does not run the best recipe it can, by the model's own value(), or null when it does: it cannot run it (the default is run where the part can run none), or another it can run is worth more at these prices. |
-| 964 | 194 | `static void sectionNine() throws Exception` |  |
+| 664 | 18 | `static String notMix(BuildingsTemplate t, Recipe a, int na, Recipe b, int nb)` | Whether a template's live figures are the mean of two recipes weighted na and nb, the posts and the draw rounded; the first thing that is not, or null. |
+| 683 | 70 | `static void sectionFive()` |  |
+
+### 6. the fit's gain for a recipe piece (lines 754-824)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 756 | 68 | `static void sectionSix()` |  |
+
+### 7. save and load (lines 825-905)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 827 | 78 | `static void sectionSeven() throws Exception` |  |
+
+### 8. a Game that played a 1900 town, then founded the default way (lines 906-937)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 908 | 29 | `static void sectionEight()` |  |
+
+### 9. the shipped rows (lines 938-1168)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 941 | 10 | `static void stand(Game g, BuildingsTemplate t, int n, int[] direct)` | Stands at least n of the template in the town: bought without construction where the ground has room for it, else put on the books; each order that took the second way adds one to direct[0]. |
+| 953 | 4 | `static double score(Recipe r, Recipes.Prices p)` | A recipe's value for a ranking: not a number is the worst there is, as Recipes.best() reads it. |
+| 962 | 10 | `static String notBest(BuildingsTemplate t, Recipe run, boolean fitted, int month, Recipes.Prices p)` | Why a part does not run the best recipe it can, by the model's own value(), or null when it does: it cannot run it (the default is run where the part can run none), or another it can run is worth more at these prices. |
+| 973 | 195 | `static void sectionNine() throws Exception` |  |
 
