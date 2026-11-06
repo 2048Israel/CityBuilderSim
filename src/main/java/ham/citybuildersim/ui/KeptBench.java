@@ -3173,4 +3173,161 @@ public final class KeptBench {
         if (n instanceof SVGPath s) return " svg " + s.getContent();
         return "";
     }
+
+    /* =====================================================================
+       TRADE & THE WORLD (KP6, slice B): the six pages and a nation's page behind Partners, kept and built new, the hands on
+       what reshapes them (a page or a nation picked, the span, the good, a fold or a line opened, the river and the goods'
+       toggles, the exchange's ask) and the real show method
+       ===================================================================== */
+
+    /** The Trade tab on its Overview: nothing folded open, the steps, goods rather than businesses, the exchange buying and asking nothing. */
+    public Page trade() {
+        return trade("the Trade Overview", TradeScreen.OVERVIEW);
+    }
+
+    /**
+     * The Trade tab as a Page, as the screen draws it from its pool: the page `page` names (one of tradePages()), and on Partners the
+     * nation tradeNationPick() names - it opens with nothing folded open, the steps, goods, the month's table and the exchange buying.
+     */
+    public Page trade(String name, String page) {
+        TradeScreen s = ui.tradeScreen;
+        return new Page(name, "showForeignMenu", () -> s.pool, pool -> timed(pool, s::drawPage), () -> {
+            s.forget();
+            s.openLines.clear();
+            s.showRiver = false;
+            s.byBusiness = false;
+            s.tradeBuying = true;
+            s.tradeExchange = 0;
+            s.tradeMoney = null;
+            s.partners.nation = 0;
+            s.partners.span = ham.citybuildersim.PartnersView.Span.MONTH;
+            s.partners.good = null;
+            tradeOpen(page);
+        });
+    }
+
+    /** A nation's page behind Partners (the number from 1: tradePartners() names some), as the table's link would open it. */
+    public Page tradeNation(String name, int nation) {
+        Page p = trade(name, TradeScreen.PARTNERS);
+        Runnable home = p.home;
+        return new Page(name, p.screen, p.pool, p.draw, () -> {
+            home.run();
+            tradeNationPick(nation);
+        });
+    }
+
+    /** The six pages, in the strip's order. */
+    public static List<String> tradePages() {
+        return List.of(TradeScreen.PAGES);
+    }
+
+    /** The keys of the "details" folds and "more" lines a page of the tab has, outermost first (a fold inside a fold needs the one it is in open). */
+    public static List<String> tradeFolds(String page) {
+        return switch (page) {
+            case TradeScreen.MONTH    -> List.of("month:ledger");
+            case TradeScreen.GOODS    -> List.of("goods:all", "goods:prices", "goods:band", "band:all");
+            case TradeScreen.PARTNERS -> List.of("partners:all", "partners:goods");
+            case TradeScreen.CURRENCY -> List.of("currency:rule");
+            case TradeScreen.RESERVES -> List.of("reserves:eight", "reserves:claims");
+            default                   -> List.of();
+        };
+    }
+
+    /** The key of the fold of the rest of a nation's goods on its page. */
+    public static String tradeNationFold(int nation) {
+        return "partners:goods:" + nation;
+    }
+
+    /** The screen on a page, as a chip would put it (the next draw shows it): a nation's page only by tradeNationPick(). */
+    public void tradeOpen(String page) {
+        TradeScreen s = ui.tradeScreen;
+        s.tradeArea = null;
+        s.tradePage = page;
+        s.partners.nation = 0;
+    }
+
+    /** The screen on a nation's page behind Partners, as a row's link would put it (the next draw shows it); 0 is the table. */
+    public void tradeNationPick(int nation) {
+        TradeScreen s = ui.tradeScreen;
+        s.tradePage = TradeScreen.PARTNERS;
+        s.partners.nation = nation;
+    }
+
+    /** The nations the month's table ranks first, at most `limit`, by number: the ones a row, a strip card or a link opens. */
+    public List<Integer> tradePartners(int limit) {
+        ham.citybuildersim.PartnersView.Table table = ham.citybuildersim.PartnersView.table(ui.game, ham.citybuildersim.PartnersView.Span.MONTH);
+        List<Integer> out = new ArrayList<>();
+        if (table != null) for (ham.citybuildersim.PartnersView.Row r : table.rows()) if (out.size() < limit) out.add(r.nation());
+        return out;
+    }
+
+    /** The goods the Partners board offers, those the city sold first. */
+    public List<ham.citybuildersim.Good> tradeGoods() {
+        ham.citybuildersim.PartnersView.Goods goods = ham.citybuildersim.PartnersView.goods(ui.game);
+        List<ham.citybuildersim.Good> out = new ArrayList<>(goods.sold());
+        out.addAll(goods.others());
+        return out;
+    }
+
+    /** The Partners board of a good, as its chip would pick it. */
+    public void tradeGood(ham.citybuildersim.Good good) {
+        ui.tradeScreen.partners.good = good;
+    }
+
+    /** The Partners table of the year so far or of the month, as its chip would pick it. */
+    public void tradeSpan(boolean year) {
+        ui.tradeScreen.partners.span = year ? ham.citybuildersim.PartnersView.Span.YEAR : ham.citybuildersim.PartnersView.Span.MONTH;
+    }
+
+    /** A fold, or a "more" line, opened or closed by its key, as a click on it would. */
+    public void tradeLine(String key, boolean open) {
+        fold(ui.tradeScreen.openLines, key, open);
+    }
+
+    /** The Month page on the river or on the steps, as its chip would put it. */
+    public void tradeRiver(boolean river) {
+        ui.tradeScreen.showRiver = river;
+    }
+
+    /** What we trade by business or by good, as its chip would put it. */
+    public void tradeByBusiness(boolean business) {
+        ui.tradeScreen.byBusiness = business;
+    }
+
+    /** The exchange buying or selling, as its toggle would put it (an ask the other way cleared). */
+    public void tradeBuying(boolean buying) {
+        TradeScreen s = ui.tradeScreen;
+        if (buying != s.tradeBuying) {
+            s.tradeExchange = 0;
+            s.tradeMoney = null;
+        }
+        s.tradeBuying = buying;
+    }
+
+    /** The exchange asked for this much (thousands of the city's money; the card keeps it to what there is to deal). */
+    public void tradeAsk(double thousands) {
+        ui.tradeScreen.tradeExchange = thousands;
+    }
+
+    /** The exchange dealing in one of the eight moneys by its code (null: the mix when buying, the largest holding when selling). */
+    public void tradeMoney(String code) {
+        ui.tradeScreen.tradeMoney = code;
+    }
+
+    /** A door of the tab to a page and a card on it (TradeScreen.open(page, target)): the real open, which draws the screen through its show method. */
+    public void tradeDoor(String page, String target) {
+        ensureWindow();
+        ui.tradeScreen.open(page, target);
+    }
+
+    /** The Trade tab shown through its real show method, as the rail's tab or a month landing shows it (the chrome, then the page kept). */
+    public void showTrade() {
+        ensureWindow();
+        ui.tradeScreen.showForeignMenu();
+    }
+
+    /** The Trade tab forgotten, as another city opened would leave it: nothing kept, nothing just landed. */
+    public void forgetTrade() {
+        ui.tradeScreen.forget();
+    }
 }
