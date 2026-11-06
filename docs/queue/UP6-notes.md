@@ -1,6 +1,6 @@
 # UP6 - the autosave: a skip's end, the window's close, the player's Save off the clock ({next}, 2026-11-06)
 
-**WHERE IT STANDS** (2026-11-06): in progress.
+**WHERE IT STANDS** (2026-11-06): the slice in and reviewed (cf683672); `--pick` exit 3 and the full suite exit 3, main's recorded reds only (§4). Waiting for KP2b to reach main (RL1), then main merged in, `--pick` again and the ship file.
 
 The batch's record. `QUEUE.md`'s UP6 row and [UP6.md](UP6.md): Jerus's calls on UP1's ★4, ★1 and ★2 (2026-10-23:
 "Autosave at the skip's end", "Yes, autosave on close", "Background + 'Saving...'") and LB3-S (2026-10-31, "Take all
@@ -47,16 +47,68 @@ saves folder.
 
 ## 3. The slice
 
-(to fill after the review)
+One Sonnet 5.5 slice at xhigh (`target/deepseek/brief-UP6.md`), reviewed as a stranger's and committed (cf683672). It
+touched `GameFiles` (+32/-6), `SaveWriter` (+9/-4), `Game` (+110/-25), `Inbox` (+28), `ui/UserInterface` (+123/-28),
+`ui/ReplayMode` (+3), `SaveSlotCheck` (+341/-9) and one label of `ui/UiProbe` (its numbered-save line no longer calls the
+sync save "the Save button"). Mended in review, by Opus: the skip's end autosave keyed on a flag the `catch
+(RuntimeException)` set, so an `Error` mid-month would have autosaved a city stopped inside a month over the "before
+skipping" one; it now needs every month to have run (`ranThrough`, set after the loop). Two banners cited UP1's "star 3"
+for "Background + 'Saving...'", which was star 2.
+
+The result page is a menu screen, built by `clearMenu` as the menu's screens still are since KP7 (`Kept` draws the
+rail's screens; the clock never redraws a game menu). It is built once on arrival, and when the Save lands its three
+lines (outcome, file, advice) are set in place by `fillSaveResult()`, the one method the build calls too, with every
+value set on both sides of its condition: the kept rule's one code path, without a pool for a page drawn twice in its
+life. A Save that failed, or saved without its history, opens its page even for a player who has left it (★1); one that
+landed whole is not forced on him.
+
+What else leaned on the old way: the slice grepped the harnesses for a read of the autosave's file, or a count of
+`SaveWriter.writes()`, right after a multi-month skip with no wait between. Three, all in SaveSlotCheck (7's 30-month
+skip, 7b, 7c.5), now `awaitSaves()` first. Every other harness that skips either saves through the sync `save()`, which
+waits first, loads (which waits), or never reads the autosave. The default playtest and DeterminismCheck step single
+months.
 
 ## 4. What checks it
 
-(to fill)
+SaveSlotCheck, UP1's section 7, holds each of the brief's fixtures on a young city whose save clock stands still:
+- **7e.1** a 3-month skip inside the floor ends with its own last month on disk, named "Autosave - after skipping 3
+  months", whole; the counter starts again and twelve single months with the clock still write nothing.
+- **7e.2** a 2-month skip and at once the close (`saveForClose()`): the autosave is the close's at the city's month;
+  with the writer held the close returns only after it is let go.
+- **7e.3** the player's Save returns with the writer held, slot 4 still empty; let go, it lands ok and whole, and the
+  slot is then named and at the city's month with its whole history. **7e.3b** a second Save while the first is held
+  returns after the release with the first already written (2 writes, the slot named for the second). **7e.3c** a Save
+  to slot 5 changes no other file in the saves folder; the autosave's slot and one past the last are refused.
+- **7e.4** with slot 6's history `.tmp` a folder (7c.6's obstacle; not 7d's held file, which races under load), the
+  Save is ok and not whole, `outcome()` "Saved, but its history could not be written: <reason>", the slot holds the new
+  save beside the old history and the `.bak` is the save from before; the sync `saveGame` says it too. The autosave's:
+  the inbox's "autosave" notice, titled for the history, then for a failed save, settled by one that lands whole.
+- **7b** the autosave at a skip's end is loaded and played on, and the one before the skip, now the end's `.bak` trio,
+  loaded the same way from a copy. **7c.5** a skip waits for a held autosave: 3 writes (the held one, the skip's before
+  and its end's), the file the end's.
+
+`./batch-check.sh --pick` on cf683672: exit 3, 14 harnesses, main's recorded MapCheck red only (`docs/notes/gate.txt`);
+SaveSlotCheck 253 OK, SaveFileCheck 974, InboxCheck 43, ReplayCheck 118, no FAIL; SaveSlotCheck's and MapCheck's timing
+lines SOFT (side by side). The full suite (`./batch-check.sh`, all 180 harnesses, on 61dfcfa7): exit 3, nothing red but main's six recorded reds (SlopeCheck, MonetaryCheck, DenominationCheck, ScaleCheck, MapCheck, KeptCheck), each word for word by the suite's judge.
+
+Not run in a window: the Save page's "Saving..." line and the close. **To look at, if anything seems off:** Save to a
+slot in a long city (the page says "Saving..." for a moment, then "Saved." and the path); close the window with the X
+and open Load: the autosave row says "Autosave - on close" at the month the city stood.
 
 ## 5. The ★ calls
 
-(to fill)
+- **★1 A Save that failed, or saved without its history, opens its page even after the player left it** (the clock
+  stops under it, as under any menu page); a whole one is shown only on its page. The other way: a toast or an inbox
+  notice for the player's own Save, like the autosave's. Recommended: as built - he asked for that save, and it is rare
+  (he must leave the page within the write, about 0.1 s at month 4,000).
+- **★2 An autosave that could not be written at all is an inbox notice too**, not only one whose history failed (the
+  brief named the history; until now a failed autosave was a log line, "Autosave failed:"). One standing notice, keyed
+  "autosave", retitled as the trouble changes and settled by the next autosave that lands whole. Recommended: as built.
 
 ## 6. Found, left
 
-(to fill)
+- The map's sidecar that cannot be written is still a log line only (`Job.write`), as before: a load redraws a missing
+  or stale map from the save (`CityMap`'s canonical draw), so nothing is lost. No row.
+- A notice raised by `reportSaves()` inside a load's `awaitSaves()` goes into the inbox the load then replaces: an
+  autosave's trouble found at that moment is in the log only. Rare (a failed write and a load inside one write's time);
+  no row.
