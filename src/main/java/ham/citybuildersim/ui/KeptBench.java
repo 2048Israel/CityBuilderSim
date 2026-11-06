@@ -1912,7 +1912,8 @@ public final class KeptBench {
      * a click on it opens the chart), "landRow" (an offer's row), "oreCard" (the land office's ore card), "doorCard"
      * (Services' card made a door), and since KP3 Build's "jobTile" (the Overview's tile for a city category), "marketTile" (its row's tile for a market
      * category) and "ringCard" (a small ring card that is not the one picked, on a category with many rings: Education's), and since KP4 the
-     * Sectors list's "sectorCard" (a business's card).
+     * Sectors list's "sectorCard" (a business's card), since KP5 the money screens' "bankCard", "rungName", "financeCard", "bookRow" and "holdingRow",
+     * and since KP6 "ringKeyRow", "bridgeRow", "rankRow", "mirrorGround" and "policyRow".
      */
     public Node hoverTarget(String kind) {
         List<Node> found = new ArrayList<>();
@@ -1946,6 +1947,17 @@ public final class KeptBench {
                         && style.contains("-fx-padding: 2 4 2 4; -fx-background-radius: 4; -fx-cursor: hand");
                 case "holdingRow" -> n instanceof HBox && n.getOnMouseClicked() != null
                         && style.contains("-fx-background-radius: 6; -fx-cursor: hand");
+                // KP6: the key rows of the Government tab's split ring (Pieces.ringKey), its bridge's rows (Pieces.bridgeRow), the rows of its ranked bars
+                // (Pieces.rankBars, which carry their line's key), the grounds of Trade's mirror rows (Pieces.MirrorRows), and the tall rows of Policy that
+                // are clicked (a payer's, a course's, a zone's).
+                case "ringKeyRow" -> n instanceof HBox && n.getOnMouseClicked() != null
+                        && style.contains("-fx-padding: 1 4 1 4; -fx-background-radius: 4; -fx-cursor: hand");
+                case "bridgeRow" -> n instanceof HBox && n.getOnMouseClicked() != null && style.startsWith("-fx-background-radius: 4; -fx-cursor: hand");
+                case "rankRow" -> n instanceof HBox && n.getOnMouseClicked() != null && n.getProperties().containsKey(Pieces.RANK_KEY);
+                case "mirrorGround" -> n instanceof Region && !(n instanceof Pane) && n.getCursor() == javafx.scene.Cursor.HAND
+                        && n.getOnMouseClicked() != null && style.startsWith("-fx-background-radius: 4;");
+                case "policyRow" -> n instanceof HBox && n.getOnMouseClicked() != null && !n.getProperties().containsKey(Pieces.RANK_KEY)
+                        && style.contains("-fx-padding: 4 6 4 6; -fx-background-radius: 6;") && style.contains("-fx-cursor: hand");
                 default -> throw new IllegalArgumentException(kind);
             };
             if (it) found.add(n);
@@ -3171,6 +3183,507 @@ public final class KeptBench {
         if (n instanceof Rectangle r) return String.format(Locale.ROOT, " rect %.2fx%.2f", r.getWidth(), r.getHeight());
         if (n instanceof Polyline p) return " points" + p.getPoints();
         if (n instanceof SVGPath s) return " svg " + s.getContent();
+        // KP6: a kept path (Trade's river ribbons, a Sector's curve) is handed back with last month's elements unless the draw sets them.
+        if (n instanceof javafx.scene.shape.Path p) return " path" + pathOf(p);
         return "";
+    }
+
+    /** A path's elements as figures: each element's kind and its end point (and a curve's controls). */
+    private static String pathOf(javafx.scene.shape.Path p) {
+        StringBuilder b = new StringBuilder();
+        for (javafx.scene.shape.PathElement e : p.getElements()) {
+            if (e instanceof javafx.scene.shape.MoveTo m) b.append(String.format(Locale.ROOT, " M%.2f,%.2f", m.getX(), m.getY()));
+            else if (e instanceof javafx.scene.shape.LineTo l) b.append(String.format(Locale.ROOT, " L%.2f,%.2f", l.getX(), l.getY()));
+            else if (e instanceof javafx.scene.shape.CubicCurveTo c) b.append(String.format(Locale.ROOT, " C%.2f,%.2f %.2f,%.2f %.2f,%.2f",
+                    c.getControlX1(), c.getControlY1(), c.getControlX2(), c.getControlY2(), c.getX(), c.getY()));
+            else if (e instanceof javafx.scene.shape.QuadCurveTo q) b.append(String.format(Locale.ROOT, " Q%.2f,%.2f %.2f,%.2f", q.getControlX(), q.getControlY(), q.getX(), q.getY()));
+            else if (e instanceof javafx.scene.shape.HLineTo h) b.append(String.format(Locale.ROOT, " H%.2f", h.getX()));
+            else if (e instanceof javafx.scene.shape.VLineTo v) b.append(String.format(Locale.ROOT, " V%.2f", v.getY()));
+            else if (e instanceof javafx.scene.shape.ClosePath) b.append(" Z");
+            else b.append(' ').append(e.getClass().getSimpleName());
+        }
+        return b.toString();
+    }
+
+    /* =====================================================================
+       TRADE & THE WORLD (KP6, slice B): the six pages and a nation's page behind Partners, kept and built new, the hands on
+       what reshapes them (a page or a nation picked, the span, the good, a fold or a line opened, the river and the goods'
+       toggles, the exchange's ask) and the real show method
+       ===================================================================== */
+
+    /** The Trade tab on its Overview: nothing folded open, the steps, goods rather than businesses, the exchange buying and asking nothing. */
+    public Page trade() {
+        return trade("the Trade Overview", TradeScreen.OVERVIEW);
+    }
+
+    /**
+     * The Trade tab as a Page, as the screen draws it from its pool: the page `page` names (one of tradePages()), and on Partners the
+     * nation tradeNationPick() names - it opens with nothing folded open, the steps, goods, the month's table and the exchange buying.
+     */
+    public Page trade(String name, String page) {
+        TradeScreen s = ui.tradeScreen;
+        return new Page(name, "showForeignMenu", () -> s.pool, pool -> timed(pool, s::drawPage), () -> {
+            s.forget();
+            s.openLines.clear();
+            s.showRiver = false;
+            s.byBusiness = false;
+            s.tradeBuying = true;
+            s.tradeExchange = 0;
+            s.tradeMoney = null;
+            s.partners.nation = 0;
+            s.partners.span = ham.citybuildersim.PartnersView.Span.MONTH;
+            s.partners.good = null;
+            tradeOpen(page);
+        });
+    }
+
+    /** A nation's page behind Partners (the number from 1: tradePartners() names some), as the table's link would open it. */
+    public Page tradeNation(String name, int nation) {
+        Page p = trade(name, TradeScreen.PARTNERS);
+        Runnable home = p.home;
+        return new Page(name, p.screen, p.pool, p.draw, () -> {
+            home.run();
+            tradeNationPick(nation);
+        });
+    }
+
+    /** The six pages, in the strip's order. */
+    public static List<String> tradePages() {
+        return List.of(TradeScreen.PAGES);
+    }
+
+    /** The keys of the "details" folds and "more" lines a page of the tab has, outermost first (a fold inside a fold needs the one it is in open). */
+    public static List<String> tradeFolds(String page) {
+        return switch (page) {
+            case TradeScreen.MONTH    -> List.of("month:ledger");
+            case TradeScreen.GOODS    -> List.of("goods:all", "goods:prices", "goods:band", "band:all");
+            case TradeScreen.PARTNERS -> List.of("partners:all", "partners:goods");
+            case TradeScreen.CURRENCY -> List.of("currency:rule");
+            case TradeScreen.RESERVES -> List.of("reserves:eight", "reserves:claims");
+            default                   -> List.of();
+        };
+    }
+
+    /** The key of the fold of the rest of a nation's goods on its page. */
+    public static String tradeNationFold(int nation) {
+        return "partners:goods:" + nation;
+    }
+
+    /** The screen on a page, as a chip would put it (the next draw shows it): a nation's page only by tradeNationPick(). */
+    public void tradeOpen(String page) {
+        TradeScreen s = ui.tradeScreen;
+        s.tradeArea = null;
+        s.tradePage = page;
+        s.partners.nation = 0;
+    }
+
+    /** The screen on a nation's page behind Partners, as a row's link would put it (the next draw shows it); 0 is the table. */
+    public void tradeNationPick(int nation) {
+        TradeScreen s = ui.tradeScreen;
+        s.tradePage = TradeScreen.PARTNERS;
+        s.partners.nation = nation;
+    }
+
+    /** The nations the month's table ranks first, at most `limit`, by number: the ones a row, a strip card or a link opens. */
+    public List<Integer> tradePartners(int limit) {
+        ham.citybuildersim.PartnersView.Table table = ham.citybuildersim.PartnersView.table(ui.game, ham.citybuildersim.PartnersView.Span.MONTH);
+        List<Integer> out = new ArrayList<>();
+        if (table != null) for (ham.citybuildersim.PartnersView.Row r : table.rows()) if (out.size() < limit) out.add(r.nation());
+        return out;
+    }
+
+    /** The goods the Partners board offers, those the city sold first. */
+    public List<ham.citybuildersim.Good> tradeGoods() {
+        ham.citybuildersim.PartnersView.Goods goods = ham.citybuildersim.PartnersView.goods(ui.game);
+        List<ham.citybuildersim.Good> out = new ArrayList<>(goods.sold());
+        out.addAll(goods.others());
+        return out;
+    }
+
+    /** The Partners board of a good, as its chip would pick it. */
+    public void tradeGood(ham.citybuildersim.Good good) {
+        ui.tradeScreen.partners.good = good;
+    }
+
+    /** The Partners table of the year so far or of the month, as its chip would pick it. */
+    public void tradeSpan(boolean year) {
+        ui.tradeScreen.partners.span = year ? ham.citybuildersim.PartnersView.Span.YEAR : ham.citybuildersim.PartnersView.Span.MONTH;
+    }
+
+    /** A fold, or a "more" line, opened or closed by its key, as a click on it would. */
+    public void tradeLine(String key, boolean open) {
+        fold(ui.tradeScreen.openLines, key, open);
+    }
+
+    /** The Month page on the river or on the steps, as its chip would put it. */
+    public void tradeRiver(boolean river) {
+        ui.tradeScreen.showRiver = river;
+    }
+
+    /** What we trade by business or by good, as its chip would put it. */
+    public void tradeByBusiness(boolean business) {
+        ui.tradeScreen.byBusiness = business;
+    }
+
+    /** The exchange buying or selling, as its toggle would put it (an ask the other way cleared). */
+    public void tradeBuying(boolean buying) {
+        TradeScreen s = ui.tradeScreen;
+        if (buying != s.tradeBuying) {
+            s.tradeExchange = 0;
+            s.tradeMoney = null;
+        }
+        s.tradeBuying = buying;
+    }
+
+    /** The exchange asked for this much (thousands of the city's money; the card keeps it to what there is to deal). */
+    public void tradeAsk(double thousands) {
+        ui.tradeScreen.tradeExchange = thousands;
+    }
+
+    /** The exchange dealing in one of the eight moneys by its code (null: the mix when buying, the largest holding when selling). */
+    public void tradeMoney(String code) {
+        ui.tradeScreen.tradeMoney = code;
+    }
+
+    /** A door of the tab to a page and a card on it (TradeScreen.open(page, target)): the real open, which draws the screen through its show method. */
+    public void tradeDoor(String page, String target) {
+        ensureWindow();
+        ui.tradeScreen.open(page, target);
+    }
+
+    /** The Trade tab shown through its real show method, as the rail's tab or a month landing shows it (the chrome, then the page kept). */
+    public void showTrade() {
+        ensureWindow();
+        ui.tradeScreen.showForeignMenu();
+    }
+
+    /** The Trade tab forgotten, as another city opened would leave it: nothing kept, nothing just landed. */
+    public void forgetTrade() {
+        ui.tradeScreen.forget();
+    }
+
+    /* =====================================================================
+       THE GOVERNMENT TAB (KP6, slice A): its four pages, kept and built new, the hands on what reshapes them (a page picked, a
+       fold or a line opened, a door's target) and the real show method
+       ===================================================================== */
+
+    /** The Government tab on its Overview: nothing folded open, no line opened. */
+    public Page government() {
+        return government("the Government Overview", "Overview");
+    }
+
+    /**
+     * The Government tab as a Page, as the screen draws it from its pool, on the page `page` names (its first page when null): it
+     * opens with nothing folded open and no line opened.
+     */
+    public Page government(String name, String page) {
+        GovernmentScreen s = ui.governmentScreen;
+        return new Page(name, "showGovernmentMenu", () -> s.pool, pool -> timed(pool, s::drawPage), () -> {
+            s.forget();
+            s.open.clear();
+            s.govPage = page == null ? GovernmentScreen.GOV_PAGES[0] : page;
+        });
+    }
+
+    /** The tab's four pages, in the chip strip's order. */
+    public static List<String> governmentPages() {
+        return List.of(GovernmentScreen.GOV_PAGES);
+    }
+
+    /** The keys of the folds the pages hold: the treasury's month, the paper, the output's months recorded, and the bridge's two columns' "N more". */
+    public static List<String> governmentFolds() {
+        return List.of("treasury", "debt", "output", "bridge:0", "bridge:1");
+    }
+
+    /** The lines of Revenue or Spending that open into who pays (the other pages have none). */
+    public static List<String> governmentLines(String page) {
+        return switch (page) {
+            case "Revenue" -> List.of("Business tax", "Sales tax", "Wage tax", "Property tax", "Pension contributions",
+                    "Healthcare fees", "School fees", "Mortgage insurance premiums", "Transfer from the fund");
+            case "Spending" -> List.of("Healthcare", "Education", "Pensions", "Interest on the city's paper", "Land bought",
+                    "Mortgage insurance claims", "Food assistance");
+            default -> List.of();
+        };
+    }
+
+    /** The screen on the page `page` names, as a chip would put it (the next draw shows it). */
+    public void governmentOpen(String page) {
+        ui.governmentScreen.govPage = page;
+    }
+
+    /** A fold ("details" or a bridge column's "N more"), by its key, opened or closed, as a click on it would. */
+    public void governmentFold(String key, boolean open) {
+        fold(ui.governmentScreen.open, key, open);
+    }
+
+    /** A line of Revenue or Spending opened or closed into who pays, by its name, as a click on its row would. */
+    public void governmentLine(String page, String line, boolean open) {
+        fold(ui.governmentScreen.open, GovernmentScreen.lineKey(page, line), open);
+    }
+
+    /** A chip of the Government tab picked, as a click on it would: the page, at its top (GovernmentScreen.open, no line). */
+    public void governmentPick(String page) {
+        ui.governmentScreen.open(page, null);
+    }
+
+    /** A door of the tab used, as its click would: the page opened with `line` opened and scrolled to (a budget line's name, or the Overview's BRIDGE or BALANCE). */
+    public void governmentDoor(String page, String line) {
+        ui.governmentScreen.open(page, line);
+    }
+
+    /** The Government tab shown through its real show method, as the rail's tab or a month landing shows it (the chrome, then the page kept). */
+    public void showGovernment() {
+        ensureWindow();
+        ui.governmentScreen.showGovernmentMenu();
+    }
+
+    /** The Government tab forgotten, as another city opened would leave it: nothing kept, nothing just landed. */
+    public void forgetGovernment() {
+        ui.governmentScreen.forget();
+    }
+
+    /* =====================================================================
+       POLICY AND ZONING (KP6, slice C): the hub and every page of the five areas, kept and built new, the hands on what reshapes them (an
+       area and page picked, a fold or a line opened, a zone's page, a change staged), the controls on them and the real show method
+       ===================================================================== */
+
+    /** The Policy tab on its hub: nothing opened, nothing staged. */
+    public Page policy() {
+        return policy("the Policy hub", null, null);
+    }
+
+    /**
+     * The Policy tab as a Page, as the screen draws it from its pool (the hub when `area` is null, else the area and the page `page`
+     * names, or the area's first page when `page` is null; a zone's page of Zoning is "zone:" and its sector's key): it opens with
+     * nothing folded open and nothing staged. Zoning's pages are drawn from the same pool.
+     */
+    public Page policy(String name, String area, String page) {
+        PolicyScreen s = ui.policyScreen;
+        return new Page(name, "showPolicyMenu", () -> s.pool, pool -> timed(pool, s::drawPage), () -> {
+            s.forget();
+            s.openLines.clear();
+            s.dropProposal();
+            policyOpen(area, page);
+        });
+    }
+
+    /** Every fixed page of the five areas as {area, page}, in the tabs' order (Zoning's two; its zones' pages are policyZone()'s). */
+    public static List<String[]> policyPages() {
+        List<String[]> out = new ArrayList<>();
+        for (String area : PolicyScreen.AREAS) {
+            for (String page : PolicyScreen.pagesOf(area)) out.add(new String[]{area, page});
+        }
+        return out;
+    }
+
+    /** The page of the zone of a sector, as the area's tabs name it. */
+    public static String policyZonePage(String sector) {
+        return ZoningScreen.zonePage(sector);
+    }
+
+    /** Every sector's key, in the registry's order: each has a zone's page, zoned or not. */
+    public static List<String> policySectors() {
+        return List.of(ham.citybuildersim.Sectors.KEYS);
+    }
+
+    /** Policy on an area and page (`area` null: the hub), as a door or a tab would put it; the staged set dropped (the next draw shows it). */
+    public void policyOpen(String area, String page) {
+        PolicyScreen s = ui.policyScreen;
+        s.policyArea = area;
+        s.policyPage = area == null ? PolicyScreen.POLICY_HOME : page == null ? PolicyScreen.pagesOf(area)[0] : page;
+        s.dropProposal();
+    }
+
+    /** A door of the tab pressed (PolicyScreen.open): the area and page at their top, through the real show method. */
+    public void policyPick(String area, String page) {
+        ensureWindow();
+        ui.currentScreen = "showPolicyMenu";
+        ui.policyScreen.open(area, page);
+    }
+
+    /** The hub's door pressed (PolicyScreen.openHub). */
+    public void policyPickHub() {
+        ensureWindow();
+        ui.currentScreen = "showPolicyMenu";
+        ui.policyScreen.openHub();
+    }
+
+    /** A fold, a payer's own dial, a course's own price or the folded zero payers (by its key) opened or closed, as a click on it would. */
+    public void policyLine(String key, boolean open) {
+        fold(ui.policyScreen.openLines, key, open);
+    }
+
+    /** The keys of the lines open now: what a page's folds hold. */
+    public java.util.Set<String> policyLines() {
+        return new java.util.TreeSet<>(ui.policyScreen.openLines);
+    }
+
+    /** A change staged under a lever's key, as a release on its dial stages it (the next draw shows it). */
+    public void policyStage(String key, double value) {
+        ui.policyScreen.stage(key, value);
+    }
+
+    /** A staged change taken back, as the tray's × does. */
+    public void policyUnstage(String key) {
+        ui.policyScreen.unstage(key);
+    }
+
+    /** Everything staged dropped, as "Discard" or "Leave it as it is" does. */
+    public void policyDrop() {
+        ui.policyScreen.dropProposal();
+    }
+
+    /** What is staged now, by key, in the order it was staged. */
+    public java.util.Map<String, Double> policyStaged() {
+        return new java.util.LinkedHashMap<>(ui.policyScreen.policyStaged);
+    }
+
+    /** The keys of the dials the page on show has registered, in the order drawn: what the tray can name and apply. */
+    public List<String> policyLevers() {
+        return new ArrayList<>(ui.policyScreen.policyLevers.keySet());
+    }
+
+    /** The tray under the page, or null with nothing staged to show: the page's third top node. */
+    public Node policyTray() {
+        List<Node> top = column.getChildren();
+        return top.size() > 2 ? top.get(2) : null;
+    }
+
+    /** Every slider on the page, in the page's order (the dials': the first is the first card's). */
+    public List<javafx.scene.control.Slider> policySliders() {
+        List<javafx.scene.control.Slider> out = new ArrayList<>();
+        each(column, n -> {
+            if (n instanceof javafx.scene.control.Slider s) out.add(s);
+        });
+        return out;
+    }
+
+    /** How many "→" arrows the page shows: one a dial card's effect that has moved, so a card drawn at its thumb shows its after. */
+    public int policyArrows() {
+        int[] n = {0};
+        each(column, node -> {
+            if (node instanceof Label l && "→".equals(l.getText())) n[0]++;
+        });
+        return n[0];
+    }
+
+    /** A sector zoned through the model (a share of the dry ground, at the going price), as the zone's page applies it; false while zoning is shut. */
+    public boolean policyZone(String sector, double share) {
+        ui.game.setZone(sector, ham.citybuildersim.Zoning.Size.SHARE, share, ham.citybuildersim.Zoning.MAX_PRICE_SHARE);
+        return ui.game.getZoning().zone(sector) != null;
+    }
+
+    /** A zone taken off through the model. */
+    public void policyUnzone(String sector) {
+        ui.game.removeZone(sector);
+    }
+
+    /** The sectors with a zone now. */
+    public List<String> policyZoned() {
+        List<String> out = new ArrayList<>();
+        for (ham.citybuildersim.Zoning.Zone z : ui.game.getZoning().zones()) out.add(z.sector());
+        return out;
+    }
+
+    /** The Policy tab shown through its real show method, as the rail's tab or a month landing shows it (the chrome, then the page kept). */
+    public void showPolicy() {
+        ensureWindow();
+        ui.policyScreen.showPolicyMenu();
+    }
+
+    /** The Policy tab forgotten, as another city opened would leave it: nothing kept. */
+    public void forgetPolicy() {
+        ui.policyScreen.forget();
+    }
+
+    /* =====================================================================
+       THE HANDS THE KP6 HARNESS ADDS (KP6, slice D): what Trade counts up, and the width of its charts
+       ===================================================================== */
+
+    /** The head word of a limit cell (Pieces.limitCell): its first child's words, whether that is a label or a row that starts with one. */
+    private static String headOf(VBox cell) {
+        if (cell.getChildren().isEmpty()) return "";
+        Node first = cell.getChildren().get(0);
+        if (first instanceof Label l) return l.getText() == null ? "" : l.getText();
+        if (first instanceof HBox row && !row.getChildren().isEmpty() && row.getChildren().get(0) instanceof Label l) return l.getText() == null ? "" : l.getText();
+        return "";
+    }
+
+    /** The two figures of Trade's strip that count up from last month's when a month lands: SOLD ABROAD's and BOUGHT ABROAD's, in that order (empty when the page has no such cells). */
+    public List<Label> tradeFigures() {
+        List<Label> out = new ArrayList<>();
+        for (String head : List.of("SOLD ABROAD", "BOUGHT ABROAD")) {
+            VBox cell = find(column, VBox.class, v -> v.getChildren().size() > 1 && v.getChildren().get(1) instanceof Label && headOf(v).startsWith(head));
+            if (cell != null) out.add((Label) cell.getChildren().get(1));
+        }
+        return out;
+    }
+
+    /**
+     * The words the strip's two counted figures read, from the model as the screen reads them (TradeScreen.countFrom): {SOLD ABROAD, BOUGHT ABROAD},
+     * each {last month's, this month's}; last month's is null while History holds fewer than two points.
+     */
+    public String[][] tradeWords() {
+        ham.citybuildersim.ForeignAccounts fx = ui.game.getForeignAccounts();
+        ham.citybuildersim.HistorySave h = ui.game.getHistorySave();
+        String[][] out = new String[2][];
+        String[] series = {"exportsAbroad", "importsAbroad"};
+        double[] now = {fx.getExports(), fx.tradeImports()};
+        for (int i = 0; i < 2; i++) {
+            double[] s = h.aligned(series[i]);
+            String before = s.length < 2 || !Double.isFinite(s[s.length - 2]) ? null : ui.tradeScreen.d(s[s.length - 2]);
+            out[i] = new String[]{before, ui.tradeScreen.d(now[i])};
+        }
+        return out;
+    }
+
+    /** The mirror-row pictures on the page (the bars of what the city bought and sold abroad), in the page's order: the ones that grow out of their axis when a month lands. */
+    public List<Pieces.MirrorRows> tradeBars() {
+        List<Pieces.MirrorRows> out = new ArrayList<>();
+        each(column, n -> {
+            if (n instanceof Pieces.MirrorRows m) out.add(m);
+        });
+        return out;
+    }
+
+    /** Every tooltip on the page by the node that carries it, by identity: Kept.tip keeps a node's own tooltip from draw to draw, Tooltip.install on a draw's node makes a new one each time. */
+    public java.util.Map<Node, Tooltip> tooltips() {
+        java.util.Map<Node, Tooltip> out = new java.util.IdentityHashMap<>();
+        each(column, n -> {
+            Tooltip t = Kept.tipOf(n);
+            if (t != null) out.put(n, t);
+        });
+        return out;
+    }
+
+    /** Every node on the page, by identity. */
+    public java.util.Set<Node> nodesOnPage() {
+        java.util.Set<Node> out = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        each(column, out::add);
+        return out;
+    }
+
+    /** The keys of a tax's payers that show a row with a dial of their own (a payer's fold is "payer:" and its key), in the ranking's order: the first is the row at the top. */
+    public List<String> policyPayers(String tax) {
+        List<String> out = new ArrayList<>();
+        for (PolicyScreen.Payer p : ui.policyScreen.payersOf(tax, ui.game.getEconomyManager().getTaxPolicy())) {
+            if (p.lever() != null && !PolicyScreen.paidNothing(p)) out.add(p.key());
+        }
+        return out;
+    }
+
+    /** What WHO GOES WITHOUT (Pieces.whoGoesWithout) says now: {its figure's words, whether the door to the shops is "drawn" or "not drawn"}. */
+    public String[] hunger() {
+        Pieces.Hunger h = Pieces.hunger(ui.game);
+        return new String[]{h.figure(), h.shortLarger() ? "drawn" : "not drawn"};
+    }
+
+    /** Every time chart on the page with the width of the box it sits in: {the chart's width, the box's width}, in the page's order. */
+    public List<double[]> chartWidths() {
+        List<double[]> out = new ArrayList<>();
+        each(column, n -> {
+            if (n instanceof TimeChart c) out.add(new double[]{c.getWidth(), c.getParent() instanceof Region box ? box.getWidth() : Double.NaN});
+        });
+        return out;
     }
 }

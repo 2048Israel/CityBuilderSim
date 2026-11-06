@@ -26,7 +26,7 @@
 > named in TreasuryJournal's list), which reads these two flags and nothing
 > else. A constant's sentence says why it sits on its side.
 
-**Used by (7):** [BankCheck](BankCheck.md), [CentralBankCheck](CentralBankCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [GroceryCheck](GroceryCheck.md), [LongPlaytest](LongPlaytest.md)
+**Used by (8):** [BankCheck](BankCheck.md), [CentralBankCheck](CentralBankCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [GroceryCheck](GroceryCheck.md), [KeptCheck](KeptCheck.md), [LongPlaytest](LongPlaytest.md)
 
 ## Enum constants
 

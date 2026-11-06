@@ -158,14 +158,17 @@ final class ZoningScreen {
         String sector = sectorOf(policy.policyPage);
         if (sector == null || head.getChildren().isEmpty() || !(head.getChildren().get(0) instanceof HBox titled)) return head;
         if (titled.getChildren().size() < 3 || !(titled.getChildren().get(2) instanceof Label where)) return head;
-        where.setStyle(where.getStyle() + " -fx-cursor: hand;");
+        // Kept (KP6): the style set whole (PolicyScreen.head() draws this label strong, as pageHead() does), not built on what it was.
+        where.setStyle(Palette.strong(Palette.SIZE_TITLE, Palette.TEXT_HEAD) + " -fx-padding: 8 0 2 0; -fx-cursor: hand;");
         where.setOnMouseClicked(e -> policy.open(PolicyScreen.ZONING, THE_GROUND));
-        Label sep = new Label("›");
-        sep.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_MUTED) + " -fx-padding: 8 0 2 0;");
-        Label last = new Label(nameOf(sector));
-        last.setStyle(Palette.strong(Palette.SIZE_TITLE, Palette.TEXT_HEAD) + " -fx-padding: 8 0 2 0;");
-        last.setMinWidth(Region.USE_PREF_SIZE);
-        titled.getChildren().addAll(3, List.of(sep, last));
+        titled.getChildren().addAll(3, Kept.scope("zone", () -> {
+            Label sep = Kept.label("›");
+            sep.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_MUTED) + " -fx-padding: 8 0 2 0;");
+            Label last = Kept.label(nameOf(sector));
+            last.setStyle(Palette.strong(Palette.SIZE_TITLE, Palette.TEXT_HEAD) + " -fx-padding: 8 0 2 0;");
+            last.setMinWidth(Region.USE_PREF_SIZE);
+            return List.<Node>of(sep, last);
+        }));
         return head;
     }
 
@@ -329,39 +332,47 @@ final class ZoningScreen {
         policy.addShutCard(page, PolicyDates.Lever.ZONING);
         page.getChildren().add(sectionHead("THE CITY'S GROUND", GROUND_INFO,
                 PolicyScreen.quiet(LandManager.areaWords(land.getLinkedOwnedSqFt()) + " dry")));
-        VBox bars = PolicyScreen.card(groundBar(parts, 18));
-        if (g.getZoning().hasZones()) {
-            bars.getChildren().add(PolicyScreen.muted("Closer: the zones, and the bare ground free for anyone"));
-            bars.getChildren().add(groundBar(ZoningView.closer(g), 12));
-        }
-        page.getChildren().add(bars);
+        // Kept (KP6): what comes and goes (the closer bar, the picker, the zones' list or its note) is a scope each, and a zone a row keyed by its sector.
+        page.getChildren().add(Kept.scope("bars", () -> {
+            VBox bars = PolicyScreen.card(groundBar(parts, 18));
+            if (g.getZoning().hasZones()) {
+                bars.getChildren().addAll(Kept.scope("closer", () -> List.<Node>of(
+                        PolicyScreen.muted("Closer: the zones, and the bare ground free for anyone"),
+                        groundBar(ZoningView.closer(g), 12))));
+            }
+            return bars;
+        }));
 
-        Pieces.ActionButton zone = actionButton(Icons.ZONING, Palette.MONEY, ACTION_INLINE,
-                new Press(Look.GO, "Zone ground for an industry", null), () -> {
-                    if (!policy.openLines.remove(PICK)) policy.openLines.add(PICK);
-                    policy.showPolicyMenu();
-                });
-        zone.setMinWidth(250);
-        zone.setMaxWidth(Region.USE_PREF_SIZE);
-        zone.setDisable(shut);
         List<ZoningView.Row> rows = ZoningView.zones(g);
-        page.getChildren().add(sectionHead("THE ZONES", ZONES_INFO, zone));
-        if (!shut && policy.openLines.contains(PICK)) page.getChildren().add(picker());
+        page.getChildren().add(sectionHead("THE ZONES", ZONES_INFO, Kept.scope("zone", () -> {
+            Pieces.ActionButton zone = actionButton(Icons.ZONING, Palette.MONEY, ACTION_INLINE,
+                    new Press(Look.GO, "Zone ground for an industry", null), () -> {
+                        if (!policy.openLines.remove(PICK)) policy.openLines.add(PICK);
+                        policy.showPolicyMenu();
+                    });
+            zone.setMinWidth(250);
+            zone.setMaxWidth(Region.USE_PREF_SIZE);
+            zone.setDisable(shut);
+            return zone;
+        })));
+        if (!shut && policy.openLines.contains(PICK)) page.getChildren().add(Kept.scope("picker", this::picker));
         if (rows.isEmpty()) {
-            page.getChildren().add(PolicyScreen.muted("No zone yet: every square metre the city has not built on is free "
-                    + "for anyone, at the going price."));
+            page.getChildren().add(Kept.scope("none", () -> PolicyScreen.muted("No zone yet: every square metre the city has not built on is free "
+                    + "for anyone, at the going price.")));
         } else {
-            VBox list = PolicyScreen.card();
-            list.setSpacing(2);
-            for (ZoningView.Row r : rows) list.getChildren().add(zoneRow(r));
-            list.setDisable(shut);
-            page.getChildren().add(list);
+            page.getChildren().add(Kept.scope("list", () -> {
+                VBox list = PolicyScreen.card();
+                list.setSpacing(2);
+                for (ZoningView.Row r : rows) list.getChildren().add(Kept.scope("zone:" + r.sector(), () -> zoneRow(r)));
+                list.setDisable(shut);
+                return list;
+            }));
         }
 
         page.getChildren().add(sectionHead("THE FOREST LAW", LAW_INFO,
                 doorPill("The forest law", Icons.TREES, Palette.ACCENT, () -> policy.open(PolicyScreen.ZONING, THE_FOREST))));
-        page.getChildren().add(PolicyScreen.doorCard(lawCard(ZoningView.forest(g, g.getZoning()), g.getZoning()),
-                () -> policy.open(PolicyScreen.ZONING, THE_FOREST)));
+        page.getChildren().add(Kept.scope("law", () -> PolicyScreen.doorCard(lawCard(ZoningView.forest(g, g.getZoning()), g.getZoning()),
+                () -> policy.open(PolicyScreen.ZONING, THE_FOREST))));
     }
 
     /** The open line of the sector picker. */
@@ -369,16 +380,18 @@ final class ZoningScreen {
 
     /** "Zone ground for an industry": every sector with no zone, a chip each, opening its page. */
     VBox picker() {
-        FlowPane chips = new FlowPane(8, 6);
+        FlowPane chips = Kept.flow(8, 6);
         for (String key : Sectors.KEYS) {
             if (ui.game.getZoning().zone(key) != null || ui.game.getSectors().byKey(key) == null) continue;
-            Label chip = stepChip(nameOf(key), () -> {
-                policy.openLines.remove(PICK);
-                policy.open(PolicyScreen.ZONING, zonePage(key));
-            }, false);
-            chip.setGraphic(icon(Icons.ofSector(ui.game.getSectors().byKey(key)), Palette.TEXT_LABEL, 13));
-            chip.setGraphicTextGap(6);
-            chips.getChildren().add(chip);
+            chips.getChildren().add(Kept.scope("pick:" + key, () -> {
+                Label chip = stepChip(nameOf(key), () -> {
+                    policy.openLines.remove(PICK);
+                    policy.open(PolicyScreen.ZONING, zonePage(key));
+                }, false);
+                chip.setGraphic(icon(Icons.ofSector(ui.game.getSectors().byKey(key)), Palette.TEXT_LABEL, 13));
+                chip.setGraphicTextGap(6);
+                return chip;
+            }));
         }
         return PolicyScreen.card(PolicyScreen.words("Which industry? Its page opens with nothing zoned; nothing changes "
                 + "until it is applied.", Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL), chips);
@@ -400,16 +413,16 @@ final class ZoningScreen {
     HBox zoneRow(ZoningView.Row r) {
         Sector s = ui.game.getSectors().byKey(r.sector());
         String colour = zoneColour(r.sector());
-        HBox lead = new HBox(8, iconSquare(Icons.ofSector(s), colour, 24, 13));
-        VBox named = new VBox(0, PolicyScreen.words(nameOf(r.sector()), Palette.SIZE_BODY + 1, Palette.TEXT_BODY));
-        if (r.isShort()) named.getChildren().add(chip("holds less than it wants", Palette.WARN));
+        HBox lead = Kept.row(8, iconSquare(Icons.ofSector(s), colour, 24, 13));
+        VBox named = Kept.column(0, PolicyScreen.words(nameOf(r.sector()), Palette.SIZE_BODY + 1, Palette.TEXT_BODY));
+        if (r.isShort()) named.getChildren().add(Kept.scope("short", () -> chip("holds less than it wants", Palette.WARN)));
         lead.getChildren().add(named);
         lead.setAlignment(Pos.CENTER_LEFT);
         lead.setMinWidth(170);
         lead.setPrefWidth(200);
         lead.setMaxWidth(200);
 
-        VBox size = new VBox(0, PolicyScreen.figure(LandManager.areaWords(r.sizeSqFt()), Palette.SIZE_BODY + 1, Palette.TEXT_HEAD),
+        VBox size = Kept.column(0, PolicyScreen.figure(LandManager.areaWords(r.sizeSqFt()), Palette.SIZE_BODY + 1, Palette.TEXT_HEAD),
                 PolicyScreen.muted(pct2(r.share()) + " of the dry ground"));
         size.setMinWidth(130);
         size.setPrefWidth(140);
@@ -420,41 +433,43 @@ final class ZoningScreen {
                 new Segment(r.usedSqFt(), colour, false, null, null, "built in it · " + LandManager.areaWords(r.usedSqFt()), null),
                 new Segment(r.heldSqFt(), colour, true, null, null, "held for it · " + LandManager.areaWords(r.heldSqFt()), null)),
                 scale > 0 ? scale : 1, List.of(), 0, 8);
-        VBox used = new VBox(3, bar, PolicyScreen.muted(usedWords(r)));
+        VBox used = Kept.column(3, bar, PolicyScreen.muted(usedWords(r)));
         used.setMinWidth(150);
         HBox.setHgrow(used, Priority.ALWAYS);
 
-        VBox price = new VBox(0, PolicyScreen.figure(pct0(r.priceShare()) + " of the price", Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD),
+        VBox price = Kept.column(0, PolicyScreen.figure(pct0(r.priceShare()) + " of the price", Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD),
                 PolicyScreen.muted(money(LandManager.perM2(r.pricePerSqFt())) + "/m²"));
         price.setMinWidth(110);
         price.setPrefWidth(120);
         price.setMaxWidth(120);
 
-        FlowPane rates = new FlowPane(4, 4);
+        FlowPane rates = Kept.flow(4, 4);
         for (Zoning.Tax t : Zoning.Tax.values()) {
-            rates.getChildren().add(chip(rateChip(t, r.rate()[t.ordinal()], r.offset()[t.ordinal()]),
-                    Math.abs(r.offset()[t.ordinal()]) > 1e-12 ? Palette.ACCENT : Palette.TEXT_LABEL));
+            rates.getChildren().add(Kept.scope("rate:" + t.name(), () -> chip(rateChip(t, r.rate()[t.ordinal()], r.offset()[t.ordinal()]),
+                    Math.abs(r.offset()[t.ordinal()]) > 1e-12 ? Palette.ACCENT : Palette.TEXT_LABEL)));
         }
         rates.setPrefWrapLength(200);
         rates.setMinWidth(170);
         rates.setPrefWidth(210);
         rates.setMaxWidth(210);
 
-        VBox relief = new VBox(0, PolicyScreen.figure(money(r.taxRelief()), Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD),
+        VBox relief = Kept.column(0, PolicyScreen.figure(money(r.taxRelief()), Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD),
                 PolicyScreen.muted("a month relief"));
         relief.setMinWidth(90);
         relief.setPrefWidth(96);
         relief.setMaxWidth(96);
 
-        Label arrow = new Label("›");
+        Label arrow = Kept.label("›");
         arrow.setStyle(Palette.strong(Palette.SIZE_HEADING + 2, Palette.TEXT_MUTED));
-        HBox row = new HBox(10, lead, size, used, price, rates, relief, arrow);
+        HBox row = Kept.row(10, lead, size, used, price, rates, relief, arrow);
         row.setAlignment(Pos.CENTER_LEFT);
         row.setMinHeight(44);
         String rest = "-fx-padding: 4 6 4 6; -fx-background-radius: 6;"
                 + " -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 0 1 0; -fx-cursor: hand;";
-        row.setStyle(rest);
-        row.setOnMouseEntered(e -> row.setStyle(rest + " -fx-background-color: " + Palette.CONTROL + ";"));
+        // Kept (KP6): the look the pointer calls for is chosen from isHover() where it is set.
+        String lit = rest + " -fx-background-color: " + Palette.CONTROL + ";";
+        row.setStyle(row.isHover() ? lit : rest);
+        row.setOnMouseEntered(e -> row.setStyle(lit));
         row.setOnMouseExited(e -> row.setStyle(rest));
         row.setOnMouseClicked(e -> policy.open(PolicyScreen.ZONING, zonePage(r.sector())));
         return row;
@@ -469,13 +484,12 @@ final class ZoningScreen {
     /** The forest law's card: the forest as a bar of its kinds, cleared ground grey, and what the law means. */
     VBox lawCard(ZoningView.Forest f, Zoning z) {
         if (!(f.forestSqFt() > 0)) {
-            return PolicyScreen.card(PolicyScreen.cardHead(Icons.TREES, FOREST_PROTECTED, "THE CITY OWNS NO FOREST", null, null),
-                    PolicyScreen.muted("A law here keeps nothing until the city buys forest ground."));
+            return Kept.scope("noForest", () -> PolicyScreen.card(PolicyScreen.cardHead(Icons.TREES, FOREST_PROTECTED, "THE CITY OWNS NO FOREST", null, null),
+                    PolicyScreen.muted("A law here keeps nothing until the city buys forest ground.")));
         }
-        VBox c = PolicyScreen.card(PolicyScreen.cardHead(Icons.TREES, FOREST_PROTECTED, lawTitle(z), null,
+        return Kept.scope("forest", () -> PolicyScreen.card(PolicyScreen.cardHead(Icons.TREES, FOREST_PROTECTED, lawTitle(z), null,
                         PolicyScreen.quiet(LandManager.areaWords(f.forestSqFt()) + " of forest")),
-                forestBar(f, 14), PolicyScreen.words(lawWords(f, z), Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
-        return c;
+                forestBar(f, 14), PolicyScreen.words(lawWords(f, z), Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL)));
     }
 
     /** "NO FOREST LAW", "10% PROTECTED · 25% KEPT FROM BUILDING". */
@@ -681,11 +695,12 @@ final class ZoningScreen {
         if (policy.policyStaged.isEmpty()) return null;
         List<Node> chips = new ArrayList<>();
         for (PolicyScreen.TrayItem item : policy.trayItems()) {
-            chips.add(stagedChip(item.words(), () -> {
+            // Kept (KP6): a staged change comes and goes, so its chip is a scope of its own, keyed by the lever.
+            chips.add(Kept.scope("staged:" + item.key(), () -> stagedChip(item.words(), () -> {
                 policy.unstage(item.key());
                 if (item.key().endsWith(":unit")) policy.unstage(item.key().substring(0, item.key().length() - 5) + ":size");
                 policy.showPolicyMenu();
-            }));
+            })));
         }
         if (chips.isEmpty()) return null;
         int count = chips.size();
@@ -734,17 +749,18 @@ final class ZoningScreen {
         String line = !zoned ? name + " has no zone: its buildings take the ground free for anyone, at the going price."
                 : name + "'s zone holds " + LandManager.areaWords(row.heldSqFt()) + " for it; it has built on "
                         + LandManager.areaWords(row.usedSqFt()) + " in it" + (row.isShort() ? " - short of what it wants." : ".");
+        // Kept (KP6): every card is a scope of its own, and the zone's own "take it off" and its staged note come and go.
         page.getChildren().add(sectionHead(possessive(name).toUpperCase() + " ZONE", null,
-                zoned ? offControl(s, name, off) : null));
+                zoned ? Kept.scope("off", () -> offControl(s, name, off)) : null));
         page.getChildren().add(PolicyScreen.muted(line));
         if (off) {
-            page.getChildren().add(PolicyScreen.card(PolicyScreen.words("Staged: the zone comes off. What it holds goes back to "
+            page.getChildren().add(Kept.scope("staged", () -> PolicyScreen.card(PolicyScreen.words("Staged: the zone comes off. What it holds goes back to "
                     + "everyone; what was sold in it stays with its owner at what it paid, assessed at the going price from then on.",
-                    Palette.SIZE_LABEL + 1, Palette.WARN)));
+                    Palette.SIZE_LABEL + 1, Palette.WARN))));
         }
-        page.getChildren().add(sizeCard(s, name, sector));
-        page.getChildren().add(priceCard(s, name));
-        page.getChildren().add(taxesCard(s, name));
+        page.getChildren().add(Kept.scope(sizeKey(s), () -> sizeCard(s, name, sector)));
+        page.getChildren().add(Kept.scope(priceKey(s), () -> priceCard(s, name)));
+        page.getChildren().add(Kept.scope("taxes", () -> taxesCard(s, name)));
     }
 
     /** "Take the zone off" - staged, its chip in the tray - or, staged, "Keep it". */
@@ -778,7 +794,7 @@ final class ZoningScreen {
                 read, v -> applyZone(s));
         boolean shut = policy.isShut(PolicyDates.Lever.ZONING);
         Ladder ladder = policy.ladderOf(lever).greyed(shut);
-        HBox units = new HBox(6, unitChip(s, "A share of the dry ground", Zoning.Size.SHARE, kind),
+        HBox units = Kept.row(6, unitChip(s, "A share of the dry ground", Zoning.Size.SHARE, kind),
                 unitChip(s, "km²", Zoning.Size.KM2, kind));
         units.setDisable(shut);
         ZoningView.Page now = ZoningView.page(ui.game, ui.game.getZoning(), s);
@@ -807,6 +823,7 @@ final class ZoningScreen {
             }
             policy.showPolicyMenu();
         }, to != kind);
+        // The chip's style was set whole by stepChip() just above, in this draw, so this adds to nothing a past draw left.
         if (to == kind) c.setStyle(c.getStyle() + " -fx-border-color: " + Palette.ACCENT + "; -fx-border-width: 0 0 2 0;");
         return c;
     }
@@ -869,37 +886,47 @@ final class ZoningScreen {
     /** A dial card of several dials (ITS TAXES, the forest law): their words and ladders down the left, what they would do at the right, following whichever thumb moves. */
     static VBox multiDialCard(String svg, String title, String info, String status, List<Dial> dials,
                               BiFunction<String, Double, List<Effect>> effectsAt, String caveat, String caveatWhole) {
-        HBox head = new HBox(Palette.GAP, iconSquare(svg, Palette.MONEY, 28, 15), PolicyScreen.words(title, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
+        HBox head = Kept.row(Palette.GAP, iconSquare(svg, Palette.MONEY, 28, 15), PolicyScreen.words(title, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
         ((Label) head.getChildren().get(1)).setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
-        if (info != null) head.getChildren().add(infoButton(info, true));
+        if (info != null) head.getChildren().add(Kept.scope("info", () -> infoButton(info, true)));
         head.setAlignment(Pos.CENTER_LEFT);
-        VBox left = new VBox(6, head);
-        if (status != null) left.getChildren().add(PolicyScreen.words(status, Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-        VBox effects = new VBox(8);
+        VBox left = Kept.column(6, head);
+        if (status != null) left.getChildren().add(Kept.scope("status", () -> PolicyScreen.words(status, Palette.SIZE_LABEL, Palette.TEXT_MUTED)));
+        VBox effects = Kept.column(8);
         BiFunction<String, Double, Void> fill = (k, v) -> {
             effects.getChildren().clear();
-            for (Effect e : effectsAt.apply(k, v)) effects.getChildren().add(beforeAfter(e, EFFECTS));
+            Kept.scope("effects", () -> {
+                for (Effect e : effectsAt.apply(k, v)) effects.getChildren().add(beforeAfter(e, EFFECTS));
+            });
             return null;
         };
-        fill.apply(null, 0.0);
+        // Kept (KP6): each dial's ladder is built in a scope of its own, keyed by its lever, so its slider is its own; the effects are
+        // drawn after them, at the thumb the player holds if one is held (a month that lands mid-drag), else as staged.
+        String held = null;
+        double heldAt = 0;
         for (Dial d : dials) {
             left.getChildren().add(d.words());
-            left.getChildren().add(d.ladder().wide(520).onTrack(v -> fill.apply(d.key(), v)).build());
+            left.getChildren().add(Kept.scope("dial:" + d.key(), () -> d.ladder().wide(520).onTrack(v -> fill.apply(d.key(), v)).build()));
+            if (Math.abs(d.ladder().shown() - d.at()) > 1e-12) {
+                held = d.key();
+                heldAt = d.ladder().shown();
+            }
         }
+        fill.apply(held, heldAt);
         left.setPrefWidth(520);
         left.setMaxWidth(520);
         left.setMinWidth(0);
-        Label what = new Label("WHAT IT WOULD DO");
+        Label what = Kept.label("WHAT IT WOULD DO");
         what.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-        VBox right = new VBox(6, what, effects);
+        VBox right = Kept.column(6, what, effects);
         if (caveat != null) {
-            right.getChildren().add(infoLine(caveat, caveatWhole != null ? caveatWhole : caveat, true,
-                    Palette.SIZE_LABEL, Palette.TEXT_MUTED, EFFECTS));
+            right.getChildren().add(Kept.scope("caveat", () -> infoLine(caveat, caveatWhole != null ? caveatWhole : caveat, true,
+                    Palette.SIZE_LABEL, Palette.TEXT_MUTED, EFFECTS)));
         }
         right.setMinWidth(260);
         HBox.setHgrow(right, Priority.ALWAYS);
         right.setMaxWidth(Double.MAX_VALUE);
-        VBox card = new VBox(10, new HBox(24, left, right));
+        VBox card = Kept.column(10, Kept.row(24, left, right));
         card.setMaxWidth(Double.MAX_VALUE);
         card.setStyle("-fx-padding: 12; -fx-background-color: " + Palette.RAISED + ";"
                 + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + Palette.EDGE + ";");
@@ -1001,11 +1028,11 @@ final class ZoningScreen {
         VBox bars = PolicyScreen.card(PolicyScreen.words(moved ? "Under the staged law" : "Under the law as it stands",
                 Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL), forestBar(then, 18));
         if (moved) {
-            bars.getChildren().addAll(PolicyScreen.muted("As it stands"), forestBar(now, 10));
+            bars.getChildren().addAll(Kept.scope("asItStands", () -> List.<Node>of(PolicyScreen.muted("As it stands"), forestBar(now, 10))));
         }
         page.getChildren().add(bars);
         if (!(now.forestSqFt() > 0)) {
-            page.getChildren().add(PolicyScreen.muted("The city owns no forest: a law keeps nothing until it buys forest ground."));
+            page.getChildren().add(Kept.scope("noForest", () -> PolicyScreen.muted("The city owns no forest: a law keeps nothing until it buys forest ground.")));
         }
 
         List<Dial> dials = new ArrayList<>();
@@ -1018,15 +1045,15 @@ final class ZoningScreen {
         dials.add(new Dial(PolicyScreen.words("KEPT FROM BUILDING: the protected, and the working forest - cut, never built on",
                 Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL), kept.key(), policy.ladderOf(kept), policy.staged(kept.key(), kept.current())));
         BiFunction<String, Double, List<Effect>> effects = (k, v) -> forestEffects(now, k, v == null ? 0 : v);
-        page.getChildren().add(multiDialCard(Icons.TREES, "THE FOREST LAW", FOREST_INFO,
+        page.getChildren().add(Kept.scope("law", () -> multiDialCard(Icons.TREES, "THE FOREST LAW", FOREST_INFO,
                 "The kept share is never under the protected: a law of more protected than kept keeps the protected.",
-                dials, effects, "In the long run, on the forest as it stands.", FOREST_INFO));
+                dials, effects, "In the long run, on the forest as it stands.", FOREST_INFO)));
         // THE CREW RULE (E) (0.7.142, batch I13; board 3's last line): Forestry's rule on the forest it may cut now.
         BuildCard.CrewRule rule = BuildCard.crewRule(g);
         if (rule != null) {
-            page.getChildren().add(PolicyScreen.card(PolicyScreen.words("THE CREW RULE (E) · at "
+            page.getChildren().add(Kept.scope("crew", () -> PolicyScreen.card(PolicyScreen.words("THE CREW RULE (E) · at "
                     + ham.citybuildersim.sectors.Forestry.FOREST_CREW_MONTHS + " months", Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL),
-                    PolicyScreen.muted(crewRuleWords(rule, BuildCard.smallestCrew(g)))));
+                    PolicyScreen.muted(crewRuleWords(rule, BuildCard.smallestCrew(g))))));
         }
     }
 

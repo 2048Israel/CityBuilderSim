@@ -52,7 +52,8 @@ import javafx.scene.layout.Priority;
  * Infrastructure, Services and Land pages reach, and the cause bar, cohort
  * bars, effect scale and rows on one scale are told their figures by set()
  * as the segment bar and the waterfall are; a style a hover changes is
- * chosen from isHover() where it is set.
+ * chosen from isHover() where it is set. Since KP6 so do the Government tab's: the split ring and its key, the ranked bars (a scope a
+ * line, keyed by the line, so the Policy tab's list shares them), the payer rows and the bridge.
  *
  * Static for the same reason as Money and Statement: no state, used
  * everywhere, called unqualified through an import static. The scroller is
@@ -920,14 +921,16 @@ public final class Pieces {
 
     /** The popover itself: the whole text on the raised ground, under the (i), until a click elsewhere or Esc. */
     static void openPopover(javafx.scene.Node anchor, String whole, boolean manual) {
-        Label text = new Label(whole);
+        // Built when the click fires, never in a draw (KP6): Kept's calls are new nodes outside one, and inside one - an (i) pressed
+        // by code in the middle of a draw - the popover's card is not the page's to hand back.
+        Label text = Kept.label(whole);
         text.setWrapText(true);
         text.setMaxWidth(POPOVER_WIDTH);
         text.setStyle("-fx-font-family: " + Fonts.sans() + "; -fx-font-size: 12.5px;"
                 + " -fx-text-fill: " + Palette.TEXT_LABEL + "; -fx-line-spacing: 2;");
-        VBox card = new VBox(6, text);
+        VBox card = Kept.column(6, text);
         if (manual) {
-            Label more = new Label(MORE_IN_THE_MANUAL);
+            Label more = Kept.label(MORE_IN_THE_MANUAL);
             more.setStyle("-fx-font-family: " + Fonts.sans() + "; -fx-font-size: 12px;"
                     + " -fx-text-fill: " + Palette.TEXT_MUTED + ";");
             card.getChildren().add(more);
@@ -944,7 +947,7 @@ public final class Pieces {
         if (popover != null) popover.hide();
         javafx.geometry.Bounds at = anchor.localToScreen(anchor.getBoundsInLocal());
         if (at == null || anchor.getScene() == null) return;
-        VBox card = body instanceof VBox v && v.getStyle().isEmpty() ? v : new VBox(6, body);
+        VBox card = body instanceof VBox v && v.getStyle().isEmpty() ? v : Kept.column(6, body);
         card.setStyle("-fx-background-color: " + Palette.PINNED + "; -fx-border-color: " + Palette.EDGE + ";"
                 + " -fx-border-width: 1; -fx-background-radius: 8; -fx-border-radius: 8;"
                 + " -fx-padding: 10 12 10 12;"
@@ -966,44 +969,48 @@ public final class Pieces {
 
     /** One payer inside an opened line: who, how much, at what rate. */
     public static HBox payerRow(String who, double amount, double total, String rate) {
+        // Kept (KP6): a payer's row is a scope of its own (its caller keys it by who), so a line opened with more or fewer payers
+        // than last month hands no other row's labels to this one.
+        return Kept.scope("payerRow", () -> {
 
-        Label name = new Label(who);
-        name.setPrefWidth(150);
-        name.setMinWidth(150);
-        name.setWrapText(true);      // never cut (0.7.31): "Principal repaid - not an expense" is wider than 150
-        name.setStyle(Palette.words(Palette.SIZE_CAPTION,
-                amount > 0 ? Palette.TEXT_BODY : Palette.TEXT_SPENT));
+            Label name = Kept.label(who);
+            name.setPrefWidth(150);
+            name.setMinWidth(150);
+            name.setWrapText(true);      // never cut (0.7.31): "Principal repaid - not an expense" is wider than 150
+            name.setStyle(Palette.words(Palette.SIZE_CAPTION,
+                    amount > 0 ? Palette.TEXT_BODY : Palette.TEXT_SPENT));
 
-        Region gap = new Region();
-        HBox.setHgrow(gap, Priority.ALWAYS);
+            Region gap = Kept.region();
+            HBox.setHgrow(gap, Priority.ALWAYS);
 
-        // A true minus (0.7.31, the Government spec's B15: tightMoney() writes a
-        // hyphen, and a refund sat under figures signed with a minus).
-        String shown = tightMoney(toDollars(Math.abs(amount)));
-        Label money = new Label(amount < 0 && !"$0".equals(shown) ? "\u2212" + shown : shown);
-        money.setPrefWidth(94);
-        money.setMinWidth(94);
-        money.setAlignment(Pos.CENTER_RIGHT);
-        money.setStyle(Palette.figure(Palette.SIZE_CAPTION,
-                amount > 0 ? Palette.TEXT_BODY : Palette.TEXT_SPENT));
+            // A true minus (0.7.31, the Government spec's B15: tightMoney() writes a
+            // hyphen, and a refund sat under figures signed with a minus).
+            String shown = tightMoney(toDollars(Math.abs(amount)));
+            Label money = Kept.label(amount < 0 && !"$0".equals(shown) ? "−" + shown : shown);
+            money.setPrefWidth(94);
+            money.setMinWidth(94);
+            money.setAlignment(Pos.CENTER_RIGHT);
+            money.setStyle(Palette.figure(Palette.SIZE_CAPTION,
+                    amount > 0 ? Palette.TEXT_BODY : Palette.TEXT_SPENT));
 
-        Label share = new Label(String.format("%.0f%%", total > 0 ? amount / total * 100 : 0).replace('-', '\u2212'));
-        share.setPrefWidth(48);
-        share.setMinWidth(48);
-        share.setAlignment(Pos.CENTER_RIGHT);
-        share.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+            Label share = Kept.label(String.format("%.0f%%", total > 0 ? amount / total * 100 : 0).replace('-', '−'));
+            share.setPrefWidth(48);
+            share.setMinWidth(48);
+            share.setAlignment(Pos.CENTER_RIGHT);
+            share.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
 
-        Label at = new Label(rate == null ? "" : rate);
-        at.setPrefWidth(80);
-        at.setMinWidth(80);
-        at.setAlignment(Pos.CENTER_RIGHT);
-        at.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_SPENT));
+            Label at = Kept.label(rate == null ? "" : rate);
+            at.setPrefWidth(80);
+            at.setMinWidth(80);
+            at.setAlignment(Pos.CENTER_RIGHT);
+            at.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_SPENT));
 
-        HBox row = new HBox(Palette.GAP_TIGHT, name, gap, money, share, at);
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.setMaxWidth(STATEMENT - 22);
-        row.setStyle("-fx-padding: 2 0 2 0;");
-        return row;
+            HBox row = Kept.row(Palette.GAP_TIGHT, name, gap, money, share, at);
+            row.setAlignment(Pos.CENTER_LEFT);
+            row.setMaxWidth(STATEMENT - 22);
+            row.setStyle("-fx-padding: 2 0 2 0;");
+            return row;
+        });
     }
 
     /** The gap between cards in a row or a grid: Build's cards in their flow, the land office's shelf. */
@@ -1817,11 +1824,23 @@ public final class Pieces {
     /** A chip: the words in a colour on a faint ground of it (Construction's, 0.7.22; here since 0.7.27). */
     public static Label chip(String text, String colour) {
         Label l = Kept.label(text);
+        chipLook(l, colour);
+        return l;
+    }
+
+    /** ...with a graphic of the caller's own before the words (KP6): handed over where the chip is made, so a kept chip is not stripped of it and given it back. */
+    public static Label chip(String text, String colour, javafx.scene.Node graphic) {
+        Label l = Kept.label(text, graphic);
+        chipLook(l, colour);
+        return l;
+    }
+
+    /** A chip's look: the words in a colour on a faint ground of it. */
+    private static void chipLook(Label l, String colour) {
         l.setStyle(Palette.words(Palette.SIZE_CAPTION, colour)
                 + " -fx-background-color: " + tint(colour, .16) + "; -fx-background-radius: 10;"
                 + " -fx-padding: 2 8 2 8;");
         l.setMinWidth(Region.USE_PREF_SIZE);
-        return l;
     }
 
     /** A colour at an opacity, for a chip's ground. */
@@ -3453,7 +3472,15 @@ public final class Pieces {
                 boolean on = Double.isFinite(rule.at()) && rule.at() >= 0 && rule.at() <= scale;
                 line.setVisible(on);
                 name.setVisible(on && rule.name() != null);
-                if (!on) continue;
+                if (!on) {
+                    // A rule off the scale keeps nothing of the month it was last on (a page built new has none): its line and name where nothing laid them out.
+                    line.setStartX(0);
+                    line.setEndX(0);
+                    line.setStartY(0);
+                    line.setEndY(0);
+                    name.resizeRelocate(0, 0, 0, 0);
+                    continue;
+                }
                 double x = Math.floor(x0 + barW * rule.at() / scale) + .5;
                 line.setStartX(x);
                 line.setEndX(x);
@@ -3682,55 +3709,64 @@ public final class Pieces {
      */
     public static javafx.scene.layout.StackPane splitRing(List<Slice> slices, String top, String figure,
                                                           String tone, double size, Consumer<Slice> pick) {
-        javafx.scene.layout.Pane ring = new javafx.scene.layout.Pane();
-        ring.setPrefSize(size, size);
-        ring.setMinSize(size, size);
-        ring.setMaxSize(size, size);
+        // Kept (KP6): the ring's arcs, a scope each keyed by the slice's name, so a line that comes into the five (or leaves them)
+        // moves no other arc's tooltip or click onto the wrong line.
+        return Kept.scope("splitRing", () -> {
+            javafx.scene.layout.Pane ring = Kept.plain();
+            ring.setPrefSize(size, size);
+            ring.setMinSize(size, size);
+            ring.setMaxSize(size, size);
 
-        double total = 0;
-        for (Slice s : slices) total += s.amount();
+            double total = 0;
+            for (Slice s : slices) total += s.amount();
 
-        double radius = (size - Palette.RING) / 2;
-        double at = 90;                       // twelve o'clock, going clockwise
-        double gap = slices.size() > 1 ? 1.5 : 0;
+            double radius = (size - Palette.RING) / 2;
+            double at = 90;                       // twelve o'clock, going clockwise
+            double gap = slices.size() > 1 ? 1.5 : 0;
 
-        for (Slice s : slices) {
-            double span = total > 0 ? s.amount() / total * 360 : 0;
-            javafx.scene.shape.Arc arc = new javafx.scene.shape.Arc(
-                    size / 2, size / 2, radius, radius,
-                    at - span + gap / 2, Math.max(0, span - gap));
-            arc.setType(javafx.scene.shape.ArcType.OPEN);
-            arc.setFill(null);
-            arc.setStroke(javafx.scene.paint.Color.web(s.colour()));
-            arc.setStrokeWidth(Palette.RING);
-            arc.setStrokeLineCap(javafx.scene.shape.StrokeLineCap.BUTT);
+            for (Slice s : slices) {
+                double span = total > 0 ? s.amount() / total * 360 : 0;
+                final double from = at - span + gap / 2, length = Math.max(0, span - gap);
+                final double whole = total;
+                ring.getChildren().add(Kept.scope(s.name(), () -> {
+                    javafx.scene.shape.Arc arc = Kept.of(javafx.scene.shape.Arc.class, javafx.scene.shape.Arc::new);
+                    arc.setCenterX(size / 2);
+                    arc.setCenterY(size / 2);
+                    arc.setRadiusX(radius);
+                    arc.setRadiusY(radius);
+                    arc.setStartAngle(from);
+                    arc.setLength(length);
+                    arc.setType(javafx.scene.shape.ArcType.OPEN);
+                    arc.setFill(null);
+                    arc.setStroke(javafx.scene.paint.Color.web(s.colour()));
+                    arc.setStrokeWidth(Palette.RING);
+                    arc.setStrokeLineCap(javafx.scene.shape.StrokeLineCap.BUTT);
 
-            Tooltip tip = new Tooltip(String.format("%s%n%s   %.1f%% of the total",
-                    s.name(), money(s.amount()), total > 0 ? s.amount() / total * 100 : 0));
-            tip.setShowDelay(Duration.millis(200));
-            Tooltip.install(arc, tip);
-            if (pick != null) {
-                arc.setCursor(javafx.scene.Cursor.HAND);
-                arc.setOnMouseClicked(e -> pick.accept(s));
+                    Kept.tip(arc, String.format("%s%n%s   %.1f%% of the total",
+                            s.name(), money(s.amount()), whole > 0 ? s.amount() / whole * 100 : 0), 200);
+                    // Set on both sides of the condition: a kept arc is handed back with no click, and the cursor it had.
+                    arc.setCursor(pick != null ? javafx.scene.Cursor.HAND : null);
+                    arc.setOnMouseClicked(pick != null ? e -> pick.accept(s) : null);
+                    return arc;
+                }));
+                at -= span;
             }
-            ring.getChildren().add(arc);
-            at -= span;
-        }
 
-        Label caption = new Label(top);
-        caption.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-        Label middle = new Label(figure);
-        middle.setStyle(Palette.figure(Palette.SIZE_LEAD, tone));
-        middle.setMinWidth(Region.USE_PREF_SIZE);
-        VBox inside = new VBox(0, caption, middle);
-        inside.setAlignment(Pos.CENTER);
-        inside.setMouseTransparent(true);
+            Label caption = Kept.label(top);
+            caption.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+            Label middle = Kept.label(figure);
+            middle.setStyle(Palette.figure(Palette.SIZE_LEAD, tone));
+            middle.setMinWidth(Region.USE_PREF_SIZE);
+            VBox inside = Kept.column(0, caption, middle);
+            inside.setAlignment(Pos.CENTER);
+            inside.setMouseTransparent(true);
 
-        javafx.scene.layout.StackPane box = new javafx.scene.layout.StackPane(ring, inside);
-        box.setPrefSize(size, size);
-        box.setMinSize(size, size);
-        box.setMaxSize(size, size);
-        return box;
+            javafx.scene.layout.StackPane box = Kept.stack(ring, inside);
+            box.setPrefSize(size, size);
+            box.setMinSize(size, size);
+            box.setMaxSize(size, size);
+            return box;
+        });
     }
 
     /**
@@ -3750,49 +3786,57 @@ public final class Pieces {
     public static VBox ringKey(List<Slice> slices, double width, Consumer<Slice> pick) {
         double total = 0;
         for (Slice s : slices) total += s.amount();
-        VBox key = new VBox(2);
-        for (Slice s : slices) {
-            Region swatch = new Region();
-            swatch.setMinSize(10, 10);
-            swatch.setPrefSize(10, 10);
-            swatch.setMaxSize(10, 10);
-            swatch.setStyle("-fx-background-color: " + s.colour() + "; -fx-background-radius: 2;");
+        final double whole = total;
+        // Kept (KP6): a row a slice, a scope each keyed by the slice's name, as the ring's arcs are.
+        return Kept.scope("ringKey", () -> {
+            VBox key = Kept.column(2);
+            for (Slice s : slices) key.getChildren().add(Kept.scope(s.name(), () -> {
+                Region swatch = Kept.region();
+                swatch.setMinSize(10, 10);
+                swatch.setPrefSize(10, 10);
+                swatch.setMaxSize(10, 10);
+                swatch.setStyle("-fx-background-color: " + s.colour() + "; -fx-background-radius: 2;");
 
-            Label name = new Label(s.name());
-            name.setWrapText(true);
-            name.setMinWidth(0);
-            name.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_BODY));
-            HBox.setHgrow(name, Priority.ALWAYS);
-            name.setMaxWidth(Double.MAX_VALUE);
+                Label name = Kept.label(s.name());
+                name.setWrapText(true);
+                name.setMinWidth(0);
+                name.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_BODY));
+                HBox.setHgrow(name, Priority.ALWAYS);
+                name.setMaxWidth(Double.MAX_VALUE);
 
-            Label share = new Label(String.format("%.1f%%", total > 0 ? s.amount() / total * 100 : 0));
-            share.setMinWidth(46);
-            share.setPrefWidth(46);
-            share.setAlignment(Pos.CENTER_RIGHT);
-            share.setStyle(Palette.figure(Palette.SIZE_LABEL, Palette.TEXT_HEAD));
+                Label share = Kept.label(String.format("%.1f%%", whole > 0 ? s.amount() / whole * 100 : 0));
+                share.setMinWidth(46);
+                share.setPrefWidth(46);
+                share.setAlignment(Pos.CENTER_RIGHT);
+                share.setStyle(Palette.figure(Palette.SIZE_LABEL, Palette.TEXT_HEAD));
 
-            Label amount = new Label(money(s.amount()));
-            amount.setMinWidth(Region.USE_PREF_SIZE);
-            amount.setPrefWidth(64);
-            amount.setAlignment(Pos.CENTER_RIGHT);
-            amount.setStyle(Palette.figure(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+                Label amount = Kept.label(money(s.amount()));
+                amount.setMinWidth(Region.USE_PREF_SIZE);
+                amount.setPrefWidth(64);
+                amount.setAlignment(Pos.CENTER_RIGHT);
+                amount.setStyle(Palette.figure(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
 
-            HBox row = new HBox(Palette.GAP_TIGHT + 2, swatch, name, share, amount);
-            row.setAlignment(Pos.CENTER_LEFT);
-            row.setMinHeight(22);
-            row.setPrefWidth(width);
-            row.setMaxWidth(width);
-            String rest = "-fx-padding: 1 4 1 4; -fx-background-radius: 4;";
-            row.setStyle(rest);
-            if (pick != null) {
-                row.setStyle(rest + " -fx-cursor: hand;");
-                row.setOnMouseEntered(e -> row.setStyle(rest + " -fx-cursor: hand; -fx-background-color: " + Palette.CONTROL + ";"));
-                row.setOnMouseExited(e -> row.setStyle(rest + " -fx-cursor: hand;"));
-                row.setOnMouseClicked(e -> pick.accept(s));
-            }
-            key.getChildren().add(row);
-        }
-        return key;
+                HBox row = Kept.row(Palette.GAP_TIGHT + 2, swatch, name, share, amount);
+                row.setAlignment(Pos.CENTER_LEFT);
+                row.setMinHeight(22);
+                row.setPrefWidth(width);
+                row.setMaxWidth(width);
+                String rest = "-fx-padding: 1 4 1 4; -fx-background-radius: 4;";
+                if (pick != null) {
+                    // The look the pointer calls for is chosen from isHover() where it is set (a kept row is not entered afresh).
+                    String hand = rest + " -fx-cursor: hand;";
+                    String over = hand + " -fx-background-color: " + Palette.CONTROL + ";";
+                    row.setStyle(row.isHover() ? over : hand);
+                    row.setOnMouseEntered(e -> row.setStyle(over));
+                    row.setOnMouseExited(e -> row.setStyle(hand));
+                    row.setOnMouseClicked(e -> pick.accept(s));
+                } else {
+                    row.setStyle(rest);
+                }
+                return row;
+            }));
+            return key;
+        });
     }
 
     /* ----------------------------- ranked bars ----------------------------- */
@@ -3831,88 +3875,111 @@ public final class Pieces {
      */
     public static VBox rankBars(List<RankRow> rows, double scale, double[] columns, double doorWidth,
                                 java.util.Set<String> open, Runnable redraw) {
-        double pos = Math.max(0, scale), neg = 0;
+        double most = Math.max(0, scale), least = 0;
         for (RankRow r : rows) {
-            if (r.amount() > pos) pos = r.amount();
-            if (-r.amount() > neg) neg = -r.amount();
+            if (r.amount() > most) most = r.amount();
+            if (-r.amount() > least) least = -r.amount();
         }
-        VBox list = new VBox(0);
-        for (RankRow r : rows) {
-            boolean opens = r.opened() != null;
-            boolean shown = opens && open.contains(r.key());
+        final double pos = most, neg = least;
+        // Kept (KP6): the list is a scope, and a row a scope inside it keyed by the line it shows - so a line that comes or goes, or opens
+        // into who pays, moves no other row's nodes (the rows are in the order the caller ranked them, and rank changes month to month).
+        return Kept.scope("rankBars", () -> {
+            VBox list = Kept.column(0);
+            for (RankRow r : rows) {
+                List<javafx.scene.Node> made = Kept.scope(r.key(), () -> rankRow(r, pos, neg, columns, doorWidth, open, redraw));
+                list.getChildren().addAll(made);
+            }
+            return list;
+        });
+    }
 
-            HBox lead = new HBox(8);
-            lead.setAlignment(Pos.CENTER_LEFT);
-            lead.setMinWidth(200);
-            lead.setPrefWidth(236);
-            lead.setMaxWidth(236);
-            if (r.icon() != null) lead.getChildren().add(iconSquare(r.icon(), r.colour(), 24, 13));
-            Label name = new Label(r.name());
-            name.setWrapText(true);
-            name.setMinWidth(0);
-            name.setStyle(Palette.words(Palette.SIZE_BODY + 1, r.amount() == 0 ? Palette.TEXT_MUTED : Palette.TEXT_BODY));
-            VBox named = new VBox(0, name);
-            if (opens) {
-                Label mark = new Label((shown ? "▾ " : "▸ ") + r.openWord());
+    /** One line of rankBars(): its row, and under it what it opens into while it is open. */
+    private static List<javafx.scene.Node> rankRow(RankRow r, double pos, double neg, double[] columns, double doorWidth,
+                                                   java.util.Set<String> open, Runnable redraw) {
+        boolean opens = r.opened() != null;
+        boolean shown = opens && open.contains(r.key());
+
+        HBox lead = Kept.row(8);
+        lead.setAlignment(Pos.CENTER_LEFT);
+        lead.setMinWidth(200);
+        lead.setPrefWidth(236);
+        lead.setMaxWidth(236);
+        if (r.icon() != null) lead.getChildren().add(iconSquare(r.icon(), r.colour(), 24, 13));
+        Label name = Kept.label(r.name());
+        name.setWrapText(true);
+        name.setMinWidth(0);
+        name.setStyle(Palette.words(Palette.SIZE_BODY + 1, r.amount() == 0 ? Palette.TEXT_MUTED : Palette.TEXT_BODY));
+        VBox named = Kept.column(0, name);
+        if (opens) {
+            named.getChildren().add(Kept.scope("mark", () -> {
+                Label mark = Kept.label((shown ? "▾ " : "▸ ") + r.openWord());
                 mark.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.ACCENT));
-                named.getChildren().add(mark);
-            }
-            HBox.setHgrow(named, Priority.ALWAYS);
-            lead.getChildren().add(named);
-
-            RankBar bar = new RankBar(r.amount(), pos, neg, r.colour());
-            HBox.setHgrow(bar, Priority.ALWAYS);
-            if (r.tip() != null) {
-                Tooltip tip = new Tooltip(r.tip());
-                tip.setShowDelay(Duration.millis(200));
-                Tooltip.install(bar, tip);
-            }
-
-            HBox row = new HBox(10, lead, bar);
-            for (int c = 0; c < r.figures().size(); c++) {
-                Label f = new Label(r.figures().get(c));
-                double w = c < columns.length ? columns[c] : 70;
-                f.setMinWidth(Region.USE_PREF_SIZE);
-                f.setPrefWidth(w);
-                f.setAlignment(Pos.CENTER_RIGHT);
-                f.setStyle(Palette.figure(c == 0 ? Palette.SIZE_BODY + 1 : Palette.SIZE_LABEL,
-                        c == 0 ? Palette.TEXT_HEAD : Palette.TEXT_MUTED));
-                row.getChildren().add(f);
-            }
-            if (doorWidth > 0) {
-                javafx.scene.Node d = r.door() == null ? new Region() : door(r.doorWords(), Palette.ACCENT, r.door());
-                HBox slot = new HBox(d);
-                slot.setAlignment(Pos.CENTER_RIGHT);
-                slot.setMinWidth(doorWidth);
-                slot.setPrefWidth(doorWidth);
-                row.getChildren().add(slot);
-            }
-            row.setAlignment(Pos.CENTER_LEFT);
-            row.setMinHeight(RANK_ROW);
-            row.getProperties().put(RANK_KEY, r.key());
-            String rest = "-fx-padding: 4 6 4 6; -fx-background-radius: 6;"
-                    + " -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 0 1 0;";
-            row.setStyle(rest);
-            if (opens) {
-                row.setStyle(rest + " -fx-cursor: hand;");
-                row.setOnMouseEntered(e -> row.setStyle(rest + " -fx-cursor: hand; -fx-background-color: " + Palette.CONTROL + ";"));
-                row.setOnMouseExited(e -> row.setStyle(rest + " -fx-cursor: hand;"));
-                row.setOnMouseClicked(e -> {
-                    if (!open.remove(r.key())) open.add(r.key());
-                    redraw.run();
-                });
-            }
-            list.getChildren().add(row);
-            if (shown) {
-                javafx.scene.Node inside = r.opened().get();
-                if (inside != null) {
-                    VBox under = new VBox(inside);
-                    under.setStyle("-fx-padding: 6 0 10 46;");
-                    list.getChildren().add(under);
-                }
-            }
+                return mark;
+            }));
         }
-        return list;
+        HBox.setHgrow(named, Priority.ALWAYS);
+        lead.getChildren().add(named);
+
+        // The bar is a picture kept with its parts and told its figures (RankBar.set); its tooltip is set where it has one.
+        RankBar bar = Kept.of(RankBar.class, RankBar::new);
+        bar.set(r.amount(), pos, neg, r.colour());
+        HBox.setHgrow(bar, Priority.ALWAYS);
+        if (r.tip() != null) Kept.tip(bar, r.tip(), 200);
+
+        HBox row = Kept.row(10, lead, bar);
+        for (int c = 0; c < r.figures().size(); c++) {
+            Label f = Kept.label(r.figures().get(c));
+            double w = c < columns.length ? columns[c] : 70;
+            f.setMinWidth(Region.USE_PREF_SIZE);
+            f.setPrefWidth(w);
+            f.setAlignment(Pos.CENTER_RIGHT);
+            f.setStyle(Palette.figure(c == 0 ? Palette.SIZE_BODY + 1 : Palette.SIZE_LABEL,
+                    c == 0 ? Palette.TEXT_HEAD : Palette.TEXT_MUTED));
+            row.getChildren().add(f);
+        }
+        if (doorWidth > 0) {
+            HBox slot = Kept.scope("door", () -> {
+                javafx.scene.Node d = r.door() == null ? Kept.region() : door(r.doorWords(), Palette.ACCENT, r.door());
+                HBox s = Kept.row(0, d);
+                s.setAlignment(Pos.CENTER_RIGHT);
+                s.setMinWidth(doorWidth);
+                s.setPrefWidth(doorWidth);
+                return s;
+            });
+            row.getChildren().add(slot);
+        }
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setMinHeight(RANK_ROW);
+        row.getProperties().put(RANK_KEY, r.key());
+        String rest = "-fx-padding: 4 6 4 6; -fx-background-radius: 6;"
+                + " -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 0 1 0;";
+        if (opens) {
+            // The look the pointer calls for is chosen from isHover() where it is set (a kept row is not entered afresh).
+            String hand = rest + " -fx-cursor: hand;";
+            String over = hand + " -fx-background-color: " + Palette.CONTROL + ";";
+            row.setStyle(row.isHover() ? over : hand);
+            row.setOnMouseEntered(e -> row.setStyle(over));
+            row.setOnMouseExited(e -> row.setStyle(hand));
+            row.setOnMouseClicked(e -> {
+                if (!open.remove(r.key())) open.add(r.key());
+                redraw.run();
+            });
+        } else {
+            row.setStyle(rest);
+        }
+        List<javafx.scene.Node> out = new java.util.ArrayList<>();
+        out.add(row);
+        if (shown) {
+            javafx.scene.Node under = Kept.scope("under", () -> {
+                javafx.scene.Node inside = r.opened().get();
+                if (inside == null) return null;
+                VBox box = Kept.column(0, inside);
+                box.setStyle("-fx-padding: 6 0 10 46;");
+                return box;
+            });
+            if (under != null) out.add(under);
+        }
+        return out;
     }
 
     /** The bar rankBars() draws for one row: a Pane that lays its track, its fill and its axis out at whatever width it is given. */
@@ -4015,28 +4082,36 @@ public final class Pieces {
     public static HBox bridge(List<Anchor> anchors, List<List<BridgeStep>> steps,
                               java.util.function.DoubleFunction<String> figure, String in, String out,
                               int foldPast, java.util.Set<String> open, String key, Runnable redraw) {
-        double scale = 0;
-        for (List<BridgeStep> col : steps) for (BridgeStep s : col) scale = Math.max(scale, Math.abs(s.amount()));
+        double most = 0;
+        for (List<BridgeStep> col : steps) for (BridgeStep s : col) most = Math.max(most, Math.abs(s.amount()));
+        final double scale = most;
 
-        HBox card = new HBox(6);
-        card.setAlignment(Pos.TOP_LEFT);
-        for (int i = 0; i < anchors.size(); i++) {
-            if (i > 0) {
-                card.getChildren().add(bridgeChevron());
-                List<BridgeStep> col = i - 1 < steps.size() ? steps.get(i - 1) : List.of();
-                VBox column = bridgeColumn(col, scale, figure, in, out, foldPast, open, key + ":" + (i - 1), redraw);
-                HBox.setHgrow(column, Priority.ALWAYS);
-                card.getChildren().add(column);
-                card.getChildren().add(bridgeChevron());
+        // Kept (KP6): the tiles, the chevrons and the columns are a scope each, keyed by their place - the bridge's shape is the
+        // anchors' (three), and what changes month to month is a column's steps, which are scopes of their own.
+        return Kept.scope("bridge", () -> {
+            HBox card = Kept.row(6);
+            card.setAlignment(Pos.TOP_LEFT);
+            for (int i = 0; i < anchors.size(); i++) {
+                if (i > 0) {
+                    final int at = i;
+                    card.getChildren().add(Kept.scope("before " + i, Pieces::bridgeChevron));
+                    List<BridgeStep> col = at - 1 < steps.size() ? steps.get(at - 1) : List.of();
+                    VBox column = Kept.scope("column " + (at - 1),
+                            () -> bridgeColumn(col, scale, figure, in, out, foldPast, open, key + ":" + (at - 1), redraw));
+                    HBox.setHgrow(column, Priority.ALWAYS);
+                    card.getChildren().add(column);
+                    card.getChildren().add(Kept.scope("after " + i, Pieces::bridgeChevron));
+                }
+                final Anchor a = anchors.get(i);
+                card.getChildren().add(Kept.scope("tile " + i, () -> bridgeTile(a)));
             }
-            card.getChildren().add(bridgeTile(anchors.get(i)));
-        }
-        return card;
+            return card;
+        });
     }
 
     /** The muted "›" between a tile and a column. */
     static Label bridgeChevron() {
-        Label l = new Label("›");
+        Label l = Kept.label("›");
         l.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_SPENT) + " -fx-padding: 18 0 0 0;");
         l.setMinWidth(Region.USE_PREF_SIZE);
         return l;
@@ -4044,22 +4119,24 @@ public final class Pieces {
 
     /** One anchor as a tile: caption and icon, the figure, its line, its chips. */
     static VBox bridgeTile(Anchor a) {
-        HBox head = new HBox(6);
+        HBox head = Kept.row(6);
         head.setAlignment(Pos.CENTER_LEFT);
         if (a.icon() != null) head.getChildren().add(icon(a.icon(), Palette.TEXT_LABEL, 13));
-        Label caption = new Label(a.caption());
+        Label caption = Kept.label(a.caption());
         caption.setWrapText(true);
         caption.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
         head.getChildren().add(caption);
-        Label fig = new Label(a.figure());
+        Label fig = Kept.label(a.figure());
         fig.setMinWidth(Region.USE_PREF_SIZE);
         fig.setStyle(Fonts.monoSemiBold() + " -fx-font-size: 22px; -fx-text-fill: " + Palette.TEXT_HEAD + ";");
-        VBox tile = new VBox(2, head, fig);
+        VBox tile = Kept.column(2, head, fig);
         if (a.line() != null) {
-            Label line = new Label(a.line());
-            line.setWrapText(true);
-            line.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-            tile.getChildren().add(line);
+            tile.getChildren().add(Kept.scope("line", () -> {
+                Label line = Kept.label(a.line());
+                line.setWrapText(true);
+                line.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+                return line;
+            }));
         }
         if (a.chips() != null) {
             for (javafx.scene.Node c : a.chips()) {
@@ -4073,11 +4150,9 @@ public final class Pieces {
         tile.setMaxWidth(BRIDGE_TILE);
         String rest = "-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.PANEL + "; -fx-background-radius: 8;"
                 + " -fx-border-color: " + Palette.EDGE + "; -fx-border-radius: 8;";
-        tile.setStyle(rest);
-        if (a.go() != null) {
-            tile.setStyle(rest + " -fx-cursor: hand;");
-            tile.setOnMouseClicked(e -> a.go().run());
-        }
+        // Set on both sides of the condition: a kept tile is handed back with no click, and the style it had.
+        tile.setStyle(a.go() != null ? rest + " -fx-cursor: hand;" : rest);
+        tile.setOnMouseClicked(a.go() != null ? e -> a.go().run() : null);
         return tile;
     }
 
@@ -4094,26 +4169,36 @@ public final class Pieces {
         shown.sort((a, b) -> Double.compare(Math.abs(b.amount()), Math.abs(a.amount())));
         shown.addAll(kept);
 
-        VBox column = new VBox(2);
+        VBox column = Kept.column(2);
         column.setMinWidth(220);
         column.setStyle("-fx-padding: 6 0 0 0;");
         if (shown.isEmpty()) {
-            Label none = new Label("nothing between them");
-            none.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_SPENT));
-            column.getChildren().add(none);
+            // Words present one month and absent the next are a scope of their own (an emptied label keeps the height it had).
+            column.getChildren().add(Kept.scope("none", () -> {
+                Label none = Kept.label("nothing between them");
+                none.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_SPENT));
+                return none;
+            }));
             return column;
         }
-        boolean all = open.contains(key) || shown.size() <= foldPast;
+        final boolean all = open.contains(key) || shown.size() <= foldPast;
         int count = all ? shown.size() : Math.max(1, foldPast - 1);
-        for (int i = 0; i < count; i++) column.getChildren().add(bridgeRow(shown.get(i), scale, figure, in, out));
+        // A step is a scope keyed by its words, so a step that comes or goes, or moves up the column as the sizes change, takes its nodes with it.
+        for (int i = 0; i < count; i++) {
+            final BridgeStep step = shown.get(i);
+            column.getChildren().add(Kept.scope(step.label(), () -> bridgeRow(step, scale, figure, in, out)));
+        }
         if (shown.size() > foldPast) {
-            Label more = new Label(all ? "fewer ▴" : (shown.size() - count) + " more ▸");
-            more.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.ACCENT) + " -fx-cursor: hand;");
-            more.setOnMouseClicked(e -> {
-                if (!open.remove(key)) open.add(key);
-                redraw.run();
-            });
-            column.getChildren().add(more);
+            final int hidden = shown.size() - count;
+            column.getChildren().add(Kept.scope("more", () -> {
+                Label more = Kept.label(all ? "fewer ▴" : hidden + " more ▸");
+                more.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.ACCENT) + " -fx-cursor: hand;");
+                more.setOnMouseClicked(e -> {
+                    if (!open.remove(key)) open.add(key);
+                    redraw.run();
+                });
+                return more;
+            }));
         }
         return column;
     }
@@ -4122,12 +4207,17 @@ public final class Pieces {
     static HBox bridgeRow(BridgeStep s, double scale, java.util.function.DoubleFunction<String> figure,
                           String in, String out) {
         boolean adds = s.amount() >= 0;
-        Label sign = new Label(Math.abs(s.amount()) < BRIDGE_NOTHING ? "" : adds ? "+" : "−");
-        sign.setMinWidth(10);
-        sign.setStyle(Palette.figure(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-        HBox row = new HBox(5, sign);
+        // Words present one month and absent the next get a scope of their own (an emptied label keeps the height of the "−" it had: KP6).
+        String mark = Math.abs(s.amount()) < BRIDGE_NOTHING ? "" : adds ? "+" : "−";
+        Label sign = Kept.scope(mark.isEmpty() ? "no sign" : "sign", () -> {
+            Label l = Kept.label(mark);
+            l.setMinWidth(10);
+            l.setStyle(Palette.figure(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+            return l;
+        });
+        HBox row = Kept.row(5, sign);
         if (s.icon() != null) row.getChildren().add(icon(s.icon(), Palette.TEXT_LABEL, 12));
-        Label words = new Label(s.label());
+        Label words = Kept.label(s.label());
         words.setWrapText(true);
         words.setMinWidth(0);
         words.setStyle(Palette.words(Palette.SIZE_LABEL, s.go() == null ? Palette.TEXT_BODY : Palette.ACCENT));
@@ -4135,7 +4225,7 @@ public final class Pieces {
         words.setMaxWidth(Double.MAX_VALUE);
         row.getChildren().add(words);
         row.getChildren().add(bar(scale > 0 ? Math.abs(s.amount()) / scale : 0, adds ? in : out, BRIDGE_BAR, 6));
-        Label fig = new Label(figure.apply(s.amount()));
+        Label fig = Kept.label(figure.apply(s.amount()));
         fig.setMinWidth(Region.USE_PREF_SIZE);
         fig.setPrefWidth(BRIDGE_FIGURE);
         fig.setAlignment(Pos.CENTER_RIGHT);
@@ -4144,18 +4234,20 @@ public final class Pieces {
         row.setAlignment(Pos.CENTER_LEFT);
         row.setMinHeight(22);
         if (s.tip() != null) {
-            Tooltip tip = new Tooltip(s.tip());
-            tip.setShowDelay(Duration.millis(200));
+            Tooltip tip = Kept.tip(row, s.tip(), 200);
             tip.setWrapText(true);
             tip.setMaxWidth(POPOVER_WIDTH);
-            Tooltip.install(row, tip);
         }
         if (s.go() != null) {
+            // The look the pointer calls for is chosen from isHover() where it is set (a kept row is not entered afresh).
             String rest = "-fx-background-radius: 4; -fx-cursor: hand;";
-            row.setStyle(rest);
-            row.setOnMouseEntered(e -> row.setStyle(rest + " -fx-background-color: " + Palette.CONTROL + ";"));
+            String over = rest + " -fx-background-color: " + Palette.CONTROL + ";";
+            row.setStyle(row.isHover() ? over : rest);
+            row.setOnMouseEntered(e -> row.setStyle(over));
             row.setOnMouseExited(e -> row.setStyle(rest));
             row.setOnMouseClicked(e -> s.go().run());
+        } else {
+            row.setStyle("");
         }
         return row;
     }
@@ -5110,58 +5202,116 @@ public final class Pieces {
      */
     public static BandTrack bandTrack(double at, double[] edges, String[] tones, List<Tick> ticks,
                                       double width, double band, boolean muted) {
-        return new BandTrack(at, edges, tones, ticks, width, band, muted);
+        // Kept (KP6): a track on a kept page is told its bands by set(); anywhere else this is a new track, as it was.
+        BandTrack track = Kept.of(BandTrack.class, BandTrack::new);
+        track.set(at, edges, tones, ticks, width, band, muted);
+        return track;
     }
 
-    /** The track bandTrack() draws: a Pane that lays its bands, ticks and mark out at whatever width it is given. */
+    /**
+     * The track bandTrack() draws: a Pane that lays its bands, ticks and mark out at whatever width it is given. A picture
+     * (KP6): its parts are its own, made with new (a picture owns its children); set() keeps them while the track has as
+     * many bands and ticks, named the same way, as it had, and makes them afresh when that changes, so the common month - the
+     * mark moved, the bands the same - makes no node; it asks for a layout only when a figure the layout reads moved.
+     */
     public static final class BandTrack extends javafx.scene.layout.Pane {
-        private final double at, band;
-        private final double[] edges;
-        private final List<Tick> ticks;
-        private final boolean muted;
+        private double at, band;
+        private double[] edges = new double[0];
+        private List<Tick> ticks = List.of();
+        private boolean muted;
+        /** What the parts were made for at the last set() (see shapeOf()), and what the layout read (see layoutKey()): null before the first. */
+        private String shape, laidOut;
         private final List<Region> bands = new java.util.ArrayList<>(), marks = new java.util.ArrayList<>();
         private final List<Label> names = new java.util.ArrayList<>();
         private final Region mark = new Region();
 
-        BandTrack(double at, double[] edges, String[] tones, List<Tick> ticks, double width, double band, boolean muted) {
+        /** The mark, made once in its life; the bands and ticks come with set(). */
+        BandTrack() {
+            mark.setStyle("-fx-background-color: " + Palette.TEXT_MAX + "; -fx-background-radius: 1;");
+        }
+
+        /** What the track draws now; see bandTrack() for what each is. */
+        void set(double at, double[] edges, String[] tones, List<Tick> ticks, double width, double band, boolean muted) {
             this.at = Double.isFinite(at) ? Math.max(0, Math.min(1, at)) : 0;
             this.edges = edges == null ? new double[0] : edges;
             this.ticks = ticks == null ? List.of() : ticks;
             this.band = band;
             this.muted = muted;
+            String now = shapeOf();
+            boolean built = !now.equals(shape);
+            if (built) {
+                shape = now;
+                build();
+            }
             for (int i = 0; i < this.edges.length; i++) {
-                Region r = new Region();
                 String tone = tones != null && i < tones.length ? tones[i] : Palette.CONTROL;
                 double rl = i == 0 ? band / 2 : 0, rr = i == this.edges.length - 1 ? band / 2 : 0;
-                r.setStyle("-fx-background-color: " + tint(tone, .32) + ";"
+                bands.get(i).setStyle("-fx-background-color: " + tint(tone, .32) + ";"
                         + " -fx-background-radius: " + rl + " " + rr + " " + rr + " " + rl + ";");
-                bands.add(r);
-                getChildren().add(r);
             }
-            for (Tick t : this.ticks) {
-                Region m = new Region();
-                m.setStyle("-fx-background-color: " + t.colour() + ";");
-                if (t.tip() != null) {
-                    Tooltip tip = new Tooltip(t.tip());
-                    tip.setShowDelay(Duration.millis(200));
-                    Tooltip.install(m, tip);
-                }
-                marks.add(m);
-                getChildren().add(m);
-                Label name = new Label(t.name() == null ? "" : t.name());
+            for (int i = 0; i < this.ticks.size(); i++) {
+                Tick t = this.ticks.get(i);
+                marks.get(i).setStyle("-fx-background-color: " + t.colour() + ";");
+                tipFor(marks.get(i), t.tip(), 200);
+                Label name = names.get(i);
+                name.setText(t.name() == null ? "" : t.name());
                 name.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-                name.setVisible(t.name() != null);
-                names.add(name);
-                getChildren().add(name);
             }
-            mark.setStyle("-fx-background-color: " + Palette.TEXT_MAX + "; -fx-background-radius: 1;");
             mark.setVisible(!muted);
-            getChildren().add(mark);
             setMinWidth(width > 0 ? width : 0);
             setPrefWidth(width > 0 ? width : 200);
             setMaxWidth(width > 0 ? width : Double.MAX_VALUE);
             setMinHeight(tall());
             setPrefHeight(tall());
+            String key = layoutKey();
+            if (built || !key.equals(laidOut)) {
+                laidOut = key;
+                requestLayout();
+            }
+        }
+
+        /**
+         * What the parts depend on: how many bands, how many ticks and which of them are named. WHY the names (KP2, KeptCheck's
+         * goods' fold): a Label that has had words and is set to none keeps the Text node's bounds of the words it had, so a
+         * tick that gains or loses its name is made afresh, as the page built new has it.
+         */
+        private String shapeOf() {
+            StringBuilder s = new StringBuilder().append(edges.length).append('#');
+            for (Tick t : ticks) s.append(t.name() == null ? '-' : 'n');
+            return s.toString();
+        }
+
+        /** Every figure the layout reads, in one string: laid out again only when it differs. */
+        private String layoutKey() {
+            StringBuilder s = new StringBuilder().append(at).append(',').append(band).append(',').append(muted).append(';');
+            for (double e : edges) s.append(e).append(',');
+            s.append(';');
+            for (Tick t : ticks) s.append(t.at()).append(',').append(t.width()).append(',').append(t.name()).append(';');
+            return s.toString();
+        }
+
+        /** The parts made afresh, in the order they are drawn (the mark over them all). */
+        private void build() {
+            bands.clear();
+            marks.clear();
+            names.clear();
+            List<javafx.scene.Node> all = new java.util.ArrayList<>();
+            for (int i = 0; i < edges.length; i++) {
+                Region r = new Region();
+                bands.add(r);
+                all.add(r);
+            }
+            for (Tick t : ticks) {
+                Region m = new Region();
+                marks.add(m);
+                all.add(m);
+                Label name = new Label();
+                name.setVisible(t.name() != null);
+                names.add(name);
+                all.add(name);
+            }
+            all.add(mark);
+            getChildren().setAll(all);
         }
 
         private boolean named() {
@@ -5213,36 +5363,47 @@ public final class Pieces {
     public static VBox gaugeCard(String svg, String colour, String title, String info, String reading,
                                  String readingTone, String chip, String chipTone, double at, double[] edges,
                                  String[] tones, List<Tick> ticks, String foot, boolean muted, Runnable go) {
-        Label t = new Label(title);
+        Label t = Kept.label(title);
         t.setWrapText(true);
         t.setMinWidth(0);
         t.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
-        HBox head = new HBox(Palette.GAP, iconSquare(svg, colour, 28, 15), t);
+        HBox head = Kept.row(Palette.GAP, iconSquare(svg, colour, 28, 15), t);
         if (info != null) head.getChildren().add(infoButton(info, true));
         head.setAlignment(Pos.CENTER_LEFT);
-        Label big = new Label(reading);
+        Label big = Kept.label(reading);
+        big.setWrapText(false);
         big.setMinWidth(Region.USE_PREF_SIZE);
         big.setStyle(Palette.figure(22, readingTone == null ? Palette.TEXT_HEAD : readingTone));
-        HBox figure = new HBox(Palette.GAP, big);
+        HBox figure = Kept.row(Palette.GAP, big);
         figure.setAlignment(Pos.CENTER_LEFT);
-        if (chip != null) figure.getChildren().add(chip(chip, chipTone == null ? Palette.TEXT_MUTED : chipTone));
-        VBox card = new VBox(8, head, figure, bandTrack(at, edges, tones, ticks, 0, 12, muted));
+        // Kept (KP6): the verdict's chip and the foot come only sometimes, so a scope of their own each: they shift no label after them.
+        if (chip != null) figure.getChildren().add(Kept.scope("chip", () -> chip(chip, chipTone == null ? Palette.TEXT_MUTED : chipTone)));
+        VBox card = Kept.column(8, head, figure, bandTrack(at, edges, tones, ticks, 0, 12, muted));
         if (foot != null) {
-            Label f = new Label(foot);
-            f.setWrapText(true);
-            f.setMinWidth(0);
-            f.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-            card.getChildren().add(f);
+            card.getChildren().add(Kept.scope("foot", () -> {
+                Label f = Kept.label(foot);
+                f.setWrapText(true);
+                f.setMinWidth(0);
+                f.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+                return f;
+            }));
         }
         card.setMaxWidth(Double.MAX_VALUE);
         String rest = "-fx-padding: 12; -fx-background-color: " + Palette.RAISED + ";"
                 + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: ";
-        card.setStyle(rest + Palette.EDGE + ";");
+        // The look the pointer calls for is chosen from isHover() where it is set, and the click is this draw's (a kept card has none else).
         if (go != null) {
+            card.setStyle(rest + (card.isHover() ? Palette.ACCENT : Palette.EDGE) + ";");
             card.setCursor(javafx.scene.Cursor.HAND);
             card.setOnMouseEntered(e -> card.setStyle(rest + Palette.ACCENT + ";"));
             card.setOnMouseExited(e -> card.setStyle(rest + Palette.EDGE + ";"));
             card.setOnMouseClicked(e -> go.run());
+        } else {
+            card.setStyle(rest + Palette.EDGE + ";");
+            card.setCursor(null);
+            card.setOnMouseEntered(null);
+            card.setOnMouseExited(null);
+            card.setOnMouseClicked(null);
         }
         return card;
     }
@@ -5272,84 +5433,97 @@ public final class Pieces {
      */
     public static MirrorRows mirrorRows(List<Mirror> rows, double scale, String leftColour, String rightColour,
                                         String leftHead, String rightHead, double nameWidth, double netWidth) {
-        return new MirrorRows(rows, scale, leftColour, rightColour, leftHead, rightHead, nameWidth, netWidth);
+        // Kept (KP6): the rows on a kept page are told their figures by set(); anywhere else this is a new picture, as it was.
+        MirrorRows picture = Kept.of(MirrorRows.class, MirrorRows::new);
+        picture.set(rows, scale, leftColour, rightColour, leftHead, rightHead, nameWidth, netWidth);
+        return picture;
     }
 
-    /** The rows mirrorRows() draws: a Pane that lays them out at whatever width it is given. */
+    /**
+     * The rows mirrorRows() draws: a Pane that lays them out at whatever width it is given. A picture (KP6): its parts are its
+     * own, made with new (a picture owns its children); set() keeps them while the rows have the shape they had (as many, with
+     * the same icons and the same sides that say anything) and makes them afresh when it changes, so the common month - the
+     * figures moved, the rows the same - makes no node; it asks for a layout only when a figure or a word the layout reads moved.
+     */
     public static final class MirrorRows extends javafx.scene.layout.Pane {
-        private final List<Mirror> rows;
-        private final double scale, nameWidth, netWidth;
+        private List<Mirror> rows = List.of();
+        private double scale, nameWidth, netWidth;
+        private String leftColour, rightColour, leftHeadWords, rightHeadWords;
         private final List<javafx.scene.Node> icons = new java.util.ArrayList<>();
         private final List<Label> names = new java.util.ArrayList<>(), lefts = new java.util.ArrayList<>(),
                 rights = new java.util.ArrayList<>(), nets = new java.util.ArrayList<>();
         private final List<Region> leftBars = new java.util.ArrayList<>(), rightBars = new java.util.ArrayList<>(),
                 grounds = new java.util.ArrayList<>();
         private final Region axis = new Region();
-        private final Label leftHead, rightHead;
+        private Label leftHead, rightHead;
+        private Region leftSwatch, rightSwatch;
+        /** What the parts were made for at the last set() (see shapeOf()), and what the layout read (see layoutKey()): null before the first. */
+        private String shape, laidOut;
         /** How far the bars have grown out of the axis, 0 to 1 (grow()). */
         private final javafx.beans.property.DoubleProperty grown = new javafx.beans.property.SimpleDoubleProperty(1);
 
         /** A row's least height, its bar's thickness, an icon's size and the gaps between the columns. */
         static final double ROW = 28, BAR = 12, ICON = 18, GAP = 8;
 
-        MirrorRows(List<Mirror> rows, double scale, String leftColour, String rightColour, String leftHead,
-                   String rightHead, double nameWidth, double netWidth) {
+        /** The axis and the picture's size, made once in its life; the rows come with set(). */
+        MirrorRows() {
+            axis.setStyle("-fx-background-color: " + Palette.TEXT_SPENT + ";");
+            setMinWidth(0);
+            setPrefWidth(600);
+            setMaxWidth(Double.MAX_VALUE);
+            grown.addListener((o, was, now) -> requestLayout());
+        }
+
+        /** What the picture draws now; see mirrorRows() for what each is. */
+        void set(List<Mirror> rows, double scale, String leftColour, String rightColour, String leftHead,
+                 String rightHead, double nameWidth, double netWidth) {
             this.rows = rows == null ? List.of() : rows;
             double most = 0;
             for (Mirror m : this.rows) most = Math.max(most, Math.max(finite(m.left()), finite(m.right())));
             this.scale = scale > 0 ? scale : most;
             this.nameWidth = nameWidth;
             this.netWidth = Math.max(0, netWidth);
-            axis.setStyle("-fx-background-color: " + Palette.TEXT_SPENT + ";");
-            getChildren().add(axis);
-            this.leftHead = head(leftHead, leftColour);
-            this.rightHead = head(rightHead, rightColour);
-            for (Mirror m : this.rows) {
-                Region ground = new Region();
-                ground.setStyle("-fx-background-radius: 4;");
-                grounds.add(ground);
-                getChildren().add(0, ground);
-                javafx.scene.Node mark = m.svg() == null ? null : icon(m.svg(), Palette.TEXT_LABEL, ICON - 2);
-                icons.add(mark);
-                if (mark != null) getChildren().add(mark);
-                Label name = new Label(m.name());
-                name.setWrapText(true);
-                name.setStyle(Palette.words(Palette.SIZE_LABEL + 1, Palette.TEXT_BODY));
-                names.add(name);
-                getChildren().add(name);
-                leftBars.add(bar(leftColour));
-                rightBars.add(bar(rightColour));
-                lefts.add(figure(m.leftFigure()));
-                rights.add(figure(m.rightFigure()));
-                Label net = figure(m.net());
-                net.setStyle(Palette.figure(Palette.SIZE_LABEL, Palette.TEXT_HEAD));
-                nets.add(net);
-                if (m.tip() != null || m.go() != null) {
-                    if (m.tip() != null) {
-                        Tooltip tip = new Tooltip(m.tip());
-                        tip.setShowDelay(Duration.millis(250));
-                        tip.setWrapText(true);
-                        tip.setMaxWidth(POPOVER_WIDTH);
-                        Tooltip.install(ground, tip);
-                    }
-                    if (m.go() != null) {
-                        ground.setCursor(javafx.scene.Cursor.HAND);
-                        ground.setOnMouseEntered(e -> ground.setStyle("-fx-background-radius: 4; -fx-background-color: "
-                                + Palette.CONTROL + ";"));
-                        ground.setOnMouseExited(e -> ground.setStyle("-fx-background-radius: 4;"));
-                        ground.setOnMouseClicked(e -> {
-                            e.consume();
-                            m.go().accept(ground);
-                        });
-                    }
-                }
+            this.leftColour = leftColour;
+            this.rightColour = rightColour;
+            this.leftHeadWords = leftHead;
+            this.rightHeadWords = rightHead;
+            String now = shapeOf();
+            boolean built = !now.equals(shape);
+            if (built) {
+                shape = now;
+                build();
             }
-            // The bars, figures and names let the pointer through to the row's ground under them.
-            for (javafx.scene.Node n : getChildren()) if (!grounds.contains(n)) n.setMouseTransparent(true);
-            setMinWidth(0);
-            setPrefWidth(600);
-            setMaxWidth(Double.MAX_VALUE);
-            grown.addListener((o, was, now) -> requestLayout());
+            fill();
+            String key = layoutKey();
+            if (built || !key.equals(laidOut)) {
+                laidOut = key;
+                requestLayout();
+            }
+        }
+
+        /**
+         * What the parts depend on: whether each head is there, and per row its icon and which of its three figures say
+         * anything. WHY the figures (KP2, KeptCheck's goods' fold): a Label that has had words and is set to none keeps the
+         * Text node's bounds of the words it had, so a side that gains or loses its figure is made afresh.
+         */
+        private String shapeOf() {
+            StringBuilder s = new StringBuilder().append(leftHeadWords != null ? 'L' : '-').append(rightHeadWords != null ? 'R' : '-').append('#');
+            for (Mirror m : rows) {
+                s.append(m.svg()).append('|').append(m.leftFigure() != null ? 'l' : '-').append(m.rightFigure() != null ? 'r' : '-')
+                        .append(m.net() != null ? 'n' : '-').append(';');
+            }
+            return s.toString();
+        }
+
+        /** Every figure and word the layout reads, in one string: laid out again only when it differs. */
+        private String layoutKey() {
+            StringBuilder s = new StringBuilder().append(scale).append(',').append(nameWidth).append(',').append(netWidth).append(',')
+                    .append(leftHeadWords).append(',').append(rightHeadWords).append(';');
+            for (Mirror m : rows) {
+                s.append(m.name()).append(',').append(m.left()).append(',').append(m.right()).append(',').append(m.leftFigure()).append(',')
+                        .append(m.rightFigure()).append(',').append(m.net()).append(';');
+            }
+            return s.toString();
         }
 
         private static double finite(double v) { return Double.isFinite(v) ? Math.max(0, v) : 0; }
@@ -5357,45 +5531,149 @@ public final class Pieces {
         /** Row i's ground - the node its click is handed, to anchor a popover - or null past the rows. */
         public Region row(int i) { return i >= 0 && i < grounds.size() ? grounds.get(i) : null; }
 
-        private Label head(String text, String colour) {
-            if (text == null) return null;
-            Label l = new Label(text);
-            l.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+        /** The parts made afresh: the grounds behind, then the axis, the heads and each row's icon, name, bars and figures. */
+        private void build() {
+            icons.clear();
+            names.clear();
+            lefts.clear();
+            rights.clear();
+            nets.clear();
+            leftBars.clear();
+            rightBars.clear();
+            grounds.clear();
+            leftHead = leftHeadWords == null ? null : head();
+            rightHead = rightHeadWords == null ? null : head();
+            leftSwatch = leftHead == null ? null : (Region) leftHead.getGraphic();
+            rightSwatch = rightHead == null ? null : (Region) rightHead.getGraphic();
+            List<javafx.scene.Node> behind = new java.util.ArrayList<>(), front = new java.util.ArrayList<>();
+            front.add(axis);
+            if (leftHead != null) front.add(leftHead);
+            if (rightHead != null) front.add(rightHead);
+            for (Mirror m : rows) {
+                Region ground = new Region();
+                grounds.add(ground);
+                behind.add(ground);
+                javafx.scene.Node mark = m.svg() == null ? null : makeIcon(m.svg(), Palette.TEXT_LABEL, ICON - 2, false);
+                icons.add(mark);
+                if (mark != null) front.add(mark);
+                Label name = new Label();
+                name.setWrapText(true);
+                names.add(name);
+                front.add(name);
+                Region lb = new Region(), rb = new Region();
+                leftBars.add(lb);
+                rightBars.add(rb);
+                front.add(lb);
+                front.add(rb);
+                lefts.add(figure(front));
+                rights.add(figure(front));
+                nets.add(figure(front));
+            }
+            List<javafx.scene.Node> all = new java.util.ArrayList<>(behind);
+            all.addAll(front);
+            // The bars, figures and names let the pointer through to the row's ground under them.
+            for (javafx.scene.Node n : all) if (!grounds.contains(n)) n.setMouseTransparent(true);
+            getChildren().setAll(all);
+        }
+
+        private Label head() {
+            Label l = new Label();
             l.setMinWidth(Region.USE_PREF_SIZE);
             Region swatch = new Region();
             swatch.setMinSize(8, 8);
             swatch.setPrefSize(8, 8);
             swatch.setMaxSize(8, 8);
-            swatch.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: 2;");
             l.setGraphic(swatch);
             l.setGraphicTextGap(5);
-            getChildren().add(l);
             return l;
         }
 
-        private Region bar(String colour) {
-            Region r = new Region();
-            r.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: 2;");
-            getChildren().add(r);
-            return r;
-        }
-
-        private Label figure(String text) {
-            Label l = new Label(text == null ? "" : text);
-            l.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+        private Label figure(List<javafx.scene.Node> into) {
+            Label l = new Label();
             l.setMinWidth(Region.USE_PREF_SIZE);
-            l.setVisible(text != null);
-            getChildren().add(l);
+            into.add(l);
             return l;
         }
 
-        /** The bars grow out of the axis over `millis` - a month landing on the page. */
+        /**
+         * What the parts say and do now: their words, styles, tooltips and clicks, each set and never added to, and on both
+         * sides of every condition (a kept ground may have had a tooltip or a click last month).
+         */
+        private void fill() {
+            if (leftHead != null) {
+                leftHead.setText(leftHeadWords);
+                leftHead.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+                leftSwatch.setStyle("-fx-background-color: " + leftColour + "; -fx-background-radius: 2;");
+            }
+            if (rightHead != null) {
+                rightHead.setText(rightHeadWords);
+                rightHead.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+                rightSwatch.setStyle("-fx-background-color: " + rightColour + "; -fx-background-radius: 2;");
+            }
+            for (int i = 0; i < rows.size(); i++) {
+                Mirror m = rows.get(i);
+                Label name = names.get(i);
+                name.setText(m.name());
+                name.setStyle(Palette.words(Palette.SIZE_LABEL + 1, Palette.TEXT_BODY));
+                leftBars.get(i).setStyle("-fx-background-color: " + leftColour + "; -fx-background-radius: 2;");
+                rightBars.get(i).setStyle("-fx-background-color: " + rightColour + "; -fx-background-radius: 2;");
+                Label lf = lefts.get(i), rf = rights.get(i), net = nets.get(i);
+                lf.setText(m.leftFigure() == null ? "" : m.leftFigure());
+                lf.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+                lf.setVisible(m.leftFigure() != null);
+                rf.setText(m.rightFigure() == null ? "" : m.rightFigure());
+                rf.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+                rf.setVisible(m.rightFigure() != null);
+                net.setText(m.net() == null ? "" : m.net());
+                net.setStyle(Palette.figure(Palette.SIZE_LABEL, Palette.TEXT_HEAD));
+                net.setVisible(m.net() != null);
+                Region ground = grounds.get(i);
+                String plain = "-fx-background-radius: 4;";
+                String over = "-fx-background-radius: 4; -fx-background-color: " + Palette.CONTROL + ";";
+                tipFor(ground, m.tip(), 250);
+                Tooltip tip = Kept.tipOf(ground);
+                if (tip != null) {
+                    tip.setWrapText(true);
+                    tip.setMaxWidth(POPOVER_WIDTH);
+                }
+                if (m.go() != null) {
+                    ground.setCursor(javafx.scene.Cursor.HAND);
+                    // The look the pointer calls for is chosen from isHover() where it is set (a kept ground under a still pointer is not entered afresh).
+                    ground.setStyle(ground.isHover() ? over : plain);
+                    ground.setOnMouseEntered(e -> ground.setStyle(over));
+                    ground.setOnMouseExited(e -> ground.setStyle(plain));
+                    ground.setOnMouseClicked(e -> {
+                        e.consume();
+                        m.go().accept(ground);
+                    });
+                } else {
+                    ground.setCursor(null);
+                    ground.setStyle(plain);
+                    ground.setOnMouseEntered(null);
+                    ground.setOnMouseExited(null);
+                    ground.setOnMouseClicked(null);
+                }
+            }
+        }
+
+        /** The bars grow out of the axis over `millis` - a month landing on the page. Through Kept, which stops the growth the picture was last given. */
         public void grow(double millis) {
             grown.set(0);
             javafx.animation.Timeline t = new javafx.animation.Timeline(
                     new javafx.animation.KeyFrame(Duration.millis(millis),
                             new javafx.animation.KeyValue(grown, 1, javafx.animation.Interpolator.EASE_OUT)));
-            t.play();
+            Kept.play(this, t);
+        }
+
+        /**
+         * The bars standing at their lengths (KP6): a growth still running from the last draw stopped and the bars full, for a
+         * draw that does not grow them - a month that lands past the clock speed the figures can follow (UserInterface.countsUp()),
+         * or a redraw in the same month. Nothing happens to a picture that never grew.
+         */
+        public void stand() {
+            javafx.animation.Animation running = Kept.animationOf(this);
+            if (running != null) running.stop();
+            if (grown.get() != 1) grown.set(1);
         }
 
         private double headRoom() { return leftHead != null || rightHead != null ? 18 : 0; }
@@ -5501,85 +5779,170 @@ public final class Pieces {
     public static DivergingBars divergingBars(List<Force> rows, double scale, double nameWidth, double figureWidth,
                                               String colour, String totalColour, String leftWords, String rightWords,
                                               java.util.function.DoubleFunction<String> fmt) {
-        return new DivergingBars(rows, scale, nameWidth, figureWidth, colour, totalColour, leftWords, rightWords, fmt);
+        // Kept (KP6): the rows on a kept page are told their figures by set(); anywhere else this is a new picture, as it was.
+        DivergingBars picture = Kept.of(DivergingBars.class, DivergingBars::new);
+        picture.set(rows, scale, nameWidth, figureWidth, colour, totalColour, leftWords, rightWords, fmt);
+        return picture;
     }
 
-    /** The rows divergingBars() draws: a Pane that lays them out at whatever width it is given. */
+    /**
+     * The rows divergingBars() draws: a Pane that lays them out at whatever width it is given. A picture (KP6): its parts are
+     * its own, made with new (a picture owns its children); set() keeps them while the rows have the shape they had (as many,
+     * with the same (i)s and lines) and makes them afresh when it changes, so the common month - the figures moved, the rows
+     * the same - makes no node; it asks for a layout only when a figure or a word the layout reads moved.
+     */
     public static final class DivergingBars extends javafx.scene.layout.Pane {
-        private final List<Force> rows;
-        private final double scale, nameWidth, figureWidth;
+        private List<Force> rows = List.of();
+        private double scale = 1, nameWidth, figureWidth;
+        private String leftWordsText, rightWordsText;
         private final List<VBox> names = new java.util.ArrayList<>();
+        private final List<Label> nameLabels = new java.util.ArrayList<>(), lines = new java.util.ArrayList<>(),
+                figures = new java.util.ArrayList<>();
         private final List<Region> bars = new java.util.ArrayList<>(), tracks = new java.util.ArrayList<>();
-        private final List<Label> figures = new java.util.ArrayList<>();
         private final Region axis = new Region();
-        private final Label leftWords, rightWords;
+        private Label leftWords, rightWords;
+        /** What the parts were made for at the last set() (see shapeOf()), and what the layout read (see layoutKey()): null before the first. */
+        private String shape, laidOut;
 
         /** A row's least height and its bar's thickness. */
         static final double ROW = 30, BAR = 12;
 
-        DivergingBars(List<Force> rows, double scale, double nameWidth, double figureWidth, String colour,
-                      String totalColour, String leftWords, String rightWords,
-                      java.util.function.DoubleFunction<String> fmt) {
-            this.rows = rows == null ? List.of() : rows;
-            this.scale = scale > 0 ? scale : 1;
-            this.nameWidth = nameWidth;
-            this.figureWidth = figureWidth;
-            for (Force f : this.rows) {
-                Region track = new Region();
-                track.setStyle("-fx-background-color: " + Palette.CONTROL + "; -fx-background-radius: 3;");
-                tracks.add(track);
-                getChildren().add(track);
-            }
+        /** The axis and the picture's size, made once in its life; the rows come with set(). */
+        DivergingBars() {
             axis.setStyle("-fx-background-color: " + Palette.TEXT_SPENT + ";");
-            getChildren().add(axis);
-            this.leftWords = words(leftWords);
-            this.rightWords = words(rightWords);
-            for (Force f : this.rows) {
-                Label name = new Label(f.name());
-                name.setWrapText(true);
-                name.setMinWidth(0);
-                name.setStyle(f.total() ? Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD)
-                        : Palette.words(Palette.SIZE_LABEL + 1, Palette.TEXT_BODY));
-                HBox titled = new HBox(Palette.GAP_TIGHT, name);
-                titled.setAlignment(Pos.CENTER_LEFT);
-                if (f.info() != null) titled.getChildren().add(infoButton(f.info(), true));
-                VBox box = new VBox(1, titled);
-                if (f.line() != null) {
-                    Label l = new Label(f.line());
-                    l.setWrapText(true);
-                    l.setMinWidth(0);
-                    l.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-                    box.getChildren().add(l);
-                }
-                box.setMinWidth(0);
-                names.add(box);
-                getChildren().add(box);
-                String c = f.total() ? totalColour : colour;
-                Region bar = new Region();
-                bar.setStyle(f.ghost()
-                        ? "-fx-background-color: " + c + "33; -fx-border-color: " + c + "; -fx-border-width: 1;"
-                          + " -fx-background-radius: 2; -fx-border-radius: 2;"
-                        : "-fx-background-color: " + c + "; -fx-background-radius: 2;");
-                bars.add(bar);
-                getChildren().add(bar);
-                Label fig = new Label(fmt.apply(f.value()));
-                fig.setMinWidth(Region.USE_PREF_SIZE);
-                fig.setStyle(Palette.figure(Palette.SIZE_LABEL, f.total() ? Palette.TEXT_HEAD : Palette.TEXT_LABEL));
-                figures.add(fig);
-                getChildren().add(fig);
-            }
             setMinWidth(0);
             setPrefWidth(500);
             setMaxWidth(Double.MAX_VALUE);
         }
 
-        private Label words(String text) {
-            if (text == null) return null;
-            Label l = new Label(text);
-            l.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        /** What the picture draws now; see divergingBars() for what each is. */
+        void set(List<Force> rows, double scale, double nameWidth, double figureWidth, String colour,
+                 String totalColour, String leftWords, String rightWords, java.util.function.DoubleFunction<String> fmt) {
+            this.rows = rows == null ? List.of() : rows;
+            this.scale = scale > 0 ? scale : 1;
+            this.nameWidth = nameWidth;
+            this.figureWidth = figureWidth;
+            this.leftWordsText = leftWords;
+            this.rightWordsText = rightWords;
+            String now = shapeOf();
+            boolean built = !now.equals(shape);
+            if (built) {
+                shape = now;
+                build();
+            }
+            fill(colour, totalColour, fmt);
+            String key = layoutKey();
+            if (built || !key.equals(laidOut)) {
+                laidOut = key;
+                requestLayout();
+            }
+        }
+
+        /**
+         * What the parts depend on: whether each direction is named, and per row its (i)'s sentence and whether it has a line
+         * under its name. The (i) is made with its sentence, so a row whose sentence differs is made afresh.
+         */
+        private String shapeOf() {
+            StringBuilder s = new StringBuilder().append(leftWordsText != null ? 'L' : '-').append(rightWordsText != null ? 'R' : '-').append('#');
+            for (Force f : rows) s.append(f.info()).append('|').append(f.line() != null ? 'l' : '-').append(';');
+            return s.toString();
+        }
+
+        /** Every figure and word the layout reads, in one string: laid out again only when it differs. */
+        private String layoutKey() {
+            StringBuilder s = new StringBuilder().append(scale).append(',').append(nameWidth).append(',').append(figureWidth).append(',')
+                    .append(leftWordsText).append(',').append(rightWordsText).append(';');
+            for (Force f : rows) s.append(f.name()).append(',').append(f.value()).append(',').append(f.total()).append(',').append(f.line()).append(';');
+            return s.toString();
+        }
+
+        /** The parts made afresh, in the order they are drawn. */
+        private void build() {
+            names.clear();
+            nameLabels.clear();
+            lines.clear();
+            bars.clear();
+            tracks.clear();
+            figures.clear();
+            List<javafx.scene.Node> all = new java.util.ArrayList<>();
+            for (Force f : rows) {
+                Region track = new Region();
+                tracks.add(track);
+                all.add(track);
+            }
+            all.add(axis);
+            leftWords = leftWordsText == null ? null : wordsLabel();
+            rightWords = rightWordsText == null ? null : wordsLabel();
+            if (leftWords != null) all.add(leftWords);
+            if (rightWords != null) all.add(rightWords);
+            for (Force f : rows) {
+                Label name = new Label();
+                name.setWrapText(true);
+                name.setMinWidth(0);
+                nameLabels.add(name);
+                HBox titled = new HBox(Palette.GAP_TIGHT, name);
+                titled.setAlignment(Pos.CENTER_LEFT);
+                if (f.info() != null) titled.getChildren().add(makeInfo(f.info(), true, false));
+                VBox box = new VBox(1, titled);
+                Label line = null;
+                if (f.line() != null) {
+                    line = new Label();
+                    line.setWrapText(true);
+                    line.setMinWidth(0);
+                    box.getChildren().add(line);
+                }
+                lines.add(line);
+                box.setMinWidth(0);
+                names.add(box);
+                all.add(box);
+                Region bar = new Region();
+                bars.add(bar);
+                all.add(bar);
+                Label fig = new Label();
+                fig.setMinWidth(Region.USE_PREF_SIZE);
+                figures.add(fig);
+                all.add(fig);
+            }
+            getChildren().setAll(all);
+        }
+
+        private Label wordsLabel() {
+            Label l = new Label();
             l.setMinWidth(Region.USE_PREF_SIZE);
-            getChildren().add(l);
             return l;
+        }
+
+        /** What the parts say now: their words and styles, each set and never added to. */
+        private void fill(String colour, String totalColour, java.util.function.DoubleFunction<String> fmt) {
+            for (Region track : tracks) track.setStyle("-fx-background-color: " + Palette.CONTROL + "; -fx-background-radius: 3;");
+            if (leftWords != null) {
+                leftWords.setText(leftWordsText);
+                leftWords.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+            }
+            if (rightWords != null) {
+                rightWords.setText(rightWordsText);
+                rightWords.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+            }
+            for (int i = 0; i < rows.size(); i++) {
+                Force f = rows.get(i);
+                Label name = nameLabels.get(i);
+                name.setText(f.name());
+                name.setStyle(f.total() ? Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD)
+                        : Palette.words(Palette.SIZE_LABEL + 1, Palette.TEXT_BODY));
+                Label line = lines.get(i);
+                if (line != null) {
+                    line.setText(f.line());
+                    line.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+                }
+                String c = f.total() ? totalColour : colour;
+                bars.get(i).setStyle(f.ghost()
+                        ? "-fx-background-color: " + c + "33; -fx-border-color: " + c + "; -fx-border-width: 1;"
+                          + " -fx-background-radius: 2; -fx-border-radius: 2;"
+                        : "-fx-background-color: " + c + "; -fx-background-radius: 2;");
+                Label fig = figures.get(i);
+                fig.setText(fmt.apply(f.value()));
+                fig.setStyle(Palette.figure(Palette.SIZE_LABEL, f.total() ? Palette.TEXT_HEAD : Palette.TEXT_LABEL));
+            }
         }
 
         private double headRoom() { return leftWords != null || rightWords != null ? 16 : 0; }
@@ -5753,21 +6116,22 @@ public final class Pieces {
 
     /** A staged change as a chip in the tray (0.7.36): its words in the accent, and a × that takes it back out of the set. */
     public static HBox stagedChip(String text, Runnable remove) {
-        Label words = new Label(text);
+        // Kept (KP6): the caller makes the chip in a scope of its own, keyed by the change it names; the × is a scope inside it.
+        Label words = Kept.label(text);
         words.setWrapText(true);
         words.setMinWidth(0);
         words.setStyle(Palette.words(Palette.SIZE_LABEL + 1, Palette.ACCENT));
-        HBox chip = new HBox(6, words);
+        HBox chip = Kept.row(6, words);
         chip.setAlignment(Pos.CENTER_LEFT);
         if (remove != null) {
-            Label x = new Label("×");
-            x.setMinWidth(Region.USE_PREF_SIZE);
-            x.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.ACCENT) + " -fx-cursor: hand;");
-            Tooltip tip = new Tooltip("Take it out of the staged set");
-            tip.setShowDelay(Duration.millis(250));
-            Tooltip.install(x, tip);
-            x.setOnMouseClicked(e -> { e.consume(); remove.run(); });
-            chip.getChildren().add(x);
+            chip.getChildren().add(Kept.scope("remove", () -> {
+                Label x = Kept.label("×");
+                x.setMinWidth(Region.USE_PREF_SIZE);
+                x.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.ACCENT) + " -fx-cursor: hand;");
+                Kept.tip(x, "Take it out of the staged set", 250);
+                x.setOnMouseClicked(e -> { e.consume(); remove.run(); });
+                return x;
+            }));
         }
         chip.setStyle("-fx-padding: 3 8 3 10; -fx-background-radius: 12; -fx-border-radius: 12;"
                 + " -fx-border-color: " + Palette.ACCENT + "; -fx-background-color: " + tint(Palette.ACCENT, .10) + ";");
@@ -5784,26 +6148,29 @@ public final class Pieces {
      */
     public static HBox stagedTray(List<? extends javafx.scene.Node> chips, Effect budget, javafx.scene.Node apply,
                                   javafx.scene.Node discard, String info) {
-        Label caption = new Label("STAGED");
+        // Kept (KP6): the tray's parts that come and go (the (i), THE BUDGET, the buttons) are a scope each.
+        Label caption = Kept.label("STAGED");
         caption.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
-        HBox head = new HBox(Palette.GAP_TIGHT, caption);
+        HBox head = Kept.row(Palette.GAP_TIGHT, caption);
         head.setAlignment(Pos.CENTER_LEFT);
-        if (info != null) head.getChildren().add(infoButton(info, true));
-        javafx.scene.layout.FlowPane list = new javafx.scene.layout.FlowPane(8, 6);
-        list.getChildren().addAll(chips);
-        VBox left = new VBox(6, head, list);
+        if (info != null) head.getChildren().add(Kept.scope("info", () -> infoButton(info, true)));
+        javafx.scene.layout.FlowPane list = Kept.flow(8, 6);
+        list.getChildren().setAll(chips);
+        VBox left = Kept.column(6, head, list);
         HBox.setHgrow(left, Priority.ALWAYS);
         left.setMinWidth(0);
         left.setMaxWidth(Double.MAX_VALUE);
-        HBox tray = new HBox(18, left);
+        HBox tray = Kept.row(18, left);
         if (budget != null) {
-            VBox money = beforeAfter(budget, 300);
-            money.setMinWidth(300);
-            money.setPrefWidth(320);
-            money.setMaxWidth(340);
-            tray.getChildren().add(money);
+            tray.getChildren().add(Kept.scope("budget", () -> {
+                VBox money = beforeAfter(budget, 300);
+                money.setMinWidth(300);
+                money.setPrefWidth(320);
+                money.setMaxWidth(340);
+                return money;
+            }));
         }
-        VBox buttons = new VBox(6);
+        VBox buttons = Kept.column(6);
         buttons.setAlignment(Pos.CENTER);
         buttons.setMinWidth(220);
         buttons.setPrefWidth(220);
@@ -6130,19 +6497,22 @@ public final class Pieces {
 
     /** WHO GOES WITHOUT as a card: the figure, the two halves on a bar of the whole city, the sentence, and a door to the shops when they are the larger half. */
     public static VBox whoGoesWithout(Game g, Runnable shops) {
-        Hunger h = hunger(g);
-        List<Segment> halves = List.of(
-                new Segment(h.pricedOut(), Palette.PEOPLE, false, null, null, h.pricedOutWords(), null),
-                new Segment(h.shortOfStock(), Palette.PEOPLE_LIGHT, false, null, null, h.shortWords(), null));
-        javafx.scene.layout.FlowPane key = new javafx.scene.layout.FlowPane(14, 4,
-                keySwatch(Palette.PEOPLE, h.pricedOutWords()), keySwatch(Palette.PEOPLE_LIGHT, h.shortWords()));
-        VBox c = PolicyScreen.card(PolicyScreen.cardHead(Icons.FOOD, Palette.PEOPLE, "WHO GOES WITHOUT", h.info(), null),
-                PolicyScreen.figure(h.figure(), Palette.SIZE_LEAD, Palette.TEXT_HEAD),
-                segmentBar(halves, 1, List.of(), 0, 12), key,
-                PolicyScreen.words(h.sentence(), Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
-        if (h.shortLarger() && shops != null) {
-            c.getChildren().add(doorPill("The shops · Sectors › Retail", Icons.SHOPS, Palette.BUSINESS, shops));
-        }
-        return c;
+        // Kept (KP6): the card is a scope of its own (People and Policy both draw it), and its door comes and goes inside it.
+        return Kept.scope("whoGoesWithout", () -> {
+            Hunger h = hunger(g);
+            List<Segment> halves = List.of(
+                    new Segment(h.pricedOut(), Palette.PEOPLE, false, null, null, h.pricedOutWords(), null),
+                    new Segment(h.shortOfStock(), Palette.PEOPLE_LIGHT, false, null, null, h.shortWords(), null));
+            javafx.scene.layout.FlowPane key = PolicyScreen.flowOf(14, 4,
+                    keySwatch(Palette.PEOPLE, h.pricedOutWords()), keySwatch(Palette.PEOPLE_LIGHT, h.shortWords()));
+            VBox c = PolicyScreen.card(PolicyScreen.cardHead(Icons.FOOD, Palette.PEOPLE, "WHO GOES WITHOUT", h.info(), null),
+                    PolicyScreen.figure(h.figure(), Palette.SIZE_LEAD, Palette.TEXT_HEAD),
+                    segmentBar(halves, 1, List.of(), 0, 12), key,
+                    PolicyScreen.words(h.sentence(), Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
+            if (h.shortLarger() && shops != null) {
+                c.getChildren().add(Kept.scope("shops", () -> doorPill("The shops · Sectors › Retail", Icons.SHOPS, Palette.BUSINESS, shops)));
+            }
+            return c;
+        });
     }
 }

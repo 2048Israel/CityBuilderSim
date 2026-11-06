@@ -49,6 +49,14 @@ final class GovernmentScreen {
 
     GovernmentScreen(UserInterface ui) { this.ui = ui; }
 
+    /** The nodes this screen made at its last draw, handed back to it at the next (KP6; study UP4, docs/studies/spec-screens-in-place.md). */
+    final Kept.Pool pool = new Kept.Pool();
+
+    /** Every node is made new at the next draw: another city opened (UserInterface.anotherCity()). */
+    void forget() {
+        pool.forget();
+    }
+
     /* =====================================================================
        THE GOVERNMENT.
 
@@ -101,7 +109,7 @@ final class GovernmentScreen {
      * ticks and a row that shut itself each time would be unreadable at
      * speed (the old bridge's bridgeOpen is one key of it now).
      */
-    private final java.util.Set<String> open = new java.util.HashSet<>();
+    final java.util.Set<String> open = new java.util.HashSet<>();
 
     /** Where the page is to be scrolled to once it is drawn: a line's key, BRIDGE or BALANCE; null for the top. */
     private String scrollTarget;
@@ -133,6 +141,9 @@ final class GovernmentScreen {
         scrollTarget = line == null ? null : line.startsWith("#") ? line : lineKey(page, line);
         if (line != null && !line.startsWith("#")) open.add(lineKey(page, line));
         ui.innerScrollAt.remove("showGovernmentMenu:body");
+        // Kept (KP6): a page opened is drawn from its top - the scroller of the page already on show is kept where the player left it - and a door's
+        // target is scrolled to after the draw (showGovernmentMenu()).
+        toTop();
         showGovernmentMenu();
     }
 
@@ -140,29 +151,8 @@ final class GovernmentScreen {
     static String lineKey(String page, String line) { return page + ":" + line; }
 
     void showGovernmentMenu() {
-        ui.clearMenu("showGovernmentMenu", () -> showGovernmentMenu());
-
-        boolean known = false;
-        for (String p : GOV_PAGES) if (p.equals(govPage)) known = true;
-        if (!known) govPage = GOV_PAGES[0];
-
-        EconomyManager em = ui.game.getEconomyManager();
-        NationalAccounts na = em.getNationalAccounts();
-        List<CityNeeds.Need> all = CityNeeds.measure(ui.game, SummaryScreen.WORDS);
-        targets.clear();
-
-        VBox page = widePage();
-        switch (govPage) {
-            case "Revenue"  -> revenuePage(page, em, na);
-            case "Spending" -> spendingPage(page, em, na, all);
-            case "Output"   -> outputPage(page, na);
-            default         -> overviewPage(page, em, na, all);
-        }
-
-        javafx.scene.layout.FlowPane strip =
-                chipStrip(GOV_PAGES, GOV_ICONS, govPage, Palette.SIZE_LABEL, name -> open(name, null));
-        VBox frame = new VBox(Palette.GAP, head(), vitals(em, na, all), strip);
-        frameOver(frame, page);
+        // Kept (KP6): the page is drawn over last time's nodes when the same screen is redrawn; the rail's own tab arrives afresh.
+        ui.keepMenu("showGovernmentMenu", () -> showGovernmentMenu(), pool, this::drawPage);
 
         if (scrollTarget != null) {
             String target = scrollTarget;
@@ -177,22 +167,78 @@ final class GovernmentScreen {
         }
     }
 
+    /**
+     * The page itself, put in the window through setPage(): what keepMenu runs as a kept draw from the pool, and
+     * what KeptBench runs kept and built new for KeptCheck - the page `govPage` names under its frame. What the
+     * show method did before the draw (the page known, the door targets cleared) is done here, in the draw, so
+     * the bench's draw has it too.
+     */
+    void drawPage() {
+        boolean known = false;
+        for (String p : GOV_PAGES) if (p.equals(govPage)) known = true;
+        if (!known) govPage = GOV_PAGES[0];
+
+        EconomyManager em = ui.game.getEconomyManager();
+        NationalAccounts na = em.getNationalAccounts();
+        List<CityNeeds.Need> all = CityNeeds.measure(ui.game, SummaryScreen.WORDS);
+        targets.clear();
+
+        // Kept (KP6): the whole page - its frame, its scroller and its page - is a scope keyed by the page, so another page shares
+        // no node with the last, and opens at its top; a month's redraw of the same page keeps every node and the scroll.
+        Kept.scope(govPage, () -> {
+            // ...the page itself in a scope of its own, so what its sections make shifts none of the frame's nodes.
+            VBox page = Kept.scope("page", () -> {
+                VBox p = widePage();
+                switch (govPage) {
+                    case "Revenue"  -> revenuePage(p, em, na);
+                    case "Spending" -> spendingPage(p, em, na, all);
+                    case "Output"   -> outputPage(p, na);
+                    default         -> overviewPage(p, em, na, all);
+                }
+                return p;
+            });
+
+            javafx.scene.layout.FlowPane strip = Kept.scope("strip", () ->
+                    chipStrip(GOV_PAGES, GOV_ICONS, govPage, Palette.SIZE_LABEL, name -> open(name, null)));
+            VBox frame = Kept.column(Palette.GAP, Kept.scope("head", this::head),
+                    Kept.scope("figures", () -> vitals(em, na, all)), strip);
+            frameOver(frame, page);
+        });
+    }
+
+    /** The page on show scrolled to its top: a page opened is drawn from the top, and another page is a scope of its own with a scroller of its own, which opens there; but the page opened may be the one already on show, whose kept scroller stays where the player left it unless it is put back. */
+    private void toTop() {
+        if (body != null && body.getVvalue() != 0) body.setVvalue(0);
+    }
+
+    /** The key in a kept scroller's properties for the frame its height is bound to, and in a kept page's for the scroller its width is bound to (frameOver()). */
+    private static final String BOUND_TO_FRAME = "gov.frame", BOUND_TO_SCROLLER = "gov.scroller";
+
     /** The fixed frame over a scrolling page, at the page's width, the page as tall as what is left under the frame as laid out (SectorScreen's, 0.7.30). */
     private void frameOver(VBox frame, VBox page) {
         frame.setMaxWidth(PAGE_WIDE);
         frame.setFillWidth(true);
         frame.setPadding(new javafx.geometry.Insets(0, 18, 4, 18));
         body = ui.scrolled(page, FRAME_CHROME);
-        body.prefHeightProperty().unbind();
-        body.prefHeightProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
-                () -> Math.max(260, ui.menuScroller.getHeight()
-                        - (frame.getHeight() > 0 ? frame.getHeight() + STAGE_REST : FRAME_CHROME)),
-                ui.menuScroller.heightProperty(), frame.heightProperty()));
         final javafx.scene.control.ScrollPane scroller = body;
-        page.prefWidthProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
-                () -> Math.min(PAGE_WIDE, Math.max(320, scroller.getViewportBounds().getWidth())),
-                scroller.viewportBoundsProperty()));
-        ui.rootMenu.getChildren().addAll(frame, body);
+        // Kept (KP6): both bindings are made once per scroller, since a kept page is handed back each draw with the
+        // scroller and frame it is already bound to; a draw never unbinds and binds again.
+        if (scroller.getProperties().get(BOUND_TO_FRAME) != frame) {
+            scroller.prefHeightProperty().unbind();
+            scroller.prefHeightProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
+                    () -> Math.max(260, ui.menuScroller.getHeight()
+                            - (frame.getHeight() > 0 ? frame.getHeight() + STAGE_REST : FRAME_CHROME)),
+                    ui.menuScroller.heightProperty(), frame.heightProperty()));
+            scroller.getProperties().put(BOUND_TO_FRAME, frame);
+        }
+        if (page.getProperties().get(BOUND_TO_SCROLLER) != scroller) {
+            page.prefWidthProperty().unbind();
+            page.prefWidthProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
+                    () -> Math.min(PAGE_WIDE, Math.max(320, scroller.getViewportBounds().getWidth())),
+                    scroller.viewportBoundsProperty()));
+            page.getProperties().put(BOUND_TO_SCROLLER, scroller);
+        }
+        ui.setPage(frame, scroller);
     }
 
     /** Scroll the page to a node on it (InfrastructureScreen's). */
@@ -291,9 +337,14 @@ final class GovernmentScreen {
         VBox[] cells = new VBox[k.size()];
         for (int i = 0; i < cells.length; i++) {
             Kpi c = k.get(i);
-            cells[i] = limitCell(c.label(), c.value(), c.note(), c.tone(), c.where(), go[i]);
+            final int at = i;
+            // Kept (KP6): a cell a scope, keyed by its place (SURPLUS turns DEFICIT in the same cell).
+            cells[i] = Kept.scope("cell " + i, () -> {
+                VBox cell = limitCell(c.label(), c.value(), c.note(), c.tone(), c.where(), go[at]);
+                if (at == 1) withSpark(cell, "surplus");
+                return cell;
+            });
         }
-        withSpark(cells[1], "surplus");
         return vitalsBar(cells);
     }
 
@@ -307,18 +358,21 @@ final class GovernmentScreen {
         List<Integer> when = months.size() == all.length ? months.subList(from, all.length) : null;
         Node figure = cell.getChildren().get(1);
         cell.getChildren().remove(1);
-        Region gap = new Region();
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
-        HBox top = new HBox(6, figure, gap, sparkline(year, when, Palette.MONEY, 64, 16));
+        HBox top = Kept.row(6, figure, gap, sparkline(year, when, Palette.MONEY, 64, 16));
         top.setAlignment(Pos.CENTER_LEFT);
         cell.getChildren().add(1, top);
         String d = change(series);
         if (d != null) {
-            Label change = new Label(d);
-            change.setWrapText(true);
-            change.setMaxWidth(LIMIT_CELL - 28);
-            change.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-            cell.getChildren().add(change);
+            // Words present one month and absent the next are a scope of their own (an emptied label keeps the height it had).
+            cell.getChildren().add(Kept.scope("change", () -> {
+                Label change = Kept.label(d);
+                change.setWrapText(true);
+                change.setMaxWidth(LIMIT_CELL - 28);
+                change.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+                return change;
+            }));
         }
     }
 
@@ -461,7 +515,7 @@ final class GovernmentScreen {
 
     /** Words that wrap, at a size, in a colour. */
     static Label words(String text, double size, String tone) {
-        Label l = new Label(text);
+        Label l = Kept.label(text);
         l.setWrapText(true);
         l.setMinWidth(0);
         l.setStyle(BuildScreen.wordsAt(size, tone));
@@ -470,7 +524,7 @@ final class GovernmentScreen {
 
     /** A figure that is never cut, at a size, in a colour. */
     static Label figure(String text, double size, String tone) {
-        Label l = new Label(text);
+        Label l = Kept.label(text);
         l.setMinWidth(Region.USE_PREF_SIZE);
         l.setStyle(BuildScreen.figureAt(size, tone));
         return l;
@@ -478,10 +532,10 @@ final class GovernmentScreen {
 
     /** A picture's caption: a few words in capitals, with an (i) after them when `info` is not null. */
     static HBox caption(String text, String info) {
-        Label l = new Label(text);
+        Label l = Kept.label(text);
         l.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
         l.setMinWidth(Region.USE_PREF_SIZE);
-        HBox row = new HBox(Palette.GAP, l);
+        HBox row = Kept.row(Palette.GAP, l);
         if (info != null) row.getChildren().add(infoButton(info, true));
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
@@ -489,13 +543,13 @@ final class GovernmentScreen {
 
     /** A card's head: its icon in a square tinted in its colour, its name, its (i), and a door at its right (each of the last two may be null). */
     static HBox cardHead(String svg, String colour, String name, String info, Node door) {
-        Label n = new Label(name);
+        Label n = Kept.label(name);
         n.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
         n.setWrapText(true);
-        HBox head = new HBox(8, iconSquare(svg, colour, 28, 15), n);
+        HBox head = Kept.row(8, iconSquare(svg, colour, 28, 15), n);
         if (info != null) head.getChildren().add(infoButton(info, true));
         if (door != null) {
-            Region gap = new Region();
+            Region gap = Kept.region();
             HBox.setHgrow(gap, Priority.ALWAYS);
             head.getChildren().addAll(gap, door);
         }
@@ -505,7 +559,7 @@ final class GovernmentScreen {
 
     /** A card on Build's ground: RAISED, radius 8, a 1 px edge, padding 14. */
     static VBox card(Node... rows) {
-        VBox c = new VBox(8);
+        VBox c = Kept.column(8);
         for (Node n : rows) if (n != null) c.getChildren().add(n);
         c.setMaxWidth(Double.MAX_VALUE);
         c.setStyle("-fx-padding: 14; -fx-background-color: " + Palette.RAISED + ";"
@@ -515,19 +569,22 @@ final class GovernmentScreen {
 
     /** A line of a card: words at the left, wrapping, and a figure at the right. */
     static HBox cardLine(String label, String value, String tone) {
-        Label what = words(label, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL);
-        HBox.setHgrow(what, Priority.ALWAYS);
-        what.setMaxWidth(Double.MAX_VALUE);
-        Label v = figure(value, Palette.SIZE_LABEL + 1, tone == null ? Palette.TEXT_HEAD : tone);
-        HBox row = new HBox(Palette.GAP, what, v);
-        row.setAlignment(Pos.CENTER_LEFT);
-        return row;
+        // Kept (KP6): a line a scope keyed by its words, so a line that comes or goes (the arrears, by line) takes its own nodes with it.
+        return Kept.scope("line:" + label, () -> {
+            Label what = words(label, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL);
+            HBox.setHgrow(what, Priority.ALWAYS);
+            what.setMaxWidth(Double.MAX_VALUE);
+            Label v = figure(value, Palette.SIZE_LABEL + 1, tone == null ? Palette.TEXT_HEAD : tone);
+            HBox row = Kept.row(Palette.GAP, what, v);
+            row.setAlignment(Pos.CENTER_LEFT);
+            return row;
+        });
     }
 
     /** ...with an (i) after its words. */
     static HBox cardLine(String label, String value, String tone, String info) {
         HBox row = cardLine(label, value, tone);
-        if (info != null) row.getChildren().add(1, infoButton(info, true));
+        if (info != null) row.getChildren().add(1, Kept.scope("info:" + label, () -> infoButton(info, true)));
         return row;
     }
 
@@ -538,7 +595,7 @@ final class GovernmentScreen {
 
     /** A statement column, for a fold or an opened line: the old rows at their old width (D14). */
     static VBox column(Node... rows) {
-        VBox c = new VBox(0);
+        VBox c = Kept.column(0);
         for (Node n : rows) if (n != null) c.getChildren().add(n);
         c.setMaxWidth(STATEMENT);
         return c;
@@ -667,21 +724,25 @@ final class GovernmentScreen {
        ===================================================================== */
 
     void overviewPage(VBox page, EconomyManager em, NationalAccounts na, List<CityNeeds.Need> all) {
-        page.getChildren().add(budgetCard(em, na, all));
-        VBox bridge = bridgeCard(na);
+        // Kept (KP6): each card is a scope of its own, keyed by what it is.
+        page.getChildren().add(Kept.scope("budget", () -> budgetCard(em, na, all)));
+        VBox bridge = Kept.scope("bridge", () -> bridgeCard(na));
         targets.put(BRIDGE, bridge);
         page.getChildren().add(bridge);
 
-        VBox economy = economyCard(na);
+        VBox economy = Kept.scope("economy", () -> economyCard(na));
         CentralBank cb = ui.game.getCentralBank();
         if (cb.getAdvancesToTreasury() > 0 || cb.getPrintedLifetime() > 0 || ui.game.hasArrears()) {
-            javafx.scene.layout.GridPane two = equalColumns(2, TILE_GAP);
-            VBox bank = centralBankCard(cb);
-            javafx.scene.layout.GridPane.setFillHeight(bank, true);
-            javafx.scene.layout.GridPane.setFillHeight(economy, true);
-            two.add(bank, 0, 0);
-            two.add(economy, 1, 0);
-            page.getChildren().add(two);
+            // ...and the pair side by side, for the month the central bank's card comes or goes.
+            page.getChildren().add(Kept.scope("beside", () -> {
+                javafx.scene.layout.GridPane two = equalColumns(2, TILE_GAP);
+                VBox bank = Kept.scope("central bank", () -> centralBankCard(cb));
+                javafx.scene.layout.GridPane.setFillHeight(bank, true);
+                javafx.scene.layout.GridPane.setFillHeight(economy, true);
+                two.add(bank, 0, 0);
+                two.add(economy, 1, 0);
+                return two;
+            }));
         } else {
             page.getChildren().add(economy);
         }
@@ -706,18 +767,18 @@ final class GovernmentScreen {
         List<Slice> inSlices = topSlices(inNames, inAmounts, Palette.CATEGORIES);
         List<Slice> outSlices = topSlices(outNames, outAmounts, Palette.CATEGORIES);
 
-        List<Node> inFoot = new ArrayList<>(netted(inNames, inAmounts));
+        // Kept (KP6): each ring's block is a scope, and its netted lines are made inside it (netted() keys them by line).
+        VBox left = Kept.scope("in", () -> ringBlock("WHERE IT COMES FROM", inSlices, "taken in", m(revenue),
+                netted(inNames, inAmounts), "Revenue"));
         // Repairs were named here, "outside the total", from 0.7.31; a line of the ring since 0.7.102 (A15).
-        List<Node> outFoot = new ArrayList<>(netted(outNames, outAmounts));
-
-        VBox left = ringBlock("WHERE IT COMES FROM", inSlices, "taken in", m(revenue), inFoot, "Revenue");
-        VBox right = ringBlock("WHERE IT GOES", outSlices, "paid out", m(spending), outFoot, "Spending");
-        VBox centre = balanceBlock(na, all);
+        VBox right = Kept.scope("out", () -> ringBlock("WHERE IT GOES", outSlices, "paid out", m(spending),
+                netted(outNames, outAmounts), "Spending"));
+        VBox centre = Kept.scope("balance", () -> balanceBlock(na, all));
         targets.put(BALANCE, centre);
 
         HBox.setHgrow(left, Priority.ALWAYS);
         HBox.setHgrow(right, Priority.ALWAYS);
-        HBox card = new HBox(16, left, centre, right);
+        HBox card = Kept.row(16, left, centre, right);
         card.setAlignment(Pos.TOP_LEFT);
         card.setMaxWidth(Double.MAX_VALUE);
         card.setStyle("-fx-padding: 14; -fx-background-color: " + Palette.RAISED + ";"
@@ -731,15 +792,21 @@ final class GovernmentScreen {
                 open(page, EVERYTHING_ELSE.equals(sl.name()) ? null : sl.name());
         VBox key = ringKey(slices, 260, pick);
         HBox.setHgrow(key, Priority.ALWAYS);
-        HBox ringAndKey = new HBox(16, splitRing(slices, top, total, Palette.TEXT_HEAD, 180, pick), key);
+        HBox ringAndKey = Kept.row(16, splitRing(slices, top, total, Palette.TEXT_HEAD, 180, pick), key);
         ringAndKey.setAlignment(Pos.CENTER_LEFT);
-        VBox block = new VBox(8, caption(title, null), ringAndKey);
+        VBox block = Kept.column(8, caption(title, null), ringAndKey);
+        // Words present one month and absent the next, and the netted lines, are scopes of their own (an emptied label keeps the height it had).
         if (slices.isEmpty()) {
-            block.getChildren().add(words("nothing this month", Palette.SIZE_LABEL, Palette.TEXT_SPENT));
+            block.getChildren().add(Kept.scope("nothing", () ->
+                    words("nothing this month", Palette.SIZE_LABEL, Palette.TEXT_SPENT)));
         }
-        VBox under = new VBox(2);
-        under.getChildren().addAll(foot);
-        if (!foot.isEmpty()) block.getChildren().add(under);
+        if (!foot.isEmpty()) {
+            block.getChildren().add(Kept.scope("foot", () -> {
+                VBox under = Kept.column(2);
+                under.getChildren().addAll(foot);
+                return under;
+            }));
+        }
         block.setMinWidth(380);
         block.setPrefWidth(460);
         return block;
@@ -754,8 +821,11 @@ final class GovernmentScreen {
         List<Node> out = new ArrayList<>();
         for (int i = 0; i < names.size(); i++) {
             if (amounts.get(i) <= -.5) {
-                out.add(words("less " + names.get(i).toLowerCase() + " " + s(amounts.get(i)),
-                        Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+                final String name = names.get(i);
+                final double amount = amounts.get(i);
+                // Kept (KP6): a netted line is a scope keyed by the line it names.
+                out.add(Kept.scope(name, () -> words("less " + name.toLowerCase() + " " + s(amount),
+                        Palette.SIZE_LABEL, Palette.TEXT_MUTED)));
             }
         }
         return out;
@@ -785,42 +855,49 @@ final class GovernmentScreen {
         double annual = annualGdp(na);
         String tone = needTone(all, CityNeeds.Kind.BUDGET, Palette.TEXT_HEAD);
 
-        Label verdict = new Label(balance >= 0 ? "SURPLUS" : "DEFICIT");
+        Label verdict = Kept.label(balance >= 0 ? "SURPLUS" : "DEFICIT");
         verdict.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, tone));
-        VBox block = new VBox(4, caption("THE BALANCE", null), verdict, figure(s(balance), 28, Palette.TEXT_HEAD),
+        VBox block = Kept.column(4, caption("THE BALANCE", null), verdict, figure(s(balance), 28, Palette.TEXT_HEAD),
                 infoLine(revenue > 0
                                 ? String.format("%.0f%% of what it took in", Math.abs(balance) / revenue * 100)
                                 : "nothing came in",
                         balance >= 0 ? SURPLUS_INFO : DEFICIT_INFO, true, Palette.SIZE_LABEL, Palette.TEXT_LABEL, 230));
 
         double scale = Math.max(revenue, spending);
-        block.getChildren().add(balanceBar("Taken in", revenue, spending, scale, Palette.MONEY, tone, true));
-        block.getChildren().add(balanceBar("Paid out", spending, revenue, scale, Palette.MONEY_DARK, tone, false));
+        // Kept (KP6): what is drawn only sometimes is a scope of its own, and each bar one keyed by its name.
+        block.getChildren().add(Kept.scope("Taken in", () ->
+                balanceBar("Taken in", revenue, spending, scale, Palette.MONEY, tone, true)));
+        block.getChildren().add(Kept.scope("Paid out", () ->
+                balanceBar("Paid out", spending, revenue, scale, Palette.MONEY_DARK, tone, false)));
         if (Math.abs(balance) >= .5) {
-            Region swatch = new Region();
-            swatch.setMinSize(12, 8);
-            swatch.setPrefSize(12, 8);
-            swatch.setMaxSize(12, 8);
-            swatch.setStyle("-fx-border-color: " + tone + "; -fx-border-width: 1.5; -fx-border-radius: 2;");
-            Label kept = words((balance >= 0 ? "kept " : "short ") + m(Math.abs(balance)), Palette.SIZE_LABEL, tone);
-            HBox line = new HBox(6, swatch, kept);
-            line.setAlignment(Pos.CENTER_LEFT);
-            block.getChildren().add(line);
+            block.getChildren().add(Kept.scope("kept", () -> {
+                Region swatch = Kept.region();
+                swatch.setMinSize(12, 8);
+                swatch.setPrefSize(12, 8);
+                swatch.setMaxSize(12, 8);
+                swatch.setStyle("-fx-border-color: " + tone + "; -fx-border-width: 1.5; -fx-border-radius: 2;");
+                Label kept = words((balance >= 0 ? "kept " : "short ") + m(Math.abs(balance)), Palette.SIZE_LABEL, tone);
+                HBox line = Kept.row(6, swatch, kept);
+                line.setAlignment(Pos.CENTER_LEFT);
+                return line;
+            }));
         }
         // The books (CD3): the balance takes the gain on paper retired, which is below the two bars' lines.
-        Node gainLine = retiredGainLine(na, 230);
+        Node gainLine = Kept.scope("retired gain", () -> retiredGainLine(na, 230));
         if (gainLine != null) block.getChildren().add(gainLine);
         // ...and the exchange gain (loss) on the foreign paper (CD7), in the balance the same way.
-        Node exchangeLine = debtExchangeLine(na, 230);
+        Node exchangeLine = Kept.scope("exchange gain", () -> debtExchangeLine(na, 230));
         if (exchangeLine != null) block.getChildren().add(exchangeLine);
         if (annual > 0) {
-            // The last twelve months' balance where History has them (B7): a busy month is not a year.
-            double year = yearOf(balance, SURPLUS_KEYS);
-            block.getChildren().add(words(trailing(SURPLUS_KEYS)
-                            ? String.format("a year's %s, %.1f%% %s", year >= 0 ? "surplus" : "deficit",
-                                    Math.abs(year) / annual * 100, ofAnnualGdp(na))
-                            : String.format("%.1f%% %s", Math.abs(balance) * 12 / annual * 100, ofAnnualGdp(na)),
-                    Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+            block.getChildren().add(Kept.scope("year", () -> {
+                // The last twelve months' balance where History has them (B7): a busy month is not a year.
+                double year = yearOf(balance, SURPLUS_KEYS);
+                return words(trailing(SURPLUS_KEYS)
+                                ? String.format("a year's %s, %.1f%% %s", year >= 0 ? "surplus" : "deficit",
+                                        Math.abs(year) / annual * 100, ofAnnualGdp(na))
+                                : String.format("%.1f%% %s", Math.abs(balance) * 12 / annual * 100, ofAnnualGdp(na)),
+                        Palette.SIZE_LABEL, Palette.TEXT_MUTED);
+            }));
         }
         block.getChildren().add(words("tap a slice or a line for who pays", Palette.SIZE_LABEL, Palette.TEXT_SPENT));
         block.setMinWidth(254);
@@ -859,9 +936,9 @@ final class GovernmentScreen {
     static Node retiredGainRow(NationalAccounts na) {
         double gain = na.getRetiredGain();
         if (Math.abs(gain) < .5) return null;
-        Region gap = new Region();
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
-        HBox row = new HBox(Palette.GAP,
+        HBox row = Kept.row(Palette.GAP,
                 infoLine("Gain (loss) on debt retired", RETIRED_GAIN_INFO, true, Palette.SIZE_BODY, Palette.TEXT_BODY, 300),
                 gap, figure(s(gain), Palette.SIZE_BODY + 1, Palette.TEXT_BODY));
         row.setAlignment(Pos.CENTER_LEFT);
@@ -873,9 +950,9 @@ final class GovernmentScreen {
     static Node debtExchangeRow(NationalAccounts na) {
         double gain = na.getDebtExchangeGain();
         if (Math.abs(gain) < .5) return null;
-        Region gap = new Region();
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
-        HBox row = new HBox(Palette.GAP,
+        HBox row = Kept.row(Palette.GAP,
                 infoLine("Exchange gain (loss) on foreign debt", DEBT_EXCHANGE_INFO, true, Palette.SIZE_BODY, Palette.TEXT_BODY, 300),
                 gap, figure(s(gain), Palette.SIZE_BODY + 1, Palette.TEXT_BODY));
         row.setAlignment(Pos.CENTER_LEFT);
@@ -894,31 +971,34 @@ final class GovernmentScreen {
         double unit = scale > 0 ? w / scale : 0;
         double filled = Math.min(Math.max(0, value), Math.max(0, other)) * unit;
         double over = Math.max(0, value - Math.max(0, other)) * unit;
-        javafx.scene.layout.Pane bar = new javafx.scene.layout.Pane();
+        javafx.scene.layout.Pane bar = Kept.plain();
         bar.setMinSize(w, h);
         bar.setPrefSize(w, h);
         bar.setMaxSize(w, h);
-        Region track = new Region();
+        Region track = Kept.region();
         track.setStyle("-fx-background-color: " + Palette.EDGE + "; -fx-background-radius: 3;");
         place(track, 0, w, h);
-        Region fill = new Region();
+        Region fill = Kept.region();
         fill.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: 3 0 0 3;");
         place(fill, 0, Math.max(value > 0 ? 2 : 0, filled), h);
         bar.getChildren().addAll(track, fill);
         if (over >= 1) {
-            Region past = new Region();
-            past.setStyle("-fx-background-color: " + colour + "; -fx-border-color: " + tone + ";"
-                    + " -fx-border-width: 1.5; -fx-border-radius: 0 3 3 0; -fx-background-radius: 0 3 3 0;");
-            place(past, filled, over, h);
-            bar.getChildren().add(past);
+            // Kept (KP6): the part past the other bar is drawn only sometimes, and is a scope of its own.
+            bar.getChildren().add(Kept.scope("past", () -> {
+                Region past = Kept.region();
+                past.setStyle("-fx-background-color: " + colour + "; -fx-border-color: " + tone + ";"
+                        + " -fx-border-width: 1.5; -fx-border-radius: 0 3 3 0; -fx-background-radius: 0 3 3 0;");
+                place(past, filled, over, h);
+                return past;
+            }));
         }
         Label what = words(name, Palette.SIZE_LABEL, Palette.TEXT_LABEL);
-        Region gap = new Region();
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
-        HBox head = new HBox(6, what, gap, figure(m(value), Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD));
+        HBox head = Kept.row(6, what, gap, figure(m(value), Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD));
         head.setAlignment(Pos.CENTER_LEFT);
         head.setMaxWidth(w);
-        VBox box = new VBox(2, head, bar);
+        VBox box = Kept.column(2, head, bar);
         box.setStyle(first ? "-fx-padding: 6 0 0 0;" : "");
         return box;
     }
@@ -1017,13 +1097,17 @@ final class GovernmentScreen {
         List<Node> chips = new ArrayList<>();
         if (banked) {
             BridgeStep most = mostly(balance);
-            if (most != null) chips.add(chip("mostly: " + most.label() + " " + s(most.amount()), Palette.TEXT_LABEL));
+            // Kept (KP6): a chip that comes or goes is a scope of its own.
+            if (most != null) chips.add(Kept.scope("mostly", () ->
+                    chip("mostly: " + most.label() + " " + s(most.amount()), Palette.TEXT_LABEL)));
             double printed = ui.game.getCentralBank().getAdvancedToTreasury();
             if (printed > 0) {
-                Label p = chip("printed " + m(printed), Palette.MONEY);
-                p.setGraphic(icon(Icons.BANK, Palette.MONEY, 11));
-                p.setGraphicTextGap(4);
-                chips.add(p);
+                chips.add(Kept.scope("printed", () -> {
+                    // ...handed its icon where it is made, so a kept chip is not stripped of it and given it back.
+                    Label p = chip("printed " + m(printed), Palette.MONEY, icon(Icons.BANK, Palette.MONEY, 11));
+                    p.setGraphicTextGap(4);
+                    return p;
+                }));
             }
         }
         anchors.add(new Anchor("BANKED", Icons.FINANCES, banked ? s(ui.game.getTreasuryChange()) : "—",
@@ -1033,9 +1117,9 @@ final class GovernmentScreen {
 
         List<List<BridgeStep>> steps = List.of(earnedSteps(), banked ? cashSteps() : List.of());
 
-        Region gap = new Region();
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
-        HBox head = new HBox(Palette.GAP, caption("FROM EARNED TO BANKED", BRIDGE_INFO), gap,
+        HBox head = Kept.row(Palette.GAP, caption("FROM EARNED TO BANKED", BRIDGE_INFO), gap,
                 hint(banked ? "last month, press to press" : "the cash after the first month closes"));
         head.setAlignment(Pos.CENTER_LEFT);
 
@@ -1043,8 +1127,8 @@ final class GovernmentScreen {
                 bridge(anchors, steps, GovernmentScreen::s, Palette.MONEY, Palette.MONEY_DARK, 5, open, "bridge",
                         ui::redraw));
         if (banked) {
-            card.getChildren().add(details("treasury", "the treasury's month, line by line", open, ui::redraw,
-                    this::treasuryStatement));
+            card.getChildren().add(Kept.scope("fold treasury", () -> details("treasury", "the treasury's month, line by line", open, ui::redraw,
+                    this::treasuryStatement)));
         }
         return card;
     }
@@ -1188,18 +1272,24 @@ final class GovernmentScreen {
 
     /** CD7: the rows under the Spending page's total that the balance carries and the total does not: the retired gain's and the exchange gain's, one or both, or null at neither. */
     static Node outsideRows(NationalAccounts na) {
-        Node gain = retiredGainRow(na), exchange = debtExchangeRow(na);
+        // Kept (KP6): a row that comes or goes is a scope of its own.
+        Node gain = Kept.scope("gain", () -> retiredGainRow(na));
+        Node exchange = Kept.scope("exchange", () -> debtExchangeRow(na));
         if (gain == null || exchange == null) return gain != null ? gain : exchange;
-        return new VBox(0, gain, exchange);
+        return Kept.column(0, gain, exchange);
     }
 
     /** One row of the fold's grid: a movement, signed, and a zero written as one. */
     static int moved(javafx.scene.layout.GridPane grid, int row, String label, double amount, boolean under) {
-        Label what = gridCell(label, under ? Palette.TEXT_MUTED : Palette.TEXT_BODY, Palette.SIZE_CAPTION, false);
-        if (under) what.setStyle(what.getStyle() + " -fx-padding: 0 0 0 16;");
-        grid.add(what, 0, row);
-        grid.add(gridCell(s(amount), Math.abs(amount) < .5 ? Palette.TEXT_SPENT : Palette.TEXT_BODY,
-                Palette.SIZE_CAPTION, true), 1, row);
+        // Kept (KP6): a row of the grid, two cells, is a scope keyed by its words, for the rows that come and go.
+        Kept.scope("moved:" + label, () -> {
+            Label what = gridCell(label, under ? Palette.TEXT_MUTED : Palette.TEXT_BODY, Palette.SIZE_CAPTION, false);
+            // (A style is set whole, never built on getStyle(): the cell's own, with the indent.)
+            if (under) what.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED) + " -fx-padding: 0 0 0 16;");
+            grid.add(what, 0, row);
+            grid.add(gridCell(s(amount), Math.abs(amount) < .5 ? Palette.TEXT_SPENT : Palette.TEXT_BODY,
+                    Palette.SIZE_CAPTION, true), 1, row);
+        });
         return row + 1;
     }
 
@@ -1230,25 +1320,31 @@ final class GovernmentScreen {
         String tone = cb.ceilingBound() ? Palette.BAD : Palette.MONEY;
         Region ring = ring(ceiling > 0 ? owes / ceiling : 0, tone, 64, 8,
                 ceiling > 0 ? String.format("%.0f%%", owes / ceiling * 100) : "—", 13);
-        VBox words = new VBox(4,
+        VBox words = Kept.column(4,
                 words("owes " + m(owes) + " of a " + m(ceiling) + " ceiling ("
                         + cb.getAdvancesCeilingMonths() + " months of revenue)", Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL),
                 cardLine("Printed this month", m(cb.getAdvancedToTreasury()), null),
                 cardLine("...since founding", m(cb.getPrintedLifetime()), Palette.TEXT_MUTED),
                 cardLine("Repaid this month", m(cb.getRepaidByTreasury()), Palette.TEXT_MUTED));
         HBox.setHgrow(words, Priority.ALWAYS);
-        HBox top = new HBox(14, ring, words);
+        HBox top = Kept.row(14, ring, words);
         top.setAlignment(Pos.CENTER_LEFT);
         VBox card = card(cardHead(Icons.BANK, Palette.MONEY, "CENTRAL BANK", advancesInfo(),
                 door("Policy › Money", Palette.ACCENT, () -> openPolicy("Money", "The policy rate"))), top);
 
         java.util.Map<TreasuryLine, Double> owed = ui.game.getArrearsByLine();
         if (!owed.isEmpty()) {
-            card.getChildren().add(caption("OWED AND UNPAID, BY LINE", ARREARS_INFO));
-            for (java.util.Map.Entry<TreasuryLine, Double> line : owed.entrySet()) {
-                card.getChildren().add(cardLine(line.getKey().label, m(line.getValue()), Palette.BAD));
-            }
-            card.getChildren().add(cardLine("Owed altogether", m(ui.game.getArrearsTotal()), Palette.BAD));
+            // Kept (KP6): the arrears, a caption and a line each, are a scope of their own (cardLine() keys a line by its words).
+            List<Node> lines = Kept.scope("arrears", () -> {
+                List<Node> made = new ArrayList<>();
+                made.add(caption("OWED AND UNPAID, BY LINE", ARREARS_INFO));
+                for (java.util.Map.Entry<TreasuryLine, Double> line : owed.entrySet()) {
+                    made.add(cardLine(line.getKey().label, m(line.getValue()), Palette.BAD));
+                }
+                made.add(cardLine("Owed altogether", m(ui.game.getArrearsTotal()), Palette.BAD));
+                return made;
+            });
+            card.getChildren().addAll(lines);
         }
         return card;
     }
@@ -1281,7 +1377,7 @@ final class GovernmentScreen {
         VBox card = card(cardHead(Icons.REPORTS, Palette.MONEY, "AGAINST THE ECONOMY", ECONOMY_INFO,
                 door("Output", Palette.ACCENT, () -> open("Output", null))));
         if (annual <= 0) {
-            card.getChildren().add(words(NO_YEAR, Palette.SIZE_LABEL + 1, Palette.TEXT_MUTED));
+            card.getChildren().add(Kept.scope("no year", () -> words(NO_YEAR, Palette.SIZE_LABEL + 1, Palette.TEXT_MUTED)));
             return card;
         }
         double revenue = na.getTotalRevenue(), spending = na.getTotalExpenses(), balance = na.getBalance();
@@ -1308,11 +1404,12 @@ final class GovernmentScreen {
         long heads = ui.game.getPopulationManager().getPopulation();
         String line = (gdpEstimated(na) ? "GDP, annualised " : "annual GDP ") + m(annual)
                 + (heads > 0 ? " · " + moneyFull(annual / heads) + " a head" : "");
-        card.getChildren().add(gdpEstimated(na)
+        // Kept (KP6): the note and the plain line are different nodes, so each is a scope of its own.
+        card.getChildren().add(Kept.scope(gdpEstimated(na) ? "estimated" : "measured", () -> gdpEstimated(na)
                 ? noteLine(line, String.format("This city has only %d months of output recorded, so the year is "
                         + "scaled up from those rather than measured. It settles as the twelfth month goes by.",
                         na.getMonthsRecorded()), 560)
-                : words(line, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
+                : words(line, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL)));
         return card;
     }
 
@@ -1463,7 +1560,7 @@ final class GovernmentScreen {
         // The list's year (B7): what came in, or what went out, over the last twelve months once History has them.
         double totalYear = "Spending".equals(pageName) ? spendingYear(total) : yearOf(total, REVENUE_KEYS);
 
-        javafx.scene.layout.FlowPane lead = new javafx.scene.layout.FlowPane(8, 0);
+        javafx.scene.layout.FlowPane lead = Kept.flow(8, 0);
         lead.setRowValignment(javafx.geometry.VPos.BASELINE);
         lead.getChildren().addAll(figure(m(total), 22, Palette.TEXT_HEAD),
                 words(verb + (annual > 0 ? String.format(" · %.1f%% %s", totalYear / annual * 100, ofAnnualGdp(na)) : "")
@@ -1498,23 +1595,24 @@ final class GovernmentScreen {
                     opens.apply(name), word.apply(name), d == null ? null : d.words(), d == null ? null : d.go()));
         }
 
-        page.getChildren().add(listHead(na));
+        page.getChildren().add(Kept.scope("head", () -> listHead(na)));
         VBox list = rankBars(rows, total, LIST_COLUMNS, LIST_DOOR, open, ui::redraw);
         for (Node n : list.getChildren()) {
             Object key = n.getProperties().get(RANK_KEY);
             if (key != null) targets.put(key.toString(), n);
         }
         page.getChildren().add(list);
+        // Kept (KP6): words present one month and absent the next are a scope of their own (an emptied label keeps the height it had).
         if (!nothing.isEmpty()) {
-            page.getChildren().add(words("nothing this month: " + String.join(" · ", nothing),
-                    Palette.SIZE_LABEL + 1, Palette.TEXT_SPENT));
+            page.getChildren().add(Kept.scope("nothing", () -> words("nothing this month: " + String.join(" · ", nothing),
+                    Palette.SIZE_LABEL + 1, Palette.TEXT_SPENT)));
         }
 
         Label t = words(totalWords, Palette.SIZE_BODY + 1, Palette.TEXT_HEAD);
         t.setStyle(Palette.strong(Palette.SIZE_BODY + 1, Palette.TEXT_HEAD));
-        Region gap = new Region();
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
-        HBox totalRow = new HBox(Palette.GAP, t, gap, figure(m(total), Palette.SIZE_BODY + 3, Palette.TEXT_HEAD));
+        HBox totalRow = Kept.row(Palette.GAP, t, gap, figure(m(total), Palette.SIZE_BODY + 3, Palette.TEXT_HEAD));
         totalRow.setAlignment(Pos.CENTER_LEFT);
         totalRow.setStyle("-fx-padding: 4 6 0 6; -fx-border-color: " + Palette.EDGE + "; -fx-border-width: 1 0 0 0;");
         page.getChildren().add(totalRow);
@@ -1523,32 +1621,38 @@ final class GovernmentScreen {
 
     /** The column heads over a list, in the rows' own columns; the "of GDP" head carries P19 while the year is scaled. */
     HBox listHead(NationalAccounts na) {
-        Region lead = new Region();
+        Region lead = Kept.region();
         lead.setMinWidth(236);
         lead.setPrefWidth(236);
-        Region grow = new Region();
+        Region grow = Kept.region();
         HBox.setHgrow(grow, Priority.ALWAYS);
-        HBox row = new HBox(10, lead, grow);
+        HBox row = Kept.row(10, lead, grow);
         String[] heads = {"a month", "of the budget", "of GDP"};
         for (int c = 0; c < heads.length; c++) {
-            Label h = new Label(heads[c]);
-            h.setWrapText(true);
-            h.setAlignment(Pos.CENTER_RIGHT);
-            h.setTextAlignment(javafx.scene.text.TextAlignment.RIGHT);
-            h.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-            Node cell = h;
-            if (c == 2 && gdpEstimated(na)) {
-                HBox withInfo = new HBox(3, h, infoButton(scaledYearInfo(na), true));
-                withInfo.setAlignment(Pos.CENTER_RIGHT);
-                cell = withInfo;
-            }
-            HBox slot = new HBox(cell);
-            slot.setAlignment(Pos.CENTER_RIGHT);
-            slot.setMinWidth(LIST_COLUMNS[c]);
-            slot.setPrefWidth(LIST_COLUMNS[c]);
-            row.getChildren().add(slot);
+            final int at = c;
+            // Kept (KP6): a head a scope keyed by its place; the third one's (i), shown while the year is scaled up, one of its own.
+            row.getChildren().add(Kept.scope("head " + c, () -> {
+                Label h = Kept.label(heads[at]);
+                h.setWrapText(true);
+                h.setAlignment(Pos.CENTER_RIGHT);
+                h.setTextAlignment(javafx.scene.text.TextAlignment.RIGHT);
+                h.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+                Node cell = h;
+                if (at == 2 && gdpEstimated(na)) {
+                    cell = Kept.scope("info", () -> {
+                        HBox withInfo = Kept.row(3, h, infoButton(scaledYearInfo(na), true));
+                        withInfo.setAlignment(Pos.CENTER_RIGHT);
+                        return withInfo;
+                    });
+                }
+                HBox slot = Kept.row(0, cell);
+                slot.setAlignment(Pos.CENTER_RIGHT);
+                slot.setMinWidth(LIST_COLUMNS[at]);
+                slot.setPrefWidth(LIST_COLUMNS[at]);
+                return slot;
+            }));
         }
-        Region door = new Region();
+        Region door = Kept.region();
         door.setMinWidth(LIST_DOOR);
         door.setPrefWidth(LIST_DOOR);
         row.getChildren().add(door);
@@ -1568,7 +1672,7 @@ final class GovernmentScreen {
      * the (i) on the panel's first line. At the statement's width (D14).
      */
     VBox payers(String caption, String note, List<Payer> who, double total, String colour) {
-        VBox box = new VBox(2);
+        VBox box = Kept.column(2);
         box.setMaxWidth(STATEMENT);
         box.getChildren().add(noteLine(caption, note, STATEMENT - 22));
         List<Slice> parts = new ArrayList<>();
@@ -1578,7 +1682,10 @@ final class GovernmentScreen {
             parts.add(new Slice(p.who(), p.amount(), k++ % 2 == 0 ? colour : tint(colour, .55)));
         }
         if (!parts.isEmpty()) box.getChildren().add(stackedBar(parts, STATEMENT - 22, v -> m(v)));
-        for (Payer p : who) box.getChildren().add(payerRow(p.who(), p.amount(), total, p.rate()));
+        // Kept (KP6): a payer's row a scope keyed by who (a course with no students leaves the list).
+        for (Payer p : who) {
+            box.getChildren().add(Kept.scope(p.who(), () -> payerRow(p.who(), p.amount(), total, p.rate())));
+        }
         return box;
     }
 
@@ -1914,25 +2021,30 @@ final class GovernmentScreen {
             who.add(new Payer(k.name() + "  ×" + k.count(), k.expense(),
                     m(k.principal()) + " owed · carried " + m(k.carried())));
         }
-        if (who.isEmpty()) return column(statementNote("The city owes nothing."));
+        if (who.isEmpty()) return Kept.scope("owes nothing", () -> column(statementNote("The city owes nothing.")));
         VBox box = payers("by the paper it is charged on", interestInfo(repaid), who, total, colour);
         // ...and the line's two parts (CD3), the cash and the books: the coupons paid, the discount wearing off.
         NationalAccounts na = ui.game.getEconomyManager().getNationalAccounts();
-        box.getChildren().add(payerRow("...of which the coupons, paid in cash", na.getInterestPaidInCash(), total, "left the treasury"));
+        // Kept (KP6): each row added here is a scope keyed by what it says, for the months it comes and goes.
+        box.getChildren().add(Kept.scope("coupons", () ->
+                payerRow("...of which the coupons, paid in cash", na.getInterestPaidInCash(), total, "left the treasury")));
         if (Math.abs(na.getInterestNotCash()) >= .5) {
-            box.getChildren().add(payerRow(na.getInterestNotCash() > 0 ? "...and the discount wearing off"
-                    : "...less the premium wearing off", na.getInterestNotCash(), total, "no cash"));
+            box.getChildren().add(Kept.scope("not cash", () -> payerRow(na.getInterestNotCash() > 0
+                    ? "...and the discount wearing off" : "...less the premium wearing off",
+                    na.getInterestNotCash(), total, "no cash")));
         }
         // The linked bonds' indexation (CD5) is a line of its own on this list, beside the interest; named here where the interest is split.
         double uplift = na.getInflationUplift();
         if (Math.abs(uplift) >= .5) {
-            box.getChildren().add(payerRow("Inflation uplift — its own line", uplift, 0,
-                    na.getUpliftPaidInCash() >= .5 ? "at maturity" : "no cash"));
+            box.getChildren().add(Kept.scope("uplift", () -> payerRow("Inflation uplift — its own line", uplift, 0,
+                    na.getUpliftPaidInCash() >= .5 ? "at maturity" : "no cash")));
         }
         /* --------------- and the money that is not on this statement --------------- */
-        if (repaid > 0) box.getChildren().add(payerRow("Principal repaid — not an expense", repaid, 0, "left the treasury"));
+        if (repaid > 0) box.getChildren().add(Kept.scope("repaid", () ->
+                payerRow("Principal repaid — not an expense", repaid, 0, "left the treasury")));
         double foreignInterest = ui.game.getForeignInterestPaidThisMonth();
-        if (foreignInterest > 0) box.getChildren().add(payerRow("...of which paid abroad", foreignInterest, total, "in dollars"));
+        if (foreignInterest > 0) box.getChildren().add(Kept.scope("abroad", () ->
+                payerRow("...of which paid abroad", foreignInterest, total, "in dollars")));
         return box;
     }
 
@@ -2030,7 +2142,7 @@ final class GovernmentScreen {
         double total = na.getTotalExpenses();
         // "Outside the budget's total: repairs ..." stood here from 0.7.31; a line of the list since 0.7.102 (A15).
         // Under the total now stands the gain (loss) on debt retired (CD3), when there is one: in the balance, not in this total.
-        Node outside = outsideRows(na);
+        Node outside = Kept.scope("outside", () -> outsideRows(na));
         listPage(page, "Spending", "paid out", names, amounts, total, na,
                 name -> {
                     double amount = amounts.get(names.indexOf(name));
@@ -2049,7 +2161,9 @@ final class GovernmentScreen {
                 name -> "Interest on the city's paper".equals(name) ? "on what" : "who", "Paid out altogether", outside);
 
         javafx.scene.layout.GridPane three = equalColumns(3, TILE_GAP);
-        VBox debt = debtCard(na, total), services = servicesCard(em), pensions = pensionsCard(em, all);
+        // Kept (KP6): each card is a scope of its own, keyed by what it is.
+        VBox debt = Kept.scope("debt", () -> debtCard(na, total)), services = Kept.scope("services", () -> servicesCard(em)),
+                pensions = Kept.scope("pensions", () -> pensionsCard(em, all));
         for (VBox c : new VBox[] {debt, services, pensions}) javafx.scene.layout.GridPane.setFillHeight(c, true);
         three.add(debt, 0, 0);
         three.add(services, 1, 0);
@@ -2113,7 +2227,8 @@ final class GovernmentScreen {
         PaperKind notes = paperKind("Notes"), serial = paperKind("Serial bonds"), term = paperKind("Term loans"),
                 floating = paperKind("Floating-rate notes"), linked = paperKind("Inflation-linked bonds");
         if (notes.count() + serial.count() + term.count() + floating.count() + linked.count() == 0) {
-            card.getChildren().add(words("The city owes nothing.", Palette.SIZE_BODY + 1, Palette.TEXT_LABEL));
+            card.getChildren().add(Kept.scope("owes nothing", () ->
+                    words("The city owes nothing.", Palette.SIZE_BODY + 1, Palette.TEXT_LABEL)));
             return card;
         }
         List<Slice> parts = new ArrayList<>();
@@ -2130,7 +2245,10 @@ final class GovernmentScreen {
         double booked = na.getInterestPaidInCash();
         List<String[]> lines = debtLines(na);
         card.getChildren().add(words(lines.get(0)[0], Palette.SIZE_BODY + 1, Palette.TEXT_HEAD));
-        for (String[] line : lines.subList(1, lines.size())) card.getChildren().add(noteLine(line[0], line[1], 360));
+        // Kept (KP6): a kind's line is a scope keyed by its (i) - the words change every month, the (i) is the kind's - for the kinds that come and go.
+        for (String[] line : lines.subList(1, lines.size())) {
+            card.getChildren().add(Kept.scope(line[1], () -> noteLine(line[0], line[1], 360)));
+        }
         /*
          * A FRESHLY LOADED CITY HAS NOT CHARGED A COUPON YET.
          *
@@ -2143,12 +2261,15 @@ final class GovernmentScreen {
          */
         double coupons = notes.coupon() + serial.coupon() + term.coupon() + floating.coupon() + linked.coupon();
         if (coupons > 0 && Math.abs(coupons - booked) > coupons * .02) {
-            HBox c = new HBox(4, chip("coupons " + m(coupons) + " a month, paid " + m(booked)
-                    + ": not struck yet", Palette.TEXT_LABEL), infoButton(COUPON_INFO, true));
-            c.setAlignment(Pos.CENTER_LEFT);
-            card.getChildren().add(c);
+            card.getChildren().add(Kept.scope("coupons", () -> {
+                HBox c = Kept.row(4, chip("coupons " + m(coupons) + " a month, paid " + m(booked)
+                        + ": not struck yet", Palette.TEXT_LABEL), infoButton(COUPON_INFO, true));
+                c.setAlignment(Pos.CENTER_LEFT);
+                return c;
+            }));
         }
-        card.getChildren().add(details("debt", "the paper, line by line", open, ui::redraw, () -> debtGrid(spending)));
+        card.getChildren().add(Kept.scope("fold debt", () ->
+                details("debt", "the paper, line by line", open, ui::redraw, () -> debtGrid(spending))));
         return card;
     }
 
@@ -2207,27 +2328,34 @@ final class GovernmentScreen {
         int line = 1;
         for (PaperKind k : paperKinds()) {
             if (k.count() == 0 && Math.abs(k.expense()) < .5) continue;
-            table.add(gridCell(k.name(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, line);
-            table.add(gridCell(String.valueOf(k.count()), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 1, line);
-            table.add(gridCell(m(k.principal()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 2, line);
-            table.add(gridCell(m(k.carried()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 3, line);
-            table.add(gridCell(m(k.expense()), k.expense() > 0 ? Palette.TEXT_BODY : Palette.TEXT_SPENT,
-                    Palette.SIZE_CAPTION, true), 4, line);
-            table.add(gridCell(spending > 0 ? String.format("%.2f%%", k.expense() / spending * 100) : "—",
-                    Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 5, line);
+            final int at = line;
+            // Kept (KP6): a kind's row of cells is a scope keyed by the kind, for the kinds that come and go.
+            Kept.scope(k.name(), () -> {
+                table.add(gridCell(k.name(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, at);
+                table.add(gridCell(String.valueOf(k.count()), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 1, at);
+                table.add(gridCell(m(k.principal()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 2, at);
+                table.add(gridCell(m(k.carried()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 3, at);
+                table.add(gridCell(m(k.expense()), k.expense() > 0 ? Palette.TEXT_BODY : Palette.TEXT_SPENT,
+                        Palette.SIZE_CAPTION, true), 4, at);
+                table.add(gridCell(spending > 0 ? String.format("%.2f%%", k.expense() / spending * 100) : "—",
+                        Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 5, at);
+            });
             line++;
         }
         // The foot (CD6): all the paper together - what is owed, what it is carried at, and the budget's own
         // interest line, which the rows above add up to.
         DebtManager ledger = ui.game.getDebtManager();
         double interest = ui.game.getEconomyManager().getNationalAccounts().getInterestExpense();
-        table.add(gridCell("all paper", Palette.TEXT_HEAD, Palette.SIZE_CAPTION, false), 0, line);
-        table.add(gridCell(String.valueOf(ledger.getDebt().size()), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 1, line);
-        table.add(gridCell(m(ledger.getAllPrincipal()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 2, line);
-        table.add(gridCell(m(ledger.getCarryingValue()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 3, line);
-        table.add(gridCell(m(interest), interest > 0 ? Palette.TEXT_HEAD : Palette.TEXT_SPENT, Palette.SIZE_CAPTION, true), 4, line);
-        table.add(gridCell(spending > 0 ? String.format("%.2f%%", interest / spending * 100) : "—",
-                Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 5, line);
+        final int foot = line;
+        Kept.scope("all paper", () -> {
+            table.add(gridCell("all paper", Palette.TEXT_HEAD, Palette.SIZE_CAPTION, false), 0, foot);
+            table.add(gridCell(String.valueOf(ledger.getDebt().size()), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 1, foot);
+            table.add(gridCell(m(ledger.getAllPrincipal()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 2, foot);
+            table.add(gridCell(m(ledger.getCarryingValue()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 3, foot);
+            table.add(gridCell(m(interest), interest > 0 ? Palette.TEXT_HEAD : Palette.TEXT_SPENT, Palette.SIZE_CAPTION, true), 4, foot);
+            table.add(gridCell(spending > 0 ? String.format("%.2f%%", interest / spending * 100) : "—",
+                    Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 5, foot);
+        });
         return table;
     }
 
@@ -2254,8 +2382,10 @@ final class GovernmentScreen {
         VBox card = card(cardHead(Icons.HEALTH, Palette.PEOPLE, "THE SERVICES THAT CHARGE",
                 both ? BOTH_DEFICIT_INFO : NOT_BOTH_INFO,
                 door("Services", Palette.ACCENT, () -> ui.servicesScreen.open("Health", ServicesScreen.OVERVIEW))));
-        card.getChildren().add(serviceLine("care", em.getHealthcareBill(), em.getHealthcareFees(), em.getHealthcareNet()));
-        card.getChildren().add(serviceLine("schools", em.getEducationBill(), em.getEducationFees(), em.getEducationNet()));
+        card.getChildren().add(Kept.scope("care", () ->
+                serviceLine("care", em.getHealthcareBill(), em.getHealthcareFees(), em.getHealthcareNet())));
+        card.getChildren().add(Kept.scope("schools", () ->
+                serviceLine("schools", em.getEducationBill(), em.getEducationFees(), em.getEducationNet())));
         return card;
     }
 
@@ -2269,8 +2399,10 @@ final class GovernmentScreen {
 
     /** One service: its fees against its bill as a bar, and its words. */
     static VBox serviceLine(String name, double bill, double fees, double net) {
-        VBox box = new VBox(3, words(serviceWords(name, bill, fees, net), Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
-        if (bill >= .5 || fees >= .5) box.getChildren().add(bar(bill > 0 ? fees / bill : 1, Palette.MONEY, 300, 8));
+        VBox box = Kept.column(3, words(serviceWords(name, bill, fees, net), Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
+        if (bill >= .5 || fees >= .5) {
+            box.getChildren().add(Kept.scope("bar", () -> bar(bill > 0 ? fees / bill : 1, Palette.MONEY, 300, 8)));
+        }
         return box;
     }
 
@@ -2295,14 +2427,14 @@ final class GovernmentScreen {
                         ? String.format("contributions cover %.0f%% of %s", em.getPensionCoverage() * 100, m(paid))
                         : "no pensions paid this month",
                 Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
-        if (paid > 0) card.getChildren().add(bar(in / paid, Palette.PEOPLE, 300, 8));
+        if (paid > 0) card.getChildren().add(Kept.scope("bar", () -> bar(in / paid, Palette.PEOPLE, 300, 8)));
         card.getChildren().add(words(people(em.getSeniors()) + " seniors at " + cash(em.getTaxPolicy().pensionPerSenior()),
                 Palette.SIZE_LABEL + 1, Palette.TEXT_MUTED));
         card.getChildren().add(words(gap > .5 ? m(gap) + " from general revenue" : "contributions pay for all of it",
                 Palette.SIZE_LABEL + 1, Palette.TEXT_MUTED));
         CityNeeds.Need row = need(all, CityNeeds.Kind.PENSIONS);
-        if (row != null && row.level() >= 1) card.getChildren().add(chip("NEEDS YOU: " + row.reading(),
-                BuildScreen.verdict(row.level())));
+        if (row != null && row.level() >= 1) card.getChildren().add(Kept.scope("needs you", () ->
+                chip("NEEDS YOU: " + row.reading(), BuildScreen.verdict(row.level()))));
         return card;
     }
 
@@ -2318,10 +2450,12 @@ final class GovernmentScreen {
        ===================================================================== */
 
     void outputPage(VBox page, NationalAccounts na) {
-        page.getChildren().add(outputHero(na));
+        // Kept (KP6): each section is a scope of its own, keyed by what it is.
+        page.getChildren().add(Kept.scope("hero", () -> outputHero(na)));
 
         javafx.scene.layout.GridPane four = equalColumns(4, TILE_GAP);
-        VBox[] cards = {consumptionCard(na), investmentCard(na), governmentCard(na), tradeCard(na)};
+        VBox[] cards = {Kept.scope("consumption", () -> consumptionCard(na)), Kept.scope("investment", () -> investmentCard(na)),
+                Kept.scope("government", () -> governmentCard(na)), Kept.scope("trade", () -> tradeCard(na))};
         for (int i = 0; i < cards.length; i++) {
             javafx.scene.layout.GridPane.setFillHeight(cards[i], true);
             four.add(cards[i], i, 0);
@@ -2339,22 +2473,23 @@ final class GovernmentScreen {
         double[] values = {na.getConsumption(), na.getInvestment(), na.getGovernment(), na.getNetExports()};
         String[] colours = {Palette.GDP_LAYERS[0], Palette.GDP_LAYERS[1], Palette.GDP_LAYERS[2], Palette.TEXT_MUTED};
         List<Segment> parts = new ArrayList<>();
-        javafx.scene.layout.FlowPane key = new javafx.scene.layout.FlowPane(14, 2);
         for (int i = 0; i < names.length; i++) {
             parts.add(new Segment(Math.abs(values[i]), colours[i], false, null, null,
                     names[i] + "\n" + s(values[i]), null));
-            key.getChildren().add(keySwatch(colours[i], names[i] + " " + s(values[i])));
         }
-        page.getChildren().add(new VBox(4, caption("THIS MONTH, AS ONE BAR", null),
-                segmentBar(parts, 0, List.of(), 0, 14), key));
+        page.getChildren().add(Kept.scope("one bar", () -> {
+            javafx.scene.layout.FlowPane key = Kept.flow(14, 2);
+            for (int i = 0; i < names.length; i++) key.getChildren().add(keySwatch(colours[i], names[i] + " " + s(values[i])));
+            return Kept.column(4, caption("THIS MONTH, AS ONE BAR", null), segmentBar(parts, 0, List.of(), 0, 14), key);
+        }));
 
-        page.getChildren().add(growthStrip(na));
-        page.getChildren().add(details("output", "how many months are recorded", open, ui::redraw,
+        page.getChildren().add(Kept.scope("growth", () -> growthStrip(na)));
+        page.getChildren().add(Kept.scope("fold output", () -> details("output", "how many months are recorded", open, ui::redraw,
                 () -> column(statementLine("Months recorded", people(na.getMonthsRecorded())),
                         statementNote(na.getMonthsRecorded() >= 12
                                 ? "A year or more, so the annual figures are measured."
                                 : String.format("Fewer than twelve, so the annual figure is %d months scaled up "
-                                        + "rather than a year measured.", na.getMonthsRecorded())))));
+                                        + "rather than a year measured.", na.getMonthsRecorded()))))));
     }
 
     /** The layers' caption's (i). */
@@ -2369,7 +2504,8 @@ final class GovernmentScreen {
         HistoryScreen.Trace trace = ui.historyScreen.traceFor(HistoryScreen.LAYERED);
         String unit = trace.unit();
         TimeChart.Stack stack = ui.historyScreen.gdpStack(h, unit);
-        TimeChart chart = new TimeChart(new ChartModel(), java.util.Set.of(), false);
+        // Kept (KP6): made once in its scope, told its data and its size at every draw (BankScreen.chart()'s way).
+        TimeChart chart = Kept.of(TimeChart.class, () -> new TimeChart(new ChartModel(), java.util.Set.of(), false));
         chart.setData(h.getMonth(),
                 List.of(new TimeChart.Line(HistoryScreen.LAYERED, trace.label(), HistoryScreen.LAYERED_LINE, 0,
                         ui.historyScreen.historyValues(h, HistoryScreen.LAYERED),
@@ -2377,8 +2513,8 @@ final class GovernmentScreen {
                 HistoryScreen.axisFor(unit), null, false, false, stack, List.of(), List.of(), List.of(),
                 "from the end of the first year");
         chart.setSize(880, 220);
-        VBox left = new VBox(4, caption("WHAT THE CITY MAKES · a rolling year, in founding money", LAYERS_INFO), chart,
-                ui.historyScreen.layersKey(stack.layers(), 880));
+        VBox left = Kept.column(4, caption("WHAT THE CITY MAKES · a rolling year, in founding money", LAYERS_INFO), chart,
+                Kept.scope("layers key", () -> ui.historyScreen.layersKey(stack.layers(), 880)));
         left.setMinWidth(0);
         HBox.setHgrow(left, Priority.ALWAYS);
 
@@ -2386,7 +2522,7 @@ final class GovernmentScreen {
         long heads = ui.game.getPopulationManager().getPopulation();
         double[] growth = YearBook.realGrowth(h);
         double grew = growth.length == 0 ? Double.NaN : growth[growth.length - 1];
-        VBox right = new VBox(6,
+        VBox right = Kept.column(6,
                 words("GDP this month", Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL),
                 figure(m(na.getGdp()), 28, Palette.TEXT_HEAD),
                 words((gdpEstimated(na) ? "a year, annualised " : "a year ") + m(annual)
@@ -2398,7 +2534,7 @@ final class GovernmentScreen {
         right.setPrefWidth(280);
         right.setMaxWidth(280);
 
-        HBox card = new HBox(24, left, right);
+        HBox card = Kept.row(24, left, right);
         card.setAlignment(Pos.TOP_LEFT);
         card.setMaxWidth(Double.MAX_VALUE);
         card.setStyle("-fx-padding: 14 16 14 16; -fx-background-color: " + Palette.RAISED + ";"
@@ -2416,12 +2552,12 @@ final class GovernmentScreen {
 
     /** One of the four parts' cards: its name, its figure, and its lines. */
     static VBox partCard(String name, String colour, String amount, String info, Node... lines) {
-        Region swatch = new Region();
+        Region swatch = Kept.region();
         swatch.setMinSize(10, 10);
         swatch.setPrefSize(10, 10);
         swatch.setMaxSize(10, 10);
         swatch.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: 3;");
-        HBox head = new HBox(6, swatch, caption(name, info));
+        HBox head = Kept.row(6, swatch, caption(name, info));
         head.setAlignment(Pos.CENTER_LEFT);
         VBox card = card(head, figure(amount, 22, Palette.TEXT_HEAD));
         for (Node n : lines) if (n != null) card.getChildren().add(n);
@@ -2497,17 +2633,24 @@ final class GovernmentScreen {
         double annual = annualGdp(na);
         long heads = ui.game.getPopulationManager().getPopulation();
         int recorded = na.getMonthsRecorded();
-        VBox year = limitCell(gdpEstimated(na) ? "GDP, ANNUALISED" : "ANNUAL GDP", m(annual),
-                gdpEstimated(na) ? recorded + " months scaled up" : "the last twelve months", Palette.TEXT_HEAD);
-        VBox trend = limitCell("TREND", m(na.getTrendGdp()), "a month, twelve-month average", Palette.TEXT_HEAD);
-        VBox head = limitCell("PER HEAD", heads > 0 ? moneyFull(annual / heads) : "—", "a year", Palette.TEXT_HEAD);
-        VBox yoy = limitCell("YEAR ON YEAR", recorded >= 13 ? minus(String.format("%+.1f%%", na.getYearOnYearGrowth() * 100))
-                : "—", recorded >= 13 ? "nominal, this month on a year ago" : "needs " + (13 - recorded) + " more months",
-                Palette.TEXT_HEAD);
-        withInfo(yoy, YOY_INFO);
-        VBox mom = limitCell("MONTH ON MONTH", minus(String.format("%+.0f%%", na.getMonthlyGrowthAnnualised() * 100)),
-                "annualised", Palette.TEXT_HEAD);
-        withInfo(mom, MOM_INFO);
+        // Kept (KP6): a cell a scope keyed by its place.
+        VBox year = Kept.scope("year", () -> limitCell(gdpEstimated(na) ? "GDP, ANNUALISED" : "ANNUAL GDP", m(annual),
+                gdpEstimated(na) ? recorded + " months scaled up" : "the last twelve months", Palette.TEXT_HEAD));
+        VBox trend = Kept.scope("trend", () -> limitCell("TREND", m(na.getTrendGdp()), "a month, twelve-month average", Palette.TEXT_HEAD));
+        VBox head = Kept.scope("head", () -> limitCell("PER HEAD", heads > 0 ? moneyFull(annual / heads) : "—", "a year", Palette.TEXT_HEAD));
+        VBox yoy = Kept.scope("yoy", () -> {
+            VBox cell = limitCell("YEAR ON YEAR", recorded >= 13 ? minus(String.format("%+.1f%%", na.getYearOnYearGrowth() * 100))
+                    : "—", recorded >= 13 ? "nominal, this month on a year ago" : "needs " + (13 - recorded) + " more months",
+                    Palette.TEXT_HEAD);
+            withInfo(cell, YOY_INFO);
+            return cell;
+        });
+        VBox mom = Kept.scope("mom", () -> {
+            VBox cell = limitCell("MONTH ON MONTH", minus(String.format("%+.0f%%", na.getMonthlyGrowthAnnualised() * 100)),
+                    "annualised", Palette.TEXT_HEAD);
+            withInfo(cell, MOM_INFO);
+            return cell;
+        });
         HBox strip = vitalsBar(year, trend, head, yoy, mom);
         strip.setMaxWidth(Double.MAX_VALUE);
         return strip;
@@ -2517,7 +2660,7 @@ final class GovernmentScreen {
     static void withInfo(VBox cell, String info) {
         Node note = cell.getChildren().get(cell.getChildren().size() - 1);
         cell.getChildren().remove(note);
-        HBox row = new HBox(4, note, infoButton(info, true));
+        HBox row = Kept.row(4, note, infoButton(info, true));
         row.setAlignment(Pos.CENTER_LEFT);
         cell.getChildren().add(row);
     }

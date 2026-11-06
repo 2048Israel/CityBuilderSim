@@ -3958,6 +3958,10 @@ public class UserInterface extends Application {
         bankScreen.forget();
         // ...and Finances (KP5): its kept page, and the pictures on it, are the last city's.
         financesScreen.forget();
+        // ...and Government, Trade and Policy (KP6, Policy with zoning's pages): their kept pages, and the charts on them, are the last city's.
+        governmentScreen.forget();
+        tradeScreen.forget();
+        policyScreen.forget();
         // ...and the header and the rail hand the next city none of this one's nodes (UP2).
         forgetChrome();
     }
