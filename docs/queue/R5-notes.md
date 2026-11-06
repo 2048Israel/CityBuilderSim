@@ -3,10 +3,11 @@
 ## WHERE IT STANDS
 
 **Ready.** Branch `batch/R5` from `batch/R4`'s ship file (RL1, 00fa589a); main with R4 in (7afdddbe) merged at
-a5c719c0 (KeptCheck's one conflict, KP7's sections 82-90 and R5's 95-97 added at the same places: both kept). Slice A
-is bf2f26a6, B2 4b4de81d, B1 9785404f. The default trace is R4's to the byte, so no ensemble. `--pick` on the merge:
-**exit 3**, main's recorded reds only; the full suite before it, the same (§3). R5-L, the card's licence line for
-R2c, in the ship file's `## pending`.
+a5c719c0, and, after the gate sent R5 back on a conflict with KP2b (0.9.31), main with KP2b in (a6d07279) at 11e7e0f3:
+KeptCheck's sections added at the same places both times (KP7's 82-90, KP2b's 91-93, R5's 95-97), all kept. R5's
+pages with something on them are held to KP2b's rule (a redraw with nothing new writes nothing, §3). Slice A is
+bf2f26a6, B2 4b4de81d, B1 9785404f. The default trace is R4's to the byte, so no ensemble. `--pick` on the merge:
+**exit 3**, main's recorded reds only (§3). R5-L, the card's licence line for R2c, in the ship file's `## pending`.
 
 ## 1. What R5 is, and where it splits
 
@@ -83,6 +84,15 @@ All drafted by Sonnet 5.5 at xhigh, reviewed here. What the reviews found:
   KeptCheck 95-97, 43 + 23 + 27 assertions, ok.
 - **`--pick` on the merge with main** (R4 and KP7 in, 7afdddbe; merged at a5c719c0): 27 of 182 harnesses for 64 files:
   **exit 3**, main's recorded reds only (DenominationCheck, ScaleCheck, KeptCheck), none NEW; timing SOFT.
+- **KP2b's rule** (KeptCheck 92: a second kept draw in the same month writes no style, text, graphic, padding or width),
+  on the pages section 92's default bench cannot show: Found in the 1900 town (its timeline, rows and charts) writes 0,
+  and Industry's Investors page with ITS EQUIPMENT 0 (KeptCheck 95 and 96 hold each; Found in a default city is in 92's
+  own sweep, 0). The Build tab is outside KP2b's sweep: a second draw of Industry with the NEW furnace writes 82, none
+  from R5's lines - 73 the card head's padding (`BuildScreen.cardHead()`, a new `Insets` a card), the rest the head's
+  and strip's paddings and widths set twice a draw (`BuildScreen.java:527/554/401/677/762`, `Pieces.java:118/142`):
+  KP2c's, not held here.
+- **`--pick` on the merge with KP2b** (a6d07279; merged at 11e7e0f3), 27 of 182 harnesses for 56 files: its one NEW red
+  was that Build line, taken out (above); KeptCheck again after it: **exit 3**, its one red main's recorded one.
 - **The full suite** after it (`./batch-check.sh`, timing soft, 182 harnesses, on 9952407b's tree): **exit 3**, the six
   reds main's recorded ones and none NEW (SlopeCheck, MonetaryCheck, DenominationCheck, ScaleCheck, MapCheck, KeptCheck).
 - **The save** (`--pick`'s "review needed - saves: HistorySave.java"): one new field, `HistorySave.researchSeries`, a
