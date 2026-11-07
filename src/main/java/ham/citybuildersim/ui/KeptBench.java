@@ -3578,6 +3578,12 @@ public final class KeptBench {
         ui.tradeScreen.tradeExchange = thousands;
     }
 
+    /** The words of the exchange's warning past the bound for the ask now made - title, line, what is behind its (i) - or null under the bound (XI2; pure). */
+    public String[] tradePastBound() {
+        TradeScreen.PastBound p = ui.tradeScreen.pastBound();
+        return p == null ? null : new String[] {p.title(), p.line(), p.whole()};
+    }
+
     /** The exchange dealing in one of the eight moneys by its code (null: the mix when buying, the largest holding when selling). */
     public void tradeMoney(String code) {
         ui.tradeScreen.tradeMoney = code;

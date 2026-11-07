@@ -48,6 +48,17 @@ import java.io.PrintStream;
  *      dealing, played 240 months: no reprice's defence passes the bound, the
  *      premise of the byte-identical claim.
  *
+ *   6. THE MONTH'S DEALING IS ONE SUM (XI2, the model Trade's warning reads).
+ *      Two pieces of 9% of a year's output each are under the bound and 18%
+ *      together are over it: dealtYears() and yearsOfOutputWith() read the sum;
+ *      dealEffectOnTop() is the rule of the sum less the rule of what is dealt,
+ *      less than the piece alone moves it, and the effects of the pieces add to
+ *      the rule of their sum, which is what the reprice feels. Under a peg the
+ *      rate is held at the peg, the float's own rate behind it moves by the rule
+ *      of the sum (against a twin that dealt nothing) and the vault sells the
+ *      dollars to hold it; under a band the rate stops at the weak edge once the
+ *      move would carry it past, and moves inside the edges when it would not.
+ *
  * Numbering is the running order. Money is in thousands, as everywhere.
  *
  * @author Jerus
@@ -130,6 +141,7 @@ public class InterventionCheck {
         theInverse();
         rotterdam();
         howOftenItFires();
+        theMonthsDealingIsOneSum();
 
         out.printf("%nran in %.1f s%n", (System.currentTimeMillis() - started) / 1000.0);
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -442,5 +454,95 @@ public class InterventionCheck {
         assertTrue("fixture: the lean sold in some month, or the claim means nothing (" + sold + " of " + RUN_MONTHS + ")", sold > 0);
         assertTrue("no reprice's defence passed INTERVENTION_LINEAR of a year's output: the bound changes no figure of the default run ("
                 + past + " of " + RUN_MONTHS + ")", past == 0);
+    }
+
+    /* ================= 6. the month's dealing is one sum (XI2) ================= */
+
+    /** The standard trade a currency settles on, the regimes' fixture (CurrencyRegimeCheck.book()), in this regime, quiet, with a vault no sale empties. */
+    static ForeignAccounts held(ForeignAccounts.Regime regime) {
+        return CurrencyRegimeCheck.book(CurrencyRegimeCheck.TRADE, CurrencyRegimeCheck.TRADE, CurrencyRegimeCheck.DEEP, 0, regime);
+    }
+
+    static void theMonthsDealingIsOneSum() {
+        out.println("\n--- 6. the month's dealing is one sum, and the regime's part in it (XI2) ---");
+
+        final double each = .09;
+        assertTrue("fixture: each piece (" + each + " of a year's output) is under the bound and the two together are over it",
+                each < LINEAR && 2 * each > LINEAR);
+
+        // THE FLOAT: two pieces cross the bound together.
+        ForeignAccounts fx = held(ForeignAccounts.Regime.FLOAT);
+        double annual = 12 * fx.getGdpTrailing();
+        double piece = each * annual;
+        close("nothing dealt yet: a piece is its own share of a year's output", fx.yearsOfOutputWith(piece), each, 1e-12);
+        same("...and a piece on top of nothing moves the rate as the deal alone does, to the bit", fx.dealEffectOnTop(piece), fx.dealEffect(piece));
+        double first = fx.dealEffectOnTop(piece);
+        fx.buyReserves(piece);
+        close("one piece dealt: dealtYears() is its share", fx.dealtYears(), each, 1e-12);
+        close("...and a second on top brings the month's dealing to the two together", fx.yearsOfOutputWith(piece), 2 * each, 1e-12);
+        assertTrue("...which is past the bound though neither piece is", Math.abs(fx.yearsOfOutputWith(piece)) > LINEAR);
+        double second = fx.dealEffectOnTop(piece);
+        assertTrue(String.format("the second piece moves the rate less than it would alone (%.4f against %.4f)", second, fx.dealEffect(piece)),
+                second < fx.dealEffect(piece));
+        close("...by the rule of the sum less the rule of what is dealt", second,
+                ForeignAccounts.interventionMove(2 * piece, annual) - ForeignAccounts.interventionMove(piece, annual), 1e-12);
+        close("...so the two pieces' effects add to the rule of their sum", first + second, ForeignAccounts.interventionMove(2 * piece, annual), 1e-12);
+        assertTrue("...which is less than the rule of each alone, twice", first + second < 2 * fx.dealEffect(piece));
+        close("a sale of the same size on top of the first piece takes back exactly what it moved", fx.dealEffectOnTop(-piece), -first, 1e-12);
+        fx.buyReserves(piece);
+        close("dealtYears() reads both pieces", fx.dealtYears(), 2 * each, 1e-12);
+        CurrencyRegimeCheck.month(fx, CurrencyRegimeCheck.TRADE, CurrencyRegimeCheck.TRADE);
+        double annualNow = 12 * fx.getGdpTrailing();
+        close("the reprice feels the sum: the rule of the two pieces together", fx.getInterventionFelt(),
+                ForeignAccounts.interventionMove(2 * piece, annualNow), 1e-9);
+        close("...and dealtYears() is clear again", fx.dealtYears(), 0, 1e-12);
+
+        // A PEG: the rate is held, the float's own rate behind it moves, the vault sells to hold it.
+        ForeignAccounts peg = held(ForeignAccounts.Regime.PEG), pegTwin = held(ForeignAccounts.Regime.PEG);
+        double pegAnnual = 12 * peg.getGdpTrailing(), pegPiece = each * pegAnnual;
+        peg.buyReserves(pegPiece);
+        assertTrue("a peg holds the deal: the regime keeps its move off the rate", peg.regimeHoldsDeal(pegPiece));
+        close("...and the rate after it is the peg", peg.rateAfterDeal(pegPiece), peg.getPegRate(), 1e-12);
+        peg.buyReserves(pegPiece);
+        double rateBefore = peg.getRate();
+        CurrencyRegimeCheck.month(peg, CurrencyRegimeCheck.TRADE, CurrencyRegimeCheck.TRADE);
+        CurrencyRegimeCheck.month(pegTwin, CurrencyRegimeCheck.TRADE, CurrencyRegimeCheck.TRADE);
+        close("under the peg the rate stays at the peg after the two pieces", peg.getRate(), peg.getPegRate(), 1e-9);
+        double pegAnnualNow = 12 * peg.getGdpTrailing();
+        close("...while the float's own rate behind it moved by the rule of the sum, against a twin that dealt nothing",
+                Math.log(peg.getShadowRate() / pegTwin.getShadowRate()), ForeignAccounts.interventionMove(2 * pegPiece, pegAnnualNow), 1e-9);
+        assertTrue(String.format("...and the vault sold dollars to hold the peg (US$%,.1fk against the twin's US$%,.1fk)",
+                peg.getDefenceUsd(), pegTwin.getDefenceUsd()), peg.getDefenceUsd() > pegTwin.getDefenceUsd());
+        relative("...as many as the dealt money buys at the rate before it (the rule's inverse of its own move)",
+                peg.getDefenceUsd() - pegTwin.getDefenceUsd(), 2 * pegPiece / rateBefore, 1e-3);
+
+        // A BAND: the rate stops at the weak edge when the move would carry it past, and moves inside the edges when it would not.
+        ForeignAccounts band = held(ForeignAccounts.Regime.BAND);
+        double bandAnnual = 12 * band.getGdpTrailing(), bandPiece = each * bandAnnual;
+        band.buyReserves(bandPiece);
+        double carried = band.getRate() * Math.exp(band.dealEffectOnTop(bandPiece));
+        assertTrue(String.format("a band: on top of one piece another would carry the rate to %.3f, past the weak edge %.3f", carried, band.bandWeakEdge()),
+                carried > band.bandWeakEdge());
+        assertTrue("...so the regime holds it", band.regimeHoldsDeal(bandPiece));
+        close("...and the rate after it is the weak edge", band.rateAfterDeal(bandPiece), band.bandWeakEdge(), 1e-9);
+        band.buyReserves(bandPiece);
+        CurrencyRegimeCheck.month(band, CurrencyRegimeCheck.TRADE, CurrencyRegimeCheck.TRADE);
+        relative("the reprice held the rate at the weak edge", band.getRate(), band.bandWeakEdge(), 1e-9);
+        assertTrue("...with the float's own rate beyond it", band.getShadowRate() > band.bandWeakEdge());
+
+        ForeignAccounts inside = held(ForeignAccounts.Regime.BAND);
+        double insideAnnual = 12 * inside.getGdpTrailing(), big = .11 * insideAnnual, small = .01 * insideAnnual;
+        inside.buyReserves(big);
+        double moved = inside.getRate() * Math.exp(inside.dealEffectOnTop(small));
+        assertTrue(String.format("a band: on top of 11%% dealt a further 1%% moves the rate to %.3f, inside the edges %.3f to %.3f", moved,
+                inside.bandStrongEdge(), inside.bandWeakEdge()), moved < inside.bandWeakEdge() && moved > inside.bandStrongEdge());
+        assertTrue("...so the regime holds nothing of it", !inside.regimeHoldsDeal(small));
+        close("...and the rate after it is the rate times that move", inside.rateAfterDeal(small), moved, 1e-12);
+
+        // The other regimes hold nothing, and the factor is the move either way round.
+        assertTrue("under the float the regime holds none of a deal", !held(ForeignAccounts.Regime.FLOAT).regimeHoldsDeal(piece));
+        close("dealFactor() of a sale is the factor of its move, one or more", fx.dealFactor(-piece),
+                Math.exp(Math.abs(fx.dealEffectOnTop(-piece))), 1e-12);
+        assertTrue("...and the move of a sale is dearer, a purchase's weaker", fx.dealEffectOnTop(-piece) < 0 && fx.dealEffectOnTop(piece) > 0);
     }
 }

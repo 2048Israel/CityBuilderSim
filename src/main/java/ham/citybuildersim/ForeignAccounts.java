@@ -1501,6 +1501,49 @@ public class ForeignAccounts {
     /** This much local money as years of the city's output (12 x gdpTrailing); 0 with no GDP. Pure. */
     public double yearsOfOutput(double local) { return gdpTrailing > 0 ? local / (12 * gdpTrailing) : 0; }
 
+    /**
+     * The net dealing since the last reprice as years of the city's output, a purchase positive: what the next reprice feels (THE FLOAT, step 5), and the
+     * sum the bound reads, not the deal in hand (XI2: several pieces each under INTERVENTION_LINEAR cross it together). 0 with no GDP. Pure.
+     */
+    public double dealtYears() { return yearsOfOutput(dealtSinceReprice); }
+
+    /** ...and what it would be with one more deal of this much local money (a purchase positive, a sale negative) on top of it (XI2). Pure. */
+    public double yearsOfOutputWith(double localPurchase) { return yearsOfOutput(dealtSinceReprice + localPurchase); }
+
+    /**
+     * What one more deal adds to the float's log rate on top of what has been dealt since the last reprice (XI2): the interventions' rule of the sum
+     * less the rule of what is dealt already, so a piece past the bound moves it less than it would alone (dealEffect(), which reads the deal by itself). 0
+     * with no GDP. Pure.
+     */
+    public double dealEffectOnTop(double localPurchase) {
+        if (!(gdpTrailing > 0)) return 0;
+        double annual = 12 * gdpTrailing;
+        return interventionMove(dealtSinceReprice + localPurchase, annual) - interventionMove(dealtSinceReprice, annual);
+    }
+
+    /** The factor, 1 or more, that one more deal of this size moves the float's rate by, whichever way (dealEffectOnTop(), exponentiated; the sign says weaker or stronger). Pure. */
+    public double dealFactor(double localPurchase) { return Math.exp(Math.abs(dealEffectOnTop(localPurchase))); }
+
+    /**
+     * Where one more deal would leave the rate in its month, D$ per US$, the regime holding it (XI2): a peg stays at the peg (the float's rate behind it
+     * moves, and the vault deals to hold it - XR5), a band stops at its edge, the rest take the float's rate times dealFactor(). The rate now is the
+     * reading, so this is the deal's move alone: the month's other forces and the fading of what is felt are not in it. Pure.
+     */
+    public double rateAfterDeal(double localPurchase) {
+        if (regime == Regime.PEG && pegRate > 0) return pegRate;
+        double to = rate * Math.exp(dealEffectOnTop(localPurchase));
+        if (regime == Regime.BAND && rate > 0) return Math.max(bandStrongEdge(), Math.min(bandWeakEdge(), to));
+        return to;
+    }
+
+    /** Whether the regime keeps this deal's move off the rate (XI2): a peg, whatever the deal, and a band once the move would carry the rate past an edge. Pure. */
+    public boolean regimeHoldsDeal(double localPurchase) {
+        if (regime == Regime.PEG) return pegRate > 0;
+        if (regime != Regime.BAND || !(rate > 0)) return false;
+        double to = rate * Math.exp(dealEffectOnTop(localPurchase));
+        return to > bandWeakEdge() || to < bandStrongEdge();
+    }
+
     /** What dealing this much local money puts on the float's log rate against a year's GDP (annual), a purchase positive: INTERVENTION_IMPACT x local / annual up to INTERVENTION_LINEAR of the year, and past it INTERVENTION_IMPACT x INTERVENTION_LINEAR x (1 + ln(share / INTERVENTION_LINEAR)), a sale the mirror (XI1). 0 with no GDP. Pure. */
     public static double interventionMove(double local, double annual) {
         if (!(annual > 0)) return 0;
