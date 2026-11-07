@@ -2,7 +2,10 @@
 
 ## WHERE IT STANDS
 
-**In progress.** Branch `batch/R0e` from `batch/R0d`'s ship file (RL1, 6a16cabd).
+**Ready.** Branch `batch/R0e` from `batch/R0d`'s ship file (RL1, 6a16cabd); main with R0d in (154eb0b9) merged at
+b4700225, the generated docs alone in conflict (main's side, regenerated). One slice (d72c0eab), drafted by Sonnet 5.5 at
+xhigh and reviewed here, the data and `HomeFuel`'s two dials written here from a research pass. Only a city founded the
+1900 way reads any of it; the default trace is main's to the byte (§5), so no ensemble. `--pick` on the merge: **exit 3**.
 
 ## 1. What R0e is
 
@@ -123,6 +126,10 @@ PD1 is about; R0c's deduction of the homes' bill from the shopping (Game ~4163) 
   ConsumptionCheck: all exit 0. BasketYearCheck: nine sections, exit 0 (its car town: 0.1292 cars a household in the
   default town after 24 months, none in the 1900 town, 0.1511 with the cap lifted).
 - **`git merge-tree` with origin/main** (a56a3189, AN2 in): the source merges clean; the generated docs alone conflict.
+- **On the merge with main** (b4700225; 154eb0b9, R0d and AN2 in): the default playtest traced on main and on the merge,
+  each built apart: all eight CSVs byte-identical, the log but for "in 72s"/"in 97s" and the layout windows' line.
+  `--pick` (20 of 186 harnesses for 32 files, LongPlaytest for Game.java, BuildingManager.java and Good.java) with the seven
+  harnesses that found a 1900 city named: **exit 3**, main's recorded MapCheck red only.
 
 ## 6. Sources and licences
 
