@@ -10,15 +10,15 @@ are `docs/notes/batch-history.md`. Split by reader in BM1 (2026-10-28).
 
 Each batch runs in a worktree of the orchestrator's clone, on a branch of its
 own (`batch/<id>`) from `main`, or, as a lane's next batch, from its
-predecessor's tip (7). Batches check side by side (TM1, 2026-10-18), so every
-`batch-check.sh` run but `--timing` times soft: a figure over its budget says
-SOFT and is not counted. Timing is judged hard only at the gate (BP1's review:
-a run that began alone timed hard, and main's own misses on a slow day came
-out as the batch's reds). The suite runs three harnesses at once (SP1,
-`AllChecks.PARALLEL`, each JVM under `-Xmx` `AllChecks.HEAP_MB`, none started
-while the commit charge is over `AllChecks.COMMIT_PCT`); a hard run, `-Dcbs.parallel=1`
-in `JDK_JAVA_OPTIONS` (memory short) and the cloud workbench (two cores, one
-JVM under the lock `batch-check.sh` takes) go one at a time.
+predecessor's tip (7). Batches check side by side (TM1), so every
+`batch-check.sh` run but `--timing` times soft (a figure over budget says SOFT,
+uncounted); timing is judged hard only at the gate (BP1's review: a run that
+began alone timed hard, and main's own misses on a slow day came out as the
+batch's reds). The suite runs three harnesses at once (SP1, `AllChecks.PARALLEL`,
+each JVM under `-Xmx` `AllChecks.HEAP_MB`, none started while the commit charge
+is over `AllChecks.COMMIT_PCT`); a hard run, `-Dcbs.parallel=1` in
+`JDK_JAVA_OPTIONS` (memory short) and the cloud workbench (two cores, one JVM
+under `batch-check.sh`'s lock) go one at a time.
 
 1. Read `docs/map/README.md`, then the map of each file the change touches;
    grep `docs/harnesses.md` for what already checks the area, and `sh
@@ -28,8 +28,9 @@ JVM under the lock `batch-check.sh` takes) go one at a time.
    and named harnesses (`./batch-check.sh <names>`) as the work needs.
 3. Change the model first, the save second, the screen last; a harness for the
    mechanic before the screen, which is checked by eye. The coding goes to
-   Sonnet (`docs/deepseek.md`) in **fewer, larger slices** (BP1 item 6), each
-   one a brief can pin down, and the diff is reviewed as a stranger's
+   Sonnet in **fewer, larger slices** (BP1 item 6), each one a brief can pin
+   down and about 80 steps long, started as `subagent_type: "slice"` (CX1,
+   `docs/deepseek.md`); the diff is reviewed as a stranger's
    **without re-reading what the brief sent Sonnet to read**. A **small fix
    batch** - no money, saves or threading, a few hundred lines - runs on
    Sonnet as the whole session, Opus at the gate only (BP1 item 7). Every
