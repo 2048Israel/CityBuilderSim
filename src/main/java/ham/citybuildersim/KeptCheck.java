@@ -5247,6 +5247,119 @@ public class KeptCheck {
         };
     }
 
+    /** What a scenario of 74b checks of the warning's three texts (title, line, what is behind its (i)), null under the bound. */
+    interface Verify {
+        void on(String[] words);
+    }
+
+    /**
+     * One scenario of 74b (XI2): the regime is entered (a peg struck, a band centred, at the rate of the day), the treasury has dealt the pieces
+     * (shares of a year's output; the vault only, no month's cash), and the exchange asks for one more, buying or selling. The warning's texts are read
+     * and checked, the page is drawn kept and equal to a page built new, and the city goes back to where it stood: ForeignAccounts is restored from
+     * its save array, which holds the regime, the vault, the dealing and the held state, and no month turns, so the sections after run on the city
+     * they would have run on (a first draft dealt through Game, stepped a month after each scenario and left the later sections a different city).
+     */
+    static void boundRun(Game g, KeptBench bench, KeptBench.Page tab, double annual, String name, ForeignAccounts.Regime regime, boolean buying,
+            double askShare, double[] dealtShares, Verify verify) throws Exception {
+        ForeignAccounts fx = g.getForeignAccounts();
+        fx(() -> {
+            double[] snapshot = fx.toSaveArray();
+            fx.setRegime(regime);
+            for (double s : dealtShares) fx.buyReserves(s * annual);
+            bench.tradeBuying(buying);
+            bench.tradeMoney(null);
+            bench.tradeAsk(askShare * annual);
+            verify.on(bench.tradePastBound());
+            bench.drawKept(tab);
+            String d = againstNew(bench, tab, false);
+            check(name + ": the page drawn kept equals a page built new", d == null, d);
+            fx.restore(snapshot);
+            bench.tradeBuying(true);
+            bench.tradeAsk(0);
+            return null;
+        });
+    }
+
+    /**
+     * Section 74b (XI2): Trade's warning past the bound reads the month's dealing and not the deal in hand, and says what the regime does with it. Two
+     * pieces of 9% each cross the bound together, a sale on top of a big purchase is still past it, a later piece's figure is its move on top of what
+     * is dealt and not its move alone, and under a peg and a band the texts say what the model does (ForeignAccounts.rateAfterDeal(),
+     * regimeHoldsDeal(); InterventionCheck 6 proves the model).
+     */
+    static void kp6TradeBound(Game g, KeptBench bench, KeptBench.Page tab, String reservesName) throws Exception {
+        System.out.println("\n--- 74b: Trade's warning past the bound reads the month's dealing and the regime (XI2) ---");
+        ForeignAccounts fx = g.getForeignAccounts();
+        double perYear = fx.yearsOfOutput(1);
+        check("fixture (74b): the city has a GDP to measure the bound against", perYear > 0);
+        if (!(perYear > 0)) return;
+        final double annual = 1 / perYear, each = .09;
+        check("fixture (74b): each of two pieces (" + each + " of a year's output) is under the bound and both together are over it",
+                each < ForeignAccounts.INTERVENTION_LINEAR && 2 * each > ForeignAccounts.INTERVENTION_LINEAR);
+        final ForeignAccounts.Regime lean = ForeignAccounts.Regime.LEAN, peg = ForeignAccounts.Regime.PEG, band = ForeignAccounts.Regime.BAND;
+        final ForeignAccounts.Regime was = fx.getRegime();
+        final double dealtWas = fx.getDealtSinceReprice(), vaultWas = fx.getReservesUsd();
+        fx(() -> {
+            bench.tradeOpen(reservesName);
+            bench.home(tab);
+            bench.drawKept(tab);
+            bench.passes();
+            bench.settle();
+            return null;
+        });
+        final double ask = each * annual;
+        boundRun(g, bench, tab, annual, "Lean: a piece of 9% dealt, an ask of 9% on top", lean, true, each, new double[] {each}, w -> {
+            check("...two pieces under the bound cross it together: the warning shows though the ask alone is under it", w != null);
+            if (w == null) return;
+            check("...its title is the month's dealing, 18% of a year", w[0].equals("This purchase takes the month's dealing to 18% of a year of the city's output"), w[0]);
+            check("...and it says what is dealt already", w[2].contains("The treasury has already bought") && w[2].contains("so this piece lands on top of it"), w[2]);
+            String onTop = String.format("about ×%.1f", fx.dealFactor(ask)), alone = String.format("about ×%.1f", Math.exp(fx.dealEffect(ask)));
+            check("fixture: the piece on top of what is dealt and the piece alone read differently (" + onTop + ", " + alone + ")", !onTop.equals(alone));
+            check("...the warning's figure is the piece on top (" + onTop + "), not the piece alone", w[2].contains(onTop) && !w[2].contains(alone), w[2]);
+        });
+        boundRun(g, bench, tab, annual, "Lean: nothing dealt, an ask of 11%", lean, true, .11, new double[0], w -> {
+            check("...an ask past the bound alone warns", w != null);
+            if (w == null) return;
+            check("...its title is the ask, 11% of a year", w[0].equals("This purchase is 11% of a year of the city's output"), w[0]);
+            check("...and nothing is said of what is dealt already", !w[2].contains("already"), w[2]);
+            check("...its figure is the piece alone", w[2].contains(String.format("This one alone would move the rate about ×%.1f", fx.dealFactor(.11 * annual))), w[2]);
+        });
+        boundRun(g, bench, tab, annual, "Lean: 20% bought, a sale of 5% on top", lean, false, .05, new double[] {.20}, w -> {
+            check("...a sale that leaves the month's dealing past the bound warns, the sale alone being far under it", w != null);
+            if (w == null) return;
+            check("...its title is the month's dealing, 15% of a year", w[0].equals("This sale takes the month's dealing to 15% of a year of the city's output"), w[0]);
+            check("...and the sale's move is a dearer D$ (÷)", w[2].contains("about ÷"), w[2]);
+        });
+        boundRun(g, bench, tab, annual, "Peg: a piece of 9% dealt, an ask of 9% on top", peg, true, each, new double[] {each}, w -> {
+            check("fixture: the regime is the peg", fx.getRegime() == peg);
+            check("...the warning shows", w != null);
+            if (w == null) return;
+            check("...it says the rate stays at the peg and does not say the deal moves nothing", w[2].contains("Under the peg the rate stays at") && !w[2].contains("moves nothing"), w[2]);
+            check("...it says the float's own rate behind the peg moves by the piece on top (" + String.format("%.1f", fx.dealFactor(ask)) + ")",
+                    w[2].contains(String.format("the float's own rate behind it about ×%.1f", fx.dealFactor(ask))), w[2]);
+            check("...and the model holds the deal at the peg", fx.regimeHoldsDeal(ask) && fx.rateAfterDeal(ask) == fx.getPegRate());
+        });
+        boundRun(g, bench, tab, annual, "Band: a piece of 9% dealt, an ask of 9% on top", band, true, each, new double[] {each}, w -> {
+            check("fixture: the regime is the band", fx.getRegime() == band);
+            check("...the warning shows", w != null);
+            if (w == null) return;
+            check("...the model carries the move past the weak edge, so the band holds it there", fx.regimeHoldsDeal(ask) && Math.abs(fx.rateAfterDeal(ask) / fx.bandWeakEdge() - 1) < 1e-9);
+            check("...the warning says the rate stops at its edge and that the float's own rate would move by the piece on top",
+                    w[2].contains("Under the band the rate stops at its edge") && w[2].contains(String.format("the float's own rate about ×%.1f", fx.dealFactor(ask)))
+                            && !w[2].contains("would move the rate about"), w[2]);
+        });
+        boundRun(g, bench, tab, annual, "Band: 11% dealt, an ask of 1% on top", band, true, .01, new double[] {.11}, w -> {
+            double small = .01 * annual;
+            check("...the warning shows", w != null);
+            if (w == null) return;
+            check("...the model keeps the move inside the edges, so the band holds nothing of it", !fx.regimeHoldsDeal(small) && fx.rateAfterDeal(small) < fx.bandWeakEdge()
+                    && fx.rateAfterDeal(small) > fx.bandStrongEdge());
+            check("...the warning says the rate stays inside the band and moves by the piece on top",
+                    w[2].contains("Under the band the rate stays inside it") && w[2].contains(String.format("about ×%.1f", fx.dealFactor(small))), w[2]);
+        });
+        check("the city is as it was: the regime (" + fx.getRegime() + "), the dealing and the vault as they stood",
+                fx.getRegime() == was && fx.getDealtSinceReprice() == dealtWas && fx.getReservesUsd() == vaultWas);
+    }
+
     /** Sections 72 to 74: Trade & the World kept. */
     static void kp6Trade(Game g, KeptBench bench) throws Exception {
         System.out.println("\n=== The Trade tab (KP6) ===");
@@ -5367,6 +5480,7 @@ public class KeptCheck {
         vault.add(new Choice("the eight over the years opened", tradeFold("reserves:eight", true), true));
         vault.add(choice("the eight over the years closed", tradeFold("reserves:eight", false)));
         pageReshaped(g, bench, tab, 74, vault, KP6_HANDED_BACK);
+        kp6TradeBound(g, bench, tab, reservesName);
 
         // The fold "the eight over the years" (VaultTable): its two charts take the card's width on a kept draw as they do on a page built new.
         Object[] charts = fx(() -> {
