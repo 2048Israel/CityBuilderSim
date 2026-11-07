@@ -150,6 +150,18 @@ import java.util.List;
  *      re-tying moves them; ruleNow() and settledDial() are the dial; untied (the
  *      source false, or never set) every path is the rule's to the bit; in a city
  *      the source is the peg.
+ *  18. A THIN VAULT'S MONTHS ARE WHAT THE HOLD DOES (XR5; Jerus, "Warn on a thin
+ *      vault"). A bare currency pegged with its shadow a steady gap over the peg,
+ *      the vault deep: the first month's sale is the first month of
+ *      monthsHoldingGap() and each month after it the each-month figure, to a
+ *      millionth of a dollar, with the cover over THIN_COVER; a vault under the
+ *      first month's cost is the share of it the headroom pays; played on to the
+ *      break by the vault, the months it held are printed beside the projection
+ *      struck at entry and held between a lower bound (the months before the
+ *      cover fell under THIN_COVER, which the projection prices exactly) and the
+ *      projection (it leaves the cover's premium out, which only adds pressure);
+ *      no GDP gives infinity, a vault under its floor 0, and asking changes
+ *      nothing.
  *
  * Numbering is the running order. Money is in thousands, as everywhere.
  *
@@ -351,6 +363,7 @@ public class CurrencyRegimeCheck {
         aBandsEdgesPayThePressure();
         theOvershootBothWays();
         theTiedPathPricesTheCurve();
+        aThinVaultsMonthsAreWhatTheHoldDoes();
 
         out.printf("%n(%.0f s)%n", (System.currentTimeMillis() - started) / 1000.0);
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -1848,7 +1861,7 @@ public class CurrencyRegimeCheck {
         same("...the net flow, which is the first two", loaded.netFlow(), hot.netFlow());
         same("...the doubt's lifetime", loaded.getDoubtDepartedLifetime(), hot.getDoubtDepartedLifetime());
         same("...the stock", loaded.getStock(), hot.getStock());
-        // The figure Policy draws the month after: "of which ... was hot money leaving on doubt", in US$ (PolicyScreen).
+        // The figure Policy draws the month after: "... of hot money left on doubt, which weakens the shadow", in US$ (PolicyScreen).
         double drawn = fx.toUsd(hot.getDoubtDeparted());
         assertTrue("fixture: the figure Policy draws is a sum of money (US$" + String.format("%,.2fk", drawn) + ")", drawn > 0);
         same("the figure Policy draws for the doubt's departure, in US$, is the loaded city's as the live one's", bfx.toUsd(loaded.getDoubtDeparted()), drawn);
@@ -2307,5 +2320,148 @@ public class CurrencyRegimeCheck {
     static boolean tiedIn(Game city, DebtManager dm, ForeignAccounts.Regime regime) {
         quietly(() -> city.setCurrencyRegime(regime));
         return dm.isTied();
+    }
+
+    /* ================= 18. a thin vault's months are what the hold does (XR5) ================= */
+
+    /**
+     * A bare currency pegged at its rate with its shadow a steady gap (a log) over the peg, on balanced trade and a quiet market: the parity is set once, before the first
+     * reprice, so the trend opens on it and stays (a level with no slope on a parity that does not move), and the gap, balance and cover terms are 0 while the vault is deep.
+     * The shadow then stands at exactly the gap over the peg every month, which is the steady gap monthsHoldingGap() is struck on.
+     */
+    static ForeignAccounts steadyGap(double gap, double vaultUsd) {
+        ForeignAccounts fx = book(TRADE, TRADE, vaultUsd, 0, PEG);
+        fx.setParity(Math.exp(gap), 1.0, 0, 0);
+        return fx;
+    }
+
+    /** The first month's cost of holding a steady gap, in dollars, from the model's own constants and getters: interventionLocalFor(gap, a year's GDP) over the rate. */
+    static double firstMonthUsd(ForeignAccounts fx, double gap) {
+        return ForeignAccounts.interventionLocalFor(gap, 12 * fx.getGdpTrailing()) / fx.getRate();
+    }
+
+    /** ...and each month after it: what the support's fading takes, (1 - 0.5^(1 / INTERVENTION_HALF_LIFE)) of the gap. */
+    static double eachMonthUsd(ForeignAccounts fx, double gap) {
+        return ForeignAccounts.interventionLocalFor((1 - Math.pow(.5, 1 / ForeignAccounts.INTERVENTION_HALF_LIFE)) * gap, 12 * fx.getGdpTrailing()) / fx.getRate();
+    }
+
+    static void aThinVaultsMonthsAreWhatTheHoldDoes() {
+        out.println("\n--- 18. a thin vault's months are what the hold does ---");
+
+        /*
+         * XR5 (Jerus, "Warn on a thin vault"). PolicyScreen warns a city choosing a peg or a band when the vault would hold a steady gap of BREAK_GAP for fewer than
+         * THIN_HOLD_MONTHS; the figure it reads is monthsHoldingGap(), a projection that costs the first month at the whole gap and each month after it at what the support's
+         * fading takes. This section proves that projection is what the hold deals: the sums are the harness's own, from the model's constants, and the sales are read
+         * from the model's getters after each month.
+         */
+        final double gap = ForeignAccounts.BREAK_GAP, deep = 40_000;
+
+        // The measured months, with a vault deep enough to keep the cover over THIN_COVER throughout.
+        ForeignAccounts fx = steadyGap(gap, deep);
+        final double first = firstMonthUsd(fx, gap), each = eachMonthUsd(fx, gap);
+        final double headroom = fx.getReservesUsd() - fx.vaultFloorUsd();
+        double projected = fx.monthsHoldingGap(gap);
+        out.printf("   a peg with its shadow a steady %.0f%% over it: the first month costs US$%,.4f, each month after it US$%,.4f; a vault of US$%,.0f (floor US$%,.0f) holds %.2f months%n",
+                gap * 100, first, each, deep, fx.vaultFloorUsd(), projected);
+        assertTrue("fixture: a pegged currency with a GDP and a floor, the vault deep (cover " + String.format("%.1f", fx.importCover()) + " months, over THIN_COVER), the first month dearer than each after it",
+                fx.getRegime() == PEG && fx.getGdpTrailing() > 0 && fx.vaultFloorUsd() > 0 && fx.importCover() > 2 * ForeignAccounts.THIN_COVER && first > each && each > 0);
+        close("the projection over a vault above its first month's cost is 1 + (headroom - first month) / each month after it, from the harness's own sums", projected, 1 + (headroom - first) / each, 1e-9);
+        double reserves = fx.getReservesUsd(), rate = fx.getRate(), holdFelt = fx.getHoldFelt();
+        fx.monthsHoldingGap(gap);
+        fx.monthsHoldingGap(3 * gap);
+        assertTrue("...asking is pure: the vault, the rate and the hold are where they were, to the bit",
+                Double.compare(fx.getReservesUsd(), reserves) == 0 && Double.compare(fx.getRate(), rate) == 0 && Double.compare(fx.getHoldFelt(), holdFelt) == 0);
+
+        final int measured = 6;
+        double worstGap = 0, worstFirst = 0, worstEach = 0, lowestCover = Double.MAX_VALUE;
+        for (int i = 0; i < measured; i++) {
+            double before = fx.getReservesUsd();
+            month(fx, TRADE, TRADE);
+            double sold = before - fx.getReservesUsd();
+            worstGap = Math.max(worstGap, Math.abs(fx.getLastPegGap() - gap));
+            if (i == 0) worstFirst = Math.abs(sold - first); else worstEach = Math.max(worstEach, Math.abs(sold - each));
+            lowestCover = Math.min(lowestCover, fx.importCover());
+            if (fx.getRegime() != PEG || Double.compare(fx.getRate(), fx.getPegRate()) != 0) worstGap = 1;
+        }
+        out.printf("   %d months played: the first sold US$%,.4f, the next ones US$%,.4f each; the vault from US$%,.2f to US$%,.2f, the cover down to %.1f months%n", measured,
+                first, each, deep, fx.getReservesUsd(), lowestCover);
+        close("the shadow stood at the steady gap over the peg every month, and the peg held (the fixture)", worstGap, 0, 1e-9);
+        assertTrue("...the cover stayed over THIN_COVER (" + String.format("%.1f", lowestCover) + " months), so the cover's premium added nothing", lowestCover > ForeignAccounts.THIN_COVER);
+        close("the first month's sale is the projection's first month: interventionLocalFor(the gap) over the rate, to a millionth of a dollar", worstFirst, 0, DOLLAR);
+        close("...and each month after it sold the projection's each-month figure, to a millionth of a dollar (" + (measured - 1) + " months)", worstEach, 0, DOLLAR);
+
+        // A vault under the first month's cost: the share of it the headroom pays.
+        double floorUsd = fx.vaultFloorUsd();
+        ForeignAccounts half = steadyGap(gap, floorUsd + first / 2);
+        close("a vault whose headroom is half the first month's cost holds half a month", half.monthsHoldingGap(gap), .5, 1e-9);
+        ForeignAccounts exact = steadyGap(gap, floorUsd + first);
+        close("...and one whose headroom is exactly the first month's cost holds exactly one", exact.monthsHoldingGap(gap), 1, 1e-9);
+        ForeignAccounts onePlus = steadyGap(gap, floorUsd + first + each);
+        close("...and one with the first month and one more month's cost holds two", onePlus.monthsHoldingGap(gap), 2, 1e-9);
+
+        // A vault at its floor, or under it, holds nothing; no GDP or no gap, nothing to pay.
+        ForeignAccounts atFloor = steadyGap(gap, floorUsd);
+        ForeignAccounts under = steadyGap(gap, floorUsd / 2);
+        assertTrue("fixture: the first vault is at its floor to the dollar, the second under it", Math.abs(atFloor.getReservesUsd() - atFloor.vaultFloorUsd()) <= DOLLAR
+                && under.getReservesUsd() < under.vaultFloorUsd());
+        close("a vault at its floor holds 0 months", atFloor.monthsHoldingGap(gap), 0, 1e-9);
+        same("...and one already under it, 0", under.monthsHoldingGap(gap), 0);
+        ForeignAccounts noGdp = CurrencyCheck.settled(TRADE, TRADE, 0);
+        noGdp.buyReserves(deep * noGdp.getRate());
+        noGdp.forgetDealing();
+        noGdp.setRegime(PEG);
+        assertTrue("with no GDP the interventions' rule has nothing to weigh a deal against: the months are infinite",
+                noGdp.getGdpTrailing() == 0 && Double.isInfinite(noGdp.monthsHoldingGap(gap)) && noGdp.monthsHoldingGap(gap) > 0);
+        assertTrue("...and with no gap there is nothing to hold: infinite, at a gap of 0 and at a gap the other way", Double.isInfinite(fx.monthsHoldingGap(0)) && fx.monthsHoldingGap(0) > 0
+                && Double.isInfinite(fx.monthsHoldingGap(-gap)));
+
+        // Played on to the break by the vault. The vault starts a few months over THIN_COVER (the first month's cost and ten and a half more over it, so that no month opens
+        // with the cover exactly at THIN_COVER) and falls through it: the cover's premium comes in on the way down, which is what the projection leaves out.
+        final double start = ForeignAccounts.THIN_COVER * TRADE + first + 10.5 * each;
+        ForeignAccounts run = steadyGap(gap, start);
+        final double floorAtEntry = run.vaultFloorUsd();
+        final double thinUsd = ForeignAccounts.THIN_COVER * TRADE / run.getRate();
+        double atEntry = run.monthsHoldingGap(gap);
+        // The months in which the cover (the vault after the last sale, over the month's imports) is still at THIN_COVER or over when the month opens: the cover's premium is
+        // 0 in each, so the month's sale is the projection's, exactly, and the vault one sale lower is still over THIN_COVER's vault, which is over the floor and over the first
+        // month's cost. Those months are held whatever comes after, so they are the lower bound; the projection itself is the upper bound, the premium only ever adding to
+        // the sale.
+        int lower = 0;
+        for (double vault = run.getReservesUsd(); vault >= thinUsd; lower++) vault -= lower == 0 ? first : each;
+        assertTrue("fixture: THIN_COVER months of imports is more than the floor and the first month's cost together (so a month opened over THIN_COVER can always pay), and the projection is past its lower bound",
+                thinUsd - run.vaultFloorUsd() > first && atEntry > lower);
+
+        int held = 0, exactMonths = 0, firstPremium = 0;
+        double lastSale = 0;
+        boolean fixedUp = true;
+        for (int m = 1; m <= 200 && !run.brokeThisMonth(); m++) {
+            double before = run.getReservesUsd();
+            month(run, TRADE, TRADE);
+            if (run.brokeThisMonth()) break;
+            held++;
+            double sold = before - run.getReservesUsd();
+            double expected = m == 1 ? first : each;
+            if (Math.abs(sold - expected) <= DOLLAR) { if (firstPremium == 0) exactMonths++; }
+            else if (firstPremium == 0) firstPremium = m;
+            lastSale = sold;
+            if (Double.compare(run.getRate(), run.getPegRate()) != 0 || run.getRegime() != PEG) fixedUp = false;
+        }
+        out.printf("   a vault of US$%,.0f (cover %.1f months, floor US$%,.0f) projected at entry to hold %.2f months; played on, it held %d and broke in the %s month (cause: %s); the lower bound is %d%n",
+                start, start / TRADE, floorAtEntry, atEntry, held, ordinal(held + 1), run.getLastBreakCause().words, lower);
+        out.printf("   the first %d months sold the projection's figures exactly; the last held month sold US$%,.4f against US$%,.4f projected%n", exactMonths, lastSale, each);
+        assertTrue("fixture: the run held the rate every month until the break, which came by the vault (not by doubt: the market is quiet)",
+                fixedUp && run.brokeThisMonth() && run.getLastBreakCause() == ForeignAccounts.BreakCause.VAULT && run.getRegime() == FLOAT);
+        assertTrue("the months held are at most the projection struck at entry (" + held + " against " + String.format("%.2f", atEntry) + "): the projection leaves out the cover's premium, which only adds pressure",
+                held <= atEntry);
+        assertTrue("...and at least the months before the cover fell under THIN_COVER (" + held + " against " + lower + "), which the projection prices exactly", held >= lower);
+        assertTrue("...the first " + exactMonths + " months sold the projection's figures to a millionth of a dollar, which is at least the lower bound (" + lower + "): the premium came after the cover fell under THIN_COVER",
+                exactMonths >= lower);
+        assertTrue("...and the projection is not the whole story for a vault that falls under THIN_COVER: it held fewer months than projected (" + held + " against " + String.format("%.2f", atEntry) + ")",
+                held < Math.floor(atEntry));
+    }
+
+    /** 21 as "21st", for a printed line. */
+    static String ordinal(int n) {
+        return n + (n % 100 >= 11 && n % 100 <= 13 ? "th" : n % 10 == 1 ? "st" : n % 10 == 2 ? "nd" : n % 10 == 3 ? "rd" : "th");
     }
 }

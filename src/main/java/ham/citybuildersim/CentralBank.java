@@ -646,11 +646,12 @@ public final class CentralBank {
      * bank's liabilities here (Bank, THE THREE STATEMENTS) it would have come
      * straight out of the bank's equity.
      *
-     * THE MIRROR OF THE DEFENCE (XR2, ForeignAccounts, THE REGIMES): at the
-     * strong edge of a band, or in a pegged month's surplus, the vault BUYS
-     * dollars, and by default this bank pays for them in new money (the SNB's
-     * 2011-2015, its balance sheet from CHF 250 billion to 640 billion). The
-     * vault is up by the dollars, M0 is up by their local price, and equity is
+     * THE MIRROR OF THE DEFENCE (XR2, ForeignAccounts, THE REGIMES): in the
+     * purchases the hold makes (XR5: a band's strong edge, or a peg whose free
+     * rate is under it), the vault BUYS dollars, and by default this bank pays
+     * for them in new money (the SNB's 2011-2015, its balance sheet from CHF 250
+     * billion to 640 billion). The vault is up by the dollars, M0 is up by
+     * their local price, and equity is
      * where it was: the assets grew by what the liabilities grew by. The money
      * made goes abroad for the dollars, so MoneyAudit declares it twice - made
      * (MONEY, "+ centralbank IssuedForDollars") and paid abroad (RESERVE, "-

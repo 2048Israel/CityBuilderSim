@@ -1465,6 +1465,34 @@ public class ForeignAccounts {
         return Double.POSITIVE_INFINITY;
     }
 
+    /** A vault that would hold a peg or a band for fewer months than this against a steady gap of BREAK_GAP is thin, and choosing one warns (XR5; Jerus, "Warn on a thin vault"): two years, the median peg's life among 125 countries (the study's R29). */
+    public static final int THIN_HOLD_MONTHS = 24;
+
+    /**
+     * How many months the vault, above its floor, would hold the rate against a
+     * steady gap this wide (a log, the shadow weaker than the rate held), entered
+     * with no support (XR5, THE HOLD PAYS THE PRESSURE): the first month pays
+     * interventionLocalFor(gap) over the rate, each month after it what the
+     * support's fading takes - (1 - 0.5^(1/INTERVENTION_HALF_LIFE)) of the gap -
+     * which is exactly what step 7 of repriceCurrency() then deals while the gap
+     * stands. Continuous: under the first month's cost, the share of it the
+     * headroom pays; otherwise 1 + (headroom - first) / each. It leaves out the
+     * cover's premium, which only adds to the pressure once the vault falls under
+     * THIN_COVER months of imports, so the months a vault really holds are at most
+     * these. Positive infinity with no GDP or no gap, 0 for a vault at or under its
+     * floor. Pure: nothing in the month reads it.
+     */
+    public double monthsHoldingGap(double gap) {
+        double annual = 12 * gdpTrailing;
+        if (!(annual > 0) || !(gap > 0) || !(rate > 0)) return Double.POSITIVE_INFINITY;
+        double headroom = getReservesUsd() - vaultFloorUsd();
+        if (!(headroom > 0)) return 0;
+        double first = interventionLocalFor(gap, annual) / rate;
+        double each = interventionLocalFor((1 - Math.pow(.5, 1 / INTERVENTION_HALF_LIFE)) * gap, annual) / rate;
+        if (headroom < first) return headroom / first;
+        return 1 + (headroom - first) / each;
+    }
+
     /** What a purchase of dollars for this much local money would put on the float's log rate (positive weaker; a sale the other way), at the real size: the interventions' channel, bounded past INTERVENTION_LINEAR of a year's output (XI1). 0 with no GDP. Pure. */
     public double dealEffect(double localPurchase) {
         return gdpTrailing > 0 ? interventionMove(localPurchase, 12 * gdpTrailing) : 0;
