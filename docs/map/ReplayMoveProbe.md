@@ -1,6 +1,6 @@
 # ReplayMoveProbe.java - 876 lines · 32 methods · 12 constants · interface
 
-`ham/citybuildersim/ui/ReplayMoveProbe.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/ReplayMoveProbe.java` - generated 2026-11-07 by CodeMap; line numbers are as of that run.
 
 > What a replay's camera moves show unpainted, measured: it opens the real window full screen on a recorded city in replay
 > mode, runs the seven moves a trailer makes (the fly out and back, the glide from the street to the whole Earth and back, a

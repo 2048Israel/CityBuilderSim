@@ -1,4 +1,4 @@
-# XR5 - the regimes' rest: the hold pays the pressure, the tied path, the overshoot both ways, a thin vault's warning ({next}, 2026-11-06)
+# XR5 - the regimes' rest: the hold pays the pressure, the tied path, the overshoot both ways, a thin vault's warning (0.9.35, 2026-11-06)
 
 ## WHERE IT STANDS
 

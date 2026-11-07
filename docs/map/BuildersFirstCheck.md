@@ -1,6 +1,6 @@
 # BuildersFirstCheck.java - 683 lines · 17 methods · 8 constants · harnesses
 
-`ham/citybuildersim/BuildersFirstCheck.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildersFirstCheck.java` - generated 2026-11-07 by CodeMap; line numbers are as of that run.
 
 > The builders' own depots first (0.7.130, batch T1-C): the rule that serves
 > a depot on site the crews' rule would starve - keep there past the months

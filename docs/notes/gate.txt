@@ -1,18 +1,16 @@
-# gate of Merge batch/UP7: the speed reading as the reached speed alone in amber at a fixed width, a stall counted clamped, no "2x · 2x"; the drawer's bar and the construction tab kept (Jerus, 2026-10-23, on UP2's ★1: "Reached speed alone, amber"), 0.9.34
-# date: 2026-11-06
+# gate of Merge batch/XR5: the currency regimes' rest: a peg pays the pressure, not the month's balance; the tied path prices the curve under a peg; the overshoot both ways; a warning when a thin vault pegs (Jerus, 2026-10-23, on XR2's ★4, ★5 and the review's two: "Pay the pressure", "Price on the tied path"), 0.9.35
+# date: 2026-11-07
 # earth-2.bin: named
 # nightly: 2026-11-06 01:09 0.9.24 f33540a0 4,000 months: RED, exit 1 in 89 s: a building on the map moved 1 time(s), months 3012-3012
-# suite: 182 harnesses run in 3046s: 176 passed, 6 failed
-# timing: 16 harnesses run in 1208s: 11 passed, 5 failed; its red lines were judged side by side with main's, below
-# timing red not the batch's (paired): EarthTerrainCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): EarthTerrainCheck | the Earth screen: 198 tiles at Rotterdam's site - ground, plans, paint and raster - in no more than MapCheck.SCREEN_MS FAIL  129.5 ms (0.654 a tile), 17,690 buildings; the first time, its plans made, 1084 ms; the square city 121 districts a side, laid in 37243 ms; the screen 3% sea, 4% fresh   [main 52.3 ms, batch 53.8 ms (+2.9%), budget 80 ms: within 15% of main's]
-# timing red not the batch's (paired): EarthTerrainCheck | ...and at 1024 plots a pixel it is drawn in no more than SCREEN_MS                                   FAIL  80.5 ms with the relief, 70.0 without, 475 ms the first time over fresh data   [main 33.3 ms, batch 33.8 ms (+1.4%), budget 80 ms: within 15% of main's]
-# timing red not the batch's (paired): EarthTerrainCheck | 2 FAILED   [the harness's own count of the timing reds above]
+# suite: 182 harnesses run in 1490s: 176 passed, 6 failed
+# timing: 16 harnesses run in 866s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 32.0 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 40.2 ms, batch 32.3 ms (-19.8%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 31.1 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 30.2 ms, batch 31.9 ms (+5.7%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 5.61 ms, batch 5.46 ms (-2.7%), budget 5 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | 3 FAILED   [the harness's own count of the timing reds above]
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | exit 3
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | the city has a plain business and a materials industry with works to draw (Construction, null) FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | 3 FAILED
 SlopeCheck | exit 1
 SlopeCheck | the run played its months and found nothing: every month passed the playtest's audit and the layout watcher, [a building on the map moved] FAIL
 SlopeCheck | 1 FAILED
@@ -42,6 +40,8 @@ MapCheck | exit 1
 MapCheck | a yard laid across a district's buildings moves off it the boxes under it and no others: 72 of the plan before's 530 boxes lie under the yard and the railway, and 78 are not in the plan after (each of the rest stands where it stood) FAIL
 MapCheck | ...and the layout watch (LongPlaytest, as the map draws the district) counts them apart and flags none: 72 boxes left a district in the yard's month because a run laid in it lies across them, 6 are counted as moved FAIL
 MapCheck | 2 FAILED
-KeptCheck | exit 1
+KeptCheck | exit 3
 KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
-KeptCheck | 1 FAILED
+KeptCheck | the city has a plain business and a materials industry with works to draw (Construction, null) FAIL
+KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL
+KeptCheck | 3 FAILED
