@@ -230,7 +230,7 @@ public class HouseholdAccounts {
         }
     }
 
-    /** What the households paid for fuel this month: the refiners' shelf at its price and the world's at the import price (0.7.62). */
+    /** What the households paid for fuel this month: the refiners' shelf at its price and the world's at the import price (0.7.62); the drivers' petrol is this line and not in the shopping since PD1. */
     public double getFuel() { return fuel; }
 
     /** ...and what of it was paid to the world (0.7.62): all of it with no refinery. */
