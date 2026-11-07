@@ -56,7 +56,13 @@ look at why. **The check-in stays**, as the fallback for a wait lost with its
 session or a lane stuck. `sh tools/wait-selftest.sh` tries the wait.
 
 **Two lanes, on files of their own**: the next two queued batches side by
-side, as sessions, never more than two. **A lane's next batch starts at its
+side, as sessions. **A third only while the plan is behind pace** (Jerus,
+2026-11-07: "Yes, standing rule"; that day 11% of the week was left with 15
+hours to the reset, the rate 0.15% an hour, the two lanes waiting on gates):
+when the week's % used (`get_usage`) plus the last six hours' rate times the
+hours to the reset comes under 95, the next light row (a study, a process
+batch) starts as a third session, and none after it once the pace is met.
+**A lane's next batch starts at its
 predecessor's ship file, not its merge** (RL1, 2026-10-27: a lane no longer
 idles for a gate): when `wait.sh --ship` names PRED, the orchestrator starts
 the next batch, whose brief's first step is `git fetch origin && git checkout

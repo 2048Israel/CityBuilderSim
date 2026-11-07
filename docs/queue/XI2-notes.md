@@ -1,4 +1,4 @@
-# XI2 - XI1's texts on Trade, true of today's model ({next}, 2026-11-07)
+# XI2 - XI1's texts on Trade, true of today's model (0.9.44, 2026-11-07)
 
 ## WHERE IT STANDS
 

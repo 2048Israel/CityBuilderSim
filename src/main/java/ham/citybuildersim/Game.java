@@ -4173,6 +4173,13 @@ public class Game {
         // too, the households would pay them twice. The sale held is the month the statement is of (both are last month's, struck and
         // told here); with both shares at 0 there is none and the shopping is the shop's sales to the bit.
         if (homeFuel.getBill() > 0) retailSales = Math.max(0, retailSales - homeFuel.getBill());
+        // ...AND LESS THE DRIVERS' PETROL (PD1): Retail books each litre as a sale of PETROL to the households (sellFuel()), so its value is in
+        // salesToHouseholds too, and the same month's petrol is the households' fuel line (households.setCommute(), above: Motoring's bill, the
+        // duty in it), paid out of the cells' cash as the row's fees: left in the shopping, the households would pay it twice. Read from the same
+        // statement on both paths (its petrol sold at home, the bill less the treasury's duty), the month the bill is of; with no drivers there
+        // is none and the shopping is the shop's sales to the bit.
+        Sector.Split petrolSold = getSectors().retail().statement().sold.get(Good.PETROL);
+        if (petrolSold != null && petrolSold.atHome > 0) retailSales = Math.max(0, retailSales - petrolSold.atHome);
 
         if (accrue) {
             households.update(
