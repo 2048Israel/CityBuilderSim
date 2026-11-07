@@ -93,6 +93,9 @@ and 4.67 in 1950 (HSC W340-438, 3.8x); the university share of arrivals goes .00
   apart and run back to back: all eight CSVs byte-identical, the log but for "in 52s"/"in 51s" and the layout windows'
   "1.8 s"/"1.7 s"; and slice 1 against slice 2 (a2e5c0e3) the same, the eight CSVs byte-identical. ArrivalMixCheck 4 holds
   the join: `Migration` with no year mix and with `ArrivalMix.TODAY` composes the same arrivals, bit for bit.
+- **`--pick`** on the merge with R3b's tip (e64301e6, main 0.9.34 in): 57 of 185 harnesses for 40 files, LongPlaytest for
+  Game.java; **exit 3**, main's recorded reds only (DenominationCheck, ScaleCheck). Before PrizeCheck's fixture (★7) it was
+  exit 4 on PrizeCheck 12's five lines alone.
 - **FittingCheck 4** went red on slice 1: its 1900 village, on 1901's wages, grows more slowly (1,242 people at month 14
   against 1,780), so its builders finish the second pair of Bakeries after the 36 months the fixture gave them. The window
   is now `BAKERY_MONTHS`, 60; the premise (what a finished Bakery comes with) is unmoved, and a default village stops as
