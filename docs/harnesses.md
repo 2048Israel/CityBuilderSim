@@ -2,7 +2,7 @@
 
 Generated 2026-11-07 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**185 harness files, 21,480 labelled assertions.** AllChecks runs 185 of them.
+**185 harness files, 21,490 labelled assertions.** AllChecks runs 185 of them.
 
 ## Which harnesses read which class
 
@@ -20699,7 +20699,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L693 ...and no kind rails more than crossed of it, either way
   - L696 ...and having moved boxes, its freight station is drawn a container yard (TrainSchedule.boxesByRail())
 
-## RailDepotCheck.java - 55 labelled assertions
+## RailDepotCheck.java - 65 labelled assertions
 
 > The railway's stations: the Rail Depot, and the rules that put a station
 > first and track only where it is needed (FR7, 2026-10-18; docs/queue/FR7.md
@@ -20715,79 +20715,91 @@ _(this harness does not label its checks through a helper - it prints its findin
 > what the stations let through. What it has to prove:
 > ...
 
-- **L158 1. THE RAIL DEPOT IN THE CATALOGUE**
-- **L162 the Rail Depot is in the catalogue, on the ladder, a tenth of a terminal**
-  - L164 it is id 141, Freight's, a RAIL building
-  - L166 ...its own track is its connection to the main line: railCapacity equals what it sorts
-  - L172 ...its cash is on the ladder: a tonne no dearer than the spur's and no cheaper than the line's
-  - L187 ...its posts, by type, are the terminal's x its share of the tonnes, rounded
-  - L194 ...and so are its construction points and materials, power, water, ground and road load
-  - L199 ...its three road loads still add to its one, to the bit
-  - L201 the Rail Terminal is a station of all it carries: stationTonnes equals its railCapacity
-  - L203 ...and the Rail Spur and the Freight Line sort nothing
-  - L212 the stations are the Rail Depot and the Rail Terminal and no other building
-  - L214 ...the one siding is the Rail Spur's
-  - L216 ...and the catalogue has four rail buildings: the spur, the line, the terminal and the depot
-- **L219 2. A YOUNG CITY'S FIRST RAIL ORDER IS A RAIL DEPOT**
-- **L223 a young city's first rail order is a Rail Depot, at its threshold and never a terminal**
-  - L228 tonnes a month just below the Depot's threshold: nothing is ordered, and the reason names the station
-  - L240 goods past the Depot's threshold and no bulk: the same, a Rail Depot
-- **L242 3. NO SPUR OR LINE BEFORE A STATION**
-- **L246 no spur or line before a station, whatever track the city has and whatever works stand**
-  - L259 with five bulk works and a line standing or not, at any tonnes: a Rail Depot or nothing, never a spur or a line
-  - L264 ...and spurs and lines already standing (a city from before the stations) do not count as one: still the Rail Depot first
-- **L267 4. THE STATIONS CAP WHAT IS RAILED**
-- **L271 the stations cap what is railed: goods through a station only, bulk past the stations on the sidings**
-  - L275 a depot, ample track and sets, bulk and goods past it: the bulk takes the station and the goods get none
-  - L278 ...goods alone never rail more than the depot handles
-  - L280 ...a bulk that leaves room shares the station: goods rail what it leaves, and together never past the depot
-  - L283 ...bulk past the stations rides the spurs' sidings: a depot and two spurs rail the stations' tonnes plus the sidings'
-  - L286 ...bulk that fits on a siding leaves the station whole for the goods
-  - L289 a spur and no station: bulk rails to the siding's tonnes and goods, which go only through a station, not at all
-  - L292 the sets or the track still limit it: a quarter of a depot's capacity rails a quarter of its tonnes
-  - L295 neither a station nor a spur: nothing rails, exactly zero (the band stays the lorries', to the bit)
-  - L298 its capacity is the least of the track, the sets and the stations and sidings together
-- **L305 ...and in a played city: lines alone rail nothing, spurs rail bulk, a depot lets the rest through**
-  - L326 four freight lines and no station or spur: capacity none, nothing hauled, the band the lorries' to the bit
-  - L340 then two spurs, no station: the capacity is the sidings', and the bulk, which is more, rides them up to it
-  - L346 ...and the goods, which go only through a station, are not railed at all (the fixture offers some)
-  - L353 then a depot: the capacity is the stations' and the sidings' together, and the goods ride the station
-- **L361 5. A SPUR ONLY FOR A WORKS WITHOUT A SIDING**
-- **L365 the bulk works: which templates are one**
-  - L377 mines, quarries and the plants that work bulk are in:
-  - L384 ...shops, restaurants and homes are out, though a shop 'uses' grain (a few tonnes, under a set's month of it)
-  - L387 ...and Freight's own buildings are out: the railway is not a works to lay a siding into
-  - L390 the city counts the bulk works standing: three mines, and the shops beside them add none
-- **L393 a spur is ordered for a works without a siding, when the track and the sidings are short**
-  - L400 a terminal stands, three works have no siding, the track is short by the spur's threshold: a Rail Spur is ordered
-  - L402 ...though a Rail Depot is also wanted there (the stations are as short), and a depot beats a spur on profit per cost: the siding goes first, by kind
-  - L407 the track short by a tonne under the spur's threshold: no spur (nor anything: the stations are short by as little)
-  - L413 every bulk works already has a spur (three and three), the tonnes far past what stands: no spur, though a station may be
-  - L418 ...and the fourth works, with the same tonnes: a Rail Spur
-  - L424 a city with no bulk works: no spur, with the same tonnes
-  - L429 ...and with one works: a Rail Spur
-  - L437 a works with its siding and a terminal, tonnes past the track by a spur's threshold: no spur is laid for it (a second siding into one works)
-- **L440 6. THE OVERBUILD**
-- **L444 the overbuild: no track is ordered against track that already stands, while the sets limit the capacity**
-  - L450 the fixture: the track stands at many times the tonnes, the sets are the limit, and the old measure (tonnes less capacity) was past a spur's threshold
-  - L456 ...and the plan orders nothing: the track and the station already carry the tonnes, the sets are what lag
-  - L470 from half the depot's tonnes to sixteen times it, all under the track: never a spur or a line, a station at most
-  - L474 ...but past the track by a spur's threshold, the sets still lagging, track IS ordered (a spur): the guard is the track's, not the sets'
-  - L479 ...and a tonne under it: no track (the stations are what is short)
-  - L484 a depot stands and the track is short by a whole line, the stations by too little for a terminal: a Freight Line
-- **L488 7. A TERMINAL FOLLOWS WHEN THE TONNES OUTGROW THE DEPOTS**
-- **L492 a terminal follows when the tonnes outgrow the depots, at its own threshold**
-  - L498 two depots stand, the stations short a tonne under the terminal's threshold: not a terminal
-  - L504 ...and when the tonnes are three terminals past the depots: the order is a Rail Terminal
-- **L507 8. THE LAST STATION IS NOT RETIRED WHILE TRACK STANDS**
-- **L511 the last station is not retired while a spur or a line stands**
-  - L514 a lone depot with no other track may be sold
-  - L516 ...with a spur standing it may not
-  - L518 ...nor the only terminal with a line standing
-  - L520 ...but with a second depot standing one of them may go
-  - L522 ...and a depot beside a terminal may go, though the terminal is the one left
-  - L523 the track itself may still be sold, the station standing
-  - L525 a Truck Depot is still never retired by the railway's measure
+- **L162 1. THE RAIL DEPOT IN THE CATALOGUE**
+- **L166 the Rail Depot is in the catalogue, on the ladder, a tenth of a terminal**
+  - L168 it is id 141, Freight's, a RAIL building
+  - L170 ...its own track is its connection to the main line: railCapacity equals what it sorts
+  - L176 ...its cash is on the ladder: a tonne no dearer than the spur's and no cheaper than the line's
+  - L191 ...its posts, by type, are the terminal's x its share of the tonnes, rounded
+  - L198 ...and so are its construction points and materials, power, water, ground and road load
+  - L203 ...its three road loads still add to its one, to the bit
+  - L205 the Rail Terminal is a station of all it carries: stationTonnes equals its railCapacity
+  - L207 ...and the Rail Spur and the Freight Line sort nothing
+  - L216 the stations are the Rail Depot and the Rail Terminal and no other building
+  - L218 ...the one siding is the Rail Spur's
+  - L220 ...and the catalogue has four rail buildings: the spur, the line, the terminal and the depot
+- **L223 2. A YOUNG CITY'S FIRST RAIL ORDER IS A RAIL DEPOT**
+- **L227 a young city's first rail order is a Rail Depot, at its threshold and never a terminal**
+  - L232 tonnes a month just below the Depot's threshold: nothing is ordered, and the reason names the station
+  - L244 goods past the Depot's threshold and no bulk: the same, a Rail Depot
+- **L246 3. NO SPUR OR LINE BEFORE A STATION**
+- **L250 no spur or line before a station, whatever track the city has and whatever works stand**
+  - L263 with five bulk works and a line standing or not, at any tonnes: a Rail Depot or nothing, never a spur or a line
+  - L268 ...and spurs and lines already standing (a city from before the stations) do not count as one: still the Rail Depot first
+- **L271 4. THE STATIONS CAP WHAT IS RAILED**
+- **L275 the stations cap what is railed: goods through a station only, bulk past the stations on the sidings**
+  - L279 a depot, ample track and sets, bulk and goods past it: the bulk takes the station and the goods get none
+  - L282 ...goods alone never rail more than the depot handles
+  - L284 ...a bulk that leaves room shares the station: goods rail what it leaves, and together never past the depot
+  - L287 ...bulk past the stations rides the spurs' sidings: a depot and two spurs rail the stations' tonnes plus the sidings'
+  - L290 ...bulk that fits on a siding leaves the station whole for the goods
+  - L293 a spur and no station: bulk rails to the siding's tonnes and goods, which go only through a station, not at all
+  - L296 the sets or the track still limit it: a quarter of a depot's capacity rails a quarter of its tonnes
+  - L299 neither a station nor a spur: nothing rails, exactly zero (the band stays the lorries', to the bit)
+  - L302 its capacity is the least of the track, the sets and the stations and sidings together
+- **L309 ...and in a played city: lines alone rail nothing, spurs rail bulk, a depot lets the rest through**
+  - L330 four freight lines and no station or spur: capacity none, nothing hauled, the band the lorries' to the bit
+  - L344 then two spurs, no station: the capacity is the sidings', and the bulk, which is more, rides them up to it
+  - L350 ...and the goods, which go only through a station, are not railed at all (the fixture offers some)
+  - L357 then a depot: the capacity is the stations' and the sidings' together, and the goods ride the station
+- **L365 5. A SPUR ONLY FOR A WORKS WITHOUT A SIDING**
+- **L369 the bulk works: which templates are one**
+  - L381 mines, quarries and the plants that work bulk are in:
+  - L388 ...shops, restaurants and homes are out, though a shop 'uses' grain (a few tonnes, under a set's month of it)
+  - L391 ...and Freight's own buildings are out: the railway is not a works to lay a siding into
+  - L394 the city counts the bulk works standing: three mines, and the shops beside them add none
+- **L397 a spur is ordered for a works without a siding, when the track and the sidings are short**
+  - L404 a terminal stands, three works have no siding, the track is short by the spur's threshold: a Rail Spur is ordered
+  - L406 ...though a Rail Depot is also wanted there (the stations are as short), and a depot beats a spur on profit per cost: the siding goes first, by kind
+  - L411 the track short by a tonne under the spur's threshold: no spur (nor anything: the stations are short by as little)
+  - L417 every bulk works already has a spur (three and three), the tonnes far past what stands: no spur, though a station may be
+  - L422 ...and the fourth works, with the same tonnes: a Rail Spur
+  - L428 a city with no bulk works: no spur, with the same tonnes
+  - L433 ...and with one works: a Rail Spur
+  - L441 a works with its siding and a terminal, tonnes past the track by a spur's threshold: no spur is laid for it (a second siding into one works)
+- **L444 6. THE OVERBUILD**
+- **L448 the overbuild: no track is ordered against track that already stands, while the sets limit the capacity**
+  - L454 the fixture: the track stands at many times the tonnes, the sets are the limit, and the old measure (tonnes less capacity) was past a spur's threshold
+  - L460 ...and the plan orders nothing: the track and the station already carry the tonnes, the sets are what lag
+  - L474 from half the depot's tonnes to sixteen times it, all under the track: never a spur or a line, a station at most
+  - L478 ...but past the track by a spur's threshold, the sets still lagging, track IS ordered (a spur): the guard is the track's, not the sets'
+  - L483 ...and a tonne under it: no track (the stations are what is short)
+  - L488 a depot stands and the track is short by a whole line, the stations by too little for a terminal: a Freight Line
+- **L492 7. A TERMINAL FOLLOWS WHEN THE TONNES OUTGROW THE DEPOTS**
+- **L496 a terminal follows when the tonnes outgrow the depots, at its own threshold**
+  - L502 two depots stand, the stations short a tonne under the terminal's threshold: not a terminal
+  - L508 ...and when the tonnes are three terminals past the depots: the order is a Rail Terminal
+- **L511 8. THE LAST STATION IS NOT RETIRED WHILE TRACK STANDS**
+- **L515 the last station is not retired while a spur or a line stands**
+  - L518 a lone depot with no other track may be sold
+  - L520 ...with a spur standing it may not
+  - L522 ...nor the only terminal with a line standing
+  - L524 ...but with a second depot standing one of them may go
+  - L526 ...and a depot beside a terminal may go, though the terminal is the one left
+  - L527 the track itself may still be sold, the station standing
+  - L529 a Truck Depot is still never retired by the railway's measure
+- **L532 9. THE LAST STATION IS KEPT WHILE IT HAS A STATION'S FREIGHT (FD1)**
+- **L536 the last station is kept while the freight it carries would order a station again**
+  - L541 a lone depot offered a depot's threshold of goods tonnes may not be sold: the sale would be bought back
+  - L545 ...a tonne under the threshold it may be sold: nothing would be ordered in its place
+  - L551 the premise, from one side: a city with no station offered that threshold orders a Rail Depot
+  - L556 ...and from the other: a tonne under it orders nothing, so the sale the guard refuses is the one that would be bought back
+  - L558 the first station is the Rail Depot, the smallest of the catalogue
+  - L566 the distress rule:
+  - L572 ...a tonne under the threshold, the same losses sell the Rail Depot
+  - L577 a lone terminal offered a depot's threshold may not be sold either: a depot would be ordered
+  - L582 two depots standing offered three thresholds: one may go, the guard is the last station's
+  - L585 a spur, a Truck Depot and a null are no station, so none of them is a sale that would be bought back
 
 ## RailDrawCheck.java - 169 labelled assertions
 

@@ -1,6 +1,6 @@
 # FD1 - notes: Freight keeps its last station while it has a station's freight ({next}, 2026-11-07)
 
-*{next}, 2026-11-07. [The brief](FD1.md); MF1's ★2, from its trace of FX7's ★4 (Jerus: "Into MF1"). Built on FX9's tip 7152ea8d (RL1). The model moves: the trace moves, so the ensemble ran (section 4). Save format unchanged. One Sonnet slice ([its brief](FD1/slice-A.md)); the probe is beside these notes ([FD1/FD1Probe.java](FD1/FD1Probe.java)).*
+*{next}, 2026-11-07. [The brief](FD1.md); MF1's ★2, from its trace of FX7's ★4 (Jerus: "Into MF1"). Built on FX9's tip 7152ea8d (RL1); main merged in at 96ba32b3, FX9 landed, before the final checks. The model moves: the trace moves, so the ensemble ran (section 4). Save format unchanged. One Sonnet slice ([its brief](FD1/slice-A.md)); the probe is beside these notes ([FD1/FD1Probe.java](FD1/FD1Probe.java)).*
 
 ## 1. Counted first, on today's model
 
@@ -62,7 +62,7 @@ The rest of the railway's sales follow the city's own path, which moved from m10
 ## 4. The checks and the ensemble
 
 - **The ensemble** (`docs/ensemble/FD1.md`, 80 of 80 runs, 13.5 min): 23 of 26 criteria, as the 0.9.26 baseline. The three reds are its own (A2, A3, S1), at its medians: A2's longest spell 16 months, A3's deflation spell 5 against 4, S1's gap 2.00%. AUTO2's final population is 603,462 against 602,188. No run has a LongPlaytest finding.
-- **`--pick`** (24 harnesses, LongPlaytest among them for Freight's 44 readers). All green but LongPlaytest, exit 4: its one finding `a building on the map moved 2 time(s), months 1203-1810` (worst, m1810, district (-1,0): 99 of its 914 boxes). That is the layout watch's class, which DM2 mends (the wall ways dated; BA1-D and LD2-D passed the same line by name on their paths). FD1's diff touches no map code. The city's path moves from m1039, where the station is now kept, so the map's moves fall in other months. FX9's move counter (`FX9/FX9Moves.java`, 2,400 months) counts 272 boxes in 60 month pairs on this path, against FX9's 147 in 27. Two of them fall in the watch's 13-month windows (m1200, m1800); main's do not.
+- **`--pick`** on the merge with main 96ba32b3 (25 harnesses, LongPlaytest among them for Freight's 44 readers): **exit 3**, main's recorded reds only (MapCheck; LongPlaytest's `exit 1` and `(no FAIL line)`, recorded by FX9's gate). On FX9's tip, before the merge, it was exit 4 on the same two LongPlaytest lines. LongPlaytest has one finding, `a building on the map moved 2 time(s), months 1203-1810` (worst, m1810, district (-1,0): 99 of its 914 boxes). That is the layout watch's class, which DM2 mends (the wall ways dated; BA1-D and LD2-D passed the same line by name on their paths). FD1's diff touches no map code. The city's path moves from m1039, where the station is now kept, so the map's moves fall in other months. FX9's move counter (`FX9/FX9Moves.java`, 2,400 months) counts 272 boxes in 60 month pairs on this path, against FX9's 147 in 27. Two of them fall in the watch's 13-month windows (m1200, m1800); main's do not.
 - **RailDepotCheck**, RailCheck, HomeRailCheck green. Three of section 9's assertions were red on the old rule.
 
 ## 5. Left
