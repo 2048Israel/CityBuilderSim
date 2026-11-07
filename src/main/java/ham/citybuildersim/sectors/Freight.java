@@ -1707,13 +1707,10 @@ public final class Freight extends Sector {
 
         BuildingsTemplate bestSiding = null;
         double bestSidingScore = 0;
-        BuildingsTemplate firstStation = null;
+        BuildingsTemplate firstStation = firstStation();
         double smallestRung = Double.MAX_VALUE;
         boolean spurWithoutWorks = false;
         int eligible = 0;
-        for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
-            if (t.isStation() && (firstStation == null || t.getStationTonnes() < firstStation.getStationTonnes())) firstStation = t;
-        }
 
         for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
             if (t.getRailCapacity() <= 0 && !t.isStation()) continue;
@@ -1835,16 +1832,59 @@ public final class Freight extends Sector {
      * (FR7): without it the railway would carry nothing past its sidings and
      * every line left would be track to no yard, the very thing the stations
      * were made to end. With a second station standing either may go.
+     *
+     * ...nor while the freight it carries would order a station again (FD1,
+     * 2026-11-07): the last station is also kept when selling it would leave
+     * the stations short by the first station's rung (wouldOrderAgain()), the
+     * tonnes plan() orders a first station at. WHY: the default playtest's
+     * Freight sold its only station by the distress rule four times in 4,000
+     * months while the freight offered was two to four times that rung, and
+     * bought one again 27 and 79 months later at $339m and $990m against
+     * plots of $0 and $20m (the fourth sale, m3844, gave up a railway billing
+     * $261m a month against $31m running); MF1 counted 16 such sales in 3,140
+     * months before BA1, RT1 and R1b. With a second station standing either
+     * may still go.
      */
     @Override
     public boolean mayRetire(BuildingsTemplate t) {
         if (t == null || t.getTruckRoom() > 0) return false;
         if (t.isStation() && buildings != null
                 && buildings.totalBySector(key(), s -> s.isStation() ? 1 : 0) <= 1
-                && buildings.totalBySector(key(), s -> s.getRailCapacity() > 0 && !s.isStation() ? 1 : 0) > 0) {
+                && (buildings.totalBySector(key(), s -> s.getRailCapacity() > 0 && !s.isStation() ? 1 : 0) > 0
+                        || wouldOrderAgain(t))) {
             return false;
         }
         return super.mayRetire(t);
+    }
+
+    /**
+     * The smallest station of this sector's catalogue by the tonnes it sorts: the
+     * one plan() orders first, before any track; null with no catalogue or no
+     * station in it.
+     */
+    public BuildingsTemplate firstStation() {
+        if (buildings == null) return null;
+        BuildingsTemplate first = null;
+        for (BuildingsTemplate t : buildings.getTemplatesBySector(key())) {
+            if (t.isStation() && (first == null || t.getStationTonnes() < first.getStationTonnes())) first = t;
+        }
+        return first;
+    }
+
+    /**
+     * Whether selling this station would leave the stations short by the first
+     * station's rung (FD1): the shortfall the stations leave, with this one's
+     * tonnes added back, is at least the tonnes plan() orders a first station
+     * at, so the sale would be bought again. It is plan()'s own rung
+     * (firstStation() times MIN_LINE_UTILISATION, against shortfalls().station()),
+     * so the two cannot drift. False for a template that is not a station, and
+     * with no catalogue or no station in it.
+     */
+    public boolean wouldOrderAgain(BuildingsTemplate station) {
+        if (station == null || !station.isStation() || buildings == null) return false;
+        BuildingsTemplate first = firstStation();
+        if (first == null) return false;
+        return shortfalls().station() + station.getStationTonnes() >= first.getStationTonnes() * MIN_LINE_UTILISATION;
     }
 
     /* ------------------------------------------------------------ the books */
