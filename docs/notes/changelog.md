@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.41 — FD1, Freight keeps its last station while it has a station's freight — 2026-11-07, ready, see docs/queue/FD1-notes.md
+MF1's ★2 (Jerus: "Into MF1"). Counted again first: the churn had moved, not gone. The default playtest sold its only
+station 4 times in 4,000 months (MF1: 16), bought again after 27 and 79 months at $339m and $990m against plots of $0
+and $20m; the ensemble's 16 AUTO2 seeds sold it 16 times, all bought again, 2 in the same month. Every sale was the
+distress rule's, and all but one had the freight plan() orders a first station for. `Freight.mayRetire()` now also
+keeps the last station while selling it would leave the stations short by that rung (`wouldOrderAgain()`, plan()'s
+own through `firstStation()`): after, no such sale in the playtest or any seed. RailDepotCheck 9. Ensemble 23 of 26,
+as 0.9.26. LongPlaytest red on the moved path: `a building on the map moved`, the layout watch's class, which DM2
+mends; FD1 touches no map code; passed by name (FD1-D).
+
 ### 0.9.40 — R0e, research: the household's basket by year — 2026-11-07, ready, see docs/queue/R0e-notes.md
 A city founded the 1900 way (off until R1d) keeps the household's basket of its year: `consumption.json`'s new `years`, knots
 at the census years and today's from 1971, read by `Consumption.yearAt()`. Bread: 51% bought in 1900, the rest baked at home

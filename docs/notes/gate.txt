@@ -1,11 +1,11 @@
-# gate of Merge batch/R0e: research: the household's basket by year - 1900's raw staples, lamp oil and coal, no car (after R0c's goods, and on the live demand path, not the shadow basket), 0.9.40
+# gate of Merge batch/FD1: freight sells its last station and buys it back: the default playtest sells its only Rail Depot once the last spur is gone and orders another 3 to 93 months later, 16 times, 4 in the same month (MF1's trace of FX7's ★4); measure the churn and stop it at its cause, the model's (Jerus put the relays into MF1: "Into MF1"), 0.9.41
 # date: 2026-11-07
 # earth-2.bin: named
 # nightly: 2026-11-07 00:56 0.9.35 a260d4f1 4,000 months: OK in 121 s
-# suite: 186 harnesses run in 1198s: 180 passed, 6 failed
-# timing: 16 harnesses run in 881s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
+# suite: 186 harnesses run in 1132s: 180 passed, 6 failed
+# timing: 16 harnesses run in 894s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 31.6 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 29.7 ms, batch 31.9 ms (+7.5%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 32.0 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 32.0 ms, batch 32.2 ms (+0.5%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
 MonetaryCheck | exit 1
 MonetaryCheck | ...and a month's delay in the hand moves them less than the allowance FAIL
