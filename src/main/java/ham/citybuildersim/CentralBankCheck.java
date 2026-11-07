@@ -2129,6 +2129,9 @@ public class CentralBankCheck {
         // the hold is not saved). Its premise is a calm path (see above, re-picked six times), sized on today's deaths; on 1900's causes its
         // very strict twin read -4.28% in the last year where the target is 2%, and "within a full miss of the target, no spiral" failed.
         // The eleven other shapes of the set keep the deaths of 1900: they are the policy's claim read over many cities.
+        // R0g measured the -4.28% over all twelve STRICT_SHAPES with the causes on (docs/queue/R0g-notes.md): every very strict
+        // twin's last year was within a full miss (-1.47% to 4.57%; this shape's own 1.19% on R0g's tree). It was this one city's
+        // path on R0b's tree, not 1900's deaths tipping the bank into a spiral; the hold stays for the calm path its premises need.
         return shapedCity(files, PROBE_HOUSES, PROBE_MONTHS, true);
     }
 

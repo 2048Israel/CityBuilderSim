@@ -2,7 +2,7 @@
 
 Generated 2026-11-07 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**186 harness files, 21,604 labelled assertions.** AllChecks runs 186 of them.
+**186 harness files, 21,616 labelled assertions.** AllChecks runs 186 of them.
 
 ## Which harnesses read which class
 
@@ -203,7 +203,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [MiniMapFrame](map/MiniMapFrame.md) | MapCheck |
 | [Mining](map/Mining.md) | BuildCardCheck, BuildingDataCheck, ConservationCheck, CopperMiningCheck, DenominationCheck, ForestryCheck, GatewayCheck, HaulageCheck, HomeRailCheck, IndustryViewCheck, InvestCheck, LandCheck, LandClassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, OilCheck, PlanCheck, PriceLevelCheck, RailDepotCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, TradeCostCheck, TruckRouteCheck, WellCheck |
 | [Money](map/Money.md) | KeptCheck, LandClassCheck, PriceLevelCheck, RankingsCheck, RunWorksCheck, TradeBandCheck, WorldDataCheck |
-| [MoneyAudit](map/MoneyAudit.md) | AuctionCheck, BankCheck, BondCheck, BuildersFirstCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarryTradeCheck, CementConcreteCheck, CentralBankCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CurrencyCheck, CurrencyRegimeCheck, DeathCareFirstCheck, DebtExchangeCheck, DebtMoneysCheck, DiscoveryCheck, EducationCheck, ExchangeCheck, ExchangeRateCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FundCheck, GroceryCheck, HistoryCheck, HoldersCheck, InterestAbroadCheck, InvestCheck, LandCheck, LongPlaytest, MaterialsCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PortCheck, PrizeCheck, QuarryingCheck, RefineryCheck, RoadCheck, SaveFileCheck, ScaleCheck, ShortSellingCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TreasuryCheck, WoodProductsCheck |
+| [MoneyAudit](map/MoneyAudit.md) | AuctionCheck, BankCheck, BondCheck, BuildersFirstCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CurrencyCheck, CurrencyRegimeCheck, DeathCareFirstCheck, DebtExchangeCheck, DebtMoneysCheck, DiscoveryCheck, EducationCheck, ExchangeCheck, ExchangeRateCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FundCheck, GroceryCheck, HistoryCheck, HoldersCheck, InterestAbroadCheck, InvestCheck, LandCheck, LongPlaytest, MaterialsCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PortCheck, PrizeCheck, QuarryingCheck, RefineryCheck, RoadCheck, SaveFileCheck, ScaleCheck, ShortSellingCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TreasuryCheck, WoodProductsCheck |
 | [MonthOrder](map/MonthOrder.md) | **none** |
 | [Mortgage](map/Mortgage.md) | BooksCheck, BuildCardCheck, CreditCheck, InvestCheck, LongPlaytest, MortgageCheck, OrderSearchCheck, ReadPathCheck, ScaleCheck |
 | [Motoring](map/Motoring.md) | CarCheck, InfrastructureCheck, OilCheck, ReadPathCheck, TradeCostCheck |
@@ -3592,7 +3592,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L365 a risk-off with no book to repay repays nothing and counts no month
   - L368 what was repaid in a risk-off survives being written down
 
-## CausesOfDeathCheck.java - 120 labelled assertions
+## CausesOfDeathCheck.java - 132 labelled assertions
 
 > Proves the causes of death of 1900 (R0b, slice 1): the model on its own,
 > before the month hands its rates to the cohorts. Every claim below sets its
@@ -3608,136 +3608,150 @@ _(this harness does not label its checks through a helper - it prints its findin
 >   8. booking the dead, the TB sick and the save
 > ...
 
-- **L181 1. the constants hold together**
-  - L183 Canada's 1901 people by band sum to 1
-  - L185 who dies of
-  - L192 fixture: summer diarrhoea and winter pneumonia do have seasons
-  - L197 the influenza's months share all of its dead between them
-  - L209 history is 1 in January 1900 for every cause
-  - L210 ...and 0 in January 1980 for every cause but the influenza, whose months carry it
-  - L211 ...never negative in two hundred years
-  - L212 ...and never above 1900's value, childbirth aside
-  - L220 mothers' deaths peak at 1930's 5.8 over 1900's MOTHERS_1900
-  - L221 ...and sit above 1900's only between 1921 and 1940
-  - L223 the mean outbreak is a real severity, between Health's floor and its largest peak
-- **L227 2. a 1900 city dies of each cause at its 1900 rate**
-  - L239 ...and never more than the rate itself
-  - L242 mothers die at
-  - L244 the influenza kills nobody in 1900
-- **L246 3. the split leaves a 1900 baby's rate where it was**
-  - L261 fixture: babies' shares are under the cap
-  - L262 babies' shares are 1900's rates over the excess, uncapped
-  - L264 fixture: children's shares come to more than the cap
-  - L265 children's shares are scaled to sum to MAX_SPLIT
-  - L268 the children's shares keep their proportions under the cap
-  - L271 an adult's shares of a swing are nothing
-  - L272 childbirth never splits a swing
-  - L274 an adult's factor is untouched by the split
-  - L279 fixture: at the swing's top a baby dies of causes in July 1930
-  - L284 at a factor of
-  - L293 in October 1918 at a factor of 1
-  - L300 in 1980
-  - L301 in 1980
-- **L307 4. seasons and outbreaks**
-  - L317 diarrhoea in
-  - L321 pneumonia in
-  - L324 typhoid has no season
-  - L332 fixture: with an outbreak running the babies and children do die of one
-  - L333 with no outbreak running nobody dies of one
-  - L335 outbreak deaths in
-  - L349 fixture: Health alone had outbreaks in a tenth of its months or fewer, and some
-  - L351 Health's mean outbreak severity over
-- **L356 5. history on its dates**
-  - L360 typhoid in 1915 is 1/40.8 of 1900's (chlorination, Toronto 40.8 to 1.0)
-  - L362 ...and so is an adult's typhoid rate that January
-  - L364 TB in 1948 is 37 of 1900's 180
-  - L367 mothers in January 1944 die at 2.8 per 1,000 births (penicillin)
-  - L370 ...and in January 1950 at 1.1
-  - L379 typhoid over 1946-50 is under 1 per 100,000 (the study: about 0)
-  - L387 every cause is zero in every month of 1980 and 2000
-  - L389 fixture: 1979 still has deaths to take away
-- **L391 6. the city's conditions raise a cause, never lower it**
-  - L397 fixture: by 1930 history has taken most of typhoid away
-  - L399 1930 with no piped water: an adult's typhoid is 1900's again
-  - L401 ...a baby's diarrhoea too
-  - L402 1930 with half the city piped: typhoid is half-way between
-  - L406 hunger
-  - L408 ...and a baby's TB the same
-  - L410 ...and summer diarrhoea by 1 + DIARRHOEA_HUNGER x hungry
-  - L414 no general care raises an adult's pneumonia by 1 + UNCARED
-  - L416 ...and leaves a baby's pneumonia alone (childcare is theirs)
-  - L417 ...and raises an adult's TB the same
-  - L418 ...and the mothers' deaths
-  - L419 fixture: TB's hunger and no care together would be over the cap
-  - L422 every condition at its worst holds an adult's TB at CONDITION_CAP
-  - L442 no piped water, hunger or lack of care takes any cause below its history, in any month to 1980
-  - L443 shares outside 0 to 1 are held to the ends
-- **L445 7. the 1918 influenza**
-  - L457 the influenza kills in the months it has a share of and in no other
-  - L458 ...and it ran for ten months
-  - L461 October 1918 to March 1920 the city loses INFLUENZA_DEATHS of its people
-  - L463 October 1918 holds .35 of the dead
-  - L471 the sick peak in October 1918, at INFLUENZA_SICK x .35
-  - L472 ...in October 1918
-  - L473 September 1918 has no influenza sick
-  - L474 ...nor has April 1920
-  - L475 over the epidemic a quarter of the people were sick, INFLUENZA_SICK
-- **L477 8. booking the dead, the TB sick and the save**
-  - L487 the causes' dead add up to the dead the cohorts booked
-  - L490 ...TB's are each band's dead by TB's share of its rate
-  - L497 ...and every band's dead are given out whole
-  - L506 two causes split a band's dead by their rates: TB 25%
-  - L507 ...pneumonia 75%
-  - L508 a band with no rate books nothing
-  - L521 after thirteen months the twelve-month sum has dropped the first
-  - L522 ...and the total has not
-  - L523 ...and last month's is the thirteenth
-  - L524 a cause that was never booked has none
-  - L535 the TB sick are the TB's dead over the long sick's chance, band by band
-  - L536 ...the adults' part being their TB deaths over Sickness.deathChance(ADULT)
-  - L538 fixture: the adults are most of the TB sick
-  - L546 a null people array gives zeros and no TB sick
-  - L551 ...and so does a length that is not the bands'
-  - L569 garbage in (NaN, negatives, infinities) still gives finite rates of at least zero
-  - L582 the state is last month's, the totals, the ring and the TB sick
-  - L584 a state of the right length is taken
-  - L592 the restored instance gives back every getter, and the state itself
-  - L593 fixture: the played city has dead of each named cause
-  - L596 a state one too short is refused
-  - L597 ...one too long
-  - L598 ...empty
-  - L599 ...and null
-  - L600 a refused state leaves the instance as it was
-  - L602 a reset city has booked nothing
-- **L619 a real city's month books the causes**
-  - L638 fixture: the first month brought people to the city
-  - L647 the city played all
-  - L648 every month the cohorts' cause dead are the causes' booked dead
-  - L649 ...and the month's dead add up: of age, illness, killed, aged out and the causes
-  - L650 ...and, once there were people, somebody died of the causes in every month
-  - L652 over the
-  - L653 ...and the book's total for it is the months' sum
-  - L657 adults die at more than AgeBand's
-- **L675 the 1918 influenza in a real city**
-  - L712 the city played on to December 1918, game month
-  - L713 every month ran (nothing stopped the skip)
-  - L714 the influenza booked nobody before October 1918
-  - L715 ...Health had none of its sick before October 1918
-  - L716 ...and the inbox had no influenza notice before it
-  - L717 it booked somebody in October 1918
-  - L718 ...in November
-  - L719 ...and in December
-  - L720 Health's influenza sick in October 1918 are the model's for that month
-  - L722 ...which is a quarter of the people times its first wave's share, not nothing
-  - L723 ...and they are in the sick rate: its parts, capped, make it
-  - L725 Health's influenza sick in December 1918 are the model's
-  - L727 the inbox holds a live influenza notice in October 1918
-  - L728 ...and in November 1918, titled for it
-  - L729 ...which names the dead and the sick
-  - L738 fixture: the influenza has dead on the books in December 1918
-  - L746 a reloaded city keeps every cause's last month, year and total
-  - L747 ...the cohorts' dead of the causes
-  - L748 ...and Health's influenza sick
+- **L185 1. the constants hold together**
+  - L187 Canada's 1901 people by band sum to 1
+  - L189 who dies of
+  - L196 fixture: summer diarrhoea and winter pneumonia do have seasons
+  - L201 the influenza's months share all of its dead between them
+  - L213 history is 1 in January 1900 for every cause
+  - L214 ...and 0 in January 1980 for every cause but the influenza, whose months carry it
+  - L215 ...never negative in two hundred years
+  - L216 ...and never above 1900's value, childbirth aside
+  - L224 mothers' deaths peak at 1930's 5.8 over 1900's MOTHERS_1900
+  - L225 ...and sit above 1900's only between 1921 and 1940
+  - L227 the mean outbreak is a real severity, between Health's floor and its largest peak
+- **L231 2. a 1900 city dies of each cause at its 1900 rate**
+  - L243 ...and never more than the rate itself
+  - L246 mothers die at
+  - L248 the influenza kills nobody in 1900
+- **L250 3. the split leaves a 1900 baby's rate where it was**
+  - L265 fixture: babies' shares are under the cap
+  - L266 babies' shares are 1900's rates over the excess, uncapped
+  - L268 fixture: children's shares come to more than the cap
+  - L269 children's shares are scaled to sum to MAX_SPLIT
+  - L272 the children's shares keep their proportions under the cap
+  - L275 an adult's shares of a swing are nothing
+  - L276 childbirth never splits a swing
+  - L278 an adult's factor is untouched by the split
+  - L283 fixture: at the swing's top a baby dies of causes in July 1930
+  - L288 at a factor of
+  - L297 in October 1918 at a factor of 1
+  - L304 in 1980
+  - L305 in 1980
+- **L311 4. seasons and outbreaks**
+  - L321 diarrhoea in
+  - L325 pneumonia in
+  - L328 typhoid has no season
+  - L336 fixture: with an outbreak running the babies and children do die of one
+  - L337 with no outbreak running nobody dies of one
+  - L339 outbreak deaths in
+  - L353 fixture: Health alone had outbreaks in a tenth of its months or fewer, and some
+  - L355 Health's mean outbreak severity over
+- **L360 5. history on its dates**
+  - L364 typhoid in 1915 is 1/40.8 of 1900's (chlorination, Toronto 40.8 to 1.0)
+  - L366 ...and so is an adult's typhoid rate that January
+  - L368 TB in 1948 is 37 of 1900's 180
+  - L371 mothers in January 1944 die at 2.8 per 1,000 births (penicillin)
+  - L374 ...and in January 1950 at 1.1
+  - L383 typhoid over 1946-50 is under 1 per 100,000 (the study: about 0)
+  - L391 every cause is zero in every month of 1980 and 2000
+  - L393 fixture: 1979 still has deaths to take away
+- **L395 6. the city's conditions raise a cause, never lower it**
+  - L401 fixture: by 1930 history has taken most of typhoid away
+  - L403 1930 with no piped water: an adult's typhoid is 1900's again
+  - L405 ...a baby's diarrhoea too
+  - L406 1930 with half the city piped: typhoid is half-way between
+  - L410 hunger
+  - L412 ...and a baby's TB the same
+  - L414 ...and summer diarrhoea by 1 + DIARRHOEA_HUNGER x hungry
+  - L418 no general care raises an adult's pneumonia by 1 + UNCARED
+  - L420 ...and leaves a baby's pneumonia alone (childcare is theirs)
+  - L421 ...and raises an adult's TB the same
+  - L422 ...and the mothers' deaths
+  - L423 fixture: TB's hunger and no care together would be over the cap
+  - L426 every condition at its worst holds an adult's TB at CONDITION_CAP
+  - L446 no piped water, hunger or lack of care takes any cause below its history, in any month to 1980
+  - L447 shares outside 0 to 1 are held to the ends
+- **L449 7. the 1918 influenza**
+  - L461 the influenza kills in the months it has a share of and in no other
+  - L462 ...and it ran for ten months
+  - L465 October 1918 to March 1920 the city loses INFLUENZA_DEATHS of its people
+  - L467 October 1918 holds .35 of the dead
+  - L475 the sick peak in October 1918, at INFLUENZA_SICK x .35
+  - L476 ...in October 1918
+  - L477 September 1918 has no influenza sick
+  - L478 ...nor has April 1920
+  - L479 over the epidemic a quarter of the people were sick, INFLUENZA_SICK
+- **L481 8. booking the dead, the TB sick and the save**
+  - L491 the causes' dead add up to the dead the cohorts booked
+  - L494 ...TB's are each band's dead by TB's share of its rate
+  - L501 ...and every band's dead are given out whole
+  - L510 two causes split a band's dead by their rates: TB 25%
+  - L511 ...pneumonia 75%
+  - L512 a band with no rate books nothing
+  - L525 after thirteen months the twelve-month sum has dropped the first
+  - L526 ...and the total has not
+  - L527 ...and last month's is the thirteenth
+  - L528 a cause that was never booked has none
+  - L539 the TB sick are the TB's dead over the long sick's chance, band by band
+  - L540 ...the adults' part being their TB deaths over Sickness.deathChance(ADULT)
+  - L542 fixture: the adults are most of the TB sick
+  - L550 a null people array gives zeros and no TB sick
+  - L555 ...and so does a length that is not the bands'
+  - L573 garbage in (NaN, negatives, infinities) still gives finite rates of at least zero
+  - L586 the state is last month's, the totals, the ring and the TB sick
+  - L588 a state of the right length is taken
+  - L596 the restored instance gives back every getter, and the state itself
+  - L597 fixture: the played city has dead of each named cause
+  - L600 a state one too short is refused
+  - L601 ...one too long
+  - L602 ...empty
+  - L603 ...and null
+  - L604 a refused state leaves the instance as it was
+  - L606 a reset city has booked nothing
+- **L623 a real city's month books the causes**
+  - L642 fixture: the first month brought people to the city
+  - L651 the city played all
+  - L652 every month the cohorts' cause dead are the causes' booked dead
+  - L653 ...and the month's dead add up: of age, illness, killed, aged out and the causes
+  - L654 ...and, once there were people, somebody died of the causes in every month
+  - L656 over the
+  - L657 ...and the book's total for it is the months' sum
+  - L661 adults die at more than AgeBand's
+- **L679 the 1918 influenza in a real city**
+  - L718 the city played on to December 1918, game month
+  - L719 every month ran (nothing stopped the skip)
+  - L720 the influenza booked nobody before October 1918
+  - L721 ...Health had none of its sick before October 1918
+  - L722 ...and the inbox had no influenza notice before it
+  - L723 it booked somebody in October 1918
+  - L724 ...in November
+  - L725 ...and in December
+  - L726 Health's influenza sick in October 1918 are the model's for that month
+  - L728 ...which is a quarter of the people times its first wave's share, not nothing
+  - L729 ...and they are in the sick rate: its parts, capped, make it
+  - L731 Health's influenza sick in December 1918 are the model's
+  - L733 the inbox holds a live influenza notice in October 1918
+  - L734 ...and in November 1918, titled for it
+  - L735 ...which names the dead and the sick
+  - L744 fixture: the influenza has dead on the books in December 1918
+  - L752 a reloaded city keeps every cause's last month, year and total
+  - L753 ...the cohorts' dead of the causes
+  - L754 ...and Health's influenza sick
+- **L824 a reload mid-influenza, played on to March 1919**
+  - L844 fixture: the playtest's city played a month at a time to December 1918
+  - L845 fixture: it had influenza sick in December 1918, on Health's rate
+  - L846 fixture: the reload is at the same month, and has the same people
+  - L865 every month ran on both cities, and they are in the same game month
+  - L867 fixture:
+- **L885 the fixtures' hold kept across a load**
+  - L891 fixture: the held twin loaded the city of September 1918
+  - L892 a held twin keeps the influenza's hold in Health after the load
+  - L893 ...and the causes' hold
+  - L906 fixture: the held twin played every month from October 1918 to March 1920
+  - L908 fixture: those months were influenza months in the model, and the unheld city had its sick in October 1918
+  - L910 the held twin has no influenza sick in any month from October 1918 to March 1920
+  - L911 ...and its causes booked no influenza dead in any of them
 
 ## CementConcreteCheck.java - 22 labelled assertions
 
