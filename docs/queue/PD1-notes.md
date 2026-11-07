@@ -2,10 +2,11 @@
 
 ## WHERE IT STANDS
 
-**{STATE}** Branch `batch/PD1` from `batch/R0g`'s ship file (RL1, 211c10f1). One slice, drafted by Sonnet 5.5 at
+**Ready.** Branch `batch/PD1` from `batch/R0g`'s ship file (RL1, 211c10f1); main with FD1 merged at 9860749a and with R0g
+in (f93d97bd) at 9e89b5ea, the generated docs alone in conflict both times (main's side, regenerated). One slice, drafted by Sonnet 5.5 at
 xhigh and reviewed here (71037d15): OilCheck 20 first, run red on R0g's tip, then the mend. The petrol WAS counted
 twice, in the households' books and in the cells' cash, so the mend moves every city whose people drive: the
-ensemble ran (section 4). `--pick`: {PICK}.
+ensemble ran on the merge (section 4): 24/26, one more than FD1's baseline. `--pick` on the last merge: **exit 3**.
 
 ## 1. The finding (R0c's §3, settled)
 
@@ -84,3 +85,5 @@ deleted.
 - `--pick` on the merge with main 071ed050 (FD1 in), 0fc57978: 45 harnesses, **exit 3**, main's recorded reds only
   (MapCheck and LongPlaytest, `docs/notes/gate.txt`). `git merge-tree` with main: the generated docs alone in
   conflict (main's side, regenerated).
+- `--pick` on the merge with main f93d97bd (R0g in), 9e89b5ea: 13 harnesses, **exit 3**, main's recorded LongPlaytest red
+  only. Since the ensemble's classes (9860749a) the source changed only in `GameVersion.VERSION`, so the run stands.
