@@ -130,6 +130,40 @@ public class LabourMarket {
     public double getMinSettable() { return minSettable; }
     public double getMaxSettable() { return maxSettable; }
 
+    /**
+     * The wage ladder this market prices on (R0d): today's, PayTier's, in every city but one founded the 1900 way, whose market pays 1901's (WageLadder).
+     * Never saved - the city says, from its saved founding (Game.layTheLadder()) - and set before the saved wages and floor are read back, so
+     * the dial's bounds are the ladder's when the floor is clamped to them.
+     */
+    private transient WageLadder ladder = WageLadder.TODAY;
+
+    /** The ladder this market prices on (R0d). */
+    public WageLadder getLadder() { return ladder; }
+
+    /**
+     * Puts this market on a ladder (R0d): the ladder and the dial's bounds, which are multiples of its anchor (today's are exactly MIN_SETTABLE and
+     * MAX_SETTABLE). Never the minimum wage or the wages, so the load path can call it over restored state; a new city's founding is foundOn().
+     */
+    public void setLadder(WageLadder l) {
+        ladder = l == null ? WageLadder.TODAY : l;
+        minSettable = lowestSettable();
+        maxSettable = highestSettable();
+    }
+
+    /** The dial's bounds on this market's ladder at the founding unit: the constants on today's, multiples of the 1901 anchor on 1901's. */
+    private double lowestSettable()  { return ladder.isHistorical() ? ladder.anchor() * MIN_SETTABLE_SHARE : MIN_SETTABLE; }
+    private double highestSettable() { return ladder.isHistorical() ? ladder.anchor() * MAX_SETTABLE_MULTIPLE : MAX_SETTABLE; }
+
+    /**
+     * A city founded on a ladder (R0d): its bounds, its minimum wage at the ladder's anchor - the field, not setMinimumWage(), which would log a
+     * decision nobody made - and every wage on its base. Founding only; a load restores the floor and the wages and calls setLadder().
+     */
+    public void foundOn(WageLadder l) {
+        setLadder(l);
+        minimumWage = ladder.anchor();
+        resetToBase();
+    }
+
     private double minimumWage = DEFAULT_MINIMUM_WAGE;
 
     /**
@@ -279,10 +313,18 @@ public class LabourMarket {
      * the first time somebody rebalanced a tier. Deriving it also gives the
      * neutrality property: minimumWage x ratio reproduces PayTier exactly when
      * the dial is at its default.
+     *
+     * TODAY'S LADDER (R0d): for a reader with no city. A city's market reads
+     * ratio(job), which is its own ladder's: this one, the expression
+     * unchanged, unless the city was founded the 1900 way.
      */
     public static double ratioOf(JobType job) {
-        double floor = PayTier.UNSKILLED.getMonthlyWage();
-        return floor > 0 ? PayTier.wageOf(job) / floor : 1;
+        return WageLadder.TODAY.ratio(job);
+    }
+
+    /** What this job pays relative to the unskilled floor on this market's ladder (R0d): ratioOf() on today's, the census's ratios on 1901's. */
+    public double ratio(JobType job) {
+        return ladder.ratio(job);
     }
 
     /* ==================== THE COST OF LIVING ====================
@@ -463,7 +505,7 @@ public class LabourMarket {
          * and is now indexed too. Nothing else had to change, and the player's
          * ± % sits on top of a floor that was real all along.
          */
-        return minimumWage * ratioOf(job) * costOfLiving;
+        return minimumWage * ratio(job) * costOfLiving;
     }
 
     /* ===================================================================
@@ -752,7 +794,7 @@ public class LabourMarket {
      * which the wage itself may not have reached. Pure.
      */
     public double targetWageAt(JobType job, double floor) {
-        double base = floor * ratioOf(job) * costOfLiving;
+        double base = floor * ratio(job) * costOfLiving;
         double combined = Math.min(MAX_MULTIPLE,
                 bandMultiple[WageBand.of(job).ordinal()] * licenceMultiple[job.ordinal()]);
         return Math.max(base * combined, cashAt(floor));
@@ -866,8 +908,8 @@ public class LabourMarket {
 
     /** Re-seeds the money CONSTANTS at a given unit. See Denomination. */
     public void seedConstants(double unit) {
-        minSettable = MIN_SETTABLE / unit;
-        maxSettable = MAX_SETTABLE / unit;
+        minSettable = lowestSettable() / unit;
+        maxSettable = highestSettable() / unit;
     }
 
 }

@@ -804,6 +804,8 @@ public class Game {
         // Rebuild rather than reset. See buildWorld() for the twenty-three
         // fields the old reset was missing and why the list itself was the bug.
         buildWorld(foundable(choices));
+        // ...and, when the city is founded the 1900 way (R0d), on 1901's wage ladder, before initialize() copies the wages and the first month is struck on them.
+        layTheLadder(true);
 
         // buildWorld() made a new BuildingManager, so the templates have to be
         // loaded into it. initialize() is guarded, so the flag has to drop first
@@ -1209,6 +1211,40 @@ public class Game {
         recipes.choose(this);
         recipes.apply(this);
         equipmentForms.apply(this);
+    }
+
+    /**
+     * The wage ladder a city founded the 1900 way is paid on (R0d; research-1900 5.2): 1901's, the census's, about a quarter of today's real
+     * wage, on the labour market (its ratios, the minimum wage's bounds), the population manager (its wages and the allocator's band bases), the
+     * tax policy (the pension's wage base and the default grant) and the rents. At the founding it also lays the figures a new city opens on - the
+     * minimum wage at the ladder's anchor, every wage on its base, the grant and the rents on the anchor - and a load, which restores the saved
+     * floor, wages, grant and rents, lays only the ladder, the bounds and the anchors back (founding = false). A city founded the default way
+     * calls nothing here and is today's, to the bit. Nothing is saved: the ladder is the saved founding's.
+     */
+    private void layTheLadder(boolean atFounding) {
+        if (!founding.isUnfitted()) return;
+        layTheLadder(WageLadder.of(founding), atFounding);
+    }
+
+    /**
+     * The same, on a ladder named rather than the founding's: package-private so that a harness whose premise is not the wages can found its 1900
+     * city on today's ladder (PrizeCheck's lab villages, R0d ★7: an investors' order needs owners with today's savings), as unfitTheFounding()
+     * is for a hand-placed village. A load lays the founding's ladder back.
+     */
+    void layTheLadder(WageLadder ladder, boolean atFounding) {
+        TaxPolicy tax = economyManager.getTaxPolicy();
+        populationManager.setLadder(ladder);
+        if (atFounding) {
+            labourMarket.foundOn(ladder);
+            tax.foundOn(ladder);
+            getSectors().realEstate().foundOn(ladder.anchor());
+            populationManager.setWagesPerType();
+        } else {
+            // ...and not the wages: the load takes them from the restored market (takeWagesFrom()), after this.
+            labourMarket.setLadder(ladder);
+            tax.setLadder(ladder);
+            getSectors().realEstate().setWageAnchor(ladder.anchor());
+        }
     }
 
     /**
@@ -8556,7 +8592,7 @@ public class Game {
         for (JobType job : JobType.values()) {
             double posts = depot.getJobs(job);
             if (posts <= 0) continue;
-            double wage = !today ? PayTier.wageOf(job) / unit
+            double wage = !today ? WageLadder.of(founding).monthlyWage(PayTier.of(job)) / unit
                     : job.ordinal() < wages.length ? wages[job.ordinal()] : 0;
             if (!(wage > 0)) return 0;
             bill += posts * wage;
@@ -14976,6 +15012,10 @@ public class Game {
         // Migration.monthlyNet() and FamilyModel.roomLeft().
         migration.setDoors(buildingManager.homesBySize());
 
+        // ...and, in a city founded the 1900 way, what the world's movers hold this year (R0d; ArrivalMix): the skills the month's
+        // arrivals are drawn from. A city founded the default way holds none and draws from WageBand's ceilings alone, as it always did.
+        migration.setYearMix(foundedUnfitted() ? ArrivalMix.at(month) : null);
+
         cohorts.migrate(migration.monthlyNet(
                 population,
                 populationManager.getTotalJobs(),
@@ -20413,6 +20453,8 @@ public class Game {
              * D$2.5B and US$1B - see DataSave.getFounding().
              */
             founding = loaded.getFounding(world.getMeanInflation());
+            // ...and the wage ladder it was founded on (R0d), before the saved floor and wages are read against its bounds: the ladder, not the figures.
+            layTheLadder(false);
             // ...and the seed the world's draws are made from (WN3), which the founding carries: buildWorld() set the default's.
             world.setSeed(founding.getPathSeed());
             /*
