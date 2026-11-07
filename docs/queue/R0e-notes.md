@@ -1,4 +1,4 @@
-# R0e - research: the household's basket by year ({next}, 2026-11-07)
+# R0e - research: the household's basket by year (0.9.40, 2026-11-07)
 
 ## WHERE IT STANDS
 

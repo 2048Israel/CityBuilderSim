@@ -981,6 +981,12 @@ public final class DistrictPlan {
     /** Pieces the join joined; dead ends joined along a cut; street plots taken up as strays; merges refused for splitting the network; buildings placed on a field. */
     public int joins, shoreJoins, strays, mergesRefused, onFields;
 
+    /** Street plots laid on ground the city bought inside a cell already open, after the stray pieces were taken up (Builder.cellsOnGrown(), FX9): a harness's figure. */
+    public int boughtStreets;
+
+    /** Cell layings of an open cell's own ring and streets on ground bought inside it (Builder.cellsOnGrown(), FX9): a harness's figure. */
+    public int boughtCells;
+
     /** How many times the plan was made again with the way to a piece the buildings wall in kept clear of them (FW11, A PIECE BUILDINGS WALL IN; 0 for nearly every district), and the plots so kept clear in the plan returned. */
     public int wallTries, wallClear;
 
@@ -1201,7 +1207,7 @@ public final class DistrictPlan {
         int cvKeepN, cvCurveN, cvOff;
         Curve[] cvCurves;
         final List<int[]> unplacedAt = new ArrayList<>();
-        int shoreJoins, strays, mergesRefused, mergesUndone, onFields;
+        int shoreJoins, strays, mergesRefused, mergesUndone, onFields, boughtStreets, boughtCells;
     }
 
     /** src's first n into dst, a new array where dst is null or shorter (KEPT): dst, or the array made. */
@@ -1247,6 +1253,9 @@ public final class DistrictPlan {
 
     /** Whether a plan works its ground out again only where the records it lays and the land it adds touch (Builder.groundNear(), THE GROUND KEPT): true in play; a harness sets it false to make the plan with the whole ground worked out each time, the reference the kept ground is held equal to, plot for plot. */
     static volatile boolean keepGround = true;
+
+    /** Whether an open cell's own ring and streets are laid on the ground the city buys inside it (Builder.cellsOnGrown(), FX9): true in play; a harness sets it false for FX6's way, the bought ground with no streets of its own. */
+    static volatile boolean streetsOnBought = true;
 
     /** Whether each limited pass of the ground is followed by the whole ground worked out, every array it writes compared with what the pass left, the plots that differ counted in groundDiffers: false in play (a harness's check, PlanCheck 15c). */
     static volatile boolean verifyGround;
@@ -2548,8 +2557,10 @@ public final class DistrictPlan {
                 forgetFails(c);
                 mergeFails[c] = 0;
             }
-            // The avenues on the ground just bought (CL4): an open cell lays the staircase plots it could not when it opened.
-            if (avOn && n > 0) avOnGrown(n);
+            // An open cell's own ring and streets on the ground just bought (FX9), then the avenues on it (CL4): an open cell lays the staircase plots it could not when it opened.
+            boolean[] laidIn = null;
+            if (streetsOnBought && !proto && n > 0) laidIn = cellsOnGrown(n);
+            if (avOn && n > 0) avOnGrown(n, laidIn);
             cutLines.clear();
             // The order: the cells either pointer has taken keep their places; between them the cells of the grown ground in
             // its growth order, then any that stood between and the new order lacks, in their old order.
@@ -2570,6 +2581,147 @@ public final class DistrictPlan {
             for (int k = bFar + 1; k < order.length; k++) next[m++] = order[k];
             order = Arrays.copyOf(next, m);
             bFar = far;
+        }
+
+        /** The plots of the call (grown[0..n)) stamped grownStamp, and cellsOnGrown()'s laying under way: while onBought, lay() lays only the plots just bought. */
+        int[] grownMark;
+        int grownStamp;
+        boolean onBought;
+        /** The plots cellsOnGrown() laid, stamped laidStamp, and whether shore() joins only those dead ends. */
+        int[] laidMark;
+        int laidStamp;
+        boolean shoreLaid;
+
+        /**
+         * THE STREETS ON GROUND BOUGHT (FX9, on FX6's THE GROUND BOUGHT): each open cell whose box - interior and ring lines -
+         * holds one of the `n` plots just bought (grown[]) has its own ring and streets laid on them, the layout its opening
+         * recorded (kind, boulevard, square, layout, an estate's lines, a crescent's arc), joined to the streets that stand and
+         * with none of them touched: lay() takes only the plots just bought while onBought, so the old ground is no cut and a
+         * merge, a pruned piece or an avenue's floor there is left as it is. The stray pieces of the new streets are taken up
+         * (prune(): shorter than a block), the dead ends the ground cuts are joined along the cut (shore(), the new streets'
+         * dead ends alone), any of them not in the district's main network is taken up too (pruneApart(): a piece the ground
+         * parts is not grown onto the ground that parted it, where the houses would wall it in), and the cells'
+         * free rows are worked out again; a join is no curve, so none is recorded (its band would be kept free over old
+         * plots that may hold buildings). The new ground fills from the next month's arrivals, as before. WHY: FX6 gave the
+         * ground bought the free rows of the cells already open but no streets of their own, so it was built on only within
+         * reach of the streets that stood and most of it stayed empty (Jerus, 2026-10-23, "Extend the streets"; MapCheck 2c's
+         * fixture built on 56 of 667 new plots of a cell already open, 568 before FX6). The cells laid in, or null for none.
+         */
+        boolean[] cellsOnGrown(int n) {
+            if (grownMark == null) grownMark = new int[AREA];
+            int mark = ++grownStamp;
+            boolean[] cells = null;
+            for (int k = 0; k < n; k++) {
+                int p = grown[k], x = p % FRAME, y = p / FRAME;
+                grownMark[p] = mark;
+                // The open cells whose box (interior and ring lines) holds the plot: up to four, where ring lines meet.
+                for (int cj = Math.max(0, (y - 1) / CELL); cj <= Math.min(CELLS_A_SIDE - 1, y / CELL); cj++) {
+                    for (int ci = Math.max(0, (x - 1) / CELL); ci <= Math.min(CELLS_A_SIDE - 1, x / CELL); ci++) {
+                        int c = ci + cj * CELLS_A_SIDE;
+                        if (x < CELL * ci || x > CELL * ci + CELL || y < CELL * cj || y > CELL * cj + CELL || bOut.cellKind[c] == CLOSED) continue;
+                        if (cells == null) cells = new boolean[CELLS];
+                        cells[c] = true;
+                    }
+                }
+            }
+            if (cells == null) return null;
+            nChanged = 0;
+            refused = false;
+            cvPending.clear();
+            onBought = true;
+            try {
+                byte st = (byte) ROLE_STREET;
+                boolean cut = false;
+                for (int c = 0; c < CELLS; c++) {
+                    if (!cells[c]) continue;
+                    int ci = c % CELLS_A_SIDE, cj = c / CELLS_A_SIDE;
+                    int x0 = CELL * ci + 1, y0 = CELL * cj + 1;
+                    byte layout = bOut.cellLayout[c];
+                    // A crescent cell's arc, as its opening chose it; the layout is the one it opened with.
+                    ArcShape crescent = layout == LAYOUT_CRESCENT ? arc(crescentBulge(in.seed, in.x0 + (long) CELL * ci, in.y0 + (long) CELL * cj)) : null;
+                    refused = false;
+                    layRing(x0, y0, x0 + INTERIOR, y0 + INTERIOR, bOut.cellBoulevard[c]);
+                    layLayout(c, x0, y0, bOut.cellKind[c], bOut.cellSquare[c], bOut.cellAcross[c], layout, crescent, bOut.cellStreets[c], st);
+                    bOut.boughtCells++;
+                    // Where the ground cuts the cell the merges look to the cut, as at its opening.
+                    if (refused) cellCut[c] = true;
+                    cut |= refused;
+                }
+                refused = cut;
+                bOut.strays += prune();
+                if (laidMark == null) laidMark = new int[AREA];
+                if (refused) {
+                    // The dead ends the new ground leaves where it is cut: those of the plots laid just now are joined along the cut.
+                    int laid = ++laidStamp;
+                    for (int k = 0; k < nChanged; k++) laidMark[changed[k]] = laid;
+                    int joined = 0;
+                    shoreLaid = true;
+                    for (int c = 0; c < CELLS; c++) {
+                        if (!cells[c]) continue;
+                        int x0 = CELL * (c % CELLS_A_SIDE) + 1, y0 = CELL * (c / CELLS_A_SIDE) + 1;
+                        joined += shore(x0 - 1, y0 - 1, x0 + INTERIOR, y0 + INTERIOR);
+                    }
+                    shoreLaid = false;
+                    bOut.strays += prune();
+                    bOut.shoreJoins += joined;
+                }
+                bOut.strays += pruneApart();
+                cvPending.clear();
+                for (int k = 0; k < nChanged; k++) {
+                    int p = changed[k];
+                    if (str[p] || under[p]) bOut.boughtStreets++;
+                    occ[p] = str[p] || under[p] || cvKeep[p] ? -1 : occStart[p];
+                }
+            } finally {
+                onBought = false;
+                shoreLaid = false;
+            }
+            for (int c = 0; c < CELLS; c++) {
+                if (!cells[c]) continue;
+                refreeCell(c);
+                forgetFails(c);
+                staleAround(c);
+                mergeFails[c] = 0;
+            }
+            nChanged = 0;
+            return cells;
+        }
+
+        /**
+         * NO STREET APART ON GROUND BOUGHT (FX9): of the plots cellsOnGrown() laid (the ring and streets and the joins along
+         * the cut), those not in the district's main network - the piece that holds the most streets standing before them -
+         * are taken up again, whatever their size: a piece the ground parts from the rest, or one touching nothing but the
+         * frame's edge (the plan's own join walks the frame alone), stays as it is and is not grown onto the ground bought,
+         * where the houses built beside its new streets would wall it in and FW11 keep a way clear over them (DM2's class: the
+         * way is let go when a departure cures the wall, and the boxes behind it move). The plots taken up.
+         */
+        int pruneApart() {
+            if (nChanged == 0) return 0;
+            int laid = ++laidStamp, taken = 0;
+            for (int k = 0; k < nChanged; k++) laidMark[changed[k]] = laid;
+            // Every street's piece (pieces(): four-connected, beneath a highway included), and the standing streets in each.
+            int[] lab = scratchLab, sizes = pieces(lab), standing = new int[sizes.length];
+            for (int i = 0; i < nOrdered; i++) if (laidMark[ordered[i]] != laid) standing[lab[ordered[i]]]++;
+            int main = 0;
+            for (int i = 1; i < sizes.length; i++) if (standing[i] > standing[main]) main = i;
+            for (int k = 0; k < nChanged; k++) {
+                int a = changed[k];
+                if (!(str[a] || under[a]) || lab[a] == main) continue;
+                if (avDone[a] == 1) avUnlay(a);
+                setStr(a, false);
+                under[a] = false;
+                art[a] = false;
+                blvd[a] = false;
+                role[a] = 0;
+                taken++;
+            }
+            if (taken > 0) {
+                // The changed list keeps only what is still laid.
+                int m = 0;
+                for (int k = 0; k < nChanged; k++) if (str[changed[k]] || under[changed[k]]) changed[m++] = changed[k];
+                nChanged = m;
+            }
+            return taken;
         }
 
         /* ------------------------------------------------ the runs dated (batch FX7) */
@@ -3380,6 +3532,8 @@ public final class DistrictPlan {
             t.mergesRefused = out.mergesRefused;
             t.mergesUndone = out.mergesUndone;
             t.onFields = out.onFields;
+            t.boughtStreets = out.boughtStreets;
+            t.boughtCells = out.boughtCells;
             return t;
         }
 
@@ -3441,6 +3595,8 @@ public final class DistrictPlan {
             out.mergesRefused = t.mergesRefused;
             out.mergesUndone = t.mergesUndone;
             out.onFields = t.onFields;
+            out.boughtStreets = t.boughtStreets;
+            out.boughtCells = t.boughtCells;
         }
 
         /** The builder's turns (KEPT): the next one free, made the first time. */
@@ -3504,18 +3660,8 @@ public final class DistrictPlan {
             out.cellBoulevard[c] = bl;
             nChanged = 0;
             refused = false;
-            byte ringRole = (byte) (bl ? ROLE_BOULEVARD : ROLE_ARTERIAL);
             // Its arterials: the ring of plots round its interior, two deep on a boulevard.
-            for (int ring = 0; ring < (bl ? 2 : 1); ring++) {
-                for (int x = x0 - 1 + ring; x < x1 + 1 - ring; x++) {
-                    lay(x, y0 - 1 + ring, true, true, ringRole);
-                    lay(x, y1 - ring, true, true, ringRole);
-                }
-                for (int y = y0 - 1 + ring; y < y1 + 1 - ring; y++) {
-                    lay(x0 - 1 + ring, y, false, true, ringRole);
-                    lay(x1 - ring, y, false, true, ringRole);
-                }
-            }
+            layRing(x0, y0, x1, y1, bl);
             // Its streets. A homes cell takes the layout its place hashes to (CL2); LAYOUT_TODAY is the comb, or the whole square.
             byte st = (byte) ROLE_STREET;
             long cellX = in.x0 + (long) CELL * ci, cellY = in.y0 + (long) CELL * cj;
@@ -3533,29 +3679,9 @@ public final class DistrictPlan {
                 }
             }
             out.cellLayout[c] = layout;
-            if (crescent != null) {
-                crescentLayout(x0, y0, across, crescent, st);
-            } else if (layout != LAYOUT_TODAY) {
-                if (square) squareLayout(x0, y0, across, layout, cellX, cellY, st);
-                else homesLayout(x0, y0, across, layout, cellX, cellY, st);
-            } else if (square) {
-                for (int v : STREETS_AT) {
-                    for (int u = 0; u < INTERIOR; u++) {
-                        lay(x0 + u, y0 + v, true, false, st);
-                        lay(x0 + v, y0 + u, false, false, st);
-                    }
-                }
-            } else if (kind == HOMES) {
-                if (across) {
-                    for (int v : STREETS_AT) for (int u = 0; u < INTERIOR; u++) lay(x0 + u, y0 + v, true, false, st);
-                    for (int v = 0; v < INTERIOR; v++) lay(x0 + MIDDLE, y0 + v, false, false, st);
-                } else {
-                    for (int u : STREETS_AT) for (int v = 0; v < INTERIOR; v++) lay(x0 + u, y0 + v, false, false, st);
-                    for (int u = 0; u < INTERIOR; u++) lay(x0 + u, y0 + MIDDLE, true, false, st);
-                }
-            } else {
+            int lines = 1 << MIDDLE;
+            if (crescent == null && layout == LAYOUT_TODAY && !square && kind != HOMES) {
                 // ESTATE LINES (0.7.90): the prototype's spine, or strips sized to what opens the cell.
-                int lines = 1 << MIDDLE;
                 if (!proto) {
                     int pick = estateLines(c, across, bl, w, h);
                     lines = pick & ~FLIP;
@@ -3565,12 +3691,8 @@ public final class DistrictPlan {
                     }
                 }
                 out.cellStreets[c] = lines;
-                for (int o = 0; o < INTERIOR; o++) {
-                    if ((lines >>> o & 1) == 0) continue;
-                    if (across) for (int v = 0; v < INTERIOR; v++) lay(x0 + o, y0 + v, false, false, st);
-                    else for (int u = 0; u < INTERIOR; u++) lay(x0 + u, y0 + o, true, false, st);
-                }
             }
+            layLayout(c, x0, y0, kind, square, across, layout, crescent, lines, st);
             // THE AVENUES (CL4): the arms' staircase plots in its box laid as arterials, then the + floor along them.
             avBegin();
             boolean avBroke = layAvenues(x0, y0, x1, y1, true);
@@ -3601,6 +3723,58 @@ public final class DistrictPlan {
             for (int k = 0; k < nChanged; k++) occ[changed[k]] = -1;
             freshCell(c);
             staleAround(c);
+        }
+
+        /** A cell's arterials laid: the ring of plots round its interior (box x0 - 1 to x1, y0 - 1 to y1), two deep on a boulevard (openCell(); cellsOnGrown() lays it again on ground bought). */
+        void layRing(int x0, int y0, int x1, int y1, boolean bl) {
+            byte ringRole = (byte) (bl ? ROLE_BOULEVARD : ROLE_ARTERIAL);
+            for (int ring = 0; ring < (bl ? 2 : 1); ring++) {
+                for (int x = x0 - 1 + ring; x < x1 + 1 - ring; x++) {
+                    lay(x, y0 - 1 + ring, true, true, ringRole);
+                    lay(x, y1 - ring, true, true, ringRole);
+                }
+                for (int y = y0 - 1 + ring; y < y1 + 1 - ring; y++) {
+                    lay(x0 - 1 + ring, y, false, true, ringRole);
+                    lay(x1 - ring, y, false, true, ringRole);
+                }
+            }
+        }
+
+        /**
+         * Cell c's streets laid by what its opening chose (interior from (x0, y0)): a crescent by its arc, a homes cell or a
+         * square by its layout (CL2), the comb or the whole square for LAYOUT_TODAY, an estate cell by its `lines` (ESTATE
+         * LINES: bit o a street o plots in, north-south where `across`, else east-west). openCell() lays them with it;
+         * cellsOnGrown() lays them again from what the opening recorded.
+         */
+        void layLayout(int c, int x0, int y0, byte kind, boolean square, boolean across, byte layout, ArcShape crescent, int lines, byte st) {
+            long cellX = in.x0 + (long) CELL * (c % CELLS_A_SIDE), cellY = in.y0 + (long) CELL * (c / CELLS_A_SIDE);
+            if (crescent != null) {
+                crescentLayout(x0, y0, across, crescent, st);
+            } else if (layout != LAYOUT_TODAY) {
+                if (square) squareLayout(x0, y0, across, layout, cellX, cellY, st);
+                else homesLayout(x0, y0, across, layout, cellX, cellY, st);
+            } else if (square) {
+                for (int v : STREETS_AT) {
+                    for (int u = 0; u < INTERIOR; u++) {
+                        lay(x0 + u, y0 + v, true, false, st);
+                        lay(x0 + v, y0 + u, false, false, st);
+                    }
+                }
+            } else if (kind == HOMES) {
+                if (across) {
+                    for (int v : STREETS_AT) for (int u = 0; u < INTERIOR; u++) lay(x0 + u, y0 + v, true, false, st);
+                    for (int v = 0; v < INTERIOR; v++) lay(x0 + MIDDLE, y0 + v, false, false, st);
+                } else {
+                    for (int u : STREETS_AT) for (int v = 0; v < INTERIOR; v++) lay(x0 + u, y0 + v, false, false, st);
+                    for (int u = 0; u < INTERIOR; u++) lay(x0 + u, y0 + MIDDLE, true, false, st);
+                }
+            } else {
+                for (int o = 0; o < INTERIOR; o++) {
+                    if ((lines >>> o & 1) == 0) continue;
+                    if (across) for (int v = 0; v < INTERIOR; v++) lay(x0 + o, y0 + v, false, false, st);
+                    else for (int u = 0; u < INTERIOR; u++) lay(x0 + u, y0 + o, true, false, st);
+                }
+            }
         }
 
         /* ----- the avenues (CL4) -----
@@ -3846,14 +4020,16 @@ public final class DistrictPlan {
          * (growGround(), the `n` plots in grown[]) lay the staircase plots of it they could not lay when they opened - the city
          * did not own them then - as at opening, then the + floor along them and the stray pieces taken up. A plot just bought
          * holds no building, so nothing that stands moves; without this an avenue was missing wherever the city bought its
-         * ground after the cell opened (the Earth playtest's north-west arm: 31 of its district's 169 plots laid).
+         * ground after the cell opened (the Earth playtest's north-west arm: 31 of its district's 169 plots laid). The cells
+         * cellsOnGrown() laid its streets in (`laidIn`, null for none) are floored too, as at opening - the streets, then the
+         * avenues, then the + floor - even when no staircase plot of theirs was bought.
          */
-        void avOnGrown(int n) {
+        void avOnGrown(int n, boolean[] laidIn) {
             // Every open cell whose box holds a staircase plot the plan owns now and has not laid: one bought since the cell
             // opened, or one avAlone() took up while the ground between left it apart - all of them laid together, so pieces
             // the new ground joins across cells are judged joined.
-            boolean any = false;
-            boolean[] cells = null;
+            boolean any = laidIn != null;
+            boolean[] cells = laidIn;
             for (int i = 0; i < nAvList; i++) {
                 int p = avList[i];
                 if (avDone[p] != 0 || !owns[p] || avKind(p) == AVK_OFF) continue;
@@ -4000,6 +4176,8 @@ public final class DistrictPlan {
                         if (d != 0 && o >= 0 && (avRing(a, o) || avKeptHas(a, o))) near = true;
                     }
                     if (!near) {
+                        // A box floored again keeps a junction once (FX9: cellsOnGrown()'s cells are floored over their old ground too).
+                        if (avKeptHas(a, j)) continue;
                         if (avKeptN == avKept.length) avKept = Arrays.copyOf(avKept, avKeptN * 2);
                         avKept[avKeptN++] = a << 28 | j;
                         continue;
@@ -4665,6 +4843,15 @@ public final class DistrictPlan {
          * railway that runs across it (never along it).
          */
         boolean lay(int x, int y, boolean horizontal, boolean arterial, byte r) {
+            // On ground bought (cellsOnGrown()) only the plots just bought are laid: the old ground is no cut, and stays as it is;
+            // ground the city does not own is a cut, as at opening, so the dead end it leaves is joined along it (shore()).
+            if (onBought && x >= 0 && y >= 0 && x < FRAME && y < FRAME) {
+                int p = y * FRAME + x;
+                if (grownMark[p] != grownStamp || cvKeep[p]) {
+                    if (!owns[p]) refused = true;
+                    return false;
+                }
+            }
             boolean ok = layPlot(x, y, horizontal, arterial, r);
             if (!ok) refused = true;
             return ok;
@@ -4790,6 +4977,8 @@ public final class DistrictPlan {
                     if (x < 0 || x >= FRAME) continue;
                     int p0 = y * FRAME + x;
                     if (!str[p0] || streetNeighbours(p0) != 1) continue;
+                    // On ground bought (cellsOnGrown()) only a dead end laid in that call is joined; the old ground's are as they were.
+                    if (shoreLaid && laidMark[p0] != laidStamp) continue;
                     // Its stub: the plots back along it to the first junction, that junction too.
                     for (int k = 0; k < nStub; k++) stub[stubAt[k]] = false;
                     nStub = 0;

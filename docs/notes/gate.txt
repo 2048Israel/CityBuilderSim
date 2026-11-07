@@ -1,20 +1,12 @@
-# gate of Merge batch/R0d: research: the 1901 wage ladder and the arrivals' skill mix by year - each `PayTier` rung's 1901 comparator, sourced or flagged est. (research-1900 §5.2, §12.1), switched on with R1's 1900 recipes (R0-notes call 2); arrivals' diplomas from the year's mix (1.2 university students per 1,000 in 1901, 4.7 in 1950; nurses 0.05 to 3), 0.9.38
+# gate of Merge batch/R0e: research: the household's basket by year - 1900's raw staples, lamp oil and coal, no car (after R0c's goods, and on the live demand path, not the shadow basket), 0.9.40
 # date: 2026-11-07
 # earth-2.bin: named
 # nightly: 2026-11-07 00:56 0.9.35 a260d4f1 4,000 months: OK in 121 s
-# suite: 185 harnesses run in 1405s: 179 passed, 6 failed
-# timing: 16 harnesses run in 1077s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
+# suite: 186 harnesses run in 1198s: 180 passed, 6 failed
+# timing: 16 harnesses run in 881s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 32.7 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 33.2 ms, batch 29.7 ms (-10.4%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 31.6 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 29.7 ms, batch 31.9 ms (+7.5%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 18.5 ms, batch 16.7 ms (-9.7%), budget 19 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | 3 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): KeptCheck | exit 2   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): KeptCheck | the kept month on the fund's Search is within KEPT_FUND_MS (321.0 ms)    FAIL   [main 170 ms, batch 170 ms (+0.2%), budget 321 ms: within 15% of main's]
-# timing red not the batch's (paired): KeptCheck | 2 FAILED   [the harness's own count of the timing reds above]
-SlopeCheck | exit 1
-SlopeCheck | the run played its months and found nothing: every month passed the playtest's audit and the layout watcher, [a building on the map moved] FAIL
-SlopeCheck | 1 FAILED
 MonetaryCheck | exit 1
 MonetaryCheck | ...and a month's delay in the hand moves them less than the allowance FAIL
 MonetaryCheck | 1 FAILED
@@ -44,3 +36,5 @@ MapCheck | 2 FAILED
 KeptCheck | exit 1
 KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
 KeptCheck | 1 FAILED
+LongPlaytest | exit 1
+LongPlaytest | (no FAIL line)
