@@ -1,6 +1,6 @@
 # PolicyDates.java - 295 lines · 31 methods · 3 constants · model
 
-`ham/citybuildersim/PolicyDates.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PolicyDates.java` - generated 2026-11-07 by CodeMap; line numbers are as of that run.
 
 > When Canada first had each of the Policy tab's levers, as pure data: the game month each one opens in a city founded in January 1900, the
 > study's entry for it, what Canada first did and on what terms, and how far a law discovery may bring it forward (R0, research-1900.md 7).

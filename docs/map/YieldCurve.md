@@ -1,6 +1,6 @@
 # YieldCurve.java - 278 lines · 19 methods · 2 constants · model
 
-`ham/citybuildersim/YieldCurve.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/YieldCurve.java` - generated 2026-11-07 by CodeMap; line numbers are as of that run.
 
 > The city's curve: a discount factor for every month to fifty years, built
 > from the dial the market expects, the credit spreads, and the shape the term
@@ -31,7 +31,7 @@
 
 **Uses:** [DebtManager](DebtManager.md) (2), [Expectations](Expectations.md) (1)
 
-**Used by (10):** [AuctionCheck](AuctionCheck.md), [CallCheck](CallCheck.md), [CallTree](CallTree.md), [CurveCheck](CurveCheck.md), [DebtManager](DebtManager.md), [DeskCheck](DeskCheck.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md)
+**Used by (11):** [AuctionCheck](AuctionCheck.md), [CallCheck](CallCheck.md), [CallTree](CallTree.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [CurveCheck](CurveCheck.md), [DebtManager](DebtManager.md), [DeskCheck](DeskCheck.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md)
 
 ## Sections
 

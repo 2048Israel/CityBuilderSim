@@ -1,6 +1,6 @@
 # ClockCheck.java - 583 lines · 21 methods · 6 constants · harnesses
 
-`ham/citybuildersim/ClockCheck.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ClockCheck.java` - generated 2026-11-07 by CodeMap; line numbers are as of that run.
 
 > The clock's pace (UP2): a redraw is paced by what it cost, a frame spends a budget on months and
 > drops what it could not run, the header's speed says when the city falls short of it, and the

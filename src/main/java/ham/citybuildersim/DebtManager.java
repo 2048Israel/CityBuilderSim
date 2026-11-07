@@ -2172,24 +2172,46 @@ public class DebtManager {
      * WHAT THE RULE WOULD SET THE DIAL TO AT TODAY'S INFLATION (CD6): the rule
      * the market expects the dial to close on (YieldCurve.expectedPath()'s
      * R(0)), advisedPolicyRate() at the inflation the month struck; the dial
-     * itself when nothing is struck, as the path is then flat at it. It is not
-     * the path's first month - that is the dial, and the gap between the two
-     * closes from there (expectedPath()) - except with the dial on the rule,
-     * when it is both.
+     * itself when nothing is struck, as the path is then flat at it - and
+     * since XR5 when the dial is tied to the US's rate (isTied(), a peg): the
+     * market then expects the dial to stay tied, so the rule it closes on is
+     * the dial. It is not the path's first month - that is the dial, and the
+     * gap between the two closes from there (expectedPath()) - except with the
+     * dial on the rule, when it is both.
      */
     public double ruleNow() {
-        return isStruck() ? advisedPolicyRate(struckInflation) : getPolicyRate();
+        return isStruck() && !isTied() ? advisedPolicyRate(struckInflation) : getPolicyRate();
     }
 
     /**
      * ...and where the market expects the dial to settle (CD6): the rule at
      * the inflation the city expects it to settle at, which the path
      * approaches with the gap closed (expectedPath()'s limit); the dial when
-     * nothing is struck.
+     * nothing is struck, and, since XR5, when it is tied (isTied()).
      */
     public double settledDial() {
-        return isStruck() ? advisedPolicyRate(struckExpected) : getPolicyRate();
+        return isStruck() && !isTied() ? advisedPolicyRate(struckExpected) : getPolicyRate();
     }
+
+    /**
+     * IS THE DIAL TIED TO THE US'S RATE (XR5, PRICE ON THE TIED PATH)? Under a
+     * peg Game sets the dial to tiedRate() every month (the US's rate plus the
+     * spread), and the inflation rule is not what the market expects it to
+     * follow: the curve's path and a floater's close on the dial and not on
+     * the rule. False for a manager nobody handed a source (setTiedSource()),
+     * and then every path is the rule's, to the bit.
+     */
+    public boolean isTied() {
+        java.util.function.BooleanSupplier source = tiedSource;
+        return source != null && source.getAsBoolean();
+    }
+
+    /** Hands the manager whether the city's dial is tied to the US's (Game: the peg is the regime in force), so it can price the tied path without knowing the currency. Not saved: Game hands it in when it builds the manager; a fixture hands its own. */
+    public void setTiedSource(java.util.function.BooleanSupplier source) {
+        this.tiedSource = source;
+    }
+
+    private transient java.util.function.BooleanSupplier tiedSource;
 
     /**
      * The expected dial's path and the curve built on it are CACHED, because
@@ -2201,12 +2223,12 @@ public class DebtManager {
      * matches itself.
      */
     private static final class PathEntry {
-        final double floor, inflation, expected, target;
+        final double floor, inflation, expected, target, tie;
         final Strictness strictness;
         final double[] path;
-        PathEntry(double floor, double inflation, double expected, double target, Strictness strictness, double[] path) {
+        PathEntry(double floor, double inflation, double expected, double target, double tie, Strictness strictness, double[] path) {
             this.floor = floor; this.inflation = inflation; this.expected = expected;
-            this.target = target; this.strictness = strictness; this.path = path;
+            this.target = target; this.tie = tie; this.strictness = strictness; this.path = path;
         }
     }
 
@@ -2227,23 +2249,34 @@ public class DebtManager {
         return Double.doubleToLongBits(a) == Double.doubleToLongBits(b);
     }
 
-    /** The dial the market expects from this floor: the rule's path from the struck expectations, or the floor held flat when nothing is struck. */
+    /**
+     * The dial the market expects from this floor: the rule's path from the
+     * struck expectations, or the floor held flat when nothing is struck - and
+     * since XR5, with the dial tied to the US's rate (isTied(), a peg), the
+     * floor's premium over THE DIAL closes as it does toward the rule, so the
+     * long end follows the US-tied dial and not the inflation rule the dial no
+     * longer follows. The tie is in the cache's key (the dial when tied, NaN
+     * when not), so an untied manager's path is built exactly as before.
+     */
     private double[] pathFor(double floor) {
         double inflation = struckInflation, expected = struckExpected;
         boolean struck = !Double.isNaN(inflation) && !Double.isNaN(expected);
         if (!struck) inflation = expected = Double.NaN;
         double target = inflationTarget;
         Strictness strict = strictness;
+        final boolean tied = isTied();
+        final double dial = tied ? getPolicyRate() : Double.NaN;
         PathEntry e = pathCache;
         if (e != null && same(e.floor, floor) && same(e.inflation, inflation) && same(e.expected, expected)
-                && same(e.target, target) && e.strictness == strict) {
+                && same(e.target, target) && same(e.tie, dial) && e.strictness == strict) {
             return e.path;
         }
         final double now = inflation, settle = expected;
         double[] path = struck
-                ? YieldCurve.expectedPath(floor, x -> advisedPolicyRate(x), now, settle)
+                ? (tied ? YieldCurve.expectedPath(floor, x -> dial, now, settle)
+                        : YieldCurve.expectedPath(floor, x -> advisedPolicyRate(x), now, settle))
                 : YieldCurve.flatPath(floor);
-        pathCache = new PathEntry(floor, inflation, expected, target, strict, path);
+        pathCache = new PathEntry(floor, inflation, expected, target, dial, strict, path);
         return path;
     }
 
@@ -2389,26 +2422,30 @@ public class DebtManager {
      * THE DIAL THE MARKET EXPECTS FROM THE POLICY RATE, t = 0 the dial now (CD5): what a
      * floating-rate note's coupons are priced on - the same expected path the curve is built on
      * (YieldCurve.expectedPath()), started from the dial and not from the floor. The rule's path
-     * from the struck expectations; the dial held flat when nothing is struck. Cached as
-     * pathFor() caches, and not to be changed.
+     * from the struck expectations; the dial held flat when nothing is struck, and, since
+     * XR5, when it is tied to the US's rate (isTied(): the market expects it to stay there, so
+     * the path is flat at it). Cached as pathFor() caches, the tie in the key, and not to be
+     * changed.
      */
     public double[] expectedPolicyPath() {
-        double dial = getPolicyRate();
+        final double dial = getPolicyRate();
         double inflation = struckInflation, expected = struckExpected;
         boolean struck = !Double.isNaN(inflation) && !Double.isNaN(expected);
         if (!struck) inflation = expected = Double.NaN;
         double target = inflationTarget;
         Strictness strict = strictness;
+        final boolean tied = isTied();
+        final double tie = tied ? dial : Double.NaN;
         PathEntry e = policyPathCache;
         if (e != null && same(e.floor, dial) && same(e.inflation, inflation) && same(e.expected, expected)
-                && same(e.target, target) && e.strictness == strict) {
+                && same(e.target, target) && same(e.tie, tie) && e.strictness == strict) {
             return e.path;
         }
         final double now = inflation, settle = expected;
-        double[] path = struck
+        double[] path = struck && !tied
                 ? YieldCurve.expectedPath(dial, x -> advisedPolicyRate(x), now, settle)
                 : YieldCurve.flatPath(dial);
-        policyPathCache = new PathEntry(dial, inflation, expected, target, strict, path);
+        policyPathCache = new PathEntry(dial, inflation, expected, target, tie, strict, path);
         return path;
     }
 

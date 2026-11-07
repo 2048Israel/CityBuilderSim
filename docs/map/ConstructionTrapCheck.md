@@ -1,6 +1,6 @@
 # ConstructionTrapCheck.java - 1,240 lines · 36 methods · 12 constants · harnesses
 
-`ham/citybuildersim/ConstructionTrapCheck.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ConstructionTrapCheck.java` - generated 2026-11-07 by CodeMap; line numbers are as of that run.
 
 > The builders short (FC1): what an order pays a point of work as the repairs leave the builders fewer points for the
 > sites, and the foreign contractor that takes the orders, builds the builders' own depots first and is paid abroad

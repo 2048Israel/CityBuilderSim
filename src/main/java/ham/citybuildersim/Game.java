@@ -350,6 +350,7 @@ public class Game {
         debtManager = new DebtManager();
         debtManager.setRateVolatility(this::rateVolatility);   // a callable piece is valued at the city's own volatility (CD4)
         debtManager.setPriceIndexSource(() -> priceIndex.getIndex());   // a linked bond is indexed on the city's price index (CD5)
+        debtManager.setTiedSource(() -> foreign.getRegime() == ForeignAccounts.Regime.PEG);   // a peg ties the dial to the US's, and the curve is priced on the tied path (XR5)
         businessInvestment = new BusinessInvestment(buildingManager, economyManager);
         businessInvestment.watchOrders(orderWatch);   // a harness's watch outlives a load (0.7.54)
         businessInvestment.setRunWorksCost(this::runWorksCost);   // a railway line's cuts, viaducts and tunnels are in its price (ET4)

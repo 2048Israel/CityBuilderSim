@@ -3764,7 +3764,7 @@ final class PolicyScreen {
             case FLOAT -> "The market sets it. The vault does nothing.";
             case LEAN -> "The vault sells dollars against a fall: the city's way until now, and the default.";
             case BAND -> "Free inside a band you set. The vault holds its edges.";
-            case PEG -> "Held at one rate. The vault meets every flow at it.";
+            case PEG -> "Held at one rate. The vault pays what holding it takes.";
         };
     }
 
@@ -3773,10 +3773,10 @@ final class PolicyScreen {
         return "How the city holds its " + sym() + ". Float: the market sets it and the vault does nothing. Lean against falls is the "
                 + "default and what the city did before there were regimes: the vault sells dollars against a fall (a "
                 + "reserve defends a currency; it does not hold one down). Band: the rate floats inside a band you set - a "
-                + "centre, the slope it crawls at and a width either side - and the vault holds its edges, selling dollars "
-                + "at the weak one and buying them at the strong one, as the Monetary Authority of Singapore does (its band "
-                + "is thought to be about 2% either side). Peg: held at one rate, the vault meeting every flow at it, until "
-                + "it cannot. A peg breaks when the vault would fall under " + curMonths(ForeignAccounts.VAULT_FLOOR)
+                + "centre, the slope it crawls at and a width either side - and the vault holds its edges, selling the dollars "
+                + "that holding the weak one takes and buying those that holding the strong one takes, as the Monetary Authority of "
+                + "Singapore does (its band is thought to be about 2% either side). Peg: held at one rate, the vault paying "
+                + "what holding it takes, until it cannot. A peg breaks when the vault would fall under " + curMonths(ForeignAccounts.VAULT_FLOOR)
                 + " of imports, or by chance as the shadow rate - where the float would be - sits further from it. History: "
                 + "sterling in 1992 fell 10% against the mark in two weeks and 24% against the dollar in four months; the baht "
                 + "in 1997 lost 55% in six and a half months; Argentina in 2002 about two thirds. Among 125 countries the "
@@ -3794,7 +3794,7 @@ final class PolicyScreen {
             case BAND -> "In a band of " + curRate(fx.bandStrongEdge()) + " to " + curRate(fx.bandWeakEdge()) + " per "
                     + Currency.FOREIGN_SYMBOL + ": free inside it, the vault holding its edges.";
             case PEG -> "Pegged at " + curRate(fx.getPegRate()) + " per " + Currency.FOREIGN_SYMBOL
-                    + ": the vault meets every flow at it.";
+                    + ": the vault pays what holding it takes.";
         };
     }
 
@@ -3807,10 +3807,39 @@ final class PolicyScreen {
                     + share1(ForeignAccounts.BAND_WIDTH) + " either side. Its centre, slope and width are yours to set "
                     + "once it is in force.";
             case PEG -> "Entering the peg pegs the " + sym() + " at today's rate, " + curRate(fx.getRate()) + " per "
-                    + Currency.FOREIGN_SYMBOL + ". The vault then meets the month's whole balance at it, until it falls "
+                    + Currency.FOREIGN_SYMBOL + ". The vault then pays what holding it takes, until paying would take it "
                     + "under " + curMonths(ForeignAccounts.VAULT_FLOOR) + " of imports.";
         };
     }
+
+    /**
+     * The warning under a peg or a band that is staged and not in force (XR5; Jerus, "Warn on a thin vault"): the vault's months against a gap of BREAK_GAP,
+     * where doubt starts to break a peg (ForeignAccounts.monthsHoldingGap(), pure), when they are fewer than THIN_HOLD_MONTHS; or, before the city has
+     * traded a month, that nothing yet says what holding the rate will cost. Null for any other regime, and for a vault that would last (pure). The
+     * choice goes ahead either way: this is words, the Apply button is not touched.
+     */
+    String thinVaultWords(ForeignAccounts fx, ForeignAccounts.Regime want) { return thinVaultWords(fx, want, sym()); }
+
+    /** ...with the city's money's mark handed in (pure: the harness reads it without a window). */
+    static String thinVaultWords(ForeignAccounts fx, ForeignAccounts.Regime want, String sym) {
+        if (want != ForeignAccounts.Regime.PEG && want != ForeignAccounts.Regime.BAND) return null;
+        String what = want == ForeignAccounts.Regime.PEG ? "a peg" : "a band";
+        if (fx.getGdpTrailing() <= 0 || fx.monthlyImports() <= 0) {
+            return "The city has not traded a month yet, so nothing says what holding the " + sym + " will cost. " + cap(what)
+                    + " chosen now is held with the vault's " + usd(fx.getReservesUsd()) + ", and the vault pays what holding it takes every month.";
+        }
+        double months = fx.monthsHoldingGap(ForeignAccounts.BREAK_GAP);
+        if (!(months < ForeignAccounts.THIN_HOLD_MONTHS)) return null;
+        String sits = "Held against the " + sym + " sitting " + pct0(ForeignAccounts.BREAK_GAP) + " weaker (where doubt starts to break a peg), ";
+        String floor = "its floor (" + usd(fx.vaultFloorUsd()) + ", " + curMonths(ForeignAccounts.VAULT_FLOOR) + " of imports)";
+        return "A thin vault for " + what + ". " + sits + (months > 0
+                // At the most: monthsHoldingGap() leaves out the thin cover's premium, which only adds pressure (CurrencyRegimeCheck 18: 26.8 projected, 20 held).
+                ? "the vault's " + usd(fx.getReservesUsd()) + " would reach " + floor + ": " + floorWords(months) + " at the most. It goes ahead if applied."
+                : "the vault's " + usd(fx.getReservesUsd()) + " is already at or under " + floor + ". It goes ahead if applied.");
+    }
+
+    /** A word with its first letter capital (pure). */
+    private static String cap(String word) { return Character.toUpperCase(word.charAt(0)) + word.substring(1); }
 
     /** The chip row's Apply button: what pressing it does. */
     private String regimeApplies(ForeignAccounts fx, ForeignAccounts.Regime r) {
@@ -3846,6 +3875,9 @@ final class PolicyScreen {
         VBox c = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "HOW THE " + sym() + " IS SET", regimeInfo(),
                 quiet("what each way does, before it is chosen")), row(cols));
         c.getChildren().add(line(want == now ? regimeNow(fx) : regimeEntering(fx, want), null));
+        // A thin vault's warning (XR5): amber words under the line of what entering does, there only while a peg or a band is staged and not in force.
+        String thin = want == now ? null : thinVaultWords(fx, want);
+        if (thin != null) c.getChildren().add(Kept.scope("thinVault", () -> words(thin, Palette.SIZE_LABEL + 1, Palette.WARN)));
         String broke = breakLine(fx);
         if (broke != null && now != ForeignAccounts.Regime.PEG) c.getChildren().add(Kept.scope("broke", () -> muted(broke)));
         c.getChildren().addAll(currencyFoot(regimeApplies(fx, want), () -> {
@@ -3863,15 +3895,16 @@ final class PolicyScreen {
 
     /** THE PEG's (i): what holds it, how it breaks, and what a devaluation is. */
     String pegInfo() {
-        return "A peg holds the " + sym() + " at one rate: the vault meets the month's whole balance at it, selling dollars when "
-                + "the city runs short of them and taking them when it runs long. The shadow rate is where the float "
-                + "would put the " + sym() + ", and its gap from the peg is the pressure on it. The peg breaks when paying the "
-                + "month's deficit would take the vault under " + curMonths(ForeignAccounts.VAULT_FLOOR) + " of imports, "
+        return "A peg holds the " + sym() + " at one rate: the vault pays the pressure on it, selling dollars when the shadow "
+                + "sits weaker than the peg and taking them when it sits stronger. The shadow rate is where the float "
+                + "would put the " + sym() + " - the month's balance is one of the things that moves it - and its gap from the "
+                + "peg is the pressure on it. The peg breaks when the sale holding it takes would take the vault under "
+                + curMonths(ForeignAccounts.VAULT_FLOOR) + " of imports, "
                 + "or by doubt: " + share1(ForeignAccounts.BREAK_BASE) + " a month at no gap, rising with the shadow's gap "
                 + "once it is past " + pct0(ForeignAccounts.BREAK_GAP) + " (" + share1(ForeignAccounts.hazard(2 * ForeignAccounts.BREAK_GAP))
                 + " a month at a gap of " + pct0(2 * ForeignAccounts.BREAK_GAP) + "), and hot money leaves on that doubt "
                 + "before it. When it breaks the " + sym() + " lands at the shadow rate plus " + pct0(ForeignAccounts.OVERSHOOT)
-                + " of the gap again, floats from then on, and trust in the bank falls " + pct0(Expectations.PEG_BREAK_DENT)
+                + " of the gap again, past it on whichever side it was, floats from then on, and trust in the bank falls " + pct0(Expectations.PEG_BREAK_DENT)
                 + " of the way to its least. A higher rate is a weaker " + sym() + ": raising the peg devalues, lowering it revalues, "
                 + "and the rate follows at the next reprice.";
     }
@@ -3906,7 +3939,7 @@ final class PolicyScreen {
         VBox dealt;
         if (fx.getDefenceUsd() > 0) {
             dealt = Kept.scope("paid", () -> fxCell("THIS MONTH THE VAULT PAID", usd(fx.getDefenceUsd()), "to hold " + curRate(peg)
-                    + (doubtUsd > 0 ? ", of which " + usd(doubtUsd) + " was hot money leaving on doubt" : ""), null));
+                    + (doubtUsd > 0 ? "; " + usd(doubtUsd) + " of hot money left on doubt, which weakens the shadow" : ""), null));
         } else if (fx.getEdgeBoughtUsd() > 0) {
             dealt = Kept.scope("bought", () -> fxCell("THIS MONTH THE VAULT BOUGHT", usd(fx.getEdgeBoughtUsd()), "at the peg, paid by "
                     + fx.getEdgeOwedPayer().words.toLowerCase() + " at the top of next month", null));
@@ -4018,9 +4051,10 @@ final class PolicyScreen {
     /** THE BAND's (i): the three settings, the two edges and what the vault does at each. */
     String bandInfo() {
         return "A band is a centre, the slope it crawls at a year and a width either side. The rate floats inside it as "
-                + "the float's rule takes it; at the weak edge (the upper rate: a weaker " + sym() + ") the vault sells the month's "
-                + "deficit in dollars, at the strong edge it buys the month's surplus - the dollars paid for by whoever "
-                + "you choose below. The centre can crawl at most " + share1(ForeignAccounts.MAX_BAND_SLOPE) + " a year and "
+                + "the float's rule takes it; at the weak edge (the upper rate: a weaker " + sym() + ") the vault sells the dollars "
+                + "that holding it there takes, at the strong edge it buys those that holding it there takes - the dollars paid "
+                + "for by whoever you choose below. What it dealt at an edge still leans on the rate inside the band, fading "
+                + "by half in about " + curMonths(ForeignAccounts.INTERVENTION_HALF_LIFE) + ". The centre can crawl at most " + share1(ForeignAccounts.MAX_BAND_SLOPE) + " a year and "
                 + "the band can be at most " + share1(ForeignAccounts.MAX_BAND_WIDTH) + " either side. It opens at "
                 + share1(ForeignAccounts.BAND_WIDTH) + " either side of the rate of the day. The vault holds the edges "
                 + "only while it has dollars to sell: under " + curMonths(ForeignAccounts.VAULT_FLOOR) + " of imports the "
@@ -4030,7 +4064,7 @@ final class PolicyScreen {
     /** What the band did this month in a line: the weak edge touched, the strong, or inside (pure). */
     String bandMonthWords(ForeignAccounts fx) {
         if (fx.getRate() > fx.bandWeakEdge() * (1 + 1e-9)) {
-            return "This month the band gave way: paying the deficit would have taken the vault under "
+            return "This month the band gave way: the sale holding the weak edge takes would have taken the vault under "
                     + curMonths(ForeignAccounts.VAULT_FLOOR) + " of imports, so the rate stands where the float's rule puts it, "
                     + curRate(fx.getRate()) + ", past the weak edge. The band is still the regime.";
         }
@@ -4040,6 +4074,10 @@ final class PolicyScreen {
         if (fx.getEdgeBoughtUsd() > 0) {
             return "This month the rate touched the strong edge: the vault bought " + usd(fx.getEdgeBoughtUsd())
                     + " to hold it, paid by " + fx.getEdgeOwedPayer().words.toLowerCase() + " at the top of next month.";
+        }
+        if (fx.isHeld() && fx.getHoldFelt() != 0) {
+            return "This month the rate stayed inside the band: nothing dealt, but what the vault dealt at an edge before still "
+                    + "leans on it, fading by half in about " + curMonths(ForeignAccounts.INTERVENTION_HALF_LIFE) + ".";
         }
         return "This month the rate stayed inside the band: nothing dealt.";
     }
@@ -4123,8 +4161,8 @@ final class PolicyScreen {
 
     /** WHO BUYS AT THE STRONG EDGE's (i). */
     static String payerInfo() {
-        return "At a band's strong edge, or under a peg when the city earns more dollars than it spends, the vault takes "
-                + "the surplus at once; the local money for it is owed to its payer and settled at the top of the next "
+        return "At a band's strong edge, or under a peg when the shadow rate sits stronger than the peg, the vault takes "
+                + "the dollars that holding the rate needs at once; the local money for it is owed to its payer and settled at the top of the next "
                 + "month. Paid by the central bank it is new money, so M0 rises and the city's money supply with it, as the "
                 + "Swiss National Bank's did buying euros from 2011 to 2015. Paid by the treasury it comes out of its "
                 + "cash, a reserve purchase like any other: money that could have built something. What the treasury "

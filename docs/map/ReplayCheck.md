@@ -1,6 +1,6 @@
 # ReplayCheck.java - 895 lines · 13 methods · 2 constants · harnesses
 
-`ham/citybuildersim/ReplayCheck.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ReplayCheck.java` - generated 2026-11-07 by CodeMap; line numbers are as of that run.
 
 > Replay of a recorded city (batch TR1, 2026-10-31): the recorder, the throwaway copy, the input log, and what recording costs.
 > Timing harness (Timing.HARNESSES): section 6 judges the recorder's FX-thread cost through Timing.
