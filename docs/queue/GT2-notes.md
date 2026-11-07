@@ -61,7 +61,7 @@ is the first to skip.
 
 ## Checks
 
-`sh tools/ship-selftest.sh`: all passed, with four new cases (the figure
+`sh tools/ship-selftest.sh`: 112 of 112 passed, with four new cases (the figure
 recorded at TM's ship; the same miss the same day passes with no round; one
 over the margin is timed and stops; another day's record is not read). One old
 case moved with it: "a 30% slower one the next time still stops" now has a
