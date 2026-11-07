@@ -109,6 +109,15 @@ tied path", "Overshoot both ways", "Warn on a thin vault".
 - **Leaving a peg or a band** for Lean or Float drops the support: the rate goes to the
   shadow, as before. Moving between a band and a peg keeps it. `repeg()` keeps it, so a
   devaluation buys dollars and a revaluation sells them.
+- **A devaluation buys** what holding the D$ that much weaker than the shadow takes, on
+  XI1's bounded rule run backwards. The central bank, the default payer, pays it the next
+  month in new money:
+  - A peg 20% weaker: 9% of a year's output (linear).
+  - 50% weaker: 28% of it.
+  - Twice the shadow: 1.2 years of it.
+
+  Holding a currency far under its market takes printing that much. No cap was added: the
+  stepper lets a player stage any size, and the bill is the rule's.
 - **With no GDP** (`annual` 0) the rule gives 0, and the hold holds the rate and deals
   nothing.
 - **The warning's test** is a steady gap of `BREAK_GAP` held under `THIN_HOLD_MONTHS`. It is
