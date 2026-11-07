@@ -267,7 +267,7 @@
 | 1819 | 3 | `public double[] retirementDemandAndCapacity(Game game)` | Tonnes against nameplate: a city whose trade collapses should sell the track, and this is the one sector in the game whose demand series is neither a good nor a headcount. |
 | 1824 | 1 | `public double unitsOf(BuildingsTemplate t)` |  |
 | 1849 | 10 | `public boolean mayRetire(BuildingsTemplate t)` | A Truck Depot is never retired by the railway's measure (FR2): the retirement rule weighs track against the tonnes offered it, and a depot has no track to weigh. |
-| 1865 | 8 | `public BuildingsTemplate firstStation()` | The smallest station of this sector's catalogue by tonnes sorted: the one plan() orders first, before any track; null with no catalogue or no station in it. |
+| 1865 | 8 | `public BuildingsTemplate firstStation()` | The smallest station of this sector's catalogue by the tonnes it sorts: the one plan() orders first, before any track; null with no catalogue or no station in it. |
 | 1883 | 6 | `public boolean wouldOrderAgain(BuildingsTemplate station)` | Whether selling this station would leave the stations short by the first station's rung (FD1): the shortfall the stations leave, with this one's tonnes added back, is at least the tonnes plan() orders a first station ... |
 
 ### the books (lines 1890-1924)
