@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.StringReader;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -75,6 +76,15 @@ import java.util.TreeMap;
  *  16. THE SAVE. The new keys are written and read back; a loaded city and the one saved play two years alike; a city with only a prize writes the key.
  *  17. A CITY FOUNDED THE DEFAULT WAY orders nothing, pays nothing and has no lab, whatever the prizes; a reform of the money scales the prize, the
  *      pot and the month's prize paid.
+ *
+ * R3b (the gate reviews of R3 and R4), the same villages:
+ *
+ *  18. THE MONTH'S COUNTS ARE SAVED. The researchers, idle researchers and open problems of each field and the labs' researchers and idle ones come
+ *      back from a save as the saved month had them, not 0 until the next; a save without them reads them empty.
+ *  19. A MONTH THE BOOKS DO NOT CLOSE. When the month's cash update is blocked (a figure that is not finite) a find's purse is owed to Business Services
+ *      as arrears on the prizes' line, none paid that month, and paid down when cash returns.
+ *  20. THE STAKE STAYS. The investors' stake for a lab is in Business Services' till from the order to the find: in a village whose prize draws a lab
+ *      the Exchange's buyback spends nothing of it, the company never being a buyer.
  */
 public class PrizeCheck {
 
@@ -270,6 +280,9 @@ public class PrizeCheck {
         sectionFifteen();
         sectionSixteen();
         sectionSeventeen();
+        sectionEighteen();
+        sectionNineteen();
+        sectionTwenty();
         System.out.println(fails == 0 ? "PrizeCheck: all " + passes + " ok" : "PrizeCheck: " + fails + " FAILED of " + (passes + fails));
         System.exit(fails);
     }
@@ -1550,6 +1563,11 @@ public class PrizeCheck {
 
     /** A village at month 80 with a lab standing and a prize (`prize`, or the one that just wants a lab if 0), a month played with the lab at work, then the target's pile put just under its size and the month of the find played. */
     static Found findCity(String label, double prize) {
+        return findCity(label, prize, null);
+    }
+
+    /** ...and with `beforeTheFind` run on the city just before the month of the find is played (R3b: a month whose books do not come to a finite figure), or none. */
+    static Found findCity(String label, double prize, java.util.function.Consumer<Game> beforeTheFind) {
         Found f = new Found();
         f.g = labCity(label, true, F, 1);
         Game g = f.g;
@@ -1563,6 +1581,7 @@ public class PrizeCheck {
         if (f.target == null) return f;
         pileJustUnder(g, f.target);
         f.potBefore = r.pot(F);
+        if (beforeTheFind != null) beforeTheFind.accept(g);
         playHanded(g, 1);
         return f;
     }
@@ -1755,5 +1774,128 @@ public class PrizeCheck {
         near("...the pot too", r.pot(F), pot * scale, 1e-9 * pot * scale);
         near("...and the month's prize paid", g.getPrizePaid(), paid * scale, 1e-9 * paid * scale);
         check("the work piled, the finds and the other fields' prizes are not money and are as they were", r.piles().equals(piles) && r.foundHere().equals(found) && r.prize(Field.LAW) == 0 && r.prize(Field.MEDICINE) == 0);
+    }
+
+    /* ==================== 18. the month's counts are saved (R3b) ==================== */
+
+    /** The five counts of the month, field by field, as one string (full precision): researchers, idle, open, the labs' researchers, the labs' idle. */
+    static String countsOf(Research r) {
+        StringBuilder sb = new StringBuilder();
+        for (Field f : Field.values()) {
+            sb.append(f).append(' ').append(r.researchers(f)).append('/').append(r.idle(f)).append('/').append(r.open(f)).append('/')
+                    .append(r.labResearchers(f)).append('/').append(r.labsIdle(f)).append(' ');
+        }
+        return sb.toString().trim();
+    }
+
+    static void sectionEighteen() throws Exception {
+        System.out.println("\n--- 18. the month's researchers, idle researchers, open problems, lab researchers and idle lab researchers are saved: a load reads them as the saved month had them ---");
+        Game g = labCity("prize-counts", true, F, 1);
+        Research r = g.getResearch();
+        BuildingsTemplate lab = g.labTemplate(F);
+        DiscoveryCheck.quietly(() -> g.buildStack(lab, 2, true));
+        r.setPrize(F, justWantsALab(g, F));
+        r.setGrant(F, 3.5 * Research.postCost(F, g.getPopulationManager().getWagesPerType().clone()));
+        playHanded(g, 3);
+        boolean allFields = true;
+        for (Field f : Field.values()) allFields &= r.researchers(f) > 0;
+        check("fixture: a city with a grant, a prize and two labs, three months on: every field has researchers, engineering has problems open, lab researchers and some of them idle, and business has researchers idle with nothing open",
+                allFields && r.open(F) > 0 && r.labResearchers(F) > 0 && r.labsIdle(F) > 0 && r.idle(Field.BUSINESS) > 0 && r.open(Field.BUSINESS) == 0, countsOf(r));
+        check("...and medicine has a problem open and nobody idle: the counts differ field by field", r.open(Field.MEDICINE) > 0 && r.idle(Field.MEDICINE) == 0 && r.idle(Field.BUSINESS) > 0, countsOf(r));
+        String before = countsOf(r);
+
+        GameFiles.Result wrote = EquipmentCheck.save(g, "counts kept");
+        check("the city is saved", wrote.ok, wrote.message());
+        Path file = g.getGameFiles().saveFile(1);
+        String json = Files.readString(file);
+        check("...with the five counts under its research", json.contains("\"researchers\"") && json.contains("\"idle\"") && json.contains("\"open\"") && json.contains("\"labResearchers\"") && json.contains("\"labsIdle\""));
+        Game back = new Game(g.getGameFiles());
+        DiscoveryCheck.quietly(() -> back.loadGameSave(1));
+        check("loaded without a failure", back.getLoadFailure() == null, String.valueOf(back.getLoadFailure()));
+        check("the loaded city reads the same five counts in every field as the one saved did, before it plays a month: " + before, countsOf(back.getResearch()).equals(before), countsOf(back.getResearch()));
+
+        // A save from before R3b has none of the five: they read empty, nothing is lost and nothing fails.
+        com.google.gson.JsonObject root = com.google.gson.JsonParser.parseString(json).getAsJsonObject();
+        com.google.gson.JsonObject research = root.getAsJsonObject("research");
+        for (String key : List.of("researchers", "idle", "open", "labResearchers", "labsIdle")) research.remove(key);
+        Files.writeString(file, root.toString());
+        Game old = new Game(g.getGameFiles());
+        DiscoveryCheck.quietly(() -> old.loadGameSave(1));
+        boolean empty = true;
+        for (Field f : Field.values()) empty &= old.getResearch().researchers(f) == 0 && old.getResearch().idle(f) == 0 && old.getResearch().open(f) == 0 && old.getResearch().labResearchers(f) == 0 && old.getResearch().labsIdle(f) == 0;
+        check("a save without the five reads them empty, with the rest of the research as it was", old.getLoadFailure() == null && empty && old.getResearch().prizesForSave().equals(r.prizesForSave())
+                && old.getResearch().grantsForSave().equals(r.grantsForSave()) && old.getResearch().postsForSave().equals(r.postsForSave()), String.valueOf(old.getLoadFailure()));
+    }
+
+    /* ==================== 19. a month the books do not close (R3b) ==================== */
+
+    static void sectionNineteen() {
+        System.out.println("\n--- 19. a month whose books do not come to a finite figure moves no cash, and the labs' share of a find in it is owed to Business Services and paid when cash returns ---");
+        Found f = findCity("prize-blocked", 0, game -> game.setCashForTest(Double.NaN));
+        Game g = f.g;
+        if (f.target == null) { check("fixture: the lab has a target on the chase list after its first month at work", false); return; }
+        Research r = g.getResearch();
+        Research.Purse purse = r.purses().get(f.target.code());
+        double owed = r.toLabs(F);
+        check("fixture: the month of the find, with the treasury's cash not a number, found " + f.target.code() + " and its purse has both parts above nothing, the labs' owed",
+                Double.isNaN(g.getCash()) && r.foundThisMonth().contains(f.target.code()) && purse != null && purse.toLabs() > 0 && purse.toSchools() > 0 && owed > 0, String.valueOf(r.purses()));
+        check("the month's cash update was blocked: nothing was paid to the labs, the prize paid is 0 and Business Services' statement received nothing from the city",
+                g.getPrizePaid() == 0 && g.getSectorBooks().get(BS).fromTheCity() == 0, g.getPrizePaid() + " / " + g.getSectorBooks().get(BS).fromTheCity());
+        Double arrears = g.getArrearsByLine().get(TreasuryLine.PRIZES);
+        near("...but the labs' share is owed: arrears on the prizes' line, to Business Services, of exactly the purse's labs' part (" + owed + ")", arrears == null ? 0 : arrears, owed, 1e-9 * owed);
+        check("...Business Services is owed it, whatever else the blocked month refused it", g.getArrearsOwedTo(BS) >= owed - 1e-9 * owed, String.valueOf(g.getArrearsOwedTo(BS)));
+        check("...and it is among the month's refusals, as any refused line is", g.getArrearsRefusedThisMonth() >= owed - 1e-9 * owed, String.valueOf(g.getArrearsRefusedThisMonth()));
+        check("the schools' share is in the pot all the same: the find was made", Math.abs(r.pot(F) - (f.potBefore + purse.toSchools())) <= 1e-9 * Math.max(1, purse.toSchools()));
+
+        // Cash returns: the next month's treasury pays the arrears down, to Business Services' till.
+        g.setCashForTest(1e6 * Math.max(1, owed));
+        playHanded(g, 1);
+        check("with cash back the next month pays it down: nothing is owed on the prizes' line, and Business Services' till received the labs' share from the city as arrears paid, on its statement's arrears line",
+                !g.getArrearsByLine().containsKey(TreasuryLine.PRIZES) && g.getArrearsOwedTo(BS) == 0 && g.getArrearsPaidTo(BS) >= owed - 1e-9 * owed
+                        && g.getSectorBooks().get(BS).arrearsPaid() >= owed - 1e-9 * owed,
+                g.getArrearsByLine() + " " + g.getArrearsPaidTo(BS) + " " + g.getSectorBooks().get(BS).arrearsPaid());
+        check("...and the prize paid that month stays 0: it came as arrears, not as a prize", g.getPrizePaid() == 0);
+    }
+
+    /* ==================== 20. the stake stays in the till (R3b) ==================== */
+
+    static void sectionTwenty() {
+        System.out.println("\n--- 20. the stake the investors put up for a lab: in a village whose prize draws a lab the Exchange's buyback spends none of it before the find ---");
+        Game g = labCity("prize-stake", true, F, 1);
+        Research r = g.getResearch();
+        EconomyManager e = g.getEconomyManager();
+        int company = Equity.indexOf(BS);
+        r.setPrize(F, justWantsALab(g, F));
+        int months = 36, withStake = 0, qualified = 0, pastCushion = 0;
+        double raised = 0, bought = 0, stakeAtOrder = Double.NaN, tillMost = 0, cushionLeast = Double.POSITIVE_INFINITY;
+        Equity.Regime regime = null;
+        String firstBuyer = null;
+        for (int i = 1; i <= months; i++) {
+            playHanded(g, 1);
+            SectorBooks.SectorMonth books = g.getSectorBooks().get(BS);
+            double labs = g.labsStanding(F) + g.labsOnSite(F);
+            double stake = labs * r.labStake(F, g.getMonth() + 1, g.getPopulationManager().getWagesPerType().clone());
+            if (stake > 0) withStake++;
+            if (Double.isNaN(stakeAtOrder) && labs > 0 && stake > 0) stakeAtOrder = stake;
+            raised += e.getEquityRaised(BS);
+            bought += e.getSharesBoughtBack(BS);
+            regime = g.getEquity().getRegime(company);
+            double cushion = Exchange.BUYBACK_CUSHION_MONTHS * (Math.max(0, books.operatingCost()) + Math.max(0, books.interest()) + Math.max(0, books.repaid()) + Math.max(0, books.bondsRepaid()));
+            tillMost = Math.max(tillMost, e.getSectorCash(BS));
+            cushionLeast = Math.min(cushionLeast, cushion);
+            if (e.getSectorCash(BS) > cushion) pastCushion++;
+            // The Exchange's own rule for a company to bid for its shares (postCompanies()): a record that is neither bad nor new, and equity past its target by OVER_TARGET.
+            boolean buyer = regime != Equity.Regime.BAD && regime != Equity.Regime.NEW && books.totalAssets() > 0
+                    && books.equity() - (g.getEquity().getTargetEquityShare(company) + Exchange.OVER_TARGET) * books.totalAssets() > books.totalAssets() * Exchange.MIN_EXCESS;
+            if (buyer) { qualified++; if (firstBuyer == null) firstBuyer = "month " + g.getMonth(); }
+        }
+        check("fixture: the investors ordered a lab, and put up money for it as equity (" + String.format("%,.0f", raised) + " raised over the " + months + " months), which a stake of "
+                + String.format("%,.0f", stakeAtOrder) + " carries to the target's find; the lab is on site or standing and the stake is still needed in " + withStake + " of them",
+                labsInAll(g) == 1 && raised > 0 && stakeAtOrder > 0 && withStake >= 12, labsOf(g));
+        check("the Exchange's buyback spent nothing of it in any of the " + months + " months: Business Services bought none of its shares back (" + bought + ")", bought == 0, String.valueOf(bought));
+        check("...because it never qualified to bid: a record that is bad (" + regime + " at the end) and equity far under its target, in no month of the " + months + " a buyer in the Exchange's own rule" + (firstBuyer == null ? "" : ", the first " + firstBuyer),
+                qualified == 0, qualified + " months");
+        check("...and its till (at most " + String.format("%,.0f", tillMost) + ") never stood above the six months of costs it keeps (at least " + String.format("%,.0f", cushionLeast) + "), so there was no money for a buyback to take past the cushion even had it qualified",
+                pastCushion == 0, pastCushion + " months");
     }
 }

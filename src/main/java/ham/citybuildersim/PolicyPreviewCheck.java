@@ -583,10 +583,11 @@ public class PolicyPreviewCheck {
                     && lm.targetWageAt(job, floor * 1.1) >= lm.cashAt(floor * 1.1) - 1e-12;
         }
         assertTrue("every job's target moves by the floor's own ratio, and none is under the floor in today's money", targets);
-        assertTrue("...so a floor ten per cent up moves every wage, and the city's own payroll, by ten per cent once walked",
+        assertTrue("...so a floor ten per cent up moves every wage, and the city's own payroll - the teachers', the doctors' and nurses' and the research posts' (R3b) - by ten per cent once walked",
                 Math.abs(PolicyPreview.wageMoveAt(g, floor * 1.1) - 1.1) <= 1e-12
                 && near(PolicyPreview.cityPayrollAt(g, floor * 1.1),
-                        (g.getEducation().getPayroll() + g.getHealthcare().getPayroll()) * PolicyPreview.wageMoveAt(g, floor * 1.1)));
+                        (g.getEducation().getPayroll() + g.getHealthcare().getPayroll() + g.getEconomyManager().getResearchPayroll()) * PolicyPreview.wageMoveAt(g, floor * 1.1))
+                && near(PolicyPreview.cityPayrollAt(g, floor), g.getEducation().getPayroll() + g.getHealthcare().getPayroll() + g.getEconomyManager().getResearchPayroll()));
     }
 
     /* ============================ 8. THE FUND'S WITHDRAWAL (0.7.48) ============================ */

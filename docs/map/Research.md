@@ -1,4 +1,4 @@
-# Research.java - 1,095 lines · 89 methods · 24 constants · model
+# Research.java - 1,168 lines · 98 methods · 24 constants · model
 
 `ham/citybuildersim/Research.java` - generated 2026-11-07 by CodeMap; line numbers are as of that run.
 
@@ -38,7 +38,7 @@
 
 **Uses:** [JobType](JobType.md) (17), [ResearchCatalog](ResearchCatalog.md) (7), [World](World.md) (2), [EducationType](EducationType.md) (2), [BusinessInvestment](BusinessInvestment.md) (1)
 
-**Used by (16):** [BuildScreen](BuildScreen.md), [BuildingsTemplate](BuildingsTemplate.md), [DataSave](DataSave.md), [DiscoveryCheck](DiscoveryCheck.md), [Equipment](Equipment.md), [EquipmentFit](EquipmentFit.md), [Game](Game.md), [HistorySave](HistorySave.md), [Inbox](Inbox.md), [KeptCheck](KeptCheck.md), [LandCheck](LandCheck.md), [PrizeCheck](PrizeCheck.md), [Recipe](Recipe.md), [Recipes](Recipes.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md)
+**Used by (19):** [BuildScreen](BuildScreen.md), [BuildingsTemplate](BuildingsTemplate.md), [DataSave](DataSave.md), [DiscoveryCheck](DiscoveryCheck.md), [Equipment](Equipment.md), [EquipmentFit](EquipmentFit.md), [Game](Game.md), [HistorySave](HistorySave.md), [Inbox](Inbox.md), [KeptCheck](KeptCheck.md), [LandCheck](LandCheck.md), [PrizeCheck](PrizeCheck.md), [Recipe](Recipe.md), [Recipes](Recipes.md), [ResearchPreview](ResearchPreview.md), [ResearchPreviewCheck](ResearchPreviewCheck.md), [ResearchScreen](ResearchScreen.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md)
 
 ## Sections
 
@@ -59,6 +59,7 @@
 | 830 | · the labs' month |
 | 882 | · the investors' questions |
 | 906 | · what is kept |
+| 975 | · the month's counts, to save (R3b): a flow cannot be reconstructed from the state a month ended in, and a load would r... |
 
 ## Constants
 
@@ -120,7 +121,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 51 | 1045 | **type** `public final class Research` | The city's research (R3): the grants the player sets, the posts they buy, the researchers who fill them, the work piled on each open problem, the discoveries found here and the month's pure step that moves the work on... |
+| 51 | 1118 | **type** `public final class Research` | The city's research (R3): the grants the player sets, the posts they buy, the researchers who fill them, the work piled on each open problem, the discoveries found here and the month's pure step that moves the work on... |
 
 ### THE DIALS (research-design 1.8). Each is the study's, and (est.) where the study says so. (lines 53-128)
 
@@ -261,7 +262,7 @@
 | 895 | 4 | `public Entry labTarget(Field f, int month, double[] wagePerType)` | The problem a new lab would go for: the chase list's first, or null where there is none. |
 | 901 | 4 | `public double labStake(Field f, int month, double[] wagePerType)` | What investors put up for one lab at the target (stake() of it at the field's post cost and its pile now): NaN where there is no target. |
 
-### what is kept (lines 906-1095)
+### what is kept (lines 906-974)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -276,9 +277,23 @@
 | 959 | 3 | `public Map<String, Double> labPilesForSave()` | The labs' part of the piles to save, by code. |
 | 964 | 3 | `public Map<String, Double> citySharesForSave()` | The city's own researchers on each problem in the last month(), to save, by code (what labsWanted() reads after a reload). |
 | 969 | 5 | `public Map<String, Integer> labIdleMonthsForSave()` | The months in a row each field has had a lab too many, to save, by Field.name(); only those above nothing. |
-| 982 | 42 | `public void restorePrizes(Map<String, Double> prizes, Map<String, Double> pots, Map<String, Double> labPiles, Map<String, Doubl...` | Puts the prizes, the pots, the labs' piles, the city's shares and the counts of months with a lab too many back, replacing what there was (the load path, called AFTER restore(), whose piles the labs' part must sit wit... |
-| 1030 | 28 | `public void restore(Map<String, Double> grants, Map<String, Integer> posts, Map<String, Double> piles, Map<String, Integer> found)` | Puts the city's research back, replacing all (the load path), keyed by Field.name() and by code and never by an ordinal. |
-| 1059 | 7 | `private static Field fieldOf(String name)` |  |
-| 1068 | 5 | `public void redenominate(double scale)` | A reform of the money (Game.redenominate()): every grant, prize and pot times `scale`. |
-| 1075 | 20 | `public void reset()` | A new game: no grant, no prize, no pot, no post, no work piled, nothing found, no lab too many and no event (Game.buildWorld()). |
+
+### the month's counts, to save (R3b): a flow cannot be reconstructed from the state a month ended in, and a load would r... (lines 975-1168)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 982 | 4 | `public boolean hasMonthCounts()` | Whether the month has any count to show: researchers, idle ones, open problems or the labs' (R3b's review). |
+| 988 | 1 | `public Map<String, Double> researchersForSave()` | The month's researchers by field, to save, by Field.name(); only those above nothing (researchers() reads 0 for the rest). |
+| 991 | 1 | `public Map<String, Double> idleForSave()` | The month's idle researchers by field, to save, by Field.name(); only those above nothing. |
+| 994 | 5 | `public Map<String, Integer> openForSave()` | The month's open problems by field, to save, by Field.name(); only those above nothing. |
+| 1001 | 1 | `public Map<String, Double> labResearchersForSave()` | The month's lab researchers by field, to save, by Field.name(); only those above nothing. |
+| 1004 | 1 | `public Map<String, Double> labsIdleForSave()` | The month's idle lab researchers by field, to save, by Field.name(); only those above nothing. |
+| 1006 | 8 | `private static Map<String, Double> aboveNothing(EnumMap<Field, Double> counts)` |  |
+| 1022 | 42 | `public void restorePrizes(Map<String, Double> prizes, Map<String, Double> pots, Map<String, Double> labPiles, Map<String, Doubl...` | Puts the prizes, the pots, the labs' piles, the city's shares and the counts of months with a lab too many back, replacing what there was (the load path, called AFTER restore(), whose piles the labs' part must sit wit... |
+| 1071 | 18 | `public void restoreMonth(Map<String, Double> researchers, Map<String, Double> idle, Map<String, Integer> open, Map<String, Doub...` | Puts the month's counts back (R3b; the load path, called AFTER restore() and restorePrizes(), neither of which may clear them): each field's researchers, idle researchers, open problems, lab researchers and idle lab r... |
+| 1090 | 7 | `private static void putAmounts(EnumMap<Field, Double> into, Map<String, Double> saved)` |  |
+| 1103 | 28 | `public void restore(Map<String, Double> grants, Map<String, Integer> posts, Map<String, Double> piles, Map<String, Integer> found)` | Puts the city's research back, replacing all (the load path), keyed by Field.name() and by code and never by an ordinal. |
+| 1132 | 7 | `private static Field fieldOf(String name)` |  |
+| 1141 | 5 | `public void redenominate(double scale)` | A reform of the money (Game.redenominate()): every grant, prize and pot times `scale`. |
+| 1148 | 20 | `public void reset()` | A new game: no grant, no prize, no pot, no post, no work piled, nothing found, no lab too many and no event (Game.buildWorld()). |
 

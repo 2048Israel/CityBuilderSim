@@ -972,6 +972,46 @@ public final class Research {
         return out;
     }
 
+    /* ----- the month's counts, to save (R3b): a flow cannot be reconstructed from the state a month ended in, and a load would read 0 until the next month ----- */
+
+    /**
+     * Whether the month has any count to show: researchers, idle ones, open problems or the labs' (R3b's review). A city founded the default way with a
+     * University and no grant is empty() - nothing of its own - and still has its faculty's researchers this month, which the screens draw, so the save
+     * writes the research for them too (DataSave.setResearch()).
+     */
+    public boolean hasMonthCounts() {
+        return !researchersForSave().isEmpty() || !idleForSave().isEmpty() || !openForSave().isEmpty() || !labResearchersForSave().isEmpty()
+                || !labsIdleForSave().isEmpty();
+    }
+
+    /** The month's researchers by field, to save, by Field.name(); only those above nothing (researchers() reads 0 for the rest). A fresh map. */
+    public Map<String, Double> researchersForSave() { return aboveNothing(researchersNow); }
+
+    /** The month's idle researchers by field, to save, by Field.name(); only those above nothing. A fresh map. */
+    public Map<String, Double> idleForSave() { return aboveNothing(idleNow); }
+
+    /** The month's open problems by field, to save, by Field.name(); only those above nothing. A fresh map. */
+    public Map<String, Integer> openForSave() {
+        Map<String, Integer> out = new LinkedHashMap<>();
+        for (Field f : Field.values()) if (open(f) > 0) out.put(f.name(), open(f));
+        return out;
+    }
+
+    /** The month's lab researchers by field, to save, by Field.name(); only those above nothing. A fresh map. */
+    public Map<String, Double> labResearchersForSave() { return aboveNothing(labResearchersNow); }
+
+    /** The month's idle lab researchers by field, to save, by Field.name(); only those above nothing. A fresh map. */
+    public Map<String, Double> labsIdleForSave() { return aboveNothing(labsIdleNow); }
+
+    private static Map<String, Double> aboveNothing(EnumMap<Field, Double> counts) {
+        Map<String, Double> out = new LinkedHashMap<>();
+        for (Field f : Field.values()) {
+            Double n = counts.get(f);
+            if (n != null && n > 0) out.put(f.name(), n);
+        }
+        return out;
+    }
+
     /**
      * Puts the prizes, the pots, the labs' piles, the city's shares and the counts of months with a lab too many back, replacing what there was
      * (the load path, called AFTER restore(), whose piles the labs' part must sit within). An entry that is malformed is skipped, as restore() skips
@@ -1020,6 +1060,39 @@ public final class Research {
             }
         }
         for (Field f : Field.values()) if (posts(f) > 0) grantPosts.put(f, posts(f));
+    }
+
+    /**
+     * Puts the month's counts back (R3b; the load path, called AFTER restore() and restorePrizes(), neither of which may clear them): each field's
+     * researchers, idle researchers, open problems, lab researchers and idle lab researchers as the saved month ended with them, so that a loaded city
+     * reads what the one saved did instead of 0 until its next month. Replaces what there was in these five alone; null maps restore nothing. An entry
+     * that is malformed is skipped: a field that is not one, an amount not finite or not above nothing, a count below one.
+     */
+    public void restoreMonth(Map<String, Double> researchers, Map<String, Double> idle, Map<String, Integer> open,
+                             Map<String, Double> labResearchers, Map<String, Double> labsIdle) {
+        researchersNow.clear();
+        idleNow.clear();
+        openNow.clear();
+        labResearchersNow.clear();
+        labsIdleNow.clear();
+        putAmounts(researchersNow, researchers);
+        putAmounts(idleNow, idle);
+        putAmounts(labResearchersNow, labResearchers);
+        putAmounts(labsIdleNow, labsIdle);
+        if (open != null) {
+            for (Map.Entry<String, Integer> e : open.entrySet()) {
+                Field f = fieldOf(e.getKey());
+                if (f != null && e.getValue() != null && e.getValue() > 0) openNow.put(f, e.getValue());
+            }
+        }
+    }
+
+    private static void putAmounts(EnumMap<Field, Double> into, Map<String, Double> saved) {
+        if (saved == null) return;
+        for (Map.Entry<String, Double> e : saved.entrySet()) {
+            Field f = fieldOf(e.getKey());
+            if (f != null && e.getValue() != null && Double.isFinite(e.getValue()) && e.getValue() > 0) into.put(f, e.getValue());
+        }
     }
 
     /**

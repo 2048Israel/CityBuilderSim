@@ -1262,7 +1262,7 @@ public class Game {
 
     /* ===== THE CITY'S RESEARCH IN THE MONTH (R3, 2026-11-06; docs/studies/research-design.md 5.1, 5.2) =====
      *
-     * The month's steps, in the order they run: the posts are STRUCK at the top (nextMonth(), after the policy hears the month: they are jobs
+     * The month's steps, in the order they run: the posts are STRUCK at the top (nextMonth(), after the policy hears the month and the demolitions close: they are jobs
      * the labour market fills, so they are counted before the posts are, and getJobs() adds them to the buildings'); the researchers WORK, the
      * bill is struck and a law find brings its lever forward in advanceDemographics(), beside the schools (their staff are the faculty and the room);
      * the treasury pays the bill in finalUpdateEconomy() (TreasuryLine.RESEARCH) and the inbox tells what was found (Inbox.takeResearch()).
@@ -1294,7 +1294,7 @@ public class Game {
         return out;
     }
 
-    /** The posts the month's grants buy are struck at the top of the month (nextMonth()), at the wages the labour market has now. Nothing to strike while no grant is set and no post is held. */
+    /** The posts the month's grants buy are struck at the top of the month (nextMonth()), after the demolitions ordered close (closeDemolished(): a school pulled down gives no room), at the wages the labour market has now. Nothing to strike while no grant is set and no post is held. */
     private void strikeResearchPosts() {
         if (research.isEmpty()) return;
         java.util.EnumMap<ResearchCatalog.Field, Double> room = new java.util.EnumMap<>(ResearchCatalog.Field.class);
@@ -12968,15 +12968,18 @@ public class Game {
          * ON HISTORY'S DATES.
          */
         policyHearsTheMonth();
-        // THE RESEARCH POSTS ARE STRUCK NEXT (R3): what the month's grants buy within the schools' room, at the wages the labour market has now.
-        // They are jobs, so they are struck before the posts are counted (getJobs()); none while no grant is set and no post is held.
-        strikeResearchPosts();
         // The buildings the player ordered demolished between the presses
         // close now, as the month after the order starts - the first it is
         // in force for - before anything in it reads the city (0.7.22; THE
         // PLAYER'S HAND ON THE QUEUE). No money moves. None in a city that
         // ordered none.
         closeDemolished();
+        // THE RESEARCH POSTS ARE STRUCK NEXT (R3), AFTER THE DEMOLITIONS (R3b): what the month's grants buy within the schools' room, at the wages the
+        // labour market has now. The room is the standing schools' (researchStaff()): struck before closeDemolished() a school the player had ordered
+        // pulled down still gave that month's posts from its room. They are jobs, so they are struck before the posts are counted (getJobs(),
+        // refreshJobs()); nothing between here and the count reads them, and closeDemolished() reads no research. None while no grant is set and no
+        // post is held.
+        strikeResearchPosts();
         // The bank's clock, for its preferred's anniversaries, and the fund's
         // month (0.7.14).
         bank.setMonth(month);
@@ -14536,6 +14539,8 @@ public class Game {
              */
         } else {
             System.out.println("Cash update blocked due to invalid value.");
+            // ...and the labs' share of a find that month is owed all the same (R3b): the guard moves no cash, it does not cancel the purse.
+            owePrizes();
         }
 
         /*
@@ -14554,16 +14559,34 @@ public class Game {
     }
     
     
-    /** The labs' share of the month's prizes, paid to Business Services' till (finalUpdateEconomy(); R4): the sum of Research.toLabs() over the fields, through the prizes' line. Sets prizePaid. */
-    private void payPrizes() {
+    /** The labs' share of the month's prizes, the sum of Research.toLabs() over the fields (R4): what the finds of the month owe the Research Labs that worked them. */
+    private double prizesOwedToLabs() {
         double owed = 0;
         for (ResearchCatalog.Field f : ResearchCatalog.Field.values()) owed += research.toLabs(f);
+        return owed;
+    }
+
+    /** The labs' share of the month's prizes, paid to Business Services' till (finalUpdateEconomy(); R4): the sum of Research.toLabs() over the fields, through the prizes' line. Sets prizePaid. */
+    private void payPrizes() {
+        double owed = prizesOwedToLabs();
         if (!(owed > 0)) return;
         ham.citybuildersim.sectors.BusinessServices labs = getSectors().businessServices();
         double paid = treasuryPays(TreasuryLine.PRIZES, owed, labs.key());
         // A plain add: nothing here may compute an amount, or the money the city spent and the money the sector received could differ.
         labs.addCash(paid);
         prizePaid = paid;
+    }
+
+    /**
+     * THE LABS' SHARE IN A MONTH THE BOOKS DID NOT CLOSE (R3b; finalUpdateEconomy()'s guard): the month's cash update is blocked when its figure is not
+     * finite, and payPrizes() sat inside it, so a find that month was neither paid nor owed and the labs lost the purse. It is booked as arrears to
+     * Business Services on the prizes' line, the arrears the treasury keeps for a refused discretionary line (oweArrears()), so payDownArrears() pays it
+     * when cash returns as it pays any; nothing is paid now (the guard moves no cash), so prizePaid stays 0 and no money moved for the audit to count.
+     */
+    private void owePrizes() {
+        double owed = prizesOwedToLabs();
+        if (!(owed > 0) || !Double.isFinite(owed)) return;
+        oweArrears(TreasuryLine.PRIZES, getSectors().businessServices().key(), owed);
     }
 
     private void updateConstructionCost(){
@@ -18901,12 +18924,15 @@ public class Game {
         if (!(paid > 0)) paid = 0;
         cash -= paid;
         double refused = amount - paid;
-        if (refused > 0 && line.accruesArrears()) {
-            arrears.merge(arrearsKey(line, payee), refused, Double::sum);
-            arrearsRefusedThisMonth += refused;
-            arrearsRefusedLifetime += refused;
-        }
+        if (refused > 0 && line.accruesArrears()) oweArrears(line, payee, refused);
         return paid;
+    }
+
+    /** Books what a discretionary line refused as owed on its key, and in the month's and the lifetime's refused counters: the one place arrears are made (treasuryPays(); owePrizes() in a month the books did not close). */
+    private void oweArrears(TreasuryLine line, String payee, double refused) {
+        arrears.merge(arrearsKey(line, payee), refused, Double::sum);
+        arrearsRefusedThisMonth += refused;
+        arrearsRefusedLifetime += refused;
     }
 
     /**
@@ -20681,6 +20707,8 @@ public class Game {
                 research.restore(savedResearch.grants, savedResearch.posts, savedResearch.piles, savedResearch.found);
                 // ...and the prizes, the pots, the labs' piles, the city's shares and the idle counts (R4), AFTER the piles they sit within, with the month's prize paid.
                 research.restorePrizes(savedResearch.prizes, savedResearch.pots, savedResearch.labPiles, savedResearch.cityShares, savedResearch.labIdleMonths);
+                // ...and the month's researchers, idle and open counts (R3b), AFTER both, which would clear them: a save without them reads them empty.
+                research.restoreMonth(savedResearch.researchers, savedResearch.idle, savedResearch.open, savedResearch.labResearchers, savedResearch.labsIdle);
                 economyManager.setResearch(savedResearch.payroll, savedResearch.costs);
                 prizePaid = Double.isFinite(savedResearch.prizePaid) ? Math.max(0, savedResearch.prizePaid) : 0;
             }

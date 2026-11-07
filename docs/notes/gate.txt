@@ -1,16 +1,14 @@
-# gate of Merge batch/XR5: the currency regimes' rest: a peg pays the pressure, not the month's balance; the tied path prices the curve under a peg; the overshoot both ways; a warning when a thin vault pegs (Jerus, 2026-10-23, on XR2's ★4, ★5 and the review's two: "Pay the pressure", "Price on the tied path"), 0.9.35
+# gate of Merge batch/R3b: research: Policy › Research - the Overview and Funding pages, the four grant cards with each card's preview of finds over ten years from the sizes' distribution (research-design §5.5, §6.2), §9's harness that the young and big cities of §5.4 reproduce the previews, and each school's posts line; in the kept way, best beside R5 and before R1d; and R3's gate review (2026-11-06), each needing a grant above 0: `strikeResearchPosts()` (`Game.java:12792`) reads the schools' room before `closeDemolished()`, so a school ordered down still gives a month's posts (strike after it); Government's spending list (`GovernmentScreen.java:1491-1534`) has no research line while `getTotalExpenses()` counts it, and `PolicyPreview.java:308`'s wage cost, `GovernmentScreen.java:1384`'s payroll and `RealEstate.java:666` `latentHeadShortfall()` leave the posts out; the month's researchers, idle and open counts are not saved (0 after a load until the next press); and R4's gate review (2026-11-06): `payPrizes()` sits inside `if (Double.isFinite(tempCash))` (`Game.java:14507`), so in a month whose books are not finite the labs' share of a purse is neither paid nor owed (move it out, or book it as arrears); and whether `Exchange`'s buyback (cut to a cushion of months of costs) hands the labs' stake back to the shareholders before the find; and R5's gate review (2026-11-06): figures worked out in `ui/ResearchScreen.java` rather than read from `ResearchView` (the found-here and abroad counts laid on the history's months at `:687-693`, "still to come" at `:190`, the bar shares at `:302` and `:318`): into `ResearchView` methods, 0.9.36
 # date: 2026-11-07
 # earth-2.bin: named
-# nightly: 2026-11-06 01:09 0.9.24 f33540a0 4,000 months: RED, exit 1 in 89 s: a building on the map moved 1 time(s), months 3012-3012
-# suite: 182 harnesses run in 1490s: 176 passed, 6 failed
-# timing: 16 harnesses run in 866s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
+# nightly: 2026-11-07 00:56 0.9.35 a260d4f1 4,000 months: OK in 121 s
+# suite: 183 harnesses run in 1201s: 177 passed, 6 failed
+# timing: 16 harnesses run in 923s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 31.1 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 30.2 ms, batch 31.9 ms (+5.7%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 30.3 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 33.3 ms, batch 32.8 ms (-1.6%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | exit 3
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | the city has a plain business and a materials industry with works to draw (Construction, null) FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | 3 FAILED
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | exit 1
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | 1 FAILED
 SlopeCheck | exit 1
 SlopeCheck | the run played its months and found nothing: every month passed the playtest's audit and the layout watcher, [a building on the map moved] FAIL
 SlopeCheck | 1 FAILED
@@ -40,8 +38,6 @@ MapCheck | exit 1
 MapCheck | a yard laid across a district's buildings moves off it the boxes under it and no others: 72 of the plan before's 530 boxes lie under the yard and the railway, and 78 are not in the plan after (each of the rest stands where it stood) FAIL
 MapCheck | ...and the layout watch (LongPlaytest, as the map draws the district) counts them apart and flags none: 72 boxes left a district in the yard's month because a run laid in it lies across them, 6 are counted as moved FAIL
 MapCheck | 2 FAILED
-KeptCheck | exit 3
+KeptCheck | exit 1
 KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
-KeptCheck | the city has a plain business and a materials industry with works to draw (Construction, null) FAIL
-KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL
-KeptCheck | 3 FAILED
+KeptCheck | 1 FAILED

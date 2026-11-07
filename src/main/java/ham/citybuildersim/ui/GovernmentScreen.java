@@ -218,7 +218,7 @@ final class GovernmentScreen {
     private void frameOver(VBox frame, VBox page) {
         frame.setMaxWidth(PAGE_WIDE);
         frame.setFillWidth(true);
-        frame.setPadding(new javafx.geometry.Insets(0, 18, 4, 18));
+        frame.setPadding(FRAME_ROOM);
         body = ui.scrolled(page, FRAME_CHROME);
         final javafx.scene.control.ScrollPane scroller = body;
         // Kept (KP6): both bindings are made once per scroller, since a kept page is handed back each draw with the
@@ -642,6 +642,8 @@ final class GovernmentScreen {
             case "Fuel duty"                        -> new String[] {"Taxes", "Fuel"};
             // ...and the port dues (FR4), FR3's dial on a page of its own beside the fuel duty.
             case "Port dues"                        -> new String[] {"Taxes", "Port dues"};
+            // ...and the research bill (R3b): the grants are Policy's Research Funding dials.
+            case "Research"                         -> new String[] {"Research", "Funding"};
             case "Central bank remittance", "Interest to the central bank"
                                                     -> new String[] {"Money", "The policy rate"};
             // ...and the arrears paid down (0.7.102): owed because the ceiling on the advances bound, set there,
@@ -709,6 +711,7 @@ final class GovernmentScreen {
             case "Crude for the reserve", "Crude sold from the reserve" -> Icons.TANK;
             case "Fuel duty"                         -> Icons.DROP;
             case "Port dues"                         -> Icons.CRANE;
+            case "Research"                          -> Icons.FLASK;
             default                                  -> Icons.COIN;
         };
     }
@@ -1279,6 +1282,17 @@ final class GovernmentScreen {
         return Kept.column(0, gain, exchange);
     }
 
+    /**
+     * The Subsidies line, opened (R3b): what the city paid to keep its sectors alive (Game.getTotalSubsidyPaid()) and the labs' share of a find's purse
+     * (Game.getPrizePaid(), TreasuryLine.PRIZES), which the books strike in this line as the transfer to a firm it is (strikeGovernmentBooks(), R4 ★5).
+     */
+    VBox subsidiesSpendDetail(double total, String colour) {
+        return payers("to whom", "The sectors the city props up with its standing subsidies, and the Research Labs' share of the prize for a find made "
+                + "here: a prize is paid as a subsidy is, into the labs' owners' till. The dials are Policy › Promises › Subsidies and Policy › Research › "
+                + "Funding.", List.of(new Payer("The sectors kept going", ui.game.getTotalSubsidyPaid(), null),
+                        new Payer("Research prizes to the labs", ui.game.getPrizePaid(), null)), total, colour);
+    }
+
     /** One row of the fold's grid: a movement, signed, and a zero written as one. */
     static int moved(javafx.scene.layout.GridPane grid, int row, String label, double amount, boolean under) {
         // Kept (KP6): a row of the grid, two cells, is a scope keyed by its words, for the rows that come and go.
@@ -1356,7 +1370,7 @@ final class GovernmentScreen {
             + "compare a budget with anything - another city, another year, or a rule of thumb. What came in, what "
             + "went out and the balance are their last twelve months once City History has them; until then, and "
             + "for the staff's wages, the month is annualised, so a month that bought a lot of buildings reads as a year of them. "
-            + "The staff are the care and schools staff; the police's and transit's wages are their own lines under Spending.";
+            + "The staff are the care and schools staff and the researchers in the posts the research grants buy; the police's and transit's wages are their own lines under Spending.";
 
     /** P7: no month of output yet. */
     static final String NO_YEAR = "There is no output recorded yet, so nothing here can be put in "
@@ -1381,13 +1395,13 @@ final class GovernmentScreen {
             return card;
         }
         double revenue = na.getTotalRevenue(), spending = na.getTotalExpenses(), balance = na.getBalance();
-        double staff = ui.game.getHealthcare().getPayroll() + ui.game.getEducation().getPayroll();
+        double staff = PolicyPreview.cityPayroll(ui.game);
         // Each bar's year (B7): the last twelve months where History records the line, the month × 12 where not.
         double balanceYear = yearOf(balance, SURPLUS_KEYS);
         double[] monthly = {revenue, spending, balance, staff};
         double[] yearly = {yearOf(revenue, REVENUE_KEYS), spendingYear(spending), Math.abs(balanceYear), staff * 12};
         boolean[] measured = {trailing(REVENUE_KEYS), trailing(REVENUE_KEYS) && trailing(SURPLUS_KEYS), trailing(SURPLUS_KEYS), false};
-        String[] names = {"Taken in", "Paid out", balanceYear >= 0 ? "Surplus" : "Deficit", "Care and schools staff"};
+        String[] names = {"Taken in", "Paid out", balanceYear >= 0 ? "Surplus" : "Deficit", "Care, schools and research staff"};
         String[] colours = {Palette.MONEY, Palette.MONEY_DARK, Palette.MONEY_LIGHT, Palette.PEOPLE};
         double top = 0;
         for (double v : yearly) top = Math.max(top, v / annual * 100);
@@ -1494,7 +1508,9 @@ final class GovernmentScreen {
                 "Interest to the central bank", "Subsidies", "Mortgage insurance claims", "Food assistance",
                 "Transit", "Repairs", "Arrears paid down", "Crude for the reserve",
                 // ...and the linked bonds' indexation (CD5), on the end for the same reason: in getTotalExpenses() beside the interest.
-                "Inflation uplift on linked bonds");
+                "Inflation uplift on linked bonds",
+                // ...and the research grants' posts and laboratories (R3b), the bill NationalAccounts.getTotalExpenses() has carried since R3 and no line named.
+                "Research");
     }
 
     List<Double> spendingAmounts(NationalAccounts na) {
@@ -1531,7 +1547,9 @@ final class GovernmentScreen {
                 na.getArrearsPaid(),
                 na.getReserveCrudeBought(),
                 // ...and the month's indexation of the linked bonds (CD5, spec-city-debt.md 5.4): in getTotalExpenses() at its end.
-                na.getInflationUplift());
+                na.getInflationUplift(),
+                // ...and the research grants' posts and laboratories (R3), in getTotalExpenses() beside the safety bill.
+                na.getResearchSpending());
     }
 
     /** The column heads' widths: a month, of the budget, of GDP. */
@@ -1608,7 +1626,10 @@ final class GovernmentScreen {
                     Palette.SIZE_LABEL + 1, Palette.TEXT_SPENT)));
         }
 
-        Label t = words(totalWords, Palette.SIZE_BODY + 1, Palette.TEXT_HEAD);
+        // The total's words, in the style they keep (KP2b: words() sets one and the strong one after it was a second write at every draw).
+        Label t = Kept.label(totalWords);
+        t.setWrapText(true);
+        t.setMinWidth(0);
         t.setStyle(Palette.strong(Palette.SIZE_BODY + 1, Palette.TEXT_HEAD));
         Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
@@ -2070,6 +2091,19 @@ final class GovernmentScreen {
                 people(bal.getHouseholdsAssisted()), people(bal.getFedByAssistance())), who, total, colour);
     }
 
+    /**
+     * The research line, opened (R3b): the bill the accounts book is the pay of the posts the grants bought (already in the households' wages, which count
+     * a post as the job it is) and the laboratories' other costs (EconomyManager.setResearch()). The prizes are not in it: they are in Subsidies.
+     */
+    VBox researchSpendDetail(double total, String colour) {
+        EconomyManager em = ui.game.getEconomyManager();
+        return payers("to whom, by kind of cost", "The posts the research grants bought: their researchers and the support staff they need, whose pay "
+                + "is in the households' wages already, and the Research Labs' other costs. The grants are set on Policy › Research › Funding. The "
+                + "prizes the labs are paid on a find are not in this line: they are in Subsidies, a transfer to the labs' owners as a subsidy is.",
+                List.of(new Payer("The posts' pay", em.getResearchPayroll(), null),
+                        new Payer("The laboratories' other costs", em.getResearchCosts(), null)), total, colour);
+    }
+
     /** Pensions, and who they go to. */
     VBox pensionDetail(double total, String colour) {
         EconomyManager em = ui.game.getEconomyManager();
@@ -2155,6 +2189,8 @@ final class GovernmentScreen {
                         case "Land bought"   -> amount > 0 ? () -> landSpendDetail(amount, c) : null;
                         case "Mortgage insurance claims" -> this::mortgageInsuranceDetail;
                         case "Food assistance" -> amount > 0 ? () -> foodAssistanceDetail(amount, c) : null;
+                        case "Research"      -> amount > 0 ? () -> researchSpendDetail(amount, c) : null;
+                        case "Subsidies"     -> amount > 0 && ui.game.getPrizePaid() > 0 ? () -> subsidiesSpendDetail(amount, c) : null;
                         default              -> null;
                     };
                 },

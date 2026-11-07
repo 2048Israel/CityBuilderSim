@@ -114,7 +114,7 @@ final class PolicyScreen {
        way back to the hub) with the areas as chips at its right (six since R5, Research's; five since
        0.7.109, Zoning's); the area's pages as tabs under it; the four
        figures across every page - TAX A MONTH, THE FLOOR, THE POLICY RATE,
-       PROMISES, and on Zoning's pages zoning's own four (ZoningScreen) -
+       PROMISES, and on Zoning's pages zoning's own four (ZoningScreen) and on Research's Overview and Funding its own (ResearchScreen.vitals()) -
        each a door; the page, which alone scrolls (BankScreen's frame,
        0.7.33); and on the pages whose dials batch, the staged tray at the
        foot of the stage.
@@ -296,7 +296,7 @@ final class PolicyScreen {
                 frame.getChildren().add(Kept.scope("tabs",
                         () -> chipStrip(pages, iconsOf(policyArea), policyPage, Palette.SIZE_LABEL, this::openPage)));
             }
-            frame.getChildren().add(Kept.scope("vitals", () -> ZONING.equals(policyArea) ? zoning.vitals() : vitals()));
+            frame.getChildren().add(Kept.scope("vitals", () -> ZONING.equals(policyArea) ? zoning.vitals() : RESEARCH.equals(policyArea) && !ResearchScreen.FOUND.equals(policyPage) ? research.vitals() : vitals()));
             // ...the tray last, after the page, since it names the dials the page registered.
             Region tray = Kept.scope("tray", () -> ZONING.equals(policyArea) ? zoning.tray() : tray());
             frameOver(frame, page, tray);
@@ -397,9 +397,9 @@ final class PolicyScreen {
     /** The tab's (i): the landing's lead, and the banner's line that every dial is a proposal (P1). */
     static final String LEAD_INFO = "Every number the city sets for itself, and what each one is doing this month. "
             + "Every dial is a proposal until it is applied: moving one stages a change, the page draws what it "
-            + "would do against last month's books, and nothing reaches the model until Apply. The five cards open "
-            + "the taxes, the wage floor, the price of money, the promises and the zoning of the city's ground; under "
-            + "them, the levers that are forcing somebody's hand.";
+            + "would do against last month's books, and nothing reaches the model until Apply. The six cards open "
+            + "the taxes, the wage floor, the price of money, the promises, the zoning of the city's ground and the "
+            + "research of its schools; under them, the levers that are forcing somebody's hand.";
 
     /** Each area's (i): what it holds (the landing's row blurbs until 0.7.36). */
     static String areaInfo(String area) {
@@ -786,7 +786,8 @@ final class PolicyScreen {
      */
     Region tray() {
         if (policyStaged.isEmpty()) return null;
-        boolean batches = TAXES.equals(policyArea) || (PROMISES.equals(policyArea) && "Schools".equals(policyPage));
+        boolean researchGrants = RESEARCH.equals(policyArea) && ResearchScreen.FUNDING.equals(policyPage);
+        boolean batches = TAXES.equals(policyArea) || (PROMISES.equals(policyArea) && "Schools".equals(policyPage)) || researchGrants;
         if (!batches) return null;
         List<Node> chips = new ArrayList<>();
         for (TrayItem item : trayItems()) {
@@ -804,10 +805,15 @@ final class PolicyScreen {
                 () -> { applyStaged(); showPolicyMenu(); });
         Pieces.ActionButton discard = actionButton(Icons.CLOSE, Palette.TEXT_LABEL, ACTION_INLINE,
                 new Press(Look.CHOOSE, "Discard", null), () -> { dropProposal(); showPolicyMenu(); });
-        PolicyPreview.Budget b = stagedBudget();
-        Effect budget = Effect.of("THE BUDGET, a month", b.before(), b.after(), v -> signedTight(v, false))
-                .delta(d -> signedTight(d, false)).info(BUDGET_INFO);
-        return stagedTray(chips, budget, apply, discard, TRAY_INFO);
+        // Research's grants change the budget by the posts' bill, not by a tax (ResearchView.budget()); nothing else staged on its page does.
+        Effect budget;
+        if (researchGrants) {
+            budget = research.budgetEffect();
+        } else {
+            PolicyPreview.Budget b = stagedBudget();
+            budget = Effect.of("THE BUDGET, a month", b.before(), b.after(), v -> signedTight(v, false)).delta(d -> signedTight(d, false)).info(BUDGET_INFO);
+        }
+        return stagedTray(chips, budget, apply, discard, researchGrants ? ResearchScreen.TRAY_INFO : TRAY_INFO);
     }
 
     /** One staged change as the tray lists it: its key, and "The wage rate 15.00% → 16.00%". */
@@ -1203,7 +1209,7 @@ final class PolicyScreen {
         // decisions lately made a scope each, keyed by their words.
         page.getChildren().add(row(Kept.scope("taxes", this::taxesCard), Kept.scope("wages", this::wagesCard),
                 Kept.scope("money", this::moneyCard), Kept.scope("promises", this::promisesCard),
-                Kept.scope("zoning", zoning::areaCard)));
+                Kept.scope("zoning", zoning::areaCard), Kept.scope("research", research::areaCard)));
 
         page.getChildren().add(Kept.scope("biting", () -> sectionHead("WHAT IS BITING", null, quiet("the dials that are forcing someone's hand"))));
         List<Flag> flags = policyFlags();
@@ -1318,13 +1324,13 @@ final class PolicyScreen {
         LabourMarket labour = ui.game.getLabourMarket();
         double floor = labour.cashMinimumWage();
         int pinned = pinnedBands();
-        double payroll = ui.game.getEducation().getPayroll() + ui.game.getHealthcare().getPayroll();
+        double payroll = PolicyPreview.cityPayroll(ui.game);
         return areaCard(Icons.STAFF, "WAGES", moneyFull(floor) + " a month",
                 bulletBar(labour.getWage(JobType.NO_DIPLOMA), floor, Palette.MONEY, 0,
                         "the unskilled wage, " + moneyFull(labour.getWage(JobType.NO_DIPLOMA)) + ", against the floor's tick"),
                 "every wage is a multiple of it · " + (pinned == 0 ? "no band is pinned"
                         : pinned + (pinned == 1 ? " band is" : " bands are") + " pinned to it"),
-                "the city's own payroll " + money(payroll), () -> open(WAGES, null));
+                "the city's own payroll " + money(payroll) + " · teachers, doctors, nurses and researchers", () -> open(WAGES, null));
     }
 
     VBox moneyCard() {
@@ -2557,8 +2563,8 @@ final class PolicyScreen {
 
     /** P22, the floor's (i). */
     static final String FLOOR_INFO = "Every wage in the city is a multiple of this number, so moving it moves "
-            + "all of them - including the doctors and nurses the city pays out of its "
-            + "own treasury. Wages walk to their new level over about a year rather "
+            + "all of them - including the doctors, nurses and teachers the city pays out of its "
+            + "own treasury, and the researchers in the posts its research grants buy. Wages walk to their new level over about a year rather "
             + "than jumping, so a change made now is a bill met slowly.";
 
     /** P23, both forms. */
@@ -2632,7 +2638,7 @@ final class PolicyScreen {
         DoubleFunction<String> today = v -> moneyFull(market.cashAt(v));
         Ladder ladder = ownLadder("floor", floor, min, max, step, today).stepReads(today).greyed(isShut(PolicyDates.Lever.MINIMUM_WAGE));
         double want = staged("floor", floor);
-        double payroll = ui.game.getEducation().getPayroll() + ui.game.getHealthcare().getPayroll();
+        double payroll = PolicyPreview.cityPayroll(ui.game);
         DoubleFunction<List<Effect>> effects = floorEffects(market);
         String info = FLOOR_INFO + " The dial is set in founding money - " + moneyFull(floor) + " a month at founding "
                 + "prices - and read in today's: the cost of living and the "
@@ -2647,7 +2653,7 @@ final class PolicyScreen {
 
     /** The floor's effects at any value of its thumb (pure: the probe reads them). */
     DoubleFunction<List<Effect>> floorEffects(LabourMarket market) {
-        double payroll = ui.game.getEducation().getPayroll() + ui.game.getHealthcare().getPayroll();
+        double payroll = PolicyPreview.cityPayroll(ui.game);
         return v -> List.of(
                 Effect.of("The floor, in today's money", market.cashMinimumWage(), market.cashAt(v), Money::moneyFull)
                         .delta(PolicyScreen::moneyMoveFull),
@@ -2656,7 +2662,7 @@ final class PolicyScreen {
                 Effect.of("Every wage, once walked", 1, PolicyPreview.wageMoveAt(ui.game, v),
                         x -> String.format("%+.1f%%", unsigned0((x - 1) * 100, 1)).replace('-', '−')),
                 Effect.of("The city's own payroll", payroll, PolicyPreview.cityPayrollAt(ui.game, v), PolicyScreen::amount)
-                        .delta(PolicyScreen::moneyMove));
+                        .delta(PolicyScreen::moneyMove).info("The teachers, the doctors and nurses and the researchers in the posts its research grants buy."));
     }
 
     /** What the city itself pays (W4), neutral (B14: a payroll is not bad news by being one). */
@@ -2664,11 +2670,12 @@ final class PolicyScreen {
         Education schools = ui.game.getEducation();
         Healthcare hospitals = ui.game.getHealthcare();
         return card(cardHead(Icons.GOVERNMENT, Palette.MONEY, "WHAT THE CITY ITSELF PAYS",
-                        "The teachers, doctors and nurses on the city's own payroll: every one of their wages is a multiple "
-                        + "of the floor too, so the floor is a bill the treasury pays as well as one it sets.", null),
+                        "The teachers, doctors and nurses, and the researchers in the posts its research grants buy, on the city's own payroll: every one "
+                        + "of their wages is a multiple of the floor too, so the floor is a bill the treasury pays as well as one it sets.", null),
                 cardLine("Teachers", money(schools.getPayroll()), null),
                 cardLine("Doctors and nurses", money(hospitals.getPayroll()), null),
-                cardLine("Its own payroll", money(schools.getPayroll() + hospitals.getPayroll()), Palette.TEXT_HEAD));
+                cardLine("Researchers in the research posts", money(ui.game.getEconomyManager().getResearchPayroll()), null),
+                cardLine("Its own payroll", money(PolicyPreview.cityPayroll(ui.game)), Palette.TEXT_HEAD));
     }
 
     /** The ladder as a table (W2), behind "details", in today's money: each job's multiple of the floor, what it is paid, and where it heads at a staged floor. */
