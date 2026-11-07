@@ -1,6 +1,6 @@
 # RailDepotCheck.java - 534 lines · 14 methods · 1 constants · harnesses
 
-`ham/citybuildersim/RailDepotCheck.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RailDepotCheck.java` - generated 2026-11-07 by CodeMap; line numbers are as of that run.
 
 > The railway's stations: the Rail Depot, and the rules that put a station
 > first and track only where it is needed (FR7, 2026-10-18; docs/queue/FR7.md
