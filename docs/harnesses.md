@@ -2,7 +2,7 @@
 
 Generated 2026-11-07 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**186 harness files, 21,677 labelled assertions.** AllChecks runs 186 of them.
+**186 harness files, 21,678 labelled assertions.** AllChecks runs 186 of them.
 
 ## Which harnesses read which class
 
@@ -4377,7 +4377,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L550 NEEDS YOU's childcare row wants those places
   - L555 ...and the month's coverage is its places over them, times the share who can pay
 
-## ClockCheck.java - 34 labelled assertions
+## ClockCheck.java - 35 labelled assertions
 
 > The clock's pace (UP2): a redraw is paced by what it cost, a frame spends a budget on months and
 > drops what it could not run, the header's speed says when the city falls short of it, and the
@@ -4393,47 +4393,49 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > ...
 
-- **L115 ClockCheck: the clock's pace (UP2)**
-- **L129 1: the next redraw waits for the cost of this one**
-  - L131 before any redraw the gap is REDRAW_EVERY
-  - L133 an end with no redraw begun changes nothing
-  - L155 ...and due on the frame once it has passed
-  - L161 a cheap redraw keeps the floor, a dear one is spaced by its cost
-  - L188 a redraw whose pulse came late is counted at REDRAW_COST_MAX, not at minutes
-- **L196 2: the months a frame runs**
-  - L202 5 ms months: a clamped frame at 50x runs every whole month due (
-  - L203 ...and keeps the rest of the month as the progress
-  - L215 50 ms months (over MONTH_FRAME_MS): one a frame whenever one is due, never more
-  - L238 600 frames at 50x: the months the callback ran are the sum of the frames' returns
-  - L240 ...no frame ran a month that was not due, and each ran the first when one was
-  - L243 ...and the slow months dropped time (the cut ran)
-  - L244 ...leaving at most one month owed
-  - L250 the clock stopping itself ends the frame after that month and zeroes the progress
-- **L257 3: a 2 s stall at 50x**
-  - L268 ...and owes under two months after it
-  - L269 ...the seconds past the clamp are dropped, not banked
-  - L273 ...and under one month is owed once the next frame has run its month
-- **L308 4: the speed's reading**
-  - L316 5 ms months at 50x for 3 s: the reading is the rung alone throughout, and no speed is reached
-  - L329 120 ms months at 50x: until a full window has run the reading is the rung
-  - L332 ...the figure reached is under the rung by more than SHORT_BY
-  - L335 the rung alone again after restart()
-  - L337 ...and for the first part of the new window
-  - L339 ...the speed reached again once a full window has run
-  - L342 a new rung starts the window again (the timer is told the speed each frame)
-  - L364 a speed reached under 1 is written with one decimal (0.4 against a rung of 1)
-  - L371 a rung of 0.1x with no month landed in the window reads the rung alone
-- **L441 5: the header reads the window it draws**
-  - L447 the young city has fewer than SPARK_MONTHS months, so the tile reads everything recorded
-  - L449 young city
-  - L454 the older city has more than SPARK_MONTHS + 24 months
-  - L455 older city
-  - L468 the grown history has folded years
-  - L469 folded history
-- **L487 6: the stall and the equal pair**
-  - L532 ...the same city read against other words is short, and says \"2×\" (it is the words that are equal)
-  - L576 every text the pace reached in this run is in reachedTexts() (
-  - L578 ...the list holds a text once, the tenths from 0.0× to 0.9× (no 1.0×) and the wholes up to a tenth under the top rung
+- **L135 ClockCheck: the clock's pace (UP2)**
+- **L150 1: the next redraw waits for the cost of this one**
+  - L152 before any redraw the gap is REDRAW_EVERY
+  - L154 an end with no redraw begun changes nothing
+  - L176 ...and due on the frame once it has passed
+  - L182 a cheap redraw keeps the floor, a dear one is spaced by its cost
+  - L209 a redraw whose pulse came late is counted at REDRAW_COST_MAX, not at minutes
+- **L217 2: the months a frame runs**
+  - L223 5 ms months: a clamped frame at 50x runs every whole month due (
+  - L224 ...and keeps the rest of the month as the progress
+  - L236 50 ms months (over MONTH_FRAME_MS): one a frame whenever one is due, never more
+  - L259 600 frames at 50x: the months the callback ran are the sum of the frames' returns
+  - L261 ...no frame ran a month that was not due, and each ran the first when one was
+  - L264 ...and the slow months dropped time (the cut ran)
+  - L265 ...leaving at most one month owed
+  - L271 the clock stopping itself ends the frame after that month and zeroes the progress
+- **L278 3: a 2 s stall at 50x**
+  - L289 ...and owes under two months after it
+  - L290 ...the seconds past the clamp are dropped, not banked
+  - L294 ...and under one month is owed once the next frame has run its month
+- **L329 4: the speed's reading**
+  - L337 5 ms months at 50x for 3 s: the reading is the rung alone throughout, and no speed is reached
+  - L350 120 ms months at 50x: until a full window has run the reading is the rung
+  - L353 ...the figure reached is under the rung by more than SHORT_BY
+  - L356 the rung alone again after restart()
+  - L358 ...and for the first part of the new window
+  - L360 ...the speed reached again once a full window has run
+  - L363 a new rung starts the window again (the timer is told the speed each frame)
+  - L385 a speed reached under 1 is written with one decimal (0.4 against a rung of 1)
+  - L392 a rung of 0.1x with no month landed in the window reads the rung alone
+- **L462 5: the header reads the window it draws**
+  - L468 the young city has fewer than SPARK_MONTHS months, so the tile reads everything recorded
+  - L470 young city
+  - L475 the older city has more than SPARK_MONTHS + 24 months
+  - L476 older city
+  - L489 the grown history has folded years
+  - L490 folded history
+- **L508 6: the stall and the equal pair**
+  - L553 ...the same city read against other words is short, and says \"2×\" (it is the words that are equal)
+  - L597 every text the pace reached in this run is in reachedTexts() (
+  - L599 ...the list holds a text once, the tenths from 0.0× to 0.9× (no 1.0×) and the wholes up to a tenth under the top rung
+- **L629 7: a stall the clock makes itself, again and again**
+  - L687 50×, a redraw begun while the clock stood still, then a stall of twice its cost: the reading stays the rung
 
 ## CoalMiningCheck.java - 49 labelled assertions
 

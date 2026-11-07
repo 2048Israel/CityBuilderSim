@@ -1,8 +1,9 @@
 # UP7b - the clock counts the stall its own redraw made; the pulse listener reads the pace field ({next}, 2026-11-07)
 
-**WHERE IT STANDS** (2026-11-07): code in, committed (969f7c42) and pushed on `batch/UP7b`, built on `origin/batch/XI2` (RL1: its
-lane's predecessor, ship file there, not on main yet). `--pick` on that tip: 7 of 186 harnesses, exit 3, main's recorded MapCheck and
-KeptCheck reds only; two timing assertions soft. The ship file waits for XI2 to land on main and be merged in (`docs/batch.md` 7).
+**WHERE IT STANDS** (2026-11-07): ready, see the ship file. Code in and committed (969f7c42), built on `origin/batch/XI2` (RL1); XI2 landed
+(0.9.44, 58b3d0fd) and main merged in (9e2cde9f; the generated docs conflicted, main's side taken, `--pick` regenerated them).
+`--pick` on that merge: 7 of 186 harnesses, exit 3, main's recorded MapCheck red only; 7 timing assertions soft (MapCheck 3,
+KeptCheck 4). Stale 0 firm.
 
 UP7's gate review, as the `QUEUE.md` row had it. Run on Sonnet whole (a small fix batch, `docs/batch.md` 3): no slice.
 
