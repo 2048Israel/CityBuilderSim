@@ -3020,8 +3020,9 @@ final class TradeScreen {
             ForeignAccounts.RISK_PREMIUM * 100, ForeignAccounts.THIN_COVER);
     static final String INTERVENTION_INFO = String.format("Dollars the treasury buys cheapen the currency and dollars it "
             + "sells make it dearer, at the real size: %.0f%% for each 1%% of a year's output up to %.0f%% of it, and "
-            + "less for each dollar past that, fading by half in %.0f "
-            + "months. The central bank sells dollars into a fall, and that lifts the currency the same way.",
+            + "less for each dollar past that, counted over everything dealt since the month turned, fading by half in %.0f "
+            + "months. The central bank sells dollars into a fall, and that lifts the currency the same way. Under a peg or "
+            + "a band the rate is held, and the hold (its own row) takes this off it again.",
             ForeignAccounts.INTERVENTION_IMPACT, ForeignAccounts.INTERVENTION_LINEAR * 100,
             ForeignAccounts.INTERVENTION_HALF_LIFE);
     static final String WORLD_FORCE_INFO = String.format("The dollar's own swing against every money, money running to safety, and the "
@@ -3216,13 +3217,15 @@ final class TradeScreen {
             + "against a year's output, at most %.0f%% either way) and the vault's cover (a %.0f%% discount on an empty "
             + "vault, falling to nothing at %.0f months of imports). The market is its own swing: seeded, fading by half in "
             + "%.1f years, about %.1f%% of fresh news a month. Dealing in dollars moves the rate at the real size, %.0f%% for "
-            + "each 1%% of a year's output, fading by half in %.0f months. The market and the fundamentals reach the rate in "
+            + "each 1%% of a year's output, up to %.0f%% of it dealt between two month ends and by less for each dollar past "
+            + "that, fading by half in %.0f months. Under a peg or a band the rate is held, so dealing moves the rate "
+            + "behind the hold, and the vault deals to meet it. The market and the fundamentals reach the rate in "
             + "full once the city trades %.0f%% of its output, and in proportion below that.",
             ForeignAccounts.TREND_LEVEL * 100, 1 / ForeignAccounts.TREND_SLOPE, ForeignAccounts.PERSISTENCE,
             ForeignAccounts.GAP_CAP * 100, ForeignAccounts.GAP_IMPACT * 100, ForeignAccounts.BALANCE_WEIGHT * 100,
             ForeignAccounts.BALANCE_CAP * 100, ForeignAccounts.RISK_PREMIUM * 100, ForeignAccounts.THIN_COVER,
             ForeignAccounts.MARKET_HALF_LIFE / 12, ForeignAccounts.MARKET_SIGMA * 100, ForeignAccounts.INTERVENTION_IMPACT,
-            ForeignAccounts.INTERVENTION_HALF_LIFE, ForeignAccounts.OPEN_ENOUGH * 100);
+            ForeignAccounts.INTERVENTION_LINEAR * 100, ForeignAccounts.INTERVENTION_HALF_LIFE, ForeignAccounts.OPEN_ENOUGH * 100);
 
     /** A fraction as a signed per cent to three places, with a true minus: "−0.229%". */
     static String signedPct3(double v) {
@@ -3587,6 +3590,59 @@ final class TradeScreen {
 
     /* ------------------------------ the exchange ------------------------------ */
 
+    /** The warning past the bound (XI2): its title, its line and what sits behind its (i). */
+    record PastBound(String title, String line, String whole) { }
+
+    /**
+     * The warning for an ask that takes the month's dealing past INTERVENTION_LINEAR of a year's output, or null (pure: the model's figures only). XI2: the
+     * bound is on what the treasury has dealt since the last reprice with this piece on top (ForeignAccounts.yearsOfOutputWith(), the sum step 5 reads), not on
+     * the piece alone - several pieces each under it cross it together - and the piece's move is what it adds to what is dealt already
+     * (dealEffectOnTop()). Under a peg the rate stays at the peg and the deal moves the float's own rate behind it, which the vault then deals against (XR5);
+     * under a band the rate stops at its edge once the move would carry it there.
+     */
+    PastBound pastBound() {
+        ForeignAccounts fx = ui.game.getForeignAccounts();
+        if (!(tradeExchange > 0)) return null;
+        double piece = tradeBuying ? tradeExchange : -tradeExchange;
+        double total = Math.abs(fx.yearsOfOutputWith(piece));
+        if (total <= ForeignAccounts.INTERVENTION_LINEAR) return null;
+        String kind = tradeBuying ? "purchase" : "sale";
+        boolean before = Math.abs(fx.getDealtSinceReprice()) >= .5;
+        String size = total >= 1 ? String.format("%.1f years", total) : String.format("%.0f%% of a year", total * 100);
+        String title = before ? String.format("This %s takes the month's dealing to %s of the city's output", kind, size)
+                : String.format("This %s is %s of the city's output", kind, size);
+        String line = String.format(before ? "The month's dealing counts together: past %.0f%% of a year's output each further dollar moves the %s less."
+                        : "Past %.0f%% of a year's output each further dollar moves the %s less.",
+                ForeignAccounts.INTERVENTION_LINEAR * 100, sym());
+        StringBuilder whole = new StringBuilder(String.format("Up to %.0f%% of a year's output dealt between two month ends moves the rate %.0f%% for "
+                        + "each 1%% of it, fading by half in %.0f months; past that each further dollar moves it less, so a deal many times "
+                        + "the size moves it only a few times as much. ",
+                ForeignAccounts.INTERVENTION_LINEAR * 100, ForeignAccounts.INTERVENTION_IMPACT, ForeignAccounts.INTERVENTION_HALF_LIFE));
+        if (before) {
+            double dealt = fx.getDealtSinceReprice();
+            whole.append(String.format("The treasury has already %s %s since the month turned, %.1f%% of a year's output, so this piece lands on top of it. ",
+                    dealt > 0 ? "bought" : "sold", d(Math.abs(dealt)), Math.abs(fx.dealtYears()) * 100));
+        }
+        String own = before ? "On top of that this piece alone" : "This one alone";
+        String mult = (fx.dealEffectOnTop(piece) >= 0 ? "×" : "÷") + String.format("%.1f", fx.dealFactor(piece));
+        String fades = String.format("half of that gone in %.0f months", ForeignAccounts.INTERVENTION_HALF_LIFE);
+        ForeignAccounts.Regime regime = fx.getRegime();
+        if (regime == ForeignAccounts.Regime.PEG) {
+            whole.append(String.format("Under the peg the rate stays at %s%s, held. %s would move the float's own rate behind it about %s, and the "
+                            + "vault deals to hold the peg against that (a peg gives way if holding it would take the vault under its floor).",
+                    sym(), fxRate(fx.rateAfterDeal(piece)), own, mult));
+        } else if (regime == ForeignAccounts.Regime.BAND && fx.regimeHoldsDeal(piece)) {
+            whole.append(String.format("Under the band the rate stops at its edge, %s%s. %s would move the float's own rate about %s, and the vault "
+                            + "deals to hold the rest.", sym(), fxRate(fx.rateAfterDeal(piece)), own, mult));
+        } else if (regime == ForeignAccounts.Regime.BAND) {
+            whole.append(String.format("Under the band the rate stays inside it. %s would move it about %s (%s per %s) in its month, to %s%s, %s.",
+                    own, mult, sym(), Currency.FOREIGN_SYMBOL, sym(), fxRate(fx.rateAfterDeal(piece)), fades));
+        } else {
+            whole.append(String.format("%s would move the rate about %s (%s per %s) in its month, %s.", own, mult, sym(), Currency.FOREIGN_SYMBOL, fades));
+        }
+        return new PastBound(title, line, whole.toString());
+    }
+
     /** What a press on the exchange's button says (pure: the probe reads it): GO with the amount; CHOOSE with nothing asked yet - a press asks the smallest step and prices it, and never trades. */
     Press exchangePress() {
         int money = ForeignAccounts.moneyIndex(tradeMoney);
@@ -3838,27 +3894,10 @@ final class TradeScreen {
                             + "it, is the sequence every currency crisis in the literature has in common.",
                             ForeignAccounts.THIN_COVER), null)));
         }
-        // XI1: a deal past INTERVENTION_LINEAR of a year's output moves the rate by less for each dollar (the model's interventionMove).
-        double years = fx.yearsOfOutput(tradeExchange);
-        if (years > ForeignAccounts.INTERVENTION_LINEAR) {
-            String kind = tradeBuying ? "purchase" : "sale";
-            String pastTitle = years >= 1
-                    ? String.format("This %s is %.1f years of the city's output", kind, years)
-                    : String.format("This %s is %.0f%% of a year of the city's output", kind, years * 100);
-            String pastLine = String.format("Past %.0f%% of a year's output each further dollar moves the %s less.",
-                    ForeignAccounts.INTERVENTION_LINEAR * 100, sym());
-            double effect = fx.dealEffect(tradeBuying ? tradeExchange : -tradeExchange);
-            String pastWhole = String.format("Up to %.0f%% of a year's output a deal moves the rate %.0f%% for each 1%% of it, "
-                            + "fading by half in %.0f months; past that each further dollar moves it less, so a deal many times "
-                            + "the size moves it only a few times as much. ",
-                    ForeignAccounts.INTERVENTION_LINEAR * 100, ForeignAccounts.INTERVENTION_IMPACT,
-                    ForeignAccounts.INTERVENTION_HALF_LIFE)
-                    + (fx.getRegime() == ForeignAccounts.Regime.PEG
-                    ? "Under the peg it moves nothing: the rate is held."
-                    : String.format("This one alone would move the rate about %s%.1f (%s per %s) in its month, half of that "
-                            + "gone in %.0f months.", effect >= 0 ? "×" : "÷", Math.exp(Math.abs(effect)), sym(),
-                            Currency.FOREIGN_SYMBOL, ForeignAccounts.INTERVENTION_HALF_LIFE));
-            c.getChildren().add(Kept.scope("past the bound", () -> actionCard(Icons.ALERT, Palette.WARN, pastTitle, pastLine, pastWhole, null)));
+        // XI1/XI2: the month's dealing past INTERVENTION_LINEAR of a year's output moves the rate by less for each dollar (pastBound() has the words).
+        PastBound past = pastBound();
+        if (past != null) {
+            c.getChildren().add(Kept.scope("past the bound", () -> actionCard(Icons.ALERT, Palette.WARN, past.title(), past.line(), past.whole(), null)));
         }
         c.getChildren().add(button);
         return c;

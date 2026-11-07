@@ -18,6 +18,28 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.45 — SS2, SaveSlotCheck 7d's hold on the swap's own count, not a clock — 2026-11-07, ready, see docs/queue/SS2-notes.md
+No player sees this one: a check went red under load and no longer can. LB3's section 7d (a save's swap over a file another
+program has open) held the file on a reader thread that let go after 100 ms of the wall clock, against the swap's ten tries
+fifty milliseconds apart; under load the thread and the tries slipped apart, and the check went red at RT1's gate on whether
+the swap "was refused and landed on a later try". The swap now calls a test seam, `GameFiles.onSwapRefused`, after each refused
+try, and 7d lets go of the file from inside it on the second, so the release is a step of the swap itself and no time is
+compared with a dial. The assertions are the same, with one added: the swap was refused exactly twice first. SaveSlotCheck ran
+three times beside two other harness JVMs and 7d held every time; the one red in each, 7c's median due month, is main's
+recorded timing red. Nothing in the model, a save or a screen changed, so the trace is PD1's and the ensemble was not run.
+
+### 0.9.44 — XI2, Trade's warning and rule text true of the bounded intervention, a peg and a band — 2026-11-07, ready, see docs/queue/XI2-notes.md
+XI1's review follow-ups, on texts only (the model's steps 5 and 7 are untouched, the trace is byte-identical, no ensemble). Trade's
+THE RULE and the Interventions row's (i) stated the unbounded linear rule; they now say up to 10% of a year's output dealt between
+two month ends and less for each dollar past that, and that a peg or a band holds the rate while dealing moves the rate behind the
+hold. The warning on the exchange read the deal alone: two pieces of 9% each crossed the bound unwarned, and the second's figure was
+its move alone (×1.2) when the model gives it on top of the first (×1.1). It now reads the month's dealing as the sum step 5 reads
+(a sale on top of a big purchase counts net) and says what is dealt already. Under a peg it said "moves nothing": the rate is held
+but the float's own rate behind it moves and the vault deals to hold it (XR5); under a band it said "would move the rate ×N" where
+the band stops it at its edge. New pure getters on `ForeignAccounts` (`dealtYears`, `yearsOfOutputWith`, `dealEffectOnTop`,
+`dealFactor`, `rateAfterDeal`, `regimeHoldsDeal`); `TradeScreen.pastBound()` has the words. InterventionCheck 6 proves the model
+(peg, band, the sum); KeptCheck 74b the texts, each scenario drawn kept.
+
 ### 0.9.43 — PD1, the drivers' petrol paid once — 2026-11-07, ready, see docs/queue/PD1-notes.md
 The households paid for their petrol twice. Retail books every litre as a sale to them, so it was in the shopping
 their books are handed, and the same month's bill, the fuel duty in it, was also their fuel line, taken out of the

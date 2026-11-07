@@ -1,4 +1,4 @@
-# SS2 ({next}, 2026-11-07): SaveSlotCheck 7d's hold on the swap's own count, not a sleep
+# SS2 (0.9.45, 2026-11-07): SaveSlotCheck 7d's hold on the swap's own count, not a sleep
 
 Built on PD1 (RL1); touches only `GameFiles.java` and `SaveSlotCheck.java`. No model, no save, no screen, no process change
 (a seam of a few lines in one retry, and a fixture): the default playtest's trace is byte-identical to PD1's, so no ensemble.
