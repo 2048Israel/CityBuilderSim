@@ -53,21 +53,24 @@ The trace moves. The default playtest on PD1's tip parts from R0g's at month 142
 against 182.28), is a person apart at month 261, and then plays its own 200 years, as a long city does on any change
 to its money; the ensemble is what judges it.
 
-The 80 runs (label PD1, the classes of 71037d15, four at once, 13.3 min) against `docs/ensemble/0.9.26.md`, the newest
-baseline: **23/26, the same three reds as the baseline**, each about where it was:
+The 80 runs on the final model, the merge with main (FD1 in; label PD1, the classes of 9860749a, four at once, 18.4
+min) against `docs/ensemble/0.9.41.md`, FD1's, the newest baseline: **24/26, one more than the baseline's 23**. A3
+passes now (its longest deflation spell 11 months against 15); A2 and S1 are red as they were:
 
-| criterion | PD1 | 0.9.26 |
+| criterion | PD1 on main | 0.9.41 |
 |---|---|---|
-| AUTO2 A1 inflation m240-end, a year | 2.35% [2.03 to 2.52], 16/16 in band | 2.36% [1.87 to 2.79], 16/16 |
-| AUTO2 A2 longest spell of yoy > 10% (FAIL in both) | 18 months [11 to 38] | 16 [10 to 35] |
-| AUTO2 A3 deflation spell (FAIL in both) | 4 [0 to 15] | 4 [0 to 15] |
-| ZERO_SLACK S1 inflation at 0% less the twin's (FAIL in both) | 2.17% [1.35 to 5.92], spell 92 months | 2.00% [1.11 to 4.79], spell 107 |
-| HIGH R3 inflation m660-720 less the twin | -3.80%, 2 seeds above +1 pt (the most it allows) | -3.52%, 0 above |
+| AUTO2 A1 inflation m240-end, a year | 2.35% [1.99 to 2.87], 16/16 in band | 2.34% [1.90 to 2.69], 16/16 |
+| AUTO2 A2 longest spell of yoy > 10% (FAIL in both) | 20 months [11 to 33] | 16 [10 to 33] |
+| AUTO2 A3 deflation spell, final/peak population | 4 [0 to 11]: PASS | 5 [0 to 15]: FAIL |
+| ZERO_SLACK S1 inflation at 0% less the twin's (FAIL in both) | 2.14% [1.35 to 5.11], spell 102 months | 2.00% [1.04 to 4.89], spell 107 |
+| HIGH R3 inflation m660-720 less the twin | -3.80%, 2 seeds above +1 pt (the most it allows) | -3.09%, 1 above |
 | M1 months the money audit failed, every policy | 0 | 0 |
-| T2 final population, AUTO2 / ZERO_SLACK / SHOCK / HIGH | 567,766 / 387,966 / 38,240 / 13,924 | 602,188 / 397,895 / 29,413 / 15,097 |
+| T2 final population, AUTO2 / ZERO_SLACK / SHOCK / HIGH | 585,213 / 377,106 / 38,288 / 13,924 | 603,462 / 391,434 / 30,352 / 14,550 |
 
-T1 16/16 seeds reach 40,000 people (median m864) and F1 no run with a playtest finding, as before. R3 at its limit is
-the line to watch at the next ensemble. The run's `baseline.md` is `docs/ensemble/PD1.md`; its folder (81 MB) is
+T1 16/16 seeds reach 40,000 people (median m862) and F1 no run with a playtest finding, as before. A2's median spell
+is four months longer, its worst the same; R3 at its limit is the line to watch at the next ensemble. A first run on
+R0g's tip, before FD1 (71037d15, against 0.9.26), scored 23/26 with the baseline's three reds; it was not the final
+model, so this one is kept. The run's `baseline.md` is `docs/ensemble/PD1.md`; both runs' folders (81 MB each) are
 deleted.
 
 ## 5. Checks
@@ -78,3 +81,6 @@ deleted.
 - `./batch-check.sh --pick` on 71037d15 against R0g's tip (12 harnesses, `Game.java` left to the gate, LongPlaytest in
   its place): **exit 3**, main's recorded LongPlaytest red only (exit 1 with no FAIL line, as `docs/notes/gate.txt`
   records it; its one finding is a building drawn moved at month 2396, map code PD1 does not touch). Stale 0 firm.
+- `--pick` on the merge with main 071ed050 (FD1 in), 0fc57978: 45 harnesses, **exit 3**, main's recorded reds only
+  (MapCheck and LongPlaytest, `docs/notes/gate.txt`). `git merge-tree` with main: the generated docs alone in
+  conflict (main's side, regenerated).
