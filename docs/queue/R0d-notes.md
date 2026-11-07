@@ -92,7 +92,9 @@ and 4.67 in 1950 (HSC W340-438, 3.8x); the university share of arrivals goes .00
 - **The trace.** The default playtest (2,405 months) traced on R3b's tip (853c29bd) and slice 1 (742590a6), each built
   apart and run back to back: all eight CSVs byte-identical, the log but for "in 52s"/"in 51s" and the layout windows'
   "1.8 s"/"1.7 s"; and slice 1 against slice 2 (a2e5c0e3) the same, the eight CSVs byte-identical. ArrivalMixCheck 4 holds
-  the join: `Migration` with no year mix and with `ArrivalMix.TODAY` composes the same arrivals, bit for bit.
+  the join: `Migration` with no year mix and with `ArrivalMix.TODAY` composes the same arrivals, bit for bit. Last, R3b's ready
+  tip (47bf4066, main 0.9.34 with UP7 and CX1 in) against its merge here (c2cfe602): the eight CSVs byte-identical, the log
+  but for "in 64s"/"in 60s" and the layout windows' line. So no ensemble (`docs/batch.md` 6).
 - **`--pick`** on the merge with R3b's tip (e64301e6, main 0.9.34 in): 57 of 185 harnesses for 40 files, LongPlaytest for
   Game.java; **exit 3**, main's recorded reds only (DenominationCheck, ScaleCheck). Before PrizeCheck's fixture (★7) it was
   exit 4 on PrizeCheck 12's five lines alone.
