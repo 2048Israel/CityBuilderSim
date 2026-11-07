@@ -24,7 +24,8 @@ import java.util.Arrays;
  * fix is a lag on the goods and only the goods: EconomyManager, THE D$ THE
  * GOODS ARE STRUCK AT. This is its harness. The first four sections prove the
  * rule and its wiring; the fifth the save; the sixth, the third rule of the
- * checks, that the mechanic fires in a real run and not only on a bench.
+ * checks, that the mechanic fires in a real run and not only on a bench; the
+ * seventh, AN2, the reading the player is shown.
  *
  * What it has to prove, a section each, every one a fixture that causes the
  * condition rather than waiting for it:
@@ -72,6 +73,10 @@ import java.util.Arrays;
  *      goods' D$ against the D$ the strike saw - median and widest gap, the
  *      months more than 5% apart - and the months in which the mechanic moved
  *      the goods at all.
+ *   7. THE SCREEN'S READING (AN2, 2026-11-06). Game.struckFromRate(), the line
+ *      on Trade > The currency: NaN while nothing is struck; and over section
+ *      2's months, the gap it reads at a month's end is the one the next
+ *      month's strike closes PASS_THROUGH of, in logs.
  *
  * Numbering is the running order. Money is in thousands, as everywhere.
  *
@@ -149,6 +154,7 @@ public class PassThroughCheck {
         theRingSettles();
         aSaveCarriesIt();
         howOftenItMatters();
+        theScreensReading();
 
         out.printf("%nrun time %.1f s%n", (System.currentTimeMillis() - started) / 1000.0);
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -269,6 +275,10 @@ public class PassThroughCheck {
     /** The D$ the strike saw, and the goods' D$ it struck, for each of section 2's months: section 6 reads them. */
     static final double[] seen = new double[MONTHS], struck = new double[MONTHS];
 
+    /** Game.struckFromRate() at the end of each of section 2's months (AN2), and whether it read NaN in the city before its first month: section 7 reads them. */
+    static final double[] gapEnd = new double[MONTHS];
+    static boolean nanAtFounding;
+
     static void theWiring() {
         out.println("\n--- 2. the wiring, every month in a real city ---");
 
@@ -276,6 +286,7 @@ public class PassThroughCheck {
         EconomyManager em = city.getEconomyManager();
         ForeignAccounts fx = city.getForeignAccounts();
         assertTrue("fixture: a new city has struck nothing yet: its struck rate is 0", em.getStruckRate() == 0);
+        nanAtFounding = Double.isNaN(city.struckFromRate());
 
         int wrongStrike = 0, wrongMarkets = 0, wrongBuildings = 0, wrongStart = 0;
         double widestDollar = 0, firstSeen = fx.getRate();
@@ -284,6 +295,7 @@ public class PassThroughCheck {
             month(city);
             seen[m] = dollar;
             struck[m] = em.getStruckRate();
+            gapEnd[m] = city.struckFromRate();
             double expected = m == 0 ? dollar : EconomyManager.passThrough(before, dollar, K);
             // The D$ the strike saw is the one read between months: the reprice is late in the month and nothing but it (and a
             // reform) moves the rate, so what the last month left is what the next one's strike finds.
@@ -684,5 +696,63 @@ public class PassThroughCheck {
                 + String.format("%.1f%%", 100 * widest) + ")", widest > .01);
         assertTrue("...and in a good many: more than 5% apart in " + over5 + " months", over5 > 0);
         assertTrue("...and the goods' D$ moved in nearly every month, as the rule has it (" + moved + " of " + (MONTHS - 1) + ")", moved > (MONTHS - 1) * .9);
+    }
+
+    /* ================= 7. the screen's reading ================= */
+
+    /**
+     * The least a month's two figures in logs may differ by before section 7 calls them different: doubles' own noise (a log of a ratio and an
+     * exp-log round trip each carry a few 1e-16), so a month whose gap is tiny is not failed for its last digits. Far under the screen's .05% line.
+     */
+    static final double LOG_NOISE = 1e-14;
+
+    static void theScreensReading() {
+        out.println("\n--- 7. the screen's reading: the goods' D$ against the D$ ---");
+
+        // NaN while nothing is struck: a city before its first month, and section 2's city with its struck rate cleared and put back.
+        assertTrue("a new city has struck nothing, and the reading is NaN: the line is not drawn (section 2's founding)", nanAtFounding);
+        EconomyManager em = city.getEconomyManager();
+        double kept = em.getStruckRate(), rate = city.getForeignAccounts().getRate();
+        em.setStruckRate(0);
+        assertTrue("fixture: the city's struck rate is cleared, as before a first strike", em.getStruckRate() == 0);
+        assertTrue("...and with nothing struck the reading is NaN", Double.isNaN(city.struckFromRate()));
+        em.setStruckRate(kept);
+        assertTrue("fixture: the struck rate is put back (" + String.format("%.6f", kept) + ")", Double.compare(em.getStruckRate(), kept) == 0);
+        close("...and the reading is the struck rate over the D$, less one (" + String.format("%.2f%%", 100 * city.struckFromRate()) + ")",
+                city.struckFromRate(), kept / rate - 1, 1e-15);
+
+        // The claim the screen's muted line makes: it closes PASS_THROUGH of the gap a month. gapEnd[m] is what the line would read when month m
+        // ends; the strike of month m+1 moves the goods' D$ that share of the way, in logs, to the D$ it finds, which is the D$ the line read.
+        int off = 0, shown = 0;
+        double worst = 0;
+        StringBuilder which = new StringBuilder();
+        for (int m = 0; m + 1 < MONTHS; m++) {
+            double actual = Math.log(struck[m + 1] / struck[m]), expected = -K * Math.log(1 + gapEnd[m]);
+            double miss = Math.abs(actual - expected);
+            if (miss > worst) worst = miss;
+            if (!(miss <= 1e-9 * Math.abs(expected) + LOG_NOISE)) {
+                off++;
+                if (shown++ < 12) which.append(String.format(" m%d (%.3e against %.3e: %.3e)", m + 1, actual, expected, miss));
+            }
+        }
+        out.printf("   %d month-pairs: the widest miss between what the strike moved the goods' D$ and K x the gap the line read is %.2e in logs;"
+                + " %d off%s%n", MONTHS - 1, worst, off, off == 0 ? "" : ":" + which);
+        assertTrue("every month, the gap the line reads at a month's end is the one the next strike closes PASS_THROUGH of, in logs (off in "
+                + off + " of " + (MONTHS - 1) + ")", off == 0);
+
+        // How often the line speaks: printed, not asserted.
+        int over5 = 0, stronger = 0, weaker = 0, level = 0;
+        double[] abs = new double[MONTHS];
+        for (int m = 0; m < MONTHS; m++) {
+            abs[m] = Math.abs(gapEnd[m]);
+            if (abs[m] > .05) over5++;
+            if (abs[m] < .0005) level++;
+            else if (gapEnd[m] < 0) stronger++;
+            else weaker++;
+        }
+        Arrays.sort(abs);
+        double median = (abs[MONTHS / 2 - 1] + abs[MONTHS / 2]) / 2;
+        out.printf("   the line over %d month-ends: %d months more than 5%% either way, median gap %.2f%%, widest %.2f%%;"
+                + " %d say \"stronger than the rate\", %d \"weaker\", %d \"level\"%n", MONTHS, over5, 100 * median, 100 * abs[MONTHS - 1], stronger, weaker, level);
     }
 }

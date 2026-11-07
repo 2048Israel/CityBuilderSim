@@ -1,4 +1,4 @@
-# R0d - research: the 1901 wage ladder and the arrivals' skill mix by year ({next}, 2026-11-06)
+# R0d - research: the 1901 wage ladder and the arrivals' skill mix by year (0.9.38, 2026-11-06)
 
 ## WHERE IT STANDS
 

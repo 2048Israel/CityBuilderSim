@@ -2342,6 +2342,12 @@ public class Game {
         return RealDollar.dollarsPer2015Usd(foreign.getRate(), world.getPriceLevel());
     }
 
+    /** How far the D$ the goods are struck at (EconomyManager.getStruckRate(), AN1) sits from today's D$: the struck rate over the D$, less one - below nothing while the goods trail a D$ that has weakened, above while they trail one that has strengthened; NaN before the first strike. Trade › The currency shows it (AN2); nothing in the model reads it. */
+    public double struckFromRate() {
+        double struck = economyManager.getStruckRate(), rate = foreign.getRate();
+        return struck > 0 && rate > 0 ? struck / rate - 1 : Double.NaN;
+    }
+
     /**
      * The last finished month's GDP in real 2015 US$: the month's GDP over the city's price index (YearBook.realGdp's division) over the founding's
      * rate in today's money (RealDollar.realGdp2015Usd).
