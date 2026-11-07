@@ -1,4 +1,4 @@
-# PD1 - the drivers' petrol paid once ({next}, 2026-11-07)
+# PD1 - the drivers' petrol paid once (0.9.43, 2026-11-07)
 
 ## WHERE IT STANDS
 
