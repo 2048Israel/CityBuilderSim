@@ -21,7 +21,7 @@ reviews' items of R3, R4 and R5 (§3).
 |---|---|---|
 | A1 | `ResearchPreview` (Research.month() on arrays over 400 draws of the hidden sizes, each conditioned on its pile, the labs by the game's own chase), `ResearchView`'s Overview and Funding reads, the cached preview and its words, R5's gate-review reads; `ResearchPreviewCheck` 1-9, `ResearchViewCheck` 11-15; `docs/studies/research-model/previews.py`, the reference run | b6937637 |
 | A2 | the gate reviews' items in the model and the save (§3); DiscoveryCheck 19-20, PrizeCheck 18-20 | 4ba8ef6d |
-| B | `ui/ResearchScreen`'s Overview and Funding, the hub's sixth card, each school's posts line, Government's research line and payroll, Policy's payroll sums; `ResearchView.Card`, the dials' ranges, the budget's effect, a school's posts; KeptCheck 98-100, ResearchViewCheck 16-19 | 74ae8eb8 |
+| B | `ui/ResearchScreen`'s Overview and Funding, the hub's sixth card, each school's posts line, Government's research line and payroll, Policy's payroll sums; `ResearchView.Card`, the dials' ranges, the budget's effect, a school's posts; KeptCheck 99-101, ResearchViewCheck 16-19 | 74ae8eb8 |
 
 All drafted by Sonnet 5.5 at xhigh, reviewed here. What the reviews found:
 
@@ -45,7 +45,7 @@ All drafted by Sonnet 5.5 at xhigh, reviewed here. What the reviews found:
 - **Mended here (56698350):** B put the prizes paid to the labs in a row under Spending's total, its (i) saying the total
   does not count them; the books strike them in Subsidies (`strikeGovernmentBooks()`: `getTotalSubsidyPaid() +
   prizePaid`, R4 ★5), so the row showed them twice. The row is gone, the Subsidies line opens on the sectors kept going
-  and the research prizes in a month one was paid, and KeptCheck 100 holds the line to the two.
+  and the research prizes in a month one was paid, and KeptCheck 101 holds the line to the two.
 
 ## 2. The calls (★)
 
@@ -98,7 +98,7 @@ All drafted by Sonnet 5.5 at xhigh, reviewed here. What the reviews found:
   back: all eight CSVs byte-identical, the log but for "in 54s"/"in 57s". No ensemble (`docs/batch.md` 6).
 - **The save** (`DataSave.ResearchRecord`): five maps by field name, written only while the record is (a default city
   writes none, as before). No format bump: a save without them reads them empty.
-- **The screens** (KeptCheck 98-100: 44, 75 and 21 ok; ResearchViewCheck 209 ok): each new page drawn kept over last
+- **The screens** (KeptCheck 99-101, 98 until UP7 took it: 44, 75 and 21 ok; ResearchViewCheck 209 ok): each new page drawn kept over last
   month's nodes is the page built new, month after month, in the 1900 town and a default city, with a dial staged and
   a month landing under a held thumb; a second draw in the month writes 0 (section 92's rule) on Overview, Funding,
   the hub, Education, Spending and the wage floor.
