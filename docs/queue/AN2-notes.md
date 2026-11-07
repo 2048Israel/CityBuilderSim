@@ -5,10 +5,17 @@ The brief is [AN2](AN2.md): Jerus, 2026-10-23, on AN1-C's "left undone", "Queue 
 ## WHERE IT STANDS
 
 **Ready.**
-- **The branch.** `batch/AN2` was built on XR5's ship file (RL1, 25b1e5c4): {MERGE}.
+- **The branch.** `batch/AN2` was built on XR5's ship file (RL1, 25b1e5c4); main with XR5
+  in (92f33f13, CX1 with it) was merged at bc44336a, main's side taken in the generated
+  `docs/map/README.md`. `git merge-tree` with origin/main 92f33f13: clean.
 - **The commit.** 3064ead9: the getter, the line and the harness, drafted by Sonnet 5.5 at
   xhigh and reviewed by Opus.
-- **The checks.** {PICK}
+- **The checks.** `./batch-check.sh --pick KeptCheck` on the merge: exit 3, main's recorded
+  KeptCheck red only (PassThroughCheck, LongPlaytest for Game.java, TimingCheck; KeptCheck
+  named, since `pick` counts no harness reading TradeScreen while KeptCheck 72 draws Trade ›
+  The currency: kept, 274 nodes handed back a month, none made). Before the merge the same
+  run said exit 4 with XR5's two KeptCheck lines (KF1), not this batch's code; they are in
+  main's record since XR5's gate.
 - **The trace.** The default playtest ran traced (`-Dplaytest.trace`, both data files named)
   on XR5's tip (25b1e5c4, built apart) and on 3064ead9: all eight CSVs are byte-identical,
   and the logs differ only in their run times. So there is no ensemble (EN1).
