@@ -189,6 +189,13 @@ import java.nio.file.Path;
  *      railway's, which the clearing used to wipe - so the refinery's
  *      buyers on the industry card sum to its row's sold at home.
  *
+ *  20. THE DRIVERS' PETROL, PAID ONCE (PD1, 2026-11-07): Retail's sale of
+ *      petrol to the households is in its sales to them and is also the
+ *      households' fuel line (the bill, the duty in it); the households'
+ *      shopping is the shop's sales less the petrol, the two lines foot to
+ *      the shop's sales and the treasury's duty, the cells pay it once in
+ *      their fees, and a save loaded reads the same books.
+ *
  * Every fixture CAUSES its condition: the city is handed its oil the way
  * MiningCheck hands a city its ore (LandManager.restoreSites()), except in
  * section 2, which buys it.
@@ -317,6 +324,7 @@ public class OilCheck {
         theTankFarm();
         theStrategicReserve();
         theFuelDuty();
+        petrolPaidOnce();
 
         out.println();
         if (fails == 0) {
@@ -786,6 +794,93 @@ public class OilCheck {
         double r = na.getTotalRevenue();
         na.setFuelDuty(d);
         return r;
+    }
+
+    /* ============================ 20. THE DRIVERS' PETROL, PAID ONCE (PD1, 2026-11-07) ============================ */
+
+    /** The statement's petrol sold to the households, the grocers' sale without the duty; 0 when the book holds none. */
+    static double petrolAtHome(Retail pump) {
+        var split = pump.statement().sold.get(Good.PETROL);
+        return split == null ? 0 : split.atHome;
+    }
+
+    /** Two figures agree to a billionth of the larger (a sum in another order). */
+    static boolean near(double a, double b) {
+        return Math.abs(a - b) <= 1e-9 * Math.max(Math.abs(a), Math.abs(b));
+    }
+
+    /**
+     * R0c's review found the drivers' petrol in two lines of the households'
+     * books: Retail books each litre as a sale of PETROL to the households,
+     * so its value is in the shop's sales to them, which the sync hands the
+     * books as the shopping - and the same month's petrol is the households'
+     * fuel line (Motoring's bill, the duty in it), settled out of the cells'
+     * cash with the row's fees. A 600-house town that drives, with the duty
+     * set, a month struck and a month on: the shopping is the shop's sales
+     * less the petrol, the two lines foot to what the shop and the treasury
+     * took, and the cells pay the petrol in their fees once.
+     */
+    static void petrolPaidOnce() throws Exception {
+        out.println("\n--- 20. the drivers pay their petrol once: their fuel line, not their shopping too (PD1) ---");
+        Game g = town("oilcheck-petrol-once", 600, 2_000_000);
+        Retail pump = g.getSectors().retail();
+        TaxPolicy policy = g.getEconomyManager().getTaxPolicy();
+        Motoring mo = g.getMotoring();
+        HouseholdAccounts hb = g.getHouseholds();
+        policy.setFuelDuty(DUTY);
+        int[] months = { 0 };
+        quietly(() -> {
+            while (months[0] < 36 && !(mo.getFuelBill() > 0)) {
+                g.simulateMonths(1);
+                months[0]++;
+            }
+        });
+        // The month the statement will be of: its bill and duty, taken before the next month moves them.
+        double bill = mo.getFuelBill(), duty = pump.getFuelDuty();
+        double worst = g.getLastMoneyAudit().relative();
+        quietly(() -> g.simulateMonths(1));
+        worst = Math.max(worst, g.getLastMoneyAudit().relative());
+
+        double petrol = petrolAtHome(pump);
+        double salesToHouseholds = pump.statement().salesToHouseholds;
+        double homeFuel = g.getHomeFuel().getBill();
+        report("fixture: the drivers bought petrol at the pump, in the grocers' book and in the households' fuel line",
+                bill > 0 && petrol > 0 && hb.getFuel() > 0,
+                String.format("%d months, petrol sold $%,.6fk, the fuel line $%,.6fk", months[0], petrol, hb.getFuel()));
+        report("...the grocers' petrol the drivers' bill less the duty, the households' fuel line the whole bill, the duty in it",
+                duty > 0 && near(petrol, bill - duty) && near(hb.getFuel(), bill),
+                String.format("petrol $%,.6fk, bill $%,.6fk, duty $%,.6fk, fuel line $%,.6fk", petrol, bill, duty, hb.getFuel()));
+
+        // THE FINDING: the shopping is the shop's sales less what has its own line.
+        double shopping = hb.getShopping(), expected = salesToHouseholds - petrol - homeFuel;
+        report("the households' shopping is the grocers' sales to them less the petrol (and less the homes' lamp oil and coal)",
+                near(shopping, expected),
+                String.format("$%,.6fk against $%,.6fk, over by $%,.6fk (the petrol $%,.6fk)", shopping, expected, shopping - expected, petrol));
+        double lines = shopping + hb.getFuel(), took = salesToHouseholds + duty;
+        report("...so the shopping and the fuel line foot to who took the money: the grocers' sales to the households and the treasury's duty",
+                near(lines, took),
+                String.format("$%,.6fk against $%,.6fk, over by $%,.6fk (the petrol $%,.6fk)", lines, took, lines - took, petrol));
+
+        // The cells' cash: the rows add up, and the fuel is in the fees they settle.
+        double rows = 0;
+        boolean fees = true;
+        for (int r = 0; r < hb.getRowCount(); r++) {
+            rows += hb.getRowShopping(r);
+            fees &= g.getRowFeesSettled(r) == hb.getRowHealthcare(r) + hb.getRowTuition(r) + hb.getRowFares(r) + hb.getRowFuel(r) + hb.getRowHomeFuel(r);
+        }
+        report("the rows' shopping add to the shopping, and each row's fees settled hold its fuel: the cells pay the petrol once, in their fees",
+                near(rows, shopping) && fees, String.format("rows $%,.6fk of $%,.6fk", rows, shopping));
+
+        // Across a save: the load path strikes the same books.
+        GameFiles files = FILES.get(g);
+        quietly(() -> g.saveGame(10, "petrol-once"));
+        Game twin = new Game(files);
+        quietly(() -> twin.loadGameSave(10));
+        report("the load path agrees: a twin loaded from the save reads the same shopping and the same fuel line",
+                twin.getLoadFailure() == null && near(twin.getHouseholds().getShopping(), shopping) && near(twin.getHouseholds().getFuel(), hb.getFuel()),
+                String.format("shopping $%,.6fk against $%,.6fk, fuel $%,.6fk against $%,.6fk", twin.getHouseholds().getShopping(), shopping,
+                        twin.getHouseholds().getFuel(), hb.getFuel()));
+        report("...and the audit closed in those months", worst < 1e-10, String.format("worst %.2e", worst));
     }
 
     /* ============================ 13. THE PHASE-1 BUYERS (0.7.83) ============================ */
