@@ -1,4 +1,4 @@
-# UP7 - the speed reading as the reached speed alone; the drawer's bar and the construction tab kept ({next}, 2026-11-06)
+# UP7 - the speed reading as the reached speed alone; the drawer's bar and the construction tab kept (0.9.34, 2026-11-06)
 
 **WHERE IT STANDS** (2026-11-06): ready, see the ship file. The code in and reviewed (b1f1470d, 7babacf3). Built on
 `origin/batch/UP6` at its ship file (2c8040a9, RL1); UP6 landed and main (c7ad4d9a) merged in (9be237da). The
