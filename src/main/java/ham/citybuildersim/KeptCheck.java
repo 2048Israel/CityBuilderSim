@@ -6634,10 +6634,10 @@ public class KeptCheck {
     static void researchOverview(Game town, KeptBench bench) throws Exception {
         System.out.println("\n--- 99: the Overview in a city founded the 1900 way, kept: four figures, a row a field, a row a kind of school ---");
         KeptBench.Page page = fx(() -> bench.policy("Policy, Research's Overview", "Research", "Overview"));
-        pageKept(town, bench, page, 98);
+        pageKept(town, bench, page, 99);
         nothingSet(bench, page, "Policy, Research, Overview in the town (its figures, a row a field, a row a kind of school)");
         arrive(bench, page);
-        pageShows(town, bench, page, 98);
+        pageShows(town, bench, page, 99);
 
         ResearchView.Overview ov = fx(() -> ResearchView.overview(town));
         List<ResearchView.SchoolRow> schools = fx(() -> ResearchView.schoolRows(town));
@@ -6697,7 +6697,7 @@ public class KeptCheck {
         choices.add(policyPage("Research", "Funding"));
         choices.add(policyPage("Research", "Found"));
         choices.add(policyPage("Research", "Overview"));
-        pageReshaped(town, bench, page, 98, choices, KP6_HANDED_BACK);
+        pageReshaped(town, bench, page, 99, choices, KP6_HANDED_BACK);
 
         // The hub's sixth card.
         KeptBench.Page hub = fx(() -> bench.policy("the Policy hub in the research town", null, null));
@@ -6717,10 +6717,10 @@ public class KeptCheck {
     static void researchFundingPage(Game town, KeptBench bench) throws Exception {
         System.out.println("\n--- 100: the Funding page, kept: a card a field, a grant and a prize staged through Policy's set and tray, their rows before and after ---");
         KeptBench.Page page = fx(() -> bench.policy("Policy, Research's Funding", "Research", "Funding"));
-        pageKept(town, bench, page, 99);
+        pageKept(town, bench, page, 100);
         nothingSet(bench, page, "Policy, Research, Funding in the town (its four cards, their dials and rows)");
         arrive(bench, page);
-        pageShows(town, bench, page, 99);
+        pageShows(town, bench, page, 100);
 
         ResearchCatalog.Field eng = ResearchCatalog.Field.ENGINEERING, med = ResearchCatalog.Field.MEDICINE;
         ResearchView.Overview ov = fx(() -> ResearchView.overview(town));
@@ -6807,7 +6807,7 @@ public class KeptCheck {
                 c3.prizeMoved() && has(lowSig, label(KeptBench.researchSay(c3))) && has(lowSig, "is under what a lab needs here") && has(lowSig, label(Money.money(lowPrize))));
 
         // What reshapes the page: each stage, the discard, two dials at once, a month after each.
-        pageReshaped(town, bench, page, 99, List.of(
+        pageReshaped(town, bench, page, 100, List.of(
                 choice("a grant staged up on engineering", stageMore),
                 choice("...and discarded", discard),
                 choice("a grant past the room", stagePast),
