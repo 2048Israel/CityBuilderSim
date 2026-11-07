@@ -44,6 +44,10 @@ import java.util.TreeSet;
  *   7. A TERMINAL FOLLOWS when the tonnes outgrow the depots, at its own
  *      threshold.
  *   8. THE LAST STATION IS NOT RETIRED while a spur or a line stands.
+ *   9. THE LAST STATION IS KEPT WHILE IT HAS A STATION'S FREIGHT (FD1): a sale
+ *      the planner would buy back (the freight left unserved is a first
+ *      station's rung) is refused, by the distress rule as by any other, and
+ *      allowed a tonne under it or with a second station standing.
  *
  * The fixtures are bare cities (a catalogue, a planner, a Freight with nothing
  * else), because plan() asks for nothing a city adds except the staffing,
@@ -524,6 +528,62 @@ public class RailDepotCheck {
                 withSpur.fr.mayRetire(withSpur.t("Rail Spur")) && withLine.fr.mayRetire(withLine.t("Freight Line")));
         assertTrue("a Truck Depot is still never retired by the railway's measure",
                 !withSpur.fr.mayRetire(withSpur.t("Truck Depot")));
+
+        /* ================================================================
+           9. THE LAST STATION IS KEPT WHILE IT HAS A STATION'S FREIGHT (FD1)
+           ================================================================ */
+
+        System.out.println("\n--- the last station is kept while the freight it carries would order a station again ---");
+
+        // Goods tonnes are not served by sidings (offer(0, tonnes) leaves the sidings none), so the stations carry all the offer.
+        Fx keepDepot = new Fx().stand("Rail Depot", 1);
+        keepDepot.offer(0, depotNeeds);
+        assertTrue("a lone depot offered a depot's threshold of goods tonnes may not be sold: the sale would be bought back",
+                !keepDepot.fr.mayRetire(depot) && keepDepot.fr.wouldOrderAgain(depot));
+        Fx sellDepot = new Fx().stand("Rail Depot", 1);
+        sellDepot.offer(0, depotNeeds - 1);
+        assertTrue("...a tonne under the threshold it may be sold: nothing would be ordered in its place",
+                sellDepot.fr.mayRetire(depot) && !sellDepot.fr.wouldOrderAgain(depot));
+
+        Fx bare = new Fx();
+        bare.offer(0, depotNeeds);
+        BusinessInvestment.Decision orderedAgain = bare.plan();
+        report("the premise, from one side: a city with no station offered that threshold orders a Rail Depot",
+                orderedAgain.build && orderedAgain.template == bare.t("Rail Depot"), say(orderedAgain));
+        Fx bareUnder = new Fx();
+        bareUnder.offer(0, depotNeeds - 1);
+        BusinessInvestment.Decision notOrdered = bareUnder.plan();
+        report("...and from the other: a tonne under it orders nothing, so the sale the guard refuses is the one that would be bought back",
+                !notOrdered.build, say(notOrdered));
+        assertTrue("the first station is the Rail Depot, the smallest of the catalogue",
+                cat.fr.firstStation() == depot);
+
+        // The distress rule: DISTRESS_LOSS_MONTHS of losses, overdrawn, nothing in flight.
+        Fx keptInDistress = new Fx().stand("Rail Depot", 1);
+        keptInDistress.offer(0, depotNeeds);
+        for (int i = 0; i < BusinessInvestment.DISTRESS_LOSS_MONTHS; i++) keptInDistress.plans.recordSectorResult(keptInDistress.fr.key(), -1);
+        BusinessInvestment.Decision keptDecision = keptInDistress.plans.planDistressRetirement(keptInDistress.fr, -1, 0);
+        report("the distress rule: " + BusinessInvestment.DISTRESS_LOSS_MONTHS + " months of losses, overdrawn, the depot's threshold offered: it sells nothing",
+                !keptDecision.build, say(keptDecision));
+        Fx soldInDistress = new Fx().stand("Rail Depot", 1);
+        soldInDistress.offer(0, depotNeeds - 1);
+        for (int i = 0; i < BusinessInvestment.DISTRESS_LOSS_MONTHS; i++) soldInDistress.plans.recordSectorResult(soldInDistress.fr.key(), -1);
+        BusinessInvestment.Decision soldDecision = soldInDistress.plans.planDistressRetirement(soldInDistress.fr, -1, 0);
+        report("...a tonne under the threshold, the same losses sell the Rail Depot",
+                soldDecision.build && soldDecision.template == soldInDistress.t("Rail Depot"), say(soldDecision));
+
+        Fx loneTerminal = new Fx().stand("Rail Terminal", 1);
+        loneTerminal.offer(0, depotNeeds);
+        assertTrue("a lone terminal offered a depot's threshold may not be sold either: a depot would be ordered",
+                !loneTerminal.fr.mayRetire(terminal) && loneTerminal.fr.wouldOrderAgain(terminal));
+
+        Fx pairOfDepots = new Fx().stand("Rail Depot", 2);
+        pairOfDepots.offer(0, 3 * depotNeeds);
+        assertTrue("two depots standing offered three thresholds: one may go, the guard is the last station's",
+                pairOfDepots.fr.mayRetire(depot));
+
+        assertTrue("a spur, a Truck Depot and a null are no station, so none of them is a sale that would be bought back",
+                !cat.fr.wouldOrderAgain(spur) && !cat.fr.wouldOrderAgain(null) && !cat.fr.wouldOrderAgain(cat.t("Truck Depot")));
 
         if (fails > 0) {
             System.out.printf("%n%d check(s) failed%n", fails);
