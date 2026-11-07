@@ -2,10 +2,10 @@
 
 ## WHERE IT STANDS
 
-**Ready.** Branch `batch/R0g` from `batch/R0e`'s ship file (RL1, cdcb0a67); main with R0e in merged at MERGE. One slice,
-drafted by Sonnet 5.5 at xhigh and reviewed here (COMMIT); the probes, the CentralBankCheck comment and the two queued
+**Ready.** Branch `batch/R0g` from `batch/R0e`'s ship file (RL1, cdcb0a67); main with R0e and FX9 in (d7ce0f44) merged at e57dc53d, the generated docs alone in conflict (main's side, regenerated). One slice,
+drafted by Sonnet 5.5 at xhigh and reviewed here (921d218c); the probes, the CentralBankCheck comment and the two queued
 briefs written here. The game's own month is untouched: a fixture's hold and two harness sections. So the default trace
-is main's to the byte (section 6), and there is no ensemble. `--pick` on the merge: **EXIT**.
+is main's to the byte (section 6), and there is no ensemble. `--pick` on the merge: **exit 3**.
 
 ## 1. What R0g is
 
@@ -107,7 +107,7 @@ ring (a saved field, the screens' sick by age and the long-sick bars), and the d
   10b takes 0.4 s.
 - **`--pick`** on the branch before the merge (30 of 186 harnesses for 52 files against 154eb0b9, R0e's among them;
   LongPlaytest for Game.java, BuildingManager.java and Good.java): **exit 3**, main's recorded MapCheck red only
-  (`docs/notes/gate.txt`). PICKMERGE
+  (`docs/notes/gate.txt`). On the merge with main d7ce0f44 (14 of 186 harnesses for 18 files; LongPlaytest for Game.java): **exit 3**, main's recorded LongPlaytest red only ("exit 1", no FAIL line, recorded by R0e's gate). The trace was compared before the merge; what the merge brings is main's, and R0g adds nothing to a game's month.
 - One in, one out (`docs/batch.md` 10) does not apply: no process file changed.
 
 The scratch probes (`R0gProbe`, `R0gDrift`) and their output were deleted once their figures were in these notes.
