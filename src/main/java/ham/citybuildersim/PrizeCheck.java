@@ -1310,7 +1310,17 @@ public class PrizeCheck {
 
     /** A village with a University and the hands, played to the month before `f` first wants `labs` labs. */
     static Game labCity(String label, boolean the1900Way, Field f, int labs) {
+        return labCity(label, the1900Way, f, labs, true);
+    }
+
+    /**
+     * The same, on today's wage ladder or on the founding's (R0d ★7). Today's, the 1900 way's villages too, for the investors' order: it needs owners
+     * with the savings to put up a lab at its cost, and a default-way twin that wants one at the same prize, and on 1901's wages a village has neither
+     * (R1d judges that). The founding's for a village that is saved and loaded: a load lays the founding's ladder, before anything a harness can say.
+     */
+    static Game labCity(String label, boolean the1900Way, Field f, int labs, boolean todaysLadder) {
         Game g = DiscoveryCheck.cityWithSchools(label, the1900Way, false);
+        if (todaysLadder) g.layTheLadder(WageLadder.TODAY, true);
         playHanded(g, monthWantingALab(f, labs) - 1 - g.getMonth());
         return g;
     }
@@ -1670,7 +1680,8 @@ public class PrizeCheck {
 
     static void sectionSixteen() throws Exception {
         System.out.println("\n--- 16. the save: prizes, pots, the labs' piles, the shares, the idle counts and the month's prize paid come back, and a loaded city plays on as the one saved ---");
-        Game g = labCity("prize-save", true, F, 1);
+        // On the founding's ladder, 1901's: it is saved and loaded, and its labs are placed by hand, so it asks no owner for money (R0d ★7).
+        Game g = labCity("prize-save", true, F, 1, false);
         Research r = g.getResearch();
         BuildingsTemplate lab = g.labTemplate(F);
         DiscoveryCheck.quietly(() -> g.buildStack(lab, 2, true));

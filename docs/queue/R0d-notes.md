@@ -2,9 +2,10 @@
 
 ## WHERE IT STANDS
 
-**Building.** Branch `batch/R0d` from `batch/R3b`'s ship file (RL1, 853c29bd). Slice 1 (the ladder) is 742590a6; slice 2
-(the arrivals' mix) is with Sonnet. Only a city founded the 1900 way (`Founding.isUnfitted()`, R1c ★1, R2 ★3) reads either;
-R1d switches that founding on and judges it.
+**Built; waiting for R3b.** Branch `batch/R0d` from `batch/R3b`'s ship file (RL1, 853c29bd). Slice 1 (the ladder) is
+742590a6, slice 2 (the arrivals' mix) a2e5c0e3, both drafted by Sonnet 5.5 at xhigh and reviewed here. Only a city founded the
+1900 way (`Founding.isUnfitted()`, R1c ★1, R2 ★3) reads either; R1d switches that founding on and judges it. The default
+trace is R3b's to the byte (§5), so no ensemble.
 
 ## 1. What R0d is
 
@@ -15,7 +16,7 @@ on with R1's 1900 recipes, in a city founded the 1900 way, and nowhere else.
 | slice | what | state |
 |---|---|---|
 | 1 | `WageLadder` (today's, PayTier's to the bit; 1901's, the census's, converted to founding money once), the labour market, the allocator's band bases, the pension's wage base and the grant, the founding rents and the depot's founding quote on the city's ladder (`Game.layTheLadder()`, at founding and on load; nothing saved); `WageLadderCheck` | 742590a6 |
-| 2 | `ArrivalMix` (knots 1901, 1913, 1953 and today's model in 2021, the shares interpolated by month), `Migration.composeArrivals()`'s 1900 branch, Game's push each month; `ArrivalMixCheck` | with Sonnet |
+| 2 | `ArrivalMix` (knots 1901, 1913, 1953 and today's model in 2021, the shares interpolated by month), `Migration.composeArrivals()`'s 1900 branch, Game's push each month (nothing saved); `ArrivalMixCheck` | a2e5c0e3 |
 
 ## 2. The 1901 ladder
 
@@ -78,12 +79,20 @@ and 4.67 in 1950 (HSC W340-438, 3.8x); the university share of arrivals goes .00
    counts.
 6. **★ 1953 to 2021 is a straight line to today's model** (no 1961-2011 knots; est.). Recommended: keep until a batch sources
    them from the censuses' attainment tables.
+7. **★ PrizeCheck's lab villages are founded on today's ladder** (`labCity()`, through `Game.layTheLadder(WageLadder, boolean)`,
+   package-private as `unfitTheFounding()` is). On 1901's wages a 1900 village's owners put up $0 of the $733k a lab costs at
+   today's prices, and its default-way twin no longer wants a lab at the 1900 village's prize: section 12's five reds. The
+   section's premise is the investors' order (owners first, never a loan, one a field a month), so the fixture causes its
+   condition, as R0's ★17-18 opened the levers. The save village keeps the founding's ladder (a load lays the founding's
+   before anything a harness can say, and its labs are placed by hand). Recommended: keep; what a 1900 city on 1901's wages
+   can fund is R1d's to judge (`## pending`).
 
 ## 5. Checks
 
 - **The trace.** The default playtest (2,405 months) traced on R3b's tip (853c29bd) and slice 1 (742590a6), each built
   apart and run back to back: all eight CSVs byte-identical, the log but for "in 52s"/"in 51s" and the layout windows'
-  "1.8 s"/"1.7 s". (Slice 2 and the final tree: below.)
+  "1.8 s"/"1.7 s"; and slice 1 against slice 2 (a2e5c0e3) the same, the eight CSVs byte-identical. ArrivalMixCheck 4 holds
+  the join: `Migration` with no year mix and with `ArrivalMix.TODAY` composes the same arrivals, bit for bit.
 - **FittingCheck 4** went red on slice 1: its 1900 village, on 1901's wages, grows more slowly (1,242 people at month 14
   against 1,780), so its builders finish the second pair of Bakeries after the 36 months the fixture gave them. The window
   is now `BAKERY_MONTHS`, 60; the premise (what a finished Bakery comes with) is unmoved, and a default village stops as

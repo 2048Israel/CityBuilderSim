@@ -4,7 +4,7 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 525 files, 578,941 lines, 25,186 methods, 5,543 constants. `GameVersion.VERSION` is "0.9.33", `SAVE_FORMAT` 50.
+**The tree:** 525 files, 578,961 lines, 25,188 methods, 5,543 constants. `GameVersion.VERSION` is "0.9.33", `SAVE_FORMAT` 50.
 
 ## model (247 files)
 
@@ -99,7 +99,7 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [FuelSplit.java](FuelSplit.md) | 229 | 8 | FUEL, split into the PETROL and DIESEL it became: a save written before 0.7.76 converted once, on its load, before anything is restored (batch O1; ... | 2 |
 | [FundLedger.java](FundLedger.md) | 766 | 92 | The city's fund's cost basis: what each holding cost, by the average-cost method, what its sales and maturities realized, what it has paid in incom... | 10 |
 | [FundView.java](FundView.md) | 873 | 39 | The city's fund as the screens read it (0.7.39): every holding with its average cost and P&L, what the fund has made since it began and by kind, it... | 5 |
-| [Game.java](Game.md) | 22,016 | 973 | sections: THE CITY FOUNDED THE 1900 WAY, AND WHAT A NEW BUILDING COMES WITH (R1b, 2026-11-05; docs/studies/research-design.md 2.2 step 6), THE FITT... | 260 |
+| [Game.java](Game.md) | 22,025 | 974 | sections: THE CITY FOUNDED THE 1900 WAY, AND WHAT A NEW BUILDING COMES WITH (R1b, 2026-11-05; docs/studies/research-design.md 2.2 step 6), THE FITT... | 260 |
 | [GameFiles.java](GameFiles.md) | 548 | 46 | Where the game keeps its files, and how it writes them. | 170 |
 | [GameLog.java](GameLog.md) | 348 | 20 | Everything the game prints, written somewhere a player can find it. | 12 |
 | [GamePrefs.java](GamePrefs.md) | 249 | 27 | How the player likes the window, kept between runs. | 5 |
@@ -244,7 +244,7 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [UtilitiesHandler.java](UtilitiesHandler.md) | 733 | 70 | sections: WATER SUPPLY, THE FRESH WATER LIMIT (0.7.59, batch J2; spec-land 2.3 and star 7)... | 25 |
 | [VaultView.java](VaultView.md) | 64 | 2 | The vault in eight (WN6; docs/studies/spec-nations.md 8, the Trade screen's The reserves with the eight moneys in a table): what the vault holds of... | 2 |
 | [WageBand.java](WageBand.md) | 170 | 7 | The four education bands the wage tax is set by. | 36 |
-| [WageLadder.java](WageLadder.md) | 145 | 10 | The wage ladder a city is founded on: today's (PayTier's) or 1901's (the census's). | 5 |
+| [WageLadder.java](WageLadder.md) | 145 | 10 | The wage ladder a city is founded on: today's (PayTier's) or 1901's (the census's). | 6 |
 | [WantedPosts.java](WantedPosts.md) | 222 | 19 | The posts the city's businesses wanted this month and the staffing gate would not let them open, and the part of them the labour market prices as i... | 11 |
 | [WorkingHousehold.java](WorkingHousehold.md) | 50 | 7 | A household with an earner in it, at one pay tier. | 5 |
 | [World.java](World.md) | 2,162 | 120 | The world a city is founded on: a flat square the size of the Earth with its sea, lakes, forest and beaches, the founding site with its lake and ri... | 105 |
@@ -479,7 +479,7 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [PopulationCheck.java](PopulationCheck.md) | 1,426 | 11 | The demographics: do they hold together, and do they move the city the way they were told to? | 0 |
 | [PortCheck.java](PortCheck.md) | 1,192 | 23 | The city's ports and their boats (0.7.86, batch O9; docs/studies/spec-oil.md 2.9, 2.10 and 4's PortCheck; runs/research-freight.md 5). | 3 |
 | [PriceLevelCheck.java](PriceLevelCheck.md) | 1,093 | 42 | A city founded at 1900's prices is today's real economy with every dollar multiplied by one factor, and this is how we know (EP1, Jerus 2026-10-30:... | 12 |
-| [PrizeCheck.java](PrizeCheck.md) | 1,901 | 71 | A prize pays only for a result, a Research Lab goes for the cheapest problem the purse pays for, and the schools' share of a purse buys posts (R4, ... | 1 |
+| [PrizeCheck.java](PrizeCheck.md) | 1,912 | 72 | A prize pays only for a result, a Research Lab goes for the cheapest problem the purse pays for, and the schools' share of a purse buys posts (R4, ... | 1 |
 | [QuarryingCheck.java](QuarryingCheck.md) | 638 | 13 | Quarrying, checked (0.7.131, batch I7; docs/studies/spec-materials.md 2.1, 2.3, 2.4, 2.10, 4 and 5's I7 row; the study's - materials-chains-researc... | 1 |
 | [RailCheck.java](RailCheck.md) | 753 | 8 | The railway: what it charges, who pays it, and what it does to the band. | 1 |
 | [RailDepotCheck.java](RailDepotCheck.md) | 534 | 14 | The railway's stations: the Rail Depot, and the rules that put a station first and track only where it is needed (FR7, 2026-10-18; docs/queue/FR7.m... | 1 |

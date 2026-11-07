@@ -1222,19 +1222,28 @@ public class Game {
      */
     private void layTheLadder(boolean atFounding) {
         if (!founding.isUnfitted()) return;
-        WageLadder ladder = WageLadder.of(founding);
+        layTheLadder(WageLadder.of(founding), atFounding);
+    }
+
+    /**
+     * The same, on a ladder named rather than the founding's: package-private so that a harness whose premise is not the wages can found its 1900
+     * city on today's ladder (PrizeCheck's lab villages, R0d ★7: an investors' order needs owners with today's savings), as unfitTheFounding()
+     * is for a hand-placed village. A load lays the founding's ladder back.
+     */
+    void layTheLadder(WageLadder ladder, boolean atFounding) {
         TaxPolicy tax = economyManager.getTaxPolicy();
         populationManager.setLadder(ladder);
         if (atFounding) {
             labourMarket.foundOn(ladder);
             tax.foundOn(ladder);
             getSectors().realEstate().foundOn(ladder.anchor());
+            populationManager.setWagesPerType();
         } else {
+            // ...and not the wages: the load takes them from the restored market (takeWagesFrom()), after this.
             labourMarket.setLadder(ladder);
             tax.setLadder(ladder);
             getSectors().realEstate().setWageAnchor(ladder.anchor());
         }
-        populationManager.setWagesPerType();
     }
 
     /**

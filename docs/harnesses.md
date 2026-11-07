@@ -333,7 +333,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [VaultTable](map/VaultTable.md) | **none** |
 | [VaultView](map/VaultView.md) | PartnersCheck |
 | [WageBand](map/WageBand.md) | ArrivalMixCheck, BankCheck, BuildAdviceCheck, EducationCheck, HouseholdCheck, InvestCheck, KeptCheck, LabourCheck, LongPlaytest, OutsideCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, SaveFileCheck, ScaleCheck, WageLadderCheck, WantedPostsCheck, ZoningCheck |
-| [WageLadder](map/WageLadder.md) | WageLadderCheck |
+| [WageLadder](map/WageLadder.md) | PrizeCheck, WageLadderCheck |
 | [WantedPosts](map/WantedPosts.md) | AutoBuildCheck, CurrencyRegimeCheck, CurveCheck, DeathRecordCheck, DeskCheck, HoldersCheck, OrderSearchCheck, ScaleCheck, WantedPostsCheck |
 | [Where](map/Where.md) | KeptCheck |
 | [WoodProducts](map/WoodProducts.md) | BuildCardCheck, BuildingDataCheck, GdpCheck, IndustryViewCheck, WoodProductsCheck |
@@ -20265,108 +20265,108 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1254 ...with three labs of 300 researchers in every field and a prize of 0 it is the same: the labs find nothing, pile nothing and sit idle (
   - L1261 ...and a prize with no lab changes none of the work either: the schools take every purse (
   - L1272 with a prize of 0 nobody wants a lab, in any field, in any month of history: no wanted, no target, no stake, no chase
-- **L1370 11. the labs are buildings: four templates, one a field, with a lab's jobs; no planner of Business Services offers one**
-  - L1374 fixture: both the built-in definitions and buildings.json are there
-  - L1422 a \"researches\" that is no field is reported by name and read as none, and one that is a field is read: the key is a Field's name
-  - L1443 Business Services' plan is never a lab nor held for the staff of one, over 36 months of a 1900 village, a default one and a 1900 village with no hands (
-  - L1456 fixture: the sector's only templates are the four labs and the city cannot staff one (
-  - L1457 ...and the plan still offers none and holds for nobody's staff: no template, no hold, no build
-- **L1463 12. investors build a lab while the purse pays for it: owners first, never a loan, one a field a month, only in a city founded the 1900 way**
-  - L1469 fixture: three villages at month
-  - L1473 fixture: a prize exists at which the model wants a lab here next month: the least cover of the open problems that does (
-  - L1478 ...and it wants one at that prize and none a hair under it
-  - L1482 fixture: the default-way village's model would want a lab at the same prize (its research is empty: it has not run)
-  - L1485 fixture: the lab has a target, a cost and a stake above nothing
-  - L1490 within a month of play a lab is ordered: one is on site, none standing yet, and the month's word under
-  - L1493 ...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (
-  - L1495 ...and no loan: Business Services borrowed this month what its twin did
-  - L1497 with the prize a hair under, none is ordered: nothing on site, and nothing said
-  - L1498 a village founded the default way with the same prize orders none and says nothing
-  - L1499 ...and the lab is in no other field, and no other village ordered one
-  - L1510 fixture: a prize that covers every problem the world leaves a team time for makes the model want
-  - L1513 ...yet the investors order one that month, never two: at most one lab a field a month
-  - L1517 ...and the next month one more only if the model still wants more than the one it has (wanted
-- **L1523 13. a lab at work: its researchers are the posts' filled ones, and go for the problem the purse pays for**
-  - L1534 fixture: two labs stand, and the buildings' jobs grew by two labs' (Research.labJobs() twice), which the city's jobs count
-  - L1536 fixture: a prize covers a problem the world leaves time for
-  - L1541 fixture: the labs have a target on the chase list
-  - L1545 the month's lab researchers are the filled researchers of the labs' posts at the month's fill, two labs' hundred posts each (
-  - L1546 ...and there are some: the posts are filled
-  - L1549 their work lands on the target: the lab share on it is above nothing
-  - L1550 ...and every lab researcher is on a problem or idle: the shares and the idle make the researchers (
-  - L1551 ...the labs' part of the target's pile is above nothing and within the pile
-  - L1552 a field with no lab has no lab researchers
-- **L1590 14. the purse is paid: the labs' share to Business Services' till through the treasury's prizes line, the schools' to the pot, told in th...**
-  - L1594 fixture: the lab has a target on the chase list after its first month at work
-  - L1597 fixture: the lab's month found
-  - L1599 the purse is the prize, split by the work piled
-  - L1600 the treasury's prizes line paid exactly the labs' share (
-  - L1601 ...none of it refused past the ceiling: no arrears
-  - L1603 Business Services' cash flow statement received the same figure from the city (its cash rose by what the treasury paid)
-  - L1604 ...and the statement explains the sector's till to the cent: nothing unexplained
-  - L1606 the month's money audit closes with the transfer in it
-  - L1607 the national accounts carry it where the business subsidies are (a transfer to a firm, not government consumption): the month's subsidies paid
-  - L1608 the schools' share is in the field's pot
-  - L1611 the inbox's \"found\" notice carries the sentence:
-  - L1612 the sentence names the prize and both parts, and a part of nothing would be left out
-  - L1615 the treasury's prizes line is discretionary like the subsidies: not a promise, not a purchase, owed as arrears when refused, labelled for the prizes, and the...
-  - L1619 a month with no find pays no prize: the month's prize paid is zero again
-  - L1624 fixture: the lab has a target on the chase list after its first month at work, at the largest prize
-  - L1628 a purse past the treasury's room is paid what the treasury may spend and the rest is owed, as arrears on the prizes' line (
-  - L1631 ...and the sector's books still close on what it was paid, and the audit with them
-- **L1638 15. a lab with nothing to chase idles for LAB_IDLE_MONTHS months and is then sold back, as any building is**
-  - L1644 fixture: a lab stands in a village with no prize, nothing to chase and no count yet
-  - L1650 not one month before: through the first
-  - L1653 the next month it is sold back: no lab stands, the count starts again, the sale is in the demolition log under Business Services
-  - L1657 ...and no other lab is ordered or sold in the months after: with no prize nobody wants one
-  - L1665 a lab of a sector a harness holds is not sold, though its idle months pass the threshold (
-- **L1672 16. the save: prizes, pots, the labs' piles, the shares, the idle counts and the month's prize paid come back, and a loaded city plays on...**
-  - L1682 fixture: a city with a prize, two labs, a find and its purse paid, work piled by the labs, last month's shares and a lab too many
-  - L1686 the city is saved
-  - L1688 ...with the new keys under its research
-  - L1692 loaded without a failure
-  - L1693 the prizes, the pots, the labs' piles, the city's shares and the idle counts come back equal
-  - L1697 ...and the month's prize paid
-  - L1698 ...the labs stand as they did and the jobs are the same
-  - L1717 two years on, month by month, the saved city and the loaded one have the same finds (in order,
-  - L1723 ...and at the end the same pots, piles and labs' piles
-  - L1729 fixture: a city founded the default way that has played two months holds no research at all
-  - L1731 a prize alone makes it hold some
-  - L1734 ...so the save has the research key, with the prize under its field
-  - L1737 ...and a load puts it back: the prize is 12.5 in law and nothing in the other fields
-- **L1744 17. a city founded the default way orders nothing, pays nothing and has no lab, whatever the prizes; a reform of the money scales prizes,...**
-  - L1750 fixture: a village founded the default way at month
-  - L1757 six months on nothing is ordered, said, paid or owed, and nothing is found, piled or potted: no lab, no prize paid, no purse
-  - L1764 fixture: the lab has a target on the chase list after its first month at work
-  - L1768 fixture: a prize, a pot, a prize paid this month and a find
-  - L1772 fixture: the reform went through and moved the money: the treasury's cash is
-  - L1773 the prize is scaled as the cash is
-  - L1774 ...the pot too
-  - L1775 ...and the month's prize paid
-  - L1776 the work piled, the finds and the other fields' prizes are not money and are as they were
-- **L1792 18. the month's researchers, idle researchers, open problems, lab researchers and idle lab researchers are saved: a load reads them as th...**
-  - L1802 fixture: a city with a grant, a prize and two labs, three months on: every field has researchers, engineering has problems open, lab researchers and some of ...
-  - L1804 ...and medicine has a problem open and nobody idle: the counts differ field by field
-  - L1808 the city is saved
-  - L1811 ...with the five counts under its research
-  - L1814 loaded without a failure
-  - L1815 the loaded city reads the same five counts in every field as the one saved did, before it plays a month:
-  - L1826 a save without the five reads them empty, with the rest of the research as it was
-- **L1833 19. a month whose books do not come to a finite figure moves no cash, and the labs' share of a find in it is owed to Business Services an...**
-  - L1836 fixture: the lab has a target on the chase list after its first month at work
-  - L1840 fixture: the month of the find, with the treasury's cash not a number, found
-  - L1842 the month's cash update was blocked: nothing was paid to the labs, the prize paid is 0 and Business Services' statement received nothing from the city
-  - L1845 ...but the labs' share is owed: arrears on the prizes' line, to Business Services, of exactly the purse's labs' part (
-  - L1846 ...Business Services is owed it, whatever else the blocked month refused it
-  - L1847 ...and it is among the month's refusals, as any refused line is
-  - L1848 the schools' share is in the pot all the same: the find was made
-  - L1853 with cash back the next month pays it down: nothing is owed on the prizes' line, and Business Services' till received the labs' share from the city as arrear...
-  - L1857 ...and the prize paid that month stays 0: it came as arrears, not as a prize
-- **L1863 20. the stake the investors put up for a lab: in a village whose prize draws a lab the Exchange's buyback spends none of it before the find**
-  - L1892 fixture: the investors ordered a lab, and put up money for it as equity (
-  - L1895 the Exchange's buyback spent nothing of it in any of the
-  - L1896 ...because it never qualified to bid: a record that is bad (
-  - L1898 ...and its till (at most
+- **L1380 11. the labs are buildings: four templates, one a field, with a lab's jobs; no planner of Business Services offers one**
+  - L1384 fixture: both the built-in definitions and buildings.json are there
+  - L1432 a \"researches\" that is no field is reported by name and read as none, and one that is a field is read: the key is a Field's name
+  - L1453 Business Services' plan is never a lab nor held for the staff of one, over 36 months of a 1900 village, a default one and a 1900 village with no hands (
+  - L1466 fixture: the sector's only templates are the four labs and the city cannot staff one (
+  - L1467 ...and the plan still offers none and holds for nobody's staff: no template, no hold, no build
+- **L1473 12. investors build a lab while the purse pays for it: owners first, never a loan, one a field a month, only in a city founded the 1900 way**
+  - L1479 fixture: three villages at month
+  - L1483 fixture: a prize exists at which the model wants a lab here next month: the least cover of the open problems that does (
+  - L1488 ...and it wants one at that prize and none a hair under it
+  - L1492 fixture: the default-way village's model would want a lab at the same prize (its research is empty: it has not run)
+  - L1495 fixture: the lab has a target, a cost and a stake above nothing
+  - L1500 within a month of play a lab is ordered: one is on site, none standing yet, and the month's word under
+  - L1503 ...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (
+  - L1505 ...and no loan: Business Services borrowed this month what its twin did
+  - L1507 with the prize a hair under, none is ordered: nothing on site, and nothing said
+  - L1508 a village founded the default way with the same prize orders none and says nothing
+  - L1509 ...and the lab is in no other field, and no other village ordered one
+  - L1520 fixture: a prize that covers every problem the world leaves a team time for makes the model want
+  - L1523 ...yet the investors order one that month, never two: at most one lab a field a month
+  - L1527 ...and the next month one more only if the model still wants more than the one it has (wanted
+- **L1533 13. a lab at work: its researchers are the posts' filled ones, and go for the problem the purse pays for**
+  - L1544 fixture: two labs stand, and the buildings' jobs grew by two labs' (Research.labJobs() twice), which the city's jobs count
+  - L1546 fixture: a prize covers a problem the world leaves time for
+  - L1551 fixture: the labs have a target on the chase list
+  - L1555 the month's lab researchers are the filled researchers of the labs' posts at the month's fill, two labs' hundred posts each (
+  - L1556 ...and there are some: the posts are filled
+  - L1559 their work lands on the target: the lab share on it is above nothing
+  - L1560 ...and every lab researcher is on a problem or idle: the shares and the idle make the researchers (
+  - L1561 ...the labs' part of the target's pile is above nothing and within the pile
+  - L1562 a field with no lab has no lab researchers
+- **L1600 14. the purse is paid: the labs' share to Business Services' till through the treasury's prizes line, the schools' to the pot, told in th...**
+  - L1604 fixture: the lab has a target on the chase list after its first month at work
+  - L1607 fixture: the lab's month found
+  - L1609 the purse is the prize, split by the work piled
+  - L1610 the treasury's prizes line paid exactly the labs' share (
+  - L1611 ...none of it refused past the ceiling: no arrears
+  - L1613 Business Services' cash flow statement received the same figure from the city (its cash rose by what the treasury paid)
+  - L1614 ...and the statement explains the sector's till to the cent: nothing unexplained
+  - L1616 the month's money audit closes with the transfer in it
+  - L1617 the national accounts carry it where the business subsidies are (a transfer to a firm, not government consumption): the month's subsidies paid
+  - L1618 the schools' share is in the field's pot
+  - L1621 the inbox's \"found\" notice carries the sentence:
+  - L1622 the sentence names the prize and both parts, and a part of nothing would be left out
+  - L1625 the treasury's prizes line is discretionary like the subsidies: not a promise, not a purchase, owed as arrears when refused, labelled for the prizes, and the...
+  - L1629 a month with no find pays no prize: the month's prize paid is zero again
+  - L1634 fixture: the lab has a target on the chase list after its first month at work, at the largest prize
+  - L1638 a purse past the treasury's room is paid what the treasury may spend and the rest is owed, as arrears on the prizes' line (
+  - L1641 ...and the sector's books still close on what it was paid, and the audit with them
+- **L1648 15. a lab with nothing to chase idles for LAB_IDLE_MONTHS months and is then sold back, as any building is**
+  - L1654 fixture: a lab stands in a village with no prize, nothing to chase and no count yet
+  - L1660 not one month before: through the first
+  - L1663 the next month it is sold back: no lab stands, the count starts again, the sale is in the demolition log under Business Services
+  - L1667 ...and no other lab is ordered or sold in the months after: with no prize nobody wants one
+  - L1675 a lab of a sector a harness holds is not sold, though its idle months pass the threshold (
+- **L1682 16. the save: prizes, pots, the labs' piles, the shares, the idle counts and the month's prize paid come back, and a loaded city plays on...**
+  - L1693 fixture: a city with a prize, two labs, a find and its purse paid, work piled by the labs, last month's shares and a lab too many
+  - L1697 the city is saved
+  - L1699 ...with the new keys under its research
+  - L1703 loaded without a failure
+  - L1704 the prizes, the pots, the labs' piles, the city's shares and the idle counts come back equal
+  - L1708 ...and the month's prize paid
+  - L1709 ...the labs stand as they did and the jobs are the same
+  - L1728 two years on, month by month, the saved city and the loaded one have the same finds (in order,
+  - L1734 ...and at the end the same pots, piles and labs' piles
+  - L1740 fixture: a city founded the default way that has played two months holds no research at all
+  - L1742 a prize alone makes it hold some
+  - L1745 ...so the save has the research key, with the prize under its field
+  - L1748 ...and a load puts it back: the prize is 12.5 in law and nothing in the other fields
+- **L1755 17. a city founded the default way orders nothing, pays nothing and has no lab, whatever the prizes; a reform of the money scales prizes,...**
+  - L1761 fixture: a village founded the default way at month
+  - L1768 six months on nothing is ordered, said, paid or owed, and nothing is found, piled or potted: no lab, no prize paid, no purse
+  - L1775 fixture: the lab has a target on the chase list after its first month at work
+  - L1779 fixture: a prize, a pot, a prize paid this month and a find
+  - L1783 fixture: the reform went through and moved the money: the treasury's cash is
+  - L1784 the prize is scaled as the cash is
+  - L1785 ...the pot too
+  - L1786 ...and the month's prize paid
+  - L1787 the work piled, the finds and the other fields' prizes are not money and are as they were
+- **L1803 18. the month's researchers, idle researchers, open problems, lab researchers and idle lab researchers are saved: a load reads them as th...**
+  - L1813 fixture: a city with a grant, a prize and two labs, three months on: every field has researchers, engineering has problems open, lab researchers and some of ...
+  - L1815 ...and medicine has a problem open and nobody idle: the counts differ field by field
+  - L1819 the city is saved
+  - L1822 ...with the five counts under its research
+  - L1825 loaded without a failure
+  - L1826 the loaded city reads the same five counts in every field as the one saved did, before it plays a month:
+  - L1837 a save without the five reads them empty, with the rest of the research as it was
+- **L1844 19. a month whose books do not come to a finite figure moves no cash, and the labs' share of a find in it is owed to Business Services an...**
+  - L1847 fixture: the lab has a target on the chase list after its first month at work
+  - L1851 fixture: the month of the find, with the treasury's cash not a number, found
+  - L1853 the month's cash update was blocked: nothing was paid to the labs, the prize paid is 0 and Business Services' statement received nothing from the city
+  - L1856 ...but the labs' share is owed: arrears on the prizes' line, to Business Services, of exactly the purse's labs' part (
+  - L1857 ...Business Services is owed it, whatever else the blocked month refused it
+  - L1858 ...and it is among the month's refusals, as any refused line is
+  - L1859 the schools' share is in the pot all the same: the find was made
+  - L1864 with cash back the next month pays it down: nothing is owed on the prizes' line, and Business Services' till received the labs' share from the city as arrear...
+  - L1868 ...and the prize paid that month stays 0: it came as arrears, not as a prize
+- **L1874 20. the stake the investors put up for a lab: in a village whose prize draws a lab the Exchange's buyback spends none of it before the find**
+  - L1903 fixture: the investors ordered a lab, and put up money for it as equity (
+  - L1906 the Exchange's buyback spent nothing of it in any of the
+  - L1907 ...because it never qualified to bid: a record that is bad (
+  - L1909 ...and its till (at most
 
 ## QuarryingCheck.java - 47 labelled assertions
 
