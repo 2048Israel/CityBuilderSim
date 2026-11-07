@@ -392,14 +392,16 @@ public class SaveSlotCheck {
      */
     static final int GROWN_MONTHS = 180;
 
-    /** How long 7d holds the file open before letting go: a fifth of the swap's retries (GameFiles.SWAP_RETRIES times SWAP_RETRY_MS), well inside them. */
-    static final long HOLD_MS = GameFiles.SWAP_RETRIES * GameFiles.SWAP_RETRY_MS / 5;
+    /** The refused try of the swap at which 7d lets go of the file it holds: the second of GameFiles.SWAP_RETRIES, well inside them; the swap's own count, no clock (SS2). */
+    static final int RELEASE_ON_REFUSAL = 2;
 
     /**
      * 7d (LB3's gate review, 2026-10-31): a write's swap over a file another handle has open. On Windows the move is
      * refused while the handle is open - the Rankings board reading a slot, an antivirus scan - and the slot kept its
      * old history beside its new save. The fixture causes it: a reader holds the target open, and a plain move over it
-     * is refused. Then a write whose handle is let go after HOLD_MS lands, having waited; one whose handle outlasts every
+     * is refused. Then a write whose handle is let go at the swap's refused try number RELEASE_ON_REFUSAL lands, having
+     * waited. The release is made from GameFiles.onSwapRefused on the swap's own thread (SS2: it was a thread timed
+     * against the wall clock, and slipped under load, RT1's gate); one whose handle outlasts every
      * retry fails, says so, and leaves the file whole; and the next write lands. Another filesystem lets a file be
      * replaced while it is open, and there is nothing to wait for: the section says so and asserts nothing.
      */
@@ -433,20 +435,25 @@ public class SaveSlotCheck {
         int waitedBefore = GameFiles.swapsThatWaited();
 
         java.io.Reader held = Files.newBufferedReader(target);
-        Thread release = new Thread(() -> {
-            try {
-                Thread.sleep(HOLD_MS);
-                held.close();
-            } catch (Exception ignored) {
-                // The write's assertions below say what happened.
+        int[] refusals = {0};
+        GameFiles.onSwapRefused = tries -> {
+            refusals[0] = tries;
+            if (tries == RELEASE_ON_REFUSAL) {
+                try {
+                    held.close();
+                } catch (java.io.IOException ignored) {
+                    // The write's assertions below say what happened.
+                }
             }
-        }, "slotcheck-release");
-        long from = System.nanoTime();
-        release.start();
-        GameFiles.Result waited = files.write(target, out -> out.write("new"));
-        long took = (System.nanoTime() - from) / 1_000_000;
-        release.join();
-        assertTrue("a write over a file let go after " + HOLD_MS + " ms lands (" + took + " ms)", waited.ok && Files.readString(target).equals("new"));
+        };
+        GameFiles.Result waited;
+        try {
+            waited = files.write(target, out -> out.write("new"));
+        } finally {
+            GameFiles.onSwapRefused = null;
+        }
+        assertTrue("a write over a file let go at its refused try " + RELEASE_ON_REFUSAL + " lands", waited.ok && Files.readString(target).equals("new"));
+        assertEquals("...having been refused exactly that many times first", refusals[0], RELEASE_ON_REFUSAL);
         assertTrue("...after waiting for it: its swap was refused and landed on a later try (GameFiles.swapsThatWaited)", GameFiles.swapsThatWaited() == waitedBefore + 1);
         assertTrue("...with the .tmp gone and the file before it in the .bak", !Files.exists(tmp) && Files.readString(bak).equals("old"));
 

@@ -1,4 +1,4 @@
-# GameFiles.java - 548 lines · 46 methods · 11 constants · model
+# GameFiles.java - 559 lines · 46 methods · 11 constants · model
 
 `ham/citybuildersim/GameFiles.java` - generated 2026-11-07 by CodeMap; line numbers are as of that run.
 
@@ -81,12 +81,13 @@
 | 356 | `public final Path file` |  |
 | 357 | `public final String error` |  |
 | 363 | `public final String historyError` | Why the history beside this save could not be written (UP6, LB3-S), or null when it was or none was written. |
+| 492 | `static volatile java.util.function.IntConsumer onSwapRefused` | A test seam in the swap's retry (SS2): called on the swap's own thread after each refused try that will be tried again, with the number of tries made so far, before the wait. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 54 | 495 | **type** `public final class GameFiles` | Where the game keeps its files, and how it writes them. |
+| 54 | 506 | **type** `public final class GameFiles` | Where the game keeps its files, and how it writes them. |
 
 ### slots (lines 61-115)
 
@@ -138,7 +139,7 @@
 | 335 | 3 | `public boolean slotIsUnreadable(int slot)` | True when a slot holds a file the game cannot make sense of. |
 | 340 | 4 | `public boolean slotIsLoadable(int slot)` | Loadable: something is there, and it can be read. |
 
-### writing (lines 345-548)
+### writing (lines 345-559)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -157,7 +158,7 @@
 | 439 | 1 | `void writeTo(java.io.Writer out) throws IOException` _(in GameFiles.Body)_ |  |
 | 451 | 19 | `public Result write(Path file, Body body)` | The same, streamed (UP1, 2026-10-22): the body writes straight into the .tmp through a buffered UTF-8 writer instead of being built whole as a String first - a 13 MB history was a String of 13 MB on the FX thread, and... |
 | 481 | 3 | `static int swapsThatWaited()` | How many swaps had to wait for a file another handle held open, and landed. |
-| 497 | 29 | `private static Result swapIn(Path file, Path tmp) throws IOException` | The tail both writes share: the existing file copied to .bak, then the finished .tmp moved over it. |
-| 528 | 12 | `private static void moveOver(Path tmp, Path file) throws IOException` | The finished .tmp moved over the file, atomically where the filesystem can. |
-| 541 | 7 | `private static void deleteQuietly(Path path)` |  |
+| 506 | 31 | `private static Result swapIn(Path file, Path tmp) throws IOException` | The tail both writes share: the existing file copied to .bak, then the finished .tmp moved over it. |
+| 539 | 12 | `private static void moveOver(Path tmp, Path file) throws IOException` | The finished .tmp moved over the file, atomically where the filesystem can. |
+| 552 | 7 | `private static void deleteQuietly(Path path)` |  |
 

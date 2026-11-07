@@ -1,22 +1,19 @@
-# gate of Merge batch/XI2: xI1's review follow-ups, Trade's texts on the bounded intervention: `ui/TradeScreen.java:2969`'s `RULE` still states the unbounded linear rule; the warning (`:3573/3581`) reads this deal alone, not what was dealt since the last reprice, so several pieces each under 10% of a year's output cross the bound unwarned and a later piece's figure overstates its move; under Band it says "would move the rate xN" while the band holds it at its edge, under Peg "moves nothing" while the deal moves the shadow rate behind the peg (`:3586`) (XI1's gate review, 2026-11-06), 0.9.44
+# gate of Merge batch/SS2: saveSlotCheck 7d's hold on a latch, not a sleep: LB3's fixture times a reader thread's hold of the file (let go after 100 ms) against the swap's retries (`SWAP_RETRIES` 10 x `SWAP_RETRY_MS` 50), so under load the hold slips; red at RT1's second gate (2026-11-05, beside two batch sessions' JVMs) on "...after waiting for it: its swap was refused and landed on a later try" and "...leaving the file whole as it was, and no .tmp, and it is no swap that waited and landed", passed by name at the third: tie the reader's release to the swap's own try count (a hook in `GameFiles`' retry, or a latch the fixture counts down), no time against a dial, 0.9.45
 # date: 2026-11-07
 # earth-2.bin: named
 # nightly: 2026-11-07 00:56 0.9.35 a260d4f1 4,000 months: OK in 121 s
-# suite: 186 harnesses run in 1507s: 181 passed, 5 failed
-# timing: 16 harnesses run in 1258s: 11 passed, 5 failed; its red lines were judged side by side with main's, below
-# timing red not the batch's (paired): EarthTerrainCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): EarthTerrainCheck | the Earth screen: 198 tiles at Rotterdam's site - ground, plans, paint and raster - in no more than MapCheck.SCREEN_MS FAIL  85.5 ms (0.432 a tile), 17,690 buildings; the first time, its plans made, 831 ms; the square city 121 districts a side, laid in 27775 ms; the screen 3% sea, 4% fresh   [main 76.6 ms, batch 78.3 ms (+2.2%), budget 80 ms: within 15% of main's]
-# timing red not the batch's (paired): EarthTerrainCheck | 1 FAILED   [the harness's own count of the timing reds above]
+# suite: 186 harnesses run in 1522s: 181 passed, 5 failed
+# timing: 16 harnesses run in 1154s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 55.4 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 36.6 ms, batch 36.9 ms (+1.0%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 43.8 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 41.7 ms, batch 43.5 ms (+4.5%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | on the full file, every stride's far node over Rotterdam is drawn in no more than SCREEN_MS FAIL   [main 62.9 ms, batch 65.1 ms (+3.5%), budget 80 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 24.4 ms, batch 26.7 ms (+9.3%), budget 19 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 5.65 ms, batch 6.78 ms (+20.1%), budget 5 ms: main over the budget too]
+# timing red not the batch's (paired): MapCheck | on the full file, every stride's far node over Rotterdam is drawn in no more than SCREEN_MS FAIL   [main 61.5 ms, batch 62.7 ms (+2.0%), budget 80 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 28.3 ms, batch 22.8 ms (-19.4%), budget 19 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | 5 FAILED   [the harness's own count of the timing reds above]
 # timing red not the batch's (paired): KeptCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): KeptCheck | the whole kept chrome's month is within KEPT_ALL_CHROME_MS (8.0 ms)      FAIL   [main 9.11 ms, batch 7.78 ms (-14.6%), budget 8 ms: within 15% of main's]
+# timing red not the batch's (paired): KeptCheck | the whole kept chrome's month is within KEPT_ALL_CHROME_MS (8.0 ms)      FAIL   [main 9.91 ms, batch 7.86 ms (-20.7%), budget 8 ms: within 15% of main's]
 # timing red not the batch's (paired): KeptCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red passed on Jerus's word, over main's by more than 15% or not a timing red (always, if checks were not caused by its own code, then it should always pass): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [over main's by more than 15%: main 3.92 ms, batch 7.77 ms (+98.2%), budget 5 ms]
-# timing red passed on Jerus's word, over main's by more than 15% or not a timing red (always, if checks were not caused by its own code, then it should always pass): MapCheck | 5 FAILED   [the harness's own count, with a red above that is not a timing red that passes]
 MonetaryCheck | exit 1
 MonetaryCheck | ...and a month's delay in the hand moves them less than the allowance FAIL
 MonetaryCheck | 1 FAILED
