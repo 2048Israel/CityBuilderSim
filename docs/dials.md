@@ -2766,13 +2766,13 @@ Generated 2026-11-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 42 | `ResearchView.FIRST_MONTH` | `1` | The month every city is founded in. |
 | 49 | `ResearchView.NEW_MONTHS` | `12` | How many months a building is NEW on its card after it became known in the city: it is new while its age (the city's month less the month it became known) is under this. |
 | 52 | `ResearchView.FLAG_KIND` | `"discovery"` | The kind of the flags a discovery puts on City History's decision lane (flagEntries()); a discovery is not a decision, so it is no DecisionLog kind. |
-| 739 | `ResearchView.CACHE_SIZE` | `32` | The preview's answers kept, the least recently read dropped first: a card's dials are read again at every redraw of the screen, and the answer does not change until a dial or the month does. |
-| 740 | `ResearchView.CACHE` | `new java.util.LinkedHashMap<>(16, 0.75f, true) { @ Override protected boolean removeEld...` |  |
-| 834 | `ResearchView.GRANT_REACH` | `1.2` | How far past the room the grant dial reaches, as a share of the room, and the least number of posts it reaches past it (a grant past the room buys nothing, and the player may try one). |
-| 835 | `ResearchView.GRANT_REACH_POSTS` | `3` |  |
-| 861 | `ResearchView.PRIZE_DIAL_YEARS` | `1000` | The researcher-years of work a prize dial reaches for, at the least: a problem of that size, paid at a post's cost a month, is its top. |
-| 864 | `ResearchView.PRIZE_REACH` | `2` | How many times the least prize that brings a lab the prize dial reaches, at the least. |
-| 867 | `ResearchView.PRIZE_STEPS` | `100` | The steps a prize dial is divided into. |
+| 743 | `ResearchView.CACHE_SIZE` | `32` | The preview's answers kept, the least recently read dropped first: a card's dials are read again at every redraw of the screen, and the answer does not change until a dial or the month does. |
+| 744 | `ResearchView.CACHE` | `new java.util.LinkedHashMap<>(16, 0.75f, true) { @ Override protected boolean removeEld...` |  |
+| 838 | `ResearchView.GRANT_REACH` | `1.2` | How far past the room the grant dial reaches, as a share of the room, and the least number of posts it reaches past it (a grant past the room buys nothing, and the player may try one). |
+| 839 | `ResearchView.GRANT_REACH_POSTS` | `3` |  |
+| 865 | `ResearchView.PRIZE_DIAL_YEARS` | `1000` | The researcher-years of work a prize dial reaches for, at the least: a problem of that size, paid at a post's cost a month, is its top. |
+| 868 | `ResearchView.PRIZE_REACH` | `2` | How many times the least prize that brings a lab the prize dial reaches, at the least. |
+| 871 | `ResearchView.PRIZE_STEPS` | `100` | The steps a prize dial is divided into. |
 
 ### Resource.java ([map](map/Resource.md))
 
@@ -4989,26 +4989,26 @@ Generated 2026-11-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 98 | `ResearchScreen.AREA_INFO` | `"Who is at research and what is in reach of them, the grant and the prize of each field...` | The area's (i). |
 | 174 | `ResearchScreen.FIELDS_INFO` | `"Each field's researchers - the city's own, from the schools' faculty and the posts its...` |  |
 | 178 | `ResearchScreen.SCHOOLS_INFO` | `"The kinds of school that host research: the University, hosting every field, and the I...` |  |
-| 317 | `ResearchScreen.GRANT_INFO` | `"A month's money for research posts at the schools that host the field: one post a step...` |  |
-| 321 | `ResearchScreen.PRIZE_INFO` | `"What the city pays for a discovery made here, once, and only on a find: nothing is spe...` |  |
-| 325 | `ResearchScreen.PREVIEW_INFO` | `"What the field's researchers would find here before the world does over the next ten y...` |  |
-| 329 | `ResearchScreen.TRAY_INFO` | `"Everything staged on this page, applied together by one press: each field's grant and ...` |  |
-| 334 | `ResearchScreen.CARD_W` | `540, INNER_W = CARD_W - 24` | A card's width, and what its rows and dials are drawn within it (the card's padding takes twelve a side). |
-| 563 | `ResearchScreen.TIMELINE_INFO` | `"Every discovery the city has come to know since its founding, a row a field.A hollow d...` |  |
-| 567 | `ResearchScreen.FOUND_INFO` | `"What the city's own researchers found before the world did, the newest first, and how ...` |  |
-| 569 | `ResearchScreen.RECIPES_INFO` | `"The ways of running a building, other than its usual one, that the city knows: how man...` |  |
-| 572 | `ResearchScreen.EQUIPMENT_INFO` | `"The pieces of equipment the city knows, on the buildings they suit: how many of those ...` |  |
-| 575 | `ResearchScreen.OVER_TIME_INFO` | `"Four charts of the city's research since its founding: the researchers at work, what r...` |  |
-| 744 | `ResearchScreen.ROW_STYLE` | `"-fx-padding: 5 6 5 6; -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 ...` | A row's ground: a hairline under it. |
-| 747 | `ResearchScreen.DOOR_STYLE` | `ROW_STYLE + " -fx-background-radius: 6; -fx-cursor: hand;"` | ...and a row that is a door's: the pointer's hand and, under it, a ground. |
-| 748 | `ResearchScreen.DOOR_LIT` | `DOOR_STYLE + " -fx-background-color: " + Palette.CONTROL + ";"` |  |
-| 813 | `ResearchScreen.DOT` | `12, DOT_GAP = 3` | A dot's width, and the gap two dots of a row keep from each other before one stacks above the other. |
-| 816 | `ResearchScreen.LEVEL` | `26` | How far a stacked dot stands above the one under it: the dot, the figure that sits over it and a margin. |
-| 819 | `ResearchScreen.LABEL_W` | `150, PAD_R = 16, TICK_ROOM = 60` | The room a row's name takes at the left, the room kept at the right, and the least apart two year ticks stand. |
-| 822 | `ResearchScreen.ROW_TOP` | `18, ROW_FOOT = 8, ROW_MIN = 46` | A row's room over its top dot (the figure "+1.5y"), under its bottom one, and its least height (its two lines of words). |
-| 825 | `ResearchScreen.AXIS_H` | `20` | The room under the last row for the years' names. |
-| 890 | `ResearchScreen.PLACE` | `"research.place"` | The key a timeline child carries its Place under. |
-| 1121 | `ResearchScreen.CHART_W` | `575, CHART_H = 150` | A small chart's size: the Bank's two-across cards'. |
+| 320 | `ResearchScreen.GRANT_INFO` | `"A month's money for research posts at the schools that host the field: one post a step...` |  |
+| 324 | `ResearchScreen.PRIZE_INFO` | `"What the city pays for a discovery made here, once, and only on a find: nothing is spe...` |  |
+| 328 | `ResearchScreen.PREVIEW_INFO` | `"What the field's researchers would find here before the world does over the next ten y...` |  |
+| 332 | `ResearchScreen.TRAY_INFO` | `"Everything staged on this page, applied together by one press: each field's grant and ...` |  |
+| 337 | `ResearchScreen.CARD_W` | `540, INNER_W = CARD_W - 24` | A card's width, and what its rows and dials are drawn within it (the card's padding takes twelve a side). |
+| 566 | `ResearchScreen.TIMELINE_INFO` | `"Every discovery the city has come to know since its founding, a row a field.A hollow d...` |  |
+| 570 | `ResearchScreen.FOUND_INFO` | `"What the city's own researchers found before the world did, the newest first, and how ...` |  |
+| 572 | `ResearchScreen.RECIPES_INFO` | `"The ways of running a building, other than its usual one, that the city knows: how man...` |  |
+| 575 | `ResearchScreen.EQUIPMENT_INFO` | `"The pieces of equipment the city knows, on the buildings they suit: how many of those ...` |  |
+| 578 | `ResearchScreen.OVER_TIME_INFO` | `"Four charts of the city's research since its founding: the researchers at work, what r...` |  |
+| 747 | `ResearchScreen.ROW_STYLE` | `"-fx-padding: 5 6 5 6; -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 ...` | A row's ground: a hairline under it. |
+| 750 | `ResearchScreen.DOOR_STYLE` | `ROW_STYLE + " -fx-background-radius: 6; -fx-cursor: hand;"` | ...and a row that is a door's: the pointer's hand and, under it, a ground. |
+| 751 | `ResearchScreen.DOOR_LIT` | `DOOR_STYLE + " -fx-background-color: " + Palette.CONTROL + ";"` |  |
+| 816 | `ResearchScreen.DOT` | `12, DOT_GAP = 3` | A dot's width, and the gap two dots of a row keep from each other before one stacks above the other. |
+| 819 | `ResearchScreen.LEVEL` | `26` | How far a stacked dot stands above the one under it: the dot, the figure that sits over it and a margin. |
+| 822 | `ResearchScreen.LABEL_W` | `150, PAD_R = 16, TICK_ROOM = 60` | The room a row's name takes at the left, the room kept at the right, and the least apart two year ticks stand. |
+| 825 | `ResearchScreen.ROW_TOP` | `18, ROW_FOOT = 8, ROW_MIN = 46` | A row's room over its top dot (the figure "+1.5y"), under its bottom one, and its least height (its two lines of words). |
+| 828 | `ResearchScreen.AXIS_H` | `20` | The room under the last row for the years' names. |
+| 893 | `ResearchScreen.PLACE` | `"research.place"` | The key a timeline child carries its Place under. |
+| 1124 | `ResearchScreen.CHART_W` | `575, CHART_H = 150` | A small chart's size: the Bank's two-across cards'. |
 
 ### SectorScreen.java ([map](map/SectorScreen.md))
 
@@ -6342,11 +6342,11 @@ Generated 2026-11-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 4987 | `KeptCheck.KEPT_POLICY_MS` | `10` | The budget for the kept Policy month - its draw, then the pulse's CSS and layout - on the hub and on the pages heavy with dials (Taxes' Profit page and the policy rate's), the largest of them being... |
 | 4996 | `KeptCheck.KP6_HANDED_BACK` | `.75` | The share of a KP6 page's nodes a month's redraw has to hand back after a choice, at least: three in four. |
 | 5009 | `KeptCheck.TRADE_FOLDS_THAT_ADD` | `java.util.Set.of("month:ledger", "reserves:eight")` | The folds the Trade sections open that have to add to their page in any city that trades: the month's ledger and the eight moneys over the years. |
-| 7172 | `KeptCheck.CLOCK_MONTHS` | `3` | The months landed, each followed by the clock's redraw, on every screen in section 88. |
-| 7278 | `KeptCheck.KEPT_HOUSEHOLD_MS` | `8` | The budget for the kept Household money month - its draw, then the pulse's CSS and layout - on the page as it opens and with the first family cell's books open (the larger of the two being the figu... |
-| 7286 | `KeptCheck.KEPT_RANKINGS_MS` | `7` | The budget for the kept Rankings month - its draw, then the pulse's CSS and layout - on the tab as it opens and with every measure unfolded (Browse all: a line a measure; the larger of the two bein... |
-| 7703 | `KeptCheck.NOT_KP2B` | `java.util.Set.of("UserInterface.java", "InfrastructureScreen.java", "ServicesScreen.java")` | The files of the screens KP2b's sweep did not reach, whose writes section 92 names and does not count: the sweep was the list of screens Pieces, the statements, Sectors, Land, the Bank, the fund, F... |
-| 8049 | `KeptCheck.SITE_COUNTS` | `{ 0, 1, 3 }` | The sites a state puts the city in: none, one (the tab says "1 site"), three (it says "3 sites"). |
+| 7188 | `KeptCheck.CLOCK_MONTHS` | `3` | The months landed, each followed by the clock's redraw, on every screen in section 88. |
+| 7294 | `KeptCheck.KEPT_HOUSEHOLD_MS` | `8` | The budget for the kept Household money month - its draw, then the pulse's CSS and layout - on the page as it opens and with the first family cell's books open (the larger of the two being the figu... |
+| 7302 | `KeptCheck.KEPT_RANKINGS_MS` | `7` | The budget for the kept Rankings month - its draw, then the pulse's CSS and layout - on the tab as it opens and with every measure unfolded (Browse all: a line a measure; the larger of the two bein... |
+| 7719 | `KeptCheck.NOT_KP2B` | `java.util.Set.of("UserInterface.java", "InfrastructureScreen.java", "ServicesScreen.java")` | The files of the screens KP2b's sweep did not reach, whose writes section 92 names and does not count: the sweep was the list of screens Pieces, the statements, Sectors, Land, the Bank, the fund, F... |
+| 8065 | `KeptCheck.SITE_COUNTS` | `{ 0, 1, 3 }` | The sites a state puts the city in: none, one (the tab says "1 site"), three (it says "3 sites"). |
 
 ### KnownRedsCheck.java ([map](map/KnownRedsCheck.md))
 
@@ -7150,10 +7150,10 @@ Generated 2026-11-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 121 | `ResearchViewCheck.CAT` | `ResearchCatalog.get()` |  |
-| 285 | `ResearchViewCheck.NOW_SECTION_TWO` | `50` | A month well past the first discoveries, for the cores of section 2. |
-| 332 | `ResearchViewCheck.FINDS` | `Map.of("PE1", 4, "PE14", 150, "PE2", 20, "PE3", ResearchView.FIRST_MONTH, "PL5", Resear...` | The finds of section 3's research: PE1 and PE14 before history's date, PE2 after it, PE3 at the founding month and PL5 the month after it. |
-| 340 | `ResearchViewCheck.NOW` | `400` |  |
+| 123 | `ResearchViewCheck.CAT` | `ResearchCatalog.get()` |  |
+| 288 | `ResearchViewCheck.NOW_SECTION_TWO` | `50` | A month well past the first discoveries, for the cores of section 2. |
+| 335 | `ResearchViewCheck.FINDS` | `Map.of("PE1", 4, "PE14", 150, "PE2", 20, "PE3", ResearchView.FIRST_MONTH, "PL5", Resear...` | The finds of section 3's research: PE1 and PE14 before history's date, PE2 after it, PE3 at the founding month and PL5 the month after it. |
+| 343 | `ResearchViewCheck.NOW` | `400` |  |
 
 ### RestaurantsCheck.java ([map](map/RestaurantsCheck.md))
 
