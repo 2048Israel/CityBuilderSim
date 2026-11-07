@@ -1,4 +1,4 @@
-# VaultMoneysCheck.java - 741 lines · 18 methods · 4 constants · harnesses
+# VaultMoneysCheck.java - 753 lines · 18 methods · 4 constants · harnesses
 
 `ham/citybuildersim/VaultMoneysCheck.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
@@ -32,8 +32,11 @@
 >      never touches the mix holds only US$ with no cross move; a purchase of euros and one by the world's mix put balances where they
 >      say; and the month's revaluation in local money is the vault's dollars at the rate's move plus the cross move at the last rate.
 > 
-> Every fixture causes its condition: a settled currency on a peg whose month is a deficit (the defence sells) or a surplus (the edge
-> buys), holdings built by named purchases at known rates, and rates handed by hand.
+> Every fixture causes its condition: a settled currency on a peg that the hold has to sell for (the peg revalued under the rate it
+> stands at, so the lift is a sale: the defence sells) or buy for (devalued, or a surplus: the edge buys), holdings built by named
+> purchases at known rates, and rates handed by hand. XR5 (THE HOLD PAYS THE PRESSURE, 2026-11-06): until it the peg met the month's
+> balance, so a deficit month sold and a surplus month bought and a peg moved to 1.6 on balanced trade dealt nothing; now the hold
+> deals the lift the peg and the shadow ask, so the fixtures move the peg to cause the sale or the purchase they stand on.
 
 **Uses:** [ForeignAccounts](ForeignAccounts.md) (77), [CurrencyRegimeCheck](CurrencyRegimeCheck.md) (15), [WorldData](WorldData.md) (8), [WorldMoneysCheck](WorldMoneysCheck.md) (5), [WorldMoneys](WorldMoneys.md) (4), [Game](Game.md) (4), [Nations](Nations.md) (2), [CurrencyCheck](CurrencyCheck.md) (1), [PartnerTrade](PartnerTrade.md) (1)
 
@@ -41,85 +44,85 @@
 
 | line | section |
 |---:|---|
-| 116 | 1. ALL US$ IS THE OLD VAULT |
-| 215 | 2. A BUY GOES IN BY THE MIX |
-| 340 | 3. A SALE COMES FROM THE LARGEST |
-| 441 | 4. THE CROSS REVALUATION |
-| 515 | 5. MATCH_TRADE'S MAPPING - on the full file |
-| 572 | 6. THE SAVE |
-| 679 | 7. IN A CITY |
+| 119 | 1. ALL US$ IS THE OLD VAULT |
+| 226 | 2. A BUY GOES IN BY THE MIX |
+| 351 | 3. A SALE COMES FROM THE LARGEST |
+| 453 | 4. THE CROSS REVALUATION |
+| 527 | 5. MATCH_TRADE'S MAPPING - on the full file |
+| 584 | 6. THE SAVE |
+| 691 | 7. IN A CITY |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 44 | `VaultMoneysCheck.out` | `System.out` |  |
-| 47 | `VaultMoneysCheck.R` | `{ 1, 1.10, 0.0070, 1.27, 0.14, 0.73, 0.65, 1.12 }` | The cross rates the sections hand: US$ per unit of the US$, euro, yen, pound, yuan, Canadian and Australian dollar and franc. |
-| 50 | `VaultMoneysCheck.SLOTS` | `147` | The length of the foreign accounts' array: slots 0 to 141 and, after them, what the vault earned (142-146, XR4; InterestAbroadCheck's section 7 asserts them). |
-| 52 | `VaultMoneysCheck.ALL_USD` | `ForeignAccounts.Mix.ALL_USD, MATCH_TRADE = ForeignAccounts.Mix.MATCH_TRADE, W...` |  |
+| 47 | `VaultMoneysCheck.out` | `System.out` |  |
+| 50 | `VaultMoneysCheck.R` | `{ 1, 1.10, 0.0070, 1.27, 0.14, 0.73, 0.65, 1.12 }` | The cross rates the sections hand: US$ per unit of the US$, euro, yen, pound, yuan, Canadian and Australian dollar and franc. |
+| 53 | `VaultMoneysCheck.SLOTS` | `148` | The length of the foreign accounts' array: slots 0 to 141 and, after them, what the vault earned (142-146, XR4; InterestAbroadCheck's section 7 asserts them) and the hold's support (147, XR5; CurrencyRegimeCheck 10). |
+| 55 | `VaultMoneysCheck.ALL_USD` | `ForeignAccounts.Mix.ALL_USD, MATCH_TRADE = ForeignAccounts.Mix.MATCH_TRADE, W...` |  |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 43 | `static int fails` |  |
+| 46 | `static int fails` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 41 | 701 | **type** `public class VaultMoneysCheck` | The vault in eight moneys (batch WN4, slice C; spec-nations 5.2-5.4): ForeignAccounts keeps a balance in each of the eight the IMF's COFER names, takes a dollar in by the reserve mix and gives one up from the largest ... |
-| 55 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 61 | 5 | `static void same(String label, double actual, double expected)` | Equal to the bit (and so a -0.0 is not a 0.0). |
-| 68 | 5 | `static void near(String label, double actual, double expected, double tol)` | Equal within a share of the expected (or an absolute 1e-12 about zero). |
-| 74 | 1 | `static boolean sameArray(double[] a, double[] b)` |  |
-| 77 | 5 | `static double beyondTheDollar(ForeignAccounts fx)` | What the vault holds beyond the US$, in the eight's own units, added up: 0 only if it holds nothing but dollars. |
-| 84 | 5 | `static double coferTotal()` | The sum of the COFER dial, which the mix normalises by. |
-| 91 | 3 | `static ForeignAccounts peg()` | A settled currency on a peg at its own rate, no vault, no seed (so no doubt can break it): the fixture a month's deficit sells from and a month's surplus buys into. |
-| 96 | 5 | `static void pegMonth(ForeignAccounts fx, double exportShare)` | One month of the peg fixture's trade at this share of its imports, repriced; the deficit or surplus dealt is the vault's. |
-| 102 | 13 | `public static void main(String[] args) throws Exception` |  |
+| 44 | 710 | **type** `public class VaultMoneysCheck` | The vault in eight moneys (batch WN4, slice C; spec-nations 5.2-5.4): ForeignAccounts keeps a balance in each of the eight the IMF's COFER names, takes a dollar in by the reserve mix and gives one up from the largest ... |
+| 58 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 64 | 5 | `static void same(String label, double actual, double expected)` | Equal to the bit (and so a -0.0 is not a 0.0). |
+| 71 | 5 | `static void near(String label, double actual, double expected, double tol)` | Equal within a share of the expected (or an absolute 1e-12 about zero). |
+| 77 | 1 | `static boolean sameArray(double[] a, double[] b)` |  |
+| 80 | 5 | `static double beyondTheDollar(ForeignAccounts fx)` | What the vault holds beyond the US$, in the eight's own units, added up: 0 only if it holds nothing but dollars. |
+| 87 | 5 | `static double coferTotal()` | The sum of the COFER dial, which the mix normalises by. |
+| 94 | 3 | `static ForeignAccounts peg()` | A settled currency on a peg at its own rate, no vault, no seed (so no doubt can break it): the fixture a month's deficit sells from and a month's surplus buys into. |
+| 99 | 5 | `static void pegMonth(ForeignAccounts fx, double exportShare)` | One month of the peg fixture's trade at this share of its imports, repriced; the deficit or surplus dealt is the vault's. |
+| 105 | 13 | `public static void main(String[] args) throws Exception` |  |
 
-### 1. ALL US$ IS THE OLD VAULT (lines 116-214)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 120 | 94 | `static void allUsdIsTheOldVault()` |  |
-
-### 2. A BUY GOES IN BY THE MIX (lines 215-339)
+### 1. ALL US$ IS THE OLD VAULT (lines 119-225)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 219 | 6 | `static ForeignAccounts rated()` |  |
-| 226 | 113 | `static void aBuyGoesInByTheMix()` |  |
+| 123 | 102 | `static void allUsdIsTheOldVault()` |  |
 
-### 3. A SALE COMES FROM THE LARGEST (lines 340-440)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 345 | 7 | `static ForeignAccounts three()` | A vault of 50,000, 30,000 and 20,000 US$ worth in euros, pounds and Canadian dollars, bought at a rate of 1 so local money and US$ are one number. |
-| 353 | 87 | `static void aSaleComesFromTheLargest()` |  |
-
-### 4. THE CROSS REVALUATION (lines 441-514)
+### 2. A BUY GOES IN BY THE MIX (lines 226-350)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 445 | 69 | `static void theCrossRevaluation()` |  |
+| 230 | 6 | `static ForeignAccounts rated()` |  |
+| 237 | 113 | `static void aBuyGoesInByTheMix()` |  |
 
-### 5. MATCH_TRADE'S MAPPING - on the full file (lines 515-571)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 519 | 52 | `static void theMapping() throws Exception` |  |
-
-### 6. THE SAVE (lines 572-678)
+### 3. A SALE COMES FROM THE LARGEST (lines 351-452)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 576 | 102 | `static void theSave()` |  |
+| 356 | 7 | `static ForeignAccounts three()` | A vault of 50,000, 30,000 and 20,000 US$ worth in euros, pounds and Canadian dollars, bought at a rate of 1 so local money and US$ are one number. |
+| 364 | 88 | `static void aSaleComesFromTheLargest()` |  |
 
-### 7. IN A CITY (lines 679-741)
+### 4. THE CROSS REVALUATION (lines 453-526)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 683 | 58 | `static void inACity()` |  |
+| 457 | 69 | `static void theCrossRevaluation()` |  |
+
+### 5. MATCH_TRADE'S MAPPING - on the full file (lines 527-583)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 531 | 52 | `static void theMapping() throws Exception` |  |
+
+### 6. THE SAVE (lines 584-690)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 588 | 102 | `static void theSave()` |  |
+
+### 7. IN A CITY (lines 691-753)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 695 | 58 | `static void inACity()` |  |
 
