@@ -759,13 +759,13 @@ Generated 2026-11-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 48 | `ClockPace.REDRAW_EVERY` | `.12` | The least time between one redraw of the open screen and the next while the clock runs, in seconds (moved here from ui.UserInterface by UP2, its comment with it). |
-| 51 | `ClockPace.REDRAW_SPACING` | `3` | How many times a redraw's cost the next one waits (UP2): 3, so redraws take at most a third of the thread. |
-| 54 | `ClockPace.REDRAW_COST_MAX` | `.5` | The most a redraw is counted to have cost, in seconds (UP2): the pulse that ends the measure can be late (a minimised window), and a gap of minutes is a screen that never moves. |
-| 57 | `ClockPace.MONTH_FRAME_MS` | `40` | The time one frame may spend running months, in milliseconds (UP2): the loop stops when the months run in it pass this, but the first month always runs. |
-| 71 | `ClockPace.FRAME_CLAMP` | `.25` | The most real time one frame is worth to the game's clock, in seconds. |
-| 74 | `ClockPace.SHORT_WINDOW` | `2` | The running time the speed achieved is read over, in seconds (UP2); until a full window has run the header reads the rung alone. |
-| 77 | `ClockPace.SHORT_BY` | `.1` | How far under the rung the speed achieved must fall, as a share of the rung, before the header says so (UP2): more than a tenth. |
+| 50 | `ClockPace.REDRAW_EVERY` | `.12` | The least time between one redraw of the open screen and the next while the clock runs, in seconds (moved here from ui.UserInterface by UP2, its comment with it). |
+| 53 | `ClockPace.REDRAW_SPACING` | `3` | How many times a redraw's cost the next one waits (UP2): 3, so redraws take at most a third of the thread. |
+| 56 | `ClockPace.REDRAW_COST_MAX` | `.5` | The most a redraw is counted to have cost, in seconds (UP2): the pulse that ends the measure can be late (a minimised window), and a gap of minutes is a screen that never moves. |
+| 59 | `ClockPace.MONTH_FRAME_MS` | `40` | The time one frame may spend running months, in milliseconds (UP2): the loop stops when the months run in it pass this, but the first month always runs. |
+| 73 | `ClockPace.FRAME_CLAMP` | `.25` | The most real time one frame is worth to the game's clock, in seconds. |
+| 76 | `ClockPace.SHORT_WINDOW` | `2` | The running time the speed achieved is read over, in seconds (UP2); until a full window has run the header reads the rung alone. |
+| 79 | `ClockPace.SHORT_BY` | `.1` | How far under the rung the speed achieved must fall, as a share of the rung, before the header says so (UP2): more than a tenth. |
 
 ### ConstructionControl.java ([map](map/ConstructionControl.md))
 
@@ -5582,12 +5582,12 @@ Generated 2026-11-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 52 | `ClockCheck.SPM` | `UserInterface.SECONDS_PER_MONTH` | Real seconds a month takes at 1x, as the window's clock has it. |
-| 55 | `ClockCheck.TOP` | `50` | The top rung. |
-| 56 | `ClockCheck.TOP_LABEL` | `"50×"` |  |
-| 58 | `ClockCheck.FRAME` | `1.0 / 60` |  |
-| 287 | `ClockCheck.SEEN` | `new java.util.TreeSet<>()` | Every text the pace said it reached in this run: section 6 holds them against the list reachedTexts() gives. |
-| 391 | `ClockCheck.KEYS` | `{ "population", "gdp", "priceIndex", "unemployment", "policyRate" }` | The header's five keys, and the whole-history read each one stands in for. |
+| 58 | `ClockCheck.SPM` | `UserInterface.SECONDS_PER_MONTH` | Real seconds a month takes at 1x, as the window's clock has it. |
+| 61 | `ClockCheck.TOP` | `50` | The top rung. |
+| 62 | `ClockCheck.TOP_LABEL` | `"50×"` |  |
+| 64 | `ClockCheck.FRAME` | `1.0 / 60` |  |
+| 308 | `ClockCheck.SEEN` | `new java.util.TreeSet<>()` | Every text the pace said it reached in this run: section 6 holds them against the list reachedTexts() gives. |
+| 412 | `ClockCheck.KEYS` | `{ "population", "gdp", "priceIndex", "unemployment", "policyRate" }` | The header's five keys, and the whole-history read each one stands in for. |
 
 ### CoalMiningCheck.java ([map](map/CoalMiningCheck.md))
 

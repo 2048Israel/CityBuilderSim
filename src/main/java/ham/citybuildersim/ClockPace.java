@@ -27,7 +27,9 @@ import java.util.function.LongSupplier;
  * MONTH_FRAME_MS on them and drops the time it could not run instead of banking it, and the
  * speed the header reads says when the city is running slower than the rung asked for (UP7: it
  * reads the speed reached alone, in place of the rung, and counts the time a frame was worth
- * rather than the time it took, so a stalled frame is not a shortfall).
+ * rather than the time it took, so a stalled frame is not a shortfall; UP7b: except the stall
+ * the clock's own redraw made, which is counted by what the redraw cost, so a redraw that keeps
+ * stalling the city shows).
  */
 public final class ClockPace {
 
@@ -87,6 +89,8 @@ public final class ClockPace {
     private double redrawGap = REDRAW_EVERY;
     private long redrawBegan;
     private boolean redrawing;
+    /** Whether the frame now due follows a redraw the clock made (UP7b): set by redrawStarted(), taken by the next frame() or idle(). */
+    private boolean afterRedraw;
 
     /** The frames of the window: each one's real seconds and the months it advanced. */
     private final ArrayDeque<double[]> window = new ArrayDeque<>();
@@ -157,13 +161,22 @@ public final class ClockPace {
         // seconds the frame was WORTH (the clamped share), not the seconds it took (UP7): a
         // stalled frame of half a second advances the city a quarter of one, and read over its
         // raw half the speed of even 1x would have come out short for two seconds after it.
-        windowAdd(share, ran + progress - before);
+        // But the frame right after the clock's own redraw also counts the redraw's cost, the
+        // stall the clock made (UP7b): a redraw over FRAME_CLAMP every REDRAW_SPACING times its
+        // cost loses the city a share of the rung every cycle, and counted at the clamp alone the
+        // window never saw it. What the redraw measured explains is counted, no more (a stall
+        // after it that the redraw did not cause, a minimised window, stays clamped).
+        double worth = share;
+        if (afterRedraw) worth += Math.min(dt - share, redrawCost);
+        afterRedraw = false;
+        windowAdd(worth, ran + progress - before);
         return ran;
     }
 
     /** A frame of a clock that is not running (paused, or a menu or dialog up): only the redraw's time moves. */
     public void idle(double dt) {
         sinceRedraw += dt;
+        afterRedraw = false;       // a redraw begun in an idle frame is no part of the running time the window reads (UP7b)
     }
 
     /** The share of the next month the clock has run, 0 up to 1 (1 while a month is owed that a slow frame could not run): what the date's day is read from. */
@@ -205,6 +218,7 @@ public final class ClockPace {
         sinceRedraw = 0;
         redrawBegan = nanoTime.getAsLong();
         redrawing = true;
+        afterRedraw = true;
     }
 
     /** Whether a redraw began and its cost has not been taken (redrawEnded()). */
