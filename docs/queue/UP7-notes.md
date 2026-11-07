@@ -1,8 +1,12 @@
 # UP7 - the speed reading as the reached speed alone; the drawer's bar and the construction tab kept ({next}, 2026-11-06)
 
 **WHERE IT STANDS** (2026-11-06): ready, see the ship file. The code in and reviewed (b1f1470d, 7babacf3). Built on
-`origin/batch/UP6` at its ship file (2c8040a9, RL1); UP6 landed and main (c7ad4d9a) merged in (9be237da); `--pick`
-on the merge exit 3, main's recorded MapCheck and KeptCheck reds only; `git merge-tree` with origin/main clean.
+`origin/batch/UP6` at its ship file (2c8040a9, RL1); UP6 landed and main (c7ad4d9a) merged in (9be237da). The
+gate sent it back (2026-11-06, 20:15): R5 (0.9.33) had added KeptCheck sections 95-97, so the merge conflicted in
+KeptCheck. Main 90c56f75 merged in (1472bd03), both sides' sections kept; this batch's speed-reading section,
+95 on the branch, is **98** now (R5's Found page is 95); its drawer section stays 94. `--pick` on that merge exit 3,
+main's recorded MapCheck and KeptCheck reds only; `git merge-tree` with origin/main clean. Found in the merge, not
+mended (R5's): KeptCheck's header list has no line for R5's section 95 (the Found page), only 96 and 97.
 
 The batch's record. `QUEUE.md`'s UP7 row and [UP7.md](UP7.md): Jerus's call on UP2's ★1 (2026-10-23, "Reached
 speed alone, amber"); UP2's ★2-★4 stay as built. Lane 2 (screens). Opus wrote the brief, reviewed the diff and
@@ -30,7 +34,7 @@ reassigns it.
 One slice (ClockPace +53/-15, ClockCheck +152/-24, UserInterface +155/-62, KeptBench +232/-2, KeptCheck +493/-2,
 counted on the branch against UP6's tip). Reviewed as a stranger's: the header's draw and `paintSpeed()` build the
 style from one method (`speedStyle`), so a kept draw sets nothing; `KeptBench.redrawSets` is generalised to a root
-and a draw (`redrawSets(Page...)` calls it), not copied; KeptCheck 95's write checks cannot pass on a label made new
+and a draw (`redrawSets(Page...)` calls it), not copied; KeptCheck 98's write checks cannot pass on a label made new
 (the header draw that finds the pace short must write once on the watched label). The slice set KeptCheck 94's
 sites with `BuildingsStacks.setUnderConstruction` (the loader's setter) and put them back, rather than playing
 buildings to the end. Its clicks were fired: the bench's city is `GameFiles.scratch("keptcheck")`, so `Prefs.save`
@@ -47,7 +51,7 @@ writes into the scratch folder.
   three states; a spoiled count seen and set right; a second draw writes nothing (and one after a pin flip does);
   the hover look kept under a still pointer; the same tooltips with their words following; the clicks pin, unpin,
   open and fold.
-- **KeptCheck 95**: at every rung, at pace, short and stopped: the words and the colour, the one width, never
+- **KeptCheck 98** (95 until R5 took the number on main, 0.9.33): at every rung, at pace, short and stopped: the words and the colour, the one width, never
   clipped, at pace laid out exactly as the old label (so the same pixels at pace), the clock block and the tiles
   at the same x short and at pace, the kept header equal to one built new, and a flip sets words and style once.
 - **The slice's runs** (`./batch-check.sh ClockCheck KeptCheck`, twice): ClockCheck green; KeptCheck main's recorded
@@ -58,6 +62,10 @@ writes into the scratch folder.
   LandCheck, MapCheck, TimingCheck, ZoningViewCheck), exit 3: known red only, MapCheck and KeptCheck as
   `docs/notes/gate.txt` records them (not this batch's code: MapCheck's yard and its timing, KeptCheck's
   nine-in-ten on a page this batch does not draw); two timing assertions soft. Stale 0 firm.
+- **`--pick`** again on the merge with main 90c56f75 (R5, 0.9.33): 7 of 182 harnesses, exit 3, known red only
+  (MapCheck, KeptCheck, as above); KeptCheck 94 and 98 green beside R5's 95-97; 16 timing assertions soft
+  (MapCheck 3, KeptCheck 13: the PC under other batches' suites, seven starts held for the commit charge). Stale
+  0 firm.
 
 ## 5. For Jerus
 
