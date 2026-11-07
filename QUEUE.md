@@ -140,6 +140,7 @@ stuff".
 | ER1 | What holds an Earth city at Rotterdam's site at about 12 thousand people for 97 years (m618-m1778) when the default city grows sevenfold in the same months - a diagnosis only, with a fixture that holds the city there: the land in use at 99-100% by m618 and only a third of the fields; land falling to 54% and hunger at 60% by m1778; what changes at m1778-m2025, when the fields reach 100% and jobs fourfold; the fix is its own batch (AN2's ★1, recommended and taken by the orchestrator, 2026-11-07) | [AN2 notes](docs/queue/AN2-notes.md) |
 | R0h | The 1918 influenza's sick counted once: they also die through `Sickness`'s ring, about 7 more dead on the influenza's 63 (11%), mostly January to April 1919; carry its share beside the ring | [R0h](docs/queue/R0h.md) |
 | SR1 | A city stocked complete in bulk (`CausesOfDeathCheck.founded()`'s `stock()`) reloads with its cash drifting from month 3 (+0.0143 a month on at m3, +1.28 at m60); find the unsaved flow | [SR1](docs/queue/SR1.md) |
+| CX2 | What an Opus session re-sends each step: a lighter start and a slower climb, CX1's work for the Opus sessions, now about three-quarters of the plan's usage (a session here holds about 93k before a first read: built-in tools 42k, connectors 20.5k, some of them never called by a batch); measured by kind of session from the transcripts, the cuts the table supports, CX2-M after; a process batch, one in, one out (Jerus, 2026-11-07: "yes start it if orchestrator says yes"; started as a third lane) | [CX2](docs/queue/CX2.md) |
 
 ## Pending
 
