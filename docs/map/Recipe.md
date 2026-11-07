@@ -24,7 +24,7 @@
 
 **Uses:** [Good](Good.md) (11), [JobType](JobType.md) (5), [Equipment](Equipment.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [ResearchCatalog](ResearchCatalog.md) (1), [Research](Research.md) (1)
 
-**Used by (8):** [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingsTemplate](BuildingsTemplate.md), [DiscoveryCheck](DiscoveryCheck.md), [RecipeCheck](RecipeCheck.md), [Recipes](Recipes.md), [ResearchCheck](ResearchCheck.md), [Sector](Sector.md)
+**Used by (10):** [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingsTemplate](BuildingsTemplate.md), [DiscoveryCheck](DiscoveryCheck.md), [RecipeCheck](RecipeCheck.md), [Recipes](Recipes.md), [ResearchCheck](ResearchCheck.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md), [Sector](Sector.md)
 
 ## Constants
 

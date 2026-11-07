@@ -4,6 +4,7 @@ import ham.citybuildersim.ChartModel;
 import ham.citybuildersim.CityCalendar;
 import ham.citybuildersim.DecisionLog;
 import ham.citybuildersim.GameLog;
+import ham.citybuildersim.ResearchView;
 import ham.citybuildersim.YearBook;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -1061,13 +1062,16 @@ final class TimeChart extends VBox {
      * A flag's colour: the area its decision is about - money blue, people
      * teal, building pink - and since 0.7.109 (batch Z2) zoning's in the
      * ground's sand (Palette.ORE, the land office's colour for what the
-     * ground holds), a colour no other kind takes. Never a verdict.
+     * ground holds), a colour no other kind takes. Never a verdict. Since R5 a
+     * discovery's flag (ResearchView.FLAG_KIND) is the research violet
+     * (Palette.DISCOVERY), which no decision's is.
      */
     static String flagColour(String kind) {
         return switch (kind) {
             case DecisionLog.PROMISE -> Palette.PEOPLE;
             case DecisionLog.CONSTRUCTION -> Palette.BUILDING;
             case DecisionLog.ZONING -> Palette.ORE;
+            case ResearchView.FLAG_KIND -> Palette.DISCOVERY;
             default -> Palette.MONEY;
         };
     }
@@ -1433,6 +1437,14 @@ final class TimeChart extends VBox {
     /** At most this many decisions are listed on a flag's card; the rest are counted. */
     static final int CARD_DECISIONS = 10;
 
+    /** A flag's head counts, the two kinds apart (pure): "2 decisions", "1 discovery", "2 decisions · 1 discovery"; none of either reads "0 decisions". */
+    static String flagCounts(int decisions, int discoveries) {
+        String d = decisions + (decisions == 1 ? " decision" : " decisions");
+        String x = discoveries + (discoveries == 1 ? " discovery" : " discoveries");
+        if (discoveries == 0) return d;
+        return decisions == 0 ? x : d + " · " + x;
+    }
+
     private void flagCard(ChartModel.Cluster c) {
         // The months its decisions were made in (0.7.37): a founding-month flag sits on the axis's first
         // month (ChartModel.onAxis()), and its card still says when each was decided.
@@ -1443,9 +1455,14 @@ final class TimeChart extends VBox {
                 last = Math.max(last, e.month());
             }
         }
+        // The flag counts its decisions and its discoveries apart (R5): "2 decisions", "1 discovery", "2 decisions · 1 discovery".
+        int discoveries = 0;
+        for (ChartModel.Flag f : c.flags()) {
+            for (DecisionLog.Entry e : f.entries()) if (ResearchView.FLAG_KIND.equals(e.kind())) discoveries++;
+        }
         card.getChildren().add(head(CityCalendar.formatShort(first)
                 + (last != first ? " – " + CityCalendar.formatShort(last) : "")
-                + "  ·  " + c.count() + (c.count() == 1 ? " decision" : " decisions")));
+                + "  ·  " + flagCounts(c.count() - discoveries, discoveries)));
         int shown = 0;
         for (ChartModel.Flag f : c.flags()) {
             for (DecisionLog.Entry e : f.entries()) {

@@ -199,6 +199,9 @@ public final class Icons {
     /** A mortarboard: Education. */
     public static final String EDUCATION = "M2 9l10-5 10 5-10 5z M6 11v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5 M22 9v6";
 
+    /** A flask: Research, Policy's sixth area (R5; research-design's mockup 3 draws it). */
+    public static final String FLASK = "M9 3h6 M10 3v6L4.5 18.5A1.6 1.6 0 0 0 6 21h12a1.6 1.6 0 0 0 1.5-2.5L14 9V3 M7.5 15h9";
+
     /** A shield with a tick: Safety. */
     public static final String SAFETY = "M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z M9 12l2 2 4-4";
 

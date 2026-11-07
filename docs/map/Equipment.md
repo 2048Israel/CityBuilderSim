@@ -23,7 +23,7 @@
 
 **Uses:** [Good](Good.md) (6), [ResearchCatalog](ResearchCatalog.md) (1), [Research](Research.md) (1), [CityCalendar](CityCalendar.md) (1)
 
-**Used by (13):** [BuildingCatalog](BuildingCatalog.md), [BuildingsTemplate](BuildingsTemplate.md), [BusinessInvestment](BusinessInvestment.md), [DiscoveryCheck](DiscoveryCheck.md), [EquipmentCheck](EquipmentCheck.md), [EquipmentFit](EquipmentFit.md), [EquipmentForms](EquipmentForms.md), [FittingCheck](FittingCheck.md), [Game](Game.md), [Recipe](Recipe.md), [RecipeCheck](RecipeCheck.md), [ResearchCheck](ResearchCheck.md), [SectorScreen](SectorScreen.md)
+**Used by (15):** [BuildingCatalog](BuildingCatalog.md), [BuildingsTemplate](BuildingsTemplate.md), [BusinessInvestment](BusinessInvestment.md), [DiscoveryCheck](DiscoveryCheck.md), [EquipmentCheck](EquipmentCheck.md), [EquipmentFit](EquipmentFit.md), [EquipmentForms](EquipmentForms.md), [FittingCheck](FittingCheck.md), [Game](Game.md), [Recipe](Recipe.md), [RecipeCheck](RecipeCheck.md), [ResearchCheck](ResearchCheck.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md), [SectorScreen](SectorScreen.md)
 
 ## Enum constants
 

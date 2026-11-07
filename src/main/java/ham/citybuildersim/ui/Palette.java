@@ -221,6 +221,14 @@ public final class Palette {
     /** Business and trade: Sectors, Trade & the world. GDP, profits, exports, investors' buildings. */
     public static final String BUSINESS = "#a78bfa";
 
+    /**
+     * What research brought (R5): a discovery's flag on City History, a NEW building's mark and edge, the Research area's
+     * accents. The mockups' violet (research-design's mockups 3 and 5 draw it as their business colour), so it is BUSINESS's
+     * hex under a name of its own: a screen that marks something new says so by the name, and a later change of the one moves
+     * neither the other nor a verdict.
+     */
+    public static final String DISCOVERY = BUSINESS;
+
     /** Building and land: Build, the land office. Sites, the queue, ground used. */
     public static final String BUILDING = "#f17cb0";
 

@@ -25,7 +25,7 @@
 
 **Uses:** [BuildingsTemplate](BuildingsTemplate.md) (10), [Equipment](Equipment.md) (10), [Game](Game.md) (7), [SpreadPlanner](SpreadPlanner.md) (6), [BusinessInvestment](BusinessInvestment.md) (5), [Sector](Sector.md) (4), [Good](Good.md) (4), [Research](Research.md) (3), [BuildingsStacks](BuildingsStacks.md) (3), [Haulage](Haulage.md) (2), [HydroSites](HydroSites.md) (1), [Markets](Markets.md) (1), [Recipes](Recipes.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [Fittings](Fittings.md) (1)
 
-**Used by (7):** [DiscoveryCheck](DiscoveryCheck.md), [EquipmentCheck](EquipmentCheck.md), [FittingCheck](FittingCheck.md), [Game](Game.md), [RecipeCheck](RecipeCheck.md), [ResearchCheck](ResearchCheck.md), [SectorScreen](SectorScreen.md)
+**Used by (10):** [DiscoveryCheck](DiscoveryCheck.md), [EquipmentCheck](EquipmentCheck.md), [FittingCheck](FittingCheck.md), [Game](Game.md), [RecipeCheck](RecipeCheck.md), [ResearchCheck](ResearchCheck.md), [ResearchScreen](ResearchScreen.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md), [SectorScreen](SectorScreen.md)
 
 ## Sections
 

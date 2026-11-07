@@ -1764,6 +1764,62 @@ public final class KeptBench {
         return cardNodes().size();
     }
 
+    /** Whether the Build screen shows NEW on a template's card now (R5): its one rule, which the card, the category's dot and the strip all ask. */
+    public boolean buildShowsNew(BuildingsTemplate t) {
+        return ui.buildScreen.showsNew(t);
+    }
+
+    /** The rule alone (R5): NEW while the model says so and the card was not first drawn in an earlier month than `month`. */
+    public static boolean buildShowsNew(boolean modelNew, Integer firstDrawn, int month) {
+        return BuildScreen.showsNew(modelNew, firstDrawn, month);
+    }
+
+    /** The month a template's card was first drawn in while it was NEW (R5), or null for one the screen has not drawn. */
+    public Integer buildNewSeen(BuildingsTemplate t) {
+        return ui.buildScreen.newSeen.get(t.getId());
+    }
+
+    /** The templates that show NEW on the Build screen now (R5), in the templates' order. */
+    public List<BuildingsTemplate> buildShownNew() {
+        return ui.buildScreen.shownNew();
+    }
+
+    /** How many NEW chips the Build page shows (R5): the cards that say NEW in their heads. */
+    public int buildNewChips() {
+        int[] n = {0};
+        each(column, node -> {
+            if (node instanceof Label l && "NEW".equals(l.getText())) n[0]++;
+        });
+        return n[0];
+    }
+
+    /** The words of the strip under the Build page's head that says what is new on the page (R5), or null when there is none. */
+    public String buildNewStrip() {
+        Label l = find(column, Label.class, x -> x.getText() != null && x.getText().startsWith("New: "));
+        return l == null ? null : l.getText();
+    }
+
+    /** The category chips on the Build page's strip that carry the discovery's dot (R5): the buttons whose graphic is the pair of dots, one of them the discovery's violet ringed, by their names. */
+    public List<String> buildNewDots() {
+        List<String> out = new ArrayList<>();
+        each(column, node -> {
+            if (node instanceof javafx.scene.control.Button b && b.getGraphic() instanceof HBox pair
+                    && pair.getChildren().stream().anyMatch(k -> k.getStyle() != null && k.getStyle().contains("-fx-border-color: " + Palette.TEXT_HEAD))) {
+                out.add(b.getText());
+            }
+        });
+        return out;
+    }
+
+    /** How many cards on the Build page have the discovery's violet for their edge (R5). */
+    public int buildNewEdges() {
+        int[] n = {0};
+        for (javafx.scene.layout.StackPane card : cardNodes()) {
+            if (card.getStyle() != null && card.getStyle().contains("-fx-border-color: " + Palette.DISCOVERY)) n[0]++;
+        }
+        return n[0];
+    }
+
     /** A press on a card's stepper ("+", "+10", "+100", "−" or "↺"), as the pointer's: its order repriced and the order bar refilled in place, outside any draw. False when there is no such card or button. */
     public boolean buildStep(int card, String glyph) {
         List<javafx.scene.layout.StackPane> cards = cardNodes();
@@ -3800,6 +3856,69 @@ public final class KeptBench {
     /** The Policy tab forgotten, as another city opened would leave it: nothing kept. */
     public void forgetPolicy() {
         ui.policyScreen.forget();
+    }
+
+    /* =====================================================================
+       THE RESEARCH AREA AND CITY HISTORY'S FLAGS (R5, slice B1): the pure helpers the Found page and the History flags are made of, reached
+       from the harness (the screens are package-private)
+       ===================================================================== */
+
+    /** How high each dot of a timeline row stands (ResearchScreen.levels()) for the months given, at the width a plot is given: the dot and its gap are the screen's. */
+    public static int[] researchLevels(int[] months, int first, int last, double plotWidth) {
+        return ResearchScreen.levels(months, first, last, plotWidth, ResearchScreen.DOT + ResearchScreen.DOT_GAP);
+    }
+
+    /** What two dots must be apart not to stack, in pixels (the dot and its gap). */
+    public static double researchSlot() {
+        return ResearchScreen.DOT + ResearchScreen.DOT_GAP;
+    }
+
+    /** The months the timeline's year ticks stand at (ResearchScreen.yearTicks()), and the least width between two of them. */
+    public static int[] researchTicks(int first, int last, double plotWidth) {
+        return ResearchScreen.yearTicks(first, last, plotWidth);
+    }
+
+    /** The least width between two year ticks of the timeline, in pixels. */
+    public static double researchTickRoom() {
+        return ResearchScreen.TICK_ROOM;
+    }
+
+    /** Where a month stands across a plot (ResearchScreen.xOf()). */
+    public static double researchX(int month, int first, int last, double plotWidth) {
+        return ResearchScreen.xOf(month, first, last, plotWidth);
+    }
+
+    /** Every dot of the Found page's timeline, in the order drawn: {its left, top, width and height in its pane, then the pane's width and height}. */
+    public List<double[]> researchDots() {
+        List<double[]> out = new ArrayList<>();
+        each(column, n -> {
+            if (!(n instanceof ResearchScreen.Timeline t)) return;
+            for (Node d : t.dots()) {
+                Bounds b = d.getBoundsInParent();
+                out.add(new double[]{b.getMinX(), b.getMinY(), b.getWidth(), b.getHeight(), t.getWidth(), t.getHeight()});
+            }
+        });
+        return out;
+    }
+
+    /** A flag's head counts, decisions and discoveries apart (TimeChart.flagCounts()). */
+    public static String flagCounts(int decisions, int discoveries) {
+        return TimeChart.flagCounts(decisions, discoveries);
+    }
+
+    /** The colour a flag of this kind is drawn in (TimeChart.flagColour()). */
+    public static String flagColour(String kind) {
+        return TimeChart.flagColour(kind);
+    }
+
+    /** The decisions of a window of flags, newest first, a discovery's left out (HistoryScreen.decisionsInView()). */
+    public static List<ham.citybuildersim.DecisionLog.Entry> decisionsInView(List<ham.citybuildersim.ChartModel.Flag> flags, int from, int to) {
+        return HistoryScreen.decisionsInView(flags, from, to);
+    }
+
+    /** How many decisions a flag holds, its discoveries left out (HistoryScreen.decisionsIn()). */
+    public static int decisionsIn(ham.citybuildersim.ChartModel.Flag flag) {
+        return HistoryScreen.decisionsIn(flag);
     }
 
     /* =====================================================================

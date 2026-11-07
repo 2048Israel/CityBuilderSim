@@ -2,7 +2,7 @@
 
 Generated 2026-11-06 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**181 harness files, 20,782 labelled assertions.** AllChecks runs 181 of them.
+**182 harness files, 20,963 labelled assertions.** AllChecks runs 182 of them.
 
 ## Which harnesses read which class
 
@@ -35,11 +35,11 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BuildersShort](map/BuildersShort.md) | ConstructionTrapCheck |
 | [BuildingCatalog](map/BuildingCatalog.md) | BridgeMapCheck, BuildingDataCheck, CrossingCheck, DiscoveryCheck, EarthTerrainCheck, EquipmentCheck, GatewayCheck, IslandNetCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, PortCheck, PriceLevelCheck, PrizeCheck, RailDrawCheck, RecipeCheck, ResearchCheck, SlopeCheck, WellCheck |
 | [BuildingInstance](map/BuildingInstance.md) | **none** |
-| [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AutoBuildCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CausesOfDeathCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DiscoveryCheck, EarthFoundingCheck, EquipmentCheck, ExpectationsCheck, FittingCheck, FoodProcessingCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, IndustryViewCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, NewGameCheck, OilCheck, OilViewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestructureCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SicknessCheck, SupplierCreditCheck, TradeCostCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck, ZoningViewCheck |
-| [BuildingType](map/BuildingType.md) | BooksCheck, BridgeCheck, BuildAdviceCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, ForestryCheck, HaulageCheck, HouseholdCheck, HydroCheck, InfrastructureCheck, InvestCheck, JunctionCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PlanCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, RailDrawCheck, RecipeCheck, ResearchCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, TruckRouteCheck, WoodProductsCheck |
+| [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AutoBuildCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CausesOfDeathCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DiscoveryCheck, EarthFoundingCheck, EquipmentCheck, ExpectationsCheck, FittingCheck, FoodProcessingCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, IndustryViewCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, NewGameCheck, OilCheck, OilViewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchViewCheck, RestructureCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SicknessCheck, SupplierCreditCheck, TradeCostCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck, ZoningViewCheck |
+| [BuildingType](map/BuildingType.md) | BooksCheck, BridgeCheck, BuildAdviceCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, ForestryCheck, HaulageCheck, HouseholdCheck, HydroCheck, InfrastructureCheck, InvestCheck, JunctionCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PlanCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, RailDrawCheck, RecipeCheck, ResearchCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, TruckRouteCheck, WoodProductsCheck |
 | [BuildingVisual](map/BuildingVisual.md) | BridgeMapCheck, ChildcareCheck, CrossingCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, IslandNetCheck, JunctionCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, RunWorksCheck, SlopeCheck, TruckRouteCheck |
-| [BuildingsStacks](map/BuildingsStacks.md) | BuildCardCheck, BuildersFirstCheck, ChildcareCheck, ConstructionControlCheck, DeathCareFirstCheck, DiscoveryCheck, EquipmentCheck, FittingCheck, InvestCheck, KeptCheck, LandmassCheck, LongPlaytest, RecipeCheck, RefineryCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, WellCheck, ZoningViewCheck |
-| [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DiscoveryCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GatewayCheck, GdpCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HousingCheck, HydroCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, TradeCostCheck, TreasuryCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [BuildingsStacks](map/BuildingsStacks.md) | BuildCardCheck, BuildersFirstCheck, ChildcareCheck, ConstructionControlCheck, DeathCareFirstCheck, DiscoveryCheck, EquipmentCheck, FittingCheck, InvestCheck, KeptCheck, LandmassCheck, LongPlaytest, RecipeCheck, RefineryCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, WellCheck, ZoningViewCheck |
+| [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DiscoveryCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GatewayCheck, GdpCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HousingCheck, HydroCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, TradeCostCheck, TreasuryCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessDebt](map/BusinessDebt.md) | BankCheck, CreditCheck, LongPlaytest, MortgageCheck |
 | [BusinessDebtManager](map/BusinessDebtManager.md) | AuctionCheck, BankCheck, BondCheck, BooksCheck, BuildCardCheck, CreditCheck, FittingCheck, FundLedgerCheck, InvestCheck, LongPlaytest, MoneyCheck, MortgageCheck, OrderSearchCheck, ReadPathCheck, RefineryCheck, SaveFileCheck, SupplierCreditCheck, WantedPostsCheck |
 | [BusinessInvestment](map/BusinessInvestment.md) | AgricultureCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, DiscoveryCheck, EquipmentCheck, FittingCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, HaulageCheck, IndustryViewCheck, InvestCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MortgageCheck, OilCheck, OrderSearchCheck, PolicyCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ResearchCheck, RestaurantsCheck, RunWorksCheck, ScaleCheck, WantedPostsCheck, WellCheck, WoodProductsCheck, ZoningCheck, ZoningViewCheck |
@@ -57,10 +57,10 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CementConcrete](map/CementConcrete.md) | BuildingDataCheck, CementConcreteCheck, Forms1900Check, IndustryViewCheck, QuarryingCheck |
 | [CentralBank](map/CentralBank.md) | BankCheck, BuybackCheck, CallCheck, CentralBankCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, FloatLinkCheck, ForeignCheck, FundCheck, HoldersCheck, LongPlaytest, MortgageCheck, PolicyPreviewCheck, ScaleCheck |
 | [ChartFitBench](map/ChartFitBench.md) | ChartFitCheck |
-| [ChartModel](map/ChartModel.md) | BankCheck, ChartCheck, ForeignDebtCheck, HistoryCheck, KeptCheck, ReadPathCheck |
+| [ChartModel](map/ChartModel.md) | BankCheck, ChartCheck, ForeignDebtCheck, HistoryCheck, KeptCheck, ReadPathCheck, ResearchViewCheck |
 | [CityBasket](map/CityBasket.md) | **none** |
 | [CityBuilderSim](map/CityBuilderSim.md) | **none** |
-| [CityCalendar](map/CityCalendar.md) | AuctionCheck, CalendarCheck, CausesOfDeathCheck, ChartCheck, DebtExchangeCheck, DenominationCheck, EquipmentCheck, ForeignDebtCheck, FundCheck, LandNationsCheck, OilViewCheck, PolicyDatesCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, RecipeCheck, ReplayCheck, ResearchCheck, SaveFileCheck, WorldMoneysCheck, YearBookCheck |
+| [CityCalendar](map/CityCalendar.md) | AuctionCheck, CalendarCheck, CausesOfDeathCheck, ChartCheck, DebtExchangeCheck, DenominationCheck, EquipmentCheck, ForeignDebtCheck, FundCheck, KeptCheck, LandNationsCheck, OilViewCheck, PolicyDatesCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, RecipeCheck, ReplayCheck, ResearchCheck, SaveFileCheck, WorldMoneysCheck, YearBookCheck |
 | [CityLand](map/CityLand.md) | AutoBuildCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, HydroCheck, IslandNetCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, QuarryingCheck, ReadPathCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SlopeCheck, WaterCheck, WorldCheck |
 | [CityMap](map/CityMap.md) | BridgeCheck, BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck |
 | [CityMeasures](map/CityMeasures.md) | RankingsCheck |
@@ -83,7 +83,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Debt](map/Debt.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CentralBankCheck, ChartCheck, CreditCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, GdpCheck, HoldersCheck, KeptCheck, LongPlaytest, MoneyCheck, NewGameCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, SectorStatementCheck, TreasuryCheck |
 | [DebtManager](map/DebtManager.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarryTradeCheck, CentralBankCheck, CreditCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FloatLinkCheck, ForeignDebtCheck, HoldersCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, MonetaryCheck, MoneyCheck, MortgageCheck, PartnersCheck, PolicyPreviewCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, TreasuryCheck |
 | [DebtQuote](map/DebtQuote.md) | AuctionCheck, AutoBuildCheck, CallCheck, CreditCheck, CurveCheck, DebtMoneysCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, HoldersCheck, LandCheck, LongPlaytest, MapCheck, NewGameCheck, RestructureCheck |
-| [DecisionLog](map/DecisionLog.md) | AutoBuildCheck, BankCheck, CentralBankCheck, ChartCheck, ForeignDebtCheck, FundCheck, LongPlaytest, OilCheck, PolicyDatesCheck, ReadPathCheck, SaveFileCheck, YearBookCheck, ZoningViewCheck |
+| [DecisionLog](map/DecisionLog.md) | AutoBuildCheck, BankCheck, CentralBankCheck, ChartCheck, ForeignDebtCheck, FundCheck, KeptCheck, LongPlaytest, OilCheck, PolicyDatesCheck, ReadPathCheck, ResearchViewCheck, SaveFileCheck, YearBookCheck, ZoningViewCheck |
 | [DemolitionLog](map/DemolitionLog.md) | CalendarCheck, HouseholdCheck, MortgageCheck |
 | [Denomination](map/Denomination.md) | DenominationCheck, NewGameCheck |
 | [Deposit](map/Deposit.md) | BuildCardCheck, CementConcreteCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, IndustryViewCheck, LandCheck, LandmassCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, QuarryingCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, WellCheck, WorldCheck |
@@ -94,11 +94,11 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [EarthProj](map/EarthProj.md) | EarthCheck, EarthDepositsCheck, EarthTerrainCheck, GlobeCheck, LandNationsCheck, LandmassCheck, MapCheck, PartnerCallsCheck, PartnersCheck |
 | [EarthSite](map/EarthSite.md) | BridgeCheck, CopperRefiningCheck, DeterminismCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, HydroCheck, LandCheck, LandNationsCheck, LandmassCheck, LongPlaytest, NewGameCheck, PartnersCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, SlopeCheck |
 | [EarthTerrain](map/EarthTerrain.md) | BridgeCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, GatewayCheck, GlobeCheck, LandCheck, LandmassCheck, MapCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SlopeCheck |
-| [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BuildCardCheck, CapitalFlowCheck, CreditCheck, CrimeCheck, DebtExchangeCheck, DiscoveryCheck, EducationCheck, GdpCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, RailDepotCheck, ReadPathCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, WellCheck, ZoningCheck, ZoningViewCheck |
+| [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BuildCardCheck, CapitalFlowCheck, CreditCheck, CrimeCheck, DebtExchangeCheck, DiscoveryCheck, EducationCheck, GdpCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, RailDepotCheck, ReadPathCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, WellCheck, ZoningCheck, ZoningViewCheck |
 | [Education](map/Education.md) | EducationCheck, ExpectationsCheck, LongPlaytest, PriceLevelCheck |
 | [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, DiscoveryCheck, EducationCheck, ExpectationsCheck, KeptCheck, LongPlaytest, PriceLevelCheck, ReadPathCheck, ScaleCheck |
-| [Equipment](map/Equipment.md) | DiscoveryCheck, EquipmentCheck, FittingCheck, RecipeCheck, ResearchCheck |
-| [EquipmentFit](map/EquipmentFit.md) | DiscoveryCheck, EquipmentCheck, FittingCheck, RecipeCheck, ResearchCheck |
+| [Equipment](map/Equipment.md) | DiscoveryCheck, EquipmentCheck, FittingCheck, RecipeCheck, ResearchCheck, ResearchViewCheck |
+| [EquipmentFit](map/EquipmentFit.md) | DiscoveryCheck, EquipmentCheck, FittingCheck, RecipeCheck, ResearchCheck, ResearchViewCheck |
 | [EquipmentForms](map/EquipmentForms.md) | **none** |
 | [Equity](map/Equity.md) | AgricultureCheck, BankCheck, BuildCardCheck, BusinessServicesCheck, CapitalFlowCheck, CarCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, DenominationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HouseholdCheck, InterestAbroadCheck, LongPlaytest, ManufacturingCheck, MarketCheck, MortgageCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, ShortSellingCheck, WoodProductsCheck |
 | [Exchange](map/Exchange.md) | BankCheck, ExchangeCheck, FundCheck, FundLedgerCheck, HistoryCheck, LongPlaytest, MarketCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ShortSellingCheck |
@@ -114,7 +114,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ForeignAccounts](map/ForeignAccounts.md) | CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, CurrencyRegimeCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, ExchangeRateCheck, ExpectationsCheck, ForeignCheck, ForeignDebtCheck, HoldersCheck, InterestAbroadCheck, InterventionCheck, KeptCheck, LabourCheck, LandCheck, LandNationsCheck, LongPlaytest, MonetaryCheck, NewGameCheck, OilCheck, PartnersCheck, PassThroughCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldMoneysCheck |
 | [Forestry](map/Forestry.md) | BuildCardCheck, BuildingDataCheck, ForestryCheck, IndustryViewCheck, WoodProductsCheck, ZoningCheck |
 | [Formats](map/Formats.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, CarCheck, FoodProcessingCheck, LandCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck, SectorFlowCheck, TradeCostCheck, WellCheck, ZoningCheck |
-| [Founding](map/Founding.md) | AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BridgeCheck, BridgeMapCheck, BuildAdviceCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, DeathCareFirstCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ExchangeRateCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, GatewayCheck, GdpCheck, GridCheck, GroceryCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HydroCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandNetCheck, JunctionCheck, LandCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OutsideCheck, PartnerCallsCheck, PartnersCheck, PassThroughCheck, PlanCheck, PolicyDatesCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDrawCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WellCheck, WorldCheck, WorldMoneysCheck, ZoningCheck, ZoningViewCheck |
+| [Founding](map/Founding.md) | AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BridgeCheck, BridgeMapCheck, BuildAdviceCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, DeathCareFirstCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ExchangeRateCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, GatewayCheck, GdpCheck, GridCheck, GroceryCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HydroCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandNetCheck, JunctionCheck, LandCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OutsideCheck, PartnerCallsCheck, PartnersCheck, PassThroughCheck, PlanCheck, PolicyDatesCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDrawCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchViewCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WellCheck, WorldCheck, WorldMoneysCheck, ZoningCheck, ZoningViewCheck |
 | [FoundingName](map/FoundingName.md) | NewGameCheck |
 | [FoundingScreen](map/FoundingScreen.md) | **none** |
 | [Freight](map/Freight.md) | BuildCardCheck, EquipmentCheck, FittingCheck, Forms1900Check, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, LandlordPortCheck, LongPlaytest, MapCheck, OilCheck, PortCheck, RailCheck, RailDepotCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, TradeBandCheck, TruckCheck, TruckRouteCheck, WorldDataCheck |
@@ -123,8 +123,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [FundLedger](map/FundLedger.md) | FundLedgerCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
 | [FundScreen](map/FundScreen.md) | **none** |
 | [FundView](map/FundView.md) | FundCheck, FundLedgerCheck, LongPlaytest, ReadPathCheck |
-| [Game](map/Game.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DebtMoneysCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PartnersCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, TruckRouteCheck, VanCheck, VaultMoneysCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
-| [GameFiles](map/GameFiles.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DenominationCheck, DeterminismCheck, DiscoveryCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PartnersCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, TruckRouteCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [Game](map/Game.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DebtMoneysCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PartnersCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, TruckRouteCheck, VanCheck, VaultMoneysCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [GameFiles](map/GameFiles.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DenominationCheck, DeterminismCheck, DiscoveryCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PartnersCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, TruckRouteCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [GameLog](map/GameLog.md) | RobustnessCheck |
 | [GamePrefs](map/GamePrefs.md) | TruckCheck |
 | [GameVersion](map/GameVersion.md) | BridgeCheck, ChartCheck, ConstructionControlCheck, EarthDepositsCheck, EarthTerrainCheck, EnsembleCheck, LandmassCheck, MaterialsCheck, RankingsCheck, ReplayCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck, WellCheck |
@@ -143,7 +143,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Healthcare](map/Healthcare.md) | BuildAdviceCheck, CausesOfDeathCheck, ChildcareCheck, DeathCareFirstCheck, ExpectationsCheck, HealthCheck, LongPlaytest, OutsideCheck, PopulationCheck, SaveFileCheck, SicknessCheck |
 | [HeavyIndustry](map/HeavyIndustry.md) | AgricultureCheck, BuildCardCheck, BuildingDataCheck, CementConcreteCheck, CopperRefiningCheck, DenominationCheck, FreightViewCheck, GdpCheck, HaulageCheck, IndustryViewCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, RailCheck, ReadPathCheck, SaveFileCheck, SectorFlowCheck, TradeCostCheck, VanCheck, WoodProductsCheck |
 | [HistoryGrapher](map/HistoryGrapher.md) | **none** |
-| [HistorySave](map/HistorySave.md) | BuybackCheck, ChartCheck, ClockCheck, DeathRecordCheck, DebtExchangeCheck, DenominationCheck, HistoryCheck, HouseholdMemoryCheck, InterestAbroadCheck, PartnersCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, WorldMoneysCheck, YearBookCheck |
+| [HistorySave](map/HistorySave.md) | BuybackCheck, ChartCheck, ClockCheck, DeathRecordCheck, DebtExchangeCheck, DenominationCheck, HistoryCheck, HouseholdMemoryCheck, InterestAbroadCheck, PartnersCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, ReplayCheck, ResearchViewCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, WorldMoneysCheck, YearBookCheck |
 | [HistoryScreen](map/HistoryScreen.md) | **none** |
 | [HomeFuel](map/HomeFuel.md) | Forms1900Check |
 | [Household](map/Household.md) | BankCheck, BondCheck, BusinessServicesCheck, CarCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, Forms1900Check, FundCheck, FundLedgerCheck, GroceryCheck, HealthCheck, HistoryCheck, HoldersCheck, HouseholdCheck, InvestCheck, LongPlaytest, MarketCheck, OutsideCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ShortSellingCheck |
@@ -226,7 +226,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [PayTier](map/PayTier.md) | AgricultureCheck, BankCheck, BondCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, DiscoveryCheck, EducationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MarketCheck, MaterialsCheck, MiningCheck, OutsideCheck, PopulationCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, TradeCostCheck, WoodProductsCheck |
 | [PeopleScreen](map/PeopleScreen.md) | **none** |
 | [Pieces](map/Pieces.md) | IslandNetCheck |
-| [PolicyDates](map/PolicyDates.md) | DiscoveryCheck, EquipmentCheck, ForestryCheck, KeptCheck, LandmassCheck, PolicyDatesCheck, RecipeCheck, ResearchCheck, ZoningViewCheck |
+| [PolicyDates](map/PolicyDates.md) | DiscoveryCheck, EquipmentCheck, ForestryCheck, KeptCheck, LandmassCheck, PolicyDatesCheck, RecipeCheck, ResearchCheck, ResearchViewCheck, ZoningViewCheck |
 | [PolicyPreview](map/PolicyPreview.md) | CentralBankCheck, GroceryCheck, PolicyPreviewCheck, ReadPathCheck, ZoningViewCheck |
 | [PolicyRates](map/PolicyRates.md) | DebtMoneysCheck, GlobeCheck, InterestAbroadCheck, PartnersCheck, ReadPathCheck, SaveFileCheck |
 | [PolicyScreen](map/PolicyScreen.md) | **none** |
@@ -243,7 +243,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [RankingsScreen](map/RankingsScreen.md) | **none** |
 | [RealDollar](map/RealDollar.md) | PriceLevelCheck, RankingsCheck, RealDollarCheck |
 | [RealEstate](map/RealEstate.md) | HouseholdCheck, HousingCheck, InvestCheck, LabourCheck, LongPlaytest, MortgageCheck, NewGameCheck, ReadPathCheck, RoadCheck |
-| [Recipe](map/Recipe.md) | BuildingDataCheck, DiscoveryCheck, RecipeCheck, ResearchCheck |
+| [Recipe](map/Recipe.md) | BuildingDataCheck, DiscoveryCheck, RecipeCheck, ResearchCheck, ResearchViewCheck |
 | [Recipes](map/Recipes.md) | DiscoveryCheck, RecipeCheck, ResearchCheck |
 | [Recording](map/Recording.md) | ReplayCheck, SaveFileCheck |
 | [RefineryFlow](map/RefineryFlow.md) | BuildCardCheck, BuildingDataCheck, OilCheck, OilViewCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck |
@@ -256,8 +256,10 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ReplayGraphs](map/ReplayGraphs.md) | ReplayCheck |
 | [ReplayMode](map/ReplayMode.md) | **none** |
 | [ReplayMoveProbe](map/ReplayMoveProbe.md) | ReplayCheck |
-| [Research](map/Research.md) | DiscoveryCheck, LandCheck, PrizeCheck |
-| [ResearchCatalog](map/ResearchCatalog.md) | BuildCardCheck, DiscoveryCheck, EquipmentCheck, PrizeCheck, RecipeCheck, ResearchCheck |
+| [Research](map/Research.md) | DiscoveryCheck, KeptCheck, LandCheck, PrizeCheck, ResearchViewCheck |
+| [ResearchCatalog](map/ResearchCatalog.md) | BuildCardCheck, DiscoveryCheck, EquipmentCheck, PrizeCheck, RecipeCheck, ResearchCheck, ResearchViewCheck |
+| [ResearchScreen](map/ResearchScreen.md) | **none** |
+| [ResearchView](map/ResearchView.md) | KeptCheck, ResearchViewCheck |
 | [Resource](map/Resource.md) | AutoBuildCheck, BridgeMapCheck, BuildCardCheck, BuildingDataCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, HaulageCheck, IndustryViewCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, OilCheck, OilViewCheck, PlanCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, ScaleCheck, SlopeCheck, WellCheck, WorldCheck, ZoningCheck, ZoningViewCheck |
 | [Restaurants](map/Restaurants.md) | InvestCheck, LongPlaytest, RestaurantsCheck |
 | [Retail](map/Retail.md) | BondCheck, BuildCardCheck, BuildingDataCheck, CarCheck, ExpectationsCheck, ForeignCheck, Forms1900Check, GdpCheck, GroceryCheck, HealthCheck, InfrastructureCheck, InvestCheck, LongPlaytest, MonetaryCheck, NewGameCheck, OilCheck, ReadPathCheck, RefineryViewCheck, RestaurantsCheck, SaveFileCheck, SupplierCreditCheck, WaterCheck |
@@ -339,7 +341,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [WorldMarket](map/WorldMarket.md) | DenominationCheck, GlobeCheck, InterestAbroadCheck, PartnerCallsCheck, PartnersCheck, PriceLevelCheck, ReadPathCheck, SaveFileCheck, WorldMarketCheck, WorldMoneysCheck |
 | [WorldMeasures](map/WorldMeasures.md) | RankingsCheck, WorldMeasuresCheck |
 | [WorldMoneys](map/WorldMoneys.md) | DebtMoneysCheck, ExchangeRateCheck, GlobeCheck, InterestAbroadCheck, KeptCheck, PartnersCheck, PriceLevelCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldMoneysCheck |
-| [YearBook](map/YearBook.md) | ChartCheck, ClockCheck, HistoryCheck, InterestAbroadCheck, RankingsCheck, ReadPathCheck, ScaleCheck, WorldMoneysCheck, YearBookCheck |
+| [YearBook](map/YearBook.md) | ChartCheck, ClockCheck, HistoryCheck, InterestAbroadCheck, RankingsCheck, ReadPathCheck, ResearchViewCheck, ScaleCheck, WorldMoneysCheck, YearBookCheck |
 | [YieldCurve](map/YieldCurve.md) | AuctionCheck, CallCheck, CurveCheck, DeskCheck, FloatLinkCheck, LongPlaytest |
 | [Zoning](map/Zoning.md) | ForestryCheck, KeptCheck, LandCheck, LandClassCheck, LandmassCheck, PolicyDatesCheck, PolicyPreviewCheck, ZoningCheck, ZoningViewCheck |
 | [ZoningScreen](map/ZoningScreen.md) | **none** |
@@ -13928,7 +13930,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2150 21d. a + of two one-plot streets keeps its four corners of verge: nothing is filled between single bars
   - L2161 21e. a band across the corner of four tiles is one carriageway too: every pixel between its edges paved, across the seam
 
-## KeptCheck.java - 263 labelled assertions
+## KeptCheck.java - 338 labelled assertions
 
 > The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each
 > month's redraw run over last month's nodes ends exactly where a page built new would, and costs
@@ -13944,331 +13946,412 @@ _(this harness does not label its checks through a helper - it prints its findin
 > times the kept month.
 > ...
 
-- **L477 6: the chrome is kept**
-  - L510 each month's redraw keeps the nodes the header and the rail drew (the same top nodes,
-  - L512 each month hands back nine in ten of the nodes the first draw made, or more (
-  - L514 most months make no node at all (
-- **L517 7 and 8: the kept chrome against a chrome built new, in every state**
-  - L577 the kept chrome's signature equals the new chrome's at every month, through every state (
-- **L579 8: and its pixels**
-  - L581 the kept header and rail are the same pictures as the new ones at
-  - L603 one figure made wrong in the kept header (\"
-  - L605 ...and its picture
-  - L606 ...and the next kept draw sets it right again
-  - L616 a header node that had the focus loses it at the next kept draw, as the rebuild took it
-  - L641 a rail button drawn again under the pointer keeps its hover look, and loses it when the pointer goes
-  - L643 ...and so does a header tile
-- **L645 9: a city opened forgets the chrome**
-  - L658 before the forgetting a draw makes few nodes, after it every node is new (
-  - L662 a draw within another pool's draw gives each pool its own nodes (the envelope inside the header)
-- **L664 10: what the kept chrome costs**
-- **L719 11: the panels are kept**
-  - L769 each month's redraw keeps the nodes the three panels drew (the same top nodes,
-  - L771 each month hands back nine in ten of the nodes the first draw made, or more (
-  - L775 the nodes made in a month are few (
-- **L778 12: the kept panels against panels built new, in every state**
-  - L836 the kept panels' signatures equal the new panels' at every month, through every state (
-  - L838 the kept panels are the same pictures as the new ones at
-  - L860 one figure made wrong in the kept city panel (\"
-  - L862 ...and its picture
-  - L863 ...and the next kept draw sets it right again
-  - L880 the city panel's scroller is kept and stays where it was put (
-  - L900 a summary row drawn again under the pointer keeps its hover look, and loses it when the pointer goes
-  - L916 an inbox button that had the focus loses it at the next kept draw, as the rebuild took it
-- **L918 13: what the whole chrome costs, kept**
-- **L997 14: City History is kept**
-  - L1013 the page holds the big chart and the two pins' (
-  - L1041 each month's redraw keeps the page it drew (the same top nodes,
-  - L1042 each month hands back nine in ten of the nodes the first draw made, or more (
-  - L1044 most months make no node at all (
-  - L1045 the big chart and both pins' stay in the scene, in the same box, after every redraw (
-  - L1047 the legend's chips and the range buttons are the same nodes after every redraw (
-  - L1049 no label's graphic is taken off the scene and put back by a kept redraw (
-- **L1052 15 and 16: the kept page, month after month, against a page built new, and its pixels**
-  - L1093 the kept page's signature equals the new page's at every month (
-  - L1095 the kept page and the new page are the same picture at
-  - L1116 one figure made wrong on the kept page (\"
-  - L1118 ...and its picture
-  - L1119 ...and the next kept draw sets it right again
-- **L1121 17: what reshapes the page**
-- **L1236 18: the crosshair and the window survive a month**
-  - L1264 a month landed (the history grew by one)
-  - L1265 a window on the newest month follows it across a kept redraw
-  - L1266 a window put by hand, ending before the newest month, stays where it was across a kept redraw
-  - L1284 the pointer over the big chart's plot shows its crosshair
-  - L1285 the crosshair is still there after a kept redraw
-  - L1286 ...and a page built new, which takes the chart off the scene, clears it
-  - L1307 a legend chip has a tooltip to keep
-  - L1308 a legend chip under the pointer is still the same chip, still under it, with the same tooltip, after a kept redraw
-  - L1310 ...and a page built new has a chip of its own, with no pointer on it
-- **L1320 19: the count-up only at 1x-10x**
-  - L1358 a month landing on People starts the headcount's count-up exactly at the rungs countsUp() allows, and when paused (
-  - L1390 a month landing on City History starts the pin's count-up exactly at the rungs countsUp() allows, and when paused (
-  - L1413 a count-up running when a month lands past COUNT_UP_TOP is stopped, and the figure is the month's
-- **L1418 20: what the kept City History month costs**
-  - L1521 each month's redraw keeps the page it drew (the same top nodes,
-  - L1522 each month hands back nine in ten of the nodes the first draw made, or more (
-  - L1525 no month makes more than a tenth of the nodes the first draw made (the most made in one:
-  - L1528 most months make no node at all (
-  - L1576 the kept page's signature equals the new page's at every month (
-  - L1578 the kept page and the new page are the same picture at
-  - L1599 one figure made wrong on the kept page (\"
-  - L1601 ...and its picture
-  - L1602 ...and the next kept draw sets it right again
-  - L1663 a month's redraw after each choice hands back
-- **L1740 Infrastructure (KP2)**
-- **L1778 Services (KP2)**
-- **L1801 The land office (KP2)**
-- **L1834 33: the land office's other pages**
-- **L1857 34: a control keeps the player's hand**
-  - L1920 the Transit page has a fare dial (a slider) to hold
-  - L1925 a slider pressed is held
-  - L1926 a month landing on a held slider leaves the same slider node, still held
-  - L1927 ...its value still the thumb's (
-  - L1928 ...the reading the thumb's words in the month's money (\"
-  - L1930 ...Ladder.shown() the thumb's value, not the staged one
-  - L1931 ...and nothing is staged before the release
-  - L1932 a slider released is not held
-  - L1933 ...the fare is staged at the thumb (
-  - L1934 ...and the page is the same slider, kept, equal to a page built new
-  - L1936 after several kept months the one slider node still carries the dial
-  - L1937 a value set outside any draw updates the reading of the latest draw (\"
-  - L1939 ...and it is the reading on the page
-  - L1940 the fare is unstaged at the end of the section
-  - L1951 City History's filter box takes the focus (
-  - L1961 a month landing keeps the filter box (the same node)
-  - L1962 ...its text (\"
-  - L1963 ...its caret (
-  - L1965 ...and its focus
-  - L1976 Kept.text leaves a field with the focus as the player typed it (\"
-  - L1977 ...and sets a field that has none (\"
-- **L1982 35: the hover is kept**
-  - L2042 a
-- **L2149 Build (KP3)**
-  - L2152 the city has
-  - L2163 a city category has cards to dial an order on (
-  - L2175 the order bar shows the order dialled up (\"
-  - L2182 a kept draw fills the order bar once, after the last card (
-  - L2199 a market category has cards to dial an order on (
-  - L2283 the sites were held through the months:
-- **L2288 The construction page (KP3)**
-  - L2291 the city has
-  - L2351 the sites were held through the months:
-- **L2362 44: the pages a build is stopped on, and the funding and fell-short pages**
-  - L2367 a building names the no-
-- **L2404 45: a control keeps the player's hand**
-  - L2460 the Overview has a dial (a slider) to hold
-  - L2465 a slider pressed is held
-  - L2466 a month landing on a held slider leaves the same slider node, still held
-  - L2467 ...its value still the thumb's (
-  - L2468 ...the reading the thumb's words (\"
-  - L2469 ...Ladder.shown() the thumb's value
-  - L2470 ...and the margin is not set before the release (
-  - L2471 a slider released is not held
-  - L2472 ...the margin is set at the thumb (
-  - L2473 ...and the page is the same slider, kept, equal to a page built new
-  - L2475 after several kept months the one slider node still carries the dial
-  - L2476 a value set outside any draw updates the reading of the latest draw (\"
-  - L2477 the margin is put back at the end of the section
-  - L2488 the Overview's yield box takes the focus (
-  - L2507 the box found is the cap chips' yield box
-  - L2508 a month landing keeps the yield box (the same node)
-  - L2509 ...its text (\"
-  - L2510 ...its caret (
-  - L2511 ...and its focus
-  - L2512 Kept.text leaves a yield box with the focus as the player typed it (\"
-  - L2513 ...and sets one that has none (\"
-  - L2514 the builder's cap is as it was (nothing typed was set)
-  - L2526 the construction page's find box takes the focus (
-  - L2551 the box found is the find box
-  - L2552 a month landing keeps the find box (the same node)
-  - L2553 ...its text (\"
-  - L2554 ...its caret (
-  - L2555 ...and its focus
-  - L2556 Kept.text leaves a find box with the focus as the player typed it (\"
-  - L2557 ...and sets one that has none (\"
-  - L2559 the screen's own filter changed under the hand leaves the focused find box as typed (\"
-  - L2561 ...and the next draw, once the focus is gone, sets the box to it (\"
-  - L2601 a card's + pressed between draws is a press on the card (the count reads \"
-  - L2602 ...the order bar is refilled in place at once, outside any draw, once (
-  - L2603 ...and the next kept draw keeps the bar and equals a page built new
-  - L2605 +100, a month and a kept draw equal a page built new
-  - L2607 the card's own ↺ clears the order, the bar goes, and the next kept draw equals a page built new
-- **L2613 46: the hover is kept (Build)**
-  - L2642 a
-- **L2758 Sectors (KP4)**
-  - L2763 the city has a plain business with a plant standing (
-  - L2764 ...and a materials industry with works standing (
-- **L2869 50: the pictures on a business's page are kept**
-  - L2885 the refinery's town has a refinery that runs, so that its picture is drawn (
-- **L3082 51: the count-up only at 1x-10x (Sectors)**
-  - L3105 a month landing starts
-  - L3143 a count running when a month lands past COUNT_UP_TOP is stopped on
-- **L3175 53: a control keeps the player's hand (the oil reserve's dials)**
-  - L3177 the sea town has a Strategic Reserve with oil in it, to draw its two dials (
-  - L3193 the oil industry's page has the reserve's two dials to hold (
-- **L3271 54: the hover is kept (Sectors)**
-  - L3282 a
-- **L3337 The Bank tab (KP5)**
-- **L3451 57: a chip picked lands at the top of its page**
-  - L3484 the Bank's
-  - L3491 ...a month landing leaves the kept scroller where the player left it
-  - L3492 ...its own chip picked leaves the same scroller (the page is kept) at the top (
-  - L3493 ...and the page is equal to a page built new
-  - L3519 the Overview's chip picked from a scrolled Profit page lands at its top (
-  - L3520 the Statement view picked from a scrolled page lands at its top (
-  - L3521 ...and the Summary view picked again, scrolled, at its top (
-- **L3586 The Finances tab (KP5)**
-- **L3634 60: the book, a line's page and Close it now**
-- **L3724 60: the foreign default menu and the debt result menu**
-- **L3786 The city's fund (KP5)**
-  - L3812 the fund holds something to draw (
-- **L4005 64: the pictures on the money screens are kept**
-  - L4028 a
-- **L4273 65: the count-up only at 1x-10x (Bank and the fund)**
-  - L4297 a month landing starts
-  - L4345 an animation running when a month lands past COUNT_UP_TOP is stopped on
-- **L4482 66: the boxes keep the player's hand**
-  - L4492 the city has a piece of paper to close
-- **L4520 67: the hover is kept (Bank, Finances, the fund)**
-  - L4545 a
-  - L4611 the fund's heaviest page is Search or Activity, the two costed (
-- **L4809 The Government tab (KP6)**
-  - L4888 the central bank's printing and the arrears owed cause the cards they are meant to (CENTRAL BANK lines
-- **L4938 The Trade tab (KP6)**
-  - L4947 the tab has its six pages (
-  - L4954 the city trades with three nations, whose pages can be opened (
-  - L5078 the fold of the eight over the years holds its charts (
-  - L5086 ...each chart as wide as the card it sits in, on the kept draw and the month after
-  - L5087 ...and the card is not as wide as a chart made before it has a card (794 px and its padding): the width is the card's
-  - L5088 ...the page equal to a page built new
-- **L5150 The Policy tab (KP6)**
-  - L5358 People's page, with people short of food (
-  - L5536 a draw with nothing changed sets the reading's text and style no more (
-  - L5539 ...and the counter hears a text set by hand (
-  - L5540 a slider pressed is held
-  - L5541 a month landing on a held slider leaves the same slider node, still held
-  - L5542 ...its value still the thumb's (
-  - L5543 ...the reading the thumb's words (\"
-  - L5544 ...Ladder.shown() the thumb's value
-  - L5545 ...the card's effects drawn at the thumb (
-  - L5547 ...the line under the dial followed the thumb while it was dragged (it says the held step's words)
-  - L5548 ...and a month landing under the hand leaves the held step's words under the thumb, not the city's step's
-  - L5551 ...and nothing staged before the release
-  - L5553 ...and nothing applied before the release (the model at
-  - L5555 a slider released is not held
-  - L5557 ...the change is staged at the thumb (
-  - L5559 ...the change is applied at once, the model at the thumb (
-  - L5562 ...and the page is the same slider, kept, equal to a page built new
-  - L5634 ...the held slider is the same node, still held, at the thumb (
-  - L5635 ...its reading the thumb's (\"
-  - L5636 ...and no dial in front of it carries its thumb
-  - L5637 ...released, the page is equal to a page built new
-  - L5639 ...the card taken away and the change dropped: the page is equal to a page built new
-- **L5645 78: a card comes in front of a held dial**
-  - L5659 a tax has two payers with a row and a dial of their own to open (
-  - L5693 a sector's ITS TAXES card has a
-- **L5808 79: the count-up only at 1x-10x (Trade; Government and Policy have none)**
-  - L5832 a month landing starts
-  - L5878 a count running when a month lands past COUNT_UP_TOP is stopped on
-- **L5942 80: the hover is kept (Government, Trade, Policy)**
-  - L5969 Policy's Zoning › The ground page: a policyRow was found on the page of this city, to put the pointer on
-- **L5978 80: the tooltips are kept (Government, Trade, Policy)**
-  - L6029 the
-- **L6101 88: the clock never rebuilds a rail screen**
-  - L6108 a page drawn the old way twice under one name moves the in-place count by one (it moved
-  - L6109 ...and the next real screen shown, an arrival, does not move it (it moved
-  - L6170 the clock's redraw of
-  - L6171 ...and left its page's top nodes the same nodes (
-  - L6172 ...and the screen on show is still
-  - L6173 ...and the redraw ran over the screen's own nodes (
-- **L6208 Household money (KP7)**
-  - L6225 the grid has cells to open, family cells and rows below the rule (
-  - L6257 the open cell's books sit beside the grid at the full width and under it at 1000 wide (beside:
-- **L6267 The Rankings tab (KP7)**
-  - L6318 the city is saved into slot 10 of the harness's scratch folder (the player's own folder is refused)
-  - L6330 the read of the saved cities landed within a minute, with the saved city on the board (
-- **L6382 89: the hover is kept (Household money, the Rankings tab)**
-  - L6402 Household money: a limitCell was found on the page of this city, to put the pointer on
-  - L6403 the Rankings tab: a measure line was found on the page of this city, to put the pointer on
-  - L6404 the Rankings tab: a table row was found on the page of this city, to put the pointer on
-- **L6409 89: the tooltips are kept (Household money, the Rankings tab)**
-  - L6436 the pages of
-- **L6505 91: a slider greyed while held lets go**
-  - L6551 a slider
-  - L6554 a slider
-  - L6555 ...greyed while held it lets go (held
-  - L6556 ...ungreyed, a draw with another value staged puts the thumb on it (
-  - L6558 ...and the page is equal to a page built new
-  - L6560 ...the staged value dropped, the thumb is back at the city's (
-  - L6598 ...a draw with nothing changed sets no door card's style (
-  - L6600 ...and the counter hears a style set by hand (
-  - L6649 a second kept draw of
-- **L6689 92: a redraw with nothing new sets nothing**
-  - L6713 a style set to what it is moves no listener, and set to another and back moves it twice (
-  - L6721 a berth kind that goes to none is drawn as a row built new with none, bounds and all
-  - L6726 the city has a plain business and a materials industry with works to draw (
-  - L6740 the first note on
-  - L6786 the city's books hold a piece of paper (the fixture's premise for a line's page and Close it now:
-  - L6793 the fund lists a security (the fixture's premise for a security's page:
-  - L6799 the city trades with a nation (the fixture's premise for a nation's page:
-  - L6807 the window abroad is shut (the fixture's premise):
-  - L6823 the grid has a cell to open (the fixture's premise for Household money's open cells:
-- **L6879 93: the Rankings table keeps its hand, and its band follows a pointer a wheel leaves still**
-  - L6888 the Rankings table's picture has the hand, and a kept draw of the page writes its cursor none
-  - L6896 the Rankings table: after a wheel scrolls the page under a still pointer, and after a month lands, the band is on the row the pointer is over now
-  - L6910 the Rankings tab has a saved city on its board (the fixture's premise for Your cities:
-- **L6992 The drawer's bar, the construction tab and the speed's reading (UP7)**
-  - L6998 the city has stacks enough to put three on site (
-  - L7009 the first draw made the bar's nodes and the tab's (
-  - L7060 after the first, each of
-  - L7062 ...and the nodes are the same objects in the same boxes (
-  - L7063 the tab's count is the number of sites the city has, in every state (
-  - L7064 the kept bar and tab's signature equals the new ones' in every state (
-  - L7066 the kept bar and tab are the same pictures as the new ones at three states, to SHADE_LEVELS (
-  - L7086 the tab's count made wrong by hand (\"
-  - L7087 ...and its picture
-  - L7088 ...and the next kept draw sets it right again
-  - L7114 a second kept draw of the bar and of the tab in the same state sets no style, text, graphic, padding or width (
-  - L7115 ...and a draw after the pin is flipped does set the bar's words and look (
-  - L7139 the tab drawn again under a still pointer keeps its hover look, and loses it when the pointer goes
-  - L7141 ...and drawn with the panel open it has that look with the pointer away
-  - L7162 the tab's tooltip, the pin's and the close's are the same objects across draws
-  - L7163 ...the tab's words follow the count (nothing on site, 1 site, 3 sites) and the panel (open, then fold)
-  - L7166 ...the pin's follow the pin (\"
-  - L7168 ...and the delays are the tab's own 300 ms and the pin's 1,000 (
-  - L7199 the bar's pin and close and the tab have their click handlers after a kept draw, after one built new and after the kept draw again
-  - L7202 ...fired, the pin pins and unpins the drawer and draws the bar, and the tab opens and folds the panel (prefs saved in the scratch city)
-- **L7243 95: the speed's reading is the speed reached, alone and in amber, in one width**
-  - L7275 the reading's one width is the widest text it can show, and never under 34 (
-  - L7311 at pace, at every rung, the reading is the rung's words in the header's colour (
-  - L7313 ...laid out at the one width (
-  - L7314 ...and exactly as a label made the old way is (min width 34, the old style, the same words): the same width and height (
-  - L7316 ...and no reading's words are clipped (
-  - L7347 short of the rung, at every rung, the reading is pace.reached() alone, with no rung beside it (
-  - L7349 ...in amber (WARN) and nothing else changed in its style (
-  - L7350 ...at the one width (
-  - L7351 ...and the clock block's width and the money block's, the tiles' and the rating's x are the same as at pace (
-  - L7361 with the clock stopped the reading is the rung in the header's colour, though the pace was short
-  - L7388 the kept header's signature equals a header built new, at pace and short, at every rung (
-  - L7410 a second header draw at pace writes nothing on the reading (
-  - L7411 paintSpeed() with the reading unchanged writes nothing, at pace and short (
-  - L7413 a flip from pace to short sets the words once and the style once (
-  - L7414 ...and back sets them once each (
-  - L7415 ...and a header draw that finds the pace short sets them once each, the next draw nothing (
-- **L7438 KeptCheck: the People page, the chrome, City History, Infrastructure, Services, the land office, Build, the construction page, the Sector...**
-- **L7453 1 and 2: the kept page, month after month, against a page built new**
-  - L7508 each month's redraw keeps the page it drew (the same top node,
-  - L7509 each month hands back nine in ten of the nodes the first draw made, or more (
-  - L7511 most months make no node at all (
-  - L7513 the kept page's signature equals the new page's at every month (
-- **L7515 3: and its pixels**
-  - L7517 the kept page and the new page are the same picture at
-  - L7537 one figure made wrong on the kept page (\"
-  - L7539 ...and its picture
-  - L7540 ...and the next kept draw sets it right again
-- **L7542 4: what reshapes the page**
-- **L7577 5: what the kept month costs**
+- **L488 6: the chrome is kept**
+  - L521 each month's redraw keeps the nodes the header and the rail drew (the same top nodes,
+  - L523 each month hands back nine in ten of the nodes the first draw made, or more (
+  - L525 most months make no node at all (
+- **L528 7 and 8: the kept chrome against a chrome built new, in every state**
+  - L588 the kept chrome's signature equals the new chrome's at every month, through every state (
+- **L590 8: and its pixels**
+  - L592 the kept header and rail are the same pictures as the new ones at
+  - L614 one figure made wrong in the kept header (\"
+  - L616 ...and its picture
+  - L617 ...and the next kept draw sets it right again
+  - L627 a header node that had the focus loses it at the next kept draw, as the rebuild took it
+  - L652 a rail button drawn again under the pointer keeps its hover look, and loses it when the pointer goes
+  - L654 ...and so does a header tile
+- **L656 9: a city opened forgets the chrome**
+  - L669 before the forgetting a draw makes few nodes, after it every node is new (
+  - L673 a draw within another pool's draw gives each pool its own nodes (the envelope inside the header)
+- **L675 10: what the kept chrome costs**
+- **L730 11: the panels are kept**
+  - L780 each month's redraw keeps the nodes the three panels drew (the same top nodes,
+  - L782 each month hands back nine in ten of the nodes the first draw made, or more (
+  - L786 the nodes made in a month are few (
+- **L789 12: the kept panels against panels built new, in every state**
+  - L847 the kept panels' signatures equal the new panels' at every month, through every state (
+  - L849 the kept panels are the same pictures as the new ones at
+  - L871 one figure made wrong in the kept city panel (\"
+  - L873 ...and its picture
+  - L874 ...and the next kept draw sets it right again
+  - L891 the city panel's scroller is kept and stays where it was put (
+  - L911 a summary row drawn again under the pointer keeps its hover look, and loses it when the pointer goes
+  - L927 an inbox button that had the focus loses it at the next kept draw, as the rebuild took it
+- **L929 13: what the whole chrome costs, kept**
+- **L1008 14: City History is kept**
+  - L1024 the page holds the big chart and the two pins' (
+  - L1052 each month's redraw keeps the page it drew (the same top nodes,
+  - L1053 each month hands back nine in ten of the nodes the first draw made, or more (
+  - L1055 most months make no node at all (
+  - L1056 the big chart and both pins' stay in the scene, in the same box, after every redraw (
+  - L1058 the legend's chips and the range buttons are the same nodes after every redraw (
+  - L1060 no label's graphic is taken off the scene and put back by a kept redraw (
+- **L1063 15 and 16: the kept page, month after month, against a page built new, and its pixels**
+  - L1104 the kept page's signature equals the new page's at every month (
+  - L1106 the kept page and the new page are the same picture at
+  - L1127 one figure made wrong on the kept page (\"
+  - L1129 ...and its picture
+  - L1130 ...and the next kept draw sets it right again
+- **L1132 17: what reshapes the page**
+- **L1247 18: the crosshair and the window survive a month**
+  - L1275 a month landed (the history grew by one)
+  - L1276 a window on the newest month follows it across a kept redraw
+  - L1277 a window put by hand, ending before the newest month, stays where it was across a kept redraw
+  - L1295 the pointer over the big chart's plot shows its crosshair
+  - L1296 the crosshair is still there after a kept redraw
+  - L1297 ...and a page built new, which takes the chart off the scene, clears it
+  - L1318 a legend chip has a tooltip to keep
+  - L1319 a legend chip under the pointer is still the same chip, still under it, with the same tooltip, after a kept redraw
+  - L1321 ...and a page built new has a chip of its own, with no pointer on it
+- **L1331 19: the count-up only at 1x-10x**
+  - L1369 a month landing on People starts the headcount's count-up exactly at the rungs countsUp() allows, and when paused (
+  - L1401 a month landing on City History starts the pin's count-up exactly at the rungs countsUp() allows, and when paused (
+  - L1424 a count-up running when a month lands past COUNT_UP_TOP is stopped, and the figure is the month's
+- **L1429 20: what the kept City History month costs**
+  - L1532 each month's redraw keeps the page it drew (the same top nodes,
+  - L1533 each month hands back nine in ten of the nodes the first draw made, or more (
+  - L1536 no month makes more than a tenth of the nodes the first draw made (the most made in one:
+  - L1539 most months make no node at all (
+  - L1587 the kept page's signature equals the new page's at every month (
+  - L1589 the kept page and the new page are the same picture at
+  - L1610 one figure made wrong on the kept page (\"
+  - L1612 ...and its picture
+  - L1613 ...and the next kept draw sets it right again
+  - L1674 a month's redraw after each choice hands back
+- **L1751 Infrastructure (KP2)**
+- **L1789 Services (KP2)**
+- **L1812 The land office (KP2)**
+- **L1845 33: the land office's other pages**
+- **L1868 34: a control keeps the player's hand**
+  - L1931 the Transit page has a fare dial (a slider) to hold
+  - L1936 a slider pressed is held
+  - L1937 a month landing on a held slider leaves the same slider node, still held
+  - L1938 ...its value still the thumb's (
+  - L1939 ...the reading the thumb's words in the month's money (\"
+  - L1941 ...Ladder.shown() the thumb's value, not the staged one
+  - L1942 ...and nothing is staged before the release
+  - L1943 a slider released is not held
+  - L1944 ...the fare is staged at the thumb (
+  - L1945 ...and the page is the same slider, kept, equal to a page built new
+  - L1947 after several kept months the one slider node still carries the dial
+  - L1948 a value set outside any draw updates the reading of the latest draw (\"
+  - L1950 ...and it is the reading on the page
+  - L1951 the fare is unstaged at the end of the section
+  - L1962 City History's filter box takes the focus (
+  - L1972 a month landing keeps the filter box (the same node)
+  - L1973 ...its text (\"
+  - L1974 ...its caret (
+  - L1976 ...and its focus
+  - L1987 Kept.text leaves a field with the focus as the player typed it (\"
+  - L1988 ...and sets a field that has none (\"
+- **L1993 35: the hover is kept**
+  - L2053 a
+- **L2160 Build (KP3)**
+  - L2163 the city has
+  - L2174 a city category has cards to dial an order on (
+  - L2186 the order bar shows the order dialled up (\"
+  - L2193 a kept draw fills the order bar once, after the last card (
+  - L2210 a market category has cards to dial an order on (
+  - L2294 the sites were held through the months:
+- **L2299 The construction page (KP3)**
+  - L2302 the city has
+  - L2362 the sites were held through the months:
+- **L2373 44: the pages a build is stopped on, and the funding and fell-short pages**
+  - L2378 a building names the no-
+- **L2415 45: a control keeps the player's hand**
+  - L2471 the Overview has a dial (a slider) to hold
+  - L2476 a slider pressed is held
+  - L2477 a month landing on a held slider leaves the same slider node, still held
+  - L2478 ...its value still the thumb's (
+  - L2479 ...the reading the thumb's words (\"
+  - L2480 ...Ladder.shown() the thumb's value
+  - L2481 ...and the margin is not set before the release (
+  - L2482 a slider released is not held
+  - L2483 ...the margin is set at the thumb (
+  - L2484 ...and the page is the same slider, kept, equal to a page built new
+  - L2486 after several kept months the one slider node still carries the dial
+  - L2487 a value set outside any draw updates the reading of the latest draw (\"
+  - L2488 the margin is put back at the end of the section
+  - L2499 the Overview's yield box takes the focus (
+  - L2518 the box found is the cap chips' yield box
+  - L2519 a month landing keeps the yield box (the same node)
+  - L2520 ...its text (\"
+  - L2521 ...its caret (
+  - L2522 ...and its focus
+  - L2523 Kept.text leaves a yield box with the focus as the player typed it (\"
+  - L2524 ...and sets one that has none (\"
+  - L2525 the builder's cap is as it was (nothing typed was set)
+  - L2537 the construction page's find box takes the focus (
+  - L2562 the box found is the find box
+  - L2563 a month landing keeps the find box (the same node)
+  - L2564 ...its text (\"
+  - L2565 ...its caret (
+  - L2566 ...and its focus
+  - L2567 Kept.text leaves a find box with the focus as the player typed it (\"
+  - L2568 ...and sets one that has none (\"
+  - L2570 the screen's own filter changed under the hand leaves the focused find box as typed (\"
+  - L2572 ...and the next draw, once the focus is gone, sets the box to it (\"
+  - L2612 a card's + pressed between draws is a press on the card (the count reads \"
+  - L2613 ...the order bar is refilled in place at once, outside any draw, once (
+  - L2614 ...and the next kept draw keeps the bar and equals a page built new
+  - L2616 +100, a month and a kept draw equal a page built new
+  - L2618 the card's own ↺ clears the order, the bar goes, and the next kept draw equals a page built new
+- **L2624 46: the hover is kept (Build)**
+  - L2653 a
+- **L2787 The research screens on Sectors and Build (R5, slice B2): a city founded the 1900 way**
+- **L2805 96: a sector's Investors page with its equipment, kept**
+  - L2812 the town has a stack that lacks a piece the city knows (the page's premise)
+  - L2819 ITS EQUIPMENT is on
+  - L2820 ...with the piece's card (
+  - L2822 ...saying how many carry it, as the model counts them (
+  - L2830 ...and the model's verdict on the next one (
+  - L2831 ...and where it came from (known since the founding, or from abroad)
+  - L2848 the kept page's signature equals the new page's for
+  - L2850 each month hands back nine in ten of the nodes, or more
+  - L2852 the page still has equipment rows to draw (the next check's premise)
+  - L2872 before the tractor is found the farms have no equipment to show (the model's rows)
+  - L2874 ...and no ITS EQUIPMENT on their page
+  - L2880 the tractor found here gives the farms a row in the model
+  - L2884 ...ITS EQUIPMENT is on their page with the piece (
+  - L2886 ...where it came from, the month and the years ahead as the discovery says them
+  - L2888 ...what it does, in the entry's words
+  - L2890 ...and, as the model prices it (
+  - L2901 a city founded the default way has no equipment rows in the model
+  - L2905 ...and no ITS EQUIPMENT on an Investors page (
+- **L2918 97: a NEW build card, kept**
+  - L2927 the town's furnace is NEW, found here in month 9, five months old (the page's premise)
+  - L2938 the town has a market category with nothing new on it (
+  - L2944 no card has been drawn: the furnace shows NEW and was seen in no month
+  - L2946 on
+  - L2948 ...and the furnace is still unseen (its card has not been drawn)
+  - L2957 the card is drawn in month
+  - L2958 ...it shows NEW: the chip in its head and the violet edge
+  - L2963 ...the strip under the head says what is new (
+  - L2964 ...the chip of
+  - L2968 ...and the card says where it came from (
+  - L2971 the kept page of
+  - L2982 drawn again in the same month the card still shows NEW (a month's own redraws are the same month)
+  - L2992 the month after, the model alone still says NEW (the premise of the seen rule)
+  - L2993 ...and the screen does not: the card was first drawn in month
+  - L2994 ...no NEW chip, no violet edge and no strip on
+  - L2996 ...and no dot on its chip, which follows the same rule
+  - L2998 the kept page the month after equals a page built new
+  - L2999 ...the same on the page of
+  - L3007 a reload (the screen forgotten) shows NEW again on what became known within the year
+  - L3013 the rule alone: NEW for a card never drawn, and for one drawn this month
+  - L3015 ...and not for one drawn in an earlier month, nor for what the model says is not new
+  - L3029 a lab's card (
+  - L3031 ...and in a city founded the 1900 way says no more than that
+  - L3034 the lab's page kept equals a page built new
+  - L3037 a city founded the default way has no NEW in the model
+  - L3041 ...no NEW chip, edge, strip or dot on
+  - L3043 ...and a lab's card there says that nothing is ever on the chase in such a city
+- **L3049 Sectors (KP4)**
+  - L3054 the city has a plain business with a plant standing (
+  - L3055 ...and a materials industry with works standing (
+- **L3160 50: the pictures on a business's page are kept**
+  - L3176 the refinery's town has a refinery that runs, so that its picture is drawn (
+- **L3373 51: the count-up only at 1x-10x (Sectors)**
+  - L3396 a month landing starts
+  - L3434 a count running when a month lands past COUNT_UP_TOP is stopped on
+- **L3466 53: a control keeps the player's hand (the oil reserve's dials)**
+  - L3468 the sea town has a Strategic Reserve with oil in it, to draw its two dials (
+  - L3484 the oil industry's page has the reserve's two dials to hold (
+- **L3562 54: the hover is kept (Sectors)**
+  - L3573 a
+- **L3628 The Bank tab (KP5)**
+- **L3742 57: a chip picked lands at the top of its page**
+  - L3775 the Bank's
+  - L3782 ...a month landing leaves the kept scroller where the player left it
+  - L3783 ...its own chip picked leaves the same scroller (the page is kept) at the top (
+  - L3784 ...and the page is equal to a page built new
+  - L3810 the Overview's chip picked from a scrolled Profit page lands at its top (
+  - L3811 the Statement view picked from a scrolled page lands at its top (
+  - L3812 ...and the Summary view picked again, scrolled, at its top (
+- **L3877 The Finances tab (KP5)**
+- **L3925 60: the book, a line's page and Close it now**
+- **L4015 60: the foreign default menu and the debt result menu**
+- **L4077 The city's fund (KP5)**
+  - L4103 the fund holds something to draw (
+- **L4296 64: the pictures on the money screens are kept**
+  - L4319 a
+- **L4564 65: the count-up only at 1x-10x (Bank and the fund)**
+  - L4588 a month landing starts
+  - L4636 an animation running when a month lands past COUNT_UP_TOP is stopped on
+- **L4773 66: the boxes keep the player's hand**
+  - L4783 the city has a piece of paper to close
+- **L4811 67: the hover is kept (Bank, Finances, the fund)**
+  - L4836 a
+  - L4902 the fund's heaviest page is Search or Activity, the two costed (
+- **L5100 The Government tab (KP6)**
+  - L5179 the central bank's printing and the arrears owed cause the cards they are meant to (CENTRAL BANK lines
+- **L5229 The Trade tab (KP6)**
+  - L5238 the tab has its six pages (
+  - L5245 the city trades with three nations, whose pages can be opened (
+  - L5369 the fold of the eight over the years holds its charts (
+  - L5377 ...each chart as wide as the card it sits in, on the kept draw and the month after
+  - L5378 ...and the card is not as wide as a chart made before it has a card (794 px and its padding): the width is the card's
+  - L5379 ...the page equal to a page built new
+- **L5441 The Policy tab (KP6)**
+  - L5649 People's page, with people short of food (
+  - L5827 a draw with nothing changed sets the reading's text and style no more (
+  - L5830 ...and the counter hears a text set by hand (
+  - L5831 a slider pressed is held
+  - L5832 a month landing on a held slider leaves the same slider node, still held
+  - L5833 ...its value still the thumb's (
+  - L5834 ...the reading the thumb's words (\"
+  - L5835 ...Ladder.shown() the thumb's value
+  - L5836 ...the card's effects drawn at the thumb (
+  - L5838 ...the line under the dial followed the thumb while it was dragged (it says the held step's words)
+  - L5839 ...and a month landing under the hand leaves the held step's words under the thumb, not the city's step's
+  - L5842 ...and nothing staged before the release
+  - L5844 ...and nothing applied before the release (the model at
+  - L5846 a slider released is not held
+  - L5848 ...the change is staged at the thumb (
+  - L5850 ...the change is applied at once, the model at the thumb (
+  - L5853 ...and the page is the same slider, kept, equal to a page built new
+  - L5925 ...the held slider is the same node, still held, at the thumb (
+  - L5926 ...its reading the thumb's (\"
+  - L5927 ...and no dial in front of it carries its thumb
+  - L5928 ...released, the page is equal to a page built new
+  - L5930 ...the card taken away and the change dropped: the page is equal to a page built new
+- **L5936 78: a card comes in front of a held dial**
+  - L5950 a tax has two payers with a row and a dial of their own to open (
+  - L5984 a sector's ITS TAXES card has a
+- **L6099 79: the count-up only at 1x-10x (Trade; Government and Policy have none)**
+  - L6123 a month landing starts
+  - L6169 a count running when a month lands past COUNT_UP_TOP is stopped on
+- **L6233 80: the hover is kept (Government, Trade, Policy)**
+  - L6260 Policy's Zoning › The ground page: a policyRow was found on the page of this city, to put the pointer on
+- **L6269 80: the tooltips are kept (Government, Trade, Policy)**
+  - L6320 the
+- **L6409 95: in a city founded the default way the page is one quiet card**
+  - L6412 the Research area's Found page is one of the fixed pages section 77's default bench walks (KeptBench.policyPages())
+  - L6421 the default city's page is the one card that says nothing is found (
+  - L6424 ...and City History draws no discovery flag there
+- **L6441 95: what the page shows, from the model's own reads**
+  - L6456 fixture: the town has a find here, discoveries from abroad, a recipe in use and a piece of equipment (
+  - L6458 the lead counts them: \"
+  - L6470 every discovery is a dot whose tooltip names it and says how the city came to know it, in the model's own month and years ahead
+  - L6471 a FOUND HERE row for each find: its name and how many years before the world
+  - L6482 a RECIPES IN USE row for each way: its name, how many of the building's stack run it, and where it came from
+  - L6495 an EQUIPMENT FITTED row for each piece: its name, how many of its buildings carry it
+  - L6496 ...with the sector's own verdict in words (
+  - L6497 ...each row a door to its sector's Investors page (a click, and the tooltip that says so)
+  - L6502 the timeline is one pane with four charts under it (a researchers, a money, a found-against-abroad and a spread chart):
+  - L6514 laid out, there is a dot for each of the
+  - L6515 ...and no two dots stand on each other
+- **L6525 95: the timeline's stacking, its year ticks and City History's flags, as pure helpers**
+  - L6528 the slot is the dot's width and its gap (
+  - L6531 two dots a pixel apart stack: the second stands one above the first
+  - L6533 two dots far apart share the floor
+  - L6536 exactly the slot apart they do not stack, one pixel less they do
+  - L6539 a bunch of three climbs, and a dot with room again goes back to the floor
+  - L6542 dots of one month stack one on another, no level past the count
+  - L6544 a wider plot parts dots that a narrow one stacked, and a narrower one stacks dots that were apart
+  - L6547 and the same row at the same width stacks the same way twice
+  - L6559 the year ticks are Januaries inside the axis, at least
+  - L6561 a narrower plot has fewer ticks, a wider one more
+  - L6564 a flag's head counts its decisions and its discoveries apart, singular and plural right
+  - L6575 a discovery's flag has the research violet (
+  - L6583 YOUR DECISIONS lists the decisions, newest first, and leaves the discoveries out
+  - L6585 ...and only those in the window: 6 to 7 holds a discovery and no decision
+  - L6587 a flag counts its decisions alone (a month of one decision and a find counts one; a find alone, none)
+  - L6594 the flags City History is handed carry each of the town's
+- **L6614 88: the clock never rebuilds a rail screen**
+  - L6621 a page drawn the old way twice under one name moves the in-place count by one (it moved
+  - L6622 ...and the next real screen shown, an arrival, does not move it (it moved
+  - L6683 the clock's redraw of
+  - L6684 ...and left its page's top nodes the same nodes (
+  - L6685 ...and the screen on show is still
+  - L6686 ...and the redraw ran over the screen's own nodes (
+- **L6721 Household money (KP7)**
+  - L6738 the grid has cells to open, family cells and rows below the rule (
+  - L6770 the open cell's books sit beside the grid at the full width and under it at 1000 wide (beside:
+- **L6780 The Rankings tab (KP7)**
+  - L6831 the city is saved into slot 10 of the harness's scratch folder (the player's own folder is refused)
+  - L6843 the read of the saved cities landed within a minute, with the saved city on the board (
+- **L6895 89: the hover is kept (Household money, the Rankings tab)**
+  - L6915 Household money: a limitCell was found on the page of this city, to put the pointer on
+  - L6916 the Rankings tab: a measure line was found on the page of this city, to put the pointer on
+  - L6917 the Rankings tab: a table row was found on the page of this city, to put the pointer on
+- **L6922 89: the tooltips are kept (Household money, the Rankings tab)**
+  - L6949 the pages of
+- **L7018 91: a slider greyed while held lets go**
+  - L7064 a slider
+  - L7067 a slider
+  - L7068 ...greyed while held it lets go (held
+  - L7069 ...ungreyed, a draw with another value staged puts the thumb on it (
+  - L7071 ...and the page is equal to a page built new
+  - L7073 ...the staged value dropped, the thumb is back at the city's (
+  - L7111 ...a draw with nothing changed sets no door card's style (
+  - L7113 ...and the counter hears a style set by hand (
+  - L7162 a second kept draw of
+- **L7202 92: a redraw with nothing new sets nothing**
+  - L7226 a style set to what it is moves no listener, and set to another and back moves it twice (
+  - L7234 a berth kind that goes to none is drawn as a row built new with none, bounds and all
+  - L7239 the city has a plain business and a materials industry with works to draw (
+  - L7253 the first note on
+  - L7299 the city's books hold a piece of paper (the fixture's premise for a line's page and Close it now:
+  - L7306 the fund lists a security (the fixture's premise for a security's page:
+  - L7312 the city trades with a nation (the fixture's premise for a nation's page:
+  - L7320 the window abroad is shut (the fixture's premise):
+  - L7336 the grid has a cell to open (the fixture's premise for Household money's open cells:
+- **L7392 93: the Rankings table keeps its hand, and its band follows a pointer a wheel leaves still**
+  - L7401 the Rankings table's picture has the hand, and a kept draw of the page writes its cursor none
+  - L7409 the Rankings table: after a wheel scrolls the page under a still pointer, and after a month lands, the band is on the row the pointer is over now
+  - L7423 the Rankings tab has a saved city on its board (the fixture's premise for Your cities:
+- **L7505 The drawer's bar, the construction tab and the speed's reading (UP7)**
+  - L7511 the city has stacks enough to put three on site (
+  - L7522 the first draw made the bar's nodes and the tab's (
+  - L7573 after the first, each of
+  - L7575 ...and the nodes are the same objects in the same boxes (
+  - L7576 the tab's count is the number of sites the city has, in every state (
+  - L7577 the kept bar and tab's signature equals the new ones' in every state (
+  - L7579 the kept bar and tab are the same pictures as the new ones at three states, to SHADE_LEVELS (
+  - L7599 the tab's count made wrong by hand (\"
+  - L7600 ...and its picture
+  - L7601 ...and the next kept draw sets it right again
+  - L7627 a second kept draw of the bar and of the tab in the same state sets no style, text, graphic, padding or width (
+  - L7628 ...and a draw after the pin is flipped does set the bar's words and look (
+  - L7652 the tab drawn again under a still pointer keeps its hover look, and loses it when the pointer goes
+  - L7654 ...and drawn with the panel open it has that look with the pointer away
+  - L7675 the tab's tooltip, the pin's and the close's are the same objects across draws
+  - L7676 ...the tab's words follow the count (nothing on site, 1 site, 3 sites) and the panel (open, then fold)
+  - L7679 ...the pin's follow the pin (\"
+  - L7681 ...and the delays are the tab's own 300 ms and the pin's 1,000 (
+  - L7712 the bar's pin and close and the tab have their click handlers after a kept draw, after one built new and after the kept draw again
+  - L7715 ...fired, the pin pins and unpins the drawer and draws the bar, and the tab opens and folds the panel (prefs saved in the scratch city)
+- **L7756 98: the speed's reading is the speed reached, alone and in amber, in one width**
+  - L7788 the reading's one width is the widest text it can show, and never under 34 (
+  - L7824 at pace, at every rung, the reading is the rung's words in the header's colour (
+  - L7826 ...laid out at the one width (
+  - L7827 ...and exactly as a label made the old way is (min width 34, the old style, the same words): the same width and height (
+  - L7829 ...and no reading's words are clipped (
+  - L7860 short of the rung, at every rung, the reading is pace.reached() alone, with no rung beside it (
+  - L7862 ...in amber (WARN) and nothing else changed in its style (
+  - L7863 ...at the one width (
+  - L7864 ...and the clock block's width and the money block's, the tiles' and the rating's x are the same as at pace (
+  - L7874 with the clock stopped the reading is the rung in the header's colour, though the pace was short
+  - L7901 the kept header's signature equals a header built new, at pace and short, at every rung (
+  - L7923 a second header draw at pace writes nothing on the reading (
+  - L7924 paintSpeed() with the reading unchanged writes nothing, at pace and short (
+  - L7926 a flip from pace to short sets the words once and the style once (
+  - L7927 ...and back sets them once each (
+  - L7928 ...and a header draw that finds the pace short sets them once each, the next draw nothing (
+- **L7951 KeptCheck: the People page, the chrome, City History, Infrastructure, Services, the land office, Build, the construction page, the Sector...**
+- **L7966 1 and 2: the kept page, month after month, against a page built new**
+  - L8021 each month's redraw keeps the page it drew (the same top node,
+  - L8022 each month hands back nine in ten of the nodes the first draw made, or more (
+  - L8024 most months make no node at all (
+  - L8026 the kept page's signature equals the new page's at every month (
+- **L8028 3: and its pixels**
+  - L8030 the kept page and the new page are the same picture at
+  - L8050 one figure made wrong on the kept page (\"
+  - L8052 ...and its picture
+  - L8053 ...and the next kept draw sets it right again
+- **L8055 4: what reshapes the page**
+- **L8090 5: what the kept month costs**
 
 ## KnownRedsCheck.java - 43 labelled assertions
 
@@ -21669,6 +21752,139 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L708 the basic-oxygen recipe cannot be run by the part without the open hearth the month before E1's, and can at it
   - L710 ...and the part with the open hearth never runs it, known or not; the open-hearth recipe is the fitted part's from the first month
   - L713 the Grain Farm's tractor recipe is the fitted part's, from PE14's month and not before, and the horses' recipe is the unfitted part's throughout
+
+## ResearchViewCheck.java - 106 labelled assertions
+
+> What the research screens read (R5, slice A: ResearchView, three series in HistorySave, ChartModel.flags(log, more), Recipes.chosen()).
+> 
+> WHY. The screens draw only what the model hands them, and a wrong month in the timeline, a piece shown before it is known, or a NEW mark one month
+> too long would sit in a screen where no assertion in the model would see it. So every read is held to the model's own constants and functions
+> (FIRST_MONTH, NEW_MONTHS, Entry.worldMonth(), EquipmentFit.verdict(), Recipes.chosen()), each threshold is caused from both sides, and a city
+> founded the default way is shown to have nothing new on any of them (research runs only in a city founded the 1900 way, so every played city keeps
+> its screens). The cores that take a catalogue, a research and a month are driven at any month with a research of their own, and the Game-level reads
+> on cities the harness plays; researchTown() is the one fixture the next slices' screens share.
+> 
+> What this has to prove:
+> 
+>   1. A CITY FOUNDED THE DEFAULT WAY. The timeline, the equipment, the recipes in use, the new templates and the flags are all empty, every origin is null
+> ...
+
+- **L188 1. a city founded the default way: nothing new on any read, and the history has none of the series**
+  - L191 fixture: founded the default way, and the village stands: a Bakery carrying a piece, a Mixed Farm with a choice of recipes
+  - L194 the timeline is empty
+  - L195 ...the equipment (whole city and a sector) and the recipes in use are empty though the stacks stand
+  - L197 ...no flag, no new template, and the share of the equipment fitted is not a number
+  - L204 ...every template's origin is null and none is new
+  - L205 ...and it knew every discovery at its founding: knownAtFounding() is the catalogue's
+  - L212 with a find in its research (PE1 in month
+  - L214 ...and read as the city it is, still nothing: no discovery, no origin, not new, no flag
+  - L229 its history has none of the
+- **L250 2. a city founded the 1900 way, at its founding: no discovery yet, and FIRST_MONTH is where the line is**
+  - L254 fixture: founded the 1900 way, in the founding month
+  - L255 the timeline is empty
+  - L256 knownAtFounding() counts exactly the entries history dates at FIRST_MONTH or before (
+  - L261 fixture: the harness's catalogue has three entries in months 1, 2 and 3
+  - L265 an entry history dates AT FIRST_MONTH was known at the founding: counted by knownAtFounding(), never on the timeline
+  - L268 ...the entry of the month AFTER it is a discovery, from abroad, when the clock gets there and not before
+  - L275 a find AT FIRST_MONTH is known at the founding too: PE3 found in month
+  - L280 ...found the month after, it is one: HERE in month
+  - L287 its equipment stands:
+- **L305 3. the timeline: found here at the month found, from abroad on history's date, none after now, in order**
+  - L312 fixture: the finds are before history's date, but PE2's is after it (found in month 20, history's month
+  - L315 a find here is HERE at the month it was found, and years ahead by (worldMonth - found) / 12
+  - L318 ...a find the month after FIRST_MONTH counts (PL5 in month
+  - L320 ...a find after history's date is the world's: PE2 is ABROAD at history's month
+  - L341 every other entry history dates after FIRST_MONTH and by month
+  - L343 ...the one found at the founding month (PE3) is counted as known at the founding instead:
+  - L353 none is after the city's month, and they are ordered by month and, inside a month, by the catalogue's order
+  - L356 fixture: some two share a month, so the tie-break was caused
+  - L360 at an earlier month the timeline is the shorter run of the same: month 100 has
+  - L375 byField() partitions the timeline: every discovery in its field's list (
+  - L378 ...and an empty timeline still has all four fields, each with an empty list
+- **L384 4. cumulative(): monotone, ending at the counts, the first entry the first month and all before it, the length rule**
+  - L390 over months 1 to
+  - L391 ...the last entries are the counts:
+  - L397 starting at the first discovery's month (
+  - L399 ...starting one month before it, entry 0 does not and entry 1 does
+  - L406 starting after some, entry 0 holds every discovery of that month and before it (
+  - L410 a window that ends early leaves the later ones out: months 1 to 100 total
+  - L412 one month is one entry
+  - L414 a window that ends before it starts is empty, two empty arrays
+  - L416 an empty timeline counts nothing in any month
+- **L422 5. the flags: one a discovery in the words of its source, never in the decision log, and one flag a month with the decisions**
+  - L434 one entry for each of the
+  - L437 the finds here say \"Found here: ... 0.8 years before the world\" (nine months is 0.75: one decimal, and always \"years\"); the world's say \"From abroad: ...\"
+  - L442 none of them is in the decision log: a discovery is not a decision
+  - L456 the decisions and the discoveries make one flag a month, oldest month first: months 2, 3, 4, 6 and 9
+  - L458 ...a decision and a discovery of month 3 are ONE flag of four, the month's decisions first in the log's order, then the discoveries in theirs
+  - L460 ...other months are kept apart: 2 and 4 only a discovery, 6 only a decision, 9 the decision first and then the discovery
+  - L467 no discoveries (null, or empty) reads as the log's own flags
+  - L469 no log (null) reads as the discoveries alone, one flag a month, and nothing at all as no flag
+  - L477 a flag's entries are read-only, as the log's flags' are
+- **L489 6. the equipment: what stands and is known, with the Fit pill's verdict, from both sides of a piece being known**
+  - L492 the town's equipment has rows
+  - L507 every row is a stack that stands, with fitted + unfitted = buildings, unfitted the stack's count (at most its buildings) and on site what the fittings hold
+  - L509 ...its verdict is EquipmentFit.verdict() on that stack and piece - the Fit pill's call - and every piece is known at the city's month
+  - L510 ...in the templates' order
+  - L516 the share fitted is the rows' fitted buildings over their buildings (
+  - L521 a piece not known at the month is not shown: the farms' tractor (
+  - L524 ...the Bakery's electric drive (known from a year) is, with no discovery behind it
+  - L538 ...found here (PE14 in month
+  - L552 the sector filter keeps only its sector's templates (
+  - L554 ...a sector with no stack, or no sector at all, has none
+  - L561 a fitting on site is counted on its row: one Bakery drive being fitted
+- **L568 7. the recipes in use: non-default, known, and running as Recipes.chosen() and the parts' sizes say**
+  - L581 the town has recipes in use:
+  - L582 ...each listed recipe is not its template's default and is known at the city's month
+  - L583 ...running is the buildings of the parts that chose it (Recipes.chosen()): the fitted part is the stack less its unfitted count of the recipe piece, the unfi...
+  - L589 fixture: the Mixed Farm's choice is kept - the tractor (its default, not known yet) for the fitted part, the horses for the unfitted - and its recipe piece i...
+  - L591 the horses run on every farm of the stack: each lacks its tractor, so the unfitted part is the whole stack (
+  - L598 with one farm of
+  - L611 a template with no recipe piece is all one part: the Pulp Mill (
+  - L614 ...a way known and not chosen is listed with nothing running
+  - L620 a template with a choice of recipes and no stack lists nothing: the Iron Mine has
+  - L627 a listed recipe carries the discovery of its code where that is on the timeline, and none where it is a year (no shipped non-default recipe is dated by a cod...
+- **L633 8. origin and the NEW mark: found here or from abroad, a year is its January, new for NEW_MONTHS - 1 months and not at NEW_MONTHS**
+  - L638 fixture: the furnace is opened by PE1, found here in month
+  - L641 a template opened by a code found here is HERE at the month found, with the entry and the years ahead of the world
+  - L643 ...and NEW,
+  - L648 one month older, at NEW_MONTHS, it is not new - and it still has its origin: HERE in month
+  - L653 found by no one, the world's month is the origin: ABROAD at history's month
+  - L661 newTemplates() is every template that isNew(), in the templates' order (
+  - L665 a template known at the founding has no origin: an undated House, and a Quarry dated 1900, the founding's January
+  - L668 ...nor one not known yet: the Large Cement Plant (PE4, history's month
+  - L675 a code history has not reached is not an origin yet, and is on the month it does: T2 in month
+  - L679 ...a code history dates AT FIRST_MONTH (T1) was known at the founding: no origin in any month
+  - L681 a code the catalogue lacks is never known, so never an origin
+  - L683 an undated row has none either
+  - L689 a since that is a year is ABROAD at its January: the Panel Mill (1980) none in month
+  - L691 ...and new for NEW_MONTHS - 1 months after it and not at NEW_MONTHS
+  - L694 a year of the founding's January (1900) is known at the founding: none
+  - L699 the four labs are labs, and a school (the University), a house and nothing at all are not
+- **L732 9. the series: the researchers, the spend and the share fitted, every month as the model says, through a save, the year book and a reform**
+  - L768 fixture:
+  - L779 each field's researchers are recorded every month, the same length as the axis (
+  - L782 ...the lab's are in them: in the month the lab first worked, engineering's
+  - L787 researchSpend is every month's own figure, the month's research bill and prize paid, in each of the
+  - L788 ...in the find's month it is the bill and the prize together,
+  - L793 equipmentFitted is the share of the equipment fitted, between 0 and 1, in each month, as the stacks say (the last
+  - L800 a load restores the history whole: the three kinds of series, the same length and the same figures
+  - L803 ...and a month recorded on it follows: every series is still the axis' length
+  - L809 the year book rules each: the researchers are levels, the spend a flow, the share fitted a rate, each with a note, and nothing in the history is left without...
+  - L821 a reform of the money halves the spend and leaves the researchers and the share fitted alone
+  - L859 fixture: no equipment stands, so the share fitted is not a number
+  - L864 two months with nothing to count: the share fitted has not begun (no series), while the researchers and the spend have, month for month
+  - L875 a bakery built, it begins at the first month with equipment: NaN (not counting) in the
+  - L881 a cut at a month before the series began leaves no such series (not an empty one), the others kept; a cut at the end keeps it whole
+  - L889 through a save it comes back as it began: the same months blank, the same figures
+  - L897 every bakery pulled down, the month after records 0 on the series that has begun (a gap cannot be kept: the series lines up with the axis' end)
+- **L905 10. researchTown(): each of its guarantees**
+  - L907 founded the 1900 way, in month
+  - L911 (a) a discovery found HERE and at least two from ABROAD are on the timeline:
+  - L913 ...the find is PE1 at month 3, the world's are PE2 (month 6) and PE3 (month 13), in that order of months
+  - L925 (b) a stack stands with a known piece some of its buildings lack, and its sector's equipment lists it with a verdict that is not FITTED:
+  - L936 (c) a template is NEW, its origin within NEW_MONTHS of the month:
+  - L945 (d) a recipe is in use on a template with a recipe piece (the farms' horses) and on one with none (the Pulp Mill's):
 
 ## RestaurantsCheck.java - 36 labelled assertions
 

@@ -160,6 +160,7 @@ public final class YearBook {
         flow(m, "safetyBill", "gross cost of police and prisons, in thousands");
         flow(m, "basketsAsked", "baskets the households asked for at the shelf price - a basket is a person-month of groceries (recorded since 0.7.45)");
         flow(m, "basketsHanded", "baskets the shops handed over (recorded since 0.7.45)");
+        flow(m, HistorySave.RESEARCH_SPEND, "what research cost the month: the grants' posts and the labs' other costs, and the prizes the treasury paid the labs, in thousands (recorded since R5, in a city founded the 1900 way)");
 
         /* ---- levels: a stock, so a row is where it STOOD at the end ---- */
         level(m, "cash", "the treasury's cash in hand - negative is an overdraft, in thousands");
@@ -213,6 +214,10 @@ public final class YearBook {
         level(m, "mealTargetMargin", "the multiple the kitchens aim at; what they charge moves a sixth of the way there a month (recorded since 0.7.45)");
         level(m, "luxuryMargin", "what the counters charge, a multiple of what a piece lands at (recorded since 0.7.45)");
         level(m, "luxuryTargetMargin", "the multiple the counters aim at (recorded since 0.7.45)");
+        for (ResearchCatalog.Field field : ResearchCatalog.Field.values()) {
+            level(m, HistorySave.researchersKey(field), "researchers at work in " + field.name().toLowerCase(java.util.Locale.ROOT)
+                    + ", the city's own and the labs' - the year's last month (recorded since R5, in a city founded the 1900 way)");
+        }
 
         /* ---- rates, prices and indices: a row is the AVERAGE ---- */
         rate(m, "interestRate", "what the city pays to borrow, a fraction a year");
@@ -257,6 +262,7 @@ public final class YearBook {
         rate(m, "policeCoverage", "staffed officers against full coverage, which is 360 per 100,000");
         rate(m, "landUse", "land allocated over land owned");
         rate(m, "hunger", "share of the city short of a basket a month, struck at the top of the month on the last sale (recorded since 0.7.45)");
+        rate(m, HistorySave.EQUIPMENT_FITTED, "the share of the equipment standing that is fitted, 0 to 1 - from the first month with equipment to count, the months before it not recorded (recorded since R5, in a city founded the 1900 way)");
         rate(m, "hungerPricedOut", "of the hunger, the share who could not afford a basket at the price - the rest the shelves left short (recorded since 0.7.45)");
         // The world's moneys (WN4): kept only by a city with a world file, a rate and not money of the city's.
         for (String code : WorldMoneys.EIGHT) {
