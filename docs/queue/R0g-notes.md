@@ -1,4 +1,4 @@
-# R0g - the causes of death: R0b's review follow-ups ({next}, 2026-11-07)
+# R0g - the causes of death: R0b's review follow-ups (0.9.42, 2026-11-07)
 
 ## WHERE IT STANDS
 

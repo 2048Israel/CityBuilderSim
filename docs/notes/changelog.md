@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.42 — R0g, the causes of death: R0b's review follow-ups — 2026-11-07, ready, see docs/queue/R0g-notes.md
+A harness fixture that holds the causes of death off before loading a city now keeps the 1918 influenza's sick held
+too: the load built a new `Health` and dropped that half of the hold (`Game.buildWorld()`). CausesOfDeathCheck proves a
+reload in December 1918 plays January to March 1919 as the unbroken city does, to the bit, and that a held twin loaded
+at September 1918 has no influenza sick or dead to March 1920. CentralBankCheck's very strict twin at -4.28% on 1900's
+deaths was one city's path: over all twelve founding shapes with the causes on, its last year stays within a full miss
+of the target (-1.47% to 4.57%). Two findings queued: the influenza's sick also die through the long-sick ring, about
+11% more than its own dead (R0h), and a city stocked complete in bulk reloads with its cash drifting (SR1). The game's
+month is unchanged; the default trace is main's to the byte.
+
 ### 0.9.41 — FD1, Freight keeps its last station while it has a station's freight — 2026-11-07, ready, see docs/queue/FD1-notes.md
 MF1's ★2 (Jerus: "Into MF1"). Counted again first: the churn had moved, not gone. The default playtest sold its only
 station 4 times in 4,000 months (MF1: 16), bought again after 27 and 79 months at $339m and $990m against plots of $0
