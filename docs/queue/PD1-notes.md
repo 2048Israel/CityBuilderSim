@@ -49,8 +49,32 @@ None. No format bump: nothing saved changes; a save's statement already holds th
 
 ## 4. The ensemble
 
-{ENSEMBLE}
+The trace moves. The default playtest on PD1's tip parts from R0g's at month 142 (a write-off added back, 182.29
+against 182.28), is a person apart at month 261, and then plays its own 200 years, as a long city does on any change
+to its money; the ensemble is what judges it.
+
+The 80 runs (label PD1, the classes of 71037d15, four at once, 13.3 min) against `docs/ensemble/0.9.26.md`, the newest
+baseline: **23/26, the same three reds as the baseline**, each about where it was:
+
+| criterion | PD1 | 0.9.26 |
+|---|---|---|
+| AUTO2 A1 inflation m240-end, a year | 2.35% [2.03 to 2.52], 16/16 in band | 2.36% [1.87 to 2.79], 16/16 |
+| AUTO2 A2 longest spell of yoy > 10% (FAIL in both) | 18 months [11 to 38] | 16 [10 to 35] |
+| AUTO2 A3 deflation spell (FAIL in both) | 4 [0 to 15] | 4 [0 to 15] |
+| ZERO_SLACK S1 inflation at 0% less the twin's (FAIL in both) | 2.17% [1.35 to 5.92], spell 92 months | 2.00% [1.11 to 4.79], spell 107 |
+| HIGH R3 inflation m660-720 less the twin | -3.80%, 2 seeds above +1 pt (the most it allows) | -3.52%, 0 above |
+| M1 months the money audit failed, every policy | 0 | 0 |
+| T2 final population, AUTO2 / ZERO_SLACK / SHOCK / HIGH | 567,766 / 387,966 / 38,240 / 13,924 | 602,188 / 397,895 / 29,413 / 15,097 |
+
+T1 16/16 seeds reach 40,000 people (median m864) and F1 no run with a playtest finding, as before. R3 at its limit is
+the line to watch at the next ensemble. The run's `baseline.md` is `docs/ensemble/PD1.md`; its folder (81 MB) is
+deleted.
 
 ## 5. Checks
 
-{CHECKS}
+- OilCheck 20, seven lines: red on R0g's tip (two, each by exactly the petrol, section 1), green on the mend. OilCheck
+  whole: all passed, 10 s. Forms1900Check (R0c's homes' fuel, the same identity), CarCheck, HouseholdCheck and
+  SaveFileCheck: all passed.
+- `./batch-check.sh --pick` on 71037d15 against R0g's tip (12 harnesses, `Game.java` left to the gate, LongPlaytest in
+  its place): **exit 3**, main's recorded LongPlaytest red only (exit 1 with no FAIL line, as `docs/notes/gate.txt`
+  records it; its one finding is a building drawn moved at month 2396, map code PD1 does not touch). Stale 0 firm.
