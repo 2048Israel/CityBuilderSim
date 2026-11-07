@@ -7215,9 +7215,9 @@ Generated 2026-11-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 393 | `SaveSlotCheck.GROWN_MONTHS` | `180` | How many months 7c grows its city: long enough that the lists and books a city reaches by itself hold something - the inbox is empty at month 124 of this fixture and has a notice by 183, the bonds'... |
-| 396 | `SaveSlotCheck.HOLD_MS` | `GameFiles.SWAP_RETRIES * GameFiles.SWAP_RETRY_MS / 5` | How long 7d holds the file open before letting go: a fifth of the swap's retries (GameFiles.SWAP_RETRIES times SWAP_RETRY_MS), well inside them. |
-| 479 | `SaveSlotCheck.LANDS_WITHIN_SECONDS` | `10` | How long a Save's result is waited for before the check calls it lost. |
-| 1075 | `SaveSlotCheck.SILENT` | `new PrintStream(OutputStream.nullOutputStream())` | The stream the model's per-month printing goes to while 7c steps months: each month prints some forty lines, and nobody reads them here. |
+| 396 | `SaveSlotCheck.RELEASE_ON_REFUSAL` | `2` | The refused try of the swap at which 7d lets go of the file it holds: the second of GameFiles.SWAP_RETRIES, well inside them; the swap's own count, no clock (SS2). |
+| 486 | `SaveSlotCheck.LANDS_WITHIN_SECONDS` | `10` | How long a Save's result is waited for before the check calls it lost. |
+| 1082 | `SaveSlotCheck.SILENT` | `new PrintStream(OutputStream.nullOutputStream())` | The stream the model's per-month printing goes to while 7c steps months: each month prints some forty lines, and nobody reads them here. |
 
 ### ScaleCheck.java ([map](map/ScaleCheck.md))
 

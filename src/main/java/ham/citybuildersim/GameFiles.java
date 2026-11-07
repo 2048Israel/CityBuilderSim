@@ -483,6 +483,15 @@ public final class GameFiles {
     }
 
     /**
+     * A test seam in the swap's retry (SS2): called on the swap's own thread after each refused try that will be
+     * tried again, with the number of tries made so far, before the wait. SaveSlotCheck 7d lets go of the file it
+     * holds from here, on the try it names, so the release is tied to the swap's own count and not to a clock
+     * (WHY: 7d's reader thread let go after 100 ms of the wall clock, and under load the thread and the swap's
+     * ten tries slipped against each other; it went red at RT1's gate). Null outside the check.
+     */
+    static volatile java.util.function.IntConsumer onSwapRefused;
+
+    /**
      * The tail both writes share: the existing file copied to .bak, then the
      * finished .tmp moved over it. The rule is stated once, here.
      *
@@ -514,6 +523,8 @@ public final class GameFiles {
                 // A missing .tmp, or any other failure that waiting cannot mend, is reported at once.
                 boolean held = e instanceof AccessDeniedException || e.getClass() == FileSystemException.class;
                 if (!held || tried >= SWAP_RETRIES) throw e;
+                java.util.function.IntConsumer seam = onSwapRefused;
+                if (seam != null) seam.accept(tried + 1);
                 try {
                     Thread.sleep(SWAP_RETRY_MS);
                 } catch (InterruptedException stop) {
