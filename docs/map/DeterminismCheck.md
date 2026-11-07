@@ -32,6 +32,8 @@
 
 **Uses:** [FloatLinkCheck](FloatLinkCheck.md) (8), [WorldData](WorldData.md) (6), [Game](Game.md) (6), [GameFiles](GameFiles.md) (3), [TempDirs](TempDirs.md) (2), [LongPlaytest](LongPlaytest.md) (2), [AllChecks](AllChecks.md) (1), [EarthSite](EarthSite.md) (1), [Founding](Founding.md) (1), [Sectors](Sectors.md) (1), [Sector](Sector.md) (1)
 
+**Used by (1):** [CausesOfDeathCheck](CausesOfDeathCheck.md)
+
 ## Sections
 
 | line | section |

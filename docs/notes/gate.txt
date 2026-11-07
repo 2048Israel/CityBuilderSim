@@ -1,11 +1,11 @@
-# gate of Merge batch/FD1: freight sells its last station and buys it back: the default playtest sells its only Rail Depot once the last spur is gone and orders another 3 to 93 months later, 16 times, 4 in the same month (MF1's trace of FX7's ★4); measure the churn and stop it at its cause, the model's (Jerus put the relays into MF1: "Into MF1"), 0.9.41
+# gate of Merge batch/R0g: the causes of death, R0b's review follow-ups: a reload mid-influenza played on against an unbroken run; the fixtures' influenza hold lost on load (`loadGameSave` makes a new `Health`); CentralBankCheck's very strict twin at -4.28% on 1900's deaths measured over CB1's shapes, 0.9.42
 # date: 2026-11-07
 # earth-2.bin: named
 # nightly: 2026-11-07 00:56 0.9.35 a260d4f1 4,000 months: OK in 121 s
-# suite: 186 harnesses run in 1132s: 180 passed, 6 failed
-# timing: 16 harnesses run in 894s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
+# suite: 186 harnesses run in 1645s: 180 passed, 6 failed
+# timing: 16 harnesses run in 908s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 32.0 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 32.0 ms, batch 32.2 ms (+0.5%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 32.2 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 38.7 ms, batch 32.8 ms (-15.3%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
 MonetaryCheck | exit 1
 MonetaryCheck | ...and a month's delay in the hand moves them less than the allowance FAIL

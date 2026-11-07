@@ -1,4 +1,4 @@
-# CentralBankCheck.java - 2,249 lines · 35 methods · 11 constants · harnesses
+# CentralBankCheck.java - 2,252 lines · 35 methods · 11 constants · harnesses
 
 `ham/citybuildersim/CentralBankCheck.java` - generated 2026-11-07 by CodeMap; line numbers are as of that run.
 
@@ -119,7 +119,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 175 | 2075 | **type** `public class CentralBankCheck` | Proves the central bank's books: that money is made and destroyed on them and nowhere else, every price 0.7.0 hangs off the policy rate, and its two dials - the holdings (0.7.1) and the advances ceiling (0.7.2). |
+| 175 | 2078 | **type** `public class CentralBankCheck` | Proves the central bank's books: that money is made and destroyed on them and nowhere else, every price 0.7.0 hangs off the policy rate, and its two dials - the holdings (0.7.1) and the advances ceiling (0.7.2). |
 | 181 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 186 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 196 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
@@ -170,7 +170,7 @@
 |---:|---:|---|---|
 | 1460 | 128 | `static void theSurplusPaysEveryone() throws Exception` |  |
 
-### 21. HOW STRICT (0.7.52) - the dial beside the target (DebtManager, (lines 1589-2249)
+### 21. HOW STRICT (0.7.52) - the dial beside the target (DebtManager, (lines 1589-2252)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -181,15 +181,15 @@
 | 1682 | 17 | **type** `static final class LooseMonths` | The very loose twin's months by the side of its target the rule read (0.7.81): in a month under it the rate is Standard's, to the bit; in one over it, money cheaper than Standard's rule at that reading - inside the ba... |
 | 1686 | 12 | `void take(Game g, double read, double target, int month)` _(in CentralBankCheck.LooseMonths)_ | One month taken: `read` is what the autopilot read at the top of it (Game.nextMonth(), THE AUTOPILOT), the dial what the rule set. |
 | 1700 | 319 | `static void howStrict() throws Exception` |  |
-| 2127 | 7 | `static Game probeCity(GameFiles files)` | The probe city: the playtest's founding (LongPlaytest.founding()) in its seed 7's shape since FR7 - 43 houses, then four months before the next 20 (seed 5's, 41 and four months, from 0.7.139; seed 8's, 40 and five mon... |
-| 2139 | 3 | `static Game shapedCity(GameFiles files, int houses, int months)` | A city founded in the given shape - `houses` before the next twenty, `months` played before them - and played as the probe city is (probeCity()) to STRICT_BRANCH. |
-| 2144 | 44 | `static Game shapedCity(GameFiles files, int houses, int months, boolean causesHeldOff)` | ...with the causes of 1900 held off from the first month where asked (probeCity()). |
-| 2190 | 3 | `static void playTo(Game g, int months)` | Up to `months` of the playtest's months, never past STRICT_BRANCH. |
-| 2195 | 9 | `static void strictMonth(Game g)` | One of a twin's months: the playtest's month, with nothing built. |
-| 2206 | 4 | **type** `record CityGap(int houses, int months, long people, double strict, double standard)` | One city's very strict and Standard inflation a year over STRICT_HORIZON, and its people at the branch. |
-| 2208 | 1 | `double gap()` _(in CentralBankCheck.CityGap)_ | How far under Standard very strict ran, in a year's inflation: negative when it held prices lower. |
-| 2212 | 19 | `static double[] strictAgainstStandard(Game city, GameFiles files)` | The city saved at its branch, then its very strict and its Standard twin played STRICT_HORIZON months: their inflation a year, {strict, standard}. |
-| 2233 | 1 | `static int strictNeed(int cities)` | How many of `cities` must hold the claim: STRICT_SHARE of them, rounded up. |
-| 2236 | 6 | `static double median(double[] xs)` | The median of `xs`, of a sorted copy: the mean of the two middle values when there is an even number. |
-| 2244 | 5 | `static boolean strictHolds(double[] gaps)` | Whether very strict held prices lower than Standard over the set: the median gap under zero and at least strictNeed() of the gaps under it. |
+| 2127 | 10 | `static Game probeCity(GameFiles files)` | The probe city: the playtest's founding (LongPlaytest.founding()) in its seed 7's shape since FR7 - 43 houses, then four months before the next 20 (seed 5's, 41 and four months, from 0.7.139; seed 8's, 40 and five mon... |
+| 2142 | 3 | `static Game shapedCity(GameFiles files, int houses, int months)` | A city founded in the given shape - `houses` before the next twenty, `months` played before them - and played as the probe city is (probeCity()) to STRICT_BRANCH. |
+| 2147 | 44 | `static Game shapedCity(GameFiles files, int houses, int months, boolean causesHeldOff)` | ...with the causes of 1900 held off from the first month where asked (probeCity()). |
+| 2193 | 3 | `static void playTo(Game g, int months)` | Up to `months` of the playtest's months, never past STRICT_BRANCH. |
+| 2198 | 9 | `static void strictMonth(Game g)` | One of a twin's months: the playtest's month, with nothing built. |
+| 2209 | 4 | **type** `record CityGap(int houses, int months, long people, double strict, double standard)` | One city's very strict and Standard inflation a year over STRICT_HORIZON, and its people at the branch. |
+| 2211 | 1 | `double gap()` _(in CentralBankCheck.CityGap)_ | How far under Standard very strict ran, in a year's inflation: negative when it held prices lower. |
+| 2215 | 19 | `static double[] strictAgainstStandard(Game city, GameFiles files)` | The city saved at its branch, then its very strict and its Standard twin played STRICT_HORIZON months: their inflation a year, {strict, standard}. |
+| 2236 | 1 | `static int strictNeed(int cities)` | How many of `cities` must hold the claim: STRICT_SHARE of them, rounded up. |
+| 2239 | 6 | `static double median(double[] xs)` | The median of `xs`, of a sorted copy: the mean of the two middle values when there is an even number. |
+| 2247 | 5 | `static boolean strictHolds(double[] gaps)` | Whether very strict held prices lower than Standard over the set: the median gap under zero and at least strictNeed() of the gaps under it. |
 
