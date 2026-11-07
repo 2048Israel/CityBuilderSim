@@ -31,7 +31,7 @@
 
 **Uses:** [DebtManager](DebtManager.md) (2), [Expectations](Expectations.md) (1)
 
-**Used by (10):** [AuctionCheck](AuctionCheck.md), [CallCheck](CallCheck.md), [CallTree](CallTree.md), [CurveCheck](CurveCheck.md), [DebtManager](DebtManager.md), [DeskCheck](DeskCheck.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md)
+**Used by (11):** [AuctionCheck](AuctionCheck.md), [CallCheck](CallCheck.md), [CallTree](CallTree.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [CurveCheck](CurveCheck.md), [DebtManager](DebtManager.md), [DeskCheck](DeskCheck.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md)
 
 ## Sections
 

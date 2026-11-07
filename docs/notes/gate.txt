@@ -1,18 +1,14 @@
-# gate of Merge batch/UP7: the speed reading as the reached speed alone in amber at a fixed width, a stall counted clamped, no "2x · 2x"; the drawer's bar and the construction tab kept (Jerus, 2026-10-23, on UP2's ★1: "Reached speed alone, amber"), 0.9.34
-# date: 2026-11-06
+# gate of Merge batch/R3b: research: Policy › Research - the Overview and Funding pages, the four grant cards with each card's preview of finds over ten years from the sizes' distribution (research-design §5.5, §6.2), §9's harness that the young and big cities of §5.4 reproduce the previews, and each school's posts line; in the kept way, best beside R5 and before R1d; and R3's gate review (2026-11-06), each needing a grant above 0: `strikeResearchPosts()` (`Game.java:12792`) reads the schools' room before `closeDemolished()`, so a school ordered down still gives a month's posts (strike after it); Government's spending list (`GovernmentScreen.java:1491-1534`) has no research line while `getTotalExpenses()` counts it, and `PolicyPreview.java:308`'s wage cost, `GovernmentScreen.java:1384`'s payroll and `RealEstate.java:666` `latentHeadShortfall()` leave the posts out; the month's researchers, idle and open counts are not saved (0 after a load until the next press); and R4's gate review (2026-11-06): `payPrizes()` sits inside `if (Double.isFinite(tempCash))` (`Game.java:14507`), so in a month whose books are not finite the labs' share of a purse is neither paid nor owed (move it out, or book it as arrears); and whether `Exchange`'s buyback (cut to a cushion of months of costs) hands the labs' stake back to the shareholders before the find; and R5's gate review (2026-11-06): figures worked out in `ui/ResearchScreen.java` rather than read from `ResearchView` (the found-here and abroad counts laid on the history's months at `:687-693`, "still to come" at `:190`, the bar shares at `:302` and `:318`): into `ResearchView` methods, 0.9.36
+# date: 2026-11-07
 # earth-2.bin: named
-# nightly: 2026-11-06 01:09 0.9.24 f33540a0 4,000 months: RED, exit 1 in 89 s: a building on the map moved 1 time(s), months 3012-3012
-# suite: 182 harnesses run in 3046s: 176 passed, 6 failed
-# timing: 16 harnesses run in 1208s: 11 passed, 5 failed; its red lines were judged side by side with main's, below
-# timing red not the batch's (paired): EarthTerrainCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): EarthTerrainCheck | the Earth screen: 198 tiles at Rotterdam's site - ground, plans, paint and raster - in no more than MapCheck.SCREEN_MS FAIL  129.5 ms (0.654 a tile), 17,690 buildings; the first time, its plans made, 1084 ms; the square city 121 districts a side, laid in 37243 ms; the screen 3% sea, 4% fresh   [main 52.3 ms, batch 53.8 ms (+2.9%), budget 80 ms: within 15% of main's]
-# timing red not the batch's (paired): EarthTerrainCheck | ...and at 1024 plots a pixel it is drawn in no more than SCREEN_MS                                   FAIL  80.5 ms with the relief, 70.0 without, 475 ms the first time over fresh data   [main 33.3 ms, batch 33.8 ms (+1.4%), budget 80 ms: within 15% of main's]
-# timing red not the batch's (paired): EarthTerrainCheck | 2 FAILED   [the harness's own count of the timing reds above]
+# nightly: 2026-11-07 00:56 0.9.35 a260d4f1 4,000 months: OK in 121 s
+# suite: 183 harnesses run in 1201s: 177 passed, 6 failed
+# timing: 16 harnesses run in 923s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 32.0 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 40.2 ms, batch 32.3 ms (-19.8%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 30.3 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 33.3 ms, batch 32.8 ms (-1.6%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 5.61 ms, batch 5.46 ms (-2.7%), budget 5 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | 3 FAILED   [the harness's own count of the timing reds above]
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | exit 1
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | 1 FAILED
 SlopeCheck | exit 1
 SlopeCheck | the run played its months and found nothing: every month passed the playtest's audit and the layout watcher, [a building on the map moved] FAIL
 SlopeCheck | 1 FAILED

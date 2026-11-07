@@ -2940,6 +2940,14 @@ final class TradeScreen {
                       + "this month.";
         }
         if (regime == ForeignAccounts.Regime.BAND) {
+            // Inside the edges and still held (XR5): the rate is not at an edge but leans on what the vault dealt at one, which fades.
+            boolean inside = fx.getRate() < fx.bandWeakEdge() * (1 - 1e-9) && fx.getRate() > fx.bandStrongEdge() * (1 + 1e-9);
+            if (fx.isHeld() && inside) {
+                return "What the vault dealt at the band's edge still leans on the rate, " + d + fxRate(fx.getRate()) + " against "
+                        + d + fxRate(fx.getShadowRate()) + " where the float's rule put it, fading by half in about "
+                        + String.format("%.0f", ForeignAccounts.INTERVENTION_HALF_LIFE) + " months: the part of the month's "
+                        + "move that dealing kept off the rate.";
+            }
             return fx.isHeld()
                     ? "The rate reached the band's edge and the vault held it there, " + d + fxRate(fx.getRate()) + ", away "
                       + "from where the float's rule put it, " + d + fxRate(fx.getShadowRate()) + ": the part of the month's "
@@ -2954,8 +2962,8 @@ final class TradeScreen {
     static final String HOLD_INFO = "The part of the month's move the vault's hold made: under a peg the rate stays at the "
             + "peg, and under a band it stops at the edge, away from where the float's rule - the other forces - would "
             + "have put it. So this line undoes what they added, and all of them still add to the month's move. In a month a "
-            + "peg gave way it is the peg letting go of the rate it had held. Exactly nothing under Lean and Float, and "
-            + "while a band's rate is inside it. Policy › Money › The currency is where it is set.";
+            + "peg gave way it is the peg letting go of the rate it had held. Nothing under Lean and Float, and "
+            + "inside a band once what the vault dealt at its edge has faded. Policy › Money › The currency is where it is set.";
 
     /** THE MONTH'S MOVE (pure): where US$1 stood and where it stands, which the forces (and the hold, when it is a row) add up to. */
     String totalSentence() {

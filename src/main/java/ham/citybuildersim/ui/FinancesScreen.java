@@ -2715,7 +2715,9 @@ final class FinancesScreen {
             + "It starts at the dial and closes the gap to the rule over about " + YieldCurve.DRIFT_MONTHS + " months, whoever "
             + "holds the dial - by hand or on autopilot. The rule it closes on follows the inflation the city expects, which "
             + "is not today's: it settles between what the city has lived through and the target, by how far people "
-            + "believe the bank. Credibility shows at the long end of the curve for that reason.";
+            + "believe the bank. Credibility shows at the long end of the curve for that reason. Under a peg the dial is "
+            + "tied to the US's rate plus the spread and the market expects it to stay tied: the rule it closes on is then "
+            + "the dial itself, so the path is flat at the dial.";
 
     /** The gap under which two rates are the same to the eye in the page's sentences: a twentieth of a point. */
     static final double LEAN = .0005;
@@ -2726,12 +2728,14 @@ final class FinancesScreen {
         // The board's raised card: a step lighter than the others.
         VBox card = cardOn(cardStyle(Palette.PINNED, Palette.EDGE), caption("WHAT THE MARKET EXPECTS THE DIAL TO DO", EXPECT_INFO),
                 cardLine("The dial today", pct2(ledger.getPolicyRate()), null),
-                cardLine("The rule, at today's inflation", pct2(ledger.ruleNow()), null),
+                cardLine(ledger.isTied() ? "Tied: the US's rate and the spread" : "The rule, at today's inflation", pct2(ledger.ruleNow()), null),
                 cardLine("Expected in a year", pct2(ledger.expectedDialIn(12)), null),
                 cardLine("Expected in five years", pct2(ledger.expectedDialIn(60)), null),
                 cardLine("Where it settles", pct2(ledger.settledDial()), null),
                 flag(expectWords(ledger, ui.game.getCredibility()), Palette.RAISED),
-                muted("By hand or on autopilot, the market prices the same path: a dial held off the rule is expected to come "
+                muted(ledger.isTied()
+                        ? "Under the peg the market prices the dial staying tied, whoever holds it, and not coming back to the inflation rule."
+                        : "By hand or on autopilot, the market prices the same path: a dial held off the rule is expected to come "
                         + "back to it over about " + YieldCurve.DRIFT_MONTHS + " months."));
         return card;
     }
@@ -2742,9 +2746,15 @@ final class FinancesScreen {
      */
     static String expectWords(DebtManager l, double credibility) {
         double dial = l.getPolicyRate();
+        // Tied to the US's rate (XR5, a peg): the market expects the dial to stay tied, so the curve is priced on that path and not on the inflation rule.
+        if (l.isTied()) {
+            String tie = "The dial is tied to the US's rate plus the spread, " + pct2(dial) + " today, and the market expects it to stay "
+                    + "tied, so the curve is priced on that path and not on the inflation rule.";
+            return l.isStruck() ? tie + " " + beliefWords(l, credibility) : tie;
+        }
         if (!l.isStruck()) return "Nothing has been struck yet, so the market expects the dial where it is, " + pct2(dial) + ".";
         double rule = l.ruleNow(), year = l.expectedDialIn(12), settled = l.settledDial();
-        double inflation = l.getStruckInflation(), expected = l.getStruckExpected(), target = l.getInflationTarget();
+        double inflation = l.getStruckInflation();
         String rules = Math.abs(rule - dial) < LEAN
                 ? String.format("The dial is on the rule: it would set %s at today's inflation of %s", pct2(rule), pct2(inflation))
                 : String.format("The rule would set %s at today's inflation of %s, %s the dial's %s", pct2(rule), pct2(inflation),
@@ -2757,11 +2767,16 @@ final class FinancesScreen {
                 : (Math.abs(near) > LEAN ? ", then it holds" : ""));
         // The rule follows the inflation the city expects: when that is not today's, the rule's own move is part of the path.
         String why = Math.abs(settled - rule) > LEAN ? ", as the rule follows the inflation it expects" : "";
-        String belief = Math.abs(expected - target) < LEAN
+        return rules + ". The market expects " + move + why + ". " + beliefWords(l, credibility);
+    }
+
+    /** The belief sentence: where the city expects inflation to settle, and why it is off the target when it is (pure of drawing; the model's figures). */
+    static String beliefWords(DebtManager l, double credibility) {
+        double expected = l.getStruckExpected(), target = l.getInflationTarget();
+        return Math.abs(expected - target) < LEAN
                 ? String.format("It expects inflation to settle at %s, the target.", pct2(expected))
                 : String.format("It expects inflation to settle at %s, not the %s target: at %s credibility the rest is what "
                         + "the city has lived through.", pct2(expected), pct2(target), trust(credibility));
-        return rules + ". The market expects " + move + why + ". " + belief;
     }
 
     /** A note on a card: words on a ground a step off the card's, with an edge. */

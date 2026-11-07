@@ -1,4 +1,4 @@
-# R3b - research: Policy › Research's Overview and Funding ({next}, 2026-11-06)
+# R3b - research: Policy › Research's Overview and Funding (0.9.36, 2026-11-06)
 
 ## WHERE IT STANDS
 
