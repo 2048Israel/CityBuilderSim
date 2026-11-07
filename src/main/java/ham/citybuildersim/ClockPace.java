@@ -1,7 +1,10 @@
 package ham.citybuildersim;
 
 import java.util.ArrayDeque;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.LongSupplier;
 
@@ -12,7 +15,7 @@ import java.util.function.LongSupplier;
  * It holds the arithmetic of ui.UserInterface.startClock() and nothing else: pure Java, no JavaFX,
  * with its time source injected so a harness can drive it with a clock it advances by hand
  * (ClockCheck). The window's timer calls frame() once a frame, redrawStarted() and redrawEnded()
- * around each redraw it makes, and asks redrawDue(), progress() and reading().
+ * around each redraw it makes, and asks redrawDue(), progress() and reached().
  *
  * WHY THIS EXISTS. The timer ran every month that was due in a frame, however long they took (up
  * to two and a half of them after a stalled frame at 50x), and redrew the open screen at a fixed
@@ -22,7 +25,9 @@ import java.util.function.LongSupplier;
  * and paid back in a burst the frame after. So the redraw now waits three times what it cost (it
  * takes at most a third of the thread), a frame stops running months when it has spent
  * MONTH_FRAME_MS on them and drops the time it could not run instead of banking it, and the
- * speed the header reads says when the city is running slower than the rung asked for.
+ * speed the header reads says when the city is running slower than the rung asked for (UP7: it
+ * reads the speed reached alone, in place of the rung, and counts the time a frame was worth
+ * rather than the time it took, so a stalled frame is not a shortfall).
  */
 public final class ClockPace {
 
@@ -148,8 +153,11 @@ public final class ClockPace {
 
         // What the frame advanced the city: the months it ran and the fraction of the next it
         // gained. Counted so, not in months landed alone, a rung of 0.1x (a month in fifty
-        // seconds) has a speed to read over two seconds as well as a rung of 50x.
-        windowAdd(dt, ran + progress - before);
+        // seconds) has a speed to read over two seconds as well as a rung of 50x. Over the
+        // seconds the frame was WORTH (the clamped share), not the seconds it took (UP7): a
+        // stalled frame of half a second advances the city a quarter of one, and read over its
+        // raw half the speed of even 1x would have come out short for two seconds after it.
+        windowAdd(share, ran + progress - before);
         return ran;
     }
 
@@ -227,22 +235,52 @@ public final class ClockPace {
        ===================================================================== */
 
     /**
-     * What the header reads between the speed's arrows: the rung alone - {@code rungLabel}, as
-     * the header writes it - while the city keeps up or until a full SHORT_WINDOW of running time
-     * has passed since the window began; and the rung, then the speed achieved, once the months
-     * have fallen more than SHORT_BY under it: "50&times; &middot; 31&times;". The speed achieved
-     * is written whole from 1 up and with one decimal under 1.
+     * The speed the city has reached, as the header reads it between the speed's arrows in place
+     * of the rung (UP7), or null when the header reads the rung: the city keeps up (within SHORT_BY
+     * of the rung), a full SHORT_WINDOW of running time has not yet passed since the window began,
+     * or the speed reached prints as the rung's own words (a rung of 2 reached at 1.75 rounds to
+     * "2&times;", and "2&times;" for "2&times;" says nothing). The text is whole from 1 up and has
+     * one decimal under 1 ("39&times;", "0.4&times;"); it comes from reachedText(), the formatter
+     * reachedTexts() lists, so the two cannot drift. The header takes its amber from a non-null
+     * answer, so the words and the colour come from this one call.
      *
      * @param rungLabel the rung as the header writes it ("50&times;")
      * @param rung      the rung, in times real speed
      */
-    public String reading(String rungLabel, double rung) {
-        if (windowSeconds < SHORT_WINDOW || secondsPerMonth <= 0) return rungLabel;
+    public String reached(String rungLabel, double rung) {
+        if (windowSeconds < SHORT_WINDOW || secondsPerMonth <= 0) return null;
         double achieved = windowMonths / windowSeconds * secondsPerMonth;
-        if (!(achieved < rung * (1 - SHORT_BY))) return rungLabel;
-        return rungLabel + " · " + (achieved >= 1
-                ? Long.toString(Math.round(achieved))
-                : String.format(Locale.ROOT, "%.1f", achieved)) + "×";
+        if (!(achieved < rung * (1 - SHORT_BY))) return null;
+        String text = reachedText(achieved);
+        return text.equals(rungLabel) ? null : text;
+    }
+
+    /** What the header reads between the arrows: reached() when the city falls short, else the rung's own words. */
+    public String reading(String rungLabel, double rung) {
+        String reached = reached(rungLabel, rung);
+        return reached != null ? reached : rungLabel;
+    }
+
+    /** A speed reached in words: whole from 1 up, one decimal under 1, then the times sign ("39×", "0.4×"). */
+    private static String reachedText(double achieved) {
+        String tenths = String.format(Locale.ROOT, "%.1f", achieved);
+        // A speed just under 1 that rounds up to it is written as the ladder writes 1x: "1×", never "1.0×" beside it (UP7).
+        return (achieved >= 1 || tenths.equals("1.0") ? Long.toString(Math.round(achieved)) : tenths) + "×";
+    }
+
+    /**
+     * Every text reached() can return under this top rung (UP7), by the formatter reached() uses: the
+     * tenths from 0.0 up to 0.9 (a speed of .96 is written "1×", as the ladder writes 1x), and the whole numbers from 1 up to the
+     * most a speed under SHORT_BY below the rung can round to. The header measures the widest of these
+     * and of its rung labels once, to give the reading one width for ever.
+     *
+     * @param topRung the highest rung, in times real speed
+     */
+    public static List<String> reachedTexts(double topRung) {
+        Set<String> out = new LinkedHashSet<>();
+        for (int hundredth = 0; hundredth < 100; hundredth++) out.add(reachedText(hundredth / 100.0));
+        for (long whole = 1; whole <= Math.round(topRung * (1 - SHORT_BY)); whole++) out.add(reachedText(whole));
+        return List.copyOf(out);
     }
 
     /** One frame into the window; the oldest frames go while what is left still spans SHORT_WINDOW. */

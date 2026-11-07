@@ -26,12 +26,18 @@ import java.util.function.IntToDoubleFunction;
  *      twice, and the time worth is the months run, owed and dropped;
  *   3. a 2 s stall at 50x is worth FRAME_CLAMP, leaves at most one month owed, and is not paid
  *      back in a burst afterwards, with months of 5 and of 50 ms;
- *   4. the speed's reading is the rung while the city keeps up and until a window has run, both
- *      figures once it falls more than SHORT_BY under, the rung again after restart() or a new
- *      rung, and a slow rung (0.1x) is not read as a shortfall;
+ *   4. the speed's reading is the rung while the city keeps up and until a window has run, the
+ *      speed reached ALONE (UP7: "31×", never "50× · 31×") once it falls more than SHORT_BY
+ *      under, the rung again after restart() or a new rung, and a slow rung (0.1x) is not read
+ *      as a shortfall; reached() is null exactly when the reading is the rung;
  *   5. the header's five series, read the windowed way, are the last SPARK_MONTHS of the
  *      whole-history read, value for value, on a young city, an older one and a history past
- *      MONTHLY_KEPT (folded years), and so is the GDP tile's change line.
+ *      MONTHLY_KEPT (folded years), and so is the GDP tile's change line;
+ *   6. a stalled frame is not a shortfall (UP7): after one frame of half a second, and one of
+ *      under FRAME_CLAMP, the reading is the rung at 1x and at 50x with cheap months, and a city
+ *      really short stays short across the same stall; a speed that prints as the rung's own
+ *      words ("2×" reached at 1.75 of a rung of 2) is not a shortfall, one that rounds apart is;
+ *      and every text reached anywhere above is one of ClockPace.reachedTexts().
  */
 public class ClockCheck {
 
@@ -112,6 +118,7 @@ public class ClockCheck {
         stall();
         reading();
         windows();
+        stallAndPair();
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -276,6 +283,27 @@ public class ClockCheck {
 
     /* ============ 4. the speed says when it falls short ============ */
 
+    /** Every text the pace said it reached in this run: section 6 holds them against the list reachedTexts() gives. */
+    static final java.util.Set<String> SEEN = new java.util.TreeSet<>();
+
+    /** The speed reached (ClockPace.reached), noted in SEEN when there is one. */
+    static String reachedOf(ClockPace pace, String label, double rung) {
+        String reached = pace.reached(label, rung);
+        if (reached != null) SEEN.add(reached);
+        return reached;
+    }
+
+    /** Whether the pace reads the rung's own words: reading() is the rung and reached() says nothing. */
+    static boolean readsRung(ClockPace pace, String label, double rung) {
+        return pace.reading(label, rung).equals(label) && reachedOf(pace, label, rung) == null;
+    }
+
+    /** Whether the pace reads a speed reached, alone: reading() is reached(), which is not the rung's words. */
+    static boolean readsReached(ClockPace pace, String label, double rung) {
+        String reached = reachedOf(pace, label, rung);
+        return reached != null && pace.reading(label, rung).equals(reached) && !reached.equals(label) && !reached.contains("·");
+    }
+
     static void reading() {
         System.out.println("\n--- 4: the speed's reading ---");
         Sim keeps = new Sim();
@@ -283,37 +311,35 @@ public class ClockCheck {
         boolean rungAlone = true;
         for (int i = 0; keeps.elapsed < 3; i++) {
             keeps.step();
-            if (!keeps.pace.reading(TOP_LABEL, TOP).equals(TOP_LABEL)) rungAlone = false;
+            if (!readsRung(keeps.pace, TOP_LABEL, TOP)) rungAlone = false;
         }
-        check("5 ms months at 50x for 3 s: the reading is the rung alone throughout", rungAlone);
+        check("5 ms months at 50x for 3 s: the reading is the rung alone throughout, and no speed is reached", rungAlone);
 
         Sim falls = new Sim();
         falls.monthMs = m -> 120;
         boolean aloneToWindow = true;
         while (falls.elapsed < 3) {
             falls.step();
-            if (falls.elapsed < ClockPace.SHORT_WINDOW - 0.2 && !falls.pace.reading(TOP_LABEL, TOP).equals(TOP_LABEL)) aloneToWindow = false;
+            if (falls.elapsed < ClockPace.SHORT_WINDOW - 0.2 && !readsRung(falls.pace, TOP_LABEL, TOP)) aloneToWindow = false;
         }
-        String both = falls.pace.reading(TOP_LABEL, TOP);
-        // One month a frame, and a frame is FRAME plus the month: that is the speed achieved.
+        String reached = reachedOf(falls.pace, TOP_LABEL, TOP);
+        // One month a frame, and a frame is FRAME plus the month: that is the speed reached.
         double expect = SPM / (FRAME + .120);
-        int shown = both.startsWith(TOP_LABEL + " · ") && both.endsWith("×")
-                ? Integer.parseInt(both.substring((TOP_LABEL + " · ").length(), both.length() - 1)) : -1;
+        int shown = reached != null && reached.endsWith("×") ? Integer.parseInt(reached.substring(0, reached.length() - 1)) : -1;
         check("120 ms months at 50x: until a full window has run the reading is the rung", aloneToWindow);
-        check(String.format("...then both, the rung first and the speed achieved: \"%s\" (%.1f expected)", both, expect),
-                shown >= 0 && near(shown, expect, 1));
-        check("...the achieved figure is under the rung by more than SHORT_BY", shown >= 0 && shown < TOP * (1 - ClockPace.SHORT_BY));
+        check(String.format("...then the speed reached alone, the rung gone: \"%s\" (%.1f expected)", falls.pace.reading(TOP_LABEL, TOP), expect),
+                shown >= 0 && readsReached(falls.pace, TOP_LABEL, TOP) && near(shown, expect, 1));
+        check("...the figure reached is under the rung by more than SHORT_BY", shown >= 0 && shown < TOP * (1 - ClockPace.SHORT_BY));
 
         falls.pace.restart();
-        check("the rung alone again after restart()", falls.pace.reading(TOP_LABEL, TOP).equals(TOP_LABEL));
+        check("the rung alone again after restart()", readsRung(falls.pace, TOP_LABEL, TOP));
         while (falls.elapsed < 3 + ClockPace.SHORT_WINDOW - 0.3) falls.step();
-        check("...and for the first part of the new window", falls.pace.reading(TOP_LABEL, TOP).equals(TOP_LABEL));
+        check("...and for the first part of the new window", readsRung(falls.pace, TOP_LABEL, TOP));
         while (falls.elapsed < 3 + ClockPace.SHORT_WINDOW + 0.5) falls.step();
-        check("...both again once a full window has run", falls.pace.reading(TOP_LABEL, TOP).startsWith(TOP_LABEL + " · "));
+        check("...the speed reached again once a full window has run", readsReached(falls.pace, TOP_LABEL, TOP));
         falls.speed = 20;
         falls.step();
-        check("a new rung starts the window again (the timer is told the speed each frame)",
-                falls.pace.reading("20×", 20).equals("20×"));
+        check("a new rung starts the window again (the timer is told the speed each frame)", readsRung(falls.pace, "20×", 20));
 
         // The tenth, from both sides: a quicker city (months of 0.5 s at 1x, so a window has hundreds)
         // run a little under and well under the rung it is read against.
@@ -325,8 +351,9 @@ public class ClockCheck {
             String text = s.pace.reading(TOP_LABEL, TOP);
             boolean inside = under < ClockPace.SHORT_BY;
             check(String.format("%.0f%% under the rung (the tenth is %.0f%%): %s", under * 100, ClockPace.SHORT_BY * 100,
-                    inside ? "the rung alone" : "both figures (\"" + text + "\")"),
-                    inside ? text.equals(TOP_LABEL) : text.equals(TOP_LABEL + " · " + Math.round(TOP * (1 - under)) + "×"));
+                    inside ? "the rung alone" : "the speed reached alone (\"" + text + "\")"),
+                    inside ? readsRung(s.pace, TOP_LABEL, TOP)
+                            : readsReached(s.pace, TOP_LABEL, TOP) && text.equals(Math.round(TOP * (1 - under)) + "×"));
         }
 
         // Under 1x the figure has one decimal.
@@ -334,15 +361,16 @@ public class ClockCheck {
         crawl.spm = .5;
         crawl.speed = .4;
         while (crawl.elapsed < ClockPace.SHORT_WINDOW + 1) crawl.step();
-        check("a speed achieved under 1 is written with one decimal (0.4 against a rung of 1)",
-                crawl.pace.reading("1×", 1).equals("1× · 0.4×"));
+        check("a speed reached under 1 is written with one decimal (0.4 against a rung of 1)",
+                readsReached(crawl.pace, "1×", 1) && crawl.pace.reading("1×", 1).equals("0.4×"));
 
         // 0.1x lands a month in fifty seconds: two seconds hold no month, and that is not a shortfall.
         Sim slow = new Sim();
         slow.speed = .1;
         while (slow.elapsed < ClockPace.SHORT_WINDOW + 1) slow.step();
-        check("a rung of 0.1x with no month landed in the window reads the rung alone", slow.pace.reading("0.1×", .1).equals("0.1×"));
+        check("a rung of 0.1x with no month landed in the window reads the rung alone", readsRung(slow.pace, "0.1×", .1));
     }
+
 
     /* ============ 5. the header reads the window it draws ============ */
 
@@ -451,5 +479,105 @@ public class ClockCheck {
         }
         if (name.equals("students") || name.equals("prisoners")) return 10 + code % 7;
         return 100 + Math.floorMod(month * 13 + code, 71) + code;
+    }
+
+    /* ============ 6. a stalled frame is not a shortfall, and a speed that prints as the rung is not one ============ */
+
+    static void stallAndPair() {
+        System.out.println("\n--- 6: the stall and the equal pair ---");
+        // (a) One frame of a stall, then a window and more: a frame is worth FRAME_CLAMP at most, so the seconds the stall took
+        // past that are no shortfall - from both sides of the clamp (a stall under it is worth all its seconds).
+        for (double rung : new double[] {1, TOP}) {
+            String label = rung == TOP ? TOP_LABEL : "1×";
+            for (double stall : new double[] {ClockPace.FRAME_CLAMP * .8, ClockPace.FRAME_CLAMP * 2}) {
+                Sim s = new Sim();
+                s.speed = rung;
+                s.monthMs = m -> 5;
+                while (s.elapsed < ClockPace.SHORT_WINDOW + .5) s.step();
+                boolean before = readsRung(s.pace, label, rung);
+                s.frame(stall);
+                boolean alone = readsRung(s.pace, label, rung);
+                int frames = 0;
+                for (double from = s.elapsed; s.elapsed - from < ClockPace.SHORT_WINDOW + .5; frames++) {
+                    s.step();
+                    alone &= readsRung(s.pace, label, rung);
+                }
+                check(String.format("%s, a %.2f s stall (%s FRAME_CLAMP): the reading is the rung at the stall and at each of %d frames after it",
+                        label, stall, stall > ClockPace.FRAME_CLAMP ? "over" : "under", frames), before && alone);
+            }
+        }
+
+        // ...and caused from the other side: a city really short (months of 120 ms at 50x) stays short across the same stall.
+        Sim real = new Sim();
+        real.monthMs = m -> 120;
+        while (real.elapsed < ClockPace.SHORT_WINDOW + .5) real.step();
+        boolean short0 = readsReached(real.pace, TOP_LABEL, TOP);
+        real.frame(ClockPace.FRAME_CLAMP * 2);
+        boolean stays = readsReached(real.pace, TOP_LABEL, TOP);
+        int frames = 0;
+        for (double from = real.elapsed; real.elapsed - from < ClockPace.SHORT_WINDOW + .5; frames++) {
+            real.step();
+            stays &= readsReached(real.pace, TOP_LABEL, TOP);
+        }
+        check(String.format("120 ms months at 50x, a %.2f s stall: short before it, and short at the stall and at each of %d frames after (\"%s\")",
+                ClockPace.FRAME_CLAMP * 2, frames, real.pace.reading(TOP_LABEL, TOP)), short0 && stays);
+
+        // (b) The equal pair: past the tenth, the speed reached can still print as the rung's own words.
+        Sim twin = new Sim();
+        twin.spm = .5;
+        twin.speed = 2 * (1 - 1.25 * ClockPace.SHORT_BY);
+        while (twin.elapsed < ClockPace.SHORT_WINDOW + 1) twin.step();
+        check(String.format("a rung of 2 run at %.2f (past the tenth, which rounds to 2): the reading is \"2×\" and nothing is reached", twin.speed),
+                readsRung(twin.pace, "2×", 2));
+        check("...the same city read against other words is short, and says \"2×\" (it is the words that are equal)",
+                "2×".equals(twin.pace.reached("two", 2)));
+        Sim near = new Sim();
+        near.spm = .5;
+        near.speed = 2 * (1 - 3 * ClockPace.SHORT_BY);
+        while (near.elapsed < ClockPace.SHORT_WINDOW + 1) near.step();
+        check(String.format("a rung of 2 run at %.2f (rounds to 1): the reading is \"1×\", the speed reached", near.speed),
+                readsReached(near.pace, "2×", 2) && near.pace.reading("2×", 2).equals("1×"));
+        Sim apart = new Sim();
+        apart.spm = .5;
+        apart.speed = TOP * (1 - 1.1 * ClockPace.SHORT_BY);
+        while (apart.elapsed < ClockPace.SHORT_WINDOW + 1) apart.step();
+        check(String.format("a rung of 50 run at %.2f (rounds apart): the reading is \"%d×\", the speed reached", apart.speed, Math.round(apart.speed)),
+                readsReached(apart.pace, TOP_LABEL, TOP) && apart.pace.reading(TOP_LABEL, TOP).equals(Math.round(apart.speed) + "×"));
+        // A speed just under 1 that rounds to it at one decimal: written as the ladder writes 1x, not "1.0×" (and, from the other side, one that does not round up keeps its decimal).
+        Sim justUnder = new Sim();
+        justUnder.spm = .5;
+        justUnder.speed = .97;
+        while (justUnder.elapsed < ClockPace.SHORT_WINDOW + 1) justUnder.step();
+        Sim under = new Sim();
+        under.spm = .5;
+        under.speed = .92;
+        while (under.elapsed < ClockPace.SHORT_WINDOW + 1) under.step();
+        check(String.format("a rung of 2 run at %.2f reads \"1×\", as the ladder writes 1x, never \"1.0×\"; at %.2f, \"0.9×\"", justUnder.speed, under.speed),
+                readsReached(justUnder.pace, "2×", 2) && justUnder.pace.reading("2×", 2).equals("1×")
+                        && readsReached(under.pace, "2×", 2) && under.pace.reading("2×", 2).equals("0.9×"));
+
+        // (c) The list: every text seen above and in section 4 is one reachedTexts() gives, and a sweep of speeds finds none outside it.
+        java.util.List<String> list = ClockPace.reachedTexts(TOP);
+        for (int k = 1; k < 100; k++) {          // the top rung, run from nothing up to the tenth under it
+            Sim s = new Sim();
+            s.spm = .5;
+            s.speed = TOP * (1 - ClockPace.SHORT_BY) * k / 100;
+            while (s.elapsed < ClockPace.SHORT_WINDOW + .5) s.step();
+            reachedOf(s.pace, TOP_LABEL, TOP);
+        }
+        for (int k = 1; k <= 40; k++) {          // a rung of 2 under 1.8, in steps of a twentieth: the decimals, and 1x
+            Sim s = new Sim();
+            s.spm = .5;
+            s.speed = k / 20.0;
+            while (s.elapsed < ClockPace.SHORT_WINDOW + .5) s.step();
+            reachedOf(s.pace, "2×", 2);
+        }
+        System.out.printf("  %d texts in the list (%s ... %s); %d seen in this run%n", list.size(), list.get(0), list.get(list.size() - 1), SEEN.size());
+        check("every text the pace reached in this run is in reachedTexts() (" + SEEN.size() + " seen, " + list.size() + " listed)",
+                list.containsAll(SEEN) && SEEN.size() > 40);
+        check("...the list holds a text once, the tenths from 0.0× to 0.9× (no 1.0×) and the wholes up to a tenth under the top rung",
+                new java.util.HashSet<>(list).size() == list.size() && list.contains("0.0×") && list.contains("0.9×") && !list.contains("1.0×")
+                        && list.contains("1×") && list.contains(Math.round(TOP * (1 - ClockPace.SHORT_BY)) + "×")
+                        && !list.contains(TOP_LABEL));
     }
 }

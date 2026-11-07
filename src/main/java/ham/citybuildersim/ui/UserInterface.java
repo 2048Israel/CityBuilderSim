@@ -206,8 +206,8 @@ public class UserInterface extends Application {
     javafx.scene.control.ScrollPane menuScroller;
     /** The construction panel: over the stage's right edge while open, folded to constructionTab otherwise (0.7.24). */
     VBox constructionPanel;
-    /** The slim tab on the stage's right edge the construction panel folds to (0.7.24). */
-    private VBox constructionTab;
+    /** The slim tab on the stage's right edge the construction panel folds to (0.7.24); made once, its parts kept since UP7 (tabPool). */
+    VBox constructionTab;
     /** The City overview's content, drawn by SummaryScreen. */
     VBox cityPanel;
     /** The drawer the City overview opens in, over the stage's left (0.7.24); see THE FRAME FOLDS AWAY. */
@@ -419,6 +419,9 @@ public class UserInterface extends Application {
     Kept.Pool cityPool = new Kept.Pool();
     Kept.Pool sitesPool = new Kept.Pool();
     Kept.Pool listPool = new Kept.Pool();
+    /** The drawer's pinned bar (drawerBar) and the construction tab's parts (constructionTab), kept since UP7: placeFrame() draws both at every redraw. */
+    Kept.Pool barPool = new Kept.Pool();
+    Kept.Pool tabPool = new Kept.Pool();
 
     /** The minimap's node in the rail, or null before the rail is first drawn (KeptBench keeps it off the picture). */
     javafx.scene.Node miniMapNode() {
@@ -433,6 +436,8 @@ public class UserInterface extends Application {
         cityPool.forget();
         sitesPool.forget();
         listPool.forget();
+        barPool.forget();
+        tabPool.forget();
     }
 
     /* =====================================================================
@@ -502,8 +507,10 @@ public class UserInterface extends Application {
      * The clock's arithmetic (UP2): the share of the month run, the months a
      * frame may take, how long a redraw has to wait and the speed achieved. The
      * timer below calls it; ClockPace says what it does and why.
+     * Not final, and not private (UP7): KeptBench swaps it for a pace on a clock it moves by hand,
+     * to put the header's speed reading in a known state (at pace, or short of the rung).
      */
-    private final ClockPace pace = new ClockPace();
+    ClockPace pace = new ClockPace();
 
     /*
      * HOW OFTEN THE SCREEN MAY BE REBUILT WHILE TIME RUNS.
@@ -594,7 +601,8 @@ public class UserInterface extends Application {
         this.cityPanel = cityPanelBox();
         // A drawer since 0.7.24: the header's "Needs you" chip opens it over
         // the left of the stage. See THE FRAME FOLDS AWAY.
-        this.drawer = new VBox(0, drawerBar(), cityPanel);
+        this.drawerBar = drawerBarBox();
+        this.drawer = new VBox(0, drawerBar, cityPanel);
         this.drawer.setMaxWidth(Region.USE_PREF_SIZE);
         this.drawer.setStyle("-fx-background-color: " + Palette.PANEL + ";"
                 + " -fx-border-color: " + Palette.EDGE + "; -fx-border-width: 0 1 0 0;"
@@ -784,7 +792,7 @@ public class UserInterface extends Application {
         constructionPanel.setMaxHeight(Double.MAX_VALUE);
         showIf(constructionPanel, false);
         this.stagePane.getChildren().add(constructionPanel);
-        this.constructionTab = new VBox(8);
+        this.constructionTab = constructionTabBox();
 
         /*
          * The inbox's list FLOATS too, and it earns it: it is shut almost
@@ -2011,8 +2019,8 @@ public class UserInterface extends Application {
     /** The month's figure in the clock, kept so it pops when a month lands. */
     private Label monthFigure;
 
-    /** The speed's reading between its two arrows, kept so a click changes it in place. */
-    private Label speedReading;
+    /** The speed's reading between its two arrows, kept so a click changes it in place (package-private: KeptBench reads it, UP7). */
+    Label speedReading;
 
     /** The month the clock last showed, so the month's figure pops only when it moves. */
     private int clockAt = -1;
@@ -2948,17 +2956,21 @@ public class UserInterface extends Application {
         monthFigure = Kept.label("month " + formatter.format(month));
         monthFigure.setStyle("-fx-font-size: 11px; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
 
-        // The reading is the rung, and the speed achieved after it when the months fall short (UP2);
-        // it may grow to hold both, and never under 34.
-        speedReading = Kept.label(speedText());
-        speedReading.setMinWidth(34);
+        // The reading is the rung, or the speed reached alone, in amber, when the months fall short of it
+        // (UP2, UP7); one width for ever (speedWidth()), so nothing beside it moves when it changes.
+        String reached = speedReached();
+        speedReading = Kept.label(reached != null ? reached : speedLabel(speedIndex));
         speedReading.setAlignment(Pos.CENTER);
-        speedReading.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11px;"
-                + " -fx-text-fill: " + Palette.TEXT_HEAD + ";");
+        double width = speedWidth();
+        speedReading.setMinWidth(width);
+        speedReading.setPrefWidth(width);
+        speedReading.setMaxWidth(width);
+        speedReading.setStyle(speedStyle(reached != null));
         HBox speed = Kept.row(0, speedArrow("‹", -1), speedReading, speedArrow("›", 1));
         speed.setAlignment(Pos.CENTER_LEFT);
         Kept.tip(speed, "How fast a month passes: " + (int) SECONDS_PER_MONTH
-                + " seconds a month at 1×. ← and → change it too.", 1000);
+                + " seconds a month at 1×. ← and → change it too. In amber: the speed the city is reaching,"
+                + " when it cannot keep up with the one asked for.", 1000);
         speed.setVisible(inCity);
 
         HBox second = Kept.row(8, monthFigure, speed);
@@ -5045,11 +5057,12 @@ public class UserInterface extends Application {
 
     /**
      * The drawer's own bar: the pin and the close, refilled as the pin
-     * changes. Made in start(), not here: a harness constructs this window
-     * without the toolkit (BuildMenuCheck), and a node cannot be made
-     * without it.
+     * changes. Made in start() by drawerBarBox(), not here: a harness
+     * constructs this window without the toolkit (BuildMenuCheck), and a
+     * node cannot be made without it. Package-private since UP7: KeptBench
+     * makes it as start() does.
      */
-    private HBox drawerBarBox;
+    HBox drawerBar;
 
     /** "Needs you" and the count, or "Nothing needs you": the drawer's door. */
     private Region needsChip() {
@@ -5121,39 +5134,56 @@ public class UserInterface extends Application {
         summaryScreen.refreshCityPanel();
     }
 
-    /** The drawer's bar: pin it open across screens, or close it. */
-    private HBox drawerBar() {
-        if (drawerBarBox == null) drawerBarBox = new HBox(6);
-        drawerBarBox.setAlignment(Pos.CENTER_RIGHT);
-        drawerBarBox.setStyle("-fx-padding: 8 10 0 12; -fx-background-color: " + Palette.PANEL + ";");
-        return drawerBarBox;
+    /**
+     * The drawer's bar, empty and styled: the pin and the close go in it (refreshDrawerBar()).
+     *
+     * MADE ONCE, WITH ITS LOOK, like the construction panel's box (constructionPanelBox()): the bar was handed its
+     * alignment and its style again at every redraw along with its children, and a box that holds still has
+     * nothing to set. Its parts are the draw's (UP7).
+     */
+    static HBox drawerBarBox() {
+        HBox box = new HBox(6);
+        box.setAlignment(Pos.CENTER_RIGHT);
+        box.setStyle("-fx-padding: 8 10 0 12; -fx-background-color: " + Palette.PANEL + ";");
+        return box;
     }
 
-    private void refreshDrawerBar() {
-        if (drawerBarBox == null) return;
+    /**
+     * The drawer's bar, drawn kept (UP7; barPool): pin it open across screens, or close it. The pin and the
+     * close are the labels the last draw made, with this state set on them.
+     *
+     * WHY. placeFrame() calls it at every redraw, so every month made both labels, both icons and both Tooltips
+     * new, and installed a tooltip on a node that was thrown away the month after; a bar whose only state is the
+     * pin has nothing to rebuild. The click handlers are set at every draw, on a node that has none handed back.
+     */
+    void refreshDrawerBar() {
+        if (drawerBar == null) return;
+        if (barPool.holds()) dropFocusIn(drawerBar);
+        Kept.draw(barPool, this::drawDrawerBar);
+    }
+
+    private void drawDrawerBar() {
         boolean pinned = prefs != null && prefs.isDrawerPinned();
-        Label pin = new Label(pinned ? "Pinned" : "Pin");
-        pin.setGraphic(Pieces.icon(Icons.PIN, pinned ? Palette.ACCENT : Palette.TEXT_LABEL, 14));
+        // The icons are handed to the labels where these are made: a kept label is not stripped of its graphic and given it back.
+        Label pin = Kept.label(pinned ? "Pinned" : "Pin", Pieces.icon(Icons.PIN, pinned ? Palette.ACCENT : Palette.TEXT_LABEL, 14));
         pin.setGraphicTextGap(5);
         pin.setStyle(Palette.words(Palette.SIZE_LABEL, pinned ? Palette.ACCENT : Palette.TEXT_LABEL)
                 + " -fx-cursor: hand; -fx-padding: 2 6 2 6;");
-        Tooltip.install(pin, new Tooltip(pinned ? "Pinned: it stays open across screens. Click to unpin."
-                : "Keep it open across screens"));
+        Kept.tip(pin, pinned ? "Pinned: it stays open across screens. Click to unpin." : "Keep it open across screens", 1000);
         pin.setOnMouseClicked(e -> {
             if (prefs == null) return;
             prefs.setDrawerPinned(!prefs.isDrawerPinned());
             prefs.save(game.getGameFiles());
             refreshDrawerBar();
         });
-        Label close = new Label();
-        close.setGraphic(Pieces.icon(Icons.CLOSE, Palette.TEXT_LABEL, 14));
+        Label close = Kept.label("", Pieces.icon(Icons.CLOSE, Palette.TEXT_LABEL, 14));
         close.setStyle("-fx-cursor: hand; -fx-padding: 2 2 2 4;");
-        Tooltip.install(close, new Tooltip("Close  (Esc)"));
+        Kept.tip(close, "Close  (Esc)", 1000);
         close.setOnMouseClicked(e -> {
             drawerOpen = false;
             placeFrame();
         });
-        drawerBarBox.getChildren().setAll(pin, close);
+        Kept.set(drawerBar.getChildren(), List.of(pin, close));
     }
 
     /** The drawer, the construction panel and its tab, shown as the player left them - and none of it on the menus. */
@@ -5177,43 +5207,68 @@ public class UserInterface extends Application {
     /** How wide the construction panel's tab is. */
     static final double CONSTRUCTION_TAB = 44;
 
-    /** The tab the construction panel folds to: a crane, how many sites, and the words down it. */
-    private void refreshConstructionTab(boolean inCity, boolean open) {
-        constructionTab.getChildren().clear();
+    /**
+     * The tab, empty and sized: the panel's fold on the stage's right edge, 44 wide and its parts from the top
+     * (refreshConstructionTab()).
+     *
+     * MADE ONCE, WITH ITS WIDTHS AND ITS ALIGNMENT: they were set again at every redraw along with the children
+     * (UP7), and a box that holds still has nothing to set. Its look, which follows the panel and the pointer,
+     * is the draw's.
+     */
+    static VBox constructionTabBox() {
+        VBox box = new VBox(8);
+        box.setPrefWidth(CONSTRUCTION_TAB);
+        box.setMinWidth(CONSTRUCTION_TAB);
+        box.setMaxWidth(CONSTRUCTION_TAB);
+        box.setAlignment(Pos.TOP_CENTER);
+        return box;
+    }
+
+    /**
+     * The tab the construction panel folds to, drawn kept (UP7; tabPool): a crane, how many sites, and the words
+     * down it. The labels, the icon and the rotated words are the ones the last draw made, with this month's
+     * count set on them, and the one tooltip is the tab's own with its text set.
+     *
+     * WHY. placeFrame() calls it at every redraw, so every month made all of them and a Tooltip new, and
+     * installed the tooltip on the tab again over the last month's. The tab's look is chosen from the pointer
+     * where it is drawn (Kept's rule since KP2): a pointer that has not moved stays over the tab but sends no
+     * mouse-entered, and a style set back to rest at the draw would lose the look the pointer gives it.
+     */
+    void refreshConstructionTab(boolean inCity, boolean open) {
+        if (tabPool.holds()) dropFocusIn(constructionTab);
+        Kept.draw(tabPool, () -> drawConstructionTab(inCity, open));
+    }
+
+    private void drawConstructionTab(boolean inCity, boolean open) {
         showIf(constructionTab, inCity);
-        constructionTab.setPrefWidth(CONSTRUCTION_TAB);
-        constructionTab.setMinWidth(CONSTRUCTION_TAB);
-        constructionTab.setMaxWidth(CONSTRUCTION_TAB);
-        constructionTab.setAlignment(Pos.TOP_CENTER);
         String rest = "-fx-padding: 10 0 10 0; -fx-border-color: " + Palette.EDGE + "; -fx-border-width: 0 0 0 1;"
                 + " -fx-cursor: hand; -fx-background-color: ";
-        constructionTab.setStyle(rest + (open ? Palette.RAISED : Palette.PANEL) + ";");
+        constructionTab.setStyle(rest + (open || constructionTab.isHover() ? Palette.RAISED : Palette.PANEL) + ";");
         constructionTab.setOnMouseEntered(e -> constructionTab.setStyle(rest + Palette.RAISED + ";"));
         constructionTab.setOnMouseExited(e -> constructionTab.setStyle(rest + (open ? Palette.RAISED : Palette.PANEL) + ";"));
 
-        Label chevron = new Label(open ? "›" : "‹");
+        Label chevron = Kept.label(open ? "›" : "‹");
         chevron.setStyle(Palette.words(14, Palette.TEXT_LABEL));
 
         // The panel's own count: the kinds of building on site ("N site(s)").
         int sites = game.getBuildingManager().getUnderConstruction();
-        Label count = new Label(String.valueOf(sites));
+        Label count = Kept.label(String.valueOf(sites));
         count.setStyle(Fonts.monoSemiBold() + " -fx-font-size: 11px; -fx-text-fill: " + Palette.ON_FILL + ";"
                 + " -fx-background-color: " + (sites > 0 ? Palette.BUILDING : Palette.TEXT_SPENT) + ";"
                 + " -fx-background-radius: 9; -fx-padding: 0 5 0 5;");
         count.setMinSize(20, 18);
         count.setAlignment(Pos.CENTER);
 
-        Label words = new Label("UNDER CONSTRUCTION");
+        Label words = Kept.label("UNDER CONSTRUCTION");
         words.setStyle(Fonts.sansSemiBold() + " -fx-font-size: 10.5px; -fx-text-fill: " + Palette.TEXT_LABEL + ";");
         words.setRotate(90);
-        javafx.scene.Group down = new javafx.scene.Group(words);
+        javafx.scene.Group down = Kept.group();
+        Kept.children(down, words);
 
-        constructionTab.getChildren().addAll(chevron, Pieces.icon(Icons.CRANE, Palette.BUILDING, 20), count, down);
-        Tooltip tip = new Tooltip(sites == 0 ? "Under construction: nothing on site. Click to " + (open ? "fold the panel." : "open the panel.")
+        Kept.set(constructionTab.getChildren(), List.of(chevron, Pieces.icon(Icons.CRANE, Palette.BUILDING, 20), count, down));
+        Kept.tip(constructionTab, sites == 0 ? "Under construction: nothing on site. Click to " + (open ? "fold the panel." : "open the panel.")
                 : "Under construction: " + sites + " site" + (sites == 1 ? "" : "s") + ". Click to "
-                        + (open ? "fold the panel." : "open the panel."));
-        tip.setShowDelay(Duration.millis(300));
-        Tooltip.install(constructionTab, tip);
+                        + (open ? "fold the panel." : "open the panel."), 300);
         constructionTab.setOnMouseClicked(e -> {
             if (prefs == null) return;
             prefs.setConstructionOpen(!prefs.isConstructionOpen());
@@ -6681,21 +6736,59 @@ public class UserInterface extends Application {
     }
 
     /**
-     * The speed's reading between the arrows (UP2): the rung, and after it the
-     * speed the months landed over the last two seconds add up to when that is
-     * more than a tenth under the rung - "50× · 31×". The rung alone while the
-     * clock is stopped, because nothing is being achieved then.
+     * The speed's reading between the arrows (UP2, UP7): the speed reached, alone and in amber, in
+     * place of the rung, when the months landed over the last two seconds add up to more than a tenth
+     * under the rung ("39×" for a rung of 50×) and to a figure that is not the rung's own words;
+     * null when the header reads the rung - the city keeps up, the window has not run its two
+     * seconds, or the clock is stopped, because nothing is being reached then.
      */
-    private String speedText() {
-        String rung = speedLabel(speedIndex);
-        return clockRunning ? pace.reading(rung, SPEEDS[speedIndex]) : rung;
+    private String speedReached() {
+        return clockRunning ? pace.reached(speedLabel(speedIndex), SPEEDS[speedIndex]) : null;
     }
 
-    /** The reading, repainted in place and only when its words change: no rebuild, and no layout for a figure that is the same. */
-    private void paintSpeed() {
+    /** The reading's style: the figures' face at 11 px, in the header's heading colour at pace and in amber (WARN) when the city is short of the rung. */
+    private static String speedStyle(boolean amber) {
+        return "-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11px;"
+                + " -fx-text-fill: " + (amber ? Palette.WARN : Palette.TEXT_HEAD) + ";";
+    }
+
+    /** The least the reading is wide, in pixels: the width it held before UP7, so that at pace it sits where it did. */
+    static final double SPEED_MIN_WIDTH = 34;
+
+    /** The reading's one width, measured on its first draw. */
+    private double speedWidth;
+
+    /**
+     * The reading's width, for ever (UP7): the widest text it can show - every rung's words and every
+     * speed ClockPace can say it reached under the top rung - measured once in the label's own font
+     * (the figures' face, 11 px), and never under SPEED_MIN_WIDTH.
+     *
+     * WHY. The reading grew to hold the rung and the speed reached after it, and the header's tiles
+     * moved with it each time the city fell short and caught up. Now the label is the same width
+     * whatever it says, and nothing beside it moves.
+     */
+    double speedWidth() {
+        if (speedWidth == 0) {
+            javafx.scene.text.Font font = Fonts.monoFont(11);
+            double widest = 0;
+            for (int i = 0; i < SPEEDS.length; i++) widest = Math.max(widest, TimeChart.textWidth(speedLabel(i), font));
+            for (String text : ClockPace.reachedTexts(SPEED_TOP)) widest = Math.max(widest, TimeChart.textWidth(text, font));
+            speedWidth = Math.max(SPEED_MIN_WIDTH, Math.ceil(widest));
+        }
+        return speedWidth;
+    }
+
+    /**
+     * The reading, repainted in place and only where it changes (the words, the colour): no rebuild, and no
+     * layout for a figure that is the same. The words and the colour come from one call of the pace.
+     */
+    void paintSpeed() {
         if (speedReading == null) return;
-        String text = speedText();
+        String reached = speedReached();
+        String text = reached != null ? reached : speedLabel(speedIndex);
+        String style = speedStyle(reached != null);
         if (!text.equals(speedReading.getText())) speedReading.setText(text);
+        if (!style.equals(speedReading.getStyle())) speedReading.setStyle(style);
     }
 
     /* =====================================================================
@@ -6891,7 +6984,7 @@ public class UserInterface extends Application {
     }
 
     /** "0.25×", "1×", "10×" - no trailing zeros on the round ones; the header's speed reads it (0.7.21: "×", the mockups', for "x"). */
-    private static String speedLabel(int index) {
+    static String speedLabel(int index) {
         double s = SPEEDS[index];
         return (s == Math.floor(s) ? String.valueOf((int) s) : String.valueOf(s)) + "×";
     }
