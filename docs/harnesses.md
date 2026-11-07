@@ -2,7 +2,7 @@
 
 Generated 2026-11-07 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**186 harness files, 21,606 labelled assertions.** AllChecks runs 186 of them.
+**186 harness files, 21,613 labelled assertions.** AllChecks runs 186 of them.
 
 ## Which harnesses read which class
 
@@ -148,7 +148,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [HistoryScreen](map/HistoryScreen.md) | **none** |
 | [HomeFuel](map/HomeFuel.md) | BasketYearCheck, Forms1900Check |
 | [Household](map/Household.md) | BankCheck, BasketYearCheck, BondCheck, BusinessServicesCheck, CarCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, Forms1900Check, FundCheck, FundLedgerCheck, GroceryCheck, HealthCheck, HistoryCheck, HoldersCheck, HouseholdCheck, InvestCheck, LongPlaytest, MarketCheck, OutsideCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ShortSellingCheck |
-| [HouseholdAccounts](map/HouseholdAccounts.md) | BankCheck, Forms1900Check, HealthCheck, HouseholdCheck, HousingCheck, OutsideCheck, PolicyDatesCheck, PolicyPreviewCheck, ReadPathCheck |
+| [HouseholdAccounts](map/HouseholdAccounts.md) | BankCheck, Forms1900Check, HealthCheck, HouseholdCheck, HousingCheck, OilCheck, OutsideCheck, PolicyDatesCheck, PolicyPreviewCheck, ReadPathCheck |
 | [HouseholdBalance](map/HouseholdBalance.md) | AuctionCheck, BankCheck, BondCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CarCheck, CentralBankCheck, CoalMiningCheck, CopperMiningCheck, CrimeCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, FloatLinkCheck, ForestryCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, LongPlaytest, MarketCheck, MaterialsCheck, OutsideCheck, PolicyDatesCheck, PolicyPreviewCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, ShortSellingCheck, WoodProductsCheck |
 | [HydroSites](map/HydroSites.md) | EquipmentCheck, Forms1900Check, HydroCheck |
 | [Icons](map/Icons.md) | **none** |
@@ -18449,7 +18449,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1390 a place the Earth search found names the city with its own name, trimmed
   - L1402 ...and every place's name in a sample of
 
-## OilCheck.java - 215 labelled assertions
+## OilCheck.java - 222 labelled assertions
 
 > Fuel, from the oil in the ground to the drivers' tanks (0.7.62, batch K;
 > the project's spec-land.md 2.7 and section 3's K entry).
@@ -18465,235 +18465,243 @@ _(this harness does not label its checks through a helper - it prints its findin
 >      research's wholesale ladder (petrol and diesel since 0.7.78, batch O2;
 > ...
 
-  - L360 with no Tank Farm the refiners keep no crude: bought whole at the rate, the tanks the products' as they
-  - L371 a Tank Farm standing, they keep CRUDE_COVER_MONTHS of their crude units' run at nameplate, as far as its
-  - L379 ...and the products share the rest of the room, the farm's and the refinery's tanks less the crude's
-  - L383 ...their order the month's run at the rate and what fills the store to it, and their crude is stock:
-  - L393 a month on, what it had and the fill less the run at the rate: the store a month's run
-  - L396 ...counted among the goods the national accounts hold (NationalAccounts.HELD)
-  - L407 the store crosses a save: the crude on hand, to the bit, and kept as the live city keeps it
-  - L411 ...and a month on the reloaded city's store is the live one's, to the bit
-  - L432 fixture: with the refiners' till emptied their order for crude is not placed, and the store pays
-  - L435 ...the first month runs on the store, at the rate, the crude on hand covering it
-  - L439 ...and the second runs no more than what was left: the rate held to the crude on hand and the month's fill
-  - L445 ...the run's cap is the crude on hand and the fill over the nameplate run, none with no crude unit (pure)
-  - L491 with no Strategic Reserve standing there is no room: a fill orders nothing, and is no decision
-  - L496 a Strategic Reserve's room is its tanks' litres at a tonne of crude's: 429,185 t
-  - L504 a fill is ordered for the next clearing and recorded as the player's decision
-  - L513 fixture: four wells lift less than the order, and no refinery buys their crude
-  - L516 the reserve holds the order, bought in the month's crude market
-  - L517 ...every tonne the wells lifted first
-  - L518 ...and the world's for the rest
-  - L519 ...at the local price and the import price, its book what it paid, to the bit
-  - L524 ...the wells' crude Oil's sale to the city, on its books, none shipped
-  - L533 the next strike settles it: what it bought abroad is the audit's - city ReserveFill, TRADE
-  - L541 ...the treasury paid the whole, at home and abroad, and the budget carries it: the reserve's cash, exact
-  - L546 ...and what it paid the wells is Oil's sale, banked at the same strike: a pool paying a pool, not listed
-  - L551 ...the crude it bought abroad among crude's, the city among its buyers, footing to the balance of payments
-  - L556 ...and its crude among the goods held, the national accounts' fifth term
-  - L564 a fill past the room is cut to the room left, or to what the treasury could pay at the import price
-  - L568 ...and a release cancels it: the city never trades with itself
-  - L585 fixture: the refinery wants more than the wells and the release offer it
-  - L587 the refiners took the release whole, at the local price, pro rata with the wells
-  - L589 ...nothing of it shipped, and their books the purchase from the city at the local price
-  - L594 ...the reserve's tonnes fall by the release
-  - L595 ...and its book by the share of it the tonnes were, at average cost
-  - L605 a release past what the refiners want: they take their share, and the rest stays in the reserve's tanks -
-  - L610 ...its tonnes fall by what the refiners took and no more
-  - L611 ...and its book by the share of it those tonnes were, at average cost
-  - L621 the reserve crosses a save: its crude, its book, its release and the month the strike will settle, to the bit
-  - L630 ...the strike after settles what the refiners took: the treasury takes in the reserve's sale to the bit,
-  - L638 ...and the reloaded city settles the same, and holds the same, to the bit
-  - L644 ...the release a standing order, the tonnes falling by what the refiners took again, the rest kept
-  - L658 a release offers no more than the reserve holds: it empties, and its book with it
-  - L660 the goods, the city's crude among them, foot to the balance of payments both ways every month
-  - L662 ...and the audit closes every month
-- **L676 17. the fuel duty: a dial, a litre at the pump dearer by it, the treasury's own line (0.7.103)**
-  - L686 fixture: the town drives, and buys its petrol at the pump
-  - L688 the dial is 0 by default (Jerus's A7): no duty is charged and none taken, the sign the grocers' price
-  - L697 set, it is the player's decision, a tax
-  - L704 ...a litre charged at the expected price level, the dial held to MAX_FUEL_DUTY over the unit and never below
-  - L709 ...and the sign today dearer by it: the price the owners weigh a ride against
-  - L721 a month with the duty: on every litre the drivers took, at the stations and past them
-  - L724 ...the sign the pump's price and the queue's with exactly the duty on top
-  - L728 ...the drivers' bill the grocers' sale and the duty
-  - L731 ...the grocers' petrol sold here the bill less the duty: their books what they were
-  - L735 the duty is the treasury's: in the tax take, the budget's own line, in its revenue, and the audit's + e FuelDuty
-  - L744 ...and the households' books, struck a month on, pay the whole bill, the duty in it
-  - L746 ...the grocers' statement the sale without it
-  - L752 ...and the audit closes every month for a year with it
-  - L760 the dial and the month's duty cross a save, the budget's line reading the same
-  - L770 ...and a policy from before 0.7.103, cut before the duty's slot, loads with no duty
-  - L818 a Paved Road ordered draws its bitumen as it is placed: 64.25 t, bought by the builders
-  - L838 fixture: the town has no refinery, so its four fuels and oils come from the world
-  - L842 the vans' and the trucks' diesel is DIESEL bought abroad, by the sectors that run vans and by Freight's trucks
-  - L845 ...the factories' lubricants LUBRICANTS', by Manufacturing and Automotive and nobody else
-  - L848 ...the drivers' petrol PETROL's, by the forecourts
-  - L849 ...and the road's bitumen BITUMEN's, by the builders, the month after it was drawn
-  - L851 the goods, the four among them, foot to the balance of payments' imports every month
-  - L853 ...and the audit closes every month
-- **L859 14. the forecourts: the pump price, the queue past the stations, the grocers' books and their stations (0.7.83)**
-  - L861 the pump price is the wholesale times 1 + PUMP_MARGIN, over 1 less the sales tax, to the bit; the queue's
-  - L867 ...so on a litre the grocers keep PUMP_MARGIN of its wholesale once they have remitted their rate on the price
-  - L879 fixture: three filling stations stand, and the town drives
-  - L882 what they can sell is their litres at the grocers' operating rate
-  - L887 with stations that can sell what the drivers burn, the grocers order none
-  - L900 a month past their capacity: what they can sell at the pump, the rest past the stations
-  - L903 ...at the pump price and the queue's on the wholesale they paid a litre, the bill the two sales to the bit
-  - L907 ...the bill a sale to the households on Retail's books
-  - L908 ...and its petrol line's
-  - L909 ...the wholesale its purchase, bought from the world with no refinery here
-  - L911 ...and none of it the households' own import
-  - L924 a town with no station, its drivers' petrol all past the stations at the queue's price, is given one
-  - L932 ...earning, for the interest test, its margin on the litres it would sell (the forecast's, under its 350,000)
-  - L934 ...and the shops' rules never sell a station: it serves the drivers, not the baskets they count
-  - L951 a save from before 0.7.83 loads with no petrol sold at the pump and no pump price
-  - L956 ...and its first month sells the drivers' petrol at the pump, the audit closing
-- **L983 1. the goods, the buildings and the sectors are the spec's**
-  - L985 crude: US$600 a tonne in, US$500 out - about US$75 a barrel at 7.33 barrels a tonne
-  - L988 CRUDE: freight is three quarters of the half-wedge, Good's rule
-  - L989 ...so the world still buys below what it sells for
-  - L990 crude ships what is lifted (a flow good, star)
-  - L991 crude goes by the bulk stream
-  - L992 FUEL is retired (0.7.76): no good is saved by its name
-  - L996 petrol and diesel at wholesale (0.7.78): the ladder takes 63% off the pump price a litre the drivers paid, and 59%
-  - L1020 the nine are stockable, priced in the band, taxed, and the world sells and buys each
-  - L1021 ...a litre weighs its good's tonne over its litres (1,850 for gas to 1,010 for fuel oil), bitumen and coke
-  - L1023 ...all nine on the ladder: crude's world middle a litre (a tonne) x the research's ratio, x1.08 in and x0.92
-  - L1025 ...freight three quarters of the half-wedge (Good's rule; on the ladder .06 of the world's price), so the
-  - L1027 ...petrol and diesel with the goods, the other seven by the bulk stream, as crude
-  - L1036 the medium cuts are a barrel: they sum to one
-  - L1037 a tonne of medium crude makes 70 L of petrol (its light naphtha)
-  - L1038 ...169 L of diesel: its 256 less the third of the residue's litres it cuts
-  - L1040 ...629 L of fuel oil: its gas oil and the residue, cut three to one with the diesel
-  - L1042 ...and its gas, heavy naphtha and kerosene as petroleum gas, naphtha and jet fuel
-  - L1047 the litres balance: the products and the residue burned are the tonne's 1,165 L
-  - L1049 ...a medium crude's diesel cuts all its residue: none burned, and no lubricants, bitumen or coke without
-  - L1053 an Oil Refinery's 8,300 t make 1.98M L of petrol and diesel (where they made 8.3M L of FUEL)
-  - L1055 oil in the ground is crude, sold at 5% of its world price
-  - L1064 an offer's oil adds its tonnes at 5% of .50 at the world's price level (to the US$5k rounding)
-  - L1070 the registry has the wells and then the refinery after Restaurants, where they went on the end:
-  - L1075 ...each found by its saved name, the wells making crude, the refinery crude into the nine
-  - L1083 the Oil Well: id 74, MINING, the Oil sector's, 415 t of crude a month (a hundred barrels a day)
-  - L1086 ...and stands on an oil site: Game.siteOf() is oil, an Iron Mine's iron
-  - L1089 the Oil Refinery: id 75, HEAVY_INDUSTRY, Refining's, a crude unit of 8,300 t, its products the slate of
-  - L1095 ...with more than the months of its run a maker keeps in its tanks (STOCK_MONTHS)
-  - L1098 the railway burns eighteen litres of diesel a tonne hauled, pinned (0.7.78) where WORLD_FUEL_PER_TONNE over the
-- **L1109 2. a well lifts only the oil the city owns**
-  - L1113 fixture: a new city owns no oil
-  - L1116 with no oil an Oil Well is refused for its deposit, on the card as at the order
-  - L1120 ...and the investors drill nothing: the wells' word names the deposit
-  - L1122 an Oil Well has one post, a diploma's (0.7.84; three until then: two without a diploma and one with)
-  - L1142 fixture: an offer with oil on dry ground bought (toward the nearest such field)
-  - L1144 ...the city's oil sites are the sites its purchases listed
-  - L1145 an Iron Mine is not let through by oil
-  - L1150 a well a site: as many as the city owns stand, and one more is refused
-  - L1170 what the wells lift is what leaves the ground, never past their nameplate
-  - L1172 ...and the world's oil is unowned + the city's remaining + its extracted, to the tonne
-- **L1178 3. the oil runs out, and the wells retire**
-  - L1194 fixture: two months of four wells' nameplate in the ground, and it is gone
-  - L1197 a well over a worked-out field lifts nothing
-  - L1200 ...so the wells' plant is spare by any measure: no demand against their capacity
-  - L1203 ...and nobody drills more: the word names the deposit
-  - L1209 the wells retire, as the mines do when the ore runs out
-- **L1216 4. the refinery takes the wells' crude first, and imports the rest**
-  - L1242 fixture: four wells lift less than the refinery runs on
-  - L1244 every tonne the wells lifted went to the refinery
-  - L1245 ...none of it shipped
-  - L1246 ...and the refinery imported the rest of what it wanted
-  - L1257 fixture: thirty wells lift more than the refinery runs on
-  - L1259 the refinery imports none of it
-  - L1260 ...takes all it wanted from the wells
-  - L1261 ...and the wells ship the rest abroad
-  - L1272 its nameplate, good by good, is the slate of its crude, to the bit
-  - L1275 ...and its tanks are shared among the products as its run is, the shares its whole tankage
-  - L1276 ...the petrol's room its share of the run
-- **L1284 5. the drivers and the railway take the refiners' fuel first**
-  - L1292 fixture: the refinery's tanks hold petrol and the town drives
-  - L1305 the month's drivers' petrol, all of it, the forecourts bought at home: none imported, by them or by the
-  - L1307 ...at the refiners' price
-  - L1308 fixture: every litre the forecourts sold, at the pump or past the stations
-  - L1312 ...and the drivers paid the pump's price on it: the refiners' price times 1 + PUMP_MARGIN, over 1 less the
-  - L1323 a draw past the tanks takes all the petrol they hold
-  - L1324 ...the forecourts import the rest at the import price
-  - L1325 ...and their wholesale bill is the two together
-  - L1327 ...the shelf's part a sale to the forecourts on Refining's books, none to the households
-  - L1350 fixture: the railway hauls and burns diesel, with diesel in the refiners' tanks
-  - L1354 the railway imported none of its diesel
-  - L1356 ...and bought no petrol
-  - L1358 ...it bought it at home, on its books, with its trucks'
-  - L1361 ...eighteen litres a tonne hauled, and the city tonnes' litres, at the litre's price when it drew them
-- **L1368 6. fuel's money audit closes, every month of a city with wells and a refinery**
-  - L1441 the audit closes every month (relative to what moved)
-  - L1451 fixture: months the forecourts imported the drivers' petrol and months they bought it at home
-  - L1453 the households import none of it: the audit's PetrolFunded and PetrolImports are nothing, to the cent
-  - L1475 the products nobody here buys fill their tank share to the dump line and no further, shipped past it or
-  - L1479 fixture: a product the city does not take all of, whose share of the line's whole bill - the crude among it, by
-  - L1482 ...yet the run's every product leaves: made for home or shipped, none of it idled (Refining.
-  - L1486 ...and the domestic part is on Refining's statement, its sales to the forecourts (to the households until
-  - L1490 fixture: ...and another sector than the forecourts bought petrol at home in some of the months (the farms' tractors, R1c),
-  - L1492 ...and the goods, fuel among them, foot to the balance of payments' imports
-  - L1494 the litres shipped are the rows' exported, the export-bound among them (Sector.produceStock() books them
-  - L1588 fixture: months the railway or its trucks drew diesel off the refiners' tanks
-  - L1590 every month, each product's opening stock and what was made, less what was written off, sold at home and
-  - L1599 fixture: months the forecourts drew petrol off the tanks and months the vans drew diesel off them
-  - L1601 the refiners' fills of each fuel in the city are what its takers' own records drew, every month
-  - L1603 ...so the refinery's buyers on the industry card sum to its row's sold at home
-- **L1611 7. with no refinery, the households pay today's bill at the world's price level**
-  - L1629 fixture: the town drives, and has no refinery
-  - L1631 its drivers burned a month of journeys at 1.2 litres
-  - L1642 ...every litre imported, by the forecourts
-  - L1646 ...at the import price: a journey's litres at petrol's ladder price, at the rate, times the world's price level
-  - L1650 ...63% under the bill the pump price struck (0.7.49's journey at the rate and the level)
-  - L1655 ...and the drivers pay the forecourts' price on it: the pump's on what their stations can sell, the queue's on
-  - L1658 ...the level the markets were told
-  - L1660 a journey's fuel, which the owners weigh a ride against, is a journey's litres at the pump price on the import
-- **L1669 8. a refinery is built for the city's own fuel or its own crude: rule 6 and the package (0.7.82)**
-  - L1685 a town short of less petrol and diesel than FEED_GATE of what a refinery makes of them, with no wells, is not given
-  - L1693 ...its package charges every tonne of its crude at the net import price, not the band's middle: a dearer import
-  - L1721 with FEED_GATE of a refinery's crude lifted that nobody takes, the gate opens: it passes its feed
-  - L1725 ...and with a whole refinery's worth spare its crude is the wells', at the local price: the import price moves its
-  - L1732 ...its estimate (what Game.consider() tests) is its share of its package's earnings, by cost
-- **L1749 9. the month's fuel crosses a save**
-  - L1759 fixture: a month with fuel from both the tanks and the world
-  - L1769 the bill, its imported part and the litres load as 6d drew them
-  - L1773 ...and the forecourts' month: the litres at the pump and past it, what the stations could sell, the two
-  - L1781 ...and a month on, both cities' households pay the same fuel, as much of it abroad by the forecourts
-  - L1796 a save from before 0.7.62 derives the month as it struck it: drivers x journeys x a journey's fuel
-  - L1798 ...every litre imported
-- **L1870 10. a save from before 0.7.76 is refused since 0.7.120 (to 0.7.119 its FUEL was split into petrol and diesel)**
-  - L1933 fixture: a format-33 save, FUEL in the refiners' tanks, its market and both sides' books, burned by the
-  - L1954 the format-33 save is refused since 0.7.120, below the floor: in P7's words, nothing of it applied, its file as it was
-- **L1968 11. a refinery that closes ships what its tanks held**
-  - L1987 fixture: the town's one refinery, its tanks holding its products, bought out and gone
-  - L1990 ...its tanks are empty, what they held sold at home or shipped, and nothing written off
-- **L2041 12. a field's crude is light, medium or heavy, and the refinery runs its month's mix (0.7.79)**
-  - L2058 each grade's cuts are a barrel, and medium's are O1's MEDIUM_CUTS
-  - L2059 ...light's Brent's column [R1] and heavy's Maya's [R2], its naphtha split one to two as the blend's
-  - L2065 on medium crude alone a slate is O1's to the bit: a tonne's petrol its run x 1 x the light naphtha's cut
-  - L2068 a tonne of light crude makes 97 L of petrol...
-  - L2069 ...and 252 L of diesel, its 296 less the third of its residue it cuts, none burned
-  - L2071 a tonne of heavy crude burns 101 L of residue its diesel cannot cut, three to one
-  - L2073 ...its diesel all spent cutting, held at nothing
-  - L2083 the litres balance on every grade and on a third of each
-  - L2084 light crude makes more of what the city buys than medium, and heavy less
-  - L2091 a month's mix: nothing bought, or only imports, is medium to the bit
-  - L2094 ...local crude at the lift's grades and imports at medium, each a share of what was bought
-  - L2102 fixture: the world's nearest oil field to its site is in the sea, heavy
-  - L2116 fixture: the office buys the ground under it, and the centre holds no oil field
-  - L2120 a field's sites are sea sites when its centre plot is sea, the rest dry, and the two are the city's sites
-  - L2129 the oil is laid out as it is worked out, each pool on its own fields (0.7.93): the ground's the centre's 1,000 t by
-  - L2140 a land well's lift takes the ground pool's alone: 1,500 t asked, its 1,000 t lifted, medium (until 0.7.93 the one
-  - L2146 ...and a platform's the offshore pool's: 500 t of the field's heavy, graded by where the sea's E stood, to the tonne
-  - L2151 ...a month's lifts add up, all of the sea's the field's grade
-  - L2152 ...nothing moves but the two pools' E: unowned + remaining + extracted is the world's, to the tonne
-  - L2157 ...and the month's grades clear with its flows
-  - L2205 fixture: a town on that world owns the field, a platform on it with a well in each of its slots, and a refinery
-  - L2217 fixture: the refinery took the wells' heavy crude and imported the rest
-  - L2220 its month's mix is its local crude at the lift's grade and its imports at medium, to the bit
-  - L2226 ...and next month's nameplate is the slate of its run at that mix, good by good, to the bit - less petrol than
-  - L2235 the mix crosses a save, to the bit
-  - L2245 ...saved as Refining's crudeMix.LIGHT, .MEDIUM and .HEAVY; a save without them reads medium
+  - L368 with no Tank Farm the refiners keep no crude: bought whole at the rate, the tanks the products' as they
+  - L379 a Tank Farm standing, they keep CRUDE_COVER_MONTHS of their crude units' run at nameplate, as far as its
+  - L387 ...and the products share the rest of the room, the farm's and the refinery's tanks less the crude's
+  - L391 ...their order the month's run at the rate and what fills the store to it, and their crude is stock:
+  - L401 a month on, what it had and the fill less the run at the rate: the store a month's run
+  - L404 ...counted among the goods the national accounts hold (NationalAccounts.HELD)
+  - L415 the store crosses a save: the crude on hand, to the bit, and kept as the live city keeps it
+  - L419 ...and a month on the reloaded city's store is the live one's, to the bit
+  - L440 fixture: with the refiners' till emptied their order for crude is not placed, and the store pays
+  - L443 ...the first month runs on the store, at the rate, the crude on hand covering it
+  - L447 ...and the second runs no more than what was left: the rate held to the crude on hand and the month's fill
+  - L453 ...the run's cap is the crude on hand and the fill over the nameplate run, none with no crude unit (pure)
+  - L499 with no Strategic Reserve standing there is no room: a fill orders nothing, and is no decision
+  - L504 a Strategic Reserve's room is its tanks' litres at a tonne of crude's: 429,185 t
+  - L512 a fill is ordered for the next clearing and recorded as the player's decision
+  - L521 fixture: four wells lift less than the order, and no refinery buys their crude
+  - L524 the reserve holds the order, bought in the month's crude market
+  - L525 ...every tonne the wells lifted first
+  - L526 ...and the world's for the rest
+  - L527 ...at the local price and the import price, its book what it paid, to the bit
+  - L532 ...the wells' crude Oil's sale to the city, on its books, none shipped
+  - L541 the next strike settles it: what it bought abroad is the audit's - city ReserveFill, TRADE
+  - L549 ...the treasury paid the whole, at home and abroad, and the budget carries it: the reserve's cash, exact
+  - L554 ...and what it paid the wells is Oil's sale, banked at the same strike: a pool paying a pool, not listed
+  - L559 ...the crude it bought abroad among crude's, the city among its buyers, footing to the balance of payments
+  - L564 ...and its crude among the goods held, the national accounts' fifth term
+  - L572 a fill past the room is cut to the room left, or to what the treasury could pay at the import price
+  - L576 ...and a release cancels it: the city never trades with itself
+  - L593 fixture: the refinery wants more than the wells and the release offer it
+  - L595 the refiners took the release whole, at the local price, pro rata with the wells
+  - L597 ...nothing of it shipped, and their books the purchase from the city at the local price
+  - L602 ...the reserve's tonnes fall by the release
+  - L603 ...and its book by the share of it the tonnes were, at average cost
+  - L613 a release past what the refiners want: they take their share, and the rest stays in the reserve's tanks -
+  - L618 ...its tonnes fall by what the refiners took and no more
+  - L619 ...and its book by the share of it those tonnes were, at average cost
+  - L629 the reserve crosses a save: its crude, its book, its release and the month the strike will settle, to the bit
+  - L638 ...the strike after settles what the refiners took: the treasury takes in the reserve's sale to the bit,
+  - L646 ...and the reloaded city settles the same, and holds the same, to the bit
+  - L652 ...the release a standing order, the tonnes falling by what the refiners took again, the rest kept
+  - L666 a release offers no more than the reserve holds: it empties, and its book with it
+  - L668 the goods, the city's crude among them, foot to the balance of payments both ways every month
+  - L670 ...and the audit closes every month
+- **L684 17. the fuel duty: a dial, a litre at the pump dearer by it, the treasury's own line (0.7.103)**
+  - L694 fixture: the town drives, and buys its petrol at the pump
+  - L696 the dial is 0 by default (Jerus's A7): no duty is charged and none taken, the sign the grocers' price
+  - L705 set, it is the player's decision, a tax
+  - L712 ...a litre charged at the expected price level, the dial held to MAX_FUEL_DUTY over the unit and never below
+  - L717 ...and the sign today dearer by it: the price the owners weigh a ride against
+  - L729 a month with the duty: on every litre the drivers took, at the stations and past them
+  - L732 ...the sign the pump's price and the queue's with exactly the duty on top
+  - L736 ...the drivers' bill the grocers' sale and the duty
+  - L739 ...the grocers' petrol sold here the bill less the duty: their books what they were
+  - L743 the duty is the treasury's: in the tax take, the budget's own line, in its revenue, and the audit's + e FuelDuty
+  - L752 ...and the households' books, struck a month on, pay the whole bill, the duty in it
+  - L754 ...the grocers' statement the sale without it
+  - L760 ...and the audit closes every month for a year with it
+  - L768 the dial and the month's duty cross a save, the budget's line reading the same
+  - L778 ...and a policy from before 0.7.103, cut before the duty's slot, loads with no duty
+- **L824 20. the drivers pay their petrol once: their fuel line, not their shopping too (PD1)**
+  - L847 fixture: the drivers bought petrol at the pump, in the grocers' book and in the households' fuel line
+  - L850 ...the grocers' petrol the drivers' bill less the duty, the households' fuel line the whole bill, the duty in it
+  - L856 the households' shopping is the grocers' sales to them less the petrol (and less the homes' lamp oil and coal)
+  - L860 ...so the shopping and the fuel line foot to who took the money: the grocers' sales to the households and the treasury's duty
+  - L871 the rows' shopping add to the shopping, and each row's fees settled hold its fuel: the cells pay the petrol once, in their fees
+  - L879 the load path agrees: a twin loaded from the save reads the same shopping and the same fuel line
+  - L883 ...and the audit closed in those months
+  - L913 a Paved Road ordered draws its bitumen as it is placed: 64.25 t, bought by the builders
+  - L933 fixture: the town has no refinery, so its four fuels and oils come from the world
+  - L937 the vans' and the trucks' diesel is DIESEL bought abroad, by the sectors that run vans and by Freight's trucks
+  - L940 ...the factories' lubricants LUBRICANTS', by Manufacturing and Automotive and nobody else
+  - L943 ...the drivers' petrol PETROL's, by the forecourts
+  - L944 ...and the road's bitumen BITUMEN's, by the builders, the month after it was drawn
+  - L946 the goods, the four among them, foot to the balance of payments' imports every month
+  - L948 ...and the audit closes every month
+- **L954 14. the forecourts: the pump price, the queue past the stations, the grocers' books and their stations (0.7.83)**
+  - L956 the pump price is the wholesale times 1 + PUMP_MARGIN, over 1 less the sales tax, to the bit; the queue's
+  - L962 ...so on a litre the grocers keep PUMP_MARGIN of its wholesale once they have remitted their rate on the price
+  - L974 fixture: three filling stations stand, and the town drives
+  - L977 what they can sell is their litres at the grocers' operating rate
+  - L982 with stations that can sell what the drivers burn, the grocers order none
+  - L995 a month past their capacity: what they can sell at the pump, the rest past the stations
+  - L998 ...at the pump price and the queue's on the wholesale they paid a litre, the bill the two sales to the bit
+  - L1002 ...the bill a sale to the households on Retail's books
+  - L1003 ...and its petrol line's
+  - L1004 ...the wholesale its purchase, bought from the world with no refinery here
+  - L1006 ...and none of it the households' own import
+  - L1019 a town with no station, its drivers' petrol all past the stations at the queue's price, is given one
+  - L1027 ...earning, for the interest test, its margin on the litres it would sell (the forecast's, under its 350,000)
+  - L1029 ...and the shops' rules never sell a station: it serves the drivers, not the baskets they count
+  - L1046 a save from before 0.7.83 loads with no petrol sold at the pump and no pump price
+  - L1051 ...and its first month sells the drivers' petrol at the pump, the audit closing
+- **L1078 1. the goods, the buildings and the sectors are the spec's**
+  - L1080 crude: US$600 a tonne in, US$500 out - about US$75 a barrel at 7.33 barrels a tonne
+  - L1083 CRUDE: freight is three quarters of the half-wedge, Good's rule
+  - L1084 ...so the world still buys below what it sells for
+  - L1085 crude ships what is lifted (a flow good, star)
+  - L1086 crude goes by the bulk stream
+  - L1087 FUEL is retired (0.7.76): no good is saved by its name
+  - L1091 petrol and diesel at wholesale (0.7.78): the ladder takes 63% off the pump price a litre the drivers paid, and 59%
+  - L1115 the nine are stockable, priced in the band, taxed, and the world sells and buys each
+  - L1116 ...a litre weighs its good's tonne over its litres (1,850 for gas to 1,010 for fuel oil), bitumen and coke
+  - L1118 ...all nine on the ladder: crude's world middle a litre (a tonne) x the research's ratio, x1.08 in and x0.92
+  - L1120 ...freight three quarters of the half-wedge (Good's rule; on the ladder .06 of the world's price), so the
+  - L1122 ...petrol and diesel with the goods, the other seven by the bulk stream, as crude
+  - L1131 the medium cuts are a barrel: they sum to one
+  - L1132 a tonne of medium crude makes 70 L of petrol (its light naphtha)
+  - L1133 ...169 L of diesel: its 256 less the third of the residue's litres it cuts
+  - L1135 ...629 L of fuel oil: its gas oil and the residue, cut three to one with the diesel
+  - L1137 ...and its gas, heavy naphtha and kerosene as petroleum gas, naphtha and jet fuel
+  - L1142 the litres balance: the products and the residue burned are the tonne's 1,165 L
+  - L1144 ...a medium crude's diesel cuts all its residue: none burned, and no lubricants, bitumen or coke without
+  - L1148 an Oil Refinery's 8,300 t make 1.98M L of petrol and diesel (where they made 8.3M L of FUEL)
+  - L1150 oil in the ground is crude, sold at 5% of its world price
+  - L1159 an offer's oil adds its tonnes at 5% of .50 at the world's price level (to the US$5k rounding)
+  - L1165 the registry has the wells and then the refinery after Restaurants, where they went on the end:
+  - L1170 ...each found by its saved name, the wells making crude, the refinery crude into the nine
+  - L1178 the Oil Well: id 74, MINING, the Oil sector's, 415 t of crude a month (a hundred barrels a day)
+  - L1181 ...and stands on an oil site: Game.siteOf() is oil, an Iron Mine's iron
+  - L1184 the Oil Refinery: id 75, HEAVY_INDUSTRY, Refining's, a crude unit of 8,300 t, its products the slate of
+  - L1190 ...with more than the months of its run a maker keeps in its tanks (STOCK_MONTHS)
+  - L1193 the railway burns eighteen litres of diesel a tonne hauled, pinned (0.7.78) where WORLD_FUEL_PER_TONNE over the
+- **L1204 2. a well lifts only the oil the city owns**
+  - L1208 fixture: a new city owns no oil
+  - L1211 with no oil an Oil Well is refused for its deposit, on the card as at the order
+  - L1215 ...and the investors drill nothing: the wells' word names the deposit
+  - L1217 an Oil Well has one post, a diploma's (0.7.84; three until then: two without a diploma and one with)
+  - L1237 fixture: an offer with oil on dry ground bought (toward the nearest such field)
+  - L1239 ...the city's oil sites are the sites its purchases listed
+  - L1240 an Iron Mine is not let through by oil
+  - L1245 a well a site: as many as the city owns stand, and one more is refused
+  - L1265 what the wells lift is what leaves the ground, never past their nameplate
+  - L1267 ...and the world's oil is unowned + the city's remaining + its extracted, to the tonne
+- **L1273 3. the oil runs out, and the wells retire**
+  - L1289 fixture: two months of four wells' nameplate in the ground, and it is gone
+  - L1292 a well over a worked-out field lifts nothing
+  - L1295 ...so the wells' plant is spare by any measure: no demand against their capacity
+  - L1298 ...and nobody drills more: the word names the deposit
+  - L1304 the wells retire, as the mines do when the ore runs out
+- **L1311 4. the refinery takes the wells' crude first, and imports the rest**
+  - L1337 fixture: four wells lift less than the refinery runs on
+  - L1339 every tonne the wells lifted went to the refinery
+  - L1340 ...none of it shipped
+  - L1341 ...and the refinery imported the rest of what it wanted
+  - L1352 fixture: thirty wells lift more than the refinery runs on
+  - L1354 the refinery imports none of it
+  - L1355 ...takes all it wanted from the wells
+  - L1356 ...and the wells ship the rest abroad
+  - L1367 its nameplate, good by good, is the slate of its crude, to the bit
+  - L1370 ...and its tanks are shared among the products as its run is, the shares its whole tankage
+  - L1371 ...the petrol's room its share of the run
+- **L1379 5. the drivers and the railway take the refiners' fuel first**
+  - L1387 fixture: the refinery's tanks hold petrol and the town drives
+  - L1400 the month's drivers' petrol, all of it, the forecourts bought at home: none imported, by them or by the
+  - L1402 ...at the refiners' price
+  - L1403 fixture: every litre the forecourts sold, at the pump or past the stations
+  - L1407 ...and the drivers paid the pump's price on it: the refiners' price times 1 + PUMP_MARGIN, over 1 less the
+  - L1418 a draw past the tanks takes all the petrol they hold
+  - L1419 ...the forecourts import the rest at the import price
+  - L1420 ...and their wholesale bill is the two together
+  - L1422 ...the shelf's part a sale to the forecourts on Refining's books, none to the households
+  - L1445 fixture: the railway hauls and burns diesel, with diesel in the refiners' tanks
+  - L1449 the railway imported none of its diesel
+  - L1451 ...and bought no petrol
+  - L1453 ...it bought it at home, on its books, with its trucks'
+  - L1456 ...eighteen litres a tonne hauled, and the city tonnes' litres, at the litre's price when it drew them
+- **L1463 6. fuel's money audit closes, every month of a city with wells and a refinery**
+  - L1536 the audit closes every month (relative to what moved)
+  - L1546 fixture: months the forecourts imported the drivers' petrol and months they bought it at home
+  - L1548 the households import none of it: the audit's PetrolFunded and PetrolImports are nothing, to the cent
+  - L1570 the products nobody here buys fill their tank share to the dump line and no further, shipped past it or
+  - L1574 fixture: a product the city does not take all of, whose share of the line's whole bill - the crude among it, by
+  - L1577 ...yet the run's every product leaves: made for home or shipped, none of it idled (Refining.
+  - L1581 ...and the domestic part is on Refining's statement, its sales to the forecourts (to the households until
+  - L1585 fixture: ...and another sector than the forecourts bought petrol at home in some of the months (the farms' tractors, R1c),
+  - L1587 ...and the goods, fuel among them, foot to the balance of payments' imports
+  - L1589 the litres shipped are the rows' exported, the export-bound among them (Sector.produceStock() books them
+  - L1683 fixture: months the railway or its trucks drew diesel off the refiners' tanks
+  - L1685 every month, each product's opening stock and what was made, less what was written off, sold at home and
+  - L1694 fixture: months the forecourts drew petrol off the tanks and months the vans drew diesel off them
+  - L1696 the refiners' fills of each fuel in the city are what its takers' own records drew, every month
+  - L1698 ...so the refinery's buyers on the industry card sum to its row's sold at home
+- **L1706 7. with no refinery, the households pay today's bill at the world's price level**
+  - L1724 fixture: the town drives, and has no refinery
+  - L1726 its drivers burned a month of journeys at 1.2 litres
+  - L1737 ...every litre imported, by the forecourts
+  - L1741 ...at the import price: a journey's litres at petrol's ladder price, at the rate, times the world's price level
+  - L1745 ...63% under the bill the pump price struck (0.7.49's journey at the rate and the level)
+  - L1750 ...and the drivers pay the forecourts' price on it: the pump's on what their stations can sell, the queue's on
+  - L1753 ...the level the markets were told
+  - L1755 a journey's fuel, which the owners weigh a ride against, is a journey's litres at the pump price on the import
+- **L1764 8. a refinery is built for the city's own fuel or its own crude: rule 6 and the package (0.7.82)**
+  - L1780 a town short of less petrol and diesel than FEED_GATE of what a refinery makes of them, with no wells, is not given
+  - L1788 ...its package charges every tonne of its crude at the net import price, not the band's middle: a dearer import
+  - L1816 with FEED_GATE of a refinery's crude lifted that nobody takes, the gate opens: it passes its feed
+  - L1820 ...and with a whole refinery's worth spare its crude is the wells', at the local price: the import price moves its
+  - L1827 ...its estimate (what Game.consider() tests) is its share of its package's earnings, by cost
+- **L1844 9. the month's fuel crosses a save**
+  - L1854 fixture: a month with fuel from both the tanks and the world
+  - L1864 the bill, its imported part and the litres load as 6d drew them
+  - L1868 ...and the forecourts' month: the litres at the pump and past it, what the stations could sell, the two
+  - L1876 ...and a month on, both cities' households pay the same fuel, as much of it abroad by the forecourts
+  - L1891 a save from before 0.7.62 derives the month as it struck it: drivers x journeys x a journey's fuel
+  - L1893 ...every litre imported
+- **L1965 10. a save from before 0.7.76 is refused since 0.7.120 (to 0.7.119 its FUEL was split into petrol and diesel)**
+  - L2028 fixture: a format-33 save, FUEL in the refiners' tanks, its market and both sides' books, burned by the
+  - L2049 the format-33 save is refused since 0.7.120, below the floor: in P7's words, nothing of it applied, its file as it was
+- **L2063 11. a refinery that closes ships what its tanks held**
+  - L2082 fixture: the town's one refinery, its tanks holding its products, bought out and gone
+  - L2085 ...its tanks are empty, what they held sold at home or shipped, and nothing written off
+- **L2136 12. a field's crude is light, medium or heavy, and the refinery runs its month's mix (0.7.79)**
+  - L2153 each grade's cuts are a barrel, and medium's are O1's MEDIUM_CUTS
+  - L2154 ...light's Brent's column [R1] and heavy's Maya's [R2], its naphtha split one to two as the blend's
+  - L2160 on medium crude alone a slate is O1's to the bit: a tonne's petrol its run x 1 x the light naphtha's cut
+  - L2163 a tonne of light crude makes 97 L of petrol...
+  - L2164 ...and 252 L of diesel, its 296 less the third of its residue it cuts, none burned
+  - L2166 a tonne of heavy crude burns 101 L of residue its diesel cannot cut, three to one
+  - L2168 ...its diesel all spent cutting, held at nothing
+  - L2178 the litres balance on every grade and on a third of each
+  - L2179 light crude makes more of what the city buys than medium, and heavy less
+  - L2186 a month's mix: nothing bought, or only imports, is medium to the bit
+  - L2189 ...local crude at the lift's grades and imports at medium, each a share of what was bought
+  - L2197 fixture: the world's nearest oil field to its site is in the sea, heavy
+  - L2211 fixture: the office buys the ground under it, and the centre holds no oil field
+  - L2215 a field's sites are sea sites when its centre plot is sea, the rest dry, and the two are the city's sites
+  - L2224 the oil is laid out as it is worked out, each pool on its own fields (0.7.93): the ground's the centre's 1,000 t by
+  - L2235 a land well's lift takes the ground pool's alone: 1,500 t asked, its 1,000 t lifted, medium (until 0.7.93 the one
+  - L2241 ...and a platform's the offshore pool's: 500 t of the field's heavy, graded by where the sea's E stood, to the tonne
+  - L2246 ...a month's lifts add up, all of the sea's the field's grade
+  - L2247 ...nothing moves but the two pools' E: unowned + remaining + extracted is the world's, to the tonne
+  - L2252 ...and the month's grades clear with its flows
+  - L2300 fixture: a town on that world owns the field, a platform on it with a well in each of its slots, and a refinery
+  - L2312 fixture: the refinery took the wells' heavy crude and imported the rest
+  - L2315 its month's mix is its local crude at the lift's grade and its imports at medium, to the bit
+  - L2321 ...and next month's nameplate is the slate of its run at that mix, good by good, to the bit - less petrol than
+  - L2330 the mix crosses a save, to the bit
+  - L2340 ...saved as Refining's crudeMix.LIGHT, .MEDIUM and .HEAVY; a save without them reads medium
 
 ## OilViewCheck.java - 60 labelled assertions
 

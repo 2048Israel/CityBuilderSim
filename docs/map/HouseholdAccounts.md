@@ -50,7 +50,7 @@
 
 **Uses:** [Household](Household.md) (17), [PayTier](PayTier.md) (10), [FamilyModel](FamilyModel.md) (7), [FamilyStructure](FamilyStructure.md) (5), [Statement](Statement.md) (3), [AgeBand](AgeBand.md) (2), [SocialSecurity](SocialSecurity.md) (1)
 
-**Used by (17):** [BankCheck](BankCheck.md), [Forms1900Check](Forms1900Check.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HealthCheck](HealthCheck.md), [HouseholdCheck](HouseholdCheck.md), [HousingCheck](HousingCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [KeptBench](KeptBench.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyDatesCheck](PolicyDatesCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [ShadowBasket](ShadowBasket.md)
+**Used by (18):** [BankCheck](BankCheck.md), [Forms1900Check](Forms1900Check.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HealthCheck](HealthCheck.md), [HouseholdCheck](HouseholdCheck.md), [HousingCheck](HousingCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [KeptBench](KeptBench.md), [OilCheck](OilCheck.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyDatesCheck](PolicyDatesCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [ShadowBasket](ShadowBasket.md)
 
 ## Sections
 
@@ -174,7 +174,7 @@
 |---:|---:|---|---|
 | 217 | 3 | `public void setCommute(double fuelBill, double[] riders, double[] drivers)` | The month's fuel bill, every litre of it imported, and each row's riders and drivers (any scale; only their shares are read). |
 | 222 | 10 | `public void setCommute(double fuelBill, double fuelImported, double[] riders, double[] drivers)` | ...with the part of the bill the world was paid (0.7.62; Motoring.getFuelImports()), never more than the bill. |
-| 234 | 1 | `public double getFuel()` | What the households paid for fuel this month: the refiners' shelf at its price and the world's at the import price (0.7.62). |
+| 234 | 1 | `public double getFuel()` | What the households paid for fuel this month: the refiners' shelf at its price and the world's at the import price (0.7.62); the drivers' petrol is this line and not in the shopping since PD1. |
 | 237 | 1 | `public double getFuelImports()` | ...and what of it was paid to the world (0.7.62): all of it with no refinery. |
 | 240 | 1 | `public double getRowFuel(int row)` | ...and what this row paid of it. |
 | 243 | 1 | `public double rowFaresPerHead(int row)` | The fares one person of the row paid this month: the row's fares over its people (the People page's cell panel). |
