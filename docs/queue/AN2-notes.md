@@ -1,4 +1,4 @@
-# AN2 - AN1's leftovers: the struck D$ on Trade › The currency, and the Earth playtest ({next}, 2026-11-06)
+# AN2 - AN1's leftovers: the struck D$ on Trade › The currency, and the Earth playtest (0.9.37, 2026-11-06)
 
 The brief is [AN2](AN2.md): Jerus, 2026-10-23, on AN1-C's "left undone", "Queue both, small".
 

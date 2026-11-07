@@ -64,6 +64,13 @@ import java.util.Set;
  *  17. THE SAVE. A city with research writes it and a load restores grants, posts, piles, finds, jobs and the bill, and plays on as the city saved;
  *      a city with none writes no key.
  *  18. A REFORM OF THE MONEY scales the grants and the bill and nothing else of the research.
+ *
+ * R3b (the gate reviews of R3 and R4), on the same villages:
+ *
+ *  19. A SCHOOL ORDERED DEMOLISHED gives no posts the month it closes: the strike follows the demolitions (nextMonth()), so the room it strikes
+ *      from is the standing schools'; a twin with no order strikes as before.
+ *  20. THE CITY'S OWN PAYROLL at a new floor counts the research posts (PolicyPreview.cityPayrollAt()), and the landlords' credit check counts every
+ *      post the city offers, the research posts' jobs included (RealEstate.latentHeadShortfall()), as plan() does.
  */
 public class DiscoveryCheck {
 
@@ -164,6 +171,8 @@ public class DiscoveryCheck {
         sectionSixteen();
         sectionSeventeen();
         sectionEighteen();
+        sectionNineteen();
+        sectionTwenty();
         System.out.println(fails == 0 ? "DiscoveryCheck: all " + passes + " ok" : "DiscoveryCheck: " + fails + " FAILED of " + (passes + fails));
         System.exit(fails);
     }
@@ -1304,5 +1313,79 @@ public class DiscoveryCheck {
         near("...and the national accounts' spending on them", e.getNationalAccounts().getResearchSpending(), spending * scale, 1e-9 * spending * scale);
         check("the posts, the piles and the finds are not money and are as they were", r.postsForSave().equals(posts) && r.piles().equals(piles) && r.foundHere().equals(found));
         check("a grant of 0 stays 0 and the other fields stay without one", r.grant(Field.LAW) == 0 && r.grant(Field.BUSINESS) == 0);
+    }
+
+    /* ==================== 19. a school ordered demolished (R3b) ==================== */
+
+    static void sectionNineteen() {
+        System.out.println("\n--- 19. a school ordered demolished gives no posts the next month: the strike follows the demolitions that close ---");
+        Game g = cityWithSchools("discovery-pulled-down", true, false), twin = cityWithSchools("discovery-pulled-down-twin", true, false);
+        Research r = g.getResearch(), rt = twin.getResearch();
+        play(g, 2);
+        play(twin, 2);
+        double[] wages = g.getPopulationManager().getWagesPerType().clone();
+        double grant = 5.5 * Research.postCost(Field.ENGINEERING, wages);
+        r.setGrant(Field.ENGINEERING, grant);
+        rt.setGrant(Field.ENGINEERING, grant);
+        play(g, 1);
+        play(twin, 1);
+        BuildingsTemplate university = g.getBuildingManager().getTemplateByName("University");
+        check("fixture: both villages, founded the 1900 way with one University, struck the engineering posts the grant buys (" + r.posts(Field.ENGINEERING) + " and " + rt.posts(Field.ENGINEERING) + ")",
+                g.foundedUnfitted() && g.getBuildingManager().getQuantity(university.getId()) == 1 && r.posts(Field.ENGINEERING) == 5 && rt.posts(Field.ENGINEERING) == 5);
+        boolean[] ordered = new boolean[1];
+        quietly(() -> ordered[0] = g.demolish(university, 1));
+        check("the University is ordered demolished, between the presses: the city's own to pull down, and the quote paid", ordered[0], g.getLastHandRefusal());
+        check("it still stands until the month starts, and so does its room and the grant's posts", g.getBuildingManager().getQuantity(university.getId()) == 1
+                && roomOf(g).getOrDefault(Field.ENGINEERING, 0.0) > 0 && r.posts(Field.ENGINEERING) == 5);
+        play(g, 1);
+        play(twin, 1);
+        check("the month it closes the University is gone: no school stands, and its room with it", g.getBuildingManager().getQuantity(university.getId()) == 0 && roomOf(g).getOrDefault(Field.ENGINEERING, 0.0) == 0);
+        check("...so the grant buys no post that month, from a room that is not there: the strike followed the demolition (before it, a school ordered pulled down still gave that month's posts)",
+                r.posts(Field.ENGINEERING) == 0 && r.grant(Field.ENGINEERING) == grant && noPosts(r), String.valueOf(r.postsForSave()));
+        check("...and the city's jobs are the buildings' alone, the posts' gone with the school", same(g.getJobs(), g.getBuildingManager().getTotalJobs()) && same(g.getPopulationManager().getJobs(), g.getBuildingManager().getTotalJobs()));
+        check("the twin, with no order, struck its five posts again: the order moved nothing but the school's", rt.posts(Field.ENGINEERING) == 5 && twin.getBuildingManager().getQuantity(university.getId()) == 1);
+    }
+
+    /* ==================== 20. the city's own payroll and the heads it houses (R3b) ==================== */
+
+    static void sectionTwenty() {
+        System.out.println("\n--- 20. the city's own payroll at a new floor counts the research posts, and the landlords' credit check counts every post the city offers ---");
+        Game g = cityWithSchools("discovery-payroll", true, false);
+        Research r = g.getResearch();
+        EconomyManager e = g.getEconomyManager();
+        play(g, 2);
+        double[] wages = g.getPopulationManager().getWagesPerType().clone();
+        r.setGrant(Field.ENGINEERING, 5.5 * Research.postCost(Field.ENGINEERING, wages));
+        play(g, 1);
+        LabourMarket labour = g.getLabourMarket();
+        double floor = labour.getMinimumWage(), schools = g.getEducation().getPayroll(), care = g.getHealthcare().getPayroll(), posts = e.getResearchPayroll();
+        check("fixture: a grant has bought posts that are filled and paid (" + r.posts(Field.ENGINEERING) + " posts, a research payroll of " + posts + ")", r.posts(Field.ENGINEERING) == 5 && posts > 0);
+
+        double move = PolicyPreview.wageMoveAt(g, floor * 1.1);
+        near("the city's own payroll at a floor ten per cent up is its teachers', its doctors' and nurses' and its research posts', every wage moved by the floor's ratio", PolicyPreview.cityPayrollAt(g, floor * 1.1),
+                (schools + care + posts) * move, 1e-9 * (schools + care + posts) * move);
+        near("...so it is that much above what it was when it left the posts out", PolicyPreview.cityPayrollAt(g, floor * 1.1) - (schools + care) * move, posts * move, 1e-9 * posts * move);
+        near("at the floor in force it is the payroll the city pays today, the posts' pay in it", PolicyPreview.cityPayrollAt(g, floor), schools + care + posts, 1e-9 * (schools + care + posts));
+        near("...and PolicyPreview.cityPayroll() is that figure, the one a screen sets the effect against", PolicyPreview.cityPayroll(g), schools + care + posts, 1e-9 * (schools + care + posts));
+
+        // The landlords' credit check reads the head shortage as plan() does.
+        ham.citybuildersim.sectors.RealEstate landlords = g.getSectors().realEstate();
+        long postsJobs = 0;
+        for (long n : r.jobs()) postsJobs += n;
+        long buildingsJobs = 0;
+        for (long n : g.getBuildingManager().getTotalJobs()) buildingsJobs += n;
+        check("fixture: the posts are " + postsJobs + " jobs on top of the buildings' " + buildingsJobs + ", and the population manager, which plan() reads, counts both",
+                postsJobs > 0 && g.getPopulationManager().getTotalJobs() == buildingsJobs + postsJobs);
+        double withPosts = landlords.latentHeadShortfall();
+        Map<String, Double> grants = r.grantsForSave();
+        Map<String, Integer> held = r.postsForSave();
+        Map<String, Double> piles = r.piles();
+        Map<String, Integer> finds = r.foundHere();
+        r.restore(grants, Map.of(), piles, finds);
+        double withoutPosts = landlords.latentHeadShortfall();
+        r.restore(grants, held, piles, finds);
+        near("the credit check's head shortage counts the research posts as plan() does: each post's job houses 2.25 heads (the 2.25 plan() and the check both write), " + postsJobs + " jobs",
+                withPosts - withoutPosts, postsJobs * 2.25, 1e-9 * postsJobs * 2.25);
+        near("...and with the posts held again it is what it was", landlords.latentHeadShortfall(), withPosts, 1e-9 * Math.max(1, Math.abs(withPosts)));
     }
 }

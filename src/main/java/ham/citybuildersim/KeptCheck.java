@@ -1,6 +1,7 @@
 package ham.citybuildersim;
 
 import ham.citybuildersim.ui.KeptBench;
+import ham.citybuildersim.ui.Money;
 import ham.citybuildersim.ui.Palette;
 import javafx.animation.Animation;
 import javafx.application.Platform;
@@ -311,6 +312,22 @@ import java.util.concurrent.TimeUnit;
  *      the old way (min width 34, the old style, the same words); the clock block and the tiles beside it do not move between pace and short; the kept header's
  *      signature equals a header built new, short and at pace; a second header draw, and paintSpeed() with the reading unchanged, write nothing on the label,
  *      and a flip from pace to short and back sets its words and its style once each.
+ * ...and Policy > Research's Overview and Funding pages (R3b, slice B), in a city founded the default way and, on ResearchViewCheck.fundedTown() (two
+ * Universities, an Institute of technology and a Medical school, grants that bought posts, a lab and a prize), a city founded the 1900 way:
+ *  99. the Overview, the hub's sixth card: in a default city one quiet card, the area's first page the Overview, a door to the area landing on it; in the
+ *      town four figures (the researchers at work with the idle and to each 1,000 workers, a month, found here with from abroad, in reach by field), a row a
+ *      field (its schools, researchers with the labs' and the idle, what is in reach, finds, a door to Funding) and a row a kind of school (the posts it carries
+ *      of each field, the room it has), each held to the model's reads; the page kept over last month's nodes is the page built new, a second draw in a
+ *      month writes nothing (92's rule), and the hub's Research card (a door to the Overview) is held to the reads the same way;
+ * 100. Funding: a card a field with its grant and prize dials, the room and where labs come, rows before and after and the sentence the reads choose - in a
+ *      default city (nothing to find; a grant staged still buys posts) and in the town; a staged grant, a grant past the room, a prize under a lab's
+ *      threshold, two dials at once, each equal to a page built new and shown from the model's reads (the posts of the room, the researchers, the bill, the
+ *      preview, THE BUDGET); Apply all through the tray sets the grants and prizes in the model and logs them as the promises are; a thumb held through a
+ *      month's landing keeps its place and its rows (a grant dial and a prize dial);
+ * 101. the schools' research posts on Services > Education (the University, the Institute of technology and the Medical school say the field, the posts filled
+ *      and the room; a school not built or hosting none says nothing), Government's Spending list with the Research line (the lines add up to the total, a
+ *      door to Funding, who is paid), its payroll and the wage floor's naming the research staff (the floor in force shows no change of the payroll), each
+ *      kept against a page built new with 92's rule.
  */
 public class KeptCheck {
 
@@ -320,6 +337,12 @@ public class KeptCheck {
         checks++;
         if (!ok) fails++;
         System.out.printf("%-72s %s%n", label, ok ? "OK" : "FAIL");
+    }
+
+    /** The same, with what was found printed under a failure (R3b, sections 99 to 101). */
+    static void check(String label, boolean ok, String found) {
+        check(label, ok);
+        if (!ok && found != null) System.out.println("       found: " + found);
     }
 
     /** The months the city is played to before the page is watched: a city with a history, households of every shape, a full ladder. */
@@ -6375,6 +6398,568 @@ public class KeptCheck {
     }
 
     /* =====================================================================
+       POLICY > RESEARCH'S OVERVIEW AND FUNDING (R3b, slice B), sections 99 to 101: the two pages, the hub's Research card, the schools' research posts on
+       Services, the research line on Government's Spending list and the wage floor's payroll, each kept over last month's nodes against a page built new
+       ===================================================================== */
+
+    /**
+     * The city of sections 99 to 101: ResearchViewCheck.fundedTown() - a 1900 city with two Universities, an Institute of technology and a Medical school,
+     * and grants in engineering, medicine and business that bought posts - with a prize on medicine, played two
+     * months on so that the posts and the month's bill are in its books.
+     */
+    static Game researchFundingTown() throws Exception {
+        Game town = ResearchViewCheck.fundedTown();
+        town.getResearch().setPrize(ResearchCatalog.Field.MEDICINE, 200 * Research.postCost(ResearchCatalog.Field.MEDICINE, town.getPopulationManager().getWagesPerType().clone()));
+        ResearchViewCheck.play(town, 2);
+        return town;
+    }
+
+    /** A city founded the default way with a University and a grant in engineering that bought posts (ResearchViewCheck's section 15 city), played three months. */
+    static Game researchDefaultTown() throws Exception {
+        ResearchViewCheck.ensureQuiet();
+        Game d = FittingCheck.village("kept-research-default", Founding.defaults(), false, false);
+        ResearchViewCheck.quietly(() -> {
+            d.buildStack(ResearchViewCheck.template(d, "University"), 1, true);
+            MaterialsCheck.handWorkers(d);
+        });
+        d.getResearch().setGrant(ResearchCatalog.Field.ENGINEERING,
+                8.5 * Research.postCost(ResearchCatalog.Field.ENGINEERING, d.getPopulationManager().getWagesPerType().clone()));
+        ResearchViewCheck.play(d, 3);
+        return d;
+    }
+
+
+    /** A Funding card made by hand: the read that ResearchScreen.sayWords() chooses a sentence from. */
+    static ResearchView.Card syntheticCard(boolean researching, int room, int inReach, double idle, double total, boolean grantMoved, int postsAfter, boolean prizeMoved,
+                                           double prize, double threshold, int labsNow, int labsAfter) {
+        ResearchCatalog.Field f = ResearchCatalog.Field.LAW;
+        ResearchView.FieldReach reach = new ResearchView.FieldReach(f, total, 0, idle, inReach, List.of(), 0, 0, List.of());
+        ResearchView.Funding fu = new ResearchView.Funding(f, 0, 0, 0, 0, room, 1, room, 0, 0, 0, 0, labsNow, 0, threshold);
+        return new ResearchView.Card(f, reach, fu, null, researching, 0, prize, grantMoved, prizeMoved, room, total, total, 0, postsAfter, 0, 0, labsNow, labsAfter, 0, 0, 0, 0,
+                0.3, 0.3, 0.3, 0.3);
+    }
+
+    /**
+     * The sentence under a Funding card for every case the model's reads can make, in the order the screen chooses among them: a city founded the default way;
+     * no school; nothing in reach; a prize that brings labs; one under a lab's threshold; the room full; researchers with nothing to work on; a grant that
+     * buys posts; and the card as it stands.
+     */
+    static void sayCases() throws Exception {
+        String[][] cases = {
+            {"a city founded the default way", KeptBench.researchSay(syntheticCard(false, 10, 2, 0, 10, false, 0, false, 0, Double.NaN, 0, 0)), "Every discovery is known from the start"},
+            {"no school hosting the field", KeptBench.researchSay(syntheticCard(true, 0, 2, 0, 10, true, 5, false, 0, Double.NaN, 0, 0)), "No school here hosts law research"},
+            {"nothing in reach (before a lab, before the room)", KeptBench.researchSay(syntheticCard(true, 10, 0, 0, 10, true, 10, true, 50, 9, 0, 2)), "Nothing in law is in reach"},
+            {"a prize that brings labs", KeptBench.researchSay(syntheticCard(true, 10, 2, 0, 10, false, 0, true, 50, 9, 0, 2)), "labs can pay their posts on the cheapest problem they can finish before the world: 2 labs of "
+                    + Research.LAB_POSTS + " posts"},
+            {"a prize under a lab's threshold", KeptBench.researchSay(syntheticCard(true, 10, 2, 0, 10, false, 0, true, 5, 9, 0, 0)), "is under what a lab needs here"},
+            {"a prize with no threshold to be under", KeptBench.researchSay(syntheticCard(true, 10, 2, 0, 10, false, 0, true, 5, Double.NaN, 0, 0)), "2 problems are in reach of 10 researchers"},
+            {"the room full", KeptBench.researchSay(syntheticCard(true, 10, 2, 0, 10, true, 10, false, 0, 9, 0, 0)), "The room is full"},
+            {"researchers with nothing to work on (before a grant's)", KeptBench.researchSay(syntheticCard(true, 10, 2, 4, 10, true, 7, false, 0, 9, 0, 0)), "4 of 10 researchers have no problem to work on"},
+            {"a grant that buys posts", KeptBench.researchSay(syntheticCard(true, 10, 2, 0, 10, true, 7, false, 0, 9, 0, 0)), "7 posts give a 30% chance of a find here before the world over ten years."},
+            {"one post", KeptBench.researchSay(syntheticCard(true, 10, 2, 0, 10, true, 1, false, 0, 9, 0, 0)), "1 post gives a 30% chance"},
+            {"the card as it stands", KeptBench.researchSay(syntheticCard(true, 10, 1, 0, 1, false, 0, false, 0, 9, 0, 0)), "1 problem is in reach of 1 researcher: 30% chance of a find here first in ten years."},
+        };
+        for (String[] c : cases) {
+            check("the sentence for " + c[0] + " says \"" + c[2] + "\"", c[1].contains(c[2]), c[1]);
+        }
+    }
+    /** A field as the screens read it: "Engineering". */
+    static String fieldWord(ResearchCatalog.Field f) {
+        String n = f.name();
+        return n.charAt(0) + n.substring(1).toLowerCase(java.util.Locale.ROOT);
+    }
+
+    /** "412 researchers", "1 researcher". */
+    static String researchersWord(double n) {
+        return Math.round(n) == 1 ? "1 researcher" : Money.people(n) + " researchers";
+    }
+
+    /** The page home, a hand on it, drawn and laid out: its signature. */
+    static List<String> shownWith(KeptBench bench, KeptBench.Page page, Hand hand) throws Exception {
+        return fx(() -> {
+            bench.home(page);
+            if (hand != null) hand.on(bench);
+            bench.drawKept(page);
+            bench.passes();
+            bench.settle();
+            return bench.signature();
+        });
+    }
+
+    /**
+     * A page, after a hand on it, kept over last month's nodes for `months` months: the signature equal to a page built new at each, and nine in ten of its
+     * nodes handed back on average (the share section 96 holds a page to).
+     */
+    static void monthsAgainstNew(Game town, KeptBench bench, KeptBench.Page page, String what, int months, Hand hand) throws Exception {
+        fx(() -> {
+            bench.home(page);
+            if (hand != null) hand.on(bench);
+            bench.drawKept(page);
+            bench.passes();
+            return null;
+        });
+        String first = null;
+        double handed = 0;
+        for (int m = 0; m < months; m++) {
+            Object[] r = fx(() -> {
+                month(town);
+                bench.drawKept(page);
+                int[] counts = bench.counts(page);
+                return new Object[]{againstNew(bench, page), counts[1] / (double) Math.max(1, counts[0] + counts[1])};
+            });
+            if (r[0] != null && first == null) first = "month " + town.getMonth() + ", " + r[0];
+            handed += (double) r[1];
+        }
+        if (first != null) System.out.println("  first difference: " + first);
+        check(what + ": the kept page's signature equals the new page's for " + months + " months", first == null);
+        System.out.printf("  %d months: %.1f%% of the page's nodes handed back a month on average%n", months, handed / months * 100);
+        check(what + ": each month hands back nine in ten of the nodes, or more", handed / months >= HANDED_BACK);
+    }
+
+    /**
+     * Sections 99 to 101: Policy > Research's Overview and Funding pages (R3b, slice B), in a city founded the default way (one quiet card; Funding says
+     * there is nothing to find) and in a city founded the 1900 way with schools, grants and a lab, each page drawn kept over last month's nodes against a
+     * page built new, month after month; what each shows held against the model's reads; the dials staged, held through a month and applied.
+     */
+    static void researchFunding(Game g, KeptBench defaultBench) throws Exception {
+        System.out.printf("%n=== Policy > Research's Overview and Funding (R3b): the default city at month %d, and a city founded the 1900 way with schools, grants and a lab ===%n", g.getMonth());
+        long t = System.nanoTime();
+        int c = checks;
+        researchDefaultWay(g, defaultBench);
+        t = tookWith("a city founded the default way (99)", t, c);
+        c = checks;
+        Game town = fx(KeptCheck::researchFundingTown);
+        KeptBench bench = fx(() -> new KeptBench(town));
+        fx(() -> {
+            bench.clock(false, null);
+            bench.speed(0);
+            return null;
+        });
+        researchOverview(town, bench);
+        t = tookWith("the Overview and the hub's Research card (99)", t, c);
+        c = checks;
+        researchFundingPage(town, bench);
+        t = tookWith("the Funding page (100)", t, c);
+        c = checks;
+        researchSchoolsAndBooks(town, bench);
+        tookWith("the schools' posts, the spending list and the wage floor (101)", t, c);
+    }
+
+    /** Section 99, the first part: in a city founded the default way. */
+    static void researchDefaultWay(Game g, KeptBench defaultBench) throws Exception {
+        System.out.println("\n--- 99: in a city founded the default way the Overview is one quiet card, Funding says there is nothing to find, and the hub has a Research card ---");
+        ResearchView.Overview ov = fx(() -> ResearchView.overview(g));
+        String firstPage = null;
+        for (String[] p : KeptBench.policyPages()) {
+            if ("Research".equals(p[0]) && firstPage == null) firstPage = p[1];
+        }
+        check("the Research area's first page is the Overview, where a door to the area lands (" + firstPage + ")", "Overview".equals(firstPage));
+        fx(() -> {
+            defaultBench.policyPick("Research", null);
+            return null;
+        });
+        check("...and a door to the area (Policy's open(area, null)) lands on it: " + fx(defaultBench::policyWhere), "Research/Overview".equals(fx(defaultBench::policyWhere)));
+
+        KeptBench.Page overview = fx(() -> defaultBench.policy("Policy, Research's Overview in a default city", "Research", "Overview"));
+        List<String> quiet = shownWith(defaultBench, overview, null);
+        check("the Overview is the one card that says there is nothing to research (" + ResearchView.knownAtFounding(g) + " known at the founding), without the rows",
+                has(quiet, label("NOTHING TO RESEARCH")) && has(quiet, "discoveries in the catalogue, so no problem is in reach") && !has(quiet, label("BY FIELD"))
+                        && !has(quiet, label("BY SCHOOL")));
+
+        KeptBench.Page funding = fx(() -> defaultBench.policy("Policy, Research's Funding in a default city", "Research", "Funding"));
+        List<String> cards = shownWith(defaultBench, funding, null);
+        boolean fields = true;
+        for (ResearchCatalog.Field f : ResearchCatalog.Field.values()) fields &= has(cards, label(fieldWord(f)));
+        check("Funding has a card for each of the four fields", fields);
+        check("...each ending in the sentence that every discovery is known from the start, so a grant buys posts whose researchers have nothing to work on",
+                cards.stream().filter(l -> l.contains("Every discovery is known from the start in a city founded this way")).count() == 4);
+        int dials = fx(() -> defaultBench.policySliders().size());
+        check("...a grant and a prize dial on each (" + dials + " sliders), and no tray with nothing staged", dials == 8 && fx(() -> defaultBench.policyTray()) == null);
+        check("...and no lab could come: each prize says nothing is to be found", cards.stream().filter(l -> l.contains("nothing to find: a prize is never paid")).count() == 4);
+
+        // A city founded the default way with a University and a grant that bought posts: the Overview says what the posts are doing, and Funding's cards have
+        // room for a grant to be staged against.
+        Game d = fx(KeptCheck::researchDefaultTown);
+        KeptBench dBench = fx(() -> new KeptBench(d));
+        fx(() -> {
+            dBench.clock(false, null);
+            dBench.speed(0);
+            return null;
+        });
+        ResearchCatalog.Field eng = ResearchCatalog.Field.ENGINEERING;
+        ResearchView.Overview dov = fx(() -> ResearchView.overview(d));
+        check("fixture: founded the default way, with a University, a grant that bought posts, researchers holding them and every one of them idle (" + Money.people(dov.researchers()) + ")",
+                !d.foundedUnfitted() && dov.researchers() > 0 && dov.idle() == dov.researchers() && dov.inReach() == 0 && dov.researchBill() > 0);
+        KeptBench.Page dOverview = fx(() -> dBench.policy("Policy, Research's Overview in a default city with a grant", "Research", "Overview"));
+        List<String> posts = shownWith(dBench, dOverview, null);
+        check("fixture: ...and the posts the grant bought (" + dov.posts() + ")", dov.posts() > 0);
+        check("the Overview, with a grant set, says what its posts are doing: " + Money.people(dov.researchers()) + " researchers, " + dov.posts() + " posts, " + Money.people(dov.idle()) + " of them idle, " + Money.money(dov.researchBill()) + " a month",
+                has(posts, label("NOTHING TO RESEARCH")) && has(posts, label(Money.people(dov.researchers()) + " researchers at work, the schools' own staff and the " + dov.posts()
+                        + " posts a grant bought, " + Money.people(dov.idle()) + " of them idle; the posts cost " + Money.money(dov.researchBill()) + " a month.")) && !has(posts, label("BY FIELD")));
+        check("...and with no researcher (the played city) there is no such line", !has(quiet, "a grant bought") && !has(quiet, "the schools' own staff"));
+        nothingSet(dBench, dOverview, "Policy, Research, Overview in a default city with a grant set");
+
+        // A grant staged: the tray, the chip and the card's rows follow it, and the posts it buys are the model's.
+        KeptBench.Page dFunding = fx(() -> dBench.policy("Policy, Research's Funding in a default city with a school", "Research", "Funding"));
+        ResearchView.Funding dfu = fx(() -> ResearchView.funding(d, eng));
+        double staged = (dfu.grantPosts() + 3) * dfu.postCost();
+        Object[] r = fx(() -> {
+            dBench.home(dFunding);
+            dBench.policyStage(KeptBench.researchGrantKey(eng), staged);
+            dBench.drawKept(dFunding);
+            dBench.passes();
+            dBench.settle();
+            Object[] out = {dBench.signature(), dBench.policyTray() != null, dBench.policyTrayWords(), dBench.policyArrows(), againstNew(dBench, dFunding)};
+            dBench.policyDrop();
+            return out;
+        });
+        @SuppressWarnings("unchecked") List<String> sig = (List<String>) r[0];
+        @SuppressWarnings("unchecked") List<String> chips = (List<String>) r[2];
+        ResearchView.AtGrant at = ResearchView.atGrant(d, eng, staged);
+        check("a grant staged on Engineering in a default city shows the tray with its chip (" + chips + ") and rows that move (" + r[3] + " arrows)", (boolean) r[1] && chips.size() == 1
+                && chips.get(0).startsWith("Engineering grant ") && chips.get(0).contains(" → ") && (int) r[3] > 0);
+        check("...the posts it buys, as the model counts them (" + at.grantPosts() + " of " + dfu.roomPosts() + "; " + dfu.grantPosts() + " now), the page equal to a page built new",
+                at.grantPosts() > dfu.grantPosts() && has(sig, label(at.grantPosts() + " of " + dfu.roomPosts())) && r[4] == null);
+        if (r[4] != null) System.out.println("  " + r[4]);
+        check("...and its sentence is still that there is nothing to find", sig.stream().filter(l -> l.contains("Every discovery is known from the start in a city founded this way")).count() == 4);
+        nothingSet(dBench, dFunding, "Policy, Research, Funding in a default city with a school, a grant staged", b -> { b.policyStage(KeptBench.researchGrantKey(eng), staged); return null; });
+
+        // R3b's gate review: the same town with its grant taken away. Its University's faculty still research, and the card must not say a grant bought posts.
+        fx(() -> {
+            d.getResearch().setGrant(eng, 0);
+            ResearchViewCheck.play(d, 1);
+            return null;
+        });
+        ResearchView.Overview fov = fx(() -> ResearchView.overview(d));
+        check("fixture: the grant taken away, a month on: no post is held, and the faculty are still at research (" + Money.people(fov.researchers()) + ")",
+                fov.posts() == 0 && fov.researchers() > 0 && d.getResearch().grant(eng) == 0);
+        KeptBench.Page fOverview = fx(() -> dBench.policy("Policy, Research's Overview in a default city with no grant", "Research", "Overview"));
+        List<String> faculty = shownWith(dBench, fOverview, null);
+        check("the Overview then says the researchers are the schools' own staff, and claims no post a grant bought and no cost",
+                has(faculty, label(Money.people(fov.researchers()) + " researchers at work, the schools' own staff in the time they keep for research, " + Money.people(fov.idle())
+                        + " of them idle: no grant pays for it, so it costs nothing.")) && !has(faculty, "a grant bought"));
+
+        KeptBench.Page hub = fx(() -> defaultBench.policy("the Policy hub in a default city", null, null));
+        List<String> hubSig = shownWith(defaultBench, hub, null);
+        check("the hub has a Research card: its title, the researchers at work (" + researchersWord(ov.working()) + "), the month's bill and what was found",
+                has(hubSig, label("RESEARCH")) && has(hubSig, label(Money.people(ov.working()) + " at work")) && has(hubSig, label("nothing spent on research"))
+                        && has(hubSig, label(ov.foundHere() + " found here · " + ov.fromAbroad() + " from abroad")));
+    }
+
+    /** Section 99, the second part: the Overview and the hub's Research card in the 1900 town. */
+    static void researchOverview(Game town, KeptBench bench) throws Exception {
+        System.out.println("\n--- 99: the Overview in a city founded the 1900 way, kept: four figures, a row a field, a row a kind of school ---");
+        KeptBench.Page page = fx(() -> bench.policy("Policy, Research's Overview", "Research", "Overview"));
+        pageKept(town, bench, page, 99);
+        nothingSet(bench, page, "Policy, Research, Overview in the town (its figures, a row a field, a row a kind of school)");
+        arrive(bench, page);
+        pageShows(town, bench, page, 99);
+
+        ResearchView.Overview ov = fx(() -> ResearchView.overview(town));
+        List<ResearchView.SchoolRow> schools = fx(() -> ResearchView.schoolRows(town));
+        List<String> sig = shownWith(bench, page, null);
+        check("fixture: the town has researchers at work, a bill, problems in reach in some field and none in others, and three kinds of school",
+                ov.working() > 0 && ov.researchBill() > 0 && ov.inReach() > 0 && ov.fields().stream().anyMatch(f -> f.inReach() == 0) && schools.size() == 3,
+                ov.working() + " at work, bill " + ov.researchBill() + ", " + ov.inReach() + " in reach, " + schools.size() + " kinds");
+        // The four figures.
+        List<String> idle = new ArrayList<>();
+        if (Math.round(ov.idle()) > 0) idle.add(Money.people(ov.idle()) + " idle");
+        if (!Double.isNaN(ov.perThousandWorkers())) idle.add(String.format(java.util.Locale.ROOT, "%.1f per 1,000 workers", ov.perThousandWorkers()));
+        check("RESEARCHERS AT WORK is the people at work on a problem (" + Money.people(ov.working()) + "), with the idle and the researchers to each 1,000 workers (\"" + String.join(" · ", idle) + "\")",
+                has(sig, label("RESEARCHERS AT WORK")) && has(sig, label(Money.people(ov.working()))) && has(sig, label(String.join(" · ", idle))));
+        check("A MONTH is the research bill (" + Money.money(ov.researchBill()) + "), the posts and the labs, a door to Funding; the prizes paid are none",
+                has(sig, label("A MONTH  ›")) && has(sig, label(Money.money(ov.researchBill()))) && has(sig, label("the posts and the labs")) && ov.prizesPaid() == 0);
+        check("FOUND HERE is the finds (" + ov.foundHere() + ") with those from abroad (" + ov.fromAbroad() + "), a door to Found",
+                has(sig, label("FOUND HERE  ›")) && has(sig, label(String.valueOf(ov.foundHere()))) && has(sig, label(ov.fromAbroad() + " from abroad since the founding")));
+        check("IN REACH is the problems open (" + ov.inReach() + ") and the fields they are in (\"" + ResearchView.reachByFieldWords(ov.fields()) + "\")",
+                has(sig, label("IN REACH")) && has(sig, label(ov.inReach() + (ov.inReach() == 1 ? " problem" : " problems"))) && has(sig, label(ResearchView.reachByFieldWords(ov.fields()))));
+        // A row a field.
+        boolean rows = true;
+        String off = "";
+        for (ResearchView.FieldReach f : ov.fields()) {
+            List<String> notes = new ArrayList<>();
+            if (f.labResearchers() > 0) notes.add(Money.people(f.labResearchers()) + " in labs");
+            if (Math.round(f.idle()) > 0) notes.add(Money.people(f.idle()) + " idle");
+            else if (f.total() > 0) notes.add("all at work");
+            boolean ok = has(sig, label(fieldWord(f.field()))) && has(sig, label(f.schoolsWords())) && has(sig, label(researchersWord(f.total())))
+                    && has(sig, label(notes.isEmpty() ? "none yet" : String.join(" · ", notes))) && has(sig, label(f.reachWords()))
+                    && has(sig, label(f.foundHere() + " found here")) && has(sig, label(f.fromAbroad() + " from abroad"))
+                    && has(sig, "tip{" + fieldWord(f.field()) + ": click for its funding.");
+            if (!ok) off += f.field() + "; ";
+            rows &= ok;
+        }
+        check("a row for each field: its name, its schools, its researchers with the labs' and the idle among them, what is in reach, what it found here and had from abroad, and a door to its funding",
+                rows, off);
+        // A row a kind of school.
+        boolean schoolRows = true;
+        for (ResearchView.SchoolRow s : schools) {
+            String name = ResearchView.schoolsWords(List.of(new ResearchView.SchoolCount(s.name(), s.count())));
+            String posts = KeptBench.researchPostsWords(s.posts());
+            schoolRows &= has(sig, label(name)) && posts != null && has(sig, label(posts));
+        }
+        check("a row for each kind of school that stands: its name and count, and the posts it carries of each field it hosts (" + schools.size() + " rows)", schoolRows);
+        boolean room = true;
+        for (ResearchView.SchoolRow s : schools) {
+            for (ResearchView.SchoolPosts p : s.posts()) {
+                room &= KeptBench.researchPostsWords(s.posts()).contains(fieldWord(p.field()) + ": " + Money.people(p.filled()) + " filled, room for " + Money.people(p.room()));
+            }
+        }
+        check("...the posts there filled and the room there, as the model's shares of each field", room);
+
+        // What reshapes the page: the area's other pages and back, and a month on either side.
+        List<Choice> choices = new ArrayList<>();
+        choices.add(choice("the hub", policyOn(null, null)));
+        choices.add(policyPage("Research", "Overview"));
+        choices.add(policyPage("Research", "Funding"));
+        choices.add(policyPage("Research", "Found"));
+        choices.add(policyPage("Research", "Overview"));
+        pageReshaped(town, bench, page, 99, choices, KP6_HANDED_BACK);
+
+        // The hub's sixth card.
+        KeptBench.Page hub = fx(() -> bench.policy("the Policy hub in the research town", null, null));
+        List<String> hubSig = shownWith(bench, hub, null);
+        ResearchView.Overview now = fx(() -> ResearchView.overview(town));
+        check("the hub's Research card: its title, " + Money.people(now.working()) + " at work, the month's bill and what was found",
+                has(hubSig, label("RESEARCH")) && has(hubSig, label(Money.people(now.working()) + " at work"))
+                        && has(hubSig, label(Money.money(now.researchBill()) + " a month on the posts and the labs"))
+                        && has(hubSig, label(now.foundHere() + " found here · " + now.fromAbroad() + " from abroad")));
+        boolean clicked = fx(() -> bench.policyDoorClick("RESEARCH"));
+        check("...a door: a press on the card opens the Research area on its Overview (" + fx(bench::policyWhere) + ")", clicked && "Research/Overview".equals(fx(bench::policyWhere)));
+        nothingSet(bench, hub, "the Policy hub in the research town (its Research card)");
+        monthsAgainstNew(town, bench, hub, "the Policy hub in the research town", R5_MONTHS, null);
+    }
+
+    /** Section 100: the Funding page in the 1900 town. */
+    static void researchFundingPage(Game town, KeptBench bench) throws Exception {
+        System.out.println("\n--- 100: the Funding page, kept: a card a field, a grant and a prize staged through Policy's set and tray, their rows before and after ---");
+        KeptBench.Page page = fx(() -> bench.policy("Policy, Research's Funding", "Research", "Funding"));
+        pageKept(town, bench, page, 100);
+        nothingSet(bench, page, "Policy, Research, Funding in the town (its four cards, their dials and rows)");
+        arrive(bench, page);
+        pageShows(town, bench, page, 100);
+
+        ResearchCatalog.Field eng = ResearchCatalog.Field.ENGINEERING, med = ResearchCatalog.Field.MEDICINE;
+        ResearchView.Overview ov = fx(() -> ResearchView.overview(town));
+        ResearchPreview.Result asIs = fx(() -> ResearchView.preview(town, ResearchView.Staged.none()));
+        List<String> sig = shownWith(bench, page, null);
+        int sliders = fx(() -> bench.policySliders().size());
+        check("a grant and a prize dial on each of the four cards (" + sliders + " sliders), and no tray with nothing staged", sliders == 8 && fx(() -> bench.policyTray()) == null);
+        boolean cards = true;
+        String off = "";
+        for (ResearchView.FieldReach row : ov.fields()) {
+            ResearchCatalog.Field f = row.field();
+            ResearchView.Funding fu = ResearchView.funding(town, f);
+            ResearchView.Card card = ResearchView.card(town, f, ResearchView.Staged.none(), row, asIs, asIs);
+            String room = fu.roomPosts() == 0 ? "no school hosts this field yet: a grant buys nothing"
+                    : "room for " + fu.roomPosts() + (fu.roomPosts() == 1 ? " post: " : " posts: ") + Money.money(fu.grantToFillRoom())
+                    + (fu.postCost() > 0 ? " · a post costs " + Money.money(fu.postCost()) : "");
+            String prize = Double.isNaN(fu.labThreshold()) ? "no lab could finish a problem before the world · paid only on a find"
+                    : "labs come at " + Money.money(fu.labThreshold()) + " or more · paid only on a find";
+            boolean ok = has(sig, label(fieldWord(f))) && has(sig, label(row.schoolsWords())) && has(sig, label(room)) && has(sig, label(prize))
+                    && has(sig, label(Money.people(card.researchersNow()))) && has(sig, label(Math.round(card.grantPostsNow()) + " of " + card.roomPosts()))
+                    && has(sig, label(Money.money(card.billNow()))) && has(sig, label(card.findsNowWords())) && has(sig, label(KeptBench.researchSay(card)));
+            if (!ok) off += f + "; ";
+            cards &= ok;
+        }
+        check("each card shows its field and schools, the room and what a post costs, where labs come, and the rows at the dials in force: the researchers, the posts of the room, the bill and what it would find first - the model's reads",
+                cards, off);
+        check("...and the sentence the model's reads choose: nothing in reach for medicine, business and law (their problems wait on ideas nobody has), the problems in reach for engineering",
+                has(sig, "Nothing in medicine is in reach") && has(sig, "Nothing in business is in reach") && has(sig, "Nothing in law is in reach")
+                        && ov.fields().get(0).inReach() > 0);
+        ResearchView.Funding engFu = ResearchView.funding(town, eng);
+        check("medicine's prize in force is in its \"A find pays out\" row (" + Money.money(town.getResearch().prize(med)) + ")",
+                has(sig, label("A find pays out")) && has(sig, label(Money.money(town.getResearch().prize(med)))));
+        System.out.println("  engineering says: " + KeptBench.researchSay(ResearchView.card(town, eng, ResearchView.Staged.none(), ov.fields().get(0), asIs, asIs)));
+
+        // The dials staged: the rows before and after, the tray and its budget, the sentence for each case.
+        double cost = engFu.postCost();
+        int posts = engFu.grantPosts();
+        double more = (posts + 3) * cost, past = engFu.grantToFillRoom() + 3 * cost, lowPrize = engFu.labThreshold() / 2;
+        check("fixture: engineering has a threshold for a lab (" + engFu.labThreshold() + ") and room for more posts than it has (" + posts + " of " + engFu.roomPosts() + ")",
+                engFu.labThreshold() > 0 && engFu.roomPosts() > posts + 3);
+        Hand stageMore = b -> { b.policyStage(KeptBench.researchGrantKey(eng), more); return null; };
+        Hand stagePast = b -> { b.policyStage(KeptBench.researchGrantKey(eng), past); return null; };
+        Hand stageLow = b -> { b.policyStage(KeptBench.researchPrizeKey(eng), lowPrize); return null; };
+        Hand stageBoth = b -> {
+            b.policyStage(KeptBench.researchGrantKey(eng), more);
+            b.policyStage(KeptBench.researchPrizeKey(med), 50 * cost * 12);
+            return null;
+        };
+        Hand discard = b -> { b.policyDrop(); return null; };
+
+        ResearchView.Staged s1 = ResearchView.Staged.none().withGrant(eng, more);
+        ResearchView.Card c1 = ResearchView.card(town, eng, s1, ov.fields().get(0), asIs, ResearchView.preview(town, s1));
+        Object[] one = fx(() -> {
+            bench.home(page);
+            stageMore.on(bench);
+            bench.drawKept(page);
+            bench.passes();
+            bench.settle();
+            return new Object[]{bench.signature(), bench.policyTray() != null, bench.policyTrayWords(), bench.policyArrows(), againstNew(bench, page)};
+        });
+        @SuppressWarnings("unchecked") List<String> sigOne = (List<String>) one[0];
+        @SuppressWarnings("unchecked") List<String> chips = (List<String>) one[2];
+        check("a grant staged three posts up on engineering: the tray with its chip (\"" + chips + "\"), and THE BUDGET beside it", (boolean) one[1] && chips.size() == 1
+                && chips.get(0).equals("Engineering grant " + Money.money(engFu.grant()) + " → " + Money.money(more)) && has(sigOne, "THE BUDGET, a month"));
+        ResearchView.Budget budget = ResearchView.budget(town, s1);
+        check("...THE BUDGET is the balance with the posts' bill (" + Money.signedTight(budget.before(), false) + " → " + Money.signedTight(budget.after(), false) + ")",
+                has(sigOne, label(Money.signedTight(budget.before(), false))) && has(sigOne, label(Money.signedTight(budget.after(), false))) && budget.after() < budget.before());
+        check("...the rows move (" + one[3] + " arrows): the posts of the room " + c1.grantPostsNow() + " → " + c1.grantPostsAfter() + ", the researchers, the bill and the preview, as the model reads them at the dial",
+                (int) one[3] > 0 && has(sigOne, label(c1.grantPostsAfter() + " of " + c1.roomPosts())) && has(sigOne, label(Money.people(c1.researchersAfter())))
+                        && has(sigOne, label(Money.money(c1.billAfter()))) && has(sigOne, label(c1.findsAfterWords())) && c1.grantPostsAfter() == posts + 3);
+        check("...and the sentence the reads choose for the case: " + KeptBench.researchSay(c1), has(sigOne, label(KeptBench.researchSay(c1))));
+        check("...the page equal to a page built new", one[4] == null);
+        if (one[4] != null) System.out.println("  " + one[4]);
+
+        List<String> pastSig = shownWith(bench, page, stagePast);
+        ResearchView.Staged s2 = ResearchView.Staged.none().withGrant(eng, past);
+        ResearchView.Card c2 = ResearchView.card(town, eng, s2, ov.fields().get(0), asIs, ResearchView.preview(town, s2));
+        check("a grant past the room buys the room and no more (" + c2.grantPostsAfter() + " of " + c2.roomPosts() + "): the sentence says the room is full, and a line says some of the grant is not spent",
+                c2.roomFull() && has(pastSig, label(KeptBench.researchSay(c2))) && has(pastSig, "The room is full") && has(pastSig, "of the grant is not spent") && c2.unspends());
+        List<String> lowSig = shownWith(bench, page, stageLow);
+        ResearchView.Staged s3 = ResearchView.Staged.none().withPrize(eng, lowPrize);
+        ResearchView.Card c3 = ResearchView.card(town, eng, s3, ov.fields().get(0), asIs, ResearchView.preview(town, s3));
+        check("a prize under what a lab needs: its sentence says so, and the row \"A find pays out\" shows the prize (" + Money.money(lowPrize) + ")",
+                c3.prizeMoved() && has(lowSig, label(KeptBench.researchSay(c3))) && has(lowSig, "is under what a lab needs here") && has(lowSig, label(Money.money(lowPrize))));
+
+        // What reshapes the page: each stage, the discard, two dials at once, a month after each.
+        pageReshaped(town, bench, page, 100, List.of(
+                choice("a grant staged up on engineering", stageMore),
+                choice("...and discarded", discard),
+                choice("a grant past the room", stagePast),
+                choice("...and a prize under a lab's threshold", stageLow),
+                choice("...and discarded", discard),
+                choice("a grant on engineering and a prize on medicine at once", stageBoth),
+                choice("...and discarded", discard),
+                policyPage("Taxes", "Everything"),
+                policyPage("Research", "Funding")), KP6_HANDED_BACK);
+
+        // Applied through the tray's own path: the model has the grants, the decision log the grant, and the staged set is empty.
+        double was = town.getResearch().grant(eng), prizeWas = town.getResearch().prize(med);
+        int logged = town.getDecisions().entries().size();
+        List<String> after = fx(() -> {
+            bench.home(page);
+            stageBoth.on(bench);
+            bench.drawKept(page);
+            bench.passes();
+            bench.policyApplyStaged();
+            bench.drawKept(page);
+            bench.passes();
+            return List.of(String.valueOf(bench.policyTray() == null), String.valueOf(bench.policyStaged().isEmpty()));
+        });
+        check("Apply all through the tray's own path sets the engineering grant (" + town.getResearch().grant(eng) + ") and the medicine prize (" + town.getResearch().prize(med) + ") in the model, empties the set and takes the tray down",
+                town.getResearch().grant(eng) == more && town.getResearch().prize(med) == 50 * cost * 12 && after.equals(List.of("true", "true")));
+        List<DecisionLog.Entry> entries = town.getDecisions().entries();
+        String lastTwo = entries.size() >= 2 ? entries.get(entries.size() - 2).label() + " | " + entries.get(entries.size() - 1).label() : "";
+        check("...each change logged as the promises are (" + lastTwo + ")", entries.size() == logged + 2 && lastTwo.contains("Engineering research grant to") && lastTwo.contains("Medicine research prize to")
+                && entries.get(entries.size() - 1).kind().equals(DecisionLog.PROMISE));
+        town.getResearch().setGrant(eng, was);
+        town.getResearch().setPrize(med, prizeWas);
+
+        // The player's hand: a grant dial and a prize dial pressed, dragged two steps and a month lands.
+        holdDial(town, bench, "Research Funding's engineering grant", "Research", "Funding", all -> all.size() > 0 ? all.get(0) : null,
+                KeptBench.researchGrantKey(eng), true, true, null, null);
+        holdDial(town, bench, "Research Funding's medicine prize", "Research", "Funding", all -> all.size() > 3 ? all.get(3) : null,
+                KeptBench.researchPrizeKey(med), true, true, null, null);
+
+        // The sentence for each case the reads choose among, on cards made by hand so that every case is caused (the town has only some of them).
+        sayCases();
+
+        // A lab standing, built last and read before another month can retire it (a lab with no prize and nothing to work on goes idle): its row on the card.
+        // (The treasury is in the red by now: the city is given the money to build it.)
+        fx(() -> {
+            town.setCashForTest(Math.max(0, town.getCash()) + 1e7);
+            ResearchViewCheck.quietly(() -> {
+                town.buildStack(ResearchViewCheck.template(town, "Engineering Research Lab"), 1, true);
+                MaterialsCheck.handWorkers(town);
+            });
+            ResearchViewCheck.play(town, 1);
+            return null;
+        });
+        ResearchView.Overview withLab = fx(() -> ResearchView.overview(town));
+        ResearchView.Funding labFu = fx(() -> ResearchView.funding(town, eng));
+        ResearchPreview.Result labAsIs = fx(() -> ResearchView.preview(town, ResearchView.Staged.none()));
+        ResearchView.Card labCard = fx(() -> ResearchView.card(town, eng, ResearchView.Staged.none(), withLab.fields().get(0), labAsIs, labAsIs));
+        List<String> labSig = shownWith(bench, page, null);
+        check("an Engineering Research Lab standing (" + labFu.labsStanding() + ") has its row on the engineering card: " + Money.people(labCard.labResearchersNow()) + " researchers in labs, 1 lab",
+                labFu.labsStanding() == 1 && labCard.labsNow() == 1 && has(labSig, label("in Research Labs")) && has(labSig, label(Money.people(labCard.labResearchersNow()) + " · 1 lab")));
+        check("...and the card's researchers are the field's and the lab's (" + Money.people(labCard.researchersNow()) + ")", has(labSig, label(Money.people(labCard.researchersNow()))));
+        nothingSet(bench, page, "Policy, Research, Funding in the town with a lab standing");
+    }
+
+    /** Section 101: the schools' research posts on Services, the research line on Government's Spending list, and the wage floor's payroll. */
+    static void researchSchoolsAndBooks(Game town, KeptBench bench) throws Exception {
+        System.out.println("\n--- 101: Services > Education's research posts, Government's Research line and payroll, and the wage floor: the research staff counted ---");
+        // The schools.
+        KeptBench.Page edu = fx(bench::services);
+        Hand open = b -> { b.servicesOpen("Education", "Overview"); return null; };
+        List<ResearchView.SchoolRow> schools = fx(() -> ResearchView.schoolRows(town));
+        List<String> eduSig = shownWith(bench, edu, open);
+        boolean lines = true;
+        for (ResearchView.SchoolRow s : schools) lines &= has(eduSig, label("Research posts · " + KeptBench.researchPostsWords(s.posts())));
+        long shown = eduSig.stream().filter(l -> l.contains("\"Research posts · ")).count();
+        check("each kind of school that hosts research and stands has its research posts line - the University, the Institute of technology and the Medical school - saying the field, the posts filled and the room (" + shown + " lines)",
+                lines && shown == schools.size() && schools.size() == 3);
+        check("...and no other card has one (the Business and Law schools, not built; the ladder's stages and the college host none)", shown == 3);
+        nothingSet(bench, edu, "Services, Education in the town (the schools' research posts)", open);
+        monthsAgainstNew(town, bench, edu, "Services, Education in the town", R5_MONTHS, open);
+
+        // Government: the Research line.
+        NationalAccounts na = town.getEconomyManager().getNationalAccounts();
+        EconomyManager em = town.getEconomyManager();
+        KeptBench.Page spending = fx(() -> bench.government("the Government Spending page in the town", "Spending"));
+        List<String> names = KeptBench.governmentSpendingNames();
+        List<Double> amounts = fx(bench::governmentSpendingAmounts);
+        double sum = 0;
+        for (double a : amounts) sum += a;
+        check("fixture: the research bill is above nothing and is in the accounts' total expenses (" + na.getResearchSpending() + " of " + na.getTotalExpenses() + ")",
+                na.getResearchSpending() > 0 && na.getResearchSpending() == em.getResearchBill());
+        check("the Spending list has a Research line (the last of " + names.size() + "), and the lines still add up to the total paid out (" + sum + " of " + na.getTotalExpenses() + ")",
+                names.get(names.size() - 1).equals("Research") && amounts.size() == names.size() && amounts.get(amounts.size() - 1) == na.getResearchSpending()
+                        && Math.abs(sum - na.getTotalExpenses()) <= 1e-6 * Math.max(1, Math.abs(sum)));
+        List<String> spendSig = shownWith(bench, spending, null);
+        check("...the page names it with the accounts' figure (" + Money.money(na.getResearchSpending()) + "), and its door is Policy > Research > Funding",
+                has(spendSig, label("Research")) && has(spendSig, label(Money.money(na.getResearchSpending()))) && java.util.Arrays.equals(KeptBench.governmentPlace("Research"), new String[] {"Research", "Funding"}));
+        boolean known = false;
+        for (String[] p : KeptBench.policyPages()) known |= p[0].equals("Research") && p[1].equals("Funding");
+        check("...a page that Policy has", known);
+        // ...the labs' prizes are struck in Subsidies (Game.strikeGovernmentBooks(), R4 ★5), so they are in the total and no row stands under it for them.
+        check("the prizes paid to the labs are in the Subsidies line, as the books strike them (" + na.getSubsidies() + " = " + town.getTotalSubsidyPaid() + " + "
+                        + town.getPrizePaid() + "), and no row under the total names them",
+                Math.abs(na.getSubsidies() - (town.getTotalSubsidyPaid() + town.getPrizePaid())) <= 1e-6 * Math.max(1, Math.abs(na.getSubsidies()))
+                        && !has(spendSig, label("Research prizes to the labs")));
+        Hand line = b -> { b.governmentLine("Spending", "Research", true); return null; };
+        List<String> openSig = shownWith(bench, spending, line);
+        check("the Research line opened shows who is paid: the posts' pay (" + Money.money(em.getResearchPayroll()) + ") and the laboratories' other costs (" + Money.money(em.getResearchCosts()) + ")",
+                has(openSig, label("The posts' pay")) && has(openSig, label("The laboratories' other costs")) && em.getResearchCosts() >= 0 && em.getResearchPayroll() > 0);
+        nothingSet(bench, spending, "Government, Spending in the town with the Research line opened", line);
+        nothingSet(bench, spending, "Government, Spending in the town");
+        monthsAgainstNew(town, bench, spending, "Government, Spending with the Research line open", R5_MONTHS, line);
+
+        // Government's payroll, and the wage floor's.
+        double payroll = PolicyPreview.cityPayroll(town);
+        check("the city's own payroll is the care, the schools and the research posts (" + Money.money(payroll) + ")",
+                Math.abs(payroll - (town.getEducation().getPayroll() + town.getHealthcare().getPayroll() + em.getResearchPayroll())) <= 1e-9 && em.getResearchPayroll() > 0);
+        KeptBench.Page overview = fx(bench::government);
+        List<String> govSig = shownWith(bench, overview, null);
+        check("Government's AGAINST THE ECONOMY names the research staff with the payroll (" + Money.money(payroll) + " a month)",
+                has(govSig, "tip{Care, schools and research staff\n" + Money.money(payroll) + " a month") && !has(govSig, "Care and schools staff"));
+
+        KeptBench.Page floor = fx(() -> bench.policy("Policy, Wages' floor in the town", "Wages", "The floor"));
+        List<String> floorSig = shownWith(bench, floor, null);
+        double old = town.getEducation().getPayroll() + town.getHealthcare().getPayroll();
+        double floorNow = town.getLabourMarket().getMinimumWage();
+        check("the floor in force shows no change of the city's own payroll: the payroll at the floor in force is the payroll (" + Money.money(PolicyPreview.cityPayrollAt(town, floorNow)) + "), where the care and schools alone ("
+                        + Money.money(old) + ") would have shown the research posts as a change", Math.abs(PolicyPreview.cityPayrollAt(town, floorNow) - payroll) <= 1e-9 && Math.abs(old - payroll) > 1e-9);
+        check("...the card of what the city itself pays lists the research posts (" + Money.money(em.getResearchPayroll()) + ") and totals the payroll (" + Money.money(payroll) + ")",
+                has(floorSig, label("Researchers in the research posts")) && has(floorSig, label(Money.money(em.getResearchPayroll()))) && has(floorSig, label(Money.money(payroll))));
+        KeptBench.Page hub = fx(() -> bench.policy("the Policy hub in the research town", null, null));
+        List<String> hubSig = shownWith(bench, hub, null);
+        check("the hub's Wages card names the research staff with the payroll", has(hubSig, label("the city's own payroll " + Money.money(payroll) + " · teachers, doctors, nurses and researchers")));
+        nothingSet(bench, floor, "Policy, Wages' floor in the town (the research posts in its payroll)");
+    }
+
+    /* =====================================================================
        THE RESEARCH AREA (R5, slice B1), section 95: the Found page kept, and what City History's flags and the stacking of the timeline are made of
        ===================================================================== */
 
@@ -8130,6 +8715,7 @@ public class KeptCheck {
         screensKP6(g, bench);
         screensKP7(g, bench);
         researchFound(g, bench);
+        researchFunding(g, bench);
         greyedWhileHeld(g, bench);
         doorsStyledOnce(g, bench);
         kp2bSets(g, bench);

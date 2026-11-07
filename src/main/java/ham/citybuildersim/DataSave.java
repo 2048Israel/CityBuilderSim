@@ -1227,18 +1227,29 @@ public class DataSave implements Cloneable {
         public java.util.Map<String, Double> cityShares = new java.util.LinkedHashMap<>();
         public java.util.Map<String, Integer> labIdleMonths = new java.util.LinkedHashMap<>();
         public double prizePaid;
+        // R3b: the month's researchers, idle researchers, open problems, lab researchers and idle lab researchers by field name (only the fields above
+        // nothing), which Research.month() struck and a load would otherwise read as 0 until the next. A save from before R3b has none, and reads empty.
+        public java.util.Map<String, Double> researchers = new java.util.LinkedHashMap<>();
+        public java.util.Map<String, Double> idle = new java.util.LinkedHashMap<>();
+        public java.util.Map<String, Integer> open = new java.util.LinkedHashMap<>();
+        public java.util.Map<String, Double> labResearchers = new java.util.LinkedHashMap<>();
+        public java.util.Map<String, Double> labsIdle = new java.util.LinkedHashMap<>();
     }
 
     private ResearchRecord research;
 
-    /** The research to write with the month's bill (EconomyManager.getResearchPayroll(), getResearchCosts()), or none: a city that has no grant, post, pile or find writes no key. */
+    /**
+     * The research to write with the month's bill (EconomyManager.getResearchPayroll(), getResearchCosts()), or none: a city that has no grant, post,
+     * pile or find and no researcher this month writes no key. R3b: one with nothing of its own but its faculty's researchers (a city founded the default
+     * way with a University and no grant) writes them, or a load would show none until the next month.
+     */
     public void setResearch(Research r, double payroll, double costs) {
         setResearch(r, payroll, costs, 0);
     }
 
     /** ...and with the prize the treasury paid the labs that month (R4), after the prize dials, the pots, the labs' piles, the city's shares and the idle counts, which Research gives. */
     public void setResearch(Research r, double payroll, double costs, double prizePaid) {
-        if (r == null || r.isEmpty()) {
+        if (r == null || (r.isEmpty() && !r.hasMonthCounts())) {
             this.research = null;
             return;
         }
@@ -1255,6 +1266,11 @@ public class DataSave implements Cloneable {
         record.cityShares.putAll(r.citySharesForSave());
         record.labIdleMonths.putAll(r.labIdleMonthsForSave());
         record.prizePaid = prizePaid;
+        record.researchers.putAll(r.researchersForSave());
+        record.idle.putAll(r.idleForSave());
+        record.open.putAll(r.openForSave());
+        record.labResearchers.putAll(r.labResearchersForSave());
+        record.labsIdle.putAll(r.labsIdleForSave());
         this.research = record;
     }
 

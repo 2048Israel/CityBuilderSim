@@ -18,6 +18,28 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.37 — AN2, AN1's leftovers: the D$ the goods are struck at on Trade › The currency, and the Earth playtest — 2026-11-06, ready, see docs/queue/AN2-notes.md
+Jerus, 2026-10-23: "Queue both, small". THE RATE card on Trade › The currency shows, under the D$, the D$ the
+city's traded goods are struck at (AN1's lag) and how far it sits from the rate, closing 1/36 of the gap a month
+(`Game.struckFromRate()`, a kept scope of its own; PassThroughCheck 7: the words hold every month, to 2e-16 in
+logs). Nothing in the model reads it: the playtest's trace is byte-identical, no ensemble. The Earth playtest at
+Rotterdam, 4,000 months: the anchor holds (prices +3.9% a year, the world's pace; the D$ 22% under parity, never
+at its guard; 973,877 people), but the city holds at 10-13 thousand people for 97 years (m618-m1778) before it
+grows (★1, a diagnosis recommended).
+</content>
+</invoke>
+
+### 0.9.36 — R3b, research: Policy › Research's Overview and Funding — 2026-11-06, ready, see docs/queue/R3b-notes.md
+Policy › Research opens on an Overview (each field's researchers, the labs', the idle, what is in reach and what it
+touches, by school; the month's bill and prizes; found here and from abroad) and a Funding page: a card a field, its
+grant and prize staged through Policy's tray, the schools' room and the least prize that brings a lab marked on the
+dials, rows now and after down to the finds here over ten years, a chance or a count from 400 draws of the hidden sizes
+and never the city's own (ResearchPreview, research-design §6.2). ResearchPreviewCheck holds §5.4's two cities to the
+study's figures within their Monte Carlo error; a prize plays the game's own chase (★1). The hub has its sixth card,
+each research school its posts line, Spending a Research line and the prizes in Subsidies, every city payroll the
+research posts. From the reviews: posts struck after the demolitions, the month's counts saved, a find's labs' share
+owed as arrears when the books did not close. A default city's trace is R5's to the byte.
+
 ### 0.9.35 — XR5, the currency regimes' rest: the hold pays the pressure, the tied path, the overshoot both ways, a thin vault's warning — 2026-11-06, ready, see docs/queue/XR5-notes.md
 Jerus's calls on XR2's ★4 and ★5 and FX8's two. Under a peg or a band the vault no longer meets the month's balance: it
 pays what holding the rate takes, the interventions' rule run backwards (XI1's bounded inverse), and what it dealt

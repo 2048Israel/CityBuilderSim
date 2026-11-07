@@ -303,9 +303,18 @@ public final class PolicyPreview {
         return now > 0 ? m.targetWageAt(JobType.NO_DIPLOMA, floor) / now : 1;
     }
 
-    /** What the city's own staff - teachers, doctors and nurses - would cost a month with every wage moved by wageMoveAt(): today's posts, paid at the targets of the new floor. */
+    /**
+     * What the city's own staff - teachers, doctors and nurses, and the research posts its grants buy (R3b: city-paid jobs, EconomyManager.getResearchPayroll())
+     * - cost a month at today's wages: the figure cityPayrollAt() moves, and the one a screen sets a floor's effect against, so that at the floor in force the two
+     * are equal. A city with no post held has no research payroll and this is what it was.
+     */
+    public static double cityPayroll(Game g) {
+        return g.getEducation().getPayroll() + g.getHealthcare().getPayroll() + g.getEconomyManager().getResearchPayroll();
+    }
+
+    /** What the city's own staff - teachers, doctors and nurses, and the research posts its grants buy (R3b) - would cost a month with every wage moved by wageMoveAt(): today's posts, paid at the targets of the new floor. */
     public static double cityPayrollAt(Game g, double floor) {
-        return (g.getEducation().getPayroll() + g.getHealthcare().getPayroll()) * wageMoveAt(g, floor);
+        return cityPayroll(g) * wageMoveAt(g, floor);
     }
 
     /* =====================================================================

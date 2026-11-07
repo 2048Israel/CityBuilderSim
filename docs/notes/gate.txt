@@ -1,16 +1,14 @@
-# gate of Merge batch/XR5: the currency regimes' rest: a peg pays the pressure, not the month's balance; the tied path prices the curve under a peg; the overshoot both ways; a warning when a thin vault pegs (Jerus, 2026-10-23, on XR2's ★4, ★5 and the review's two: "Pay the pressure", "Price on the tied path"), 0.9.35
+# gate of Merge batch/AN2: aN1's leftovers: the D$ the goods are struck at on Trade › The currency, and the Earth playtest (Rotterdam) with the anchor (Jerus, 2026-10-23: "Queue both, small"), 0.9.37
 # date: 2026-11-07
 # earth-2.bin: named
-# nightly: 2026-11-06 01:09 0.9.24 f33540a0 4,000 months: RED, exit 1 in 89 s: a building on the map moved 1 time(s), months 3012-3012
-# suite: 182 harnesses run in 1490s: 176 passed, 6 failed
-# timing: 16 harnesses run in 866s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
+# nightly: 2026-11-07 00:56 0.9.35 a260d4f1 4,000 months: OK in 121 s
+# suite: 183 harnesses run in 1405s: 177 passed, 6 failed
+# timing: 16 harnesses run in 1001s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 31.1 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 30.2 ms, batch 31.9 ms (+5.7%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 31.1 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 32.4 ms, batch 30.7 ms (-5.2%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | exit 3
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | the city has a plain business and a materials industry with works to draw (Construction, null) FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | 3 FAILED
+# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 16.9 ms, batch 17.9 ms (+6.3%), budget 19 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | 3 FAILED   [the harness's own count of the timing reds above]
 SlopeCheck | exit 1
 SlopeCheck | the run played its months and found nothing: every month passed the playtest's audit and the layout watcher, [a building on the map moved] FAIL
 SlopeCheck | 1 FAILED
@@ -40,8 +38,6 @@ MapCheck | exit 1
 MapCheck | a yard laid across a district's buildings moves off it the boxes under it and no others: 72 of the plan before's 530 boxes lie under the yard and the railway, and 78 are not in the plan after (each of the rest stands where it stood) FAIL
 MapCheck | ...and the layout watch (LongPlaytest, as the map draws the district) counts them apart and flags none: 72 boxes left a district in the yard's month because a run laid in it lies across them, 6 are counted as moved FAIL
 MapCheck | 2 FAILED
-KeptCheck | exit 3
+KeptCheck | exit 1
 KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
-KeptCheck | the city has a plain business and a materials industry with works to draw (Construction, null) FAIL
-KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL
-KeptCheck | 3 FAILED
+KeptCheck | 1 FAILED
