@@ -2599,8 +2599,8 @@ public final class DistrictPlan {
          * with none of them touched: lay() takes only the plots just bought while onBought, so the old ground is no cut and a
          * merge, a pruned piece or an avenue's floor there is left as it is. The stray pieces of the new streets are taken up
          * (prune(): shorter than a block), the dead ends the ground cuts are joined along the cut (shore(), the new streets'
-         * dead ends alone), any piece touching no street that stands is taken up too (pruneApart(): the plan would join it by
-         * a long join, and that join met a standing street in a + closer than a block to another), and the cells'
+         * dead ends alone), any of them not in the district's main network is taken up too (pruneApart(): a piece the ground
+         * parts is not grown onto the ground that parted it, where the houses would wall it in), and the cells'
          * free rows are worked out again; a join is no curve, so none is recorded (its band would be kept free over old
          * plots that may hold buildings). The new ground fills from the next month's arrivals, as before. WHY: FX6 gave the
          * ground bought the free rows of the cells already open but no streets of their own, so it was built on only within
@@ -2687,52 +2687,33 @@ public final class DistrictPlan {
             return cells;
         }
 
-        /** pruneApart()'s walk of a piece of the plots just laid: each plot's mark (against boughtWalkStamp). */
-        int[] boughtWalk;
-        int boughtWalkStamp;
-
         /**
-         * NO POCKET APART ON GROUND BOUGHT (FX9): each piece of the plots cellsOnGrown() laid (the changed plots, the ring and
-         * streets and the joins along the cut) that touches no street standing before it - and not the frame's edge, where the
-         * next district's streets go on - is taken up again, whatever its size: the cut left it apart, and the plan would only
-         * join it to the network by a long join through ground that holds no street. The plots taken up.
+         * NO STREET APART ON GROUND BOUGHT (FX9): of the plots cellsOnGrown() laid (the ring and streets and the joins along
+         * the cut), those not in the district's main network - the piece that holds the most streets standing before them -
+         * are taken up again, whatever their size: a piece the ground parts from the rest, or one touching nothing but the
+         * frame's edge (the plan's own join walks the frame alone), stays as it is and is not grown onto the ground bought,
+         * where the houses built beside its new streets would wall it in and FW11 keep a way clear over them (DM2's class: the
+         * way is let go when a departure cures the wall, and the boxes behind it move). The plots taken up.
          */
         int pruneApart() {
-            if (boughtWalk == null) boughtWalk = new int[AREA];
-            int laid = ++laidStamp, taken = 0, base = boughtWalkStamp;
+            if (nChanged == 0) return 0;
+            int laid = ++laidStamp, taken = 0;
             for (int k = 0; k < nChanged; k++) laidMark[changed[k]] = laid;
-            int[] q = queue;
+            // Every street's piece (pieces(): four-connected, beneath a highway included), and the standing streets in each.
+            int[] lab = scratchLab, sizes = pieces(lab), standing = new int[sizes.length];
+            for (int i = 0; i < nOrdered; i++) if (laidMark[ordered[i]] != laid) standing[lab[ordered[i]]]++;
+            int main = 0;
+            for (int i = 1; i < sizes.length; i++) if (standing[i] > standing[main]) main = i;
             for (int k = 0; k < nChanged; k++) {
-                int p0 = changed[k];
-                if (!(str[p0] || under[p0]) || boughtWalk[p0] > base) continue;
-                int w = ++boughtWalkStamp, qh = 0, qt = 0;
-                boolean joined = false;
-                boughtWalk[p0] = w;
-                q[qt++] = p0;
-                while (qh < qt) {
-                    int u = q[qh++], ux = u % FRAME, uy = u / FRAME;
-                    if (ux == 0 || uy == 0 || ux == FRAME - 1 || uy == FRAME - 1) joined = true;
-                    for (int d = 0; d < 4; d++) {
-                        int ax = ux + TilePainter.DX[d], ay = uy + TilePainter.DY[d];
-                        if (ax < 0 || ay < 0 || ax >= FRAME || ay >= FRAME) continue;
-                        int a = ay * FRAME + ax;
-                        if (!(str[a] || under[a]) || boughtWalk[a] == w) continue;
-                        if (laidMark[a] != laid) { joined = true; continue; }
-                        boughtWalk[a] = w;
-                        q[qt++] = a;
-                    }
-                }
-                if (joined) continue;
-                for (int i = 0; i < qt; i++) {
-                    int a = q[i];
-                    if (avDone[a] == 1) avUnlay(a);
-                    setStr(a, false);
-                    under[a] = false;
-                    art[a] = false;
-                    blvd[a] = false;
-                    role[a] = 0;
-                    taken++;
-                }
+                int a = changed[k];
+                if (!(str[a] || under[a]) || lab[a] == main) continue;
+                if (avDone[a] == 1) avUnlay(a);
+                setStr(a, false);
+                under[a] = false;
+                art[a] = false;
+                blvd[a] = false;
+                role[a] = 0;
+                taken++;
             }
             if (taken > 0) {
                 // The changed list keeps only what is still laid.
