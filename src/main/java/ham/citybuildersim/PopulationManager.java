@@ -257,10 +257,13 @@ public class PopulationManager {
      *
      * Measured cost of the collapse on a city of 8,792: the whole wage bill
      * moved -1.08%.
+     *
+     * ON THE CITY'S LADDER (R0d): PayTier's figures on today's, the census's
+     * on 1901's, in a city founded the 1900 way (setLadder()).
      */
     public void setWagesPerType(){
         for (JobType type : JobType.values()) {
-            jobWage[type.ordinal()] = PayTier.wageOf(type);
+            jobWage[type.ordinal()] = ladder.monthlyWage(PayTier.of(type));
         }
     }
 
@@ -484,23 +487,41 @@ public class PopulationManager {
 
     /**
      * Each band's base as a multiple of the unskilled floor: what its ungated
-     * posts pay at the going rate (LabourMarket.ratioOf()). The minimum wage
-     * and the cost of living multiply every band alike, so this is all the
-     * ladder the allocator needs to compare wages on.
+     * posts pay at the going rate (the ladder's ratio, LabourMarket.ratioOf() on
+     * today's). The minimum wage and the cost of living multiply every band
+     * alike, so this is all the ladder the allocator needs to compare wages on.
+     * The city's own since R0d: a city founded the 1900 way compares its bands on
+     * 1901's ratios (setLadder()); today's is what every other city has.
      */
-    private static final double[] BAND_BASE = bandBases();
+    private double[] bandBase = bandBases(WageLadder.TODAY);
 
-    private static double[] bandBases() {
+    /** The wage ladder the wages and the bands' bases are struck on (R0d). Not saved: Game.layTheLadder() hands it from the founding. */
+    private WageLadder ladder = WageLadder.TODAY;
+
+    /** Puts the city's wages and the allocator's band bases on a ladder (R0d): today's by default, 1901's in a city founded the 1900 way. */
+    public void setLadder(WageLadder l) {
+        ladder = l == null ? WageLadder.TODAY : l;
+        bandBase = bandBases(ladder);
+    }
+
+    /** The ladder this city's wages are struck on (R0d). */
+    public WageLadder getLadder() { return ladder; }
+
+    /** Each band's lowest ungated ratio on a ladder: the base its posts are compared on. */
+    static double[] bandBases(WageLadder l) {
         double[] base = new double[WageBand.values().length];
         java.util.Arrays.fill(base, Double.MAX_VALUE);
         for (JobType job : JobType.values()) {
             if (isGated(job)) continue;
             int b = WageBand.of(job).ordinal();
-            base[b] = Math.min(base[b], LabourMarket.ratioOf(job));
+            base[b] = Math.min(base[b], l.ratio(job));
         }
         for (int b = 0; b < base.length; b++) if (base[b] == Double.MAX_VALUE) base[b] = 1;
         return base;
     }
+
+    /** The allocator's base for a band: its lowest ungated ratio on this city's ladder (R0d; read by WageLadderCheck). */
+    public double getBandBase(WageBand band) { return bandBase[band.ordinal()]; }
 
     /**
      * One month's workers against one count of posts, by band (0.7.18) - the
@@ -612,12 +633,12 @@ public class PopulationManager {
         double best = Double.NEGATIVE_INFINITY;
         for (int b = 0; b < bands; b++) {
             if (posts[b] <= 0) continue;
-            double w = BAND_BASE[b] * LabourMarket.multipleAt(posts[b] / Math.max(f.supply[b], 1));
+            double w = bandBase[b] * LabourMarket.multipleAt(posts[b] / Math.max(f.supply[b], 1));
             boolean hiringHere = f.placed[b] < posts[b] - 1e-9;
             if (!hiringHere && w < best) {
-                double t = Math.min(1, LabourMarket.tightnessAt(best / BAND_BASE[b]));
+                double t = Math.min(1, LabourMarket.tightnessAt(best / bandBase[b]));
                 f.supply[b] = Math.min(f.supply[b], posts[b] / t);
-                w = BAND_BASE[b] * LabourMarket.multipleAt(posts[b] / Math.max(f.supply[b], 1));
+                w = bandBase[b] * LabourMarket.multipleAt(posts[b] / Math.max(f.supply[b], 1));
             }
             if (hiringHere) best = Math.max(best, w);
         }
@@ -639,8 +660,8 @@ public class PopulationManager {
      * posts, which never out-pays anything) and returns the workers it leaves
      * for the bands below.
      */
-    private static double fillMarket(BandFill f, int hi, int lo, double carriedIn, double[] posts,
-                                     double[] own, double[] gated, double[] wage, int k) {
+    private double fillMarket(BandFill f, int hi, int lo, double carriedIn, double[] posts,
+                              double[] own, double[] gated, double[] wage, int k) {
         double pool = carriedIn;
         double room = 0;
         for (int b = lo; b <= hi; b++) {
@@ -658,7 +679,7 @@ public class PopulationManager {
                 f.placed[b] = Math.max(gated[b], Math.min(Math.max(0, posts[b]), w));
                 f.supply[b] = w;
                 if (posts[b] > 0) {
-                    best = Math.max(best, BAND_BASE[b] * LabourMarket.multipleAt(posts[b] / Math.max(w, 1)));
+                    best = Math.max(best, bandBase[b] * LabourMarket.multipleAt(posts[b] / Math.max(w, 1)));
                 }
                 c = Math.max(0, w - f.placed[b]);
             }
@@ -669,8 +690,8 @@ public class PopulationManager {
         // One market, one wage: the lambda at which the bands' posts take the pool.
         double low = Double.MAX_VALUE, high = 0;
         for (int b = lo; b <= hi; b++) {
-            low = Math.min(low, BAND_BASE[b]);
-            high = Math.max(high, BAND_BASE[b]);
+            low = Math.min(low, bandBase[b]);
+            high = Math.max(high, bandBase[b]);
         }
         low *= 1e-3;
         high *= 1e6;
@@ -687,7 +708,7 @@ public class PopulationManager {
                 f.supply[b] = own[b] + (b == hi ? carriedIn : 0);
                 continue;
             }
-            double t = LabourMarket.tightnessAt(lambda / BAND_BASE[b]);
+            double t = LabourMarket.tightnessAt(lambda / bandBase[b]);
             double take = Math.max(gated[b], Math.min(posts[b], posts[b] / t));
             f.placed[b] = take;
             // Short: priced on the workers it holds. Full: on the queue that puts it at lambda.
@@ -699,11 +720,11 @@ public class PopulationManager {
     }
 
     /** The workers bands hi down to lo would hold if every one of their posts paid lambda. */
-    private static double heldAt(double lambda, int hi, int lo, double[] posts, double[] gated) {
+    private double heldAt(double lambda, int hi, int lo, double[] posts, double[] gated) {
         double held = 0;
         for (int b = lo; b <= hi; b++) {
             if (posts[b] <= 0) continue;
-            double t = LabourMarket.tightnessAt(lambda / BAND_BASE[b]);
+            double t = LabourMarket.tightnessAt(lambda / bandBase[b]);
             held += Math.max(gated[b], Math.min(posts[b], posts[b] / t));
         }
         return held;

@@ -18,6 +18,26 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.39 — FX9, ground bought inside an open cell gets the cell's own streets — 2026-11-07, ready, see docs/queue/FX9-notes.md
+Jerus, 2026-10-23, on FX6's ★1: "Extend the streets". Ground the city buys inside a cell already open now takes that
+cell's own ring and streets, laid from what its opening chose (`DistrictPlan.Builder.cellsOnGrown()`) and joined to
+the main network; nothing standing moves, and the new ground fills from the next month. MapCheck 2c's full district
+places all 3,356 of its houses (3,188 before), its bought plots in open cells built on 533 of 667 against 233; the
+playtest's m4000 city packs 462 fewer at the rim. The map's alone: the trace byte-identical, no ensemble. LongPlaytest
+at 2,400 months is red by DM2's class (m1209, 20 boxes: a way FW11 kept clear, cured by a departure): FX9 moves where
+those fall (over 4,000 months 99 move pairs against main's 102); ★1, pass it by name (recommended).
+
+### 0.9.38 — R0d, research: the 1901 wage ladder and the arrivals' skill mix by year — 2026-11-07, ready, see docs/queue/R0d-notes.md
+A city founded the 1900 way (off until R1d) pays 1901's wages: `WageLadder` puts each pay rung on its nearest 1901 comparator,
+men's earnings at regular work (labourers $256.29, electricians $518.12, draughtsmen $723.72, civil engineers $1,316.31, bank
+managers $1,784.37; the 1901 census's Bulletin I and the Canada Year Book 1907; the elite rung est.), a census dollar a founding
+dollar: the unskilled wage .24 of today's, an engineer 5.1 labourers against 2.4. The labour market, the allocator, the pension's
+base and the grant, the founding rents and the depot's founding quote take the city's ladder, laid at founding and on load,
+nothing saved. Its arrivals come from the year's skill mix (`ArrivalMix`: 1913's arrivals by occupation, 1953's, today's model
+in 2021): in 1913 three in four hold no diploma and come at the going rate, graduates bought as today on the year's ceilings.
+WageLadderCheck, ArrivalMixCheck; FittingCheck's bakery window 36 to 60 months, PrizeCheck's lab villages on today's ladder.
+A default city's trace is main's to the byte.
+
 ### 0.9.37 — AN2, AN1's leftovers: the D$ the goods are struck at on Trade › The currency, and the Earth playtest — 2026-11-06, ready, see docs/queue/AN2-notes.md
 Jerus, 2026-10-23: "Queue both, small". THE RATE card on Trade › The currency shows, under the D$, the D$ the
 city's traded goods are struck at (AN1's lag) and how far it sits from the rate, closing 1/36 of the gap a month

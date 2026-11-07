@@ -383,6 +383,13 @@ public class FittingCheck {
 
     /* ============================ 4. what a new building comes with ============================ */
 
+    /**
+     * The months a pair of Bakeries is given to finish: 36 until R0d, whose 1900 village on 1901's wages (WageLadder) grows more slowly - 1,242
+     * people at month 14 against 1,780 - and so builds more slowly, its second pair still on site at 36. The fixture causes the finish; the
+     * premise, what a finished Bakery comes with, is unmoved. A default village stops as soon as its pair is open.
+     */
+    static final int BAKERY_MONTHS = 60;
+
     /** Presses the clock until nothing is on site on this stack (at most `most` months); how many buildings opened over them. */
     static int pressUntilOpen(Game g, BuildingsStacks s, int most) {
         int opened = 0;
@@ -443,7 +450,7 @@ public class FittingCheck {
         quietly(() -> ordered[0] = g.buildStack(t, 2, false));
         ORDER_COST[which] = cash - g.getCash();
         check("fixture: two Bakeries are on site", ordered[0] == Game.BuildResult.SUCCESS && bakery.getUnderConstruction() == 2, String.valueOf(ordered[0]));
-        int opened = pressUntilOpen(g, bakery, 36);
+        int opened = pressUntilOpen(g, bakery, BAKERY_MONTHS);
         check("at that price the Bakeries that finished came fitted: the count of the drive unfitted is as it was", opened == 2 && bakery.getUnfitted(DRIVE) == before,
                 "opened " + opened + ", count " + before + " -> " + bakery.getUnfitted(DRIVE));
         if (unfittedCity) {
@@ -460,7 +467,7 @@ public class FittingCheck {
         final int heldBefore = before;
         quietly(() -> ordered[0] = g.buildStack(t, 2, false));
         check("fixture: two more Bakeries are on site", ordered[0] == Game.BuildResult.SUCCESS && bakery.getUnderConstruction() == 2, String.valueOf(ordered[0]));
-        opened = pressUntilOpen(g, bakery, 36);
+        opened = pressUntilOpen(g, bakery, BAKERY_MONTHS);
         if (unfittedCity) {
             check("below it the Bakeries that finished came unfitted: the count of the drive unfitted is up by what finished", opened == 2 && bakery.getUnfitted(DRIVE) == heldBefore + opened,
                     "opened " + opened + ", count " + heldBefore + " -> " + bakery.getUnfitted(DRIVE));

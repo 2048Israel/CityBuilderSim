@@ -1071,6 +1071,19 @@ public class Migration {
     }
 
     /**
+     * The year's skill mix this month's arrivals are drawn from (R0d slice 2), or null: null in every city but one founded the 1900 way, whose
+     * Game sets it each month from ArrivalMix.at(), and so null is the model composeArrivals() has always run. Never saved: Game pushes it
+     * before every month, like the doors and the rent burden, so a loaded city has it by the time anybody arrives.
+     */
+    private ArrivalMix.Point yearMix;
+
+    /** Game, each month of a city founded the 1900 way: the mix of skills the month's arrivals are drawn from (ArrivalMix.at()); null for any other city. */
+    public void setYearMix(ArrivalMix.Point mix) { this.yearMix = mix; }
+
+    /** The year's skill mix set for this month, or null where the arrivals are drawn from today's ceilings alone. */
+    public ArrivalMix.Point getYearMix() { return yearMix; }
+
+    /**
      * Splits this month's arrivals across the skill bands.
      *
      * The world's own mix, weighted by what the city is paying over the going
@@ -1079,6 +1092,9 @@ public class Migration {
      * thousand is simply what doctors cost. Only paying MORE than that moves
      * anybody, which is what makes the number the player can see - the premium
      * on the People screen - the one that actually does something.
+     *
+     * In a city founded the 1900 way (yearMix, ArrivalMix) the ceilings and the unconditional no-diploma arrivals are the year's rather than
+     * WageBand's; how many arrive is the same budget either way.
      */
     private void composeArrivals(LabourMarket market, PopulationManager people) {
         double[] weight = new double[WageBand.values().length];
@@ -1142,7 +1158,18 @@ public class Migration {
                     ? 1
                     : reach(market == null ? 1 : market.bandPremium(band));
 
-            weight[b] = admits(band) ? band.arrivalCeiling() * pull * opportunity : 0;
+            if (yearMix == null) {
+                weight[b] = admits(band) ? band.arrivalCeiling() * pull * opportunity : 0;
+            } else {
+                /*
+                 * A CITY FOUNDED THE 1900 WAY (R0d slice 2; ArrivalMix): the ordinary arrival may hold no diploma. The year's mix
+                 * gives the no-diploma arrivals who come at the going rate (ordinary(), unconditional, per diploma arrival) and the
+                 * graduate bands' ceilings; the bought part of every band is the ceiling times the pull, as above, and the NONE band's
+                 * sits on top of its ordinary arrivals. The diploma band is still its 1 and the opportunity is still the band's own.
+                 * Only the weight differs; the opportunity, the pull, the professions' pull and the one budget below are shared.
+                 */
+                weight[b] = admits(band) ? (yearMix.ordinary(band) + yearMix.ceiling(band) * pull) * opportunity : 0;
+            }
             total += weight[b];
         }
 
@@ -1175,9 +1202,10 @@ public class Migration {
             if (job == null) continue;
 
             double pull = admits(WageBand.UNIVERSITY) ? reach(market == null ? 1 : market.licencePremium(job)) : 0;
-            double w = WageBand.UNIVERSITY.arrivalCeiling()
-                    * type.worldLicenceShare()
-                    * pull;
+            // The university figure is the year's where the city has one (R0d slice 2): the licence shares are today's in every year.
+            double w = yearMix == null
+                    ? WageBand.UNIVERSITY.arrivalCeiling() * type.worldLicenceShare() * pull
+                    : yearMix.university() * type.worldLicenceShare() * pull;
 
             licenceWeight[job.ordinal()] = w;
             total += w;

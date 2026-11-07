@@ -1,6 +1,6 @@
-# FX9 - notes: ground bought inside an open cell gets the cell's own streets ({next}, 2026-11-07)
+# FX9 - notes: ground bought inside an open cell gets the cell's own streets (0.9.39, 2026-11-07)
 
-*{next}, 2026-11-07. [The brief](FX9.md); Jerus, 2026-10-23, on FX6's ★1: "Extend the streets". Built on AN2's tip 5456fabf (RL1); main merged in before the final checks. The map's alone: nothing in the model reads it, and the default playtest's trace is byte-identical to the base's in all eight CSVs, so no ensemble (EN1's rule). Save format and the map's sidecar unchanged. Two Sonnet slices (section 6).*
+*0.9.39, 2026-11-07. [The brief](FX9.md); Jerus, 2026-10-23, on FX6's ★1: "Extend the streets". Built on AN2's tip 5456fabf (RL1); main merged in before the final checks. The map's alone: nothing in the model reads it, and the default playtest's trace is byte-identical to the base's in all eight CSVs, so no ensemble (EN1's rule). Save format and the map's sidecar unchanged. Two Sonnet slices (section 6).*
 
 ## 1. What was built
 

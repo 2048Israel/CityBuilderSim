@@ -152,6 +152,24 @@ public final class RealEstate extends Sector {
     /** The studio price, per person of capacity. Opens equal and goes its own way. */
     private double studioRentPrice = rentFor(PayTier.UNSKILLED.getMonthlyWage());
 
+    /**
+     * The unskilled wage the founding rent is struck on (R0d): PayTier's in every city but one founded the 1900 way, which opens on 1901's
+     * (WageLadder.anchor()). Never saved - the rent is, by its own path - and set by Game.layTheLadder() from the saved founding.
+     */
+    private double wageAnchor = PayTier.UNSKILLED.getMonthlyWage();
+
+    /** Takes the founding wage a reset seeds the rent from (R0d); the standing rents are left where they are, as a load restores them. */
+    public void setWageAnchor(double anchor) {
+        if (anchor > 0) wageAnchor = anchor;
+    }
+
+    /** A city founded on a wage (R0d): the anchor, and both rents at the rent for it, as a fresh sector opens at PayTier's. Founding only. */
+    public void foundOn(double anchor) {
+        setWageAnchor(anchor);
+        rentPrice = rentFor(wageAnchor);
+        studioRentPrice = rentPrice;
+    }
+
     private double lastRentTarget;
     private double lastStudioTarget;
 
@@ -890,7 +908,7 @@ public final class RealEstate extends Sector {
 
     @Override
     protected void resetExtras() {
-        rentPrice = rentFor(PayTier.UNSKILLED.getMonthlyWage());
+        rentPrice = rentFor(wageAnchor);
         studioRentPrice = rentPrice;
         lastRentTarget = lastStudioTarget = 0;
         studioRentWeight = familyRentWeight = 0;
