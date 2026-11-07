@@ -68,6 +68,42 @@ transposition of $1.497: the five lines sum to 149.7 c, and only that closes the
 
 ## 3. The calls (★)
 
+1. **★ The wood-heated homes buy nothing.** The game has no firewood good (R0c ★11), and the 1900 budget weights a
+   wood-heated home like a coal one, so half of 1900's homes heat for nothing, and a quarter of 1941's urban ones.
+   Recommended: leave it until R1d judges a 1900 city; if the heat bill matters there, a cordwood good (Forestry's roundwood
+   sold by Retail as the homes' third fuel, beside `Retail.sellHomeFuel()`'s two) is a small batch of its own.
+2. **★ What replaced the lamp and the stove is not billed** (R0c ★12): the electric light, and the oil furnace (30% of urban
+   homes in 1951), gas and electric heat cost a household nothing, as today's homes pay nothing for power or heat, so a 1900
+   city's homes' fuel bill falls to nothing by 1971. Recommended: keep; the household utility bill is its own batch ("on the
+   list", `EconomyManager.setElectricityConsumption()`).
+3. **★ A lamp-lit home still draws the grid** (R0c ★12 kept the homes' draw): in 1900, 96% of the homes buy lamp oil and the
+   city still makes their power. Recommended: leave it to the household power bill's batch, which can cut the homes' draw by
+   the lamp share as it bills the rest; R1d sees it in a 1900 city's power balance first.
+4. **★ Only the bread is baked at home.** No licence-clean source gives 1900's share of the convenience goods (ready meals,
+   snacks, bakery goods, drinks) bought against made; they follow income alone, and 1901's wage ladder (R0d, about a quarter
+   of today's) already moves the basket toward the staples (BasketYearCheck 5's 1900 village eats more bread a head than a
+   default one, bread being an inferior good). The bakery's goods carry `homeMadeFrom: GRAINS` for the day a figure is
+   found. Recommended: keep.
+5. **★ The budget's quantities are the Department's construction**, not a survey (its own words, S3 p. 72: "a list of
+   quantities based on estimates by various official bodies"): its gallon of coal oil and eighth of a short ton of coal a
+   week are what a home burns now, and reading the four fuels as a coal home and a wood home weighted alike is this batch's
+   (est.). Recommended: take; they are the only Canadian 1900 quantities under a usable licence.
+6. **★ Urban where Canada has it, national or American where it does not**: 1961's coal is all dwellings; the lamp shares
+   of 1921 and 1931 are customers over households scaled by 1941's urban ratio; before 1920 they are the US series's.
+   Recommended: take.
+7. **★ The cars' cap is registrations per household**, business cars and taxis in, about a third above the census's share
+   of homes with a car (1941: .497 a household against 36.7% of homes with one), so a lenient cap the economy stays under.
+   Recommended: keep.
+8. **★ No screen.** Nothing draws the basket by year (no screen reads the homes' fuel bill or the car ceiling), and the
+   1900 founding is not open to players until R1d. Recommended: R1d's screen pass draws the year's basket on People's
+   household money page.
+9. **★ No format bump.** `homeFuelSale` is a new key written only for a month that struck a sale; an older save reads as
+   no sale held, which is right for every city before R0e (none struck one in play). Recommended: take.
+
+Found on the way (mended in slice 1): `HomeFuel` is a final field and `buildWorld()` never reset it, so a 1900 city's
+shares and held sale outlived it into the next city founded or loaded in the same Game; `HomeFuel.reset()` is called beside
+`research.reset()` (BasketYearCheck 8).
+
 ## 4. PD1
 
 PD1 (the drivers' petrol perhaps counted twice in the households' spending) follows R0e in this lane. R0e touches
@@ -75,6 +111,18 @@ PD1 (the drivers' petrol perhaps counted twice in the households' spending) foll
 PD1 is about; R0c's deduction of the homes' bill from the shopping (Game ~4163) is unchanged and is what PD1 mirrors.
 
 ## 5. Checks
+
+- **The trace.** The default playtest (2,405 months) traced on R0d's tip (6a16cabd) and on slice 1 with the sourced data
+  (d72c0eab), each built apart and run back to back on the PC: all eight CSVs byte-identical, the log but for "in 59s"/"in
+  67s" and the layout windows' "2.4 s"/"2.2 s". So no ensemble (`docs/batch.md` 6). BasketYearCheck 3 and 4 hold the join:
+  the basket with no year is the two-argument one to the bit, and a default city has no year in any month.
+- **`--pick`** on d72c0eab (20 of 186 harnesses for 37 files against R0d's tip; LongPlaytest for Game.java,
+  BuildingManager.java and Good.java): **exit 3**, main's recorded MapCheck red only (`docs/notes/gate.txt`).
+- **The cities founded the 1900 way**, whose basket now follows the year: ArrivalMixCheck, DiscoveryCheck, FittingCheck,
+  RecipeCheck, ResearchViewCheck and WageLadderCheck, with SaveFileCheck, ReadPathCheck, Forms1900Check, CarCheck and
+  ConsumptionCheck: all exit 0. BasketYearCheck: nine sections, exit 0 (its car town: 0.1292 cars a household in the
+  default town after 24 months, none in the 1900 town, 0.1511 with the cap lifted).
+- **`git merge-tree` with origin/main** (a56a3189, AN2 in): the source merges clean; the generated docs alone conflict.
 
 ## 6. Sources and licences
 
