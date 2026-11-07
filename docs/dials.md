@@ -2,15 +2,23 @@
 
 Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**5,533 constants in 523 files.**
+**5,543 constants in 525 files.**
 
-## model (2685 constants)
+## model (2688 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 180 | `AgeBand.MAX_MONTHLY_MORTALITY` | `.05` | No band may lose more than this in a single month, whatever modifies it. |
+
+### ArrivalMix.java ([map](map/ArrivalMix.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 78 | `ArrivalMix.TODAY_SUM` | `WageBand.DIPLOMA.arrivalCeiling() + WageBand.COLLEGE.arrivalCeiling() + WageBand.UNIVER...` | The sum of the ceilings the diploma and graduate bands have today: 1 + .35 + .12 = 1.47. |
+| 81 | `ArrivalMix.TODAY` | `new Point(0, WageBand.COLLEGE.arrivalCeiling(), WageBand.UNIVERSITY.arrivalCeiling())` | Today's mix: no ordinary arrivals without a diploma, the graduate bands at WageBand's ceilings. |
+| 89 | `ArrivalMix.KNOTS` | `List.of(new Knot(1901,.73066,.23184,.03,.0075, "CYB1913", true, "1913's: the boom's arr...` | The year's mix, in year order. |
 
 ### Auction.java ([map](map/Auction.md))
 
@@ -1506,10 +1514,10 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 14260 | `Game.FIXED_ISSUE_COST` | `12 * PriceLevel.FACTOR` | Bond counsel, rating and printing. |
 | 14271 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
 | 14311 | `Game.MINIMUM_ISSUE_FLOOR` | `50 * PriceLevel.FACTOR` | The floor under minimumIssueSize(), in thousands: $50k, so a brand new city can still borrow. |
-| 16004 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
-| 16408 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
-| 17017 | `Game.RECORD_BACKLOG` | `6` | The most recording writes the writer may be behind by (months and histories not yet on disk): the clock then records nothing that month, and a skip waits. |
-| 17020 | `Game.RECORD_WAIT_MS` | `30_000` | The longest a skip waits for the writer to get inside RECORD_BACKLOG, in milliseconds, before it records nothing that month: a writer that cannot write must not hold the skip for ever. |
+| 16008 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
+| 16412 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
+| 17021 | `Game.RECORD_BACKLOG` | `6` | The most recording writes the writer may be behind by (months and histories not yet on disk): the clock then records nothing that month, and a skip waits. |
+| 17024 | `Game.RECORD_WAIT_MS` | `30_000` | The longest a skip waits for the writer to get inside RECORD_BACKLOG, in milliseconds, before it records nothing that month: a writer that cannot write must not hold the skip for ever. |
 
 ### GameFiles.java ([map](map/GameFiles.md))
 
@@ -2273,8 +2281,8 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 360 | `Migration.DEPARTURE_RATE` | `.05` |  |
 | 363 | `Migration.DECLINE_MONTHS` | `12` | Consecutive months of falling wages before a tier's people give up. |
 | 367 | `Migration.TIERS` | `PayTier.values().length` |  |
-| 1221 | `Migration.HISTORY_SLOTS` | `TIERS * DECLINE_MONTHS + TIERS + 1` | The wage history, its streaks and the months recorded: the array before 0.7.27. |
-| 1224 | `Migration.LAST_SCALARS` | `16` | The month's scalars that follow it, in toSaveArray()'s order. |
+| 1249 | `Migration.HISTORY_SLOTS` | `TIERS * DECLINE_MONTHS + TIERS + 1` | The wage history, its streaks and the months recorded: the array before 0.7.27. |
+| 1252 | `Migration.LAST_SCALARS` | `16` | The month's scalars that follow it, in toSaveArray()'s order. |
 
 ### MiniMapFrame.java ([map](map/MiniMapFrame.md))
 
@@ -5343,7 +5351,7 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 748 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1028 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1466 constants)
+## harnesses (1473 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -5376,6 +5384,18 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 151 | `AllChecks.NO_FAIL_LINE` | `"(no FAIL line; its last lines:)"` | The line a log says before the last lines of a harness that died with no failing line of its own. |
 | 154 | `AllChecks.KNOWN_TAG` | `"[known] "` | The tag -f puts before a failing line that is in the record; the same width as NEW_TAG. |
 | 157 | `AllChecks.NEW_TAG` | `"[NEW] "` | The tag -f puts before a failing line that is not in the record. |
+
+### ArrivalMixCheck.java ([map](map/ArrivalMixCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 75 | `ArrivalMixCheck.DEFAULT` | `Founding.defaults()` |  |
+| 76 | `ArrivalMixCheck.THE_1900_WAY` | `Founding.defaults().withUnfitted(true)` |  |
+| 78 | `ArrivalMixCheck.NONE` | `WageBand.NONE.ordinal()` |  |
+| 79 | `ArrivalMixCheck.DIPLOMA` | `WageBand.DIPLOMA.ordinal()` |  |
+| 80 | `ArrivalMixCheck.COLLEGE` | `WageBand.COLLEGE.ordinal()` |  |
+| 81 | `ArrivalMixCheck.UNIVERSITY` | `WageBand.UNIVERSITY.ordinal()` |  |
+| 217 | `ArrivalMixCheck.ADULT_SHARE` | `PopulationCohorts.equilibriumShare(AgeBand.ADULT)` | The adult share the fixtures run at (PopulationCheck's). |
 
 ### AuctionCheck.java ([map](map/AuctionCheck.md))
 
@@ -5941,7 +5961,7 @@ Generated 2026-11-06 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 66 | `FittingCheck.DRIVE` | `EquipmentCheck.DRIVE, TRUCK = EquipmentCheck.TRUCK, TRACTOR = EquipmentCheck.TRACTOR` |  |
-| 392 | `FittingCheck.BAKERY_MONTHS` | `60` | The months a pair of Bakeries is given to finish: 36 until R0d, whose 1900 village on 1901's wages (WageLadder) grows more slowly - 1,242 people at month 14 against 1,780 - and so builds more slowl... |
+| 391 | `FittingCheck.BAKERY_MONTHS` | `60` | The months a pair of Bakeries is given to finish: 36 until R0d, whose 1900 village on 1901's wages (WageLadder) grows more slowly - 1,242 people at month 14 against 1,780 - and so builds more slowl... |
 | 408 | `FittingCheck.ORDER_COST` | `{ Double.NaN, Double.NaN }, ORDER_QUOTED = { Double.NaN, Double.NaN }, ORDER_STICKER = ...` | What the last order cost, by city: [the city founded the 1900 way, the default one]; what the model quoted for it just before (Game.quoteBuildOn(), which buildStack() charges); the quote's sticker,... |
 
 ### FloatLinkCheck.java ([map](map/FloatLinkCheck.md))

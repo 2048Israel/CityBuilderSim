@@ -14996,6 +14996,10 @@ public class Game {
         // Migration.monthlyNet() and FamilyModel.roomLeft().
         migration.setDoors(buildingManager.homesBySize());
 
+        // ...and, in a city founded the 1900 way, what the world's movers hold this year (R0d; ArrivalMix): the skills the month's
+        // arrivals are drawn from. A city founded the default way holds none and draws from WageBand's ceilings alone, as it always did.
+        migration.setYearMix(foundedUnfitted() ? ArrivalMix.at(month) : null);
+
         cohorts.migrate(migration.monthlyNet(
                 population,
                 populationManager.getTotalJobs(),

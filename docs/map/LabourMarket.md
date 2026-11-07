@@ -54,7 +54,7 @@
 
 **Uses:** [JobType](JobType.md) (27), [WageBand](WageBand.md) (20), [WageLadder](WageLadder.md) (7), [DecisionLog](DecisionLog.md) (5), [PayTier](PayTier.md) (3), [EducationType](EducationType.md) (2)
 
-**Used by (21):** [CityNeeds](CityNeeds.md), [DiscoveryCheck](DiscoveryCheck.md), [Education](Education.md), [ExpectationsCheck](ExpectationsCheck.md), [Game](Game.md), [HistorySave](HistorySave.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [PeopleScreen](PeopleScreen.md), [PolicyDatesCheck](PolicyDatesCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [PopulationManager](PopulationManager.md), [PriceLevelCheck](PriceLevelCheck.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [WageLadderCheck](WageLadderCheck.md), [WantedPosts](WantedPosts.md), [WantedPostsCheck](WantedPostsCheck.md)
+**Used by (22):** [ArrivalMixCheck](ArrivalMixCheck.md), [CityNeeds](CityNeeds.md), [DiscoveryCheck](DiscoveryCheck.md), [Education](Education.md), [ExpectationsCheck](ExpectationsCheck.md), [Game](Game.md), [HistorySave](HistorySave.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [PeopleScreen](PeopleScreen.md), [PolicyDatesCheck](PolicyDatesCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [PopulationManager](PopulationManager.md), [PriceLevelCheck](PriceLevelCheck.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [WageLadderCheck](WageLadderCheck.md), [WantedPosts](WantedPosts.md), [WantedPostsCheck](WantedPostsCheck.md)
 
 ## Sections
 

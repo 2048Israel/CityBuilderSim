@@ -1,4 +1,4 @@
-# Migration.java - 1,312 lines · 56 methods · 16 constants · model
+# Migration.java - 1,340 lines · 58 methods · 16 constants · model
 
 `ham/citybuildersim/Migration.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
 
@@ -48,9 +48,9 @@
 > a year to start and then years to play out, and a bad month is just a bad
 > month. That asymmetry is the point of the twelve-month gate.
 
-**Uses:** [WageBand](WageBand.md) (26), [PayTier](PayTier.md) (8), [FamilyModel](FamilyModel.md) (7), [LabourMarket](LabourMarket.md) (3), [JobType](JobType.md) (3), [RealEstate](RealEstate.md) (2), [PopulationManager](PopulationManager.md) (2), [EducationType](EducationType.md) (2), [PopulationCohorts](PopulationCohorts.md) (1), [AgeBand](AgeBand.md) (1)
+**Uses:** [WageBand](WageBand.md) (26), [PayTier](PayTier.md) (8), [FamilyModel](FamilyModel.md) (7), [LabourMarket](LabourMarket.md) (3), [JobType](JobType.md) (3), [ArrivalMix](ArrivalMix.md) (3), [RealEstate](RealEstate.md) (2), [PopulationManager](PopulationManager.md) (2), [EducationType](EducationType.md) (2), [PopulationCohorts](PopulationCohorts.md) (1), [AgeBand](AgeBand.md) (1)
 
-**Used by (18):** [BuildScreen](BuildScreen.md), [CrimeCheck](CrimeCheck.md), [EducationCheck](EducationCheck.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [HistorySave](HistorySave.md), [Inbox](Inbox.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [PeopleScreen](PeopleScreen.md), [PopulationCheck](PopulationCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md), [Sector](Sector.md), [ServicesScreen](ServicesScreen.md), [UserInterface](UserInterface.md), [WantedPostsCheck](WantedPostsCheck.md)
+**Used by (19):** [ArrivalMixCheck](ArrivalMixCheck.md), [BuildScreen](BuildScreen.md), [CrimeCheck](CrimeCheck.md), [EducationCheck](EducationCheck.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [HistorySave](HistorySave.md), [Inbox](Inbox.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [PeopleScreen](PeopleScreen.md), [PopulationCheck](PopulationCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md), [Sector](Sector.md), [ServicesScreen](ServicesScreen.md), [UserInterface](UserInterface.md), [WantedPostsCheck](WantedPostsCheck.md)
 
 ## Sections
 
@@ -68,7 +68,7 @@
 | 553 | · recording |
 | 565 | IN REAL TERMS, OR EVERY DEFLATION IS AN EXODUS |
 | 695 | · deciding |
-| 1204 | · saving |
+| 1232 | · saving |
 
 ## Constants
 
@@ -88,8 +88,8 @@
 | 360 | `Migration.DEPARTURE_RATE` | `.05` |  |
 | 363 | `Migration.DECLINE_MONTHS` | `12` | Consecutive months of falling wages before a tier's people give up. |
 | 367 | `Migration.TIERS` | `PayTier.values().length` |  |
-| 1221 | `Migration.HISTORY_SLOTS` | `TIERS * DECLINE_MONTHS + TIERS + 1` | The wage history, its streaks and the months recorded: the array before 0.7.27. |
-| 1224 | `Migration.LAST_SCALARS` | `16` | The month's scalars that follow it, in toSaveArray()'s order. |
+| 1249 | `Migration.HISTORY_SLOTS` | `TIERS * DECLINE_MONTHS + TIERS + 1` | The wage history, its streaks and the months recorded: the array before 0.7.27. |
+| 1252 | `Migration.LAST_SCALARS` | `16` | The month's scalars that follow it, in toSaveArray()'s order. |
 
 ## Fields (state)
 
@@ -124,12 +124,13 @@
 | 904 | `private double bankruptcyPush` | Households the balance sheet discharged this month, whose people are leaving because they are broke. |
 | 912 | `private double lastBankruptcyPush` |  |
 | 1047 | `private final boolean[] closed` | Bands a harness has closed to arrivals, by ordinal; see holdArrivals(). |
+| 1078 | `private ArrivalMix.Point yearMix` | The year's skill mix this month's arrivals are drawn from (R0d slice 2), or null: null in every city but one founded the 1900 way, whose Game sets it each month from ArrivalMix.at(), and so null is the model composeAr... |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 50 | 1263 | **type** `public class Migration` | Why people move to this city, and the much narrower question of why they leave. |
+| 50 | 1291 | **type** `public class Migration` | Why people move to this city, and the much narrower question of why they leave. |
 
 ### the dials (lines 52-53)
 
@@ -217,7 +218,7 @@
 | 664 | 7 | `public double severity(PayTier tier)` | How far a tier has fallen over the year, 0 to 1. |
 | 681 | 13 | `public double decliningPressure()` | The share of the city's payroll that has actually been destroyed, as opposed to merely sitting in a tier that qualifies. |
 
-### deciding (lines 695-1203)
+### deciding (lines 695-1231)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -232,14 +233,16 @@
 | 1041 | 4 | `public static double opportunity(double open, double queue)` | A band's chance of work at its own level, as a multiplier on its pull. |
 | 1058 | 3 | `public void holdArrivals(WageBand band)` | Harnesses only: nobody of this band arrives for the rest of the run, whatever it is paid - the way BusinessInvestment.holdSector() holds a sector out of the investment loop. |
 | 1069 | 3 | `public boolean admits(WageBand band)` | Whether any migrant can come for this band at all (0.7.18): it has an arrival ceiling above zero and no harness has closed it. |
-| 1083 | 120 | `private void composeArrivals(LabourMarket market, PopulationManager people)` | Splits this month's arrivals across the skill bands. |
+| 1081 | 1 | `public void setYearMix(ArrivalMix.Point mix)` | Game, each month of a city founded the 1900 way: the mix of skills the month's arrivals are drawn from (ArrivalMix.at()); null for any other city. |
+| 1084 | 1 | `public ArrivalMix.Point getYearMix()` | The year's skill mix set for this month, or null where the arrivals are drawn from today's ceilings alone. |
+| 1099 | 132 | `private void composeArrivals(LabourMarket market, PopulationManager people)` | Splits this month's arrivals across the skill bands. |
 
-### saving (lines 1204-1312)
+### saving (lines 1232-1340)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1227 | 3 | `private static int lastSlots()` | ...then the arrival mix and the departure mix by band, and the licences by job. |
-| 1231 | 19 | `public double[] toSaveArray()` |  |
-| 1251 | 33 | `public void restore(double[] saved)` |  |
-| 1285 | 27 | `public void reset()` |  |
+| 1255 | 3 | `private static int lastSlots()` | ...then the arrival mix and the departure mix by band, and the licences by job. |
+| 1259 | 19 | `public double[] toSaveArray()` |  |
+| 1279 | 33 | `public void restore(double[] saved)` |  |
+| 1313 | 27 | `public void reset()` |  |
 

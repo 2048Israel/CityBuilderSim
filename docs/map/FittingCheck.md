@@ -52,7 +52,7 @@
 
 **Uses:** [Game](Game.md) (57), [EquipmentFit](EquipmentFit.md) (54), [EquipmentCheck](EquipmentCheck.md) (48), [BuildingsStacks](BuildingsStacks.md) (20), [Founding](Founding.md) (20), [Good](Good.md) (16), [Sector](Sector.md) (13), [BusinessInvestment](BusinessInvestment.md) (13), [Equipment](Equipment.md) (12), [GameFiles](GameFiles.md) (8), [Fittings](Fittings.md) (8), [Forms1900Check](Forms1900Check.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (7), [DataSave](DataSave.md) (6), [SpreadPlanner](SpreadPlanner.md) (5), [Sectors](Sectors.md) (4), [MoneyAudit](MoneyAudit.md) (4), [GoodsMarket](GoodsMarket.md) (3), [BuildingManager](BuildingManager.md) (2), [Currency](Currency.md) (2), [World](World.md) (2), [Nations](Nations.md) (2), [Construction](Construction.md) (2), [MaterialsCheck](MaterialsCheck.md) (1), [Agriculture](Agriculture.md) (1), [Landmasses](Landmasses.md) (1), [Trade](Trade.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [Freight](Freight.md) (1)
 
-**Used by (5):** [DiscoveryCheck](DiscoveryCheck.md), [KeptCheck](KeptCheck.md), [RecipeCheck](RecipeCheck.md), [ResearchViewCheck](ResearchViewCheck.md), [WageLadderCheck](WageLadderCheck.md)
+**Used by (6):** [ArrivalMixCheck](ArrivalMixCheck.md), [DiscoveryCheck](DiscoveryCheck.md), [KeptCheck](KeptCheck.md), [RecipeCheck](RecipeCheck.md), [ResearchViewCheck](ResearchViewCheck.md), [WageLadderCheck](WageLadderCheck.md)
 
 ## Sections
 
@@ -77,7 +77,7 @@
 | line | constant | value | says |
 |---:|---|---|---|
 | 66 | `FittingCheck.DRIVE` | `EquipmentCheck.DRIVE, TRUCK = EquipmentCheck.TRUCK, TRACTOR = EquipmentCheck....` |  |
-| 392 | `FittingCheck.BAKERY_MONTHS` | `60` | The months a pair of Bakeries is given to finish: 36 until R0d, whose 1900 village on 1901's wages (WageLadder) grows more slowly - 1,242 people at month 14 against 1,780 - and so builds more slowly, its second pair s... |
+| 391 | `FittingCheck.BAKERY_MONTHS` | `60` | The months a pair of Bakeries is given to finish: 36 until R0d, whose 1900 village on 1901's wages (WageLadder) grows more slowly - 1,242 people at month 14 against 1,780 - and so builds more slowly, its second pair s... |
 | 408 | `FittingCheck.ORDER_COST` | `{ Double.NaN, Double.NaN }, ORDER_QUOTED = { Double.NaN, Double.NaN }, ORDER_...` | What the last order cost, by city: [the city founded the 1900 way, the default one]; what the model quoted for it just before (Game.quoteBuildOn(), which buildStack() charges); the quote's sticker, the template's whol... |
 
 ## Fields (state)
@@ -127,7 +127,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 394 | 8 | `static int pressUntilOpen(Game g, BuildingsStacks s, int most)` |  |
+| 394 | 8 | `static int pressUntilOpen(Game g, BuildingsStacks s, int most)` | Presses the clock until nothing is on site on this stack (at most `most` months); how many buildings opened over them. |
 | 412 | 10 | `static Game builtVillage(String label, Founding founding)` | A village on the goods' literals (the moved prices hold through the months), the builders' depots standing and the sectors that would build on their own held. |
 | 423 | 78 | `static void newBuildings(String label, boolean unfittedCity, int which)` |  |
 | 502 | 17 | `static void sectionFour()` |  |
