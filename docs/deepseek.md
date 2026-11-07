@@ -1,39 +1,55 @@
 # DeepSeek - the coder a Claude session hands a slice to
 
-A batch's Claude session hands the coding a brief can pin down to DeepSeek V4
-Pro, through `tools/deepseek/agent.py`: Claude decides the design, writes the
-brief, reviews the diff, runs the checks and commits (in a small fix batch
-Sonnet is the whole session, below); DeepSeek does the reading and writing in between, at about a ninth of Claude's price per token.
-Jerus, 2026-10-17: "update the required docs so that new batches with claude
-remember to use deepseek". DeepSeek is not an assistant like ChatGPT or Gemini:
-it has no branch and no brief of its own, and nothing it writes is committed
-until a Claude session has read it.
+A batch's Claude session hands the coding a brief can pin down to a coder:
+Sonnet for now (below), DeepSeek V4 Pro through `tools/deepseek/agent.py` when
+Jerus has the budget. Claude decides the design, writes the brief, reviews the
+diff, runs the checks and commits; the coder does the reading and writing in
+between. DeepSeek is not an assistant like ChatGPT or Gemini: it has no branch
+and no brief of its own, and nothing it writes is committed until a Claude
+session has read it (Jerus, 2026-10-17: "update the required docs so that new
+batches with claude remember to use deepseek").
 
 **Sonnet first, for now** (Jerus, 2026-10-20): "for a long while there will
 be no deepseek so its sonnet". DeepSeek is billed by the token on top of his
-20x subscription, and Sonnet runs inside it, so until he has the budget for
-more agents every slice goes to an Agent subagent with model "sonnet"
-(Sonnet 5.5) and effort "xhigh", handled as this page handles DeepSeek: the
-same brief, the subagent edits the worktree and commits nothing, runs only
+20x subscription and Sonnet runs inside it, so every slice goes to an Agent
+subagent of type `slice` (`.claude/agents/slice.md`: Sonnet 5.5 at xhigh, six
+tools, 120 steps, no `CLAUDE.md`; CX1), handled as this page handles DeepSeek:
+the same brief, the subagent edits the worktree and commits nothing, runs only
 the harness its brief names, and Claude reviews the diff as a stranger's and
-commits. Since BP1 (2026-10-24) the slices are fewer and larger, and Claude
-reviews the diff without re-reading what the brief sent the subagent to
-read: an Opus batch session cost 400k-770k tokens with Sonnet already doing
-the edits, much of it that re-reading and its own context re-sent on every
-slice. A small fix batch - no money, saves or threading, a few hundred
-lines - runs on Sonnet as the whole batch session, Opus seeing it only at
-the gate (which amends "Which model", `docs/orchestrator.md`). The trial ran from FR1 to FX4 (2026-10-18/19), about forty slices
-in eight batches, each batch's notes keeping a table of what the review
-changed: about half needed nothing; the map, drawing and harness slices
-were nearly always right, and the slices sometimes corrected the brief; the
-model slices needed real fixes (FR3's dues never reaching the treasury,
-FR2's Haulage rules, every id across a save). So a model slice's review is
-the careful one, and most of all where money, saves or threading change
-(BP1): the bank, bonds, the treasury and funds; `DataSave`, `HistorySave`,
-the load path and `SAVE_FORMAT`; threads and anything UI-wide. Those get a
-stranger's review at the gate as well, and `tools/pick.sh`'s review line
-names them. When DeepSeek returns, Sonnet is its fallback whenever
+commits. Since BP1 (2026-10-24) the slices are fewer and larger and Claude
+reviews **without re-reading what the brief sent the subagent to read**: an
+Opus batch session cost 400k-770k tokens with Sonnet already editing, much of
+it that re-reading. A small fix batch - no money, saves or threading, a few
+hundred lines - runs on Sonnet as the whole session, Opus at the gate only
+(amends "Which model", `docs/orchestrator.md`). A model slice's review is the
+careful one (the FR1-FX4 trial: the map, drawing and harness slices were nearly
+always right, the model slices needed real fixes - FR3's dues never reaching the
+treasury, FR2's Haulage rules, every id across a save), most of all where money,
+saves or threading change (BP1): the bank, bonds, the treasury and funds;
+`DataSave`, `HistorySave`, the load path and `SAVE_FORMAT`; threads and anything
+UI-wide. Those get a stranger's review at the gate as well, and `tools/pick.sh`'s
+review line names them. When DeepSeek returns, Sonnet is its fallback whenever
 `DEEPSEEK_API_KEY` is unset or the API fails.
+
+## What a slice costs (CX1, 2026-11-07)
+
+A week of 167 Sonnet slices was 4.46B tokens, a median 95 steps each, every step
+re-sending the whole context (`docs/queue/CX1-notes.md` has the tables):
+
+- **Start every slice as `slice`, never the default agent.** WHY: the default
+  began at 62k, 65% of it 38 tool definitions of which a slice calls six, and
+  re-sent them on all 17.5k steps; those, the skill list, `CLAUDE.md` and memory
+  were 21% of the week's re-sent tokens.
+- **The brief carries what the slice needs**: each file, each method with its
+  `Where X -print`, the harness, and any rule beyond the definition's. WHY:
+  orienting itself lifted a slice from 62k to 104k in ten steps.
+- **Size a slice to about 80 steps.** One that reports partial at 100 or stops
+  at 120 gets a fresh successor briefed on the rest, not a resume (which
+  re-sends all). WHY: steps past 100 held 44% of the re-sent tokens (72 of 167
+  slices), at 324k of context; a fresh `slice` starts near 15k (estimated).
+- **A run's output goes to a file and is grepped; independent reads share a
+  step.** WHY: Bash results (reads, greps, harness runs) were 37% of the re-sent
+  tokens, and 89% of steps made no more than one call.
 
 ## What to hand it, and what to keep
 
@@ -51,22 +67,6 @@ the todo, README's counts and the maps; the review, the checks and the
 commit. A batch writes no version: `ship.sh` sets `GameVersion.VERSION` at
 the gate, and the full suite is the gate's (BP1). A fix of a few lines is
 cheaper made than briefed.
-
-## What it costs (the test, 2026-10-17)
-
-- DeepSeek did FR0's land gateway bearing (a model class of 128 lines, a
-  harness of 174, two rounds) in 95 requests and 3.7M tokens for **$0.29**.
-  The same tokens on Claude Opus would have cost about $2.50.
-- The Claude agent supervising it cost about **$4.80**, as much as writing
-  the slice itself (about $3-4). It built this script from scratch (about
-  $1-1.50 of that), wrote two briefs and reviewed twice. With the script here,
-  the aim is the Claude side at **$1.50 or less a slice**: one brief, one
-  review, at most one follow-up. The saving grows with the slice.
-- Quality: it compiled and its harness passed the first time; 6/10 as
-  delivered, 7/10 after one review. It follows the conventions; its harnesses
-  took shortcuts until told (the list under *The review*, now in
-  `tools/deepseek/system.md`, so it is told up front). The slice is commit
-  `6fd8dda`, reverted in `b24f009`: `git show 6fd8dda` is the worked example.
 
 ## How
 
@@ -90,10 +90,8 @@ cheaper made than briefed.
    the files DeepSeek drafted ("drafted by DeepSeek V4 Pro through
    tools/deepseek, reviewed by Claude").
 
-Options: `--model deepseek-flash` (cheaper and faster; for lookups);
-`--write src/,docs/studies/` (the prefixes it may write, `src/` by default,
-`''` for a read-only run; the generated docs are refused whatever is given);
-`--turns 40`; `--depth 3`.
+`agent.py --help` lists the options (`--model deepseek-flash` for lookups;
+`--write` the prefixes it may write, the generated docs refused whatever is given).
 
 ### The brief
 
@@ -106,11 +104,9 @@ Options: `--model deepseek-flash` (cheaper and faster; for lookups);
   (the next slices, `Game`, the screen).
 - **The harness:** a small existing one to model, each section and the
   fixture that causes it, and its line in `AllChecks.HARNESSES`.
-- **Done means:** `compile` clean and the harness exits 0 with no FAIL line.
-- **Timing** (a Sonnet subagent's brief): run a harness through
-  `./batch-check.sh <Name>`, which always times soft. A bare
-  `java ... <Name>` times hard, so it takes `-Dcbs.timing=soft` while
-  `tools/jvms.ps1` counts another batch's JVM or the game (TM2).
+- **Done means:** `compile` clean and the harness exits 0 with no FAIL line
+  (a `slice` runs it through `./batch-check.sh`, which times soft; a bare
+  `java ... <Name>` takes `-Dcbs.timing=soft` while another JVM runs, TM2).
 
 ### The review
 
@@ -133,10 +129,9 @@ What the gate sent back in the test, and what DeepSeek cannot do itself:
 
 - **The key** is Jerus's DeepSeek account ($20 topped up, 2026-10-17). In a
   cloud session the environment's network secret on `api.deepseek.com`
-  injects it, and the script sends a dummy. On the PC, set `DEEPSEEK_API_KEY`
-  as a user environment variable; never commit it.
-- **The balance:** `curl -sS https://api.deepseek.com/user/balance`; the
-  script prints `spent_usd` and `balance_after`. Below $2, tell Jerus.
+  injects it; on the PC `DEEPSEEK_API_KEY` is a user environment variable;
+  never commit it. The balance: `curl -sS https://api.deepseek.com/user/balance`
+  (the script prints `spent_usd` and `balance_after`); below $2, tell Jerus.
 - **What leaves the machine:** the brief and every file DeepSeek reads go to
   DeepSeek's servers (Jerus asked for it, 2026-10-17). Never put a save, a
   key or anything personal in a brief.
@@ -144,22 +139,9 @@ What the gate sent back in the test, and what DeepSeek cannot do itself:
   `deepseek-v4-pro`, which reasons before it answers, the reasoning counting
   against `--max-tokens`; `deepseek-flash` (V4.1 Flash), which the old name
   `deepseek-chat` now gives.
-- **Agents in the cloud nest one level.** The cloud launcher sets
-  `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=1`, and Claude Code keeps a launcher's
-  variables over the environment's own and over settings files (checked
-  2026-10-17), so a session can start agents but an agent cannot start
-  another. A batch run as an agent runs DeepSeek through Bash, which works at
-  any level. DeepSeek's own helpers (`ask_deepseek`) nest to `--depth`; in the
-  test it delegated only when told to, and two of its four helpers ran out of
-  turns: do not count on them.
-- **One JVM at a time on the cloud workbench:** there the script's compile
-  and harness wait on the lock `batch-check.sh` takes (`$CBS_JVM_LOCK`). The
-  PC has no lock: batches check side by side (TM1). A harness the script runs
-  takes one look at the machine just before its JVM (TM2: `tools/jvms.ps1` on
-  Windows, `ps` elsewhere) and times soft when another batch's JVM or the game
-  runs, saying so on the first line of its result ("timing soft - ... a timing
-  miss says SOFT and is not counted"); alone, it times hard. `batch-check.sh`
-  times every run soft but the gate's `--timing`; `Batch check.bat` decides
-  soft or hard once, as the suite starts, never per harness (lesson d,
-  `docs/notes/batch-history.md`); a timing red at the gate `ship.sh` compares with main's
-  own timing run, the same day on the same machine.
+- **In the cloud** an agent cannot start another agent (depth 1), so a batch run
+  as an agent runs DeepSeek through Bash, and DeepSeek's own `ask_deepseek`
+  helpers are not to be counted on. The workbench runs one JVM at a time (the lock
+  `batch-check.sh` takes, `$CBS_JVM_LOCK`); the PC checks side by side (TM1), and
+  a harness that finds another JVM running times soft (TM2). The rest is in
+  `docs/notes/batch-history.md`, "The DeepSeek test and its limits".
