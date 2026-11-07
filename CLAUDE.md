@@ -43,15 +43,15 @@ every call after it.
   re-sends all of it: start a fresh session or agent per task (a batch, a
   review), with a brief to the point and a report of 15 lines.
 - **Coding goes to Sonnet** (Jerus, 2026-10-20): a batch hands each slice a
-  brief can pin down to an Agent subagent on Sonnet 5.5, which edits the
-  worktree and commits nothing; Opus writes the brief, reviews the diff as a
-  stranger's and commits. It runs inside his 20x subscription, where DeepSeek
-  (`tools/deepseek/agent.py`, about a ninth of Claude's price per token) is
-  billed on top: DeepSeek comes back when he has the budget for more agents,
-  and then Sonnet is its fallback. `docs/deepseek.md` says what to hand over,
-  how, and what to review, for either; `docs/batch.md`, 3, how large a slice
-  is and when Sonnet is the whole session. In the cloud an agent cannot start
-  another agent (depth 1), so a batch run as an agent writes its slices
+  brief can pin down to an Agent subagent of type `slice`
+  (`.claude/agents/slice.md`: Sonnet 5.5 at xhigh, six tools, no `CLAUDE.md`;
+  CX1), which edits the worktree and commits nothing; Opus writes the brief,
+  reviews the diff as a stranger's and commits. It runs inside his 20x
+  subscription, where DeepSeek (`tools/deepseek/agent.py`) is billed on top and
+  returns when he has the budget. `docs/deepseek.md` says what to hand over,
+  how, what a slice costs and what to review; `docs/batch.md`, 3, how large a
+  slice is and when Sonnet is the whole session. In the cloud an agent cannot
+  start another agent (depth 1), so a batch run as an agent writes its slices
   itself. **Every session and agent runs at xhigh or max** (Jerus,
   2026-10-24: "anything on high effort or lower is banned").
 

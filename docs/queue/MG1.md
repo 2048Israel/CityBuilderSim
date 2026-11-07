@@ -26,30 +26,44 @@ starts that grow past the room together (79.8% to 85.9% within a minute,
 2026-10-27). It must also prevent something new: paging when RAM itself is
 short. RAM reached 89-91% in use on 11-06 while two KeptChecks ran.
 
-1. **The rule.** Another harness starts beside the running ones only while
-   both hold:
+**And the CPU** (Jerus, 2026-11-06: "Yes, add it", to a CPU condition in this
+rule). Once a restart freed the memory, the CPU became the limit. At 23:20 the
+commit charge was 41% and RAM 67%, but the CPU was at 94% of 20 threads, with
+three batches checking (R3b, R0d, AN2) and XR5's gate running its suite. Two
+KeptChecks were running at once. Over the 20 minutes after the restart the CPU
+averaged 77% and sat at 85% or more for 8 of them. A harness started then only
+splits the same threads: every run slows, and the gate's hard timing step runs
+under more load, which costs paired rounds.
+
+1. **The rule.** Another harness starts beside the running ones only while all
+   three hold:
    - free commit (the limit less the charge) covers one more harness at its
      full size, `HEAP_MB` plus its measured non-heap, with the running ones'
      growth to their full size kept in reserve;
-   - available RAM is at least a dial's GB.
+   - available RAM is at least a dial's GB;
+   - the machine's CPU, averaged over the last few seconds, is under a dial's
+     percent. Java reads it as `OperatingSystemMXBean.getCpuLoad()` on Windows
+     and Linux alike.
 
-   A run with nothing running always starts, as now. Both thresholds are dials
-   in `AllChecks`, each with its sentence, valued from measurement (the notes
-   give it). Elsewhere (Linux, the cloud) the rule reads the same two figures
-   from `/proc/meminfo`, or keeps today's swap reading: the batch's call.
+   A run with nothing running always starts, as now. Each threshold is a dial
+   in `AllChecks` with its sentence, valued from measurement (the notes give
+   it). Elsewhere (Linux, the cloud) the memory figures come from
+   `/proc/meminfo`, or the rule keeps today's swap reading: the batch's call.
 2. **A harness for the rule**, as a pure function of free commit, available
-   RAM and what the running harnesses hold. Each threshold is caused from both
-   sides against the dials, with no reading of the machine in the fixture.
+   RAM, CPU load and what the running harnesses hold. Each threshold is caused
+   from both sides against the dials, with no reading of the machine in the
+   fixture.
 3. **The line it prints** ("memory: N start(s) held until ...") names the
-   figure that held them, in GB.
+   figure that held them: GB for memory, percent for the CPU.
 4. **Measured on the PC:** a soft suite run before and after, with its wall
-   time and how often a start was held. The notes give both, with the commit
-   and RAM figures at the time. MemWatch logs those a minute apart, in
-   `C:\Users\Jerus\Tools\MemWatch\history-<date>.csv`.
+   time and how often a start was held, and by which figure. The notes give
+   both, with the commit, RAM and CPU figures at the time. MemWatch logs those
+   a minute apart, in `C:\Users\Jerus\Tools\MemWatch\history-<date>.csv`.
 
 **Done means:** the rule's harness is green. On the PC, under the load of the
 day, the suite runs up to `PARALLEL` at once when the dials allow and holds
-when they do not, and no start fails for memory.
+when they do not, no start fails for memory, and no start is made into a CPU
+that is already full.
 
 **Not this batch:** KeptCheck's run time (KT1); the timing lines main misses
 under load (UP8, SS2, GT1-T). MG1 edits `AllChecks.java`, which KT1 may also

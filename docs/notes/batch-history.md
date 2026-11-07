@@ -170,3 +170,44 @@ already says which harnesses mention which class, so the diff names the
 harnesses and the review the same way. A cap that fell back to the whole
 suite when a pick grew was left out: the pick is a floor, the gate's full
 suite is the net, and a class most harnesses read is said to be left to it.
+
+## The DeepSeek test and its limits
+
+Moved out of `docs/deepseek.md` in CX1 (2026-11-07), verbatim but for the
+headings; the page keeps the rules and the way in.
+
+**What it cost (the test, 2026-10-17)**
+
+- DeepSeek did FR0's land gateway bearing (a model class of 128 lines, a
+  harness of 174, two rounds) in 95 requests and 3.7M tokens for **$0.29**.
+  The same tokens on Claude Opus would have cost about $2.50.
+- The Claude agent supervising it cost about **$4.80**, as much as writing
+  the slice itself (about $3-4). It built `tools/deepseek/agent.py` from
+  scratch (about $1-1.50 of that), wrote two briefs and reviewed twice. With the
+  script, the aim is the Claude side at **$1.50 or less a slice**: one brief,
+  one review, at most one follow-up. The saving grows with the slice.
+- Quality: it compiled and its harness passed the first time; 6/10 as
+  delivered, 7/10 after one review. It follows the conventions; its harnesses
+  took shortcuts until told (the list under *The review*, now in
+  `tools/deepseek/system.md`, so it is told up front). The slice is commit
+  `6fd8dda`, reverted in `b24f009`: `git show 6fd8dda` is the worked example.
+
+**Agents in the cloud nest one level.** The cloud launcher sets
+`CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=1`, and Claude Code keeps a launcher's
+variables over the environment's own and over settings files (checked
+2026-10-17), so a session can start agents but an agent cannot start another.
+A batch run as an agent runs DeepSeek through Bash, which works at any level.
+DeepSeek's own helpers (`ask_deepseek`) nest to `--depth`; in the test it
+delegated only when told to, and two of its four helpers ran out of turns: do
+not count on them.
+
+**One JVM at a time on the cloud workbench:** there the script's compile and
+harness wait on the lock `batch-check.sh` takes (`$CBS_JVM_LOCK`). The PC has
+no lock: batches check side by side (TM1). A harness the script runs takes one
+look at the machine just before its JVM (TM2: `tools/jvms.ps1` on Windows, `ps`
+elsewhere) and times soft when another batch's JVM or the game runs, saying so
+on the first line of its result ("timing soft - ... a timing miss says SOFT and
+is not counted"); alone, it times hard. `batch-check.sh` times every run soft
+but the gate's `--timing`; `Batch check.bat` decides soft or hard once, as the
+suite starts, never per harness (lesson d); a timing red at the gate `ship.sh`
+compares with main's own timing run, the same day on the same machine.

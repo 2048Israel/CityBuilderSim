@@ -18,6 +18,9 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### CX1 — a lighter start and a slower climb for Sonnet slices — 2026-11-07, ready, no tag (process), see docs/queue/CX1-notes.md
+Sonnet slices were about half of the plan's usage: 167 in a week, 4.46B tokens, a median 95 steps re-sending 187k of context each, and the start alone 62k before a first read, 65% of it 38 tool definitions of which a slice calls six, then the skill list, `CLAUDE.md` and the deferred-tool names. The new `.claude/agents/slice.md` (Sonnet 5.5, xhigh, six tools, no `CLAUDE.md` but its own 47 lines of standing rules, 120 steps) should start a slice near 9-19k. `docs/deepseek.md` and `docs/batch.md` say to start every slice as `slice`, brief it with the files, methods and harness, size it to about 80 steps and hand the rest to a fresh one, and send a run's output to a file; each rule has its WHY from the notes' tables. By the notes' model the definition alone saves 19% of the tokens re-sent and a cap of 120 steps 37%; the bar of under 95k a step needs the climb a third lower as well. The DeepSeek test's figures moved to `docs/notes/batch-history.md`. Not yet run on a real slice: CX1-M measures.
+
 ### 0.9.34 — UP7, the speed reading as the reached speed alone; the drawer's bar and the construction tab kept — 2026-11-06, ready, see docs/queue/UP7-notes.md
 Jerus's call on UP2's ★1 ("Reached speed alone, amber"). When the city falls more than a tenth short of the rung,
 the reading between the speed's arrows shows the speed reached alone, in amber ("39×", not "50× · 39×"), at one
