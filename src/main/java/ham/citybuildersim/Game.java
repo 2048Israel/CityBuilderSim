@@ -345,6 +345,7 @@ public class Game {
          * NewGameCheck takes and leaked across the new city on the first run.
          */
         health = new Health();
+        if (causesOfDeath.isHeldOff()) health.holdInfluenzaOff();   // R0g: a fixture's hold is the Game's, so a load's new Health keeps it
         healthcare = new Healthcare();
         historyGrapher = new HistoryGrapher();
         debtManager = new DebtManager();
@@ -15561,8 +15562,11 @@ public class Game {
     /**
      * Today's deaths, as before R0b: no cause of 1900 kills, the swing stays
      * whole and the influenza takes nobody off work. Only for a harness fixture
-     * whose condition was sized on them (R0b call 7); not saved, so a fixture
-     * that loads the city calls it again on the loaded one, before its first month.
+     * whose condition was sized on them (R0b call 7). The hold is the Game's and
+     * outlives a load on the same Game, called before or after loadGameSave (R0g:
+     * a load builds a new Health and gives it the hold again). It is still not
+     * saved, so a NEW Game loaded from a held city's save is not held: its
+     * fixture calls this on it again, before its first month.
      */
     public void holdCausesOfDeathOff() {
         causesOfDeath.holdOff();

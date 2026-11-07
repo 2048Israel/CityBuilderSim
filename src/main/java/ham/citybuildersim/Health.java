@@ -285,9 +285,13 @@ public class Health {
     private double influenzaRate;
     public double getInfluenzaRate() { return influenzaRate; }
 
-    /** The influenza held off, for a harness fixture sized on today's deaths: see CausesOfDeath.holdOff(). Not saved. */
+    /**
+     * The influenza held off, for a harness fixture sized on today's deaths: see CausesOfDeath.holdOff().
+     * Not saved; the Game's hold outlives a load because Game.buildWorld() gives a new Health the hold again (R0g).
+     */
     private boolean influenzaHeldOff;
     public void holdInfluenzaOff() { influenzaHeldOff = true; }
+    public boolean isInfluenzaHeldOff() { return influenzaHeldOff; }
 
     private double unhousedRate;
 
