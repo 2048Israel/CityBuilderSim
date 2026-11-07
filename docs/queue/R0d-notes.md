@@ -2,10 +2,11 @@
 
 ## WHERE IT STANDS
 
-**Built; waiting for R3b.** Branch `batch/R0d` from `batch/R3b`'s ship file (RL1, 853c29bd). Slice 1 (the ladder) is
-742590a6, slice 2 (the arrivals' mix) a2e5c0e3, both drafted by Sonnet 5.5 at xhigh and reviewed here. Only a city founded the
-1900 way (`Founding.isUnfitted()`, R1c ★1, R2 ★3) reads either; R1d switches that founding on and judges it. The default
-trace is R3b's to the byte (§5), so no ensemble.
+**Ready.** Branch `batch/R0d` from `batch/R3b`'s ship file (RL1, 853c29bd); R3b's mended tip merged twice, then main with
+R3b and XR5 in (4e9bfc73) at fa27e6f5, the generated docs alone in conflict (main's side, regenerated). Slice 1 (the ladder) is
+742590a6, slice 2 (the arrivals' mix) a2e5c0e3, both drafted by Sonnet 5.5 at xhigh and reviewed here; PrizeCheck's fixture
+(★7) bc5de1a9. Only a city founded the 1900 way (`Founding.isUnfitted()`, R1c ★1, R2 ★3) reads either; R1d switches that
+founding on and judges it. The default trace is main's to the byte (§5), so no ensemble. `--pick` on the merge: **exit 3**.
 
 ## 1. What R0d is
 
@@ -94,9 +95,10 @@ and 4.67 in 1950 (HSC W340-438, 3.8x); the university share of arrivals goes .00
   "1.8 s"/"1.7 s"; and slice 1 against slice 2 (a2e5c0e3) the same, the eight CSVs byte-identical. ArrivalMixCheck 4 holds
   the join: `Migration` with no year mix and with `ArrivalMix.TODAY` composes the same arrivals, bit for bit. Last, R3b's ready
   tip (47bf4066, main 0.9.34 with UP7 and CX1 in) against its merge here (c2cfe602): the eight CSVs byte-identical, the log
-  but for "in 64s"/"in 60s" and the layout windows' line. So no ensemble (`docs/batch.md` 6).
-- **`--pick`** on the merge with R3b's tip (e64301e6, main 0.9.34 in): 57 of 185 harnesses for 40 files, LongPlaytest for
-  Game.java; **exit 3**, main's recorded reds only (DenominationCheck, ScaleCheck). Before PrizeCheck's fixture (★7) it was
+  but for "in 64s"/"in 60s" and the layout windows' line; and main (4e9bfc73) against the merge with it (fa27e6f5), the same.
+  So no ensemble (`docs/batch.md` 6).
+- **`--pick`** on the merge with main (fa27e6f5; 4e9bfc73, R3b and XR5 in): 57 of 185 harnesses for 43 files, LongPlaytest
+  for Game.java; **exit 3**, main's recorded reds only (DenominationCheck, ScaleCheck); the same on R3b's earlier tip (e64301e6). Before PrizeCheck's fixture (★7) it was
   exit 4 on PrizeCheck 12's five lines alone.
 - **FittingCheck 4** went red on slice 1: its 1900 village, on 1901's wages, grows more slowly (1,242 people at month 14
   against 1,780), so its builders finish the second pair of Bakeries after the 36 months the fixture gave them. The window
