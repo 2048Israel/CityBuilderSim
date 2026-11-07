@@ -6892,7 +6892,11 @@ public class KeptCheck {
         boolean known = false;
         for (String[] p : KeptBench.policyPages()) known |= p[0].equals("Research") && p[1].equals("Funding");
         check("...a page that Policy has", known);
-        check("the prizes paid to the labs stand under the total when there are any (none this month: no row)", town.getPrizePaid() == 0 && !has(spendSig, label("Research prizes paid to the labs")));
+        // ...the labs' prizes are struck in Subsidies (Game.strikeGovernmentBooks(), R4 ★5), so they are in the total and no row stands under it for them.
+        check("the prizes paid to the labs are in the Subsidies line, as the books strike them (" + na.getSubsidies() + " = " + town.getTotalSubsidyPaid() + " + "
+                        + town.getPrizePaid() + "), and no row under the total names them",
+                Math.abs(na.getSubsidies() - (town.getTotalSubsidyPaid() + town.getPrizePaid())) <= 1e-6 * Math.max(1, Math.abs(na.getSubsidies()))
+                        && !has(spendSig, label("Research prizes to the labs")));
         Hand line = b -> { b.governmentLine("Spending", "Research", true); return null; };
         List<String> openSig = shownWith(bench, spending, line);
         check("the Research line opened shows who is paid: the posts' pay (" + Money.money(em.getResearchPayroll()) + ") and the laboratories' other costs (" + Money.money(em.getResearchCosts()) + ")",

@@ -963,24 +963,6 @@ final class GovernmentScreen {
         return row;
     }
 
-    /** R3b: the prizes the treasury paid the Research Labs this month (Game.getPrizePaid()) as a row under the Spending page's total, which does not count them. Null at none. */
-    static Node prizesRow(double paid) {
-        if (!(paid > 0)) return null;
-        Region gap = Kept.region();
-        HBox.setHgrow(gap, Priority.ALWAYS);
-        HBox row = Kept.row(Palette.GAP,
-                infoLine("Research prizes paid to the labs", PRIZES_INFO, true, Palette.SIZE_BODY, Palette.TEXT_BODY, 300),
-                gap, figure(m(paid), Palette.SIZE_BODY + 1, Palette.TEXT_BODY));
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.setStyle("-fx-padding: 4 6 0 6;");
-        return row;
-    }
-
-    /** R3b: the prizes row's (i). */
-    static final String PRIZES_INFO = "The labs' share of a find's purse, paid by the treasury to the Research Labs that worked the problem the month a find is "
-            + "made in a field with a prize. It comes out of the treasury's cash like any payment, but it is not one of the lines the budget's total counts "
-            + "above: those carry the research bill, the posts' pay and the labs' other costs.";
-
     /**
      * One balance bar: its name and figure over a bar of 230 x 12 on the
      * scale both share, filled in its colour to the shorter of the two
@@ -1291,19 +1273,24 @@ final class GovernmentScreen {
         return c;
     }
 
-    /**
-     * CD7: the rows under the Spending page's total that the balance carries and the total does not - the retired gain's and the exchange gain's - and,
-     * since R3b, the prizes the treasury paid the Research Labs (the total has the research bill and no prize): any of them, or null at none.
-     */
-    static Node outsideRows(NationalAccounts na, double prizesPaid) {
+    /** CD7: the rows under the Spending page's total that the balance carries and the total does not: the retired gain's and the exchange gain's, one or both, or null at neither. */
+    static Node outsideRows(NationalAccounts na) {
         // Kept (KP6): a row that comes or goes is a scope of its own.
         Node gain = Kept.scope("gain", () -> retiredGainRow(na));
         Node exchange = Kept.scope("exchange", () -> debtExchangeRow(na));
-        Node prizes = Kept.scope("prizes", () -> prizesRow(prizesPaid));
-        List<Node> rows = new ArrayList<>();
-        for (Node n : new Node[] {gain, exchange, prizes}) if (n != null) rows.add(n);
-        if (rows.isEmpty()) return null;
-        return rows.size() == 1 ? rows.get(0) : Kept.column(0, rows.toArray(new Node[0]));
+        if (gain == null || exchange == null) return gain != null ? gain : exchange;
+        return Kept.column(0, gain, exchange);
+    }
+
+    /**
+     * The Subsidies line, opened (R3b): what the city paid to keep its sectors alive (Game.getTotalSubsidyPaid()) and the labs' share of a find's purse
+     * (Game.getPrizePaid(), TreasuryLine.PRIZES), which the books strike in this line as the transfer to a firm it is (strikeGovernmentBooks(), R4 ★5).
+     */
+    VBox subsidiesSpendDetail(double total, String colour) {
+        return payers("to whom", "The sectors the city props up with its standing subsidies, and the Research Labs' share of the prize for a find made "
+                + "here: a prize is paid as a subsidy is, into the labs' owners' till. The dials are Policy › Promises › Subsidies and Policy › Research › "
+                + "Funding.", List.of(new Payer("The sectors kept going", ui.game.getTotalSubsidyPaid(), null),
+                        new Payer("Research prizes to the labs", ui.game.getPrizePaid(), null)), total, colour);
     }
 
     /** One row of the fold's grid: a movement, signed, and a zero written as one. */
@@ -2106,13 +2093,13 @@ final class GovernmentScreen {
 
     /**
      * The research line, opened (R3b): the bill the accounts book is the pay of the posts the grants bought (already in the households' wages, which count
-     * a post as the job it is) and the laboratories' other costs (EconomyManager.setResearch()). The prizes are not in it: they stand under the total.
+     * a post as the job it is) and the laboratories' other costs (EconomyManager.setResearch()). The prizes are not in it: they are in Subsidies.
      */
     VBox researchSpendDetail(double total, String colour) {
         EconomyManager em = ui.game.getEconomyManager();
         return payers("to whom, by kind of cost", "The posts the research grants bought: their researchers and the support staff they need, whose pay "
                 + "is in the households' wages already, and the Research Labs' other costs. The grants are set on Policy › Research › Funding. The "
-                + "prizes the labs are paid on a find are not in this line: they stand under the total when there are any.",
+                + "prizes the labs are paid on a find are not in this line: they are in Subsidies, a transfer to the labs' owners as a subsidy is.",
                 List.of(new Payer("The posts' pay", em.getResearchPayroll(), null),
                         new Payer("The laboratories' other costs", em.getResearchCosts(), null)), total, colour);
     }
@@ -2189,7 +2176,7 @@ final class GovernmentScreen {
         double total = na.getTotalExpenses();
         // "Outside the budget's total: repairs ..." stood here from 0.7.31; a line of the list since 0.7.102 (A15).
         // Under the total now stands the gain (loss) on debt retired (CD3), when there is one: in the balance, not in this total.
-        Node outside = Kept.scope("outside", () -> outsideRows(na, ui.game.getPrizePaid()));
+        Node outside = Kept.scope("outside", () -> outsideRows(na));
         listPage(page, "Spending", "paid out", names, amounts, total, na,
                 name -> {
                     double amount = amounts.get(names.indexOf(name));
@@ -2203,6 +2190,7 @@ final class GovernmentScreen {
                         case "Mortgage insurance claims" -> this::mortgageInsuranceDetail;
                         case "Food assistance" -> amount > 0 ? () -> foodAssistanceDetail(amount, c) : null;
                         case "Research"      -> amount > 0 ? () -> researchSpendDetail(amount, c) : null;
+                        case "Subsidies"     -> amount > 0 && ui.game.getPrizePaid() > 0 ? () -> subsidiesSpendDetail(amount, c) : null;
                         default              -> null;
                     };
                 },
