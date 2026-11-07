@@ -2,6 +2,7 @@ package ham.citybuildersim;
 
 import ham.citybuildersim.ui.KeptBench;
 import ham.citybuildersim.ui.Money;
+import ham.citybuildersim.ui.Palette;
 import javafx.animation.Animation;
 import javafx.application.Platform;
 import javafx.scene.layout.Pane;
@@ -286,7 +287,14 @@ import java.util.concurrent.TimeUnit;
  *      from; the writes of the screens outside the sweep (NOT_KP2B) are named and not counted;
  *  93. the Rankings table's picture (KP2b): a kept draw of the page writes its cursor none (the hand is in its style, which Kept leaves alone), and the band
  *      that lights the row under the pointer follows a pointer a wheel leaves still - a ScrollEvent through the table's canvas moves the page, no
- *      mouse-moved follows, and after it, and after a month's draw, the band is on the row the pointer is over now and not on the one it was over before.
+ *      mouse-moved follows, and after it, and after a month's draw, the band is on the row the pointer is over now and not on the one it was over before;
+ *  94. (UP7) the drawer's pinned bar and the construction tab are kept: two boxes made once, on scenes of their own, drawn by the real refreshDrawerBar() and
+ *      refreshConstructionTab(inCity, open) - after the first draw each hands back every node and makes none; in every state (pinned and not, the panel open and
+ *      folded, a city on show and a game menu, no site, one and three) the kept signature equals one built new (the pools swapped for empty ones), and at three
+ *      states the same pixels; the tab's count made wrong by hand is seen and set right by the next draw; a second draw with nothing new writes no style, text,
+ *      graphic, padding or width (and one after the pin is flipped does, so the counter sees the bar); the tab drawn under a still pointer keeps its hover look and
+ *      loses it with the pointer; the tooltips are the same objects across draws, their words following the count and the pin; the click handlers are there after a
+ *      kept draw on both sides, and fired (the scratch city's prefs file) they pin, unpin, open and fold.
  * ...and the research screens on the Sectors and Build tabs (R5, slice B2), on ResearchViewCheck.researchTown(), a city founded the 1900 way (a played
  * city has nothing of either to draw, and says so):
  *  96. a sector's Investors page with its equipment, kept: the sector of the fixture's unfitted stack has ITS EQUIPMENT with the piece's card, the
@@ -297,19 +305,26 @@ import java.util.concurrent.TimeUnit;
  *      under the head and the dot on the category's chip; the seen rule from both sides (NEW the month the card is first drawn, a redraw in that month
  *      too, and not the month after while the model alone still says NEW; the dot on another page follows it; a reload shows NEW again; the rule alone
  *      on a seen map and two months); a lab's card says what a lab is for, in either kind of city; a played city has no NEW anywhere.
+ * ...and the header's speed reading (UP7):
+ *  98. (UP7) the speed's reading is the speed reached alone: the header's pace swapped for ones on a clock moved by hand, through the real refreshHeader() and
+ *      paintSpeed() at every rung - short, the label reads pace.reached() with no rung beside it, in amber (WARN); at pace and stopped, the rung in the header's
+ *      colour; the label is the one measured width at every rung, short and at pace, and no reading is clipped; at pace it is laid out exactly as a label made
+ *      the old way (min width 34, the old style, the same words); the clock block and the tiles beside it do not move between pace and short; the kept header's
+ *      signature equals a header built new, short and at pace; a second header draw, and paintSpeed() with the reading unchanged, write nothing on the label,
+ *      and a flip from pace to short and back sets its words and its style once each.
  * ...and Policy > Research's Overview and Funding pages (R3b, slice B), in a city founded the default way and, on ResearchViewCheck.fundedTown() (two
  * Universities, an Institute of technology and a Medical school, grants that bought posts, a lab and a prize), a city founded the 1900 way:
- *  98. the Overview, the hub's sixth card: in a default city one quiet card, the area's first page the Overview, a door to the area landing on it; in the
+ *  99. the Overview, the hub's sixth card: in a default city one quiet card, the area's first page the Overview, a door to the area landing on it; in the
  *      town four figures (the researchers at work with the idle and to each 1,000 workers, a month, found here with from abroad, in reach by field), a row a
  *      field (its schools, researchers with the labs' and the idle, what is in reach, finds, a door to Funding) and a row a kind of school (the posts it carries
  *      of each field, the room it has), each held to the model's reads; the page kept over last month's nodes is the page built new, a second draw in a
  *      month writes nothing (92's rule), and the hub's Research card (a door to the Overview) is held to the reads the same way;
- *  99. Funding: a card a field with its grant and prize dials, the room and where labs come, rows before and after and the sentence the reads choose - in a
+ * 100. Funding: a card a field with its grant and prize dials, the room and where labs come, rows before and after and the sentence the reads choose - in a
  *      default city (nothing to find; a grant staged still buys posts) and in the town; a staged grant, a grant past the room, a prize under a lab's
  *      threshold, two dials at once, each equal to a page built new and shown from the model's reads (the posts of the room, the researchers, the bill, the
  *      preview, THE BUDGET); Apply all through the tray sets the grants and prizes in the model and logs them as the promises are; a thumb held through a
  *      month's landing keeps its place and its rows (a grant dial and a prize dial);
- * 100. the schools' research posts on Services > Education (the University, the Institute of technology and the Medical school say the field, the posts filled
+ * 101. the schools' research posts on Services > Education (the University, the Institute of technology and the Medical school say the field, the posts filled
  *      and the room; a school not built or hosting none says nothing), Government's Spending list with the Research line (the lines add up to the total, a
  *      door to Funding, who is paid), its payroll and the wage floor's naming the research staff (the floor in force shows no change of the payroll), each
  *      kept against a page built new with 92's rule.
@@ -324,7 +339,7 @@ public class KeptCheck {
         System.out.printf("%-72s %s%n", label, ok ? "OK" : "FAIL");
     }
 
-    /** The same, with what was found printed under a failure (R3b, sections 98 to 100). */
+    /** The same, with what was found printed under a failure (R3b, sections 99 to 101). */
     static void check(String label, boolean ok, String found) {
         check(label, ok);
         if (!ok && found != null) System.out.println("       found: " + found);
@@ -6383,12 +6398,12 @@ public class KeptCheck {
     }
 
     /* =====================================================================
-       POLICY > RESEARCH'S OVERVIEW AND FUNDING (R3b, slice B), sections 98 to 100: the two pages, the hub's Research card, the schools' research posts on
+       POLICY > RESEARCH'S OVERVIEW AND FUNDING (R3b, slice B), sections 99 to 101: the two pages, the hub's Research card, the schools' research posts on
        Services, the research line on Government's Spending list and the wage floor's payroll, each kept over last month's nodes against a page built new
        ===================================================================== */
 
     /**
-     * The city of sections 98 to 100: ResearchViewCheck.fundedTown() - a 1900 city with two Universities, an Institute of technology and a Medical school,
+     * The city of sections 99 to 101: ResearchViewCheck.fundedTown() - a 1900 city with two Universities, an Institute of technology and a Medical school,
      * and grants in engineering, medicine and business that bought posts - with a prize on medicine, played two
      * months on so that the posts and the month's bill are in its books.
      */
@@ -6502,7 +6517,7 @@ public class KeptCheck {
     }
 
     /**
-     * Sections 98 to 100: Policy > Research's Overview and Funding pages (R3b, slice B), in a city founded the default way (one quiet card; Funding says
+     * Sections 99 to 101: Policy > Research's Overview and Funding pages (R3b, slice B), in a city founded the default way (one quiet card; Funding says
      * there is nothing to find) and in a city founded the 1900 way with schools, grants and a lab, each page drawn kept over last month's nodes against a
      * page built new, month after month; what each shows held against the model's reads; the dials staged, held through a month and applied.
      */
@@ -6511,7 +6526,7 @@ public class KeptCheck {
         long t = System.nanoTime();
         int c = checks;
         researchDefaultWay(g, defaultBench);
-        t = tookWith("a city founded the default way (98)", t, c);
+        t = tookWith("a city founded the default way (99)", t, c);
         c = checks;
         Game town = fx(KeptCheck::researchFundingTown);
         KeptBench bench = fx(() -> new KeptBench(town));
@@ -6521,18 +6536,18 @@ public class KeptCheck {
             return null;
         });
         researchOverview(town, bench);
-        t = tookWith("the Overview and the hub's Research card (98)", t, c);
+        t = tookWith("the Overview and the hub's Research card (99)", t, c);
         c = checks;
         researchFundingPage(town, bench);
-        t = tookWith("the Funding page (99)", t, c);
+        t = tookWith("the Funding page (100)", t, c);
         c = checks;
         researchSchoolsAndBooks(town, bench);
-        tookWith("the schools' posts, the spending list and the wage floor (100)", t, c);
+        tookWith("the schools' posts, the spending list and the wage floor (101)", t, c);
     }
 
-    /** Section 98, the first part: in a city founded the default way. */
+    /** Section 99, the first part: in a city founded the default way. */
     static void researchDefaultWay(Game g, KeptBench defaultBench) throws Exception {
-        System.out.println("\n--- 98: in a city founded the default way the Overview is one quiet card, Funding says there is nothing to find, and the hub has a Research card ---");
+        System.out.println("\n--- 99: in a city founded the default way the Overview is one quiet card, Funding says there is nothing to find, and the hub has a Research card ---");
         ResearchView.Overview ov = fx(() -> ResearchView.overview(g));
         String firstPage = null;
         for (String[] p : KeptBench.policyPages()) {
@@ -6615,14 +6630,14 @@ public class KeptCheck {
                         && has(hubSig, label(ov.foundHere() + " found here · " + ov.fromAbroad() + " from abroad")));
     }
 
-    /** Section 98, the second part: the Overview and the hub's Research card in the 1900 town. */
+    /** Section 99, the second part: the Overview and the hub's Research card in the 1900 town. */
     static void researchOverview(Game town, KeptBench bench) throws Exception {
-        System.out.println("\n--- 98: the Overview in a city founded the 1900 way, kept: four figures, a row a field, a row a kind of school ---");
+        System.out.println("\n--- 99: the Overview in a city founded the 1900 way, kept: four figures, a row a field, a row a kind of school ---");
         KeptBench.Page page = fx(() -> bench.policy("Policy, Research's Overview", "Research", "Overview"));
-        pageKept(town, bench, page, 98);
+        pageKept(town, bench, page, 99);
         nothingSet(bench, page, "Policy, Research, Overview in the town (its figures, a row a field, a row a kind of school)");
         arrive(bench, page);
-        pageShows(town, bench, page, 98);
+        pageShows(town, bench, page, 99);
 
         ResearchView.Overview ov = fx(() -> ResearchView.overview(town));
         List<ResearchView.SchoolRow> schools = fx(() -> ResearchView.schoolRows(town));
@@ -6682,7 +6697,7 @@ public class KeptCheck {
         choices.add(policyPage("Research", "Funding"));
         choices.add(policyPage("Research", "Found"));
         choices.add(policyPage("Research", "Overview"));
-        pageReshaped(town, bench, page, 98, choices, KP6_HANDED_BACK);
+        pageReshaped(town, bench, page, 99, choices, KP6_HANDED_BACK);
 
         // The hub's sixth card.
         KeptBench.Page hub = fx(() -> bench.policy("the Policy hub in the research town", null, null));
@@ -6698,14 +6713,14 @@ public class KeptCheck {
         monthsAgainstNew(town, bench, hub, "the Policy hub in the research town", R5_MONTHS, null);
     }
 
-    /** Section 99: the Funding page in the 1900 town. */
+    /** Section 100: the Funding page in the 1900 town. */
     static void researchFundingPage(Game town, KeptBench bench) throws Exception {
-        System.out.println("\n--- 99: the Funding page, kept: a card a field, a grant and a prize staged through Policy's set and tray, their rows before and after ---");
+        System.out.println("\n--- 100: the Funding page, kept: a card a field, a grant and a prize staged through Policy's set and tray, their rows before and after ---");
         KeptBench.Page page = fx(() -> bench.policy("Policy, Research's Funding", "Research", "Funding"));
-        pageKept(town, bench, page, 99);
+        pageKept(town, bench, page, 100);
         nothingSet(bench, page, "Policy, Research, Funding in the town (its four cards, their dials and rows)");
         arrive(bench, page);
-        pageShows(town, bench, page, 99);
+        pageShows(town, bench, page, 100);
 
         ResearchCatalog.Field eng = ResearchCatalog.Field.ENGINEERING, med = ResearchCatalog.Field.MEDICINE;
         ResearchView.Overview ov = fx(() -> ResearchView.overview(town));
@@ -6792,7 +6807,7 @@ public class KeptCheck {
                 c3.prizeMoved() && has(lowSig, label(KeptBench.researchSay(c3))) && has(lowSig, "is under what a lab needs here") && has(lowSig, label(Money.money(lowPrize))));
 
         // What reshapes the page: each stage, the discard, two dials at once, a month after each.
-        pageReshaped(town, bench, page, 99, List.of(
+        pageReshaped(town, bench, page, 100, List.of(
                 choice("a grant staged up on engineering", stageMore),
                 choice("...and discarded", discard),
                 choice("a grant past the room", stagePast),
@@ -6856,9 +6871,9 @@ public class KeptCheck {
         nothingSet(bench, page, "Policy, Research, Funding in the town with a lab standing");
     }
 
-    /** Section 100: the schools' research posts on Services, the research line on Government's Spending list, and the wage floor's payroll. */
+    /** Section 101: the schools' research posts on Services, the research line on Government's Spending list, and the wage floor's payroll. */
     static void researchSchoolsAndBooks(Game town, KeptBench bench) throws Exception {
-        System.out.println("\n--- 100: Services > Education's research posts, Government's Research line and payroll, and the wage floor: the research staff counted ---");
+        System.out.println("\n--- 101: Services > Education's research posts, Government's Research line and payroll, and the wage floor: the research staff counted ---");
         // The schools.
         KeptBench.Page edu = fx(bench::services);
         Hand open = b -> { b.servicesOpen("Education", "Overview"); return null; };
@@ -8026,8 +8041,483 @@ public class KeptCheck {
         });
     }
 
+    /* =====================================================================
+       THE DRAWER'S BAR, THE CONSTRUCTION TAB AND THE SPEED'S READING (UP7): sections 94 and 98
+       ===================================================================== */
+
+    /** The sites a state puts the city in: none, one (the tab says "1 site"), three (it says "3 sites"). */
+    static final int[] SITE_COUNTS = {0, 1, 3};
+
+    /**
+     * Puts the played city's building stacks in a state with this many sites on (the stacks' own setter, the one a loaded save uses):
+     * the first n stacks under construction, the rest not, so the tab's count and its tooltip are the model's own answer. Returns nothing;
+     * the caller kept what the stacks held (up7Frame puts it back).
+     */
+    static void putSitesOn(BuildingManager buildings, int n) {
+        List<BuildingsStacks> stacks = buildings.getStacksView();
+        for (int i = 0; i < stacks.size(); i++) stacks.get(i).setUnderConstruction(i < n ? 1 + i : 0);
+    }
+
+    /** Whether the scratch city's folder is under this JVM's TempDirs folder: then a click that saves the prefs writes nothing of the player's. */
+    static boolean cityIsScratch(Game g) {
+        java.nio.file.Path base = java.nio.file.Path.of(System.getProperty("java.io.tmpdir")).toAbsolutePath().normalize().resolve("citybuildersim-tmp");
+        return g.getGameFiles().getDirectory().toAbsolutePath().normalize().startsWith(base);
+    }
+
+    /**
+     * Section 94: the drawer's pinned bar and the construction tab, two boxes made once and drawn kept (UP7). The real refreshDrawerBar() and
+     * refreshConstructionTab(inCity, open) on scenes of their own, kept and with every node new, through every state - pinned and not, the panel
+     * open and folded, a city on show and a game menu, no site, one and three - and the hands on them: a figure made wrong, a second draw, the
+     * pointer, the tooltips and the clicks.
+     */
+    static void up7Frame(Game g, KeptBench bench) throws Exception {
+        System.out.println("\n=== The drawer's bar, the construction tab and the speed's reading (UP7) ===");
+        System.out.println("\n--- 94: the drawer's bar and the construction tab are kept ---");
+        BuildingManager buildings = g.getBuildingManager();
+        List<BuildingsStacks> stacks = buildings.getStacksView();
+        int[] held = new int[stacks.size()];
+        for (int i = 0; i < held.length; i++) held[i] = stacks.get(i).getUnderConstruction();
+        check("the city has stacks enough to put three on site (" + held.length + ")", held.length >= SITE_COUNTS[SITE_COUNTS.length - 1]);
+
+        int[] first = fx(() -> {
+            putSitesOn(buildings, SITE_COUNTS[1]);
+            bench.framePinned(false);
+            bench.drawFrameKept(true, false);
+            bench.framePasses();
+            return bench.frameCounts();
+        });
+        int barMade = first[0], tabMade = first[2];
+        System.out.printf("  the first draw made %d nodes through Kept (the bar's %d, the tab's %d)%n", barMade + tabMade, barMade, tabMade);
+        check("the first draw made the bar's nodes and the tab's (" + barMade + ", " + tabMade + ") and handed none back", barMade > 0 && tabMade > 0 && first[1] == 0 && first[3] == 0);
+
+        // Every state, twice, each time in another order (7 and 5 are coprime to 24): the nodes stay, and the kept pair equals the new pair.
+        int states = 2 * 2 * 2 * SITE_COUNTS.length;
+        int differ = 0, countWrong = 0, madeAny = 0, drawn = 0, shots = 0, shotsSame = 0, shotsAlike = 0, tabMoved = 0;
+        String firstDiffer = null;
+        int nextShot = 0;
+        for (int k = 0; k < 2 * states; k++) {
+            final int idx = k < states ? (k * 7) % states : (k * 5 + 3) % states;
+            final boolean pinned = idx % 2 == 1, open = idx / 2 % 2 == 1, inCity = idx / 4 % 2 == 0;
+            final int sites = SITE_COUNTS[idx / 8 % SITE_COUNTS.length];
+            final boolean shoot = inCity && k >= nextShot && shots < 3;
+            if (shoot) {
+                shots++;
+                nextShot = k + 7;
+            }
+            Object[] r = fx(() -> {
+                List<javafx.scene.Node> before = bench.frameKids();
+                putSitesOn(buildings, sites);
+                bench.framePinned(pinned);
+                bench.drawFrameKept(inCity, open);
+                bench.framePasses();
+                int[] c = bench.frameCounts();
+                boolean same = before.equals(bench.frameKids());
+                List<String> kept = bench.frameSignature();
+                int[][] keptPx = shoot ? bench.framePixels() : null;
+                bench.showFreshFrame(inCity, open);
+                List<String> fresh = bench.frameSignature();
+                int[][] freshPx = shoot ? bench.framePixels() : null;
+                bench.restoreKeptFrame();
+                return new Object[]{firstDifference(kept, fresh), keptPx, freshPx, c, same, bench.tabCount().getText()};
+            });
+            int[] c = (int[]) r[3];
+            drawn++;
+            if (c[0] != 0 || c[2] != 0 || c[1] != barMade || c[3] != tabMade) madeAny++;
+            if (!(boolean) r[4]) tabMoved++;
+            if (!String.valueOf(sites).equals(r[5])) countWrong++;
+            if (r[0] != null) {
+                differ++;
+                if (firstDiffer == null) firstDiffer = "state " + idx + " (pinned " + pinned + ", open " + open + ", in the city " + inCity + ", " + sites + " site(s)), " + r[0];
+            }
+            if (r[1] != null) {
+                int[][] kp = (int[][]) r[1], fp = (int[][]) r[2];
+                for (int i = 0; i < 2; i++) {
+                    if (java.util.Arrays.equals(kp[i], fp[i])) shotsSame++;
+                    if (alike(kp[i], fp[i])) shotsAlike++;
+                    else System.out.println("  " + (i == 0 ? "bar" : "tab") + " pixels differ at state " + idx + ": " + pixelDifference(kp[i], fp[i]));
+                }
+            }
+        }
+        if (firstDiffer != null) System.out.println("  first difference: " + firstDiffer);
+        check("after the first, each of " + drawn + " draws hands back every node (" + barMade + " + " + tabMade + ") and makes none, through every state ("
+                + madeAny + " drew otherwise)", madeAny == 0);
+        check("...and the nodes are the same objects in the same boxes (" + tabMoved + " moved)", tabMoved == 0);
+        check("the tab's count is the number of sites the city has, in every state (" + countWrong + " wrong)", countWrong == 0);
+        check("the kept bar and tab's signature equals the new ones' in every state (" + differ + " differ)", differ == 0);
+        System.out.printf("  %d of %d pictures the very same pixels%n", shotsSame, 2 * shots);
+        check("the kept bar and tab are the same pictures as the new ones at three states, to SHADE_LEVELS (" + shotsAlike + " of " + 2 * shots + ")", shots == 3 && shotsAlike == 2 * shots);
+
+        // One figure made wrong by hand: seen, and set right by the next kept draw.
+        Object[] spoilt = fx(() -> {
+            putSitesOn(buildings, SITE_COUNTS[2]);
+            bench.drawFrameKept(true, true);
+            bench.framePasses();
+            String was = bench.spoilFrame();
+            bench.framePasses();
+            List<String> kept = bench.frameSignature();
+            int[][] keptPx = bench.framePixels();
+            bench.showFreshFrame(true, true);
+            List<String> fresh = bench.frameSignature();
+            int[][] freshPx = bench.framePixels();
+            bench.restoreKeptFrame();
+            bench.drawFrameKept(true, true);
+            bench.framePasses();
+            List<String> mended = bench.frameSignature();
+            return new Object[]{was, firstDifference(kept, fresh), alike(keptPx[1], freshPx[1]), firstDifference(mended, fresh)};
+        });
+        check("the tab's count made wrong by hand (\"" + spoilt[0] + "\") parts its signature from the new tab's", spoilt[0] != null && spoilt[1] != null);
+        check("...and its picture", !(boolean) spoilt[2]);
+        check("...and the next kept draw sets it right again", spoilt[3] == null);
+
+        // A second draw with nothing new writes nothing; the counter sees these nodes (a pin flipped between the draws is written).
+        int wrote = 0, seen = 0;
+        String wroteFrom = null;
+        for (int idx = 0; idx < states; idx++) {
+            final int at = idx;
+            Object[] w = fx(() -> {
+                boolean inCity = at / 4 % 2 == 0, open = at / 2 % 2 == 1;
+                putSitesOn(buildings, SITE_COUNTS[at / 8 % SITE_COUNTS.length]);
+                bench.framePinned(at % 2 == 1);
+                bench.drawFrameKept(inCity, open);
+                bench.framePasses();
+                KeptBench.Sets[] s = bench.frameSets(inCity, open);
+                bench.framePasses();
+                // ...and the draw after a pin flipped, which does write: the bar's label, its words and its look.
+                bench.framePinned(at % 2 == 0);
+                KeptBench.Sets[] flipped = bench.frameSets(inCity, open);
+                return new Object[]{s, flipped};
+            });
+            KeptBench.Sets[] s = (KeptBench.Sets[]) w[0], flipped = (KeptBench.Sets[]) w[1];
+            wrote += s[0].count() + s[1].count();
+            if (wroteFrom == null && s[0].count() + s[1].count() > 0) wroteFrom = "state " + idx + ": " + s[0].first() + s[1].first();
+            seen += flipped[0].count();
+        }
+        if (wroteFrom != null) System.out.println("  written: " + wroteFrom);
+        check("a second kept draw of the bar and of the tab in the same state sets no style, text, graphic, padding or width (" + wrote + " in " + states + " states)", wrote == 0);
+        check("...and a draw after the pin is flipped does set the bar's words and look (" + seen + " writes in " + states + " states): the counter sees the bar", seen >= 2 * states);
+
+        // The pointer: the tab drawn again under a pointer that has not moved keeps the look the pointer gives it, and loses it with the pointer.
+        String[] looks = fx(() -> {
+            putSitesOn(buildings, SITE_COUNTS[1]);
+            bench.framePinned(false);
+            bench.drawFrameKept(true, false);
+            bench.framePasses();
+            javafx.scene.Node tab = bench.tab();
+            String rest = tab.getStyle();
+            tab.getOnMouseEntered().handle(null);
+            String hover = tab.getStyle();
+            tab.getOnMouseExited().handle(null);
+            KeptBench.hover(tab, true);
+            bench.drawFrameKept(true, false);
+            String under = tab.getStyle();
+            KeptBench.hover(tab, false);
+            bench.drawFrameKept(true, false);
+            String away = tab.getStyle();
+            // ...and with the panel open the tab is lit whether the pointer is over it or not.
+            bench.drawFrameKept(true, true);
+            String lit = tab.getStyle();
+            return new String[]{rest, hover, under, away, lit};
+        });
+        check("the tab drawn again under a still pointer keeps its hover look, and loses it when the pointer goes",
+                !looks[0].equals(looks[1]) && looks[2].equals(looks[1]) && looks[3].equals(looks[0]));
+        check("...and drawn with the panel open it has that look with the pointer away", looks[4].equals(looks[1]));
+
+        // The tooltips are the same objects across draws, their text following the count and the pin.
+        Object[] tips = fx(() -> {
+            bench.framePinned(false);
+            putSitesOn(buildings, SITE_COUNTS[0]);
+            bench.drawFrameKept(true, false);
+            Object tab0 = KeptBench.tooltipOf(bench.tab()), pin0 = KeptBench.tooltipOf(bench.pinLabel()), close0 = KeptBench.tooltipOf(bench.closeLabel());
+            String none = ((javafx.scene.control.Tooltip) tab0).getText(), pinWords0 = ((javafx.scene.control.Tooltip) pin0).getText();
+            putSitesOn(buildings, SITE_COUNTS[1]);
+            bench.drawFrameKept(true, false);
+            String one = ((javafx.scene.control.Tooltip) KeptBench.tooltipOf(bench.tab())).getText();
+            putSitesOn(buildings, SITE_COUNTS[2]);
+            bench.framePinned(true);
+            bench.drawFrameKept(true, true);
+            javafx.scene.control.Tooltip tab3 = (javafx.scene.control.Tooltip) KeptBench.tooltipOf(bench.tab());
+            javafx.scene.control.Tooltip pin3 = (javafx.scene.control.Tooltip) KeptBench.tooltipOf(bench.pinLabel());
+            boolean same = tab0 == tab3 && pin0 == pin3 && close0 == KeptBench.tooltipOf(bench.closeLabel());
+            return new Object[]{same, none, one, tab3.getText(), pinWords0, pin3.getText(), tab3.getShowDelay().toMillis(), pin3.getShowDelay().toMillis()};
+        });
+        System.out.println("  the tab says: \"" + tips[1] + "\" / \"" + tips[2] + "\" / \"" + tips[3] + "\"");
+        check("the tab's tooltip, the pin's and the close's are the same objects across draws", (boolean) tips[0]);
+        check("...the tab's words follow the count (nothing on site, 1 site, 3 sites) and the panel (open, then fold)",
+                tips[1].toString().contains("nothing on site") && tips[2].toString().contains("1 site.") && tips[3].toString().contains("3 sites")
+                        && tips[1].toString().contains("open the panel") && tips[3].toString().contains("fold the panel"));
+        check("...the pin's follow the pin (\"" + tips[4] + "\" then \"" + tips[5] + "\")",
+                !tips[4].equals(tips[5]) && tips[5].toString().startsWith("Pinned"));
+        check("...and the delays are the tab's own 300 ms and the pin's 1,000 (" + tips[6] + ", " + tips[7] + ")",
+                (double) tips[6] == 300 && (double) tips[7] == 1000);
+
+        // The clicks: the handlers are set at every draw on both sides; fired, when the city's prefs file is the scratch city's.
+        boolean scratch = cityIsScratch(g);
+        Object[] clicks = fx(() -> {
+            bench.framePinned(false);
+            bench.drawFrameKept(true, false);
+            boolean there = bench.pinLabel().getOnMouseClicked() != null && bench.closeLabel().getOnMouseClicked() != null
+                    && bench.tab().getOnMouseClicked() != null && bench.tab().getOnMouseEntered() != null && bench.tab().getOnMouseExited() != null;
+            bench.showFreshFrame(true, false);
+            boolean built = bench.pinLabel().getOnMouseClicked() != null && bench.closeLabel().getOnMouseClicked() != null
+                    && bench.tab().getOnMouseClicked() != null;
+            bench.restoreKeptFrame();
+            bench.drawFrameKept(true, false);
+            boolean again = bench.pinLabel().getOnMouseClicked() != null && bench.closeLabel().getOnMouseClicked() != null
+                    && bench.tab().getOnMouseClicked() != null;
+            if (!scratch) return new Object[]{there, built, again, null};
+            // The pin's click pins the drawer and draws the bar: the label says so.
+            bench.pinLabel().getOnMouseClicked().handle(null);
+            boolean pinned = bench.framePinned() && "Pinned".equals(bench.pinLabel().getText());
+            bench.pinLabel().getOnMouseClicked().handle(null);
+            boolean unpinned = !bench.framePinned() && "Pin".equals(bench.pinLabel().getText());
+            // The tab's click opens the panel (the prefs flip; the frame is the window's to place, which the bench has not).
+            bench.tab().getOnMouseClicked().handle(null);
+            boolean opened = bench.frameOpen();
+            bench.tab().getOnMouseClicked().handle(null);
+            boolean folded = !bench.frameOpen();
+            bench.closeLabel().getOnMouseClicked().handle(null);
+            return new Object[]{there, built, again, pinned && unpinned && opened && folded};
+        });
+        check("the bar's pin and close and the tab have their click handlers after a kept draw, after one built new and after the kept draw again",
+                (boolean) clicks[0] && (boolean) clicks[1] && (boolean) clicks[2]);
+        if (clicks[3] == null) System.out.println("  the city's folder is not the scratch city's: the clicks are not fired");
+        else check("...fired, the pin pins and unpins the drawer and draws the bar, and the tab opens and folds the panel (prefs saved in the scratch city)", (boolean) clicks[3]);
+
+        // Put back what the section moved.
+        fx(() -> {
+            for (int i = 0; i < held.length; i++) stacks.get(i).setUnderConstruction(held[i]);
+            bench.framePinned(false);
+            return null;
+        });
+    }
+
+    /** A pace on a clock moved by hand, run past a full window: at pace, or short of the rung (a rung of 50 by months of 120 ms as ClockCheck's falls, the rest by a city that runs at two fifths of it). */
+    static ClockPace paceFor(double rung, boolean short_) {
+        ClockCheck.Sim s = new ClockCheck.Sim();
+        if (short_) {
+            if (rung == 50) {
+                s.speed = rung;
+                s.monthMs = m -> 120;
+            } else {
+                s.spm = .5;
+                s.speed = rung * .4;
+            }
+        } else {
+            s.speed = rung;
+            s.monthMs = m -> 5;
+        }
+        while (s.elapsed < ClockPace.SHORT_WINDOW + .5) s.step();
+        return s.pace;
+    }
+
+    /** The header drawn kept and laid out, as the clock's redraw leaves it. */
+    static void drawHeader(KeptBench bench) throws Exception {
+        bench.drawChromeKept();
+        bench.chromePasses();
+    }
+
+    /**
+     * Section 98: the speed's reading (UP7). The header's pace swapped for ones on a clock moved by hand, at pace and short of the rung, at every rung,
+     * through the real refreshHeader() and paintSpeed(): the reading is the speed reached alone in amber when short and the rung in the header's colour
+     * otherwise, one width for ever, never clipped, the tiles beside it never moving, and written once when it changes.
+     */
+    static void up7Speed(Game g, KeptBench bench) throws Exception {
+        System.out.println("\n--- 98: the speed's reading is the speed reached, alone and in amber, in one width ---");
+        double[] rungs = KeptBench.speedRungs();
+        String pace = "-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11px; -fx-text-fill: " + Palette.TEXT_HEAD + ";";
+        String amber = "-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11px; -fx-text-fill: " + Palette.WARN + ";";
+
+        // What the window measured: the widest rung's words and the widest reached text, in the label's own font.
+        double widestWords = 0, widestReached = 0;
+        String wordsOf = "", reachedOf = "";
+        for (int i = 0; i < rungs.length; i++) {
+            double w = KeptBench.speedTextWidth(KeptBench.speedWords(i));
+            if (w > widestWords) {
+                widestWords = w;
+                wordsOf = KeptBench.speedWords(i);
+            }
+        }
+        for (String text : ClockPace.reachedTexts(rungs[rungs.length - 1])) {
+            double w = KeptBench.speedTextWidth(text);
+            if (w > widestReached) {
+                widestReached = w;
+                reachedOf = text;
+            }
+        }
+        double fixed = fx(() -> {
+            bench.clock(true, null);
+            bench.screen(CHROME_SCREENS[0]);
+            bench.speed(0);
+            bench.pace(paceFor(rungs[0], false));
+            drawHeader(bench);
+            return bench.speedWidth();
+        });
+        System.out.printf("  measured in the label's own font: the widest rung words %s %.2f px, the widest reached text %s %.2f px; the window holds %.1f px%n",
+                wordsOf, widestWords, reachedOf, widestReached, fixed);
+        check("the reading's one width is the widest text it can show, and never under 34 (" + fixed + ")",
+                fixed >= Math.max(34, Math.max(widestWords, widestReached)) && fixed < Math.max(34, Math.ceil(Math.max(widestWords, widestReached))) + 1);
+
+        // At pace, every rung: the label as it was before - min width 34, the old style, the same words - at the one width, never clipped.
+        StringBuilder atPace = new StringBuilder();
+        int[] widthWrong = {0}, clipped = {0}, notOld = {0}, styleWrong = {0}, wordsWrong = {0}, reachedWrong = {0};
+        double[] xs = new double[rungs.length * 3];
+        double[] clockWidth = new double[rungs.length];
+        for (int i = 0; i < rungs.length; i++) {
+            final int rung = i;
+            Object[] r = fx(() -> {
+                bench.clock(true, null);
+                bench.speed(rung);
+                ClockPace p = paceFor(rungs[rung], false);
+                bench.pace(p);
+                drawHeader(bench);
+                String words = KeptBench.speedWords(rung);
+                javafx.scene.control.Label label = bench.speedLabel();
+                double[] old = bench.speedOldWay(words);
+                double[] x = {bench.headerChildX(1), bench.headerChildX(2), bench.headerChildX(3)};
+                return new Object[]{label.getText(), label.getStyle(), label.getWidth(), bench.speedClipped(), old, bench.speedHeight(),
+                        p.reached(words, rungs[rung]), x, bench.headerChild(0).getBoundsInParent().getWidth()};
+            });
+            String words = KeptBench.speedWords(rung);
+            double[] old = (double[]) r[4];
+            if (!words.equals(r[0])) wordsWrong[0]++;
+            if (!pace.equals(r[1])) styleWrong[0]++;
+            if ((double) r[2] != fixed) widthWrong[0]++;
+            if ((boolean) r[3]) clipped[0]++;
+            if (old[0] != (double) r[2] || old[1] != (double) r[5]) notOld[0]++;
+            if (r[6] != null) reachedWrong[0]++;
+            System.arraycopy((double[]) r[7], 0, xs, rung * 3, 3);
+            clockWidth[rung] = (double) r[8];
+            atPace.append(String.format(java.util.Locale.ROOT, " %s %.1f/%.1f", words, r[2], old[0]));
+        }
+        System.out.println("  at pace, the label's width / a label made the old way:" + atPace);
+        check("at pace, at every rung, the reading is the rung's words in the header's colour (" + wordsWrong[0] + " words and " + styleWrong[0] + " styles wrong)",
+                wordsWrong[0] == 0 && styleWrong[0] == 0 && reachedWrong[0] == 0);
+        check("...laid out at the one width (" + widthWrong[0] + " rungs not)", widthWrong[0] == 0);
+        check("...and exactly as a label made the old way is (min width 34, the old style, the same words): the same width and height (" + notOld[0] + " rungs not)",
+                notOld[0] == 0);
+        check("...and no reading's words are clipped (" + clipped[0] + " rungs)", clipped[0] == 0);
+
+        // Short of the rung, every rung: the speed reached alone, in amber, at the one width, and the tiles where they were.
+        StringBuilder shortWords = new StringBuilder();
+        int shortWordsWrong = 0, shortStyleWrong = 0, shortWidthWrong = 0, shortClipped = 0, tilesMoved = 0, withRung = 0;
+        for (int i = 0; i < rungs.length; i++) {
+            final int rung = i;
+            Object[] r = fx(() -> {
+                bench.clock(true, null);
+                bench.speed(rung);
+                ClockPace p = paceFor(rungs[rung], true);
+                bench.pace(p);
+                drawHeader(bench);
+                String words = KeptBench.speedWords(rung);
+                javafx.scene.control.Label label = bench.speedLabel();
+                double[] x = {bench.headerChildX(1), bench.headerChildX(2), bench.headerChildX(3)};
+                return new Object[]{label.getText(), label.getStyle(), label.getWidth(), bench.speedClipped(), p.reached(words, rungs[rung]), x,
+                        bench.headerChild(0).getBoundsInParent().getWidth()};
+            });
+            String words = KeptBench.speedWords(rung);
+            if (r[4] == null || !r[4].equals(r[0])) shortWordsWrong++;
+            if (!amber.equals(r[1])) shortStyleWrong++;
+            if ((double) r[2] != fixed) shortWidthWrong++;
+            if ((boolean) r[3]) shortClipped++;
+            if (String.valueOf(r[0]).contains(words) || String.valueOf(r[0]).contains("·")) withRung++;
+            double[] x = (double[]) r[5];
+            for (int k = 0; k < 3; k++) if (x[k] != xs[rung * 3 + k]) tilesMoved++;
+            if ((double) r[6] != clockWidth[rung]) tilesMoved++;
+            shortWords.append(' ').append(words).append("->").append(r[0]);
+        }
+        System.out.println("  short of the rung, what the label reads:" + shortWords);
+        check("short of the rung, at every rung, the reading is pace.reached() alone, with no rung beside it (" + shortWordsWrong + " wrong, " + withRung + " with the rung)",
+                shortWordsWrong == 0 && withRung == 0);
+        check("...in amber (WARN) and nothing else changed in its style (" + shortStyleWrong + " wrong)", shortStyleWrong == 0);
+        check("...at the one width (" + shortWidthWrong + " rungs not), never clipped (" + shortClipped + ")", shortWidthWrong == 0 && shortClipped == 0);
+        check("...and the clock block's width and the money block's, the tiles' and the rating's x are the same as at pace (" + tilesMoved + " moved)", tilesMoved == 0);
+
+        // Stopped: the rung, whatever the pace says.
+        Object[] stopped = fx(() -> {
+            bench.clock(false, null);
+            bench.speed(rungs.length - 1);
+            bench.pace(paceFor(rungs[rungs.length - 1], true));
+            drawHeader(bench);
+            return new Object[]{bench.speedLabel().getText(), bench.speedLabel().getStyle()};
+        });
+        check("with the clock stopped the reading is the rung in the header's colour, though the pace was short", KeptBench.speedWords(rungs.length - 1).equals(stopped[0]) && pace.equals(stopped[1]));
+
+        // The kept header against a header built new, at pace and short, at every rung.
+        int signDiffer = 0;
+        String firstDiffer = null;
+        for (int i = 0; i < rungs.length; i++) {
+            for (boolean short_ : new boolean[]{false, true}) {
+                final int rung = i;
+                final boolean isShort = short_;
+                String d = fx(() -> {
+                    bench.clock(true, null);
+                    bench.speed(rung);
+                    bench.pace(paceFor(rungs[rung], isShort));
+                    drawHeader(bench);
+                    List<String> kept = bench.chromeSignature();
+                    bench.showFreshChrome();
+                    List<String> fresh = bench.chromeSignature();
+                    bench.restoreKeptChrome();
+                    return firstDifference(kept, fresh);
+                });
+                if (d != null) {
+                    signDiffer++;
+                    if (firstDiffer == null) firstDiffer = "rung " + KeptBench.speedWords(rung) + (isShort ? " short" : " at pace") + ", " + d;
+                }
+            }
+        }
+        if (firstDiffer != null) System.out.println("  first difference: " + firstDiffer);
+        check("the kept header's signature equals a header built new, at pace and short, at every rung (" + signDiffer + " differ)", signDiffer == 0);
+
+        // A header drawn again writes nothing on the reading; so does paintSpeed() with it unchanged; a flip writes its words and its colour once each.
+        int top = rungs.length - 1;
+        KeptBench.Sets[] sets = fx(() -> {
+            bench.clock(true, null);
+            bench.speed(top);
+            bench.pace(paceFor(rungs[top], false));
+            drawHeader(bench);
+            KeptBench.Sets again = bench.speedSets(() -> bench.drawChromeKept());
+            bench.chromePasses();
+            KeptBench.Sets repaint = bench.speedSets(bench::paintSpeed);
+            bench.pace(paceFor(rungs[top], true));
+            KeptBench.Sets toShort = bench.speedSets(bench::paintSpeed);
+            KeptBench.Sets repaintShort = bench.speedSets(bench::paintSpeed);
+            bench.pace(paceFor(rungs[top], false));
+            KeptBench.Sets toPace = bench.speedSets(bench::paintSpeed);
+            bench.pace(paceFor(rungs[top], true));
+            KeptBench.Sets drawnShort = bench.speedSets(() -> bench.drawChromeKept());
+            KeptBench.Sets drawnShortAgain = bench.speedSets(() -> bench.drawChromeKept());
+            return new KeptBench.Sets[]{again, repaint, toShort, repaintShort, toPace, drawnShort, drawnShortAgain};
+        });
+        check("a second header draw at pace writes nothing on the reading (" + sets[0].count() + ")", sets[0].count() == 0);
+        check("paintSpeed() with the reading unchanged writes nothing, at pace and short (" + sets[1].count() + ", " + sets[3].count() + ")",
+                sets[1].count() == 0 && sets[3].count() == 0);
+        check("a flip from pace to short sets the words once and the style once (" + sets[2].count() + ")", onceEach(sets[2]));
+        check("...and back sets them once each (" + sets[4].count() + ")", onceEach(sets[4]));
+        check("...and a header draw that finds the pace short sets them once each, the next draw nothing (" + sets[5].count() + ", " + sets[6].count() + ")",
+                onceEach(sets[5]) && sets[6].count() == 0);
+
+        fx(() -> {
+            bench.pace(new ClockPace());
+            bench.clock(true, null);
+            bench.speed(3);
+            return null;
+        });
+    }
+
+    /** Whether a draw wrote the reading's words once and its style once, and nothing else. */
+    static boolean onceEach(KeptBench.Sets s) {
+        boolean words = false, style = false;
+        for (String line : s.first()) {
+            if (line.startsWith("x1 ") && line.contains(" text: ")) words = true;
+            if (line.startsWith("x1 ") && line.contains(" style: ")) style = true;
+        }
+        if (s.count() != 2 || !words || !style) System.out.println("      " + s.count() + " written: " + s.first());
+        return s.count() == 2 && words && style;
+    }
+
     public static void main(String[] args) throws Exception {
-        System.out.println("=== KeptCheck: the People page, the chrome, City History, Infrastructure, Services, the land office, Build, the construction page, the Sectors tab, the Bank, Finances, the city's fund, Government, Trade & the World and Policy kept between redraws, the clock never rebuilding a rail screen, and the research screens (study UP4, UP2, KP1, KP2, KP3, KP4, KP5, KP6, KP7, R5) ===");
+        System.out.println("=== KeptCheck: the People page, the chrome, City History, Infrastructure, Services, the land office, Build, the construction page, the Sectors tab, the Bank, Finances, the city's fund, Government, Trade & the World, Policy, the drawer's bar and the construction tab kept between redraws, the speed's reading, the clock never rebuilding a rail screen, and the research screens (study UP4, UP2, KP1, KP2, KP3, KP4, KP5, KP6, KP7, UP7, R5) ===");
         String down = startJavaFx();
         if (down != null) {
             System.out.println("skipped: the JavaFX toolkit cannot start here (" + down + "); the page needs it to be laid out");
@@ -8214,6 +8704,8 @@ public class KeptCheck {
         doorsStyledOnce(g, bench);
         kp2bSets(g, bench);
         kp2bRowsPicture(g, bench);
+        up7Frame(g, bench);
+        up7Speed(g, bench);
 
         System.out.println("\n" + (fails == 0 ? "ALL OK" : fails + " FAILED"));
         Platform.exit();
