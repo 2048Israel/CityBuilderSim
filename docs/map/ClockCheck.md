@@ -1,4 +1,4 @@
-# ClockCheck.java - 583 lines · 21 methods · 6 constants · harnesses
+# ClockCheck.java - 689 lines · 25 methods · 6 constants · harnesses
 
 `ham/citybuildersim/ClockCheck.java` - generated 2026-11-07 by CodeMap; line numbers are as of that run.
 
@@ -34,9 +34,15 @@
 >      under FRAME_CLAMP, the reading is the rung at 1x and at 50x with cheap months, and a city
 >      really short stays short across the same stall; a speed that prints as the rung's own
 >      words ("2×" reached at 1.75 of a rung of 2) is not a shortfall, one that rounds apart is;
->      and every text reached anywhere above is one of ClockPace.reachedTexts().
+>      and every text reached anywhere above is one of ClockPace.reachedTexts();
+>   7. a stall the clock makes itself, again and again (UP7b): a redraw costing over FRAME_CLAMP,
+>      due every REDRAW_SPACING times its cost, runs the city short of the rung (the fixture
+>      measures it) and the reading says so at every frame once a window has run, at 1x and at
+>      50x; a redraw under FRAME_CLAMP loses nothing and the reading stays the rung; a stall the
+>      redraw does not explain (a minimised window after a cheap redraw, or after a redraw begun
+>      while the clock stood still) is still clamped and no shortfall.
 
-**Uses:** [ClockPace](ClockPace.md) (63), [YearBook](YearBook.md) (8), [HistorySave](HistorySave.md) (7), [UserInterface](UserInterface.md) (4), [GameFiles](GameFiles.md) (2), [LongPlaytest](LongPlaytest.md) (2), [Game](Game.md) (1)
+**Uses:** [ClockPace](ClockPace.md) (78), [YearBook](YearBook.md) (8), [HistorySave](HistorySave.md) (7), [UserInterface](UserInterface.md) (4), [GameFiles](GameFiles.md) (2), [LongPlaytest](LongPlaytest.md) (2), [Game](Game.md) (1)
 
 **Used by (1):** [KeptCheck](KeptCheck.md)
 
@@ -44,92 +50,102 @@
 
 | line | section |
 |---:|---|
-| 126 | 1. a redraw is paced by what it cost |
-| 193 | 2. a frame has a budget for months |
-| 254 | 3. a stall is not paid back |
-| 284 | 4. the speed says when it falls short |
-| 375 | 5. the header reads the window it draws |
-| 484 | 6. a stalled frame is not a shortfall, and a speed that prints as the rung is not one |
+| 147 | 1. a redraw is paced by what it cost |
+| 214 | 2. a frame has a budget for months |
+| 275 | 3. a stall is not paid back |
+| 305 | 4. the speed says when it falls short |
+| 396 | 5. the header reads the window it draws |
+| 505 | 6. a stalled frame is not a shortfall, and a speed that prints as the rung is not one |
+| 605 | 7. a stall the clock makes itself, again and again |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 52 | `ClockCheck.SPM` | `UserInterface.SECONDS_PER_MONTH` | Real seconds a month takes at 1x, as the window's clock has it. |
-| 55 | `ClockCheck.TOP` | `50` | The top rung. |
-| 56 | `ClockCheck.TOP_LABEL` | `"50×"` |  |
-| 58 | `ClockCheck.FRAME` | `1.0 / 60` |  |
-| 287 | `ClockCheck.SEEN` | `new java.util.TreeSet<>()` | Every text the pace said it reached in this run: section 6 holds them against the list reachedTexts() gives. |
-| 391 | `ClockCheck.KEYS` | `{ "population", "gdp", "priceIndex", "unemployment", "policyRate" }` | The header's five keys, and the whole-history read each one stands in for. |
+| 58 | `ClockCheck.SPM` | `UserInterface.SECONDS_PER_MONTH` | Real seconds a month takes at 1x, as the window's clock has it. |
+| 61 | `ClockCheck.TOP` | `50` | The top rung. |
+| 62 | `ClockCheck.TOP_LABEL` | `"50×"` |  |
+| 64 | `ClockCheck.FRAME` | `1.0 / 60` |  |
+| 308 | `ClockCheck.SEEN` | `new java.util.TreeSet<>()` | Every text the pace said it reached in this run: section 6 holds them against the list reachedTexts() gives. |
+| 412 | `ClockCheck.KEYS` | `{ "population", "gdp", "priceIndex", "unemployment", "policyRate" }` | The header's five keys, and the whole-history read each one stands in for. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 44 | `static int fails` |  |
-| 70 | `long nanos` |  |
-| 71 | `final ClockPace pace` |  |
-| 72 | `double speed` |  |
-| 74 | `IntToDoubleFunction monthMs` | What month number m costs, in milliseconds. |
-| 75 | `long last` |  |
-| 76 | `int called, returned, badFrames` |  |
-| 77 | `double elapsed` |  |
+| 50 | `static int fails` |  |
+| 76 | `long nanos` |  |
+| 77 | `final ClockPace pace` |  |
+| 78 | `double speed` |  |
+| 80 | `IntToDoubleFunction monthMs` | What month number m costs, in milliseconds. |
+| 81 | `long last` |  |
+| 82 | `int called, returned, badFrames` |  |
+| 83 | `double elapsed` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 42 | 542 | **type** `public class ClockCheck` | The clock's pace (UP2): a redraw is paced by what it cost, a frame spends a budget on months and drops what it could not run, the header's speed says when the city falls short of it, and the header reads only the mont... |
-| 46 | 4 | `static void check(String label, boolean ok)` |  |
-| 60 | 3 | `static boolean near(double a, double b, double eps)` |  |
-| 69 | 44 | **type** `static final class Sim` | The timer's frames on a clock moved by hand: each step is one frame of FRAME seconds plus whatever the work of the frame before it took (the timer's dt is the gap between two pulses, and the work is in it), months and... |
-| 79 | 3 | `void advance(double ms)` _(in ClockCheck.Sim)_ |  |
-| 84 | 3 | `int step()` _(in ClockCheck.Sim)_ | One frame; dt is the gap since the last. |
-| 88 | 17 | `int frame(double interval)` _(in ClockCheck.Sim)_ |  |
-| 107 | 5 | `void redraw(double ms)` _(in ClockCheck.Sim)_ | A redraw that costs {@code ms}, begun and ended as the timer does. |
-| 114 | 11 | `public static void main(String[] args) throws Exception` |  |
+| 48 | 642 | **type** `public class ClockCheck` | The clock's pace (UP2): a redraw is paced by what it cost, a frame spends a budget on months and drops what it could not run, the header's speed says when the city falls short of it, and the header reads only the mont... |
+| 52 | 4 | `static void check(String label, boolean ok)` |  |
+| 66 | 3 | `static boolean near(double a, double b, double eps)` |  |
+| 75 | 58 | **type** `static final class Sim` | The timer's frames on a clock moved by hand: each step is one frame of FRAME seconds plus whatever the work of the frame before it took (the timer's dt is the gap between two pulses, and the work is in it), months and... |
+| 85 | 3 | `void advance(double ms)` _(in ClockCheck.Sim)_ |  |
+| 90 | 3 | `int step()` _(in ClockCheck.Sim)_ | One frame; dt is the gap since the last. |
+| 94 | 17 | `int frame(double interval)` _(in ClockCheck.Sim)_ |  |
+| 113 | 5 | `void redraw(double ms)` _(in ClockCheck.Sim)_ | A redraw that costs {@code ms}, begun and ended as the timer does. |
+| 120 | 7 | `void idle(double interval)` _(in ClockCheck.Sim)_ | One frame of a clock that is not running (a pause): the timer's idle branch. |
+| 129 | 3 | `double city()` _(in ClockCheck.Sim)_ | The speed the city really ran at, in times real speed: the months it advanced over the seconds that passed. |
+| 134 | 12 | `public static void main(String[] args) throws Exception` |  |
 
-### 1. a redraw is paced by what it cost (lines 126-192)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 128 | 64 | `static void redraws()` |  |
-
-### 2. a frame has a budget for months (lines 193-253)
+### 1. a redraw is paced by what it cost (lines 147-213)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 195 | 58 | `static void months()` |  |
+| 149 | 64 | `static void redraws()` |  |
 
-### 3. a stall is not paid back (lines 254-283)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 256 | 27 | `static void stall()` |  |
-
-### 4. the speed says when it falls short (lines 284-374)
+### 2. a frame has a budget for months (lines 214-274)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 290 | 5 | `static String reachedOf(ClockPace pace, String label, double rung)` | The speed reached (ClockPace.reached), noted in SEEN when there is one. |
-| 297 | 3 | `static boolean readsRung(ClockPace pace, String label, double rung)` | Whether the pace reads the rung's own words: reading() is the rung and reached() says nothing. |
-| 302 | 4 | `static boolean readsReached(ClockPace pace, String label, double rung)` | Whether the pace reads a speed reached, alone: reading() is reached(), which is not the rung's words. |
-| 307 | 66 | `static void reading()` |  |
+| 216 | 58 | `static void months()` |  |
 
-### 5. the header reads the window it draws (lines 375-483)
+### 3. a stall is not paid back (lines 275-304)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 377 | 3 | `static boolean same(double a, double b)` |  |
-| 382 | 7 | `static boolean isTailOf(double[] tail, double[] whole)` | Whether the tail is the last tail.length entries of the whole, value for value, NaN where NaN. |
-| 393 | 3 | `static double[] whole(HistorySave h, String key)` |  |
-| 398 | 41 | `static void headerReads(String what, HistorySave h, int...tails)` | The header's reads on one history: the five tiles, the change line, and every series' tail. |
-| 440 | 31 | `static void windows()` |  |
-| 473 | 10 | `static double foldedValue(String name, int month)` | A value for every series of a history grown by hand: positive, different by series and month, with a hole in the price index. |
+| 277 | 27 | `static void stall()` |  |
 
-### 6. a stalled frame is not a shortfall, and a speed that prints as the rung is not one (lines 484-583)
+### 4. the speed says when it falls short (lines 305-395)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 486 | 97 | `static void stallAndPair()` |  |
+| 311 | 5 | `static String reachedOf(ClockPace pace, String label, double rung)` | The speed reached (ClockPace.reached), noted in SEEN when there is one. |
+| 318 | 3 | `static boolean readsRung(ClockPace pace, String label, double rung)` | Whether the pace reads the rung's own words: reading() is the rung and reached() says nothing. |
+| 323 | 4 | `static boolean readsReached(ClockPace pace, String label, double rung)` | Whether the pace reads a speed reached, alone: reading() is reached(), which is not the rung's words. |
+| 328 | 66 | `static void reading()` |  |
+
+### 5. the header reads the window it draws (lines 396-504)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 398 | 3 | `static boolean same(double a, double b)` |  |
+| 403 | 7 | `static boolean isTailOf(double[] tail, double[] whole)` | Whether the tail is the last tail.length entries of the whole, value for value, NaN where NaN. |
+| 414 | 3 | `static double[] whole(HistorySave h, String key)` |  |
+| 419 | 41 | `static void headerReads(String what, HistorySave h, int...tails)` | The header's reads on one history: the five tiles, the change line, and every series' tail. |
+| 461 | 31 | `static void windows()` |  |
+| 494 | 10 | `static double foldedValue(String name, int month)` | A value for every series of a history grown by hand: positive, different by series and month, with a hole in the price index. |
+
+### 6. a stalled frame is not a shortfall, and a speed that prints as the rung is not one (lines 505-604)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 507 | 97 | `static void stallAndPair()` |  |
+
+### 7. a stall the clock makes itself, again and again (lines 605-689)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 612 | 15 | `static Sim redrawing(double rung, double costS, double seconds, double from, int[] seen)` | The timer's loop with a redraw of {@code costS} seconds whenever one is due: a frame, then the redraw (whose cost lands in the next frame's dt), for {@code seconds}. |
+| 628 | 61 | `static void recurringStall()` |  |
 

@@ -6618,7 +6618,7 @@ public class UserInterface extends Application {
         if (clock != null) return;
         // A redraw's cost ends with the layout pass of the pulse it was made in (the timer's
         // handle runs inside the pulse, before its CSS and layout). Added once.
-        scene.addPostLayoutPulseListener(pace::redrawEnded);
+        scene.addPostLayoutPulseListener(() -> pace.redrawEnded());    // not pace::redrawEnded: that binds the pace of this call, and the field is not final (UP7b)
         clock = new javafx.animation.AnimationTimer() {
             @Override public void handle(long now) {
                 if (lastFrame == 0) { lastFrame = now; return; }

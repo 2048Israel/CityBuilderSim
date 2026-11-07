@@ -37,7 +37,13 @@ import java.util.function.IntToDoubleFunction;
  *      under FRAME_CLAMP, the reading is the rung at 1x and at 50x with cheap months, and a city
  *      really short stays short across the same stall; a speed that prints as the rung's own
  *      words ("2×" reached at 1.75 of a rung of 2) is not a shortfall, one that rounds apart is;
- *      and every text reached anywhere above is one of ClockPace.reachedTexts().
+ *      and every text reached anywhere above is one of ClockPace.reachedTexts();
+ *   7. a stall the clock makes itself, again and again (UP7b): a redraw costing over FRAME_CLAMP,
+ *      due every REDRAW_SPACING times its cost, runs the city short of the rung (the fixture
+ *      measures it) and the reading says so at every frame once a window has run, at 1x and at
+ *      50x; a redraw under FRAME_CLAMP loses nothing and the reading stays the rung; a stall the
+ *      redraw does not explain (a minimised window after a cheap redraw, or after a redraw begun
+ *      while the clock stood still) is still clamped and no shortfall.
  */
 public class ClockCheck {
 
@@ -109,6 +115,20 @@ public class ClockCheck {
             advance(ms);
             pace.redrawEnded();
         }
+
+        /** One frame of a clock that is not running (a pause): the timer's idle branch. */
+        void idle(double interval) {
+            nanos += Math.round(interval * 1e9);
+            double dt = (nanos - last) / 1e9;
+            last = nanos;
+            elapsed += dt;
+            pace.idle(dt);
+        }
+
+        /** The speed the city really ran at, in times real speed: the months it advanced over the seconds that passed. */
+        double city() {
+            return (returned + pace.progress()) * spm / elapsed;
+        }
     }
 
     public static void main(String[] args) throws Exception {
@@ -119,6 +139,7 @@ public class ClockCheck {
         reading();
         windows();
         stallAndPair();
+        recurringStall();
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -579,5 +600,90 @@ public class ClockCheck {
                 new java.util.HashSet<>(list).size() == list.size() && list.contains("0.0×") && list.contains("0.9×") && !list.contains("1.0×")
                         && list.contains("1×") && list.contains(Math.round(TOP * (1 - ClockPace.SHORT_BY)) + "×")
                         && !list.contains(TOP_LABEL));
+    }
+
+    /* ============ 7. a stall the clock makes itself, again and again ============ */
+
+    /**
+     * The timer's loop with a redraw of {@code costS} seconds whenever one is due: a frame, then the redraw
+     * (whose cost lands in the next frame's dt), for {@code seconds}. Returns the Sim, and counts in {@code seen}
+     * the frames from {@code from} seconds on that read a speed reached (seen[0]) out of those that were read (seen[1]).
+     */
+    static Sim redrawing(double rung, double costS, double seconds, double from, int[] seen) {
+        String label = rung == TOP ? TOP_LABEL : "1×";
+        Sim s = new Sim();
+        s.speed = rung;
+        s.monthMs = m -> 5;
+        while (s.elapsed < seconds) {
+            s.step();
+            if (s.pace.redrawDue()) s.redraw(costS * 1000);
+            if (s.elapsed >= from) {
+                seen[1]++;
+                if (readsReached(s.pace, label, rung)) seen[0]++;
+            }
+        }
+        return s;
+    }
+
+    static void recurringStall() {
+        System.out.println("\n--- 7: a stall the clock makes itself, again and again ---");
+        // (a) Caused: a redraw over FRAME_CLAMP is due every REDRAW_SPACING times its cost, and the frame after each
+        // is a stall whose seconds past the clamp the city does not run - the city is short of the rung by the
+        // fixture's own measure, and the reading, which counted the clamped share alone, stayed white (UP7).
+        double cost = ClockPace.FRAME_CLAMP * 2;
+        double cycle = Math.max(ClockPace.REDRAW_EVERY, cost * ClockPace.REDRAW_SPACING);
+        double lost = (cost + FRAME - ClockPace.FRAME_CLAMP) / cycle;          // the share of the rung each cycle loses
+        for (double rung : new double[] {1, TOP}) {
+            String label = rung == TOP ? TOP_LABEL : "1×";
+            int[] seen = new int[2];
+            Sim s = redrawing(rung, cost, 12, ClockPace.SHORT_WINDOW + cycle, seen);
+            check(String.format("%s, a redraw of %.2f s every %.2f s: the city runs at %.0f%% of the rung (a cycle loses %.0f%%, over the %.0f%% the header tolerates)",
+                    label, cost, cycle, 100 * s.city() / rung, 100 * lost, 100 * ClockPace.SHORT_BY),
+                    lost > ClockPace.SHORT_BY && s.city() < rung * (1 - ClockPace.SHORT_BY));
+            check(String.format("...and the reading says so at each of %d frames once a window has run, not only at some (reads \"%s\")",
+                    seen[1], s.pace.reading(label, rung)), seen[1] > 100 && seen[0] == seen[1]);
+        }
+
+        // (b) From the other side: a redraw under FRAME_CLAMP loses the city nothing, and the reading stays the rung.
+        double cheap = ClockPace.FRAME_CLAMP * .8;
+        for (double rung : new double[] {1, TOP}) {
+            String label = rung == TOP ? TOP_LABEL : "1×";
+            int[] seen = new int[2];
+            Sim s = redrawing(rung, cheap, 12, ClockPace.SHORT_WINDOW + 1, seen);
+            check(String.format("%s, a redraw of %.2f s (under FRAME_CLAMP): the city runs at %.0f%% of the rung and the reading is the rung at each of %d frames",
+                    label, cheap, 100 * s.city() / rung, seen[1]), s.city() >= rung * (1 - ClockPace.SHORT_BY / 2) && seen[1] > 100 && seen[0] == 0);
+        }
+
+        // (c) A stall the redraw does not explain stays clamped: a cheap redraw, then half a minute (a minimised window).
+        for (double rung : new double[] {1, TOP}) {
+            String label = rung == TOP ? TOP_LABEL : "1×";
+            Sim s = new Sim();
+            s.speed = rung;
+            s.monthMs = m -> 5;
+            while (s.elapsed < ClockPace.SHORT_WINDOW + .5) s.step();
+            s.redraw(10);
+            s.frame(30);
+            boolean alone = readsRung(s.pace, label, rung);
+            int frames = 0;
+            for (double from = s.elapsed; s.elapsed - from < ClockPace.SHORT_WINDOW + .5; frames++) {
+                s.step();
+                alone &= readsRung(s.pace, label, rung);
+            }
+            check(String.format("%s, a 10 ms redraw and then a 30 s stall: the reading is the rung at the stall and at each of %d frames after it", label, frames), alone);
+        }
+
+        // (d) A redraw begun while the clock stood still is no part of the running time: the first stall after the clock runs again is clamped.
+        Sim idle = new Sim();
+        idle.monthMs = m -> 5;
+        while (idle.elapsed < ClockPace.SHORT_WINDOW + .5) idle.step();
+        idle.redraw(cost * 1000);
+        idle.idle(FRAME);
+        idle.frame(2 * cost);       // a stall that, counted raw beside the redraw's cost, would read short
+        boolean quiet = readsRung(idle.pace, TOP_LABEL, TOP);
+        for (double from = idle.elapsed; idle.elapsed - from < ClockPace.SHORT_WINDOW + .5; ) {
+            idle.step();
+            quiet &= readsRung(idle.pace, TOP_LABEL, TOP);
+        }
+        check("50×, a redraw begun while the clock stood still, then a stall of twice its cost: the reading stays the rung", quiet);
     }
 }
