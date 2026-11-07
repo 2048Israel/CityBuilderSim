@@ -61,4 +61,11 @@ The rest of the railway's sales follow the city's own path, which moved from m10
 
 ## 4. The checks and the ensemble
 
-{checks}
+- **The ensemble** (`docs/ensemble/FD1.md`, 80 of 80 runs, 13.5 min): 23 of 26 criteria, as the 0.9.26 baseline. The three reds are its own (A2, A3, S1), at its medians: A2's longest spell 16 months, A3's deflation spell 5 against 4, S1's gap 2.00%. AUTO2's final population is 603,462 against 602,188. No run has a LongPlaytest finding.
+- **`--pick`** (24 harnesses, LongPlaytest among them for Freight's 44 readers). All green but LongPlaytest, exit 4: its one finding `a building on the map moved 2 time(s), months 1203-1810` (worst, m1810, district (-1,0): 99 of its 914 boxes). That is the layout watch's class, which DM2 mends (the wall ways dated; BA1-D and LD2-D passed the same line by name on their paths). FD1's diff touches no map code. The city's path moves from m1039, where the station is now kept, so the map's moves fall in other months. FX9's move counter (`FX9/FX9Moves.java`, 2,400 months) counts 272 boxes in 60 month pairs on this path, against FX9's 147 in 27. Two of them fall in the watch's 13-month windows (m1200, m1800); main's do not.
+- **RailDepotCheck**, RailCheck, HomeRailCheck green. Three of section 9's assertions were red on the old rule.
+
+## 5. Left
+
+- The playtest's watch red on this path: DM2's class, passed by name (Jerus, 2026-11-04: a red outside the batch's own code), in `## pending` as FD1-D, DM2 mending it.
+- The probe's counts outside the railway: the sales bought back within a year are a few in a hundred. That is the spare-capacity rule's cycle; nothing is queued for it.
