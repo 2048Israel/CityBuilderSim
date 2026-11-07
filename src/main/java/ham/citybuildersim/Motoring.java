@@ -298,6 +298,17 @@ public final class Motoring {
         double pass = game.getEconomyManager().getTaxPolicy().monthlyFare();
         prefersTransit = InfrastructureManager.transitChosen(fullCost, pass);
         double ceiling = 1 - HouseholdBalance.TRANSIT_DETERRENT * roads.getTransitCover() * prefersTransit;
+        /*
+         * ...AND THE YEAR'S OWN CAP (R0e; research-1900 5.4 item 5, "no car"):
+         * in a city founded the 1900 way the household's basket of the year
+         * puts its cars per household over the ceiling, none at all in 1900
+         * and more each year until the last knot, where the year is
+         * today's and no cap holds. A city founded the default way has no
+         * year (Game.basketYear() is null) and its ceiling is the transit
+         * one above, to the bit.
+         */
+        Consumption.YearPoint year = game.basketYear();
+        if (year != null) ceiling = Math.min(ceiling, year.carCeiling());
         ownershipCeiling = ceiling;
 
         /*

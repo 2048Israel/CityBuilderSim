@@ -2344,6 +2344,16 @@ public class DataSave implements Cloneable {
     public double[] getHouseholdFuel()       { return householdFuel == null ? null : householdFuel.clone(); }
 
     /**
+     * ...and the homes' lamp oil and coal as 6d struck them for the households' next bill (R0e): {homes, litres, tonnes, bill, cost, imported}
+     * (HomeFuel.heldSale()) - a sale off the refiners' and mines' shelves is a month passing and cannot be run again by a load. Written only for
+     * a month that struck one, so a default city's save is unchanged (Gson leaves a null out) and a save without it holds no sale.
+     */
+    private double[] homeFuelSale;
+
+    public void setHomeFuelSale(double[] v) { this.homeFuelSale = v == null ? null : v.clone(); }
+    public double[] getHomeFuelSale()       { return homeFuelSale == null ? null : homeFuelSale.clone(); }
+
+    /**
      * ...and the students who finished a course and wait for the next census
      * to carry their loans to the working families, beside the ones who
      * carried theirs at this month's (0.7.63; HouseholdBalance.graduatesToSave()).

@@ -1,4 +1,4 @@
-# Motoring.java - 367 lines · 21 methods · 2 constants · model
+# Motoring.java - 378 lines · 21 methods · 2 constants · model
 
 `ham/citybuildersim/Motoring.java` - generated 2026-11-07 by CodeMap; line numbers are as of that run.
 
@@ -54,7 +54,7 @@
 > month. The interface went the same way the same day. See the project's
 > splitting-game.md.
 
-**Uses:** [Good](Good.md) (4), [Markets](Markets.md) (3), [Game](Game.md) (3), [HouseholdBalance](HouseholdBalance.md) (3), [InfrastructureManager](InfrastructureManager.md) (2), [PriceLevel](PriceLevel.md) (1), [Retail](Retail.md) (1), [Bank](Bank.md) (1), [GoodsMarket](GoodsMarket.md) (1), [TaxPolicy](TaxPolicy.md) (1), [Trade](Trade.md) (1)
+**Uses:** [Good](Good.md) (4), [Markets](Markets.md) (3), [Game](Game.md) (3), [HouseholdBalance](HouseholdBalance.md) (3), [InfrastructureManager](InfrastructureManager.md) (2), [PriceLevel](PriceLevel.md) (1), [Retail](Retail.md) (1), [Bank](Bank.md) (1), [GoodsMarket](GoodsMarket.md) (1), [TaxPolicy](TaxPolicy.md) (1), [Consumption](Consumption.md) (1), [Trade](Trade.md) (1)
 
 **Used by (6):** [CarCheck](CarCheck.md), [Game](Game.md), [InfrastructureCheck](InfrastructureCheck.md), [OilCheck](OilCheck.md), [ReadPathCheck](ReadPathCheck.md), [TradeCostCheck](TradeCostCheck.md)
 
@@ -90,11 +90,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 56 | 312 | **type** `public final class Motoring` | The households' car market: the second-hand pass, then the showroom, with the road told what is parked on it - and since 0.7.49 the drivers' fuel and a buyer who weighs a car's full cost against the fare. |
+| 56 | 323 | **type** `public final class Motoring` | The households' car market: the second-hand pass, then the showroom, with the road told what is parked on it - and since 0.7.49 the drivers' fuel and a buyer who weighs a car's full cost against the fare. |
 
 ### THE FUEL, AND THE BUYER WEIGHS THE FARE (0.7.49) (lines 66-117)
 
-### THE FUEL IS DRAWN (0.7.62, batch K) (lines 118-367)
+### THE FUEL IS DRAWN (0.7.62, batch K) (lines 118-378)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -118,5 +118,5 @@
 | 239 | 1 | `public double getUsedCarPrice()` | What one went for. |
 | 242 | 1 | `public double getUsedCarSpend()` | What the buyers paid for them, all in. |
 | 245 | 1 | `public double getUsedCarCredit()` | ...and what of that a lender advanced. |
-| 248 | 119 | `void month(Game game)` | The car market's month. |
+| 248 | 130 | `void month(Game game)` | The car market's month. |
 

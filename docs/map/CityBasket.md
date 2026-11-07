@@ -1,4 +1,4 @@
-# CityBasket.java - 120 lines · 2 methods · 0 constants · model
+# CityBasket.java - 122 lines · 2 methods · 0 constants · model
 
 `ham/citybuildersim/CityBasket.java` - generated 2026-11-07 by CodeMap; line numbers are as of that run.
 
@@ -35,7 +35,7 @@
 > month. The interface went the same way the same day. See the project's
 > splitting-game.md.
 
-**Uses:** [Good](Good.md) (11), [Consumption](Consumption.md) (3), [Game](Game.md) (1), [ForeignAccounts](ForeignAccounts.md) (1), [HouseholdBalance](HouseholdBalance.md) (1), [Household](Household.md) (1)
+**Uses:** [Good](Good.md) (11), [Consumption](Consumption.md) (5), [Game](Game.md) (1), [ForeignAccounts](ForeignAccounts.md) (1), [HouseholdBalance](HouseholdBalance.md) (1), [Household](Household.md) (1)
 
 **Used by (1):** [Game](Game.md)
 
@@ -43,7 +43,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 37 | 84 | **type** `public final class CityBasket` | What the city eats: the basket per head, struck from the households' own statements, and the file's reference basket for a city that has none yet. |
-| 59 | 50 | `java.util.Map<Good, Double> perHead(Game game)` | Kilograms of each of the thirteen in ONE person-month, averaged over the city by headcount. |
-| 111 | 9 | `private static java.util.Map<Good, Double> referenceBasket(Consumption consumption)` | What the file's reference household eats, for a city with no statements yet. |
+| 37 | 86 | **type** `public final class CityBasket` | What the city eats: the basket per head, struck from the households' own statements, and the file's reference basket for a city that has none yet. |
+| 59 | 52 | `java.util.Map<Good, Double> perHead(Game game)` | Kilograms of each of the thirteen in ONE person-month, averaged over the city by headcount. |
+| 113 | 9 | `private static java.util.Map<Good, Double> referenceBasket(Consumption consumption, Consumption.YearPoint year)` | What the file's reference household eats, for a city with no statements yet, in the year's basket when the city has one (null: today's). |
 

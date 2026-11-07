@@ -48,6 +48,87 @@
     "FOOD_TREAT": 0.10
   },
   "referenceIncomeMultiple": 27.0,
+  "_yearsComment": [
+    "THE HOUSEHOLD'S BASKET BY YEAR, read only in a city founded the 1900 way (R0e;",
+    "research-1900 5.4 item 5: 1900's has more raw staples, lamp oil and coal, and no car).",
+    "",
+    "Each knot is January of its year; between two knots every figure is",
+    "interpolated linearly by month, and from the last knot's January on the",
+    "basket is today's, so the last knot holds today's figures. lampShare is",
+    "the share of the homes lit by lamp oil and coalShare the share heated by",
+    "a coal stove (HomeFuel, which holds what one such home burns);",
+    "carsPerHousehold caps the households' cars (Motoring's ownership ceiling,",
+    "1 being no cap); bought is the share of each good a household buys ready",
+    "made, the rest made at home: from its homeMadeFrom good where the good",
+    "names one, at the same calories, and done without where it does not. A",
+    "good not named is bought whole. Each knot's note says which figures were",
+    "read and which are interpolated or estimated.",
+    "",
+    "THE SOURCES, all allowing commercial use (the arithmetic in docs/queue/R0e-notes.md):",
+    "[S1] Canada Year Book 1918 (French), p. 485, the Department of Labour's weekly",
+    "  family budget, 60 cities, December 1900; and [S3] the Board of Inquiry into the",
+    "  Cost of Living, 1915, vol. II, pp. 71-76 - Crown copyright expired.",
+    "[S12] Historical Statistics of Canada 11-516-X, T147-194 (motor vehicle",
+    "  registrations), [S11] A248-253 (households), [S10] Q97-101 (electricity",
+    "  customers), [S8, S9] DBS Bakeries 1964 and M428-445 (flour a head) -",
+    "  Statistics Canada Open Licence; DBS 1964 Crown copyright expired.",
+    "[S14] Census of Canada 1941 vol. IX and [S15] 1951 vol. III (lighting and",
+    "  heating fuel, urban) - Crown copyright expired; [S17] Canada Year Book 1975,",
+    "  14.3.5 - Statistics Canada Open Licence.",
+    "[S13] Historical Statistics of the United States to 1970, S108-119 (dwellings",
+    "  with electric service) and [S6] USDA BAE 1947 (flour by user) - US federal",
+    "  works, public domain."
+  ],
+  "years": [
+    {
+      "year": 1900, "lampShare": 0.96, "coalShare": 0.50, "carsPerHousehold": 0.0,
+      "bought": { "BREAD": 0.51 },
+      "source": "S1, S13", "estimate": true,
+      "note": "lamp: est., the US dwellings with electric service (S13) back from 1907's 8.0% and 1912's 15.9% at their growth, 3.1% in 1900, x 1.366 for the urban (1920's urban and non-farm 47.4 over all 34.7) = 4.2%; coal: est., the Department's budget buys 1/8 short ton of coal and 1/8 cord of wood a week (S1), a coal-heated home and a wood-heated one weighted alike; cars: none registered before Ontario's 178 in 1903 (S12); bread: est., the budget's 15 lb of bread bought against 10 lb of flour, 14.3 lb of bread at 0.70 lb of flour a pound, 15 / 29.3"
+    },
+    {
+      "year": 1911, "lampShare": 0.81, "coalShare": 0.54, "carsPerHousehold": 0.0145,
+      "bought": { "BREAD": 0.51 },
+      "source": "S12, S11, S13", "estimate": true,
+      "note": "lamp: est., S13 at 1911 at the same growth, 13.9%, x 1.366 = 18.9%; coal: interpolated, 1900 to 1941; cars: 21,783 registrations less 264 motorcycles (passenger cars not yet split everywhere) over 1,482,980 households; bread: held"
+    },
+    {
+      "year": 1921, "lampShare": 0.39, "coalShare": 0.57, "carsPerHousehold": 0.221,
+      "bought": { "BREAD": 0.51 },
+      "source": "S10, S11, S12", "estimate": true,
+      "note": "lamp: est., 830,100 residential and farm customers over 1,897,227 households, 43.8%, x 1.397 for the urban (1941's 96.55% over 69.13%) = 61.2%; coal: interpolated; cars: est., 464,805 less 7,806 motorcycles x the reporting provinces' passenger share 333,621 / 362,915 = 420,111 over 1,897,227; bread: held"
+    },
+    {
+      "year": 1931, "lampShare": 0.17, "coalShare": 0.61, "carsPerHousehold": 0.456,
+      "bought": { "BREAD": 0.51 },
+      "source": "S10, S11, S12", "estimate": true,
+      "note": "lamp: est., 1,336,700 customers over 2,252,729 households, 59.3%, x 1.397 = 82.8%; coal: interpolated; cars: 1,028,100 passenger cars over 2,252,729 households; bread: held (bakery bread 33-39% of all flour, 1929-35, S8/S9)"
+    },
+    {
+      "year": 1941, "lampShare": 0.034, "coalShare": 0.644, "carsPerHousehold": 0.497,
+      "bought": { "BREAD": 0.51 },
+      "source": "S14, S12, S11", "estimate": false,
+      "note": "lamp: the census, 1,368,038 of 1,416,893 urban dwellings lit by electricity (96.55%); coal: the census, 814,573 coal and 98,077 coke of the 1,416,893 urban dwellings (64.4%); cars: 1,281,190 passenger cars over 2,575,744 households; bread: held, est. (bakers and homes each 40-45% of flour about 1939, S6)"
+    },
+    {
+      "year": 1951, "lampShare": 0.007, "coalShare": 0.496, "carsPerHousehold": 0.618,
+      "bought": { "BREAD": 0.51 },
+      "source": "S15, S12, S11", "estimate": false,
+      "note": "lamp: the census, 2,140,200 of 2,155,035 urban dwellings (99.31%); coal: the census, 1,041,555 coal and 28,135 coke of 2,155,035 urban (49.6%); cars: 2,105,869 over 3,409,284 households; bread: held, est. (bakery bread 45% of all flour in 1950, S8/S9)"
+    },
+    {
+      "year": 1961, "lampShare": 0.0, "coalShare": 0.106, "carsPerHousehold": 0.950,
+      "bought": { "BREAD": 0.755 },
+      "source": "S17, S12, S11", "estimate": true,
+      "note": "lamp: est., the urban 99.3% of 1951 complete; coal: the census's coal or coke, 10.6% of all dwellings (no urban split found); cars: 4,325,682 over 4,554,736 households; bread: interpolated, 1951 to today's"
+    },
+    {
+      "year": 1971, "lampShare": 0.0, "coalShare": 0.0, "carsPerHousehold": 1.0,
+      "bought": { },
+      "source": "today", "estimate": false,
+      "note": "today's model: no lamp, no coal stove (the census: coal or coke 1.1% of dwellings, S17), no cap on the cars (115 a hundred households, S12), every good bought"
+    }
+  ],
   "goods": [
     {
       "key": "GRAINS", "label": "Grains", "unit": "kg", "category": "FOOD_STAPLE",
@@ -60,7 +141,7 @@
       "key": "BREAD", "label": "Bread", "unit": "kg", "category": "FOOD_STAPLE",
       "worldImportPrice": 0.00250, "worldExportPrice": 0.00160,
       "kcalPerUnit": 2650, "quality": 0.60, "elasticity": -0.10,
-      "convenience": 0.80, "referenceKg": 3.5,
+      "convenience": 0.80, "referenceKg": 3.5, "homeMadeFrom": "GRAINS",
       "note": "A staple that needs no cooking, which is why it is only mildly inferior where grains are strongly so."
     },
     {
@@ -120,7 +201,7 @@
       "key": "BAKERY", "label": "Bakery goods", "unit": "kg", "category": "FOOD_TREAT",
       "worldImportPrice": 0.00600, "worldExportPrice": 0.00370,
       "kcalPerUnit": 4000, "quality": 0.30, "elasticity": 0.50,
-      "convenience": 0.95, "referenceKg": 1.5,
+      "convenience": 0.95, "referenceKg": 1.5, "homeMadeFrom": "GRAINS",
       "note": "Cake, not bread. Kept apart from BREAD deliberately - one is a staple a household eats more of when it is poor and the other is a treat it eats more of when it is rich, and a single 'baked goods' row cannot say both."
     },
     {
