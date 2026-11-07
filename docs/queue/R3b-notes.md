@@ -82,6 +82,8 @@ All drafted by Sonnet 5.5 at xhigh, reviewed here. What the reviews found:
 | R4: `payPrizes()` inside the isFinite block | a find's labs' share neither paid nor owed in a month whose books did not close | owed as arrears on the prizes' line (`owePrizes()`; PrizeCheck 19) |
 | R4: the buyback and the labs' stake | not reached in a played city | ★4, PrizeCheck 20 |
 | R5: figures worked out in ResearchScreen | the series on History's months, still to come, the bars' shares | `ResearchView.cumulativeOn()`, `stillToCome()`, `share()`; the screen reads them (B) |
+| R3b's gate review: the default card's words | a default city with a University and no grant: "N researchers hold the posts a grant bought ... D$ 0 a month" of its faculty | posts claimed only where some are held (`Overview.posts()`), else the schools' own staff, costing nothing (cec4a07b; KeptCheck 99) |
+| R3b's gate review: the counts' save | saved only while the research was not empty, so that city's faculty read 0 after a load | the record written whenever the month has counts too (`Research.hasMonthCounts()`; ResearchViewCheck 20) |
 
 ## 4. Checks
 
@@ -96,8 +98,15 @@ All drafted by Sonnet 5.5 at xhigh, reviewed here. What the reviews found:
 - **The catalogue** is the study's for every entry §5.4 reads but M1's needs (PM6, known by 1955).
 - **The trace.** The default playtest (2,405 months) on R5's tip (7f76eb97, built apart) and on A2 (4ba8ef6d), back to
   back: all eight CSVs byte-identical, the log but for "in 54s"/"in 57s". No ensemble (`docs/batch.md` 6).
-- **The save** (`DataSave.ResearchRecord`): five maps by field name, written only while the record is (a default city
-  writes none, as before). No format bump: a save without them reads them empty.
+- **The save** (`DataSave.ResearchRecord`): five maps by field name. Since the gate's review the record is written
+  while the research has anything of its own or the month has counts, so a default city with a school now writes one
+  (its counts alone) where it wrote none. No format bump: a save without them reads them empty.
+- **`--pick` on the review's mends** (cec4a07b, main 0.9.34 in, 28 of 183 harnesses with KeptCheck and ResearchViewCheck):
+  exit 4, its one NEW red ResearchViewCheck 20's own fixture (a village whose new University had no staff two months
+  in, so its faculty were 0); the fixture now starts from KeptCheck 99's default town with its grant taken away, and
+  ResearchViewCheck alone is 217 ok. Everything else picked, KeptCheck's 99-101 among it, was main's recorded reds only.
+- **The trace again after the review's mends**: the default playtest on main 0.9.34 (437f3648) and on cec4a07b, built
+  apart, back to back: all eight CSVs byte-identical, the log but for "in 59s"/"in 75s" and the layout windows' time.
 - **The screens** (KeptCheck 99-101, 98 until UP7 took it: 44, 75 and 21 ok; ResearchViewCheck 209 ok): each new page drawn kept over last
   month's nodes is the page built new, month after month, in the 1900 town and a default city, with a dial staged and
   a month landing under a held thumb; a second draw in the month writes 0 (section 92's rule) on Overview, Funding,

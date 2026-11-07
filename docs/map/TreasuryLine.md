@@ -1,6 +1,6 @@
 # TreasuryLine.java - 185 lines · 2 methods · 0 constants · model
 
-`ham/citybuildersim/TreasuryLine.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TreasuryLine.java` - generated 2026-11-07 by CodeMap; line numbers are as of that run.
 
 > Every kind of payment the treasury makes, and whether it is a promise.
 > 

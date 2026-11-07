@@ -1658,17 +1658,16 @@ public class ResearchViewCheck {
     }
 
     static void sectionTwenty() throws Exception {
-        System.out.println("\n--- 20. a city founded the default way with a University and no grant: its researchers are the faculty's own, and they survive a save ---");
+        System.out.println("\n--- 20. a city founded the default way with a University and no grant now: its researchers are the faculty's own, and they survive a save ---");
         ensureQuiet();
-        Game d = FittingCheck.village("research-view-default-faculty", Founding.defaults(), false, false);
-        quietly(() -> {
-            d.buildStack(template(d, "University"), 1, true);
-            MaterialsCheck.handWorkers(d);
-        });
-        play(d, 2);
+        // KeptCheck 99's default town: a village with a University whose grant's posts drew the graduates its staff are, the grant then taken away and a
+        // month played, so no post is held and the faculty are at research (a University built in a village with no grant ever is not staffed in months).
+        Game d = KeptCheck.researchDefaultTown();
+        d.getResearch().setGrant(Field.ENGINEERING, 0);
+        play(d, 1);
         Research r = d.getResearch();
         ResearchView.Overview ov = ResearchView.overview(d);
-        check("fixture: founded the default way with a University and no grant, its faculty at research (" + ov.researchers() + ") and every one of them idle",
+        check("fixture: founded the default way with a University, its grant taken away a month ago, its faculty at research (" + ov.researchers() + ") and every one of them idle",
                 !d.foundedUnfitted() && ov.researchers() > 0 && ov.idle() == ov.researchers() && r.grant(Field.ENGINEERING) == 0 && r.grant(Field.MEDICINE) == 0);
         check("the Overview counts no post where no grant bought one (" + ov.posts() + "), so the page claims none", ov.posts() == 0);
         check("the research has nothing of its own (empty) and still has the month's counts to show", r.isEmpty() && r.hasMonthCounts());

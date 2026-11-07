@@ -1,6 +1,6 @@
 # DiscoveryCheck.java - 1,391 lines · 44 methods · 4 constants · harnesses
 
-`ham/citybuildersim/DiscoveryCheck.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DiscoveryCheck.java` - generated 2026-11-07 by CodeMap; line numbers are as of that run.
 
 > The city finds discoveries of its own, and a discovery found here is known here from the month it was found (R3, slice A: Research, and the
 > seam in Recipe, Equipment, BuildingsTemplate, Recipes and EquipmentFit; docs/studies/research-design.md 1.8, 5.1, 5.2, 6.3).

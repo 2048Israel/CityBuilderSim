@@ -1,6 +1,6 @@
 # BuildingsTemplate.java - 1,518 lines · 155 methods · 2 constants · model
 
-`ham/citybuildersim/BuildingsTemplate.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildingsTemplate.java` - generated 2026-11-07 by CodeMap; line numbers are as of that run.
 
 > One kind of building, and what it costs to put up.
 > 

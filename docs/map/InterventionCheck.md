@@ -1,6 +1,6 @@
 # InterventionCheck.java - 446 lines · 12 methods · 5 constants · harnesses
 
-`ham/citybuildersim/InterventionCheck.java` - generated 2026-11-06 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/InterventionCheck.java` - generated 2026-11-07 by CodeMap; line numbers are as of that run.
 
 > Proves a purchase or sale of dollars moves the D$ a BOUNDED amount (XI1,
 > 2026-11-06): linear up to INTERVENTION_LINEAR of a year's GDP, exactly as it
