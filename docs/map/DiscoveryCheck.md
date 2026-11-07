@@ -52,7 +52,7 @@
 
 **Uses:** [Research](Research.md) (214), [Recipes](Recipes.md) (34), [BuildingsTemplate](BuildingsTemplate.md) (24), [Game](Game.md) (24), [JobType](JobType.md) (23), [PolicyDates](PolicyDates.md) (21), [EquipmentFit](EquipmentFit.md) (17), [TreasuryLine](TreasuryLine.md) (11), [TaxPolicy](TaxPolicy.md) (11), [Notice](Notice.md) (9), [EducationType](EducationType.md) (8), [PayTier](PayTier.md) (5), [Recipe](Recipe.md) (5), [Equipment](Equipment.md) (5), [MoneyAudit](MoneyAudit.md) (5), [GameFiles](GameFiles.md) (4), [EquipmentCheck](EquipmentCheck.md) (4), [EconomyManager](EconomyManager.md) (4), [ResearchCatalog](ResearchCatalog.md) (2), [PriceLevel](PriceLevel.md) (2), [BuildingCatalog](BuildingCatalog.md) (2), [FittingCheck](FittingCheck.md) (2), [Founding](Founding.md) (2), [MaterialsCheck](MaterialsCheck.md) (2), [Good](Good.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [BuildingManager](BuildingManager.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [NationalAccounts](NationalAccounts.md) (1), [Inbox](Inbox.md) (1)
 
-**Used by (1):** [PrizeCheck](PrizeCheck.md)
+**Used by (2):** [PrizeCheck](PrizeCheck.md), [ResearchViewCheck](ResearchViewCheck.md)
 
 ## Sections
 

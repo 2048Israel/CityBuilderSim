@@ -61,7 +61,7 @@
 
 **Uses:** [Palette](Palette.md) (598), [Bank](Bank.md) (402), [Kept](Kept.md) (208), [Icons](Icons.md) (73), [BusinessDebtManager](BusinessDebtManager.md) (27), [Equity](Equity.md) (21), [Exchange](Exchange.md) (20), [TimeChart](TimeChart.md) (20), [SectorScreen](SectorScreen.md) (16), [StatementView](StatementView.md) (13), [Ladder](Ladder.md) (13), [Game](Game.md) (13), [SectorStatements](SectorStatements.md) (10), [HistorySave](HistorySave.md) (10), [Sectors](Sectors.md) (10), [CityNeeds](CityNeeds.md) (9), [Mortgage](Mortgage.md) (9), [CityCalendar](CityCalendar.md) (8), [ChartModel](ChartModel.md) (6), [Pieces](Pieces.md) (6), [TreasuryFund](TreasuryFund.md) (6), [UserInterface](UserInterface.md) (4), [CentralBank](CentralBank.md) (4), [HouseholdBalance](HouseholdBalance.md) (4), [BondMarket](BondMarket.md) (4), [OrderBook](OrderBook.md) (4), [DecisionLog](DecisionLog.md) (4), [HistoryScreen](HistoryScreen.md) (4), [CorporateBond](CorporateBond.md) (3), [YearBook](YearBook.md) (3)... and 12 more
 
-**Used by (5):** [FinancesScreen](FinancesScreen.md), [FundScreen](FundScreen.md), [KeptBench](KeptBench.md), [SectorScreen](SectorScreen.md), [UserInterface](UserInterface.md)
+**Used by (6):** [FinancesScreen](FinancesScreen.md), [FundScreen](FundScreen.md), [KeptBench](KeptBench.md), [ResearchScreen](ResearchScreen.md), [SectorScreen](SectorScreen.md), [UserInterface](UserInterface.md)
 
 ## Sections
 

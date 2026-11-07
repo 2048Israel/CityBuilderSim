@@ -18,7 +18,7 @@
 
 **Uses:** [PolicyDates](PolicyDates.md) (2), [CityCalendar](CityCalendar.md) (2)
 
-**Used by (14):** [BuildCardCheck](BuildCardCheck.md), [BuildingCatalog](BuildingCatalog.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [DiscoveryCheck](DiscoveryCheck.md), [Equipment](Equipment.md), [EquipmentCheck](EquipmentCheck.md), [Game](Game.md), [Inbox](Inbox.md), [PrizeCheck](PrizeCheck.md), [Recipe](Recipe.md), [RecipeCheck](RecipeCheck.md), [Research](Research.md), [ResearchCheck](ResearchCheck.md)
+**Used by (19):** [BuildCardCheck](BuildCardCheck.md), [BuildingCatalog](BuildingCatalog.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [DiscoveryCheck](DiscoveryCheck.md), [Equipment](Equipment.md), [EquipmentCheck](EquipmentCheck.md), [Game](Game.md), [HistorySave](HistorySave.md), [Inbox](Inbox.md), [PrizeCheck](PrizeCheck.md), [Recipe](Recipe.md), [RecipeCheck](RecipeCheck.md), [Research](Research.md), [ResearchCheck](ResearchCheck.md), [ResearchScreen](ResearchScreen.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md), [YearBook](YearBook.md)
 
 ## Sections
 

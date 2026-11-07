@@ -1,27 +1,15 @@
-# gate of Merge batch/UP6: the autosave: an unfloored save at a multi-month skip's end, the window's close autosaves like Quit, the player's own Save off the clock with a "Saving..." line (Jerus, 2026-10-23, on UP1's ★4, ★1, ★2: "Autosave at the skip's end", "Yes, autosave on close", "Background + 'Saving...'"); and a history that could not be written told to the player, not "Saved" alone (LB3-S; Jerus, 2026-10-31: "Take all (Recommended)"), 0.9.32
+# gate of Merge batch/R5: research: the screens, 0.9.33
 # date: 2026-11-06
 # earth-2.bin: named
 # nightly: 2026-11-06 01:09 0.9.24 f33540a0 4,000 months: RED, exit 1 in 89 s: a building on the map moved 1 time(s), months 3012-3012
-# suite: 181 harnesses run in 4663s: 175 passed, 6 failed
-# timing: 16 harnesses run in 1974s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
+# suite: 182 harnesses run in 2605s: 176 passed, 6 failed
+# timing: 16 harnesses run in 1061s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 59.1 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 42.4 ms, batch 35.5 ms (-16.3%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 43.2 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 51.6 ms, batch 67.6 ms (+30.9%), budget 25 ms: main over the budget too]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | ...and is written and read back in no more than SIDECAR_MS (500 ms) each       FAIL   [main 322 ms, batch 290 ms (-9.9%), budget 500 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 3.23 ms, batch 3.89 ms (+20.4%), budget 5 ms: the batch within the budget]
-# timing red not the batch's (paired): MapCheck | on the full file, every stride's far node over Rotterdam is drawn in no more than SCREEN_MS FAIL   [main 64.2 ms, batch 59.7 ms (-7.0%), budget 80 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | the stamp - its frame and its node - drawn in no more than MiniMapFrame.STAMP_MS (8 ms) of the wall clock FAIL   [main 2.74 ms, batch 2.61 ms (-4.7%), budget 8 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 25.8 ms, batch 19.8 ms (-23.4%), budget 19 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | 7 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): KeptCheck | exit 8   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): KeptCheck | the kept chrome's month is within KEPT_CHROME_MS (4.0 ms)                FAIL   [main 2.01 ms, batch 1.54 ms (-23.1%), budget 4 ms: within 15% of main's]
-# timing red not the batch's (paired): KeptCheck | the whole kept chrome's month is within KEPT_ALL_CHROME_MS (8.0 ms)      FAIL   [main 7.07 ms, batch 6.32 ms (-10.6%), budget 8 ms: within 15% of main's]
-# timing red not the batch's (paired): KeptCheck | the kept month on the construction page is within KEPT_CONSTRUCTION_MS (4.0 ms) FAIL   [main 2.36 ms, batch 2 ms (-15.4%), budget 4 ms: within 15% of main's]
-# timing red not the batch's (paired): KeptCheck | the kept month on Borrow at home, asking for a sixth of the cash is within KEPT_FINANCES_MS (18.0 ms) FAIL   [main 9.12 ms, batch 7.99 ms (-12.3%), budget 18 ms: within 15% of main's]
-# timing red not the batch's (paired): KeptCheck | the kept month on the fund's Search is within KEPT_FUND_MS (321.0 ms)    FAIL   [main 202 ms, batch 189 ms (-6.4%), budget 321 ms: within 15% of main's]
-# timing red not the batch's (paired): KeptCheck | the kept month on the Government Overview is within KEPT_GOVERNMENT_MS (7.0 ms) FAIL   [main 3.44 ms, batch 3.06 ms (-10.8%), budget 7 ms: within 15% of main's]
-# timing red not the batch's (paired): KeptCheck | the kept month on the Rankings tab is within KEPT_RANKINGS_MS (7.0 ms)   FAIL   [main 3.11 ms, batch 3.09 ms (-0.6%), budget 7 ms: within 15% of main's]
-# timing red not the batch's (paired): KeptCheck | 8 FAILED   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): KeptCheck | exit 2   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): KeptCheck | the kept month on the Trade tab's Overview page is within KEPT_TRADE_MS (10.0 ms) FAIL   [main 6.4 ms, batch 9.35 ms (+46.1%), budget 10 ms: the batch within the budget]
+# timing red not the batch's (paired): KeptCheck | 2 FAILED   [the harness's own count of the timing reds above]
 SlopeCheck | exit 1
 SlopeCheck | the run played its months and found nothing: every month passed the playtest's audit and the layout watcher, [a building on the map moved] FAIL
 SlopeCheck | 1 FAILED

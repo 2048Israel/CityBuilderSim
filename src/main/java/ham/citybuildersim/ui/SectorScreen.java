@@ -7,7 +7,9 @@ import ham.citybuildersim.sectors.LuxuryRetail;
 import ham.citybuildersim.sectors.Restaurants;
 import ham.citybuildersim.sectors.Retail;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -3902,6 +3904,14 @@ final class SectorScreen {
                 hint("a row opens it on Build"))));
         page.getChildren().add(Kept.scope("buildings", () -> buildingsList(si)));
 
+        /* ------------------------- its equipment (R5) ------------------------- */
+        // Only where the model has a piece to show (a city founded the 1900 way, with a stack that has one known): a played city's page is as it was.
+        List<ResearchView.PieceRow> equipment = ResearchView.equipment(ui.game, key);
+        if (!equipment.isEmpty()) {
+            page.getChildren().add(Kept.scope("equipment head", () -> sectionHead("ITS EQUIPMENT", EQUIPMENT_INFO, null)));
+            page.getChildren().add(Kept.scope("equipment", () -> equipmentCards(equipment)));
+        }
+
         /* ------------------------- and what stops it ------------------------- */
         int lossMonths = plans.getLossMonths(key);
         int limit = BusinessInvestment.RETIREMENT_LOSS_MONTHS;
@@ -4187,8 +4197,8 @@ final class SectorScreen {
     private int fitRefusedMonth = -1;
 
     /**
-     * The player's Fit (R1b): one small pill on a building's row, "Fit <piece> - <cost>" at the verdict's cost, for the first piece known in the city's
-     * year with a building of the stack left to fit (unfitted, less the fittings on site); null when there is none, which is every row of a city
+     * The player's Fit (R1b): one small pill on a building's row, "Fit <piece> - <cost>" at the verdict's cost, for the first piece known to the city
+     * (at its month, finds included: R5) with a building of the stack left to fit (unfitted, less the fittings on site); null when there is none, which is every row of a city
      * founded the default way. The city pays whatever the verdict says (Game.fitForCity()); the page is drawn again after the click, with a refusal
      * written under the pill for the rest of that month.
      *
@@ -4198,9 +4208,10 @@ final class SectorScreen {
     private Node fitPill(BuildingsTemplate t) {
         BuildingsStacks stack = ui.game.getBuildingManager().getStack(t);
         if (stack == null || !stack.hasUnfitted()) return null;
-        int year = CityCalendar.yearOf(ui.game.getMonth());
+        // Known as the city knows it (R5, R2's star 8): history's month, or the month the city found the piece first (Equipment.knownAt(), as ResearchView reads it).
+        int month = ui.game.getMonth();
         for (Equipment piece : t.getEquipment()) {
-            if (!piece.knownIn(year) || stack.getUnfitted(piece.getId()) - ui.game.getFittings().onSite(t.getId(), piece.getId()) <= 0) continue;
+            if (!piece.knownAt(month, ui.game.getResearch()) || stack.getUnfitted(piece.getId()) - ui.game.getFittings().onSite(t.getId(), piece.getId()) <= 0) continue;
             double cost = EquipmentFit.verdict(ui.game, stack, piece).cost();
             String key = t.getId() + ":" + piece.getId();
             String refused = key.equals(fitRefusedKey) && fitRefusedMonth == ui.game.getMonth() ? fitRefused : null;
@@ -4218,6 +4229,149 @@ final class SectorScreen {
             });
         }
         return null;
+    }
+
+    /* =====================================================================
+       ITS EQUIPMENT (R5, slice B2; research-design 2.2 and 5.5, mockup 4)
+
+       Equipment is an investment, so it lives on the sector's Investors page, after its
+       buildings: a card for each piece the sector's stacks can carry and the city knows -
+       what it is, where it came from and, for each kind of building, how many carry it and
+       what the model's verdict on the next one is (EquipmentFit.verdict(), the very call
+       the Fit pill on the building's row makes). Every figure is ResearchView.equipment()'s;
+       the screen only says it.
+
+       Three of the mockup's four verdicts are drawn: fitted, next (it pays), and not worth
+       it yet. The fourth, "won't fit (too few years left)", has no model behind it - the
+       verdict weighs the piece's life, not the building's remaining one - so it is left out,
+       as the mockup's ranks and "it would pay at wages 30% higher" are.
+
+       A city founded the default way has no row (ResearchView.equipment() is empty there),
+       so the section is not drawn and a played city's page is as it was.
+       ===================================================================== */
+
+    /** ITS EQUIPMENT's (i): research-design 2.2's rule, in two sentences. */
+    static final String EQUIPMENT_INFO = "A piece is fitted only when it pays over its own life: what it saves a month, counted over the "
+            + "years it lasts at the sector's real rate of interest, has to cover what it costs at today's prices, and a month's saving has "
+            + "to carry the interest on its whole cost, as a new building's does. The business fits one at a time, the one that earns most "
+            + "on its cost first, and weighs it against the buildings it would put up instead.";
+
+    /** How a piece's card says its verdict: the word, the line under it (null for none) and the colour of both. */
+    private record VerdictWords(String word, String line, String tone) { }
+
+    /**
+     * A verdict in words: FITTED "all fitted"; PAYS "next: it pays" with what it earns back over its life against what it costs ("earns back
+     * $52k of $68k over 10 years"); NOT_YET "not worth it yet" with the same line, in the warning colour; and where the gain or the cost cannot be
+     * had (the tractor's: R2's notes) "its gain cannot be had yet". NOT_KNOWN is no row (ResearchView lists only what the city knows).
+     */
+    private static VerdictWords verdictWords(EquipmentFit.Verdict v) {
+        boolean priced = Double.isFinite(v.earnsBack()) && Double.isFinite(v.cost());
+        String line = priced ? "earns back " + m(v.earnsBack()) + " of " + m(v.cost()) + " over " + BuildScreen.yearsWords(v.lifeMonths() / 12.0)
+                : "its gain cannot be had yet";
+        switch (v.kind()) {
+            case FITTED:  return new VerdictWords("all fitted", null, Palette.GOOD);
+            case PAYS:    return new VerdictWords("next: it pays", line, Palette.ACCENT);
+            case NOT_YET: return new VerdictWords("not worth it yet", line, Palette.WARN);
+            default:      return new VerdictWords("not known yet", null, Palette.TEXT_MUTED);
+        }
+    }
+
+    /**
+     * Where a piece came from: "found here, May 1973 · 1.5 years before the world" for one the city's researchers found first, "from abroad,
+     * June 1974" for one the world had on history's date (a discovery, or a year later than the founding), and "known since the founding" for the
+     * rest. The years are the discovery's own (ResearchView.Discovery.yearsAhead()), one decimal and always "years", as the discovery's flag on City
+     * History says them.
+     */
+    static String originWords(ResearchView.PieceRow row) {
+        ResearchView.Discovery from = row.from();
+        if (from != null) {
+            return from.source() == ResearchView.Source.HERE
+                    ? String.format(java.util.Locale.ROOT, "found here, %s · %.1f years before the world", CityCalendar.format(from.month()), from.yearsAhead())
+                    : "from abroad, " + CityCalendar.format(from.month());
+        }
+        Equipment piece = row.piece();
+        if (piece.isYear() && piece.knownFrom() > ResearchView.FIRST_MONTH) return "from abroad, " + CityCalendar.format(piece.knownFrom());
+        return "known since the founding";
+    }
+
+    /** A card for each piece the rows hold, in the order the pieces first appear (a piece is the same on every kind of building that carries it). */
+    VBox equipmentCards(List<ResearchView.PieceRow> rows) {
+        Map<String, List<ResearchView.PieceRow>> byPiece = new LinkedHashMap<>();
+        for (ResearchView.PieceRow r : rows) byPiece.computeIfAbsent(r.piece().getId() + "|" + r.piece().getSince(), k -> new ArrayList<>()).add(r);
+        // Kept (R5): each piece a scope keyed by its id, so a piece that comes (a find, the world's date) takes nobody's nodes.
+        VBox column = Kept.column(8);
+        for (Map.Entry<String, List<ResearchView.PieceRow>> piece : byPiece.entrySet()) {
+            column.getChildren().add(Kept.scope("piece:" + piece.getKey(), () -> equipmentCard(piece.getValue())));
+        }
+        return column;
+    }
+
+    /** One piece's card: its name, where it came from, what it does (a find's own words) and a row for each kind of building that carries it. */
+    private VBox equipmentCard(List<ResearchView.PieceRow> rows) {
+        ResearchView.PieceRow first = rows.get(0);
+        ResearchView.Discovery from = first.from();
+        Label name = Kept.label(first.piece().getName());
+        name.setStyle(Palette.strong(Palette.SIZE_BODY + 1, Palette.TEXT_HEAD));
+        name.setMinWidth(Region.USE_PREF_SIZE);
+        Label origin = Kept.scope("origin", () -> chip(originWords(first),
+                from != null && from.source() == ResearchView.Source.HERE ? Palette.DISCOVERY : Palette.TEXT_LABEL));
+        HBox head = Kept.row(10, name, origin);
+        head.setAlignment(Pos.CENTER_LEFT);
+        VBox card = Kept.column(6, head);
+        if (from != null && !from.entry().effect().isBlank()) {
+            card.getChildren().add(Kept.scope("effect", () -> caption(from.entry().effect(), Palette.TEXT_MUTED)));
+        }
+        card.getChildren().add(Kept.scope("rows", () -> equipmentRows(rows)));
+        card.setStyle("-fx-padding: 10 14 10 14; -fx-background-color: " + Palette.RAISED + "; -fx-background-radius: 8;");
+        return card;
+    }
+
+    /** A piece's rows, one for each kind of building: its name, how many carry the piece (and how many are being fitted), and the verdict. */
+    private GridPane equipmentRows(List<ResearchView.PieceRow> rows) {
+        GridPane grid = Kept.grid();
+        grid.setHgap(14);
+        grid.setVgap(0);
+        grid.setMaxWidth(Double.MAX_VALUE);
+        double[] widths = { 230, 150, -1 };
+        for (double w : widths) {
+            javafx.scene.layout.ColumnConstraints c = new javafx.scene.layout.ColumnConstraints();
+            if (w > 0) { c.setPrefWidth(w); c.setMinWidth(w * .7); }
+            else { c.setHgrow(Priority.ALWAYS); c.setMinWidth(160); }
+            grid.getColumnConstraints().add(c);
+        }
+        for (int n = 0; n < rows.size(); n++) {
+            final ResearchView.PieceRow r = rows.get(n);
+            final int at = n;
+            // ...each kind of building a scope keyed by its template, so one that comes and goes takes its own nodes.
+            Kept.scope("kind:" + r.template().getId(), () -> {
+                Label who = Kept.label(r.template().getName());
+                who.setWrapText(true);
+                who.setStyle(Palette.strong(Palette.SIZE_BODY, Palette.TEXT_HEAD));
+                VBox have = Kept.scope("have", () -> {
+                    VBox h = Kept.column(0, caption(String.format("%,d of %,d fitted", r.fitted(), r.buildings()), Palette.TEXT_BODY));
+                    if (r.onSite() > 0) h.getChildren().add(Kept.scope("on site", () -> caption(String.format("%,d on site", r.onSite()), Palette.BUILDING)));
+                    return h;
+                });
+                VerdictWords say = verdictWords(r.verdict());
+                VBox verdict = Kept.scope("verdict", () -> {
+                    Label word = Kept.label(say.word());
+                    word.setStyle(Palette.strong(Palette.SIZE_BODY, say.tone()));
+                    word.setMinWidth(Region.USE_PREF_SIZE);
+                    VBox v = Kept.column(0, word);
+                    if (say.line() != null) v.getChildren().add(Kept.scope("line", () -> caption(say.line(), say.tone())));
+                    return v;
+                });
+                Node[] cells = { who, have, verdict };
+                for (int i = 0; i < cells.length; i++) {
+                    javafx.scene.layout.StackPane cell = Kept.stack(cells[i]);
+                    javafx.scene.layout.StackPane.setAlignment(cells[i], Pos.CENTER_LEFT);
+                    cell.setMinHeight(34);
+                    cell.setStyle("-fx-padding: 4 0 4 0; -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 1 0 0 0;");
+                    grid.add(cell, i, at);
+                }
+            });
+        }
+        return grid;
     }
 
     /** A gate's icon: the deposit's pick, the licence's cap, the staffing test's person, the land, the money - and the bank for the interest on its whole cost (0.7.122). */

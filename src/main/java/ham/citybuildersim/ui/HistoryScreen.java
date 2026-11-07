@@ -824,10 +824,13 @@ final class HistoryScreen {
         // chart, the episodes and the flags run under the big one, and the
         // strip and the hard times list them. A decision made before the
         // history's first month - the founding month's - is on that first
-        // month (ChartModel.onAxis(), the spec's B4).
+        // month (ChartModel.onAxis(), the spec's B4). The flags carry the city's
+        // discoveries beside its decisions (R5: ResearchView.flagEntries(), which
+        // the log does not hold); what lists decisions says so (isDecision()).
         List<YearBook.Band> bands = ChartModel.bands(h);
         List<YearBook.Episode> episodes = ChartModel.episodes(h);
-        List<ChartModel.Flag> flags = ChartModel.onAxis(ChartModel.flags(ui.game.getDecisions()), axis.get(0));
+        List<ChartModel.Flag> flags = ChartModel.onAxis(
+                ChartModel.flags(ui.game.getDecisions(), ResearchView.flagEntries(ui.game)), axis.get(0));
         noteEpisodes(episodes, month);
 
         // Kept: each part is a scope of its own, so a part that comes and goes (the readings, the layers
@@ -1211,7 +1214,7 @@ final class HistoryScreen {
 
         DecisionLog log = ui.game.getDecisions();
         int decided = 0;
-        for (ChartModel.Flag f : flags) if (f.month() >= from && f.month() <= to) decided += f.count();
+        for (ChartModel.Flag f : flags) if (f.month() >= from && f.month() <= to) decided += decisionsIn(f);
         cells.add(new Cell("YOUR DECISIONS", String.format("%,d", log.size()),
                 log.size() == 0 ? "none made yet"
                         : "since founding · " + (decided == 0 ? "none" : String.format("%,d", decided)) + " in view · last "
@@ -2867,10 +2870,32 @@ final class HistoryScreen {
         return out;
     }
 
-    /** The decisions inside the window, newest first (pure): a founding-month one counts at the history's first month, where its flag stands. */
+    /**
+     * Whether a flag's entry is a decision of the player's: the flags carry the city's discoveries beside its decisions (R5; ResearchView.FLAG_KIND),
+     * and a discovery is not a decision, so every list and count of "your decisions" on this screen leaves them out.
+     */
+    static boolean isDecision(DecisionLog.Entry e) {
+        return !ResearchView.FLAG_KIND.equals(e.kind());
+    }
+
+    /** How many decisions a flag holds (its discoveries left out: isDecision()). */
+    static int decisionsIn(ChartModel.Flag f) {
+        int n = 0;
+        for (DecisionLog.Entry e : f.entries()) if (isDecision(e)) n++;
+        return n;
+    }
+
+    /**
+     * The decisions inside the window, newest first (pure): a founding-month one counts at the history's first month, where its flag stands. DECISIONS
+     * ONLY (R5): the flags the chart is handed carry the city's discoveries too (ResearchView.flagEntries()), and a discovery is not a decision, so
+     * it is filtered out by its kind (isDecision()) and is no row of HARD TIMES AND YOUR DECISIONS.
+     */
     static List<DecisionLog.Entry> decisionsInView(List<ChartModel.Flag> flags, int from, int to) {
         List<DecisionLog.Entry> out = new ArrayList<>();
-        for (ChartModel.Flag f : flags) if (f.month() >= from && f.month() <= to) out.addAll(f.entries());
+        for (ChartModel.Flag f : flags) {
+            if (f.month() < from || f.month() > to) continue;
+            for (DecisionLog.Entry e : f.entries()) if (isDecision(e)) out.add(e);
+        }
         java.util.Collections.reverse(out);
         return out;
     }
@@ -3128,6 +3153,7 @@ final class HistoryScreen {
         int decisions = 0;
         for (ChartModel.Flag f : flags) {
             for (DecisionLog.Entry d : f.entries()) {
+                if (!isDecision(d)) continue;
                 ticks.add(new Tick(f.month() - first + .5, TimeChart.flagColour(d.kind()), 2, null,
                         CityCalendar.formatShort(d.month()) + "  " + d.label()));
                 decisions++;

@@ -59,6 +59,8 @@
 
 **Uses:** [Research](Research.md) (268), [Game](Game.md) (36), [DiscoveryCheck](DiscoveryCheck.md) (26), [BuildingsTemplate](BuildingsTemplate.md) (13), [TreasuryLine](TreasuryLine.md) (8), [JobType](JobType.md) (6), [Inbox](Inbox.md) (6), [MoneyAudit](MoneyAudit.md) (5), [BusinessInvestment](BusinessInvestment.md) (3), [ResearchCatalog](ResearchCatalog.md) (2), [BuildingManager](BuildingManager.md) (2), [BuildingCatalog](BuildingCatalog.md) (2), [BusinessServices](BusinessServices.md) (2), [SectorBooks](SectorBooks.md) (2), [GameFiles](GameFiles.md) (2), [EquipmentCheck](EquipmentCheck.md) (2), [PayTier](PayTier.md) (1), [Sectors](Sectors.md) (1), [MaterialsCheck](MaterialsCheck.md) (1), [BuildingType](BuildingType.md) (1), [Sector](Sector.md) (1), [EconomyManager](EconomyManager.md) (1), [Notice](Notice.md) (1)
 
+**Used by (1):** [ResearchViewCheck](ResearchViewCheck.md)
+
 ## Sections
 
 | line | section |

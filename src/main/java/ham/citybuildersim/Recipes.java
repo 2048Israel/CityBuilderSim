@@ -216,6 +216,15 @@ public final class Recipes {
         chosen.clear();
     }
 
+    /**
+     * The recipes a template's two parts run now (R5: what ResearchView.recipesInUse() counts): a copy of [the fitted part's recipe id, the unfitted
+     * part's], or null when both run the default (the template has no choice kept).
+     */
+    public String[] chosen(int templateId) {
+        String[] picked = chosen.get(templateId);
+        return picked == null ? null : picked.clone();
+    }
+
     /** The choices to save, by template id: [the fitted part's recipe id, the unfitted part's]; a fresh map, empty when every part runs the default (the save then has no key). */
     public Map<Integer, List<String>> forSave() {
         Map<Integer, List<String>> out = new TreeMap<>();

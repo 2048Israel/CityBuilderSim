@@ -539,6 +539,38 @@ public class HistorySave {
     /** The dollar cycle's series and the risk-off's. */
     public static final String WORLD_CYCLE = "worldCycle", WORLD_RISK_OFF = "worldRiskOff";
 
+    /* ------------------- the research (R5, 2026-11-06) -------------------
+
+       The Found page's graphs (Policy > Research): the researchers over time, the money over time and the share of the equipment fitted. None can be
+       rebuilt from a save (a flow cannot be reconstructed from the state a month ended in; the discoveries themselves can, and are not here:
+       ResearchView derives them). Three series, kept only by a city founded the 1900 way - research runs in no other, so a city founded the
+       default way has no such series and its history file, its year book and its charts stay as they were - and in a map by name, as the world's
+       moneys are, so that a city without them has none and aligned() reads them as "not recorded":
+
+         researchersEngineering, researchersMedicine, researchersBusiness, researchersLaw (researchersKey()):
+             a field's researchers in the month, the city's own and the labs' (Research.researchers() + labResearchers()); a LEVEL, a head count.
+         researchSpend: the month's research bill (EconomyManager.getResearchBill(): the posts' pay and the labs' other costs) and the prizes the
+             treasury paid the labs (Game.getPrizePaid()), the city's money; a FLOW, so a reform scales it.
+         equipmentFitted: the share of the equipment standing that is fitted, 0 to 1 (ResearchView.fittedShare()); a RATE. It begins in the first
+             month with a stack that carries a known piece, so the months before it read as "not counting" (NaN: JSON holds no NaN, which is why it is
+             not stored as one). A month after that with no such stack at all (every one pulled down) records 0.
+
+       All three are struck at the month's close, where recordMonth() runs, after the bill is struck, the researchers have worked the problems, the
+       prizes are paid and the fittings done, so each is the month's own figure and not the last month's.
+       ------------------------------------------------------------------ */
+    private Map<String, List<Double>> researchSeries = new LinkedHashMap<>();
+
+    /** The series of a field's researchers (the city's and the labs'): "researchersEngineering", "researchersMedicine", "researchersBusiness", "researchersLaw". */
+    public static String researchersKey(ResearchCatalog.Field field) {
+        return "researchers" + capitalised(field.name().toLowerCase(java.util.Locale.ROOT));
+    }
+
+    /** The month's research bill and prizes paid, the city's money. */
+    public static final String RESEARCH_SPEND = "researchSpend";
+
+    /** The share of the equipment standing that is fitted, 0 to 1; begins when there is equipment to count. */
+    public static final String EQUIPMENT_FITTED = "equipmentFitted";
+
     /* ------------------- the trade by partner (WN3, 2026-10-28) -------------------
 
        Each finished calendar year's table of the city's trade with the world's
@@ -912,6 +944,22 @@ public class HistorySave {
         luxuryMargin.add(round4(finite(game.getSectors().luxuryRetail().getMargin())));
         luxuryTargetMargin.add(round4(finite(game.getSectors().luxuryRetail().getTargetMargin())));
 
+        /* ------------------------- the research (R5) -------------------------
+           A city founded the 1900 way only (see the field's note). */
+        if (game.foundedUnfitted()) {
+            Research research = game.getResearch();
+            for (ResearchCatalog.Field field : ResearchCatalog.Field.values()) {
+                researchSeries.computeIfAbsent(researchersKey(field), k -> new ArrayList<>())
+                        .add(round2(finite(research.researchers(field) + research.labResearchers(field))));
+            }
+            researchSeries.computeIfAbsent(RESEARCH_SPEND, k -> new ArrayList<>())
+                    .add(round2(finite(economy.getResearchBill() + game.getPrizePaid())));
+            double fitted = ResearchView.fittedShare(game);
+            if (!Double.isNaN(fitted) || researchSeries.containsKey(EQUIPMENT_FITTED)) {
+                researchSeries.computeIfAbsent(EQUIPMENT_FITTED, k -> new ArrayList<>()).add(round4(finite(fitted)));
+            }
+        }
+
         /* --------------------- the city's fund (0.7.39) ---------------------
            Last, after the share prices: the warrants' value in fundValue()
            reads the bank's price history (Game.bankVolatility()), which has
@@ -1261,6 +1309,7 @@ public class HistorySave {
         sectorWorkers = copyMap(loaded.sectorWorkers);
 
         worldMoney = copyMap(loaded.worldMoney);
+        researchSeries = copyMap(loaded.researchSeries);
 
         // The trade by partner (WN3): each year's table rebuilt, so a table read by Gson (a list it made) is the immutable one the model keeps.
         tradeByPartner = new ArrayList<>();
@@ -1429,6 +1478,7 @@ public class HistorySave {
             dropEmpty(copy.sectorNetIncome);
             dropEmpty(copy.sectorWorkers);
             dropEmpty(copy.worldMoney);
+            dropEmpty(copy.researchSeries);
         }
         if (dropped > 0 && copy.tradeByPartner != null) {
             int thisYear = CityCalendar.yearOf(lastMonth);
@@ -1899,6 +1949,8 @@ public class HistorySave {
         }
         // ...and the world's moneys, where the city has had them (WN4).
         if (worldMoney != null) map.putAll(worldMoney);
+        // ...and the research's, where the city is founded the 1900 way (R5).
+        if (researchSeries != null) map.putAll(researchSeries);
         return map;
     }
 
@@ -1975,6 +2027,8 @@ public class HistorySave {
         if (shareValue != null) for (List<Double> s : shareValue.values()) scaleAll(scale, s);
         // A sector's net income is money; its workers are people (0.7.4).
         if (sectorNetIncome != null) for (List<Double> s : sectorNetIncome.values()) scaleAll(scale, s);
+        // The research's spend (R5) is money; its researchers and the share of the equipment fitted are not.
+        if (researchSeries != null && researchSeries.get(RESEARCH_SPEND) != null) scaleAll(scale, researchSeries.get(RESEARCH_SPEND));
         // The trade by partner's finished years (DZ1): each cell's value out and in is money; the tables are immutable, so the list takes the scaled ones.
         if (tradeByPartner != null) tradeByPartner.replaceAll(t -> t.scaled(scale));
     }
