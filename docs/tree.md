@@ -321,6 +321,12 @@ adds its line here, not in `CLAUDE.md`.
         ResearchCheck.java         R2's catalogue: the file read whole, the needs dated no later, history's
                                    months against the tables and PolicyDates, the work rule, the reader's
                                    refusals, buildings.json's codes and each known from its entry's month
+        ResearchView.java          what the research screens draw (R5, 2026-11-06; research-design 5.5,
+                                   6.2): every discovery on a timeline, found here or from abroad, the
+                                   recipes in use, the equipment rows with each verdict, a building's
+                                   origin and NEW, City History's discovery flags; empty in a default city
+        ResearchViewCheck.java     R5's reads on a default city and a 1900 one, the series kept, and
+                                   researchTown(), the 1900 city the research screens' KeptCheck shares
         EquipmentForms.java        R0c's shares set from the buildings still without the piece that ends
                                    each form (BuildingsStacks' unfitted counts, saved by template id),
                                    weighted by draw, land or truck room, only where a count is or was;
@@ -809,7 +815,8 @@ adds its line here, not in `CLAUDE.md`.
                                    UP3, a far node re-coloured only when its MapTiles.nodeKey() moved),
                                    and ZoningScreen.java (Policy's fifth
                                    area, Zoning, 0.7.109: PolicyScreen dispatches the area to it and keeps
-                                   the staged set and the tray), and MiniMap.java (the minimap, 0.7.134: a
+                                   the staged set and the tray), and ResearchScreen.java (Policy's sixth,
+                                   Research, R5: the Found page, its timeline a picture of kept dots), and MiniMap.java (the minimap, 0.7.134: a
                                    stamp of the city at the rail's foot above Menu, its preview on hover,
                                    the land office's map over the window on a click; MiniMapFrame's
                                    arithmetic; since 0.8.27, batch UP3, the stamp and the preview from

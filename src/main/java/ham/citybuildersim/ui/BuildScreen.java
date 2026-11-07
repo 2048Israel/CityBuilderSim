@@ -81,10 +81,19 @@ final class BuildScreen {
     /** The page the pool last drew under "handleAllBuildingMenus" (the Overview, or a category's name): a different page is an arrival, the same one a kept redraw. */
     private String drawnPage;
 
+    /**
+     * The month each NEW building's card was first drawn in, by template id (R5): a card shows NEW while the model says the building is new
+     * (ResearchView.isNew()) and it has not been drawn in an EARLIER month - drawn this month still shows it, PolicyScreen's biting flags' rule.
+     * NOT SAVED, so a reload shows NEW again on what became known within ResearchView.NEW_MONTHS, which is the bound: a building shows NEW for a
+     * year at the most, whatever the player does, and past the month the player first sees it in, no longer. Forgotten with the pool (forget()).
+     */
+    final java.util.Map<Integer, Integer> newSeen = new java.util.HashMap<>();
+
     /** A new city or a load: nothing of the last city's page is kept. */
     void forget() {
         pool.forget();
         drawnPage = null;
+        newSeen.clear();
     }
 
     /**
@@ -404,6 +413,8 @@ final class BuildScreen {
             return overview;
         }));
 
+        // R5: the buildings that show NEW, once for the strip (none in a city founded the default way): a category holding one carries a dot.
+        List<BuildingsTemplate> showing = shownNew();
         boolean ruled = false;
         for (BuildCategory category : buildCategories()) {
             boolean on = category.name().equals(current);
@@ -425,19 +436,25 @@ final class BuildScreen {
              * "which of these do I actually have to do".
              */
             boolean theirs = investorBuilt(category.types());
+            List<BuildingsTemplate> fresh = newOnPage(showing, category.name());
             strip.getChildren().add(Kept.scope(category.name(), () -> {
                 Button tab = Kept.of(Button.class, Button::new);
                 tab.setText(category.name());
-                tab.setGraphic(whoDot(theirs));
+                // ...the who-builds dot alone, or (R5) beside the discovery's, each in its own scope: a dot that comes and goes takes its own nodes.
+                tab.setGraphic(fresh.isEmpty() ? whoDot(theirs) : Kept.scope("marks", () -> {
+                    HBox both = Kept.row(4, whoDot(theirs), newDot());
+                    both.setAlignment(Pos.CENTER_LEFT);
+                    return both;
+                }));
                 tab.setGraphicTextGap(6);
                 tab.setStyle(Palette.words(Palette.SIZE_BODY, on ? Palette.TEXT_HEAD : Palette.TEXT_LABEL)
                         + " -fx-background-color: " + (on ? Palette.PINNED : "transparent") + ";"
                         + " -fx-background-radius: " + Palette.RADIUS + ";"
                         + " -fx-border-color: " + (on ? Palette.BUILDING : "transparent") + ";"
                         + " -fx-border-width: 0 0 2 0; -fx-padding: 6 10 6 10; -fx-cursor: hand;");
-                Kept.tip(tab, theirs
+                Kept.tip(tab, (theirs
                         ? "Investors build these themselves. You can build them too."
-                        : "Nobody builds these but the city.", 250);
+                        : "Nobody builds these but the city.") + (fresh.isEmpty() ? "" : newWords(fresh)), 250);
                 tab.setOnAction(e -> openCategory(category.name()));
                 return tab;
             }));
@@ -874,10 +891,15 @@ final class BuildScreen {
         BuildingsTemplate template = f.template();
         String key = template.getName();
         boolean afford = f.price() <= ui.game.getCash();
+        // R5: a building the city came to know after the founding says so (NEW, where it came from), and a lab says what a lab is for.
+        boolean showNew = seeNew(template);
+        ResearchView.Origin origin = ResearchView.origin(ui.game, template);
 
         VBox face = Kept.column(6);
         face.setStyle("-fx-padding: 10 12 10 12;");
-        face.getChildren().add(Kept.scope("head", () -> cardHead(f, Icons.ofCategory(c.name()), f.market() ? INVESTOR_DOT : CITY_DOT, afford)));
+        face.getChildren().add(Kept.scope("head", () -> cardHead(f, Icons.ofCategory(c.name()), f.market() ? INVESTOR_DOT : CITY_DOT, afford, showNew)));
+        if (origin != null) face.getChildren().add(Kept.scope("origin", () -> originLine(origin)));
+        if (ResearchView.isLab(template)) face.getChildren().add(Kept.scope("lab", this::labLine));
         javafx.scene.layout.FlowPane tags = Kept.scope("tags", () -> cardTags(f, group));
         if (!tags.getChildren().isEmpty()) face.getChildren().add(tags);
         face.getChildren().addAll(Kept.scope("hero", () -> heroRow(f)), Kept.scope("price", () -> priceRow(f, afford)));
@@ -920,10 +942,10 @@ final class BuildScreen {
         face.getChildren().add(Kept.scope("needs", () -> needsLine(f)));
 
         StackPane card = Kept.stack();
-        // The border turns the building colour while an order is pending.
+        // The border turns the building colour while an order is pending, and the discovery's violet while the building is NEW (R5) and none is.
         Runnable dress = () -> card.setStyle("-fx-background-color: " + Palette.RAISED + ";"
                 + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: "
-                + (orderQty.getOrDefault(key, 0) > 0 ? Palette.BUILDING : Palette.EDGE) + ";");
+                + (orderQty.getOrDefault(key, 0) > 0 ? Palette.BUILDING : showNew ? Palette.DISCOVERY : Palette.EDGE) + ";");
         Order order = Kept.scope("order", () -> orderControls(template, key, c.name(), c.types(), dress));
         repriced[0] = order.reprice();
         face.getChildren().addAll(order.steps(), order.build(), order.quoted());
@@ -949,6 +971,143 @@ final class BuildScreen {
         order.reprice().run();
         if (key.equals(landOn)) landCard = card;
         return card;
+    }
+
+    /* ----- NEW, WHERE IT CAME FROM, AND WHAT A LAB IS FOR (R5, slice B2; research-design 5.5, mockup 5) ----- */
+
+    /*
+     * A building the city came to know after the founding is NEW on its card for NEW_MONTHS months (ResearchView.isNew()), unless the player has
+     * seen it: a card shows NEW while the model says so and the card was not drawn in an EARLIER month. Three things say it - the card's chip and
+     * violet edge, the category's dot in the strip and the strip under its head - and all three ask showsNew(), the one rule. Nothing here is saved:
+     * newSeen is the screen's. In a city founded the default way ResearchView has no origin and no NEW, so no card, dot or strip changes.
+     */
+
+    /**
+     * Whether a building shows NEW now: the model says it is new, and its card was not first drawn in an earlier month than this one (newSeen).
+     * The card, the category's dot and the strip's line all ask this, so the three never disagree.
+     */
+    boolean showsNew(BuildingsTemplate t) {
+        return showsNew(ResearchView.isNew(ui.game, t), newSeen.get(t.getId()), ui.game.getMonth());
+    }
+
+    /** The rule on its own: NEW while the model says so and the card was not first drawn in an earlier month (never drawn, or drawn this month, still shows it). */
+    static boolean showsNew(boolean modelNew, Integer firstDrawn, int month) {
+        return modelNew && (firstDrawn == null || firstDrawn >= month);
+    }
+
+    /** The card's: notes the month a NEW building's card is first drawn in (a card drawn again in that month still shows NEW), then asks showsNew(). */
+    boolean seeNew(BuildingsTemplate t) {
+        if (ResearchView.isNew(ui.game, t)) newSeen.putIfAbsent(t.getId(), ui.game.getMonth());
+        return showsNew(t);
+    }
+
+    /** The templates that show NEW now, in the templates' order: ResearchView.newTemplates(), less those the player has seen in an earlier month. */
+    List<BuildingsTemplate> shownNew() {
+        List<BuildingsTemplate> out = new ArrayList<>();
+        for (BuildingsTemplate t : ResearchView.newTemplates(ui.game)) if (showsNew(true, newSeen.get(t.getId()), ui.game.getMonth())) out.add(t);
+        return out;
+    }
+
+    /** The ones of a list that are on a category's page. */
+    private static List<BuildingsTemplate> newOnPage(List<BuildingsTemplate> shown, String category) {
+        List<BuildingsTemplate> out = new ArrayList<>();
+        for (BuildingsTemplate t : shown) {
+            BuildAdvice.Category c = BuildAdvice.categoryOf(t);
+            if (c != null && c.name().equals(category)) out.add(t);
+        }
+        return out;
+    }
+
+    /** Where a building came from, in the strip's words: "found here, June 1979" or "from abroad, June 1955". */
+    static String originPlace(ResearchView.Origin o) {
+        return (o.source() == ResearchView.Source.HERE ? "found here, " : "from abroad, ") + CityCalendar.format(o.month());
+    }
+
+    /**
+     * The card's line on where the building came from: "Found here, June 1979 · the Institute of technology found it, 1.5 years before the world"
+     * (the school the way the inbox says it, Inbox.takeResearch(); the years the way City History's flag does, one decimal and always "years"), or
+     * "From abroad, June 1955". A building known by a year (no discovery behind it) came from abroad on that January.
+     */
+    static String originWords(ResearchView.Origin o) {
+        String place = originPlace(o);
+        String line = Character.toUpperCase(place.charAt(0)) + place.substring(1);
+        if (o.source() == ResearchView.Source.HERE && o.entry() != null) {
+            line += String.format(java.util.Locale.ROOT, " · %s found it, %.1f years before the world", o.entry().field().school(), o.yearsAhead());
+        }
+        return line;
+    }
+
+    /** A card's line on where the building came from, in the discovery's violet for one the city found and muted for one the world had. */
+    private Label originLine(ResearchView.Origin o) {
+        Label line = Kept.label(originWords(o));
+        line.setWrapText(true);
+        line.setMinHeight(Region.USE_PREF_SIZE);
+        line.setStyle(Palette.words(Palette.SIZE_LABEL, o.source() == ResearchView.Source.HERE ? Palette.DISCOVERY : Palette.TEXT_MUTED));
+        return line;
+    }
+
+    /**
+     * What a Research Lab is for (R4's star 10), one line from the model's constants: the investors' building for a prize, put up when a field's prize
+     * pays for an open problem a team could finish before the world (Policy > Research), and shed after LAB_IDLE_MONTHS months idle when ordered by hand
+     * with nothing to chase. In a city founded the default way there is never anything on the chase, so a lab ordered there only idles.
+     */
+    static String labWords(boolean defaultCity) {
+        String words = "A lab is the investors' building for a prize: " + Research.LAB_POSTS + " researchers of one field, put up when the field's prize "
+                + "pays for an open problem a team could finish before the world (Policy › Research). One ordered by hand with nothing to chase is shed after "
+                + Research.LAB_IDLE_MONTHS + " months idle.";
+        return defaultCity ? words + " In a city founded the default way nothing is ever on the chase, so a lab ordered here only idles." : words;
+    }
+
+    /** A Research Lab's card's line on what a lab is for. */
+    private Label labLine() {
+        Label line = Kept.label(labWords(!ui.game.foundedUnfitted()));
+        line.setWrapText(true);
+        line.setMinHeight(Region.USE_PREF_SIZE);
+        line.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        return line;
+    }
+
+    /**
+     * A category page's strip on what is new in it (mockup 5): "New: the Pelletising Plant (from abroad, June 1955) · the Wind Farm (found here,
+     * June 1979)", for the buildings of the page that show NEW; null when none does, so a played city's page is as it was.
+     */
+    private HBox newStrip(BuildAdvice.Category c) {
+        List<BuildingsTemplate> here = newOnPage(shownNew(), c.name());
+        if (here.isEmpty()) return null;
+        List<String> parts = new ArrayList<>();
+        for (BuildingsTemplate t : here) {
+            ResearchView.Origin o = ResearchView.origin(ui.game, t);
+            parts.add("the " + t.getName() + (o == null ? "" : " (" + originPlace(o) + ")"));
+        }
+        Label words = Kept.label("New: " + String.join(" · ", parts));
+        words.setWrapText(true);
+        words.setMinHeight(Region.USE_PREF_SIZE);
+        words.setMinWidth(0);
+        words.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_HEAD));
+        HBox.setHgrow(words, Priority.ALWAYS);
+        HBox strip = Kept.row(10, words);
+        strip.setAlignment(Pos.CENTER_LEFT);
+        strip.setStyle("-fx-padding: 6 12 6 12; -fx-background-color: " + Pieces.tint(Palette.DISCOVERY, .12) + "; -fx-background-radius: 4;"
+                + " -fx-border-color: " + Pieces.tint(Palette.DISCOVERY, .5) + "; -fx-border-radius: 4;");
+        return strip;
+    }
+
+    /** The chip's tooltip after its own words, for a category with something new on it: a line "New here: the Wind Farm, the Electric Arc Furnace". */
+    private static String newWords(List<BuildingsTemplate> fresh) {
+        List<String> names = new ArrayList<>();
+        for (BuildingsTemplate t : fresh) names.add("the " + t.getName());
+        return "\nNew here: " + String.join(", ", names);
+    }
+
+    /** A category chip's mark of something new in it: a violet dot a little larger than the who-builds dot, ringed so the two are told apart. */
+    private static Region newDot() {
+        Region dot = Kept.region();
+        dot.setMinSize(8, 8);
+        dot.setPrefSize(8, 8);
+        dot.setMaxSize(8, 8);
+        dot.setStyle("-fx-background-color: " + Palette.DISCOVERY + "; -fx-background-radius: 4;"
+                + " -fx-border-color: " + Palette.TEXT_HEAD + "; -fx-border-width: 1; -fx-border-radius: 5;");
+        return dot;
     }
 
     /* ----- PAVING, ON THE GRAVEL ROAD'S CARD (0.7.70) ----- */
@@ -1107,9 +1266,10 @@ final class BuildScreen {
      * when one costs more than the cash, "you have N" or "none built", and
      * what is on site for anyone's order with its wait (0.7.20), a link to the
      * site on the construction page (0.7.22). Room is left at the right for
-     * the (i), which sits over the card.
+     * the (i), which sits over the card. A building that shows NEW (R5) has
+     * the chip after its name, in the discovery's violet.
      */
-    HBox cardHead(BuildCard.Figures f, String svg, String dot, boolean afford) {
+    HBox cardHead(BuildCard.Figures f, String svg, String dot, boolean afford, boolean showNew) {
         BuildingsTemplate t = f.template();
         int owned = f.owned();
         Label name = Kept.label(t.getName());
@@ -1130,7 +1290,16 @@ final class BuildScreen {
             Kept.set(haveLine.getChildren(), List.of(have));
         }
         haveLine.setMinWidth(0);
-        VBox who = Kept.column(1, name, haveLine);
+        // ...the chip beside the name only where there is one: a card with none is the card it was (the name straight in the column).
+        javafx.scene.Node title = name;
+        if (showNew) {
+            title = Kept.scope("title", () -> {
+                HBox row = Kept.row(6, name, Kept.scope("new", () -> tag("NEW", Palette.DISCOVERY)));
+                row.setAlignment(Pos.CENTER_LEFT);
+                return row;
+            });
+        }
+        VBox who = Kept.column(1, title, haveLine);
         HBox.setHgrow(who, Priority.ALWAYS);
         who.setMinWidth(0);
         who.setPadding(new javafx.geometry.Insets(0, 20, 0, 0));
@@ -3842,7 +4011,11 @@ final class BuildScreen {
                 right.setAlignment(Pos.CENTER_RIGHT);
                 return right;
             });
-            page.getChildren().addAll(head, strip, limits, rings,
+            // ...and (R5) under the head, what is new on the page: a scope of its own that is null where nothing is.
+            HBox fresh = Kept.scope("new strip", () -> newStrip(c));
+            page.getChildren().addAll(head, strip);
+            if (fresh != null) page.getChildren().add(fresh);
+            page.getChildren().addAll(limits, rings,
                     Kept.scope("ring head", () -> sectionHead(on.label().toUpperCase() + " · " + measureSubtitle(on), headRight)),
                     cards);
             page.getChildren().addAll(beyond);
@@ -4374,7 +4547,11 @@ final class BuildScreen {
             HBox head = Kept.scope("head", () -> categoryHead(c));
             javafx.scene.layout.FlowPane strip = Kept.scope("strip", () -> categoryStrip(c));
             HBox who = Kept.scope("who", () -> whoBuildsThis(c.name(), c.types()));
-            page.getChildren().addAll(head, strip, Kept.scope("limits", this::constraintsBar), who);
+            // ...and (R5) under the head, what is new on the page: a scope of its own that is null where nothing is.
+            HBox fresh = Kept.scope("new strip", () -> newStrip(c));
+            page.getChildren().addAll(head, strip);
+            if (fresh != null) page.getChildren().add(fresh);
+            page.getChildren().addAll(Kept.scope("limits", this::constraintsBar), who);
 
             // The order bar first: each card reprices into it as it is drawn.
             orderBar = Kept.scope("order bar", () -> Kept.column(0));

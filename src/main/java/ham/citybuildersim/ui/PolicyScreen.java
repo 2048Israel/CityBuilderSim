@@ -90,9 +90,13 @@ final class PolicyScreen {
     /** The Zoning area's pages (0.7.109, batch Z2): drawn there, staged and applied through this screen's set and tray. */
     final ZoningScreen zoning;
 
+    /** The Research area's pages (R5): drawn there from this screen's pool, under this screen's four figures and tray. */
+    final ResearchScreen research;
+
     PolicyScreen(UserInterface ui) {
         this.ui = ui;
         this.zoning = new ZoningScreen(this, ui);
+        this.research = new ResearchScreen(this, ui);
     }
 
     /** The nodes this screen made at its last draw, handed back to it at the next - zoning's pages too, which draw from it (KP6; study UP4, docs/studies/spec-screens-in-place.md). */
@@ -107,7 +111,7 @@ final class PolicyScreen {
        POLICY (0.7.36): THE FRAME
 
        The head ("Policy", or the breadcrumb "Policy › Taxes", "Policy" a
-       way back to the hub) with the areas as chips at its right (five since
+       way back to the hub) with the areas as chips at its right (six since R5, Research's; five since
        0.7.109, Zoning's); the area's pages as tabs under it; the four
        figures across every page - TAX A MONTH, THE FLOOR, THE POLICY RATE,
        PROMISES, and on Zoning's pages zoning's own four (ZoningScreen) -
@@ -116,14 +120,17 @@ final class PolicyScreen {
        foot of the stage.
        ===================================================================== */
 
-    /** The four areas, by what kind of lever each is - Jerus picked the grouping - and since 0.7.109 (batch Z2) the fifth, the city's ground: Zoning (ZoningScreen draws it). */
-    static final String TAXES = "Taxes", WAGES = "Wages", MONEY = "Money", PROMISES = "Promises", ZONING = "Zoning";
+    /**
+     * The four areas, by what kind of lever each is - Jerus picked the grouping - and since 0.7.109 (batch Z2) the fifth, the city's ground: Zoning
+     * (ZoningScreen draws it), and since R5 the sixth, what the city's researchers have found: Research (ResearchScreen draws it).
+     */
+    static final String TAXES = "Taxes", WAGES = "Wages", MONEY = "Money", PROMISES = "Promises", ZONING = "Zoning", RESEARCH = "Research";
 
     /** ...as the head's chips list them. */
-    static final String[] AREAS = {TAXES, WAGES, MONEY, PROMISES, ZONING};
+    static final String[] AREAS = {TAXES, WAGES, MONEY, PROMISES, ZONING, RESEARCH};
 
-    /** ...and each one's icon: the coin, the staff, the bank, the people, the flag on a plot. */
-    static final String[] AREA_ICONS = {Icons.COIN, Icons.STAFF, Icons.BANK, Icons.POPULATION, Icons.ZONING};
+    /** ...and each one's icon: the coin, the staff, the bank, the people, the flag on a plot, the flask. */
+    static final String[] AREA_ICONS = {Icons.COIN, Icons.STAFF, Icons.BANK, Icons.POPULATION, Icons.ZONING, Icons.FLASK};
 
     /** The area open, one of AREAS, or null for the hub. */
     String policyArea = null;                  // null is the hub
@@ -188,6 +195,7 @@ final class PolicyScreen {
             case MONEY    -> POLICY_MONEY_PAGES;
             case PROMISES -> POLICY_PROMISE_PAGES;
             case ZONING   -> ZoningScreen.PAGES;
+            case RESEARCH -> ResearchScreen.PAGES;
             default       -> POLICY_TAX_PAGES;
         };
     }
@@ -200,6 +208,7 @@ final class PolicyScreen {
             case MONEY    -> MONEY_ICONS;
             case PROMISES -> PROMISE_ICONS;
             case ZONING   -> ZoningScreen.PAGE_ICONS;
+            case RESEARCH -> ResearchScreen.PAGE_ICONS;
             default       -> TAX_ICONS;
         };
     }
@@ -254,6 +263,7 @@ final class PolicyScreen {
                             else                                      ratePage(p);
                         }
                         case ZONING -> zoning.page(p);
+                        case RESEARCH -> research.page(p);
                         case PROMISES -> {
                             switch (policyPage) {
                                 case "Schools"     -> schoolsPage(p);
@@ -404,6 +414,7 @@ final class PolicyScreen {
             case PROMISES -> "Pensions, EI, food assistance, the clinic's price, school fees, and the sectors the city "
                     + "will not let fail: what the city has promised, what it collects for it and what it costs.";
             case ZONING -> ZoningScreen.AREA_INFO;
+            case RESEARCH -> ResearchScreen.AREA_INFO;
             default -> "Each tax's own rate, and the moves off it by band and by sector. Profit, sales and wage tax "
                     + "each move off a base of their own; property is charged on what things are worth rather "
                     + "than on anything anybody earned.";
