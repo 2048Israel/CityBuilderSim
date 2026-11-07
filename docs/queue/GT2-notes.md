@@ -70,6 +70,6 @@ day covers it. `TimingCheck` (section 9 runs the awk) green; `--pick` below.
 
 **One in, one out:** `git diff --numstat origin/main` over `ship.sh`,
 `tools/timing-pair.awk`, `tools/ship-selftest.sh` and `docs/orchestrator.md`:
-104 added, 95 removed (net +9): the awk's header condensed (its TM3 and SP1
+105 added, 96 removed (net +9): the awk's header condensed (its TM3 and SP1
 history to a line each), step 6 two lines shorter, `--red-ok`'s usage note,
 which repeated step 9, three lines shorter.
