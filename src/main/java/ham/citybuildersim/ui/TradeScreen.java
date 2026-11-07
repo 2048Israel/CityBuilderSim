@@ -1193,6 +1193,13 @@ final class TradeScreen {
             + "times the US dollar's prices since the city was founded. It is shown to compare the city with the nations, and for "
             + "nothing else: nothing in the city's economy reads it.";
 
+    /** THE RATE's line for the D$ the goods are struck at (AN2): what the traded goods are priced at, and how it follows the rate (AN1's PASS_THROUGH). */
+    static final String STRUCK_INFO = String.format("What the city's traded goods are priced at: the dock's imports and exports, the band "
+            + "the city's own goods trade in and the materials in a building's cost are each the world's price, in its own money, times "
+            + "this rate - not the rate of the month. Each month it closes 1/%.0f of its gap to the rate, so a step in the rate reaches "
+            + "the goods in full, half of it in about %.0f months. The rate itself still converts the vault, the debts and the land office.",
+            1 / EconomyManager.PASS_THROUGH, Math.log(.5) / Math.log(1 - EconomyManager.PASS_THROUGH));
+
     /** The real effective rate's (i) (D29). */
     static final String REAL_EFFECTIVE_INFO = "The city's dollar against the moneys of the nations it trades with, each weighted by how much the "
             + "city traded with it over the last finished year, with the prices taken out of both ends. It is 100 at founding. Above 100 "
@@ -2608,6 +2615,15 @@ final class TradeScreen {
         // Kept (KP6): what is drawn only sometimes is a scope of its own, so it shifts no node after it.
         String moved = rateMove();
         if (moved != null) c.getChildren().add(Kept.scope("moved", () -> muted(moved)));
+        // AN2: the D$ the traded goods are struck at (AN1), and how far it trails the rate - a scope of its own, drawn once something is struck.
+        double struck = ui.game.getEconomyManager().getStruckRate(), gap = ui.game.struckFromRate();
+        if (struck > 0) {
+            Kept.scope("struck", () -> {
+                c.getChildren().add(cardLine("The goods are struck at", sym() + fxRate(struck), null, STRUCK_INFO));
+                c.getChildren().add(muted(Math.abs(gap) < .0005 ? "Level with the rate: the goods have caught up."
+                        : farFrom(gap, "the rate") + ", closing " + String.format("1/%.0f", 1 / EconomyManager.PASS_THROUGH) + " of the gap a month"));
+            });
+        }
         addRegimeLine(c);
         c.getChildren().add(Kept.scope("rising", () -> muted("A rising figure is a cheaper " + sym() + ": " + Currency.FOREIGN_SYMBOL + "1 costs more of it.")));
         // D29 (WN6): the other US dollar, the real 2015 one the nations' output is counted in, and the D$'s real effective rate against the partners'.

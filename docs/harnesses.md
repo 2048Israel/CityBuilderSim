@@ -2,7 +2,7 @@
 
 Generated 2026-11-06 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**182 harness files, 21,072 labelled assertions.** AllChecks runs 182 of them.
+**182 harness files, 21,078 labelled assertions.** AllChecks runs 182 of them.
 
 ## Which harnesses read which class
 
@@ -18991,7 +18991,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L824 the host nation's (
   - L827 ...and a distance of its node from the spot that is not nothing and not the world's width (
 
-## PassThroughCheck.java - 52 labelled assertions
+## PassThroughCheck.java - 58 labelled assertions
 
 > Proves the city's goods are struck at a D$ that follows the D$ slowly (AN1,
 > 2026-10-22): each month the goods' D$ closes EconomyManager.PASS_THROUGH of
@@ -19007,64 +19007,71 @@ _(this harness does not label its checks through a helper - it prints its findin
 > in, the materials in a building's cost - was struck at the D$ of the month:
 > ...
 
-- **L233 1. the rule on the bench**
-  - L239 a 10% step in the D$,
-  - L245 ...which is when half of the step is still to come: (1-k) to the half-life is a half
-  - L261 at speed one the goods' D$ is the D$ itself: within a few last digits of it, over twenty thousand pairs
-  - L262 a struck rate at the D$ stays there: within a few last digits of it, over twenty thousand rates
-  - L263 one strike moves the goods' D$ the share k of the way to a D$ 10% off, in logs, and no further: ln(1.1) x k
-- **L273 2. the wiring, every month in a real city**
-  - L278 fixture: a new city has struck nothing yet: its struck rate is 0
-  - L299 fixture: the city played its
-  - L300 fixture: the D$ moved in the run, by more than 5% from its start - the strikes below are not a rate held still
-  - L301 the city's first strike is at the D$ itself (the D$ the first month saw), to the bit
-  - L302 every month the struck rate is the last month's moved PASS_THROUGH of the way to the D$ the strike saw, to the bit (wrong in
-  - L304 every month the markets' rate is the struck rate times the world's price level, to the bit (wrong in
-  - L306 ...and so is the rate the economy manager prices the building materials at (wrong in
-  - L346 the city is saved at its end, for the twins of the sections after
-- **L352 3. a step in the D$ reaches the goods at PASS_THROUGH a month**
-  - L356 fixture: the twins are one city before the pin: one month, one struck rate, one price index, to the bit
-  - L360 fixture: the D$ and the goods' D$ are apart when the pin comes (the D$ is
-  - L365 fixture: both D$ are pinned, the steady one at the goods' D$ (no gap pending) and the other's 10% weaker
-  - L389 for 36 months the weak twin's struck rate over the other's is 1.1^(1-(1-k)^n), worst error in logs over the 36
-  - L390 ...and so is the rate the markets are priced at, the world's level being one
-  - L405 the groceries component's pass-through is positive at 12 months: a weaker D$ raised the shelf's price (
-  - L407 ...and under the goods' own share at 12 months: the shelf follows the goods' D$ with a lag of its own, not ahead of it (
-  - L468 fixture (
-  - L472 fixture (
-  - L482 fixture (
-  - L493 fixture (
-  - L504 the purchase's month (
-  - L507 ...and the vault's cover moved the two alike, so nothing but the intervention parted their moves
-  - L510 ...the shock twin's D$ is weaker than its twin's that month (
-  - L523 fixture (
-- **L568 4. the ring settles: the same swing of the D$, the goods following at PASS_THROUGH and one for one**
-  - L581 fixture: two plain loads of the base city play
-  - L585 at PASS_THROUGH
-  - L587 one for one, the rule before AN1
-  - L589 at PASS_THROUGH the goods' gap never exceeds the D$'s widest gap so far times 1-(1-k)^n, in any of the
-  - L591 ...while one for one the goods go as far as the D$ does, a month behind it (its widest
-  - L594 ...and at PASS_THROUGH they never do (the goods' widest
-  - L607 the premise: over the swing's months 1-
-  - L609 ...and so does the price index (
-- **L616 5. a save carries it**
-  - L622 fixture: the live city has struck its goods (
-  - L625 a loaded city has the struck rate of the city saved, to the bit
-  - L626 ...and the rate its markets were priced at
-  - L630 one month on both strike the same rate, to the bit (
-  - L632 ...and price the markets the same, to the bit (
-  - L634 ...and it was a strike that moved the goods' D$ (from
-  - L639 fixture: the loaded city's struck rate is cleared, as a save without the key reads
-  - L642 a loaded city whose struck rate is cleared strikes at the D$ itself the next month, to the bit
-  - L644 ...which is not where the city that kept its struck rate struck (
-  - L653 fixture: the city was reformed, one new D$ for 100 old
-  - L654 a reform scales the struck rate by the factor
-  - L655 ...as it does the D$ itself, so the gap between them is the one the city had
-  - L659 the month after, the reformed city strikes the unreformed twin's rate over the factor
-- **L666 6. how often it matters in a real city**
-  - L683 the mechanic fires in a real city: the goods' D$ was more than 1% from the D$ in some month (widest
-  - L685 ...and in a good many: more than 5% apart in
-  - L686 ...and the goods' D$ moved in nearly every month, as the rule has it (
+- **L239 1. the rule on the bench**
+  - L245 a 10% step in the D$,
+  - L251 ...which is when half of the step is still to come: (1-k) to the half-life is a half
+  - L267 at speed one the goods' D$ is the D$ itself: within a few last digits of it, over twenty thousand pairs
+  - L268 a struck rate at the D$ stays there: within a few last digits of it, over twenty thousand rates
+  - L269 one strike moves the goods' D$ the share k of the way to a D$ 10% off, in logs, and no further: ln(1.1) x k
+- **L283 2. the wiring, every month in a real city**
+  - L288 fixture: a new city has struck nothing yet: its struck rate is 0
+  - L311 fixture: the city played its
+  - L312 fixture: the D$ moved in the run, by more than 5% from its start - the strikes below are not a rate held still
+  - L313 the city's first strike is at the D$ itself (the D$ the first month saw), to the bit
+  - L314 every month the struck rate is the last month's moved PASS_THROUGH of the way to the D$ the strike saw, to the bit (wrong in
+  - L316 every month the markets' rate is the struck rate times the world's price level, to the bit (wrong in
+  - L318 ...and so is the rate the economy manager prices the building materials at (wrong in
+  - L358 the city is saved at its end, for the twins of the sections after
+- **L364 3. a step in the D$ reaches the goods at PASS_THROUGH a month**
+  - L368 fixture: the twins are one city before the pin: one month, one struck rate, one price index, to the bit
+  - L372 fixture: the D$ and the goods' D$ are apart when the pin comes (the D$ is
+  - L377 fixture: both D$ are pinned, the steady one at the goods' D$ (no gap pending) and the other's 10% weaker
+  - L401 for 36 months the weak twin's struck rate over the other's is 1.1^(1-(1-k)^n), worst error in logs over the 36
+  - L402 ...and so is the rate the markets are priced at, the world's level being one
+  - L417 the groceries component's pass-through is positive at 12 months: a weaker D$ raised the shelf's price (
+  - L419 ...and under the goods' own share at 12 months: the shelf follows the goods' D$ with a lag of its own, not ahead of it (
+  - L480 fixture (
+  - L484 fixture (
+  - L494 fixture (
+  - L505 fixture (
+  - L516 the purchase's month (
+  - L519 ...and the vault's cover moved the two alike, so nothing but the intervention parted their moves
+  - L522 ...the shock twin's D$ is weaker than its twin's that month (
+  - L535 fixture (
+- **L580 4. the ring settles: the same swing of the D$, the goods following at PASS_THROUGH and one for one**
+  - L593 fixture: two plain loads of the base city play
+  - L597 at PASS_THROUGH
+  - L599 one for one, the rule before AN1
+  - L601 at PASS_THROUGH the goods' gap never exceeds the D$'s widest gap so far times 1-(1-k)^n, in any of the
+  - L603 ...while one for one the goods go as far as the D$ does, a month behind it (its widest
+  - L606 ...and at PASS_THROUGH they never do (the goods' widest
+  - L619 the premise: over the swing's months 1-
+  - L621 ...and so does the price index (
+- **L628 5. a save carries it**
+  - L634 fixture: the live city has struck its goods (
+  - L637 a loaded city has the struck rate of the city saved, to the bit
+  - L638 ...and the rate its markets were priced at
+  - L642 one month on both strike the same rate, to the bit (
+  - L644 ...and price the markets the same, to the bit (
+  - L646 ...and it was a strike that moved the goods' D$ (from
+  - L651 fixture: the loaded city's struck rate is cleared, as a save without the key reads
+  - L654 a loaded city whose struck rate is cleared strikes at the D$ itself the next month, to the bit
+  - L656 ...which is not where the city that kept its struck rate struck (
+  - L665 fixture: the city was reformed, one new D$ for 100 old
+  - L666 a reform scales the struck rate by the factor
+  - L667 ...as it does the D$ itself, so the gap between them is the one the city had
+  - L671 the month after, the reformed city strikes the unreformed twin's rate over the factor
+- **L678 6. how often it matters in a real city**
+  - L695 the mechanic fires in a real city: the goods' D$ was more than 1% from the D$ in some month (widest
+  - L697 ...and in a good many: more than 5% apart in
+  - L698 ...and the goods' D$ moved in nearly every month, as the rule has it (
+- **L710 7. the screen's reading: the goods' D$ against the D$**
+  - L713 a new city has struck nothing, and the reading is NaN: the line is not drawn (section 2's founding)
+  - L717 fixture: the city's struck rate is cleared, as before a first strike
+  - L718 ...and with nothing struck the reading is NaN
+  - L720 fixture: the struck rate is put back (
+  - L721 ...and the reading is the struck rate over the D$, less one (
+  - L740 every month, the gap the line reads at a month's end is the one the next strike closes PASS_THROUGH of, in logs (off in
 
 ## PlanCheck.java - 213 labelled assertions
 
