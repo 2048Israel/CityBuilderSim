@@ -1013,6 +1013,33 @@ public class TaxPolicy {
     /** The wage a pension is a share of, carried in today's money - struck at the expected price level since 0.7.42 (seedConstants()). */
     private double pensionWageBase = PayTier.UNSKILLED.getMonthlyWage();
 
+    /**
+     * The unskilled wage the city was founded on, the figure the pension's wage base and the default grant are struck from (R0d): PayTier's
+     * unskilled rung in every city but one founded the 1900 way, which is founded on 1901's (WageLadder.anchor()). Never saved: the city says,
+     * from its saved founding (Game.layTheLadder()), before the month's re-strike reads it.
+     */
+    private transient double wageAnchor = PayTier.UNSKILLED.getMonthlyWage();
+
+    /** Takes the founding wage the pension and the default grant are struck from from a ladder (R0d); the grant a load restored is left where it was. */
+    public void setLadder(WageLadder l) {
+        wageAnchor = l == null ? PayTier.UNSKILLED.getMonthlyWage() : l.anchor();
+    }
+
+    /**
+     * A city founded on a ladder (R0d): its anchor, the pension's wage base on it, and the default grant it opens on - DEFAULT_STUDENT_GRANT_SHARE
+     * of the ladder's unskilled wage, as DEFAULT_FIXED_GRANT is of PayTier's - where the student-aid lever is open: a shut lever's grant is held
+     * at zero (setMonth()), and a city told its month before this must not be handed a grant the history it keeps has not opened. Founding only;
+     * a load restores the grant and re-strikes the base.
+     */
+    public void foundOn(WageLadder l) {
+        setLadder(l);
+        pensionWageBase = wageAnchor;
+        if (isOpen(PolicyDates.Lever.STUDENT_AID)) grantAmount = defaultFixedGrant();
+    }
+
+    /** The default grant on this policy's founding wage: DEFAULT_FIXED_GRANT where that is PayTier's, the same share of the 1900 city's own. */
+    private double defaultFixedGrant() { return DEFAULT_STUDENT_GRANT_SHARE * wageAnchor; }
+
     public void redenominate(double scale) {
         pensionWageBase *= scale;
         /*
@@ -1293,7 +1320,7 @@ public class TaxPolicy {
 
     /** Re-seeds the money CONSTANTS at a given unit. See Denomination. Since 0.7.42 Game calls it every month at the unit over the expected price level (Game.restrikeMoneyConstants()), so the pension's wage base keeps up with what prices are expected to be. */
     public void seedConstants(double unit) {
-        pensionWageBase = PayTier.UNSKILLED.getMonthlyWage() / unit;
+        pensionWageBase = wageAnchor / unit;
     }
 
     private final double[] wageOffset     = new double[WageBand.values().length];
@@ -1638,6 +1665,7 @@ public class TaxPolicy {
         c.healthFeeScale = healthFeeScale;
         c.healthPremiumRate = healthPremiumRate;
         c.pensionWageBase = pensionWageBase;
+        c.wageAnchor = wageAnchor;
         c.transitFare = transitFare;
         c.foodAssistance = foodAssistance;
         c.fuelDuty = fuelDuty;
@@ -1950,7 +1978,7 @@ public class TaxPolicy {
         eiPremiumRate = Unemployment.DEFAULT_PREMIUM_RATE;
         eiBenefitRate = Unemployment.DEFAULT_BENEFIT_RATE;
         grantBasis = DEFAULT_GRANT_BASIS;
-        grantAmount = DEFAULT_FIXED_GRANT;
+        grantAmount = defaultFixedGrant();
         fixedGrantNominal = false;
         fareNominal = false;
         expectedLevel = 1.0;

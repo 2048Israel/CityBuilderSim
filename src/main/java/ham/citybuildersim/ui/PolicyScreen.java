@@ -2689,7 +2689,7 @@ final class PolicyScreen {
             final int at = line++;
             Kept.scope("row:" + job.name(), () -> {
                 ladder.add(gridCell(ui.buildScreen.jobLabel(job), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, at);
-                ladder.add(gridCell(String.format("%.2fx", LabourMarket.ratioOf(job)), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 1, at);
+                ladder.add(gridCell(String.format("%.2fx", market.ratio(job)), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 1, at);
                 ladder.add(gridCell(moneyFull(market.getWage(job)), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 2, at);
                 if (moved) ladder.add(Kept.scope("heads", () -> gridCell(moneyFull(market.targetWageAt(job, want)), Palette.ACCENT, Palette.SIZE_CAPTION, true)), 3, at);
             });
