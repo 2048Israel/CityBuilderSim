@@ -1,17 +1,12 @@
-# gate of Merge batch/FX9: ground bought into an open cell gets the cell's own streets, nothing standing moved, so piecemeal land is built on (Jerus, 2026-10-23, on FX6's ★1: "Extend the streets"), 0.9.39
+# gate of Merge batch/R0e: research: the household's basket by year - 1900's raw staples, lamp oil and coal, no car (after R0c's goods, and on the live demand path, not the shadow basket), 0.9.40
 # date: 2026-11-07
 # earth-2.bin: named
 # nightly: 2026-11-07 00:56 0.9.35 a260d4f1 4,000 months: OK in 121 s
-# suite: 185 harnesses run in 1295s: 179 passed, 6 failed
-# timing: 16 harnesses run in 1018s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
+# suite: 186 harnesses run in 1198s: 180 passed, 6 failed
+# timing: 16 harnesses run in 881s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 33.7 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 31.6 ms, batch 32.7 ms (+3.6%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 31.6 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 29.7 ms, batch 31.9 ms (+7.5%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 5.13 ms, batch 3.98 ms (-22.4%), budget 5 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 17.2 ms, batch 18.0 ms (+4.6%), budget 19 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | 4 FAILED   [the harness's own count of the timing reds above]
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): LongPlaytest | exit 1
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): LongPlaytest | (no FAIL line)
 MonetaryCheck | exit 1
 MonetaryCheck | ...and a month's delay in the hand moves them less than the allowance FAIL
 MonetaryCheck | 1 FAILED

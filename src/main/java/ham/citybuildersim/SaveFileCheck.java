@@ -416,6 +416,15 @@ public class SaveFileCheck {
         assertTrue("the drivers' fuel month survived, every figure (0.7.62)", java.util.Arrays.equals(
                 gson.fromJson(Files.readString(trip.saveFile(2)), DataSave.class).getHouseholdFuel(),
                 new double[] { 1_234.567, 456.789, 987_654.321 }));
+        // ...and the homes' lamp oil and coal as 6d struck them for the next bill (R0e): six figures, and no key at all for a month that struck none.
+        landSave.setHomeFuelSale(new double[] { 321.5, 8_025.25, 224.875, 1_234.567, 456.789, 123.456 });
+        assertTrue("fixture: the homes' fuel sale wrote itself", landSave.saveGame(trip, 2).ok);
+        assertTrue("the homes' fuel sale survived, every figure (R0e)", java.util.Arrays.equals(
+                gson.fromJson(Files.readString(trip.saveFile(2)), DataSave.class).getHomeFuelSale(),
+                new double[] { 321.5, 8_025.25, 224.875, 1_234.567, 456.789, 123.456 }));
+        landSave.setHomeFuelSale(null);
+        assertTrue("fixture: ...and a save with no sale wrote itself", landSave.saveGame(trip, 2).ok);
+        assertTrue("...and a month that struck none writes no homeFuelSale (R0e)", !Files.readString(trip.saveFile(2)).contains("\"homeFuelSale\""));
         assertTrue("fixture: ...and a save with no map wrote itself", landSave.saveGame(trip, 2).ok);
         assertTrue("...and a save with no map carries no stamp", !Files.readString(trip.saveFile(2)).contains("\"mapStamp\""));
         CityLand rebuilt = CityLand.restore(ground.key(), landRead.getLandCentre(), landRead.getLandCentreRects(),
@@ -432,6 +441,7 @@ public class SaveFileCheck {
         assertTrue("...and no city map, which waits to be asked for (0.7.60)", format30.getMapStamp() == null);
         assertTrue("...and no fuel month, which the load derives as that build struck it (0.7.62)",
                 format30.getHouseholdFuel() == null);
+        assertTrue("...and no homes' fuel sale, which holds nothing to charge (R0e)", format30.getHomeFuelSale() == null);
         assertEquals("the slot list reads the same name off the same file",
                 trip.readHeader(1).getCityName(), "Arden");
         DataSave older = gson.fromJson("{\"cash\": 5.0}", DataSave.class);

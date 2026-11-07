@@ -172,9 +172,46 @@ public class Consumption {
                        double kcalPerUnit, double quality, double elasticity,
                        double convenience, double referenceKg) { }
 
+    /**
+     * One knot of the household's basket by year, at January of its year: what a city founded the 1900 way (Founding.isUnfitted()) holds
+     * then. lampShare is the share of the homes lit by lamp oil and coalShare the share heated by a coal stove (HomeFuel); carsPerHousehold
+     * caps the households' cars (Motoring's ownership ceiling, 1 being no cap); bought is the share of each good a household buys ready made,
+     * the rest being made at home (a key not named is bought whole). source, estimate and note say where the figures were read.
+     *
+     * WHY (docs/studies/research-1900.md 5.4 item 5): "1900's has more raw staples, lamp oil and coal, and no car". The map is unmodifiable.
+     */
+    public record Year(int year, double lampShare, double coalShare, double carsPerHousehold, Map<String, Double> bought,
+                       String source, boolean estimate, String note) {
+        public Year {
+            bought = bought == null ? Map.of() : Collections.unmodifiableMap(new LinkedHashMap<>(bought));
+        }
+    }
+
+    /**
+     * The figures of one game month, interpolated between two knots (Consumption.yearAt): the shares of the homes on lamp oil and coal, the
+     * ceiling the year puts on the households' cars, and the share of each good a household buys ready made. What Consumption.basket(...,
+     * YearPoint) and Motoring.month() read. The map is unmodifiable and a good it does not name is bought whole.
+     */
+    public record YearPoint(double lampShare, double coalShare, double carCeiling, Map<String, Double> bought) {
+        public YearPoint {
+            bought = bought == null ? Map.of() : Collections.unmodifiableMap(new LinkedHashMap<>(bought));
+        }
+
+        /** The share of this good a household buys ready made: the map's, or 1 (bought whole) for a good it does not name. */
+        public double bought(String key) {
+            Double b = bought.get(key);
+            return b == null ? 1 : b;
+        }
+    }
+
     private final Map<String, Item> byKey = new LinkedHashMap<>();
     private final Map<String, Double> targetShares = new LinkedHashMap<>();
     private final List<Item> all = new ArrayList<>();
+    /** Each good's homeMadeFrom good by key, only for the goods that name one the file holds (see parse()). */
+    private final Map<String, String> homeMade = new LinkedHashMap<>();
+    /** For each good in `all` the index of its homeMadeFrom good, or -1: homeMade turned into positions once, so basket() scans nothing. */
+    private int[] homeMadeIndex = new int[0];
+    private final List<Year> years = new ArrayList<>();
     private double referenceIncomeMultiple = 8.0;
     private String source = "none";
     private double meanConvenience;
@@ -184,6 +221,19 @@ public class Consumption {
     public Item item(String key)        { return key == null ? null : byKey.get(key); }
     public boolean isLoaded()           { return !all.isEmpty(); }
     public double referenceMultiple()   { return referenceIncomeMultiple; }
+
+    /**
+     * The household's basket by year, in year order, empty when the file has no years block (or a malformed one, which parse() drops).
+     * Read only by a city founded the 1900 way; see yearAt(). WHY: research-1900 5.4 item 5, R0e.
+     */
+    public List<Year> years() { return Collections.unmodifiableList(years); }
+
+    /**
+     * The good a good is made from at home when a household does not buy it ready made, by key; null when it names none, or names a good the
+     * file does not hold, or itself. WHY: research-1900 section 4, "Home butter and bread: data, not a mechanism" - the 1900 household baked
+     * its bread from flour at the same calories, which is a line in the file and not a branch in the code (R0e).
+     */
+    public String homeMadeFrom(String key) { return key == null ? null : homeMade.get(key); }
 
     /** The calorie share each category should carry in a balanced diet. */
     public Map<String, Double> targetShares() { return Collections.unmodifiableMap(targetShares); }
@@ -254,6 +304,9 @@ public class Consumption {
         if (goods == null || goods.isEmpty()) return false;
         byKey.clear();
         all.clear();
+        homeMade.clear();
+        years.clear();
+        Map<String, String> declaredHomeMade = new LinkedHashMap<>();
         if (root.has("referenceIncomeMultiple")) {
             referenceIncomeMultiple = root.get("referenceIncomeMultiple").getAsDouble();
         }
@@ -283,11 +336,150 @@ public class Consumption {
                 return false;
             }
             all.add(it);
+            if (o.has("homeMadeFrom")) {
+                JsonElement h = o.get("homeMadeFrom");
+                if (h.isJsonPrimitive() && h.getAsJsonPrimitive().isString()) declaredHomeMade.put(it.key(), h.getAsString());
+                else System.out.println(FILE_NAME + ": " + it.key() + "'s homeMadeFrom is not a good's key; ignored");
+            }
         }
         double c = 0;
         for (Item i : all) c += i.convenience();
         meanConvenience = all.isEmpty() ? 0 : c / all.size();
+        readHomeMade(declaredHomeMade);
+        readYears(root);
         return true;
+    }
+
+    /**
+     * Keeps the homeMadeFrom lines that name a good the file holds and not the good itself; any other is ignored with a line in the log (a data
+     * file must not stop a game). Run once every good is in, since a good may name one that comes after it.
+     */
+    private void readHomeMade(Map<String, String> declared) {
+        for (Map.Entry<String, String> e : declared.entrySet()) {
+            String made = e.getValue();
+            if (made.equals(e.getKey())) {
+                System.out.println(FILE_NAME + ": " + e.getKey() + " is homeMadeFrom itself; ignored");
+            } else if (!byKey.containsKey(made)) {
+                System.out.println(FILE_NAME + ": " + e.getKey() + " is homeMadeFrom " + made + ", which is no good in the file; ignored");
+            } else {
+                homeMade.put(e.getKey(), made);
+            }
+        }
+        homeMadeIndex = new int[all.size()];
+        for (int i = 0; i < all.size(); i++) {
+            String made = homeMade.get(all.get(i).key());
+            homeMadeIndex[i] = -1;
+            if (made == null) continue;
+            for (int j = 0; j < all.size(); j++) {
+                if (all.get(j).key().equals(made)) { homeMadeIndex[i] = j; break; }
+            }
+        }
+    }
+
+    /**
+     * Reads the optional "years" block into years. A missing block is no years; a malformed one (a field missing or not a number, years not
+     * strictly ascending, a share or cap not finite or outside [0, 1]) logs one line and leaves no years, the goods already loaded; a bought key
+     * naming no good in the file is ignored with a line of its own. A data file must not stop a game, and a city founded the 1900 way with no
+     * years behaves as every other city does.
+     */
+    private void readYears(JsonObject root) {
+        if (!root.has("years") || root.get("years").isJsonNull()) return;
+        List<Year> read = new ArrayList<>();
+        try {
+            JsonArray array = root.getAsJsonArray("years");
+            for (JsonElement e : array) {
+                JsonObject o = e.getAsJsonObject();
+                double yearValue = yearNumber(o, "year");
+                if (yearValue != Math.rint(yearValue)) throw new IllegalArgumentException("year " + yearValue + " is not a whole year");
+                int year = (int) yearValue;
+                if (!read.isEmpty() && year <= read.get(read.size() - 1).year()) {
+                    throw new IllegalArgumentException("year " + year + " does not follow " + read.get(read.size() - 1).year());
+                }
+                double lamp = yearShare(o, "lampShare", year);
+                double coal = yearShare(o, "coalShare", year);
+                double cars = yearShare(o, "carsPerHousehold", year);
+                Map<String, Double> bought = new LinkedHashMap<>();
+                if (o.has("bought")) {
+                    JsonObject b = o.getAsJsonObject("bought");
+                    for (String key : b.keySet()) {
+                        double v = b.get(key).getAsDouble();
+                        if (!(v >= 0 && v <= 1)) throw new IllegalArgumentException(year + "'s bought " + key + " " + v + " is not in [0, 1]");
+                        if (!byKey.containsKey(key)) {
+                            System.out.println(FILE_NAME + ": " + year + "'s bought names " + key + ", which is no good in the file; ignored");
+                            continue;
+                        }
+                        bought.put(key, v);
+                    }
+                }
+                read.add(new Year(year, lamp, coal, cars, bought,
+                        yearText(o, "source", ""), o.has("estimate") && o.get("estimate").getAsBoolean(), yearText(o, "note", "")));
+            }
+        } catch (RuntimeException ex) {
+            System.out.println(FILE_NAME + ": the years block is dropped, no basket follows the year: " + ex.getMessage());
+            return;
+        }
+        years.addAll(read);
+    }
+
+    private static double yearNumber(JsonObject o, String name) {
+        JsonElement v = o.get(name);
+        if (v == null || !v.isJsonPrimitive() || !v.getAsJsonPrimitive().isNumber()) {
+            throw new IllegalArgumentException(name + " is missing or not a number");
+        }
+        return v.getAsDouble();
+    }
+
+    private static double yearShare(JsonObject o, String name, int year) {
+        double v = yearNumber(o, name);
+        if (!(v >= 0 && v <= 1)) throw new IllegalArgumentException(year + "'s " + name + " " + v + " is not in [0, 1]");
+        return v;
+    }
+
+    private static String yearText(JsonObject o, String name, String otherwise) {
+        JsonElement v = o.get(name);
+        return v != null && v.isJsonPrimitive() ? v.getAsString() : otherwise;
+    }
+
+    /**
+     * The household's basket of a game month in a city founded the 1900 way: null when the file has no years, and null from the LAST knot's
+     * January on, where the basket is today's model and nothing jumps. Before the first knot's January the first knot's figures; between two
+     * knots every figure linear by month from one January to the next (ArrivalMix.januaryOf, the same rule as ArrivalMix.at()), a bought key
+     * one knot does not name reading 1 there. No state: the same month always gives the same point.
+     *
+     * WHY (research-1900 5.4 item 5; R0e): a household's basket in 1900 was not today's, and growing into today's at the last knot is the
+     * rule every year-following table here keeps. A city founded the default way never asks.
+     */
+    public YearPoint yearAt(int gameMonth) {
+        if (years.isEmpty()) return null;
+        Year first = years.get(0), last = years.get(years.size() - 1);
+        if (gameMonth >= ArrivalMix.januaryOf(last.year())) return null;
+        if (gameMonth < ArrivalMix.januaryOf(first.year())) return pointOf(first);
+        for (int i = 1; i < years.size(); i++) {
+            Year to = years.get(i);
+            int end = ArrivalMix.januaryOf(to.year());
+            if (gameMonth >= end) continue;
+            Year from = years.get(i - 1);
+            int start = ArrivalMix.januaryOf(from.year());
+            double t = (gameMonth - start) / (double) (end - start);
+            Map<String, Double> bought = new LinkedHashMap<>();
+            for (String key : from.bought().keySet()) bought.put(key, 0.0);
+            for (String key : to.bought().keySet()) bought.put(key, 0.0);
+            for (Map.Entry<String, Double> e : bought.entrySet()) {
+                double a = from.bought().getOrDefault(e.getKey(), 1.0);
+                double b = to.bought().getOrDefault(e.getKey(), 1.0);
+                e.setValue(a + (b - a) * t);
+            }
+            return new YearPoint(
+                    from.lampShare() + (to.lampShare() - from.lampShare()) * t,
+                    from.coalShare() + (to.coalShare() - from.coalShare()) * t,
+                    from.carsPerHousehold() + (to.carsPerHousehold() - from.carsPerHousehold()) * t,
+                    bought);
+        }
+        return null;   // unreachable: the month is under the last knot's January, so some knot ends after it
+    }
+
+    private static YearPoint pointOf(Year y) {
+        return new YearPoint(y.lampShare(), y.coalShare(), y.carsPerHousehold(), y.bought());
     }
 
     /* ---------------------------- what it costs ---------------------------- */
@@ -382,6 +574,24 @@ public class Consumption {
      *                       it has - see the note at the top
      */
     public Map<String, Double> basket(double incomeMultiple, double timePressure) {
+        return basket(incomeMultiple, timePressure, null);
+    }
+
+    /**
+     * The same basket in the year of a city founded the 1900 way: what one person buys in a month when part of what today's household buys
+     * ready made was made at home. With year == null it is exactly the two-argument basket (the default city's, to the bit).
+     *
+     * WHY (research-1900 5.4 item 5, "1900's has more raw staples", and section 4, "Home butter and bread: data, not a mechanism"; R0e): the
+     * quantities are first the same as today (reference x income to the elasticity x the time lean); then for each good the year says a share b
+     * of it is bought, the rest, q x (1 - b), is not bought but made at home - from the good's homeMadeFrom good (bread from grain), at the same
+     * calories (the home-made part's kcal over the raw good's kcal a kilogram), or done without where the good names none. Every transfer is
+     * worked from the quantities as first computed (two passes), so the order of the goods does not matter; the value, the calories and the
+     * scale are then worked exactly as today, so a household bound by its appetite holds today's calories in more raw staple and one bound
+     * by its money holds more calories for the same cost.
+     *
+     * @param year the year's figures (yearAt), or null for today's basket
+     */
+    public Map<String, Double> basket(double incomeMultiple, double timePressure, YearPoint year) {
         Map<String, Double> out = new LinkedHashMap<>();
         if (all.isEmpty() || !(incomeMultiple > 0)) return out;
 
@@ -389,7 +599,6 @@ public class Consumption {
         double pressure = Math.max(0, timePressure);
 
         double[] qty = new double[all.size()];
-        double value = 0;
         for (int i = 0; i < all.size(); i++) {
             Item it = all.get(i);
             double q = it.referenceKg() * Math.pow(x, it.elasticity());
@@ -397,8 +606,21 @@ public class Consumption {
             double lean = 1 + TIME_WEIGHT * pressure * (it.convenience() - meanConvenience);
             q *= Math.max(0, lean);
             qty[i] = q;
-            value += q * it.worldImportPrice();
         }
+        if (year != null) {
+            double[] first = qty.clone();
+            for (int i = 0; i < all.size(); i++) {
+                double b = year.bought(all.get(i).key());
+                if (!(b < 1)) continue;
+                double home = first[i] * (1 - Math.max(0, b));
+                qty[i] -= home;
+                int r = homeMadeIndex[i];
+                double rawKcal = r < 0 ? 0 : all.get(r).kcalPerUnit();
+                if (r >= 0 && rawKcal > 0) qty[r] += home * all.get(i).kcalPerUnit() / rawKcal;
+            }
+        }
+        double value = 0;
+        for (int i = 0; i < all.size(); i++) value += qty[i] * all.get(i).worldImportPrice();
         if (value <= 0) return out;
 
         /*

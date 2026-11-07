@@ -291,12 +291,18 @@ adds its line here, not in `CLAUDE.md`.
         HomeFuel.java              the homes' lamp oil and coal (R0c, 2026-11-05; research-1900.md 4): the
                                    shares of the homes lit by a lamp and heated by a stove, the litres and
                                    tonnes a home burns, and the month's sale Retail.sellHomeFuel() strikes;
-                                   both shares 0 in a played city until R0e - Forms1900Check holds it
+                                   both shares 0 in a default city; the year's in one founded the 1900 way
+                                   since R0e, its held sale saved - Forms1900Check holds it
         Forms1900Check.java        the 1900 forms, built off (R0c): the twins at 0 to the bit, the farm's
                                    horses eating its own crop captive and their hands, steam off the grid
                                    onto coal, Haulage's horse and wagon (no diesel, crops, carters, fewer
                                    trucks, the quote), the homes' lamp oil and coal, and the money's audit
                                    with each on
+        BasketYearCheck.java       the household's basket by year (R0e, 2026-11-07; research-1900.md 5.4
+                                   item 5): consumption.json's years, read only in a city founded the 1900
+                                   way - bread baked at home from grain, the homes' lamp and stove shares,
+                                   the cap on the cars, the held fuel sale through a save, today's from the
+                                   last knot, and a default city reading none of it
         Equipment.java             a piece of equipment a template carries (R1, 2026-11-05; research-design
                                    2.1-2.2): its id, since (a year, or a catalogue code: since R2 known
                                    from its entry's month in research.json),

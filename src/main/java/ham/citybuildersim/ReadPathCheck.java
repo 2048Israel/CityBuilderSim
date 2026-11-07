@@ -1394,6 +1394,8 @@ public class ReadPathCheck {
         wellsR.landWellsStanding(); wellsR.wellNameplate(); wellsR.landWell(); wellsR.unitsOf(wellT);
         wellsR.retirementDemandAndCapacity(g); g.sitesFor(wellT); g.getWellsWornOut();
         g.getMotoring().getFuelBill(); g.getMotoring().getFuelImports(); g.getMotoring().getFuelLitres();
+        // ...and the household's basket by year (R0e): the year's point, the shops' basket, the homes' held fuel sale.
+        g.basketYear(); g.cityBasketPerHead(); g.getHomeFuel().heldSale();
         Motoring.journeyFuel(g.getMarkets());
         g.getSectors().freight().getFuelBill(); g.getSectors().freight().getFuelImported();
         // ...and the phase-1 buyers (0.7.83): the forecourts' month, their stations, the price on the sign, a station's

@@ -64,8 +64,10 @@ public final class CityBasket {
         ForeignAccounts foreign = game.getForeignAccounts();
         HouseholdBalance householdBalance = game.getHouseholdBalance();
 
+        // R0e: the year's basket in a city founded the 1900 way (research-1900 5.4 item 5), null in every other, whose basket is today's to the bit.
+        Consumption.YearPoint year = game.basketYear();
         double rate = foreign == null ? 1 : foreign.getRate();
-        if (householdBalance == null) return referenceBasket(consumption);
+        if (householdBalance == null) return referenceBasket(consumption, year);
         double heads = 0;
         for (Household cell : householdBalance.cells()) {
             double homes = cell.households();
@@ -78,7 +80,7 @@ public final class CityBasket {
             if (!(x > 0)) continue;
 
             java.util.Map<String, Double> theirs =
-                    consumption.basket(x, Consumption.timePressure(cell.shape()));
+                    consumption.basket(x, Consumption.timePressure(cell.shape()), year);
             for (java.util.Map.Entry<String, Double> e : theirs.entrySet()) {
                 Good g = Good.byName(e.getKey());
                 if (g != null) out.merge(g, e.getValue() * people, Double::sum);
@@ -102,16 +104,16 @@ public final class CityBasket {
          * on - and it is replaced by the real thing the moment one month has
          * been lived.
          */
-        if (heads <= 0) return referenceBasket(consumption);
+        if (heads <= 0) return referenceBasket(consumption, year);
         for (java.util.Map.Entry<Good, Double> e : out.entrySet()) e.setValue(e.getValue() / heads);
         return out;
     }
 
-    /** What the file's reference household eats, for a city with no statements yet. */
-    private static java.util.Map<Good, Double> referenceBasket(Consumption consumption) {
+    /** What the file's reference household eats, for a city with no statements yet, in the year's basket when the city has one (null: today's). */
+    private static java.util.Map<Good, Double> referenceBasket(Consumption consumption, Consumption.YearPoint year) {
         java.util.Map<Good, Double> out = new java.util.EnumMap<>(Good.class);
         for (java.util.Map.Entry<String, Double> e
-                : consumption.basket(consumption.referenceMultiple(), 0).entrySet()) {
+                : consumption.basket(consumption.referenceMultiple(), 0, year).entrySet()) {
             Good g = Good.byName(e.getKey());
             if (g != null && e.getValue() > 0) out.put(g, e.getValue());
         }

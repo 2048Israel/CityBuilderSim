@@ -9,7 +9,8 @@ import ham.citybuildersim.sectors.Retail;
  *
  * A 1900 home was lit by a lamp burning kerosene (JET, the kerosene cut) and heated by a coal stove, and the
  * family of five spent about $1.50 a week on both: coal oil at 24 cents a gallon, a fifth of the bill for light
- * (1.06% against 4.19% of a working family's spending, US 1901, [P1.15]; [CYB18]), the rest for coal. Two shares,
+ * (1.06% against 4.19% of a working family's spending, US 1901, [P1.15]; [CYB18]), the rest for coal and wood
+ * (R0e reads the same budget's quantities for the two dials below; the game has no firewood good). Two shares,
  * 0..1, of the homes run the 1900 way: lampShare, the homes lit by lamp oil and not by the grid, and coalShare,
  * the homes heated by a coal stove. At 0, the default and every played city in R0c, nothing here runs, nothing
  * is drawn or told and the month is today's, to the bit.
@@ -23,9 +24,11 @@ import ham.citybuildersim.sectors.Retail;
  * split over, so a flat two families share has one stove.
  *
  * WHY A SHARE: the electric light and the gas range spread when they paid, and nothing in the game needs to
- * schedule that; R0e (the household's basket by year) sets the shares from the year and sizes the two goods;
- * here they are built and off, and only a harness sets them. They are not saved (nothing sets them in a played
- * city yet; R0e saves the bill when it goes on).
+ * schedule that; R0e (the household's basket by year) sets the shares from the year, in a city founded the 1900
+ * way (Game.basketHearsTheYear()), and sizes the two goods; a city founded the default way leaves them at 0, and
+ * a harness may set them. The shares are not saved: they follow the year, which the month and the founding give
+ * back on a load. The held sale is (heldSale(), restoreSale(); DataSave.homeFuelSale, R0e), since it is struck at
+ * 6d and charged to the households the month after, and a save between the two must carry it.
  *
  * WHY NO POWER BILL: "electrified homes buy power instead", and today's homes pay nothing for power
  * (EconomyManager.setElectricityConsumption(): a household utility bill "is on the list"), so the grid's draw
@@ -35,22 +38,23 @@ import ham.citybuildersim.sectors.Retail;
 public final class HomeFuel {
 
     /**
-     * Lamp oil a home lit by kerosene burned a month, in litres: light was a fifth of a working family's fuel and
-     * light (1.06% against 4.19% of spending, US 1901, [P1.15]), a fifth of research-1900 5.3's $1.50 a week at 24
-     * cents a gallon ([CYB18]) is about 5.4 imperial gallons, 25 L (est.).
+     * Lamp oil a home lit by kerosene burned a month, in litres: the Department of Labour's family budget, December
+     * 1900, buys a gallon of coal oil a week (at 24.0 cents; Canada Year Book 1918, p. 485, Crown copyright expired),
+     * the imperial gallon, 4.54609 L x 52 weeks / 12 = 19.70 L (R0e; R0c's estimate was 25 L).
      */
-    public static final double LAMP_OIL_LITRES_A_HOME_MONTH = 25;
+    public static final double LAMP_OIL_LITRES_A_HOME_MONTH = 4.54609 * 52 / 12;
 
     /**
-     * Coal a home heated by a stove burned a month, in tonnes, averaged over the year: the rest of research-1900
-     * 5.3's fuel and light, about $1.20 a week, at about $6.50 a short ton (est., the price unverified: R0e sources it).
+     * Coal a home heated by a coal stove burned a month, in tonnes: the same budget buys a sixteenth of a short ton of
+     * anthracite and a sixteenth of bituminous a week, beside an eighth of a cord of wood (a wood-heated home, weighted
+     * alike), so an eighth of a short ton, 0.125 x 52 / 12 x 0.90718 t = 0.491 t (est. reading; R0e, R0c's was 0.7 t).
      */
-    public static final double COAL_TONNES_A_HOME_MONTH = 0.7;
+    public static final double COAL_TONNES_A_HOME_MONTH = 0.125 * 52 / 12 * 0.90718474;
 
-    /** The share of the homes lit by lamp oil, 0 to 1: 0 until a harness or R0e sets it; not saved. */
+    /** The share of the homes lit by lamp oil, 0 to 1: 0 until the year (R0e) or a harness sets it; not saved, it follows the year. */
     private double lampShare;
 
-    /** The share of the homes heated by a coal stove, 0 to 1: 0 until a harness or R0e sets it; not saved. */
+    /** The share of the homes heated by a coal stove, 0 to 1: 0 until the year (R0e) or a harness sets it; not saved, it follows the year. */
     private double coalShare;
 
     /** The month's sale as struck (strike()): the homes it was struck for, the litres of JET and tonnes of THERMAL_COAL sold, the bill the households are charged, the wholesale cost and the part of it paid to the world. Zeroed before each month's strike. */
@@ -121,6 +125,42 @@ public final class HomeFuel {
 
     /** ...and of that cost what Retail paid the world: its import. */
     public double getImported() { return imported; }
+
+    /**
+     * Both shares and the held sale back to 0, as a new city has them (Game.buildWorld()): this object outlives the city, and a share the last city
+     * (founded the 1900 way, R0e) set must not burn lamp oil in the next, nor its sale be charged to the households of one that struck none.
+     */
+    void reset() {
+        lampShare = coalShare = 0;
+        homes = litres = tonnes = bill = cost = imported = 0;
+    }
+
+    /**
+     * The held sale as six numbers {homes, litres, tonnes, bill, cost, imported}, a fresh array, for the save: null when no sale is held
+     * (hasSale() false), so a month that struck nothing writes nothing. WHY (R0e): the sale struck at 6d is charged to the households next
+     * month, and a save between the two has to carry it or the load loses a month's bill.
+     */
+    double[] heldSale() {
+        return hasSale() ? new double[]{homes, litres, tonnes, bill, cost, imported} : null;
+    }
+
+    /**
+     * Puts back a sale from heldSale(), as a load does. Null or fewer than six numbers restores nothing (the sale stays as it is); an entry that
+     * is not a number reads 0.
+     */
+    void restoreSale(double[] v) {
+        if (v == null || v.length < 6) return;
+        homes = finite(v[0]);
+        litres = finite(v[1]);
+        tonnes = finite(v[2]);
+        bill = finite(v[3]);
+        cost = finite(v[4]);
+        imported = finite(v[5]);
+    }
+
+    private static double finite(double d) {
+        return Double.isFinite(d) ? d : 0;
+    }
 
     /** The held sale, divided into the new unit in a currency reform (Game.redenominate()), as the drivers' fuel is. */
     void redenominate(double scale) {

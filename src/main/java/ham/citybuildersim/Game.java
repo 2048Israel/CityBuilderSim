@@ -711,6 +711,9 @@ public class Game {
         research.reset();
         economyManager.setResearch(0, 0);
         prizePaid = 0;
+        // ...and the homes' lamp oil and coal (R0e): the last city's shares and held sale. This Game's HomeFuel outlives buildWorld() (the field is final), a city
+        // founded the default way never sets a share, and a stale one would burn lamp oil in it; basketHearsTheYear() sets them again for a city founded the 1900 way.
+        homeFuel.reset();
         // ...and the levers history has not opened yet are held at zero (R0): the city is in its first month.
         policyHearsTheMonth();
         economyManager.getSalesTaxLedger().reset();
@@ -806,6 +809,8 @@ public class Game {
         buildWorld(foundable(choices));
         // ...and, when the city is founded the 1900 way (R0d), on 1901's wage ladder, before initialize() copies the wages and the first month is struck on them.
         layTheLadder(true);
+        // ...and the homes' lamp and stove shares of the year (R0e), the first month's, before the first month's fuel is struck.
+        basketHearsTheYear();
 
         // buildWorld() made a new BuildingManager, so the templates have to be
         // loaded into it. initialize() is guarded, so the flag has to drop first
@@ -4454,13 +4459,16 @@ public class Game {
     /** ...and the drivers' fuel as 6d drew it (0.7.62): bill, imported part, litres - DataSave.householdFuel; null for a save from before it. */
     private double[] carriedFuelMonth;
 
+    /** ...and the homes' lamp oil and coal as 6d struck them (R0e): the sale held for the next bill, DataSave.homeFuelSale; null for a month that struck none. */
+    private double[] carriedHomeFuelSale;
+
     /** The households' car market; runs once a month, after the ledger. See Motoring. */
     private final Motoring motoring = new Motoring();
 
     /** The car market, for the screens and the harnesses that read past the getters below. */
     public Motoring getMotoring() { return motoring; }
 
-    /** The homes' lamp oil and coal (R0c, the home form); both shares 0 in every played city until R0e, and then nothing in it runs. Struck beside the drivers' fuel. See HomeFuel. */
+    /** The homes' lamp oil and coal (R0c, the home form); both shares the year's in a city founded the 1900 way (R0e, basketHearsTheYear()), 0 in every other, and then nothing in it runs. Struck beside the drivers' fuel. See HomeFuel. */
     private final HomeFuel homeFuel = new HomeFuel();
 
     /** The homes' lamp oil and coal, for the harnesses that set its shares and the screens that will read its sale. */
@@ -13010,6 +13018,8 @@ public class Game {
          * ON HISTORY'S DATES.
          */
         policyHearsTheMonth();
+        // ...and the homes' lamp and stove shares of the year (R0e), in a city founded the 1900 way, before this month's fuel is struck (6d).
+        basketHearsTheYear();
         // The buildings the player ordered demolished between the presses
         // close now, as the month after the order starts - the first it is
         // in force for - before anything in it reads the city (0.7.22; THE
@@ -15989,6 +15999,27 @@ public class Game {
         return consumption;
     }
 
+    /**
+     * The household's basket of this month (R0e; research-1900 5.4 item 5): the year's figures in a city founded the 1900 way, null in every other
+     * city and in a 1900 one from the last knot's January on, where the basket is today's. Null is what every reader takes as today's model, to the bit:
+     * CityBasket.perHead(), Motoring.month() (the cap on the cars) and basketHearsTheYear() (the homes' lamp oil and coal).
+     */
+    public Consumption.YearPoint basketYear() {
+        return foundedUnfitted() ? getConsumption().yearAt(month) : null;
+    }
+
+    /**
+     * The homes' lamp and stove shares of the year (R0e): in a city founded the 1900 way HomeFuel's two shares are the year's (0 and 0 once the year is
+     * today's), set at the founding, at the top of every month and after a load, since they are not saved. Returns at once in a city founded the default
+     * way, whose homes' shares stay what they were: 0 unless a harness set them.
+     */
+    private void basketHearsTheYear() {
+        if (!foundedUnfitted()) return;
+        Consumption.YearPoint year = basketYear();
+        homeFuel.setLampShare(year == null ? 0 : year.lampShare());
+        homeFuel.setCoalShare(year == null ? 0 : year.coalShare());
+    }
+
     /** The basket per head, struck from the household statements each time the shops ask. See CityBasket. */
     private final CityBasket cityBasket = new CityBasket();
 
@@ -16857,6 +16888,8 @@ public class Game {
         dataSave.setFuelPerJourney(getInfrastructureManager().getFuelPerJourney());
         // ...and the drivers' fuel as 6d drew it (0.7.62). See carriedFuelMonth.
         dataSave.setHouseholdFuel(new double[] { motoring.getFuelBill(), motoring.getFuelImports(), motoring.getFuelLitres() });
+        // ...and the homes' lamp oil and coal as 6d struck them for the next bill (R0e); null, so no key, in a month that struck none.
+        dataSave.setHomeFuelSale(homeFuel.heldSale());
         dataSave.setRememberedCommute(
                 getInfrastructureManager().getRememberedThroughput());
         dataSave.setDenomination(denomination.toSaveArray());
@@ -19819,6 +19852,8 @@ public class Game {
         motoring.setFuelBill(getInfrastructureManager().getDrivers() * TaxPolicy.JOURNEYS_A_MONTH
                 * getInfrastructureManager().getFuelPerJourney());
     }
+    // ...and the homes' lamp oil and coal as 6d struck them (R0e), charged to the households next month; a null restores nothing.
+    homeFuel.restoreSale(carriedHomeFuelSale);
     economyManager.setRoadRatio(getInfrastructureManager(), buildingManager);
 
     /*
@@ -20455,6 +20490,8 @@ public class Game {
             founding = loaded.getFounding(world.getMeanInflation());
             // ...and the wage ladder it was founded on (R0d), before the saved floor and wages are read against its bounds: the ladder, not the figures.
             layTheLadder(false);
+            // ...and the homes' lamp and stove shares of the year (R0e), from the month and the founding just read back; the shares are not saved.
+            basketHearsTheYear();
             // ...and the seed the world's draws are made from (WN3), which the founding carries: buildWorld() set the default's.
             world.setSeed(founding.getPathSeed());
             /*
@@ -20558,6 +20595,7 @@ public class Game {
             carriedCaptiveShare = loaded.getCaptiveShare();
             carriedFuel = loaded.getFuelPerJourney();
             carriedFuelMonth = loaded.getHouseholdFuel();
+            carriedHomeFuelSale = loaded.getHomeFuelSale();
             getInfrastructureManager().setRememberedThroughput(loaded.getRememberedCommute());
 
             /*
@@ -21593,6 +21631,7 @@ public class Game {
         carriedCaptiveShare = -1;
         carriedFuel = -1;
         carriedFuelMonth = null;
+        carriedHomeFuelSale = null;
 
         priceTheDebtMarket();
         refreshBank();
