@@ -18,6 +18,15 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.39 — FX9, ground bought inside an open cell gets the cell's own streets — 2026-11-07, ready, see docs/queue/FX9-notes.md
+Jerus, 2026-10-23, on FX6's ★1: "Extend the streets". Ground the city buys inside a cell already open now takes that
+cell's own ring and streets, laid from what its opening chose (`DistrictPlan.Builder.cellsOnGrown()`) and joined to
+the main network; nothing standing moves, and the new ground fills from the next month. MapCheck 2c's full district
+places all 3,356 of its houses (3,188 before), its bought plots in open cells built on 533 of 667 against 233; the
+playtest's m4000 city packs 462 fewer at the rim. The map's alone: the trace byte-identical, no ensemble. LongPlaytest
+at 2,400 months is red by DM2's class (m1209, 20 boxes: a way FW11 kept clear, cured by a departure): FX9 moves where
+those fall (over 4,000 months 99 move pairs against main's 102); ★1, pass it by name (recommended).
+
 ### 0.9.38 — R0d, research: the 1901 wage ladder and the arrivals' skill mix by year — 2026-11-07, ready, see docs/queue/R0d-notes.md
 A city founded the 1900 way (off until R1d) pays 1901's wages: `WageLadder` puts each pay rung on its nearest 1901 comparator,
 men's earnings at regular work (labourers $256.29, electricians $518.12, draughtsmen $723.72, civil engineers $1,316.31, bank

@@ -2573,6 +2573,42 @@ public class PlanCheck {
         return n;
     }
 
+    /** The plan made with the streets laid on the ground bought inside the open cells (`on`) or without them (FX6's way); the switch back to play's after. */
+    static DistrictPlan makeBought(DistrictPlan.Input in, boolean on) {
+        DistrictPlan.streetsOnBought = on;
+        try {
+            return DistrictPlan.make(in);
+        } finally {
+            DistrictPlan.streetsOnBought = true;
+        }
+    }
+
+    /** The plots of a plan's cell streets (no avenue plot: the avenues are laid on ground bought as ever) on a cut cell's new half: x past `cut` to `east`, y over the rows of cells cj0 to cj1 and their ring lines; with `interiors` only the plots inside a cell's ring. */
+    static boolean[] halfStreets(DistrictPlan p, int cut, int east, int cj0, int cj1, boolean interiors) {
+        boolean[] m = new boolean[DistrictPlan.AREA];
+        for (int y = cj0 * DistrictPlan.CELL; y <= (cj1 + 1) * DistrictPlan.CELL; y++) {
+            for (int x = cut + 1; x <= east; x++) {
+                if (interiors && ((x - 1) % DistrictPlan.CELL >= DistrictPlan.INTERIOR || (y - 1) % DistrictPlan.CELL >= DistrictPlan.INTERIOR)) continue;
+                int q = y * DistrictPlan.FRAME + x;
+                m[q] = p.kindAt(q) != DistrictPlan.NONE && (p.avenue == null || p.avenue[q] == 0);
+            }
+        }
+        return m;
+    }
+
+    /** How many plots a (and b, when it is not null) hold. */
+    static int plotsIn(boolean[] a, boolean[] b) {
+        int n = 0;
+        for (int q = 0; q < a.length; q++) if (a[q] && (b == null || b[q])) n++;
+        return n;
+    }
+
+    /** Whether the two plans open cell c the same way: its kind, layout, direction, squareness and boulevard. */
+    static boolean openedAlike(DistrictPlan a, DistrictPlan b, int c) {
+        return a.cellKind[c] == b.cellKind[c] && a.cellLayout[c] == b.cellLayout[c] && a.cellAcross[c] == b.cellAcross[c] && a.cellSquare[c] == b.cellSquare[c]
+                && a.cellBoulevard[c] == b.cellBoulevard[c];
+    }
+
     static void groundBought(BuildingVisual.Type[] types) {
         out.println("\n--- 12. the ground bought: a district that buys land keeps its buildings where they stand (batch FX6) ---");
         final int house = pick(types, 1, t -> t.category() == BuildingType.RESIDENTIAL && !t.outer() && t.site() == null);
@@ -2620,6 +2656,44 @@ public class PlanCheck {
                 + " %d of them in the cell's other half%n", beforeHalf.buildings, beforeHalf.overflowCount(), bought, afterHalf.buildings, inside);
         check("land bought inside a cell already open adds room there and moves nothing: the district is full, every box stands, the arrivals after the purchase are placed, some in the cell's new half",
                 beforeHalf.overflowCount() > 0 && missing(beforeHalf, afterHalf) == 0 && afterHalf.buildings > beforeHalf.buildings && inside > 0);
+        // ---- the cell's own streets laid on the ground bought inside it (FX9, "Extend the streets")
+        final int cj0 = 3, cj1 = 4, ciCut = east / DistrictPlan.CELL - 1;
+        DistrictPlan halfBare = makeBought(halfIn, false);
+        int insideBare = 0;
+        for (int i = 0; i < halfBare.buildings; i++) if (halfBare.bx[i] > cut && halfBare.bx[i] < east) insideBare++;
+        boolean[] ownAll = halfStreets(afterHalf, cut, east, cj0, cj1, false), ownIn = halfStreets(afterHalf, cut, east, cj0, cj1, true);
+        boolean[] bareIn = halfStreets(halfBare, cut, east, cj0, cj1, true);
+        int ownStreets = plotsIn(ownAll, null), ownInside = plotsIn(ownIn, null), bareInside = plotsIn(bareIn, null);
+        out.printf("      (a) the cut cells' new half (x %d to %d, the rows of cells %d and %d): %,d street plots laid (%,d inside the cells' rings); without the streets laid on ground bought %,d inside the cells' rings;"
+                + " the plan counts %,d street plots laid on ground bought in %d cell layings%n", cut + 1, east, cj0, cj1, ownStreets, ownInside, bareInside, afterHalf.boughtStreets, afterHalf.boughtCells);
+        check("(a) the open cell's own streets are laid on the ground bought inside it: street plots on its new half, and none inside the cells' rings when the switch is off",
+                ownInside > 0 && bareInside == 0 && afterHalf.boughtStreets > 0 && afterHalf.boughtCells >= cj1 - cj0 + 1 && halfBare.boughtStreets == 0);
+        // (b) the streets laid are the cell's own: the same two cells, opened whole (the first fixture's cells 0 to 3 owned from before they opened), have the same streets on that half
+        final int cellA = ciCut + cj0 * DistrictPlan.CELLS_A_SIDE, cellB = ciCut + cj1 * DistrictPlan.CELLS_A_SIDE;
+        boolean alike = openedAlike(after, afterHalf, cellA) && openedAlike(after, afterHalf, cellB);
+        check("(b) the fixture: the two cells the purchase cuts are opened the same way in the plan that owned them whole (kind, layout, direction, square, boulevard): cells " + cellA + " and " + cellB, alike
+                && after.cellKind[cellA] != DistrictPlan.CLOSED && after.cellKind[cellB] != DistrictPlan.CLOSED);
+        boolean[] wholeAll = halfStreets(after, cut, east, cj0, cj1, false);
+        int wholeStreets = plotsIn(wholeAll, null), shared = plotsIn(wholeAll, ownAll);
+        out.printf("      (b) street plots on the new half: %,d in the plan that owned the cells whole, %,d in the plan that bought it, %,d of them the same%n", wholeStreets, ownStreets, shared);
+        check("(b) the new half's streets are the cell's own: at least three quarters of the street plots the cell lays there owned whole are street plots of the cell bought into",
+                wholeStreets > 0 && shared * 4 >= wholeStreets * 3);
+        // (c) on the half alone - the cells beside not bought, three more months of houses - so the arrivals after the purchase have the half to go to and no other room
+        Log more = log.copy();
+        for (int m = bought + 2; m <= bought + 4; m++) more.add(m, house, HOUSES_A_MONTH);
+        DistrictPlan.Input halfOnly = more.into(cellsOwned(types, 0, 3, 3, 4));
+        halfOnly.boughtAt = boughtOn(cellsOwned(types, 0, 3, 3, 4), halfOld, bought);
+        DistrictPlan onlyOn = makeBought(halfOnly, true), onlyOff = makeBought(halfOnly, false);
+        int onlyIn = 0, onlyInBare = 0;
+        for (int i = 0; i < onlyOn.buildings; i++) if (onlyOn.bx[i] > cut && onlyOn.bx[i] < east) onlyIn++;
+        for (int i = 0; i < onlyOff.buildings; i++) if (onlyOff.bx[i] > cut && onlyOff.bx[i] < east) onlyInBare++;
+        out.printf("      (c) boxes in the cell's other half: %,d with the streets laid on ground bought, %,d without (%d of the old ground's boxes missing with them); the half bought alone, three more months"
+                + " of houses: %,d with the streets (%,d without a place), %,d without them (%,d without a place), %d of the old ground's boxes missing%n", inside, insideBare, missing(beforeHalf, afterHalf),
+                onlyIn, onlyOn.overflowCount(), onlyInBare, onlyOff.overflowCount(), missing(beforeHalf, onlyOn));
+        check("(c) more is built on the new half with the streets than without - the half bought alone, the arrivals after it having no other room - and every box that stood still stands",
+                onlyIn > onlyInBare && onlyOn.overflowCount() < onlyOff.overflowCount() && missing(beforeHalf, onlyOn) == 0 && missing(beforeHalf, afterHalf) == 0);
+        check("(d) the streets are joined on today's ground, every check holding, with the streets laid on ground bought", figures(afterHalf, halfIn).holds(afterHalf, halfIn));
+        check("(e) a plan is a pure function of its input: the plan with the streets laid on ground bought, made twice, is the same plan box for box and street for street", samePlan(afterHalf, DistrictPlan.make(halfIn)));
         // ---- dates that change nothing
         DistrictPlan.Input zeros = log.into(cellsOwned(types, 0, 5, 3, 4));
         zeros.boughtAt = new int[DistrictPlan.AREA];

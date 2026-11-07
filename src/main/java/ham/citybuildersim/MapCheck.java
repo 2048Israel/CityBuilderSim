@@ -1247,6 +1247,7 @@ public class MapCheck {
         long free3 = d.freeCells();
         DistrictPlan p3 = m.plan(d);
         java.util.Set<PlanBox> s3 = boxesOf(p3);
+        DistrictPlan p3off = planWithoutStreetsOnBought(m, d);
 
         // ----- the second block, and six months of houses -----
         Bought b2 = nearestFreeBlock(land, frame);
@@ -1259,6 +1260,7 @@ public class MapCheck {
         int ownedAfter2 = d.owned(), count4 = d.count(house);
         DistrictPlan p4 = m.plan(d);
         java.util.Set<PlanBox> s4 = boxesOf(p4);
+        DistrictPlan p4off = planWithoutStreetsOnBought(m, d);
         int moved34 = movedOf(s3, s4);
         int onNew = 0;
         if (b2 != null) {
@@ -1277,6 +1279,19 @@ public class MapCheck {
                 + " S4 (month %d): %,d houses, the plan places %,d, %,d of S3's %,d moved, %,d new ones on the second block%n", month3, count3, free3, p3.buildings,
                 b2 == null ? "none" : "[" + b2.x0() + "," + b2.x1() + ") x [" + b2.y0() + "," + b2.y1() + ")", boughtMonth2, b2 == null ? 0 : b2.dry(), ownedBefore2,
                 ownedAfter2, h.last(), count4, p4.buildings, moved34, s3.size(), onNew);
+
+        // The ground bought inside the cells already open (FX9): of each block's dry interior plots, those in cells open before it was bought and those in cells closed, and how many of each a plan builds on.
+        int[] on3 = builtOn(p1, p3, b1, frame), off3 = builtOn(p1, p3off, b1, frame);
+        int[] on4 = builtOn(p3, p4, b2, frame), off4 = builtOn(p3, p4off, b2, frame);
+        out.printf("      the first block at S3, its dry interior plots built on {cells open before it: built of dry, cells closed: built of dry}: streets on {%,d of %,d, %,d of %,d}, off (FX6's way) {%,d of %,d, %,d of %,d};"
+                + " the plan places %,d boxes of the %,d houses with the streets on, %,d with them off%n", on3[1], on3[0], on3[3], on3[2], off3[1], off3[0], off3[3], off3[2],
+                p3.buildings, count3, p3off.buildings);
+        out.printf("      the second block at S4: streets on {%,d of %,d, %,d of %,d}, off {%,d of %,d, %,d of %,d}; the plan places %,d boxes of the %,d houses with the streets on, %,d with them off%n",
+                on4[1], on4[0], on4[3], on4[2], off4[1], off4[0], off4[3], off4[2], p4.buildings, count4, p4off.buildings);
+        out.println("      the plan places every house of the full district (S3) with the streets on: " + (p3.buildings == count3) + ", off: " + (p3off.buildings == count3)
+                + "; at S4: " + (p4.buildings == count4) + " on, " + (p4off.buildings == count4) + " off");
+        boolean open4 = on4[0] > 0;
+        if (!open4) out.println("      the second block has no dry interior plot in a cell open at S3 (" + on4[0] + "): no check of its share");
 
         check("fixture: the founding site's district found, and the land's blocks smaller than a district, so a bought block fits in one",
                 d != null && frame != null && blocks < World.DISTRICT && h.reconciled);
@@ -1297,6 +1312,56 @@ public class MapCheck {
         check("...and holds more after it: the houses that came after the purchase are placed (" + s4.size() + " boxes, " + s3.size() + " before)", s4.size() > s3.size());
         check("...the arrivals after the purchase go on the new ground: " + onNew + " of the new boxes lie wholly on the second block", onNew > 0);
         check("...every district's log still sums to its counts, the blocks' records one to a district and month", logsAddUp(m));
+        check("fixture: the first block cuts cells open before it was bought and cells that opened after: " + on3[0] + " dry interior plots in cells open at S1, " + on3[2] + " in cells closed", on3[0] > 0 && on3[2] > 0);
+        check("bought ground inside the cells already open is built on about as the cells opened after the purchase are (S3, first block): " + on3[1] + " of " + on3[0] + " in the open cells against "
+                + on3[3] + " of " + on3[2] + " in the closed, at least 3/4 of the closed share; with the streets off it is not: " + off3[1] + " of " + off3[0] + " against " + off3[3] + " of " + off3[2],
+                openShareHolds(on3) && !openShareHolds(off3));
+        if (open4) {
+            check("...the same for the second block (S4): " + on4[1] + " of " + on4[0] + " in the open cells against " + on4[3] + " of " + on4[2] + " in the closed, at least 3/4 of the closed share; with the streets off it is not: "
+                    + off4[1] + " of " + off4[0] + " against " + off4[3] + " of " + off4[2], on4[2] > 0 && openShareHolds(on4) && !openShareHolds(off4));
+        }
+        check("the full district holds its houses at home: at S3 the plan places more of them with the streets on than with FX6's way (" + p3.buildings + " against " + p3off.buildings + " of " + count3 + ")",
+                p3.buildings > p3off.buildings);
+    }
+
+    /** The plan of d drawn fresh from the map with the streets on the ground bought inside an open cell off (FX6's way, DistrictPlan.streetsOnBought), the switch set back after. */
+    static DistrictPlan planWithoutStreetsOnBought(CityMap m, CityMap.District d) {
+        DistrictPlan.streetsOnBought = false;
+        try {
+            return m.plan(d);
+        } finally {
+            DistrictPlan.streetsOnBought = true;
+        }
+    }
+
+    /**
+     * Of block b's dry plots in the cells' interiors (neither on a cell's west column nor its north row), {those in cells open in `before`, of them those a box of `after` covers,
+     * those in cells closed in `before`, of them those a box of `after` covers}.
+     */
+    static int[] builtOn(DistrictPlan before, DistrictPlan after, Bought b, DistrictPlan.Input frame) {
+        int[] n = new int[4];
+        if (b == null) return n;
+        boolean[] covered = new boolean[DistrictPlan.AREA];
+        for (int i = 0; i < after.buildings; i++) {
+            for (int y = after.by[i]; y < after.by[i] + after.bh[i]; y++) {
+                for (int x = after.bx[i]; x < after.bx[i] + after.bw[i]; x++) covered[y * DistrictPlan.FRAME + x] = true;
+            }
+        }
+        for (int y = (int) (b.y0() - frame.y0); y < b.y1() - frame.y0; y++) {
+            for (int x = (int) (b.x0() - frame.x0); x < b.x1() - frame.x0; x++) {
+                if (x % DistrictPlan.CELL == 0 || y % DistrictPlan.CELL == 0 || !World.dry(frame.terrain[y * DistrictPlan.FRAME + x])) continue;
+                int c = (x / DistrictPlan.CELL) + (y / DistrictPlan.CELL) * DistrictPlan.CELLS_A_SIDE;
+                int at = before.cellKind[c] != DistrictPlan.CLOSED ? 0 : 2;
+                n[at]++;
+                if (covered[y * DistrictPlan.FRAME + x]) n[at + 1]++;
+            }
+        }
+        return n;
+    }
+
+    /** Whether the open cells' share of dry interior plots built on is at least 3/4 of the closed cells' share (the counts as builtOn() returns them). */
+    static boolean openShareHolds(int[] c) {
+        return c[1] * c[2] * 4L >= c[3] * c[0] * 3L;
     }
 
     /** The plan's buildings as boxes, a set: a building stands where it did when its box is in the plan again. */
