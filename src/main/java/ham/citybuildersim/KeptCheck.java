@@ -6592,10 +6592,11 @@ public class KeptCheck {
                 !d.foundedUnfitted() && dov.researchers() > 0 && dov.idle() == dov.researchers() && dov.inReach() == 0 && dov.researchBill() > 0);
         KeptBench.Page dOverview = fx(() -> dBench.policy("Policy, Research's Overview in a default city with a grant", "Research", "Overview"));
         List<String> posts = shownWith(dBench, dOverview, null);
-        check("the Overview, with a grant set, says what its posts are doing: " + Money.people(dov.researchers()) + " researchers, " + Money.people(dov.idle()) + " of them idle, " + Money.money(dov.researchBill()) + " a month",
-                has(posts, label("NOTHING TO RESEARCH")) && has(posts, label(Money.people(dov.researchers()) + " researchers hold the posts a grant bought, " + Money.people(dov.idle())
-                        + " of them idle, and they cost " + Money.money(dov.researchBill()) + " a month.")) && !has(posts, label("BY FIELD")));
-        check("...and with no grant set (the played city) there is no such line", !has(quiet, "hold the posts a grant bought"));
+        check("fixture: ...and the posts the grant bought (" + dov.posts() + ")", dov.posts() > 0);
+        check("the Overview, with a grant set, says what its posts are doing: " + Money.people(dov.researchers()) + " researchers, " + dov.posts() + " posts, " + Money.people(dov.idle()) + " of them idle, " + Money.money(dov.researchBill()) + " a month",
+                has(posts, label("NOTHING TO RESEARCH")) && has(posts, label(Money.people(dov.researchers()) + " researchers at work, the schools' own staff and the " + dov.posts()
+                        + " posts a grant bought, " + Money.people(dov.idle()) + " of them idle; the posts cost " + Money.money(dov.researchBill()) + " a month.")) && !has(posts, label("BY FIELD")));
+        check("...and with no researcher (the played city) there is no such line", !has(quiet, "a grant bought") && !has(quiet, "the schools' own staff"));
         nothingSet(dBench, dOverview, "Policy, Research, Overview in a default city with a grant set");
 
         // A grant staged: the tray, the chip and the card's rows follow it, and the posts it buys are the model's.
@@ -6622,6 +6623,21 @@ public class KeptCheck {
         if (r[4] != null) System.out.println("  " + r[4]);
         check("...and its sentence is still that there is nothing to find", sig.stream().filter(l -> l.contains("Every discovery is known from the start in a city founded this way")).count() == 4);
         nothingSet(dBench, dFunding, "Policy, Research, Funding in a default city with a school, a grant staged", b -> { b.policyStage(KeptBench.researchGrantKey(eng), staged); return null; });
+
+        // R3b's gate review: the same town with its grant taken away. Its University's faculty still research, and the card must not say a grant bought posts.
+        fx(() -> {
+            d.getResearch().setGrant(eng, 0);
+            ResearchViewCheck.play(d, 1);
+            return null;
+        });
+        ResearchView.Overview fov = fx(() -> ResearchView.overview(d));
+        check("fixture: the grant taken away, a month on: no post is held, and the faculty are still at research (" + Money.people(fov.researchers()) + ")",
+                fov.posts() == 0 && fov.researchers() > 0 && d.getResearch().grant(eng) == 0);
+        KeptBench.Page fOverview = fx(() -> dBench.policy("Policy, Research's Overview in a default city with no grant", "Research", "Overview"));
+        List<String> faculty = shownWith(dBench, fOverview, null);
+        check("the Overview then says the researchers are the schools' own staff, and claims no post a grant bought and no cost",
+                has(faculty, label(Money.people(fov.researchers()) + " researchers at work, the schools' own staff in the time they keep for research, " + Money.people(fov.idle())
+                        + " of them idle: no grant pays for it, so it costs nothing.")) && !has(faculty, "a grant bought"));
 
         KeptBench.Page hub = fx(() -> defaultBench.policy("the Policy hub in a default city", null, null));
         List<String> hubSig = shownWith(defaultBench, hub, null);

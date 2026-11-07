@@ -451,9 +451,11 @@ public final class ResearchView {
 
     /**
      * The Overview page: a row for each field in the enum's order, the month's research bill and the prizes the treasury paid the labs, the discoveries
-     * found here and come from abroad since the founding, and the researchers there are to each 1,000 people at work (NaN where nobody works).
+     * found here and come from abroad since the founding, the researchers there are to each 1,000 people at work (NaN where nobody works), and the
+     * posts the grants and pots bought this month, all fields together (Research.posts(); none where the researchers are the faculty's own alone).
      */
-    public record Overview(List<FieldReach> fields, double researchBill, double prizesPaid, int foundHere, int fromAbroad, double perThousandWorkers) {
+    public record Overview(List<FieldReach> fields, double researchBill, double prizesPaid, int foundHere, int fromAbroad, double perThousandWorkers,
+                           int posts) {
 
         /** The people at research in all the fields, the labs' too. */
         public double researchers() {
@@ -562,13 +564,15 @@ public final class ResearchView {
         List<Discovery> timeline = timeline(game);
         List<FieldReach> rows = new ArrayList<>();
         double people = 0;
+        int posts = 0;
         for (Field f : Field.values()) {
             FieldReach row = reach(research, month, f, timeline, schoolsOf(game, f), game.foundedUnfitted());
             rows.add(row);
             people += row.total();
+            posts += research.posts(f);
         }
         return new Overview(rows, game.getEconomyManager().getResearchBill(), game.getPrizePaid(), count(timeline, Source.HERE), count(timeline, Source.ABROAD),
-                perThousandWorkers(people, game.getPopulationManager().getJobsFilled()));
+                perThousandWorkers(people, game.getPopulationManager().getJobsFilled()), posts);
     }
 
     /* =====================================================================

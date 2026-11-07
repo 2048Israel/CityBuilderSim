@@ -217,10 +217,13 @@ final class ResearchScreen {
                         + "found here.", Palette.SIZE_BODY + 1, Palette.TEXT_LABEL),
                 PolicyScreen.muted("A grant still buys research posts, but their researchers have nothing to work on: this page fills in a city founded "
                         + "the 1900 way."));
+        // ...the posts claimed only where a grant bought some (R3b's review): a University with no grant gives its faculty's own research, which costs nothing.
         if (ov.researchers() > 0) {
-            card.getChildren().add(Kept.scope("posts", () -> PolicyScreen.words(people(ov.researchers()) + " researchers hold the posts a grant bought, "
-                    + people(ov.idle()) + " of them idle, and they cost " + money(ov.researchBill()) + " a month.", Palette.SIZE_LABEL + 1,
-                    Palette.TEXT_HEAD)));
+            card.getChildren().add(Kept.scope("posts", () -> PolicyScreen.words(ov.posts() > 0
+                    ? researchersWords(ov.researchers()) + " at work, the schools' own staff and the " + ov.posts() + (ov.posts() == 1 ? " post" : " posts")
+                            + " a grant bought, " + people(ov.idle()) + " of them idle; the posts cost " + money(ov.researchBill()) + " a month."
+                    : researchersWords(ov.researchers()) + " at work, the schools' own staff in the time they keep for research, " + people(ov.idle())
+                            + " of them idle: no grant pays for it, so it costs nothing.", Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD)));
         }
         return card;
     }

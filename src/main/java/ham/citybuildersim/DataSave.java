@@ -1238,14 +1238,18 @@ public class DataSave implements Cloneable {
 
     private ResearchRecord research;
 
-    /** The research to write with the month's bill (EconomyManager.getResearchPayroll(), getResearchCosts()), or none: a city that has no grant, post, pile or find writes no key. */
+    /**
+     * The research to write with the month's bill (EconomyManager.getResearchPayroll(), getResearchCosts()), or none: a city that has no grant, post,
+     * pile or find and no researcher this month writes no key. R3b: one with nothing of its own but its faculty's researchers (a city founded the default
+     * way with a University and no grant) writes them, or a load would show none until the next month.
+     */
     public void setResearch(Research r, double payroll, double costs) {
         setResearch(r, payroll, costs, 0);
     }
 
     /** ...and with the prize the treasury paid the labs that month (R4), after the prize dials, the pots, the labs' piles, the city's shares and the idle counts, which Research gives. */
     public void setResearch(Research r, double payroll, double costs, double prizePaid) {
-        if (r == null || r.isEmpty()) {
+        if (r == null || (r.isEmpty() && !r.hasMonthCounts())) {
             this.research = null;
             return;
         }

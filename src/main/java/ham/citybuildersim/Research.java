@@ -974,6 +974,16 @@ public final class Research {
 
     /* ----- the month's counts, to save (R3b): a flow cannot be reconstructed from the state a month ended in, and a load would read 0 until the next month ----- */
 
+    /**
+     * Whether the month has any count to show: researchers, idle ones, open problems or the labs' (R3b's review). A city founded the default way with a
+     * University and no grant is empty() - nothing of its own - and still has its faculty's researchers this month, which the screens draw, so the save
+     * writes the research for them too (DataSave.setResearch()).
+     */
+    public boolean hasMonthCounts() {
+        return !researchersForSave().isEmpty() || !idleForSave().isEmpty() || !openForSave().isEmpty() || !labResearchersForSave().isEmpty()
+                || !labsIdleForSave().isEmpty();
+    }
+
     /** The month's researchers by field, to save, by Field.name(); only those above nothing (researchers() reads 0 for the rest). A fresh map. */
     public Map<String, Double> researchersForSave() { return aboveNothing(researchersNow); }
 

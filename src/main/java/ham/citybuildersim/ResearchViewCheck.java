@@ -76,6 +76,8 @@ import java.util.Map;
  *  18. THE SCHOOLS AND THE BUDGET. The kinds of school stand up the game's own staff and room; a kind has its share of each field's posts; a kind that hosts none, or of
  *      which none stands, carries nothing; THE BUDGET moves by the staged grants' posts and not by a prize.
  *  19. A LAB STANDING. The card counts the lab and its researchers with the field's, and the same lab is on both sides of a card that moves a grant.
+ *  20. A DEFAULT CITY'S FACULTY (R3b's gate review). A city founded the default way with a University and no grant: its researchers are the faculty's
+ *      own and no post is held (the Overview's posts), and the month's counts survive a save and a load though the research has nothing of its own.
  */
 public class ResearchViewCheck {
 
@@ -216,6 +218,7 @@ public class ResearchViewCheck {
         sectionSeventeen(funded);
         sectionEighteen(funded);
         sectionNineteen(funded);
+        sectionTwenty();
         System.out.println(fails == 0 ? "ResearchViewCheck: all " + passes + " ok" : "ResearchViewCheck: " + fails + " FAILED of " + (passes + fails));
         System.exit(fails);
     }
@@ -1640,6 +1643,48 @@ public class ResearchViewCheck {
                 ResearchView.budget(g, ResearchView.Staged.none().withPrize(Field.BUSINESS, 1e6)).change() == 0
                         && Math.abs(ResearchView.budget(g, ResearchView.Staged.none().withGrant(Field.BUSINESS, more).withGrant(Field.ENGINEERING, 0)).change()
                         + (atMore.bill() - atNow.bill()) + ResearchView.atGrant(g, Field.ENGINEERING, 0).bill() - ResearchView.atGrant(g, Field.ENGINEERING, r.grant(Field.ENGINEERING)).bill()) <= 1e-9);
+    }
+
+    /* ==================== 20. a default city's faculty, through a save ==================== */
+
+    /** The month's five counts of a research, field by field, in words a harness can compare. */
+    static String monthCounts(Research r) {
+        StringBuilder out = new StringBuilder();
+        for (Field f : Field.values()) {
+            out.append(f.name()).append(' ').append(r.researchers(f)).append('/').append(r.idle(f)).append('/').append(r.open(f)).append('/')
+                    .append(r.labResearchers(f)).append('/').append(r.labsIdle(f)).append("; ");
+        }
+        return out.toString();
+    }
+
+    static void sectionTwenty() throws Exception {
+        System.out.println("\n--- 20. a city founded the default way with a University and no grant: its researchers are the faculty's own, and they survive a save ---");
+        ensureQuiet();
+        Game d = FittingCheck.village("research-view-default-faculty", Founding.defaults(), false, false);
+        quietly(() -> {
+            d.buildStack(template(d, "University"), 1, true);
+            MaterialsCheck.handWorkers(d);
+        });
+        play(d, 2);
+        Research r = d.getResearch();
+        ResearchView.Overview ov = ResearchView.overview(d);
+        check("fixture: founded the default way with a University and no grant, its faculty at research (" + ov.researchers() + ") and every one of them idle",
+                !d.foundedUnfitted() && ov.researchers() > 0 && ov.idle() == ov.researchers() && r.grant(Field.ENGINEERING) == 0 && r.grant(Field.MEDICINE) == 0);
+        check("the Overview counts no post where no grant bought one (" + ov.posts() + "), so the page claims none", ov.posts() == 0);
+        check("the research has nothing of its own (empty) and still has the month's counts to show", r.isEmpty() && r.hasMonthCounts());
+        String before = monthCounts(r);
+        GameFiles.Result wrote = EquipmentCheck.save(d, "default faculty");
+        check("the city is saved", wrote.ok, wrote.message());
+        JsonObject root = JsonParser.parseString(Files.readString(d.getGameFiles().saveFile(1))).getAsJsonObject();
+        check("...with its research written for the faculty's counts alone", root.has("research") && root.getAsJsonObject("research").has("researchers"));
+        Game back = new Game(d.getGameFiles());
+        quietly(() -> back.loadGameSave(1));
+        check("loaded without a failure", back.getLoadFailure() == null, String.valueOf(back.getLoadFailure()));
+        check("the loaded city reads the same counts in every field before it plays a month: " + before, monthCounts(back.getResearch()).equals(before),
+                monthCounts(back.getResearch()));
+        ResearchView.Overview again = ResearchView.overview(back);
+        check("...so its Overview (and the hub's card) show the same researchers and idle (" + again.researchers() + " and " + again.idle() + "), and no post",
+                again.researchers() == ov.researchers() && again.idle() == ov.idle() && again.posts() == 0);
     }
 
     /* ==================== 19. a lab standing ==================== */
