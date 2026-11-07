@@ -5,13 +5,14 @@
 **Ready.**
 - **The branch.** `batch/XR5` was built on UP7's ship file (RL1, 0ec6b4fa). UP7 came back
   from its gate (a KeptCheck conflict with main 0.9.33) and was ready again at 698360bd,
-  merged here at 733156db with R5 (0.9.33) in it.
+  merged here at 733156db with R5 (0.9.33) in it; main with UP7 in (0.9.34) at 17166530
+  and its queue rows at 437f3648.
 - **The commits.** Slice A (the model, the save, the harness) is e053f099; slice B (the
   warning, the screens) is f951d5ca. Both were drafted by Sonnet 5.5 at xhigh and reviewed
   by Opus.
 - **The trace.** A city on the default regime (Lean) moves by nothing, byte for byte
   (section 2), so no ensemble.
-- **The checks.** `--pick` on the merge exits 4. Besides main's recorded reds there are
+- **The checks.** `--pick` on the merge with main 0.9.34 exits 4. Besides main's recorded reds there are
   two KeptCheck lines that come from no code this batch wrote (section 6). CurrencyRegimeCheck
   is green.
 - **Money changes**, so the gate gives it a stranger's review. Section 3 names the
@@ -152,7 +153,8 @@ month.
   - VaultMoneysCheck: the peg is revalued to make the sale and devalued to make the
     purchase. A peg on balanced trade no longer sells or buys by the month's balance.
   - InterestAbroadCheck and SaveFileCheck: 148 slots.
-- **`--pick` on the merge** (733156db, 48 of 182 harnesses) exits 4. The reds are:
+- **`--pick` on the merge with main** (0.9.34, 437f3648; 48 of 182 harnesses) exits 4,
+  as it did on the merge with UP7 (733156db). The reds are:
   - main's recorded ones;
   - two KeptCheck lines that are not this batch's code (section 6).
 
