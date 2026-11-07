@@ -1102,6 +1102,16 @@ public class Game {
         awaitSaves();
     }
 
+    /**
+     * The window's close autosave (UP6; Jerus, 2026-10-23, on UP1's star 1: "Yes, autosave on close"): Quit's, under its own
+     * name, and on disk when this returns - the JVM ends once the window's stop() returns, and the writer's thread does not
+     * hold it. UserInterface.stop() calls it.
+     */
+    public void saveForClose(){
+        autosave("on close");
+        awaitSaves();
+    }
+
     /** Why the last load did not happen, or null. Read by the UI. */
     private String loadFailure;
 
@@ -8106,6 +8116,10 @@ public class Game {
 
         int completed = 0;
 
+        // Set when every month has run: a skip that stopped part-way (the catch below, or an Error the
+        // finally lets through) does not autosave at its end - its city stopped inside a month.
+        boolean ranThrough = false;
+
         // Snapshot before anything moves. Everything the summary shows is a diff
         // against this or a count taken month by month below - see TimeSkipReport.
         skipReport.beginSkip(months);
@@ -8140,6 +8154,7 @@ public class Game {
                 // ...and the sales nobody pressed (CD2, D28 to D30): the rollover's and automatic building's.
                 skipReport.sampleSales(autoSalesThisMonth);
             }
+            ranThrough = true;
 
         } catch (RuntimeException e) {
             /*
@@ -8170,13 +8185,17 @@ public class Game {
             // produces a readable summary rather than a half-filled one.
             captureSkipSnapshot(false);
 
-            // A skip ends with every autosave it queued written (UP1), so the player -
-            // and every harness that steps with simulateMonths() - finds whole files.
-            // Not always a late one: the "before skipping" autosave above starts the
-            // floor again, so a skip that runs inside SaveWriter.FLOOR_SECONDS queues
-            // no twelve-monthly autosave and ends with the one from before it on disk
-            // (UP1-C, star 4).
+            // The skip waits for every autosave its months queued (UP1), then asks for its
+            // own, unfloored, which it does not wait for: it costs only the fill on the
+            // clock, about 5 ms (UP6; Jerus, 2026-10-23, on UP1's star 4: "Autosave at the
+            // skip's end"). WHY: the "before skipping" autosave starts the floor again, so
+            // a skip that ran inside SaveWriter.FLOOR_SECONDS queued no twelve-monthly
+            // autosave and ended with the one from before it on disk. A caller that needs
+            // the end's on disk calls awaitSaves(), as a load, Quit, the close and the next
+            // skip do. A skip that stopped part-way leaves the "before skipping" autosave as
+            // the point to come back to (the catch above).
             awaitSaves();
+            if (months > 1 && ranThrough) autosave("after skipping " + months + " months");
         }
 
         return completed;
@@ -13801,8 +13820,9 @@ public class Game {
          * history to 1850 at month 1851, then 1852). Here, after
          * recordMonth(), the counter and every month-end record agree, as
          * they do for a save made between the presses - which is where the
-         * two other autosaves, "before skipping" (simulateMonths()) and "on
-         * quit" (toggleQuit()), were always written. The save moves no pool.
+         * other autosaves, "before skipping" and "after skipping"
+         * (simulateMonths()), "on quit" (toggleQuit()) and "on close"
+         * (saveForClose()), were always written. The save moves no pool.
          * SaveSlotCheck holds it. An autosave written before 0.7.52 is left as
          * it is: its month's top had run (the fund's year end, the rollover,
          * the startMonth()s above), and would run again if the counter were
@@ -16369,10 +16389,12 @@ public class Game {
     /**
      * Writes the autosave slot, if there is a city to write.
      *
-     * Called on three occasions, and each covers a different way of losing a
+     * Called on five occasions, and each covers a different way of losing a
      * city: every twelve months for the ordinary case, before a multi-month skip
      * because that is a single click that can undo a hundred months of decisions,
-     * and on quit because the window closing is the most common accident of all.
+     * after one so the skip's last month is on disk too (UP6), on quit, and on
+     * the window's close (UP6), because the window closing is the most common
+     * accident of all.
      *
      * Failures are reported and swallowed. An autosave that cannot write must
      * not stop a month advancing or a player quitting - it is a safety net, and
@@ -16393,7 +16415,7 @@ public class Game {
         SaveWriter.shared().submit(job,
                 result -> {
                     System.out.println(GameFiles.slotLabel(GameFiles.AUTOSAVE_SLOT) + ": " + result.message());
-                    savesWritten.add(result);
+                    savesWritten.add(new Written(GameFiles.AUTOSAVE_SLOT, result));
                 });
         // A recorded city's history goes at the autosave's pace, from the snapshot the save already made (TR1; THE RECORDING).
         recordHistoryFrom(job);
@@ -16416,24 +16438,31 @@ public class Game {
      * change the city while the last one is written.
      *
      * The writer is waited for wherever a file must be whole: a numbered-slot
-     * save() (the player's own Save, written on his thread with the live
-     * objects as it always was), a load, Quit and a skip each awaitSaves()
-     * first. A skip waits again at its end, so a caller that stepped with
-     * simulateMonths() finds every autosave it queued whole on disk - which,
-     * for a skip inside the floor, is the one from before it (below).
+     * save() (written on the caller's thread with the live objects, for every
+     * caller that wants the files on disk when it returns - harnesses, benches;
+     * the player's own Save is saveInBackground() since UP6, below), a load,
+     * Quit, the close and a skip each awaitSaves() first. A skip waits again at
+     * its end for every autosave its months queued, then asks for its own last
+     * month's and does not wait for that one (UP6): a caller that needs it on
+     * disk calls awaitSaves().
      *
      * The floor: an autosave comes every AUTOSAVE_MONTHS months but never
      * sooner than SaveWriter.FLOOR_SECONDS of real time after the last one
      * (Jerus, 2026-10-22: "At most every 30 s"), which at 50x holds the
      * writer to once in 30 s instead of once in 1.2 s. A month due inside it
      * is not queued: its counter starts again, and the next due month past
-     * the floor writes. The skip's and Quit's autosaves ignore the floor, and
-     * like every autosave start it again: a skip that runs inside it writes
-     * none of its twelve-monthly ones (UP1-C, star 4).
+     * the floor writes. The skip's two, Quit's and the close's autosaves ignore
+     * the floor, and like every autosave start it again: since UP6 a skip that
+     * runs inside it still writes none of its twelve-monthly ones, but ends with
+     * its own last month written (the skip's end autosave, Jerus, 2026-10-23:
+     * "Autosave at the skip's end"). The running clock keeps its floor.
      * ====================================================================== */
 
+    /** A result the writer finished, and the slot it was for (UP6): an autosave's goes to the inbox, the player's Save is told by its page. */
+    private record Written(int slot, GameFiles.Result result) { }
+
     /** Results the writer's thread has finished, waiting for the FX thread to take them: see reportSaves(). */
-    private final java.util.concurrent.ConcurrentLinkedQueue<GameFiles.Result> savesWritten =
+    private final java.util.concurrent.ConcurrentLinkedQueue<Written> savesWritten =
             new java.util.concurrent.ConcurrentLinkedQueue<>();
 
     /** The clock the floor is measured on (nanoseconds); checks give a city their own. */
@@ -16454,11 +16483,15 @@ public class Game {
      * has always said it.
      */
     private void reportSaves() {
-        GameFiles.Result result;
-        while ((result = savesWritten.poll()) != null) {
-            lastSaveResult = result;
-            if (!result.ok) {
-                System.out.println("Autosave failed: " + result.error);
+        Written w;
+        while ((w = savesWritten.poll()) != null) {
+            lastSaveResult = w.result();
+            if (w.slot() == GameFiles.AUTOSAVE_SLOT) {
+                if (!w.result().ok) {
+                    System.out.println("Autosave failed: " + w.result().error);
+                }
+                // The inbox keeps the autosave's trouble standing until one lands whole (UP6, LB3-S).
+                inbox.autosaveWritten(month, w.result());
             }
         }
     }
@@ -16481,6 +16514,58 @@ public class Game {
     public void save(int slot, String slotName){
         awaitSaves();
         lastSaveResult = prepareSave(slot, slotName, false).write();
+    }
+
+    /* ===== THE PLAYER'S SAVE OFF THE CLOCK (UP6, 2026-11-06) ================
+     *
+     * The player's own Save used to be save(): written on his thread with the
+     * live objects, so the window froze for the length of the write (Jerus,
+     * 2026-10-23, on UP1's star 2: "Background + 'Saving...'"). It is
+     * saveInBackground() now: the same snapshot an autosave takes, filled here
+     * on the calling thread (prepareSave(slot, name, true)) and written on
+     * SaveWriter's one thread, with a "Saving..." line on the Save page until
+     * the write lands.
+     *
+     * What waits for what. A second Save while the player's last is still in
+     * the writer waits for it, so the two are written in the order they were
+     * asked for and the first is never replaced unwritten (the writer replaces
+     * a waiting job for the same file). Load's menu, Quit, the close, a load
+     * and a skip each awaitSaves() first, and that waits for the player's Save
+     * too.
+     *
+     * The writer touches a slot only when asked: the autosave slot for an
+     * autosave, the slot the player chose for his Save, the recording folder
+     * for a recorded city - never slots 1-9 otherwise.
+     * ====================================================================== */
+
+    /** The player's Saves handed to the writer and not yet reported back by it. */
+    private final java.util.concurrent.atomic.AtomicInteger playerSavesInWriter =
+            new java.util.concurrent.atomic.AtomicInteger();
+
+    /**
+     * Saves to a numbered slot without holding the caller (UP6): filled now, on the calling thread, written on the writer's.
+     * Returns at once. {@code done} is told the result on the writer's thread (the window hands it to the FX thread); the
+     * result also reaches getLastSaveResult() at the next reportSaves(). A second Save while one of the player's is still in
+     * the writer waits for it. It does not touch the autosave floor. Throws IllegalArgumentException for a slot outside
+     * 1..GameFiles.SLOT_COUNT - never the autosave's.
+     */
+    public void saveInBackground(int slot, String slotName, java.util.function.Consumer<GameFiles.Result> done) {
+
+        if (slot < 1 || slot > GameFiles.SLOT_COUNT) {
+            throw new IllegalArgumentException("A player's Save goes to a numbered slot, 1 to "
+                    + GameFiles.SLOT_COUNT + ", not " + slot);
+        }
+
+        if (playerSavesInWriter.get() > 0) awaitSaves();
+
+        SaveWriter.Job job = prepareSave(slot, slotName, true);
+        playerSavesInWriter.incrementAndGet();
+        SaveWriter.shared().submit(job, result -> {
+            System.out.println(GameFiles.slotLabel(slot) + ": " + result.message());
+            savesWritten.add(new Written(slot, result));
+            playerSavesInWriter.decrementAndGet();
+            done.accept(result);
+        });
     }
 
     /**

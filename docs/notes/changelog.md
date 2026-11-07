@@ -18,6 +18,28 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.33 — R5, research: the screens — 2026-11-06, ready, see docs/queue/R5-notes.md
+What a city founded the 1900 way has found is on screen (research-design §5.5, mockups 3-5). Policy has a sixth area,
+Research, opening on Found: every discovery on one timeline a row a field (hollow from abroad on history's date, filled
+found here with a line to the world's date and how far ahead), what the city found itself, the recipes in use and the
+equipment fitted with each verdict, and four charts over time (three new history series, kept only by a 1900 city). A
+sector's Investors page has ITS EQUIPMENT: a card a piece, each kind of building's fitted count and the verdict on the
+next one; the Fit pill reads the city's month and finds. A building known after the founding says on its card where it
+came from and shows NEW (a chip, a violet edge, its category's dot, a strip) for a year or until the month after it is
+seen; a Research Lab's card says what a lab is for (R4 ★10). City History flags every discovery. A default city gains
+one Policy chip and a quiet page, its trace R4's to the byte. Overview and Funding are R3b's.
+
+### 0.9.32 — UP6, The autosave: a skip's end, the window's close, the player's Save off the clock — 2026-11-06, ready, see docs/queue/UP6-notes.md
+A multi-month skip ends with an autosave of its own last month, unfloored, asked for and not waited for (about 5 ms on
+the clock), so a skip inside the 30 s floor no longer leaves the save from before it on disk; none after a skip that
+stopped part-way. Closing the window autosaves like Quit ("Autosave - on close", the real city during a replay), on disk
+before the game exits. The player's own Save is written on the save writer from a snapshot: the page says "Saving..."
+until the write lands, then the result as before; a second Save waits for the first, the Save menu waits as Load's does,
+and the writer writes a numbered slot only when the player saves there. A history that could not be written is told:
+"Saved, but its history could not be written: <reason>" on the Save page, an inbox notice for the autosave (and for an
+autosave that fails whole), the .bak kept. SaveSlotCheck 7e holds each; 7b and 7c.5 read the skip's end. No model
+change: no ensemble.
+
 ### 0.9.31 — KP2b, The kept screens' review follow-ups — 2026-11-06, ready, see docs/queue/KP2b-notes.md
 The stranger's reviews at KP2-KP7's gates, mended: a kept page redrawn with nothing new now writes nothing on its nodes,
 where every page wrote 15 to 100 styles, texts, paddings and widths a month (a plain style then the full one, a `new

@@ -328,6 +328,34 @@ public class Inbox {
         }
     }
 
+    /* ----- the autosave (UP6) ----- */
+
+    /**
+     * An autosave that could not be written whole (UP6, LB3-S), a condition notice keyed "autosave": the save failed, or it landed
+     * beside a history that could not be written (the slot then holds the new save and an older history). A whole result settles
+     * the one standing. Told on the writer's report, not in takeMonth(): Game.reportSaves() hands it each autosave's result.
+     */
+    public void autosaveWritten(int month, GameFiles.Result result) {
+        String title;
+        List<String> body;
+        if (!result.ok) {
+            title = "The autosave could not be written";
+            body = wrapped("Month " + month + "'s autosave could not be written: " + result.error
+                    + ". The autosave before it is still on disk, whole. Check there is free disk space; the next autosave tries again.",
+                    BODY_COLUMNS);
+        } else if (result.historyError != null) {
+            title = "The autosave's history could not be written";
+            body = wrapped("Month " + month + "'s autosave was written, but its history could not be: " + result.historyError
+                    + ". The autosave holds this month beside an older history; the save that history belongs to is kept beside it as "
+                    + result.file.getFileName() + ".bak. The next autosave tries again.",
+                    BODY_COLUMNS);
+        } else {
+            title = "";
+            body = new ArrayList<>();
+        }
+        take(null, month, "autosave", !result.whole(), title, body);
+    }
+
     /**
      * Every city's site on overtime whose next month is its third or later
      * (ConstructionControl, B. RUSH): from the third month on a 50-hour week

@@ -139,6 +139,9 @@ final class ReplayMode {
 
     boolean isOn() { return on; }
 
+    /** The real game while a replay is on - the one Quit and the window's close autosave (UP6) - or null when none is. */
+    Game realGame() { return realGame; }
+
     /** The replay's camera: MapView asks for it each frame (UserInterface.replayCamera()). */
     ReplayCamera camera() { return camera; }
 
