@@ -7060,6 +7060,33 @@ public final class CityMap {
         return bestFrame;
     }
 
+    /**
+     * The units of terminal type t that the district's yards stand for, taken out of the log the plan is given (in.logChange, a copy):
+     * the oldest standing first - the bottom of the type's stack, which a departure (the newest first, as the plan's pop() takes them)
+     * never reaches while the yard stands - up to `yards` and no more than the log stands beyond the plan's count.
+     * WHY (MF2, 2026-11-08): the plan was handed one depot less than its log stood and squared the log by leaving out the newest
+     * standing unit (DistrictPlan.readLog()'s iExcl), so when a depot left, the depot left out became the older one, gone from its
+     * arrival on, and every box placed after it was placed again (main's playtest, m2395 to m2396, district (-3,-2): a Rail Depot
+     * gone, 3 of 17 boxes moved; MapCheck 23). With the yard's own unit the oldest, out of the log, a depot that leaves takes its own
+     * box and nothing else moves.
+     */
+    private static void yardUnitsOut(DistrictPlan.Input in, int t, int yards) {
+        int n = Math.min(in.logType.length, in.logChange.length);
+        int[] stack = new int[8];
+        int top = 0;
+        for (int r = 0; r < n; r++) {
+            if (in.logType[r] != t) continue;
+            int ch = in.logChange[r];
+            for (int j = 0; j < ch; j++) {
+                if (top == stack.length) stack = Arrays.copyOf(stack, top * 2);
+                stack[top++] = r;
+            }
+            for (int j = 0; j < -ch && top > 0; j++) top--;
+        }
+        int out = Math.min(yards, top - in.counts[t]);
+        for (int j = 0; j < out; j++) in.logChange[stack[j]]--;
+    }
+
     private static void addWork(DistrictPlan.Input in, long x, long y, long w, long h) {
         if (x >= 1 && y >= 1 && x + w <= DISTRICT && y + h <= DISTRICT) in.works.add(new int[] { (int) x, (int) y, (int) w, (int) h });
     }
@@ -9890,7 +9917,9 @@ public final class CityMap {
         // ...less its Rail Terminals and Rail Depots the runs draw as yards (0.7.89; since FR7 slice 3 each of its own type).
         for (int t = 0; t < types.length && t < in.counts.length; t++) {
             if (types[t] == null || !types[t].terminal()) continue;
-            in.counts[t] -= Math.min(yardsOf(d, t), in.counts[t]);
+            int yards = Math.min(yardsOf(d, t), in.counts[t]);
+            in.counts[t] -= yards;
+            if (yards > 0) yardUnitsOut(in, t, yards);
         }
         // ...and its terminals and tank farms the shore holds (0.7.97).
         if (!shore.isEmpty()) for (int t : shoreTypes()) if (t < in.counts.length) in.counts[t] = Math.max(0, in.counts[t] - shoreOf(d, t));

@@ -406,6 +406,9 @@ import java.util.Map;
  *      six months of arrivals on (WN3-M(b); green on main).
  *  22. (batch MF2) A STORE LEAVING: the same district without the works, a Convenience Store leaving takes its own box out of the plan and no other
  *      box moves or is new (HD1-M; green on main).
+ *  23. (batch MF2) A RAIL DEPOT LEAVING THE DISTRICT THAT STANDS THE YARD: 20's city, a second depot in the yard's district with works placed
+ *      between and after the two, then one depot leaves: its own box goes and no other box moves or is new (main's playtest, m2396, district (-3,-2):
+ *      the plan squared the yard's depot away as the newest, so the departure made the older one the yard's and the boxes after it moved).
  *
  * Since 0.7.99 (batch W1, fewer and bigger deposits, in clusters) the
  * default world's site has no iron within ten kilometres, nor its dry place's
@@ -564,6 +567,7 @@ public class MapCheck {
         yardStaysWithItsDistrict();
         boughtInsideBuiltDistrict();
         aStoreLeaves();
+        aDepotLeavesTheYardsDistrict();
         fullCopy(sq);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -14134,5 +14138,59 @@ public class MapCheck {
         }
         check("a Convenience Store leaving takes one box out of the plan and no other moves: " + BUILT_DEPARTURES + " departures, one box gone each time (" + gone + "), " + moved + " others moved, " + added
                 + " boxes new; the type's drawn count fell " + (drawnBefore - drawnAfter) + " in all", gone == BUILT_DEPARTURES && moved == 0 && added == 0 && drawnBefore - drawnAfter == BUILT_DEPARTURES && c.reconciled);
+    }
+
+    /* =====================================================================
+       23. A RAIL DEPOT LEAVING THE DISTRICT THAT STANDS THE YARD (batch MF2, 2026-11-08)
+       ===================================================================== */
+
+    /*
+     * WHY (main's own playtest red, 0.9.49, m2395 to m2396, district (-3,-2): "3 of its 17 boxes moved: 2 x Wind Farm, 1 x Assembly Plant"): the district
+     * stood the city's one yard and counted two Rail Depots, one from m2243 and one from m2300; the plan was handed one depot less than its log stood
+     * and squared the log by leaving out the newest standing one. At m2396 one depot left - the newest, as a departure is - so the plan's count fell to
+     * none and the older depot was left out instead, from m2243 on: every box placed after it was placed again with its ground free. MF2 takes the
+     * yard's own unit out of the log the plan is given as the oldest standing (CityMap.yardUnitsOut()), so the departure takes its own box.
+     * The fixture causes it on 20's city: the first depot lays the yard in the second district, works arrive, a second depot arrives there, works
+     * arrive after it, and one depot leaves.
+     */
+
+    /** The months of works 23 gives the yard's district before its second Rail Depot and after it, YARD_WORKS a month. */
+    static final int DEPOT_LEAVES_MONTHS = 3;
+
+    static void aDepotLeavesTheYardsDistrict() {
+        out.println("\n--- 23. a Rail Depot leaving the district that stands the yard takes only its own box out of the plan (MF2; main's playtest, m2396) ---");
+        YardCity c = new YardCity();
+        CityMap m = c.map;
+        c.model[c.depot] = 1;
+        c.run();
+        long[] yard = m.runs().yards().isEmpty() ? null : m.runs().yards().get(0);
+        CityMap.District stands = yardDistrict(m, yard);
+        for (int i = 0; i < DEPOT_LEAVES_MONTHS; i++) {
+            c.model[c.wind] += YARD_WORKS;
+            c.run();
+        }
+        c.model[c.depot] = 2;
+        c.run();
+        for (int i = 0; i < DEPOT_LEAVES_MONTHS; i++) {
+            c.model[c.wind] += YARD_WORKS;
+            c.run();
+        }
+        boolean ready = stands != null && stands.count(c.depot) == 2 && m.runs().yards().size() == 1 && m.yardsOf(stands, c.depot) == 1 && c.reconciled;
+        check("fixture: one yard in the frame of the district that counts both Rail Depots (" + (stands == null ? "none" : stands.count(c.depot) + " there, dealt "
+                + m.yardsOf(stands, c.depot)) + "), works placed between the two arrivals and after them (" + (stands == null ? 0 : stands.count(c.wind)) + " Wind Farms)",
+                ready && stands.count(c.wind) == 2 * DEPOT_LEAVES_MONTHS * YARD_WORKS);
+        if (!ready) return;
+        Snap before = new Snap(m, stands);
+        c.model[c.depot] = 1;
+        c.run();
+        Snap after = new Snap(m, stands);
+        int gone = movedOf(before.boxes, after.boxes), added = movedOf(after.boxes, before.boxes), goneDepots = 0;
+        for (PlanBox b : before.boxes) if (!after.boxes.contains(b) && b.type() == c.depot) goneDepots++;
+        out.printf("      the yard's district: %d boxes before, %d not in the plan after (%d of them Rail Depots), %d new; it counts %d depot(s), dealt %d yard(s)%n",
+                before.boxes.size(), gone, goneDepots, added, stands.count(c.depot), m.yardsOf(stands, c.depot));
+        check("fixture: one Rail Depot leaves the district that stands the yard, and the yard stays its (" + stands.count(c.depot) + " counted, " + m.yardsOf(stands, c.depot) + " dealt, "
+                + m.runs().yards().size() + " laid)", stands.count(c.depot) == 1 && m.yardsOf(stands, c.depot) == 1 && m.runs().yards().size() == 1 && c.reconciled);
+        check("a Rail Depot leaving takes its own box out of the plan and no other box moves or is new (" + gone + " gone of " + before.boxes.size() + ", " + goneDepots
+                + " of them a Rail Depot; " + added + " new)", gone == 1 && goneDepots == 1 && added == 0);
     }
 }
