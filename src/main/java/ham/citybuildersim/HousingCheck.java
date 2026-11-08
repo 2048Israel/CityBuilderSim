@@ -639,12 +639,26 @@ public class HousingCheck {
            templates here, never typed: a Studio (80 units) and a Low-Rise (63)
            each have the two, a House (one unit) has none.
 
-           THE FIXTURE CAUSES THE CONDITION: stores whose posts take every
-           diploma the small city has, so a Studio's two diploma posts have no
-           spare worker to go to; the builders are pinned to their crews as
-           InvestCheck's section 3 pins them, because a village this size staffs
-           its depots at a seventh and the landlords hold their orders to the
-           months of work the sites can do - a different question from staffing.
+           THE FIXTURE CAUSES THE CONDITION (HD1; re-caused RE2, 2026-11-08):
+           the stores, depots and plants are built and the city is run 24 months
+           with the landlords HELD (BusinessInvestment.holdSector), so they own
+           no posts and build no beds of their own. The landlords never ask the
+           staffing gate, so left free they order Studios and Low-Rises through
+           those months themselves: measured, that city is 1,148 people, 493
+           posts and 1,598 beds, jobs x 2.25 under the beds and the landlords
+           already holding posts, and the city could staff all of a Studio's
+           (the beds they built brought the people to fill the posts). Held, it
+           is 106 people, 453 posts and 172 beds: every band has more posts than
+           workers, the diploma band included, so a Studio's two diploma posts
+           have no spare worker (0% of them, the bar is 80%). The builders are
+           still pinned to their crews as InvestCheck's section 3 pins them,
+           because a village this size staffs its depots at a seventh and the
+           landlords hold their orders to the months of work the sites can do -
+           a different question from staffing; at the check none of their crews
+           is laid off (no posts withheld, not idle at the core crew), so IC1's
+           spare crews add no worker here. The hold is RELEASED just before the
+           plan is asked, so the landlords order the home the city could not
+           staff as they would in any city, and own no posts until it stands.
            =================================================================== */
         System.out.println("\n--- the landlords build before anyone can staff them ---");
 
@@ -653,6 +667,7 @@ public class HousingCheck {
         ham.citybuildersim.sectors.RealEstate landlords = staffed.getSectors().realEstate();
         staffed.getGovernmentInvestor().spend(-4_000_000);
         staffed.getLandManager().setOwnedSqFt(staffed.getLandManager().getOwnedSqFt() + 200_000_000L);
+        staffed.getBusinessInvestment().holdSector(landlords.key());
 
         /* ---- the posts, by the NAA rule, read from the templates ---- */
         final int naaFurtherTeamMemberUnits = 51;
@@ -709,6 +724,7 @@ public class HousingCheck {
                 !landlords.ordersOnlyWhatItCanStaff() && othersAsk);
 
         /* ---- the plan, the card ---- */
+        staffed.getBusinessInvestment().releaseSector(landlords.key());
         BusinessInvestment.Decision ordered = landlords.plan(staffed.getBusinessInvestment(), staffed);
         System.out.println("   " + ordered.reason
                 + (ordered.template == null ? "" : " -> " + ordered.quantity + " x " + ordered.template.getName()));
