@@ -1,17 +1,19 @@
-# gate of Merge batch/GT2: a timing red main also misses re-runs nothing: `ship.sh`'s paired rounds (`CBS_TIMING_ROUNDS` 3, main's classes beside the merge's) run for every red timing harness, and SaveSlotCheck's "the median due month ... holds the clock at most CLOCK_MS (25 ms)" is over on main itself under the lanes' load (30-50 ms) at nearly every gate since 2026-11-05, so a gate spends 20-60 minutes (rounds of 7-27 min) to conclude it is not the batch's (R0d's gate 110 min, FD1's first 102, against 37-43 min without the rounds). Judge a timing red against main's own same-day figure first (the last gate's `timing.tsv` or the nightly's, recorded) and run the rounds only when the merge is over it by the margin, or re-measure SaveSlotCheck's budget on a loaded PC; a process batch, one in, one out (Jerus, 2026-11-07: "Yes, queue it"), 0.9.47
-# date: 2026-11-07
+# gate of Merge batch/CX2: what an Opus session re-sends each step: a lighter start and a slower climb, CX1's work for the Opus sessions, now about three-quarters of the plan's usage (a session here holds about 93k before a first read: built-in tools 42k, connectors 20.5k, some of them never called by a batch); measured by kind of session from the transcripts, the cuts the table supports, CX2-M after; a process batch, one in, one out (Jerus, 2026-11-07: "yes start it if orchestrator says yes"; started as a third lane), 0.9.47
+# date: 2026-11-08
 # earth-2.bin: named
 # nightly: 2026-11-07 00:56 0.9.35 a260d4f1 4,000 months: OK in 121 s
-# suite: 186 harnesses run in 1433s: 181 passed, 5 failed
-# timing: 16 harnesses run in 1101s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
-# timing red not the batch's (paired): EarthTerrainCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): EarthTerrainCheck | the Earth screen: 198 tiles at Rotterdam's site - ground, plans, paint and raster - in no more than MapCheck.SCREEN_MS FAIL  86.9 ms (0.439 a tile), 17,690 buildings; the first time, its plans made, 792 ms; the square city 121 districts a side, laid in 20915 ms; the screen 3% sea, 4% fresh   [main 77.8 ms, batch 83.3 ms (+7.1%), budget 80 ms: within 15% of main's]
-# timing red not the batch's (paired): EarthTerrainCheck | 1 FAILED   [the harness's own count of the timing reds above]
+# suite: 186 harnesses run in 1409s: 181 passed, 5 failed
+# timing: 16 harnesses run in 1070s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 44.7 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 43.1 ms, batch 38.5 ms (-10.9%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 36.0 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 42.3 ms, batch 41.3 ms (-2.2%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 22.0 ms, batch 20.8 ms (-5.3%), budget 19 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 23.2 ms, batch 26.9 ms (+15.9%), budget 19 ms: main over the budget too]
 # timing red not the batch's (paired): MapCheck | 3 FAILED   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): KeptCheck | exit 1   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): KeptCheck | the whole kept chrome's month is within KEPT_ALL_CHROME_MS (8.0 ms)      FAIL   [main 8.46 ms, batch 7.81 ms (-7.8%), budget 8 ms: within 15% of main's]
+# timing red not the batch's (paired): KeptCheck | 1 FAILED   [the harness's own count of the timing reds above]
+# figure	SaveSlotCheck	the median due month, 36.0 ms, holds the clock at most CLOCK_MS (25 ms)	41.3333	25	ms	FAIL	1	1
+# figure	MapCheck	a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month	26.8594	19	ms	FAIL	1	1
 MonetaryCheck | exit 1
 MonetaryCheck | ...and a month's delay in the hand moves them less than the allowance FAIL
 MonetaryCheck | 1 FAILED
