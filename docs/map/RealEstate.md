@@ -1,6 +1,6 @@
 # RealEstate.java - 938 lines · 93 methods · 9 constants · sectors
 
-`ham/citybuildersim/sectors/RealEstate.java` - generated 2026-11-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/RealEstate.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
 
 > The landlords. Own every home in the city and let them by the month.
 > 
