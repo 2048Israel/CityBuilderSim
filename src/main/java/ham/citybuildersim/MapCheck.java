@@ -113,6 +113,12 @@ import java.util.Map;
  *      work (runs/fixRD7-notes.md 4 and its star 4, and 7; runs/fixO11-notes.md
  *      5); the wall clock is printed beside it, and a JVM that cannot measure
  *      a thread's CPU is timed on the wall clock and says so;
+ *  5b. (batch UP8, 2026-11-08) the 10B copy once it is full, run last for it fills the copy: +0.01% a month from the copy's counts until a month
+ *      puts buildings into the district with the most room left because no district has room for them (CityMap.lastOverflows(), within
+ *      FULL_MONTHS_MAX months), then twelve months timed as section 5 times them, each placing past every district's room, and after each the
+ *      districts sum to the counts exactly, every log sums to its district's counts and the room the walks read (CityMap.freeKept()) is each
+ *      district's own; the months' figures and the collections inside them are printed and no bound is set (a full city's month went to the
+ *      scan of every district for the roomiest: 12 to 32 ms before the room tree);
  *   6. the city is drawn as what it has (0.7.64, batch L2): a new default
  *      city as founded, a month on and a year on draws its own buildings and
  *      nothing else - at its founding the bank and bare ground, no road, no
@@ -546,6 +552,7 @@ public class MapCheck {
         curvesDrawn(sq);
         redrawsOnlyWhatMoved(city, sq);
         nationsNearView();
+        fullCopy(sq);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -4425,8 +4432,11 @@ public class MapCheck {
     /** Whether every district's log sums, type by type, to its counts: what a log is for, and what a sidecar read back is held to (CL3). */
     static boolean logsAddUp(CityMap m) {
         if (m == null) return false;
+        // One array for every district (no garbage: section 5 runs this between its timed months).
+        int[] sums = null;
         for (CityMap.District d : m.districts()) {
-            int[] sums = new int[d.counts.length];
+            if (sums == null || sums.length != d.counts.length) sums = new int[d.counts.length];
+            else Arrays.fill(sums, 0);
             for (int k = 0; k < d.logSize(); k++) sums[d.logType[k]] += d.logChange[k];
             if (!Arrays.equals(sums, d.counts)) return false;
         }
@@ -4491,6 +4501,13 @@ public class MapCheck {
     /** The clock a month's bound reads, in ns: the main thread's CPU, or the wall clock where CPU_TIMED is false. */
     static long monthClock() {
         return CPU_TIMED ? THREADS.getCurrentThreadCpuTime() : System.nanoTime();
+    }
+
+    /** The collections the JVM's collectors have made so far, summed (a G1 concurrent cycle counts in its own collector): read outside a timed month, before and after it. */
+    static long collections() {
+        long n = 0;
+        for (java.lang.management.GarbageCollectorMXBean b : java.lang.management.ManagementFactory.getGarbageCollectorMXBeans()) n += Math.max(0, b.getCollectionCount());
+        return n;
     }
 
     static void cost(Squares sq) {
@@ -4562,42 +4579,122 @@ public class MapCheck {
             // Each month on the bound's clock (monthClock(): the main thread's CPU) and on the wall clock; the
             // bound reads the year of +0.01% and the -0.05%, the worst of them.
             double worst = 0, worstsWall = 0, worstWall = 0, firstMs, firstWall, downMs, downWall;
+            // The collections inside the bounded months (the year of +0.01% and the -0.05%: read before and after each, outside its clock), and whether after
+            // every month the logs sum to the counts and the room the walks read (CityMap.freeKept()) is each district's own.
+            long collected = 0, g0;
+            boolean kept = true;
             for (int t = 0; t < c.length; t++) c[t] += c[t] / 2000;
             if (mine >= 0) c[mine] = Math.min(c[mine], sites);
+            // UP8 (2026-11-08): the map's month on its own garbage, as the System.gc() before the screen rounds does for them. The earlier sections
+            // leave 580 to 750 MB live, so G1 runs about 25 concurrent marking cycles in a MapCheck run, each ending in a Remark pause of 2 to 5 ms;
+            // one that landed inside one of the 13 timed months took a month of 1 to 2 ms to 5 to 8 (the slow months were the ones with a concurrent
+            // collection, none a young one). The bound is the map's own work.
+            System.gc();
             long w0 = System.nanoTime(), t0 = monthClock();
             m.reconcile(c);
             firstMs = (monthClock() - t0) / 1e6;
             firstWall = (System.nanoTime() - w0) / 1e6;
+            kept &= logsAddUp(m) && m.freeKept();
             StringBuilder months = new StringBuilder();
             for (int month = 0; month < 12; month++) {
                 for (int t = 0; t < c.length; t++) c[t] += c[t] / 10_000;
                 if (mine >= 0) c[mine] = Math.min(c[mine], sites);
+                g0 = collections();
                 w0 = System.nanoTime();
                 t0 = monthClock();
                 m.reconcile(c);
                 double ms = (monthClock() - t0) / 1e6;
                 double wall = (System.nanoTime() - w0) / 1e6;
+                collected += collections() - g0;
+                kept &= logsAddUp(m) && m.freeKept();
                 if (ms > worst) { worst = ms; worstsWall = wall; }
                 worstWall = Math.max(worstWall, wall);
                 months.append(String.format(" %.2f/%.2f", ms, wall));
             }
             for (int t = 0; t < c.length; t++) c[t] -= c[t] / 2000;
+            g0 = collections();
             w0 = System.nanoTime();
             t0 = monthClock();
             m.reconcile(c);
             downMs = (monthClock() - t0) / 1e6;
             downWall = (System.nanoTime() - w0) / 1e6;
+            collected += collections() - g0;
+            kept &= logsAddUp(m) && m.freeKept();
             if (downMs > worst) { worst = downMs; worstsWall = downWall; }
             worstWall = Math.max(worstWall, downWall);
             String size = TIMES[i] < 10_000 ? "5" : "10";
             String clock = CPU_TIMED ? "the main thread's CPU" : "the wall clock (this JVM cannot read a thread's CPU finely enough)";
             out.printf("      x %,.0f, in ms of %s / on the wall clock: +0.05%% in %.2f/%.2f, then a year of +0.01%%:%s,"
-                    + " then -0.05%% in %.2f/%.2f; the bounded months' worst %.2f (its wall clock %.2f), the wall clock's worst %.2f%n",
-                    TIMES[i], clock, firstMs, firstWall, months, downMs, downWall, worst, worstsWall, worstWall);
+                    + " then -0.05%% in %.2f/%.2f; the bounded months' worst %.2f (its wall clock %.2f), the wall clock's worst %.2f;"
+                    + " collections inside its bounded months: %d%n",
+                    TIMES[i], clock, firstMs, firstWall, months, downMs, downWall, worst, worstsWall, worstWall, collected);
             check("at " + size + " billion a month's change takes no more than 5 ms of "
                     + (CPU_TIMED ? "the main thread's CPU" : "the wall clock"), Timing.within(worst, RECONCILE_MS));
             check("...and its districts still sum to the counts exactly", Arrays.equals(m.totals(), c));
+            check("...and after every month every district's log sums to its counts, and the room the walks read is each district's own", kept);
         }
+    }
+
+    /** The most months of +0.01% section 5b grows the 10B copy before it must be full (it was full after about 32 in UP8's measure). */
+    static final int FULL_MONTHS_MAX = 240;
+
+    /** Months section 5b times once the copy is full. */
+    static final int FULL_TIMED = 12;
+
+    /**
+     * 5b. The 10B copy once it is full: no district has room for what a month adds, so every type's growth goes to the district with the most room left
+     * (UP8: that was a scan of all 29,255 districts' objects, 12 to 32 ms a month, with the cursors at the ends). No bound is set; the figures are printed.
+     * Run last: it fills the copy.
+     */
+    static void fullCopy(Squares sq) {
+        out.println("\n--- 5b. the 10B copy once it is full: what no district has room for, every month ---");
+        int at = -1;
+        for (int i = 0; i < TIMES.length; i++) if (TIMES[i] == 19_629) at = i;
+        CityMap m = sq.maps[at];
+        long[] c = m.totals();
+        int mine = -1;
+        for (BuildingVisual.Type t : m.types()) if (t != null && t.id() == Mining.IRON_MINE) mine = t.id();
+        long sites = mine >= 0 ? mineSites(m, mine) : 0;
+        System.gc();
+        int filled = 0;
+        boolean full = false;
+        while (!full && filled < FULL_MONTHS_MAX) {
+            for (int t = 0; t < c.length; t++) c[t] += c[t] / 10_000;
+            if (mine >= 0) c[mine] = Math.min(c[mine], sites);
+            m.reconcile(c);
+            filled++;
+            full = m.lastOverflows() > 0;
+        }
+        // The timed months as section 5 times them (monthClock() and the wall clock); the rest is read outside the clock.
+        double[] cpu = new double[FULL_TIMED], wall = new double[FULL_TIMED];
+        long collected = 0, g0;
+        int overflows = 0;
+        boolean exact = true;
+        StringBuilder months = new StringBuilder();
+        for (int month = 0; month < FULL_TIMED; month++) {
+            for (int t = 0; t < c.length; t++) c[t] += c[t] / 10_000;
+            if (mine >= 0) c[mine] = Math.min(c[mine], sites);
+            g0 = collections();
+            long w0 = System.nanoTime(), t0 = monthClock();
+            m.reconcile(c);
+            cpu[month] = (monthClock() - t0) / 1e6;
+            wall[month] = (System.nanoTime() - w0) / 1e6;
+            collected += collections() - g0;
+            if (m.lastOverflows() > 0) overflows++;
+            exact &= Arrays.equals(m.totals(), c) && logsAddUp(m) && m.freeKept();
+            months.append(String.format(" %.2f/%.2f", cpu[month], wall[month]));
+        }
+        double[] byCpu = cpu.clone(), byWall = wall.clone();
+        Arrays.sort(byCpu);
+        Arrays.sort(byWall);
+        int mid = FULL_TIMED / 2;
+        String clock = CPU_TIMED ? "the main thread's CPU" : "the wall clock (this JVM cannot read a thread's CPU finely enough)";
+        out.printf("      x %,.0f filled after %d months of +0.01%%, then %d months in ms of %s / on the wall clock:%s; median %.2f/%.2f, worst %.2f/%.2f;"
+                + " collections inside them: %d%n", TIMES[at], filled, FULL_TIMED, clock, months, (byCpu[mid - 1] + byCpu[mid]) / 2,
+                (byWall[mid - 1] + byWall[mid]) / 2, byCpu[FULL_TIMED - 1], byWall[FULL_TIMED - 1], collected);
+        check("the 10B copy fills within " + FULL_MONTHS_MAX + " months of +0.01%: a month puts buildings where no district has room for them", full);
+        check("...and every one of the " + FULL_TIMED + " months timed after it places past every district's room", overflows == FULL_TIMED);
+        check("...and after every one the districts sum to the counts exactly, every log sums to its district's counts and the room the walks read is each district's own", exact);
     }
 
     /* =====================================================================
