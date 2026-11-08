@@ -6840,7 +6840,14 @@ public final class CityMap {
         minesKey = key;
     }
 
-    /** Each district's Rail Terminals and Depots the runs draw as yards, by its index and then the terminal type's place among the terminal types (terminalTypes()): the yards of each type dealt to the districts holding that type in the map's order, so the rest are their plans' (kept against the runs' version). */
+    /**
+     * Each district's Rail Terminals and Depots the runs draw as yards, by its index and then the terminal type's place among the terminal types (terminalTypes()), so the rest are
+     * their plans' (kept against the runs' version). MF2, 2026-11-08: each yard is dealt to the district whose frame holds its ground (yardFrame()) when that district counts a
+     * building of the yard's type not yet dealt a yard; the yards left over, to the districts holding that type in the map's order.
+     * WHY: until MF2 every yard went to the first district in the map's order that counted the type, so when a Rail Depot arrived in a district earlier in that order the one
+     * yard's share jumped to it: the district that stood the yard on its ground drew its own depot as a box at its dated place in the log, the boxes after it moved (WN3-M(a),
+     * Historical's city at m3995: district (-2,-3), 10 boxes), and the new depot vanished into a yard that stands in another district's frame (MapCheck 20).
+     */
     private int[][] yardShare;
     private long yardShareAt = Long.MIN_VALUE;
 
@@ -6858,6 +6865,13 @@ public final class CityMap {
 
     private int[] terminalTypesKept;
 
+    /** The district whose frame holds more of a yard's plots than any other frame does (workIn(): the plan the yard's ground is given to), or null where the map has none there. */
+    private District yardFrame(long[] yard) {
+        long fx = frameHolding(yard[0], yard[2]), fy = frameHolding(yard[1], yard[3]);
+        if (fx == Long.MIN_VALUE || fy == Long.MIN_VALUE) return null;
+        return districtAt(key((int) (fx / DISTRICT - baseDX), (int) (fy / DISTRICT - baseDY)));
+    }
+
     /** How many of district d's buildings of terminal type t are the runs' yards. */
     int yardsOf(District d, int t) {
         long at = World.mix(runs.version() ^ changes);
@@ -6867,15 +6881,27 @@ public final class CityMap {
             yardShareAt = at;
             // The runs' yards of each type, from the sequence: the first of them laid (those the ground had no place for are the last).
             int[] seq = haveSequence();
-            int laid = runs.yards().size();
+            List<long[]> laidYards = runs.yards();
+            int laid = laidYards.size();
             int[] left = new int[tt.length];
-            for (int i = 0; i < seq.length && i < laid; i++) for (int k = 0; k < tt.length; k++) if (tt[k] == seq[i]) left[k]++;
+            for (int i = 0; i < seq.length && i < laid; i++) {
+                for (int k = 0; k < tt.length; k++) {
+                    if (tt[k] != seq[i]) continue;
+                    // (MF2) A yard is the district's whose frame holds its ground, where that district counts a building of its type with no yard yet.
+                    District f = yardFrame(laidYards.get(i));
+                    int n = f == null || tt[k] >= f.counts.length ? 0 : f.counts[tt[k]];
+                    if (f != null && f.index < yardShare.length && yardShare[f.index][k] < n) yardShare[f.index][k]++;
+                    else left[k]++;
+                }
+            }
+            // ...and those left over, in the map's order (as before MF2).
             for (int k = 0; k < tt.length; k++) {
                 for (int i = 0; i < districts.size() && left[k] > 0; i++) {
                     District o = districts.get(i);
                     int n = tt[k] < o.counts.length ? o.counts[tt[k]] : 0;
-                    int take = Math.min(n, left[k]);
-                    yardShare[i][k] = take;
+                    int take = Math.min(n - yardShare[i][k], left[k]);
+                    if (take <= 0) continue;
+                    yardShare[i][k] += take;
                     left[k] -= take;
                 }
             }
@@ -7020,12 +7046,45 @@ public final class CityMap {
 
     /** Whether the frame whose first plot is f holds more of the n plots from p than any other frame does; a tie to the first. */
     private static boolean holdsMost(long p, long n, long f) {
+        long bestFrame = frameHolding(p, n);
+        return bestFrame != Long.MIN_VALUE && f == bestFrame;
+    }
+
+    /** The first plot of the frame that holds more of the n plots from p than any other frame does (a tie to the first), Long.MIN_VALUE for none. */
+    private static long frameHolding(long p, long n) {
         long best = 0, bestFrame = Long.MIN_VALUE;
         for (long k = Math.floorDiv(p, DISTRICT); k <= Math.floorDiv(p + n - 1, DISTRICT); k++) {
             long held = Math.min(p + n, k * DISTRICT + DISTRICT) - Math.max(p, k * DISTRICT + 1);
             if (held > best) { best = held; bestFrame = k * DISTRICT; }
         }
-        return best > 0 && f == bestFrame;
+        return bestFrame;
+    }
+
+    /**
+     * The units of terminal type t that the district's yards stand for, taken out of the log the plan is given (in.logChange, a copy):
+     * the oldest standing first - the bottom of the type's stack, which a departure (the newest first, as the plan's pop() takes them)
+     * never reaches while the yard stands - up to `yards` and no more than the log stands beyond the plan's count.
+     * WHY (MF2, 2026-11-08): the plan was handed one depot less than its log stood and squared the log by leaving out the newest
+     * standing unit (DistrictPlan.readLog()'s iExcl), so when a depot left, the depot left out became the older one, gone from its
+     * arrival on, and every box placed after it was placed again (main's playtest, m2395 to m2396, district (-3,-2): a Rail Depot
+     * gone, 3 of 17 boxes moved; MapCheck 23). With the yard's own unit the oldest, out of the log, a depot that leaves takes its own
+     * box and nothing else moves.
+     */
+    private static void yardUnitsOut(DistrictPlan.Input in, int t, int yards) {
+        int n = Math.min(in.logType.length, in.logChange.length);
+        int[] stack = new int[8];
+        int top = 0;
+        for (int r = 0; r < n; r++) {
+            if (in.logType[r] != t) continue;
+            int ch = in.logChange[r];
+            for (int j = 0; j < ch; j++) {
+                if (top == stack.length) stack = Arrays.copyOf(stack, top * 2);
+                stack[top++] = r;
+            }
+            for (int j = 0; j < -ch && top > 0; j++) top--;
+        }
+        int out = Math.min(yards, top - in.counts[t]);
+        for (int j = 0; j < out; j++) in.logChange[stack[j]]--;
     }
 
     private static void addWork(DistrictPlan.Input in, long x, long y, long w, long h) {
@@ -9858,7 +9917,9 @@ public final class CityMap {
         // ...less its Rail Terminals and Rail Depots the runs draw as yards (0.7.89; since FR7 slice 3 each of its own type).
         for (int t = 0; t < types.length && t < in.counts.length; t++) {
             if (types[t] == null || !types[t].terminal()) continue;
-            in.counts[t] -= Math.min(yardsOf(d, t), in.counts[t]);
+            int yards = Math.min(yardsOf(d, t), in.counts[t]);
+            in.counts[t] -= yards;
+            if (yards > 0) yardUnitsOut(in, t, yards);
         }
         // ...and its terminals and tank farms the shore holds (0.7.97).
         if (!shore.isEmpty()) for (int t : shoreTypes()) if (t < in.counts.length) in.counts[t] = Math.max(0, in.counts[t] - shoreOf(d, t));

@@ -1200,6 +1200,8 @@ public final class DistrictPlan {
         int[][] free, freeF, near, touch, failW, failH, failFW, failFH, mergeFailW, mergeFailH;
         /** The avenues' state (CL4): the plots decided, the counts, the cell-street junctions kept. */
         byte[] avDone;
+        /** The plots the avenue made a street of (MF2's avOwn), kept with the rest so a plan resumed here takes up only those. */
+        boolean[] avOwn;
         int[] avN, avKept;
         int avKeptN;
         /** The curves' state (CL4, slice C): the plots kept free of buildings, the curves laid, the crescents the ground refused. */
@@ -2521,6 +2523,7 @@ public final class DistrictPlan {
                     int r = in.fixedLog[fxNext++];
                     if (keeping && !touched[r >>> 8]) noteTouch(r >>> 8);
                     fx[r >>> 8] = (byte) (r & 15);
+                    if ((r & 15) == FIXED_RESERVE) rsvNote(r >>> 8);
                     laid++;
                 }
             }
@@ -2532,6 +2535,8 @@ public final class DistrictPlan {
                 wholePass = true;
                 ground();
             }
+            // No street across an interchange's reserve laid after them (MF2).
+            if (nRsv > 0) streetsOffReserve();
             // Each new plot is as a build begins; in the interior of a cell that is open it is room (freshCell()'s rule, less
             // streets: a plot just bought holds none), and that cell looks again.
             boolean[] roomed = new boolean[CELLS], refree = new boolean[CELLS];
@@ -2581,6 +2586,53 @@ public final class DistrictPlan {
             for (int k = bFar + 1; k < order.length; k++) next[m++] = order[k];
             order = Arrays.copyOf(next, m);
             bFar = far;
+        }
+
+        /*
+         * NO AVENUE THROUGH AN INTERCHANGE'S RESERVE LAID AFTER IT (batch MF2, 2026-11-08). A reserve's ground is ground the painter
+         * draws its highways, slips and loops on (FIXED_RESERVE). A reserve there from the start - or a cell that opens after it -
+         * gets no avenue on it: layAvenues() does not lay an avenue at a yard's, a reserve's or a mine's site (avKind()). A reserve
+         * laid AFTER its avenue was (the interchange built years into a city: UP5's THE RESERVES DATED, the records growGround() lays)
+         * left every avenue plot it lay on a street, and Jerus's Bergen city (month 2,418) drew a diagonal avenue straight through
+         * a cloverleaf's loops, joined to no lane. WHY it was missed: FX7's rule is that a street under a run laid later stays (a
+         * highway's deck, a track's, a yard's), which is right for the cells' own streets, whose buildings stand by them, and was
+         * never looked at for the avenue, which no building needs but the plots beside it.
+         * HOW: the plots a record makes a reserve's are listed as growGround() lays the records (rsvNote()), and once the ground is
+         * worked out again each of them an avenue was laid on is taken up (streetsOffReserve()): decided not laid and counted as not
+         * laid at a reserve, as the same reserve from the start counts it (avenueBroken), the avenue standing on both sides and
+         * ending at the reserve's edge, where the streets it met go on as they did; a plot the avenue made a street (avOwn) is
+         * no street any more and is the reserve's again, a plot it ran along a street of the cell's stays that street's. The
+         * streets of the cells themselves stay (FX7: the buildings beside the reserve stand by them - 7 boxes of MF2's fixture
+         * were out of reach of every street when they were taken up too, and moving them is MF1's business, not this).
+         */
+
+        /** The plots the records just laid made a reserve's (rsvNote()), and how many: what streetsOffReserve() looks at. */
+        int[] rsvAt = new int[64];
+        int nRsv;
+
+        /** Plot p just made a reserve's: listed. */
+        void rsvNote(int p) {
+            if (nRsv == rsvAt.length) rsvAt = Arrays.copyOf(rsvAt, nRsv * 2);
+            rsvAt[nRsv++] = p;
+        }
+
+        /** The avenue plots on the reserve plots just laid taken up: each given back to the avenue's counts, decided not laid and counted not laid at a reserve; the street the avenue made of it (avOwn) no street, no room. */
+        void streetsOffReserve() {
+            for (int k = 0; k < nRsv; k++) {
+                int p = rsvAt[k];
+                if (fx[p] != FIXED_RESERVE || avDone[p] != 1) continue;
+                avUnlay(p);
+                avN[AV_BROKEN]++;
+                if (!avOwn[p]) continue;
+                avOwn[p] = false;
+                setStr(p, false);
+                under[p] = false;
+                art[p] = false;
+                blvd[p] = false;
+                role[p] = 0;
+                occ[p] = cvKeep[p] ? -1 : occStart[p];
+            }
+            nRsv = 0;
         }
 
         /** The plots of the call (grown[0..n)) stamped grownStamp, and cellsOnGrown()'s laying under way: while onBought, lay() lays only the plots just bought. */
@@ -3157,6 +3209,8 @@ public final class DistrictPlan {
                 Arrays.fill(blvd, false);
                 Arrays.fill(role, (byte) 0);
                 Arrays.fill(avDone, (byte) 0);
+                Arrays.fill(avOwn, false);
+                nRsv = 0;
                 Arrays.fill(avN, 0);
                 avKeptN = 0;
                 cvReset();
@@ -3494,6 +3548,7 @@ public final class DistrictPlan {
             t.blvd = copyInto(blvd, t.blvd);
             t.role = copyInto(role, t.role);
             t.avDone = copyInto(avDone, t.avDone);
+            t.avOwn = copyInto(avOwn, t.avOwn);
             t.avN = copyInto(avN, avN.length, t.avN);
             t.avKept = copyInto(avKept, avKeptN, t.avKept);
             t.avKeptN = avKeptN;
@@ -3551,6 +3606,8 @@ public final class DistrictPlan {
             System.arraycopy(t.blvd, 0, blvd, 0, AREA);
             System.arraycopy(t.role, 0, role, 0, AREA);
             System.arraycopy(t.avDone, 0, avDone, 0, AREA);
+            System.arraycopy(t.avOwn, 0, avOwn, 0, AREA);
+            nRsv = 0;
             System.arraycopy(t.avN, 0, avN, 0, avN.length);
             avKeptN = t.avKeptN;
             if (avKept.length < avKeptN) avKept = new int[Math.max(avKeptN, avKept.length * 2)];
@@ -3807,6 +3864,8 @@ public final class DistrictPlan {
         final byte[] avDone = new byte[AREA];
         /** ...and the kind of fixed ground each laid plot was laid on (THE RUNS DATED: the ground may be another by the time it is taken up, and the counts of what lies beneath and across are given back as they were taken). */
         final byte[] avFx = new byte[AREA];
+        /** The plots an avenue made a street of, where none was (MF2): a plot it ran along a street of a cell's is that street's still when the avenue is taken up there. */
+        final boolean[] avOwn = new boolean[AREA];
         final int[] avN = new int[8];
         int[] avKept = new int[512];
         int avKeptN;
@@ -3949,6 +4008,7 @@ public final class DistrictPlan {
                     if (!str[p] && !under[p]) {
                         // Made a street now (not a ring's or a cell street's plot it runs over): avAlone() may take it up again.
                         avNow[p] = avNowStamp;
+                        avOwn[p] = true;
                         if (nAvNow == avNowList.length) avNowList = Arrays.copyOf(avNowList, nAvNow * 2);
                         avNowList[nAvNow++] = p;
                     }

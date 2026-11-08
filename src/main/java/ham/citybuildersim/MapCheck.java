@@ -397,6 +397,18 @@ import java.util.Map;
  *      and the same box round Rotterdam by none; the answer is kept for the same box and spot; planeBorders() of the Baarle lines on a 1,389 x 868
  *      frame fitted on the box, and on a frame at the closest scale on one of the line's own vertices, keeps every vertex within DRAW_MARGIN_PX of
  *      the canvas, at the level a pixel of PLOT_M / 1000 / scale km takes; drawsOn() is true for an Earth world and false for a generated one.
+ *  20. (batch MF2) THE ONE YARD STAYS WITH ITS DISTRICT: a city with one Rail Depot stands its one yard in the frame of the district that counts it; a
+ *      Rail Depot then arrives in a district earlier in the map's order (the later district full): the yard's share stays with the district that
+ *      stands it (CityMap.yardsOf), and in the plan of neither district does a box that stood move - the arrival is the one new box, in its own
+ *      district's plan.
+ *  21. (batch MF2) GROUND BOUGHT INSIDE A BUILT DISTRICT WITH LARGE WORKS STANDING: a district of houses, Convenience Stores and Rod Mills, Meat
+ *      Works and Bottling Plants filled to BUILT_SHARE of its room, then 112 plots bought inside its frame: no box of its plan moves, that month or
+ *      six months of arrivals on (WN3-M(b); green on main).
+ *  22. (batch MF2) A STORE LEAVING: the same district without the works, a Convenience Store leaving takes its own box out of the plan and no other
+ *      box moves or is new (HD1-M; green on main).
+ *  23. (batch MF2) A RAIL DEPOT LEAVING THE DISTRICT THAT STANDS THE YARD: 20's city, a second depot in the yard's district with works placed
+ *      between and after the two, then one depot leaves: its own box goes and no other box moves or is new (main's playtest, m2396, district (-3,-2):
+ *      the plan squared the yard's depot away as the newest, so the departure made the older one the yard's and the boxes after it moved).
  *
  * Since 0.7.99 (batch W1, fewer and bigger deposits, in clusters) the
  * default world's site has no iron within ten kilometres, nor its dry place's
@@ -552,6 +564,10 @@ public class MapCheck {
         curvesDrawn(sq);
         redrawsOnlyWhatMoved(city, sq);
         nationsNearView();
+        yardStaysWithItsDistrict();
+        boughtInsideBuiltDistrict();
+        aStoreLeaves();
+        aDepotLeavesTheYardsDistrict();
         fullCopy(sq);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -1466,7 +1482,12 @@ public class MapCheck {
 
     /** The id of the building template of that name, from the catalog. */
     static int idNamed(String name) {
-        for (BuildingsTemplate t : new BuildingCatalog().load()) if (t.getName().equals(name)) return t.getId();
+        return idNamed(new BuildingCatalog().load(), name);
+    }
+
+    /** ...and from a catalog already loaded. */
+    static int idNamed(List<BuildingsTemplate> catalog, String name) {
+        for (BuildingsTemplate t : catalog) if (t.getName().equals(name)) return t.getId();
         throw new IllegalStateException("no building named " + name);
     }
 
@@ -13835,5 +13856,341 @@ public class MapCheck {
                     runs.level == NationsMap.levelFor(World.PLOT_M / 1000 / frame.scale()) && runs.level == 0);
         }
         check("borders and nations are drawn on an Earth world and on none a generated one makes", NationsMap.drawsOn(World.Key.earth(1L, 51.44, 4.93, "earth-2:test")) && !NationsMap.drawsOn(World.Key.generated(1L)) && !NationsMap.drawsOn(null));
+    }
+
+    /* =====================================================================
+       20. THE ONE YARD STAYS WITH ITS DISTRICT (batch MF2, 2026-11-08)
+       ===================================================================== */
+
+    /*
+     * WHY (WN3-M(a), found on Historical's larger city, queued as MF2 item 2): CityMap.yardsOf() dealt the runs' yards to the districts counting a Rail Depot in the map's
+     * order, the first district first. A city has one yard however many depots it counts (a further yard is laid only beside works more than a district from every yard), so
+     * when a Rail Depot arrived in a district earlier in the order than the one that stood the yard, the yard's share moved to it: the district that stood the yard drew its
+     * own depot as a box at the place its log dates it, the boxes after it moved (m3995, district (-2,-3): 10 boxes), and the new depot vanished into a yard on another
+     * district's ground. MF2 deals a yard to the district whose frame holds it when that district counts a depot with no yard yet; only a yard no such district claims
+     * is dealt by the order.
+     *
+     * The fixture causes the condition, on the default world's dry place and no Game: two districts side by side, the first (the founding site's, 6 plots from its east
+     * edge) owned but for a strip along that edge, so the nearest crossing of the highways' lattice the city owns is across the edge, in the second, which owns a block
+     * only. One Rail Depot goes to the second district (a depot is an outer building: the last district with room), the railway starts at that crossing and lays the
+     * one yard there, in the second district's frame. The second district is then filled with works month by month until it has no room for a second depot, and
+     * the second depot goes to the first district, earlier in the map's order. The plans of both districts before it and after the month it arrives are compared.
+     */
+
+    /** Where the founding site stands in 20's first district, plots from its north-west corner: 6 plots in from its east edge, so the nearest crossing it owns is across it. */
+    static final int[] YARD_SITE_AT = { 250, 144 };
+
+    /** The strip along the first district's east edge the city does not own, in plots: wider than a crossing's reach from the site, so the hub is not in the first district. */
+    static final int YARD_STRIP = 32;
+
+    /** The block the city owns in the second district, { x0, y0, x1, y1 } in plots from its north-west corner: room for the yard and some works, none for a second depot once they stand. */
+    static final int[] YARD_NEXT = { 0, 80, 96, 208 };
+
+    /** The months the first district is given flats and the second works before the second is filled: the flats and the works, a month each. */
+    static final int YARD_MONTHS = 6, YARD_FLATS = 20, YARD_WORKS = 3;
+
+    /** 20's city: two districts, the founding site's and the one across its east edge, and the model's counts. */
+    static final class YardCity {
+        final List<BuildingsTemplate> catalog = new BuildingCatalog().load();
+        final BuildingVisual.Type[] types = BuildingVisual.table(catalog);
+        final CityMap map;
+        final long[] model = new long[types.length];
+        final int depot = idNamed(catalog, "Rail Depot"), flats = idNamed(catalog, "Low-Rise Apartments"), wind = idNamed(catalog, "Wind Farm"), small = idNamed(catalog, "Heavy Truck Plant");
+        /** The month the next one is run in. */
+        int month = 10;
+        boolean reconciled = true;
+
+        YardCity() {
+            long seed = Founding.DEFAULT_WORLD_SEED, d = CityMap.DISTRICT;
+            long[] place = dryPlace(World.of(seed));
+            long x0 = Math.floorDiv(place[0], d) * d, y0 = Math.floorDiv(place[1], d) * d;
+            double[] centre = new double[CityLand.CENTRE_FIELDS];
+            centre[CityLand.CENTRE_FIELDS - 5] = -1;
+            centre[CityLand.CENTRE_FIELDS - 4] = -1;
+            centre[CityLand.CENTRE_FIELDS - 2] = x0 + YARD_SITE_AT[0];
+            centre[CityLand.CENTRE_FIELDS - 1] = y0 + YARD_SITE_AT[1];
+            double[][] rects = { { x0, y0, x0 + d - YARD_STRIP, y0 + d },
+                { x0 + d + YARD_NEXT[0], y0 + YARD_NEXT[1], x0 + d + YARD_NEXT[2], y0 + YARD_NEXT[3] } };
+            CityLand land = CityLand.restore(World.Key.generated(seed), centre, rects, null, null, null);
+            map = CityMap.canonical(land, r -> land.amountsInOrder(r), types, new long[types.length], 0);
+        }
+
+        /** One month, the map reconciled to the model's counts as they stand. */
+        void run() {
+            reconciled &= map.reconcile(model, month++);
+        }
+    }
+
+    /** The district whose frame holds more of the yard than any other (the plan its ground is given to, CityMap.workIn()), or null. */
+    static CityMap.District yardDistrict(CityMap m, long[] yard) {
+        for (CityMap.District d : m.districts()) {
+            if (yard != null && CityMap.workIn(yard, (m.baseDX() + d.dx) * CityMap.DISTRICT, (m.baseDY() + d.dy) * CityMap.DISTRICT) != null) return d;
+        }
+        return null;
+    }
+
+    static void yardStaysWithItsDistrict() {
+        out.println("\n--- 20. the one rail yard is dealt to the district whose frame holds it: a Rail Depot arriving in a district earlier in the map's order moves no box (MF2; WN3-M(a)) ---");
+        YardCity c = new YardCity();
+        CityMap m = c.map;
+        int cellsDepot = BuildingVisual.cells(c.types[c.depot]), cellsWorks = BuildingVisual.cells(c.types[c.wind]);
+
+        // ----- one Rail Depot: the railway and its one yard, in the frame of the district that counts the depot -----
+        c.model[c.depot] = 1;
+        c.run();
+        long[] yard = m.runs().yards().isEmpty() ? null : m.runs().yards().get(0);
+        CityMap.District stands = yardDistrict(m, yard), first = m.districts().get(0);
+        boolean oneYard = m.runs().yards().size() == 1 && stands != null && stands.count(c.depot) == 1;
+        check("fixture: one Rail Depot lays one yard (" + m.runs().yards().size() + " laid), in the frame of the district that counts the depot ("
+                + (stands == null ? "none" : "(" + stands.dx + "," + stands.dy + ")") + "), which comes after the founding site's in the map's order (" + (stands == null ? -1 : stands.index) + " of "
+                + m.districts().size() + ")", oneYard && stands.index > first.index && m.districts().size() == 2);
+        if (!oneYard) return;
+
+        // ----- works in the district that stands the yard, flats in the first; then works until it has no room for a second depot -----
+        for (int i = 0; i < YARD_MONTHS; i++) {
+            c.model[c.flats] += YARD_FLATS;
+            c.model[c.wind] += YARD_WORKS;
+            c.run();
+        }
+        int guard = 4000;
+        while (stands.freeCells() >= cellsWorks && guard-- > 0) {
+            c.model[c.wind]++;
+            c.run();
+        }
+        while (stands.freeCells() >= cellsDepot && guard-- > 0) {
+            c.model[c.small]++;
+            c.run();
+        }
+        Snap standsBefore = new Snap(m, stands), firstBefore = new Snap(m, first);
+        check("fixture: the district that stands the yard counts its depot and has no room for another (" + stands.freeCells() + " free cells of " + cellsDepot + "), the yard laid as it was, and the model's yard is the district's ("
+                + m.yardsOf(stands, c.depot) + ")", stands.count(c.depot) == 1 && stands.freeCells() < cellsDepot && m.runs().yards().size() == 1 && m.runs().yards().get(0) == yard
+                && m.yardsOf(stands, c.depot) == 1 && m.yardsOf(first, c.depot) == 0 && c.reconciled);
+
+        // ----- the second Rail Depot: it goes to the first district, ahead in the map's order -----
+        c.model[c.depot] = 2;
+        c.run();
+        Snap standsAfter = new Snap(m, stands), firstAfter = new Snap(m, first);
+        check("fixture: the second Rail Depot arrives in the district ahead in the map's order (" + first.count(c.depot) + " there, " + stands.count(c.depot) + " in the district that stands the yard), and the runs lay no second yard ("
+                + m.runs().yards().size() + " laid, the first as it was)", first.count(c.depot) == 1 && stands.count(c.depot) == 1 && first.index < stands.index
+                && m.runs().yards().size() == 1 && m.runs().yards().get(0) == yard && c.reconciled);
+        int sharesSum = 0;
+        for (CityMap.District d : m.districts()) sharesSum += m.yardsOf(d, c.depot);
+        check("the yard's share stays with the district that stands it: it is dealt " + m.yardsOf(stands, c.depot) + " of the depots there and " + m.yardsOf(first, c.depot) + " of the arrival's in the district ahead (the yards laid: "
+                + m.runs().yards().size() + ")", m.yardsOf(stands, c.depot) == 1 && m.yardsOf(first, c.depot) == 0);
+        check("...every yard laid is dealt to some district (" + sharesSum + " dealt of " + m.runs().yards().size() + ")", sharesSum == m.runs().yards().size());
+        int movedStands = movedOf(standsBefore.boxes, standsAfter.boxes), newStands = movedOf(standsAfter.boxes, standsBefore.boxes);
+        int movedFirst = movedOf(firstBefore.boxes, firstAfter.boxes), newFirst = movedOf(firstAfter.boxes, firstBefore.boxes);
+        int newDepots = 0;
+        for (PlanBox b : firstAfter.boxes) if (!firstBefore.boxes.contains(b) && b.type() == c.depot) newDepots++;
+        out.printf("      the district that stands the yard: %d boxes before, %d moved, %d new; the district ahead: %d before, %d moved, %d new (%d of them Rail Depots)%n",
+                standsBefore.boxes.size(), movedStands, newStands, firstBefore.boxes.size(), movedFirst, newFirst, newDepots);
+        check("no box of the district that stands the yard moves, and it gains none: its depot is still its yard's (" + standsBefore.boxes.size() + " boxes before, " + movedStands + " moved, " + newStands + " new)",
+                !standsBefore.boxes.isEmpty() && movedStands == 0 && newStands == 0);
+        check("no box of the district ahead moves, and the arrival is its one new box, drawn in its plan (" + firstBefore.boxes.size() + " boxes before, " + movedFirst + " moved, " + newFirst + " new, " + newDepots + " a Rail Depot)",
+                !firstBefore.boxes.isEmpty() && movedFirst == 0 && newFirst == 1 && newDepots == 1);
+    }
+
+    /* =====================================================================
+       21 AND 22. TWO MOVED-BOX FINDINGS, CAUSED ON A BUILT DISTRICT (batch MF2, 2026-11-08)
+       ===================================================================== */
+
+    /*
+     * WHY (WN3-M(b) and HD1-M, queued as MF2 items 2 and 4): the bigger cities LongPlaytest watched met two cases of "a building on the map moved" with no run, reserve or yard
+     * to move it: WN3's Historical city at m2078, where 112 plots bought inside district (0,0) cost a Rod Mill, a Meat Works and a Bottling Plant each a standing box (again
+     * at m2323), and HD1's run at m3998, where three Convenience Stores of district (-1,-2) moved when one of their type left (623 drawn to 622). Many such findings are DM2's
+     * class (the way FW11 keeps clear for a street piece the buildings wall in is worked out again from the whole log on every plan, so an arrival, a departure or a purchase
+     * changes it and first-fit cascades), and DM2 will date it; these two are asked of the plain case, with no wall to cross: a district of houses, stores and large works
+     * (a Rod Mill takes 12 plots) filled to BUILT_SHARE of its room, then (21) BUILT_BOUGHT plots bought inside its frame, or (22) one of its Convenience Stores leaves.
+     * Both are green on main (0.9.49): the fixtures stand guard, and a finding that moves a box needs more than this (MF2's report names what).
+     */
+
+    /** The owned ground of 21 and 22's district, plots a side from its north-west corner; the founding site is in the middle of it. */
+    static final int BUILT_SIDE = 160;
+
+    /** The ground 21 buys inside the district's frame, { x, y, across, down } in plots from its north-west corner: 112 plots, WN3's purchase at m2078, as a notch in the owned ground. */
+    static final int[] BUILT_BOUGHT = { 100, 100, 28, 4 };
+
+    /** How much of its room the district is filled to before the purchase or the departure: nine tenths of the cells its plan may fill (CityMap.PLAN_FILL of its owned plots). */
+    static final double BUILT_SHARE = 0.9;
+
+    /** What the district is given a month: houses, Convenience Stores, and (21) Rod Mills, Meat Works and Bottling Plants. */
+    static final int BUILT_HOUSES = 600, BUILT_STORES = 12, BUILT_RODS = 2, BUILT_WORKS = 8;
+
+    /** The Convenience Stores 22 sends away, one at a time, a month of arrivals between. */
+    static final int BUILT_DEPARTURES = 3;
+
+    /** 21 and 22's city: one district of houses, stores and large works on the default world's dry place, no Game. */
+    static final class BuiltDistrict {
+        final List<BuildingsTemplate> catalog = new BuildingCatalog().load();
+        final BuildingVisual.Type[] types = BuildingVisual.table(catalog);
+        final int house = idNamed(catalog, "House"), store = idNamed(catalog, "Convenience Store"), rod = idNamed(catalog, "Rod Mill"),
+                meat = idNamed(catalog, "Meat Works"), bottling = idNamed(catalog, "Bottling Plant");
+        final CityLand land;
+        final CityMap map;
+        final long[] model = new long[types.length];
+        final CityMap.District d;
+        /** The frame's first plot, and the month the next one is run in. */
+        final long x0, y0;
+        int month = 10;
+        boolean reconciled = true;
+
+        BuiltDistrict(boolean notch) {
+            long seed = Founding.DEFAULT_WORLD_SEED, f = CityMap.DISTRICT, s = BUILT_SIDE;
+            long[] place = dryPlace(World.of(seed));
+            x0 = Math.floorDiv(place[0], f) * f;
+            y0 = Math.floorDiv(place[1], f) * f;
+            double[] centre = new double[CityLand.CENTRE_FIELDS];
+            centre[CityLand.CENTRE_FIELDS - 5] = -1;
+            centre[CityLand.CENTRE_FIELDS - 4] = -1;
+            centre[CityLand.CENTRE_FIELDS - 2] = x0 + s / 2;
+            centre[CityLand.CENTRE_FIELDS - 1] = y0 + s / 2;
+            long bx = BUILT_BOUGHT[0], by = BUILT_BOUGHT[1], bw = BUILT_BOUGHT[2], bh = BUILT_BOUGHT[3];
+            double[][] rects = notch
+                    ? new double[][] { { x0, y0, x0 + s, y0 + by }, { x0, y0 + by + bh, x0 + s, y0 + s }, { x0, y0 + by, x0 + bx, y0 + by + bh }, { x0 + bx + bw, y0 + by, x0 + s, y0 + by + bh } }
+                    : new double[][] { { x0, y0, x0 + s, y0 + s } };
+            land = CityLand.restore(World.Key.generated(seed), centre, rects, null, null, null);
+            map = CityMap.canonical(land, r -> land.amountsInOrder(r), types, new long[types.length], 0);
+            d = map.districts().get(0);
+        }
+
+        /** One month of arrivals: houses and stores, and with `works` the large works, the map reconciled to them. */
+        void arrive(boolean works) {
+            model[house] += BUILT_HOUSES;
+            model[store] += BUILT_STORES;
+            if (works) {
+                model[rod] += BUILT_RODS;
+                model[meat] += BUILT_WORKS;
+                model[bottling] += BUILT_WORKS;
+            }
+            run();
+        }
+
+        /** One month with the model's counts as they stand. */
+        void run() {
+            reconciled &= map.reconcile(model, month++);
+        }
+
+        /** Arrivals month by month until BUILT_SHARE of the room is used. */
+        void fill(boolean works) {
+            int guard = 200;
+            while (d.usedCells() < d.room() * BUILT_SHARE && guard-- > 0) arrive(works);
+        }
+
+        /** How many of a plan's boxes are large works of 21's three kinds. */
+        int worksIn(java.util.Set<PlanBox> boxes) {
+            int n = 0;
+            for (PlanBox b : boxes) if (b.type() == rod || b.type() == meat || b.type() == bottling) n++;
+            return n;
+        }
+    }
+
+    static void boughtInsideBuiltDistrict() {
+        out.println("\n--- 21. ground bought inside a built district with large works standing moves no box of its plan (MF2; WN3-M(b)) ---");
+        BuiltDistrict c = new BuiltDistrict(true);
+        CityMap.District d = c.d;
+        c.fill(true);
+        Snap before = new Snap(c.map, d);
+        int works = c.worksIn(before.boxes);
+        check("fixture: the district is built to " + BUILT_SHARE + " of its room (" + d.usedCells() + " of " + d.room() + " cells) with " + d.count(c.rod) + " Rod Mills among " + before.boxes.size()
+                + " boxes, " + works + " of them large works, and its plan places every one", d.usedCells() >= d.room() * BUILT_SHARE && d.count(c.rod) > 0 && works > 0 && before.plan.overflowCount() == 0
+                && c.reconciled);
+
+        // ----- the notch bought, between months (dated the month that ran), and the month that follows it -----
+        long bx = c.x0 + BUILT_BOUGHT[0], by = c.y0 + BUILT_BOUGHT[1];
+        DistrictPlan.Input frame = c.map.planInput(d);
+        int dry = dryPlots(frame, bx, by, bx + BUILT_BOUGHT[2], by + BUILT_BOUGHT[3]), ownedBefore = d.owned();
+        c.land.extend(new LandParcel(-5, 1, 0, 2, bx, by, bx + BUILT_BOUGHT[2], by + BUILT_BOUGHT[3], null, null, null, 0, 0), c.month - 1, 0);
+        c.arrive(false);
+        Snap after = new Snap(c.map, d);
+        int moved = movedOf(before.boxes, after.boxes), movedWorks = 0;
+        for (PlanBox b : before.boxes) if (!after.boxes.contains(b) && (b.type() == c.rod || b.type() == c.meat || b.type() == c.bottling)) movedWorks++;
+        check("fixture: the " + BUILT_BOUGHT[2] * BUILT_BOUGHT[3] + " plots bought are inside the frame, " + dry + " dry, and the district's owned ground grows by them (" + ownedBefore + " to " + d.owned() + ")",
+                dry > 0 && d.owned() - ownedBefore == dry && c.reconciled);
+        check("ground bought inside a built district moves none of the boxes that stand: " + moved + " of " + before.boxes.size() + " not in the plan after, " + movedWorks + " of them large works", moved == 0 && movedWorks == 0 && after.boxes.size() > before.boxes.size());
+
+        // ----- six months more of arrivals, large works among them -----
+        for (int i = 0; i < 6; i++) c.arrive(true);
+        Snap later = new Snap(c.map, d);
+        int movedLater = movedOf(before.boxes, later.boxes);
+        check("...and six months of arrivals after it, large works among them, move none either (" + movedLater + " of " + before.boxes.size() + ")", movedLater == 0 && later.boxes.size() > after.boxes.size());
+    }
+
+    static void aStoreLeaves() {
+        out.println("\n--- 22. a Convenience Store that leaves takes only its own box out of the plan (MF2; HD1-M) ---");
+        BuiltDistrict c = new BuiltDistrict(false);
+        CityMap.District d = c.d;
+        c.fill(false);
+        check("fixture: the district is built to " + BUILT_SHARE + " of its room (" + d.usedCells() + " of " + d.room() + " cells) with " + d.count(c.store) + " Convenience Stores among "
+                + d.count(c.house) + " houses", d.usedCells() >= d.room() * BUILT_SHARE && d.count(c.store) > BUILT_DEPARTURES && c.reconciled);
+        int gone = 0, moved = 0, added = 0, drawnBefore = 0, drawnAfter = 0;
+        for (int k = 0; k < BUILT_DEPARTURES; k++) {
+            Snap before = new Snap(c.map, d);
+            c.model[c.store]--;
+            c.run();
+            Snap after = new Snap(c.map, d);
+            int left = movedOf(before.boxes, after.boxes);
+            gone += left == 1 ? 1 : 0;
+            moved += left - 1;
+            added += movedOf(after.boxes, before.boxes);
+            for (PlanBox b : before.boxes) if (b.type() == c.store) drawnBefore++;
+            for (PlanBox b : after.boxes) if (b.type() == c.store) drawnAfter++;
+            c.arrive(false);
+        }
+        check("a Convenience Store leaving takes one box out of the plan and no other moves: " + BUILT_DEPARTURES + " departures, one box gone each time (" + gone + "), " + moved + " others moved, " + added
+                + " boxes new; the type's drawn count fell " + (drawnBefore - drawnAfter) + " in all", gone == BUILT_DEPARTURES && moved == 0 && added == 0 && drawnBefore - drawnAfter == BUILT_DEPARTURES && c.reconciled);
+    }
+
+    /* =====================================================================
+       23. A RAIL DEPOT LEAVING THE DISTRICT THAT STANDS THE YARD (batch MF2, 2026-11-08)
+       ===================================================================== */
+
+    /*
+     * WHY (main's own playtest red, 0.9.49, m2395 to m2396, district (-3,-2): "3 of its 17 boxes moved: 2 x Wind Farm, 1 x Assembly Plant"): the district
+     * stood the city's one yard and counted two Rail Depots, one from m2243 and one from m2300; the plan was handed one depot less than its log stood
+     * and squared the log by leaving out the newest standing one. At m2396 one depot left - the newest, as a departure is - so the plan's count fell to
+     * none and the older depot was left out instead, from m2243 on: every box placed after it was placed again with its ground free. MF2 takes the
+     * yard's own unit out of the log the plan is given as the oldest standing (CityMap.yardUnitsOut()), so the departure takes its own box.
+     * The fixture causes it on 20's city: the first depot lays the yard in the second district, works arrive, a second depot arrives there, works
+     * arrive after it, and one depot leaves.
+     */
+
+    /** The months of works 23 gives the yard's district before its second Rail Depot and after it, YARD_WORKS a month. */
+    static final int DEPOT_LEAVES_MONTHS = 3;
+
+    static void aDepotLeavesTheYardsDistrict() {
+        out.println("\n--- 23. a Rail Depot leaving the district that stands the yard takes only its own box out of the plan (MF2; main's playtest, m2396) ---");
+        YardCity c = new YardCity();
+        CityMap m = c.map;
+        c.model[c.depot] = 1;
+        c.run();
+        long[] yard = m.runs().yards().isEmpty() ? null : m.runs().yards().get(0);
+        CityMap.District stands = yardDistrict(m, yard);
+        for (int i = 0; i < DEPOT_LEAVES_MONTHS; i++) {
+            c.model[c.wind] += YARD_WORKS;
+            c.run();
+        }
+        c.model[c.depot] = 2;
+        c.run();
+        for (int i = 0; i < DEPOT_LEAVES_MONTHS; i++) {
+            c.model[c.wind] += YARD_WORKS;
+            c.run();
+        }
+        boolean ready = stands != null && stands.count(c.depot) == 2 && m.runs().yards().size() == 1 && m.yardsOf(stands, c.depot) == 1 && c.reconciled;
+        check("fixture: one yard in the frame of the district that counts both Rail Depots (" + (stands == null ? "none" : stands.count(c.depot) + " there, dealt "
+                + m.yardsOf(stands, c.depot)) + "), works placed between the two arrivals and after them (" + (stands == null ? 0 : stands.count(c.wind)) + " Wind Farms)",
+                ready && stands.count(c.wind) == 2 * DEPOT_LEAVES_MONTHS * YARD_WORKS);
+        if (!ready) return;
+        Snap before = new Snap(m, stands);
+        c.model[c.depot] = 1;
+        c.run();
+        Snap after = new Snap(m, stands);
+        int gone = movedOf(before.boxes, after.boxes), added = movedOf(after.boxes, before.boxes), goneDepots = 0;
+        for (PlanBox b : before.boxes) if (!after.boxes.contains(b) && b.type() == c.depot) goneDepots++;
+        out.printf("      the yard's district: %d boxes before, %d not in the plan after (%d of them Rail Depots), %d new; it counts %d depot(s), dealt %d yard(s)%n",
+                before.boxes.size(), gone, goneDepots, added, stands.count(c.depot), m.yardsOf(stands, c.depot));
+        check("fixture: one Rail Depot leaves the district that stands the yard, and the yard stays its (" + stands.count(c.depot) + " counted, " + m.yardsOf(stands, c.depot) + " dealt, "
+                + m.runs().yards().size() + " laid)", stands.count(c.depot) == 1 && m.yardsOf(stands, c.depot) == 1 && m.runs().yards().size() == 1 && c.reconciled);
+        check("a Rail Depot leaving takes its own box out of the plan and no other box moves or is new (" + gone + " gone of " + before.boxes.size() + ", " + goneDepots
+                + " of them a Rail Depot; " + added + " new)", gone == 1 && goneDepots == 1 && added == 0);
     }
 }

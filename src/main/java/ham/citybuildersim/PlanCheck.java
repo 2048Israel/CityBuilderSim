@@ -173,6 +173,15 @@ import java.util.List;
  *      pieces behind such a belt on its iron field, MapCheck 8 red); one
  *      network, every check, a pure function; and the case counted across
  *      section 17's cities and this harness's, before and after.
+ *  19. no avenue through an interchange (batch MF2, 2026-11-08; DistrictPlan's NO AVENUE THROUGH AN INTERCHANGE'S RESERVE
+ *      LAID AFTER IT; Jerus's Bergen city drew a diagonal avenue through a cloverleaf's loops): a 19 x 19 reserve laid across
+ *      the south-east arm in a month after the avenue was laid (the arm's step 8, inside the cell beside the hub, and step 20,
+ *      across a ring line) has no avenue plot in its box in any month from the one it was laid in - the plan's avenue marks,
+ *      which the painter draws from, and the harness's own staircase agree - as the same reserve there from the start has none;
+ *      what the plan took up of the streets the plan before it had in the box is the avenue's alone (the cells' own stand, FX7);
+ *      the avenue stands on both sides of the reserve and counts what it does not lay there (avenueBroken) as the same reserve
+ *      from the start does; no building off the reserve moves; every check holds. (D2, a diagonal highway through a full
+ *      district, is a probe, docs/queue/MF2/MF2DiagonalProbe, compiled by hand, while the plan lays no frontage avenue.)
  *
  * THE CHECKS, after every plan (spec 2.4; the prototype's, and H5):
  *   - one network: its streets one piece, four-connected (a street beneath a
@@ -377,6 +386,7 @@ public class PlanCheck {
         farBank(types);
         walledIn(types);
         fieldWall(types);
+        interchangeAvenue(types);
         for (String s : saves) save(Path.of(s));
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -4739,6 +4749,92 @@ public class PlanCheck {
                 (p.wallTries > 0 ? 1 : 0) + left, p.wallTries > 0 ? 1 : 0, p.wallField > 0 ? 1 : 0, left, (p.wallField > 0 ? 1 : 0) + left);
         check("...none left apart: no district of MapCheck's played city, its river fixture, sections 5 and 6, or this section's has a piece the ground does not part",
                 playedCase[3] == 0 && riverCase[3] == 0 && citiesLeft == 0 && left == 0);
+    }
+
+    /* =====================================================================
+       19. NO AVENUE THROUGH AN INTERCHANGE (batch MF2, 2026-11-08)
+       ===================================================================== */
+
+    /** The street plots (any kind), the avenue plots and the plots beneath a highway in the w x h box from (x, y) of plan p. */
+    static int[] streetsIn(DistrictPlan p, int x, int y, int w, int h) {
+        int[] n = new int[3];
+        for (int yy = y; yy < y + h; yy++) {
+            for (int xx = x; xx < x + w; xx++) {
+                int q = yy * DistrictPlan.FRAME + xx;
+                if (p.isStreet(q)) n[0]++;
+                if (p.avenue != null && p.avenue[q] != 0) n[1]++;
+                if (p.kindAt(q) == DistrictPlan.UNDER) n[2]++;
+            }
+        }
+        return n;
+    }
+
+
+    /** The reserve of a cloverleaf, in plots a side: CityRuns.F_RESERVE's 19 x 19 (InterchangeGround). */
+    static final int RESERVE_SIDE = 19;
+
+    static void interchangeAvenue(BuildingVisual.Type[] types) {
+        out.println("\n--- 19. no avenue through an interchange (batch MF2): an avenue laid before a cloverleaf's reserve stops at the reserve's edge, as one laid after it ---");
+        final int house = pick(types, 1, t -> t.category() == BuildingType.RESIDENTIAL && !t.outer() && t.site() == null);
+        final int shop = pick(types, 1, t -> t.category() == BuildingType.COMMERCIAL && !t.outer() && t.site() == null);
+        final int works = pick(types, 9, t -> t.cls() == BuildingVisual.INDUSTRY && !t.outer() && t.site() == null && t.campusGroup() == BuildingVisual.NO_GROUP);
+        final int farm = pick(types, 1, t -> t.category() == BuildingType.AGRICULTURE && t.outer() && t.site() == null);
+        final int paved = pavedRoad(types);
+        final int laid = 3, last = 6, size = RESERVE_SIDE;
+        Log log = runsLog(house, shop, works, farm, paved, last);
+        Stairs s = stairs(flat(types));
+        DistrictPlan before = DistrictPlan.make(log.until(laid - 1).into(flat(types)));
+        out.printf("      month %d, before the reserve: %,d buildings in %d cells, %d avenue plots%n", laid - 1, before.buildings, cellsOpened(before), before.avenuePlots);
+        // The reserve across the south-east arm (arm 0), its box's corner on the arm's step `first`, so the arm runs from corner to corner through it: where the cell
+        // beside the hub holds the whole box (step 8), and across a ring line, a cell on from it (step 20).
+        for (int first : new int[] { 8, 20 }) {
+            final int rx = s.ox + first, ry = s.oy + first;
+            int onArm = 0;
+            for (int k = 0; k < size; k++) if (s.mark[(ry + k) * DistrictPlan.FRAME + rx + k] != 0) onArm++;
+            int[] had = streetsIn(before, rx, ry, size, size);
+            check("fixture (the reserve from the arm's step " + first + "): its box at (" + rx + ", " + ry + ") has the south-east arm's staircase across it from corner to corner (" + onArm + " of "
+                    + size + "), and the avenue and the cells' streets are laid across it before the reserve (" + had[1] + " avenue plots, " + (had[0] - had[1]) + " others)", onArm == size && had[1] > 0 && had[0] > had[1]);
+            // The reserve laid in month `laid` (the plan made at each month from it), and its twin: there from the first month.
+            Runs dated = new Runs().lay(laid, rx, ry, size, size, DistrictPlan.FIXED_RESERVE);
+            Runs twin = new Runs().lay(0, rx, ry, size, size, DistrictPlan.FIXED_RESERVE);
+            int inBox = 0, inAvenue = 0, inTwin = 0, lostOther = 0, wrongSides = 0, sidesLaid = 0, brokenOff = 0, moved = 0, badChecks = 0, plans = 0, avenueWrong = 0;
+            for (int m = laid; m <= last; m++) {
+                DistrictPlan.Input din = dated.into(log.until(m).into(flat(types)), m, true);
+                DistrictPlan p = DistrictPlan.make(din);
+                DistrictPlan t = DistrictPlan.make(twin.into(log.until(m).into(flat(types)), m, true));
+                int[] n = streetsIn(p, rx, ry, size, size), nt = streetsIn(t, rx, ry, size, size);
+                Figures f = figures(p, din);
+                int[] ag = avenueAgainst(p, s, q -> din.fixed[q] != DistrictPlan.FIXED_RESERVE);
+                plans++;
+                inBox += n[0];
+                inAvenue += n[1];
+                inTwin += nt[0] + nt[1];
+                // What the plan took up of the streets the plan before had in the box: the avenue's own and nothing else.
+                for (int yy = ry; yy < ry + size; yy++) {
+                    for (int xx = rx; xx < rx + size; xx++) {
+                        int q = yy * DistrictPlan.FRAME + xx;
+                        if (before.isStreet(q) && !p.isStreet(q) && (before.avenue == null || before.avenue[q] == 0)) lostOther++;
+                    }
+                }
+                // The plots of the arm just before and just after the box: laid, in a plan as in its twin.
+                boolean near = stepLaid(p, s, 0, first - 1), far = stepLaid(p, s, 0, first + size);
+                if (near != stepLaid(t, s, 0, first - 1) || far != stepLaid(t, s, 0, first + size)) wrongSides++;
+                if (near) sidesLaid++;
+                if (p.avenueBroken != t.avenueBroken) brokenOff++;
+                if (m == laid) moved += missingOff(before, p, rx, ry, size, size);
+                if (!f.holds(p, din)) badChecks++;
+                avenueWrong += ag[2];
+                out.printf("      reserve (step %d) laid in month %d, plan at month %d: %,d buildings; %d street plots in its box (its twin: %d), %d of them avenue; %d avenue plots, %d not laid at a reserve or a yard (twin %d);"
+                        + " the arm laid before/after the box: %b/%b; %d piece(s), %d beside a highway%n", first, laid, m, p.buildings, n[0], nt[0], n[1], p.avenuePlots, p.avenueBroken, t.avenueBroken, near, far, f.pieces, f.besideHighway);
+            }
+            check("a reserve laid after its avenue (step " + first + "): no avenue plot lies inside its box in any of the " + plans + " months from the one it was laid in (" + inAvenue + " plots; the plan's avenue marks,"
+                    + " which the painter draws from, and the harness's own staircase agree: " + avenueWrong + " wrong), and the same reserve from the start has no street at all there (" + inTwin + " plots)", inAvenue == 0 && avenueWrong == 0 && inTwin == 0);
+            check("...what the plan took up of the streets the plan before it had in the box is the avenue's alone (" + lostOther + " other street plots), the cells' own streets standing as FX7 keeps them ("
+                    + inBox + " plots over the " + plans + " months)", lostOther == 0 && inBox > 0);
+            check("...the avenue stands on both sides of the reserve as its twin's does, in each month (" + sidesLaid + " of " + plans + " with the near side laid; " + wrongSides + " differ), and counts what it does not lay there as its twin does (avenueBroken)",
+                    wrongSides == 0 && brokenOff == 0 && (first > 8 || sidesLaid == plans));
+            check("...no building off the reserve moved (" + moved + " of month " + (laid - 1) + "'s " + before.buildings + " boxes), and every check holds in each month: one network or pieces the ground parts, the + floor, reach, none on a street, the surface (" + badChecks + " months not)", moved == 0 && badChecks == 0);
+        }
     }
 
 }

@@ -1556,6 +1556,74 @@ public final class TileRaster {
         }
     }
 
+    /*
+     * WHY (MF2, 2026-11-08; Jerus's Bergen city, pictures 2 and 4: "a highway and a railway cross the sea on a brown stair-stepped strip"). A
+     * bridge's deck was a bar across each plot of the run (the carriageway's width and a pixel either side), which on a 45-degree stretch,
+     * whose carriageway is the band along its line (diagBand()), is a bar through every step and every corner plot of the staircase: a brown
+     * staircase whose corners stand out of the band by the plot's size. A 45-degree bridge's deck is the same band, deckAcross() wide.
+     */
+
+    /** A bridge's deck across, in pixels, where it is the band along a 45-degree line (MF2): the road's (or, for PAVED, the track's) whole width and a pixel either side, as the bars' deck is, but not held to a plot's width. */
+    static int deckAcross(int kind, int px) {
+        return crossSection(kind, px)[0] + 2;
+    }
+
+    /**
+     * The step of a 45-degree bridge's deck at plot (x, y), in the tile or just across one of its edges: its marks as stepMarkAt() reads
+     * them, with 0x100 added where it is the railway's and 0x200 where it lies across the tile's edge, or -1 where the plot is no step of a
+     * bridge (a corner, a straight run, other ground). Across an edge the neighbour's own bridge is not known, but its run is.
+     */
+    private static int deckStepAt(TilePainter.Input in, TilePainter.Painted p, int x, int y) {
+        int tile = TilePainter.TILE, mark, beyond = 0;
+        boolean rail;
+        if (x >= 0 && y >= 0 && x < tile && y < tile) {
+            int j = y * tile + x;
+            if (!p.bridge[j] || p.tunnel[j]) return -1;
+            rail = p.use[j] == TilePainter.RAIL && p.road[j] == 0;
+            if (!rail && !isHighway(p, j)) return -1;
+            mark = in.marks[j];
+        } else {
+            if ((x < 0 || x >= tile) && (y < 0 || y >= tile)) return -1;
+            int dir = y < 0 ? 0 : y >= tile ? 2 : x < 0 ? 3 : 1, along = dir == 0 || dir == 2 ? x : y;
+            byte f = in.fixedBeyond[dir * tile + along];
+            if (f != BuildingVisual.HIGHWAY && f != TilePainter.RAIL_OVER && f != TilePainter.RAIL) return -1;
+            rail = f == TilePainter.RAIL;
+            mark = in.marksBeyond[dir * tile + along];
+            beyond = 0x200;
+        }
+        return (mark & CityRuns.M_DIAG) != 0 && (mark & CityRuns.M_CORNER) == 0 ? (mark & 0xff) | (rail ? 0x100 : 0) | beyond : -1;
+    }
+
+    /**
+     * The ground between two steps of a 45-degree bridge (MF2): as diagOpen() fills the carriageway's notch, the deck's band across plot i -
+     * open ground or water with a step of the bridge on one axis and the next step of it on the other - through the step's middle, in the
+     * deck's colour, so the deck is one band along the line and not the step plots' pieces of it. Where a step lies across the tile's edge,
+     * whose bridge is not known (deckStepAt()), only water is drawn on, so that no highway on dry ground gets a deck at the seam.
+     */
+    private static void deckOpen(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img) {
+        if ((p.use[i] != TilePainter.EMPTY && p.use[i] != TilePainter.FIELD) || p.run[i] != 0) return;
+        boolean wet = World.bridgeable(in.terrain[i]);
+        int tile = TilePainter.TILE, x = i % tile, y = i / tile;
+        int west = deckStepAt(in, p, x - 1, y), east = deckStepAt(in, p, x + 1, y);
+        if (west < 0 && east < 0) return;
+        int north = deckStepAt(in, p, x, y - 1), south = deckStepAt(in, p, x, y + 1);
+        if (north < 0 && south < 0) return;
+        int c = in.owned[i] ? DECK : blend(DECK, VOID, UNOWNED_DIM);
+        for (int ex = -1; ex <= 1; ex += 2) {
+            for (int ey = -1; ey <= 1; ey += 2) {
+                int a = ex < 0 ? west : east, b = ey < 0 ? north : south;
+                if (a < 0 || b < 0 || (a & 0x100) != (b & 0x100) || (!wet && ((a | b) & 0x200) != 0)) continue;
+                int code = (a >> CityRuns.M_DIAG_SHIFT) & 3;
+                if (((b >> CityRuns.M_DIAG_SHIFT) & 3) != code) continue;
+                int dx = code == 0 || code == 3 ? 1 : -1, dy = code == 0 || code == 1 ? 1 : -1;
+                // The two steps are diagonal neighbours of each other along the heading: b - a = (-ex, ey) = +-(dx, dy).
+                if (!(ex == -dx && ey == dy) && !(ex == dx && ey == -dy)) continue;
+                double half = deckAcross((a & 0x100) != 0 ? BuildingVisual.PAVED : BuildingVisual.HIGHWAY, px) / 2.0;
+                diagLine(img, tile * px, i, px, code, (0.5 + ex) * px, 0.5 * px, half, Double.POSITIVE_INFINITY, c);
+            }
+        }
+    }
+
     /* =====================================================================
        THE AVENUES (batch CL4; the study spec-city-layout 5.2)
        ===================================================================== */
@@ -2301,10 +2369,19 @@ public final class TileRaster {
                 avenueDeck(in, p, i, px, img);
                 continue;
             } else if (isHighway(p, i)) {
+                // A 45-degree stretch's deck is the band along its line (MF2), not the plots' bars (a staircase).
+                if (diagonal(in, i)) {
+                    diagBand(img, w, i, px, in.marks[i], deckAcross(BuildingVisual.HIGHWAY, px) / 2.0, in.owned[i] ? DECK : blend(DECK, VOID, UNOWNED_DIM));
+                    continue;
+                }
                 across = crossSection(BuildingVisual.HIGHWAY, px)[0];
                 ns = highwayAt(in, p, i, 0) || highwayAt(in, p, i, 2);
                 ew = !ns;
             } else if (p.use[i] == TilePainter.RAIL && p.road[i] == 0) {
+                if (diagonal(in, i)) {
+                    diagBand(img, w, i, px, in.marks[i], deckAcross(BuildingVisual.PAVED, px) / 2.0, in.owned[i] ? DECK : blend(DECK, VOID, UNOWNED_DIM));
+                    continue;
+                }
                 across = crossSection(BuildingVisual.PAVED, px)[0];
                 ns = railAt(in, p, i, 0) || railAt(in, p, i, 2);
                 ew = !ns;
@@ -2319,6 +2396,8 @@ public final class TileRaster {
             if (ns) fillRect(img, w, x0 + o, y0, x0 + o + width, y0 + px, deck);
             if (ew) fillRect(img, w, x0, y0 + o, x0 + px, y0 + o + width, deck);
         }
+        // ...and the water between two steps of a diagonal deck, the band's corner the step plots leave out (MF2).
+        for (int i = 0; i < TilePainter.PLOTS; i++) deckOpen(in, p, i, px, img);
         // ...and an avenue's outer plot over water between two bridging steps.
         if (notches != null) {
             for (int i = 0; i < TilePainter.PLOTS; i++) if (notches[i] != 0) avenueNotch(in, p, i, notches[i], px, img, true, false);
@@ -3333,8 +3412,13 @@ public final class TileRaster {
     /**
      * The loops of every reserve that reaches the tile, from JUNCTIONS_FROM px a plot: a cloverleaf's four leaves, each with its connector
      * round the outside; a trumpet's one leaf, in the quadrant between its stub and the highway it ends at - all in the highway's colour
-     * and casing, only on the reserve's own open plots (never over a highway, a street, a building or a field's plot of the tile that is not
-     * the reserve's). Each ramp keeps to its own quadrant, so a pixel is measured against one quadrant's ramps.
+     * and casing, only on the reserve's own plots (never over a highway, a building or a plot of the tile that is not the reserve's). A street
+     * laid across the reserve before it was (a cell's own street, which the plan keeps, FX7; the avenue it takes up, DistrictPlan's NO AVENUE
+     * THROUGH AN INTERCHANGE'S RESERVE) is the reserve's ground all the same: the ramps are drawn over it, bridging it, and not broken off at
+     * its edges (MF2, 2026-11-08; Jerus's Bergen city, picture 4: "the loops are loose arcs not joined to the highway's lanes" - an avenue
+     * through the interchange cut each leaf and connector in two pieces, each touching one highway at most; the loops did meet the
+     * carriageway wherever they were drawn). Each ramp keeps to its own quadrant, so a pixel is measured
+     * against one quadrant's ramps.
      */
     private static void loops(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
         int tile = TilePainter.TILE, w = tile * px, ri = TilePainter.RESERVE_INTS;
@@ -3357,7 +3441,8 @@ public final class TileRaster {
             for (int y = Math.max(0, by0); y < Math.min(tile, by0 + bh); y++) {
                 for (int x = Math.max(0, bx0); x < Math.min(tile, bx0 + bw); x++) {
                     int i = y * tile + x;
-                    if (p.run[i] != 0 || (p.use[i] != TilePainter.EMPTY && p.use[i] != TilePainter.FIELD)) continue;
+                    // The reserve's ground is the ramps' (MF2): a street laid across it before the reserve was is crossed by them, not a gap in them.
+                    if (p.run[i] != 0 || (p.use[i] != TilePainter.EMPTY && p.use[i] != TilePainter.FIELD && p.use[i] != TilePainter.ROAD)) continue;
                     int fill = in.owned[i] ? ROAD[BuildingVisual.HIGHWAY] : blend(ROAD[BuildingVisual.HIGHWAY], VOID, UNOWNED_DIM);
                     int caseC = in.owned[i] ? HIGHWAY_CASE : blend(HIGHWAY_CASE, VOID, UNOWNED_DIM);
                     for (int dy = 0; dy < px; dy++) {

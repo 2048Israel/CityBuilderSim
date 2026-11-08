@@ -109,6 +109,17 @@ import java.util.Set;
  *      a yard across a district's edge is one district's work, clipped to its
  *      frame (CityMap.workIn()).
  *
+ * 16. THE RAILWAY'S CORNER AND ITS DEAD END (batch MF2, 2026-11-08, Jerus's Bergen
+ *      city, 2026-10-31: "the railway comes diagonally through the blocks, turns
+ *      back sharply, crosses the street and stops in empty ground"): on a coast
+ *      where the gate arm turns south-east at the sea and meets the sea again,
+ *      no corner of the railway turns more than 45 degrees (a highway's arm on
+ *      the same coast does: its rules are as they were, its plots the same), so
+ *      the V's second leg, which ended in empty ground, is not laid; the ways
+ *      the trains run (wayTo()) turn no sharper than 45 degrees either. Where
+ *      each arm ends is printed: a 45-degree run along a shore past the last
+ *      yard is left (MF2's notes, star 7).
+ *
  * WHY THIS EXISTS: batch FR0 slice M sets the main-line marks that the painter
  * already draws. A fixture CAUSES each condition, and every assertion is
  * against the model's own constants, never a bare number.
@@ -475,6 +486,7 @@ public class MainLineCheck {
         railWays(siteX, siteY, m, sq);
         stationAlone(siteX, siteY);
         longYards(m);
+        railCorner();
 
         System.out.println();
         System.out.println(fails == 0 ? "The main line runs to the freight station." : fails + " FAILED");
@@ -1544,6 +1556,174 @@ public class MainLineCheck {
         int[] whole = CityMap.workIn(new long[] { 100, 97, term[0], term[1] }, 0, 0);
         check("a yard wholly inside one district is that district's work as it was, its own box", whole != null && whole[0] == 100 && whole[1] == 97 && whole[2] == term[0] && whole[3] == term[1]
                 && CityMap.workIn(new long[] { 100, 97, term[0], term[1] }, d, 0) == null);
+    }
+
+    /* ============ 16. the railway's corner and its dead end (MF2) ============ */
+
+    /**
+     * MF2, 2026-11-08. A coast, in plots from the net's hub (hx, hy), the gateway east: owned grass west of COAST_AT; from there a
+     * diagonal shore running south-east (the arm's way east is sea, its way south-east is land) to a second sea, a line across its way
+     * at x + y = COAST_SUM from the hub; and, from COAST_BAY plots east of the hub, land north-east of the arm too, to the sea north of
+     * COAST_TIP - so that the arm, stopped short of the second sea, has ground on its other 45-degree side. WHY: Jerus's Bergen laid a
+     * railway arm that went south-east along a shore, met the sea again, and took the 45-degree way on the other side of its heading at
+     * once - a V of 90 degrees whose second leg ended in empty ground by the coast.
+     */
+    static final int COAST_AT = 60, COAST_BAY = 125, COAST_SUM = 214, COAST_TIP = 40;
+
+    static class CoastGround extends BoxGround {
+        final long hx, hy;
+
+        CoastGround(long x0, long y0, long x1, long y1, long hx, long hy) {
+            super(x0, y0, x1, y1);
+            this.hx = hx;
+            this.hy = hy;
+        }
+
+        @Override public int at(long x, long y, int dir) {
+            if (x < x0 || x > x1 || y < y0 || y > y1) return -1;
+            long dx = x - hx, dy = y - hy;
+            boolean land = dx < COAST_AT || dx + dy <= COAST_SUM && (dx < COAST_BAY ? dy >= dx - COAST_AT : dy >= COAST_TIP);
+            return land ? World.GRASS : World.SALT;
+        }
+    }
+
+    /** The turn between two headings, in 45-degree units: 0 straight on to 4 about face. */
+    static int turn(int h1, int h2) {
+        int d = Math.floorMod(h2 - h1, 8);
+        return Math.min(d, 8 - d);
+    }
+
+    /** The sharpest corner between one stretch of an arm and the next over the net's arms, in 45-degree units. */
+    static int sharpestCorner(CityRuns.Net n) {
+        int worst = 0;
+        for (CityRuns.Arm a : n.arms) for (int s = 1; s < a.segs; s++) worst = Math.max(worst, turn(a.segHead[s - 1], a.segHead[s]));
+        return worst;
+    }
+
+    /** The sharpest corner of a way's points (each a plot's middle), in degrees: 0 straight on. */
+    static double sharpestWayCorner(double[][] way) {
+        double worst = 0;
+        double[] xs = way[0], ys = way[1];
+        for (int i = 2; i < xs.length; i++) {
+            double a1 = Math.atan2(ys[i - 1] - ys[i - 2], xs[i - 1] - xs[i - 2]), a2 = Math.atan2(ys[i] - ys[i - 1], xs[i] - xs[i - 1]);
+            double d = Math.abs(Math.toDegrees(a2 - a1)) % 360;
+            worst = Math.max(worst, d > 180 ? 360 - d : d);
+        }
+        return worst;
+    }
+
+    /** Each arm's stretches as text, heading x steps in order: what the log shows of a net's shape. */
+    static String shape(CityRuns.Net n) {
+        StringBuilder b = new StringBuilder();
+        for (int i = 0; i < n.arms.size(); i++) {
+            CityRuns.Arm a = n.arms.get(i);
+            if (a.steps == 0) continue;
+            b.append(b.length() == 0 ? "" : "; ").append("arm ").append(i).append(':');
+            for (int s = 0; s < a.segs; s++) b.append(' ').append(a.segHead[s] * 45).append('x').append(a.segSteps[s]);
+        }
+        return b.toString();
+    }
+
+    /** What the highways' 900 plots on the coast above laid on main at 0.9.49 (MF2, 2026-11-08), before the railway's rules changed: their count and the hash of their stretches. */
+    static final long HIGHWAYS_GOLDEN = 900;
+    static final int HIGHWAYS_SHAPE = -1584424669;
+
+    /** A net's stretches as one array, arm by arm: {x0, y0, heading, steps, home} each. */
+    static long[] flat(CityRuns.Net n) {
+        List<long[]> st = n.stretches();
+        long[] out = new long[st.size() * 5];
+        for (int i = 0; i < st.size(); i++) System.arraycopy(st.get(i), 0, out, i * 5, 5);
+        return out;
+    }
+
+    /** Whether each yard's way from the main arm's end walks only plots the railway covers, and no plot twice. */
+    static boolean walkWayOk(CityRuns runs) {
+        boolean ok = !runs.yards().isEmpty();
+        for (long[] y : runs.yards()) {
+            double[][] way = runs.wayTo(y);
+            if (way == null) { ok = false; continue; }
+            int[] w = walkWay(runs, way);
+            ok &= w[2] == 0 && w[1] == 0;
+        }
+        return ok;
+    }
+
+    static void railCorner() {
+        System.out.println("\n--- the railway's corner and its dead end (MF2) ---");
+        long s = JunctionCheck.SITE;
+        long x0 = s - 150, y0 = s - 150, x1 = s + 500, y1 = s + 300;
+        List<int[]> station = List.of(terminalYard());
+
+        // The hubs, from open ground: the railway's and the highways' (their rows differ; the coast is the same shape from each).
+        BoxGround open = ground(x0, y0, x1, y1);
+        CityRuns probe = new CityRuns();
+        probe.setGateway(0);
+        probe.layTo(100, 100, 0, 0, 0, open, s, s, s, s, new ArrayList<>());
+        long rhx = probe.rail.hubX, rhy = probe.rail.hubY, hhx = probe.highways.hubX, hhy = probe.highways.hubY;
+        check("fixture: the railway and the highways each have a hub, on rows of their own", probe.rail.started && probe.highways.started && rhy != hhy);
+
+        // The railway on the coast, a station standing: the line is grown till it waits at the city's ground.
+        CoastGround coast = new CoastGround(x0, y0, x1, y1, rhx, rhy);
+        CityRuns runs = new CityRuns();
+        runs.setGateway(0);
+        // A mine beside the gate arm's first stretch, so the yard stands on it and not on the hub (nearest the mine first).
+        List<long[]> mines = new ArrayList<>(List.of(new long[] { rhx + 28, rhy - 12, rhx + 32, rhy - 8 }));
+        runs.layTo(0, 100, station, 0, coast, s, s, s, s, mines, new ArrayList<>());
+        CityRuns.Net rail = runs.rail;
+        System.out.println("  the railway: " + shape(rail) + "; yards " + runs.yards().size() + ", mainArm " + runs.mainArm());
+        int gate = CityRuns.gateArm(rail, 0), west = westArm(rail);
+        check("fixture: the gate arm heads east, the arm opposite it west, and both have track, with one yard", gate >= 0 && west >= 0 && rail.arms.get(gate).home == 0
+                && rail.arms.get(gate).steps > 0 && rail.arms.get(west).steps > 0 && runs.yards().size() == 1);
+        if (gate < 0 || west < 0) return;
+        CityRuns.Arm gateA = rail.arms.get(gate), westA = rail.arms.get(west);
+        check("fixture: the gate arm waits at the sea and the west arm runs on to the city's edge, where the world line leaves", gateA.stoppedBy == CityRuns.SEA
+                && westA.stoppedBy == CityRuns.EDGE);
+        // The map sets the main arm from where the world line leaves the city's ground (CityMap): the west arm.
+        runs.setMainArm(west);
+        System.out.println("  the yard: " + Arrays.toString(runs.yards().get(0)) + "; the main arm " + runs.mainArm() + ", the hub (" + rail.hubX + ", " + rail.hubY + ")");
+
+        // (a) no corner of the laid rail, and none of the trains' way, turns more than 45 degrees.
+        int worst = sharpestCorner(rail);
+        check("no corner of the railway turns more than 45 degrees (a stretch to the next, over every arm): the sharpest is " + worst * 45, worst <= 1);
+        double way = 0;
+        boolean ways = true;
+        for (long[] y : runs.yards()) {
+            double[][] w = runs.wayTo(y);
+            if (w == null) ways = false;
+            else way = Math.max(way, sharpestWayCorner(w));
+        }
+        check("...nor any corner of the trains' way to a yard (wayTo()): the sharpest is " + Math.round(way) + " degrees", ways && way <= 45.0 + 1e-6);
+
+        // (b) where each arm ends, for the record. An arm's 45-degree run along a shore past the last yard is left (MF2's notes, star 7: taking
+        // it back moved MapCheck 9b's harbour coast, whose premise stood on two such tails); the V's second leg, which ended in empty ground,
+        // is not laid (the corner above).
+        int alongShore = 0;
+        for (int i = 0; i < rail.arms.size(); i++) {
+            CityRuns.Arm a = rail.arms.get(i);
+            if (a.steps == 0 || a.corridor > 1) continue;
+            long[] tip = plotOnArm(a, a.steps);
+            boolean inYard = false;
+            for (long[] y : runs.yards()) inYard |= inYard(y, tip[0], tip[1]);
+            boolean world = i == runs.mainArm() && a.stoppedBy == CityRuns.EDGE;
+            // The arm's straight track to the sea stays as FX2 laid it (MainLineCheck 13): it ends on its own heading. What it laid along the shore after that serves nothing.
+            boolean straight = a.segHead[a.segs - 1] == a.home;
+            System.out.println("  arm " + i + " ends at (" + tip[0] + ", " + tip[1] + "), heading " + a.segHead[a.segs - 1] * 45 + " of home " + a.home * 45 + ": "
+                    + (inYard ? "in a yard" : world ? "at the city's edge, the world line" : straight ? "on its own heading, straight to the sea" : "in empty ground along a shore"));
+            if (!inYard && !world && !straight) alongShore++;
+        }
+        System.out.println("  " + alongShore + " railway arm(s) end along a shore past the last yard (left, MF2's star 7)");
+        check("the yard's way from the main arm's end walks plots the railway covers, no plot twice", walkWayOk(runs));
+
+        // The same coast, the same shape from the highways' own hub: a highway's arm still turns at the sea as it did.
+        CoastGround hcoast = new CoastGround(x0, y0, x1, y1, hhx, hhy);
+        CityRuns hw = new CityRuns();
+        hw.setGateway(0);
+        hw.layTo(900, 0, 0, 0, 0, hcoast, s, s, s, s, new ArrayList<>());
+        int hworst = sharpestCorner(hw.highways);
+        System.out.println("  the highways: " + hw.highways.plots + " plots, hash " + Arrays.hashCode(flat(hw.highways)) + ", " + shape(hw.highways));
+        check("a highway's arm may still turn 90 degrees at the sea (its rules are as they were): the sharpest of its corners is " + hworst * 45, hworst == 2);
+        check("...and lays the plots it laid before: " + hw.highways.plots + " of " + HIGHWAYS_GOLDEN + " (recorded on main, 0.9.49)",
+                hw.highways.plots == HIGHWAYS_GOLDEN && Arrays.hashCode(flat(hw.highways)) == HIGHWAYS_SHAPE);
     }
 
     static boolean marksCarry(CityMap m, int bits) {
