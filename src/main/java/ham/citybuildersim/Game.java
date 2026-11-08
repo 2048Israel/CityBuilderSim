@@ -12141,8 +12141,8 @@ public class Game {
      * {@code requested}, the face, what it raises and the rounding are all in it. Empty when the money has no rate this month
      * (DebtManager.offers()), as when the window is shut. The US$ is quoteForeign(type, requestedUsd, ...), through this, to the bit.
      *
-     * The fixed cost of issue (costOfIssuance()) is local money: taken off a US$ quote as the figure it is, as it always was, and converted to the
-     * money's units (at localPer()) off any other.
+     * The fixed cost of issue (costOfIssuance()) is local money: converted to the money's units (at localPer()) off every quote, the US$'s included
+     * (CD9, 2026-11-08; it was taken off a US$ quote unconverted before).
      */
     public DebtQuote quoteForeign(String type, String money, double requested, int duration, double rounding) {
 
@@ -12200,9 +12200,14 @@ public class Game {
     /** What the treasury is told when it asks for a dollar floater or linker. */
     public static final String NO_DOLLAR_FLOAT_OR_LINKED = "Floating-rate notes and inflation-linked bonds are issued at home only.";
 
-    /** A dollar bond's coupon on a world curve: its par yield at the term, rounded down to Auction.COUPON_STEP. */
+    /**
+     * A foreign bond's coupon on a world curve: its par yield at the term, rounded down to Auction.COUPON_STEP,
+     * and not under DebtManager.MIN_FOREIGN_COUPON (CD9, 2026-11-08): a yield under zero is paid in the price,
+     * the bond selling over par.
+     */
     private static double dollarCoupon(YieldCurve world, int months) {
-        return Math.floor((world.parYield(months) + 1e-12) / Auction.COUPON_STEP) * Auction.COUPON_STEP;
+        double struck = Math.floor((world.parYield(months) + 1e-12) / Auction.COUPON_STEP) * Auction.COUPON_STEP;
+        return Math.max(DebtManager.MIN_FOREIGN_COUPON, struck);
     }
 
     /**
@@ -12229,11 +12234,11 @@ public class Game {
         double level = debtManager.quoteForeignRate(code, face, months) - premium;
         for (int i = 0; i < FOREIGN_QUOTE_ITERATIONS; i++) {
             double next = debtManager.quoteForeignRate(
-                    shape.apply(debtManager.worldCurveAt(level)), months) - premium;
-            if (Math.abs(next - level) < 1e-13) return debtManager.worldCurveAt(next);
+                    shape.apply(debtManager.worldCurveAt(code, level)), months) - premium;
+            if (Math.abs(next - level) < 1e-13) return debtManager.worldCurveAt(code, next);
             level = next;
         }
-        return debtManager.worldCurveAt(level);
+        return debtManager.worldCurveAt(code, level);
     }
 
     /** The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. */
@@ -12245,10 +12250,9 @@ public class Game {
         return shape;
     }
 
-    /** The fixed cost of an issue (costOfIssuance()) in the money the paper is written in: the figure itself for the US$, as a dollar quote has always taken it, and local money over localPer() for another (CD8). */
+    /** The fixed cost of an issue (costOfIssuance(), local money) in the money the paper is written in: over localPer(code), the US$ included - localPer("USD") is the D$'s rate (CD9, 2026-11-08; the US$ took the local figure unconverted before). */
     private double issueCostIn(String code, double face) {
-        double fee = costOfIssuance(face);
-        return "USD".equals(code) ? fee : fee / localPer(code);
+        return costOfIssuance(face) / localPer(code);
     }
 
     /**

@@ -638,6 +638,9 @@ public class DebtManager {
     /** The cheapest money the market will ever offer, whatever the books say (public since CD1: YieldCurve clamps every forward at it). */
     public static final double MIN_RATE = 0.005;
 
+    /** The lowest coupon a foreign bond is struck at (CD9, 2026-11-08): 0%, as the zero-coupon issues of 2015-22 were; a yield under it is paid in the price, the bond selling over par. */
+    public static final double MIN_FOREIGN_COUPON = 0;
+
     /** How many times to walk the face-value/rate fixed point. See quoteRate(). */
     private static final int QUOTE_ITERATIONS = 6;
 
@@ -2330,7 +2333,7 @@ public class DebtManager {
         // Its own schedule - except a floater's and a linker's, which the market prices on the dial and
         // the index it expects (CD5, pricingFlows()).
         double[] flows = pricingFlows(paper);
-        if (paper.isForeign()) return worldCurveAt(foreignRate(paper.getMoney())).pv(flows);
+        if (paper.isForeign()) return worldCurveAt(paper.getMoney(), foreignRate(paper.getMoney())).pv(flows);
         YieldCurve curve = curve();
         if (paper instanceof LongTermBond bond && bond.isCallable()) return callableValue(bond, curve, flows);
         return curve.pv(flows);
@@ -2535,8 +2538,9 @@ public class DebtManager {
 
     private static final class WorldEntry {
         final double rate;
+        final double floor;
         final YieldCurve curve;
-        WorldEntry(double rate, YieldCurve curve) { this.rate = rate; this.curve = curve; }
+        WorldEntry(double rate, double floor, YieldCurve curve) { this.rate = rate; this.floor = floor; this.curve = curve; }
     }
 
     private transient volatile WorldEntry worldCache;
@@ -2552,12 +2556,28 @@ public class DebtManager {
      * the credit judgement is already in the short rate (countryPremium()),
      * so no spread is added and no ceiling applies. Built once per rate and
      * kept, one immutable object behind one reference, as curveAt()'s is.
+     *
+     * The US$'s curve; a money of the eight's is worldCurveAt(code, shortRate).
      */
     public YieldCurve worldCurveAt(double shortRate) {
+        return worldCurveAt("USD", shortRate);
+    }
+
+    /**
+     * ...in a money of the eight (CD9, 2026-11-08), floored at THAT money's own
+     * policy rate (worldRate(code)), not at the city's MIN_RATE: the city's
+     * floor is the cheapest it will lend at home, and a franc sold abroad
+     * at 0.5% when its central bank is at -0.75% was priced by a rule that is
+     * not the franc's (CD8-F). The country premium is never negative, so the
+     * short rate is never under the floor, and a money under zero sells under
+     * zero. Null and "USD" are the US$. The cache keys on the rate and the floor.
+     */
+    public YieldCurve worldCurveAt(String code, double shortRate) {
+        double floor = worldRate(code);
         WorldEntry e = worldCache;
-        if (e != null && same(e.rate, shortRate)) return e.curve;
-        YieldCurve made = new YieldCurve(YieldCurve.flatPath(shortRate), 0, 0, Double.MAX_VALUE, m -> termPremium(m));
-        worldCache = new WorldEntry(shortRate, made);
+        if (e != null && same(e.rate, shortRate) && same(e.floor, floor)) return e.curve;
+        YieldCurve made = new YieldCurve(YieldCurve.flatPath(shortRate), 0, 0, Double.MAX_VALUE, floor, m -> termPremium(m));
+        worldCache = new WorldEntry(shortRate, floor, made);
         return made;
     }
 
@@ -2566,9 +2586,9 @@ public class DebtManager {
         return worldCurveAt(foreignRate()).factor(months);
     }
 
-    /** ...in a money of the eight (CD8): on worldCurveAt(foreignRate(code)), that money's level. The US$'s is foreignFactor(months). */
+    /** ...in a money of the eight (CD8): on worldCurveAt(code, foreignRate(code)), that money's level. The US$'s is foreignFactor(months). */
     public double foreignFactor(String code, int months) {
-        return worldCurveAt(foreignRate(code)).factor(months);
+        return worldCurveAt(code, foreignRate(code)).factor(months);
     }
 
     /** The yield to maturity of a piece on the price a buyback pays: a RESULT of marketValue(), not the rate it was priced at (CD1). */
@@ -2605,7 +2625,7 @@ public class DebtManager {
     public double valueOfAPoint(Debt paper) {
         if (paper == null || paper.getRemainingMonths() <= 0) return 0;
         double[] flows = pricingFlows(paper);
-        YieldCurve curve = paper.isForeign() ? worldCurveAt(foreignRate(paper.getMoney())) : curve();
+        YieldCurve curve = paper.isForeign() ? worldCurveAt(paper.getMoney(), foreignRate(paper.getMoney())) : curve();
         double[] shifted = flows;
         if (paper instanceof FloatingRateNote note) {
             // The dial a point up lifts the coupon of every month after the next, which was fixed at the last reset.
