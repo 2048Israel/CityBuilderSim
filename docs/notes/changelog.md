@@ -18,6 +18,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.57 — CD9, the foreign debt's follow-ups — 2026-11-08, ready, see docs/queue/CD9-notes.md
+A money under zero sells under zero. Each money's curve abroad floors at its own rate, not the city's 0.5%, so the
+franc and the euro in their negative years sell at a yield under zero where the chip read -0.6% and the sale was struck
+at 0.5%; the coupon floors at 0% (`DebtManager.MIN_FOREIGN_COUPON`) and the paper sells over par, as real zero-coupon
+issues did (CD8-F). The fixed issue cost is converted into US$ as for the other seven (CD8-I). One revaluation: the old
+D$-only figure, which missed the crosses, is retired for CD7's booked line, which the playtest, the Trade screen, the
+debt card's chip and the Summary now read (CD8-R). EARNED's interest carries the month's coupons abroad, saved as
+`cityForeignInterest`, so the walk from EARNED to the budget leaves nothing of them (CD7-E). No format bump. Found at
+the gate: the fund's closed lots fold drew all 5,562 lots of an old fund, over a gigabyte, and lists the newest 200 now
+(`FundScreen.CLOSED_FOLD_ROWS`); KeptCheck sells its 20-year bond first, for the sections that draw it. The ensemble:
+23/26, as 0.9.54; ZERO_SLACK's median city 332,066 people against 349,699.
+
 ### 0.9.56 — WN3-R, the band's monetary study — 2026-11-08, ready, see docs/queue/WN3-R-notes.md
 MonetaryCheck, PassThroughCheck and CurveCheck play on the world's band again, with no model change, because the
 premise already holds there on 0.9.55. The held dial gives 7.22/5.92/5.25/4.96% at 3/10/20/40%, the month-late rows

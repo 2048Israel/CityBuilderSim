@@ -277,6 +277,17 @@ public class DataSave implements Cloneable {
     private double cityInterestAccrued;
 
     /*
+     * ...AND THE MONTH'S COUPONS ABROAD (CD9, CD7-E, 2026-11-08): the foreign
+     * paper's interest, every money's, in D$, that EARNED's expenses carry
+     * beside the accrued interest (EconomyManager.getForeignInterest()). A
+     * flow struck at the month's books (Game.strikeGovernmentBooks()) and paid
+     * at once, so there is nothing to rederive it from on load: a city saved
+     * after the strike read EARNED without it until the next strike. A save
+     * from before it reads 0.
+     */
+    private double cityForeignInterest;
+
+    /*
      * EVERY SECTOR, WHOLE, BY NAME - and every market's price (2026-09-11,
      * the sector template). Its cash, its stocks, the month in progress, the
      * month last struck, the three bills of the month, and whatever state is
@@ -1402,6 +1413,9 @@ public class DataSave implements Cloneable {
 
     public void setCityInterestAccrued(double value) { this.cityInterestAccrued = value; }
     public double getCityInterestAccrued()           { return cityInterestAccrued; }
+
+    public void setCityForeignInterest(double value) { this.cityForeignInterest = value; }
+    public double getCityForeignInterest()           { return cityForeignInterest; }
 
     public void setWorkforce(long workforce) { this.workforce = workforce; }
 

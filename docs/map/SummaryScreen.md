@@ -1,4 +1,4 @@
-# SummaryScreen.java - 1,545 lines · 33 methods · 8 constants · interface
+# SummaryScreen.java - 1,547 lines · 33 methods · 8 constants · interface
 
 `ham/citybuildersim/ui/SummaryScreen.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
 
@@ -39,18 +39,18 @@
 | 854 | · BANK |
 | 890 | · TRADE - the city's edge, in one line. |
 | 925 | · THE TWO POCKETS, AND WHICH MONEY EACH IS IN. |
-| 1028 | · TAX |
-| 1050 | · LABOUR - and this is the one Jerus asked for by name. |
-| 1143 | · SCHOOLS |
-| 1181 | · PEOPLE |
-| 1199 | · HEALTH |
-| 1228 | · SAFETY (2026-09-11) |
-| 1258 | · RESOURCES |
-| 1289 | · LAND |
-| 1328 | · SECTOR CASH |
-| 1340 | · BUILDINGS, and this is where the folding pays for itself. |
-| 1418 | · THE VITALS, which are never folded away. |
-| 1450 | · AND WHATEVER IS ACTUALLY WRONG. |
+| 1030 | · TAX |
+| 1052 | · LABOUR - and this is the one Jerus asked for by name. |
+| 1145 | · SCHOOLS |
+| 1183 | · PEOPLE |
+| 1201 | · HEALTH |
+| 1230 | · SAFETY (2026-09-11) |
+| 1260 | · RESOURCES |
+| 1291 | · LAND |
+| 1330 | · SECTOR CASH |
+| 1342 | · BUILDINGS, and this is where the folding pays for itself. |
+| 1420 | · THE VITALS, which are never folded away. |
+| 1452 | · AND WHATEVER IS ACTUALLY WRONG. |
 
 ## Constants
 
@@ -77,7 +77,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 37 | 1509 | **type** `final class SummaryScreen` | The left panel's content: the summary and the dashboard - the vitals, the alert block, the six lines that are always worth a glance or the thirteen folded sections - and the problem list that decides what goes red, dr... |
+| 37 | 1511 | **type** `final class SummaryScreen` | The left panel's content: the summary and the dashboard - the vitals, the alert block, the six lines that are always worth a glance or the thirteen folded sections - and the problem list that decides what goes red, dr... |
 | 42 | 1 | `SummaryScreen(UserInterface ui)` |  |
 
 ### HEADROOM, NOT SATISFACTION (lines 44-123)
@@ -112,7 +112,7 @@
 | 420 | 7 | `Label foldLink(String text, Runnable act)` |  |
 | 435 | 9 | `Label panelNote(String text)` | A caption inside an open section - a sub-heading, or a note. |
 
-### THE SUMMARY IS A PROBLEM LIST NOW. (lines 445-1545)
+### THE SUMMARY IS A PROBLEM LIST NOW. (lines 445-1547)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -129,9 +129,9 @@
 | 715 | 55 | `private void summaryRows(VBox body)` |  |
 | 772 | 18 | `VBox panelHeading(String text)` | A rule and a caption, dividing the panel's two halves. |
 | 799 | 3 | `void panelDashboardSections(VBox body)` | The thirteen sections, folded the way the player left them. |
-| 803 | 573 | `private void dashboardSections(VBox body)` |  |
-| 1382 | 4 | `void refreshCityPanel()` | The city panel, drawn kept (UP2): the nodes the last draw made, this month's figures set on them (ui.cityPool). |
-| 1387 | 128 | `private void drawCityPanel()` |  |
-| 1528 | 12 | `HBox careLine(String label, CareType care, double needed, double[] staffing)` | One coverage row: the percentage, and the two numbers behind it. |
-| 1542 | 3 | `String shorten(String name)` | Keeps building names inside the panel's fixed-width column. |
+| 803 | 575 | `private void dashboardSections(VBox body)` |  |
+| 1384 | 4 | `void refreshCityPanel()` | The city panel, drawn kept (UP2): the nodes the last draw made, this month's figures set on them (ui.cityPool). |
+| 1389 | 128 | `private void drawCityPanel()` |  |
+| 1530 | 12 | `HBox careLine(String label, CareType care, double needed, double[] staffing)` | One coverage row: the percentage, and the two numbers behind it. |
+| 1544 | 3 | `String shorten(String name)` | Keeps building names inside the panel's fixed-width column. |
 

@@ -1690,11 +1690,12 @@ public class ScaleCheck {
        ----------------------------------------------------------------------- */
 
     static void registers(JsonObject d, long k) {
-        // The treasury's month in progress and its paper (CD3 to CD6): the interest accrued and not yet charged, what it has
+        // The treasury's month in progress and its paper (CD3 to CD6): the interest accrued and not yet charged (and the month's
+        // coupons abroad in EARNED, CD9), what it has
         // raised and what it has retired for a gain since the last strike, the paper its bank has taken and not yet paid for
         // with the discount on it, what its buybacks have not yet settled, its capital spending, the transit bill, the month's
         // material imports (units and bill) and the shed's points of work: money and units, K times over as the cash is.
-        for (String key : new String[] { "cityInterestAccrued", "treasuryRaisedPending", "retiredGainPending", "cityPaperUnsettled",
+        for (String key : new String[] { "cityInterestAccrued", "cityForeignInterest", "treasuryRaisedPending", "retiredGainPending", "cityPaperUnsettled",
                 "cityDiscountUnsettled", "buybackToHouseholdsUnsettled", "buybackAbroadUnsettled", "cityCapitalSpending",
                 "transitBill", "monthlyMaterialImports", "monthlyMaterialImportBill", "constructionShedPoints" }) {
             scalar(d, key, k);

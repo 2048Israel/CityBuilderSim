@@ -1170,11 +1170,14 @@ public class SaveFileCheck {
         /* ============ 12b. ...AND ONE THAT OWES ABROAD (2026-09-21) ============
 
            What the currency did to the city's dollar debt this month -
-           ForeignAccounts.getLastRevaluation(), printed by the trade and the
-           finance pages beside what is owed - was struck inside the month and
-           carried by nothing, so a freshly loaded city read "the currency did
-           nothing" beside a debt the rate had just moved. Slot 24 of the
-           foreign accounts' array now.
+           printed by the trade and the finance pages beside what is owed -
+           was struck inside the month and carried by nothing, so a freshly
+           loaded city read "the currency did nothing" beside a debt the rate
+           had just moved. It was ForeignAccounts' own figure (slot 24 of its
+           array); since CD9 (2026-11-08) it is CD7's booked line,
+           NationalAccounts.getDebtExchangeGain(), and the sum since founding
+           is the history's "debtExchange" series. Slots 14, 15 and 24 are
+           written as 0 and read by nobody.
 
            The fixture CAUSES a revaluation rather than finding one: the city
            borrows dollars on its first morning, and is played until a month in
@@ -1198,13 +1201,13 @@ public class SaveFileCheck {
             final int tradingMonths = 24;
             abroad.simulateMonths(tradingMonths + 2);
             for (int extra = 0; extra < 120
-                    && Math.abs(abroad.getForeignAccounts().getLastRevaluation()) < 1e-6; extra++) {
+                    && Math.abs(abroad.getEconomyManager().getNationalAccounts().getDebtExchangeGain()) < 1e-6; extra++) {
                 abroad.simulateMonths(1);
             }
         } finally {
             System.setOut(shown);
         }
-        double revalued = abroad.getForeignAccounts().getLastRevaluation();
+        double revalued = abroad.getEconomyManager().getNationalAccounts().getDebtExchangeGain();   // a gain positive (CD9: the booked line)
         System.out.printf("   US$%,.0fk owed; the currency moved it by $%,.4fk this month%n",
                 abroad.getDebtManager().getForeignPrincipalUsd(), revalued);
         assertTrue("fixture: the city really does owe dollars",
@@ -1215,11 +1218,21 @@ public class SaveFileCheck {
         assertTrue("saved owing abroad", abroad.saveGame(1, "owes abroad").ok);
         Game abroadBack = new Game(abroadFiles);
         abroadBack.loadGameSave(1);
-        same("what the currency did to the debt this month reloads",
-                abroadBack.getForeignAccounts().getLastRevaluation(), revalued);
-        same("...beside the rest of the foreign accounts, which always did",
-                abroadBack.getForeignAccounts().getLifetimeRevaluation(),
-                abroad.getForeignAccounts().getLifetimeRevaluation());
+        same("what the currency did to the debt this month reloads (CD7's booked line)",
+                abroadBack.getEconomyManager().getNationalAccounts().getDebtExchangeGain(), revalued);
+        same("...and what it has done to it since founding (the history's sum of the line)",
+                abroadBack.debtExchangeSinceFounding(), abroad.debtExchangeSinceFounding());
+        assertTrue("fixture: ...which is not nothing after a month with a move",
+                abroad.debtExchangeSinceFounding() != 0);
+        // ...and the month's coupons abroad (CD9, CD7-E): the flow EARNED's expenses carry beside the accrued interest,
+        // struck at the month's books and paid at once, so DataSave.cityForeignInterest is all there is to bring it back.
+        double abroadCoupon = abroad.getEconomyManager().getForeignInterest();
+        assertTrue("fixture: the city paid a coupon abroad this month, and EARNED's expenses carry it",
+                abroadCoupon > 0 && abroadCoupon == abroad.getForeignInterestPaidThisMonth()
+                        && abroad.getEconomyManager().getExpenses() >= abroadCoupon);
+        same("the month's coupons abroad reload with the save", abroadBack.getEconomyManager().getForeignInterest(), abroadCoupon);
+        assertTrue("...and the reloaded city's EARNED expenses carry it",
+                abroadBack.getEconomyManager().getExpenses() >= abroadCoupon);
         // ...and what that move did to the dollar debt in the city's BOOKS (CD7): the month's exchange gain (loss), the last slot
         // of the government block; the history's series of it; and the rate each sale into the dollar piece was made at.
         double exchangeLine = abroad.getEconomyManager().getNationalAccounts().getDebtExchangeGain();

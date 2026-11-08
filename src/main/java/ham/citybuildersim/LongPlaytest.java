@@ -6829,7 +6829,7 @@ public class LongPlaytest {
                         + fxMarket.foreignWindowReason() + ")");
         out.printf("  the currency did $%,.0fk to that debt over the run;"
                 + " walked away from $%,.0fk; scar %.2f points%n",
-                fx.getLifetimeRevaluation(), fx.getRepudiated(),
+                -g.debtExchangeSinceFounding(), fx.getRepudiated(),   // CD9: CD7's booked line, printed as before (a loss positive)
                 fxMarket.getDefaultScar() * 100);
         /*
          * WHAT THE SICKNESS IS MADE OF, because the total on its own cannot be

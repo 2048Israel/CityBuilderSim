@@ -1009,10 +1009,12 @@ final class SummaryScreen {
                                 usd(fxPanel.getForeignDebtUsd()), PANEL_BAD));
                         b.getChildren().add(statLine("  costing",
                                 money(fxPanel.getForeignDebt()), PANEL_BAD));
-                        if (Math.abs(fxPanel.getLastRevaluation()) > .005) {
+                        // CD9 (CD8-R, 2026-11-08): the booked line (a gain positive, a loss BAD), not ForeignAccounts' second figure.
+                        double exchangeGain = ui.game.getEconomyManager().getNationalAccounts().getDebtExchangeGain();
+                        if (Math.abs(exchangeGain) > .005) {
                             b.getChildren().add(statLine("Currency did",
-                                    money(-fxPanel.getLastRevaluation()),
-                                    fxPanel.getLastRevaluation() > 0 ? PANEL_BAD : PANEL_GOOD));
+                                    money(exchangeGain),
+                                    exchangeGain < 0 ? PANEL_BAD : PANEL_GOOD));
                         }
                         b.getChildren().add(statLine("Net position",
                                 money(fxPanel.netForeignPosition()),

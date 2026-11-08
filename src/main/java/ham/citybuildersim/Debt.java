@@ -1246,9 +1246,10 @@ public abstract class Debt {
      * an arbitrary schedule - which is exactly the point of having a schedule.
      * PV falls monotonically as the rate rises, so bisection cannot get lost;
      * eighty iterations over a 0-500% bracket is far more precision than a
-     * percentage on a screen can use.
+     * percentage on a screen can use. A price over everything still to be paid
+     * is a negative yield, bisected on EFFECTIVE_RATE_FLOOR to 0 (CD9).
      *
-     * @return the nominal annual yield, or 0 if the bond owes nothing
+     * @return the nominal annual yield (under zero for a price over the total), or 0 if the bond owes nothing
      */
     public double getYieldToMaturity(double price) {
 
@@ -1261,14 +1262,18 @@ public abstract class Debt {
         for (double cf : flows) total += cf;
 
         // Paying more than every remaining payment put together is a negative
-        // yield. Real, but off the bottom of the bracket, so it is reported as
-        // zero rather than as a wrong number.
-        if (price >= total) {
-            return 0;
-        }
-
+        // yield, as a franc bond sold over par has (CD9, 2026-11-08): found on
+        // [EFFECTIVE_RATE_FLOOR, 0] by the same bisection. A price of exactly
+        // the total is a yield of exactly 0, as it always was.
         double low = 0;
         double high = 5.0;
+        if (price == total) {
+            return 0;
+        }
+        if (price > total) {
+            low = EFFECTIVE_RATE_FLOOR;
+            high = 0;
+        }
 
         for (int i = 0; i < 80; i++) {
             double mid = (low + high) / 2;

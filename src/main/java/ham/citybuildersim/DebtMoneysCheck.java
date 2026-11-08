@@ -41,6 +41,13 @@ import java.util.Set;
  *      same, and the load books no exchange move.
  *  10. US$ paper in the same city as before: its rate is the D$'s exactly, it saves with no money, the US$ the city owes counts it at its own-money
  *      principal, and the US$'s every curve and quote is its old expression's.
+ *  11. A money under zero sells under zero, its coupon at 0% (CD9, 2026-11-08; Jerus: a world curve floors at its own money's rate, not the city's):
+ *      the franc handed a policy rate under zero between presses has a curve held at that rate (DebtManager.worldRate(code)) and not at MIN_RATE, while
+ *      the domestic floor is the city's still; a twelve-month franc bill is quoted under zero, at the chip's rate, over par; a two-year franc bond has a
+ *      coupon of MIN_FOREIGN_COUPON, a price over par and a yield under zero that is the chip's, books over its face, and a month with it closes in the
+ *      audit; and a money over MIN_RATE prices as before, to the cent and to the bit.
+ *  12. The cost of issue is taken in the paper's money, the US$ too: with the D$ off 1, a US$ bill raises its face at the curve less the fixed cost over
+ *      the D$'s rate (Game.costOfIssuance() / localPer), and not the unconverted figure.
  */
 public class DebtMoneysCheck {
 
@@ -60,6 +67,9 @@ public class DebtMoneysCheck {
 
     /** The share of its worth in US$ the D$ keeps in a fall: 0.90 is a D$ 10% weaker (DebtExchangeCheck.KEEPS). */
     static final double KEEPS = 0.90;
+
+    /** The franc's policy rate handed in section 11, a fraction a year: the Swiss National Bank's of February 2015 (InterestAbroadCheck.SPOTS), under zero and under the city's MIN_RATE. */
+    static final double FRANC_RATE = -0.0075;
 
     /** The tenors, in months, the curves are read at. */
     static final int[] TENORS = {1, 12, 60, 120, 360};
@@ -257,7 +267,7 @@ public class DebtMoneysCheck {
         near("its books open with what it raised, in euros", eur.carryingInCurrency(), eurQuote.cashReceived());
         near("the treasury's cash rose by what it raised in euros times the euro's D$", w.getCash() - cashBefore, eurQuote.cashReceived() * eurLocalPer);
         near("what the city owes abroad in local money is the piece at its own rate", dm.getForeignPrincipal(), eur.principalInCurrency() * eurLocalPer);
-        double par = dm.worldCurveAt(dm.foreignRate("EUR")).parYield(120);
+        double par = dm.worldCurveAt("EUR", dm.foreignRate("EUR")).parYield(120);
         check("its coupon is the par yield of the euro's curve with the piece on the books, rounded down to the coupon step",
                 eurQuote.couponRate() <= par + 1e-9 && par - eurQuote.couponRate() < Auction.COUPON_STEP + 1e-9);
         double premiumAfterEur = dm.countryPremium();
@@ -367,7 +377,7 @@ public class DebtMoneysCheck {
         open(w);
         double principal = eur.getOustandingPrincipal();
         double usdOwed = dm.getForeignPrincipalUsd();
-        double fairOnCurve = dm.worldCurveAt(dm.foreignRate("EUR")).pv(eur.remainingCashFlows()) / principal * 100;
+        double fairOnCurve = dm.worldCurveAt("EUR", dm.foreignRate("EUR")).pv(eur.remainingCashFlows()) / principal * 100;
         Buyback.Result quote = w.quoteBuyback(eur, 1e12, Double.NaN);
         near("its fair per 100 is its value on the euro's curve, not the US$'s", quote.fairPer100(), fairOnCurve, 1e-9);
         check("...which is not what the US$'s curve would have said", Math.abs(fairOnCurve - dm.worldCurveAt(dm.foreignRate()).pv(eur.remainingCashFlows()) / principal * 100) > 1e-6);
@@ -488,6 +498,103 @@ public class DebtMoneysCheck {
         double booked = bare.revalueForeign(1.40 * 1.25);
         near("the bare ledger's exchange line moves a euro piece by the D$'s move times its US$ per unit (the US$ piece by the D$'s)", booked,
                 bareUsd.carryingInCurrency() * (1.40 - 1.40 * 1.25) + bareEur.carryingInCurrency() * (1.40 * 1.10 - 1.40 * 1.25 * 1.10), 1e-6);
+
+        /* ============ 11. a money under zero ============ */
+        out.println("\n--- a money under zero sells under zero, its coupon at 0% ---");
+
+        Game neg = town("debt-moneys-negative", false);
+        DebtManager ndm = neg.getDebtManager();
+        double[] handed = new double[WorldMoneys.EIGHT.size()];
+        for (int k = 0; k < handed.length; k++) handed[k] = ndm.worldRate(WorldMoneys.EIGHT.get(k));
+        handed[WorldMoneys.EIGHT.indexOf("CHF")] = FRANC_RATE;
+        ndm.setMoneyRates(handed);
+        open(neg);
+        double francRate = ndm.worldRate("CHF");
+        check("premise: the franc's world rate is under zero, and under the city's own floor (MIN_RATE)", francRate < 0 && francRate < DebtManager.MIN_RATE);
+        check("premise: the franc is offered, and the city owes nothing abroad", ndm.offers("CHF") && ndm.getForeignPrincipal() == 0);
+
+        // (a) the floors themselves
+        YieldCurve under = ndm.worldCurveAt("CHF", francRate - 0.01);
+        check("a world curve built under the franc's rate is held at the franc's rate: its forward(0) is worldRate(CHF), exactly", under.forward(0) == francRate);
+        YieldCurve atRate = ndm.worldCurveAt("CHF", francRate);
+        check("...and built at the franc's rate it is that rate, under MIN_RATE: the city's floor no longer applies abroad",
+                atRate.forward(0) == francRate && atRate.forward(0) < DebtManager.MIN_RATE);
+        check("...the cache keys on the floor as well as the rate: the US$'s curve at the same level is held at the US$'s rate",
+                ndm.worldCurveAt("USD", francRate).forward(0) == ndm.worldRate("USD") && ndm.worldCurveAt(francRate).forward(0) == ndm.worldRate());
+        check("the domestic floor is the city's still: shortRate(-1%) and a curve built on a path at -1% are MIN_RATE",
+                YieldCurve.shortRate(-0.01, 0, 0, Double.MAX_VALUE) == DebtManager.MIN_RATE
+                        && new YieldCurve(YieldCurve.flatPath(-0.01), 0, 0, Double.MAX_VALUE, m -> 0).forward(0) == DebtManager.MIN_RATE);
+
+        // (b) a twelve-month franc bill
+        Set<Debt> negHad = new HashSet<>(foreignPieces(neg));
+        // The smallest deal the city may do, in francs: the country premium reads the sale's own size, and a big one would lift the franc's rate over zero.
+        double francAsk = neg.minimumIssueSizeIn("CHF");
+        DebtQuote francBill = neg.quoteForeign("Note", "CHF", francAsk, 12, 100);
+        check("the twelve-month franc bill quote is not empty, and its rate is under zero", !francBill.isEmpty() && francBill.marketRate() < 0);
+        sell(neg, "Note", "CHF", francAsk, 12, false);
+        Debt francBillPiece = newest(neg, negHad);
+        check("the bill was sold, written in francs", francBillPiece != null && "CHF".equals(francBillPiece.getMoney()));
+        near("its rate is the chip's, foreignCurveRate(CHF, 12) as it reads with the bill on the books (the sale's own size is in the premium)",
+                francBill.marketRate(), ndm.foreignCurveRate("CHF", 12), 1e-9);
+        double billFee = neg.costOfIssuance(francBill.faceValue()) / localPer(neg, "CHF");
+        check("what it raised plus the cost of issue in francs is over its face: sold over par", francBill.cashReceived() + billFee > francBill.faceValue());
+        near("...it raised its face at the franc's curve for twelve months, less the cost in francs (to the cent)", francBill.cashReceived(),
+                francBill.faceValue() * ndm.foreignFactor("CHF", 12) - billFee, .006);
+
+        // (c) a two-year franc bond
+        negHad = new HashSet<>(foreignPieces(neg));
+        double bondAsk = neg.minimumIssueSizeIn("CHF");
+        DebtQuote francBond = neg.quoteForeign("Term", "CHF", bondAsk, 2, 100);
+        check("the two-year franc bond quote is not empty, and its coupon is MIN_FOREIGN_COUPON", !francBond.isEmpty() && francBond.coupon() == DebtManager.MIN_FOREIGN_COUPON);
+        double bondFee = neg.costOfIssuance(francBond.faceValue()) / localPer(neg, "CHF");
+        check("...its price is over par: it raised, with the cost of issue in francs, more than its face", francBond.cashReceived() + bondFee > francBond.faceValue());
+        check("...and its yield, the quote's rate, is under zero", francBond.marketRate() < 0);
+        sell(neg, "Term", "CHF", bondAsk, 2, false);
+        Debt francPiece = newest(neg, negHad);
+        check("the bond was sold, written in francs", francPiece instanceof LongTermBond && "CHF".equals(francPiece.getMoney()));
+        near("its yield is the chip's, foreignCurveRate(CHF, 24) as it reads with both pieces on the books", francBond.marketRate(), ndm.foreignCurveRate("CHF", 24), 1e-9);
+        check("the booked piece's coupon is 0", francPiece instanceof LongTermBond lb && lb.getCouponRate() == 0 && francPiece.couponInCurrency() == 0);
+        near("...its books open with what it raised, in francs", francPiece.carryingInCurrency(), francBond.cashReceived());
+        check("...which is over its face", francPiece.carryingInCurrency() > francPiece.faceInCurrency());
+        press(neg);
+        check("a month with the franc paper at a negative rate: the money audit closes", closes(neg));
+
+        // (d) a money over MIN_RATE prices as it did (the press handed the nil exports back, so the window is opened again)
+        open(neg);
+        for (String code : new String[] {"USD", "EUR"}) {
+            double ask = askIn(neg, code);
+            DebtQuote quoted = neg.quoteForeign("Note", code, ask, 12, 100);
+            check("premise: the " + code + " twelve-month bill quote is not empty, and its rate is over MIN_RATE", !quoted.isEmpty() && quoted.marketRate() > DebtManager.MIN_RATE);
+            YieldCurve old = new YieldCurve(YieldCurve.flatPath(quoted.marketRate()), 0, 0, Double.MAX_VALUE, DebtManager::termPremium);
+            double oldFee = neg.costOfIssuance(quoted.faceValue()) / localPer(neg, code);
+            near("the " + code + " bill raised its face at the city's-floor curve at its rate, less the cost in its money (to the cent)", quoted.cashReceived(),
+                    quoted.faceValue() * old.factor(12) - oldFee, .006);
+            YieldCurve worldCurve = ndm.worldCurveAt(code, quoted.marketRate());
+            boolean bits = true;
+            for (int m : TENORS) bits &= old.zero(m) == worldCurve.zero(m) && old.factor(m) == worldCurve.factor(m) && old.forward(m) == worldCurve.forward(m);
+            check("...and the old curve and the " + code + " world curve at that level agree to the bit at every tenor", bits);
+        }
+
+        /* ============ 12. the cost of issue in the paper's money ============ */
+        out.println("\n--- the cost of issue is taken in the paper's money, the US$ too ---");
+
+        Game cost = town("debt-moneys-issue-cost", false);
+        ForeignAccounts costFx = cost.getForeignAccounts();
+        costFx.pinRate(1 / KEEPS);
+        press(cost);
+        open(cost);
+        double dRate = costFx.getRate();
+        check("premise: the D$ is off 1 (the rate is " + dRate + "), so the fixed cost in D$ and in US$ are not the same figure", Math.abs(dRate - 1) > 0.01);
+        double usAsk = askIn(cost, "USD");
+        DebtQuote usBill = cost.quoteForeign("Note", "USD", usAsk, 12, 100);
+        check("the US$ twelve-month bill quote is not empty", !usBill.isEmpty());
+        double usFace = usBill.faceValue();
+        double usGross = usFace * Math.exp(-12 * Math.log1p(usBill.marketRate() / 12));
+        near("it raised its face at its rate's factor, less the fixed cost over the D$'s rate (to the cent)", usBill.cashReceived(),
+                usGross - cost.costOfIssuance(usFace) / dRate, .006);
+        check("...and not the fixed cost unconverted (the two differ by more than a cent)",
+                Math.abs((usGross - cost.costOfIssuance(usFace)) - (usGross - cost.costOfIssuance(usFace) / dRate)) > .01
+                        && Math.abs(usBill.cashReceived() - (usGross - cost.costOfIssuance(usFace))) > .01);
 
         out.printf("%n(%d assertions)%n", asserted);
         out.println(fails == 0

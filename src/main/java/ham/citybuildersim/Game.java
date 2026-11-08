@@ -5554,6 +5554,21 @@ public class Game {
     }
 
     /**
+     * CD9 (CD8-R, 2026-11-08): what the currency has done to the city's foreign debt since founding, a gain positive,
+     * a loss below nothing: the sum of the history's "debtExchange" series, CD7's booked line month by month, the
+     * crosses of the paper in the other moneys included. It replaces ForeignAccounts' lifetime revaluation (the
+     * US$ stock times the D$'s move alone, dearer positive), which missed the crosses. The stored figures, so a
+     * folded year adds its sum; the months before the series began read nothing. A read.
+     */
+    public double debtExchangeSinceFounding() {
+        double sum = 0;
+        for (double v : historySave.raw("debtExchange")) {
+            if (!Double.isNaN(v)) sum += v;
+        }
+        return sum;
+    }
+
+    /**
      * WHAT THE ROLLOVER LEAVES FOR THE FUND, now: the dial's share of this
      * calendar year's surplus so far (TreasuryFund.reservedFor()) - nothing
      * once this year's pay-in is made, and nothing at a dial of 0.
@@ -12141,8 +12156,8 @@ public class Game {
      * {@code requested}, the face, what it raises and the rounding are all in it. Empty when the money has no rate this month
      * (DebtManager.offers()), as when the window is shut. The US$ is quoteForeign(type, requestedUsd, ...), through this, to the bit.
      *
-     * The fixed cost of issue (costOfIssuance()) is local money: taken off a US$ quote as the figure it is, as it always was, and converted to the
-     * money's units (at localPer()) off any other.
+     * The fixed cost of issue (costOfIssuance()) is local money: converted to the money's units (at localPer()) off every quote, the US$'s included
+     * (CD9, 2026-11-08; it was taken off a US$ quote unconverted before).
      */
     public DebtQuote quoteForeign(String type, String money, double requested, int duration, double rounding) {
 
@@ -12200,9 +12215,14 @@ public class Game {
     /** What the treasury is told when it asks for a dollar floater or linker. */
     public static final String NO_DOLLAR_FLOAT_OR_LINKED = "Floating-rate notes and inflation-linked bonds are issued at home only.";
 
-    /** A dollar bond's coupon on a world curve: its par yield at the term, rounded down to Auction.COUPON_STEP. */
+    /**
+     * A foreign bond's coupon on a world curve: its par yield at the term, rounded down to Auction.COUPON_STEP,
+     * and not under DebtManager.MIN_FOREIGN_COUPON (CD9, 2026-11-08): a yield under zero is paid in the price,
+     * the bond selling over par.
+     */
     private static double dollarCoupon(YieldCurve world, int months) {
-        return Math.floor((world.parYield(months) + 1e-12) / Auction.COUPON_STEP) * Auction.COUPON_STEP;
+        double struck = Math.floor((world.parYield(months) + 1e-12) / Auction.COUPON_STEP) * Auction.COUPON_STEP;
+        return Math.max(DebtManager.MIN_FOREIGN_COUPON, struck);
     }
 
     /**
@@ -12229,11 +12249,11 @@ public class Game {
         double level = debtManager.quoteForeignRate(code, face, months) - premium;
         for (int i = 0; i < FOREIGN_QUOTE_ITERATIONS; i++) {
             double next = debtManager.quoteForeignRate(
-                    shape.apply(debtManager.worldCurveAt(level)), months) - premium;
-            if (Math.abs(next - level) < 1e-13) return debtManager.worldCurveAt(next);
+                    shape.apply(debtManager.worldCurveAt(code, level)), months) - premium;
+            if (Math.abs(next - level) < 1e-13) return debtManager.worldCurveAt(code, next);
             level = next;
         }
-        return debtManager.worldCurveAt(level);
+        return debtManager.worldCurveAt(code, level);
     }
 
     /** The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. */
@@ -12245,10 +12265,9 @@ public class Game {
         return shape;
     }
 
-    /** The fixed cost of an issue (costOfIssuance()) in the money the paper is written in: the figure itself for the US$, as a dollar quote has always taken it, and local money over localPer() for another (CD8). */
+    /** The fixed cost of an issue (costOfIssuance(), local money) in the money the paper is written in: over localPer(code), the US$ included - localPer("USD") is the D$'s rate (CD9, 2026-11-08; the US$ took the local figure unconverted before). */
     private double issueCostIn(String code, double face) {
-        double fee = costOfIssuance(face);
-        return "USD".equals(code) ? fee : fee / localPer(code);
+        return costOfIssuance(face) / localPer(code);
     }
 
     /**
@@ -14481,6 +14500,8 @@ public class Game {
          * that is not cash, of which the uplift paid is the cash part. Nothing but zero for a city that
          * holds no linker.
          */
+        // CD9 (CD7-E, 2026-11-08): the month's coupons abroad, which the budget's interest below carries, are EARNED's too (getExpenses()).
+        economyManager.setForeignInterest(foreignInterestPaidThisMonth);
         economyManager.refreshGovernmentAccounts(
                 landManager.getLandSalesThisMonth(),
                 cityCapitalSpending,
@@ -16777,6 +16798,8 @@ public class Game {
         // interest and the load path feeds it straight back to setInterest().
         // Saving the whole expense line double-counted pensions on load.
         dataSave.setCityInterestAccrued(economyManager.getInterestAccrued());
+        // ...and the month's coupons abroad (CD9, CD7-E): a flow struck at the month's books, in EARNED's expenses, nothing to rederive it from.
+        dataSave.setCityForeignInterest(economyManager.getForeignInterest());
 
         /*
          * EVERY SECTOR, WHOLE, BY NAME (2026-09-11, the sector template): its
@@ -20298,6 +20321,7 @@ public class Game {
          */
         double restoredPropertyTax = 0;
         double restoredCityInterest = 0;
+        double restoredCityForeignInterest = 0;
         DataSave restoredFlows = null;
 
         try {
@@ -21035,6 +21059,7 @@ public class Game {
 
             restoredPropertyTax = loaded.getPropertyTaxCharged();
             restoredCityInterest = loaded.getCityInterestAccrued();
+            restoredCityForeignInterest = loaded.getCityForeignInterest();
             restoredFlows = loaded;
             
 
@@ -21251,6 +21276,8 @@ public class Game {
          * behaved as.
          */
         economyManager.setInterest(restoredCityInterest);
+        // ...and the month's coupons abroad EARNED carries (CD9, CD7-E): unconditional too, 0 for a save from before it.
+        economyManager.setForeignInterest(restoredCityForeignInterest);
 
         /*
          * THE HOUSEHOLDS, BEFORE THE REBUILD RATHER THAN AFTER IT.

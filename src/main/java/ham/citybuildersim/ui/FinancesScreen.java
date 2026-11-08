@@ -2325,7 +2325,6 @@ final class FinancesScreen {
     /** THE DOLLAR DEBT: dollars times the rate is the local figure; what the currency did to it last month as a chip. */
     VBox dollarDebtCard() {
         DebtManager ledger = ui.game.getDebtManager();
-        ForeignAccounts fx = ui.game.getForeignAccounts();
         // CD8: the card counts every money abroad in US$ at the month's crosses, so it says so once the city owes in another of the eight.
         boolean others = false;
         for (int k = 1; k < WorldMoneys.EIGHT.size(); k++) others |= ledger.hasForeignDebtIn(WorldMoneys.EIGHT.get(k));
@@ -2333,7 +2332,8 @@ final class FinancesScreen {
                 () -> openTrade("The currency", TradeScreen.TRADE_MONEY_PAGES[0]))));
         card.getChildren().add(figure(usd(ledger.getForeignPrincipalUsd()) + " × " + perUsd(ledger.getExchangeRate())
                 + " = " + d(ledger.getForeignPrincipal()), Palette.SIZE_BODY + 2, Palette.TEXT_HEAD));
-        double moved = fx.getLastRevaluation();
+        // CD9 (CD8-R, 2026-11-08): the booked line (a gain positive), shown dearer-positive as before, not ForeignAccounts' second figure.
+        double moved = -ui.game.getEconomyManager().getNationalAccounts().getDebtExchangeGain();
         if (Math.abs(moved) > .005) {
             card.getChildren().add(Kept.scope("moved", () -> chip("the currency moved it " + signedD(moved) + " last month",
                     moved > 0 ? Palette.BAD : Palette.GOOD)));

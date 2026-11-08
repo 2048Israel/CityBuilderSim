@@ -111,6 +111,18 @@ public final class YieldCurve {
      * @param shape      termPremium(m) - compression(m) for m >= 1 (0 up to a year)
      */
     public YieldCurve(double[] path, double gdpSpread, double revenueSpread, double ceilingNow, IntToDoubleFunction shape) {
+        this(path, gdpSpread, revenueSpread, ceilingNow, DebtManager.MIN_RATE, shape);
+    }
+
+    /**
+     * ...with the lowest forward as a parameter (CD9, 2026-11-08): the city's own
+     * curves pass DebtManager.MIN_RATE (the constructor above), a world curve
+     * passes its own money's policy rate, which may be under zero. The two
+     * clamps (each forward, and shortRate()) read it and nothing else does.
+     *
+     * @param cheapest the lowest forward any month can have
+     */
+    public YieldCurve(double[] path, double gdpSpread, double revenueSpread, double ceilingNow, double cheapest, IntToDoubleFunction shape) {
         if (path == null || path.length == 0) throw new IllegalArgumentException("a curve needs a path");
         if (path.length == HORIZON) {
             this.path = path;
@@ -126,8 +138,8 @@ public final class YieldCurve {
         boolean same = true;
         for (int t = 0; t < HORIZON; t++) {
             double p = this.path[t];
-            forward[t] = (t == 0 || p == p0) ? shortRate(p, gdpSpread, revenueSpread, ceilingNow)
-                    : Math.max(DebtManager.MIN_RATE, Math.min((p + gdpSpread) + revenueSpread, p + gap));
+            forward[t] = (t == 0 || p == p0) ? shortRate(p, gdpSpread, revenueSpread, ceilingNow, cheapest)
+                    : Math.max(cheapest, Math.min((p + gdpSpread) + revenueSpread, p + gap));
             if (forward[t] != forward[0]) same = false;
         }
         flat = same;
@@ -159,7 +171,12 @@ public final class YieldCurve {
      * quoted before there was a curve.
      */
     public static double shortRate(double floor, double gdpSpread, double revenueSpread, double ceilingNow) {
-        return Math.max(DebtManager.MIN_RATE, Math.min((floor + gdpSpread) + revenueSpread, ceilingNow));
+        return shortRate(floor, gdpSpread, revenueSpread, ceilingNow, DebtManager.MIN_RATE);
+    }
+
+    /** ...held between a cheapest rate of the caller's (CD9, 2026-11-08) and the ceiling: a world curve's is its own money's policy rate, the city's is DebtManager.MIN_RATE. */
+    public static double shortRate(double floor, double gdpSpread, double revenueSpread, double ceilingNow, double cheapest) {
+        return Math.max(cheapest, Math.min((floor + gdpSpread) + revenueSpread, ceilingNow));
     }
 
     /** A curve from a path, one number for the credit spreads and the room between the path's first month and the ceiling - the fixture's way in; DebtManager hands the two spreads and the ceiling to the constructor. */

@@ -2244,17 +2244,22 @@ public class ForeignAccounts {
        the identity, and rightly, because no money moved. It changes the
        POSITION, which is what a valuation change is.
 
-       Computed off the USD stock and the rate change rather than off the
-       month-on-month local value, because that local value also moves when the
-       city borrows or repays, and a figure captioned "what the currency did to
-       your debt" must not include what the treasury did to it.
+       THIS CLASS NO LONGER KEEPS THE REVALUATION (CD9, 2026-11-08; CD8-R).
+       "What the currency did to the debt" is CD7's booked line,
+       DebtManager.revalueForeign(): every piece at its own rate, the paper in
+       the other moneys with their crosses, stored as
+       NationalAccounts.getDebtExchangeGain() (a GAIN is positive), recorded
+       monthly in the history series "debtExchange" and summed by
+       Game.debtExchangeSinceFounding(). This class kept a second figure for
+       the same thing - the US$ stock times the D$'s move alone, dearer
+       positive - and with the city borrowing in eight moneys it missed every
+       cross: two figures for one thing, and the old one the wrong one. It is
+       gone and the screens read the booked one. Only the POSITION stays here:
+       the stock in US$ and its face value at today's rate, a different thing.
        ======================================================================= */
 
     private double foreignDebt;         // local value of USD paper outstanding
     private double foreignDebtUsd;      // ...and in the dollars it is owed in
-    private double lastDebtRate = OPENING_RATE;
-    private double lastRevaluation;
-    private double lifetimeRevaluation;
 
     /**
      * @param usdOutstanding principal still owed abroad, in dollars
@@ -2262,9 +2267,6 @@ public class ForeignAccounts {
      */
     public void takeForeignDebt(double usdOutstanding, double rateNow) {
         if (rateNow <= 0) return;
-        lastRevaluation = usdOutstanding * (rateNow - lastDebtRate);
-        lifetimeRevaluation += lastRevaluation;
-        lastDebtRate = rateNow;
         foreignDebtUsd = usdOutstanding;
         foreignDebt = usdOutstanding * rateNow;
     }
@@ -2272,10 +2274,6 @@ public class ForeignAccounts {
     /** What the city owes abroad, in local money at today's rate. */
     public double getForeignDebt()    { return foreignDebt; }
     public double getForeignDebtUsd() { return foreignDebtUsd; }
-
-    /** What the currency did to that debt this month. Positive means dearer. */
-    public double getLastRevaluation()     { return lastRevaluation; }
-    public double getLifetimeRevaluation() { return lifetimeRevaluation; }
 
     /**
      * Claims abroad less what is owed abroad: the city's net position.
@@ -2836,14 +2834,14 @@ public class ForeignAccounts {
                  */
                 openness, 0, lastAbsorption,
                 /*
-                 * AND THE RATE THE DEBT WAS LAST VALUED AT.
-                 *
-                 * Without it a reload compares this month's rate against 1.00
-                 * and books the city's entire currency history as one month's
-                 * revaluation. The lifetime figure goes with it for the same
-                 * reason every other lifetime total is carried.
+                 * SLOTS 14 AND 15 WERE THE RATE THE DEBT WAS LAST VALUED AT and
+                 * the lifetime revaluation, retired by CD9 (2026-11-08): the
+                 * revaluation is CD7's booked line (DebtManager.revalueForeign,
+                 * NationalAccounts' debtExchangeGain and the "debtExchange"
+                 * series), saved there. Written as 0 and read by nobody, and
+                 * the slots after them keep their places.
                  */
-                lastDebtRate, lifetimeRevaluation, repudiated, lifetimeIntervention, parity,
+                0, 0, repudiated, lifetimeIntervention, parity,
                 /*
                  * THE VAULT, saved separately since the two were split. Slot 19,
                  * so an older save restores its single number into the
@@ -2883,16 +2881,12 @@ public class ForeignAccounts {
                  */
                 lastVaultRevaluation,
                 /*
-                 * ...AND WHAT IT DID TO THE DEBT, slot 24 (2026-09-21). The
-                 * same flow on the other side of the position: struck by
-                 * takeForeignDebt() after the reprice, and shown by the trade
-                 * and finance pages beside the dollars owed - which read
-                 * nothing on a freshly loaded city until the month turned. An
-                 * older save has no slot 24 and reads as nothing done until
-                 * its first month, which is what it always read. The rate the
-                 * debt was last valued at is slot 14.
+                 * SLOT 24 WAS WHAT THE CURRENCY DID TO THE DEBT THAT MONTH,
+                 * retired by CD9 (2026-11-08) with slots 14 and 15: the booked
+                 * line (CD7's) is what the screens show of it now. Written as
+                 * 0 and read by nobody.
                  */
-                lastRevaluation,
+                0,
                 /*
                  * ...AND THE DEFENCE, slots 25-27 (0.7.2): the dollars the
                  * central bank sold at the last reprice, the local money they
@@ -3080,10 +3074,7 @@ public class ForeignAccounts {
             // slot 12 was the pressure, retired by XR1: written as 0, read by nobody
             lastAbsorption = saved[13];
         }
-        if (saved.length > 15) {
-            lastDebtRate = saved[14] > 0 ? saved[14] : rate;
-            lifetimeRevaluation = saved[15];
-        }
+        // slots 14 and 15 were the debt's last rate and its lifetime revaluation, retired by CD9: written as 0, read by nobody
         if (saved.length > 16) repudiated = saved[16];
         if (saved.length > 17) lifetimeIntervention = saved[17];
         if (saved.length > 18) parity = saved[18] > 0 ? saved[18] : OPENING_PARITY;
@@ -3101,7 +3092,7 @@ public class ForeignAccounts {
         else if (saved.length > 19) vault[0] = Math.max(0, saved[19]) / rate;
         lastVaultRate = rate;
         if (saved.length > 23) lastVaultRevaluation = saved[23];
-        if (saved.length > 24) lastRevaluation = saved[24];
+        // slot 24 was the month's revaluation, retired by CD9: written as 0, read by nobody
         if (saved.length > 27) {
             defenceUsd = Math.max(0, saved[25]);
             defenceLocal = Math.max(0, saved[26]);
@@ -3272,8 +3263,6 @@ public class ForeignAccounts {
         openness = 0;
         lastAbsorption = 0;
         foreignDebt = foreignDebtUsd = 0;
-        lastDebtRate = OPENING_RATE;
-        lastRevaluation = lifetimeRevaluation = 0;
         parity = OPENING_PARITY;
         repudiated = 0;
         lifetimeIntervention = 0;
@@ -3364,7 +3353,6 @@ public class ForeignAccounts {
         maxRate  *= scale;
         parityBase *= scale;
         parity   *= scale;
-        lastDebtRate *= scale;
         lastVaultRate *= scale;
 
         cumulativeBalance *= scale;
@@ -3387,10 +3375,8 @@ public class ForeignAccounts {
         lifetimeImports   *= scale;
         lifetimeInterest  *= scale;
         lifetimeFinancial *= scale;
-        lifetimeRevaluation *= scale;
         lifetimeIntervention *= scale;
 
-        lastRevaluation *= scale;
         lastVaultRevaluation *= scale;   // (the vault's interest is US$, and stays like the vault's dollars; its local figure is read at the rate)
         lastValuation   *= scale;
         repudiated      *= scale;

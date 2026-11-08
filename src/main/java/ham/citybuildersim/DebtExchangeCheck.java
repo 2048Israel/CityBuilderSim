@@ -46,6 +46,10 @@ import java.util.List;
  *      the grant is what a month in which the D$ did not move would pay.
  *  12. The same for the gain on paper bought back below its book: the balance holds it, the cash does not (the
  *      price paid was the cash), and the grant is the share of the cash.
+ *  13. EARNED carries the month's coupons abroad (CD9, CD7-E): in a month nobody moved a dial, EconomyManager's foreign
+ *      interest is the month's foreign coupon paid, EARNED's expenses carry it (and the accrued interest the cash pays
+ *      does not), and the EARNED-to-budget residual is nothing of it - minus the domestic coupons the holders outside the
+ *      bank were paid, where there are any (FloatLinkCheck's X_EARNED), which is not this batch's to change.
  */
 public class DebtExchangeCheck {
 
@@ -199,6 +203,15 @@ public class DebtExchangeCheck {
         return na.getBalance() - na.getRetiredGain() - na.getDebtExchangeGain() + na.getInterestNotCash() + na.getUpliftNotCash();
     }
 
+    /**
+     * What the month paid the holders of the domestic paper OUTSIDE the bank (CD9): the households', the businesses' and the
+     * world's coupons and the central bank's paper coupons, the figures FloatLinkCheck's X_EARNED premise sums. They are in the
+     * budget's interest and not in EARNED, which carries the bank's share only, so the walk leaves minus them.
+     */
+    static double outsideCoupons(Game g) {
+        return g.getCouponsToHouseholds() + g.getCouponsToFirms() + g.getCouponsToWorld() + g.getCentralBank().getPaperCoupons();
+    }
+
     /** The journal's or the walk's entry with this label, or null. */
     static TreasuryJournal.Entry entry(List<TreasuryJournal.Entry> entries, String label) {
         for (TreasuryJournal.Entry e : entries) if (e.label().equals(label)) return e;
@@ -280,6 +293,7 @@ public class DebtExchangeCheck {
         }
         MoneyAudit.Result quietAudit = city.getLastMoneyAudit();
         double quietResidual = city.getTreasuryResidual(), quietEarned = city.getEarnedResidual();
+        double quietOutside = outsideCoupons(city);   // (CD9) what a quiet month paid the domestic holders outside the bank, which the walk leaves
         double quietSize = sizeOf(city);
 
         /* ============ 2. the D$ falls 10% ============ */
@@ -325,15 +339,20 @@ public class DebtExchangeCheck {
         TreasuryJournal.Entry walk = entry(city.getEarnedToBudget(), "Exchange gain (loss) on foreign debt");
         check("EARNED walks to the budget with the line as a step of its own", walk != null);
         near("...the step is the line", walk == null ? Double.NaN : walk.amount(), fall.line);
-        // What the walk leaves in a city with dollar paper is the dollar coupon, which EARNED and its steps do not carry
-        // (it stands at D$ -377 in every month of the fixture whatever the line does, and moves with the D$): a gap the
-        // walk had before the line existed. The line must not be in it: the residual of the month of the move is the quiet
-        // month's, moved by the D$ as the coupon is (to a ten-thousandth, the amortisation drifting the coupon's expense).
-        double scaledQuiet = quietEarned * fall.rateAfter / fall.rateBefore;
-        near("...and the walk comes to the budget: what it leaves is a quiet month's dollar coupon at the new D$, and nothing of the line",
-                city.getEarnedResidual(), scaledQuiet, 1e-4 * Math.abs(scaledQuiet));
+        // CD9 (CD7-E, 2026-11-08): this used to leave the dollar coupon (D$ -377 in every month of the fixture, moving with the
+        // D$): the budget's interest carries the coupons abroad and EARNED's expenses did not. EconomyManager carries them now
+        // (getForeignInterest(), handed over where the budget's interest is struck), so the walk leaves nothing of the coupon,
+        // and nothing of the line. What it can leave is minus the domestic coupons the holders outside the bank were paid
+        // (FloatLinkCheck's X_EARNED); that is not this batch's to change, and it is nothing where no such holder has paper.
+        double couponAbroad = city.getForeignInterestPaidThisMonth();
+        double walkTolerance = 1e-4 * couponAbroad;   // (to a ten-thousandth of the coupon, as it was: the amortisation drifts the expense)
+        check("premise: the city paid a coupon abroad in the month of the fall", couponAbroad > 0);
+        near("...and the walk comes to the budget: what it leaves is nothing of the dollar coupon and nothing of the line (minus the domestic holders' coupons outside the bank, if any)",
+                city.getEarnedResidual(), -outsideCoupons(city), walkTolerance);
+        near("...and a quiet month's walk left nothing of the coupon either",
+                quietEarned, -quietOutside, walkTolerance);
         check("premise: the line is far larger than that tolerance, so a walk that left it in the residual would have missed",
-                Math.abs(fall.line) > 100 * 1e-4 * Math.abs(scaledQuiet));
+                Math.abs(fall.line) > 100 * walkTolerance);
 
         /* ============ 4. MoneyAudit untouched ============ */
         out.println("\n--- and MoneyAudit does not see it: it is a revaluation, not a flow ---");
@@ -628,6 +647,33 @@ public class DebtExchangeCheck {
                 bought.studentGrantBill(), SHARE * (bna.getTotalRevenue() - bna.getTotalExpenses() + bna.getInterestNotCash() + bna.getUpliftNotCash()), 1e-9);
         move(bought, 1.0);
         near("the month after pays the share of the cash surplus, as paid", bought.getEconomyManager().getStudentGrants(), SHARE * buyCash, 1e-9);
+
+        /* ============ 13. EARNED carries the coupons abroad (CD9, CD7-E) ============ */
+        out.println("\n--- and EARNED carries the month's coupons abroad, as the budget does: the walk leaves nothing of them ---");
+
+        // Section 1's city, which still owes dollars: one more month with the D$ pinned where it stands and no dial touched, so
+        // the budget was struck at the dials EARNED reads today and the walk's residual is the coupons' and nothing else's.
+        EconomyManager em = city.getEconomyManager();
+        Month calm = move(city, 1.0);
+        double coupon = city.getForeignInterestPaidThisMonth();
+        check("premise: the city still owes dollars abroad, paid their coupon in the month, and the D$ did not move",
+                dm.getForeignPrincipalUsd() > 0 && coupon > 0 && calm.line == 0);
+        near("EconomyManager's foreign interest is the month's foreign coupon paid", em.getForeignInterest(), coupon, 0);
+        double earned = city.getIncome(), accrued = em.getInterestAccrued(), residual = city.getEarnedResidual();
+        em.setForeignInterest(0);
+        double earnedWithout = city.getIncome(), residualWithout = city.getEarnedResidual();
+        check("...and the accrued interest the cash pays at the month's end leaves it out", em.getInterestAccrued() == accrued);
+        em.setForeignInterest(coupon);
+        near("EARNED's expenses carry it: EARNED is the coupon less with it than without", earnedWithout - earned, coupon);
+        double outside = outsideCoupons(city), calmTolerance = 1e-4 * coupon;
+        out.printf("   the month's coupon abroad D$%,.4fk; paid the domestic holders outside the bank D$%,.4fk; the walk leaves D$%,.4fk (D$%,.4fk without the coupon in EARNED)%n",
+                coupon, outside, residual, residualWithout);
+        near("the walk from EARNED to the budget leaves nothing of the coupon: it is minus the domestic coupons held outside the bank (nothing where none is)",
+                residual, -outside, calmTolerance);
+        near("premise: had EARNED not carried the coupon, the walk would have left minus it as well, as it did before",
+                residualWithout, -outside - coupon, calmTolerance);
+        check("premise: that coupon is far larger than the tolerance, so a walk without it would have missed",
+                coupon > 100 * calmTolerance);
 
         out.printf("%n(%d assertions)%n", asserted);
         out.println(fails == 0

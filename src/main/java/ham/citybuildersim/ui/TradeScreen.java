@@ -3247,17 +3247,20 @@ final class TradeScreen {
         }
         c.getChildren().add(cardLine("owed abroad", usdFull(fx.getForeignDebtUsd()), null));
         c.getChildren().add(cardLine("which at this rate is", dFull(fx.getForeignDebt()), null));
-        if (Math.abs(fx.getLastRevaluation()) > .005) {
-            c.getChildren().add(cardLine("the currency moved it this month by", signedFull(fx.getLastRevaluation()), null,
-                    fx.getLastRevaluation() > 0
+        // CD9 (CD8-R, 2026-11-08): the booked line (a gain positive), not ForeignAccounts' second figure; shown dearer-positive as before.
+        double moved = -ui.game.getEconomyManager().getNationalAccounts().getDebtExchangeGain();
+        double sinceFounding = -ui.game.debtExchangeSinceFounding();
+        if (Math.abs(moved) > .005) {
+            c.getChildren().add(cardLine("the currency moved it this month by", signedFull(moved), null,
+                    moved > 0
                             ? "Dearer this month, and nobody was paid a cent for it. That is what a devaluation does to a "
                               + "country that borrowed in somebody else's money."
                             : "Cheaper this month — the same paper, a stronger currency. It works both ways and it is not "
                               + "income either way."));
         }
-        if (Math.abs(fx.getLifetimeRevaluation()) > .005) {
-            c.getChildren().add(cardLine("since founding, the currency has " + (fx.getLifetimeRevaluation() > 0 ? "added" : "taken off"),
-                    dFull(Math.abs(fx.getLifetimeRevaluation())), null));
+        if (Math.abs(sinceFounding) > .005) {
+            c.getChildren().add(cardLine("since founding, the currency has " + (sinceFounding > 0 ? "added" : "taken off"),
+                    dFull(Math.abs(sinceFounding)), null));
         }
         c.getChildren().add(doorPill("Finances · home & abroad", Icons.FINANCES, Palette.MONEY,
                 () -> ui.financesScreen.open("The position", "Home & abroad", null)));

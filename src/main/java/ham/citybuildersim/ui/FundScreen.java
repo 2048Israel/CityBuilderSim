@@ -109,6 +109,9 @@ final class FundScreen {
     /** The closed lots the Portfolio's CLOSED card lists before its fold. */
     static final int CLOSED_ROWS = 8;
 
+    /** The most closed lots the CLOSED card lists with its fold open, the newest; the older are counted, not drawn (CD9: a fund 2,400 months old had closed 5,562, and the fold drew every one, over a gigabyte of nodes, which took KeptCheck past its heap). */
+    static final int CLOSED_FOLD_ROWS = 200;
+
     /** The money steps: the ticket's on a buy by amount and on a bond's face, and PAY IN, DRAW OUT's; a quantity of shares steps by 1, 10, 100 and 1,000 instead. */
     static final double[] MONEY_STEPS = {1_000, 10_000, 100_000, 1_000_000};
 
@@ -1413,11 +1416,18 @@ final class FundScreen {
             card.getChildren().add(Kept.scope("closed:" + c.key() + "|" + c.when(), () -> closedRow(c)));
         }
         if (all.size() > CLOSED_ROWS) {
-            card.getChildren().add(Kept.scope("fund:closed", () -> details("fund:closed", "every closed lot (" + all.size() + ")", open, this::redraw, () -> {
+            // The fold lists the newest CLOSED_FOLD_ROWS (CD9): every one was drawn before, thousands in an old fund.
+            int end = Math.min(all.size(), CLOSED_ROWS + CLOSED_FOLD_ROWS);
+            String title = end == all.size() ? "every closed lot (" + all.size() + ")" : "the newest " + end + " closed lots (of " + all.size() + ")";
+            card.getChildren().add(Kept.scope("fund:closed", () -> details("fund:closed", title, open, this::redraw, () -> {
                 VBox more = Kept.column(2);
-                for (int i = CLOSED_ROWS; i < all.size(); i++) {
+                for (int i = CLOSED_ROWS; i < end; i++) {
                     Closed c = all.get(i);
                     more.getChildren().add(Kept.scope("closed:" + c.key() + "|" + c.when(), () -> closedRow(c)));
+                }
+                if (end < all.size()) {
+                    more.getChildren().add(Kept.scope("older", () -> words("and " + (all.size() - end) + " older, not listed",
+                            Palette.SIZE_CAPTION, Palette.TEXT_MUTED)));
                 }
                 return more;
             })));
