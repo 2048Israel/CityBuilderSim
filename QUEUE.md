@@ -138,6 +138,7 @@ stuff".
 | FA1 | A frontage avenue along each side of a diagonal highway, so the grid's streets meet it at junctions and the wedges beside it are built (Jerus's Bergen city, MF2's item 4, "the highway cuts the blocks"); its fixture is MF2's probe, red on main | [FA1](docs/queue/FA1.md) |
 | LF1c | LF1's review follow-ups (the short's lending fee): the Fund screen's words (`ui/FundScreen.java:946` shows the raw LENDING_FEE, `:924` a bond's "face gone" for shares, `:431`/`:674` "dividends" holding the fees); `Exchange.cancelShortHeld`'s wipe with no VALUATION line, so `ForeignAccounts`' forgiven misses it; ShortSellingCheck 8's fixture in an order the month never runs (LF1's gate review, 2026-11-08: SHIP + FOLLOW-UP) | [LF1c](docs/queue/LF1c.md) |
 | LF1b | The cells' share trades with the world as a FINANCIAL/DOMESTIC pair in MoneyAudit, as BondMarket books the cells' bonds: the financial account leaves their shares out today; moves the exchange rate and the trace, so the size first and the ensemble (LF1's notes, 2) | [LF1b](docs/queue/LF1b.md) |
+| EN2 | The ensemble names the data files (`data/earth-2.bin`, `data/world-1.bin`) in a worktree, as the gate and `nightly.sh` do, with one baseline taken under the new setting (RE2's ★4, taken on its recommendation); a small process batch, Sonnet whole | [EN2](docs/queue/EN2.md) |
 
 ## Pending
 
