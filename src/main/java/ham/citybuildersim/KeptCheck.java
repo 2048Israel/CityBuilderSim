@@ -3840,6 +3840,14 @@ public class KeptCheck {
     /** The paper the money sections sell, one of each kind the Borrow page offers (and a callable bond too): {kind, term, "callable" or ""}. The Note first: it falls due soonest. */
     static final String[][] PAPER = {{"Note", "12", ""}, {"Float", "5", ""}, {"Serial", "10", ""}, {"Term", "10", ""}, {"Term", "20", "callable"}, {"Linked", "10", ""}};
 
+    /**
+     * The order sellPaper sells PAPER in: the 20-year bond first, the piece that falls due last, which sections 64, 66 and 67 draw for
+     * dozens of months, then the rest as PAPER has them. WHY (CD9): a market with room for one sale gives it to the first; in this
+     * city on CD9 merged with 0.9.54, at month 2,335, the Note took the bank's room and the other five were refused as tiny, so the
+     * books held only the Note, which fell due during section 64's watch, and 64, 66 and 67 had no paper to draw.
+     */
+    static final int[] SELL_ORDER = {4, 0, 1, 2, 3, 5};
+
     /** A piece of paper in words: its kind, as the book writes it, and its maturity. */
     static String pieceWords(Debt d) {
         return d.getClass().getSimpleName() + (d instanceof LongTermBond b && b.isCallable() ? " (callable)" : "") + " due month " + d.getMaturityMonth();
@@ -3848,17 +3856,18 @@ public class KeptCheck {
     /**
      * The city's books put where the Finances screens have something to draw: one piece of every kind of paper sold through the
      * model, as the Borrow page's own button sells it (executeDebtLogic, at the default highest yield), and a month played. Returns
-     * the pieces that came of it, in PAPER's order (null for a sale the auction would not make), after printing what each sale said.
+     * the pieces that came of it, sold in SELL_ORDER and returned in PAPER's order (null for a sale the auction would not make), after printing what each sale said.
      */
     static List<Debt> sellPaper(Game g, KeptBench bench) throws Exception {
-        List<Debt> out = new ArrayList<>();
+        Debt[] out = new Debt[PAPER.length];
         double ask = fx(() -> Math.max(g.minimumIssueSize() * 3, g.getCash() / 40));
-        for (String[] p : PAPER) {
+        for (int i : SELL_ORDER) {
+            String[] p = PAPER[i];
             List<Debt> before = fx(bench::financesPieces);
             String said = fx(() -> quietly(() -> bench.financesSell(p[0], Integer.parseInt(p[1]), ask, !p[2].isEmpty())));
             List<Debt> after = fx(bench::financesPieces);
             after.removeAll(before);
-            out.add(after.isEmpty() ? null : after.get(0));
+            out[i] = after.isEmpty() ? null : after.get(0);
             System.out.println("  sold " + p[0] + " " + p[1] + (p[2].isEmpty() ? "" : " " + p[2]) + ": "
                     + (after.isEmpty() ? "nothing came of it (" + said.split("\n")[0] + ")" : pieceWords(after.get(0))));
         }
@@ -3866,7 +3875,7 @@ public class KeptCheck {
             month(g);
             return null;
         });
-        return out;
+        return new ArrayList<>(java.util.Arrays.asList(out));
     }
 
     /** The hand that puts the Finances tab on an area and a page. */

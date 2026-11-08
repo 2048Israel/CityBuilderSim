@@ -4,7 +4,7 @@ Generated 2026-11-08 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 528 files, 586,479 lines, 25,482 methods, 5,584 constants. `GameVersion.VERSION` is "0.9.54", `SAVE_FORMAT` 51.
+**The tree:** 528 files, 586,489 lines, 25,482 methods, 5,585 constants. `GameVersion.VERSION` is "0.9.54", `SAVE_FORMAT` 51.
 
 ## model (247 files)
 
@@ -306,7 +306,7 @@ Generated 2026-11-08 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [ConstructionScreen.java](ConstructionScreen.md) | 1,319 | 45 | The construction page (0.7.22): the builders' gauge, every site with its order, its crews, its time and its money and the player's hand on it - pri... | 2 |
 | [FinancesScreen.java](FinancesScreen.md) | 7,069 | 289 | The Finances tab: what the city owes and when it falls due, what its paper costs and who holds it, why its money costs what it does, every piece an... | 8 |
 | [FoundingScreen.java](FoundingScreen.md) | 1,427 | 61 | Found a city: its name, its money, what the founders leave in the treasury and the vault, the ground it stands on and the world it is founded into. | 2 |
-| [FundScreen.java](FundScreen.md) | 2,570 | 99 | The city's fund on the Finances tab, as a brokerage (0.7.39): its Portfolio - what it is worth, what it has made and on what, every holding with it... | 3 |
+| [FundScreen.java](FundScreen.md) | 2,580 | 99 | The city's fund on the Finances tab, as a brokerage (0.7.39): its Portfolio - what it is worth, what it has made and on what, every holding with it... | 3 |
 | [GovernmentScreen.java](GovernmentScreen.md) | 2,703 | 113 | The government tab: where the city's money came from and went, the road from what it EARNED through the budget's SURPLUS to what the cash BANKED, w... | 3 |
 | [HistoryScreen.java](HistoryScreen.md) | 3,374 | 124 | City History: the city as a shape over time. | 15 |
 | [Icons.java](Icons.md) | 560 | 6 | The rail's icons, as vector outlines - and since 0.7.24 the Build tab's, one per category, and the few the frame draws (the money block, the "Needs... | 22 |
