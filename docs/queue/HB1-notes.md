@@ -123,6 +123,12 @@ For Jerus (the batch takes the safer way meanwhile):
   (its third item) adds (c)'s one moving part to it. The batch draws (a)
   until he picks.
 
+  **Settled on (b)** by the orchestrator, 2026-11-08, after the merge (BP1:
+  a Pending row waiting only on a recommended call is settled that way): it
+  is the recommended look, and HB2's stock and crane build on it. HB2 builds
+  it first; Jerus can
+  overturn it.
+
 ## 4. The checks
 
 - **Slice A** (c6eb3c63, CityMap +151, MapCheck 9c +268). 9c: (a) of 33 lays in a

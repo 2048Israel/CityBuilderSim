@@ -5,6 +5,11 @@ Queued 2026-10-31 from Jerus's ideas for the ports (his words are in
 to him with renders before it is built. It runs after HB1, which bundles the
 terminals and docks the ships.
 
+The harbour's look is HB1's render (b), the open cargo yard by what each
+terminal handles (`docs/queue/HB1/hb1-b-yard.png`, `hb1-d-kinds.png`),
+settled 2026-11-08 on its recommendation (HB1 notes, HB1-S); this batch
+builds it first, and item 1's stock is that yard's heaps and rows.
+
 1. **The quay shows its stock**: container stacks or bulk piles that grow
    and shrink with what the port holds (read through the port's public
    getters; the screen never recomputes a model figure).
