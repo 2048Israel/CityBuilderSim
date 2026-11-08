@@ -1,6 +1,6 @@
 # GamePrefs.java - 249 lines · 27 methods · 3 constants · model
 
-`ham/citybuildersim/GamePrefs.java` - generated 2026-11-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GamePrefs.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
 
 > How the player likes the window, kept between runs.
 > 
@@ -55,7 +55,7 @@
 | 170 | `private boolean trucksOnMap` | Whether Haulage's trucks are drawn on the map's roads at the near view (0.8.8, batch FR5). |
 | 180 | `private boolean nationsOnMap` | Whether the expanded map on the real Earth writes the nations on it: a dot at each nation's largest place by its output, its name and figures where they fit, and the card a click opens (WN2; Jerus: "a toggle on the ma... |
 | 186 | `private boolean bordersOnMap` | Whether the map draws the nations' borders, dashed white - at the far views, and up close where one crosses the city's ground (WN2; Jerus: "a map button to ... |
-| 197 | `private boolean tradeRoutesOnMap` | Whether the map draws the city's trade as routes: on the Earth's globe a lane from the city toward each partner over D$0.3M a month, the lanes that go the same way shared, violet what the city sells and sand what it b... |
+| 197 | `private boolean tradeRoutesOnMap` | Whether the map draws the city's trade as routes: on the Earth's globe a lane from the city toward each partner over D$0.3M a month at today's prices (TradeLanes.minLane(): TP1), the lanes that go the same way shared,... |
 | 203 | `private boolean mapLegendFolded` | Whether the expanded map's legend is folded to its head line (WN2; Jerus: "legend should be collapsable"). |
 
 ## Methods, in file order, under their sections

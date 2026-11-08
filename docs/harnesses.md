@@ -1,8 +1,8 @@
 # The harnesses
 
-Generated 2026-11-07 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-11-08 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**186 harness files, 21,679 labelled assertions.** AllChecks runs 186 of them.
+**186 harness files, 21,703 labelled assertions.** AllChecks runs 186 of them.
 
 ## Which harnesses read which class
 
@@ -315,7 +315,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [TrackCurves](map/TrackCurves.md) | GatewayCheck, JunctionCheck, MapCheck, PlanCheck, RailDrawCheck |
 | [Trade](map/Trade.md) | BooksCheck, CopperRefiningCheck, CreditCheck, FittingCheck, IndustryViewCheck, MaterialsCheck, MiningCheck, OilCheck, OilViewCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, SupplierCreditCheck |
 | [TradeBand](map/TradeBand.md) | TradeBandCheck |
-| [TradeLanes](map/TradeLanes.md) | GlobeCheck, PartnerCallsCheck, ReadPathCheck, SaveFileCheck |
+| [TradeLanes](map/TradeLanes.md) | DenominationCheck, GlobeCheck, PartnerCallsCheck, ReadPathCheck, SaveFileCheck |
 | [TradeScreen](map/TradeScreen.md) | **none** |
 | [Traffic](map/Traffic.md) | CarCheck, CopperMiningCheck, ForestryCheck, FreightViewCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, LandlordPortCheck, LongPlaytest, MaterialsCheck, OilCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, TruckCheck, VanCheck, WoodProductsCheck |
 | [TrainSchedule](map/TrainSchedule.md) | GatewayCheck, MainLineCheck, MapCheck, PartnerCallsCheck, RailCheck, RailDrawCheck, ReadPathCheck, TruckRouteCheck |
@@ -6776,7 +6776,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L487 a money with no rate this month is not offered, and the paper already on the books keeps the last good rate
   - L489 the bare ledger's exchange line moves a euro piece by the D$'s move times its US$ per unit (the US$ piece by the D$'s)
 
-## DenominationCheck.java - 84 labelled assertions
+## DenominationCheck.java - 108 labelled assertions
 
 > A currency reform is a change of units, and this is how we know.
 > 
@@ -6792,108 +6792,133 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > ...
 
-  - L75 the same people live there, to the person
-  - L78 the same output
-  - L80 ...and the same year of it
-  - L82 the same rent
-  - L83 the same price level
-  - L85 the same currency
-  - L87 the same treasury
-  - L88 the same shops' till
-  - L92 the same city debt
-  - L94 the same bank
-- **L203 1. THE UNIT**
-  - L207 a founding city is in founding money
-  - L208 ...and cannot reform, because nothing has inflated
-  - L210 ...nor at nine times
-  - L211 ...and can at ten
-  - L214 lopping two zeros makes a dollar a hundred old ones
-  - L215 ...so a founding price reads as a hundredth
-  - L218 ...and the money gets a new name
-  - L219 ...the city's own money's, renamed
-  - L221 ...and again
-  - L222 the unit compounds
-  - L226 it stops before a double runs out of digits
-- **L229 2. IT IS THE SAME CITY**
-- **L235 a reformed city is the same city**
-  - L240 fixture: the two cities really are identical to start with
-  - L256 the reform goes through
-  - L258 cash divided
-  - L259 the exchange rate divided
-  - L262 the shelf price divided
-  - L264 rent divided
-  - L265 the minimum wage divided
-  - L268 a House costs a hundredth as many dollars
-- **L271 ...AND THE SHARE DESK'S ROOM DOES NOT DIVIDE, WHICH IS THE POINT**
-  - L303 the desk's room in
-  - L368 fixture: there was a per-good breakdown to divide (
-  - L386 the price index did not move
-  - L388 nor the rent burden
-  - L391 nor the cost of living
-  - L394 nor the population
-- **L397 3. AND IT STAYS THE SAME CITY**
-- **L455 ...and the month after the reform is the same month**
-- **L463 ...and the same city a year later**
-- **L467 ...and the same city a decade later**
-- **L509 3a. AND NO CELL UNDER HALF A HOUSEHOLD HOLDS ANYTHING**
-- **L522 ...and no cell under half a household holds anything, reformed or not**
-  - L523 right after the reform, in either city
-  - L526 fixture: the census left cells under half a household
-  - L527 ...and after no month did one hold anything
-- **L529 4. AND NO MONEY WAS MADE OR LOST**
-- **L534 and the books still balance**
-  - L542 a reformed city conserves money like any other
-- **L544 5. AND IT SURVIVES A SAVE**
-  - L567 the unit came back
-  - L568 ...and the money with it
-  - L569 ...and the rent it was charging
-  - L570 ...and a House still costs what it cost
-- **L573 6. AND THE TRAMS (B6, 0.7.47)**
-- **L585 a reform and the buses**
-  - L589 fixture: two bus towns, identical, with riders and a transit bill and fares
-  - L592 fixture: the bus towns' builders raised the list of 400 houses they were given
-  - L601 fixture: the bus town's drivers burn fuel, struck, billed and paid
-  - L603 fixture: the reform by a thousand goes through
-  - L604 a reform scales the month's transit bill and fares
-  - L607 a reform divides the fuel struck and the fuel paid
-  - L611 ...and the fare dial's cap is the founding cap in the new unit
-  - L619 after a reform the riders are what the same real fare drew
-  - L632 no working row's income after fixed bills goes negative across a reform
-- **L635 7. THE TRADE BY PARTNER (DZ1, 2026-11-02)**
-- **L731 the trade by partner: its history's grid follows the unit**
-  - L738 fixture: the twelve months tallied are one calendar year and the next month is another's
-  - L751 fixture: the turn sent a year of four cells (two goods, two nations) to the history, off the grid
-  - L753 fixture: the month and the year held had trade with no partner to divide
-  - L763 a reformed record's history is the plain record's, divided: every cell's value out and in
-  - L765 ...and its units are the plain record's, exactly
-  - L784 a reform in mid-year divides the month held, with its trade that had no partner
-  - L792 ...and the year held: its exports and imports to date are the plain record's, divided
-  - L797 ...and the year it sends to the history is the plain record's, divided
-  - L804 fixture: the year is in the history before the reform
-  - L806 a reform divides the years already finished: their cells are the plain record's, divided
-  - L808 ...with the same year and the same units
-  - L816 fixture: the save's copy holds the finished year
-  - L817 a reform divides the save's trade by partner: its cells are the plain record's, divided
-- **L831 the trade by partner: a city on the world fixture, reformed in mid-year**
-  - L833 fixture: the twelve-nation world file is beside the classes
-  - L956 fixture: both cities have a world market and a trade by partner that has seen a year turn
-  - L958 fixture: the two cities are the same city before the reform
-  - L960 fixture: the year behind them has trade (
-  - L967 fixture: the reform falls in mid-year, not in a January (
-  - L971 fixture: the year held has trade by then, and so has the month
-  - L974 fixture: the two cities are still the same city
-  - L975 the reform took: a hundred old dollars to the new one
-  - L982 a reform in mid-year divides the month and the year held, by nation and with no partner
-  - L983 ...and leaves their tonnes and units as they were
-  - L985 ...and divides the years already finished (
-  - L986 ...and leaves their units as they were
-  - L989 fixture: the save's copy holds the finished year in both cities
-  - L990 ...and the save's copy of them is divided too
-  - L996 both cities finished a second year, in
-  - L1000 fixture: the year just finished has trade (
-  - L1014 the year finished on the new grid is the plain one's, divided
-  - L1015 ...and its units are the plain one's
-  - L1016 ...and so is every year behind it, the save's copy too
+  - L83 the same people live there, to the person
+  - L86 the same output
+  - L88 ...and the same year of it
+  - L90 the same rent
+  - L91 the same price level
+  - L93 the same currency
+  - L95 the same treasury
+  - L96 the same shops' till
+  - L100 the same city debt
+  - L102 the same bank
+- **L211 1. THE UNIT**
+  - L215 a founding city is in founding money
+  - L216 ...and cannot reform, because nothing has inflated
+  - L218 ...nor at nine times
+  - L219 ...and can at ten
+  - L222 lopping two zeros makes a dollar a hundred old ones
+  - L223 ...so a founding price reads as a hundredth
+  - L226 ...and the money gets a new name
+  - L227 ...the city's own money's, renamed
+  - L229 ...and again
+  - L230 the unit compounds
+  - L234 it stops before a double runs out of digits
+- **L237 2. IT IS THE SAME CITY**
+- **L243 a reformed city is the same city**
+  - L248 fixture: the two cities really are identical to start with
+  - L264 the reform goes through
+  - L266 cash divided
+  - L267 the exchange rate divided
+  - L270 the shelf price divided
+  - L272 rent divided
+  - L273 the minimum wage divided
+  - L276 a House costs a hundredth as many dollars
+- **L279 ...AND THE SHARE DESK'S ROOM DOES NOT DIVIDE, WHICH IS THE POINT**
+  - L311 the desk's room in
+  - L376 fixture: there was a per-good breakdown to divide (
+  - L394 the price index did not move
+  - L396 nor the rent burden
+  - L399 nor the cost of living
+  - L402 nor the population
+- **L405 3. AND IT STAYS THE SAME CITY**
+- **L463 ...and the month after the reform is the same month**
+- **L471 ...and the same city a year later**
+- **L475 ...and the same city a decade later**
+- **L517 3a. AND NO CELL UNDER HALF A HOUSEHOLD HOLDS ANYTHING**
+- **L530 ...and no cell under half a household holds anything, reformed or not**
+  - L531 right after the reform, in either city
+  - L534 fixture: the census left cells under half a household
+  - L535 ...and after no month did one hold anything
+- **L537 4. AND NO MONEY WAS MADE OR LOST**
+- **L542 and the books still balance**
+  - L550 a reformed city conserves money like any other
+- **L552 5. AND IT SURVIVES A SAVE**
+  - L575 the unit came back
+  - L576 ...and the money with it
+  - L577 ...and the rent it was charging
+  - L578 ...and a House still costs what it cost
+- **L581 6. AND THE TRAMS (B6, 0.7.47)**
+- **L593 a reform and the buses**
+  - L597 fixture: two bus towns, identical, with riders and a transit bill and fares
+  - L600 fixture: the bus towns' builders raised the list of 400 houses they were given
+  - L609 fixture: the bus town's drivers burn fuel, struck, billed and paid
+  - L611 fixture: the reform by a thousand goes through
+  - L612 a reform scales the month's transit bill and fares
+  - L615 a reform divides the fuel struck and the fuel paid
+  - L619 ...and the fare dial's cap is the founding cap in the new unit
+  - L627 after a reform the riders are what the same real fare drew
+  - L640 no working row's income after fixed bills goes negative across a reform
+- **L643 7. THE TRADE BY PARTNER (DZ1, 2026-11-02)**
+- **L740 the trade by partner: its history's grid follows the unit**
+  - L747 fixture: the twelve months tallied are one calendar year and the next month is another's
+  - L760 fixture: the turn sent a year of four cells (two goods, two nations) to the history, off the grid
+  - L762 fixture: the month and the year held had trade with no partner to divide
+  - L772 a reformed record's history is the plain record's, divided: every cell's value out and in
+  - L774 ...and its units are the plain record's, exactly
+  - L793 a reform in mid-year divides the month held, with its trade that had no partner
+  - L801 ...and the year held: its exports and imports to date are the plain record's, divided
+  - L806 ...and the year it sends to the history is the plain record's, divided
+  - L813 fixture: the year is in the history before the reform
+  - L815 a reform divides the years already finished: their cells are the plain record's, divided
+  - L817 ...with the same year and the same units
+  - L825 fixture: the save's copy holds the finished year
+  - L826 a reform divides the save's trade by partner: its cells are the plain record's, divided
+- **L837 the lanes' floor in real terms: the price index and the currency's unit (TP1)**
+  - L839 at the founding's prices and money the floor is the board's D$0.3M priced at the founding's
+  - L840 prices twice as high double it
+  - L841 a reform by a hundred divides it by a hundred
+  - L842 ...and a reform with prices doubled is both
+  - L843 an index or a unit that is not a positive number reads 1
+  - L845 the feed with no money to read it from holds partners to the board's figure as written
+  - L854 unit
+  - L856 unit
+  - L857 unit
+  - L863 unit
+- **L879 the trade by partner: a city on the world fixture, reformed in mid-year**
+  - L881 fixture: the twelve-nation world file is beside the classes
+  - L1004 fixture: both cities have a world market and a trade by partner that has seen a year turn
+  - L1006 fixture: the two cities are the same city before the reform
+  - L1008 fixture: the year behind them has trade (
+  - L1015 fixture: the reform falls in mid-year, not in a January (
+  - L1019 fixture: the year held has trade by then, and so has the month
+  - L1022 fixture: the two cities are still the same city
+  - L1024 the reform took: a hundred old dollars to the new one
+  - L1031 a reform in mid-year divides the month and the year held, by nation and with no partner
+  - L1032 ...and leaves their tonnes and units as they were
+  - L1034 ...and divides the years already finished (
+  - L1035 ...and leaves their units as they were
+  - L1038 fixture: the save's copy holds the finished year in both cities
+  - L1039 ...and the save's copy of them is divided too
+  - L1046 both cities finished a second year, in
+  - L1050 fixture: the year just finished has trade (
+  - L1064 the year finished on the new grid is the plain one's, divided
+  - L1065 ...and its units are the plain one's
+  - L1066 ...and so is every year behind it, the save's copy too
+  - L1097 fixture: both cities are at the same month (
+  - L1107 fixture: the plain city has sold and bought this year (D$
+  - L1108 the nation card's year to date is the plain city's,
+  - L1109 ...and its tonnes are the plain city's
+  - L1110 the month's figures the lanes are made of are the plain city's,
+  - L1116 the plain city's floor is the board's in its prices (index
+  - L1117 the reformed city's is the same, in its money (unit
+  - L1118 ...and, the cities being the same, the plain city's times
+  - L1132 fixture: every partner with trade stands apart from the place the lanes are drawn from (Halifax)
+  - L1137 fixture: the plain city's month has a partner with a lane and an arrow (
+  - L1140 the
+  - L1143 ...and the same arrows, in the same order (
+  - L1146 the fault: the floor a reform left undivided (D$
+  - L1151 the price index has moved (
 
 ## DeskCheck.java - 234 labelled assertions
 
