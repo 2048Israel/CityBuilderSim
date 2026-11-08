@@ -343,6 +343,15 @@ public class ScaleCheck {
      * months (every month 138 to 163 and 320 to 372, the calm windows to 2,346, every tenth to 1,340, every thirtieth to 2,480):
      * none holds every line; the fewest misses are one, at 336 (section 9's cash, 2.84e-2 against .0125). Left at 488 and red,
      * passed by name at RT1's gate; ST3 is the fix.
+     *
+     * ...AND RE2 (2026-11-08) FOUND NO MONTH, AND THE MISS IS THE BANK'S. With the landlords' posts (2 DIPLOMA a Studio and a
+     * Low-Rise) the town at 488 passes section 6's fixture and misses section 9's people (1.69e-2), cash (1.57e-2) and prices
+     * (4.78e-3). Not the posts': the landlords' posts (14 against 14,000), fill, payroll, rent billed and floor scale K-fold to
+     * 0.2%. In month 1 the copy's bank closes 975 of its 1,000 branches where the city's one is never the last
+     * (branchesTheFeesCover()), and the plots sold back to the treasury are 24,944 of its 27,551 a K short, the cash line; the
+     * 12,125 jobs they took part the people and the prices after. Scanned in ScaleCheck itself, 29 months from 455 to 525: none
+     * holds every line, the cash misses in all (1.29e-2 at best, 483), the fewest misses two (480: cash and savings; 515: the
+     * growing fixture and cash). Left at 488 and red; ST3 is the fix, with the branches held in both copies as the sectors are.
      */
     static final int FREE_FIXTURE_MONTHS = 488;
 

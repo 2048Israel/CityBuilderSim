@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**186 harness files, 21,896 labelled assertions.** AllChecks runs 186 of them.
+**186 harness files, 21,916 labelled assertions.** AllChecks runs 186 of them.
 
 ## Which harnesses read which class
 
@@ -30,7 +30,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BridgeWorks](map/BridgeWorks.md) | BridgeCheck, BuildCardCheck, PriceLevelCheck, SaveSlotCheck |
 | [Bridges](map/Bridges.md) | BridgeCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
 | [BuildAdvice](map/BuildAdvice.md) | AuctionCheck, AutoBuildCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, ChildcareCheck, EquipmentCheck, HydroCheck, InvestCheck, KeptCheck, LandCheck, LongPlaytest, ReadPathCheck, RoadCheck, SectorFlowCheck, WaterCheck |
-| [BuildCard](map/BuildCard.md) | BridgeCheck, BuildCardCheck, ChildcareCheck, HydroCheck, LandmassCheck, OilCheck, PortCheck, ReadPathCheck, RoadCheck, RunWorksCheck, SectorFlowCheck, SectorStatementCheck, WaterCheck, WellCheck, ZoningViewCheck |
+| [BuildCard](map/BuildCard.md) | BridgeCheck, BuildCardCheck, ChildcareCheck, HousingCheck, HydroCheck, LandmassCheck, OilCheck, PortCheck, ReadPathCheck, RoadCheck, RunWorksCheck, SectorFlowCheck, SectorStatementCheck, WaterCheck, WellCheck, ZoningViewCheck |
 | [BuildLog](map/BuildLog.md) | CalendarCheck, SaveSlotCheck |
 | [BuildScreen](map/BuildScreen.md) | **none** |
 | [BuildersShort](map/BuildersShort.md) | ConstructionTrapCheck |
@@ -43,7 +43,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DiscoveryCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GatewayCheck, GdpCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HousingCheck, HydroCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, TradeCostCheck, TreasuryCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessDebt](map/BusinessDebt.md) | BankCheck, CreditCheck, LongPlaytest, MortgageCheck |
 | [BusinessDebtManager](map/BusinessDebtManager.md) | AuctionCheck, BankCheck, BondCheck, BooksCheck, BuildCardCheck, CreditCheck, FittingCheck, FundLedgerCheck, InvestCheck, LongPlaytest, MoneyCheck, MortgageCheck, OrderSearchCheck, ReadPathCheck, RefineryCheck, SaveFileCheck, SupplierCreditCheck, WantedPostsCheck |
-| [BusinessInvestment](map/BusinessInvestment.md) | AgricultureCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, DiscoveryCheck, EquipmentCheck, FittingCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, HaulageCheck, IndustryViewCheck, InvestCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MortgageCheck, OilCheck, OrderSearchCheck, PolicyCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ResearchCheck, RestaurantsCheck, RunWorksCheck, ScaleCheck, WantedPostsCheck, WellCheck, WoodProductsCheck, ZoningCheck, ZoningViewCheck |
+| [BusinessInvestment](map/BusinessInvestment.md) | AgricultureCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, DiscoveryCheck, EquipmentCheck, FittingCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, HaulageCheck, HousingCheck, IndustryViewCheck, InvestCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MortgageCheck, OilCheck, OrderSearchCheck, PolicyCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ResearchCheck, RestaurantsCheck, RunWorksCheck, ScaleCheck, WantedPostsCheck, WellCheck, WoodProductsCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessLoan](map/BusinessLoan.md) | BankCheck, BondCheck, CreditCheck, MortgageCheck |
 | [BusinessServices](map/BusinessServices.md) | BusinessServicesCheck, LongPlaytest, PrizeCheck |
 | [Buyback](map/Buyback.md) | BuybackCheck, CentralBankCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, HoldersCheck, ReadPathCheck |
@@ -166,7 +166,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Investor](map/Investor.md) | CreditCheck |
 | [IslandChip](map/IslandChip.md) | **none** |
 | [JavaScan](map/JavaScan.md) | **none** |
-| [JobType](map/JobType.md) | AgricultureCheck, ArrivalMixCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, BusinessServicesCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, DiscoveryCheck, EducationCheck, EquipmentCheck, FoodProcessingCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FundCheck, HaulageCheck, HealthCheck, HouseholdCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, ResearchPreviewCheck, RestaurantsCheck, ScaleCheck, SectorStatementCheck, WageLadderCheck, WantedPostsCheck, WellCheck, WoodProductsCheck |
+| [JobType](map/JobType.md) | AgricultureCheck, ArrivalMixCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, BusinessServicesCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, DiscoveryCheck, EducationCheck, EquipmentCheck, FoodProcessingCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FundCheck, HaulageCheck, HealthCheck, HouseholdCheck, HousingCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, ResearchPreviewCheck, RestaurantsCheck, ScaleCheck, SectorStatementCheck, WageLadderCheck, WantedPostsCheck, WellCheck, WoodProductsCheck |
 | [Kept](map/Kept.md) | **none** |
 | [KeptBench](map/KeptBench.md) | KeptCheck |
 | [LabourMarket](map/LabourMarket.md) | ArrivalMixCheck, DiscoveryCheck, ExpectationsCheck, LabourCheck, LongPlaytest, PolicyDatesCheck, PolicyPreviewCheck, PriceLevelCheck, WageLadderCheck, WantedPostsCheck |
@@ -12990,7 +12990,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L280 a played city's record survives a save
   - L286 ...and the month after, both cities hold the same households
 
-## HousingCheck.java - 41 labelled assertions
+## HousingCheck.java - 61 labelled assertions
 
 > Audits the three subsystems that describe the same housing, every month, and
 > makes them agree. Not part of the game.
@@ -13006,59 +13006,81 @@ _(this harness does not label its checks through a helper - it prints its findin
 > first time and reported an apparent contradiction: 15,181 homes standing
 > ...
 
-- **L97 1. every door is accounted for**
-  - L100 let plus empty is owned
-  - L101 ...and the landlords own what was built
-  - L107 ...and the sizes add up to the same stock
-  - L118 nobody lets more homes than exist
-- **L121 2. every household is accounted for**
-  - L126 housed plus doubled up is every household
-  - L128 ...and nobody is doubled up who does not exist
-  - L145 ...nor refused by a studio without being somewhere
-- **L148 3. rent paid is rent received**
-  - L154 the households paid what the landlords billed
-  - L163 ...and that is the weight times the price
-  - L167 ...and the two segment weights are the whole weight
-- **L172 3b. the two segments partition everything**
-  - L180 studio doors plus family doors is every door
-  - L182 ...and studio seekers plus family seekers is every household
-  - L184 a studio never bills more than its own doors hold
-- **L188 3c. rent never falls through the floor**
-  - L219 the blended rent target never goes under break-even
-- **L223 3d. repairs are a flow, not a number**
-  - L251 what the city paid for repairs is what the builders were paid
-  - L258 and the landlords' share is the residential charge
-  - L286 ...and the per-household figure is that over the payers
-- **L329 4b. A CITY THAT REALLY DOES HOLD BOTH AT ONCE.**
-- **L341 a city that built nothing but studios**
-- **L373 WHAT THIS SECTION CAN AND CANNOT CLAIM, REWRITTEN 2026-09-09.**
-  - L448 a studio city either builds family doors or can say who it refused
-  - L451 either way it owns doors a child is allowed in, or refuses openly
-  - L453 ...and every refusal is either crammed in or outside
-- **L457 5. AND ALL OF IT SURVIVES A SAVE.**
-  - L490 fixture: this city really is collecting rent
-  - L491 fixture: ...at two prices that are really being charged
-  - L493 fixture: ...on doors that are really let
-  - L494 saved
-  - L499 households doubled up
-  - L501 ...the ones a studio turned away
-  - L503 ...the ones in something too small
-  - L505 the rent the households paid
-  - L507 the homes the landlords let
-  - L509 ...and the studio market's own price
-  - L512 ...and the family one's
-  - L519 the month after a reload still balances
-- **L522 4b. A SMALL HOUSEHOLD TAKES A BIG DOOR WHEN THE SMALL ONES RUN OUT.**
-- **L542 a single adult takes a four-person flat when that is all there is**
-  - L559 fixture: the city really does have households to place
-  - L561 every household is placed when only big doors exist
-  - L563 ...and each one bills its DOOR's size, not its own
-  - L565 ...and none of it is billed as studio
-  - L581 ...and the only crowding is households too big for the flat
-  - L602 fixture: some households really do have a child
-  - L603 a studio-only city turns away exactly the households with a child
-  - L605 ...and those are exactly the ones it could not place
-  - L607 nothing is billed as a family let when only studios exist
+- **L107 1. every door is accounted for**
+  - L110 let plus empty is owned
+  - L111 ...and the landlords own what was built
+  - L117 ...and the sizes add up to the same stock
+  - L128 nobody lets more homes than exist
+- **L131 2. every household is accounted for**
+  - L136 housed plus doubled up is every household
+  - L138 ...and nobody is doubled up who does not exist
+  - L155 ...nor refused by a studio without being somewhere
+- **L158 3. rent paid is rent received**
+  - L164 the households paid what the landlords billed
+  - L173 ...and that is the weight times the price
+  - L177 ...and the two segment weights are the whole weight
+- **L182 3b. the two segments partition everything**
+  - L190 studio doors plus family doors is every door
+  - L192 ...and studio seekers plus family seekers is every household
+  - L194 a studio never bills more than its own doors hold
+- **L198 3c. rent never falls through the floor**
+  - L229 the blended rent target never goes under break-even
+- **L233 3d. repairs are a flow, not a number**
+  - L261 what the city paid for repairs is what the builders were paid
+  - L268 and the landlords' share is the residential charge
+  - L296 ...and the per-household figure is that over the payers
+- **L339 4b. A CITY THAT REALLY DOES HOLD BOTH AT ONCE.**
+- **L351 a city that built nothing but studios**
+- **L383 WHAT THIS SECTION CAN AND CANNOT CLAIM, REWRITTEN 2026-09-09.**
+  - L458 a studio city either builds family doors or can say who it refused
+  - L461 either way it owns doors a child is allowed in, or refuses openly
+  - L463 ...and every refusal is either crammed in or outside
+- **L467 5. AND ALL OF IT SURVIVES A SAVE.**
+  - L500 fixture: this city really is collecting rent
+  - L501 fixture: ...at two prices that are really being charged
+  - L503 fixture: ...on doors that are really let
+  - L504 saved
+  - L509 households doubled up
+  - L511 ...the ones a studio turned away
+  - L513 ...the ones in something too small
+  - L515 the rent the households paid
+  - L517 the homes the landlords let
+  - L519 ...and the studio market's own price
+  - L522 ...and the family one's
+  - L529 the month after a reload still balances
+- **L532 4b. A SMALL HOUSEHOLD TAKES A BIG DOOR WHEN THE SMALL ONES RUN OUT.**
+- **L552 a single adult takes a four-person flat when that is all there is**
+  - L569 fixture: the city really does have households to place
+  - L571 every household is placed when only big doors exist
+  - L573 ...and each one bills its DOOR's size, not its own
+  - L575 ...and none of it is billed as studio
+  - L591 ...and the only crowding is households too big for the flat
+  - L612 fixture: some households really do have a child
+  - L613 a studio-only city turns away exactly the households with a child
+  - L615 ...and those are exactly the ones it could not place
+  - L617 nothing is billed as a family let when only studios exist
+- **L624 6. THE LANDLORDS BUILD BEFORE ANYONE CAN STAFF THEM (HD1, 2026-10-29)**
+- **L663 the landlords build before anyone can staff them**
+  - L686 fixture: the landlords own three homes, two of them over the NAA's 51 units
+  - L690 a House has no posts: a single house's repairs are the builders' order
+  - L691 a Studio and a Low-Rise each have one office and one maintenance post
+  - L693 ...every home's posts as the NAA rule has them, and all of them diploma posts
+  - L713 fixture: jobs for more people than there are beds
+  - L715 fixture: the city could not staff a Studio (it would fail the bar every other owner is held to)
+  - L717 fixture: ...nor a Low-Rise
+  - L718 fixture: the landlords have no posts of their own yet
+  - L723 the landlords are the one owner that does not hold an order to staffing; every other keeps the gate
+  - L731 the landlords still order a home the city could not staff
+  - L736 the investors' gate for a Studio is not STAFFING
+  - L739 ...nor does its appraisal ask staffing at all: no mark, where a shop's would pass or fail
+  - L741 ...and the card reads the city could staff all of it (1), so no \"could staff\" words
+  - L750 two Studios standing: their whole capacity counts in the city's housing, staffed or not
+  - L753 the posts are real: the landlords' posts rose by the blocks' own jobs
+  - L755 ...mostly empty, since no spare worker was there to take them (partly or wholly)
+  - L757 ...and the ones the city did have for them are paid: the landlords' payroll is above zero
+  - L759 the block bills rent with its posts empty: the landlords' rent billed rose
+  - L763 the rent floor carries the wages they pay
+  - L765 ...which the floor without them would not have
 
 ## HydroCheck.java - 101 labelled assertions
 
@@ -24364,108 +24386,108 @@ _(this harness does not label its checks through a helper - it prints its findin
 > model, the save, the history and the screens.
 > ...
 
-- **L468 1. the fixture, and its copy K times over**
-  - L505 fixture: the founded city has people, posts and homes
-  - L507 fixture: K times its people passes 2^31
-- **L513 2. the counts read back whole**
-  - L517 the slot header of a save past 2^31 people reads (an int could not parse it)
-  - L518 ...and its population is K times the founded city's
-  - L524 the copy loads
-  - L525 its population is K times the founded city's, past 2^31
-  - L526 ...its workforce too, not stuck at 2,147,483,647
-  - L527 ...both past the int ceiling
-  - L540 its ground is K times the founded city's
-  - L541 ...and its land's books K times the founded city's (scaled with it, 0.7.67): its dry ground that figure
-  - L552 ...its iron as the founded city's: sites and tonnes
-- **L556 3. posts, doors and household places**
-  - L558 every post is K times the founded city's
-  - L559 every home is K times the founded city's
-  - L560 the household places are K times the founded city's, its own hundred included (K endowments, FW9)
-  - L562 ...because the copy holds K founding endowments where the founded city holds one
-- **L566 4. three months at that size**
-  - L575 the months ran
-  - L576 the population is still past 2^31
-  - L577 ...and is the pyramid's, rounded once
-  - L578 the workforce is still past 2^31
-  - L581 the history's last population is the city's
-  - L582 ...its workforce
-  - L583 ...its posts
-  - L584 ...the people out of work
-  - L585 ...and its homes
-- **L587 5. the save round-trips them**
-  - L589 the city past 2^31 saves
-  - L591 its header reads
-  - L592 ...with the population it was saved with
-  - L598 it loads at the month it was saved
-  - L599 the population came back
-  - L600 ...the workforce
-  - L601 ...the posts
-  - L602 ...the posts filled
-  - L603 ...the people out of work
-  - L604 ...the homes
-  - L605 ...the household places
-  - L606 ...the founding endowments it holds (FW9)
-  - L609 ...and the history, month for month
-  - L616 the loaded city plays its next month to the same population
-  - L618 ...the same workforce
-  - L619 ...and the same people out of work
-- **L621 6. the sectors free, at 5 and 10 billion**
-  - L655 fixture: the city is growing - more people than a year before
-  - L659 fixture: ...with ground free for a home
-  - L663 fixture: ...and its own rents price no migrant out in the months its copies are read against
-- **L667 7. money at that size reads**
-- **L670 8. the audit's floor at size**
-- **L673 9. a copy tracks its city month by month**
-- **L685 the audit's floor is never under the figures' own step (0.7.63)**
-  - L695 a floor of its own is never under ULP_STEPS of a double's steps at the size, at any size
-  - L696 ...and is the floor exactly below 2^27 units, past every size the other harnesses read it at
-  - L700 ...so the cash-flow statement K's copy missed on rounding alone is within it
-  - L706 a cent never moves: a cent or a part in a trillion, at every size, as before
-  - L707 ...and a size that is not a number keeps the floor alone
-- **L713 money at that size reads in its own unit**
-  - L715 a 10 billion city's treasury, 2.6e13 units (the study's), reads in quadrillions
-  - L716 ...a thousand quadrillion and more is grouped
-  - L717 ...a negative one keeps its sign
-  - L718 ...and a trillion still reads as one
-  - L720 cash() prints every whole dollar a double holds, as before
-  - L722 ...and past Formats.WHOLE_DOLLARS_MOST it is amount()'s
-  - L723 ...so a sum past a long's reach is not the saturated $9,223,372,036,854,775,807
-  - L814 the copy loads
-  - L850 every month the population is past 2^31, whole, and the pyramid's rounded once
-  - L851 ...and the posts, the doors and the household places add up exactly, every month
-  - L861 the copy's ground is the city's in its first month: as crowded, the same premium and dollars
-  - L864 ...and its businesses pay the city's price for it
-  - L874 ...and it builds: more homes at the end than at the start
-  - L875 fixture: the free copy ordered - an order of more than a million buildings decided,
-  - L975 the copy at K =
-  - L1021 fixture: the grown city loads, to have its building sites emptied
-  - L1030 fixture: ...and nothing is under construction when the copies are taken (within
-  - L1228 the month's money audit closes, to the cent (BankCheck and four more)
-  - L1237 a sector's cash-flow statement closes (MortgageCheck, BankCheck)
-  - L1243 the bank's equity moved by its income and named causes (MortgageCheck, BankCheck)
-  - L1248 the money the audit saw made is the central bank's (LongPlaytest)
-  - L1252 M0 moved by the money made (LongPlaytest, already relative)
-  - L1260 nothing moved after the audit struck (LongPlaytest, MoneyCheck)
-  - L1265 the treasury's window opens where it closed (TreasuryCheck)
-  - L1269 the treasury's closing balance is its cash (TreasuryCheck)
-  - L1275 the treasury's bridge foots (TreasuryCheck)
-  - L1293 the history's GDP parts are the accounts' own, to the cent (HistoryCheck)
-  - L1296 the history's GDP parts add up to its GDP, to the cent (HistoryCheck)
-  - L1302 the history's net income is the sector books', to the cent (HistoryCheck)
-  - L1309 the history's bank figures are the bank's own, to the cent (HistoryCheck)
-  - L1322 ...
-  - L1381 no order judged on its interest asked the bond desk more than Game.deskCallsMost() times
-  - L1401 fixture: the free copy has ground for some building
-  - L1405 orderSize() (BA1) of a gap past the int range is the plots, never a wrapped negative:
-  - L1407 ...a gap of a million buildings is a million where the ground holds them, and the plots where it does not
-  - L1410 ...and the same gap in a building holding more is fewer: ceil(gap / capacity)
-  - L1432 every post,
-  - L1435 ...the posts on offer by job type add up to the total
-  - L1436 ...and the total is every post less those withheld
-  - L1441 every home is the stacks' quantity times their doors
-  - L1442 ...and the homes by size add up to it
-  - L1444 ...and the landlords' studio and family doors to it too
-  - L1446 the household places are the city's hundred for each founding endowment and the stacks' places
+- **L477 1. the fixture, and its copy K times over**
+  - L514 fixture: the founded city has people, posts and homes
+  - L516 fixture: K times its people passes 2^31
+- **L522 2. the counts read back whole**
+  - L526 the slot header of a save past 2^31 people reads (an int could not parse it)
+  - L527 ...and its population is K times the founded city's
+  - L533 the copy loads
+  - L534 its population is K times the founded city's, past 2^31
+  - L535 ...its workforce too, not stuck at 2,147,483,647
+  - L536 ...both past the int ceiling
+  - L549 its ground is K times the founded city's
+  - L550 ...and its land's books K times the founded city's (scaled with it, 0.7.67): its dry ground that figure
+  - L561 ...its iron as the founded city's: sites and tonnes
+- **L565 3. posts, doors and household places**
+  - L567 every post is K times the founded city's
+  - L568 every home is K times the founded city's
+  - L569 the household places are K times the founded city's, its own hundred included (K endowments, FW9)
+  - L571 ...because the copy holds K founding endowments where the founded city holds one
+- **L575 4. three months at that size**
+  - L584 the months ran
+  - L585 the population is still past 2^31
+  - L586 ...and is the pyramid's, rounded once
+  - L587 the workforce is still past 2^31
+  - L590 the history's last population is the city's
+  - L591 ...its workforce
+  - L592 ...its posts
+  - L593 ...the people out of work
+  - L594 ...and its homes
+- **L596 5. the save round-trips them**
+  - L598 the city past 2^31 saves
+  - L600 its header reads
+  - L601 ...with the population it was saved with
+  - L607 it loads at the month it was saved
+  - L608 the population came back
+  - L609 ...the workforce
+  - L610 ...the posts
+  - L611 ...the posts filled
+  - L612 ...the people out of work
+  - L613 ...the homes
+  - L614 ...the household places
+  - L615 ...the founding endowments it holds (FW9)
+  - L618 ...and the history, month for month
+  - L625 the loaded city plays its next month to the same population
+  - L627 ...the same workforce
+  - L628 ...and the same people out of work
+- **L630 6. the sectors free, at 5 and 10 billion**
+  - L664 fixture: the city is growing - more people than a year before
+  - L668 fixture: ...with ground free for a home
+  - L672 fixture: ...and its own rents price no migrant out in the months its copies are read against
+- **L676 7. money at that size reads**
+- **L679 8. the audit's floor at size**
+- **L682 9. a copy tracks its city month by month**
+- **L694 the audit's floor is never under the figures' own step (0.7.63)**
+  - L704 a floor of its own is never under ULP_STEPS of a double's steps at the size, at any size
+  - L705 ...and is the floor exactly below 2^27 units, past every size the other harnesses read it at
+  - L709 ...so the cash-flow statement K's copy missed on rounding alone is within it
+  - L715 a cent never moves: a cent or a part in a trillion, at every size, as before
+  - L716 ...and a size that is not a number keeps the floor alone
+- **L722 money at that size reads in its own unit**
+  - L724 a 10 billion city's treasury, 2.6e13 units (the study's), reads in quadrillions
+  - L725 ...a thousand quadrillion and more is grouped
+  - L726 ...a negative one keeps its sign
+  - L727 ...and a trillion still reads as one
+  - L729 cash() prints every whole dollar a double holds, as before
+  - L731 ...and past Formats.WHOLE_DOLLARS_MOST it is amount()'s
+  - L732 ...so a sum past a long's reach is not the saturated $9,223,372,036,854,775,807
+  - L823 the copy loads
+  - L859 every month the population is past 2^31, whole, and the pyramid's rounded once
+  - L860 ...and the posts, the doors and the household places add up exactly, every month
+  - L870 the copy's ground is the city's in its first month: as crowded, the same premium and dollars
+  - L873 ...and its businesses pay the city's price for it
+  - L883 ...and it builds: more homes at the end than at the start
+  - L884 fixture: the free copy ordered - an order of more than a million buildings decided,
+  - L984 the copy at K =
+  - L1030 fixture: the grown city loads, to have its building sites emptied
+  - L1039 fixture: ...and nothing is under construction when the copies are taken (within
+  - L1237 the month's money audit closes, to the cent (BankCheck and four more)
+  - L1246 a sector's cash-flow statement closes (MortgageCheck, BankCheck)
+  - L1252 the bank's equity moved by its income and named causes (MortgageCheck, BankCheck)
+  - L1257 the money the audit saw made is the central bank's (LongPlaytest)
+  - L1261 M0 moved by the money made (LongPlaytest, already relative)
+  - L1269 nothing moved after the audit struck (LongPlaytest, MoneyCheck)
+  - L1274 the treasury's window opens where it closed (TreasuryCheck)
+  - L1278 the treasury's closing balance is its cash (TreasuryCheck)
+  - L1284 the treasury's bridge foots (TreasuryCheck)
+  - L1302 the history's GDP parts are the accounts' own, to the cent (HistoryCheck)
+  - L1305 the history's GDP parts add up to its GDP, to the cent (HistoryCheck)
+  - L1311 the history's net income is the sector books', to the cent (HistoryCheck)
+  - L1318 the history's bank figures are the bank's own, to the cent (HistoryCheck)
+  - L1331 ...
+  - L1390 no order judged on its interest asked the bond desk more than Game.deskCallsMost() times
+  - L1410 fixture: the free copy has ground for some building
+  - L1414 orderSize() (BA1) of a gap past the int range is the plots, never a wrapped negative:
+  - L1416 ...a gap of a million buildings is a million where the ground holds them, and the plots where it does not
+  - L1419 ...and the same gap in a building holding more is fewer: ceil(gap / capacity)
+  - L1441 every post,
+  - L1444 ...the posts on offer by job type add up to the total
+  - L1445 ...and the total is every post less those withheld
+  - L1450 every home is the stacks' quantity times their doors
+  - L1451 ...and the homes by size add up to it
+  - L1453 ...and the landlords' studio and family doors to it too
+  - L1455 the household places are the city's hundred for each founding endowment and the stacks' places
 
 ## SectorBooksCheck.java - 16 labelled assertions
 
@@ -24597,7 +24619,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L859 fixture: the cities' schedules borrowed, repaid and wrote off
   - L861 the sheet is read at the month's close: nothing is lent after it, in any schedule (0.7.102)
 - **L877 9. every building at every gate (R4)**
-  - L935 ...and the ground put back, each city is as it was
+  - L937 ...and the ground put back, each city is as it was
 
 ## ShortSellingCheck.java - 212 labelled assertions
 
