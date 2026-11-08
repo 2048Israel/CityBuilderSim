@@ -1,4 +1,4 @@
-# TileRaster.java - 4,262 lines · 157 methods · 104 constants · model
+# TileRaster.java - 4,347 lines · 160 methods · 104 constants · model
 
 `ham/citybuildersim/TileRaster.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 > shed, the freight it handles - ore stockpiles, or at the freight station
 > ... (64 more lines in the source)
 
-**Uses:** [TilePainter](TilePainter.md) (586), [BuildingVisual](BuildingVisual.md) (125), [World](World.md) (36), [CityRuns](CityRuns.md) (28), [TrackCurves](TrackCurves.md) (26), [DistrictPlan](DistrictPlan.md) (8), [Resource](Resource.md) (3), [StreetCurves](StreetCurves.md) (1), [InterchangeGround](InterchangeGround.md) (1)
+**Uses:** [TilePainter](TilePainter.md) (600), [BuildingVisual](BuildingVisual.md) (130), [World](World.md) (37), [CityRuns](CityRuns.md) (32), [TrackCurves](TrackCurves.md) (26), [DistrictPlan](DistrictPlan.md) (8), [Resource](Resource.md) (3), [StreetCurves](StreetCurves.md) (1), [InterchangeGround](InterchangeGround.md) (1)
 
 **Used by (27):** [BridgeMapCheck](BridgeMapCheck.md), [BuildingVisual](BuildingVisual.md), [CityMap](CityMap.md), [CityRuns](CityRuns.md), [CrossingCheck](CrossingCheck.md), [DistrictPicture](DistrictPicture.md), [EarthTerrainCheck](EarthTerrainCheck.md), [FoundingScreen](FoundingScreen.md), [GlobeCheck](GlobeCheck.md), [GlobePicture](GlobePicture.md), [JunctionCheck](JunctionCheck.md), [LandMap](LandMap.md), [LandScreen](LandScreen.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapFrame](MapFrame.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [MiniMap](MiniMap.md), [RailDrawCheck](RailDrawCheck.md), [ReadPathCheck](ReadPathCheck.md), [ReliefRenders](ReliefRenders.md), [RunRenders](RunRenders.md), [RunWorksCheck](RunWorksCheck.md), [SlopeRenders](SlopeRenders.md), [TrainSchedule](TrainSchedule.md), [TrainShapes](TrainShapes.md)
 
@@ -80,21 +80,21 @@
 | 928 | THE MATERIALS AS THEMSELVES (0.8.0, batch I14; spec-materials 5's I14 |
 | 1040 | AT SEA (0.7.97, batch O13; TilePainter's AT SEA; mockup 3's colours) |
 | 1175 | THE MIDDLE AND FAR VIEWS AS BLOCKS (J3b: the mockup's levels 1 and 2) |
-| 1559 | THE AVENUES (batch CL4; the study spec-city-layout 5.2) |
-| 1940 | THE CURVES (batch CL4, slice D; the study spec-city-layout 5.2) |
-| 2215 | THE WAYS AS LINES (0.7.88, batch RD2; from LINES_FROM px a plot) |
-| 2563 | · a wide road is one carriageway (MF1, slice C) |
-| 2670 | · junctions' helpers |
-| 2997 | · 1. signals: where arterials, boulevards and access roads cross (FX5: one box a crossing) |
-| 3072 | · 2. roundabouts: where ROUNDABOUT_ROADS or more roads meet (FX5; before, wherever boulevards crossed) |
-| 3116 | · 3. diamonds: a street passes beneath a highway |
-| 3171 | · 4. a highway arm's end |
-| 3253 | · 5. a stack: highways cross |
-| 3303 | · 6. interchanges' loops: a cloverleaf's and a trumpet's reserve (batch FR7; spec-freight 4.6, D19; leaves since MF1) |
-| 3418 | · 7. kerb corners and estate T's (batch FR7; spec-freight 4.6's table) |
-| 3540 | · the track as rail, and its crossings (0.8.1, batch FR0; spec-freight 4.3) |
-| 3828 | · the curves (FX5) |
-| 4195 | A RECTANGLE OF PIXELS, AND THE PLOTS' COLOURS |
+| 1627 | THE AVENUES (batch CL4; the study spec-city-layout 5.2) |
+| 2008 | THE CURVES (batch CL4, slice D; the study spec-city-layout 5.2) |
+| 2283 | THE WAYS AS LINES (0.7.88, batch RD2; from LINES_FROM px a plot) |
+| 2642 | · a wide road is one carriageway (MF1, slice C) |
+| 2749 | · junctions' helpers |
+| 3076 | · 1. signals: where arterials, boulevards and access roads cross (FX5: one box a crossing) |
+| 3151 | · 2. roundabouts: where ROUNDABOUT_ROADS or more roads meet (FX5; before, wherever boulevards crossed) |
+| 3195 | · 3. diamonds: a street passes beneath a highway |
+| 3250 | · 4. a highway arm's end |
+| 3332 | · 5. a stack: highways cross |
+| 3382 | · 6. interchanges' loops: a cloverleaf's and a trumpet's reserve (batch FR7; spec-freight 4.6, D19; leaves since MF1) |
+| 3503 | · 7. kerb corners and estate T's (batch FR7; spec-freight 4.6's table) |
+| 3625 | · the track as rail, and its crossings (0.8.1, batch FR0; spec-freight 4.3) |
+| 3913 | · the curves (FX5) |
+| 4280 | A RECTANGLE OF PIXELS, AND THE PLOTS' COLOURS |
 
 ## Constants
 
@@ -190,37 +190,37 @@
 | 1186 | `TileRaster.BLOCK_MIDDLE` | `4` | Blocks the mockup drew at its middle view, in plots a side: 4 (120 m), from 1.4 to 3.2 px a plot... |
 | 1189 | `TileRaster.BLOCK_FAR` | `8` | ...and at its far view: 8 (240 m), below 1.4 px a plot, with gravel hidden. |
 | 1300 | `TileRaster.HIGHWAY_LEAST_PX` | `2` | The least a highway is drawn across, in pixels, in the blocks' views: 2 (the mockup's 1.8 at its far view, 2 at its middle). |
-| 1626 | `TileRaster.NOTCH` | `1<<24` | What marks an outer plot in avenueNotches(): bit 24, over the arm's code (low two bits) and the codes of the two steps either side of it (bits 8 to 15 and 16 to 23). |
-| 2481 | `TileRaster.RAMP_WIDTH` | `ROAD_WIDTH [ BuildingVisual.GRAVEL ]` | A ramp's slip road's width, as a share of a plot: a gravel street's, 0.3 (ROAD_WIDTH). |
-| 2737 | `TileRaster.Crossings.N` | `TilePainter.CROSS_RING, R = TilePainter.CROSS_REACH` | The side of Input.ring and how far it reaches past the tile on every side, in plots: TilePainter.CROSS_RING and TilePainter.CROSS_REACH. |
-| 2739 | `TileRaster.Crossings.NONE` | `new Crossings()` | A tile with no junction street about it: no crossings. |
-| 3309 | `TileRaster.LOOP_WIDTH` | `0.34` | A loop's road across, as a share of a plot: 0.34, a pixel or two wider than a gravel street's, so it reads as a ramp at 8 px a plot and not as a street. |
-| 3312 | `TileRaster.SLIP_OFF` | `0.45` | How far off a highway's middle a ramp runs where it meets the highway, in plots: just off the highway's band (0.45). |
-| 3321 | `TileRaster.LEAF_RADIUS` | `2.4` | A leaf's radius, in plots (MF1, 2026-10-28; Jerus, shot 5: "Draw a cleaner interchange (a cloverleaf's or a diamond's shape)"): a cloverleaf's loop ramp is one leaf in its quadrant, about 270 degrees of a circle of th... |
-| 3324 | `TileRaster.LEAF_AT` | `LEAF_RADIUS + SLIP_OFF` | Where a leaf's middle lies, in plots from the junction's middle along each of its two highways: its radius and the highway's edge, so it touches both. |
-| 3331 | `TileRaster.CONNECTOR_RADIUS` | `5.2` | The outer connector's radius about the leaf's middle, in plots (MF1): in each quadrant of a cloverleaf a second, wider arc about the leaf, from one highway's edge round the outside of the leaf to the other's, the righ... |
-| 3421 | `TileRaster.KERB_RADIUS` | `0.25` | A kerb corner's radius, in plots: 0.25 (7.5 m), the corner of a + of two streets in a homes cell - and of a street's T on an arterial there. |
-| 3424 | `TileRaster.ESTATE_T_RADIUS` | `0.5` | An estate T's corner radius, in plots: 0.5 (15 m) - wide, where trucks turn (spec-freight 4.6: "a T with wide radius corners"). |
-| 3638 | `TileRaster.SIDING_SHED` | `0.7` | A siding's loading shed, the share of a plot it fills (FR7 slice 3): 0.7, a small block at the siding's end beside the works. |
-| 3990 | `TileRaster.HIGHWAY_LEG` | `2` | How far the straight legs of a highway bend are drawn past its tangent points, in plots: two - past the last plot the bend replaces (a plot and a half out), where the plots' own bands take over. |
-| 4242 | `TileRaster.ROAD_SMALL` | `{ 0, 0xffbdb8ae, 0xff6a7077, 0xff3b4048 }` | A road plot's colour below LINES_FROM px a plot, where it fills its plot, by kind: gravel's and the highway's own, a paved road's casing - its own grey is the grass's brightness, and a pixel of it vanishes among the h... |
+| 1694 | `TileRaster.NOTCH` | `1<<24` | What marks an outer plot in avenueNotches(): bit 24, over the arm's code (low two bits) and the codes of the two steps either side of it (bits 8 to 15 and 16 to 23). |
+| 2560 | `TileRaster.RAMP_WIDTH` | `ROAD_WIDTH [ BuildingVisual.GRAVEL ]` | A ramp's slip road's width, as a share of a plot: a gravel street's, 0.3 (ROAD_WIDTH). |
+| 2816 | `TileRaster.Crossings.N` | `TilePainter.CROSS_RING, R = TilePainter.CROSS_REACH` | The side of Input.ring and how far it reaches past the tile on every side, in plots: TilePainter.CROSS_RING and TilePainter.CROSS_REACH. |
+| 2818 | `TileRaster.Crossings.NONE` | `new Crossings()` | A tile with no junction street about it: no crossings. |
+| 3388 | `TileRaster.LOOP_WIDTH` | `0.34` | A loop's road across, as a share of a plot: 0.34, a pixel or two wider than a gravel street's, so it reads as a ramp at 8 px a plot and not as a street. |
+| 3391 | `TileRaster.SLIP_OFF` | `0.45` | How far off a highway's middle a ramp runs where it meets the highway, in plots: just off the highway's band (0.45). |
+| 3400 | `TileRaster.LEAF_RADIUS` | `2.4` | A leaf's radius, in plots (MF1, 2026-10-28; Jerus, shot 5: "Draw a cleaner interchange (a cloverleaf's or a diamond's shape)"): a cloverleaf's loop ramp is one leaf in its quadrant, about 270 degrees of a circle of th... |
+| 3403 | `TileRaster.LEAF_AT` | `LEAF_RADIUS + SLIP_OFF` | Where a leaf's middle lies, in plots from the junction's middle along each of its two highways: its radius and the highway's edge, so it touches both. |
+| 3410 | `TileRaster.CONNECTOR_RADIUS` | `5.2` | The outer connector's radius about the leaf's middle, in plots (MF1): in each quadrant of a cloverleaf a second, wider arc about the leaf, from one highway's edge round the outside of the leaf to the other's, the righ... |
+| 3506 | `TileRaster.KERB_RADIUS` | `0.25` | A kerb corner's radius, in plots: 0.25 (7.5 m), the corner of a + of two streets in a homes cell - and of a street's T on an arterial there. |
+| 3509 | `TileRaster.ESTATE_T_RADIUS` | `0.5` | An estate T's corner radius, in plots: 0.5 (15 m) - wide, where trucks turn (spec-freight 4.6: "a T with wide radius corners"). |
+| 3723 | `TileRaster.SIDING_SHED` | `0.7` | A siding's loading shed, the share of a plot it fills (FR7 slice 3): 0.7, a small block at the siding's end beside the works. |
+| 4075 | `TileRaster.HIGHWAY_LEG` | `2` | How far the straight legs of a highway bend are drawn past its tangent points, in plots: two - past the last plot the bend replaces (a plot and a half out), where the plots' own bands take over. |
+| 4327 | `TileRaster.ROAD_SMALL` | `{ 0, 0xffbdb8ae, 0xff6a7077, 0xff3b4048 }` | A road plot's colour below LINES_FROM px a plot, where it fills its plot, by kind: gravel's and the highway's own, a paved road's casing - its own grey is the grass's brightness, and a pixel of it vanishes among the h... |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 2742 | `final byte[] role` | The role of the street on each plot of the ring, by TilePainter.ringIndex(); null with no junction street about the tile. |
-| 2744 | `final int[] group` | The crossing each plot belongs to, or -1; null with none. |
-| 2746 | `byte[] av` | The avenue's mark on each plot of the ring, by ringIndex() (CL4); null with no avenue about the tile. |
-| 2748 | `int groups` | The crossings: each one's rectangle (first and last column and row, in the tile's plots, which may lie off the tile), the roads that leave it, and whether it is a roundabout. |
-| 2749 | `int[] x0` |  |
-| 2750 | `boolean[] round` |  |
+| 2821 | `final byte[] role` | The role of the street on each plot of the ring, by TilePainter.ringIndex(); null with no junction street about the tile. |
+| 2823 | `final int[] group` | The crossing each plot belongs to, or -1; null with none. |
+| 2825 | `byte[] av` | The avenue's mark on each plot of the ring, by ringIndex() (CL4); null with no avenue about the tile. |
+| 2827 | `int groups` | The crossings: each one's rectangle (first and last column and row, in the tile's plots, which may lie off the tile), the roads that leave it, and whether it is a roundabout. |
+| 2828 | `int[] x0` |  |
+| 2829 | `boolean[] round` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 131 | 4132 | **type** `public final class TileRaster` | A painted tile as pixels: an int[] of 0xAARRGGBB, a row at a time, at a whole number of pixels a plot - what the map view hands PixelWriter.setPixels() for a tile's image. |
+| 131 | 4217 | **type** `public final class TileRaster` | A painted tile as pixels: an int[] of 0xAARRGGBB, a row at a time, at a whole number of pixels a plot - what the map view hands PixelWriter.setPixels() for a tile's image. |
 | 133 | 1 | `private TileRaster()` |  |
 | 165 | 9 | `static { ... }` |  |
 | 181 | 4 | `public static int colour(int cover, int relief)` | A plot's ground colour from its cover (a World class) and its relief (World.FLAT to VERY_STEEP): GROUND[cover] on flat ground, on water, on ice and for a generated world (which has no relief); on dry open ground (gras... |
@@ -276,7 +276,7 @@
 | 1149 | 16 | `private static void overBuildings(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | A highway passing over a building (0.7.89): a mine standing on its site where the elevated highway crosses it - drawn over the building, its arms to the highway beside it (spec 2.7: elevated). |
 | 1167 | 7 | `private static boolean runHighwayAt(TilePainter.Input in, TilePainter.Painted p, int i, int dir)` | Whether the plot a step from plot i, across the tile's edge too, is a highway's of the runs (under a building or not). |
 
-### THE MIDDLE AND FAR VIEWS AS BLOCKS (J3b: the mockup's levels 1 and 2) (lines 1175-1558)
+### THE MIDDLE AND FAR VIEWS AS BLOCKS (J3b: the mockup's levels 1 and 2) (lines 1175-1626)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -300,193 +300,196 @@
 | 1517 | 3 | `private static boolean bendReplaces(TilePainter.Input in, TilePainter.Painted p, int i)` | Whether a highway bend draws plot i instead of its cell (FX5 slice D): the plot is one Input.curved names and no bridge's - a bridge's deck is straight and the arc is never drawn over water, so a curved plot over fres... |
 | 1522 | 8 | `private static boolean highwayPlot(TilePainter.Input in, TilePainter.Painted p, int x, int y)` | Whether plot (x, y), in the tile or just across one of its edges on an axis, is a highway's own. |
 | 1543 | 15 | `private static void diagEndOpen(TilePainter.Input in, TilePainter.Painted p, int i, int px, double half, int c, int[] img)` | An arm that ends on its diagonal (FX5 slice D) ends squared across its heading at its last step's far edge. |
+| 1567 | 3 | `static int deckAcross(int kind, int px)` | A bridge's deck across, in pixels, where it is the band along a 45-degree line (MF2): the road's (or, for PAVED, the track's) whole width and a pixel either side, as the bars' deck is, but not held to a plot's width. |
+| 1576 | 20 | `private static int deckStepAt(TilePainter.Input in, TilePainter.Painted p, int x, int y)` | The step of a 45-degree bridge's deck at plot (x, y), in the tile or just across one of its edges: its marks as stepMarkAt() reads them, with 0x100 added where it is the railway's and 0x200 where it lies across the ti... |
+| 1603 | 23 | `private static void deckOpen(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img)` | The ground between two steps of a 45-degree bridge (MF2): as diagOpen() fills the carriageway's notch, the deck's band across plot i - open ground or water with a step of the bridge on one axis and the next step of it... |
 
-### THE AVENUES (batch CL4; the study spec-city-layout 5.2) (lines 1559-1939)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1579 | 1 | `private static int armDx(int code)` | The heading of an avenue's arm, by CityRuns.diagCode(): east-south, west-south, west-north, east-north (as DistrictPlan.AVENUE_DX and AVENUE_DY): +1 or -1 along x... |
-| 1582 | 1 | `private static int armDy(int code)` | ...and along y. |
-| 1585 | 6 | `private static int codeAt(TilePainter.Input in, int x, int y)` | The street code on plot (x, y) of the tile or within CROSS_REACH of it (Input.street, Input.ring): 0 for none or a plot farther out. |
-| 1593 | 5 | `private static boolean ringStreet(TilePainter.Input in, TilePainter.Painted p, int x, int y)` | Whether plot (x, y), in the tile or within REACH of it, is a street (as streetAt() reads it: a track, and a highway's plot a street passes beneath, among them). |
-| 1605 | 6 | `private static boolean axisArm(TilePainter.Input in, TilePainter.Painted p, int x, int y, int d)` | Whether avenue plot (x, y) of the tile has an AXIS ARM in direction d (north, east, south, west): a street running into it that is none of the avenue's - the plot beside it a street plot and no avenue's, and the plot ... |
-| 1613 | 4 | `private static int stepAt(TilePainter.Input in, int x, int y)` | The mark of the avenue's step (a plot of the line, no corner) at (x, y) of the tile or its ring, or -1. |
-| 1619 | 5 | `private static boolean bridgeAt(TilePainter.Input in, TilePainter.Painted p, int x, int y)` | Whether plot (x, y) of the tile or its ring bridges fresh water: its street's bridge, or the deck the painter laid. |
-| 1634 | 24 | `private static int[] avenueNotches(TilePainter.Input in, TilePainter.Painted p)` | The OUTER PLOTS of the tile's avenues (O_k, the fourth plot of the 2 x 2 block S_(k-1), C_k, S_k, O_k): by plot, 0 for none, else NOTCH, the arm's code, and the street codes of the two steps either side of it, S_(k-1)... |
-| 1660 | 3 | `private static boolean notchVerge(TilePainter.Input in, TilePainter.Painted p, int i)` | Whether outer plot i (avenueNotches() says it is) is open ground that takes a verge: nothing on it, dry. |
-| 1672 | 27 | `private static void avLine(TilePainter.Input in, int[] img, int w, int i, int px, int code, double pxl, double pyl, double half...` | The pixels of plot i within `half` pixels of the line at the heading `code` through the point (pxl, pyl) of the plot's pixels, no farther along the heading than sMax pixels from that point and no farther behind it tha... |
-| 1701 | 3 | `private static int surfaceOf(int width, int px)` | A street's surface across its plot, in pixels at px a plot, as a straight street's bar is (SURFACE by its width code, 1 or 2). |
-| 1713 | 33 | `private static void avenuePlot(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, boolean box)` | Avenue plot i drawn (from LINES_FROM px a plot): the bar across it for each street that crosses the avenue through it (axisArm()), in that street's own kind and width - so the street reads as one line across the band ... |
-| 1748 | 4 | `private static int avenueArm(TilePainter.Input in, TilePainter.Painted p, int x, int y, int d0, int d1)` | The street code of the first of the two arms (directions d0 and d1, the axis's two ways) of avenue plot (x, y) that is an axis arm: the code of the plot beside it; 0 for none. |
-| 1758 | 23 | `private static void axisBar(TilePainter.Input in, int i, int px, int[] img, boolean horizontal, int arm, boolean box)` | The bar of a street that crosses an avenue, across avenue plot i along one axis (horizontal or not), edge to edge, in the kind and width of its code `arm` - gravel's grain, a track's dashes, a highway's none - or, box... |
-| 1783 | 6 | `private static int notchKind(int codeA, int codeB)` | The kind, in BuildingVisual's numbering or TilePainter.TRACK, an outer plot between two steps is drawn as: the lesser of theirs, a track if either is one; 0 where a step has none (beneath a highway). |
-| 1796 | 32 | `private static void avenueNotch(TilePainter.Input in, TilePainter.Painted p, int i, int info, int px, int[] img, boolean deck, ...` | Outer plot i (avenueNotches() entry `info`) drawn: the band of its arm's line through the middle of the step beside it across its pixels - the notch the staircase's plots would leave in the band - in the kind and widt... |
-| 1837 | 33 | `private static void avenueEnds(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | A piece of avenue's end: where a step's successor corner is not laid (its head: the avenue ends there, at a yard, at water too wide, at the edge of the city's ground) or its predecessor's is not (its tail), the band e... |
-| 1879 | 32 | `private static void avenueOrigin(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, Crossings cr)` | The origin's neighbourhood (the 3 x 3 plots about Input.avenueOx/avenueOy, the lattice node the four arms run out from): a plot two arms share carries the first arm's mark only (DistrictPlan.avenue), so the marks draw... |
-| 1913 | 11 | `private static void avenueDeck(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img)` | Avenue plot i over fresh water (the decks' pass of ways()): its deck - the band a pixel wider either side - and a bar of deck for each street that crosses it; the surface comes with avenuePlot(). |
-| 1926 | 13 | `private static void avenueBoxes(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, Crossings cr)` | The avenues' part of every signalled crossing's one box (CL4): the avenue plots, the outer plots and the origin's rays that lie in a junction of a signal, redrawn in JUNCTION_BOX. |
-
-### THE CURVES (batch CL4, slice D; the study spec-city-layout 5.2) (lines 1940-2214)
+### THE AVENUES (batch CL4; the study spec-city-layout 5.2) (lines 1627-2007)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1967 | 11 | `private static boolean curveDrawn(TilePainter.Input in, TilePainter.Painted p, int x, int y)` | Whether plot (x, y), of the tile or within REACH of it, is a street plot a curve draws in place of its bars (see THE CURVES). |
-| 1984 | 6 | `private static boolean curveArm(TilePainter.Input in, TilePainter.Painted p, int x, int y, int d)` | Whether curve-drawn plot (x, y) has an ARM in direction d (north, east, south, west): a street running into it that is none of the curve's - the plot beside it a street plot and no curve's own, and the plot beyond tha... |
-| 1997 | 9 | `private static boolean curveLink(TilePainter.Input in, TilePainter.Painted p, int ax, int ay, int bx, int by, int d)` | Whether plot A (ax, ay) of the tile, beside the street plot B (bx, by) in direction d, has a bar toward it, where a curve is about (streetAt()): two plots the curve draws have none between them; a plot the curve draws... |
-| 2008 | 6 | `private static void curveArms(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img)` | The bars of curve-drawn plot i: the street that crosses it along each axis, across the plot in that street's kind and width (axisBar()). |
-| 2016 | 4 | `private static int curveArmCode(TilePainter.Input in, TilePainter.Painted p, int x, int y, int d0, int d1)` | The street code of the first of the two arms (directions d0 and d1) of curve-drawn plot (x, y); 0 for none. |
-| 2028 | 30 | `private static boolean curveEndBars(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int dashT, int dashS...` | The bars of an end of a curve (CV_END), where the street runs into it from one side alone on an axis - the dead end the street along a cut leaves from, whose street stops there - so the bar is drawn from that side's e... |
-| 2060 | 5 | `private static boolean bandable(TilePainter.Painted p, int i)` | Whether the band may be drawn on plot i of the tile: a street's plot (no bridge's, none beneath a highway, no highway's own) or open ground, the water the line cuts across a corner of among it - never a building, the ... |
-| 2067 | 11 | `private static int curveLookOf(TilePainter.Input in, TilePainter.Painted p, int x, int y)` | What the band is drawn as on own plot (x, y) of the tile or its ring: (kind << 4 \| width) + 1 of its street, 0 where it is none the band is drawn as (a highway's, one beneath a highway, a bridge's). |
-| 2080 | 23 | `private static int[] curveLooks(TilePainter.Input in, TilePainter.Painted p)` | What the band is drawn as on the plots of the tile: per plot, 0 for none or (kind << 4 \| width) + 1 - an own street plot's own kind and width, a band plot's those of the nearest own street plot beside it (the four sid... |
-| 2109 | 19 | `static double[][] curveLine(int kind, double[] g, int at, int n)` | A curve's line, in the plots of the tile, from the numbers Input.curveGeom holds (n of them from `at`): {xs, ys}. |
-| 2130 | 11 | `private static void curves(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | Every curve of the tile drawn (THE CURVES): the band along each line over the plots it is drawn on. |
-| 2147 | 67 | `private static void drawCurve(TilePainter.Input in, int px, int[] img, int[] look, double[] xs, double[] ys)` | One curve's band: for each plot the curve is drawn on (look), the pixels of it whose centres lie within half the street's width of the line (xs, ys, in plots) - a track's width, the dashes counted along the line from ... |
+| 1647 | 1 | `private static int armDx(int code)` | The heading of an avenue's arm, by CityRuns.diagCode(): east-south, west-south, west-north, east-north (as DistrictPlan.AVENUE_DX and AVENUE_DY): +1 or -1 along x... |
+| 1650 | 1 | `private static int armDy(int code)` | ...and along y. |
+| 1653 | 6 | `private static int codeAt(TilePainter.Input in, int x, int y)` | The street code on plot (x, y) of the tile or within CROSS_REACH of it (Input.street, Input.ring): 0 for none or a plot farther out. |
+| 1661 | 5 | `private static boolean ringStreet(TilePainter.Input in, TilePainter.Painted p, int x, int y)` | Whether plot (x, y), in the tile or within REACH of it, is a street (as streetAt() reads it: a track, and a highway's plot a street passes beneath, among them). |
+| 1673 | 6 | `private static boolean axisArm(TilePainter.Input in, TilePainter.Painted p, int x, int y, int d)` | Whether avenue plot (x, y) of the tile has an AXIS ARM in direction d (north, east, south, west): a street running into it that is none of the avenue's - the plot beside it a street plot and no avenue's, and the plot ... |
+| 1681 | 4 | `private static int stepAt(TilePainter.Input in, int x, int y)` | The mark of the avenue's step (a plot of the line, no corner) at (x, y) of the tile or its ring, or -1. |
+| 1687 | 5 | `private static boolean bridgeAt(TilePainter.Input in, TilePainter.Painted p, int x, int y)` | Whether plot (x, y) of the tile or its ring bridges fresh water: its street's bridge, or the deck the painter laid. |
+| 1702 | 24 | `private static int[] avenueNotches(TilePainter.Input in, TilePainter.Painted p)` | The OUTER PLOTS of the tile's avenues (O_k, the fourth plot of the 2 x 2 block S_(k-1), C_k, S_k, O_k): by plot, 0 for none, else NOTCH, the arm's code, and the street codes of the two steps either side of it, S_(k-1)... |
+| 1728 | 3 | `private static boolean notchVerge(TilePainter.Input in, TilePainter.Painted p, int i)` | Whether outer plot i (avenueNotches() says it is) is open ground that takes a verge: nothing on it, dry. |
+| 1740 | 27 | `private static void avLine(TilePainter.Input in, int[] img, int w, int i, int px, int code, double pxl, double pyl, double half...` | The pixels of plot i within `half` pixels of the line at the heading `code` through the point (pxl, pyl) of the plot's pixels, no farther along the heading than sMax pixels from that point and no farther behind it tha... |
+| 1769 | 3 | `private static int surfaceOf(int width, int px)` | A street's surface across its plot, in pixels at px a plot, as a straight street's bar is (SURFACE by its width code, 1 or 2). |
+| 1781 | 33 | `private static void avenuePlot(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, boolean box)` | Avenue plot i drawn (from LINES_FROM px a plot): the bar across it for each street that crosses the avenue through it (axisArm()), in that street's own kind and width - so the street reads as one line across the band ... |
+| 1816 | 4 | `private static int avenueArm(TilePainter.Input in, TilePainter.Painted p, int x, int y, int d0, int d1)` | The street code of the first of the two arms (directions d0 and d1, the axis's two ways) of avenue plot (x, y) that is an axis arm: the code of the plot beside it; 0 for none. |
+| 1826 | 23 | `private static void axisBar(TilePainter.Input in, int i, int px, int[] img, boolean horizontal, int arm, boolean box)` | The bar of a street that crosses an avenue, across avenue plot i along one axis (horizontal or not), edge to edge, in the kind and width of its code `arm` - gravel's grain, a track's dashes, a highway's none - or, box... |
+| 1851 | 6 | `private static int notchKind(int codeA, int codeB)` | The kind, in BuildingVisual's numbering or TilePainter.TRACK, an outer plot between two steps is drawn as: the lesser of theirs, a track if either is one; 0 where a step has none (beneath a highway). |
+| 1864 | 32 | `private static void avenueNotch(TilePainter.Input in, TilePainter.Painted p, int i, int info, int px, int[] img, boolean deck, ...` | Outer plot i (avenueNotches() entry `info`) drawn: the band of its arm's line through the middle of the step beside it across its pixels - the notch the staircase's plots would leave in the band - in the kind and widt... |
+| 1905 | 33 | `private static void avenueEnds(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | A piece of avenue's end: where a step's successor corner is not laid (its head: the avenue ends there, at a yard, at water too wide, at the edge of the city's ground) or its predecessor's is not (its tail), the band e... |
+| 1947 | 32 | `private static void avenueOrigin(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, Crossings cr)` | The origin's neighbourhood (the 3 x 3 plots about Input.avenueOx/avenueOy, the lattice node the four arms run out from): a plot two arms share carries the first arm's mark only (DistrictPlan.avenue), so the marks draw... |
+| 1981 | 11 | `private static void avenueDeck(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img)` | Avenue plot i over fresh water (the decks' pass of ways()): its deck - the band a pixel wider either side - and a bar of deck for each street that crosses it; the surface comes with avenuePlot(). |
+| 1994 | 13 | `private static void avenueBoxes(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, Crossings cr)` | The avenues' part of every signalled crossing's one box (CL4): the avenue plots, the outer plots and the origin's rays that lie in a junction of a signal, redrawn in JUNCTION_BOX. |
 
-### THE WAYS AS LINES (0.7.88, batch RD2; from LINES_FROM px a plot) (lines 2215-2562)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2266 | 213 | `private static void ways(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | The ways as lines (from LINES_FROM px a plot; spec 5): each street's verge, its whole plot on dry ground; the decks of bridges; the track (as rail since 0.8.1); each street's surface down its middle along each way it ... |
-| 2493 | 37 | `private static void ramps(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | The ramps (0.7.89; spec 2.7: "ramps where an arterial crosses, every other one, and at an arm's end"): at a highway's plot the runs mark a ramp, where a street passes beneath it, a slip road on each verge plot at its ... |
-| 2532 | 8 | `private static boolean isRunHighway(TilePainter.Input in, TilePainter.Painted p, int x, int y)` | Whether plot (x, y) - in the tile, or just across one of its edges - is a highway's of the runs. |
-| 2542 | 7 | `private static boolean isStreetAt(TilePainter.Input in, TilePainter.Painted p, int x, int y)` | Whether plot (x, y) - in the tile, or just across one of its edges - is a street's. |
-| 2551 | 11 | `private static void segment(int[] img, int w, int x0, int y0, int px, double ax, double ay, double bx, double by, double half, ...` | The pixels of a plot (its corner at x0, y0, px a side) within `half` of the segment from (ax, ay) to (bx, by), in the plot's pixels: colour c. |
-
-### a wide road is one carriageway (MF1, slice C) (lines 2563-2669)
+### THE CURVES (batch CL4, slice D; the study spec-city-layout 5.2) (lines 2008-2282)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2578 | 48 | `private static void bands(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | The surface of every 2 x 2 block of street plots between the bars through their middles, so a road several plots across is one carriageway (MF1, 2026-10-28; Jerus, on his city: "continous intersection, like its a 3x14... |
-| 2628 | 4 | `private static boolean block(TilePainter.Input in, TilePainter.Painted p, int x, int y, int[] at)` | Whether the four plots from (x, y), across and down, are street of one kind as bandAt() counts it - which it leaves in `at`, one a plot. |
-| 2634 | 4 | `private static boolean sameKind(int[] at)` | Whether the four bandAt() values in `at` are all street, and of one kind. |
-| 2640 | 10 | `private static int[] mesh(int[] at, int px, int x, int y)` | The pixels {x0, y0, x1, y1} between the bars of the four street plots from plot (x, y), from their bandAt() values: bar edge to bar edge. |
-| 2652 | 17 | `private static int bandAt(TilePainter.Input in, TilePainter.Painted p, int x, int y)` | What plot (x, y) of the tile or its ring is to bands(): 0 for no street of its kind, else its kind (GRAVEL or PAVED) and, in bits 4 and 5, its width (1 half, 2 full). |
+| 2035 | 11 | `private static boolean curveDrawn(TilePainter.Input in, TilePainter.Painted p, int x, int y)` | Whether plot (x, y), of the tile or within REACH of it, is a street plot a curve draws in place of its bars (see THE CURVES). |
+| 2052 | 6 | `private static boolean curveArm(TilePainter.Input in, TilePainter.Painted p, int x, int y, int d)` | Whether curve-drawn plot (x, y) has an ARM in direction d (north, east, south, west): a street running into it that is none of the curve's - the plot beside it a street plot and no curve's own, and the plot beyond tha... |
+| 2065 | 9 | `private static boolean curveLink(TilePainter.Input in, TilePainter.Painted p, int ax, int ay, int bx, int by, int d)` | Whether plot A (ax, ay) of the tile, beside the street plot B (bx, by) in direction d, has a bar toward it, where a curve is about (streetAt()): two plots the curve draws have none between them; a plot the curve draws... |
+| 2076 | 6 | `private static void curveArms(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img)` | The bars of curve-drawn plot i: the street that crosses it along each axis, across the plot in that street's kind and width (axisBar()). |
+| 2084 | 4 | `private static int curveArmCode(TilePainter.Input in, TilePainter.Painted p, int x, int y, int d0, int d1)` | The street code of the first of the two arms (directions d0 and d1) of curve-drawn plot (x, y); 0 for none. |
+| 2096 | 30 | `private static boolean curveEndBars(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int dashT, int dashS...` | The bars of an end of a curve (CV_END), where the street runs into it from one side alone on an axis - the dead end the street along a cut leaves from, whose street stops there - so the bar is drawn from that side's e... |
+| 2128 | 5 | `private static boolean bandable(TilePainter.Painted p, int i)` | Whether the band may be drawn on plot i of the tile: a street's plot (no bridge's, none beneath a highway, no highway's own) or open ground, the water the line cuts across a corner of among it - never a building, the ... |
+| 2135 | 11 | `private static int curveLookOf(TilePainter.Input in, TilePainter.Painted p, int x, int y)` | What the band is drawn as on own plot (x, y) of the tile or its ring: (kind << 4 \| width) + 1 of its street, 0 where it is none the band is drawn as (a highway's, one beneath a highway, a bridge's). |
+| 2148 | 23 | `private static int[] curveLooks(TilePainter.Input in, TilePainter.Painted p)` | What the band is drawn as on the plots of the tile: per plot, 0 for none or (kind << 4 \| width) + 1 - an own street plot's own kind and width, a band plot's those of the nearest own street plot beside it (the four sid... |
+| 2177 | 19 | `static double[][] curveLine(int kind, double[] g, int at, int n)` | A curve's line, in the plots of the tile, from the numbers Input.curveGeom holds (n of them from `at`): {xs, ys}. |
+| 2198 | 11 | `private static void curves(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | Every curve of the tile drawn (THE CURVES): the band along each line over the plots it is drawn on. |
+| 2215 | 67 | `private static void drawCurve(TilePainter.Input in, int px, int[] img, int[] look, double[] xs, double[] ys)` | One curve's band: for each plot the curve is drawn on (look), the pixels of it whose centres lie within half the street's width of the line (xs, ys, in plots) - a track's width, the dashes counted along the line from ... |
 
-### junctions' helpers (lines 2670-2996)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2680 | 13 | `private static byte streetRoleAt(TilePainter.Input in, TilePainter.Painted p, int x, int y)` | The role of the street at plot (x, y) - ARTERIAL, BOULEVARD, ACCESS or STREET: in the tile, from its painted plots; the plot just across one of its edges, from Input.beyond; and (FX5) any other plot within TilePainter... |
-| 2700 | 5 | `private static byte crossingRoleAt(TilePainter.Input in, TilePainter.Painted p, int x, int y)` | The role of the street at plot (x, y) as a crossing reads it (MF1, 2026-10-28): from the plan's code on every plot, the tile's own among them, not from the painted plot, which a building or a highway laid over a stree... |
-| 2707 | 5 | `private static byte roleOfCode(int code)` | The role of a street code (the S_ codes) as streetRoleAt() answers it: 0 for none or a street beneath a highway. |
-| 2714 | 3 | `private static boolean junctionRole(byte role)` | Whether a street role is one a junction is drawn for. |
-| 2735 | 243 | **type** `private static final class Crossings` | The crossings of a tile's streets (FX5; Jerus, 2026-10-20, "Mostly signals"), read once for the tile over the plots about it - the tile and TilePainter.CROSS_REACH more on every side, which Input.ring gives - so a cro... |
-| 2752 | 4 | `private Crossings()` _(in TileRaster.Crossings)_ |  |
-| 2757 | 5 | `private Crossings(byte[] role)` _(in TileRaster.Crossings)_ |  |
-| 2764 | 66 | `static Crossings of(TilePainter.Input in, TilePainter.Painted p)` _(in TileRaster.Crossings)_ | The crossings of the tile in/p draw. |
-| 2837 | 21 | `private static void avenueJunctions(TilePainter.Input in, byte[] role, byte[] avm, boolean[] jp)` _(in TileRaster.Crossings)_ | The junction plots the avenues make (CL4), into jp: an avenue's plot of a junction role (they are arterials) that a street of a junction role crosses - one of its sides a plot of such a street that is no avenue's with... |
-| 2860 | 4 | `int avAt(int x, int y)` _(in TileRaster.Crossings)_ | The avenue's mark on plot (x, y) of the ring; 0 for none or a plot off it. |
-| 2871 | 6 | `private boolean streetOut(int x, int y, int d)` _(in TileRaster.Crossings)_ | Whether plot (x, y), just outside a crossing's rectangle, is a road leaving it (CL4): a street plot that is no avenue's, or an avenue's plot that is also a street the avenue crosses - one that goes on out, in directio... |
-| 2884 | 15 | `private int branches(int g)` _(in TileRaster.Crossings)_ | The avenues' branches that leave crossing g (CL4): of the avenue's plots in its rectangle each plot the staircase runs on to (a step's are the corner before it, at (x, y - dy), and after it, at (x + dx, y); a corner's... |
-| 2901 | 3 | `private static boolean runRole(byte[] role, byte[] avm, int k)` _(in TileRaster.Crossings)_ | Whether plot k of the ring is a plot of a run of junction streets: a junction role, and no avenue's plot (avm null with no avenue about the tile). |
-| 2906 | 10 | `private int open(int x, int y)` _(in TileRaster.Crossings)_ | Starts a crossing at plot (x, y); its number. |
-| 2918 | 4 | `private void grow(int g, int x, int y)` _(in TileRaster.Crossings)_ | Adds plot (x, y) to crossing g's rectangle. |
-| 2924 | 4 | `byte roleAt(int x, int y)` _(in TileRaster.Crossings)_ | The role of the street at plot (x, y) of the ring; 0 for none or for a plot off it. |
-| 2930 | 4 | `int at(int x, int y)` _(in TileRaster.Crossings)_ | The crossing plot (x, y) is a junction plot of, or -1. |
-| 2936 | 4 | `boolean signalAt(int x, int y)` _(in TileRaster.Crossings)_ | Whether plot (x, y) is a junction plot of a signal. |
-| 2942 | 3 | `boolean inRect(int g, int x, int y)` _(in TileRaster.Crossings)_ | Whether plot (x, y) lies in crossing g's rectangle. |
-| 2954 | 23 | `private int roadsLeaving(int g)` _(in TileRaster.Crossings)_ | The roads that leave crossing g: on each of the rectangle's four sides each maximal run of street plots just outside it is one road, and a street plot diagonally off a corner is one more where the street goes on out a... |
-| 2984 | 6 | `static int[][] crossings(TilePainter.Input in, TilePainter.Painted p)` | The crossings the painter reads for a tile, each {first column, first row, last column, last row, roads that leave it, 1 for a roundabout and 0 for a signal}, in the tile's plots (a rectangle may lie off the tile): wh... |
-| 2992 | 4 | `private static int[] surfaceAt(TilePainter.Painted p, int i, int px)` | A street's surface across its plot at px pixels a plot: {its width, its offset from the plot's edge}. |
-
-### 1. signals: where arterials, boulevards and access roads cross (FX5: one box a crossing) (lines 2997-3071)
+### THE WAYS AS LINES (0.7.88, batch RD2; from LINES_FROM px a plot) (lines 2283-2641)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2999 | 45 | `private static void signals(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, Crossings cr)` |  |
-| 3046 | 25 | `private static void drawSignalArm(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int dir)` | A zebra crossing and its stop line on one arm of a signal, at the edge facing the junction. |
+| 2334 | 224 | `private static void ways(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | The ways as lines (from LINES_FROM px a plot; spec 5): each street's verge, its whole plot on dry ground; the decks of bridges; the track (as rail since 0.8.1); each street's surface down its middle along each way it ... |
+| 2572 | 37 | `private static void ramps(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | The ramps (0.7.89; spec 2.7: "ramps where an arterial crosses, every other one, and at an arm's end"): at a highway's plot the runs mark a ramp, where a street passes beneath it, a slip road on each verge plot at its ... |
+| 2611 | 8 | `private static boolean isRunHighway(TilePainter.Input in, TilePainter.Painted p, int x, int y)` | Whether plot (x, y) - in the tile, or just across one of its edges - is a highway's of the runs. |
+| 2621 | 7 | `private static boolean isStreetAt(TilePainter.Input in, TilePainter.Painted p, int x, int y)` | Whether plot (x, y) - in the tile, or just across one of its edges - is a street's. |
+| 2630 | 11 | `private static void segment(int[] img, int w, int x0, int y0, int px, double ax, double ay, double bx, double by, double half, ...` | The pixels of a plot (its corner at x0, y0, px a side) within `half` of the segment from (ax, ay) to (bx, by), in the plot's pixels: colour c. |
 
-### 2. roundabouts: where ROUNDABOUT_ROADS or more roads meet (FX5; before, wherever boulevards crossed) (lines 3072-3115)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3074 | 18 | `private static void roundabouts(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, Crossings cr)` |  |
-| 3094 | 5 | `private static boolean roundaboutTarget(TilePainter.Input in, TilePainter.Painted p, int i)` | Whether a roundabout's ring or island may be drawn on plot i: a street or empty ground, never a building, the track, a highway or water. |
-| 3101 | 14 | `private static void drawRoundaboutOn(TilePainter.Input in, int i, int px, int[] img, double centreX, double centreY, double out...` | The ring's and island's pixels of a roundabout centred on (centreX, centreY), in the tile's pixels, with an outer and an island radius in pixels, that fall on plot i. |
-
-### 3. diamonds: a street passes beneath a highway (lines 3116-3170)
+### a wide road is one carriageway (MF1, slice C) (lines 2642-2748)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3118 | 29 | `private static void diamonds(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` |  |
-| 3150 | 20 | `private static void drawSlip(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, int hx, int hy, boolean rowHw, int...` | One diamond slip along the verge beside a highway, from the street out for SLIP_LENGTH plots. |
+| 2657 | 48 | `private static void bands(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | The surface of every 2 x 2 block of street plots between the bars through their middles, so a road several plots across is one carriageway (MF1, 2026-10-28; Jerus, on his city: "continous intersection, like its a 3x14... |
+| 2707 | 4 | `private static boolean block(TilePainter.Input in, TilePainter.Painted p, int x, int y, int[] at)` | Whether the four plots from (x, y), across and down, are street of one kind as bandAt() counts it - which it leaves in `at`, one a plot. |
+| 2713 | 4 | `private static boolean sameKind(int[] at)` | Whether the four bandAt() values in `at` are all street, and of one kind. |
+| 2719 | 10 | `private static int[] mesh(int[] at, int px, int x, int y)` | The pixels {x0, y0, x1, y1} between the bars of the four street plots from plot (x, y), from their bandAt() values: bar edge to bar edge. |
+| 2731 | 17 | `private static int bandAt(TilePainter.Input in, TilePainter.Painted p, int x, int y)` | What plot (x, y) of the tile or its ring is to bands(): 0 for no street of its kind, else its kind (GRAVEL or PAVED) and, in bits 4 and 5, its width (1 half, 2 full). |
 
-### 4. a highway arm's end (lines 3171-3252)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3181 | 59 | `private static void highwayEnds(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | A highway arm's end (spec 2.7's ramp at an arm's end): a highway plot the runs mark as a ramp with no street beneath, where the highway runs on exactly one of its four sides - the band narrows to a paved road's and a ... |
-| 3242 | 10 | `private static void drawHighwayApron(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, int tx, int ty, boolean ve...` | A paved apron the paved road's width across the plot just past a highway's open end, when that plot is empty ground. |
-
-### 5. a stack: highways cross (lines 3253-3302)
+### junctions' helpers (lines 2749-3075)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3263 | 26 | `private static void stack(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | A stack where two straight highways cross: a highway plot with another beside it on both axes. |
-| 3291 | 11 | `private static void drawStackSlip(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, int cx, int cy, int dx, int dy)` | One corner slip of a stack, across the plot diagonal to the crossing. |
+| 2759 | 13 | `private static byte streetRoleAt(TilePainter.Input in, TilePainter.Painted p, int x, int y)` | The role of the street at plot (x, y) - ARTERIAL, BOULEVARD, ACCESS or STREET: in the tile, from its painted plots; the plot just across one of its edges, from Input.beyond; and (FX5) any other plot within TilePainter... |
+| 2779 | 5 | `private static byte crossingRoleAt(TilePainter.Input in, TilePainter.Painted p, int x, int y)` | The role of the street at plot (x, y) as a crossing reads it (MF1, 2026-10-28): from the plan's code on every plot, the tile's own among them, not from the painted plot, which a building or a highway laid over a stree... |
+| 2786 | 5 | `private static byte roleOfCode(int code)` | The role of a street code (the S_ codes) as streetRoleAt() answers it: 0 for none or a street beneath a highway. |
+| 2793 | 3 | `private static boolean junctionRole(byte role)` | Whether a street role is one a junction is drawn for. |
+| 2814 | 243 | **type** `private static final class Crossings` | The crossings of a tile's streets (FX5; Jerus, 2026-10-20, "Mostly signals"), read once for the tile over the plots about it - the tile and TilePainter.CROSS_REACH more on every side, which Input.ring gives - so a cro... |
+| 2831 | 4 | `private Crossings()` _(in TileRaster.Crossings)_ |  |
+| 2836 | 5 | `private Crossings(byte[] role)` _(in TileRaster.Crossings)_ |  |
+| 2843 | 66 | `static Crossings of(TilePainter.Input in, TilePainter.Painted p)` _(in TileRaster.Crossings)_ | The crossings of the tile in/p draw. |
+| 2916 | 21 | `private static void avenueJunctions(TilePainter.Input in, byte[] role, byte[] avm, boolean[] jp)` _(in TileRaster.Crossings)_ | The junction plots the avenues make (CL4), into jp: an avenue's plot of a junction role (they are arterials) that a street of a junction role crosses - one of its sides a plot of such a street that is no avenue's with... |
+| 2939 | 4 | `int avAt(int x, int y)` _(in TileRaster.Crossings)_ | The avenue's mark on plot (x, y) of the ring; 0 for none or a plot off it. |
+| 2950 | 6 | `private boolean streetOut(int x, int y, int d)` _(in TileRaster.Crossings)_ | Whether plot (x, y), just outside a crossing's rectangle, is a road leaving it (CL4): a street plot that is no avenue's, or an avenue's plot that is also a street the avenue crosses - one that goes on out, in directio... |
+| 2963 | 15 | `private int branches(int g)` _(in TileRaster.Crossings)_ | The avenues' branches that leave crossing g (CL4): of the avenue's plots in its rectangle each plot the staircase runs on to (a step's are the corner before it, at (x, y - dy), and after it, at (x + dx, y); a corner's... |
+| 2980 | 3 | `private static boolean runRole(byte[] role, byte[] avm, int k)` _(in TileRaster.Crossings)_ | Whether plot k of the ring is a plot of a run of junction streets: a junction role, and no avenue's plot (avm null with no avenue about the tile). |
+| 2985 | 10 | `private int open(int x, int y)` _(in TileRaster.Crossings)_ | Starts a crossing at plot (x, y); its number. |
+| 2997 | 4 | `private void grow(int g, int x, int y)` _(in TileRaster.Crossings)_ | Adds plot (x, y) to crossing g's rectangle. |
+| 3003 | 4 | `byte roleAt(int x, int y)` _(in TileRaster.Crossings)_ | The role of the street at plot (x, y) of the ring; 0 for none or for a plot off it. |
+| 3009 | 4 | `int at(int x, int y)` _(in TileRaster.Crossings)_ | The crossing plot (x, y) is a junction plot of, or -1. |
+| 3015 | 4 | `boolean signalAt(int x, int y)` _(in TileRaster.Crossings)_ | Whether plot (x, y) is a junction plot of a signal. |
+| 3021 | 3 | `boolean inRect(int g, int x, int y)` _(in TileRaster.Crossings)_ | Whether plot (x, y) lies in crossing g's rectangle. |
+| 3033 | 23 | `private int roadsLeaving(int g)` _(in TileRaster.Crossings)_ | The roads that leave crossing g: on each of the rectangle's four sides each maximal run of street plots just outside it is one road, and a street plot diagonally off a corner is one more where the street goes on out a... |
+| 3063 | 6 | `static int[][] crossings(TilePainter.Input in, TilePainter.Painted p)` | The crossings the painter reads for a tile, each {first column, first row, last column, last row, roads that leave it, 1 for a roundabout and 0 for a signal}, in the tile's plots (a rectangle may lie off the tile): wh... |
+| 3071 | 4 | `private static int[] surfaceAt(TilePainter.Painted p, int i, int px)` | A street's surface across its plot at px pixels a plot: {its width, its offset from the plot's edge}. |
 
-### 6. interchanges' loops: a cloverleaf's and a trumpet's reserve (batch FR7; spec-freight 4.6, D19; leaves since MF1) (lines 3303-3417)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3339 | 41 | `private static void loops(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | The loops of every reserve that reaches the tile, from JUNCTIONS_FROM px a plot: a cloverleaf's four leaves, each with its connector round the outside; a trumpet's one leaf, in the quadrant between its stub and the hi... |
-| 3386 | 22 | `private static double rampDistance(double qa, double qb, boolean connector)` | The distance from a point of a quadrant to the quadrant's ramps, the point given from the leaf's middle along the quadrant's two axes (qa, qb): to the leaf, the circle of LEAF_RADIUS but for the quarter facing the cro... |
-| 3410 | 7 | `private static boolean reserveJunction(TilePainter.Input in, int x, int y)` | Whether plot (x, y) of the tile is the junction of a reserve that reaches it: where loops replace a stack's corner slips. |
-
-### 7. kerb corners and estate T's (batch FR7; spec-freight 4.6's table) (lines 3418-3539)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3439 | 56 | `private static void kerbs(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | Kerb corners and estate T's, from JUNCTIONS_FROM px a plot, over the streets' surfaces and their verges: at a + of two streets (a cell's streets, role STREET, on all four sides) each of its four inner corners is round... |
-| 3497 | 14 | `private static boolean estateAt(TilePainter.Input in, TilePainter.Painted p, int x, int y)` | Whether a building of an estate's classes - industry, farms, utilities, mines and wells, transport; a homes cell holds the rest - stands within two plots of plot (x, y): the painter's reading of an estate. |
-| 3520 | 19 | `private static void fillet(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, int jx, int jy, int cx, int cy, int ...` | One rounded corner: the corner point (cx, cy), in pixels from plot (jx, jy)'s corner, where two bars meet; (sx, sy) the way out of it, toward the verge. |
-
-### the track as rail, and its crossings (0.8.1, batch FR0; spec-freight 4.3) (lines 3540-3827)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3553 | 6 | `private static void track(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | The track (0.7.72; redrawn as rail, 0.8.1, batch FR0, spec-freight 4.3): each plot's middle and its arms to the track beside it - past the tile's edge too, where the line runs on - as a ballast bed, and from 4 px a pl... |
-| 3571 | 19 | `private static void tunnels(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | The tunnels (ET4, 2026-10-25; spec-earth2-terrain 4.3: "a run on very steep ground is drawn as a tunnel (portals, a dashed line)"): each plot of a run that lies on very steep dry ground (Painted.tunnel) is its ground,... |
-| 3592 | 44 | `private static void tunnelWay(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int arms, int colour, int ...` | One run's way through tunnel plot i, `arms` its neighbours (bit d for direction d) and `cross` its cross-section in pixels: the dashed line and the portals of tunnels(). |
-| 3645 | 20 | `private static void sidingSheds(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | A siding's loading shed (FR7 slice 3): on the plot marked M_SHED, the last of a siding beside its works' box, a small block in TRANSPORT's colours over the track's end, edged from EDGE_FROM. |
-| 3667 | 3 | `private static int bedWidth(int px, boolean doubled)` | The ballast bed's width, whole pixels: BED, or BED_DOUBLE where the plot is marked double track. |
-| 3672 | 4 | `private static void drawTrackLook(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img)` | The track's look on one plot that carries rail: its ballast bed, sleepers and rails (a 45-degree stretch's just a bed and one rail). |
-| 3678 | 23 | `private static void drawTrackLook(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int arms)` | ...with the track beside it given, bit d for direction d (a yard's head reads it from the runs: yardTrack()). |
-| 3703 | 10 | `private static void drawBed(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z, int arms)` | The track's ballast bed: the plot's middle and its arms to the track beside it, as the bed's whole width. |
-| 3715 | 22 | `private static void drawSleepers(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z, boolean n...` | The sleepers, a pixel thick across the bed, every `step` pixels along the way the track runs. |
-| 3739 | 8 | `private static void drawSleeperTicks(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z, boole...` | Below RAILS_FROM px a plot, one sleeper tick across the bed at the start of each plot along the track. |
-| 3749 | 5 | `private static void drawRails(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z, boolean ns, ...` | The rails, a pixel each, along the way the track runs. |
-| 3756 | 29 | `private static void drawRailsFull(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z, boolean ...` | From RAILS_FROM px a plot: two rails a track, double track's two tracks at the plot's middle +/- TRACKS_APART. |
-| 3787 | 22 | `private static void drawRailsLow(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z, boolean n...` | Below RAILS_FROM px a plot: one STEEL line down the track's middle, two at double track's tracks. |
-| 3811 | 7 | `private static void railH(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z, int row, int c, ...` | A rail a pixel wide along an east-west track at row `row`, its middle and its arms. |
-| 3820 | 7 | `private static void railV(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z, int col, int c, ...` | ...and a north-south track's, at column `col`. |
-
-### the curves (FX5) (lines 3828-4194)
+### 1. signals: where arterials, boulevards and access roads cross (FX5: one box a crossing) (lines 3076-3150)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3848 | 8 | `private static void bends(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, int cx0, int cy0, int cx1, int cy1, b...` | The railway's bends (Input.bends, TrackCurves), drawn on the pixels of the tile within the box [cx0, cx1) x [cy0, cy1): for each, its arc between its tangent points and its two legs' straights from each tangent point ... |
-| 3858 | 3 | `private static TrackCurves.Bend inPixels(TrackCurves.Bend b, int px)` | The bend scaled to pixels a plot: the same arc, its corner, radius and tangent length times px. |
-| 3870 | 18 | `private static double pathLateral(TrackCurves.Bend s, double back1, double back2, double x, double y, double[] out)` | How far point (x, y) lies from the path of bend s (in pixels): its arc, the straight of `back1` before its start along the incoming leg, and the straight of `back2` after its end along the outgoing one - the least of ... |
-| 3889 | 69 | `private static void drawBend(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, TrackCurves.Bend b, boolean double...` |  |
-| 3964 | 24 | `private static void blockBends(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | The bends in the blocks' views (FX5): each bend's arc and straights in RAIL_DARK at the width the blocks draw track (a plot, px pixels), in place of the cells of the plots it replaces. |
-| 4006 | 24 | `private static void highwayBends(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, double half, int c)` | The highways' bends (Input.bends of net HIGHWAY, FX5 slice D), drawn as the carriageway along the arc: the pixels within `half` pixels of each bend's path in colour c, one pass of the highways' casing or surface (ways... |
-| 4039 | 26 | `private static void highwayBendDashes(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, int dash)` | The highways' bends' centre line (FX5 slice D): a dash over the first 55% of each plot's length of the path from the arc's start (`dash` pixels of every px), a pixel wide on the row or column the straight's own dash t... |
-| 4075 | 18 | `private static void ladderRails(int[] img, int w, int px, boolean ew, double apexAlong, double lineAcross, double sidingAlong, ...` | One of a yard's ladders (FX5), from the fan's apex on the line to its siding's start, as TrackCurves.ladder() lays it - an S tangent to the line and to the siding, the points the trains' routes run along - drawn as th... |
-| 4101 | 51 | `private static void railCrossings(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | The railway's crossings (0.8.1, spec-freight 4.3, D18): the street's surface already lies over the bed; from RAILS_FROM px a plot, draw the rails through a level crossing with its crossbucks and half barriers, and an ... |
-| 4154 | 5 | `private static void drawCrossbucks(int px, int[] img, int w, int x0, int y0)` | A level crossing's two crossbucks: a white X in the plot's north-west and south-east corners. |
-| 4161 | 6 | `private static void drawX(int[] img, int w, int x0, int y0, int s)` | An X of side `s` in CROSSBUCK, its corner at (x0, y0). |
-| 4169 | 25 | `private static void drawBarriers(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int w, int x0, int y0, ...` | A level crossing's half barriers: a bar across the lane coming in at each edge where the street enters the plot. |
+| 3078 | 45 | `private static void signals(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, Crossings cr)` |  |
+| 3125 | 25 | `private static void drawSignalArm(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int dir)` | A zebra crossing and its stop line on one arm of a signal, at the edge facing the junction. |
 
-### A RECTANGLE OF PIXELS, AND THE PLOTS' COLOURS (lines 4195-4262)
+### 2. roundabouts: where ROUNDABOUT_ROADS or more roads meet (FX5; before, wherever boulevards crossed) (lines 3151-3194)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4200 | 10 | `private static void grain(TilePainter.Input in, int[] img, int w, int x0, int y0, int x1, int y1, int c)` | Speckles GRAVEL_GRAIN_SHARE of the box's pixels with c, each by a hash of its pixel in the tile and the tile's place, so the same street speckles the same at every paint. |
-| 4211 | 6 | `private static void fillRect(int[] img, int w, int x0, int y0, int x1, int y1, int c)` |  |
-| 4219 | 10 | `static int groundColour(TilePainter.Input in, TilePainter.Painted p, int i)` | A plot's ground: its terrain - forest under a building cleared (0.7.88; spec 2.6) - its site's tint or grey, dimmed when unowned: what a road is drawn on from LINES_FROM px. |
-| 4231 | 9 | `static int siteTint(TilePainter.Input in, int i, int s, int c)` | A site's plot over its ground: its resource's colour, speckled, half grey while its holding is worked, grey worked out. |
-| 4245 | 9 | `static int plotColour(TilePainter.Input in, TilePainter.Painted p, int i)` | A plot's colour before its building: its ground, its site's tint or grey, its road's colour - a track's brown (0.7.88) - or (0.7.72) its track's, where no street crosses it - and dimmed when unowned. |
-| 4256 | 6 | `static int blend(int a, int b, double f)` | a toward b by share f, channel by channel, opaque. |
+| 3153 | 18 | `private static void roundabouts(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, Crossings cr)` |  |
+| 3173 | 5 | `private static boolean roundaboutTarget(TilePainter.Input in, TilePainter.Painted p, int i)` | Whether a roundabout's ring or island may be drawn on plot i: a street or empty ground, never a building, the track, a highway or water. |
+| 3180 | 14 | `private static void drawRoundaboutOn(TilePainter.Input in, int i, int px, int[] img, double centreX, double centreY, double out...` | The ring's and island's pixels of a roundabout centred on (centreX, centreY), in the tile's pixels, with an outer and an island radius in pixels, that fall on plot i. |
+
+### 3. diamonds: a street passes beneath a highway (lines 3195-3249)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3197 | 29 | `private static void diamonds(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` |  |
+| 3229 | 20 | `private static void drawSlip(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, int hx, int hy, boolean rowHw, int...` | One diamond slip along the verge beside a highway, from the street out for SLIP_LENGTH plots. |
+
+### 4. a highway arm's end (lines 3250-3331)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3260 | 59 | `private static void highwayEnds(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | A highway arm's end (spec 2.7's ramp at an arm's end): a highway plot the runs mark as a ramp with no street beneath, where the highway runs on exactly one of its four sides - the band narrows to a paved road's and a ... |
+| 3321 | 10 | `private static void drawHighwayApron(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, int tx, int ty, boolean ve...` | A paved apron the paved road's width across the plot just past a highway's open end, when that plot is empty ground. |
+
+### 5. a stack: highways cross (lines 3332-3381)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3342 | 26 | `private static void stack(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | A stack where two straight highways cross: a highway plot with another beside it on both axes. |
+| 3370 | 11 | `private static void drawStackSlip(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, int cx, int cy, int dx, int dy)` | One corner slip of a stack, across the plot diagonal to the crossing. |
+
+### 6. interchanges' loops: a cloverleaf's and a trumpet's reserve (batch FR7; spec-freight 4.6, D19; leaves since MF1) (lines 3382-3502)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3423 | 42 | `private static void loops(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | The loops of every reserve that reaches the tile, from JUNCTIONS_FROM px a plot: a cloverleaf's four leaves, each with its connector round the outside; a trumpet's one leaf, in the quadrant between its stub and the hi... |
+| 3471 | 22 | `private static double rampDistance(double qa, double qb, boolean connector)` | The distance from a point of a quadrant to the quadrant's ramps, the point given from the leaf's middle along the quadrant's two axes (qa, qb): to the leaf, the circle of LEAF_RADIUS but for the quarter facing the cro... |
+| 3495 | 7 | `private static boolean reserveJunction(TilePainter.Input in, int x, int y)` | Whether plot (x, y) of the tile is the junction of a reserve that reaches it: where loops replace a stack's corner slips. |
+
+### 7. kerb corners and estate T's (batch FR7; spec-freight 4.6's table) (lines 3503-3624)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3524 | 56 | `private static void kerbs(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | Kerb corners and estate T's, from JUNCTIONS_FROM px a plot, over the streets' surfaces and their verges: at a + of two streets (a cell's streets, role STREET, on all four sides) each of its four inner corners is round... |
+| 3582 | 14 | `private static boolean estateAt(TilePainter.Input in, TilePainter.Painted p, int x, int y)` | Whether a building of an estate's classes - industry, farms, utilities, mines and wells, transport; a homes cell holds the rest - stands within two plots of plot (x, y): the painter's reading of an estate. |
+| 3605 | 19 | `private static void fillet(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, int jx, int jy, int cx, int cy, int ...` | One rounded corner: the corner point (cx, cy), in pixels from plot (jx, jy)'s corner, where two bars meet; (sx, sy) the way out of it, toward the verge. |
+
+### the track as rail, and its crossings (0.8.1, batch FR0; spec-freight 4.3) (lines 3625-3912)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3638 | 6 | `private static void track(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | The track (0.7.72; redrawn as rail, 0.8.1, batch FR0, spec-freight 4.3): each plot's middle and its arms to the track beside it - past the tile's edge too, where the line runs on - as a ballast bed, and from 4 px a pl... |
+| 3656 | 19 | `private static void tunnels(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | The tunnels (ET4, 2026-10-25; spec-earth2-terrain 4.3: "a run on very steep ground is drawn as a tunnel (portals, a dashed line)"): each plot of a run that lies on very steep dry ground (Painted.tunnel) is its ground,... |
+| 3677 | 44 | `private static void tunnelWay(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int arms, int colour, int ...` | One run's way through tunnel plot i, `arms` its neighbours (bit d for direction d) and `cross` its cross-section in pixels: the dashed line and the portals of tunnels(). |
+| 3730 | 20 | `private static void sidingSheds(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | A siding's loading shed (FR7 slice 3): on the plot marked M_SHED, the last of a siding beside its works' box, a small block in TRANSPORT's colours over the track's end, edged from EDGE_FROM. |
+| 3752 | 3 | `private static int bedWidth(int px, boolean doubled)` | The ballast bed's width, whole pixels: BED, or BED_DOUBLE where the plot is marked double track. |
+| 3757 | 4 | `private static void drawTrackLook(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img)` | The track's look on one plot that carries rail: its ballast bed, sleepers and rails (a 45-degree stretch's just a bed and one rail). |
+| 3763 | 23 | `private static void drawTrackLook(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int arms)` | ...with the track beside it given, bit d for direction d (a yard's head reads it from the runs: yardTrack()). |
+| 3788 | 10 | `private static void drawBed(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z, int arms)` | The track's ballast bed: the plot's middle and its arms to the track beside it, as the bed's whole width. |
+| 3800 | 22 | `private static void drawSleepers(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z, boolean n...` | The sleepers, a pixel thick across the bed, every `step` pixels along the way the track runs. |
+| 3824 | 8 | `private static void drawSleeperTicks(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z, boole...` | Below RAILS_FROM px a plot, one sleeper tick across the bed at the start of each plot along the track. |
+| 3834 | 5 | `private static void drawRails(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z, boolean ns, ...` | The rails, a pixel each, along the way the track runs. |
+| 3841 | 29 | `private static void drawRailsFull(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z, boolean ...` | From RAILS_FROM px a plot: two rails a track, double track's two tracks at the plot's middle +/- TRACKS_APART. |
+| 3872 | 22 | `private static void drawRailsLow(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z, boolean n...` | Below RAILS_FROM px a plot: one STEEL line down the track's middle, two at double track's tracks. |
+| 3896 | 7 | `private static void railH(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z, int row, int c, ...` | A rail a pixel wide along an east-west track at row `row`, its middle and its arms. |
+| 3905 | 7 | `private static void railV(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int a, int z, int col, int c, ...` | ...and a north-south track's, at column `col`. |
+
+### the curves (FX5) (lines 3913-4279)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3933 | 8 | `private static void bends(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, int cx0, int cy0, int cx1, int cy1, b...` | The railway's bends (Input.bends, TrackCurves), drawn on the pixels of the tile within the box [cx0, cx1) x [cy0, cy1): for each, its arc between its tangent points and its two legs' straights from each tangent point ... |
+| 3943 | 3 | `private static TrackCurves.Bend inPixels(TrackCurves.Bend b, int px)` | The bend scaled to pixels a plot: the same arc, its corner, radius and tangent length times px. |
+| 3955 | 18 | `private static double pathLateral(TrackCurves.Bend s, double back1, double back2, double x, double y, double[] out)` | How far point (x, y) lies from the path of bend s (in pixels): its arc, the straight of `back1` before its start along the incoming leg, and the straight of `back2` after its end along the outgoing one - the least of ... |
+| 3974 | 69 | `private static void drawBend(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, TrackCurves.Bend b, boolean double...` |  |
+| 4049 | 24 | `private static void blockBends(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | The bends in the blocks' views (FX5): each bend's arc and straights in RAIL_DARK at the width the blocks draw track (a plot, px pixels), in place of the cells of the plots it replaces. |
+| 4091 | 24 | `private static void highwayBends(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, double half, int c)` | The highways' bends (Input.bends of net HIGHWAY, FX5 slice D), drawn as the carriageway along the arc: the pixels within `half` pixels of each bend's path in colour c, one pass of the highways' casing or surface (ways... |
+| 4124 | 26 | `private static void highwayBendDashes(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, int dash)` | The highways' bends' centre line (FX5 slice D): a dash over the first 55% of each plot's length of the path from the arc's start (`dash` pixels of every px), a pixel wide on the row or column the straight's own dash t... |
+| 4160 | 18 | `private static void ladderRails(int[] img, int w, int px, boolean ew, double apexAlong, double lineAcross, double sidingAlong, ...` | One of a yard's ladders (FX5), from the fan's apex on the line to its siding's start, as TrackCurves.ladder() lays it - an S tangent to the line and to the siding, the points the trains' routes run along - drawn as th... |
+| 4186 | 51 | `private static void railCrossings(TilePainter.Input in, TilePainter.Painted p, int px, int[] img)` | The railway's crossings (0.8.1, spec-freight 4.3, D18): the street's surface already lies over the bed; from RAILS_FROM px a plot, draw the rails through a level crossing with its crossbucks and half barriers, and an ... |
+| 4239 | 5 | `private static void drawCrossbucks(int px, int[] img, int w, int x0, int y0)` | A level crossing's two crossbucks: a white X in the plot's north-west and south-east corners. |
+| 4246 | 6 | `private static void drawX(int[] img, int w, int x0, int y0, int s)` | An X of side `s` in CROSSBUCK, its corner at (x0, y0). |
+| 4254 | 25 | `private static void drawBarriers(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int w, int x0, int y0, ...` | A level crossing's half barriers: a bar across the lane coming in at each edge where the street enters the plot. |
+
+### A RECTANGLE OF PIXELS, AND THE PLOTS' COLOURS (lines 4280-4347)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4285 | 10 | `private static void grain(TilePainter.Input in, int[] img, int w, int x0, int y0, int x1, int y1, int c)` | Speckles GRAVEL_GRAIN_SHARE of the box's pixels with c, each by a hash of its pixel in the tile and the tile's place, so the same street speckles the same at every paint. |
+| 4296 | 6 | `private static void fillRect(int[] img, int w, int x0, int y0, int x1, int y1, int c)` |  |
+| 4304 | 10 | `static int groundColour(TilePainter.Input in, TilePainter.Painted p, int i)` | A plot's ground: its terrain - forest under a building cleared (0.7.88; spec 2.6) - its site's tint or grey, dimmed when unowned: what a road is drawn on from LINES_FROM px. |
+| 4316 | 9 | `static int siteTint(TilePainter.Input in, int i, int s, int c)` | A site's plot over its ground: its resource's colour, speckled, half grey while its holding is worked, grey worked out. |
+| 4330 | 9 | `static int plotColour(TilePainter.Input in, TilePainter.Painted p, int i)` | A plot's colour before its building: its ground, its site's tint or grey, its road's colour - a track's brown (0.7.88) - or (0.7.72) its track's, where no street crosses it - and dimmed when unowned. |
+| 4341 | 6 | `static int blend(int a, int b, double f)` | a toward b by share f, channel by channel, opaque. |
 
