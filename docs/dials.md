@@ -2,9 +2,9 @@
 
 Generated 2026-11-08 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**5,578 constants in 526 files.**
+**5,582 constants in 528 files.**
 
-## model (2690 constants)
+## model (2691 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -1093,37 +1093,38 @@ Generated 2026-11-08 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 106 | `EarthData.PROPERTY` | `"cbs.earth"` | The system property that names the file instead (-Dcbs.earth=<path>), as the harnesses' runs on the full file and LongPlaytest --earth take it. |
 | 109 | `EarthData.MAGIC` | `"EARTH-1\n"` | The bytes the first eight of the file are: they name the container's layout, which earth-2.bin shares with earth-1.bin, not the file. |
 | 112 | `EarthData.FORMAT` | `1` | The layout's version this reads (FORMAT.txt). |
-| 115 | `EarthData.CACHE_BYTES` | `10_000_000` | The inflated tiles kept, in bytes: spec-earth 5's heap budget of about 10 MB (64 1-degree tiles of sea and lake at 115 KB, and the rest). |
-| 118 | `EarthData.KIND_TILES` | `0` | A layer of 64,800 1-degree tiles, numbered (lat0 + 90) x 360 + (lon0 + 180) from the south-west corner. |
-| 120 | `EarthData.KIND_BANDS` | `1` | A layer of 180 1-degree bands of latitude, numbered lat0 + 90. |
-| 122 | `EarthData.KIND_WHOLE` | `2` | A layer held whole, one blob. |
-| 125 | `EarthData.TILES` | `180 * 360` | The tiles in a KIND_TILES layer. |
-| 128 | `EarthData.SHARE_LEVELS` | `15` | The sea and lake layers' levels: a cell's share is its value over this. |
-| 130 | `EarthData.FAR_LEVELS` | `255` | The far view's levels: a cell's share is its value over this. |
-| 133 | `EarthData.SLOPE_LEVELS` | `7` | The slope layer's levels in each of the foothill and steep shares (3 bits): a share is the value over this (FORMAT-2.txt). |
-| 135 | `EarthData.VERY_STEEP_LEVELS` | `3` | The slope layer's levels in the very steep part of the steep ground (2 bits): the part is the value over this. |
-| 137 | `EarthData.DEPTH_METRE_CODES` | `200` | A sea depth code of this or less is that many metres (0 is no sea, 1 to this the metres). |
-| 139 | `EarthData.DEPTH_STEP_M` | `10` | Above DEPTH_METRE_CODES each code is this many metres deeper: 201 is 210 m, 254 is 740 m. |
-| 141 | `EarthData.DEPTH_DEEPEST_CODE` | `255` | The sea depth code for the deepest sea the layer tells apart. |
-| 143 | `EarthData.DEPTH_DEEPEST_M` | `750` | What the deepest code, 255, stands for and depthM() answers for it: 750 m or deeper (the layer does not say how much deeper). |
-| 145 | `EarthData.SLOPE` | `"slope"` | The slope layer's name: a file has the earth-2 layers when it has this one (hasRelief()). |
-| 147 | `EarthData.LANDMASS` | `"landmass"` | The landmass layer's name: a palette blob a tile, not a byte grid (landmassAt()). |
-| 150 | `EarthData.LC_FOREST` | `0x0F` | Land cover's forest level, 0 to SHARE_LEVELS: the forest's share of the cell's land. |
-| 152 | `EarthData.LC_BEACH` | `0x10` | Land cover's bit for bare ground at 2% of the land or more (the beach rule). |
-| 154 | `EarthData.LC_DESERT` | `0x20` | Land cover's bit for bare ground at half the land or more: the founding card's desert warning (EarthSite, 0.7.121). |
-| 156 | `EarthData.LC_ICE` | `0x40` | Land cover's bit for snow and ice at half the land or more: what the founding card refuses (EarthSite, 0.7.121). |
-| 158 | `EarthData.LC_NO_DATA` | `0x80` | Land cover's bit for land WorldCover has no data on (south of 60 S, and GEBCO-only land). |
-| 161 | `EarthData.RIVER_UNITS` | `100_000` | A river vertex's position is stored in these units a degree. |
-| 163 | `EarthData.LAKE_UNITS` | `10_000` | A small lake's position is stored in these units a degree. |
-| 165 | `EarthData.SMALL_LAKE_KM2` | `0.1` | A small lake's area at code 0, km2; each code is an eighth of an octave more (FORMAT.txt). |
-| 167 | `EarthData.LAKE_CODES_AN_OCTAVE` | `8` | A small lake's area codes an octave. |
-| 170 | `EarthData.RIVER` | `0` | GRWL's flag for a river. |
-| 172 | `EarthData.TIDAL` | `2` | GRWL's flag for a tidal river. |
-| 174 | `EarthData.CANAL` | `3` | GRWL's flag for a canal. |
-| 184 | `EarthData.EIGHTH_OCTAVES` | `{ 0x1.0p0, 0x1.172b83c7d517bp0, 0x1.306fe0a31b715p0, 0x1.4bfdad5362a27p0, 0x1.6a09e667f...` | 2^(k/8) for k = 0 to 7, each the double nearest the true value (worked to 60 digits): a small lake's area is SMALL_LAKE_KM2 x 2^(code/8), and StrictMath.pow misses the nearest double by one unit at... |
-| 188 | `EarthData.LAKE_AREA` | `new double [ 256 ]` | The area a small lake's code stands for, km2, code by code. |
-| 864 | `EarthData.SHALLOW_M` | `30` | The depth, in metres, the shallow layer's share counts the sea to: 30 (FORMAT-2's depth.SHALLOW_M; the study's D11, ET1): the sea World.SHALLOW is drawn of. |
-| 933 | `EarthData.LANDMASS_GRIDS_KEPT` | `16` | How many landmass tiles landmassGrid() keeps read out: 16, about a megabyte (a 15" tile is 57,600 cells, a byte each). |
+| 120 | `EarthData.CACHE_BYTES` | `24_000_000` | The inflated tiles kept, in bytes: 24 MB since MT1 (ET1-C 1), 83 tiles of earth-2's 296 KB, about five cities (spec-earth 5's 10 MB was 64 1-degree tiles of sea and lake at 115 KB, and the rest). |
+| 123 | `EarthData.KIND_TILES` | `0` | A layer of 64,800 1-degree tiles, numbered (lat0 + 90) x 360 + (lon0 + 180) from the south-west corner. |
+| 125 | `EarthData.KIND_BANDS` | `1` | A layer of 180 1-degree bands of latitude, numbered lat0 + 90. |
+| 127 | `EarthData.KIND_WHOLE` | `2` | A layer held whole, one blob. |
+| 130 | `EarthData.TILES` | `180 * 360` | The tiles in a KIND_TILES layer. |
+| 133 | `EarthData.SHARE_LEVELS` | `15` | The sea and lake layers' levels: a cell's share is its value over this. |
+| 135 | `EarthData.FAR_LEVELS` | `255` | The far view's levels: a cell's share is its value over this. |
+| 138 | `EarthData.SLOPE_LEVELS` | `7` | The slope layer's levels in each of the foothill and steep shares (3 bits): a share is the value over this (FORMAT-2.txt). |
+| 140 | `EarthData.VERY_STEEP_LEVELS` | `3` | The slope layer's levels in the very steep part of the steep ground (2 bits): the part is the value over this. |
+| 142 | `EarthData.DEPTH_METRE_CODES` | `200` | A sea depth code of this or less is that many metres (0 is no sea, 1 to this the metres). |
+| 144 | `EarthData.DEPTH_STEP_M` | `10` | Above DEPTH_METRE_CODES each code is this many metres deeper: 201 is 210 m, 254 is 740 m. |
+| 146 | `EarthData.DEPTH_DEEPEST_CODE` | `255` | The sea depth code for the deepest sea the layer tells apart. |
+| 148 | `EarthData.DEPTH_DEEPEST_M` | `750` | What the deepest code, 255, stands for and depthM() answers for it: 750 m or deeper (the layer does not say how much deeper). |
+| 150 | `EarthData.SLOPE` | `"slope"` | The slope layer's name: a file has the earth-2 layers when it has this one (hasRelief()). |
+| 152 | `EarthData.LANDMASS` | `"landmass"` | The landmass layer's name: a palette blob a tile, not a byte grid (landmassAt()). |
+| 155 | `EarthData.LC_FOREST` | `0x0F` | Land cover's forest level, 0 to SHARE_LEVELS: the forest's share of the cell's land. |
+| 157 | `EarthData.LC_BEACH` | `0x10` | Land cover's bit for bare ground at 2% of the land or more (the beach rule). |
+| 159 | `EarthData.LC_DESERT` | `0x20` | Land cover's bit for bare ground at half the land or more: the founding card's desert warning (EarthSite, 0.7.121). |
+| 161 | `EarthData.LC_ICE` | `0x40` | Land cover's bit for snow and ice at half the land or more: what the founding card refuses (EarthSite, 0.7.121). |
+| 163 | `EarthData.LC_NO_DATA` | `0x80` | Land cover's bit for land WorldCover has no data on (south of 60 S, and GEBCO-only land). |
+| 166 | `EarthData.RIVER_UNITS` | `100_000` | A river vertex's position is stored in these units a degree. |
+| 168 | `EarthData.LAKE_UNITS` | `10_000` | A small lake's position is stored in these units a degree. |
+| 170 | `EarthData.SMALL_LAKE_KM2` | `0.1` | A small lake's area at code 0, km2; each code is an eighth of an octave more (FORMAT.txt). |
+| 172 | `EarthData.LAKE_CODES_AN_OCTAVE` | `8` | A small lake's area codes an octave. |
+| 175 | `EarthData.RIVER` | `0` | GRWL's flag for a river. |
+| 177 | `EarthData.TIDAL` | `2` | GRWL's flag for a tidal river. |
+| 179 | `EarthData.CANAL` | `3` | GRWL's flag for a canal. |
+| 189 | `EarthData.EIGHTH_OCTAVES` | `{ 0x1.0p0, 0x1.172b83c7d517bp0, 0x1.306fe0a31b715p0, 0x1.4bfdad5362a27p0, 0x1.6a09e667f...` | 2^(k/8) for k = 0 to 7, each the double nearest the true value (worked to 60 digits): a small lake's area is SMALL_LAKE_KM2 x 2^(code/8), and StrictMath.pow misses the nearest double by one unit at... |
+| 193 | `EarthData.LAKE_AREA` | `new double [ 256 ]` | The area a small lake's code stands for, km2, code by code. |
+| 852 | `EarthData.HAND_NAMES` | `{ { "1", "Mumbai", "Afro-Eurasia" }, { "2", "New York", "North and South America" }, { ...` | The six biggest landmasses of earth-2, named by hand (MT1; ET1-C 2): {id, the data's most populous place on it, the name}. |
+| 909 | `EarthData.SHALLOW_M` | `30` | The depth, in metres, the shallow layer's share counts the sea to: 30 (FORMAT-2's depth.SHALLOW_M; the study's D11, ET1): the sea World.SHALLOW is drawn of. |
+| 978 | `EarthData.LANDMASS_GRIDS_KEPT` | `16` | How many landmass tiles landmassGrid() keeps read out: 16, about a megabyte (a 15" tile is 57,600 cells, a byte each). |
 
 ### EarthProj.java ([map](map/EarthProj.md))
 
@@ -1152,12 +1153,12 @@ Generated 2026-11-08 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 284 | `EarthSite.BEFORE_DEPOSITS_WORDS` | `"This city was founded on the real Earth before its oil, iron and other fields were dra...` | The load's words for a city on the real Earth saved before its fields were drawn on the geology (DEPOSITS_FORMAT). |
 | 289 | `EarthSite.BEFORE_SLOPE_WORDS` | `"This city was founded on the real Earth before slope decided where a building may stan...` | The load's words for a city on the real Earth saved before its founding site was snapped to ground a building may stand on (SLOPE_FORMAT). |
 | 294 | `EarthSite.BEFORE_LANDMASS_WORDS` | `"This city was founded on the real Earth before its ground was counted by landmass: gro...` | The load's words for a city on the real Earth saved before its ground was counted by landmass (LANDMASS_FORMAT). |
-| 561 | `EarthSite.NO_SITE_WORDS` | `"No dry ground within 5 km to found a city on: the spot is in the sea, or on an island ...` | The card's words for a spot with no site: in the sea, or on an island too small (a spot among steep slopes has SLOPE_WORDS). |
-| 564 | `EarthSite.SLOPE_WORDS` | `"No ground a building may stand on within 5 km: the slopes here are steep."` | The card's words for a spot among steep slopes (ET2): the first sentence of noSiteWords(), the nearest buildable ground after it. |
-| 567 | `EarthSite.ICE_WORDS` | `"On ice: snow and ice cover half the ground here or more, and no city is founded on an ...` | ...on ice. |
-| 570 | `EarthSite.DESERT_WORDS` | `"A desert: bare ground covers half the land here or more."` | The warning for a desert. |
-| 573 | `EarthSite.NO_FRESH_WORDS` | `"No river or lake within 5 km: a water plant needs one, so the city's first water is fr...` | The warning where there is no fresh water within the card's reach and the sea is near. |
-| 576 | `EarthSite.NO_WATER_WORDS` | `"No river, lake or sea within 5 km: the city has nowhere near to draw its water from."` | ...and where there is neither. |
+| 562 | `EarthSite.NO_SITE_WORDS` | `"No dry ground within 5 km to found a city on: the spot is in the sea, or on an island ...` | The card's words for a spot with no site: in the sea, or on an island too small (a spot among steep slopes has SLOPE_WORDS). |
+| 565 | `EarthSite.SLOPE_WORDS` | `"No ground a building may stand on within 5 km: the slopes here are steep."` | The card's words for a spot among steep slopes (ET2): the first sentence of noSiteWords(), the nearest buildable ground after it. |
+| 568 | `EarthSite.ICE_WORDS` | `"On ice: snow and ice cover half the ground here or more, and no city is founded on an ...` | ...on ice. |
+| 571 | `EarthSite.DESERT_WORDS` | `"A desert: bare ground covers half the land here or more."` | The warning for a desert. |
+| 574 | `EarthSite.NO_FRESH_WORDS` | `"No river or lake within 5 km: a water plant needs one, so the city's first water is fr...` | The warning where there is no fresh water within the card's reach and the sea is near. |
+| 577 | `EarthSite.NO_WATER_WORDS` | `"No river, lake or sea within 5 km: the city has nowhere near to draw its water from."` | ...and where there is neither. |
 
 ### EarthTerrain.java ([map](map/EarthTerrain.md))
 
@@ -1560,7 +1561,7 @@ Generated 2026-11-08 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.52"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.9.53"` | Bump on release. |
 | 8267 | `GameVersion.SAVE_FORMAT` | `51` | The save shape. |
 | 8316 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `51` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
 | 8324 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
@@ -2169,12 +2170,12 @@ Generated 2026-11-08 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 126 | `LandmassView.WIDTHS` | `{ 0, 92, 230, 190, 290 }` | The columns' widths in pixels (the first, 0, takes the rest). |
 | 129 | `LandmassView.RIGHT` | `{ false, true, false, false, false }` | Which columns' cells lie to the right. |
 | 276 | `LandmassView.SEGMENT_KEY` | `"free, no port links it"` | The key's words for that segment. |
-| 313 | `LandmassView.CHOOSER_LABEL` | `"Where"` | The chooser's label, before its chips. |
-| 398 | `LandmassView.NO_SHORE_WAY` | `"own some sea in front of dry shore, on the landmass it serves: the Land office ›"` | ...and the way out under it. |
-| 433 | `LandmassView.PORT_DOOR` | `"Build a port there ›"` | The label of the door from the refusal to the port card. |
-| 440 | `LandmassView.NOTICE_KEY` | `"island:"` | A standing notice's key prefix: "island:" and the landmass's id. |
-| 458 | `LandmassView.NOTICE_BUTTON` | `PORT_DOOR` | The button on that notice. |
-| 461 | `LandmassView.NOTICE_BUTTON_NO_SHORE` | `"Go to the Land office ›"` | The button on that notice where the city owns no shore on the landmass: a terminal cannot stand there yet, and sea is bought at the Land office. |
+| 324 | `LandmassView.CHOOSER_LABEL` | `"Where"` | The chooser's label, before its chips. |
+| 409 | `LandmassView.NO_SHORE_WAY` | `"own some sea in front of dry shore, on the landmass it serves: the Land office ›"` | ...and the way out under it. |
+| 444 | `LandmassView.PORT_DOOR` | `"Build a port there ›"` | The label of the door from the refusal to the port card. |
+| 451 | `LandmassView.NOTICE_KEY` | `"island:"` | A standing notice's key prefix: "island:" and the landmass's id. |
+| 469 | `LandmassView.NOTICE_BUTTON` | `PORT_DOOR` | The button on that notice. |
+| 472 | `LandmassView.NOTICE_BUTTON_NO_SHORE` | `"Go to the Land office ›"` | The button on that notice where the city owns no shore on the landmass: a terminal cannot stand there yet, and sea is bought at the Land office. |
 
 ### Landmasses.java ([map](map/Landmasses.md))
 
@@ -4002,7 +4003,7 @@ Generated 2026-11-08 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 77 | `WoodProducts.PAPER_MILL` | `137` | The Paper Mill's (0.7.140): 5,500 t of paper a month from 5,775 t of pulp and 850,000 litres of fuel oil. |
 | 80 | `WoodProducts.PELLET_MILL` | `138` | The Wood Pellet Mill's (0.7.140): 6,000 t of pellets a month from 13,200 m3 of residues. |
 
-## interface (1137 constants)
+## interface (1139 constants)
 
 ### BankScreen.java ([map](map/BankScreen.md))
 
@@ -4469,6 +4470,13 @@ Generated 2026-11-08 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 32 | `InputRecorder.MARKER_EPSILON` | `1e-6` | The smallest change of a width, a height or a map's centre that is worth a marker: below it the polled value is the same view. |
 
+### IslandChip.java ([map](map/IslandChip.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 23 | `IslandChip.PAD_X` | `6, PAD_Y = 3, LINE_H = 12, ARC = 7` | The plate's padding either side and above and below, the height of a line, and its corner. |
+| 26 | `IslandChip.PLATE` | `Color.rgb(11, 17, 24, 0.9), EDGE = Color.web(Palette.WARN, 0.45)` | The plate (the stage's dark, nearly opaque) and its hairline edge in the warning amber the text is in. |
+
 ### Kept.java ([map](map/Kept.md))
 
 | line | constant | value | says |
@@ -4569,53 +4577,53 @@ Generated 2026-11-08 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1647 | `MapView.BLOCK_LINE_ALPHA` | `0.08` | The block lines' white, its alpha: 0.08 (0.7.69, star) - faint, so the ground under them reads first; at 0.08 a line shows on the dimmed world and on the city's own ground alike (the M5 renders). |
 | 1650 | `MapView.EDGE_ALPHA` | `MapTiles.EDGE_ALPHA` | The city's edge's white, its alpha: 0.55, as since 0.7.61 - the far nodes' too (MapTiles.EDGE_ALPHA, 0.7.128). |
 | 1653 | `MapView.WORLD_LINE_ALPHA` | `LandMap.WORLD_ALPHA` | The world line's opacity (spec-freight 4.1: "faded, to the edge of the view"): the model's dial, LandMap.WORLD_ALPHA, so the line and its legend swatch are one. |
-| 1961 | `MapView.DASH_ON` | `5, DASH_PERIOD = 9` | A run's dashes: 5 px on and 4 off, as the offers' edge has been drawn since 0.7.61. |
-| 2022 | `MapView.PICKED_ALPHA` | `0.22` | The tint of a picked offer's ground and of picked blocks: the building pink at 0.22 (the picked offer's since 0.7.137). |
-| 2079 | `MapView.NEW_TAG` | `"NEW"` | The words under an offer's number on the expanded map while it is NEW (0.7.137, board 6): the office's tag (LandScreen.isNew()), in the building pink. |
-| 2147 | `MapView.SCALE_BAR_PX` | `120` | The scale bar's longest, in pixels: 120 (the mockup's). |
-| 2186 | `MapView.DIMMED` | `GlobePicture.colours(true)` | The ground's colours on the globe, by code - a class and its relief (ET1 slice D): the world off the city's land dimmed, as the far nodes dim it (GlobePicture.colours()). |
-| 2189 | `MapView.PIECE_PX` | `MapFrame.NODE_PX` | A GROUND-tier piece past the plane, in pixels a side: 128, a far node's (MapFrame.NODE_PX) - 9 to 50 ms on the worker from 0.48 to 7.3 km a pixel (E9's probe on the full file). |
-| 2192 | `MapView.RING_PX` | `6` | The city's ring on the globe, its radius in pixels: 6, the founding globe's site mark's arms (FoundingScreen, 6 px each way). |
-| 2195 | `MapView.NODE_SAMPLE_PX` | `16` | The screen is sampled every this many pixels for the part of it the plane draws (globeNodes()): 16, an eighth of a node - the part's edge found to 16 px, and padded by as much. |
-| 2335 | `MapView.CHART_NODE_OFFSET` | `1L<<19` | A chart node's indexes run negative west and north of the chart's anchor: this many are added to each to key it. |
-| 2694 | `MapView.DRAWING_EARTH` | `"Drawing the Earth…"` | The note while the planet's picture is made, the first time an Earth map is expanded. |
-| 2882 | `MapView.BLOCK_LINE_SAG_PX` | `0.25` | The most the camera may bend a block line from its chord before the line is split in two, in pixels: a quarter (the line is drawn a pixel wide, so a quarter is not seen). |
-| 2885 | `MapView.BLOCK_LINE_SPLITS` | `6` | ...and how many times a line is split at most: 6 (64 pieces - far more than the 64 px a line bends by at the widest near scale 12,000 km from the city needs). |
-| 2996 | `MapView.CLICK_TO_DROP` | `"Shift-click to drop it · Enter buys"` | The hover card's last line over a block that is picked already (BL1), in blue as the offers' is: how to drop it. |
-| 3492 | `MapView.CLICK_TO_BUY` | `"Click to buy it here"` | The hover card's last line over an offer on the expanded map (spec-earth 3.1, board 4), in blue. |
-| 3525 | `MapView.CARD_FIELDS` | `LandMap.CARD_FIELDS` | The most fields a hover card lists: 3 (LandMap.CARD_FIELDS since 0.7.135). |
-| 3569 | `MapView.CARD_GAP` | `14` | The card stands off its offer's box by this many pixels: 14, as the hover card stands off the pointer (showCard()). |
-| 3572 | `MapView.CARD_MARGIN` | `10` | ...and at least this far inside the view: 10, the hover card's (showCard()). |
-| 3575 | `MapView.BOX_FILL_ALPHA` | `0.12` | The box's fill (B7), the offers' pink at this alpha: 0.12 (star M6) - under the lit offer's 0.34 and the picked one's 0.22 (overlays()), so the offers under the box read through it. |
-| 3998 | `MapView.NATIONS_TIP` | `"A dot at each nation's largest port or city, by its output; its name, output and peopl...` | The Nations chip's tooltip (WN2). |
-| 4002 | `MapView.BORDERS_TIP` | `"The nations' borders, dashed white, at the far views; up close only where one crosses ...` | ...and the Borders chip's. |
-| 4005 | `MapView.TRADE_TIP` | `"This month's trade as routes from the city: violet what we sell, sand what we buy, the...` | ...and the Trade routes chip's (WN3). |
-| 4009 | `MapView.TRADE_SELL_WORDS` | `"What we sell, a month", TRADE_BUY_WORDS = "What we buy"` | The legend's words for the two kinds of route (the board's, less its "it"). |
-| 4012 | `MapView.TRADE_ALPHA` | `0.78` | A route's colours: the business violet for what we sell and the ore's sand for what we buy (Palette's), at the board's stroke opacity, .78. |
-| 4013 | `MapView.TRADE_SELL` | `Color.web(Palette.BUSINESS, TRADE_ALPHA), TRADE_BUY = Color.web(Palette.ORE, TRADE_ALPHA)` |  |
-| 4016 | `MapView.ARROW_LEN_PX` | `34` | A generated world's arrow is this many pixels long from its tip inward... |
-| 4019 | `MapView.ARROW_HEAD_PX` | `9, ARROW_HEAD_WIDE_PX = 3` | ...with a head this many pixels long, and this much wider than the shaft either side. |
-| 4022 | `MapView.NO_FIGURES` | `new double [ 0 ]` | A stand-in for a feed that gave no figures. |
-| 4025 | `MapView.LABEL_NAME_PX` | `11` | A dot's label, the name: sans semibold, 11 px (the board's .lbl)... |
-| 4028 | `MapView.LABEL_FIGURES_PX` | `9.5` | ...and the figures under it, mono, 9.5 px (the board's .lbl2). |
-| 4031 | `MapView.DOT_EDGE_PX` | `1.2` | A dot's edge, in pixels: 1.2, in NationsMap.DOT_EDGE_ARGB (the board's). |
-| 4034 | `MapView.HALO_PX` | `3, HALO_ALPHA = 0.75` | A label's halo, drawn under its words: 3 px wide in NationsMap.DOT_EDGE_ARGB at 0.75 (the board's .lbl stroke). |
-| 4037 | `MapView.WIDTHS_MOST` | `600` | The widths of label words kept, by string (the names never change and the figures change once a year): the 600 most recently used. |
-| 4040 | `MapView.NATION_CARD_W` | `330` | A nation's card is this wide, in pixels: 330 (the board's .card)... |
-| 4043 | `MapView.NATION_CARD_GAP` | `4` | ...and its head, its distance line and its rows stand this many pixels apart: 4. |
-| 5035 | `MapView.LEGEND_ROWS` | `17` | Rows a column of the legend holds: 17, its 52 entries in three columns and the first row of a fourth, and the zones set after them (since 0.8.2 the train, 51 in three columns before; since 0.8.1 th... |
-| 5038 | `MapView.SHIP_SIZE_WORDS` | `"Ships are drawn 1.6\u00d7 their size until 6 px a plot"` | The legend's line under the boats' entries (0.7.97; the research's 4.4, mockup 3's legend). |
-| 5041 | `MapView.TRUCK_WORDS` | `"Trucks: one per %s"` | The legend's line for the trucks (0.8.8, batch FR5; spec-freight 4.7): "Trucks: one per 12 loads", the unit's words filled in by trucksWords(). |
-| 5049 | `MapView.TRACK_ENTRY` | `LandMap.TRACK_ENTRY` | The legend's unmade streets (0.7.88; spec 5): a street the city has bought no road for - the model's words since 0.7.135. |
-| 5067 | `MapView.LEGEND_NOTE_WIDTH` | `300` | The legend's note's widest, in pixels: the legend's own width at most, so it wraps under the entries. |
-| 5122 | `MapView.LEGEND_FOLD_WORDS` | `"· click to fold"` | The head line's words when the legend is open, after its chevron and "Legend" (the board's .lh). |
-| 5298 | `MapView.REPLAY_FRAME_MS` | `24` | The most a frame spends painting tiles in a replay, in ms: 24 - a replay computes no month, so a frame's whole share is the picture's, and a view reached by the camera comes in over two or three fr... |
-| 5301 | `MapView.CAMERA_PAUSE_S` | `0.25` | A gap between two camera frames longer than this, in seconds, is not time the camera moved in: 0.25 - the pump stops when the view is idle and a glide or a fly must not find the minutes gone by in ... |
-| 5462 | `MapView.STUCK_S` | `2` | How long the worker may sit idle while a view of the load still lacks something before the load passes it, in seconds: 2 - a far node or chart the worker cannot ground never comes back, and the loa... |
-| 5465 | `MapView.LOAD_HEAP_SHARE` | `0.8` | The share of the most the heap may hold at which a load stops, saying so: 0.8 - a move too long or too wide to hold in memory is refused, not run half loaded. |
-| 5468 | `MapView.LOAD_WORDS_PX` | `28` | The height of the words written over the map while a move loads or waits for its click, in pixels: 28. |
-| 5628 | `MapView.NO_MOVE` | `new MoveLoad(0, 0, false)` | A move with nothing passed and nothing kept, for viewSettled(). |
-| 5883 | `MapView.MoveTally.WHERES` | `{ "L0", "L1", "L2", "FAR", "GROUND", "PICTURE" }` |  |
+| 1962 | `MapView.DASH_ON` | `5, DASH_PERIOD = 9` | A run's dashes: 5 px on and 4 off, as the offers' edge has been drawn since 0.7.61. |
+| 2023 | `MapView.PICKED_ALPHA` | `0.22` | The tint of a picked offer's ground and of picked blocks: the building pink at 0.22 (the picked offer's since 0.7.137). |
+| 2080 | `MapView.NEW_TAG` | `"NEW"` | The words under an offer's number on the expanded map while it is NEW (0.7.137, board 6): the office's tag (LandScreen.isNew()), in the building pink. |
+| 2148 | `MapView.SCALE_BAR_PX` | `120` | The scale bar's longest, in pixels: 120 (the mockup's). |
+| 2187 | `MapView.DIMMED` | `GlobePicture.colours(true)` | The ground's colours on the globe, by code - a class and its relief (ET1 slice D): the world off the city's land dimmed, as the far nodes dim it (GlobePicture.colours()). |
+| 2190 | `MapView.PIECE_PX` | `MapFrame.NODE_PX` | A GROUND-tier piece past the plane, in pixels a side: 128, a far node's (MapFrame.NODE_PX) - 9 to 50 ms on the worker from 0.48 to 7.3 km a pixel (E9's probe on the full file). |
+| 2193 | `MapView.RING_PX` | `6` | The city's ring on the globe, its radius in pixels: 6, the founding globe's site mark's arms (FoundingScreen, 6 px each way). |
+| 2196 | `MapView.NODE_SAMPLE_PX` | `16` | The screen is sampled every this many pixels for the part of it the plane draws (globeNodes()): 16, an eighth of a node - the part's edge found to 16 px, and padded by as much. |
+| 2336 | `MapView.CHART_NODE_OFFSET` | `1L<<19` | A chart node's indexes run negative west and north of the chart's anchor: this many are added to each to key it. |
+| 2695 | `MapView.DRAWING_EARTH` | `"Drawing the Earth…"` | The note while the planet's picture is made, the first time an Earth map is expanded. |
+| 2883 | `MapView.BLOCK_LINE_SAG_PX` | `0.25` | The most the camera may bend a block line from its chord before the line is split in two, in pixels: a quarter (the line is drawn a pixel wide, so a quarter is not seen). |
+| 2886 | `MapView.BLOCK_LINE_SPLITS` | `6` | ...and how many times a line is split at most: 6 (64 pieces - far more than the 64 px a line bends by at the widest near scale 12,000 km from the city needs). |
+| 2997 | `MapView.CLICK_TO_DROP` | `"Shift-click to drop it · Enter buys"` | The hover card's last line over a block that is picked already (BL1), in blue as the offers' is: how to drop it. |
+| 3493 | `MapView.CLICK_TO_BUY` | `"Click to buy it here"` | The hover card's last line over an offer on the expanded map (spec-earth 3.1, board 4), in blue. |
+| 3526 | `MapView.CARD_FIELDS` | `LandMap.CARD_FIELDS` | The most fields a hover card lists: 3 (LandMap.CARD_FIELDS since 0.7.135). |
+| 3570 | `MapView.CARD_GAP` | `14` | The card stands off its offer's box by this many pixels: 14, as the hover card stands off the pointer (showCard()). |
+| 3573 | `MapView.CARD_MARGIN` | `10` | ...and at least this far inside the view: 10, the hover card's (showCard()). |
+| 3576 | `MapView.BOX_FILL_ALPHA` | `0.12` | The box's fill (B7), the offers' pink at this alpha: 0.12 (star M6) - under the lit offer's 0.34 and the picked one's 0.22 (overlays()), so the offers under the box read through it. |
+| 3999 | `MapView.NATIONS_TIP` | `"A dot at each nation's largest port or city, by its output; its name, output and peopl...` | The Nations chip's tooltip (WN2). |
+| 4003 | `MapView.BORDERS_TIP` | `"The nations' borders, dashed white, at the far views; up close only where one crosses ...` | ...and the Borders chip's. |
+| 4006 | `MapView.TRADE_TIP` | `"This month's trade as routes from the city: violet what we sell, sand what we buy, the...` | ...and the Trade routes chip's (WN3). |
+| 4010 | `MapView.TRADE_SELL_WORDS` | `"What we sell, a month", TRADE_BUY_WORDS = "What we buy"` | The legend's words for the two kinds of route (the board's, less its "it"). |
+| 4013 | `MapView.TRADE_ALPHA` | `0.78` | A route's colours: the business violet for what we sell and the ore's sand for what we buy (Palette's), at the board's stroke opacity, .78. |
+| 4014 | `MapView.TRADE_SELL` | `Color.web(Palette.BUSINESS, TRADE_ALPHA), TRADE_BUY = Color.web(Palette.ORE, TRADE_ALPHA)` |  |
+| 4017 | `MapView.ARROW_LEN_PX` | `34` | A generated world's arrow is this many pixels long from its tip inward... |
+| 4020 | `MapView.ARROW_HEAD_PX` | `9, ARROW_HEAD_WIDE_PX = 3` | ...with a head this many pixels long, and this much wider than the shaft either side. |
+| 4023 | `MapView.NO_FIGURES` | `new double [ 0 ]` | A stand-in for a feed that gave no figures. |
+| 4026 | `MapView.LABEL_NAME_PX` | `11` | A dot's label, the name: sans semibold, 11 px (the board's .lbl)... |
+| 4029 | `MapView.LABEL_FIGURES_PX` | `9.5` | ...and the figures under it, mono, 9.5 px (the board's .lbl2). |
+| 4032 | `MapView.DOT_EDGE_PX` | `1.2` | A dot's edge, in pixels: 1.2, in NationsMap.DOT_EDGE_ARGB (the board's). |
+| 4035 | `MapView.HALO_PX` | `3, HALO_ALPHA = 0.75` | A label's halo, drawn under its words: 3 px wide in NationsMap.DOT_EDGE_ARGB at 0.75 (the board's .lbl stroke). |
+| 4038 | `MapView.WIDTHS_MOST` | `600` | The widths of label words kept, by string (the names never change and the figures change once a year): the 600 most recently used. |
+| 4041 | `MapView.NATION_CARD_W` | `330` | A nation's card is this wide, in pixels: 330 (the board's .card)... |
+| 4044 | `MapView.NATION_CARD_GAP` | `4` | ...and its head, its distance line and its rows stand this many pixels apart: 4. |
+| 5036 | `MapView.LEGEND_ROWS` | `17` | Rows a column of the legend holds: 17, its 52 entries in three columns and the first row of a fourth, and the zones set after them (since 0.8.2 the train, 51 in three columns before; since 0.8.1 th... |
+| 5039 | `MapView.SHIP_SIZE_WORDS` | `"Ships are drawn 1.6\u00d7 their size until 6 px a plot"` | The legend's line under the boats' entries (0.7.97; the research's 4.4, mockup 3's legend). |
+| 5042 | `MapView.TRUCK_WORDS` | `"Trucks: one per %s"` | The legend's line for the trucks (0.8.8, batch FR5; spec-freight 4.7): "Trucks: one per 12 loads", the unit's words filled in by trucksWords(). |
+| 5050 | `MapView.TRACK_ENTRY` | `LandMap.TRACK_ENTRY` | The legend's unmade streets (0.7.88; spec 5): a street the city has bought no road for - the model's words since 0.7.135. |
+| 5068 | `MapView.LEGEND_NOTE_WIDTH` | `300` | The legend's note's widest, in pixels: the legend's own width at most, so it wraps under the entries. |
+| 5123 | `MapView.LEGEND_FOLD_WORDS` | `"· click to fold"` | The head line's words when the legend is open, after its chevron and "Legend" (the board's .lh). |
+| 5299 | `MapView.REPLAY_FRAME_MS` | `24` | The most a frame spends painting tiles in a replay, in ms: 24 - a replay computes no month, so a frame's whole share is the picture's, and a view reached by the camera comes in over two or three fr... |
+| 5302 | `MapView.CAMERA_PAUSE_S` | `0.25` | A gap between two camera frames longer than this, in seconds, is not time the camera moved in: 0.25 - the pump stops when the view is idle and a glide or a fly must not find the minutes gone by in ... |
+| 5463 | `MapView.STUCK_S` | `2` | How long the worker may sit idle while a view of the load still lacks something before the load passes it, in seconds: 2 - a far node or chart the worker cannot ground never comes back, and the loa... |
+| 5466 | `MapView.LOAD_HEAP_SHARE` | `0.8` | The share of the most the heap may hold at which a load stops, saying so: 0.8 - a move too long or too wide to hold in memory is refused, not run half loaded. |
+| 5469 | `MapView.LOAD_WORDS_PX` | `28` | The height of the words written over the map while a move loads or waits for its click, in pixels: 28. |
+| 5629 | `MapView.NO_MOVE` | `new MoveLoad(0, 0, false)` | A move with nothing passed and nothing kept, for viewSettled(). |
+| 5884 | `MapView.MoveTally.WHERES` | `{ "L0", "L1", "L2", "FAR", "GROUND", "PICTURE" }` |  |
 
 ### MiniMap.java ([map](map/MiniMap.md))
 
@@ -6444,7 +6452,7 @@ Generated 2026-11-08 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1524 | `LandmassCheck.HOME_COAST_SHORE` | `90` | Shore plots the square of home's open coast must hold in section 10: 90. |
 | 1527 | `LandmassCheck.GROWN_MONTHS` | `480` | Months section 12 runs after its two terminals are ordered: 480 (it was 96, for terminals of 35,000 points; see TERMINAL_MONTHS). |
 | 1558 | `LandmassCheck.GSON` | `new com.google.gson.Gson()` |  |
-| 3193 | `LandmassCheck.RUN_MONTHS` | `1200` | The months the Rotterdam run plays. |
+| 3198 | `LandmassCheck.RUN_MONTHS` | `1200` | The months the Rotterdam run plays. |
 
 ### LongPlaytest.java ([map](map/LongPlaytest.md))
 
@@ -7621,7 +7629,13 @@ Generated 2026-11-08 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 99 | `ZoningViewCheck.ORDERS` | `{ { "House", "580" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction ...` | ZoningCheck's orders: a small city with homes, shops, diners and works. |
 | 105 | `ZoningViewCheck.CITY_KM2` | `80` | The ground the city is drawn to round the default world's founding site: ZoningCheck's land office's 80 km², forest and bare ground both. |
 
-## tools (59 constants)
+## tools (60 constants)
+
+### ChipRender.java ([map](map/ChipRender.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 33 | `ChipRender.AMBER` | `"#e3b341"` |  |
 
 ### HarnessMap.java ([map](map/HarnessMap.md))
 

@@ -1455,7 +1455,7 @@ public class EarthTerrainCheck {
         check("World.dry(): grass, forest, the beach and the desert are dry ground; fresh water, the sea and ice are not, nor what is not a class", rule);
         check("...ICE and DESERT take the two bytes after the five, World.CLASSES in all, each with its colour and its own name on the hover",
                 World.ICE == 5 && World.DESERT == 6 && World.CLASSES == World.SHALLOW + 1 && TileRaster.GROUND.length == World.CLASSES
-                        && LandMap.groundWords(World.ICE).equals("Ice") && LandMap.groundWords(World.DESERT).equals("Desert"));
+                        && LandMap.groundWords(World.ICE).equals("Snow and ice") && LandMap.groundWords(World.DESERT).equals("Desert"));
         // The books (GridConversion.km2Of(), what CityLand counts every holding with).
         long n = 1000;
         double[] grass = GridConversion.km2Of(only(World.GRASS, n)), desert = GridConversion.km2Of(only(World.DESERT, n)), ice = GridConversion.km2Of(only(World.ICE, n));

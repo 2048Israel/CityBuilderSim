@@ -2,7 +2,7 @@
 
 Generated 2026-11-08 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**186 harness files, 21,850 labelled assertions.** AllChecks runs 186 of them.
+**186 harness files, 21,855 labelled assertions.** AllChecks runs 186 of them.
 
 ## Which harnesses read which class
 
@@ -26,7 +26,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Branding](map/Branding.md) | BrandingCheck |
 | [BridgeGround](map/BridgeGround.md) | **none** |
 | [BridgeSurvey](map/BridgeSurvey.md) | BridgeCheck, ReadPathCheck |
-| [BridgeView](map/BridgeView.md) | BridgeCheck, ReadPathCheck |
+| [BridgeView](map/BridgeView.md) | BridgeCheck, EarthFoundingCheck, ReadPathCheck |
 | [BridgeWorks](map/BridgeWorks.md) | BridgeCheck, BuildCardCheck, PriceLevelCheck, SaveSlotCheck |
 | [Bridges](map/Bridges.md) | BridgeCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
 | [BuildAdvice](map/BuildAdvice.md) | AuctionCheck, AutoBuildCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, ChildcareCheck, EquipmentCheck, HydroCheck, InvestCheck, KeptCheck, LandCheck, LongPlaytest, ReadPathCheck, RoadCheck, SectorFlowCheck, WaterCheck |
@@ -59,6 +59,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CentralBank](map/CentralBank.md) | BankCheck, BuybackCheck, CallCheck, CentralBankCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, FloatLinkCheck, ForeignCheck, FundCheck, HoldersCheck, LongPlaytest, MortgageCheck, PolicyPreviewCheck, ScaleCheck |
 | [ChartFitBench](map/ChartFitBench.md) | ChartFitCheck |
 | [ChartModel](map/ChartModel.md) | BankCheck, ChartCheck, ForeignDebtCheck, HistoryCheck, KeptCheck, ReadPathCheck, ResearchViewCheck |
+| [ChipRender](map/ChipRender.md) | **none** |
 | [CityBasket](map/CityBasket.md) | **none** |
 | [CityBuilderSim](map/CityBuilderSim.md) | **none** |
 | [CityCalendar](map/CityCalendar.md) | ArrivalMixCheck, AuctionCheck, BasketYearCheck, CalendarCheck, CausesOfDeathCheck, ChartCheck, DebtExchangeCheck, DenominationCheck, EquipmentCheck, ForeignDebtCheck, FundCheck, KeptCheck, LandNationsCheck, OilViewCheck, PolicyDatesCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, RecipeCheck, ReplayCheck, ResearchCheck, SaveFileCheck, WorldMoneysCheck, YearBookCheck |
@@ -163,6 +164,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [InterchangeGround](map/InterchangeGround.md) | JunctionCheck, MapCheck |
 | [InterimLoan](map/InterimLoan.md) | CreditCheck, LongPlaytest |
 | [Investor](map/Investor.md) | CreditCheck |
+| [IslandChip](map/IslandChip.md) | **none** |
 | [JavaScan](map/JavaScan.md) | **none** |
 | [JobType](map/JobType.md) | AgricultureCheck, ArrivalMixCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, BusinessServicesCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, DiscoveryCheck, EducationCheck, EquipmentCheck, FoodProcessingCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FundCheck, HaulageCheck, HealthCheck, HouseholdCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, ResearchPreviewCheck, RestaurantsCheck, ScaleCheck, SectorStatementCheck, WageLadderCheck, WantedPostsCheck, WellCheck, WoodProductsCheck |
 | [Kept](map/Kept.md) | **none** |
@@ -7683,7 +7685,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L784 this build saves at DEPOSITS_FORMAT or later
   - L785 a generated save of the format before still reads: the floor is Earth-only, as E7's ice
 
-## EarthFoundingCheck.java - 52 labelled assertions
+## EarthFoundingCheck.java - 56 labelled assertions
 
 > Founding a city on the real Earth (0.7.121, batch E4; the project's spec-earth.md 2, 6 and 8): the founding card's figures against the plots they are counted on, the place search and Random spot, the sea's depth on Earth, and an Earth city founded, played and drilling at sea.
 > 
@@ -7720,45 +7722,49 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L330 Medellin: mostly hills - flat under 60% of its dry ground, foothill over 30%, steep and very steep over 3% (the mockup: 42 / 45 / 12)
   - L334 ...its words fold very steep into steep and keep the order flat, foothill, steep
   - L335 ...inland: no shallow water and no sea within 5 km, said so
-  - L339 ...its landmass is the data's at the site, with the data's own name and area, the Americas' (over ten million km2)
+  - L339 ...its landmass is the data's at the site, with the data's own area, the Americas' (over ten million km2), named by hand (MT1) and no longer by its most popu...
   - L343 Halifax: shallow water within a kilometre, and the sea within 5 km is well over a metre deep - 10 m or more, the harbour's and the Atlantic's (the mockup: 19 m)
   - L346 ...its words say how far the shallow water is and how deep the sea is
   - L348 ...on the same landmass as Medellin's, the Americas'
   - L349 Prince Edward Island: a landmass of its own - not Halifax's, a few thousand km2 (the study: 5,611 and the island's real 5,660)
   - L353 ...its words name the data's place and area, whole km2
-  - L357 Valparaiso: the sea within 5 km runs deep - well past Halifax's, over 50 m, said in the card's words
-  - L364 Tengboche
-  - L366 Tengboche, in the Himalaya: very steep ground is a number of its own on the card, and its words fold it into steep (most of its ground)
-  - L371 Rotterdam: flat - all but a hair of its dry ground flat, on Afro-Eurasia (landmass 1, over seventy million km2)
-- **L389 3. a spot in the sea, or on ice, is refused; a desert, or no water near, is warned of**
-  - L394 fixture: a spot in the North Sea - the card has no site, and says so
-  - L397 ...the founding's problem() says the same
-  - L409 ...and the game will not found it
-  - L412 fixture: Paris is neither ice nor desert, and has the Seine: no warning
-  - L418 the full file: the middle of Greenland's sheet is refused, on ice
-  - L421 ...the Sahara is foundable, warned that it is a desert and has no water near
-  - L424 ...and a spot by the sea with no river or lake within 5 km is warned it drinks the sea
-  - L428 ...and the middle of the Atlantic is refused
-- **L435 4. search, and the spot the seed picks**
-  - L437 fixture: the fixture carries the data's places whole
-  - L446 a place's own name, in capitals, finds a place of that name first (
-  - L453 fixture: a name with accents is found by its plain spelling and without them
-  - L466 the hits are ranked whole, begun, a word begun, within, each group in the data's order, at most SEARCH_HITS
-  - L467 ...and nothing typed finds nothing
-  - L477 Random spot: the same seed picks the same place, and it passes the site test
-  - L478 ...and eight seeds pick more than one place
-- **L485 5. the sea's depth on Earth: the depth layer's, at least a metre (ET1, D17)**
-  - L509 fixture: west of Rotterdam's site, nothing where the plot is not the sea's, and at sea the depth layer's code at the plot's centre, decoded, at least a metre
-  - L526 ...a sea plot is never shallower than SEA_LEAST_DEPTH_M, and where the layer reads none under it, it is exactly that
-  - L530 ...and the elevation field's shelf, which Earth has none of, is still refused
-  - L541 the full file: the North Sea off Rotterdam, 40 and 80 km out, is the layer's depth and a platform stands in it (the study: 27 and 34 m, E4's rule gave 69 and...
-  - L545 ...the sea off Valparaiso, 20 and 40 km out, is hundreds of metres: a floating platform stands in it, at deep water's cost
-- **L578 6. an Earth city founded, played, and drilling at sea**
-  - L581 fixture: Rotterdam's spot is a founding with no problem, on Earth
-  - L600 the game founds it: its World the Earth's of that key, its land the snap's site, two months played
-  - L622 fixture: an oil field in the North Sea near the site, shallow enough for a platform
-  - L655 the city buys the ground to it: its sites the sea's, the field on the sea's list at World's depth
-  - L680 a platform and its wells stand on it, the city plays two months more, the investors planning at sea, and the oil's page
+  - L359 the six biggest landmasses of the file read by hand (Afro-Eurasia, North and South America, Antarctica, Australia, Greenland, New Guinea), none a possessive ...
+  - L362 ...the seventh and on keep the data's place as a possessive, and one the data does not name is empty (Island N takes it)
+  - L364 ...the guard is the id and the data's place together: id 2 under another place, or 'New York' on another id, keeps the data's words
+  - L366 ...a bridge's sentence lets a hand name stand as it is, and still adds 'landmass' to a possessive
+  - L370 Valparaiso: the sea within 5 km runs deep - well past Halifax's, over 50 m, said in the card's words
+  - L377 Tengboche
+  - L379 Tengboche, in the Himalaya: very steep ground is a number of its own on the card, and its words fold it into steep (most of its ground)
+  - L384 Rotterdam: flat - all but a hair of its dry ground flat, on Afro-Eurasia (landmass 1, over seventy million km2)
+- **L402 3. a spot in the sea, or on ice, is refused; a desert, or no water near, is warned of**
+  - L407 fixture: a spot in the North Sea - the card has no site, and says so
+  - L410 ...the founding's problem() says the same
+  - L422 ...and the game will not found it
+  - L425 fixture: Paris is neither ice nor desert, and has the Seine: no warning
+  - L431 the full file: the middle of Greenland's sheet is refused, on ice
+  - L434 ...the Sahara is foundable, warned that it is a desert and has no water near
+  - L437 ...and a spot by the sea with no river or lake within 5 km is warned it drinks the sea
+  - L441 ...and the middle of the Atlantic is refused
+- **L448 4. search, and the spot the seed picks**
+  - L450 fixture: the fixture carries the data's places whole
+  - L459 a place's own name, in capitals, finds a place of that name first (
+  - L466 fixture: a name with accents is found by its plain spelling and without them
+  - L479 the hits are ranked whole, begun, a word begun, within, each group in the data's order, at most SEARCH_HITS
+  - L480 ...and nothing typed finds nothing
+  - L490 Random spot: the same seed picks the same place, and it passes the site test
+  - L491 ...and eight seeds pick more than one place
+- **L498 5. the sea's depth on Earth: the depth layer's, at least a metre (ET1, D17)**
+  - L522 fixture: west of Rotterdam's site, nothing where the plot is not the sea's, and at sea the depth layer's code at the plot's centre, decoded, at least a metre
+  - L539 ...a sea plot is never shallower than SEA_LEAST_DEPTH_M, and where the layer reads none under it, it is exactly that
+  - L543 ...and the elevation field's shelf, which Earth has none of, is still refused
+  - L554 the full file: the North Sea off Rotterdam, 40 and 80 km out, is the layer's depth and a platform stands in it (the study: 27 and 34 m, E4's rule gave 69 and...
+  - L558 ...the sea off Valparaiso, 20 and 40 km out, is hundreds of metres: a floating platform stands in it, at deep water's cost
+- **L591 6. an Earth city founded, played, and drilling at sea**
+  - L594 fixture: Rotterdam's spot is a founding with no problem, on Earth
+  - L613 the game founds it: its World the Earth's of that key, its land the snap's site, two months played
+  - L635 fixture: an oil field in the North Sea near the site, shallow enough for a platform
+  - L668 the city buys the ground to it: its sites the sea's, the field on the sea's list at World's depth
+  - L693 a platform and its wells stand on it, the city plays two months more, the investors planning at sea, and the oil's page
 
 ## EarthTerrainCheck.java - 92 labelled assertions
 
@@ -16144,7 +16150,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L704 A CITY SAVED AND RELOADED READS THE SAME QUOTES, TONNES AND BILLS, to the bit
   - L706 ...the same dues paid and handling billed, the treasury's tax take line and the national accounts' line, and the dial
 
-## LandmassCheck.java - 333 labelled assertions
+## LandmassCheck.java - 334 labelled assertions
 
 > The city's ground counted by landmass, and the island rule, checked (ET5; the ET5 design): a landmass is read from the
 > Earth's data at every plot, the city's books are kept by landmass, ground on a landmass the city has not linked is owned,
@@ -16463,58 +16469,59 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2743 the hover over owned ground on the island has one line more, under whose it is: 'On Island 2, which no port links: only a port can be built here'
   - L2748 ...none over home's ground, none for books of a city on one landmass or no books, and the old five-argument card is the card with no books
   - L2751 the chip says the landmass, what the city owns of it and why it is not linked, in the model's words: 'Island 2 · <its area> · not linked: needs a port here a...
-  - L2755 the legend has one entry while a landmass is unlinked, 'Not linked: only a port' in the warning amber, and none for a city on one landmass or none
-  - L2764 premise: the island holds forest, so the forest on linked ground is less than the city's whole forest
-  - L2767 the zoning view's forest figures are the forest on linked ground (LandManager.getLinkedForestSqFt()); the twin's are the city's whole forest to the bit
-  - L2776 ...and the cleared forest is worked out on linked ground, never past it (the island's forest is no forest the city can clear); the twin's is the old expressi...
-  - L2783 the chooser's chips are the landmasses with shore, home first, the island marked while no port links it; home is the one lit by default and the island once p...
-  - L2787 ...once the card picks the island, its chip is the one lit
-  - L2788 a terminal on the island with no port standing anywhere links nothing: 'links nothing until home has a port too'; at home it links nothing yet
-  - L2797 a month on, one notice stands for the island: key 'island:648', its title and body the view's, in lines of at most
-  - L2801 its body says what the city owns there and what links it, in the books' own figures
-  - L2804 its button is 'Build a port there ›', the key's id is read back, and no other key is an island's
-  - L2809 the button opens the General Cargo Terminal's card (the first terminal of that kind in the catalogue); no terminal in the catalogue is none
-  - L2815 a city on one landmass raises no island notice, ever
-  - L2819 a terminal ordered for the island by the card's path is placed there
-  - L2820 the island has a port and no linked landmass has one: 'no: it has a port, and needs one at home', and a terminal at home 'links Island 2, which has a port'
-  - L2825 a terminal at home is placed by the rule and links the island
-  - L2827 linked, the island's row says 'yes' in green and shares the linked free ground's one figure with home; the chooser no longer marks it; nothing more is linked...
-  - L2839 the month a port links the island its notice is settled, and no island notice stands for a landmass that is linked
-  - L2842 ...and it stays settled, none raised again while the island is linked
-  - L2847 a terminal at home is placed and stands
-  - L2849 with home's port standing the island is unlinked still, 'no: needs a port here (home has one)', and a terminal there 'Island 2 becomes the city's 2nd linked ...
-  - L2862 premise: the city owns the island's ground with no shore and none at home, so a terminal is refused for its coast
-  - L2868 a refused terminal names where: 'No shore owned' with no pick, 'No shore on Island 2' with the island picked, the quote line the same in lower case; a plant ...
-  - L2873 a city on one landmass keeps the old words: no title, no quote, no paragraph, no clause on the terminal's description
-  - L2876 on more than one landmass the NO COAST page adds its paragraph and the terminal's description its clause: the shore is on the landmass it serves
-  - L2881 a notice for an island the city owns no shore on says so and its button goes to the Land office; one with shore keeps the port card's door and says nothing o...
-  - L2889 premise: the city owns shore on the island and none at home, so the rule finds no landmass for a terminal and the verdict is NO_COAST
-  - L2893 the chooser is shown for the island alone (a card with no pick could never order there), not for home alone and not for none
-  - L2896 with no pick the refusal says 'No shore on linked ground' (the city owns shore, on an island no port links), the quote the same; a city that owns none says '...
-  - L2901 ...and once the island is picked the terminal has a landmass to stand on, the island's room is the ground it measures, and the link sentence warns that it li...
-  - L2905 an order is an island-port order only for a sea terminal on an island no port links: not a house, not a terminal of the twin's on one landmass
-  - L2908 a desalination plant refused for its coast is the same verdict, and the words say linked ground
-- **L3002 12 (continued). the audit sees books gone stale: ground bought and the books never told**
-  - L3003 fixtures were found
-  - L3005 premise: the city that owns the island square passes its own audit (the books by landmass are a fresh recount's)
-  - L3013 a second island square added to the land and the books never told: the audit says the books are not a fresh recount's
-  - L3015 ...and told, the books are the recount's again and the audit is clean
-- **L3026 12. grown across landmasses: 24 months with the island owned and unlinked, the two terminals by the card's path, then 480 months, the boo...**
-  - L3027 fixtures were found
-  - L3070 premise: the 24 months moved the city - ground was allocated and buildings stand that did not
-  - L3115 24 months with the island owned and no terminal: it stays unlinked, owned and counted, and no investor's refusal hides it
-  - L3116 the two terminals by the card's path (the island's, then home's) are placed, and the island is linked once both stand
-  - L3124 the grown city's map, which measured every district again in the month
-  - L3126 home filled by a fixture (
-  - L3132 fixture: a city on the island with a field across the water
-  - L3158 premise: the island city owns the mainland's field across the water - sites no works may use - and its 24 months moved it: ground allocated, buildings standi...
-  - L3169 the map of the island city, kept up the 24 months: its site index is the model's sites (every sited resource), nothing is drawn on the mainland's ground acro...
-  - L3213 the Rotterdam delta's islands read Rotterdam's landmass in the model's own reader: Voorne-Putten, Rozenburg, IJsselmonde, the Hoeksche Waard
-  - L3214 ...and Goeree-Overflakkee does not
-  - L3216 Prince Edward Island is a landmass of its own (101), apart from the mainland across the strait
-  - L3217 Halifax and Dartmouth are one landmass; Medellin is on the Americas (2)
-  - L3262 the run played its months and found nothing: every month passed the playtest's audit,
-  - L3264 the test player never builds a terminal off its home landmass (it never links an island)
+  - L2754 ...drawn in two lines (MT1, BK1-L): the name and area, then why it is not linked, each about half the one line's 70 characters, and the one line is the two j...
+  - L2760 the legend has one entry while a landmass is unlinked, 'Not linked: only a port' in the warning amber, and none for a city on one landmass or none
+  - L2769 premise: the island holds forest, so the forest on linked ground is less than the city's whole forest
+  - L2772 the zoning view's forest figures are the forest on linked ground (LandManager.getLinkedForestSqFt()); the twin's are the city's whole forest to the bit
+  - L2781 ...and the cleared forest is worked out on linked ground, never past it (the island's forest is no forest the city can clear); the twin's is the old expressi...
+  - L2788 the chooser's chips are the landmasses with shore, home first, the island marked while no port links it; home is the one lit by default and the island once p...
+  - L2792 ...once the card picks the island, its chip is the one lit
+  - L2793 a terminal on the island with no port standing anywhere links nothing: 'links nothing until home has a port too'; at home it links nothing yet
+  - L2802 a month on, one notice stands for the island: key 'island:648', its title and body the view's, in lines of at most
+  - L2806 its body says what the city owns there and what links it, in the books' own figures
+  - L2809 its button is 'Build a port there ›', the key's id is read back, and no other key is an island's
+  - L2814 the button opens the General Cargo Terminal's card (the first terminal of that kind in the catalogue); no terminal in the catalogue is none
+  - L2820 a city on one landmass raises no island notice, ever
+  - L2824 a terminal ordered for the island by the card's path is placed there
+  - L2825 the island has a port and no linked landmass has one: 'no: it has a port, and needs one at home', and a terminal at home 'links Island 2, which has a port'
+  - L2830 a terminal at home is placed by the rule and links the island
+  - L2832 linked, the island's row says 'yes' in green and shares the linked free ground's one figure with home; the chooser no longer marks it; nothing more is linked...
+  - L2844 the month a port links the island its notice is settled, and no island notice stands for a landmass that is linked
+  - L2847 ...and it stays settled, none raised again while the island is linked
+  - L2852 a terminal at home is placed and stands
+  - L2854 with home's port standing the island is unlinked still, 'no: needs a port here (home has one)', and a terminal there 'Island 2 becomes the city's 2nd linked ...
+  - L2867 premise: the city owns the island's ground with no shore and none at home, so a terminal is refused for its coast
+  - L2873 a refused terminal names where: 'No shore owned' with no pick, 'No shore on Island 2' with the island picked, the quote line the same in lower case; a plant ...
+  - L2878 a city on one landmass keeps the old words: no title, no quote, no paragraph, no clause on the terminal's description
+  - L2881 on more than one landmass the NO COAST page adds its paragraph and the terminal's description its clause: the shore is on the landmass it serves
+  - L2886 a notice for an island the city owns no shore on says so and its button goes to the Land office; one with shore keeps the port card's door and says nothing o...
+  - L2894 premise: the city owns shore on the island and none at home, so the rule finds no landmass for a terminal and the verdict is NO_COAST
+  - L2898 the chooser is shown for the island alone (a card with no pick could never order there), not for home alone and not for none
+  - L2901 with no pick the refusal says 'No shore on linked ground' (the city owns shore, on an island no port links), the quote the same; a city that owns none says '...
+  - L2906 ...and once the island is picked the terminal has a landmass to stand on, the island's room is the ground it measures, and the link sentence warns that it li...
+  - L2910 an order is an island-port order only for a sea terminal on an island no port links: not a house, not a terminal of the twin's on one landmass
+  - L2913 a desalination plant refused for its coast is the same verdict, and the words say linked ground
+- **L3007 12 (continued). the audit sees books gone stale: ground bought and the books never told**
+  - L3008 fixtures were found
+  - L3010 premise: the city that owns the island square passes its own audit (the books by landmass are a fresh recount's)
+  - L3018 a second island square added to the land and the books never told: the audit says the books are not a fresh recount's
+  - L3020 ...and told, the books are the recount's again and the audit is clean
+- **L3031 12. grown across landmasses: 24 months with the island owned and unlinked, the two terminals by the card's path, then 480 months, the boo...**
+  - L3032 fixtures were found
+  - L3075 premise: the 24 months moved the city - ground was allocated and buildings stand that did not
+  - L3120 24 months with the island owned and no terminal: it stays unlinked, owned and counted, and no investor's refusal hides it
+  - L3121 the two terminals by the card's path (the island's, then home's) are placed, and the island is linked once both stand
+  - L3129 the grown city's map, which measured every district again in the month
+  - L3131 home filled by a fixture (
+  - L3137 fixture: a city on the island with a field across the water
+  - L3163 premise: the island city owns the mainland's field across the water - sites no works may use - and its 24 months moved it: ground allocated, buildings standi...
+  - L3174 the map of the island city, kept up the 24 months: its site index is the model's sites (every sited resource), nothing is drawn on the mainland's ground acro...
+  - L3218 the Rotterdam delta's islands read Rotterdam's landmass in the model's own reader: Voorne-Putten, Rozenburg, IJsselmonde, the Hoeksche Waard
+  - L3219 ...and Goeree-Overflakkee does not
+  - L3221 Prince Edward Island is a landmass of its own (101), apart from the mainland across the strait
+  - L3222 Halifax and Dartmouth are one landmass; Medellin is on the Americas (2)
+  - L3267 the run played its months and found nothing: every month passed the playtest's audit,
+  - L3269 the test player never builds a terminal off its home landmass (it never links an island)
 
 ## LongPlaytest.java - 0 labelled assertions
 

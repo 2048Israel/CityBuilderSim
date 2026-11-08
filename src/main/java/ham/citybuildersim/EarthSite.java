@@ -526,15 +526,16 @@ public final class EarthSite {
     }
 
     /**
-     * ...and the landmass: its place's name (the data's most populous place on it) and its area ("Its landmass: New
-     * York's, 36.8 million km² (id 2)"), or null where the data has none to say.
+     * ...and the landmass: its name (the data's most populous place on it as a possessive, "Charlottetown's", or for the
+     * six biggest the name by hand, EarthData.Landmass.words()) and its area ("Its landmass: North and South America,
+     * 36.8 million km² (id 2)"), or null where the data has none to say.
      */
     public static String landmassWords(Card c) {
         EarthData.Landmass l = c.landmass();
         if (l == null) return null;
         String area = l.areaKm2() >= 1e6 ? String.format(Locale.ROOT, "%.1f million km²", l.areaKm2() / 1e6)
                 : l.areaKm2() >= 10 ? String.format(Locale.ROOT, "%,.0f km²", l.areaKm2()) : String.format(Locale.ROOT, "%.1f km²", l.areaKm2());
-        return "Its landmass: " + (l.name().isBlank() ? "unnamed" : l.name().trim() + "'s") + ", " + area + " (id " + l.id() + ")";
+        return "Its landmass: " + (l.words().isEmpty() ? "unnamed" : l.words()) + ", " + area + " (id " + l.id() + ")";
     }
 
     /** The card's reach as it writes it: "5 km". */

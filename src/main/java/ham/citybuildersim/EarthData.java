@@ -111,8 +111,13 @@ public final class EarthData implements AutoCloseable {
     /** The layout's version this reads (FORMAT.txt). */
     public static final int FORMAT = 1;
 
-    /** The inflated tiles kept, in bytes: spec-earth 5's heap budget of about 10 MB (64 1-degree tiles of sea and lake at 115 KB, and the rest). */
-    public static final long CACHE_BYTES = 10_000_000;
+    /**
+     * The inflated tiles kept, in bytes: 24 MB since MT1 (ET1-C 1), 83 tiles of earth-2's 296 KB, about five cities
+     * (spec-earth 5's 10 MB was 64 1-degree tiles of sea and lake at 115 KB, and the rest). WHY: earth-2's tile with
+     * every layer inflated is 296 KB, so 10 MB kept 33 tiles where earth-1 kept 83, and a far node (Rotterdam's
+     * 54 of 80 ms, MP1-C) re-inflated what a city's own ring had just pushed out.
+     */
+    public static final long CACHE_BYTES = 24_000_000;
 
     /** A layer of 64,800 1-degree tiles, numbered (lat0 + 90) x 360 + (lon0 + 180) from the south-west corner. */
     public static final int KIND_TILES = 0;
@@ -818,7 +823,47 @@ public final class EarthData implements AutoCloseable {
        ===================================================================== */
 
     /** One landmass: its id (1 is Afro-Eurasia, ids by area, largest first), its area in km2, its count of 15" cells and the name of the most populous Natural Earth place on it (empty when none). */
-    public record Landmass(int id, double areaKm2, long cells, String name) { }
+    public record Landmass(int id, double areaKm2, long cells, String name) {
+
+        /**
+         * The landmass as a sentence names it (MT1, ET1-C): the six biggest by hand (HAND_NAMES: "Afro-Eurasia",
+         * "North and South America"), else the data's place as a possessive ("Charlottetown's"), else "" where the data
+         * names none. WHY by hand: the data names a landmass by its most populous place, so the Americas read "New
+         * York's, 36.8 million km²" and Afro-Eurasia "Mumbai's" on the founding card and the bridge card. A hand name
+         * is no possessive, so BridgeView.landmassWords() lets it stand as "Island 2" stands.
+         */
+        public String words() {
+            String hand = handName(id, name);
+            if (hand != null) return hand;
+            String place = name == null ? "" : name.trim();
+            return place.isEmpty() ? "" : place + "'s";
+        }
+    }
+
+    /**
+     * The six biggest landmasses of earth-2, named by hand (MT1; ET1-C 2): {id, the data's most populous place on it,
+     * the name}. The ids are by area, largest first; the place is the guard, so a file baked another way (a landmass
+     * of another id under the same place) keeps the data's words rather than a wrong hand name. The Americas and
+     * Afro-Eurasia are one landmass each in this layer (so the six "continents" are four, with Antarctica and
+     * Australia, and the next two landmasses by area, Greenland and New Guinea). None ends in 's and none opens with
+     * an article, so each reads in any
+     * sentence ("On Greenland, which no port links", "Greenland becomes the city's 2nd linked landmass").
+     */
+    private static final String[][] HAND_NAMES = {
+        {"1", "Mumbai", "Afro-Eurasia"},
+        {"2", "New York", "North and South America"},
+        {"3", "McMurdo Station", "Antarctica"},
+        {"4", "Sydney", "Australia"},
+        {"5", "Nuuk", "Greenland"},
+        {"6", "Port Moresby", "New Guinea"},
+    };
+
+    /** The hand name of landmass `id` whose data place is `place`, or null where it has none. */
+    private static String handName(int id, String place) {
+        if (place == null) return null;
+        for (String[] h : HAND_NAMES) if (Integer.parseInt(h[0]) == id && h[1].equals(place.trim())) return h[2];
+        return null;
+    }
 
     /** A landmass tile's palette read: the ids the tile holds, ascending, and where its indexes begin in the inflated blob (a byte each, or a big-endian short each when the palette passes 256). */
     private static final class Palette {

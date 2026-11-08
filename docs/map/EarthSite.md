@@ -1,4 +1,4 @@
-# EarthSite.java - 723 lines · 44 methods · 21 constants · model
+# EarthSite.java - 724 lines · 44 methods · 21 constants · model
 
 `ham/citybuildersim/EarthSite.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
 
@@ -91,12 +91,12 @@
 | 284 | `EarthSite.BEFORE_DEPOSITS_WORDS` | `"This city was founded on the real Earth before its oil, iron and other field...` | The load's words for a city on the real Earth saved before its fields were drawn on the geology (DEPOSITS_FORMAT). |
 | 289 | `EarthSite.BEFORE_SLOPE_WORDS` | `"This city was founded on the real Earth before slope decided where a buildin...` | The load's words for a city on the real Earth saved before its founding site was snapped to ground a building may stand on (SLOPE_FORMAT). |
 | 294 | `EarthSite.BEFORE_LANDMASS_WORDS` | `"This city was founded on the real Earth before its ground was counted by lan...` | The load's words for a city on the real Earth saved before its ground was counted by landmass (LANDMASS_FORMAT). |
-| 561 | `EarthSite.NO_SITE_WORDS` | `"No dry ground within 5 km to found a city on: the spot is in the sea, or on ...` | The card's words for a spot with no site: in the sea, or on an island too small (a spot among steep slopes has SLOPE_WORDS). |
-| 564 | `EarthSite.SLOPE_WORDS` | `"No ground a building may stand on within 5 km: the slopes here are steep."` | The card's words for a spot among steep slopes (ET2): the first sentence of noSiteWords(), the nearest buildable ground after it. |
-| 567 | `EarthSite.ICE_WORDS` | `"On ice: snow and ice cover half the ground here or more, and no city is foun...` | ...on ice. |
-| 570 | `EarthSite.DESERT_WORDS` | `"A desert: bare ground covers half the land here or more."` | The warning for a desert. |
-| 573 | `EarthSite.NO_FRESH_WORDS` | `"No river or lake within 5 km: a water plant needs one, so the city's first w...` | The warning where there is no fresh water within the card's reach and the sea is near. |
-| 576 | `EarthSite.NO_WATER_WORDS` | `"No river, lake or sea within 5 km: the city has nowhere near to draw its wat...` | ...and where there is neither. |
+| 562 | `EarthSite.NO_SITE_WORDS` | `"No dry ground within 5 km to found a city on: the spot is in the sea, or on ...` | The card's words for a spot with no site: in the sea, or on an island too small (a spot among steep slopes has SLOPE_WORDS). |
+| 565 | `EarthSite.SLOPE_WORDS` | `"No ground a building may stand on within 5 km: the slopes here are steep."` | The card's words for a spot among steep slopes (ET2): the first sentence of noSiteWords(), the nearest buildable ground after it. |
+| 568 | `EarthSite.ICE_WORDS` | `"On ice: snow and ice cover half the ground here or more, and no city is foun...` | ...on ice. |
+| 571 | `EarthSite.DESERT_WORDS` | `"A desert: bare ground covers half the land here or more."` | The warning for a desert. |
+| 574 | `EarthSite.NO_FRESH_WORDS` | `"No river or lake within 5 km: a water plant needs one, so the city's first w...` | The warning where there is no fresh water within the card's reach and the sea is near. |
+| 577 | `EarthSite.NO_WATER_WORDS` | `"No river, lake or sea within 5 km: the city has nowhere near to draw its wat...` | ...and where there is neither. |
 
 ## Fields (state)
 
@@ -109,7 +109,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 67 | 657 | **type** `public final class EarthSite` | A spot on the real Earth as the founding screen weighs it: whether the game has the Earth's data, the place names a player searches, the spot the seed picks, and the founding card - the site the snap finds, the ground... |
+| 67 | 658 | **type** `public final class EarthSite` | A spot on the real Earth as the founding screen weighs it: whether the game has the Earth's data, the place names a player searches, the spot the seed picks, and the founding card - the site the snap finds, the ground... |
 | 69 | 1 | `private EarthSite()` |  |
 
 ### THE GAME'S EARTH: is the file here? (lines 129-167)
@@ -158,7 +158,7 @@
 | 429 | 3 | `static boolean inDesert(EarthTerrain e, long x, long y)` | ...and a desert: bare ground on half its land or more (EarthData.LC_DESERT). |
 | 433 | 5 | `private static int cover(EarthTerrain e, long x, long y)` |  |
 
-### THE CARD (lines 439-723)
+### THE CARD (lines 439-724)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -174,11 +174,11 @@
 | 498 | 15 | `public static String reliefWords(Card c)` | THE CARD'S THREE LINES OF ET1 (spec-earth2-terrain 3.4; Jerus 2026-10-12, D21: relief, water and landmass). |
 | 515 | 6 | `public static String shallowWords(Card c)` | ...the nearest shallow water and how deep the sea gets in reach: "Shallow water 0.4 km away · the sea is up to 34 m deep within 5 km", or none within the reach (the mockup's "deepest 1' cell", the depth layer's). |
 | 523 | 4 | `private static double plotDepth(EarthTerrain e, EarthData d, long x, long y, double[] ll)` | The depth layer's metres under a sea plot (World.depthAt()'s rule, read here without the world's plot cache): a metre at least, and the layer's deepest past the planet's rim. |
-| 532 | 7 | `public static String landmassWords(Card c)` | ...and the landmass: its place's name (the data's most populous place on it) and its area ("Its landmass: New York's, 36.8 million km² (id 2)"), or null where the data has none to say. |
-| 541 | 1 | `private static String reachWords()` | The card's reach as it writes it: "5 km". |
-| 544 | 3 | `private static String distanceWords(double km)` | A distance as the card writes it: a tenth of a km under ten, whole km from there (the founding screen's). |
-| 556 | 3 | `static EarthData.Landmass siteLandmass(World w, long sx, long sy)` | The landmass a site stands on (ET1; ET5): the one World.landmassAt() reads at the snapped site's plot - the data's cell at the plot's blend point, or for a plot the game draws dry on a cell the layer calls no land the... |
-| 590 | 96 | `public static Card measure(World.Key key)` | The founding card for the world a key names (spec-earth 2): the snap's site, the ground within CARD_PLOTS of it plot by plot - dry, rivers and lakes, sea and (0.7.127) ice - and the nearest fresh water and sea to its ... |
-| 693 | 24 | `static double[] nearestIron(World w, long x, long y)` | The nearest iron field's centre to a plot, {plots away, east, south}, or null when none lies within IRON_RINGS cells: the world's fields cell by cell, ring by ring round the plot's cell, until no ring left can hold a ... |
-| 719 | 4 | `public static String latLonWords(double lat, double lon)` | A latitude and longitude as the card and the search write them: "51.92° N, 4.48° E". |
+| 533 | 7 | `public static String landmassWords(Card c)` | ...and the landmass: its name (the data's most populous place on it as a possessive, "Charlottetown's", or for the six biggest the name by hand, EarthData.Landmass.words()) and its area ("Its landmass: North and South... |
+| 542 | 1 | `private static String reachWords()` | The card's reach as it writes it: "5 km". |
+| 545 | 3 | `private static String distanceWords(double km)` | A distance as the card writes it: a tenth of a km under ten, whole km from there (the founding screen's). |
+| 557 | 3 | `static EarthData.Landmass siteLandmass(World w, long sx, long sy)` | The landmass a site stands on (ET1; ET5): the one World.landmassAt() reads at the snapped site's plot - the data's cell at the plot's blend point, or for a plot the game draws dry on a cell the layer calls no land the... |
+| 591 | 96 | `public static Card measure(World.Key key)` | The founding card for the world a key names (spec-earth 2): the snap's site, the ground within CARD_PLOTS of it plot by plot - dry, rivers and lakes, sea and (0.7.127) ice - and the nearest fresh water and sea to its ... |
+| 694 | 24 | `static double[] nearestIron(World w, long x, long y)` | The nearest iron field's centre to a plot, {plots away, east, south}, or null when none lies within IRON_RINGS cells: the world's fields cell by cell, ring by ring round the plot's cell, until no ring left can hold a ... |
+| 720 | 4 | `public static String latLonWords(double lat, double lon)` | A latitude and longitude as the card and the search write them: "51.92° N, 4.48° E". |
 

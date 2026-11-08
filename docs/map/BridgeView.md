@@ -12,7 +12,7 @@
 
 **Uses:** [BridgeSurvey](BridgeSurvey.md) (5), [Landmasses](Landmasses.md) (3), [EarthData](EarthData.md) (1)
 
-**Used by (4):** [BridgeCheck](BridgeCheck.md), [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [ReadPathCheck](ReadPathCheck.md)
+**Used by (5):** [BridgeCheck](BridgeCheck.md), [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [EarthFoundingCheck](EarthFoundingCheck.md), [ReadPathCheck](ReadPathCheck.md)
 
 ## Methods, in file order
 

@@ -857,7 +857,10 @@ adds its line here, not in `CLAUDE.md`.
                                    2026-10-27: the game's identity on screen - the icon on the window, every
                                    size of resources/icons/ handed to the stage, and the title art on the
                                    start screen; BrandingCheck holds the files and the store's title art to
-                                   it). The model never imports it.
+                                   it), and IslandChip.java (MT1: the chip on a landmass no port links,
+                                   two lines of amber caption on a dark rounded plate, drawn by
+                                   MapView.islandChips(); public so tools/ChipRender draws the same plate
+                                   over a hatch for review). The model never imports it.
         *Check.java                142 harnesses, each a main() with static helpers
         MarketCheck.java           the efficient market (EM1), each case on a fixture that causes it: one value for a share, one
                                    yardstick, two shares alike but for price, the buyback finding its sellers, a share earning

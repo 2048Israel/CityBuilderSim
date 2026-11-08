@@ -1,27 +1,13 @@
-# gate of Merge batch/LF1: the short's lending fee on the lenders' books: the households' fee an audit pair in the current account, the fund's an income counter and a ledger row; and four edge cases of EM2's short book (lenders paid on shares sold, emigrants with a short open, a short at zero shares in issue, a short below minFair); found by the stranger's review at EM2's gate, 0.9.52
+# gate of Merge batch/MT1: the map's words: the island label on a dark plate in two lines (BK1-L); the landmasses named by hand, not "New York's", the legend's "Snow and ice", and `EarthData.CACHE_BYTES` 10 to 24 MB (ET1-C's three calls) (Jerus, 2026-10-31: "Take all (Recommended)"), 0.9.53
 # date: 2026-11-08
 # earth-2.bin: named
 # nightly: 2026-11-08 01:36 0.9.47 39c0948d 4,000 months: OK in 97 s
-# suite: 186 harnesses run in 2035s: 181 passed, 5 failed
-# timing: 16 harnesses run in 1808s: 11 passed, 5 failed; its red lines were judged side by side with main's, below
+# suite: 186 harnesses run in 1542s: 181 passed, 5 failed
+# timing: 16 harnesses run in 1315s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 49.0 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 28.6 ms, batch 27.6 ms (-3.5%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 28.4 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 27.6 ms (gate.txt, today), batch 28.4 ms (+2.9%), budget 25 ms: main over the budget too, no round]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | at 5 billion a month's change takes no more than 5 ms of the wall clock        FAIL   [main 1.18 ms, batch 1.35 ms (+14.7%), budget 5 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | on the full file, every stride's far node over Rotterdam is drawn in no more than SCREEN_MS FAIL   [main 53.3 ms, batch 53.7 ms (+0.8%), budget 80 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 17.1 ms, batch 17.7 ms (+3.3%), budget 19 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | 5 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): PlanCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): PlanCheck | a district's plan, the dense screen's slowest, in no more than 40 ms (half the screen's 80) FAIL   [main 5.28 ms, batch 5.09 ms (-3.5%), budget 40 ms: within 15% of main's]
-# timing red not the batch's (paired): PlanCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): KeptCheck | exit 16   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): KeptCheck | the kept month is within KEPT_MONTH_MS (12.0 ms)                         FAIL   [main 4.89 ms, batch 5 ms (+2.2%), budget 12 ms: within 15% of main's]
-# timing red not the batch's (paired): KeptCheck | the whole kept chrome's month is within KEPT_ALL_CHROME_MS (8.0 ms)      FAIL   [main 4.88 ms, batch 4.81 ms (-1.4%), budget 8 ms: within 15% of main's]
-# timing red not the batch's (paired): KeptCheck | the kept month on the construction page is within KEPT_CONSTRUCTION_MS (4.0 ms) FAIL   [main 1.78 ms, batch 1.84 ms (+2.9%), budget 4 ms: within 15% of main's]
-# timing red not the batch's (paired): KeptCheck | the kept month on Retail's Operations page is within KEPT_SECTOR_MS (15.0 ms) FAIL   [main 4.93 ms, batch 5.14 ms (+4.3%), budget 15 ms: within 15% of main's]
-# timing red not the batch's (paired): KeptCheck | the kept month on the fund's Search is within KEPT_FUND_MS (321.0 ms)    FAIL   [main 200 ms, batch 180 ms (-10.2%), budget 321 ms: within 15% of main's]
-# timing red not the batch's (paired): KeptCheck | 16 FAILED   [the harness's own count of the timing reds above]
-# figure	SaveSlotCheck	the median due month, 49.0 ms, holds the clock at most CLOCK_MS (25 ms)	27.6315	25	ms	FAIL	1	1
+# figure	SaveSlotCheck	the median due month, 28.4 ms, holds the clock at most CLOCK_MS (25 ms)	28.4431	25	ms	FAIL	1	1
 MonetaryCheck | exit 1
 MonetaryCheck | ...and a month's delay in the hand moves them less than the allowance FAIL
 MonetaryCheck | 1 FAILED

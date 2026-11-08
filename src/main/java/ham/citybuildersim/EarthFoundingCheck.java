@@ -336,9 +336,9 @@ public class EarthFoundingCheck {
                 && EarthSite.shallowWords(med).equals("No shallow water within 5 km · no sea within 5 km"));
         int americas = file.landmassAt(med.siteLat(), med.siteLon());
         EarthData.Landmass am = file.landmass(americas);
-        report("...its landmass is the data's at the site, with the data's own name and area, the Americas' (over ten million km2)",
+        report("...its landmass is the data's at the site, with the data's own area, the Americas' (over ten million km2), named by hand (MT1) and no longer by its most populous place",
                 am != null && med.landmass() != null && med.landmass().equals(am) && am.areaKm2() > 1e7 && !am.name().isBlank()
-                        && EarthSite.landmassWords(med).equals("Its landmass: " + am.name().trim() + "'s, " + String.format("%.1f million km²", am.areaKm2() / 1e6) + " (id " + am.id() + ")"),
+                        && EarthSite.landmassWords(med).equals("Its landmass: North and South America, " + String.format("%.1f million km²", am.areaKm2() / 1e6) + " (id " + am.id() + ")"),
                 EarthSite.landmassWords(med));
         report("Halifax: shallow water within a kilometre, and the sea within 5 km is well over a metre deep - 10 m or more, the harbour's and the Atlantic's (the mockup: 19 m)",
                 !Double.isNaN(hal.shallowKm()) && hal.shallowKm() < 1 && hal.seaDepthMaxM() >= 10,
@@ -352,6 +352,19 @@ public class EarthFoundingCheck {
                 EarthSite.landmassWords(pei));
         check("...its words name the data's place and area, whole km2", EarthSite.landmassWords(pei).contains(pei.landmass().name().trim())
                 && EarthSite.landmassWords(pei).contains(String.format("%,.0f km²", pei.landmass().areaKm2())));
+        // MT1 (ET1-C 2): the six biggest landmasses by hand, the rest as the data's place's possessive, and a file whose ids differ keeps the data's words.
+        String[] hand = { "Afro-Eurasia", "North and South America", "Antarctica", "Australia", "Greenland", "New Guinea" };
+        boolean sixByHand = true;
+        for (int i = 0; i < hand.length; i++) sixByHand &= file.landmass(i + 1) != null && file.landmass(i + 1).words().equals(hand[i]);
+        report("the six biggest landmasses of the file read by hand (Afro-Eurasia, North and South America, Antarctica, Australia, Greenland, New Guinea), none a possessive and none opening with an article, so one name reads in any sentence",
+                sixByHand && java.util.Arrays.stream(hand).noneMatch(h -> h.endsWith("'s") || h.startsWith("The ") || h.startsWith("the ")),
+                file.landmass(1).words() + " | " + file.landmass(2).words() + " | " + file.landmass(5).words());
+        check("...the seventh and on keep the data's place as a possessive, and one the data does not name is empty (Island N takes it)",
+                file.landmass(7).words().equals(file.landmass(7).name().trim() + "'s") && new EarthData.Landmass(99, 1, 1, "").words().isEmpty());
+        check("...the guard is the id and the data's place together: id 2 under another place, or 'New York' on another id, keeps the data's words",
+                new EarthData.Landmass(2, 1, 1, "Boston").words().equals("Boston's") && new EarthData.Landmass(9, 1, 1, "New York").words().equals("New York's"));
+        check("...a bridge's sentence lets a hand name stand as it is, and still adds 'landmass' to a possessive",
+                BridgeView.landmassWords(false, file.landmass(5).words()).equals("Greenland") && BridgeView.landmassWords(false, "Halifax's").equals("Halifax's landmass"));
         // A deep sea: Valparaiso, where the shelf is narrow and the study found hundreds of metres 20 km out.
         EarthSite.Card valpo = fullCard("Valparaiso", -33.03, -71.63);
         report("Valparaiso: the sea within 5 km runs deep - well past Halifax's, over 50 m, said in the card's words",
