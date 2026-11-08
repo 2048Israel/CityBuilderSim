@@ -57,6 +57,16 @@ where to meet them: homes and jobs placed ahead of the people, so wages hold
 against rents in a small town. If no plan can be calm at that size without a
 model change, say so; that is a finding for Jerus, not a premise to move.
 
+Point 6 has a cause of its own (RE2, 2026-11-08, `docs/queue/RE2-notes.md`):
+in its first month the 1,000-times copy's bank closes 975 of its 1,000
+branches, while the city's one branch is never the last
+(`branchesTheFeesCover()` is at least 1). The plots sold back to the treasury
+are most of the copy's cash miss (24,944 of 27,551 a K short), and the jobs
+the branches took part the copy's people and prices after. On 0.9.50 with
+the landlords' posts, no month from 455 to 525 holds the cash line. A
+branch is one building at any K, so section 9 should hold the branches'
+closings in both copies, as SK1 holds the sectors, whatever town it reads.
+
 ## What does not move
 
 ScaleCheck's premise (a growing city, with ground free for a home, whose own
