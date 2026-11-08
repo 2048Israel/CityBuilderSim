@@ -69,6 +69,27 @@ import java.util.List;
  *      the road with them, and a month on the city and its reload agree to
  *      the bit; a save from before them loads with nothing at sea.
  *
+ *  10. THE HARBOUR'S QUAY (HB1, 2026-11-08; Jerus: "and that ships dock
+ *      properly"): from the zoom where the scale bar first reads 500 m
+ *      (MapFrame.DETAIL_FROM, strictly above) a docked boat lies alongside
+ *      its quay - heading along the face, its side on it, none of it in the
+ *      work's box or quay - on each of the four sides, and is the boat itself
+ *      at DETAIL_FROM and below; a berth carries its work's side; and the
+ *      harbour terminals' quays are walls, side by side within the gap one
+ *      wall over both sea sides and the gap, farther apart two, another way
+ *      its own, no plot of any box in one. 10b (slice E, same day): boats do
+ *      not overlap alongside - BoatSchedule.berthed() lays a docked boat
+ *      alongside, in the order they arrived, only where its hull crosses no
+ *      box, wall or other docked boat (each as it lies); three Capesizes at
+ *      Bulk Berths 5 apart stay as placed, two 8 apart give the first to
+ *      arrive its place, far apart every one has it, a lone berth is
+ *      alongside() itself, a corner overlaps nothing, a boat's place is the
+ *      same whatever window it is drawn in (BoatSchedule.drawn()), within
+ *      a frame's boat budget, and below DETAIL_FROM nothing moves.
+ *
+ * Timing harness (Timing.HARNESSES, since HB1): 10b judges a frame's boats drawn() through Timing, so the line is soft under
+ * -Dcbs.timing=soft and hard at the gate.
+ *
  * Every fixture CAUSES its condition: the coast is bought (the offer nearest
  * the sea, as WaterCheck buys it), the terminals and the plants stood, and
  * the pure sections hand Ports its month's tonnes and berths.
@@ -87,6 +108,12 @@ public class PortCheck {
     static void report(String label, boolean ok, String detail) {
         if (!ok) fails++;
         out.printf("%-100s %s  %s%n", label, ok ? "OK" : "FAIL", detail);
+    }
+
+    /** A timing assertion's line (HB1 slice E, 10b's cost), as report() prints one, its verdict Timing's: soft under -Dcbs.timing=soft, hard at the gate. */
+    static void timed(String label, boolean ok, String detail) {
+        if (!ok) fails++;
+        out.printf("%-100s %s  %s%n", label, Timing.verdict(ok, label), detail);
     }
 
     static void quietly(Runnable r) {
@@ -212,6 +239,7 @@ public class PortCheck {
         crudeNeedsRoom();
         theBoats();
         acrossASave(port);
+        theHarbourQuay();
 
         for (GameFiles f : FILES.values()) LongPlaytest.cleanUp(f.getDirectory().getParent());
         out.println();
@@ -1188,5 +1216,666 @@ public class PortCheck {
         report("...and its terminal takes its share the first month it plays, the audit closing",
                 none.share(Ports.Cargo.GENERAL) > 0 && auditMiss(old) <= 1,
                 String.format("%.4f", none.share(Ports.Cargo.GENERAL)));
+    }
+
+    /* ============================ 10. THE HARBOUR'S QUAY ============================ */
+
+    /** The fixture terminal's box, in plots: 6 across and 5 deep (the fixture's own, not the model's). */
+    static final int BOX_W = 6, BOX_H = 5;
+
+    /** A harbour terminal of the fixture: its box at (x0, y0), the sea on `side`, the harbour's quay. */
+    static CityShore.Work harbourWork(long x0, long y0, int side) {
+        return new CityShore.Work(x0, y0, BOX_W, BOX_H, 0, side, CityShore.HARBOUR_QUAY_PLOTS);
+    }
+
+    /** Two harbour terminals facing `side` at (2000, 2000), the second `gap` plots past the first along the shore, on the same line. */
+    static CityShore pairOnShore(int side, int gap) {
+        boolean along = side % 2 == 0;
+        int len = along ? BOX_W : BOX_H;
+        CityShore s = new CityShore();
+        s.add(harbourWork(2000, 2000, side));
+        s.add(harbourWork(2000 + (along ? len + gap : 0), 2000 + (along ? 0 : len + gap), side));
+        return s;
+    }
+
+    /** The wall the pair should make, worked from the geometry alone: the strip before both sea sides and the gap between, HARBOUR_QUAY_PLOTS deep. */
+    static CityShore.Wall pairsWall(int side, int gap) {
+        int q = CityShore.HARBOUR_QUAY_PLOTS, len = (side % 2 == 0 ? BOX_W : BOX_H) * 2 + gap;
+        switch (side) {
+            case 0:  return new CityShore.Wall(2000, 2000 - q, len, q, 0);
+            case 1:  return new CityShore.Wall(2000 + BOX_W, 2000, q, len, 1);
+            case 2:  return new CityShore.Wall(2000, 2000 + BOX_H, len, q, 2);
+            default: return new CityShore.Wall(2000 - q, 2000, q, len, 3);
+        }
+    }
+
+    /** Whether some wall of `walls` holds world plot (x, y). */
+    static boolean walled(List<CityShore.Wall> walls, long x, long y) {
+        for (CityShore.Wall w : walls) if (w.holds(x, y)) return true;
+        return false;
+    }
+
+    /** Whether every plot of the rectangle (x0, y0, w, h) is in a wall (all = true), or none of them is (all = false). */
+    static boolean walledAll(List<CityShore.Wall> walls, long x0, long y0, long w, long h, boolean all) {
+        for (long y = y0; y < y0 + h; y++) for (long x = x0; x < x0 + w; x++) if (walled(walls, x, y) != all) return false;
+        return true;
+    }
+
+    /** Whether any plot of any wall of `shore` is in a work's box. */
+    static boolean wallInABox(CityShore shore) {
+        for (CityShore.Wall w : shore.walls()) {
+            for (long y = w.y0(); y < w.y0() + w.h(); y++) for (long x = w.x0(); x < w.x0() + w.w(); x++) if (shore.at(x, y) != null) return true;
+        }
+        return false;
+    }
+
+    static void theHarbourQuay() {
+        out.println("\n--- 10. the harbour's quay (HB1): from the detail zoom in a boat at its berth lies alongside its quay and the terminals' quays are one wall ---");
+        double eps = 1e-9;
+
+        // THE DIAL: the zoom where the scale bar first reads 500 m, strictly above DETAIL_FROM.
+        MapFrame f = new MapFrame(1000, 800);
+        double mid = World.SIDE / 2.0;
+        f.set(mid, mid, MapFrame.DETAIL_FROM);
+        double atFrom = f.scaleBar(MapFrame.SCALE_BAR_PX)[0];
+        f.set(mid, mid, MapFrame.DETAIL_FROM * 1.01);
+        double above = f.scaleBar(MapFrame.SCALE_BAR_PX)[0];
+        f.set(mid, mid, Math.nextDown(MapFrame.DETAIL_FROM));
+        double below = f.scaleBar(MapFrame.SCALE_BAR_PX)[0];
+        report("the dial: the bar reads 1,000 m at DETAIL_FROM, 500 m at 1% past it, 1,000 m just under it",
+                atFrom == 1000 && above == 500 && below == 1000 && MapFrame.DETAIL_FROM == MapFrame.SCALE_BAR_PX * World.PLOT_M / 1000
+                        && MapFrame.DETAIL_FROM > MapFrame.L0_FROM,
+                String.format("DETAIL_FROM %.3f px a plot, bar %.0f / %.0f / %.0f m", MapFrame.DETAIL_FROM, atFrom, above, below));
+
+        // ALONGSIDE: a docked boat at a harbour berth on each side, from above DETAIL_FROM.
+        Ports.Ship[] ships = { Ports.Ship.GENERAL_CARGO, Ports.Ship.MR, Ports.Ship.VLCC };
+        double[] scales = { MapFrame.DETAIL_FROM * 1.01, MapFrame.BIG_TILES_FROM, MapFrame.MOST_PX_A_PLOT };
+        int cases = 0;
+        boolean parallel = true, turned = true, seaward = true, onFace = true, beam = true, clear = true, lateral = true, kept = true;
+        boolean narrow = false, wide = false;
+        for (int side = 0; side < 4; side++) {
+            CityShore.Work w = harbourWork(1000, 1000, side);
+            long[] sp = w.shorePlot();
+            double mx = sp[0] + 0.5, my = sp[1] + 0.5, dx = CityShore.DX[side], dy = CityShore.DY[side];
+            double[] bp = w.berth();
+            double face = w.quay() + 0.5;
+            for (Ports.Ship ship : ships) {
+                for (double scale : scales) {
+                    BoatSchedule.Call call = new BoatSchedule.Call(ship.cargo(), ship, true, 0, 0.5);
+                    BoatSchedule.Boat b = new BoatSchedule.Boat(call, bp[0], bp[1], true, true, 0.3, 1);
+                    BoatSchedule.Boat a = BoatSchedule.alongside(b, side, scale);
+                    cases++;
+                    double hx = Math.cos(a.heading()), hy = Math.sin(a.heading());
+                    parallel &= Math.abs(hx * dx + hy * dy) < eps;
+                    turned &= Math.abs((dx * hy - dy * hx) - 1) < eps;
+                    kept &= a.call().equals(b.call()) && a.docked() && a.loaded() == b.loaded() && a.alpha() == b.alpha();
+                    lateral &= Math.abs((a.x() - bp[0]) * dy - (a.y() - bp[1]) * dx) < eps;
+                    double halfBeam = ShipShapes.drawnLength(a, scale) * ShipShapes.BEAM / 2;
+                    narrow |= halfBeam < 0.5;
+                    wide |= halfBeam > 0.5;
+                    double[][] hull = ShipShapes.hull(a, scale);
+                    double least = Double.MAX_VALUE, most = -Double.MAX_VALUE;
+                    for (int i = 0; i < hull[0].length; i++) {
+                        double px = hull[0][i], py = hull[1][i], depth = (px - mx) * dx + (py - my) * dy;
+                        least = Math.min(least, depth);
+                        most = Math.max(most, depth);
+                        clear &= !(px > w.x0() + eps && px < w.x0() + w.w() - eps && py > w.y0() + eps && py < w.y0() + w.h() - eps);
+                        for (int k = 1; k <= w.quay(); k++) {
+                            long[] qp = w.quayPlot(k);
+                            clear &= !(px > qp[0] + eps && px < qp[0] + 1 - eps && py > qp[1] + eps && py < qp[1] + 1 - eps);
+                        }
+                    }
+                    seaward &= least >= face - eps;
+                    onFace &= Math.abs(least - face) < eps;
+                    beam &= Math.abs(most - least - 2 * halfBeam) < eps;
+                }
+            }
+        }
+        String of = cases + " boats on four sides";
+        report("alongside: the heading is along the quay face, the sea's direction turned a quarter the same way every time", parallel && turned && cases == 4 * ships.length * scales.length, of);
+        report("...every hull point seaward of the face, none in the work's box or its quay's plots", seaward && clear, of);
+        report("...the hull's side on the face, its far side a beam out (hulls narrower and wider than a plot)", onFace && beam && narrow && wide, of);
+        report("...the boat on the berth's line out from the work, its call, load and docking as they were", lateral && kept, of);
+
+        // ...at DETAIL_FROM and below, a boat not docked, a side not known: the boat itself.
+        boolean same = true;
+        BoatSchedule.Call call = new BoatSchedule.Call(Ports.Cargo.LIQUID, Ports.Ship.MR, true, 0, 0.5);
+        BoatSchedule.Boat docked = new BoatSchedule.Boat(call, 1000.5, 990.5, true, true, 0.3, 1);
+        BoatSchedule.Boat afloat = new BoatSchedule.Boat(call, 1000.5, 990.5, true, false, 0.3, 1);
+        for (int side = 0; side < 4; side++) {
+            for (double scale : new double[] { MapFrame.DETAIL_FROM, MapFrame.L0_FROM, MapFrame.L1_FROM, f.leastScale() }) {
+                same &= BoatSchedule.alongside(docked, side, scale).equals(docked);
+            }
+            same &= BoatSchedule.alongside(afloat, side, MapFrame.MOST_PX_A_PLOT).equals(afloat);
+        }
+        same &= BoatSchedule.alongside(docked, -1, MapFrame.MOST_PX_A_PLOT).equals(docked)
+                && BoatSchedule.alongside(docked, CityShore.DX.length, MapFrame.MOST_PX_A_PLOT).equals(docked)
+                && !BoatSchedule.alongside(docked, 0, MapFrame.MOST_PX_A_PLOT).equals(docked);
+        report("...at DETAIL_FROM and below, for a boat afloat, and for a berth whose side is not known: the boat itself", same, "");
+
+        // THE BERTH SAYS ITS SIDE: CityShore.berths() hands the work's side on; a berth made by hand has none.
+        BuildingVisual.Type terminal = new BuildingVisual.Type(0, null, 0, false, BuildingVisual.NOT_A_ROAD, null, false, 1, false, 0, 0, 0,
+                false, true, false, false, false, Ports.Cargo.LIQUID.ordinal(), 0, null, BuildingVisual.PLAIN, BuildingVisual.NO_GROUP, false, "", false, false);
+        boolean sides = new BoatSchedule.Berth(Ports.Cargo.LIQUID, 1, 2).side() == -1;
+        for (int side = 0; side < 4; side++) {
+            CityShore one = new CityShore();
+            CityShore.Work w = harbourWork(1000, 1000, side);
+            one.add(w);
+            List<BoatSchedule.Berth> berths = one.berths(new BuildingVisual.Type[] { terminal });
+            double[] bp = w.berth();
+            sides &= berths.size() == 1 && berths.get(0).side() == side && berths.get(0).x() == (long) Math.floor(bp[0]) && berths.get(0).y() == (long) Math.floor(bp[1])
+                    && berths.get(0).cargo() == Ports.Cargo.LIQUID;
+        }
+        assertTrue("the berth carries its work's side from CityShore.berths(), -1 for a berth made by hand", sides);
+
+        // THE WALLS: side by side within the gap, one wall; farther apart, two; another way, its own; none in a box.
+        int q = CityShore.HARBOUR_QUAY_PLOTS, join = CityShore.WALL_JOIN_GAP;
+        boolean one = true, two = true, noBox = true, fromGeometry = join == 2 * CityShore.CLEAR + 1;
+        for (int side = 0; side < 4; side++) {
+            for (int gap = CityShore.CLEAR; gap <= join; gap++) {
+                CityShore s = pairOnShore(side, gap);
+                one &= s.walls().equals(List.of(pairsWall(side, gap)));
+                noBox &= !wallInABox(s);
+                // the sea sides and the gap between all walled, and not a plot inland of the line
+                CityShore.Wall e = pairsWall(side, gap);
+                one &= walledAll(s.walls(), e.x0(), e.y0(), e.w(), e.h(), true);
+            }
+            CityShore apart = pairOnShore(side, join + 1);
+            CityShore.Wall e = pairsWall(side, join + 1);      // the span of both strips and the gap between
+            boolean along = side % 2 == 0;
+            int len = along ? BOX_W : BOX_H;
+            long gx = e.x0() + (along ? len : 0), gy = e.y0() + (along ? 0 : len);      // the gap's strip
+            two &= apart.walls().size() == 2 && walledAll(apart.walls(), gx, gy, along ? join + 1 : q, along ? q : join + 1, false)
+                    && walledAll(apart.walls(), e.x0(), e.y0(), along ? len : q, along ? q : len, true)
+                    && walledAll(apart.walls(), gx + (along ? join + 1 : 0), gy + (along ? 0 : join + 1), along ? len : q, along ? q : len, true);
+            noBox &= !wallInABox(apart);
+        }
+        assertTrue("walls: two works side by side within the gap (WALL_JOIN_GAP, from CLEAR), on each of the four sides: one wall over both sea sides and the gap", one && fromGeometry);
+        assertTrue("...the same two farther apart than the gap: two walls, the gap not covered", two);
+
+        CityShore mixed = pairOnShore(0, CityShore.CLEAR);
+        mixed.add(harbourWork(2100, 2000, 1));                        // another way: east
+        mixed.add(harbourWork(2000 + 2 * BOX_W + 2 * CityShore.CLEAR, 2001, 0));   // the same side a plot inland, a gap on: another line
+        mixed.add(new CityShore.Work(2200, 2000, BOX_W, BOX_H, 0, 0, CityShore.QUAY_PLOTS[0]));   // a pier of its own: no wall
+        mixed.add(new CityShore.Work(2300, 2000, BOX_W, BOX_H, 0, 0, 0));                         // a tank farm: no quay
+        List<CityShore.Wall> mw = mixed.walls();
+        boolean own = mw.size() == 3 && mw.contains(new CityShore.Wall(2100 + BOX_W, 2000, q, BOX_H, 1))
+                && mw.contains(new CityShore.Wall(2000 + 2 * BOX_W + 2 * CityShore.CLEAR, 2001 - q, BOX_W, q, 0))
+                && mw.contains(new CityShore.Wall(2000, 2000 - q, 2 * BOX_W + CityShore.CLEAR, q, 0))
+                && mw.stream().noneMatch(w -> w.x0() >= 2200);
+        noBox &= !wallInABox(mixed);
+        assertTrue("...a third facing another way has its own, the same side on another line has its own, a pier of its own and a tank farm have none", own);
+
+        // A box in a strip cuts the wall round it.
+        CityShore cut = new CityShore();
+        cut.add(harbourWork(2000, 2000, 0));
+        CityShore.Work in = new CityShore.Work(2003, 2000 - q + 1, 2, 1, 0, 1, 0);   // a small box one row into the strip, two plots across
+        cut.add(in);
+        List<CityShore.Wall> cw = cut.walls();
+        int plots = 0;
+        for (CityShore.Wall w : cw) plots += w.w() * w.h();
+        boolean cutOk = plots == BOX_W * q - in.w() * in.h() && walledAll(cw, 2003, 2000 - q + 1, in.w(), in.h(), false) && !wallInABox(cut);
+        noBox &= !wallInABox(cut);
+        assertTrue("...no plot of any work's box is in a wall: a box in a strip cuts the wall round it, the rest of the strip still walled", noBox && cutOk);
+
+        // The walls are made once a version and asked by the window; the order the works were laid in does not matter.
+        CityShore laid = pairOnShore(2, CityShore.CLEAR), backwards = new CityShore();
+        for (int i = laid.works().size() - 1; i >= 0; i--) backwards.add(laid.works().get(i));
+        boolean order = laid.walls().equals(backwards.walls());
+        long before = laid.version();
+        laid.add(harbourWork(2000 + 2 * (BOX_W + CityShore.CLEAR), 2000, 2));
+        boolean grows = laid.version() > before && laid.walls().size() == 1 && laid.walls().get(0).w() == 3 * BOX_W + 2 * CityShore.CLEAR;
+        CityShore.Wall one0 = new CityShore.Wall(2000, 2000 - q, 2 * BOX_W + CityShore.CLEAR, q, 0);
+        boolean window = mixed.wallsIn(one0.x0(), one0.y0(), one0.x0() + one0.w(), one0.y0() + one0.h()).contains(one0)
+                && mixed.wallsIn(one0.x0() + 5000, one0.y0(), one0.x0() + 6000, one0.y0() + 100).isEmpty()
+                && mixed.wallsIn(Long.MIN_VALUE / 2, Long.MIN_VALUE / 2, Long.MAX_VALUE / 2, Long.MAX_VALUE / 2).equals(mw)
+                && mixed.wallsIn(one0.x0() + one0.w(), one0.y0(), one0.x0() + one0.w() + 1, one0.y0() + 1).stream().noneMatch(one0::equals);
+        assertTrue("...made again when a work is laid (a third joins the wall), the same in whatever order they were laid, asked by the window", order && grows && window);
+
+        berthsShareTheQuay();
+    }
+
+    /* ----- 10b. THE BOATS ALONGSIDE OVERLAP NOTHING (HB1 slice E, 2026-11-08) ----- */
+
+    /** A Bulk Berth's box of the fixture, in plots: 5 along the shore and 4 deep (the fixture's own; the berth's land is 215,000 m2). */
+    static final int BULK_ALONG = 5, BULK_DEEP = 4;
+
+    /** The scales the berths are laid at, px a plot: 4, just past DETAIL_FROM (where boats were drawn 1.6 times true before slice E), and 8 (the renders' other). */
+    static final double[] BERTH_SCALES = { 4, 8 };
+
+    /** A Bulk Berth of the fixture with its box at (x0, y0), the sea on `side`, the harbour's quay. */
+    static CityShore.Work bulkWork(long x0, long y0, int side) {
+        boolean along = side % 2 == 0;
+        return new CityShore.Work(x0, y0, along ? BULK_ALONG : BULK_DEEP, along ? BULK_DEEP : BULK_ALONG, 0, side, CityShore.HARBOUR_QUAY_PLOTS);
+    }
+
+    /** `count` Bulk Berths facing `side`, `pitch` plots from one box to the next along the shore, from (3000, 3000). */
+    static CityShore berthRow(int count, int side, int pitch) {
+        CityShore s = new CityShore();
+        boolean along = side % 2 == 0;
+        for (int k = 0; k < count; k++) s.add(bulkWork(3000 + (along ? (long) k * pitch : 0), 3000 + (along ? 0 : (long) k * pitch), side));
+        return s;
+    }
+
+    /** The routes of a shore's berthed works in the order laid, one each, the berth's cargo cycling through `cargos`: a straight lane 60 plots out to sea from the work's berth point, the berth carrying the work's side. */
+    static List<BoatSchedule.Route> routesOf(CityShore shore, Ports.Cargo... cargos) {
+        List<BoatSchedule.Route> routes = new ArrayList<>();
+        for (CityShore.Work w : shore.works()) {
+            if (!w.berthed()) continue;
+            double[] bp = w.berth();
+            BoatSchedule.Berth berth = new BoatSchedule.Berth(cargos[routes.size() % cargos.length], (long) Math.floor(bp[0]), (long) Math.floor(bp[1]), w.side());
+            routes.add(BoatSchedule.Route.through(berth, new double[] { bp[0], bp[0] + 60.0 * CityShore.DX[w.side()] },
+                    new double[] { bp[1], bp[1] + 60.0 * CityShore.DY[w.side()] }, 1, 0, 0));
+        }
+        return routes;
+    }
+
+    /** A call of `ship` on route r arriving at `arrives`, and its boat at the quay the instant it does, as the schedule places it. */
+    static BoatSchedule.Boat dockedOn(List<BoatSchedule.Route> routes, int r, Ports.Ship ship, double arrives) {
+        return BoatSchedule.position(new BoatSchedule.Call(ship.cargo(), ship, true, r, arrives), routes.get(r), arrives);
+    }
+
+    /** A rectangle's outline {xs, ys}. */
+    static double[][] box(double x, double y, double w, double h) {
+        return new double[][] { { x, x + w, x + w, x }, { y, y, y + h, y + h } };
+    }
+
+    /**
+     * How thick the part two convex outlines share is: the narrowest width, across the edges of the part itself, of what the second clips of the
+     * first (Sutherland-Hodgman) - 0 when they share nothing or only a line. Worked from the outlines alone, not from the model's separating-axis test.
+     */
+    static double thickness(double[][] a, double[][] b) {
+        List<double[]> poly = new ArrayList<>();
+        for (int i = 0; i < a[0].length; i++) poly.add(new double[] { a[0][i], a[1][i] });
+        int m = b[0].length;
+        double wind = 0;
+        for (int i = 0; i < m; i++) wind += b[0][i] * b[1][(i + 1) % m] - b[0][(i + 1) % m] * b[1][i];
+        double sign = Math.signum(wind);
+        for (int e = 0; e < m && poly.size() > 2; e++) {
+            double ex = b[0][e], ey = b[1][e], fx = b[0][(e + 1) % m] - ex, fy = b[1][(e + 1) % m] - ey;
+            List<double[]> next = new ArrayList<>();
+            for (int i = 0; i < poly.size(); i++) {
+                double[] p = poly.get(i), q = poly.get((i + 1) % poly.size());
+                double sp = sign * (fx * (p[1] - ey) - fy * (p[0] - ex)), sq = sign * (fx * (q[1] - ey) - fy * (q[0] - ex));
+                if (sp >= 0) next.add(p);
+                if ((sp >= 0) != (sq >= 0)) {
+                    double u = sp / (sp - sq);
+                    next.add(new double[] { p[0] + (q[0] - p[0]) * u, p[1] + (q[1] - p[1]) * u });
+                }
+            }
+            poly = next;
+        }
+        if (poly.size() < 3) return 0;
+        double least = Double.MAX_VALUE;
+        for (int i = 0; i < poly.size(); i++) {
+            double[] p = poly.get(i), q = poly.get((i + 1) % poly.size());
+            double nx = q[1] - p[1], ny = p[0] - q[0], len = Math.hypot(nx, ny);
+            if (len < 1e-12) continue;
+            double lo = Double.MAX_VALUE, hi = -Double.MAX_VALUE;
+            for (double[] r : poly) {
+                double d = (r[0] * nx + r[1] * ny) / len;
+                lo = Math.min(lo, d);
+                hi = Math.max(hi, d);
+            }
+            least = Math.min(least, hi - lo);
+        }
+        return least == Double.MAX_VALUE ? 0 : least;
+    }
+
+    /**
+     * What a layout of docked boats comes to, counted from the outlines (thickness()) and not the model's test: {how many lie in a place of their own, alongside or stern-to (are not
+     * the boat given), how many pairs of drawn hulls share a part thicker than BoatSchedule.CROSS_TOLERANCE, how many boats alongside have a part
+     * of that thickness in a work's box or a wall of `shore`}.
+     */
+    static int[] audit(CityShore shore, List<BoatSchedule.Boat> given, List<BoatSchedule.Boat> drawn, double scale) {
+        double deep = BoatSchedule.CROSS_TOLERANCE + 1e-9;
+        int alongside = 0, overlaps = 0, crossings = 0;
+        for (int i = 0; i < drawn.size(); i++) {
+            BoatSchedule.Boat a = drawn.get(i);
+            if (!a.docked()) continue;
+            double[][] ha = ShipShapes.hull(a, scale);
+            if (!a.equals(given.get(i))) {
+                alongside++;
+                for (CityShore.Work w : shore.works()) if (thickness(ha, box(w.x0(), w.y0(), w.w(), w.h())) > deep) crossings++;
+                for (CityShore.Wall w : shore.walls()) if (thickness(ha, box(w.x0(), w.y0(), w.w(), w.h())) > deep) crossings++;
+            }
+            for (int j = i + 1; j < drawn.size(); j++) {
+                if (drawn.get(j).docked() && thickness(ha, ShipShapes.hull(drawn.get(j), scale)) > deep) overlaps++;
+            }
+        }
+        return new int[] { alongside, overlaps, crossings };
+    }
+
+    /** `n` copies of a side, for kinds(): a row of boats facing one way. */
+    static int[] same(int side, int n) {
+        int[] s = new int[n];
+        java.util.Arrays.fill(s, side);
+        return s;
+    }
+
+    /** How a layout's docked boats lie, by comparing each with the places BoatSchedule gives it on its side (sides[i], the side of the berth of boat i): {alongside, stern-to, as placed}. */
+    static int[] kinds(List<BoatSchedule.Boat> given, List<BoatSchedule.Boat> drawn, int[] sides, double scale) {
+        int[] k = new int[3];
+        for (int i = 0; i < drawn.size(); i++) {
+            if (!drawn.get(i).docked()) continue;
+            if (drawn.get(i).equals(BoatSchedule.alongside(given.get(i), sides[i], scale))) k[0]++;
+            else if (drawn.get(i).equals(BoatSchedule.sternTo(given.get(i), sides[i], scale))) k[1]++;
+            else if (drawn.get(i).equals(given.get(i))) k[2]++;
+            else throw new IllegalStateException("a boat in none of the three places: " + drawn.get(i));
+        }
+        return k;
+    }
+
+    /** The sum of a kinds() count into another. */
+    static void add(int[] to, int[] k) {
+        for (int i = 0; i < to.length; i++) to[i] += k[i];
+    }
+
+    static void berthsShareTheQuay() {
+        out.println("\n--- 10b. (HB1 slice E) the boats lie alongside, else stern-to, else as placed, only where their hulls cross no box, wall or other docked boat ---");
+        double tol = BoatSchedule.CROSS_TOLERANCE;
+        Ports.Ship cape = Ports.Ship.CAPESIZE;
+        List<BoatSchedule.Route> one = routesOf(berthRow(1, 0, 0), cape.cargo());
+        double length = ShipShapes.drawnLength(dockedOn(one, 0, cape, .5), BERTH_SCALES[0]), beam = length * ShipShapes.BEAM;
+        boolean trueSize = true;
+        for (double scale : BERTH_SCALES) trueSize &= scale > MapFrame.DETAIL_FROM && ShipShapes.boost(scale) == 1
+                && ShipShapes.drawnLength(dockedOn(one, 0, cape, .5), scale) == length;
+        report("slice E: from the detail zoom in boats are drawn at true size (ShipShapes.TRUE_FROM is DETAIL_FROM), so the fixtures' scales draw a Capesize one length",
+                trueSize && ShipShapes.TRUE_FROM == MapFrame.DETAIL_FROM, String.format("a Capesize %.2f plots long, %.2f across", length, beam));
+
+        // THREE CAPESIZES AT BERTHS TOUCHING (5 plots apart, the box's width) and at the harbour's own spacing (a box and CLEAR).
+        int cases = 0, lie = 0, overlaps = 0, crossings = 0;
+        int[] k5 = new int[3], k6 = new int[3];
+        int rows = 4 * BERTH_SCALES.length;
+        for (int pitch : new int[] { BULK_ALONG, BULK_ALONG + CityShore.CLEAR }) {
+            for (int side = 0; side < 4; side++) {
+                for (double scale : BERTH_SCALES) {
+                    CityShore shore = berthRow(3, side, pitch);
+                    List<BoatSchedule.Route> routes = routesOf(shore, cape.cargo());
+                    List<BoatSchedule.Boat> given = List.of(dockedOn(routes, 0, cape, .5), dockedOn(routes, 1, cape, .5001), dockedOn(routes, 2, cape, .5002));
+                    List<BoatSchedule.Boat> drawn = BoatSchedule.berthed(given, routes, scale, shore);
+                    int[] au = audit(shore, given, drawn, scale);
+                    cases++;
+                    lie += au[0];
+                    overlaps += au[1];
+                    crossings += au[2];
+                    add(pitch == BULK_ALONG ? k5 : k6, kinds(given, drawn, same(side, 3), scale));
+                }
+            }
+        }
+        report("three Capesizes at Bulk Berths side by side facing one way, 5 plots apart and 6, at 4 px and 8: no two drawn hulls overlap, none alongside or stern-to crosses a box or a wall",
+                cases == 2 * rows && overlaps == 0 && crossings == 0, cases + " rows on four sides, " + lie + " boats alongside or stern-to");
+        report("...5 apart a neighbour's hull as placed lies across every one's place alongside (a Capesize is more than 5 plots long), but each is clear stern-to: all three of every row, none alongside, none as placed",
+                java.util.Arrays.equals(k5, new int[] { 0, 3 * rows, 0 }), k5[0] + " alongside, " + k5[1] + " stern-to, " + k5[2] + " as placed");
+        report("...6 apart, a box and CLEAR: the first and third of a row lie alongside (a neighbour's hull as placed clears them by less than the tolerance) and the middle one stern-to, none as placed",
+                java.util.Arrays.equals(k6, new int[] { 2 * rows, rows, 0 }), k6[0] + " alongside, " + k6[1] + " stern-to, " + k6[2] + " as placed");
+
+        // THE FIRST TO ARRIVE LIES ALONGSIDE where only the second's place is crossed: 8 plots apart, between where its bow-out hull is clear and where its hull alongside is.
+        int apart = 8;
+        double from = (length + beam) / 2 - tol, to = length - tol;
+        boolean firstLies = true, secondStern = true, clean = true, anyOrder = true;
+        for (int side = 0; side < 4; side++) {
+            for (double scale : BERTH_SCALES) {
+                CityShore shore = berthRow(2, side, apart);
+                List<BoatSchedule.Route> routes = routesOf(shore, cape.cargo());
+                for (int first = 0; first < 2; first++) {
+                    BoatSchedule.Boat[] g = new BoatSchedule.Boat[2];
+                    g[first] = dockedOn(routes, first, cape, .5);
+                    g[1 - first] = dockedOn(routes, 1 - first, cape, .6);
+                    List<BoatSchedule.Boat> given = List.of(g[0], g[1]), drawn = BoatSchedule.berthed(given, routes, scale, shore);
+                    firstLies &= drawn.get(first).equals(BoatSchedule.alongside(g[first], side, scale));
+                    secondStern &= drawn.get(1 - first).equals(BoatSchedule.sternTo(g[1 - first], side, scale));
+                    int[] au = audit(shore, given, drawn, scale);
+                    clean &= au[0] == 2 && au[1] == 0 && au[2] == 0;
+                    anyOrder &= BoatSchedule.berthed(List.of(g[1], g[0]), routes, scale, shore).equals(List.of(drawn.get(1), drawn.get(0)));
+                }
+            }
+        }
+        report("two Capesizes 8 plots apart, a pitch between where a bow-out hull is clear of the other's place and where two lie nose to tail: the first to arrive lies alongside, the second stern-to (its place alongside crossed), either way round",
+                from < apart && apart < to && firstLies && secondStern && clean, String.format("clear from %.2f plots, crossed under %.2f", from, to));
+        assertTrue("...the answer is the same whatever order the boats are handed in (the order they arrived decides, not the list's)", anyOrder);
+
+        // THE SAME WORKS FAR APART: every one alongside.
+        int far = (int) Math.ceil(length + beam) + CityShore.CLEAR;
+        boolean everyOne = true, farClean = true;
+        for (int side = 0; side < 4; side++) {
+            for (double scale : BERTH_SCALES) {
+                CityShore shore = berthRow(3, side, far);
+                List<BoatSchedule.Route> routes = routesOf(shore, cape.cargo());
+                List<BoatSchedule.Boat> given = List.of(dockedOn(routes, 0, cape, .5), dockedOn(routes, 1, cape, .5001), dockedOn(routes, 2, cape, .5002));
+                List<BoatSchedule.Boat> drawn = BoatSchedule.berthed(given, routes, scale, shore);
+                for (int i = 0; i < 3; i++) everyOne &= drawn.get(i).equals(BoatSchedule.alongside(given.get(i), side, scale));
+                int[] au = audit(shore, given, drawn, scale);
+                farClean &= au[0] == 3 && au[1] == 0 && au[2] == 0;
+            }
+        }
+        report("the same three Bulk Berths spaced far apart (a Capesize's length and beam and a plot): every boat alongside, as alongside() gives it, none crossing anything",
+                everyOne && farClean, "pitch " + far + " plots");
+
+        // A LONE BERTH: alongside() itself, on each side, for each class, at three scales (slice C's case).
+        Ports.Ship[] classes = { Ports.Ship.GENERAL_CARGO, Ports.Ship.MR, Ports.Ship.PANAMAX, Ports.Ship.CAPESIZE, Ports.Ship.VLCC };
+        double[] lone = { BERTH_SCALES[0], BERTH_SCALES[1], MapFrame.MOST_PX_A_PLOT };
+        int alone = 0;
+        boolean same = true, loneClean = true;
+        for (int side = 0; side < 4; side++) {
+            for (Ports.Ship ship : classes) {
+                for (double scale : lone) {
+                    CityShore shore = berthRow(1, side, 0);
+                    List<BoatSchedule.Route> routes = routesOf(shore, ship.cargo());
+                    BoatSchedule.Boat b = dockedOn(routes, 0, ship, .5);
+                    List<BoatSchedule.Boat> drawn = BoatSchedule.berthed(List.of(b), routes, scale, shore);
+                    same &= drawn.size() == 1 && drawn.get(0).equals(BoatSchedule.alongside(b, side, scale)) && !drawn.get(0).equals(b);
+                    int[] au = audit(shore, List.of(b), drawn, scale);
+                    loneClean &= au[0] == 1 && au[1] == 0 && au[2] == 0;
+                    alone++;
+                }
+            }
+        }
+        report("a lone berth: the boat lies alongside exactly as alongside() gives it, on each side, for five classes of ship, at three scales (slice C's case unchanged)",
+                same && loneClean, alone + " boats");
+
+        // STERN-TO: the place itself, worked from the geometry: heading the sea's direction, the stern on the face, on the berth's line out from the work, none of it in the box or the quay.
+        double eps = 1e-9;
+        int sternCases = 0;
+        boolean sternHeading = true, sternFace = true, sternLine = true, sternKept = true, sternAshore = true, sternSame = true;
+        double legShare = BoatSchedule.LEG_SECONDS / BoatSchedule.MONTH_SECONDS;
+        for (int side = 0; side < 4; side++) {
+            CityShore.Work w = harbourWork(1000, 1000, side);
+            long[] sp = w.shorePlot();
+            double mx = sp[0] + 0.5, my = sp[1] + 0.5, dx = CityShore.DX[side], dy = CityShore.DY[side], face = w.quay() + 0.5;
+            double[] bp = w.berth();
+            for (Ports.Ship ship : classes) {
+                for (double scale : lone) {
+                    BoatSchedule.Call call = new BoatSchedule.Call(ship.cargo(), ship, true, 0, 0.5);
+                    BoatSchedule.Boat b = new BoatSchedule.Boat(call, bp[0], bp[1], true, true, 0.3, 1), s = BoatSchedule.sternTo(b, side, scale);
+                    sternCases++;
+                    sternHeading &= Math.abs(Math.cos(s.heading()) - dx) < eps && Math.abs(Math.sin(s.heading()) - dy) < eps;
+                    double[][] hull = ShipShapes.hull(s, scale);
+                    double least = Double.MAX_VALUE, most = -Double.MAX_VALUE;
+                    for (int i = 0; i < hull[0].length; i++) {
+                        double depth = (hull[0][i] - mx) * dx + (hull[1][i] - my) * dy;
+                        least = Math.min(least, depth);
+                        most = Math.max(most, depth);
+                        sternAshore &= !(hull[0][i] > w.x0() + eps && hull[0][i] < w.x0() + w.w() - eps && hull[1][i] > w.y0() + eps && hull[1][i] < w.y0() + w.h() - eps);
+                    }
+                    sternFace &= Math.abs(least - face) < eps && Math.abs(most - least - ShipShapes.drawnLength(s, scale)) < eps;
+                    sternLine &= Math.abs((s.x() - bp[0]) * dy - (s.y() - bp[1]) * dx) < eps;
+                    sternKept &= s.call().equals(b.call()) && s.docked() && s.loaded() == b.loaded() && s.alpha() == b.alpha();
+                    BoatSchedule.Boat afloat = BoatSchedule.position(call, routesOf(berthRow(1, side, 0), ship.cargo()).get(0), 0.5 - legShare / 2);
+                    sternSame &= BoatSchedule.sternTo(afloat, side, scale).equals(afloat) && BoatSchedule.sternTo(b, -1, scale).equals(b)
+                            && BoatSchedule.sternTo(b, CityShore.DX.length, scale).equals(b) && BoatSchedule.sternTo(b, side, MapFrame.DETAIL_FROM).equals(b)
+                            && BoatSchedule.sternTo(b, side, MapFrame.L1_FROM).equals(b);
+                }
+            }
+        }
+        String stern = sternCases + " boats on four sides";
+        report("stern-to: the heading is the sea's direction, the hull's stern on the quay's face (least depth the face, its length the drawn length), on the berth's line out from the work", sternHeading && sternFace && sternLine, stern);
+        report("...none of the hull in the work's box, the call, load and docking as they were; the boat itself at DETAIL_FROM and below, afloat, and for a side not known", sternAshore && sternKept && sternSame, stern);
+
+        // A BOX OR A WALL IN THE WAY: a Capesize's tip would go deeper than the tolerance into a neighbour's box, or its wall, and a smaller ship clears them.
+        CityShore bare = berthRow(1, 0, 0);
+        List<BoatSchedule.Route> bareRoutes = routesOf(bare, cape.cargo());
+        BoatSchedule.Boat cb = dockedOn(bareRoutes, 0, cape, .5);
+        double[] bp = bare.works().get(0).berth();
+        long reach = (long) Math.floor(bp[0] + length / 2 - 0.8);
+        CityShore boxed = berthRow(1, 0, 0), walled = berthRow(1, 0, 0);
+        boxed.add(new CityShore.Work(reach, 2995, BULK_ALONG, 3, 0, 1, 0));                                    // a tank farm's box, in the ship's band
+        walled.add(new CityShore.Work(reach, 2992, BULK_ALONG, BULK_DEEP, 0, 2, CityShore.HARBOUR_QUAY_PLOTS)); // a work facing the other way: its wall in the band, its box clear of it
+        Ports.Ship pana = Ports.Ship.PANAMAX;
+        BoatSchedule.Boat pb = dockedOn(bareRoutes, 0, pana, .5);
+        boolean fallsBack = true, smallerClears = true, wallClear = true, sternClean = true;
+        for (double scale : BERTH_SCALES) {
+            fallsBack &= BoatSchedule.berthed(List.of(cb), bareRoutes, scale, bare).get(0).equals(BoatSchedule.alongside(cb, 0, scale));    // nothing in the way: alongside
+            fallsBack &= BoatSchedule.berthed(List.of(cb), bareRoutes, scale, boxed).get(0).equals(BoatSchedule.sternTo(cb, 0, scale));
+            fallsBack &= BoatSchedule.berthed(List.of(cb), bareRoutes, scale, walled).get(0).equals(BoatSchedule.sternTo(cb, 0, scale));
+            sternClean &= java.util.Arrays.equals(audit(boxed, List.of(cb), BoatSchedule.berthed(List.of(cb), bareRoutes, scale, boxed), scale), new int[] { 1, 0, 0 })
+                    && java.util.Arrays.equals(audit(walled, List.of(cb), BoatSchedule.berthed(List.of(cb), bareRoutes, scale, walled), scale), new int[] { 1, 0, 0 });
+            smallerClears &= BoatSchedule.berthed(List.of(pb), bareRoutes, scale, boxed).get(0).equals(BoatSchedule.alongside(pb, 0, scale))
+                    && BoatSchedule.berthed(List.of(pb), bareRoutes, scale, walled).get(0).equals(BoatSchedule.alongside(pb, 0, scale));
+            wallClear &= walled.walls().stream().anyMatch(w -> thickness(ShipShapes.hull(BoatSchedule.alongside(cb, 0, scale), scale), box(w.x0(), w.y0(), w.w(), w.h())) > tol)
+                    && thickness(ShipShapes.hull(BoatSchedule.alongside(cb, 0, scale), scale), box(reach, 2992, BULK_ALONG, BULK_DEEP)) <= tol;
+        }
+        report("a box in the way, or a neighbour's wall (its box clear): a Capesize lies stern-to, crossing nothing, though alone it lies alongside; a Panamax, which clears them, lies alongside",
+                fallsBack && smallerClears && wallClear && sternClean, String.format("Capesize %.2f plots, Panamax %.2f", length, ShipShapes.drawnLength(pb, BERTH_SCALES[0])));
+
+        // BOTH BLOCKED: a box on the water straight out from the berth, across the Capesize's stern-to place and its place alongside, and a Panamax's: as placed.
+        CityShore blocked = berthRow(1, 0, 0);
+        blocked.add(new CityShore.Work(3001, 2994, 3, 4, 0, 1, 0));                                       // a tank farm's box at the face, out from the berth's middle
+        boolean asPlaced = true, causes = true;
+        for (double scale : BERTH_SCALES) {
+            for (BoatSchedule.Boat ship : new BoatSchedule.Boat[] { cb, pb }) {
+                asPlaced &= BoatSchedule.berthed(List.of(ship), bareRoutes, scale, bare).get(0).equals(BoatSchedule.alongside(ship, 0, scale))
+                        && BoatSchedule.berthed(List.of(ship), bareRoutes, scale, blocked).get(0).equals(ship);
+                double[][] in = box(3001, 2994, 3, 4);
+                causes &= thickness(ShipShapes.hull(BoatSchedule.alongside(ship, 0, scale), scale), in) > tol
+                        && thickness(ShipShapes.hull(BoatSchedule.sternTo(ship, 0, scale), scale), in) > tol;
+            }
+        }
+        report("a box on the water straight out from the berth, across both its place alongside and its stern-to place: a Capesize and a Panamax stay as the schedule placed them, though without it each lies alongside",
+                asPlaced && causes, "both places crossed deeper than the tolerance, by the oracle");
+
+        // A CORNER: a work facing east and one facing south, 3 plots from its wall, their ships' places crossing where the two shores meet.
+        boolean cornerClean = true, eastLies = true, southAs = true;
+        int[] cornerKinds = new int[3];
+        for (double scale : BERTH_SCALES) {
+            CityShore corner = new CityShore();
+            corner.add(new CityShore.Work(3000, 3010, BULK_DEEP, BULK_ALONG, 0, 1, CityShore.HARBOUR_QUAY_PLOTS));
+            corner.add(new CityShore.Work(3000 + BULK_DEEP + CityShore.HARBOUR_QUAY_PLOTS + 3, 3006, BULK_ALONG, BULK_DEEP, 0, 2, CityShore.HARBOUR_QUAY_PLOTS));
+            List<BoatSchedule.Route> routes = routesOf(corner, cape.cargo());
+            for (int firstEast = 0; firstEast < 2; firstEast++) {
+                BoatSchedule.Boat east = dockedOn(routes, 0, cape, firstEast == 1 ? .5 : .6), south = dockedOn(routes, 1, cape, firstEast == 1 ? .6 : .5);
+                List<BoatSchedule.Boat> given = List.of(east, south), drawn = BoatSchedule.berthed(given, routes, scale, corner);
+                boolean cross = thickness(ShipShapes.hull(BoatSchedule.alongside(east, 1, scale), scale), ShipShapes.hull(BoatSchedule.alongside(south, 2, scale), scale)) > tol;
+                int[] au = audit(corner, given, drawn, scale);
+                cornerClean &= cross && au[1] == 0 && au[2] == 0;
+                eastLies &= drawn.get(0).equals(BoatSchedule.alongside(east, 1, scale));
+                southAs &= drawn.get(1).equals(firstEast == 1 ? BoatSchedule.sternTo(south, 2, scale) : south);
+                add(cornerKinds, kinds(given, drawn, new int[] { 1, 2 }, scale));
+            }
+        }
+        report("a corner, two works at right angles with 3 plots between a wall and a box, where the ships lying alongside would cross: no two drawn hulls overlap, none laid alongside or stern-to crosses a box or a wall",
+                cornerClean, "either ship first, at 4 px and 8");
+        report("...the east ship, clear of the south's place, lies alongside; the south ship lies stern-to when the east ship came first, and as placed when it came second (its stern-to place crossed by the east ship's hull as placed)",
+                eastLies && southAs && java.util.Arrays.equals(cornerKinds, new int[] { 4, 2, 2 }),
+                cornerKinds[0] + " alongside, " + cornerKinds[1] + " stern-to, " + cornerKinds[2] + " as placed in 4 corners");
+
+        // BELOW THE DETAIL ZOOM, A BOAT AFLOAT, A BERTH OF NO SIDE: as they were.
+        CityShore row = berthRow(2, 0, apart);
+        List<BoatSchedule.Route> routes = routesOf(row, cape.cargo());
+        double leg = BoatSchedule.LEG_SECONDS / BoatSchedule.MONTH_SECONDS;
+        BoatSchedule.Boat docked = dockedOn(routes, 0, cape, .5);
+        BoatSchedule.Call coming = new BoatSchedule.Call(cape.cargo(), cape, true, 1, .5);
+        BoatSchedule.Boat afloat = BoatSchedule.position(coming, routes.get(1), .5 - leg / 2);
+        List<BoatSchedule.Boat> mixed = List.of(docked, afloat);
+        MapFrame mf = new MapFrame(1000, 800);
+        boolean below = true;
+        for (double scale : new double[] { MapFrame.DETAIL_FROM, MapFrame.L0_FROM, MapFrame.L1_FROM, mf.leastScale() }) below &= BoatSchedule.berthed(mixed, routes, scale, row) == mixed;
+        List<BoatSchedule.Boat> above = BoatSchedule.berthed(mixed, routes, BERTH_SCALES[0], row);
+        boolean afloatKept = !afloat.docked() && above.get(1).equals(afloat) && above.get(0).equals(BoatSchedule.alongside(docked, 0, BERTH_SCALES[0]));
+        BoatSchedule.Route blind = BoatSchedule.Route.through(new BoatSchedule.Berth(cape.cargo(), routes.get(0).berth().x(), routes.get(0).berth().y()),
+                routes.get(0).xs(), routes.get(0).ys(), 1, 0, 0);
+        boolean noSide = BoatSchedule.berthed(List.of(docked), List.of(blind), BERTH_SCALES[0], row).get(0).equals(docked);
+        report("at DETAIL_FROM and below every boat comes back as given (the list itself); above it a boat afloat is untouched, and a boat whose berth's side is not known stays as it is",
+                below && afloatKept && noSide, "");
+
+        windowFixture();
+    }
+
+    /**
+     * A boat's place does not depend on the window: BoatSchedule.drawn() weighs the boats of a frame against every boat docked at that moment (docked()),
+     * on a bay of berths in a row, liquid and dry bulk by turns (MR tankers beside Capesizes, so that neighbours' places cross), and a month of
+     * the trade at sea, 250,000 t out a tanker berth and 750,000 t a bulk one, at every call's arrival - on a bay of 8 berths and one of 64 - and
+     * its cost on the bay of 64.
+     */
+    static void windowFixture() {
+        int pitch = BULK_ALONG + CityShore.CLEAR;
+        double scale = BERTH_SCALES[1];
+        for (int berths : new int[] { 8, 64 }) {
+            CityShore bay = berthRow(berths, 0, pitch);
+            List<BoatSchedule.Route> routes = routesOf(bay, Ports.Cargo.LIQUID, Ports.Cargo.DRY_BULK);
+            BoatSchedule month = BoatSchedule.of(4000, MapCheck.tradeAtSea(berths * 125_000.0, berths * 375_000.0, 0, 0), routes, Ports.BULK_TERMINAL_SHIPS);
+            long x0 = 3000 - 10, x1 = 3000 + (long) berths * pitch + 10, y0 = 2900, y1 = 3010;
+            List<long[]> windows = new ArrayList<>();
+            windows.add(new long[] { x0, y0, x1, y1 });                                           // the whole bay
+            windows.add(new long[] { x0, y0, (x0 + x1) / 2, y1 });                                // its west half
+            windows.add(new long[] { (x0 + x1) / 2, y0, x1, y1 });                                // its east half
+            for (int k = 0; k < berths; k += 3) windows.add(new long[] { 3000 + (long) k * pitch, 2930, 3000 + (long) (k + 1) * pitch, y1 });   // one berth's width
+            for (int k = 0; k < berths; k += 5) windows.add(new long[] { 3000 + (long) k * pitch, 2930, 3000 + (long) (k + 4) * pitch, y1 });   // four berths'
+            int together = 0, differs = 0, boatsSeen = 0;
+            boolean sameSet = true, stable = true, belowSame = true;
+            List<BoatSchedule.Call> calls = month.calls();
+            for (BoatSchedule.Call c : calls) {
+                double t = c.arrives();
+                List<BoatSchedule.Boat> all = month.docked(t);
+                java.util.Set<BoatSchedule.Boat> expect = new java.util.HashSet<>();
+                for (BoatSchedule.Call k : calls) {
+                    BoatSchedule.Boat b = BoatSchedule.position(k, routes.get(k.route()), t);
+                    if (b != null && b.docked()) expect.add(b);
+                }
+                sameSet &= all.size() == expect.size() && expect.containsAll(all) && all.contains(BoatSchedule.position(c, routes.get(c.route()), t));
+                java.util.Map<BoatSchedule.Call, BoatSchedule.Boat> laid = new java.util.HashMap<>();
+                List<BoatSchedule.Boat> placed = BoatSchedule.berthed(all, routes, scale, bay);
+                for (int i = 0; i < all.size(); i++) laid.put(all.get(i).call(), placed.get(i));
+                if (all.size() > 1) together++;
+                for (long[] w : windows) {
+                    List<BoatSchedule.Boat> frame = month.frame(w[0], w[1], w[2], w[3], t), drawn = month.drawn(frame, t, scale, bay);
+                    belowSame &= month.drawn(frame, t, MapFrame.DETAIL_FROM, bay) == frame;
+                    List<BoatSchedule.Boat> alone = BoatSchedule.berthed(frame, routes, scale, bay);
+                    stable &= drawn.size() == frame.size();
+                    for (int i = 0; i < frame.size() && i < drawn.size(); i++) {
+                        BoatSchedule.Boat b = frame.get(i);
+                        if (!b.docked()) {
+                            stable &= drawn.get(i).equals(b);
+                            continue;
+                        }
+                        boatsSeen++;
+                        stable &= drawn.get(i).equals(laid.get(b.call()));
+                        if (!alone.get(i).equals(drawn.get(i))) differs++;
+                    }
+                }
+            }
+            report("the window, a bay of " + berths + " berths: docked(t) is every boat at a quay at t, and a frame's boats drawn() are the same boats whichever part of the bay is on screen",
+                    sameSet && stable && belowSame && boatsSeen > 0,
+                    calls.size() + " arrivals, " + together + " with two boats or more at a quay, " + boatsSeen + " docked boats seen through " + windows.size() + " windows each");
+            assertTrue("...berthed() over a window's boats alone would have turned some of them (the window matters, so drawn() weighs every boat docked): " + differs + " boats", differs > 0);
+
+            if (berths < 64) continue;
+            // THE COST: a frame's boats drawn over the bay of 64, the frame's own search included, within a frame's boat budget.
+            int frames = Math.min(calls.size(), 400);
+            double best = Double.MAX_VALUE;
+            long shown = 0;
+            for (int round = 0; round < MapCheck.WARM_ROUNDS + MapCheck.TIMED_ROUNDS; round++) {
+                long t0 = System.nanoTime();
+                shown = 0;
+                for (int i = 0; i < frames; i++) {
+                    double t = calls.get(i * calls.size() / frames).arrives();
+                    shown += month.drawn(month.frame(windows.get(0)[0], windows.get(0)[1], windows.get(0)[2], windows.get(0)[3], t), t, scale, bay).size();
+                }
+                double ms = (System.nanoTime() - t0) / 1e6 / frames;
+                if (round >= MapCheck.WARM_ROUNDS) best = Math.min(best, ms);
+            }
+            timed("a frame's boats drawn() over the whole bay of 64 berths take no more than MapCheck.BOAT_FRAME_MS (0.5 ms)",
+                    Timing.within(best, MapCheck.BOAT_FRAME_MS) && shown > 0, String.format("%.3f ms a frame, %,d boats over %d frames", best, shown, frames));
+        }
     }
 }

@@ -1,0 +1,27 @@
+# HB1 harbour renders
+
+Written by `ham.citybuildersim.tools.HarbourRenders`: a Bergen city on the real Earth (earth-2) played twice in one JVM, once with `CityMap.bundleHarbour` false (MF1's order) and once true (HB1's), drawn by the game's own painters. Not a harness; nothing in it asserts.
+
+## The pictures
+
+- `hb1-0-mf1.png` - the MF1 city's largest harbour at 2 px a plot: the window round all its shore works plus 2 tiles of margin: harbour of 10 shore works (10 with a quay; 2 General Cargo Terminal, 7 Bulk Berth, 1 Bulk Terminal) over 158 x 72 plots, nearest neighbour 13.7 plots mean, 60.9 greatest, tiles (11770, 11773) to (11779, 11779), 640 x 448 px
+- `hb1-0-bundled.png` - the same for the HB1 city: harbour of 10 shore works (10 with a quay; 2 General Cargo Terminal, 7 Bulk Berth, 1 Bulk Terminal) over 158 x 72 plots, nearest neighbour 13.4 plots mean, 64.1 greatest, tiles (11770, 11773) to (11779, 11779), 640 x 448 px
+- `hb1-d-kinds.png` - an extra, not asked for, because a Bergen city may hold no terminal of some kind: a specimen sheet of every kind of terminal (a row each, with a tank farm), on a plain straight shore with the sea to the north, each at its real box size, with its quay wall and boat; column a the box as the game draws it, b the yard, c the shed and cranes. The sea and the land are plain, not the game's tiles. Tanker Terminal (Liquid bulk, box 16 x 15 plots, MR tanker); Bulk Terminal (Dry bulk, box 16 x 15 plots, Panamax); Container Terminal (Containers, box 16 x 15 plots, feeder); General Cargo Terminal (General cargo, box 7 x 7 plots, general cargo ship); Bulk Berth (Dry bulk, box 5 x 4 plots, Handysize); Tank Farm (no quay, box 11 x 10 plots).
+- `hb1-a-boxes.png` - the window of 6 x 4 tiles (1,536 x 1,024 px, 8 px a plot) from tile (11772, 11775) with the most shore works: 10 wholly in it and 10 touching it. The game's tiles, the quay walls (QUAY_DECK, edged QUAY_EDGE) and a boat docked at each berth, laid by BoatSchedule.berthed() (alongside its quay where it fits, else stern-to it, else as the schedule places it, centred on its berth), true size, each terminal's box as the game draws it now.
+- `hb1-b-yard.png` - the same window; each terminal's box painted as an open cargo yard by what it handles: container terminals rows of small coloured boxes (ShipShapes.boxColour's six), dry bulk two or three heaps in ochre or grey, general cargo stacked crates and one shed, a tank farm or reserve round tanks.
+- `hb1-c-cranes.png` - the same window; each terminal's box under a long transit shed set back from the wall, and on the wall 2 or 3 quay cranes (a dark gantry on the wall, its boom out over the ship); a tank farm has no quay and is drawn with its tanks as in b. A crane's boom reaches about a plot past the wall over the water.
+- `hb1-x-4px.png` - an extra, not asked for: the same window as a, at 4 px a plot (768 x 512), just past MapFrame.DETAIL_FROM, where boats are true size too (ShipShapes.TRUE_FROM is DETAIL_FROM since slice E; they were drawn 1.6 times true there before) and are laid by BoatSchedule.berthed() as at 8; the game's tiles, walls and boats, boxes as the game draws them.
+
+The boat at each berth is the ship the game's schedule would bring there, laden, coming in, every berth occupied at once (the crowded case, more than the game's months show): at a dry bulk berth the first of Ports.bulkShipsStanding() (a Panamax in this city), at any other the first class of its terminal's Ports.shipsOf() (a Container Terminal a feeder, a General Cargo Terminal a general cargo ship). The boats are laid in the order of their made-up arrivals, one after another.
+
+## What the drawing shows (HB1's own: walls, boats alongside)
+
+- the HB1 city, at 8.0 px a plot (true size): 16 boats docked: 11 alongside, 5 stern-to, 0 as placed; pairs of boats overlapping: 0 among those alongside or stern-to (expected 0), 0 with a boat as placed; boats alongside or stern-to across a box or a wall: 0 and 0 (expected 0); boats as placed across a box: 0 (0 across its own), across a wall: 0
+- the HB1 city, walls: 15 of 178 plots; of the 172 plots of the works' 2-plot strips, 0 lie outside every wall (and 2 more are cut out of it where another work's box stands on the strip); 6 wall plots are no work's strip (joins across a gap of up to 3 plots); 0 wall plots lie on a box; 0 works with a quay of another length (a pier) have no wall
+- the HB1 city, at 4.0 px a plot (just past DETAIL_FROM, true size since slice E): 16 boats docked: 11 alongside, 5 stern-to, 0 as placed; pairs of boats overlapping: 0 among those alongside or stern-to (expected 0), 0 with a boat as placed; boats alongside or stern-to across a box or a wall: 0 and 0 (expected 0); boats as placed across a box: 0 (0 across its own), across a wall: 0
+- the MF1 city, for comparison, at 8.0 px a plot (true size): 16 boats docked: 12 alongside, 4 stern-to, 0 as placed; pairs of boats overlapping: 0 among those alongside or stern-to (expected 0), 0 with a boat as placed; boats alongside or stern-to across a box or a wall: 0 and 0 (expected 0); boats as placed across a box: 0 (0 across its own), across a wall: 0
+
+## The runs
+
+- mf1: Bergen played 2400 months in 53 s (asked for 2400); 16 shore works in 2 harbours: 10, 6 works (the largest drawn).
+- bundled: Bergen played 2400 months in 46 s (asked for 2400); 16 shore works in 2 harbours: 10, 6 works (the largest drawn).

@@ -1101,6 +1101,7 @@ final class MapView {
             if (level == MapFrame.FAR) drawNodes(gc, f);
             else {
                 drawTiles(gc, f, level);
+                harbourQuay(gc, f);
                 boats(gc, f, level);
                 trains(gc, f, level);
                 trucks(gc, f, level);
@@ -1293,7 +1294,9 @@ final class MapView {
         if (level == MapFrame.L2 || (crossing == 0 && forking == 0) || schedule.callCount() == 0) return;
         boatsLive = true;
         double s = f.scale();
-        for (BoatSchedule.Boat b : schedule.frame(x0, y0, x1, y1, t)) {
+        // From MapFrame.DETAIL_FROM in a docked boat lies alongside its quay where it fits (BoatSchedule.berthed()), weighed against every boat docked
+        // at t, not the frame's, so panning never turns a boat; the lookup is a binary search a route, and only a frame that holds a docked boat asks.
+        for (BoatSchedule.Boat b : schedule.drawn(schedule.frame(x0, y0, x1, y1, t), t, s, shownMap.shore())) {
             double bx = f.screenX(b.x()), by = f.screenY(b.y());
             if (bx < -margin * s || by < -margin * s || bx > f.width() + margin * s || by > f.height() + margin * s) continue;
             int c = ShipShapes.colour(b);
@@ -1316,6 +1319,35 @@ final class MapView {
             gc.setStroke(colour(c, b.alpha()));
             gc.setLineWidth(1.2);
             gc.strokePolygon(screenXs(f, hull[0]), screenYs(f, hull[1]), hull[0].length);
+        }
+    }
+
+    /* ----- the harbour's quay and its boats alongside (HB1, 2026-11-08) ----- */
+
+    /**
+     * The harbour's quays as walls (CityShore.walls()) over the tiles and under the boats, from MapFrame.DETAIL_FROM in and not below it
+     * (HB1; Jerus, 2026-10-31, HB2's "at 500m is where the detail would be"): in the colour the tiles paint a quay plot, TileRaster.QUAY_DECK,
+     * and its edge from TileRaster.EDGE_FROM px a plot. Only the walls that meet the frame are asked for (CityShore.wallsIn(), from the set
+     * cached on the shore's version) - a few rectangles filled a frame, outside the tiles' FRAME_MS.
+     */
+    private void harbourQuay(GraphicsContext gc, MapFrame f) {
+        if (shownMap == null || !(f.scale() > MapFrame.DETAIL_FROM)) return;
+        CityShore shore = shownMap.shore();
+        if (shore.isEmpty()) return;
+        List<CityShore.Wall> walls = shore.wallsIn((long) Math.floor(f.plotX(0)), (long) Math.floor(f.plotY(0)),
+                (long) Math.ceil(f.plotX(f.width())), (long) Math.ceil(f.plotY(f.height())));
+        if (walls.isEmpty()) return;
+        gc.setFill(colour(TileRaster.QUAY_DECK));
+        for (CityShore.Wall w : walls) {
+            double sx = f.screenX(w.x0()), sy = f.screenY(w.y0());
+            gc.fillRect(sx, sy, f.screenX(w.x0() + w.w()) - sx, f.screenY(w.y0() + w.h()) - sy);
+        }
+        if (f.scale() < TileRaster.EDGE_FROM) return;
+        gc.setStroke(colour(TileRaster.QUAY_EDGE));
+        gc.setLineWidth(1);
+        for (CityShore.Wall w : walls) {
+            double sx = f.screenX(w.x0()), sy = f.screenY(w.y0());
+            gc.strokeRect(sx + 0.5, sy + 0.5, f.screenX(w.x0() + w.w()) - sx - 1, f.screenY(w.y0() + w.h()) - sy - 1);
         }
     }
 
@@ -2118,10 +2150,10 @@ final class MapView {
         }
     }
 
-    /** The scale bar at the bottom left: the longest of 1, 2 or 5 times a power of ten metres in SCALE_BAR_PX, its length in words. */
+    /** The scale bar at the bottom left: the longest of 1, 2 or 5 times a power of ten metres in MapFrame.SCALE_BAR_PX, its length in words. */
     private void scaleBar(GraphicsContext gc, MapFrame f) {
         if (cinematic && expanded) return;      // (TR1) not drawn in a replay's cinematic mode
-        double[] bar = f.scaleBar(SCALE_BAR_PX);
+        double[] bar = f.scaleBar(MapFrame.SCALE_BAR_PX);
         scaleBar(gc, f.height(), bar[1], MapFrame.scaleWords(bar[0]));
     }
 
@@ -2143,9 +2175,6 @@ final class MapView {
         gc.setFill(Color.rgb(255, 255, 255, 0.95));
         gc.fillText(words, x + px + 6, y + 4);
     }
-
-    /** The scale bar's longest, in pixels: 120 (the mockup's). */
-    static final double SCALE_BAR_PX = 120;
 
     /** A colour from the model's 0xAARRGGBB. */
     static Color colour(int argb) {
@@ -2940,7 +2969,7 @@ final class MapView {
     /** The scale bar on the globe: GlobeFrame.scaleBar() at the view's centre, its words saying so. */
     private void globeScaleBar(GraphicsContext gc) {
         if (cinematic && expanded) return;      // (TR1) not drawn in a replay's cinematic mode
-        double[] bar = globe.scaleBar(SCALE_BAR_PX);
+        double[] bar = globe.scaleBar(MapFrame.SCALE_BAR_PX);
         scaleBar(gc, globe.height(), bar[1], GlobeFrame.scaleWords(bar[0]));
     }
 

@@ -39,7 +39,7 @@
 > assertion's line goes through {@link #verdict(boolean, String)}, which
 > appends its figures to the file {@link #TSV_PROPERTY} names.
 
-**Used by (20):** [AllChecks](AllChecks.md), [BridgeCheck](BridgeCheck.md), [BridgeMapCheck](BridgeMapCheck.md), [EarthCheck](EarthCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [GlobeCheck](GlobeCheck.md), [GridCheck](GridCheck.md), [IslandNetCheck](IslandNetCheck.md), [KeptCheck](KeptCheck.md), [LandNationsCheck](LandNationsCheck.md), [MapCheck](MapCheck.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PlanCheck](PlanCheck.md), [ReplayCheck](ReplayCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [ScaleCheck](ScaleCheck.md), [TimingCheck](TimingCheck.md), [UiProbe](UiProbe.md), [WorldCheck](WorldCheck.md), [WorldMarketCheck](WorldMarketCheck.md)
+**Used by (21):** [AllChecks](AllChecks.md), [BridgeCheck](BridgeCheck.md), [BridgeMapCheck](BridgeMapCheck.md), [EarthCheck](EarthCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [GlobeCheck](GlobeCheck.md), [GridCheck](GridCheck.md), [IslandNetCheck](IslandNetCheck.md), [KeptCheck](KeptCheck.md), [LandNationsCheck](LandNationsCheck.md), [MapCheck](MapCheck.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PlanCheck](PlanCheck.md), [PortCheck](PortCheck.md), [ReplayCheck](ReplayCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [ScaleCheck](ScaleCheck.md), [TimingCheck](TimingCheck.md), [UiProbe](UiProbe.md), [WorldCheck](WorldCheck.md), [WorldMarketCheck](WorldMarketCheck.md)
 
 ## Constants
 

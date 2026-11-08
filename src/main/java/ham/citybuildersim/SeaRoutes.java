@@ -290,10 +290,10 @@ public final class SeaRoutes {
 
     /** A berth's route, searched (SeaRoutes' rule). */
     static BoatSchedule.Route route(Grid g, BoatSchedule.Berth b, long siteX, long siteY, double radius) {
-        return route(g, b, nearestSea(g, Math.floorDiv(b.x(), CELL), Math.floorDiv(b.y(), CELL)), siteX, siteY, radius);
+        return route(g, b, startOf(g, b), siteX, siteY, radius);
     }
 
-    /** ...from its start cell, which nearestSea() found (null for none: the straight lane). */
+    /** ...from its start cell, which startOf() found (null for none: the straight lane). */
     static BoatSchedule.Route route(Grid g, BoatSchedule.Berth b, long[] start, long siteX, long siteY, double radius) {
         double bx = b.x() + 0.5, by = b.y() + 0.5;
         if (start == null) return BoatSchedule.lane(b, siteX, siteY);
@@ -511,6 +511,34 @@ public final class SeaRoutes {
         return true;
     }
 
+    /**
+     * A berth's start cell (HB1): nearestSea()'s, but when the berth's own
+     * cell is land and its side is known, the nearest sea cell within
+     * NEAR_CELLS whose centre lies out from the berth on its sea side (the
+     * nearer, then the first in rows); none there, nearestSea()'s. WHY: the
+     * nearest sea cell in any direction could lie behind the berth's own work,
+     * and the first leg ran back across its box (MapCheck 9b(d), once a
+     * harbour's works stood side by side).
+     */
+    static long[] startOf(Grid g, BoatSchedule.Berth b) {
+        long ci = Math.floorDiv(b.x(), CELL), cj = Math.floorDiv(b.y(), CELL);
+        int s = b.side();
+        if (s < 0 || s >= CityShore.DX.length || g.sea(ci, cj)) return nearestSea(g, ci, cj);
+        double bx = b.x() + 0.5, by = b.y() + 0.5;
+        long[] best = null;
+        long bestD = Long.MAX_VALUE;
+        for (long j = cj - NEAR_CELLS; j <= cj + NEAR_CELLS; j++) {
+            for (long i = ci - NEAR_CELLS; i <= ci + NEAR_CELLS; i++) {
+                if (!g.sea(i, j)) continue;
+                double ox = i * CELL + CELL / 2.0 - bx, oy = j * CELL + CELL / 2.0 - by;
+                if (ox * CityShore.DX[s] + oy * CityShore.DY[s] <= 0) continue;
+                long d = (i - ci) * (i - ci) + (j - cj) * (j - cj);
+                if (d < bestD) { bestD = d; best = new long[] { i, j }; }
+            }
+        }
+        return best != null ? best : nearestSea(g, ci, cj);
+    }
+
     /** The berth's own cell when it is sea, else the nearest sea cell within NEAR_CELLS (the nearer, then the first in rows), or null. */
     static long[] nearestSea(Grid g, long ci, long cj) {
         if (g.sea(ci, cj)) return new long[] { ci, cj };
@@ -683,7 +711,7 @@ public final class SeaRoutes {
 
         /** The next berth's route: joined to a lane when one is in reach, else searched. */
         void next(BoatSchedule.Berth b) {
-            long[] start = nearestSea(g, Math.floorDiv(b.x(), CELL), Math.floorDiv(b.y(), CELL));
+            long[] start = startOf(g, b);
             int at = lanes.routes.size();
             BoatSchedule.Route r = start == null || lanes.count == 0 ? null : join(at, b, start);
             if (r == null) {

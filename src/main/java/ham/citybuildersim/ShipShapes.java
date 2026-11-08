@@ -15,9 +15,13 @@ package ham.citybuildersim;
  * general cargo ship 102 - each within about a tenth of its class's real
  * length - and BEAM of it wide (the mockup's 42 / 245).
  *
- * DRAWN. True size from BIG_TILES_FROM px a plot; below it BOOST times true
- * (the research's 4.4: "draw boats at 1.6x, and at true size from close zoom
- * in"), and never shorter than LEAST_PX, where it is a dart of its colour.
+ * DRAWN. True size from TRUE_FROM px a plot - since HB1 (2026-11-08) the
+ * detail zoom, MapFrame.DETAIL_FROM, where the harbour is drawn as built and a
+ * docked boat lies alongside its quay (BoatSchedule.alongside()), which a hull
+ * 1.6 times true cannot do beside a quay drawn at true size; below it BOOST
+ * times true (the research's 4.4: "draw boats at 1.6x, and at true size from
+ * close zoom in"), and never shorter than LEAST_PX, where it is a dart of its
+ * colour.
  *
  * COLOURS (the research's 4.4, mockup 3's): an import coming in full blue,
  * an export going out full orange, an empty leg grey, a box ship - loaded
@@ -39,8 +43,8 @@ public final class ShipShapes {
     /** Boats are drawn this many times their size below BIG_TILES_FROM px a plot: 1.6 (the research's 4.4, mockup 3's legend). */
     public static final double BOOST = 1.6;
 
-    /** ...and at true size from here, px a plot: MapFrame.BIG_TILES_FROM, 6 - the close zoom. */
-    public static final double TRUE_FROM = MapFrame.BIG_TILES_FROM;
+    /** ...and at true size from here, px a plot: MapFrame.DETAIL_FROM, 3.6 (HB1; it was BIG_TILES_FROM, 6) - where the harbour is drawn as built, so a boat lying alongside its quay is the size of the quay it lies by. */
+    public static final double TRUE_FROM = MapFrame.DETAIL_FROM;
 
     /** The shortest a boat is drawn whole, in px: 7 - BEAM of it is 1.2 px, its deck and bridge under a pixel each; shorter, its hull is a dart of its colour (spec-oil 6's fallback, "dots at L1"; star O13-9). */
     public static final double LEAST_PX = 7;
