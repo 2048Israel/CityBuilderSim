@@ -33,8 +33,29 @@ public final class TradeLanes {
        THE DIALS
        ===================================================================== */
 
-    /** A partner whose exports and imports together come to less than this, in the city's money, thousands a month, gets no lane: 300, the board's D$0.3M. */
+    /**
+     * A partner whose exports and imports together come to less than this, thousands a month, gets no lane: 300, the board's D$0.3M at today's
+     * (2025's) prices. It is the figure as the board wrote it; the floor a city's map holds its partners to is minLane(), the same in real terms (TP1).
+     */
     public static final double MIN_LANE = 300;
+
+    /**
+     * MIN_LANE in the city's money now (TP1): the board's D$0.3M priced at the founding's level (times PriceLevel.FACTOR, EP1, as every nominal anchor
+     * is), times the price index (PriceIndex.getIndex(): the basket against the basket at founding, so a ratio that inflation moves and a reform
+     * does not), over the money's unit (Denomination.getUnit(): a reform by 100 counts every trade a hundredth, and the floor with it). A figure
+     * that is not a positive number reads 1.
+     *
+     * <p>WHY. MIN_LANE alone was a floor in absolute city money (WN3's stranger review, 2026-10-30): it drifted with inflation, so a late city drew
+     * every partner it had, and a reform dividing by 100 divided every partner's trade and left the floor, hiding every lane. In real terms a
+     * partner has a lane when its trade is as big, in what it buys, as the board meant, whatever the money is called. The price index was
+     * chosen over a share of the month's trade because it keeps the board's meaning (a floor in money, under which a trade is too small to
+     * draw) and the same lanes for the same trade; a share would draw the largest partners of a trade of D$50.
+     */
+    public static double minLane(double priceIndex, double unit) {
+        double index = priceIndex > 0 && priceIndex < Double.POSITIVE_INFINITY ? priceIndex : 1;
+        double u = unit > 0 && unit < Double.POSITIVE_INFINITY ? unit : 1;
+        return MIN_LANE * PriceLevel.FACTOR * index / u;
+    }
 
     /** A lane is sampled along its great circle every this many degrees: 2 (222 km), so a frame's chords sag by under a pixel at the closest view that draws them. */
     public static final double LANE_STEP = 2;
@@ -103,6 +124,12 @@ public final class TradeLanes {
         /** This month's imports from each nation (what the city bought of it), thousands of the city's money. */
         double[] importsByNation();
 
+        /**
+         * The floor a partner's month must reach for a lane or an arrow, in the money the figures are in (TP1: TradeLanes.minLane(), the price index
+         * and the currency's unit at the tally); MIN_LANE where the feed has no money to read it from.
+         */
+        default double minLane() { return MIN_LANE; }
+
         /** A nation's figures for the year so far; null where the feed has none (the card then has no trade rows). */
         default YearToDate yearToDate(int nation) { return null; }
 
@@ -121,6 +148,8 @@ public final class TradeLanes {
     private final int month;
     private final double cityLat, cityLon;
     private final double[] exports, imports;
+    /** The floor the partners were held to when these lanes were built (TP1): the screen builds them again when it moves. */
+    private final double minLane;
     private final int partners, edgeCount, vertexCount, branchPoints, leavingCity;
     /** The vertices as unit vectors, by global index. */
     private final double[] vx, vy, vz;
@@ -143,8 +172,9 @@ public final class TradeLanes {
     private GlobeFrame cachedView;
     private Drawn cachedDrawn;
 
-    private TradeLanes(Builder b, int month, double cityLat, double cityLon, double[] exports, double[] imports, int inputs) {
+    private TradeLanes(Builder b, int month, double cityLat, double cityLon, double[] exports, double[] imports, double minLane, int inputs) {
         this.month = month;
+        this.minLane = minLane;
         this.cityLat = cityLat;
         this.cityLon = cityLon;
         this.exports = exports;
@@ -222,22 +252,32 @@ public final class TradeLanes {
      * under MIN_LANE, or whose figures or node are not numbers, has no lane. The arrays are copied.
      */
     public static TradeLanes of(double cityLat, double cityLon, int month, double[] nodeLat, double[] nodeLon, double[] exports, double[] imports) {
+        return of(cityLat, cityLon, month, nodeLat, nodeLon, exports, imports, MIN_LANE);
+    }
+
+    /** The same with the floor a city holds its partners to, in its money as it stands (minLane(), the feed's minLane()), where the figures are in it. */
+    public static TradeLanes of(double cityLat, double cityLon, int month, double[] nodeLat, double[] nodeLon, double[] exports, double[] imports, double minLane) {
         int n = Math.min(nodeLat.length, nodeLon.length);
         if (n >= 1 << 16) throw new IllegalArgumentException("too many nations: " + n);
         Builder b = new Builder(cityLat, cityLon, n);
-        b.build(nodeLat, nodeLon, exports, imports);
-        return new TradeLanes(b, month, cityLat, cityLon, exports.clone(), imports.clone(), n);
+        b.build(nodeLat, nodeLon, exports, imports, minLane);
+        return new TradeLanes(b, month, cityLat, cityLon, exports.clone(), imports.clone(), minLane, n);
     }
 
     /** The same to the nodes of a nations' map. */
     public static TradeLanes of(NationsMap map, double cityLat, double cityLon, int month, double[] exports, double[] imports) {
+        return of(map, cityLat, cityLon, month, exports, imports, MIN_LANE);
+    }
+
+    /** ...with the floor a city holds its partners to. */
+    public static TradeLanes of(NationsMap map, double cityLat, double cityLon, int month, double[] exports, double[] imports, double minLane) {
         int n = map.count();
         double[] la = new double[n], lo = new double[n];
         for (int i = 0; i < n; i++) {
             la[i] = map.nodeLat(i + 1);
             lo[i] = map.nodeLon(i + 1);
         }
-        return of(cityLat, cityLon, month, la, lo, exports, imports);
+        return of(cityLat, cityLon, month, la, lo, exports, imports, minLane);
     }
 
     /** A figure as money: itself if it is a positive number, else 0. */
@@ -271,13 +311,13 @@ public final class TradeLanes {
             partnerNode = new int[inputs];
         }
 
-        void build(double[] nodeLat, double[] nodeLon, double[] exports, double[] imports) {
+        void build(double[] nodeLat, double[] nodeLon, double[] exports, double[] imports, double minLane) {
             int n = inputs;
             double[] ux = new double[n], uy = new double[n], uz = new double[n], angle = new double[n];
             long[] keys = new long[n];
             int m = 0, vertices = 0;
             for (int i = 0; i < n; i++) {
-                if (value(exports, i) + value(imports, i) < MIN_LANE || !Double.isFinite(nodeLat[i]) || !Double.isFinite(nodeLon[i])) continue;
+                if (value(exports, i) + value(imports, i) < minLane || !Double.isFinite(nodeLat[i]) || !Double.isFinite(nodeLon[i])) continue;
                 double[] u = unit(nodeLat[i], nodeLon[i]);
                 ux[i] = u[0];
                 uy[i] = u[1];
@@ -534,8 +574,17 @@ public final class TradeLanes {
 
     /** Whether these are the lanes of the same month, city and figures: the screen builds them again only when this is false. */
     public boolean matches(int month, double cityLat, double cityLon, double[] exports, double[] imports) {
-        return month == this.month && cityLat == this.cityLat && cityLon == this.cityLon && Arrays.equals(exports, this.exports) && Arrays.equals(imports, this.imports);
+        return matches(month, cityLat, cityLon, exports, imports, MIN_LANE);
     }
+
+    /** ...and of the same floor (TP1): a reform or a year of inflation moves it, and the lanes are built again. */
+    public boolean matches(int month, double cityLat, double cityLon, double[] exports, double[] imports, double minLane) {
+        return month == this.month && cityLat == this.cityLat && cityLon == this.cityLon && minLane == this.minLane
+                && Arrays.equals(exports, this.exports) && Arrays.equals(imports, this.imports);
+    }
+
+    /** The floor the partners were held to when these lanes were built: MIN_LANE where the caller gave none. */
+    public double minLane() { return minLane; }
 
     /* =====================================================================
        A FRAME - culled to the view, projected and cut
@@ -670,6 +719,7 @@ public final class TradeLanes {
         private final int month;
         private final double standLat, standLon;
         private final double[] exportsKept, importsKept;
+        private final double minLane;
         private final int count;
         private final int[] nation = new int[ARROWS_MAX], sellPx = new int[ARROWS_MAX], buyPx = new int[ARROWS_MAX];
         private final double[] sell = new double[ARROWS_MAX], buy = new double[ARROWS_MAX], bearing = new double[ARROWS_MAX];
@@ -680,8 +730,9 @@ public final class TradeLanes {
         private final double hiddenSell, hiddenBuy;
         private double placedW = -1, placedH = -1;
 
-        private Arrows(int month, double standLat, double standLon, double[] nodeLat, double[] nodeLon, double[] exports, double[] imports) {
+        private Arrows(int month, double standLat, double standLon, double[] nodeLat, double[] nodeLon, double[] exports, double[] imports, double minLane) {
             this.month = month;
+            this.minLane = minLane;
             this.standLat = standLat;
             this.standLon = standLon;
             this.exportsKept = exports.clone();
@@ -692,7 +743,7 @@ public final class TradeLanes {
             if (Double.isFinite(standLat) && Double.isFinite(standLon)) {
                 for (int i = 0; i < n; i++) {
                     double s = value(exports, i), b = value(imports, i);
-                    if (s + b < MIN_LANE || !Double.isFinite(nodeLat[i]) || !Double.isFinite(nodeLon[i])) continue;
+                    if (s + b < minLane || !Double.isFinite(nodeLat[i]) || !Double.isFinite(nodeLon[i])) continue;
                     if (bearingDeg(standLat, standLon, nodeLat[i], nodeLon[i]) < 0) continue;
                     over++;
                     allSell += s;
@@ -737,23 +788,39 @@ public final class TradeLanes {
 
         /** The arrows of a month for a city standing at (standLat, standLon) to the nations at the nodes given, as of() gives the lanes: the largest ARROWS_MAX partners over MIN_LANE. */
         public static Arrows of(double standLat, double standLon, int month, double[] nodeLat, double[] nodeLon, double[] exports, double[] imports) {
-            return new Arrows(month, standLat, standLon, nodeLat, nodeLon, exports, imports);
+            return of(standLat, standLon, month, nodeLat, nodeLon, exports, imports, MIN_LANE);
+        }
+
+        /** ...over the floor a city holds its partners to (TP1: minLane(), the feed's minLane()) in place of MIN_LANE. */
+        public static Arrows of(double standLat, double standLon, int month, double[] nodeLat, double[] nodeLon, double[] exports, double[] imports, double minLane) {
+            return new Arrows(month, standLat, standLon, nodeLat, nodeLon, exports, imports, minLane);
         }
 
         /** The same to the nodes of a nations' map. */
         public static Arrows of(NationsMap map, double standLat, double standLon, int month, double[] exports, double[] imports) {
+            return of(map, standLat, standLon, month, exports, imports, MIN_LANE);
+        }
+
+        /** ...with the floor a city holds its partners to. */
+        public static Arrows of(NationsMap map, double standLat, double standLon, int month, double[] exports, double[] imports, double minLane) {
             int n = map.count();
             double[] la = new double[n], lo = new double[n];
             for (int i = 0; i < n; i++) {
                 la[i] = map.nodeLat(i + 1);
                 lo[i] = map.nodeLon(i + 1);
             }
-            return of(standLat, standLon, month, la, lo, exports, imports);
+            return of(standLat, standLon, month, la, lo, exports, imports, minLane);
         }
 
         /** Whether these are the arrows of the same month, place and figures. */
         public boolean matches(int month, double standLat, double standLon, double[] exports, double[] imports) {
-            return month == this.month && standLat == this.standLat && standLon == this.standLon && Arrays.equals(exports, exportsKept) && Arrays.equals(imports, importsKept);
+            return matches(month, standLat, standLon, exports, imports, MIN_LANE);
+        }
+
+        /** ...and of the same floor (TP1). */
+        public boolean matches(int month, double standLat, double standLon, double[] exports, double[] imports, double minLane) {
+            return month == this.month && standLat == this.standLat && standLon == this.standLon && minLane == this.minLane
+                    && Arrays.equals(exports, exportsKept) && Arrays.equals(imports, importsKept);
         }
 
         public int count() { return count; }

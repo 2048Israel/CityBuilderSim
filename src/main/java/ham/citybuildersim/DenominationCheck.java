@@ -48,6 +48,14 @@ import java.nio.file.Path;
  * Game.reformCurrency() divides the record, which the bare objects cannot show
  * and which the twins of section 2 show only where the gate names the real
  * world file.
+ *
+ * Section 7's third part (TP1, 2026-11-08) is what the screens read of it: the
+ * nation card's year to date, the month's figures the map's lanes and arrows
+ * are made of, and the floor under which a partner has none (TradeLanes.minLane(),
+ * MIN_LANE in the price index and the currency's unit). A bare part holds the
+ * floor's arithmetic; the same two cities, on both sides of the reform and
+ * again with prices moved, show that the reformed city's card is the plain
+ * one's divided and that it draws the same partners.
  */
 public class DenominationCheck {
 
@@ -666,6 +674,7 @@ public class DenominationCheck {
            reformed city's first rounding on the new grid.
            ================================================================= */
         tradeByPartner();
+        lanesFloor();
         tradeByPartnerInGame(root);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -816,6 +825,45 @@ public class DenominationCheck {
         assertTrue("fixture: the save's copy holds the finished year", savedTables.size() == 1);
         close("a reform divides the save's trade by partner: its cells are the plain record's, divided",
                 cellGap(savedTables.get(0).cells(), plainCells, 1 / factor), 0, 1e-12);
+    }
+
+    /* ----------- section 7, third part: the lanes' floor (TP1, 2026-11-08) ----------- */
+
+    /**
+     * The floor under which a partner has no lane, on bare TradeLanes: the board's D$0.3M at the founding's prices (times PriceLevel.FACTOR), moved by
+     * the price index and the currency's unit alone, and the lanes and arrows held to the floor they are given, at the floor of each unit.
+     */
+    static void lanesFloor() {
+        out.println("\n--- the lanes' floor in real terms: the price index and the currency's unit (TP1) ---");
+        double founding = TradeLanes.minLane(1, 1);
+        close("at the founding's prices and money the floor is the board's D$0.3M priced at the founding's", founding, TradeLanes.MIN_LANE * PriceLevel.FACTOR, 1e-12);
+        close("prices twice as high double it", TradeLanes.minLane(2, 1), 2 * founding, 1e-12);
+        close("a reform by a hundred divides it by a hundred", TradeLanes.minLane(1, 100), founding / 100, 1e-12);
+        close("...and a reform with prices doubled is both", TradeLanes.minLane(2, 100), 2 * founding / 100, 1e-12);
+        close("an index or a unit that is not a positive number reads 1",
+                TradeLanes.minLane(Double.NaN, 0) + TradeLanes.minLane(-3, Double.POSITIVE_INFINITY), 2 * founding, 1e-12);
+        assertTrue("the feed with no money to read it from holds partners to the board's figure as written", TradeLanes.Feed.NONE.minLane() == TradeLanes.MIN_LANE);
+
+        // Two partners, one at the floor and one a hair under it, in the money of an unreformed city and of three reformed ones.
+        double[] lat = { 52, 10 }, lon = { 5, 100 };
+        for (double unit : new double[] { 1, 100, 1000, 1e6 }) {
+            double floor = TradeLanes.minLane(1, unit);
+            double[] ex = { floor, Math.nextDown(floor) }, im = { 0, 0 };
+            TradeLanes lanes = TradeLanes.of(45, -63, 7, lat, lon, ex, im, floor);
+            TradeLanes.Arrows arrows = TradeLanes.Arrows.of(45, -63, 7, lat, lon, ex, im, floor);
+            assertTrue("unit " + unit + ": the partner at the floor has a lane, the one a hair under has none",
+                    lanes.partners() == 1 && lanes.partnerEdge(0) >= 0 && lanes.partnerEdge(1) == -1);
+            assertTrue("unit " + unit + ": ...and an arrow, the other none (" + arrows.count() + " drawn)", arrows.count() == 1 && arrows.nation(0) == 1);
+            assertTrue("unit " + unit + ": ...and they are the lanes of that floor and no other (the screen builds them again when it moves)",
+                    lanes.matches(7, 45, -63, ex, im, floor) && !lanes.matches(7, 45, -63, ex, im, floor / 2) && lanes.minLane() == floor
+                            && arrows.matches(7, 45, -63, ex, im, floor) && !arrows.matches(7, 45, -63, ex, im, floor * 2));
+            if (unit > 1) {
+                // The fixture can tell the floors apart: the figures are a hundredth or less of the board's, which the board's own floor, left
+                // as it was written, would hide whole.
+                assertTrue("unit " + unit + ": the floor as the board wrote it would hide both (" + floor + " < " + TradeLanes.MIN_LANE + ")",
+                        TradeLanes.of(45, -63, 7, lat, lon, ex, im).partners() == 0 && TradeLanes.Arrows.of(45, -63, 7, lat, lon, ex, im).count() == 0);
+            }
+        }
     }
 
     /* ----------- section 7, second part: the Game's two lines, in a city ----------- */
@@ -972,6 +1020,7 @@ public class DenominationCheck {
                 sum(plainBefore.yearExportValue) + sum(plainBefore.yearImportValue) > 0
                         && sum(plainBefore.exportValue) + sum(plainBefore.importValue) + plainBefore.noPartnerExports + plainBefore.noPartnerImports > 0);
         assertTrue("fixture: the two cities are still the same city", same(plain, lopped) && tradeOf(lopped).toState().year == plainBefore.year);
+        cardAndLanes("before the reform", plain, lopped, 1, false);
         assertTrue("the reform took: a hundred old dollars to the new one",
                 force(lopped, factor) && Math.abs(lopped.getDenomination().getUnit() - factor) <= band * factor);
 
@@ -989,6 +1038,7 @@ public class DenominationCheck {
         assertTrue("fixture: the save's copy holds the finished year in both cities", savedPlain.size() == 1 && savedLopped.size() == 1);
         gapWithin("...and the save's copy of them is divided too", historyMoneyGap(savedLopped, savedPlain, 1 / factor), band);
         out.printf("   right after the reform the worst gaps: money %.2g, real %.2g, history %.2g%n", moneyGap, realGap, historyGap);
+        cardAndLanes("right after the reform", plain, lopped, 1 / factor, true);
 
         // 4. On to the next turn of the year: the first rounding on the new grid, with the half year before it in the old money divided.
         for (int m = 0; m < 13 && tradeOf(lopped).yearsFinished() < 2; m++) monthOn(plain, lopped);
@@ -1019,8 +1069,87 @@ public class DenominationCheck {
         out.printf("   reformed in %s, the second year turned in %s: worst gaps money %.2g, units %.2g (founding grid: %.2g)%n",
                 CityCalendar.shortMonthName(reformMonth), CityCalendar.shortMonthName(turnMonth), newestMoney, newestUnits, oldGrid);
 
+        cardAndLanes("a year turned on", plain, lopped, 1 / factor, true);
+
         // 5. The city as a whole is still the same city.
         sameCity(plain, lopped, factor, 1e-9);
+
+        // 6. On until prices have moved: the floor is the index's, in both money, and the reformed city still draws what the plain one does.
+        for (int m = 0; m < 12 && tradeOf(plain).snapshot().minLane() <= TradeLanes.minLane(1, 1) * (1 + 1e-9); m++) monthOn(plain, lopped);
+        cardAndLanes("with prices moved", plain, lopped, 1 / factor, true);
+    }
+
+    /** Where the lanes of cardAndLanes() are drawn from: Halifax, as GlobeCheck's city. */
+    static final double LANES_FROM_LAT = 44.65, LANES_FROM_LON = -63.57;
+
+    /**
+     * What the screens read of two cities' trade by partner, the second the first reformed by 1 / scale (scale 1: the same city, before the reform):
+     * the nation card's year to date, the month's figures the lanes are made of, the floor under which a partner has no lane, and the lanes and the
+     * arrows built on them as the map builds them, from the snapshot's own floor. The reformed city's card and figures are the plain one's times
+     * `scale`, its floor too, and it draws the same partners. `reformed` says the second city is not the first's twin but its reform, where the
+     * floor the reform left alone would have hidden every lane (the fault: TradeLanes.MIN_LANE was money as the city counted it, and a reform
+     * divides every trade but not it).
+     */
+    static void cardAndLanes(String when, Game plain, Game lopped, double scale, boolean reformed) {
+        out.println("--- the card and the lanes, " + when + " (TP1) ---");
+        PartnerTrade.Snapshot p = tradeOf(plain).snapshot(), l = tradeOf(lopped).snapshot();
+        double band = 1e-12;
+        assertTrue("fixture: both cities are at the same month (" + CityCalendar.shortMonthName(p.month()) + ") with a trade by partner", p.month() == l.month() && p.nations() == l.nations() && p.nations() >= 1);
+
+        // The card: each nation's year to date, in the city's money and in tonnes.
+        double cardMoney = 0, cardTonnes = 0, yearTrade = 0;
+        for (int nation = 1; nation <= p.nations(); nation++) {
+            TradeLanes.YearToDate a = l.yearToDate(nation), e = p.yearToDate(nation);
+            yearTrade += e.exports() + e.imports();
+            cardMoney = Math.max(cardMoney, Math.max(gapOf(a.exports(), e.exports() * scale), gapOf(a.imports(), e.imports() * scale)));
+            cardTonnes = Math.max(cardTonnes, Math.max(gapOf(a.tonnesOut(), e.tonnesOut()), gapOf(a.tonnesIn(), e.tonnesIn())));
+        }
+        assertTrue("fixture: the plain city has sold and bought this year (D$" + String.format("%.1f", yearTrade) + " thousand)", yearTrade > 0);
+        gapWithin("the nation card's year to date is the plain city's, " + (scale == 1 ? "as it was" : "divided"), cardMoney, band);
+        gapWithin("...and its tonnes are the plain city's", cardTonnes, band);
+        gapWithin("the month's figures the lanes are made of are the plain city's, " + (scale == 1 ? "as they were" : "divided"),
+                Math.max(arrayGap(l.exportsByNation(), p.exportsByNation(), scale), arrayGap(l.importsByNation(), p.importsByNation(), scale)), band);
+
+        // The floor: the board's, in each city's own price index and money.
+        double index = plain.getPriceIndex().getIndex();
+        double unit = lopped.getDenomination().getUnit();
+        close("the plain city's floor is the board's in its prices (index " + String.format("%.4f", index) + ")", p.minLane(), TradeLanes.minLane(index, 1), 1e-12);
+        close("the reformed city's is the same, in its money (unit " + unit + ")", l.minLane(), TradeLanes.minLane(lopped.getPriceIndex().getIndex(), unit), 1e-12);
+        gapWithin("...and, the cities being the same, the plain city's times " + (scale == 1 ? "1" : "the reform's scale"), gapOf(l.minLane(), p.minLane() * scale), band);
+
+        // The lanes and the arrows, as the map builds them: on the nodes of the nations, from the place the city stands.
+        int n = p.nations();
+        double[] la = new double[n], lo = new double[n];
+        for (int i = 0; i < n; i++) {
+            la[i] = plain.getWorldMarket().nodeLat(i + 1);
+            lo[i] = plain.getWorldMarket().nodeLon(i + 1);
+        }
+        // From Halifax, not from the place the city stands: the fixture's only partner is the nation it stands in (the United States, at the stand-in's
+        // own node), which needs no lane or arrow at its own place, so the lanes would be empty. The floor and the figures are what is under test.
+        double cityLat = LANES_FROM_LAT, cityLon = LANES_FROM_LON;
+        boolean apart = true;
+        for (int i = 0; i < n; i++) if (p.exportsByNation()[i] + p.importsByNation()[i] > 0) apart &= Math.abs(la[i] - cityLat) > 1 || Math.abs(lo[i] - cityLon) > 1;
+        assertTrue("fixture: every partner with trade stands apart from the place the lanes are drawn from (Halifax)", apart);
+        TradeLanes pl = TradeLanes.of(cityLat, cityLon, p.month(), la, lo, p.exportsByNation(), p.importsByNation(), p.minLane());
+        TradeLanes ll = TradeLanes.of(cityLat, cityLon, l.month(), la, lo, l.exportsByNation(), l.importsByNation(), l.minLane());
+        TradeLanes.Arrows pa = TradeLanes.Arrows.of(cityLat, cityLon, p.month(), la, lo, p.exportsByNation(), p.importsByNation(), p.minLane());
+        TradeLanes.Arrows la2 = TradeLanes.Arrows.of(cityLat, cityLon, l.month(), la, lo, l.exportsByNation(), l.importsByNation(), l.minLane());
+        assertTrue("fixture: the plain city's month has a partner with a lane and an arrow (" + pl.partners() + " lanes, " + pa.count() + " arrows)", pl.partners() >= 1 && pa.count() >= 1);
+        boolean sameLanes = pl.partners() == ll.partners();
+        for (int i = 0; i < n; i++) sameLanes &= (pl.partnerEdge(i) >= 0) == (ll.partnerEdge(i) >= 0);
+        assertTrue("the " + (scale == 1 ? "twin" : "reformed city") + " has a lane to every partner the plain city has one to, and to no other (" + ll.partners() + " of " + pl.partners() + ")", sameLanes);
+        boolean sameArrows = pa.count() == la2.count() && pa.hidden() == la2.hidden();
+        for (int k = 0; sameArrows && k < pa.count(); k++) sameArrows = pa.nation(k) == la2.nation(k);
+        assertTrue("...and the same arrows, in the same order (" + la2.count() + " drawn, " + la2.hidden() + " hidden)", sameArrows);
+        if (reformed) {
+            // The fixture can tell the floors apart: the plain city's floor left in the old money is what the reform used to leave, and it hides the lot.
+            assertTrue("the fault: the floor a reform left undivided (D$" + String.format("%.3f", p.minLane()) + ") would hide every lane and arrow of the reformed city",
+                    TradeLanes.of(cityLat, cityLon, l.month(), la, lo, l.exportsByNation(), l.importsByNation(), p.minLane()).partners() == 0
+                            && TradeLanes.Arrows.of(cityLat, cityLon, l.month(), la, lo, l.exportsByNation(), l.importsByNation(), p.minLane()).count() == 0);
+        }
+        if (when.startsWith("with prices")) {
+            assertTrue("the price index has moved (" + String.format("%.4f", index) + "), and the floor with it: above the founding's", index > 1 && p.minLane() > TradeLanes.minLane(1, 1));
+        }
     }
 
     /* ------------------------------ helpers ------------------------------ */
