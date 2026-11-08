@@ -1,0 +1,8 @@
+{
+  "modelSettings": {"claude-opus-5-5": {"autoCompactWindow": 300000}},
+  "permissions": {"deny": [
+    "ScheduleWakeup", "SuggestPluginInstall", "SearchPlugins", "SuggestSkills", "ReportFindings",
+    "mcp__visualize", "mcp__ccd_session__read_widget_context",
+    "mcp__plugin_github_github", "mcp__mcp-registry", "mcp__scheduled-tasks"
+  ]}
+}

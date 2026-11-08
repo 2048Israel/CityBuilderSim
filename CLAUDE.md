@@ -39,21 +39,23 @@ every call after it.
   or a large screen whole.
 - **The big indexes:** `docs/harnesses.md` (800 KB) and `docs/dials.md`
   (500 KB) are for grep, never for reading.
-- **Sessions:** a long session costs more per call, because each call
-  re-sends all of it: start a fresh session or agent per task (a batch, a
-  review), with a brief to the point and a report of 15 lines.
+- **Sessions:** each call re-sends all of the session so far: a fresh session
+  or agent per task (a batch, a review), a brief to the point, a report of 15
+  lines. Opus compacts at 300k and never loads the tools no session here has
+  called (`.claude/settings.json`; CX2: past step 150 a batch session re-sent
+  31% of the week's batch tokens), so what must survive goes in the notes file
+  when it is decided. Independent reads go in one step (88% of an Opus batch
+  step made one call), a wide search to an `Explore` agent on Sonnet.
 - **Coding goes to Sonnet** (Jerus, 2026-10-20): a batch hands each slice a
   brief can pin down to an Agent subagent of type `slice`
   (`.claude/agents/slice.md`: Sonnet 5.5 at xhigh, six tools, no `CLAUDE.md`;
   CX1), which edits the worktree and commits nothing; Opus writes the brief,
-  reviews the diff as a stranger's and commits. It runs inside his 20x
-  subscription, where DeepSeek (`tools/deepseek/agent.py`) is billed on top and
-  returns when he has the budget. `docs/deepseek.md` says what to hand over,
-  how, what a slice costs and what to review; `docs/batch.md`, 3, how large a
-  slice is and when Sonnet is the whole session. In the cloud an agent cannot
-  start another agent (depth 1), so a batch run as an agent writes its slices
-  itself. **Every session and agent runs at xhigh or max** (Jerus,
-  2026-10-24: "anything on high effort or lower is banned").
+  reviews the diff as a stranger's and commits. `docs/deepseek.md` says what
+  to hand over, how, what a slice costs and what to review (DeepSeek, billed
+  on top, and the cloud's depth 1 too); `docs/batch.md`, 3, how large a slice
+  is and when Sonnet is the whole session. **Every session and agent runs at
+  xhigh or max** (Jerus, 2026-10-24: "anything on high effort or lower is
+  banned").
 
 ## Open these before reading source
 
@@ -228,13 +230,11 @@ Conventions the code is written to, which the indexes rely on:
 
 ## How a batch is done
 
-Two files, split by reader (BM1, 2026-10-28); a slice, which loads this file
-whole, reads neither. `docs/batch.md` is a batch session's checklist, from its
-row in `QUEUE.md` to a pushed branch with its ship file last;
-`docs/orchestrator.md` the orchestrator's: the day, the gate `ship.sh` runs,
-the screen-check session, the PC, the Earth file, the other assistants, which
-model, the docs pass. Each rule in them has a one-line WHY naming its
-incident; the longer story is `docs/notes/batch-history.md`. The standing
+`docs/batch.md` is a batch session's checklist, from its row in `QUEUE.md` to
+a pushed branch with its ship file last; `docs/orchestrator.md` the
+orchestrator's: the day, the gate, the screen-check session, the PC (BM1,
+split by reader; a slice reads neither). Each rule has a one-line WHY naming
+its incident, the longer story in `docs/notes/batch-history.md`; the standing
 rules above bind both.
 
 ## Adding things - where the shape already is

@@ -33,9 +33,8 @@ under `batch-check.sh`'s lock) go one at a time.
    `docs/deepseek.md`); the diff is reviewed as a stranger's
    **without re-reading what the brief sent Sonnet to read**. A **small fix
    batch** - no money, saves or threading, a few hundred lines - runs on
-   Sonnet as the whole session, Opus at the gate only (BP1 item 7). Every
-   session and slice runs at xhigh or max (Jerus, 2026-10-24: a medium-effort
-   orchestrator stalled a lane, lesson e). Commit small and often.
+   Sonnet as the whole session, Opus at the gate only (BP1 item 7). Commit
+   small and often.
 4. At the end, `./batch-check.sh --pick`: the compile, the harnesses that read
    what the diff changed (`tools/pick.sh`), the maps regenerated, Stale and
    the tree. **Exit 0** is green; **3**, nothing failed but main's recorded
