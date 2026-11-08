@@ -1,4 +1,4 @@
-# SectorStatementCheck.java - 937 lines · 23 methods · 4 constants · harnesses
+# SectorStatementCheck.java - 939 lines · 23 methods · 4 constants · harnesses
 
 `ham/citybuildersim/SectorStatementCheck.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
 
@@ -115,7 +115,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 86 | 852 | **type** `public class SectorStatementCheck` | The sector statements (0.7.74, batch S1): SectorStatements' formal statements held to the model's own figures, every sector and the bank, every month of two played cities, and across a save. |
+| 86 | 854 | **type** `public class SectorStatementCheck` | The sector statements (0.7.74, batch S1): SectorStatements' formal statements held to the model's own figures, every sector and the bank, every month of two played cities, and across a save. |
 | 95 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 100 | 5 | `static void quietly(Runnable r)` |  |
 | 107 | 22 | **type** `static final class Tally` | One identity's tally over a run: how many times it was checked, how many missed by more than a cent, and the worst miss. |
@@ -180,9 +180,9 @@
 |---:|---:|---|---|
 | 846 | 18 | `static void theSchedule()` |  |
 
-### 9 (lines 865-937)
+### 9 (lines 865-939)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 876 | 61 | `static void everyGate(Game...cities)` | Every building at every gate (R4), on the test player's city as it stands: each one's first failure is the build card's gate (gate()); a gate it has not is NONE - no ore without a site, no licence, no posts, no ground... |
+| 876 | 63 | `static void everyGate(Game...cities)` | Every building at every gate (R4), on the test player's city as it stands: each one's first failure is the build card's gate (gate()); a gate it has not is NONE - no ore without a site, no licence, no posts, no ground... |
 
