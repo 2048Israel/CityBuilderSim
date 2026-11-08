@@ -2,7 +2,8 @@
 
 The brief is `docs/queue/CD9.md`: CD8's three pending rows (CD8-F, CD8-I, CD8-R) and CD7's EARNED residual (CD7-E).
 Built on main at ec2aa95f (LF1 merged); main's c143b9a3 (MT1) merged in before the checks, and 8c2cb9af (RE2, 0.9.54)
-after the first gate found KeptCheck out of heap on the merge (1d14cbf8). Two slices on Sonnet 5.5 at xhigh, each
+after the first gate found KeptCheck out of heap on the merge (1d14cbf8), and aa56f24b (HB1, 0.9.55, the map's: its
+trace does not move) once the checks below were done (e7815abb; `--fast` clean on it). Two slices on Sonnet 5.5 at xhigh, each
 reviewed here as a stranger's: the curves, the coupon floor and the issue cost (c0007e9c); the one revaluation and the
 coupon in EARNED (16c2aaea, with ScaleCheck's register added in review); a fixture fix in DebtMoneysCheck from the first
 run (54e3988d); the fund's fold cap and KeptCheck's sale order from the gate (49366c39).
