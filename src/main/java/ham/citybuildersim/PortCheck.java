@@ -69,6 +69,16 @@ import java.util.List;
  *      the road with them, and a month on the city and its reload agree to
  *      the bit; a save from before them loads with nothing at sea.
  *
+ *  10. THE HARBOUR'S QUAY (HB1, 2026-11-08; Jerus: "and that ships dock
+ *      properly"): from the zoom where the scale bar first reads 500 m
+ *      (MapFrame.DETAIL_FROM, strictly above) a docked boat lies alongside
+ *      its quay - heading along the face, its side on it, none of it in the
+ *      work's box or quay - on each of the four sides, and is the boat itself
+ *      at DETAIL_FROM and below; a berth carries its work's side; and the
+ *      harbour terminals' quays are walls, side by side within the gap one
+ *      wall over both sea sides and the gap, farther apart two, another way
+ *      its own, no plot of any box in one.
+ *
  * Every fixture CAUSES its condition: the coast is bought (the offer nearest
  * the sea, as WaterCheck buys it), the terminals and the plants stood, and
  * the pure sections hand Ports its month's tonnes and berths.
@@ -212,6 +222,7 @@ public class PortCheck {
         crudeNeedsRoom();
         theBoats();
         acrossASave(port);
+        theHarbourQuay();
 
         for (GameFiles f : FILES.values()) LongPlaytest.cleanUp(f.getDirectory().getParent());
         out.println();
@@ -1188,5 +1199,220 @@ public class PortCheck {
         report("...and its terminal takes its share the first month it plays, the audit closing",
                 none.share(Ports.Cargo.GENERAL) > 0 && auditMiss(old) <= 1,
                 String.format("%.4f", none.share(Ports.Cargo.GENERAL)));
+    }
+
+    /* ============================ 10. THE HARBOUR'S QUAY ============================ */
+
+    /** The fixture terminal's box, in plots: 6 across and 5 deep (the fixture's own, not the model's). */
+    static final int BOX_W = 6, BOX_H = 5;
+
+    /** A harbour terminal of the fixture: its box at (x0, y0), the sea on `side`, the harbour's quay. */
+    static CityShore.Work harbourWork(long x0, long y0, int side) {
+        return new CityShore.Work(x0, y0, BOX_W, BOX_H, 0, side, CityShore.HARBOUR_QUAY_PLOTS);
+    }
+
+    /** Two harbour terminals facing `side` at (2000, 2000), the second `gap` plots past the first along the shore, on the same line. */
+    static CityShore pairOnShore(int side, int gap) {
+        boolean along = side % 2 == 0;
+        int len = along ? BOX_W : BOX_H;
+        CityShore s = new CityShore();
+        s.add(harbourWork(2000, 2000, side));
+        s.add(harbourWork(2000 + (along ? len + gap : 0), 2000 + (along ? 0 : len + gap), side));
+        return s;
+    }
+
+    /** The wall the pair should make, worked from the geometry alone: the strip before both sea sides and the gap between, HARBOUR_QUAY_PLOTS deep. */
+    static CityShore.Wall pairsWall(int side, int gap) {
+        int q = CityShore.HARBOUR_QUAY_PLOTS, len = (side % 2 == 0 ? BOX_W : BOX_H) * 2 + gap;
+        switch (side) {
+            case 0:  return new CityShore.Wall(2000, 2000 - q, len, q, 0);
+            case 1:  return new CityShore.Wall(2000 + BOX_W, 2000, q, len, 1);
+            case 2:  return new CityShore.Wall(2000, 2000 + BOX_H, len, q, 2);
+            default: return new CityShore.Wall(2000 - q, 2000, q, len, 3);
+        }
+    }
+
+    /** Whether some wall of `walls` holds world plot (x, y). */
+    static boolean walled(List<CityShore.Wall> walls, long x, long y) {
+        for (CityShore.Wall w : walls) if (w.holds(x, y)) return true;
+        return false;
+    }
+
+    /** Whether every plot of the rectangle (x0, y0, w, h) is in a wall (all = true), or none of them is (all = false). */
+    static boolean walledAll(List<CityShore.Wall> walls, long x0, long y0, long w, long h, boolean all) {
+        for (long y = y0; y < y0 + h; y++) for (long x = x0; x < x0 + w; x++) if (walled(walls, x, y) != all) return false;
+        return true;
+    }
+
+    /** Whether any plot of any wall of `shore` is in a work's box. */
+    static boolean wallInABox(CityShore shore) {
+        for (CityShore.Wall w : shore.walls()) {
+            for (long y = w.y0(); y < w.y0() + w.h(); y++) for (long x = w.x0(); x < w.x0() + w.w(); x++) if (shore.at(x, y) != null) return true;
+        }
+        return false;
+    }
+
+    static void theHarbourQuay() {
+        out.println("\n--- 10. the harbour's quay (HB1): from the detail zoom in a boat at its berth lies alongside its quay and the terminals' quays are one wall ---");
+        double eps = 1e-9;
+
+        // THE DIAL: the zoom where the scale bar first reads 500 m, strictly above DETAIL_FROM.
+        MapFrame f = new MapFrame(1000, 800);
+        double mid = World.SIDE / 2.0;
+        f.set(mid, mid, MapFrame.DETAIL_FROM);
+        double atFrom = f.scaleBar(MapFrame.SCALE_BAR_PX)[0];
+        f.set(mid, mid, MapFrame.DETAIL_FROM * 1.01);
+        double above = f.scaleBar(MapFrame.SCALE_BAR_PX)[0];
+        f.set(mid, mid, Math.nextDown(MapFrame.DETAIL_FROM));
+        double below = f.scaleBar(MapFrame.SCALE_BAR_PX)[0];
+        report("the dial: the bar reads 1,000 m at DETAIL_FROM, 500 m at 1% past it, 1,000 m just under it",
+                atFrom == 1000 && above == 500 && below == 1000 && MapFrame.DETAIL_FROM == MapFrame.SCALE_BAR_PX * World.PLOT_M / 1000
+                        && MapFrame.DETAIL_FROM > MapFrame.L0_FROM,
+                String.format("DETAIL_FROM %.3f px a plot, bar %.0f / %.0f / %.0f m", MapFrame.DETAIL_FROM, atFrom, above, below));
+
+        // ALONGSIDE: a docked boat at a harbour berth on each side, from above DETAIL_FROM.
+        Ports.Ship[] ships = { Ports.Ship.GENERAL_CARGO, Ports.Ship.MR, Ports.Ship.VLCC };
+        double[] scales = { MapFrame.DETAIL_FROM * 1.01, ShipShapes.TRUE_FROM, MapFrame.MOST_PX_A_PLOT };
+        int cases = 0;
+        boolean parallel = true, turned = true, seaward = true, onFace = true, beam = true, clear = true, lateral = true, kept = true;
+        boolean narrow = false, wide = false;
+        for (int side = 0; side < 4; side++) {
+            CityShore.Work w = harbourWork(1000, 1000, side);
+            long[] sp = w.shorePlot();
+            double mx = sp[0] + 0.5, my = sp[1] + 0.5, dx = CityShore.DX[side], dy = CityShore.DY[side];
+            double[] bp = w.berth();
+            double face = w.quay() + 0.5;
+            for (Ports.Ship ship : ships) {
+                for (double scale : scales) {
+                    BoatSchedule.Call call = new BoatSchedule.Call(ship.cargo(), ship, true, 0, 0.5);
+                    BoatSchedule.Boat b = new BoatSchedule.Boat(call, bp[0], bp[1], true, true, 0.3, 1);
+                    BoatSchedule.Boat a = BoatSchedule.alongside(b, side, scale);
+                    cases++;
+                    double hx = Math.cos(a.heading()), hy = Math.sin(a.heading());
+                    parallel &= Math.abs(hx * dx + hy * dy) < eps;
+                    turned &= Math.abs((dx * hy - dy * hx) - 1) < eps;
+                    kept &= a.call().equals(b.call()) && a.docked() && a.loaded() == b.loaded() && a.alpha() == b.alpha();
+                    lateral &= Math.abs((a.x() - bp[0]) * dy - (a.y() - bp[1]) * dx) < eps;
+                    double halfBeam = ShipShapes.drawnLength(a, scale) * ShipShapes.BEAM / 2;
+                    narrow |= halfBeam < 0.5;
+                    wide |= halfBeam > 0.5;
+                    double[][] hull = ShipShapes.hull(a, scale);
+                    double least = Double.MAX_VALUE, most = -Double.MAX_VALUE;
+                    for (int i = 0; i < hull[0].length; i++) {
+                        double px = hull[0][i], py = hull[1][i], depth = (px - mx) * dx + (py - my) * dy;
+                        least = Math.min(least, depth);
+                        most = Math.max(most, depth);
+                        clear &= !(px > w.x0() + eps && px < w.x0() + w.w() - eps && py > w.y0() + eps && py < w.y0() + w.h() - eps);
+                        for (int k = 1; k <= w.quay(); k++) {
+                            long[] qp = w.quayPlot(k);
+                            clear &= !(px > qp[0] + eps && px < qp[0] + 1 - eps && py > qp[1] + eps && py < qp[1] + 1 - eps);
+                        }
+                    }
+                    seaward &= least >= face - eps;
+                    onFace &= Math.abs(least - face) < eps;
+                    beam &= Math.abs(most - least - 2 * halfBeam) < eps;
+                }
+            }
+        }
+        String of = cases + " boats on four sides";
+        report("alongside: the heading is along the quay face, the sea's direction turned a quarter the same way every time", parallel && turned && cases == 4 * ships.length * scales.length, of);
+        report("...every hull point seaward of the face, none in the work's box or its quay's plots", seaward && clear, of);
+        report("...the hull's side on the face, its far side a beam out (hulls narrower and wider than a plot)", onFace && beam && narrow && wide, of);
+        report("...the boat on the berth's line out from the work, its call, load and docking as they were", lateral && kept, of);
+
+        // ...at DETAIL_FROM and below, a boat not docked, a side not known: the boat itself.
+        boolean same = true;
+        BoatSchedule.Call call = new BoatSchedule.Call(Ports.Cargo.LIQUID, Ports.Ship.MR, true, 0, 0.5);
+        BoatSchedule.Boat docked = new BoatSchedule.Boat(call, 1000.5, 990.5, true, true, 0.3, 1);
+        BoatSchedule.Boat afloat = new BoatSchedule.Boat(call, 1000.5, 990.5, true, false, 0.3, 1);
+        for (int side = 0; side < 4; side++) {
+            for (double scale : new double[] { MapFrame.DETAIL_FROM, MapFrame.L0_FROM, MapFrame.L1_FROM, f.leastScale() }) {
+                same &= BoatSchedule.alongside(docked, side, scale).equals(docked);
+            }
+            same &= BoatSchedule.alongside(afloat, side, MapFrame.MOST_PX_A_PLOT).equals(afloat);
+        }
+        same &= BoatSchedule.alongside(docked, -1, MapFrame.MOST_PX_A_PLOT).equals(docked)
+                && BoatSchedule.alongside(docked, CityShore.DX.length, MapFrame.MOST_PX_A_PLOT).equals(docked)
+                && !BoatSchedule.alongside(docked, 0, MapFrame.MOST_PX_A_PLOT).equals(docked);
+        report("...at DETAIL_FROM and below, for a boat afloat, and for a berth whose side is not known: the boat itself", same, "");
+
+        // THE BERTH SAYS ITS SIDE: CityShore.berths() hands the work's side on; a berth made by hand has none.
+        BuildingVisual.Type terminal = new BuildingVisual.Type(0, null, 0, false, BuildingVisual.NOT_A_ROAD, null, false, 1, false, 0, 0, 0,
+                false, true, false, false, false, Ports.Cargo.LIQUID.ordinal(), 0, null, BuildingVisual.PLAIN, BuildingVisual.NO_GROUP, false, "", false, false);
+        boolean sides = new BoatSchedule.Berth(Ports.Cargo.LIQUID, 1, 2).side() == -1;
+        for (int side = 0; side < 4; side++) {
+            CityShore one = new CityShore();
+            CityShore.Work w = harbourWork(1000, 1000, side);
+            one.add(w);
+            List<BoatSchedule.Berth> berths = one.berths(new BuildingVisual.Type[] { terminal });
+            double[] bp = w.berth();
+            sides &= berths.size() == 1 && berths.get(0).side() == side && berths.get(0).x() == (long) Math.floor(bp[0]) && berths.get(0).y() == (long) Math.floor(bp[1])
+                    && berths.get(0).cargo() == Ports.Cargo.LIQUID;
+        }
+        assertTrue("the berth carries its work's side from CityShore.berths(), -1 for a berth made by hand", sides);
+
+        // THE WALLS: side by side within the gap, one wall; farther apart, two; another way, its own; none in a box.
+        int q = CityShore.HARBOUR_QUAY_PLOTS, join = CityShore.WALL_JOIN_GAP;
+        boolean one = true, two = true, noBox = true, fromGeometry = join == 2 * CityShore.CLEAR + 1;
+        for (int side = 0; side < 4; side++) {
+            for (int gap = CityShore.CLEAR; gap <= join; gap++) {
+                CityShore s = pairOnShore(side, gap);
+                one &= s.walls().equals(List.of(pairsWall(side, gap)));
+                noBox &= !wallInABox(s);
+                // the sea sides and the gap between all walled, and not a plot inland of the line
+                CityShore.Wall e = pairsWall(side, gap);
+                one &= walledAll(s.walls(), e.x0(), e.y0(), e.w(), e.h(), true);
+            }
+            CityShore apart = pairOnShore(side, join + 1);
+            CityShore.Wall e = pairsWall(side, join + 1);      // the span of both strips and the gap between
+            boolean along = side % 2 == 0;
+            int len = along ? BOX_W : BOX_H;
+            long gx = e.x0() + (along ? len : 0), gy = e.y0() + (along ? 0 : len);      // the gap's strip
+            two &= apart.walls().size() == 2 && walledAll(apart.walls(), gx, gy, along ? join + 1 : q, along ? q : join + 1, false)
+                    && walledAll(apart.walls(), e.x0(), e.y0(), along ? len : q, along ? q : len, true)
+                    && walledAll(apart.walls(), gx + (along ? join + 1 : 0), gy + (along ? 0 : join + 1), along ? len : q, along ? q : len, true);
+            noBox &= !wallInABox(apart);
+        }
+        assertTrue("walls: two works side by side within the gap (WALL_JOIN_GAP, from CLEAR), on each of the four sides: one wall over both sea sides and the gap", one && fromGeometry);
+        assertTrue("...the same two farther apart than the gap: two walls, the gap not covered", two);
+
+        CityShore mixed = pairOnShore(0, CityShore.CLEAR);
+        mixed.add(harbourWork(2100, 2000, 1));                        // another way: east
+        mixed.add(harbourWork(2000 + 2 * BOX_W + 2 * CityShore.CLEAR, 2001, 0));   // the same side a plot inland, a gap on: another line
+        mixed.add(new CityShore.Work(2200, 2000, BOX_W, BOX_H, 0, 0, CityShore.QUAY_PLOTS[0]));   // a pier of its own: no wall
+        mixed.add(new CityShore.Work(2300, 2000, BOX_W, BOX_H, 0, 0, 0));                         // a tank farm: no quay
+        List<CityShore.Wall> mw = mixed.walls();
+        boolean own = mw.size() == 3 && mw.contains(new CityShore.Wall(2100 + BOX_W, 2000, q, BOX_H, 1))
+                && mw.contains(new CityShore.Wall(2000 + 2 * BOX_W + 2 * CityShore.CLEAR, 2001 - q, BOX_W, q, 0))
+                && mw.contains(new CityShore.Wall(2000, 2000 - q, 2 * BOX_W + CityShore.CLEAR, q, 0))
+                && mw.stream().noneMatch(w -> w.x0() >= 2200);
+        noBox &= !wallInABox(mixed);
+        assertTrue("...a third facing another way has its own, the same side on another line has its own, a pier of its own and a tank farm have none", own);
+
+        // A box in a strip cuts the wall round it.
+        CityShore cut = new CityShore();
+        cut.add(harbourWork(2000, 2000, 0));
+        CityShore.Work in = new CityShore.Work(2003, 2000 - q + 1, 2, 1, 0, 1, 0);   // a small box one row into the strip, two plots across
+        cut.add(in);
+        List<CityShore.Wall> cw = cut.walls();
+        int plots = 0;
+        for (CityShore.Wall w : cw) plots += w.w() * w.h();
+        boolean cutOk = plots == BOX_W * q - in.w() * in.h() && walledAll(cw, 2003, 2000 - q + 1, in.w(), in.h(), false) && !wallInABox(cut);
+        noBox &= !wallInABox(cut);
+        assertTrue("...no plot of any work's box is in a wall: a box in a strip cuts the wall round it, the rest of the strip still walled", noBox && cutOk);
+
+        // The walls are made once a version and asked by the window; the order the works were laid in does not matter.
+        CityShore laid = pairOnShore(2, CityShore.CLEAR), backwards = new CityShore();
+        for (int i = laid.works().size() - 1; i >= 0; i--) backwards.add(laid.works().get(i));
+        boolean order = laid.walls().equals(backwards.walls());
+        long before = laid.version();
+        laid.add(harbourWork(2000 + 2 * (BOX_W + CityShore.CLEAR), 2000, 2));
+        boolean grows = laid.version() > before && laid.walls().size() == 1 && laid.walls().get(0).w() == 3 * BOX_W + 2 * CityShore.CLEAR;
+        CityShore.Wall one0 = new CityShore.Wall(2000, 2000 - q, 2 * BOX_W + CityShore.CLEAR, q, 0);
+        boolean window = mixed.wallsIn(one0.x0(), one0.y0(), one0.x0() + one0.w(), one0.y0() + one0.h()).contains(one0)
+                && mixed.wallsIn(one0.x0() + 5000, one0.y0(), one0.x0() + 6000, one0.y0() + 100).isEmpty()
+                && mixed.wallsIn(Long.MIN_VALUE / 2, Long.MIN_VALUE / 2, Long.MAX_VALUE / 2, Long.MAX_VALUE / 2).equals(mw)
+                && mixed.wallsIn(one0.x0() + one0.w(), one0.y0(), one0.x0() + one0.w() + 1, one0.y0() + 1).stream().noneMatch(one0::equals);
+        assertTrue("...made again when a work is laid (a third joins the wall), the same in whatever order they were laid, asked by the window", order && grows && window);
     }
 }

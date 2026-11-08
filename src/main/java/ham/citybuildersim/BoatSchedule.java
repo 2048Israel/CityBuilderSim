@@ -99,8 +99,17 @@ public final class BoatSchedule {
     /** A month's arrival ticks, 2^36: an arrival in ticks over this is its share of the month. */
     private static final double TICKS = (double) (1L << ARRIVAL_BITS);
 
-    /** One terminal's quay: its kind and where on the map it stands, in plots. */
-    public record Berth(Ports.Cargo cargo, long x, long y) { }
+    /**
+     * One terminal's quay: its kind, where on the map it stands in plots (the plot just past its quay's end), and (HB1) the side its
+     * sea is on, CityShore.Work.side(): 0 north to 3 west, or -1 when it is not known (a berth made by hand, a fixture's).
+     */
+    public record Berth(Ports.Cargo cargo, long x, long y, int side) {
+
+        /** A berth whose side is not known: its boats lie at its point as they did before HB1 (alongside() leaves them). */
+        public Berth(Ports.Cargo cargo, long x, long y) {
+            this(cargo, x, y, -1);
+        }
+    }
 
     /**
      * A berth's route: its quay, its far end (x1, y1) out at sea, and the
@@ -722,6 +731,29 @@ public final class BoatSchedule {
         if (coming) heading += Math.PI;
         double alpha = d <= fade ? 1 : Math.max(0, 1 - (d - fade) / run);
         return new Boat(call, x, y, loaded, docked, heading, alpha);
+    }
+
+    /* ----- the harbour's quay and its boats alongside (HB1, 2026-11-08) ----- */
+
+    /**
+     * A docked boat lying alongside its quay, not bow-on to it (HB1; Jerus, 2026-10-31: "and that ships dock properly"), from the detail
+     * zoom in: above MapFrame.DETAIL_FROM px a plot, strictly; at it and below, and for a boat not docked, or a berth whose side is not
+     * known (-1: a berth made by hand), `b` itself - the map is drawn as it was.
+     *
+     * The geometry, worked from CityShore.Work. Its quay runs `quay` plots out from the middle of its shore plot, so the quay's outer face
+     * is (quay + 0.5) plots out from that middle; its berth point (Work.berth(), where a docked boat is) is the middle of the plot just
+     * past the quay, (quay + 1) out - half a plot seaward of the face. The boat heads along the face: the sea's direction (CityShore.DX,
+     * DY of `side`) turned a quarter, clockwise on the screen, the same way on every side. Its side lies on the face when its centre is
+     * half its drawn beam (ShipShapes.drawnLength() x BEAM / 2) seaward of the face, which from the berth point is (half beam - 0.5)
+     * plots along the sea's direction: a little shoreward for a hull narrower than a plot, seaward for a wider one, and the same for a
+     * quay of any length. The centre stays on the berth's line out from the work's middle, so the boat lies off the middle of the work's
+     * sea side. Pure.
+     */
+    public static Boat alongside(Boat b, int side, double scale) {
+        if (b == null || !b.docked() || side < 0 || side >= CityShore.DX.length || !(scale > MapFrame.DETAIL_FROM)) return b;
+        double dx = CityShore.DX[side], dy = CityShore.DY[side];
+        double shift = ShipShapes.drawnLength(b, scale) * ShipShapes.BEAM / 2 - 0.5;
+        return new Boat(b.call(), b.x() + dx * shift, b.y() + dy * shift, b.loaded(), true, Math.atan2(dy, dx) + Math.PI / 2, b.alpha());
     }
 
     /** A call's turn of its route's last leg, in radians: within its route's spread either way, by the call's own hash (its arrival and its route). */
