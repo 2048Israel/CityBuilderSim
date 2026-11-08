@@ -2750,6 +2750,11 @@ public class LandmassCheck {
                             && LandMap.hoverWords(land, lm.getMarket(), f.b.books(), px, py, LandMap.CARD_FIELDS).equals(plain));
             check("the chip says the landmass, what the city owns of it and why it is not linked, in the model's words: 'Island 2 · <its area> · not linked: needs a port here and one at home'",
                     LandmassView.chipWords(lms, chips.get(0)).equals("Island 2 · " + LandMap.area(chips.get(0).plots() * World.KM2_PER_PLOT) + " · not linked: needs a port here and one at home"));
+            String[] chipLines = LandmassView.chipLines(lms, chips.get(0));
+            check("...drawn in two lines (MT1, BK1-L): the name and area, then why it is not linked, each about half the one line's 70 characters, and the one line is the two joined by ' · '",
+                    chipLines.length == 2 && chipLines[0].equals("Island 2 · " + LandMap.area(chips.get(0).plots() * World.KM2_PER_PLOT))
+                            && chipLines[1].equals("not linked: needs a port here and one at home")
+                            && LandmassView.chipWords(lms, chips.get(0)).equals(chipLines[0] + " · " + chipLines[1]));
         }
         List<LandMap.Entry> legend = LandMap.unlinkedLegend(lms);
         check("the legend has one entry while a landmass is unlinked, 'Not linked: only a port' in the warning amber, and none for a city on one landmass or none",

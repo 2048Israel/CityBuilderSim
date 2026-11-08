@@ -296,8 +296,19 @@ public final class LandmassView {
 
     /** The map's chip on a landmass no port links: "Island 2 · 12.0 km² · not linked: needs a port here (home has one)". */
     public static String chipWords(Landmasses lms, LandMap.Chip chip) {
-        return landmassName(lms, chip.id()) + " · " + LandMap.area(chip.plots() * World.KM2_PER_PLOT) + " · not linked: "
-                + needsWords(lms, chip.id()).substring("no: ".length());
+        String[] lines = chipLines(lms, chip);
+        return lines[0] + " · " + lines[1];
+    }
+
+    /**
+     * ...in the two lines the map draws it in (MT1, BK1-L): the name and area, "Island 2 · 12.0 km²", then why it is not
+     * linked, "not linked: needs a port here (home has one)". WHY two: in one line it was some 70 characters of amber
+     * over the landmass's own hatch and tint, wider than a small island; each line is half that. chipWords() is the two
+     * with " · " between, as the chip read before.
+     */
+    public static String[] chipLines(Landmasses lms, LandMap.Chip chip) {
+        return new String[] { landmassName(lms, chip.id()) + " · " + LandMap.area(chip.plots() * World.KM2_PER_PLOT),
+                "not linked: " + needsWords(lms, chip.id()).substring("no: ".length()) };
     }
 
     /** The hover card's line for a plot of owned or offered ground on a landmass no port links: "On Island 2, which no port links: only a port can be built here". */

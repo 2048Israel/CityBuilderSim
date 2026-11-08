@@ -256,7 +256,7 @@ public final class Landmasses {
         return Math.max(0, Math.round(km2 / World.KM2_PER_PLOT));
     }
 
-    /** Names the landmasses off home: the data's name as the founding card writes it ("Charlottetown's"), else "Island N", N counting from 2 in the order the city first owned them (the lowest holding, then the lowest id). */
+    /** Names the landmasses off home: the data's name as the founding card writes it ("Charlottetown's", or by hand "Greenland": EarthData.Landmass.words()), else "Island N", N counting from 2 in the order the city first owned them (the lowest holding, then the lowest id). */
     private void nameThem(World world) {
         List<Books> order = new ArrayList<>(books.values());
         order.sort((a, b) -> a.firstHolding != b.firstHolding ? Integer.compare(a.firstHolding, b.firstHolding) : Integer.compare(a.id, b.id));
@@ -264,8 +264,8 @@ public final class Landmasses {
         int n = 2;
         for (Books b : order) {
             EarthData.Landmass l = data == null ? null : data.landmass(b.id);
-            b.dataName = l == null ? "" : l.name().trim();
-            names.put(b.id, b.dataName.isEmpty() ? "Island " + n : b.dataName + "'s");
+            b.dataName = l == null ? "" : l.words();
+            names.put(b.id, b.dataName.isEmpty() ? "Island " + n : b.dataName);
             n++;
         }
     }
