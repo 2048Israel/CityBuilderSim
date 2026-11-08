@@ -1,4 +1,4 @@
-# LandmassCheck.java - 3,295 lines · 94 methods · 14 constants · harnesses
+# LandmassCheck.java - 3,300 lines · 94 methods · 14 constants · harnesses
 
 `ham/citybuildersim/LandmassCheck.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      of ground no port links, no piece of ground holding one, the districts' free plots the linked ground's to the plot (a loop over
 > ... (29 more lines in the source)
 
-**Uses:** [World](World.md) (192), [Landmasses](Landmasses.md) (185), [LandmassView](LandmassView.md) (147), [Game](Game.md) (106), [CityMap](CityMap.md) (53), [BuildingsTemplate](BuildingsTemplate.md) (49), [LandParcel](LandParcel.md) (44), [LandManager](LandManager.md) (43), [Resource](Resource.md) (42), [LongPlaytest](LongPlaytest.md) (42), [LandMap](LandMap.md) (29), [CityLand](CityLand.md) (25), [EarthData](EarthData.md) (17), [Founding](Founding.md) (16), [LandMarket](LandMarket.md) (16), [Ports](Ports.md) (13), [TilePainter](TilePainter.md) (11), [CityShore](CityShore.md) (11), [Deposit](Deposit.md) (10), [GridOffers](GridOffers.md) (10), [BuildCard](BuildCard.md) (10), [EarthTerrain](EarthTerrain.md) (9), [GameFiles](GameFiles.md) (8), [ConstructionControl](ConstructionControl.md) (8), [ZoningView](ZoningView.md) (8), [AutoBuilder](AutoBuilder.md) (7), [EarthSite](EarthSite.md) (6), [EarthCheck](EarthCheck.md) (5), [Notice](Notice.md) (5), [LandGrid](LandGrid.md) (4)... and 13 more
+**Uses:** [World](World.md) (193), [Landmasses](Landmasses.md) (185), [LandmassView](LandmassView.md) (149), [Game](Game.md) (106), [CityMap](CityMap.md) (53), [BuildingsTemplate](BuildingsTemplate.md) (49), [LandParcel](LandParcel.md) (44), [LandManager](LandManager.md) (43), [Resource](Resource.md) (42), [LongPlaytest](LongPlaytest.md) (42), [LandMap](LandMap.md) (30), [CityLand](CityLand.md) (25), [EarthData](EarthData.md) (17), [Founding](Founding.md) (16), [LandMarket](LandMarket.md) (16), [Ports](Ports.md) (13), [TilePainter](TilePainter.md) (11), [CityShore](CityShore.md) (11), [Deposit](Deposit.md) (10), [GridOffers](GridOffers.md) (10), [BuildCard](BuildCard.md) (10), [EarthTerrain](EarthTerrain.md) (9), [GameFiles](GameFiles.md) (8), [ConstructionControl](ConstructionControl.md) (8), [ZoningView](ZoningView.md) (8), [AutoBuilder](AutoBuilder.md) (7), [EarthSite](EarthSite.md) (6), [EarthCheck](EarthCheck.md) (5), [Notice](Notice.md) (5), [LandGrid](LandGrid.md) (4)... and 13 more
 
 **Used by (3):** [BridgeCheck](BridgeCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
@@ -93,8 +93,8 @@
 | 1971 | 9. THE SAVE |
 | 2076 | 10. THE MAP |
 | 2586 | 11. THE WORDS |
-| 2912 | 12. GROWN ACROSS LANDMASSES |
-| 3173 | 13. THE FULL FILE |
+| 2917 | 12. GROWN ACROSS LANDMASSES |
+| 3178 | 13. THE FULL FILE |
 
 ## Constants
 
@@ -113,7 +113,7 @@
 | 1524 | `LandmassCheck.HOME_COAST_SHORE` | `90` | Shore plots the square of home's open coast must hold in section 10: 90. |
 | 1527 | `LandmassCheck.GROWN_MONTHS` | `480` | Months section 12 runs after its two terminals are ordered: 480 (it was 96, for terminals of 35,000 points; see TERMINAL_MONTHS). |
 | 1558 | `LandmassCheck.GSON` | `new com.google.gson.Gson()` |  |
-| 3193 | `LandmassCheck.RUN_MONTHS` | `1200` | The months the Rotterdam run plays. |
+| 3198 | `LandmassCheck.RUN_MONTHS` | `1200` | The months the Rotterdam run plays. |
 
 ## Fields (state)
 
@@ -143,7 +143,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 109 | 3187 | **type** `public class LandmassCheck` | The city's ground counted by landmass, and the island rule, checked (ET5; the ET5 design): a landmass is read from the Earth's data at every plot, the city's books are kept by landmass, ground on a landmass the city h... |
+| 109 | 3192 | **type** `public class LandmassCheck` | The city's ground counted by landmass, and the island rule, checked (ET5; the ET5 design): a landmass is read from the Earth's data at every plot, the city's books are kept by landmass, ground on a landmass the city h... |
 | 133 | 4 | `static void check(String label, boolean ok)` |  |
 | 138 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 143 | 5 | `static void quietly(Runnable r)` |  |
@@ -335,30 +335,30 @@
 | 2228 | 6 | `static Landmasses.Picture linkedWith(Landmasses.Picture p, int id)` | The picture with a landmass added to its linked set and its stamp moved: what a link makes of it, handed to a map by hand. |
 | 2235 | 350 | `static void theMap(Fixtures f) throws Exception` |  |
 
-### 11. THE WORDS (lines 2586-2911)
+### 11. THE WORDS (lines 2586-2916)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 2591 | 1 | `static String km2Words(double sqFt)` | A km2 figure as the report line writes it. |
 | 2594 | 3 | `static boolean islandPort(City c, BuildingsTemplate gc)` | The landmass kinds of terminal ordered by the card's path: the general cargo terminal, on the island. |
-| 2598 | 313 | `static void theWords(Fixtures f)` |  |
+| 2598 | 318 | `static void theWords(Fixtures f)` |  |
 
-### 12. GROWN ACROSS LANDMASSES (lines 2912-3172)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2922 | 63 | `static String audit(Game g)` | The model's books of the terminals and the ground, audited at one look: the linked free ground fits the linked owned ground less the linked built ground; the ground the unlinked landmasses' terminals hold is what the ... |
-| 2987 | 12 | `static String booksDiffer(List<Landmasses.Row> books, List<Landmasses.Row> recount)` | What differs between the books' rows and a recount's, ignoring the name and whether the landmass is linked; null when they are the same books. |
-| 3001 | 16 | `static void theAudit(Fixtures f)` | The audit, tried on books gone stale: land bought and the books never told. |
-| 3019 | 5 | `static int buildingsOf(Game g)` | The buildings standing, every template's. |
-| 3025 | 147 | `static void grown(Fixtures f)` |  |
-
-### 13. THE FULL FILE (lines 3173-3295)
+### 12. GROWN ACROSS LANDMASSES (lines 2917-3177)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3178 | 13 | `static EarthData theEarth()` | The Earth's data where it is named or lies at its place, or null - and the one line saying so. |
-| 3195 | 74 | `static void fullFile(EarthData file)` |  |
-| 3270 | 17 | `private static void look(Game g, int[] looks, String[] first)` |  |
-| 3289 | 6 | `static double[] dryArea(double km2)` | The five areas of an offer of this many square kilometres of dry ground. |
+| 2927 | 63 | `static String audit(Game g)` | The model's books of the terminals and the ground, audited at one look: the linked free ground fits the linked owned ground less the linked built ground; the ground the unlinked landmasses' terminals hold is what the ... |
+| 2992 | 12 | `static String booksDiffer(List<Landmasses.Row> books, List<Landmasses.Row> recount)` | What differs between the books' rows and a recount's, ignoring the name and whether the landmass is linked; null when they are the same books. |
+| 3006 | 16 | `static void theAudit(Fixtures f)` | The audit, tried on books gone stale: land bought and the books never told. |
+| 3024 | 5 | `static int buildingsOf(Game g)` | The buildings standing, every template's. |
+| 3030 | 147 | `static void grown(Fixtures f)` |  |
+
+### 13. THE FULL FILE (lines 3178-3300)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3183 | 13 | `static EarthData theEarth()` | The Earth's data where it is named or lies at its place, or null - and the one line saying so. |
+| 3200 | 74 | `static void fullFile(EarthData file)` |  |
+| 3275 | 17 | `private static void look(Game g, int[] looks, String[] first)` |  |
+| 3294 | 6 | `static double[] dryArea(double km2)` | The five areas of an offer of this many square kilometres of dry ground. |
 

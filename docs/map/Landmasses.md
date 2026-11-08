@@ -142,7 +142,7 @@
 |---:|---:|---|---|
 | 229 | 24 | `void recount(World world, CityLand land)` | Counts the city's ground by landmass again (derived, ET5): home is the landmass at the land's site plot; the owned ground is read where it can lie on another landmass, and home's books are what is left of the land's. |
 | 255 | 3 | `private static long plots(double km2)` | A land area in square kilometres as a whole number of plots. |
-| 260 | 12 | `private void nameThem(World world)` | Names the landmasses off home: the data's name as the founding card writes it ("Charlottetown's"), else "Island N", N counting from 2 in the order the city first owned them (the lowest holding, then the lowest id). |
+| 260 | 12 | `private void nameThem(World world)` | Names the landmasses off home: the data's name as the founding card writes it ("Charlottetown's", or by hand "Greenland": EarthData.Landmass.words()), else "Island N", N counting from 2 in the order the city first own... |
 | 278 | 47 | `boolean onlyHome(World world, long x0, long y0, long x1, long y1)` | Whether no landmass but home's (and none at all, 0) can lie under the box of plots [x0, x1) x [y0, y1) or within the cells' reach of it: the 1-degree tiles under the box, widened, hold no other id. |
 | 327 | 4 | `private boolean homeOnly(int[] near)` | Whether every landmass a tile's plots can take is home's (or none): then its plots all read home. |
 | 333 | 14 | `private int[] near(World world, long tx, long ty)` | The ids a tile's window of cells holds (World.idsNear()), from the memory of this world's tiles or read once and remembered. |

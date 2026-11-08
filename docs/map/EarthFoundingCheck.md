@@ -1,4 +1,4 @@
-# EarthFoundingCheck.java - 693 lines · 18 methods · 4 constants · harnesses
+# EarthFoundingCheck.java - 706 lines · 18 methods · 4 constants · harnesses
 
 `ham/citybuildersim/EarthFoundingCheck.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      Valparaiso 20 and 40 km out, where a floating platform stands at deep
 > ... (15 more lines in the source)
 
-**Uses:** [EarthSite](EarthSite.md) (100), [World](World.md) (82), [EarthData](EarthData.md) (47), [EarthTerrain](EarthTerrain.md) (12), [Resource](Resource.md) (12), [Oil](Oil.md) (10), [Founding](Founding.md) (8), [Game](Game.md) (8), [EarthCheck](EarthCheck.md) (5), [Deposit](Deposit.md) (4), [OilView](OilView.md) (4), [GameFiles](GameFiles.md) (3), [LandManager](LandManager.md) (3), [CityLand](CityLand.md) (2), [TempDirs](TempDirs.md) (1), [BuildingManager](BuildingManager.md) (1), [LandParcel](LandParcel.md) (1), [MiningCheck](MiningCheck.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [LongPlaytest](LongPlaytest.md) (1)
+**Uses:** [EarthSite](EarthSite.md) (100), [World](World.md) (82), [EarthData](EarthData.md) (50), [EarthTerrain](EarthTerrain.md) (12), [Resource](Resource.md) (12), [Oil](Oil.md) (10), [Founding](Founding.md) (8), [Game](Game.md) (8), [EarthCheck](EarthCheck.md) (5), [Deposit](Deposit.md) (4), [OilView](OilView.md) (4), [GameFiles](GameFiles.md) (3), [LandManager](LandManager.md) (3), [BridgeView](BridgeView.md) (2), [CityLand](CityLand.md) (2), [TempDirs](TempDirs.md) (1), [BuildingManager](BuildingManager.md) (1), [LandParcel](LandParcel.md) (1), [MiningCheck](MiningCheck.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [LongPlaytest](LongPlaytest.md) (1)
 
 ## Sections
 
@@ -72,10 +72,10 @@
 |---:|---|
 | 148 | 1. THE DATA, OR WHY NOT |
 | 199 | 2. THE CARD IS THE PLOTS' |
-| 385 | 3. A SPOT IN THE SEA IS REFUSED (and on the full file: ice, a desert) |
-| 431 | 4. SEARCH AND RANDOM SPOT |
-| 481 | 5. THE SEA'S DEPTH |
-| 574 | 6. AN EARTH CITY, FOUNDED, PLAYED AND AT SEA |
+| 398 | 3. A SPOT IN THE SEA IS REFUSED (and on the full file: ice, a desert) |
+| 444 | 4. SEARCH AND RANDOM SPOT |
+| 494 | 5. THE SEA'S DEPTH |
+| 587 | 6. AN EARTH CITY, FOUNDED, PLAYED AND AT SEA |
 
 ## Constants
 
@@ -96,7 +96,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 89 | 605 | **type** `public class EarthFoundingCheck` | Founding a city on the real Earth (0.7.121, batch E4; the project's spec-earth.md 2, 6 and 8): the founding card's figures against the plots they are counted on, the place search and Random spot, the sea's depth on Ea... |
+| 89 | 618 | **type** `public class EarthFoundingCheck` | Founding a city on the real Earth (0.7.121, batch E4; the project's spec-earth.md 2, 6 and 8): the founding card's figures against the plots they are counted on, the place search and Random spot, the sea's depth on Ea... |
 | 97 | 4 | `static void check(String label, boolean ok)` |  |
 | 102 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 108 | 1 | **type** `record Spot(String name, double lat, double lon)` | The fixture's windows: name, latitude, longitude. |
@@ -108,7 +108,7 @@
 |---:|---:|---|---|
 | 151 | 47 | `static EarthData theData(String id) throws Exception` |  |
 
-### 2. THE CARD IS THE PLOTS' (lines 199-384)
+### 2. THE CARD IS THE PLOTS' (lines 199-397)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -117,33 +117,33 @@
 | 255 | 1 | `static String km(double v)` |  |
 | 258 | 14 | `static double[] bruteIron(World w, long x, long y, double cardKm)` | The nearest iron field's centre to a plot by brute force: every field in every cell within the card's distance and two cells more, {plots away}; null for none. |
 | 278 | 36 | `static void reliefChecks(String name, World w, EarthSite.Card c)` | THE CARD'S THREE LINES OF ET1 (D21), counted again by another road: the disc's dry plots by World.reliefAt(), the nearest shallow plot, the deepest the sea is under any sea plot of the disc - read two ways, World.dept... |
-| 321 | 54 | `static void reliefCards(EarthData file, Map<String, Spot> spots)` | 2b. |
-| 377 | 7 | `static EarthSite.Card fullCard(String name, double lat, double lon)` | A card on the full file, its relief and landmass counted again (reliefChecks()). |
+| 321 | 67 | `static void reliefCards(EarthData file, Map<String, Spot> spots)` | 2b. |
+| 390 | 7 | `static EarthSite.Card fullCard(String name, double lat, double lon)` | A card on the full file, its relief and landmass counted again (reliefChecks()). |
 
-### 3. A SPOT IN THE SEA IS REFUSED (and on the full file: ice, a desert) (lines 385-430)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 388 | 42 | `static void refused(String id, Map<String, Spot> spots, EarthData file)` |  |
-
-### 4. SEARCH AND RANDOM SPOT (lines 431-480)
+### 3. A SPOT IN THE SEA IS REFUSED (and on the full file: ice, a desert) (lines 398-443)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 434 | 46 | `static void search(EarthData data, String id)` |  |
+| 401 | 42 | `static void refused(String id, Map<String, Spot> spots, EarthData file)` |  |
 
-### 5. THE SEA'S DEPTH (lines 481-573)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 484 | 70 | `static void depth(String id, Spot r, EarthData file)` |  |
-| 556 | 5 | `static double layerDepth(EarthTerrain e, EarthData data, long x, long y)` | The depth layer's metres at a plot's centre, at least SEA_LEAST_DEPTH_M: what depthAt() must give, read by another road (the raw code at the plot's latitude and longitude). |
-| 563 | 10 | `static double seaOut(World w, double km)` | The sea's depth `km` out from the coast west of a world's founding site, along its row: the first sea plot going west, then km further; -1 where the row has no sea within 200 km. |
-
-### 6. AN EARTH CITY, FOUNDED, PLAYED AND AT SEA (lines 574-693)
+### 4. SEARCH AND RANDOM SPOT (lines 444-493)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 577 | 110 | `static void aCity(String id, Spot r)` |  |
-| 688 | 5 | `static void quietly(Runnable r)` |  |
+| 447 | 46 | `static void search(EarthData data, String id)` |  |
+
+### 5. THE SEA'S DEPTH (lines 494-586)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 497 | 70 | `static void depth(String id, Spot r, EarthData file)` |  |
+| 569 | 5 | `static double layerDepth(EarthTerrain e, EarthData data, long x, long y)` | The depth layer's metres at a plot's centre, at least SEA_LEAST_DEPTH_M: what depthAt() must give, read by another road (the raw code at the plot's latitude and longitude). |
+| 576 | 10 | `static double seaOut(World w, double km)` | The sea's depth `km` out from the coast west of a world's founding site, along its row: the first sea plot going west, then km further; -1 where the row has no sea within 200 km. |
+
+### 6. AN EARTH CITY, FOUNDED, PLAYED AND AT SEA (lines 587-706)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 590 | 110 | `static void aCity(String id, Spot r)` |  |
+| 701 | 5 | `static void quietly(Runnable r)` |  |
 

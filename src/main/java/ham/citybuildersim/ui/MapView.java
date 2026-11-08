@@ -1840,24 +1840,25 @@ final class MapView {
         islandChips(gc, f, lms);
     }
 
-    /** Each such landmass's chip (LandmassView.chipWords()), mono caption on a dark stroke, as newTag() writes NEW: centred on the middle of its owned tiles, kept inside the view. */
+    /** The chip lines' widths kept by string, as nameW keeps the names' (the plate is IslandChip's). */
+    private final Map<String, Double> chipWidths = widths();
+
+    /**
+     * Each such landmass's chip (LandmassView.chipLines()): two lines of amber mono caption on a dark rounded plate the width of
+     * the longer, centred on the middle of its owned tiles, kept inside the view (MT1, BK1-L). WHY a plate and two lines: the
+     * chip was one line of some 70 characters whose only ground was a 3 px dark stroke, drawn over the landmass's own amber
+     * hatch and tint, so over busy ground it was hard to read.
+     */
     private void islandChips(GraphicsContext gc, MapFrame f, Landmasses lms) {
-        gc.setFont(Palette.Fonts.monoFont(Palette.SIZE_CAPTION));
+        javafx.scene.text.Font font = Palette.Fonts.monoFont(Palette.SIZE_CAPTION);
+        gc.setFont(font);
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.CENTER);
-        gc.setLineWidth(3);
+        gc.setLineWidth(1);
         for (LandMap.Chip chip : islandChips) {
             double x = f.screenX(chip.x()), y = f.screenY(chip.y());
             if (x < 0 || y < 0 || x > f.width() || y > f.height()) continue;
-            String words = LandmassView.chipWords(lms, chip);
-            double half = words.length() * Palette.SIZE_CAPTION * 0.31 + 4;
-            x = half * 2 >= f.width() ? f.width() / 2 : Math.max(half, Math.min(f.width() - half, x));
-            x = Math.rint(x);
-            y = Math.rint(y);
-            gc.setStroke(Color.rgb(11, 17, 24, 0.85));
-            gc.strokeText(words, x, y);
-            gc.setFill(Color.web(Palette.WARN));
-            gc.fillText(words, x, y);
+            IslandChip.draw(gc, font, LandmassView.chipLines(lms, chip), x, y, f.width(), s -> widthOf(s, font, chipWidths));
         }
         gc.setTextAlign(TextAlignment.LEFT);
         gc.setTextBaseline(VPos.BASELINE);

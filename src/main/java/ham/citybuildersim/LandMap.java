@@ -757,7 +757,7 @@ public final class LandMap {
             case World.SALT:   return "Sea";
             case World.SHALLOW: return SHALLOW_WORDS;
             case World.SAND:   return "Beach";
-            case World.ICE:    return "Ice";
+            case World.ICE:    return "Snow and ice"; // the study's words (spec-earth2-terrain board 2; MT1, ET1-C 3), on the hover and the legend alike
             case World.DESERT: return "Desert";
             default:           return "Grass";
         }
