@@ -1,4 +1,4 @@
-# YieldCurve.java - 278 lines · 19 methods · 2 constants · model
+# YieldCurve.java - 295 lines · 21 methods · 2 constants · model
 
 `ham/citybuildersim/YieldCurve.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
 
@@ -31,7 +31,7 @@
 
 **Uses:** [DebtManager](DebtManager.md) (2), [Expectations](Expectations.md) (1)
 
-**Used by (11):** [AuctionCheck](AuctionCheck.md), [CallCheck](CallCheck.md), [CallTree](CallTree.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [CurveCheck](CurveCheck.md), [DebtManager](DebtManager.md), [DeskCheck](DeskCheck.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md)
+**Used by (12):** [AuctionCheck](AuctionCheck.md), [CallCheck](CallCheck.md), [CallTree](CallTree.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [CurveCheck](CurveCheck.md), [DebtManager](DebtManager.md), [DebtMoneysCheck](DebtMoneysCheck.md), [DeskCheck](DeskCheck.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md)
 
 ## Sections
 
@@ -39,7 +39,7 @@
 |---:|---|
 | 61 | · the paths |
 | 94 | · building one |
-| 178 | · reads |
+| 195 | · reads |
 
 ## Constants
 
@@ -66,7 +66,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 36 | 243 | **type** `public final class YieldCurve` | The city's curve: a discount factor for every month to fifty years, built from the dial the market expects, the credit spreads, and the shape the term premium and the central bank's holdings give the long end (CD1, do... |
+| 36 | 260 | **type** `public final class YieldCurve` | The city's curve: a discount factor for every month to fifty years, built from the dial the market expects, the credit spreads, and the shape the term premium and the central bank's holdings give the long end (CD1, do... |
 
 ### the paths (lines 61-93)
 
@@ -75,30 +75,32 @@
 | 76 | 10 | `public static double[] expectedPath(double floor, DoubleUnaryOperator rule, double inflationNow, double expectedInflation)` | The dial the market expects, month by month: p(t) = R(t) + (floor - R(0)) x e^(-t / DRIFT_MONTHS), where R(t) is the rule at the inflation expected t months ahead, pi(t) = pi_inf + (pi_now - pi_inf) x e^(-t / Expectat... |
 | 88 | 5 | `public static double[] flatPath(double floor)` | A dial that never moves: the floor every month. |
 
-### building one (lines 94-177)
+### building one (lines 94-194)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 113 | 40 | `public YieldCurve(double[] path, double gdpSpread, double revenueSpread, double ceilingNow, IntToDoubleFunction shape)` | The curve from a path, the two credit spreads, the rate the two cannot pass, and the shape. |
-| 161 | 3 | `public static double shortRate(double floor, double gdpSpread, double revenueSpread, double ceilingNow)` | The short rate the city is quoted: the floor and the two credit spreads added in that order, held between the cheapest money (DebtManager.MIN_RATE) and the ceiling. |
-| 166 | 4 | `public static YieldCurve of(double[] path, double spreads, double ceilingGap, IntToDoubleFunction shape)` | A curve from a path, one number for the credit spreads and the room between the path's first month and the ceiling - the fixture's way in; DebtManager hands the two spreads and the ceiling to the constructor. |
-| 172 | 5 | `private static double discount(double z, int m)` | (1 + z/12)^(-m); a rate that discounts nothing (as Debt.presentValue treats one) gives 1. |
+| 113 | 3 | `public YieldCurve(double[] path, double gdpSpread, double revenueSpread, double ceilingNow, IntToDoubleFunction shape)` | The curve from a path, the two credit spreads, the rate the two cannot pass, and the shape. |
+| 125 | 40 | `public YieldCurve(double[] path, double gdpSpread, double revenueSpread, double ceilingNow, double cheapest, IntToDoubleFunctio...` | ...with the lowest forward as a parameter (CD9, 2026-11-08): the city's own curves pass DebtManager.MIN_RATE (the constructor above), a world curve passes its own money's policy rate, which may be under zero. |
+| 173 | 3 | `public static double shortRate(double floor, double gdpSpread, double revenueSpread, double ceilingNow)` | The short rate the city is quoted: the floor and the two credit spreads added in that order, held between the cheapest money (DebtManager.MIN_RATE) and the ceiling. |
+| 178 | 3 | `public static double shortRate(double floor, double gdpSpread, double revenueSpread, double ceilingNow, double cheapest)` | ...held between a cheapest rate of the caller's (CD9, 2026-11-08) and the ceiling: a world curve's is its own money's policy rate, the city's is DebtManager.MIN_RATE. |
+| 183 | 4 | `public static YieldCurve of(double[] path, double spreads, double ceilingGap, IntToDoubleFunction shape)` | A curve from a path, one number for the credit spreads and the room between the path's first month and the ceiling - the fixture's way in; DebtManager hands the two spreads and the ceiling to the constructor. |
+| 189 | 5 | `private static double discount(double z, int m)` | (1 + z/12)^(-m); a rate that discounts nothing (as Debt.presentValue treats one) gives 1. |
 
-### reads (lines 178-278)
+### reads (lines 195-295)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 181 | 3 | `public double path(int t)` | The dial expected in month t ahead (0 this month); clamped to the path. |
-| 186 | 3 | `public double forward(int t)` | The forward rate for month t ahead (0 this month, the short rate); clamped to the path. |
-| 191 | 3 | `public double zero(int m)` | The zero rate for m months, a nominal annual rate: the compounded forwards plus the shape. |
-| 196 | 3 | `public double baseZero(int m)` | The compounded forwards over m months, before the shape (z0). |
-| 201 | 3 | `public double shape(int m)` | The shape at m months: the term premium less the compression the caller gave (0 up to a year and at 0). |
-| 206 | 5 | `public double factor(int m)` | The factor a payment m months away is discounted by: (1 + z(m)/12)^(-m); 1 now; past fifty years at the last zero rate. |
-| 213 | 6 | `public double pv(double[] flows)` | The present value of flows paid at months 1, 2, ...: each at its own month's factor. |
-| 228 | 6 | `public double pvAtSpread(double[] flows, double spread)` | The present value of flows paid at months 1, 2, ... |
-| 242 | 4 | `public double factorAtSpread(int m, double spread)` | The factor a payment m months away is discounted by with a spread added to its zero rate: (1 + (zero(m) + spread)/12)^(-m); 1 now. |
-| 248 | 3 | `public double effectiveSpread()` | The spread the forward actually carries this month: the two credit spreads, or the room under the ceiling if less. |
-| 258 | 3 | `public double expectedDialOver(int m)` | The dial the market expects, averaged over m months, and nothing else in the rate: z0(m) less the spread. |
-| 267 | 6 | `public double parYield(int months)` | The annual coupon a monthly-paying bullet of this term needs to price at par on this curve: (1 - d(n)) / (the sum of d(1..n) / 12). |
-| 275 | 3 | `public boolean isFlat()` | True when every forward is the same number: the path is flat (a city on target with the dial at the rule, or one nobody struck), and the curve is the old parallel one. |
+| 198 | 3 | `public double path(int t)` | The dial expected in month t ahead (0 this month); clamped to the path. |
+| 203 | 3 | `public double forward(int t)` | The forward rate for month t ahead (0 this month, the short rate); clamped to the path. |
+| 208 | 3 | `public double zero(int m)` | The zero rate for m months, a nominal annual rate: the compounded forwards plus the shape. |
+| 213 | 3 | `public double baseZero(int m)` | The compounded forwards over m months, before the shape (z0). |
+| 218 | 3 | `public double shape(int m)` | The shape at m months: the term premium less the compression the caller gave (0 up to a year and at 0). |
+| 223 | 5 | `public double factor(int m)` | The factor a payment m months away is discounted by: (1 + z(m)/12)^(-m); 1 now; past fifty years at the last zero rate. |
+| 230 | 6 | `public double pv(double[] flows)` | The present value of flows paid at months 1, 2, ...: each at its own month's factor. |
+| 245 | 6 | `public double pvAtSpread(double[] flows, double spread)` | The present value of flows paid at months 1, 2, ... |
+| 259 | 4 | `public double factorAtSpread(int m, double spread)` | The factor a payment m months away is discounted by with a spread added to its zero rate: (1 + (zero(m) + spread)/12)^(-m); 1 now. |
+| 265 | 3 | `public double effectiveSpread()` | The spread the forward actually carries this month: the two credit spreads, or the room under the ceiling if less. |
+| 275 | 3 | `public double expectedDialOver(int m)` | The dial the market expects, averaged over m months, and nothing else in the rate: z0(m) less the spread. |
+| 284 | 6 | `public double parYield(int months)` | The annual coupon a monthly-paying bullet of this term needs to price at par on this curve: (1 - d(n)) / (the sum of d(1..n) / 12). |
+| 292 | 3 | `public boolean isFlat()` | True when every forward is the same number: the path is flat (a city on target with the dial at the rule, or one nobody struck), and the curve is the old parallel one. |
 
