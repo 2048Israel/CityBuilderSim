@@ -19,15 +19,15 @@ def rows(path):
         for r in csv.DictReader(f):
             try:
                 yield int(float(r["month"])), float(r["pop"]), float(r.get("re_net", "nan"))
-            except (KeyError, ValueError):
+            except (KeyError, ValueError, TypeError):
                 continue
 
 def scan(path):
     rs = [r for r in rows(path) if r[1] == r[1]]
     if not rs:
         return None
-    worst = (0, None, None)              # most loss months in a window, its start, its growth
-    for i in range(0, max(1, len(rs) - WINDOW)):
+    worst, hits, first = (0, None, None), 0, None     # most loss months in a window; windows with both tests; the first
+    for i in range(0, max(1, len(rs) - WINDOW + 1)):
         w = rs[i:i + WINDOW]
         if len(w) < WINDOW:
             break
@@ -35,10 +35,13 @@ def scan(path):
         growth = w[-1][1] / w[0][1] - 1 if w[0][1] > 0 else 0
         if loss > worst[0]:
             worst = (loss, w[0][0], growth)
+        if loss >= LOSS_SHARE * WINDOW and abs(growth) < FLAT:
+            hits += 1
+            first = w[0][0] if first is None else first
     loss, start, growth = worst
-    flagged = loss >= LOSS_SHARE * WINDOW and growth is not None and abs(growth) < FLAT
+    flagged = hits > 0
     losses = sum(1 for _, _, n in rs if n < 0)
-    return flagged, loss, start, growth, losses, len(rs), rs[-1][1]
+    return flagged, loss, start, growth, losses, len(rs), rs[-1][1], hits, first
 
 def main(folder):
     out = []
@@ -49,10 +52,11 @@ def main(folder):
     flagged = [o for o in out if o[1]]
     print(f"{len(out)} runs read; {len(flagged)} flagged (a {WINDOW}-month stretch with the landlords at a loss"
           f" in {LOSS_SHARE:.0%} of it and the population within {FLAT:.0%})")
-    print("run | flagged | most loss months in a window | from | growth over it | loss months in all | final pop")
-    for name, f, loss, start, growth, losses, months, final in out:
+    print("run | flagged (windows, first from) | most loss months in a window | from | growth over it | loss months in all | final pop")
+    for name, f, loss, start, growth, losses, months, final, hits, first in out:
         g = "-" if growth is None else f"{growth:+.1%}"
-        print(f"{name} | {'YES' if f else 'no'} | {loss} | {start} | {g} | {losses} of {months} | {final:,.0f}")
+        flag = f"YES ({hits}, m{first})" if f else "no"
+        print(f"{name} | {flag} | {loss} | {start} | {g} | {losses} of {months} | {final:,.0f}")
 
 if __name__ == "__main__":
     main(sys.argv[1])
