@@ -1,6 +1,6 @@
 # InputLog.java - 438 lines · 35 methods · 7 constants · model
 
-`ham/citybuildersim/InputLog.java` - generated 2026-11-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/InputLog.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
 
 > What the player did in a sitting, as a file (TR1, 2026-10-31): the mouse, the keys and the markers beside them - the window's
 > size, the screen open, the expanded map's view, the clock, and the moment each month turned - each with its time in

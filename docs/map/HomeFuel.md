@@ -1,6 +1,6 @@
 # HomeFuel.java - 171 lines · 20 methods · 2 constants · model
 
-`ham/citybuildersim/HomeFuel.java` - generated 2026-11-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HomeFuel.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
 
 > The homes' lamp oil and coal: what the households that light with a lamp and heat with a stove ask of the shops each month, as two shares of the homes.
 > 

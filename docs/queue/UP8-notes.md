@@ -37,11 +37,33 @@ none from year 3's eighth month (32 months). From then a month cost 12-32 ms (ye
 the placing 15-26 of it: with the cursors at the ends, each type's overflow went to `roomiest()`, a pass over all
 29,255 districts' objects. THE ROOM TREE (`CityMap`): two max trees beside GT1's `freeOf` and `freeRoadOf`, kept in
 `moved()`, so `place()` jumps to the next district that fits, the cursors to the next with room and `roomiest()` reads
-the leftmost maximum, each in about 15 steps. The placements are the old code's: [AFTER: hashes].
+the leftmost maximum, each in about 15 steps. The placements are the old code's: a hash of every district's counts
+after every month, six years from the fresh copy, is main's year for year (d0fe1c61... to f49e8ccb...).
 
-[AFTER: the figures, ABBA]
+## 4. Against main, ABBA
 
-## 4. The checks
+Main's classes (39c0948d) and the batch's in turn, each JVM alone with the gate's flags (`-Xmx2048m -Xms64m
+-Dcbs.timing=hard`), MapCheck then the probe, four rounds; the night's other lane ran its suite through rounds 1-2
+(eight JVMs, 79% CPU).
+
+| round | 10B worst bounded month, main / UP8 (ms) | full copy's years 4-5, median (worst), main | UP8 |
+|---|---|---|---|
+| 1 (loaded) | 39.48 / 38.65 | 13.85 (15.54), 14.06 (16.41) | 0.92 (1.87), 0.89 (2.06) |
+| 2 (UP8's turn loaded) | 1.98 / 117.11 | 16.04 (26.84), 16.66 (17.96) | 0.51 (1.12), 0.46 (0.94) |
+| 3 | 4.83 / 1.62 | 15.17 (33.42), 14.38 (16.04) | 0.58 (1.09), 0.43 (0.95) |
+| 4 | 2.66 / 2.82 | 13.43 (14.97), 13.48 (14.20) | 0.50 (1.19), 0.43 (0.88) |
+
+No collection fell inside any of UP8's bounded months. The loaded months are the PC's: 117 ms and 39 ms months with
+no collection in them are a JVM not run, which no change to the map's work moves; a gate's paired rounds meet them
+on either side. MapCheck 5b on UP8: median 0.53-1.01 ms, worst 0.92-1.63 (48.0 in round 1's load).
+
+Four more rounds of MapCheck alone once the other lane's suite had ended (three JVMs, 13% CPU), the 10B worst bounded
+month: main 2.25 / 2.65 / 6.33 / 5.50 ms (median 4.08, over RECONCILE_MS twice: month 1 at 6.33), UP8 1.76 / 2.03 /
+2.80 / 2.51 (median 2.27), no collection inside UP8's months. Over the six rounds not loaded, main's median 3.74 and
+worst 6.33, UP8's 2.27 and 2.82: under 5 ms with room. WN3's gate (main 6.92, the merge 8.97) was not rebuilt: its
++30% is the same coin, where a Remark fell.
+
+## 5. The checks
 
 - MapCheck 5: after every month, outside the timed span, every district's log sums to its counts and the room the
   walks read is each district's own (`freeKept()`); `logsAddUp()` reuses one array (it had made 17 MB a call at 10B,
@@ -49,8 +71,13 @@ the leftmost maximum, each in about 15 steps. The placements are the old code's:
 - MapCheck 5b (new, last in `main()`): the 10B copy grown until a month places past every district's room
   (`lastOverflows()`, at most `FULL_MONTHS_MAX` months), then 12 timed months, each placing past it; their figures
   printed, no budget of their own (★2).
+- `./batch-check.sh --pick` on the merge with main 39c0948d: 18 harnesses, exit 4 on one line, MapCheck 2d's "a yard
+  that goes moves none of the buildings ... (1200 of them, 136 moved)": DM2's class (queued), and main's own classes
+  fail it word for word in every one of their twelve runs here (XI2's main in its four): not this batch's, passed by
+  name (Jerus, 2026-11-04). Timing soft there; the gate times it hard.
+- The ensemble is skipped: nothing in the model reads the map, and the placements are main's month for month (3).
 
-## 5. The calls (each takes its recommended way, BP1)
+## 6. The calls (each takes its recommended way, BP1)
 
 - **★1 A `System.gc()` before each copy's timed months.** Recommended: yes. The Remark is the JVM's, started by the
   other sections' heap; the month measured on its own garbage is what RECONCILE_MS bounds. The alternative, judging the
