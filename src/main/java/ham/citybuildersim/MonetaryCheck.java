@@ -742,12 +742,11 @@ public class MonetaryCheck {
     }
 
     /**
-     * ...on the goods' literals where asked (Game.playOnLiterals()). WN3: section 6 measures how far the dial's level carries into
-     * inflation through the currency, on a founding whose D$ is 27% weaker by month 60 at the founding's own 3% (fx 1.27, inflation
-     * 10.4% a year) - the hot town the transmission was calibrated on (0.7.3 to 0.7.43). Priced at the world's band the same founding
-     * is calm (fx 0.99, inflation 4.2% at 3%), there is no currency inflation for a higher dial to bring down, and between 3% and 10%
-     * the cost of the money (rent follows what a home costs to build and finance: the index's rent 1.19 at 3%, 1.32 at 10%) outweighs
-     * the stronger D$: 4.23%, 6.55%, 5.96%, 5.75%. The premise of the rows is a fixed price level, so they are struck on the literals.
+     * ...on the goods' literals where asked (Game.playOnLiterals()); no section here asks since WN3-R. WN3 struck section 6's rows on
+     * the literals: on the world's band at 0.8.75 they read 4.23%, 6.55%, 5.96%, 5.75% at 3/10/20/40% (rent following what a home
+     * costs to build and finance outweighed the stronger D$ between 3% and 10%). WN3-R (2026-11-08) measured the band again on 0.9.55:
+     * 7.22%, 5.92%, 5.25%, 4.96%, the month-late rows within 0.052 points, the D$ at 1.07/0.87/0.73/0.68 a US$ - the dial holds the
+     * band's founding, and the rows are struck where the game is played.
      */
     static Game founding(Path root, String label, boolean onLiterals) {
         return founding(root, label, onLiterals, new String[0]);
@@ -862,13 +861,13 @@ public class MonetaryCheck {
     static double heldRun(Path root, String label, double rate, int heldFrom, double[] print, Game[] city) {
         System.setOut(quiet);
         try {
-            // WN3: on the literals, see founding(). R0b call 7: and the causes of 1900 held off, before a month: the rows' premise is a steady
+            // WN3-R: on the world's band, see founding(). R0b call 7: the causes of 1900 held off, before a month: the rows' premise is a steady
             // town (the founding's builders and its hospital keep every crew on, MEASUREMENT_NOISE is how far two readings of it can differ),
             // sized on today's deaths; on 1900's causes the town was not steady: the same rows held a month late differed by 0.498 and 0.618
             // points at 20% and 40% (0.100 allowed), with the crews all on. RT1 (2026-11-05): and the farms held: with a farm counted in money the
             // spare-capacity rule sells one of the town's two at month 41, the town outgrows the other, and the 20% rows held a month apart differed
             // by 0.172 points; held, the farms are the fixture's two.
-            Game g = founding(root, label, true, true, Sectors.AGRICULTURE);
+            Game g = founding(root, label, false, true, Sectors.AGRICULTURE);
             if (print != null) System.arraycopy(fingerprint(g), 0, print, 0, print.length);
             double indexFrom = g.getPriceIndex().getIndex();
             while (g.getMonth() <= MEASURED_MONTHS) {
