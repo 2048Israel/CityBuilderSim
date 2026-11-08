@@ -45,7 +45,9 @@ import java.util.PriorityQueue;
  *             can; at the deep sea, or water wider than it bridges (fresh or
  *             shallow, ET6), it turns 45 degrees to the side with more
  *             ground and runs along the shore (the alternative is a dead
- *             end); it turns back onto its heading
+ *             end; the railway's arm, (MF2) turns no corner of more than
+ *             RAIL_CORNER 45 degrees: where its next way would be sharper it
+ *             waits); it turns back onto its heading
  *             where the way home runs TURN_COST plots (each step home lays one
  *             plot where the staircase lays two, so the turn pays); at the
  *             city's edge it waits for the ground ahead, unless the ground
@@ -166,6 +168,14 @@ public final class CityRuns {
 
     /** How far an arm at the sea looks along each 45-degree way, to turn toward the one with more ground: 159 plots (hw.py's score, range(1, 160)). */
     public static final int SIDE_LOOK = 159;
+
+    /**
+     * The sharpest corner a railway arm turns, in 45-degree steps: 1, so no corner of the railway is sharper than 45 degrees; a highway's
+     * arm is not held to it. (MF2, 2026-11-08; WHY: Jerus's Bergen laid a railway arm that went south-east along a shore, met the sea
+     * again and took the 45-degree way to the other side of its home heading at once - a V of 90 degrees, whose second leg ended in
+     * empty ground. Where its next way would be sharper than this, the arm waits there.)
+     */
+    public static final int RAIL_CORNER = 1;
 
     /** What a step straight on costs, in plots of straight: 1 (spec 2.7, H2). */
     public static final int STRAIGHT_COST = 1;
@@ -1284,6 +1294,8 @@ public final class CityRuns {
             for (int turn = 1; turn >= -1; turn -= 2) {
                 int d2 = Math.floorMod(home + turn, 8);
                 if (d2 == a.head) continue;
+                // (MF2) The railway's corner: a way more than RAIL_CORNER 45-degree steps off the heading it is on is not taken (the V).
+                if (n.kind == RAILWAY && Math.min(Math.floorMod(d2 - a.head, 8), Math.floorMod(a.head - d2, 8)) > RAIL_CORNER) continue;
                 int run = clear(n, g, x, y, d2, look, why);
                 if (run >= need && run > bestRun) { bestRun = run; best = d2; }
             }
