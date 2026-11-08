@@ -127,7 +127,15 @@ import java.util.Arrays;
  *      narrower than the highway; a trumpet's one leaf joins its stub and the highway it ends at;
  *  21. (batch MF1, slice C; red until the fix; Jerus: "continous intersection, like its a 3x14 road roughly, but shown as 3 roads") A WIDE ROAD IS
  *      ONE ROAD: a band of street plots 3 across and 14 long, joined by a cross street, is one colour between its straight sides, with a box
- *      and zebras only where the cross street meets it; the same across a tile's corner; a + of one-plot streets keeps its verge corners.
+ *      and zebras only where the cross street meets it; the same across a tile's corner; a + of one-plot streets keeps its verge corners;
+ *  22. (batch MF2, slice B; red until the fix; Jerus's Bergen city, pictures 2 and 4: "a stair-stepped strip") A 45-DEGREE BRIDGE'S DECK IS A BAND
+ *      ALONG ITS LINE: a highway's and a railway's, south-east and north-east, at 4 and 8 px a plot: no deck pixel farther from the line than half
+ *      the deck's width and a pixel, none of the water in the band left bare, deck on both sides at every step, the water beyond as it was, the
+ *      carriageway's and the track's own colours kept; a straight bridge's deck keeps to its band as before;
+ *  23. (batch MF2, slice B; red until the fix; Jerus's Bergen city, picture 4: "the loops are loose arcs not joined to the highway's lanes") A
+ *      CLOVERLEAF'S LOOPS ARE JOINED TO THE LANES: at every pixel size they are drawn at (6 to 8 px a plot), two whole curves a quadrant, each with a
+ *      pixel beside the east-west highway's carriageway and one beside the north-south one's, inside the reserve's box and on no highway plot - on a
+ *      clean crossing and across one with a diagonal avenue and a street through the reserve, which they bridge instead of breaking off.
  *
  * The ground and the access roads are held on the map's own cities by MapCheck
  * section 8 (its 8b), and the spurs dealt to the plans' sidings by its 8c.
@@ -254,6 +262,8 @@ public class JunctionCheck {
         crossingReadAlike();
         leavesDrawn();
         wideRoad();
+        bridgeDeck();
+        loopsJoined();
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails);
     }
@@ -2159,6 +2169,199 @@ public class JunctionCheck {
             for (int dy = 0; dy < px; dy++)
                 for (int X = (T - 1) * px + oh; X < (T + 1) * px + oh + half; X++) wholeOne &= fourT[(y * px + dy) * (2 * w) + X] == paved;
         check("21e. a band across the corner of four tiles is one carriageway too: every pixel between its edges paved, across the seam", wholeOne);
+    }
+
+    /* ================= 22. a 45-degree bridge's deck is a band (MF2) ================= */
+
+    /** A tile of owned shallow water, which a run bridges: no buildings, no streets. */
+    static TilePainter.Input shallows() {
+        TilePainter.Input in = owned();
+        Arrays.fill(in.terrain, World.SHALLOW);
+        return in;
+    }
+
+    /** The plots of a 45-degree stretch of `steps` steps from (x0, y0) toward (dx, dy), as CityRuns.stretchInto() lays them: step k's plot and its corner, the plot before it along the other axis. */
+    static void stretch(TilePainter.Input in, byte fixed, int x0, int y0, int dx, int dy, int steps) {
+        int diag = CityRuns.M_DIAG | (CityRuns.diagCode(dx > 0 ? (dy > 0 ? 1 : 7) : (dy > 0 ? 3 : 5)) << CityRuns.M_DIAG_SHIFT);
+        for (int k = 1; k <= steps; k++) {
+            int step = (y0 + dy * k) * T + x0 + dx * k, corner = (y0 + dy * k - dy) * T + x0 + dx * k;
+            in.fixed[step] = fixed;
+            in.marks[step] = (byte) diag;
+            in.fixed[corner] = fixed;
+            in.marks[corner] = (byte) (diag | CityRuns.M_CORNER);
+        }
+    }
+
+    /**
+     * (MF2, 2026-11-08; Jerus's Bergen city, pictures 2 and 4: "a highway and a railway cross the sea on a brown stair-stepped strip, not a
+     * straight deck") A bridge's deck was a bar through every plot of the run: on a 45-degree stretch, whose carriageway and track are the
+     * band along its line, a staircase of bars whose corners stood a plot out of it. The deck of a 45-degree bridge, a highway's and a
+     * railway's, at each pixel size the near view draws (MapFrame.SMALL_TILE_PX, BIG_TILE_PX) and both ways the stretch can lean (south-east,
+     * north-east), is the band along the line: no deck-coloured pixel farther from the line than half the deck's own width (TileRaster.deckAcross)
+     * and a pixel, none of the water within half a pixel of its edge left bare between steps 2 and 11, deck on both sides of the line at every step, the
+     * water beyond it as it was, the carriageway's road and centre line and the track's rail kept. A straight bridge's deck keeps its bars.
+     */
+    static void bridgeDeck() {
+        System.out.println("--- 22. (MF2) a 45-degree bridge's deck is a band along its line, a highway's and a railway's, not a staircase of the plots' bars ---");
+        for (int px : new int[] { MapFrame.SMALL_TILE_PX, MapFrame.BIG_TILE_PX }) {
+            for (int rail = 0; rail < 2; rail++) {
+                for (int north = 0; north < 2; north++) deckAlong(px, rail != 0, north != 0);
+                deckStraight(px, rail != 0);
+                // The same stretch over dry ground is no bridge: no deck pixel at all.
+                TilePainter.Input land = owned();
+                stretch(land, rail != 0 ? TilePainter.RAIL : (byte) BuildingVisual.HIGHWAY, 8, 6, 1, 1, 12);
+                int[] landImg = raster(land, paint(land), px);
+                boolean deck = false;
+                for (int c : landImg) deck |= c == TileRaster.DECK;
+                check("22f. a " + (rail != 0 ? "railway" : "highway") + " on a 45-degree stretch over dry ground at " + px + " px has no deck pixel", !deck);
+            }
+        }
+    }
+
+    /** One 45-degree bridge of twelve steps, laid south-east or north-east, rastered at px a plot: the deck's pixels measured from its line. */
+    static void deckAlong(int px, boolean rail, boolean north) {
+        int dx = 1, dy = north ? -1 : 1, x0 = 8, y0 = north ? 24 : 6, steps = 12, w = T * px;
+        String name = (rail ? "railway" : "highway") + " bridge " + (north ? "north-east" : "south-east") + " at " + px + " px";
+        TilePainter.Input in = shallows();
+        stretch(in, rail ? TilePainter.RAIL : (byte) BuildingVisual.HIGHWAY, x0, y0, dx, dy, steps);
+        int[] img = raster(in, paint(in), px), bare = raster(shallows(), paint(shallows()), px);
+        double deckHalf = TileRaster.deckAcross(rail ? BuildingVisual.PAVED : BuildingVisual.HIGHWAY, px) / 2.0;
+        double roadHalf = TileRaster.crossSection(BuildingVisual.HIGHWAY, px)[0] / 2.0, root = Math.sqrt(2);
+        int road = TileRaster.ROAD[BuildingVisual.HIGHWAY];
+        // The line runs through the steps' middles: step 2's is the origin of `along`, step 11's lies span pixels on.
+        double cx = (x0 + dx * 2 + 0.5) * px, cy = (y0 + dy * 2 + 0.5) * px, span = 9 * root * px;
+        int off = 0, offX = -1, offY = -1, deckPx = 0, gaps = 0, gapX = -1, gapY = -1, beyond = 0, kept = 0, inside = 0;
+        boolean[][] sides = new boolean[12][2];
+        for (int Y = 0; Y < w; Y++) {
+            for (int X = 0; X < w; X++) {
+                int c = img[Y * w + X];
+                double u = X + 0.5 - cx, v = Y + 0.5 - cy, signed = (u * dy - v * dx) / root, d = Math.abs(signed), along = (u * dx + v * dy) / root;
+                if (c == TileRaster.DECK) {
+                    deckPx++;
+                    if (d > deckHalf + 1) { off++; if (offX < 0) { offX = X; offY = Y; } }
+                    for (int k = 2; k <= 11; k++) if (Math.abs(along - (k - 2) * root * px) <= 0.5 * root * px) sides[k][signed < 0 ? 0 : 1] = true;
+                }
+                if (along < 0 || along > span) continue;
+                if (d <= deckHalf - 0.5 && c == bare[Y * w + X]) { gaps++; if (gapX < 0) { gapX = X; gapY = Y; } }
+                if (d > deckHalf + 1 && c != bare[Y * w + X]) beyond++;
+                if (!rail && d <= roadHalf - 1.5) { inside++; if (c != road && c != TileRaster.CENTRE_LINE) kept++; }
+                if (rail && d <= 0.5) { inside++; if (c != TileRaster.STEEL) kept++; }
+            }
+        }
+        int bare2 = 0;
+        for (int k = 2; k <= 11; k++) if (!sides[k][0] || !sides[k][1]) bare2++;
+        System.out.printf("  %s: the deck is %d px across (half %.1f); %d of %d deck pixels lie farther than %.1f px from the line%s; %d bare water pixels within %.1f px of it%s; %d of the steps 2 to 11 lack deck on a side%n",
+                name, TileRaster.deckAcross(rail ? BuildingVisual.PAVED : BuildingVisual.HIGHWAY, px), deckHalf, off, deckPx, deckHalf + 1,
+                off == 0 ? "" : ", the first at pixel (" + offX + ", " + offY + ")", gaps, deckHalf - 0.5, gaps == 0 ? "" : ", the first at (" + gapX + ", " + gapY + ")", bare2);
+        check("22a. " + name + ": no deck-coloured pixel lies farther from the line than half the deck's width and a pixel", deckPx > 0 && off == 0);
+        check("22b. " + name + ": the deck is one band along the line: no pixel within half the deck's width less half a pixel of it is left as the water was, steps 2 to 11", gaps == 0);
+        check("22c. " + name + ": deck shows on both sides of the line at each of steps 2 to 11, and the water beyond the deck is as it was", bare2 == 0 && beyond == 0);
+        check("22d. " + name + ": the " + (rail ? "rail's steel" : "carriageway's road and centre line") + " keeps its colour along the line (" + inside + " pixels, " + kept + " other)", inside > 0 && kept == 0);
+    }
+
+    /** A straight bridge twenty-four plots long along row 16, rastered at px a plot: its deck's bars stay within their band and leave no water bare in it. */
+    static void deckStraight(int px, boolean rail) {
+        int w = T * px, row = 16;
+        String name = "straight " + (rail ? "railway" : "highway") + " bridge at " + px + " px";
+        TilePainter.Input in = shallows();
+        for (int x = 4; x <= 27; x++) in.fixed[row * T + x] = rail ? TilePainter.RAIL : (byte) BuildingVisual.HIGHWAY;
+        int[] img = raster(in, paint(in), px), bare = raster(shallows(), paint(shallows()), px);
+        int deckW = Math.min(px, TileRaster.deckAcross(rail ? BuildingVisual.PAVED : BuildingVisual.HIGHWAY, px));
+        double cy = (row + 0.5) * px;
+        int off = 0, gaps = 0, deckPx = 0;
+        for (int Y = 0; Y < w; Y++) {
+            for (int X = 6 * px; X < 26 * px; X++) {
+                int c = img[Y * w + X];
+                double d = Math.abs(Y + 0.5 - cy);
+                if (c == TileRaster.DECK) { deckPx++; if (d > deckW / 2.0 + 1) off++; }
+                if (d <= deckW / 2.0 - 0.5 && c == bare[Y * w + X]) gaps++;
+            }
+        }
+        System.out.printf("  %s: the deck is %d px across; %d deck pixels, %d off its band, %d bare in it%n", name, deckW, deckPx, off, gaps);
+        check("22e. " + name + ": its deck, as before, lies within half its width and a pixel of the line and leaves no bare water in it", off == 0 && gaps == 0);
+    }
+
+    /* ================= 23. a cloverleaf's loops are joined to the lanes (MF2) ================= */
+
+    /**
+     * (MF2, 2026-11-08; Jerus's Bergen city, picture 4: "the loops are loose arcs not joined to the highway's lanes, and a diagonal street runs
+     * through the middle") A cloverleaf's loops, a leaf and its connector in each quadrant, each meet both highways' carriageways: at every pixel
+     * size the loops are drawn at (JUNCTIONS_FROM up to MapFrame.BIG_TILE_PX), each of the eight curves is whole (one piece, not cut) and has a
+     * pixel beside the east-west highway's carriageway and one beside the north-south one's. On a clean crossing that held already (the
+     * highway fills its whole plot, so a loop that reaches the plot's edge is touching it); what breaks it is a street laid across the reserve
+     * before the reserve was, as the diagonal avenue of his city is - the loops were drawn on open plots alone, so each street plot cut every
+     * curve it crossed into two loose arcs. The loops are drawn over the reserve's streets (bridging them), keep inside the reserve's box, and
+     * leave every pixel outside it, a street's among them, as the tile had it.
+     */
+    static void loopsJoined() {
+        System.out.println("--- 23. (MF2) a cloverleaf's leaves and connectors are each one piece and join both highways' carriageways, a street across the reserve or none ---");
+        for (int px = TileRaster.JUNCTIONS_FROM; px <= MapFrame.BIG_TILE_PX; px++) {
+            joined("a clean crossing", px, false);
+            joined("a crossing with a diagonal avenue and a street across the connectors' far side", px, true);
+        }
+    }
+
+    /** A cloverleaf at (16, 16), with the avenue's staircase from corner to corner of the reserve and a street down the column its connectors reach out to when `streets`: the curves' pieces and where they touch. */
+    static void joined(String what, int px, boolean streets) {
+        int jx = 16, jy = 16, w = T * px, side = InterchangeGround.CLOVERLEAF_SIDE, lo = jx - side / 2, hi = jx + side / 2;
+        String name = what + " at " + px + " px";
+        int[] withLoops = null, without = null;
+        for (int pass = 0; pass < 2; pass++) {
+            TilePainter.Input in = owned();
+            highwayRow(in, jy);
+            highwayColumn(in, jx);
+            if (streets) {
+                for (int k = -side / 2; k <= side / 2; k++) {
+                    for (int s = 0; s < 2; s++) {
+                        int sx = jx + k + s, sy = jy + k;
+                        if (sx >= 0 && sy >= 0 && sx < T && sy < T && sx != jx && sy != jy) in.street[sy * T + sx] = (byte) ARTERIAL;
+                    }
+                }
+                for (int y = 0; y < T; y++) if (y != jy) in.street[y * T + hi - 1] = (byte) ARTERIAL;
+            }
+            if (pass == 0) in.addReserve(InterchangeGround.CLOVERLEAF, -1, jx, jy, lo, lo, side, side);
+            int[] img = raster(in, paint(in), px);
+            if (pass == 0) withLoops = img; else without = img;
+        }
+        int road = TileRaster.ROAD[BuildingVisual.HIGHWAY];
+        boolean[] ramp = new boolean[w * w];
+        for (int i = 0; i < ramp.length; i++) ramp[i] = withLoops[i] != without[i] && (withLoops[i] == road || withLoops[i] == TileRaster.HIGHWAY_CASE);
+        int[] label = new int[w * w];
+        int n = components(ramp, w, label);
+        int cx = jx * px + px / 2, cy = jy * px + px / 2;
+        int[] beside = new int[n + 1], besideV = new int[n + 1], perQuadrant = new int[4];
+        boolean[] seen = new boolean[n + 1];
+        int[] quadrant = new int[n + 1];
+        int outside = 0, changedOutside = 0, onHighway = 0;
+        for (int i = 0; i < ramp.length; i++) {
+            int x = i % w, y = i / w, px0 = x / px, py0 = y / px;
+            boolean inBox = px0 >= lo && px0 <= hi && py0 >= lo && py0 <= hi;
+            if (!inBox && withLoops[i] != without[i]) changedOutside++;
+            int l = label[i];
+            if (l == 0) continue;
+            if (!inBox) outside++;
+            if (py0 == jy || px0 == jx) onHighway++;
+            if (!seen[l]) { seen[l] = true; quadrant[l] = (x < cx ? 0 : 1) + (y < cy ? 0 : 2); perQuadrant[quadrant[l]]++; }
+            // A loop pixel 4-adjacent to a carriageway pixel of the highway's plot row or column, which is no loop pixel.
+            int[] ddx = { 1, -1, 0, 0 }, ddy = { 0, 0, 1, -1 };
+            for (int d = 0; d < 4; d++) {
+                int nx = x + ddx[d], ny = y + ddy[d];
+                if (nx < 0 || ny < 0 || nx >= w || ny >= w || ramp[ny * w + nx]) continue;
+                int c = withLoops[ny * w + nx];
+                if (c != road && c != TileRaster.HIGHWAY_CASE && c != TileRaster.CENTRE_LINE) continue;
+                if (ny / px == jy) beside[l]++;
+                if (nx / px == jx) besideV[l]++;
+            }
+        }
+        int loose = 0;
+        for (int l = 1; l <= n; l++) if (beside[l] == 0 || besideV[l] == 0) loose++;
+        System.out.printf("  %s: %d curves (%d expected, two a quadrant), %d of them not touching both carriageways; %d loop pixels outside the reserve's box, %d on a highway's plot%n",
+                name, n, 8, loose, outside, onHighway);
+        check("23a. " + name + ": two curves in each quadrant, the leaf and its connector, each one piece (" + n + " curves)",
+                n == 8 && perQuadrant[0] == 2 && perQuadrant[1] == 2 && perQuadrant[2] == 2 && perQuadrant[3] == 2);
+        check("23b. " + name + ": each of them has a pixel beside the east-west carriageway and one beside the north-south one (" + loose + " that has not)", n > 0 && loose == 0);
+        check("23c. " + name + ": the loops keep inside the reserve's box and off the highways' plots, and change no pixel outside the box (" + changedOutside + " changed)",
+                outside == 0 && onHighway == 0 && changedOutside == 0);
     }
 
 }
