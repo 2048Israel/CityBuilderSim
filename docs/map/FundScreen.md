@@ -1,4 +1,4 @@
-# FundScreen.java - 2,566 lines · 99 methods · 23 constants · interface
+# FundScreen.java - 2,570 lines · 99 methods · 23 constants · interface
 
 `ham/citybuildersim/ui/FundScreen.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
 
@@ -31,7 +31,7 @@
 > and an arrow; nothing else here is: a price, its move, a yield and every
 > chart line are in ink or their area's colour.
 
-**Uses:** [Palette](Palette.md) (232), [Kept](Kept.md) (206), [FundView](FundView.md) (100), [Game](Game.md) (61), [FundLedger](FundLedger.md) (61), [TreasuryFund](TreasuryFund.md) (58), [Icons](Icons.md) (19), [Equity](Equity.md) (19), [TimeChart](TimeChart.md) (19), [ChartModel](ChartModel.md) (16), [OrderBook](OrderBook.md) (12), [FinancesScreen](FinancesScreen.md) (9), [CityCalendar](CityCalendar.md) (8), [CorporateBond](CorporateBond.md) (7), [HistoryScreen](HistoryScreen.md) (7), [Pieces](Pieces.md) (7), [HistorySave](HistorySave.md) (5), [Bank](Bank.md) (4), [PolicyPreview](PolicyPreview.md) (4), [UserInterface](UserInterface.md) (2), [SectorScreen](SectorScreen.md) (2), [DecisionLog](DecisionLog.md) (2), [Levers](Levers.md) (2), [Exchange](Exchange.md) (1), [DebtManager](DebtManager.md) (1), [BondMarket](BondMarket.md) (1), [BankScreen](BankScreen.md) (1), [BuildScreen](BuildScreen.md) (1), [Ladder](Ladder.md) (1)
+**Uses:** [Palette](Palette.md) (232), [Kept](Kept.md) (207), [FundView](FundView.md) (100), [Game](Game.md) (61), [FundLedger](FundLedger.md) (61), [TreasuryFund](TreasuryFund.md) (58), [Icons](Icons.md) (19), [Equity](Equity.md) (19), [TimeChart](TimeChart.md) (19), [ChartModel](ChartModel.md) (16), [OrderBook](OrderBook.md) (12), [FinancesScreen](FinancesScreen.md) (9), [CityCalendar](CityCalendar.md) (8), [CorporateBond](CorporateBond.md) (7), [HistoryScreen](HistoryScreen.md) (7), [Pieces](Pieces.md) (7), [HistorySave](HistorySave.md) (5), [Bank](Bank.md) (4), [PolicyPreview](PolicyPreview.md) (4), [UserInterface](UserInterface.md) (2), [SectorScreen](SectorScreen.md) (2), [DecisionLog](DecisionLog.md) (2), [Levers](Levers.md) (2), [Exchange](Exchange.md) (1), [DebtManager](DebtManager.md) (1), [BondMarket](BondMarket.md) (1), [BankScreen](BankScreen.md) (1), [BuildScreen](BuildScreen.md) (1), [Ladder](Ladder.md) (1)
 
 **Used by (3):** [FinancesScreen](FinancesScreen.md), [KeptBench](KeptBench.md), [SectorScreen](SectorScreen.md)
 
@@ -95,7 +95,7 @@
 | 2326 | `FundScreen.WITHDRAWAL_LADDER` | `520` | The withdrawal's ladder: the card runs the page's width, the dial at the left and what it would do beside it. |
 | 2344 | `FundScreen.WITHDRAWAL_CAVEAT` | `"next month's on the fund as it stands - its prices and what the book takes w...` | The withdrawal's caveat, under what it would do. |
 | 2346 | `FundScreen.WITHDRAWAL_CAVEAT_INFO` | `"Next month's withdrawal is struck on what the fund is worth at the top of " ...` | ...and the sentence behind it, its (i). |
-| 2455 | `FundScreen.RESCUE_BOOK_INFO` | `"What the city holds from rescuing its bank: the shares it took when it " + "...` | The rescue book's (i). |
+| 2459 | `FundScreen.RESCUE_BOOK_INFO` | `"What the city holds from rescuing its bank: the shares it took when it " + "...` | The rescue book's (i). |
 
 ## Fields (state)
 
@@ -130,7 +130,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 73 | 2494 | **type** `final class FundScreen` | The city's fund on the Finances tab, as a brokerage (0.7.39): its Portfolio - what it is worth, what it has made and on what, every holding with its average cost and P&L - a Search of the shares and bonds it can buy, ... |
+| 73 | 2498 | **type** `final class FundScreen` | The city's fund on the Finances tab, as a brokerage (0.7.39): its Portfolio - what it is worth, what it has made and on what, every holding with its average cost and P&L - a Search of the shares and bonds it can buy, ... |
 | 79 | 4 | `FundScreen(UserInterface ui, FinancesScreen fin)` |  |
 
 ### THE PAGES (lines 84-117)
@@ -301,7 +301,7 @@
 | 2278 | 6 | `static String dialInfo()` | The dial's (i). |
 | 2286 | 36 | `VBox dialCard(Game g)` | THE DIAL: its share of the year's surplus, the steps, and what it reads against. |
 
-### THE WITHDRAWAL (0.7.48, C2) (lines 2323-2566)
+### THE WITHDRAWAL (0.7.48, C2) (lines 2323-2570)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -311,12 +311,12 @@
 | 2382 | 14 | `static java.util.function.DoubleFunction<List<Pieces.Effect>> withdrawalEffects(Game g)` | What the withdrawal would do at any value of its thumb (pure: the probe reads them), each PolicyPreview.fundWithdrawalAt() against the dial in force: next month's to the treasury, what its cash pays of it, the rest - ... |
 | 2398 | 13 | `VBox withdrawalCard(Game g)` | THE WITHDRAWAL (0.7.48, C2): the dial on a Levers card, as the fare's on Infrastructure - its reading, its status, the ladder, what it would do, and its Apply once staged. |
 | 2413 | 8 | `static String transferInfo(TreasuryFund fund)` | The transfer's (i): the withdrawal dial in force, read. |
-| 2423 | 30 | `VBox transferCard(Game g)` | TO THE TREASURY: last month's, paid and not, this year's, next month's, and what came in. |
-| 2460 | 15 | `VBox rescueBookCard(Game g)` | THE RESCUE BOOK: the city's stake in its bank as a ring, the book's lines, and the preferred's terms (0.7.39). |
-| 2477 | 15 | `static List<String> rescueTerms(Game g)` | The preferred's terms and its warrants', a line each (0.7.39). |
-| 2494 | 31 | `VBox moveCard(Game g)` | PAY IN, DRAW OUT: the amount and its steps (FinancesScreen.fundAsk), and the two moves. |
-| 2527 | 5 | `static Press payInPress(Game g, double ask)` | PAY IN's press: choose, nothing in the treasury, or what it would move. |
-| 2534 | 5 | `static Press drawOutPress(Game g, double ask)` | DRAW OUT's press: only the fund's free cash - not what the player's buys hold - can be drawn. |
-| 2541 | 9 | `static String capRule()` | THE RULE's sentence on the cap. |
-| 2552 | 14 | `VBox ruleCard(Game g)` | THE RULE: the shares against the aim, the cap in words, and the treasury's rescue setting. |
+| 2423 | 34 | `VBox transferCard(Game g)` | TO THE TREASURY: last month's, paid and not, this year's, next month's, and what came in. |
+| 2464 | 15 | `VBox rescueBookCard(Game g)` | THE RESCUE BOOK: the city's stake in its bank as a ring, the book's lines, and the preferred's terms (0.7.39). |
+| 2481 | 15 | `static List<String> rescueTerms(Game g)` | The preferred's terms and its warrants', a line each (0.7.39). |
+| 2498 | 31 | `VBox moveCard(Game g)` | PAY IN, DRAW OUT: the amount and its steps (FinancesScreen.fundAsk), and the two moves. |
+| 2531 | 5 | `static Press payInPress(Game g, double ask)` | PAY IN's press: choose, nothing in the treasury, or what it would move. |
+| 2538 | 5 | `static Press drawOutPress(Game g, double ask)` | DRAW OUT's press: only the fund's free cash - not what the player's buys hold - can be drawn. |
+| 2545 | 9 | `static String capRule()` | THE RULE's sentence on the cap. |
+| 2556 | 14 | `VBox ruleCard(Game g)` | THE RULE: the shares against the aim, the cap in words, and the treasury's rescue setting. |
 

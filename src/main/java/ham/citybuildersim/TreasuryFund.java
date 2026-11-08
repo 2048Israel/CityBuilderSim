@@ -339,6 +339,8 @@ public final class TreasuryFund {
     private double paidInFromSurplus, paidInFromCash, handPaidIn, handDrawnOut;
     private double transfersPaid, transfersShort;
     private double dividendsMarket, dividendsRescue, coupons, principal, bondFaceLost;
+    // The lending fee the world paid it for the shares its market book lent a short (EM2; LF1: a counter of its own, and a row).
+    private double lendingFees;
     private double preferredBought, preferredDividends, preferredRedeemed, warrantsBoughtBack, warrantSharesTaken;
     private double sharesBought, sharesSold, bondsBought, bondsSold, rescueSold;
 
@@ -347,7 +349,7 @@ public final class TreasuryFund {
     // went out, which the Fund page reads after the month has closed - and so
     // saved with it (State.month), since a reloaded city cannot rebuild a flow.
     private double transferDue, transferPaid;
-    private double monthDividends, monthCoupons, monthPrincipal, monthBought, monthSold;
+    private double monthDividends, monthCoupons, monthPrincipal, monthBought, monthSold, monthLendingFees;
     // Over the default withdrawal (C1): what the month's cash could not cover,
     // sold from the market book at the step and paid at the next month's top -
     // carried, so not cleared with the month - and what that payment was.
@@ -562,9 +564,17 @@ public final class TreasuryFund {
         dividendsMarket += amount - rescue;
     }
 
-    /** The lending fee the world pays the fund for the shares its market book lends (EM2, Exchange.strikeLending()): cash in, income from the world. */
-    void receiveLendingFee(double amount) {
-        if (amount > 0) cash += amount;
+    /**
+     * The lending fee the world pays the fund for the shares its market book lends (EM2, Exchange.strikeLending()): cash in, income from the
+     * world - and, since LF1, the fund's own income counters (the month's and the life's, FundView's income and its "Company shares" kind) and a
+     * LENDING_FEE row in the ledger, the company's market lot's income. It had touched the cash alone, so the fund's statements left it out.
+     */
+    void receiveLendingFee(String company, double amount, int month) {
+        if (!(amount > 0)) return;
+        cash += amount;
+        lendingFees += amount;
+        monthLendingFees += amount;
+        ledger.lendingFee(company, amount, month);
     }
 
     /** A coupon on its bonds. */
@@ -617,7 +627,7 @@ public final class TreasuryFund {
     /** Clears the month's working. The top of the month. */
     void startMonth() {
         transferDue = transferPaid = transferPaidLate = 0;
-        monthDividends = monthCoupons = monthPrincipal = monthBought = monthSold = 0;
+        monthDividends = monthCoupons = monthPrincipal = monthBought = monthSold = monthLendingFees = 0;
     }
 
     /* ============================== the rescue ============================== */
@@ -813,6 +823,8 @@ public final class TreasuryFund {
     public double getRescueSold()             { return rescueSold; }
     public double getMonthDividends()         { return monthDividends; }
     public double getMonthCoupons()           { return monthCoupons; }
+    public double getMonthLendingFees()       { return monthLendingFees; }
+    public double getLendingFees()            { return lendingFees; }
     public double getMonthPrincipal()         { return monthPrincipal; }
     public double getMonthBought()            { return monthBought; }
     public double getMonthSold()              { return monthSold; }
@@ -981,9 +993,9 @@ public final class TreasuryFund {
         s.life = new double[] { paidInFromSurplus, paidInFromCash, handPaidIn, handDrawnOut,
                 transfersPaid, transfersShort, dividendsMarket, dividendsRescue, coupons, principal, bondFaceLost,
                 preferredBought, preferredDividends, preferredRedeemed, warrantsBoughtBack, warrantSharesTaken,
-                sharesBought, sharesSold, bondsBought, bondsSold, rescueSold };
+                sharesBought, sharesSold, bondsBought, bondsSold, rescueSold, lendingFees };
         s.month = new double[] { transferDue, transferPaid, monthDividends, monthCoupons, monthPrincipal,
-                monthBought, monthSold, toRaise, transferPaidLate };
+                monthBought, monthSold, toRaise, transferPaidLate, monthLendingFees };
         return s;
     }
 
@@ -1032,7 +1044,9 @@ public final class TreasuryFund {
             coupons = l[i++]; principal = l[i++]; bondFaceLost = l[i++];
             preferredBought = l[i++]; preferredDividends = l[i++]; preferredRedeemed = l[i++];
             warrantsBoughtBack = l[i++]; warrantSharesTaken = l[i++];
-            sharesBought = l[i++]; sharesSold = l[i++]; bondsBought = l[i++]; bondsSold = l[i++]; rescueSold = l[i];
+            sharesBought = l[i++]; sharesSold = l[i++]; bondsBought = l[i++]; bondsSold = l[i++]; rescueSold = l[i++];
+            // ...the lending fees (LF1): a longer array than an older save's has one more, and an older one reads none.
+            if (l.length >= 22) lendingFees = l[i];
         }
         double[] m = s.month;
         if (m != null && m.length >= 7) {
@@ -1043,6 +1057,7 @@ public final class TreasuryFund {
         if (m != null && m.length >= 9) {
             toRaise = Double.isFinite(m[7]) ? Math.max(0, m[7]) : 0;
             transferPaidLate = Double.isFinite(m[8]) ? m[8] : 0;
+            if (m.length >= 10 && Double.isFinite(m[9])) monthLendingFees = m[9];
         }
     }
 
@@ -1070,7 +1085,7 @@ public final class TreasuryFund {
         transfersPaid = transfersShort = 0;
         dividendsMarket = dividendsRescue = coupons = principal = bondFaceLost = 0;
         preferredBought = preferredDividends = preferredRedeemed = warrantsBoughtBack = warrantSharesTaken = 0;
-        sharesBought = sharesSold = bondsBought = bondsSold = rescueSold = 0;
+        sharesBought = sharesSold = bondsBought = bondsSold = rescueSold = lendingFees = 0;
         startMonth();
     }
 
@@ -1102,6 +1117,7 @@ public final class TreasuryFund {
         preferredBought *= scale; preferredDividends *= scale; preferredRedeemed *= scale; warrantsBoughtBack *= scale;
         sharesBought *= scale; sharesSold *= scale; bondsBought *= scale; bondsSold *= scale; rescueSold *= scale;
         transferDue *= scale; transferPaid *= scale; toRaise *= scale; transferPaidLate *= scale;
-        monthDividends *= scale; monthCoupons *= scale; monthPrincipal *= scale; monthBought *= scale; monthSold *= scale;
+        monthDividends *= scale; monthCoupons *= scale; monthPrincipal *= scale; monthBought *= scale; monthSold *= scale; monthLendingFees *= scale;
+        lendingFees *= scale;
     }
 }

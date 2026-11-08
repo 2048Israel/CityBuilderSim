@@ -2445,6 +2445,10 @@ final class FundScreen {
         card.getChildren().add(caption("WHAT CAME IN LAST MONTH", null));
         card.getChildren().add(cardLine("Dividends", d(g, fund.getMonthDividends()), null));
         card.getChildren().add(cardLine("Coupons", d(g, fund.getMonthCoupons()), null));
+        // The fee the world paid for the shares it lent a short (LF1): shown only in a month it was paid, as the card says only sometimes.
+        if (fund.getMonthLendingFees() > 0) {
+            card.getChildren().add(Kept.scope("lendingFee", () -> cardLine("Lending fees", d(g, fund.getMonthLendingFees()), null)));
+        }
         card.getChildren().add(cardLine("Bonds repaid", d(g, fund.getMonthPrincipal()), null));
         card.getChildren().add(cardLine("Bought and sold", d(g, fund.getMonthBought()) + " bought · "
                 + d(g, fund.getMonthSold()) + " sold", null));

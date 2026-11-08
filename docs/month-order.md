@@ -31,7 +31,7 @@ Generated 2026-11-08 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
    _THE RESEARCH POSTS ARE STRUCK NEXT (R3), AFTER THE DEMOLITIONS (R3b): what the month's grants buy within the schools' room, at the wages the labour market has now._
 16. **L13047** `bank.setMonth(month);` → [Bank.setMonth](map/Bank.md) (L2327)  
    _The bank's clock, for its preferred's anniversaries, and the fund's month (0.7.14)._
-17. **L13048** `fund.startMonth();` → [TreasuryFund.startMonth](map/TreasuryFund.md) (L618)
+17. **L13048** `fund.startMonth();` → [TreasuryFund.startMonth](map/TreasuryFund.md) (L628)
 18. **L13051** `equity.startMonth();` → [Equity.startMonth](map/Equity.md) (L367)  
    _The register's month: nothing offered, nothing paid, until it is._
 19. **L13052** `exchange.startMonth(month);` → [Exchange.startMonth](map/Exchange.md) (L507)
@@ -168,7 +168,7 @@ Generated 2026-11-08 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 113. **L13528** `tradeShares();` → [Game.tradeShares](map/Game.md) (L4791)
 114. **L13538** `settleThePreferred();` → [Game.settleThePreferred](map/Game.md) (L5350)  
    _...and the city's preferred (0.7.14): every block at its third anniversary repaid whole at par with its unpaid dividends, from the bank's capital over its target and the rest by an offering of new ..._
-115. **L13548** `bondMarket.takeMonth(month, exchange.cityMarketValue(equity));` → [BondMarket.takeMonth](map/BondMarket.md) (L1140), [Exchange.cityMarketValue](map/Exchange.md) (L1722)  
+115. **L13548** `bondMarket.takeMonth(month, exchange.cityMarketValue(equity));` → [BondMarket.takeMonth](map/BondMarket.md) (L1140), [Exchange.cityMarketValue](map/Exchange.md) (L1744)  
    _...AND THE BONDS TRADE (0.7.12): the month's coupons paid to their holders, last month's orders withdrawn, every bond valued and every participant's orders posted again - after the shares, and befo..._
 116. **L13549** `strikeBankBonds();` → [Game.strikeBankBonds](map/Game.md) (L4992)
 117. **L13554** `outward.setPaperBook(debtManager.firmBookRatio(), debtManager.firmBookYield());` → [OutwardInvestment.setPaperBook](map/OutwardInvestment.md) (L452), [DebtManager.firmBookRatio](map/DebtManager.md) (L2863), [DebtManager.firmBookYield](map/DebtManager.md) (L2869)  

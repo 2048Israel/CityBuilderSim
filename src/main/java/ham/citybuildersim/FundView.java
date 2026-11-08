@@ -255,8 +255,10 @@ public final class FundView {
         List<Kind> kinds = new ArrayList<>();
         double mkt = g.fundMarketSharesValue();
         double inMkt = f.getSharesBought(), backMkt = f.getSharesSold() - f.getRescueSold();
-        kinds.add(new Kind("Company shares", inMkt, backMkt, mkt, f.getDividendsMarket(),
-                mkt + backMkt + f.getDividendsMarket() - inMkt, null));
+        // The lending fee is the market book's too (LF1): the shares it lends the world's short, paid on top of their dividends.
+        double marketIncome = f.getDividendsMarket() + f.getLendingFees();
+        kinds.add(new Kind("Company shares", inMkt, backMkt, mkt, marketIncome,
+                mkt + backMkt + marketIncome - inMkt, null));
         double rescue = g.fundRescueSharesValue();
         kinds.add(new Kind("The rescue book", f.getRescuesPaid(), f.getRescueSold(), rescue, f.getDividendsRescue(),
                 rescue + f.getRescueSold() + f.getDividendsRescue() - f.getRescuesPaid(), null));
@@ -271,7 +273,7 @@ public final class FundView {
                 pw + backPw + f.getPreferredDividends() - f.getPreferredBought(),
                 preferredCancelled(f) > 0 ? "cancelled by a rescue" : null));
         // What the treasury had of it last month: the month's own and, over the default withdrawal, the month before's sale (0.7.48).
-        return new Portfolio(value, f.getCash(), f.getMonthDividends() + f.getMonthCoupons(), f.getTransferPaid() + f.getTransferPaidLate(),
+        return new Portfolio(value, f.getCash(), f.getMonthDividends() + f.getMonthCoupons() + f.getMonthLendingFees(), f.getTransferPaid() + f.getTransferPaidLate(),
                 f.getTransferShort(), putIn, takenOut, gain, putIn > 0 ? (value + takenOut) / putIn : Double.NaN,
                 g.fundMarketSharesValue(), bonds, g.fundRescueValue(), kinds, f.handReserve(), g.fundCashFree());
     }
@@ -822,7 +824,7 @@ public final class FundView {
     public static String groupOf(String kind) {
         return switch (kind) {
             case FundLedger.BUY, FundLedger.SELL, FundLedger.LAPSED -> TRADES;
-            case FundLedger.DIVIDEND, FundLedger.COUPON -> INCOME;
+            case FundLedger.DIVIDEND, FundLedger.COUPON, FundLedger.LENDING_FEE -> INCOME;
             case FundLedger.PAY_IN, FundLedger.DRAW_OUT, FundLedger.TRANSFER -> MONEY;
             default -> EVENTS;
         };

@@ -1579,6 +1579,14 @@ public class SaveFileCheck {
         }
         double shortSold = 0;
         if (shortCo >= 0) {
+            // The fund holds a quarter of what the biggest holder does (LF1: it lent nothing here, lentByFund 0 == 0 either way), so that it lends too.
+            Household biggest = null;
+            for (Household h : full.getHouseholdBalance().cells()) {
+                if (!h.isEmpty() && h.households() > 0 && (biggest == null || h.shares[shortCo] * h.households() > biggest.shares[shortCo] * biggest.households())) biggest = h;
+            }
+            double fundTakes = .25 * biggest.shares[shortCo] * biggest.households();
+            biggest.shares[shortCo] -= fundTakes / biggest.households();
+            full.getEquity().moveCity(shortCo, fundTakes);
             double shortRoom = .5 * Math.min(Exchange.MAX_SHORT_INTEREST * full.getEquity().getOutstanding(shortCo),
                     full.getHouseholdBalance().sharesHeld(shortCo) + full.getEquity().getCityMarketShares(shortCo));
             double shortAt = shortEx.fair(shortCo) * (1 + Exchange.SHORT_BAND);
@@ -1598,10 +1606,13 @@ public class SaveFileCheck {
             shortEx.bookOf(shortCo).withdrawAll();
             shortEx.stampShortRecordForCheck(shortCo);
             full.getEquity().setLifetimeShortPays(shortCo, 987.625);
+            // ...and the fee the fund was paid, in its own counters and its ledger (LF1), at a figure no other has.
+            full.getFund().receiveLendingFee(Equity.COMPANIES[shortCo], .75, full.getMonth());
         }
         assertTrue("fixture: the world is short of a company the households hold, lent by the cells, with collateral held against it and a record stamped",
                 shortCo >= 0 && shortSold > 0 && shortEx.shortShares(shortCo) == shortSold && shortEx.shortCollateral(shortCo) > 0
-                        && shortEx.lentByCells(shortCo) > 0 && shortEx.lendingFeeToCells(shortCo) > 0 && shortEx.getLifeMarginCalls() == 3);
+                        && shortEx.lentByCells(shortCo) > 0 && shortEx.lentByFund(shortCo) > 0 && shortEx.lendingFeeToCells(shortCo) > 0
+                        && full.getFund().getLendingFees() == .75 && shortEx.getLifeMarginCalls() == 3);
 
         assertTrue("saved a city with one of everything in it",
                 full.saveGame(1, "everything").ok);
@@ -1884,6 +1895,13 @@ public class SaveFileCheck {
             same("...the shares the fund lends", backEx.lentByFund(shortCo), liveEx.lentByFund(shortCo));
             same("...the month's fee the cells were paid", backEx.lendingFeeToCells(shortCo), liveEx.lendingFeeToCells(shortCo));
             same("...and the fund", backEx.lendingFeeToFund(shortCo), liveEx.lendingFeeToFund(shortCo));
+            same("...the fund's own income from it, the month's and the life's (LF1)", back.getFund().getMonthLendingFees() + 3 * back.getFund().getLendingFees(),
+                    full.getFund().getMonthLendingFees() + 3 * full.getFund().getLendingFees());
+            double rowsBack = 0, rowsLive = 0;
+            for (FundLedger.Activity row : back.getFund().getLedger().getActivity()) if (FundLedger.LENDING_FEE.equals(row.kind())) rowsBack += row.money();
+            for (FundLedger.Activity row : full.getFund().getLedger().getActivity()) if (FundLedger.LENDING_FEE.equals(row.kind())) rowsLive += row.money();
+            same("...and its ledger's LENDING_FEE rows", rowsBack, rowsLive);
+            assertTrue("...which are the fee it was paid, so the comparison is not of two zeros", rowsLive == .75 && full.getFund().getLendingFees() == .75);
             same("...what the short has paid at the dividends over the city's life", back.getEquity().getLifetimeShortPays(shortCo),
                     full.getEquity().getLifetimeShortPays(shortCo));
             same("...the quote it is short at", backEx.price(shortCo), liveEx.price(shortCo));
@@ -2915,7 +2933,7 @@ public class SaveFileCheck {
                 .parseString(Files.readString(fundCity.getGameFiles().saveFile(9))).getAsJsonObject();
         com.google.gson.JsonObject undialledFund = undialled.getAsJsonObject("fund");
         assertTrue("fixture: the save carries the dial and the month's two new slots",
-                undialledFund.has("withdrawalSteps") && undialledFund.getAsJsonArray("month").size() == 9);
+                undialledFund.has("withdrawalSteps") && undialledFund.getAsJsonArray("month").size() == 10);   // ...ten since LF1's lending fee
         undialledFund.remove("withdrawalSteps");
         com.google.gson.JsonArray sevenSlots = new com.google.gson.JsonArray();
         for (int i = 0; i < 7; i++) sevenSlots.add(undialledFund.getAsJsonArray("month").get(i));

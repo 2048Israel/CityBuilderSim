@@ -701,7 +701,7 @@ public class ReadPathCheck {
         fund.getPreferredBought(); fund.getPreferredDividends(); fund.getPreferredRedeemed();
         fund.getWarrantsBoughtBack(); fund.getWarrantSharesTaken(); fund.getSharesBought(); fund.getSharesSold();
         fund.getBondsBought(); fund.getBondsSold(); fund.getRescueSold(); fund.getMonthDividends();
-        fund.getMonthCoupons(); fund.getMonthPrincipal(); fund.getMonthBought(); fund.getMonthSold(); fund.isEmpty();
+        fund.getLendingFees(); fund.getMonthLendingFees(); fund.getMonthCoupons(); fund.getMonthPrincipal(); fund.getMonthBought(); fund.getMonthSold(); fund.isEmpty();
         // ...and 0.7.39's: the fund as a brokerage - every read its pages make, through FundView.
         fund.getRescuesPaid(); fund.getPutIn(); fund.getTakenOut(); fund.handReserve(); fund.getPosted();
         fund.needsLedgerSeed(); g.fundCashFree();
@@ -2329,6 +2329,8 @@ public class ReadPathCheck {
         into.put("exchange.life.short", x.getLifeShortSold() + 3 * x.getLifeShortSoldValue() + 5 * x.getLifeShortCovered() + 7 * x.getLifeShortCoveredValue());
         into.put("exchange.life.counts", x.getLifeShortAsks() + 3.0 * x.getLifeShortMonths() + 5.0 * x.getLifeMarginCalls() + 7.0 * x.getLifeRecalls());
         into.put("exchange.life.fees", x.getLifeLendingFees());
+        // ...and the fund's own books of that fee (LF1): the life's and the month's.
+        into.put("exchange.fundFees", g.getFund().getLendingFees() + 3 * g.getFund().getMonthLendingFees());
     }
 
     /** The world's own fingerprint: the solved year, the prices and scales, the trade by partner's totals, every market's band. Not-a-number is -1. */

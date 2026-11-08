@@ -1,4 +1,4 @@
-# TreasuryFund.java - 1,107 lines · 151 methods · 13 constants · model
+# TreasuryFund.java - 1,123 lines · 153 methods · 13 constants · model
 
 `ham/citybuildersim/TreasuryFund.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
 
@@ -79,18 +79,18 @@
 | 232 | the hand |
 | 313 | the cost basis (0.7.39) |
 | 330 | the record |
-| 356 | the money |
-| 376 | money in: the dial |
-| 428 | the mix |
-| 455 | money out: the transfer |
-| 462 | · the withdrawal dial (0.7.48, C1) |
-| 553 | what it receives |
-| 623 | the rescue |
-| 644 | the preferred offer |
-| 673 | the hand |
-| 787 | reading |
-| 847 | the warrants' value |
-| 911 | save and load |
+| 358 | the money |
+| 378 | money in: the dial |
+| 430 | the mix |
+| 457 | money out: the transfer |
+| 464 | · the withdrawal dial (0.7.48, C1) |
+| 555 | what it receives |
+| 633 | the rescue |
+| 654 | the preferred offer |
+| 683 | the hand |
+| 797 | reading |
+| 859 | the warrants' value |
+| 923 | save and load |
 
 ## Enum constants
 
@@ -156,31 +156,32 @@
 | 339 | `private double paidInFromSurplus, paidInFromCash, handPaidIn, handDrawnOut` | Over the fund's life, for the page and the playtest. |
 | 340 | `private double transfersPaid, transfersShort` |  |
 | 341 | `private double dividendsMarket, dividendsRescue, coupons, principal, bondFaceLost` |  |
-| 342 | `private double preferredBought, preferredDividends, preferredRedeemed, warrantsBoughtBack, warrantSharesTaken` |  |
-| 343 | `private double sharesBought, sharesSold, bondsBought, bondsSold, rescueSold` |  |
-| 349 | `private double transferDue, transferPaid` | This month's working, cleared at the top of the month: the transfer (a budget line too - NationalAccounts carries it) and what came in and went out, which the Fund page reads after the month has closed - and so saved ... |
-| 350 | `private double monthDividends, monthCoupons, monthPrincipal, monthBought, monthSold` |  |
-| 354 | `private double toRaise, transferPaidLate` | Over the default withdrawal (C1): what the month's cash could not cover, sold from the market book at the step and paid at the next month's top - carried, so not cleared with the month - and what that payment was. |
-| 915 | `double cash, dial` |  |
-| 917 | `Integer withdrawalSteps` | The withdrawal dial's steps (0.7.48, C1): null in an older save, which reads Norway's rule. |
-| 918 | `String rescue` |  |
-| 919 | `boolean offerPending` |  |
-| 920 | `int offerMonth, declinedMonth, acceptedMonth, offersMade, offersAccepted, offersDeclined` |  |
-| 921 | `double rescueCost` |  |
-| 922 | `List<Resolution> resolutions` |  |
-| 923 | `List<HandOrder> hand` |  |
-| 925 | `List<HandOrder> posted` | The hand's orders resting on the books (0.7.39). |
-| 927 | `FundLedger ledger` | What each holding cost, and the record (0.7.39): absent from an older save, which Game seeds. |
-| 928 | `int lastPayInMonth, transferYear` |  |
-| 929 | `double lastPayInYearSurplus, lastPayInFromSurplus, lastPayInFromCash, transfersThisYear, transferShortThisYear` |  |
-| 930 | `double[] life` |  |
-| 932 | `double[] month` | The month just closed: its transfer due and paid, and what came in and went out; slots 7 and 8 (0.7.48) what it sells for to pay next month, and what this month paid late. |
+| 343 | `private double lendingFees` | The lending fee the world paid it for the shares its market book lent a short (EM2; LF1: a counter of its own, and a row). |
+| 344 | `private double preferredBought, preferredDividends, preferredRedeemed, warrantsBoughtBack, warrantSharesTaken` |  |
+| 345 | `private double sharesBought, sharesSold, bondsBought, bondsSold, rescueSold` |  |
+| 351 | `private double transferDue, transferPaid` | This month's working, cleared at the top of the month: the transfer (a budget line too - NationalAccounts carries it) and what came in and went out, which the Fund page reads after the month has closed - and so saved ... |
+| 352 | `private double monthDividends, monthCoupons, monthPrincipal, monthBought, monthSold, monthLendingFees` |  |
+| 356 | `private double toRaise, transferPaidLate` | Over the default withdrawal (C1): what the month's cash could not cover, sold from the market book at the step and paid at the next month's top - carried, so not cleared with the month - and what that payment was. |
+| 927 | `double cash, dial` |  |
+| 929 | `Integer withdrawalSteps` | The withdrawal dial's steps (0.7.48, C1): null in an older save, which reads Norway's rule. |
+| 930 | `String rescue` |  |
+| 931 | `boolean offerPending` |  |
+| 932 | `int offerMonth, declinedMonth, acceptedMonth, offersMade, offersAccepted, offersDeclined` |  |
+| 933 | `double rescueCost` |  |
+| 934 | `List<Resolution> resolutions` |  |
+| 935 | `List<HandOrder> hand` |  |
+| 937 | `List<HandOrder> posted` | The hand's orders resting on the books (0.7.39). |
+| 939 | `FundLedger ledger` | What each holding cost, and the record (0.7.39): absent from an older save, which Game seeds. |
+| 940 | `int lastPayInMonth, transferYear` |  |
+| 941 | `double lastPayInYearSurplus, lastPayInFromSurplus, lastPayInFromCash, transfersThisYear, transferShortThisYear` |  |
+| 942 | `double[] life` |  |
+| 944 | `double[] month` | The month just closed: its transfer due and paid, and what came in and went out; slots 7 and 8 (0.7.48) what it sells for to pay next month, and what this month paid late. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 116 | 992 | **type** `public final class TreasuryFund` | The city's fund: the government's holding of its own city's companies and their bonds, bought on the order book by a rule and by the player's hand, and the bank it took over in a rescue (0.7.14). |
+| 116 | 1008 | **type** `public final class TreasuryFund` | The city's fund: the government's holding of its own city's companies and their bonds, bought on the order book by a rule and by the player's hand, and the bank it took over in a rescue (0.7.14). |
 
 ### the dials (lines 118-158)
 
@@ -247,179 +248,181 @@
 | 325 | 1 | `public boolean needsLedgerSeed()` | True while a save from before 0.7.39 waits for its ledger to be seeded. |
 | 328 | 1 | `void ledgerSeeded()` | The seed, done (Game.seedFundLedger()). |
 
-### the record (lines 330-355)
+### the record (lines 330-357)
 
-### the money (lines 356-375)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 359 | 1 | `public double getCash()` | Its cash: what waits for the book, and what the transfer is paid from. |
-| 362 | 1 | `void receive(double amount)` | Cash in: a dividend, a coupon, a sale, a pay-in. |
-| 365 | 1 | `void pay(double amount)` | Cash out: a purchase, the transfer, a draw-out. |
-| 368 | 1 | `public double getDial()` | The dial: a share of the year's budget surplus, 0 to MAX_DIAL. |
-| 371 | 1 | `public void setDial(double d)` | ...set by the player (the Finances tab), clamped to 0-MAX_DIAL. |
-| 373 | 1 | `public RescueMode getRescueMode()` |  |
-| 374 | 1 | `public void setRescueMode(RescueMode mode)` |  |
-
-### money in: the dial (lines 376-427)
+### the money (lines 358-377)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 389 | 9 | `public static double[] payIn(double dial, double yearSurplus, double unused, double cash, double floor)` | WHAT THE DIAL TAKES AT A YEAR END, from the year's budget surplus and from the treasury's cash: {from the surplus, from cash}. |
-| 406 | 4 | `public static double reservedFor(double dial, double surplusThisYearSoFar)` | WHAT THE ROLLOVER MUST LEAVE FOR THE FUND during a year: the dial's share of this calendar year's surplus so far, which the year-end pay-in will claim - so the dial's share is taken before the rollover nets (Jerus's e... |
-| 412 | 9 | `void notePayIn(int month, double yearSurplus, double fromSurplus, double fromCash)` | A year-end pay-in, booked: the surplus's part and the cash's, off the treasury into the fund (the caller moves the treasury's cash). |
-| 423 | 1 | `void notePaidInByHand(double amount)` | The player pays in by hand: the caller moves the treasury's cash. |
-| 426 | 1 | `void noteDrawnOutByHand(double amount)` | ...and draws out. |
+| 361 | 1 | `public double getCash()` | Its cash: what waits for the book, and what the transfer is paid from. |
+| 364 | 1 | `void receive(double amount)` | Cash in: a dividend, a coupon, a sale, a pay-in. |
+| 367 | 1 | `void pay(double amount)` | Cash out: a purchase, the transfer, a draw-out. |
+| 370 | 1 | `public double getDial()` | The dial: a share of the year's budget surplus, 0 to MAX_DIAL. |
+| 373 | 1 | `public void setDial(double d)` | ...set by the player (the Finances tab), clamped to 0-MAX_DIAL. |
+| 375 | 1 | `public RescueMode getRescueMode()` |  |
+| 376 | 1 | `public void setRescueMode(RescueMode mode)` |  |
 
-### the mix (lines 428-454)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 436 | 5 | `public static double sharesOver(double shares, double bonds, double cash)` | WHAT THE RULE SELLS OF ITS SHARES to rebalance, in money at its marks: the excess over EQUITY_WEIGHT of its market book and cash when its shares are more than REBALANCE_OVER of them; nothing otherwise. |
-| 449 | 5 | `public static double bondsOver(double shares, double bonds, double cash)` | ...AND OF ITS BONDS: the excess over the rest of the weight when its shares are more than REBALANCE_UNDER under EQUITY_WEIGHT and its bonds over theirs - the mandate's lower trigger. |
-
-### money out: the transfer (lines 455-461)
+### money in: the dial (lines 378-429)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 458 | 3 | `public static double transferOn(double value)` | A month's transfer on a fund of this value at Norway's rule, the default withdrawal: a twelfth of TRANSFER_RATE of it. |
+| 391 | 9 | `public static double[] payIn(double dial, double yearSurplus, double unused, double cash, double floor)` | WHAT THE DIAL TAKES AT A YEAR END, from the year's budget surplus and from the treasury's cash: {from the surplus, from cash}. |
+| 408 | 4 | `public static double reservedFor(double dial, double surplusThisYearSoFar)` | WHAT THE ROLLOVER MUST LEAVE FOR THE FUND during a year: the dial's share of this calendar year's surplus so far, which the year-end pay-in will claim - so the dial's share is taken before the rollover nets (Jerus's e... |
+| 414 | 9 | `void notePayIn(int month, double yearSurplus, double fromSurplus, double fromCash)` | A year-end pay-in, booked: the surplus's part and the cash's, off the treasury into the fund (the caller moves the treasury's cash). |
+| 425 | 1 | `void notePaidInByHand(double amount)` | The player pays in by hand: the caller moves the treasury's cash. |
+| 428 | 1 | `void noteDrawnOutByHand(double amount)` | ...and draws out. |
 
-### the withdrawal dial (0.7.48, C1) (lines 462-552)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 465 | 1 | `public double getWithdrawal()` | The withdrawal, a share of the fund's whole value a month: whole steps of WITHDRAWAL_STEP, 0 to MAX_WITHDRAWAL_STEPS of them; at the default the very double transferOn() multiplies by. |
-| 468 | 1 | `public int getWithdrawalSteps()` | ...in its steps. |
-| 471 | 1 | `public void setWithdrawal(double share)` | ...set by the player (Finances > The city's fund > Rules & cash): rounded to whole steps and held at 0-MAX_WITHDRAWAL_STEPS (stepsFor()); a share that is not a number leaves Norway's rule. |
-| 474 | 5 | `public static int stepsFor(double share)` | The whole steps a share a month comes to, as the dial takes it: rounded, and held at 0-MAX_WITHDRAWAL_STEPS; a share that is not a number, the default. |
-| 481 | 3 | `public double withdrawalOn(double value)` | A month's withdrawal on a fund of this value at the dial in force: transferOn() at the default, to the bit. |
-| 486 | 3 | `public static double withdrawalAt(double share, double value)` | ...and at a share of the caller's, as the dial would take it (stepsFor()): withdrawalOn() at the dial in force, to the bit - the preview's (PolicyPreview.fundWithdrawalAt()). |
-| 491 | 1 | `public boolean sellsToPay()` | True while the dial is over Norway's rule: what its cash cannot cover is sold from the market book to pay, and the rule buys nothing (a fund drawn past its expected return is being spent). |
-| 494 | 1 | `public double getToRaise()` | What the month's cash could not cover over the default, which the step sells the market book for and the next month's top pays: 0 at or under the default. |
-| 497 | 1 | `public double getTransferPaidLate()` | What this month's top paid of last month's toRaise, from what it sold: 0 at or under the default. |
-| 515 | 28 | `double payTransfer(double value, int year)` | Pays the month's transfer on a fund worth `value` and returns what was paid. |
-| 545 | 1 | `public double getTransferDue()` | This month's transfer as due, and as paid. |
-| 546 | 1 | `public double getTransferPaid()` |  |
-| 548 | 1 | `public double getTransferShort()` | ...and what the cash could not cover of it this month. |
-| 550 | 1 | `public double getTransfersThisYear()` | This calendar year's transfers, paid and unpaid. |
-| 551 | 1 | `public double getTransferShortThisYear()` |  |
-
-### what it receives (lines 553-622)
+### the mix (lines 430-456)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 556 | 8 | `void receiveDividend(double amount, double rescueShare)` | A dividend on its shares, split between its books by what each holds. |
-| 566 | 3 | `void receiveLendingFee(double amount)` | The lending fee the world pays the fund for the shares its market book lends (EM2, Exchange.strikeLending()): cash in, income from the world. |
-| 571 | 1 | `void receiveCoupon(double amount)` | A coupon on its bonds. |
-| 574 | 1 | `void receivePrincipal(double amount)` | A bond's principal at its maturity. |
-| 577 | 1 | `void noteBondLoss(double face)` | Face a default took off its bonds: a loss, no cash. |
-| 580 | 3 | `void receivePreferredDividend(double amount)` | A preferred dividend the bank paid it. |
-| 585 | 4 | `void receiveRedemption(double par, double warrants)` | The bank redeemed preferred at par, and bought warrants back at their value. |
-| 591 | 1 | `void notePreferredBought(double par)` | The treasury bought preferred for the rescue book: its cost, for the record (the treasury paid). |
-| 594 | 1 | `void noteWarrantShares(double n)` | Warrants exercised at their expiry: new shares into the rescue book, for nothing. |
-| 597 | 6 | `void noteBought(double money, boolean bond)` | A trade on the book: shares or a bond bought or sold, and how much of a sale came out of the rescue book. |
-| 603 | 6 | `void noteSold(double money, boolean bond)` |  |
-| 611 | 5 | `void noteRescueSold(double sharesSoldFromRescue, double rescueHeldBefore, double money)` | The hand sold rescue-book shares: their cost comes off the book's cost in proportion, and the sale is counted. |
-| 618 | 4 | `void startMonth()` | Clears the month's working. |
+| 438 | 5 | `public static double sharesOver(double shares, double bonds, double cash)` | WHAT THE RULE SELLS OF ITS SHARES to rebalance, in money at its marks: the excess over EQUITY_WEIGHT of its market book and cash when its shares are more than REBALANCE_OVER of them; nothing otherwise. |
+| 451 | 5 | `public static double bondsOver(double shares, double bonds, double cash)` | ...AND OF ITS BONDS: the excess over the rest of the weight when its shares are more than REBALANCE_UNDER under EQUITY_WEIGHT and its bonds over theirs - the mandate's lower trigger. |
 
-### the rescue (lines 623-643)
+### money out: the transfer (lines 457-463)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 626 | 4 | `void noteResolution(Resolution r)` | A resolution happened: the shares are the rescue book's, at what the city paid. |
-| 632 | 5 | `static Resolution newResolution(int month)` | Builds a resolution's record; Game fills it. |
-| 639 | 1 | `public List<Resolution> getResolutions()` | Every resolution the city has made, oldest first. |
-| 642 | 1 | `public double getRescueCost()` | What the city paid for the rescue book's shares it still holds. |
+| 460 | 3 | `public static double transferOn(double value)` | A month's transfer on a fund of this value at Norway's rule, the default withdrawal: a twelfth of TRANSFER_RATE of it. |
 
-### the preferred offer (lines 644-672)
+### the withdrawal dial (0.7.48, C1) (lines 464-554)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 647 | 1 | `public boolean isOfferPending()` | True while the bank's offer waits for the player's answer. |
-| 649 | 1 | `public int getOfferMonth()` | The month it was made, or -1. |
-| 651 | 1 | `public int getDeclinedMonth()` | The month it was last declined, or -1. |
-| 653 | 1 | `public int getAcceptedMonth()` | The month one was last accepted, or -1. |
-| 656 | 4 | `public boolean mayOffer(int month)` | Whether the bank may ask again this month: nothing pending, and a quarter since the city last answered, either way. |
-| 661 | 1 | `void noteOffered(int month)` |  |
-| 662 | 3 | `void noteAccepted(int month, double par)` |  |
-| 665 | 1 | `void noteDeclined(int month)` |  |
-| 667 | 1 | `void noteLapsed()` | The bank is back over its minimum on its own: the offer lapses, answered by nobody. |
-| 669 | 1 | `public int getOffersMade()` |  |
-| 670 | 1 | `public int getOffersAccepted()` |  |
-| 671 | 1 | `public int getOffersDeclined()` |  |
+| 467 | 1 | `public double getWithdrawal()` | The withdrawal, a share of the fund's whole value a month: whole steps of WITHDRAWAL_STEP, 0 to MAX_WITHDRAWAL_STEPS of them; at the default the very double transferOn() multiplies by. |
+| 470 | 1 | `public int getWithdrawalSteps()` | ...in its steps. |
+| 473 | 1 | `public void setWithdrawal(double share)` | ...set by the player (Finances > The city's fund > Rules & cash): rounded to whole steps and held at 0-MAX_WITHDRAWAL_STEPS (stepsFor()); a share that is not a number leaves Norway's rule. |
+| 476 | 5 | `public static int stepsFor(double share)` | The whole steps a share a month comes to, as the dial takes it: rounded, and held at 0-MAX_WITHDRAWAL_STEPS; a share that is not a number, the default. |
+| 483 | 3 | `public double withdrawalOn(double value)` | A month's withdrawal on a fund of this value at the dial in force: transferOn() at the default, to the bit. |
+| 488 | 3 | `public static double withdrawalAt(double share, double value)` | ...and at a share of the caller's, as the dial would take it (stepsFor()): withdrawalOn() at the dial in force, to the bit - the preview's (PolicyPreview.fundWithdrawalAt()). |
+| 493 | 1 | `public boolean sellsToPay()` | True while the dial is over Norway's rule: what its cash cannot cover is sold from the market book to pay, and the rule buys nothing (a fund drawn past its expected return is being spent). |
+| 496 | 1 | `public double getToRaise()` | What the month's cash could not cover over the default, which the step sells the market book for and the next month's top pays: 0 at or under the default. |
+| 499 | 1 | `public double getTransferPaidLate()` | What this month's top paid of last month's toRaise, from what it sold: 0 at or under the default. |
+| 517 | 28 | `double payTransfer(double value, int year)` | Pays the month's transfer on a fund worth `value` and returns what was paid. |
+| 547 | 1 | `public double getTransferDue()` | This month's transfer as due, and as paid. |
+| 548 | 1 | `public double getTransferPaid()` |  |
+| 550 | 1 | `public double getTransferShort()` | ...and what the cash could not cover of it this month. |
+| 552 | 1 | `public double getTransfersThisYear()` | This calendar year's transfers, paid and unpaid. |
+| 553 | 1 | `public double getTransferShortThisYear()` |  |
 
-### the hand (lines 673-786)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 676 | 1 | `void queue(HandOrder order)` | Queues one of the player's orders for the next step. |
-| 679 | 1 | `public List<HandOrder> getHandOrders()` | The orders waiting for the next step, oldest first. |
-| 682 | 1 | `public List<HandOrder> getPosted()` | The orders posted at the last step and resting until the next, oldest first (0.7.39). |
-| 685 | 4 | `HandOrder cancel(int i)` | Cancels the order waiting at this place, before the step posts it (0.7.39). |
-| 698 | 6 | `public double handReserve()` | WHAT THE HAND'S BUYS HOLD OF THE FUND'S CASH (0.7.39; the spec's B9): a waiting order's whole amount, and a posted one's units still to fill at its price. |
-| 706 | 5 | `double cashForTheRule()` | The fund's cash the rule may spend: its cash less the hand's reserve, never under nothing. |
-| 713 | 9 | `void notePosted(HandOrder o, String key, double units, double price, int month)` | A hand order posted at the step, `units` at `price` a unit: it rests until the next step, and the ledger opens its row. |
-| 724 | 3 | `void noteDropped(HandOrder o, String key, double units, double price, String why, int month)` | A hand order that could not be posted, and why: the ledger's row. |
-| 729 | 15 | `void handFilled(boolean bond, int which, boolean buy, double q, double cash)` | One of the hand's fills, on a company's book or a bond's: the posted orders on it, oldest first, take it. |
-| 746 | 17 | `void noteSplit(int company, double k, int month)` | A company's shares split by k (a consolidation under one): the player's orders in them, waiting or on the book, count in the new shares and price in them; the ledger's row (0.7.39). |
-| 765 | 10 | `void closePosted(boolean bond)` | The step withdrew every order on one market: the hand's posted there close, and what they did not fill lapses. |
-| 777 | 9 | `List<HandOrder> takeHandOrders(boolean bonds)` | ...taken by the market that posts them: the share orders, or the bond orders. |
-
-### reading (lines 787-846)
+### what it receives (lines 555-632)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 789 | 1 | `public int getLastPayInMonth()` |  |
-| 790 | 1 | `public double getLastPayInYearSurplus()` |  |
-| 791 | 1 | `public double getLastPayInFromSurplus()` |  |
-| 792 | 1 | `public double getLastPayInFromCash()` |  |
-| 793 | 1 | `public double getPaidInFromSurplus()` |  |
-| 794 | 1 | `public double getPaidInFromCash()` |  |
-| 795 | 1 | `public double getHandPaidIn()` |  |
-| 796 | 1 | `public double getHandDrawnOut()` |  |
-| 797 | 1 | `public double getTransfersPaid()` |  |
-| 798 | 1 | `public double getTransfersShort()` |  |
-| 799 | 1 | `public double getDividendsMarket()` |  |
-| 800 | 1 | `public double getDividendsRescue()` |  |
-| 801 | 1 | `public double getCoupons()` |  |
-| 802 | 1 | `public double getPrincipal()` |  |
-| 803 | 1 | `public double getBondFaceLost()` |  |
-| 804 | 1 | `public double getPreferredBought()` |  |
-| 805 | 1 | `public double getPreferredDividends()` |  |
-| 806 | 1 | `public double getPreferredRedeemed()` |  |
-| 807 | 1 | `public double getWarrantsBoughtBack()` |  |
-| 808 | 1 | `public double getWarrantSharesTaken()` |  |
-| 809 | 1 | `public double getSharesBought()` |  |
-| 810 | 1 | `public double getSharesSold()` |  |
-| 811 | 1 | `public double getBondsBought()` |  |
-| 812 | 1 | `public double getBondsSold()` |  |
-| 813 | 1 | `public double getRescueSold()` |  |
-| 814 | 1 | `public double getMonthDividends()` |  |
-| 815 | 1 | `public double getMonthCoupons()` |  |
-| 816 | 1 | `public double getMonthPrincipal()` |  |
-| 817 | 1 | `public double getMonthBought()` |  |
-| 818 | 1 | `public double getMonthSold()` |  |
-| 821 | 5 | `public double getRescuesPaid()` | What every resolution paid for the rescue book, over the fund's life (0.7.39). |
-| 832 | 3 | `public double getPutIn()` | WHAT THE CITY HAS PUT INTO ITS FUND, over its life (0.7.39): the dial's pay-ins and the hand's, what the rescues paid, and the preferred the treasury bought - each money the city's own that became the fund's. |
-| 837 | 3 | `public double getTakenOut()` | ...AND WHAT IT HAS TAKEN OUT: the transfers paid to the budget and the hand's draw-outs. |
-| 842 | 4 | `public boolean isEmpty()` | True when it holds nothing and has never been asked for anything: a fund that has not begun. |
+| 558 | 8 | `void receiveDividend(double amount, double rescueShare)` | A dividend on its shares, split between its books by what each holds. |
+| 572 | 7 | `void receiveLendingFee(String company, double amount, int month)` | The lending fee the world pays the fund for the shares its market book lends (EM2, Exchange.strikeLending()): cash in, income from the world - and, since LF1, the fund's own income counters (the month's and the life's... |
+| 581 | 1 | `void receiveCoupon(double amount)` | A coupon on its bonds. |
+| 584 | 1 | `void receivePrincipal(double amount)` | A bond's principal at its maturity. |
+| 587 | 1 | `void noteBondLoss(double face)` | Face a default took off its bonds: a loss, no cash. |
+| 590 | 3 | `void receivePreferredDividend(double amount)` | A preferred dividend the bank paid it. |
+| 595 | 4 | `void receiveRedemption(double par, double warrants)` | The bank redeemed preferred at par, and bought warrants back at their value. |
+| 601 | 1 | `void notePreferredBought(double par)` | The treasury bought preferred for the rescue book: its cost, for the record (the treasury paid). |
+| 604 | 1 | `void noteWarrantShares(double n)` | Warrants exercised at their expiry: new shares into the rescue book, for nothing. |
+| 607 | 6 | `void noteBought(double money, boolean bond)` | A trade on the book: shares or a bond bought or sold, and how much of a sale came out of the rescue book. |
+| 613 | 6 | `void noteSold(double money, boolean bond)` |  |
+| 621 | 5 | `void noteRescueSold(double sharesSoldFromRescue, double rescueHeldBefore, double money)` | The hand sold rescue-book shares: their cost comes off the book's cost in proportion, and the sale is counted. |
+| 628 | 4 | `void startMonth()` | Clears the month's working. |
 
-### the warrants' value (lines 847-910)
+### the rescue (lines 633-653)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 862 | 10 | `public static double callValue(double price, double strike, double rate, double sigma, double years)` | WHAT A CALL IS WORTH, Black and Scholes (1973): S N(d1) - K e^(-rT) N(d2), d1 = (ln(S/K) + (r + sigma^2/2) T) / (sigma sqrt T), d2 = d1 - sigma sqrt T. |
-| 877 | 9 | `public static double normalCdf(double x)` | The standard normal distribution function: Zelen and Severo's approximation, Abramowitz and Stegun (1964) 26.2.17, to within 7.5e-8. |
-| 893 | 17 | `public static double annualVolatility(double[] prices)` | A share's volatility, a year, from its monthly prices: the standard deviation of the last VOLATILITY_MONTHS monthly log returns, times the square root of twelve. |
+| 636 | 4 | `void noteResolution(Resolution r)` | A resolution happened: the shares are the rescue book's, at what the city paid. |
+| 642 | 5 | `static Resolution newResolution(int month)` | Builds a resolution's record; Game fills it. |
+| 649 | 1 | `public List<Resolution> getResolutions()` | Every resolution the city has made, oldest first. |
+| 652 | 1 | `public double getRescueCost()` | What the city paid for the rescue book's shares it still holds. |
 
-### save and load (lines 911-1107)
+### the preferred offer (lines 654-682)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 914 | 41 | **type** `public static final class State implements Cloneable` | Everything the fund carries from one month to the next, by name. |
-| 940 | 14 | `State copy()` _(in TreasuryFund.State)_ | A copy that shares nothing with this state (UP1, 2026-10-22): toState() lists the fund's own resolutions and orders and holds a copy of its ledger. |
-| 956 | 33 | `public State toState()` |  |
-| 995 | 53 | `public void restore(State s)` | Puts a saved fund back. |
-| 1050 | 26 | `public void reset()` | A fund that has not begun: nothing held, the dial at 0, the withdrawal at Norway's rule, the rescue on the button. |
-| 1078 | 29 | `public void redenominate(double scale)` | Every figure it keeps in money, in the new unit (Game, THE CURRENCY REFORM); share counts and the two dials do not move. |
+| 657 | 1 | `public boolean isOfferPending()` | True while the bank's offer waits for the player's answer. |
+| 659 | 1 | `public int getOfferMonth()` | The month it was made, or -1. |
+| 661 | 1 | `public int getDeclinedMonth()` | The month it was last declined, or -1. |
+| 663 | 1 | `public int getAcceptedMonth()` | The month one was last accepted, or -1. |
+| 666 | 4 | `public boolean mayOffer(int month)` | Whether the bank may ask again this month: nothing pending, and a quarter since the city last answered, either way. |
+| 671 | 1 | `void noteOffered(int month)` |  |
+| 672 | 3 | `void noteAccepted(int month, double par)` |  |
+| 675 | 1 | `void noteDeclined(int month)` |  |
+| 677 | 1 | `void noteLapsed()` | The bank is back over its minimum on its own: the offer lapses, answered by nobody. |
+| 679 | 1 | `public int getOffersMade()` |  |
+| 680 | 1 | `public int getOffersAccepted()` |  |
+| 681 | 1 | `public int getOffersDeclined()` |  |
+
+### the hand (lines 683-796)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 686 | 1 | `void queue(HandOrder order)` | Queues one of the player's orders for the next step. |
+| 689 | 1 | `public List<HandOrder> getHandOrders()` | The orders waiting for the next step, oldest first. |
+| 692 | 1 | `public List<HandOrder> getPosted()` | The orders posted at the last step and resting until the next, oldest first (0.7.39). |
+| 695 | 4 | `HandOrder cancel(int i)` | Cancels the order waiting at this place, before the step posts it (0.7.39). |
+| 708 | 6 | `public double handReserve()` | WHAT THE HAND'S BUYS HOLD OF THE FUND'S CASH (0.7.39; the spec's B9): a waiting order's whole amount, and a posted one's units still to fill at its price. |
+| 716 | 5 | `double cashForTheRule()` | The fund's cash the rule may spend: its cash less the hand's reserve, never under nothing. |
+| 723 | 9 | `void notePosted(HandOrder o, String key, double units, double price, int month)` | A hand order posted at the step, `units` at `price` a unit: it rests until the next step, and the ledger opens its row. |
+| 734 | 3 | `void noteDropped(HandOrder o, String key, double units, double price, String why, int month)` | A hand order that could not be posted, and why: the ledger's row. |
+| 739 | 15 | `void handFilled(boolean bond, int which, boolean buy, double q, double cash)` | One of the hand's fills, on a company's book or a bond's: the posted orders on it, oldest first, take it. |
+| 756 | 17 | `void noteSplit(int company, double k, int month)` | A company's shares split by k (a consolidation under one): the player's orders in them, waiting or on the book, count in the new shares and price in them; the ledger's row (0.7.39). |
+| 775 | 10 | `void closePosted(boolean bond)` | The step withdrew every order on one market: the hand's posted there close, and what they did not fill lapses. |
+| 787 | 9 | `List<HandOrder> takeHandOrders(boolean bonds)` | ...taken by the market that posts them: the share orders, or the bond orders. |
+
+### reading (lines 797-858)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 799 | 1 | `public int getLastPayInMonth()` |  |
+| 800 | 1 | `public double getLastPayInYearSurplus()` |  |
+| 801 | 1 | `public double getLastPayInFromSurplus()` |  |
+| 802 | 1 | `public double getLastPayInFromCash()` |  |
+| 803 | 1 | `public double getPaidInFromSurplus()` |  |
+| 804 | 1 | `public double getPaidInFromCash()` |  |
+| 805 | 1 | `public double getHandPaidIn()` |  |
+| 806 | 1 | `public double getHandDrawnOut()` |  |
+| 807 | 1 | `public double getTransfersPaid()` |  |
+| 808 | 1 | `public double getTransfersShort()` |  |
+| 809 | 1 | `public double getDividendsMarket()` |  |
+| 810 | 1 | `public double getDividendsRescue()` |  |
+| 811 | 1 | `public double getCoupons()` |  |
+| 812 | 1 | `public double getPrincipal()` |  |
+| 813 | 1 | `public double getBondFaceLost()` |  |
+| 814 | 1 | `public double getPreferredBought()` |  |
+| 815 | 1 | `public double getPreferredDividends()` |  |
+| 816 | 1 | `public double getPreferredRedeemed()` |  |
+| 817 | 1 | `public double getWarrantsBoughtBack()` |  |
+| 818 | 1 | `public double getWarrantSharesTaken()` |  |
+| 819 | 1 | `public double getSharesBought()` |  |
+| 820 | 1 | `public double getSharesSold()` |  |
+| 821 | 1 | `public double getBondsBought()` |  |
+| 822 | 1 | `public double getBondsSold()` |  |
+| 823 | 1 | `public double getRescueSold()` |  |
+| 824 | 1 | `public double getMonthDividends()` |  |
+| 825 | 1 | `public double getMonthCoupons()` |  |
+| 826 | 1 | `public double getMonthLendingFees()` |  |
+| 827 | 1 | `public double getLendingFees()` |  |
+| 828 | 1 | `public double getMonthPrincipal()` |  |
+| 829 | 1 | `public double getMonthBought()` |  |
+| 830 | 1 | `public double getMonthSold()` |  |
+| 833 | 5 | `public double getRescuesPaid()` | What every resolution paid for the rescue book, over the fund's life (0.7.39). |
+| 844 | 3 | `public double getPutIn()` | WHAT THE CITY HAS PUT INTO ITS FUND, over its life (0.7.39): the dial's pay-ins and the hand's, what the rescues paid, and the preferred the treasury bought - each money the city's own that became the fund's. |
+| 849 | 3 | `public double getTakenOut()` | ...AND WHAT IT HAS TAKEN OUT: the transfers paid to the budget and the hand's draw-outs. |
+| 854 | 4 | `public boolean isEmpty()` | True when it holds nothing and has never been asked for anything: a fund that has not begun. |
+
+### the warrants' value (lines 859-922)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 874 | 10 | `public static double callValue(double price, double strike, double rate, double sigma, double years)` | WHAT A CALL IS WORTH, Black and Scholes (1973): S N(d1) - K e^(-rT) N(d2), d1 = (ln(S/K) + (r + sigma^2/2) T) / (sigma sqrt T), d2 = d1 - sigma sqrt T. |
+| 889 | 9 | `public static double normalCdf(double x)` | The standard normal distribution function: Zelen and Severo's approximation, Abramowitz and Stegun (1964) 26.2.17, to within 7.5e-8. |
+| 905 | 17 | `public static double annualVolatility(double[] prices)` | A share's volatility, a year, from its monthly prices: the standard deviation of the last VOLATILITY_MONTHS monthly log returns, times the square root of twelve. |
+
+### save and load (lines 923-1123)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 926 | 41 | **type** `public static final class State implements Cloneable` | Everything the fund carries from one month to the next, by name. |
+| 952 | 14 | `State copy()` _(in TreasuryFund.State)_ | A copy that shares nothing with this state (UP1, 2026-10-22): toState() lists the fund's own resolutions and orders and holds a copy of its ledger. |
+| 968 | 33 | `public State toState()` |  |
+| 1007 | 56 | `public void restore(State s)` | Puts a saved fund back. |
+| 1065 | 26 | `public void reset()` | A fund that has not begun: nothing held, the dial at 0, the withdrawal at Norway's rule, the rescue on the button. |
+| 1093 | 30 | `public void redenominate(double scale)` | Every figure it keeps in money, in the new unit (Game, THE CURRENCY REFORM); share counts and the two dials do not move. |
 
