@@ -6309,95 +6309,95 @@ _(this harness does not label its checks through a helper - it prints its findin
 > ...
 
   - L239 the
-- **L291 1. calm prices as today**
-  - L293 fixture: the calm city is struck, its dial is neutral and the debt priced is the study's
-  - L296 fixture: it expects its target, so the rule has no reason to move
-  - L298 fixture: the bank's money costs nothing, so the floor is the dial
-  - L302 the dial the market expects is the dial at every month to the horizon
-  - L303 the short rate is the dial plus the two credit spreads
-  - L305 fixture: the credit spreads are something, so the short rate is more than the dial
-  - L308 the calm
-  - L314 fixture: a manager nobody has struck says so, and prices a flat path
-  - L318 an unstruck manager prices the calm city's curve at every maturity
-- **L323 2. hiking inverts**
-  - L327 fixture: the hiking city is struck with the study's dial, and its credibility puts the settle at 3.4%
-  - L331 fixture: the rule says more than the dial (9% against 7%), so there is a gap to close
-  - L336 the gap between the expected dial and the rule closes by e^-1 in DRIFT_MONTHS
-  - L344 the inflation expected a year ahead is e^-1 of the way from where it is to where it settles
-  - L346 ...which is pi_inf + (pi_now - pi_inf) e^-1
-  - L347 the dial expected at the horizon is the rule at where inflation settles
-  - L350 the 10-year sits under the 1-year: the curve inverts
-  - L351 the 1-month is the dial plus the two spreads: the short end is unmoved
-  - L353 ...and it is getRate()
-- **L359 3. behind is steep**
-  - L361 fixture: the behind city holds its dial at 1% by hand against a rule far above it
-  - L365 fixture: the bank's money costs nothing, so the floor is the dial
-  - L366 the 1-year is more than two points over the 1-month
-  - L369 the 10-year is at least three points over the old parallel curve's: cheap long money is gone
-- **L376 4. QE bends the long end**
-  - L378 fixture: the central bank holds a quarter of the QE city's term paper and none of the calm city's
-  - L380 fixture: the two cities have the same floor and the same short rate
-  - L383 fixture: a quarter held is a part of the full compression, not all of it
-  - L385 the QE city's
-  - L389 nothing is taken off at a year: the short end has no premium
-  - L390 ...nor at a month
-- **L396 5. the autopilot's gap is nothing**
-  - L399 fixture: the city is past its base month with a year of prices, and the rule has the dial
-  - L405 fixture: at Strict the rule says something other than Standard's at this inflation, so the curve's rule matters
+- **L286 1. calm prices as today**
+  - L288 fixture: the calm city is struck, its dial is neutral and the debt priced is the study's
+  - L291 fixture: it expects its target, so the rule has no reason to move
+  - L293 fixture: the bank's money costs nothing, so the floor is the dial
+  - L297 the dial the market expects is the dial at every month to the horizon
+  - L298 the short rate is the dial plus the two credit spreads
+  - L300 fixture: the credit spreads are something, so the short rate is more than the dial
+  - L303 the calm
+  - L309 fixture: a manager nobody has struck says so, and prices a flat path
+  - L313 an unstruck manager prices the calm city's curve at every maturity
+- **L318 2. hiking inverts**
+  - L322 fixture: the hiking city is struck with the study's dial, and its credibility puts the settle at 3.4%
+  - L326 fixture: the rule says more than the dial (9% against 7%), so there is a gap to close
+  - L331 the gap between the expected dial and the rule closes by e^-1 in DRIFT_MONTHS
+  - L339 the inflation expected a year ahead is e^-1 of the way from where it is to where it settles
+  - L341 ...which is pi_inf + (pi_now - pi_inf) e^-1
+  - L342 the dial expected at the horizon is the rule at where inflation settles
+  - L345 the 10-year sits under the 1-year: the curve inverts
+  - L346 the 1-month is the dial plus the two spreads: the short end is unmoved
+  - L348 ...and it is getRate()
+- **L354 3. behind is steep**
+  - L356 fixture: the behind city holds its dial at 1% by hand against a rule far above it
+  - L360 fixture: the bank's money costs nothing, so the floor is the dial
+  - L361 the 1-year is more than two points over the 1-month
+  - L364 the 10-year is at least three points over the old parallel curve's: cheap long money is gone
+- **L371 4. QE bends the long end**
+  - L373 fixture: the central bank holds a quarter of the QE city's term paper and none of the calm city's
+  - L375 fixture: the two cities have the same floor and the same short rate
+  - L378 fixture: a quarter held is a part of the full compression, not all of it
+  - L380 the QE city's
+  - L384 nothing is taken off at a year: the short end has no premium
+  - L385 ...nor at a month
+- **L391 5. the autopilot's gap is nothing**
+  - L394 fixture: the city is past its base month with a year of prices, and the rule has the dial
+  - L400 fixture: at Strict the rule says something other than Standard's at this inflation, so the curve's rule matters
+  - L412 at
+  - L413 at
+  - L415 at
   - L417 at
-  - L418 at
-  - L420 at
   - L422 at
-  - L427 at
-  - L430 at
-- **L443 6. every payment on its month**
-  - L451 fixture: each piece has a payment for every month it has left
-  - L454 fixture: the dollar piece is dollars, at parity
-  - L459 the
-  - L462 the dollar term loan is worth the sum of its payments at the world's factors
-  - L466 fixture: pricing the term loan at one rate would have been a different price (the curve is not flat)
-  - L472 the
-  - L483 two 20-year term loans with coupons a point apart yield differently on a steep curve
-  - L485 ...and neither yield is the curve's rate at 240 months: the yield is a result, not the rate it was priced at
-- **L518 7. the issue at the curve**
-  - L523 fixture: the dial is held by hand, two points under the rule at the inflation the month struck
-  - L526 fixture: its curve is steep - not flat, the 1-year over the 1-month and the 10-year over the 1-month by points
-  - L528 fixture: the city can pay for buying back any one piece it borrows (a buyback costs about what the piece raised)
-  - L534 fixture: the serial was booked
-  - L538 the serial's booked coupon prices its schedule at par on the curve: its market value is its face, to a cent per million
-  - L544 fixture: the term loan was booked on the quote it was shown
-  - L551 the term loan is worth its quoted gross (what it raised and the fees) the moment it is booked, to a cent per million
-  - L557 fixture: the note was booked on the quote it was shown
-  - L562 the note's market value is at or above what it raised
-- **L571 8. no money pump**
-  - L619 fixture: the
-  - L624 the
-  - L627 the
-- **L635 9. BondMarket reads the city's curve**
-  - L637 fixture: the bond market is attached to the city's readings
-  - L639 fixture: the curve being read is the steep one, not a flat one
-  - L641 the bond market's benchmark at
-  - L643 ...and the curve it reads is not the parallel one: its 10-year is not the short rate plus the premium
-- **L649 10. the strike holds through the month and a save**
-  - L654 fixture: the city, with its pieces on the books, saved to slot 10 of its scratch root
-  - L659 fixture: the loaded city has the same pieces
-  - L660 the loaded city is struck
-  - L661 the struck inflation comes back to the bit
-  - L662 the struck expectation comes back to the bit
-  - L664 the
-  - L668 piece
-  - L686 fixture: the end of the month moved the expectation
-  - L687 after the month the struck expectation is what Expectations read before the press
-  - L689 ...and it is not what the month's end has since made of it
-  - L690 after the month the struck inflation is what the month's top read
-  - L693 the next press strikes the new expectation
-  - L694 ...and the new inflation
-- **L699 11. the parts add up**
-  - L703 the
-  - L709 fixture: the QE city's compression is something, so the sum has a part to lose
-- **L715 12. how often it fires in a real run**
-  - L747 fixture: every month of the run was struck
-  - L748 the struck pair moved in at least one month of the run (
+  - L425 at
+- **L438 6. every payment on its month**
+  - L446 fixture: each piece has a payment for every month it has left
+  - L449 fixture: the dollar piece is dollars, at parity
+  - L454 the
+  - L457 the dollar term loan is worth the sum of its payments at the world's factors
+  - L461 fixture: pricing the term loan at one rate would have been a different price (the curve is not flat)
+  - L467 the
+  - L478 two 20-year term loans with coupons a point apart yield differently on a steep curve
+  - L480 ...and neither yield is the curve's rate at 240 months: the yield is a result, not the rate it was priced at
+- **L510 7. the issue at the curve**
+  - L515 fixture: the dial is held by hand, two points under the rule at the inflation the month struck
+  - L518 fixture: its curve is steep - not flat, the 1-year over the 1-month and the 10-year over the 1-month by points
+  - L520 fixture: the city can pay for buying back any one piece it borrows (a buyback costs about what the piece raised)
+  - L526 fixture: the serial was booked
+  - L530 the serial's booked coupon prices its schedule at par on the curve: its market value is its face, to a cent per million
+  - L536 fixture: the term loan was booked on the quote it was shown
+  - L543 the term loan is worth its quoted gross (what it raised and the fees) the moment it is booked, to a cent per million
+  - L549 fixture: the note was booked on the quote it was shown
+  - L554 the note's market value is at or above what it raised
+- **L563 8. no money pump**
+  - L611 fixture: the
+  - L616 the
+  - L619 the
+- **L627 9. BondMarket reads the city's curve**
+  - L629 fixture: the bond market is attached to the city's readings
+  - L631 fixture: the curve being read is the steep one, not a flat one
+  - L633 the bond market's benchmark at
+  - L635 ...and the curve it reads is not the parallel one: its 10-year is not the short rate plus the premium
+- **L641 10. the strike holds through the month and a save**
+  - L646 fixture: the city, with its pieces on the books, saved to slot 10 of its scratch root
+  - L651 fixture: the loaded city has the same pieces
+  - L652 the loaded city is struck
+  - L653 the struck inflation comes back to the bit
+  - L654 the struck expectation comes back to the bit
+  - L656 the
+  - L660 piece
+  - L678 fixture: the end of the month moved the expectation
+  - L679 after the month the struck expectation is what Expectations read before the press
+  - L681 ...and it is not what the month's end has since made of it
+  - L682 after the month the struck inflation is what the month's top read
+  - L685 the next press strikes the new expectation
+  - L686 ...and the new inflation
+- **L691 11. the parts add up**
+  - L695 the
+  - L701 fixture: the QE city's compression is something, so the sum has a part to lose
+- **L707 12. how often it fires in a real run**
+  - L739 fixture: every month of the run was struck
+  - L740 the struck pair moved in at least one month of the run (
 
 ## DeathCareFirstCheck.java - 68 labelled assertions
 
@@ -18104,10 +18104,10 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L590 ...and the inflation target, the player's dial
   - L595 fixture: the save carried the target under its own key
   - L607 a save from before the dial reads the default: 2%, the constant it was
-- **L887 inflation falls with the rate**
-  - L949 the runs differ by the dial and by nothing else
-  - L951 fixture: the builders kept every crew on through every run's window
-  - L953 ...and a month's delay in the hand moves them less than the allowance
+- **L886 inflation falls with the rate**
+  - L948 the runs differ by the dial and by nothing else
+  - L950 fixture: the builders kept every crew on through every run's window
+  - L952 ...and a month's delay in the hand moves them less than the allowance
 
 ## MoneyCheck.java - 34 labelled assertions
 
@@ -19551,71 +19551,71 @@ _(this harness does not label its checks through a helper - it prints its findin
 > in, the materials in a building's cost - was struck at the D$ of the month:
 > ...
 
-- **L239 1. the rule on the bench**
-  - L245 a 10% step in the D$,
-  - L251 ...which is when half of the step is still to come: (1-k) to the half-life is a half
-  - L267 at speed one the goods' D$ is the D$ itself: within a few last digits of it, over twenty thousand pairs
-  - L268 a struck rate at the D$ stays there: within a few last digits of it, over twenty thousand rates
-  - L269 one strike moves the goods' D$ the share k of the way to a D$ 10% off, in logs, and no further: ln(1.1) x k
-- **L283 2. the wiring, every month in a real city**
-  - L288 fixture: a new city has struck nothing yet: its struck rate is 0
-  - L311 fixture: the city played its
-  - L312 fixture: the D$ moved in the run, by more than 5% from its start - the strikes below are not a rate held still
-  - L313 the city's first strike is at the D$ itself (the D$ the first month saw), to the bit
-  - L314 every month the struck rate is the last month's moved PASS_THROUGH of the way to the D$ the strike saw, to the bit (wrong in
-  - L316 every month the markets' rate is the struck rate times the world's price level, to the bit (wrong in
-  - L318 ...and so is the rate the economy manager prices the building materials at (wrong in
-  - L358 the city is saved at its end, for the twins of the sections after
-- **L364 3. a step in the D$ reaches the goods at PASS_THROUGH a month**
-  - L368 fixture: the twins are one city before the pin: one month, one struck rate, one price index, to the bit
-  - L372 fixture: the D$ and the goods' D$ are apart when the pin comes (the D$ is
-  - L377 fixture: both D$ are pinned, the steady one at the goods' D$ (no gap pending) and the other's 10% weaker
-  - L401 for 36 months the weak twin's struck rate over the other's is 1.1^(1-(1-k)^n), worst error in logs over the 36
-  - L402 ...and so is the rate the markets are priced at, the world's level being one
-  - L417 the groceries component's pass-through is positive at 12 months: a weaker D$ raised the shelf's price (
-  - L419 ...and under the goods' own share at 12 months: the shelf follows the goods' D$ with a lag of its own, not ahead of it (
-  - L480 fixture (
-  - L484 fixture (
-  - L494 fixture (
-  - L505 fixture (
-  - L516 the purchase's month (
-  - L519 ...and the vault's cover moved the two alike, so nothing but the intervention parted their moves
-  - L522 ...the shock twin's D$ is weaker than its twin's that month (
-  - L535 fixture (
-- **L580 4. the ring settles: the same swing of the D$, the goods following at PASS_THROUGH and one for one**
-  - L593 fixture: two plain loads of the base city play
-  - L597 at PASS_THROUGH
-  - L599 one for one, the rule before AN1
-  - L601 at PASS_THROUGH the goods' gap never exceeds the D$'s widest gap so far times 1-(1-k)^n, in any of the
-  - L603 ...while one for one the goods go as far as the D$ does, a month behind it (its widest
-  - L606 ...and at PASS_THROUGH they never do (the goods' widest
-  - L619 the premise: over the swing's months 1-
-  - L621 ...and so does the price index (
-- **L628 5. a save carries it**
-  - L634 fixture: the live city has struck its goods (
-  - L637 a loaded city has the struck rate of the city saved, to the bit
-  - L638 ...and the rate its markets were priced at
-  - L642 one month on both strike the same rate, to the bit (
-  - L644 ...and price the markets the same, to the bit (
-  - L646 ...and it was a strike that moved the goods' D$ (from
-  - L651 fixture: the loaded city's struck rate is cleared, as a save without the key reads
-  - L654 a loaded city whose struck rate is cleared strikes at the D$ itself the next month, to the bit
-  - L656 ...which is not where the city that kept its struck rate struck (
-  - L665 fixture: the city was reformed, one new D$ for 100 old
-  - L666 a reform scales the struck rate by the factor
-  - L667 ...as it does the D$ itself, so the gap between them is the one the city had
-  - L671 the month after, the reformed city strikes the unreformed twin's rate over the factor
-- **L678 6. how often it matters in a real city**
-  - L695 the mechanic fires in a real city: the goods' D$ was more than 1% from the D$ in some month (widest
-  - L697 ...and in a good many: more than 5% apart in
-  - L698 ...and the goods' D$ moved in nearly every month, as the rule has it (
-- **L710 7. the screen's reading: the goods' D$ against the D$**
-  - L713 a new city has struck nothing, and the reading is NaN: the line is not drawn (section 2's founding)
-  - L717 fixture: the city's struck rate is cleared, as before a first strike
-  - L718 ...and with nothing struck the reading is NaN
-  - L720 fixture: the struck rate is put back (
-  - L721 ...and the reading is the struck rate over the D$, less one (
-  - L740 every month, the gap the line reads at a month's end is the one the next strike closes PASS_THROUGH of, in logs (off in
+- **L236 1. the rule on the bench**
+  - L242 a 10% step in the D$,
+  - L248 ...which is when half of the step is still to come: (1-k) to the half-life is a half
+  - L264 at speed one the goods' D$ is the D$ itself: within a few last digits of it, over twenty thousand pairs
+  - L265 a struck rate at the D$ stays there: within a few last digits of it, over twenty thousand rates
+  - L266 one strike moves the goods' D$ the share k of the way to a D$ 10% off, in logs, and no further: ln(1.1) x k
+- **L280 2. the wiring, every month in a real city**
+  - L285 fixture: a new city has struck nothing yet: its struck rate is 0
+  - L308 fixture: the city played its
+  - L309 fixture: the D$ moved in the run, by more than 5% from its start - the strikes below are not a rate held still
+  - L310 the city's first strike is at the D$ itself (the D$ the first month saw), to the bit
+  - L311 every month the struck rate is the last month's moved PASS_THROUGH of the way to the D$ the strike saw, to the bit (wrong in
+  - L313 every month the markets' rate is the struck rate times the world's price level, to the bit (wrong in
+  - L315 ...and so is the rate the economy manager prices the building materials at (wrong in
+  - L355 the city is saved at its end, for the twins of the sections after
+- **L361 3. a step in the D$ reaches the goods at PASS_THROUGH a month**
+  - L365 fixture: the twins are one city before the pin: one month, one struck rate, one price index, to the bit
+  - L369 fixture: the D$ and the goods' D$ are apart when the pin comes (the D$ is
+  - L374 fixture: both D$ are pinned, the steady one at the goods' D$ (no gap pending) and the other's 10% weaker
+  - L398 for 36 months the weak twin's struck rate over the other's is 1.1^(1-(1-k)^n), worst error in logs over the 36
+  - L399 ...and so is the rate the markets are priced at, the world's level being one
+  - L414 the groceries component's pass-through is positive at 12 months: a weaker D$ raised the shelf's price (
+  - L416 ...and under the goods' own share at 12 months: the shelf follows the goods' D$ with a lag of its own, not ahead of it (
+  - L477 fixture (
+  - L481 fixture (
+  - L491 fixture (
+  - L502 fixture (
+  - L513 the purchase's month (
+  - L516 ...and the vault's cover moved the two alike, so nothing but the intervention parted their moves
+  - L519 ...the shock twin's D$ is weaker than its twin's that month (
+  - L532 fixture (
+- **L577 4. the ring settles: the same swing of the D$, the goods following at PASS_THROUGH and one for one**
+  - L590 fixture: two plain loads of the base city play
+  - L594 at PASS_THROUGH
+  - L596 one for one, the rule before AN1
+  - L598 at PASS_THROUGH the goods' gap never exceeds the D$'s widest gap so far times 1-(1-k)^n, in any of the
+  - L600 ...while one for one the goods go as far as the D$ does, a month behind it (its widest
+  - L603 ...and at PASS_THROUGH they never do (the goods' widest
+  - L616 the premise: over the swing's months 1-
+  - L618 ...and so does the price index (
+- **L625 5. a save carries it**
+  - L631 fixture: the live city has struck its goods (
+  - L634 a loaded city has the struck rate of the city saved, to the bit
+  - L635 ...and the rate its markets were priced at
+  - L639 one month on both strike the same rate, to the bit (
+  - L641 ...and price the markets the same, to the bit (
+  - L643 ...and it was a strike that moved the goods' D$ (from
+  - L648 fixture: the loaded city's struck rate is cleared, as a save without the key reads
+  - L651 a loaded city whose struck rate is cleared strikes at the D$ itself the next month, to the bit
+  - L653 ...which is not where the city that kept its struck rate struck (
+  - L662 fixture: the city was reformed, one new D$ for 100 old
+  - L663 a reform scales the struck rate by the factor
+  - L664 ...as it does the D$ itself, so the gap between them is the one the city had
+  - L668 the month after, the reformed city strikes the unreformed twin's rate over the factor
+- **L675 6. how often it matters in a real city**
+  - L692 the mechanic fires in a real city: the goods' D$ was more than 1% from the D$ in some month (widest
+  - L694 ...and in a good many: more than 5% apart in
+  - L695 ...and the goods' D$ moved in nearly every month, as the rule has it (
+- **L707 7. the screen's reading: the goods' D$ against the D$**
+  - L710 a new city has struck nothing, and the reading is NaN: the line is not drawn (section 2's founding)
+  - L714 fixture: the city's struck rate is cleared, as before a first strike
+  - L715 ...and with nothing struck the reading is NaN
+  - L717 fixture: the struck rate is put back (
+  - L718 ...and the reading is the struck rate over the D$, less one (
+  - L737 every month, the gap the line reads at a month's end is the one the next strike closes PASS_THROUGH of, in logs (off in
 
 ## PlanCheck.java - 224 labelled assertions
 
