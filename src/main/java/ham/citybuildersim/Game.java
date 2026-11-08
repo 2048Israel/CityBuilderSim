@@ -4724,7 +4724,7 @@ public class Game {
             equity.listIfUnlisted(c, book, householdBalance);
         }
         // Whoever left this month took their shares with them.
-        equity.followEmigrants(householdBalance);
+        equity.followEmigrants(householdBalance, exchange::shortShares);
         /*
          * THE CITY'S PREFERRED IS PAID FIRST (0.7.14): its dividend ranks
          * ahead of the common's, accrues when the bank cannot pay it, and

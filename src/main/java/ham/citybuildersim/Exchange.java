@@ -788,7 +788,9 @@ public class Exchange {
             if (register.getShares(c) <= 0) {
                 fair[c] = register.foundingPrice(); emigrantShares[c] = 0;
                 spare[c] = earnings[c] = moneyIncome[c] = 0;
-                // ...a company with no shares left has nothing to be short of: the short is closed (EM2), keeping what it was paid.
+                // ...a company with no shares left has nothing to be short of: the short is closed (EM2), keeping what it was paid, and
+                // the shares it sold go with the company (LF1): they were never in issue, and a later listing held them on top of the founders'.
+                if (shortShares[c] > OrderBook.DUST) cancelShortHeld(c);
                 shortShares[c] = shortCollateral[c] = lentCells[c] = lentFund[c] = 0;
                 continue;
             }
@@ -1132,10 +1134,12 @@ public class Exchange {
      * (quoteBefore[], struck before the orders were withdrawn). The cells'
      * part goes into their savings pro rata to what each holds
      * (HouseholdBalance.creditLendingFee(), investment income and no
-     * dividend); the fund's into its cash (TreasuryFund.receiveLendingFee()),
-     * which MoneyAudit declares as income from the world. The world and the
+     * dividend); the fund's into its cash (TreasuryFund.receiveLendingFee(),
+     * with its own income counters and a ledger row since LF1), which
+     * MoneyAudit declares as income from the world. The world and the
      * households are outside the audited pools, so the cells' part is no
-     * line there.
+     * pool line there, but it is a pair of its own for the current account
+     * ("+ households LendingFee" and "- households LendingFeeBanked", LF1).
      */
     private void strikeLending() {
         for (int c = 0; c < n; c++) {
@@ -1146,30 +1150,45 @@ public class Exchange {
             double fundBook = fund == null ? 0 : register.getCityMarketShares(c);
             double lendable = cells + fundBook;
             if (!(lendable > 0)) { lentCells[c] = lentFund[c] = 0; continue; }
-            lentCells[c] = s * cells / lendable;
-            lentFund[c] = s * fundBook / lendable;
+            // Only what the lenders hold is lent, and only that is paid for (LF1): between a lender selling or leaving and the recall at this
+            // step, the short can be more than they hold, and the fee charged on all of it paid them for shares they no longer had.
+            double lent = Math.min(s, lendable);
+            lentCells[c] = lent * cells / lendable;
+            lentFund[c] = lent * fundBook / lendable;
             double q0 = quoteBefore[c] > 0 ? quoteBefore[c] : price(c);
-            double fee = lendingRate(s / lendable) * s * q0 / 12;
+            double fee = lendingRate(lent / lendable) * lent * q0 / 12;
             if (!(fee > 0)) continue;
             double toCells = fee * cells / lendable, toFund = fee * fundBook / lendable;
             double paidCells = toCells > 0 && cells > 0 ? households.creditLendingFee(c, toCells / cells) : 0;
             double paidFund = 0;
-            if (toFund > 0) { fund.receiveLendingFee(toFund); paidFund = toFund; }
+            if (toFund > 0) { fund.receiveLendingFee(Equity.COMPANIES[c], toFund, month); paidFund = toFund; }
             feeToCells[c] += paidCells;
             feeToFund[c] += paidFund;
             lifeLendingFees += paidCells + paidFund;
         }
     }
 
-    /** The lending book as the shorts' fills leave it (EM2): what is short, lent by the cells and the fund pro rata, none with nothing to lend. */
+    /**
+     * A company with no shares in issue and a short open: every share still held is one the world sold short and nobody issued, so
+     * the cells', the desk's, the world's and the fund's market book go for nothing (Equity.cancelHeld()), the fund's cost written
+     * off in its ledger. No money moves: the buyers lose a valuation, and the world keeps what it was paid.
+     */
+    private void cancelShortHeld(int c) {
+        if (households != null) households.surrenderShares(c);
+        double fundHeld = register.cancelHeld(c);
+        if (fund != null && fundHeld > OrderBook.DUST) fund.getLedger().sharesGone(Equity.COMPANIES[c], month);
+    }
+
+    /** The lending book as the shorts' fills leave it (EM2): what is short, up to what they hold (LF1), lent by the cells and the fund pro rata, none with nothing to lend. */
     private void restrikeLentBook(int c) {
         double s = shortShares[c];
         double cells = households == null ? 0 : households.sharesHeld(c);
         double fundBook = fund == null ? 0 : register.getCityMarketShares(c);
         double lendable = cells + fundBook;
         if (!(s > 0) || !(lendable > 0)) { lentCells[c] = lentFund[c] = 0; return; }
-        lentCells[c] = s * cells / lendable;
-        lentFund[c] = s * fundBook / lendable;
+        double lent = Math.min(s, lendable);
+        lentCells[c] = lent * cells / lendable;
+        lentFund[c] = lent * fundBook / lendable;
     }
 
     /**
@@ -1198,7 +1217,10 @@ public class Exchange {
     private void postShorts() {
         if (!shortSelling) return;
         for (int c = 0; c < n; c++) {
-            if (c == Equity.BANK || !register.valuedOnRecord(c) || fair[c] <= minFair) continue;
+            if (c == Equity.BANK || !register.valuedOnRecord(c)) continue;
+            // ...a share worth nothing opens no new short, but one already open is still margin-called, recalled and covered (LF1):
+            // it had been skipped here, and a short stood for ever at a company that had fallen to nothing.
+            if (fair[c] <= minFair && !(shortShares[c] > OrderBook.DUST)) continue;
             double s = shortShares[c];
             double q = price(c);
             double lendable = s > OrderBook.DUST ? lendable(c) : 0;
@@ -1209,7 +1231,7 @@ public class Exchange {
             } else if (s > lendable + OrderBook.DUST) {
                 lifeRecalls++;
                 post(c, WORLD_SHORT, OrderBook.Side.BUY, shortCollateral[c] / s, s - lendable);
-            } else if (q > fair[c] * (1 + SHORT_BAND)) {
+            } else if (fair[c] > minFair && q > fair[c] * (1 + SHORT_BAND)) {
                 double want = Math.min(shortRoom(c), FOREIGN_SPEED * (q / fair[c] - 1) * register.getOutstanding(c));
                 if (want > OrderBook.DUST) {
                     lifeShortAsks++;

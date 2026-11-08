@@ -35,6 +35,10 @@ import java.nio.file.Path;
  *      is the month a city that never saved would have had.
  *   7. HOW OFTEN: over a real run, the months a short opened, the months one was covered and the bubbles the quote stood against, counted - a
  *      mechanic that never fires proves nothing.
+ *   8. THE FEE ON THE LENDERS' BOOKS (LF1): the households' fee is a pair of lines in the audit, income from the world and banked; the fund's is
+ *      its own income counter and a row in its ledger; the fee is charged on the shares the lenders hold and no more; emigrants are not dropped
+ *      while a short is open; a short at a company with no shares in issue takes what it sold with it; a short at a company worth nothing is
+ *      still called in.
  *
  * Every claim is CAUSED: a book emptied and given one trade, then the orders a line names and no others; a bid or an ask put on it by a participant
  * with the means to stand behind it.
@@ -312,6 +316,7 @@ public class ShortSellingCheck {
         theLender();
         theCalls();
         theSave();
+        theBooks();
         howOften();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -555,6 +560,10 @@ public class ShortSellingCheck {
         boolean paid = false, named = false;
         int audited = 0, bad = 0;
         double worst = 0, feeFund = 0, feeCells = 0;
+        // ...and the lending fee on the lenders' books (LF1): the audit's lines for it, the fund's counters and its ledger's rows, month by month.
+        double auditCells = 0, auditBanked = 0, auditFund = 0, fundMonths = 0, incomeShort = 0;
+        boolean incomeSeen = true, fundBooked = true;
+        TreasuryFund cityFund = city.getFund();
         for (int m = 0; m < 6 && !(paid && audited >= 3); m++) {
             PrintStream real = System.out;
             System.setOut(quiet);
@@ -573,12 +582,49 @@ public class ShortSellingCheck {
             }
             feeFund += cityEx.getLendingFeeToFund();
             feeCells += cityEx.getLendingFeeToCells();
+            auditCells += lineOf(a.detail, "+ households LendingFee");
+            auditBanked += lineOf(a.detail, "- households LendingFeeBanked");
+            auditFund += lineOf(a.detail, "+ fund LendingFee");
+            // The current account's receipts (ForeignAccounts reads incomeIn) hold both fees, not the fund's alone.
+            incomeSeen &= a.incomeIn + MoneyAudit.CENT >= cityEx.getLendingFeeToCells() + cityEx.getLendingFeeToFund();
+            fundMonths += cityFund.getMonthLendingFees();
+            fundBooked &= Math.abs(cityFund.getMonthLendingFees() - cityEx.getLendingFeeToFund()) <= 1e-9 * Math.max(1, cityEx.getLendingFeeToFund());
         }
         assertTrue("every month of the city's with the short open passes the audit: worst residual " + String.format("%.6f", worst) + " over " + audited
                 + " months", bad == 0 && audited > 0);
         assertTrue("...the dividend was paid on the short, and the audit names its line", paid && named);
         assertTrue("...and the lending fee reached the fund's cash and the cells' savings: $" + String.format("%,.2f", feeFund) + " and $"
                 + String.format("%,.2f", feeCells), feeFund > 0 && feeCells > 0);
+        // LF1: neither receiver's fee was on any line of its own.
+        double lineTol = .005 * audited + 1e-9;
+        out.printf("   the months' fees: the cells' $%,.4f, the fund's $%,.4f; the audit's lines $%,.2f, $%,.2f and $%,.2f%n", feeCells, feeFund, auditCells, auditBanked, auditFund);
+        close("the households' fee is a line of the audit, income from the world (rounded to the cent a month)", auditCells, feeCells, lineTol);
+        close("...paired with its debit, the money banked, the same size", auditBanked, auditCells, 1e-9);
+        close("...and the fund's line is the fund's part", auditFund, feeFund, lineTol);
+        assertTrue("...the current account's receipts hold both fees every month", incomeSeen);
+        assertTrue("the fund's own counter for the month is what the exchange says it was paid, every month", fundBooked);
+        close("...and its life's is all of them", cityFund.getLendingFees(), fundMonths, 1e-9 * Math.max(1, fundMonths));
+        double rows = 0;
+        for (FundLedger.Activity row : cityFund.getLedger().getActivity()) if (FundLedger.LENDING_FEE.equals(row.kind())) rows += row.money();
+        close("...and the ledger has its rows, a LENDING_FEE a month, which add to it", rows, cityFund.getLendingFees(), 1e-9 * Math.max(1, fundMonths));
+        assertTrue("...the fund's page files them under income, with its dividends and coupons", FundView.INCOME.equals(FundView.groupOf(FundLedger.LENDING_FEE)));
+        FundView.Portfolio view = FundView.portfolio(city);
+        close("...its income last month holds the fee beside its dividends and coupons", view.incomeLastMonth(),
+                cityFund.getMonthDividends() + cityFund.getMonthCoupons() + cityFund.getMonthLendingFees(), 1e-9 * Math.max(1, view.incomeLastMonth()));
+        FundView.Kind shares = view.kinds().get(0);
+        assertTrue("...and the company shares' income, since it began, holds it too: " + shares.name(),
+                shares.income() >= cityFund.getDividendsMarket() + cityFund.getLendingFees() - 1e-9);
+    }
+
+    /** The number a line of the audit's detail ends in (its label, then the amount at two places), 0 when the month has no such line. */
+    static double lineOf(String detail, String label) {
+        for (String line : detail.split("\\R")) {
+            String t = line.strip();
+            if (!t.startsWith(label + " ") && !t.equals(label)) continue;
+            String num = t.substring(t.lastIndexOf(' ') + 1).replace(",", "");
+            try { return Double.parseDouble(num); } catch (NumberFormatException e) { return 0; }
+        }
+        return 0;
     }
 
     static void theLender() {
@@ -913,6 +959,119 @@ public class ShortSellingCheck {
         }
         r.seconds = (System.currentTimeMillis() - started) / 1000;
         return r;
+    }
+
+    /**
+     * Section 8 (LF1): the lending fee on the lenders' books - the fund's counters and its ledger's row - and the four edges the stranger's
+     * review found at EM2's gate, each caused by a fixture first: the fee charged on shares the lenders no longer hold, emigrants dropped
+     * while a short is open, a short at a company with no shares in issue, and a short at a company worth nothing. (The households' part, the
+     * audit's pair, is section 3's city.)
+     */
+    static void theBooks() throws Exception {
+        section("8. the lending fee on the lenders' books, and the review's four edges (LF1)");
+
+        // The fund's books. The fixture of section 4's fee: 700 can be lent by the cells and the fund, 100 are short.
+        Bench feed = standard();
+        feed.poor.lockout = 1;
+        feed.rich.lockout = 1;
+        feed.open(Exchange.DESK, feed.shortAsk(), 100);
+        feed.city.step(0);
+        double toFund = feed.ex.lendingFeeToFund(INDUSTRY);
+        assertTrue("fixture: the fund lent shares to the short and was paid for them: $" + String.format("%.6f", toFund), toFund > 0 && feed.fund.getCash() > 1e7);
+        close("the fund's income for the month counts the fee, to the cent it was paid", feed.fund.getMonthLendingFees(), toFund, 1e-12);
+        close("...and its life's", feed.fund.getLendingFees(), toFund, 1e-12);
+        int rowsNow = 0;
+        double rowMoney = 0;
+        for (FundLedger.Activity row : feed.fund.getLedger().getActivity()) {
+            if (FundLedger.LENDING_FEE.equals(row.kind()) && row.month() == feed.city.month) { rowsNow++; rowMoney += row.money(); }
+        }
+        assertTrue("the ledger has one LENDING_FEE row for the month", rowsNow == 1);
+        close("...of the money it was paid", rowMoney, toFund, 1e-12);
+        FundLedger.Lot marketLot = null;
+        for (FundLedger.Lot l : feed.fund.getLedger().getLots()) if (FundLedger.shareKey(Equity.COMPANIES[INDUSTRY]).equals(l.key())) marketLot = l;
+        assertTrue("...and the company's market lot has it as income", marketLot != null && Math.abs(marketLot.income() - toFund) <= 1e-12);
+        assertTrue("the fund's page files the row under income", FundView.INCOME.equals(FundView.groupOf(FundLedger.LENDING_FEE)));
+
+        // The fee on what the lenders hold (edge 1). The recall fixture of section 5: 60 short, and the lenders hold 50 after the cells sold.
+        Bench held = new Bench(40, 110, 800, 50, 10_000_000);
+        held.rich.savings = 5_000;
+        held.open(held.richName(), held.shortAsk(), 60);
+        held.rich.savings = 12;
+        for (Household cell : new Household[] { held.poor, held.rich }) {
+            double q = MarketCheck.heldBy(cell, INDUSTRY);
+            held.ex.tradeForCheck(INDUSTRY, Exchange.WORLD, OrderBook.Side.BUY, held.fair, q);
+            held.ex.tradeForCheck(INDUSTRY, MarketCheck.nameOf(cell), OrderBook.Side.SELL, held.fair, q);
+        }
+        held.ex.bookOf(INDUSTRY).withdrawAll();
+        double sHeld = held.shortShares(), lendableHeld = held.hb.sharesHeld(INDUSTRY) + held.reg.getCityMarketShares(INDUSTRY);
+        double q0 = held.price();
+        assertTrue("fixture: 60 short, and the lenders hold 50 between them, the fund all of it", sHeld == 60 && lendableHeld == 50
+                && held.hb.sharesHeld(INDUSTRY) == 0 && held.reg.getCityMarketShares(INDUSTRY) == 50 && q0 == held.fair);
+        held.city.step(0);
+        close("the step lends what the lenders hold and no more: 50 of the 60", held.ex.lentByCells(INDUSTRY) + held.ex.lentByFund(INDUSTRY), 50, 1e-9);
+        double feeHeld = Exchange.lendingRate(1) * 50 * q0 / 12;
+        close("...and the fee is charged on those 50, all lent so the top of the rate", held.ex.lendingFeeThisMonth(INDUSTRY), feeHeld, 1e-9 * feeHeld);
+        assertTrue("...which is not the fee on all 60, shares the lenders had sold", held.ex.lendingFeeThisMonth(INDUSTRY) < Exchange.lendingRate(1) * 60 * q0 / 12 - 1e-9);
+        close("...the fund's, which holds them all", held.ex.lendingFeeToFund(INDUSTRY), feeHeld, 1e-9 * feeHeld);
+        close("...and the cells', which hold none, nothing", held.ex.lendingFeeToCells(INDUSTRY), 0, 0);
+        assertTrue("...and the step recalls the 10 the lenders do not hold", held.ex.getLifeRecalls() == 1);
+
+        // Emigrants with a short open (edge 2): the town that bought the short leaves, with the shares it was sold on top of the founders'.
+        double s2 = 3_000;
+        double[] none = new double[HouseholdBalance.ROWS];
+        double[][] nobody = new double[FamilyStructure.values().length][PayTier.values().length];
+        HouseholdBalance leaving = ExchangeCheck.savers(20.0, 4.0);
+        Equity regLeaving = ExchangeCheck.equity();
+        regLeaving.listIfUnlisted(INDUSTRY, 10_000, leaving);
+        Household leaver = ExchangeCheck.couple(leaving);
+        leaver.shares[INDUSTRY] += s2 / leaver.households();
+        double held2 = leaving.sharesHeld(INDUSTRY);
+        leaving.advanceMonth((st, t) -> nobody[st.ordinal()][t.ordinal()], none, 0, none, none, .25, .05, 1);
+        double taken = leaving.getSharesTakenAway(INDUSTRY);
+        assertTrue("fixture: the town holds " + String.format("%,.0f", held2) + " shares, the 10,000 founders' and 3,000 a short sold it, and they all leave: "
+                + String.format("%,.0f", taken), held2 == 13_000 && Math.abs(taken - 13_000) < 1e-6);
+        Equity regKnown = ExchangeCheck.equity();
+        regKnown.listIfUnlisted(INDUSTRY, 10_000, ExchangeCheck.savers(20.0, 4.0));
+        regKnown.followEmigrants(leaving, c -> c == INDUSTRY ? s2 : 0);
+        close("told what is short, the register holds them all abroad: the holdings add to the shares in issue plus the short", regKnown.getForeignShares(INDUSTRY), 13_000, 1e-6);
+        regLeaving.followEmigrants(leaving);
+        close("...as the one-argument form, which knows of no short, caps them at the shares in issue", regLeaving.getForeignShares(INDUSTRY), 10_000, 1e-6);
+
+        // A company with no shares in issue and a short open (edge 3): what the short sold goes with it, and a later listing holds only the founders'.
+        Bench gone = standard();
+        gone.open(Exchange.DESK, gone.shortAsk(), 40);
+        gone.fund.receiveLendingFee(Equity.COMPANIES[INDUSTRY], 1, 1);                   // so the fund's ledger has a market lot to close
+        assertTrue("fixture: 40 short, held by the desk, and the register is whole", gone.shortShares() == 40 && gone.reg.getDealerShares(INDUSTRY) == 40
+                && Math.abs(gone.holdings() - (SHARES + 40)) < 1e-9);
+        gone.reg.retire(INDUSTRY, gone.reg.getShares(INDUSTRY), 0);
+        gone.city.step(0);
+        assertTrue("the short is closed", gone.shortShares() == 0);
+        close("...and what it sold goes with the company: nobody holds a share of it", gone.holdings(), 0, 1e-9);
+        close("...the desk's 40 among them", gone.reg.getDealerShares(INDUSTRY), 0, 0);
+        FundLedger.Lot goneLot = null;
+        for (FundLedger.Lot l : gone.fund.getLedger().getLots()) if (FundLedger.shareKey(Equity.COMPANIES[INDUSTRY]).equals(l.key())) goneLot = l;
+        assertTrue("...and the fund's lot is closed in its ledger, the shares it held gone", goneLot != null && goneLot.isClosed());
+        gone.reg.listIfUnlisted(INDUSTRY, 1_000, gone.hb);
+        close("a listing of the company later holds the founders' shares alone: the holdings are the shares in issue", gone.holdings(), gone.reg.getShares(INDUSTRY),
+                1e-9 * gone.reg.getShares(INDUSTRY));
+
+        // A company worth nothing, minFair here lifted over its value (edge 4): a short already open is still called in; no new one opens.
+        double lifted = Exchange.MIN_FAIR / 1.5;                                             // minFair $1.50, over fair value of about $1
+        Bench worthless = standard();
+        worthless.open(Exchange.DESK, worthless.shortAsk(), 40);
+        worthless.print(2.0);
+        worthless.ex.seedConstants(lifted);
+        worthless.city.step(0);
+        assertTrue("fixture: fair value is minFair now, and the quote is over the short's collateral", worthless.ex.fair(INDUSTRY) <= 1.5 + 1e-12
+                && worthless.price() > 1.5);
+        assertTrue("a short open at a company under minFair is still margin-called when its account is under water", worthless.ex.getLifeMarginCalls() == 1);
+        Bench shut = standard();
+        shut.print(2.0);
+        shut.ex.seedConstants(lifted);
+        shut.city.step(0);
+        assertTrue("fixture: the same quote, no short open, and over the band above minFair", shut.price() > 1.5 * (1 + Exchange.SHORT_BAND));
+        assertTrue("...opens no new short at a company under minFair", shut.ex.getLifeShortAsks() == 0 && shut.shortShares() == 0);
+        sectionEnd();
     }
 
     static void howOften() {

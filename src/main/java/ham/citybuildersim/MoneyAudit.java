@@ -791,11 +791,15 @@ public final class MoneyAudit {
          * what the company really sent abroad. The lending fee: the world pays
          * the shares' lenders, and the fund's part is cash in a pool (the
          * cells' goes to their savings, outside the pools, and the world is
-         * outside: no line). The trades themselves are the lines above and
+         * outside: no line for the pools, but a pair for the current account,
+         * below - LF1). The trades themselves are the lines above and
          * below they always were: the short sells and covers abroad.
          */
         in += credit.apply("+ equity DividendsPaidByShorts", g.getEquity().getShortPaysThisMonth(), Scope.INCOME);
         in += credit.apply("+ fund LendingFee", g.getExchange().getLendingFeeToFund(), Scope.INCOME);
+        // ...and the cells' part, from the world into their savings: both outside the pools, so a pair like ForeignInterest's - INCOME in
+        // (the current account's receipt) and DOMESTIC out ("- households LendingFeeBanked") - and the pool identity sees nothing (LF1).
+        in += credit.apply("+ households LendingFee", g.getExchange().getLendingFeeToCells(), Scope.INCOME);
         /*
          * The treasury selling reserves. Foreign money out, local money in - the
          * cash arrives in the city's pool from outside it, so it is declared.
@@ -1155,6 +1159,7 @@ public final class MoneyAudit {
          */
         out += debit.apply("- households ForeignInterestBanked",
                 g.getHouseholdBalance().getForeignInterest(), Scope.DOMESTIC);
+        out += debit.apply("- households LendingFeeBanked", g.getExchange().getLendingFeeToCells(), Scope.DOMESTIC);
         /*
          * ...AND GOING OUT. A dividend to a household leaves the pools the
          * way a wage does; a dividend to a shareholder abroad is income paid

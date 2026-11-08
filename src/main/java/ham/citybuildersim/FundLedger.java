@@ -82,7 +82,7 @@ public final class FundLedger {
     public static final String BUY = "BUY", SELL = "SELL", LAPSED = "LAPSED", DIVIDEND = "DIVIDEND", COUPON = "COUPON",
             MATURED = "MATURED", WRITTEN_DOWN = "WRITTEN_DOWN", RESCUE = "RESCUE", PREFERRED = "PREFERRED",
             WARRANTS = "WARRANTS", PAY_IN = "PAY_IN", DRAW_OUT = "DRAW_OUT", TRANSFER = "TRANSFER", SPLIT = "SPLIT",
-            TRACKING = "TRACKING";
+            TRACKING = "TRACKING", LENDING_FEE = "LENDING_FEE";
 
     /** What a lot is: a company's market book, a rescue book, a bond. */
     public static final String SHARES = "SHARES", RESCUE_BOOK = "RESCUE", BOND = "BOND";
@@ -547,6 +547,20 @@ public final class FundLedger {
         if (after <= DUST) { l.acb = 0; l.closedMonth = month; }
     }
 
+    /** A company's shares gone with the company, the fund's market book among them (LF1, Exchange.cancelShortHeld()): what is left of their cost, a realized loss. */
+    void sharesGone(String company, int month) {
+        Lot l = lot(shareKey(company));
+        if (l == null || l.isClosed()) return;
+        double out = l.acb;
+        l.acb = 0;
+        l.acbOut += out;
+        l.realized -= out;
+        l.closedMonth = month;
+        Activity a = monthRow(month, WRITTEN_DOWN, l.key, false);
+        a.realized -= out;
+        a.note = "gone";
+    }
+
     /** A bond whose face a backstop wrote to dust, taken off the market: what is left of its cost, a realized loss. */
     void gone(CorporateBond b, int month) {
         if (b == null) return;
@@ -569,6 +583,15 @@ public final class FundLedger {
         if (amount - rescue > 0) paid(shareLot(company, false, month), amount - rescue, month);
         if (rescue > 0) paid(shareLot(company, true, month), rescue, month);
         Activity a = monthRow(month, DIVIDEND, null, false);
+        a.units += 1;
+        a.money += amount;
+    }
+
+    /** The lending fee the world paid for the shares the market book lent a short (LF1): income on the market lot, one row a month for them all, as the dividend's. */
+    void lendingFee(String company, double amount, int month) {
+        if (!(amount > 0)) return;
+        paid(shareLot(company, false, month), amount, month);
+        Activity a = monthRow(month, LENDING_FEE, null, false);
         a.units += 1;
         a.money += amount;
     }

@@ -657,6 +657,12 @@ public class FundLedgerCheck {
         check("...and the ledger's purchases and proceeds are the fund's own counters'", worstCounters <= 1e-6);
         close("the whole run, end to end, the same", residual(s0, Snap.of(g)) / Math.max(1, Snap.of(g).mv), 0, 1e-9);
 
+        // The world pays the fund a lending fee for the shares its market book lends a short (LF1): cash in, with a counter and a row of its own,
+        // so the gain by kind and the cash identity below must hold it too (fee 0 in a real run: none is short).
+        check("fixture: a company the fund holds, to lend", c >= 0);
+        double lendingFee = 321.5;
+        if (c >= 0) f.receiveLendingFee(Equity.COMPANIES[c], lendingFee, g.getMonth());
+        close("...the fee is the fund's income this month and its life's", f.getMonthLendingFees() + f.getLendingFees(), 2 * lendingFee, 1e-9);
         FundView.Portfolio p = FundView.portfolio(g);
         double sum = 0;
         for (FundView.Kind k : p.kinds()) sum += k.gain();
@@ -665,7 +671,7 @@ public class FundLedgerCheck {
         close("...whose put in is the pay-ins, the rescues and the preferred", p.putIn(),
                 f.getPaidInFromSurplus() + f.getPaidInFromCash() + f.getHandPaidIn() + f.getRescuesPaid() + f.getPreferredBought(), 1e-9);
         double cashBack = f.getPaidInFromSurplus() + f.getPaidInFromCash() + f.getHandPaidIn() + f.getDividendsMarket()
-                + f.getDividendsRescue() + f.getCoupons() + f.getPrincipal() + f.getPreferredDividends() + f.getPreferredRedeemed()
+                + f.getDividendsRescue() + f.getLendingFees() + f.getCoupons() + f.getPrincipal() + f.getPreferredDividends() + f.getPreferredRedeemed()
                 + f.getWarrantsBoughtBack() + f.getSharesSold() + f.getBondsSold() - f.getSharesBought() - f.getBondsBought()
                 - f.getTransfersPaid() - f.getHandDrawnOut();
         close("...because its cash is what came in less what went out, to the cent", cashBack, f.getCash(), 1e-6);

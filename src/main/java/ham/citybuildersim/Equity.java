@@ -707,12 +707,21 @@ public class Equity {
      * company, whether or not it pays.
      */
     public void followEmigrants(HouseholdBalance households) {
+        followEmigrants(households, c -> 0);
+    }
+
+    /**
+     * ...with the shares the world is short of each company (LF1, EM2's review): the holdings add to the shares in issue plus
+     * what is short, so those who leave may take up to that many abroad; capped at the shares in issue alone, the emigrants of a
+     * company whose other holders hold less than what is short had their shares dropped, and the register was not whole.
+     */
+    public void followEmigrants(HouseholdBalance households, java.util.function.IntToDoubleFunction shortOf) {
         if (households == null) return;
         for (int c = 0; c < listings.length; c++) {
             double gone = households.getSharesTakenAway(c);
             if (gone > 0) {
                 Listing l = listings[c];
-                l.foreignShares = Math.min(l.shares, l.foreignShares + gone);
+                l.foreignShares = Math.min(l.shares + Math.max(0, shortOf.applyAsDouble(c)), l.foreignShares + gone);
             }
         }
     }
@@ -883,6 +892,23 @@ public class Equity {
         l.cityShares = l.shares;
         l.cityRescue = l.shares;
         return new double[] { world, market };
+    }
+
+    /**
+     * THE SHARES A SHORT SOLD, CANCELLED WITH THE COMPANY (LF1, EM2's review): a company with no shares in issue has nothing to hold, so
+     * what the desk, the world and the fund's market book still hold of it - the shares the world sold short, which were never in issue -
+     * goes, for nothing; the households' are the caller's to empty (HouseholdBalance.surrenderShares()), before this. Left, a later
+     * listIfUnlisted() listed the company with them held on top of the founders'.
+     *
+     * @return the fund's market book's shares before
+     */
+    double cancelHeld(int company) {
+        Listing l = listings[company];
+        double market = Math.max(0, l.cityShares - l.cityRescue);
+        l.dealerShares = 0;
+        l.foreignShares = 0;
+        l.cityShares = l.cityRescue;
+        return market;
     }
 
     /** New shares issued to the city's rescue book - warrants exercised at their expiry (0.7.14): in issue by this many, the city's by the same. */
