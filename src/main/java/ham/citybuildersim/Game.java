@@ -5554,6 +5554,21 @@ public class Game {
     }
 
     /**
+     * CD9 (CD8-R, 2026-11-08): what the currency has done to the city's foreign debt since founding, a gain positive,
+     * a loss below nothing: the sum of the history's "debtExchange" series, CD7's booked line month by month, the
+     * crosses of the paper in the other moneys included. It replaces ForeignAccounts' lifetime revaluation (the
+     * US$ stock times the D$'s move alone, dearer positive), which missed the crosses. The stored figures, so a
+     * folded year adds its sum; the months before the series began read nothing. A read.
+     */
+    public double debtExchangeSinceFounding() {
+        double sum = 0;
+        for (double v : historySave.raw("debtExchange")) {
+            if (!Double.isNaN(v)) sum += v;
+        }
+        return sum;
+    }
+
+    /**
      * WHAT THE ROLLOVER LEAVES FOR THE FUND, now: the dial's share of this
      * calendar year's surplus so far (TreasuryFund.reservedFor()) - nothing
      * once this year's pay-in is made, and nothing at a dial of 0.
@@ -14485,6 +14500,8 @@ public class Game {
          * that is not cash, of which the uplift paid is the cash part. Nothing but zero for a city that
          * holds no linker.
          */
+        // CD9 (CD7-E, 2026-11-08): the month's coupons abroad, which the budget's interest below carries, are EARNED's too (getExpenses()).
+        economyManager.setForeignInterest(foreignInterestPaidThisMonth);
         economyManager.refreshGovernmentAccounts(
                 landManager.getLandSalesThisMonth(),
                 cityCapitalSpending,
@@ -16781,6 +16798,8 @@ public class Game {
         // interest and the load path feeds it straight back to setInterest().
         // Saving the whole expense line double-counted pensions on load.
         dataSave.setCityInterestAccrued(economyManager.getInterestAccrued());
+        // ...and the month's coupons abroad (CD9, CD7-E): a flow struck at the month's books, in EARNED's expenses, nothing to rederive it from.
+        dataSave.setCityForeignInterest(economyManager.getForeignInterest());
 
         /*
          * EVERY SECTOR, WHOLE, BY NAME (2026-09-11, the sector template): its
@@ -20302,6 +20321,7 @@ public class Game {
          */
         double restoredPropertyTax = 0;
         double restoredCityInterest = 0;
+        double restoredCityForeignInterest = 0;
         DataSave restoredFlows = null;
 
         try {
@@ -21039,6 +21059,7 @@ public class Game {
 
             restoredPropertyTax = loaded.getPropertyTaxCharged();
             restoredCityInterest = loaded.getCityInterestAccrued();
+            restoredCityForeignInterest = loaded.getCityForeignInterest();
             restoredFlows = loaded;
             
 
@@ -21255,6 +21276,8 @@ public class Game {
          * behaved as.
          */
         economyManager.setInterest(restoredCityInterest);
+        // ...and the month's coupons abroad EARNED carries (CD9, CD7-E): unconditional too, 0 for a save from before it.
+        economyManager.setForeignInterest(restoredCityForeignInterest);
 
         /*
          * THE HOUSEHOLDS, BEFORE THE REBUILD RATHER THAN AFTER IT.

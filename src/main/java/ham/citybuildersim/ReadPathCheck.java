@@ -197,6 +197,8 @@ public class ReadPathCheck {
         into.put("budget.fundTransfer", g.getEconomyManager().getNationalAccounts().getFundTransfer());
         // ...and CD7's: the month's exchange gain on the foreign debt, a flow the list of paper cannot give back
         into.put("budget.debtExchangeGain", g.getEconomyManager().getNationalAccounts().getDebtExchangeGain());
+        // ...and CD9's: the month's coupons abroad EARNED's expenses carry (EconomyManager.foreignInterest), a flow saved beside the accrued interest
+        into.put("economy.foreignInterest", g.getEconomyManager().getForeignInterest());
         // ...and 0.7.12's: every bond and who holds it, every book and what
         // rests on it, the market's month and life, the cells' own bonds,
         // the bank's bonds and its concentration, each sector's mix.
@@ -343,6 +345,7 @@ public class ReadPathCheck {
             g.getHouseholds().getRowDisposable(r);
         }
         e.getExpenses();
+        e.getForeignInterest();   // CD9 (CD7-E): the coupons abroad inside it
         e.getMonthGdp();
         // ...and the Schools page's five dials and their previews (2026-09-21):
         // the grant under a basis the city has not chosen, the interest a
@@ -881,7 +884,7 @@ public class ReadPathCheck {
         g.getForeignAccounts().riskOffLoading();
         g.getForeignAccounts().getLastMove();
         g.getForeignAccounts().getLastAbsorption();
-        g.getForeignAccounts().getLastRevaluation();
+        g.debtExchangeSinceFounding();   // CD9: the retired getLastRevaluation()'s reader (CD7's booked line, summed)
         // ...and what 0.7.35's Trade tab reads: the cover a purchase would buy,
         // its verdicts, the month's goods off the businesses' books, what is
         // held where, and History's rate and parity

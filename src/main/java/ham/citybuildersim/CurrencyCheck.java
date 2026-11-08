@@ -878,8 +878,13 @@ public class CurrencyCheck {
         assertTrue("...a rate under the old guard crosses it", first < OLD_MAX_RATE);
         close("...and every month is the trend and the levels, never the guard", worst, 0, 1e-9);
         close("...and the dollar debt is worth the dollars at it", high.getForeignDebt(), usdOwed * high.getRate(), 1e-6);
-        close("...the month's revaluation the whole of the move", high.getLastRevaluation(),
-                usdOwed * (high.getRate() - before), 1e-6);
+        // CD9 (CD8-R, 2026-11-08): ForeignAccounts keeps no revaluation now; the month's is CD7's booked line (DebtManager.revalueForeign, a gain
+        // positive, so a rate that rose is a loss), here on a bare ledger holding one US$ bond of the same US$ - the premise stays: the whole of the move.
+        DebtManager highBook = new DebtManager();
+        Debt highBond = highBook.addLongTermBond(usdOwed, 120, 0, .05, true);
+        highBook.setExchangeRate(before);
+        close("...the month's revaluation the whole of the move", highBook.revalueForeign(high.getRate()),
+                highBond.carryingInCurrency() * (before - high.getRate()), 1e-6);
 
         /* UNDER A HUNDREDTH, the mirror: parity at 1/200, the trend falling past the old floor. */
         final double low = .005;
@@ -903,8 +908,11 @@ public class CurrencyCheck {
                 dear.getRate() < OLD_MIN_RATE);
         assertTrue("a rate over the old floor crosses it", firstDown > OLD_MIN_RATE);
         close("...and the dollar debt is worth the dollars at it", dear.getForeignDebt(), usdOwed * dear.getRate(), 1e-9);
-        close("...the month's revaluation the whole of the move, a gain", dear.getLastRevaluation(),
-                usdOwed * (dear.getRate() - before), 1e-9);
+        DebtManager dearBook = new DebtManager();   // (CD9: the same bare ledger, the booked line, as above)
+        Debt dearBond = dearBook.addLongTermBond(usdOwed, 120, 0, .05, true);
+        dearBook.setExchangeRate(before);
+        close("...the month's revaluation the whole of the move, a gain", dearBook.revalueForeign(dear.getRate()),
+                dearBond.carryingInCurrency() * (before - dear.getRate()), 1e-9);
 
         /*
          * A REFORM SCALES THE GUARDS WITH THE UNIT. Three zeros off a currency

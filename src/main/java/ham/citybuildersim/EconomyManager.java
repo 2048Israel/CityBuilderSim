@@ -1711,6 +1711,10 @@ public class EconomyManager {
     private double totalBankTax;
     private double totalContributions;
     private double interest;
+    // CD9 (CD7-E, 2026-11-08): the month's coupons abroad, every money's, in D$: the foreign paper's interest, paid at once
+    // (Game.payForeignInterest through TreasuryLine.FOREIGN_INTEREST) and handed here where the budget's interest is struck
+    // (Game.strikeGovernmentBooks()). EARNED's expenses carry it, as the budget's interest does; the cash does not pay it again.
+    private double foreignInterest;
     private double utilityIncome = 0;
     private double debt = 0;
     private double GDP;
@@ -2093,7 +2097,7 @@ public class EconomyManager {
 
     /** What the city pays out this month. */
     public double getExpenses() {
-        return interest + getPensionsPaid() + eiBenefits + studentGrants + healthcareBill + educationBill
+        return interest + foreignInterest + getPensionsPaid() + eiBenefits + studentGrants + healthcareBill + educationBill
                 + safetyBill
                 // ...and the research grants' posts and laboratories (R3): none at a grant of 0.
                 + getResearchBill()
@@ -2101,7 +2105,16 @@ public class EconomyManager {
                 + transitBill;
     }
 
-    /** The interest alone, which is the only part of getExpenses() that is CARRIED. */
+    /**
+     * The month's coupons abroad, every money's, in D$ (CD9, CD7-E): in getExpenses(), so EARNED carries the interest the budget
+     * does - the foreign coupon is in the budget's interest and was not in EARNED, which left getEarnedResidual() at about minus
+     * the coupon every month. NOT in getInterestAccrued(): that is the domestic coupon's bank share, which the month-end cash path
+     * pays (Game.finalUpdateEconomy()), while the foreign coupon was paid at once at the coupon and the cash must not pay it twice.
+     */
+    public double getForeignInterest() { return foreignInterest; }
+    public void setForeignInterest(double value) { this.foreignInterest = Double.isFinite(value) ? Math.max(0, value) : 0; }
+
+    /** The interest alone, which is the only part of getExpenses() that is CARRIED (CD9: the domestic coupon's, not the foreign one in getForeignInterest()). */
     public double getInterestAccrued() { return interest; }
     public void setInterest(double value) { this.interest = value; }
     public void updateInterestExpense(double interest) { this.interest += interest; }
@@ -2588,6 +2601,7 @@ public class EconomyManager {
         households = 0;
         totalWageTax = 0;
         interest = 0;
+        foreignInterest = 0;
         totalWage = 0;
         totalPropertyTax = 0;
         salesTax = 0;
@@ -2624,6 +2638,7 @@ public class EconomyManager {
         totalBankTax *= scale;
         totalWageTax *= scale;
         interest *= scale;
+        foreignInterest *= scale;
         totalWage *= scale;
         cityCrudeImports *= scale;
         cityCrudeExports *= scale;

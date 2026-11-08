@@ -364,7 +364,9 @@ public class ForeignDebtCheck {
 
         assertTrue("the fixture has a debt worth revaluing", localBefore > 1);
 
-        market.setExchangeRate(rateBefore * 1.5);
+        // CD9 (CD8-R, 2026-11-08): the move is booked as CD7's line (revalueForeign, a gain positive), not ForeignAccounts' second figure.
+        double carriedBefore = market.getCarryingValue();
+        double bookedLine = market.revalueForeign(rateBefore * 1.5);
         fx.takeForeignDebt(market.getForeignPrincipalUsd(), rateBefore * 1.5);
 
         out.printf("   a 50%% devaluation: US$%,.0f owed, $%,.0f -> $%,.0f at home%n",
@@ -373,8 +375,8 @@ public class ForeignDebtCheck {
         close("not one dollar more is owed", market.getForeignPrincipalUsd(), usdBefore, 1e-9);
         close("...and half again as much at home",
                 market.getForeignPrincipal() / localBefore, 1.5, 1e-6);
-        close("...which is exactly what the revaluation says it is",
-                fx.getLastRevaluation(), market.getForeignPrincipal() - localBefore, .01);
+        close("...which is exactly what the booked exchange line says it is (a loss, what the pieces are carried at at home rose by)",
+                -bookedLine, market.getCarryingValue() - carriedBefore, .01);
 
         /*
          * AND THE LOOP CLOSES.
@@ -655,18 +657,22 @@ public class ForeignDebtCheck {
         assertTrue("...and shut for the same reason, not a different one",
                 back.foreignWindowReason().contains("defaulted"));
 
-        close("the lifetime revaluation reloads",
-                backFx.getLifetimeRevaluation(), fx.getLifetimeRevaluation(), .005);
+        // CD9 (CD8-R, 2026-11-08): what the currency did to the debt is CD7's booked line, summed from the history (ForeignAccounts keeps no figure of its own now).
+        assertTrue("fixture: by now the currency has done something to the live city's debt", city.debtExchangeSinceFounding() != 0);
+        close("what the currency did to the debt since founding reloads (the history's \"debtExchange\" sum)",
+                reloaded.debtExchangeSinceFounding(), city.debtExchangeSinceFounding(), .005);
         close("...and what the city walked away from",
                 backFx.getRepudiated(), fx.getRepudiated(), .005);
 
         /*
          * ...AND NO PHANTOM REVALUATION ON THE FIRST TICK.
          *
-         * lastDebtRate is saved for exactly this. Without it the reloaded city
-         * compares today's rate against 1.00 and books the whole of its currency
-         * history as one month's loss - a city that has done nothing at all
-         * suddenly reporting the largest revaluation of its life.
+         * The rate each piece was last valued at is restored for exactly this
+         * (DebtManager.revalueForeign() moves a piece from its own last rate).
+         * Without it the reloaded city compares today's rate against 1.00 and
+         * books the whole of its currency history as one month's loss - a city
+         * that has done nothing at all suddenly reporting the largest
+         * revaluation of its life. Read from CD7's booked line (CD9, 2026-11-08).
          */
         System.setOut(quiet);
         try {
@@ -674,11 +680,10 @@ public class ForeignDebtCheck {
         } finally {
             System.setOut(out);
         }
-        out.printf("   first month after a reload revalues by %,.2f%n",
-                reloaded.getForeignAccounts().getLastRevaluation());
+        double firstMonthLine = reloaded.getEconomyManager().getNationalAccounts().getDebtExchangeGain();
+        out.printf("   first month after a reload revalues by %,.2f%n", firstMonthLine);
         assertTrue("a reloaded city does not book its whole history as one month",
-                Math.abs(reloaded.getForeignAccounts().getLastRevaluation())
-                        < Math.max(1, back.getForeignPrincipal() * .05));
+                Math.abs(firstMonthLine) < Math.max(1, back.getForeignPrincipal() * .05));
 
         theWorldsCurve(root.resolve("curve"));
         theLadder(root.resolve("ladder"));
