@@ -5651,6 +5651,273 @@ public class MapCheck {
         return null;
     }
 
+    /* ----- the harbour bundled: a harbour's next work beside its works (HB1, 2026-11-08) ----- */
+
+    /*
+     * Jerus, 2026-10-31, on his Bergen (15 terminals along one coast, each a box of its own with a ship): "you still want ports.. just
+     * perhaps that they bundle up? like side by side removing the buildings and placing them somewhere else?" and "not that all ports must
+     * be connected, just that if on same island, they prefer to be connected, but you can still have mutliple ports disconnected". MF1's
+     * harbour took the first spot of the first tile nearest its first work, so a harbour of 27 works filled a disc 3.7 x 4.9 km tile by
+     * tile; HB1's takes the spot nearest the harbour's works (CityMap.bundleHarbour). What this has to prove, on 9b's coast: (a) in a
+     * harbour that already holds a work, the spot the search finds is never farther from the harbour's works than the one MF1's order
+     * finds, laid one at a time, and the old order is farther in some of them (the fault); (b) the same orders laid with the switch on and
+     * off: more works stand side by side with another of their harbour on (the picture); (c) a harbour work laid across a district's
+     * planned buildings moves off it the boxes under it and no others, and the district's journal dates it that month, as a yard's does (2d).
+     */
+
+    /** Harbour works laid after the harbour's first whose districts' plans are read for the buildings they move: 8. */
+    static final int BUNDLE_LAYS = 8;
+
+    /** The least distance, in plots, from work k's shore plot to the shore plots `plots` ({x, y, ...}). */
+    static double leastTo(CityShore.Work k, long[] plots) {
+        long[] p = k.shorePlot();
+        double least = Double.MAX_VALUE;
+        for (int i = 0; i < plots.length; i += 2) least = Math.min(least, Math.hypot(p[0] - plots[i], p[1] - plots[i + 1]));
+        return least;
+    }
+
+    static void theBundledHarbour(BuildingVisual.Type[] types, long seed) {
+        out.println("\n--- 9c. the harbour bundled: each work laid side by side with the harbour's (HB1) ---");
+        bundledNearer(types, seed);
+        bundledPicture(types, seed);
+        bundledMovesBuildings(types, seed);
+    }
+
+    /**
+     * (a) Works laid one at a time on 9b's coast, every shore type in turn, round by round: before each lay the spot the search from the first
+     * tile finds with the switch on and with it off, on the same map, then the one on is laid. In a harbour that already holds a work the one on
+     * is never farther from the harbour's works (the least distance of its shore plot from theirs) than the one off; the fixture is that the one
+     * off is farther in some lay.
+     */
+    static void bundledNearer(BuildingVisual.Type[] types, long seed) {
+        World w = World.of(seed);
+        long sx = w.foundingX() - CityMap.DISTRICT, sy = w.foundingY();
+        long[] counts = noShore(types, shoreCounts(types));
+        CityMap m = coastal(seed, sx, sy, types, SHORE_SIDE, counts);
+        List<long[]> mines = m.minedSites();
+        int lays = 0, inHarbour = 0, differ = 0, onFarther = 0, offFarther = 0, offOnly = 0, otherHarbour = 0, elsewhere = 0, noRoom = 0;
+        double largest = 0;
+        for (int round = 1; round <= HARBOUR_ROUNDS; round++) {
+            for (int t : m.shoreTypes()) {
+                CityShore.Work on = m.shoreSpotFull(t, mines), off;
+                CityMap.bundleHarbour = false;
+                try {
+                    off = m.shoreSpotFull(t, mines);
+                } finally {
+                    CityMap.bundleHarbour = true;
+                }
+                if (on == null) {
+                    noRoom++;
+                    if (off != null) offOnly++;
+                    continue;
+                }
+                lays++;
+                List<CityShore.Harbour> all = m.harbours();
+                CityShore.Harbour h = harbourOf(all, on);
+                if (off == null) offOnly++;
+                else if (h != null) {
+                    inHarbour++;
+                    if (harbourOf(all, off) != h) otherHarbour++;
+                    long[] works = m.harbourPlots(h, all);
+                    double dOn = leastTo(on, works), dOff = leastTo(off, works);
+                    if (!on.equals(off)) differ++;
+                    if (dOn > dOff + 1e-9) onFarther++;
+                    if (dOff > dOn + 1e-9) {
+                        offFarther++;
+                        largest = Math.max(largest, dOff - dOn);
+                    }
+                }
+                counts[t]++;
+                m.reconcile(counts);
+                if (!m.shore().works().get(m.shore().works().size() - 1).equals(on)) elsewhere++;
+            }
+        }
+        out.printf("      %d works laid one at a time (%d more asked came up short), %d of them in a harbour that held a work: the spot the search finds with the switch off differs in %d,"
+                + " is farther from the harbour's works in %d (by %.0f plots at most) and nearer in %d; %d laid elsewhere than the spot found%n", lays, noRoom, inHarbour, differ, offFarther, largest, onFarther, elsewhere);
+        check("fixture: terminals and tank farms are laid one at a time, most of them in a harbour that already holds a work", lays >= 5 && inHarbour >= lays / 2);
+        check("in a harbour that already holds a work, the spot nearest the harbour's works is never farther from them than the spot MF1's order finds on the same map, and both are in one harbour, and the work is laid at it",
+                onFarther == 0 && otherHarbour == 0 && offOnly == 0 && elsewhere == 0);
+        check("fixture: MF1's order finds a spot farther from the harbour's works than the nearest in at least one lay: " + offFarther + " of " + inHarbour, offFarther > 0);
+    }
+
+    /**
+     * (b) The picture: orders laid with the switch on and off, two maps. Each work after its harbour's first has a distance to the nearest other work
+     * of its harbour, and stands side by side with it when that is at most the larger of the two boxes' longest side, two verges and a plot; the works
+     * a side-by-side chain joins are one piece of quay, and a harbour of one quay is the bundle. 9b's orders are printed: its coast's first harbour
+     * has room for few (the shore beside its first work is the limit, not the order, so both orders lay what fits and the pictures are alike). The
+     * fixture that causes the condition is the small coast of the harbours' cost (harbourMonthCost()), SHORE_FEW General Cargo Terminals of the boxes
+     * before SL1, which a harbour has room for and then some: the harbour is still growing when the orders end.
+     */
+    static void bundledPicture(BuildingVisual.Type[] types, long seed) {
+        CityMap onNine = harborOrdered(types, seed, new ArrayList<>(), true), offNine;
+        CityMap.bundleHarbour = false;
+        try {
+            offNine = harborOrdered(types, seed, new ArrayList<>(), true);
+        } finally {
+            CityMap.bundleHarbour = true;
+        }
+        int[] nineOn = sideBySide(onNine.shore()), nineOff = sideBySide(offNine.shore());
+        out.printf("      9b's orders laid with the switch on and off: %d and %d works in %d and %d harbours; of those after their harbour's first %d of %d and %d of %d stand side by side with another"
+                + " (%d and %d pieces of quay, the farthest from its nearest neighbour %d and %d plots)%n", onNine.shore().works().size(), offNine.shore().works().size(), onNine.harbours().size(), offNine.harbours().size(),
+                nineOn[1], nineOn[0], nineOff[1], nineOff[0], nineOn[3], nineOff[3], nineOn[2], nineOff[2]);
+        World w = World.of(seed);
+        long sx = w.foundingX() - CityMap.DISTRICT, sy = w.foundingY();
+        BuildingVisual.Type[] before = GatewayCheck.gatewayTypesBeforeSL1();
+        int gct = -1;
+        for (BuildingVisual.Type t : before) if (t != null && t.berth() == Ports.Cargo.GENERAL.ordinal()) gct = t.id();
+        long[] few = noShore(before, shoreCounts(before));
+        few[gct] = SHORE_FEW;
+        CityMap on = coastal(seed, sx, sy, before, SHORE_SIDE, few.clone()), off;
+        CityMap.bundleHarbour = false;
+        try {
+            off = coastal(seed, sx, sy, before, SHORE_SIDE, few.clone());
+        } finally {
+            CityMap.bundleHarbour = true;
+        }
+        int[] sideOn = sideBySide(on.shore()), sideOff = sideBySide(off.shore());
+        boolean members = true;
+        for (CityMap m : new CityMap[] { on, off, onNine, offNine }) {
+            List<CityShore.Harbour> all = m.harbours();
+            for (CityShore.Harbour h : all) members &= m.harbourPlots(h, all).length == 2 * h.works();
+        }
+        out.printf("      %d General Cargo Terminals ordered of the small coast: %d laid in %d harbour(s) with the switch on, %d in %d with it off; of the works after their harbour's first, %d of %d stand side by side"
+                + " with another on, %d of %d off; the farthest a work is from its nearest neighbour: %d plots on, %d off; pieces of quay: %d on, %d off%n", SHORE_FEW, on.shore().count(gct), on.harbours().size(),
+                off.shore().count(gct), off.harbours().size(), sideOn[1], sideOn[0], sideOff[1], sideOff[0], sideOn[2], sideOff[2], sideOn[3], sideOff[3]);
+        check("the harbours' works are those CityShore.harbours() counts to them: harbourPlots() has a pair for each, in every harbour of the four maps", members);
+        check("fixture: the small coast lays every General Cargo Terminal ordered with the switch on and off, in the same number of harbours, and there are works after the harbours' first",
+                on.shore().count(gct) == SHORE_FEW && off.shore().count(gct) == SHORE_FEW && on.harbours().size() == off.harbours().size() && sideOn[0] > 0 && sideOff[0] > 0);
+        check("fixture: with the switch off a work of a harbour has no neighbour side by side (" + (sideOff[0] - sideOff[1]) + " of " + sideOff[0] + "), and the quay is in pieces (" + sideOff[3] + " in "
+                + off.harbours().size() + " harbour(s))", sideOff[1] < sideOff[0] && sideOff[3] > off.harbours().size());
+        check("THE BUNDLE: with the switch on more works stand side by side with another of their harbour (" + sideOn[1] + " of " + sideOn[0] + ") than with it off (" + sideOff[1] + " of " + sideOff[0]
+                + "), and the quay is in fewer pieces (" + sideOn[3] + " against " + sideOff[3] + ")", sideOn[1] > sideOff[1] && sideOn[3] < sideOff[3]);
+    }
+
+    /**
+     * {works after their harbour's first, those with a neighbour side by side, the farthest a work is from its nearest neighbour (plots, rounded up), the pieces of quay (the groups the
+     * side-by-side pairs join, over all the harbours)} of a shore, harbours by CityShore.harbours(). Side by side: the distance between two works' shore plots is at most the larger of
+     * their boxes' longest sides plus two verges and a plot.
+     */
+    static int[] sideBySide(CityShore shore) {
+        List<CityShore.Harbour> harbours = harboursOf(shore);
+        List<CityShore.Work> works = shore.works();
+        int n = works.size(), after = 0, beside = 0, pieces = n;
+        int[] group = new int[n];
+        for (int i = 0; i < n; i++) group[i] = i;
+        double farthest = 0;
+        for (int i = 0; i < n; i++) {
+            CityShore.Work a = works.get(i);
+            CityShore.Harbour h = harbourOf(harbours, a);
+            long[] pa = a.shorePlot();
+            boolean first = h != null && pa[0] == h.x() && pa[1] == h.y();
+            double nearest = Double.MAX_VALUE;
+            boolean close = false;
+            for (int j = 0; j < n; j++) {
+                CityShore.Work b = works.get(j);
+                if (i == j || harbourOf(harbours, b) != h) continue;
+                long[] pb = b.shorePlot();
+                double d = Math.hypot(pa[0] - pb[0], pa[1] - pb[1]);
+                boolean joined = d <= Math.max(Math.max(a.w(), a.h()), Math.max(b.w(), b.h())) + 2 * CityShore.CLEAR + 1;
+                if (joined && j > i) {
+                    int ga = i, gb = j;
+                    while (group[ga] != ga) ga = group[ga];
+                    while (group[gb] != gb) gb = group[gb];
+                    if (ga != gb) {
+                        group[ga] = gb;
+                        pieces--;
+                    }
+                }
+                if (d < nearest) {
+                    nearest = d;
+                    close = joined;
+                }
+            }
+            if (h == null || first || nearest == Double.MAX_VALUE) continue;
+            after++;
+            farthest = Math.max(farthest, nearest);
+            if (close) beside++;
+        }
+        return new int[] { after, beside, (int) Math.ceil(farthest), pieces };
+    }
+
+    /**
+     * (c) A harbour work laid across a district's planned buildings moves off it the boxes under it and no others, and the district's journal dates it
+     * that month (2d's yard, for a work on the shore): works laid one at a time on 9b's coast with the town of the section standing in its districts;
+     * for each of the first BUNDLE_LAYS laid in a harbour that already holds a work, each district its ground reaches is planned before and after, and
+     * the plots the month fixed are those of the work (CityShore.blocks()), the boxes of the plan before that lie on them are the boxes not in the plan
+     * after, the journal's records of the month (LongPlaytest.layoutRunMarks(), what the layout watch counts a box moved off a run by) are those plots
+     * alone, and the district's journal grew.
+     */
+    static void bundledMovesBuildings(BuildingVisual.Type[] types, long seed) {
+        World w = World.of(seed);
+        long sx = w.foundingX() - CityMap.DISTRICT, sy = w.foundingY();
+        long[] counts = noShore(types, shoreCounts(types));
+        CityMap m = coastal(seed, sx, sy, types, SHORE_SIDE, counts);
+        List<long[]> mines = m.minedSites();
+        int reach = CityShore.CLEAR + CityShore.HARBOUR_QUAY_PLOTS + 1, f = DistrictPlan.FRAME;
+        int laid = 0, read = 0, planned = 0, under = 0, moved = 0, differ = 0, unmarked = 0, marksDiffer = 0, stray = 0, undated = 0, fixedPlots = 0;
+        for (int round = 1; round <= HARBOUR_ROUNDS && laid < BUNDLE_LAYS; round++) {
+            for (int t : m.shoreTypes()) {
+                if (laid >= BUNDLE_LAYS) break;
+                CityShore.Work spot = m.shoreSpot(t, mines);
+                if (spot == null) continue;
+                boolean inHarbour = harbourOf(m.harbours(), spot) != null;
+                List<CityMap.District> reached = new ArrayList<>();
+                List<Snap> before = new ArrayList<>();
+                if (inHarbour) {
+                    for (CityMap.District d : m.districts()) {
+                        DistrictPlan.Input in = m.planInput(d);
+                        if (spot.x0() - reach >= in.x0 + f || spot.x0() + spot.w() + reach <= in.x0 || spot.y0() - reach >= in.y0 + f || spot.y0() + spot.h() + reach <= in.y0) continue;
+                        reached.add(d);
+                        before.add(new Snap(m, d));
+                    }
+                }
+                counts[t]++;
+                m.reconcile(counts);
+                if (!inHarbour) continue;
+                laid++;
+                int month = m.month();
+                for (int i = 0; i < reached.size(); i++) {
+                    CityMap.District d = reached.get(i);
+                    Snap sb = before.get(i), sa = new Snap(m, d);
+                    DistrictPlan.Input in = m.planInput(d);
+                    boolean[] fresh = new boolean[sb.fixed.length];
+                    int freshN = 0;
+                    for (int p = 0; p < fresh.length; p++) {
+                        if (sa.fixed[p] == 0 || sb.fixed[p] != 0) continue;
+                        fresh[p] = true;
+                        freshN++;
+                        if (!m.shore().blocks(in.x0 + p % f, in.y0 + p / f)) stray++;
+                    }
+                    if (freshN == 0) continue;
+                    read++;
+                    fixedPlots += freshN;
+                    boolean[] marks = LongPlaytest.layoutRunMarks(m, d, month, month);
+                    for (int p = 0; p < fresh.length; p++) if ((marks != null && marks[p]) != fresh[p]) marksDiffer++;
+                    int underHere = 0, movedHere = movedOf(sb.boxes, sa.boxes);
+                    for (PlanBox b : sb.boxes) {
+                        if (anyPlot(b, 0, p -> fresh[p])) underHere++;
+                        if (!sa.boxes.contains(b) && (marks == null || !anyPlot(b, 0, p -> marks[p]))) unmarked++;
+                    }
+                    planned += sb.boxes.size();
+                    under += underHere;
+                    moved += movedHere;
+                    if (movedHere != underHere) differ++;
+                    if (sa.journal <= sb.journal) undated++;
+                }
+            }
+        }
+        out.printf("      %d harbour works laid in a harbour that held one, %d districts planned before and after (%,d boxes): the works fixed %,d plots, %d boxes lie under them, %d moved off; the journal's records of the month"
+                + " differ from the fixed plots at %d, %d districts' journals did not grow%n", laid, read, planned, fixedPlots, under, moved, marksDiffer, undated);
+        check("fixture: harbour works are laid in a harbour that holds one, across districts that plan buildings, and at least one box stood on a work's ground: " + under + " of " + planned,
+                laid > 0 && read > 0 && planned > 0 && under > 0);
+        check("the plots a harbour work fixes are those of the work (CityShore.blocks()): " + stray + " of " + fixedPlots + " are not", stray == 0 && fixedPlots > 0);
+        check("a harbour work laid across a district's planned buildings moves off it the boxes under it and no others: in each of " + read + " districts the boxes not in the plan after are those with a plot on the work's ground ("
+                + moved + " moved, " + under + " under)", differ == 0 && moved == under);
+        check("...each box that moved has a plot among the month's journal records, so the layout watch counts it moved off a run (" + unmarked + " have none)", unmarked == 0);
+        check("...and the district's journal dates the work that month: its records of the month are the plots the work fixed and no others, and each district's journal grew (" + marksDiffer + " plots differ, " + undated + " did not grow)",
+                marksDiffer == 0 && undated == 0);
+    }
+
     /**
      * A search that starts where the last found room is the search from the harbour's first tile (shoreSpotFull(): the harbour's tiles from the
      * nearest its first work, every time), for each General Cargo Terminal laid one at a time until the harbours are full and again after
@@ -6220,6 +6487,7 @@ public class MapCheck {
         check("...each work drawn once on the tiles, on its own box, and every plot of its quay once", once && quayPlots == wantQuay);
         shoreFollowsChange(types, seed, m);
         theHarbour(types, seed);
+        theBundledHarbour(types, seed);
 
         // ---- THE OIL AT SEA: the game's own platform (WellCheck's sea town).
         oilAtSea();

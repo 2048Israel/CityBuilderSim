@@ -7429,6 +7429,8 @@ public final class CityMap {
         boolean used;
         /** A harbour's search (MF1): the first of its tiles, in their order, that may hold a spot - the tiles before it held none and were not unsteady. */
         int from;
+        /** A harbour's search with bundleHarbour (HB1): the positions, in harbourTiles()'s order, of the tiles found to hold no spot and not unsteady - every spot of them looked at, none passed over for being too far. */
+        java.util.BitSet empty;
 
         ShoreTrack(CityShore shore, long removals, long stamp, int districts) {
             this.shore = shore;
@@ -7508,7 +7510,7 @@ public final class CityMap {
         }
     }
 
-    /** One search for a type's spot: the scratch its tiles are read into, and what the tile last looked at held. */
+    /** One search for a type's spot: the scratch its tiles are read into, and what the tile last looked at held. HB1: a harbour's search can be for the spot nearest the harbour's works (nearestTo()), weighing every spot of the tiles it looks at. */
     private final class ShoreScan {
         final int t, landmass, quay;
         /** MF1: a harbour's search: the quay is the common one, and no work may stand on a spine arm's walk to the world (worldWalks()). */
@@ -7531,6 +7533,16 @@ public final class CityMap {
 
         /** MF1: the harbour the search is for, as its first work's shore plot and the reach about it; reachSq is MAX_VALUE for a search of the whole coast. */
         long ax, ay, reachSq = Long.MAX_VALUE;
+
+        /**
+         * HB1: a harbour's search for the spot nearest its works (nearestTo()): their shore plots, flat {x, y, ...}; null for any other search. The spot
+         * kept, and its squared distance from the nearest of them, over all the tiles looked at; `pruned`: the tile last looked at had a spot passed over
+         * unasked for being no nearer than the one kept (so it is not known to hold none).
+         */
+        long[] nearTo;
+        CityShore.Work pick;
+        long pickSq = Long.MAX_VALUE;
+        boolean pruned;
 
         ShoreScan(int t, List<long[]> mines, int landmass) {
             this(t, mines, landmass, false);
@@ -7560,14 +7572,35 @@ public final class CityMap {
         }
 
         /**
+         * HB1: the search is for the spot nearest the shore plots `plots` ({x, y, ...}): look() then tries every spot of a tile, weighing each by the
+         * squared distance of its shore plot from the nearest of them before it asks whether the work fits or the water opens to the sea, and
+         * passes one over that is no nearer than the spot kept (pick, pickSq): the first found of those equally near stays. nearRing() plays no part.
+         */
+        ShoreScan nearestTo(long[] plots) {
+            nearTo = plots;
+            return this;
+        }
+
+        /** The squared distance from plot (x, y) to the nearest of nearestTo()'s plots. */
+        private long nearestSq(long x, long y) {
+            long least = Long.MAX_VALUE;
+            for (int k = 0; k < nearTo.length; k += 2) {
+                long dx = x - nearTo[k], dy = y - nearTo[k + 1];
+                least = Math.min(least, dx * dx + dy * dy);
+            }
+            return least;
+        }
+
+        /**
          * Looks at tile (tx, ty): false when it has no salt water or no dry ground (nothing to stand on: no window is read), else
          * its spots are tried in the order of the plots, the first near one ending the look (near) and the first other one kept
-         * (far); with stopAtAny the first of either ends it (first).
+         * (far); with stopAtAny the first of either ends it (first). With nearestTo() all of them are tried, and the nearest to the works
+         * is kept over the search (pick), `first` being the tile's last that was nearer than the one kept before it.
          */
         boolean look(long tx, long ty, boolean stopAtAny) {
             shoreLooked++;
             near = far = first = null;
-            firstIsNear = unsteady = false;
+            firstIsNear = unsteady = pruned = false;
             boolean wet = false, dry = false;
             if (island) world.tileLandmass(tx, ty, tileLm);
             for (int i = 0; i < World.TILE * World.TILE && !(wet && dry); i++) {
@@ -7612,8 +7645,17 @@ public final class CityMap {
                         long hx = tx * tile + ix - ax, hy = ty * tile + iy - ay;
                         if (hx * hx + hy * hy > reachSq) continue;   // MF1: the shore plot is the box's sea side's middle, whichever way round
                     }
+                    long nearSq = -1;   // HB1: the plot's weight, asked when a side has a spot
+                    sides:
                     for (int side = 0; side < 4; side++) {
                         if (!World.salt(ground[j + CityShore.DX[side] + CityShore.DY[side] * ww])) continue;
+                        if (nearTo != null) {
+                            if (nearSq < 0) nearSq = nearestSq(tx * tile + ix, ty * tile + iy);
+                            if (nearSq >= pickSq) {
+                                pruned = true;
+                                break;
+                            }
+                        }
                         for (int turn = 0; turn < (fp[0] == fp[1] ? 1 : 2); turn++) {
                             int w = turn == 0 ? fp[0] : fp[1], h = turn == 0 ? fp[1] : fp[0];
                             long sx = tx * tile + ix, sy = ty * tile + iy;
@@ -7631,6 +7673,11 @@ public final class CityMap {
                                     shoreTouched++;
                                 }
                                 if (!opens) continue;
+                            }
+                            if (nearTo != null) {
+                                pick = first = c;
+                                pickSq = nearSq;
+                                break sides;   // the plot's other sides and turns are no nearer
                             }
                             boolean ring = nearRing(c);
                             if (stopAtAny) {
@@ -7667,7 +7714,7 @@ public final class CityMap {
         for (CityShore.Harbour h : all) {
             if (landmass != ANY_LANDMASS && h.landmass() != landmass) continue;
             if (h.landmass() == coast) onCoast++;
-            CityShore.Work w = harbourSpot(t, mines, landmass, kept, h);
+            CityShore.Work w = harbourSpot(t, mines, landmass, kept, h, all);
             if (w != null) return w;
         }
         if (onCoast >= CityShore.HARBOURS_MOST) return null;
@@ -7809,8 +7856,9 @@ public final class CityMap {
      * the best shore ... the rest of the coast stays beach". CityShore says the rule (HARBOUR_*); this finds each work's place
      * by it. A harbour is the first work laid within reach of no other's: openHarbour() weighs the shores nearest the founding
      * site (near, sheltered, deep) and lays the first work on the best; harbourSpot() lays every later one within
-     * HARBOUR_REACH of it, the tile nearest the first work first, its quay HARBOUR_QUAY_PLOTS so that the berths lie side by side
-     * on one line. The marks of SL1 (ShoreTrack) are kept for a harbour's tiles, one cursor, and held to the same exactness:
+     * HARBOUR_REACH of it, its quay HARBOUR_QUAY_PLOTS so that the berths lie side by side on one line: the tile nearest the first
+     * work first by MF1, which filled a harbour's disc tile by tile (Jerus's Bergen: 27 works over 3.7 x 4.9 km); since HB1
+     * (2026-11-08) the spot nearest the harbour's works, so that the quay grows along the shore. The marks of SL1 (ShoreTrack) are kept for a harbour's tiles, one cursor, and held to the same exactness:
      * the spot is the one a search from the first tile finds (shoreSpotFull()).
      */
 
@@ -7834,12 +7882,14 @@ public final class CityMap {
     }
 
     /**
-     * The first spot in harbour h's reach for a work of type t, or null: the harbour's tiles (those within its reach of its first
-     * work's shore plot, owned) nearest that plot first, the first spot of a tile in the order of its plots. `kept`: from the
-     * first tile that may hold a spot, as the marks the last search left say (the tiles before it held none and were steady, which
-     * works laid since cannot change; any other change forgets them, shoreSpot()'s ShoreTrack); else from the first tile.
+     * The spot in harbour h's reach for a work of type t, or null. By MF1's order (bundleHarbour false): the harbour's tiles (those
+     * within its reach of its first work's shore plot, owned) nearest that plot first, the first spot of a tile in the order of its
+     * plots. HB1 (2026-11-08): the spot nearest the harbour's works, so that its quay grows along the shore from its ends instead of
+     * filling a disc tile by tile - harbourSpotBundled(). `kept`: from the first tile that may hold a spot, as the marks the last
+     * search left say (the tiles before it held none and were steady, which works laid since cannot change; any other change forgets
+     * them, shoreSpot()'s ShoreTrack); else from the first tile.
      */
-    private CityShore.Work harbourSpot(int t, List<long[]> mines, int landmass, boolean kept, CityShore.Harbour h) {
+    private CityShore.Work harbourSpot(int t, List<long[]> mines, int landmass, boolean kept, CityShore.Harbour h, List<CityShore.Harbour> all) {
         long ckey = World.mix(((long) t << 32) ^ (landmass & 0xffffffffL)) ^ World.mix(h.x() * 0x9E3779B97F4A7C15L ^ h.y() ^ 0x4841524DL);
         ShoreTrack tr = null;
         if (kept) {
@@ -7852,6 +7902,7 @@ public final class CityMap {
         }
         long[] order = harbourTiles(h);
         ShoreScan sc = new ShoreScan(t, mines, landmass, true).within(h.x(), h.y(), harbourReach);
+        if (bundleHarbour) return harbourSpotBundled(sc, tr, order, h, all, landmass);
         int n = order.length / 2, first = tr == null ? 0 : tr.from, a1 = n;
         CityShore.Work result = null;
         for (int i = first; i < n; i++) {
@@ -7870,6 +7921,81 @@ public final class CityMap {
             tr.used = true;
         }
         return result;
+    }
+
+    /**
+     * HB1 (2026-11-08; Jerus, 2026-10-31, of his Bergen's 27 works scattered over 3.7 x 4.9 km: "you still want ports.. just perhaps that they
+     * bundle up? like side by side", "if on same island, they prefer to be connected, but you can still have mutliple ports disconnected"): of
+     * every spot in harbour h's reach, the one whose shore plot is nearest (squared distance) the shore plot of one of the harbour's works
+     * (harbourPlots()) - the first found among equals, in the visiting order and the order of a tile's plots, sides and turns. Best first: the
+     * tiles by the least distance from any of those plots to the tile's square (0 inside it; equals in harbourTiles()'s order), each weighed
+     * whole (ShoreScan.nearestTo()), and the search ends when the next tile is no nearer than the spot kept, as none of its spots can beat it.
+     * `tr`: the tiles found to hold no spot and steady (ShoreTrack.empty, held valid as the rest of ShoreTrack is) are passed over; a tile
+     * with a spot passed over for being too far is not known to hold none and is looked at again. A work laid takes room and brings the
+     * harbour's works nearer, never farther, so the kept search finds the spot the full one does (MapCheck 9b (f) and 9c hold both).
+     */
+    private CityShore.Work harbourSpotBundled(ShoreScan sc, ShoreTrack tr, long[] order, CityShore.Harbour h, List<CityShore.Harbour> all, int landmass) {
+        long[] works = harbourPlots(h, all);
+        if (works.length == 0) works = new long[] { h.x(), h.y() };
+        int n = order.length / 2, tile = World.TILE;
+        long[][] bound = new long[n][];
+        for (int i = 0; i < n; i++) {
+            long x0 = order[2 * i] * tile, y0 = order[2 * i + 1] * tile, least = Long.MAX_VALUE;
+            for (int k = 0; k < works.length; k += 2) {
+                long dx = Math.max(0, Math.max(x0 - works[k], works[k] - (x0 + tile - 1))), dy = Math.max(0, Math.max(y0 - works[k + 1], works[k + 1] - (y0 + tile - 1)));
+                least = Math.min(least, dx * dx + dy * dy);
+            }
+            bound[i] = new long[] { least, i };
+        }
+        Arrays.sort(bound, Comparator.<long[]>comparingLong(a -> a[0]).thenComparingLong(a -> a[1]));
+        if (tr != null && tr.empty == null) tr.empty = new java.util.BitSet(n);
+        sc.nearestTo(works);
+        for (long[] b : bound) {
+            if (b[0] >= sc.pickSq) break;   // no spot of this tile or a later one is nearer than the one kept
+            int i = (int) b[1];
+            if (tr != null && tr.empty.get(i)) continue;
+            long tx = order[2 * i], ty = order[2 * i + 1];
+            if (cover(land.grid().cover(5, tx, ty)) == NONE) continue;
+            if (sc.island && landmass != landmasses.home() && Arrays.binarySearch(sc.world.idsNear(tx, ty), landmass) < 0) continue;
+            boolean looked = sc.look(tx, ty, true);
+            if (tr != null && (!looked || !(sc.unsteady || sc.pruned || sc.first != null))) tr.empty.set(i);
+        }
+        if (tr != null) tr.used = true;
+        return sc.pick;
+    }
+
+    /**
+     * The shore plots of harbour h's works, flat {x, y, ...} in the order laid: the works CityShore.harbours() counts to h - each on h's
+     * landmass within the reach of h's first work's shore plot that no harbour opened before h (`all`: harbours()'s answer) has within its
+     * own. That is harbours()'s rule asked of what it returned; MapCheck 9c holds the count to Harbour.works().
+     */
+    long[] harbourPlots(CityShore.Harbour h, List<CityShore.Harbour> all) {
+        World world = World.of(worldKey);
+        long r = Math.max(1, harbourReach), reachSq = r * r;
+        List<CityShore.Harbour> before = all.subList(0, Math.max(0, all.indexOf(h)));
+        List<long[]> in = new ArrayList<>();
+        for (CityShore.Work w : shore.works()) {
+            long[] s = w.shorePlot();
+            long dx = s[0] - h.x(), dy = s[1] - h.y();
+            if (dx * dx + dy * dy > reachSq) continue;
+            int lm = landmasses == null ? ANY_LANDMASS : workLandmass(world, w);
+            if (lm != h.landmass()) continue;
+            boolean earlier = false;
+            for (CityShore.Harbour g : before) {
+                long gx = s[0] - g.x(), gy = s[1] - g.y();
+                if (g.landmass() == lm && gx * gx + gy * gy <= reachSq) {
+                    earlier = true;
+                    break;
+                }
+            }
+            if (!earlier) in.add(s);
+        }
+        long[] out = new long[2 * in.size()];
+        for (int i = 0; i < in.size(); i++) {
+            out[2 * i] = in.get(i)[0];
+            out[2 * i + 1] = in.get(i)[1];
+        }
+        return out;
     }
 
     /** The tiles of harbour h's reach, as pairs (tx, ty) in a flat array: a tile whose square lies within HARBOUR_REACH of its first work's shore plot, the nearest that plot first (the tile's middle's distance, then its row and column). */
@@ -7968,6 +8094,9 @@ public final class CityMap {
 
     /** MF1 test switch, true: a harbour's works keep off the spine arms' walks (worldWalks()). MapCheck 9b turns it off to show the fault. */
     static boolean keepWorldWalks = true;
+
+    /** HB1 test switch, true: a harbour's next work takes the spot nearest the harbour's works, so its quay grows along the shore; false: MF1's order (the tiles nearest its first work, the first spot of a tile). MapCheck 9c turns it off to show the fault. */
+    static boolean bundleHarbour = true;
 
     /**
      * The walks the world line reads (worldLine()), as {x, y, dx, dy}: from the end of each spine arm that has steps - the railway's
