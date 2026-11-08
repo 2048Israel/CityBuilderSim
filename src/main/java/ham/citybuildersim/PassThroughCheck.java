@@ -185,13 +185,11 @@ public class PassThroughCheck {
         // vault the defence sells from in proportion to what it holds, sized on today's deaths; on 1900's causes the twin that bought held
         // US$134k over the other's where it had bought US$131k, so the treasury could not sell back "the dollars the defence had not sold".
         city.holdCausesOfDeathOff();
-        // WN3: on the goods' literals, here and in every twin loaded from it (load()). The premise of the ring is a world whose prices
-        // stand still (the markets' rate is the struck rate times a world level of one, section 2): the D$'s swing and the goods'
-        // following are the only thing moving the twins. Measured on the world's band, one for one: the twins' D$ gap, 10% at the
-        // purchase and under 3% after two years, stood at 34% at month 120, its widest at the very end (the goods a month behind it),
-        // and the vault of the twin that bought held 89 more than it had bought, not fewer (US$2,400k of US$2,311k); the world's own
-        // years moving the goods' prices is the difference between that run and the literals' (not isolated further).
-        city.playOnLiterals();
+        // On the world's band since WN3-R (2026-11-08), here and in every twin loaded from it (load()). WN3 put the ring on the goods'
+        // literals: on the band at 0.8.75 the twins' D$ gap, one for one, stood at 34% at month 120 and the vault of the twin that bought
+        // held more than it had bought. Measured again on 0.9.55: at PASS_THROUGH the D$'s widest gap 10.22% (month 1), ten years on
+        // -0.14%; one for one -0.47%; the vaults equal after the treasury's sale-back, and the price index's mean gap 0.25% against 0.81%.
+        // Both twins live in the one world, so its years move them alike and the intervention is still the only thing parting them.
         quietly(() -> {
             city.run();
             // THE LEVERS OPENED IN THE FIXTURE (BA1, 2026-11-05; R0 dates a 1900 city on Canada's policy): the ring is read in a town that taxes from month 1 and whose
@@ -221,7 +219,6 @@ public class PassThroughCheck {
     /** A city loaded from the base city's slot 1 (BASE_SLOT), into a city of its own. */
     static Game load(Game base) {
         Game g = new Game(base.getGameFiles());
-        g.playOnLiterals();   // WN3: as the base city (town()); the choice is not saved
         g.holdCausesOfDeathOff();   // R0b call 7: as the base city (town()); the hold is not saved
         quietly(() -> g.loadGameSave(BASE_SLOT));
         return g;

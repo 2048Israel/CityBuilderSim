@@ -1,18 +1,13 @@
-# gate of Merge batch/HB1: a city's ports bundled into one harbour: every terminal kept, those on one island leaning toward one harbour (separate ports elsewhere allowed), ships berthed alongside the quay with the buildings there moved, and a harbour sprite put to Jerus with renders (his Bergen city, picture 5; Jerus, 2026-10-31: "you still want ports.. just perhaps that they bundle up?"); after MF2, 0.9.55
+# gate of Merge batch/WN3-R: the band's monetary study (0.8.75): on the world's band a higher policy rate raises rent (the landlords' financing) more than its stronger D$ cools imports, so R3 fails in 3 seeds of 16 on the shipped model (the HIGH policy, a 15% target from m600, ends m660-m720 over 1 point above its AUTO2 twin at 2%: seeds 3, 4, 10 at +2.16, +1.40, +1.05; in 3 and 4 rent +42% and +111% over the twin, the D$ 17% the stronger and level; seed 10's rent 10% under, its D$ 42% the stronger; median -1.12; 4 seeds before EM1 was merged, median -2.72) and MonetaryCheck's held runs gave 4.23/6.55/5.96/5.75% at dials of 3/10/20/40% before the merge (10.43/9.68/8.99/8.82% on the literals). The study chooses the mechanism (rent's pass-through of financing against the demand a dear mortgage takes away; the D$'s pull on an import-heavy city), then MonetaryCheck, PassThroughCheck and CurveCheck go back on the band (`playOnLiterals()` taken out) and R3 passes. HD1-C/HD2's coupon (the businesses' dollars abroad: paid home it inverted the same dial; HD2 keeps it abroad so the dial keeps its sign) is the same monetary question, the study to read HD2's dial beside the band's (Jerus, 2026-10-29: "WN3 yes ship, ill look into it later"); and the central bank's window's long draws in the same study (WN3-B: no young city trapped on the shipped model, but 8 of 16 AUTO2 seeds on it for a while, seed 1 for 297 months, m242-m638; Jerus, 2026-10-31: "Take all (Recommended)"), 0.9.56
 # date: 2026-11-08
 # earth-2.bin: named
 # nightly: 2026-11-08 01:36 0.9.47 39c0948d 4,000 months: OK in 97 s
-# suite: 186 harnesses run in 1314s: 181 passed, 5 failed
-# timing: 17 harnesses run in 1046s: 13 passed, 4 failed; its red lines were judged side by side with main's, below
+# suite: 186 harnesses run in 1101s: 182 passed, 4 failed
+# timing: 17 harnesses run in 865s: 13 passed, 4 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 42.8 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 29.3 ms, batch 29.9 ms (+2.0%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 28.1 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 29.9 ms (gate.txt, today), batch 28.1 ms (-5.8%), budget 25 ms: main over the budget too, no round]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 18.4 ms, batch 18.1 ms (-1.2%), budget 19 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | 5 FAILED   [the harness's own count of the timing reds above]
-# figure	SaveSlotCheck	the median due month, 42.8 ms, holds the clock at most CLOCK_MS (25 ms)	29.8666	25	ms	FAIL	1	1
-MonetaryCheck | exit 1
-MonetaryCheck | ...and a month's delay in the hand moves them less than the allowance FAIL
-MonetaryCheck | 1 FAILED
+# figure	SaveSlotCheck	the median due month, 28.1 ms, holds the clock at most CLOCK_MS (25 ms)	28.1457	25	ms	FAIL	1	1
 PriceLevelCheck | exit 1
 PriceLevelCheck | FAIL sector.Retail.cash (nominal) month 29: 99.30704620 at the factor over the factor, 99.30704375 at today's prices (9.62e-09 apart)
 PriceLevelCheck | every live nominal series equal over the factor within 1.0E-9 (worst 9.6e-09 in sector.Retail.cash) FAIL
