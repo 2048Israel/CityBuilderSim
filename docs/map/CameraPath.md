@@ -1,6 +1,6 @@
 # CameraPath.java - 231 lines · 20 methods · 8 constants · model
 
-`ham/citybuildersim/CameraPath.java` - generated 2026-11-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CameraPath.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
 
 > The replay camera's arithmetic without the toolkit (TR1, 2026-10-31): the glide between two marked views, the fly out to the
 > whole Earth and back, and the smooth hand that eases the wheel, W A S D and the drift - what ui/MapView applies to its frame

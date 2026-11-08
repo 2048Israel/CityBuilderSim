@@ -1,6 +1,6 @@
 # Kept.java - 687 lines · 66 methods · 4 constants · interface
 
-`ham/citybuildersim/ui/Kept.java` - generated 2026-11-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/Kept.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
 
 > A page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): the nodes a
 > screen's code made at its last draw, handed back to the same code, in the order it asks for

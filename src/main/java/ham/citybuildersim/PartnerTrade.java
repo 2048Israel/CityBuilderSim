@@ -30,6 +30,11 @@ import java.util.function.DoubleSupplier;
  * the HistorySave, a list a year; the month's and the year to date in the DataSave (State), because a flow cannot be reconstructed from the state a
  * month ended in: the lanes a loaded city draws are last month's trade.
  *
+ * <p>THE LANES' FLOOR (TP1). The map draws a partner only over a floor in the city's money, and the money is the record's own: each snapshot carries
+ * minLane(), TradeLanes.minLane() of the price index (setPriceIndex()) and the currency's unit (setMoneyUnit()) at the tally or the reform that
+ * published it, so the floor and the figures it is held against are always in the same money. A floor in absolute money (MIN_LANE alone) drifted
+ * with inflation and, after a reform dividing every trade by a hundred, hid every lane.
+ *
  * <p>TWO THREADS. The model's thread writes, and publishes an immutable Snapshot through a volatile at the end of every tally (close()); the
  * screen's thread reads the snapshot and never sees a half-tallied month. Everything else here is the model thread's alone.
  *
@@ -105,9 +110,10 @@ public final class PartnerTrade {
                            double noPartnerExports, double noPartnerImports,
                            double[] yearExportValue, double[] yearImportValue, double[] yearExportTonnes, double[] yearImportTonnes,
                            List<Cell> yearCells, List<Table> history, List<GoodUnits> goodUnits,
-                           double standInLat, double standInLon, String[] names) implements TradeLanes.Feed {
+                           double standInLat, double standInLon, String[] names, double minLane) implements TradeLanes.Feed {
 
-        /* month(), standInLat() and standInLon() are the record's own accessors, which are the Feed's. */
+        /* month(), standInLat(), standInLon() and minLane() are the record's own accessors, which are the Feed's (minLane: TP1, the floor of a lane
+           in the money the figures are in, struck when the snapshot is published). */
 
         @Override public double[] exportsByNation() { return exportValue; }
 
@@ -188,6 +194,9 @@ public final class PartnerTrade {
     /** The currency's unit as it stands now (Denomination.getUnit()): 1 until a reform, then the old money per new. Read live; never saved. */
     private DoubleSupplier moneyUnit = () -> 1;
 
+    /** The city's price index as it stands now (PriceIndex.getIndex(): the basket against the basket at founding, 1 until it is based). Read live; never saved. */
+    private DoubleSupplier priceIndex = () -> 1;
+
     /** A record for a world of `nations` nations: nothing tallied, no month. */
     public PartnerTrade(int nations) {
         if (nations < 1) throw new IllegalArgumentException("partner trade: " + nations + " nations");
@@ -219,6 +228,21 @@ public final class PartnerTrade {
     private double unit() {
         double u = moneyUnit.getAsDouble();
         return Double.isFinite(u) && u > 0 ? u : 1;
+    }
+
+    /**
+     * The city's price index, read live (TP1): with the money's unit it is what the map's lane floor is in real terms (TradeLanes.minLane()), struck
+     * into every snapshot published. Null reads 1, as does an index that is not finite and positive.
+     */
+    public void setPriceIndex(DoubleSupplier index) {
+        priceIndex = index == null ? () -> 1 : index;
+        publish();
+    }
+
+    /** The floor of a lane now, in the city's money as it stands: TradeLanes.minLane() of the price index and the unit. */
+    private double minLaneNow() {
+        double i = priceIndex.getAsDouble();
+        return TradeLanes.minLane(Double.isFinite(i) && i > 0 ? i : 1, unit());
     }
 
     /**
@@ -395,7 +419,7 @@ public final class PartnerTrade {
                 noPartnerExports, noPartnerImports,
                 yearExportValue.clone(), yearImportValue.clone(), yearExportTonnes.clone(), yearImportTonnes.clone(),
                 List.copyOf(cellList(false)), List.copyOf(history), unitsByGood(),
-                standInLat, standInLon, names);
+                standInLat, standInLon, names, minLaneNow());
     }
 
     /** The month's units by good as the snapshot keeps them, in good order. */

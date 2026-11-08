@@ -1817,6 +1817,8 @@ public class Game {
             PartnerTrade trade = new PartnerTrade(made.nationCount());
             // The history's grid in the money of the day, read live (DZ1): a reform changes the unit, and the grid follows it.
             trade.setMoneyUnit(denomination::getUnit);
+            // ...and the lane floor in real terms (TP1): the price index since founding and that unit, struck into every snapshot the map reads.
+            trade.setPriceIndex(() -> priceIndex.getIndex());
             trade.setPlace(standLat, standLon, names);
             partnerTrade = trade;
             worldMarket = made;

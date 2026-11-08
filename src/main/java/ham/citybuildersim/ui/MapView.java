@@ -4002,7 +4002,7 @@ final class MapView {
     static final String BORDERS_TIP = "The nations' borders, dashed white, at the far views; up close only where one crosses the city's ground.";
 
     /** ...and the Trade routes chip's (WN3). */
-    static final String TRADE_TIP = "This month's trade as routes from the city: violet what we sell, sand what we buy, the width by money, none under D$0.3M a month."
+    static final String TRADE_TIP = "This month's trade as routes from the city: violet what we sell, sand what we buy, the width by money, none for a partner under D$0.3M a month at 2025's prices (the same trade in the money of the day)."
             + " Partners the same way share a lane. On a generated world, the biggest partners as arrows at the map's edge.";
 
     /** The legend's words for the two kinds of route (the board's, less its "it"). */
@@ -4270,8 +4270,8 @@ final class MapView {
     private TradeLanes lanesNow(NationsMap nm) {
         TradeLanes.Feed f = tradeFeed();
         double[] ex = f.exportsByNation() == null ? NO_FIGURES : f.exportsByNation(), im = f.importsByNation() == null ? NO_FIGURES : f.importsByNation();
-        if (lanes == null || lanesOf != nm || !lanes.matches(f.month(), globe.cityLat(), globe.cityLon(), ex, im)) {
-            lanes = TradeLanes.of(nm, globe.cityLat(), globe.cityLon(), f.month(), ex, im);
+        if (lanes == null || lanesOf != nm || !lanes.matches(f.month(), globe.cityLat(), globe.cityLon(), ex, im, f.minLane())) {
+            lanes = TradeLanes.of(nm, globe.cityLat(), globe.cityLon(), f.month(), ex, im, f.minLane());
             lanesOf = nm;
         }
         return lanes;
@@ -4283,7 +4283,7 @@ final class MapView {
         if (nm == null || !standsIn()) return null;
         TradeLanes.Feed f = tradeFeed();
         double[] ex = f.exportsByNation() == null ? NO_FIGURES : f.exportsByNation(), im = f.importsByNation() == null ? NO_FIGURES : f.importsByNation();
-        if (arrows == null || !arrows.matches(f.month(), f.standInLat(), f.standInLon(), ex, im)) arrows = TradeLanes.Arrows.of(nm, f.standInLat(), f.standInLon(), f.month(), ex, im);
+        if (arrows == null || !arrows.matches(f.month(), f.standInLat(), f.standInLon(), ex, im, f.minLane())) arrows = TradeLanes.Arrows.of(nm, f.standInLat(), f.standInLon(), f.month(), ex, im, f.minLane());
         return arrows;
     }
 

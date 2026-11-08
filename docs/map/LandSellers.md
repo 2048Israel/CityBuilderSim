@@ -1,6 +1,6 @@
 # LandSellers.java - 511 lines · 35 methods · 7 constants · model
 
-`ham/citybuildersim/LandSellers.java` - generated 2026-11-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandSellers.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
 
 > The nation that sells each plot of a real-Earth world's ground, and an offer's unowned ground split by its sellers. A pure model of the world file's
 > owner layer and the Earth's coasts; the land office prices each part at its seller's land factor (LandFactors) and pays it to that nation (WN5).

@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.48 — TP1, the map's lane floor through a currency reform — 2026-11-08, ready, see docs/queue/TP1-notes.md
+The brief's first two faults (trade by partner not rescaled by a reform) were already mended by DZ1 (0.9.4); this closes the
+third. The map draws a partner only over a floor, `TradeLanes.MIN_LANE` (300, the board's D$0.3M), which was absolute city
+money: a reform dividing every trade by 100 left it and hid every lane and arrow, and inflation drifted it. The floor is now
+`TradeLanes.minLane(priceIndex, unit)`: the board's figure at the founding's prices (times `PriceLevel.FACTOR`, as EP1 prices
+every anchor), times the price index, over the currency's unit, struck into each partner snapshot and carried to the map by
+the feed (`MapView` rebuilds lanes and arrows when it moves). A 1900 town's map therefore shows a lane from about D$7.8
+thousand a month of trade instead of D$300 thousand. DenominationCheck's section 7 gains the floor's arithmetic and, on its two
+cities either side of the reform and with prices moved, the nation card, the month's figures, the floor, the lanes and the
+arrows. Display only: no save change, no pool moves, the trace unchanged.
+
 ### CX2 — a lighter start and a slower climb for the Opus sessions — 2026-11-07, ready, no tag (process), see docs/queue/CX2-notes.md
 After CX1 the Opus sessions were most of the plan: 120 Opus transcripts in a week, 3.79B tokens. A batch session starts at 86.7k before its first read and re-sends a mean 249k a step over a median 161 steps (36.6M tokens); the orchestrator begun on 11-05 was still running two days on at 792k a step (323M tokens, 8.5% of the week). The start is mostly tool definitions (Artifact alone 12.5k), the system prompt and the listings; past step 150 lie 31% of a batch session's tokens, and 88% of its steps make one call. The new `.claude/settings.json` denies the tools no session in this folder has ever called (about 7k off every start), and has Opus compact near 300k instead of 1M, which keeps the session's id and lane where a hand-over cannot. `CLAUDE.md`'s "Sessions" rule says what must survive a compaction goes in the notes, independent reads go in one step and a wide search goes to an `Explore` agent on Sonnet. By the notes' model the Opus tokens fall about 32% and a batch session's mean context a third; what stays outside the repository (Artifact and the browser pane loaded whole, personal chats in this folder, unused skills) is put to Jerus. Unrun: CX2-M measures.
 

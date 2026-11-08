@@ -1,6 +1,6 @@
 # ArrivalMix.java - 169 lines · 8 methods · 3 constants · model
 
-`ham/citybuildersim/ArrivalMix.java` - generated 2026-11-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ArrivalMix.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
 
 > What the world's movers hold by year: the skill mix a month's arrivals are drawn from, in a city founded the 1900 way.
 > 
