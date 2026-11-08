@@ -1294,8 +1294,9 @@ final class MapView {
         if (level == MapFrame.L2 || (crossing == 0 && forking == 0) || schedule.callCount() == 0) return;
         boatsLive = true;
         double s = f.scale();
-        for (BoatSchedule.Boat afloat : schedule.frame(x0, y0, x1, y1, t)) {
-            BoatSchedule.Boat b = alongsideQuay(afloat, routes, s);
+        // From MapFrame.DETAIL_FROM in a docked boat lies alongside its quay where it fits (BoatSchedule.berthed()), weighed against every boat docked
+        // at t, not the frame's, so panning never turns a boat; the lookup is a binary search a route, and only a frame that holds a docked boat asks.
+        for (BoatSchedule.Boat b : schedule.drawn(schedule.frame(x0, y0, x1, y1, t), t, s, shownMap.shore())) {
             double bx = f.screenX(b.x()), by = f.screenY(b.y());
             if (bx < -margin * s || by < -margin * s || bx > f.width() + margin * s || by > f.height() + margin * s) continue;
             int c = ShipShapes.colour(b);
@@ -1322,17 +1323,6 @@ final class MapView {
     }
 
     /* ----- the harbour's quay and its boats alongside (HB1, 2026-11-08) ----- */
-
-    /**
-     * A boat as it is drawn: a docked one from MapFrame.DETAIL_FROM in lies alongside its quay (BoatSchedule.alongside()), on the side of the
-     * berth its call's route starts from - the route's berth says it (routes are the schedule's: a call's route() is an index of them),
-     * nothing is looked up or made for a boat afloat or at a scale below the detail; any other boat is returned as it is.
-     */
-    private static BoatSchedule.Boat alongsideQuay(BoatSchedule.Boat b, List<BoatSchedule.Route> routes, double scale) {
-        if (!b.docked() || !(scale > MapFrame.DETAIL_FROM)) return b;
-        int r = b.call().route();
-        return r < 0 || r >= routes.size() ? b : BoatSchedule.alongside(b, routes.get(r).berth().side(), scale);
-    }
 
     /**
      * The harbour's quays as walls (CityShore.walls()) over the tiles and under the boats, from MapFrame.DETAIL_FROM in and not below it

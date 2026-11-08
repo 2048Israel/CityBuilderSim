@@ -8095,8 +8095,8 @@ public final class CityMap {
     /** MF1 test switch, true: a harbour's works keep off the spine arms' walks (worldWalks()). MapCheck 9b turns it off to show the fault. */
     static boolean keepWorldWalks = true;
 
-    /** HB1 test switch, true: a harbour's next work takes the spot nearest the harbour's works, so its quay grows along the shore; false: MF1's order (the tiles nearest its first work, the first spot of a tile). MapCheck 9c turns it off to show the fault. */
-    static boolean bundleHarbour = true;
+    /** HB1 test switch (public for tools.HarbourRenders), true: a harbour's next work takes the spot nearest the harbour's works, so its quay grows along the shore; false: MF1's order (the tiles nearest its first work, the first spot of a tile). MapCheck 9c turns it off to show the fault. */
+    public static boolean bundleHarbour = true;
 
     /**
      * The walks the world line reads (worldLine()), as {x, y, dx, dy}: from the end of each spine arm that has steps - the railway's

@@ -756,6 +756,187 @@ public final class BoatSchedule {
         return new Boat(b.call(), b.x() + dx * shift, b.y() + dy * shift, b.loaded(), true, Math.atan2(dy, dx) + Math.PI / 2, b.alpha());
     }
 
+    /**
+     * A docked boat lying stern-to its quay (HB1 slice E): its stern on the quay's face and its bow straight out to sea along its berth's
+     * side, heading the sea's direction (CityShore.DX, DY of `side`). The face lies half a plot landward of the berth point (see alongside()),
+     * so the stern is at the berth point less 0.5 along the sea's direction, and the centre half its drawn length (ShipShapes.drawnLength())
+     * out from there: (drawnLength / 2 - 0.5) plots from the berth point, on the berth's line out from the work. `b` itself when it is not
+     * docked, the scale is at or below MapFrame.DETAIL_FROM, or the side is not known (-1). Pure.
+     */
+    public static Boat sternTo(Boat b, int side, double scale) {
+        if (b == null || !b.docked() || side < 0 || side >= CityShore.DX.length || !(scale > MapFrame.DETAIL_FROM)) return b;
+        double dx = CityShore.DX[side], dy = CityShore.DY[side];
+        double shift = ShipShapes.drawnLength(b, scale) / 2 - 0.5;
+        return new Boat(b.call(), b.x() + dx * shift, b.y() + dy * shift, b.loaded(), true, Math.atan2(dy, dx), b.alpha());
+    }
+
+    /** How deep a hull may go into a box, a wall or another hull and still not cross it, in plots: 0.25 - a boat alongside lies on its quay's face, which touches the wall there, and a quarter of a plot is the width of a drawn edge, not an overlap. */
+    public static final double CROSS_TOLERANCE = 0.25;
+
+    /**
+     * The boats as they are drawn at a scale (HB1, 2026-11-08, slice E): `boats` as given at or below MapFrame.DETAIL_FROM and for a boat
+     * afloat; above it each docked boat, in the order it arrived (Call.arrives(), a tie by route), takes the first of three places that is free:
+     * (1) alongside its quay (alongside(), the side of its route's berth); (2) stern-to it (sternTo()), its stern on the face and its bow out
+     * to sea; (3) where the schedule placed it, centred on its berth point, bow out. A place is free when the hull laid there crosses none of:
+     * any work's box (shore.works()); any wall (shore.wallsIn()); the hull of any other docked boat, which is where it has been laid already
+     * if it arrived before, else where the schedule placed it. So nothing laid in (1) or (2) overlaps any boat a later one comes to, whichever
+     * place that one takes. A hull "crosses" a shape when it goes deeper into it than CROSS_TOLERANCE along every axis of a separating-axis
+     * test of the two convex outlines (ShipShapes.hull(), the shape a box or a wall is) - so one touching its own wall's face does not. A boat
+     * whose berth's side is not known (-1) stays as it is and is in the way as such. The list comes back in the order given. Pure.
+     *
+     * WHY. The renders (docs/queue/HB1, tools/HarbourRenders) found boats alongside overlapping their neighbours' and crossing the walls and
+     * boxes beside them: a 5 x 4 Bulk Berth's quay is 4 to 5 plots, a Handysize 6.2 plots long, and Ports.bulkShipsStanding() makes every dry
+     * bulk call a Panamax or a Capesize (7.5 to 10.6 plots) once a Bulk Terminal stands; 4 overlapping pairs at 8 px a plot, 7 at 4 px (where
+     * boats were drawn 1.6 times true size, so ShipShapes.TRUE_FROM is DETAIL_FROM now). Refusing a boat the quay and leaving it where the
+     * schedule placed it put it across its own box and wall, half of it ashore (5 of 16 boats in a Bergen render): stern-to it lies on the
+     * water, as ships tie up to a short quay, and (3) is left for a boat with a box or another hull straight out to sea in front of its berth.
+     *
+     * The answer for a boat depends on the boats given and nothing else: to draw a window of the map, hand it every boat docked at that time
+     * (docked()), not the window's - drawn() does - so that panning never turns a boat.
+     */
+    public static List<Boat> berthed(List<Boat> boats, List<Route> routes, double scale, CityShore shore) {
+        if (boats == null || !(scale > MapFrame.DETAIL_FROM)) return boats;
+        List<Integer> order = new ArrayList<>();
+        for (int i = 0; i < boats.size(); i++) if (boats.get(i).docked()) order.add(i);
+        if (order.isEmpty()) return boats;
+        order.sort(java.util.Comparator.<Integer>comparingDouble(i -> boats.get(i).call().arrives()).thenComparingInt(i -> boats.get(i).call().route()).thenComparingInt(i -> i));
+        int n = order.size();
+        double[][][] hull = new double[n][][];       // each docked boat's hull as it lies now: as placed, until it is laid in a place of its own
+        Boat[][] places = new Boat[n][];             // each boat's places to try, in order: alongside, stern-to
+        double lox = Double.MAX_VALUE, loy = Double.MAX_VALUE, hix = -Double.MAX_VALUE, hiy = -Double.MAX_VALUE;
+        for (int k = 0; k < n; k++) {
+            Boat b = boats.get(order.get(k));
+            int side = sideOf(b, routes);
+            places[k] = side < 0 ? new Boat[0] : new Boat[] { alongside(b, side, scale), sternTo(b, side, scale) };
+            hull[k] = ShipShapes.hull(b, scale);
+            List<double[][]> reach = new ArrayList<>();
+            reach.add(hull[k]);
+            for (Boat p : places[k]) reach.add(ShipShapes.hull(p, scale));
+            for (double[][] h : reach) {
+                for (double x : h[0]) { lox = Math.min(lox, x); hix = Math.max(hix, x); }
+                for (double y : h[1]) { loy = Math.min(loy, y); hiy = Math.max(hiy, y); }
+            }
+        }
+        // The shore's boxes and walls that the boats can reach, once each.
+        List<double[][]> shapes = new ArrayList<>();
+        if (shore != null) {
+            for (CityShore.Work w : shore.works()) {
+                if (w.x0() < hix && w.x0() + w.w() > lox && w.y0() < hiy && w.y0() + w.h() > loy) shapes.add(rectangle(w.x0(), w.y0(), w.w(), w.h()));
+            }
+            for (CityShore.Wall w : shore.wallsIn((long) Math.floor(lox), (long) Math.floor(loy), (long) Math.ceil(hix), (long) Math.ceil(hiy))) {
+                shapes.add(rectangle(w.x0(), w.y0(), w.w(), w.h()));
+            }
+        }
+        Boat[] out = boats.toArray(new Boat[0]);
+        for (int k = 0; k < n; k++) {
+            for (Boat place : places[k]) {
+                double[][] cand = ShipShapes.hull(place, scale);
+                boolean free = true;
+                for (int s = 0; free && s < shapes.size(); s++) free = !deeper(cand, shapes.get(s));
+                for (int j = 0; free && j < n; j++) free = j == k || !deeper(cand, hull[j]);
+                if (!free) continue;
+                hull[k] = cand;
+                out[order.get(k)] = place;
+                break;
+            }
+        }
+        return java.util.Arrays.asList(out);
+    }
+
+    /** The side of the berth a docked boat's call starts from, 0 to 3, or -1 when its route or its berth's side is not known. */
+    private static int sideOf(Boat b, List<Route> routes) {
+        int r = b.call().route();
+        if (r < 0 || routes == null || r >= routes.size()) return -1;
+        int side = routes.get(r).berth().side();
+        return side >= 0 && side < CityShore.DX.length ? side : -1;
+    }
+
+    /** A rectangle's outline as {xs, ys}, in the order a hull's is. */
+    private static double[][] rectangle(double x, double y, double w, double h) {
+        return new double[][] { { x, x + w, x + w, x }, { y, y, y + h, y + h } };
+    }
+
+    /** Whether two convex outlines {xs, ys} go deeper into one another than CROSS_TOLERANCE: along every normal of every edge of either, their shadows overlap by more than it. */
+    static boolean deeper(double[][] a, double[][] b) {
+        return !apart(a[0], b[0]) && !apart(a[1], b[1]) && !apart(a, b) && !apart(b, a);
+    }
+
+    /**
+     * Whether two outlines' shadows on one axis (their xs, or their ys) overlap by no more than CROSS_TOLERANCE: the bounding boxes' test,
+     * first, so that the far boxes, walls and hulls berthed() weighs cost a few comparisons each. It changes no answer there: a place berthed()
+     * tries lies along an axis (alongside or stern-to), so x and y are among its own edges' normals already.
+     */
+    private static boolean apart(double[] a, double[] b) {
+        double alo = Double.MAX_VALUE, ahi = -Double.MAX_VALUE, blo = Double.MAX_VALUE, bhi = -Double.MAX_VALUE;
+        for (double v : a) { alo = Math.min(alo, v); ahi = Math.max(ahi, v); }
+        for (double v : b) { blo = Math.min(blo, v); bhi = Math.max(bhi, v); }
+        return Math.min(ahi, bhi) - Math.max(alo, blo) <= CROSS_TOLERANCE;
+    }
+
+    /** Whether some edge of `a` has a normal along which a's shadow and b's overlap by no more than CROSS_TOLERANCE. */
+    private static boolean apart(double[][] a, double[][] b) {
+        int n = a[0].length;
+        for (int i = 0; i < n; i++) {
+            int j = (i + 1) % n;
+            double nx = a[1][j] - a[1][i], ny = a[0][i] - a[0][j], len = Math.hypot(nx, ny);
+            if (len < 1e-12) continue;
+            nx /= len;
+            ny /= len;
+            double lo = Double.MAX_VALUE, hi = -Double.MAX_VALUE, blo = Double.MAX_VALUE, bhi = -Double.MAX_VALUE;
+            for (int k = 0; k < n; k++) {
+                double p = a[0][k] * nx + a[1][k] * ny;
+                lo = Math.min(lo, p);
+                hi = Math.max(hi, p);
+            }
+            for (int k = 0; k < b[0].length; k++) {
+                double p = b[0][k] * nx + b[1][k] * ny;
+                blo = Math.min(blo, p);
+                bhi = Math.max(bhi, p);
+            }
+            if (Math.min(hi, bhi) - Math.max(lo, blo) <= CROSS_TOLERANCE) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Every boat lying at its quay at t (month fractions), on any route, in the order of route and arrival: the boats berthed() weighs against
+     * one another, whatever part of the map is on screen. Each route's arrivals are searched once for the span a boat stays, BERTH_SECONDS.
+     */
+    public List<Boat> docked(double t) {
+        build();
+        List<Boat> out = new ArrayList<>();
+        double leg = LEG_SECONDS / MONTH_SECONDS, berth = BERTH_SECONDS / MONTH_SECONDS;
+        for (int r = 0; r < routes.size(); r++) {
+            int from = routeStart[r + 1], to = routeStart[r + 2];
+            long low = ((long) (r + 1) << ROUTE_SHIFT) | ((long) Math.max(0, Math.floor((t - berth - leg) * TICKS)) << GROUP_BITS);
+            for (int i = lower(keys, from, to, low); i < to; i++) {
+                double a = arrivalOf(keys[i]);
+                if (a > t) break;
+                if (t > a + berth) continue;      // position()'s own test for a boat at the quay (a <= t is the break above)
+                Boat b = position(callAt(i), routes.get(r), t);
+                if (b != null && b.docked()) out.add(b);
+            }
+        }
+        return out;
+    }
+
+    /**
+     * A window's boats (frame()'s at t) as they are drawn at a scale: berthed() over every boat docked at t (docked()), not the window's, so
+     * a boat's place never depends on what is on screen. `frame` itself when it holds no docked boat or the scale is at or below the detail zoom.
+     */
+    public List<Boat> drawn(List<Boat> frame, double t, double scale, CityShore shore) {
+        if (!(scale > MapFrame.DETAIL_FROM)) return frame;
+        boolean any = false;
+        for (Boat b : frame) any |= b.docked();
+        if (!any) return frame;
+        List<Boat> all = docked(t), placed = berthed(all, routes, scale, shore);
+        java.util.Map<Call, Boat> by = new java.util.HashMap<>();
+        for (int i = 0; i < all.size(); i++) by.put(all.get(i).call(), placed.get(i));
+        List<Boat> out = new ArrayList<>(frame.size());
+        for (Boat b : frame) out.add(b.docked() ? by.getOrDefault(b.call(), b) : b);
+        return out;
+    }
+
     /** A call's turn of its route's last leg, in radians: within its route's spread either way, by the call's own hash (its arrival and its route). */
     static double turnOf(Call call, Route route) {
         long h = World.mix(Double.doubleToLongBits(call.arrives()) ^ ((long) call.route() << 40) ^ 0x5B4EADL);
