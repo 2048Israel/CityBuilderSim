@@ -3003,8 +3003,10 @@ public class Bank {
      * moved the bank's profit, so its tax and its dividend, and over 600 months
      * AutoBuildCheck's city diverged (the gate, 2026-10-29). It is an artifact
      * of the pooled discount, not an economic gain, so it moves neither profit
-     * nor tax nor dividends; BK2 is to remove the artifact with a per-holder
-     * discount. Saved with the month's lines. A non-finite or nil gain books
+     * nor tax nor dividends. Since BK2 each holder's own discount moves with
+     * its face, so this books nothing at a reopening at a discount; what is
+     * left is a premium the bank pays beyond its own discount on the line (the
+     * floor), as on main. Saved with the month's lines. A non-finite or nil gain books
      * nothing. (Where an issue or a trade releases the discount outside the
      * settle, restrikeCarriedDiscount() is the cause, since BD1.)
      */
@@ -3041,8 +3043,11 @@ public class Bank {
      * buyback between two presses does (sellPaperBack()). Not clamped at
      * nothing: the gain is measured against the book, so the carried figure
      * lands on the book's, and a clamp would open the identity it closes. A
-     * non-finite or nil gain books nothing. Saved with the month's lines
-     * (discountRestruck).
+     * non-finite or nil gain books nothing. Since BK2 each holder's own
+     * discount moves with its face, so this books nothing at a reopening at a
+     * discount either; what is left is a premium the bank pays beyond its own
+     * discount on the line (the floor), as on main. Saved with the month's
+     * lines (discountRestruck).
      */
     public void restrikeCarriedDiscount(double gain) {
         if (!Double.isFinite(gain) || gain == 0) return;

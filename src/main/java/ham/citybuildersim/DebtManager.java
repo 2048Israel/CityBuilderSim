@@ -1545,14 +1545,9 @@ public class DebtManager {
              * payments move the holders' shares: the bank's part is its
              * interest at the settle, the households' is theirs at maturity
              * (their paper is carried at market), and the central bank's was
-             * taken when it bought, at face. See Debt.accrete().
+             * taken when it bought, at face. Since BK2 each holder has its own discount and accrete() returns the bank's step. See Debt.accrete().
              */
-            if (!debt.isForeign()) {
-                double out = debt.getOustandingPrincipal();
-                double bankShare = out > 0 ? debt.bankPrincipal() / out : 0;
-                double step = debt.accrete();
-                if (step > 0) accretedForBank += step * bankShare;
-            }
+            if (!debt.isForeign()) accretedForBank += debt.accrete();   // the bank's own step (BK2): each holder has its own discount
 
             debt.processMonth(game);
 

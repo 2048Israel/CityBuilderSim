@@ -385,7 +385,7 @@ public class HoldersCheck {
                 bond.householdPrincipal() > 0 && bond.centralBankPrincipal() > 0 && bond.bankPrincipal() > 0);
         double principal = bond.getOustandingPrincipal();
         double hhFace = bond.householdPrincipal(), cbFace = bond.centralBankPrincipal();
-        double bFace = bond.bankPrincipal(), bUnearned = bond.unaccretedOn(bFace);
+        double bFace = bond.bankPrincipal(), bUnearned = bond.unaccretedOn(Debt.Holder.BANK, bFace);
         city.setCashForTest(city.getCash() + 2 * principal);
         // CD4: the buyback is a reverse auction, each holder paid the price of its own slices, not a pro rata share of one
         // price; the quote struck before the buy says what each is paid and the face each sells (the premise stands: it pays
@@ -1041,7 +1041,7 @@ public class HoldersCheck {
         double soldFace = total0 * OutwardInvestment.HOME_SPEED;
         double unearned = 0;
         for (Debt d : ledger.getDebt()) {
-            if (d.firmPrincipal() > 0) unearned += d.unaccretedOn(soldFace * d.firmPrincipal() / ledger.firmPrincipal());
+            if (d.firmPrincipal() > 0) unearned += d.unaccretedOn(Debt.Holder.FIRMS, soldFace * d.firmPrincipal() / ledger.firmPrincipal());
         }
         double bankCash = bank.getCash(), bankBook = bank.getCityBook(), bankGains = bank.getPaperGains();
         double soldBefore = outward.getLifetimePaperSold();
@@ -2013,7 +2013,7 @@ public class HoldersCheck {
         double twinRaised = twinHb.sellPaperForSpread(0, twinBank.depositRate());
         Standing after = standing(city), twinAfter = standing(twin);
         double sold = heldBefore - line.householdPrincipal();
-        double handed = line.unaccretedOn(sold);          // what the desk is handed with the face (Debt.unaccretedOn): the whole line's discount pro rata
+        double handed = line.unaccretedOn(Debt.Holder.HOUSEHOLDS, sold);          // what the desk is handed with the face (Debt.unaccretedOn): the sellers' (the households') own discount, read after the sale
         double bookRose = after.book() - going.book();    // what the book's figure for the bank rose by: the settled part's discount over the settled face
         double tolerance = movementTolerance(bank), splitTol = splitTolerance(bank);
         out.printf("   the desk bought $%,.4fk of face for $%,.4fk; handed $%,.6fk of discount, the book's figure rose by $%,.6fk%n",

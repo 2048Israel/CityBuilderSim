@@ -17675,10 +17675,10 @@ public class Game {
         if (!(outside > 0)) return;
         treasuryPays(TreasuryLine.PRINCIPAL, outside);
         cityPrincipalRepaidThisMonth += outside;
-        paper.moveToHouseholds(-s[0]);
-        paper.moveToCentralBank(-s[1]);
-        paper.moveToFirms(-s[2]);
-        paper.moveToWorld(-s[3]);
+        paper.repay(Debt.Holder.HOUSEHOLDS, s[0]);
+        paper.repay(Debt.Holder.CENTRAL_BANK, s[1]);
+        paper.repay(Debt.Holder.FIRMS, s[2]);
+        paper.repay(Debt.Holder.WORLD, s[3]);
         householdBalance.creditPaperPrincipal(s[0]);
         principalToHouseholds += s[0];
         centralBank.takePrincipal(s[1]);
@@ -17712,8 +17712,7 @@ public class Game {
             if (mine <= 0) continue;
             double off = mine >= held ? take : take * mine / held;
             off = Math.min(off, mine);
-            unearned += d.unaccretedOn(off);
-            d.moveToHouseholds(-off);
+            unearned += d.pass(Debt.Holder.HOUSEHOLDS, Debt.Holder.BANK, off);
         }
         bank.buyPaperFromHouseholds(cash, take, unearned);
         restrikeBankDiscountCarried(carriedBefore, bookBefore);
@@ -17739,8 +17738,7 @@ public class Game {
             if (mine <= 0) continue;
             double off = mine >= held ? take : take * mine / held;
             off = Math.min(off, mine);
-            unearned += d.unaccretedOn(off);
-            d.moveToFirms(-off);
+            unearned += d.pass(Debt.Holder.FIRMS, Debt.Holder.BANK, off);
         }
         bank.buyPaperFromFirms(cash, take, unearned);
         restrikeBankDiscountCarried(carriedBefore, bookBefore);
@@ -17771,9 +17769,8 @@ public class Game {
             if (mine <= 0) continue;
             double off = mine >= held ? take : take * mine / held;
             off = Math.min(off, mine);
-            unearned += d.unaccretedOn(off);
             price += debtManager.marketValue(d) * off / d.getOustandingPrincipal();
-            d.moveToWorld(-off);
+            unearned += d.pass(Debt.Holder.WORLD, Debt.Holder.BANK, off);
         }
         bank.buyPaperFromWorld(price, take, unearned);
         restrikeBankDiscountCarried(carriedBefore, bookBefore);
@@ -17841,7 +17838,11 @@ public class Game {
                 for (Debt d : settling) face += d.allotHouseholdsFace() * take / wanted;
                 paid = householdBalance.buyAtIssue(take, face / take);
                 double scale = take > 0 ? paid / take : 0;
-                for (Debt d : settling) d.moveToHouseholds(d.allotHouseholdsFace() * take / wanted * scale);
+                for (Debt d : settling) {
+                    // BK2: each piece's share, at the cash it was allotted for it: the discount is theirs (Debt.takeAtSettle()).
+                    d.takeAtSettle(Debt.Holder.HOUSEHOLDS, d.allotHouseholdsFace() * take / wanted * scale,
+                            d.allotHouseholdsCash() * take / wanted * scale);
+                }
             }
         }
         // ...and the businesses, from their tills, before the allotment is cleared.
@@ -17861,7 +17862,8 @@ public class Game {
      * what its paper gained in face since the snapshot, less what it paid for it, less what its unearned
      * discount rose by - nothing when only its own purchase moved. The 1e-9 is a numerical guard, not a policy:
      * the three are sums of thousands of pieces, a fresh line leaves only their rounding, and booking that would
-     * move every month's figures at the last bit.
+     * move every month's figures at the last bit. Since BK2 each holder's own discount moves with its face, so this books nothing at
+     * a reopening at a discount; what is left is a premium the bank pays beyond its own discount on the line (the floor), as on main.
      */
     private void restrikeBankDiscount(double unearnedBefore, double faceBefore, double bankPaid) {
         if (restrikeOffForTest) return;
@@ -17882,6 +17884,8 @@ public class Game {
      * a re-strike there left the piece's whole discount unexplained for good). The gain is what the bank's carried
      * unearned discount moved by, less what the book's figure for it moved by, struck from the two figures taken
      * just before any face or discount moved. The 1e-9 is BK1's numerical guard: sums of thousands of pieces.
+     * Since BK2 each holder's own discount moves with its face, so this books nothing at a reopening at a discount; what is left is a
+     * premium the bank pays beyond its own discount on the line (the floor), as on main.
      */
     private void restrikeBankDiscountCarried(double carriedBefore, double bookBefore) {
         if (restrikeOffForTest) return;
@@ -17935,7 +17939,7 @@ public class Game {
                 if (!(w > 0)) continue;
                 double cash = d.allotFirmsCash() * w, face = d.allotFirmsFace() * w;
                 outward.takeAllotment(keys[k], cash, face, economyManager);
-                d.moveToFirms(face);
+                d.takeAtSettle(Debt.Holder.FIRMS, face, cash);
                 paid += cash;
             }
         }
@@ -17964,7 +17968,7 @@ public class Game {
         for (Debt d : settling) {
             double cash = d.allotWorldCash(), face = d.allotWorldFace();
             if (!(cash > 0) || !(face > 0)) continue;
-            d.moveToWorld(face);
+            d.takeAtSettle(Debt.Holder.WORLD, face, cash);
             hotMoney.takePaper(cash, face);
             paid += cash;
         }
@@ -18085,10 +18089,11 @@ public class Game {
                 faceOf[i] = f;
                 double out = d.getOustandingPrincipal();
                 price += debtManager.marketValue(d) * f / out;
-                unearned += d.unaccretedOn(f);
             }
             for (int i = 0; i < pieces.size(); i++) {
-                pieces.get(i).moveToCentralBank(move > 0 ? faceOf[i] : -faceOf[i]);
+                Debt d = pieces.get(i);
+                unearned += move > 0 ? d.pass(Debt.Holder.BANK, Debt.Holder.CENTRAL_BANK, faceOf[i])
+                        : d.pass(Debt.Holder.CENTRAL_BANK, Debt.Holder.BANK, faceOf[i]);
             }
             if (move > 0) {
                 centralBank.buyPaper(price, face);
@@ -18143,8 +18148,7 @@ public class Game {
             price += debtManager.marketValue(d) * f / d.getOustandingPrincipal();
         }
         for (int i = 0; i < pieces.size(); i++) {
-            pieces.get(i).moveToHouseholds(-faceOf[i]);
-            pieces.get(i).moveToCentralBank(faceOf[i]);
+            pieces.get(i).pass(Debt.Holder.HOUSEHOLDS, Debt.Holder.CENTRAL_BANK, faceOf[i]);
         }
         centralBank.buyPaperFromHouseholds(price, face);
         householdBalance.creditPaperBuyback(face, price);
@@ -18185,8 +18189,7 @@ public class Game {
             price += debtManager.marketValue(d) * f / d.getOustandingPrincipal();
         }
         for (int i = 0; i < pieces.size(); i++) {
-            pieces.get(i).moveToFirms(-faceOf[i]);
-            pieces.get(i).moveToCentralBank(faceOf[i]);
+            pieces.get(i).pass(Debt.Holder.FIRMS, Debt.Holder.CENTRAL_BANK, faceOf[i]);
         }
         centralBank.buyPaper(price, face);
         outward.creditPaperBuyback(face, price, economyManager);
@@ -18228,8 +18231,7 @@ public class Game {
             price += debtManager.marketValue(d) * f / d.getOustandingPrincipal();
         }
         for (int i = 0; i < pieces.size(); i++) {
-            pieces.get(i).moveToWorld(-faceOf[i]);
-            pieces.get(i).moveToCentralBank(faceOf[i]);
+            pieces.get(i).pass(Debt.Holder.WORLD, Debt.Holder.CENTRAL_BANK, faceOf[i]);
         }
         centralBank.buyPaperFromWorld(price, face);
         hotMoney.sellPaper(face, price);
@@ -18483,6 +18485,7 @@ public class Game {
         // BK1: the central bank's face joined a line (reopenForCentralBank(), addOnForCentralBank()) with the bank's
         // own unchanged and nothing paid by it, but the pool's discount re-blended over a larger line: its share of
         // the discount moved with no cash behind it, which is its gain or loss on the paper.
+        // Since BK2 this books nothing: the bank's own discount does not move (the central bank's face carries its own).
         restrikeBankDiscount(bankUnearnedBefore, bankFaceBefore, 0);
         String here = getCurrency().qualifiedSymbol();
         if (took < par * (1 - 1e-12)) {
@@ -19347,7 +19350,7 @@ public class Game {
 
         double principal = debt.getOustandingPrincipal();
         // The unearned discount that rides on the bank's face goes with it (strike before the piece shrinks).
-        double bankUnearned = debt.unaccretedOn(deal.bankFace());
+        double bankUnearned = debt.unaccretedOn(Debt.Holder.BANK, deal.bankFace());
         double price = deal.paid();
         // The whole piece: nothing is left of it but dust. (The central bank's face, which does not sell, keeps it on the books.)
         boolean whole = takesTheWholePiece(deal.takenFace(), principal);
@@ -19545,7 +19548,7 @@ public class Game {
         double hhFace = debt.householdPrincipal(), cbFace = debt.centralBankPrincipal();
         double firmFace = debt.firmPrincipal(), worldFace = debt.worldPrincipal();
         double bankFace = debt.bankPrincipal();
-        double bankUnearned = debt.unaccretedOn(bankFace);
+        double bankUnearned = debt.unaccretedOn(Debt.Holder.BANK, bankFace);
         double carried = debt.getCarryingValue();
         if (!debtManager.retire(debt)) return 0;   // not on the books; do not charge for it
 

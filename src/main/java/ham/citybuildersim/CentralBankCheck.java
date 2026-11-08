@@ -491,7 +491,7 @@ public class CentralBankCheck {
         // the money first, because its cash is part of what the market prices.
         double principal = bond.getOustandingPrincipal();
         double bankFace = bond.bankPrincipal();
-        double bankUnearned = bond.unaccretedOn(bankFace);
+        double bankUnearned = bond.unaccretedOn(Debt.Holder.BANK, bankFace);
         city.setCashForTest(2 * principal);
         double bankCash = bank.getCash(), bankBook = bank.getCityBook(), bankEquity = bank.equity();
         double price = city.quoteRepurchase(bond);
@@ -871,7 +871,7 @@ public class CentralBankCheck {
         double face = CentralBank.QE_SPEED * .30 * term;
         city.strikeTheCurve();   // the expectations the top will strike first (CD1)
         double price = ledger.marketValue(bond) * face / bond.getOustandingPrincipal();
-        double unearned = bond.unaccretedOn(face);
+        double unearned = bond.unaccretedOn(Debt.Holder.BANK, face);
         double bookBefore = ledger.bankPrincipal();
         double m0Before = cb.m0();
         play(city);
