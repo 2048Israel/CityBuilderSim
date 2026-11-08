@@ -559,7 +559,8 @@ public class DebtMoneysCheck {
         press(neg);
         check("a month with the franc paper at a negative rate: the money audit closes", closes(neg));
 
-        // (d) a money over MIN_RATE prices as it did
+        // (d) a money over MIN_RATE prices as it did (the press handed the nil exports back, so the window is opened again)
+        open(neg);
         for (String code : new String[] {"USD", "EUR"}) {
             double ask = askIn(neg, code);
             DebtQuote quoted = neg.quoteForeign("Note", code, ask, 12, 100);
