@@ -385,7 +385,7 @@ public class HoldersCheck {
                 bond.householdPrincipal() > 0 && bond.centralBankPrincipal() > 0 && bond.bankPrincipal() > 0);
         double principal = bond.getOustandingPrincipal();
         double hhFace = bond.householdPrincipal(), cbFace = bond.centralBankPrincipal();
-        double bFace = bond.bankPrincipal(), bUnearned = bond.unaccretedOn(bFace);
+        double bFace = bond.bankPrincipal(), bUnearned = bond.unaccretedOn(Debt.Holder.BANK, bFace);
         city.setCashForTest(city.getCash() + 2 * principal);
         // CD4: the buyback is a reverse auction, each holder paid the price of its own slices, not a pro rata share of one
         // price; the quote struck before the buy says what each is paid and the face each sells (the premise stands: it pays
@@ -450,7 +450,9 @@ public class HoldersCheck {
             paperSame = a.householdPrincipal() == b.householdPrincipal()
                     && a.centralBankPrincipal() == b.centralBankPrincipal()
                     && a.getSettleDue() == b.getSettleDue() && a.getIssueYield() == b.getIssueYield()
-                    && a.getIssueDiscount() == b.getIssueDiscount() && a.getDiscountLeft() == b.getDiscountLeft();
+                    && a.getIssueDiscount() == b.getIssueDiscount() && a.getDiscountLeft() == b.getDiscountLeft()
+                    && a.unsettledDiscount() == b.unsettledDiscount();
+            for (Debt.Holder h : Debt.Holder.values()) paperSame &= a.discountOf(h) == b.discountOf(h);   // BK2: each holder's own, exactly
         }
         assertTrue("every piece of paper's holders, what it is owed for and its discount came back",
                 paperSame);
@@ -496,7 +498,8 @@ public class HoldersCheck {
             // three it was written for, and no piece of paper held a world sliver in the fixture until the city that founds
             // with a staffed yard let the auction allot the world a bit (0.1 of the 5,602.5 owed here).
             for (String k : new String[] {"householdPrincipal", "centralBankPrincipal", "firmPrincipal", "worldPrincipal", "settleDue",
-                    "issueYield", "issueDiscount", "discountLeft"}) d.remove(k);
+                    "issueYield", "issueDiscount", "bankDiscount", "householdDiscount", "centralBankDiscount", "firmDiscount",
+                    "worldDiscount", "unsettledDiscount"}) d.remove(k);   // BK2: each holder's own discount, six keys in place of the one pool (discountLeft)
         }
         // ...and the sectors' array as it was before their paper was appended (CD2, slice 4).
         com.google.gson.JsonArray sectorsFull = json.getAsJsonArray("outwardInvestment");
@@ -562,6 +565,7 @@ public class HoldersCheck {
         theReopening();
         theDiscountReleased();
         theHoldingFloor();
+        theEachHoldersOwn();
 
         assertTrue(String.format("every month this harness played closed the audit (%d)",
                 closedMonths + brokenMonths), brokenMonths == 0);
@@ -1041,7 +1045,7 @@ public class HoldersCheck {
         double soldFace = total0 * OutwardInvestment.HOME_SPEED;
         double unearned = 0;
         for (Debt d : ledger.getDebt()) {
-            if (d.firmPrincipal() > 0) unearned += d.unaccretedOn(soldFace * d.firmPrincipal() / ledger.firmPrincipal());
+            if (d.firmPrincipal() > 0) unearned += d.unaccretedOn(Debt.Holder.FIRMS, soldFace * d.firmPrincipal() / ledger.firmPrincipal());
         }
         double bankCash = bank.getCash(), bankBook = bank.getCityBook(), bankGains = bank.getPaperGains();
         double soldBefore = outward.getLifetimePaperSold();
@@ -1660,8 +1664,8 @@ public class HoldersCheck {
 
     /* ================= 12. the pooled discount re-struck (BK1) ================= */
 
-    /** One city of section 12 (BK1): the city, the line it sold once and settled, and its split going in. */
-    record Reopening(Game city, Debt line, double splitStart) { }
+    /** One city of section 12 (BK1): the city, the line it sold once and settled, its split going in, and the line at the two edges of that first settle (BK2: Edge, null if no line was sold). */
+    record Reopening(Game city, Debt line, double splitStart, Edge[] firstSettle) { }
 
     /**
      * Section 12's fixture, made twice: a city founded, built and played as the other sections' cities were, then
@@ -1719,8 +1723,10 @@ public class HoldersCheck {
         quietly(() -> city.handleLongBondLogic(ask1, 20, 100 * PriceLevel.FACTOR));
         Debt line = newPiece(ledger, had);
         double splitStart = city.getBank().equitySplitResidual();
+        Edge[] firstSettle = line == null ? null : watchSettle(city, line);   // BK2: the first settle's two edges, for section 15
         play(city);
-        return new Reopening(city, line, splitStart);
+        city.settleProbeForTest = null;
+        return new Reopening(city, line, splitStart, firstSettle);
     }
 
     /** What the reopening did to a line: its face and its discount per unit of face either side, whether it is the same line, and what the households held going in. */
@@ -1742,6 +1748,57 @@ public class HoldersCheck {
                 line.getDiscountLeft() / line.getOustandingPrincipal(), heldBefore, same);
     }
 
+    /** Two of the model's own figures agree to this much of the larger of them (BK2's relative tolerances: 1e-9 for sums of a line's pieces, 1e-12 for a rate per face). */
+    static void closeRel(String label, double actual, double expected, double rel) {
+        close(label, actual, expected, rel * Math.max(Math.abs(actual), Math.abs(expected)));
+    }
+
+    /** This holder's own unaccreted discount per unit of the face it holds on the line (BK2); zero where it holds none. */
+    static double perFace(Debt line, Debt.Holder h) {
+        double held = line.heldBy(h);
+        return held > 0 ? line.discountOf(h) / held : 0;
+    }
+
+    /**
+     * A line at one edge of the settle (BK2), read through Game.settleProbeForTest: before the households take their share and after the
+     * bank has been given the rest, both ahead of the month's accretion, so each holder's own discount is the settle's and nothing else's.
+     * The faces and discounts are in Debt.Holder's order; the three "paid" figures are the city's running totals of what the households,
+     * the businesses and the world have paid for the paper at its settles.
+     */
+    record Edge(double due, double unsettledFace, double unsettledDiscount, double discountLeft, double[] discount, double[] face,
+                double hhPaid, double firmsPaid, double worldPaid, double bankBook) {
+        static Edge of(Game city, Debt line) {
+            Debt.Holder[] holders = Debt.Holder.values();
+            double[] discount = new double[holders.length], face = new double[holders.length];
+            for (Debt.Holder h : holders) {
+                discount[h.ordinal()] = line.discountOf(h);
+                face[h.ordinal()] = line.heldBy(h);
+            }
+            return new Edge(line.getSettleDue(), line.unsettledFace(), line.unsettledDiscount(), line.getDiscountLeft(), discount, face,
+                    city.getHouseholdsBoughtPaper(), city.getFirmsBoughtPaper(), city.getWorldBoughtPaper(), city.getDebtManager().bankBook());
+        }
+        double discountOf(Debt.Holder h) { return discount[h.ordinal()]; }
+        double faceOf(Debt.Holder h)     { return face[h.ordinal()]; }
+        /** What the bank paid for its face at the settle: what the market owed for the sale, less what the three outside payers paid. */
+        double bankPaid(Edge after) { return due - (after.hhPaid - hhPaid) - (after.firmsPaid - firmsPaid) - (after.worldPaid - worldPaid); }
+        /** What this outside holder paid at the settle. */
+        double paid(Debt.Holder h, Edge after) {
+            return switch (h) {
+                case HOUSEHOLDS -> after.hhPaid - hhPaid;
+                case FIRMS -> after.firmsPaid - firmsPaid;
+                case WORLD -> after.worldPaid - worldPaid;
+                default -> 0;
+            };
+        }
+    }
+
+    /** Watches the next month's settle of this line: the two edges are filled as the month plays, and the caller clears city.settleProbeForTest after it. */
+    static Edge[] watchSettle(Game city, Debt line) {
+        Edge[] edges = new Edge[2];
+        city.settleProbeForTest = after -> edges[after ? 1 : 0] = Edge.of(city, line);
+        return edges;
+    }
+
     static final String[] CITY_FIGURES = { "net income", "tax", "dividends", "gains on paper", "the treasury's cash", "the bank's equity" };
 
     /** The figures of a month that the re-strike must not move (BK1): the bank's profit, tax, dividends and gains on the city's paper, the treasury's cash and the bank's equity. */
@@ -1760,8 +1817,8 @@ public class HoldersCheck {
     }
 
     static void theReopening() throws Exception {
-        out.println("\n--- 12. a line reopened at another price while the households hold part of it: the bank's share of its"
-                + " discount is re-struck straight to its retained earnings, and moves no figure of the city ---");
+        out.println("\n--- 12. a line reopened at another price while the households hold part of it: each holder keeps its own"
+                + " discount, so nothing is re-struck and no figure of the city moves ---");
         Reopening fix = reopeningFixture("holderscheck-reopen", false);
         Reopening twinFix = reopeningFixture("holderscheck-reopen-twin", true);
         Game city = fix.city(), twin = twinFix.city();
@@ -1784,9 +1841,13 @@ public class HoldersCheck {
 
         /* ---- the same line, reopened at another price ---- */
         out.println("   -- the rates up four points, the same line reopened and settled the next month, in the city and in its twin");
+        double hhPerFaceBefore = perFace(line, Debt.Holder.HOUSEHOLDS);
         Reopened re = reopen(city, line), reTwin = reopen(twin, twinFix.line());
         assertTrue("fixture: the second sale reopened the same line, and the households held part of it going in",
                 re.sameLine() && re.faceAfter() > re.faceBefore() + 1e-6 && re.heldBefore() > 0);
+        assertTrue("fixture: ...the households' own discount is something to keep: it is on the line before the reopening", hhPerFaceBefore > 0);
+        closeRel("the reopening did not re-blend the households' own discount per face of the line (BK2)",
+                perFace(line, Debt.Holder.HOUSEHOLDS), hhPerFaceBefore, 1e-12);
         assertTrue(String.format("fixture: ...at a clearly different price, the line's discount per unit of face %.4f to %.4f",
                 re.perFaceBefore(), re.perFaceAfter()), re.perFaceAfter() > re.perFaceBefore() + .01);
         assertTrue("fixture: ...and the twin's line was reopened to the same face and the same price",
@@ -1794,40 +1855,61 @@ public class HoldersCheck {
 
         double splitBefore = bank.equitySplitResidual();
         double unearnedBefore = bank.getUnearnedDiscount(), bookBefore = bank.getCityBook(), cashBefore = bank.getCash();
+        Edge[] edge = watchSettle(city, line);
         MoneyAudit.Result settled = play(city);
+        city.settleProbeForTest = null;
         MoneyAudit.Result settledTwin = play(twin);
         Bank.EquityMovement moved = bank.equityMovement();
         double restruck = bank.getDiscountRestruck(), tolerance = Math.max(1e-6, 1e-9 * moved.scale());
         double equityTol = Math.max(1e-6, 1e-9 * Math.abs(bank.equity()));
+        Edge before = edge[0], after = edge[1];
+        double bankFaceTaken = after.faceOf(Debt.Holder.BANK) - before.faceOf(Debt.Holder.BANK), bankPaid = before.bankPaid(after);
+        double bankOwnRose = after.discountOf(Debt.Holder.BANK) - before.discountOf(Debt.Holder.BANK);
+        double hhFaceTaken = after.faceOf(Debt.Holder.HOUSEHOLDS) - before.faceOf(Debt.Holder.HOUSEHOLDS);
+        double hhPaid = before.paid(Debt.Holder.HOUSEHOLDS, after);
         out.printf("   the line's discount per face %.4f to %.4f; the bank's unearned discount $%,.4fk to $%,.4fk,"
                         + " its book $%,.4fk to $%,.4fk, its cash $%,.4fk to $%,.4fk%n"
                         + "   the discount re-struck $%,.6fk; the movement's residual %.9f on %,.0fk; the twin's split after %.9f,"
-                        + " the city's %.9f (before the month %.9f)%n",
+                        + " the city's %.9f (before the month %.9f)%n"
+                        + "   at the settle the bank took $%,.4fk of face for $%,.4fk and its own discount on the line rose $%,.6fk;"
+                        + " the households took $%,.4fk for $%,.4fk, their own per face %.6f to %.6f%n",
                 re.perFaceBefore(), re.perFaceAfter(), unearnedBefore, bank.getUnearnedDiscount(), bookBefore, bank.getCityBook(),
                 cashBefore, bank.getCash(), restruck, moved.residual(), moved.scale(), twinBank.equitySplitResidual(),
-                bank.equitySplitResidual(), splitBefore);
+                bank.equitySplitResidual(), splitBefore, bankFaceTaken, bankPaid, bankOwnRose, hhFaceTaken, hhPaid,
+                before.discountOf(Debt.Holder.HOUSEHOLDS) / before.faceOf(Debt.Holder.HOUSEHOLDS),
+                after.discountOf(Debt.Holder.HOUSEHOLDS) / after.faceOf(Debt.Holder.HOUSEHOLDS));
         assertTrue("the households took their share of the reopening at the settle",
                 line.householdPrincipal() > re.heldBefore());
-        assertTrue("the month of the reopened settle re-struck the line's discount: far over what the movement's tolerance would pass",
-                Math.abs(restruck) > 100 * tolerance);
-        close("...it is the movement's cause, whole", moved.discountRestruck(), restruck, 0);
-        close("...and it is not in the statement's line: the gains on the city's paper are what they are without it",
+        close("the reopened settle re-strikes nothing: each holder's own discount moved with its own face and its own price",
+                restruck, 0, tolerance);
+        close("...so the movement's own re-strike is nothing", moved.discountRestruck(), 0, tolerance);
+        close("...and the gains on the city's paper are the twin's",
                 bank.thisMonth(Bank.Line.PAPER_GAINS), twinBank.thisMonth(Bank.Line.PAPER_GAINS), 0);
         close("...the twin, which books no re-strike, booked none", twinBank.getDiscountRestruck(), 0, 0);
         close("...so the month's movement leaves nothing unexplained", moved.residual(), 0, tolerance);
         close("...and its equity's two parts and the preferred add up to its equity", bank.equitySplitResidual(), 0, equityTol);
-        close("...where the twin's, as main's were, opened by the re-strike", twinBank.equitySplitResidual(), -restruck,
-                Math.max(1e-6, 1e-9 * Math.max(Math.abs(restruck), Math.abs(bank.equity()))));
-        close("...and the twin's movement left exactly the re-strike unexplained", twinBank.equityMovement().residual(), restruck,
-                Math.max(1e-6, 1e-9 * Math.max(Math.abs(restruck), moved.scale())));
+        close("...the twin, which books no re-strike, closes too: its split is nothing", twinBank.equitySplitResidual(), 0,
+                Math.max(1e-6, 1e-9 * Math.abs(twinBank.equity())));
+        close("...and its movement's residual is nothing", twinBank.equityMovement().residual(), 0,
+                Math.max(1e-6, 1e-9 * twinBank.equityMovement().scale()));
+        assertTrue("fixture: at the settle the bank took face and the households took more of the line",
+                bankFaceTaken > 0 && hhFaceTaken > 0 && hhPaid > 0 && bankPaid > 0);
+        closeRel("the households' own discount per face of the line is what it was before the reopening, going into the settle",
+                before.discountOf(Debt.Holder.HOUSEHOLDS) / before.faceOf(Debt.Holder.HOUSEHOLDS), hhPerFaceBefore, 1e-12);
+        closeRel("...the households' own discount rose by the face they took less what they paid for it",
+                after.discountOf(Debt.Holder.HOUSEHOLDS) - before.discountOf(Debt.Holder.HOUSEHOLDS), hhFaceTaken - hhPaid, 1e-9);
+        closeRel("the bank's book rose by exactly the face it took at the settle",
+                after.bankBook() - before.bankBook(), bankFaceTaken, 1e-9);
+        closeRel("...and the bank's own discount on the line rose by that face less what it paid for it",
+                bankOwnRose, bankFaceTaken - bankPaid, 1e-9);
         assertTrue("the audit closed on the settle month", Math.abs(settled.residual) <= MoneyAudit.tolerance(settled.moved()));
         assertTrue("...and on the twin's", Math.abs(settledTwin.residual) <= MoneyAudit.tolerance(settledTwin.moved()));
 
-        /* ---- the re-strike moves no figure of the city: the twin's four months, side by side ---- */
-        out.println("   -- the settle month and the three after, the city beside its twin that books no re-strike");
-        double twinOpened = twinBank.equitySplitResidual();
+        /* ---- no re-strike moves any figure of the city: the twin's four months, side by side ---- */
+        out.println("   -- the settle month and the three after, the city beside its twin that books no re-strike (neither books any)");
+        double twinSplit = twinBank.equitySplitResidual();
         String apart = firstDifference(cityFigures(city), cityFigures(twin));
-        boolean same = apart.isEmpty(), whole = true, twinStaysOpen = Math.abs(twinOpened + restruck) <= equityTol;
+        boolean same = apart.isEmpty(), whole = true, twinStaysShut = Math.abs(twinSplit) <= Math.max(1e-6, 1e-9 * Math.abs(twinBank.equity()));
         double worstResidual = Math.abs(moved.residual()), worstSplit = Math.abs(bank.equitySplitResidual());
         for (int i = 0; i < 3; i++) {
             play(city);
@@ -1841,16 +1923,16 @@ public class HoldersCheck {
             worstSplit = Math.max(worstSplit, Math.abs(bank.equitySplitResidual()));
             whole &= Math.abs(next.residual()) <= Math.max(1e-6, 1e-9 * next.scale())
                     && Math.abs(bank.equitySplitResidual()) <= Math.max(1e-6, 1e-9 * Math.abs(bank.equity()));
-            twinStaysOpen &= Math.abs(twinBank.equitySplitResidual() - twinOpened)
+            twinStaysShut &= Math.abs(twinBank.equitySplitResidual())
                     <= Math.max(1e-6, 1e-9 * Math.abs(twinBank.equity()));
         }
         if (!apart.isEmpty()) out.println("   first figure apart: " + apart);
-        out.printf("   four months: the worst movement residual %.9f, the worst split %.9f; the twin's split %.9f, stayed open: %b%n",
-                worstResidual, worstSplit, twinBank.equitySplitResidual(), twinStaysOpen);
+        out.printf("   four months: the worst movement residual %.9f, the worst split %.9f; the twin's split %.9f, stayed shut: %b%n",
+                worstResidual, worstSplit, twinBank.equitySplitResidual(), twinStaysShut);
         assertTrue("the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,"
                 + " in all four months", same);
         assertTrue("three months on, the movement left nothing unexplained and the split still added up to the equity, every month", whole);
-        assertTrue("...while the twin's split, opened by the re-strike in the settle month, stayed open", twinStaysOpen);
+        assertTrue("...and the twin's split stayed shut too, every month", twinStaysShut);
     }
 
     /* ================= 13. the discount released at an issue or a trade (BD1) ================= */
@@ -1901,14 +1983,14 @@ public class HoldersCheck {
     }
 
     static void theDiscountReleased() throws Exception {
-        out.println("\n--- 13. the line's discount released at an issue or a trade (BD1): re-struck where it happens,"
-                + " the bank's unearned discount the book's, and no figure of the city moved ---");
+        out.println("\n--- 13. the line's discount at an issue or a trade (BD1): each holder's own moves with its face, so nothing is"
+                + " re-struck where it happens, the bank's unearned discount is the book's, and no figure of the city moved ---");
         thePremium();
         theDeskOnAnUnsettledLine();
         theBuybackBeforeTheSettle();
     }
 
-    /** 13a: the same line reopened at a premium between the presses releases the bank's share of its discount. */
+    /** 13a: the same line reopened at a premium between the presses: the premium is the unsettled sale's until the settle, which takes it off the bank's own discount on the line (BK2). */
     static void thePremium() throws Exception {
         out.println("   -- 13a. the same line reopened at a premium between the presses, in the city and in its twin");
         Reopening fix = reopeningFixture("holderscheck-premium", false, PREMIUM_RISE);
@@ -1923,65 +2005,81 @@ public class HoldersCheck {
                 line != null && line.bankPrincipal() > 0 && line.getDiscountLeft() > 0 && going.book() > 0);
         close("fixture: ...the bank's unearned discount is the book's going in, in the city", going.carried(), going.book(), 1e-9);
         assertTrue("fixture: ...and the twin's is the same city", going.book() == twinGoing.book() && going.carried() == twinGoing.carried());
+        double bankOwnBefore = line.discountOf(Debt.Holder.BANK);
 
         Premium p = reopenAtAPremium(city, line), pTwin = reopenAtAPremium(twin, twinLine);
         Standing after = standing(city), twinAfter = standing(twin);
-        double released = going.book() - after.book(), tolerance = movementTolerance(bank), splitTol = splitTolerance(bank);
-        out.printf("   a sale of $%,.4fk face raised $%,.4fk; the line's discount left $%,.6fk to $%,.6fk%n",
-                p.face(), p.proceeds(), p.discountBefore(), p.discountAfter());
+        double tolerance = movementTolerance(bank), splitTol = splitTolerance(bank);
+        out.printf("   a sale of $%,.4fk face raised $%,.4fk; the line's discount left $%,.6fk to $%,.6fk, the unsettled sale's discount"
+                        + " $%,.6fk; the bank's own discount on the line $%,.6fk to $%,.6fk%n",
+                p.face(), p.proceeds(), p.discountBefore(), p.discountAfter(), line.unsettledDiscount(), bankOwnBefore,
+                line.discountOf(Debt.Holder.BANK));
         assertTrue("fixture: the second sale reopened the same line, between the presses, for proceeds over its face",
                 p.sameLine() && p.face() > 0 && p.proceeds() > p.face() + 1e-6);
-        assertTrue("fixture: ...which ate into the line's discount left: it fell", p.discountAfter() < p.discountBefore() - 1e-9);
-        assertTrue("fixture: ...and the book's figure for the bank fell with it: the release",
-                released > 100 * tolerance);
+        closeRel("fixture: ...the premium is the unsettled sale's discount, below nothing: its face less what it raised",
+                line.unsettledDiscount(), p.face() - p.proceeds(), 1e-9);
+        assertTrue("fixture: ...so the line's discount left did not move at the sale: the premium is nobody's until the settle",
+                p.discountAfter() == p.discountBefore());
         assertTrue("fixture: ...and the twin's line was reopened to the same face, price and discount",
                 pTwin.sameLine() && p.face() == pTwin.face() && p.proceeds() == pTwin.proceeds() && p.discountAfter() == pTwin.discountAfter());
 
         /* ---- at once, before any month is played ---- */
         out.println("   -- at once, before any month is played");
         Bank.EquityMovement now = bank.equityMovement();
-        double splitNow = bank.equitySplitResidual();
-        assertTrue("the release was booked where it happened: far over what the movement's tolerance would pass",
-                after.restruck() - going.restruck() > 100 * tolerance);
-        close("...by exactly the book's fall", after.restruck() - going.restruck(), -(after.book() - going.book()), 1e-12);
+        close("nothing was re-struck at the sale: the premium waits for the settle", after.restruck() - going.restruck(), 0, tolerance);
+        close("...the bank's own discount on the line did not move", line.discountOf(Debt.Holder.BANK), bankOwnBefore, 0);
+        closeRel("...nor did the book's figure for the bank", after.book(), going.book(), 1e-12);
         close("the bank's unearned discount is the book's", after.carried(), after.book(), 1e-12);
         close("...its equity's movement leaves nothing unexplained", now.residual(), 0, tolerance);
         close("...and its equity's two parts and the preferred add up to its equity", bank.equitySplitResidual(), splitGoingIn, splitTol);
         close("...the twin, which books none, booked none", twinAfter.restruck(), 0, 0);
-        assertTrue("...so its unearned discount is not the book's: the carried figure waits for the next month's refresh",
-                Math.abs(twinAfter.carried() - twinAfter.book()) > 100 * tolerance);
+        close("...and carries the book's figure too: nothing was re-struck for the two to differ by",
+                twinAfter.carried(), twinAfter.book(), 1e-12);
         String apartNow = linesApart(city, twin);
         if (!apartNow.isEmpty()) out.println("   first line apart: " + apartNow);
         assertTrue("the statement's net income, tax and gains on the city's paper are the twin's, at once", apartNow.isEmpty());
 
         /* ---- the settle month ---- */
-        out.println("   -- the month played: the reopening settles, BK1's re-strike with it");
-        MoneyAudit.Result settled = play(city), settledTwin = play(twin);
+        out.println("   -- the month played: the reopening settles, the bank's premium taken off its own discount on the line");
+        Edge[] edge = watchSettle(city, line);
+        MoneyAudit.Result settled = play(city);
+        city.settleProbeForTest = null;
+        MoneyAudit.Result settledTwin = play(twin);
         Bank.EquityMovement moved = bank.equityMovement(), twinMoved = twinBank.equityMovement();
         double monthRestruck = bank.getDiscountRestruck();
         double afterTol = movementTolerance(bank), afterSplitTol = splitTolerance(bank);
-        out.printf("   the book's figure $%,.6fk to $%,.6fk, the bank's carried $%,.6fk to $%,.6fk, the release re-struck $%,.6fk;"
-                        + " at once: residual %.9f, split %.9f%n"
-                        + "   the month played: the settle re-struck $%,.6fk, the residual %.9f on %,.0fk, the split %.9f;"
+        Edge before = edge[0], settle = edge[1];
+        double bankFaceTaken = settle.faceOf(Debt.Holder.BANK) - before.faceOf(Debt.Holder.BANK), bankPaid = before.bankPaid(settle);
+        double bankPremium = bankPaid - bankFaceTaken, bankOwn = before.discountOf(Debt.Holder.BANK);
+        double shortfall = Math.max(0, bankPremium - bankOwn);
+        out.printf("   the book's figure $%,.6fk to $%,.6fk, the bank's carried $%,.6fk to $%,.6fk, re-struck at the sale $%,.6fk;"
+                        + " at once: residual %.9f%n"
+                        + "   the month played: the bank took $%,.4fk of face for $%,.4fk, a premium of $%,.6fk over its own discount on the line"
+                        + " of $%,.6fk (short of it by $%,.6fk); the settle re-struck $%,.6fk, the residual %.9f on %,.0fk, the split %.9f;"
                         + " the twin's residual %.9f, its split %.9f%n",
                 going.book(), after.book(), going.carried(), after.carried(), after.restruck() - going.restruck(),
-                now.residual(), splitNow, monthRestruck, moved.residual(),
+                now.residual(), bankFaceTaken, bankPaid, bankPremium, bankOwn, shortfall, monthRestruck, moved.residual(),
                 moved.scale(), bank.equitySplitResidual(), twinMoved.residual(), twinBank.equitySplitResidual());
+        assertTrue("fixture: the bank paid more than the face it took at the settle: a premium", bankPremium > 0);
+        close("the bank's premium came off its own discount on the line, floored at nothing",
+                settle.discountOf(Debt.Holder.BANK), Math.max(0, bankOwn - bankPremium), 1e-9 * Math.max(1, Math.abs(bankOwn)));
+        close("...so the settle re-strikes nothing but the shortfall of that discount under the premium (nothing, where it covers it)",
+                monthRestruck, -shortfall, afterTol);
         close("the month's movement leaves nothing unexplained", moved.residual(), 0, afterTol);
         close("...and its equity's two parts and the preferred add up to its equity", bank.equitySplitResidual(), 0, afterSplitTol);
         assertTrue("...the audit closed on the month", Math.abs(settled.residual) <= MoneyAudit.tolerance(settled.moved()));
         assertTrue("...and on the twin's", Math.abs(settledTwin.residual) <= MoneyAudit.tolerance(settledTwin.moved()));
-        close("...the twin's split opened by the release and the settle's re-strike, as main's did before BK1", twinBank.equitySplitResidual(),
-                -(released + monthRestruck), Math.max(1e-6, 1e-9 * Math.max(released, Math.abs(twinBank.equity()))));
-        close("...and its movement left both unexplained", twinMoved.residual(), released + monthRestruck,
-                Math.max(1e-6, 1e-9 * Math.max(released, twinMoved.scale())));
+        close("...the twin, which books none, closes as the city's re-strike leaves it: its split is that, and nothing else",
+                twinBank.equitySplitResidual(), -monthRestruck, Math.max(1e-6, 1e-9 * Math.max(Math.abs(monthRestruck), Math.abs(twinBank.equity()))));
+        close("...and its movement left only that unexplained", twinMoved.residual(), monthRestruck,
+                Math.max(1e-6, 1e-9 * Math.max(Math.abs(monthRestruck), twinMoved.scale())));
         String apart = firstDifference(cityFigures(city), cityFigures(twin));
         if (!apart.isEmpty()) out.println("   first figure apart: " + apart);
         assertTrue("the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,"
                 + " in the month", apart.isEmpty());
     }
 
-    /** 13b: the desk buying the households' paper of a line with a sale unsettled is handed more or less discount than the book moves by. */
+    /** 13b: the desk buying the households' paper of a line with a sale unsettled is handed the households' own discount per face, which is what the book moves by (BK2). */
     static void theDeskOnAnUnsettledLine() throws Exception {
         out.println("   -- 13b. the desk buying the households' paper of a line with a sale unsettled, in the city and in its twin");
         Reopening fix = reopeningFixture("holderscheck-desk", false);
@@ -2009,39 +2107,48 @@ public class HoldersCheck {
         Standing going = standing(city), twinGoing = standing(twin);
         double splitGoingIn = bank.equitySplitResidual();
         close("fixture: the bank's unearned discount is the book's going in", going.carried(), going.book(), 1e-9);
+        // BK2: what the desk is handed with the face is the households' own discount per face, read before the trade, times the face sold;
+        // the line's pooled discount per face (the sale's heavier discount in it) is what main handed, and is read here to tell the two apart.
+        double hhPerFace = perFace(line, Debt.Holder.HOUSEHOLDS), pooledPerFace = line.getDiscountLeft() / line.getOustandingPrincipal();
         double raised = hb.sellPaperForSpread(0, bank.depositRate());
         double twinRaised = twinHb.sellPaperForSpread(0, twinBank.depositRate());
         Standing after = standing(city), twinAfter = standing(twin);
         double sold = heldBefore - line.householdPrincipal();
-        double handed = line.unaccretedOn(sold);          // what the desk is handed with the face (Debt.unaccretedOn): the whole line's discount pro rata
-        double bookRose = after.book() - going.book();    // what the book's figure for the bank rose by: the settled part's discount over the settled face
+        double handed = hhPerFace * sold;                 // what the desk is handed with the face: the sellers' (the households') own discount
+        double pooledHanded = pooledPerFace * sold;      // ...and what the line's one pool would have handed with it
+        double bookRose = after.book() - going.book();    // what the book's figure for the bank rose by
         double tolerance = movementTolerance(bank), splitTol = splitTolerance(bank);
-        out.printf("   the desk bought $%,.4fk of face for $%,.4fk; handed $%,.6fk of discount, the book's figure rose by $%,.6fk%n",
-                sold, raised, handed, bookRose);
+        out.printf("   the desk bought $%,.4fk of face for $%,.4fk; handed $%,.6fk of discount (the line's pool would have handed $%,.6fk),"
+                        + " the book's figure rose by $%,.6fk%n",
+                sold, raised, handed, pooledHanded, bookRose);
         assertTrue("fixture: the desk bought some of the households' paper of the line, in the city and in its twin",
                 sold > 0 && raised > 0 && twinRaised == raised && twinHb.totalPaper() == hb.totalPaper());
-        assertTrue("fixture: ...and the discount it was handed is not the book's rise: far over what the movement's tolerance would pass",
-                Math.abs(handed - bookRose) > 100 * tolerance);
+        assertTrue("fixture: ...and the households' own discount is not the line's pool per face: far over what the movement's tolerance would pass",
+                Math.abs(handed - pooledHanded) > 100 * tolerance);
         assertTrue("fixture: ...and the two books of the households' paper still agree", booksAgree(city) && booksAgree(twin));
+        closeRel("the book's figure for the bank rose by exactly the households' own discount on the face the desk bought",
+                bookRose, handed, 1e-9);
+        closeRel("...and the households' own discount per face of what they keep did not move",
+                perFace(line, Debt.Holder.HOUSEHOLDS), hhPerFace, 1e-12);
 
         /* ---- at once, before the settle ---- */
         out.println("   -- at once, before the settle");
         Bank.EquityMovement now = bank.equityMovement();
         double splitNow = bank.equitySplitResidual();
         close("the bank's unearned discount is the book's", after.carried(), after.book(), 1e-9);
-        close("...the re-strike is the difference between what the desk was handed and what the book rose by",
-                after.restruck() - going.restruck(), handed - bookRose, tolerance);
+        close("...nothing is re-struck: the desk was handed the households' own discount, and the book's figure rose by that",
+                after.restruck() - going.restruck(), 0, tolerance);
         close("...its equity's movement leaves nothing unexplained", now.residual(), 0, tolerance);
         close("...and its equity's two parts and the preferred add up to its equity", bank.equitySplitResidual(), splitGoingIn, splitTol);
         close("...the twin, which books none, booked none", twinAfter.restruck(), 0, 0);
-        assertTrue("...so the twin carries what the desk was handed, and not the book's figure",
-                Math.abs(twinAfter.carried() - twinAfter.book()) > 100 * tolerance);
+        close("...and carries the book's figure too: nothing was re-struck for the two to differ by",
+                twinAfter.carried(), twinAfter.book(), 1e-9);
         String apartNow = linesApart(city, twin);
         if (!apartNow.isEmpty()) out.println("   first line apart: " + apartNow);
         assertTrue("the statement's net income, tax and gains on the city's paper are the twin's, at once", apartNow.isEmpty());
 
         /* ---- the settle month ---- */
-        out.println("   -- the month played: the unsettled sale settles, BK1's re-strike with this one");
+        out.println("   -- the month played: the unsettled sale settles, and the settle re-strikes nothing either");
         MoneyAudit.Result settled = play(city), settledTwin = play(twin);
         Bank.EquityMovement moved = bank.equityMovement(), twinMoved = twinBank.equityMovement();
         double restruckAtOnce = after.restruck() - going.restruck(), monthRestruck = bank.getDiscountRestruck();
@@ -2049,15 +2156,14 @@ public class HoldersCheck {
                         + " the residual %.9f on %,.0fk, the split %.9f; the twin's residual %.9f, its split %.9f%n",
                 restruckAtOnce, now.residual(), splitNow, monthRestruck, moved.residual(), moved.scale(),
                 bank.equitySplitResidual(), twinMoved.residual(), twinBank.equitySplitResidual());
-        close("the month's movement leaves nothing unexplained", moved.residual(), 0, movementTolerance(bank));
+        close("the settle re-strikes nothing: the month's re-strike is nothing", monthRestruck, 0, movementTolerance(bank));
+        close("...so the month's movement leaves nothing unexplained", moved.residual(), 0, movementTolerance(bank));
         close("...and its equity's two parts and the preferred add up to its equity", bank.equitySplitResidual(), 0, splitTolerance(bank));
         assertTrue("...the audit closed on the month", Math.abs(settled.residual) <= MoneyAudit.tolerance(settled.moved()));
         assertTrue("...and on the twin's", Math.abs(settledTwin.residual) <= MoneyAudit.tolerance(settledTwin.moved()));
-        close("...the twin's split opened by this re-strike and the settle's, as main's did before BK1", twinBank.equitySplitResidual(),
-                -(restruckAtOnce + monthRestruck),
-                Math.max(1e-6, 1e-9 * Math.max(Math.abs(restruckAtOnce) + Math.abs(monthRestruck), Math.abs(twinBank.equity()))));
-        close("...and its movement left both unexplained", twinMoved.residual(), restruckAtOnce + monthRestruck,
-                Math.max(1e-6, 1e-9 * Math.max(Math.abs(restruckAtOnce) + Math.abs(monthRestruck), twinMoved.scale())));
+        close("...the twin, which books none, closes too: its split is nothing", twinBank.equitySplitResidual(), 0,
+                Math.max(1e-6, 1e-9 * Math.abs(twinBank.equity())));
+        close("...and its movement's residual is nothing", twinMoved.residual(), 0, Math.max(1e-6, 1e-9 * twinMoved.scale()));
         String apart = firstDifference(cityFigures(city), cityFigures(twin));
         if (!apart.isEmpty()) out.println("   first figure apart: " + apart);
         assertTrue("the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,"
@@ -2211,5 +2317,189 @@ public class HoldersCheck {
         assertTrue("fixture: ten times the floor at that scale is under HOLDING_ROUNDING itself, which a fixed floor would have snapped",
                 aboveF < Debt.HOLDING_ROUNDING);
         assertTrue("...yet it stays, because the floor is a share of the face moved", Debt.moved(takenF + aboveF, -takenF) > 0);
+    }
+
+    /* ================= 15. each holder's discount is its own (BK2) ================= */
+
+    /** The five owners' unaccreted discount on a line, in Debt.Holder's order. */
+    static double[] owned(Debt line) {
+        double[] own = new double[Debt.Holder.values().length];
+        for (Debt.Holder h : Debt.Holder.values()) own[h.ordinal()] = line.discountOf(h);
+        return own;
+    }
+
+    static double sum(double[] a) {
+        double s = 0;
+        for (double v : a) s += v;
+        return s;
+    }
+
+    /**
+     * A loose piece of 1,000 sold for 900 and settled by hand, every holder at a price of its own: the households took 300 for 285 (their
+     * own discount 15), the businesses 100 for 96 (4), the world 50 for 47 (3), the bank is the residual buyer (the sale's 100 less 22,
+     * so 78 on 550 of face), and the central bank bought 110 more of the line for 101 (9): 1,110 of face, 109 of discount in five hands.
+     */
+    static LongTermBond ownedPiece() {
+        LongTermBond p = loosePiece();
+        p.markIssued(900, .06);
+        p.takeAtSettle(Debt.Holder.HOUSEHOLDS, 300, 285);
+        p.takeAtSettle(Debt.Holder.FIRMS, 100, 96);
+        p.takeAtSettle(Debt.Holder.WORLD, 50, 47);
+        p.settled();
+        p.reopenForCentralBank(110, 101, .06);      // the central bank's own purchase of 110 more, at a price of its own: 9 of discount
+        return p;
+    }
+
+    static void theEachHoldersOwn() throws Exception {
+        out.println("\n--- 15. each holder's discount is its own, at the price it paid (BK2) ---");
+        Reopening fix = reopeningFixture("holderscheck-own", false);
+        Game city = fix.city();
+        Debt line = fix.line();
+        Edge[] first = fix.firstSettle();
+        final Debt.Holder BANK = Debt.Holder.BANK, HH = Debt.Holder.HOUSEHOLDS, CB = Debt.Holder.CENTRAL_BANK;
+        final Debt.Holder FIRMS = Debt.Holder.FIRMS, WORLD = Debt.Holder.WORLD;
+
+        /* ---- the first settle: each holder's own is its face less what it paid ---- */
+        out.println("   -- the first settle of a twenty-year line: each holder takes its face at its own price");
+        assertTrue("fixture: the treasury sold a twenty-year bond between the presses, and the fixture's settle of it was watched at both edges",
+                line != null && first != null && first[0] != null && first[1] != null);
+        Edge in = first[0], settled = first[1];
+        double sold = in.unsettledFace(), raised = in.due();
+        assertTrue("fixture: ...a new line, all of it unsettled going in, and no holder's discount on it yet",
+                sold > 0 && sum(in.discount()) == 0 && in.faceOf(BANK) == 0);
+        closeRel("fixture: ...the sale's discount is the unsettled sale's: its face less what it raised",
+                in.unsettledDiscount(), sold - raised, 1e-9);
+        assertTrue("fixture: ...the households and the bank each took part of it, and the central bank none",
+                settled.faceOf(HH) > 0 && settled.faceOf(BANK) > 0 && settled.faceOf(CB) == 0);
+        for (Debt.Holder h : new Debt.Holder[]{ HH, FIRMS, WORLD }) {
+            double face = settled.faceOf(h) - in.faceOf(h), paid = in.paid(h, settled);
+            out.printf("   %s took $%,.4fk of face for $%,.4fk: its own discount $%,.6fk%n", h, face, paid, settled.discountOf(h));
+            closeRel(h + ": its own discount is the face it took less what it paid for it", settled.discountOf(h), face - paid, 1e-9);
+        }
+        double bankFace = settled.faceOf(BANK) - in.faceOf(BANK), bankPaid = in.bankPaid(settled);
+        out.printf("   BANK took $%,.4fk of face for $%,.4fk: its own discount $%,.6fk%n", bankFace, bankPaid, settled.discountOf(BANK));
+        closeRel("BANK: its own discount is the face it took less what it paid, the residual buyer's", settled.discountOf(BANK),
+                bankFace - bankPaid, 1e-9);
+        close("CENTRAL_BANK: it took none, so it has none of the discount", settled.discountOf(CB), 0, 0);
+        closeRel("...and the line's discount left is the five owners' sum", settled.discountLeft(), sum(settled.discount()), 1e-9);
+        close("...with nothing of the sale left unsettled", settled.unsettledDiscount(), 0, 0);
+        closeRel("...and the five together are the sale's whole discount: its face less what it raised",
+                sum(settled.discount()), sold - raised, 1e-9);
+
+        /* ---- a reopening at another price: no owner's discount moves at the sale ---- */
+        out.println("   -- the same line reopened at another price: nobody's own moves at the sale, the sale's discount waits for the settle");
+        Edge beforeSale = Edge.of(city, line);
+        Reopened re = reopen(city, line);
+        Edge afterSale = Edge.of(city, line);
+        Debt.Sale sale = line.getSales().get(line.getSales().size() - 1);
+        double saleDiscount = sale.getFace() - sale.getProceeds();
+        assertTrue("fixture: the second sale reopened the same line at a discount and is unsettled: the market owes for it",
+                re.sameLine() && saleDiscount > 0 && line.unsettledFace() > 0);
+        boolean unmoved = true;
+        for (Debt.Holder h : Debt.Holder.values()) unmoved &= afterSale.discountOf(h) == beforeSale.discountOf(h);
+        assertTrue("a reopening at another price moves no owner's discount at the sale: the five are what they were, bit for bit", unmoved);
+        closeRel("...the unsettled sales' discount is the reopening's face less what it raised", afterSale.unsettledDiscount(), saleDiscount, 1e-9);
+        Edge[] edge = watchSettle(city, line);
+        play(city);
+        city.settleProbeForTest = null;
+        closeRel("after its settle the owners' sum, with nothing unsettled, is the line's discount left",
+                line.getDiscountLeft(), sum(owned(line)), 1e-9);
+        close("...nothing of the sale is left unsettled", line.unsettledDiscount(), 0, 0);
+        closeRel("...and at the settle the owners' sum rose by the sale's discount, whole",
+                sum(edge[1].discount()) - sum(edge[0].discount()), saleDiscount, 1e-9);
+
+        /* ---- face changes hands at the seller's own discount per face ---- */
+        out.println("   -- the desk buying the households' face, and the bank handing face back: the seller's discount per face goes with it");
+        double hhFace = line.householdPrincipal(), hhOwn = line.discountOf(HH), bankOwn = line.discountOf(BANK), hhPer = perFace(line, HH);
+        assertTrue("fixture: the households hold part of the line, and own discount on it", hhFace > 0 && hhOwn > 0);
+        double bought = hhFace / 3, due = hhOwn * bought / hhFace;
+        double handed = line.pass(HH, BANK, bought);
+        out.printf("   the desk bought $%,.4fk of the households' $%,.4fk: handed $%,.6fk of their $%,.6fk%n", bought, hhFace, handed, hhOwn);
+        closeRel("the bank is handed the households' own discount times the face over their holding", handed, due, 1e-12);
+        closeRel("...the bank's own discount rose by exactly that", line.discountOf(BANK) - bankOwn, due, 1e-9);
+        closeRel("...the households' fell by exactly that", hhOwn - line.discountOf(HH), due, 1e-9);
+        closeRel("...and the households' discount per face of what they keep did not move", perFace(line, HH), hhPer, 1e-12);
+        double bankPer = perFace(line, BANK), bankHeld = line.heldBy(BANK), hhOwn2 = line.discountOf(HH);
+        double back = bankHeld / 4, dueBack = line.discountOf(BANK) * back / bankHeld;
+        double handedBack = line.pass(BANK, HH, back);
+        closeRel("the bank handing face to the households hands them its own discount per face on it, whatever they paid",
+                handedBack, dueBack, 1e-12);
+        closeRel("...the households' own rose by exactly that", line.discountOf(HH) - hhOwn2, dueBack, 1e-9);
+        closeRel("...and the bank's discount per face of what it keeps did not move", perFace(line, BANK), bankPer, 1e-12);
+
+        /* ---- one month's accretion ---- */
+        out.println("   -- one month's accretion: each owner's own wears off by its own over the months left");
+        double[] ownBefore = owned(line);
+        double pool = line.getDiscountLeft();
+        int left = line.getRemainingMonths();
+        assertTrue("fixture: months are left past the last, and nothing is unsettled: the old pool's step is its discount over the months left",
+                left > 1 && line.unsettledDiscount() == 0);
+        double step = line.accrete(), fell = 0;
+        double[] ownAfter = owned(line);
+        for (Debt.Holder h : Debt.Holder.values()) {
+            int i = h.ordinal();
+            closeRel(h + ": its own discount fell by its own over the months left", ownBefore[i] - ownAfter[i], ownBefore[i] / left, 1e-12);
+            fell += ownBefore[i] - ownAfter[i];
+        }
+        closeRel("the step the line returns is the bank's: the one income books", step, ownBefore[BANK.ordinal()] / left, 1e-12);
+        closeRel("...and the five steps add up to the old pool's step: its discount left over the months left, the city's accretion unchanged",
+                fell, pool / left, 1e-12);
+
+        /* ---- principal repaid, a buyback of part, a redenomination: on a piece built by hand ---- */
+        out.println("   -- a piece sold for 900 of its 1,000, every holder at a price of its own: principal repaid, part bought back, redenominated");
+        LongTermBond piece = ownedPiece();
+        double[] per = new double[Debt.Holder.values().length];
+        for (Debt.Holder h : Debt.Holder.values()) per[h.ordinal()] = perFace(piece, h);
+        double[] sorted = per.clone();
+        java.util.Arrays.sort(sorted);
+        boolean distinct = true;
+        for (int i = 1; i < sorted.length; i++) distinct &= sorted[i] - sorted[i - 1] > 1e-3;
+        out.printf("   the discount per face: households %.4f, central bank %.4f, businesses %.4f, world %.4f, bank %.4f%n",
+                per[HH.ordinal()], per[CB.ordinal()], per[FIRMS.ordinal()], per[WORLD.ordinal()], per[BANK.ordinal()]);
+        assertTrue("fixture: the five holders' discounts per face are five different figures", distinct);
+        closeRel("fixture: ...and together they are the discount of what was sold: 1,110 of face less the 1,001 it raised",
+                sum(owned(piece)), 109, 1e-12);
+        double[] own0 = owned(piece);
+        double principal0 = piece.getOustandingPrincipal();
+        for (Debt.Holder h : new Debt.Holder[]{ HH, CB, FIRMS, WORLD }) piece.repay(h, piece.heldBy(h) * .1);
+        piece.outstandingPrincipal -= principal0 * .1;      // every holder's face falls by a tenth, the bank's (the residual) with the piece's
+        boolean still = true;
+        for (Debt.Holder h : Debt.Holder.values()) still &= piece.discountOf(h) == own0[h.ordinal()];
+        assertTrue("principal repaid moves no owner's discount: the five are what they were, bit for bit", still);
+        for (Debt.Holder h : Debt.Holder.values()) {
+            closeRel(h + ": ...its discount per face rose with its face down by a tenth", perFace(piece, h), per[h.ordinal()] / .9, 1e-12);
+        }
+
+        double[] perNow = new double[Debt.Holder.values().length], faceNow = new double[Debt.Holder.values().length];
+        for (Debt.Holder h : Debt.Holder.values()) {
+            perNow[h.ordinal()] = perFace(piece, h);
+            faceNow[h.ordinal()] = piece.heldBy(h);
+        }
+        double[] own1 = owned(piece);
+        double[] sellFace = new double[Debt.Holder.values().length];
+        sellFace[BANK.ordinal()] = faceNow[BANK.ordinal()] / 5;
+        sellFace[HH.ordinal()] = faceNow[HH.ordinal()] / 4;
+        sellFace[FIRMS.ordinal()] = faceNow[FIRMS.ordinal()] / 3;
+        sellFace[WORLD.ordinal()] = faceNow[WORLD.ordinal()] / 2;
+        piece.retirePart(sellFace[BANK.ordinal()], sellFace[HH.ordinal()], sellFace[FIRMS.ordinal()], sellFace[WORLD.ordinal()]);
+        for (Debt.Holder h : new Debt.Holder[]{ BANK, HH, FIRMS, WORLD }) {
+            closeRel(h + ": its own share of the discount left with the face it sold back",
+                    own1[h.ordinal()] - piece.discountOf(h), perNow[h.ordinal()] * sellFace[h.ordinal()], 1e-12);
+        }
+        assertTrue("CENTRAL_BANK: the central bank does not sell, so its own discount stays, bit for bit",
+                piece.discountOf(CB) == own1[CB.ordinal()]);
+
+        LongTermBond big = ownedPiece();
+        big.reopen(100, 88, .06);                                  // an unsettled sale: its discount is the sixth
+        double[] own2 = owned(big);
+        double unsettled0 = big.unsettledDiscount(), k = 7.25;
+        boolean allOwn = true;
+        for (double v : own2) allOwn &= v > 0;
+        assertTrue("fixture: a sale unsettled, and every owner has discount", unsettled0 > 0 && allOwn);
+        big.redenominate(k);
+        for (Debt.Holder h : Debt.Holder.values()) {
+            closeRel(h + ": redenominated by " + k + ", its own discount scales by it", big.discountOf(h), own2[h.ordinal()] * k, 1e-12);
+        }
+        closeRel("the unsettled sales' discount scales by it too", big.unsettledDiscount(), unsettled0 * k, 1e-12);
     }
 }

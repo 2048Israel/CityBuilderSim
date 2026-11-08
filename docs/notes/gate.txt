@@ -1,20 +1,93 @@
-# gate of Merge batch/UP8: the 10B month's change at its causes: the month after a big month (its dirty districts' log, the placing and the cursors, 3.4-3.9 ms against 1.3-1.6 for the rest - MapCheck 5's worst bounded month, red at the gates under load; nothing grew since MP1), and the walk once the copies are full (12-15 ms a month at 10B from the third year, `place()` and `roomiest()`, on every tag since 0.8.61), with a fixture that fills them; ABBA against main, no budget moved (the orchestrator, 2026-10-29, during UP5); and RT1's three gates (2026-11-05), the 10B month at twice main's each time (5.7 ms against 3.2, then 4.15 against 2.07, three paired rounds each) on maps scaled from the fixed `JERUS_COUNTS` that no line of RT1 reaches: what in the JVM before section 5 (the played city RT1 changed: its heap, its JIT profile) doubles the map's month, and whether a game's JVM meets it, 0.9.49
+# gate of Merge batch/BK2: each holder's own discount on a line of the city's paper: the households', firms', world's and central bank's unaccreted discount set at the price each paid and carried with the face they trade, so a reopening re-blends nothing and BK1's re-strike is zero (up to -$1,641k in a month in AutoBuildCheck's cities); a save-format bump, the trace moves (the orchestrator, 2026-10-29, on BK1's recommendation; waits: Jerus runs only BK1, HD1 and EM1 today); with BK1-C's fixture, the central bank's add-on into a reopened line (Jerus, 2026-10-31: "Take all (Recommended)"), 0.9.50
 # date: 2026-11-08
 # earth-2.bin: named
 # nightly: 2026-11-08 01:36 0.9.47 39c0948d 4,000 months: OK in 97 s
-# suite: 186 harnesses run in 1089s: 181 passed, 5 failed
-# timing: 16 harnesses run in 831s: 13 passed, 3 failed; its red lines were judged side by side with main's, below
+# suite: 186 harnesses run in 1495s: 181 passed, 5 failed
+# timing: 16 harnesses run in 1579s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 26.9 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 32.1 ms (gate.txt, today), batch 26.9 ms (-16.0%), budget 25 ms: main over the budget too, no round]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 32.9 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 27.2 ms, batch 29.1 ms (+6.8%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# figure	SaveSlotCheck	the median due month, 26.9 ms, holds the clock at most CLOCK_MS (25 ms)	26.9452	25	ms	FAIL	1	1
+# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 17.3 ms, batch 18.0 ms (+4.0%), budget 19 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | 3 FAILED   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): KeptCheck | exit 12   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): KeptCheck | the whole kept chrome's month is within KEPT_ALL_CHROME_MS (8.0 ms)      FAIL   [main 4.73 ms, batch 4.59 ms (-2.9%), budget 8 ms: within 15% of main's]
+# timing red not the batch's (paired): KeptCheck | 12 FAILED   [the harness's own count of the timing reds above]
+# figure	SaveSlotCheck	the median due month, 32.9 ms, holds the clock at most CLOCK_MS (25 ms)	29.0935	25	ms	FAIL	1	1
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL cash (nominal) month 101: 33.02625233 at the factor over the factor, -781.2016015 at today's prices (0.0102 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL gdp.month (nominal) month 103: 20149.68879 at the factor over the factor, 20161.96419 at today's prices (0.000376 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL bank.deposits (nominal) month 101: 537130.1022 at the factor over the factor, 530333.1374 at today's prices (0.0127 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL retail.shelf (nominal) month 98: 0.3883191787 at the factor over the factor, 0.3883265723 at today's prices (1.76e-05 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL rent (nominal) month 103: 0.5844845720 at the factor over the factor, 0.5844900010 at today's prices (9.29e-06 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL rate (real) month 102: 0.7534912624 at the factor , 0.7537263533 at today's prices (0.000312 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL priceIndex (real) month 103: 1.680394127 at the factor , 1.680409325 at today's prices (9.04e-06 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL mkt.CROPS.supply (real) month 103: 296.7335969 at the factor , 296.7336064 at today's prices (3.21e-08 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL mkt.CROPS.demand (real) month 103: 307.7191191 at the factor , 307.7191296 at today's prices (3.40e-08 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL mkt.CROPS.imported (real) month 91: 44.41753272 at the factor , 44.41752242 at today's prices (2.32e-07 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL mkt.CROPS.local (nominal) month 103: 0.4106639727 at the factor over the factor, 0.4106799199 at today's prices (2.15e-05 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL mkt.CROPS.import (nominal) month 103: 0.4935589056 at the factor over the factor, 0.4935780717 at today's prices (2.30e-05 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL mkt.CROPS.export (nominal) month 103: 0.3247001451 at the factor over the factor, 0.3247127541 at today's prices (1.93e-05 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL stock.CROPS (real) month 103: 255.3299188 at the factor , 255.3299277 at today's prices (3.50e-08 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL mkt.GRAINS.demand (real) month 102: 3191.278092 at the factor , 3193.120794 at today's prices (0.000577 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL mkt.GRAINS.imported (real) month 102: 3191.278092 at the factor , 3193.120794 at today's prices (0.000577 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL mkt.GRAINS.local (nominal) month 103: 0.0009355042567 at the factor over the factor, 0.0009355405847 at today's prices (3.74e-05 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL mkt.GRAINS.import (nominal) month 103: 0.0009355042567 at the factor over the factor, 0.0009355405847 at today's prices (3.74e-05 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL mkt.GRAINS.export (nominal) month 103: 0.0006188945134 at the factor over the factor, 0.0006189185466 at today's prices (3.66e-05 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL mkt.BREAD.supply (real) month 103: 2247.999340 at the factor , 2248.937926 at today's prices (0.000417 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL mkt.BREAD.demand (real) month 102: 6743.998020 at the factor , 6746.813778 at today's prices (0.000417 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL mkt.BREAD.exported (real) month 102: 104857.4574 at the factor , 104850.0957 at today's prices (7.02e-05 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL mkt.BREAD.local (nominal) month 102: 0.002746596313 at the factor over the factor, 0.002746741733 at today's prices (5.07e-05 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL mkt.BREAD.import (nominal) month 103: 0.002977913917 at the factor over the factor, 0.002978029558 at today's prices (3.74e-05 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | every real series equal within 1.0E-9 (worst 1.2 in h.bankReturnOnEquity)              FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | the history's 91 money series equal over the factor to the rounding they were recorded at FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | every live nominal series equal over the factor within 1.0E-9 (worst 0.73 in sector.Manufacturing.cash) FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | 358 FAILED
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | exit 11
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | note 1 opened on it adds to the page (371 lines, then 371)               FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | each month hands back nine in ten of the nodes the first draw made, or more (238 of 302) FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | a month landing starts the fund's worth and a payment exactly at the rungs countsUp() allows, and when paused (10 clocks) FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | an animation running when a month lands past COUNT_UP_TOP is stopped on the fund's worth and a payment, and the page is the month's FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | the city has a piece of paper to close                                   FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | a bookRow was found on a money page of this city, to put the pointer on  FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | no month makes more than a tenth of the nodes the first draw made (the most made in one: 41 of 335; 6 of 25 months made none) FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | Household money: every tooltip a node had and still has is the same Tooltip after a month's kept redraw (79 of 79), and none is lost from a node the page keeps (1) FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | 11 FAILED
 MonetaryCheck | exit 1
 MonetaryCheck | ...and a month's delay in the hand moves them less than the allowance FAIL
 MonetaryCheck | 1 FAILED
 PriceLevelCheck | exit 1
+PriceLevelCheck | FAIL cash (nominal) month 101: 33.02625233 at the factor over the factor, -781.2016015 at today's prices (0.0102 apart)
+PriceLevelCheck | FAIL gdp.month (nominal) month 103: 20149.68879 at the factor over the factor, 20161.96419 at today's prices (0.000376 apart)
+PriceLevelCheck | FAIL bank.deposits (nominal) month 101: 537130.1022 at the factor over the factor, 530333.1374 at today's prices (0.0127 apart)
+PriceLevelCheck | FAIL retail.shelf (nominal) month 98: 0.3883191787 at the factor over the factor, 0.3883265723 at today's prices (1.76e-05 apart)
+PriceLevelCheck | FAIL rent (nominal) month 103: 0.5844845720 at the factor over the factor, 0.5844900010 at today's prices (9.29e-06 apart)
+PriceLevelCheck | FAIL rate (real) month 102: 0.7534912624 at the factor , 0.7537263533 at today's prices (0.000312 apart)
+PriceLevelCheck | FAIL priceIndex (real) month 103: 1.680394127 at the factor , 1.680409325 at today's prices (9.04e-06 apart)
+PriceLevelCheck | FAIL mkt.CROPS.supply (real) month 103: 296.7335969 at the factor , 296.7336064 at today's prices (3.21e-08 apart)
+PriceLevelCheck | FAIL mkt.CROPS.demand (real) month 103: 307.7191191 at the factor , 307.7191296 at today's prices (3.40e-08 apart)
+PriceLevelCheck | FAIL mkt.CROPS.imported (real) month 91: 44.41753272 at the factor , 44.41752242 at today's prices (2.32e-07 apart)
+PriceLevelCheck | FAIL mkt.CROPS.local (nominal) month 103: 0.4106639727 at the factor over the factor, 0.4106799199 at today's prices (2.15e-05 apart)
+PriceLevelCheck | FAIL mkt.CROPS.import (nominal) month 103: 0.4935589056 at the factor over the factor, 0.4935780717 at today's prices (2.30e-05 apart)
+PriceLevelCheck | FAIL mkt.CROPS.export (nominal) month 103: 0.3247001451 at the factor over the factor, 0.3247127541 at today's prices (1.93e-05 apart)
+PriceLevelCheck | FAIL stock.CROPS (real) month 103: 255.3299188 at the factor , 255.3299277 at today's prices (3.50e-08 apart)
+PriceLevelCheck | FAIL mkt.GRAINS.demand (real) month 102: 3191.278092 at the factor , 3193.120794 at today's prices (0.000577 apart)
+PriceLevelCheck | FAIL mkt.GRAINS.imported (real) month 102: 3191.278092 at the factor , 3193.120794 at today's prices (0.000577 apart)
+PriceLevelCheck | FAIL mkt.GRAINS.local (nominal) month 103: 0.0009355042567 at the factor over the factor, 0.0009355405847 at today's prices (3.74e-05 apart)
+PriceLevelCheck | FAIL mkt.GRAINS.import (nominal) month 103: 0.0009355042567 at the factor over the factor, 0.0009355405847 at today's prices (3.74e-05 apart)
+PriceLevelCheck | FAIL mkt.GRAINS.export (nominal) month 103: 0.0006188945134 at the factor over the factor, 0.0006189185466 at today's prices (3.66e-05 apart)
+PriceLevelCheck | FAIL mkt.BREAD.supply (real) month 103: 2247.999340 at the factor , 2248.937926 at today's prices (0.000417 apart)
+PriceLevelCheck | FAIL mkt.BREAD.demand (real) month 102: 6743.998020 at the factor , 6746.813778 at today's prices (0.000417 apart)
+PriceLevelCheck | FAIL mkt.BREAD.exported (real) month 102: 104857.4574 at the factor , 104850.0957 at today's prices (7.02e-05 apart)
+PriceLevelCheck | FAIL mkt.BREAD.local (nominal) month 102: 0.002746596313 at the factor over the factor, 0.002746741733 at today's prices (5.07e-05 apart)
+PriceLevelCheck | FAIL mkt.BREAD.import (nominal) month 103: 0.002977913917 at the factor over the factor, 0.002978029558 at today's prices (3.74e-05 apart)
+PriceLevelCheck | every real series equal within 1.0E-9 (worst 1.2 in h.bankReturnOnEquity)              FAIL
+PriceLevelCheck | the history's 91 money series equal over the factor to the rounding they were recorded at FAIL
+PriceLevelCheck | every live nominal series equal over the factor within 1.0E-9 (worst 0.73 in sector.Manufacturing.cash) FAIL
 PriceLevelCheck | FAIL sector.Retail.cash (nominal) month 29: 99.30704620 at the factor over the factor, 99.30704375 at today's prices (9.62e-09 apart)
 PriceLevelCheck | every live nominal series equal over the factor within 1.0E-9 (worst 9.6e-09 in sector.Retail.cash) FAIL
-PriceLevelCheck | 1 FAILED
+PriceLevelCheck | 358 FAILED
 ScaleCheck | exit 1
 ScaleCheck | fixture: ...and its own rents price no migrant out in the months its copies are read against (the affordability pull 1 in all 6) FAIL
 ScaleCheck | its rents pull migrants as the city's do, every month (the affordability pull within 0.01; worst 0.047) FAIL
@@ -27,5 +100,15 @@ MapCheck | exit 1
 MapCheck | a yard laid across a district's buildings moves off it the boxes under it and no others: 72 of the plan before's 530 boxes lie under the yard and the railway, and 78 are not in the plan after (each of the rest stands where it stood) FAIL
 MapCheck | ...and the layout watch (LongPlaytest, as the map draws the district) counts them apart and flags none: 72 boxes left a district in the yard's month because a run laid in it lies across them, 6 are counted as moved FAIL
 MapCheck | 2 FAILED
-LongPlaytest | exit 1
-LongPlaytest | (no FAIL line)
+KeptCheck | exit 11
+KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
+KeptCheck | note 1 opened on it adds to the page (371 lines, then 371)               FAIL
+KeptCheck | each month hands back nine in ten of the nodes the first draw made, or more (238 of 302) FAIL
+KeptCheck | a month landing starts the fund's worth and a payment exactly at the rungs countsUp() allows, and when paused (10 clocks) FAIL
+KeptCheck | an animation running when a month lands past COUNT_UP_TOP is stopped on the fund's worth and a payment, and the page is the month's FAIL
+KeptCheck | the city has a piece of paper to close                                   FAIL
+KeptCheck | a bookRow was found on a money page of this city, to put the pointer on  FAIL
+KeptCheck | no month makes more than a tenth of the nodes the first draw made (the most made in one: 41 of 335; 6 of 25 months made none) FAIL
+KeptCheck | Household money: every tooltip a node had and still has is the same Tooltip after a month's kept redraw (79 of 79), and none is lost from a node the page keeps (1) FAIL
+KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL
+KeptCheck | 11 FAILED

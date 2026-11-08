@@ -1722,7 +1722,8 @@ public class ScaleCheck {
         // yields, its months and its per-100 price paths stay. A dollar piece is a quantity of dollars, so it scales too.
         named(d.get("debts"), k, "faceValue", "outstandingPrincipal", "householdPrincipal", "centralBankPrincipal",
                 "firmPrincipal", "worldPrincipal", "settleDue", "unsettledFace", "allotHouseholdsFace", "allotHouseholdsCash",
-                "allotFirmsFace", "allotFirmsCash", "allotWorldFace", "allotWorldCash", "issueDiscount", "discountLeft",
+                "allotFirmsFace", "allotFirmsCash", "allotWorldFace", "allotWorldCash", "issueDiscount", "bankDiscount", "householdDiscount",
+                "centralBankDiscount", "firmDiscount", "worldDiscount", "unsettledDiscount",
                 "carryingValue", "lastExpenseOwn", "lastCouponOwn", "face", "proceeds", "lastUpliftOwn", "lastUpliftPaidOwn",
                 "principalPerSlice");
         // The builders' contracts still on site: their value, the units of material still to draw and the allowance priced in.

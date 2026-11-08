@@ -163,12 +163,25 @@ import java.util.List;
  *      save, and a save without it, or with a name this build does not
  *      know, reads Standard.
  *
+ * And, since BK2 gave each holder its own discount on a line (BK1-C):
+ *
+ *  22. The central bank's par rolled into a line the households hold part
+ *      of: a two-year line the households and the bank each hold part of,
+ *      and a first two-year bond the central bank holds all of, falling due
+ *      next month. Its par alone, with nothing for the market to be sold,
+ *      and its add-on to a sale of the line made by hand in the gap, each
+ *      join the line with its face and its own discount (par less what it
+ *      paid) while the households', the bank's and the others' own do not
+ *      move across the roll, and the bank's book and unearned discount do
+ *      not either: the month re-strikes nothing, its equity movement and
+ *      split close, and the audit closes.
+ *
  * The numbers are labels, not the running order. The run prints 2, 3 and 4
  * first, on bare objects; then it builds a city, where 1 is held on every
  * month the harness plays and its closing assertions - every kind of flow
  * seen, every month closed - print after 5, which supplies the treasury's
  * kinds; then 6, 7, 9 and 8, because 8's reform scales the advances and
- * arrears 9's fixture leaves behind; then 10; and 11 to 21 last, in order.
+ * arrears 9's fixture leaves behind; then 10; and 11 to 22 last, in order.
  *
  * @author Jerus
  */
@@ -491,7 +504,7 @@ public class CentralBankCheck {
         // the money first, because its cash is part of what the market prices.
         double principal = bond.getOustandingPrincipal();
         double bankFace = bond.bankPrincipal();
-        double bankUnearned = bond.unaccretedOn(bankFace);
+        double bankUnearned = bond.unaccretedOn(Debt.Holder.BANK, bankFace);
         city.setCashForTest(2 * principal);
         double bankCash = bank.getCash(), bankBook = bank.getCityBook(), bankEquity = bank.equity();
         double price = city.quoteRepurchase(bond);
@@ -796,6 +809,7 @@ public class CentralBankCheck {
         theRolloverAtIssue();
         theSurplusPaysEveryone();
         howStrict();
+        theParRolledIntoAHeldLine();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails);
@@ -871,7 +885,7 @@ public class CentralBankCheck {
         double face = CentralBank.QE_SPEED * .30 * term;
         city.strikeTheCurve();   // the expectations the top will strike first (CD1)
         double price = ledger.marketValue(bond) * face / bond.getOustandingPrincipal();
-        double unearned = bond.unaccretedOn(face);
+        double unearned = bond.unaccretedOn(Debt.Holder.BANK, face);
         double bookBefore = ledger.bankPrincipal();
         double m0Before = cb.m0();
         play(city);
@@ -1448,6 +1462,256 @@ public class CentralBankCheck {
 
         assertTrue(String.format("every month of the rollover's branches closed the audit, and M0"
                 + " moved by exactly the money made (%d months in all)", monthsPlayed), monthsBroken == 0);
+    }
+
+    /* =====================================================================
+       22. THE CENTRAL BANK'S PAR ROLLED INTO A LINE THE HOUSEHOLDS HOLD PART
+       OF (BK2, BK1-C) - section 19 reaches the roll into a line (the
+       central bank's par alone into the benchmark line, or its add-on to a
+       sale that reopened one) only with fresh pieces. Here a two-year bond
+       line the households and the bank each hold part of, and a first
+       two-year bond the central bank holds all of, falling due next month;
+       saved at that press, and played once for each way into the line.
+       ===================================================================== */
+
+    /** The term of the fixture's bonds, in years: the shortest term bond the lineup sells, so the city's own sales build the whole fixture in two years. */
+    static final int LINE_YEARS = 2;
+
+    /** The most months the dial at all of the paper is given to take the whole of the first bond into the central bank's book (HoldersCheck 11 reaches it in a year or so). */
+    static final int TAKE_ALL_MONTHS = 14;
+
+    /** The city's own piece that is on the book now and was not before: the one a sale made. */
+    static Debt pieceSince(DebtManager ledger, java.util.List<Debt> before) {
+        Debt found = null;
+        for (Debt d : ledger.getDebt()) if (!d.isForeign() && !before.contains(d)) found = d;
+        return found;
+    }
+
+    /** A line as the section reads it at one moment: its face, each holder's own discount (Debt.Holder order), the bank's face of it, and the bank's book and unearned discount over all the paper. */
+    record LineNow(double face, double[] discounts, double bankFace, double householdFace, double centralBankFace,
+                   double bankBook, double bankUnearned, double discountLeft, int sales, String lastHow) {
+        double of(Debt.Holder h) { return discounts[h.ordinal()]; }
+    }
+
+    static LineNow lineNow(Game g, Debt line) {
+        Debt.Holder[] holders = Debt.Holder.values();
+        double[] discounts = new double[holders.length];
+        for (Debt.Holder h : holders) discounts[h.ordinal()] = line.discountOf(h);
+        java.util.List<Debt.Sale> sales = line.getSales();
+        return new LineNow(line.getOustandingPrincipal(), discounts, line.bankPrincipal(), line.householdPrincipal(),
+                line.centralBankPrincipal(), g.getDebtManager().bankBook(), g.getDebtManager().bankUnearnedDiscount(), line.getDiscountLeft(),
+                sales.size(), sales.isEmpty() ? "" : sales.get(sales.size() - 1).getHow());
+    }
+
+    /** A month played, with the line read going in and read once the central bank's face has joined it: after the roll and the holdings step, before the households' settle and the month's accretion (Game.settleProbeForTest). */
+    record RolledMonth(LineNow going, LineNow rolled) { }
+
+    static RolledMonth playRolling(Game g, Debt line) {
+        LineNow going = lineNow(g, line);
+        final LineNow[] mid = new LineNow[1];
+        g.settleProbeForTest = after -> { if (!after) mid[0] = lineNow(g, line); };
+        try { play(g); } finally { g.settleProbeForTest = null; }
+        return new RolledMonth(going, mid[0]);
+    }
+
+    /** How far the policy rate is put up after the line is sold, so that the line stands at the coupon of lower rates and its reopening comes in under par (HoldersCheck 12 puts it up the same four points). */
+    static final double RATES_UP = .04;
+
+    /**
+     * The saved fixture, loaded fresh: the press at which the first bond's last month is paid, with the rates up and the curve struck on them,
+     * and the treasury's cash at nothing so that no surplus nets the central bank's par.
+     */
+    static Game atTheRollPress(GameFiles files) {
+        Game g = new Game(files);
+        g.holdCausesOfDeathOff();
+        quietly(() -> g.loadGameSave(ROLL_SLOT));
+        g.setRolloverMode(Rollover.Mode.SAME_STRUCTURE);
+        g.getDebtManager().setPolicyRate(g.getDebtManager().getPolicyRate() + RATES_UP);
+        g.strikeTheCurve();
+        g.setCashForTest(0);
+        return g;
+    }
+
+    /** The first bond: the term bond of the fixture's years that falls due next month. */
+    static Debt fallingDue(Game g) {
+        for (Debt d : g.getDebtManager().getDebt()) {
+            if (d instanceof LongTermBond && !d.isForeign() && d.getDuration() == LINE_YEARS * 12
+                    && d.principalDueNextMonth() > 0) return d;
+        }
+        return null;
+    }
+
+    /** Whether any of the city's term paper was sold between the presses and has yet to settle: what the central bank's par is added on to. */
+    static boolean soldBetweenPresses(Game g) {
+        for (Debt d : g.getDebtManager().getDebt()) if (DebtManager.isTermPaper(d) && d.getSettleDue() > 0) return true;
+        return false;
+    }
+
+    static void theParRolledIntoAHeldLine() throws Exception {
+        out.println("\n--- 22. the central bank's par rolled into a line the households hold part of: its face and its own discount"
+                + " join the line, and the bank's books do not move (BK1-C) ---");
+        GameFiles files = GameFiles.scratch("centralbankcheck-parline");
+        Game city = new Game(files);
+        // R0b call 7: the causes of death held off, as HoldersCheck 12's reopening fixture holds them, so that no household sells its
+        // part of the line back to the bank between the sale and the roll: the households' discount is read against itself.
+        city.holdCausesOfDeathOff();
+        quietly(() -> {
+            city.run();
+            city.getForeignAccounts().pinRate(1.0);
+            city.buildStack(template(city, "Gravel Road"), 6, true);
+            city.buildStack(template(city, "House"), 300, false);
+            city.buildStack(template(city, "Convenience Store"), 6, false);
+            city.buildStack(template(city, "Industrial Bakery"), 2, false);
+            city.buildStack(template(city, "Construction Depot"), 4, false);
+            city.buildStack(template(city, "Coal Power Plant"), 1, false);
+            city.buildStack(template(city, "Commercial Bank"), 1, false);
+            city.simulateMonths(60);
+        });
+        city.setRolloverMode(Rollover.Mode.SAME_STRUCTURE);
+        DebtManager ledger = city.getDebtManager();
+        CentralBank cb = city.getCentralBank();
+
+        /* ---- the fixture, built from the city's own sales: the first bond, all of it the central bank's ---- */
+        java.util.List<Debt> had = new java.util.ArrayList<>(ledger.getDebt());
+        final double askFirst = Math.max(20_000, city.getHouseholdBalance().spareForPaper() * 3);
+        quietly(() -> city.handleLongBondLogic(askFirst, LINE_YEARS, 100 * PriceLevel.FACTOR));
+        Debt first = pieceSince(ledger, had);
+        assertTrue("fixture: the treasury sold a two-year term bond", first != null && first.getDuration() == LINE_YEARS * 12);
+        play(city);                                        // the settle: the households and the bank take it
+        cb.setTargetShare(1.0);
+        int taking = 0;
+        while (first.centralBankPrincipal() < first.getOustandingPrincipal() * (1 - 1e-12) && taking++ < TAKE_ALL_MONTHS) play(city);
+        close("fixture: the central bank took the whole of the first bond, through its dial", first.centralBankPrincipal(),
+                first.getOustandingPrincipal(), 1e-9 * first.getOustandingPrincipal());
+        while (first.getRemainingMonths() > 2) play(city);
+
+        /* ---- ...then a line sold with two months left on it, which the roll will reopen: the households and the bank take it ---- */
+        had = new java.util.ArrayList<>(ledger.getDebt());
+        final double askLine = Math.max(20_000, city.getHouseholdBalance().spareForPaper() * 3);
+        quietly(() -> city.handleLongBondLogic(askLine, LINE_YEARS, 100 * PriceLevel.FACTOR));
+        Debt line = pieceSince(ledger, had);
+        assertTrue("fixture: the treasury sold a new line of the same term with the first bond two months from its end",
+                line != null && line != first && line.getDuration() == LINE_YEARS * 12 && ledger.benchmarkLine(LINE_YEARS) == line
+                        && first.getRemainingMonths() == 2);
+        // The dial at the share it holds of the book with the line in it, so that the holdings step buys none of the line off the
+        // households or the bank: what the section reads is the roll's own, not the dial's.
+        cb.setTargetShare(cb.getPaperHeld() / ledger.termPrincipal());
+        play(city);                                        // the line settles; the first bond has one month left
+        assertTrue("fixture: the households and the bank each hold part of the line",
+                line.householdPrincipal() > 0 && line.bankPrincipal() > 0);
+        assertTrue("fixture: the first bond is in its last month, and the line is the benchmark the roll will reopen",
+                first.principalDueNextMonth() > 0 && ledger.benchmarkLine(LINE_YEARS) == line);
+        quietly(() -> city.saveGame(ROLL_SLOT, "the press before the first bond is paid"));
+        out.printf("   m%d: the line $%,.0fk - the households $%,.0fk, the bank $%,.0fk; the first bond $%,.0fk, the central bank's%n",
+                city.getMonth(), line.getOustandingPrincipal(), line.householdPrincipal(), line.bankPrincipal(),
+                first.getOustandingPrincipal());
+
+        /* ---- its par alone: nothing is sold between the presses, the market's part of what falls due is nothing ---- */
+        out.println("   -- the rollover with nothing for the market to be sold: the central bank's par alone into the line");
+        Game alone = atTheRollPress(files);
+        Debt aLine = alone.getDebtManager().benchmarkLine(LINE_YEARS), aFirst = fallingDue(alone);
+        assertTrue("fixture: the benchmark line is a two-year line the households and the bank each hold part of",
+                aLine != null && aLine.householdPrincipal() > 0 && aLine.bankPrincipal() > 0);
+        assertTrue("fixture: the central bank holds the first bond, which falls due next month and is not the line",
+                aFirst != null && aFirst != aLine && aFirst.centralBankPrincipal() > 0);
+        Rollover.Plan alonePlan = alone.rolloverPlan();
+        assertTrue("fixture: the plan rolls the central bank's whole par, nets none of it and leaves the market nothing",
+                alonePlan.centralBankPar() > 0 && alonePlan.centralBankNetted() == 0 && alonePlan.issues().isEmpty()
+                        && Math.abs(alonePlan.toRoll()) < 1e-9);
+        assertTrue("fixture: nothing is sold between the presses", !soldBetweenPresses(alone));
+        assertTrue("fixture: ...and the central bank's book is at its dial, so none of it runs off or is bought on",
+                alone.centralBankOverItsDial() == 0);
+        double alonePar = alonePlan.centralBankPar();
+        RolledMonth aloneMonth = playRolling(alone, aLine);
+        aboutTheRoll("par alone", alone, aLine, aloneMonth, alonePar, Debt.CENTRAL_BANK_AT_PAR);
+
+        /* ---- its add-on: the treasury reopens the line between the presses while the central bank has par falling due ---- */
+        out.println("   -- the treasury reopens the line by hand in the gap: the central bank's par added on to the reopened sale");
+        Game added = atTheRollPress(files);
+        Debt dLine = added.getDebtManager().benchmarkLine(LINE_YEARS), dFirst = fallingDue(added);
+        int pieces = added.getDebtManager().getDebt().size();
+        final double askMore = Math.max(20_000, added.getHouseholdBalance().spareForPaper() * 2);
+        quietly(() -> added.handleLongBondLogic(askMore, LINE_YEARS, 100 * PriceLevel.FACTOR));
+        added.setCashForTest(0);                           // the sale raised cash; none to net the central bank's par
+        assertTrue("fixture: the sale reopened the same line - no new piece - and has yet to settle",
+                dLine != null && added.getDebtManager().getDebt().size() == pieces
+                        && added.getDebtManager().benchmarkLine(LINE_YEARS) == dLine && dLine.getSettleDue() > 0
+                        && dLine.unsettledFace() > 0);
+        assertTrue("fixture: the households and the bank each hold part of the line, and the central bank the first bond",
+                dLine.householdPrincipal() > 0 && dLine.bankPrincipal() > 0 && dFirst != null && dFirst != dLine
+                        && dFirst.centralBankPrincipal() > 0);
+        added.getCentralBank().setTargetShare(added.getCentralBank().getPaperHeld() / added.getDebtManager().termPrincipal());
+        Rollover.Plan addPlan = added.rolloverPlan();
+        assertTrue("fixture: the plan rolls the central bank's whole par, nets none of it, and sells the market nothing more",
+                addPlan.centralBankPar() > 0 && addPlan.centralBankNetted() == 0 && addPlan.issues().isEmpty()
+                        && Math.abs(addPlan.toRoll()) < 1e-9);
+        assertTrue("fixture: term paper was sold between the presses, and the central bank is at its dial",
+                soldBetweenPresses(added) && added.centralBankOverItsDial() == 0);
+        double addPar = addPlan.centralBankPar();
+        RolledMonth addedMonth = playRolling(added, dLine);
+        aboutTheRoll("add-on", added, dLine, addedMonth, addPar, Debt.CENTRAL_BANK_ADD_ON);
+
+        assertTrue(String.format("every month of the section closed the audit, and M0 moved by exactly the money made"
+                + " (%d months in all)", monthsPlayed), monthsBroken == 0);
+    }
+
+    /** What the central bank's par did to the line in the month it joined it, read at the probe, and what the month left of the bank's books. */
+    static void aboutTheRoll(String how, Game g, Debt line, RolledMonth m, double par, String saleReads) {
+        LineNow going = m.going(), rolled = m.rolled();
+        CentralBank cb = g.getCentralBank();
+        Bank bank = g.getBank();
+        assertTrue(how + ": the probe read the line between the roll and the settle", rolled != null);
+        if (rolled == null) return;
+        double paid = cb.getBoughtAtIssue();
+        double scale = Math.max(1, par);
+        close(how + ": the central bank rolled its par at issue, all of it", cb.getParAtIssue(), par, 1e-9 * scale);
+        double expectedCb = Math.max(0, going.of(Debt.Holder.CENTRAL_BANK) + par - paid);
+        out.printf("   %s: par $%,.4fk, paid $%,.4fk; the central bank's own discount on the line $%,.4fk to $%,.4fk;"
+                        + " the households' $%,.4fk, the bank's $%,.4fk%n", how, par, paid,
+                going.of(Debt.Holder.CENTRAL_BANK), rolled.of(Debt.Holder.CENTRAL_BANK),
+                rolled.of(Debt.Holder.HOUSEHOLDS), rolled.of(Debt.Holder.BANK));
+        assertTrue(how + ": the roll was under par, so there is a discount for it to carry", paid < par);
+
+        /* ---- the face joined the line ---- */
+        close(how + ": the line's face grew by the central bank's par", rolled.face() - going.face(), par, 1e-9 * scale);
+        assertTrue(how + ": ...its last sale reads \"" + saleReads + "\"",
+                rolled.sales() == going.sales() + 1 && saleReads.equals(rolled.lastHow()));
+        close(how + ": ...the central bank holds that much of the line more", rolled.centralBankFace() - going.centralBankFace(),
+                par, 1e-9 * scale);
+
+        /* ---- its own discount joined, the others' did not move ---- */
+        // The households' desk may sell the bank part of their face in the stretch of the month before the probe (a household on its way
+        // out, or the spread gone: HouseholdBalance's paper desk), and the face carries the households' discount per face with it. That is
+        // not the roll's, and it is accounted: what is asserted is that the roll moved nothing else.
+        double hhFace = going.householdFace(), hhPerFace = hhFace > 0 ? going.of(Debt.Holder.HOUSEHOLDS) / hhFace : 0;
+        double deskFace = hhFace - rolled.householdFace(), deskDiscount = deskFace * hhPerFace;
+        close(how + ": the central bank's own discount on the line rose by the par less what it paid (not under nothing)",
+                rolled.of(Debt.Holder.CENTRAL_BANK), expectedCb, 1e-9 * scale);
+        close(how + ": the households' own discount per face did not move across the roll (read before the settle and the month's accretion)",
+                rolled.of(Debt.Holder.HOUSEHOLDS), hhPerFace * rolled.householdFace(), 1e-9 * scale);
+        close(how + ": the bank's own did not move but by the discount on the face the households' desk sold it (" + String.format("$%,.4fk", deskFace) + " of face)",
+                rolled.of(Debt.Holder.BANK), going.of(Debt.Holder.BANK) + deskDiscount, 1e-9 * scale);
+        close(how + ": the businesses' and the world's did not move either",
+                rolled.of(Debt.Holder.FIRMS) + rolled.of(Debt.Holder.WORLD),
+                going.of(Debt.Holder.FIRMS) + going.of(Debt.Holder.WORLD), 1e-9 * scale);
+        close(how + ": the line's discount left grew by the central bank's alone", rolled.discountLeft() - going.discountLeft(),
+                expectedCb - going.of(Debt.Holder.CENTRAL_BANK), 1e-9 * scale);
+
+        /* ---- the bank's books did not move ---- */
+        close(how + ": the bank's face of the line grew by the desk's face and nothing from the roll", rolled.bankFace(),
+                going.bankFace() + deskFace, 1e-9 * scale);
+        close(how + ": ...so did its book of the city's paper", rolled.bankBook(), going.bankBook() + deskFace,
+                1e-9 * Math.max(1, going.bankBook()));
+        close(how + ": ...and its unearned discount over all of it, by the desk's discount", rolled.bankUnearned(),
+                going.bankUnearned() + deskDiscount, 1e-9 * Math.max(1, going.bankUnearned()));
+        close(how + ": so the month re-struck nothing of the bank's discount", bank.getDiscountRestruck(), 0, 1e-9);
+        Bank.EquityMovement moved = bank.equityMovement();
+        close(how + ": the bank's equity movement leaves nothing unexplained that month", moved.residual(), 0,
+                Math.max(1e-6, 1e-9 * moved.scale()));
+        close(how + ": ...and its equity's two parts and the preferred add up to its equity", bank.equitySplitResidual(), 0,
+                Math.max(1e-6, 1e-9 * Math.abs(bank.equity())));
+        MoneyAudit.Result audit = g.getLastMoneyAudit();
+        assertTrue(how + ": the money audit closed that month", Math.abs(audit.residual) <= MoneyAudit.tolerance(audit.moved()));
     }
 
     /* =====================================================================

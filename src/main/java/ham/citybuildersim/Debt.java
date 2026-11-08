@@ -165,7 +165,20 @@ public abstract class Debt {
      * discount was booked the month it settled.
      */
     protected double issueDiscount;
-    protected double discountLeft;
+
+    /** Who holds a piece of this paper, in the order the discount and the principal are kept by (BK2). */
+    public enum Holder { BANK, HOUSEHOLDS, CENTRAL_BANK, FIRMS, WORLD }
+
+    /**
+     * THE UNACCRETED DISCOUNT, EACH HOLDER'S OWN (BK2, 2026-11-08): what each holder has not yet earned of the discount on what it
+     * holds, set from the price it paid, and carried with the face when the face changes hands (pass()) at the SELLER's discount per
+     * face. Never below nothing. unsettledDiscount is the unsettled sales' face less what they raised, signed, and nobody's until the
+     * settle (settled() gives what is left to the bank, the residual buyer). WHY: one pool for the line was re-blended at every
+     * reopening, so the bank's unearned discount moved with no cash (BK1's re-strike, up to -$1,641k in a month in AutoBuildCheck's
+     * cities). Saved with the piece.
+     */
+    protected double bankDiscount, householdDiscount, centralBankDiscount, firmDiscount, worldDiscount;
+    protected double unsettledDiscount;
 
     public double householdPrincipal()   { return foreign ? 0 : householdPrincipal; }
     public double centralBankPrincipal() { return foreign ? 0 : centralBankPrincipal; }
@@ -182,7 +195,39 @@ public abstract class Debt {
     public double getSettleDue()      { return settleDue; }
     public double getIssueYield()     { return issueYield; }
     public double getIssueDiscount()  { return issueDiscount; }
-    public double getDiscountLeft()   { return discountLeft; }
+
+    /** What is left to accrete on the line, all holders': each one's own and the unsettled sales' (if they are a discount). */
+    public double getDiscountLeft() {
+        return bankDiscount + householdDiscount + centralBankDiscount + firmDiscount + worldDiscount
+                + Math.max(0, unsettledDiscount);
+    }
+
+    /** The unaccreted discount this holder has on the line (BK2). A dollar bond: zero. */
+    public double discountOf(Holder h) {
+        if (foreign || h == null) return 0;
+        return switch (h) {
+            case BANK -> bankDiscount;
+            case HOUSEHOLDS -> householdDiscount;
+            case CENTRAL_BANK -> centralBankDiscount;
+            case FIRMS -> firmDiscount;
+            case WORLD -> worldDiscount;
+        };
+    }
+
+    /** The unsettled sales' face less what they raised, signed: a premium reads below nothing. Nobody's until the settle. */
+    public double unsettledDiscount() { return foreign ? 0 : unsettledDiscount; }
+
+    /** The face this holder holds, for the discount's pro rata: the bank's is what it has paid for (bankPrincipalPaid()). */
+    double heldBy(Holder h) {
+        if (h == null) return 0;
+        return switch (h) {
+            case BANK -> bankPrincipalPaid();
+            case HOUSEHOLDS -> householdPrincipal();
+            case CENTRAL_BANK -> centralBankPrincipal();
+            case FIRMS -> firmPrincipal();
+            case WORLD -> worldPrincipal();
+        };
+    }
 
     /** Told at issue what it raised and at what yield. See Game's handle*Logic(). The city's books open with what it raised (openBooks()); a dollar piece's are opened by Game.handleForeignLogic(). */
     void markIssued(double received, double yield) {
@@ -195,7 +240,8 @@ public abstract class Debt {
         settleDue = Math.max(0, received);
         issueYield = yield;
         issueDiscount = Math.max(0, getOustandingPrincipal() - received);
-        discountLeft = issueDiscount;
+        bankDiscount = householdDiscount = centralBankDiscount = firmDiscount = worldDiscount = 0;
+        unsettledDiscount = getOustandingPrincipal() - received;
         unsettledFace = getOustandingPrincipal();
         openBooks(received);
         noteSale(monthStarted, getOustandingPrincipal(), received, yield, how);
@@ -207,16 +253,20 @@ public abstract class Debt {
      * its date, for `proceeds`. The face joins the piece's face and principal;
      * what the buyers owe for it joins settleDue (the line's older part was
      * settled when it was sold); the discount it carries - the face less what
-     * it raised - joins the discount still to accrete; and the issue yield
-     * blends by face, until CD3 replaces it with the effective interest.
+     * it raised - joins the unsettled sales' discount (unsettledDiscount, BK2),
+     * which nobody holds until the settle gives it to the buyers one by one
+     * (takeAtSettle()) and the bank, the residual, at the end; and the issue
+     * yield blends by face, until CD3 replaces it with the effective interest.
      *
      * A PREMIUM (proceeds over face, a line sold at a coupon over today's
      * yield) is not accreted: accrete() and Bank.takeDiscount() both ignore
-     * a negative discount, and the bank's unearned discount is held at
+     * a negative discount, and every holder's own discount is held at
      * nothing or more, exactly as markIssued() has always held a new piece's.
      * So the discount stays at nothing or more here too: the premium first
-     * eats what the line has left to accrete, and the rest is the buyers'
-     * loss when they pay it, never carried. Domestic paper only.
+     * eats what the buyer has on the line (takeAtSettle()), floored at
+     * nothing, and the rest is the buyers' loss when they pay it, never
+     * carried. The other holders' own discount does not move at the sale.
+     * Domestic paper only.
      *
      * THE CITY'S BOOKS (CD3) are not so held: what the sale raised, premium
      * or not, joins the carrying value, and the effective rate is solved
@@ -243,7 +293,7 @@ public abstract class Debt {
         unsettledFace += face;
         double discount = face - Math.max(0, proceeds);
         issueDiscount = Math.max(0, issueDiscount + discount);
-        discountLeft = Math.max(0, discountLeft + discount);
+        unsettledDiscount += discount;
         issueYield = was + face > 0 ? (issueYield * was + yield * face) / (was + face) : yield;
         carryingValue += Math.max(0, proceeds);
         effectiveRate = effectiveRateOf(scheduleOwed(), carryingValue);
@@ -264,15 +314,20 @@ public abstract class Debt {
     /** ...in the month the caller knows, recorded as the central bank's own sale (CD6). */
     void reopenForCentralBank(double face, double price, double yield, int month) {
         if (foreign || !(face > 0)) return;
-        double dueBefore = settleDue, unsettledBefore = unsettledFace;
+        double dueBefore = settleDue, unsettledBefore = unsettledFace, unsettledDiscountBefore = unsettledDiscount;
         reopen(face, price, yield, month, CENTRAL_BANK_AT_PAR);
         settleDue = dueBefore;
         unsettledFace = unsettledBefore;
+        unsettledDiscount = unsettledDiscountBefore;
         centralBankPrincipal += face;
+        centralBankDiscount = Math.max(0, centralBankDiscount + face - Math.max(0, price));
     }
 
     /** The settle has taken place: nothing is owed for this paper any more, and the allotment is paid. */
     void settled() {
+        // The bank, the residual buyer, takes what is left of the sale's discount: its face less what it paid, exactly (BK2).
+        bankDiscount = Math.max(0, bankDiscount + unsettledDiscount);
+        unsettledDiscount = 0;
         settleDue = 0;
         unsettledFace = 0;
         allotHouseholdsCash = allotHouseholdsFace = 0;
@@ -351,25 +406,95 @@ public abstract class Debt {
     }
 
     /**
-     * The discount the bank has not yet earned on what it has paid for: what
-     * is left to accrete on the part of the piece that has settled - the
-     * whole of it less the unsettled sale's own - pro rata to the face the
-     * bank holds of that part.
+     * The discount the bank has not yet earned on what it has paid for: its own (BK2), which the unsettled sale's is not in until
+     * the settle gives the bank what is left of it (settled()).
      */
     public double unaccretedOnPaid() {
-        if (foreign) return 0;
-        double settledOut = getOustandingPrincipal() - unsettledFace;
-        double paid = bankPrincipalPaid();
-        if (!(settledOut > 0) || !(paid > 0)) return 0;
-        double settledDiscount = Math.max(0, discountLeft - Math.max(0, unsettledFace - settleDue));
-        return settledDiscount * Math.min(1, paid / settledOut);
+        return foreign ? 0 : bankDiscount;
     }
 
-    /** Moves face between the holders: positive to the households, the central bank, the businesses or the world from the bank, negative back to it. */
-    void moveToHouseholds(double face)  { householdPrincipal = moved(householdPrincipal, face); }
-    void moveToCentralBank(double face) { centralBankPrincipal = moved(centralBankPrincipal, face); }
-    void moveToFirms(double face)       { firmPrincipal = moved(firmPrincipal, face); }
-    void moveToWorld(double face)       { worldPrincipal = moved(worldPrincipal, face); }
+    /**
+     * Moves face between the holders: positive to the households, the central bank, the businesses or the world from the bank, negative
+     * back to it - and the seller's discount per face with it (pass()). Returns that discount.
+     */
+    double moveToHouseholds(double face)  { return face >= 0 ? pass(Holder.BANK, Holder.HOUSEHOLDS, face) : pass(Holder.HOUSEHOLDS, Holder.BANK, -face); }
+    double moveToCentralBank(double face) { return face >= 0 ? pass(Holder.BANK, Holder.CENTRAL_BANK, face) : pass(Holder.CENTRAL_BANK, Holder.BANK, -face); }
+    double moveToFirms(double face)       { return face >= 0 ? pass(Holder.BANK, Holder.FIRMS, face) : pass(Holder.FIRMS, Holder.BANK, -face); }
+    double moveToWorld(double face)       { return face >= 0 ? pass(Holder.BANK, Holder.WORLD, face) : pass(Holder.WORLD, Holder.BANK, -face); }
+
+    /**
+     * FACE CHANGES HANDS (BK2): `face` of the line goes from one holder to another with the SELLER's own discount per face on it, and
+     * that discount is returned. A holder's discount is its own: what it paid for the face is what it earns, and the buyer takes on
+     * the seller's unearned part of it with the face, whatever the buyer paid. The outside holders' principal moves as moved() does; the
+     * bank's is the residual, so a bank side moves no field. The face moved is not clamped (the caller's); the discount carried is
+     * at most the seller's all, and all of it when what the seller keeps is within HOLDING_ROUNDING of the face of nothing - no dust of
+     * discount on no face. A dollar bond, a face at nothing or from == to: nothing moves.
+     */
+    double pass(Holder from, Holder to, double face) {
+        if (foreign || from == null || to == null || from == to || !(face > 0)) return 0;
+        double held = heldBy(from);
+        double share = held > 0 ? Math.min(1, face / held) : 0;
+        if (held - face <= HOLDING_ROUNDING * face) share = 1;
+        double carried = discountOf(from) * share;
+        setDiscount(from, discountOf(from) - carried);
+        setDiscount(to, discountOf(to) + carried);
+        if (from != Holder.BANK) setPrincipal(from, moved(principalField(from), -face));
+        if (to != Holder.BANK) setPrincipal(to, moved(principalField(to), face));
+        return carried;
+    }
+
+    /**
+     * A SALE'S SHARE TAKEN AT THE SETTLE (BK2): this holder (never the bank, which is the residual) takes `face` of the unsettled sale
+     * for `cash`. Its principal grows by the face, its own discount by the face less the cash, and the sale's unsettledDiscount falls
+     * by the same. A premium (cash over the face) first eats the buyer's own discount on the line, floored at nothing (reopen()'s rule,
+     * per holder); settled() gives what is left to the bank.
+     */
+    void takeAtSettle(Holder h, double face, double cash) {
+        if (foreign || h == null || h == Holder.BANK || !(face > 0)) return;
+        setPrincipal(h, moved(principalField(h), face));
+        setDiscount(h, Math.max(0, discountOf(h) + face - cash));
+        unsettledDiscount -= face - cash;
+    }
+
+    /**
+     * Principal repaid off a holder (BK2): its face falls by `face` and its own discount stays - every holder's face falls in
+     * proportion, so their discount per face moves alike, as the pool's did. The bank's is the residual: nothing to move.
+     */
+    void repay(Holder h, double face) {
+        if (foreign || h == null || h == Holder.BANK) return;
+        setPrincipal(h, moved(principalField(h), -face));
+    }
+
+    private double principalField(Holder h) {
+        return switch (h) {
+            case HOUSEHOLDS -> householdPrincipal;
+            case CENTRAL_BANK -> centralBankPrincipal;
+            case FIRMS -> firmPrincipal;
+            case WORLD -> worldPrincipal;
+            case BANK -> 0;
+        };
+    }
+
+    private void setPrincipal(Holder h, double value) {
+        switch (h) {
+            case HOUSEHOLDS -> householdPrincipal = value;
+            case CENTRAL_BANK -> centralBankPrincipal = value;
+            case FIRMS -> firmPrincipal = value;
+            case WORLD -> worldPrincipal = value;
+            case BANK -> { }
+        }
+    }
+
+    private void setDiscount(Holder h, double value) {
+        double v = Math.max(0, value);
+        switch (h) {
+            case BANK -> bankDiscount = v;
+            case HOUSEHOLDS -> householdDiscount = v;
+            case CENTRAL_BANK -> centralBankDiscount = v;
+            case FIRMS -> firmDiscount = v;
+            case WORLD -> worldDiscount = v;
+        }
+    }
 
     /** The share of the face moved under which what a holder is left with is the subtraction's rounding, and none (RT1). */
     static final double HOLDING_ROUNDING = 1e-12;
@@ -424,35 +549,49 @@ public abstract class Debt {
         faceValue += face;
         outstandingPrincipal = out + face;
         issueDiscount += discount;
-        discountLeft += discount;
         redenominateSchedule(k);
         centralBankPrincipal += face;
+        centralBankDiscount = Math.max(0, centralBankDiscount + face * (1 - price));
         carryingValue += face * price;
         effectiveRate = effectiveRateOf(scheduleOwed(), carryingValue);
         noteSale(month, face, face * price, issueYield, CENTRAL_BANK_ADD_ON);
     }
 
     /**
-     * The unaccreted discount that rides on this much face - the part a
-     * holder gives up, or takes on, when that face changes hands.
+     * The unaccreted discount that rides on this much of a holder's face - the part it gives up, or takes on, when that face changes
+     * hands (pass()): its own discount pro rata to the face it holds. The bank's, for a whole buyback before the settle (the bank's
+     * principal then includes the unsettled sale), adds the unsettled sale's discount, if it is one, pro rata to the face beyond what
+     * the bank has paid for.
      */
-    public double unaccretedOn(double face) {
-        double out = getOustandingPrincipal();
-        return out > 0 && face > 0 ? discountLeft * Math.min(1, face / out) : 0;
+    public double unaccretedOn(Holder h, double face) {
+        if (foreign || h == null || !(face > 0)) return 0;
+        double held = heldBy(h);
+        double own = held > 0 ? discountOf(h) * Math.min(1, face / held) : 0;
+        if (h == Holder.BANK && face > held && unsettledFace > 0) {
+            own += Math.max(0, unsettledDiscount) * Math.min(1, (face - held) / unsettledFace);
+        }
+        return own;
     }
 
     /**
-     * This month's accretion: what is left of the discount over the months
-     * left, taken off what is left. Straight-line, and exact to the last
-     * month, when the remainder goes whole. Called by DebtManager before the
-     * month's payments, so the holders' shares it is split by are the ones
-     * the month opened with.
+     * This month's accretion: what is left of each holder's own discount over the months left, taken off what is left. Straight-line,
+     * and exact to the last month, when the remainder goes whole. The unsettled sales' discount is nobody's and does not accrete.
+     * Returns the BANK's step only - the one income books (DebtManager.processAllDebts()); the others' discount is their own and
+     * wears off the same way. Called by DebtManager before the month's payments.
      */
     double accrete() {
-        if (foreign || discountLeft <= 0) return 0;
-        double step = remainingMonths <= 1 ? discountLeft : discountLeft / remainingMonths;
-        discountLeft = Math.max(0, discountLeft - step);
-        return step;
+        if (foreign) return 0;
+        double bankStep = accretionOf(bankDiscount);
+        bankDiscount = Math.max(0, bankDiscount - bankStep);
+        householdDiscount = Math.max(0, householdDiscount - accretionOf(householdDiscount));
+        centralBankDiscount = Math.max(0, centralBankDiscount - accretionOf(centralBankDiscount));
+        firmDiscount = Math.max(0, firmDiscount - accretionOf(firmDiscount));
+        worldDiscount = Math.max(0, worldDiscount - accretionOf(worldDiscount));
+        return bankStep;
+    }
+
+    private double accretionOf(double own) {
+        return own <= 0 ? 0 : remainingMonths <= 1 ? own : own / remainingMonths;
     }
 
     /* =======================================================================
@@ -486,7 +625,7 @@ public abstract class Debt {
        The bank's side is NOT this: accrete() above is the bank's straight-
        line discount income (Bank.takeDiscount()), and stays as it was; the
        bank's books are another study's (spec section 10). These fields sit
-       beside issueDiscount and discountLeft and read neither.
+       beside issueDiscount and the holders' discount and read neither.
 
        ONE CARRYING VALUE AND ONE EFFECTIVE RATE A LINE (D16): a reopening
        adds what the new sale raised to the carrying value and solves the
@@ -1188,7 +1327,12 @@ public abstract class Debt {
             allotWorldFace *= scale;
             allotWorldCash *= scale;
             issueDiscount *= scale;
-            discountLeft *= scale;
+            bankDiscount *= scale;
+            householdDiscount *= scale;
+            centralBankDiscount *= scale;
+            firmDiscount *= scale;
+            worldDiscount *= scale;
+            unsettledDiscount *= scale;
             // The city's books (CD3): the carrying value and the month's booked figures, in the new unit
             // like the face; the effective rate is a rate and does not move.
             carryingValue *= scale;
@@ -1229,8 +1373,9 @@ public abstract class Debt {
      * smaller, so its books close to the cent at its end as they did.
      *
      * The unaccreted discount that rides on the bank's face is the caller's to
-     * strike BEFORE this (unaccretedOn(bankFace)): after it the discount is
-     * the remaining piece's. Dollar paper is bought back in dollars at the
+     * strike BEFORE this (unaccretedOn(Holder.BANK, bankFace)): after it the discount is
+     * the remaining piece's. Each seller's own share of it goes with its face
+     * (BK2); the central bank's stays. Dollar paper is bought back in dollars at the
      * piece's rate: the faces are local money, {@code k} is their ratio to the
      * local principal, and the own-currency figures scale by it; its holder
      * fields read zero (it is the world's) and are not touched, and its
@@ -1254,6 +1399,13 @@ public abstract class Debt {
         if (!(taken > 0) || !(out > 0)) return;
         double k = Math.max(0, 1 - taken / out);
         if (!foreign) {
+            // each seller's own discount on the face it sells goes with the face (the central bank does not sell), struck before any principal moves
+            double bankOff = unaccretedOn(Holder.BANK, bank), hhOff = unaccretedOn(Holder.HOUSEHOLDS, hh),
+                   firmsOff = unaccretedOn(Holder.FIRMS, firms), worldOff = unaccretedOn(Holder.WORLD, world);
+            bankDiscount = Math.max(0, bankDiscount - bankOff);
+            householdDiscount = Math.max(0, householdDiscount - hhOff);
+            firmDiscount = Math.max(0, firmDiscount - firmsOff);
+            worldDiscount = Math.max(0, worldDiscount - worldOff);
             householdPrincipal = moved(householdPrincipal, -hh);
             firmPrincipal = moved(firmPrincipal, -firms);
             worldPrincipal = moved(worldPrincipal, -world);
@@ -1262,7 +1414,6 @@ public abstract class Debt {
         faceValue *= k;
         outstandingPrincipal *= k;
         issueDiscount *= k;
-        discountLeft *= k;
         carryingValue *= k;
         lastExpenseOwn *= k;
         lastCouponOwn *= k;

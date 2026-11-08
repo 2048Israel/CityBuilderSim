@@ -7369,7 +7369,7 @@ public final class GameVersion {
      *     note 11. A city of flat ground is priced by the old expressions.
      *   - Harness: LandClassCheck (new); LandClassRenders, docs/queue/ET3/.
      */
-    public static final String VERSION = "0.9.49";
+    public static final String VERSION = "0.9.50";
 
     /**
      * The save shape.
@@ -8249,8 +8249,22 @@ public final class GameVersion {
      *     city's world state belongs to another real year; and every dollar it
      *     holds is 38 times its new world's prices and wages. It is refused,
      *     naming the build that still opens it. No conversion is written.
+     *
+     * 51 - EACH HOLDER'S OWN DISCOUNT (batch BK2): a line of the city's paper
+     *     carries the bank's, the households', the central bank's, the firms'
+     *     and the world's unaccreted discount, each set at the price it paid,
+     *     and the unsettled sale's beside them (Debt's bankDiscount ...
+     *     unsettledDiscount), in place of one pool (discountLeft).
+     *
+     *     THE FLOOR RISES TO 51 WITH IT (the rule): a save of format 50 or
+     *     older would load WRONGLY. Its pieces carry the pool and none of the
+     *     six, so every holder would read no discount: the bank's unearned
+     *     discount would fall to nothing at the first refresh with no cause,
+     *     and its accretion income stop for the life of every line it holds.
+     *     It is refused, naming the build that still opens it. No conversion
+     *     is written.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 50;
+    public static final int SAVE_FORMAT = 51;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -8260,7 +8274,9 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
-     * 50 since batch EP1 (THE GAME STARTS IN 1900 above: a save's calendar
+     * 51 since batch BK2 (EACH HOLDER'S OWN DISCOUNT above: a save's pieces
+     * carry one pool of discount, and every holder would read none of it).
+     * 50 from batch EP1 (THE GAME STARTS IN 1900 above: a save's calendar
      * years would read a century ahead and its dollars 38 times its world's).
      * 49 from batch WN4 (THE WORLD'S MONEYS above: a save's dollar walked
      * and its D$ felt no world, and loaded on the US's path both would jump in
@@ -8297,7 +8313,7 @@ public final class GameVersion {
      * land, the old world's ground, the derived paid-in) is past the floor
      * now, and stays for the day old saves must load again.
      */
-    public static final int OLDEST_LOADABLE_FORMAT = 50;
+    public static final int OLDEST_LOADABLE_FORMAT = 51;
 
     /**
      * The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose
