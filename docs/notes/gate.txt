@@ -1,30 +1,15 @@
-# gate of Merge batch/RE2: real Estate's workers back in (Jerus, 2026-10-28: "gotta add workers to real estate"), as HD1 built them (fec704a7: 2 DIPLOMA posts a Studio and Low-Rise, homes before workers, the payroll in the rent floor), now that RE1 found the stall was HD1's town: on 0.8.77 no seed stalls with them. With them: EducationCheck's surplus fixture re-caused, ScaleCheck section 9 read again after EM2, and the ensemble watched for RE1's till trap (RE1-T: a seed that shows it is the fixture for its way (a), the payroll billed with the rent, queued then; Jerus, 2026-10-31: "Take all (Recommended)"); saves unchanged, the trace moves, 0.9.54
+# gate of Merge batch/HB1: a city's ports bundled into one harbour: every terminal kept, those on one island leaning toward one harbour (separate ports elsewhere allowed), ships berthed alongside the quay with the buildings there moved, and a harbour sprite put to Jerus with renders (his Bergen city, picture 5; Jerus, 2026-10-31: "you still want ports.. just perhaps that they bundle up?"); after MF2, 0.9.55
 # date: 2026-11-08
 # earth-2.bin: named
 # nightly: 2026-11-08 01:36 0.9.47 39c0948d 4,000 months: OK in 97 s
-# suite: 186 harnesses run in 1923s: 181 passed, 5 failed
-# timing: 16 harnesses run in 904s: 12 passed, 4 failed; its red lines were judged side by side with main's, below
+# suite: 186 harnesses run in 1314s: 181 passed, 5 failed
+# timing: 17 harnesses run in 1046s: 13 passed, 4 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 27.3 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 28.4 ms (gate.txt, today), batch 27.3 ms (-3.9%), budget 25 ms: main over the budget too, no round]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 42.8 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 29.3 ms, batch 29.9 ms (+2.0%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 16.9 ms, batch 17.7 ms (+4.5%), budget 19 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 18.4 ms, batch 18.1 ms (-1.2%), budget 19 ms: within 15% of main's]
 # timing red not the batch's (paired): MapCheck | 5 FAILED   [the harness's own count of the timing reds above]
-# figure	SaveSlotCheck	the median due month, 27.3 ms, holds the clock at most CLOCK_MS (25 ms)	27.3254	25	ms	FAIL	1	1
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | 1 FAILED
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): ScaleCheck | ...people: the copy is K times the city's within 0.0150 in all 6 months (worst 1.69e-02) FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): ScaleCheck | ...cash: the copy is K times the city's within 0.0125 in all 6 months (worst 1.57e-02) FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): ScaleCheck | ...prices: the copy is equal to the city's within 0.00400 in all 6 months (worst 4.78e-03) FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): ScaleCheck | 3 FAILED
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MapCheck | a yard laid across a district's buildings moves off it the boxes under it and no others: 71 of the plan before's 520 boxes lie under the yard and the railway, and 77 are not in the plan after (each of the rest stands where it stood) FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MapCheck | ...and the layout watch (LongPlaytest, as the map draws the district) counts them apart and flags none: 71 boxes left a district in the yard's month because a run laid in it lies across them, 6 are counted as moved FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MapCheck | a yard that goes moves none of the buildings: every box of the plan before stands in the plan after (726 of them, 22 moved) FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MapCheck | a yard laid again across the buildings that stand moves off it the boxes under it and no others: 67 of the plan before's 916 boxes lie under the yard and the railway, 121 are not in the plan after FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MapCheck | 4 FAILED
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | exit 4
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | most months make no node at all (11 of 25)                               FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | each month hands back nine in ten of the nodes the first draw made, or more (209 of 233) FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | the city has a plain business and a materials industry with works to draw (Construction, null) FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | 4 FAILED
+# figure	SaveSlotCheck	the median due month, 42.8 ms, holds the clock at most CLOCK_MS (25 ms)	29.8666	25	ms	FAIL	1	1
 MonetaryCheck | exit 1
 MonetaryCheck | ...and a month's delay in the hand moves them less than the allowance FAIL
 MonetaryCheck | 1 FAILED

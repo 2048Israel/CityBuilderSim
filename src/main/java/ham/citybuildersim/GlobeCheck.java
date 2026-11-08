@@ -889,7 +889,7 @@ public class GlobeCheck {
        2c. THE NEAR VIEW PAST THE REACH IS THE PLANE'S GROUND (MS2)
        ===================================================================== */
 
-    /** Jerus's near scale, km a pixel: 2 km in the scale bar's 120 px (ui/MapView.SCALE_BAR_PX), 1.8 px a plot - the view of his two screenshots. */
+    /** Jerus's near scale, km a pixel: 2 km in the scale bar's 120 px (MapFrame.SCALE_BAR_PX), 1.8 px a plot - the view of his two screenshots. */
     static final double JERUS_KM = 2.0 / 120;
 
     /**

@@ -1,4 +1,4 @@
-# MapFrame.java - 368 lines · 47 methods · 20 constants · model
+# MapFrame.java - 374 lines · 47 methods · 22 constants · model
 
 `ham/citybuildersim/MapFrame.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
 
@@ -28,16 +28,16 @@
 >   - FAR, past that: node images NODE_PX across from the world's terrain
 >     and the districts' counts, one image pixel nodePlots() plots.
 
-**Uses:** [World](World.md) (15), [TileRaster](TileRaster.md) (2)
+**Uses:** [World](World.md) (16), [TileRaster](TileRaster.md) (2)
 
-**Used by (22):** [CameraPath](CameraPath.md), [EarthTerrain](EarthTerrain.md), [EarthTerrainCheck](EarthTerrainCheck.md), [FoundingScreen](FoundingScreen.md), [GlobeCheck](GlobeCheck.md), [GlobeFrame](GlobeFrame.md), [JunctionCheck](JunctionCheck.md), [LandMap](LandMap.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [MiniMap](MiniMap.md), [MiniMapFrame](MiniMapFrame.md), [NationsMap](NationsMap.md), [PartnerCallsCheck](PartnerCallsCheck.md), [RailDrawCheck](RailDrawCheck.md), [ReliefRenders](ReliefRenders.md), [ReplayCheck](ReplayCheck.md), [ShipShapes](ShipShapes.md), [TrainShapes](TrainShapes.md), [TruckCheck](TruckCheck.md), [TruckSchedule](TruckSchedule.md)
+**Used by (24):** [BoatSchedule](BoatSchedule.md), [CameraPath](CameraPath.md), [EarthTerrain](EarthTerrain.md), [EarthTerrainCheck](EarthTerrainCheck.md), [FoundingScreen](FoundingScreen.md), [GlobeCheck](GlobeCheck.md), [GlobeFrame](GlobeFrame.md), [JunctionCheck](JunctionCheck.md), [LandMap](LandMap.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [MiniMap](MiniMap.md), [MiniMapFrame](MiniMapFrame.md), [NationsMap](NationsMap.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PortCheck](PortCheck.md), [RailDrawCheck](RailDrawCheck.md), [ReliefRenders](ReliefRenders.md), [ReplayCheck](ReplayCheck.md), [ShipShapes](ShipShapes.md), [TrainShapes](TrainShapes.md), [TruckCheck](TruckCheck.md), [TruckSchedule](TruckSchedule.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 163 | · the keys (0.7.135, batch E9; docs/studies/spec-globe.md 3.11) |
-| 222 | · the overlay on whole pixels (0.7.69, batch M5) |
+| 169 | · the keys (0.7.135, batch E9; docs/studies/spec-globe.md 3.11) |
+| 228 | · the overlay on whole pixels (0.7.69, batch M5) |
 
 ## Constants
 
@@ -46,90 +46,92 @@
 | 33 | `MapFrame.ZOOM_STEP` | `1.25` | A notch of the wheel zooms by this much, at the pointer: 1.25 (spec-land 2.6). |
 | 36 | `MapFrame.MOST_PX_A_PLOT` | `16` | The closest the view comes: 16 px a plot (spec-land 2.6), a plot's buildings and roads drawn at the raster's own widths. |
 | 39 | `MapFrame.L0_FROM` | `3.2` | L0 from here: 3.2 px a plot (the mockup's): buildings one by one. |
-| 42 | `MapFrame.L1_FROM` | `1.4` | L1 from here to L0: 1.4 px a plot (the mockup's): blocks of four plots; below it, blocks of eight. |
-| 45 | `MapFrame.BIG_TILES_FROM` | `6` | Past this the L0 tiles are rastered at BIG_TILE_PX: 6 px a plot (spec-land 2.6), where TileRaster begins to edge the buildings (EDGE_FROM) and case the roads. |
-| 48 | `MapFrame.SMALL_TILE_PX` | `4` | Pixels a plot an L0 tile is rastered at up to BIG_TILES_FROM: 4 (spec-land 2.6), TileRaster's first width with every road's line drawn. |
-| 51 | `MapFrame.BIG_TILE_PX` | `8` | ...and past it: 8 (spec-land 2.6). |
-| 54 | `MapFrame.MIDDLE_TILE_PX` | `2` | Pixels a plot an L1 tile is rastered at: 2 - the blocks of four drawn at the middle view's own scale, as J3b's renders drew them (round(1.74) at Jerus's expanded view), so a road is a line, not a band, when drawn up t... |
-| 57 | `MapFrame.FAR_TILE_PX` | `1` | ...and an L2 tile: 1, a pixel a plot, drawn smaller than it is. |
-| 60 | `MapFrame.NEAR_TILES_MOST` | `1024` | L2 draws painted tiles while the view holds no more than this many (star): 1,024 - a city the size of Jerus's (about 350 tiles fitted into the land office's small map) is drawn from its painted streets, as J3b's rende... |
-| 63 | `MapFrame.NODE_PX` | `128` | A far node image's side, in pixels: 128 (star) - shown between 128 and 256 px, so about 96 of them at most fill a 1,345 x 806 view. |
-| 66 | `MapFrame.FIT_MARGIN` | `0.94` | A fitted view leaves this much of itself round what it fits: 0.94 of the view (J3b's renders), a margin of 3% each side. |
-| 69 | `MapFrame.OPENING_MARGIN` | `0.35` | The land office opens on the city's own ground with this share of its half-size round it each way (star): 0.35 - the near part of every offer is in view, where fitting every offer whole would shrink the city (on the l... |
-| 72 | `MapFrame.L0` | `0, L1 = 1, L2 = 2, FAR = 3` | The levels. |
-| 75 | `MapFrame.BLOCK_LINES_FROM` | `6` | The city's block lines are drawn from here: a block at least 6 px across on screen (spec-grid 2.4), so the lines never crowd the ground they mark. |
-| 78 | `MapFrame.PLACE_LABEL_FROM` | `11` | An offer's place is written on it from here: its box at least 11 px each way on screen (0.7.69, star) - a digit of Plex Mono at 11 px is 6.6 px wide and 7.7 px of capital, so it stands clear of the box's edge, its hal... |
-| 81 | `MapFrame.OPENING_OFFER_PX` | `PLACE_LABEL_FROM + 1` | The land office opens close enough that its smallest offer is this many px across (0.7.79, star O3-2; LandMap.open()): PLACE_LABEL_FROM and a pixel for the grid's phase, since a box PLACE_LABEL_FROM px across on scree... |
-| 89 | `MapFrame.CLIP_PX` | `4` | How far past the view's edges the overlay is clipped, in px: 4 - a clipped box's 2 px edge, and a line's square cap, stay off the screen. |
-| 176 | `MapFrame.KEY_PX_A_SECOND` | `600` | A held key moves the ground this many screen pixels a second: 600 (spec-globe 3.11's est.) - the same at every zoom, so the expanded map's 1,345 pixels cross in a little over two seconds. |
-| 179 | `MapFrame.KEY_STEP_MOST_S` | `0.1` | A frame of the pump moves the keys' ground no more than this many seconds' worth: 0.1 (★E9) - a frame held up (a far node coloured, a collection) steps the view a sixth of the screen at most, not the whole stall's wor... |
+| 42 | `MapFrame.SCALE_BAR_PX` | `120` | The scale bar's longest, in pixels: 120 (the mockup's) - what ui/MapView draws the bar by and DETAIL_FROM is read from. |
+| 45 | `MapFrame.DETAIL_FROM` | `SCALE_BAR_PX * World.PLOT_M / 1000` | The detail starts where the scale bar first reads 500 m (Jerus, 2026-10-31, HB2's brief: "at 500m is where the detail would be"): above SCALE_BAR_PX x World.PLOT_M / 1000 px a plot, 3.6, the scale at which a bar of SC... |
+| 48 | `MapFrame.L1_FROM` | `1.4` | L1 from here to L0: 1.4 px a plot (the mockup's): blocks of four plots; below it, blocks of eight. |
+| 51 | `MapFrame.BIG_TILES_FROM` | `6` | Past this the L0 tiles are rastered at BIG_TILE_PX: 6 px a plot (spec-land 2.6), where TileRaster begins to edge the buildings (EDGE_FROM) and case the roads. |
+| 54 | `MapFrame.SMALL_TILE_PX` | `4` | Pixels a plot an L0 tile is rastered at up to BIG_TILES_FROM: 4 (spec-land 2.6), TileRaster's first width with every road's line drawn. |
+| 57 | `MapFrame.BIG_TILE_PX` | `8` | ...and past it: 8 (spec-land 2.6). |
+| 60 | `MapFrame.MIDDLE_TILE_PX` | `2` | Pixels a plot an L1 tile is rastered at: 2 - the blocks of four drawn at the middle view's own scale, as J3b's renders drew them (round(1.74) at Jerus's expanded view), so a road is a line, not a band, when drawn up t... |
+| 63 | `MapFrame.FAR_TILE_PX` | `1` | ...and an L2 tile: 1, a pixel a plot, drawn smaller than it is. |
+| 66 | `MapFrame.NEAR_TILES_MOST` | `1024` | L2 draws painted tiles while the view holds no more than this many (star): 1,024 - a city the size of Jerus's (about 350 tiles fitted into the land office's small map) is drawn from its painted streets, as J3b's rende... |
+| 69 | `MapFrame.NODE_PX` | `128` | A far node image's side, in pixels: 128 (star) - shown between 128 and 256 px, so about 96 of them at most fill a 1,345 x 806 view. |
+| 72 | `MapFrame.FIT_MARGIN` | `0.94` | A fitted view leaves this much of itself round what it fits: 0.94 of the view (J3b's renders), a margin of 3% each side. |
+| 75 | `MapFrame.OPENING_MARGIN` | `0.35` | The land office opens on the city's own ground with this share of its half-size round it each way (star): 0.35 - the near part of every offer is in view, where fitting every offer whole would shrink the city (on the l... |
+| 78 | `MapFrame.L0` | `0, L1 = 1, L2 = 2, FAR = 3` | The levels. |
+| 81 | `MapFrame.BLOCK_LINES_FROM` | `6` | The city's block lines are drawn from here: a block at least 6 px across on screen (spec-grid 2.4), so the lines never crowd the ground they mark. |
+| 84 | `MapFrame.PLACE_LABEL_FROM` | `11` | An offer's place is written on it from here: its box at least 11 px each way on screen (0.7.69, star) - a digit of Plex Mono at 11 px is 6.6 px wide and 7.7 px of capital, so it stands clear of the box's edge, its hal... |
+| 87 | `MapFrame.OPENING_OFFER_PX` | `PLACE_LABEL_FROM + 1` | The land office opens close enough that its smallest offer is this many px across (0.7.79, star O3-2; LandMap.open()): PLACE_LABEL_FROM and a pixel for the grid's phase, since a box PLACE_LABEL_FROM px across on scree... |
+| 95 | `MapFrame.CLIP_PX` | `4` | How far past the view's edges the overlay is clipped, in px: 4 - a clipped box's 2 px edge, and a line's square cap, stay off the screen. |
+| 182 | `MapFrame.KEY_PX_A_SECOND` | `600` | A held key moves the ground this many screen pixels a second: 600 (spec-globe 3.11's est.) - the same at every zoom, so the expanded map's 1,345 pixels cross in a little over two seconds. |
+| 185 | `MapFrame.KEY_STEP_MOST_S` | `0.1` | A frame of the pump moves the keys' ground no more than this many seconds' worth: 0.1 (★E9) - a frame held up (a far node coloured, a collection) steps the view a sixth of the screen at most, not the whole stall's wor... |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 91 | `private double width, height, cx, cy, scale` |  |
+| 97 | `private double width, height, cx, cy, scale` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 30 | 339 | **type** `public final class MapFrame` | The map view's arithmetic without the toolkit: where the view looks and how close, how a drag, a notch of the wheel and a held key (0.7.135) move it, which level of detail it draws and which tiles or far nodes that ta... |
-| 84 | 3 | `public static boolean labelFits(double[] box)` | Whether a box on screen (onScreen()) holds an offer's place number: PLACE_LABEL_FROM px each way or more. |
-| 94 | 7 | `public MapFrame(double width, double height)` | A view of width x height pixels, looking at the whole world. |
-| 102 | 1 | `public double width()` |  |
-| 103 | 1 | `public double height()` |  |
-| 105 | 1 | `public double centreX()` | Where it looks, in plots. |
-| 106 | 1 | `public double centreY()` |  |
-| 108 | 1 | `public double scale()` | How close: screen pixels a plot. |
-| 111 | 1 | `public double leastScale()` | The farthest the view goes: the whole world across its shorter side - about 28 km a pixel at the land office's expanded size. |
-| 114 | 5 | `public void resize(double w, double h)` | A new size, the centre and scale kept (clamped to the new least). |
-| 121 | 6 | `public void set(double x, double y, double s)` | Looks at (x, y) in plots, at a scale; both clamped. |
-| 128 | 6 | `private void clamp()` |  |
-| 136 | 4 | `public void fit(double x0, double y0, double x1, double y1)` | Fits a box of plots (x0, y0) to (x1, y1) into the view, FIT_MARGIN of it, centred. |
-| 142 | 8 | `public void zoomAt(double sx, double sy, double factor)` | Zooms by a factor about a screen point: the plot under it stays under it, unless a clamp stops it. |
-| 152 | 3 | `public void zoomNotches(double sx, double sy, double notches)` | ...by notches of the wheel, ZOOM_STEP each, in (positive) or out. |
-| 157 | 5 | `public void pan(double dx, double dy)` | A drag of (dx, dy) screen pixels: the ground moves with the pointer. |
+| 30 | 345 | **type** `public final class MapFrame` | The map view's arithmetic without the toolkit: where the view looks and how close, how a drag, a notch of the wheel and a held key (0.7.135) move it, which level of detail it draws and which tiles or far nodes that ta... |
+| 90 | 3 | `public static boolean labelFits(double[] box)` | Whether a box on screen (onScreen()) holds an offer's place number: PLACE_LABEL_FROM px each way or more. |
+| 100 | 7 | `public MapFrame(double width, double height)` | A view of width x height pixels, looking at the whole world. |
+| 108 | 1 | `public double width()` |  |
+| 109 | 1 | `public double height()` |  |
+| 111 | 1 | `public double centreX()` | Where it looks, in plots. |
+| 112 | 1 | `public double centreY()` |  |
+| 114 | 1 | `public double scale()` | How close: screen pixels a plot. |
+| 117 | 1 | `public double leastScale()` | The farthest the view goes: the whole world across its shorter side - about 28 km a pixel at the land office's expanded size. |
+| 120 | 5 | `public void resize(double w, double h)` | A new size, the centre and scale kept (clamped to the new least). |
+| 127 | 6 | `public void set(double x, double y, double s)` | Looks at (x, y) in plots, at a scale; both clamped. |
+| 134 | 6 | `private void clamp()` |  |
+| 142 | 4 | `public void fit(double x0, double y0, double x1, double y1)` | Fits a box of plots (x0, y0) to (x1, y1) into the view, FIT_MARGIN of it, centred. |
+| 148 | 8 | `public void zoomAt(double sx, double sy, double factor)` | Zooms by a factor about a screen point: the plot under it stays under it, unless a clamp stops it. |
+| 158 | 3 | `public void zoomNotches(double sx, double sy, double notches)` | ...by notches of the wheel, ZOOM_STEP each, in (positive) or out. |
+| 163 | 5 | `public void pan(double dx, double dy)` | A drag of (dx, dy) screen pixels: the ground moves with the pointer. |
 
-### the keys (0.7.135, batch E9; docs/studies/spec-globe.md 3.11) (lines 163-221)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 188 | 6 | `public static double[] keyVelocity(boolean w, boolean a, boolean s, boolean d)` | The ground's velocity on the screen from the keys held, {across, down} in pixels a second: W looks north, so the ground moves down; A west, the ground right; S south; D east. |
-| 196 | 4 | `public static double[] keyStep(double[] velocity, double seconds)` | The pixels a frame of `seconds` moves the ground at a velocity, its time capped at KEY_STEP_MOST_S: {across, down}. |
-| 202 | 4 | `public void keyPan(double[] velocity, double seconds)` | A frame of the keys held: the ground panned by keyStep() - as a drag of those pixels, the world's square its stop. |
-| 208 | 5 | `public static long nodePlotsAt(double scale)` | Plots a far node's pixel stands for at a scale: nodePlots()'s rule, the least power of two at least a screen pixel wide. |
-| 215 | 1 | `public double screenX(double x)` | A plot's place on the screen. |
-| 216 | 1 | `public double screenY(double y)` |  |
-| 219 | 1 | `public double plotX(double sx)` | The plot coordinate under a screen point. |
-| 220 | 1 | `public double plotY(double sy)` |  |
-
-### the overlay on whole pixels (0.7.69, batch M5) (lines 222-368)
+### the keys (0.7.135, batch E9; docs/studies/spec-globe.md 3.11) (lines 169-227)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 235 | 1 | `public double pixelX(double x)` | The pixel line a plot edge lies on, across: the screen column boundary nearest it, a half rounded up (never to even, so edges a plot apart are as many pixels apart wherever they fall), and two shapes sharing the edge ... |
-| 238 | 1 | `public double pixelY(double y)` | ...and down. |
-| 246 | 6 | `public double[] onScreen(double x0, double y0, double x1, double y1)` | A box of plots [x0, x1) x [y0, y1) on the screen: its edges on their pixel lines, clipped to the view and CLIP_PX round it, as {x0, y0, x1, y1} in pixels - at least a pixel each way - or null when no pixel of it is in... |
-| 263 | 13 | `public double[] runOnScreen(double x0, double y0, double x1, double y1)` | A run along plot edges on the screen, crisp: from (x0, y0) to (x1, y1), horizontal or vertical, with what it bounds on its right as it runs (a run east has it to the south, as LandMap.outline() gives them) - the pixel... |
-| 284 | 10 | `public double[] blockLines(int level, boolean columns)` | The block grid's lines in view (spec-grid 2.4): every multiple of 2^level plots across (columns) or down, as its pixel line - a line a pixel wide is the column or row of pixels after it, crisp; none when a block is un... |
-| 296 | 3 | `public static int levelOf(double scale)` | The level a scale draws at, before the count of tiles is asked: L0, L1 or L2. |
-| 301 | 5 | `public int level()` | The level this view draws at: L0, L1, L2, or FAR when an L2 view holds more than NEAR_TILES_MOST tiles. |
-| 308 | 8 | `public static int tilePx(int level, double scale)` | Pixels a plot a tile is rastered at for a level and scale: SMALL_TILE_PX or BIG_TILE_PX at L0, MIDDLE_TILE_PX at L1, FAR_TILE_PX at L2; 0 at FAR. |
-| 318 | 3 | `public static int blockOf(int level)` | The block a level's tiles are drawn in (TileRaster.blocks()): 0 at L0 (buildings one by one), BLOCK_MIDDLE at L1, BLOCK_FAR at L2. |
-| 323 | 1 | `public long tileX0()` | The first and last tile columns and rows in view (inclusive). |
-| 324 | 1 | `public long tileX1()` |  |
-| 325 | 1 | `public long tileY0()` |  |
-| 326 | 1 | `public long tileY1()` |  |
-| 329 | 1 | `public long tilesInView()` | How many tiles the view holds, whole and in part. |
-| 332 | 4 | `public long tilesAt(double s)` | The most tiles a view this size holds at a scale, wherever it looks: what a level's cache must hold for one screen. |
-| 338 | 1 | `public long nodePlots()` | Plots a far node's pixel stands for: the least power of two at least a screen pixel wide, so a node is shown at NODE_PX to twice that. |
-| 341 | 1 | `public long nodeSpan()` | A far node's side in plots. |
-| 344 | 1 | `public long nodeX0()` | The first and last far nodes in view (inclusive), in node spans from the world's corner, clipped to the world. |
-| 345 | 1 | `public long nodeX1()` |  |
-| 346 | 1 | `public long nodeY0()` |  |
-| 347 | 1 | `public long nodeY1()` |  |
-| 350 | 3 | `public long nodesAtMost()` | The most far nodes a view this size holds: what the node cache must hold. |
-| 355 | 8 | `public double[] scaleBar(double mostPx)` | The scale bar: the longest of 1, 2 and 5 times a power of ten metres no wider than mostPx, as {metres, pixels}. |
-| 365 | 3 | `public static String scaleWords(double metres)` | A scale bar's words: "500 m", "2 km", "1,000 km". |
+| 194 | 6 | `public static double[] keyVelocity(boolean w, boolean a, boolean s, boolean d)` | The ground's velocity on the screen from the keys held, {across, down} in pixels a second: W looks north, so the ground moves down; A west, the ground right; S south; D east. |
+| 202 | 4 | `public static double[] keyStep(double[] velocity, double seconds)` | The pixels a frame of `seconds` moves the ground at a velocity, its time capped at KEY_STEP_MOST_S: {across, down}. |
+| 208 | 4 | `public void keyPan(double[] velocity, double seconds)` | A frame of the keys held: the ground panned by keyStep() - as a drag of those pixels, the world's square its stop. |
+| 214 | 5 | `public static long nodePlotsAt(double scale)` | Plots a far node's pixel stands for at a scale: nodePlots()'s rule, the least power of two at least a screen pixel wide. |
+| 221 | 1 | `public double screenX(double x)` | A plot's place on the screen. |
+| 222 | 1 | `public double screenY(double y)` |  |
+| 225 | 1 | `public double plotX(double sx)` | The plot coordinate under a screen point. |
+| 226 | 1 | `public double plotY(double sy)` |  |
+
+### the overlay on whole pixels (0.7.69, batch M5) (lines 228-374)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 241 | 1 | `public double pixelX(double x)` | The pixel line a plot edge lies on, across: the screen column boundary nearest it, a half rounded up (never to even, so edges a plot apart are as many pixels apart wherever they fall), and two shapes sharing the edge ... |
+| 244 | 1 | `public double pixelY(double y)` | ...and down. |
+| 252 | 6 | `public double[] onScreen(double x0, double y0, double x1, double y1)` | A box of plots [x0, x1) x [y0, y1) on the screen: its edges on their pixel lines, clipped to the view and CLIP_PX round it, as {x0, y0, x1, y1} in pixels - at least a pixel each way - or null when no pixel of it is in... |
+| 269 | 13 | `public double[] runOnScreen(double x0, double y0, double x1, double y1)` | A run along plot edges on the screen, crisp: from (x0, y0) to (x1, y1), horizontal or vertical, with what it bounds on its right as it runs (a run east has it to the south, as LandMap.outline() gives them) - the pixel... |
+| 290 | 10 | `public double[] blockLines(int level, boolean columns)` | The block grid's lines in view (spec-grid 2.4): every multiple of 2^level plots across (columns) or down, as its pixel line - a line a pixel wide is the column or row of pixels after it, crisp; none when a block is un... |
+| 302 | 3 | `public static int levelOf(double scale)` | The level a scale draws at, before the count of tiles is asked: L0, L1 or L2. |
+| 307 | 5 | `public int level()` | The level this view draws at: L0, L1, L2, or FAR when an L2 view holds more than NEAR_TILES_MOST tiles. |
+| 314 | 8 | `public static int tilePx(int level, double scale)` | Pixels a plot a tile is rastered at for a level and scale: SMALL_TILE_PX or BIG_TILE_PX at L0, MIDDLE_TILE_PX at L1, FAR_TILE_PX at L2; 0 at FAR. |
+| 324 | 3 | `public static int blockOf(int level)` | The block a level's tiles are drawn in (TileRaster.blocks()): 0 at L0 (buildings one by one), BLOCK_MIDDLE at L1, BLOCK_FAR at L2. |
+| 329 | 1 | `public long tileX0()` | The first and last tile columns and rows in view (inclusive). |
+| 330 | 1 | `public long tileX1()` |  |
+| 331 | 1 | `public long tileY0()` |  |
+| 332 | 1 | `public long tileY1()` |  |
+| 335 | 1 | `public long tilesInView()` | How many tiles the view holds, whole and in part. |
+| 338 | 4 | `public long tilesAt(double s)` | The most tiles a view this size holds at a scale, wherever it looks: what a level's cache must hold for one screen. |
+| 344 | 1 | `public long nodePlots()` | Plots a far node's pixel stands for: the least power of two at least a screen pixel wide, so a node is shown at NODE_PX to twice that. |
+| 347 | 1 | `public long nodeSpan()` | A far node's side in plots. |
+| 350 | 1 | `public long nodeX0()` | The first and last far nodes in view (inclusive), in node spans from the world's corner, clipped to the world. |
+| 351 | 1 | `public long nodeX1()` |  |
+| 352 | 1 | `public long nodeY0()` |  |
+| 353 | 1 | `public long nodeY1()` |  |
+| 356 | 3 | `public long nodesAtMost()` | The most far nodes a view this size holds: what the node cache must hold. |
+| 361 | 8 | `public double[] scaleBar(double mostPx)` | The scale bar: the longest of 1, 2 and 5 times a power of ten metres no wider than mostPx, as {metres, pixels}. |
+| 371 | 3 | `public static String scaleWords(double metres)` | A scale bar's words: "500 m", "2 km", "1,000 km". |
 

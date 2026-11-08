@@ -38,6 +38,12 @@ public final class MapFrame {
     /** L0 from here: 3.2 px a plot (the mockup's): buildings one by one. */
     public static final double L0_FROM = 3.2;
 
+    /** The scale bar's longest, in pixels: 120 (the mockup's) - what ui/MapView draws the bar by and DETAIL_FROM is read from. */
+    public static final double SCALE_BAR_PX = 120;
+
+    /** The detail starts where the scale bar first reads 500 m (Jerus, 2026-10-31, HB2's brief: "at 500m is where the detail would be"): above SCALE_BAR_PX x World.PLOT_M / 1000 px a plot, 3.6, the scale at which a bar of SCALE_BAR_PX px reads exactly 1 km, so strictly above it, never at it; at it and below the map draws as before. */
+    public static final double DETAIL_FROM = SCALE_BAR_PX * World.PLOT_M / 1000;
+
     /** L1 from here to L0: 1.4 px a plot (the mockup's): blocks of four plots; below it, blocks of eight. */
     public static final double L1_FROM = 1.4;
 

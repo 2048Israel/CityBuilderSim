@@ -451,9 +451,148 @@ public final class CityShore {
         for (Work w : works) {
             if (!w.berthed() || w.type() < 0 || w.type() >= types.length || types[w.type()] == null || types[w.type()].berth() < 0) continue;
             double[] b = w.berth();
-            out.add(new BoatSchedule.Berth(Ports.Cargo.values()[types[w.type()].berth()], (long) Math.floor(b[0]), (long) Math.floor(b[1])));
+            out.add(new BoatSchedule.Berth(Ports.Cargo.values()[types[w.type()].berth()], (long) Math.floor(b[0]), (long) Math.floor(b[1]), w.side()));
         }
         return out;
+    }
+
+    /* ----- the harbour's quay and its boats alongside (HB1, 2026-11-08) ----- */
+
+    /** How wide a gap along the shore a harbour's quay still joins across, in plots: 2 x CLEAR + 1, 3 - the verge each of two neighbours keeps and a plot more, so works that stand side by side read as one wall, and works farther apart as two. */
+    public static final int WALL_JOIN_GAP = 2 * CLEAR + 1;
+
+    /**
+     * One run of a harbour's quay, drawn as a wall from DETAIL_FROM in: world plots (x0, y0) to (x0 + w, y0 + h) not included, on the
+     * sea side `side` of the works it stands before (0 north to 3 west).
+     */
+    public record Wall(long x0, long y0, int w, int h, int side) {
+
+        /** Whether it meets the plots from (x0, y0) up to, not including, (x1, y1). */
+        public boolean meets(long wx0, long wy0, long wx1, long wy1) {
+            return x0 < wx1 && x0 + w > wx0 && y0 < wy1 && y0 + h > wy0;
+        }
+
+        /** Whether world plot (x, y) is in it. */
+        public boolean holds(long x, long y) {
+            return x >= x0 && y >= y0 && x < x0 + w && y < y0 + h;
+        }
+    }
+
+    /** The walls as they were made, and what they were made against: the version and the count of works (a list edited by hand moves the count, as the index checks). */
+    private record Walls(long version, int works, Wall[] walls) { }
+
+    /** The walls, or null when they are to be made again: a reader takes the set it finds, so a rebuild beside it costs it a stale answer, never a failed one. */
+    private volatile Walls walls;
+
+    /**
+     * The harbour's quays as walls, cached on version(): for each berthed work with quay() == HARBOUR_QUAY_PLOTS the strip of plots along its
+     * box's whole sea side, quay() plots deep; and between two such works facing the same side, whose strips lie on the same line (the same
+     * outer edge), a gap along the shore of at most WALL_JOIN_GAP plots, the gap's strip too - so side-by-side works have one wall, works
+     * farther apart one each. No plot of any work's box is in a wall: a box in a strip cuts the wall in pieces round it. Works on piers of
+     * their own (a quay of QUAY_PLOTS, laid before MF1) have no wall. In the order of side, line and place along the shore.
+     */
+    public List<Wall> walls() {
+        return List.of(wallsNow().walls);
+    }
+
+    /** The walls that meet the plots from (x0, y0) up to, not including, (x1, y1): a frame's, from the cached set, in the order of walls(). */
+    public List<Wall> wallsIn(long x0, long y0, long x1, long y1) {
+        List<Wall> out = new ArrayList<>();
+        for (Wall w : wallsNow().walls) if (w.meets(x0, y0, x1, y1)) out.add(w);
+        return out;
+    }
+
+    private Walls wallsNow() {
+        Walls c = walls;
+        long v = version;
+        int n = works.size();
+        if (c != null && c.version() == v && c.works() == n) return c;
+        c = new Walls(v, n, makeWalls());
+        walls = c;
+        return c;
+    }
+
+    /** One work's strip before its sea side, as {side, line, from, to, depth}: `line` the strip's outer edge, `from` to `to` (not included) along the shore. */
+    private static long[] strip(Work k) {
+        int q = k.quay(), s = k.side();
+        switch (s) {
+            case 0:  return new long[] { s, k.y0() - q, k.x0(), k.x0() + k.w(), q };
+            case 1:  return new long[] { s, k.x0() + k.w() + q, k.y0(), k.y0() + k.h(), q };
+            case 2:  return new long[] { s, k.y0() + k.h() + q, k.x0(), k.x0() + k.w(), q };
+            default: return new long[] { s, k.x0() - q, k.y0(), k.y0() + k.h(), q };
+        }
+    }
+
+    /** The walls of walls(): the strips sorted by side, line and place, joined across WALL_JOIN_GAP, each cut round the boxes it meets. */
+    private Wall[] makeWalls() {
+        List<long[]> strips = new ArrayList<>();
+        for (Work k : works) {
+            if (k.berthed() && k.quay() == HARBOUR_QUAY_PLOTS && k.side() >= 0 && k.side() < DX.length) strips.add(strip(k));
+        }
+        strips.sort((a, b) -> a[0] != b[0] ? Long.compare(a[0], b[0]) : a[1] != b[1] ? Long.compare(a[1], b[1]) : Long.compare(a[2], b[2]));
+        List<Wall> out = new ArrayList<>();
+        for (int i = 0; i < strips.size(); ) {
+            long[] a = strips.get(i);
+            long to = a[3];
+            int j = i + 1;
+            while (j < strips.size() && strips.get(j)[0] == a[0] && strips.get(j)[1] == a[1] && strips.get(j)[2] - to <= WALL_JOIN_GAP) {
+                to = Math.max(to, strips.get(j)[3]);
+                j++;
+            }
+            int depth = (int) a[4], len = (int) (to - a[2]);
+            long x0, y0;
+            int w, h;
+            switch ((int) a[0]) {
+                case 0:  x0 = a[2]; y0 = a[1]; w = len; h = depth; break;
+                case 1:  x0 = a[1] - depth; y0 = a[2]; w = depth; h = len; break;
+                case 2:  x0 = a[2]; y0 = a[1] - depth; w = len; h = depth; break;
+                default: x0 = a[1]; y0 = a[2]; w = depth; h = len; break;
+            }
+            cutRound(out, new Wall(x0, y0, w, h, (int) a[0]));
+            i = j;
+        }
+        return out.toArray(new Wall[0]);
+    }
+
+    /** Whether the wall meets work k's box. */
+    private static boolean meetsBox(Wall wall, Work k) {
+        return wall.meets(k.x0(), k.y0(), k.x0() + k.w(), k.y0() + k.h());
+    }
+
+    /** `wall` added to `out` less every plot of every work's box: the works that stand in its plots, and the pieces of it round their boxes. */
+    private void cutRound(List<Wall> out, Wall wall) {
+        List<Work> in = new ArrayList<>();
+        long cx0 = wall.x0() >> CELL_SHIFT, cx1 = (wall.x0() + wall.w() - 1) >> CELL_SHIFT, cy0 = wall.y0() >> CELL_SHIFT, cy1 = (wall.y0() + wall.h() - 1) >> CELL_SHIFT;
+        if ((cx1 - cx0 + 1) * (cy1 - cy0 + 1) <= CELLS_MOST) {
+            // The works of the cells the wall touches (SL1's index): a box that meets the wall touches one of them.
+            Index ix = index();
+            for (long cy = cy0; cy <= cy1; cy++) {
+                for (long cx = cx0; cx <= cx1; cx++) {
+                    Cell c = ix.cellAt(cx, cy);
+                    if (c != null) for (Work k : c.works) if (meetsBox(wall, k) && !in.contains(k)) in.add(k);
+                }
+            }
+            for (Work k : ix.wide) if (meetsBox(wall, k) && !in.contains(k)) in.add(k);
+        } else {
+            for (Work k : works) if (meetsBox(wall, k) && !in.contains(k)) in.add(k);
+        }
+        List<Wall> pieces = new ArrayList<>();
+        pieces.add(wall);
+        for (Work k : in) {
+            List<Wall> next = new ArrayList<>();
+            for (Wall p : pieces) {
+                long px1 = p.x0() + p.w(), py1 = p.y0() + p.h(), kx1 = k.x0() + k.w(), ky1 = k.y0() + k.h();
+                if (!p.meets(k.x0(), k.y0(), kx1, ky1)) { next.add(p); continue; }
+                // Left and right of the box over the wall's whole depth, then above and below it between them.
+                if (k.x0() > p.x0()) next.add(new Wall(p.x0(), p.y0(), (int) (k.x0() - p.x0()), p.h(), p.side()));
+                if (kx1 < px1) next.add(new Wall(kx1, p.y0(), (int) (px1 - kx1), p.h(), p.side()));
+                long mx0 = Math.max(p.x0(), k.x0()), mx1 = Math.min(px1, kx1);
+                if (k.y0() > p.y0()) next.add(new Wall(mx0, p.y0(), (int) (mx1 - mx0), (int) (k.y0() - p.y0()), p.side()));
+                if (ky1 < py1) next.add(new Wall(mx0, ky1, (int) (mx1 - mx0), (int) (py1 - ky1), p.side()));
+            }
+            pieces = next;
+        }
+        out.addAll(pieces);
     }
 
     /* ----- the sidecar ----- */

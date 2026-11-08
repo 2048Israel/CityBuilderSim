@@ -1,4 +1,4 @@
-# SeaRoutes.java - 946 lines · 44 methods · 19 constants · model
+# SeaRoutes.java - 974 lines · 45 methods · 19 constants · model
 
 `ham/citybuildersim/SeaRoutes.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 > each terminal side by side. The berths are routed now in the order the
 > ... (24 more lines in the source)
 
-**Uses:** [BoatSchedule](BoatSchedule.md) (36), [World](World.md) (14), [SeaLanes](SeaLanes.md) (2)
+**Uses:** [BoatSchedule](BoatSchedule.md) (37), [World](World.md) (14), [CityShore](CityShore.md) (3), [SeaLanes](SeaLanes.md) (2)
 
 **Used by (6):** [BoatSchedule](BoatSchedule.md), [CityMap](CityMap.md), [GatewayCheck](GatewayCheck.md), [Gateways](Gateways.md), [MapCheck](MapCheck.md), [PartnerCallsCheck](PartnerCallsCheck.md)
 
@@ -74,7 +74,7 @@
 |---:|---|
 | 213 | THE GRID |
 | 281 | A ROUTE |
-| 628 | SHARED LANES (SL1, 2026-10-28) |
+| 656 | SHARED LANES (SL1, 2026-10-28) |
 
 ## Constants
 
@@ -98,7 +98,7 @@
 | 145 | `SeaRoutes.EXIT_LEAST_M` | `ABYSS_M / 2` | The least run of open sea an exit has, in metres: ABYSS_M / 2, 1.5 km; a bearing whose sea (and its turned legs') ends sooner is closed, for a boat would fade within sight of the offing (WN7). |
 | 148 | `SeaRoutes.BLOCK` | `64` | Cells a side of a block of the grid read at once: 64, 1,024 plots (a block a World.regionTerrain() call). |
 | 435 | `SeaRoutes.OPEN_M` | `OFFING_M` | How far out a berth's water must reach for a terminal to stand on it, in metres: OFFING_M, the offing's own margin past the city (star O13-5). |
-| 635 | `SeaRoutes.Router.SIDE` | `2 * JOIN_CELLS + 1` | A join's scratch window: JOIN_CELLS either way of the berth's start cell. |
+| 663 | `SeaRoutes.Router.SIDE` | `2 * JOIN_CELLS + 1` | A join's scratch window: JOIN_CELLS either way of the berth's start cell. |
 
 ## Fields (state)
 
@@ -110,30 +110,30 @@
 | 224 | `final Map<Long, byte[]> opens` | Each block's cells' openness as worked out: 0 not yet, 1 the shore's, 2 open water. |
 | 225 | `final byte[] buf` |  |
 | 226 | `int read` |  |
-| 637 | `final Grid g` |  |
-| 638 | `final long siteX, siteY` |  |
-| 639 | `final double radius` |  |
-| 640 | `final int reach` |  |
-| 641 | `final Lanes lanes` |  |
-| 642 | `final int[] joinAt` |  |
-| 643 | `int searched, joined` |  |
-| 646 | `private final Map<List<Double>, double[]> exitsAt` | The exits worked out for each offing point so far (WN7): a joined route has its lane's offing, so it has its lane's exits, found once. |
-| 649 | `private final double[] cost` | The window's cells: the cost reached, the cell it was reached from, and the join they were last reached in (a stamp, so nothing is cleared). |
-| 650 | `private final int[] prev` |  |
-| 651 | `private int gen` |  |
-| 653 | `private double[] heapCost` | The cells reached and not yet looked at, a binary heap by cost, then by cell. |
-| 654 | `private int[] heapAt` |  |
-| 655 | `private int heapN` |  |
-| 863 | `final List<BoatSchedule.Route> routes` | The routes taken in, in order (all of them, whether they are lanes or not). |
-| 865 | `int count` | How many of them are lanes. |
-| 867 | `private final Map<Long, long[]> cells` | Each cell's legs: route << 24 \| leg, in the order taken in. |
-| 869 | `private final SeaLanes.Legs kept` | The legs indexed, each once (SeaLanes.Legs: a leg kept already, or lying on one that ends where it does, is not indexed again). |
+| 665 | `final Grid g` |  |
+| 666 | `final long siteX, siteY` |  |
+| 667 | `final double radius` |  |
+| 668 | `final int reach` |  |
+| 669 | `final Lanes lanes` |  |
+| 670 | `final int[] joinAt` |  |
+| 671 | `int searched, joined` |  |
+| 674 | `private final Map<List<Double>, double[]> exitsAt` | The exits worked out for each offing point so far (WN7): a joined route has its lane's offing, so it has its lane's exits, found once. |
+| 677 | `private final double[] cost` | The window's cells: the cost reached, the cell it was reached from, and the join they were last reached in (a stamp, so nothing is cleared). |
+| 678 | `private final int[] prev` |  |
+| 679 | `private int gen` |  |
+| 681 | `private double[] heapCost` | The cells reached and not yet looked at, a binary heap by cost, then by cell. |
+| 682 | `private int[] heapAt` |  |
+| 683 | `private int heapN` |  |
+| 891 | `final List<BoatSchedule.Route> routes` | The routes taken in, in order (all of them, whether they are lanes or not). |
+| 893 | `int count` | How many of them are lanes. |
+| 895 | `private final Map<Long, long[]> cells` | Each cell's legs: route << 24 \| leg, in the order taken in. |
+| 897 | `private final SeaLanes.Legs kept` | The legs indexed, each once (SeaLanes.Legs: a leg kept already, or lying on one that ends where it does, is not indexed again). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 95 | 852 | **type** `public final class SeaRoutes` | Each sea terminal's route out to the world: found once on a grid of the sea at 480 m, pulled straight, sailed from the terminal's quay out to the offing - past the city's ground, on the bearing with the most open sea ... |
+| 95 | 880 | **type** `public final class SeaRoutes` | Each sea terminal's route out to the world: found once on a grid of the sea at 480 m, pulled straight, sailed from the terminal's quay out to the offing - past the city's ground, on the bearing with the most open sea ... |
 | 97 | 1 | `private SeaRoutes()` |  |
 | 151 | 3 | `public static List<BoatSchedule.Route> of(World world, List<BoatSchedule.Berth> berths, long siteX, long siteY, double radius)` | Each terminal's route, in the berths' order, each against those before it (pure in the world, the berths, the site and the radius). |
 | 161 | 1 | **type** `public record Found(List<BoatSchedule.Route> routes, int searched, int joined, int[] joinAt)` | The routes found, and how: how many berths were searched (route(): the 72 bearings and an A*, a straight lane where the sea gave no way) and how many joined a lane (join()), of the berths this call routed; for each of... |
@@ -157,45 +157,46 @@
 | 257 | 12 | `boolean open(long ci, long cj)` _(in SeaRoutes.Grid)_ | Whether a sea cell is open water: every cell about it sea too; else it is the shore's. |
 | 271 | 8 | `boolean clear(double ai, double aj, double bi, double bj)` _(in SeaRoutes.Grid)_ | Whether the straight line between two cells' middles crosses only sea cells, looked at three times a cell along it (the prototype's clear()). |
 
-### A ROUTE (lines 281-627)
+### A ROUTE (lines 281-655)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 286 | 4 | `static int reachOf(double radius)` | How far out the offing lies from a berth's start cell for a city of this radius, in cells: the radius plus OFFING_M, at least 1, at most RAY_CELLS. |
 | 292 | 3 | `static BoatSchedule.Route route(Grid g, BoatSchedule.Berth b, long siteX, long siteY, double radius)` | A berth's route, searched (SeaRoutes' rule). |
-| 297 | 74 | `static BoatSchedule.Route route(Grid g, BoatSchedule.Berth b, long[] start, long siteX, long siteY, double radius)` | ...from its start cell, which nearestSea() found (null for none: the straight lane). |
+| 297 | 74 | `static BoatSchedule.Route route(Grid g, BoatSchedule.Berth b, long[] start, long siteX, long siteY, double radius)` | ...from its start cell, which startOf() found (null for none: the straight lane). |
 | 382 | 51 | `static List<long[]> outOfTheBay(Grid g, long[] start, int reach, double away)` | The way out of a bay (star O13-5): Dijkstra over the sea's cells from `start` (eight ways, a shore cell SHORE_COST times an open one), no cell farther than `reach` cells from it in a straight line, at most EXPANSIONS_... |
 | 444 | 26 | `public static boolean opensToSea(Grid g, long x, long y, java.util.Set<Long> shut)` | Whether the water at world plot (x, y) opens to the sea (star O13-5): from its cell, or the nearest sea cell within NEAR_CELLS, the sea's cells reach OPEN_M away in a straight line, eight ways (a breadth-first flood, ... |
 | 477 | 5 | `static double abyssRun(Grid g, double x, double y, double ux, double uy)` | How far past the offing (x, y) the abyss runs on along (ux, uy), in plots: ABYSS_M, or the longest of its lengths a third of a cell shorter at a time whose leg keeps to the sea's cells (legOnSea()) - a third of a cell... |
 | 489 | 14 | `static double[] exitsAt(Grid g, double x, double y)` | The exits of the offing at (x, y) (WN7): for each compass bearing every BEARING_STEP degrees from north (the plane's BoatSchedule.compassX() and compassY()), the run of open sea out on it in plots - the least of abyss... |
 | 505 | 8 | `static boolean legOnSea(Grid g, double ax, double ay, double bx, double by)` | Whether the straight leg from (ax, ay) to (bx, by) keeps to the sea's cells, looked at three times a cell along it, both ends too. |
-| 515 | 13 | `static long[] nearestSea(Grid g, long ci, long cj)` | The berth's own cell when it is sea, else the nearest sea cell within NEAR_CELLS (the nearer, then the first in rows), or null. |
-| 530 | 12 | `static int run(Grid g, long[] from, int deg)` | The run of sea cells out from a cell on a bearing, in cells, up to RAY_CELLS; 1,000 more when it leaves the world at sea (the prototype's open water). |
-| 544 | 41 | `static List<long[]> astar(Grid g, long[] a, long[] b)` | The cheapest way over the sea's cells, eight ways, a shore cell SHORE_COST times an open one, Euclidean ahead (the prototype's astar()); null when none, or past EXPANSIONS_MOST. |
-| 586 | 1 | `private static long key(long i, long j)` |  |
-| 589 | 12 | `static List<long[]> pull(Grid g, List<long[]> path)` | String pulling (the prototype's pull()): from each point kept, on to the farthest point the straight line reaches over sea alone. |
-| 609 | 18 | `static boolean tailClear(Grid g, double[] xs, double[] ys, int pivot, double turn)` | Whether the route's last leg and abyss, turned by `turn` radians about the pivot, keep to sea cells: looked at three times a cell along them, past the pivot's own cell and the one beside it (the pivot is the berth whe... |
+| 523 | 18 | `static long[] startOf(Grid g, BoatSchedule.Berth b)` | A berth's start cell (HB1): nearestSea()'s, but when the berth's own cell is land and its side is known, the nearest sea cell within NEAR_CELLS whose centre lies out from the berth on its sea side (the nearer, then th... |
+| 543 | 13 | `static long[] nearestSea(Grid g, long ci, long cj)` | The berth's own cell when it is sea, else the nearest sea cell within NEAR_CELLS (the nearer, then the first in rows), or null. |
+| 558 | 12 | `static int run(Grid g, long[] from, int deg)` | The run of sea cells out from a cell on a bearing, in cells, up to RAY_CELLS; 1,000 more when it leaves the world at sea (the prototype's open water). |
+| 572 | 41 | `static List<long[]> astar(Grid g, long[] a, long[] b)` | The cheapest way over the sea's cells, eight ways, a shore cell SHORE_COST times an open one, Euclidean ahead (the prototype's astar()); null when none, or past EXPANSIONS_MOST. |
+| 614 | 1 | `private static long key(long i, long j)` |  |
+| 617 | 12 | `static List<long[]> pull(Grid g, List<long[]> path)` | String pulling (the prototype's pull()): from each point kept, on to the farthest point the straight line reaches over sea alone. |
+| 637 | 18 | `static boolean tailClear(Grid g, double[] xs, double[] ys, int pivot, double turn)` | Whether the route's last leg and abyss, turned by `turn` radians about the pivot, keep to sea cells: looked at three times a cell along them, past the pivot's own cell and the one beside it (the pivot is the berth whe... |
 
-### SHARED LANES (SL1, 2026-10-28) (lines 628-946)
+### SHARED LANES (SL1, 2026-10-28) (lines 656-974)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 633 | 221 | **type** `private static final class Router` | The routes of one call, in the berths' order: each joins a lane of those before it (join()) or is searched (route()). |
-| 657 | 9 | `Router(Grid g, long siteX, long siteY, double radius, int berths)` _(in SeaRoutes.Router)_ |  |
-| 668 | 4 | `void keep(BoatSchedule.Route r)` _(in SeaRoutes.Router)_ | A route found already, for the next berth: it is a lane for those after, and its exits are those of its offing. |
-| 673 | 3 | `private static List<Double> offingOf(BoatSchedule.Route r)` _(in SeaRoutes.Router)_ |  |
-| 678 | 5 | `private BoatSchedule.Route withExits(BoatSchedule.Route r)` _(in SeaRoutes.Router)_ | The route with the exits of its offing (WN7), made once for each offing point; a straight lane has none. |
-| 685 | 12 | `void next(BoatSchedule.Berth b)` _(in SeaRoutes.Router)_ | The next berth's route: joined to a lane when one is in reach, else searched. |
-| 704 | 44 | `private BoatSchedule.Route join(int at, BoatSchedule.Berth b, long[] start)` _(in SeaRoutes.Router)_ | The berth's route by a lane (SL1): a Dijkstra over the sea's cells from `start` (eight ways, a shore cell SHORE_COST times an open one, as outOfTheBay() costs them), no cell farther than JOIN_CELLS from it in a straig... |
-| 755 | 52 | `private BoatSchedule.Route assemble(int at, BoatSchedule.Berth b, long[] start, List<long[]> path, int[] cover)` _(in SeaRoutes.Router)_ | The joined route: the berth, the way to the covering cell pulled straight (pull(), with route()'s rule for the berth's own cell and its FR3 check of the berth's first leg), the join point, then the lane's own points a... |
-| 808 | 3 | `private boolean before(int a, int b)` _(in SeaRoutes.Router)_ |  |
-| 812 | 15 | `private void push(double c, int at)` _(in SeaRoutes.Router)_ |  |
-| 829 | 15 | `private void pop()` _(in SeaRoutes.Router)_ | Takes the heap's first away. |
-| 845 | 8 | `private void swap(int a, int b)` _(in SeaRoutes.Router)_ |  |
-| 861 | 64 | **type** `private static final class Lanes` | The lanes a berth may join: the legs of the routes found by a search or joined (a straight lane, two points, is never one), each from its berth up to its offing and never the abyss's, indexed by the sea cell each pass... |
-| 872 | 27 | `void add(BoatSchedule.Route r)` _(in SeaRoutes.Lanes)_ | The next route taken in: indexed when it is a lane. |
-| 901 | 3 | `static int samples(double ax, double ay, double bx, double by)` _(in SeaRoutes.Lanes)_ | The samples along a leg, three a cell as legOnSea() takes them (the last index; there is one more). |
-| 905 | 3 | `static long cellOf(double v)` _(in SeaRoutes.Lanes)_ |  |
-| 913 | 11 | `int[] covering(long ci, long cj, long[] start, int reach)` _(in SeaRoutes.Lanes)_ | The lane covering cell (ci, cj) that a berth whose start cell is `start` may join, as {route, leg}, or null: the first in the order taken in whose offing lies at least (reach - 1) cells from the start. |
-| 931 | 15 | `private static double[] joinPoint(Grid g, BoatSchedule.Route q, int leg, long ci, long cj)` | Where a berth's way meets leg `leg` of lane q, which covers cell (ci, cj): the point on the leg nearest the cell's middle; or, where the straight way from the middle to it would leave the sea (the point lies in the ne... |
+| 661 | 221 | **type** `private static final class Router` | The routes of one call, in the berths' order: each joins a lane of those before it (join()) or is searched (route()). |
+| 685 | 9 | `Router(Grid g, long siteX, long siteY, double radius, int berths)` _(in SeaRoutes.Router)_ |  |
+| 696 | 4 | `void keep(BoatSchedule.Route r)` _(in SeaRoutes.Router)_ | A route found already, for the next berth: it is a lane for those after, and its exits are those of its offing. |
+| 701 | 3 | `private static List<Double> offingOf(BoatSchedule.Route r)` _(in SeaRoutes.Router)_ |  |
+| 706 | 5 | `private BoatSchedule.Route withExits(BoatSchedule.Route r)` _(in SeaRoutes.Router)_ | The route with the exits of its offing (WN7), made once for each offing point; a straight lane has none. |
+| 713 | 12 | `void next(BoatSchedule.Berth b)` _(in SeaRoutes.Router)_ | The next berth's route: joined to a lane when one is in reach, else searched. |
+| 732 | 44 | `private BoatSchedule.Route join(int at, BoatSchedule.Berth b, long[] start)` _(in SeaRoutes.Router)_ | The berth's route by a lane (SL1): a Dijkstra over the sea's cells from `start` (eight ways, a shore cell SHORE_COST times an open one, as outOfTheBay() costs them), no cell farther than JOIN_CELLS from it in a straig... |
+| 783 | 52 | `private BoatSchedule.Route assemble(int at, BoatSchedule.Berth b, long[] start, List<long[]> path, int[] cover)` _(in SeaRoutes.Router)_ | The joined route: the berth, the way to the covering cell pulled straight (pull(), with route()'s rule for the berth's own cell and its FR3 check of the berth's first leg), the join point, then the lane's own points a... |
+| 836 | 3 | `private boolean before(int a, int b)` _(in SeaRoutes.Router)_ |  |
+| 840 | 15 | `private void push(double c, int at)` _(in SeaRoutes.Router)_ |  |
+| 857 | 15 | `private void pop()` _(in SeaRoutes.Router)_ | Takes the heap's first away. |
+| 873 | 8 | `private void swap(int a, int b)` _(in SeaRoutes.Router)_ |  |
+| 889 | 64 | **type** `private static final class Lanes` | The lanes a berth may join: the legs of the routes found by a search or joined (a straight lane, two points, is never one), each from its berth up to its offing and never the abyss's, indexed by the sea cell each pass... |
+| 900 | 27 | `void add(BoatSchedule.Route r)` _(in SeaRoutes.Lanes)_ | The next route taken in: indexed when it is a lane. |
+| 929 | 3 | `static int samples(double ax, double ay, double bx, double by)` _(in SeaRoutes.Lanes)_ | The samples along a leg, three a cell as legOnSea() takes them (the last index; there is one more). |
+| 933 | 3 | `static long cellOf(double v)` _(in SeaRoutes.Lanes)_ |  |
+| 941 | 11 | `int[] covering(long ci, long cj, long[] start, int reach)` _(in SeaRoutes.Lanes)_ | The lane covering cell (ci, cj) that a berth whose start cell is `start` may join, as {route, leg}, or null: the first in the order taken in whose offing lies at least (reach - 1) cells from the start. |
+| 959 | 15 | `private static double[] joinPoint(Grid g, BoatSchedule.Route q, int leg, long ci, long cj)` | Where a berth's way meets leg `leg` of lane q, which covers cell (ci, cj): the point on the leg nearest the cell's middle; or, where the straight way from the middle to it would leave the sea (the point lies in the ne... |
 
