@@ -138,6 +138,7 @@ stuff".
 | LF1b | The cells' share trades with the world as a FINANCIAL/DOMESTIC pair in MoneyAudit, as BondMarket books the cells' bonds: the financial account leaves their shares out today; moves the exchange rate and the trace, so the size first and the ensemble (LF1's notes, 2) | [LF1b](docs/queue/LF1b.md) |
 | EN2 | The ensemble names the data files (`data/earth-2.bin`, `data/world-1.bin`) in a worktree, as the gate and `nightly.sh` do, with one baseline taken under the new setting (RE2's ★4, taken on its recommendation); a small process batch, Sonnet whole | [EN2](docs/queue/EN2.md) |
 | RE3 | The landlords' payroll billed with the rent at once (RE1-T's way (a), settled 2026-10-31 on Jerus's "Take all (Recommended)"), its fixture AUTO2 seed 3 on RE2's model: 125 loss months, a 59-month down-payment hold and the town near 20,000 for 160 months while main's doubles | [RE3](docs/queue/RE3.md) |
+| CD9b | CD9's review follow-ups (the stranger's review at its gate, 2026-11-08): `Debt.effectiveRateOf`'s javadoc says `getYieldToMaturity()` is left as it was, though CD9 split its bracket at the payments' total; CurrencyCheck's two extreme-rate sections (lines 886, 914) build a bare ledger and assert `revalueForeign`'s own formula, and should drive the fixture city's own ledger, red on a skipped revaluation; a small fix batch, Sonnet whole | [CD9b](docs/queue/CD9b.md) |
 
 ## Pending
 
