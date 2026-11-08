@@ -93,6 +93,7 @@ No young city is trapped, and nothing is built.
 - **★3 FL1-E and HD2-P are settled by these measurements** (for the orchestrator to take out of Pending): R2 passes
   on both paths (+1.73 and +1.68 points against +0.50), and PassThroughCheck's "...and so does the price index" passes
   on the band (0.25% against 0.81%).
+  Taken out of Pending by the orchestrator after the 0.9.56 tag, 2026-11-08 (BP1: the recommended call, measured passing).
 
 ## 6. The checks
 
