@@ -18,6 +18,9 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### CX2 — a lighter start and a slower climb for the Opus sessions — 2026-11-07, ready, no tag (process), see docs/queue/CX2-notes.md
+After CX1 the Opus sessions were most of the plan: 120 Opus transcripts in a week, 3.79B tokens. A batch session starts at 86.7k before its first read and re-sends a mean 249k a step over a median 161 steps (36.6M tokens); the orchestrator begun on 11-05 was still running two days on at 792k a step (323M tokens, 8.5% of the week). The start is mostly tool definitions (Artifact alone 12.5k), the system prompt and the listings; past step 150 lie 31% of a batch session's tokens, and 88% of its steps make one call. The new `.claude/settings.json` denies the tools no session in this folder has ever called (about 7k off every start), and has Opus compact near 300k instead of 1M, which keeps the session's id and lane where a hand-over cannot. `CLAUDE.md`'s "Sessions" rule says what must survive a compaction goes in the notes, independent reads go in one step and a wide search goes to an `Explore` agent on Sonnet. By the notes' model the Opus tokens fall about 32% and a batch session's mean context a third; what stays outside the repository (Artifact and the browser pane loaded whole, personal chats in this folder, unused skills) is put to Jerus. Unrun: CX2-M measures.
+
 ### 0.9.47 — GT2, a timing red main also misses re-runs nothing — 2026-11-07, ready, see docs/queue/GT2-notes.md
 No player sees this one: the gate is shorter. Every gate since 11-05 had a timing red that main itself misses (SaveSlotCheck's
 25 ms, main's medians 26-57 ms), and `ship.sh` timed each in three paired rounds of main's classes and the merge's, 20-80
