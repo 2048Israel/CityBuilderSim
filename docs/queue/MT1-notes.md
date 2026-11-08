@@ -46,3 +46,11 @@ green on the full file (`-Dcbs.earth` named). The new assertions are in the firs
 
 None: no script and no rule changed. `CLAUDE.md`'s "forty-four files" became "forty-five" (`ui/IslandChip.java` is the
 45th; `Stale` has it as a firm finding), and `docs/tree.md` has the two new files' line.
+
+## The checks
+
+`./batch-check.sh --pick` on the merge with main (ab904e13), the full Earth file named: exit 3, `MapCheck`'s recorded
+reds only (its two yard reds; the 5B timing red SOFT). The first run exited 4 on one line of `FittingCheck` ("one more
+press on each leaves the treasury equal to the bit", $0.27 over, a harness about the treasury that reads none of this
+diff): it passed alone on main's classes and, twice, on this branch's, and passed in the second `--pick`, so it is a
+load flake of the three-at-once suite, not the batch's; named here because it was a NEW red once.
