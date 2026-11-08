@@ -689,7 +689,7 @@ public final class CityMap {
         long cx = (baseDX + dx) * DISTRICT + DISTRICT / 2, cy = (baseDY + dy) * DISTRICT + DISTRICT / 2;
         double ox = cx - siteX, oy = cy - siteY;
         District d = new District(dx, dy, types.length, ox * ox + oy * oy);
-        freeOf = freeRoadOf = null;
+        freeOf = freeRoadOf = freeTree = roadTree = null;
         districts.add(d);
         d.index = districts.size() - 1;
         indexDistrict(d);
@@ -711,8 +711,11 @@ public final class CityMap {
             weighQueue.add(d);
         }
         if (freeOf != null) {
-            freeOf[d.index] = d.freeCells();
-            freeRoadOf[d.index] = d.freeRoad();
+            long free = d.freeCells(), road = d.freeRoad();
+            freeOf[d.index] = free;
+            freeRoadOf[d.index] = road;
+            setLeaf(freeTree, d.index, free);
+            setLeaf(roadTree, d.index, road);
         }
     }
 
@@ -736,10 +739,114 @@ public final class CityMap {
         }
         freeOf = free;
         freeRoadOf = road;
+        treeSize = 1;
+        while (treeSize < n) treeSize <<= 1;
+        freeTree = treeOver(free);
+        roadTree = treeOver(road);
     }
 
+    /* ----- THE ROOM TREE (UP8, 2026-11-08) ----- */
+    /*
+     * WHY: in a full city every type's overflow called roomiest(), a scan of all 29,255 districts' objects at 10 billion (12 to 32 ms a month), and
+     * a month's walks stepped over long runs of full districts (place() 1.3 ms in the year's first and eighth months, 0.3 otherwise). A max tree over
+     * freeOf and freeRoadOf finds the next district with room, and the roomiest, in about fifteen steps. MP1 tried a tree for roomiest() and took it
+     * out because MapCheck's year never asked it; MapCheck section 5b asks it. Written in moved(), null where the arrays are.
+     */
+
+    /** A max tree over a keepFree() array: leaf i at treeSize + i, the leaves past the last district -1 so none ever has room; node k is the larger of 2k and 2k + 1. */
+    private long[] freeTree, roadTree;
+    private int treeSize;
+
+    private long[] treeOver(long[] leaves) {
+        long[] tree = new long[2 * treeSize];
+        Arrays.fill(tree, -1);
+        System.arraycopy(leaves, 0, tree, treeSize, leaves.length);
+        for (int k = treeSize - 1; k >= 1; k--) tree[k] = Math.max(tree[2 * k], tree[2 * k + 1]);
+        return tree;
+    }
+
+    /** Leaf i of a room tree to v, the nodes above it to the larger of their children (stopping where one does not change). */
+    private void setLeaf(long[] tree, int i, long v) {
+        int k = treeSize + i;
+        tree[k] = v;
+        for (k >>= 1; k >= 1; k >>= 1) {
+            long m = Math.max(tree[2 * k], tree[2 * k + 1]);
+            if (tree[k] == m) return;
+            tree[k] = m;
+        }
+    }
+
+    /** The least district index j >= from, below the districts' count, whose value in the room tree is at least x; the count when there is none. */
+    private int firstAtLeast(long[] tree, int from, long x) {
+        int n = districts.size();
+        if (from < 0) from = 0;
+        if (from >= n) return n;
+        int k = treeSize + from;
+        for (;;) {
+            if (tree[k] >= x) {
+                while (k < treeSize) k = tree[2 * k] >= x ? 2 * k : 2 * k + 1;
+                return Math.min(k - treeSize, n);
+            }
+            // Not in this subtree: the next one to its right.
+            while ((k & 1) == 1) {
+                if (k == 1) return n;
+                k >>= 1;
+            }
+            k++;
+        }
+    }
+
+    /** The greatest district index j <= from, not below 0, whose value in the room tree is at least x; -1 when there is none. */
+    private int lastAtLeast(long[] tree, int from, long x) {
+        int n = districts.size();
+        if (from >= n) from = n - 1;
+        if (from < 0) return -1;
+        int k = treeSize + from;
+        for (;;) {
+            if (tree[k] >= x) {
+                while (k < treeSize) k = tree[2 * k + 1] >= x ? 2 * k + 1 : 2 * k;
+                return k - treeSize;
+            }
+            // Not in this subtree: the next one to its left.
+            while (k > 1 && (k & 1) == 0) k >>= 1;
+            if (k == 1) return -1;
+            k--;
+        }
+    }
+
+    /** The least district index holding the room tree's maximum (the districts are not empty). */
+    private int leftmostMax(long[] tree) {
+        int k = 1;
+        while (k < treeSize) k = tree[2 * k] >= tree[k] ? 2 * k : 2 * k + 1;
+        return k - treeSize;
+    }
+
+    /** True when the room the walks read is each district's own: freeOf and freeRoadOf equal freeCells() and freeRoad() of every district and every tree node is the larger of its children (a harness's exactness check); true while they are not kept. */
+    boolean freeKept() {
+        if (freeOf == null) return true;
+        int n = districts.size();
+        if (freeOf.length != n || freeRoadOf.length != n) return false;
+        for (int i = 0; i < n; i++) {
+            District d = districts.get(i);
+            if (freeOf[i] != d.freeCells() || freeRoadOf[i] != d.freeRoad()) return false;
+        }
+        return treeKept(freeTree, freeOf) && treeKept(roadTree, freeRoadOf);
+    }
+
+    private boolean treeKept(long[] tree, long[] leaves) {
+        if (tree == null || tree.length != 2 * treeSize) return false;
+        for (int i = 0; i < treeSize; i++) if (tree[treeSize + i] != (i < leaves.length ? leaves[i] : -1)) return false;
+        for (int k = treeSize - 1; k >= 1; k--) if (tree[k] != Math.max(tree[2 * k], tree[2 * k + 1])) return false;
+        return true;
+    }
+
+    /** How many place()s of the last reconcile() put buildings into roomiest(): the districts had no room for them (a harness reads it). */
+    int lastOverflows() { return lastOverflows; }
+
+    private int lastOverflows;
+
     private void sortDistricts() {
-        freeOf = freeRoadOf = null;
+        freeOf = freeRoadOf = freeTree = roadTree = null;
         districts.sort(DISTRICT_ORDER);
         for (int i = 0; i < districts.size(); i++) districts.get(i).index = i;
         rangeTypes();
@@ -764,8 +871,9 @@ public final class CityMap {
     }
 
     private void advanceCursors() {
-        while (innerCursor < districts.size() && districts.get(innerCursor).freeCells() < MIN_ROOM) innerCursor++;
-        while (outerCursor >= 0 && districts.get(outerCursor).freeCells() < MIN_ROOM) outerCursor--;
+        keepFree();
+        if (innerCursor < districts.size() && freeOf[innerCursor] < MIN_ROOM) innerCursor = firstAtLeast(freeTree, innerCursor, MIN_ROOM);
+        if (outerCursor >= 0 && freeOf[outerCursor] < MIN_ROOM) outerCursor = lastAtLeast(freeTree, outerCursor, MIN_ROOM);
     }
 
     /* =====================================================================
@@ -1050,6 +1158,7 @@ public final class CityMap {
         if (siteIndex == null && measured) siteIndex();   // ET5: a stamp change dropped it (landmassPicture()); built once now, over the land as it stands
         this.month = month;
         nPassed = 0;
+        lastOverflows = 0;
         int touched = 0;
         // The buildings first, then the roads, which follow them (0.7.72, ROADS FOLLOW THEIR BUILDINGS).
         roadShare = roadShareOf(model);
@@ -1379,11 +1488,12 @@ public final class CityMap {
         int i = out ? outerCursor : innerCursor, kind = (out ? 2 : 0) | (road ? 1 : 0), first = -2;
         if (each > 0) i = passed(kind, each, i);
         keepFree();
-        long[] fits = road ? freeRoadOf : freeOf;
+        long[] fits = road ? freeRoadOf : freeOf, tree = road ? roadTree : freeTree;
         while (n > 0 && i >= 0 && i < districts.size()) {
-            // A district with fewer free plots than the building takes has room for none (GT1: read from the array, not the district).
+            // A district with fewer free plots than the building takes has room for none (GT1: read from the array, not the district):
+            // the walk goes on to the next with room, in the room tree (UP8), the end of the districts when none has.
             if (each > 0 && fits[i] < each) {
-                i += out ? -1 : 1;
+                i = out ? lastAtLeast(tree, i, each) : firstAtLeast(tree, i, each);
                 continue;
             }
             District d = districts.get(i);
@@ -1402,6 +1512,7 @@ public final class CityMap {
             District most = roomiest();
             add(most, most.index, t, n);
             touched++;
+            lastOverflows++;
         }
         return touched;
     }
@@ -1578,9 +1689,9 @@ public final class CityMap {
 
     /** The district with the most room left, the nearer on a tie: where what no district has room for goes, to be drawn smaller there. */
     District roomiest() {
-        District best = districts.isEmpty() ? home() : districts.get(0);
-        for (District d : districts) if (d.freeCells() > best.freeCells()) best = d;
-        return best;
+        if (districts.isEmpty()) return home();
+        keepFree();
+        return districts.get(leftmostMax(freeTree));
     }
 
     /** Takes n of type t away: an inner type from the outermost district holding it in, an outer type from the innermost out. */

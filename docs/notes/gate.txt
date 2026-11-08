@@ -1,28 +1,13 @@
-# gate of Merge batch/TP1: trade by partner through a currency reform: WN3's partner records (the month, the year to date, the finished years) rescaled with the money, and the map's lane threshold in real terms; found by the stranger's review at WN3's gate (display and record only), 0.9.48
+# gate of Merge batch/UP8: the 10B month's change at its causes: the month after a big month (its dirty districts' log, the placing and the cursors, 3.4-3.9 ms against 1.3-1.6 for the rest - MapCheck 5's worst bounded month, red at the gates under load; nothing grew since MP1), and the walk once the copies are full (12-15 ms a month at 10B from the third year, `place()` and `roomiest()`, on every tag since 0.8.61), with a fixture that fills them; ABBA against main, no budget moved (the orchestrator, 2026-10-29, during UP5); and RT1's three gates (2026-11-05), the 10B month at twice main's each time (5.7 ms against 3.2, then 4.15 against 2.07, three paired rounds each) on maps scaled from the fixed `JERUS_COUNTS` that no line of RT1 reaches: what in the JVM before section 5 (the played city RT1 changed: its heap, its JIT profile) doubles the map's month, and whether a game's JVM meets it, 0.9.49
 # date: 2026-11-08
 # earth-2.bin: named
 # nightly: 2026-11-08 01:36 0.9.47 39c0948d 4,000 months: OK in 97 s
-# suite: 186 harnesses run in 1361s: 181 passed, 5 failed
-# timing: 16 harnesses run in 1678s: 11 passed, 5 failed; its red lines were judged side by side with main's, below
-# timing red not the batch's (paired): EarthTerrainCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): EarthTerrainCheck | the cells pass in no more than CELLS_PASS_MS of the wall clock, its tiles read from the file the first time FAIL  1116 ms of the wall clock (this JVM cannot read a thread's CPU finely enough) the first time (1116 on the wall clock), 871 again (871 on the wall clock); the study 370-450 on the wall clock   [main 497 ms, batch 368 ms (-26.1%), budget 1000 ms: within 15% of main's]
-# timing red not the batch's (paired): EarthTerrainCheck | a hilly tile's ground and its relief together in no more than TILE_MS (the median of 3 rounds over 32 x 32 tiles about Medellin) FAIL  0.322 ms a tile: 0.147 for the cover and 0.175 for the relief beside it (cover kept; rounds 0.170 to 0.187)   [main 0.07 ms, batch 0.0703 ms (+0.4%), budget 0.3 ms: within 15% of main's]
-# timing red not the batch's (paired): EarthTerrainCheck | 2 FAILED   [the harness's own count of the timing reds above]
+# suite: 186 harnesses run in 1089s: 181 passed, 5 failed
+# timing: 16 harnesses run in 831s: 13 passed, 3 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 100.4 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 27.1 ms, batch 32.1 ms (+18.5%), budget 25 ms: main over the budget too]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 26.9 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 32.1 ms (gate.txt, today), batch 26.9 ms (-16.0%), budget 25 ms: main over the budget too, no round]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | ...and is written and read back in no more than SIDECAR_MS (500 ms) each       FAIL   [main 237 ms, batch 232 ms (-2.1%), budget 500 ms: within 15% of main's; main 273 ms, batch 280 ms (+2.4%), budget 500 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | ...and is written and read back in no more than SIDECAR_MS (500 ms) each       FAIL   [main 237 ms, batch 232 ms (-2.1%), budget 500 ms: within 15% of main's; main 273 ms, batch 280 ms (+2.4%), budget 500 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | at 5 billion a month's change takes no more than 5 ms of the wall clock        FAIL   [main 2.25 ms, batch 1.4 ms (-37.6%), budget 5 ms: within 15% of main's; main 2.68 ms, batch 2.2 ms (-17.8%), budget 5 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 2.25 ms, batch 1.4 ms (-37.6%), budget 5 ms: within 15% of main's; main 2.68 ms, batch 2.2 ms (-17.8%), budget 5 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | on the full file, every stride's far node over Rotterdam is drawn in no more than SCREEN_MS FAIL   [main 56.8 ms, batch 56.0 ms (-1.5%), budget 80 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 20.9 ms, batch 17.3 ms (-17.5%), budget 19 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | 8 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): KeptCheck | exit 2   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): KeptCheck | the kept month on Borrow at home, asking for a sixth of the cash is within KEPT_FINANCES_MS (18.0 ms) FAIL   [main 9.85 ms, batch 6.93 ms (-29.6%), budget 18 ms: within 15% of main's]
-# timing red not the batch's (paired): KeptCheck | the kept month on the fund's Search is within KEPT_FUND_MS (321.0 ms)    FAIL   [main 136 ms, batch 140 ms (+2.5%), budget 321 ms: within 15% of main's]
-# timing red not the batch's (paired): KeptCheck | 2 FAILED   [the harness's own count of the timing reds above]
-# figure	SaveSlotCheck	the median due month, 100.4 ms, holds the clock at most CLOCK_MS (25 ms)	32.0821	25	ms	FAIL	1	1
+# figure	SaveSlotCheck	the median due month, 26.9 ms, holds the clock at most CLOCK_MS (25 ms)	26.9452	25	ms	FAIL	1	1
 MonetaryCheck | exit 1
 MonetaryCheck | ...and a month's delay in the hand moves them less than the allowance FAIL
 MonetaryCheck | 1 FAILED
