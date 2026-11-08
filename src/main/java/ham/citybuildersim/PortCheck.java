@@ -87,6 +87,9 @@ import java.util.List;
  *      same whatever window it is drawn in (BoatSchedule.drawn()), within
  *      a frame's boat budget, and below DETAIL_FROM nothing moves.
  *
+ * Timing harness (Timing.HARNESSES, since HB1): 10b judges a frame's boats drawn() through Timing, so the line is soft under
+ * -Dcbs.timing=soft and hard at the gate.
+ *
  * Every fixture CAUSES its condition: the coast is bought (the offer nearest
  * the sea, as WaterCheck buys it), the terminals and the plants stood, and
  * the pure sections hand Ports its month's tonnes and berths.
@@ -105,6 +108,12 @@ public class PortCheck {
     static void report(String label, boolean ok, String detail) {
         if (!ok) fails++;
         out.printf("%-100s %s  %s%n", label, ok ? "OK" : "FAIL", detail);
+    }
+
+    /** A timing assertion's line (HB1 slice E, 10b's cost), as report() prints one, its verdict Timing's: soft under -Dcbs.timing=soft, hard at the gate. */
+    static void timed(String label, boolean ok, String detail) {
+        if (!ok) fails++;
+        out.printf("%-100s %s  %s%n", label, Timing.verdict(ok, label), detail);
     }
 
     static void quietly(Runnable r) {
@@ -1865,7 +1874,7 @@ public class PortCheck {
                 double ms = (System.nanoTime() - t0) / 1e6 / frames;
                 if (round >= MapCheck.WARM_ROUNDS) best = Math.min(best, ms);
             }
-            report("a frame's boats drawn() over the whole bay of 64 berths take no more than MapCheck.BOAT_FRAME_MS (0.5 ms)",
+            timed("a frame's boats drawn() over the whole bay of 64 berths take no more than MapCheck.BOAT_FRAME_MS (0.5 ms)",
                     Timing.within(best, MapCheck.BOAT_FRAME_MS) && shown > 0, String.format("%.3f ms a frame, %,d boats over %d frames", best, shown, frames));
         }
     }
