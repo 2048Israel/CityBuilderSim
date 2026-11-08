@@ -41,9 +41,14 @@ disc tile by tile, wherever a tile has shore, instead of growing along one quay.
   changes; MapCheck 9c holds it for a harbour work.
 - **Ships alongside and the joined quay (drawing, from the detail level).**
   `MapFrame.DETAIL_FROM`, where the scale bar first reads 500 m (HB2's brief): from
-  there in, a boat at its berth lies along its quay's face, its side to the wall,
-  and a harbour's quays are drawn as one wall along the boxes' sea sides, joined
-  across the gap between neighbours facing the same water. Below it, as now.
+  there in:
+  - boats are drawn at true size;
+  - a boat at its berth lies along its quay's face, its side to the wall, where
+    it fits; otherwise it lies stern-to (★ HB1-5, HB1-6);
+  - a harbour's quays are drawn as one wall along the boxes' sea sides, joined
+    across the gap between neighbours facing the same water.
+  
+  Below it, as now.
 - **The sprite** is a call for Jerus with renders (the brief's item 3), not decided
   here: the batch draws the boxes as now.
 
@@ -147,8 +152,9 @@ For Jerus (the batch takes the safer way meanwhile):
   The threading flag `--pick` raised (the volatile walls cache) is sound: the
   month and the map's frame both run on the FX thread (UserInterface's clock),
   and the cache hands a reader an immutable set.
-- **The trace:** the default playtest's eight trace files are byte-identical
-  to main's (c143b9a3, built apart). The report differs in the run's seconds
+- **The trace:** the default playtest's eight trace files, at 315dd6be, are
+  byte-identical to main's (c143b9a3, built apart). Slice E adds drawing only:
+  `berthed`/`drawn` are called by MapView and the renders, never by the month. The report differs in the run's seconds
   and in one map line (industry's mean distance from the site, 8.19 against
   8.18 km). No ensemble.
 - **Slice E** (the ships' places, `ShipShapes.TRUE_FROM`): PortCheck 10b
@@ -171,6 +177,14 @@ For Jerus (the batch takes the safer way meanwhile):
   work at 5B, 19.7 ms against 19. That line has gone soft beside other runs
   before (MS3, WN5b). The month in question lays no terminal, and HB1 adds
   nothing else to it; the gate runs it hard.
+- **TimingCheck** went red at the first `--pick` on the merge: 10b's cost line
+  called `Timing.within`, and PortCheck was not a timing harness. PortCheck is
+  in `Timing.HARNESSES` now (7.7 s a run), and the line prints through
+  `Timing.verdict`; 0.042 ms a frame.
+- **`--pick`** on the merge with main (0.9.54, RE2) ran 32 harnesses and
+  exited 3. The only reds are main's recorded ScaleCheck, MapCheck and
+  KeptCheck lines, and one timing line went SOFT under load (SaveSlotCheck's,
+  not HB1's).
 
 ## 5. What the renders showed
 
