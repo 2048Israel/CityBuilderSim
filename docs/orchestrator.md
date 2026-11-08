@@ -137,31 +137,29 @@ batch it is built on):
    its cause in the notes and its fix queued. Any other
    red goes back to the batch as its failing lines (`target/checks/reds.txt`
    in the gate's clone), its ship file off first (`docs/batch.md`, 5).
-6. **Timing** (lesson d; TM3, 2026-10-27: a wall-clock budget measured once on a
-   PC that also runs Jerus's game measures the load as much as the code; HY1's
-   gate stopped on three map lines main itself misses). A timing red is judged
-   side by side with main. `ship.sh` takes its figure from
-   `target/checks/timing.tsv`, which every timing assertion writes through
-   `Timing.verdict(ok, label)`, never from the label's prose, and times the red
-   harnesses again with main's classes (a worktree of `main`) and the merge's in
-   turn, back to back, **three rounds** (`CBS_TIMING_ROUNDS`, at least two), main
+6. **Timing** (lesson d; TM3, 2026-10-27: a wall-clock budget measured on a PC
+   that also runs Jerus's game measures the load as much as the code). A timing
+   red is judged side by side with main, by the figure every timing assertion
+   writes to `target/checks/timing.tsv` (`Timing.verdict(ok, label)`), never the
+   label's prose. **First against main's figure of the day** (GT2, 2026-11-07:
+   SaveSlotCheck missed its budget on main at every gate since 11-05, and the
+   rounds that said so took 20-80 minutes a gate): each gate keeps the merged
+   main's figure of every miss in `gate.txt` (`# figure` lines); a miss whose
+   figure there, dated today, misses the budget too, with the merge's no more
+   than the margin over it, passes with no round. A harness with a miss left
+   uncovered is timed again with main's classes (a worktree of `main`) and the
+   merge's in turn, **three rounds** (`CBS_TIMING_ROUNDS`, at least two), main
    first in odd rounds (SP1: a run straight after a switch of build was the
    slower). It counts against the batch only if its median is **more than 15%**
-   over main's (`tools/timing-pair.awk`; `CBS_TIMING_MARGIN` moves it), main's
-   median within the budget and the batch's over it; not when main's median
-   misses the same budget too, or the batch's is within it (SP1 item 7: SC1
-   stopped twice on a shifting load, both sides within the budget, then both
-   over). Otherwise it passes, named in the merge's `Gate-timing:` line with
-   both medians and why, and in `gate.txt` only as a `#` line, so it never
-   becomes a recorded red. A red over the margin with main within the budget and
-   the batch over it, one with nothing to compare (main has no such assertion, a
-   round did not run) and one that is no clock's (a failure behind no missed
-   figure) stops - unless `--red-ok` and a `--red-line` name it (step 5), said in
-   `Gate-timing:` and `gate.txt` `#` lines; a timing red not named stops even
-   with `--red-ok`. Wall-clock comparisons that are not a budget are `Timing`
-   assertions too (TimingCheck 6): soft in the suite, judged here. **The hard run
-   starts at once** (GP1: TM2's quiet minute, a wait of up to 30 minutes for no
-   other JVM, is gone, because this comparison shares one load by design).
+   over main's (`tools/timing-pair.awk`; `CBS_TIMING_MARGIN`), main's median
+   within the budget and the batch's over it (SP1 item 7: SC1 stopped twice on a
+   shifting load). Otherwise it passes, named in the merge's `Gate-timing:` line
+   with both figures and why, and in `gate.txt` only as `#` lines, never a
+   recorded red. A red that is the batch's, one with nothing to compare and one
+   that is no clock's stops, unless `--red-ok` and a `--red-line` name it (step
+   5). Wall-clock comparisons that are not a budget are `Timing` assertions too
+   (TimingCheck 6), soft in the suite. **The hard run starts at once** (GP1: the
+   comparison shares one load by design).
 7. `--version X.Y.Z` only on Jerus's word. `--dry-run` runs everything, the gate
    included, prints what it would commit, tag and push, and keeps nothing;
    harness names after `--` only with it (a partial suite never ships). A

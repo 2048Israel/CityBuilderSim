@@ -366,11 +366,16 @@ ok sh -c "grep -q -x -F 'MapCheck | exit 1' $G && grep -q '^# timing red not the
 LABEL="TM: the merge body names the timing line, with the medians"; ok sh -c "git -C $TA/main log -1 --format=%B | grep -q -F 'Gate-timing: red on the merge, judged side by side with main' && git -C $TA/main log -1 --format=%B | grep -q -F 'PlanCheck [main 45 ms, batch 45 ms'"
 LABEL="TM: its header and separator rows did not reach QUEUE.md, its two rows did"
 Q="$TA/main/QUEUE.md"
-ok sh -c "[ \$(grep -c '^| item |' $Q) = 1 ] && [ \$(grep -c '^| batch |' $Q) = 1 ] && [ \$(grep -c '^|---|---|---|---|\$' $Q) = 1 ] && [ \$(grep -c '^|---|---|---|\$' $Q) = 1 ] && [ \$(grep -c '^| TM-C |' $Q) = 1 ] && [ \$(grep -c '^| TM-N |' $Q) = 1 ]"
+ok sh -c "b() { git -C $TA/main show HEAD^:QUEUE.md | grep -c \"\$1\"; }; [ \$(grep -c '^| item |' $Q) = \$(b '^| item |') ] && [ \$(grep -c '^| batch |' $Q) = \$(b '^| batch |') ] && [ \$(grep -c '^|---|---|---|---|\$' $Q) = \$(b '^|---|---|---|---|\$') ] && [ \$(grep -c '^|---|---|---|\$' $Q) = \$(b '^|---|---|---|\$') ] && [ \$(grep -c '^| TM-C |' $Q) = 1 ] && [ \$(grep -c '^| TM-N |' $Q) = 1 ]"   # as many header and separator rows as main had before TM (QUEUE.md has two | batch | tables since 2026-11-02)
 LABEL="TM: the records line counts rows, not headers"; ok sh -c "grep -q -F '1 Pending row(s), 1 Queued row(s) added' $TA/out.txt"
-LABEL="timing: the passed red is no recorded red, a 30% slower one the next time still stops"
-STUB_FIGS_MAIN="40 41 42" STUB_FIGS_BATCH="52 53 54" tm run --dry-run batch/RED
-ok sh -c "[ $RC = 1 ] && grep -q -F 'over main' $TA/out.txt"
+# GT2: TM's gate wrote the merged main's figure of its miss; a red the same day is judged against it first
+LABEL="TM: gate.txt keeps main's figure of the miss, the merge's median over the rounds (GT2)"; ok grep -q -x -F "$(printf '# figure\tPlanCheck\t%s\t45\t42\tms\tFAIL\t1\t1' "$PL")" $G
+LABEL="timing: the same miss today, within the margin of main's figure that misses the budget too, passes with no round"; : > "$STUB_LOG"; tm run --dry-run batch/RED
+ok sh -c "[ $RC = 0 ] && grep -q -F 'PlanCheck [main 45 ms (gate.txt, today), batch 45 ms (+0.0%), budget 42 ms: main over the budget too, no round]' $TA/out.txt && ! grep -q 'cwd=main-timing' $STUB_LOG"
+LABEL="timing: the passed red is no recorded red, a 30% slower one the next time (over main's figure of the day by the margin too) still stops"
+PT0=$PT; PT="PlanCheck|$PL|53|42|ms|FAIL|1"; STUB_FIGS_MAIN="40 41 42" STUB_FIGS_BATCH="52 53 54" tm run --dry-run batch/RED; PT=$PT0; ok sh -c "[ $RC = 1 ] && grep -q -F 'over main' $TA/out.txt"
+LABEL="timing: main's figure of another day is not read: the rounds run"; : > "$STUB_LOG"; ( cd "$TA/main" && sed -i 's/^# date: .*/# date: 2000-01-01/' docs/notes/gate.txt && git commit -q -am "selftest: gate.txt of another day" && git push -q origin main )
+STUB_FIGS_MAIN="44 45 46" STUB_FIGS_BATCH="46 45 44" tm run --dry-run batch/RED; ok sh -c "[ $RC = 0 ] && grep -q 'cwd=main-timing' $STUB_LOG"
 LABEL="timing: main's recorded red, repeated by the timing run, is not judged again"; : > "$STUB_LOG"
 STUB_EXIT=3 STUB_REDS='MapCheck | exit 1' STUB_TEXIT=3 STUB_TREDS='MapCheck | exit 1' run --dry-run batch/RED
 ok sh -c "[ $RC = 0 ] && grep -q -F 'gate: known red only' $TA/out.txt && ! grep -q 'cwd=main-timing' $STUB_LOG"

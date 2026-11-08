@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.47 — GT2, a timing red main also misses re-runs nothing — 2026-11-07, ready, see docs/queue/GT2-notes.md
+No player sees this one: the gate is shorter. Every gate since 11-05 had a timing red that main itself misses (SaveSlotCheck's
+25 ms, main's medians 26-57 ms), and `ship.sh` timed each in three paired rounds of main's classes and the merge's, 20-80
+minutes a gate (PD1's 78), to conclude it was not the batch's. Each gate now keeps the merged main's figure of every miss in
+`docs/notes/gate.txt` (`# figure` lines: the merge's median over the rounds, else its hard figure); the next gate the same day
+passes a miss whose recorded figure misses the budget too, with the merge's no more than 15% over it, with no round, and times
+the rest as before. Replayed on 11-07's nine gates, four would have run no round and four would have run them without
+SaveSlotCheck. `docs/orchestrator.md`, The gate 6, says so; `tools/ship-selftest.sh` has four cases for it, and its QUEUE.md
+case, red since that file gained a second table on 11-02, compares with main before the merge. Process lines 105 in, 96 out.
+
 ### 0.9.46 — UP7b, the speed reading shows a stall the clock's own redraw keeps making — 2026-11-07, ready, see docs/queue/UP7b-notes.md
 UP7's gate review, on the clock. UP7 counted every stalled frame at its clamped share, so a redraw costing more than a quarter of a second
 (due every three times its cost) ran the city at about 83% of the rung while the header's reading stayed white. The frame after the
