@@ -1,4 +1,4 @@
-# ReplayCheck.java - 1,451 lines · 29 methods · 2 constants · harnesses
+# ReplayCheck.java - 1,571 lines · 31 methods · 3 constants · harnesses
 
 `ham/citybuildersim/ReplayCheck.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
 
@@ -51,97 +51,118 @@
 >   9. Follow into a headless copy: a real recording and a sitting logged with the writer, played by FollowPlayer into a Target over
 >      a ReplayCity that loads each month whole as the log turns it: the copy is at each logged month in order, the screens arrive
 >      in logged order at their logged times divided by the speed (to the frame), joining mid-month loads the month and catches
->      its input up flagged, and ends on the screen playing from the month's start reaches; nothing in the recording is written.
+>      its input up flagged, and ends on the screen playing from the month's start reaches; nothing in the recording is written;
+>  10. Follow in the real window: the rules (FollowRules) drop what a copy must not do again - anything logged on a game menu (Save,
+>      Load, New city, Settings and Quit live there) or while the copy is on one, anything under a dialog, a click on a node that
+>      opens a menu or moves the clock, Space, Left, Right and F11, Esc and P where they would open the menu - and keep the
+>      rest; then a sitting logged with the writer over a copy of the recording is played into the window by frames: the copy
+>      is at each logged month as its marker passes, each click on a rail tab takes it to that tab's screen before the SCREEN
+>      marker comes and the screens arrive in order, the click on the Menu button is dropped and Follow stays on through every
+>      press, the ghost sits at the logged pointer, a stop and a join in mid-month reaches the screen and month that a run
+>      from the month's start reaches, a viewer's press ends Follow and his move does only past the grace and 8 px, and leaving
+>      the replay leaves the copy and the player's folder as they were (FollowBench.check and followCheck; the window part is
+>      skipped where JavaFX cannot start).
 
-**Uses:** [InputLog](InputLog.md) (149), [CameraPath](CameraPath.md) (103), [Recording](Recording.md) (57), [InputTimeline](InputTimeline.md) (46), [FollowPlayer](FollowPlayer.md) (26), [GameFiles](GameFiles.md) (22), [Game](Game.md) (14), [ReplayCity](ReplayCity.md) (14), [HistorySave](HistorySave.md) (12), [DataSave](DataSave.md) (11), [ReplayGraphs](ReplayGraphs.md) (11), [CityMap](CityMap.md) (7), [MapTiles](MapTiles.md) (7), [MapFrame](MapFrame.md) (7), [ReplayMoveProbe](ReplayMoveProbe.md) (5), [World](World.md) (4), [TilePainter](TilePainter.md) (4), [PartnerTrade](PartnerTrade.md) (4), [TempDirs](TempDirs.md) (4), [SaveWriter](SaveWriter.md) (4), [SaveSlotCheck](SaveSlotCheck.md) (3), [Timing](Timing.md) (2), [GameVersion](GameVersion.md) (2), [CityCalendar](CityCalendar.md) (1), [TaxPolicy](TaxPolicy.md) (1), [SaveHeader](SaveHeader.md) (1)
+**Uses:** [InputLog](InputLog.md) (185), [CameraPath](CameraPath.md) (103), [Recording](Recording.md) (58), [FollowRules](FollowRules.md) (48), [InputTimeline](InputTimeline.md) (46), [FollowPlayer](FollowPlayer.md) (26), [GameFiles](GameFiles.md) (24), [Game](Game.md) (15), [ReplayCity](ReplayCity.md) (14), [HistorySave](HistorySave.md) (12), [DataSave](DataSave.md) (11), [ReplayGraphs](ReplayGraphs.md) (11), [CityMap](CityMap.md) (7), [MapTiles](MapTiles.md) (7), [MapFrame](MapFrame.md) (7), [FollowBench](FollowBench.md) (6), [ReplayMoveProbe](ReplayMoveProbe.md) (5), [World](World.md) (4), [TilePainter](TilePainter.md) (4), [PartnerTrade](PartnerTrade.md) (4), [TempDirs](TempDirs.md) (4), [SaveWriter](SaveWriter.md) (4), [Timing](Timing.md) (3), [SaveSlotCheck](SaveSlotCheck.md) (3), [GameVersion](GameVersion.md) (2), [CityCalendar](CityCalendar.md) (1), [TaxPolicy](TaxPolicy.md) (1), [SaveHeader](SaveHeader.md) (1), [LongPlaytest](LongPlaytest.md) (1)
+
+**Used by (1):** [FollowBench](FollowBench.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 189 | · 1. a recording writes one month each, and a rewind rewrites from the next |
-| 399 | · 3. nothing sticks |
-| 428 | · 4. the input log round-trips; a re-enacted Save, Load, Quit writes nothing |
-| 553 | · 5. the camera's arithmetic |
-| 775 | · 5d. a replay's camera move loads first, then runs with nothing unpainted and nothing asked (CM1) |
-| 796 | · 6. recording costs the month only its fill, and changes nothing in it |
-| 919 | 7. TR1's review: a failed log write, an id from a save, a failed first write, a month that autosaves |
-| 1119 | 8. the timeline |
-| 1350 | 9. Follow into a headless copy |
+| 201 | · 1. a recording writes one month each, and a rewind rewrites from the next |
+| 411 | · 3. nothing sticks |
+| 440 | · 4. the input log round-trips; a re-enacted Save, Load, Quit writes nothing |
+| 565 | · 5. the camera's arithmetic |
+| 787 | · 5d. a replay's camera move loads first, then runs with nothing unpainted and nothing asked (CM1) |
+| 808 | · 6. recording costs the month only its fill, and changes nothing in it |
+| 935 | 7. TR1's review: a failed log write, an id from a save, a failed first write, a month that autosaves |
+| 1135 | 8. the timeline |
+| 1366 | 9. Follow into a headless copy |
+| 1468 | 10. Follow in the window |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 76 | `ReplayCheck.GROWN` | `48` | The month the section 1 to 4 city is grown to before it is recorded. |
-| 79 | `ReplayCheck.GROWN_SIX` | `36` | The month the section 6 cities are grown to. |
+| 88 | `ReplayCheck.GROWN` | `48` | The month the section 1 to 4 city is grown to before it is recorded. |
+| 91 | `ReplayCheck.GROWN_SIX` | `36` | The month the section 6 cities are grown to. |
+| 1471 | `ReplayCheck.GAME_MENUS` | `{ "showMainMenu", "showSavingMenu", "showSaveSlotConfirm", "showLoadMenu", "l...` | The screens UserInterface.isGameMenu takes for a game menu: the main menu (Save, Load, New city, Settings, Credits and Quit are on it or behind it), the pages they open, and the replay's list. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 73 | `static int fails` |  |
-| 1123 | `final ReplayCity copy` |  |
-| 1124 | `final List<String> calls` |  |
-| 1125 | `final List<InputLog.Event> events` |  |
-| 1126 | `final List<Boolean> catching` |  |
-| 1127 | `final List<Integer> months` |  |
-| 1128 | `final List<String> screens` |  |
-| 1129 | `final List<Double> screenTimes` |  |
-| 1130 | `double elapsed` |  |
-| 1131 | `String screen` |  |
-| 1132 | `boolean loaded` |  |
+| 85 | `static int fails` |  |
+| 1139 | `final ReplayCity copy` |  |
+| 1140 | `final List<String> calls` |  |
+| 1141 | `final List<InputLog.Event> events` |  |
+| 1142 | `final List<Boolean> catching` |  |
+| 1143 | `final List<Integer> months` |  |
+| 1144 | `final List<String> screens` |  |
+| 1145 | `final List<Double> screenTimes` |  |
+| 1146 | `double elapsed` |  |
+| 1147 | `String screen` |  |
+| 1148 | `boolean loaded` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 71 | 1381 | **type** `public class ReplayCheck` | Replay of a recorded city (batch TR1, 2026-10-31): the recorder, the throwaway copy, the input log, and what recording costs; and Follow (batch TR2, 2026-11-09): the timeline of the input logs and the player that play... |
-| 82 | 4 | `static void helper(String label, boolean ok)` | An assertion's line: Timing.verdict says OK, FAIL, or SOFT with the figure and its budget. |
-| 88 | 10 | `static double[] districtsMiddle(CityMap map)` | The middle of a map's districts in plots {x, y}: where a view of the city looks. |
-| 100 | 13 | `static long[] stampsOf(MapTiles tiles, CityMap map, List<long[]> view)` | The stamps of the tiles in a view, their district plans drawn first as the view's worker draws them (the jobs run and kept here). |
-| 115 | 3 | `static boolean near(double a, double b, double tol)` | Whether two figures agree to {@code tol}, absolutely under 1 and relatively over it. |
-| 120 | 1 | **type** `record Figures(long population, double gdp, double cash, double price, long buildings)` | What the city shows at a month's end: the figures the replay has to give back. |
-| 122 | 6 | `static Figures figuresOf(Game g)` |  |
-| 130 | 9 | `static String parted(Figures got, Figures want)` | Whether two figures agree, and which differ when they do not (the words for the line). |
-| 141 | 12 | `static Map<String, String> hashes(Path dir) throws Exception` | Every file under a folder: its path from the folder, its size and its SHA-256. |
-| 155 | 8 | `static String firstDifference(Map<String, String> before, Map<String, String> after)` | The first difference between two maps of hashes, in words, or null when they are the same. |
-| 165 | 9 | `static void clockMonth(Game game)` | Plays one month on the clock's path with the month's printed report silenced: the city prints its reports to the log. |
-| 175 | 5 | `static Map<Integer, byte[]> monthBytes(Recording rec) throws IOException` |  |
-| 181 | 702 | `public static void main(String[] args) throws Exception` |  |
-| 891 | 19 | `static void movedChecks(ReplayMoveProbe.Moved m, double glideSeconds, String ranBy, boolean acrossLevels)` | Section 5d's assertions for one glide, loaded and run in the window (ReplayMoveProbe.check()): it reached Ready with every plan view loaded, held its pins while it waited, ran on the click or the key; no frame of its ... |
-| 912 | 6 | `static boolean closedIgnores(InputLog.Writer closed) throws Exception` | Whether a closed log ignores an event added to it: nothing more is read from its file. |
+| 83 | 1489 | **type** `public class ReplayCheck` | Replay of a recorded city (batch TR1, 2026-10-31): the recorder, the throwaway copy, the input log, and what recording costs; and Follow (batch TR2, 2026-11-09): the timeline of the input logs and the player that play... |
+| 94 | 4 | `static void helper(String label, boolean ok)` | An assertion's line: Timing.verdict says OK, FAIL, or SOFT with the figure and its budget. |
+| 100 | 10 | `static double[] districtsMiddle(CityMap map)` | The middle of a map's districts in plots {x, y}: where a view of the city looks. |
+| 112 | 13 | `static long[] stampsOf(MapTiles tiles, CityMap map, List<long[]> view)` | The stamps of the tiles in a view, their district plans drawn first as the view's worker draws them (the jobs run and kept here). |
+| 127 | 3 | `static boolean near(double a, double b, double tol)` | Whether two figures agree to {@code tol}, absolutely under 1 and relatively over it. |
+| 132 | 1 | **type** `record Figures(long population, double gdp, double cash, double price, long buildings)` | What the city shows at a month's end: the figures the replay has to give back. |
+| 134 | 6 | `static Figures figuresOf(Game g)` |  |
+| 142 | 9 | `static String parted(Figures got, Figures want)` | Whether two figures agree, and which differ when they do not (the words for the line). |
+| 153 | 12 | `public static Map<String, String> hashes(Path dir) throws Exception` | Every file under a folder: its path from the folder, its size and its SHA-256 (public since TR2: FollowBench asks it in the window). |
+| 167 | 8 | `public static String firstDifference(Map<String, String> before, Map<String, String> after)` | The first difference between two maps of hashes, in words, or null when they are the same. |
+| 177 | 9 | `static void clockMonth(Game game)` | Plays one month on the clock's path with the month's printed report silenced: the city prints its reports to the log. |
+| 187 | 5 | `static Map<Integer, byte[]> monthBytes(Recording rec) throws IOException` |  |
+| 193 | 706 | `public static void main(String[] args) throws Exception` |  |
+| 907 | 19 | `static void movedChecks(ReplayMoveProbe.Moved m, double glideSeconds, String ranBy, boolean acrossLevels)` | Section 5d's assertions for one glide, loaded and run in the window (ReplayMoveProbe.check()): it reached Ready with every plan view loaded, held its pins while it waited, ran on the click or the key; no frame of its ... |
+| 928 | 6 | `static boolean closedIgnores(InputLog.Writer closed) throws Exception` | Whether a closed log ignores an event added to it: nothing more is read from its file. |
 
-### 7. TR1's review: a failed log write, an id from a save, a failed first write, a month that autosaves (lines 919-1118)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 922 | 3 | **type** `interface Body` | A body that may throw: what {@link #printed} runs. |
-| 923 | 1 | `void run() throws Exception` _(in ReplayCheck.Body)_ |  |
-| 927 | 11 | `static String printed(Body body) throws Exception` | What a body prints to the log, as a string (and not to the log). |
-| 940 | 5 | `static GameFiles.Result printedResult(java.util.function.Supplier<GameFiles.Result> write) throws Exception` | What a task's write returns, with what it prints kept out of the log. |
-| 947 | 8 | `static boolean awaitTrue(java.util.function.BooleanSupplier condition, long ms) throws InterruptedException` | Waits up to {@code ms} for a condition, polling; whether it came true. |
-| 956 | 5 | `static int occurrences(String text, String part)` |  |
-| 963 | 127 | `static void reviewChecks(Game a, Game b, GameFiles filesA, GameFiles filesB) throws Exception` | {@code a} and {@code b}: the section 6 cities, both recording. |
-| 1096 | 22 | `static boolean tripFirstWrite(Game city) throws Exception` | The city's own first write after a load: a month written, a month past the next one made undeletable (a directory with a file in it), recording switched off and on as a load does; the first month then cannot clear the... |
-
-### 8. the timeline (lines 1119-1349)
+### 7. TR1's review: a failed log write, an id from a save, a failed first write, a month that autosaves (lines 935-1134)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1122 | 33 | **type** `static final class Tape implements FollowPlayer.Target` | What a Follow target was handed, in order; with a copy it loads each month whole, as Follow does in the window (sections 8 and 9). |
-| 1134 | 1 | `Tape(ReplayCity copy)` _(in ReplayCheck.Tape)_ |  |
-| 1136 | 5 | `public void loadMonth(int month)` _(in ReplayCheck.Tape)_ |  |
-| 1142 | 10 | `public void event(InputLog.Event e, boolean catchingUp)` _(in ReplayCheck.Tape)_ |  |
-| 1153 | 1 | `long count(InputLog.Kind kind)` _(in ReplayCheck.Tape)_ |  |
-| 1157 | 6 | `static void playOut(FollowPlayer player, Tape tape, double frameMs)` | Plays the timeline out in frames of {@code frameMs}; the tape's clock is the frames' end. |
-| 1164 | 3 | `static int[] months(int from, int to)` |  |
-| 1168 | 173 | `static void timelineChecks()` |  |
-| 1342 | 7 | `static boolean playsNothing(InputTimeline empty)` |  |
+| 938 | 3 | **type** `interface Body` | A body that may throw: what {@link #printed} runs. |
+| 939 | 1 | `void run() throws Exception` _(in ReplayCheck.Body)_ |  |
+| 943 | 11 | `static String printed(Body body) throws Exception` | What a body prints to the log, as a string (and not to the log). |
+| 956 | 5 | `static GameFiles.Result printedResult(java.util.function.Supplier<GameFiles.Result> write) throws Exception` | What a task's write returns, with what it prints kept out of the log. |
+| 963 | 8 | `static boolean awaitTrue(java.util.function.BooleanSupplier condition, long ms) throws InterruptedException` | Waits up to {@code ms} for a condition, polling; whether it came true. |
+| 972 | 5 | `static int occurrences(String text, String part)` |  |
+| 979 | 127 | `static void reviewChecks(Game a, Game b, GameFiles filesA, GameFiles filesB) throws Exception` | {@code a} and {@code b}: the section 6 cities, both recording. |
+| 1112 | 22 | `static boolean tripFirstWrite(Game city) throws Exception` | The city's own first write after a load: a month written, a month past the next one made undeletable (a directory with a file in it), recording switched off and on as a load does; the first month then cannot clear the... |
 
-### 9. Follow into a headless copy (lines 1350-1451)
+### 8. the timeline (lines 1135-1365)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1352 | 99 | `static void followChecks(Recording rec, GameFiles files) throws Exception` |  |
+| 1138 | 33 | **type** `static final class Tape implements FollowPlayer.Target` | What a Follow target was handed, in order; with a copy it loads each month whole, as Follow does in the window (sections 8 and 9). |
+| 1150 | 1 | `Tape(ReplayCity copy)` _(in ReplayCheck.Tape)_ |  |
+| 1152 | 5 | `public void loadMonth(int month)` _(in ReplayCheck.Tape)_ |  |
+| 1158 | 10 | `public void event(InputLog.Event e, boolean catchingUp)` _(in ReplayCheck.Tape)_ |  |
+| 1169 | 1 | `long count(InputLog.Kind kind)` _(in ReplayCheck.Tape)_ |  |
+| 1173 | 6 | `static void playOut(FollowPlayer player, Tape tape, double frameMs)` | Plays the timeline out in frames of {@code frameMs}; the tape's clock is the frames' end. |
+| 1180 | 3 | `static int[] months(int from, int to)` |  |
+| 1184 | 173 | `static void timelineChecks()` |  |
+| 1358 | 7 | `static boolean playsNothing(InputTimeline empty)` |  |
+
+### 9. Follow into a headless copy (lines 1366-1467)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1368 | 99 | `static void followChecks(Recording rec, GameFiles files) throws Exception` |  |
+
+### 10. Follow in the window (lines 1468-1571)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1474 | 77 | `static void followRulesChecks()` |  |
+| 1556 | 15 | `static void followWindowChecks(Recording rec) throws Exception` | Section 10 in the real window, off screen: FollowBench's findings on the Reenactor and on a sitting followed in a copy of {@code rec}, each printed as a line. |
 

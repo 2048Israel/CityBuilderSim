@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**5,675 constants in 541 files.**
+**5,687 constants in 541 files.**
 
 ## model (2713 constants)
 
@@ -4041,7 +4041,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 77 | `WoodProducts.PAPER_MILL` | `137` | The Paper Mill's (0.7.140): 5,500 t of paper a month from 5,775 t of pulp and 850,000 litres of fuel oil. |
 | 80 | `WoodProducts.PELLET_MILL` | `138` | The Wood Pellet Mill's (0.7.140): 6,000 t of pellets a month from 13,200 m3 of residues. |
 
-## interface (1169 constants)
+## interface (1180 constants)
 
 ### BankScreen.java ([map](map/BankScreen.md))
 
@@ -4259,8 +4259,19 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 48 | `FollowBench.WIDTH` | `1600` | The window's width the bench lays the scene out at. |
-| 51 | `FollowBench.HEIGHT` | `900` | The window's height the bench lays the scene out at. |
+| 61 | `FollowBench.WIDTH` | `1600` | The window's width the bench lays the scene out at. |
+| 64 | `FollowBench.HEIGHT` | `900` | The window's height the bench lays the scene out at. |
+| 370 | `FollowBench.RAIL_WORDS` | `{ "People", "Policy", "Services", "Bank", "Trade", "Finances", "Sectors" }` | The rail's words the sitting clicks, in the order tried: the first few the window has, whose clicks open different screens. |
+| 373 | `FollowBench.LOGGED_MONTHS` | `4` | How many of the recording's months the sitting logs, one after the other from its fourth. |
+| 376 | `FollowBench.MONTH_MS` | `2_400` | How long a month lasts in the sitting's own time, ms. |
+| 379 | `FollowBench.MENU_MONTH` | `1` | The month of the sitting (counting from 0) in which the player also clicked the rail's Menu. |
+| 382 | `FollowBench.REJOIN_MONTH` | `2` | The month of the sitting (counting from 0) in which Follow is stopped and joined again. |
+| 385 | `FollowBench.REJOIN_STOP_FRAMES` | `30` | The frames of the rejoin's first stretch: 990 ms into the month, after the click (560 ms) and its SCREEN marker (760 ms). |
+| 388 | `FollowBench.REJOIN_END_FRAMES` | `60` | The frames from the month's start to where the rejoin and the run without a stop are compared: 1,980 ms, after the month's last move (1,800 ms). |
+| 391 | `FollowBench.FRAME_MS` | `33` | One Follow frame, in ms of the player's time (about 30 a second); the window check steps by it. |
+| 394 | `FollowBench.MAX_FRAMES` | `3_000` | The most frames one stretch of stepping may take: a Follow that never gets going ends the check rather than hangs it. |
+| 397 | `FollowBench.SITTING_AT` | `1_790_000_000_000L` | The epoch of the sitting's start in its file's name: any, but one no real sitting has. |
+| 400 | `FollowBench.GHOST_PX` | `2` | How near, in pixels, the ghost's tip has to be to the logged pointer. |
 
 ### FollowRules.java ([map](map/FollowRules.md))
 
@@ -5452,7 +5463,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 748 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1028 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1535 constants)
+## harnesses (1536 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -7291,8 +7302,9 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 76 | `ReplayCheck.GROWN` | `48` | The month the section 1 to 4 city is grown to before it is recorded. |
-| 79 | `ReplayCheck.GROWN_SIX` | `36` | The month the section 6 cities are grown to. |
+| 88 | `ReplayCheck.GROWN` | `48` | The month the section 1 to 4 city is grown to before it is recorded. |
+| 91 | `ReplayCheck.GROWN_SIX` | `36` | The month the section 6 cities are grown to. |
+| 1471 | `ReplayCheck.GAME_MENUS` | `{ "showMainMenu", "showSavingMenu", "showSaveSlotConfirm", "showLoadMenu", "loadSlot", ...` | The screens UserInterface.isGameMenu takes for a game menu: the main menu (Save, Load, New city, Settings, Credits and Quit are on it or behind it), the pages they open, and the replay's list. |
 
 ### ResearchCheck.java ([map](map/ResearchCheck.md))
 

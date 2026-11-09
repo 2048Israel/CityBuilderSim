@@ -22,7 +22,7 @@
 
 **Uses:** [InputLog](InputLog.md) (12), [MapView](MapView.md) (5), [Recording](Recording.md) (1)
 
-**Used by (3):** [FollowPlayer](FollowPlayer.md), [ReplayCheck](ReplayCheck.md), [ReplayMode](ReplayMode.md)
+**Used by (4):** [FollowBench](FollowBench.md), [FollowPlayer](FollowPlayer.md), [ReplayCheck](ReplayCheck.md), [ReplayMode](ReplayMode.md)
 
 ## Sections
 

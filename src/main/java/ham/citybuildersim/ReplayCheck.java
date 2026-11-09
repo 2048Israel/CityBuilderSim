@@ -996,7 +996,7 @@ public class ReplayCheck {
                 failing.queued() == 0 && failing.written() == 1);
         long closing = System.nanoTime();
         failing.close();
-        helper("...closes at once, not after the wait for a thread that has gone", (System.nanoTime() - closing) / 1e6 < InputLog.CLOSE_WAIT_MS / 2);
+        helper("...closes at once, not after the wait for a thread that has gone", Timing.within((System.nanoTime() - closing) / 1e6, InputLog.CLOSE_WAIT_MS / 2.0));
         boolean deleted;
         try {
             deleted = Files.deleteIfExists(failing.path());

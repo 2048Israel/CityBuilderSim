@@ -16,7 +16,7 @@
 
 **Uses:** [InputLog](InputLog.md) (7), [UserInterface](UserInterface.md) (2)
 
-**Used by (3):** [FollowBench](FollowBench.md), [Reenactor](Reenactor.md), [UserInterface](UserInterface.md)
+**Used by (4):** [FollowBench](FollowBench.md), [Reenactor](Reenactor.md), [ReplayCheck](ReplayCheck.md), [UserInterface](UserInterface.md)
 
 ## Enum constants
 

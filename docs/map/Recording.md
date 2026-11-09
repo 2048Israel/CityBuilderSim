@@ -21,7 +21,7 @@
 
 **Uses:** [GameFiles](GameFiles.md) (11), [SaveWriter](SaveWriter.md) (4), [HistorySave](HistorySave.md) (3), [DataSave](DataSave.md) (2)
 
-**Used by (9):** [Game](Game.md), [InputLog](InputLog.md), [InputTimeline](InputTimeline.md), [ReplayCheck](ReplayCheck.md), [ReplayCity](ReplayCity.md), [ReplayMode](ReplayMode.md), [ReplayMoveProbe](ReplayMoveProbe.md), [SaveFileCheck](SaveFileCheck.md), [UiProbe](UiProbe.md)
+**Used by (10):** [FollowBench](FollowBench.md), [Game](Game.md), [InputLog](InputLog.md), [InputTimeline](InputTimeline.md), [ReplayCheck](ReplayCheck.md), [ReplayCity](ReplayCity.md), [ReplayMode](ReplayMode.md), [ReplayMoveProbe](ReplayMoveProbe.md), [SaveFileCheck](SaveFileCheck.md), [UiProbe](UiProbe.md)
 
 ## Sections
 

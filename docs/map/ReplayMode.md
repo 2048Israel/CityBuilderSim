@@ -34,7 +34,7 @@
 
 **Uses:** [Palette](Palette.md) (53), [InputTimeline](InputTimeline.md) (21), [FollowPlayer](FollowPlayer.md) (11), [Recording](Recording.md) (10), [UserInterface](UserInterface.md) (8), [ReplayCamera](ReplayCamera.md) (8), [InputLog](InputLog.md) (7), [CameraPath](CameraPath.md) (6), [Game](Game.md) (4), [ReplayCity](ReplayCity.md) (4), [GameVersion](GameVersion.md) (3), [CityCalendar](CityCalendar.md) (3), [ReplayGraphLayer](ReplayGraphLayer.md) (2), [GhostLayer](GhostLayer.md) (2), [Branding](Branding.md) (1), [MapView](MapView.md) (1)
 
-**Used by (4):** [ReplayCamera](ReplayCamera.md), [ReplayGraphLayer](ReplayGraphLayer.md), [ReplayMoveProbe](ReplayMoveProbe.md), [UserInterface](UserInterface.md)
+**Used by (5):** [FollowBench](FollowBench.md), [ReplayCamera](ReplayCamera.md), [ReplayGraphLayer](ReplayGraphLayer.md), [ReplayMoveProbe](ReplayMoveProbe.md), [UserInterface](UserInterface.md)
 
 ## Sections
 

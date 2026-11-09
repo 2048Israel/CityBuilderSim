@@ -4,7 +4,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 541 files, 597,049 lines, 25,953 methods, 5,675 constants. `GameVersion.VERSION` is "0.9.71", `SAVE_FORMAT` 51.
+**The tree:** 541 files, 597,605 lines, 25,970 methods, 5,687 constants. `GameVersion.VERSION` is "0.9.71", `SAVE_FORMAT` 51.
 
 ## model (250 files)
 
@@ -129,7 +129,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [InflationLinkedBond.java](InflationLinkedBond.md) | 311 | 28 | An inflation-linked bond: a REAL coupon every month on a principal that follows the city's price index, and at the end the indexed principal, never... | 6 |
 | [InfrastructureManager.java](InfrastructureManager.md) | 1,318 | 101 | The road network: what the city's buildings demand of it, what it can carry, and what happens when the first number passes the second. | 29 |
 | [InputLog.java](InputLog.md) | 471 | 39 | What the player did in a sitting, as a file (TR1, 2026-10-31): the mouse, the keys and the markers beside them - the window's size, the screen open... | 8 |
-| [InputTimeline.java](InputTimeline.md) | 378 | 32 | A recording's input logs read as one timeline (TR2, 2026-11-09): which sitting holds each recorded month, the segments those make, where Follow can... | 3 |
+| [InputTimeline.java](InputTimeline.md) | 378 | 32 | A recording's input logs read as one timeline (TR2, 2026-11-09): which sitting holds each recorded month, the segments those make, where Follow can... | 4 |
 | [InterchangeGround.java](InterchangeGround.md) | 169 | 9 | The ground a highway interchange keeps: a 19 x 19 plot reserve centred on each highway x highway crossing (a cloverleaf), an 11 x 11 one beside eac... | 5 |
 | [InterimLoan.java](InterimLoan.md) | 35 | 1 | Interim financing: the bank's loan to a sector in the month it defaulted, for what the month's bills left unpaid after its debt was written down, r... | 4 |
 | [Investor.java](Investor.md) | 44 | 6 | Whoever is paying for a building. | 3 |
@@ -186,7 +186,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [RealDollar.java](RealDollar.md) | 137 | 9 | The real US dollar, constant 2015 dollars, and what the city's money is against it (WN4, D29): the D$ per real US$, the city's real GDP in it, and ... | 6 |
 | [Recipe.java](Recipe.md) | 192 | 23 | A way a building runs: what it uses, what it makes, who it needs and what it draws, and when it is known and what piece of equipment it needs. | 10 |
 | [Recipes.java](Recipes.md) | 249 | 17 | Chooses the recipe each part of a stack runs, at the city's own prices, and sets the template's figures to what its buildings run: the driver of R1... | 5 |
-| [Recording.java](Recording.md) | 402 | 23 | One recorded city on disk (TR1, 2026-10-31): the folder {@code recordings/<id>/} that "Record this city" keeps, and the one place that knows its fi... | 9 |
+| [Recording.java](Recording.md) | 402 | 23 | One recorded city on disk (TR1, 2026-10-31): the folder {@code recordings/<id>/} that "Record this city" keeps, and the one place that knows its fi... | 10 |
 | [RefineryView.java](RefineryView.md) | 1,617 | 82 | The refinery's month as a picture (0.7.95, batch O11; docs/studies/spec-oil.md 2.12): the crude it ran and where that came from, the column's cuts,... | 9 |
 | [ReplayCity.java](ReplayCity.md) | 144 | 15 | The throwaway copy of a recorded city that replay shows (TR1, 2026-10-31): a Game of its own, in a scratch folder, that loads any recorded month an... | 3 |
 | [ReplayGraphs.java](ReplayGraphs.md) | 92 | 6 | The faint lines behind the city in a replay (TR1, 2026-10-31), without the toolkit: a recorded series read once from the recording's own history, e... | 2 |
@@ -225,7 +225,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [StudentHousehold.java](StudentHousehold.md) | 60 | 10 | Full-time students, as one ledger. | 7 |
 | [SupplierCredit.java](SupplierCredit.md) | 255 | 21 | What a buyer owes its suppliers for stock they let it have on credit (0.7.44): the grocers' trade credit, struck and repaid a month at a time. | 8 |
 | [TaxPolicy.java](TaxPolicy.md) | 2,023 | 124 | The city's tax rates - the revenue half of what the player actually decides. | 64 |
-| [TempDirs.java](TempDirs.md) | 141 | 7 | The one place a harness, or a scratch city, gets a temporary folder from: one folder per JVM under the system temp folder, deleted when that JVM ex... | 85 |
+| [TempDirs.java](TempDirs.md) | 141 | 7 | The one place a harness, or a scratch city, gets a temporary folder from: one folder per JVM under the system temp folder, deleted when that JVM ex... | 86 |
 | [TilePainter.java](TilePainter.md) | 920 | 44 | Paints one tile of the city map: from the tile's ground, what the city owns of it, its district's street plan through it - each street's kind, widt... | 24 |
 | [TileRaster.java](TileRaster.md) | 4,347 | 160 | A painted tile as pixels: an int[] of 0xAARRGGBB, a row at a time, at a whole number of pixels a plot - what the map view hands PixelWriter.setPixe... | 28 |
 | [TimeSkipReport.java](TimeSkipReport.md) | 682 | 68 | What happened while you were not watching. | 7 |
@@ -308,8 +308,8 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [CityBuilderSim.java](CityBuilderSim.md) | 55 | 2 | The way in. | 0 |
 | [ConstructionScreen.java](ConstructionScreen.md) | 1,319 | 45 | The construction page (0.7.22): the builders' gauge, every site with its order, its crews, its time and its money and the player's hand on it - pri... | 2 |
 | [FinancesScreen.java](FinancesScreen.md) | 7,139 | 290 | The Finances tab: what the city owes and when it falls due, what its paper costs and who holds it, why its money costs what it does, every piece an... | 8 |
-| [FollowBench.java](FollowBench.md) | 313 | 13 | The Reenactor on the real window (TR2, 2026-11-09): a city's window made as the game makes it (UserInterface.start on an undecorated stage that is ... | 0 |
-| [FollowRules.java](FollowRules.md) | 100 | 2 | What Follow re-enacts of a logged sitting and what it drops (TR2, 2026-11-09): the verdict on one logged input event, from the screen the player ha... | 3 |
+| [FollowBench.java](FollowBench.md) | 749 | 28 | The Reenactor on the real window (TR2, 2026-11-09): a city's window made as the game makes it (UserInterface.start on an undecorated stage that is ... | 1 |
+| [FollowRules.java](FollowRules.md) | 100 | 2 | What Follow re-enacts of a logged sitting and what it drops (TR2, 2026-11-09): the verdict on one logged input event, from the screen the player ha... | 4 |
 | [FoundingScreen.java](FoundingScreen.md) | 1,427 | 61 | Found a city: its name, its money, what the founders leave in the treasury and the vault, the ground it stands on and the world it is founded into. | 2 |
 | [FundScreen.java](FundScreen.md) | 2,580 | 99 | The city's fund on the Finances tab, as a brokerage (0.7.39): its Portfolio - what it is worth, what it has made and on what, every holding with it... | 3 |
 | [GhostLayer.java](GhostLayer.md) | 141 | 11 | The ghost cursor (TR2, 2026-11-09): a see-through pointer arrow drawn at a scene point over the replay's window, in {@link Palette#GHOST}, with a r... | 1 |
@@ -336,7 +336,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [Reenactor.java](Reenactor.md) | 442 | 33 | Re-enacts one logged input event in the window (TR2, 2026-11-09): the mouse moved over the copy's real nodes, pressed, dragged, released and clicke... | 2 |
 | [ReplayCamera.java](ReplayCamera.md) | 390 | 46 | The replay's camera (TR1, 2026-10-31): the two marked views and the glide between them, the fly out to the whole Earth and back, the load of a move... | 4 |
 | [ReplayGraphLayer.java](ReplayGraphLayer.md) | 197 | 9 | The faint GDP and population lines behind the city in a replay (TR1, 2026-10-31): one mouse-transparent canvas laid over the window's content and u... | 1 |
-| [ReplayMode.java](ReplayMode.md) | 1,629 | 85 | Replay mode (TR1, 2026-10-31): a recorded city (Recording) shown on a throwaway copy of it (ReplayCity) in the game's own window, with a time bar a... | 4 |
+| [ReplayMode.java](ReplayMode.md) | 1,629 | 85 | Replay mode (TR1, 2026-10-31): a recorded city (Recording) shown on a throwaway copy of it (ReplayCity) in the game's own window, with a time bar a... | 5 |
 | [ReplayMoveProbe.java](ReplayMoveProbe.md) | 876 | 32 | What a replay's camera moves show unpainted, measured: it opens the real window full screen on a recorded city in replay mode, runs the seven moves... | 1 |
 | [ResearchScreen.java](ResearchScreen.md) | 1,199 | 73 | Policy › Research (R5, slice B1; R3b, slice B): the sixth Policy area, drawn in Policy's own style - three pages: the Overview (who is at research ... | 3 |
 | [SectorScreen.java](SectorScreen.md) | 7,221 | 291 | The sector economy: every business in the city as a card, and each one's five pages - what goes in and what comes out, the income statement with la... | 8 |
@@ -463,7 +463,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [LandNationsCheck.java](LandNationsCheck.md) | 1,249 | 47 | Land bought from the nation it lies in, checked (WN5; docs/studies/spec-nations.md 6.2-6.4, D21, D22): the land table, each nation's land factor an... | 1 |
 | [LandlordPortCheck.java](LandlordPortCheck.md) | 739 | 29 | The landlord port, held to FR3's brief (docs/queue/FR3.md): the city builds and keeps the sea terminals and Freight's Ports division works them. | 0 |
 | [LandmassCheck.java](LandmassCheck.md) | 3,363 | 95 | The city's ground counted by landmass, and the island rule, checked (ET5; the ET5 design): a landmass is read from the Earth's data at every plot, ... | 4 |
-| [LongPlaytest.java](LongPlaytest.md) | 8,182 | 154 | A city played for 2,400 months at the gate and 4,000 once a night on main (tools/nightly.sh), the way a person plays. | 59 |
+| [LongPlaytest.java](LongPlaytest.md) | 8,182 | 154 | A city played for 2,400 months at the gate and 4,000 once a night on main (tools/nightly.sh), the way a person plays. | 60 |
 | [MainLineCheck.java](MainLineCheck.md) | 1,743 | 56 | The main line is the railway's run from its gateway to the freight station, the yard nearest the gate arm's end, and it is drawn double where the c... | 2 |
 | [ManufacturingCheck.java](ManufacturingCheck.md) | 632 | 8 | The ninth sector: what the city makes out of its own steel, and ships. | 0 |
 | [MapCheck.java](MapCheck.md) | 14,784 | 386 | The city map's data and painter: the districts add up to the model's counts every month and nothing placed moves, the painter draws each district's... | 12 |
@@ -504,7 +504,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [RefineryCheck.java](RefineryCheck.md) | 1,539 | 35 | The refinery's units and the flow through them (0.7.80, batch O4; docs/studies/spec-oil.md 2.3, and 4's RefineryCheck), and since 0.7.82 the spread... | 0 |
 | [RefineryViewCheck.java](RefineryViewCheck.md) | 632 | 23 | The refinery's pictogram (0.7.95, batch O11; docs/studies/spec-oil.md 2.12): RefineryView's figures and its picture, held to the model's own reads ... | 2 |
 | [ReloadCheck.java](ReloadCheck.md) | 552 | 34 | Plays a city, saves it, loads the save into a second game, runs both a month and compares what each would save: a reloaded city has to play its nex... | 2 |
-| [ReplayCheck.java](ReplayCheck.md) | 1,451 | 29 | Replay of a recorded city (batch TR1, 2026-10-31): the recorder, the throwaway copy, the input log, and what recording costs; and Follow (batch TR2... | 0 |
+| [ReplayCheck.java](ReplayCheck.md) | 1,571 | 31 | Replay of a recorded city (batch TR1, 2026-10-31): the recorder, the throwaway copy, the input log, and what recording costs; and Follow (batch TR2... | 1 |
 | [ResearchCheck.java](ResearchCheck.md) | 755 | 20 | The research catalogue is read whole from research.json, every discovery is on history's date with what it needs first, and the reader refuses what... | 0 |
 | [ResearchPreviewCheck.java](ResearchPreviewCheck.md) | 726 | 34 | The preview each dial card on Policy > Research shows: what a set of dials would find here over ten years (R3b, slice A: ResearchPreview, and the w... | 1 |
 | [ResearchViewCheck.java](ResearchViewCheck.md) | 1,713 | 48 | What the research screens read (R5, slice A: ResearchView, three series in HistorySave, ChartModel.flags(log, more), Recipes.chosen()). | 1 |
