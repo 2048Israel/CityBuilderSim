@@ -27,6 +27,41 @@ wins over fair); in the played city, a callable line before its first call is qu
 offer at the least of it and 100, `buyBack()` paying that quote. A callable line's fair falls at its first call
 month (the tree exercises), so 9b compares at that month's fair.
 
+## B: Close it now leads with what the auction would book (CD6-C ★1), commit df924cc4
+
+Jerus, 2026-10-31: "show fair, but when click buyback it shows what the actual gain or loss would be cause of
+liquidity or whatever, with option to just buyback part of it or something idk." The book's desk and the line's
+page stay at fair. The Close it now page has a new first card under the piece, WHAT THIS BUYBACK WOULD BOOK: the
+gain or loss at the holders' asks against carrying value, large, green or red; the gain at fair for the same face
+under it; and a sentence from the quote's own figures - the holders ask D$X over fair for this face, the holder
+asking most named with its amount (or "the offers taken are at fair, so the two agree"), why the households, the
+businesses and the world ask more than fair while the bank sells at fair (D34), and on a line callable now that
+no holder asks more than the call price. The model's three new getters on `Buyback.Result`: `gainAtFair()`,
+`gainAtFairShare()`, `overFair(Holder)`; the screen recomputes nothing. The face's quick picks are now a quarter,
+a half and all on offer, beside the box (they wrap under it when narrow), the one the box holds underlined, and a
+line under them: the cheapest offers go first, so the less of the line asked for, the less each 100 costs. The
+desk's Close it now tip says its figure is at fair and the page shows the auction's.
+
+`BuybackCheck` 10: on a quote taking from more than one holder, the gain at fair less the auction's gain is what
+the holders ask over fair, the holders' over-fair adds to it, the bank's is nothing; a bank-only quote agrees with
+fair; CD6's case by hand (households hold all of it, carrying value between the fair worth and the auction's
+price): fair reads +43.7, the auction -43.7. `KeptCheck`'s face-box test pressed the chip "half", now "a half":
+that one token changed, the test's premise unchanged.
+
+**Look at** (renders, `docs/queue/BB1/`, `RenderBB1.java` beside them): `close-all.png`, the household-held
+ten-year line all on offer, +D$8.5k (+0.4%) at fair and -D$292k (-14.6%) at the asks, households 75%;
+`close-half.png` the same at a half (+D$4.2k, -D$51k: a half costs less over fair); `close-callable.png` a
+callable line at its first call, the households' slices at 100.000 and the cap's sentence; `close-narrow.png` at
+900 and `close-narrowest.png` at 520, the chips wrapping. RenderCD6's own sequence read every line red or both
+green, so the render raises the policy rate in steps to 19.5% until the ten-year line crosses (CD6's +5.1M /
+-2.1M was not reproduced). Seen, not this batch's: a holder holding dust (the world here) shows "Taken from the
+world D$0 for D$0" and ten D$0 slices on the ladder, as since CD4.
+
+## The checks
+
+`./batch-check.sh --pick` with the Earth and world files named: exit 3, 10 of 188 harnesses (LongPlaytest for
+Game.java), the only red KeptCheck's, main's recorded one. Timing left to the gate.
+
 The trace: nothing in the month or the test player buys back (`Buyback.run` is reached only from
 `Game.quoteBuyback()`, whose callers are the screen, `buyBack()` and the harnesses), so the default playtest cannot
 move and the ensemble is skipped.
