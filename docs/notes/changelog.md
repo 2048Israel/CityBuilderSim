@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.62 — CR1, a Credits page from the title screen — 2026-11-09, ready, see docs/queue/CR1-notes.md
+The title screen and the Esc menu have a Credits button under Settings, and the page it opens shows
+the two data files' credits in full, the Earth's (`ATTRIBUTION-2.txt`) and the nations' (`world/ATTRIBUTION.txt`),
+then the fonts' notice (IBM Plex Sans and Mono, Copyright © 2017 IBM Corp., SIL Open Font License 1.1) and the
+licence's own text. The jar carries both files straight from `tools/` (`pom.xml`'s resources), so the page and the
+copies beside the exe have one source each, and a notice a file gains is on the page with it. Both files' "ships
+beside the exe" lines now name the page. `Credits` is the page's model; `CreditsCheck` proves every file
+`Build EXE.bat` ships as a credit is on the page word for word, the fonts are all IBM Plex under that notice, and
+a build missing a file says where it is. Checked by eye.
+
 ### 0.9.61 — MW1, a city saved with the world file and loaded without it — 2026-11-09, ready, see docs/queue/MW1-notes.md
 A city saved on the US's price path and loaded without `world-1.bin` no longer walks its dollar back to the flat
 trend of 1 (WN4-W): the walk's trend now starts at the level the path hands it, at the month it takes over, so the

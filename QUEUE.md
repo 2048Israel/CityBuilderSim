@@ -28,7 +28,6 @@ stuff".
 
 | batch | what | brief |
 |---|---|---|
-| CR1 | A Credits page from the title screen: both attribution files in full and the fonts' notice (IBM Plex, SIL Open Font License 1.1) | [LC1 notes §5](docs/queue/LC1-notes.md) |
 | HB2 | The harbour's detail: the quay showing its stock, rail sidings on the quay with the placement leaning rail toward ports, and a near-view crane moving a box between ship, quay and train; each put to Jerus with renders first, within MapView.FRAME_MS and BOAT_FRAME_MS (Jerus, 2026-10-31: "just some ideas, if its too much no worries"); the harbour's look is (b), the open cargo yard by cargo (HB1-S, settled 2026-11-08 on its recommendation), built with it; after HB1 | [HB2](docs/queue/HB2.md) |
 | LB4 | Rankings: a slot holding the city in play marked "this city, as saved" and left out at Your age (LB3-D); the saved histories read with `JsonReader`, only the kept series, as `double[]` (LB3-R) (Jerus, 2026-10-31: "Take all (Recommended)") | [LB4](docs/queue/LB4.md) |
 | RN1 | A glut's rent under the carry: where a segment has fewer seekers than doors the carry lift does not bind, HousingCheck 3c restated by his word for a tight or balanced market (EN1-C ★2, R3); and the ensemble's S1 restated as "the currency's and no more" (EN1-C ★1) (Jerus, 2026-10-31: "Take all (Recommended)"); the trace moves, the ensemble | [RN1](docs/queue/RN1.md), [EN1-notes §3](docs/queue/EN1-notes.md#3-the-four-that-failed-on-main) |
@@ -135,6 +134,7 @@ stuff".
 | OL1 | The orchestrator is one long-lived session that compacts in place at 150k (the "CBS orchestrator" environment and the local hooks; Jerus, 2026-11-08: "seems like it is worth it"): `docs/orchestrator.md` "The day", CLAUDE.md's Sessions bullet and `docs/batch.md` say so, the daily hand-over goes, fewer lines than it removes | [OL1](docs/queue/OL1.md) |
 | CU1 | Copper Refining's margin, a study: why a refinery buys its input at 52% of its sales and keeps 35% as net income, the cathode's price over its concentrate's (treatment and refining charges) on the seeds that build refineries, then the batch that sets it; at seed 0's m3996 the margin is 72% of the city's value added (LS1, section 4) | [LS1's study](docs/studies/spec-labour-share.md) |
 | LX1 | Luxury Retail's sales per post: payroll over the margin from about 2% toward BEA's 41.7% through the Boutique's coverage and posts together, the luxury piece's price held, checked by LS1's probe rerun; after CU1, whose margin sets the old city's demand (LS1, section 5) | [LS1's study](docs/studies/spec-labour-share.md) |
+| WN4c | WN4b's review follow-ups (the stranger's review at its gate, 2026-11-09): a save whose peg anchor has lost its US$ price falls back to the US$ but keeps `pegRate` in the old anchor's units; zero it on that fallback, asserted in PegAnchorCheck section 8; and the review's two low notes settled; a small fix batch, Sonnet whole | [WN4c](docs/queue/WN4c.md) |
 
 ## Pending
 
@@ -142,6 +142,7 @@ Not done, and waiting on Jerus.
 
 | item | what is left | why it waits | brief |
 |---|---|---|---|
+| CR1-L | the libraries' notices (Gson's Apache 2.0, OpenJFX's GPL v2 with the Classpath Exception) on the Credits page (0.9.62) | ★1: the brief named the data and the fonts only | docs/queue/CR1-notes.md |
 | CD9-G | The Government screen's "...of which paid abroad" row says "in dollars" for coupons paid in any of the eight moneys; the figure is right, in D$ (0.9.57) | a screen's words outside CD9's brief, found on the way | [CD9 notes §3](docs/queue/CD9-notes.md) |
 | CD9-K | KeptCheck's sales assume a bond market that takes six sales of three times the smallest deal; in its city on CD9 merged with 0.9.54 the market takes one (months 2,335 and 2,941), so section 69's Overview and section 71's Spending debt fold go red; the month's GDP read D$-51.7T there, not looked into (0.9.57) | the fixture cannot cause its premise in a thin market; found at CD9's gate | [CD9 notes §3](docs/queue/CD9-notes.md) |
 | MF2-S | The same squaring for mines and wells on sites and the shore's works: the plan is given fewer than its log stands and leaves out the newest, so a departure of such a type can make an older one the one left out and move the boxes after it (0.9.51) | Latent: no run or fixture has met it; recommended, mend it as the yards were (`CityMap.yardUnitsOut`) when a run does, or in DM2 | [MF2 notes ★8](docs/queue/MF2-notes.md#2-the-calls-each--took-the-recommended-way) |

@@ -1,7 +1,8 @@
 earth-2: the Earth data of CityBuilderSim
 
 earth-2.bin is derived from the data sets below. Their licences allow this use; their credits follow,
-each in the form its publisher asks for. It ships beside the exe as data/earth-2-ATTRIBUTION.txt.
+each in the form its publisher asks for. It ships beside the exe as data/earth-2-ATTRIBUTION.txt, and the
+game shows it in full on its Credits page, from the title screen.
 
 GEBCO 2026 Grid (ice-surface elevation) and Type Identifier (TID) grid (GEBCO_2026)
   Credit:  GEBCO Bathymetric Compilation Group 2026 (2026). The GEBCO_2026 Grid - a continuous terrain model for oceans and land at 15 arc-second intervals. NERC EDS British Oceanographic Data Centre NOC. doi:10.5285/4f68d5c7-45eb-f999-e063-7086abc036fa

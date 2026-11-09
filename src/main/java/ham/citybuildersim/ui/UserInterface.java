@@ -1160,7 +1160,7 @@ public class UserInterface extends Application {
     /**
      * Clears the menu area and refreshes the construction panel, for a screen
      * that is built afresh at every draw: since KP7 only the menu's own screens
-     * (isGameMenu(): the main menu, Save, Load, Settings, the founding screen,
+     * (isGameMenu(): the main menu, Save, Load, Settings, Credits, the founding screen,
      * the replay list), which the clock never redraws, and the two simulate-
      * months pages, which nothing has opened since 2026-09-18. Every screen in
      * a city draws through keepMenu() instead.
@@ -1501,7 +1501,7 @@ public class UserInterface extends Application {
         switch (screen) {
             case "showMainMenu": case "showSavingMenu": case "showSaveSlotConfirm":
             case "showLoadMenu": case "loadSlot": case "showSaveResult":
-            case "showSettingsMenu": case FoundingScreen.SCREEN: case ReplayMode.LIST:
+            case "showSettingsMenu": case "showCreditsMenu": case FoundingScreen.SCREEN: case ReplayMode.LIST:
                 return true;
             default:
                 return false;
@@ -3294,7 +3294,7 @@ public class UserInterface extends Application {
     /** The menu's own screens, which draw over the backdrop while no city is open. */
     private static boolean coldMenu(String screen) {
         switch (screen) {
-            case "showSettingsMenu": case "showLoadMenu": case "loadSlot":
+            case "showSettingsMenu": case "showCreditsMenu": case "showLoadMenu": case "loadSlot":
             case "showSavingMenu": case "showSaveSlotConfirm": case "showSaveResult": case ReplayMode.LIST:
                 return true;
             default:
@@ -3527,6 +3527,8 @@ public class UserInterface extends Application {
         load.setOnAction(e -> showLoadMenu());
         Button settings = menuButton("Settings", null, false);
         settings.setOnAction(e -> showSettingsMenu());
+        Button credits = menuButton("Credits", null, false);
+        credits.setOnAction(e -> showCreditsMenu());
         Button quit = menuButton("Quit", null, false);
         // Asks first (0.7.20); see showQuitDialog.
         quit.setOnAction(e -> showQuitDialog());
@@ -3539,7 +3541,7 @@ public class UserInterface extends Application {
             save.setOnAction(e -> showSavingMenu());
             column.getChildren().add(save);
         }
-        column.getChildren().addAll(found, load, settings, quit);
+        column.getChildren().addAll(found, load, settings, credits, quit);
         addReplayEntries(column);       // (TR1) "Record this city" and "Replay a recording", above Quit
         column.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
         StackPane.setAlignment(column, Pos.TOP_LEFT);
@@ -4396,6 +4398,53 @@ public class UserInterface extends Application {
         column.getChildren().add(statementLine("\u2190  \u00b7  \u2192", "the speed, one rung a press"));
         column.getChildren().add(statementLine("Enter", "on the build tab: place every pending order on the page"));
         column.getChildren().add(statementLine("Backspace  \u00b7  Delete", "on the build tab: clear them"));
+
+        Button back = new Button("Back");
+        back.setOnAction(e -> showMainMenu());
+
+        // Over the backdrop the panel scrolls itself; in a city the column scrolls in the page.
+        page.getChildren().addAll(title, page == rootMenu ? scrolled(column) : column, back);
+    }
+
+    /* ----- the Credits page (CR1, 2026-11-09) ----- */
+
+    /**
+     * The Credits page: the Earth and nations attribution files in full and the fonts' notice with its
+     * licence, each as Credits reads it from the jar (the game is sold, and those licences ask that the
+     * credit reach the player). Drawn like Settings, and scrolled the same way: ~400 lines of text, so
+     * it must scroll in the Esc menu (the column in the page) and over the title backdrop (the panel
+     * menuPage() makes scrolls itself, so the column is not wrapped a second time there).
+     */
+    private void showCreditsMenu() {
+        clearMenu("showCreditsMenu", () -> showCreditsMenu());
+        VBox page = menuPage();
+
+        Label title = pageTitle("CREDITS");
+
+        VBox column = new VBox(0);
+        column.setAlignment(Pos.TOP_LEFT);
+        column.setMaxWidth(Region.USE_PREF_SIZE);
+
+        column.getChildren().add(statementNote(
+                "The data the city's world is made from, and the type it is set in. "
+                + "Each file is shown as it ships beside the game."));
+        for (Credits.Section s : Credits.sections()) {
+            column.getChildren().add(statementHead(s.title()));
+            if (s.lead() != null) column.getChildren().add(statementNote(s.lead()));
+            if (s.missing()) {
+                column.getChildren().add(statementNote(Credits.missingNote(s)));
+                continue;
+            }
+            // One label for each paragraph: a single label holding the whole file is slow to lay out.
+            for (String paragraph : Credits.paragraphs(s.text())) {
+                Label text = new Label(paragraph);
+                text.setWrapText(true);
+                text.setMaxWidth(STATEMENT - 16);
+                text.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 12px; -fx-text-fill: "
+                        + Palette.TEXT_MUTED + "; -fx-padding: 0 0 8 14;");
+                column.getChildren().add(text);
+            }
+        }
 
         Button back = new Button("Back");
         back.setOnAction(e -> showMainMenu());
