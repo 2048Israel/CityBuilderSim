@@ -5,6 +5,9 @@ Queued 2026-10-31 from Jerus's ideas for the ports (his words are in
 to him with renders before it is built. It runs after HB1, which bundles the
 terminals and docks the ships.
 
+**The renders are made and he has picked (2026-11-09): 1a, 2a and 3a.** "His
+picks", at the end, is what the batch builds.
+
 The harbour's look is HB1's render (b), the open cargo yard by what each
 terminal handles (`docs/queue/HB1/hb1-b-yard.png`, `hb1-d-kinds.png`),
 settled 2026-11-08 on its recommendation (HB1 notes, HB1-S); this batch
@@ -90,3 +93,19 @@ What the renders found, which the build starts from:
   (`MapCheck.BOAT_FRAME_MS`) gains next to nothing.
 - A dry bulk berth's crane carries a grab of ore, not a box; a tanker's is a
   loading arm that does not move.
+
+## His picks (Jerus, 2026-11-09)
+
+Asked in one box, a question an idea, each with its three looks and "Leave
+it out", the facts and the costs above inside it. He ticked the recommended
+look of each and added no words:
+
+1. Stock: **"1a Yard fills"**. The question said the ports hold no stock, so
+   what he took is the level as how busy a cargo kind's terminals are this
+   month, its sea tonnes over its berths' capacity, with nothing new saved.
+2. Rail: **"2a Tracks on quay"**, with the railway leaning toward a port so a
+   line reaches those tracks.
+3. Crane: **"3a Pixel line"**.
+
+So the batch builds 1a, 2a and 3a. Nothing is left out and nothing waits on
+him. The other six looks stay in `docs/queue/HB2/` as the record.
