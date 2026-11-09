@@ -47,6 +47,17 @@ import java.util.List;
  *    year played - History's revenue less surplus plus the gain on debt
  *    retired is the budget's expenses, month by month, and the treasury's
  *    month of spending is their average; without the gain it is off by it.
+ * 9. A line callable now (BB1, CD4-C ★6): the city could call it at
+ *    CallTree.CALL_PRICE, so no holder asks more than that. By hand, a line
+ *    whose coupon is over what the households ask offers over the call price
+ *    without the cap and at most the call price with it, the offers already
+ *    under it unchanged, the ladder still ascending, a full buyback's stop and
+ *    cost within it; a line whose fair is itself over it offers at exactly the
+ *    call price (the cap wins over the floor at fair). In a played city, a
+ *    callable line before its first call month is quoted as the holders ask,
+ *    over the call price; at it, the same quote is the same ladder with each
+ *    offer at the least of what it was and the call price, and the buyback
+ *    booked is that quote, within what calling the line costs.
  *
  * Each fixture causes its condition rather than finding a city in it.
  *
@@ -161,6 +172,7 @@ public class BuybackCheck {
         dollars();
         refused(city);
         theYearAddsUp(city);
+        callableNow(city);
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         if (fails > 0) System.exit(1);
@@ -858,5 +870,188 @@ public class BuybackCheck {
         near("...and so is the sum of what the history says it was", sumWith / months, sumExpenses / months, .02);
         check("without the gain the year is off by it: this is the bug", Math.abs(sumWithout - sumExpenses) > .02);
         near("...by exactly the gain (revenue less surplus is expenses less the gain)", sumExpenses - sumWithout, gain, .02 * months);
+    }
+
+    /* ================= 9. a line callable now ================= */
+
+    /** A coupon over what the households ask, and under the market's yield: the line is worth less than par and the households still ask over par. */
+    static final double COUPON_OVER_ASKS = .045;
+    /** A coupon so far over the market's yield that the line's fair is itself over the call price. */
+    static final double COUPON_OVER_FAIR = .08;
+
+    /** The pure fixture's line at another coupon: ten years of months, fair at the market's yield, the call price as given (NaN: not callable now). */
+    static Buyback.Line lineAt(double coupon, double callPer100) {
+        double[] per100 = Auction.bulletPer100(coupon, 120);
+        double[] f = new double[per100.length];
+        for (int i = 0; i < f.length; i++) f[i] = per100[i] * PRINCIPAL / 100;
+        double fair = Debt.presentValue(f, MARKET_YIELD) / PRINCIPAL * 100;
+        return new Buyback.Line(PRINCIPAL, f, fair, 980, 400, 200, 100, 150, 150, false, callPer100);
+    }
+
+    static void callableNow(Game city) {
+        out.println("\n--- 9. a line callable now: no holder asks more than the call price (BB1, CD4-C ★6) ---");
+        callableByHand();
+        callableInPlay(city);
+    }
+
+    static void callableByHand() {
+        final double call = CallTree.CALL_PRICE;
+        Auction.Bidders b = calm();
+        Buyback.Line free = lineAt(COUPON_OVER_ASKS, Double.NaN);
+        Buyback.Line capped = lineAt(COUPON_OVER_ASKS, call);
+
+        double firstAsk = .02 + (200 * .9 / PRINCIPAL) / HouseholdBalance.HOUSEHOLD_PAPER_APPETITE;
+        check("fixture: the coupon is over the yield the households ask for their first slice", COUPON_OVER_ASKS > firstAsk);
+        check("fixture: ...and the line's fair is under the call price, the market's yield being over the coupon", free.fairPer100() < call);
+        check("fixture: a line with no call price, a NaN or a call price of nothing, is not callable now",
+                !free.callableNow() && !lineAt(COUPON_OVER_ASKS, 0).callableNow()
+                        && !new Buyback.Line(PRINCIPAL, free.flows(), free.fairPer100(), 980, 400, 200, 100, 150, 150, false).callableNow());
+        check("...and one with the call price is", capped.callableNow());
+
+        List<Buyback.Offer> loose = Buyback.offers(free, b), tight = Buyback.offers(capped, b);
+        double dearest = loose.get(loose.size() - 1).per100();
+        out.printf("   without the call price: from %.3f to %.3f per 100 (fair %.3f); with it: to %.3f%n",
+                loose.get(0).per100(), dearest, free.fairPer100(), tight.get(tight.size() - 1).per100());
+        check("premise: without the call price the dearest offer is over it", dearest > call);
+        check("premise: ...and the cheapest is under it, the bank's at fair", loose.get(0).per100() < call);
+        check("a line with no call price offers what it did before the cap existed (the ten-figure line, NaN)",
+                loose.equals(Buyback.offers(new Buyback.Line(PRINCIPAL, free.flows(), free.fairPer100(), 980, 400, 200, 100, 150, 150, false), b)));
+
+        boolean atMost = true, sorted = true;
+        for (int i = 0; i < tight.size(); i++) {
+            atMost &= tight.get(i).per100() <= call;
+            if (i > 0) sorted &= tight.get(i - 1).per100() <= tight.get(i).per100();
+        }
+        check("with the call price every offer is at most it", atMost);
+        check("...and the ladder is still the cheapest first", sorted);
+        check("...with as many offers, the central bank's face still not among them",
+                tight.size() == loose.size() && Math.abs(faceOf(tight) - (PRINCIPAL - 150)) <= 1e-9);
+
+        boolean kept = true, cut = true, same = true, climbs = true, someCut = false, someKept = false;
+        for (Buyback.Holder h : Buyback.Holder.values()) {
+            List<Buyback.Offer> was = of(loose, h), is = of(tight, h);
+            same &= was.size() == is.size();
+            for (int j = 0; j < Math.min(was.size(), is.size()); j++) {
+                same &= was.get(j).face() == is.get(j).face();
+                if (was.get(j).per100() <= call) {
+                    kept &= is.get(j).per100() == was.get(j).per100();
+                    someKept = true;
+                } else {
+                    cut &= is.get(j).per100() == call;
+                    someCut = true;
+                }
+                if (j > 0) climbs &= is.get(j - 1).per100() <= is.get(j).per100();
+            }
+        }
+        check("premise: some offers were under the call price and some over it", someKept && someCut);
+        check("the offers that were under the call price are unchanged, holder by holder, slice by slice", kept && same);
+        check("the ones that were over it are exactly the call price", cut);
+        check("each holder's own slices still ascend", climbs);
+
+        // A full buyback: everything offered.
+        double offerable = PRINCIPAL - 150;
+        Buyback.Result dear = Buyback.run(free, b, Buyback.Ask.anyPrice(PRINCIPAL));
+        Buyback.Result cheap = Buyback.run(capped, b, Buyback.Ask.anyPrice(PRINCIPAL));
+        near("a full buyback takes all that is offered", cheap.takenFace(), offerable, 1e-9);
+        check("its stop is at most the call price", cheap.stopPer100() <= call);
+        check("...and what it paid is at most the face taken at the call price", cheap.paid() <= cheap.takenFace() * call / 100 + 1e-9);
+        check("premise: without the call price the stop was over it and the city paid more than the face at the call price",
+                dear.stopPer100() > call && dear.paid() > dear.takenFace() * call / 100);
+        check("so the call price saves the city something", cheap.paid() < dear.paid());
+        check("...and moves nothing else: the face taken and the piece's fair are the same",
+                Math.abs(cheap.takenFace() - dear.takenFace()) <= 1e-9 && cheap.fairPer100() == dear.fairPer100());
+
+        // A line whose fair is itself over the call price: the cap wins over the floor at fair.
+        Buyback.Line richFree = lineAt(COUPON_OVER_FAIR, Double.NaN), rich = lineAt(COUPON_OVER_FAIR, call);
+        check("fixture: a coupon so far over the market's yield that the line's fair is over the call price", rich.fairPer100() > call);
+        List<Buyback.Offer> richLoose = Buyback.offers(richFree, b), richTight = Buyback.offers(rich, b);
+        check("premise: without the call price every offer is at least fair, so over the call price", richLoose.get(0).per100() >= richFree.fairPer100() && richLoose.get(0).per100() > call);
+        boolean exactly = true;
+        for (Buyback.Offer o : richTight) exactly &= o.per100() == call;
+        check("with it every offer is exactly the call price: the cap wins over the floor at fair", exactly && richTight.size() == richLoose.size());
+        Buyback.Result richRun = Buyback.run(rich, b, Buyback.Ask.anyPrice(PRINCIPAL));
+        near("a full buyback of it pays the call price on average", richRun.averagePer100(), call, 1e-9);
+
+        // The rule is general: dollar paper, whose holder is the world alone, is capped too (it cannot be called, so the game never sets it).
+        Buyback.Line dollar = new Buyback.Line(PRINCIPAL, rich.flows(), rich.fairPer100(), 980, 0, 0, 0, PRINCIPAL, 0, true, call);
+        List<Buyback.Offer> dollars = Buyback.offers(dollar, b);
+        boolean dollarAtCall = dollars.size() == Buyback.SLICES;
+        for (Buyback.Offer o : dollars) dollarAtCall &= o.per100() == call;
+        check("dollar paper with a call price is offered at it, never at the fair that is over it", dollarAtCall);
+    }
+
+    static void callableInPlay(Game city) {
+        final double call = CallTree.CALL_PRICE;
+        DebtManager ledger = city.getDebtManager();
+        HouseholdBalance hb = city.getHouseholdBalance();
+
+        worldWantsPaper(city);
+        city.setCashForTest(Founding.WEALTHY_CASH);
+        double ask = Math.max(100 * PriceLevel.FACTOR, hb.spareForPaper() * 3);
+        quietly(() -> city.handleLongBondLogic(ask, 10, 100 * PriceLevel.FACTOR, Auction.Cap.DEFAULT, true));
+        LongTermBond found = null;
+        for (Debt d : ledger.getDebt()) if (d instanceof LongTermBond l && l.isCallable() && !l.isForeign() && l.unsettledFace() > 0) found = l;
+        check("fixture: the treasury sold a callable ten-year line", found != null);
+        if (found == null) return;
+        LongTermBond bond = found;
+        check("fixture: ...unsettled until the month turns, so it cannot be called", bond.unsettledFace() > 0 && !city.canCall(bond));
+        play(city);
+        check("fixture: it is settled, and the households, the bank and the world each hold part of it, the central bank none",
+                bond.unsettledFace() == 0 && bond.householdPrincipal() > 0 && bond.bankPrincipal() > 0 && bond.worldPrincipal() > 0
+                        && bond.centralBankPrincipal() == 0);
+        check("fixture: its first call month is still ahead, so it cannot be called",
+                bond.getFirstCallMonth() > city.getMonth() && !city.canCall(bond));
+
+        // Before the first call month: priced as before, the holders asking what their rules ask.
+        double principal = bond.getOustandingPrincipal();
+        Buyback.Result notYet = city.quoteBuyback(bond, principal, Double.NaN);
+        Buyback.Line byHand = new Buyback.Line(principal, ledger.pricingFlows(bond), ledger.marketValue(bond) / principal * 100,
+                bond.getCarryingValue(), bond.bankPrincipal(), bond.householdPrincipal(), bond.firmPrincipal(),
+                bond.worldPrincipal(), bond.centralBankPrincipal(), false);
+        check("a line not yet callable is quoted as the holders ask: the ladder is Buyback.offers() with no call price",
+                !notYet.ladder().isEmpty() && notYet.ladder().equals(Buyback.offers(byHand, city.auctionBidders())));
+        List<Buyback.Offer> before = notYet.ladder();
+        double dearest = before.get(before.size() - 1).per100();
+        out.printf("   the line, not yet callable: D$%,.0fk, fair %.3f per 100, offers from %.3f to %.3f%n",
+                principal, notYet.fairPer100(), before.get(0).per100(), dearest);
+        check("premise: the dearest offer is over the call price (" + String.format("%.3f", dearest) + " per 100)", dearest > call);
+        near("the quote takes it all", notYet.takenFace(), principal, 1e-6);
+
+        // At the first call month: the same city, the same holders, no offer over the call price. A callable line's fair moves
+        // with its call date (it is worth no more than the call price once it can be called), so the offers it is held against
+        // are the line's uncapped ladder at the fair of this month, built by hand: each quoted offer is the least of its price and the call price.
+        bond.moveFirstCallForTest(city.getMonth());
+        check("at its first call month it can be called", city.canCall(bond));
+        double callCost = city.callCost(bond);
+        Buyback.Result now = city.quoteBuyback(bond, principal, Double.NaN);
+        List<Buyback.Offer> after = now.ladder();
+        Buyback.Line uncapped = new Buyback.Line(principal, ledger.pricingFlows(bond), ledger.marketValue(bond) / principal * 100,
+                bond.getCarryingValue(), bond.bankPrincipal(), bond.householdPrincipal(), bond.firmPrincipal(),
+                bond.worldPrincipal(), bond.centralBankPrincipal(), false);
+        List<Buyback.Offer> loose = Buyback.offers(uncapped, city.auctionBidders());
+        double looseDearest = loose.isEmpty() ? 0 : loose.get(loose.size() - 1).per100();
+        check("premise: the same line with no call price, at this month's fair, still has its dearest offer over the call price (" + String.format("%.3f", looseDearest) + " per 100)", looseDearest > call);
+        boolean atMost = !after.isEmpty() && after.size() == loose.size(), least = atMost;
+        for (int i = 0; atMost && i < after.size(); i++) {
+            atMost &= after.get(i).per100() <= call;
+            least &= after.get(i).per100() == Math.min(call, loose.get(i).per100());
+        }
+        check("callable now, every offer on the ladder is at most the call price", atMost);
+        check("...each the least of what it would have been with no call price and the call price", least);
+        check("...and the same face on offer", Math.abs(faceOf(after) - faceOf(loose)) <= 1e-9);
+        check("its stop is at most the call price (" + String.format("%.3f", now.stopPer100()) + " per 100)", now.stopPer100() <= call);
+        near("the quote still takes it all", now.takenFace(), principal, 1e-6);
+        check("what it asks is at most what calling the line costs, and less than the quote before the call month",
+                now.paid() <= callCost + 1e-6 && now.paid() < notYet.paid());
+
+        // The deal booked is the quote shown.
+        city.setCashForTest(Founding.WEALTHY_CASH);
+        double cash = city.getCash();
+        Buyback.Result done = city.buyBack(bond, principal, Double.NaN);
+        near("the buyback booked pays what the quote said", done.paid(), now.paid(), 1e-6);
+        near("...its stop is the quote's", done.stopPer100(), now.stopPer100(), 1e-9);
+        check("...it is within what calling the line would have cost, and the line leaves the books",
+                done.paid() <= callCost + 1e-6 && !ledger.getDebt().contains(bond));
+        near("...the cash fell by what was paid", cash - city.getCash(), done.paid(), 1e-6);
     }
 }

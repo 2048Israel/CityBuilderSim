@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**5,615 constants in 532 files.**
+**5,617 constants in 532 files.**
 
 ## model (2702 constants)
 
@@ -5381,7 +5381,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 748 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1028 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1516 constants)
+## harnesses (1518 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -5526,9 +5526,11 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 102 | `BuybackCheck.PRINCIPAL` | `1_000` |  |
-| 103 | `BuybackCheck.COUPON` | `.04` |  |
-| 104 | `BuybackCheck.MARKET_YIELD` | `.05` |  |
+| 113 | `BuybackCheck.PRINCIPAL` | `1_000` |  |
+| 114 | `BuybackCheck.COUPON` | `.04` |  |
+| 115 | `BuybackCheck.MARKET_YIELD` | `.05` |  |
+| 878 | `BuybackCheck.COUPON_OVER_ASKS` | `.045` | A coupon over what the households ask, and under the market's yield: the line is worth less than par and the households still ask over par. |
+| 880 | `BuybackCheck.COUPON_OVER_FAIR` | `.08` | A coupon so far over the market's yield that the line's fair is itself over the call price. |
 
 ### CallCheck.java ([map](map/CallCheck.md))
 
