@@ -71,3 +71,23 @@ every month at x 80, maybe mid-chain - MP1-C's premise holds. Decided:
   Rule (ii) is caused by fixture 6b alone: (b) carry of district 39 moved: 94 jobs (93 lazy), 1 made,
   86 could not take; (c) 94 jobs (0 lazy), 2 made, 92 taken; (d) quiet: 94 (0 lazy), 1 made, 93 taken;
   then `quiet` lazy again and `!backingOff(dq)`. `lazyJobs` equals the harness's own count every month.
+
+## Slice B (drafted by Sonnet 5.5, reviewed 2026-11-09)
+
+- Review: matches the brief. One deviation, kept: item 5 (`layReserves` clears only for a new ground) turned
+  four JunctionCheck trumpet lines red, since `addArm` lays an arm by hand and the runs' version does not
+  move with it. So the public `layReserves` still clears whatever was bound, and `layTo` binds through a
+  private `bindReserves` that clears only for another ground. The digest reads what `reserveBlocked` reads
+  through the same calls; `reservesStale()` touches no counter. MapCheck: exit 3, the four yard lines only;
+  JunctionCheck green.
+- x 80 over 25 months (one unpaired run): a median of 401 reserves asked a month, 185 found again, 238
+  missed (6.2 ms). The guard's version moved in G = 24 of 25 months (a mine grows most months at x 80); the
+  runs' or the ground's version cleared the cache in R = 11. A fresh digest takes about 0.1 ms. The kept
+  digest and the kept sites equal fresh ones after every month; fixture 6b's quiet round finds its one ask
+  again; 2h's two runs keep 7 of 13 and 8 of 17.
+- B2, decided: design rule 5 (R over half the months) is not met, so no B2 slice. The finding it did not
+  foresee is G: the guard's stamp is one for the whole map, so a mine laid anywhere clears every region's
+  sites. The hits left are those within a month (main cleared mid-chain too, with every `changes`). A
+  regional key (the mines and works by region, and the runs' version by region for R) would save at most the
+  6.2 ms of misses a month at x 80: a Pending row with these figures, recommended left until x 80's chain is
+  measured as the screen's bottleneck again.

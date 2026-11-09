@@ -395,6 +395,9 @@ import java.util.Map;
  *      (batch UP9, slice A) The lazy try backs off: a band whose lazy job failed hands none lazy at its next hand-out and gathers its inputs at
  *      once, and after a quiet eager hand-out it hands the first jobs that could take their links lazy again (x 1, x 80, over the months); a
  *      moved carry in makes the lazy try fail, the band eager for the next two epochs, and the epoch after a quiet one lazy (x 80).
+ *      (batch UP9, slice B) The interchanges' reserves are kept across months: the guard's version is a digest of the mines and the shore's works,
+ *      so a month that moves no mine nor work finds none of x 80's reserves again; its kept digest and the sites kept equal ones worked out
+ *      afresh after every month, and a round that lets one link go and moves nothing else finds every reserve it asks as kept (x 80).
  *  19. (batch WN2) THE BORDERS ON THE NEAR VIEW: on the world fixture, a box of the city's ground 8 km a side round Baarle-Nassau is crossed
  *      (NationsMap.crossing()) by the Belgium-Netherlands line and by every line that has a segment meeting it, each sampled a thousand times,
  *      and the same box round Rotterdam by none; the answer is kept for the same box and spot; planeBorders() of the Baarle lines on a 1,389 x 868
@@ -2552,6 +2555,12 @@ public class MapCheck {
                 differ == 0 && m.journalDropped() == 0);
         check("the sidecar written after it and read back carries the journal with the reserve in it: the written map's records, the same plan (FORMAT " + CityMap.FORMAT + ")", back != null && journalRead);
         check("...and the map read back finds the reserves it was written with as its own: two months more date nothing (" + (back == null ? -1 : back.districts().size()) + " districts)", back != null && quiet);
+        // The reserves kept (batch UP9, slice B): after the months the crossing's reserve moved in, what the cache holds is what a fresh find gives, and the guard's kept digest is a fresh one.
+        long[] counted = m.runs().reserveCounts();
+        int staleKept = m.runs().reservesStale();
+        boolean digestFresh = m.guardDigestFresh() == m.runs().guardVersion();
+        check(name + ": the sites the runs kept after " + months + " months with the highways laid are the ones a fresh find gives (" + staleKept + " of " + counted[0] + " asked differ, " + counted[1] + " found again),"
+                + " and the guard's kept digest is the one worked out afresh", counted[0] > 0 && staleKept == 0 && digestFresh);
     }
 
     /** How many plots of `later`'s fixed ground worked back through its records dated after the snapshot's month differ from the fixed ground the snapshot's input held: journalDiffers() with the reserves counted, as the journal now dates them. */
@@ -12614,6 +12623,15 @@ public class MapCheck {
         /** (batch UP5, slice A) Own stamps {asked, worked out} this month and, after the rounds, {kept, those whose key held, those of them that differ from a stamp worked out afresh} (CityMap.ownStampsKept()). */
         long[] ownCalls = new long[2];
         int[] ownKept = new int[3];
+        /**
+         * (batch UP9, slice B) The month's reserve counters as CityRuns.reserveCounts() gives them, a delta over the month for each but the last: [0] to [8] the counters,
+         * [9] the guard's version the cache was stamped at, as of the month's end. The guard's version at the month's start and end, and the one the cache stood stamped at
+         * at its start; the kept regions found differently now (reservesStale()), and whether the guard's kept digest is the one worked out afresh, both at the month's end.
+         */
+        long[] reserve = new long[CityRuns.RESERVE_COUNTS];
+        long guardStart, guardEnd, stampedStart;
+        int reserveStale;
+        boolean digestFresh;
 
         double nowSum() { return stampNow + farNow + l0 + chain; }
         double todaySum() { return stampToday + farToday + l0 + chain; }
@@ -12710,6 +12728,9 @@ public class MapCheck {
             java.util.Map<CityMap.District, Long> before = new HashMap<>();
             for (CityMap.District d : m.districts()) before.put(d, d.version);
             long runsBefore = m.runs().version();
+            // (batch UP9, slice B) The reserves' counters and the guard's version as the month began.
+            long guard0 = m.runs().guardVersion();
+            long[] reserve0 = m.runs().reserveCounts();
             java.util.Map<String, long[]> drawnBefore = runsDrawn(m);
             if (beforeReconcile != null) {
                 beforeReconcile.run();
@@ -12843,6 +12864,14 @@ public class MapCheck {
                 r.astray = m.linksAstray();
                 r.kept = m.linksKept();
             }
+            // (batch UP9, slice B) What the reserves did in the month, and whether what is kept is right at its end.
+            long[] reserve1 = m.runs().reserveCounts();
+            for (int i = 0; i < CityRuns.RESERVE_COUNTS; i++) r.reserve[i] = i == CityRuns.RESERVE_COUNTS - 1 ? reserve1[i] : reserve1[i] - reserve0[i];
+            r.guardStart = guard0;
+            r.stampedStart = reserve0[CityRuns.RESERVE_COUNTS - 1];
+            r.guardEnd = m.runs().guardVersion();
+            r.reserveStale = m.runs().reservesStale();
+            r.digestFresh = m.guardDigestFresh() == r.guardEnd;
             all.add(r);
             tookS += (System.nanoTime() - began) / 1e9;
             return r;
@@ -13241,6 +13270,9 @@ public class MapCheck {
         return n;
     }
 
+    /** How many times the guard's digest is worked out afresh for the figure section 18 prints: 5, for a mean. */
+    static final int DIGEST_TIMED = 5;
+
     static double median18(java.util.List<Double> l) {
         if (l.isEmpty()) return Double.NaN;
         java.util.List<Double> s = new ArrayList<>(l);
@@ -13526,7 +13558,11 @@ public class MapCheck {
         check("...and at the epoch after, in which nothing moved but the link let go: none lazy, only that plan made (" + (int) quietEager[2] + "), the rest taken (" + (int) quietEager[3] + " of " + (int) quietEager[0]
                 + "), none failed, every picture current - and the band backs off until the epoch after that",
                 quietEager[1] == 0 && quietEager[2] == 1 && quietEager[3] == quietEager[0] - 1 && quietEager[4] == 0 && quietEager[8] == 0 && offAfterQuiet);
-        double[] quiet = quietChain(x80.m, quietAt, false), noExit = quietChain(x80.m, quietAt, true);
+        long[] reserve0 = x80.m.runs().reserveCounts();
+        double[] quiet = quietChain(x80.m, quietAt, false);
+        long[] reserve1 = x80.m.runs().reserveCounts();
+        int quietStale = x80.m.runs().reservesStale();
+        double[] noExit = quietChain(x80.m, quietAt, true);
         out.printf("      x 80, the link of district %d of %d let go, nothing else moved: %.0f plan jobs handed out (%.0f lazy, no input gathered), %.0f plans made, %.0f links taken, %.0f jobs that could do neither, %.0f plans not needed; the worker %.1f ms,"
                 + " the FX side %.2f ms; against the links of districts %d to %d let go: %.0f plan jobs, %.0f plans made, %.0f links taken; the worker %.1f ms, the FX side %.2f ms%n", quietAt, x80.m.districts().size(),
                 quiet[0], quiet[1], quiet[2], quiet[3], quiet[4], quiet[5], quiet[6], quiet[7], quietAt, x80.m.districts().size() - 1, noExit[0], noExit[2], noExit[3], noExit[6], noExit[7]);
@@ -13535,6 +13571,12 @@ public class MapCheck {
                 quiet[0] > 2 && quiet[1] == quiet[0] - 1 && quiet[2] == 1 && quiet[3] == quiet[0] - 1 && quiet[4] == 0 && quiet[5] == 0 && quiet[8] == 0);
         check("...the links of every district after it gone too, it plans each one (the chain before the early exit), the same pictures current: " + (int) noExit[2] + " plans made (x 80)",
                 noExit[0] == quiet[0] && noExit[1] == 0 && noExit[2] == noExit[0] && noExit[3] == 0 && noExit[8] == 0 && quiet[6] * 4 < noExit[6]);
+        // The reserves kept (batch UP9, slice B): that round moved no mine, no work, no run and no ground, only a link let go and the map's changes, so no reserve is found again.
+        long quietAsked = reserve1[0] - reserve0[0], quietFound = reserve1[1] - reserve0[1], quietClears = reserve1[2] - reserve0[2];
+        out.printf("      x 80, the link of district %d let go, nothing else moved: %d reserve asks, %d found again, %d clears of the cache, %d kept regions that a fresh find would give differently%n", quietAt, quietAsked, quietFound, quietClears, quietStale);
+        check("a district's link gone and nothing else moved: the reserves are found again as kept - " + quietAsked + " asked, every one found again, the cache emptied by none of them (the map's changes moved, the mines and works did not) (x 80)",
+                quietClears == 0 && (quietAsked == 0 || quietFound == quietAsked));
+        check("...and the sites kept for every region are the ones a fresh find gives, after that round (" + quietStale + " differ, x 80)", quietStale == 0);
         check("a band that had a quiet eager epoch is lazy again at the next, and stays lazy while nothing fails (the chain that let its link go handed its jobs lazy, and the one that let every link go planned each): the band backs off no longer",
                 dq != null && !x80.m.backingOff(dq));
         for (Redraw w : new Redraw[] { x1, x80 }) {
@@ -13563,6 +13605,45 @@ public class MapCheck {
                     kept > 0 && heldKeys > 0 && fewer > 0);
             check("an own stamp kept against its key equals ownStamp() worked out afresh for every district whose key held, after each of " + stampMonths + " months on " + w.name + " (none astray)", astray == 0);
         }
+
+        // ----- 6d. The reserves kept across months (batch UP9, slice B; MP1-C) -----
+        // The interchanges' reserves are found per region and kept against the runs', the ground's and the guard's versions (CityRuns.reservesIn()); the guard's is a digest of the mines and
+        // works alone (CityMap.guardDigest()), so a month that moves a district's count and no mine nor work finds none again. x 80 months, as the fixture played them.
+        java.util.List<Double> askedMs = new ArrayList<>(), foundMs = new ArrayList<>(), missedMs = new ArrayList<>(), missMsMs = new ArrayList<>();
+        int resMonths = 0, guardMoved = 0, runsGroundCleared = 0, quietMonths = 0, quietWrong = 0, movedJudged = 0, movedMissed = 0, staleMonths = 0, digestStale = 0;
+        for (RedrawMonth r : x80.all) {
+            if (r.reserveStale != 0) staleMonths++;
+            if (!r.digestFresh) digestStale++;
+            if (r.kind == SETTLE) continue;
+            resMonths++;
+            boolean moved = r.guardStart != r.guardEnd, behind = r.stampedStart != r.guardStart;
+            if (moved) guardMoved++;
+            if (r.reserve[3] + r.reserve[4] > 0) runsGroundCleared++;
+            askedMs.add((double) r.reserve[0]);
+            foundMs.add((double) r.reserve[1]);
+            missedMs.add((double) (r.reserve[0] - r.reserve[1]));
+            missMsMs.add(r.reserve[8] / 1e6);
+            // A cache stamped at the guard's version as the month began, and the version unmoved at its end: no clear by the guard. Moved, and stamped at its end version: at least one.
+            if (!behind && !moved) {
+                quietMonths++;
+                if (r.reserve[5] != 0) quietWrong++;
+            } else if (!behind && r.reserve[9] == r.guardEnd) {
+                movedJudged++;
+                if (r.reserve[5] < 1) movedMissed++;
+            }
+        }
+        long digestFrom = System.nanoTime();
+        for (int i = 0; i < DIGEST_TIMED; i++) x80.m.guardDigestFresh();
+        double digestMs = (System.nanoTime() - digestFrom) / 1e6 / DIGEST_TIMED;
+        out.printf("      x 80, %d months: the reserves asked a median of %.0f times a month, %.0f found again, %.0f missed (%.1f ms); the guard's version moved in %d months, the runs' or the ground's cleared the cache in %d; the digest worked out afresh takes %.1f ms%n",
+                resMonths, median18(askedMs), median18(foundMs), median18(missedMs), median18(missMsMs), guardMoved, runsGroundCleared, digestMs);
+        check("fixture: x 80's months ask the reserves (a median of " + (int) median18(askedMs) + " a month) and some of its months move the guard's version (" + guardMoved + " of " + resMonths + ") and some leave it ("
+                + (resMonths - guardMoved) + "), so both are tried", resMonths > 0 && median18(askedMs) > 0 && guardMoved > 0 && quietMonths > 0);
+        check("the sites kept for every region are the ones a fresh find gives, after every month of x 80 (" + staleMonths + " months with a region that differs of " + x80.all.size() + ")", staleMonths == 0);
+        check("the guard's kept digest is the one worked out afresh from the shore's works and the districts' mined sites after every month of x 80 - no writer of a mine or a work missed ("
+                + digestStale + " months that differ)", digestStale == 0);
+        check("a month in which the guard's version did not move empties the cache by it never: " + quietWrong + " of " + quietMonths + " such months on x 80 do", quietWrong == 0);
+        check("...and one in which it moved, with the reserves asked after it, empties the cache by it at least once: " + movedMissed + " of " + movedJudged + " such months on x 80 do not", movedMissed == 0 && movedJudged > 0);
 
         // ----- 7. The budget -----
         java.util.List<Double> nows = new ArrayList<>(), todays = new ArrayList<>();

@@ -4719,15 +4719,70 @@ public final class CityMap {
     /** The city's highways and railway (spec 2.7, 2.8). */
     private CityRuns runs = guarded(new CityRuns());
 
+    /* ----- UP9-B: the reserves' guard moves with the mines and the works (2026-11-09) ----- */
+
+    /*
+     * WHY (MP1-C; Jerus took the recommended way, 2026-10-31): the guard's version was the map's `changes`, which moves with every district's count
+     * (syncLand, reconcile, add), with dropLink in the plan chain and with the screen's picture setters, so at x 80 CityRuns.reservesIn()'s cache
+     * was cleared every month, maybe in the middle of the chain, and every district that moved found its plan input's reserves again (some 25 ms a
+     * month on the screen's thread). The guard blocks a reserve only by the shore's works and the mines on their sites (reserveBlocked()), so its
+     * version is now a digest of exactly those (guardDigest()), kept against `changes` and worked out again only when that moved. MapCheck 18 counts
+     * how often the reserves are found again and asserts the digest is never stale.
+     */
+
+    /** The guard's digest as last worked out, and the `changes` it was worked out at (Long.MIN_VALUE for never). */
+    private long guardDigestKept;
+    private long guardDigestAt = Long.MIN_VALUE;
+
     /** The runs given the works an interchange's reserve may not take (batch FR7, InterchangeGround.Guard): the mines on their sites and the shore's works. */
     private CityRuns guarded(CityRuns r) {
         r.setReserveGuard(new InterchangeGround.Guard() {
             @Override public boolean blocked(long x0, long y0, long x1, long y1) { return reserveBlocked(x0, y0, x1, y1); }
 
-            // Any change of the map - a building placed, a site worked, a work laid on the shore - may move a mine or a terminal.
-            @Override public long version() { return changes; }
+            // UP9-B: only a mine on its site or a work on the shore moves what blocked() says, and the digest moves with those alone.
+            @Override public long version() { return guardDigest(); }
         });
         return r;
+    }
+
+    /** The guard's version: guardDigestFresh(), kept against `changes`, which is read after sitedNow() as placeSited() may move it. */
+    private long guardDigest() {
+        sitedNow();
+        long at = changes;
+        if (at != guardDigestAt) {
+            guardDigestKept = digestOfBlockers();
+            guardDigestAt = at;
+        }
+        return guardDigestKept;
+    }
+
+    /** The guard's digest worked out afresh, the kept one ignored: for MapCheck 18 (UP9). */
+    long guardDigestFresh() {
+        sitedNow();
+        return digestOfBlockers();
+    }
+
+    /**
+     * A digest of what reserveBlocked() reads, through the same calls: the shore works' boxes, and the boxes of the mined sites of every district that
+     * has any site runs (siteList()), each with its district's dx and dy. Order-free (a sum), each box's fields folded with distinct odd multipliers
+     * before World.mix() so that a swap of two of them moves it, and mixed at the end with baseDX and baseDY, which the districts' dx and dy are against.
+     */
+    private long digestOfBlockers() {
+        long sum = 0;
+        for (CityShore.Work w : shore.works()) {
+            sum += World.mix(0x574F524BL ^ w.x0() * 0x9E3779B97F4A7C15L ^ w.y0() * 0xC2B2AE3D27D4EB4FL ^ w.w() * 0x165667B19E3779F9L ^ w.h() * 0xD6E8FEB86659FD93L);
+        }
+        for (District d : districts) {
+            boolean any = false;
+            for (int[] rs : d.siteRuns) any |= rs != null;
+            if (!any) continue;
+            for (DrawnSite s : siteList(d.dx, d.dy)) {
+                if (s.mine() < 0) continue;
+                sum += World.mix(0x4D494E45L ^ d.dx * 0x9E3779B97F4A7C15L ^ d.dy * 0xC2B2AE3D27D4EB4FL ^ s.x0() * 0x165667B19E3779F9L
+                        ^ s.y0() * 0xD6E8FEB86659FD93L ^ s.x1() * 0xFF51AFD7ED558CCDL ^ s.y1() * 0xC4CEB9FE1A85EC53L);
+            }
+        }
+        return World.mix(sum ^ baseDX * 0x9E3779B97F4A7C15L ^ baseDY * 0xC2B2AE3D27D4EB4FL);
     }
 
     /**
