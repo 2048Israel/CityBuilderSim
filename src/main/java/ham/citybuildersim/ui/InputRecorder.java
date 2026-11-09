@@ -159,6 +159,8 @@ final class InputRecorder {
             markedView = view;
             writer.add(InputLog.Event.mapView(ms(), view[0] != 0, view[1], view[2], view[3], view[4]));
         } else if (view == null) {
+            // The map closing is logged once, as a view of scale 0 (InputTimeline reads that as closed).
+            if (markedView != null) writer.add(InputLog.Event.mapView(ms(), false, 0, 0, 0, 0));
             markedView = null;
         }
         int running = ui.clockRunning ? 1 : 0;

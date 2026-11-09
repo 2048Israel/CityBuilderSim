@@ -102,7 +102,10 @@ final class ReplayGraphLayer {
         people = output = null;
     }
 
-    /** The canvas kept just under the time bar in the window's stack, above the content and the expanded map. */
+    /** The canvas, or null before the graphs were first switched on (ReplayMode tells the Reenactor never to pick it). */
+    Node layer() { return canvas; }
+
+    /** The canvas kept just under the node it is given (the ghost layer, which lies just under the time bar) in the window's stack, above the content and the expanded map. */
     void keepUnder(Node bar) {
         if (!on || canvas == null || bar == null) return;
         List<Node> kids = ui.windowStack.getChildren();

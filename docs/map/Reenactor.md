@@ -1,4 +1,4 @@
-# Reenactor.java - 441 lines · 33 methods · 5 constants · interface
+# Reenactor.java - 442 lines · 33 methods · 5 constants · interface
 
 `ham/citybuildersim/ui/Reenactor.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
 
@@ -22,11 +22,11 @@
 
 | line | section |
 |---:|---|
-| 151 | · the mouse |
-| 276 | · the hover |
-| 317 | · the pick |
-| 382 | · the keys |
-| 409 | · the firing |
+| 152 | · the mouse |
+| 277 | · the hover |
+| 318 | · the pick |
+| 383 | · the keys |
+| 410 | · the firing |
 
 ## Constants
 
@@ -58,7 +58,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 40 | 402 | **type** `final class Reenactor` | Re-enacts one logged input event in the window (TR2, 2026-11-09): the mouse moved over the copy's real nodes, pressed, dragged, released and clicked on them, the wheel turned over them, the keys pressed into the focus... |
+| 40 | 403 | **type** `final class Reenactor` | Re-enacts one logged input event in the window (TR2, 2026-11-09): the mouse moved over the copy's real nodes, pressed, dragged, released and clicked on them, the wheel turned over them, the keys pressed into the focus... |
 | 57 | 3 | `static { ... }` |  |
 | 79 | 3 | `Reenactor(UserInterface ui)` |  |
 | 84 | 3 | `boolean isFiring()` | Whether a synthesized event is being dispatched now: the window's key handler then lets the replay's own keys alone. |
@@ -66,56 +66,56 @@
 | 94 | 3 | `static boolean setsPressed()` | Whether Node.setPressed could be called. |
 | 99 | 5 | `void reset()` | The hover and the press forgotten, without a word to any node: after a month was loaded whole, the nodes they were on are gone. |
 | 106 | 7 | `private void forgetPress()` | The press forgotten: no node keeps the pressed state it was given. |
-| 115 | 3 | `void exclude(Node layer)` | A layer of the window's stack that is never picked: the time bar, the ghost, the graphs. |
-| 119 | 3 | `Verdict play(InputLog.Event e, String loggedScreen)` |  |
-| 129 | 13 | `Verdict play(InputLog.Event e, String loggedScreen, boolean catchingUp)` | Re-enacts one event. |
-| 143 | 7 | `private Verdict judge(InputLog.Event e, String loggedScreen, boolean onDropNode)` |  |
+| 115 | 4 | `void exclude(Node layer)` | A layer of the window's stack that is never picked: the time bar, the ghost, the graphs. |
+| 120 | 3 | `Verdict play(InputLog.Event e, String loggedScreen)` |  |
+| 130 | 13 | `Verdict play(InputLog.Event e, String loggedScreen, boolean catchingUp)` | Re-enacts one event. |
+| 144 | 7 | `private Verdict judge(InputLog.Event e, String loggedScreen, boolean onDropNode)` |  |
 
-### the mouse (lines 151-275)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 153 | 8 | `private Verdict move(InputLog.Event e, String loggedScreen)` |  |
-| 162 | 22 | `private Verdict press(InputLog.Event e, String loggedScreen, boolean catchingUp)` |  |
-| 185 | 9 | `private Verdict drag(InputLog.Event e, String loggedScreen)` |  |
-| 195 | 28 | `private Verdict release(InputLog.Event e, String loggedScreen, boolean catchingUp)` |  |
-| 225 | 6 | `private void abandonPress()` | A press whose release never came: let go of it where it was, with no click. |
-| 232 | 15 | `private Verdict wheel(InputLog.Event e, String loggedScreen)` |  |
-| 249 | 3 | `private MouseEvent mouse(EventType<MouseEvent> type, Node target, double x, double y, MouseButton button, int clicks, int mods,...` | A mouse event for the scene's dispatch, from the scene at the scene point, aimed at {@code target}; the buttons down as {@code down} (the log's number). |
-| 253 | 7 | `private MouseEvent mouse(EventType<MouseEvent> type, Node target, double x, double y, MouseButton button, int clicks, int mods,...` |  |
-| 261 | 5 | `private static Point2D screenOf(Scene scene, double x, double y)` |  |
-| 267 | 8 | `private static MouseButton button(int logged)` |  |
-
-### the hover (lines 276-316)
+### the mouse (lines 152-276)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 283 | 18 | `private void updateHover(Node hit, InputLog.Event at)` | The nodes under the pointer are now those of {@code hit}: each node left is told (deepest first) and each entered is told (outermost first), as the scene's own mouse handler does it. |
-| 303 | 5 | `private static List<Node> chain(Node n)` | {@code n} and its ancestors, deepest first. |
-| 310 | 6 | `private static Node commonAncestor(List<Node> pressChain, Node hit)` | The deepest node of the press's chain (deepest first) that is {@code hit} or one of its ancestors, or null. |
+| 154 | 8 | `private Verdict move(InputLog.Event e, String loggedScreen)` |  |
+| 163 | 22 | `private Verdict press(InputLog.Event e, String loggedScreen, boolean catchingUp)` |  |
+| 186 | 9 | `private Verdict drag(InputLog.Event e, String loggedScreen)` |  |
+| 196 | 28 | `private Verdict release(InputLog.Event e, String loggedScreen, boolean catchingUp)` |  |
+| 226 | 6 | `private void abandonPress()` | A press whose release never came: let go of it where it was, with no click. |
+| 233 | 15 | `private Verdict wheel(InputLog.Event e, String loggedScreen)` |  |
+| 250 | 3 | `private MouseEvent mouse(EventType<MouseEvent> type, Node target, double x, double y, MouseButton button, int clicks, int mods,...` | A mouse event for the scene's dispatch, from the scene at the scene point, aimed at {@code target}; the buttons down as {@code down} (the log's number). |
+| 254 | 7 | `private MouseEvent mouse(EventType<MouseEvent> type, Node target, double x, double y, MouseButton button, int clicks, int mods,...` |  |
+| 262 | 5 | `private static Point2D screenOf(Scene scene, double x, double y)` |  |
+| 268 | 8 | `private static MouseButton button(int logged)` |  |
 
-### the pick (lines 317-381)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 323 | 14 | `Node pick(double x, double y)` | The deepest node of the window under the scene point, as the scene would pick it, or null. |
-| 339 | 18 | `private static Node pickIn(Node n, Point2D inParent)` | {@code n}, if the point (in its parent's coordinates) is on it and no child of it is deeper there; else null. |
-| 359 | 7 | `private static List<Node> inFront(List<Node> children)` | The children back to front: the order they are drawn in, which is their order, but by viewOrder (the higher the further back) where any is set. |
-| 368 | 6 | `static boolean onDropNode(Node n)` | Whether the node, or any ancestor of it, is marked {@link FollowRules#DROP}. |
-| 375 | 6 | `private void relayout()` |  |
-
-### the keys (lines 382-408)
+### the hover (lines 277-317)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 384 | 18 | `private Verdict key(InputLog.Event e, String loggedScreen)` |  |
-| 404 | 4 | `private static Node target(Scene scene)` | Where a key goes: the focused control, or the scene's root where nothing has the focus (or the owner is one a redraw took out of the scene and no pulse has cleared yet). |
+| 284 | 18 | `private void updateHover(Node hit, InputLog.Event at)` | The nodes under the pointer are now those of {@code hit}: each node left is told (deepest first) and each entered is told (outermost first), as the scene's own mouse handler does it. |
+| 304 | 5 | `private static List<Node> chain(Node n)` | {@code n} and its ancestors, deepest first. |
+| 311 | 6 | `private static Node commonAncestor(List<Node> pressChain, Node hit)` | The deepest node of the press's chain (deepest first) that is {@code hit} or one of its ancestors, or null. |
 
-### the firing (lines 409-441)
+### the pick (lines 318-382)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 412 | 10 | `private void fire(Node target, Event ev)` | Dispatches the event through the node's chain (the scene's filters and handlers included), counted as firing. |
-| 423 | 9 | `private static Method nodeSetter(String name)` |  |
-| 433 | 8 | `private static void setFlag(Method setter, Node n, boolean on)` |  |
+| 324 | 14 | `Node pick(double x, double y)` | The deepest node of the window under the scene point, as the scene would pick it, or null. |
+| 340 | 18 | `private static Node pickIn(Node n, Point2D inParent)` | {@code n}, if the point (in its parent's coordinates) is on it and no child of it is deeper there; else null. |
+| 360 | 7 | `private static List<Node> inFront(List<Node> children)` | The children back to front: the order they are drawn in, which is their order, but by viewOrder (the higher the further back) where any is set. |
+| 369 | 6 | `static boolean onDropNode(Node n)` | Whether the node, or any ancestor of it, is marked {@link FollowRules#DROP}. |
+| 376 | 6 | `private void relayout()` |  |
+
+### the keys (lines 383-409)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 385 | 18 | `private Verdict key(InputLog.Event e, String loggedScreen)` |  |
+| 405 | 4 | `private static Node target(Scene scene)` | Where a key goes: the focused control, or the scene's root where nothing has the focus (or the owner is one a redraw took out of the scene and no pulse has cleared yet). |
+
+### the firing (lines 410-442)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 413 | 10 | `private void fire(Node target, Event ev)` | Dispatches the event through the node's chain (the scene's filters and handlers included), counted as firing. |
+| 424 | 9 | `private static Method nodeSetter(String name)` |  |
+| 434 | 8 | `private static void setFlag(Method setter, Node n, boolean on)` |  |
 

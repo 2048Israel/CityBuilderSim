@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**5,660 constants in 540 files.**
+**5,675 constants in 541 files.**
 
 ## model (2713 constants)
 
@@ -4041,7 +4041,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 77 | `WoodProducts.PAPER_MILL` | `137` | The Paper Mill's (0.7.140): 5,500 t of paper a month from 5,775 t of pulp and 850,000 litres of fuel oil. |
 | 80 | `WoodProducts.PELLET_MILL` | `138` | The Wood Pellet Mill's (0.7.140): 6,000 t of pellets a month from 13,200 m3 of residues. |
 
-## interface (1154 constants)
+## interface (1169 constants)
 
 ### BankScreen.java ([map](map/BankScreen.md))
 
@@ -4326,6 +4326,19 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 2354 | `FundScreen.WITHDRAWAL_CAVEAT` | `"next month's on the fund as it stands - its prices and what the book takes will move it"` | The withdrawal's caveat, under what it would do. |
 | 2356 | `FundScreen.WITHDRAWAL_CAVEAT_INFO` | `"Next month's withdrawal is struck on what the fund is worth at the top of " + "next mo...` | ...and the sentence behind it, its (i). |
 | 2469 | `FundScreen.RESCUE_BOOK_INFO` | `"What the city holds from rescuing its bank: the shares it took when it " + "resolved i...` | The rescue book's (i). |
+
+### GhostLayer.java ([map](map/GhostLayer.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 26 | `GhostLayer.FILL_ALPHA` | `0.55` | How opaque the arrow's body is, 0 to 1: 0.55, so the page shows through it and it still stands out on the stage's dark ground. |
+| 29 | `GhostLayer.EDGE_ALPHA` | `0.9` | How opaque the arrow's outline is, 0 to 1: 0.9, so a see-through body still has an edge to find. |
+| 32 | `GhostLayer.RIPPLE_MS` | `400` | How long a click's ripple lasts, in milliseconds: 400, long enough to be seen at 4x and short enough that two clicks never share a ring. |
+| 35 | `GhostLayer.RIPPLE_FROM_PX` | `4` | The radius a ripple starts at, in pixels: 4. |
+| 38 | `GhostLayer.RIPPLE_TO_PX` | `30` | The radius a ripple has grown to when it fades out, in pixels: 30. |
+| 41 | `GhostLayer.RIPPLE_WIDTH_PX` | `2.5` | How thick a ripple's ring is, in pixels: 2.5. |
+| 44 | `GhostLayer.MAX_RIPPLES` | `12` | The most ripples shown at once, the oldest dropped: 12 - a burst of fast clicks at 4x. |
+| 47 | `GhostLayer.ARROW` | `"M0 0 L0 16 L4 12.5 L6.8 19 L9.2 18 L6.5 11.6 L11.5 11.6 Z"` | The pointer's outline with its tip at the origin, in pixels: the usual arrow, 19 px tall. |
 
 ### GovernmentScreen.java ([map](map/GovernmentScreen.md))
 
@@ -4677,11 +4690,11 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 5152 | `MapView.LEGEND_FOLD_WORDS` | `"· click to fold"` | The head line's words when the legend is open, after its chevron and "Legend" (the board's .lh). |
 | 5328 | `MapView.REPLAY_FRAME_MS` | `24` | The most a frame spends painting tiles in a replay, in ms: 24 - a replay computes no month, so a frame's whole share is the picture's, and a view reached by the camera comes in over two or three fr... |
 | 5331 | `MapView.CAMERA_PAUSE_S` | `0.25` | A gap between two camera frames longer than this, in seconds, is not time the camera moved in: 0.25 - the pump stops when the view is idle and a glide or a fly must not find the minutes gone by in ... |
-| 5492 | `MapView.STUCK_S` | `2` | How long the worker may sit idle while a view of the load still lacks something before the load passes it, in seconds: 2 - a far node or chart the worker cannot ground never comes back, and the loa... |
-| 5495 | `MapView.LOAD_HEAP_SHARE` | `0.8` | The share of the most the heap may hold at which a load stops, saying so: 0.8 - a move too long or too wide to hold in memory is refused, not run half loaded. |
-| 5498 | `MapView.LOAD_WORDS_PX` | `28` | The height of the words written over the map while a move loads or waits for its click, in pixels: 28. |
-| 5658 | `MapView.NO_MOVE` | `new MoveLoad(0, 0, false)` | A move with nothing passed and nothing kept, for viewSettled(). |
-| 5913 | `MapView.MoveTally.WHERES` | `{ "L0", "L1", "L2", "FAR", "GROUND", "PICTURE" }` |  |
+| 5498 | `MapView.STUCK_S` | `2` | How long the worker may sit idle while a view of the load still lacks something before the load passes it, in seconds: 2 - a far node or chart the worker cannot ground never comes back, and the loa... |
+| 5501 | `MapView.LOAD_HEAP_SHARE` | `0.8` | The share of the most the heap may hold at which a load stops, saying so: 0.8 - a move too long or too wide to hold in memory is refused, not run half loaded. |
+| 5504 | `MapView.LOAD_WORDS_PX` | `28` | The height of the words written over the map while a move loads or waits for its click, in pixels: 28. |
+| 5664 | `MapView.NO_MOVE` | `new MoveLoad(0, 0, false)` | A move with nothing passed and nothing kept, for viewSettled(). |
+| 5919 | `MapView.MoveTally.WHERES` | `{ "L0", "L1", "L2", "FAR", "GROUND", "PICTURE" }` |  |
 
 ### MiniMap.java ([map](map/MiniMap.md))
 
@@ -4745,39 +4758,40 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 233 | `Palette.BUILDING` | `"#f17cb0"` | Building and land: Build, the land office. |
 | 242 | `Palette.CATEGORIES` | `{ MONEY, PEOPLE, BUILDING, BUSINESS, "#c9b68f" }` | Categories told apart (0.7.21): the Government's two rings, whose three biggest revenue slices were three steps of one blue and read as one. |
 | 253 | `Palette.ORE` | `"#c9b68f"` | Ore (0.7.26): the land office's deposits - a plot's ORE tag, the sand stripe on the ground bar, the Ore card. |
-| 278 | `Palette.MONEY_LIGHT` | `"#a9d1ff", MONEY_DARK = "#2f80d9"` | The money blue, a step lighter and a step darker: the money area's second and third lines. |
-| 281 | `Palette.PEOPLE_LIGHT` | `"#93e2da", PEOPLE_DARK = "#1c968b"` | The people teal, lighter and darker. |
-| 284 | `Palette.BUSINESS_LIGHT` | `"#d3c5fd", BUSINESS_DARK = "#8669e8"` | The business violet, lighter and darker. |
-| 287 | `Palette.BUILDING_LIGHT` | `"#f9bcd7", BUILDING_DARK = "#cf5590"` | The building pink, lighter and darker. |
-| 290 | `Palette.LINE_COLOURS` | `13` | How many lines one chart can draw before a colour repeats: the five CATEGORIES and two steps of each of the four areas. |
-| 361 | `Palette.REVENUE_RAMP` | `{ "#afd5fe", "#8dbef1", "#6aa6e4", "#468fd6", "#1577c8" }` | Money coming in. |
-| 366 | `Palette.SPENDING_RAMP` | `{ "#efca9f", "#deaf78", "#cd954f", "#bc7a19", "#aa6000" }` | Money going out. |
-| 385 | `Palette.LADDER` | `{ REVENUE_RAMP [ 0 ], REVENUE_RAMP [ 2 ], REVENUE_RAMP [ 4 ] }` | The three instruments on the maturity ladder, short to long. |
-| 396 | `Palette.GDP_LAYERS` | `{ REVENUE_RAMP [ 0 ], REVENUE_RAMP [ 2 ], REVENUE_RAMP [ 4 ] }` | GDP's three stacked layers on the Reports page (0.7.6) - consumption, investment, government, bottom to top - on the same three validated steps as the maturity ladder, and for the same reason: they... |
-| 401 | `Palette.RAMP_REST` | `"#5c6b75"` | Everything too small to have its own step. |
-| 404 | `Palette.RING` | `26` | How thick a donut's ring is drawn, and how wide the hole is. |
-| 434 | `Palette.SIZE_TITLE` | `20` | A screen's title. |
-| 437 | `Palette.SIZE_LEAD` | `17` | A figure that is the point of its panel. |
-| 440 | `Palette.SIZE_SECTION` | `14` | A section heading inside a screen. |
-| 443 | `Palette.SIZE_HEADING` | `12` | A panel's own heading. |
-| 446 | `Palette.SIZE_BODY` | `11` | Body text, and the figure in a row. |
-| 449 | `Palette.SIZE_LABEL` | `10` | The label in a row, and a button in a dense list. |
-| 452 | `Palette.SIZE_CAPTION` | `9` | A caption under something, and a unit after something. |
-| 460 | `Palette.GAP_TIGHT` | `4` |  |
-| 461 | `Palette.GAP` | `8` |  |
-| 462 | `Palette.GAP_LOOSE` | `12` |  |
-| 463 | `Palette.GAP_SECTION` | `20` |  |
-| 466 | `Palette.RADIUS` | `4` | Corner of a block, a chip, a control. |
-| 469 | `Palette.RADIUS_TIGHT` | `3` | Corner of something small - a row, a badge. |
-| 479 | `Palette.RAIL` | `76` | The navigation rail, at the window's left edge: an icon over its name (0.7.21). |
-| 482 | `Palette.HEADER` | `84` | The header across the top: the clock, the money block, five headline tiles, the "Needs you" chip, the rating and the inbox (0.7.21; the money block and the chip 0.7.24). |
-| 485 | `Palette.CITY_PANEL` | `290` | The city panel, not counting the rail: the drawer over the stage's left since 0.7.24. |
-| 488 | `Palette.BUILD_PANEL` | `280` | The construction panel down the right: over the stage while open, a tab while folded, since 0.7.24. |
-| 491 | `Palette.BUILD_ROW` | `400` | A building row, so the price column lines up down the list. |
-| 494 | `Palette.INBOX` | `470` | The inbox, sized to the 62-character lines the notices are written at. |
-| 600 | `Palette.Fonts.FOLDER` | `"/fonts/"` | Where the files sit on the classpath. |
-| 603 | `Palette.Fonts.SYSTEM_FACE` | `"System"` | The platform's own face, for words when Plex Sans did not load. |
-| 606 | `Palette.Fonts.FIGURE_FACE` | `"Courier New"` | The face figures used before 0.7.21, and use again when Plex Mono did not load. |
+| 260 | `Palette.GHOST` | `"#e040fb"` | The ghost cursor (TR2, 2026-11-09): the pointer of the player's that a replay's Follow draws, and the ripple of his clicks. |
+| 285 | `Palette.MONEY_LIGHT` | `"#a9d1ff", MONEY_DARK = "#2f80d9"` | The money blue, a step lighter and a step darker: the money area's second and third lines. |
+| 288 | `Palette.PEOPLE_LIGHT` | `"#93e2da", PEOPLE_DARK = "#1c968b"` | The people teal, lighter and darker. |
+| 291 | `Palette.BUSINESS_LIGHT` | `"#d3c5fd", BUSINESS_DARK = "#8669e8"` | The business violet, lighter and darker. |
+| 294 | `Palette.BUILDING_LIGHT` | `"#f9bcd7", BUILDING_DARK = "#cf5590"` | The building pink, lighter and darker. |
+| 297 | `Palette.LINE_COLOURS` | `13` | How many lines one chart can draw before a colour repeats: the five CATEGORIES and two steps of each of the four areas. |
+| 368 | `Palette.REVENUE_RAMP` | `{ "#afd5fe", "#8dbef1", "#6aa6e4", "#468fd6", "#1577c8" }` | Money coming in. |
+| 373 | `Palette.SPENDING_RAMP` | `{ "#efca9f", "#deaf78", "#cd954f", "#bc7a19", "#aa6000" }` | Money going out. |
+| 392 | `Palette.LADDER` | `{ REVENUE_RAMP [ 0 ], REVENUE_RAMP [ 2 ], REVENUE_RAMP [ 4 ] }` | The three instruments on the maturity ladder, short to long. |
+| 403 | `Palette.GDP_LAYERS` | `{ REVENUE_RAMP [ 0 ], REVENUE_RAMP [ 2 ], REVENUE_RAMP [ 4 ] }` | GDP's three stacked layers on the Reports page (0.7.6) - consumption, investment, government, bottom to top - on the same three validated steps as the maturity ladder, and for the same reason: they... |
+| 408 | `Palette.RAMP_REST` | `"#5c6b75"` | Everything too small to have its own step. |
+| 411 | `Palette.RING` | `26` | How thick a donut's ring is drawn, and how wide the hole is. |
+| 441 | `Palette.SIZE_TITLE` | `20` | A screen's title. |
+| 444 | `Palette.SIZE_LEAD` | `17` | A figure that is the point of its panel. |
+| 447 | `Palette.SIZE_SECTION` | `14` | A section heading inside a screen. |
+| 450 | `Palette.SIZE_HEADING` | `12` | A panel's own heading. |
+| 453 | `Palette.SIZE_BODY` | `11` | Body text, and the figure in a row. |
+| 456 | `Palette.SIZE_LABEL` | `10` | The label in a row, and a button in a dense list. |
+| 459 | `Palette.SIZE_CAPTION` | `9` | A caption under something, and a unit after something. |
+| 467 | `Palette.GAP_TIGHT` | `4` |  |
+| 468 | `Palette.GAP` | `8` |  |
+| 469 | `Palette.GAP_LOOSE` | `12` |  |
+| 470 | `Palette.GAP_SECTION` | `20` |  |
+| 473 | `Palette.RADIUS` | `4` | Corner of a block, a chip, a control. |
+| 476 | `Palette.RADIUS_TIGHT` | `3` | Corner of something small - a row, a badge. |
+| 486 | `Palette.RAIL` | `76` | The navigation rail, at the window's left edge: an icon over its name (0.7.21). |
+| 489 | `Palette.HEADER` | `84` | The header across the top: the clock, the money block, five headline tiles, the "Needs you" chip, the rating and the inbox (0.7.21; the money block and the chip 0.7.24). |
+| 492 | `Palette.CITY_PANEL` | `290` | The city panel, not counting the rail: the drawer over the stage's left since 0.7.24. |
+| 495 | `Palette.BUILD_PANEL` | `280` | The construction panel down the right: over the stage while open, a tab while folded, since 0.7.24. |
+| 498 | `Palette.BUILD_ROW` | `400` | A building row, so the price column lines up down the list. |
+| 501 | `Palette.INBOX` | `470` | The inbox, sized to the 62-character lines the notices are written at. |
+| 607 | `Palette.Fonts.FOLDER` | `"/fonts/"` | Where the files sit on the classpath. |
+| 610 | `Palette.Fonts.SYSTEM_FACE` | `"System"` | The platform's own face, for words when Plex Sans did not load. |
+| 613 | `Palette.Fonts.FIGURE_FACE` | `"Courier New"` | The face figures used before 0.7.21, and use again when Plex Mono did not load. |
 
 ### PartnersPage.java ([map](map/PartnersPage.md))
 
@@ -5031,12 +5045,18 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 65 | `ReplayMode.LIST` | `"showReplayList"` | The list of recordings, as a screen's name (clearMenu()): a screen of the menu's own, like the Load list. |
-| 68 | `ReplayMode.REST_MS` | `300` | How long the month on screen must have stood still before it is loaded whole, in milliseconds: long enough that a drag, a held key or a play never pays for a load it will not show, short enough tha... |
-| 71 | `ReplayMode.SPEEDS` | `{ 1, 2, 4, 8, 16 }` | The bar's speeds, in recorded months a second. |
-| 74 | `ReplayMode.START_SPEED` | `2` | The speed the bar starts at: an index into {@link #SPEEDS}, 4 months a second. |
-| 77 | `ReplayMode.NOTE_MS` | `4_000` | How long a note stays on the bar, in milliseconds. |
-| 80 | `ReplayMode.FILM_W` | `1920, FILM_H = 1080` | The scene the screen recorder is given, in pixels: the bar's "1920 x 1080" button sets the window to exactly it. |
+| 83 | `ReplayMode.LIST` | `"showReplayList"` | The list of recordings, as a screen's name (clearMenu()): a screen of the menu's own, like the Load list. |
+| 86 | `ReplayMode.REST_MS` | `300` | How long the month on screen must have stood still before it is loaded whole, in milliseconds: long enough that a drag, a held key or a play never pays for a load it will not show, short enough tha... |
+| 89 | `ReplayMode.SPEEDS` | `{ 1, 2, 4, 8, 16 }` | The bar's speeds, in recorded months a second. |
+| 92 | `ReplayMode.START_SPEED` | `2` | The speed the bar starts at: an index into {@link #SPEEDS}, 4 months a second. |
+| 95 | `ReplayMode.NOTE_MS` | `4_000` | How long a note stays on the bar, in milliseconds. |
+| 98 | `ReplayMode.FILM_W` | `1920, FILM_H = 1080` | The scene the screen recorder is given, in pixels: the bar's "1920 x 1080" button sets the window to exactly it. |
+| 101 | `ReplayMode.RESYNC_MS` | `300` | How long after a logged SCREEN marker the copy's screen is looked at against the logged one, in milliseconds of the viewer's time: 300, long enough for the re-enacted click that changes it to have ... |
+| 104 | `ReplayMode.VIEWER_MOVE_PX` | `8` | How far the viewer's pointer must move from where it first was after Follow began to end Follow, in pixels: 8, so a nudge of the desk while filming does not end the shot. |
+| 107 | `ReplayMode.VIEWER_GRACE_MS` | `1_500` | How long after Follow begins, or after a press on its group, the viewer's pointer may move without ending it, in milliseconds: time to take the hand off the button and the pointer out of the shot. |
+| 110 | `ReplayMode.FOLLOW_START_SPEED` | `1` | The speed Follow starts at: an index into FollowPlayer.SPEEDS, 1x. |
+| 113 | `ReplayMode.WINDOW_SETTLE_MS` | `400` | How long the window is given to settle after Follow set it and the screen could not hold the size, in milliseconds: 400, the wait filmSize() gives the window's own restore. |
+| 116 | `ReplayMode.STAMP` | `DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault())` | How a sitting's moment is read on the bar: the player's date and time of day. |
 
 ### ReplayMoveProbe.java ([map](map/ReplayMoveProbe.md))
 

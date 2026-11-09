@@ -17,7 +17,7 @@
 
 **Uses:** [InputTimeline](InputTimeline.md) (10), [InputLog](InputLog.md) (4)
 
-**Used by (1):** [ReplayCheck](ReplayCheck.md)
+**Used by (2):** [ReplayCheck](ReplayCheck.md), [ReplayMode](ReplayMode.md)
 
 ## Constants
 

@@ -22,7 +22,7 @@
 
 **Uses:** [Recording](Recording.md) (8)
 
-**Used by (7):** [FollowBench](FollowBench.md), [FollowPlayer](FollowPlayer.md), [FollowRules](FollowRules.md), [InputRecorder](InputRecorder.md), [InputTimeline](InputTimeline.md), [Reenactor](Reenactor.md), [ReplayCheck](ReplayCheck.md)
+**Used by (8):** [FollowBench](FollowBench.md), [FollowPlayer](FollowPlayer.md), [FollowRules](FollowRules.md), [InputRecorder](InputRecorder.md), [InputTimeline](InputTimeline.md), [Reenactor](Reenactor.md), [ReplayCheck](ReplayCheck.md), [ReplayMode](ReplayMode.md)
 
 ## Sections
 

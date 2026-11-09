@@ -113,6 +113,7 @@ final class Reenactor {
 
     /** A layer of the window's stack that is never picked: the time bar, the ghost, the graphs. */
     void exclude(Node layer) {
+        excluded.removeIf(n -> n.getScene() == null);      // a layer of a replay left before (its bar, its ghost) is gone from the window
         if (layer != null && !excluded.contains(layer)) excluded.add(layer);
     }
 

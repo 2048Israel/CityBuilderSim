@@ -7110,6 +7110,9 @@ public class UserInterface extends Application {
     /** The expanded map's pane while cinematic mode holds it at the window's top (it lay under the header), to put back under the header when cinematic mode ends. */
     private javafx.scene.Node cinematicLifted;
 
+    /** Whether cinematic mode that is on keeps the header and the rail (TR2: Follow's clicks land where the player's layout put them). */
+    private boolean cinematicKeepsChrome;
+
     /** The replay's mode, made when first asked for: the first main menu is drawn in start() before the recorder is, and a harness's window never starts. */
     private ReplayMode replayMode() {
         if (replayMode == null) replayMode = new ReplayMode(this);
@@ -7243,6 +7246,37 @@ public class UserInterface extends Application {
     /** The land office's map over the window on the city, as Expand opens it (the replay's M key). */
     void replayOpenMap() { openMapOn(null); }
 
+    /** Whether the land office's map is over the window (TR2: Follow opens, closes and moves it as the log says). */
+    boolean replayMapOpen() { return panKeys != null; }
+
+    /** The expanded map closed, the office drawn again, as Esc does it; nothing when it is not over the window. */
+    void replayCloseMap() {
+        if (panKeys != null) panKeys.collapse(true);
+    }
+
+    /** A logged view put on the expanded map, as the camera puts a view (MapView.replayShowView()); nothing when the map is not over the window or is on the other kind of ground. */
+    void replaySetMapView(CameraPath.View view) {
+        if (panKeys != null) panKeys.replayShowView(view);
+    }
+
+    /** The rail tab a screen belongs to ("land", "bank"...), or "" for a screen that is on no tab (the game menus, the funding pages...). */
+    String replayTabOf(String screen) {
+        return screen == null ? "" : tabFor(screen);
+    }
+
+    /** Goes to the rail tab a screen belongs to, as pressing its rail button does (goHome); false when the screen is on no tab. */
+    boolean replayGoTab(String screen) {
+        String key = replayTabOf(screen);
+        if (key.isEmpty()) return false;
+        for (Tab t : tabs()) {
+            if (t.key().equals(key)) {
+                goHome(t);
+                return true;
+            }
+        }
+        return false;
+    }
+
     // What ReplayMode needs of this class's private parts, one small method each.
 
     Stage replayStage() { return stage; }
@@ -7297,6 +7331,9 @@ public class UserInterface extends Application {
     /** Whether cinematic mode is on. */
     boolean isCinematic() { return cinematic; }
 
+    /** Whether cinematic mode is on and takes the chrome away (not the form Follow keeps, TR2): what a map expanded in it follows. */
+    boolean cinematicHidesChrome() { return cinematic && !cinematicKeepsChrome; }
+
     /**
      * Cinematic mode on or off (ReplayMode: the C key and the bar's button). On, the header, the rail (the minimap at its foot),
      * the construction panel and its tab, the toasts and the inbox's list are taken off the window - taken out of their parents
@@ -7306,31 +7343,51 @@ public class UserInterface extends Application {
      * show stays. The time bar is ReplayMode's.
      */
     void replayCinematic(boolean on) {
+        replayCinematic(on, false);
+    }
+
+    /**
+     * ...and, with {@code keepChrome} (TR2, while Follow plays), the header and the rail stay and the map's pane stays under the
+     * header: the player's clicks that Follow re-enacts land where his layout put them. Asked for the other form while one is on,
+     * it takes the first back and then makes the second.
+     */
+    void replayCinematic(boolean on, boolean keepChrome) {
         BorderPane root = replayRoot();
-        if (on == cinematic || root == null || stagePane == null) return;
-        cinematic = on;
-        if (on) {
-            hideTooltips();
-            root.setTop(null);
-            root.setLeft(null);
-            root.setRight(null);
-            stagePane.getChildren().removeAll(drawer, constructionPanel, inboxCorner, toastStack);
-            scene.setCursor(javafx.scene.Cursor.NONE);
-            liftChartPane(true);
-        } else {
-            root.setTop(header);
-            root.setLeft(tabRail);
-            root.setRight(constructionTab);
-            stagePane.getChildren().addAll(drawer, constructionPanel, inboxCorner, toastStack);
+        if (root == null || stagePane == null) return;
+        if (on == cinematic && (!on || keepChrome == cinematicKeepsChrome)) return;
+        if (cinematic) {
+            if (!cinematicKeepsChrome) {       // the kept form took nothing off
+                root.setTop(header);
+                root.setLeft(tabRail);
+                root.setRight(constructionTab);
+                stagePane.getChildren().addAll(drawer, constructionPanel, inboxCorner, toastStack);
+                liftChartPane(false);
+            }
             scene.setCursor(null);
-            liftChartPane(false);
+            cinematic = false;
+            cinematicKeepsChrome = false;
         }
-        if (panKeys != null) panKeys.setCinematic(on);
+        if (on) {
+            cinematic = true;
+            cinematicKeepsChrome = keepChrome;
+            hideTooltips();
+            // Kept, the whole layout stays as the player had it: the header, the rail, the construction tab and the panels over the page.
+            if (!keepChrome) {
+                root.setTop(null);
+                root.setLeft(null);
+                root.setRight(null);
+                stagePane.getChildren().removeAll(drawer, constructionPanel, inboxCorner, toastStack);
+            }
+            scene.setCursor(javafx.scene.Cursor.NONE);
+            if (!keepChrome) liftChartPane(true);
+        }
+        // The expanded map keeps its own chrome in the kept form too: its canvas is then the size the player's clicks were made on.
+        if (panKeys != null) panKeys.setCinematic(on && !keepChrome);
     }
 
     /** A pane laid under the header while cinematic mode is on (showChartFullScreen()) starts at the window's top. */
     private void replayCinematicPane(boolean underHeader) {
-        if (cinematic && underHeader) liftChartPane(true);
+        if (cinematic && !cinematicKeepsChrome && underHeader) liftChartPane(true);
     }
 
     /** The expanded map's pane at the window's top (chartFullTop() 0, no margin) or, ending cinematic mode, back under the header as it was. */
