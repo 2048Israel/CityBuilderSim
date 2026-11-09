@@ -24,3 +24,37 @@ the orchestrator's app environment, W=150000 (compaction near 118k), so what mus
    reads the bytes (`Files.readAllBytes`, the handle closed before parsing, LB3's gate) and parses those. `slim` stays.
 5. One Sonnet slice does both (they share `SavedCities` and `RankingsCheck`); the memory is measured by UiProbe's
    `-Dprobe.saved=N` over copies of its grown city in its own scratch folder, never the real slots.
+
+## Done
+
+- One Sonnet slice (`target/deepseek/brief-lb4.md`) wrote it all; reviewed as a stranger's diff, committed in one.
+  Two departures from its brief, both kept: the new harness sections are RankingsCheck 19 (the city in play) and 20
+  (the packed read), since 18 was taken; and `ui/KeptBench`'s two `now()` calls pass `Played.NONE` to compile.
+- The review found nothing that writes to a kept list after the read (`Rankings` sorts a copy of its rows;
+  `CityMeasures` and `alignedTail` only read), so read-only packed lists are safe where the boxed ones were.
+- The match is on the founding: `Game.getCityName()` reads the founding, so a city is never renamed and its slot
+  cannot drift from it. A second city founded with the same name and the same world seed matches too; it is the same
+  founding, and at Your age it would nearly tie with the city in play the same way.
+
+## Measured (UiProbe, `-Dprobe.saved=N`, the grown city copied into its own scratch folder's slots)
+
+| run | slots | history each | retained old -> new | peak old -> new | ms old -> new |
+|---|---|---|---|---|---|
+| `UiProbe 24 2`, saved=3 | 3 | 0.9 MB | 2.8 -> 0.9 MB | 162.3 -> 120.4 MB | 114 -> 60 |
+| `UiProbe 600 1`, saved=3 | 3 | 1.6 MB | 4.9 -> 1.5 MB | 220.2 -> 148.9 MB | 163 -> 83 |
+| `UiProbe 6000 1`, saved=10 | 10 | 13.0 MB | 96.8 -> 32.0 MB | 1295.3 -> 1219.3 MB | 1216 -> 929 |
+
+Retained is what the board holds after the read: a third of before, about 2.8 MB a slot at 6,000 months, which is the
+58 kept series as `double[]`. Peak sums the heap pools' peaks, the city in play included, so it overstates; the
+read's own share fell by about 76 MB over ten slots. The long run timed beside `--pick`, so its ms are only a
+comparison within the run. Every row of each run was marked "this city, as saved" (3 of 3, 3 of 3, 10 of 10).
+
+## Checks
+
+- The ensemble is skipped: no model file moved, so the trace is main's (batch.md 6).
+- `--pick` without the world named reddened KeptCheck (17) and ResearchViewCheck (1), "world-1.bin not named"; the
+  rerun names `-Dcbs.earth`/`-Dcbs.world` as the gate does and exits **3**: main's recorded reds only (PriceLevelCheck,
+  ScaleCheck, KeptCheck), 2 timing SOFT (SaveSlotCheck, KeptCheck), Stale 0 firm, the maps regenerated unchanged.
+- `--pick` asks for a saves review of `HistorySave.java`: nothing a save writes or the game's load reads moved. The
+  change is a second read for the board alone (`readKept`, the packed lists), and slim's trim of `foldedMonths` moved
+  into a helper both share; SaveFileCheck, ReadPathCheck, HistoryCheck and SaveSlotCheck ran green.
