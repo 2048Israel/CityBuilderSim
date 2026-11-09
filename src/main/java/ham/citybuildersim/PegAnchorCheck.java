@@ -40,6 +40,10 @@ import java.util.Set;
  *      reads the US$; an anchor with no saved rate reads the US$.
  *   9. IN A CITY (the full file only): a trading town pegged to the euro holds the peg per euro over the euro's price, its dial is the
  *      euro area's rate plus the spread, and the decision log names the euro.
+ *  10. THE REVIEW'S TWO LOW NOTES (WN4c): in every month a euro peg holds, for three years of a swinging euro, the hold's support is
+ *      the log of the held rate over the shadow, so it needs no clamp; and the gap the dial reads (currencyGap()), after the month's
+ *      rates are handed and before the reprice, is the last reprice's shadow over the held rate at THIS month's euro, the same held
+ *      rate the reprice then measures its gap against.
  *
  * Every fixture causes its condition: rates handed by hand before each month (the eight's, with the euro moved where a section needs the
  * anchor to move), a deficit trade where the hold has to sell, a vault of none where it cannot, a quiet market (seed 0) where a chance
@@ -133,6 +137,7 @@ public class PegAnchorCheck {
         theDialTiesToTheAnchorsRate();
         theSave();
         inACity();
+        theReviewsLowNotes();
         out.printf("%nPegAnchorCheck took %.1f s%n", (System.nanoTime() - start) / 1e9);
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -494,6 +499,15 @@ public class PegAnchorCheck {
         unrated.restore(noEuro);
         assertTrue("fixture: that save has no rate for the euro", !unrated.hasRate(1));
         assertTrue("a save whose slot 148 is the euro but whose euro rate is 0 restores the US$: a money with no rate cannot anchor a peg", unrated.getPegAnchor() == 0);
+        // WN4c (the stranger's review of WN4b): slot 76 is D$ per EURO; on that fallback it must not be read as D$ per US$.
+        assertTrue("fixture: the saved peg is D$ per euro, " + String.format("%.4f", saved[76]) + ", not the loaded rate, " + String.format("%.4f", saved[3]),
+                Math.abs(saved[76] / saved[3] - 1) > .02);
+        assertTrue("...the fallback keeps the peg: still a peg, on the US$", unrated.getRegime() == PEG && unrated.getPegAnchor() == 0);
+        same("...its held rate is the loaded rate, not the euro figure", unrated.getPegRate(), saved[3]);
+        same("...and the peg per US$ is that rate", unrated.getPegPerAnchor(), saved[3]);
+        CurrencyRegimeCheck.month(unrated, exports, TRADE);
+        assertTrue("fixture: that peg held the next month", unrated.getRegime() == PEG);
+        same("...and held the loaded rate, as a US$ peg of that rate does", unrated.getRate(), saved[3]);
         ForeignAccounts wild = new ForeignAccounts();
         double[] garbled = saved.clone();
         garbled[148] = 9;
@@ -579,5 +593,46 @@ public class PegAnchorCheck {
         close("...and the next month's rate is the peg per pound over the pound's price", fx.getRate(), fx.getPegPerAnchor() / fx.getMoneyUsd(3), 1e-12);
         same("...with the dial on the pound's rate as the month began with it", dm.getPolicyRate(), Math.max(DebtManager.MIN_POLICY_RATE,
                 Math.min(DebtManager.MAX_POLICY_RATE, poundRateBefore + spreadNow)));
+    }
+
+    /* =====================================================================
+       10. THE REVIEW'S TWO LOW NOTES (WN4c)
+       ===================================================================== */
+
+    static void theReviewsLowNotes() {
+        out.println("--- 10. the review's two low notes: the hold's support is the held rate's log over the shadow in every held month; the dial's gap is read at this month's euro ---");
+        double exports = .9 * TRADE;
+        ForeignAccounts fx = euroPeg(exports, TRADE, DEEP, 0, euroAt(0));
+        int months = 36, held = 0, up = 0, down = 0;
+        double worst = 0, widest = 0;
+        for (int m = 1; m <= months; m++) {
+            month(fx, euroAt(m), exports, TRADE);
+            if (fx.getRegime() != PEG || !fx.isHeld()) continue;
+            held++;
+            double support = fx.getHoldFelt();
+            worst = Math.max(worst, Math.abs(support - Math.log(fx.getPegRate() / fx.getShadowRate())));
+            widest = Math.max(widest, Math.abs(support));
+            if (support > 0) up++;
+            if (support < 0) down++;
+        }
+        assertTrue("fixture: a quiet euro peg on a deep vault held all " + months + " months of a euro swinging 6% either side (held " + held + ")", held == months);
+        assertTrue("fixture: the hold's support took both signs and was never zero for want of work (" + up + " months up, " + down + " down)", up > 0 && down > 0);
+        assertTrue("note 1: in every held month the support is the log of the held rate over the shadow to 1e-9 (worst " + String.format("%.2e", worst)
+                + "): the hold lifts the rate by exactly the gap, so a clamp on it would only break the peg", worst <= 1e-9);
+        assertTrue("...and it is as wide as the gap the hold paid for, inside the euro's whole swing (ln(1.06/.94)), the widest being " + String.format("%.4f", widest), widest > 0 && widest < Math.log(1.06 / .94));
+
+        month(fx, euroAt(months + 1), exports, TRADE);
+        assertTrue("fixture: still a held peg for the dial's month", fx.getRegime() == PEG && fx.isHeld());
+        double e0 = euroAt(months + 1), e1 = e0 * 1.10;
+        double shadow = fx.getShadowRate(), gapAtE0 = fx.currencyGap();
+        fx.setMoneyRates(rates(e1));
+        double gapAtDial = fx.currencyGap();
+        close("note 2: the month's rates handed, the shadow is still the last reprice's", fx.getShadowRate(), shadow, 1e-15);
+        close("...and the dial's gap is that shadow over the held rate at the NEW euro: the peg per euro over " + String.format("%.4f", e1),
+                gapAtDial, shadow / (fx.getPegPerAnchor() / e1) - 1, 1e-12);
+        close("...so a euro that rose a tenth moved the gap's ratio by a tenth", 1 + gapAtDial, (1 + gapAtE0) * 1.10, 1e-12);
+        month(fx, e1, exports, TRADE);
+        closeAbs("...and the gap the reprice then measures is against that same held rate, with the shadow the reprice found", fx.getLastPegGap(),
+                Math.log(fx.getShadowRate() / (fx.getPegPerAnchor() / e1)), 1e-9);
     }
 }

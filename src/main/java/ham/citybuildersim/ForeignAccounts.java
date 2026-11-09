@@ -3289,7 +3289,11 @@ public class ForeignAccounts {
         // The peg's anchor (WN4b, slot 148); a save from before it is a peg to the US$. A money with no saved rate to measure it by cannot anchor a peg: it reads the US$.
         if (saved.length > 148) {
             pegAnchor = ordinalOr(saved[148], MONEYS, 0);
-            if (pegAnchor != 0 && !(usdPer[pegAnchor] > 0)) pegAnchor = 0;
+            if (pegAnchor != 0 && !(usdPer[pegAnchor] > 0)) {
+                // WN4c (the stranger's review of WN4b): slot 76 was D$ per unit of the money that has lost its price, which the US$ must not read as D$ per US$ (a euro figure held as a dollar one). Under a peg the loaded rate is the one held, as the peg's own month would strike it; the other regimes keep no peg.
+                pegAnchor = 0;
+                pegRate = regime == Regime.PEG ? rate : 0;
+            }
         }
     }
 
