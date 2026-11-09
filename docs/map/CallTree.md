@@ -34,7 +34,7 @@
 
 **Uses:** [YieldCurve](YieldCurve.md) (6), [LongTermBond](LongTermBond.md) (1), [Auction](Auction.md) (1)
 
-**Used by (4):** [CallCheck](CallCheck.md), [DebtManager](DebtManager.md), [FinancesScreen](FinancesScreen.md), [Game](Game.md)
+**Used by (5):** [BuybackCheck](BuybackCheck.md), [CallCheck](CallCheck.md), [DebtManager](DebtManager.md), [FinancesScreen](FinancesScreen.md), [Game](Game.md)
 
 ## Sections
 

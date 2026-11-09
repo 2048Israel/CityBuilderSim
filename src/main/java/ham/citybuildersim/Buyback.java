@@ -95,10 +95,26 @@ public final class Buyback {
      * @param worldFace       ...the world (for dollar paper: all of it)
      * @param centralBankFace ...the central bank, which does not offer (D18)
      * @param foreign         true for dollar paper (D26): the world's alone, every slice at fair
+     * @param callPer100      the price per 100 the city may call the piece at this month (CallTree.CALL_PRICE), or NaN
+     *                        when it may not be called now; a piece the city can call now is never bought back dearer
+     *                        than that, whatever a holder asks (BB1, CD4-C ★6)
      */
     public record Line(double principal, double[] flows, double fairPer100, double carryingValue,
                        double bankFace, double householdFace, double firmFace, double worldFace,
-                       double centralBankFace, boolean foreign) {
+                       double centralBankFace, boolean foreign, double callPer100) {
+
+        /** A piece the city cannot call now: the ten figures that came before the call price (BB1), callPer100 NaN. */
+        public Line(double principal, double[] flows, double fairPer100, double carryingValue,
+                    double bankFace, double householdFace, double firmFace, double worldFace,
+                    double centralBankFace, boolean foreign) {
+            this(principal, flows, fairPer100, carryingValue, bankFace, householdFace, firmFace, worldFace,
+                    centralBankFace, foreign, Double.NaN);
+        }
+
+        /** True when the city may call the piece now, at a price above nothing (BB1). */
+        public boolean callableNow() {
+            return Double.isFinite(callPer100) && callPer100 > 0;
+        }
 
         /** The face that can be offered: everything but the central bank's. */
         public double offerable() {
@@ -167,6 +183,29 @@ public final class Buyback {
             return paid - fairPer100 * takenFace / 100;
         }
 
+        /**
+         * What the same face taken would book at fair (BB1, Jerus CD6-C ★1): its carrying value less its worth at fair,
+         * the book's desk figure; the auction books gainOnCarrying(), which is this less overFair().
+         */
+        public double gainAtFair() {
+            return carriedTaken - fairPer100 * takenFace / 100;
+        }
+
+        /** That gain at fair as a share of the carrying value of the face taken, a fraction (BB1); 0 when nothing carried was taken. */
+        public double gainAtFairShare() {
+            return carriedTaken > 0 ? gainAtFair() / carriedTaken : 0;
+        }
+
+        /** What one holder is paid over fair for the face taken from it: its paid less its face at fair (BB1; the bank's is nothing, D34). */
+        public double overFair(Holder h) {
+            return switch (h) {
+                case BANK -> bankPaid - fairPer100 * bankFace / 100;
+                case HOUSEHOLDS -> householdPaid - fairPer100 * householdFace / 100;
+                case FIRMS -> firmPaid - fairPer100 * firmFace / 100;
+                case WORLD -> worldPaid - fairPer100 * worldFace / 100;
+            };
+        }
+
         /** The offers that were taken, in the order they were: the ladder up to the stop, the last one in part when the ask ran out. */
         public List<Offer> taken() {
             List<Offer> out = new ArrayList<>();
@@ -208,6 +247,11 @@ public final class Buyback {
        and the dearer the next slice. Never under fair: a holder whose rule
        wants nothing of the bond (its required yield is over what the bond
        pays) sells at what the market would pay, not under it.
+
+       The one thing over that: a piece the city can call now (Line.callPer100)
+       is never offered dearer than the call price, for any holder, the floor
+       at fair included - the city could call it at that price, so no holder
+       is paid more for it (BB1, CD4-C ★6).
        ===================================================================== */
 
     /** The piece's remaining payments discounted at one flat yield, per 100 of principal: Debt.presentValue's convention, the one every price in the game uses. */
@@ -267,22 +311,25 @@ public final class Buyback {
         if (line == null || !(line.principal() > 0)) return ladder;
         Auction.Bidders b = bidders == null ? Auction.Bidders.none() : bidders;
         double fair = line.fairPer100();
+        // BB1 (CD4-C ★6): the city could call a piece it may call now at the call price, so no holder is paid
+        // more than that for it, whatever its rule asks and whatever fair is. The cap wins over the floor at fair.
+        double cap = line.callableNow() ? line.callPer100() : Double.POSITIVE_INFINITY;
 
         if (line.foreign()) {
             // D26: the world's alone, whole, every slice at fair.
-            slices(ladder, Holder.WORLD, line.worldFace(), n -> fair);
+            slices(ladder, Holder.WORLD, line.worldFace(), n -> fair, cap);
         } else {
             // D34: the bank offers at fair, as it bids at fair at the auction.
-            slices(ladder, Holder.BANK, line.bankFace(), n -> fair);
+            slices(ladder, Holder.BANK, line.bankFace(), n -> fair, cap);
             double hh = Math.max(0, line.householdFace());
-            slices(ladder, Holder.HOUSEHOLDS, hh, left -> priceAt(line, householdsYield(left, line, b)));
+            slices(ladder, Holder.HOUSEHOLDS, hh, left -> priceAt(line, householdsYield(left, line, b)), cap);
             double firms = Math.max(0, line.firmFace());
-            slices(ladder, Holder.FIRMS, firms, left -> priceAt(line, firmsYield(left, b)));
+            slices(ladder, Holder.FIRMS, firms, left -> priceAt(line, firmsYield(left, b)), cap);
             double world = Math.max(0, line.worldFace());
             double stock = Math.max(0, b.worldStock());
             // The world's stock is the whole of what it has in the city, of which this piece's slices are part:
             // each slice sold takes that much off it, so the next asks for the stock that is left.
-            slices(ladder, Holder.WORLD, world, left -> priceAt(line, worldYield(stock - (world - left), b)));
+            slices(ladder, Holder.WORLD, world, left -> priceAt(line, worldYield(stock - (world - left), b)), cap);
             // The central bank does not offer (D18): its face stays on the piece.
         }
         // A stable sort: price, then the holder's place in a tie; a holder's own slices already ascend.
@@ -298,14 +345,18 @@ public final class Buyback {
         double of(double remaining);
     }
 
-    /** Cuts one holder's holding into SLICES equal slices, each priced at the holding that remains once it is sold, and never under the slice before it. */
-    private static void slices(List<Offer> ladder, Holder holder, double holding, SlicePrice price) {
+    /**
+     * Cuts one holder's holding into SLICES equal slices, each priced at the holding that remains once it is
+     * sold, never under the slice before it and never over cap (the call price of a piece the city can call
+     * now, infinity otherwise; BB1): the least of an ascending series and a number still ascends.
+     */
+    private static void slices(List<Offer> ladder, Holder holder, double holding, SlicePrice price, double cap) {
         if (!(holding > 0)) return;
         double each = holding / SLICES;
         double floor = Double.NEGATIVE_INFINITY;
         for (int j = 1; j <= SLICES; j++) {
             double remaining = j == SLICES ? 0 : holding - each * j;
-            double p = Math.max(floor, price.of(remaining));
+            double p = Math.min(cap, Math.max(floor, price.of(remaining)));
             ladder.add(new Offer(holder, each, p));
             floor = p;
         }

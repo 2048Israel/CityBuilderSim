@@ -1,13 +1,13 @@
-# gate of Merge batch/UP9: x 80's chain: a band whose lazy try failed gathers its inputs at once and tries lazy again after a quiet month (UP5-B); the reserves kept across months, counted by a harness (MP1-C); measured by MapCheck 18 (Jerus, 2026-10-31: "Take all (Recommended)"), 0.9.65
+# gate of Merge batch/BB1: the buyback card: the desk stays at fair, Close it now leads with the gain or loss the auction would book at the holders' asks, with part of a line as a choice (CD6-C ★1, Jerus, 2026-10-31: "show fair, but when click buyback it shows what the actual gain or loss would be"); on a line callable now, offers capped at the call price (CD4-C ★6: "Cap offers at 100 (Recommended)"), 0.9.66
 # date: 2026-11-09
 # earth-2.bin: named
 # nightly: 2026-11-09 01:39 0.9.58 08f58a5f 4,000 months: OK in 118 s
-# suite: 188 harnesses run in 1049s: 183 passed, 5 failed
-# timing: 17 harnesses run in 821s: 13 passed, 4 failed; its red lines were judged side by side with main's, below
+# suite: 188 harnesses run in 1175s: 183 passed, 5 failed
+# timing: 17 harnesses run in 835s: 13 passed, 4 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 31.0 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 27.4 ms (gate.txt, today), batch 31.0 ms (+13.3%), budget 25 ms: main over the budget too, no round]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 28.5 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 31.0 ms (gate.txt, today), batch 28.5 ms (-8.1%), budget 25 ms: main over the budget too, no round]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# figure	SaveSlotCheck	the median due month, 31.0 ms, holds the clock at most CLOCK_MS (25 ms)	31.0131	25	ms	FAIL	1	1
+# figure	SaveSlotCheck	the median due month, 28.5 ms, holds the clock at most CLOCK_MS (25 ms)	28.513	25	ms	FAIL	1	1
 PriceLevelCheck | exit 1
 PriceLevelCheck | FAIL cash (nominal) month 101: 8.317811325 at the factor over the factor, 68.38253344 at today's prices (0.000751 apart)
 PriceLevelCheck | FAIL gdp.month (nominal) month 103: 20121.84632 at the factor over the factor, 20122.48474 at today's prices (1.95e-05 apart)

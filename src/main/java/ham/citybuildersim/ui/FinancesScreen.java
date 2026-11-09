@@ -3401,7 +3401,7 @@ final class FinancesScreen {
         close.setMaxWidth(CLOSE_BUTTON);
         close.setFocusTraversable(false);
         close.setStyle("-fx-font-size: 9px; -fx-padding: 2 4 2 4; -fx-background-radius: 6;");
-        Kept.tip(close, "Close " + pieceName(l.debt()) + " now: the page for buying it back, in whole or in part.", 1000);
+        Kept.tip(close, "Close " + pieceName(l.debt()) + " now: the page for buying it back, in whole or in part. The figure beside it is at fair; the page shows what the auction would book, at the holders' asks (BB1).", 1000);
         close.setOnAction(e -> openClose(l.debt()));
         // The click is the button's, not the row's: the rest of the row opens the line's page.
         close.setOnMouseClicked(javafx.scene.input.MouseEvent::consume);
@@ -4401,7 +4401,32 @@ final class FinancesScreen {
        is green or red since CD6 (Jerus, 2026-10-23: "show green or red",
        over the 0.7.32 spec's B6), as the book's is. The two boxes keep their typing through a month's
        redraw as the ask's does (askBox()).
+
+       BB1 (2026-11-09; Jerus, 2026-10-31, CD6-C ★1: "show fair, but when
+       click buyback it shows what the actual gain or loss would be cause of
+       liquidity or whatever, with option to just buyback part of it or
+       something idk."): the book's desk and the line's page stay at fair,
+       and this page leads with what the auction would book. The auction pays
+       each holder its own ask - the households', the businesses' and the
+       world's are over fair, the bank's and dollar paper's holder's are fair
+       (D34, D26) - so a line the households hold can read green at fair and
+       book a loss here (CD6's render: +D$5.1M at fair, -D$2.1M at the
+       auction). WHAT THIS BUYBACK WOULD BOOK is the first card under the
+       piece: the gain or loss at the holders' asks, large, the gain at fair
+       under it, and a sentence on why they differ - the model's own figures,
+       Buyback.Result's gainOnCarrying(), gainAtFair() and overFair(holder).
+       The face chips are quick picks of a part of the line (a quarter, a
+       half, all on offer): the cheapest offers are taken first, so the less
+       of the line the ticket asks for, the less each 100 costs. A line the
+       city can call now is never bought back over the call price (CD4-C ★6,
+       Buyback.Line.callPer100), which the card says.
        ===================================================================== */
+
+    /** WHAT THIS BUYBACK WOULD BOOK's (i): BB1, CD6-C ★1. */
+    static final String CLOSE_BOOKS_INFO = "The auction pays each holder its own ask, so what the books would show is the carrying "
+            + "value of the face taken less what the offers taken ask. The book's desk and the line's page show the same "
+            + "face at fair, which is what the bank and the holder of dollar paper are paid (D34, D26); the two differ by "
+            + "what the holders ask over fair. A smaller face takes the cheaper offers first.";
 
     /** THE TICKET's (i): the spec's 6.2. */
     static final String CLOSE_INFO = "Closing a piece early is a reverse auction, not one price. Name the face you want "
@@ -4552,6 +4577,19 @@ final class FinancesScreen {
     }
 
     /**
+     * Why the gain at the holders' asks is not the gain at fair, in a sentence (BB1, CD6-C ★1), from the quote's own figures:
+     * the offers taken are at fair, so the two agree (the over-fair figure rounds to no money, as gainOf() holds it), or the
+     * holders ask this much over fair, the one that asks the most named with its amount.
+     */
+    String whyTheyDiffer(Buyback.Result q) {
+        if (q.overFair() < BRIDGE_NOTHING) return "The offers taken are at fair, so the two agree.";
+        Buyback.Holder most = null;
+        for (Buyback.Holder h : Buyback.Holder.values()) if (most == null || q.overFair(h) > q.overFair(most)) most = h;
+        return "The holders ask " + d(q.overFair()) + " over fair for this face - " + holderName(most) + " the most, "
+                + d(q.overFair(most)) + " of it. That is the difference between the two.";
+    }
+
+    /**
      * Why a ticket takes nothing, in a sentence (null when it takes something):
      * nothing on offer, nothing asked, a sale not yet settled that can only go
      * whole, or a limit under the cheapest offer.
@@ -4628,18 +4666,50 @@ final class FinancesScreen {
                     : backDoor("The book", () -> open("The book", null, back)), head, facts, held, central);
         }));
 
+        // ----- what it would book (BB1, CD6-C ★1) -----
+        // The lead: the gain or loss at the holders' asks, which is what the books show, and the desk's at fair beside it.
+        page.getChildren().add(Kept.scope("books", () -> {
+            VBox books = card(caption("WHAT THIS BUYBACK WOULD BOOK", CLOSE_BOOKS_INFO, hint("the auction's, at the holders' asks")));
+            if (!taken) {
+                books.getChildren().add(Kept.scope("books none", () -> muted("Nothing to book: the ticket takes nothing, and says why below.")));
+                return books;
+            }
+            books.getChildren().add(Kept.scope("books taken", () -> {
+                Gain atAsks = gainOf(q.gainOnCarrying(), q.gainOnCarryingShare());
+                VBox body = Kept.column(6,
+                        cardLine("At the holders' asks · what the books would show", atAsks.both(), atAsks.tone(), Palette.SIZE_BODY + 5.0),
+                        gainLine("At fair · what the book's desk shows", gainOf(q.gainAtFair(), q.gainAtFairShare()), null),
+                        words(whyTheyDiffer(q), Palette.SIZE_LABEL, Palette.TEXT_BODY));
+                if (q.overFair() >= BRIDGE_NOTHING) {
+                    body.getChildren().add(Kept.scope("books why", () -> muted("Each holder offers at the price where its own rule would stop wanting "
+                            + "the paper: the households and the businesses hold the city's paper for its spread over the deposit rate, the world for "
+                            + "its excess return, so they ask more than fair; the bank sells at fair (D34). A smaller face takes the cheaper offers first.")));
+                }
+                if (g.canCall(debt)) {
+                    body.getChildren().add(Kept.scope("books call", () -> muted("It can be called now, so no holder asks more than the call price: "
+                            + String.format("%.0f", CallTree.CALL_PRICE) + " for each 100 of face.")));
+                }
+                return body;
+            }));
+            return books;
+        }));
+
         // ----- the ticket -----
         VBox ticket = card(caption("THE TICKET", CLOSE_INFO, hint("a reverse auction, struck on the city as it stands")));
-        ticket.getChildren().add(caption("HOW MUCH FACE TO BUY BACK", null));
-        javafx.scene.layout.FlowPane faceChips = Kept.flow(6, 6);
-        faceChips.getChildren().addAll(
-                stepChip("everything on offer", () -> setCloseBox(1, ""), true),
-                stepChip("half", () -> setCloseBox(1, boxAmount(offerable / 2)), false),
-                stepChip("a tenth", () -> setCloseBox(1, boxAmount(offerable / 10)), false));
-        HBox faceRow = Kept.row(Palette.GAP, closeBox(1, "everything on offer: " + d(offerable)),
+        ticket.getChildren().add(caption("HOW MUCH FACE TO BUY BACK · ALL OF IT OR PART", null));
+        // The quick picks (BB1, CD6-C ★1): a quarter, a half, all on offer; the one the box holds is underlined.
+        String typedBox = closeFaceText.trim();
+        javafx.scene.layout.FlowPane faceRow = Kept.flow(Palette.GAP, 6);
+        HBox faceBox = Kept.row(Palette.GAP, closeBox(1, "everything on offer: " + d(offerable)),
                 words("Enter sets it", Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-        faceRow.setAlignment(Pos.CENTER_LEFT);
-        ticket.getChildren().addAll(faceRow, faceChips);
+        faceBox.setAlignment(Pos.CENTER_LEFT);
+        faceRow.getChildren().addAll(faceBox,
+                stepChip("a quarter", () -> setCloseBox(1, boxAmount(offerable / 4)), false, typedBox.equals(boxAmount(offerable / 4))),
+                stepChip("a half", () -> setCloseBox(1, boxAmount(offerable / 2)), false, typedBox.equals(boxAmount(offerable / 2))),
+                stepChip("all on offer", () -> setCloseBox(1, ""), true, closeFaceText.isBlank()));
+        ticket.getChildren().add(faceRow);
+        ticket.getChildren().add(muted("The cheapest offers are taken first, so the less of the line you ask for, the less each 100 costs; "
+                + "the figures below follow the face."));
         // The default, in words: everything on offer is the principal less the central bank's face, which does not sell (D18).
         ticket.getChildren().add(muted(debt.isForeign()
                 ? "Everything on offer is " + d(offerable) + ": " + paperWord(debt.getMoney()) + " is the world's alone (D26)."

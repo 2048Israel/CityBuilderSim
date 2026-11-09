@@ -19336,9 +19336,11 @@ public class Game {
                         0, 0, 0, principal, 0, true)
                 // At home the holders offer on the schedule the market prices the piece on (CD5): a floater's
                 // and a linker's on the dial and the index it expects; every other piece's own, as before.
+                // A piece the city can call now is never bought back over the call price (BB1, CD4-C ★6).
                 : new Buyback.Line(principal, debtManager.pricingFlows(debt), fair, debt.getCarryingValue(),
                         debt.bankPrincipal(), debt.householdPrincipal(), debt.firmPrincipal(),
-                        debt.worldPrincipal(), debt.centralBankPrincipal(), false);
+                        debt.worldPrincipal(), debt.centralBankPrincipal(), false,
+                        canCall(debt) ? CallTree.CALL_PRICE : Double.NaN);
         double asked = Math.min(Math.max(0, face), buybackOfferable(debt));
         Buyback.Result quote = Buyback.run(line, auctionBidders(), new Buyback.Ask(asked, maxPer100));
         // A sale not yet settled: the whole piece or nothing (see above).
