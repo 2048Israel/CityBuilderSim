@@ -25,7 +25,7 @@
 
 **Uses:** [World](World.md) (45)
 
-**Used by (8):** [BridgeCheck](BridgeCheck.md), [BridgeGround](BridgeGround.md), [BridgeView](BridgeView.md), [BridgeWorks](BridgeWorks.md), [Bridges](Bridges.md), [BuildCard](BuildCard.md), [Game](Game.md), [ReadPathCheck](ReadPathCheck.md)
+**Used by (9):** [BridgeCheck](BridgeCheck.md), [BridgeGround](BridgeGround.md), [BridgeView](BridgeView.md), [BridgeWorks](BridgeWorks.md), [Bridges](Bridges.md), [BuildAdvice](BuildAdvice.md), [BuildCard](BuildCard.md), [Game](Game.md), [ReadPathCheck](ReadPathCheck.md)
 
 ## Sections
 

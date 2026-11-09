@@ -187,7 +187,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [LandSellersView](map/LandSellersView.md) | LandNationsCheck |
 | [LandTable](map/LandTable.md) | LandNationsCheck |
 | [LandmassView](map/LandmassView.md) | LandmassCheck, LongPlaytest, ReadPathCheck |
-| [Landmasses](map/Landmasses.md) | BridgeCheck, BuildAdviceCheck, CapitalFlowCheck, FittingCheck, LandmassCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
+| [Landmasses](map/Landmasses.md) | BridgeCheck, BuildAdviceCheck, CapitalFlowCheck, FittingCheck, LandmassCheck, LongPlaytest, NewGameCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
 | [LegacyLand](map/LegacyLand.md) | ConversionCheck, GridCheck, LandCheck, MiningCheck, OilCheck |
 | [Levers](map/Levers.md) | **none** |
 | [LongTermBond](map/LongTermBond.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CentralBankCheck, CreditCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, FundCheck, HoldersCheck, KeptCheck, LongPlaytest, NewGameCheck, ReadPathCheck, RestructureCheck, TreasuryCheck |
@@ -16742,13 +16742,13 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L3250 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
 - **L3305 AND EVERYTHING THAT IS A PURCHASE.**
 - **L3651 AND THE BEST OF THEM WINS.**
-- **L6120 founding: a few months at a time, by hand**
-- **L6217 then the real rhythm**
-- **L6365 the report**
-- **L6388 ==**
-- **L6485 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
-- **L7728 what the advisor tried, and what happened**
-- **L7734 findings**
+- **L6168 founding: a few months at a time, by hand**
+- **L6265 then the real rhythm**
+- **L6413 the report**
+- **L6436 ==**
+- **L6533 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
+- **L7781 what the advisor tried, and what happened**
+- **L7787 findings**
 
 ## MainLineCheck.java - 160 labelled assertions
 

@@ -4,7 +4,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 532 files, 592,165 lines, 25,706 methods, 5,619 constants. `GameVersion.VERSION` is "0.9.67", `SAVE_FORMAT` 51.
+**The tree:** 532 files, 592,633 lines, 25,725 methods, 5,622 constants. `GameVersion.VERSION` is "0.9.67", `SAVE_FORMAT` 51.
 
 ## model (248 files)
 
@@ -14,18 +14,18 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [ArrivalMix.java](ArrivalMix.md) | 169 | 8 | What the world's movers hold by year: the skill mix a month's arrivals are drawn from, in a city founded the 1900 way. | 5 |
 | [Auction.java](Auction.md) | 460 | 28 | The city's paper sold at auction: the bidders, each by its own rule in the game, and the one yield that clears them. | 28 |
 | [AuctionTally.java](AuctionTally.md) | 145 | 11 | The city's auctions counted: how many sales the treasury has booked, what they sold and what they asked, how often the stop sat more than a point o... | 4 |
-| [AutoBuilder.java](AutoBuilder.md) | 2,179 | 145 | Automatic building (0.7.73): the city's own works ordered for the player once a month - power, water, the roads and their lines, care, schools and ... | 15 |
+| [AutoBuilder.java](AutoBuilder.md) | 2,381 | 153 | Automatic building (0.7.73): the city's own works ordered for the player once a month - power, water, the roads and their lines, care, schools and ... | 15 |
 | [BalanceSheet.java](BalanceSheet.md) | 201 | 30 | A simple balance sheet for one business in the city. | 6 |
 | [Bank.java](Bank.md) | 6,711 | 455 | The city's commercial bank: every loan in it, and every default. | 65 |
 | [BoatSchedule.java](BoatSchedule.md) | 1,060 | 61 | The month's ships, as a pure function of time: which calls the city's sea trade makes, when each arrives, and where each boat is at any moment (0.7... | 19 |
 | [BondMarket.java](BondMarket.md) | 2,091 | 172 | The corporate bond market: every bond the city's businesses have issued, who holds each, the order book each trades on, and the rule each participa... | 21 |
 | [BookDesk.java](BookDesk.md) | 184 | 20 | The debt book as a desk: every figure the book page and a line's page draw (CD6, spec-city-debt.md section 7, boards 1 and 2), a pure model of what... | 5 |
 | [BridgeGround.java](BridgeGround.md) | 72 | 7 | The ground a bridge is surveyed over, read from the World and the city's land: the Earth's terrain, relief and landmass a tile at a time, the city'... | 1 |
-| [BridgeSurvey.java](BridgeSurvey.md) | 438 | 25 | The survey of a long bridge's crossing: the shortest chain of plots from the city's own dry ground on a far landmass to its own buildable ground on... | 8 |
-| [BridgeView.java](BridgeView.md) | 98 | 11 | What the build card says of a long bridge's crossing: the refusal of a survey in its own words, and the pieces of the line a surveyed crossing gets. | 5 |
-| [BridgeWorks.java](BridgeWorks.md) | 126 | 7 | What a long bridge's span costs, in US dollars a metre by kind and by the depth of the water it crosses, and the construction points those dollars ... | 11 |
-| [Bridges.java](Bridges.md) | 315 | 30 | The city's long bridges, built and building: for each, the template it was ordered as, its kind, the two landings and the landmass at each end, its... | 7 |
-| [BuildAdvice.java](BuildAdvice.md) | 2,219 | 110 | What the city should build next, and why: the Build tab's categories and the measures its five city categories open on, each measure's figure befor... | 31 |
+| [BridgeSurvey.java](BridgeSurvey.md) | 438 | 25 | The survey of a long bridge's crossing: the shortest chain of plots from the city's own dry ground on a far landmass to its own buildable ground on... | 9 |
+| [BridgeView.java](BridgeView.md) | 98 | 11 | What the build card says of a long bridge's crossing: the refusal of a survey in its own words, and the pieces of the line a surveyed crossing gets. | 7 |
+| [BridgeWorks.java](BridgeWorks.md) | 126 | 7 | What a long bridge's span costs, in US dollars a metre by kind and by the depth of the water it crosses, and the construction points those dollars ... | 12 |
+| [Bridges.java](Bridges.md) | 321 | 31 | The city's long bridges, built and building: for each, the template it was ordered as, its kind, the two landings and the landmass at each end, its... | 9 |
+| [BuildAdvice.java](BuildAdvice.md) | 2,409 | 117 | What the city should build next, and why: the Build tab's categories and the measures its five city categories open on, each measure's figure befor... | 31 |
 | [BuildCard.java](BuildCard.md) | 1,901 | 91 | One build card's figures, for every one of the buildings in buildings.json (0.7.25; 143 of them since FR3, the Bulk Berth): what it gives the city ... | 31 |
 | [BuildLog.java](BuildLog.md) | 162 | 10 | What the city has gained, and when. | 5 |
 | [BuildersShort.java](BuildersShort.md) | 145 | 10 | The builders short (FC1): what an order pays a point of work as the builders run out of points for the sites - a premium that rises with the months... | 6 |
@@ -144,7 +144,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [LandSellers.java](LandSellers.md) | 511 | 35 | The nation that sells each plot of a real-Earth world's ground, and an offer's unowned ground split by its sellers. | 6 |
 | [LandSellersView.java](LandSellersView.md) | 117 | 5 | What the land office says of who sells an offer's ground: a pure function of the offer's sellers (LandParcel.getSellers()) and the nations' names (... | 3 |
 | [LandmassView.java](LandmassView.md) | 528 | 38 | What the screens and the investors' words say of the city's landmasses: pure functions of the model's figures, so that the words are written in one... | 12 |
-| [Landmasses.java](Landmasses.md) | 1,238 | 99 | The city's ground counted by landmass, and which landmasses the city's buildings may stand on: its books by landmass (each landmass's owned dry gro... | 26 |
+| [Landmasses.java](Landmasses.md) | 1,255 | 100 | The city's ground counted by landmass, and which landmasses the city's buildings may stand on: its books by landmass (each landmass's owned dry gro... | 27 |
 | [LegacyLand.java](LegacyLand.md) | 514 | 44 | The city's land as spec-land drew it, read-only: a square centre round the founding site and forty lanes of wedges pushed out band by band - the ge... | 8 |
 | [LongTermBond.java](LongTermBond.md) | 208 | 21 | A bond: a fixed coupon every month on the whole face, and the face at the end - at 2, 5, 10, 20, 30 or 50 years, sold in lines that reopen (CD2). | 23 |
 | [LuxuryCounter.java](LuxuryCounter.md) | 160 | 10 | The households' discretionary spending: the boutiques and the restaurants, each striking its price against the queue. | 1 |
@@ -455,7 +455,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [LandNationsCheck.java](LandNationsCheck.md) | 1,249 | 47 | Land bought from the nation it lies in, checked (WN5; docs/studies/spec-nations.md 6.2-6.4, D21, D22): the land table, each nation's land factor an... | 1 |
 | [LandlordPortCheck.java](LandlordPortCheck.md) | 739 | 29 | The landlord port, held to FR3's brief (docs/queue/FR3.md): the city builds and keeps the sea terminals and Freight's Ports division works them. | 0 |
 | [LandmassCheck.java](LandmassCheck.md) | 3,300 | 94 | The city's ground counted by landmass, and the island rule, checked (ET5; the ET5 design): a landmass is read from the Earth's data at every plot, ... | 3 |
-| [LongPlaytest.java](LongPlaytest.md) | 8,129 | 152 | A city played for 2,400 months at the gate and 4,000 once a night on main (tools/nightly.sh), the way a person plays. | 57 |
+| [LongPlaytest.java](LongPlaytest.md) | 8,182 | 154 | A city played for 2,400 months at the gate and 4,000 once a night on main (tools/nightly.sh), the way a person plays. | 57 |
 | [MainLineCheck.java](MainLineCheck.md) | 1,743 | 56 | The main line is the railway's run from its gateway to the freight station, the yard nearest the gate arm's end, and it is drawn double where the c... | 2 |
 | [ManufacturingCheck.java](ManufacturingCheck.md) | 632 | 8 | The ninth sector: what the city makes out of its own steel, and ships. | 0 |
 | [MapCheck.java](MapCheck.md) | 14,784 | 386 | The city map's data and painter: the districts add up to the model's counts every month and nothing placed moves, the painter draws each district's... | 12 |

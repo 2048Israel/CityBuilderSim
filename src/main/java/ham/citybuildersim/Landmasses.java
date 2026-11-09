@@ -981,6 +981,23 @@ public final class Landmasses {
         return out;
     }
 
+    /** The sea terminals standing or on site on a landmass, every port template (not a stopped shell, not one being demolished; a template with no row stands at home). */
+    public int portsAt(int id) {
+        if (stock == null) return 0;
+        int at = id == 0 ? home : id;
+        int n = 0;
+        for (int t : stock.portTemplates()) {
+            Segments s = ports.get(t);
+            if (s == null) {
+                if (at == home) n += Math.max(0, stock.standing(t)) + Math.max(0, stock.onSite(t));
+            } else {
+                n += count(s.standing, at) + count(s.onSite, at);
+                if (at == home) n += count(s.standing, 0) + count(s.onSite, 0);
+            }
+        }
+        return n;
+    }
+
     /** The ports standing on a landmass, by Ports.Cargo's ordinal (a template with no row stands at home). */
     public int[] portsOn(int id) {
         int at = id == 0 ? home : id;

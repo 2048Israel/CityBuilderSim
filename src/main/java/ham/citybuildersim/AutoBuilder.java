@@ -803,6 +803,20 @@ public final class AutoBuilder {
 
     private final List<Step> steps = new ArrayList<>();
 
+    /**
+     * What the pass did to link an island (AL1): the month, the island's id, how it is linked (BuildAdvice.LinkKind),
+     * ORDERED or HELD, the orders' buildings as the log words them, their price (thousands) and the line - the order's why,
+     * or the hold's words.
+     */
+    public record LinkStep(int month, int landmass, BuildAdvice.LinkKind kind, Outcome outcome, String building, double cost,
+                           String line) { }
+
+    /** The island links the last pass ordered or held, one at most a pass (not saved: a harness reads it the month it is made). */
+    private final List<LinkStep> linkSteps = new ArrayList<>();
+
+    /** Whether the last pass met an order short of ground it would have bought (the measure it reads before it buys ground): the island links' cue (AL1). */
+    private boolean groundShort;
+
     /*
      * THE PAYBACK (0.7.104, batch P2b), which replaced the budget for every
      * building the treasury runs but the essential services. Jerus
@@ -1090,6 +1104,12 @@ public final class AutoBuilder {
     /** The last pass, a step a measure (not saved: a harness reads it the month it is made). */
     public List<Step> steps() { return Collections.unmodifiableList(steps); }
 
+    /** The island links the last pass ordered or held (AL1), a LinkStep each; empty where nothing is short of ground or nothing is unlinked. */
+    public List<LinkStep> linkSteps() { return Collections.unmodifiableList(linkSteps); }
+
+    /** Whether the last pass met an order short of ground (AL1): what sets the island links going. */
+    public boolean groundShort() { return groundShort; }
+
     /**
      * The month's pass (see the header): nothing while it is off. Called by
      * Game.nextMonth() first; a harness may call it on a city between presses.
@@ -1101,6 +1121,8 @@ public final class AutoBuilder {
         bought.clear();
         asked.clear();
         steps.clear();
+        linkSteps.clear();
+        groundShort = false;
         overSaid = false;
         lastPass = game.getMonth();
         remember(game);
@@ -1113,6 +1135,8 @@ public final class AutoBuilder {
             // one is not stepped: its order waits for its money.
             for (OpenAsk a : new ArrayList<>(asks)) reoffer(game, all, kept, a);
             for (BuildAdvice.Measure m : kept) if (askFor(m) == null) step(game, all, m);
+            // The ground running short while ground the city owns lies on a landmass nothing links (AL1): every order above is placed already.
+            if (groundShort) link(game);
         } finally {
             game.getDecisions().release();
         }
@@ -1228,6 +1252,8 @@ public final class AutoBuilder {
             // the two paid for out of the cash over the reserve, then the bond within the limit - fewer where all of
             // it is not; none, the next in the ranking (0.7.101).
             Ground ground = s.paving() ? Ground.NONE : groundFor(game, t, n);
+            // The ground running short is the cue to link an island (AL1; link()).
+            if (!s.paving() && lacks(game, t, n) > 0) groundShort = true;
             // Over the limit with "Build from cash anyway" on, what holds it is the cash (0.7.81).
             Cut money = (!within(game) && cashAnyway) || (fromCash && within(game)) ? Cut.CASH : Cut.DEBT;
             if (ground == null || !pays(game, ground.cash() + total(game, s, n), fromCash)) {
@@ -1340,7 +1366,7 @@ public final class AutoBuilder {
             return false;
         }
         // ...a sea terminal by the rule alone (ET5 D10): home if the city owns shore on it, else a landmass it has linked - never an island no port
-        // links, so the automatic builder never links one; the card's pick (Game.choosePortLandmass()) is the player's.
+        // links here: the island links are link()'s (AL1); the card's pick (Game.choosePortLandmass()) is the player's.
         boolean placed = s.paving() ? game.paveRoads(n)
                 : game.buildStack(s.template(), n, false, Landmasses.RULE) == Game.BuildResult.SUCCESS;
         if (!placed) {
@@ -1382,6 +1408,176 @@ public final class AutoBuilder {
                 m.label().toLowerCase(), cost, bondMoney > 0 ? String.format(" ($%,.0fk of it on a %d-year bond)",
                         bondMoney, Game.BUILD_BOND_YEARS) : "", why));
         return true;
+    }
+
+    /* =====================================================================
+       THE ISLAND LINKS (AL1, 2026-11-09)
+
+       Jerus, 2026-10-31: "autobuild will build bridges and ports if sees that
+       land is low and there is something unlinked (basically, if link is
+       allowed with bridge, then it builds a highway bridge or road bridge ...
+       if not it build a link via port)". LAND IS LOW is the measure the pass
+       already reads before it buys ground: an order that lacked ground (lacks()
+       past nothing) sets groundShort in step(), and at the end of the pass,
+       with every other order placed, link() asks BuildAdvice.linkFor() what
+       the city should order for the island it most needs and places it: one
+       unit, as step() orders one where none is on site, the ground its landings
+       or its terminal at home stand on bought as the others' is, the money
+       within the debt limit on the same quote and the same bond. A refusal
+       (the builders, the ground, the money, the licences, the land) leaves
+       the order unplaced and says so in the inbox, as the others do. It
+       overturns ET5's "never links an island" and ET6-C's "never orders a
+       bridge".
+       ===================================================================== */
+
+    /** The island link the pass would order, placed (AL1); a hold or an order is a LinkStep and, held, a line in the inbox. */
+    void link(Game game) {
+        BuildAdvice.Link l = BuildAdvice.linkFor(game);
+        if (l == null) return;
+        if (l.kind() == BuildAdvice.LinkKind.NONE) {
+            holdLink(game, l, "", "Island links: " + l.name() + " cannot be linked; " + l.why());
+            return;
+        }
+        Landmasses lms = game.getLandManager().getLandmasses();
+        String building = linkWords(l);
+        String wanted = "Island links: " + building + " wanted to link " + l.name();
+        // THE BUILDERS: one unit of each, as step() orders one where none is on site; no site output, none.
+        if (Double.isNaN(l.months())) {
+            holdLink(game, l, building, wanted + "; the builders have no site output to build them.");
+            return;
+        }
+        // THE GROUND: a bridge's landings and a terminal at home stand on linked ground, bought as the others' is; the island's terminal stands on the island's room.
+        BuildAdvice.LinkOrder onLinked = null;
+        for (BuildAdvice.LinkOrder o : l.orders()) {
+            if (l.kind() == BuildAdvice.LinkKind.BRIDGE || o.asked() == Landmasses.RULE) { onLinked = o; break; }
+        }
+        Ground ground = onLinked == null ? Ground.NONE : groundFor(game, onLinked.template(), 1);
+        if (ground == null) {
+            holdLink(game, l, building, wanted + "; " + groundWords(game, onLinked.template()));
+            return;
+        }
+        // THE MONEY: the cash over the reserve, then the bond within the limit, as place() asks it.
+        if (!pays(game, ground.cash() + l.price(), false)) {
+            holdLink(game, l, building, wanted + "; " + debtWords(game, l::price, "the link", ground));
+            return;
+        }
+        double gap = l.price() + ground.cash() - spendableFor(game, null);
+        double raised = 0;
+        if (gap > 0) {
+            DebtQuote bond = bondFor(game, gap, cap);
+            if (bond == null) {
+                holdLink(game, l, building, wanted + "; the bond for it would not raise the cash at the highest yield the builder takes.");
+                return;
+            }
+            double cashBefore = game.getCash();
+            game.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE, cap);
+            raised = game.getCash() - cashBefore;
+            bonds++;
+            borrowed += raised;
+            noteSale(game, bond, raised, 0);
+        }
+        // The ground first, each offer as the land office's Buy buys it.
+        double rate = game.getForeignAccounts().getRate(), landCost = 0, landSq = 0;
+        List<LandParcel> got = new ArrayList<>();
+        List<String> places = new ArrayList<>();
+        for (LandParcel o : ground.offers()) {
+            if (!game.buyLandParcel(o.getId())) break;
+            got.add(o);
+            places.add(o.where());
+            landCost += o.localPrice(rate);
+            landSq += o.getSizeSqFt();
+        }
+        landOffers += got.size();
+        landSqFt += landSq;
+        landSpent += landCost;
+        String boughtLine = got.isEmpty() ? null : "Island links: bought " + String.join(", ", places) + " - "
+                + LandManager.areaWords(landSq) + " of bare ground for " + money(landCost) + " - for " + building + ", to link "
+                + l.name() + ".";
+        if (got.size() < ground.offers().size()) {
+            if (boughtLine != null) bought.add(boughtLine + " Its order could not be placed.");
+            holdLink(game, l, building, wanted + "; the ground for it could not be bought.");
+            return;
+        }
+        // Then the orders: a bridge toward the island, a terminal on the landmass asked; the card's pick is put back as it was.
+        String how = linkReason(game, lms, l);
+        String why = l.name() + " (" + LandManager.areaWords(l.sqFt()) + " of buildable ground) is not linked and the city's free ground is"
+                + " running short; " + how + (got.isEmpty() ? "" : "; " + LandManager.areaWords(landSq) + " of ground bought for it first ("
+                + String.join(", ", places) + ", " + money(landCost) + ")");
+        List<String> placed = new ArrayList<>();
+        double cost = 0;
+        String refusal = null;
+        for (BuildAdvice.LinkOrder o : l.orders()) {
+            BuildingsTemplate t = o.template();
+            Game.BuildResult r;
+            if (l.kind() == BuildAdvice.LinkKind.BRIDGE) {
+                int before = game.getBridges().chosen(t.getId());
+                game.chooseBridgeLandmass(t, l.landmass());
+                r = game.buildStack(t, 1, false);
+                if (before == Bridges.NONE_CHOSEN) game.getBridges().clearChoice(t.getId());
+                else game.chooseBridgeLandmass(t, before);
+            } else {
+                r = game.buildStack(t, 1, false, o.asked());
+            }
+            if (r != Game.BuildResult.SUCCESS) {
+                refusal = wanted + "; the " + orderName(l, o) + " could not be placed (" + r + ")"
+                        + (placed.isEmpty() ? "." : "; the " + String.join(" and the ", placed) + " already placed stays placed.");
+                break;
+            }
+            placed.add(orderName(l, o));
+            cost += o.price();
+            Entry e = new Entry(game.getMonth(), LINKS_LABEL, t.getName(), 1, 1, o.price(), placed.size() == 1 ? raised : 0, false, why);
+            if (placed.size() == 1 && !got.isEmpty()) {
+                e.landSqFt = landSq;
+                e.landCost = landCost;
+                e.landWhere = String.join(", ", places);
+            }
+            log.add(e);
+            while (log.size() > LOG_MOST) log.remove(0);
+            orders++;
+            buildings++;
+            spent += o.price();
+        }
+        if (boughtLine != null) bought.add(placed.isEmpty() ? boughtLine + " Its order could not be placed." : boughtLine);
+        if (refusal != null) {
+            holdLink(game, l, building, refusal);
+            return;
+        }
+        String crossing = l.kind() == BuildAdvice.LinkKind.BRIDGE ? " (" + BridgeView.lengthWords(l.survey().lengthM()) + ")" : "";
+        String line = String.format("Automatic building: %s to link %s%s, $%,.0fk%s. %s", building, l.name(), crossing, cost,
+                raised > 0 ? String.format(" ($%,.0fk of it on a %d-year bond)", raised, Game.BUILD_BOND_YEARS) : "", why);
+        linkSteps.add(new LinkStep(game.getMonth(), l.landmass(), l.kind(), Outcome.ORDERED, building, cost, line));
+        GameLog.note(line);
+    }
+
+    /** The measure label an island link is entered under in the log. */
+    private static final String LINKS_LABEL = "Island links";
+
+    /** A hold of an island link: one line in the inbox, and a LinkStep. */
+    private void holdLink(Game game, BuildAdvice.Link l, String building, String line) {
+        held.add(line);
+        linkSteps.add(new LinkStep(game.getMonth(), l.landmass(), l.kind(), Outcome.HELD, building, 0, line));
+    }
+
+    /** One order of a link by name: "Road Bridge", or "Bulk Berth on Island 2" for a terminal on the island and "Bulk Berth on linked ground" for the one the rule places. */
+    private static String orderName(BuildAdvice.Link l, BuildAdvice.LinkOrder o) {
+        String n = o.template().getName();
+        if (l.kind() == BuildAdvice.LinkKind.BRIDGE) return n;
+        return o.asked() == Landmasses.RULE ? n + " on linked ground" : n + " on " + l.name();
+    }
+
+    /** A link's orders as the log words them: "1 Road Bridge", "1 Bulk Berth on Island 2 and 1 Bulk Berth on linked ground". */
+    private static String linkWords(BuildAdvice.Link l) {
+        List<String> parts = new ArrayList<>();
+        for (BuildAdvice.LinkOrder o : l.orders()) parts.add("1 " + orderName(l, o));
+        return String.join(" and ", parts);
+    }
+
+    /** Why this link and not another, for the log: the crossing a bridge is surveyed over, or the terminals that stand in for one. */
+    private static String linkReason(Game game, Landmasses lms, BuildAdvice.Link l) {
+        if (l.kind() == BuildAdvice.LinkKind.BRIDGE) return "a bridge is allowed there (" + BridgeView.crossingWords(l.survey(), lms) + ")";
+        return lms.portsAt(l.landmass()) > 0
+                ? "a terminal already stands there and none on linked ground, so the city's own joins it"
+                : "no bridge could be built there, so sea terminals link it: one on its shore and, where no linked landmass has one, one beside it";
     }
 
     /** A refused card's building as its words name it: its own name, or the gravel roads a paving paves. */
@@ -1570,7 +1766,12 @@ public final class AutoBuilder {
 
     /** Why the money pays for none: one more and (0.7.77) the ground it lacks - over the limit, or a bond that would cross it (0.7.81). */
     private String debtWords(Game game, BuildAdvice.Suggestion s, Ground ground) {
-        String one = ground.offers().isEmpty() ? "one" : "one and the " + LandManager.areaWords(ground.sqFt())
+        return debtWords(game, () -> total(game, s, 1), "one", ground);
+    }
+
+    /** ...for an order that is not a suggestion's (AL1: an island's link): its price, asked only where the words need it, and what it is called ("one", "the link"). */
+    private String debtWords(Game game, java.util.function.DoubleSupplier price, String what, Ground ground) {
+        String one = ground.offers().isEmpty() ? what : what + " and the " + LandManager.areaWords(ground.sqFt())
                 + " of ground it lacks (" + money(ground.cash()) + ")";
         double now = ratio(game);
         if (!(now <= debtLimit)) {
@@ -1585,7 +1786,7 @@ public final class AutoBuilder {
         }
         if (!(debtLimit > 0)) return "the cash over a month's tax is short of " + one + " and your debt limit is 0%, so it"
                 + " borrows nothing.";
-        double gap = gapFor(game, total(game, s, 1) + ground.cash());
+        double gap = gapFor(game, price.getAsDouble() + ground.cash());
         DebtQuote q = bondFor(game, gap, cap);
         if (q == null) return "the cash over a month's tax is short of " + one + " and no bond can be had.";
         double after = ratioAfter(game, q);
@@ -2127,6 +2328,7 @@ public final class AutoBuilder {
         asked.clear();
         asks.clear();
         steps.clear();
+        linkSteps.clear();
         paidMonths.clear();
         if (s == null) {
             on = false;
