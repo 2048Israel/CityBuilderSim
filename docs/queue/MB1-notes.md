@@ -65,3 +65,34 @@ Session window: W=150000 (orchestrator's env; compacts near 118k).
   read a band by index); b, MapCheck 2i, after 2g's fixture: small bands, a
   district bought ahead, the old rule moving other bands' boxes, the new
   moving none outside the joining band.
+
+## What the checks found
+
+- **MapCheck 2i** (`bandsHoldOnPurchase`, after 2g; slice b) builds 2g's `Rim` with
+  `CityMap.chainBand` 2 (four districts make two bands, the bought fifth a third) and buys the
+  dry block nearest the site in a district the map lacks, once under each rule. The old rule
+  (`chainByOrder`, bands cut of the map's order): 2 of the 4 districts changed band and 2,885
+  of 3,478 boxes in the other bands moved, the fault MF1-B named. The new rule: the bought
+  district sorts at chain place 4, in band 2 (the last); no district changed band; 0 of 4,938
+  boxes in the other bands moved. A city of one band keeps the map's order (`chainOrder`
+  equals `districts`, every `chainIndex == index`). MapCheck's only FAILs are main's 4 yard
+  lines (gate.txt).
+- **The ensemble is skipped.** The change is the map's plan alone: nothing in the model reads
+  the map (`CityMap`, CLAUDE.md), so the month's trace cannot move.
+- **MapCheck 5's month at 5B and 10B against main, on the same load: no budget moved.** Run side by
+  side (both JVMs at once) the first bounded month after the spurt read 5B 7.43 and 10B 5.80 ms on
+  MB1 against main's 2.76 and 2.86, and section 18 (the FX side, 19 ms) failed on both: the load,
+  not the change. Run alone, alternated (`MapCheck.cost` on main's classes and the branch's, five
+  rounds each, the branch first in three), every run passed section 5 (fails 0), in ms of the wall
+  clock, the mean of five:
+
+  | | main 5B | MB1 5B | main 10B | MB1 10B |
+  |---|---|---|---|---|
+  | the bounded months' worst | 2.74 (2.61-2.86) | 2.89 (2.73-3.31) | 2.95 (2.47-3.97) | 3.22 (2.65-3.99) |
+  | the year's mean month | 1.49 | 1.56 | 1.77 | 1.81 |
+  | the spurt (+0.05%, no budget) | 9.85 | 11.11 | 25.74 | 26.45 |
+
+  The ranges overlap; the budget is 5 ms. A month with no purchase never reaches the new code
+  (`rebuildChain` runs only from `sortDistricts` and from a tally that moves a rank, both on a
+  purchase or a rebuild); the spurt's ~0.7 ms more at 10B, inside its spread, would be a
+  purchase's sort of ~29k districts.

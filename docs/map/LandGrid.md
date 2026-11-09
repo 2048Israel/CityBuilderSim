@@ -1,4 +1,4 @@
-# LandGrid.java - 392 lines · 30 methods · 12 constants · model
+# LandGrid.java - 410 lines · 32 methods · 12 constants · model
 
 `ham/citybuildersim/LandGrid.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
 
@@ -47,8 +47,8 @@
 | 79 | THE STATE |
 | 138 | OWNING |
 | 199 | WHAT IS OWNED |
-| 331 | THE CITY'S LEVEL (spec-grid star 2) |
-| 351 | THE TREE ITSELF: what GridCheck reads |
+| 349 | THE CITY'S LEVEL (spec-grid star 2) |
+| 369 | THE TREE ITSELF: what GridCheck reads |
 
 ## Constants
 
@@ -84,7 +84,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 41 | 352 | **type** `public final class LandGrid` | The ground a city owns, as a region quadtree over the world's plots: which holding owns each plot, and how much of any block or rectangle of plots is owned. |
+| 41 | 370 | **type** `public final class LandGrid` | The ground a city owns, as a region quadtree over the world's plots: which holding owns each plot, and how much of any block or rectangle of plots is owned. |
 
 ### THE STATE (lines 79-137)
 
@@ -104,7 +104,7 @@
 | 164 | 32 | `private long fillRec(int node, int level, long bx, long by, long x0, long y0, long x1, long y1, int h)` |  |
 | 197 | 1 | `private static boolean whole(byte s)` |  |
 
-### WHAT IS OWNED (lines 199-330)
+### WHAT IS OWNED (lines 199-348)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -117,29 +117,31 @@
 | 262 | 16 | `private void flagsRec(int node, int level, long bx, long by, long x0, long y0, boolean[] out)` |  |
 | 280 | 4 | `public void tileHoldings(long tx, long ty, int[] out)` | Fills a tile's World.TILE x World.TILE holding per plot, row by row, -1 where none owns it: tileFlags()'s twin, a FULL leaf filling its square with its holding. |
 | 285 | 16 | `private void holdingsRec(int node, int level, long bx, long by, long x0, long y0, int[] out)` |  |
-| 303 | 1 | **type** `public interface Leaf` | Called back for every FULL leaf: its level, its first plot and its holding. |
-| 303 | 1 | `void at(int level, long x, long y, int holding)` _(in LandGrid.Leaf)_ |  |
-| 306 | 1 | `public void leaves(Leaf f)` | Calls f back for every FULL leaf, north-west quarter first, down the tree. |
-| 308 | 7 | `private void leavesRec(int node, int level, long bx, long by, Leaf f)` |  |
-| 317 | 1 | `public long ownedPlots()` | Plots owned, by every holding. |
-| 320 | 1 | `public long minX()` | The owned ground's bounding box, in plots, half-open: its west edge... |
-| 323 | 1 | `public long minY()` | ...its north edge... |
-| 326 | 1 | `public long maxX()` | ...one past its east edge... |
-| 329 | 1 | `public long maxY()` | ...and one past its south edge. |
+| 303 | 4 | `public int firstHolding(long x0, long y0, long x1, long y1)` | The smallest holding owning a plot of the half-open rectangle [x0,x1) x [y0,y1), or -1 when it owns none (MB1: a district's rank). |
+| 308 | 11 | `private int firstHoldingRec(int node, int level, long bx, long by, long x0, long y0, long x1, long y1, int best)` |  |
+| 321 | 1 | **type** `public interface Leaf` | Called back for every FULL leaf: its level, its first plot and its holding. |
+| 321 | 1 | `void at(int level, long x, long y, int holding)` _(in LandGrid.Leaf)_ |  |
+| 324 | 1 | `public void leaves(Leaf f)` | Calls f back for every FULL leaf, north-west quarter first, down the tree. |
+| 326 | 7 | `private void leavesRec(int node, int level, long bx, long by, Leaf f)` |  |
+| 335 | 1 | `public long ownedPlots()` | Plots owned, by every holding. |
+| 338 | 1 | `public long minX()` | The owned ground's bounding box, in plots, half-open: its west edge... |
+| 341 | 1 | `public long minY()` | ...its north edge... |
+| 344 | 1 | `public long maxX()` | ...one past its east edge... |
+| 347 | 1 | `public long maxY()` | ...and one past its south edge. |
 
-### THE CITY'S LEVEL (spec-grid star 2) (lines 331-350)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 341 | 6 | `public static int levelFor(double plots)` | The block level of a city owning `plots` plots of every kind: the largest k at which FACE_BLOCKS blocks fit across a square of that area (2^k at most sqrt(plots) / FACE_BLOCKS), never under MIN_LEVEL or over MAX_LEVEL. |
-| 349 | 1 | `public int level()` | This grid's level: levelFor() of the plots it owns. |
-
-### THE TREE ITSELF: what GridCheck reads (lines 351-392)
+### THE CITY'S LEVEL (spec-grid star 2) (lines 349-368)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 360 | 5 | `public long[] census()` | A walk of the tree: {live nodes, FULL leaves, OWNED nodes, nodes whose four children are FULL by one holding} - the last is what a merge leaves none of. |
-| 366 | 11 | `private void censusRec(int node, long[] c)` |  |
-| 379 | 3 | `public boolean sameAs(LandGrid o)` | Whether another grid is this one node for node: the same state everywhere, the same holding in every FULL leaf, the same plots owned. |
-| 383 | 9 | `private boolean sameRec(int node, LandGrid o, int other)` |  |
+| 359 | 6 | `public static int levelFor(double plots)` | The block level of a city owning `plots` plots of every kind: the largest k at which FACE_BLOCKS blocks fit across a square of that area (2^k at most sqrt(plots) / FACE_BLOCKS), never under MIN_LEVEL or over MAX_LEVEL. |
+| 367 | 1 | `public int level()` | This grid's level: levelFor() of the plots it owns. |
+
+### THE TREE ITSELF: what GridCheck reads (lines 369-410)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 378 | 5 | `public long[] census()` | A walk of the tree: {live nodes, FULL leaves, OWNED nodes, nodes whose four children are FULL by one holding} - the last is what a merge leaves none of. |
+| 384 | 11 | `private void censusRec(int node, long[] c)` |  |
+| 397 | 3 | `public boolean sameAs(LandGrid o)` | Whether another grid is this one node for node: the same state everywhere, the same holding in every FULL leaf, the same plots owned. |
+| 401 | 9 | `private boolean sameRec(int node, LandGrid o, int other)` |  |
 
