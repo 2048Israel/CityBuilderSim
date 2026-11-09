@@ -2,9 +2,9 @@
 
 Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**5,611 constants in 532 files.**
+**5,612 constants in 532 files.**
 
-## model (2700 constants)
+## model (2701 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -1573,7 +1573,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.63"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.9.64"` | Bump on release. |
 | 8267 | `GameVersion.SAVE_FORMAT` | `51` | The save shape. |
 | 8316 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `51` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
 | 8324 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
@@ -1739,12 +1739,12 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 87 | `HistorySave.MONTHLY_KEPT` | `6_000` | Months kept a month to an entry, the newest: five hundred years (0.7.55). |
-| 540 | `HistorySave.WORLD_CYCLE` | `"worldCycle", WORLD_RISK_OFF = "worldRiskOff"` | The dollar cycle's series and the risk-off's. |
-| 569 | `HistorySave.RESEARCH_SPEND` | `"researchSpend"` | The month's research bill and prizes paid, the city's money. |
-| 572 | `HistorySave.EQUIPMENT_FITTED` | `"equipmentFitted"` | The share of the equipment standing that is fitted, 0 to 1; begins when there is equipment to count. |
-| 1084 | `HistorySave.LONG_SERIES` | `java.util.Set.of("jobs", "workforce", "outOfWork", "population", "births", "deaths", "a...` | The series kept as whole numbers, a List<Long> each: what appendMonth() adds as longs to an empty one. |
-| 1106 | `HistorySave.SHARE_PRICE_DIGITS` | `6` | Share prices are recorded to six significant figures: a consolidated company's price per founding share is far under a ten-thousandth (C5); and, since EP1, so are the wage, the rent and the prices ... |
+| 109 | `HistorySave.MONTHLY_KEPT` | `6_000` | Months kept a month to an entry, the newest: five hundred years (0.7.55). |
+| 562 | `HistorySave.WORLD_CYCLE` | `"worldCycle", WORLD_RISK_OFF = "worldRiskOff"` | The dollar cycle's series and the risk-off's. |
+| 591 | `HistorySave.RESEARCH_SPEND` | `"researchSpend"` | The month's research bill and prizes paid, the city's money. |
+| 594 | `HistorySave.EQUIPMENT_FITTED` | `"equipmentFitted"` | The share of the equipment standing that is fitted, 0 to 1; begins when there is equipment to count. |
+| 1106 | `HistorySave.LONG_SERIES` | `java.util.Set.of("jobs", "workforce", "outOfWork", "population", "births", "deaths", "a...` | The series kept as whole numbers, a List<Long> each: what appendMonth() adds as longs to an empty one. |
+| 1128 | `HistorySave.SHARE_PRICE_DIGITS` | `6` | Share prices are recorded to six significant figures: a consolidated company's price per founding share is far under a ten-thousandth (C5); and, since EP1, so are the wage, the rent and the prices ... |
 
 ### HomeFuel.java ([map](map/HomeFuel.md))
 
@@ -2620,16 +2620,16 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 57 | `Rankings.Settings.OPENING` | `new Settings(Board.REAL_2025, Money.REAL_USD, Prices.PER_YEAR, Convert.MARKET)` | What the tab opens on (D9, spec-leaderboards 9): Real world 2025, real US$, per year, this month's rate. |
-| 133 | `Rankings.BASE_YEAR` | `2015` | The year the real dollar is struck at: US$ of 2015 (D29: "later the start date will move back anyways"). |
-| 136 | `Rankings.REAL_YEAR` | `2025` | The real world's year: the board Real world 2025. |
-| 139 | `Rankings.PLACE_CITY` | `"city"` | The id the drawer takes for the active city. |
-| 142 | `Rankings.SOURCE_CITY` | `"city", SOURCE_WORLD = "world-1", SOURCE_SAVE = "save"` | A row's source: the active city's own figure, a nation of the game's world file (a source id of world-2025.json's meta), and a saved city's figure. |
-| 145 | `Rankings.SAVED_PREFIX` | `"saved:"` | What a saved city's row id starts with, then its slot: the id the drawer is asked for. |
-| 148 | `Rankings.RULE_REGION` | `"region-output"` | The rule a city region's Your-world figure is an estimate by: its share of its nation's path (a rule id of the file's meta). |
-| 151 | `Rankings.YOUR_SIZE_FACTOR` | `10` | The places Your size keeps: those within this factor of the city's people, either way. |
-| 154 | `Rankings.AROUND_TOP` | `3, AROUND_EITHER_SIDE = 6, AROUND_OFF = 10` | Around you: the rows from the top, and either side of the city; the rows from the top when the city is off the board. |
-| 157 | `Rankings.TIE` | `1e-9` | Two figures within this fraction of each other are one figure and share a rank: a city saved before and after a reform by 100 differs in its last digits only (LB3). |
-| 160 | `Rankings.CONSTANT_SERIES` | `Set.of("gdp", "gdp_pp", "hh_spend_pp")` | The money measures with a series at constant prices (gdp, gdp per person, household spending per person); the rest show this month's rate under Constant. |
+| 139 | `Rankings.BASE_YEAR` | `2015` | The year the real dollar is struck at: US$ of 2015 (D29: "later the start date will move back anyways"). |
+| 142 | `Rankings.REAL_YEAR` | `2025` | The real world's year: the board Real world 2025. |
+| 145 | `Rankings.PLACE_CITY` | `"city"` | The id the drawer takes for the active city. |
+| 148 | `Rankings.SOURCE_CITY` | `"city", SOURCE_WORLD = "world-1", SOURCE_SAVE = "save"` | A row's source: the active city's own figure, a nation of the game's world file (a source id of world-2025.json's meta), and a saved city's figure. |
+| 151 | `Rankings.SAVED_PREFIX` | `"saved:"` | What a saved city's row id starts with, then its slot: the id the drawer is asked for. |
+| 154 | `Rankings.RULE_REGION` | `"region-output"` | The rule a city region's Your-world figure is an estimate by: its share of its nation's path (a rule id of the file's meta). |
+| 157 | `Rankings.YOUR_SIZE_FACTOR` | `10` | The places Your size keeps: those within this factor of the city's people, either way. |
+| 160 | `Rankings.AROUND_TOP` | `3, AROUND_EITHER_SIDE = 6, AROUND_OFF = 10` | Around you: the rows from the top, and either side of the city; the rows from the top when the city is off the board. |
+| 163 | `Rankings.TIE` | `1e-9` | Two figures within this fraction of each other are one figure and share a rank: a city saved before and after a reform by 100 differs in its last digits only (LB3). |
+| 166 | `Rankings.CONSTANT_SERIES` | `Set.of("gdp", "gdp_pp", "hh_spend_pp")` | The money measures with a series at constant prices (gdp, gdp per person, household spending per person); the rest show this month's rate under Constant. |
 
 ### RealDollar.java ([map](map/RealDollar.md))
 
@@ -2839,9 +2839,10 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 33 | `SavedCities.FIRST_SLOT` | `1` | The first slot read: slot 0 is the autosave, a copy of a numbered city, and is left out. |
-| 36 | `SavedCities.KEPT` | `keptSeries()` | The history series a slot keeps: what the measures read, and the three that make the pivot (fxRate and fxParity are among the first). |
-| 70 | `SavedCities.NONE` | `new SavedCities(List.of(), 0)` | The snapshot before any slot was read: no cities, nothing left out. |
+| 39 | `SavedCities.FIRST_SLOT` | `1` | The first slot read: slot 0 is the autosave, a copy of a numbered city, and is left out. |
+| 42 | `SavedCities.KEPT` | `keptSeries()` | The history series a slot keeps: what the measures read, and the three that make the pivot (fxRate and fxParity are among the first). |
+| 58 | `SavedCities.Played.NONE` | `new Played(null, 0L)` | No city in play: matches no slot. |
+| 95 | `SavedCities.NONE` | `new SavedCities(List.of(), 0)` | The snapshot before any slot was read: no cities, nothing left out. |
 
 ### SeaLanes.java ([map](map/SeaLanes.md))
 
@@ -4938,20 +4939,20 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 76 | `RankingsScreen.PINNED_AT_FIRST` | `List.of("gdp", "gdp_pp", "growth_real", "people", "unemployment", "inflation")` | The measures pinned the first time the tab opens: the six a player most often asks of a city. |
 | 79 | `RankingsScreen.GROUPS` | `Map.of("economy", "Economy", "work", "Work & pay", "prices", "Prices & money", "public"...` | The ten groups of the file, by their key, as the spec's table names them (spec-leaderboards 6). |
 | 170 | `RankingsScreen.WORKER` | `Executors.newSingleThreadExecutor(r -> { Thread t = new Thread(r, "rankings-saved-citie...` | The one thread the saved cities are read on, away from the screen; it dies with the window. |
-| 309 | `RankingsScreen.FRAME_CHROME` | `210` | The frame's height before it is laid out, for the scroller's first guess at what is left of the stage. |
-| 312 | `RankingsScreen.STAGE_REST` | `36` | What the stage keeps under the scroller once the frame is laid out: City History's. |
-| 315 | `RankingsScreen.FIRST_WIDTH` | `1100, MEASURES_W = 250, CARD_W = 400, TABLE_MIN = 560, COLUMN_GAP = 16` | The page's width before the scroller says it, and the widths of the columns. |
-| 388 | `RankingsScreen.BOUND_TO_FRAME` | `"rankings.frame", BOUND_TO_SCROLLER = "rankings.scroller", FOLLOWS = "rankings.follows"` | The keys in a node's properties for what frameOver() has bound it to or added to it: the scroller's height to the frame, a box's width to the scroller, the scroller's width listener. |
-| 806 | `RankingsScreen.PIN_ROOM` | `new javafx.geometry.Insets(0, 2, 0, 4), BROWSE_ROOM = new javafx.geometry.Insets(8, 0, ...` | The room round a measure line's pin, and over Browse all: one object each (KP2b). |
-| 874 | `RankingsScreen.RANK_W` | `40, KIND_W = 16, OF_W = 84, ASOF_W = 54, VALUE_W = 80, BAR_W = 52, MARK_W = 16, BAR_H = 6` |  |
-| 1131 | `RankingsScreen.ROW_H` | `24, PAD = 8, SPACE = 6` |  |
-| 1134 | `RankingsScreen.TILE_ROWS` | `40` | Rows to a canvas: 40 of 24 pixels is under a thousand, well inside any texture. |
-| 1139 | `RankingsScreen.Entry.GAP` | `new Entry(null, "", "", false, "", "", "", "", Double.NaN, "")` |  |
-| 1146 | `RankingsScreen.RowsPicture.TEXT` | `Color.web(Palette.TEXT), HEAD = Color.web(Palette.TEXT_HEAD), BODY = Color.web(Palette....` |  |
-| 1152 | `RankingsScreen.RowsPicture.RULER` | `new javafx.scene.text.Text()` | Measures a string against a column; one node, on the FX thread, where the drawing is. |
-| 1392 | `RankingsScreen.D_NAME` | `128, D_REAL = 66, D_MARK = 12, D_SOURCE = 66, D_YOURS = 60` | The drawer's columns: the measure, the real figure and its mark and source, Your world's figure and its mark. |
-| 1557 | `RankingsScreen.RankLine.H` | `76, SIDE = 36, TOP = 12, BOTTOM = 18, YEAR_GAP = 40` |  |
-| 1559 | `RankingsScreen.RankLine.LINE` | `Color.web(Palette.MONEY), FLOOR = Color.web(Palette.EDGE), RANK = Color.web(Palette.TEX...` |  |
+| 316 | `RankingsScreen.FRAME_CHROME` | `210` | The frame's height before it is laid out, for the scroller's first guess at what is left of the stage. |
+| 319 | `RankingsScreen.STAGE_REST` | `36` | What the stage keeps under the scroller once the frame is laid out: City History's. |
+| 322 | `RankingsScreen.FIRST_WIDTH` | `1100, MEASURES_W = 250, CARD_W = 400, TABLE_MIN = 560, COLUMN_GAP = 16` | The page's width before the scroller says it, and the widths of the columns. |
+| 395 | `RankingsScreen.BOUND_TO_FRAME` | `"rankings.frame", BOUND_TO_SCROLLER = "rankings.scroller", FOLLOWS = "rankings.follows"` | The keys in a node's properties for what frameOver() has bound it to or added to it: the scroller's height to the frame, a box's width to the scroller, the scroller's width listener. |
+| 813 | `RankingsScreen.PIN_ROOM` | `new javafx.geometry.Insets(0, 2, 0, 4), BROWSE_ROOM = new javafx.geometry.Insets(8, 0, ...` | The room round a measure line's pin, and over Browse all: one object each (KP2b). |
+| 881 | `RankingsScreen.RANK_W` | `40, KIND_W = 16, OF_W = 84, ASOF_W = 54, VALUE_W = 80, BAR_W = 52, MARK_W = 16, BAR_H = 6` |  |
+| 1138 | `RankingsScreen.ROW_H` | `24, PAD = 8, SPACE = 6` |  |
+| 1141 | `RankingsScreen.TILE_ROWS` | `40` | Rows to a canvas: 40 of 24 pixels is under a thousand, well inside any texture. |
+| 1146 | `RankingsScreen.Entry.GAP` | `new Entry(null, "", "", false, "", "", "", "", Double.NaN, "")` |  |
+| 1153 | `RankingsScreen.RowsPicture.TEXT` | `Color.web(Palette.TEXT), HEAD = Color.web(Palette.TEXT_HEAD), BODY = Color.web(Palette....` |  |
+| 1159 | `RankingsScreen.RowsPicture.RULER` | `new javafx.scene.text.Text()` | Measures a string against a column; one node, on the FX thread, where the drawing is. |
+| 1399 | `RankingsScreen.D_NAME` | `128, D_REAL = 66, D_MARK = 12, D_SOURCE = 66, D_YOURS = 60` | The drawer's columns: the measure, the real figure and its mark and source, Your world's figure and its mark. |
+| 1564 | `RankingsScreen.RankLine.H` | `76, SIDE = 36, TOP = 12, BOTTOM = 18, YEAR_GAP = 40` |  |
+| 1566 | `RankingsScreen.RankLine.LINE` | `Color.web(Palette.MONEY), FLOOR = Color.web(Palette.EDGE), RANK = Color.web(Palette.TEX...` |  |
 
 ### ReplayCamera.java ([map](map/ReplayCamera.md))
 
@@ -5284,12 +5285,12 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 139 | `UiProbe.report` | `System.out` | Where the probe's own lines go: the console, as it was when the class loaded. |
-| 151 | `UiProbe.FRAME_P95_MS` | `34` | The 95th-percentile frame on People at 50x at month 4,000 the clock must keep under, ms (UP2: 49 in the brief's figures and 42 in this probe's before it; the redraw paced, the months budgeted and t... |
-| 160 | `UiProbe.FRAME_P95` | `Map.ofEntries(Map.entry("Build", 99.0), Map.entry("Land", 57.0), Map.entry("People", FR...` | Every rail screen's 95th-percentile frame at 50x at month 4,000, ms: its figure before UP2, as this probe measured it on the PC on main f29b9938 (0.8.27) with nothing else running, the run the batc... |
-| 169 | `UiProbe.FRAME_P95_FROM` | `4000` | The month from which FRAME_P95 is asserted: the city it was measured on. |
-| 596 | `UiProbe.KEYS` | `{ "ham.citybuildersim.ui.UserInterface$", "ham.citybuildersim.Game.nextMonth", "ham.cit...` | The prefixes of "type.method" an FX-thread sample is counted under, if any frame of its stack starts with one: inclusive shares, so a sample counts once for each key it is under. |
-| 633 | `UiProbe.FX_THREAD` | `"JavaFX Application Thread"` | The JavaFX thread's name, as the recording names it: the only thread whose samples analyse() reads. |
+| 154 | `UiProbe.report` | `System.out` | Where the probe's own lines go: the console, as it was when the class loaded. |
+| 166 | `UiProbe.FRAME_P95_MS` | `34` | The 95th-percentile frame on People at 50x at month 4,000 the clock must keep under, ms (UP2: 49 in the brief's figures and 42 in this probe's before it; the redraw paced, the months budgeted and t... |
+| 175 | `UiProbe.FRAME_P95` | `Map.ofEntries(Map.entry("Build", 99.0), Map.entry("Land", 57.0), Map.entry("People", FR...` | Every rail screen's 95th-percentile frame at 50x at month 4,000, ms: its figure before UP2, as this probe measured it on the PC on main f29b9938 (0.8.27) with nothing else running, the run the batc... |
+| 184 | `UiProbe.FRAME_P95_FROM` | `4000` | The month from which FRAME_P95 is asserted: the city it was measured on. |
+| 671 | `UiProbe.KEYS` | `{ "ham.citybuildersim.ui.UserInterface$", "ham.citybuildersim.Game.nextMonth", "ham.cit...` | The prefixes of "type.method" an FX-thread sample is counted under, if any frame of its stack starts with one: inclusive shares, so a sample counts once for each key it is under. |
+| 708 | `UiProbe.FX_THREAD` | `"JavaFX Application Thread"` | The JavaFX thread's name, as the recording names it: the only thread whose samples analyse() reads. |
 
 ### UserInterface.java ([map](map/UserInterface.md))
 
@@ -7120,15 +7121,15 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 100 | `RankingsCheck.out` | `System.out` | Where the harness prints: the console. |
-| 103 | `RankingsCheck.SEED` | `7_001` | The seed of the nations' paths. |
-| 106 | `RankingsCheck.LIVE_MONTH` | `40` | The month the live city is played to: over the two years real growth needs. |
-| 109 | `RankingsCheck.TOLERANCE` | `1e-9` | How near two figures that should be one are: relative to the larger, with 1e-9 a floor. |
-| 112 | `RankingsCheck.YEAR_HISTORY` | `2012, YEAR_RULE = 2050` | The years Your world is read at: one inside the world file's history, one the game's rule makes. |
-| 115 | `RankingsCheck.MONEY` | `List.of("gdp", "gdp_pp", "hh_spend_pp", "avg_wage", "min_wage")` | The money measures of the file, and the ones Your world ranks of them. |
-| 118 | `RankingsCheck.ABSENT` | `Set.of("participation", "tertiary", "yield_10y", "debt_foreign", "interest_revenue", "c...` | The measures the brief leaves absent from the city, each for a reason CityMeasures' javadoc gives. |
-| 122 | `RankingsCheck.CORE` | `List.of("gdp", "gdp_pp", "growth_real", "hh_spend_pp", "investment", "gov_spend", "expo...` | What a city of a few years has: every one of these is in its figures. |
-| 899 | `RankingsCheck.LB3_FACTOR` | `100` |  |
+| 112 | `RankingsCheck.out` | `System.out` | Where the harness prints: the console. |
+| 115 | `RankingsCheck.SEED` | `7_001` | The seed of the nations' paths. |
+| 118 | `RankingsCheck.LIVE_MONTH` | `40` | The month the live city is played to: over the two years real growth needs. |
+| 121 | `RankingsCheck.TOLERANCE` | `1e-9` | How near two figures that should be one are: relative to the larger, with 1e-9 a floor. |
+| 124 | `RankingsCheck.YEAR_HISTORY` | `2012, YEAR_RULE = 2050` | The years Your world is read at: one inside the world file's history, one the game's rule makes. |
+| 127 | `RankingsCheck.MONEY` | `List.of("gdp", "gdp_pp", "hh_spend_pp", "avg_wage", "min_wage")` | The money measures of the file, and the ones Your world ranks of them. |
+| 130 | `RankingsCheck.ABSENT` | `Set.of("participation", "tertiary", "yield_10y", "debt_foreign", "interest_revenue", "c...` | The measures the brief leaves absent from the city, each for a reason CityMeasures' javadoc gives. |
+| 134 | `RankingsCheck.CORE` | `List.of("gdp", "gdp_pp", "growth_real", "hh_spend_pp", "investment", "gov_spend", "expo...` | What a city of a few years has: every one of these is in its figures. |
+| 914 | `RankingsCheck.LB3_FACTOR` | `100` |  |
 
 ### RealDollarCheck.java ([map](map/RealDollarCheck.md))
 
