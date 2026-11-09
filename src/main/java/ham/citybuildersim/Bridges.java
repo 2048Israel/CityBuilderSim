@@ -286,6 +286,12 @@ public final class Bridges implements Landmasses.Joins {
         return m;
     }
 
+    /** Whether a bridge is on site (being built) with this landmass as its far end. */
+    public boolean buildingTo(int landmass) {
+        for (Row r : rows) if (r.state == ON_SITE && r.farLandmass == landmass) return true;
+        return false;
+    }
+
     /** Whether a landmass has a standing bridge at either end. */
     public boolean joins(int landmass) { return joinedTo(landmass).length > 0; }
 

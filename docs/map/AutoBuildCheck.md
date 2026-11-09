@@ -66,6 +66,8 @@
 
 **Uses:** [AutoBuilder](AutoBuilder.md) (347), [Game](Game.md) (102), [BuildAdvice](BuildAdvice.md) (76), [LongPlaytest](LongPlaytest.md) (52), [DecisionLog](DecisionLog.md) (37), [BuildingsTemplate](BuildingsTemplate.md) (26), [ChildcareCheck](ChildcareCheck.md) (22), [CityNeeds](CityNeeds.md) (20), [GameFiles](GameFiles.md) (13), [LandManager](LandManager.md) (10), [LandParcel](LandParcel.md) (9), [DebtQuote](DebtQuote.md) (7), [CareType](CareType.md) (7), [EducationType](EducationType.md) (6), [Notice](Notice.md) (6), [LandMarket](LandMarket.md) (4), [NationalAccounts](NationalAccounts.md) (3), [TreasuryFund](TreasuryFund.md) (2), [ConstructionControl](ConstructionControl.md) (2), [PriceLevel](PriceLevel.md) (2), [CityLand](CityLand.md) (2), [Resource](Resource.md) (2), [WantedPosts](WantedPosts.md) (1), [TempDirs](TempDirs.md) (1), [Founding](Founding.md) (1), [BuildingManager](BuildingManager.md) (1), [Sector](Sector.md) (1), [EconomyManager](EconomyManager.md) (1)
 
+**Used by (1):** [IslandLinkCheck](IslandLinkCheck.md)
+
 ## Sections
 
 | line | section |

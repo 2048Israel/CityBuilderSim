@@ -4153,6 +4153,8 @@ public class LongPlaytest {
     static void keepGroundAhead(Game g) {
         LandManager land = g.getLandManager();
         double most = groundAheadUtilisation(g);
+        // ...and while ground the city owns lies across the water, the island is linked as the AutoBuilder links it (AL1): the same rule, BuildAdvice.linkFor().
+        if (land.getOwnedSqFt() > 0 && land.getUsedShare() > most && land.getLandmasses().anyUnlinked()) linkIslands(g);
         double budget = Math.max(0, g.getCash()) * GROUND_AHEAD_CASH_SHARE;
         int guard = 0;
         while (land.getOwnedSqFt() > 0 && land.getUsedShare() > most
@@ -4170,6 +4172,47 @@ public class LongPlaytest {
             groundAheadBought++;
             groundAheadSqFt += best.getSizeSqFt();
             groundAheadUsd += best.getPriceUsd();
+        }
+    }
+
+    /** Over the run (AL1): the bridges and the sea terminals the test player ordered to link an island, and the links it could not order (none can be made, or an order was refused). */
+    static int islandBridges, islandPorts, islandLinksHeld;
+
+    /**
+     * THE ISLAND LINK (AL1, 2026-11-09): the test player links an island as the AutoBuilder does, by the same rule -
+     * BuildAdvice.linkFor() - when its own measure of the ground running low says so (keepGroundAhead()). Each order goes
+     * through build(), which buys linked ground and borrows on NEEDS_FUNDING as the player's other orders do: a bridge
+     * toward the island (Game.chooseBridgeLandmass()), a terminal on the island's own shore (Game.choosePortLandmass(),
+     * no linked ground bought for it: it stands on the island's room), a terminal on linked ground by the rule. A link
+     * none can be made of, or an order refused, is counted held and tried again at the next look. Nothing is printed
+     * unless a link was ordered or held (the default playtest's trace is a generated world's: one landmass, no link).
+     */
+    static void linkIslands(Game g) {
+        BuildAdvice.Link l = BuildAdvice.linkFor(g);
+        if (l == null) return;
+        if (l.kind() == BuildAdvice.LinkKind.NONE) {
+            islandLinksHeld++;
+            return;
+        }
+        for (BuildAdvice.LinkOrder o : l.orders()) {
+            BuildingsTemplate t = o.template();
+            boolean ordered;
+            if (l.kind() == BuildAdvice.LinkKind.BRIDGE) {
+                g.chooseBridgeLandmass(t, l.landmass());
+                ordered = build(g, t.getName(), 1);
+                if (ordered) islandBridges++;
+            } else if (o.asked() == Landmasses.RULE) {
+                ordered = build(g, t.getName(), 1);
+                if (ordered) islandPorts++;
+            } else {
+                g.choosePortLandmass(t, o.asked());
+                ordered = build(g, t.getName(), 1, false);
+                if (ordered) islandPorts++;
+            }
+            if (!ordered) {
+                islandLinksHeld++;
+                return;
+            }
         }
     }
 
@@ -5082,6 +5125,11 @@ public class LongPlaytest {
      * borrow if the treasury cannot cover it, then place the order.
      */
     static boolean build(Game g, String name, int quantity) {
+        return build(g, name, quantity, true);
+    }
+
+    /** ...without the linked ground bought first (`buyGround` false): an island link's terminal stands on the island's own room, and no ground of the linked pool is wanted for it (AL1). */
+    static boolean build(Game g, String name, int quantity, boolean buyGround) {
 
         BuildingsTemplate t = template(g, name);
         if (t == null) return false;
@@ -5099,7 +5147,7 @@ public class LongPlaytest {
          * 3,000 (fixJ1b-notes).
          */
         int guard = 0;
-        while (g.getLandManager().getAvailableSqFt() < t.getLandSqFt() * quantity
+        while (buyGround && g.getLandManager().getAvailableSqFt() < t.getLandSqFt() * quantity
                 && guard++ < 60) {
             double shortfall = t.getLandSqFt() * quantity - g.getLandManager().getAvailableSqFt();
             LandParcel covers = g.bestOffer(Game.LandNeed.shortfall(shortfall));
@@ -7508,6 +7556,11 @@ public class LongPlaytest {
         out.printf("  ...room to grow past the ground-ahead line (0.7.67, M3b): %,d offer(s) bought by the move; %,d Bus"
                 + " Network(s), %,d Light Rail Line(s), %,d Metro Line(s) standing at the end%n", roomMovesBought,
                 qty(g, "Bus Network"), qty(g, "Light Rail Line"), qty(g, "Metro Line"));
+        // ...and the island links (AL1): only when one was ordered or held - a generated world is one landmass, and its trace is what it was.
+        if (islandBridges + islandPorts + islandLinksHeld > 0) {
+            out.printf("  ...island links (AL1): %,d bridge(s) and %,d sea terminal(s) ordered to link an island, %,d link(s) held%n",
+                    islandBridges, islandPorts, islandLinksHeld);
+        }
         // ...and the foothill prepared for buildings (ET2, SitePreparation): only when the city prepared any - a generated world is all flat, and its trace is what it was.
         if (g.getLandManager().getPreparedSqFt() > 0) {
             double billedAll = g.getSectors().construction().getBilledPoints();

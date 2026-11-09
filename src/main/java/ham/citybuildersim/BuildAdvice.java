@@ -2216,4 +2216,194 @@ public final class BuildAdvice {
         double years = state == BerthState.PAYS ? price / ((dues - upkeep) * 12) : Double.NaN;
         return new BerthPayback(t, state, carriable, uncovered, needed, month, carried, rate * dial, dues, upkeep, price, years);
     }
+
+    /* =====================================================================
+       THE ISLAND LINK (AL1, 2026-11-09)
+
+       Jerus, 2026-10-31: "autobuild will build bridges and ports if sees that land is low and there is something
+       unlinked (basically, if link is allowed with bridge, then it builds a highway bridge or road bridge ... if not it
+       build a link via port)". linkFor() is that rule, written once for the automatic builder (AutoBuilder.link()) and the
+       test player (LongPlaytest.linkIslands()) to read: what the city should order to link the island it most needs. It
+       overturns ET5's "the AutoBuilder and the test player never build a port to link an island" and ET6-C's "the
+       automatic builders never order a bridge". It places nothing, and leaves the card's pick of a bridge's far landmass
+       as it found it.
+
+       THE ISLAND is the unlinked landmass with the most buildable ground (the lower id on a tie) that no link is on its
+       way to: a bridge on site to it, or a terminal standing or on site on it while some linked landmass has one too. In
+       that order, the first island that can be linked is the answer, and its link is, in this order: a terminal ordered
+       at home where one already stands on the island and none on linked ground (a port shared where one serves); else a
+       bridge where BridgeSurvey finds a crossing - the Highway Bridge where the city has an Elevated Highway standing,
+       else the Road Bridge; else the cheapest terminal on the island's own shore, and, where no linked landmass has a
+       terminal, the cheapest at home beside it (Landmasses.closure(): an island's port links only beside a port on
+       linked ground). No island can be linked: the first one's Link says so, kind NONE, with the words.
+
+       NO RAIL BRIDGE: a Rail Bridge links as a Road Bridge does, and nothing in the model or on the map runs a train
+       over one (ET6-C), so the rule never orders it. A TEMPLATE counts only when the city knows it (Game.knows(): the Rail
+       and Road Bridge date from 1900, the Container Terminal from E5); the Build card has no check of its own yet, so the
+       rule asks R3's. */
+
+    /** How a link is made: a long bridge, sea terminals, or not at all (NONE: the Link says why). */
+    public enum LinkKind { BRIDGE, PORT, NONE }
+
+    /** One order of a link: the template, the landmass its order is for (a bridge's far landmass, or a terminal's `asked`: Landmasses.RULE for home, an id for an island's own shore), and its quote's total, thousands of US dollars. */
+    public record LinkOrder(BuildingsTemplate template, int asked, double price) { }
+
+    /**
+     * What the city should order to link an island: the island's id, name and buildable ground (square feet), the kind,
+     * the orders (none for NONE), the crossing a bridge is surveyed over (null otherwise), the orders' total price
+     * (thousands of US dollars), the longest order's months (NaN where an order's site has no output) and, for NONE, why.
+     */
+    public record Link(int landmass, String name, double sqFt, LinkKind kind, List<LinkOrder> orders,
+                       BridgeSurvey.Result survey, double price, double months, String why) {
+
+        /** Its price a square foot of ground it links: the candidate's unit is the ground, not trips. */
+        public double perSqFt() { return sqFt > 0 ? price / sqFt : Double.POSITIVE_INFINITY; }
+    }
+
+    /** One terminal order found, and its months. */
+    private record Found(LinkOrder order, double months) { }
+
+    /** The months a survey that found no crossing to an island stands before the rule surveys it again: such a survey searches out to 45 km, up to 1.7 s (ET6), and an island held for money or with no link at all is asked every month the ground is short: 12. */
+    static final int NO_CROSSING_MONTHS = 12;
+
+    /** A survey that found no crossing: the month it was made and its refusal in BridgeView's words. */
+    private record NoCrossing(int month, String why) { }
+
+    /** The surveys that found no crossing, by island, kept for each city's landmasses (a loaded or new city has its own; never saved, so a loaded city surveys once). */
+    private static final Map<Landmasses, Map<Integer, NoCrossing>> NO_CROSSING = new java.util.WeakHashMap<>();
+
+    /** How many crossings the rule has surveyed in this run (AL1): a harness reads that an island with none is not surveyed every month. */
+    static int linkSurveys;
+
+    /**
+     * The link the city should order for the island it most needs, or null when nothing is unlinked (checked first and
+     * alone: every generated world, and every city on one landmass, reads nothing else). Reads and quotes; changes nothing
+     * but its memory of the surveys that found no crossing (NO_CROSSING_MONTHS).
+     */
+    public static Link linkFor(Game game) {
+        Landmasses lms = game.getLandManager().getLandmasses();
+        if (!lms.anyUnlinked()) return null;
+        Bridges bridges = game.getBridges();
+        List<Landmasses.Row> islands = new ArrayList<>();
+        for (Landmasses.Row r : lms.rows()) {
+            if (r.home() || r.linked() || !lms.unlinkedIds().contains(r.id())) continue;
+            if (bridges.buildingTo(r.id())) continue;
+            if (lms.portsAt(r.id()) > 0 && linkedTerminals(lms) > 0) continue;
+            islands.add(r);
+        }
+        if (islands.isEmpty()) return null;
+        islands.sort((a, b) -> {
+            int c = Double.compare(b.buildableSqFt(), a.buildableSqFt());
+            return c != 0 ? c : Integer.compare(a.id(), b.id());
+        });
+        Link first = null;
+        for (Landmasses.Row island : islands) {
+            Link l = linkOf(game, lms, island);
+            if (l.kind() != LinkKind.NONE) return l;
+            if (first == null) first = l;
+        }
+        return first;
+    }
+
+    /** The sea terminals standing or on site on the landmasses the city has linked. */
+    private static int linkedTerminals(Landmasses lms) {
+        int n = 0;
+        for (int id : lms.linkedIds()) n += lms.portsAt(id);
+        return n;
+    }
+
+    private static Link linkOf(Game game, Landmasses lms, Landmasses.Row island) {
+        int id = island.id();
+        boolean needHome = linkedTerminals(lms) == 0;
+        String bridgeWhy = null, portWhy = null;
+        // A terminal already on the island: only the one at home is wanting.
+        if (lms.portsAt(id) > 0 && needHome) {
+            Found home = cheapestTerminal(game, lms, Landmasses.RULE, -1);
+            if (home != null) return portLink(island, List.of(home));
+        }
+        // A bridge where a crossing is allowed.
+        BuildingsTemplate bridge = bridgeTemplate(game);
+        Map<Integer, NoCrossing> none = NO_CROSSING.computeIfAbsent(lms, k -> new java.util.HashMap<>());
+        NoCrossing known = none.get(id);
+        int age = known == null ? -1 : game.getMonth() - known.month();
+        if (bridge == null) bridgeWhy = "No bridge is known yet.";
+        // ...a survey that found no crossing stands NO_CROSSING_MONTHS (a month from before it, a city loaded over this one's, does not).
+        else if (age >= 0 && age < NO_CROSSING_MONTHS) bridgeWhy = known.why();
+        else {
+            Bridges bridges = game.getBridges();
+            int before = bridges.chosen(bridge.getId());
+            try {
+                game.chooseBridgeLandmass(bridge, id);
+                linkSurveys++;
+                BridgeSurvey.Result survey = game.bridgeSurvey(bridge);
+                if (survey != null && survey.ok()) {
+                    none.remove(id);
+                    Game.BuildQuote q = game.quoteBuildOn(bridge, 1, Landmasses.RULE);
+                    return new Link(id, island.name(), island.buildableSqFt(), LinkKind.BRIDGE,
+                            List.of(new LinkOrder(bridge, id, q.total)), survey, q.total, q.months, null);
+                }
+                bridgeWhy = survey == null ? "No crossing could be surveyed." : BridgeView.refusal(survey, lms);
+                none.put(id, new NoCrossing(game.getMonth(), bridgeWhy));
+            } finally {
+                if (before == Bridges.NONE_CHOSEN) bridges.clearChoice(bridge.getId());
+                else game.chooseBridgeLandmass(bridge, before);
+            }
+        }
+        // Else a port: on the island's own shore, and at home beside it where no linked landmass has one.
+        List<Found> found = new ArrayList<>();
+        if (lms.portsAt(id) == 0) {
+            Found there = cheapestTerminal(game, lms, id, id);
+            if (there == null) portWhy = lms.shorePlots(id) <= 0 ? island.name() + " has no shore the city owns" : "no room for a terminal on " + island.name();
+            else found.add(there);
+        }
+        if (portWhy == null && needHome) {
+            Found home = cheapestTerminal(game, lms, Landmasses.RULE, -1);
+            if (home == null) portWhy = "home has no shore for the terminal it needs";
+            else found.add(home);
+        }
+        if (portWhy == null && !found.isEmpty()) return portLink(island, found);
+        if (portWhy == null) portWhy = "no terminal is wanted";
+        return new Link(id, island.name(), island.buildableSqFt(), LinkKind.NONE, List.of(), null, 0, 0,
+                bridgeWhy + " No port either: " + portWhy + ".");
+    }
+
+    private static Link portLink(Landmasses.Row island, List<Found> found) {
+        List<LinkOrder> orders = new ArrayList<>();
+        double price = 0, months = 0;
+        for (Found f : found) {
+            orders.add(f.order());
+            price += f.order().price();
+            months = Math.max(months, f.months());
+        }
+        return new Link(island.id(), island.name(), island.buildableSqFt(), LinkKind.PORT, orders, null, price, months, null);
+    }
+
+    /** The Highway Bridge where the city has an Elevated Highway standing, else the Road Bridge; null when the one wanted is not yet known (never the Rail Bridge). */
+    private static BuildingsTemplate bridgeTemplate(Game game) {
+        BuildingsTemplate road = null, highway = null;
+        for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
+            if (!t.isBridge() || !game.knows(t)) continue;
+            if (t.bridgeKind() == BridgeWorks.Kind.ROAD && road == null) road = t;
+            if (t.bridgeKind() == BridgeWorks.Kind.HIGHWAY && highway == null) highway = t;
+        }
+        boolean highways = game.getBuildingManager().standingWhere(t -> t.getCategory() == BuildingType.INFRASTRUCTURE && t.isHighway()) > 0;
+        return highways && highway != null ? highway : road;
+    }
+
+    /**
+     * The cheapest sea terminal the city knows for a landmass: by the quote of one asked for `asked`, among those whose
+     * order would stand where it is asked. `island` is an unlinked landmass's id, whose own room the terminal must fit
+     * (LandManager.canAllocateOn(), as Game.buildStack() checks it); -1 for the rule's (home's), any landmass but none.
+     */
+    private static Found cheapestTerminal(Game game, Landmasses lms, int asked, int island) {
+        Found best = null;
+        for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
+            if (!Ports.isPort(t) || !game.knows(t)) continue;
+            int where = lms.portLandmass(t.getId(), asked);
+            if (island >= 0 ? where != island || !game.getLandManager().canAllocateOn(island, t.getLandSqFt()) : where == Landmasses.NO_LANDMASS) continue;
+            Game.BuildQuote q = game.quoteBuildOn(t, 1, asked);
+            if (best == null || q.total < best.order().price()) best = new Found(new LinkOrder(t, asked, q.total), q.months);
+        }
+        return best;
+    }
 }

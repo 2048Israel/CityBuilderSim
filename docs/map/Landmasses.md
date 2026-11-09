@@ -1,4 +1,4 @@
-# Landmasses.java - 1,238 lines · 99 methods · 11 constants · model
+# Landmasses.java - 1,255 lines · 100 methods · 11 constants · model
 
 `ham/citybuildersim/Landmasses.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
 
@@ -35,7 +35,7 @@
 
 **Uses:** [World](World.md) (61), [LandGrid](LandGrid.md) (15), [CityLand](CityLand.md) (8), [EarthData](EarthData.md) (4), [LandManager](LandManager.md) (1), [EarthTerrain](EarthTerrain.md) (1), [EarthProj](EarthProj.md) (1), [LandParcel](LandParcel.md) (1), [LandMarket](LandMarket.md) (1), [Ports](Ports.md) (1)
 
-**Used by (26):** [AutoBuilder](AutoBuilder.md), [BridgeCheck](BridgeCheck.md), [BridgeGround](BridgeGround.md), [BridgeView](BridgeView.md), [Bridges](Bridges.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CityMap](CityMap.md), [DataSave](DataSave.md), [FittingCheck](FittingCheck.md), [Game](Game.md), [HydroSites](HydroSites.md), [Inbox](Inbox.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LandMarket](LandMarket.md), [LandmassCheck](LandmassCheck.md), [LandmassView](LandmassView.md), [MapView](MapView.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md)
+**Used by (28):** [AutoBuilder](AutoBuilder.md), [BridgeCheck](BridgeCheck.md), [BridgeGround](BridgeGround.md), [BridgeView](BridgeView.md), [Bridges](Bridges.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CityMap](CityMap.md), [DataSave](DataSave.md), [FittingCheck](FittingCheck.md), [Game](Game.md), [HydroSites](HydroSites.md), [Inbox](Inbox.md), [IslandLinkCheck](IslandLinkCheck.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LandMarket](LandMarket.md), [LandmassCheck](LandmassCheck.md), [LandmassView](LandmassView.md), [LongPlaytest](LongPlaytest.md), [MapView](MapView.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md)
 
 ## Sections
 
@@ -47,7 +47,7 @@
 | 511 | OFFERS - the same split of the ground a purchase would add |
 | 573 | REFRESH - the linked set and the unlinked sums |
 | 603 | THE PORTS - where each terminal stands, and what links the landmasses |
-| 1112 | READS - plain getters; none fills anything |
+| 1129 | READS - plain getters; none fills anything |
 
 ## Constants
 
@@ -113,7 +113,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 46 | 1193 | **type** `public final class Landmasses` | The city's ground counted by landmass, and which landmasses the city's buildings may stand on: its books by landmass (each landmass's owned dry ground by relief and forest, its shore, the holding it was first owned by... |
+| 46 | 1210 | **type** `public final class Landmasses` | The city's ground counted by landmass, and which landmasses the city's buildings may stand on: its books by landmass (each landmass's owned dry ground by relief and forest, its shore, the holding it was first owned by... |
 
 ### THE JOINS AND THE CLOSURE (lines 72-112)
 
@@ -169,7 +169,7 @@
 |---:|---:|---|---|
 | 581 | 21 | `void refresh()` | Works out the linked set and the unlinked ground again, eagerly - after a recount, and after anything that moves a port (never in a getter: ReadPathCheck holds that no read fills a cache). |
 
-### THE PORTS - where each terminal stands, and what links the landmasses (lines 603-1111)
+### THE PORTS - where each terminal stands, and what links the landmasses (lines 603-1128)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -221,41 +221,42 @@
 | 958 | 5 | `public boolean linkedShore()` | Whether some landmass the city has linked has shore it owns - the desalination plant's coast (ET5 D9): home's if it has any, else a linked island's. |
 | 971 | 4 | `public static int fieldLandmass(World world, long x, long y)` | The landmass a works field centred on plot (x, y) stands on (ET5 D9): the plot's 15" cell resolved as a dry plot's is (World.landmassOfPlot()), so a field centred on a lake plot of an island is on the island and not o... |
 | 977 | 6 | `public List<Row> portChoices()` | The landmasses the card offers for a sea terminal: those the city owns shore on, home first and then as rows() lists them; empty for a city on one landmass. |
-| 985 | 11 | `public int[] portsOn(int id)` | The ports standing on a landmass, by Ports.Cargo's ordinal (a template with no row stands at home). |
-| 1002 | 7 | `public double padSqFt(int id, double sqFt, double aheadSqFt)` | The foothill an island's terminals are cut into when they stand on more than its flat ground, square feet (the pad a building on foothill is charged, ET2): the rise in max(0, ports - flat) that `sqFt` more would make,... |
-| 1015 | 1 | **type** `public record Picture(int home, int[] linked, long[] portsByTypeAndLandmass, long stamp)` | What the map is handed (slice C): home, the linked ids ascending, the standing terminals by template and landmass as triples {template id, landmass id, units} in one array, and a stamp that changes when the linked set... |
-| 1018 | 29 | `public Picture picture()` | The picture of the linked set and the terminals on it; null while the city owns nothing off home. |
-| 1053 | 22 | `public State toState()` | DataSave's landmasses: where the terminals stand and which demolitions are taking some down; fresh on every call (the autosave's snapshot shares nothing), null when nothing stands off home. |
-| 1076 | 5 | `private static int[] toArray(List<Integer> list)` |  |
-| 1082 | 3 | `private static void into(List<Integer> list, int[] ids)` |  |
-| 1087 | 24 | `void restore(State s)` | Puts the placements back as saved; null, none. |
+| 985 | 15 | `public int portsAt(int id)` | The sea terminals standing or on site on a landmass, every port template (not a stopped shell, not one being demolished; a template with no row stands at home). |
+| 1002 | 11 | `public int[] portsOn(int id)` | The ports standing on a landmass, by Ports.Cargo's ordinal (a template with no row stands at home). |
+| 1019 | 7 | `public double padSqFt(int id, double sqFt, double aheadSqFt)` | The foothill an island's terminals are cut into when they stand on more than its flat ground, square feet (the pad a building on foothill is charged, ET2): the rise in max(0, ports - flat) that `sqFt` more would make,... |
+| 1032 | 1 | **type** `public record Picture(int home, int[] linked, long[] portsByTypeAndLandmass, long stamp)` | What the map is handed (slice C): home, the linked ids ascending, the standing terminals by template and landmass as triples {template id, landmass id, units} in one array, and a stamp that changes when the linked set... |
+| 1035 | 29 | `public Picture picture()` | The picture of the linked set and the terminals on it; null while the city owns nothing off home. |
+| 1070 | 22 | `public State toState()` | DataSave's landmasses: where the terminals stand and which demolitions are taking some down; fresh on every call (the autosave's snapshot shares nothing), null when nothing stands off home. |
+| 1093 | 5 | `private static int[] toArray(List<Integer> list)` |  |
+| 1099 | 3 | `private static void into(List<Integer> list, int[] ids)` |  |
+| 1104 | 24 | `void restore(State s)` | Puts the placements back as saved; null, none. |
 
-### READS - plain getters; none fills anything (lines 1112-1238)
+### READS - plain getters; none fills anything (lines 1129-1255)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1117 | 1 | `public int home()` | The home landmass's id: the landmass at the land's site plot; 0 where there are no landmasses to read. |
-| 1120 | 1 | `public boolean single()` | Whether the city owns dry ground on no landmass but home's: then every figure of the free ground is the old one, to the bit. |
-| 1123 | 1 | `public boolean anyUnlinked()` | Whether the city owns dry ground on a landmass it has not linked. |
-| 1126 | 1 | `public boolean linked(int id)` | Whether a landmass is one the city's buildings may stand on: home, none (0) and the linked set (closure()). |
-| 1129 | 8 | `public int[] linkedIds()` | The ids of the landmasses the city's buildings may stand on, ascending (ET6): home and the linked set (closure()). |
-| 1139 | 1 | `public List<Integer> unlinkedIds()` | The ids of the landmasses the city owns dry ground on and has not linked, ascending. |
-| 1142 | 1 | `public double unlinkedDrySqFt()` | The unlinked landmasses' dry ground, square feet: what the free ground takes off the owned (LandManager). |
-| 1145 | 1 | `public double unlinkedReliefSqFt(int relief)` | ...their ground of one relief (CityLand.RELIEF_FLAT to RELIEF_VERY_STEEP), square feet. |
-| 1148 | 1 | `public double unlinkedForestSqFt()` | ...their forest, square feet (part of their dry ground). |
-| 1151 | 1 | `public double unlinkedPortsSqFt()` | The ground the ports standing on unlinked landmasses stand on, square feet: part of the city's allocated ground, and part of what an unlinked landmass holds (0 while no port stands, is being built or is being demolish... |
-| 1154 | 4 | `public double unlinkedFreeSqFt(int id)` | The dry ground of an unlinked landmass nothing stands on, square feet; 0 for a linked one or one the city owns none of. |
-| 1160 | 5 | `public double unlinkedFreeSqFt()` | ...all the unlinked landmasses' together. |
-| 1167 | 6 | `public double portsGroundSqFt(int id)` | The ground the ports standing, being built, stopped or being demolished on a landmass hold, square feet: 0 where there are none. |
-| 1175 | 4 | `public double portRoomSqFt(int id)` | What a port may be built on on a landmass: its flat and foothill ground less the ports' on it, square feet, never below nothing. |
-| 1181 | 5 | `public long shorePlots(int id)` | The plots of a landmass the city owns that are shore: flat or foothill dry ground with owned salt water beside it. |
-| 1188 | 4 | `public long dryPlots(int id)` | The dry plots of a landmass the city owns (home's: the land's less the others'). |
-| 1194 | 5 | `public String name(int id)` | A landmass's name: "Home", the data's name as the founding card writes it ("Charlottetown's"), else "Island N" (N from 2, in the order the city first owned them). |
-| 1201 | 5 | `public String unlinkedNames()` | The unlinked landmasses' names joined for a sentence: "Island 2", "Island 2 and Island 3", "Island 2, Island 3 and Island 4"; empty for none. |
-| 1208 | 5 | `private static String joined(List<String> list)` | Names joined for a sentence: "Island 2", "Island 2 and Island 3", "Island 2, Island 3 and Island 4"; empty for none. |
-| 1215 | 8 | `public List<Row> rows()` | The landmasses the city owns, home first and then in the order it first owned them. |
-| 1224 | 5 | `private Row row(Books b, boolean isHome)` |  |
-| 1231 | 1 | `public int version()` | How many times the linked set has moved: what a cache of anything that depends on it keys on. |
-| 1234 | 1 | `public long plotsRead()` | How many plots recount() and offerSplit() have read since this was made (cumulative): 0 for a city that owns nothing near another landmass, and for every generated world. |
-| 1237 | 1 | `public boolean active()` | Whether the last recount read a world with landmasses: false on a generated world and an earth-1 file. |
+| 1134 | 1 | `public int home()` | The home landmass's id: the landmass at the land's site plot; 0 where there are no landmasses to read. |
+| 1137 | 1 | `public boolean single()` | Whether the city owns dry ground on no landmass but home's: then every figure of the free ground is the old one, to the bit. |
+| 1140 | 1 | `public boolean anyUnlinked()` | Whether the city owns dry ground on a landmass it has not linked. |
+| 1143 | 1 | `public boolean linked(int id)` | Whether a landmass is one the city's buildings may stand on: home, none (0) and the linked set (closure()). |
+| 1146 | 8 | `public int[] linkedIds()` | The ids of the landmasses the city's buildings may stand on, ascending (ET6): home and the linked set (closure()). |
+| 1156 | 1 | `public List<Integer> unlinkedIds()` | The ids of the landmasses the city owns dry ground on and has not linked, ascending. |
+| 1159 | 1 | `public double unlinkedDrySqFt()` | The unlinked landmasses' dry ground, square feet: what the free ground takes off the owned (LandManager). |
+| 1162 | 1 | `public double unlinkedReliefSqFt(int relief)` | ...their ground of one relief (CityLand.RELIEF_FLAT to RELIEF_VERY_STEEP), square feet. |
+| 1165 | 1 | `public double unlinkedForestSqFt()` | ...their forest, square feet (part of their dry ground). |
+| 1168 | 1 | `public double unlinkedPortsSqFt()` | The ground the ports standing on unlinked landmasses stand on, square feet: part of the city's allocated ground, and part of what an unlinked landmass holds (0 while no port stands, is being built or is being demolish... |
+| 1171 | 4 | `public double unlinkedFreeSqFt(int id)` | The dry ground of an unlinked landmass nothing stands on, square feet; 0 for a linked one or one the city owns none of. |
+| 1177 | 5 | `public double unlinkedFreeSqFt()` | ...all the unlinked landmasses' together. |
+| 1184 | 6 | `public double portsGroundSqFt(int id)` | The ground the ports standing, being built, stopped or being demolished on a landmass hold, square feet: 0 where there are none. |
+| 1192 | 4 | `public double portRoomSqFt(int id)` | What a port may be built on on a landmass: its flat and foothill ground less the ports' on it, square feet, never below nothing. |
+| 1198 | 5 | `public long shorePlots(int id)` | The plots of a landmass the city owns that are shore: flat or foothill dry ground with owned salt water beside it. |
+| 1205 | 4 | `public long dryPlots(int id)` | The dry plots of a landmass the city owns (home's: the land's less the others'). |
+| 1211 | 5 | `public String name(int id)` | A landmass's name: "Home", the data's name as the founding card writes it ("Charlottetown's"), else "Island N" (N from 2, in the order the city first owned them). |
+| 1218 | 5 | `public String unlinkedNames()` | The unlinked landmasses' names joined for a sentence: "Island 2", "Island 2 and Island 3", "Island 2, Island 3 and Island 4"; empty for none. |
+| 1225 | 5 | `private static String joined(List<String> list)` | Names joined for a sentence: "Island 2", "Island 2 and Island 3", "Island 2, Island 3 and Island 4"; empty for none. |
+| 1232 | 8 | `public List<Row> rows()` | The landmasses the city owns, home first and then in the order it first owned them. |
+| 1241 | 5 | `private Row row(Books b, boolean isHome)` |  |
+| 1248 | 1 | `public int version()` | How many times the linked set has moved: what a cache of anything that depends on it keys on. |
+| 1251 | 1 | `public long plotsRead()` | How many plots recount() and offerSplit() have read since this was made (cumulative): 0 for a city that owns nothing near another landmass, and for every generated world. |
+| 1254 | 1 | `public boolean active()` | Whether the last recount read a world with landmasses: false on a generated world and an earth-1 file. |
 

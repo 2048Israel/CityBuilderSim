@@ -1,4 +1,4 @@
-# BuildAdvice.java - 2,219 lines · 110 methods · 9 constants · model
+# BuildAdvice.java - 2,409 lines · 117 methods · 11 constants · model
 
 `ham/citybuildersim/BuildAdvice.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
 
@@ -46,9 +46,9 @@
 > goes (Jerus's school at 0% that one would take to 20,000%): the overshoot
 > ranks the candidates, it never stops one (0.7.101).
 
-**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (145), [Game](Game.md) (73), [CityNeeds](CityNeeds.md) (59), [BuildingType](BuildingType.md) (42), [CareType](CareType.md) (33), [Ports](Ports.md) (19), [JobType](JobType.md) (15), [InfrastructureManager](InfrastructureManager.md) (15), [EducationType](EducationType.md) (13), [ConstructionControl](ConstructionControl.md) (12), [Good](Good.md) (10), [BusinessInvestment](BusinessInvestment.md) (9), [Healthcare](Healthcare.md) (7), [SafetyType](SafetyType.md) (6), [Crime](Crime.md) (6), [Traffic](Traffic.md) (6), [Sectors](Sectors.md) (6), [BuildingManager](BuildingManager.md) (5), [LandParcel](LandParcel.md) (4), [UtilitiesHandler](UtilitiesHandler.md) (3), [Deposit](Deposit.md) (3), [Resource](Resource.md) (3), [AgeBand](AgeBand.md) (2), [Education](Education.md) (2), [ExtractionSector](ExtractionSector.md) (2), [Sector](Sector.md) (2), [GoodsMarket](GoodsMarket.md) (2), [Landmasses](Landmasses.md) (2), [StrategicReserve](StrategicReserve.md) (1), [BuildingsStacks](BuildingsStacks.md) (1)... and 8 more
+**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (151), [Game](Game.md) (79), [CityNeeds](CityNeeds.md) (59), [BuildingType](BuildingType.md) (43), [CareType](CareType.md) (33), [Ports](Ports.md) (20), [Landmasses](Landmasses.md) (16), [JobType](JobType.md) (15), [InfrastructureManager](InfrastructureManager.md) (15), [EducationType](EducationType.md) (13), [ConstructionControl](ConstructionControl.md) (12), [Good](Good.md) (10), [BusinessInvestment](BusinessInvestment.md) (9), [Healthcare](Healthcare.md) (7), [SafetyType](SafetyType.md) (6), [Crime](Crime.md) (6), [Traffic](Traffic.md) (6), [Sectors](Sectors.md) (6), [BuildingManager](BuildingManager.md) (5), [LandParcel](LandParcel.md) (4), [UtilitiesHandler](UtilitiesHandler.md) (3), [Deposit](Deposit.md) (3), [Resource](Resource.md) (3), [Bridges](Bridges.md) (3), [AgeBand](AgeBand.md) (2), [Education](Education.md) (2), [ExtractionSector](ExtractionSector.md) (2), [Sector](Sector.md) (2), [GoodsMarket](GoodsMarket.md) (2), [BridgeSurvey](BridgeSurvey.md) (2)... and 12 more
 
-**Used by (31):** [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BankScreen](BankScreen.md), [BridgeCheck](BridgeCheck.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BuildScreen](BuildScreen.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [EquipmentCheck](EquipmentCheck.md), [HydroCheck](HydroCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [InvestCheck](InvestCheck.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [LandCheck](LandCheck.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [RoadCheck](RoadCheck.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md), [WaterCheck](WaterCheck.md)
+**Used by (33):** [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BankScreen](BankScreen.md), [BridgeCheck](BridgeCheck.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BuildScreen](BuildScreen.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [EquipmentCheck](EquipmentCheck.md), [HydroCheck](HydroCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [InvestCheck](InvestCheck.md), [IslandLinkCheck](IslandLinkCheck.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [LandCheck](LandCheck.md), [LandScreen](LandScreen.md), [LandmassCheck](LandmassCheck.md), [LongPlaytest](LongPlaytest.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [RoadCheck](RoadCheck.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md), [WaterCheck](WaterCheck.md)
 
 ## Sections
 
@@ -66,6 +66,7 @@
 | 1853 | AN IRON FIELD THAT WILL NOT PAY BACK (0.7.101, batch P2) |
 | 2048 | A BERTH THAT PAYS BACK (FR3, 2026-10-19; docs/queue/FR3.md 5, the |
 | 2144 | · A BERTH'S PAYBACK, FOR ITS CARD (FR4, 2026-10-20) |
+| 2220 | THE ISLAND LINK (AL1, 2026-11-09) |
 
 ## Enum constants
 
@@ -92,6 +93,9 @@
 | 2156 | `BuildAdvice.BerthState.NO_DUES` |  |
 | 2156 | `BuildAdvice.BerthState.UPKEEP` |  |
 | 2156 | `BuildAdvice.BerthState.NO_CARGO` |  |
+| 2246 | `BuildAdvice.LinkKind.BRIDGE` |  |
+| 2246 | `BuildAdvice.LinkKind.PORT` |  |
+| 2246 | `BuildAdvice.LinkKind.NONE` |  |
 
 ## Constants
 
@@ -106,12 +110,20 @@
 | 1087 | `BuildAdvice.NOW` | `new Ahead(0, 1, 0)` | Today's demand, no slack: what NEEDS YOU reads. |
 | 1511 | `BuildAdvice.LIFE_MONTHS` | `Game.BUILD_BOND_YEARS * 12` | Months a road is weighed over (0.7.70): the funding page's bond term, Game.BUILD_BOND_YEARS - a long-lived asset "paid for over the years the city uses it". |
 | 1721 | `BuildAdvice.LIFE_YEARS` | `LIFE_MONTHS / 12` | The years of a building's life the served figure reads: LIFE_MONTHS in whole years. |
+| 2267 | `BuildAdvice.NO_CROSSING_MONTHS` | `12` | The months a survey that found no crossing to an island stands before the rule surveys it again: such a survey searches out to 45 km, up to 1.7 s (ET6), and an island held for money or with no link at all is asked eve... |
+| 2273 | `BuildAdvice.NO_CROSSING` | `new java.util.WeakHashMap<>()` | The surveys that found no crossing, by island, kept for each city's landmasses (a loaded or new city has its own; never saved, so a loaded city surveys once). |
+
+## Fields (state)
+
+| line | field | says |
+|---:|---|---|
+| 2276 | `static int linkSurveys` | How many crossings the rule has surveyed in this run (AL1): a harness reads that an island with none is not surveyed every month. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 54 | 2166 | **type** `public final class BuildAdvice` | What the city should build next, and why: the Build tab's categories and the measures its five city categories open on, each measure's figure before and after an order by the model's own arithmetic, and the rule behin... |
+| 54 | 2356 | **type** `public final class BuildAdvice` | What the city should build next, and why: the Build tab's categories and the measures its five city categories open on, each measure's figure before and after an order by the model's own arithmetic, and the rule behin... |
 | 56 | 1 | `private BuildAdvice()` |  |
 
 ### THE CATEGORIES (0.7.24) (lines 58-194)
@@ -290,4 +302,21 @@
 | 2175 | 1 | `public boolean pays()` _(in BuildAdvice.BerthPayback)_ | Whether it pays back (state PAYS). |
 | 2178 | 1 | `public double carriedAYear()` _(in BuildAdvice.BerthPayback)_ | The tonnes a year it would carry. |
 | 2193 | 26 | `public static BerthPayback berthPayback(Game game, BuildingsTemplate t)` | A sea terminal's payback, as its card says it (FR4; null for any other building). |
+
+### THE ISLAND LINK (AL1, 2026-11-09) (lines 2220-2409)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2246 | 1 | **type** `public enum LinkKind` | How a link is made: a long bridge, sea terminals, or not at all (NONE: the Link says why). |
+| 2249 | 1 | **type** `public record LinkOrder(BuildingsTemplate template, int asked, double price)` | One order of a link: the template, the landmass its order is for (a bridge's far landmass, or a terminal's `asked`: Landmasses.RULE for home, an id for an island's own shore), and its quote's total, thousands of US do... |
+| 2256 | 6 | **type** `public record Link(int landmass, String name, double sqFt, LinkKind kind, List<LinkOrder> orders, BridgeSur...` | What the city should order to link an island: the island's id, name and buildable ground (square feet), the kind, the orders (none for NONE), the crossing a bridge is surveyed over (null otherwise), the orders' total ... |
+| 2260 | 1 | `public double perSqFt()` _(in BuildAdvice.Link)_ | Its price a square foot of ground it links: the candidate's unit is the ground, not trips. |
+| 2264 | 1 | **type** `private record Found(LinkOrder order, double months)` | One terminal order found, and its months. |
+| 2270 | 1 | **type** `private record NoCrossing(int month, String why)` | A survey that found no crossing: the month it was made and its refusal in BridgeView's words. |
+| 2283 | 24 | `public static Link linkFor(Game game)` | The link the city should order for the island it most needs, or null when nothing is unlinked (checked first and alone: every generated world, and every city on one landmass, reads nothing else). |
+| 2309 | 5 | `private static int linkedTerminals(Landmasses lms)` | The sea terminals standing or on site on the landmasses the city has linked. |
+| 2315 | 54 | `private static Link linkOf(Game game, Landmasses lms, Landmasses.Row island)` |  |
+| 2370 | 10 | `private static Link portLink(Landmasses.Row island, List<Found> found)` |  |
+| 2382 | 10 | `private static BuildingsTemplate bridgeTemplate(Game game)` | The Highway Bridge where the city has an Elevated Highway standing, else the Road Bridge; null when the one wanted is not yet known (never the Rail Bridge). |
+| 2398 | 11 | `private static Found cheapestTerminal(Game game, Landmasses lms, int asked, int island)` | The cheapest sea terminal the city knows for a landmass: by the quote of one asked for `asked`, among those whose order would stand where it is asked. |
 

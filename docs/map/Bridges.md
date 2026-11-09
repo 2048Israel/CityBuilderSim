@@ -1,4 +1,4 @@
-# Bridges.java - 315 lines · 30 methods · 4 constants · model
+# Bridges.java - 321 lines · 31 methods · 4 constants · model
 
 `ham/citybuildersim/Bridges.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
 
@@ -21,7 +21,7 @@
 
 **Uses:** [BridgeWorks](BridgeWorks.md) (3), [Landmasses](Landmasses.md) (1), [BridgeSurvey](BridgeSurvey.md) (1)
 
-**Used by (7):** [BridgeCheck](BridgeCheck.md), [DataSave](DataSave.md), [Game](Game.md), [LandManager](LandManager.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md)
+**Used by (10):** [AutoBuilder](AutoBuilder.md), [BridgeCheck](BridgeCheck.md), [BuildAdvice](BuildAdvice.md), [DataSave](DataSave.md), [Game](Game.md), [IslandLinkCheck](IslandLinkCheck.md), [LandManager](LandManager.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md)
 
 ## Sections
 
@@ -31,7 +31,7 @@
 | 218 | THE LINKS - what a standing bridge joins |
 | 238 | THE CHOICE - the landmass the card bridges toward |
 | 254 | READS - plain getters; none fills anything |
-| 292 | THE SAVE |
+| 298 | THE SAVE |
 
 ## Constants
 
@@ -62,7 +62,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 26 | 290 | **type** `public final class Bridges implements Landmasses.Joins` | The city's long bridges, built and building: for each, the template it was ordered as, its kind, the two landings and the landmass at each end, its length, the depth of the water under it, the chain of plots it runs a... |
+| 26 | 296 | **type** `public final class Bridges implements Landmasses.Joins` | The city's long bridges, built and building: for each, the template it was ordered as, its kind, the two landings and the landmass at each end, its length, the depth of the water under it, the chain of plots it runs a... |
 | 38 | 13 | **type** `public interface Stock` | What Bridges reads of the buildings: Game wires it; a bare one has none and no bridge is fitted to a count. |
 | 40 | 1 | `boolean known(int template)` _(in Bridges.Stock)_ | Whether the template is one of the bridges'. |
 | 43 | 1 | `int standing(int template)` _(in Bridges.Stock)_ | The finished bridges of a template. |
@@ -104,7 +104,7 @@
 | 246 | 1 | `public int chosen(int template)` | The landmass the card picked for a template, or NONE_CHOSEN. |
 | 252 | 1 | `void clearChoice(int template)` | An order was placed: its pick is spent. |
 
-### READS - plain getters; none fills anything (lines 254-291)
+### READS - plain getters; none fills anything (lines 254-297)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -113,12 +113,13 @@
 | 269 | 5 | `public int count(int state)` | How many are in a state (STANDING, ON_SITE or SHELL). |
 | 276 | 5 | `public int count(int template, int state)` | How many of a template are in a state. |
 | 283 | 5 | `public double standingLengthM()` | The standing bridges' length, metres, all together. |
-| 290 | 1 | `public boolean joins(int landmass)` | Whether a landmass has a standing bridge at either end. |
+| 290 | 4 | `public boolean buildingTo(int landmass)` | Whether a bridge is on site (being built) with this landmass as its far end. |
+| 296 | 1 | `public boolean joins(int landmass)` | Whether a landmass has a standing bridge at either end. |
 
-### THE SAVE (lines 292-315)
+### THE SAVE (lines 298-321)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 297 | 6 | `public State toState()` | DataSave's bridges: fresh on every call (the autosave's snapshot shares nothing), null when the city has none. |
-| 305 | 10 | `void restore(State s)` | Puts the bridges back as saved; null, none. |
+| 303 | 6 | `public State toState()` | DataSave's bridges: fresh on every call (the autosave's snapshot shares nothing), null when the city has none. |
+| 311 | 10 | `void restore(State s)` | Puts the bridges back as saved; null, none. |
 

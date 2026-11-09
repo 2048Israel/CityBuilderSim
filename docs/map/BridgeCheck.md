@@ -48,7 +48,7 @@
 
 **Uses:** [World](World.md) (101), [BridgeWorks](BridgeWorks.md) (99), [BridgeSurvey](BridgeSurvey.md) (83), [LandmassCheck](LandmassCheck.md) (83), [Game](Game.md) (35), [Bridges](Bridges.md) (27), [BridgeView](BridgeView.md) (23), [Landmasses](Landmasses.md) (11), [BuildingsTemplate](BuildingsTemplate.md) (10), [BuildCard](BuildCard.md) (9), [EarthData](EarthData.md) (8), [PriceLevel](PriceLevel.md) (6), [Founding](Founding.md) (5), [Timing](Timing.md) (5), [EarthCheck](EarthCheck.md) (3), [LandManager](LandManager.md) (3), [GameFiles](GameFiles.md) (3), [BuildAdvice](BuildAdvice.md) (3), [EarthTerrain](EarthTerrain.md) (2), [RunWorks](RunWorks.md) (2), [CityMap](CityMap.md) (2), [ConstructionControl](ConstructionControl.md) (2), [ReloadCheck](ReloadCheck.md) (2), [EarthSite](EarthSite.md) (2), [BuildingType](BuildingType.md) (1), [GameVersion](GameVersion.md) (1), [SaveFileCheck](SaveFileCheck.md) (1)
 
-**Used by (1):** [SaveFileCheck](SaveFileCheck.md)
+**Used by (2):** [IslandLinkCheck](IslandLinkCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
 ## Sections
 

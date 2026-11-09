@@ -18,6 +18,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.69 — AL1, automatic building links the city's islands — 2026-11-09, ready, see docs/queue/AL1-notes.md
+Automatic building now links ground the city owns across the water (Jerus, 2026-10-31: "autobuild will build bridges
+and ports if sees that land is low and there is something unliked"). When a month's order lacks linked ground and an
+island the city owns ground on is unlinked, the AutoBuilder orders, after every other order of the month: a Highway
+Bridge where an Elevated Highway stands, else a Road Bridge, where the survey finds a crossing; else the cheapest sea
+terminal on the island's shore, and one at home where no linked ground has one (a port already there is shared). One
+rule (`BuildAdvice.linkFor()`) serves it and the test player; money, ground and refusals as its other orders. No Rail
+Bridge (nothing runs a train over one). A survey that finds no crossing stands a year. The map's highway over water
+links nothing: the model never reads the map. IslandLinkCheck (new) causes each case on the Rotterdam fixture;
+LandmassCheck 12's "stays unlinked" is held to the cue. Overturns ET5's call 5 and ET6-C's "never orders a bridge".
+One landmass reads nothing: the default playtest's trace is byte-identical, no ensemble, no format change.
+
 ### 0.9.68 — TS1, the toast stays out of the way — 2026-11-09, ready, see docs/queue/TS1-notes.md
 While a toast shows, the page gives up the corner it stands in: the page's foot takes a bottom padding as tall as the
 toasts and the stack's margin under them, so a page scrolled to its end has its last control clear of the toast (the

@@ -1,4 +1,4 @@
-# LandmassCheck.java - 3,300 lines · 94 methods · 14 constants · harnesses
+# LandmassCheck.java - 3,363 lines · 95 methods · 15 constants · harnesses
 
 `ham/citybuildersim/LandmassCheck.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
 
@@ -64,9 +64,9 @@
 >      of ground no port links, no piece of ground holding one, the districts' free plots the linked ground's to the plot (a loop over
 > ... (29 more lines in the source)
 
-**Uses:** [World](World.md) (193), [Landmasses](Landmasses.md) (185), [LandmassView](LandmassView.md) (149), [Game](Game.md) (106), [CityMap](CityMap.md) (53), [BuildingsTemplate](BuildingsTemplate.md) (49), [LandParcel](LandParcel.md) (44), [LandManager](LandManager.md) (43), [Resource](Resource.md) (42), [LongPlaytest](LongPlaytest.md) (42), [LandMap](LandMap.md) (30), [CityLand](CityLand.md) (25), [EarthData](EarthData.md) (17), [Founding](Founding.md) (16), [LandMarket](LandMarket.md) (16), [Ports](Ports.md) (13), [TilePainter](TilePainter.md) (11), [CityShore](CityShore.md) (11), [Deposit](Deposit.md) (10), [GridOffers](GridOffers.md) (10), [BuildCard](BuildCard.md) (10), [EarthTerrain](EarthTerrain.md) (9), [GameFiles](GameFiles.md) (8), [ConstructionControl](ConstructionControl.md) (8), [ZoningView](ZoningView.md) (8), [AutoBuilder](AutoBuilder.md) (7), [EarthSite](EarthSite.md) (6), [EarthCheck](EarthCheck.md) (5), [Notice](Notice.md) (5), [LandGrid](LandGrid.md) (4)... and 13 more
+**Uses:** [World](World.md) (193), [Landmasses](Landmasses.md) (186), [LandmassView](LandmassView.md) (149), [Game](Game.md) (107), [CityMap](CityMap.md) (53), [BuildingsTemplate](BuildingsTemplate.md) (49), [LandParcel](LandParcel.md) (44), [LandManager](LandManager.md) (43), [Resource](Resource.md) (42), [LongPlaytest](LongPlaytest.md) (42), [LandMap](LandMap.md) (30), [CityLand](CityLand.md) (25), [EarthData](EarthData.md) (17), [Founding](Founding.md) (16), [LandMarket](LandMarket.md) (16), [AutoBuilder](AutoBuilder.md) (14), [Ports](Ports.md) (13), [TilePainter](TilePainter.md) (11), [CityShore](CityShore.md) (11), [Deposit](Deposit.md) (10), [GridOffers](GridOffers.md) (10), [BuildCard](BuildCard.md) (10), [EarthTerrain](EarthTerrain.md) (9), [GameFiles](GameFiles.md) (8), [ConstructionControl](ConstructionControl.md) (8), [ZoningView](ZoningView.md) (8), [EarthSite](EarthSite.md) (6), [EarthCheck](EarthCheck.md) (5), [Notice](Notice.md) (5), [LandGrid](LandGrid.md) (4)... and 14 more
 
-**Used by (3):** [BridgeCheck](BridgeCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
+**Used by (4):** [BridgeCheck](BridgeCheck.md), [IslandLinkCheck](IslandLinkCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
 ## Sections
 
@@ -74,27 +74,27 @@
 |---:|---|
 | 152 | THE FIXTURES |
 | 240 | MAIN |
-| 291 | THE PROBE: --probe <folder> |
-| 370 | 0. A GENERATED WORLD HAS NO LANDMASSES |
-| 449 | 1. THE READER |
-| 582 | THE FIXTURE CITIES |
-| 629 | 1 (continued). THE 1-DEGREE GATE |
-| 706 | 2. THE BOOKS BY LANDMASS |
-| 932 | 3. FREE GROUND IS LINKED ONLY |
-| 1004 | 3 (continued). THE RELIEF AND THE FOREST LAW ON LINKED GROUND |
-| 1092 | 4. ONLY A PORT ON UNLINKED GROUND |
-| 1204 | 8. THE PICKERS |
-| 1314 | 8 (continued). A SHELF WITH NO ROOM ON IT |
-| 1391 | 4 (continued). A FIELD CENTRED ON A LAKE PLOT OF AN ISLAND |
-| 1494 | 5. TWO PORTS LINK |
-| 1742 | 6. DEMOLITION |
-| 1821 | 6 (continued). SAVED BETWEEN A DEMOLITION AND THE MONTH'S SETTLE |
-| 1867 | 7. THE CHOICE |
-| 1971 | 9. THE SAVE |
-| 2076 | 10. THE MAP |
-| 2586 | 11. THE WORDS |
-| 2917 | 12. GROWN ACROSS LANDMASSES |
-| 3178 | 13. THE FULL FILE |
+| 292 | THE PROBE: --probe <folder> |
+| 371 | 0. A GENERATED WORLD HAS NO LANDMASSES |
+| 450 | 1. THE READER |
+| 583 | THE FIXTURE CITIES |
+| 630 | 1 (continued). THE 1-DEGREE GATE |
+| 707 | 2. THE BOOKS BY LANDMASS |
+| 933 | 3. FREE GROUND IS LINKED ONLY |
+| 1005 | 3 (continued). THE RELIEF AND THE FOREST LAW ON LINKED GROUND |
+| 1093 | 4. ONLY A PORT ON UNLINKED GROUND |
+| 1205 | 8. THE PICKERS |
+| 1315 | 8 (continued). A SHELF WITH NO ROOM ON IT |
+| 1392 | 4 (continued). A FIELD CENTRED ON A LAKE PLOT OF AN ISLAND |
+| 1495 | 5. TWO PORTS LINK |
+| 1743 | 6. DEMOLITION |
+| 1822 | 6 (continued). SAVED BETWEEN A DEMOLITION AND THE MONTH'S SETTLE |
+| 1868 | 7. THE CHOICE |
+| 1972 | 9. THE SAVE |
+| 2077 | 10. THE MAP |
+| 2587 | 11. THE WORDS |
+| 2918 | 12. GROWN ACROSS LANDMASSES |
+| 3241 | 13. THE FULL FILE |
 
 ## Constants
 
@@ -108,12 +108,13 @@
 | 125 | `LandmassCheck.SQUARE` | `64` | The side of an island square, in plots. |
 | 128 | `LandmassCheck.RLAT` | `51.90625, RLON = 4.48125` | Rotterdam, the fixture's window: where the city is founded. |
 | 131 | `LandmassCheck.ON_THE_ISLAND` | `{ { 51.77, 4.15 }, { 51.75, 4.20 }, { 51.80, 4.10 } }` | Where a city on Goeree-Overflakkee is founded (the mainland is then across the water): candidate spots, the first that serves. |
-| 1009 | `LandmassCheck.FOOTHILL_X` | `376_640, FOOTHILL_Y = 375_616` | A square of home's ground in the Ardennes' foothills, 38 tiles south-west of Rotterdam (found by a scan of the fixture; its foothill count is a premise below). |
-| 1518 | `LandmassCheck.TERMINAL_MONTHS` | `400` | Months a General Cargo Terminal is given to stand on a city's builders: 400. |
-| 1524 | `LandmassCheck.HOME_COAST_SHORE` | `90` | Shore plots the square of home's open coast must hold in section 10: 90. |
-| 1527 | `LandmassCheck.GROWN_MONTHS` | `480` | Months section 12 runs after its two terminals are ordered: 480 (it was 96, for terminals of 35,000 points; see TERMINAL_MONTHS). |
-| 1558 | `LandmassCheck.GSON` | `new com.google.gson.Gson()` |  |
-| 3198 | `LandmassCheck.RUN_MONTHS` | `1200` | The months the Rotterdam run plays. |
+| 1010 | `LandmassCheck.FOOTHILL_X` | `376_640, FOOTHILL_Y = 375_616` | A square of home's ground in the Ardennes' foothills, 38 tiles south-west of Rotterdam (found by a scan of the fixture; its foothill count is a premise below). |
+| 1519 | `LandmassCheck.TERMINAL_MONTHS` | `400` | Months a General Cargo Terminal is given to stand on a city's builders: 400. |
+| 1525 | `LandmassCheck.HOME_COAST_SHORE` | `90` | Shore plots the square of home's open coast must hold in section 10: 90. |
+| 1528 | `LandmassCheck.GROWN_MONTHS` | `480` | Months section 12 runs after its two terminals are ordered: 480 (it was 96, for terminals of 35,000 points; see TERMINAL_MONTHS). |
+| 1559 | `LandmassCheck.GSON` | `new com.google.gson.Gson()` |  |
+| 3195 | `LandmassCheck.SHORT_MONTHS` | `24` | Months section 12's short-ground twin is given to meet an order short of ground and order the island's link: 24, as the section's first stretch. |
+| 3261 | `LandmassCheck.RUN_MONTHS` | `1200` | The months the Rotterdam run plays. |
 
 ## Fields (state)
 
@@ -125,25 +126,25 @@
 | 160 | `final LandManager lm` |  |
 | 161 | `final World w` |  |
 | 162 | `final World.Key key` |  |
-| 400 | `static int coastChecked` | How many sea terminals and desalination plants the last oldExpressions() asked hasCoastFor() about (the five terminals and the plants). |
-| 588 | `World.Key key` |  |
-| 589 | `City a, b` |  |
-| 590 | `Square withShore, withoutShore, homeSalt` |  |
-| 591 | `LandParcel island` |  |
-| 592 | `boolean ok` |  |
-| 712 | `final long[] relief` |  |
-| 713 | `long forest, shore` |  |
-| 714 | `int firstHolding` |  |
-| 1119 | `City city` |  |
-| 1120 | `FieldAt away, home` |  |
-| 1121 | `double[] spot` |  |
-| 1873 | `int standing, onSite, shell` |  |
+| 401 | `static int coastChecked` | How many sea terminals and desalination plants the last oldExpressions() asked hasCoastFor() about (the five terminals and the plants). |
+| 589 | `World.Key key` |  |
+| 590 | `City a, b` |  |
+| 591 | `Square withShore, withoutShore, homeSalt` |  |
+| 592 | `LandParcel island` |  |
+| 593 | `boolean ok` |  |
+| 713 | `final long[] relief` |  |
+| 714 | `long forest, shore` |  |
+| 715 | `int firstHolding` |  |
+| 1120 | `City city` |  |
+| 1121 | `FieldAt away, home` |  |
+| 1122 | `double[] spot` |  |
+| 1874 | `int standing, onSite, shell` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 109 | 3192 | **type** `public class LandmassCheck` | The city's ground counted by landmass, and the island rule, checked (ET5; the ET5 design): a landmass is read from the Earth's data at every plot, the city's books are kept by landmass, ground on a landmass the city h... |
+| 109 | 3255 | **type** `public class LandmassCheck` | The city's ground counted by landmass, and the island rule, checked (ET5; the ET5 design): a landmass is read from the Earth's data at every plot, the city's books are kept by landmass, ground on a landmass the city h... |
 | 133 | 4 | `static void check(String label, boolean ok)` |  |
 | 138 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 143 | 5 | `static void quietly(Runnable r)` |  |
@@ -163,202 +164,203 @@
 | 218 | 14 | `static Square squareWith(World w, int id, long sx, long sy, int tiles, Predicate<Square> serves)` | The nearest square (tile-aligned, SQUARE plots a side) to (sx, sy) that serves, searched out to `tiles` tiles each way with the model's reader and bounded - a FAIL for the caller, never a hang. |
 | 234 | 5 | `static long[] plotOf(World w, double lat, double lon)` | The plot of a latitude and longitude on a world. |
 
-### MAIN (lines 240-290)
+### MAIN (lines 240-291)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 244 | 46 | `public static void main(String[] args) throws Exception` |  |
+| 244 | 47 | `public static void main(String[] args) throws Exception` |  |
 
-### THE PROBE: --probe <folder> (lines 291-369)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 296 | 13 | `static java.nio.file.Path newestSave(java.nio.file.Path folder) throws java.io.IOException` | The newest save under a folder: a .json file that is no history, the latest written; null for none. |
-| 319 | 50 | `static int probe(String folder) throws Exception` | What a kept city owns across the water, from its save alone (ET5, the roll-out's check on whether the playtests' cities reach another landmass): the newest save under the folder read through DataSave and CityLand.rest... |
-
-### 0. A GENERATED WORLD HAS NO LANDMASSES (lines 370-448)
+### THE PROBE: --probe <folder> (lines 292-370)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 375 | 23 | `static boolean oldExpressions(String what, LandManager lm, Game g)` | The old expressions of the free ground, written out from the public getters: what a city with one landmass reads. |
-| 402 | 46 | `static void generatedWorld()` |  |
+| 297 | 13 | `static java.nio.file.Path newestSave(java.nio.file.Path folder) throws java.io.IOException` | The newest save under a folder: a .json file that is no history, the latest written; null for none. |
+| 320 | 50 | `static int probe(String folder) throws Exception` | What a kept city owns across the water, from its save alone (ET5, the roll-out's check on whether the playtests' cities reach another landmass): the newest save under the folder read through DataSave and CityLand.rest... |
 
-### 1. THE READER (lines 449-581)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 454 | 23 | `static int bruteResolved(EarthData d, double lat, double lon)` | The nearest land cell's id by a loop over the data's own landmassAt(): the cell holding the point, or the least dr squared + dc squared within LANDMASS_REACH, the lowest id on a tie, 0 for none. |
-| 478 | 103 | `static void theReader(EarthData d, World.Key key)` |  |
-
-### THE FIXTURE CITIES (lines 582-628)
+### 0. A GENERATED WORLD HAS NO LANDMASSES (lines 371-449)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 587 | 7 | **type** `static final class Fixtures` | The squares and cities sections 2 to 8 share. |
-| 595 | 33 | `static Fixtures fixtures(World.Key key)` |  |
+| 376 | 23 | `static boolean oldExpressions(String what, LandManager lm, Game g)` | The old expressions of the free ground, written out from the public getters: what a city with one landmass reads. |
+| 403 | 46 | `static void generatedWorld()` |  |
 
-### 1 (continued). THE 1-DEGREE GATE (lines 629-705)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 634 | 4 | `static boolean gateSays(Landmasses lms, World w, double lat, double lon)` | Plots of a box about a latitude and longitude, whether the 1-degree gate says only home's landmass can lie under it. |
-| 640 | 11 | `static long strays(World w, int home, long x0, long y0, long x1, long y1)` | The plots of a box, exactly, and of the ring the gate widens it by (GATE_MARGIN_PLOTS), every 8 plots, that read a landmass but home's. |
-| 659 | 46 | `static void theGate(Fixtures f, EarthData data, String dataId)` | The 1-degree gate (Landmasses.onlyHome()), which every Earth city away from other landmasses takes to read no plot at all: every other section's fixtures lie in the tile that holds Goeree, so the gate says "not sure" ... |
-
-### 2. THE BOOKS BY LANDMASS (lines 706-931)
+### 1. THE READER (lines 450-582)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 711 | 6 | **type** `static final class Brute` | One landmass's owned ground counted plot by plot over the box of the city's ground. |
-| 715 | 1 | `long dry()` _(in LandmassCheck.Brute)_ |  |
-| 718 | 21 | `static TreeMap<Integer, Brute> bruteBooks(World w, CityLand land, int home)` |  |
-| 740 | 3 | `private static boolean ownedSalt(World w, CityLand land, long x, long y)` |  |
-| 744 | 80 | `static void theBooks(Fixtures f)` |  |
-| 826 | 10 | `static boolean sameAsBrute(List<Landmasses.Row> rows, TreeMap<Integer, Brute> brute)` | Whether the rows are a brute-force count's: each landmass's dry plots by relief, forest, shore and (off home) first holding. |
-| 841 | 19 | `static void settledShore(Fixtures f)` | A block of home's coast bought beside the island: its interior tiles are wholly owned with wholly owned neighbours, so their shore can never change and the next recount adds it without reading them - and the count is ... |
-| 862 | 1 | **type** `record EdgePair(long ax, long ay, long bx, long by)` | Two plots across a tile's edge: a dry flat or foothill plot of home's at the edge of its tile, and the salt plot in the tile beside it. |
-| 868 | 18 | `static EdgePair edgePair(World w, int home, long sx, long sy, int tiles, int dx, int dy)` | The nearest pair of plots to (sx, sy), searched out `tiles` tiles each way with the model's reader and bounded: a dry flat or foothill plot of home's on the (dx, dy) side of its tile, with a salt plot straight across ... |
-| 893 | 32 | `static void shoreAcrossTileEdges(Fixtures f)` | The shore at a tile's edge: a dry plot on the edge of its tile with owned salt across it, in the tile beside, is shore though its own tile holds no owned salt. |
-| 926 | 5 | `static String describe(List<Landmasses.Row> rows)` |  |
+| 455 | 23 | `static int bruteResolved(EarthData d, double lat, double lon)` | The nearest land cell's id by a loop over the data's own landmassAt(): the cell holding the point, or the least dr squared + dc squared within LANDMASS_REACH, the lowest id on a tie, 0 for none. |
+| 479 | 103 | `static void theReader(EarthData d, World.Key key)` |  |
 
-### 3. FREE GROUND IS LINKED ONLY (lines 932-1003)
+### THE FIXTURE CITIES (lines 583-629)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 936 | 67 | `static void freeGroundIsLinked(Fixtures f)` |  |
+| 588 | 7 | **type** `static final class Fixtures` | The squares and cities sections 2 to 8 share. |
+| 596 | 33 | `static Fixtures fixtures(World.Key key)` |  |
 
-### 3 (continued). THE RELIEF AND THE FOREST LAW ON LINKED GROUND (lines 1004-1091)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1012 | 5 | `static long foothillIn(World w, long x0, long y0)` | The foothill dry plots of a square. |
-| 1025 | 66 | `static void reliefAndForestLaw(Fixtures f)` | The half of the linked view section 3 does not reach (the review of ET5): a city that owns home's foothill and an island with forest but no foothill, against its twin without the island, with the forest law set. |
-
-### 4. ONLY A PORT ON UNLINKED GROUND (lines 1092-1203)
+### 1 (continued). THE 1-DEGREE GATE (lines 630-706)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1097 | 1 | **type** `record FieldAt(Resource resource, Deposit field, int landmass, double km)` | A field of a sited resource centred on a dry plot of a landmass but the city's home, nearest to the site, found by search. |
-| 1099 | 17 | `static FieldAt nearestField(World w, Resource r, int notLandmass, boolean offHome)` |  |
-| 1118 | 5 | **type** `static final class IslandCity` | The city on the island whose mainland holds a field of iron: found by search over the candidate spots. |
-| 1124 | 17 | `static IslandCity onTheIsland(String id)` |  |
-| 1143 | 5 | `static LandParcel buyAround(City c, long x, long y)` | Buys a square round a plot (as an offer would be) on a city; the parcel. |
-| 1149 | 54 | `static void onlyAPort(Fixtures f, String dataId)` |  |
+| 635 | 4 | `static boolean gateSays(Landmasses lms, World w, double lat, double lon)` | Plots of a box about a latitude and longitude, whether the 1-degree gate says only home's landmass can lie under it. |
+| 641 | 11 | `static long strays(World w, int home, long x0, long y0, long x1, long y1)` | The plots of a box, exactly, and of the ring the gate widens it by (GATE_MARGIN_PLOTS), every 8 plots, that read a landmass but home's. |
+| 660 | 46 | `static void theGate(Fixtures f, EarthData data, String dataId)` | The 1-degree gate (Landmasses.onlyHome()), which every Earth city away from other landmasses takes to read no plot at all: every other section's fixtures lie in the tile that holds Goeree, so the gate says "not sure" ... |
 
-### 8. THE PICKERS (lines 1204-1313)
+### 2. THE BOOKS BY LANDMASS (lines 707-932)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1208 | 105 | `static void thePickers(Fixtures f, String dataId)` |  |
+| 712 | 6 | **type** `static final class Brute` | One landmass's owned ground counted plot by plot over the box of the city's ground. |
+| 716 | 1 | `long dry()` _(in LandmassCheck.Brute)_ |  |
+| 719 | 21 | `static TreeMap<Integer, Brute> bruteBooks(World w, CityLand land, int home)` |  |
+| 741 | 3 | `private static boolean ownedSalt(World w, CityLand land, long x, long y)` |  |
+| 745 | 80 | `static void theBooks(Fixtures f)` |  |
+| 827 | 10 | `static boolean sameAsBrute(List<Landmasses.Row> rows, TreeMap<Integer, Brute> brute)` | Whether the rows are a brute-force count's: each landmass's dry plots by relief, forest, shore and (off home) first holding. |
+| 842 | 19 | `static void settledShore(Fixtures f)` | A block of home's coast bought beside the island: its interior tiles are wholly owned with wholly owned neighbours, so their shore can never change and the next recount adds it without reading them - and the count is ... |
+| 863 | 1 | **type** `record EdgePair(long ax, long ay, long bx, long by)` | Two plots across a tile's edge: a dry flat or foothill plot of home's at the edge of its tile, and the salt plot in the tile beside it. |
+| 869 | 18 | `static EdgePair edgePair(World w, int home, long sx, long sy, int tiles, int dx, int dy)` | The nearest pair of plots to (sx, sy), searched out `tiles` tiles each way with the model's reader and bounded: a dry flat or foothill plot of home's on the (dx, dy) side of its tile, with a salt plot straight across ... |
+| 894 | 32 | `static void shoreAcrossTileEdges(Fixtures f)` | The shore at a tile's edge: a dry plot on the edge of its tile with owned salt across it, in the tile beside, is shore though its own tile holds no owned salt. |
+| 927 | 5 | `static String describe(List<Landmasses.Row> rows)` |  |
 
-### 8 (continued). A SHELF WITH NO ROOM ON IT (lines 1314-1390)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1324 | 42 | `static void noRoomOnTheShelf(Fixtures f)` | The pickers answer an offer when every offer on the shelf is wholly across the water (bestValue() is null only with nothing listed, so a city on a spit still has a best), and the test player bought it as room, again a... |
-| 1373 | 17 | `static void theWaterRule(Fixtures f)` | The test player's water rule orders a desalination plant while the city owns sea, and the model now wants shore on a linked landmass once the city owns ground off home: a plant ordered against the sea of an island no ... |
-
-### 4 (continued). A FIELD CENTRED ON A LAKE PLOT OF AN ISLAND (lines 1391-1493)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1396 | 19 | `static FieldAt lakeCentred(World w, int home, long[] near)` | A field of a sited resource centred on a water plot that is not the sea's (a lake, a river), whose 15" cell the layer puts on a landmass but home's: the nearest to a plot, found by search over the cells round it. |
-| 1420 | 67 | `static void lakeCentredField(Fixtures f)` | The review of slice A, (b): the works gate reads a field's landmass from its centre plot's 15" cell resolved by the D2 rule, not from the plot, so a field centred on a lake plot of an island (landmassAt() gives a wate... |
-| 1489 | 4 | `static CityLand.Piece pieceAt(Resource r, long x, long y, int sites)` | A piece of the ground holding a made-up field of `sites` sites centred on plot (x, y): what the works gate is asked of. |
-
-### 5. TWO PORTS LINK (lines 1494-1741)
+### 3. FREE GROUND IS LINKED ONLY (lines 933-1004)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1498 | 5 | `static BuildingsTemplate tpl(City c, String name)` |  |
-| 1505 | 1 | `static BuildingsTemplate own(City c, BuildingsTemplate t)` | A template as this city has it (a city's templates are its own; another city's object is never handed to its buildings). |
-| 1507 | 1 | `static int standing(City c, BuildingsTemplate t)` |  |
-| 1509 | 4 | `static int onSite(City c, BuildingsTemplate t)` |  |
-| 1530 | 4 | `static boolean until(City c, java.util.function.BooleanSupplier done, int most)` | Months played quietly until `done` holds, at most `most`; whether it does. |
-| 1536 | 5 | `static Game.BuildResult order(City c, BuildingsTemplate t, int n, boolean instant, int asked)` | An order, quietly: `asked` is Landmasses.CHOSEN, RULE or a landmass's id. |
-| 1543 | 4 | `static Game.BuildResult orderOn(City c, BuildingsTemplate t, int n, boolean instant, int landmass)` | An order of a terminal for a landmass by the card's path: the pick, then the order. |
-| 1549 | 8 | `static City portCity(Fixtures f, String label, boolean homeShore)` | A city of forty houses that owns the island square (shore on it) and, when asked, a stretch of home's coast. |
-| 1561 | 1 | `static String stateOf(City c)` | The saved placements as JSON: what the save writes under "landmasses" (null for none). |
-| 1564 | 15 | `static Square thirdLandmass(World w, EarthData d)` | The third landmass for the closure's third leg: the first cell of a landmass in the tile west of Goeree, and a square about it with dry ground and shore. |
-| 1580 | 161 | `static void twoPortsLink(Fixtures f, EarthData data)` |  |
+| 937 | 67 | `static void freeGroundIsLinked(Fixtures f)` |  |
 
-### 6. DEMOLITION (lines 1742-1820)
+### 3 (continued). THE RELIEF AND THE FOREST LAW ON LINKED GROUND (lines 1005-1092)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1746 | 74 | `static void demolition(Fixtures f)` |  |
+| 1013 | 5 | `static long foothillIn(World w, long x0, long y0)` | The foothill dry plots of a square. |
+| 1026 | 66 | `static void reliefAndForestLaw(Fixtures f)` | The half of the linked view section 3 does not reach (the review of ET5): a city that owns home's foothill and an island with forest but no foothill, against its twin without the island, with the forest law set. |
 
-### 6 (continued). SAVED BETWEEN A DEMOLITION AND THE MONTH'S SETTLE (lines 1821-1866)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1829 | 23 | `static void savedWhileDemolishing(Fixtures f) throws Exception` | A hand demolition of the last unit off home, or of an island's shell, leaves its row all home until the month's settle drops it; the save written in that window must not carry the row (a load drops it, so a resave los... |
-| 1854 | 12 | `static void resaved(City c, String what) throws Exception` | A city saved, read back and saved again: the two saves are the same but for the time and the name. |
-
-### 7. THE CHOICE (lines 1867-1970)
+### 4. ONLY A PORT ON UNLINKED GROUND (lines 1093-1204)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1872 | 11 | **type** `static final class StubStock implements Landmasses.Stock` | What Landmasses reads of the buildings, for a unit test of the rule: one terminal template and fixed counts. |
-| 1874 | 1 | `public int[] portTemplates()` _(in LandmassCheck.StubStock)_ |  |
-| 1875 | 1 | `public boolean known(int template)` _(in LandmassCheck.StubStock)_ |  |
-| 1876 | 1 | `public int standing(int template)` _(in LandmassCheck.StubStock)_ |  |
-| 1877 | 1 | `public int onSite(int template)` _(in LandmassCheck.StubStock)_ |  |
-| 1878 | 1 | `public int shell(int template)` _(in LandmassCheck.StubStock)_ |  |
-| 1879 | 1 | `public List<int[]> demolitions(int template)` _(in LandmassCheck.StubStock)_ |  |
-| 1880 | 1 | `public double landSqFt(int template)` _(in LandmassCheck.StubStock)_ |  |
-| 1881 | 1 | `public int cargo(int template)` _(in LandmassCheck.StubStock)_ |  |
-| 1884 | 86 | `static void theChoice(Fixtures f)` |  |
+| 1098 | 1 | **type** `record FieldAt(Resource resource, Deposit field, int landmass, double km)` | A field of a sited resource centred on a dry plot of a landmass but the city's home, nearest to the site, found by search. |
+| 1100 | 17 | `static FieldAt nearestField(World w, Resource r, int notLandmass, boolean offHome)` |  |
+| 1119 | 5 | **type** `static final class IslandCity` | The city on the island whose mainland holds a field of iron: found by search over the candidate spots. |
+| 1125 | 17 | `static IslandCity onTheIsland(String id)` |  |
+| 1144 | 5 | `static LandParcel buyAround(City c, long x, long y)` | Buys a square round a plot (as an offer would be) on a city; the parcel. |
+| 1150 | 54 | `static void onlyAPort(Fixtures f, String dataId)` |  |
 
-### 9. THE SAVE (lines 1971-2075)
+### 8. THE PICKERS (lines 1205-1314)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1975 | 75 | `static void theSave(Fixtures f) throws Exception` |  |
-| 2052 | 12 | `static void diffPaths(String path, com.google.gson.JsonElement a, com.google.gson.JsonElement b, java.util.List<String> out, in...` | The paths at which two saves' JSON differ, down to the leaf (at most `most`): what jsonDiff() names only by its top key. |
-| 2065 | 4 | `static void assertSaved(City c, int slot)` |  |
-| 2070 | 5 | `static GameFiles.Result quietlyResult(java.util.function.Supplier<GameFiles.Result> s)` |  |
+| 1209 | 105 | `static void thePickers(Fixtures f, String dataId)` |  |
 
-### 10. THE MAP (lines 2076-2585)
+### 8 (continued). A SHELF WITH NO ROOM ON IT (lines 1315-1391)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2081 | 3 | `static boolean unlinkedPlot(World w, CityLand land, Landmasses lms, long x, long y)` | Whether plot (x, y) is owned dry ground on a landmass the model has not linked: ground the map must draw nothing on. |
-| 2090 | 28 | `static int[] drawnOnUnlinked(CityMap map, World w, CityLand land, Landmasses lms, long tx0, long ty0, int n)` | What the map draws on unlinked ground, counted by brute force over the n x n tiles from (tx0, ty0) with the painter's own inputs (CityMap.tileInput()): {plots under building boxes, street plots, plots of the runs, sid... |
-| 2120 | 16 | `static int boxesOnLandmass(CityMap map, World w, int id, long tx0, long ty0, int n)` | How many buildings the map draws with their first plot on landmass `id` over the n x n tiles from (tx0, ty0): every box but a terminal's work and a part of a building counted on another tile. |
-| 2138 | 18 | `static long freePlots(CityMap map, World w, Landmasses lms, boolean linkedOnly)` | The plots the map's districts could build on by brute force over the tiles of the owned box: owned, buildable, and - when `linkedOnly` - on a landmass the model links. |
-| 2158 | 5 | `static long districtsFree(CityMap map)` | The free plots the map's districts hold, summed. |
-| 2165 | 3 | `static boolean ownedDryOn(World w, CityLand land, int id, long x, long y)` | Whether plot (x, y) is owned dry ground of landmass `id`, by the model's own readers. |
-| 2176 | 18 | `static int[] givenToPlansAndRuns(CityMap map, World w, CityLand land, int id, Square sq)` | What the district plans and the runs are given of landmass `id`'s owned dry ground, a plot at a time over the square: {plots looked at, those in a district the map holds, those the plan's input (CityMap.planInputHere(... |
-| 2196 | 12 | `static long landStampOfSidecar(byte[] deflated) throws java.io.IOException` | The land stamp a sidecar's header carries (after the magic, the format, the world, the month, its own stamp and the site). |
-| 2210 | 16 | `static int[] worksOnField(CityMap m, Deposit field, Resource r)` | The sites of a field as the map lists them (CityMap.siteList()), and how many carry a works: {sites listed, sites with a works}. |
-| 2228 | 6 | `static Landmasses.Picture linkedWith(Landmasses.Picture p, int id)` | The picture with a landmass added to its linked set and its stamp moved: what a link makes of it, handed to a map by hand. |
-| 2235 | 350 | `static void theMap(Fixtures f) throws Exception` |  |
+| 1325 | 42 | `static void noRoomOnTheShelf(Fixtures f)` | The pickers answer an offer when every offer on the shelf is wholly across the water (bestValue() is null only with nothing listed, so a city on a spit still has a best), and the test player bought it as room, again a... |
+| 1374 | 17 | `static void theWaterRule(Fixtures f)` | The test player's water rule orders a desalination plant while the city owns sea, and the model now wants shore on a linked landmass once the city owns ground off home: a plant ordered against the sea of an island no ... |
 
-### 11. THE WORDS (lines 2586-2916)
+### 4 (continued). A FIELD CENTRED ON A LAKE PLOT OF AN ISLAND (lines 1392-1494)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2591 | 1 | `static String km2Words(double sqFt)` | A km2 figure as the report line writes it. |
-| 2594 | 3 | `static boolean islandPort(City c, BuildingsTemplate gc)` | The landmass kinds of terminal ordered by the card's path: the general cargo terminal, on the island. |
-| 2598 | 318 | `static void theWords(Fixtures f)` |  |
+| 1397 | 19 | `static FieldAt lakeCentred(World w, int home, long[] near)` | A field of a sited resource centred on a water plot that is not the sea's (a lake, a river), whose 15" cell the layer puts on a landmass but home's: the nearest to a plot, found by search over the cells round it. |
+| 1421 | 67 | `static void lakeCentredField(Fixtures f)` | The review of slice A, (b): the works gate reads a field's landmass from its centre plot's 15" cell resolved by the D2 rule, not from the plot, so a field centred on a lake plot of an island (landmassAt() gives a wate... |
+| 1490 | 4 | `static CityLand.Piece pieceAt(Resource r, long x, long y, int sites)` | A piece of the ground holding a made-up field of `sites` sites centred on plot (x, y): what the works gate is asked of. |
 
-### 12. GROWN ACROSS LANDMASSES (lines 2917-3177)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2927 | 63 | `static String audit(Game g)` | The model's books of the terminals and the ground, audited at one look: the linked free ground fits the linked owned ground less the linked built ground; the ground the unlinked landmasses' terminals hold is what the ... |
-| 2992 | 12 | `static String booksDiffer(List<Landmasses.Row> books, List<Landmasses.Row> recount)` | What differs between the books' rows and a recount's, ignoring the name and whether the landmass is linked; null when they are the same books. |
-| 3006 | 16 | `static void theAudit(Fixtures f)` | The audit, tried on books gone stale: land bought and the books never told. |
-| 3024 | 5 | `static int buildingsOf(Game g)` | The buildings standing, every template's. |
-| 3030 | 147 | `static void grown(Fixtures f)` |  |
-
-### 13. THE FULL FILE (lines 3178-3300)
+### 5. TWO PORTS LINK (lines 1495-1742)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3183 | 13 | `static EarthData theEarth()` | The Earth's data where it is named or lies at its place, or null - and the one line saying so. |
-| 3200 | 74 | `static void fullFile(EarthData file)` |  |
-| 3275 | 17 | `private static void look(Game g, int[] looks, String[] first)` |  |
-| 3294 | 6 | `static double[] dryArea(double km2)` | The five areas of an offer of this many square kilometres of dry ground. |
+| 1499 | 5 | `static BuildingsTemplate tpl(City c, String name)` |  |
+| 1506 | 1 | `static BuildingsTemplate own(City c, BuildingsTemplate t)` | A template as this city has it (a city's templates are its own; another city's object is never handed to its buildings). |
+| 1508 | 1 | `static int standing(City c, BuildingsTemplate t)` |  |
+| 1510 | 4 | `static int onSite(City c, BuildingsTemplate t)` |  |
+| 1531 | 4 | `static boolean until(City c, java.util.function.BooleanSupplier done, int most)` | Months played quietly until `done` holds, at most `most`; whether it does. |
+| 1537 | 5 | `static Game.BuildResult order(City c, BuildingsTemplate t, int n, boolean instant, int asked)` | An order, quietly: `asked` is Landmasses.CHOSEN, RULE or a landmass's id. |
+| 1544 | 4 | `static Game.BuildResult orderOn(City c, BuildingsTemplate t, int n, boolean instant, int landmass)` | An order of a terminal for a landmass by the card's path: the pick, then the order. |
+| 1550 | 8 | `static City portCity(Fixtures f, String label, boolean homeShore)` | A city of forty houses that owns the island square (shore on it) and, when asked, a stretch of home's coast. |
+| 1562 | 1 | `static String stateOf(City c)` | The saved placements as JSON: what the save writes under "landmasses" (null for none). |
+| 1565 | 15 | `static Square thirdLandmass(World w, EarthData d)` | The third landmass for the closure's third leg: the first cell of a landmass in the tile west of Goeree, and a square about it with dry ground and shore. |
+| 1581 | 161 | `static void twoPortsLink(Fixtures f, EarthData data)` |  |
+
+### 6. DEMOLITION (lines 1743-1821)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1747 | 74 | `static void demolition(Fixtures f)` |  |
+
+### 6 (continued). SAVED BETWEEN A DEMOLITION AND THE MONTH'S SETTLE (lines 1822-1867)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1830 | 23 | `static void savedWhileDemolishing(Fixtures f) throws Exception` | A hand demolition of the last unit off home, or of an island's shell, leaves its row all home until the month's settle drops it; the save written in that window must not carry the row (a load drops it, so a resave los... |
+| 1855 | 12 | `static void resaved(City c, String what) throws Exception` | A city saved, read back and saved again: the two saves are the same but for the time and the name. |
+
+### 7. THE CHOICE (lines 1868-1971)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1873 | 11 | **type** `static final class StubStock implements Landmasses.Stock` | What Landmasses reads of the buildings, for a unit test of the rule: one terminal template and fixed counts. |
+| 1875 | 1 | `public int[] portTemplates()` _(in LandmassCheck.StubStock)_ |  |
+| 1876 | 1 | `public boolean known(int template)` _(in LandmassCheck.StubStock)_ |  |
+| 1877 | 1 | `public int standing(int template)` _(in LandmassCheck.StubStock)_ |  |
+| 1878 | 1 | `public int onSite(int template)` _(in LandmassCheck.StubStock)_ |  |
+| 1879 | 1 | `public int shell(int template)` _(in LandmassCheck.StubStock)_ |  |
+| 1880 | 1 | `public List<int[]> demolitions(int template)` _(in LandmassCheck.StubStock)_ |  |
+| 1881 | 1 | `public double landSqFt(int template)` _(in LandmassCheck.StubStock)_ |  |
+| 1882 | 1 | `public int cargo(int template)` _(in LandmassCheck.StubStock)_ |  |
+| 1885 | 86 | `static void theChoice(Fixtures f)` |  |
+
+### 9. THE SAVE (lines 1972-2076)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1976 | 75 | `static void theSave(Fixtures f) throws Exception` |  |
+| 2053 | 12 | `static void diffPaths(String path, com.google.gson.JsonElement a, com.google.gson.JsonElement b, java.util.List<String> out, in...` | The paths at which two saves' JSON differ, down to the leaf (at most `most`): what jsonDiff() names only by its top key. |
+| 2066 | 4 | `static void assertSaved(City c, int slot)` |  |
+| 2071 | 5 | `static GameFiles.Result quietlyResult(java.util.function.Supplier<GameFiles.Result> s)` |  |
+
+### 10. THE MAP (lines 2077-2586)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2082 | 3 | `static boolean unlinkedPlot(World w, CityLand land, Landmasses lms, long x, long y)` | Whether plot (x, y) is owned dry ground on a landmass the model has not linked: ground the map must draw nothing on. |
+| 2091 | 28 | `static int[] drawnOnUnlinked(CityMap map, World w, CityLand land, Landmasses lms, long tx0, long ty0, int n)` | What the map draws on unlinked ground, counted by brute force over the n x n tiles from (tx0, ty0) with the painter's own inputs (CityMap.tileInput()): {plots under building boxes, street plots, plots of the runs, sid... |
+| 2121 | 16 | `static int boxesOnLandmass(CityMap map, World w, int id, long tx0, long ty0, int n)` | How many buildings the map draws with their first plot on landmass `id` over the n x n tiles from (tx0, ty0): every box but a terminal's work and a part of a building counted on another tile. |
+| 2139 | 18 | `static long freePlots(CityMap map, World w, Landmasses lms, boolean linkedOnly)` | The plots the map's districts could build on by brute force over the tiles of the owned box: owned, buildable, and - when `linkedOnly` - on a landmass the model links. |
+| 2159 | 5 | `static long districtsFree(CityMap map)` | The free plots the map's districts hold, summed. |
+| 2166 | 3 | `static boolean ownedDryOn(World w, CityLand land, int id, long x, long y)` | Whether plot (x, y) is owned dry ground of landmass `id`, by the model's own readers. |
+| 2177 | 18 | `static int[] givenToPlansAndRuns(CityMap map, World w, CityLand land, int id, Square sq)` | What the district plans and the runs are given of landmass `id`'s owned dry ground, a plot at a time over the square: {plots looked at, those in a district the map holds, those the plan's input (CityMap.planInputHere(... |
+| 2197 | 12 | `static long landStampOfSidecar(byte[] deflated) throws java.io.IOException` | The land stamp a sidecar's header carries (after the magic, the format, the world, the month, its own stamp and the site). |
+| 2211 | 16 | `static int[] worksOnField(CityMap m, Deposit field, Resource r)` | The sites of a field as the map lists them (CityMap.siteList()), and how many carry a works: {sites listed, sites with a works}. |
+| 2229 | 6 | `static Landmasses.Picture linkedWith(Landmasses.Picture p, int id)` | The picture with a landmass added to its linked set and its stamp moved: what a link makes of it, handed to a map by hand. |
+| 2236 | 350 | `static void theMap(Fixtures f) throws Exception` |  |
+
+### 11. THE WORDS (lines 2587-2917)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2592 | 1 | `static String km2Words(double sqFt)` | A km2 figure as the report line writes it. |
+| 2595 | 3 | `static boolean islandPort(City c, BuildingsTemplate gc)` | The landmass kinds of terminal ordered by the card's path: the general cargo terminal, on the island. |
+| 2599 | 318 | `static void theWords(Fixtures f)` |  |
+
+### 12. GROWN ACROSS LANDMASSES (lines 2918-3240)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2928 | 63 | `static String audit(Game g)` | The model's books of the terminals and the ground, audited at one look: the linked free ground fits the linked owned ground less the linked built ground; the ground the unlinked landmasses' terminals hold is what the ... |
+| 2993 | 12 | `static String booksDiffer(List<Landmasses.Row> books, List<Landmasses.Row> recount)` | What differs between the books' rows and a recount's, ignoring the name and whether the landmass is linked; null when they are the same books. |
+| 3007 | 16 | `static void theAudit(Fixtures f)` | The audit, tried on books gone stale: land bought and the books never told. |
+| 3025 | 5 | `static int buildingsOf(Game g)` | The buildings standing, every template's. |
+| 3031 | 162 | `static void grown(Fixtures f)` |  |
+| 3205 | 35 | `static void grownShort(Fixtures f)` | 12 (AL1, 2026-11-09). |
+
+### 13. THE FULL FILE (lines 3241-3363)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3246 | 13 | `static EarthData theEarth()` | The Earth's data where it is named or lies at its place, or null - and the one line saying so. |
+| 3263 | 74 | `static void fullFile(EarthData file)` |  |
+| 3338 | 17 | `private static void look(Game g, int[] looks, String[] first)` |  |
+| 3357 | 6 | `static double[] dryArea(double km2)` | The five areas of an offer of this many square kilometres of dry ground. |
 
