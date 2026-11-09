@@ -4628,6 +4628,7 @@ public class MapCheck {
             firstMs = (monthClock() - t0) / 1e6;
             firstWall = (System.nanoTime() - w0) / 1e6;
             kept &= logsAddUp(m) && m.freeKept();
+            long[] partsBefore = m.guardPartCounts();
             StringBuilder months = new StringBuilder();
             for (int month = 0; month < 12; month++) {
                 for (int t = 0; t < c.length; t++) c[t] += c[t] / 10_000;
@@ -4655,6 +4656,7 @@ public class MapCheck {
             kept &= logsAddUp(m) && m.freeKept();
             if (downMs > worst) { worst = downMs; worstsWall = downWall; }
             worstWall = Math.max(worstWall, downWall);
+            long[] partsAfter = m.guardPartCounts();
             String size = TIMES[i] < 10_000 ? "5" : "10";
             String clock = CPU_TIMED ? "the main thread's CPU" : "the wall clock (this JVM cannot read a thread's CPU finely enough)";
             out.printf("      x %,.0f, in ms of %s / on the wall clock: +0.05%% in %.2f/%.2f, then a year of +0.01%%:%s,"
@@ -4665,6 +4667,12 @@ public class MapCheck {
                     + (CPU_TIMED ? "the main thread's CPU" : "the wall clock"), Timing.within(worst, RECONCILE_MS));
             check("...and its districts still sum to the counts exactly", Arrays.equals(m.totals(), c));
             check("...and after every month every district's log sums to its counts, and the room the walks read is each district's own", kept);
+            // UP9-C: the reserves' guard's digest is kept by district, so a month's recompute builds only the districts whose runs or land moved.
+            long partsBuilt = partsAfter[0] - partsBefore[0], partsKept = partsAfter[1] - partsBefore[1];
+            out.printf("      x %,.0f: the reserves' guard's digest over the year of +0.01%% and the -0.05%% after it built %,d districts' parts and kept %,d%n",
+                    TIMES[i], partsBuilt, partsKept);
+            check("at " + size + " billion the reserves' guard's digest kept districts' parts across the months", partsKept > 0);
+            check("...and the digest as kept is the digest worked out afresh", m.guardDigestFresh() == m.runs().guardVersion());
         }
     }
 

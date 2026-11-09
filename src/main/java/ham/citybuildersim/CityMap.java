@@ -269,6 +269,11 @@ public final class CityMap {
         /** (UP5) Its own stamp as last worked out (CityMap.ownStamp()) and the key of the inputs it was worked out from; ownHas false until the first. The map's thread. */
         long ownKept, ownKeyKept;
         boolean ownHas;
+        /** (UP9-C) The part of the reserves' guard's digest its mined sites' boxes made (CityMap.digestOfBlockers()), the key of what those read when it was worked out, and whether there is one yet. The screen's thread, never saved. */
+        long guardKey, guardPart;
+        boolean guardKept;
+        /** (UP9-C) Whether it is in the map's list of the districts that have site runs (CityMap.guardRunDistricts). The screen's thread, never saved. */
+        boolean guardListed;
 
         /**
          * ITS LOG (batch CL3): the changes to its counts, month by month, in the order they came - a record {month, type,
@@ -2393,6 +2398,11 @@ public final class CityMap {
             runs = less.length == 0 ? null : less;
         }
         d.siteRuns[slot] = runs;
+        if (runs != null && !d.guardListed) {
+            // UP9-C: the one writer that gives a district runs lists it for the reserves' guard's digest (relay() only takes them away).
+            guardRunDistricts.add(d);
+            d.guardListed = true;
+        }
         moved(d);
         changes++;
         minedTouched.add((baseDX + d.dx) << 32 ^ ((baseDY + d.dy) & 0xffffffffL));
@@ -4745,42 +4755,127 @@ public final class CityMap {
         return r;
     }
 
-    /** The guard's version: guardDigestFresh(), kept against `changes`, which is read after sitedNow() as placeSited() may move it. */
+    /** The guard's version: the digest of the blockers, kept against `changes`, which is read after sitedNow() as placeSited() may move it. */
     private long guardDigest() {
         sitedNow();
         long at = changes;
         if (at != guardDigestAt) {
-            guardDigestKept = digestOfBlockers();
+            guardDigestKept = digestOfBlockers(false);
             guardDigestAt = at;
         }
         return guardDigestKept;
     }
 
-    /** The guard's digest worked out afresh, the kept one ignored: for MapCheck 18 (UP9). */
+    /** The guard's digest worked out afresh, every district's part built again and the kept ones ignored: for MapCheck 18 (UP9). */
     long guardDigestFresh() {
         sitedNow();
-        return digestOfBlockers();
+        return digestOfBlockers(true);
+    }
+
+    /* ----- UP9-C: the digest kept by district (2026-11-09) ----- */
+
+    /*
+     * WHY: the digest above is worked out again whenever `changes` moved, and every reconcile moves it with every district it touched; each such
+     * district's `version` moved too, and siteList() is kept by that version, so every recompute built the lists of every district that has site runs
+     * afresh: some 15 recomputes in the 13 months MapCheck 5 times (about one a month), each of some 2,000 lists at 5 billion (14,661 districts, 30-53
+     * ms) and some 3,600 at 10 billion (29,255 districts, 64-101 ms), against the 5 ms it allows a month's change. Each district's part of the digest is
+     * therefore kept against a key of exactly what its mined boxes read (guardKeyOf()), and a recompute builds only the districts whose runs or land
+     * moved. It also walks only the districts with runs (guardRunDistricts, some 3,590 of 29,255 at 10 billion), not every district's slots: that walk
+     * alone cost 2 to 6 ms a month at 10 billion.
+     */
+
+    /**
+     * The districts that have site runs, as markRun() gives them (District.guardListed says one is in it), for the kept digest to walk. A district whose
+     * slots are all null again is dropped from it by the walk that finds it so. Never saved: a map loaded places its mines afresh through markRun().
+     */
+    private final ArrayList<District> guardRunDistricts = new ArrayList<>();
+
+    /** How many districts' parts of the digest were built (their mined sites' boxes folded) and how many were kept, cumulative: never saved. */
+    private long guardPartsBuilt, guardPartsKept;
+
+    /** {parts built, parts kept} of the digest so far (the fresh digest builds every part it meets): for MapCheck 5 and 18 (UP9). */
+    long[] guardPartCounts() { return new long[] { guardPartsBuilt, guardPartsKept }; }
+
+    /**
+     * The land's part of every district's key, worked out once a recompute: what siteList() reads of the land beyond a district's own runs - the ground's
+     * key as groundKey() folds it without the linked set (a purchase, a centre fill), the legacy field's sites and place, and the base the districts' dx
+     * and dy are against. Each folded with its own odd multiplier so that no two swap unseen. Not holdingStates: a site's state plays no part in its box.
+     */
+    private long guardLandKey() {
+        long g = World.mix(landVersion ^ ((long) land.purchases().size() << 32) ^ land.centreStamp());
+        return World.mix(g ^ land.legacySites() * 0x9E3779B97F4A7C15L ^ land.legacyX() * 0xC2B2AE3D27D4EB4FL ^ land.legacyY() * 0x165667B19E3779F9L
+                ^ baseDX * 0xD6E8FEB86659FD93L ^ baseDY * 0xFF51AFD7ED558CCDL);
+    }
+
+    /**
+     * A district's key: the land's, its dx and dy, and each slot's run array element by element (a null slot has a marker of its own, and each array's
+     * length is mixed in so that a run moved from one array to the next cannot read the same). Chained through World.mix(), never summed, so that the
+     * order of the runs, which is the order the works are given the sites in, is in it.
+     */
+    private long guardKeyOf(District d, long landKey) {
+        long h = World.mix(landKey ^ d.dx * 0x9E3779B97F4A7C15L ^ d.dy * 0xC2B2AE3D27D4EB4FL);
+        for (int q = 0; q < d.siteRuns.length; q++) {
+            int[] rs = d.siteRuns[q];
+            if (rs == null) {
+                h = World.mix(h ^ q * 0x9E3779B97F4A7C15L ^ 0x4E554C4CL);
+                continue;
+            }
+            h = World.mix(h ^ q * 0x9E3779B97F4A7C15L ^ rs.length * 0x165667B19E3779F9L);
+            for (int i = 0; i < rs.length; i++) h = World.mix(h ^ q * 0x9E3779B97F4A7C15L ^ i * 0xC2B2AE3D27D4EB4FL ^ rs[i]);
+        }
+        return h;
     }
 
     /**
      * A digest of what reserveBlocked() reads, through the same calls: the shore works' boxes, and the boxes of the mined sites of every district that
      * has any site runs (siteList()), each with its district's dx and dy. Order-free (a sum), each box's fields folded with distinct odd multipliers
      * before World.mix() so that a swap of two of them moves it, and mixed at the end with baseDX and baseDY, which the districts' dx and dy are against.
+     * A district's part is kept against its key (guardKeyOf()) and added as it was while the key stands; `fresh` builds every part afresh and keeps none.
      */
-    private long digestOfBlockers() {
+    private long digestOfBlockers(boolean fresh) {
         long sum = 0;
         for (CityShore.Work w : shore.works()) {
             sum += World.mix(0x574F524BL ^ w.x0() * 0x9E3779B97F4A7C15L ^ w.y0() * 0xC2B2AE3D27D4EB4FL ^ w.w() * 0x165667B19E3779F9L ^ w.h() * 0xD6E8FEB86659FD93L);
         }
-        for (District d : districts) {
+        long landKey = fresh ? 0 : guardLandKey();
+        // The kept digest walks the districts with runs; the fresh one every district, so that a writer of runs that missed the list is seen.
+        List<District> walk = fresh ? districts : guardRunDistricts;
+        for (int i = 0; i < walk.size(); i++) {
+            District d = walk.get(i);
             boolean any = false;
             for (int[] rs : d.siteRuns) any |= rs != null;
-            if (!any) continue;
+            if (!any) {
+                if (!fresh) {
+                    // Its runs are gone: out of the list (the last takes its place) and the flag cleared, to be listed again by markRun().
+                    District last = guardRunDistricts.remove(guardRunDistricts.size() - 1);
+                    if (last != d) guardRunDistricts.set(i, last);
+                    d.guardListed = false;
+                    i--;
+                }
+                continue;
+            }
+            long key = 0;
+            if (!fresh) {
+                key = guardKeyOf(d, landKey);
+                if (d.guardKept && d.guardKey == key) {
+                    sum += d.guardPart;
+                    guardPartsKept++;
+                    continue;
+                }
+            }
+            long part = 0;
             for (DrawnSite s : siteList(d.dx, d.dy)) {
                 if (s.mine() < 0) continue;
-                sum += World.mix(0x4D494E45L ^ d.dx * 0x9E3779B97F4A7C15L ^ d.dy * 0xC2B2AE3D27D4EB4FL ^ s.x0() * 0x165667B19E3779F9L
+                part += World.mix(0x4D494E45L ^ d.dx * 0x9E3779B97F4A7C15L ^ d.dy * 0xC2B2AE3D27D4EB4FL ^ s.x0() * 0x165667B19E3779F9L
                         ^ s.y0() * 0xD6E8FEB86659FD93L ^ s.x1() * 0xFF51AFD7ED558CCDL ^ s.y1() * 0xC4CEB9FE1A85EC53L);
             }
+            guardPartsBuilt++;
+            if (!fresh) {
+                d.guardKey = key;
+                d.guardPart = part;
+                d.guardKept = true;
+            }
+            sum += part;
         }
         return World.mix(sum ^ baseDX * 0x9E3779B97F4A7C15L ^ baseDY * 0xC2B2AE3D27D4EB4FL);
     }
