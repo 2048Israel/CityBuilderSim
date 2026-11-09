@@ -1923,8 +1923,8 @@ public class CentralBankCheck {
 
     /**
      * A fall in the world's price level by `fall` (a fraction of it), at once: the level and the newest of the
-     * thirteen months it keeps (WorldEconomy.toSaveArray(), the level first, the ring oldest first, then the mean and
-     * the shock's factor), the headline rate and the mean as they were. The harnesses' way to a world price level
+     * thirteen months it keeps (WorldEconomy.toSaveArray(), the level first, the ring oldest first, then the mean,
+     * the shock's factor and the trend's three), the headline rate and the mean as they were. The harnesses' way to a world price level
      * (OilCheck.noRefinery() sets one through restore() as well); what follows is the model's own - imports
      * cheaper at once, then the currency answering the new parity. Through shockLevel() first (WN4): on the
      * US's path the next month is the path's times the factor, and a level set through restore() alone is forgotten.
@@ -1933,7 +1933,7 @@ public class CentralBankCheck {
         WorldEconomy world = g.getWorldEconomy();
         world.shockLevel(1 - fall);
         double[] saved = world.toSaveArray();
-        saved[saved.length - 3] = saved[0];
+        saved[2 + WorldEconomy.LEVEL_RING] = saved[0];
         world.restore(saved);
     }
 

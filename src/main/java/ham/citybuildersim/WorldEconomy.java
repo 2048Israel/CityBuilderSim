@@ -240,6 +240,16 @@ public class WorldEconomy {
 
     private int monthsRun;
 
+    /*
+     * Where the trend began (MW1, WN4-W, 2026-11-09). A city saved on the US's path and loaded without the world file used to walk back to the
+     * flat trend of 1 from wherever the path had left it, half the gap in about ten years; now the trend starts at the level the walk is handed.
+     * trendBase is that level (1 for a world that never had a path), trendStart the month count it began at, and lastOnPath says the last month
+     * was a step on the path, so the next walked month is the hand-over. All three are saved, after the shock factor.
+     */
+    private double trendBase = 1;
+    private int trendStart;
+    private boolean lastOnPath;
+
     /**
      * Holds the world's prices still, for a fixture measuring something else.
      *
@@ -264,6 +274,13 @@ public class WorldEconomy {
             stepOnUsPath(month);
             return;
         }
+        // The walk takes over from the path: its trend starts at the level it is handed, not at 1 (MW1). A load can restore before or after
+        // the moneys are followed, so the hand-over is caught here and not in followUsPath.
+        if (lastOnPath) {
+            trendBase = priceLevel;
+            trendStart = monthsRun;
+            lastOnPath = false;
+        }
         // The default path seed draws the dollar it always drew (the mix of the seed's difference from it is 0 there), so the default founding's
         // world is the one every harness and the playtest were tuned on; any other seed draws its own (WN3).
         long off = seed == Nations.DEFAULT_SEED ? 0 : World.mix(seed - Nations.DEFAULT_SEED);
@@ -283,7 +300,7 @@ public class WorldEconomy {
          * only a century of it is argued with.
          */
         monthsRun++;
-        double onTrend = Math.pow(1 + TREND_INFLATION, monthsRun / 12.0);
+        double onTrend = trendBase * Math.pow(1 + TREND_INFLATION, (monthsRun - trendStart) / 12.0);
         priceLevel += (onTrend - priceLevel) * TREND_PULL;
         if (priceLevel < 1e-6) priceLevel = 1e-6;
         recordLevel();
@@ -291,7 +308,7 @@ public class WorldEconomy {
 
     /** Where the trend says the world's prices should be by now. */
     public double trendLevel() {
-        return Math.pow(1 + TREND_INFLATION, monthsRun / 12.0);
+        return trendBase * Math.pow(1 + TREND_INFLATION, (monthsRun - trendStart) / 12.0);
     }
 
     /** What the world's basket costs now against what it cost at founding. */
@@ -348,7 +365,7 @@ public class WorldEconomy {
         return priceLevel / yearAgo - 1;
     }
 
-    private static final int LEVEL_RING = 13;
+    static final int LEVEL_RING = 13;
     /** The level at the end of each of the last thirteen months; head is the newest. */
     private final double[] levels = new double[LEVEL_RING];
     private int head;
@@ -455,13 +472,14 @@ public class WorldEconomy {
         annualInflation = path.pace(t);
         priceLevel = Math.max(1e-6, levelFactor * path.level(t));
         monthsRun++;
+        lastOnPath = true;
         recordLevel();
     }
 
     /* -------------------------------- carrying -------------------------------- */
 
     public double[] toSaveArray() {
-        double[] out = new double[5 + LEVEL_RING];
+        double[] out = new double[8 + LEVEL_RING];
         out[0] = priceLevel;
         out[1] = annualInflation;
         out[2] = monthsRun;
@@ -470,6 +488,10 @@ public class WorldEconomy {
         out[3 + LEVEL_RING] = meanInflation;
         // ...and after the mean, what a shock multiplied the US's path by (WN4): an array without it reads 1.
         out[4 + LEVEL_RING] = levelFactor;
+        // ...then where the trend began, the month count it began at and whether the last month was on the path (MW1): an array without them reads 1, 0, off.
+        out[5 + LEVEL_RING] = trendBase;
+        out[6 + LEVEL_RING] = trendStart;
+        out[7 + LEVEL_RING] = lastOnPath ? 1 : 0;
         // Oldest first, so restore() can replay them in order.
         for (int back = LEVEL_RING - 1; back >= 0; back--) {
             out[3 + (LEVEL_RING - 1 - back)] = levels[(head - back + LEVEL_RING) % LEVEL_RING];
@@ -501,6 +523,10 @@ public class WorldEconomy {
                 : LEGACY_MEAN_INFLATION;
         // What a shock multiplied the US's path by (WN4); a save without the slot, or a walk's, is 1.
         levelFactor = saved.length > 4 + LEVEL_RING && saved[4 + LEVEL_RING] > 0 ? saved[4 + LEVEL_RING] : 1;
+        // Where the trend began, when, and whether the last month was on the US's path (MW1); a shorter, older array leaves 1, 0 and off.
+        trendBase = saved.length > 5 + LEVEL_RING && saved[5 + LEVEL_RING] > 0 ? saved[5 + LEVEL_RING] : 1;
+        trendStart = saved.length > 6 + LEVEL_RING ? (int) Math.round(saved[6 + LEVEL_RING]) : 0;
+        lastOnPath = saved.length > 7 + LEVEL_RING && saved[7 + LEVEL_RING] == 1;
     }
 
     /** The mean every city founded before 2026-09-13 grew up in. See restore(). */
@@ -514,6 +540,9 @@ public class WorldEconomy {
         // A new city meets no path until its moneys are built again (Game), and no shock (WN4).
         path = null;
         levelFactor = 1;
+        trendBase = 1;
+        trendStart = 0;
+        lastOnPath = false;
         head = 0;
         java.util.Arrays.fill(levels, 0);
         backcastLevels();
