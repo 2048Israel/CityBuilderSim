@@ -1504,15 +1504,12 @@ public class UserInterface extends Application {
      * advances a game the player has not opened yet.
      */
     static boolean isGameMenu(String screen) {   // package-private since TR2: FollowRules asks it of the logged screen too
-        switch (screen) {
-            case "showMainMenu": case "showSavingMenu": case "showSaveSlotConfirm":
-            case "showLoadMenu": case "loadSlot": case "showSaveResult":
-            case "showSettingsMenu": case "showCreditsMenu": case FoundingScreen.SCREEN: case ReplayMode.LIST:
-                return true;
-            default:
-                return false;
-        }
+        return screen != null && GAME_MENUS.contains(screen);
     }
+
+    /** The screens isGameMenu() names, in one list so a check can walk them (TR2's review: ReplayCheck kept a copy of it). */
+    static final List<String> GAME_MENUS = List.of("showMainMenu", "showSavingMenu", "showSaveSlotConfirm",
+            "showLoadMenu", "loadSlot", "showSaveResult", "showSettingsMenu", "showCreditsMenu", FoundingScreen.SCREEN, ReplayMode.LIST);
 
     /**
      * Where a scroller inside the CURRENT screen was left, by name.

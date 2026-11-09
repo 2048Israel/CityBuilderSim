@@ -17178,8 +17178,11 @@ public class Game {
         return Recording.isId(recordingId) ? gameFiles.recordingsDirectory().resolve(recordingId) : null;
     }
 
-    /** Set on the save writer's thread when a recording's first month after a load could not clear the old timeline's later months (Recording.monthTask); read on the FX thread by recordForReplay(), which then ends the recording. */
-    private volatile boolean recordingBroken;
+    /** The recording's timeline: a load or switching on starts the next (TR2's review: a task of the one before cannot end this one). FX thread only. */
+    private int recordingTimeline;
+
+    /** The timelines whose first write could not clear the old months: added on the writer's thread (Recording.monthTask), read by every recording task as it writes (submitRecording) and by recordForReplay(), which then ends the recording. */
+    private final java.util.Set<Integer> brokenTimelines = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     /** Months the clock left out of the recording because the writer was behind (RECORD_BACKLOG). */
     public int getMonthsNotRecorded() { return monthsNotRecorded; }
@@ -17208,12 +17211,12 @@ public class Game {
             }
             recording = true;
             recordedSinceLoad = false;
-            recordingBroken = false;
+            recordingTimeline++;
         } else {
             boolean was = recording;
             recording = false;
             if (was && recordedSinceLoad && recordingFolder() != null) {
-                submitRecording(Recording.historyTask(gameFiles, recordingFolder(), historySave.snapshot()));
+                submitRecording(recordingTimeline, Recording.historyTask(gameFiles, recordingFolder(), historySave.snapshot()));
             }
         }
     }
@@ -17224,11 +17227,23 @@ public class Game {
                 recordingStartedAt > 0 ? recordingStartedAt : System.currentTimeMillis(), founding.getWorldKey().earth());
     }
 
-    /** Hands the writer a recording file and counts it until it is written (a failure is printed there). */
-    private void submitRecording(SaveWriter.Task task) {
+    /**
+     * Hands the writer a recording file of {@code timeline} and counts it until it is written (a failure is printed there). The
+     * task checks the timeline as it writes, not as it is queued: once the timeline's first write has failed to clear the old
+     * months, nothing more of it is written beside them, however many tasks were already waiting (TR2's review).
+     */
+    private void submitRecording(int timeline, SaveWriter.Task task) {
         Path target = task.target();
         recordingsWaiting.add(target);
-        SaveWriter.shared().submit(task, result -> {
+        SaveWriter.Task checked = new SaveWriter.Task() {
+            @Override public Path target() { return target; }
+            @Override public GameFiles.Result write() {
+                return brokenTimelines.contains(timeline)
+                        ? GameFiles.Result.failed(target, "the old timeline is still on disk, so this recording writes nothing more")
+                        : task.write();
+            }
+        };
+        SaveWriter.shared().submit(checked, result -> {
             if (!result.ok) System.out.println("Recording: " + result.message());
             recordingsWaiting.remove(target);
             synchronized (recordingRoom) {
@@ -17266,8 +17281,7 @@ public class Game {
      */
     private void recordForReplay(SaveWriter.Job autosaved) {
         if (!recording || replayCopy || recordingId == null) return;
-        if (recordingBroken) {
-            recordingBroken = false;
+        if (brokenTimelines.contains(recordingTimeline)) {
             recording = false;
             recordedSinceLoad = false;
             System.out.println("Recording ended for " + getCityName() + " at month " + month
@@ -17304,17 +17318,11 @@ public class Game {
         HistorySave history = first ? historySave.snapshot() : null;
         Path folder = recordingFolder();
         Recording.Meta meta = recordingMeta();
-        submitRecording(Recording.monthTask(gameFiles, folder, meta, month, snapshot, map, first, () -> recordingBroken = true));
+        int timeline = recordingTimeline;
+        submitRecording(timeline, Recording.monthTask(gameFiles, folder, meta, month, snapshot, map, first, () -> brokenTimelines.add(timeline)));
         if (first) {
             // Written after the month's task on the same thread: a month that could not clear the old timeline leaves its history alone too (TR2).
-            SaveWriter.Task historyTask = Recording.historyTask(gameFiles, folder, history);
-            submitRecording(new SaveWriter.Task() {
-                @Override public Path target() { return historyTask.target(); }
-                @Override public GameFiles.Result write() {
-                    return recordingBroken ? GameFiles.Result.failed(historyTask.target(), "the old timeline is still on disk, so its history is kept")
-                            : historyTask.write();
-                }
-            });
+            submitRecording(timeline, Recording.historyTask(gameFiles, folder, history));
             recordedSinceLoad = true;
         }
         lastRecordNanos = System.nanoTime() - began;
@@ -17323,7 +17331,7 @@ public class Game {
     /** The autosave's history, handed to the recording from the snapshot the save made (autosave()); only once a month of this timeline is on disk. */
     private void recordHistoryFrom(SaveWriter.Job job) {
         if (!recording || replayCopy || recordingFolder() == null || !recordedSinceLoad) return;
-        submitRecording(Recording.historyTask(gameFiles, recordingFolder(), job.history()));
+        submitRecording(recordingTimeline, Recording.historyTask(gameFiles, recordingFolder(), job.history()));
     }
 
     /** Makes this game the replay's throwaway copy: recording off, and never on again. Never undone. */
@@ -20785,7 +20793,7 @@ public class Game {
             this.recordingId = loaded.getRecordingId();
             this.recording = loaded.isRecording() && recordingId != null && !replayCopy;
             this.recordedSinceLoad = false;
-            this.recordingBroken = false;
+            this.recordingTimeline++;
             if (recordingId != null && !Recording.isId(recordingId)) {
                 // An id that is not the shape Recording.newId writes could name a folder outside recordings/ (TR2): no folder, no recording.
                 System.out.println("The save's recording id \"" + recordingId + "\" is not one this game writes; recording is off for this city.");

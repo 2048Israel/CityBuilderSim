@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -76,6 +77,9 @@ final class Reenactor {
     private double pressX, pressY;
     private boolean still;
 
+    /** The keys whose KEY_PRESSED was fired and whose KEY_RELEASED has not been, with the modifiers of the press: reset() lets go of them, so a copy does not keep panning (TR2's review). */
+    private final Map<KeyCode, Integer> keysDown = new LinkedHashMap<>();
+
     Reenactor(UserInterface ui) {
         this.ui = ui;
     }
@@ -95,11 +99,24 @@ final class Reenactor {
         return SET_PRESSED != null;
     }
 
-    /** The hover and the press forgotten, without a word to any node: after a month was loaded whole, the nodes they were on are gone. */
+    /**
+     * The hover and the press forgotten, without a word to any node: after a month was loaded whole, the nodes they were on are
+     * gone. The keys still down are let go of (a KEY_RELEASED each, to the control that has the focus), so a W pressed when Follow
+     * stops does not keep the copy panning.
+     */
     void reset() {
         for (Node n : hovered) setFlag(SET_HOVER, n, false);
         hovered = new ArrayList<>();
         forgetPress();
+        Map<KeyCode, Integer> held = new LinkedHashMap<>(keysDown);
+        keysDown.clear();
+        Scene scene = ui.replayScene();
+        if (scene == null) return;
+        for (Map.Entry<KeyCode, Integer> k : held.entrySet()) {
+            int m = k.getValue();
+            fire(target(scene), new KeyEvent(scene, target(scene), KeyEvent.KEY_RELEASED, KeyEvent.CHAR_UNDEFINED, "", k.getKey(),
+                    (m & InputLog.SHIFT) != 0, (m & InputLog.CTRL) != 0, (m & InputLog.ALT) != 0, (m & InputLog.META) != 0));
+        }
     }
 
     /** The press forgotten: no node keeps the pressed state it was given. */
@@ -189,6 +206,8 @@ final class Reenactor {
         if (v != Verdict.KEEP || !gesture || pressTarget == null) return v;
         if (Math.abs(e.x() - pressX) > CLICK_SLOP || Math.abs(e.y() - pressY) > CLICK_SLOP) still = false;
         int b = e.code() == 0 ? pressButton : e.code();
+        // The scene keeps picking the node under the pointer while a button is down and tells it enter and exit (a Button pressed and dragged off disarms), but the drag itself goes to the press target.
+        updateHover(pick(e.x(), e.y()), e);
         fire(pressTarget, mouse(MouseEvent.MOUSE_DRAGGED, pressTarget, e.x(), e.y(), button(b), 0, pressMods, b));
         return Verdict.KEEP;
     }
@@ -394,6 +413,8 @@ final class Reenactor {
         boolean down = e.kind() == InputLog.Kind.KEY_DOWN;
         fire(target(scene), new KeyEvent(scene, target(scene), down ? KeyEvent.KEY_PRESSED : KeyEvent.KEY_RELEASED,
                 KeyEvent.CHAR_UNDEFINED, text, code, shift, ctrl, alt, meta));
+        if (down) keysDown.put(code, m);
+        else keysDown.remove(code);
         // The typed character follows a press that carries one (a printable key with no shortcut modifier).
         if (down && !text.isEmpty() && !ctrl && !alt && !meta && !Character.isISOControl(text.charAt(0))) {
             fire(target(scene), new KeyEvent(scene, target(scene), KeyEvent.KEY_TYPED, text, "", KeyCode.UNDEFINED, shift, ctrl, alt, meta));

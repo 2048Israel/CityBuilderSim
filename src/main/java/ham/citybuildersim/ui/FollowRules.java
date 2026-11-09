@@ -1,6 +1,7 @@
 package ham.citybuildersim.ui;
 
 import ham.citybuildersim.InputLog;
+import java.util.List;
 
 /**
  * What Follow re-enacts of a logged sitting and what it drops (TR2, 2026-11-09): the verdict on one logged input event, from
@@ -39,6 +40,11 @@ public final class FollowRules {
 
     /** The log's code of the P key, which opens the game menu too when nobody is typing. */
     static final int P = InputLog.keyCode("P");
+
+    /** The screens the rules treat as game menus (the model's own list, UserInterface.GAME_MENUS), for a harness that walks them. */
+    public static List<String> gameMenus() {
+        return UserInterface.GAME_MENUS;
+    }
 
     /** KEEP: re-enact it; every other verdict is a reason for dropping the event. */
     public enum Verdict {

@@ -76,6 +76,30 @@ menu, so the check sees what it is there for.
 - **No ensemble**: recording is off unless a city turns it on and Follow runs
   only inside replay, so the default playtest's trace cannot move.
 
+## The stranger's review (at the gate, 2026-11-09)
+
+Ship with follow-ups: replay cannot write slots 1-9 by any path; threading
+and saves clean. Mended on the branch (slice C), each with a fixture that
+went red with its fix taken out:
+
+1. **One recording, one timeline, really** (medium): the months and histories
+   queued behind a first write that fails to clear the old months ran without
+   looking, so they landed beside the old timeline. Every recording task now
+   checks its timeline as it writes (`Game.submitRecording`), and a timeline
+   is a number, bumped at a load and at switching on, with the failed ones in
+   a set (2: a failure of the timeline before can no longer end the new one).
+   ReplayCheck 7 holds the writer (`SaveWriter.hold`) to queue them.
+3. **A drag tells the nodes it crosses** (`Reenactor.drag`): a button pressed
+   and dragged off disarms, as in the real scene, and fires only if dragged
+   back on.
+4. **Keys still down when Follow stops are released** (`Reenactor.reset`), so
+   a W held at the stop does not keep the copy panning.
+5. **The game menus are one list** (`UserInterface.GAME_MENUS`,
+   `FollowRules.gameMenus()`), which ReplayCheck 10 walks.
+6. Not this batch: a click on the drawer's pin or the construction tab in
+   the copy changes the in-memory prefs, which the next prefs save takes to
+   the player's folder (TR1's viewer clicks did too). Pending, TR2-G.
+
 ## Calls (★)
 
 - ★1 **Cinematic mode while following keeps the header and the rail** - the

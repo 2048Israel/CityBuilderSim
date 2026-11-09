@@ -32,6 +32,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.PickResult;
@@ -285,6 +286,51 @@ public final class FollowBench {
             boolean armed = button.isArmed();
             re.play(InputLog.Event.release(ms += 60, at[0], at[1], 1, 0), before);
             add(out, "a press and release on a button arm it and fire its action once", armed && acted[0] == 1 && !button.isArmed());
+
+            // (h) a press dragged off a button: the scene keeps telling the node under the pointer enter and exit while the button is down (TR2's review),
+            // and a Button's behaviour disarms on exit and arms again on enter while it is pressed, so one released off it does not fire and one back on it does
+            double[] away = {at[0] - 150, at[1]};
+            int actedBefore = acted[0];
+            re.play(InputLog.Event.move(ms += 20, at[0], at[1]), before);
+            re.play(InputLog.Event.press(ms += 20, at[0], at[1], 1, 1, 0), before);
+            boolean armedOn = button.isArmed();
+            re.play(InputLog.Event.drag(ms += 20, away[0], away[1], 1), before);
+            boolean armedOff = button.isArmed();
+            re.play(InputLog.Event.release(ms += 60, away[0], away[1], 1, 0), before);
+            add(out, "a press on a button dragged to a point outside it and released there leaves it disarmed and does not fire its action",
+                    armedOn && !armedOff && acted[0] == actedBefore && !button.isArmed());
+            re.play(InputLog.Event.move(ms += 20, at[0], at[1]), before);
+            re.play(InputLog.Event.press(ms += 20, at[0], at[1], 1, 1, 0), before);
+            re.play(InputLog.Event.drag(ms += 20, away[0], away[1], 1), before);
+            boolean offAgain = !button.isArmed();
+            re.play(InputLog.Event.drag(ms += 20, at[0], at[1], 1), before);
+            boolean armedBack = button.isArmed();
+            re.play(InputLog.Event.release(ms += 60, at[0], at[1], 1, 0), before);
+            add(out, "a press on a button dragged off it and back on and released there arms it again and fires its action once",
+                    offAgain && armedBack && acted[0] == actedBefore + 1 && !button.isArmed());
+
+            // (i) a key still down when Follow stops: reset() lets go of it, once (TR2's review)
+            int[] released = {0};
+            javafx.event.EventHandler<KeyEvent> counting = e -> {
+                if (e.getCode() == KeyCode.W) released[0]++;
+            };
+            ui.replayScene().addEventFilter(KeyEvent.KEY_RELEASED, counting);
+            try {
+                re.play(key(ms += 10, true, KeyCode.W, "w"), before);
+                int beforeReset = released[0];
+                re.reset();
+                int afterReset = released[0];
+                re.reset();
+                add(out, "a re-enacted W down and then reset() fires one KEY_RELEASED of W into the scene, and a second reset() fires none",
+                        beforeReset == 0 && afterReset == 1 && released[0] == 1);
+                released[0] = 0;
+                re.play(key(ms += 10, true, KeyCode.W, "w"), before);
+                re.play(key(ms += 10, false, KeyCode.W, "w"), before);
+                re.reset();
+                add(out, "a W let go by its own re-enacted key-up is not released again by reset()", released[0] == 1);
+            } finally {
+                ui.replayScene().removeEventFilter(KeyEvent.KEY_RELEASED, counting);
+            }
 
             // (f) the wheel moves a scroll pane
             double[] over = centre(scroll);

@@ -59,7 +59,9 @@ import ham.citybuildersim.ui.ReplayMoveProbe;
  *      whose recording id is not the shape Recording.newId writes ("../escape", a drive path) gives no folder, recording off, and
  *      records nothing outside recordings/; a first write after a load that fails leaves no month of the old timeline past it, and
  *      one that cannot clear the old months writes nothing and ends the recording on the next month; a month that autosaves is
- *      filled once, and the recording's month is the autosave's save but for its name;
+ *      filled once, and the recording's month is the autosave's save but for its name; a recording's tasks queued behind a first write
+ *      that fails (the writer held: the months after it, the history an autosave hands over, the history switching off writes) write
+ *      nothing beside the old months, and a new timeline (switched off and on) is not ended by the failure of the one before;
  *   8. the timeline (InputTimeline, FollowPlayer): two sittings with a rewind give a segment each (and a third where the recording
  *      holds the older one's later months), startOf finds a month's segment and marker, a skipped month the marker past it, and
  *      none a month no log reaches; a sitting that loads an earlier save is cut into runs; stateAt gives the screen, the mouse, the
@@ -78,7 +80,8 @@ import ham.citybuildersim.ui.ReplayMoveProbe;
  *      press, the ghost sits at the logged pointer, a stop and a join in mid-month reaches the screen and month that a run
  *      from the month's start reaches, a viewer's press ends Follow and his move does only past the grace and 8 px, and leaving
  *      the replay leaves the copy and the player's folder as they were (FollowBench.check and followCheck; the window part is
- *      skipped where JavaFX cannot start).
+ *      skipped where JavaFX cannot start); a press dragged off a button disarms it and a release there does not fire it, one dragged
+ *      back on fires it, a key still down when Follow stops is released once, and the game menus are the model's own list.
  */
 public class ReplayCheck {
 
@@ -1071,6 +1074,16 @@ public class ReplayCheck {
         helper("...and in the city: a first write after a load that cannot clear the old months writes nothing, and the next month ends the recording, saying so",
                 tripFirstWrite(a));
 
+        // (3b) One recording, one timeline: what is queued behind a failing first write, and what a new timeline does after it.
+        String behind = queuedBehindBrokenFirstWrite(a, 4, false);
+        helper("...and the months queued behind that failing first write while the writer is held (the first and 3 more) are not written beside the old ones, nor is the history an autosave hands over:"
+                + " the history file is as it was, and the next month ends the recording" + behind, behind.isEmpty());
+        String behindOff = queuedBehindBrokenFirstWrite(a, 2, true);
+        helper("...and so is the history that switching the recording off writes, behind a first month and one more" + behindOff, behindOff.isEmpty());
+        String newer = newTimelineAfterBrokenOne(a);
+        helper("...and a recording switched off and on again behind a timeline whose first write fails is a new timeline: that failure, which comes after, does not end it,"
+                + " and its months are written" + newer, newer.isEmpty());
+
         // (4) A month that autosaves is filled once.
         long[] tick = {0};
         b.useSaveClockForChecks(() -> tick[0] += 60_000_000_000L);
@@ -1130,6 +1143,135 @@ public class ReplayCheck {
         });
         return !city.isRecording() && said.contains("Recording ended") && Files.isDirectory(trap)
                 && Files.isRegularFile(rec.monthFile(first)) && !Files.exists(rec.monthFile(first + 1)) && !Files.exists(rec.monthFile(first + 2));
+    }
+
+    /** The bytes of a file, or null where there is none. */
+    static byte[] bytesOrNull(Path file) throws IOException {
+        return Files.isRegularFile(file) ? Files.readAllBytes(file) : null;
+    }
+
+    /** A month made undeletable at {@code month}: a directory with a file in it stands where the month's file goes. */
+    static Path trapMonth(Recording rec, int month) throws IOException {
+        Path trap = rec.monthFile(month);
+        Files.createDirectories(trap);
+        Files.writeString(trap.resolve("keep"), "a month that cannot be deleted");
+        return trap;
+    }
+
+    /** The traps trapMonth made, taken away, so the next fixture's first write is not stopped by an older one. */
+    static void removeTraps(Recording rec) throws IOException {
+        try (DirectoryStream<Path> entries = Files.newDirectoryStream(rec.folder(), Recording.MONTH_PREFIX + "*")) {
+            for (Path entry : entries) {
+                if (!Files.isDirectory(entry)) continue;
+                try (java.util.stream.Stream<Path> walk = Files.walk(entry)) {
+                    for (Path p : walk.sorted(java.util.Comparator.reverseOrder()).toList()) Files.delete(p);
+                }
+            }
+        }
+    }
+
+    /**
+     * TR2's review, the tasks queued behind a first write that fails. A month written, one past the months to come made
+     * undeletable, recording off and on (a new timeline), the writer held: {@code months} months are played (the first is the
+     * timeline's first write, which cannot clear the old months), then either an autosave hands the recording its history or
+     * the recording is switched off, which writes it. The writer let go, none of those months is written beside the old ones and
+     * the history file is as it was; when the recording is still on, the next month ends it and says so. What went wrong, or "".
+     */
+    static String queuedBehindBrokenFirstWrite(Game city, int months, boolean switchOff) throws Exception {
+        Recording rec = Recording.at(city.recordingFolder());
+        removeTraps(rec);
+        city.setRecording(true);
+        clockMonth(city);
+        city.awaitSaves();
+        int base = city.getMonth();
+        Path trap = trapMonth(rec, base + months + 2);
+        city.setRecording(false);
+        city.awaitSaves();
+        city.setRecording(true);
+        Path historyFile = rec.folder().resolve(Recording.HISTORY_FILE);
+        byte[] historyBefore = bytesOrNull(historyFile);
+        String problems = "";
+        try {
+            printed(() -> {
+                SaveWriter.shared().hold();
+                try {
+                    for (int i = 0; i < months; i++) clockMonth(city);
+                    if (switchOff) city.setRecording(false);
+                    else city.autosave("tr2 queued");
+                } finally {
+                    SaveWriter.shared().release();
+                }
+                city.awaitSaves();
+            });
+            for (int i = 1; i <= months; i++) {
+                if (Files.exists(rec.monthFile(base + i))) problems += " month " + (base + i) + " was written beside the old timeline;";
+            }
+            if (!Arrays.equals(historyBefore, bytesOrNull(historyFile))) problems += " the history file was rewritten;";
+            if (!Files.isDirectory(trap)) problems += " the month that cannot be deleted is gone;";
+            if (!switchOff) {
+                String said = printed(() -> {
+                    city.toggleNextMonth();
+                    city.awaitSaves();
+                });
+                if (city.isRecording() || !said.contains("Recording ended")) problems += " the next month did not end the recording;";
+                if (Files.exists(rec.monthFile(city.getMonth()))) problems += " the next month was written;";
+            }
+        } finally {
+            SaveWriter.shared().release();
+            removeTraps(rec);
+        }
+        return problems;
+    }
+
+    /**
+     * TR2's review, a timeline whose first write fails and a new one after it. A month written, the next made undeletable (so the
+     * first month of the timeline cannot clear it), recording off and on, the writer held: that first month and one more are
+     * played, the recording is switched off and on (the next timeline) and two more months are played; the writer let go, the
+     * failure of the first timeline comes after the second began. The second timeline's months are written and the next month,
+     * after the failure, does not end its recording. What went wrong, or "".
+     */
+    static String newTimelineAfterBrokenOne(Game city) throws Exception {
+        Recording rec = Recording.at(city.recordingFolder());
+        removeTraps(rec);
+        city.setRecording(true);
+        clockMonth(city);
+        city.awaitSaves();
+        int base = city.getMonth();
+        Path trap = trapMonth(rec, base + 2);
+        city.setRecording(false);
+        city.awaitSaves();
+        city.setRecording(true);
+        String problems = "";
+        try {
+            printed(() -> {
+                SaveWriter.shared().hold();
+                try {
+                    clockMonth(city);
+                    clockMonth(city);
+                    city.setRecording(false);
+                    city.setRecording(true);
+                    clockMonth(city);
+                    clockMonth(city);
+                } finally {
+                    SaveWriter.shared().release();
+                }
+                city.awaitSaves();
+            });
+            String said = printed(() -> {
+                city.toggleNextMonth();
+                city.awaitSaves();
+            });
+            if (!city.isRecording() || said.contains("Recording ended")) problems += " the new timeline's recording was ended;";
+            for (int i = 3; i <= 5; i++) {
+                if (!Files.isRegularFile(rec.monthFile(base + i))) problems += " month " + (base + i) + " of the new timeline is not on disk;";
+            }
+            if (Files.isRegularFile(rec.monthFile(base + 1))) problems += " the first timeline's first month was written;";
+            if (!Files.isDirectory(trap)) problems += " the month that cannot be deleted is gone;";
+        } finally {
+            SaveWriter.shared().release();
+            removeTraps(rec);
+        }
+        return problems;
     }
 
     /* ============ 8. the timeline ============ */
@@ -1467,10 +1609,6 @@ public class ReplayCheck {
 
     /* ============ 10. Follow in the window ============ */
 
-    /** The screens UserInterface.isGameMenu takes for a game menu: the main menu (Save, Load, New city, Settings, Credits and Quit are on it or behind it), the pages they open, and the replay's list. */
-    static final String[] GAME_MENUS = {"showMainMenu", "showSavingMenu", "showSaveSlotConfirm", "showLoadMenu", "loadSlot", "showSaveResult",
-            "showSettingsMenu", "showCreditsMenu", "showFoundingScreen", "showReplayList"};
-
     static void followRulesChecks() {
         System.out.println("\n--- 10. Follow in the window: the rules drop a re-enacted Save, Load and Quit, the clock and the menu keys; then a sitting is played into the real window ---");
         FollowRules.Verdict keep = FollowRules.Verdict.KEEP;
@@ -1481,15 +1619,19 @@ public class ReplayCheck {
         InputLog.Event typedUp = InputLog.Event.key(1_140, false, InputLog.keyCode("Enter"), 0, null);
         List<InputLog.Event> inputs = List.of(move, press, release, wheel, typed, typedUp);
 
+        // The screens the model takes for a game menu: its own list (UserInterface.GAME_MENUS), not a copy of it here (TR2's review).
+        List<String> gameMenus = FollowRules.gameMenus();
         StringBuilder escaped = new StringBuilder();
-        for (String menu : GAME_MENUS) {
+        for (String menu : gameMenus) {
             for (InputLog.Event e : inputs) {
                 FollowRules.Verdict v = FollowRules.judge(e, menu, city, false, false, false, false);
                 if (v != FollowRules.Verdict.DROP_LOGGED_MENU) escaped.append(' ').append(menu).append('/').append(e.kind()).append('=').append(v);
             }
         }
-        helper("a move, press, release, wheel and key logged while the player was on a game menu (" + GAME_MENUS.length + " of them, Save, Load and Quit's among them) are dropped as logged on a menu"
+        helper("a move, press, release, wheel and key logged while the player was on a game menu (" + gameMenus.size() + " of them) are dropped as logged on a menu"
                 + escaped, escaped.length() == 0);
+        helper("...and the screens Save (the saving menu), Load (the load menu) and Quit (the main menu, which has New city and Settings too) are on are among the game menus",
+                gameMenus.containsAll(List.of("showSavingMenu", "showLoadMenu", "showMainMenu")));
         helper("...so a re-enacted Save, Load and Quit never reaches the copy: their buttons are not marked, and the verdict holds with the point on no marked node and the copy on a city screen",
                 FollowRules.judge(press, "showSavingMenu", city, false, false, false, false) == FollowRules.Verdict.DROP_LOGGED_MENU
                         && FollowRules.judge(release, "showLoadMenu", city, false, false, false, false) == FollowRules.Verdict.DROP_LOGGED_MENU
@@ -1497,7 +1639,7 @@ public class ReplayCheck {
                         && FollowRules.judge(typed, "showSavingMenu", city, false, true, false, false) == FollowRules.Verdict.DROP_LOGGED_MENU);
 
         StringBuilder onMenu = new StringBuilder();
-        for (String menu : GAME_MENUS) {
+        for (String menu : gameMenus) {
             for (InputLog.Event e : inputs) {
                 FollowRules.Verdict v = FollowRules.judge(e, city, menu, false, false, false, false);
                 if (v != FollowRules.Verdict.DROP_COPY_MENU) onMenu.append(' ').append(menu).append('/').append(e.kind()).append('=').append(v);

@@ -4041,7 +4041,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 77 | `WoodProducts.PAPER_MILL` | `137` | The Paper Mill's (0.7.140): 5,500 t of paper a month from 5,775 t of pulp and 850,000 litres of fuel oil. |
 | 80 | `WoodProducts.PELLET_MILL` | `138` | The Wood Pellet Mill's (0.7.140): 6,000 t of pellets a month from 13,200 m3 of residues. |
 
-## interface (1180 constants)
+## interface (1181 constants)
 
 ### BankScreen.java ([map](map/BankScreen.md))
 
@@ -4259,31 +4259,31 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 61 | `FollowBench.WIDTH` | `1600` | The window's width the bench lays the scene out at. |
-| 64 | `FollowBench.HEIGHT` | `900` | The window's height the bench lays the scene out at. |
-| 370 | `FollowBench.RAIL_WORDS` | `{ "People", "Policy", "Services", "Bank", "Trade", "Finances", "Sectors" }` | The rail's words the sitting clicks, in the order tried: the first few the window has, whose clicks open different screens. |
-| 373 | `FollowBench.LOGGED_MONTHS` | `4` | How many of the recording's months the sitting logs, one after the other from its fourth. |
-| 376 | `FollowBench.MONTH_MS` | `2_400` | How long a month lasts in the sitting's own time, ms. |
-| 379 | `FollowBench.MENU_MONTH` | `1` | The month of the sitting (counting from 0) in which the player also clicked the rail's Menu. |
-| 382 | `FollowBench.REJOIN_MONTH` | `2` | The month of the sitting (counting from 0) in which Follow is stopped and joined again. |
-| 385 | `FollowBench.REJOIN_STOP_FRAMES` | `30` | The frames of the rejoin's first stretch: 990 ms into the month, after the click (560 ms) and its SCREEN marker (760 ms). |
-| 388 | `FollowBench.REJOIN_END_FRAMES` | `60` | The frames from the month's start to where the rejoin and the run without a stop are compared: 1,980 ms, after the month's last move (1,800 ms). |
-| 391 | `FollowBench.FRAME_MS` | `33` | One Follow frame, in ms of the player's time (about 30 a second); the window check steps by it. |
-| 394 | `FollowBench.MAX_FRAMES` | `3_000` | The most frames one stretch of stepping may take: a Follow that never gets going ends the check rather than hangs it. |
-| 397 | `FollowBench.SITTING_AT` | `1_790_000_000_000L` | The epoch of the sitting's start in its file's name: any, but one no real sitting has. |
-| 400 | `FollowBench.GHOST_PX` | `2` | How near, in pixels, the ghost's tip has to be to the logged pointer. |
+| 62 | `FollowBench.WIDTH` | `1600` | The window's width the bench lays the scene out at. |
+| 65 | `FollowBench.HEIGHT` | `900` | The window's height the bench lays the scene out at. |
+| 416 | `FollowBench.RAIL_WORDS` | `{ "People", "Policy", "Services", "Bank", "Trade", "Finances", "Sectors" }` | The rail's words the sitting clicks, in the order tried: the first few the window has, whose clicks open different screens. |
+| 419 | `FollowBench.LOGGED_MONTHS` | `4` | How many of the recording's months the sitting logs, one after the other from its fourth. |
+| 422 | `FollowBench.MONTH_MS` | `2_400` | How long a month lasts in the sitting's own time, ms. |
+| 425 | `FollowBench.MENU_MONTH` | `1` | The month of the sitting (counting from 0) in which the player also clicked the rail's Menu. |
+| 428 | `FollowBench.REJOIN_MONTH` | `2` | The month of the sitting (counting from 0) in which Follow is stopped and joined again. |
+| 431 | `FollowBench.REJOIN_STOP_FRAMES` | `30` | The frames of the rejoin's first stretch: 990 ms into the month, after the click (560 ms) and its SCREEN marker (760 ms). |
+| 434 | `FollowBench.REJOIN_END_FRAMES` | `60` | The frames from the month's start to where the rejoin and the run without a stop are compared: 1,980 ms, after the month's last move (1,800 ms). |
+| 437 | `FollowBench.FRAME_MS` | `33` | One Follow frame, in ms of the player's time (about 30 a second); the window check steps by it. |
+| 440 | `FollowBench.MAX_FRAMES` | `3_000` | The most frames one stretch of stepping may take: a Follow that never gets going ends the check rather than hangs it. |
+| 443 | `FollowBench.SITTING_AT` | `1_790_000_000_000L` | The epoch of the sitting's start in its file's name: any, but one no real sitting has. |
+| 446 | `FollowBench.GHOST_PX` | `2` | How near, in pixels, the ghost's tip has to be to the logged pointer. |
 
 ### FollowRules.java ([map](map/FollowRules.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 23 | `FollowRules.DROP` | `"follow.drop"` | The node property that marks a node (or, set on an ancestor, everything in it) the ghost never clicks: it opens a game menu, leaves the city, quits or moves the clock. |
-| 26 | `FollowRules.SPACE` | `InputLog.keyCode("Space")` | The log's code of the Space key, which runs the clock: the toolkit's key name, as {@link InputLog#keyCode} makes it. |
-| 29 | `FollowRules.LEFT` | `InputLog.keyCode("Left")` | The log's code of the Left key, which slows the clock. |
-| 32 | `FollowRules.RIGHT` | `InputLog.keyCode("Right")` | The log's code of the Right key, which speeds the clock. |
-| 35 | `FollowRules.F11` | `InputLog.keyCode("F11")` | The log's code of the F11 key, which is the window's full screen. |
-| 38 | `FollowRules.ESC` | `InputLog.keyCode("Esc")` | The log's code of the Esc key, which opens the game menu. |
-| 41 | `FollowRules.P` | `InputLog.keyCode("P")` | The log's code of the P key, which opens the game menu too when nobody is typing. |
+| 24 | `FollowRules.DROP` | `"follow.drop"` | The node property that marks a node (or, set on an ancestor, everything in it) the ghost never clicks: it opens a game menu, leaves the city, quits or moves the clock. |
+| 27 | `FollowRules.SPACE` | `InputLog.keyCode("Space")` | The log's code of the Space key, which runs the clock: the toolkit's key name, as {@link InputLog#keyCode} makes it. |
+| 30 | `FollowRules.LEFT` | `InputLog.keyCode("Left")` | The log's code of the Left key, which slows the clock. |
+| 33 | `FollowRules.RIGHT` | `InputLog.keyCode("Right")` | The log's code of the Right key, which speeds the clock. |
+| 36 | `FollowRules.F11` | `InputLog.keyCode("F11")` | The log's code of the F11 key, which is the window's full screen. |
+| 39 | `FollowRules.ESC` | `InputLog.keyCode("Esc")` | The log's code of the Esc key, which opens the game menu. |
+| 42 | `FollowRules.P` | `InputLog.keyCode("P")` | The log's code of the P key, which opens the game menu too when nobody is typing. |
 
 ### FoundingScreen.java ([map](map/FoundingScreen.md))
 
@@ -5025,11 +5025,11 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 43 | `Reenactor.CLICK_SLOP` | `3` | How far, in pixels, a press may be dragged and still count as one that has not moved (the click's "still since press"). |
-| 46 | `Reenactor.BOUNDS_SLACK` | `1` | How far outside a parent's bounds a point may lie and still be looked for in its children: the bounds' own rounding. |
-| 49 | `Reenactor.SET_HOVER` | `nodeSetter("setHover")` | Node.setHover, which is protected: found by reflection, or null where the platform will not allow it. |
-| 52 | `Reenactor.SET_PRESSED` | `nodeSetter("setPressed")` | Node.setPressed, which is protected too: found the same way, or null. |
-| 55 | `Reenactor.KEYS` | `new HashMap<>()` | The toolkit's key for each log code (InputLog.keyCode of the key's name). |
+| 44 | `Reenactor.CLICK_SLOP` | `3` | How far, in pixels, a press may be dragged and still count as one that has not moved (the click's "still since press"). |
+| 47 | `Reenactor.BOUNDS_SLACK` | `1` | How far outside a parent's bounds a point may lie and still be looked for in its children: the bounds' own rounding. |
+| 50 | `Reenactor.SET_HOVER` | `nodeSetter("setHover")` | Node.setHover, which is protected: found by reflection, or null where the platform will not allow it. |
+| 53 | `Reenactor.SET_PRESSED` | `nodeSetter("setPressed")` | Node.setPressed, which is protected too: found the same way, or null. |
+| 56 | `Reenactor.KEYS` | `new HashMap<>()` | The toolkit's key for each log code (InputLog.keyCode of the key's name). |
 
 ### ReplayCamera.java ([map](map/ReplayCamera.md))
 
@@ -5387,43 +5387,44 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 498 | `UserInterface.COUNT_UP_TOP` | `10` | The fastest speed a figure still counts up at when a month lands (Jerus, 2026-10-23, the study's UP4 star 4: "Count up at 1x-10x only"); above it the figure is set at once. |
 | 554 | `UserInterface.PRESS_HELD` | `"UserInterface.pressHeld"` | The scene property that says a button is down (0.7.40), for what waits on a timer outside this class (TimeChart's settle). |
 | 1475 | `UserInterface.WHEEL_STEP` | `48` | The least the first wheel event of a gesture may move the page, in pixels (since 2026-09-18 the first only; see scrollPageBy). |
-| 1909 | `UserInterface.WHEEL_GESTURE_GAP_NANOS` | `150_000_000L` | A wheel event this long after the last one starts a new gesture; a burst is closer than this. |
-| 1984 | `UserInterface.STRIP_INFLATION_QUIET` | `.03` | Inflation within this many points of the player's target (DebtManager.getInflationTarget()), either side, reads as on target. |
-| 1987 | `UserInterface.STRIP_INFLATION_OVER_TARGET` | `.05` | Inflation more than this many points over the player's target reads red: prices running away from what the player asked for. |
-| 1990 | `UserInterface.STRIP_DEFLATION_ALARM` | `.10` | Deflation past this reads red, whatever the target: prices collapsing. |
-| 2002 | `UserInterface.DATE_WIDTH` | `164` | How wide the clock's date is held, so the tiles do not move as the day's name changes width: "28 September 2151" at the date's size, and a little over (0.7.24: at 17 px, so the money block and five... |
-| 2005 | `UserInterface.DATE_SIZE` | `17` | The date's size in the clock (0.7.24; it was 19). |
-| 2008 | `UserInterface.SPARK_MONTHS` | `120` | How many months a tile's sparkline draws: ten years, or everything recorded if less. |
-| 2011 | `UserInterface.SPARK_WIDTH` | `72` | A tile's sparkline at full size: on the label's row since 0.7.24, as the mockups draw it (it was 84 by 30, beside the words). |
-| 2013 | `UserInterface.SPARK_HEIGHT` | `16` | ...and its height, the label's row (0.7.24; it was 30). |
-| 2016 | `UserInterface.SPARK_MIN` | `30` | Narrower than this and a tile draws no sparkline: a line the width of a word says nothing. |
-| 2019 | `UserInterface.TILE_FIGURE` | `15` | The size of a tile's figure (0.7.24: 15, so the money block and five tiles fit a 1,280 window whole; it was 17). |
-| 2021 | `UserInterface.TILE_LABEL` | `10.5` | The size of a tile's label, and of the money block's. |
-| 2023 | `UserInterface.TILE_CHANGE` | `10.5` | The size of a tile's change line (0.7.24; it was 11). |
-| 2497 | `UserInterface.MONEY_FIGURE` | `28` | The cash in the money block: the mockups' 28 px. |
-| 3234 | `UserInterface.BACKDROP_BLOCK` | `"#121c28"` | The building blocks' fill and edge, and an unlit window, on the backdrop: the skyline's own darks, under the panels' ground. |
-| 3235 | `UserInterface.BACKDROP_EDGE` | `"#1d2b3c"` |  |
-| 3236 | `UserInterface.BACKDROP_WINDOW` | `"#22344a"` |  |
-| 3239 | `UserInterface.FOUNDING_DIM` | `.72` | How dark the founding screen dims the backdrop under its panel: the mockups' 0.72. |
-| 3242 | `UserInterface.MENU_CITIES` | `3` | Up to this many of the cities saved last, as cards at the menu's bottom right. |
-| 3589 | `UserInterface.MENU_LEFT` | `96` | How far in from the window's left the menu's column and version sit. |
-| 3592 | `UserInterface.MENU_BUTTON` | `360` | The menu's buttons' width, as the mockups draw them. |
-| 3683 | `UserInterface.CITY_CARD` | `250` | A city card's width, as the mockups draw it. |
-| 3732 | `UserInterface.SAVED_AT` | `java.time.format.DateTimeFormatter.ofPattern("d MMM HH:mm")` |  |
-| 4306 | `UserInterface.TIP_WIDTH` | `420` | The width a tooltip's text wraps at, unless it asked for its own. |
-| 4553 | `UserInterface.PAGE_FOOT` | `24` | Room left under the end of every scrolled page: a margin, since nothing floats over the stage's foot (0.7.21; it was 90, the dome's 74 and a margin). |
-| 4623 | `UserInterface.SCROLLED_CHROME` | `"scrolled.chrome"` | The key in a scroller's properties for the chrome its height is bound to (scrolled()). |
-| 5264 | `UserInterface.CONSTRUCTION_TAB` | `44` | How wide the construction panel's tab is. |
-| 5586 | `UserInterface.PANEL_TEXT` | `256` | How wide the construction panel's lines wrap: the panel less its padding. |
-| 5743 | `UserInterface.RAIL_WIDTH` | `Palette.RAIL` | The rail's width: an icon over its name, as the mockups draw it (0.7.21; it was 46). |
-| 5746 | `UserInterface.RAIL_BUTTON` | `54` | A rail button's height, and the least it may shrink to on a short window. |
-| 5747 | `UserInterface.RAIL_BUTTON_MIN` | `40` |  |
-| 5750 | `UserInterface.RAIL_ICON` | `20` | How big a rail icon is drawn: its 24-unit grid at 20 pixels. |
-| 6239 | `UserInterface.INBOX_WIDTH` | `530` | See refreshInbox: sized to the notice bodies, not to the corner. |
-| 6592 | `UserInterface.TOAST_SECONDS` | `8` | How long a toast stays before it fades, in seconds. |
-| 6595 | `UserInterface.TOAST_MAX` | `3` | How many toasts at once. |
-| 6598 | `UserInterface.TOAST_WIDTH` | `340` | How wide a toast's text wraps. |
-| 6819 | `UserInterface.SPEED_MIN_WIDTH` | `34` | The least the reading is wide, in pixels: the width it held before UP7, so that at pace it sits where it did. |
+| 1511 | `UserInterface.GAME_MENUS` | `List.of("showMainMenu", "showSavingMenu", "showSaveSlotConfirm", "showLoadMenu", "loadS...` | The screens isGameMenu() names, in one list so a check can walk them (TR2's review: ReplayCheck kept a copy of it). |
+| 1906 | `UserInterface.WHEEL_GESTURE_GAP_NANOS` | `150_000_000L` | A wheel event this long after the last one starts a new gesture; a burst is closer than this. |
+| 1981 | `UserInterface.STRIP_INFLATION_QUIET` | `.03` | Inflation within this many points of the player's target (DebtManager.getInflationTarget()), either side, reads as on target. |
+| 1984 | `UserInterface.STRIP_INFLATION_OVER_TARGET` | `.05` | Inflation more than this many points over the player's target reads red: prices running away from what the player asked for. |
+| 1987 | `UserInterface.STRIP_DEFLATION_ALARM` | `.10` | Deflation past this reads red, whatever the target: prices collapsing. |
+| 1999 | `UserInterface.DATE_WIDTH` | `164` | How wide the clock's date is held, so the tiles do not move as the day's name changes width: "28 September 2151" at the date's size, and a little over (0.7.24: at 17 px, so the money block and five... |
+| 2002 | `UserInterface.DATE_SIZE` | `17` | The date's size in the clock (0.7.24; it was 19). |
+| 2005 | `UserInterface.SPARK_MONTHS` | `120` | How many months a tile's sparkline draws: ten years, or everything recorded if less. |
+| 2008 | `UserInterface.SPARK_WIDTH` | `72` | A tile's sparkline at full size: on the label's row since 0.7.24, as the mockups draw it (it was 84 by 30, beside the words). |
+| 2010 | `UserInterface.SPARK_HEIGHT` | `16` | ...and its height, the label's row (0.7.24; it was 30). |
+| 2013 | `UserInterface.SPARK_MIN` | `30` | Narrower than this and a tile draws no sparkline: a line the width of a word says nothing. |
+| 2016 | `UserInterface.TILE_FIGURE` | `15` | The size of a tile's figure (0.7.24: 15, so the money block and five tiles fit a 1,280 window whole; it was 17). |
+| 2018 | `UserInterface.TILE_LABEL` | `10.5` | The size of a tile's label, and of the money block's. |
+| 2020 | `UserInterface.TILE_CHANGE` | `10.5` | The size of a tile's change line (0.7.24; it was 11). |
+| 2494 | `UserInterface.MONEY_FIGURE` | `28` | The cash in the money block: the mockups' 28 px. |
+| 3231 | `UserInterface.BACKDROP_BLOCK` | `"#121c28"` | The building blocks' fill and edge, and an unlit window, on the backdrop: the skyline's own darks, under the panels' ground. |
+| 3232 | `UserInterface.BACKDROP_EDGE` | `"#1d2b3c"` |  |
+| 3233 | `UserInterface.BACKDROP_WINDOW` | `"#22344a"` |  |
+| 3236 | `UserInterface.FOUNDING_DIM` | `.72` | How dark the founding screen dims the backdrop under its panel: the mockups' 0.72. |
+| 3239 | `UserInterface.MENU_CITIES` | `3` | Up to this many of the cities saved last, as cards at the menu's bottom right. |
+| 3586 | `UserInterface.MENU_LEFT` | `96` | How far in from the window's left the menu's column and version sit. |
+| 3589 | `UserInterface.MENU_BUTTON` | `360` | The menu's buttons' width, as the mockups draw them. |
+| 3680 | `UserInterface.CITY_CARD` | `250` | A city card's width, as the mockups draw it. |
+| 3729 | `UserInterface.SAVED_AT` | `java.time.format.DateTimeFormatter.ofPattern("d MMM HH:mm")` |  |
+| 4303 | `UserInterface.TIP_WIDTH` | `420` | The width a tooltip's text wraps at, unless it asked for its own. |
+| 4550 | `UserInterface.PAGE_FOOT` | `24` | Room left under the end of every scrolled page: a margin, since nothing floats over the stage's foot (0.7.21; it was 90, the dome's 74 and a margin). |
+| 4620 | `UserInterface.SCROLLED_CHROME` | `"scrolled.chrome"` | The key in a scroller's properties for the chrome its height is bound to (scrolled()). |
+| 5261 | `UserInterface.CONSTRUCTION_TAB` | `44` | How wide the construction panel's tab is. |
+| 5583 | `UserInterface.PANEL_TEXT` | `256` | How wide the construction panel's lines wrap: the panel less its padding. |
+| 5740 | `UserInterface.RAIL_WIDTH` | `Palette.RAIL` | The rail's width: an icon over its name, as the mockups draw it (0.7.21; it was 46). |
+| 5743 | `UserInterface.RAIL_BUTTON` | `54` | A rail button's height, and the least it may shrink to on a short window. |
+| 5744 | `UserInterface.RAIL_BUTTON_MIN` | `40` |  |
+| 5747 | `UserInterface.RAIL_ICON` | `20` | How big a rail icon is drawn: its 24-unit grid at 20 pixels. |
+| 6236 | `UserInterface.INBOX_WIDTH` | `530` | See refreshInbox: sized to the notice bodies, not to the corner. |
+| 6589 | `UserInterface.TOAST_SECONDS` | `8` | How long a toast stays before it fades, in seconds. |
+| 6592 | `UserInterface.TOAST_MAX` | `3` | How many toasts at once. |
+| 6595 | `UserInterface.TOAST_WIDTH` | `340` | How wide a toast's text wraps. |
+| 6816 | `UserInterface.SPEED_MIN_WIDTH` | `34` | The least the reading is wide, in pixels: the width it held before UP7, so that at pace it sits where it did. |
 
 ### VaultTable.java ([map](map/VaultTable.md))
 
@@ -5463,7 +5464,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 748 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1028 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1536 constants)
+## harnesses (1535 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -7302,9 +7303,8 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 88 | `ReplayCheck.GROWN` | `48` | The month the section 1 to 4 city is grown to before it is recorded. |
-| 91 | `ReplayCheck.GROWN_SIX` | `36` | The month the section 6 cities are grown to. |
-| 1471 | `ReplayCheck.GAME_MENUS` | `{ "showMainMenu", "showSavingMenu", "showSaveSlotConfirm", "showLoadMenu", "loadSlot", ...` | The screens UserInterface.isGameMenu takes for a game menu: the main menu (Save, Load, New city, Settings, Credits and Quit are on it or behind it), the pages they open, and the replay's list. |
+| 91 | `ReplayCheck.GROWN` | `48` | The month the section 1 to 4 city is grown to before it is recorded. |
+| 94 | `ReplayCheck.GROWN_SIX` | `36` | The month the section 6 cities are grown to. |
 
 ### ResearchCheck.java ([map](map/ResearchCheck.md))
 
