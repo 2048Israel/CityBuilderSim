@@ -46,6 +46,19 @@ import ham.citybuildersim.IslandNetCheck.Land;
  *   7. THE SIDECAR KEEPS EVERY PIECE'S RAILWAY. Runs with island rail, yards and a siding, written and read back, are same(), with the
  *      pieces' hubs and counts and the corridors' pieces and roles, fill a box alike, and laid again to the same inputs move nothing.
  *
+ *   8. THE ISLAND LINKED BY A PORT (a real map; RI1 slice B, ET5's "a linked island's hub at its port"). A real CityMap through a Game: Rotterdam's
+ *      island (648) bought, a General Cargo Terminal ordered on it and a second on home's coast, the city given a railway (two Rail Terminals and
+ *      Freight Lines handed to it), and home filled so that the houses once the island is linked are drawn there. The island's piece has the
+ *      terminal for its anchor - the middle of its box; its highway hub and its rail hub are the line crossings nearest the terminal (against a
+ *      brute force over the piece's tiles) and nearer it than the crossing nearest the founding site was (the old rule, the premise); the island has
+ *      track of its own, all on its ground, and a yard once the model has a second; a piece with no terminal (a second parcel of the island's, apart)
+ *      has its hub nearest the founding site, and the home piece's anchor is its hub. Needs the Earth fixture (EarthCheck.FIXTURE): without it the
+ *      sections 8 and 9 say they were skipped and count no fail.
+ *
+ *   9. NO PORT, NO ANCHOR; UNLINKED, NOTHING. The same city before the link, the terminal on the island and none at home: no piece holds the island
+ *      and no rail or highway plot lies on it (ET5's rule), the railway is the home piece's alone (a premise: it has track and a yard at home), and
+ *      the home piece's anchor is its hub.
+ *
  * WHY THIS EXISTS: CL5 gave every piece of the city's ground the water parts a highway net of its own and left the railway the home
  * piece's alone, so a city built on islands had no track and no yard on any but the founding site's (Jerus ticked "Rail on islands",
  * 2026-10-31: CL5-C's call 1, "the railway on other islands: its own track and yards from each piece's hub"). A fixture CAUSES each case:
@@ -194,7 +207,7 @@ public class IslandRailCheck {
         return true;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         boolean wasIslandRail = CityRuns.islandRail;
         try {
             section1();
@@ -204,6 +217,8 @@ public class IslandRailCheck {
             section5();
             section6();
             section7();
+            section8();
+            section9();
         } finally {
             CityRuns.islandRail = wasIslandRail;
         }
@@ -531,5 +546,337 @@ public class IslandRailCheck {
         } catch (java.io.IOException e) {
             check("the sidecar is written and read: " + e, false);
         }
+    }
+
+    /* ============ the map-level fixture: a real CityMap of the two-landmass city (sections 8 and 9) ============ */
+
+    /** Yards (Rail Terminals) and track (Freight Lines) handed to the city of sections 8 and 9: a second yard for an island, and track enough for each piece to be dealt some. */
+    static final int YARDS = 2, LINES = 12, HIGHWAYS = 12;
+
+    /** The side, in squares of 64 plots, of the block of the island the city buys (its port's square is the north-west one): 3. */
+    static final int ISLAND_SQUARES = 3;
+
+    /** Months after the link the fixture gives the island's piece to have weight and a railway hub. */
+    static final int LINK_MONTHS = 36;
+
+    /** The city of sections 8 and 9, built once: LandmassCheck's section 10 city (Rotterdam, the island of 648, home's open coast), played through its unlinked month and its linked months. */
+    static final class Port {
+        World w;
+        LandmassCheck.City c;
+        /** The island's square with a shore (the port's), a second parcel of the island apart from it (no terminal), and a square of home's open coast. */
+        LandmassCheck.Square isle, farIsle, homeSea;
+        /** The squares' boxes {x0, y0, x1, y1}, in plots. */
+        long[] box, farBox, seaBox;
+        boolean found, homeLandFound;
+        // What the map was before the link (section 9).
+        boolean islandPort, unlinked, railed;
+        int piecesBefore, islandPieceBefore, farPieceBefore, seaPieceBefore;
+        long railPlotsBefore, railOnIsland, highwaysOnIsland;
+        int railPiecesBefore, yardsBefore;
+        boolean homeAnchorBefore;
+        // And after it (section 8).
+        boolean linkOrdered, linked, settled;
+    }
+
+    static Port port;
+    static boolean portTried;
+
+    /** The Earth fixture's world and the squares, or null when the fixture is not beside the classes. */
+    static Port port() throws Exception {
+        if (portTried) return port;
+        portTried = true;
+        byte[] fixture = EarthCheck.resource(EarthCheck.FIXTURE);
+        if (fixture == null) return null;
+        String id = EarthTerrain.use(EarthData.of(fixture));
+        World.Key key = World.Key.earth(LandmassCheck.SEED, LandmassCheck.RLAT, LandmassCheck.RLON, id);
+        World w = World.of(key);
+        Port p = new Port();
+        port = p;
+        p.w = w;
+        long[] tip = LandmassCheck.plotOf(w, 51.848, 3.998), south = LandmassCheck.plotOf(w, 51.75, 4.20), coast = LandmassCheck.plotOf(w, 51.93, 4.20);
+        p.isle = LandmassCheck.squareWith(w, 648, tip[0], tip[1], 40, s -> s.pure() && s.onId() >= 2000 && s.shore() >= 20);
+        p.farIsle = LandmassCheck.squareWith(w, 648, south[0], south[1], 40, s -> s.pure() && s.onId() >= 3500 && s.salt() == 0);
+        p.homeSea = LandmassCheck.squareWith(w, 1, coast[0], coast[1], 12, q -> q.pure() && q.onId() >= 1000 && q.shore() >= LandmassCheck.HOME_COAST_SHORE);
+        if (p.isle == null || p.farIsle == null || p.homeSea == null) return p;
+        p.found = true;
+        p.box = new long[] { p.isle.x0(), p.isle.y0(), p.isle.x0() + ISLAND_SQUARES * LandmassCheck.SQUARE - 1, p.isle.y0() + ISLAND_SQUARES * LandmassCheck.SQUARE - 1 };
+        p.farBox = new long[] { p.farIsle.x0(), p.farIsle.y0(), p.farIsle.x0() + LandmassCheck.SQUARE - 1, p.farIsle.y0() + LandmassCheck.SQUARE - 1 };
+        p.seaBox = new long[] { p.homeSea.x0(), p.homeSea.y0(), p.homeSea.x0() + LandmassCheck.SQUARE - 1, p.homeSea.y0() + LandmassCheck.SQUARE - 1 };
+        LandmassCheck.Fixtures f = new LandmassCheck.Fixtures();
+        f.key = key;
+        f.withShore = p.isle;
+        LandmassCheck.City c = LandmassCheck.portCity(f, "islandrail-map", false);
+        p.c = c;
+        c.buy(p.homeSea);
+        c.buy(p.farIsle);
+        // The island's square is the north-west corner of a block of squares to the east and south: a piece wide enough for the nearest crossing to the terminal and to the founding site to differ.
+        for (int j = 0; j < ISLAND_SQUARES; j++) for (int i = 0; i < ISLAND_SQUARES; i++) if (i + j > 0) c.buy(new LandmassCheck.Square(p.isle.x0() + (long) i * LandmassCheck.SQUARE, p.isle.y0() + (long) j * LandmassCheck.SQUARE, 648, 0, 0, 0, 0, false));
+        // Home's founding ground is a few scattered parcels (no railway line crossing of its own within reach of the site): a dry square beside the site, of ground the city does not own, joins it, so that the railway can start at home.
+        CityLand ownedLand = c.lm.getCityLand();
+        LandmassCheck.Square homeLand = LandmassCheck.squareWith(w, 1, w.foundingX(), w.foundingY(), 6, s -> s.pure() && s.onId() >= 3800 && s.salt() == 0 && !owned(ownedLand, s));
+        p.homeLandFound = homeLand != null;
+        if (homeLand != null) c.buy(homeLand);
+        Game g = c.g;
+        BuildingsTemplate gc = LandmassCheck.tpl(c, "General Cargo Terminal"), house = LandmassCheck.tpl(c, "House");
+        // The island's terminal, standing at once, links nothing; home is filled with houses (the island unlinked, they are all drawn at home); the railway is handed to the city.
+        p.islandPort = LandmassCheck.orderOn(c, gc, 1, true, 648) == Game.BuildResult.SUCCESS;
+        fillHome(c, house, 0);
+        LandmassCheck.quietly(() -> {
+            HaulageCheck.lay(g, "Rail Terminal", YARDS);
+            HaulageCheck.lay(g, "Freight Line", LINES);
+            HaulageCheck.lay(g, "Elevated Highway", HIGHWAYS);
+        });
+        LandmassCheck.quietly(() -> g.simulateMonths(2));
+        Landmasses lms = c.books();
+        CityMap map = g.getCityMap();
+        CityRuns runs = map.runs();
+        p.unlinked = lms.anyUnlinked() && !lms.linked(648);
+        p.piecesBefore = map.pieces().count();
+        p.islandPieceBefore = pieceOnIsland(map, w, p.box);
+        p.farPieceBefore = pieceOnIsland(map, w, p.farBox);
+        p.seaPieceBefore = pieceIn(map, p.seaBox);
+        p.railPiecesBefore = runs.rail().pieces();
+        p.railPlotsBefore = runs.rail().plots;
+        p.yardsBefore = runs.yards().size();
+        p.railed = runs.rail().plots > 0;
+        p.railOnIsland = in(runs.rail(), p.box) + in(runs.rail(), p.farBox);
+        p.highwaysOnIsland = in(runs.highways(), p.box) + in(runs.highways(), p.farBox);
+        p.homeAnchorBefore = Arrays.equals(map.pieces().anchor(0), map.pieces().hub(0));
+        // The link: a terminal at home, standing at once. Then houses until the linked ground free is below half the island's buildable, so that the island's districts hold buildings (LandmassCheck 12's fill).
+        p.linkOrdered = LandmassCheck.order(c, gc, 1, true, Landmasses.RULE) == Game.BuildResult.SUCCESS;
+        p.linked = lms.linked(648);
+        LandmassCheck.quietly(() -> g.simulateMonths(1));
+        fillHome(c, house, lms.rows().get(1).buildableSqFt() / 2);
+        p.settled = LandmassCheck.until(c, () -> settled(c), LINK_MONTHS);
+        return p;
+    }
+
+    /** Whether the city owns a plot of the square (every fourth plot looked at). */
+    static boolean owned(CityLand land, LandmassCheck.Square s) {
+        for (long y = s.y0(); y < s.y0() + LandmassCheck.SQUARE; y += 4) for (long x = s.x0(); x < s.x0() + LandmassCheck.SQUARE; x += 4) if (land.ownsPlot(x, y)) return true;
+        return false;
+    }
+
+    /** Houses ordered at once until the linked ground free is below `left` square feet. */
+    static void fillHome(LandmassCheck.City c, BuildingsTemplate house, double left) {
+        for (int round = 0; round < 40 && c.lm.getAvailableSqFt() >= left; round++) {
+            LandmassCheck.quietly(() -> c.g.setCashForTest(Founding.WEALTHY_CASH * 100));
+            int n = (int) Math.floor((c.lm.getAvailableSqFt() - left) / house.getLandSqFt()) + 1;
+            if (LandmassCheck.order(c, house, n, true, Landmasses.RULE) != Game.BuildResult.SUCCESS) break;
+        }
+        LandmassCheck.quietly(() -> c.g.simulateMonths(1));
+    }
+
+    /** Whether the island's piece has weight and a railway hub and a highway hub (a net of each on it) on the map the city has now. */
+    static boolean settled(LandmassCheck.City c) {
+        CityMap map = c.g.getCityMap();
+        int ip = islandPiece(map, port);
+        return ip >= 1 && map.pieces().weight(ip) > 0 && netOf(map.runs().rail(), map, ip) >= 1 && netOf(map.runs().highways(), map, ip) >= 1;
+    }
+
+    /** The map piece of the nearest land tile (squared tile distance, then row, then column) in the box to plot (x, y): a loop over the box's tiles, not the model's ring search; -1 for none. */
+    static int pieceNearest(CityMap map, long[] box, long x, long y) {
+        long mtx = Math.floorDiv(x, World.TILE), mty = Math.floorDiv(y, World.TILE), bestKey = Long.MAX_VALUE;
+        int best = -1;
+        for (long ty = Math.floorDiv(box[1], World.TILE); ty <= Math.floorDiv(box[3], World.TILE); ty++) {
+            for (long tx = Math.floorDiv(box[0], World.TILE); tx <= Math.floorDiv(box[2], World.TILE); tx++) {
+                int q = map.pieces().pieceOf(tx * World.TILE + 8, ty * World.TILE + 8);
+                long key = (((tx - mtx) * (tx - mtx) + (ty - mty) * (ty - mty)) << 30) | (ty << 15) | tx;
+                if (q >= 0 && key < bestKey) { bestKey = key; best = q; }
+            }
+        }
+        return best;
+    }
+
+    /** The piece of the island the oldest berthed terminal on it stands on (pieceNearest to its box middle); -1 for none. */
+    static int islandPiece(CityMap map, Port p) {
+        for (CityShore.Work k : map.shore().works()) {
+            long[] sp = k.shorePlot();
+            if (k.berthed() && p.w.landmassAt(sp[0], sp[1]) == 648) return pieceNearest(map, p.box, k.x0() + k.w() / 2, k.y0() + k.h() / 2);
+        }
+        return -1;
+    }
+
+    /** The map piece that holds a tile of the box any sample of which (the model's four) reads the island's landmass, 648; -1 for none: what no piece holds while no port links the island. */
+    static int pieceOnIsland(CityMap map, World w, long[] box) {
+        for (long ty = Math.floorDiv(box[1], World.TILE); ty <= Math.floorDiv(box[3], World.TILE); ty++) {
+            for (long tx = Math.floorDiv(box[0], World.TILE); tx <= Math.floorDiv(box[2], World.TILE); tx++) {
+                int q = map.pieces().pieceOf(tx * World.TILE + 8, ty * World.TILE + 8);
+                if (q < 0) continue;
+                for (int s = 0; s < 4; s++) {
+                    if (w.landmassAt(tx * World.TILE + CityMap.PIECE_SAMPLE_AT + CityMap.PIECE_SAMPLE_EVERY * (s & 1), ty * World.TILE + CityMap.PIECE_SAMPLE_AT + CityMap.PIECE_SAMPLE_EVERY * (s >> 1)) == 648) return q;
+                }
+            }
+        }
+        return -1;
+    }
+
+    /** The map piece that holds a tile of the box {x0, y0, x1, y1} (plots, tile-aligned); -1 for none. */
+    static int pieceIn(CityMap map, long[] box) {
+        for (long ty = Math.floorDiv(box[1], World.TILE); ty <= Math.floorDiv(box[3], World.TILE); ty++) {
+            for (long tx = Math.floorDiv(box[0], World.TILE); tx <= Math.floorDiv(box[2], World.TILE); tx++) {
+                int q = map.pieces().pieceOf(tx * World.TILE + 8, ty * World.TILE + 8);
+                if (q >= 0) return q;
+            }
+        }
+        return -1;
+    }
+
+    /** The tiles {tx, ty} of the box that map piece p holds. */
+    static List<long[]> tilesOf(CityMap map, int p, long[] box) {
+        List<long[]> out = new ArrayList<>();
+        for (long ty = Math.floorDiv(box[1], World.TILE); ty <= Math.floorDiv(box[3], World.TILE); ty++) {
+            for (long tx = Math.floorDiv(box[0], World.TILE); tx <= Math.floorDiv(box[2], World.TILE); tx++) {
+                if (map.pieces().pieceOf(tx * World.TILE + 8, ty * World.TILE + 8) == p) out.add(new long[] { tx, ty });
+            }
+        }
+        return out;
+    }
+
+    /** Whether plot (x, y) is owned dry ground to the runs. */
+    static boolean ownedDry(CityMap map, long x, long y) {
+        int c = map.runGround().at(x, y, -1);
+        return c >= 0 && CityRuns.dry(c);
+    }
+
+    /** The highway line crossing of the tile of `tiles` nearest tile (rtx, rty) - squared tile distance, then row, then column, as MapPieces keys them - whose crossing is owned dry ground; null for none. */
+    static long[] nearestHighway(CityMap map, List<long[]> tiles, long rtx, long rty) {
+        long[] best = null;
+        long bestKey = Long.MAX_VALUE;
+        for (long[] t : tiles) {
+            long x = t[0] * World.TILE + CityRuns.HIGHWAY_AT, y = t[1] * World.TILE + CityRuns.HIGHWAY_AT;
+            if (!ownedDry(map, x, y)) continue;
+            long key = (((t[0] - rtx) * (t[0] - rtx) + (t[1] - rty) * (t[1] - rty)) << 30) | (t[1] << 15) | t[0];
+            if (key < bestKey) { bestKey = key; best = new long[] { x, y }; }
+        }
+        return best;
+    }
+
+    /** The railway line crossing of the tiles nearest plot (ax, ay) that is owned dry ground; null for none. */
+    static long[] nearestRail(CityMap map, List<long[]> tiles, long ax, long ay) {
+        long[] best = null;
+        double bestD = Double.MAX_VALUE;
+        for (long[] t : tiles) {
+            long x = t[0] * World.TILE + CityRuns.RAIL_AT, y = t[1] * World.TILE + CityRuns.RAIL_AT;
+            if (!ownedDry(map, x, y)) continue;
+            double d = Math.hypot(x - ax, y - ay);
+            if (d < bestD) { bestD = d; best = new long[] { x, y }; }
+        }
+        return best;
+    }
+
+    /** The net's piece (its index among the net's hubs) whose hub lies on map piece m; -1 for none. */
+    static int netOf(CityRuns.Net n, CityMap map, int m) {
+        for (int j = 1; j < n.pieces(); j++) {
+            long[] h = n.pieceHub(j);
+            if (h != null && map.pieces().pieceOf(h[0], h[1]) == m) return j;
+        }
+        return -1;
+    }
+
+    static double dist(long[] a, long[] b) {
+        return Math.hypot(a[0] - b[0], a[1] - b[1]);
+    }
+
+    static void skipped() {
+        System.out.println("  skipped: EarthCheck's fixture (" + EarthCheck.FIXTURE + ") is not beside the classes, so there is no Earth to found a city on; no fail counted");
+    }
+
+    /* ============ 8. the island linked by a port ============ */
+    static void section8() throws Exception {
+        System.out.println("\n--- 8. a linked island's hub at its port: the island's piece has the terminal for its anchor, and both nets start at the port ---");
+        Port p = port();
+        if (p == null) { skipped(); return; }
+        check("fixture: an island square with a shore, a second parcel of the island apart from it, a square of home's open coast and a dry square beside the founding site, found by search", p.found && p.homeLandFound);
+        if (!p.found) return;
+        Game g = p.c.g;
+        World w = p.w;
+        Landmasses lms = p.c.books();
+        check("the island's terminal and then home's are ordered, the island is linked (the books), and the island's piece has weight, a highway hub and a railway hub within "
+                + LINK_MONTHS + " months", p.islandPort && p.linkOrdered && p.linked && lms.linked(648) && p.settled);
+        CityMap map = g.getCityMap();
+        CityMap.MapPieces pieces = map.pieces();
+        CityRuns runs = map.runs();
+        int ip = islandPiece(map, p), fp = pieceIn(map, p.farBox);
+        System.out.printf("  %d pieces: the island's is %d (weight %,d), the far parcel's %d; %d yards, rail plots %,d (home %,d)%n", pieces.count(), ip, pieces.weight(ip), fp, runs.yards().size(),
+                runs.rail().plots, runs.rail().piecePlots(0));
+        check("the island's piece and the far parcel's are two pieces, neither home's", ip >= 1 && fp >= 1 && ip != fp);
+        if (ip < 1 || fp < 1 || ip == fp) return;
+        // The terminal: the oldest berthed work of the island's shore.
+        CityShore.Work work = null;
+        for (CityShore.Work k : map.shore().works()) {
+            long[] sp = k.shorePlot();
+            if (k.berthed() && w.landmassAt(sp[0], sp[1]) == 648) { work = k; break; }
+        }
+        check("the island has a berthed terminal on its shore", work != null);
+        if (work == null) return;
+        long[] mid = { work.x0() + work.w() / 2, work.y0() + work.h() / 2 };
+        long[] anchor = pieces.anchor(ip);
+        check("the island's anchor() is the terminal's box middle {x0 + w/2, y0 + h/2} = " + Arrays.toString(mid), Arrays.equals(anchor, mid));
+        List<long[]> tiles = tilesOf(map, ip, p.box);
+        long mtx = Math.floorDiv(mid[0], World.TILE), mty = Math.floorDiv(mid[1], World.TILE);
+        long[] site = map.site();
+        long stx = Math.floorDiv(site[0], World.TILE), sty = Math.floorDiv(site[1], World.TILE);
+        long[] want = nearestHighway(map, tiles, mtx, mty), old = nearestHighway(map, tiles, stx, sty);
+        long[] hub = pieces.hub(ip);
+        System.out.printf("  island tiles %d; highway hub %s (port %s), the founding site's rule gave %s%n", tiles.size(), Arrays.toString(hub), Arrays.toString(mid), Arrays.toString(old));
+        check("the island's hub() is the highway line crossing on its tiles nearest the terminal's tile (a loop over the piece's tiles)", want != null && Arrays.equals(hub, want));
+        check("fixture (premise): the crossing nearest the founding site on the piece was another, and farther from the terminal", old != null && want != null && !Arrays.equals(old, want)
+                && dist(old, mid) > dist(want, mid));
+        check("...so the highway hub is nearer the terminal than the old rule's (" + (hub == null ? "-" : String.format("%.1f", dist(hub, mid))) + " plots against "
+                + (old == null ? "-" : String.format("%.1f", dist(old, mid))) + ")", hub != null && old != null && dist(hub, mid) < dist(old, mid));
+        // The nets: the highway net's hub on the island is hub(); the rail net's the railway line crossing nearest the terminal.
+        int hj = netOf(runs.highways(), map, ip), rj = netOf(runs.rail(), map, ip);
+        check("the highway net has a piece on the island and its hub is hub() (a net opened after the link starts at the port)", hj >= 1 && Arrays.equals(runs.highways().pieceHub(hj), hub));
+        long[] rail = rj >= 1 ? runs.rail().pieceHub(rj) : null;
+        long[] railWant = nearestRail(map, tiles, mid[0], mid[1]);
+        long[] railOld = old == null ? null : nearestRail(map, tiles, old[0], old[1]);
+        System.out.printf("  railway hub %s (nearest the port %s), the old anchor's would have been %s%n", Arrays.toString(rail), Arrays.toString(railWant), Arrays.toString(railOld));
+        check("the railway has a piece on the island and its hub is a railway line crossing (both coordinates RAIL_AT mod CELL) on the island's piece", rail != null
+                && Math.floorMod(rail[0] - CityRuns.RAIL_AT, CityRuns.CELL) == 0 && Math.floorMod(rail[1] - CityRuns.RAIL_AT, CityRuns.CELL) == 0 && pieces.pieceOf(rail[0], rail[1]) == ip);
+        check("...the nearest to the terminal of the island's crossings (a loop over the piece's tiles)", rail != null && railWant != null && Math.abs(dist(rail, mid) - dist(railWant, mid)) < 1e-9);
+        check("fixture (premise): the crossing nearest the old anchor, the highway hub the founding site chose, was farther from the terminal", railOld != null && railWant != null
+                && dist(railOld, mid) > dist(railWant, mid) + 1e-9);
+        check("...so the railway hub is nearer the terminal than the old anchor's would have been", rail != null && railOld != null && dist(rail, mid) < dist(railOld, mid) - 1e-9);
+        // The track and the yard.
+        long boxPlots = in(runs.rail(), p.box);
+        check("the railway has track on the island's own ground: the piece's plots are counted, all inside the island's square", rj >= 1 && runs.rail().piecePlots(rj) > 0 && boxPlots == runs.rail().piecePlots(rj));
+        int onIsland = 0;
+        for (long[] y : runs.yards()) if (pieces.pieceOf(y[0] + y[2] / 2, y[1] + y[3] / 2) == ip) onIsland++;
+        // Rotterdam has no mine, so no yard stands beside one at home (the first yard of the runs); the yards the city has are the model's, and the island's piece has one of them.
+        check("the model has " + YARDS + " yards and the railway laid them: one is on the island (its middle on the piece)", runs.yards().size() == YARDS && onIsland >= 1);
+        // A piece with no terminal: the far parcel starts from the founding site as before, and the home piece's anchor is its hub.
+        List<long[]> farTiles = tilesOf(map, fp, p.farBox);
+        long[] farWant = nearestHighway(map, farTiles, stx, sty);
+        check("a piece with no terminal (the island's far parcel) has hub() nearest the founding site, the old rule, and anchor() is its hub", farWant != null && Arrays.equals(pieces.hub(fp), farWant)
+                && Arrays.equals(pieces.anchor(fp), pieces.hub(fp)));
+        check("the home piece's anchor() is its hub(): piece 0 starts from the founding site always", pieces.hub(0) != null && Arrays.equals(pieces.anchor(0), pieces.hub(0)));
+        // ...and the open coast's square, a piece apart from home's ground, is anchored by the terminal at home that stands on it as the island's is by its own.
+        int sp = pieceIn(map, p.seaBox);
+        CityShore.Work seaWork = null;
+        for (CityShore.Work k : map.shore().works()) {
+            long[] ks = k.shorePlot();
+            if (k.berthed() && w.landmassAt(ks[0], ks[1]) == lms.home()) { seaWork = k; break; }
+        }
+        check("fixture: the open coast's square is a piece of its own, and the terminal at home stands on its shore", sp >= 1 && seaWork != null);
+        if (sp >= 1 && seaWork != null) {
+            long[] seaMid = { seaWork.x0() + seaWork.w() / 2, seaWork.y0() + seaWork.h() / 2 };
+            long[] seaWant = nearestHighway(map, tilesOf(map, sp, p.seaBox), Math.floorDiv(seaMid[0], World.TILE), Math.floorDiv(seaMid[1], World.TILE));
+            check("...so its anchor() is that terminal's box middle and its hub() the highway crossing nearest it, as the island's", Arrays.equals(pieces.anchor(sp), seaMid) && seaWant != null && Arrays.equals(pieces.hub(sp), seaWant));
+        }
+    }
+
+    /* ============ 9. no port, no anchor; unlinked, nothing ============ */
+    static void section9() throws Exception {
+        System.out.println("\n--- 9. no port, no anchor; unlinked, nothing: before the link no piece holds the island, no plot of the runs lies on it ---");
+        Port p = port();
+        if (p == null) { skipped(); return; }
+        if (!p.found) { check("fixture: the squares were found", false); return; }
+        System.out.printf("  before the link: %d pieces, rail plots %,d (%d pieces), %d yards; on the island %d rail, %d highway plots%n", p.piecesBefore, p.railPlotsBefore, p.railPiecesBefore,
+                p.yardsBefore, p.railOnIsland, p.highwaysOnIsland);
+        check("fixture (premise): the terminal stands on the island and links nothing: the books have it unlinked, and the city has track laid (the premise: a railway to be found on the island, were it linked)", p.islandPort && p.unlinked && p.railed);
+        check("no piece of ground holds the island's squares: the pieces the map has are home's ground", p.islandPieceBefore == -1 && p.farPieceBefore == -1);
+        check("no plot of the runs lies on the island (a loop over its squares): no rail, no highway ", p.railOnIsland == 0 && p.highwaysOnIsland == 0 && p.railPlotsBefore > 0);
+        check("the home piece's anchor() is its hub() (piece 0 starts from the founding site always)", p.homeAnchorBefore);
     }
 }

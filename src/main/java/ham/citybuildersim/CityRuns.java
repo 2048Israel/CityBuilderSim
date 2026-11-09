@@ -266,7 +266,7 @@ public final class CityRuns {
         int pieceOf(long x, long y);
         /** Piece p's built weight (the map: the buildings drawn on it); 0 for none. */
         long weight(int p);
-        /** Piece p's hub {x, y}: a highway line crossing (both coordinates HIGHWAY_AT mod CELL) on its dry ground, nearest the founding site; null for none. */
+        /** Piece p's hub {x, y}: a highway line crossing (both coordinates HIGHWAY_AT mod CELL) on its dry ground, nearest its anchor (the map's: the island's port, RI1, else the founding site); null for none. */
         long[] hub(int p);
         /** (RI1) Where piece p's nets start from: its hub unless the map says otherwise. The railway's hub on the piece is the railway line crossing nearest it (layRail()). */
         default long[] anchor(int p) { return hub(p); }
