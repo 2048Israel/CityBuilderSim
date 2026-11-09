@@ -48,3 +48,17 @@ round-trips 60 of 60 months bit for bit, its trend 1; an array cut to
 `5+LEVEL_RING` reads trend 1. (e): a scratch town on the world file, saved at
 1.004733 and loaded on the literals, walks on with `trendLevel()` 1.004733 to
 the bit, off the path, its level 1.008494 two months on.
+
+## The checks
+
+- **`--pick`** (both data files named): exit 0. 9 of 187 harnesses for the 4
+  files changed since 3b4f040c, all green; the maps regenerated (dce4a01c);
+  Stale 0 firm.
+- **The trace.** The default playtest ran traced (`-Dplaytest.trace`, 2,405
+  months, both data files named) on main 3b4f040c and on this tree (412548a9),
+  each built apart. All eight CSVs are byte-identical. The logs differ in two
+  lines, both run times: the run's 58 s against 57 s, and the layout windows'
+  1.8 s against 1.6 s. The playtest is on the US's path throughout, so the walk
+  never runs there. So no ensemble (EN1).
+- **One in, one out:** not a process batch (no script, check machinery or
+  rule changed), so no count.
