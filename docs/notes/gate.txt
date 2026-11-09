@@ -1,17 +1,17 @@
-# gate of Merge batch/MB1: big-city map bands: the spill's chain cut in bands that do not move with a purchase (a rank kept per district, or a cut by area), so a district bought ahead in a city of more than 128 districts moves no other band's boxes (MF1-B; Jerus ticked "Big-city map bands", 2026-10-31), 0.9.67
+# gate of Merge batch/TS1: the toast stays out of the way: while a toast shows, the page's scroller takes a bottom padding as tall as the toasts, its offset kept, and a harness that a toast never covers the viewport (PT1-C, way (a); Jerus ticked "Toast stays out of the way", 2026-10-31), 0.9.68
 # date: 2026-11-09
 # earth-2.bin: named
 # nightly: 2026-11-09 01:39 0.9.58 08f58a5f 4,000 months: OK in 118 s
-# suite: 188 harnesses run in 7193s: 183 passed, 5 failed
-# timing: 17 harnesses run in 1079s: 13 passed, 4 failed; its red lines were judged side by side with main's, below
+# suite: 189 harnesses run in 1204s: 184 passed, 5 failed
+# timing: 17 harnesses run in 946s: 13 passed, 4 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 33.1 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 28.2 ms, batch 29.2 ms (+3.5%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 27.8 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 29.2 ms (gate.txt, today), batch 27.8 ms (-4.9%), budget 25 ms: main over the budget too, no round]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | ...and no more than section 5's at either size: the view adds nothing a tile   FAIL   [main 23.0 ms, batch 22.7 ms (-1.6%), budget 36.0734 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | on the full file, every stride's far node over Rotterdam is drawn in no more than SCREEN_MS FAIL   [main 66.1 ms, batch 48.5 ms (-26.7%), budget 80 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 16.2 ms, batch 16.3 ms (+0.5%), budget 19 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | 7 FAILED   [the harness's own count of the timing reds above]
-# figure	SaveSlotCheck	the median due month, 33.1 ms, holds the clock at most CLOCK_MS (25 ms)	29.241	25	ms	FAIL	1	1
+# figure	SaveSlotCheck	the median due month, 27.8 ms, holds the clock at most CLOCK_MS (25 ms)	27.8175	25	ms	FAIL	1	1
+# figure	KeptCheck	the whole kept chrome's month is within KEPT_ALL_CHROME_MS (8.0 ms)	9.2995	8	ms	FAIL	1	1
+# timing red passed on Jerus's word, over main's by more than 15% or not a timing red (always, if checks were not caused by its own code, then it should always pass): KeptCheck | exit 10   [the harness's own count, with a red above that is not a timing red that passes]
+# timing red passed on Jerus's word, over main's by more than 15% or not a timing red (always, if checks were not caused by its own code, then it should always pass): KeptCheck | the whole kept chrome's month is within KEPT_ALL_CHROME_MS (8.0 ms)      FAIL   [over main's by more than 15%: main 5.38 ms, batch 9.3 ms (+72.9%), budget 8 ms]
+# timing red passed on Jerus's word, over main's by more than 15% or not a timing red (always, if checks were not caused by its own code, then it should always pass): KeptCheck | 10 FAILED   [the harness's own count, with a red above that is not a timing red that passes]
 PriceLevelCheck | exit 1
 PriceLevelCheck | FAIL cash (nominal) month 101: 8.317811325 at the factor over the factor, 68.38253344 at today's prices (0.000751 apart)
 PriceLevelCheck | FAIL gdp.month (nominal) month 103: 20121.84632 at the factor over the factor, 20122.48474 at today's prices (1.95e-05 apart)

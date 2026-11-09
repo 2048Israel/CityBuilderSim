@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
  *     java -Dcbs.parallel=1 -cp <classes> ham.citybuildersim.AllChecks -f   one at a time
  *
  * Exit status is the number of harnesses that failed, so a build script can
- * stop on it. BuildMenuCheck, KeptCheck and ChartFitCheck need JavaFX on the classpath and are skipped,
+ * stop on it. BuildMenuCheck, KeptCheck, ChartFitCheck and ToastCheck need JavaFX on the classpath and are skipped,
  * with a note, when it is not there.
  *
  * -f is for an AI session, where every line printed is read and paid for
@@ -96,7 +96,7 @@ public class AllChecks {
         "DenominationCheck", "PriceLevelCheck", "DeterminismCheck",
         "HouseholdCheck", "PopulationCheck", "LabourCheck", "EducationCheck", "HealthCheck",
         "InfrastructureCheck", "ReadPathCheck", "RobustnessCheck", "SaveFileCheck", "ReloadCheck",
-        "SaveSlotCheck", "ScaleCheck", "MapCheck", "GatewayCheck", "MainLineCheck", "RailDrawCheck", "JunctionCheck", "PlanCheck", "OrderSearchCheck", "SkipReportCheck", "InboxCheck", "PlaytestFixCheck", "BuildMenuCheck", "KeptCheck", "ChartFitCheck", "ClockCheck",
+        "SaveSlotCheck", "ScaleCheck", "MapCheck", "GatewayCheck", "MainLineCheck", "RailDrawCheck", "JunctionCheck", "PlanCheck", "OrderSearchCheck", "SkipReportCheck", "InboxCheck", "PlaytestFixCheck", "BuildMenuCheck", "KeptCheck", "ChartFitCheck", "ToastCheck", "ClockCheck",
         "ConsumptionCheck", "SectorBooksCheck", "SectorStatementCheck", "TreasuryCheck", "HousingCheck", "OutsideCheck", "SicknessCheck", "CausesOfDeathCheck", "HouseholdMemoryCheck", "DeathRecordCheck", "CrimeCheck", "BusinessServicesCheck", "ManufacturingCheck", "AgricultureCheck", "FoodProcessingCheck", "TradeCostCheck", "RailCheck", "RailDepotCheck", "HaulageCheck", "CarCheck", "VanCheck", "RestaurantsCheck", "OilCheck", "RefineryCheck", "RefineryViewCheck", "OilViewCheck", "WellCheck", "PortCheck", "LandlordPortCheck", "HomeRailCheck", "FreightViewCheck", "TradeBandCheck", "MaterialsCheck", "CoalMiningCheck", "QuarryingCheck", "CementConcreteCheck", "CopperMiningCheck", "CopperRefiningCheck", "ForestryCheck", "WoodProductsCheck", "IndustryViewCheck", "YearBookCheck", "ChartCheck", "TimingCheck", "StaleCheck", "KnownRedsCheck", "EnsembleCheck", "TruckCheck", "TruckRouteCheck", "AuctionCheck", "LongPlaytest",
         "IslandNetCheck", "CrossingCheck", "BridgeMapCheck", "WantedPostsCheck", "PartnerCallsCheck", "Forms1900Check", "EquipmentCheck", "FittingCheck", "RecipeCheck", "ResearchCheck", "DiscoveryCheck", "PrizeCheck", "ResearchPreviewCheck", "ResearchViewCheck", "WageLadderCheck", "ArrivalMixCheck", "BasketYearCheck",
         "ReplayCheck"
@@ -188,7 +188,7 @@ public class AllChecks {
                 if (!wanted) continue;
             }
             picked.add(name);
-            if (haveFx || !(name.equals("BuildMenuCheck") || name.equals("KeptCheck") || name.equals("ChartFitCheck"))) order.add(name);
+            if (haveFx || !(name.equals("BuildMenuCheck") || name.equals("KeptCheck") || name.equals("ChartFitCheck") || name.equals("ToastCheck"))) order.add(name);
         }
         int atOnce = parallel(logged, timingOnly);
         if (atOnce > 1) order.sort(Comparator.comparingInt(x -> LONGEST_FIRST.contains(x) ? LONGEST_FIRST.indexOf(x) : LONGEST_FIRST.size()));   // stable: the rest keep their order
