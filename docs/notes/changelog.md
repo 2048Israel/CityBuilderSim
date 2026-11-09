@@ -18,6 +18,19 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.63 — RN1, a glut's rent under the carry; S1 restated — 2026-11-09, ready, see docs/queue/RN1-notes.md
+A landlord that borrows dear no longer lifts the rent of an empty market to cover its debt (EN1-C ★2): a rent leg
+with fewer than one household a door (`RealEstate.GLUT_PRESSURE`) takes its required return times the scarcity
+multiple and no carry lift, its empty flats the landlord's loss; the other leg keeps the lift as it stood. A closed
+home's mortgage no longer loads the homes left standing: the landlords keep the share of their debt whose homes are
+gone (`strandedDebtShare`, saved), and the break-even counts only the rest, though the company still pays all its
+interest. HousingCheck 3c holds Jerus's zero-profit floor where a market is tight or balanced; a city grown ten
+years and held at 15% for ten proves the waiver fires (39 months studio, 49 family) and the share survives a save.
+The ensemble's S1 now reads the currency's fall: each seed's excess inflation over its twin is within the
+currency's extra fall against the dollar plus the anchor's tolerance (EN1-C ★1). Ensemble 24/26 against 0.9.57's
+23/26: S1 and R3 now pass, A2 is red as before, A3 red by one month in one seed of sixteen (RN1-A).
+At the gate FittingCheck c retires depots until a month's crews cannot fit the drive; HealthCheck's fee twins red by name (RN1-F).
+
 ### 0.9.62 — CR1, a Credits page from the title screen — 2026-11-09, ready, see docs/queue/CR1-notes.md
 The title screen and the Esc menu have a Credits button under Settings, and the page it opens shows
 the two data files' credits in full, the Earth's (`ATTRIBUTION-2.txt`) and the nations' (`world/ATTRIBUTION.txt`),

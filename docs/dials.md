@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**5,610 constants in 532 files.**
+**5,611 constants in 532 files.**
 
 ## model (2700 constants)
 
@@ -1573,7 +1573,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.62"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.9.63"` | Bump on release. |
 | 8267 | `GameVersion.SAVE_FORMAT` | `51` | The save shape. |
 | 8316 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `51` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
 | 8324 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
@@ -3696,7 +3696,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 43 | `ZoningView.SHORT_SHARE` | `1e-6` | A zone holds less than it wants by more than this share of its want: SHORT (Z10's "holds 12.4 of 40 km²"), not a rounding. |
 
-## sectors (189 constants)
+## sectors (190 constants)
 
 ### Agriculture.java ([map](map/Agriculture.md))
 
@@ -3924,9 +3924,10 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 137 | `RealEstate.LANDLORD_YIELD` | `.058` | What a landlord wants back each year for what the building cost. |
 | 160 | `RealEstate.MAINTENANCE_PER_YEAR` | `.01` | Repairs: one percent a year of what a building cost to put up, placed as a real order with the builders in the building's own inputs. |
 | 163 | `RealEstate.SCARCITY_ELASTICITY` | `1.0` | How hard rent answers a shortage of front doors. |
-| 166 | `RealEstate.LEASE_MONTHS` | `12` | The lease, in months, which is also the lag. |
-| 169 | `RealEstate.BUILD_MARGIN` | `.33` | The margin a new building has to clear over its own costs to be worth putting up. |
-| 172 | `RealEstate.MIN_HOMES_FOR_A_MARKET` | `10` | Below this many front doors the ratio stops meaning anything. |
+| 166 | `RealEstate.GLUT_PRESSURE` | `1.0` | Households a door below which a segment is in glut and its rent is not lifted to cover the carry, an empty flat being the landlord's loss (Jerus, 2026-10-31, RN1). |
+| 169 | `RealEstate.LEASE_MONTHS` | `12` | The lease, in months, which is also the lag. |
+| 172 | `RealEstate.BUILD_MARGIN` | `.33` | The margin a new building has to clear over its own costs to be worth putting up. |
+| 175 | `RealEstate.MIN_HOMES_FOR_A_MARKET` | `10` | Below this many front doors the ratio stops meaning anything. |
 
 ### RefineryFlow.java ([map](map/RefineryFlow.md))
 
@@ -6580,15 +6581,15 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 5207 | `LongPlaytest.ABROAD_SHARE` | `.8` | CC1-S: the share of the city's own quote for a sale that the dollar quote for it must come under for the build to borrow abroad. |
 | 5210 | `LongPlaytest.QUOTED_BORROWING` | `Boolean.getBoolean("playtest.quotedBorrowing")` | -Dplaytest.quotedBorrowing=true (CC1-S): the build borrows abroad by the quotes for the sale (borrowsAbroad()); unset, by the rates before it (abroadByTheRatesBefore()), and the run is the run it a... |
 | 5266 | `LongPlaytest.refusals` | `new LinkedHashMap<>()` | Why the advisor could not do the thing it wanted to. |
-| 5849 | `LongPlaytest.ADDED_BACK_TERMS` | `{ "food", "materials", "luxuries", "held goods" }` | The inventory terms in NationalAccounts.getWrittenOffAddedBack()'s order. |
-| 5851 | `LongPlaytest.addedBackMonths` | `new int [ ADDED_BACK_TERMS.length ], addedBackFirst = { - 1, - 1, - 1, - 1 }, addedBack...` | Months each term added a write-off back, the first, and the largest with its month. |
-| 5853 | `LongPlaytest.addedBackWorst` | `new double [ ADDED_BACK_TERMS.length ]` |  |
-| 5855 | `LongPlaytest.EVENTS_PRINTED` | `12` | The events printed as they happen, each term's first few: enough to say where a trace moved. |
-| 5908 | `LongPlaytest.stakes` | `new ArrayList<>()` |  |
-| 5916 | `LongPlaytest.mostHeld` | `new double [ Equity.COMPANIES.length ]` |  |
-| 7846 | `LongPlaytest.DISTINCT_ROUNDS` | `64` | The most letters distinctCuts() adds to a name: past the longest key there is nothing left to add. |
-| 7995 | `LongPlaytest.PROBE_QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } @ Override...` |  |
-| 8001 | `LongPlaytest.PROBE_MONTH_NANOS` | `new long [ 20_000 ]` | Per-month wall time of the probe's run(g, 1), nanoseconds, by month index. |
+| 5863 | `LongPlaytest.ADDED_BACK_TERMS` | `{ "food", "materials", "luxuries", "held goods" }` | The inventory terms in NationalAccounts.getWrittenOffAddedBack()'s order. |
+| 5865 | `LongPlaytest.addedBackMonths` | `new int [ ADDED_BACK_TERMS.length ], addedBackFirst = { - 1, - 1, - 1, - 1 }, addedBack...` | Months each term added a write-off back, the first, and the largest with its month. |
+| 5867 | `LongPlaytest.addedBackWorst` | `new double [ ADDED_BACK_TERMS.length ]` |  |
+| 5869 | `LongPlaytest.EVENTS_PRINTED` | `12` | The events printed as they happen, each term's first few: enough to say where a trace moved. |
+| 5922 | `LongPlaytest.stakes` | `new ArrayList<>()` |  |
+| 5930 | `LongPlaytest.mostHeld` | `new double [ Equity.COMPANIES.length ]` |  |
+| 7863 | `LongPlaytest.DISTINCT_ROUNDS` | `64` | The most letters distinctCuts() adds to a name: past the longest key there is nothing left to add. |
+| 8012 | `LongPlaytest.PROBE_QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } @ Override...` |  |
+| 8018 | `LongPlaytest.PROBE_MONTH_NANOS` | `new long [ 20_000 ]` | Per-month wall time of the probe's run(g, 1), nanoseconds, by month index. |
 
 ### MainLineCheck.java ([map](map/MainLineCheck.md))
 

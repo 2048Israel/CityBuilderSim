@@ -32,9 +32,12 @@ AUTO2  the autopilot at 2%, 2,400 months
                seed finishes its months, and none ends below COLLAPSE_POP of its peak population
 ZERO_SLACK  the autopilot to month 1,800 (a mature city; Ensemble.SLACK_START), then 0% held 240 months
   S1 little    (restated 0.7.100, A27) the zero window against its AUTO2 twin's same months: the
-               window's inflation over the twin's, median at most SLACK_EXCESS_MEDIAN and every
-               seed at most SLACK_EXCESS_SEED; and no seed runs away in the window (yoy above
-               RUNAWAY_YOY for RUN_MONTHS consecutive months, A2's runaway). Until 0.7.100: from
+               window's inflation over the twin's, in every seed at most the currency's extra
+               fall over the window (fx's growth a year over the twin's) plus ANCHOR_TOL, every
+               seed twinned: "the currency's and no more" (restated RN1; Jerus, 2026-10-31).
+               Until RN1: median at most SLACK_EXCESS_MEDIAN, every seed at most
+               SLACK_EXCESS_SEED, and no seed running away in the window (yoy above RUNAWAY_YOY
+               for RUN_MONTHS consecutive months), now info rows. Until 0.7.100: from
                month 600, the window's own inflation, median at most SLACK_MEDIAN_MAX, every seed
                at most SLACK_SEED_MAX, no yoy above RUNAWAY_YOY (see THE PREMISES RESTATED below)
 ZERO_HOT  0% held 240 months from HOT_START (young city), then the autopilot 120 months
@@ -171,7 +174,7 @@ HOT_PERSIST_MIN = ANCHOR_TOL
 # ---- THE PREMISES RESTATED, AGAIN (EN1, 2026-10-20; Jerus: "yes, do that") ----------------
 # On 0.8.9's ensemble (FR6's fr6s1, main's model through 0.8.11) four criteria failed on main
 # itself, run after run; docs/queue/EN1-notes.md has each one's figures. Two were premises out of
-# date, restated here; S1 waits on Jerus (EN1-C) and R3 on a fix of the model, both as written.
+# date, restated here; S1 waited on Jerus (EN1-C) and R3 on a fix of the model (both RN1, below).
 # A2, THE FOUNDING IS NOT A RUNAWAY. SPELL_FROM left out the founding's own blip as it was
 # measured on 0.7.4x, over by month 104. The founding has since moved later: on 0.8.9 the 13
 # seeds that fail A2 from SPELL_FROM all fail on the founding's rent boom, a spell of 12-19
@@ -189,6 +192,16 @@ HOT_PERSIST_MIN = ANCHOR_TOL
 # target in the anchor's own terms), and below the second half's excess, the burst it stops. The
 # young city's own inflation (AUTO2_FROM to YOUNG_TO) is printed as info beside A1.
 HOT_STOP_EXCESS = ANCHOR_TOL
+
+# S1, THE CURRENCY'S AND NO MORE (RN1; Jerus, 2026-10-31, on EN1-C's first call: "Take all
+# (Recommended)"). A held 0% in a mature city is a cut of nearly four points below what the
+# autopilot holds (3.82% in the window on 0.8.9), and an open city pays for that through its
+# currency: on 0.8.9 fx rose 2.43% a year faster than the twin's [1.78-3.68] and the excess
+# inflation, 2.17% [1.16-3.45], was below that fall in every seed, by 0.13-0.85 points, with
+# unemployment the same as the twin's. "Little inflation in a slack city" is a liquidity trap's
+# premise, and this city's own rate is never near zero. So S1 reads, in every seed, the excess
+# at most the currency's extra fall plus the anchor's tolerance, and drops the spell guard (seed
+# 14's 21 months over 10% rode a 5.0% trend). The old reading is printed as info rows.
 
 # ---- THE PREMISES RETIRED (CD1, 0.8.15; Jerus, 2026-10-21: "Keep D9 as decided: H1's premise is
 # retired, A2 ships as noise at its threshold. Ship CD1.") ---------------------------------------
@@ -237,9 +250,10 @@ def at(df, col, month):
     return float(df.at[month, col]) if month in df.index else math.nan
 
 
-def ann(df, m0, m1):
-    """Annualised inflation of the index from month m0 to m1."""
-    a, b = at(df, "index", m0), at(df, "index", m1)
+def ann(df, m0, m1, col="index"):
+    """Annualised growth of a column from month m0 to m1: the index's is inflation (RN1: fx's is
+    the currency's fall, fx being local currency per US dollar)."""
+    a, b = at(df, col, m0), at(df, col, m1)
     if not (a > 0 and b > 0) or m1 <= m0:
         return math.nan
     return (b / a) ** (12.0 / (m1 - m0)) - 1
@@ -382,15 +396,25 @@ def main():
         EXPECTED_END["ZERO_SLACK"] = m1
         zt = [(s, df, twin[s]) for s, df in z if twin.get(s) is not None]
         win = lambda d: d[(d["month"] > m0) & (d["month"] <= m1)]
-        # S1 as restated (THE PREMISES RESTATED): the window against its twin's same months.
+        # S1 as restated (RN1, THE CURRENCY'S AND NO MORE): the window against its twin's same
+        # months, each seed's excess inflation at most its currency's extra fall plus ANCHOR_TOL.
         excess = [ann(df, m0, m1) - ann(t, m0, m1) for _, df, t in zt]
+        fall = [ann(df, m0, m1, "fx") - ann(t, m0, m1, "fx") for _, df, t in zt]
+        margin = [f + ANCHOR_TOL - e for e, f in zip(excess, fall)]
         spell = [longest_run((win(df)["infl_yoy"] > RUNAWAY_YOY).tolist()) for _, df in z]
-        ok = (med(excess) <= SLACK_EXCESS_MEDIAN and max(excess) <= SLACK_EXCESS_SEED
-              and max(spell) < RUN_MONTHS and len(zt) == len(z))
+        ok = (len(zt) == len(z) and len(margin) > 0 and all(m >= 0 for m in margin))   # a NaN fails
         add("ZERO_SLACK", "S1", f"inflation m{m0}-{m1} at 0% minus the AUTO2 twin's, a year", spread(excess),
-            f"median ≤ +{fmt(SLACK_EXCESS_MEDIAN)}, all ≤ +{fmt(SLACK_EXCESS_SEED)}, "
-            f"no spell of yoy > {fmt(RUNAWAY_YOY)} of {RUN_MONTHS}*", ok,
-            f"longest spell {max(spell)} months")
+            f"every seed ≤ the currency's extra fall + {fmt(ANCHOR_TOL)}*", ok,
+            f"{sum(1 for m in margin if m >= 0)}/{len(z)} seeds within")
+        add("ZERO_SLACK", "info", "the currency's extra fall, a year (fx's growth over the twin's); "
+            "each seed's margin (that fall + the tolerance - the excess)",
+            f"{spread(fall)}; {spread(margin)}", "-", "info")
+        old_ok = (med(excess) <= SLACK_EXCESS_MEDIAN and max(excess) <= SLACK_EXCESS_SEED
+                  and max(spell) < RUN_MONTHS) if excess and spell else False
+        add("ZERO_SLACK", "info", f"S1 as it was until RN1: median ≤ +{fmt(SLACK_EXCESS_MEDIAN)}, "
+            f"all ≤ +{fmt(SLACK_EXCESS_SEED)}, no spell of yoy > {fmt(RUNAWAY_YOY)} of {RUN_MONTHS}",
+            f"{spread(excess)}; longest spell {max(spell) if spell else 'n/a'} months",
+            "-", "would pass" if old_ok else "would fail")
         vals = [ann(df, m0, m1) for _, df in z]
         peak = [win(df)["infl_yoy"].max() for _, df in z]
         tpeak = [win(t)["infl_yoy"].max() for _, _, t in zt]

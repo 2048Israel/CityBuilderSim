@@ -1,16 +1,29 @@
-# gate of Merge batch/CR1: a Credits page from the title screen: both attribution files in full and the fonts' notice (IBM Plex, SIL Open Font License 1.1), 0.9.62
+# gate of Merge batch/RN1: a glut's rent under the carry: where a segment has fewer seekers than doors the carry lift does not bind, HousingCheck 3c restated by his word for a tight or balanced market (EN1-C ★2, R3); and the ensemble's S1 restated as "the currency's and no more" (EN1-C ★1) (Jerus, 2026-10-31: "Take all (Recommended)"); the trace moves, the ensemble, 0.9.63
 # date: 2026-11-09
 # earth-2.bin: named
 # nightly: 2026-11-09 01:39 0.9.58 08f58a5f 4,000 months: OK in 118 s
-# suite: 188 harnesses run in 1271s: 184 passed, 4 failed
-# timing: 17 harnesses run in 903s: 13 passed, 4 failed; its red lines were judged side by side with main's, below
+# suite: 188 harnesses run in 1105s: 183 passed, 5 failed
+# timing: 17 harnesses run in 838s: 13 passed, 4 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 29.3 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 28.1 ms (gate.txt, today), batch 29.3 ms (+4.2%), budget 25 ms: main over the budget too, no round]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 27.4 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 29.3 ms (gate.txt, today), batch 27.4 ms (-6.3%), budget 25 ms: main over the budget too, no round]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 20.6 ms, batch 21.4 ms (+3.7%), budget 19 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | 5 FAILED   [the harness's own count of the timing reds above]
-# figure	SaveSlotCheck	the median due month, 29.3 ms, holds the clock at most CLOCK_MS (25 ms)	29.2523	25	ms	FAIL	1	1
-# figure	MapCheck	a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month	21.3522	19	ms	FAIL	1	1
+# figure	SaveSlotCheck	the median due month, 27.4 ms, holds the clock at most CLOCK_MS (25 ms)	27.4237	25	ms	FAIL	1	1
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): HealthCheck | exit 1
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): HealthCheck | fixture: so the beds are not what differs: at the dial's top they take no larger a share by more than the fee turns away FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): HealthCheck | 1 FAILED
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): ScaleCheck | its rents pull migrants as the city's do, every month (the affordability pull within 0.01; worst 0.070) FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): ScaleCheck | ...cash: the copy is K times the city's within 0.0125 in all 6 months (worst 1.54e-02) FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): ScaleCheck | 2 FAILED
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | exit 9
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | most months make no node at all (10 of 25)                               FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | most months make no node at all (12 of 25)                               FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | the city has a piece of paper to close                                   FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | a bookRow was found on a money page of this city, to put the pointer on  FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | no month makes more than a tenth of the nodes the first draw made (the most made in one: 34 of 330; 14 of 25 months made none) FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | the city has a plain business and a materials industry with works to draw (Construction, null) FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | 9 FAILED
 PriceLevelCheck | exit 1
 PriceLevelCheck | FAIL cash (nominal) month 101: 8.317811325 at the factor over the factor, 68.38253344 at today's prices (0.000751 apart)
 PriceLevelCheck | FAIL gdp.month (nominal) month 103: 20121.84632 at the factor over the factor, 20122.48474 at today's prices (1.95e-05 apart)
@@ -42,21 +55,26 @@ PriceLevelCheck | every live nominal series equal over the factor within 1.0E-9 
 PriceLevelCheck | FAIL sector.Retail.cash (nominal) month 29: 99.30704620 at the factor over the factor, 99.30704375 at today's prices (9.62e-09 apart)
 PriceLevelCheck | every live nominal series equal over the factor within 1.0E-9 (worst 9.6e-09 in sector.Retail.cash) FAIL
 PriceLevelCheck | 356 FAILED
+HealthCheck | exit 1
+HealthCheck | fixture: so the beds are not what differs: at the dial's top they take no larger a share by more than the fee turns away FAIL
+HealthCheck | 1 FAILED
 ScaleCheck | exit 1
-ScaleCheck | ...people: the copy is K times the city's within 0.0150 in all 6 months (worst 1.69e-02) FAIL
-ScaleCheck | ...cash: the copy is K times the city's within 0.0125 in all 6 months (worst 1.57e-02) FAIL
-ScaleCheck | ...prices: the copy is equal to the city's within 0.00400 in all 6 months (worst 4.78e-03) FAIL
-ScaleCheck | 3 FAILED
+ScaleCheck | its rents pull migrants as the city's do, every month (the affordability pull within 0.01; worst 0.070) FAIL
+ScaleCheck | ...cash: the copy is K times the city's within 0.0125 in all 6 months (worst 1.54e-02) FAIL
+ScaleCheck | 2 FAILED
 MapCheck | exit 1
 MapCheck | a yard laid across a district's buildings moves off it the boxes under it and no others: 71 of the plan before's 520 boxes lie under the yard and the railway, and 77 are not in the plan after (each of the rest stands where it stood) FAIL
 MapCheck | ...and the layout watch (LongPlaytest, as the map draws the district) counts them apart and flags none: 71 boxes left a district in the yard's month because a run laid in it lies across them, 6 are counted as moved FAIL
 MapCheck | a yard that goes moves none of the buildings: every box of the plan before stands in the plan after (726 of them, 22 moved) FAIL
 MapCheck | a yard laid again across the buildings that stand moves off it the boxes under it and no others: 67 of the plan before's 916 boxes lie under the yard and the railway, 121 are not in the plan after FAIL
 MapCheck | 4 FAILED
-KeptCheck | exit 5
-KeptCheck | no month makes more than a tenth of the nodes the first draw made (the most made in one: 50 of 374; 2 of 25 months made none) FAIL
-KeptCheck | each month hands back nine in ten of the nodes the first draw made, or more (207 of 233) FAIL
-KeptCheck | Spending: fold debt opened adds to the page (197 lines, then 197)        FAIL
-KeptCheck | Spending: fold debt opened adds to the page (214 lines, then 214)        FAIL
+KeptCheck | exit 9
+KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
+KeptCheck | most months make no node at all (10 of 25)                               FAIL
+KeptCheck | most months make no node at all (12 of 25)                               FAIL
+KeptCheck | the city has a piece of paper to close                                   FAIL
+KeptCheck | a bookRow was found on a money page of this city, to put the pointer on  FAIL
+KeptCheck | no month makes more than a tenth of the nodes the first draw made (the most made in one: 34 of 330; 14 of 25 months made none) FAIL
+KeptCheck | the city has a plain business and a materials industry with works to draw (Construction, null) FAIL
 KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL
-KeptCheck | 5 FAILED
+KeptCheck | 9 FAILED

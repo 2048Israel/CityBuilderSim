@@ -1,4 +1,4 @@
-# FittingCheck.java - 1,087 lines · 33 methods · 3 constants · harnesses
+# FittingCheck.java - 1,094 lines · 33 methods · 3 constants · harnesses
 
 `ham/citybuildersim/FittingCheck.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
 
@@ -50,7 +50,7 @@
 > sectors build nothing on their own. Figures are asserted against the stacks' own quantities and counts, the templates' getters and the model's
 > verdicts, never numbers copied from the brief.
 
-**Uses:** [Game](Game.md) (57), [EquipmentFit](EquipmentFit.md) (54), [EquipmentCheck](EquipmentCheck.md) (48), [BuildingsStacks](BuildingsStacks.md) (20), [Founding](Founding.md) (20), [Good](Good.md) (16), [Sector](Sector.md) (13), [BusinessInvestment](BusinessInvestment.md) (13), [Equipment](Equipment.md) (12), [GameFiles](GameFiles.md) (8), [Fittings](Fittings.md) (8), [Forms1900Check](Forms1900Check.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (7), [DataSave](DataSave.md) (6), [SpreadPlanner](SpreadPlanner.md) (5), [Sectors](Sectors.md) (4), [MoneyAudit](MoneyAudit.md) (4), [GoodsMarket](GoodsMarket.md) (3), [BuildingManager](BuildingManager.md) (2), [Currency](Currency.md) (2), [World](World.md) (2), [Nations](Nations.md) (2), [Construction](Construction.md) (2), [MaterialsCheck](MaterialsCheck.md) (1), [Agriculture](Agriculture.md) (1), [Landmasses](Landmasses.md) (1), [Trade](Trade.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [Freight](Freight.md) (1)
+**Uses:** [Game](Game.md) (57), [EquipmentFit](EquipmentFit.md) (54), [EquipmentCheck](EquipmentCheck.md) (48), [BuildingsStacks](BuildingsStacks.md) (20), [Founding](Founding.md) (20), [Good](Good.md) (16), [Sector](Sector.md) (13), [BusinessInvestment](BusinessInvestment.md) (13), [Equipment](Equipment.md) (12), [GameFiles](GameFiles.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (8), [Fittings](Fittings.md) (8), [Forms1900Check](Forms1900Check.md) (7), [DataSave](DataSave.md) (6), [SpreadPlanner](SpreadPlanner.md) (5), [Sectors](Sectors.md) (4), [MoneyAudit](MoneyAudit.md) (4), [GoodsMarket](GoodsMarket.md) (3), [BuildingManager](BuildingManager.md) (2), [Currency](Currency.md) (2), [World](World.md) (2), [Nations](Nations.md) (2), [Construction](Construction.md) (2), [MaterialsCheck](MaterialsCheck.md) (1), [Agriculture](Agriculture.md) (1), [Landmasses](Landmasses.md) (1), [Trade](Trade.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [Freight](Freight.md) (1)
 
 **Used by (7):** [ArrivalMixCheck](ArrivalMixCheck.md), [BasketYearCheck](BasketYearCheck.md), [DiscoveryCheck](DiscoveryCheck.md), [KeptCheck](KeptCheck.md), [RecipeCheck](RecipeCheck.md), [ResearchViewCheck](ResearchViewCheck.md), [WageLadderCheck](WageLadderCheck.md)
 
@@ -66,11 +66,11 @@
 | 575 | 5. the order ranked with the buildings |
 | 669 | 6. the money and the goods |
 | 753 | 7. the work |
-| 861 | 8. one at a time |
-| 896 | 9. the depot's trucks |
-| 929 | 10. the player's Fit |
-| 997 | 11. the save |
-| 1065 | 12. a default city orders none |
+| 868 | 8. one at a time |
+| 903 | 9. the depot's trucks |
+| 936 | 10. the player's Fit |
+| 1004 | 11. the save |
+| 1072 | 12. a default city orders none |
 
 ## Constants
 
@@ -92,7 +92,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 1028 | **type** `public class FittingCheck` | Fitting the equipment (R1b): the 1900 forms at rest between the presses, a Game's forms cleared when it founds or loads another city, the city founded the 1900 way, what a building that finishes comes with, and the fi... |
+| 60 | 1035 | **type** `public class FittingCheck` | Fitting the equipment (R1b): the 1900 forms at rest between the presses, a Game's forms cleared when it founds or loads another city, the city founded the 1900 way, what a building that finishes comes with, and the fi... |
 | 68 | 4 | `static void check(String label, boolean ok, String detail)` |  |
 | 73 | 1 | `static void check(String label, boolean ok)` |  |
 | 76 | 4 | `static void near(String label, double actual, double expected, double rel)` | A figure against the harness's own, to a relative tolerance (and an absolute floor for a figure that is nothing). |
@@ -155,40 +155,40 @@
 |---:|---:|---|---|
 | 671 | 81 | `static void sectionSix()` |  |
 
-### 7. the work (lines 753-860)
+### 7. the work (lines 753-867)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 755 | 105 | `static void sectionSeven()` |  |
+| 755 | 112 | `static void sectionSeven()` |  |
 
-### 8. one at a time (lines 861-895)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 863 | 32 | `static void sectionEight()` |  |
-
-### 9. the depot's trucks (lines 896-928)
+### 8. one at a time (lines 868-902)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 898 | 30 | `static void sectionNine()` |  |
+| 870 | 32 | `static void sectionEight()` |  |
 
-### 10. the player's Fit (lines 929-996)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 931 | 65 | `static void sectionTen()` |  |
-
-### 11. the save (lines 997-1064)
+### 9. the depot's trucks (lines 903-935)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1000 | 8 | `static String stateLine(Game g)` | Every sector's cash and the treasury, the counts and the jobs, as one line: two cities are alike when their lines are equal. |
-| 1009 | 55 | `static void sectionEleven() throws Exception` |  |
+| 905 | 30 | `static void sectionNine()` |  |
 
-### 12. a default city orders none (lines 1065-1087)
+### 10. the player's Fit (lines 936-1003)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1067 | 20 | `static void sectionTwelve()` |  |
+| 938 | 65 | `static void sectionTen()` |  |
+
+### 11. the save (lines 1004-1071)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1007 | 8 | `static String stateLine(Game g)` | Every sector's cash and the treasury, the counts and the jobs, as one line: two cities are alike when their lines are equal. |
+| 1016 | 55 | `static void sectionEleven() throws Exception` |  |
+
+### 12. a default city orders none (lines 1072-1094)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1074 | 20 | `static void sectionTwelve()` |  |
 

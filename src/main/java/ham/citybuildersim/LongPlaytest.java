@@ -5329,6 +5329,13 @@ public class LongPlaytest {
      * mechanic nobody knows fired (the README's third rule).
      */
     static int monthsHouseholdsBought, monthsDeskBought, monthsCentralBankTraded;
+    /*
+     * THE LANDLORDS' GLUT (RN1, 2026-11-09): the months a leg of the rent was
+     * under GLUT_PRESSURE while a carry lift was waiting, so its rent was left
+     * at its own cost times its scarcity. Counted a month at a time and not
+     * asserted: the default game may well show none.
+     */
+    static int monthsStudioLiftWaived, monthsFamilyLiftWaived;
     static double householdsBoughtRun, deskBoughtRun, couponsToHouseholdsRun;
     // ...and the businesses' (CD2, slice 4).
     static int monthsFirmsBought;
@@ -5346,6 +5353,12 @@ public class LongPlaytest {
      */
     static int peakCompressionMonth;
     static double peakCompression, longRateAtPeak, heldShareAtPeak;
+
+    static void countTheGlut(Game g) {
+        ham.citybuildersim.sectors.RealEstate re = g.getSectors().realEstate();
+        if (re.glutWaivesLift(false)) monthsStudioLiftWaived++;
+        if (re.glutWaivesLift(true)) monthsFamilyLiftWaived++;
+    }
 
     static void countTheHolders(Game g) {
         double bought = g.getHouseholdsBoughtPaper();
@@ -5526,6 +5539,7 @@ public class LongPlaytest {
             countTheCitysPaper(g);
             countTheCentralBank(g);
             countTheHolders(g);
+            countTheGlut(g);
             countTheCurve(g);
             audit(g);
             traceMonth(g);
@@ -7450,6 +7464,9 @@ public class LongPlaytest {
                 dm.floorRate() * 100, dm.getPolicyRate() * 100, dm.bankFloorRate() * 100,
                 dm.centralBankShareOfPaper() * 100, holder.getBoughtFromHouseholdsLifetime(),
                 holder.getBoughtPaperLifetime());
+        // ...and the landlords' glut (RN1): the months the carry lift was waived on a leg under the glut line.
+        out.printf("  the landlords' carry lift was waived in %d month(s) on the studio leg and %d on the family leg"
+                + " (a leg in glut is not lifted to cover the carry)%n", monthsStudioLiftWaived, monthsFamilyLiftWaived);
         // ...and its own maturing paper, rolled at issue (0.7.15, round 2).
         out.printf("  the central bank rolled $%,.0fk of its own maturing par at issue over the run, paying"
                 + " $%,.0fk%n", holder.getParAtIssueLifetime(), holder.getBoughtAtIssueLifetime());
