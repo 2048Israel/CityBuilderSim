@@ -1,0 +1,13 @@
+BEA, compensation over value added, 2023-2025: GDP 51.1%, private industries 47.7%.
+The city's payroll over its value added (every sector's, a loss counted as one); without Copper
+Refining where it stands; household wages over GDP; the three largest sectors' share of value added.
+default-s0       m600   pay/va  54.2%; household wages/GDP  60.3%; top: Manufacturing 30%, Business Services 23%, Construction 14%
+default-s0       m1200  pay/va  87.1%; household wages/GDP  90.4%; top: Manufacturing 43%, Construction 21%, Real Estate 17%
+default-s0       m2400  pay/va  12.4%, without Copper Refining  28.1%; household wages/GDP  13.4%; top: Copper Refining 62%, Luxury Retail 15%, Manufacturing 8%
+default-s0       m3996  pay/va   9.9%, without Copper Refining  26.9%; household wages/GDP  10.6%; top: Copper Refining 72%, Luxury Retail 16%, Manufacturing 6%
+default-s1       m600   pay/va  26.8%; household wages/GDP  33.6%; top: Automotive 37%, Manufacturing 25%, Real Estate 8%
+default-s1       m1200  pay/va  26.8%; household wages/GDP  29.6%; top: Manufacturing 32%, Construction 26%, Automotive 18%
+default-s1       m2400  pay/va  47.2%; household wages/GDP  49.7%; top: Manufacturing 35%, Automotive 26%, Luxury Retail 13%
+earth-rotterdam  m600   pay/va  26.3%; household wages/GDP  34.1%; top: Manufacturing 51%, Automotive 15%, Construction 10%
+earth-rotterdam  m1200  pay/va  63.5%; household wages/GDP  69.6%; top: Manufacturing 38%, Automotive 19%, Real Estate 13%
+earth-rotterdam  m2400  pay/va  39.1%; household wages/GDP  45.1%; top: Manufacturing 64%, Freight 11%, Luxury Retail 8%

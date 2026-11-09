@@ -1,0 +1,162 @@
+va, basic: payroll over value added (with, then without, the taxes on production), %;
+BEA: compensation over value added, then over gross output, then value added over
+gross output, 2023-2025 (pay/rev and va/rev's BEA halves); rev/worker, pay/worker: a worker's
+month of revenue and of pay, in the city's mean monthly wage; workers: the year's mean. For Retail and
+Luxury Retail, revenue is the margin (sales less the goods bought), as BEA's trade gross output is.
+
+== default-s0, the year to m600: wage/price index 0.0771, wage/cost of living 0.095, household wages/GDP  60.3%, population 16239
+sector                 va  basic   BEA pay/rev   BEA va/rev   BEA rev/worker pay/worker  workers units/wkr price/wage
+Business Services   133.6  139.3  68.7   130.0  43.7   97.3  63.6       0.71       0.92     4170     0.436       1.62
+Manufacturing        31.3   33.4  65.2    15.1  28.2   48.4  43.3       6.19       0.94     1224      1.34        4.1
+Construction         30.7   38.5  62.3    21.7  31.9   70.6  51.2       4.22       0.91      567       nan        nan
+Automotive           47.3   51.6  51.9    29.3  12.3   61.9  23.7       3.26       0.95      333    0.0816       11.7
+Retail               66.0  122.2  47.2    64.4  29.3   97.6  62.0       1.40       0.90      285       nan        nan
+Materials            61.7   76.5  46.1    59.8  22.3   97.0  48.4       1.54       0.92      248     0.217       4.31
+Real Estate           8.8   14.5   4.7     7.4   3.4   83.3  72.3      12.26       0.90      145       nan        nan
+Restaurants          29.3   38.1  66.5    23.1  33.4   78.6  50.2       3.92       0.90      140       nan        nan
+Industry             77.4   95.3  42.3    43.6  13.0   56.3  30.8       2.11       0.92       54       562    0.00165
+Wood Products      6592.0    neg  57.5    29.9  19.7    0.5  34.2       3.11       0.93       39        31     0.0705
+Food Processing      42.6   55.5  42.3    32.9  13.0   77.3  30.8       2.75       0.90       34  2.21e+03   0.000509
+Luxury Retail         2.1    2.9  41.7     2.1  24.7   99.9  59.3      45.80       0.98       14       nan        nan
+Agriculture          37.8   45.3  20.6    36.0   7.5   95.4  36.3       2.51       0.90        3       9.4      0.178
+
+== default-s0, the year to m1200: wage/price index 0.0765, wage/cost of living 0.095, household wages/GDP  90.4%, population 22169
+sector                 va  basic   BEA pay/rev   BEA va/rev   BEA rev/worker pay/worker  workers units/wkr price/wage
+Manufacturing       166.4  189.1  65.2    36.1  28.2   21.7  43.3       2.57       0.93     6491       0.6       3.63
+Construction         23.5   38.2  62.3    16.8  31.9   71.6  51.2       5.34       0.90      461       nan        nan
+Real Estate          14.9   37.1   4.7    11.2   3.4   75.3  72.3       8.16       0.92      236       nan        nan
+Freight              23.3   41.1  59.3    19.5  31.0   83.6  52.3       4.78       0.93      211       nan        nan
+Retail               72.4  159.5  47.2    70.2  29.3   97.0  62.0       1.30       0.91      182       nan        nan
+Restaurants         135.6  509.1  66.5    73.5  33.4   54.2  50.2       1.16       0.85      158       nan        nan
+Industry            120.8  136.8  42.3    86.2  13.0   71.4  30.8       1.12       0.96      102      99.4    0.00176
+Luxury Retail         5.4    9.8  41.7     5.3  24.7   99.7  59.3      18.45       0.99       13       nan        nan
+Agriculture          65.4  100.6  20.6    60.7   7.5   92.8  36.3       1.54       0.93        7      15.1     0.0908
+
+== default-s0, the year to m2400: wage/price index 0.1250, wage/cost of living 0.097, household wages/GDP  13.4%, population 280754
+sector                 va  basic   BEA pay/rev   BEA va/rev   BEA rev/worker pay/worker  workers units/wkr price/wage
+Manufacturing        61.2   64.4  65.2    27.7  28.2   45.3  43.3       3.70       1.03    60948       6.1      0.391
+Automotive           62.4   68.5  51.9    36.2  12.3   58.0  23.7       2.91       1.05    26573    0.0166       5.67
+Copper Refining       2.9    2.9  51.4     1.2  14.7   42.6  28.6      88.59       1.08    20811      72.4       1.22
+Construction         23.6   28.2  62.3    17.5  31.9   74.0  51.2       5.63       0.98    13947       nan        nan
+Freight              25.4   35.5  59.3    19.2  31.0   75.5  52.3       5.25       1.01     9729       nan        nan
+Luxury Retail         2.3    2.8  41.7     2.3  24.7   99.9  59.3      48.33       1.09     3889       nan        nan
+Retail               79.3  129.5  47.2    77.7  29.3   98.0  62.0       1.32       1.02     3960       nan        nan
+Real Estate          18.8   63.0   4.7    15.5   3.4   82.5  72.3       6.75       1.05     3310       nan        nan
+Materials            95.4  124.1  46.1    92.5  22.3   96.9  48.4       1.09       1.01     2960     0.466       2.31
+Restaurants          19.9   24.5  66.5    15.9  33.4   79.7  50.2       6.17       0.98     2376       nan        nan
+Cement & Concrete    38.4   48.3  46.1    12.3  22.3   32.1  48.4       8.77       1.08     1955       291     0.0297
+Food Processing      57.5   71.8  42.3    44.5  13.0   77.5  30.8       2.18       0.97      632       726    0.00146
+Industry             76.4   90.8  42.3    50.1  13.0   65.6  30.8       2.02       1.01      225  1.25e+03   0.000847
+Agriculture          15.7   18.4  20.6    15.3   7.5   97.2  36.3       6.41       0.98       24        91     0.0686
+
+== default-s0, the year to m3996: wage/price index 0.0846, wage/cost of living 0.095, household wages/GDP  10.6%, population 922976
+sector                 va  basic   BEA pay/rev   BEA va/rev   BEA rev/worker pay/worker  workers units/wkr price/wage
+Manufacturing        67.2   53.9  65.2    26.3  28.2   39.1  43.3       3.63       0.95   223150      0.94       2.78
+Copper Refining       3.4    3.5  51.4     1.8  14.7   52.9  28.6      56.01       1.01   128267      32.7       1.74
+Automotive          102.3   98.9  51.9    50.5  12.3   49.4  23.7       1.95       0.98    90173    0.0229        7.7
+Construction         29.5   51.5  62.3    20.4  31.9   69.2  51.2       4.69       0.96    23496       nan        nan
+Luxury Retail         2.7    5.3  41.7     2.7  24.7   99.9  59.3      38.08       1.01    21663       nan        nan
+Retail               42.2  113.3  47.2    41.6  29.3   98.6  62.0       2.25       0.94    15632       nan        nan
+Real Estate          19.3   35.4   4.7    14.6   3.4   75.5  72.3       6.46       0.94    11822       nan        nan
+Restaurants          18.2   29.8  66.5    14.7  33.4   80.5  50.2       6.32       0.93     7860       nan        nan
+Freight              70.3    neg  59.3    19.3  31.0   27.4  52.3       4.96       0.95     7199       nan        nan
+Iron Mining          67.3   73.6  29.3    37.9  16.1   56.3  54.9       2.57       0.97     2914       175     0.0142
+Cement & Concrete    47.0   47.9  46.1    16.1  22.3   34.2  48.4       6.24       1.00     1510       131     0.0479
+Food Processing      35.4   52.6  42.3    32.6  13.0   92.2  30.8       2.84       0.93      438  6.73e+03   0.000399
+Oil                   neg    neg  11.5   343.9   6.7 -103.9  58.2       0.30       1.03       93      2.89     0.0925
+Industry             73.8   98.3  42.3    56.2  13.0   76.1  30.8       1.69       0.95       53       629    0.00141
+Agriculture          26.7   35.9  20.6    25.6   7.5   95.7  36.3       3.62       0.93       24      30.8     0.0904
+
+== default-s1, the year to m600: wage/price index 0.0766, wage/cost of living 0.098, household wages/GDP  33.6%, population 6564
+sector                 va  basic   BEA pay/rev   BEA va/rev   BEA rev/worker pay/worker  workers units/wkr price/wage
+Automotive           29.4   29.7  51.9    17.1  12.3   58.2  23.7       5.32       0.91      982   0.00441       10.3
+Manufacturing        28.1   32.8  65.2    22.0  28.2   78.0  43.3       4.02       0.88      670      7.35      0.635
+Business Services    74.9   76.8  68.7    73.7  43.7   98.3  63.6       1.19       0.88      296     0.836       1.43
+Wood Products        30.1   33.3  57.5    11.3  19.7   37.6  34.2       8.30       0.94      170       nan        nan
+Construction         20.2   25.3  62.3    19.4  31.9   95.9  51.2       4.45       0.86      103       nan        nan
+Retail               56.6  103.6  47.2    55.2  29.3   97.4  62.0       1.60       0.88       97       nan        nan
+Restaurants          12.5   15.6  66.5    10.0  33.4   80.2  50.2       8.61       0.86       56       nan        nan
+Industry             57.6   63.2  42.3    29.4  13.0   51.0  30.8       2.99       0.88       53       319    0.00146
+Real Estate           5.7    9.0   4.7     4.9   3.4   86.0  72.3      17.69       0.86       44       nan        nan
+Food Processing      27.5   35.5  42.3    20.5  13.0   74.5  30.8       4.21       0.86       15       519    0.00318
+Luxury Retail         1.2    1.6  41.7     1.2  24.7   99.9  59.3      79.09       0.93        7       nan        nan
+Agriculture          22.7   27.2  20.6    21.8   7.5   95.7  36.3       3.96       0.86        3      17.2      0.157
+
+== default-s1, the year to m1200: wage/price index 0.0874, wage/cost of living 0.093, household wages/GDP  29.6%, population 66376
+sector                 va  basic   BEA pay/rev   BEA va/rev   BEA rev/worker pay/worker  workers units/wkr price/wage
+Manufacturing        35.0   40.3  65.2    10.2  28.2   29.3  43.3       9.48       0.97    13741      2.32       3.03
+Automotive           41.5   37.7  51.9    20.3  12.3   48.9  23.7       4.95       1.01     8708    0.0121       8.83
+Construction         11.8   17.6  62.3     8.9  31.9   75.6  51.2      10.54       0.94     3885       nan        nan
+Materials            58.5   88.2  46.1    56.7  22.3   96.8  48.4       1.70       0.96     1774     0.536       3.31
+Freight              34.1   74.4  59.3    22.0  31.0   64.5  52.3       4.39       0.97     1086       nan        nan
+Retail               53.3  261.3  47.2    52.1  29.3   97.8  62.0       1.85       0.96      808       nan        nan
+Real Estate          13.8   32.0   4.7    10.6   3.4   77.2  72.3       8.88       0.95      662       nan        nan
+Iron & Steel         39.5   41.3  51.4     8.3  14.7   20.9  28.6      12.21       1.01      537       214     0.0379
+Restaurants          11.6   17.7  66.5     9.3  33.4   80.5  50.2      10.16       0.95      534       nan        nan
+Cement & Concrete    21.2   21.1  46.1     8.1  22.3   38.2  48.4      12.58       1.02      234       314      0.041
+Wood Products        37.6   39.1  57.5    13.8  19.7   36.8  34.2       7.66       1.06      175       nan        nan
+Food Processing      27.3   38.9  42.3    23.9  13.0   87.5  30.8       3.97       0.95      141  5.06e+03   0.000474
+Industry             35.0   43.9  42.3    27.8  13.0   79.5  30.8       3.46       0.96      119  1.32e+03    0.00143
+Luxury Retail         1.0    1.8  41.7     1.0  24.7   99.9  59.3     103.02       1.03       79       nan        nan
+Agriculture          15.6   22.3  20.6    14.9   7.5   95.3  36.3       6.41       0.95       15      83.2     0.0742
+
+== default-s1, the year to m2400: wage/price index 0.0998, wage/cost of living 0.095, household wages/GDP  49.7%, population 474491
+sector                 va  basic   BEA pay/rev   BEA va/rev   BEA rev/worker pay/worker  workers units/wkr price/wage
+Manufacturing        64.8   79.1  65.2    28.5  28.2   44.0  43.3       3.49       1.00   131583      4.76      0.547
+Automotive           60.2   68.8  51.9    34.7  12.3   57.7  23.7       2.95       1.02    89101     0.012       7.72
+Retail               67.9  114.3  47.2    66.5  29.3   98.0  62.0       1.47       0.98     8098       nan        nan
+Cement & Concrete    46.5   71.3  46.1    12.9  22.3   27.8  48.4       8.11       1.05     6146       205     0.0391
+Real Estate          14.7   53.5   4.7    12.1   3.4   82.1  72.3       8.23       0.99     6142       nan        nan
+Freight              43.2   59.2  59.3    26.0  31.0   60.3  52.3       3.85       1.00     5983       nan        nan
+Construction         16.9   20.3  62.3    11.8  31.9   70.1  51.2       8.98       1.06     5516       nan        nan
+Materials            95.8  130.2  46.1    92.1  22.3   96.1  48.4       1.07       0.99     5418     0.351       3.02
+Restaurants          19.6   24.5  66.5    15.6  33.4   79.7  50.2       6.14       0.96     4140       nan        nan
+Luxury Retail         2.8    3.6  41.7     2.8  24.7   99.9  59.3      37.84       1.07     1908       nan        nan
+Business Services   129.9  139.9  68.7   127.0  43.7   97.8  63.6       0.90       1.15     1384     0.554       1.37
+Food Processing      58.9   76.9  42.3    44.4  13.0   75.3  30.8       2.15       0.96     1319       464    0.00199
+Wood Products        75.6  115.7  57.5    20.0  19.7   26.5  34.2       5.34       1.07     1117       nan        nan
+Industry             63.3   80.1  42.3    44.1  13.0   69.7  30.8       2.25       0.99       53       989    0.00118
+Agriculture          17.5   20.7  20.6    17.0   7.5   97.0  36.3       5.66       0.96       23      57.9      0.094
+
+== earth-rotterdam, the year to m600: wage/price index 0.0803, wage/cost of living 0.097, household wages/GDP  34.1%, population 9510
+sector                 va  basic   BEA pay/rev   BEA va/rev   BEA rev/worker pay/worker  workers units/wkr price/wage
+Manufacturing        20.3   21.8  65.2    10.0  28.2   49.2  43.3       9.12       0.91     1216      2.01       3.92
+Automotive           36.7   36.1  51.9    20.5  12.3   55.9  23.7       4.52       0.93      660     0.015       11.2
+Industry             80.9   90.3  42.3    39.6  13.0   49.0  30.8       2.23       0.88      302      64.6    0.00161
+Business Services    94.2   97.1  68.7    92.3  43.7   98.0  63.6       0.97       0.89      297     0.631       1.53
+Construction         20.9   26.8  62.3    16.3  31.9   78.2  51.2       5.39       0.88      259       nan        nan
+Retail               48.3   83.8  47.2    47.4  29.3   98.1  62.0       1.85       0.87      120       nan        nan
+Real Estate          10.0   17.6   4.7     8.2   3.4   82.0  72.3      10.66       0.88      100       nan        nan
+Restaurants          21.9   27.9  66.5    17.4  33.4   79.4  50.2       5.06       0.88       84       nan        nan
+Wood Products       368.6    neg  57.5    18.2  19.7    4.9  34.2       4.90       0.89       65      37.2     0.0629
+Food Processing      30.8   40.0  42.3    23.2  13.0   75.3  30.8       3.78       0.88       24  3.13e+03    0.00048
+Luxury Retail         1.4    1.8  41.7     1.4  24.7   99.9  59.3      70.07       0.95        7       nan        nan
+Agriculture          24.6   29.3  20.6    23.6   7.5   96.0  36.3       3.72       0.88        3      14.3      0.173
+
+== earth-rotterdam, the year to m1200: wage/price index 0.0890, wage/cost of living 0.101, household wages/GDP  69.6%, population 12314
+sector                 va  basic   BEA pay/rev   BEA va/rev   BEA rev/worker pay/worker  workers units/wkr price/wage
+Manufacturing        87.6  118.7  65.2    18.2  28.2   20.7  43.3       5.04       0.91     2353      1.59       2.98
+Automotive           98.7  116.3  51.9    45.8  12.3   46.4  23.7       2.05       0.94     1299    0.0107       8.48
+Retail               94.4  337.5  47.2    91.4  29.3   96.8  62.0       0.99       0.90      271       nan        nan
+Construction         26.6   39.7  62.3    21.9  31.9   82.3  51.2       4.04       0.89      193       nan        nan
+Real Estate          12.4   31.9   4.7    10.0   3.4   80.6  72.3       9.20       0.92      116       nan        nan
+Industry             67.7   78.2  42.3    50.9  13.0   75.2  30.8       1.79       0.91      106       237    0.00162
+Restaurants          26.9   40.4  66.5    21.3  33.4   79.1  50.2       4.14       0.88      108       nan        nan
+Food Processing      53.3   82.9  42.3    41.6  13.0   78.0  30.8       2.12       0.88       24  1.91e+03   0.000514
+Luxury Retail         2.5    4.0  41.7     2.5  24.7   99.9  59.3      38.80       0.98       13       nan        nan
+Agriculture          60.1   80.8  20.6    57.6   7.5   95.8  36.3       1.54       0.89        3       8.8     0.0872
+
+== earth-rotterdam, the year to m2400: wage/price index 0.1128, wage/cost of living 0.099, household wages/GDP  45.1%, population 33848
+sector                 va  basic   BEA pay/rev   BEA va/rev   BEA rev/worker pay/worker  workers units/wkr price/wage
+Manufacturing        47.5   51.3  65.2    25.7  28.2   54.0  43.3       3.88       1.00    10683      6.73      0.488
+Freight              23.8   33.0  59.3    19.9  31.0   83.4  52.3       4.96       0.99      898       nan        nan
+Construction         54.1   71.3  62.3    38.5  31.9   71.1  51.2       2.47       0.95      482       nan        nan
+Retail               65.0  104.2  47.2    64.1  29.3   98.6  62.0       1.54       0.99      374       nan        nan
+Real Estate          19.2   62.8   4.7    16.0   3.4   83.4  72.3       6.39       1.02      350       nan        nan
+Restaurants          14.4   17.4  66.5    11.6  33.4   80.9  50.2       8.15       0.95      292       nan        nan
+Materials            90.8  116.6  46.1    88.5  22.3   97.5  48.4       1.21       1.07      226     0.452       2.65
+Industry             59.8   65.5  42.3    41.2  13.0   68.9  30.8       2.41       0.99      160       443    0.00121
+Cement & Concrete    79.3   96.8  46.1    11.0  22.3   13.8  48.4      10.08       1.11      120       271     0.0349
+Food Processing      43.8   54.2  42.3    34.0  13.0   77.7  30.8       2.77       0.94       82       598    0.00208
+Luxury Retail         2.0    2.5  41.7     2.0  24.7   99.9  59.3      53.66       1.06       52       nan        nan
+Agriculture          41.8   48.5  20.6    40.7   7.5   97.4  36.3       2.35       0.96        3        16     0.0787

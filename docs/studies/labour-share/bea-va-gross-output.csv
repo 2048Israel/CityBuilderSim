@@ -1,0 +1,101 @@
+code,industry,gross_output_2023_25,value_added,compensation,intermediate_inputs,va_over_go,comp_over_go
+11,"Agriculture, forestry, fishing, and hunting (A,Q)",1910.3,773.2,231.5,1137.1,0.4048,0.1212
+111CA,"Farms (A,Q)",1699.8,616.8,126.8,1083.0,0.3629,0.0746
+113FF,"Forestry, fishing, and related activities (A,Q)",210.3,156.3,104.8,54.0,0.7432,0.4983
+21,"Mining (A,Q)",2135.1,1235.4,267.4,899.7,0.5786,0.1252
+211,"Oil and gas extraction (A,Q)",1370.6,797.8,91.7,572.8,0.5821,0.0669
+212,"Mining, except oil and gas (A,Q)",428.2,235.1,68.9,193.1,0.549,0.1609
+213,"Support activities for mining (A,Q)",336.3,202.5,107.0,133.8,0.6021,0.3182
+22,"Utilities (A,Q)",1966.6,1463.8,327.9,502.8,0.7443,0.1667
+23,"Construction (A,Q)",7549.2,3863.9,2408.3,3685.3,0.5118,0.319
+311FT,"Food and beverage and tobacco products (A,Q)",3689.4,1135.7,479.9,2553.7,0.3078,0.1301
+313TT,"Textile mills and textile product mills (A,Q)",145.2,52.8,38.9,92.4,0.3636,0.2679
+315AL,"Apparel and leather and allied products (A,Q)",68.0,36.5,24.3,31.5,0.5368,0.3574
+31G,"Manufacturing (A,Q)",21424.4,8610.2,4092.3,12814.2,0.4019,0.191
+31ND,"Nondurable goods (A,Q)",10642.2,3992.1,1400.2,6650.1,0.3751,0.1316
+321,"Wood products (A,Q)",490.1,167.7,96.5,322.4,0.3422,0.1969
+322,"Paper products (A,Q)",631.2,210.6,109.5,420.6,0.3337,0.1735
+323,"Printing and related support activities (A,Q)",260.5,126.9,80.5,133.6,0.4871,0.309
+324,"Petroleum and coal products (A,Q)",1966.4,518.6,70.2,1447.8,0.2637,0.0357
+325,"Chemical products (A,Q)",3017.1,1622.7,412.2,1394.4,0.5378,0.1366
+326,"Plastics and rubber products (A,Q)",864.4,288.3,184.8,576.1,0.3335,0.2138
+327,"Nonmetallic mineral products (A,Q)",524.1,253.8,117.0,270.3,0.4843,0.2232
+331,"Primary metals (A,Q)",839.7,240.5,123.5,599.2,0.2864,0.1471
+332,"Fabricated metal products (A,Q)",1363.7,590.5,385.2,773.2,0.433,0.2825
+333,"Machinery (A,Q)",1353.3,653.1,360.7,700.2,0.4826,0.2665
+334,"Computer and electronic products (A,Q)",1288.2,895.4,564.6,392.8,0.6951,0.4383
+335,"Electrical equipment, appliances, and components (A,Q)",583.5,247.9,140.2,335.6,0.4249,0.2403
+3361MV,"Motor vehicles, bodies and trailers, and parts (A,Q)",2371.0,562.1,291.8,1808.9,0.2371,0.1231
+3364OT,"Other transportation equipment (A,Q)",1177.8,555.2,325.3,622.6,0.4714,0.2762
+337,"Furniture and related products (A,Q)",251.4,104.4,75.7,147.0,0.4153,0.3011
+339,"Miscellaneous manufacturing (A,Q)",539.3,347.3,211.5,192.0,0.644,0.3922
+33DG,"Durable goods (A,Q)",10782.2,4618.1,2692.0,6164.1,0.4283,0.2497
+42,"Wholesale trade (A,Q)",8876.3,5412.5,2190.8,3463.8,0.6098,0.2468
+441,"Motor vehicle and parts dealers (A,Q)",1666.2,1052.0,502.8,614.2,0.6314,0.3018
+445,"Food and beverage stores (A,Q)",1053.5,693.4,399.8,360.1,0.6582,0.3795
+44RT,"Retail trade (A,Q)",8538.6,5292.0,2498.1,3246.6,0.6198,0.2926
+452,"General merchandise stores (A,Q)",928.2,647.3,385.3,280.9,0.6974,0.4151
+481,"Air transportation (A,Q)",1011.5,523.6,259.6,487.9,0.5176,0.2566
+482,"Rail transportation (A,Q)",276.9,155.4,77.3,121.5,0.5612,0.2792
+483,"Water transportation (A,Q)",228.5,76.7,30.1,151.8,0.3357,0.1317
+484,"Truck transportation (A,Q)",1649.5,741.4,405.8,908.1,0.4495,0.246
+485,"Transit and ground passenger transportation (A,Q)",525.0,231.6,121.2,293.4,0.4411,0.2309
+486,"Pipeline transportation (A,Q)",225.0,147.2,32.3,77.8,0.6542,0.1436
+487OS,"Other transportation and support activities (A,Q)",1081.4,663.1,445.6,418.3,0.6132,0.4121
+48TW,"Transportation and warehousing (A,Q)",5582.6,2918.3,1730.6,2664.3,0.5227,0.31
+493,"Warehousing and storage (A,Q)",584.7,379.1,358.6,205.6,0.6484,0.6133
+4A0,"Other retail (A,Q)",4890.9,2899.4,1210.1,1991.5,0.5928,0.2474
+51,"Information (A,Q)",8112.3,4933.9,1765.1,3178.4,0.6082,0.2176
+511,"Publishing industries, except internet (includes software) (A,Q)",1959.2,1382.7,554.3,576.5,0.7057,0.2829
+512,"Motion picture and sound recording industries (A,Q)",623.5,344.7,122.6,278.8,0.5528,0.1966
+513,"Broadcasting and telecommunications (A,Q)",2835.1,1615.3,387.9,1219.8,0.5698,0.1368
+514,"Data processing, internet publishing, and other information services (A,Q)",2694.5,1591.3,700.6,1103.2,0.5906,0.26
+52,"Finance and insurance (A,Q)",12240.9,7386.1,3367.4,4854.8,0.6034,0.2751
+521CI,"Federal Reserve banks, credit intermediation, and related activities (A,Q)",4263.5,3450.6,1076.7,812.9,0.8093,0.2525
+523,"Securities, commodity contracts, and investments (A,Q)",2770.3,1296.6,1101.5,1473.7,0.468,0.3976
+524,"Insurance carriers and related activities (A,Q)",4537.0,2600.9,1167.9,1936.1,0.5733,0.2574
+525,"Funds, trusts, and other financial vehicles (A,Q)",670.1,38.0,21.2,632.1,0.0567,0.0316
+53,"Real estate and rental and leasing (A,Q)",17072.3,11984.2,675.2,5088.1,0.702,0.0395
+531,"Real estate (A,Q)",15181.4,10982.8,517.3,4198.6,0.7234,0.0341
+532RL,"Rental and leasing services and lessors of intangible assets (A,Q)",1891.0,1001.4,157.9,889.6,0.5296,0.0835
+54,"Professional, scientific, and technical services (A,Q)",10349.4,7002.5,4808.4,3346.9,0.6766,0.4646
+5411,"Legal services (A,Q)",1478.6,1178.1,567.6,300.5,0.7968,0.3839
+5412OP,"Miscellaneous professional, scientific, and technical services (A,Q)",6649.7,4229.2,2905.1,2420.5,0.636,0.4369
+5415,"Computer systems design and related services (A,Q)",2221.2,1595.3,1335.7,625.9,0.7182,0.6013
+55,"Management of companies and enterprises (A,Q)",2520.6,1605.2,1421.0,915.4,0.6368,0.5638
+56,"Administrative and waste management services (A,Q)",4568.1,2675.0,1928.4,1893.1,0.5856,0.4221
+561,"Administrative and support services (A,Q)",4032.9,2401.5,1776.2,1631.4,0.5955,0.4404
+562,"Waste management and remediation services (A,Q)",535.3,273.5,152.2,261.8,0.5109,0.2843
+6,"Educational services, health care, and social assistance (A,Q)",12127.5,7542.1,6132.0,4585.4,0.6219,0.5056
+61,"Educational services (A,Q)",1421.8,1010.5,824.4,411.3,0.7107,0.5798
+62,"Health care and social assistance (A,Q)",10705.9,6531.6,5307.4,4174.3,0.6101,0.4957
+621,"Ambulatory health care services (A,Q)",4844.5,3172.1,2452.0,1672.4,0.6548,0.5061
+622,"Hospitals (A,Q)",3776.9,2057.9,1678.6,1719.0,0.5449,0.4444
+623,"Nursing and residential care facilities (A,Q)",1027.8,628.0,560.6,399.8,0.611,0.5454
+624,"Social assistance (A,Q)",1056.7,673.6,616.2,383.1,0.6375,0.5831
+7,"Arts, entertainment, recreation, accommodation, and food services (A,Q)",6929.9,3698.3,2193.8,3231.6,0.5337,0.3166
+71,"Arts, entertainment, and recreation (A,Q)",1690.5,905.6,505.7,784.9,0.5357,0.2991
+711AS,"Performing arts, spectator sports, museums, and related activities (A,Q)",936.4,501.5,263.4,434.9,0.5356,0.2813
+713,"Amusements, gambling, and recreation industries (A,Q)",754.1,404.1,242.1,350.0,0.5359,0.321
+72,"Accommodation and food services (A,Q)",5239.3,2792.6,1688.2,2446.7,0.533,0.3222
+721,"Accommodation (A,Q)",1152.2,739.7,321.9,412.5,0.642,0.2794
+722,"Food services and drinking places (A,Q)",4087.3,2053.1,1366.2,2034.2,0.5023,0.3343
+81,"Other services, except government (A,Q)",3191.5,1820.3,1301.1,1371.2,0.5704,0.4077
+FIRE,"Finance, insurance, real estate, rental, and leasing (A,Q)",29313.2,19370.4,4042.4,9942.8,0.6608,0.1379
+G,"Government (A,Q)",16470.9,9851.1,7700.8,6619.8,0.5981,0.4675
+GF,"Federal (A,Q)",4836.6,3159.2,2001.1,1677.4,0.6532,0.4137
+GFE,"Government enterprises (A,Q) (GFE)",332.0,236.4,216.6,95.6,0.712,0.6524
+GFG,"General government (A,Q) (GFG)",4504.7,2922.8,1784.6,1581.9,0.6488,0.3962
+GFGD,"National defense (A,Q)",2647.2,1629.6,1000.8,1017.6,0.6156,0.3781
+GFGN,"Nondefense (A,Q)",1857.3,1293.1,783.8,564.2,0.6962,0.422
+GSL,"State and local (A,Q)",11634.3,6691.9,5699.5,4942.4,0.5752,0.4899
+GSLE,"Government enterprises (A,Q) (GSLE)",1449.1,472.7,427.3,976.4,0.3262,0.2949
+GSLG,"General government (A,Q) (GSLG)",10185.3,6219.2,5272.5,3966.1,0.6106,0.5177
+HS,"Housing (A,Q)",9468.9,8551.3,85.6,917.6,0.9031,0.009
+ICT,Information-communications-technology-producing industries (A),10065.5,6442.0,3194.7,3623.5,0.64,0.3174
+II,"All industries (A,Q)",151566.9,88068.2,45039.7,63498.7,0.5811,0.2972
+ORE,"Other real estate (A,Q)",5712.5,2431.5,431.6,3281.0,0.4256,0.0756
+PGOOD,"Private goods-producing industries (A,Q)",33019.1,14482.7,6999.4,18536.4,0.4386,0.212
+PROF,"Professional and business services (A,Q)",17438.1,11282.6,8157.9,6155.5,0.647,0.4678
+PSERV,"Private services-producing industries (A,Q)",102076.7,63734.4,30339.4,38342.3,0.6244,0.2972
+PVT,"Private industries (A,Q)",135095.8,78217.0,37338.9,56878.8,0.579,0.2764

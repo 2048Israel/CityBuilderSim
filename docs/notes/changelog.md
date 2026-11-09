@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.60 — LS1, the labour share by sector, a study — 2026-11-09, ready, see docs/queue/LS1-notes.md
+Each sector's payroll over its value added, a year at a time, through the default playtest (seed 0 to m3996, seed 1
+to m2400) and Earth's Rotterdam (to m2400), against BEA's compensation over value added by industry
+(docs/studies/spec-labour-share.md; the probe, BEA's tables and the runs in docs/studies/labour-share/). Luxury
+Retail's 2% (BEA's other retail 41.7%) is there from m240, and the mean wage keeps up with the price index in every
+run, so it is not wages trailing prices; nor the markup (pieces bought at 41% of their price). It is a Boutique's
+sales per post: 320 pieces a month of a $9,000 good sold near $22,000, for 7 posts. Seed 0's old city pays 10% of
+its value added because Copper Refining's margin (its input at 52% of its sales) is 72% of it. Restaurants,
+Construction and Freight sit at 0.3-0.5 of BEA's, each half under twice off. No model change; the trace is main's.
+
 ### 0.9.59 — WN4b, the D$ pegged to the euro or another of the eight — 2026-11-09, ready, see docs/queue/WN4b-notes.md
 The peg (XR2) can now be kept in any of the eight moneys with a rate this month, not only the US$ (WN4's XR3 row).
 The peg is kept in its anchor's money (`ForeignAccounts` slot 148, the anchor; no format bump, an older save reads
