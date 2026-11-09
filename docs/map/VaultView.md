@@ -1,6 +1,6 @@
 # VaultView.java - 64 lines · 2 methods · 0 constants · model
 
-`ham/citybuildersim/VaultView.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/VaultView.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
 
 > The vault in eight (WN6; docs/studies/spec-nations.md 8, the Trade screen's The reserves with the eight moneys in a table): what the vault holds of each
 > of the eight moneys of the IMF's COFER (WorldMoneys.EIGHT's order), what each is worth, how each moved against the US$ this month, its central bank's

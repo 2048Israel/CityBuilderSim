@@ -1,6 +1,6 @@
 # PegAnchorCheck.java - 583 lines · 21 methods · 5 constants · harnesses
 
-`ham/citybuildersim/PegAnchorCheck.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PegAnchorCheck.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
 
 > The peg's anchor (batch WN4b; ForeignAccounts, THE REGIMES, THE PEG'S ANCHOR): the D$ can be pegged to any of the eight moneys, not
 > only the US$. The peg is kept in the anchor's money (D$ per unit of it); the rate the hold keeps, D$ per US$, is the peg over the anchor's

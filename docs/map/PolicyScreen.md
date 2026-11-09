@@ -1,6 +1,6 @@
-# PolicyScreen.java - 5,699 lines · 291 methods · 98 constants · interface
+# PolicyScreen.java - 5,831 lines · 299 methods · 98 constants · interface
 
-`ham/citybuildersim/ui/PolicyScreen.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/PolicyScreen.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
 
 > The Policy tab: every number the city sets for itself - the taxes, the
 > wage floor, the price of money and the promises - each a dial with what
@@ -49,7 +49,7 @@
 > applyFoot(), which is why they stay here. Every dial is drawn
 > by one class, Ladder (0.7.6).
 
-**Uses:** [Palette](Palette.md) (429), [Kept](Kept.md) (221), [TaxPolicy](TaxPolicy.md) (148), [ForeignAccounts](ForeignAccounts.md) (115), [Icons](Icons.md) (100), [PolicyPreview](PolicyPreview.md) (100), [DebtManager](DebtManager.md) (75), [Money](Money.md) (40), [Ladder](Ladder.md) (33), [PolicyDates](PolicyDates.md) (30), [Education](Education.md) (20), [EducationType](EducationType.md) (18), [TimeChart](TimeChart.md) (18), [PriceIndex](PriceIndex.md) (17), [WageBand](WageBand.md) (17), [DecisionLog](DecisionLog.md) (17), [EconomyManager](EconomyManager.md) (16), [CityNeeds](CityNeeds.md) (14), [Expectations](Expectations.md) (13), [Currency](Currency.md) (13), [Pieces](Pieces.md) (12), [HouseholdBalance](HouseholdBalance.md) (12), [LabourMarket](LabourMarket.md) (10), [Sector](Sector.md) (10), [CareType](CareType.md) (10), [ZoningScreen](ZoningScreen.md) (9), [JobType](JobType.md) (9), [Denomination](Denomination.md) (9), [ResearchScreen](ResearchScreen.md) (8), [CentralBank](CentralBank.md) (8)... and 27 more
+**Uses:** [Palette](Palette.md) (436), [Kept](Kept.md) (229), [TaxPolicy](TaxPolicy.md) (148), [ForeignAccounts](ForeignAccounts.md) (144), [Icons](Icons.md) (100), [PolicyPreview](PolicyPreview.md) (100), [DebtManager](DebtManager.md) (75), [Money](Money.md) (40), [Ladder](Ladder.md) (33), [PolicyDates](PolicyDates.md) (30), [Education](Education.md) (20), [EducationType](EducationType.md) (18), [TimeChart](TimeChart.md) (18), [PriceIndex](PriceIndex.md) (17), [WageBand](WageBand.md) (17), [DecisionLog](DecisionLog.md) (17), [Currency](Currency.md) (17), [EconomyManager](EconomyManager.md) (16), [CityNeeds](CityNeeds.md) (14), [Expectations](Expectations.md) (13), [Pieces](Pieces.md) (12), [HouseholdBalance](HouseholdBalance.md) (12), [LabourMarket](LabourMarket.md) (10), [Sector](Sector.md) (10), [CareType](CareType.md) (10), [ZoningScreen](ZoningScreen.md) (9), [JobType](JobType.md) (9), [Denomination](Denomination.md) (9), [ResearchScreen](ResearchScreen.md) (8), [CentralBank](CentralBank.md) (8)... and 28 more
 
 **Used by (12):** [BuildScreen](BuildScreen.md), [FinancesScreen](FinancesScreen.md), [GovernmentScreen](GovernmentScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [KeptBench](KeptBench.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [ResearchScreen](ResearchScreen.md), [SummaryScreen](SummaryScreen.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md), [ZoningScreen](ZoningScreen.md)
 
@@ -91,21 +91,21 @@
 | 3282 | · THE ANCHOR AND THE CURRENCY'S LEVEL (0.7.45) |
 | 3445 | · THE BASKET (0.7.45) |
 | 3561 | MONEY - the currency (XR2, 2026-10-22) |
-| 3684 | · the pieces the currency page is built from |
-| 3766 | · HOW THE D$ IS SET |
-| 3901 | · THE PEG |
-| 4056 | · THE BAND |
-| 4151 | · WHO BUYS AT THE STRONG EDGE |
-| 4205 | · WHAT THE DIAL AIMS AT |
-| 4307 | · THE DIAL UNDER A PEG |
-| 4366 | · BUY OR SELL THE D$ |
-| 4399 | MONEY - the currency reform |
-| 4531 | PROMISES - the pension |
-| 4711 | PROMISES - the out of work and the students (2026-09-11) |
-| 4766 | PROMISES - food (0.7.45; the UI spec's 2.3 and D6) |
-| 4932 | PROMISES - the clinic's price, and a premium (2026-09-19) |
-| 5132 | PROMISES - the schools: the price of a place, who pays it, and the |
-| 5646 | PROMISES - the standing subsidies |
+| 3710 | · the pieces the currency page is built from |
+| 3798 | · HOW THE D$ IS SET |
+| 3947 | · THE PEG |
+| 4182 | · THE BAND |
+| 4277 | · WHO BUYS AT THE STRONG EDGE |
+| 4331 | · WHAT THE DIAL AIMS AT |
+| 4435 | · THE DIAL UNDER A PEG |
+| 4498 | · BUY OR SELL THE D$ |
+| 4531 | MONEY - the currency reform |
+| 4663 | PROMISES - the pension |
+| 4843 | PROMISES - the out of work and the students (2026-09-11) |
+| 4898 | PROMISES - food (0.7.45; the UI spec's 2.3 and D6) |
+| 5064 | PROMISES - the clinic's price, and a premium (2026-09-19) |
+| 5264 | PROMISES - the schools: the price of a place, who pays it, and the |
+| 5778 | PROMISES - the standing subsidies |
 
 ## Constants
 
@@ -190,25 +190,25 @@
 | 3448 | `PolicyScreen.BASKET_RAMP` | `{ Palette.MONEY_DARK, Palette.MONEY, Palette.MONEY_LIGHT, Palette.RAMP_REST, ...` | The basket's five parts' colours, groceries to services: the money ramp, then the rest - areas, not verdicts. |
 | 3494 | `PolicyScreen.SWING_INFO` | `"Prices here have more than doubled and come back at some point." + "Wages, r...` | P30. |
 | 3499 | `PolicyScreen.REFORMED_INFO` | `"The index is measured against the city's first basket in founding money, " +...` | P31, once the money has been reformed. |
-| 3593 | `PolicyScreen.XR_REGIME` | `"xr:regime", XR_PAYER = "xr:payer", XR_AIM = "xr:aim", XR_PEG = "xr:peg", XR_...` | The staged keys of the currency page: the regime, who pays at the strong edge and what the dial aims at by ordinal; the peg; the band's centre, slope and width; the spread over the US's rate under a peg. |
-| 3597 | `PolicyScreen.PEG_STEP` | `.01` | One step of the peg's chips: a hundredth of the peg, up to devalue and down to revalue. |
-| 3600 | `PolicyScreen.CENTRE_STEP` | `.01` | One step of the band's centre: a hundredth of it. |
-| 3603 | `PolicyScreen.SLOPE_STEP` | `.005, WIDTH_STEP =.005` | One step of the band's slope and of its width: half a point. |
-| 3606 | `PolicyScreen.SPREAD_STEP` | `.0025` | One step of the spread over the US's rate: a quarter of a point. |
-| 3609 | `PolicyScreen.CURRENCY_CHART_MONTHS` | `60` | The months the currency page's charts show: five years. |
-| 3612 | `PolicyScreen.COVER_CHART_TOP` | `12` | The most months of import cover the vault's chart draws: a year. |
-| 3615 | `PolicyScreen.DEAL_SHARE` | `.01` | The size of a deal the BUY OR SELL card weighs, a share of a year's output. |
-| 4554 | `PolicyScreen.COVER_INFO` | `"The rest is general revenue - the same pot the schools and the hospitals " +...` | P41 and P47. |
-| 4728 | `PolicyScreen.EI_INFO` | `"EI only pays the first twelve months, so a long bust costs less in EI than "...` | P57. |
-| 5177 | `PolicyScreen.EVERY_SCHOOL` | `"tuitionScale"` | The staged key of "Every school at once" on the Schools page - the one tuition scale's key, which is what that scale became in 0.7.6. |
-| 5180 | `PolicyScreen.TUITION_STEP` | `.05` | One step of every price-of-a-place ladder: a twentieth of the founding table. |
-| 5220 | `PolicyScreen.SHARE_INFO` | `"The city's share of every course fee.Households pay the rest out of a " + "m...` | P48. |
-| 5227 | `PolicyScreen.BURDEN_INFO` | `String.format("At %.0f%% of a month's wage nobody enrols at all: a red bar is...` | P49. |
-| 5233 | `PolicyScreen.PRICE_INFO` | `"The founding tuition table times this, before the city's share comes off." +...` | P50. |
-| 5241 | `PolicyScreen.SCHOOL_CAVEAT` | `"Against the courses being taken now, each kind's students at its own " + "pr...` | P51/P52: the schools' preview caveat. |
-| 5610 | `PolicyScreen.LOAN_INFO` | `"Charged on a graduate's balance while they repay it, and on nothing while " ...` | P55. |
-| 5616 | `PolicyScreen.LOAN_CAVEAT` | `"Against the balances the graduates owe today.The instalment itself does " + ...` | P56. |
-| 5661 | `PolicyScreen.SUBSIDY_INFO` | `"A protected sector is topped up to break-even every month it loses money, " ...` | P69. |
+| 3593 | `PolicyScreen.XR_REGIME` | `"xr:regime", XR_PAYER = "xr:payer", XR_AIM = "xr:aim", XR_PEG = "xr:peg", XR_...` | The staged keys of the currency page: the regime, who pays at the strong edge and what the dial aims at by ordinal; the peg; the band's centre, slope and width; the spread over the anchor's rate under a peg; the money... |
+| 3598 | `PolicyScreen.PEG_STEP` | `.01` | One step of the peg's chips: a hundredth of the peg, up to devalue and down to revalue. |
+| 3601 | `PolicyScreen.CENTRE_STEP` | `.01` | One step of the band's centre: a hundredth of it. |
+| 3604 | `PolicyScreen.SLOPE_STEP` | `.005, WIDTH_STEP =.005` | One step of the band's slope and of its width: half a point. |
+| 3607 | `PolicyScreen.SPREAD_STEP` | `.0025` | One step of the spread over the US's rate: a quarter of a point. |
+| 3610 | `PolicyScreen.CURRENCY_CHART_MONTHS` | `60` | The months the currency page's charts show: five years. |
+| 3613 | `PolicyScreen.COVER_CHART_TOP` | `12` | The most months of import cover the vault's chart draws: a year. |
+| 3616 | `PolicyScreen.DEAL_SHARE` | `.01` | The size of a deal the BUY OR SELL card weighs, a share of a year's output. |
+| 4686 | `PolicyScreen.COVER_INFO` | `"The rest is general revenue - the same pot the schools and the hospitals " +...` | P41 and P47. |
+| 4860 | `PolicyScreen.EI_INFO` | `"EI only pays the first twelve months, so a long bust costs less in EI than "...` | P57. |
+| 5309 | `PolicyScreen.EVERY_SCHOOL` | `"tuitionScale"` | The staged key of "Every school at once" on the Schools page - the one tuition scale's key, which is what that scale became in 0.7.6. |
+| 5312 | `PolicyScreen.TUITION_STEP` | `.05` | One step of every price-of-a-place ladder: a twentieth of the founding table. |
+| 5352 | `PolicyScreen.SHARE_INFO` | `"The city's share of every course fee.Households pay the rest out of a " + "m...` | P48. |
+| 5359 | `PolicyScreen.BURDEN_INFO` | `String.format("At %.0f%% of a month's wage nobody enrols at all: a red bar is...` | P49. |
+| 5365 | `PolicyScreen.PRICE_INFO` | `"The founding tuition table times this, before the city's share comes off." +...` | P50. |
+| 5373 | `PolicyScreen.SCHOOL_CAVEAT` | `"Against the courses being taken now, each kind's students at its own " + "pr...` | P51/P52: the schools' preview caveat. |
+| 5742 | `PolicyScreen.LOAN_INFO` | `"Charged on a graduate's balance while they repay it, and on nothing while " ...` | P55. |
+| 5748 | `PolicyScreen.LOAN_CAVEAT` | `"Against the balances the graduates owe today.The instalment itself does " + ...` | P56. |
+| 5793 | `PolicyScreen.SUBSIDY_INFO` | `"A protected sector is topped up to break-even every month it loses money, " ...` | P69. |
 
 ## Fields (state)
 
@@ -230,7 +230,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 85 | 5615 | **type** `final class PolicyScreen` | The Policy tab: every number the city sets for itself - the taxes, the wage floor, the price of money and the promises - each a dial with what it would do beside it, on a hub of four area cards and the levers that are... |
+| 85 | 5747 | **type** `final class PolicyScreen` | The Policy tab: every number the city sets for itself - the taxes, the wage floor, the price of money and the promises - each a dial with what it would do beside it, on a hub of four area cards and the levers that are... |
 | 96 | 5 | `PolicyScreen(UserInterface ui)` |  |
 | 106 | 3 | `void forget()` | Every node is made new at the next draw: another city opened (UserInterface.anotherCity()). |
 
@@ -482,7 +482,7 @@
 | 2953 | 1 | `static String spendPct(double v)` | The spend factor to one place: the dial reaches it only through the savers' rate, a few tenths of a point at most, which a whole percent would round away. |
 | 2956 | 9 | `String spendInfo()` | P29. |
 | 2975 | 30 | `VBox theDialCard(DebtManager market, PriceIndex px, double rate, double want)` | THE DIAL (R5, R7): the ladder with the rule's rate marked on it, the thirteen chips and "do what the rule says", whose hand it is in; what a move does to the city's rate, the savers', prime and what households spend -... |
-| 3013 | 19 | `VBox tiedDialCard(DebtManager market, double rate)` | THE DIAL under a peg (XR2, star 5): tied to the US's rate, so it offers no chips and no Apply - the dial as the US's rate plus the spread in one line, a door to where the spread is set (Policy › Money › The currency),... |
+| 3013 | 19 | `VBox tiedDialCard(DebtManager market, double rate)` | THE DIAL under a peg (XR2, star 5): tied to the anchor's rate (the US's for a peg to the US$; WN4b), so it offers no chips and no Apply - the dial as the US's rate plus the spread in one line, a door to where the spre... |
 | 3034 | 13 | `DoubleFunction<List<Effect>> dialEffects(double rate)` | The policy rate's effects at any value of its thumb (pure: the probe reads them). |
 | 3055 | 82 | `VBox ruleCard(DebtManager market, PriceIndex px)` | THE RULE (R6): what it aims at - the target, set at once by its chips and its ladder (0.7.4: it moves no price this month, only what the rule says) - and what it says at two targets, and inflation against the target a... |
 | 3139 | 1 | `static String plain(double v)` | A weight or a move in points as it is: "1.5", "1.375", "2" - one place would read 1.375 as 1.4. |
@@ -527,202 +527,210 @@
 | 3486 | 6 | `String basketWords()` | What the PRICES card says of the basket in force: when it was struck, or that it is still to be. |
 | 3509 | 51 | `VBox pricesCard(PriceIndex px)` | THE PRICES (R4): the index since founding; where it has been - the dearest and the cheapest, on a bar, today marked (Jerus, 2026-09-14: "something as well that stores the highest price index and lowest") - once the tw... |
 
-### MONEY - the currency (XR2, 2026-10-22) (lines 3561-3683)
+### MONEY - the currency (XR2, 2026-10-22) (lines 3561-3709)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3618 | 1 | `private String sym()` | The city's money's mark: "D$". |
-| 3621 | 1 | `private String curRate(double rate)` | An exchange rate with the D$'s mark: "D$1.411". |
-| 3624 | 4 | `private String curLocal(double thousands)` | Local money with its mark and a true minus: "D$2.4M", "−D$725k". |
-| 3630 | 4 | `static String curGap(double gap, String target)` | A gap of the shadow from its target in words: "8.5% weaker than the peg", "3.0% stronger than the centre", "level with the peg" (pure). |
-| 3636 | 3 | `static String curMonths(double months)` | A number of months of imports in words: "1 month", "3 months", "1.5 months" (pure). |
-| 3641 | 5 | `private<E extends Enum<E>> E stagedChoice(String key, E now, E[] all)` | The choice staged under `key`, or the one in force: an enum staged by its ordinal. |
-| 3648 | 4 | `private<E extends Enum<E>> void choose(String key, E now, E pick)` | Stages a choice, or puts the staging back when it is the one in force; and draws the page again. |
-| 3654 | 3 | `ForeignAccounts.Regime stagedRegime(ForeignAccounts.Regime now)` | The regime staged, or the one in force. |
-| 3664 | 19 | `void currencyPage(VBox page)` | THE CURRENCY PAGE: the regime and what entering it does; the peg or the band, whichever is in force (a note when one is staged and not yet); who pays at the strong edge and what the dial aims at; and under a peg the d... |
+| 3619 | 1 | `private String sym()` | The city's money's mark: "D$". |
+| 3622 | 1 | `private String curRate(double rate)` | An exchange rate with the D$'s mark: "D$1.411". |
+| 3625 | 6 | `private int stagedAnchor(ForeignAccounts fx)` | The money the peg is kept in, staged or kept (WN4b): its index in the eight, the US$ (0) by default. |
+| 3633 | 1 | `static String anchorMark(int k)` | A money's mark as the page shows it (WN4b): the US$'s as the page has always written it (Currency.FOREIGN_SYMBOL), the others' without the franc's trailing space: "€", "CHF" (pure). |
+| 3636 | 1 | `private double rateIn(ForeignAccounts fx, int k)` | The float's rate today in the money k, D$ per unit of it: the rate over the money's US$ price (pure). |
+| 3639 | 4 | `static String tieOwner(ForeignAccounts fx)` | Whose rate the tied dial stands over (WN4b): "the US's" for a peg kept in the US$, else the money's own name: "the euro's" (pure). |
+| 3645 | 3 | `static String aimsOwner(ForeignAccounts fx)` | ...and the rate of the aim's line, which holds a band as well as a peg: the peg's anchor's under a peg, the US's under a band (pure). |
+| 3650 | 4 | `private String curLocal(double thousands)` | Local money with its mark and a true minus: "D$2.4M", "−D$725k". |
+| 3656 | 4 | `static String curGap(double gap, String target)` | A gap of the shadow from its target in words: "8.5% weaker than the peg", "3.0% stronger than the centre", "level with the peg" (pure). |
+| 3662 | 3 | `static String curMonths(double months)` | A number of months of imports in words: "1 month", "3 months", "1.5 months" (pure). |
+| 3667 | 5 | `private<E extends Enum<E>> E stagedChoice(String key, E now, E[] all)` | The choice staged under `key`, or the one in force: an enum staged by its ordinal. |
+| 3674 | 4 | `private<E extends Enum<E>> void choose(String key, E now, E pick)` | Stages a choice, or puts the staging back when it is the one in force; and draws the page again. |
+| 3680 | 3 | `ForeignAccounts.Regime stagedRegime(ForeignAccounts.Regime now)` | The regime staged, or the one in force. |
+| 3690 | 19 | `void currencyPage(VBox page)` | THE CURRENCY PAGE: the regime and what entering it does; the peg or the band, whichever is in force (a note when one is staged and not yet); who pays at the strong edge and what the dial aims at; and under a peg the d... |
 
-### the pieces the currency page is built from (lines 3684-3765)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3687 | 15 | `private VBox option(String name, String says, boolean lit, boolean inForce, Runnable pick)` | One option of a choice: its chip (lit when it is the one staged or in force), "in force" beside it when it is, and what it does underneath. |
-| 3704 | 12 | `private static VBox fxCell(String label, String value, String line, String info)` | One figure on a panel, as the rate line's cells are: its label (with an (i) when `info` is given), its figure and a line under it. |
-| 3718 | 8 | `private HBox stepper(String key, double now, double step, double lo, double hi, String down, String up)` | A figure's − and + steps, staged under `key` against what it is now; `down` and `up` say what each does. |
-| 3728 | 5 | `private void restage(String key, double now, double to, double step, double lo, double hi)` | A stepped value staged on the grid of its steps from what it is now, held between its limits, or put back when it is where it started. |
-| 3740 | 25 | `private List<Node> currencyFoot(String label, Runnable apply, String...keys)` | The foot of a card of this page: Apply, and "Leave it as it is", once any of its keys is staged - and only theirs go when it is pressed, so a second card's staging survives the first one's Apply (applyFoot() drops the... |
-
-### HOW THE D$ IS SET (lines 3766-3900)
+### the pieces the currency page is built from (lines 3710-3797)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3769 | 8 | `static String regimeSays(ForeignAccounts.Regime r)` | What each regime does, in a line (the board's own words). |
-| 3779 | 14 | `String regimeInfo()` | The regime card's (i): the four ways, and what history says of a peg. |
-| 3795 | 12 | `String regimeNow(ForeignAccounts fx)` | What the regime in force means now, in a line (pure). |
-| 3809 | 12 | `String regimeEntering(ForeignAccounts fx, ForeignAccounts.Regime r)` | What entering a regime does, today (pure): a peg pegs at the rate of the day, a band centres on it. |
-| 3828 | 1 | `String thinVaultWords(ForeignAccounts fx, ForeignAccounts.Regime want)` | The warning under a peg or a band that is staged and not in force (XR5; Jerus, "Warn on a thin vault"): the vault's months against a gap of BREAK_GAP, where doubt starts to break a peg (ForeignAccounts.monthsHoldingGa... |
-| 3831 | 16 | `static String thinVaultWords(ForeignAccounts fx, ForeignAccounts.Regime want, String sym)` | ...with the city's money's mark handed in (pure: the harness reads it without a window). |
-| 3849 | 1 | `private static String cap(String word)` | A word with its first letter capital (pure). |
-| 3852 | 8 | `private String regimeApplies(ForeignAccounts fx, ForeignAccounts.Regime r)` | The chip row's Apply button: what pressing it does. |
-| 3862 | 8 | `String breakLine(ForeignAccounts fx)` | The last peg that broke and how many have, in words; null before the first (pure). |
-| 3875 | 25 | `VBox regimeCard(ForeignAccounts fx, ForeignAccounts.Regime now, ForeignAccounts.Regime want)` | HOW THE D$ IS SET: the four regimes as chips with a line each, the one in force marked, a choice staged until Apply, and what entering it does. |
+| 3713 | 10 | `private Label choiceChip(String name, boolean lit, Runnable pick)` | The chip of one choice: lit when it is the one staged or in force, a click picking it. |
+| 3725 | 9 | `private VBox option(String name, String says, boolean lit, boolean inForce, Runnable pick)` | One option of a choice: its chip (lit when it is the one staged or in force), "in force" beside it when it is, and what it does underneath. |
+| 3736 | 12 | `private static VBox fxCell(String label, String value, String line, String info)` | One figure on a panel, as the rate line's cells are: its label (with an (i) when `info` is given), its figure and a line under it. |
+| 3750 | 8 | `private HBox stepper(String key, double now, double step, double lo, double hi, String down, String up)` | A figure's − and + steps, staged under `key` against what it is now; `down` and `up` say what each does. |
+| 3760 | 5 | `private void restage(String key, double now, double to, double step, double lo, double hi)` | A stepped value staged on the grid of its steps from what it is now, held between its limits, or put back when it is where it started. |
+| 3772 | 25 | `private List<Node> currencyFoot(String label, Runnable apply, String...keys)` | The foot of a card of this page: Apply, and "Leave it as it is", once any of its keys is staged - and only theirs go when it is pressed, so a second card's staging survives the first one's Apply (applyFoot() drops the... |
 
-### THE PEG (lines 3901-4055)
+### HOW THE D$ IS SET (lines 3798-3946)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3904 | 14 | `String pegInfo()` | THE PEG's (i): what holds it, how it breaks, and what a devaluation is. |
-| 3920 | 7 | `String pegBreakWords(ForeignAccounts fx)` | The break sentence: what breaks a peg, this month's chance, and where the D$ would land (pure). |
-| 3929 | 7 | `static String floorWords(double months)` | The vault's life at this pace, in words: "the floor in 8 months", "under its floor", "not falling" (pure). |
-| 3938 | 25 | `private Node[] pegCells(ForeignAccounts fx, double peg)` | The four figures under the peg: the shadow rate, what the vault did this month, the vault and its pace (pure of drawing). |
-| 3970 | 27 | `VBox pegCard(ForeignAccounts fx, ForeignAccounts.Regime now)` | THE PEG (when it is in force; a short note when it is only staged): the peg with steps to devalue or revalue, the shadow rate, what the vault did this month, its cover and its pace to the floor, how a peg breaks, the ... |
-| 3999 | 3 | `private static double[] curTail(double[] all, int from)` | The last CURRENCY_CHART_MONTHS months of a History series (aligned to the months), from the index `from`. |
-| 4004 | 5 | `private static double[] curFlat(int n, double level)` | A flat line `n` months long: a level the chart draws across it. |
-| 4011 | 8 | `private TimeChart curChart(List<Integer> months, List<TimeChart.Line> lines, TimeChart.Axis axis, double width, double height)` | A small chart of the given lines over `months`, on the left axis given. |
-| 4021 | 4 | `private TimeChart.Line curLine(String key, String label, String colour, double[] values, java.util.function.DoubleFunction<Stri...` | One of the page's lines: History's series `key` over the last months, on the left axis, drawn in `colour`, read with `reads`. |
-| 4027 | 28 | `Node pegCharts()` | Two small charts under a peg: the rate (the peg while it holds) beside the shadow, and the vault's cover with its floor marked. |
+| 3801 | 8 | `static String regimeSays(ForeignAccounts.Regime r)` | What each regime does, in a line (the board's own words). |
+| 3811 | 14 | `String regimeInfo()` | The regime card's (i): the four ways, and what history says of a peg. |
+| 3827 | 14 | `String regimeNow(ForeignAccounts fx)` | What the regime in force means now, in a line (pure). |
+| 3843 | 13 | `String regimeEntering(ForeignAccounts fx, ForeignAccounts.Regime r)` | What entering a regime does, today (pure): a peg pegs at the rate of the day, a band centres on it. |
+| 3863 | 1 | `String thinVaultWords(ForeignAccounts fx, ForeignAccounts.Regime want)` | The warning under a peg or a band that is staged and not in force (XR5; Jerus, "Warn on a thin vault"): the vault's months against a gap of BREAK_GAP, where doubt starts to break a peg (ForeignAccounts.monthsHoldingGa... |
+| 3866 | 16 | `static String thinVaultWords(ForeignAccounts fx, ForeignAccounts.Regime want, String sym)` | ...with the city's money's mark handed in (pure: the harness reads it without a window). |
+| 3884 | 1 | `private static String cap(String word)` | A word with its first letter capital (pure). |
+| 3887 | 10 | `private String regimeApplies(ForeignAccounts fx, ForeignAccounts.Regime r)` | The chip row's Apply button: what pressing it does. |
+| 3899 | 8 | `String breakLine(ForeignAccounts fx)` | The last peg that broke and how many have, in words; null before the first (pure). |
+| 3912 | 34 | `VBox regimeCard(ForeignAccounts fx, ForeignAccounts.Regime now, ForeignAccounts.Regime want)` | HOW THE D$ IS SET: the four regimes as chips with a line each, the one in force marked, a choice staged until Apply, and what entering it does. |
 
-### THE BAND (lines 4056-4150)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 4059 | 11 | `String bandInfo()` | THE BAND's (i): the three settings, the two edges and what the vault does at each. |
-| 4072 | 19 | `String bandMonthWords(ForeignAccounts fx)` | What the band did this month in a line: the weak edge touched, the strong, or inside (pure). |
-| 4098 | 33 | `VBox bandCard(ForeignAccounts fx, ForeignAccounts.Regime now)` | THE BAND (when it is in force; a short note when it is only staged): the centre, slope and width with steps, the two edges, what the band did this month, the shadow's gap from the centre, and the rate and the shadow o... |
-| 4133 | 17 | `Node bandChart(ForeignAccounts fx)` | The rate and the shadow over the last CURRENCY_CHART_MONTHS months with today's two edges drawn flat across them, labelled "the band as set now". |
-
-### WHO BUYS AT THE STRONG EDGE (lines 4151-4204)
+### THE PEG (lines 3947-4181)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4154 | 6 | `static String payerSays(ForeignAccounts.EdgePayer p)` | Each payer's line, under its chip: what paying that way does (star 6's own words). |
-| 4162 | 6 | `static String payerApplies(ForeignAccounts.EdgePayer p)` | What the payer's Apply says: the chip's words, and that it buys at the strong edge. |
-| 4170 | 8 | `static String payerInfo()` | WHO BUYS AT THE STRONG EDGE's (i). |
-| 4180 | 24 | `VBox payerCard(ForeignAccounts fx)` | WHO BUYS AT THE STRONG EDGE (star 6): the two payers as chips, the default marked, what is owed now and what has been bought since founding. |
+| 3950 | 14 | `String pegInfo()` | THE PEG's (i): what holds it, how it breaks, and what a devaluation is. |
+| 3966 | 9 | `private String pegAnchorInfo()` | What a peg kept in another money than the US$ adds to THE PEG's (i) (WN4b); nothing for the US$, so its text is what it was (pure). |
+| 3977 | 7 | `String pegBreakWords(ForeignAccounts fx)` | The break sentence: what breaks a peg, this month's chance, and where the D$ would land (pure). |
+| 3986 | 7 | `static String floorWords(double months)` | The vault's life at this pace, in words: "the floor in 8 months", "under its floor", "not falling" (pure). |
+| 3995 | 25 | `private Node[] pegCells(ForeignAccounts fx, double held)` | The four figures under the peg: the shadow rate, what the vault did this month, the vault and its pace (pure of drawing). |
+| 4028 | 25 | `private List<Node> anchorPicker(ForeignAccounts fx, boolean inForce)` | The money the peg is kept in (WN4b): a line saying whose it is ("PEGGED TO" under a peg, "TO BE PEGGED TO" while it is only chosen) and a chip for each of the eight that has a rate this month, lit for the one staged (... |
+| 4060 | 63 | `VBox pegCard(ForeignAccounts fx, ForeignAccounts.Regime now)` | THE PEG (when it is in force; a short note when it is only staged): the peg with steps to devalue or revalue, the shadow rate, what the vault did this month, its cover and its pace to the floor, how a peg breaks, the ... |
+| 4125 | 3 | `private static double[] curTail(double[] all, int from)` | The last CURRENCY_CHART_MONTHS months of a History series (aligned to the months), from the index `from`. |
+| 4130 | 5 | `private static double[] curFlat(int n, double level)` | A flat line `n` months long: a level the chart draws across it. |
+| 4137 | 8 | `private TimeChart curChart(List<Integer> months, List<TimeChart.Line> lines, TimeChart.Axis axis, double width, double height)` | A small chart of the given lines over `months`, on the left axis given. |
+| 4147 | 4 | `private TimeChart.Line curLine(String key, String label, String colour, double[] values, java.util.function.DoubleFunction<Stri...` | One of the page's lines: History's series `key` over the last months, on the left axis, drawn in `colour`, read with `reads`. |
+| 4153 | 28 | `Node pegCharts()` | Two small charts under a peg: the rate (the peg while it holds) beside the shadow, and the vault's cover with its floor marked. |
 
-### WHAT THE DIAL AIMS AT (lines 4205-4306)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 4208 | 9 | `String aimSays(DebtManager.Aim a)` | Each aim's line, from the model's constants (star 13). |
-| 4219 | 9 | `String aimInfo()` | WHAT THE DIAL AIMS AT's (i). |
-| 4230 | 1 | `boolean hasUsRate()` | Whether the city has the world file's policy rates (XR4), so the US's rate is the Federal Reserve's; false, and the US's rate is the world's own constant (pure). |
-| 4233 | 1 | `String worldsRate()` | What the world's rate is called beside the dial: the US's where it is the Federal Reserve's, the world's where it is the constant (pure). |
-| 4236 | 1 | `String worldName()` | ...and as a short word on the rate line: "US" or "world" (pure). |
-| 4239 | 8 | `String usRateInfo()` | What the US's rate is this month, in words (pure): the Federal Reserve's policy rate, this month's figure, or the world's own constant for a city with no world file. |
-| 4249 | 11 | `String aimDialNow(DebtManager.Aim a, ForeignAccounts fx)` | What each aim would set the dial to now, under the regime in force (pure): a rate; null for a rule that reads inflation before there is a year of prices to read. |
-| 4262 | 4 | `String aimWouldSet(DebtManager.Aim a, ForeignAccounts fx)` | ...as a sentence: "It would set the dial to 3.10% now.", or that it has nothing to read yet. |
-| 4274 | 32 | `VBox aimCard(ForeignAccounts fx)` | WHAT THE DIAL AIMS AT (star 13): inflation, the currency or a mix as chips, each with the dial it would set now under the regime in force; that it acts only with the autopilot on, with a door to where that is set; and... |
-
-### THE DIAL UNDER A PEG (lines 4307-4365)
+### THE BAND (lines 4182-4276)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4310 | 9 | `String pegDialInfo()` | THE DIAL UNDER A PEG's (i): the tie, the spread, and the trinity. |
-| 4321 | 4 | `String tiedWords(double dial, double spread, String plus, String minus)` | The tied dial in words: "2.50% = the US's 2.00% + the spread 0.50%", or with the joiners "plus" and "less" (pure). |
-| 4332 | 33 | `VBox pegDialCard(ForeignAccounts fx)` | THE DIAL UNDER A PEG (star 5; the board's "the dial is still yours" became the tie): the dial as the US's rate plus the spread, the spread with quarter-point steps - or the rule's, with the autopilot aiming at the cur... |
+| 4185 | 11 | `String bandInfo()` | THE BAND's (i): the three settings, the two edges and what the vault does at each. |
+| 4198 | 19 | `String bandMonthWords(ForeignAccounts fx)` | What the band did this month in a line: the weak edge touched, the strong, or inside (pure). |
+| 4224 | 33 | `VBox bandCard(ForeignAccounts fx, ForeignAccounts.Regime now)` | THE BAND (when it is in force; a short note when it is only staged): the centre, slope and width with steps, the two edges, what the band did this month, the shadow's gap from the centre, and the rate and the shadow o... |
+| 4259 | 17 | `Node bandChart(ForeignAccounts fx)` | The rate and the shadow over the last CURRENCY_CHART_MONTHS months with today's two edges drawn flat across them, labelled "the band as set now". |
 
-### BUY OR SELL THE D$ (lines 4366-4398)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 4369 | 12 | `String dealWords(ForeignAccounts fx)` | What a deal of DEAL_SHARE of a year's output would do to the rate, under the regime in force (pure). |
-| 4383 | 7 | `String dealInfo()` | BUY OR SELL THE D$'s (i). |
-| 4392 | 6 | `VBox dealCard(ForeignAccounts fx)` | BUY OR SELL THE D$: what a deal of 1% of a year's output would do, and a door to Trade's reserves, where the dealing is. |
-
-### MONEY - the currency reform (lines 4399-4530)
+### WHO BUYS AT THE STRONG EDGE (lines 4277-4330)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4416 | 7 | `String reformInfo()` | P37. |
-| 4438 | 67 | `void reformPage(VBox page)` | THE CURRENCY REFORM, which is a change of units and says so. |
-| 4507 | 6 | `String foreignInfo()` | P40. |
-| 4515 | 7 | `static VBox priceTag(String what, String before, String after)` | One price tag: what it is, today, and after the reform in the accent. |
-| 4524 | 6 | `static String afterName(Denomination unit, double factor, Currency money)` | What the city's money would be called after lopping by this factor. |
+| 4280 | 6 | `static String payerSays(ForeignAccounts.EdgePayer p)` | Each payer's line, under its chip: what paying that way does (star 6's own words). |
+| 4288 | 6 | `static String payerApplies(ForeignAccounts.EdgePayer p)` | What the payer's Apply says: the chip's words, and that it buys at the strong edge. |
+| 4296 | 8 | `static String payerInfo()` | WHO BUYS AT THE STRONG EDGE's (i). |
+| 4306 | 24 | `VBox payerCard(ForeignAccounts fx)` | WHO BUYS AT THE STRONG EDGE (star 6): the two payers as chips, the default marked, what is owed now and what has been bought since founding. |
 
-### PROMISES - the pension (lines 4531-4710)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 4563 | 1 | **type** `record Month(String word, String says, String tone)` | What a household's month means, in one of three forms (0.7.27, P42): its chip's word, its sentence and its verdict colour. |
-| 4566 | 15 | `Month pensionerMonth()` | A pensioner household's month (pure: the probe reads it). |
-| 4582 | 49 | `void pensionPage(VBox page)` |  |
-| 4633 | 13 | `VBox contributionCard(EconomyManager em, TaxPolicy policy)` | WHAT WORKERS PAY IN (P-4): the contribution, its own Apply; collected, covered, out of the treasury and a payslip before and after (M3: struck on the wage bill, so a dial at nothing previews something - B9). |
-| 4648 | 16 | `DoubleFunction<List<Effect>> contributionEffects(TaxPolicy policy)` | The contribution's effects at any value of its thumb (pure: the probe reads them). |
-| 4666 | 20 | `VBox pensionDialCard(EconomyManager em, TaxPolicy policy, HouseholdBalance bal)` | WHAT SENIORS RECEIVE (P-5): the pension, of the FOUNDING unskilled wage (B10, D9), its own Apply; each senior, paid, out of the treasury and what one pensioner household would have. |
-| 4688 | 22 | `DoubleFunction<List<Effect>> pensionEffects(TaxPolicy policy)` | The pension's effects at any value of its thumb (pure: the probe reads them). |
-
-### PROMISES - the out of work and the students (2026-09-11) (lines 4711-4765)
+### WHAT THE DIAL AIMS AT (lines 4331-4434)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4734 | 3 | `static String cost(double v)` | Money a line takes out of the treasury, a surplus with a true minus: "$2.5M", "−$1.0M". |
-| 4738 | 27 | `void outOfWorkPage(VBox page)` |  |
+| 4334 | 9 | `String aimSays(DebtManager.Aim a)` | Each aim's line, from the model's constants (star 13). |
+| 4345 | 11 | `String aimInfo()` | WHAT THE DIAL AIMS AT's (i). |
+| 4358 | 1 | `boolean hasUsRate()` | Whether the city has the world file's policy rates (XR4), so the US's rate is the Federal Reserve's; false, and the US's rate is the world's own constant (pure). |
+| 4361 | 1 | `String worldsRate()` | What the world's rate is called beside the dial: the US's where it is the Federal Reserve's, the world's where it is the constant (pure). |
+| 4364 | 1 | `String worldName()` | ...and as a short word on the rate line: "US" or "world" (pure). |
+| 4367 | 8 | `String usRateInfo()` | What the US's rate is this month, in words (pure): the Federal Reserve's policy rate, this month's figure, or the world's own constant for a city with no world file. |
+| 4377 | 11 | `String aimDialNow(DebtManager.Aim a, ForeignAccounts fx)` | What each aim would set the dial to now, under the regime in force (pure): a rate; null for a rule that reads inflation before there is a year of prices to read. |
+| 4390 | 4 | `String aimWouldSet(DebtManager.Aim a, ForeignAccounts fx)` | ...as a sentence: "It would set the dial to 3.10% now.", or that it has nothing to read yet. |
+| 4402 | 32 | `VBox aimCard(ForeignAccounts fx)` | WHAT THE DIAL AIMS AT (star 13): inflation, the currency or a mix as chips, each with the dial it would set now under the regime in force; that it acts only with the autopilot on, with a door to where that is set; and... |
 
-### PROMISES - food (0.7.45; the UI spec's 2.3 and D6) (lines 4766-4931)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 4778 | 7 | `void foodPage(VBox page)` |  |
-| 4787 | 6 | `String foodStatus(double share)` | The dial card's status (pure: the probe reads it): who a voucher would go to at the last sale's price. |
-| 4802 | 15 | `VBox foodAssistanceCard(TaxPolicy policy)` | FOOD ASSISTANCE (0.7.43; its own tab since 0.7.45), its own Apply: the treasury's voucher toward an eligible household's baskets - what it would have paid at the last sale, the households who would hold one, the baske... |
-| 4819 | 11 | `DoubleFunction<List<Effect>> foodEffects(TaxPolicy policy)` | The food assistance dial's effects at any value of its thumb (pure: the probe reads them). |
-| 4832 | 1 | **type** `record AidRow(int row, String name, double got, String gotWords, String figures)` | One row of WHO WOULD GET IT, worked out without drawing it (pure: the probe reads them). |
-| 4835 | 18 | `List<AidRow> aidRows()` | WHO WOULD GET IT's rows: every household row a voucher would reach or did, most eligible first. |
-| 4855 | 4 | `static String basketShare(double share)` | Baskets got per basket needed, as a row says it: "got .58 of a basket", "got every basket". |
-| 4861 | 18 | `VBox whoWouldGetIt()` | WHO WOULD GET IT (the UI spec's 2.3 item 3): a row a household kind, its baskets got per basket needed, who a voucher reaches. |
-| 4881 | 12 | `VBox eiPremiumCard(EconomyManager em, TaxPolicy policy)` | What workers pay for EI (E-3), its own Apply: raised, and what EI and the grants take from the treasury. |
-| 4895 | 8 | `DoubleFunction<List<Effect>> eiPremiumEffects(TaxPolicy policy)` | The EI premium's effects at any value of its thumb (pure: the probe reads them). |
-| 4905 | 14 | `VBox eiBenefitCard(EconomyManager em, TaxPolicy policy, Unemployment u)` | What EI replaces (E-3), its own Apply: the pool's bill, a claimant's cheque and the treasury's share, struck on the pool (M5). |
-| 4921 | 10 | `DoubleFunction<List<Effect>> eiBenefitEffects(TaxPolicy policy)` | The EI benefit's effects at any value of its thumb (pure: the probe reads them). |
-
-### PROMISES - the clinic's price, and a premium (2026-09-19) (lines 4932-5131)
+### THE DIAL UNDER A PEG (lines 4435-4497)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4957 | 1 | **type** `record Corner(String word, String says)` | The corner the city is in (P62): its chip's word, and its sentence. |
-| 4959 | 23 | `Corner corner()` |  |
-| 4984 | 8 | `String coverWords()` | P63's line: what the fees and the premium cover - or that the service cost nothing (B19: it read "Fees cover 0% of the cost" in a city with fees and no cost). |
-| 4993 | 42 | `void healthPage(VBox page)` |  |
-| 5037 | 16 | `String turnedAwayInfo()` | P64, both layers. |
-| 5055 | 26 | `VBox feeCard(Healthcare care, TaxPolicy policy)` | WHAT A PATIENT PAYS (S-4), its own Apply: the break-even marked on the dial, the three fees, the fees at full and the treasury's share - at full service both sides (B13). |
-| 5083 | 18 | `DoubleFunction<List<Effect>> feeEffects(TaxPolicy policy)` | The care fee's effects at any value of its thumb (pure: the probe reads them). |
-| 5103 | 18 | `VBox healthPremiumCard(EconomyManager em, Healthcare care, TaxPolicy policy)` | WHAT EVERY WAGE PAYS (S-5), its own Apply: raised, and the treasury's share. |
-| 5123 | 8 | `DoubleFunction<List<Effect>> healthPremiumEffects(TaxPolicy policy)` | The health premium's effects at any value of its thumb (pure: the probe reads them). |
+| 4438 | 13 | `String pegDialInfo()` | THE DIAL UNDER A PEG's (i): the tie, the spread, and the trinity. |
+| 4453 | 4 | `String tiedWords(double dial, double spread, String plus, String minus)` | The tied dial in words: "2.50% = the US's 2.00% + the spread 0.50%" (the anchor's, "the euro's 2.00%", under a peg kept in another money), or with the joiners "plus" and "less" (pure). |
+| 4464 | 33 | `VBox pegDialCard(ForeignAccounts fx)` | THE DIAL UNDER A PEG (star 5; the board's "the dial is still yours" became the tie): the dial as the US's rate plus the spread, the spread with quarter-point steps - or the rule's, with the autopilot aiming at the cur... |
 
-### PROMISES - the schools: the price of a place, who pays it, and the (lines 5132-5645)
+### BUY OR SELL THE D$ (lines 4498-4530)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5183 | 1 | `static String schoolKey(EducationType kind)` | The staged key of one school kind's own price (0.7.6): "tuitionScale:UNIVERSITY". |
-| 5186 | 1 | `static String scaleWords(double scale)` | A tuition scale as the page writes it: "x1.00". |
-| 5189 | 13 | `static String grantWords(TaxPolicy.GrantBasis basis, double amount, double level)` | The grant in words, for a line that names it: "15% of an unskilled wage a month". |
-| 5204 | 8 | `static String basisName(TaxPolicy.GrantBasis basis)` | What a basis is called on its chip. |
-| 5214 | 4 | `static String amountWords(TaxPolicy.GrantBasis basis, double amount, double level)` | How a basis's amount reads on its dial: dollars, or a percentage of the thing it is a share of. |
-| 5247 | 3 | `double stagedScaleOf(TaxPolicy policy, EducationType kind)` | The scale a preview prices one kind of school at: its own lever if staged, else every school at once if that is, else what it is (0.7.6). |
-| 5251 | 40 | `void schoolsPage(VBox page)` |  |
-| 5293 | 5 | `static List<EducationType> schoolKinds()` | The nine kinds a school can be, in EducationType order: everything bar NONE (TaxPolicy's own list, which it keeps to itself). |
-| 5300 | 4 | `Lever register(Lever lever)` | A dial on this page, registered so the tray can name and apply it. |
-| 5306 | 4 | `Lever kindLever(EducationType kind, TaxPolicy policy)` | One kind's own price, as a lever. |
-| 5312 | 2 | **type** `record Course(EducationType kind, double now, double then, boolean standing, double places, double students...` | One course's row, worked out without drawing it: its burden now and staged, whether a school of it stands, and its four figures. |
-| 5316 | 11 | `List<Course> courses(Education schools, TaxPolicy policy, double[] places)` | The nine courses (pure: the probe reads them): what a place costs a family as a share of a month's wage, at the city's price and share and at the staged ones (PolicyPreview.schoolBurden()). |
-| 5329 | 18 | `VBox burdenRows(Education schools, TaxPolicy policy, double[] places)` | WHO CAN AFFORD A PLACE: the nine as bars on 0 to 100% of a month's wage with a tick at MAX_BURDEN, red past it; each opens into its own price. |
-| 5349 | 46 | `HBox courseRow(Course c, double scale, boolean shown, Runnable toggle)` | One course: its name ("▸ its price"), its bar - red past the line where nobody enrols - with the staged burden a ghost, its figure, and "no school" when none stands. |
-| 5403 | 28 | `VBox kindCard(Course c, TaxPolicy policy)` | One kind's own price, opened in place (K-3): its dial - greyed with nothing standing, since a price for a school the city does not have moves nothing today, though every school at once still sets it - its places, stud... |
-| 5433 | 16 | `DoubleFunction<List<Effect>> kindEffects(Course c, TaxPolicy policy)` | A kind's own price's effects at any value of its thumb (pure: the probe reads them). |
-| 5451 | 7 | `VBox shareCard(Lever lever, Education schools, TaxPolicy policy)` | The city's share of tuition (K-1, registered): what households pay and what the city waives before and after, and THE BUDGET. |
-| 5460 | 14 | `DoubleFunction<List<Effect>> shareEffects(TaxPolicy policy)` | The city's share's effects at any value of its thumb (pure: the probe reads them). |
-| 5476 | 11 | `VBox schoolsMonthCard(Education schools)` | THE SCHOOLS THIS MONTH (K-2), footing: staff and buildings, less what households paid, is the net cost; the tuition waived beside it in grey, outside the sum (B17, D13). |
-| 5489 | 14 | `VBox everySchoolCard(Lever lever, TaxPolicy policy)` | Every school at once (K-3, registered): its dial ("a price per school" until moved, once the nine have parted), what the courses are billed and households pay, and THE BUDGET. |
-| 5505 | 13 | `DoubleFunction<List<Effect>> everySchoolEffects(TaxPolicy policy)` | Every school's price's effects at any value of its thumb (pure: the probe reads them). |
-| 5520 | 20 | `String grantInfo(TaxPolicy policy)` | P53, with its figures. |
-| 5548 | 43 | `VBox grantCard(TaxPolicy policy)` | What a student is granted (K-5, registered): the basis as chips - a chip stages the basis AND today's grant re-expressed in its unit, so the switch alone changes nothing until the amount moves - and the amount's dial ... |
-| 5593 | 15 | `DoubleFunction<List<Effect>> grantEffects(TaxPolicy policy)` | The grant's amount's effects at any value of its thumb (pure: the probe reads them). |
-| 5621 | 14 | `VBox loanCard(Lever lever, TaxPolicy policy)` | What the loan costs them afterwards (K-6, registered): what is owed and repaid, and a month's interest and THE BUDGET before and after (HouseholdBalance.studentInterestAt()). |
-| 5637 | 8 | `DoubleFunction<List<Effect>> loanEffects(TaxPolicy policy)` | The loan rate's effects at any value of its thumb (pure: the probe reads them). |
+| 4501 | 12 | `String dealWords(ForeignAccounts fx)` | What a deal of DEAL_SHARE of a year's output would do to the rate, under the regime in force (pure). |
+| 4515 | 7 | `String dealInfo()` | BUY OR SELL THE D$'s (i). |
+| 4524 | 6 | `VBox dealCard(ForeignAccounts fx)` | BUY OR SELL THE D$: what a deal of 1% of a year's output would do, and a door to Trade's reserves, where the dealing is. |
 
-### PROMISES - the standing subsidies (lines 5646-5699)
+### MONEY - the currency reform (lines 4531-4662)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5668 | 31 | `void subsidyPage(VBox page)` |  |
+| 4548 | 7 | `String reformInfo()` | P37. |
+| 4570 | 67 | `void reformPage(VBox page)` | THE CURRENCY REFORM, which is a change of units and says so. |
+| 4639 | 6 | `String foreignInfo()` | P40. |
+| 4647 | 7 | `static VBox priceTag(String what, String before, String after)` | One price tag: what it is, today, and after the reform in the accent. |
+| 4656 | 6 | `static String afterName(Denomination unit, double factor, Currency money)` | What the city's money would be called after lopping by this factor. |
+
+### PROMISES - the pension (lines 4663-4842)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4695 | 1 | **type** `record Month(String word, String says, String tone)` | What a household's month means, in one of three forms (0.7.27, P42): its chip's word, its sentence and its verdict colour. |
+| 4698 | 15 | `Month pensionerMonth()` | A pensioner household's month (pure: the probe reads it). |
+| 4714 | 49 | `void pensionPage(VBox page)` |  |
+| 4765 | 13 | `VBox contributionCard(EconomyManager em, TaxPolicy policy)` | WHAT WORKERS PAY IN (P-4): the contribution, its own Apply; collected, covered, out of the treasury and a payslip before and after (M3: struck on the wage bill, so a dial at nothing previews something - B9). |
+| 4780 | 16 | `DoubleFunction<List<Effect>> contributionEffects(TaxPolicy policy)` | The contribution's effects at any value of its thumb (pure: the probe reads them). |
+| 4798 | 20 | `VBox pensionDialCard(EconomyManager em, TaxPolicy policy, HouseholdBalance bal)` | WHAT SENIORS RECEIVE (P-5): the pension, of the FOUNDING unskilled wage (B10, D9), its own Apply; each senior, paid, out of the treasury and what one pensioner household would have. |
+| 4820 | 22 | `DoubleFunction<List<Effect>> pensionEffects(TaxPolicy policy)` | The pension's effects at any value of its thumb (pure: the probe reads them). |
+
+### PROMISES - the out of work and the students (2026-09-11) (lines 4843-4897)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4866 | 3 | `static String cost(double v)` | Money a line takes out of the treasury, a surplus with a true minus: "$2.5M", "−$1.0M". |
+| 4870 | 27 | `void outOfWorkPage(VBox page)` |  |
+
+### PROMISES - food (0.7.45; the UI spec's 2.3 and D6) (lines 4898-5063)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4910 | 7 | `void foodPage(VBox page)` |  |
+| 4919 | 6 | `String foodStatus(double share)` | The dial card's status (pure: the probe reads it): who a voucher would go to at the last sale's price. |
+| 4934 | 15 | `VBox foodAssistanceCard(TaxPolicy policy)` | FOOD ASSISTANCE (0.7.43; its own tab since 0.7.45), its own Apply: the treasury's voucher toward an eligible household's baskets - what it would have paid at the last sale, the households who would hold one, the baske... |
+| 4951 | 11 | `DoubleFunction<List<Effect>> foodEffects(TaxPolicy policy)` | The food assistance dial's effects at any value of its thumb (pure: the probe reads them). |
+| 4964 | 1 | **type** `record AidRow(int row, String name, double got, String gotWords, String figures)` | One row of WHO WOULD GET IT, worked out without drawing it (pure: the probe reads them). |
+| 4967 | 18 | `List<AidRow> aidRows()` | WHO WOULD GET IT's rows: every household row a voucher would reach or did, most eligible first. |
+| 4987 | 4 | `static String basketShare(double share)` | Baskets got per basket needed, as a row says it: "got .58 of a basket", "got every basket". |
+| 4993 | 18 | `VBox whoWouldGetIt()` | WHO WOULD GET IT (the UI spec's 2.3 item 3): a row a household kind, its baskets got per basket needed, who a voucher reaches. |
+| 5013 | 12 | `VBox eiPremiumCard(EconomyManager em, TaxPolicy policy)` | What workers pay for EI (E-3), its own Apply: raised, and what EI and the grants take from the treasury. |
+| 5027 | 8 | `DoubleFunction<List<Effect>> eiPremiumEffects(TaxPolicy policy)` | The EI premium's effects at any value of its thumb (pure: the probe reads them). |
+| 5037 | 14 | `VBox eiBenefitCard(EconomyManager em, TaxPolicy policy, Unemployment u)` | What EI replaces (E-3), its own Apply: the pool's bill, a claimant's cheque and the treasury's share, struck on the pool (M5). |
+| 5053 | 10 | `DoubleFunction<List<Effect>> eiBenefitEffects(TaxPolicy policy)` | The EI benefit's effects at any value of its thumb (pure: the probe reads them). |
+
+### PROMISES - the clinic's price, and a premium (2026-09-19) (lines 5064-5263)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 5089 | 1 | **type** `record Corner(String word, String says)` | The corner the city is in (P62): its chip's word, and its sentence. |
+| 5091 | 23 | `Corner corner()` |  |
+| 5116 | 8 | `String coverWords()` | P63's line: what the fees and the premium cover - or that the service cost nothing (B19: it read "Fees cover 0% of the cost" in a city with fees and no cost). |
+| 5125 | 42 | `void healthPage(VBox page)` |  |
+| 5169 | 16 | `String turnedAwayInfo()` | P64, both layers. |
+| 5187 | 26 | `VBox feeCard(Healthcare care, TaxPolicy policy)` | WHAT A PATIENT PAYS (S-4), its own Apply: the break-even marked on the dial, the three fees, the fees at full and the treasury's share - at full service both sides (B13). |
+| 5215 | 18 | `DoubleFunction<List<Effect>> feeEffects(TaxPolicy policy)` | The care fee's effects at any value of its thumb (pure: the probe reads them). |
+| 5235 | 18 | `VBox healthPremiumCard(EconomyManager em, Healthcare care, TaxPolicy policy)` | WHAT EVERY WAGE PAYS (S-5), its own Apply: raised, and the treasury's share. |
+| 5255 | 8 | `DoubleFunction<List<Effect>> healthPremiumEffects(TaxPolicy policy)` | The health premium's effects at any value of its thumb (pure: the probe reads them). |
+
+### PROMISES - the schools: the price of a place, who pays it, and the (lines 5264-5777)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 5315 | 1 | `static String schoolKey(EducationType kind)` | The staged key of one school kind's own price (0.7.6): "tuitionScale:UNIVERSITY". |
+| 5318 | 1 | `static String scaleWords(double scale)` | A tuition scale as the page writes it: "x1.00". |
+| 5321 | 13 | `static String grantWords(TaxPolicy.GrantBasis basis, double amount, double level)` | The grant in words, for a line that names it: "15% of an unskilled wage a month". |
+| 5336 | 8 | `static String basisName(TaxPolicy.GrantBasis basis)` | What a basis is called on its chip. |
+| 5346 | 4 | `static String amountWords(TaxPolicy.GrantBasis basis, double amount, double level)` | How a basis's amount reads on its dial: dollars, or a percentage of the thing it is a share of. |
+| 5379 | 3 | `double stagedScaleOf(TaxPolicy policy, EducationType kind)` | The scale a preview prices one kind of school at: its own lever if staged, else every school at once if that is, else what it is (0.7.6). |
+| 5383 | 40 | `void schoolsPage(VBox page)` |  |
+| 5425 | 5 | `static List<EducationType> schoolKinds()` | The nine kinds a school can be, in EducationType order: everything bar NONE (TaxPolicy's own list, which it keeps to itself). |
+| 5432 | 4 | `Lever register(Lever lever)` | A dial on this page, registered so the tray can name and apply it. |
+| 5438 | 4 | `Lever kindLever(EducationType kind, TaxPolicy policy)` | One kind's own price, as a lever. |
+| 5444 | 2 | **type** `record Course(EducationType kind, double now, double then, boolean standing, double places, double students...` | One course's row, worked out without drawing it: its burden now and staged, whether a school of it stands, and its four figures. |
+| 5448 | 11 | `List<Course> courses(Education schools, TaxPolicy policy, double[] places)` | The nine courses (pure: the probe reads them): what a place costs a family as a share of a month's wage, at the city's price and share and at the staged ones (PolicyPreview.schoolBurden()). |
+| 5461 | 18 | `VBox burdenRows(Education schools, TaxPolicy policy, double[] places)` | WHO CAN AFFORD A PLACE: the nine as bars on 0 to 100% of a month's wage with a tick at MAX_BURDEN, red past it; each opens into its own price. |
+| 5481 | 46 | `HBox courseRow(Course c, double scale, boolean shown, Runnable toggle)` | One course: its name ("▸ its price"), its bar - red past the line where nobody enrols - with the staged burden a ghost, its figure, and "no school" when none stands. |
+| 5535 | 28 | `VBox kindCard(Course c, TaxPolicy policy)` | One kind's own price, opened in place (K-3): its dial - greyed with nothing standing, since a price for a school the city does not have moves nothing today, though every school at once still sets it - its places, stud... |
+| 5565 | 16 | `DoubleFunction<List<Effect>> kindEffects(Course c, TaxPolicy policy)` | A kind's own price's effects at any value of its thumb (pure: the probe reads them). |
+| 5583 | 7 | `VBox shareCard(Lever lever, Education schools, TaxPolicy policy)` | The city's share of tuition (K-1, registered): what households pay and what the city waives before and after, and THE BUDGET. |
+| 5592 | 14 | `DoubleFunction<List<Effect>> shareEffects(TaxPolicy policy)` | The city's share's effects at any value of its thumb (pure: the probe reads them). |
+| 5608 | 11 | `VBox schoolsMonthCard(Education schools)` | THE SCHOOLS THIS MONTH (K-2), footing: staff and buildings, less what households paid, is the net cost; the tuition waived beside it in grey, outside the sum (B17, D13). |
+| 5621 | 14 | `VBox everySchoolCard(Lever lever, TaxPolicy policy)` | Every school at once (K-3, registered): its dial ("a price per school" until moved, once the nine have parted), what the courses are billed and households pay, and THE BUDGET. |
+| 5637 | 13 | `DoubleFunction<List<Effect>> everySchoolEffects(TaxPolicy policy)` | Every school's price's effects at any value of its thumb (pure: the probe reads them). |
+| 5652 | 20 | `String grantInfo(TaxPolicy policy)` | P53, with its figures. |
+| 5680 | 43 | `VBox grantCard(TaxPolicy policy)` | What a student is granted (K-5, registered): the basis as chips - a chip stages the basis AND today's grant re-expressed in its unit, so the switch alone changes nothing until the amount moves - and the amount's dial ... |
+| 5725 | 15 | `DoubleFunction<List<Effect>> grantEffects(TaxPolicy policy)` | The grant's amount's effects at any value of its thumb (pure: the probe reads them). |
+| 5753 | 14 | `VBox loanCard(Lever lever, TaxPolicy policy)` | What the loan costs them afterwards (K-6, registered): what is owed and repaid, and a month's interest and THE BUDGET before and after (HouseholdBalance.studentInterestAt()). |
+| 5769 | 8 | `DoubleFunction<List<Effect>> loanEffects(TaxPolicy policy)` | The loan rate's effects at any value of its thumb (pure: the probe reads them). |
+
+### PROMISES - the standing subsidies (lines 5778-5831)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 5800 | 31 | `void subsidyPage(VBox page)` |  |
 

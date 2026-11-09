@@ -1,6 +1,6 @@
 # Sector.java - 3,790 lines · 266 methods · 18 constants · model
 
-`ham/citybuildersim/Sector.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Sector.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
 
 > One business in the city, and the template every sector extends.
 > 
