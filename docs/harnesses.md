@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**189 harness files, 22,278 labelled assertions.** AllChecks runs 189 of them.
+**189 harness files, 22,279 labelled assertions.** AllChecks runs 189 of them.
 
 ## Which harnesses read which class
 
@@ -25752,7 +25752,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L726 a harness that failed with no timing red of its own: FAIL
   - L731 the harnesses to time again are those with a timing red among the lines: MapCheck, not GridCheck
 
-## ToastCheck.java - 36 labelled assertions
+## ToastCheck.java - 37 labelled assertions
 
 > A toast stays out of the page's way (TS1): while a toast shows, the page's foot takes a bottom padding as
 > tall as the toasts, the scroll's pixel offset is kept as the toast comes and goes, and the last control of a
@@ -25768,51 +25768,52 @@ _(this harness does not label its checks through a helper - it prints its findin
 > own, as the window builds them (a scroller over a stack, the page's minimum height bound to the viewport's,
 > ...
 
-- **L211 ToastCheck: a toast stays out of the page's way (TS1)**
-- **L218 1. the fixture causes the condition: without room, the last control is under the toast**
-  - L222 the page is taller than the window (it scrolls)
-  - L225 a toast up, the page at its end, the last control is under the toast's bounds
-  - L230 ...and with three toasts up
-- **L233 2. with room made, the last control of a page at its end is clear**
-  - L237 no toast: the page's padding is its own and no room is made
-  - L241 one toast: the padding is the stack's height and the corner's margin
-  - L243 one toast: the page's padding is its own and the room
-  - L244 one toast: the last control is clear of the toast
-  - L246 one toast: ...and inside the viewport
-  - L250 three toasts: the last control is clear of them
-  - L252 three toasts: the room grew with the stack
-  - L260 a wrapped toast (
-  - L261 three toasts with the first wrapped: the last control is clear of them
-- **L265 3. the scroll's pixel offset is kept as a toast comes and goes**
-  - L272 a toast comes
-  - L275 ...a second and a third come
-  - L277 ...the third goes
-  - L279 ...the first goes
-  - L281 ...and the last goes, the page where it was
-  - L291 at the end of a page with a toast, the toast going leaves the page no further than its end
-- **L295 4. the room is given back when the last toast goes**
-  - L303 two of three gone: the room is that of the one left
-  - L305 the last gone: no room
-  - L306 ...the page's padding is its own again
-  - L307 ...and the page is as tall as it was
-- **L310 5. a stack that is not on show takes no room**
-  - L315 shown, with a toast: there is room
-  - L318 hidden (a game menu): the room is given back
-  - L321 shown again: the room is made again
-  - L324 taken out of the window (cinematic mode): the room is given back
-  - L327 put back: the room is made again
-- **L330 6. a page that fits is not moved**
-  - L334 the page is shorter than the window without a toast
-  - L337 a toast up: the page is at the top and has not moved
-  - L338 ...and has not grown past the viewport
-  - L339 ...and the last control is clear of the toast
-- **L342 7. a toast that arrives with the page's rebuild is fitted to the rebuilt page**
-  - L355 the rebuild with a toast: the page is where it was
-  - L356 ...with the room made against the rebuilt page
-  - L358 ...and its end is clear of the toast
-- **L361 8. the window builds it**
-  - L368 UserInterface makes a ToastRoom of its scroller, its page and its stack of toasts
-  - L370 ...and moves the scroll through pageScrollAt, the field the rebuild restores it from
+- **L217 ToastCheck: a toast stays out of the page's way (TS1)**
+- **L224 1. the fixture causes the condition: without room, the last control is under the toast**
+  - L228 the page is taller than the window (it scrolls)
+  - L231 a toast up, the page at its end, the last control is under the toast's bounds
+  - L236 ...and with three toasts up
+- **L239 2. with room made, the last control of a page at its end is clear**
+  - L243 no toast: the page's padding is its own and no room is made
+  - L247 one toast: the padding is the stack's height and the corner's margin
+  - L249 one toast: the page's padding is its own and the room
+  - L250 one toast: the last control is clear of the toast
+  - L252 one toast: ...and inside the viewport
+  - L256 three toasts: the last control is clear of them
+  - L258 three toasts: the room grew with the stack
+  - L266 a wrapped toast (
+  - L267 three toasts with the first wrapped: the last control is clear of them
+- **L271 3. the scroll's pixel offset is kept as a toast comes and goes**
+  - L278 a toast comes
+  - L280 ...and the window is told the fraction the page is at, to the pixel
+  - L284 ...a second and a third come
+  - L286 ...the third goes
+  - L288 ...the first goes
+  - L290 ...and the last goes, the page where it was
+  - L300 at the end of a page with a toast, the toast going leaves the page no further than its end
+- **L304 4. the room is given back when the last toast goes**
+  - L312 two of three gone: the room is that of the one left
+  - L314 the last gone: no room
+  - L315 ...the page's padding is its own again
+  - L316 ...and the page is as tall as it was
+- **L319 5. a stack that is not on show takes no room**
+  - L324 shown, with a toast: there is room
+  - L327 hidden (a game menu): the room is given back
+  - L330 shown again: the room is made again
+  - L333 taken out of the window (cinematic mode): the room is given back
+  - L336 put back: the room is made again
+- **L339 6. a page that fits is not moved**
+  - L343 the page is shorter than the window without a toast
+  - L347 a toast up: the page is at the top and has not moved
+  - L348 ...and has not grown past the viewport
+  - L349 ...and the last control is clear of the toast
+- **L352 7. a toast that arrives with the page's rebuild is fitted to the rebuilt page**
+  - L365 the rebuild with a toast: the page is where it was
+  - L366 ...with the room made against the rebuilt page
+  - L368 ...and its end is clear of the toast
+- **L371 8. the window builds it**
+  - L378 UserInterface makes a ToastRoom of its scroller, its page and its stack of toasts
+  - L380 ...and keeps what it is told in pageScrollAt, the field the rebuild restores the player's place from
 
 ## TradeBandCheck.java - 41 labelled assertions
 

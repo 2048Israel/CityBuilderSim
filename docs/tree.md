@@ -863,7 +863,10 @@ adds its line here, not in `CLAUDE.md`.
                                    it), and IslandChip.java (MT1: the chip on a landmass no port links,
                                    two lines of amber caption on a dark rounded plate, drawn by
                                    MapView.islandChips(); public so tools/ChipRender draws the same plate
-                                   over a hatch for review). The model never imports it.
+                                   over a hatch for review), and ToastRoom.java (TS1: the page's foot
+                                   takes a bottom padding as tall as the toasts while one shows and gives
+                                   it back, the scroller keeping its pixel offset; ToastCheck lays the
+                                   same nodes out on a scene of its own). The model never imports it.
         *Check.java                143 harnesses, each a main() with static helpers
         Credits.java               the Credits page's sections (CR1, 2026-11-09): the Earth and nations attribution files and the
                                    fonts' OFL notice read from the jar, as the exe ships them, and cut into paragraphs for the
