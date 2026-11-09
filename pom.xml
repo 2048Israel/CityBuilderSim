@@ -43,6 +43,21 @@
     </dependencies>
 
     <build>
+        <!-- The jar's resources: the default folder, and (CR1) the two data files'
+             credits from the pipelines that write them, for the Credits page. -->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>tools</directory>
+                <targetPath>credits</targetPath>
+                <includes>
+                    <include>earth/ATTRIBUTION-2.txt</include>
+                    <include>world/ATTRIBUTION.txt</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
 
             <!-- JavaFX run support (IMPORTANT for your project) -->

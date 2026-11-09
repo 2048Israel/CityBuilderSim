@@ -59,7 +59,8 @@ def main():
     srcs = sources()
     lines = ['earth-2: the Earth data of CityBuilderSim', '',
              'earth-2.bin is derived from the data sets below. Their licences allow this use; their credits follow,',
-             'each in the form its publisher asks for. It ships beside the exe as data/earth-2-ATTRIBUTION.txt.', '']
+             'each in the form its publisher asks for. It ships beside the exe as data/earth-2-ATTRIBUTION.txt, and the',
+             'game shows it in full on its Credits page, from the title screen.', '']
     for s in srcs:
         lines += [s['name'] + ' (' + s['version'] + ')', '  Credit:  ' + s['credit'], '  Licence: ' + s['licence'],
                   '  Used for: ' + s['gives'], '  Source:  ' + ', '.join(s['urls']), '']
