@@ -69,3 +69,36 @@ Built on origin/main 27801328 (MW1 merged). Baseline: docs/ensemble/0.9.57.md
   break-even counts interest * (1 - s); the company still pays all of it.
   Saved. Rejected: leaning on the glut rule alone, because the stranded debt
   comes back on the first tight leg (seed 11's studios).
+
+## The slice (3b311cca; drafted by Sonnet 5.5 at xhigh, reviewed by Claude)
+
+- **15% held from month 1 causes no glut:** the city never passes seven
+  homes (~45 people). So HousingCheck's held-rate city grows 120 months on
+  its own dial and then holds 15% for 120, like the ensemble's own "pre"
+  phase. A leg is in glut in 49 months, in none in 189; the lift is waived
+  in 39 months on the studio leg and 49 on the family leg (the first ~m145).
+  The largest lift on a leg that took it is 1.996. The landlords' stranded
+  share ends at .106 and comes back from a save on scratch. ~2.5 s.
+- **The brief's error, caught by the slice:** "0, then 1200: s still .2"
+  contradicts the formula (1200 -> 0 makes s = 1). The harness asserts the
+  formula's value, and tests the load path through toState -> restore.
+- **An edge left as it is:** once every place has closed, s is 1, and a
+  count from nothing leaves it (the load path, since ownedCapacity is not
+  saved), so the first homes rebuilt carry no interest until growth from
+  them dilutes it. The count includes homes under construction, so the
+  step from nothing is one building; it leans to the landlord's loss, and a
+  landlord that loses every home is rare. Saving ownedCapacity would tell
+  a load from a rebuild; not done (no case seen).
+- **The identities elsewhere** (MortgageCheck ~L496, HousingCheck ~L764,
+  ReadPathCheck's break-even) hold unchanged: s is 0 in their fixtures.
+  SaveFileCheck lists no RealEstate extras; the round-trip is HousingCheck's.
+
+## Found, not done
+
+- **★ TARGET_HEADROOM reads backwards** (BusinessInvestment.java:83, .05;
+  used at RealEstate:655 and :785, `demand - capacity x 1.05`): the planner builds homes only once
+  demand is 5% over what stands, the reverse of its sentence (a margin
+  over demand). So the model keeps no natural vacancy, and a leg sits at
+  or over one household a door. Recommendation: a batch of its own that
+  makes it a margin over demand, with the ensemble, since it moves rents
+  in every city; not RN1's (its brief puts the planner out of scope).
