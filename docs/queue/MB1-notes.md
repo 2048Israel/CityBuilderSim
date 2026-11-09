@@ -51,6 +51,16 @@ Session window: W=150000 (orchestrator's env; compacts near 118k).
   stays wherever it is the placement's order (the cursors, `DISTRICT_ORDER`).
 - **Test hooks:** `CityMap.chainBand` (the band's size, `CHAIN_BAND` in the
   game) and `CityMap.chainByOrder` (the old rule), set only by MapCheck 2i.
+- **The seam goes to the first in the chain** (2026-11-09, in the review of
+  slice a). `planInputHere` gives a seam to the first of the districts sharing
+  it; on main "first" was `DISTRICT_ORDER`, which was the chain's order. A
+  district bought ahead is `DISTRICT_ORDER`-earlier than its neighbours, so a
+  neighbour in another band would lose its seams and its boxes would move. The
+  test is `chainIndex` now: still one surfacer per seam, the same as before
+  within a band and in a city of one band, and a new district, last in the
+  chain, takes no seam from a neighbour. `earlierOf` keeps `DISTRICT_ORDER`:
+  it is asked only within a band, where the two orders agree.
+- `rankOf` needed no cast: `baseDX`/`baseDY` are `long`.
 - **Two slices:** a, the model (CityMap, LandGrid, two MapCheck lines that
   read a band by index); b, MapCheck 2i, after 2g's fixture: small bands, a
   district bought ahead, the old rule moving other bands' boxes, the new

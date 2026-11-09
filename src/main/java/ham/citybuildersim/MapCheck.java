@@ -12821,7 +12821,7 @@ public class MapCheck {
                         // (batch UP9, slice A) How the job was handed out and how it came out, by the band of its district and the epoch it was made at; the round counted from the fixture's first.
                         int jobKind = pj.old == null ? JOB_PLANNED : pj.in == null ? JOB_LAZY : JOB_EAGER;
                         if (jobKind == JOB_LAZY) r.lazyHanded++;
-                        r.bandJobs.add(new BandJob(CityMap.band(pj.d.index), pj.epoch, all.size() * CHAIN_ROUNDS + round, jobKind, pj.failed, pj.reused));
+                        r.bandJobs.add(new BandJob(CityMap.bandOf(pj.d), pj.epoch, all.size() * CHAIN_ROUNDS + round, jobKind, pj.failed, pj.reused));
                     }
                 }
                 long b0 = monthClock();
@@ -13824,7 +13824,7 @@ public class MapCheck {
             if (j instanceof CityMap.PlanJob pj) {
                 handed++;
                 if (pj.in == null) lazy++;
-                handedBands.add(CityMap.band(pj.d.index));
+                handedBands.add(CityMap.bandOf(pj.d));
                 workerMs += pj.ms() + pj.pictureMs();
             }
         }

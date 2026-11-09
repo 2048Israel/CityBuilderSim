@@ -299,6 +299,24 @@ public final class LandGrid {
         for (int q = 0; q < 4; q++) holdingsRec(k + q, level - 1, bx + (q & 1) * half, by + (q >> 1) * half, x0, y0, out);
     }
 
+    /** The smallest holding owning a plot of the half-open rectangle [x0,x1) x [y0,y1), or -1 when it owns none (MB1: a district's rank). */
+    public int firstHolding(long x0, long y0, long x1, long y1) {
+        int best = firstHoldingRec(0, TOP, 0, 0, x0, y0, x1, y1, Integer.MAX_VALUE);
+        return best == Integer.MAX_VALUE ? -1 : best;
+    }
+
+    private int firstHoldingRec(int node, int level, long bx, long by, long x0, long y0, long x1, long y1, int best) {
+        long size = 1L << level;
+        if (bx >= x1 || by >= y1 || bx + size <= x0 || by + size <= y0) return best;
+        byte s = state[node];
+        if (s == EMPTY) return best;
+        if (s == FULL) return Math.min(best, holding[node]);
+        int k = kids[4 * node];
+        long half = size >> 1;
+        for (int q = 0; q < 4 && best > 0; q++) best = firstHoldingRec(k + q, level - 1, bx + (q & 1) * half, by + (q >> 1) * half, x0, y0, x1, y1, best);
+        return best;
+    }
+
     /** Called back for every FULL leaf: its level, its first plot and its holding. */
     public interface Leaf { void at(int level, long x, long y, int holding); }
 

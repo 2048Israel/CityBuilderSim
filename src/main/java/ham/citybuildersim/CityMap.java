@@ -71,7 +71,10 @@ import java.util.zip.InflaterInputStream;
  * as what it has, not more, not less (Jerus, 2026-10-07). Since 0.7.89 the
  * order is cut into bands of CHAIN_BAND districts (THE CHAIN'S BANDS), so a
  * screen at the edge of a city of ten billion plans one band, not the city;
- * a city of CHAIN_BAND districts or fewer is one band, drawn as before.
+ * a city of CHAIN_BAND districts or fewer is one band, drawn as before. Since
+ * MB1 the bands are cut of the chain's own order (chainOrder()), by the rank of
+ * a district's first purchase, not of the map's order, so a district bought
+ * nearer the site than some on the map joins the last band and moves no other.
  * Since 0.8.14 (batch CL3) a district's plan places its buildings in the
  * order its LOG has them (THE SIDECAR, below; DistrictPlan's THE ORDER OF
  * ARRIVAL), since 0.8.16 (batch FX6) on its ground as the city bought it
@@ -263,6 +266,14 @@ public final class CityMap {
         long version;
         /** Its place in the map's order, nearest first. */
         int index;
+        /** The district's place in the chain's own order (MB1): bands are cut of it, never of index. */
+        int chainIndex;
+        /** The smallest holding owning a plot of the square, once found (-1 until then); purchases only append, so it never changes after. */
+        int groundFirst = -1;
+        /** The smallest holding of a site tallied in it (tallySites), Integer.MAX_VALUE when none. */
+        int siteFirst = Integer.MAX_VALUE;
+        /** The rank the chain was last sorted by (rebuildChain). */
+        int chainRank = Integer.MAX_VALUE;
         /** (CL5) What the map's pieces last credited it with: the pieces' build it was weighed in, its piece then, its built cells and the version they were read at (MapPieces.weigh()). */
         long weighedBuild = Long.MIN_VALUE, weighedAt = Long.MIN_VALUE, weighedCells;
         int weighedPiece = -1;
@@ -492,6 +503,8 @@ public final class CityMap {
     private Function<Resource, double[]> remaining;
 
     private final List<District> districts = new ArrayList<>();
+    /** The districts in the chain's own order (MB1): by the rank of their first purchase, each band's slice in the map's order; what the bands are cut of. */
+    private List<District> chainOrder = new ArrayList<>();
     /**
      * The districts by key(dx, dy), stored under spread(key): a Long's hash is its halves xor-ed (dx ^ dy), which only a few hundred values of a city
      * round the origin share, so the HashMap's bins grew into trees and every lookup walked one. Only get, put and remove touch it (districtAt(),
@@ -549,6 +562,9 @@ public final class CityMap {
 
     /** Its districts, nearest the founding site first. */
     public List<District> districts()      { return java.util.Collections.unmodifiableList(districts); }
+
+    /** Its districts in the chain's own order (MB1), the order its bands are cut of. */
+    List<District> chainOrder()            { return java.util.Collections.unmodifiableList(chainOrder); }
 
     /** The district at (dx, dy) from the founding site's, or null. */
     public District district(int dx, int dy) { return districtAt(key(dx, dy)); }
@@ -858,6 +874,36 @@ public final class CityMap {
         innerCursor = 0;
         outerCursor = districts.size() - 1;
         advanceCursors();
+        rebuildChain();
+    }
+
+    /**
+     * The chain's own order (MB1), what the bands are cut of: the districts by the rank of their first purchase - the smaller of the first
+     * holding to own a plot of the square and the first to have a site tallied in it - then the map's order, each band's slice put in the
+     * map's order again. A district bought later has a larger rank and sorts last, joining the last band, so no band before it changes a
+     * member or its root (a district bought nearer the founding site than some on the map shifted every later index of the map's order). A
+     * city of one band is the map's order, chainIndex == index. Every band is to be checked again, as its members may have moved.
+     */
+    private void rebuildChain() {
+        List<District> copy = new ArrayList<>(districts);
+        for (District d : copy) d.chainRank = rankOf(d);
+        int n = copy.size();
+        if (!chainByOrder && n > chainBand) {
+            copy.sort(Comparator.comparingInt((District d) -> d.chainRank).thenComparing(DISTRICT_ORDER));
+            for (int s = 0; s < n; s += chainBand) copy.subList(s, Math.min(n, s + chainBand)).sort(DISTRICT_ORDER);
+        }
+        chainOrder = copy;
+        for (int i = 0; i < n; i++) copy.get(i).chainIndex = i;
+        bandsStale();
+    }
+
+    /** A district's rank in the chain (MB1): the smaller of the first holding owning a plot of its square - found once it is, as purchases only append - and the first to have a site tallied in it; Integer.MAX_VALUE for neither. */
+    private int rankOf(District d) {
+        if (d.groundFirst < 0 && land != null) {
+            long x0 = (baseDX + d.dx) * DISTRICT, y0 = (baseDY + d.dy) * DISTRICT;
+            d.groundFirst = land.grid().firstHolding(x0, y0, x0 + DISTRICT, y0 + DISTRICT);
+        }
+        return Math.min(d.groundFirst >= 0 ? d.groundFirst : Integer.MAX_VALUE, d.siteFirst);
     }
 
     /** Each type's lowest and highest district index holding it. */
@@ -1962,7 +2008,7 @@ public final class CityMap {
         if (siteIndex == null) {
             siteIndex = new SiteIndex();
             double[] box = ownedBox();
-            for (District d : districts) Arrays.fill(d.sites, 0);
+            for (District d : districts) { Arrays.fill(d.sites, 0); d.siteFirst = Integer.MAX_VALUE; }
             tallySites(siteIndex, 0, box[0], box[1], box[2], box[3]);
         }
         return siteIndex;
@@ -2015,6 +2061,7 @@ public final class CityMap {
                     }
                     d.sites[k]++;
                     m.get(h).computeIfAbsent(d, x -> new int[1])[0]++;
+                    if (h < d.siteFirst) d.siteFirst = h;
                     if (redraw != null) redraw.add(d);
                 }
             }
@@ -2023,6 +2070,11 @@ public final class CityMap {
         if (added) {
             sortDistricts();
             if (pyramid != null) pyramid = new Pyramid(this);
+        } else {
+            // MB1: a site of an older holding than the ground a district was ranked by (a load, a first tally) moves its rank: the chain is cut again. A rank falls so only on those, never in a session.
+            for (District d : districts) {
+                if (rankOf(d) != d.chainRank) { rebuildChain(); break; }
+            }
         }
         SiteIndex out = new SiteIndex();
         out.tally.addAll(ix.tally);
@@ -3027,12 +3079,12 @@ public final class CityMap {
     /** Each corner seam part's districts sharing it besides its own, as AROUND's directions: north-west, north-east, south-east, south-west. */
     static final int[][] CORNER_DIRS = { { 3, 0, 4 }, { 1, 0, 5 }, { 1, 2, 6 }, { 3, 2, 7 } };
 
-    /** The districts about d (AROUND's order) that come before it in the map's order, in its band (0.7.89; CHAIN_BAND), null for the rest: whose plans its plan reads - which of its seams they leave unlaid, and where its streets join theirs. */
+    /** The districts about d (AROUND's order) that come before it in the map's order, in its band (0.7.89; CHAIN_BAND; the bands are of the chain's own order, MB1), null for the rest: whose plans its plan reads - which of its seams they leave unlaid, and where its streets join theirs. */
     District[] earlierOf(District d) {
         District[] out = new District[AROUND.length];
         for (int k = 0; k < AROUND.length; k++) {
             District od = districtAt(key(d.dx + AROUND[k][0], d.dy + AROUND[k][1]));
-            if (od != null && DISTRICT_ORDER.compare(od, d) < 0 && band(od.index) == band(d.index)) out[k] = od;
+            if (od != null && DISTRICT_ORDER.compare(od, d) < 0 && band(od.chainIndex) == band(d.chainIndex)) out[k] = od;
         }
         return out;
     }
@@ -3173,8 +3225,9 @@ public final class CityMap {
      * plans before it - what they carry on, their frames' edges - and an edge
      * district's waits for the packing, so a screen at the edge of a city of
      * ten billion would plan every district (RD2's estimate: minutes on the
-     * worker) and keep a link for each. The map's order is cut into bands of
-     * CHAIN_BAND districts, nearest the founding site first: what a district
+     * worker) and keep a link for each. The chain's own order (MB1: by the rank
+     * of a district's first purchase, never the map's order) is cut into bands of
+     * CHAIN_BAND districts, nearest the founding site first within a band: what a district
      * cannot hold is carried on within its band, its plan reads its
      * neighbours before it in its band, and what the band's last district
      * cannot hold is packed at the band's own edge districts (none: counted).
@@ -3186,13 +3239,19 @@ public final class CityMap {
     /** The bands whose links are kept, the last used: 16 (2,048 districts' links, about 4 MB) - a band let go is planned again when a screen asks for it. */
     public static final int BANDS_KEPT = 16;
 
-    /** The band of the district at index i in the map's order. */
-    static int band(int i) { return i / CHAIN_BAND; }
+    /** The size of a band, CHAIN_BAND: a harness (MapCheck 2i) sets it small to cut a few districts in bands; the game never changes it. */
+    static int chainBand = CHAIN_BAND;
 
-    /** Bands in the map's order. */
-    int bands() { return (districts.size() + CHAIN_BAND - 1) / CHAIN_BAND; }
+    /** Whether the chain is the map's order, as before MB1 (MapCheck 2i's old rule); the game never sets it. */
+    static boolean chainByOrder;
 
-    /** Each band's links checked at an epoch (bandEpoch): those of its districts up to bandValidTo (an index in the map's order) hold, and (when all do) the stamp of the packing they make. */
+    /** The band of the district at index i in the chain's own order (MB1; its chainIndex). */
+    static int band(int i) { return i / chainBand; }
+
+    /** Bands in the chain's own order. */
+    int bands() { return (districts.size() + chainBand - 1) / chainBand; }
+
+    /** Each band's links checked at an epoch (bandEpoch): those of its districts up to bandValidTo (an index in the chain's own order) hold, and (when all do) the stamp of the packing they make. */
     private long[] bandEpoch = new long[0], bandPackWanted = new long[0];
     private int[] bandValidTo = new int[0];
 
@@ -3209,7 +3268,7 @@ public final class CityMap {
      * was left unadopted. Eager and lazy never change the chain's results (MapCheck 18's chainEqualsWhole), only what a month costs, so a state gone
      * stale (an epoch it was not read at, a job adopted late) does no harm, and nothing here is saved.
      * Held one a band; the districts of x 80 grow most months, which sizes the bands again (sizeBands()), so it is grown and never reset
-     * (band(i) of a district does not move). Written by chainTo() and adopt() alone (the screen's thread), never by a job's work().
+     * (band(i) of a district does not move; MB1: a new district joins the last band of the chain's own order). Written by chainTo() and adopt() alone (the screen's thread), never by a job's work().
      */
     static final class Backoff {
         /** Whether the band's jobs that could take their links are handed out with the input gathered. */
@@ -3260,8 +3319,8 @@ public final class CityMap {
      * railway runs through its frame (0.7.89) and its terminals they draw as
      * yards, and which neighbours are on the map (whose seams it surfaces).
      *
-     * Kept since batch UP5 (the band check walks up to CHAIN_BAND links each
-     * month, about 110 us a stamp at 5B, most of it the neighbours' site
+     * Kept since batch UP5 (the band check walks up to CHAIN_BAND links of the
+     * chain's own order, MB1, each month, about 110 us a stamp at 5B, most of it the neighbours' site
      * lists and the runs' frame hash): a district's stamp is worked out again
      * only when ownKey(), a cheap key of the same inputs, has moved.
      */
@@ -3425,18 +3484,18 @@ public final class CityMap {
         Arrays.fill(bandEpoch, Long.MIN_VALUE);
     }
 
-    /** Band b's links walked in the map's order at the current epoch: its bandValidTo is the first whose own stamp moved, whose carry in is not the one before's carry on (none for the band's first), or (an edge district) that kept no free ground; and when all hold, the stamp of the packing they make. */
+    /** Band b's links walked in the chain's own order (MB1) at the current epoch: its bandValidTo is the first whose own stamp moved, whose carry in is not the one before's carry on (none for the band's first), or (an edge district) that kept no free ground; and when all hold, the stamp of the packing they make. */
     private void checkBand(int b) {
         sitedNow();
         sizeBands();
         long e = planEpoch();
         if (b >= bandEpoch.length || e == bandEpoch[b]) return;
         bandEpoch[b] = e;
-        int start = b * CHAIN_BAND, end = Math.min(districts.size(), start + CHAIN_BAND), valid = start;
+        int start = b * chainBand, end = Math.min(districts.size(), start + chainBand), valid = start;
         int[] carry = null;
         long ps = World.mix(0x5041434BL);
         for (int i = start; i < end; i++) {
-            District d = districts.get(i);
+            District d = chainOrder.get(i);
             Link l = links.get(d);
             if (l == null || !Arrays.equals(l.in, carry) || l.own != ownStamp(d) || !readHolds(l)) break;
             boolean edge = isEdge(d);
@@ -3461,9 +3520,9 @@ public final class CityMap {
 
     /** Lets go of band b's links, plans and packing: drawn again when a screen asks for it. */
     private void forgetBand(int b) {
-        int start = b * CHAIN_BAND, end = Math.min(districts.size(), start + CHAIN_BAND);
+        int start = b * chainBand, end = Math.min(districts.size(), start + chainBand);
         for (int i = start; i < end; i++) {
-            District d = districts.get(i);
+            District d = chainOrder.get(i);
             links.remove(d);
             drawn.remove(d);
         }
@@ -3477,7 +3536,7 @@ public final class CityMap {
         for (int b = 0; b < bands(); b++) {
             checkBand(b);
             Pack p = packs.get(b);
-            if (bandValidTo[b] != Math.min(districts.size(), (b + 1) * CHAIN_BAND) || p == null || p.stamp != bandPackWanted[b]) return false;
+            if (bandValidTo[b] != Math.min(districts.size(), (b + 1) * chainBand) || p == null || p.stamp != bandPackWanted[b]) return false;
         }
         return true;
     }
@@ -3485,7 +3544,7 @@ public final class CityMap {
     /** District d's band's packing of what the band cannot hold, by tile, when current; null for none. */
     private int[][] packedIn(District d) {
         if (d == null) return null;
-        int b = band(d.index);
+        int b = band(d.chainIndex);
         sizeBands();
         if (b >= bandPackWanted.length) return null;
         Pack p = packs.get(b);
@@ -3507,9 +3566,9 @@ public final class CityMap {
     /** Whether district d's plan is drawn and current, and every link before it in its band holds; for an edge district, its band's packing too: its tiles paint without planning. The screen's thread. */
     public boolean planned(District d) {
         if (d == null) return true;
-        int b = band(d.index);
+        int b = band(d.chainIndex);
         checkBand(b);
-        if (d.index >= bandValidTo[b]) return false;
+        if (d.chainIndex >= bandValidTo[b]) return false;
         Drawn got = drawn.get(d);
         if (got == null || got.stamp != links.get(d).stamp()) return false;
         if (!isEdge(d)) return true;
@@ -3765,21 +3824,21 @@ public final class CityMap {
     public List<Job> planJobs(District d) {
         List<Job> out = new ArrayList<>();
         if (d == null || planned(d)) return out;
-        useBand(band(d.index));
-        chainTo(d.index, out);
-        if (isEdge(d)) packAfter(band(d.index), out);
+        useBand(band(d.chainIndex));
+        chainTo(d.chainIndex, out);
+        if (isEdge(d)) packAfter(band(d.chainIndex), out);
         return out;
     }
 
-    /** The plan jobs up to the district at index i from its band's first, into out; the last job of the chain to it (handed out now or before), or null when its link holds. */
+    /** The plan jobs up to the district at chain index i from its band's first, into out; the last job of the chain to it (handed out now or before), or null when its link holds. */
     private PlanJob chainTo(int i, List<Job> out) {
-        int b = band(i), start = b * CHAIN_BAND;
+        int b = band(i), start = b * chainBand;
         checkBand(b);
         long e = planEpoch();
         // UP9-A: the band's state is read at each new epoch: an eager band whose last epoch was quiet (an eager job took its link, none moved, none left out) tries lazy again.
         Backoff s = backoff[b];
         if (s.seen != e) { if (s.eager && !s.moved && s.out == 0 && s.took) s.eager = false; s.moved = false; s.took = false; s.out = 0; s.seen = e; }
-        District di = districts.get(i);
+        District di = chainOrder.get(i);
         if (i < bandValidTo[b]) {
             Drawn got = drawn.get(di);
             if (got != null && got.stamp == links.get(di).stamp()) return null;
@@ -3800,7 +3859,7 @@ public final class CityMap {
         // where it can: at most one round more than planning every one.
         boolean lazyOk = !s.eager && bandFull[b] != e, redo = false;
         for (int k = bandValidTo[b]; k <= i; k++) {
-            District dk = districts.get(k);
+            District dk = chainOrder.get(k);
             PlanJob p = pending.get(dk);
             if (p != null && p.epoch == e) {
                 if (!redo && !p.failed) { prev = p; continue; }
@@ -3811,7 +3870,7 @@ public final class CityMap {
                 s.eager = true;
                 s.moved = true;
             }
-            int[] given = prev == null && k > start ? links.get(districts.get(k - 1)).out : null;
+            int[] given = prev == null && k > start ? links.get(chainOrder.get(k - 1)).out : null;
             District[] near = earlierOf(dk);
             long own = ownStamp(dk);
             boolean edgeK = isEdge(dk);
@@ -3862,7 +3921,7 @@ public final class CityMap {
     /** Whether district d's band hands its jobs out eager (the lazy try backing off, UP9-A) as of the last epoch its chain was asked at: for MapCheck 18 (UP9). */
     boolean backingOff(District d) {
         sizeBands();
-        return backoff[band(d.index)].eager;
+        return backoff[band(d.chainIndex)].eager;
     }
 
     /** District d's link replaced by a copy whose carry in is a clone with its first entry one more, every other field as it was but the serial (a new one: it is a link made now), as a month that moved the carry arriving would leave it; none for a link with no carry in: for MapCheck 18 (UP9). */
@@ -3900,7 +3959,7 @@ public final class CityMap {
     private void packAfter(int b, List<Job> out) {
         checkBand(b);
         long e = planEpoch();
-        int start = b * CHAIN_BAND, end = Math.min(districts.size(), start + CHAIN_BAND);
+        int start = b * chainBand, end = Math.min(districts.size(), start + chainBand);
         Pack cur = packs.get(b);
         if (bandValidTo[b] == end && cur != null && cur.stamp == bandPackWanted[b]) return;
         PackJob was = packings.get(b);
@@ -3908,14 +3967,14 @@ public final class CityMap {
         PlanJob tail = end <= start ? null : chainTo(end - 1, out);
         // Every edge district of the band, the farthest from the founding site first: its link's free ground, or its job's.
         List<District> edges = new ArrayList<>();
-        for (int i = end - 1; i >= start; i--) if (isEdge(districts.get(i))) edges.add(districts.get(i));
+        for (int i = end - 1; i >= start; i--) if (isEdge(chainOrder.get(i))) edges.add(chainOrder.get(i));
         Object[] from = new Object[edges.size()];
         for (int i = 0; i < edges.size(); i++) {
             District d = edges.get(i);
             PlanJob p = pending.get(d);
             from[i] = p != null && p.epoch == e ? p : links.get(d);
         }
-        Object last = end <= start ? null : tail != null ? tail : links.get(districts.get(end - 1));
+        Object last = end <= start ? null : tail != null ? tail : links.get(chainOrder.get(end - 1));
         PackJob j = new PackJob(this, edges.toArray(new District[0]), from, last, tileOrder(edges), e);
         j.band = b;
         packings.put(b, j);
@@ -3953,7 +4012,7 @@ public final class CityMap {
             if (p.watched) {
                 // UP9-A: how an eager job that could take its link came out, told to its band's state if that still is of the epoch the job was made at (a late one changes nothing).
                 sizeBands();
-                int wb = band(p.d.index);
+                int wb = band(p.d.chainIndex);
                 if (wb < backoff.length && p.epoch == backoff[wb].seen) {
                     Backoff w = backoff[wb];
                     w.out--;
@@ -3965,7 +4024,7 @@ public final class CityMap {
                 // A lazy job that could not take its link as it stood (UP5), or one that waited on it: nothing is kept, the band is checked again, and its chain handed out again at this epoch with the input gathered.
                 jobsFailed++;
                 sizeBands();
-                int fb = band(p.d.index);
+                int fb = band(p.d.chainIndex);
                 if (fb < bandFull.length) {
                     bandFull[fb] = p.epoch;
                     backoff[fb].eager = true;
@@ -4012,7 +4071,7 @@ public final class CityMap {
         if (k.result == null) return true;
         checkBand(k.band);
         // Kept when every link of its band holds and they are the ones it packed into.
-        int end = Math.min(districts.size(), (k.band + 1) * CHAIN_BAND);
+        int end = Math.min(districts.size(), (k.band + 1) * chainBand);
         if (k.band < bandValidTo.length && bandValidTo[k.band] == end && k.stamp == bandPackWanted[k.band]) packs.put(k.band, k.result);
         return true;
     }
@@ -4037,7 +4096,7 @@ public final class CityMap {
 
     /** Takes up, into the plan got, the streets its band's packing has laid in district d (MF1): a plan lives past a packing, so it keeps which packing it took them from and takes the new one's when that moves. */
     private void useLaid(District d, Drawn got) {
-        Pack pk = packs.get(band(d.index));
+        Pack pk = packs.get(band(d.chainIndex));
         if (got.laidFor == pk) return;
         got.laid = pk == null ? null : pk.laid.get(d);
         got.laidFor = pk;
@@ -4625,9 +4684,9 @@ public final class CityMap {
         if (d == null) return null;
         DistrictPicture pic = pictures.get(d);
         if (pic == null) return null;
-        int b = band(d.index);
+        int b = band(d.chainIndex);
         checkBand(b);
-        if (d.index >= bandValidTo[b]) return null;
+        if (d.chainIndex >= bandValidTo[b]) return null;
         Link l = links.get(d);
         return l != null && pic.stamp == l.picture ? pic : null;
     }
@@ -4643,8 +4702,8 @@ public final class CityMap {
     public List<Job> pictureJobs(District d) {
         List<Job> out = new ArrayList<>();
         if (d == null || pictureIfCurrent(d) != null) return out;
-        useBand(band(d.index));
-        if (chainTo(d.index, out) != null) return out;
+        useBand(band(d.chainIndex));
+        if (chainTo(d.chainIndex, out) != null) return out;
         PlanJob p = pending.get(d);
         long e = planEpoch();
         if (p != null && p.epoch == e) return out;
@@ -4676,8 +4735,8 @@ public final class CityMap {
     /** The pictures kept now: what MapTiles' budget counts PICTURES_KEPT of, DistrictPicture.BYTES each. */
     public int picturesHeld() { return pictures.size(); }
 
-    /** The band district d's links are kept in (CHAIN_BAND districts of the map's order a band): what a far view counts the bands it would plan by (MapTiles.picturesFit()). */
-    public static int bandOf(District d) { return band(d.index); }
+    /** The band district d's links are kept in (CHAIN_BAND districts of the chain's own order, MB1, a band): what a far view counts the bands it would plan by (MapTiles.picturesFit()). */
+    public static int bandOf(District d) { return band(d.chainIndex); }
 
     /* =====================================================================
        THE RUNS: THE CITY'S HIGHWAYS AND RAILWAY ON CORRIDORS (0.7.89, batch
@@ -5508,9 +5567,9 @@ public final class CityMap {
             PlanSidings ps = planSidings.get(d.key);
             Link l = links.get(d);
             if (ps == null || l == null || l.stamp() != ps.stamp()) continue;
-            int b = band(d.index);
+            int b = band(d.chainIndex);
             checkBand(b);
-            if (d.index >= bandValidTo[b]) continue;
+            if (d.chainIndex >= bandValidTo[b]) continue;
             long ox = (baseDX + d.dx) * DISTRICT, oy = (baseDY + d.dy) * DISTRICT;
             for (int[] way : ps.ways()) {
                 if (way.length < 2) continue;
@@ -5670,9 +5729,9 @@ public final class CityMap {
 
     /** Adds district d's access routes to out when its plan is drawn and current and it has any. */
     private void accessRoutesOf(District d, List<DistrictRoutes> out) {
-        int b = band(d.index);
+        int b = band(d.chainIndex);
         checkBand(b);
-        if (d.index >= bandValidTo[b]) return;
+        if (d.chainIndex >= bandValidTo[b]) return;
         Drawn got = drawn.get(d);
         Link l = links.get(d);
         if (got == null || l == null || got.stamp != l.stamp()) return;
@@ -5841,10 +5900,10 @@ public final class CityMap {
         for (Map.Entry<District, Drawn> e : new ArrayList<>(drawn.entrySet())) {
             District d = e.getKey();
             Drawn got = e.getValue();
-            int b = band(d.index);
+            int b = band(d.chainIndex);
             checkBand(b);
             Link l = links.get(d);
-            if (d.index >= bandValidTo[b] || l == null || got == null || got.stamp != l.stamp()) continue;
+            if (d.chainIndex >= bandValidTo[b] || l == null || got == null || got.stamp != l.stamp()) continue;
             plans.add(new TripPlan(d, got, (baseDX + d.dx) * DISTRICT, (baseDY + d.dy) * DISTRICT));
         }
         plans.sort(java.util.Comparator.comparingLong(p -> p.d().key));
@@ -9130,7 +9189,7 @@ public final class CityMap {
                 long e = World.mix(d.key ^ (dr == null ? NO_PLAN : dr.digest()));
                 e = World.mix(e ^ d.version);
                 // ...and its band's packing where it has anything of it (an edge district's buildings packed in its ground, the streets laid to them).
-                Pack pk = packs.get(band(d.index));
+                Pack pk = packs.get(band(d.chainIndex));
                 if (pk != null && (pk.boxes.containsKey(d) || pk.laid.containsKey(d))) e = World.mix(e ^ pk.digestOf(d) ^ 0x45444745L);
                 plans += e;
             }
@@ -10321,6 +10380,8 @@ public final class CityMap {
             }
         }
         // The seams it surfaces: north, east, south, west, then the corners north-west, north-east, south-east, south-west.
+        // The first in the chain's order surfaces a seam (MB1): within a band that is DISTRICT_ORDER, and a district bought
+        // ahead, last in the chain, takes no seam from a neighbour in another band, so that band's boxes stay where they were.
         int[][][] others = { { { 0, -1 } }, { { 1, 0 } }, { { 0, 1 } }, { { -1, 0 } },
                 { { -1, 0 }, { 0, -1 }, { -1, -1 } }, { { 1, 0 }, { 0, -1 }, { 1, -1 } },
                 { { 1, 0 }, { 0, 1 }, { 1, 1 } }, { { -1, 0 }, { 0, 1 }, { -1, 1 } } };
@@ -10328,11 +10389,11 @@ public final class CityMap {
             boolean first = true;
             for (int[] o : others[k]) {
                 District od = districtAt(key(d.dx + o[0], d.dy + o[1]));
-                if (od != null && DISTRICT_ORDER.compare(od, d) < 0) first = false;
+                if (od != null && od.chainIndex < d.chainIndex) first = false;
             }
             in.surfaces[k] = first;
         }
-        in.root = d.index % CHAIN_BAND == 0;
+        in.root = d.chainIndex % chainBand == 0;
         return in;
     }
 
