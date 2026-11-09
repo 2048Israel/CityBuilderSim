@@ -1,9 +1,10 @@
-# BrandingCheck.java - 168 lines · 5 methods · 0 constants · harnesses
+# BrandingCheck.java - 219 lines · 5 methods · 0 constants · harnesses
 
 `ham/citybuildersim/BrandingCheck.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
 
 > The game's icon is in the jar at every size it is given, the exe's .ico carries the sizes it
-> should, and the store's title art is drawn to the start screen's proportions (BR1).
+> should, the store's title art is drawn to the start screen's proportions (BR1), and Steam's art
+> is there at the sizes Steamworks asks for (BR2).
 > 
 > WHY THIS EXISTS. The window's icon (ui/Branding.dress) is loaded from the classpath and a size
 > that is missing is only a log line, never an error, so a regeneration by
@@ -25,6 +26,12 @@
 >   4. THE TITLE ART IS THE START SCREEN'S. make_title.py's proportions are Branding's, number for
 >      number, and branding/ holds the title SVG and its PNGs. Run from the repository only (it
 >      reads files there); elsewhere the section says so and is skipped.
+>   5. STEAM'S ART IS THERE, AT STEAMWORKS' SIZES. branding/steam/ holds the nine pictures
+>      Steamworks asks for (read from its graphical-assets pages 2026-11-09), each a PNG of its
+>      size, named by it, with no alpha channel but the library logo's (which must be see-through),
+>      nothing else in the folder, and tools/branding/make_steam.py listing the same names and
+>      sizes, so a size changed in the tool alone, or a picture the tool no longer draws, is seen.
+>      Run from the repository only.
 
 **Uses:** [Branding](Branding.md) (19)
 
@@ -32,16 +39,16 @@
 
 | line | field | says |
 |---:|---|---|
-| 44 | `private static int fails` |  |
+| 51 | `private static int fails` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 42 | 127 | **type** `public class BrandingCheck` | The game's icon is in the jar at every size it is given, the exe's .ico carries the sizes it should, and the store's title art is drawn to the start screen's proportions (BR1). |
-| 46 | 4 | `static void check(String label, boolean ok, String detail)` |  |
-| 51 | 7 | `static byte[] resource(String name)` |  |
-| 60 | 8 | `static int[] pngHeader(byte[] b, int at)` | {width, height, colour type} from a PNG's header, or null if the bytes are not a PNG. |
-| 70 | 5 | `static double[] pythonNumbers(String source, String names)` | The numbers a Python line "A, B = 1, 2" or "C = [1, 2]" assigns, in order, or null if the line is not there. |
-| 76 | 92 | `public static void main(String[] args) throws Exception` |  |
+| 49 | 171 | **type** `public class BrandingCheck` | The game's icon is in the jar at every size it is given, the exe's .ico carries the sizes it should, the store's title art is drawn to the start screen's proportions (BR1), and Steam's art is there at the sizes Steamw... |
+| 53 | 4 | `static void check(String label, boolean ok, String detail)` |  |
+| 58 | 7 | `static byte[] resource(String name)` |  |
+| 67 | 8 | `static int[] pngHeader(byte[] b, int at)` | {width, height, colour type} from a PNG's header, or null if the bytes are not a PNG. |
+| 77 | 5 | `static double[] pythonNumbers(String source, String names)` | The numbers a Python line "A, B = 1, 2" or "C = [1, 2]" assigns, in order, or null if the line is not there. |
+| 83 | 136 | `public static void main(String[] args) throws Exception` |  |
 

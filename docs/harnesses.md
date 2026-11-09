@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**189 harness files, 22,283 labelled assertions.** AllChecks runs 189 of them.
+**189 harness files, 22,286 labelled assertions.** AllChecks runs 189 of them.
 
 ## Which harnesses read which class
 
@@ -1965,10 +1965,11 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L291 ...nor expensed again the month after
   - L294 ...and the reloaded one expenses the same next month
 
-## BrandingCheck.java - 10 labelled assertions
+## BrandingCheck.java - 13 labelled assertions
 
 > The game's icon is in the jar at every size it is given, the exe's .ico carries the sizes it
-> should, and the store's title art is drawn to the start screen's proportions (BR1).
+> should, the store's title art is drawn to the start screen's proportions (BR1), and Steam's art
+> is there at the sizes Steamworks asks for (BR2).
 > 
 > WHY THIS EXISTS. The window's icon (ui/Branding.dress) is loaded from the classpath and a size
 > that is missing is only a log line, never an error, so a regeneration by
@@ -1978,23 +1979,26 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 > and for the store pages by tools/branding/make_title.py, from proportions each keeps: a change
 > to one would leave the store's logo unlike the game's. No JavaFX is needed: files are read as
 > bytes and text.
-> 
 > ...
 
-- **L77 BrandingCheck: the icon at every size, the exe's .ico, and the store's title art drawn as the start screen's (BR1)**
-- **L88 the .ico carries its sizes**
-  - L94 it is an icon file (reserved 0, type 1)
-  - L103 entry
-  - L105 entry
-  - L110 it lists exactly Branding.ICO_SIZES
-- **L113 the exe is built with it, and the drawing is kept**
-  - L122 Build EXE.bat passes --icon
-  - L125 the file it passes exists
-  - L126 and is the classpath's icon.ico
-- **L134 the title art is the start screen's**
-  - L147 make_title.py's
-  - L151 make_title.py names the widths it writes
-  - L153 branding/title.svg is there, the font inside it
+- **L84 BrandingCheck: the icon at every size, the exe's .ico, and the store's title art drawn as the start screen's (BR1), Steam's art at Steamw...**
+- **L95 the .ico carries its sizes**
+  - L101 it is an icon file (reserved 0, type 1)
+  - L110 entry
+  - L112 entry
+  - L117 it lists exactly Branding.ICO_SIZES
+- **L120 the exe is built with it, and the drawing is kept**
+  - L129 Build EXE.bat passes --icon
+  - L132 the file it passes exists
+  - L133 and is the classpath's icon.ico
+- **L141 the title art is the start screen's**
+  - L154 make_title.py's
+  - L158 make_title.py names the widths it writes
+  - L160 branding/title.svg is there, the font inside it
+- **L172 Steam's art is there, at Steamworks' sizes**
+  - L201 make_steam.py draws
+  - L209 branding/steam/ holds those nine and nothing else
+  - L213 and make_steam.py draws exactly nine
 
 ## BridgeCheck.java - 107 labelled assertions
 

@@ -58,8 +58,8 @@ ASSETS = {
 # How each picture is composed, in its own pixels. u is the window grid's unit (a tower's windows
 # step by u); logo is (width of the name, its centre's y as a share of the height); line is the
 # chart line's height at the left edge and at the right, as shares of the height; gap is how far, in u,
-# a tower's top stands under the line; back is how far the
-# dim towers behind the front row may stand above the line, in u; seed fixes the drawing.
+# a tower's top stands under the line; back is how far, in u, the dim towers behind the front row may
+# rise above that offset; seed fixes the drawing.
 LAYOUT = {
     "header-capsule":   dict(u=13, logo=(.80, .33), line=(.86, .68), gap=2.4, back=4.5, seed=1),
     "small-capsule":    dict(u=6,  logo=(.88, .42), line=(.90, .80), gap=1.6, back=0, seed=2),
