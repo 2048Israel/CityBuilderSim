@@ -183,10 +183,14 @@ final class RankingsScreen {
     /** Your cities at: the saved cities as they were when the active city was as old as it is now (D3), else as last saved. */
     boolean atAge;
 
-    /** The saved cities on the board, by the snapshot, the active city's month and Now / Your age they were made for; the lines about them are made with them. */
+    /**
+     * The saved cities on the board, by the snapshot, the active city's month and Now / Your age they were made for, and the city in play (LB4: a load from
+     * a slot leaves the snapshot and the month as they were, and changes which slot is the city in play); the lines about them are made with them.
+     */
     private SavedCities onBoardOf;
     private int onBoardMonth = -1;
     private boolean onBoardAtAge;
+    private SavedCities.Played onBoardPlayed;
     private List<Rankings.Saved> onBoard = List.of();
     private Map<String, Rankings.Saved> onBoardById = Map.of();
     private boolean savedReadable;
@@ -236,27 +240,30 @@ final class RankingsScreen {
      */
     private void placeSaved(Rankings.City now) {
         SavedCities snap = saved == null ? SavedCities.NONE : saved;
-        if (snap == onBoardOf && now.month() == onBoardMonth && atAge == onBoardAtAge) return;
+        SavedCities.Played played = SavedCities.Played.of(ui.game);
+        if (snap == onBoardOf && now.month() == onBoardMonth && atAge == onBoardAtAge && played.equals(onBoardPlayed)) return;
         onBoardOf = snap;
         onBoardMonth = now.month();
         onBoardAtAge = atAge;
-        onBoard = atAge ? snap.at(now.month()) : snap.now();
+        onBoardPlayed = played;
+        onBoard = atAge ? snap.at(now.month(), played) : snap.now(played);
         Map<String, Rankings.Saved> byId = new HashMap<>();
         for (Rankings.Saved sv : onBoard) byId.put(sv.id(), sv);
         onBoardById = byId;
-        savedReadable = !snap.now().isEmpty();
+        savedReadable = !snap.now(played).isEmpty();
 
         notAtAge = null;
         if (atAge) {
             List<String> parts = new ArrayList<>();
             Set<Integer> named = new HashSet<>();
             for (Rankings.Saved sv : onBoard) named.add(sv.slot());
-            for (SavedCities.Stopped st : snap.stoppedAt(now.month())) {
+            for (SavedCities.Stopped st : snap.stoppedAt(now.month(), played)) {
                 named.add(st.slot());
                 parts.add(st.name() + " (slot " + st.slot() + ") stopped at " + CityCalendar.formatShort(st.lastMonth()));
             }
-            for (Rankings.Saved sv : snap.now()) {
-                if (!named.contains(sv.slot())) parts.add(sv.city().name() + " (slot " + sv.slot() + ") keeps no figures for that month");
+            for (Rankings.Saved sv : snap.now(played)) {
+                if (sv.inPlay()) parts.add(sv.city().name() + " (slot " + sv.slot() + ") is this city, as saved");
+                else if (!named.contains(sv.slot())) parts.add(sv.city().name() + " (slot " + sv.slot() + ") keeps no figures for that month");
             }
             if (!parts.isEmpty()) notAtAge = "Not at " + Rankings.ageWords(now.month()) + ": " + String.join("; ", parts) + ".";
         }
@@ -1040,7 +1047,7 @@ final class RankingsScreen {
         boolean you = r.kind() == Rankings.Kind.CITY;
         // A saved city (LB3): "slot 3" where a region shows its nation, and the month its figure is of (the city's own, as the active city's row has).
         Rankings.Saved sv = r.kind() == Rankings.Kind.SAVED ? onBoardById.get(r.id()) : null;
-        String of = you ? "your city" : sv != null ? "slot " + sv.slot()
+        String of = you ? "your city" : sv != null ? (sv.inPlay() ? "this city, as saved · " : "") + "slot " + sv.slot()
                 : r.nation() != null && wm.place(r.nation()) != null ? wm.place(r.nation()).name() : "";
         String asOf = you ? CityCalendar.formatShort(now.month()) : sv != null ? CityCalendar.formatShort(sv.city().month())
                 : r.year() > 0 ? String.valueOf(r.year()) : "—";
@@ -1670,7 +1677,7 @@ final class RankingsScreen {
         card.getChildren().add(head);
 
         String kind = mine ? "Your city"
-                : opened != null ? "Saved city · slot " + opened.slot() + " · " + (atAge ? "at " + Rankings.ageWords(now.month()) + ", " : "")
+                : opened != null ? (opened.inPlay() ? "This city, as saved" : "Saved city") + " · slot " + opened.slot() + " · " + (atAge ? "at " + Rankings.ageWords(now.month()) + ", " : "")
                         + "as of " + CityCalendar.formatShort(opened.city().month())
                 : place == null ? "Place"
                 : place.kind() == WorldMeasures.Kind.NATION ? "Nation"

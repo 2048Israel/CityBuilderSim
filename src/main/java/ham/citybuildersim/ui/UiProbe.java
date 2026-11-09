@@ -1,9 +1,12 @@
 package ham.citybuildersim.ui;
 
+import com.google.gson.Gson;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.GameFiles;
 import ham.citybuildersim.GamePrefs;
+import ham.citybuildersim.HistorySave;
 import ham.citybuildersim.LongPlaytest;
+import ham.citybuildersim.SavedCities;
 import ham.citybuildersim.TempDirs;
 import javafx.application.Platform;
 import javafx.stage.Stage;
@@ -17,6 +20,9 @@ import jdk.jfr.consumer.RecordingFile;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryPoolMXBean;
+import java.lang.management.MemoryType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
@@ -73,6 +79,15 @@ import java.util.concurrent.TimeUnit;
  *                       (the repository is never written)
  *   -Dprobe.earth=SPOT  grow the city on the real Earth round a spot, as
  *                       LongPlaytest --earth does; needs -Dcbs.earth=PATH-TO-earth-2.bin
+ *   -Dprobe.saved=N     after the last checkpoint (LB4), save the grown city into
+ *                       slots 1..N of the probe's own scratch folder (N at most
+ *                       10; 0, the default, does nothing) and time the Rankings
+ *                       screen's read of them twice, the old way (the whole
+ *                       history parsed with Gson, then slim) and the new
+ *                       (SavedCities.read, HistorySave.readKept): one
+ *                       "saved-read" line each with the heap it retains and the
+ *                       peak it reached, then how many rows are marked as this
+ *                       city
  *
  * and, without a city or a window, the callers of a method in a recording
  * (JfrCallers): {@code UiProbe --callers file.jfr ham.citybuildersim.Game.nextMonth [rows]}
@@ -498,6 +513,8 @@ public final class UiProbe {
             report.println("JFR " + jfr);
             analyse(jfr);
         }
+        int savedSlots = Math.min(Integer.getInteger("probe.saved", 0), GameFiles.SLOT_COUNT);
+        if (savedSlots > 0) savedRead(files, savedSlots);
         report.println("\nmodel month mean by stretch (ms):");
         for (int a = 0; a < g.getMonth(); a += 500) {
             int to = Math.min(a + 500, g.getMonth());
@@ -538,6 +555,64 @@ public final class UiProbe {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    /**
+     * LB4, the Rankings screen's read of the saved cities, old way and new, on one grown city: it is saved into slots 1..n of the probe's own scratch
+     * folder (never the player's), then those n slots are read twice, each time after a System.gc() and a heap baseline, the result held until the heap is
+     * measured. The old read is what SavedCities did before LB4 (the whole history text, the whole boxed parse, then slim), the new is SavedCities.read.
+     * Retained is the heap used after a gc, less the baseline; peak is the sum of the heap pools' peaks since the baseline (so it counts what the baseline
+     * already held, the same for both).
+     */
+    private static void savedRead(GameFiles files, int n) throws Exception {
+        for (int slot = 1; slot <= n; slot++) {
+            int s = slot;
+            fx(() -> g.saveGame(s, "probe " + s));
+        }
+        g.awaitSaves();
+        double historyMb = megabytes(files.historyFile(1));
+
+        Object held = null;
+        long t0 = 0;
+        for (int round = 0; round < 2; round++) {
+            boolean old = round == 0;
+            held = null;
+            long base = heapAfterGc();
+            for (MemoryPoolMXBean pool : ManagementFactory.getMemoryPoolMXBeans()) {
+                if (pool.getType() == MemoryType.HEAP) pool.resetPeakUsage();
+            }
+            t0 = System.nanoTime();
+            if (old) {
+                List<HistorySave> read = new ArrayList<>();
+                for (int slot = 1; slot <= n; slot++) {
+                    String json = Files.readString(files.historyFile(slot));
+                    read.add(new Gson().fromJson(json, HistorySave.class).slim(SavedCities.KEPT));
+                }
+                held = read;
+            } else {
+                held = SavedCities.read(files);
+            }
+            double took = ms(System.nanoTime() - t0);
+            long peak = 0;
+            for (MemoryPoolMXBean pool : ManagementFactory.getMemoryPoolMXBeans()) {
+                if (pool.getType() == MemoryType.HEAP) peak += pool.getPeakUsage().getUsed();
+            }
+            long retained = heapAfterGc() - base;
+            report.printf("saved-read %s: %d slots, history %.1f MB each, retained %.1f MB, peak %.1f MB, %.0f ms%n",
+                    old ? "old" : "new", n, historyMb, retained / 1e6, peak / 1e6, took);
+        }
+        SavedCities read = (SavedCities) held;
+        SavedCities.Played played = fx(() -> SavedCities.Played.of(g));
+        long inPlay = read.now(played).stream().filter(r -> r.inPlay()).count();
+        report.printf("saved-read in play: %d of %d rows marked as this city (now(Played.of(game)))%n",
+                inPlay, read.now(played).size());
+    }
+
+    /** The heap in use after a System.gc(), twice, for the finalisers' sake. */
+    private static long heapAfterGc() {
+        System.gc();
+        System.gc();
+        return ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed();
     }
 
     /**

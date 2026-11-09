@@ -4541,7 +4541,7 @@ public final class KeptBench {
         if (nation != null) out.add(nation.id());
         if (region != null) out.add(region.id());
         ham.citybuildersim.SavedCities saved = ui.rankingsScreen.saved;
-        if (saved != null) for (ham.citybuildersim.Rankings.Saved sv : saved.now()) out.add(sv.id());
+        if (saved != null) for (ham.citybuildersim.Rankings.Saved sv : saved.now(ham.citybuildersim.SavedCities.Played.NONE)) out.add(sv.id());
         return out;
     }
 
@@ -4569,7 +4569,7 @@ public final class KeptBench {
     /** How many saved cities the screen's snapshot puts on the board (0 before the first read has landed). */
     public int rankingsSavedOnBoard() {
         ham.citybuildersim.SavedCities saved = ui.rankingsScreen.saved;
-        return saved == null ? 0 : saved.now().size();
+        return saved == null ? 0 : saved.now(ham.citybuildersim.SavedCities.Played.NONE).size();
     }
 
     /** The snapshot of the saved cities let go, as a tab not yet entered has it ("Your cities (reading...)" and no saved row). */

@@ -110,8 +110,14 @@ public final class Rankings {
      * A saved city on the board (LB3): the slot it was read from and the city as that save has it, a City in the units of its last save (its own fx,
      * parity, P and founding rate, all rescaled together by a reform, so the pivot divides the unit out). Its row's id is "saved:" + slot, its year the
      * city's, its mark 0 and its source SOURCE_SAVE, as the active city's row has SOURCE_CITY. SavedCities makes them, at the last save or at an age.
+     * inPlay (LB4): the slot's founding is the city in play's, so this row is that city as it was last saved (SavedCities.Played); only the last-save list has it.
      */
-    public record Saved(int slot, City city) {
+    public record Saved(int slot, City city, boolean inPlay) {
+        /** A saved city that is not the one in play. */
+        public Saved(int slot, City city) {
+            this(slot, city, false);
+        }
+
         /** The id of this city's row, and what the drawer is asked for. */
         public String id() {
             return SAVED_PREFIX + slot;

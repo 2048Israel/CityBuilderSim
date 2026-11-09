@@ -1,7 +1,9 @@
 package ham.citybuildersim;
 
-import com.google.gson.Gson;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -11,9 +13,13 @@ import java.util.Set;
 
 /**
  * The player's other saved cities as the Rankings board reads them (spec-leaderboards 5, LB3): slots 1 to GameFiles.SLOT_COUNT of a GameFiles, read only,
- * the autosave (slot 0) left out, each as a Rankings.City at its last save (now()) or at the active city's age (at(month)), the ones that never got that
- * far (stoppedAt(month)), and how many were left off the board and why (left()). A pure model in the *View manner: no JavaFX, no Game, and it never
- * writes a file. A snapshot is immutable, so the screen reads one on a worker thread (refresh) and hands it to the clock's thread.
+ * the autosave (slot 0) left out, each as a Rankings.City at its last save (now(played)) or at the active city's age (at(month, played)), the ones that never
+ * got that far (stoppedAt(month, played)), and how many were left off the board and why (left()). A pure model in the *View manner: no JavaFX, no Game, and
+ * it never writes a file. A snapshot is immutable, so the screen reads one on a worker thread (refresh) and hands it to the clock's thread.
+ *
+ * THE CITY IN PLAY (LB4). A city loaded from slot 3 is also slot 3 on disk: the same name, the city as it was last saved. Compared at the active city's age
+ * it would nearly tie with itself, so a slot whose founding (name and world seed) is the city in play's (Played) is marked inPlay in now() and left out of
+ * at() and stoppedAt(). A caller that has no city in play passes Played.NONE, which matches nothing.
  *
  * WHY. Each save is its own world: its own money (its last reform may have lopped zeros off it), its own rate, parity and price level, its own history.
  * The board compares them only through the pivot, so each city is handed over in the units of its LAST save, history and header rescaled together, and
@@ -33,7 +39,7 @@ public final class SavedCities {
     public static final int FIRST_SLOT = 1;
 
     /** The history series a slot keeps: what the measures read, and the three that make the pivot (fxRate and fxParity are among the first). */
-    static final Set<String> KEPT = keptSeries();
+    public static final Set<String> KEPT = keptSeries();
 
     private static Set<String> keptSeries() {
         Set<String> kept = new HashSet<>(CityMeasures.SERIES);
@@ -41,6 +47,25 @@ public final class SavedCities {
         kept.add("fxParity");
         kept.add("usPrices");
         return Set.copyOf(kept);
+    }
+
+    /**
+     * The city in play, by its founding: its name and its world seed (LB4). A saved slot is that city when both are the slot header's; NONE matches nothing.
+     * A header with no seed (an old save: DataSave.getFounding derives one at load, the header cannot) never matches.
+     */
+    public record Played(String name, long seed) {
+        /** No city in play: matches no slot. */
+        public static final Played NONE = new Played(null, 0L);
+
+        /** The game's city, by its founding. */
+        public static Played of(Game g) {
+            return new Played(g.getCityName(), g.getWorldSeed());
+        }
+
+        /** True when this is a city in play and a slot with this name and this seed (null: the header has none) is its founding's. */
+        boolean matches(String slotName, Long slotSeed) {
+            return this != NONE && name != null && slotName != null && name.equals(slotName) && slotSeed != null && slotSeed == seed;
+        }
     }
 
     /** A saved city that never got as far as an age: its slot, its name and the last month of its history ("stopped at Feb 2031": CityCalendar.formatShort). */
@@ -61,7 +86,7 @@ public final class SavedCities {
     record Stamp(Path save, long saveSize, long saveTime, long historySize, long historyTime) { }
 
     /** What a readable slot keeps: the city as its last save has it, the slim history behind it, and what an earlier month needs of the header. */
-    private record Holding(String name, String currency, double foundingRate, HistorySave history, int lastMonth, Rankings.City now) { }
+    private record Holding(String name, Long worldSeed, String currency, double foundingRate, HistorySave history, int lastMonth, Rankings.City now) { }
 
     /** One slot as read: its stamp, and either the city it keeps, or why it is left off, or neither (an empty slot). */
     private record Entry(int slot, Stamp stamp, Holding kept, Why left) { }
@@ -148,9 +173,10 @@ public final class SavedCities {
     }
 
     /**
-     * One slot: the header through GameFiles.readHeader, then the history file read WHOLE (Files.readString, as Game.loadHistory does) and only
-     * then parsed, cut to the kept series. Whole first, because a handle held open through a parse of seconds stops the game swapping a new history
-     * in over the file on Windows (LB3's gate review: the slot kept its old history beside the new save); readHeader reads its file whole too.
+     * One slot: the header through GameFiles.readHeader, then the history file read WHOLE (Files.readAllBytes, the handle closed) and only then parsed,
+     * skipping every series but the kept ones and keeping those as primitive arrays (HistorySave.readKept, LB4): the file is never parsed whole into boxed
+     * lists. Whole first, because a handle held open through a parse of seconds stops the game swapping a new history in over the file on Windows (LB3's
+     * gate review: the slot kept its old history beside the new save); readHeader reads its file whole too.
      */
     private static Entry readSlot(GameFiles files, int slot, Stamp stamp) {
         if (stamp.saveSize() < 0) return new Entry(slot, stamp, null, null);
@@ -161,9 +187,8 @@ public final class SavedCities {
         if (stamp.historySize() < 0) return left(slot, stamp, Why.NO_HISTORY);
         HistorySave slim;
         try {
-            String json = Files.readString(files.historyFile(slot));
-            HistorySave loaded = new Gson().fromJson(json, HistorySave.class);
-            slim = loaded == null ? null : loaded.slim(KEPT);
+            byte[] bytes = Files.readAllBytes(files.historyFile(slot));
+            slim = HistorySave.readKept(new InputStreamReader(new ByteArrayInputStream(bytes), StandardCharsets.UTF_8), KEPT);
         } catch (IOException | RuntimeException e) {
             GameLog.note("Could not read the history of " + GameFiles.slotLabel(slot) + " (" + files.historyFile(slot) + "): " + e);
             return left(slot, stamp, Why.DAMAGED);
@@ -184,7 +209,7 @@ public final class SavedCities {
             world.restore(header.getWorldEconomy());
             now = new Rankings.City(now.name(), now.currency(), now.month(), now.year(), now.fx(), now.parity(), world.getPriceLevel(), now.foundingRate(), now.figures());
         }
-        return new Entry(slot, stamp, new Holding(name, currency, foundingRate, slim, last, now), null);
+        return new Entry(slot, stamp, new Holding(name, header.getWorldSeed(), currency, foundingRate, slim, last, now), null);
     }
 
     private static Entry left(int slot, Stamp stamp, Why why) {
@@ -203,33 +228,43 @@ public final class SavedCities {
 
     /* ------------------------------- answering ------------------------------- */
 
-    /** The saved cities at their last saved month, in slot order: their figures from the whole history and the header's land and bands, in the units of their last save. */
-    public List<Rankings.Saved> now() {
+    /**
+     * The saved cities at their last saved month, in slot order: their figures from the whole history and the header's land and bands, in the units of their last save.
+     * A slot whose founding is `played`'s is marked inPlay: the city in play as it was last saved.
+     */
+    public List<Rankings.Saved> now(Played played) {
         List<Rankings.Saved> out = new ArrayList<>();
-        for (Entry e : entries) if (e.kept() != null) out.add(new Rankings.Saved(e.slot(), e.kept().now()));
+        for (Entry e : entries) {
+            if (e.kept() == null) continue;
+            out.add(new Rankings.Saved(e.slot(), e.kept().now(), played.matches(e.kept().name(), e.kept().worldSeed())));
+        }
         return out;
     }
 
     /**
      * The saved cities at game month `month` (D3, the active city's age), in slot order: each read from its history at that month, its rate, parity and price
      * level the series' there, its figures CityMeasures.at with Extras.UNKNOWN. A city that never got to the month, or whose history no longer holds it as a
-     * month, is not here (stoppedAt names the first).
+     * month, is not here (stoppedAt names the first). The slot that is the city in play (`played`) is not here either: it would be compared with itself.
      */
-    public List<Rankings.Saved> at(int month) {
+    public List<Rankings.Saved> at(int month, Played played) {
         List<Rankings.Saved> out = new ArrayList<>();
         for (Entry e : entries) {
             if (e.kept() == null) continue;
             Holding k = e.kept();
+            if (played.matches(k.name(), k.worldSeed())) continue;
             Rankings.City c = Rankings.cityAt(k.name(), k.currency(), k.foundingRate(), k.history(), CityMeasures.Extras.UNKNOWN, month);
             if (c != null) out.add(new Rankings.Saved(e.slot(), c));
         }
         return out;
     }
 
-    /** The saved cities whose history ends before game month `month`: "stopped at Feb 2031" (CityCalendar.formatShort(lastMonth)), no figure and no row. In slot order. */
-    public List<Stopped> stoppedAt(int month) {
+    /** The saved cities whose history ends before game month `month`: "stopped at Feb 2031" (CityCalendar.formatShort(lastMonth)), no figure and no row. In slot order. The slot that is the city in play (`played`) is not named. */
+    public List<Stopped> stoppedAt(int month, Played played) {
         List<Stopped> out = new ArrayList<>();
-        for (Entry e : entries) if (e.kept() != null && e.kept().lastMonth() < month) out.add(new Stopped(e.slot(), e.kept().name(), e.kept().lastMonth()));
+        for (Entry e : entries) {
+            Holding k = e.kept();
+            if (k != null && k.lastMonth() < month && !played.matches(k.name(), k.worldSeed())) out.add(new Stopped(e.slot(), k.name(), k.lastMonth()));
+        }
         return out;
     }
 

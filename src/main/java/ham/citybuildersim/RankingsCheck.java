@@ -1,6 +1,8 @@
 package ham.citybuildersim;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import ham.citybuildersim.Rankings.Board;
 import ham.citybuildersim.Rankings.Convert;
@@ -12,6 +14,7 @@ import ham.citybuildersim.Rankings.Table;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Reader;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,12 +22,14 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -88,6 +93,13 @@ import java.util.function.Supplier;
  *  18. CITYMEASURES.AT: at the last month it is of(); at the first month it was asked it is what of() said then, however far the
  *      city has played since; a month the history never reached or no longer holds as a month has no figures; Extras.UNKNOWN
  *      leaves out exactly what needs the land and the bands.
+ *
+ * LB4, THE CITY IN PLAY BESIDE ITS OWN SLOT, AND A PACKED READ. Section 17 also holds each kept series a slot keeps to be a packed one.
+ *  19. THE CITY IN PLAY, AS SAVED: a slot copied from the city's own saves (same name and world seed) is marked in play on the
+ *      last-saved list and is no row at your age and not listed as stopped; a copy with the seed one higher, one with no seed and
+ *      one with another name are not marked and stay at your age; with no city in play (Played.NONE) none is marked or left out.
+ *  20. THE PACKED READ: HistorySave.readKept over a hand-built history equals slim(KEPT) of the whole parse series by series, a null
+ *      entry kept where it was, a series not kept empty, foldedMonths trimmed, and a packed list refuses add and set.
  *
  * Every fixture causes its condition: the founding city is a founded one, a tie is a real file with three
  * figures set equal, a missing figure a real file with one removed, a save from an older build a real save with its
@@ -245,6 +257,9 @@ public class RankingsCheck {
             theRankLine(wm, random, saves);
             theSlimHistory(saves);
             theMonth(live, saves);
+            // LB4: the city in play beside its own slot (copies of those slots, edited), and the packed read of a saved history.
+            theCityInPlay(saves);
+            thePackedRead();
         }
 
         out.printf("%nRankingsCheck took %.1f s%n", (System.nanoTime() - start) / 1e9);
@@ -1016,7 +1031,7 @@ public class RankingsCheck {
         SavedCities snap = read[0];
         check("a read writes nothing: every file's bytes and modified time are as they were, none added and none removed", before.equals(fingerprint(files)) && before.size() >= 10);
 
-        List<Rankings.Saved> now = snap.now();
+        List<Rankings.Saved> now = snap.now(SavedCities.Played.NONE);
         List<Integer> slots = now.stream().map(Rankings.Saved::slot).toList();
         check("the cities on the board are slots 1 and 2, in slot order: " + slots, slots.equals(List.of(1, 2)));
         check("slot 0, the autosave, holds a good save and is left out: not on the board, not counted", Files.isRegularFile(files.saveFile(0)) && !slots.contains(0) && snap.left().total() == 5);
@@ -1038,14 +1053,14 @@ public class RankingsCheck {
                 city.month() == f.youngLast && city.currency().equals(f.game.getCurrency().plural()) && city.name().equals(f.game.getCityName()));
 
         SavedCities again = snap.refresh(files);
-        boolean reused = again.now().size() == now.size();
-        for (int i = 0; i < now.size() && reused; i++) reused = again.now().get(i).city() == now.get(i).city();
+        boolean reused = again.now(SavedCities.Played.NONE).size() == now.size();
+        for (int i = 0; i < now.size() && reused; i++) reused = again.now(SavedCities.Played.NONE).get(i).city() == now.get(i).city();
         check("a second refresh with nothing changed reads no slot and reuses every one (reads " + again.reads() + ")", again.reads() == 0 && reused && again.left().equals(left));
         copySlot(f.files, 1, files, 2, 0, true);
         SavedCities third = again.refresh(files);
         check("slot 2 saved since is the only slot read again (reads " + third.reads() + "): it is now slot 1's city, and slot 1's city is the very object it was",
-                third.reads() == 1 && third.now().size() == 2 && third.now().get(1).city().month() == f.youngLast && third.now().get(0).city() == again.now().get(0).city());
-        check("a slot deleted is gone from the next snapshot, and counted nowhere", delete(files, 1) && third.refresh(files).now().stream().map(Rankings.Saved::slot).toList().equals(List.of(2)));
+                third.reads() == 1 && third.now(SavedCities.Played.NONE).size() == 2 && third.now(SavedCities.Played.NONE).get(1).city().month() == f.youngLast && third.now(SavedCities.Played.NONE).get(0).city() == again.now(SavedCities.Played.NONE).get(0).city());
+        check("a slot deleted is gone from the next snapshot, and counted nowhere", delete(files, 1) && third.refresh(files).now(SavedCities.Played.NONE).stream().map(Rankings.Saved::slot).toList().equals(List.of(2)));
     }
 
     static boolean delete(GameFiles files, int slot) throws IOException {
@@ -1061,7 +1076,7 @@ public class RankingsCheck {
     static void thePrices(WorldMeasures wm, Nations nations, Saves f) {
         out.println("--- 13. Prices moves only saved rows, never under real US$ ---");
         Rankings.City active = f.before;
-        List<Rankings.Saved> saved = only(f.snapshot.now(), 1, 2);
+        List<Rankings.Saved> saved = only(f.snapshot.now(SavedCities.Played.NONE), 1, 2);
         Rankings.City young = saved.get(0).city(), old = saved.get(1).city();
         out.printf("      the active city's game dollar stands at %.4f, the young save's at %.4f and the old save's at %.4f%n", active.usPrices(), young.usPrices(), old.usPrices());
         check("fixture: the young save's price level differs from the active city's, and the old save, of the active city's month, has the same",
@@ -1186,7 +1201,7 @@ public class RankingsCheck {
 
     static void theReform(WorldMeasures wm, Nations nations, Saves f) {
         out.println("--- 14. a reform leaves every rank ---");
-        List<Rankings.Saved> pair = only(f.snapshot.now(), 2, 3);
+        List<Rankings.Saved> pair = only(f.snapshot.now(SavedCities.Played.NONE), 2, 3);
         Rankings.City was = pair.get(0).city(), is = pair.get(1).city();
         out.printf("      slot 2 before the reform: rate %.6f, GDP %.6g; slot 3 after: rate %.6f, GDP %.6g%n", was.fx(), was.figures().get("gdp").value(), is.fx(), is.figures().get("gdp").value());
         check("fixture: slot 3 is slot 2's city in a money a " + LB3_FACTOR + "th the size: its rate, founding rate and GDP are that fraction, its prices, month and people the same",
@@ -1236,8 +1251,8 @@ public class RankingsCheck {
         out.println("--- 15. at your age ---");
         int age = (f.youngLast + f.oldLast) / 2;
         check("fixture: the age (" + age + ", " + Rankings.ageWords(age) + ") is past slot 1's last month (" + f.youngLast + ") and before slot 2's (" + f.oldLast + ")", f.youngLast < age && age < f.oldLast && age > 24);
-        List<Rankings.Saved> rows = f.snapshot.at(age);
-        List<SavedCities.Stopped> stopped = f.snapshot.stoppedAt(age);
+        List<Rankings.Saved> rows = f.snapshot.at(age, SavedCities.Played.NONE);
+        List<SavedCities.Stopped> stopped = f.snapshot.stoppedAt(age, SavedCities.Played.NONE);
         check("at that age the cities on the board are slots 2 and 3, and slot 1 is no row", rows.stream().map(Rankings.Saved::slot).toList().equals(List.of(2, 3)));
         check("slot 1 is listed as stopped, with its name and its last month (stopped at " + CityCalendar.formatShort(f.youngLast) + ")",
                 stopped.equals(List.of(new SavedCities.Stopped(1, f.game.getCityName(), f.youngLast))));
@@ -1260,21 +1275,21 @@ public class RankingsCheck {
         Set<String> needLand = Set.of("area", "density", "old_age_dep", "life_exp", "orphans");
         check("...and the measures that need the land and the bands are absent, never guessed", needLand.stream().noneMatch(c.figures()::containsKey) && c.figures().containsKey("gdp") && c.figures().containsKey("people"));
 
-        Rankings.City last = only(f.snapshot.now(), 2).get(0).city();
+        Rankings.City last = only(f.snapshot.now(SavedCities.Played.NONE), 2).get(0).city();
         check("at its last saved month it is the whole history's last month (" + last.month() + "), with the header's land and bands: area, density and life expectancy are there",
                 last.month() == f.oldLast && last.fx() == full.aligned("fxRate")[full.months() - 1] && last.usPrices() == full.aligned("usPrices")[full.months() - 1]
                         && needLand.stream().allMatch(last.figures()::containsKey));
         check("...its area is the live city's at the month it was saved (" + last.figures().get("area").value() + " km2): both are the dry ground, the save's and the land manager's",
                 f.before.month() == last.month() && relative(last.figures().get("area").value(), f.before.figures().get("area").value()));
-        Rankings.City reformed = only(f.snapshot.at(age), 3).get(0).city();
+        Rankings.City reformed = only(f.snapshot.at(age, SavedCities.Played.NONE), 3).get(0).city();
         check("the reform reaches the saved history: slot 3 at the age has a rate a " + LB3_FACTOR + "th of slot 2's and the same price level, and its GDP is that fraction of slot 2's",
                 relative(reformed.fx() * LB3_FACTOR, c.fx()) && reformed.usPrices() == c.usPrices() && relative(reformed.figures().get("gdp").value() * LB3_FACTOR, c.figures().get("gdp").value()));
 
         check("a city still on the board at the month its history ends is not stopped, one past it is: at " + f.youngLast + " slot 1 is a row, at " + (f.youngLast + 1) + " it has stopped",
-                f.snapshot.stoppedAt(f.youngLast).isEmpty() && f.snapshot.at(f.youngLast).stream().anyMatch(s -> s.slot() == 1) && f.snapshot.stoppedAt(f.youngLast + 1).size() == 1);
+                f.snapshot.stoppedAt(f.youngLast, SavedCities.Played.NONE).isEmpty() && f.snapshot.at(f.youngLast, SavedCities.Played.NONE).stream().anyMatch(s -> s.slot() == 1) && f.snapshot.stoppedAt(f.youngLast + 1, SavedCities.Played.NONE).size() == 1);
         check("at an age none has reached, there are no rows and every city is stopped, at its own last month, in slot order",
-                f.snapshot.at(f.oldLast + 100).isEmpty() && f.snapshot.stoppedAt(f.oldLast + 100).stream().map(SavedCities.Stopped::lastMonth).toList().equals(List.of(f.youngLast, f.oldLast, f.oldLast)));
-        check("at an age before the history began there is no row either, and no city has stopped", f.snapshot.at(0).isEmpty() && f.snapshot.stoppedAt(0).isEmpty());
+                f.snapshot.at(f.oldLast + 100, SavedCities.Played.NONE).isEmpty() && f.snapshot.stoppedAt(f.oldLast + 100, SavedCities.Played.NONE).stream().map(SavedCities.Stopped::lastMonth).toList().equals(List.of(f.youngLast, f.oldLast, f.oldLast)));
+        check("at an age before the history began there is no row either, and no city has stopped", f.snapshot.at(0, SavedCities.Played.NONE).isEmpty() && f.snapshot.stoppedAt(0, SavedCities.Played.NONE).isEmpty());
     }
 
     /* =====================================================================
@@ -1316,7 +1331,7 @@ public class RankingsCheck {
             if (!points.isEmpty()) {
                 Rankings.RankPoint lastPoint = points.get(points.size() - 1);
                 Rankings.City then = Rankings.cityAt(city.name(), city.currency(), city.foundingRate(), h, CityMeasures.Extras.UNKNOWN, lastPoint.month());
-                List<Rankings.Saved> saved = f.snapshot.at(lastPoint.month());
+                List<Rankings.Saved> saved = f.snapshot.at(lastPoint.month(), SavedCities.Played.NONE);
                 Table withSaved = Rankings.table(wm, nations, then, saved, real, key);
                 Table without = Rankings.table(wm, nations, then, real, key);
                 plays.see(!saved.isEmpty() && withSaved.rows().size() > without.rows().size() && lastPoint.of() == without.rows().size(), () -> key + ": the board with " + saved.size() + " saved cities has " + withSaved.rows().size() + " rows, the point " + lastPoint.of());
@@ -1327,7 +1342,7 @@ public class RankingsCheck {
         tally("each point is the board's own rank for the city at that December, among as many places (Real world 2025 and the city)", every);
         tally("...a rank from 1 to the places ranked, among the real places that publish the measure (a wage is published for fewer places than output is)", within);
         WorldMeasures.Measure out1 = wm.measure("real_rate");
-        List<Rankings.Saved> savedNow = f.snapshot.now();
+        List<Rankings.Saved> savedNow = f.snapshot.now(SavedCities.Played.NONE);
         Table alone = Rankings.table(wm, nations, city, savedNow, real, "real_rate");
         check("a measure LC1 took out (real_rate, its source " + out1.source() + ") ranks the player's cities alone: the city and its " + savedNow.size()
                         + " saved cities, no real place, and its rank line is the city alone each December",
@@ -1366,7 +1381,7 @@ public class RankingsCheck {
     static void theSlimHistory(Saves f) throws IOException {
         out.println("--- 17. the slim history equals the full one ---");
         CityMeasures.Extras x = new CityMeasures.Extras(3.5, new double[] {900, 3000, 1500, 9000, 2000, 600}, 0.4);
-        Tally figures = new Tally(), months = new Tally(), kept = new Tally(), axis = new Tally();
+        Tally figures = new Tally(), months = new Tally(), kept = new Tally(), axis = new Tally(), packed = new Tally();
         for (int slot = 1; slot <= 3; slot++) {
             HistorySave slim = f.snapshot.history(slot), full = fullHistory(f.files, slot);
             int slotNumber = slot;
@@ -1382,6 +1397,10 @@ public class RankingsCheck {
                 List<? extends Number> mine = slimByName.get(e.getKey());
                 inside &= SavedCities.KEPT.contains(e.getKey()) ? e.getValue().equals(mine) : mine == null || mine.isEmpty();
                 if (mine != null && !mine.isEmpty()) keptSeries++;
+                // LB4: a kept series that has values is held as primitives, not boxed
+                if (SavedCities.KEPT.contains(e.getKey()) && mine != null && !mine.isEmpty()) {
+                    packed.see(mine instanceof HistorySave.PackedDoubles || mine instanceof HistorySave.PackedLongs, () -> "slot " + slotNumber + "'s " + e.getKey() + " is a " + mine.getClass().getSimpleName());
+                }
             }
             int fullSeries = loaded, slimSeries = keptSeries;
             boolean ok = inside && slimSeries * 3 < fullSeries && slimSeries > 40;
@@ -1391,6 +1410,7 @@ public class RankingsCheck {
         tally("CityMeasures.of over it is the full history's, figure for figure", figures);
         tally("...and so is CityMeasures.at of it at every month of the history", months);
         tally("it keeps only the series the measures read and the pivot's three, each as the file has it, under a third of the series the file has", kept);
+        tally("each kept series that is not empty is a HistorySave.PackedDoubles or PackedLongs: held as primitives, not boxed", packed);
         HistorySave probe = fullHistory(f.files, 2);
         check("every series CityMeasures reads is a series a history has, and the pivot's fxRate, fxParity and usPrices are kept",
                 probe.seriesByName().keySet().containsAll(CityMeasures.SERIES) && SavedCities.KEPT.containsAll(CityMeasures.SERIES) && SavedCities.KEPT.containsAll(List.of("fxRate", "fxParity", "usPrices")));
@@ -1457,5 +1477,133 @@ public class RankingsCheck {
                 relative(CityMeasures.at(folded, bands, total - 24).get("gdp").value(), 100 * 12 * CityMeasures.THOUSANDS) && same(CityMeasures.at(folded, bands, total), CityMeasures.of(folded, bands)));
         check("valueAt reads a series at a month and is NaN where the history has no such month or series",
                 CityMeasures.valueAt(folded, "gdp", total - 5) == 100 && Double.isNaN(CityMeasures.valueAt(folded, "gdp", 12)) && Double.isNaN(CityMeasures.valueAt(folded, "noSuchSeries", total - 5)) && Double.isNaN(CityMeasures.valueAt(null, "gdp", 5)));
+    }
+
+    /* =====================================================================
+       19. THE CITY IN PLAY, AS SAVED (LB4)
+       ===================================================================== */
+
+    /** Copies a slot to another folder and edits its parsed save before it is written back: one key changed or removed, to cause one condition. */
+    static void editedCopy(GameFiles from, int fromSlot, GameFiles to, int toSlot, Consumer<JsonObject> edit) throws IOException {
+        copySlot(from, fromSlot, to, toSlot, 0, true);
+        JsonObject save = JsonParser.parseString(Files.readString(to.saveFile(toSlot))).getAsJsonObject();
+        edit.accept(save);
+        Files.writeString(to.saveFile(toSlot), new Gson().toJson(save));
+    }
+
+    static void theCityInPlay(Saves f) throws IOException {
+        out.println("--- 19. the city in play, as saved ---");
+        Game g = f.game;
+        SavedCities.Played played = SavedCities.Played.of(g);
+        check("the city in play is its name and its world seed: Played.of(game) carries " + g.getCityName() + " and " + g.getWorldSeed(),
+                played.name().equals(g.getCityName()) && played.seed() == g.getWorldSeed() && !played.equals(SavedCities.Played.NONE));
+
+        JsonObject own = JsonParser.parseString(Files.readString(f.files.saveFile(1))).getAsJsonObject();
+        check("fixture: the save the copies are made from holds the city's name and its seed (" + own.get("cityName") + ", " + own.get("worldSeed") + ")",
+                own.has("cityName") && own.get("cityName").getAsString().equals(g.getCityName()) && own.has("worldSeed") && own.get("worldSeed").getAsLong() == g.getWorldSeed());
+        GameFiles files = GameFiles.scratch("rankingsinplay");
+        copySlot(f.files, 1, files, 1, 0, true);                                                                     // the city as its first save has it
+        copySlot(f.files, 2, files, 2, 0, true);                                                                     // ...and as its second has it, a longer history
+        editedCopy(f.files, 1, files, 3, save -> save.addProperty("worldSeed", g.getWorldSeed() + 1));              // the same name, another world
+        editedCopy(f.files, 1, files, 4, save -> save.remove("worldSeed"));                                          // the same name, a save that carries no seed
+        editedCopy(f.files, 1, files, 5, save -> save.addProperty("cityName", g.getCityName() + " Again"));         // the same world, another city
+        SavedCities[] read = new SavedCities[1];
+        quietly(() -> read[0] = SavedCities.read(files));
+        SavedCities snap = read[0];
+        List<Integer> all = snap.now(SavedCities.Played.NONE).stream().map(Rankings.Saved::slot).toList();
+        check("fixture: all five copies are cities on the board, in slots 1 to 5, and none is left out (" + all + ", " + snap.left() + ")", all.equals(List.of(1, 2, 3, 4, 5)) && snap.left().total() == 0);
+
+        List<Integer> marked = snap.now(played).stream().filter(Rankings.Saved::inPlay).map(Rankings.Saved::slot).toList();
+        check("a slot copied from the city's own saves (same name, same seed) is marked in play: slots 1 and 2 (" + marked + ")", marked.equals(List.of(1, 2)));
+        check("...and none is marked when there is no city in play (Played.NONE)", snap.now(SavedCities.Played.NONE).stream().noneMatch(Rankings.Saved::inPlay));
+        check("...and the last-saved list leaves none out, marked or not: every slot is a row, in slot order",
+                snap.now(played).stream().map(Rankings.Saved::slot).toList().equals(all));
+        check("a copy with the seed one higher, one with no seed and one with another name are each not marked: a save with no seed never matches",
+                snap.now(played).stream().filter(s -> s.slot() >= 3).noneMatch(Rankings.Saved::inPlay));
+
+        int month = f.youngLast;
+        List<Integer> without = snap.at(month, SavedCities.Played.NONE).stream().map(Rankings.Saved::slot).toList();
+        List<Integer> others = snap.at(month, played).stream().map(Rankings.Saved::slot).toList();
+        check("fixture: at slot 1's last month (" + month + ") every copy has a row when no city is in play (" + without + ")", without.equals(List.of(1, 2, 3, 4, 5)));
+        check("at your age the city in play, as saved, is not a row, and the seed one higher, the seed removed and the other name each stay in one: slots 3, 4 and 5 (" + others + ")",
+                others.equals(List.of(3, 4, 5)));
+
+        int now = g.getMonth();
+        check("fixture: the city in play is older than every copy's last month (month " + now + ", past " + f.oldLast + ")", f.youngLast < f.oldLast && f.oldLast < now);
+        List<Integer> stoppedAll = snap.stoppedAt(now, SavedCities.Played.NONE).stream().map(SavedCities.Stopped::slot).toList();
+        List<Integer> stoppedOthers = snap.stoppedAt(now, played).stream().map(SavedCities.Stopped::slot).toList();
+        check("a copy whose last month is before the city's month is listed as stopped when no city is in play (" + stoppedAll + ")", stoppedAll.equals(List.of(1, 2, 3, 4, 5)));
+        check("...and a slot that is the city in play is not listed as stopped: slots 3, 4 and 5 alone are (" + stoppedOthers + ")", stoppedOthers.equals(List.of(3, 4, 5)));
+    }
+
+    /* =====================================================================
+       20. THE PACKED READ OF A SAVED HISTORY (LB4)
+       ===================================================================== */
+
+    /** The first series name, in name order, of those given that HistorySave keeps in a field of that name typed List of `type` (Double or Long), not one of `not`. */
+    static String seriesOf(Collection<String> names, String type, String... not) throws NoSuchFieldException {
+        Set<String> skip = Set.of(not);
+        Set<String> series = new HistorySave().seriesByName().keySet();
+        for (String name : new TreeSet<>(names)) {
+            if (skip.contains(name) || !series.contains(name)) continue;
+            java.lang.reflect.Field field;
+            try {
+                field = HistorySave.class.getDeclaredField(name);
+            } catch (NoSuchFieldException e) {
+                continue;
+            }
+            if (field.getGenericType().getTypeName().equals("java.util.List<java.lang." + type + ">")) return name;
+        }
+        throw new NoSuchFieldException("no series of " + type + " among " + names);
+    }
+
+    @SuppressWarnings("unchecked")
+    static void thePackedRead() throws NoSuchFieldException {
+        out.println("--- 20. the packed read of a saved history ---");
+        String doubles = seriesOf(CityMeasures.SERIES, "Double"), longs = seriesOf(CityMeasures.SERIES, "Long");
+        String emptied = seriesOf(CityMeasures.SERIES, "Double", doubles);
+        String left = seriesOf(new HistorySave().seriesByName().keySet().stream().filter(n -> !SavedCities.KEPT.contains(n)).toList(), "Double");
+        String json = "{\"month\":[1,2,3,4],\"foldedMonths\":[12,12,12,12,12,12],"
+                + "\"" + doubles + "\":[1.5,null,3.25,1.0E-7],"
+                + "\"" + longs + "\":[10,20,null,9007199254740993],"
+                + "\"" + emptied + "\":null,"
+                + "\"" + left + "\":[7.5,8.5,9.5,10.5]}";
+        HistorySave whole = new Gson().fromJson(json, HistorySave.class);
+        check("fixture: the kept series " + doubles + " (Double) and " + longs + " (Long) have a null entry, " + left + " is not kept and has values, and foldedMonths (" + whole.yearlyPoints()
+                + ") is longer than month (" + whole.getMonth().size() + ")",
+                whole.seriesByName().get(doubles).contains(null) && whole.seriesByName().get(longs).contains(null) && SavedCities.KEPT.contains(doubles) && SavedCities.KEPT.contains(longs)
+                        && !SavedCities.KEPT.contains(left) && whole.seriesByName().get(left).size() == 4 && whole.yearlyPoints() > whole.getMonth().size());
+        HistorySave slim = whole.slim(SavedCities.KEPT), read = HistorySave.readKept(new StringReader(json), SavedCities.KEPT);
+
+        Tally same = new Tally();
+        for (Map.Entry<String, List<? extends Number>> e : slim.seriesByName().entrySet()) {
+            List<? extends Number> mine = read.seriesByName().get(e.getKey());
+            same.see(mine != null && e.getValue().equals(mine) && mine.equals(e.getValue()) && e.getValue().hashCode() == mine.hashCode(), () -> "series " + e.getKey());
+        }
+        tally("readKept over it equals slim(KEPT) of the whole parse, series by series (equal both ways, the same hash)", same);
+        List<? extends Number> d = read.seriesByName().get(doubles), l = read.seriesByName().get(longs);
+        check("a null entry is kept where it was, " + doubles + " at index 1 and " + longs + " at index 2, and the entries around it are the whole parse's, to the bit",
+                d.size() == 4 && l.size() == 4 && d.get(1) == null && l.get(2) == null && d.get(0).equals(1.5) && d.get(3).equals(1.0E-7) && l.get(0).equals(10L) && l.get(3).equals(9007199254740993L)
+                        && Double.doubleToLongBits(d.get(3).doubleValue()) == Double.doubleToLongBits(whole.seriesByName().get(doubles).get(3).doubleValue())
+                        && l.get(3).longValue() == whole.seriesByName().get(longs).get(3).longValue());
+        check("a Double series is a PackedDoubles and a Long series a PackedLongs", d instanceof HistorySave.PackedDoubles && l instanceof HistorySave.PackedLongs);
+        List<? extends Number> none = read.seriesByName().get(emptied);
+        check("a kept series the JSON has as null (" + emptied + ") reads as an empty packed list, as slim leaves it", none instanceof HistorySave.PackedDoubles && none.isEmpty() && slim.seriesByName().get(emptied).isEmpty());
+        check("a series that is not kept (" + left + ") is empty, as slim leaves it, though the file had " + whole.seriesByName().get(left).size() + " values", read.seriesByName().get(left).isEmpty() && slim.seriesByName().get(left).isEmpty());
+        check("foldedMonths is trimmed to month's size as slim trims it (" + read.yearlyPoints() + " of " + whole.yearlyPoints() + " read, " + slim.yearlyPoints() + " by slim), and the axis is the file's",
+                read.yearlyPoints() == read.getMonth().size() && read.yearlyPoints() == slim.yearlyPoints() && read.getMonth().equals(whole.getMonth()));
+        boolean addThrows = false, setThrows = false;
+        try {
+            ((List<Number>) d).add(2.5);
+        } catch (UnsupportedOperationException e) {
+            addThrows = true;
+        }
+        try {
+            ((List<Number>) l).set(0, 5L);
+        } catch (UnsupportedOperationException e) {
+            setThrows = true;
+        }
+        check("a packed list is read only: add and set on it throw UnsupportedOperationException", addThrows && setThrows);
+        check("an empty document reads as no history, as Gson does", HistorySave.readKept(new StringReader(""), SavedCities.KEPT) == null);
     }
 }

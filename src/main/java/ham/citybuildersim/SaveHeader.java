@@ -33,6 +33,12 @@ public class SaveHeader {
     /** The city's name (0.7.10), DataSave's founding record's; absent on an older save. */
     private String cityName;
 
+    /**
+     * The world's seed (DataSave's key of that name; LB4): with the name, the founding a slot shares with the city in play. Null on a save that has none,
+     * which never matches: DataSave.getFounding derives a seed for an old save at load and this header cannot, so a match there would be a guess.
+     */
+    private Long worldSeed;
+
     /*
      * What the Rankings board reads of a saved city beside its history (LB3, SavedCities): the money's name, the world's
      * prices, the money's unit, and the land and the people by age band as they stood at the last save. Raw, as saved: the
@@ -54,6 +60,8 @@ public class SaveHeader {
     public String getGameVersion() { return gameVersion; }
     public int getSaveFormat()     { return saveFormat; }
     public long getSavedAt()       { return savedAt; }
+    /** The world's seed as saved, or null on a save that does not carry it (LB4: such a slot is never the city in play). */
+    public Long getWorldSeed()     { return worldSeed; }
 
     /** The city's money in the plural ("Arden dollars"), or null on a save that does not carry it. */
     public String getCurrencyPlural() { return currencyPlural; }

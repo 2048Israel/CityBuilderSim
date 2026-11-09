@@ -1,12 +1,34 @@
 package ham.citybuildersim;
 
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.TypeAdapter;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
+import com.google.gson.stream.JsonWriter;
+import java.io.IOException;
+import java.io.Reader;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.RandomAccess;
+import java.util.Set;
 
 /**
  * Every month the city has ever lived, one number at a time.
@@ -2054,13 +2076,207 @@ public class HistorySave {
         HistorySave out = new HistorySave();
         out.month = copy(month);
         out.foldedMonths = copy(foldedMonths);
-        while (out.foldedMonths.size() > out.month.size()) out.foldedMonths.remove(out.foldedMonths.size() - 1);
+        out.trimFoldedMonths();
         Map<String, List<? extends Number>> from = seriesByName(), into = out.seriesByName();
         for (String name : keep) {
             List<? extends Number> source = from.get(name), target = into.get(name);
             if (source != null && target != null) ((List<Number>) target).addAll(source);
         }
         return out;
+    }
+
+    /** foldedMonths cut to the axis's length: a history can never hold more folded years than it has months (slim and readKept). */
+    private void trimFoldedMonths() {
+        while (foldedMonths.size() > month.size()) foldedMonths.remove(foldedMonths.size() - 1);
+    }
+
+    /**
+     * What slim(keep) gives on the history in `in`, without the whole parse (LB4): every series but the kept ones is skipped as the JSON is read
+     * (Gson skips the key of a field the exclusion strategy drops, building nothing for it) and the kept ones are read into primitive arrays
+     * (PackedDoubles, PackedLongs), not boxed lists. The result equals slim(keep) of the whole parse, series by series and field for field: month and
+     * foldedMonths read as they are and are trimmed alike, a name this history has no series of is ignored, and every series not kept is empty. Null for
+     * an empty document, as Gson.fromJson gives.
+     */
+    static HistorySave readKept(Reader in, Set<String> keep) {
+        Set<String> fields = keptFields(keep);
+        Gson gson = new GsonBuilder()
+                .setExclusionStrategies(new ExclusionStrategy() {
+                    @Override
+                    public boolean shouldSkipField(FieldAttributes f) {
+                        return f.getDeclaringClass() == HistorySave.class && !fields.contains(f.getName());
+                    }
+
+                    @Override
+                    public boolean shouldSkipClass(Class<?> clazz) {
+                        return false;
+                    }
+                })
+                .registerTypeAdapter(new TypeToken<List<Double>>() { }.getType(), new PackedDoublesAdapter())
+                .registerTypeAdapter(new TypeToken<List<Long>>() { }.getType(), new PackedLongsAdapter())
+                .create();
+        HistorySave read = gson.fromJson(in, HistorySave.class);
+        if (read == null) return null;
+        read.month = copy(read.month);
+        read.foldedMonths = copy(read.foldedMonths);
+        read.trimFoldedMonths();
+        return read;
+    }
+
+    /** The names of the fields readKept reads: the axis and foldedMonths (all slim copies besides the series) and the field behind each kept series, found as slim finds it, through seriesByName(). */
+    private static Set<String> keptFields(Set<String> keep) {
+        HistorySave probe = new HistorySave();
+        Set<List<? extends Number>> wanted = Collections.newSetFromMap(new IdentityHashMap<>());
+        Map<String, List<? extends Number>> series = probe.seriesByName();
+        for (String name : keep) {
+            List<? extends Number> list = series.get(name);
+            if (list != null) wanted.add(list);
+        }
+        Set<String> fields = new HashSet<>(List.of("month", "foldedMonths"));
+        for (Field f : HistorySave.class.getDeclaredFields()) {
+            if (Modifier.isStatic(f.getModifiers())) continue;
+            try {
+                f.setAccessible(true);
+                Object value = f.get(probe);
+                if (value != null && wanted.contains(value)) fields.add(f.getName());
+            } catch (IllegalAccessException e) {
+                throw new IllegalStateException("HistorySave." + f.getName() + " cannot be read: " + e);
+            }
+        }
+        return fields;
+    }
+
+    /** The Gson adapter of a kept List<Double> series: a PackedDoubles, null entries kept, a null list read as an empty one. */
+    private static final class PackedDoublesAdapter extends TypeAdapter<List<Double>> {
+        @Override
+        public List<Double> read(JsonReader in) throws IOException {
+            if (in.peek() == JsonToken.NULL) {
+                in.nextNull();
+                return new PackedDoubles(new double[0], null);
+            }
+            double[] values = new double[16];
+            BitSet nulls = null;
+            int n = 0;
+            in.beginArray();
+            while (in.hasNext()) {
+                if (n == values.length) values = Arrays.copyOf(values, n * 2);
+                if (in.peek() == JsonToken.NULL) {
+                    in.nextNull();
+                    if (nulls == null) nulls = new BitSet();
+                    nulls.set(n);
+                } else {
+                    values[n] = in.nextDouble();
+                }
+                n++;
+            }
+            in.endArray();
+            return new PackedDoubles(Arrays.copyOf(values, n), nulls);
+        }
+
+        @Override
+        public void write(JsonWriter out, List<Double> list) throws IOException {
+            if (list == null) {
+                out.nullValue();
+                return;
+            }
+            out.beginArray();
+            for (Double d : list) {
+                if (d == null) out.nullValue();
+                else out.value(d);
+            }
+            out.endArray();
+        }
+    }
+
+    /** The Gson adapter of a kept List<Long> series: a PackedLongs, null entries kept, a null list read as an empty one. */
+    private static final class PackedLongsAdapter extends TypeAdapter<List<Long>> {
+        @Override
+        public List<Long> read(JsonReader in) throws IOException {
+            if (in.peek() == JsonToken.NULL) {
+                in.nextNull();
+                return new PackedLongs(new long[0], null);
+            }
+            long[] values = new long[16];
+            BitSet nulls = null;
+            int n = 0;
+            in.beginArray();
+            while (in.hasNext()) {
+                if (n == values.length) values = Arrays.copyOf(values, n * 2);
+                if (in.peek() == JsonToken.NULL) {
+                    in.nextNull();
+                    if (nulls == null) nulls = new BitSet();
+                    nulls.set(n);
+                } else {
+                    try {
+                        values[n] = in.nextLong();
+                    } catch (NumberFormatException e) {
+                        throw new JsonSyntaxException(e);
+                    }
+                }
+                n++;
+            }
+            in.endArray();
+            return new PackedLongs(Arrays.copyOf(values, n), nulls);
+        }
+
+        @Override
+        public void write(JsonWriter out, List<Long> list) throws IOException {
+            if (list == null) {
+                out.nullValue();
+                return;
+            }
+            out.beginArray();
+            for (Long v : list) {
+                if (v == null) out.nullValue();
+                else out.value(v);
+            }
+            out.endArray();
+        }
+    }
+
+    /** A kept List<Double> series as a double[] (LB4): read only, a null entry (a BitSet, allocated only when one is met) reads back as null, so equals and hashCode are the boxed list's. */
+    static final class PackedDoubles extends AbstractList<Double> implements RandomAccess {
+        private final double[] values;
+        private final BitSet nulls;
+
+        PackedDoubles(double[] values, BitSet nulls) {
+            this.values = values;
+            this.nulls = nulls;
+        }
+
+        @Override
+        public int size() {
+            return values.length;
+        }
+
+        @Override
+        public Double get(int index) {
+            Objects.checkIndex(index, values.length);
+            if (nulls != null && nulls.get(index)) return null;
+            return values[index];
+        }
+    }
+
+    /** A kept List<Long> series as a long[] (LB4): read only, a null entry reads back as null, as PackedDoubles. */
+    static final class PackedLongs extends AbstractList<Long> implements RandomAccess {
+        private final long[] values;
+        private final BitSet nulls;
+
+        PackedLongs(long[] values, BitSet nulls) {
+            this.values = values;
+            this.nulls = nulls;
+        }
+
+        @Override
+        public int size() {
+            return values.length;
+        }
+
+        @Override
+        public Long get(int index) {
+            Objects.checkIndex(index, values.length);
+            if (nulls != null && nulls.get(index)) return null;
+            return values[index];
+        }
     }
 
 }
