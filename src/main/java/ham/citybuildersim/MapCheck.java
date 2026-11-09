@@ -536,6 +536,7 @@ public class MapCheck {
         districtBuysLandInside(city);
         outerRim();
         districtJoinsTheChain();
+        bandsHoldOnPurchase();
         runsLaidAcross(city);
         reservesDated(city);
         // ...and FC1 on again from here (the switch above covers section 1's played city, which 2h's scenarios are cut
@@ -1832,6 +1833,101 @@ public class MapCheck {
         check("...and the carry each of them reads keeps the pairs it had, as they were, a prefix: nothing handed on afresh (" + prefixes + " of " + ahead + ")", prefixes == ahead);
         check("...the district joined, second in the map's order, is carried what the district before it carried on - the pairs the district after it read before - and passes them on as they came",
                 joined != null && joined.index == 1 && java.util.Arrays.equals(before.carry().get(keys[1]), joinedCarry));
+    }
+
+    /* =====================================================================
+       2i. A DISTRICT BOUGHT AHEAD MOVES NO BOX IN ANY OTHER BAND (batch MB1; MF1-B)
+       ===================================================================== */
+
+    /*
+     * The chain is cut in bands of CHAIN_BAND districts, each band's first a root. Cut of the map's order (the districts by distance from the founding site), a
+     * district bought nearer the site than some already on the map shifted the index of every district after it, and every later band changed its members and
+     * its root: its boxes moved (MF1-B, at 3 bands, 1,315 of 1,491 boxes). MB1 cuts the bands of the chain's own order, the districts by the rank of their ground's
+     * first purchase, so a new district ranks last and joins the last band. A city of CHAIN_BAND districts or fewer has one band, so this fixture shrinks the band
+     * (CityMap.chainBand) until 2g's four districts make two and the bought fifth a third, buys 2g's block, which sorts into the map's order ahead of three of the
+     * four, and runs the month under each rule (CityMap.chainByOrder: the old rule, the chain the map's order; the new). The old rule changes the band of
+     * districts already on the map and moves boxes in the other bands; the new keeps every district's band and every box, the district joined in the last band.
+     */
+
+    /** The band's size in 2i: four districts make two bands, the bought fifth a third. */
+    static final int BAND_SMALL = 2;
+
+    /** 2i's fixture run under one rule of the chain: the bands before and after, the district bought and where it stands, how many districts already on the map changed band, and the boxes in the bands other than the bought district's. */
+    record BandsRun(boolean joined, int onMap, int bandsBefore, int bandsAfter, int index, int chainIndex, int band, int size, int overBands, int changed, int moved, int total) { }
+
+    static BandsRun bandsRun(boolean byOrder) {
+        CityMap.chainBand = BAND_SMALL;
+        CityMap.chainByOrder = byOrder;
+        try {
+            Rim r = new Rim();
+            CityMap m = r.map;
+            World w = World.of(r.seed);
+            int guard = 400;
+            while (m.districts().get(3).count(r.flats) == 0 && guard-- > 0) r.run();
+            List<CityMap.District> chain = new ArrayList<>(m.districts());
+            int[] bandWas = new int[chain.size()];
+            for (int i = 0; i < bandWas.length; i++) bandWas[i] = CityMap.bandOf(chain.get(i));
+            int bandsBefore = m.bands();
+            ChainSnap before = chainSnap(m);
+            // The nearest dry block in a district the map has none of, to the founding site, as 2g buys it.
+            long[] block = null;
+            int bdx = 0, bdy = 0;
+            double near = Double.MAX_VALUE;
+            for (int dy = -3; dy <= 3; dy++) {
+                for (int dx = -3; dx <= 3; dx++) {
+                    if (m.district(dx, dy) != null) continue;
+                    long[] c = dryBlockIn(w, m.land(), (m.baseDX() + dx) * CityMap.DISTRICT, (m.baseDY() + dy) * CityMap.DISTRICT);
+                    double o = Math.hypot((m.baseDX() + dx) * CityMap.DISTRICT + CityMap.DISTRICT / 2.0 - r.siteX, (m.baseDY() + dy) * CityMap.DISTRICT + CityMap.DISTRICT / 2.0 - r.siteY);
+                    if (c != null && o < near) { near = o; block = c; bdx = dx; bdy = dy; }
+                }
+            }
+            if (block != null) m.land().extend(new LandParcel(-5, 1, 0, m.land().level(), block[0], block[1], block[2], block[3], null, null, null, 0, 0), r.month - 1, 0);
+            r.run();
+            CityMap.District joined = block == null ? null : m.district(bdx, bdy);
+            if (joined == null || !r.reconciled) return new BandsRun(false, chain.size(), bandsBefore, m.bands(), -1, -1, -1, m.districts().size(), 0, 0, 0, 0);
+            ChainSnap after = chainSnap(m);
+            int joinedBand = CityMap.bandOf(joined);
+            java.util.Set<Integer> over = new java.util.TreeSet<>();
+            int changed = 0, moved = 0, total = 0;
+            for (int i = 0; i < chain.size(); i++) {
+                CityMap.District d = m.district(chain.get(i).dx, chain.get(i).dy);
+                int band = CityMap.bandOf(d);
+                if (band != bandWas[i]) changed++;
+                if (band == joinedBand) continue;
+                if (d.index > joined.index) over.add(band);
+                String key = d.dx + "," + d.dy;
+                java.util.Set<Long> was = before.boxes().get(key), now = after.boxes().get(key);
+                for (long b : was) if (!now.contains(b)) moved++;
+                total += was.size();
+            }
+            return new BandsRun(true, chain.size(), bandsBefore, m.bands(), joined.index, joined.chainIndex, joinedBand, m.districts().size(), over.size(), changed, moved, total);
+        } finally {
+            CityMap.chainBand = CityMap.CHAIN_BAND;
+            CityMap.chainByOrder = false;
+        }
+    }
+
+    static void bandsHoldOnPurchase() {
+        out.println("\n--- 2i. a district bought ahead moves no box in any other band (MB1; MF1-B) ---");
+        BandsRun old = bandsRun(true), now = bandsRun(false);
+        for (BandsRun run : new BandsRun[] { old, now }) {
+            out.printf("      %s: %d districts in %d bands of %d, one bought ahead makes %d in %d bands: it stands at %d in the map's order, %d in the chain's, in band %d; %d of %d districts changed band; %,d of %,d boxes in the other bands moved%n",
+                    run == old ? "the old rule" : "the new rule", run.onMap(), run.bandsBefore(), BAND_SMALL, run.size(), run.bandsAfter(), run.index(), run.chainIndex(), run.band(), run.changed(), run.onMap(), run.moved(), run.total());
+        }
+        check("fixture: under each rule a block bought ahead makes a district (" + old.size() + " and " + now.size() + " on the map), the bands of " + BAND_SMALL + " number " + old.bandsAfter() + " and " + now.bandsAfter()
+                + " (3 at least), it sorts in the map's order ahead of districts of " + old.overBands() + " and " + now.overBands() + " other bands (2 at least) and the other bands hold " + old.total() + " and " + now.total() + " boxes",
+                old.joined() && now.joined() && old.bandsAfter() >= 3 && now.bandsAfter() >= 3 && old.overBands() >= 2 && now.overBands() >= 2 && old.total() > 0 && now.total() > 0);
+        check("the old rule, bands cut of the map's order: " + old.moved() + " of " + old.total() + " boxes in other bands moved, " + old.changed() + " of " + old.onMap() + " districts on the map changed band",
+                old.joined() && old.changed() > 0 && old.moved() > 0);
+        check("the new rule, bands cut of the chain's own order: the district bought is in the last band (" + now.band() + " of " + now.bandsAfter() + ", at " + now.chainIndex() + " of " + now.size() + " in the chain), "
+                + now.changed() + " of " + now.onMap() + " districts on the map changed band, and " + now.moved() + " of " + now.total() + " boxes in the other bands moved",
+                now.joined() && now.band() == now.bandsAfter() - 1 && now.chainIndex() == now.size() - 1 && now.changed() == 0 && now.moved() == 0 && now.total() > 0);
+        Rim one = new Rim();
+        one.run();
+        boolean same = one.map.chainOrder().equals(one.map.districts());
+        for (CityMap.District d : one.map.districts()) same &= d.chainIndex == d.index;
+        check("a city of CHAIN_BAND districts or fewer is one band and keeps the map's order: " + one.map.districts().size() + " districts in " + one.map.bands() + " band, the chain's order the map's with every chain place its index",
+                one.map.bands() == 1 && same);
     }
 
     /* =====================================================================
@@ -12821,7 +12917,7 @@ public class MapCheck {
                         // (batch UP9, slice A) How the job was handed out and how it came out, by the band of its district and the epoch it was made at; the round counted from the fixture's first.
                         int jobKind = pj.old == null ? JOB_PLANNED : pj.in == null ? JOB_LAZY : JOB_EAGER;
                         if (jobKind == JOB_LAZY) r.lazyHanded++;
-                        r.bandJobs.add(new BandJob(CityMap.band(pj.d.index), pj.epoch, all.size() * CHAIN_ROUNDS + round, jobKind, pj.failed, pj.reused));
+                        r.bandJobs.add(new BandJob(CityMap.bandOf(pj.d), pj.epoch, all.size() * CHAIN_ROUNDS + round, jobKind, pj.failed, pj.reused));
                     }
                 }
                 long b0 = monthClock();
@@ -13824,7 +13920,7 @@ public class MapCheck {
             if (j instanceof CityMap.PlanJob pj) {
                 handed++;
                 if (pj.in == null) lazy++;
-                handedBands.add(CityMap.band(pj.d.index));
+                handedBands.add(CityMap.bandOf(pj.d));
                 workerMs += pj.ms() + pj.pictureMs();
             }
         }
