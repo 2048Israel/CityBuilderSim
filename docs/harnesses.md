@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**186 harness files, 21,958 labelled assertions.** AllChecks runs 186 of them.
+**187 harness files, 21,974 labelled assertions.** AllChecks runs 187 of them.
 
 ## Which harnesses read which class
 
@@ -79,6 +79,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CopperMining](map/CopperMining.md) | BuildCardCheck, BuildingDataCheck, CopperMiningCheck, CopperRefiningCheck, IndustryViewCheck |
 | [CopperRefining](map/CopperRefining.md) | BuildCardCheck, BuildingDataCheck, CopperRefiningCheck, GdpCheck, IndustryViewCheck, MoneyCheck, ReadPathCheck |
 | [CorporateBond](map/CorporateBond.md) | BondCheck, FundCheck, FundLedgerCheck, KeptCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
+| [Credits](map/Credits.md) | CreditsCheck |
 | [Crime](map/Crime.md) | BuildAdviceCheck, CrimeCheck, LongPlaytest, ScaleCheck |
 | [Currency](map/Currency.md) | DenominationCheck, FittingCheck, HistoryCheck, LandClassCheck, LongPlaytest, NewGameCheck, ReadPathCheck, SaveFileCheck, YearBookCheck |
 | [DataSave](map/DataSave.md) | EarthTerrainCheck, FittingCheck, LandmassCheck, MapCheck, PopulationCheck, ReplayCheck, SaveFileCheck, SaveSlotCheck |
@@ -5597,6 +5598,45 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1996 ...while each of the five maturities is quoted
   - L2008 a bond issued at
   - L2012 ...and the buyback takes it off the books at that price
+
+## CreditsCheck.java - 16 labelled assertions
+
+> The Credits page shows every attribution file the exe ships, in full, and the fonts' notice and
+> licence, and says where a file is when this build lacks it (CR1, 2026-11-09).
+> 
+> WHY THIS EXISTS. The game is sold, and the licences of its data (CC BY among them) and of its
+> type (the SIL Open Font License) ask that the credit reach the player. The page reads the files
+> from the jar, which pom.xml copies from tools/; Build EXE.bat copies the same files beside the
+> exe. A third attribution file added to the batch file and not to the page, a page cut down from
+> its file, or a font added without its licence would each leave a credit unshown without any
+> error. Files are read from the working directory (the repository), as BrandingCheck reads
+> them; elsewhere those sections say so and are skipped.
+> 
+> What it has to prove:
+> ...
+
+- **L60 CreditsCheck: the Credits page carries every attribution the exe ships and the fonts' licence, in full (CR1)**
+- **L69 every file the exe ships as a credit is on the page, in full**
+  - L75 Build EXE.bat copies at least two ATTRIBUTION files beside the exe
+  - L92 every one of them was matched to a section
+- **L97 the fonts' notice and licence**
+  - L100 the page has a fonts section reading
+  - L101 the notice says 2017 IBM Corp.
+  - L102 the notice names the SIL Open Font License, Version 1.1
+  - L104 the fonts' section leads with the notice
+  - L105 the fonts' section is not missing
+  - L118 there is at least one font in resources/fonts/
+  - L119 every font there is IBM Plex, whose licence the page carries
+  - L121 OFL.txt is beside the fonts
+  - L124 OFL.txt carries Copyright
+  - L125 OFL.txt names the SIL Open Font License, Version 1.1
+  - L127 the fonts' section shows OFL.txt exactly
+- **L133 a build without a file says where the file is**
+  - L140 and its note names
+- **L144 the paragraphs keep the whole text**
+  - L162 \"a\\nb\\n\\n\\nc\\r\\n\" is [\"a\\nb\", \"c\"]
+  - L163 a null text has no paragraphs
+- **L165 each shipped file names the page**
 
 ## CrimeCheck.java - 79 labelled assertions
 

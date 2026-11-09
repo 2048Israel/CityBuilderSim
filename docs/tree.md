@@ -861,7 +861,13 @@ adds its line here, not in `CLAUDE.md`.
                                    two lines of amber caption on a dark rounded plate, drawn by
                                    MapView.islandChips(); public so tools/ChipRender draws the same plate
                                    over a hatch for review). The model never imports it.
-        *Check.java                142 harnesses, each a main() with static helpers
+        *Check.java                143 harnesses, each a main() with static helpers
+        Credits.java               the Credits page's sections (CR1, 2026-11-09): the Earth and nations attribution files and the
+                                   fonts' OFL notice read from the jar, as the exe ships them, and cut into paragraphs for the
+                                   screen (UserInterface.showCreditsMenu(), from the title screen and the Esc menu); no JavaFX
+        CreditsCheck.java          the page held to the files: every ATTRIBUTION copy in Build EXE.bat is a section whose text is
+                                   the file exactly, the fonts' notice over OFL.txt in full, a missing file named beside the exe,
+                                   the paragraphs losing no line, and both files saying "Credits page"
         MarketCheck.java           the efficient market (EM1), each case on a fixture that causes it: one value for a share, one
                                    yardstick, two shares alike but for price, the buyback finding its sellers, a share earning
                                    less than dollars abroad sold, a quiet market, the save
