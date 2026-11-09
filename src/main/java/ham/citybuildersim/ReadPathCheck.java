@@ -882,6 +882,13 @@ public class ReadPathCheck {
         g.getForeignAccounts().getWorldLevel();
         g.getForeignAccounts().getTermsOfTradeReached();
         g.getForeignAccounts().riskOffLoading();
+        // ...and the peg's anchor (WN4b): the money it is kept in, the peg in it, the rate held, the words the page names the regime by, and the tied dial's money and rate
+        g.getForeignAccounts().getPegAnchor();
+        g.getForeignAccounts().getPegPerAnchor();
+        g.getForeignAccounts().getPegRate();
+        g.getForeignAccounts().regimeWords();
+        g.getDebtManager().tieRate();
+        g.getDebtManager().tieMoney();
         g.getForeignAccounts().getLastMove();
         g.getForeignAccounts().getLastAbsorption();
         g.debtExchangeSinceFounding();   // CD9: the retired getLastRevaluation()'s reader (CD7's booked line, summed)

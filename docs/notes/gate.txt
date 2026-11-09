@@ -1,17 +1,21 @@
-# gate of Merge batch/LC2: the Rankings' measures back from sources that allow commercial use: inflation (ILOSTAT's CPI, else the Bank's GDP deflator), child deaths (WPP 2024), private credit (the BIS), public finance, the current account and health spending (the OECD, members only), each read into docs/studies/licences.md first, 0.9.58
+# gate of Merge batch/WN4b: the D$ pegged to the euro or another of the eight (XR2's peg anchor, left for "XR3 in WN4, once their moneys exist"): the peg's anchor money, the held rate as the peg times the anchor's rate, the shadow's gap against it, Policy › The currency's picker, 0.9.59
 # date: 2026-11-09
 # earth-2.bin: named
-# nightly: 2026-11-08 01:36 0.9.47 39c0948d 4,000 months: OK in 97 s
-# suite: 186 harnesses run in 1359s: 182 passed, 4 failed
-# timing: 17 harnesses run in 902s: 13 passed, 4 failed; its red lines were judged side by side with main's, below
+# nightly: 2026-11-09 01:39 0.9.58 08f58a5f 4,000 months: OK in 118 s
+# suite: 187 harnesses run in 1185s: 183 passed, 4 failed
+# timing: 17 harnesses run in 1136s: 13 passed, 4 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 30.8 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 27.8 ms, batch 28.4 ms (+2.2%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 53.8 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 29.6 ms, batch 29.4 ms (-0.6%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): KeptCheck | exit 6   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): KeptCheck | the kept month on the fund's Activity is within KEPT_FUND_MS (321.0 ms)  FAIL   [main 352 ms, batch 347 ms (-1.7%), budget 321 ms: within 15% of main's]
-# timing red not the batch's (paired): KeptCheck | 6 FAILED   [the harness's own count of the timing reds above]
-# figure	SaveSlotCheck	the median due month, 30.8 ms, holds the clock at most CLOCK_MS (25 ms)	28.4061	25	ms	FAIL	1	1
-# figure	KeptCheck	the kept month on the fund's Activity is within KEPT_FUND_MS (321.0 ms)	346.639	321	ms	FAIL	1	1
+# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 16.2 ms, batch 18.6 ms (+14.4%), budget 19 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | 5 FAILED   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): KeptCheck | exit 8   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): KeptCheck | the whole kept chrome's month is within KEPT_ALL_CHROME_MS (8.0 ms)      FAIL   [main 4.66 ms, batch 4.95 ms (+6.3%), budget 8 ms: within 15% of main's]
+# timing red not the batch's (paired): KeptCheck | the kept month on the fund's Search is within KEPT_FUND_MS (321.0 ms)    FAIL   [main 270 ms, batch 270 ms (-0.0%), budget 321 ms: within 15% of main's]
+# timing red not the batch's (paired): KeptCheck | the kept month on the fund's Activity is within KEPT_FUND_MS (321.0 ms)  FAIL   [main 339 ms, batch 338 ms (-0.2%), budget 321 ms: within 15% of main's]
+# timing red not the batch's (paired): KeptCheck | 8 FAILED   [the harness's own count of the timing reds above]
+# figure	SaveSlotCheck	the median due month, 53.8 ms, holds the clock at most CLOCK_MS (25 ms)	29.4049	25	ms	FAIL	1	1
+# figure	KeptCheck	the kept month on the fund's Activity is within KEPT_FUND_MS (321.0 ms)	338.308	321	ms	FAIL	1	1
 PriceLevelCheck | exit 1
 PriceLevelCheck | FAIL cash (nominal) month 101: 8.317811325 at the factor over the factor, 68.38253344 at today's prices (0.000751 apart)
 PriceLevelCheck | FAIL gdp.month (nominal) month 103: 20121.84632 at the factor over the factor, 20122.48474 at today's prices (1.95e-05 apart)

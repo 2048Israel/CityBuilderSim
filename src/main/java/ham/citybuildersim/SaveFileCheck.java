@@ -3872,7 +3872,7 @@ public class SaveFileCheck {
             assertTrue("...and the foreign accounts' array runs to slot 104, the world's (95-104)", savedFx.length >= 105);
             // WN4, the vault in eight (slots 105-141): euros and pounds beside the dollars, the mix, the chosen shares, the eight's rates and the month's cross move.
             ForeignAccounts savedAccounts = city.getForeignAccounts();
-            assertTrue("...and to slot 147, the vault's (105-141), what it earned (142-146, XR4) and the hold's support (147, XR5): " + savedFx.length + " slots", savedFx.length == 148);
+            assertTrue("...and to slot 148, the vault's (105-141), what it earned (142-146, XR4), the hold's support (147, XR5) and the peg's anchor (148, WN4b): " + savedFx.length + " slots", savedFx.length == 149 && savedFx[148] == savedAccounts.getPegAnchor());
             assertTrue("fixture: the vault holds euros and pounds beside its dollars on a chosen mix, the eight have moved against each other under it, and the dollars are slot 22",
                     savedAccounts.getHolding(1) > 0 && savedAccounts.getHolding(3) > 0 && savedAccounts.getHolding(0) > 0 && savedAccounts.getReserveMix() == ForeignAccounts.Mix.CHOSEN
                             && savedAccounts.getLastVaultCrossUsd() != 0 && savedFx[22] == savedAccounts.getReservesUsd() && savedFx[105 + 1] == savedAccounts.getHolding(1)

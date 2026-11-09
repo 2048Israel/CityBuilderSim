@@ -1089,9 +1089,11 @@ public class ForeignAccounts {
             // from the peg is the pressure, and the pressure is the chance of a break.
             sellToDefend(0);
             lastAbsorption = 0;
-            if (!(pegRate > 0)) pegRate = rate;
+            if (!(pegRate > 0)) pegRate = pegAnchor == 0 ? rate : rate * anchorUsd();
+            // The rate the peg holds this month, D$ per US$ (WN4b): the peg over its anchor's US$ price, the peg itself for the US$.
+            double held = heldRate();
             shadow = clampRate(Math.exp(x));
-            double gap = Math.log(shadow / pegRate);
+            double gap = Math.log(shadow / held);
             double h = hazard(Math.max(0, gap));
             BreakCause cause = BreakCause.NONE;
             // (a) DOUBT: a draw from a stream of its own, so the market's path is the same
@@ -1107,7 +1109,7 @@ public class ForeignAccounts {
             // purchase where it is below. With no GDP the rule gives 0: the peg holds the
             // rate and deals nothing.
             double free = x + holdFelt;
-            double lift = Math.log(pegRate) - free;
+            double lift = Math.log(held) - free;
             double usd = holdUsd(lift, annual);
             // (b) THE VAULT: that sale would take it under its floor.
             if (cause == BreakCause.NONE && usd < 0 && getReservesUsd() + usd < vaultFloorUsd()) {
@@ -1120,7 +1122,7 @@ public class ForeignAccounts {
                 // purchase never breaks a peg: the vault only fills.
                 if (usd < 0) sellToDefend(-usd); else edgeBuy(usd);
                 holdFelt += lift;
-                rate = clampRate(pegRate);
+                rate = clampRate(held);
                 doubtShare = gap > 0 ? h : 0;
             } else {
                 // THE BREAK: the rate lands at the shadow plus OVERSHOOT of the gap again,
@@ -1196,10 +1198,13 @@ public class ForeignAccounts {
      *          dollars that take the rate back to the edge, at the strong edge
      *          it buys those that bring it back down (XR5: the pressure's, not
      *          the month's balance), and what it dealt fades in the rate.
-     *   PEG    the rate is held at the peg, and the vault deals what holding it
-     *          takes (XR5): the sale or purchase that lifts the shadow plus the
-     *          support still felt to the peg. The rate is D$ per US$, so a
-     *          HIGHER rate is a WEAKER D$ - the weak edge is the upper one.
+     *   PEG    the rate is held at the peg (in the anchor's money, WN4b: the
+     *          US$ unless the player chose another of the eight; D$ per US$
+     *          is the peg over the anchor's US$ price), and the vault deals
+     *          what holding it takes (XR5): the sale or purchase that lifts
+     *          the shadow plus the support still felt to the held rate. The
+     *          rate is D$ per US$, so a HIGHER rate is a WEAKER D$ - the weak
+     *          edge is the upper one.
      *
      * THE SHADOW RATE is the float's rule run beside every regime: where the D$
      * would be. Under Lean and Float it is the rate itself; under a band or a
@@ -1248,13 +1253,29 @@ public class ForeignAccounts {
      * its own (noteEdgePaidByTreasury()). Neither is dealing the next reprice
      * feels: the edge's purchase IS the hold.
      *
+     * THE PEG'S ANCHOR (WN4b, 2026-11-08): a peg is kept in one of the eight
+     * moneys (pegAnchor, the US$ by default, and for every city and save
+     * there was), and the peg (pegRate) is D$ per unit of THAT money, as
+     * Denmark's krone is kept at so many to the euro. The rate the hold keeps,
+     * D$ per US$, is the peg over the anchor's US$ price that month
+     * (heldRate()), so it moves with the anchor against the US$: a euro peg
+     * holds the D$ at a fixed rate to the euro, and a euro that falls against
+     * the US$ takes the D$ with it. The shadow's gap, the hazard and the lift
+     * the hold buys are measured against that held rate, so a peg to the euro
+     * also has to hold the euro's swing against the US$ (the shadow is the
+     * D$'s own rule, in D$ per US$, and does not follow the euro). The vault's
+     * sales still come from its largest holding (WN4's call 7), whatever the
+     * anchor, and the dial is tied to the anchor's rate, not the US's
+     * (DebtManager.tieRate()). With the US$ for the anchor every number is what
+     * it was: heldRate() is pegRate itself.
+     *
      * Leaving a regime keeps its settings in the fields, so a re-entry can show
      * them; they act only in force.
      */
 
     /** The four ways a city can hold its D$ (XR2; the study's 3.6). */
     public enum Regime {
-        FLOAT("Float"), LEAN("Lean against falls"), BAND("Band"), PEG("Peg to the US$");
+        FLOAT("Float"), LEAN("Lean against falls"), BAND("Band"), PEG("Peg");
         public final String words;
         Regime(String words) { this.words = words; }
     }
@@ -1311,8 +1332,10 @@ public class ForeignAccounts {
     private EdgePayer edgePayer = EdgePayer.CENTRAL_BANK;
     /** The band: its centre now (D$ per US$), the log a year the centre crawls, and the share either side the edges sit. Kept when the regime is left. */
     private double bandCentre, bandSlope, bandWidth = BAND_WIDTH;
-    /** The peg, D$ per US$. Kept when the regime is left. */
+    /** The peg, D$ per unit of its anchor (D$ per US$ for the US$). Kept when the regime is left. */
     private double pegRate;
+    /** The money of the eight the peg is kept in, as an index into WorldMoneys.EIGHT (WN4b): 0 is the US$, which every city and save had. Kept when the regime is left. Saved (slot 148). */
+    private int pegAnchor;
     /** What a break put on the rate and has not yet faded, in logs, positive weaker, negative where the shadow was the stronger: the overshoot (repriceCurrency(), step 6). Saved. */
     private double breakFelt;
     /**
@@ -1358,7 +1381,8 @@ public class ForeignAccounts {
     public void setRegime(Regime r) {
         if (r == null || r == regime) return;
         if (r == Regime.PEG) {
-            pegRate = rate;
+            // At the day's rate, in the anchor's money (WN4b): D$ per unit of the anchor.
+            pegRate = pegAnchor == 0 ? rate : rate * anchorUsd();
         } else if (r == Regime.BAND) {
             bandCentre = rate;
             bandSlope = 0;
@@ -1372,10 +1396,39 @@ public class ForeignAccounts {
         regime = r;
     }
 
-    /** A devaluation (a higher peg, a weaker D$) or a revaluation, under a peg; nothing under another regime. The rate follows at the next reprice. */
+    /**
+     * A devaluation (a higher peg, a weaker D$) or a revaluation, under a peg; nothing under another regime. The new peg is in the ANCHOR's
+     * money (WN4b): D$ per unit of the anchor, D$ per US$ for the US$, so a caller that means the US$ means what it always did. The rate
+     * stays inside its limits at the day's cross (the held rate is the new peg over the anchor's US$ price). The rate follows at the next reprice.
+     */
     public void repeg(double newPeg) {
         if (regime != Regime.PEG || !(newPeg > 0) || !Double.isFinite(newPeg)) return;
-        pegRate = clampRate(newPeg);
+        pegRate = pegAnchor == 0 ? clampRate(newPeg) : clampRate(newPeg / anchorUsd()) * anchorUsd();
+    }
+
+    /**
+     * Chooses the money the peg is kept in (WN4b): one of the eight, by its index in WorldMoneys.EIGHT. Nothing for an index that is none of
+     * the eight, for a money with no rate to measure it by this month (hasRate()), or for the anchor it already has. The held rate does not
+     * move on the switch: the peg is struck again at the day's cross, as Denmark's krone moved from the mark to the euro in 1999 at the
+     * rate the two stood at, so the D$ per US$ is the same the month it is chosen and follows the new anchor from the next reprice. Works in
+     * any regime: outside a peg it changes the setting the next peg will be kept in, and the peg (if one is kept) is re-struck at the same cross.
+     */
+    public void setPegAnchor(int k) {
+        if (k < 0 || k >= MONEYS || k == pegAnchor) return;
+        if (k != 0 && !hasRate(k)) return;
+        double held = heldRate();
+        pegAnchor = k;
+        if (pegRate > 0) pegRate = k == 0 ? held : held * anchorUsd();
+    }
+
+    /** The US$ price of the peg's anchor (WN4b): 1 for the US$; else the price Game last handed, 1 for a money with none, which cannot happen (setPegAnchor() and restore() never leave a non-US anchor without a rate). */
+    private double anchorUsd() {
+        return pegAnchor == 0 ? 1 : usdPer[pegAnchor] > 0 ? usdPer[pegAnchor] : 1;
+    }
+
+    /** The rate the peg holds this month, D$ per US$ (WN4b): the peg over its anchor's US$ price; the peg itself for the US$. */
+    private double heldRate() {
+        return pegAnchor == 0 ? pegRate : pegRate / anchorUsd();
     }
 
     /** Sets the band: its centre (D$ per US$), the log a year it crawls and the share either side the edges sit, each inside its limits. The rate follows at the next reprice. */
@@ -1392,7 +1445,16 @@ public class ForeignAccounts {
 
     public Regime getRegime()         { return regime; }
     public EdgePayer getEdgePayer()   { return edgePayer; }
-    public double getPegRate()        { return pegRate; }
+    /** The rate the peg holds this month, D$ per US$ (WN4b): the peg in its anchor's money over the anchor's US$ price; the peg itself for the US$. 0 with no peg yet. */
+    public double getPegRate()        { return heldRate(); }
+    /** The money the peg is kept in, an index into WorldMoneys.EIGHT (0 is the US$; WN4b). */
+    public int getPegAnchor()         { return pegAnchor; }
+    /** ...and its code ("EUR"). */
+    public String getPegAnchorCode()  { return WorldMoneys.EIGHT.get(pegAnchor); }
+    /** The peg itself, D$ per unit of its anchor (D$ per US$ for the US$; WN4b): what a devaluation changes, and what does not move as the anchor does against the US$. 0 with no peg yet. */
+    public double getPegPerAnchor()   { return pegRate; }
+    /** The regime in words for a decision's line or a screen (WN4b): under a peg, whose ("Peg to the euro"); else the regime's own. */
+    public String regimeWords()       { return regime == Regime.PEG ? Regime.PEG.words + " to " + MONEY_NAME[pegAnchor] : regime.words; }
     public double getBandCentre()     { return bandCentre; }
     /** The log a year the band's centre crawls. */
     public double getBandSlope()      { return bandSlope; }
@@ -1424,7 +1486,7 @@ public class ForeignAccounts {
      * currency aim sets the dial against (DebtManager.currencyRate()). Pure.
      */
     public double currencyGap() {
-        if (regime == Regime.PEG && pegRate > 0) return getShadowRate() / pegRate - 1;
+        if (regime == Regime.PEG && pegRate > 0) return getShadowRate() / heldRate() - 1;
         if (regime == Regime.BAND && bandCentre > 0) return getShadowRate() / bandCentre - 1;
         return 0;
     }
@@ -1454,7 +1516,7 @@ public class ForeignAccounts {
     public double breakLanding() {
         if (regime != Regime.PEG || !(pegRate > 0)) return rate;
         double shadow = getShadowRate();
-        return shadow * Math.exp(OVERSHOOT * Math.log(shadow / pegRate));
+        return shadow * Math.exp(OVERSHOOT * Math.log(shadow / heldRate()));
     }
 
     /** How many months the vault lasts at the last reprice's sales (the hold's, XR5: what holding the rate took), to its floor, under a peg or a band that sold; infinity when it sold nothing. Pure. */
@@ -1530,7 +1592,7 @@ public class ForeignAccounts {
      * reading, so this is the deal's move alone: the month's other forces and the fading of what is felt are not in it. Pure.
      */
     public double rateAfterDeal(double localPurchase) {
-        if (regime == Regime.PEG && pegRate > 0) return pegRate;
+        if (regime == Regime.PEG && pegRate > 0) return heldRate();
         double to = rate * Math.exp(dealEffectOnTop(localPurchase));
         if (regime == Regime.BAND && rate > 0) return Math.max(bandStrongEdge(), Math.min(bandWeakEdge(), to));
         return to;
@@ -3037,9 +3099,16 @@ public class ForeignAccounts {
                  * level the month cannot restrike from the state it ended in: the
                  * rate under a peg is the shadow plus it. A save that has none of
                  * it reads a hold with no support, as a peg just entered would.
+                 *
+                 * ...AND THE PEG'S ANCHOR, slot 148 (WN4b, THE PEG'S ANCHOR): the
+                 * money of the eight the peg (slot 76) is kept in, as an index, 0
+                 * the US$. The peg is D$ per unit of it, and the rate held is the
+                 * peg over its US$ price (slots 113-120). A save that has none of
+                 * it reads the US$, which is what the peg was.
                  */
                 interestUsd, interestUsdLifetime, interestDriver, interestDriverUsd, interestBaseUsd,
-                holdFelt };
+                holdFelt,
+                pegAnchor };
     }
 
     public void restore(double[] saved) {
@@ -3217,6 +3286,11 @@ public class ForeignAccounts {
         }
         // What the hold still puts on the rate (XR5, slot 147); a save from before it has a hold with no support.
         if (saved.length > 147) holdFelt = Double.isFinite(saved[147]) ? saved[147] : 0;
+        // The peg's anchor (WN4b, slot 148); a save from before it is a peg to the US$. A money with no saved rate to measure it by cannot anchor a peg: it reads the US$.
+        if (saved.length > 148) {
+            pegAnchor = ordinalOr(saved[148], MONEYS, 0);
+            if (pegAnchor != 0 && !(usdPer[pegAnchor] > 0)) pegAnchor = 0;
+        }
     }
 
     /** A saved ordinal, or the fallback's when it is not a whole number inside 0 to length - 1. */
@@ -3306,6 +3380,7 @@ public class ForeignAccounts {
         regime = Regime.LEAN;
         edgePayer = EdgePayer.CENTRAL_BANK;
         bandCentre = bandSlope = pegRate = 0;
+        pegAnchor = 0;
         bandWidth = BAND_WIDTH;
         breakFelt = lastShadowLog = holdFelt = 0;
         heldLastMonth = false;

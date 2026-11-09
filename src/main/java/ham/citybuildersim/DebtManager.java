@@ -136,7 +136,10 @@ public class DebtManager {
        Mix of the two. And under a PEG the dial is TIED to the US's rate, as
        Hong Kong's follows the US's by the board's own working (star 5): only a
        SPREAD over it is the city's to set, up against money leaving, down
-       against money arriving - or the currency aim sets it.
+       against money arriving - or the currency aim sets it. Since WN4b the
+       peg may be kept in any of the eight, and the dial is tied to THAT
+       money's central bank's rate (tieRate(): the anchor's, as Denmark's
+       follows the ECB's), the US's for a peg to the US$ as it always was.
 
        THE US'S POLICY RATE IS HANDED EACH MONTH (PolicyRates, XR4): worldRate()
        is the world's price of money where the city has the world file, and
@@ -168,18 +171,22 @@ public class DebtManager {
         this.aim = next;
     }
 
-    /** Under a peg, what the dial stands over the US's rate (a fraction a year, negative under it): the player's to set, to defend the peg. Kept when the peg is left. */
+    /** Under a peg, what the dial stands over its anchor's rate (the US's for a peg to the US$; a fraction a year, negative under it): the player's to set, to defend the peg. Kept when the peg is left. */
     private double pegSpread;
 
     public double getPegSpread() { return pegSpread; }
 
-    /** Sets the spread, inside what keeps the tied rate on the dial (MIN_POLICY_RATE to MAX_POLICY_RATE over worldRate()). */
+    /** Sets the spread, inside what keeps the tied rate on the dial (MIN_POLICY_RATE to MAX_POLICY_RATE over tieRate(): the peg's anchor's rate, the US's for the US$). */
     public void setPegSpread(double spread) {
         double next = Double.isFinite(spread)
-                ? Math.max(MIN_POLICY_RATE - worldRate(), Math.min(MAX_POLICY_RATE - worldRate(), spread))
+                ? Math.max(MIN_POLICY_RATE - tieRate(), Math.min(MAX_POLICY_RATE - tieRate(), spread))
                 : 0;
         if (DecisionLog.moved(pegSpread, next)) {
-            decided(DecisionLog.CENTRAL_BANK, "Spread over the US rate to " + DecisionLog.pct2(next));
+            String code = tieMoney();
+            int k = ForeignAccounts.moneyIndex(code);
+            String over = code == null || k == 0 ? "the US rate"
+                    : (k < 0 ? code : ForeignAccounts.MONEY_NAME[k]) + "'s rate";
+            decided(DecisionLog.CENTRAL_BANK, "Spread over " + over + " to " + DecisionLog.pct2(next));
         }
         this.pegSpread = next;
     }
@@ -195,10 +202,10 @@ public class DebtManager {
                 advisedPolicyRate(inflation) + CURRENCY_WEIGHT * gap));
     }
 
-    /** The dial under a peg (star 5): the US's rate plus the spread - the player's, or with the autopilot aiming at the currency (or a mix) the one the gap asks - inside the dial's bounds. Pure. */
+    /** The dial under a peg (star 5): the anchor's rate (tieRate(): the US's for a peg to the US$) plus the spread - the player's, or with the autopilot aiming at the currency (or a mix) the one the gap asks - inside the dial's bounds. Pure. */
     public double tiedRate(double gap) {
         double spread = autopilot && aim != Aim.INFLATION ? CURRENCY_WEIGHT * gap : pegSpread;
-        return Math.max(MIN_POLICY_RATE, Math.min(MAX_POLICY_RATE, worldRate() + spread));
+        return Math.max(MIN_POLICY_RATE, Math.min(MAX_POLICY_RATE, tieRate() + spread));
     }
 
     /**
@@ -2171,7 +2178,7 @@ public class DebtManager {
      * the market expects the dial to close on (YieldCurve.expectedPath()'s
      * R(0)), advisedPolicyRate() at the inflation the month struck; the dial
      * itself when nothing is struck, as the path is then flat at it - and
-     * since XR5 when the dial is tied to the US's rate (isTied(), a peg): the
+     * since XR5 when the dial is tied to its anchor's rate (isTied(), a peg): the
      * market then expects the dial to stay tied, so the rule it closes on is
      * the dial. It is not the path's first month - that is the dial, and the
      * gap between the two closes from there (expectedPath()) - except with the
@@ -2192,8 +2199,9 @@ public class DebtManager {
     }
 
     /**
-     * IS THE DIAL TIED TO THE US'S RATE (XR5, PRICE ON THE TIED PATH)? Under a
-     * peg Game sets the dial to tiedRate() every month (the US's rate plus the
+     * IS THE DIAL TIED TO THE ANCHOR'S RATE (XR5, PRICE ON THE TIED PATH)? Under a
+     * peg Game sets the dial to tiedRate() every month (the anchor's rate, the
+     * US's for a peg to the US$, plus the
      * spread), and the inflation rule is not what the market expects it to
      * follow: the curve's path and a floater's close on the dial and not on
      * the rule. False for a manager nobody handed a source (setTiedSource()),
@@ -2204,12 +2212,30 @@ public class DebtManager {
         return source != null && source.getAsBoolean();
     }
 
-    /** Hands the manager whether the city's dial is tied to the US's (Game: the peg is the regime in force), so it can price the tied path without knowing the currency. Not saved: Game hands it in when it builds the manager; a fixture hands its own. */
+    /** Hands the manager whether the city's dial is tied to its anchor's rate (Game: the peg is the regime in force), so it can price the tied path without knowing the currency. Not saved: Game hands it in when it builds the manager; a fixture hands its own. */
     public void setTiedSource(java.util.function.BooleanSupplier source) {
         this.tiedSource = source;
     }
 
     private transient java.util.function.BooleanSupplier tiedSource;
+
+    /** Hands the manager the code of the money the peg is kept in (Game: ForeignAccounts.getPegAnchorCode(), WN4b), so the tied dial reads that money's central bank's rate. Not saved: Game hands it in when it builds the manager; a fixture hands its own. */
+    public void setTieMoneySource(java.util.function.Supplier<String> source) {
+        this.tieMoneySource = source;
+    }
+
+    private transient java.util.function.Supplier<String> tieMoneySource;
+
+    /** The money the dial is tied to (WN4b): the peg's anchor's code while the dial is tied (isTied()); null when it is not, or nobody handed a source. Pure. */
+    public String tieMoney() {
+        java.util.function.Supplier<String> source = tieMoneySource;
+        return isTied() && source != null ? source.get() : null;
+    }
+
+    /** The rate the tied dial stands over (WN4b): the world's rate in the anchor's money, worldRate(tieMoney()) - the US's for a peg to the US$ and for a dial not tied, to the bit. Pure. */
+    public double tieRate() {
+        return worldRate(tieMoney());
+    }
 
     /**
      * The expected dial's path and the curve built on it are CACHED, because
@@ -2250,7 +2276,7 @@ public class DebtManager {
     /**
      * The dial the market expects from this floor: the rule's path from the
      * struck expectations, or the floor held flat when nothing is struck - and
-     * since XR5, with the dial tied to the US's rate (isTied(), a peg), the
+     * since XR5, with the dial tied to its anchor's rate (isTied(), a peg), the
      * floor's premium over THE DIAL closes as it does toward the rule, so the
      * long end follows the US-tied dial and not the inflation rule the dial no
      * longer follows. The tie is in the cache's key (the dial when tied, NaN
@@ -2421,7 +2447,7 @@ public class DebtManager {
      * floating-rate note's coupons are priced on - the same expected path the curve is built on
      * (YieldCurve.expectedPath()), started from the dial and not from the floor. The rule's path
      * from the struck expectations; the dial held flat when nothing is struck, and, since
-     * XR5, when it is tied to the US's rate (isTied(): the market expects it to stay there, so
+     * XR5, when it is tied to its anchor's rate (isTied(): the market expects it to stay there, so
      * the path is flat at it). Cached as pathFor() caches, the tie in the key, and not to be
      * changed.
      */

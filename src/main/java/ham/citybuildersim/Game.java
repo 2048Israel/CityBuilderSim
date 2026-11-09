@@ -352,6 +352,7 @@ public class Game {
         debtManager.setRateVolatility(this::rateVolatility);   // a callable piece is valued at the city's own volatility (CD4)
         debtManager.setPriceIndexSource(() -> priceIndex.getIndex());   // a linked bond is indexed on the city's price index (CD5)
         debtManager.setTiedSource(() -> foreign.getRegime() == ForeignAccounts.Regime.PEG);   // a peg ties the dial to the US's, and the curve is priced on the tied path (XR5)
+        debtManager.setTieMoneySource(foreign::getPegAnchorCode);   // ...to its anchor's rate: the money the peg is kept in (WN4b), the US$ unless the player chose another
         businessInvestment = new BusinessInvestment(buildingManager, economyManager);
         businessInvestment.watchOrders(orderWatch);   // a harness's watch outlives a load (0.7.54)
         businessInvestment.setRunWorksCost(this::runWorksCost);   // a railway line's cuts, viaducts and tunnels are in its price (ET4)
@@ -5881,17 +5882,43 @@ public class Game {
         ForeignAccounts.Regime was = foreign.getRegime();
         foreign.setRegime(regime);
         if (foreign.getRegime() != was) {
-            decisions.record(DecisionLog.CURRENCY, "Currency regime to " + foreign.getRegime().words);
+            decisions.record(DecisionLog.CURRENCY, "Currency regime to " + foreign.regimeWords());
         }
     }
 
-    /** Moves the peg (a higher rate is a devaluation); nothing outside a peg. */
+    /** Moves the peg (a higher rate is a devaluation); nothing outside a peg. The rate is in the peg's anchor's money (WN4b): D$ per unit of it, D$ per US$ for the US$. */
     public void repeg(double rate) {
-        double was = foreign.getPegRate();
+        double was = foreign.getPegPerAnchor();
         foreign.repeg(rate);
-        if (DecisionLog.moved(was, foreign.getPegRate())) {
-            decisions.record(DecisionLog.CURRENCY, String.format("%s the peg to %.4f D$ per US$",
-                    foreign.getPegRate() > was ? "Devalued" : "Revalued", foreign.getPegRate()));
+        if (DecisionLog.moved(was, foreign.getPegPerAnchor())) {
+            decisions.record(DecisionLog.CURRENCY, String.format("%s the peg to %.4f D$ per %s",
+                    foreign.getPegPerAnchor() > was ? "Devalued" : "Revalued", foreign.getPegPerAnchor(), anchorMark()));
+        }
+    }
+
+    /** The mark the peg's anchor is written with in a decision's line: "US$" for the US$, the money's own mark ("€") for another (WN4b). */
+    private String anchorMark() {
+        int k = foreign.getPegAnchor();
+        return k == 0 ? "US$" : ForeignAccounts.MONEY_MARK[k].trim();
+    }
+
+    /**
+     * Chooses the money the peg is kept in (WN4b): one of the eight, by code ("EUR"); nothing for a code that is none of them or a money with no rate
+     * this month. Under a peg in force the peg is struck again at the day's cross, so the rate does not move that month and follows the new anchor
+     * from the next (Denmark's krone moving from the mark to the euro in 1999); outside a peg it changes the money the next peg will be kept in.
+     */
+    public void setPegAnchor(String code) {
+        int k = ForeignAccounts.moneyIndex(code);
+        int was = foreign.getPegAnchor();
+        foreign.setPegAnchor(k);
+        if (foreign.getPegAnchor() != was) {
+            k = foreign.getPegAnchor();
+            if (foreign.getRegime() == ForeignAccounts.Regime.PEG) {
+                decisions.record(DecisionLog.CURRENCY, String.format("Re-pegged the D$ to %s at %.4f D$ per %s",
+                        ForeignAccounts.MONEY_NAME[k], foreign.getPegPerAnchor(), anchorMark()));
+            } else {
+                decisions.record(DecisionLog.CURRENCY, "The peg's anchor to " + ForeignAccounts.MONEY_NAME[k]);
+            }
         }
     }
 
@@ -13177,7 +13204,9 @@ public class Game {
          * SINCE XR2 THE REGIME AND THE AIM CHOOSE THE RULE (ForeignAccounts,
          * THE REGIMES; DebtManager, WHAT THE AUTOPILOT AIMS AT). Under a PEG the
          * dial is tied to the US's rate, whatever the autopilot (star 5): the
-         * world's rate plus the player's spread, or with the autopilot aiming at
+         * world's rate (since WN4b the rate of the money the peg is kept in,
+         * DebtManager.tieRate(); the US's for a peg to the US$, and for every
+         * city there was) plus the player's spread, or with the autopilot aiming at
          * the currency (or a mix) the spread the D$'s gap asks. Under a BAND the
          * autopilot's aim picks the rule: Inflation as before, the Currency (the
          * US's rate plus the gap's quarter point), or a Mix (the inflation rule
