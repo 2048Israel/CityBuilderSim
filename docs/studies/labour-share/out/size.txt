@@ -1,0 +1,163 @@
+Each sector's share of the city's value added, payroll and workers, %; then BEA's value added and
+compensation shares of the industries the game maps to, 2023-2025 (an industry two sectors share
+is printed beside both).
+
+== default-s0, the year to m600
+  sector                va   pay  wkrs   BEA va  comp
+  Manufacturing       29.8  17.2  16.9      1.6   2.6
+  Business Services   23.2  57.3  57.5     11.3  19.9
+  Construction        13.7   7.7   7.8     10.3  16.5
+  Real Estate         12.0   2.0   2.0     29.3   3.5
+  Automotive           5.4   4.7   4.6      1.5   2.0
+  Luxury Retail        5.0   0.2   0.2      7.7   8.3
+  Restaurants          3.5   1.9   1.9      5.5   9.4
+  Retail               3.2   3.8   3.9     14.1  17.1
+  Materials            3.0   3.4   3.4      0.7   0.8
+  Food Processing      0.6   0.5   0.5      3.0   3.3
+  Industry             0.5   0.7   0.7      3.0   3.3
+  Agriculture          0.1   0.0   0.0      1.6   0.9
+  Wood Products        0.0   0.5   0.5      0.4   0.7
+
+== default-s0, the year to m1200
+  sector                va   pay  wkrs   BEA va  comp
+  Manufacturing       43.4  82.8  82.6      1.6   2.6
+  Construction        21.2   5.7   5.9     10.3  16.5
+  Real Estate         17.4   3.0   3.0     29.3   3.5
+  Freight             10.1   2.7   2.7      7.8  11.9
+  Luxury Retail        2.9   0.2   0.2      7.7   8.3
+  Retail               2.8   2.3   2.3     14.1  17.1
+  Restaurants          1.2   1.9   2.0      5.5   9.4
+  Industry             1.0   1.4   1.3      3.0   3.3
+  Agriculture          0.1   0.1   0.1      1.6   0.9
+
+== default-s0, the year to m2400
+  sector                va   pay  wkrs   BEA va  comp
+  Copper Refining     62.3  14.3  13.8      0.6   0.8
+  Luxury Retail       14.9   2.7   2.6      7.7   8.3
+  Manufacturing        8.1  40.0  40.3      1.6   2.6
+  Construction         4.6   8.8   9.2     10.3  16.5
+  Automotive           3.5  17.9  17.6      1.5   2.0
+  Freight              3.1   6.3   6.4      7.8  11.9
+  Real Estate          1.5   2.2   2.2     29.3   3.5
+  Restaurants          0.9   1.5   1.6      5.5   9.4
+  Cement & Concrete    0.4   1.3   1.3      0.7   0.8
+  Retail               0.4   2.6   2.6     14.1  17.1
+  Materials            0.2   1.9   2.0      0.7   0.8
+  Food Processing      0.1   0.4   0.4      3.0   3.3
+  Industry             0.0   0.1   0.1      3.0   3.3
+  Agriculture          0.0   0.0   0.0      1.6   0.9
+
+== default-s0, the year to m3996
+  sector                va   pay  wkrs   BEA va  comp
+  Copper Refining     72.3  24.8  24.0      0.6   0.8
+  Luxury Retail       15.7   4.2   4.1      7.7   8.3
+  Manufacturing        6.0  40.9  41.8      1.6   2.6
+  Automotive           1.6  17.0  16.9      1.5   2.0
+  Construction         1.5   4.3   4.4     10.3  16.5
+  Real Estate          1.1   2.1   2.2     29.3   3.5
+  Restaurants          0.8   1.4   1.5      5.5   9.4
+  Retail               0.7   2.8   2.9     14.1  17.1
+  Freight              0.2   1.3   1.3      7.8  11.9
+  Iron Mining          0.1   0.5   0.5      0.6   0.5
+  Cement & Concrete    0.1   0.3   0.3      0.7   0.8
+  Food Processing      0.0   0.1   0.1      3.0   3.3
+  Agriculture          0.0   0.0   0.0      1.6   0.9
+  Industry             0.0   0.0   0.0      3.0   3.3
+  Oil                  0.0   0.0   0.0      2.1   0.6
+
+== default-s1, the year to m600
+  sector                va   pay  wkrs   BEA va  comp
+  Automotive          36.5  40.0  39.3      1.5   2.0
+  Manufacturing       25.2  26.5  26.8      1.6   2.6
+  Real Estate          8.0   1.7   1.8     29.3   3.5
+  Wood Products        6.4   7.2   6.8      0.4   0.7
+  Luxury Retail        6.2   0.3   0.3      7.7   8.3
+  Construction         5.3   4.0   4.1     10.3  16.5
+  Restaurants          4.6   2.2   2.2      5.5   9.4
+  Business Services    4.2  11.6  11.9     11.3  19.9
+  Retail               1.8   3.8   3.9     14.1  17.1
+  Industry             1.0   2.1   2.1      3.0   3.3
+  Food Processing      0.6   0.6   0.6      3.0   3.3
+  Agriculture          0.1   0.1   0.1      1.6   0.9
+  Freight              0.1   0.0   0.0      7.8  11.9
+
+== default-s1, the year to m1200
+  sector                va   pay  wkrs   BEA va  comp
+  Manufacturing       32.2  42.1  42.3      1.6   2.6
+  Construction        26.1  11.5  12.0     10.3  16.5
+  Automotive          17.8  27.6  26.8      1.5   2.0
+  Luxury Retail        6.8   0.3   0.2      7.7   8.3
+  Real Estate          3.8   2.0   2.0     29.3   3.5
+  Restaurants          3.7   1.6   1.6      5.5   9.4
+  Freight              2.6   3.3   3.3      7.8  11.9
+  Materials            2.5   5.4   5.5      0.7   0.8
+  Retail               1.2   2.5   2.5     14.1  17.1
+  Iron & Steel         1.2   1.7   1.7      0.6   0.8
+  Cement & Concrete    0.9   0.8   0.7      0.7   0.8
+  Wood Products        0.4   0.6   0.5      0.4   0.7
+  Food Processing      0.4   0.4   0.4      3.0   3.3
+  Industry             0.3   0.4   0.4      3.0   3.3
+  Agriculture          0.1   0.0   0.0      1.6   0.9
+  Forestry             0.0   0.0   0.0      0.4   0.7
+
+== default-s1, the year to m2400
+  sector                va   pay  wkrs   BEA va  comp
+  Manufacturing       35.3  48.5  49.1      1.6   2.6
+  Automotive          26.5  33.8  33.3      1.5   2.0
+  Luxury Retail       12.6   0.8   0.7      7.7   8.3
+  Real Estate          7.2   2.3   2.3     29.3   3.5
+  Construction         6.1   2.2   2.1     10.3  16.5
+  Restaurants          3.5   1.5   1.5      5.5   9.4
+  Freight              2.4   2.2   2.2      7.8  11.9
+  Cement & Concrete    2.4   2.4   2.3      0.7   0.8
+  Retail               2.0   2.9   3.0     14.1  17.1
+  Materials            1.0   2.0   2.0      0.7   0.8
+  Food Processing      0.4   0.5   0.5      3.0   3.3
+  Wood Products        0.3   0.4   0.4      0.4   0.7
+  Business Services    0.2   0.6   0.5     11.3  19.9
+  Agriculture          0.0   0.0   0.0      1.6   0.9
+  Industry             0.0   0.0   0.0      3.0   3.3
+
+== earth-rotterdam, the year to m600
+  sector                va   pay  wkrs   BEA va  comp
+  Manufacturing       50.4  39.1  38.8      1.6   2.6
+  Automotive          15.4  21.6  21.1      1.5   2.0
+  Construction        10.1   8.0   8.2     10.3  16.5
+  Real Estate          8.1   3.1   3.2     29.3   3.5
+  Luxury Retail        4.3   0.2   0.2      7.7   8.3
+  Restaurants          3.1   2.6   2.7      5.5   9.4
+  Industry             3.0   9.4   9.6      3.0   3.3
+  Business Services    2.6   9.4   9.5     11.3  19.9
+  Retail               2.0   3.7   3.8     14.1  17.1
+  Food Processing      0.6   0.7   0.8      3.0   3.3
+  Wood Products        0.1   2.0   2.1      0.4   0.7
+  Agriculture          0.1   0.1   0.1      1.6   0.9
+
+== earth-rotterdam, the year to m1200
+  sector                va   pay  wkrs   BEA va  comp
+  Manufacturing       37.8  52.2  52.5      1.6   2.6
+  Automotive          19.0  29.6  29.0      1.5   2.0
+  Real Estate         13.2   2.6   2.6     29.3   3.5
+  Construction         9.9   4.1   4.3     10.3  16.5
+  Luxury Retail        7.7   0.3   0.3      7.7   8.3
+  Restaurants          5.4   2.3   2.4      5.5   9.4
+  Retail               4.0   5.9   6.0     14.1  17.1
+  Industry             2.2   2.3   2.4      3.0   3.3
+  Food Processing      0.6   0.5   0.5      3.0   3.3
+  Agriculture          0.1   0.1   0.1      1.6   0.9
+
+== earth-rotterdam, the year to m2400
+  sector                va   pay  wkrs   BEA va  comp
+  Manufacturing       64.0  77.9  77.9      1.6   2.6
+  Freight             10.6   6.5   6.5      7.8  11.9
+  Luxury Retail        7.9   0.4   0.4      7.7   8.3
+  Restaurants          5.5   2.0   2.1      5.5   9.4
+  Real Estate          5.3   2.6   2.6     29.3   3.5
+  Construction         2.4   3.4   3.5     10.3  16.5
+  Retail               1.6   2.7   2.7     14.1  17.1
+  Materials            0.8   1.8   1.6      0.7   0.8
+  Industry             0.8   1.2   1.2      3.0   3.3
+  Food Processing      0.5   0.6   0.6      3.0   3.3
+  Cement & Concrete    0.5   1.0   0.9      0.7   0.8
+  Agriculture          0.0   0.0   0.0      1.6   0.9
+  Forestry             0.0   0.0   0.0      0.4   0.7
