@@ -2635,6 +2635,14 @@ public final class CityRuns {
     /** layRail()'s last stamp, and whether it has one: everything it reads, so it lays nothing twice for the same inputs. */
     private long railStamp;
     private boolean railStampSet;
+    /**
+     * (RI1) Each map piece whose rail hub search found no crossing: {the ground's version, the anchor's x, y} it was searched at; it is not
+     * searched again till one of them moves. WHY: the stamp moves whenever the model's track does, every month in a growing city, and in
+     * MapCheck's square city at 5B (550 pieces, 334 with a railway) the pieces without one searched afresh took the month from 2 ms to 100
+     * (its budget 5).
+     * Not saved: a loaded city searches once.
+     */
+    private long[][] railMiss = new long[0][];
 
     /**
      * What one layRail() run builds on demand and its steps share: the bulk
@@ -2710,6 +2718,29 @@ public final class CityRuns {
             tiersSorted.put(key, sorted);
             return null;
         }
+
+        /**
+         * (RI1) The first yard's box with the railway on more than one piece: nearestMineSpot()'s order, but the first that fits on home's ground
+         * (map piece 0) before any on an island's line; an island's only where home's track has room for none. WHY: the islands' spines are
+         * yard lines since RI1 (spotsOnTrack()), and a mine on an island beside its line would otherwise take home's first yard, the freight
+         * station's. The search's place is left as it was.
+         */
+        long[] homeFirstSpot(int w, int h, Ground g, Pieces pieces) {
+            long key = ((long) w << 32) ^ h;
+            List<long[]> list = spots.computeIfAbsent(key, k -> new ArrayList<>());
+            List<List<long[]>> tiers = spotTiers.computeIfAbsent(key, k -> spotsOnTrack(w, h));
+            int sorted = tiersSorted.getOrDefault(key, 0);
+            while (sorted < tiers.size()) list.addAll(nearestMineFirst(tiers.get(sorted++), mines));
+            tiersSorted.put(key, sorted);
+            long[] island = null;
+            for (int i = spotAt.getOrDefault(key, 0); i < list.size(); i++) {
+                long[] s = list.get(i);
+                if (!yardFits(s, g, mines, yards)) continue;
+                if (pieces.pieceOf(s[0] + s[2] / 2, s[1] + s[3] / 2) == 0) return s;
+                if (island == null) island = s;
+            }
+            return island;
+        }
     }
 
     /**
@@ -2753,7 +2784,7 @@ public final class CityRuns {
         if (rail.started) {
             Ctx ctx = new Ctx(mines, works);
             if (!sizes.isEmpty() && yards.isEmpty()) {
-                long[] first = ctx.nearestMineSpot(sizes.get(0)[0], sizes.get(0)[1], g);
+                long[] first = deal == null ? ctx.nearestMineSpot(sizes.get(0)[0], sizes.get(0)[1], g) : ctx.homeFirstSpot(sizes.get(0)[0], sizes.get(0)[1], g, pieces);
                 if (first != null) addYard(first, sizes.get(0));
             }
             laySidings(spurs, ctx, g, budget);
@@ -2797,12 +2828,18 @@ public final class CityRuns {
             int mj = pieces.pieceOf(hj[0], hj[1]);
             if (mj >= 0 && mj < held.length) held[mj] = true;
         }
+        if (railMiss.length != held.length) railMiss = new long[held.length][];
         for (int m = 1; m < held.length; m++) {
             if (held[m] || pieces.weight(m) <= 0) continue;
             long[] anchor = pieces.anchor(m);
             if (anchor == null) continue;
+            long[] miss = railMiss[m];
+            if (miss != null && miss[0] == g.version() && miss[1] == anchor[0] && miss[2] == anchor[1]) continue;
             long[] h = crossingNear(RAIL_AT, g, anchor[0], anchor[1], pieces, m);
-            if (h == null) continue;
+            if (h == null) {
+                railMiss[m] = new long[] { g.version(), anchor[0], anchor[1] };
+                continue;
+            }
             wayCorridors();
             openPiece(rail, h[0], h[1]);
             held[m] = true;

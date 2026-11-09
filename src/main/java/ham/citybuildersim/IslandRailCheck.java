@@ -32,7 +32,8 @@ import ham.citybuildersim.IslandNetCheck.Land;
  *   3. YARDS. The model asks 3 yards: yard 0 at home beside the mine, yards 1 and 2 on A's and B's own track, nearest their hubs (their
  *      middles on their pieces); an island with a yard has its line grown to its edges, till every arm waits, as a station's line is at home;
  *      the freight station is the home yard though an island yard is nearer the main line's end (the premise: the fixture causes it), and
- *      wayTo() of an island yard is null (the home yard's is not).
+ *      wayTo() of an island yard is null (the home yard's is not). Yard 0 is home's though a mine on island A beside its line puts A's box
+ *      first in the nearest-a-mine order (the premise), and it is the freight station.
  *
  *   4. SIDINGS. A bulk works on island A within SIDING_REACH of A's line gets a siding from A's line, every plot of it on A's dry ground;
  *      with islandRail off (the premise) A has no line and the works gets none.
@@ -378,6 +379,27 @@ public class IslandRailCheck {
         f.sea.version++;
         f.again(runs, 0, track, sizes, 0, mines, NONE);
         check("laid again for the same inputs, the yards stand where they were and nothing moves", runs.signature() == sig && runs.yards().size() == 3);
+
+        // The first yard is home's though a mine on an island stands beside its line (the islands' spines are yard lines since RI1).
+        long[] hubA = f.lay(0, track, NO_YARDS, 0, mines, NONE).rail.pieceHub(1);
+        long off = size[1] / 2 + 2;
+        List<long[]> mines2 = new ArrayList<>(mines);
+        mines2.add(new long[] { hubA[0] + CityRuns.CELL, hubA[1] + off, hubA[0] + CityRuns.CELL + 6, hubA[1] + off + 6 });
+        Fix f2 = new Fix(GAP_NEAR);
+        CityRuns r2 = f2.lay(0, track, sizes, 0, mines2, NONE);
+        long[] firstFit = null;
+        for (long[] s : r2.yardSpots(size[0], size[1], mines2)) if (r2.yardFits(s, f2.sea, mines2, new ArrayList<>())) { firstFit = s; break; }
+        long[] homeFit = null;
+        for (long[] s : r2.yardSpots(size[0], size[1], mines2)) {
+            if (f2.pieces.pieceOf(s[0] + s[2] / 2, s[1] + s[3] / 2) == 0 && r2.yardFits(s, f2.sea, mines2, new ArrayList<>())) { homeFit = s; break; }
+        }
+        long[] z0 = r2.yards().isEmpty() ? null : r2.yards().get(0);
+        System.out.printf("  a mine on A beside its line: the first box in the nearest-a-mine order %s, the first of home's %s, yard 0 %s%n",
+                Arrays.toString(firstFit), Arrays.toString(homeFit), Arrays.toString(z0));
+        check("fixture (premise): with a mine on island A beside its line, the first box that fits in the nearest-a-mine order is on A", firstFit != null
+                && f2.pieces.pieceOf(firstFit[0] + firstFit[2] / 2, firstFit[1] + firstFit[3] / 2) == 1);
+        check("...yard 0 is home's all the same: the first box of home's in that order", z0 != null && homeFit != null && Arrays.equals(z0, homeFit));
+        check("...and it is the freight station", z0 != null && Arrays.equals(r2.freightStation(), z0));
     }
 
     /** Piece p's square of ground. */
@@ -649,6 +671,48 @@ public class IslandRailCheck {
         fillHome(c, house, lms.rows().get(1).buildableSqFt() / 2);
         p.settled = LandmassCheck.until(c, () -> settled(c), LINK_MONTHS);
         return p;
+    }
+
+    /** What a tool needs of section 8's city to draw it (IslandRailRenders): the game, its map, the island's map piece and rail-net piece, the terminal's box middle, the island's rail hub, its tiles and its yards. */
+    public static final class PortIsland {
+        public Game game;
+        public CityMap map;
+        /** The island's piece on the map (CityMap's pieces), and its piece in the railway net (CityRuns.Net.pieceHub, piecePlots). */
+        public int piece, railPiece;
+        /** The berthed terminal's box middle {x0 + w/2, y0 + h/2}, in plots, and the island's railway hub {x, y}. */
+        public long[] mid, railHub;
+        /** The tiles {tx, ty} of the island's square the piece holds. */
+        public List<long[]> tiles;
+        /** The yards {x, y, w, h} the railway has on the island's piece. */
+        public List<long[]> yards;
+    }
+
+    /** Section 8's city (Rotterdam, the island of 648 linked by its General Cargo Terminal, a railway with yards, buildings on the island) for a tool, built once as port() builds it; null where the Earth fixture is not beside the classes or the island has no piece, terminal or railway hub. */
+    public static PortIsland portIsland() throws Exception {
+        Port p = port();
+        if (p == null || !p.found) return null;
+        Game g = p.c.g;
+        CityMap map = g.getCityMap();
+        int ip = islandPiece(map, p);
+        if (ip < 1) return null;
+        CityShore.Work work = null;
+        for (CityShore.Work k : map.shore().works()) {
+            long[] sp = k.shorePlot();
+            if (k.berthed() && p.w.landmassAt(sp[0], sp[1]) == 648) { work = k; break; }
+        }
+        int rj = netOf(map.runs().rail(), map, ip);
+        if (work == null || rj < 1) return null;
+        PortIsland out = new PortIsland();
+        out.game = g;
+        out.map = map;
+        out.piece = ip;
+        out.railPiece = rj;
+        out.mid = new long[] { work.x0() + work.w() / 2, work.y0() + work.h() / 2 };
+        out.railHub = map.runs().rail().pieceHub(rj);
+        out.tiles = tilesOf(map, ip, p.box);
+        out.yards = new ArrayList<>();
+        for (long[] y : map.runs().yards()) if (map.pieces().pieceOf(y[0] + y[2] / 2, y[1] + y[3] / 2) == ip) out.yards.add(y.clone());
+        return out;
     }
 
     /** Whether the city owns a plot of the square (every fourth plot looked at). */

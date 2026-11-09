@@ -935,7 +935,7 @@ adds its line here, not in `CLAUDE.md`.
                                    -Dplaytest.budget=N prints the treasury's month line by line; since
                                    0.8.14 (batch CL3) its layout watch: how many boxes the map moved
                                    between month pairs, and where industry and the homes stand
-        tools/                     the index generators, the two look-up tools, Stale (the prose check), Names (a branch's names checked, RV1), ManualToMarkdown (the manual into docs/) and LandTable (world/land-2024.json from tools/world/land.tsv, WN5); nothing in the game uses them
+        tools/                     the index generators, the two look-up tools, Stale (the prose check), Names (a branch's names checked, RV1), ManualToMarkdown (the manual into docs/), LandTable (world/land-2024.json from tools/world/land.tsv, WN5) and IslandRailRenders (RI1-C: IslandRailCheck's linked island and its railway drawn, docs/queue/RI1/); nothing in the game uses them
     src/main/resources/buildings.json    the balance file (ids permanent); consumption.json the basket;
                                          research.json the research catalogue (R2; codes permanent);
                                          fonts/ the eight IBM Plex files and their licence, OFL.txt (0.7.21);
