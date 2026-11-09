@@ -737,6 +737,11 @@ adds its line here, not in `CLAUDE.md`.
                                    corridor by a link that searches its way over the dry ground, and every
                                    piece of ground the water parts that holds buildings grows its own net
                                    (CityMap's pieces), the sidecar FORMAT 12 - IslandNetCheck holds it;
+                                   (batch RI1) the railway too has a piece on each of them, its track
+                                   dealt by the same weights from a rail hub nearest the piece's anchor,
+                                   a new yard to a piece that has none, its sidings and branches from the
+                                   island's line, the freight station and the trains staying home -
+                                   IslandRailCheck holds it;
                                    (batch ET6) a long bridge the model builds is handed to the map
                                    (CityMap.bridgePicture()) and laid whole as a fixed path of its kind -
                                    the highways', the railway's, or a road bridge's ground kept clear as a

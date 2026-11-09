@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**190 harness files, 22,346 labelled assertions.** AllChecks runs 190 of them.
+**191 harness files, 22,403 labelled assertions.** AllChecks runs 191 of them.
 
 ## Which harnesses read which class
 
@@ -64,10 +64,10 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CityBuilderSim](map/CityBuilderSim.md) | **none** |
 | [CityCalendar](map/CityCalendar.md) | ArrivalMixCheck, AuctionCheck, BasketYearCheck, CalendarCheck, CausesOfDeathCheck, ChartCheck, DebtExchangeCheck, DenominationCheck, EquipmentCheck, ForeignDebtCheck, FundCheck, KeptCheck, LandNationsCheck, OilViewCheck, PolicyDatesCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, RecipeCheck, ReplayCheck, ResearchCheck, SaveFileCheck, WorldMoneysCheck, YearBookCheck |
 | [CityLand](map/CityLand.md) | AutoBuildCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, HydroCheck, IslandNetCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, QuarryingCheck, ReadPathCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SlopeCheck, WaterCheck, WorldCheck |
-| [CityMap](map/CityMap.md) | BridgeCheck, BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck |
+| [CityMap](map/CityMap.md) | BridgeCheck, BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, IslandRailCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck |
 | [CityMeasures](map/CityMeasures.md) | RankingsCheck |
 | [CityNeeds](map/CityNeeds.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ChildcareCheck, LandCheck, LongPlaytest, PlaytestFixCheck, PolicyPreviewCheck, ReadPathCheck, RoadCheck, WaterCheck, ZoningViewCheck |
-| [CityRuns](map/CityRuns.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, TruckRouteCheck |
+| [CityRuns](map/CityRuns.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, IslandRailCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, TruckRouteCheck |
 | [CityShore](map/CityShore.md) | LandmassCheck, MapCheck, PortCheck, RailDrawCheck, TruckRouteCheck |
 | [ClockPace](map/ClockPace.md) | ClockCheck, KeptCheck |
 | [CoalMining](map/CoalMining.md) | BuildCardCheck, BuildingDataCheck, CoalMiningCheck, IndustryViewCheck, LandCheck |
@@ -230,7 +230,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [PartnersView](map/PartnersView.md) | PartnersCheck |
 | [PayTier](map/PayTier.md) | AgricultureCheck, ArrivalMixCheck, BankCheck, BondCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, DiscoveryCheck, EducationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MarketCheck, MaterialsCheck, MiningCheck, OutsideCheck, PopulationCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, ShortSellingCheck, TradeCostCheck, WageLadderCheck, WoodProductsCheck |
 | [PeopleScreen](map/PeopleScreen.md) | **none** |
-| [Pieces](map/Pieces.md) | IslandNetCheck, ResearchViewCheck |
+| [Pieces](map/Pieces.md) | IslandNetCheck, IslandRailCheck, ResearchViewCheck |
 | [PolicyDates](map/PolicyDates.md) | DiscoveryCheck, EquipmentCheck, ForestryCheck, KeptCheck, LandmassCheck, PolicyDatesCheck, RecipeCheck, ResearchCheck, ResearchPreviewCheck, ResearchViewCheck, WageLadderCheck, ZoningViewCheck |
 | [PolicyPreview](map/PolicyPreview.md) | CentralBankCheck, DiscoveryCheck, GroceryCheck, KeptCheck, PolicyPreviewCheck, ReadPathCheck, ZoningViewCheck |
 | [PolicyRates](map/PolicyRates.md) | DebtMoneysCheck, GlobeCheck, InterestAbroadCheck, PartnersCheck, ReadPathCheck, SaveFileCheck |
@@ -14487,6 +14487,87 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L761 the west net, no longer its piece's owner, is frozen as it was; the model's plots are all laid
   - L789 on the city of billions a purchase is an update of the map's pieces, not another flood
   - L790 ...and the update takes no more than MapCheck's RECONCILE_MS (
+
+## IslandRailCheck.java - 57 labelled assertions
+
+> The railway has a piece of its own on each piece of the city's ground the water parts, its track dealt by built weight and its yards on the
+> islands (RI1).
+> 
+> WHAT THIS HAS TO PROVE (the sections below are numbered to match):
+> 
+>   1. EACH LINKED ISLAND HAS A RAILWAY HUB AND TRACK OF ITS OWN. A home square and two islands (A, B) parted by sea, a Pieces of three,
+>      and a dry square C the runs' ground does not own (an unlinked island: not owned, so in no piece). With CityRuns.islandRail off the
+>      islands have highways and the railway is one piece with no track off home (the premise: the fault); on, each island has a rail hub -
+>      a railway line crossing (RAIL_AT mod CELL in both coordinates) on its own dry ground, the nearest to the piece's anchor - and track
+>      from it, every rail plot is on owned dry ground, and C has none.
+> 
+>   2. THE TRACK IS DEALT BY WEIGHT AS THE HIGHWAYS ARE. With no yards each island's track is the floor of the model's track times its weight
+> ...
+
+- **L216 1. each linked island has a railway hub and track of its own**
+  - L222 fixture (premise): with islandRail off the islands have highways, a net of their own each
+  - L224 ...and the railway is one piece with track at home and none on either island
+  - L230 islandRail on: the railway has three pieces, a hub for each island
+  - L236 island
+  - L240 ...the nearest to the piece's anchor:
+  - L242 ...with track of its own, all on the island, counted as the piece's
+  - L244 the home piece's railway is on the home square, counted as the piece's
+  - L245 every rail plot is on owned dry ground: the plots counted are the plots inside the ground and none is on salt
+  - L247 the unowned dry square C has no rail, and the runs have no piece for it
+  - L248 the highways were laid too, and rail runs on none of them (nothing is both)
+- **L253 2. the track is dealt by weight as the highways are**
+  - L263 with no yards each island's track is its floor share of the model's, by the rule's own formula
+  - L264 ...and the home piece has the rest, so all the model's track is laid (trackSurplus is 0)
+  - L265 ...no island's line was grown to its edges: with no yard it stops at its share
+  - L273 fixture (premise): at the drifted weights the shares are not what is laid (A
+  - L277 the weights drift (3:2:1 to 1:4:4) and the railway is laid again for the same track: nothing moves (the signature is the same)
+  - L279 ...each piece has what it had, though its share is more or less now
+  - L287 more track (
+  - L288 ...what was laid is kept: every arm is a prefix of what it is now
+  - L295 less track (
+  - L297 ...from the newest end: every arm that is left is a prefix of what it was
+  - L300 ...each island's hub plot is still laid (the piece's last plot to go)
+  - L303 with no track at all the railway is taken back to nothing and reset: no plot, no piece, not started
+  - L305 ...and laid again from nothing: the islands open afresh, each with its share
+- **L310 3. yards**
+  - L324 the model asks 3 yards and all 3 are laid (yardsShort is 0)
+  - L326 yard 0 is at home, on the first spot in the nearest-a-mine order
+  - L333 yard
+  - L343 ...the nearest its hub of the YARD_LONG boxes on the island's track (
+  - L345 ...island
+  - L356 fixture (premise): the yard nearest the main line's end is not the home yard but one on an island
+  - L358 freightStation() is the home yard all the same
+  - L359 wayTo() of an island's yard is null: no train runs to it
+  - L360 ...the home yard's way is not
+  - L365 laid again for the same inputs, the yards stand where they were and nothing moves
+- **L386 4. sidings**
+  - L395 fixture (premise): with islandRail off A has no line and the works is no nearer a line than the sea parts it: it gets no siding
+  - L400 with it on, the works gets a siding
+  - L403 ...from A's line: it starts on a plot of an arm of A's piece
+  - L415 ...every plot of it on A's dry ground
+  - L416 ...and it ends at the works
+  - L417 the ways are the net's: the siding is an arm of the SIDING corridor, after the pieces' arms
+  - L419 the home piece has no siding (no works near it)
+- **L424 5. a purchase joining an island to home freezes its railway**
+  - L437 the month a purchase joins A to home, with the same track: nothing moves (the signature is the same)
+  - L441 as the track grows, every arm laid before is a prefix of the arm after
+  - L442 A's railway, the younger net on the home piece's ground, is frozen: its plots are what they were
+  - L450 ...every arm of it exactly as it was
+  - L456 home goes on growing: past what it held, to its share less the frozen net's
+  - L457 B is dealt on by its piece's weight (the map's second piece now): its share of the new track
+  - L458 the model's track is all laid
+- **L463 6. one piece is the railway as it was**
+  - L481 fixture: a railway with a yard, a siding and track on the home square, and none on the islands (the ground is one piece)
+  - L483 islandRail on and off: the same signature()
+  - L486 ...the same rail plots, yards and sidings
+- **L492 7. the sidecar keeps every piece's railway**
+  - L504 fixture: a railway on three pieces with 3 yards and a siding
+  - L510 written and read at FORMAT
+  - L513 ...the railway's pieces kept: their hubs and their counts
+  - L519 ...the corridors' pieces and roles (the ways' placeholders 2 and 3, then each island's two spines)
+  - L525 ...and they fill a box alike
+  - L528 the runs read back, laid again for the same inputs, move nothing: the signature, the yards and the siding are what they were
+  - L532 the sidecar is written and read:
 
 ## JunctionCheck.java - 170 labelled assertions
 
