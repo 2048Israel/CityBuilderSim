@@ -190,6 +190,8 @@ public class UserInterface extends Application {
     VBox inboxCorner;
     /** The toasts, stacked at the stage's bottom right (0.7.20); see TOASTS. */
     private VBox toastStack;
+    /** What gives the toasts' corner up on the page while one shows (TS1); see ToastRoom. */
+    private ToastRoom toastRoom;
     /** The whole window, with a dialog laid over it when one is open (0.7.20). Not private: KeptBench gives the chart's full screen a stack to go in. */
     StackPane windowStack;
     /** The dialog that is up - Quit's, or since 0.7.22 a confirmation (confirm()) - or null. */
@@ -814,6 +816,12 @@ public class UserInterface extends Application {
         StackPane.setAlignment(toastStack, Pos.BOTTOM_RIGHT);
         StackPane.setMargin(toastStack, new javafx.geometry.Insets(0, 24, 16, 0));
         this.stagePane.getChildren().add(toastStack);
+        // ...and the page gives the corner up while a toast stands in it (TS1; see ToastRoom). The scroll is
+        // moved through pageScrollAt too: the rebuild restores the player's place from that field.
+        this.toastRoom = new ToastRoom(menuScroller, rootMenu, toastStack, at -> {
+            pageScrollAt = at;
+            menuScroller.setVvalue(at);
+        });
 
         /* =====================================================================
            AND THE TIME CONTROLS DID NOT FLOAT, WHICH WAS A CORRECTION.
@@ -6572,6 +6580,12 @@ public class UserInterface extends Application {
        one. A LOAD then counts every notice the save holds as toasted
        (Inbox.markAllToasted(), PT1): one raised before the save does not
        toast on load - it stays unread in the inbox, the envelope still red.
+
+       And since TS1 the page gives the corner up: a toast passed over a
+       control (the Build overview's "Turn automatic building off", mid-page,
+       went under it for about 50 px of scrolling), so while any toast shows
+       the page takes a bottom padding as tall as the toasts (ToastRoom), its
+       pixel offset kept, and gives it back when the last one goes.
        ===================================================================== */
 
     /** How long a toast stays before it fades, in seconds. */
