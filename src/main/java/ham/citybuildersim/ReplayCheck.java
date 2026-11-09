@@ -14,6 +14,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import ham.citybuildersim.ui.FollowBench;
+import ham.citybuildersim.ui.FollowRules;
 import ham.citybuildersim.ui.ReplayMoveProbe;
 
 /**
@@ -66,7 +68,17 @@ import ham.citybuildersim.ui.ReplayMoveProbe;
  *   9. Follow into a headless copy: a real recording and a sitting logged with the writer, played by FollowPlayer into a Target over
  *      a ReplayCity that loads each month whole as the log turns it: the copy is at each logged month in order, the screens arrive
  *      in logged order at their logged times divided by the speed (to the frame), joining mid-month loads the month and catches
- *      its input up flagged, and ends on the screen playing from the month's start reaches; nothing in the recording is written.
+ *      its input up flagged, and ends on the screen playing from the month's start reaches; nothing in the recording is written;
+ *  10. Follow in the real window: the rules (FollowRules) drop what a copy must not do again - anything logged on a game menu (Save,
+ *      Load, New city, Settings and Quit live there) or while the copy is on one, anything under a dialog, a click on a node that
+ *      opens a menu or moves the clock, Space, Left, Right and F11, Esc and P where they would open the menu - and keep the
+ *      rest; then a sitting logged with the writer over a copy of the recording is played into the window by frames: the copy
+ *      is at each logged month as its marker passes, each click on a rail tab takes it to that tab's screen before the SCREEN
+ *      marker comes and the screens arrive in order, the click on the Menu button is dropped and Follow stays on through every
+ *      press, the ghost sits at the logged pointer, a stop and a join in mid-month reaches the screen and month that a run
+ *      from the month's start reaches, a viewer's press ends Follow and his move does only past the grace and 8 px, and leaving
+ *      the replay leaves the copy and the player's folder as they were (FollowBench.check and followCheck; the window part is
+ *      skipped where JavaFX cannot start).
  */
 public class ReplayCheck {
 
@@ -137,8 +149,8 @@ public class ReplayCheck {
         return sb.toString();
     }
 
-    /** Every file under a folder: its path from the folder, its size and its SHA-256. */
-    static Map<String, String> hashes(Path dir) throws Exception {
+    /** Every file under a folder: its path from the folder, its size and its SHA-256 (public since TR2: FollowBench asks it in the window). */
+    public static Map<String, String> hashes(Path dir) throws Exception {
         Map<String, String> out = new TreeMap<>();
         if (!Files.isDirectory(dir)) return out;
         try (var walk = Files.walk(dir)) {
@@ -152,7 +164,7 @@ public class ReplayCheck {
     }
 
     /** The first difference between two maps of hashes, in words, or null when they are the same. */
-    static String firstDifference(Map<String, String> before, Map<String, String> after) {
+    public static String firstDifference(Map<String, String> before, Map<String, String> after) {
         for (Map.Entry<String, String> e : before.entrySet()) {
             if (!after.containsKey(e.getKey())) return "gone: " + e.getKey();
             if (!after.get(e.getKey()).equals(e.getValue())) return "changed: " + e.getKey();
@@ -875,7 +887,11 @@ public class ReplayCheck {
         timelineChecks();
         long nineAt = System.nanoTime();
         followChecks(rec, files);
-        System.out.printf("      sections 7, 8 and 9 took %.1f s, %.1f s and %.1f s%n", (eightAt - sevenAt) / 1e9, (nineAt - eightAt) / 1e9, (System.nanoTime() - nineAt) / 1e9);
+        long tenAt = System.nanoTime();
+        followRulesChecks();
+        followWindowChecks(rec);
+        System.out.printf("      sections 7, 8, 9 and 10 took %.1f s, %.1f s, %.1f s and %.1f s%n", (eightAt - sevenAt) / 1e9, (nineAt - eightAt) / 1e9,
+                (tenAt - nineAt) / 1e9, (System.nanoTime() - tenAt) / 1e9);
 
         System.out.printf("%n%s: %d failure(s)%n", ReplayCheck.class.getSimpleName(), fails);
         System.exit(fails == 0 ? 0 : 1);
@@ -1447,5 +1463,109 @@ public class ReplayCheck {
         String hurtPlayer = firstDifference(playerBefore, hashes(files.getDirectory()));
         helper("following writes nothing in the recording's folder, and nothing in the player's" + (hurtRecording == null ? "" : " - " + hurtRecording)
                 + (hurtPlayer == null ? "" : " - " + hurtPlayer), hurtRecording == null && hurtPlayer == null && Arrays.equals(rec.months(), have));
+    }
+
+    /* ============ 10. Follow in the window ============ */
+
+    /** The screens UserInterface.isGameMenu takes for a game menu: the main menu (Save, Load, New city, Settings, Credits and Quit are on it or behind it), the pages they open, and the replay's list. */
+    static final String[] GAME_MENUS = {"showMainMenu", "showSavingMenu", "showSaveSlotConfirm", "showLoadMenu", "loadSlot", "showSaveResult",
+            "showSettingsMenu", "showCreditsMenu", "showFoundingScreen", "showReplayList"};
+
+    static void followRulesChecks() {
+        System.out.println("\n--- 10. Follow in the window: the rules drop a re-enacted Save, Load and Quit, the clock and the menu keys; then a sitting is played into the real window ---");
+        FollowRules.Verdict keep = FollowRules.Verdict.KEEP;
+        String city = "showPopulationInfoMenu";
+        InputLog.Event move = InputLog.Event.move(1_000, 120, 340), press = InputLog.Event.press(1_020, 120, 340, 1, 1, 0), release = InputLog.Event.release(1_080, 120, 340, 1, 0);
+        InputLog.Event wheel = InputLog.Event.wheel(1_100, 120, 340, 0, -80, 0);
+        InputLog.Event typed = InputLog.Event.key(1_120, true, InputLog.keyCode("Enter"), 0, null);
+        InputLog.Event typedUp = InputLog.Event.key(1_140, false, InputLog.keyCode("Enter"), 0, null);
+        List<InputLog.Event> inputs = List.of(move, press, release, wheel, typed, typedUp);
+
+        StringBuilder escaped = new StringBuilder();
+        for (String menu : GAME_MENUS) {
+            for (InputLog.Event e : inputs) {
+                FollowRules.Verdict v = FollowRules.judge(e, menu, city, false, false, false, false);
+                if (v != FollowRules.Verdict.DROP_LOGGED_MENU) escaped.append(' ').append(menu).append('/').append(e.kind()).append('=').append(v);
+            }
+        }
+        helper("a move, press, release, wheel and key logged while the player was on a game menu (" + GAME_MENUS.length + " of them, Save, Load and Quit's among them) are dropped as logged on a menu"
+                + escaped, escaped.length() == 0);
+        helper("...so a re-enacted Save, Load and Quit never reaches the copy: their buttons are not marked, and the verdict holds with the point on no marked node and the copy on a city screen",
+                FollowRules.judge(press, "showSavingMenu", city, false, false, false, false) == FollowRules.Verdict.DROP_LOGGED_MENU
+                        && FollowRules.judge(release, "showLoadMenu", city, false, false, false, false) == FollowRules.Verdict.DROP_LOGGED_MENU
+                        && FollowRules.judge(press, "showMainMenu", city, false, false, false, false) == FollowRules.Verdict.DROP_LOGGED_MENU
+                        && FollowRules.judge(typed, "showSavingMenu", city, false, true, false, false) == FollowRules.Verdict.DROP_LOGGED_MENU);
+
+        StringBuilder onMenu = new StringBuilder();
+        for (String menu : GAME_MENUS) {
+            for (InputLog.Event e : inputs) {
+                FollowRules.Verdict v = FollowRules.judge(e, city, menu, false, false, false, false);
+                if (v != FollowRules.Verdict.DROP_COPY_MENU) onMenu.append(' ').append(menu).append('/').append(e.kind()).append('=').append(v);
+            }
+        }
+        helper("with the copy on a game menu, every input logged on a city screen is dropped as the copy's menu" + onMenu, onMenu.length() == 0);
+        helper("a press, a release and a key are dropped while a dialog (Quit's) is up on the copy",
+                FollowRules.judge(press, city, city, true, false, false, false) == FollowRules.Verdict.DROP_DIALOG
+                        && FollowRules.judge(release, city, city, true, false, false, false) == FollowRules.Verdict.DROP_DIALOG
+                        && FollowRules.judge(typed, city, city, true, false, false, false) == FollowRules.Verdict.DROP_DIALOG);
+        helper("a press and a release on a node marked as the ghost never clicks (the rail's Menu, the clock) are dropped, and a move over it is kept",
+                FollowRules.judge(press, city, city, false, false, false, true) == FollowRules.Verdict.DROP_NODE
+                        && FollowRules.judge(release, city, city, false, false, false, true) == FollowRules.Verdict.DROP_NODE
+                        && FollowRules.judge(move, city, city, false, false, false, true) == keep);
+
+        int space = InputLog.keyCode("Space"), left = InputLog.keyCode("Left"), right = InputLog.keyCode("Right"), f11 = InputLog.keyCode("F11");
+        boolean clock = true;
+        for (int code : new int[] {space, left, right}) {
+            clock &= FollowRules.judge(InputLog.Event.key(1_200, true, code, 0, null), city, city, false, false, false, false) == FollowRules.Verdict.DROP_CLOCK_KEY;
+            clock &= FollowRules.judge(InputLog.Event.key(1_210, false, code, 0, null), city, city, false, false, false, false) == FollowRules.Verdict.DROP_CLOCK_KEY;
+        }
+        helper("Space, Left and Right, down and up, are dropped as the clock's keys", clock);
+        helper("...but not in a text field, where Space types a space; and F11 is dropped as the window's key, typing or not",
+                FollowRules.judge(InputLog.Event.key(1_220, true, space, 0, " "), city, city, false, true, false, false) == keep
+                        && FollowRules.judge(InputLog.Event.key(1_230, true, f11, 0, null), city, city, false, false, false, false) == FollowRules.Verdict.DROP_WINDOW_KEY
+                        && FollowRules.judge(InputLog.Event.key(1_240, true, f11, 0, null), city, city, false, true, false, false) == FollowRules.Verdict.DROP_WINDOW_KEY);
+
+        InputLog.Event esc = InputLog.Event.key(1_300, true, InputLog.keyCode("Esc"), 0, null), p = InputLog.Event.key(1_310, true, InputLog.keyCode("P"), 0, "p");
+        helper("Esc is dropped where it would open the game menu, typing or not, and kept where it closes something else",
+                FollowRules.judge(esc, city, city, false, false, true, false) == FollowRules.Verdict.DROP_MENU_KEY
+                        && FollowRules.judge(esc, city, city, false, true, true, false) == FollowRules.Verdict.DROP_MENU_KEY
+                        && FollowRules.judge(esc, city, city, false, false, false, false) == keep);
+        helper("P is dropped where it would open the game menu, and kept where it would not and in a text field",
+                FollowRules.judge(p, city, city, false, false, true, false) == FollowRules.Verdict.DROP_MENU_KEY
+                        && FollowRules.judge(p, city, city, false, false, false, false) == keep
+                        && FollowRules.judge(p, city, city, false, true, true, false) == keep);
+
+        boolean kept = true;
+        for (InputLog.Event e : inputs) {
+            kept &= FollowRules.judge(e, city, city, false, false, false, false) == keep;
+            kept &= FollowRules.judge(e, null, null, false, false, false, false) == keep;
+        }
+        helper("a plain move, press, release, wheel and key on a city screen are kept, and so is any input where the screens are not known", kept);
+        boolean markers = true;
+        for (InputLog.Event e : List.of(InputLog.Event.screen(1_400, "showSavingMenu"), InputLog.Event.window(1_410, 1280, 720), InputLog.Event.month(1_420, 12),
+                InputLog.Event.clock(1_430, 1, true), InputLog.Event.mapView(1_440, false, 1, 2, 3, 0))) {
+            markers &= FollowRules.judge(e, "showSavingMenu", "showMainMenu", true, false, true, true) == keep;
+        }
+        helper("the log's markers (screen, window, month, clock, map) are kept whatever the screens: they are no input", markers);
+    }
+
+    /**
+     * Section 10 in the real window, off screen: FollowBench's findings on the Reenactor and on a sitting followed in a copy of
+     * {@code rec}, each printed as a line. Skipped, and said so, where JavaFX cannot start.
+     */
+    static void followWindowChecks(Recording rec) throws Exception {
+        String cannot = FollowBench.startJavaFx();
+        if (cannot != null) {
+            System.out.println("      skipped in the window: " + cannot);
+            return;
+        }
+        GameFiles windowFiles = GameFiles.scratch("followwindow");
+        Game city = FollowBench.fx(() -> LongPlaytest.probeCity(windowFiles, null));
+        long t0 = System.nanoTime();
+        List<String[]> reenacted = FollowBench.fx(() -> FollowBench.check(city));
+        for (String[] f : reenacted) helper("in the window: " + f[0], "true".equals(f[1]));
+        List<String[]> followed = FollowBench.fx(() -> FollowBench.followCheck(city, rec.folder()));
+        for (String[] f : followed) helper("in the window: " + f[0], "true".equals(f[1]));
+        System.out.printf("      %d findings in the window, %.1f s%n", reenacted.size() + followed.size(), (System.nanoTime() - t0) / 1e9);
     }
 }

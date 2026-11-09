@@ -7113,8 +7113,8 @@ public class UserInterface extends Application {
     /** Whether cinematic mode that is on keeps the header and the rail (TR2: Follow's clicks land where the player's layout put them). */
     private boolean cinematicKeepsChrome;
 
-    /** The replay's mode, made when first asked for: the first main menu is drawn in start() before the recorder is, and a harness's window never starts. */
-    private ReplayMode replayMode() {
+    /** The replay's mode, made when first asked for: the first main menu is drawn in start() before the recorder is, and a harness's window never starts. Package-private since TR2: FollowBench enters a recording through it. */
+    ReplayMode replayMode() {
         if (replayMode == null) replayMode = new ReplayMode(this);
         return replayMode;
     }
