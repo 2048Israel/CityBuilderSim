@@ -1166,7 +1166,10 @@ final class TradeScreen {
             case LEAN -> null;
             case FLOAT -> "Floating freely";
             case BAND -> "In a band of " + sym() + fxRate(fx.bandStrongEdge()) + "-" + sym() + fxRate(fx.bandWeakEdge());
-            case PEG -> "Held at a peg of " + sym() + fxRate(fx.getPegRate());
+            // The peg kept in another money than the US$ (WN4b): the D$ per US$ it holds this month, and the peg itself in its own money.
+            case PEG -> "Held at a peg of " + sym() + fxRate(fx.getPegRate())
+                    + (fx.getPegAnchor() == 0 ? "" : " per " + Currency.FOREIGN_SYMBOL + " this month, " + sym() + fxRate(fx.getPegPerAnchor())
+                            + " per " + PolicyScreen.anchorMark(fx.getPegAnchor()));
         };
     }
 
@@ -2948,11 +2951,13 @@ final class TradeScreen {
         }
         ForeignAccounts.Regime regime = fx.getRegime();
         if (regime == ForeignAccounts.Regime.PEG) {
+            // Kept in another money than the US$ (WN4b), the rate is said to be that money's peg; for the US$ the sentences are what they were.
+            String to = fx.getPegAnchor() == 0 ? "" : " (the peg is to " + ForeignAccounts.MONEY_NAME[fx.getPegAnchor()] + ")";
             return fx.isHeld()
-                    ? "The vault held the " + d + " at the peg, " + d + fxRate(fx.getPegRate()) + ", away from where the "
+                    ? "The vault held the " + d + " at the peg, " + d + fxRate(fx.getPegRate()) + to + ", away from where the "
                       + "float's rule put it, " + d + fxRate(fx.getShadowRate()) + ": the part of the month's move the peg "
                       + "kept off the rate."
-                    : "The float's rule and the peg were in step, " + d + fxRate(fx.getPegRate()) + ": nothing to hold "
+                    : "The float's rule and the peg were in step, " + d + fxRate(fx.getPegRate()) + to + ": nothing to hold "
                       + "this month.";
         }
         if (regime == ForeignAccounts.Regime.BAND) {
