@@ -123,4 +123,7 @@ Built on origin/main 27801328 (MW1 merged). Baseline: docs/ensemble/0.9.57.md
   Recommendation: ship, A3's red accepted (it is Jerus's rule, a glut's
   empty flats the landlord's loss, and costs one month of sixteen seeds'),
   and the deflation at the zero bound studied in a batch of its own (RN1-A).
+- **The default game:** LongPlaytest's 2,400 months (with the data files)
+  waive the lift in 0 months on the studio leg and 61 on the family leg;
+  every month passed its audit and every reload matched.
 - **Process lines:** none; RN1 changes no script, check machinery or rule.
