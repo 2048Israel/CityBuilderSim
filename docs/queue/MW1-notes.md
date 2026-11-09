@@ -27,3 +27,24 @@ reads base 1, start 0, flag off; a scratch town saved on the world file and
 loaded on the literals holds the loaded level as its trend.
 An older save carries no flag and walks to the flat trend as before: no
 conversion code (CLAUDE.md, old saves), no format bump.
+
+## The slice
+
+One Sonnet slice (`slice`, xhigh): `WorldEconomy` (+33/-4: `trendBase`,
+`trendStart`, `lastOnPath`; the hand-over at the top of the walk in
+`advanceMonth`, after the path's early return; `trendLevel()` and the pull on
+the base and start; the array at `8+LEVEL_RING`; `restore` and `reset`),
+`RealDollarCheck` (+102/-2, section 8 and the shock's slots) and
+`CentralBankCheck` (+3/-3, its slot named). Reviewed as a stranger's and
+committed as 412548a9. The path is set to null only when the moneys are gone,
+so a game on the world file never hands over; a fresh walk is bit-identical
+(`1 * pow(..., (m - 0) / 12.0)`).
+
+Section 8's figures: the level handed L = 3.3161; the first walked month's
+`trendLevel()` equals L to the bit; a decade on, 3.5991 = L x 1.0853 (the walk
+from 1), ratio 1.000000000000. The pre-MW1 walk (flag cleared) ends at 2.3545,
+short by 1.2446 against the 0.5956 required. A walk never on the path
+round-trips 60 of 60 months bit for bit, its trend 1; an array cut to
+`5+LEVEL_RING` reads trend 1. (e): a scratch town on the world file, saved at
+1.004733 and loaded on the literals, walks on with `trendLevel()` 1.004733 to
+the bit, off the path, its level 1.008494 two months on.

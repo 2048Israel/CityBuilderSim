@@ -3563,8 +3563,8 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 177 | `WorldEconomy.SEED` | `0x5F3A91C7L` |  |
 | 236 | `WorldEconomy.TREND_INFLATION` | `.0` | The world's long-run trend, against which the wandering rate is a cycle. |
 | 239 | `WorldEconomy.TREND_PULL` | `.006` | How hard the level is pulled back to trend. |
-| 351 | `WorldEconomy.LEVEL_RING` | `13` |  |
-| 507 | `WorldEconomy.LEGACY_MEAN_INFLATION` | `.0333` | The mean every city founded before 2026-09-13 grew up in. |
+| 368 | `WorldEconomy.LEVEL_RING` | `13` |  |
+| 533 | `WorldEconomy.LEGACY_MEAN_INFLATION` | `.0333` | The mean every city founded before 2026-09-13 grew up in. |
 
 ### WorldMarket.java ([map](map/WorldMarket.md))
 
@@ -7124,10 +7124,10 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 43 | `RealDollarCheck.out` | `System.out` |  |
-| 44 | `RealDollarCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
-| 47 | `RealDollarCheck.SEED` | `20_261_031L` | The path seed the cities are founded on. |
-| 395 | `RealDollarCheck.GROWING` | `new WorldEconomy.UsPath() { @ Override public double level(int t) { return Math.pow(1.0...` | A synthetic US: 0.2% a month, 2.4% a year, so a shock is read against a path that moves. |
+| 46 | `RealDollarCheck.out` | `System.out` |  |
+| 47 | `RealDollarCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
+| 50 | `RealDollarCheck.SEED` | `20_261_031L` | The path seed the cities are founded on. |
+| 399 | `RealDollarCheck.GROWING` | `new WorldEconomy.UsPath() { @ Override public double level(int t) { return Math.pow(1.0...` | A synthetic US: 0.2% a month, 2.4% a year, so a shock is read against a path that moves. |
 
 ### RecipeCheck.java ([map](map/RecipeCheck.md))
 
