@@ -978,11 +978,13 @@ adds its line here, not in `CLAUDE.md`.
                                          concepts each, "towers as a chart" and "the ledger's total"):
                                          make_icons.py writes the two SVGs, the PNGs and icon.ico into
                                          src/main/resources/icons/, make_title.py the store's title art into
-                                         branding/, pngio.py renders with Edge or Chrome headless and reads and
+                                         branding/, make_steam.py Steam's nine pictures into branding/steam/ (BR2),
+                                         pngio.py renders with Edge or Chrome headless and reads and
                                          writes PNGs (Python, standard library only)
     branding/                            the game's store art (BR1): title.svg with its font inside and its PNGs
                                          600, 1200 and 2400 wide (tools/branding/make_title.py), the itch.io cover,
-                                         and README.md - the name, what is where, how to remake it, the releases
+                                         steam/ (BR2: the capsules, hero, logo and background at Steamworks' sizes,
+                                         make_steam.py), and README.md - the name, what is where, how to remake it, the releases
     tools/jvms.ps1                       counts the other batches' JVMs and the game's processes on the PC, for
                                          Batch check.bat, which times soft while either runs, and deepseek/agent.py
                                          (TM1; GP1 took out TM2's -Quiet wait, SP1 batch-check.sh's soft-run line)

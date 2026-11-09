@@ -1,13 +1,15 @@
-# gate of Merge batch/WN4c: wN4b's review follow-ups (the stranger's review at its gate, 2026-11-09): a save whose peg anchor has lost its US$ price falls back to the US$ but keeps `pegRate` in the old anchor's units; zero it on that fallback, asserted in PegAnchorCheck section 8; and the review's two low notes settled; a small fix batch, Sonnet whole, 0.9.70
+# gate of Merge batch/BR2: steam's store art: the capsules at Steam's sizes and a transparent logo, drawn by a script from `branding/`'s title art and icon; Steamworks verification stays his (Jerus, 2026-10-31: "From our art (AI)"), 0.9.71
 # date: 2026-11-09
 # earth-2.bin: named
 # nightly: 2026-11-09 01:39 0.9.58 08f58a5f 4,000 months: OK in 118 s
-# suite: 190 harnesses run in 1123s: 185 passed, 5 failed
-# timing: 17 harnesses run in 896s: 13 passed, 4 failed; its red lines were judged side by side with main's, below
+# suite: 190 harnesses run in 1397s: 185 passed, 5 failed
+# timing: 17 harnesses run in 918s: 13 passed, 4 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 29.6 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 29.5 ms (gate.txt, today), batch 29.6 ms (+0.4%), budget 25 ms: main over the budget too, no round]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 28.5 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 29.6 ms (gate.txt, today), batch 28.5 ms (-3.9%), budget 25 ms: main over the budget too, no round]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# figure	SaveSlotCheck	the median due month, 29.6 ms, holds the clock at most CLOCK_MS (25 ms)	29.6068	25	ms	FAIL	1	1
+# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 17.6 ms, batch 16.8 ms (-4.6%), budget 19 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | 5 FAILED   [the harness's own count of the timing reds above]
+# figure	SaveSlotCheck	the median due month, 28.5 ms, holds the clock at most CLOCK_MS (25 ms)	28.4593	25	ms	FAIL	1	1
 PriceLevelCheck | exit 1
 PriceLevelCheck | FAIL cash (nominal) month 101: 8.317811325 at the factor over the factor, 68.38253344 at today's prices (0.000751 apart)
 PriceLevelCheck | FAIL gdp.month (nominal) month 103: 20121.84632 at the factor over the factor, 20122.48474 at today's prices (1.95e-05 apart)

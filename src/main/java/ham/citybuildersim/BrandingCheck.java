@@ -16,7 +16,8 @@ import java.util.regex.Pattern;
 
 /**
  * The game's icon is in the jar at every size it is given, the exe's .ico carries the sizes it
- * should, and the store's title art is drawn to the start screen's proportions (BR1).
+ * should, the store's title art is drawn to the start screen's proportions (BR1), and Steam's art
+ * is there at the sizes Steamworks asks for (BR2).
  *
  * WHY THIS EXISTS. The window's icon (ui/Branding.dress) is loaded from the classpath and a size
  * that is missing is only a log line, never an error, so a regeneration by
@@ -38,6 +39,12 @@ import java.util.regex.Pattern;
  *   4. THE TITLE ART IS THE START SCREEN'S. make_title.py's proportions are Branding's, number for
  *      number, and branding/ holds the title SVG and its PNGs. Run from the repository only (it
  *      reads files there); elsewhere the section says so and is skipped.
+ *   5. STEAM'S ART IS THERE, AT STEAMWORKS' SIZES. branding/steam/ holds the nine pictures
+ *      Steamworks asks for (read from its graphical-assets pages 2026-11-09), each a PNG of its
+ *      size, named by it, with no alpha channel but the library logo's (which must be see-through),
+ *      nothing else in the folder, and tools/branding/make_steam.py listing the same names and
+ *      sizes, so a size changed in the tool alone, or a picture the tool no longer draws, is seen.
+ *      Run from the repository only.
  */
 public class BrandingCheck {
 
@@ -74,7 +81,7 @@ public class BrandingCheck {
     }
 
     public static void main(String[] args) throws Exception {
-        System.out.println("=== BrandingCheck: the icon at every size, the exe's .ico, and the store's title art drawn as the start screen's (BR1) ===");
+        System.out.println("=== BrandingCheck: the icon at every size, the exe's .ico, and the store's title art drawn as the start screen's (BR1), Steam's art at Steamworks' sizes (BR2) ===");
 
         System.out.println("--- every PNG is there, at its size ---");
         for (int n : Branding.SIZES) {
@@ -160,6 +167,50 @@ public class BrandingCheck {
                             head != null && head[0] == (int) wd && head[2] == 6, head == null ? "missing" : head[0] + "x" + head[1]);
                 }
             }
+        }
+
+        System.out.println("--- Steam's art is there, at Steamworks' sizes ---");
+        Path steam = Path.of("branding", "steam"), maker = Path.of("tools", "branding", "make_steam.py");
+        if (!inRepository || !Files.isDirectory(steam) || !Files.exists(maker)) {
+            System.out.println("  (not run from the repository, skipped)");
+        } else {
+            // What Steamworks asks for: name, width, height, and whether the PNG must be see-through.
+            Object[][] asked = {
+                {"header-capsule", 920, 430, false}, {"small-capsule", 462, 174, false},
+                {"main-capsule", 1232, 706, false}, {"vertical-capsule", 748, 896, false},
+                {"library-capsule", 600, 900, false}, {"library-header", 920, 430, false},
+                {"library-hero", 3840, 1240, false}, {"library-logo", 1280, 720, true},
+                {"page-background", 1438, 810, false},
+            };
+            String py = new String(Files.readAllBytes(maker), StandardCharsets.UTF_8);
+            List<String> expected = new ArrayList<>();
+            for (Object[] a : asked) {
+                String name = (String) a[0];
+                int w = (Integer) a[1], h = (Integer) a[2];
+                boolean seeThrough = (Boolean) a[3];
+                String file = name + "-" + w + "x" + h + ".png";
+                expected.add(file);
+                Path png = steam.resolve(file);
+                int[] head = Files.exists(png) ? pngHeader(Files.readAllBytes(png), 0) : null;
+                check(file + " is a PNG of " + w + " by " + h, head != null && head[0] == w && head[1] == h,
+                        head == null ? "missing" : head[0] + "x" + head[1]);
+                if (head != null) {
+                    check(file + (seeThrough ? " has an alpha channel (a logo is see-through)" : " has none (it is not see-through)"),
+                            seeThrough ? head[2] == 6 : head[2] == 2, "colour type " + head[2]);
+                }
+                check("make_steam.py draws " + name + " at " + w + " by " + h, Pattern.compile("\"" + name + "\":\\s*\\(" + w + ", " + h + ", ").matcher(py).find(), null);
+            }
+            List<String> found = new ArrayList<>();
+            try (var files = Files.list(steam)) {
+                files.forEach(f -> found.add(f.getFileName().toString()));
+            }
+            java.util.Collections.sort(found);
+            java.util.Collections.sort(expected);
+            check("branding/steam/ holds those nine and nothing else", found.equals(expected), "holds " + found);
+            int listed = 0;
+            Matcher m = Pattern.compile("(?m)^    \"[a-z-]+\":\\s*\\(\\d+, \\d+, \"[a-z]+\"\\),").matcher(py);
+            while (m.find()) listed++;
+            check("and make_steam.py draws exactly nine", listed == asked.length, listed + " listed");
         }
 
         System.out.println(fails == 0 ? "BrandingCheck: all ok" : "BrandingCheck: " + fails + " FAILED");
