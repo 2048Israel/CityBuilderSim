@@ -96,3 +96,20 @@ Session window: W=150000 (orchestrator's env; compacts near 118k).
   (`rebuildChain` runs only from `sortDistricts` and from a tally that moves a rank, both on a
   purchase or a rebuild); the spurt's ~0.7 ms more at 10B, inside its spread, would be a
   purchase's sort of ~29k districts.
+- **Section 18's FX-side month at 5B (19 ms on the median month) reads as main's.** A first
+  probe ran MB1 before main in every round and read it ~3 ms slower: the order, not the code.
+  Alternated three ways (MB1, the old cut through `chainByOrder`, main), each alone of the others
+  but beside five other JVMs (other sessions, BB1's gate), the median of nine months in ms:
+
+  | | round 1 | round 2 | round 3 |
+  |---|---|---|---|
+  | the month: MB1 | 17.65 | 20.58 | 23.00 |
+  | the month: the old cut | 24.97 | 17.66 | 17.61 |
+  | the month: main | 21.16 | 22.33 | 17.76 |
+  | the far screen: MB1 | 15.00 | 17.60 | 18.50 |
+  | the far screen: the old cut | 20.51 | 14.79 | 14.97 |
+  | the far screen: main | 17.13 | 18.71 | 15.01 |
+
+  The chain's own share is 0.05-0.10 ms in every run. Under that load main failed the budget in
+  two rounds of three, as MB1 did; the ranges overlap and the round decides which reads fastest.
+  No budget moved; the gate runs it hard and alone, where main passes.
