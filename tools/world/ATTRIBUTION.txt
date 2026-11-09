@@ -86,10 +86,11 @@ world-2025: the Rankings' measures file (LB1, 2026-10-30)
 world-2025.json (src/main/resources/world/) is derived from the data sets below, and from world-1.bin's 2025 figures
 for the few nations the World Bank does not cover (the credits above). Its meta names each source with its licence,
 and the Rankings' (i) shows it; this file, beside the exe, carries the credits in full. LC1 (2026-10-31) left out
-every figure whose maker's terms do not allow a sold game to ship it (docs/studies/licences.md).
+every figure whose maker's terms do not allow a sold game to ship it, and LC2 (2026-11-08) put nine of those measures
+back on sources whose terms do (docs/studies/licences.md).
 
 World Development Indicators (the World Bank), as of 2026-10-08
-  Credit:  The World Bank: World Development Indicators (29 series, measures.tsv names them): World Bank national
+  Credit:  The World Bank: World Development Indicators (31 series, measures.tsv names them): World Bank national
            accounts data and OECD National Accounts data files; World Bank, International Comparison Program;
            United Nations, DESA, Population Division (2024), World Population Prospects 2024 (CC BY 3.0 IGO);
            ILO, ILOSTAT modelled estimates (CC BY 4.0); FAO, FAOSTAT and AQUASTAT, accessed through the WDI
@@ -98,24 +99,42 @@ World Development Indicators (the World Bank), as of 2026-10-08
            endorse it.
   Licence: CC BY 4.0, each series' own License_Type checked 2026-10-31
            (https://datacatalog.worldbank.org/public-licenses)
-  Used for: most nations' measures: output in three moneys, the price level, trade, public spending, people, work,
-           land, water, food, energy
+  Used for: most nations' measures: output in three moneys, the price level, inflation (the household consumption
+           deflator's change), trade, public spending, people, work, land, water, food, energy
   Not used: the WDI series the IMF, UNODC, the WHO, the World Federation of Exchanges, the UN IGME or UNESCO make
-           (inflation, public finance, banks, homicides, health spending, child deaths and others: LC1)
+           (consumer prices, public finance, banks, homicides, health spending, child deaths and others: LC1; some of
+           these measures are back since LC2, from the sources below)
 
 OECD data
   Credit:  OECD (2026), Earnings; Financial market statistics; Social Expenditure Database; National Accounts at a
            Glance; Regions, cities and local areas (functional urban areas); Affordable Housing Database;
-           https://data-explorer.oecd.org/ (accessed on 2026-10-30)
+           https://data-explorer.oecd.org/ (accessed on 2026-10-30); and, for the OECD's members only, OECD (2026),
+           Economic Outlook 119 (general government finance, current account) and OECD, Health Statistics, System of
+           Health Accounts (health expenditure and financing), https://data-explorer.oecd.org/ (accessed on
+           2026-11-08)
   Licence: the OECD's terms and conditions, Data: "for any purpose, even for commercial use", with credit
            (https://www.oecd.org/en/about/terms-conditions.html)
   Used for: wages, the minimum wage, long-term yields, pensions, household debt, homes, homelessness; the 16 city
-           regions on the OECD's functional urban areas (people, area, share of output, real growth)
+           regions on the OECD's functional urban areas (people, area, share of output, real growth); the members'
+           current account, public debt, budget balance, tax revenue and interest over revenue (Economic Outlook 119)
+           and health spending (System of Health Accounts)
 
 Central bank policy rates (Bank for International Settlements)
   Credit:  Bank for International Settlements, central bank policy rates (WS_CBPOL)
   Licence: BIS terms of use of statistics: unrestricted, with the BIS cited (https://data.bis.org/help/legal)
   Used for: the policy rate at 2025's end
+
+Total credit to the non-financial sector (Bank for International Settlements)
+  Credit:  Bank for International Settlements, total credit to the non-financial sector (WS_TC), quarterly
+  Licence: BIS terms of use of statistics: unrestricted, with the BIS cited (https://data.bis.org/help/legal)
+  Used for: credit to firms and households as a share of GDP, 2025's last quarter with a figure
+
+World Population Prospects 2024, Demographic Indicators (United Nations, DESA, Population Division)
+  Credit:  United Nations, Department of Economic and Social Affairs, Population Division (2024). World Population
+           Prospects 2024, Demographic Indicators, Medium variant. https://population.un.org/wpp/
+  Licence: CC BY 3.0 IGO (https://creativecommons.org/licenses/by/3.0/igo/)
+  Used for: child deaths (deaths under five per 1,000 live births): 2015-2023 the Division's estimate, 2024-2025 its
+           projection
 
 World Urbanization Prospects 2025 (United Nations, DESA, Population Division)
   Credit:  United Nations, Department of Economic and Social Affairs, Population Division (2025). World

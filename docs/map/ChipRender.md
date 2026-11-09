@@ -1,6 +1,6 @@
 # ChipRender.java - 101 lines · 3 methods · 1 constants · tools
 
-`ham/citybuildersim/tools/ChipRender.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/tools/ChipRender.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
 
 > Renders the island chip for review (MT1, BK1-L): the chip as it was (one line, a 3 px dark stroke) and as it is (two
 > lines on a dark rounded plate, IslandChip.draw()) over the amber hatch and tint of a landmass no port links.

@@ -1326,14 +1326,14 @@ public class RankingsCheck {
         tally("the rank line has one point for each December the city has a figure for, oldest first, and a point for every December where the city has a figure in all of them", months);
         tally("each point is the board's own rank for the city at that December, among as many places (Real world 2025 and the city)", every);
         tally("...a rank from 1 to the places ranked, among the real places that publish the measure (a wage is published for fewer places than output is)", within);
-        WorldMeasures.Measure out1 = wm.measure("inflation");
+        WorldMeasures.Measure out1 = wm.measure("real_rate");
         List<Rankings.Saved> savedNow = f.snapshot.now();
-        Table alone = Rankings.table(wm, nations, city, savedNow, real, "inflation");
-        check("a measure LC1 took out (inflation, its source " + out1.source() + ") ranks the player's cities alone: the city and its " + savedNow.size()
+        Table alone = Rankings.table(wm, nations, city, savedNow, real, "real_rate");
+        check("a measure LC1 took out (real_rate, its source " + out1.source() + ") ranks the player's cities alone: the city and its " + savedNow.size()
                         + " saved cities, no real place, and its rank line is the city alone each December",
                 !out1.sourced() && !alone.realFigures() && alone.rows().size() == 1 + savedNow.size() && savedNow.size() > 1
                         && alone.rows().stream().allMatch(r -> r.kind() == Rankings.Kind.CITY || r.kind() == Rankings.Kind.SAVED)
-                        && Rankings.rankOverYears(wm, city, h, real, "inflation").stream().allMatch(p -> p.rank() == 1 && p.of() == 1));
+                        && Rankings.rankOverYears(wm, city, h, real, "real_rate").stream().allMatch(p -> p.rank() == 1 && p.of() == 1));
         tally("Your world's settings give the same points: the line is against Real world 2025 only", board);
         tally("saved cities would change the places ranked (the board with them has more rows), and the point leaves them out", plays);
 

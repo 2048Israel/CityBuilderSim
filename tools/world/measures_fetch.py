@@ -1,5 +1,6 @@
 """The downloads the Rankings measures are made from (batch LB1, slice A, 2026-10-30): every World Bank WDI indicator
-that tools/world/measures.tsv names, and the files of the OECD, BIS, UNODC, UN WUP 2025 and US EIA sources it points to.
+that tools/world/measures.tsv names, and the files of the OECD, BIS, UNODC, UN WPP 2024, UN WUP 2025 and US EIA
+sources it points to.
 
 WHY: world-2025.json carries up to 70 measures for 196 nations, and WN0's six WDI files cover only the money and
 population. Downloading in one script keeps the sources reproducible on the PC (the same URLs, the same folders) and
@@ -49,7 +50,17 @@ FILES = [
     ('oecd', 'AHD_HM1-1-Housing-stock-and-construction.xlsx', AHD + 'HM1-1-Housing-stock-and-construction.xlsx'),
     ('oecd', 'AHD_HC3-1-Population-experiencing-homelessness.xlsx',
      AHD + 'HC3-1-Population-experiencing-homelessness.xlsx'),
+    # LC2: the Economic Outlook 119's public finance and current account (the members' own figures) and the health
+    # accounts' current spending over GDP, all financing schemes, functions and providers.
+    ('oecd', 'eo119_public_external.csv',
+     OECD + 'OECD.ECO.MAD,DSD_EO@DF_EO,1.5/.CBGDPR+GGFLQ+NLGQ+TAXQ+GGINTP+YRGT.A?' + CSV),
+    ('oecd', 'sha_health_spending.csv',
+     OECD + 'OECD.ELS.HD,DSD_SHA@DF_SHA,1.1/.A.EXP_HEALTH.PT_B1GQ._T._Z._T._T._T._Z._Z._Z?' + CSV),
     ('bis', 'WS_CBPOL_csv_col.zip', 'https://data.bis.org/static/bulk/WS_CBPOL_csv_col.zip'),
+    ('bis', 'WS_TC_csv_col.zip', 'https://data.bis.org/static/bulk/WS_TC_csv_col.zip'),
+    ('wpp', 'WPP2024_Demographic_Indicators_Medium.csv.gz',
+     'https://population.un.org/wpp/assets/Excel%20Files/1_Indicator%20(Standard)/CSV_FILES/'
+     'WPP2024_Demographic_Indicators_Medium.csv.gz'),
     ('unodc', 'data_cts_prisons_and_prisoners.xlsx',
      'https://data.unodc.org/sites/dataportal.unodc.org/files/2026-07/data_cts_prisons_and_prisoners.xlsx'),
     ('unodc', 'data_cts_access_and_functioning_of_justice.xlsx',
@@ -81,7 +92,8 @@ def bls_file(first, last):
 
 
 def wdi_codes():
-    """Every WDI code measures.tsv names (wdi:A, wdi:A/B*k, wdi-cagr:A:10) plus WDI_EXTRA, in first-seen order."""
+    """Every WDI code measures.tsv names (wdi:A, wdi:A/B*k, wdi-cagr:A:10, wdi-growth:A/B) plus WDI_EXTRA, in
+    first-seen order."""
     out = []
     with open(os.path.join(HERE, 'measures.tsv'), encoding='utf-8') as f:
         rows = [line.rstrip('\n').split('\t') for line in f]
@@ -90,7 +102,7 @@ def wdi_codes():
         s = r[col]
         if s.startswith('wdi-cagr:'):
             found = [s.split(':')[1]]
-        elif s.startswith('wdi:'):
+        elif s.startswith('wdi:') or s.startswith('wdi-growth:'):
             found = re.findall(r'[A-Z]{2}\.[A-Z0-9.]+', s.split(':', 1)[1])
         else:
             continue

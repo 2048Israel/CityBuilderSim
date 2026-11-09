@@ -1,6 +1,6 @@
 # The dials
 
-Generated 2026-11-08 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
 **5,601 constants in 529 files.**
 
@@ -1564,7 +1564,7 @@ Generated 2026-11-08 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.57"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.9.58"` | Bump on release. |
 | 8267 | `GameVersion.SAVE_FORMAT` | `51` | The save shape. |
 | 8316 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `51` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
 | 8324 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
@@ -7556,43 +7556,43 @@ Generated 2026-11-08 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 96 | `WorldMeasuresCheck.SCOPE_NC` | `13, SCOPE_Y = 4` | The measures whose scope is city regions too (NC), and the ones only the player's cities rank (Y). |
 | 99 | `WorldMeasuresCheck.YOUR_WORLD` | `List.of("gdp", "gdp_pp", "growth_real", "growth_10y", "inflation", "price_level", "peop...` | The ten measures of Your world (spec-leaderboards D15), in the file's order. |
 | 102 | `WorldMeasuresCheck.POSITIVE` | `Set.of("gdp", "gdp.k", "gdp.ppp", "gdp_pp", "gdp_pp.k", "gdp_pp.ppp", "people", "area",...` | The measures (and the GDP variants) a place cannot have 0 of: a figure of 0 for one is a figure nobody published. |
-| 107 | `WorldMeasuresCheck.AGREE_SHARE` | `.95, AGREE_TOLERANCE =.01` | The share of the money figures that must agree with their identity, and how near is agreeing: a few nations' published figures miss each identity (the WDI converts AGO BDI NPL SYR UGA ZWE at an alt... |
-| 110 | `WorldMeasuresCheck.MIN_COUNTED` | `100` | The fewest nations an identity may be counted over before the share means anything. |
-| 113 | `WorldMeasuresCheck.US_ONE_TOLERANCE` | `1e-9` | The nearest the United States' price level and rate against parity are to 1: the base of both is the United States. |
-| 116 | `WorldMeasuresCheck.DOCTORED_NATION` | `"AFG"` | The nation the doctored copies change (Afghanistan, which has a published GDP and most of the others). |
-| 119 | `WorldMeasuresCheck.DOCTORED_REGION` | `"TYO"` | The city region the doctored copies change (Tokyo, an OECD region with published shares). |
-| 122 | `WorldMeasuresCheck.P_DUP_MEASURE` | `"a measure key that is in the file twice"` | The problems' sentences: problems() writes them and the sections look for them by these words. |
-| 123 | `WorldMeasuresCheck.P_DUP_PLACE` | `"a place id that is in the file twice"` |  |
-| 124 | `WorldMeasuresCheck.P_NOT_A_MEASURE` | `"is not a measure or a variant of the file"` |  |
-| 125 | `WorldMeasuresCheck.P_NO_SOURCE` | `"is a measure nothing publishes(its source is none:)"` |  |
-| 126 | `WorldMeasuresCheck.P_Y_ONLY` | `"is a measure only the player's cities rank(scope Y)"` |  |
-| 127 | `WorldMeasuresCheck.P_REGION_SCOPE` | `"is not a city-region measure(scope NC)"` |  |
-| 128 | `WorldMeasuresCheck.P_NOT_FINITE` | `"is not a finite number"` |  |
-| 129 | `WorldMeasuresCheck.P_NOT_POSITIVE` | `"is not over 0"` |  |
-| 130 | `WorldMeasuresCheck.P_WINDOW` | `"is outside the window"` |  |
-| 131 | `WorldMeasuresCheck.P_MARK` | `"is not 1, 2 or 3"` |  |
-| 132 | `WorldMeasuresCheck.P_MARK_UNLISTED` | `"is not in meta.marks"` |  |
-| 133 | `WorldMeasuresCheck.P_SOURCE` | `"is not in meta.sources"` |  |
-| 134 | `WorldMeasuresCheck.P_RULE_MISSING` | `"is an estimate(mark 1) with no rule"` |  |
-| 135 | `WorldMeasuresCheck.P_RULE_UNKNOWN` | `"is not in meta.rules"` |  |
-| 136 | `WorldMeasuresCheck.P_RULE_SPARE` | `"is not an estimate and carries a rule"` |  |
-| 137 | `WorldMeasuresCheck.P_LICENCE` | `"licence is blank"` |  |
-| 138 | `WorldMeasuresCheck.P_URL` | `"url is blank"` |  |
-| 139 | `WorldMeasuresCheck.P_WEO` | `"mentions the IMF's World Economic Outlook"` |  |
-| 140 | `WorldMeasuresCheck.P_SOURCE_UNUSED` | `"source is named by no figure"` |  |
-| 141 | `WorldMeasuresCheck.P_RULE_UNUSED` | `"rule is made by no figure"` |  |
-| 142 | `WorldMeasuresCheck.P_COUNT` | `"but the places hold"` |  |
-| 143 | `WorldMeasuresCheck.P_REGION_NATION` | `"is not a nation place"` |  |
-| 144 | `WorldMeasuresCheck.P_REGION_ID` | `"has a nation's id"` |  |
-| 145 | `WorldMeasuresCheck.P_REGION_DEF` | `"is not in meta.definitions"` |  |
-| 146 | `WorldMeasuresCheck.P_SHARE_MISSING` | `"is missing"` |  |
-| 147 | `WorldMeasuresCheck.P_SHARE_RANGE` | `"is not over 0 and under 1"` |  |
-| 148 | `WorldMeasuresCheck.P_REGION_PEOPLE` | `"is not under its nation's"` |  |
-| 149 | `WorldMeasuresCheck.P_CPI_YEAR` | `"is absent"` |  |
-| 150 | `WorldMeasuresCheck.P_CPI_RISE` | `"does not rise"` |  |
-| 151 | `WorldMeasuresCheck.P_CPI_CONSTANT` | `"is not the BLS's"` |  |
-| 152 | `WorldMeasuresCheck.P_CPI_SERIES` | `"series is not"` |  |
-| 153 | `WorldMeasuresCheck.P_RATIO` | `"is not cpi_u 2015 over 2025"` |  |
+| 108 | `WorldMeasuresCheck.AGREE_SHARE` | `.95, AGREE_TOLERANCE =.01` | The share of the money figures that must agree with their identity, and how near is agreeing: a few nations' published figures miss each identity (the WDI converts AGO BDI NPL SYR UGA ZWE at an alt... |
+| 111 | `WorldMeasuresCheck.MIN_COUNTED` | `100` | The fewest nations an identity may be counted over before the share means anything. |
+| 114 | `WorldMeasuresCheck.US_ONE_TOLERANCE` | `1e-9` | The nearest the United States' price level and rate against parity are to 1: the base of both is the United States. |
+| 117 | `WorldMeasuresCheck.DOCTORED_NATION` | `"AFG"` | The nation the doctored copies change (Afghanistan, which has a published GDP and most of the others). |
+| 120 | `WorldMeasuresCheck.DOCTORED_REGION` | `"TYO"` | The city region the doctored copies change (Tokyo, an OECD region with published shares). |
+| 123 | `WorldMeasuresCheck.P_DUP_MEASURE` | `"a measure key that is in the file twice"` | The problems' sentences: problems() writes them and the sections look for them by these words. |
+| 124 | `WorldMeasuresCheck.P_DUP_PLACE` | `"a place id that is in the file twice"` |  |
+| 125 | `WorldMeasuresCheck.P_NOT_A_MEASURE` | `"is not a measure or a variant of the file"` |  |
+| 126 | `WorldMeasuresCheck.P_NO_SOURCE` | `"is a measure nothing publishes(its source is none:)"` |  |
+| 127 | `WorldMeasuresCheck.P_Y_ONLY` | `"is a measure only the player's cities rank(scope Y)"` |  |
+| 128 | `WorldMeasuresCheck.P_REGION_SCOPE` | `"is not a city-region measure(scope NC)"` |  |
+| 129 | `WorldMeasuresCheck.P_NOT_FINITE` | `"is not a finite number"` |  |
+| 130 | `WorldMeasuresCheck.P_NOT_POSITIVE` | `"is not over 0"` |  |
+| 131 | `WorldMeasuresCheck.P_WINDOW` | `"is outside the window"` |  |
+| 132 | `WorldMeasuresCheck.P_MARK` | `"is not 1, 2 or 3"` |  |
+| 133 | `WorldMeasuresCheck.P_MARK_UNLISTED` | `"is not in meta.marks"` |  |
+| 134 | `WorldMeasuresCheck.P_SOURCE` | `"is not in meta.sources"` |  |
+| 135 | `WorldMeasuresCheck.P_RULE_MISSING` | `"is an estimate(mark 1) with no rule"` |  |
+| 136 | `WorldMeasuresCheck.P_RULE_UNKNOWN` | `"is not in meta.rules"` |  |
+| 137 | `WorldMeasuresCheck.P_RULE_SPARE` | `"is not an estimate and carries a rule"` |  |
+| 138 | `WorldMeasuresCheck.P_LICENCE` | `"licence is blank"` |  |
+| 139 | `WorldMeasuresCheck.P_URL` | `"url is blank"` |  |
+| 140 | `WorldMeasuresCheck.P_WEO` | `"mentions the IMF's World Economic Outlook"` |  |
+| 141 | `WorldMeasuresCheck.P_SOURCE_UNUSED` | `"source is named by no figure"` |  |
+| 142 | `WorldMeasuresCheck.P_RULE_UNUSED` | `"rule is made by no figure"` |  |
+| 143 | `WorldMeasuresCheck.P_COUNT` | `"but the places hold"` |  |
+| 144 | `WorldMeasuresCheck.P_REGION_NATION` | `"is not a nation place"` |  |
+| 145 | `WorldMeasuresCheck.P_REGION_ID` | `"has a nation's id"` |  |
+| 146 | `WorldMeasuresCheck.P_REGION_DEF` | `"is not in meta.definitions"` |  |
+| 147 | `WorldMeasuresCheck.P_SHARE_MISSING` | `"is missing"` |  |
+| 148 | `WorldMeasuresCheck.P_SHARE_RANGE` | `"is not over 0 and under 1"` |  |
+| 149 | `WorldMeasuresCheck.P_REGION_PEOPLE` | `"is not under its nation's"` |  |
+| 150 | `WorldMeasuresCheck.P_CPI_YEAR` | `"is absent"` |  |
+| 151 | `WorldMeasuresCheck.P_CPI_RISE` | `"does not rise"` |  |
+| 152 | `WorldMeasuresCheck.P_CPI_CONSTANT` | `"is not the BLS's"` |  |
+| 153 | `WorldMeasuresCheck.P_CPI_SERIES` | `"series is not"` |  |
+| 154 | `WorldMeasuresCheck.P_RATIO` | `"is not cpi_u 2015 over 2025"` |  |
 
 ### WorldMoneysCheck.java ([map](map/WorldMoneysCheck.md))
 

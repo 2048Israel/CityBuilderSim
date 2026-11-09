@@ -1,6 +1,6 @@
 # LandmassCheck.java - 3,300 lines · 94 methods · 14 constants · harnesses
 
-`ham/citybuildersim/LandmassCheck.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandmassCheck.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
 
 > The city's ground counted by landmass, and the island rule, checked (ET5; the ET5 design): a landmass is read from the
 > Earth's data at every plot, the city's books are kept by landmass, ground on a landmass the city has not linked is owned,
