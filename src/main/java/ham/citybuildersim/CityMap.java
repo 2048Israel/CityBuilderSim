@@ -269,6 +269,11 @@ public final class CityMap {
         /** (UP5) Its own stamp as last worked out (CityMap.ownStamp()) and the key of the inputs it was worked out from; ownHas false until the first. The map's thread. */
         long ownKept, ownKeyKept;
         boolean ownHas;
+        /** (UP9-C) The part of the reserves' guard's digest its mined sites' boxes made (CityMap.digestOfBlockers()), the key of what those read when it was worked out, and whether there is one yet. The screen's thread, never saved. */
+        long guardKey, guardPart;
+        boolean guardKept;
+        /** (UP9-C) Whether it is in the map's list of the districts that have site runs (CityMap.guardRunDistricts). The screen's thread, never saved. */
+        boolean guardListed;
 
         /**
          * ITS LOG (batch CL3): the changes to its counts, month by month, in the order they came - a record {month, type,
@@ -2393,6 +2398,11 @@ public final class CityMap {
             runs = less.length == 0 ? null : less;
         }
         d.siteRuns[slot] = runs;
+        if (runs != null && !d.guardListed) {
+            // UP9-C: the one writer that gives a district runs lists it for the reserves' guard's digest (relay() only takes them away).
+            guardRunDistricts.add(d);
+            d.guardListed = true;
+        }
         moved(d);
         changes++;
         minedTouched.add((baseDX + d.dx) << 32 ^ ((baseDY + d.dy) & 0xffffffffL));
@@ -3189,8 +3199,39 @@ public final class CityMap {
     /** Each band's epoch (planEpoch()) at which a job that tried to take its district's link as it stood could not (PlanJob, lazy), Long.MIN_VALUE for none: the chain is handed out in full for the band at that epoch (batch UP5). */
     private long[] bandFull = new long[0];
 
+    /* ----- UP9-A: the lazy try backs off (2026-11-09) ----- */
+
+    /**
+     * WHY (UP5-B; Jerus took the recommended way, 2026-10-31): at x 80 a grown month's carry nearly always moves, so the lazy try (a job that
+     * takes its old link if the carry arriving is its link's, else fails) failed in 24 of 25 months - MapCheck 18 on main 092130f4 handed 250
+     * jobs a month, 124 of them failed and were handed again with the input gathered, in a redo round. So a band whose lazy try failed gathers its
+     * inputs at once (eager) and tries lazy again after a quiet month: one where an eager job took its link, none made a plan or failed, and none
+     * was left unadopted. Eager and lazy never change the chain's results (MapCheck 18's chainEqualsWhole), only what a month costs, so a state gone
+     * stale (an epoch it was not read at, a job adopted late) does no harm, and nothing here is saved.
+     * Held one a band; the districts of x 80 grow most months, which sizes the bands again (sizeBands()), so it is grown and never reset
+     * (band(i) of a district does not move). Written by chainTo() and adopt() alone (the screen's thread), never by a job's work().
+     */
+    static final class Backoff {
+        /** Whether the band's jobs that could take their links are handed out with the input gathered. */
+        boolean eager;
+        /** Whether something at the epoch `seen` broke the quiet: a lazy try failed, or an eager job that could take its link made a plan or made none. */
+        boolean moved;
+        /** Whether an eager job of that epoch took its link as it stood. */
+        boolean took;
+        /** The epoch (planEpoch()) the rest is of, Long.MIN_VALUE for none. */
+        long seen = Long.MIN_VALUE;
+        /** The eager jobs that could take their links, handed out at `seen` and not adopted yet. */
+        int out;
+    }
+
+    /** Each band's Backoff (UP9-A). */
+    private Backoff[] backoff = new Backoff[0];
+
     /** How the chain's jobs came out since the map was drawn (batch UP5), counted as adopt() keeps them: plans made, links taken as they stood, jobs that could do neither (a lazy job whose carry in or edges had moved: its band was then handed out in full), and plans made that were not needed - made after the first that broke, from the inputs the district's link was made from (what a perfect early exit would have taken). A harness reads them (chainJobs()). */
     private long jobsPlanned, jobsReused, jobsFailed, jobsWasted;
+
+    /** The chain's jobs handed out lazy since the map was drawn (UP9-A), however they came out: a harness reads it (chainJobs()). */
+    private long jobsLazy;
     private int bandsSized = -1;
 
     /** The bands used, the last last: those past BANDS_KEPT are let go (forgetBand()). */
@@ -3369,6 +3410,12 @@ public final class CityMap {
         bandValidTo = new int[n];
         bandFull = new long[n];
         Arrays.fill(bandFull, Long.MIN_VALUE);
+        // Grown, the bands it has as they are (UP9-A): a band's state outlives the districts added after it.
+        if (backoff.length < n) {
+            int had = backoff.length;
+            backoff = Arrays.copyOf(backoff, n);
+            for (int k = had; k < n; k++) backoff[k] = new Backoff();
+        }
         bandsSized = districts.size();
     }
 
@@ -3527,6 +3574,8 @@ public final class CityMap {
         volatile boolean failed;
         /** Whether it took its link's work (the inputs it would be planned from were its link's). */
         boolean reused;
+        /** Whether it is an eager job that may take its link (UP9-A): adopt() tells its band's Backoff how it came out. Set by chainTo() before the job is handed out. */
+        boolean watched;
         double ms;
         /** Its picture's (0.7.128, batch MM1): the boxes the runs and the shore stand on its ground (extrasIn()), the stamp of the picture kept for it when it was handed out (0 for none), its plan's plots' stamp (DistrictPicture.stampOf()), and what run() drew - null when the kept one is of the same plots. */
         final int[] extras;
@@ -3727,6 +3776,9 @@ public final class CityMap {
         int b = band(i), start = b * CHAIN_BAND;
         checkBand(b);
         long e = planEpoch();
+        // UP9-A: the band's state is read at each new epoch: an eager band whose last epoch was quiet (an eager job took its link, none moved, none left out) tries lazy again.
+        Backoff s = backoff[b];
+        if (s.seen != e) { if (s.eager && !s.moved && s.out == 0 && s.took) s.eager = false; s.moved = false; s.took = false; s.out = 0; s.seen = e; }
         District di = districts.get(i);
         if (i < bandValidTo[b]) {
             Drawn got = drawn.get(di);
@@ -3746,7 +3798,7 @@ public final class CityMap {
         // most are, a month in one district moving neither). The first time at an epoch it is LAZY, with no input gathered here; one that cannot
         // fails with all that wait on it, and the band is handed out again at this epoch with the input gathered, each job still taking its link
         // where it can: at most one round more than planning every one.
-        boolean lazyOk = bandFull[b] != e, redo = false;
+        boolean lazyOk = !s.eager && bandFull[b] != e, redo = false;
         for (int k = bandValidTo[b]; k <= i; k++) {
             District dk = districts.get(k);
             PlanJob p = pending.get(dk);
@@ -3756,6 +3808,8 @@ public final class CityMap {
                 redo = true;
                 lazyOk = false;
                 bandFull[b] = e;
+                s.eager = true;
+                s.moved = true;
             }
             int[] given = prev == null && k > start ? links.get(districts.get(k - 1)).out : null;
             District[] near = earlierOf(dk);
@@ -3764,9 +3818,14 @@ public final class CityMap {
             Link was = links.get(dk);
             PlanJob j;
             boolean keeps = prev != null && was != null && was.own == own && (!edgeK || was.free != null) && Arrays.equals(was.earlier, near);
-            if (keeps && lazyOk) j = new PlanJob(this, dk, was, drawn.get(dk), own, prev, edgeK, near, sources(near), e);
-            else if (keeps) j = new PlanJob(this, dk, planInputHere(dk), own, prev, given, edgeK, near, sources(near), e, was, drawn.get(dk));
-            else j = new PlanJob(this, dk, planInputHere(dk), own, prev, given, edgeK, near, sources(near), e);
+            if (keeps && lazyOk) {
+                j = new PlanJob(this, dk, was, drawn.get(dk), own, prev, edgeK, near, sources(near), e);
+                jobsLazy++;
+            } else if (keeps) {
+                j = new PlanJob(this, dk, planInputHere(dk), own, prev, given, edgeK, near, sources(near), e, was, drawn.get(dk));
+                j.watched = true;
+                s.out++;
+            } else j = new PlanJob(this, dk, planInputHere(dk), own, prev, given, edgeK, near, sources(near), e);
             pending.put(dk, j);
             out.add(j);
             prev = j;
@@ -3774,8 +3833,8 @@ public final class CityMap {
         return prev;
     }
 
-    /** How the chain's jobs came out since the map was drawn, as adopt() kept them (batch UP5): {plans made, links taken as they stood, jobs that could do neither, plans made that were not needed}. A harness's. */
-    long[] chainJobs() { return new long[] { jobsPlanned, jobsReused, jobsFailed, jobsWasted }; }
+    /** How the chain's jobs came out since the map was drawn, as adopt() kept them (batch UP5): {plans made, links taken as they stood, jobs that could do neither, plans made that were not needed, jobs handed out lazy (UP9-A, as handed out)}. A harness's. */
+    long[] chainJobs() { return new long[] { jobsPlanned, jobsReused, jobsFailed, jobsWasted, jobsLazy }; }
 
     /** The links kept as a harness compares them month to month (batch UP5): each district's {own, carry in, carry out, read, margins' hash, the link}. The arrays are the links' own and never written. */
     java.util.Map<District, Object[]> linkSnapshot() {
@@ -3799,6 +3858,25 @@ public final class CityMap {
 
     /** The map's epoch moved (planEpoch()) with nothing else: a harness's, for a chain handed out at a new epoch, the first time lazy. */
     void epochMoves() { changes++; }
+
+    /** Whether district d's band hands its jobs out eager (the lazy try backing off, UP9-A) as of the last epoch its chain was asked at: for MapCheck 18 (UP9). */
+    boolean backingOff(District d) {
+        sizeBands();
+        return backoff[band(d.index)].eager;
+    }
+
+    /** District d's link replaced by a copy whose carry in is a clone with its first entry one more, every other field as it was but the serial (a new one: it is a link made now), as a month that moved the carry arriving would leave it; none for a link with no carry in: for MapCheck 18 (UP9). */
+    void carryMoves(District d) {
+        Link l = links.get(d);
+        if (l == null || l.in == null || l.in.length == 0) return;
+        int[] in = l.in.clone();
+        in[0]++;
+        Link c = new Link(l.own, in, l.out, l.free, l.streets, l.margins, l.marginsHash, l.earlier, l.read, l.surplus, ++jobsHanded);
+        c.leftover = l.leftover;
+        c.picture = l.picture;
+        links.put(d, c);
+        bandsStale();
+    }
 
     /** District d's link's margins hash, carry out and stamp as {stamp, margins' hash, hash of the carry out}, null for no link: a harness's. */
     long[] linkDigest(District d) {
@@ -3872,12 +3950,27 @@ public final class CityMap {
         if (j == null || j.map != this || !j.done()) return false;
         if (j instanceof PlanJob p) {
             if (pending.get(p.d) == p) pending.remove(p.d);
+            if (p.watched) {
+                // UP9-A: how an eager job that could take its link came out, told to its band's state if that still is of the epoch the job was made at (a late one changes nothing).
+                sizeBands();
+                int wb = band(p.d.index);
+                if (wb < backoff.length && p.epoch == backoff[wb].seen) {
+                    Backoff w = backoff[wb];
+                    w.out--;
+                    if (p.failed || !p.reused) w.moved = true;
+                    else w.took = true;
+                }
+            }
             if (p.failed) {
                 // A lazy job that could not take its link as it stood (UP5), or one that waited on it: nothing is kept, the band is checked again, and its chain handed out again at this epoch with the input gathered.
                 jobsFailed++;
                 sizeBands();
                 int fb = band(p.d.index);
-                if (fb < bandFull.length) bandFull[fb] = p.epoch;
+                if (fb < bandFull.length) {
+                    bandFull[fb] = p.epoch;
+                    backoff[fb].eager = true;
+                    backoff[fb].moved = true;
+                }
                 bandsStale();
                 return true;
             }
@@ -4636,15 +4729,155 @@ public final class CityMap {
     /** The city's highways and railway (spec 2.7, 2.8). */
     private CityRuns runs = guarded(new CityRuns());
 
+    /* ----- UP9-B: the reserves' guard moves with the mines and the works (2026-11-09) ----- */
+
+    /*
+     * WHY (MP1-C; Jerus took the recommended way, 2026-10-31): the guard's version was the map's `changes`, which moves with every district's count
+     * (syncLand, reconcile, add), with dropLink in the plan chain and with the screen's picture setters, so at x 80 CityRuns.reservesIn()'s cache
+     * was cleared every month, maybe in the middle of the chain, and every district that moved found its plan input's reserves again (some 25 ms a
+     * month on the screen's thread). The guard blocks a reserve only by the shore's works and the mines on their sites (reserveBlocked()), so its
+     * version is now a digest of exactly those (guardDigest()), kept against `changes` and worked out again only when that moved. MapCheck 18 counts
+     * how often the reserves are found again and asserts the digest is never stale.
+     */
+
+    /** The guard's digest as last worked out, and the `changes` it was worked out at (Long.MIN_VALUE for never). */
+    private long guardDigestKept;
+    private long guardDigestAt = Long.MIN_VALUE;
+
     /** The runs given the works an interchange's reserve may not take (batch FR7, InterchangeGround.Guard): the mines on their sites and the shore's works. */
     private CityRuns guarded(CityRuns r) {
         r.setReserveGuard(new InterchangeGround.Guard() {
             @Override public boolean blocked(long x0, long y0, long x1, long y1) { return reserveBlocked(x0, y0, x1, y1); }
 
-            // Any change of the map - a building placed, a site worked, a work laid on the shore - may move a mine or a terminal.
-            @Override public long version() { return changes; }
+            // UP9-B: only a mine on its site or a work on the shore moves what blocked() says, and the digest moves with those alone.
+            @Override public long version() { return guardDigest(); }
         });
         return r;
+    }
+
+    /** The guard's version: the digest of the blockers, kept against `changes`, which is read after sitedNow() as placeSited() may move it. */
+    private long guardDigest() {
+        sitedNow();
+        long at = changes;
+        if (at != guardDigestAt) {
+            guardDigestKept = digestOfBlockers(false);
+            guardDigestAt = at;
+        }
+        return guardDigestKept;
+    }
+
+    /** The guard's digest worked out afresh, every district's part built again and the kept ones ignored: for MapCheck 18 (UP9). */
+    long guardDigestFresh() {
+        sitedNow();
+        return digestOfBlockers(true);
+    }
+
+    /* ----- UP9-C: the digest kept by district (2026-11-09) ----- */
+
+    /*
+     * WHY: the digest above is worked out again whenever `changes` moved, and every reconcile moves it with every district it touched; each such
+     * district's `version` moved too, and siteList() is kept by that version, so every recompute built the lists of every district that has site runs
+     * afresh: some 15 recomputes in the 13 months MapCheck 5 times (about one a month), each of some 2,000 lists at 5 billion (14,661 districts, 30-53
+     * ms) and some 3,600 at 10 billion (29,255 districts, 64-101 ms), against the 5 ms it allows a month's change. Each district's part of the digest is
+     * therefore kept against a key of exactly what its mined boxes read (guardKeyOf()), and a recompute builds only the districts whose runs or land
+     * moved. It also walks only the districts with runs (guardRunDistricts, some 3,590 of 29,255 at 10 billion), not every district's slots: that walk
+     * alone cost 2 to 6 ms a month at 10 billion.
+     */
+
+    /**
+     * The districts that have site runs, as markRun() gives them (District.guardListed says one is in it), for the kept digest to walk. A district whose
+     * slots are all null again is dropped from it by the walk that finds it so. Never saved: a map loaded places its mines afresh through markRun().
+     */
+    private final ArrayList<District> guardRunDistricts = new ArrayList<>();
+
+    /** How many districts' parts of the digest were built (their mined sites' boxes folded) and how many were kept, cumulative: never saved. */
+    private long guardPartsBuilt, guardPartsKept;
+
+    /** {parts built, parts kept} of the digest so far (the fresh digest builds every part it meets): for MapCheck 5 and 18 (UP9). */
+    long[] guardPartCounts() { return new long[] { guardPartsBuilt, guardPartsKept }; }
+
+    /**
+     * The land's part of every district's key, worked out once a recompute: what siteList() reads of the land beyond a district's own runs - the ground's
+     * key as groundKey() folds it without the linked set (a purchase, a centre fill), the legacy field's sites and place, and the base the districts' dx
+     * and dy are against. Each folded with its own odd multiplier so that no two swap unseen. Not holdingStates: a site's state plays no part in its box.
+     */
+    private long guardLandKey() {
+        long g = World.mix(landVersion ^ ((long) land.purchases().size() << 32) ^ land.centreStamp());
+        return World.mix(g ^ land.legacySites() * 0x9E3779B97F4A7C15L ^ land.legacyX() * 0xC2B2AE3D27D4EB4FL ^ land.legacyY() * 0x165667B19E3779F9L
+                ^ baseDX * 0xD6E8FEB86659FD93L ^ baseDY * 0xFF51AFD7ED558CCDL);
+    }
+
+    /**
+     * A district's key: the land's, its dx and dy, and each slot's run array element by element (a null slot has a marker of its own, and each array's
+     * length is mixed in so that a run moved from one array to the next cannot read the same). Chained through World.mix(), never summed, so that the
+     * order of the runs, which is the order the works are given the sites in, is in it.
+     */
+    private long guardKeyOf(District d, long landKey) {
+        long h = World.mix(landKey ^ d.dx * 0x9E3779B97F4A7C15L ^ d.dy * 0xC2B2AE3D27D4EB4FL);
+        for (int q = 0; q < d.siteRuns.length; q++) {
+            int[] rs = d.siteRuns[q];
+            if (rs == null) {
+                h = World.mix(h ^ q * 0x9E3779B97F4A7C15L ^ 0x4E554C4CL);
+                continue;
+            }
+            h = World.mix(h ^ q * 0x9E3779B97F4A7C15L ^ rs.length * 0x165667B19E3779F9L);
+            for (int i = 0; i < rs.length; i++) h = World.mix(h ^ q * 0x9E3779B97F4A7C15L ^ i * 0xC2B2AE3D27D4EB4FL ^ rs[i]);
+        }
+        return h;
+    }
+
+    /**
+     * A digest of what reserveBlocked() reads, through the same calls: the shore works' boxes, and the boxes of the mined sites of every district that
+     * has any site runs (siteList()), each with its district's dx and dy. Order-free (a sum), each box's fields folded with distinct odd multipliers
+     * before World.mix() so that a swap of two of them moves it, and mixed at the end with baseDX and baseDY, which the districts' dx and dy are against.
+     * A district's part is kept against its key (guardKeyOf()) and added as it was while the key stands; `fresh` builds every part afresh and keeps none.
+     */
+    private long digestOfBlockers(boolean fresh) {
+        long sum = 0;
+        for (CityShore.Work w : shore.works()) {
+            sum += World.mix(0x574F524BL ^ w.x0() * 0x9E3779B97F4A7C15L ^ w.y0() * 0xC2B2AE3D27D4EB4FL ^ w.w() * 0x165667B19E3779F9L ^ w.h() * 0xD6E8FEB86659FD93L);
+        }
+        long landKey = fresh ? 0 : guardLandKey();
+        // The kept digest walks the districts with runs; the fresh one every district, so that a writer of runs that missed the list is seen.
+        List<District> walk = fresh ? districts : guardRunDistricts;
+        for (int i = 0; i < walk.size(); i++) {
+            District d = walk.get(i);
+            boolean any = false;
+            for (int[] rs : d.siteRuns) any |= rs != null;
+            if (!any) {
+                if (!fresh) {
+                    // Its runs are gone: out of the list (the last takes its place) and the flag cleared, to be listed again by markRun().
+                    District last = guardRunDistricts.remove(guardRunDistricts.size() - 1);
+                    if (last != d) guardRunDistricts.set(i, last);
+                    d.guardListed = false;
+                    i--;
+                }
+                continue;
+            }
+            long key = 0;
+            if (!fresh) {
+                key = guardKeyOf(d, landKey);
+                if (d.guardKept && d.guardKey == key) {
+                    sum += d.guardPart;
+                    guardPartsKept++;
+                    continue;
+                }
+            }
+            long part = 0;
+            for (DrawnSite s : siteList(d.dx, d.dy)) {
+                if (s.mine() < 0) continue;
+                part += World.mix(0x4D494E45L ^ d.dx * 0x9E3779B97F4A7C15L ^ d.dy * 0xC2B2AE3D27D4EB4FL ^ s.x0() * 0x165667B19E3779F9L
+                        ^ s.y0() * 0xD6E8FEB86659FD93L ^ s.x1() * 0xFF51AFD7ED558CCDL ^ s.y1() * 0xC4CEB9FE1A85EC53L);
+            }
+            guardPartsBuilt++;
+            if (!fresh) {
+                d.guardKey = key;
+                d.guardPart = part;
+                d.guardKept = true;
+            }
+            sum += part;
+        }
+        return World.mix(sum ^ baseDX * 0x9E3779B97F4A7C15L ^ baseDY * 0xC2B2AE3D27D4EB4FL);
     }
 
     /**

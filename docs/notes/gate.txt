@@ -1,13 +1,13 @@
-# gate of Merge batch/LB4: rankings: a slot holding the city in play marked "this city, as saved" and left out at Your age (LB3-D); the saved histories read with `JsonReader`, only the kept series, as `double[]` (LB3-R) (Jerus, 2026-10-31: "Take all (Recommended)"), 0.9.64
+# gate of Merge batch/UP9: x 80's chain: a band whose lazy try failed gathers its inputs at once and tries lazy again after a quiet month (UP5-B); the reserves kept across months, counted by a harness (MP1-C); measured by MapCheck 18 (Jerus, 2026-10-31: "Take all (Recommended)"), 0.9.65
 # date: 2026-11-09
 # earth-2.bin: named
 # nightly: 2026-11-09 01:39 0.9.58 08f58a5f 4,000 months: OK in 118 s
-# suite: 188 harnesses run in 1125s: 183 passed, 5 failed
-# timing: 17 harnesses run in 852s: 13 passed, 4 failed; its red lines were judged side by side with main's, below
+# suite: 188 harnesses run in 1049s: 183 passed, 5 failed
+# timing: 17 harnesses run in 821s: 13 passed, 4 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 27.4 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 27.4 ms (gate.txt, today), batch 27.4 ms (-0.2%), budget 25 ms: main over the budget too, no round]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 31.0 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 27.4 ms (gate.txt, today), batch 31.0 ms (+13.3%), budget 25 ms: main over the budget too, no round]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# figure	SaveSlotCheck	the median due month, 27.4 ms, holds the clock at most CLOCK_MS (25 ms)	27.3762	25	ms	FAIL	1	1
+# figure	SaveSlotCheck	the median due month, 31.0 ms, holds the clock at most CLOCK_MS (25 ms)	31.0131	25	ms	FAIL	1	1
 PriceLevelCheck | exit 1
 PriceLevelCheck | FAIL cash (nominal) month 101: 8.317811325 at the factor over the factor, 68.38253344 at today's prices (0.000751 apart)
 PriceLevelCheck | FAIL gdp.month (nominal) month 103: 20121.84632 at the factor over the factor, 20122.48474 at today's prices (1.95e-05 apart)

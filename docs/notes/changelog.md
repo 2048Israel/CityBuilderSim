@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.65 — UP9, x 80's chain: the lazy try backs off, the reserves kept — 2026-11-09, ready, see docs/queue/UP9-notes.md
+At x 80 a grown month's carry nearly always moves, so the map's lazy try failed and its band was handed out again
+with its inputs: 250 plan jobs a month, 124 of them doing nothing. A band whose lazy try failed now gathers its
+inputs at once, and tries lazy again after a quiet month (UP5-B): 126 jobs, none wasted, and the far screen is
+coloured once a month instead of twice (MapCheck 18, paired against main over four rounds: 29.7 to 18.1 ms now's,
+34.0 to 23.3 today's; the chain's FX side 27.0 to 26.0). The interchanges' reserves are kept across months
+(MP1-C): the map's guard moves only with the mines and shore works it reads, a digest of exactly those kept by
+district and walked only over the districts with runs, so a month's change stays inside section 5's 5 ms (5B 1.7,
+10B 2.8 ms); 185 of 401 asked a month are found again, and the kept reserves and digest are asserted equal to
+fresh ones every month. `CHAIN_ROUNDS` stays 5. Map only: the default trace is byte-identical, so no ensemble.
+
 ### 0.9.64 — LB4, Rankings: the city in play beside its own slot, and a lighter read of the saved cities — 2026-11-09, ready, see docs/queue/LB4-notes.md
 A saved slot holding the city in play (the same city name and world seed in its header) now reads "this city, as
 saved · slot N" on the Rankings board and in its drawer, and is left out at Your age, where it only tied with

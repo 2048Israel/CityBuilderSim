@@ -712,20 +712,86 @@ public final class CityRuns {
     /** The most regions' sites kept at once: 8,192 - a screen's tiles and the plans' frames, many times over. */
     static final int RESERVES_KEPT = 8192;
 
-    /** Sets the works a reserve may not take (the map's mines and shore works). */
+    /* ----- UP9-B: the reserves kept, and counted (2026-11-09) ----- */
+
+    /*
+     * WHY (MP1-C): the cache below was emptied by every month's layReserves() and by each change of the guard's version (the map's `changes`, until
+     * UP9-B), so at x 80 every district that moved found its plan input's reserves again. It is now emptied only by a new ground or a new guard (the
+     * map binds one RunGround for its life) and by the stamp of the runs', the ground's and the guard's versions moving; and what it does is counted
+     * (reserveCounts()) and its kept lists can be checked against a fresh find (reservesStale()), for MapCheck 18. Nothing here is saved.
+     */
+
+    /** Reserve counters, never saved: reservesIn() calls with a ground bound, those answered from the cache, the cache emptied by reservesIn(), and the clears by cause. */
+    private long reserveAsked, reserveFound, reserveClears, clearsByRuns, clearsByGround, clearsByGuard, clearsByCap;
+
+    /** The cache emptied by setReserveGuard() or layReserves(), and the nanoseconds the misses spent in InterchangeGround.sitesIn(). */
+    private long reserveRebinds, reserveMissNanos;
+
+    /** The versions the stamp was last taken at (the runs', the ground's, the guard's): a clear counts each that moved. */
+    private long lastRunsVersion, lastGroundVersion, lastGuardVersion;
+
+    /** Sets the works a reserve may not take (the map's mines and shore works): the sites kept are let go when it is not the guard already set. */
     public void setReserveGuard(InterchangeGround.Guard guard) {
-        reserveGuard = guard;
-        reserveKept.clear();
+        if (guard != reserveGuard) {
+            reserveGuard = guard;
+            reserveKept.clear();
+            reserveRebinds++;
+        }
     }
 
     /**
      * Binds the ground the interchanges' reserves are found over and forgets
-     * the sites kept: called by layTo() every month, and by the map when it
-     * has read its runs back. Nothing is found until it is asked for.
+     * the sites kept, whatever was bound: called by the map when it has read
+     * its runs back, and by a harness that lays an arm by hand (the runs'
+     * version does not move with it). layTo() binds with bindReserves(), which
+     * forgets them only for another ground. Nothing is found until it is asked for.
      */
     public void layReserves(Ground g) {
         reserveGround = g;
         reserveKept.clear();
+        reserveRebinds++;
+    }
+
+    /** layTo()'s bind, every month: the sites kept are let go only when g is not the ground already bound (the map binds one RunGround for its life); the stamp, the runs', the ground's and the guard's versions, decides the rest. */
+    private void bindReserves(Ground g) {
+        if (g != reserveGround) layReserves(g);
+    }
+
+    /**
+     * The reserve counters since the runs were made, for MapCheck 18 (UP9), in this order: [0] reservesIn() calls with a ground bound, [1] those
+     * answered from the cache (found again), [2] times reservesIn() emptied the cache, then of those the ones in which [3] the runs' version
+     * had moved since the last stamp, [4] the ground's, [5] the guard's, [6] the cache had reached RESERVES_KEPT; [7] times setReserveGuard() or
+     * layReserves() emptied it; [8] the nanoseconds the misses spent finding sites. A clear counts each cause that holds, so [3] to [6] may sum
+     * to more than [2]. Then not a count: [9] the guard's version the sites kept were last stamped at (what a clear by the guard is told by).
+     */
+    long[] reserveCounts() {
+        return new long[] { reserveAsked, reserveFound, reserveClears, clearsByRuns, clearsByGround, clearsByGuard, clearsByCap, reserveRebinds, reserveMissNanos, lastGuardVersion };
+    }
+
+    /** The entries of reserveCounts(): for MapCheck 18 (UP9). */
+    static final int RESERVE_COUNTS = 10;
+
+    /** The guard's version, 0 with none set: for MapCheck 18 (UP9). */
+    long guardVersion() { return reserveGuard == null ? 0 : reserveGuard.version(); }
+
+    /**
+     * How many of the regions kept would be found differently now, for MapCheck 18 (UP9): each found afresh (InterchangeGround.sitesIn()) and its
+     * list compared with the one kept. A cache whose stamp has moved (or that is full) is emptied by the next reservesIn() and counts 0, as
+     * does one with no ground bound; touches no counter and not the cache.
+     */
+    int reservesStale() {
+        if (reserveGround == null || reserveStampOf(reserveGround.version(), guardVersion()) != reserveStamp || reserveKept.size() >= RESERVES_KEPT) return 0;
+        int stale = 0;
+        for (Map.Entry<List<Long>, List<InterchangeGround.Site>> e : reserveKept.entrySet()) {
+            List<Long> k = e.getKey();
+            if (!InterchangeGround.sitesIn(this, reserveGround, reserveGuard, k.get(0), k.get(1), (int) (long) k.get(2), (int) (long) k.get(3)).equals(e.getValue())) stale++;
+        }
+        return stale;
+    }
+
+    /** The stamp reservesIn() keeps its sites against: the runs', the ground's and the guard's versions (the guard's term is 0 with none set). */
+    private long reserveStampOf(long groundV, long guardV) {
+        return World.mix(version ^ World.mix(groundV + 0x5245L) ^ (reserveGuard == null ? 0 : World.mix(guardV + 0x47L)));
     }
 
     /** The ground the interchanges' reserves are found over, by its version (Ground.version(): it moves with a purchase), 0 with none bound: a tile's key (CityMap.tileKey(), batch UP5) folds it, as reservesIn() is kept against it. */
@@ -740,16 +806,32 @@ public final class CityRuns {
      */
     public List<InterchangeGround.Site> reservesIn(long x0, long y0, int w, int h) {
         if (reserveGround == null) return List.of();
-        long stamp = World.mix(version ^ World.mix(reserveGround.version() + 0x5245L) ^ (reserveGuard == null ? 0 : World.mix(reserveGuard.version() + 0x47L)));
-        if (stamp != reserveStamp || reserveKept.size() >= RESERVES_KEPT) {
+        long groundV = reserveGround.version(), guardV = reserveGuard == null ? 0 : reserveGuard.version();
+        long stamp = reserveStampOf(groundV, guardV);
+        reserveAsked++;
+        boolean full = reserveKept.size() >= RESERVES_KEPT;
+        if (stamp != reserveStamp || full) {
+            // UP9-B: counted by the version that moved since the last stamp, and by the size cap.
+            reserveClears++;
+            if (version != lastRunsVersion) clearsByRuns++;
+            if (groundV != lastGroundVersion) clearsByGround++;
+            if (guardV != lastGuardVersion) clearsByGuard++;
+            if (full) clearsByCap++;
+            lastRunsVersion = version;
+            lastGroundVersion = groundV;
+            lastGuardVersion = guardV;
             reserveKept.clear();
             reserveStamp = stamp;
         }
         List<Long> key = List.of(x0, y0, (long) w, (long) h);
         List<InterchangeGround.Site> sites = reserveKept.get(key);
         if (sites == null) {
+            long t0 = System.nanoTime();
             sites = InterchangeGround.sitesIn(this, reserveGround, reserveGuard, x0, y0, w, h);
+            reserveMissNanos += System.nanoTime() - t0;
             reserveKept.put(key, sites);
+        } else {
+            reserveFound++;
         }
         return sites;
     }
@@ -3792,7 +3874,7 @@ public final class CityRuns {
         layHighways(highwayPlots, g, fx, fy, pieces);
         layRail(trackPlots, yardSizes, spurs, g, rx, ry, mines, works);
         if (highwayPlots == 0 && highways.plots == 0 && highways.started) highways.reset();
-        layReserves(g);
+        bindReserves(g);
         highwayShort = Math.max(0, highwayPlots - highways.plots);
         trackSurplus = Math.max(0, trackPlots - rail.plots);
         long v1 = signature();
