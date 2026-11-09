@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**187 harness files, 22,095 labelled assertions.** AllChecks runs 187 of them.
+**187 harness files, 22,113 labelled assertions.** AllChecks runs 187 of them.
 
 ## Which harnesses read which class
 
@@ -83,7 +83,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Currency](map/Currency.md) | DenominationCheck, FittingCheck, HistoryCheck, LandClassCheck, LongPlaytest, NewGameCheck, ReadPathCheck, SaveFileCheck, YearBookCheck |
 | [DataSave](map/DataSave.md) | EarthTerrainCheck, FittingCheck, LandmassCheck, MapCheck, PopulationCheck, ReplayCheck, SaveFileCheck, SaveSlotCheck |
 | [Debt](map/Debt.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CentralBankCheck, ChartCheck, CreditCheck, CurrencyCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, GdpCheck, HoldersCheck, KeptCheck, LongPlaytest, MoneyCheck, NewGameCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, SectorStatementCheck, TreasuryCheck |
-| [DebtManager](map/DebtManager.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarryTradeCheck, CentralBankCheck, CreditCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FloatLinkCheck, ForeignDebtCheck, HoldersCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, MonetaryCheck, MoneyCheck, MortgageCheck, PartnersCheck, PegAnchorCheck, PolicyPreviewCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, TreasuryCheck |
+| [DebtManager](map/DebtManager.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarryTradeCheck, CentralBankCheck, CreditCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FloatLinkCheck, ForeignDebtCheck, HoldersCheck, HousingCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, MonetaryCheck, MoneyCheck, MortgageCheck, PartnersCheck, PegAnchorCheck, PolicyPreviewCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, TreasuryCheck |
 | [DebtQuote](map/DebtQuote.md) | AuctionCheck, AutoBuildCheck, CallCheck, CreditCheck, CurveCheck, DebtMoneysCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, HoldersCheck, LandCheck, LongPlaytest, MapCheck, NewGameCheck, RestructureCheck |
 | [DecisionLog](map/DecisionLog.md) | AutoBuildCheck, BankCheck, CentralBankCheck, ChartCheck, ForeignDebtCheck, FundCheck, KeptCheck, LongPlaytest, OilCheck, PegAnchorCheck, PolicyDatesCheck, ReadPathCheck, ResearchViewCheck, SaveFileCheck, YearBookCheck, ZoningViewCheck |
 | [DemolitionLog](map/DemolitionLog.md) | CalendarCheck, HouseholdCheck, MortgageCheck |
@@ -12991,7 +12991,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L280 a played city's record survives a save
   - L286 ...and the month after, both cities hold the same households
 
-## HousingCheck.java - 61 labelled assertions
+## HousingCheck.java - 79 labelled assertions
 
 > Audits the three subsystems that describe the same housing, every month, and
 > makes them agree. Not part of the game.
@@ -13025,63 +13025,83 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L192 ...and studio seekers plus family seekers is every household
   - L194 a studio never bills more than its own doors hold
 - **L198 3c. rent never falls through the floor**
-  - L229 the blended rent target never goes under break-even
-- **L233 3d. repairs are a flow, not a number**
-  - L261 what the city paid for repairs is what the builders were paid
-  - L268 and the landlords' share is the residential charge
-  - L296 ...and the per-household figure is that over the payers
-- **L339 4b. A CITY THAT REALLY DOES HOLD BOTH AT ONCE.**
-- **L351 a city that built nothing but studios**
-- **L383 WHAT THIS SECTION CAN AND CANNOT CLAIM, REWRITTEN 2026-09-09.**
-  - L458 a studio city either builds family doors or can say who it refused
-  - L461 either way it owns doors a child is allowed in, or refuses openly
-  - L463 ...and every refusal is either crammed in or outside
-- **L467 5. AND ALL OF IT SURVIVES A SAVE.**
-  - L500 fixture: this city really is collecting rent
-  - L501 fixture: ...at two prices that are really being charged
-  - L503 fixture: ...on doors that are really let
-  - L504 saved
-  - L509 households doubled up
-  - L511 ...the ones a studio turned away
-  - L513 ...the ones in something too small
-  - L515 the rent the households paid
-  - L517 the homes the landlords let
-  - L519 ...and the studio market's own price
-  - L522 ...and the family one's
-  - L529 the month after a reload still balances
-- **L532 4b. A SMALL HOUSEHOLD TAKES A BIG DOOR WHEN THE SMALL ONES RUN OUT.**
-- **L552 a single adult takes a four-person flat when that is all there is**
-  - L569 fixture: the city really does have households to place
-  - L571 every household is placed when only big doors exist
-  - L573 ...and each one bills its DOOR's size, not its own
-  - L575 ...and none of it is billed as studio
-  - L591 ...and the only crowding is households too big for the flat
-  - L612 fixture: some households really do have a child
-  - L613 a studio-only city turns away exactly the households with a child
-  - L615 ...and those are exactly the ones it could not place
-  - L617 nothing is billed as a family let when only studios exist
-- **L624 6. THE LANDLORDS BUILD BEFORE ANYONE CAN STAFF THEM (HD1, 2026-10-29)**
-- **L663 the landlords build before anyone can staff them**
-  - L686 fixture: the landlords own three homes, two of them over the NAA's 51 units
-  - L690 a House has no posts: a single house's repairs are the builders' order
-  - L691 a Studio and a Low-Rise each have one office and one maintenance post
-  - L693 ...every home's posts as the NAA rule has them, and all of them diploma posts
-  - L713 fixture: jobs for more people than there are beds
-  - L715 fixture: the city could not staff a Studio (it would fail the bar every other owner is held to)
-  - L717 fixture: ...nor a Low-Rise
-  - L718 fixture: the landlords have no posts of their own yet
-  - L723 the landlords are the one owner that does not hold an order to staffing; every other keeps the gate
-  - L731 the landlords still order a home the city could not staff
-  - L736 the investors' gate for a Studio is not STAFFING
-  - L739 ...nor does its appraisal ask staffing at all: no mark, where a shop's would pass or fail
-  - L741 ...and the card reads the city could staff all of it (1), so no \"could staff\" words
-  - L750 two Studios standing: their whole capacity counts in the city's housing, staffed or not
-  - L753 the posts are real: the landlords' posts rose by the blocks' own jobs
-  - L755 ...mostly empty, since no spare worker was there to take them (partly or wholly)
-  - L757 ...and the ones the city did have for them are paid: the landlords' payroll is above zero
-  - L759 the block bills rent with its posts empty: the landlords' rent billed rose
-  - L763 the rent floor carries the wages they pay
-  - L765 ...which the floor without them would not have
+  - L240 while neither market is in glut, the blended rent target never goes under break-even
+- **L244 3d. repairs are a flow, not a number**
+  - L272 what the city paid for repairs is what the builders were paid
+  - L279 and the landlords' share is the residential charge
+  - L307 ...and the per-household figure is that over the payers
+- **L350 4b. A CITY THAT REALLY DOES HOLD BOTH AT ONCE.**
+- **L362 a city that built nothing but studios**
+- **L394 WHAT THIS SECTION CAN AND CANNOT CLAIM, REWRITTEN 2026-09-09.**
+  - L469 a studio city either builds family doors or can say who it refused
+  - L472 either way it owns doors a child is allowed in, or refuses openly
+  - L474 ...and every refusal is either crammed in or outside
+- **L478 5. AND ALL OF IT SURVIVES A SAVE.**
+  - L511 fixture: this city really is collecting rent
+  - L512 fixture: ...at two prices that are really being charged
+  - L514 fixture: ...on doors that are really let
+  - L515 saved
+  - L520 households doubled up
+  - L522 ...the ones a studio turned away
+  - L524 ...the ones in something too small
+  - L526 the rent the households paid
+  - L528 the homes the landlords let
+  - L530 ...and the studio market's own price
+  - L533 ...and the family one's
+  - L540 the month after a reload still balances
+- **L543 4b. A SMALL HOUSEHOLD TAKES A BIG DOOR WHEN THE SMALL ONES RUN OUT.**
+- **L563 a single adult takes a four-person flat when that is all there is**
+  - L580 fixture: the city really does have households to place
+  - L582 every household is placed when only big doors exist
+  - L584 ...and each one bills its DOOR's size, not its own
+  - L586 ...and none of it is billed as studio
+  - L602 ...and the only crowding is households too big for the flat
+  - L623 fixture: some households really do have a child
+  - L624 a studio-only city turns away exactly the households with a child
+  - L626 ...and those are exactly the ones it could not place
+  - L628 nothing is billed as a family let when only studios exist
+- **L635 6. THE LANDLORDS BUILD BEFORE ANYONE CAN STAFF THEM (HD1, 2026-10-29)**
+- **L674 the landlords build before anyone can staff them**
+  - L697 fixture: the landlords own three homes, two of them over the NAA's 51 units
+  - L701 a House has no posts: a single house's repairs are the builders' order
+  - L702 a Studio and a Low-Rise each have one office and one maintenance post
+  - L704 ...every home's posts as the NAA rule has them, and all of them diploma posts
+  - L724 fixture: jobs for more people than there are beds
+  - L726 fixture: the city could not staff a Studio (it would fail the bar every other owner is held to)
+  - L728 fixture: ...nor a Low-Rise
+  - L729 fixture: the landlords have no posts of their own yet
+  - L734 the landlords are the one owner that does not hold an order to staffing; every other keeps the gate
+  - L742 the landlords still order a home the city could not staff
+  - L747 the investors' gate for a Studio is not STAFFING
+  - L750 ...nor does its appraisal ask staffing at all: no mark, where a shop's would pass or fail
+  - L752 ...and the card reads the city could staff all of it (1), so no \"could staff\" words
+  - L761 two Studios standing: their whole capacity counts in the city's housing, staffed or not
+  - L764 the posts are real: the landlords' posts rose by the blocks' own jobs
+  - L766 ...mostly empty, since no spare worker was there to take them (partly or wholly)
+  - L768 ...and the ones the city did have for them are paid: the landlords' payroll is above zero
+  - L770 the block bills rent with its posts empty: the landlords' rent billed rose
+  - L774 the rent floor carries the wages they pay
+  - L776 ...which the floor without them would not have
+- **L831 a city at a held 15% rents its glut at no lift**
+  - L865 held 15%, neither market in glut: the blended target is not under break-even
+  - L873 fixture: the held dial is the rate the landlords borrow against
+  - L874 fixture: a glut with a lift waiting came up (the lift was waived in a month)
+  - L880 fixture: the city closed homes and left their debt on the landlords
+  - L881 saved
+  - L884 a closed home's debt share comes back from a save
+- **L894 a closed home's debt is the landlord's loss**
+  - L901 fixture: nothing closed, nothing stranded
+  - L902 ...and all the interest is carried
+  - L904 1000 places down to 600: 400 of 1000 are closed, a share of .4
+  - L905 ...and the interest carried is the .6 left
+  - L907 600 up to 1200: the share is diluted by places, .4 x 600 / 1200
+  - L909 the break-even over what it owns is maintenance, tax, the interest carried and payroll
+  - L911 ...and it is under what it would be with all the interest counted
+  - L914 the company still pays all its interest: the line is untouched
+  - L919 a saved landlord, loaded: the share is back
+  - L921 ...and the month's first count, from nothing, leaves it as saved
+  - L925 1200 places down to none: the whole debt is a closed home's
+  - L927 ...and a count from nothing leaves it
 
 ## HydroCheck.java - 101 labelled assertions
 
@@ -16608,13 +16628,13 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L3250 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
 - **L3305 AND EVERYTHING THAT IS A PURCHASE.**
 - **L3651 AND THE BEST OF THEM WINS.**
-- **L6106 founding: a few months at a time, by hand**
-- **L6203 then the real rhythm**
-- **L6351 the report**
-- **L6374 ==**
-- **L6471 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
-- **L7711 what the advisor tried, and what happened**
-- **L7717 findings**
+- **L6120 founding: a few months at a time, by hand**
+- **L6217 then the real rhythm**
+- **L6365 the report**
+- **L6388 ==**
+- **L6485 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
+- **L7728 what the advisor tried, and what happened**
+- **L7734 findings**
 
 ## MainLineCheck.java - 160 labelled assertions
 

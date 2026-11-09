@@ -206,9 +206,20 @@ public class HousingCheck {
              * is a twelve-month walk toward the target and is allowed to be
              * below it on the way down - what must never happen is the target
              * itself being set under the floor.
+             *
+             * Since RN1 (2026-11-09) the floor holds where a market is tight
+             * or balanced; a glut's empty flats are the landlord's loss
+             * (Jerus, 2026-10-31, "Take all (Recommended)" over EN1-C star 2).
+             * So the floor is asserted in the months neither market is in
+             * glut, and a leg that is in glut is asserted to be its own cost
+             * times its scarcity, not lifted.
              */
             double breakEven = shops.rentBreakEven();
-            if (breakEven > 0) {
+            double studioPressure = shops.studioPressure(), familyPressure = shops.familyPressure();
+            boolean neitherInGlut = studioPressure >= ham.citybuildersim.sectors.RealEstate.GLUT_PRESSURE
+                    && familyPressure >= ham.citybuildersim.sectors.RealEstate.GLUT_PRESSURE;
+            assertGlutLegsNotLifted(shops, month);
+            if (breakEven > 0 && neitherInGlut) {
                 /*
                  * ON THE BLEND, NOT ON EITHER LEG, since 2026-09-10.
                  *
@@ -226,7 +237,7 @@ public class HousingCheck {
                  * is a statement about the rent roll, so it is asserted on the
                  * rent roll.
                  */
-                assertNotMore("the blended rent target never goes under break-even",
+                assertNotMore("while neither market is in glut, the blended rent target never goes under break-even",
                         month, breakEven, shops.blendedRentTarget() + TOLERANCE);
             }
 
@@ -766,6 +777,9 @@ public class HousingCheck {
                 landlords.rentBreakEven() * landlords.getOwnedHousingCapacity()
                         > carryWithPay - landlords.getPayroll() + TOLERANCE);
 
+        heldRateRentsItsGlutAtNoLift();
+        aClosedHomesDebtIsTheLandlordsLoss();
+
         System.out.println(fails == 0
                 ? "\nEvery door, every household and every dollar of rent is accounted for."
                 : "\n" + fails + " FAILED");
@@ -778,6 +792,144 @@ public class HousingCheck {
             if (t.getName().equals(name)) return t;
         }
         throw new IllegalStateException("no template named " + name);
+    }
+
+    /**
+     * A leg under GLUT_PRESSURE is its own cost times its scarcity and is not
+     * lifted to cover the carry (RN1, 2026-11-09). A leg with no required
+     * return has no cost to scale and is left to targetFor(). Returns whether
+     * a leg was in glut with a required return.
+     */
+    static boolean assertGlutLegsNotLifted(ham.citybuildersim.sectors.RealEstate re, int month) {
+        boolean any = false;
+        for (boolean family : new boolean[] {false, true}) {
+            double pressure = family ? re.familyPressure() : re.studioPressure();
+            double required = re.rentRequired(family);
+            if (pressure >= ham.citybuildersim.sectors.RealEstate.GLUT_PRESSURE || required <= 0) continue;
+            any = true;
+            double target = family ? re.rentTarget() : re.studioRentTarget();
+            near((family ? "a family" : "a studio") + " leg in glut is its cost times its scarcity",
+                    month, target, required * re.scarcityMultipleOf(pressure));
+            assertNotMore((family ? "a family" : "a studio") + " leg in glut is not lifted over its cost",
+                    month, target, required);
+        }
+        return any;
+    }
+
+    /**
+     * RN1, 2026-11-09. LANDLORD_YIELD is .058 and the landlords borrow at about
+     * 15.7% when the dial is held at 15%, so the carry is dearer than the
+     * required return and the carry lift binds; a leg in glut must not take
+     * it. The dial is held as tools/ensemble does (a hand takes it back from
+     * the advisor each month), but NOT from month 1: a city held at 15% from
+     * its first month never grows past seven homes, so it never has a glut to
+     * rent. The city grows on its own dial for GROWN months (the ensemble's
+     * own "pre" phase, which runs to MATURE), then the dial is held and the
+     * people go, and a leg falls under GLUT_PRESSURE some 25 months into it.
+     */
+    static void heldRateRentsItsGlutAtNoLift() {
+        System.out.println("\n--- a city at a held 15% rents its glut at no lift ---");
+        final double HELD = .15;
+        final int GROWN = 120, MONTHS = 240;
+        long started = System.currentTimeMillis();
+        Game held = new Game(GameFiles.scratch("housing-held-rate"));
+        held.newGame();
+        ham.citybuildersim.sectors.RealEstate re = held.getSectors().realEstate();
+        DebtManager dm = held.getDebtManager();
+        int run = 0, studioWaived = 0, familyWaived = 0, glutMonths = 0, neitherMonths = 0;
+        double largestLift = 1;
+        for (int i = 0; i < MONTHS; i++) {
+            // The advisor nudges a hand-held dial between looks; the hand takes it back.
+            if (i >= GROWN && (dm.isAutopilot() || dm.getPolicyRate() != HELD)) dm.takeTheDial(HELD);
+            held.toggleNextMonth();
+            run++;
+            int month = held.getMonth();
+            boolean inGlut = assertGlutLegsNotLifted(re, month);
+            if (inGlut) glutMonths++;
+            if (re.glutWaivesLift(false)) studioWaived++;
+            if (re.glutWaivesLift(true)) familyWaived++;
+            // The lift is read off a leg that took it: its target over its cost times its scarcity.
+            double studioPressure = re.studioPressure(), familyPressure = re.familyPressure();
+            double studioBase = re.rentRequired(false) * re.scarcityMultipleOf(studioPressure);
+            double familyBase = re.rentRequired(true) * re.scarcityMultipleOf(familyPressure);
+            if (studioPressure >= ham.citybuildersim.sectors.RealEstate.GLUT_PRESSURE && studioBase > 0) {
+                largestLift = Math.max(largestLift, re.studioRentTarget() / studioBase);
+            }
+            if (familyPressure >= ham.citybuildersim.sectors.RealEstate.GLUT_PRESSURE && familyBase > 0) {
+                largestLift = Math.max(largestLift, re.rentTarget() / familyBase);
+            }
+            if (studioPressure >= ham.citybuildersim.sectors.RealEstate.GLUT_PRESSURE
+                    && familyPressure >= ham.citybuildersim.sectors.RealEstate.GLUT_PRESSURE
+                    && re.rentBreakEven() > 0) {
+                neitherMonths++;
+                assertNotMore("held 15%, neither market in glut: the blended target is not under break-even",
+                        month, re.rentBreakEven(), re.blendedRentTarget());
+            }
+        }
+        System.out.printf("   %d months run, the dial held at %.0f%% for the last %d, in %.1f s; a leg in glut in %d of them, none in %d; "
+                        + "the lift waived on the studio leg in %d and on the family leg in %d; the largest lift on a leg that took it %.3f%n",
+                run, HELD * 100, run - GROWN, (System.currentTimeMillis() - started) / 1000.0, glutMonths, neitherMonths,
+                studioWaived, familyWaived, largestLift);
+        assertTrue("fixture: the held dial is the rate the landlords borrow against", dm.getPolicyRate() == HELD);
+        assertTrue("fixture: a glut with a lift waiting came up (the lift was waived in a month)",
+                studioWaived + familyWaived > 0);
+
+        // ...and the share of its debt whose homes are closed goes through a save and a load.
+        double share = re.strandedDebtShare();
+        System.out.printf("   the landlords' debt on closed homes at the end: %.3f of it%n", share);
+        assertTrue("fixture: the city closed homes and left their debt on the landlords", share > 0 && share <= 1);
+        assertTrue("saved", held.saveGame(1, "housing-held").ok);
+        Game back = new Game(held.getGameFiles());
+        back.loadGame(1);
+        isNear("a closed home's debt share comes back from a save", back.getSectors().realEstate().strandedDebtShare(), share);
+    }
+
+    /**
+     * RN1, 2026-11-09. Of the debt, the share whose homes are closed is not
+     * carried by the homes left: capacity down raises the share by the places
+     * that went, capacity up dilutes it by places, and a count from nothing
+     * (a load, before the month's first count) leaves it as saved.
+     */
+    static void aClosedHomesDebtIsTheLandlordsLoss() {
+        System.out.println("\n--- a closed home's debt is the landlord's loss ---");
+        final double INTEREST = 100, MAINTENANCE = 30, TAX = 20;
+        ham.citybuildersim.sectors.RealEstate re = new ham.citybuildersim.sectors.RealEstate();
+        re.setInterestExpense(INTEREST);
+        re.setMaintenanceExpense(MAINTENANCE);
+        re.setPropertyTaxExpense(TAX);
+        re.setOwnedHousingCapacity(1000);
+        isNear("fixture: nothing closed, nothing stranded", re.strandedDebtShare(), 0);
+        isNear("...and all the interest is carried", re.carriedInterest(), INTEREST);
+        re.setOwnedHousingCapacity(600);
+        isNear("1000 places down to 600: 400 of 1000 are closed, a share of .4", re.strandedDebtShare(), .4);
+        isNear("...and the interest carried is the .6 left", re.carriedInterest(), INTEREST * .6);
+        re.setOwnedHousingCapacity(1200);
+        isNear("600 up to 1200: the share is diluted by places, .4 x 600 / 1200", re.strandedDebtShare(), .2);
+        double carry = MAINTENANCE + TAX + re.carriedInterest() + re.getPayroll();
+        isNear("the break-even over what it owns is maintenance, tax, the interest carried and payroll",
+                re.rentBreakEven() * re.getOwnedHousingCapacity(), carry);
+        assertTrue("...and it is under what it would be with all the interest counted",
+                re.rentBreakEven() * re.getOwnedHousingCapacity()
+                        < MAINTENANCE + TAX + INTEREST + re.getPayroll() - TOLERANCE);
+        assertTrue("the company still pays all its interest: the line is untouched", re.getInterestExpense() == INTEREST);
+
+        // A load: ownedCapacity is not saved, so the restored landlord counts from nothing and keeps the share.
+        ham.citybuildersim.sectors.RealEstate loaded = new ham.citybuildersim.sectors.RealEstate();
+        loaded.restore(re.toState());
+        isNear("a saved landlord, loaded: the share is back", loaded.strandedDebtShare(), .2);
+        loaded.setOwnedHousingCapacity(1200);
+        isNear("...and the month's first count, from nothing, leaves it as saved", loaded.strandedDebtShare(), .2);
+
+        // Every place closed: every debt is a closed home's.
+        re.setOwnedHousingCapacity(0);
+        isNear("1200 places down to none: the whole debt is a closed home's", re.strandedDebtShare(), 1);
+        re.setOwnedHousingCapacity(1200);
+        isNear("...and a count from nothing leaves it", re.strandedDebtShare(), 1);
+    }
+
+    /** assertTrue, said as an equality within TOLERANCE, so a figure that is right prints its line. */
+    static void isNear(String label, double actual, double expected) {
+        assertTrue(label, Math.abs(actual - expected) <= TOLERANCE);
     }
 
     static void assertNotMore(String what, int month, double actual, double ceiling) {

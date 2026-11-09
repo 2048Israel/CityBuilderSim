@@ -162,6 +162,9 @@ public final class RealEstate extends Sector {
     /** How hard rent answers a shortage of front doors. One: households per door is the multiple. */
     public static final double SCARCITY_ELASTICITY = 1.0;
 
+    /** Households a door below which a segment is in glut and its rent is not lifted to cover the carry, an empty flat being the landlord's loss (Jerus, 2026-10-31, RN1). */
+    public static final double GLUT_PRESSURE = 1.0;
+
     /** The lease, in months, which is also the lag. */
     public static final int LEASE_MONTHS = 12;
 
@@ -219,6 +222,13 @@ public final class RealEstate extends Sector {
 
     /** People the residential buildings hold, sites included - the break-even's denominator. */
     private double ownedCapacity;
+    /**
+     * The share, in [0,1], of the company's debt whose homes are gone (RN1,
+     * 2026-11-09): Game.retire sells the land back and leaves the mortgage on
+     * the company, so what is left of the debt is the closed homes' and not
+     * the standing ones' to carry. Saved; see setOwnedHousingCapacity().
+     */
+    private double strandedDebtShare;
 
     private long studioHomes, familyHomes;
     private double studioSeekers, familySeekers;
@@ -276,7 +286,31 @@ public final class RealEstate extends Sector {
         this.familyCostPerCapacity = Math.max(0, familyPerCapacity);
     }
 
-    public void setOwnedHousingCapacity(double capacity) { this.ownedCapacity = Math.max(0, capacity); }
+    /**
+     * Told by the economy each month. The capacity going down moves the share
+     * of the debt that belongs to closed homes up (RN1, 2026-11-09): of what
+     * was owed, the fraction of the places that went. Capacity going up dilutes
+     * the share by places, which is an approximation - a new home is not
+     * priced as an old one. From nothing (a load, before the month's first
+     * count) the share is left as it was saved.
+     */
+    public void setOwnedHousingCapacity(double capacity) {
+        double before = ownedCapacity;
+        double after = Math.max(0, capacity);
+        if (before > 0 && after < before) {
+            strandedDebtShare = strandedDebtShare + (1 - strandedDebtShare) * (before - after) / before;
+        } else if (before > 0 && after > before) {
+            strandedDebtShare = strandedDebtShare * before / after;
+        }
+        strandedDebtShare = Math.min(1, Math.max(0, strandedDebtShare));
+        this.ownedCapacity = after;
+    }
+
+    /** The share of the debt whose homes are closed (RN1): see setOwnedHousingCapacity(). */
+    public double strandedDebtShare() { return strandedDebtShare; }
+
+    /** The interest of the homes still standing: all of it but the closed homes' share (RN1). */
+    public double carriedInterest() { return getInterestExpense() * (1 - strandedDebtShare); }
 
     public void setSegments(long studioHomes, long familyHomes,
                             double studioSeekers, double familySeekers,
@@ -363,10 +397,15 @@ public final class RealEstate extends Sector {
      * years, so the interest part of this floor moves with the dial only as
      * the mortgages renew - and it is the interest alone: the principal each
      * payment repays is money owed going back, not a cost of holding a home.
+     *
+     * THE INTEREST COUNTED IS THE STANDING HOMES' (RN1, 2026-11-09): a home
+     * closed leaves its mortgage on the company, and that interest is the
+     * landlord's loss and not a reason to raise the rent on the homes left.
+     * See carriedInterest(); the company still pays all of it.
      */
     public double rentBreakEven() {
         if (ownedCapacity <= 0) return 0;
-        double carry = getMaintenanceExpense() + getPropertyTaxExpense() + getInterestExpense() + getPayroll();
+        double carry = getMaintenanceExpense() + getPropertyTaxExpense() + carriedInterest() + getPayroll();
         return carry > 0 ? carry / ownedCapacity : 0;
     }
 
@@ -421,18 +460,32 @@ public final class RealEstate extends Sector {
      * against the carry is made up on the whole portfolio, so the two legs
      * keep the distance their costs put between them and the cheaper market
      * subsidises the dearer one, exactly as one company's rent roll does.
+     *
+     * THE LIFT BINDS ONLY ON A LEG THAT IS TIGHT OR BALANCED (RN1,
+     * 2026-11-09): a leg under GLUT_PRESSURE is not lifted, and the other leg
+     * is not raised to make up its shortfall - the landlord eats it as it
+     * eats an empty flat (Jerus, 2026-10-31, "Take all (Recommended)").
      */
     private double targetFor(double pressure, boolean family) {
         double required = rentRequired(family);
         double breakEven = rentBreakEven();
         if (required <= 0) return breakEven > 0 ? breakEven : rentPrice;
+        if (pressure < GLUT_PRESSURE) return required * scarcityMultipleOf(pressure);
         return required * scarcityMultipleOf(pressure) * carryLift();
+    }
+
+    /** Whether this leg is in glut with a carry lift waiting that its glut has waived (RN1). */
+    public boolean glutWaivesLift(boolean family) {
+        double pressure = family ? familyPressure() : studioPressure();
+        return pressure < GLUT_PRESSURE && carryLift() > 1;
     }
 
     /**
      * How far short of the carry the two legs come, struck on their own
      * costs, weighted by what is actually billed. Never below one: a
      * portfolio already covering its carry is not asked to charge more.
+     * Since RN1 (2026-11-09) the lift is applied only to a leg that is tight
+     * or balanced (targetFor()); the blend here is still struck on both legs.
      */
     private double carryLift() {
         double breakEven = rentBreakEven();
@@ -929,6 +982,7 @@ public final class RealEstate extends Sector {
         extras.put("rentIncome", rRentIncome);
         extras.put("homes", (double) homes);
         extras.put("occupiedHomes", occupiedHomes);
+        extras.put("strandedDebtShare", strandedDebtShare);
     }
 
     @Override
@@ -944,6 +998,7 @@ public final class RealEstate extends Sector {
         rRentIncome = extras.getOrDefault("rentIncome", 0.0);
         homes = Math.round(extras.getOrDefault("homes", 0.0));
         occupiedHomes = extras.getOrDefault("occupiedHomes", 0.0);
+        strandedDebtShare = extras.getOrDefault("strandedDebtShare", 0.0);
     }
 
     @Override
@@ -955,6 +1010,7 @@ public final class RealEstate extends Sector {
         rBilledStudioWeight = rBilledFamilyWeight = 0;
         rRentIncome = 0;
         homes = 0; occupiedHomes = 0; household = 0; population = 0; householdCount = 0;
+        strandedDebtShare = 0;
         marginalHousingCost = structurePerCapacity = landPerCapacity = 0;
         studioCostPerCapacity = familyCostPerCapacity = ownedCapacity = 0;
         studioHomes = familyHomes = 0;

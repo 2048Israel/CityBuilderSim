@@ -1,4 +1,4 @@
-# HousingCheck.java - 791 lines · 5 methods · 1 constants · harnesses
+# HousingCheck.java - 943 lines · 9 methods · 1 constants · harnesses
 
 `ham/citybuildersim/HousingCheck.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
 
@@ -59,7 +59,7 @@
 >      and the block, once standing, counts whole in the city's housing, bills
 >      its rent with its posts mostly empty, and pays the wages of those filled.
 
-**Uses:** [Game](Game.md) (9), [BuildCard](BuildCard.md) (8), [FamilyModel](FamilyModel.md) (7), [Sector](Sector.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (6), [RealEstate](RealEstate.md) (4), [FamilyStructure](FamilyStructure.md) (4), [GameFiles](GameFiles.md) (3), [JobType](JobType.md) (2), [BuildingManager](BuildingManager.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1), [Construction](Construction.md) (1), [EconomyManager](EconomyManager.md) (1), [Sectors](Sectors.md) (1), [PriceLevel](PriceLevel.md) (1), [BusinessInvestment](BusinessInvestment.md) (1)
+**Uses:** [RealEstate](RealEstate.md) (17), [Game](Game.md) (13), [BuildCard](BuildCard.md) (8), [FamilyModel](FamilyModel.md) (7), [Sector](Sector.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (6), [GameFiles](GameFiles.md) (4), [FamilyStructure](FamilyStructure.md) (4), [JobType](JobType.md) (2), [BuildingManager](BuildingManager.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1), [Construction](Construction.md) (1), [EconomyManager](EconomyManager.md) (1), [Sectors](Sectors.md) (1), [PriceLevel](PriceLevel.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [DebtManager](DebtManager.md) (1)
 
 ## Sections
 
@@ -70,12 +70,12 @@
 | 158 | · · 3. rent paid is rent received |
 | 182 | · · 3b. the two segments partition everything |
 | 198 | · · 3c. rent never falls through the floor |
-| 233 | · · 3d. repairs are a flow, not a number |
-| 339 | · 4b. A CITY THAT REALLY DOES HOLD BOTH AT ONCE. |
-| 383 | · WHAT THIS SECTION CAN AND CANNOT CLAIM, REWRITTEN 2026-09-09. |
-| 467 | · 5. AND ALL OF IT SURVIVES A SAVE. |
-| 532 | · 4b. A SMALL HOUSEHOLD TAKES A BIG DOOR WHEN THE SMALL ONES RUN OUT. |
-| 624 | · 6. THE LANDLORDS BUILD BEFORE ANYONE CAN STAFF THEM (HD1, 2026-10-29) |
+| 244 | · · 3d. repairs are a flow, not a number |
+| 350 | · 4b. A CITY THAT REALLY DOES HOLD BOTH AT ONCE. |
+| 394 | · WHAT THIS SECTION CAN AND CANNOT CLAIM, REWRITTEN 2026-09-09. |
+| 478 | · 5. AND ALL OF IT SURVIVES A SAVE. |
+| 543 | · 4b. A SMALL HOUSEHOLD TAKES A BIG DOOR WHEN THE SMALL ONES RUN OUT. |
+| 635 | · 6. THE LANDLORDS BUILD BEFORE ANYONE CAN STAFF THEM (HD1, 2026-10-29) |
 
 ## Constants
 
@@ -93,10 +93,14 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 63 | 729 | **type** `public class HousingCheck` | Audits the three subsystems that describe the same housing, every month, and makes them agree. |
+| 63 | 881 | **type** `public class HousingCheck` | Audits the three subsystems that describe the same housing, every month, and makes them agree. |
 | 70 | 8 | `static void near(String what, int month, double actual, double expected)` |  |
 | 79 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 84 | 691 | `public static void main(String[] args)` |  |
-| 776 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 783 | 8 | `static void assertNotMore(String what, int month, double actual, double ceiling)` |  |
+| 84 | 705 | `public static void main(String[] args)` |  |
+| 790 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 803 | 15 | `static boolean assertGlutLegsNotLifted(ham.citybuildersim.sectors.RealEstate re, int month)` | A leg under GLUT_PRESSURE is its own cost times its scarcity and is not lifted to cover the carry (RN1, 2026-11-09). |
+| 830 | 56 | `static void heldRateRentsItsGlutAtNoLift()` | RN1, 2026-11-09. |
+| 893 | 36 | `static void aClosedHomesDebtIsTheLandlordsLoss()` | RN1, 2026-11-09. |
+| 931 | 3 | `static void isNear(String label, double actual, double expected)` | assertTrue, said as an equality within TOLERANCE, so a figure that is right prints its line. |
+| 935 | 8 | `static void assertNotMore(String what, int month, double actual, double ceiling)` |  |
 
