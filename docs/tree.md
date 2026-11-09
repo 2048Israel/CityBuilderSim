@@ -582,6 +582,9 @@ adds its line here, not in `CLAUDE.md`.
         VaultMoneysCheck.java      the vault in eight (WN4): all US$ the old vault to the bit at every site,
                                    a buy by the mix, a sale from the largest, the cross revaluation, the
                                    trade mix's mapping through the pegs, the save
+        PegAnchorCheck.java        the peg's anchor (WN4b): a US$ anchor the peg as it was to the bit, the
+                                   held rate the peg over the anchor's price, the gap against it, choosing
+                                   the anchor, a devaluation, the break, the dial's tie, the save, a city
         RealDollar.java            the real US$ of 2015 (WN4, D29; spec-exchange-rates 3.9): the D$ per 2015
                                    US$, real GDP in 2015 US$ and the real effective rate, pure functions
                                    behind Game's three getters; nothing in the model reads them (WN6 shows)

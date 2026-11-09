@@ -1,0 +1,23 @@
+share: payroll over value added, %, the median over every run and month (n); BEA: compensation over
+value added, 2023-2025; gap = share / BEA = (pay/rev / BEA's comp/GO) / (va/rev / BEA's va/GO);
+va/wkr: value added per worker in the city's mean wage; BEA va/wkr: what BEA's share makes it.
+For Retail and Luxury Retail, rev is the margin (sales less the goods bought), as BEA's GO is for trade.
+sector              n  share   BEA   gap pay/rev/BEA va/rev/BEA  va/wkr BEA va/wkr
+Luxury Retail      10    2.2  41.7  0.05        0.09       1.69    47.0        2.4
+Copper Refining     2    3.1  51.4  0.06        0.10       1.67    33.7        2.0
+Restaurants        10   19.8  66.5  0.30        0.47       1.59     4.9        1.4
+Construction       10   23.6  62.3  0.38        0.58       1.42     4.0        1.5
+Freight             6   29.8  59.3  0.50        0.64       1.34     3.4        1.6
+Iron & Steel        1   39.5  51.4  0.77        0.56       0.73     2.6        2.0
+Manufacturing      10   54.4  65.2  0.83        0.84       1.03     1.9        1.4
+Food Processing     9   42.6  42.3  1.01        2.53       2.52     2.2        2.2
+Cement & Concrete   5   46.5  46.1  1.01        0.55       0.66     2.3        2.3
+Automotive          8   53.7  51.9  1.03        2.60       2.40     1.9        1.9
+Agriculture        10   25.6  20.6  1.25        3.30       2.64     3.5        4.5
+Wood Products       5   75.6  57.5  1.31        0.93       0.77     1.4        1.6
+Retail             10   65.5  47.2  1.39        2.20       1.58     1.5        2.0
+Business Services   4  112.0  68.7  1.63        2.51       1.54     0.9        1.3
+Industry           10   70.8  42.3  1.67        3.37       2.25     1.3        2.3
+Materials           5   90.8  46.1  1.97        3.97       2.00     1.2        2.1
+Iron Mining         1   67.3  29.3  2.30        2.35       1.03     1.4        3.3
+Real Estate        10   14.2   4.7  3.03        3.21       1.13     6.8       19.8
