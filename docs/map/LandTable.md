@@ -1,6 +1,6 @@
 # LandTable.java - 362 lines · 13 methods · 5 constants · tools
 
-`ham/citybuildersim/tools/LandTable.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/tools/LandTable.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
 
 > Makes src/main/resources/world/land-2024.json, the table LandFactors reads: every nation's land a hectare, in US dollars of 2024, from the
 > published farmland prices of tools/world/land.tsv (Eurostat's, the USDA's, Statistics Canada's) and, for the nations that publish none, a fit.

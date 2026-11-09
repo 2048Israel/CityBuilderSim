@@ -109,6 +109,19 @@ REGION_KEYS = ['gdp', 'gdp.k', 'gdp.ppp', 'gdp_pp', 'gdp_pp.k', 'gdp_pp.ppp', 'g
 # The names the OECD's Affordable Housing Database workbooks use for a nation that world-1's name differs from.
 AHD_NAMES = {'Korea': 'KOR', 'Slovak Republic': 'SVK', 'T\u00fcrkiye': 'TUR', 'UK (England)': 'GBR'}
 
+# The 38 members of the OECD, whose own figures the filter members=OECD keeps (the Economic Outlook's and the health
+# accounts' other rows are partner nations and groups, outside the licence read for them in LC2).
+OECD_MEMBERS = ('AUS AUT BEL CAN CHL COL CRI CZE DNK EST FIN FRA DEU GRC HUN ISL IRL ISR ITA JPN KOR LVA LTU LUX MEX '
+                'NLD NZL NOR POL PRT SVK SVN ESP SWE CHE TUR GBR USA').split()
+
+# The last year the UN's World Population Prospects 2024 estimates from data; its later years are a published projection.
+WPP_LAST_ESTIMATE = 2023
+
+# A wdi-growth year whose divisor (the constant-price series) is over this many times the year before's is a break in
+# the series, not growth, and is dropped: Bulgaria's household consumption at constant prices rises 67% into 2025
+# and its deflator falls 32%; Vanuatu's 2017 and the Central African Republic's 2018 rise likewise (LC2).
+GROWTH_BREAK = 1.45
+
 # What a measure's note says on top of measures.tsv's: how this file differs from the plain reading of the source.
 NOTE_ADDITIONS = {
     'policy_rate': 'The 20 euro-area members, whose own series ended before the euro, take the euro area\'s rate '
@@ -126,24 +139,29 @@ NOTE_ADDITIONS = {
 
 # The sources a figure can name: id, name and version, url, licence (MEASURES-SOURCES.txt in the sources folder).
 SOURCE_ROWS = {
-    'wdi': ('World Bank, World Development Indicators, last updated 2026-10-08 (29 series, each the World Bank\'s own or '
+    'wdi': ('World Bank, World Development Indicators, last updated 2026-10-08 (31 series, each the World Bank\'s own or '
             'from a body whose terms allow commercial use: the UN\'s WPP, the ILO, the FAO, the IEA; every series\' own '
             'metadata gives License_Type CC BY-4.0, checked 2026-10-31, docs/studies/licences.md)',
             'https://api.worldbank.org/v2/country/all/indicator/', 'CC BY 4.0', DOWNLOADED),
     'oecd': ('OECD data, credit to the OECD per dataset: Earnings (average and minimum wages), Financial market '
              '(long-term interest rates), Social Expenditure (public old-age pensions), National Accounts at a '
              'Glance (households), Regions, cities and local areas (functional urban areas: economy, population, '
-             'density), Affordable Housing Database (HM1.1 housing stock, HC3.1 homelessness)',
+             'density), Affordable Housing Database (HM1.1 housing stock, HC3.1 homelessness), Economic Outlook 119 '
+             '(general government, current account; members only) and the System of Health Accounts (health '
+             'expenditure; members only), these last two downloaded 2026-11-08',
              'https://sdmx.oecd.org/public/rest/data/ and https://webfs.oecd.org/Els-com/Affordable_Housing_Database/',
              'OECD terms and conditions, Data: permitted for any purpose, even commercial, with credit '
              '(https://www.oecd.org/en/about/terms-conditions.html)', DOWNLOADED),
     'bis': ('Bank for International Settlements, central bank policy rates (WS_CBPOL), monthly, bulk file '
-            'WS_CBPOL_csv_col.zip', 'https://data.bis.org/topics/CBPOL',
+            'WS_CBPOL_csv_col.zip, and total credit to the private non-financial sector (WS_TC), quarterly, bulk file '
+            'WS_TC_csv_col.zip (downloaded 2026-11-08)', 'https://data.bis.org/topics/CBPOL',
             'BIS terms of permitted use of statistics: unrestricted with the BIS cited, not misleading, and no '
             'additional charge to users of a commercial product (https://data.bis.org/help/legal)', DOWNLOADED),
     'wup': ('United Nations, DESA, Population Division, World Urbanization Prospects 2025 (the 22nd revision), '
             'cities of 50,000 people or more, Degree of Urbanization',
             'https://population.un.org/wup/', 'CC BY 3.0 IGO', DOWNLOADED),
+    'wpp': ('United Nations, DESA, Population Division, World Population Prospects 2024, Demographic Indicators, '
+            'Medium variant (Q5)', 'https://population.un.org/wpp/', 'CC BY 3.0 IGO', '2026-11-08'),
     'eia': ('US Energy Information Administration, International Energy Statistics (INTL bulk file, series updated '
             '2026-10-16)', 'https://www.eia.gov/opendata/bulk/INTL.zip',
             'public domain (a US government work); source: U.S. Energy Information Administration', DOWNLOADED),
@@ -224,10 +242,10 @@ def read_regions():
 
 
 def parse_spec(spec):
-    """A measure's source spec as (kind, body, filters): kind wdi, wdi-cagr, none or a source folder id; for a
-    folder source body is the file and filters the comma-separated KEY=value pairs after the bar."""
+    """A measure's source spec as (kind, body, filters): kind wdi, wdi-cagr, wdi-growth, none or a source folder id;
+    for a folder source body is the file and filters the comma-separated KEY=value pairs after the bar."""
     kind, _, rest = spec.partition(':')
-    if kind in ('wdi', 'wdi-cagr', 'none'):
+    if kind in ('wdi', 'wdi-cagr', 'wdi-growth', 'none'):
         return kind, rest, {}
     body, _, filt = rest.partition('|')
     filters = {}
@@ -252,8 +270,18 @@ class Wdi:
         return self.cache[code]
 
     def values(self, spec):
-        """{iso3: {year: value}} for a wdi: or wdi-cagr: spec, a year only where every part exists."""
+        """{iso3: {year: value}} for a wdi:, wdi-cagr: or wdi-growth: spec, a year only where every part exists."""
         kind, body, _ = parse_spec(spec)
+        if kind == 'wdi-growth':                    # wdi-growth:A/B, the percent change of A over B from the year before
+            a, b = body.split('/')
+            sa, sb = self.get(a), self.get(b)
+            out = {}
+            for iso, ys in sa.items():
+                d = {y: v / sb[iso][y] for y, v in ys.items() if iso in sb and y in sb[iso] and sb[iso][y] != 0}
+                for y in range(WINDOW_FIRST, WINDOW_LAST + 1):
+                    if y in d and y - 1 in d and d[y - 1] != 0 and sb[iso][y] <= GROWTH_BREAK * sb[iso][y - 1]:
+                        out.setdefault(iso, {})[y] = (d[y] / d[y - 1] - 1.0) * 100.0
+            return out
         if kind == 'wdi-cagr':
             code, n = body.rsplit(':', 1)
             n = int(n)
@@ -370,23 +398,47 @@ class Folder:
         return self.rows[rel]
 
     def oecd_csv(self, key, fname, filters):
-        """{iso3: {year: (value, mark)}} from an OECD SDMX csv: the rows whose columns hold the filters' values."""
-        reserved = ('nation', 'time', 'value', 'mul', 'div')
+        """{iso3: {year: (value, mark)}} from an OECD SDMX csv: the rows whose columns hold the filters' values.
+        members=OECD keeps the members' rows only; over=M divides the value by the same file's row of MEASURE=M (the
+        same nation and year, the other filters the same), a year without that row giving no figure, and mul applies
+        after the division."""
+        reserved = ('nation', 'time', 'value', 'mul', 'div', 'members', 'over')
         want = {k: v for k, v in filters.items() if k not in reserved}
         ncol, tcol, vcol = filters['nation'], filters['time'], filters['value']
         mul = float(filters.get('mul', 1))
         div = filters.get('div')
         divs = self.wdi.values(div) if div else None
+        members = filters.get('members')
+        assert members in (None, 'OECD'), members
+        over = filters.get('over')
+        rows = self.csv_rows('oecd/' + fname)
+        under = None
+        if over:
+            want_over = dict(want, MEASURE=over)
+            under = {}
+            for r in rows:
+                if any(r[k] != v for k, v in want_over.items()) or r[vcol] == '' or r[ncol] not in common.NATIONS:
+                    continue
+                at = (r[ncol], int(r[tcol][:4]))
+                assert at not in under or under[at] == float(r[vcol]), (at, under[at], r[vcol])
+                under[at] = float(r[vcol])
         out = {}
         seen = {}
         skipped = 0
-        for r in self.csv_rows('oecd/' + fname):
+        for r in rows:
             if any(r[k] != v for k, v in want.items()) or r[vcol] == '' or r[ncol] not in common.NATIONS:
+                continue
+            if members and r[ncol] not in OECD_MEMBERS:
                 continue
             iso, y = r[ncol], int(r[tcol][:4])
             if not WINDOW_FIRST <= y <= WINDOW_LAST:
                 continue
-            v = float(r[vcol]) * mul
+            v = float(r[vcol])
+            if under is not None:
+                if not under.get((iso, y)):         # no receipts row that year, or a zero: no figure
+                    continue
+                v = v / under[(iso, y)]
+            v = v * mul
             if divs is not None:
                 if iso not in divs or y not in divs[iso] or divs[iso][y] == 0:
                     continue
@@ -435,6 +487,50 @@ class Folder:
             if latest_year(out.get(iso, {})) != top:
                 out[iso] = dict(xm)
         return {iso: ys for iso, ys in out.items() if ys}
+
+    def total_credit(self, filters):
+        """BIS total credit (WS_TC): the last quarter with a figure of each year, {iso3: {year: (value, 3)}}, from the
+        csv_col rows whose columns hold the filters' values; the aggregates (XM, 4T, 5A, 5R, G2) map to no nation."""
+        reserved = ('nation', 'time', 'value')
+        want = {k: v for k, v in filters.items() if k not in reserved}
+        iso2 = econ_paths_sources.wdi_iso2(self.sources)
+        inv = {iso2[n]: n for n in common.NATIONS if n in iso2}
+        out = {}
+        with zipfile.ZipFile(self.sources + '/bis/WS_TC_csv_col.zip') as z:
+            f = io.TextIOWrapper(z.open(z.namelist()[0]), encoding='utf-8-sig', newline='')
+            rd = csv.reader(f)
+            head = next(rd)
+            ra = head.index('BORROWERS_CTY')
+            cols = [(head.index(k), v) for k, v in want.items()]
+            quarters = [(i, int(h[:4])) for i, h in enumerate(head) if re.fullmatch(r'\d{4}-Q[1-4]', h)
+                        and WINDOW_FIRST <= int(h[:4]) <= WINDOW_LAST]
+            for row in rd:
+                if row[ra] not in inv or any(row[i] != v for i, v in cols):
+                    continue
+                ys = {}
+                for i, y in quarters:               # quarters run in time order, so the last cell of a year wins
+                    if row[i] != '':
+                        v = float(row[i])
+                        if math.isfinite(v):
+                            ys[y] = (v, 3)
+                if ys:
+                    assert inv[row[ra]] not in out, row[ra]
+                    out[inv[row[ra]]] = ys
+        return out
+
+    def wpp(self, fname, filters):
+        """UN WPP 2024 demographic indicators: {iso3: {year: (value, mark)}} of the column named by value, the rows of
+        one variant; mark 3 to WPP_LAST_ESTIMATE, then 2 (a published projection)."""
+        ncol, tcol, vcol, variant = filters['nation'], filters['time'], filters['value'], filters['Variant']
+        out = {}
+        with gzip.open('%s/wpp/%s' % (self.sources, fname), 'rt', encoding='utf-8-sig', newline='') as f:
+            for r in csv.DictReader(f):
+                if r['Variant'] != variant or r[ncol] not in common.NATIONS or r[vcol] == '':
+                    continue
+                y = int(r[tcol])
+                if WINDOW_FIRST <= y <= WINDOW_LAST:
+                    out.setdefault(r[ncol], {})[y] = (float(r[vcol]), 3 if y <= WPP_LAST_ESTIMATE else 2)
+        return out
 
     def eia(self, series_id, mul, div):
         """EIA: {iso3: {year: (value, 3)}} from INTL.txt's series INTL.<id with <ISO3>>, times mul, over a WDI series."""
@@ -512,7 +608,9 @@ class Folder:
         if kind in UNREAD:
             raise SystemExit('measure %s names %s, which is not read (UNODC\'s terms)' % (m['key'], kind))
         if kind == 'bis':
-            return self.policy_rate()
+            return self.total_credit(f) if body == 'WS_TC_csv_col.zip' else self.policy_rate()
+        if kind == 'wpp':
+            return self.wpp(body, f)
         if kind == 'eia':
             mul = float(f.get('mul', 1))
             return self.eia(f['series_id'], mul, f.get('div'))
@@ -685,7 +783,7 @@ def nation_figures(measures, wdi, folder, nser):
         kind, _, _ = parse_spec(m['source'])
         if kind == 'none' or m['scope'] == 'Y' or m['key'] in MONEY_KEYS:
             continue
-        if kind in ('wdi', 'wdi-cagr'):
+        if kind in ('wdi', 'wdi-cagr', 'wdi-growth'):
             s = {iso: {y: (v, 3) for y, v in ys.items()} for iso, ys in wdi.values(m['source']).items()}
             src = 'wdi'
         else:

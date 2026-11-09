@@ -1,6 +1,6 @@
-# WorldMeasuresCheck.java - 662 lines · 25 methods · 47 constants · harnesses
+# WorldMeasuresCheck.java - 663 lines · 25 methods · 47 constants · harnesses
 
-`ham/citybuildersim/WorldMeasuresCheck.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorldMeasuresCheck.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
 
 > The Rankings' real-world file held to what it promises (batch LB1; the
 > project's spec-leaderboards.md 6-8): WorldMeasures' reading of
@@ -59,9 +59,9 @@
 
 | line | section |
 |---:|---|
-| 168 | THE RULES - one method, each problem a sentence naming the place and key |
-| 277 | THE DOCTORED COPIES |
-| 339 | THE SECTIONS |
+| 169 | THE RULES - one method, each problem a sentence naming the place and key |
+| 278 | THE DOCTORED COPIES |
+| 340 | THE SECTIONS |
 
 ## Constants
 
@@ -77,43 +77,43 @@
 | 96 | `WorldMeasuresCheck.SCOPE_NC` | `13, SCOPE_Y = 4` | The measures whose scope is city regions too (NC), and the ones only the player's cities rank (Y). |
 | 99 | `WorldMeasuresCheck.YOUR_WORLD` | `List.of("gdp", "gdp_pp", "growth_real", "growth_10y", "inflation", "price_lev...` | The ten measures of Your world (spec-leaderboards D15), in the file's order. |
 | 102 | `WorldMeasuresCheck.POSITIVE` | `Set.of("gdp", "gdp.k", "gdp.ppp", "gdp_pp", "gdp_pp.k", "gdp_pp.ppp", "people...` | The measures (and the GDP variants) a place cannot have 0 of: a figure of 0 for one is a figure nobody published. |
-| 107 | `WorldMeasuresCheck.AGREE_SHARE` | `.95, AGREE_TOLERANCE =.01` | The share of the money figures that must agree with their identity, and how near is agreeing: a few nations' published figures miss each identity (the WDI converts AGO BDI NPL SYR UGA ZWE at an alternative rate and gi... |
-| 110 | `WorldMeasuresCheck.MIN_COUNTED` | `100` | The fewest nations an identity may be counted over before the share means anything. |
-| 113 | `WorldMeasuresCheck.US_ONE_TOLERANCE` | `1e-9` | The nearest the United States' price level and rate against parity are to 1: the base of both is the United States. |
-| 116 | `WorldMeasuresCheck.DOCTORED_NATION` | `"AFG"` | The nation the doctored copies change (Afghanistan, which has a published GDP and most of the others). |
-| 119 | `WorldMeasuresCheck.DOCTORED_REGION` | `"TYO"` | The city region the doctored copies change (Tokyo, an OECD region with published shares). |
-| 122 | `WorldMeasuresCheck.P_DUP_MEASURE` | `"a measure key that is in the file twice"` | The problems' sentences: problems() writes them and the sections look for them by these words. |
-| 123 | `WorldMeasuresCheck.P_DUP_PLACE` | `"a place id that is in the file twice"` |  |
-| 124 | `WorldMeasuresCheck.P_NOT_A_MEASURE` | `"is not a measure or a variant of the file"` |  |
-| 125 | `WorldMeasuresCheck.P_NO_SOURCE` | `"is a measure nothing publishes(its source is none:)"` |  |
-| 126 | `WorldMeasuresCheck.P_Y_ONLY` | `"is a measure only the player's cities rank(scope Y)"` |  |
-| 127 | `WorldMeasuresCheck.P_REGION_SCOPE` | `"is not a city-region measure(scope NC)"` |  |
-| 128 | `WorldMeasuresCheck.P_NOT_FINITE` | `"is not a finite number"` |  |
-| 129 | `WorldMeasuresCheck.P_NOT_POSITIVE` | `"is not over 0"` |  |
-| 130 | `WorldMeasuresCheck.P_WINDOW` | `"is outside the window"` |  |
-| 131 | `WorldMeasuresCheck.P_MARK` | `"is not 1, 2 or 3"` |  |
-| 132 | `WorldMeasuresCheck.P_MARK_UNLISTED` | `"is not in meta.marks"` |  |
-| 133 | `WorldMeasuresCheck.P_SOURCE` | `"is not in meta.sources"` |  |
-| 134 | `WorldMeasuresCheck.P_RULE_MISSING` | `"is an estimate(mark 1) with no rule"` |  |
-| 135 | `WorldMeasuresCheck.P_RULE_UNKNOWN` | `"is not in meta.rules"` |  |
-| 136 | `WorldMeasuresCheck.P_RULE_SPARE` | `"is not an estimate and carries a rule"` |  |
-| 137 | `WorldMeasuresCheck.P_LICENCE` | `"licence is blank"` |  |
-| 138 | `WorldMeasuresCheck.P_URL` | `"url is blank"` |  |
-| 139 | `WorldMeasuresCheck.P_WEO` | `"mentions the IMF's World Economic Outlook"` |  |
-| 140 | `WorldMeasuresCheck.P_SOURCE_UNUSED` | `"source is named by no figure"` |  |
-| 141 | `WorldMeasuresCheck.P_RULE_UNUSED` | `"rule is made by no figure"` |  |
-| 142 | `WorldMeasuresCheck.P_COUNT` | `"but the places hold"` |  |
-| 143 | `WorldMeasuresCheck.P_REGION_NATION` | `"is not a nation place"` |  |
-| 144 | `WorldMeasuresCheck.P_REGION_ID` | `"has a nation's id"` |  |
-| 145 | `WorldMeasuresCheck.P_REGION_DEF` | `"is not in meta.definitions"` |  |
-| 146 | `WorldMeasuresCheck.P_SHARE_MISSING` | `"is missing"` |  |
-| 147 | `WorldMeasuresCheck.P_SHARE_RANGE` | `"is not over 0 and under 1"` |  |
-| 148 | `WorldMeasuresCheck.P_REGION_PEOPLE` | `"is not under its nation's"` |  |
-| 149 | `WorldMeasuresCheck.P_CPI_YEAR` | `"is absent"` |  |
-| 150 | `WorldMeasuresCheck.P_CPI_RISE` | `"does not rise"` |  |
-| 151 | `WorldMeasuresCheck.P_CPI_CONSTANT` | `"is not the BLS's"` |  |
-| 152 | `WorldMeasuresCheck.P_CPI_SERIES` | `"series is not"` |  |
-| 153 | `WorldMeasuresCheck.P_RATIO` | `"is not cpi_u 2015 over 2025"` |  |
+| 108 | `WorldMeasuresCheck.AGREE_SHARE` | `.95, AGREE_TOLERANCE =.01` | The share of the money figures that must agree with their identity, and how near is agreeing: a few nations' published figures miss each identity (the WDI converts AGO BDI NPL SYR UGA ZWE at an alternative rate and gi... |
+| 111 | `WorldMeasuresCheck.MIN_COUNTED` | `100` | The fewest nations an identity may be counted over before the share means anything. |
+| 114 | `WorldMeasuresCheck.US_ONE_TOLERANCE` | `1e-9` | The nearest the United States' price level and rate against parity are to 1: the base of both is the United States. |
+| 117 | `WorldMeasuresCheck.DOCTORED_NATION` | `"AFG"` | The nation the doctored copies change (Afghanistan, which has a published GDP and most of the others). |
+| 120 | `WorldMeasuresCheck.DOCTORED_REGION` | `"TYO"` | The city region the doctored copies change (Tokyo, an OECD region with published shares). |
+| 123 | `WorldMeasuresCheck.P_DUP_MEASURE` | `"a measure key that is in the file twice"` | The problems' sentences: problems() writes them and the sections look for them by these words. |
+| 124 | `WorldMeasuresCheck.P_DUP_PLACE` | `"a place id that is in the file twice"` |  |
+| 125 | `WorldMeasuresCheck.P_NOT_A_MEASURE` | `"is not a measure or a variant of the file"` |  |
+| 126 | `WorldMeasuresCheck.P_NO_SOURCE` | `"is a measure nothing publishes(its source is none:)"` |  |
+| 127 | `WorldMeasuresCheck.P_Y_ONLY` | `"is a measure only the player's cities rank(scope Y)"` |  |
+| 128 | `WorldMeasuresCheck.P_REGION_SCOPE` | `"is not a city-region measure(scope NC)"` |  |
+| 129 | `WorldMeasuresCheck.P_NOT_FINITE` | `"is not a finite number"` |  |
+| 130 | `WorldMeasuresCheck.P_NOT_POSITIVE` | `"is not over 0"` |  |
+| 131 | `WorldMeasuresCheck.P_WINDOW` | `"is outside the window"` |  |
+| 132 | `WorldMeasuresCheck.P_MARK` | `"is not 1, 2 or 3"` |  |
+| 133 | `WorldMeasuresCheck.P_MARK_UNLISTED` | `"is not in meta.marks"` |  |
+| 134 | `WorldMeasuresCheck.P_SOURCE` | `"is not in meta.sources"` |  |
+| 135 | `WorldMeasuresCheck.P_RULE_MISSING` | `"is an estimate(mark 1) with no rule"` |  |
+| 136 | `WorldMeasuresCheck.P_RULE_UNKNOWN` | `"is not in meta.rules"` |  |
+| 137 | `WorldMeasuresCheck.P_RULE_SPARE` | `"is not an estimate and carries a rule"` |  |
+| 138 | `WorldMeasuresCheck.P_LICENCE` | `"licence is blank"` |  |
+| 139 | `WorldMeasuresCheck.P_URL` | `"url is blank"` |  |
+| 140 | `WorldMeasuresCheck.P_WEO` | `"mentions the IMF's World Economic Outlook"` |  |
+| 141 | `WorldMeasuresCheck.P_SOURCE_UNUSED` | `"source is named by no figure"` |  |
+| 142 | `WorldMeasuresCheck.P_RULE_UNUSED` | `"rule is made by no figure"` |  |
+| 143 | `WorldMeasuresCheck.P_COUNT` | `"but the places hold"` |  |
+| 144 | `WorldMeasuresCheck.P_REGION_NATION` | `"is not a nation place"` |  |
+| 145 | `WorldMeasuresCheck.P_REGION_ID` | `"has a nation's id"` |  |
+| 146 | `WorldMeasuresCheck.P_REGION_DEF` | `"is not in meta.definitions"` |  |
+| 147 | `WorldMeasuresCheck.P_SHARE_MISSING` | `"is missing"` |  |
+| 148 | `WorldMeasuresCheck.P_SHARE_RANGE` | `"is not over 0 and under 1"` |  |
+| 149 | `WorldMeasuresCheck.P_REGION_PEOPLE` | `"is not under its nation's"` |  |
+| 150 | `WorldMeasuresCheck.P_CPI_YEAR` | `"is absent"` |  |
+| 151 | `WorldMeasuresCheck.P_CPI_RISE` | `"does not rise"` |  |
+| 152 | `WorldMeasuresCheck.P_CPI_CONSTANT` | `"is not the BLS's"` |  |
+| 153 | `WorldMeasuresCheck.P_CPI_SERIES` | `"series is not"` |  |
+| 154 | `WorldMeasuresCheck.P_RATIO` | `"is not cpi_u 2015 over 2025"` |  |
 
 ## Fields (state)
 
@@ -125,45 +125,45 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 71 | 592 | **type** `public class WorldMeasuresCheck` | The Rankings' real-world file held to what it promises (batch LB1; the project's spec-leaderboards.md 6-8): WorldMeasures' reading of world-2025.json, and the rules tools/world/FORMAT-2025.txt states of the file, whic... |
-| 156 | 4 | `static void check(String label, boolean ok)` | Prints a label and OK or FAIL; the exit code is the count of FAILs. |
-| 162 | 5 | `static void all(String label, int counted, List<String> bad)` | A check over many things, that says how many there were and the first few that were wrong. |
+| 71 | 593 | **type** `public class WorldMeasuresCheck` | The Rankings' real-world file held to what it promises (batch LB1; the project's spec-leaderboards.md 6-8): WorldMeasures' reading of world-2025.json, and the rules tools/world/FORMAT-2025.txt states of the file, whic... |
+| 157 | 4 | `static void check(String label, boolean ok)` | Prints a label and OK or FAIL; the exit code is the count of FAILs. |
+| 163 | 5 | `static void all(String label, int counted, List<String> bad)` | A check over many things, that says how many there were and the first few that were wrong. |
 
-### THE RULES - one method, each problem a sentence naming the place and key (lines 168-276)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 173 | 80 | `static List<String> problems(WorldMeasures w)` | Everything wrong with a file, as short sentences naming the place and key; none when it keeps FORMAT-2025.txt. |
-| 255 | 16 | `static void figureProblems(String at, WorldMeasures.Figure f, WorldMeasures w, List<String> p, Set<String> usedSources, Set<Str...` | What is wrong with one figure besides its value: its year, its mark, its source and its rule. |
-| 273 | 3 | `static String digits17(double v)` | A double to 17 significant digits, which tells any two doubles apart. |
-
-### THE DOCTORED COPIES (lines 277-338)
+### THE RULES - one method, each problem a sentence naming the place and key (lines 169-277)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 282 | 5 | `static WorldMeasures doctored(String json, Consumer<JsonObject> change)` | The real JSON parsed into an object, changed in one place by the change, and read again as a file. |
-| 288 | 1 | `static JsonObject meta(JsonObject root)` |  |
-| 290 | 6 | `static JsonObject placeOf(JsonObject root, String id)` |  |
-| 297 | 5 | `static JsonArray figureOf(JsonObject root, String id, String key)` |  |
-| 304 | 10 | `static void addFigure(JsonObject root, String id, String key, double value, int year, int mark, String source)` | A figure added to a place, with the meta's figure count one more so that the count is not what the copy breaks. |
-| 316 | 7 | `static void caught(String label, WorldMeasures copy, String...words)` | Whether the copy has exactly one problem, and it says the words; prints what it has when it does not. |
-| 325 | 6 | `static void caughtAll(String label, WorldMeasures copy, String word)` | Whether the copy has problems, and every one says the words (a change that breaks many figures alike). |
-| 333 | 5 | `static void none(String label, List<String> real, String word)` | Whether the real file has no problem of a kind. |
+| 174 | 80 | `static List<String> problems(WorldMeasures w)` | Everything wrong with a file, as short sentences naming the place and key; none when it keeps FORMAT-2025.txt. |
+| 256 | 16 | `static void figureProblems(String at, WorldMeasures.Figure f, WorldMeasures w, List<String> p, Set<String> usedSources, Set<Str...` | What is wrong with one figure besides its value: its year, its mark, its source and its rule. |
+| 274 | 3 | `static String digits17(double v)` | A double to 17 significant digits, which tells any two doubles apart. |
 
-### THE SECTIONS (lines 339-662)
+### THE DOCTORED COPIES (lines 278-339)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 343 | 26 | `public static void main(String[] args) throws Exception` |  |
-| 371 | 35 | `static void theFile(WorldMeasures w, byte[] bytes, List<String> real)` | 1. |
-| 408 | 26 | `static void theNations(WorldMeasures w) throws Exception` | 2. |
-| 436 | 19 | `static void presence(WorldMeasures w, String of, WorldData data, boolean full)` | Every nation of a world-1 file is in the measures file once, with its name; for the full file, none is there that the file lacks. |
-| 457 | 34 | `static void theMissing(WorldMeasures w, String json, List<String> real)` | 3. |
-| 493 | 41 | `static void theMarksAndSources(WorldMeasures w, String json, List<String> real)` | 4. |
-| 536 | 19 | `static void theShares(WorldMeasures w, String json, List<String> real)` | 5. |
-| 557 | 27 | `static void theCpi(WorldMeasures w, String json, List<String> real)` | 6. |
-| 586 | 59 | `static void theMoney(WorldMeasures w)` | 7. |
-| 647 | 3 | `static boolean published(WorldMeasures.Figure f)` | Whether a figure is there and published (mark 3). |
-| 652 | 3 | `static int bandOf(double people)` | The size band of a people figure: the digits of the number, to 6 significant digits, less one. |
-| 657 | 5 | `static void agree(String label, int counted, List<String> outside)` | At least AGREE_SHARE of the counted agree with an identity: prints the count, the share and the ones outside. |
+| 283 | 5 | `static WorldMeasures doctored(String json, Consumer<JsonObject> change)` | The real JSON parsed into an object, changed in one place by the change, and read again as a file. |
+| 289 | 1 | `static JsonObject meta(JsonObject root)` |  |
+| 291 | 6 | `static JsonObject placeOf(JsonObject root, String id)` |  |
+| 298 | 5 | `static JsonArray figureOf(JsonObject root, String id, String key)` |  |
+| 305 | 10 | `static void addFigure(JsonObject root, String id, String key, double value, int year, int mark, String source)` | A figure added to a place, with the meta's figure count one more so that the count is not what the copy breaks. |
+| 317 | 7 | `static void caught(String label, WorldMeasures copy, String...words)` | Whether the copy has exactly one problem, and it says the words; prints what it has when it does not. |
+| 326 | 6 | `static void caughtAll(String label, WorldMeasures copy, String word)` | Whether the copy has problems, and every one says the words (a change that breaks many figures alike). |
+| 334 | 5 | `static void none(String label, List<String> real, String word)` | Whether the real file has no problem of a kind. |
+
+### THE SECTIONS (lines 340-663)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 344 | 26 | `public static void main(String[] args) throws Exception` |  |
+| 372 | 35 | `static void theFile(WorldMeasures w, byte[] bytes, List<String> real)` | 1. |
+| 409 | 26 | `static void theNations(WorldMeasures w) throws Exception` | 2. |
+| 437 | 19 | `static void presence(WorldMeasures w, String of, WorldData data, boolean full)` | Every nation of a world-1 file is in the measures file once, with its name; for the full file, none is there that the file lacks. |
+| 458 | 34 | `static void theMissing(WorldMeasures w, String json, List<String> real)` | 3. |
+| 494 | 41 | `static void theMarksAndSources(WorldMeasures w, String json, List<String> real)` | 4. |
+| 537 | 19 | `static void theShares(WorldMeasures w, String json, List<String> real)` | 5. |
+| 558 | 27 | `static void theCpi(WorldMeasures w, String json, List<String> real)` | 6. |
+| 587 | 59 | `static void theMoney(WorldMeasures w)` | 7. |
+| 648 | 3 | `static boolean published(WorldMeasures.Figure f)` | Whether a figure is there and published (mark 3). |
+| 653 | 3 | `static int bandOf(double people)` | The size band of a people figure: the digits of the number, to 6 significant digits, less one. |
+| 658 | 5 | `static void agree(String label, int counted, List<String> outside)` | At least AGREE_SHARE of the counted agree with an identity: prints the count, the share and the ones outside. |
 
