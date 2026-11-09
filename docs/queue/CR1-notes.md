@@ -65,7 +65,7 @@ W=150000 (the orchestrator's env, not the project's 300k).
   are main's recorded ones (`docs/notes/gate.txt`): PriceLevelCheck, ScaleCheck, MapCheck and KeptCheck.
   KeptCheck's five failing lines are main's five, word for word and figure for figure. Four timing assertions
   were soft (SaveSlotCheck 1, MapCheck 1, KeptCheck 2). Maps regenerated, nothing changed; stale 0 firm.
-- CreditsCheck: 36 ok, 0 FAIL.
+- CreditsCheck: all ok, 35 assertions, 0 FAIL.
 - The review line: "needed - threading: ui/UserInterface.java (UI-wide)", a floor for the gate's stranger's
   review. The diff adds no threaded line (no synchronized, volatile, thread, executor, runLater, Atomic or
-  Concurrent). The page reads three small files from the jar on the FX thread when it opens (about 40 KB).
+  Concurrent). The page reads three small files from the jar on the FX thread when it opens (25 KB in all).
