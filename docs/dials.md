@@ -2,9 +2,9 @@
 
 Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**5,606 constants in 530 files.**
+**5,610 constants in 532 files.**
 
-## model (2696 constants)
+## model (2700 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -805,6 +805,15 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 76 | `CorporateBond.TERM_MONTHS` | `Mortgage.MORTGAGE_TERM_MONTHS` | The term every bond is issued at: ten years, the benchmark tenor of investment-grade corporate issuance, and the term the model already prices at (the insured mortgage's, Mortgage.MORTGAGE_TERM_MON... |
 | 79 | `CorporateBond.COUPONS_A_YEAR` | `12` | Coupons a year: one a month, the model's month; real bonds pay twice a year. |
 
+### Credits.java ([map](map/Credits.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 34 | `Credits.EARTH` | `"/credits/earth/ATTRIBUTION-2.txt"` | The Earth data's attribution, in the jar (pom.xml copies tools/earth/ATTRIBUTION-2.txt there). |
+| 37 | `Credits.NATIONS` | `"/credits/world/ATTRIBUTION.txt"` | The nations' attribution, in the jar (pom.xml copies tools/world/ATTRIBUTION.txt there). |
+| 40 | `Credits.FONTS` | `"/fonts/OFL.txt"` | The fonts' licence in full, the SIL Open Font License 1.1 with IBM's copyright line, as it sits beside the fonts. |
+| 43 | `Credits.FONT_NOTICE` | `"The type is IBM Plex Sans and IBM Plex Mono, Copyright © 2017 IBM Corp., " + "with Res...` | The line above the fonts' licence: what the type is, whose, and the licence it is used under. |
+
 ### Crime.java ([map](map/Crime.md))
 
 | line | constant | value | says |
@@ -1564,7 +1573,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.61"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.9.62"` | Bump on release. |
 | 8267 | `GameVersion.SAVE_FORMAT` | `51` | The save shape. |
 | 8316 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `51` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
 | 8324 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
@@ -5312,24 +5321,24 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 3229 | `UserInterface.BACKDROP_WINDOW` | `"#22344a"` |  |
 | 3232 | `UserInterface.FOUNDING_DIM` | `.72` | How dark the founding screen dims the backdrop under its panel: the mockups' 0.72. |
 | 3235 | `UserInterface.MENU_CITIES` | `3` | Up to this many of the cities saved last, as cards at the menu's bottom right. |
-| 3580 | `UserInterface.MENU_LEFT` | `96` | How far in from the window's left the menu's column and version sit. |
-| 3583 | `UserInterface.MENU_BUTTON` | `360` | The menu's buttons' width, as the mockups draw them. |
-| 3674 | `UserInterface.CITY_CARD` | `250` | A city card's width, as the mockups draw it. |
-| 3723 | `UserInterface.SAVED_AT` | `java.time.format.DateTimeFormatter.ofPattern("d MMM HH:mm")` |  |
-| 4297 | `UserInterface.TIP_WIDTH` | `420` | The width a tooltip's text wraps at, unless it asked for its own. |
-| 4497 | `UserInterface.PAGE_FOOT` | `24` | Room left under the end of every scrolled page: a margin, since nothing floats over the stage's foot (0.7.21; it was 90, the dome's 74 and a margin). |
-| 4567 | `UserInterface.SCROLLED_CHROME` | `"scrolled.chrome"` | The key in a scroller's properties for the chrome its height is bound to (scrolled()). |
-| 5208 | `UserInterface.CONSTRUCTION_TAB` | `44` | How wide the construction panel's tab is. |
-| 5530 | `UserInterface.PANEL_TEXT` | `256` | How wide the construction panel's lines wrap: the panel less its padding. |
-| 5687 | `UserInterface.RAIL_WIDTH` | `Palette.RAIL` | The rail's width: an icon over its name, as the mockups draw it (0.7.21; it was 46). |
-| 5690 | `UserInterface.RAIL_BUTTON` | `54` | A rail button's height, and the least it may shrink to on a short window. |
-| 5691 | `UserInterface.RAIL_BUTTON_MIN` | `40` |  |
-| 5694 | `UserInterface.RAIL_ICON` | `20` | How big a rail icon is drawn: its 24-unit grid at 20 pixels. |
-| 6182 | `UserInterface.INBOX_WIDTH` | `530` | See refreshInbox: sized to the notice bodies, not to the corner. |
-| 6529 | `UserInterface.TOAST_SECONDS` | `8` | How long a toast stays before it fades, in seconds. |
-| 6532 | `UserInterface.TOAST_MAX` | `3` | How many toasts at once. |
-| 6535 | `UserInterface.TOAST_WIDTH` | `340` | How wide a toast's text wraps. |
-| 6756 | `UserInterface.SPEED_MIN_WIDTH` | `34` | The least the reading is wide, in pixels: the width it held before UP7, so that at pace it sits where it did. |
+| 3582 | `UserInterface.MENU_LEFT` | `96` | How far in from the window's left the menu's column and version sit. |
+| 3585 | `UserInterface.MENU_BUTTON` | `360` | The menu's buttons' width, as the mockups draw them. |
+| 3676 | `UserInterface.CITY_CARD` | `250` | A city card's width, as the mockups draw it. |
+| 3725 | `UserInterface.SAVED_AT` | `java.time.format.DateTimeFormatter.ofPattern("d MMM HH:mm")` |  |
+| 4299 | `UserInterface.TIP_WIDTH` | `420` | The width a tooltip's text wraps at, unless it asked for its own. |
+| 4546 | `UserInterface.PAGE_FOOT` | `24` | Room left under the end of every scrolled page: a margin, since nothing floats over the stage's foot (0.7.21; it was 90, the dome's 74 and a margin). |
+| 4616 | `UserInterface.SCROLLED_CHROME` | `"scrolled.chrome"` | The key in a scroller's properties for the chrome its height is bound to (scrolled()). |
+| 5257 | `UserInterface.CONSTRUCTION_TAB` | `44` | How wide the construction panel's tab is. |
+| 5579 | `UserInterface.PANEL_TEXT` | `256` | How wide the construction panel's lines wrap: the panel less its padding. |
+| 5736 | `UserInterface.RAIL_WIDTH` | `Palette.RAIL` | The rail's width: an icon over its name, as the mockups draw it (0.7.21; it was 46). |
+| 5739 | `UserInterface.RAIL_BUTTON` | `54` | A rail button's height, and the least it may shrink to on a short window. |
+| 5740 | `UserInterface.RAIL_BUTTON_MIN` | `40` |  |
+| 5743 | `UserInterface.RAIL_ICON` | `20` | How big a rail icon is drawn: its 24-unit grid at 20 pixels. |
+| 6231 | `UserInterface.INBOX_WIDTH` | `530` | See refreshInbox: sized to the notice bodies, not to the corner. |
+| 6578 | `UserInterface.TOAST_SECONDS` | `8` | How long a toast stays before it fades, in seconds. |
+| 6581 | `UserInterface.TOAST_MAX` | `3` | How many toasts at once. |
+| 6584 | `UserInterface.TOAST_WIDTH` | `340` | How wide a toast's text wraps. |
+| 6805 | `UserInterface.SPEED_MIN_WIDTH` | `34` | The least the reading is wide, in pixels: the width it held before UP7, so that at pace it sits where it did. |
 
 ### VaultTable.java ([map](map/VaultTable.md))
 
@@ -5383,7 +5392,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 89 | `AllChecks.HARNESSES` | `{ "BuildingDataCheck", "BrandingCheck", "NewGameCheck", "WorldCheck", "GridCheck", "Con...` | In the order they are cheapest to fail. |
+| 89 | `AllChecks.HARNESSES` | `{ "BuildingDataCheck", "BrandingCheck", "CreditsCheck", "NewGameCheck", "WorldCheck", "...` | In the order they are cheapest to fail. |
 | 106 | `AllChecks.FAIL_LINES` | `40` | The most lines -f prints for one failed harness; the rest stays in its log. |
 | 109 | `AllChecks.PARALLEL` | `3` | How many harnesses a soft, logged run runs at once (SP1); memory, not the cores, bounds it. |
 | 112 | `AllChecks.PARALLEL_PROPERTY` | `"cbs.parallel"` | The property that sets it for one run: -Dcbs.parallel=1 runs them one at a time (given on the java command line or in JDK_JAVA_OPTIONS). |

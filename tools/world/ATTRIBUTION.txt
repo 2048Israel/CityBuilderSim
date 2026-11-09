@@ -3,7 +3,8 @@ world-1: the nations' world of CityBuilderSim (Civic Ledger)
 world-1.bin, and its fixture world-1-fixture.bin in the game's jar, are derived from the data sets below: their
 figures selected, converted and combined by the game, not as published. Their credits follow, each in the form its
 publisher asks for; docs/studies/licences.md has each licence as read on 2026-10-31 (LC1) and, for the sources LC3
-added, 2026-11-02. This file ships beside the exe as data/world-ATTRIBUTION.txt.
+added, 2026-11-02. This file ships beside the exe as data/world-ATTRIBUTION.txt, and the game shows it in full
+on its Credits page, from the title screen.
 
 Natural Earth 1:10m Cultural Vectors (5.1.2): Admin 0 - Countries, Admin 0 - Boundary Lines (land), Populated Places (simple), Ports
   Credit:  Made with Natural Earth. Free vector and raster map data @ naturalearthdata.com.

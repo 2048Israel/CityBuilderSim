@@ -4,9 +4,9 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 530 files, 589,961 lines, 25,629 methods, 5,606 constants. `GameVersion.VERSION` is "0.9.61", `SAVE_FORMAT` 51.
+**The tree:** 532 files, 590,287 lines, 25,641 methods, 5,610 constants. `GameVersion.VERSION` is "0.9.62", `SAVE_FORMAT` 51.
 
-## model (247 files)
+## model (248 files)
 
 | file | lines | methods | what it is | used by |
 |---|---:|---:|---|---:|
@@ -62,6 +62,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [ConstructionControl.java](ConstructionControl.md) | 911 | 66 | The player's hand on the construction queue (0.7.22): the order the city's own sites are served in, the sites it has put on overtime, the orders it... | 24 |
 | [Consumption.java](Consumption.md) | 763 | 35 | What a household eats, and what changes it. | 8 |
 | [CorporateBond.java](CorporateBond.md) | 248 | 29 | A corporate bond: a sector's debt to investors, issued at par through bookbuilding, paying a fixed coupon every month and its whole face at the end. | 15 |
+| [Credits.java](Credits.md) | 100 | 7 | The Credits page's sections: the Earth data's attribution, the nations' attribution and the fonts' notice with its licence, each read from the jar ... | 2 |
 | [Crime.java](Crime.md) | 525 | 61 | Crime, the police who deter and catch it, and the prisons that hold who they catch. | 18 |
 | [Currency.java](Currency.md) | 263 | 21 | What the city's money is called, and how it is written. | 27 |
 | [DataSave.java](DataSave.md) | 2,887 | 441 | sections: land and ore, the shedding warning... | 12 |
@@ -340,11 +341,11 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [TimeChart.java](TimeChart.md) | 1,647 | 91 | A chart of months (0.7.23): lines over a window the player drags, wheels and ranges through, years on its axis, recessions named on their bands, th... | 13 |
 | [TradeScreen.java](TradeScreen.md) | 3,942 | 164 | The Trade & the world tab: how the city stands against the world this month - what it sells and buys abroad, the month's balance of payments, what ... | 7 |
 | [UiProbe.java](UiProbe.md) | 729 | 23 | What the window costs the JavaFX thread as a city ages, measured: it grows the playtest's city to the months it is given, opens the real window on ... | 0 |
-| [UserInterface.java](UserInterface.md) | 7,261 | 235 | The window: the stage and its theme, the header - the clock and the speed, the money block, five headline tiles, the "Needs you" chip, the rating a... | 39 |
+| [UserInterface.java](UserInterface.md) | 7,310 | 236 | The window: the stage and its theme, the header - the clock and the speed, the money block, five headline tiles, the "Needs you" chip, the rating a... | 39 |
 | [VaultTable.java](VaultTable.md) | 235 | 13 | The vault in eight moneys (WN6; docs/studies/spec-nations.md 8, board 3): the first card of Trade &gt; The reserves where the vault holds, or can h... | 1 |
 | [ZoningScreen.java](ZoningScreen.md) | 1,135 | 71 | Policy › Zoning (0.7.109, batch Z2): the fifth Policy area - the city's ground and its zones on one page, a sector's zone on its own page of dial c... | 3 |
 
-## harnesses (188 files)
+## harnesses (189 files)
 
 | file | lines | methods | what it is | used by |
 |---|---:|---:|---|---:|
@@ -388,6 +389,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [CopperMiningCheck.java](CopperMiningCheck.md) | 525 | 13 | Copper Mining, checked (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.3, 2.4, 4 and 5's I8 row; the study's - materials-chains-research.... | 2 |
 | [CopperRefiningCheck.java](CopperRefiningCheck.md) | 1,132 | 27 | Copper Refining, checked (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.7, 2.9, 2.12, 4 and 5's I8 row; the study's - materials-chains-r... | 0 |
 | [CreditCheck.java](CreditCheck.md) | 2,108 | 19 | Verifies private-sector credit: pricing, origination, rollover, cash conservation. | 0 |
+| [CreditsCheck.java](CreditsCheck.md) | 177 | 4 | The Credits page shows every attribution file the exe ships, in full, and the fonts' notice and licence, and says where a file is when this build l... | 0 |
 | [CrimeCheck.java](CrimeCheck.md) | 345 | 8 | Crime, the police and the prisons: every claim in claude/crime-has-reasons.md, each with its own cause. | 0 |
 | [CrossingCheck.java](CrossingCheck.md) | 520 | 27 | Short crossings of bridgeable water (ET6; spec-earth2-terrain 6.2, D12): the shallow sea is water a road or a railway may bridge, exactly as fresh ... | 0 |
 | [CurrencyCheck.java](CurrencyCheck.md) | 949 | 22 | Proves the currency under a central bank (0.7.2): the rate answers to the real rate, the vault is spent defending it, and the dial and the carry ap... | 6 |
