@@ -32,13 +32,14 @@ def url(path):
     return "file:///" + os.path.abspath(path).replace(os.sep, "/")
 
 
-def screenshot(exe, page, width, height):
-    """(width, height, RGBA) of the page drawn on a transparent background."""
+def screenshot(exe, page, width, height, opaque=False):
+    """(width, height, RGBA) of the page drawn on a transparent background (opaque: the page paints its own,
+    and the browser may hand back RGB, which comes back here with every alpha 255)."""
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
         shot = os.path.join(tmp, "shot.png")
         _run(exe, ["--default-background-color=00000000", f"--window-size={width},{height}",
                    f"--screenshot={shot}", url(page)], tmp)
-        w, h, rgba = png_read(shot)
+        w, h, rgba = png_read(shot, opaque)
     if w < width or h < height:
         sys.exit(f"the render came back {w}x{h}, smaller than the {width}x{height} asked for")
     return w, h, rgba
@@ -50,8 +51,8 @@ def dump_dom(exe, page):
         return _run(exe, ["--dump-dom", url(page)], tmp).stdout.decode("utf-8")
 
 
-def png_read(path):
-    """Returns (width, height, RGBA bytes) of an 8-bit RGBA PNG."""
+def png_read(path, opaque=False):
+    """Returns (width, height, RGBA bytes) of an 8-bit RGBA PNG (an RGB one too, if opaque is allowed)."""
     data = open(path, "rb").read()
     if data[:8] != b"\x89PNG\r\n\x1a\n":
         sys.exit(f"{path} is not a PNG")
@@ -66,9 +67,9 @@ def png_read(path):
         elif kind == b"IDAT":
             idat += chunk
         pos += 12 + n
-    if ctype != 6:
+    if ctype != 6 and not opaque:
         sys.exit(f"{path} came back without transparency (RGB): the browser ignored the transparent background")
-    bpp, raw = 4, zlib.decompress(idat)
+    bpp, raw = (4 if ctype == 6 else 3), zlib.decompress(idat)
     stride = w * bpp
     out = bytearray(h * stride)
     prev = bytearray(stride)
@@ -87,6 +88,10 @@ def png_read(path):
                 row[i] = (row[i] + (a if pa <= pb and pa <= pc else b if pb <= pc else c)) & 255
         out[y * stride:(y + 1) * stride] = row
         prev = row
+    if ctype == 2:
+        rgba = bytearray([255]) * (w * h * 4)
+        rgba[0::4], rgba[1::4], rgba[2::4] = out[0::3], out[1::3], out[2::3]
+        return w, h, bytes(rgba)
     return w, h, bytes(out)
 
 
@@ -96,6 +101,20 @@ def png_bytes(w, h, rgba):
     raw = b"".join(b"\x00" + rgba[y * w * 4:(y + 1) * w * 4] for y in range(h))
     return (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", w, h, 8, 6, 0, 0, 0))
             + chunk(b"IDAT", zlib.compress(raw, 9)) + chunk(b"IEND", b""))
+
+
+def png_rgb_bytes(w, h, rgba):
+    """The same picture without its alpha channel (8-bit RGB), for art that is not meant to be see-through."""
+    def chunk(kind, body):
+        return struct.pack(">I", len(body)) + kind + body + struct.pack(">I", zlib.crc32(kind + body) & 0xffffffff)
+    rows = []
+    for y in range(h):
+        row = rgba[y * w * 4:(y + 1) * w * 4]
+        rgb = bytearray(w * 3)
+        rgb[0::3], rgb[1::3], rgb[2::3] = row[0::4], row[1::4], row[2::4]
+        rows.append(b"\x00" + bytes(rgb))
+    return (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", w, h, 8, 2, 0, 0, 0))
+            + chunk(b"IDAT", zlib.compress(b"".join(rows), 9)) + chunk(b"IEND", b""))
 
 
 def crop(w, rgba, x, y, cw, ch):
