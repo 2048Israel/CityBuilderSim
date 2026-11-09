@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**188 harness files, 22,242 labelled assertions.** AllChecks runs 188 of them.
+**188 harness files, 22,257 labelled assertions.** AllChecks runs 188 of them.
 
 ## Which harnesses read which class
 
@@ -19810,7 +19810,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L718 ...and the reading is the struck rate over the D$, less one (
   - L737 every month, the gap the line reads at a month's end is the one the next strike closes PASS_THROUGH of, in logs (off in
 
-## PegAnchorCheck.java - 129 labelled assertions
+## PegAnchorCheck.java - 144 labelled assertions
 
 > The peg's anchor (batch WN4b; ForeignAccounts, THE REGIMES, THE PEG'S ANCHOR): the D$ can be pegged to any of the eight moneys, not
 > only the US$. The peg is kept in the anchor's money (D$ per unit of it); the rate the hold keeps, D$ per US$, is the peg over the anchor's
@@ -19826,144 +19826,160 @@ _(this harness does not label its checks through a helper - it prints its findin
 >   1. A US$ ANCHOR IS THE PEG AS IT WAS: a new ForeignAccounts's anchor is the US$, and two seeded US$ pegs on a deficit trade and a deep
 > ...
 
-- **L146 1. a US$ anchor is the peg as it was: the eight's moves do not reach it, to the bit**
-  - L148 a new ForeignAccounts's anchor is the US$: index 0, code USD
-  - L153 fixture: two seeded pegs to the US$ on a deficit trade (exports .8 of imports) and a deep vault, struck at the same rate
-  - L177 fixture: the eight really moved (the euro took
-  - L180 the rate is the same every month, to the bit
-  - L181 ...the hold's sale
-  - L182 ...the strong edge's purchase
-  - L183 ...the hold's support
-  - L184 ...the shadow's gap from the peg
-  - L185 ...and the shadow
-  - L186 getPegRate() is getPegPerAnchor() exactly, in both, and the same in both
-- **L194 2. the held rate is the peg over the anchor's US$ price: the D$ per euro is the peg, the D$ per US$ moves with the euro**
-  - L197 fixture: pegged to the euro on a deep vault and a balanced trade, quiet, at today's rate in euros (the rate times the euro's US$ price)
-  - L213 every month for two years the peg held and was never broken
-  - L214 each month the rate is the peg per euro over the euro's US$ price that month, to 1e-12
-  - L215 ...getPegPerAnchor() never moved
-  - L216 ...so the D$ per euro (the rate times the euro's price) is the peg every month
-  - L217 ...while the D$ per US$ took
-  - L218 ...and the hold dealt, US$
-  - L219 getPegRate() is the rate held now: the peg per euro over the euro's last price
-- **L227 3. the shadow's gap is against the held rate: a euro that rises takes the D$ off the shadow, and the hold pays for it**
-  - L233 fixture: two quiet twins on the same deficit trade and a deep vault, one pegged to the US$ at r, one to the euro at r x
-  - L241 fixture: the US$ twin's hold sold dollars that month (US$
-  - L242 a month at the same euro deals the same in both: the rate, the sale and the support to the bit
-  - L248 fixture: both held a peg that month, and the euro rose
-  - L250 the shadow is the D$'s own rule and does not follow the euro: the same in both to the bit
-  - L251 the euro twin's gap is the US$ twin's plus ln(1.1)
-  - L252 currencyGap() is the shadow over the held rate less one, the US$ twin's
-  - L253 ...and the euro twin's, where the held rate is the one the euro put it at
-  - L254 the euro twin holds the D$ a tenth stronger against the US$: its rate is the US$ twin's over 1.1
-  - L255 ...and that costs the vault: the euro twin sold more (US$
-  - L257 the euro twin's support is the log of the held rate over the shadow: the hold's own identity
-  - L259 ...and the US$ twin's likewise
-  - L261 breakLanding() reads the held rate: the shadow plus the overshoot of its gap from it
-  - L263 rateAfterDeal() under the peg is the held rate
-- **L271 4. choosing the anchor: the held rate does not move on the switch, a money with no rate is refused, outside a peg the setting is kept**
-  - L277 fixture: a US$ peg at p =
-  - L279 under a US$ peg the words are \"Peg to the US dollar\"
-  - L281 setPegAnchor(1) makes the euro the anchor
-  - L282 ...the held rate does not move on the switch: getPegRate() is p
-  - L283 ...the peg is struck again at the day's cross: getPegPerAnchor() is p times the euro's price
-  - L284 ...the words name the euro
-  - L287 fixture: the euro moved and the peg held
-  - L288 the next month the rate follows the euro: the peg per euro over the new price
-  - L291 back to the US$, the held rate is where it stood
-  - L292 ...and the peg is that rate, D$ per US$
-  - L294 choosing the anchor it already has changes nothing
-  - L299 a ForeignAccounts never handed rates refuses the euro: the anchor stays the US$
-  - L305 fixture: the yen has no rate this month
-  - L306 a money with no rate this month is refused
-  - L308 an index outside 0 to 7 is refused
-  - L310 ...and so is a code that is none of the eight (moneyIndex() reads -1)
-  - L317 outside a peg (Lean), setPegAnchor(3) keeps the setting and does not move the rate or the regime
-  - L319 ...and under Lean the words are the regime's own
-  - L321 entering the peg pegs at the day's rate in pounds: getPegPerAnchor() is the rate times the pound's price
-  - L322 ...so the rate held is the rate of the day
-  - L323 ...and the words are \"Peg to the pound\"
-  - L325 leaving the peg keeps the anchor
-  - L326 the Peg regime's own words no longer name a money
-- **L334 5. a devaluation in the anchor's money: repeg() is D$ per euro, the held rate is that over the euro's price**
-  - L338 fixture: a euro peg, held
-  - L341 repeg(x) sets the peg per euro to x
-  - L342 ...and the held rate to x over the euro's price
-  - L343 ...a higher x is a higher held rate (a weaker D$)
-  - L346 fixture: the peg held through the month
-  - L347 the next month the rate is the new peg over the euro's price that month
-  - L350 a revaluation lowers the held rate
-  - L355 outside a peg repeg() does nothing
-- **L363 6. the break under a euro peg: a euro peg with no vault breaks for want of one, at the held rate's gap**
-  - L369 fixture: a euro peg with no vault, revalued to 0.8 of itself so the hold must sell dollars it has not got, quiet (no chance of doubt)
-  - L372 the peg broke that month
-  - L373 ...for want of the vault
-  - L374 ...the regime is Float after it
-  - L375 ...and the anchor is still the euro, kept when the regime is left
-  - L378 fixture: the shadow was the weaker side of the held rate (
-  - L380 the rate it lands at is the shadow times exp(OVERSHOOT x the gap against the held rate):
-- **L388 7. the dial ties to the anchor's rate: a bare DebtManager, tied to the euro, to the US$, and not at all**
-  - L402 fixture: the US's rate is 4%, the euro area's 2% and the yen's 0.1%
-  - L404 tied with the euro the anchor, tieMoney() is EUR
-  - L405 ...tieRate() is the euro area's rate
-  - L407 ...a spread of half a point is kept
-  - L408 ...and tiedRate(0) is the euro area's rate plus the spread, inside the dial's bounds
-  - L410 ...which is not the US's rate plus the spread
-  - L412 ...and the decision names the euro's rate: \"
-  - L415 a spread of 100 points is clamped to the dial's ceiling over the euro area's rate
-  - L417 ...and a spread under it to the floor over the euro area's rate
-  - L421 moved to the yen, tieRate() is the yen's rate
-  - L424 tied with the US$ the anchor, tieMoney() is USD
-  - L425 ...tieRate() is worldRate() to the bit
-  - L426 ...tiedRate(0) is the old expression: the US's rate plus the spread, inside the bounds, to the bit
-  - L430 ...and the decision reads as it did: \"
-  - L432 ...a spread of 100 points is clamped over the US's rate
-  - L438 with the autopilot aiming at the currency under a euro peg, tiedRate(gap) is the euro area's rate plus the gap's quarter point
-  - L440 ...and currencyRate(), a band's aim, stays on the US's rate
-  - L444 untied, tieMoney() is null
-  - L445 ...and tieRate() is the US's rate
-  - L448 a manager nobody handed a source is untied, and tieMoney() is null
-  - L449 ...with tieRate() the US's rate
-  - L451 tied with no money source, it is still null and the US's
-  - L452 ...and tieRate() the US's rate
-- **L460 8. the save: slot 148 is the anchor; a restored euro peg plays the same, and a save without the slot reads the US$**
-  - L465 fixture: a euro peg that has dealt for eight months and carries a support (
-  - L467 the array runs to slot 148, the peg's anchor (
-  - L468 slot 148 is the anchor's index, the euro's
-  - L469 slot 147 is still the hold's support
-  - L470 slot 76 is still the peg, now D$ per euro
-  - L474 restored, the anchor is the euro
-  - L475 ...the peg per euro is the saved one
-  - L476 ...and so is the rate held
-  - L477 ...and every slot reads back to the bit
-  - L481 fixture: both held the peg the next month
-  - L482 the next month, with the same rates and trade, the rate is the unsaved twin's
-  - L483 ...the deal
-  - L484 ...the support
-  - L485 ...the gap
-  - L486 ...and the shadow
-  - L490 a save cut to 148 slots, as WN4 wrote it, restores the US$ as the anchor, the peg still held
-  - L495 fixture: that save has no rate for the euro
-  - L496 a save whose slot 148 is the euro but whose euro rate is 0 restores the US$: a money with no rate cannot anchor a peg
-  - L501 an anchor outside the eight reads the US$
-  - L504 ...and so does one that is not a number
-  - L506 reset() puts the anchor back on the US$
-  - L508 restoring a shorter save over a euro peg starts from the US$ (restore() resets first)
-- **L523 9. in a city (the full file): a trading town pegged to the euro holds the peg per euro, ties its dial to the euro area and says so**
-  - L532 fixture: the town has played until the eight have rates, on the US$ for its anchor and Lean
-  - L536 fixture: pegged to the euro at the day's cross, the peg per euro the rate times the euro's price
-  - L540 the decision log names the euro: \"
-  - L542 fixture: the dial is on the Inflation aim, so a tied dial is the anchor's rate plus the spread, and the euro area's rate is not the US's
-  - L560 three months on, the peg held (not broken)
-  - L561 each month the rate is the peg per euro over the euro's US$ price
-  - L562 ...the euro's price is the world's rate for it
-  - L563 ...the dial is the euro area's rate plus the spread, which is what tiedRate() gives
-  - L564 ...and tieRate() is the euro area's rate and tieMoney() EUR
-  - L570 a devaluation in the euro's money is logged in it: \"
-  - L574 moving the anchor under a peg re-pegs at the day's cross and says so: \"
-  - L576 ...the held rate did not move on the switch
-  - L579 ...and the next month's rate is the peg per pound over the pound's price
-  - L580 ...with the dial on the pound's rate as the month began with it
+- **L151 1. a US$ anchor is the peg as it was: the eight's moves do not reach it, to the bit**
+  - L153 a new ForeignAccounts's anchor is the US$: index 0, code USD
+  - L158 fixture: two seeded pegs to the US$ on a deficit trade (exports .8 of imports) and a deep vault, struck at the same rate
+  - L182 fixture: the eight really moved (the euro took
+  - L185 the rate is the same every month, to the bit
+  - L186 ...the hold's sale
+  - L187 ...the strong edge's purchase
+  - L188 ...the hold's support
+  - L189 ...the shadow's gap from the peg
+  - L190 ...and the shadow
+  - L191 getPegRate() is getPegPerAnchor() exactly, in both, and the same in both
+- **L199 2. the held rate is the peg over the anchor's US$ price: the D$ per euro is the peg, the D$ per US$ moves with the euro**
+  - L202 fixture: pegged to the euro on a deep vault and a balanced trade, quiet, at today's rate in euros (the rate times the euro's US$ price)
+  - L218 every month for two years the peg held and was never broken
+  - L219 each month the rate is the peg per euro over the euro's US$ price that month, to 1e-12
+  - L220 ...getPegPerAnchor() never moved
+  - L221 ...so the D$ per euro (the rate times the euro's price) is the peg every month
+  - L222 ...while the D$ per US$ took
+  - L223 ...and the hold dealt, US$
+  - L224 getPegRate() is the rate held now: the peg per euro over the euro's last price
+- **L232 3. the shadow's gap is against the held rate: a euro that rises takes the D$ off the shadow, and the hold pays for it**
+  - L238 fixture: two quiet twins on the same deficit trade and a deep vault, one pegged to the US$ at r, one to the euro at r x
+  - L246 fixture: the US$ twin's hold sold dollars that month (US$
+  - L247 a month at the same euro deals the same in both: the rate, the sale and the support to the bit
+  - L253 fixture: both held a peg that month, and the euro rose
+  - L255 the shadow is the D$'s own rule and does not follow the euro: the same in both to the bit
+  - L256 the euro twin's gap is the US$ twin's plus ln(1.1)
+  - L257 currencyGap() is the shadow over the held rate less one, the US$ twin's
+  - L258 ...and the euro twin's, where the held rate is the one the euro put it at
+  - L259 the euro twin holds the D$ a tenth stronger against the US$: its rate is the US$ twin's over 1.1
+  - L260 ...and that costs the vault: the euro twin sold more (US$
+  - L262 the euro twin's support is the log of the held rate over the shadow: the hold's own identity
+  - L264 ...and the US$ twin's likewise
+  - L266 breakLanding() reads the held rate: the shadow plus the overshoot of its gap from it
+  - L268 rateAfterDeal() under the peg is the held rate
+- **L276 4. choosing the anchor: the held rate does not move on the switch, a money with no rate is refused, outside a peg the setting is kept**
+  - L282 fixture: a US$ peg at p =
+  - L284 under a US$ peg the words are \"Peg to the US dollar\"
+  - L286 setPegAnchor(1) makes the euro the anchor
+  - L287 ...the held rate does not move on the switch: getPegRate() is p
+  - L288 ...the peg is struck again at the day's cross: getPegPerAnchor() is p times the euro's price
+  - L289 ...the words name the euro
+  - L292 fixture: the euro moved and the peg held
+  - L293 the next month the rate follows the euro: the peg per euro over the new price
+  - L296 back to the US$, the held rate is where it stood
+  - L297 ...and the peg is that rate, D$ per US$
+  - L299 choosing the anchor it already has changes nothing
+  - L304 a ForeignAccounts never handed rates refuses the euro: the anchor stays the US$
+  - L310 fixture: the yen has no rate this month
+  - L311 a money with no rate this month is refused
+  - L313 an index outside 0 to 7 is refused
+  - L315 ...and so is a code that is none of the eight (moneyIndex() reads -1)
+  - L322 outside a peg (Lean), setPegAnchor(3) keeps the setting and does not move the rate or the regime
+  - L324 ...and under Lean the words are the regime's own
+  - L326 entering the peg pegs at the day's rate in pounds: getPegPerAnchor() is the rate times the pound's price
+  - L327 ...so the rate held is the rate of the day
+  - L328 ...and the words are \"Peg to the pound\"
+  - L330 leaving the peg keeps the anchor
+  - L331 the Peg regime's own words no longer name a money
+- **L339 5. a devaluation in the anchor's money: repeg() is D$ per euro, the held rate is that over the euro's price**
+  - L343 fixture: a euro peg, held
+  - L346 repeg(x) sets the peg per euro to x
+  - L347 ...and the held rate to x over the euro's price
+  - L348 ...a higher x is a higher held rate (a weaker D$)
+  - L351 fixture: the peg held through the month
+  - L352 the next month the rate is the new peg over the euro's price that month
+  - L355 a revaluation lowers the held rate
+  - L360 outside a peg repeg() does nothing
+- **L368 6. the break under a euro peg: a euro peg with no vault breaks for want of one, at the held rate's gap**
+  - L374 fixture: a euro peg with no vault, revalued to 0.8 of itself so the hold must sell dollars it has not got, quiet (no chance of doubt)
+  - L377 the peg broke that month
+  - L378 ...for want of the vault
+  - L379 ...the regime is Float after it
+  - L380 ...and the anchor is still the euro, kept when the regime is left
+  - L383 fixture: the shadow was the weaker side of the held rate (
+  - L385 the rate it lands at is the shadow times exp(OVERSHOOT x the gap against the held rate):
+- **L393 7. the dial ties to the anchor's rate: a bare DebtManager, tied to the euro, to the US$, and not at all**
+  - L407 fixture: the US's rate is 4%, the euro area's 2% and the yen's 0.1%
+  - L409 tied with the euro the anchor, tieMoney() is EUR
+  - L410 ...tieRate() is the euro area's rate
+  - L412 ...a spread of half a point is kept
+  - L413 ...and tiedRate(0) is the euro area's rate plus the spread, inside the dial's bounds
+  - L415 ...which is not the US's rate plus the spread
+  - L417 ...and the decision names the euro's rate: \"
+  - L420 a spread of 100 points is clamped to the dial's ceiling over the euro area's rate
+  - L422 ...and a spread under it to the floor over the euro area's rate
+  - L426 moved to the yen, tieRate() is the yen's rate
+  - L429 tied with the US$ the anchor, tieMoney() is USD
+  - L430 ...tieRate() is worldRate() to the bit
+  - L431 ...tiedRate(0) is the old expression: the US's rate plus the spread, inside the bounds, to the bit
+  - L435 ...and the decision reads as it did: \"
+  - L437 ...a spread of 100 points is clamped over the US's rate
+  - L443 with the autopilot aiming at the currency under a euro peg, tiedRate(gap) is the euro area's rate plus the gap's quarter point
+  - L445 ...and currencyRate(), a band's aim, stays on the US's rate
+  - L449 untied, tieMoney() is null
+  - L450 ...and tieRate() is the US's rate
+  - L453 a manager nobody handed a source is untied, and tieMoney() is null
+  - L454 ...with tieRate() the US's rate
+  - L456 tied with no money source, it is still null and the US's
+  - L457 ...and tieRate() the US's rate
+- **L465 8. the save: slot 148 is the anchor; a restored euro peg plays the same, and a save without the slot reads the US$**
+  - L470 fixture: a euro peg that has dealt for eight months and carries a support (
+  - L472 the array runs to slot 148, the peg's anchor (
+  - L473 slot 148 is the anchor's index, the euro's
+  - L474 slot 147 is still the hold's support
+  - L475 slot 76 is still the peg, now D$ per euro
+  - L479 restored, the anchor is the euro
+  - L480 ...the peg per euro is the saved one
+  - L481 ...and so is the rate held
+  - L482 ...and every slot reads back to the bit
+  - L486 fixture: both held the peg the next month
+  - L487 the next month, with the same rates and trade, the rate is the unsaved twin's
+  - L488 ...the deal
+  - L489 ...the support
+  - L490 ...the gap
+  - L491 ...and the shadow
+  - L495 a save cut to 148 slots, as WN4 wrote it, restores the US$ as the anchor, the peg still held
+  - L500 fixture: that save has no rate for the euro
+  - L501 a save whose slot 148 is the euro but whose euro rate is 0 restores the US$: a money with no rate cannot anchor a peg
+  - L503 fixture: the saved peg is D$ per euro,
+  - L505 ...the fallback keeps the peg: still a peg, on the US$
+  - L506 ...its held rate is the loaded rate, not the euro figure
+  - L507 ...and the peg per US$ is that rate
+  - L509 fixture: that peg held the next month
+  - L510 ...and held the loaded rate, as a US$ peg of that rate does
+  - L515 an anchor outside the eight reads the US$
+  - L518 ...and so does one that is not a number
+  - L520 reset() puts the anchor back on the US$
+  - L522 restoring a shorter save over a euro peg starts from the US$ (restore() resets first)
+- **L537 9. in a city (the full file): a trading town pegged to the euro holds the peg per euro, ties its dial to the euro area and says so**
+  - L546 fixture: the town has played until the eight have rates, on the US$ for its anchor and Lean
+  - L550 fixture: pegged to the euro at the day's cross, the peg per euro the rate times the euro's price
+  - L554 the decision log names the euro: \"
+  - L556 fixture: the dial is on the Inflation aim, so a tied dial is the anchor's rate plus the spread, and the euro area's rate is not the US's
+  - L574 three months on, the peg held (not broken)
+  - L575 each month the rate is the peg per euro over the euro's US$ price
+  - L576 ...the euro's price is the world's rate for it
+  - L577 ...the dial is the euro area's rate plus the spread, which is what tiedRate() gives
+  - L578 ...and tieRate() is the euro area's rate and tieMoney() EUR
+  - L584 a devaluation in the euro's money is logged in it: \"
+  - L588 moving the anchor under a peg re-pegs at the day's cross and says so: \"
+  - L590 ...the held rate did not move on the switch
+  - L593 ...and the next month's rate is the peg per pound over the pound's price
+  - L594 ...with the dial on the pound's rate as the month began with it
+- **L603 10. the review's two low notes: the hold's support is the held rate's log over the shadow in every held month; the dial's gap is read at ...**
+  - L618 fixture: a quiet euro peg on a deep vault held all
+  - L619 fixture: the hold's support took both signs and was never zero for want of work (
+  - L620 note 1: in every held month the support is the log of the held rate over the shadow to 1e-9 (worst
+  - L622 ...and it is as wide as the gap the hold paid for, inside the euro's whole swing (ln(1.06/.94)), the widest being
+  - L625 fixture: still a held peg for the dial's month
+  - L630 note 2: the month's rates handed, the shadow is still the last reprice's
+  - L631 ...and the dial's gap is that shadow over the held rate at the NEW euro: the peg per euro over
+  - L633 ...so a euro that rose a tenth moved the gap's ratio by a tenth
+  - L635 ...and the gap the reprice then measures is against that same held rate, with the shadow the reprice found
 
 ## PlanCheck.java - 224 labelled assertions
 
