@@ -30,3 +30,6 @@ The labour share by sector, a study (docs/queue/LS1.md). No model change.
   then LX1 (Luxury Retail's sales per post). Restaurants, Construction,
   Freight: gaps 0.3-0.5, both halves under 2x, no batch.
 - No trace moves (no model change): no ensemble.
+- Checks: `--pick` exit 0 (no harness reads the diff; the gate runs the
+  suite). The first pass exited 1 on line endings: seven of the first run's
+  files were written CRLF; stripped to LF, no content change.
