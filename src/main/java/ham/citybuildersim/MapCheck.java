@@ -392,6 +392,9 @@ import java.util.Map;
  *      was not needed); the links and plans kept after the months equal the chain planned whole from nothing (x 1, x 80), and the carry
  *      moved in months of x 80; and an own stamp (ownStamp()) kept against its key equals one worked out afresh, for every district whose
  *      key held, after every month on x 1, x 80, 5B and the played city.
+ *      (batch UP9, slice A) The lazy try backs off: a band whose lazy job failed hands none lazy at its next hand-out and gathers its inputs at
+ *      once, and after a quiet eager hand-out it hands the first jobs that could take their links lazy again (x 1, x 80, over the months); a
+ *      moved carry in makes the lazy try fail, the band eager for the next two epochs, and the epoch after a quiet one lazy (x 80).
  *  19. (batch WN2) THE BORDERS ON THE NEAR VIEW: on the world fixture, a box of the city's ground 8 km a side round Baarle-Nassau is crossed
  *      (NationsMap.crossing()) by the Belgium-Netherlands line and by every line that has a segment meeting it, each sampled a thousand times,
  *      and the same box round Rotterdam by none; the answer is kept for the same box and spot; planeBorders() of the Baarle lines on a 1,389 x 868
@@ -12600,6 +12603,11 @@ public class MapCheck {
         /** (batch UP5, slice A) The chain of the month: plan jobs handed out and the ms the worker spent on them (plans and pictures, run in turn); as adopt() kept them, the plans made, the links taken as they stood, the jobs that could do neither and the plans made that were not needed (CityMap.chainJobs()). */
         int handed;
         long madePlans, reusedLinks, failedJobs, wastedPlans;
+        /** (batch UP9, slice A) The month's plan jobs handed out lazy as the map counted them (CityMap.chainJobs()), and as the rounds below saw them handed (no input gathered, a link to take): the two are held equal. */
+        long lazyJobs;
+        int lazyHanded;
+        /** (batch UP9, slice A) Every plan job the month's rounds handed, in order, with how it came out (bandRules()). */
+        final java.util.List<BandJob> bandJobs = new ArrayList<>();
         double workerMs;
         /** (batch UP5, slice A) Links kept from before the month: re-made, and of those how many carried a different carry out; the built districts left with no current picture after the rounds. */
         int remade, carryMoved, staleAfter;
@@ -12781,6 +12789,10 @@ public class MapCheck {
                     if (j instanceof CityMap.PlanJob pj) {
                         r.handed++;
                         r.workerMs += pj.ms() + pj.pictureMs();
+                        // (batch UP9, slice A) How the job was handed out and how it came out, by the band of its district and the epoch it was made at; the round counted from the fixture's first.
+                        int jobKind = pj.old == null ? JOB_PLANNED : pj.in == null ? JOB_LAZY : JOB_EAGER;
+                        if (jobKind == JOB_LAZY) r.lazyHanded++;
+                        r.bandJobs.add(new BandJob(CityMap.band(pj.d.index), pj.epoch, all.size() * CHAIN_ROUNDS + round, jobKind, pj.failed, pj.reused));
                     }
                 }
                 long b0 = monthClock();
@@ -12794,6 +12806,7 @@ public class MapCheck {
             r.reusedLinks = jobs1[1] - jobs0[1];
             r.failedJobs = jobs1[2] - jobs0[2];
             r.wastedPlans = jobs1[3] - jobs0[3];
+            r.lazyJobs = jobs1[4] - jobs0[4];
             r.ownCalls = new long[] { own1[0] - own0[0], own1[1] - own0[1] };
             r.ownKept = m.ownStampsKept();
             if (linksBefore != null) {
@@ -13448,9 +13461,71 @@ public class MapCheck {
         }
         check("fixture: x 80 has months in which a district's carry on moved (the district after it had to be planned again) and months in which none did", carryFixture);
         check("every plan job the chain was handed was kept as a plan made, a link taken as it stood, or a job that could do neither (x 1, x 80)", jobsCounted);
+        // The lazy try backs off (batch UP9, slice A): the map's count of the jobs it handed out lazy is the rounds' own, and a band's hand-outs keep to the two rules (bandRules()).
+        int[] bandsX80 = null;
+        for (Redraw w : new Redraw[] { x1, x80 }) {
+            boolean lazyCounted = true;
+            long lazyAll = 0;
+            for (RedrawMonth r : w.all) {
+                lazyCounted &= r.lazyJobs == r.lazyHanded;
+                lazyAll += r.lazyJobs;
+            }
+            int[] rules = bandRules(w);
+            if (w == x80) bandsX80 = rules;
+            out.printf("      %s, %d months: %d plan jobs handed out lazy; %d band hand-outs, %d after one with a lazy job that failed (%d of them handing a lazy job), %d after a quiet eager one that handed a job that could take its link (%d of them handing it eager first)%n",
+                    w.name, w.all.size(), lazyAll, rules[0], rules[1], rules[2], rules[3], rules[4]);
+            check("the jobs the map counts as handed out lazy are the plan jobs the month's rounds were handed with no input and a link to take, every month on " + w.name, lazyCounted);
+            check("a band whose lazy job failed hands none lazy at its next hand-out: " + rules[1] + " such hand-outs on " + w.name + ", " + rules[2] + " lazy again", rules[2] == 0);
+            check("a band that had a quiet eager hand-out (a job that took its link, none that failed, none that planned) hands the first round of jobs that could take their links lazy at its next: "
+                    + rules[3] + " such hand-outs on " + w.name + ", " + rules[4] + " eager first", rules[4] == 0);
+        }
+        check("fixture: x 80 has a band whose lazy job failed and that was handed out again (" + bandsX80[1] + " such hand-outs), so the back-off is tried", bandsX80[1] >= 1);
         // A district's link let go and nothing else moved: the early exit in its plain case, against the links of every district after it let go.
         int quietAt = x80.m.districts().size() / 4;
         while (quietAt < x80.m.districts().size() - 1 && x80.m.districts().get(quietAt).usedCells() <= 0) quietAt++;
+        // The lazy try backs off (batch UP9, slice A): a band whose lazy try failed gathers its inputs at once, and tries lazy again after a quiet epoch.
+        // A warm-up round first, which leaves the band lazy for the next epoch (a band eager from the months has this quiet epoch to go lazy on).
+        double[] warmUp = quietChain(x80.m, quietAt, false);
+        check("fixture: x 80's band, with the link of district " + quietAt + " let go and nothing else moved, takes every link and leaves every picture current (a warm-up round: "
+                + (int) warmUp[4] + " jobs that could not take their links, " + (int) warmUp[8] + " pictures not current)", warmUp[4] == 0 && warmUp[8] == 0);
+        // The district whose carry in is moved: the first used one after quietAt in its band whose link has a carry in.
+        java.util.Map<CityMap.District, Object[]> linksNow = x80.m.linkSnapshot();
+        CityMap.District dq = null;
+        for (int i = quietAt + 1; i < Math.min(x80.m.districts().size(), (CityMap.band(quietAt) + 1) * CityMap.CHAIN_BAND); i++) {
+            CityMap.District d = x80.m.districts().get(i);
+            Object[] link = linksNow.get(d);
+            if (d.usedCells() > 0 && link != null && link[1] != null && ((int[]) link[1]).length > 0) {
+                dq = d;
+                break;
+            }
+        }
+        check("fixture: x 80 has a used district after district " + quietAt + " in its band whose link has a carry in, to move", dq != null);
+        double[] carryRound = new double[10], eagerRound = new double[10], quietEager = new double[10];
+        boolean offAfterMove = false, offAfterEager = false, offAfterQuiet = false;
+        if (dq != null) {
+            x80.m.carryMoves(dq);
+            carryRound = quietChain(x80.m, quietAt, false);
+            offAfterMove = x80.m.backingOff(dq);
+            eagerRound = quietChain(x80.m, quietAt, false);
+            offAfterEager = x80.m.backingOff(dq);
+            quietEager = quietChain(x80.m, quietAt, false);
+            offAfterQuiet = x80.m.backingOff(dq);
+        }
+        out.printf("      x 80, the carry in of district %d moved (its band's districts %d to %d), the link of district %d let go: %.0f plan jobs (%.0f lazy), %.0f plans made, %.0f jobs that could not take their links, %.0f pictures not current, eager after %b;"
+                + " the next epoch: %.0f jobs (%.0f lazy), %.0f made, %.0f taken, %.0f failed, %.0f plans not needed, %.0f pictures not current, eager after %b;"
+                + " the next, nothing moved: %.0f jobs (%.0f lazy), %.0f made, %.0f taken, %.0f failed, %.0f pictures not current, eager after %b; the bands handed jobs: %.0f, %.0f, %.0f%n",
+                dq == null ? -1 : dq.index, CityMap.band(quietAt) * CityMap.CHAIN_BAND, Math.min(x80.m.districts().size(), (CityMap.band(quietAt) + 1) * CityMap.CHAIN_BAND) - 1, quietAt,
+                carryRound[0], carryRound[1], carryRound[2], carryRound[4], carryRound[8], offAfterMove, eagerRound[0], eagerRound[1], eagerRound[2], eagerRound[3], eagerRound[4], eagerRound[5], eagerRound[8], offAfterEager,
+                quietEager[0], quietEager[1], quietEager[2], quietEager[3], quietEager[4], quietEager[8], offAfterQuiet, carryRound[9], eagerRound[9], quietEager[9]);
+        check("a link whose carry in is not the one arriving makes the lazy try fail, and the band hands its jobs out with the input gathered from then on: a district's carry in moved, one link let go,"
+                + " " + (int) carryRound[1] + " jobs handed lazy, " + (int) carryRound[2] + " plan made, " + (int) carryRound[4] + " jobs that could not take their links, " + (int) carryRound[8] + " pictures not current, the band backing off (x 80)",
+                carryRound[1] >= 1 && carryRound[2] == 1 && carryRound[4] >= 1 && carryRound[8] >= 1 && offAfterMove);
+        check("...at the next epoch none is handed lazy and none fails: the plans of the district let go and of the one whose link carried the other carry in are made (" + (int) eagerRound[2] + "), the rest taken ("
+                + (int) eagerRound[3] + " of " + (int) eagerRound[0] + "), none not needed, every picture current, and the band backs off still",
+                eagerRound[1] == 0 && eagerRound[4] == 0 && eagerRound[2] == 2 && eagerRound[3] == eagerRound[0] - 2 && eagerRound[5] == 0 && eagerRound[8] == 0 && offAfterEager);
+        check("...and at the epoch after, in which nothing moved but the link let go: none lazy, only that plan made (" + (int) quietEager[2] + "), the rest taken (" + (int) quietEager[3] + " of " + (int) quietEager[0]
+                + "), none failed, every picture current - and the band backs off until the epoch after that",
+                quietEager[1] == 0 && quietEager[2] == 1 && quietEager[3] == quietEager[0] - 1 && quietEager[4] == 0 && quietEager[8] == 0 && offAfterQuiet);
         double[] quiet = quietChain(x80.m, quietAt, false), noExit = quietChain(x80.m, quietAt, true);
         out.printf("      x 80, the link of district %d of %d let go, nothing else moved: %.0f plan jobs handed out (%.0f lazy, no input gathered), %.0f plans made, %.0f links taken, %.0f jobs that could do neither, %.0f plans not needed; the worker %.1f ms,"
                 + " the FX side %.2f ms; against the links of districts %d to %d let go: %.0f plan jobs, %.0f plans made, %.0f links taken; the worker %.1f ms, the FX side %.2f ms%n", quietAt, x80.m.districts().size(),
@@ -13460,6 +13535,8 @@ public class MapCheck {
                 quiet[0] > 2 && quiet[1] == quiet[0] - 1 && quiet[2] == 1 && quiet[3] == quiet[0] - 1 && quiet[4] == 0 && quiet[5] == 0 && quiet[8] == 0);
         check("...the links of every district after it gone too, it plans each one (the chain before the early exit), the same pictures current: " + (int) noExit[2] + " plans made (x 80)",
                 noExit[0] == quiet[0] && noExit[1] == 0 && noExit[2] == noExit[0] && noExit[3] == 0 && noExit[8] == 0 && quiet[6] * 4 < noExit[6]);
+        check("a band that had a quiet eager epoch is lazy again at the next, and stays lazy while nothing fails (the chain that let its link go handed its jobs lazy, and the one that let every link go planned each): the band backs off no longer",
+                dq != null && !x80.m.backingOff(dq));
         for (Redraw w : new Redraw[] { x1, x80 }) {
             int[] whole = chainEqualsWhole(w);
             out.printf("      %s: %d links and %d plans kept after %d months, planned again from nothing: %d links and %d plans differ%n", w.name, whole[0], whole[3], w.all.size(), whole[1], whole[2]);
@@ -13580,11 +13657,66 @@ public class MapCheck {
         }
     }
 
+    /** How a plan job was handed out (batch UP9, slice A): lazy (no input gathered, a link to take), eager with a link to take, or to be planned (no link to take: the first that broke, a district whose own stamp moved). */
+    static final int JOB_LAZY = 0, JOB_EAGER = 1, JOB_PLANNED = 2;
+
+    /** A plan job a month's round handed out and how it came out (batch UP9, slice A): the band of its district, the epoch it was made at, the round (counted from the fixture's first month's), its kind (JOB_*), and whether it made no plan (failed) or took its link (reused). */
+    record BandJob(int band, long epoch, int round, int kind, boolean failed, boolean reused) { }
+
+    /**
+     * The band log of a fixture's months (batch UP9, slice A; check 6b): the plan jobs its rounds handed out, grouped by (band, epoch) into one
+     * hand-out per band at each epoch (rounds at the same epoch merge), and each band's hand-outs taken in turn against the one before it.
+     * (i) After a hand-out with a lazy job that failed, the band hands no lazy job at all. (ii) After a quiet eager one - an eager job that could take
+     * its link, no job that failed, every such job having taken its link - the first round that hands the band a job that could take its link hands
+     * none eager. Returns {hand-outs, those that follow one with a failed lazy job (i's premises), of them those that hand a lazy job, those that
+     * follow a quiet eager one and hand a job that could take its link (ii's premises), of them those whose first such round hands an eager one}.
+     */
+    static int[] bandRules(Redraw w) {
+        java.util.Map<Integer, java.util.List<java.util.List<BandJob>>> byBand = new java.util.TreeMap<>();
+        for (RedrawMonth r : w.all) {
+            for (BandJob bj : r.bandJobs) {
+                java.util.List<java.util.List<BandJob>> outs = byBand.computeIfAbsent(bj.band(), k -> new ArrayList<>());
+                if (outs.isEmpty() || outs.get(outs.size() - 1).get(0).epoch() != bj.epoch()) outs.add(new ArrayList<>());
+                outs.get(outs.size() - 1).add(bj);
+            }
+        }
+        int handOuts = 0, afterFailed = 0, lazyAgain = 0, afterQuiet = 0, eagerFirst = 0;
+        for (java.util.List<java.util.List<BandJob>> outs : byBand.values()) {
+            for (int h = 0; h < outs.size(); h++) {
+                handOuts++;
+                if (h == 0) continue;
+                boolean failedLazy = false, anyFailed = false, eager = false, allTook = true;
+                for (BandJob bj : outs.get(h - 1)) {
+                    if (bj.failed()) anyFailed = true;
+                    if (bj.failed() && bj.kind() == JOB_LAZY) failedLazy = true;
+                    if (bj.kind() == JOB_EAGER) {
+                        eager = true;
+                        allTook &= bj.reused();
+                    }
+                }
+                java.util.List<BandJob> now = outs.get(h);
+                if (failedLazy) {
+                    afterFailed++;
+                    for (BandJob bj : now) if (bj.kind() == JOB_LAZY) { lazyAgain++; break; }
+                }
+                if (eager && !anyFailed && allTook) {
+                    int first = -1;
+                    for (BandJob bj : now) if (bj.kind() != JOB_PLANNED) { first = bj.round(); break; }
+                    if (first >= 0) {
+                        afterQuiet++;
+                        for (BandJob bj : now) if (bj.round() == first && bj.kind() == JOB_EAGER) { eagerFirst++; break; }
+                    }
+                }
+            }
+        }
+        return new int[] { handOuts, afterFailed, lazyAgain, afterQuiet, eagerFirst };
+    }
+
     /**
      * The chain asked for the picture of every built district after links were let go and nothing else moved (batch UP5, check 6b), as the far
      * view asks: the link of district `at` alone, or (`all`) of every district from it on - the chain then plans each, as it planned every one
      * after the first that broke before the early exit. Returns {plan jobs handed out, those handed out lazy, plans made, links taken, jobs that
-     * could do neither, plans not needed, the worker's ms, the FX side's ms (handing out and adopting), built districts with no current picture}.
+     * could do neither, plans not needed, the worker's ms, the FX side's ms (handing out and adopting), built districts with no current picture, and (UP9) the bands the plan jobs were handed out in}.
      */
     static double[] quietChain(CityMap m, int at, boolean all) {
         java.util.List<CityMap.District> ds = m.districts();
@@ -13597,11 +13729,13 @@ public class MapCheck {
         long t1 = System.nanoTime();
         int handed = 0, lazy = 0;
         double workerMs = 0;
+        java.util.Set<Integer> handedBands = new java.util.HashSet<>();
         for (CityMap.Job j : jobs) {
             j.run();
             if (j instanceof CityMap.PlanJob pj) {
                 handed++;
                 if (pj.in == null) lazy++;
+                handedBands.add(CityMap.band(pj.d.index));
                 workerMs += pj.ms() + pj.pictureMs();
             }
         }
@@ -13611,7 +13745,7 @@ public class MapCheck {
         long[] j1 = m.chainJobs();
         int stale = 0;
         for (CityMap.District d : ds) if (d.usedCells() > 0 && m.pictureIfCurrent(d) == null) stale++;
-        return new double[] { handed, lazy, j1[0] - j0[0], j1[1] - j0[1], j1[2] - j0[2], j1[3] - j0[3], workerMs, ((t1 - t0) + (t3 - t2)) / 1e6, stale };
+        return new double[] { handed, lazy, j1[0] - j0[0], j1[1] - j0[1], j1[2] - j0[2], j1[3] - j0[3], workerMs, ((t1 - t0) + (t3 - t2)) / 1e6, stale, handedBands.size() };
     }
 
     /** A plan as the painter reads it, hashed all through (batch UP5, check 6b): what two plans of one district are compared by. */
@@ -13722,11 +13856,12 @@ public class MapCheck {
                     w.name, medianInt(lt), medianInt(lh), medianInt(lm), median18(lk), worst18(lk), median18(li), worst18(li));
         }
         // (batch UP5, slice A) The chain a month: plan jobs handed out, the plans made and the links taken as they stood, the worker's ms and the chain's FX side; the own stamps asked and worked out.
-        java.util.List<Integer> jh = new ArrayList<>(), jp = new ArrayList<>(), jr = new ArrayList<>(), jf = new ArrayList<>(), oa = new ArrayList<>(), om = new ArrayList<>();
+        java.util.List<Integer> jh = new ArrayList<>(), jl = new ArrayList<>(), jp = new ArrayList<>(), jr = new ArrayList<>(), jf = new ArrayList<>(), oa = new ArrayList<>(), om = new ArrayList<>();
         java.util.List<Double> jw = new ArrayList<>(), jfx = new ArrayList<>();
         for (RedrawMonth r : w.all) {
             if (r.kind == SETTLE || !r.timed) continue;
             jh.add(r.handed);
+            jl.add((int) r.lazyJobs);
             jp.add((int) r.madePlans);
             jr.add((int) r.reusedLinks);
             jf.add((int) r.failedJobs);
@@ -13735,8 +13870,8 @@ public class MapCheck {
             oa.add((int) r.ownCalls[0]);
             om.add((int) r.ownCalls[1]);
         }
-        out.printf("      %s: the chain (batch UP5), a month's median: %d plan jobs handed out, %d plans made, %d links taken as they stood, %d jobs that could do neither; the worker %.1f ms, the chain's FX side %.2f ms (worst %.2f); own stamps asked %d, worked out %d%n",
-                w.name, medianInt(jh), medianInt(jp), medianInt(jr), medianInt(jf), median18(jw), median18(jfx), worst18(jfx), medianInt(oa), medianInt(om));
+        out.printf("      %s: the chain (batch UP5), a month's median: %d plan jobs handed out (%d lazy), %d plans made, %d links taken as they stood, %d jobs that could do neither; the worker %.1f ms, the chain's FX side %.2f ms (worst %.2f); own stamps asked %d, worked out %d%n",
+                w.name, medianInt(jh), medianInt(jl), medianInt(jp), medianInt(jr), medianInt(jf), median18(jw), median18(jfx), worst18(jfx), medianInt(oa), medianInt(om));
     }
 
     /* =====================================================================
