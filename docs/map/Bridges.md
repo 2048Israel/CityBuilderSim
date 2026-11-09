@@ -21,7 +21,7 @@
 
 **Uses:** [BridgeWorks](BridgeWorks.md) (3), [Landmasses](Landmasses.md) (1), [BridgeSurvey](BridgeSurvey.md) (1)
 
-**Used by (9):** [AutoBuilder](AutoBuilder.md), [BridgeCheck](BridgeCheck.md), [BuildAdvice](BuildAdvice.md), [DataSave](DataSave.md), [Game](Game.md), [LandManager](LandManager.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md)
+**Used by (10):** [AutoBuilder](AutoBuilder.md), [BridgeCheck](BridgeCheck.md), [BuildAdvice](BuildAdvice.md), [DataSave](DataSave.md), [Game](Game.md), [IslandLinkCheck](IslandLinkCheck.md), [LandManager](LandManager.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md)
 
 ## Sections
 

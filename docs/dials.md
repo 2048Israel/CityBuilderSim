@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**5,622 constants in 532 files.**
+**5,631 constants in 533 files.**
 
 ## model (2705 constants)
 
@@ -5385,7 +5385,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 748 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1028 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1519 constants)
+## harnesses (1528 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -6332,6 +6332,19 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 2009 | `InvestCheck.AHEAD_MONTHS` | `360` | Months the playtest's city is played with every order watched. |
 
+### IslandLinkCheck.java ([map](map/IslandLinkCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 60 | `IslandLinkCheck.out` | `System.out` |  |
+| 63 | `IslandLinkCheck.SEED` | `Founding.DEFAULT_WORLD_SEED` | The seed every world here is drawn with: the default world's. |
+| 66 | `IslandLinkCheck.ROOM_MONTHS` | `12` | Months a city with room is played in section 4: 12. |
+| 69 | `IslandLinkCheck.BRIDGE_MONTHS` | `800` | Most months a bridge is given to stand on two builders' depots: 800 (BridgeCheck allows 600 for the same fixture). |
+| 72 | `IslandLinkCheck.RUN_MONTHS` | `240` | Months the played Earth run and the generated world run in section 9: 240. |
+| 75 | `IslandLinkCheck.LINKS_LABEL` | `"Island links"` | The label the auto-builder enters its island links under in its log (AutoBuilder's, private). |
+| 105 | `IslandLinkCheck.CUE_PASSES` | `1` | Passes whose orders must meet the ground short, in a stretch of months with the ground cut low before each, for "the next passes order no second link" to mean something: 1 (the village orders only ... |
+| 108 | `IslandLinkCheck.CUE_MONTHS` | `120` | Most months such a stretch is given to meet CUE_PASSES: 120. |
+
 ### IslandNetCheck.java ([map](map/IslandNetCheck.md))
 
 | line | constant | value | says |
@@ -6472,12 +6485,13 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 125 | `LandmassCheck.SQUARE` | `64` | The side of an island square, in plots. |
 | 128 | `LandmassCheck.RLAT` | `51.90625, RLON = 4.48125` | Rotterdam, the fixture's window: where the city is founded. |
 | 131 | `LandmassCheck.ON_THE_ISLAND` | `{ { 51.77, 4.15 }, { 51.75, 4.20 }, { 51.80, 4.10 } }` | Where a city on Goeree-Overflakkee is founded (the mainland is then across the water): candidate spots, the first that serves. |
-| 1009 | `LandmassCheck.FOOTHILL_X` | `376_640, FOOTHILL_Y = 375_616` | A square of home's ground in the Ardennes' foothills, 38 tiles south-west of Rotterdam (found by a scan of the fixture; its foothill count is a premise below). |
-| 1518 | `LandmassCheck.TERMINAL_MONTHS` | `400` | Months a General Cargo Terminal is given to stand on a city's builders: 400. |
-| 1524 | `LandmassCheck.HOME_COAST_SHORE` | `90` | Shore plots the square of home's open coast must hold in section 10: 90. |
-| 1527 | `LandmassCheck.GROWN_MONTHS` | `480` | Months section 12 runs after its two terminals are ordered: 480 (it was 96, for terminals of 35,000 points; see TERMINAL_MONTHS). |
-| 1558 | `LandmassCheck.GSON` | `new com.google.gson.Gson()` |  |
-| 3198 | `LandmassCheck.RUN_MONTHS` | `1200` | The months the Rotterdam run plays. |
+| 1010 | `LandmassCheck.FOOTHILL_X` | `376_640, FOOTHILL_Y = 375_616` | A square of home's ground in the Ardennes' foothills, 38 tiles south-west of Rotterdam (found by a scan of the fixture; its foothill count is a premise below). |
+| 1519 | `LandmassCheck.TERMINAL_MONTHS` | `400` | Months a General Cargo Terminal is given to stand on a city's builders: 400. |
+| 1525 | `LandmassCheck.HOME_COAST_SHORE` | `90` | Shore plots the square of home's open coast must hold in section 10: 90. |
+| 1528 | `LandmassCheck.GROWN_MONTHS` | `480` | Months section 12 runs after its two terminals are ordered: 480 (it was 96, for terminals of 35,000 points; see TERMINAL_MONTHS). |
+| 1559 | `LandmassCheck.GSON` | `new com.google.gson.Gson()` |  |
+| 3195 | `LandmassCheck.SHORT_MONTHS` | `24` | Months section 12's short-ground twin is given to meet an order short of ground and order the island's link: 24, as the section's first stretch. |
+| 3261 | `LandmassCheck.RUN_MONTHS` | `1200` | The months the Rotterdam run plays. |
 
 ### LongPlaytest.java ([map](map/LongPlaytest.md))
 
