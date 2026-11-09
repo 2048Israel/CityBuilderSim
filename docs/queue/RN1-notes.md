@@ -102,3 +102,25 @@ Built on origin/main 27801328 (MW1 merged). Baseline: docs/ensemble/0.9.57.md
   or over one household a door. Recommendation: a batch of its own that
   makes it a margin over demand, with the ensemble, since it moves rents
   in every city; not RN1's (its brief puts the planner out of scope).
+
+## The ensemble (3b311cca, 80/80, no data files; docs/ensemble/RN1.md)
+
+- **24/26 against 0.9.57's 23/26.** S1 PASS (excess 1.71% [0.45 to 8.11],
+  16/16 within the currency's fall plus the tolerance); R3 PASS (median
+  -2.80% [-6.05 to 1.05], one seed above +1 pt, against three); A1, H1, H2,
+  K1, K2, R1, R2, T1, M1, F1 PASS, pairing 64/64. A2 FAIL as before (11
+  [8 to 14]). T2's AUTO2 is 557,672 against 538,393.
+- **★ A3 goes red by one month in one seed** (the longest spell of yoy under
+  -10%: 12 against the bound's under 12; final/peak population 100%). Seed 4
+  alone: RN1's spell m970-981 is 12 months, main's (27801328, the same seed,
+  run here) 11, ending m980; 0.9.57's top was 11. The traces part at ~m968,
+  rent first (.05343 against .05355, -0.2%), so yoy -.0957 against -.0949.
+  In that deflation the debt is nominal while the required return deflates,
+  so the carry lift is above one, and RN1's rule withholds it from the
+  glutted leg: RN1's own mechanism working as briefed, not main's fault.
+  The deflation is main's: the policy rate sits at 0 from m969 and yoy
+  reaches -15%. No rule makes an ensemble red block a batch.
+  Recommendation: ship, A3's red accepted (it is Jerus's rule, a glut's
+  empty flats the landlord's loss, and costs one month of sixteen seeds'),
+  and the deflation at the zero bound studied in a batch of its own (RN1-A).
+- **Process lines:** none; RN1 changes no script, check machinery or rule.
