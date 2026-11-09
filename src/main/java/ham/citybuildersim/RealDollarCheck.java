@@ -36,6 +36,9 @@ import java.util.function.Supplier;
  *      Historical one carried past a euro) is chained - RealDollar.moneyChain is [rate then / rate now] x [the US's prices then / now] x [its prices now /
  *      then] for the year it changed - so that its real rate is held across the year; the town's real effective rate with trade on it alone is the chained
  *      reading and not the old one; a nation that never changed reads as it did, to the bit.
+ *   8. THE HAND-OVER (MW1, WN4-W): a world saved on the US's path and loaded without the file walks on with its trend starting at the level it is handed,
+ *      not at 1 - so it is not pulled back toward 1 (the pre-MW1 walk is built from the same array and falls short of it); a world that never had a path,
+ *      and an older save's array, are as they were; a real city saved on the path and loaded on the literals does the same.
  */
 public class RealDollarCheck {
 
@@ -114,6 +117,7 @@ public class RealDollarCheck {
         realEffectiveRate();
         theShock();
         changeOfMoney();
+        walkOnFromThePath();
         out.printf("%nRealDollarCheck took %.1f s%n", (System.nanoTime() - start) / 1e9);
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -421,7 +425,7 @@ public class RealDollarCheck {
         tally("on the path the next 60 months keep the shock: the level is 1.3 times the path's every month, nothing pulls it back", kept);
         close("...a year on, the realised inflation is the path's again", shocked.realisedInflation(), plain.realisedInflation(), 1e-12);
         double[] saved = shocked.toSaveArray();
-        assertTrue("the factor is saved in the slot after the mean", saved[saved.length - 1] == 1.3 && saved[saved.length - 2] == shocked.getMeanInflation());
+        assertTrue("the factor is saved in the slot after the mean", saved[4 + WorldEconomy.LEVEL_RING] == 1.3 && saved[3 + WorldEconomy.LEVEL_RING] == shocked.getMeanInflation());
         WorldEconomy back = new WorldEconomy();
         back.followUsPath(GROWING);
         back.restore(saved);
@@ -430,7 +434,7 @@ public class RealDollarCheck {
         assertTrue("...and a world restored from it, handed the path, steps on to the bit", same(back.getPriceLevel(), shocked.getPriceLevel()) && back.getLevelFactor() == 1.3);
         WorldEconomy older = new WorldEconomy();
         older.followUsPath(GROWING);
-        older.restore(Arrays.copyOf(saved, saved.length - 1));
+        older.restore(Arrays.copyOf(saved, 4 + WorldEconomy.LEVEL_RING));
         plain.advanceMonth(91);
         older.advanceMonth(91);
         assertTrue("an array without the slot (an older save's) reads a factor of 1", older.getLevelFactor() == 1 && same(older.getPriceLevel(), plain.getPriceLevel()));
@@ -603,5 +607,101 @@ public class RealDollarCheck {
             assertTrue(label + ": " + who + " never changed, so its chain is exactly 1", same(chain, 1.0) && same(RealDollar.moneyChain(nations, usa, n, yearNow), 1.0));
             assertTrue(label + ": ...and the town's real effective rate with trade on it alone is the old reading to the bit (" + String.format("%.6f", got) + ")", same(got, read) && same(got, want));
         }
+    }
+
+    /* ----------------------------------------------------------------- 8 */
+
+    /** The months from..to, one advanceMonth each (on the path or the walk, as the world stands). */
+    static void advance(WorldEconomy w, int from, int to) {
+        for (int m = from; m <= to; m++) w.advanceMonth(m);
+    }
+
+    static void walkOnFromThePath() {
+        out.println("--- 8. a city saved on the US's path and loaded without the file walks on from its level (MW1) ---");
+        final int ring = WorldEconomy.LEVEL_RING;
+        final int lastOnPath = 601, walked = 120;
+        WorldEconomy following = new WorldEconomy();
+        following.followUsPath(GROWING);
+        advance(following, 2, lastOnPath);
+        double handed = following.getPriceLevel();
+        double[] saved = following.toSaveArray();
+        assertTrue(String.format("fixture: 600 months on the path leave the level at %.4f, well above the trend line's %.4f, and the array says the last month was on it", handed, following.trendLevel()),
+                handed > 2 * following.trendLevel() && saved[7 + ring] == 1 && saved[5 + ring] == 1 && saved[6 + ring] == 0);
+
+        // (a) The walk takes the level it is handed as its trend.
+        WorldEconomy walker = new WorldEconomy();
+        walker.restore(saved);
+        assertTrue("restored with no path, the world is not on it", !walker.isOnUsPath());
+        walker.advanceMonth(lastOnPath + 1);
+        assertTrue("(a) the first walked month starts the trend where the walk is handed the level: trendLevel() is the level it was saved at, to the bit", same(walker.trendLevel(), handed));
+        advance(walker, lastOnPath + 2, lastOnPath + walked);
+        double[] unit = saved.clone();
+        unit[0] = 1;
+        WorldEconomy twin = new WorldEconomy();
+        twin.restore(unit);
+        advance(twin, lastOnPath + 1, lastOnPath + walked);
+        close("(a) ...and 120 months on its level is the level it was handed times the walk's own from level 1 (the step is linear in the level and the trend's base), relative", walker.getPriceLevel() / (handed * twin.getPriceLevel()), 1, 1e-9);
+
+        // (b) The walk before MW1: the same array with the flag off, so the trend's base stays 1.
+        double[] before = saved.clone();
+        before[7 + ring] = 0;
+        WorldEconomy drifted = new WorldEconomy();
+        drifted.restore(before);
+        advance(drifted, lastOnPath + 1, lastOnPath + walked);
+        double shortBy = walker.getPriceLevel() - drifted.getPriceLevel();
+        double half = .5 * (handed - 1) * (1 - Math.pow(1 - WorldEconomy.TREND_PULL, walked));
+        out.printf("   handed %.4f; %d months on, the walk from it stands at %.4f, the same walk from level 1 at %.4f, the pre-MW1 walk (pulled to 1) at %.4f%n", handed, walked,
+                walker.getPriceLevel(), twin.getPriceLevel(), drifted.getPriceLevel());
+        assertTrue(String.format("(b) the pre-MW1 walk (the same array, the hand-over flag off) falls short of it by %.4f, at least half of the pull's work on the gap, %.4f", shortBy, half), shortBy >= half);
+
+        // (c) A world that never had a path is the walk it was.
+        WorldEconomy bare = new WorldEconomy();
+        advance(bare, 1, 300);
+        double[] kept = bare.toSaveArray();
+        assertTrue("(c) a world that never had a path saves its trend as it began: base 1, start 0, the flag off", kept[5 + ring] == 1 && kept[6 + ring] == 0 && kept[7 + ring] == 0);
+        WorldEconomy again = new WorldEconomy();
+        again.restore(kept);
+        Tally steps = new Tally();
+        for (int m = 301; m <= 360; m++) {
+            bare.advanceMonth(m);
+            again.advanceMonth(m);
+            final int month = m;
+            double line = Math.pow(1 + WorldEconomy.TREND_INFLATION, (kept[2] + m - 300) / 12.0);
+            steps.see(same(bare.getPriceLevel(), again.getPriceLevel()) && same(bare.getInflation(), again.getInflation())
+                    && same(bare.trendLevel(), line) && same(again.trendLevel(), line), () -> "month " + month);
+        }
+        tally("(c) saved after 300 months and restored, the walk goes on to the bit for 60: level, inflation and the trend line, which is the flat one", steps);
+        out.printf("   a world with no path: after 360 months its level is %.4f and its trend line %.4f%n", bare.getPriceLevel(), bare.trendLevel());
+
+        // (d) An older save's array.
+        WorldEconomy older = new WorldEconomy();
+        older.restore(Arrays.copyOf(saved, 5 + ring));
+        older.advanceMonth(lastOnPath + 1);
+        double olderLine = Math.pow(1 + WorldEconomy.TREND_INFLATION, (saved[2] + 1) / 12.0);
+        assertTrue(String.format("(d) an array cut to 5+RING (an older save's) restores the trend's base 1 from month 0 and no hand-over: a month on, trendLevel() is the line's %.4f, not the level %.4f", older.trendLevel(), handed),
+                same(older.trendLevel(), olderLine) && !same(older.trendLevel(), handed));
+
+        // (e) A real city.
+        Path file = WorldData.locate();
+        if (file == null) {
+            out.println("  world-1.bin not named (-D" + WorldData.PROPERTY + "=<path>) nor at " + WorldData.DATA_FILE + ": part (e) did not run");
+            return;
+        }
+        Game g = town("realdollar-handover", Founding.defaults());
+        play(g);
+        play(g);
+        double atSave = g.getWorldEconomy().getPriceLevel();
+        assertTrue(String.format("(e) fixture: a city on the world file, two months played, is on the path with its level at %.6f, not the trend's 1", atSave),
+                g.getWorldEconomy().isOnUsPath() && atSave != 1 && atSave > 0);
+        assertTrue("(e) ...saved to its own scratch folder", g.saveGame(2, "the hand-over").ok);
+        Game back = new Game(g.getGameFiles());
+        back.playOnLiterals();
+        quietly(() -> back.loadGameSave(2));
+        WorldEconomy bw = back.getWorldEconomy();
+        assertTrue("(e) ...loaded on the literals, it holds the level it was saved at and is not on the path", same(bw.getPriceLevel(), atSave) && !bw.isOnUsPath());
+        play(back);
+        play(back);
+        out.printf("   the city saved at level %.6f; two walked months on the literals, its level is %.6f and its trend line %.6f%n", atSave, bw.getPriceLevel(), bw.trendLevel());
+        assertTrue("(e) ...two months on the walk it is still off the path and its trend line is the level it was loaded at, to the bit (not 1)", !bw.isOnUsPath() && same(bw.trendLevel(), atSave));
     }
 }

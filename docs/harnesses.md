@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**187 harness files, 22,087 labelled assertions.** AllChecks runs 187 of them.
+**187 harness files, 22,095 labelled assertions.** AllChecks runs 187 of them.
 
 ## Which harnesses read which class
 
@@ -21920,7 +21920,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2236 fixture: a city on the file has a market, solved for the year it is in, and a trade by partner that has seen a year turn
   - L2256 reading the world market and the trade by partner fifty times changed nothing (
 
-## RealDollarCheck.java - 54 labelled assertions
+## RealDollarCheck.java - 62 labelled assertions
 
 > The two US dollars (batch WN4, D29; spec-nations 10 item 29, spec-exchange-rates 3.9): the in-game US$ inflating on the US's path, and the real US$ of
 > 2015 the city's real GDP and a rate are shown in, for comparison only.
@@ -21936,67 +21936,76 @@ _(this harness does not label its checks through a helper - it prints its findin
 >      inflation is the level over the level a year ago; on Historical the Januaries equal the file's US CPI over 2000's; a pinned world holds; a
 > ...
 
-- **L140 1. the in-game US$ is the US's: its prices follow the nations' path**
-  - L198 Historical: the Januaries are the file's US CPI over 2000's
-  - L209 a pinned world holds still on the path: 14 months, level 1 to the bit, the path handed all the same
-- **L216 2. no world file, the walk: a city on the literals walks as WorldEconomy always did**
-  - L230 the city's level is the bare WorldEconomy's at the default mean over the same months, to the bit
-  - L231 ...and so are its headline and its realised inflation
-  - L232 ...with no world's moneys and no path: the dollar is the walk
-  - L233 ...and the walk's mean is the default's, which nothing offers a choice of now
-- **L240 3. D$ per 2015 US$ is the rate times the US$'s prices since founding, over the bridge**
-  - L241 a fixture: at 1.25 D$ a US$ and prices 1.6 times founding's, a real 2015 US$ costs 2 D$ of founding's dollars: 2 over the bridge
-  - L242 ...at founding (level 1) it is the rate over the bridge
-  - L243 ...and NaN for a rate or a level that is not a positive number
-  - L247 a city founds at ForeignAccounts.OPENING_RATE (
-  - L249 ...so at founding the D$ per 2015 US$ is that rate over the bridge
-  - L251 after 24 months it is the foreign accounts' rate times the world's level, over the bridge
-  - L253 ...a number the city's prices moved (the level is no longer 1)
-- **L259 4. real GDP in 2015 US$ is the GDP over the price index over the founding's rate, times the bridge**
-  - L260 a fixture: D$120M a month at an index of 1.2 and a founding rate of 1 is 100M founding US$, 100M times the bridge in real 2015 US$
-  - L261 ...at a founding rate of 2 D$ a US$, 50M times the bridge
-  - L262 ...at an index of 1 and OPENING_RATE it is the GDP times the bridge
-  - L263 ...and NaN for an index or a rate that is not positive
-- **L276 5. the real effective rate: 100 at founding, the BIS's way**
-  - L278 a fixture: at founding (the rate, the prices and the partners' moneys where they were) it reads 100
-  - L280 the city's prices rise 10% and nothing else moves: 110
-  - L281 ...against partners alike, whatever their weights
-  - L283 the D$ falls 10% against the US$ (the rate up by 1/.9) and nothing else moves: 90
-  - L284 a partner's money rises 10% against the US$ (its units a US$ down by 1.1) with half the weight, the US$ the other half: 100 x 1.1^-.5, the other way
-  - L287 a partner's prices rise 10% (the city's not) with a third of the weight: 100 x 1.1^-(1/3)
-  - L289 the weights are shares of their sum: 6 and 2 are .75 and .25
-  - L291 the US alone with no trade, its prices up 25% and the city's 10% up: 100 x 1.1 / 1.25
-  - L292 no usable partner (a weight of nothing, a money with no rate) is the US alone at prices of 1: the D$'s own prices only
-  - L294 a partner with no rate is left out of the average, the rest taking its weight: 110 from the one that is there
-  - L296 NaN for a rate, a founding rate or an index that is not positive
-  - L301 a city before its first month: the real effective rate is 100
-  - L302 ...with no world's moneys built yet it weighs no partner to name: an empty list (the screen says the US$ alone)
-  - L316 a town that has traded with nobody: the D$ against the US$ alone, the US$'s prices the world's level
-  - L319 ...the partners it weighs then are the United States at a share of 1, which the screen names; the rate of the US as the one partner is the US$ alone's
-  - L329 premise: a town with the nations' moneys that played one month had traded with the US alone, and its trade is now wiped (no month's, no year's)
-  - L331 a town with the nations' moneys and no trade weighs no partner to name: an empty list (the screen says the US$ alone), and the rate is the US$ alone's
-  - L353 ...given a finished year's trade with Germany, Japan and the US, the getter weighs each partner's money (the one its nation uses now, against its rate in the...
-  - L354 ...which is not the US$ alone's figure: the partners' moneys and prices move it
-  - L370 the partners it weighs are named: exactly Germany, Japan and the US in nation order with shares .5, .25 and .25 adding to 1 (
-  - L374 the rate is its partners' own: the real effective rate is RealDollar.realEffectiveRate over the named partners' Partners, to the bit
-  - L388 a money that never changed reads as before WN6: its rate in the first January, else the file's first-year figure (
-- **L401 6. the import shock: permanent on the path, pulled back on the walk**
-  - L409 fixture: before the shock, the two paths read alike
-  - L411 shockLevel(1.3): the level is 1.3 times the path's at once
-  - L412 ...the factor is 1.3
-  - L413 ...and the realised inflation reads the jump for a year (the ring is kept)
-  - L421 on the path the next 60 months keep the shock: the level is 1.3 times the path's every month, nothing pulls it back
-  - L422 ...a year on, the realised inflation is the path's again
-  - L424 the factor is saved in the slot after the mean
-  - L430 ...and a world restored from it, handed the path, steps on to the bit
-  - L436 an array without the slot (an older save's) reads a factor of 1
-  - L443 a pinned world holds the shock it is given and does not follow the path
-  - L455 on the walk shockLevel(1.3) is the level times 1.3
-  - L456 ...with no path and a factor of 1
-  - L467 ...exactly what the save-and-restore door did, level and realised inflation to the bit, 370 months on
-- **L517 7. a change of money: the partner's real rate holds across the year it changed**
-  - L523 the Random town
-  - L526 a Historical town
+- **L144 1. the in-game US$ is the US's: its prices follow the nations' path**
+  - L202 Historical: the Januaries are the file's US CPI over 2000's
+  - L213 a pinned world holds still on the path: 14 months, level 1 to the bit, the path handed all the same
+- **L220 2. no world file, the walk: a city on the literals walks as WorldEconomy always did**
+  - L234 the city's level is the bare WorldEconomy's at the default mean over the same months, to the bit
+  - L235 ...and so are its headline and its realised inflation
+  - L236 ...with no world's moneys and no path: the dollar is the walk
+  - L237 ...and the walk's mean is the default's, which nothing offers a choice of now
+- **L244 3. D$ per 2015 US$ is the rate times the US$'s prices since founding, over the bridge**
+  - L245 a fixture: at 1.25 D$ a US$ and prices 1.6 times founding's, a real 2015 US$ costs 2 D$ of founding's dollars: 2 over the bridge
+  - L246 ...at founding (level 1) it is the rate over the bridge
+  - L247 ...and NaN for a rate or a level that is not a positive number
+  - L251 a city founds at ForeignAccounts.OPENING_RATE (
+  - L253 ...so at founding the D$ per 2015 US$ is that rate over the bridge
+  - L255 after 24 months it is the foreign accounts' rate times the world's level, over the bridge
+  - L257 ...a number the city's prices moved (the level is no longer 1)
+- **L263 4. real GDP in 2015 US$ is the GDP over the price index over the founding's rate, times the bridge**
+  - L264 a fixture: D$120M a month at an index of 1.2 and a founding rate of 1 is 100M founding US$, 100M times the bridge in real 2015 US$
+  - L265 ...at a founding rate of 2 D$ a US$, 50M times the bridge
+  - L266 ...at an index of 1 and OPENING_RATE it is the GDP times the bridge
+  - L267 ...and NaN for an index or a rate that is not positive
+- **L280 5. the real effective rate: 100 at founding, the BIS's way**
+  - L282 a fixture: at founding (the rate, the prices and the partners' moneys where they were) it reads 100
+  - L284 the city's prices rise 10% and nothing else moves: 110
+  - L285 ...against partners alike, whatever their weights
+  - L287 the D$ falls 10% against the US$ (the rate up by 1/.9) and nothing else moves: 90
+  - L288 a partner's money rises 10% against the US$ (its units a US$ down by 1.1) with half the weight, the US$ the other half: 100 x 1.1^-.5, the other way
+  - L291 a partner's prices rise 10% (the city's not) with a third of the weight: 100 x 1.1^-(1/3)
+  - L293 the weights are shares of their sum: 6 and 2 are .75 and .25
+  - L295 the US alone with no trade, its prices up 25% and the city's 10% up: 100 x 1.1 / 1.25
+  - L296 no usable partner (a weight of nothing, a money with no rate) is the US alone at prices of 1: the D$'s own prices only
+  - L298 a partner with no rate is left out of the average, the rest taking its weight: 110 from the one that is there
+  - L300 NaN for a rate, a founding rate or an index that is not positive
+  - L305 a city before its first month: the real effective rate is 100
+  - L306 ...with no world's moneys built yet it weighs no partner to name: an empty list (the screen says the US$ alone)
+  - L320 a town that has traded with nobody: the D$ against the US$ alone, the US$'s prices the world's level
+  - L323 ...the partners it weighs then are the United States at a share of 1, which the screen names; the rate of the US as the one partner is the US$ alone's
+  - L333 premise: a town with the nations' moneys that played one month had traded with the US alone, and its trade is now wiped (no month's, no year's)
+  - L335 a town with the nations' moneys and no trade weighs no partner to name: an empty list (the screen says the US$ alone), and the rate is the US$ alone's
+  - L357 ...given a finished year's trade with Germany, Japan and the US, the getter weighs each partner's money (the one its nation uses now, against its rate in the...
+  - L358 ...which is not the US$ alone's figure: the partners' moneys and prices move it
+  - L374 the partners it weighs are named: exactly Germany, Japan and the US in nation order with shares .5, .25 and .25 adding to 1 (
+  - L378 the rate is its partners' own: the real effective rate is RealDollar.realEffectiveRate over the named partners' Partners, to the bit
+  - L392 a money that never changed reads as before WN6: its rate in the first January, else the file's first-year figure (
+- **L405 6. the import shock: permanent on the path, pulled back on the walk**
+  - L413 fixture: before the shock, the two paths read alike
+  - L415 shockLevel(1.3): the level is 1.3 times the path's at once
+  - L416 ...the factor is 1.3
+  - L417 ...and the realised inflation reads the jump for a year (the ring is kept)
+  - L425 on the path the next 60 months keep the shock: the level is 1.3 times the path's every month, nothing pulls it back
+  - L426 ...a year on, the realised inflation is the path's again
+  - L428 the factor is saved in the slot after the mean
+  - L434 ...and a world restored from it, handed the path, steps on to the bit
+  - L440 an array without the slot (an older save's) reads a factor of 1
+  - L447 a pinned world holds the shock it is given and does not follow the path
+  - L459 on the walk shockLevel(1.3) is the level times 1.3
+  - L460 ...with no path and a factor of 1
+  - L471 ...exactly what the save-and-restore door did, level and realised inflation to the bit, 370 months on
+- **L521 7. a change of money: the partner's real rate holds across the year it changed**
+  - L527 the Random town
+  - L530 a Historical town
+- **L620 8. a city saved on the US's path and loaded without the file walks on from its level (MW1)**
+  - L634 restored with no path, the world is not on it
+  - L636 (a) the first walked month starts the trend where the walk is handed the level: trendLevel() is the level it was saved at, to the bit
+  - L643 (a) ...and 120 months on its level is the level it was handed times the walk's own from level 1 (the step is linear in the level and the trend's base), relative
+  - L661 (c) a world that never had a path saves its trend as it began: base 1, start 0, the flag off
+  - L673 (c) saved after 300 months and restored, the walk goes on to the bit for 60: level, inflation and the trend line, which is the flat one
+  - L696 (e) ...saved to its own scratch folder
+  - L701 (e) ...loaded on the literals, it holds the level it was saved at and is not on the path
+  - L705 (e) ...two months on the walk it is still off the path and its trend line is the level it was loaded at, to the bit (not 1)
 
 ## RecipeCheck.java - 155 labelled assertions
 

@@ -1,13 +1,13 @@
-# gate of Merge batch/LS1: the labour share by sector, a study: each sector's payroll over its value added through a run against BEA's shares by industry, before any post or markup moves (HD1-L: Luxury Retail's payroll is 1% of its value added; Jerus, 2026-10-31: "Take all (Recommended)"), 0.9.60
+# gate of Merge batch/MW1: a city saved with the world file and loaded without it: the walk's trend starts at the level it is handed, so its dollar does not drift to the flat trend (WN4-W; Jerus, 2026-10-31: "Take all (Recommended)"), 0.9.61
 # date: 2026-11-09
 # earth-2.bin: named
 # nightly: 2026-11-09 01:39 0.9.58 08f58a5f 4,000 months: OK in 118 s
-# suite: 187 harnesses run in 1148s: 183 passed, 4 failed
-# timing: 17 harnesses run in 924s: 13 passed, 4 failed; its red lines were judged side by side with main's, below
+# suite: 187 harnesses run in 1139s: 183 passed, 4 failed
+# timing: 17 harnesses run in 873s: 13 passed, 4 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 30.4 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 29.4 ms (gate.txt, today), batch 30.4 ms (+3.4%), budget 25 ms: main over the budget too, no round]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 28.1 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 30.4 ms (gate.txt, today), batch 28.1 ms (-7.7%), budget 25 ms: main over the budget too, no round]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# figure	SaveSlotCheck	the median due month, 30.4 ms, holds the clock at most CLOCK_MS (25 ms)	30.4161	25	ms	FAIL	1	1
+# figure	SaveSlotCheck	the median due month, 28.1 ms, holds the clock at most CLOCK_MS (25 ms)	28.0699	25	ms	FAIL	1	1
 PriceLevelCheck | exit 1
 PriceLevelCheck | FAIL cash (nominal) month 101: 8.317811325 at the factor over the factor, 68.38253344 at today's prices (0.000751 apart)
 PriceLevelCheck | FAIL gdp.month (nominal) month 103: 20121.84632 at the factor over the factor, 20122.48474 at today's prices (1.95e-05 apart)
