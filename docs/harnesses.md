@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**188 harness files, 22,214 labelled assertions.** AllChecks runs 188 of them.
+**188 harness files, 22,242 labelled assertions.** AllChecks runs 188 of them.
 
 ## Which harnesses read which class
 
@@ -2885,7 +2885,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L358 ...while its first holding is still its first holding
   - L368 ...and a city from before cars existed owns none
 
-## BuybackCheck.java - 214 labelled assertions
+## BuybackCheck.java - 242 labelled assertions
 
 > The city's paper bought back in a reverse auction (CD4, spec-city-debt.md
 > section 6.2-6.3; D12, D17-D19, D26, D34): every holder but the central bank
@@ -2901,229 +2901,258 @@ _(this harness does not label its checks through a helper - it prints its findin
 >    sells; the central bank's face is never offered (D18); a highest price
 > ...
 
-- **L184 1. the reverse auction, by hand: every holder's rule, solved for its price**
-  - L191 fixture: the line is worth less than par on a market over its coupon
-  - L192 each of the four holders but the central bank cut its holding into SLICES slices
-  - L194 the central bank's face is never offered: the ladder is the principal less its face
-  - L201 every offer is at or over fair
-  - L202 ...and the ladder is the cheapest first
-  - L207 the bank offers everything it holds at exactly fair (D34)
-  - L208 ...all of it
-  - L213 the households' first slice is the line's payments at the deposit rate plus the spread the rest of their holding asks
-  - L215 ...which is over fair: they hold it for more than a deposit pays
-  - L223 each household slice is priced at the holding that remains once it is sold
-  - L224 ...so the more they sell the dearer the next slice
-  - L225 ...and their last slice, with nothing left to hold, is the line at the deposit rate
-  - L237 each business slice is priced at the holding that remains, as a share of their idle money
-  - L238 ...and dearer as they sell
-  - L250 each world slice is priced at the stock that remains: its rate, its premium and the excess that holds it
-  - L251 ...and dearer as it sells
-  - L263 the city takes the face it asked for
-  - L264 ...and pays the sum of face times each slice's own price (multiple price, D19)
-  - L265 the stop is the dearest offer taken, the average is lower, and the average is not under fair
-  - L267 ...strictly lower than the stop: the cheaper offers were not paid the stop
-  - L268 the average is the price paid over the face taken
-  - L269 what the auction cost is what was paid over fair, and it is not negative
-  - L270 ...computed on the face taken
-  - L271 the gain on the books is the face's carrying value less the price
-  - L272 ...and against face, the face less the price
-  - L273 what was offered over what was asked
-  - L283 the offers taken are the cheapest, and no offer left behind is under the stop
-  - L293 the offers taken, by holder, are the faces the result says each sold
-  - L299 a small ask is filled from the bank alone, at fair
-  - L300 ...so the stop is the average is fair
-  - L301 ...and the auction cost nothing over fair
-  - L305 asked for more than is offered, the city takes all that is offered
-  - L306 ...and the cover says it fell short
-  - L307 the faces by holder add to the face taken
-  - L309 ...and the prices by holder to the price paid
-  - L319 with a highest price between two offers only the cheaper are taken
-  - L320 ...and the stop is the dearest of them, under the highest price
-  - L321 ...the next offer being over it
-  - L323 a highest price under the cheapest offer takes nothing
-  - L324 ...and pays nothing
-  - L330 businesses with no idle money want none of it, and offer at fair
-  - L332 a holding past OutwardInvestment.MAX_SHARE of their idle money is offered at fair: the first slice
-  - L334 ...and the last, with the share under MAX_SHARE, over it
-  - L338 the world in a run wants none of it and offers at fair
-  - L340 the same line and the same bidders give the same ladder
-  - L347 dollar paper is the world's alone, every slice at fair (D26)
-  - L348 ...all of it
-- **L354 2. a deposit rate over the line's yield: the households' rule prices under fair, so they offer at fair**
-  - L360 fixture: the deposit rate is over the line's yield
-  - L361 fixture: the households' rule, solved for its first slice, is under fair
-  - L366 so every household slice is offered at exactly fair, never under
-  - L367 ...and the businesses', whose better alternative is the deposit now
-  - L368 the world, whose rule is its own rate, still asks over fair for its last slices
-  - L377 slices at the same price go to the bank first, then the households, then the businesses (D19)
-  - L379 the city can buy the bank's, the households' and the businesses' for fair and no more
-  - L380 ...paying fair for every one of them
-  - L381 the households sold their whole holding
-- **L448 3. a played city: half of a ten-year line bought back, then most of the rest, then the last**
-  - L456 fixture: the treasury sold a ten-year line
-  - L457 fixture: ...which is unsettled until the month turns, and a part of it quotes nothing
-  - L460 fixture: it is settled, and the households, the bank and the world each hold part of it
-  - L462 fixture: ...and the central bank none, so the whole principal can be offered
-  - L469 half: the piece is still on the books, at half its principal
-  - L475 fixture: ...and this time the households, the businesses or the world sold too, at prices over the bank's
-  - L477 most of the rest: the piece is still on the books, at a fifth of what was left
-  - L484 the last: asked for all that is left, the city takes it
-  - L485 ...and the piece leaves the books
-  - L486 ...the cash fell by what was paid
-  - L487 ...and the holders' books agree with the paper: none of its principal is left in the cells
-  - L490 the last: the audit closes that month and the next
-  - L491 (the three together took the whole line)
-  - L528 ...the face
-  - L529 ...the carrying value
-  - L530 ...the issue discount
-  - L531 ...and what is left of it
-  - L532 ...the coupon
-  - L533 ...but the effective rate is the same
-  - L537 ...and every payment of its schedule, the months it has left unchanged
-  - L538 the bank's principal fell by exactly what it sold
-  - L539 ...the households'
-  - L540 ...the businesses'
-  - L541 ...the world's
-  - L542 ...and the face sold is the face asked
-  - L543 the treasury's cash fell by what was paid
-  - L544 the bank was paid its own slices' prices
-  - L545 ...its book of the city's paper fell by the face it sold
-  - L546 the households' savings rose by their own slices' prices
-  - L547 the world's book of the paper fell by the face it sold
-  - L548 the businesses' tills rose by their own slices' prices, at once
-  - L549 ...and their paper fell by the face they sold
-  - L550 what the households and the world were paid is carried to the next month's window
-  - L552 the central bank was paid nothing
-  - L553 the two books of the households' paper agree, and of the world's
-  - L557 the gain on debt retired the month booked is the carrying value of the face taken less the price
-  - L559 the audit closes the month the payments are declared in
-  - L560 ...and the month after
-  - L561 the piece pays the smaller coupon, month on month
-- **L568 4. the central bank holds part of a line: it does not offer, it is not paid**
-  - L578 fixture: the treasury sold another line
-  - L583 fixture: the central bank, on its dial, holds part of the line
-  - L584 fixture: ...and the bank, the households or the world hold the rest
-  - L591 asked for the whole principal, the quote takes the whole principal less the central bank's face
-  - L593 ...and asked is held to what can be offered
-  - L596 the buyback took the same
-  - L597 the piece stays on the books
-  - L598 the central bank's principal is unchanged
-  - L599 ...and what is left of the piece is exactly that
-  - L600 ...the bank holds nothing of it any more
-  - L601 the central bank's book of paper is unchanged
-  - L602 ...and it was paid nothing: no price is due to it
-  - L603 the cash fell by what was paid
-  - L604 the audit closes that month and the next
-  - L605 the central bank still holds what the paper says it does
-- **L611 5. can the city print money with this? A line sold and bought back**
-  - L629 fixture (the same month): a
-  - L634 the
-  - L639 a
-  - L640 the audit closes that month and the next
-  - L658 fixture: a
-  - L665 fixture: the
-  - L673 a
-  - L674 ...and two of them do not either
-  - L676 the audit still closes after the round trips
-- **L682 6. dollar paper is the world's alone, bought back at fair**
-  - L693 fixture: the city owes a dollar bond
-  - L699 the quote takes the whole piece
-  - L700 ...all of it from the world
-  - L701 ...none from anyone else
-  - L704 every slice is at fair: the dollar curve's value
-  - L705 the stop is the average is fair
-  - L706 ...and what is paid is the dollar curve's value of the piece
-  - L707 ...the auction cost nothing over fair
-  - L712 a part of it is taken
-  - L713 the piece stays on the books
-  - L714 ...in dollars, down by the part taken
-  - L715 ...its carrying value, in dollars and in local money
-  - L716 ...and its effective rate unchanged
-  - L717 what the world is owed fell with it
-  - L718 the cash fell by what was paid
-  - L719 ...and it leaves the country, carried to the next month's window
-  - L720 the audit closes: the dollar holder's payment is a financial outflow
-  - L723 the rest is taken
-  - L724 the dollar bond is off the books
-  - L725 ...and the audit closes the month after
-- **L731 7. a buyback the city cannot pay for, or no offer will meet, or a sale not yet settled, changes nothing**
-  - L740 fixture: the treasury sold a five-year line
-  - L741 fixture: ...unsettled
-  - L745 a part of a sale not yet settled is refused: nothing is taken, nothing moves
-  - L747 ...and so is the whole of it under a highest price that leaves some behind
-  - L749 ...but the whole of it, at any price, is quoted: it costs what the thin quote says
-  - L752 ...and it is worth something
-  - L754 fixture: it is settled now
-  - L759 the whole-piece quote is the same as the thin one
-  - L760 ...and the gain the same
-  - L761 ...which is never under what the piece is worth to somebody who does not care to hold it
-  - L768 a city that cannot afford it is refused: nothing is taken
-  - L769 ...and was not charged anyway
-  - L770 ...and nothing else moved: the piece, its holders, the bank, the savings and the world's book
-  - L772 the old button refuses the same
-  - L777 a highest price under every offer buys nothing
-  - L778 ...and moves nothing
-  - L780 nothing is bought of a piece that is not there
-  - L782 the audit closes after the refusals
-  - L783 fixture: the books still hold the piece
-- **L804 8. CD3's star 5: a gain on debt retired is not less spending, month by month and in the year**
-  - L812 fixture: the treasury sold a line
-  - L832 fixture: the line is worth less than the books carry it at
-  - L833 fixture: ...and the city buys back at a gain on the carrying value
-  - L838 fixture: it was bought, in part, no dearer than the highest price named
-  - L853 fixture: History has the year of months
-  - L863 History's revenue less surplus plus the gain on debt retired is the month's expenses, to the cent, every month of the year
-  - L865 History records the gain in the month of the buyback
-  - L868 ...and in no other month
-  - L869 the treasury's month of spending is their average
-  - L870 ...and so is the sum of what the history says it was
-  - L871 without the gain the year is off by it: this is the bug
-  - L872 ...by exactly the gain (revenue less surplus is expenses less the gain)
-- **L892 9. a line callable now: no holder asks more than the call price (BB1, CD4-C ★6)**
-  - L904 fixture: the coupon is over the yield the households ask for their first slice
-  - L905 fixture: ...and the line's fair is under the call price, the market's yield being over the coupon
-  - L906 fixture: a line with no call price, a NaN or a call price of nothing, is not callable now
-  - L909 ...and one with the call price is
-  - L915 premise: without the call price the dearest offer is over it
-  - L916 premise: ...and the cheapest is under it, the bank's at fair
-  - L917 a line with no call price offers what it did before the cap existed (the ten-figure line, NaN)
-  - L925 with the call price every offer is at most it
-  - L926 ...and the ladder is still the cheapest first
-  - L927 ...with as many offers, the central bank's face still not among them
-  - L946 premise: some offers were under the call price and some over it
-  - L947 the offers that were under the call price are unchanged, holder by holder, slice by slice
-  - L948 the ones that were over it are exactly the call price
-  - L949 each holder's own slices still ascend
-  - L955 a full buyback takes all that is offered
-  - L956 its stop is at most the call price
-  - L957 ...and what it paid is at most the face taken at the call price
-  - L958 premise: without the call price the stop was over it and the city paid more than the face at the call price
-  - L960 so the call price saves the city something
-  - L961 ...and moves nothing else: the face taken and the piece's fair are the same
-  - L966 fixture: a coupon so far over the market's yield that the line's fair is over the call price
-  - L968 premise: without the call price every offer is at least fair, so over the call price
-  - L971 with it every offer is exactly the call price: the cap wins over the floor at fair
-  - L973 a full buyback of it pays the call price on average
-  - L980 dollar paper with a call price is offered at it, never at the fair that is over it
-  - L994 fixture: the treasury sold a callable ten-year line
-  - L997 fixture: ...unsettled until the month turns, so it cannot be called
-  - L999 fixture: it is settled, and the households, the bank and the world each hold part of it, the central bank none
-  - L1002 fixture: its first call month is still ahead, so it cannot be called
-  - L1011 a line not yet callable is quoted as the holders ask: the ladder is Buyback.offers() with no call price
-  - L1017 premise: the dearest offer is over the call price (
-  - L1018 the quote takes it all
-  - L1024 at its first call month it can be called
-  - L1033 premise: the same line with no call price, at this month's fair, still has its dearest offer over the call price (
-  - L1039 callable now, every offer on the ladder is at most the call price
-  - L1040 ...each the least of what it would have been with no call price and the call price
-  - L1041 ...and the same face on offer
-  - L1042 its stop is at most the call price (
-  - L1043 the quote still takes it all
-  - L1044 what it asks is at most what calling the line costs, and less than the quote before the call month
-  - L1051 the buyback booked pays what the quote said
-  - L1052 ...its stop is the quote's
-  - L1053 ...it is within what calling the line would have cost, and the line leaves the books
-  - L1055 ...the cash fell by what was paid
+- **L194 1. the reverse auction, by hand: every holder's rule, solved for its price**
+  - L201 fixture: the line is worth less than par on a market over its coupon
+  - L202 each of the four holders but the central bank cut its holding into SLICES slices
+  - L204 the central bank's face is never offered: the ladder is the principal less its face
+  - L211 every offer is at or over fair
+  - L212 ...and the ladder is the cheapest first
+  - L217 the bank offers everything it holds at exactly fair (D34)
+  - L218 ...all of it
+  - L223 the households' first slice is the line's payments at the deposit rate plus the spread the rest of their holding asks
+  - L225 ...which is over fair: they hold it for more than a deposit pays
+  - L233 each household slice is priced at the holding that remains once it is sold
+  - L234 ...so the more they sell the dearer the next slice
+  - L235 ...and their last slice, with nothing left to hold, is the line at the deposit rate
+  - L247 each business slice is priced at the holding that remains, as a share of their idle money
+  - L248 ...and dearer as they sell
+  - L260 each world slice is priced at the stock that remains: its rate, its premium and the excess that holds it
+  - L261 ...and dearer as it sells
+  - L273 the city takes the face it asked for
+  - L274 ...and pays the sum of face times each slice's own price (multiple price, D19)
+  - L275 the stop is the dearest offer taken, the average is lower, and the average is not under fair
+  - L277 ...strictly lower than the stop: the cheaper offers were not paid the stop
+  - L278 the average is the price paid over the face taken
+  - L279 what the auction cost is what was paid over fair, and it is not negative
+  - L280 ...computed on the face taken
+  - L281 the gain on the books is the face's carrying value less the price
+  - L282 ...and against face, the face less the price
+  - L283 what was offered over what was asked
+  - L293 the offers taken are the cheapest, and no offer left behind is under the stop
+  - L303 the offers taken, by holder, are the faces the result says each sold
+  - L309 a small ask is filled from the bank alone, at fair
+  - L310 ...so the stop is the average is fair
+  - L311 ...and the auction cost nothing over fair
+  - L315 asked for more than is offered, the city takes all that is offered
+  - L316 ...and the cover says it fell short
+  - L317 the faces by holder add to the face taken
+  - L319 ...and the prices by holder to the price paid
+  - L329 with a highest price between two offers only the cheaper are taken
+  - L330 ...and the stop is the dearest of them, under the highest price
+  - L331 ...the next offer being over it
+  - L333 a highest price under the cheapest offer takes nothing
+  - L334 ...and pays nothing
+  - L340 businesses with no idle money want none of it, and offer at fair
+  - L342 a holding past OutwardInvestment.MAX_SHARE of their idle money is offered at fair: the first slice
+  - L344 ...and the last, with the share under MAX_SHARE, over it
+  - L348 the world in a run wants none of it and offers at fair
+  - L350 the same line and the same bidders give the same ladder
+  - L357 dollar paper is the world's alone, every slice at fair (D26)
+  - L358 ...all of it
+- **L364 2. a deposit rate over the line's yield: the households' rule prices under fair, so they offer at fair**
+  - L370 fixture: the deposit rate is over the line's yield
+  - L371 fixture: the households' rule, solved for its first slice, is under fair
+  - L376 so every household slice is offered at exactly fair, never under
+  - L377 ...and the businesses', whose better alternative is the deposit now
+  - L378 the world, whose rule is its own rate, still asks over fair for its last slices
+  - L387 slices at the same price go to the bank first, then the households, then the businesses (D19)
+  - L389 the city can buy the bank's, the households' and the businesses' for fair and no more
+  - L390 ...paying fair for every one of them
+  - L391 the households sold their whole holding
+- **L458 3. a played city: half of a ten-year line bought back, then most of the rest, then the last**
+  - L466 fixture: the treasury sold a ten-year line
+  - L467 fixture: ...which is unsettled until the month turns, and a part of it quotes nothing
+  - L470 fixture: it is settled, and the households, the bank and the world each hold part of it
+  - L472 fixture: ...and the central bank none, so the whole principal can be offered
+  - L479 half: the piece is still on the books, at half its principal
+  - L485 fixture: ...and this time the households, the businesses or the world sold too, at prices over the bank's
+  - L487 most of the rest: the piece is still on the books, at a fifth of what was left
+  - L494 the last: asked for all that is left, the city takes it
+  - L495 ...and the piece leaves the books
+  - L496 ...the cash fell by what was paid
+  - L497 ...and the holders' books agree with the paper: none of its principal is left in the cells
+  - L500 the last: the audit closes that month and the next
+  - L501 (the three together took the whole line)
+  - L538 ...the face
+  - L539 ...the carrying value
+  - L540 ...the issue discount
+  - L541 ...and what is left of it
+  - L542 ...the coupon
+  - L543 ...but the effective rate is the same
+  - L547 ...and every payment of its schedule, the months it has left unchanged
+  - L548 the bank's principal fell by exactly what it sold
+  - L549 ...the households'
+  - L550 ...the businesses'
+  - L551 ...the world's
+  - L552 ...and the face sold is the face asked
+  - L553 the treasury's cash fell by what was paid
+  - L554 the bank was paid its own slices' prices
+  - L555 ...its book of the city's paper fell by the face it sold
+  - L556 the households' savings rose by their own slices' prices
+  - L557 the world's book of the paper fell by the face it sold
+  - L558 the businesses' tills rose by their own slices' prices, at once
+  - L559 ...and their paper fell by the face they sold
+  - L560 what the households and the world were paid is carried to the next month's window
+  - L562 the central bank was paid nothing
+  - L563 the two books of the households' paper agree, and of the world's
+  - L567 the gain on debt retired the month booked is the carrying value of the face taken less the price
+  - L569 the audit closes the month the payments are declared in
+  - L570 ...and the month after
+  - L571 the piece pays the smaller coupon, month on month
+- **L578 4. the central bank holds part of a line: it does not offer, it is not paid**
+  - L588 fixture: the treasury sold another line
+  - L593 fixture: the central bank, on its dial, holds part of the line
+  - L594 fixture: ...and the bank, the households or the world hold the rest
+  - L601 asked for the whole principal, the quote takes the whole principal less the central bank's face
+  - L603 ...and asked is held to what can be offered
+  - L606 the buyback took the same
+  - L607 the piece stays on the books
+  - L608 the central bank's principal is unchanged
+  - L609 ...and what is left of the piece is exactly that
+  - L610 ...the bank holds nothing of it any more
+  - L611 the central bank's book of paper is unchanged
+  - L612 ...and it was paid nothing: no price is due to it
+  - L613 the cash fell by what was paid
+  - L614 the audit closes that month and the next
+  - L615 the central bank still holds what the paper says it does
+- **L621 5. can the city print money with this? A line sold and bought back**
+  - L639 fixture (the same month): a
+  - L644 the
+  - L649 a
+  - L650 the audit closes that month and the next
+  - L668 fixture: a
+  - L675 fixture: the
+  - L683 a
+  - L684 ...and two of them do not either
+  - L686 the audit still closes after the round trips
+- **L692 6. dollar paper is the world's alone, bought back at fair**
+  - L703 fixture: the city owes a dollar bond
+  - L709 the quote takes the whole piece
+  - L710 ...all of it from the world
+  - L711 ...none from anyone else
+  - L714 every slice is at fair: the dollar curve's value
+  - L715 the stop is the average is fair
+  - L716 ...and what is paid is the dollar curve's value of the piece
+  - L717 ...the auction cost nothing over fair
+  - L722 a part of it is taken
+  - L723 the piece stays on the books
+  - L724 ...in dollars, down by the part taken
+  - L725 ...its carrying value, in dollars and in local money
+  - L726 ...and its effective rate unchanged
+  - L727 what the world is owed fell with it
+  - L728 the cash fell by what was paid
+  - L729 ...and it leaves the country, carried to the next month's window
+  - L730 the audit closes: the dollar holder's payment is a financial outflow
+  - L733 the rest is taken
+  - L734 the dollar bond is off the books
+  - L735 ...and the audit closes the month after
+- **L741 7. a buyback the city cannot pay for, or no offer will meet, or a sale not yet settled, changes nothing**
+  - L750 fixture: the treasury sold a five-year line
+  - L751 fixture: ...unsettled
+  - L755 a part of a sale not yet settled is refused: nothing is taken, nothing moves
+  - L757 ...and so is the whole of it under a highest price that leaves some behind
+  - L759 ...but the whole of it, at any price, is quoted: it costs what the thin quote says
+  - L762 ...and it is worth something
+  - L764 fixture: it is settled now
+  - L769 the whole-piece quote is the same as the thin one
+  - L770 ...and the gain the same
+  - L771 ...which is never under what the piece is worth to somebody who does not care to hold it
+  - L778 a city that cannot afford it is refused: nothing is taken
+  - L779 ...and was not charged anyway
+  - L780 ...and nothing else moved: the piece, its holders, the bank, the savings and the world's book
+  - L782 the old button refuses the same
+  - L787 a highest price under every offer buys nothing
+  - L788 ...and moves nothing
+  - L790 nothing is bought of a piece that is not there
+  - L792 the audit closes after the refusals
+  - L793 fixture: the books still hold the piece
+- **L814 8. CD3's star 5: a gain on debt retired is not less spending, month by month and in the year**
+  - L822 fixture: the treasury sold a line
+  - L842 fixture: the line is worth less than the books carry it at
+  - L843 fixture: ...and the city buys back at a gain on the carrying value
+  - L848 fixture: it was bought, in part, no dearer than the highest price named
+  - L863 fixture: History has the year of months
+  - L873 History's revenue less surplus plus the gain on debt retired is the month's expenses, to the cent, every month of the year
+  - L875 History records the gain in the month of the buyback
+  - L878 ...and in no other month
+  - L879 the treasury's month of spending is their average
+  - L880 ...and so is the sum of what the history says it was
+  - L881 without the gain the year is off by it: this is the bug
+  - L882 ...by exactly the gain (revenue less surplus is expenses less the gain)
+- **L902 9. a line callable now: no holder asks more than the call price (BB1, CD4-C ★6)**
+  - L914 fixture: the coupon is over the yield the households ask for their first slice
+  - L915 fixture: ...and the line's fair is under the call price, the market's yield being over the coupon
+  - L916 fixture: a line with no call price, a NaN or a call price of nothing, is not callable now
+  - L919 ...and one with the call price is
+  - L925 premise: without the call price the dearest offer is over it
+  - L926 premise: ...and the cheapest is under it, the bank's at fair
+  - L927 a line with no call price offers what it did before the cap existed (the ten-figure line, NaN)
+  - L935 with the call price every offer is at most it
+  - L936 ...and the ladder is still the cheapest first
+  - L937 ...with as many offers, the central bank's face still not among them
+  - L956 premise: some offers were under the call price and some over it
+  - L957 the offers that were under the call price are unchanged, holder by holder, slice by slice
+  - L958 the ones that were over it are exactly the call price
+  - L959 each holder's own slices still ascend
+  - L965 a full buyback takes all that is offered
+  - L966 its stop is at most the call price
+  - L967 ...and what it paid is at most the face taken at the call price
+  - L968 premise: without the call price the stop was over it and the city paid more than the face at the call price
+  - L970 so the call price saves the city something
+  - L971 ...and moves nothing else: the face taken and the piece's fair are the same
+  - L976 fixture: a coupon so far over the market's yield that the line's fair is over the call price
+  - L978 premise: without the call price every offer is at least fair, so over the call price
+  - L981 with it every offer is exactly the call price: the cap wins over the floor at fair
+  - L983 a full buyback of it pays the call price on average
+  - L990 dollar paper with a call price is offered at it, never at the fair that is over it
+  - L1004 fixture: the treasury sold a callable ten-year line
+  - L1007 fixture: ...unsettled until the month turns, so it cannot be called
+  - L1009 fixture: it is settled, and the households, the bank and the world each hold part of it, the central bank none
+  - L1012 fixture: its first call month is still ahead, so it cannot be called
+  - L1021 a line not yet callable is quoted as the holders ask: the ladder is Buyback.offers() with no call price
+  - L1027 premise: the dearest offer is over the call price (
+  - L1028 the quote takes it all
+  - L1034 at its first call month it can be called
+  - L1043 premise: the same line with no call price, at this month's fair, still has its dearest offer over the call price (
+  - L1049 callable now, every offer on the ladder is at most the call price
+  - L1050 ...each the least of what it would have been with no call price and the call price
+  - L1051 ...and the same face on offer
+  - L1052 its stop is at most the call price (
+  - L1053 the quote still takes it all
+  - L1054 what it asks is at most what calling the line costs, and less than the quote before the call month
+  - L1061 the buyback booked pays what the quote said
+  - L1062 ...its stop is the quote's
+  - L1063 ...it is within what calling the line would have cost, and the line leaves the books
+  - L1065 ...the cash fell by what was paid
+  - L1075 ...the gain at fair is the carrying value of the face taken less its worth at fair
+  - L1083 ...the holders' overFair add up to the auction's
+  - L1084 ...and no holder is paid under fair (every offer is at or over it)
+  - L1085 ...the bank is paid fair (D34): its overFair is nothing
+  - L1086 ...the share is the gain at fair over the carrying value of the face taken
+- **L1102 10. what the auction books and what fair would: they differ by what the holders ask over fair (BB1, CD6-C ★1)**
+  - L1122 premise: the quote takes offers from more than one holder
+  - L1123 premise: some holder is paid over fair (
+  - L1124 a quote of several holders
+  - L1125 ...the gain at fair, by hand: the face's carrying value less its worth at fair
+  - L1126 ...so the book's desk reads more than the auction books: the gain at fair is over the gain on the carrying value
+  - L1130 a quote of the bank's offers alone
+  - L1131 premise: it took the bank's face alone
+  - L1132 ...at fair the two agree: nothing is asked over fair
+  - L1133 ...and the gain at fair is the gain the auction books
+  - L1137 a quote that takes nothing has no gain at fair and no share of one
+  - L1144 premise: the households hold all of what was taken
+  - L1145 premise: they ask over fair (
+  - L1146 premise: the line is carried between its worth at fair and what the auction pays
+  - L1148 the households' line
+  - L1149 at fair the line reads a gain
+  - L1150 ...and the auction books a loss: the figures have opposite signs
+  - L1151 ...the households' overFair is the whole of what the auction asks over fair
+  - L1160 fixture: the treasury sold a ten-year line
+  - L1163 fixture: it is settled, and held by more than the bank
+  - L1167 fixture: the quote takes the line
+  - L1170 a played line, all of it
+  - L1172 ...and half of it
+  - L1173 a smaller face takes the cheaper offers first: each 100 of half costs no more over fair than each 100 of all
 
 ## CalendarCheck.java - 67 labelled assertions
 

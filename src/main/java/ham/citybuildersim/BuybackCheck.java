@@ -58,6 +58,15 @@ import java.util.List;
  *    over the call price; at it, the same quote is the same ladder with each
  *    offer at the least of what it was and the call price, and the buyback
  *    booked is that quote, within what calling the line costs.
+ * 10. What the auction books and what fair would (BB1, CD6-C star 1): the
+ *    book's desk shows a line's gain at fair, the auction books it at the
+ *    holders' asks, and the two differ by exactly what the holders ask over
+ *    fair: gainAtFair less gainOnCarrying is overFair, the holders' overFair
+ *    add up to it, the bank's is nothing (D34), none is under nothing. The
+ *    case CD6 saw, caused by hand: a line the households hold, carried
+ *    between its worth at fair and what the auction pays, reads a gain at
+ *    fair and books a loss. In a played city, a line sold and settled quotes
+ *    the same sums.
  *
  * Each fixture causes its condition rather than finding a city in it.
  *
@@ -173,6 +182,7 @@ public class BuybackCheck {
         refused(city);
         theYearAddsUp(city);
         callableNow(city);
+        fairAndTheAuction(city);
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         if (fails > 0) System.exit(1);
@@ -1053,5 +1063,114 @@ public class BuybackCheck {
         check("...it is within what calling the line would have cost, and the line leaves the books",
                 done.paid() <= callCost + 1e-6 && !ledger.getDebt().contains(bond));
         near("...the cash fell by what was paid", cash - city.getCash(), done.paid(), 1e-6);
+    }
+
+    /* ================= 10. what the auction books and what fair would ================= */
+
+    /** What the three figures say of one quote: the identities that hold of every result, whoever the holders. */
+    static void figuresAdd(String what, Buyback.Result r) {
+        double tol = 1e-9 * Math.max(1, r.paid());
+        near(what + ": the gain at fair less the gain the auction books is what the holders ask over fair",
+                r.gainAtFair() - r.gainOnCarrying(), r.overFair(), tol);
+        near("...the gain at fair is the carrying value of the face taken less its worth at fair",
+                r.gainAtFair(), r.carriedTaken() - r.takenFace() * r.fairPer100() / 100, tol);
+        double sum = 0;
+        boolean none = true;
+        for (Buyback.Holder h : Buyback.Holder.values()) {
+            sum += r.overFair(h);
+            none &= r.overFair(h) >= -tol;
+        }
+        near("...the holders' overFair add up to the auction's", sum, r.overFair(), tol);
+        check("...and no holder is paid under fair (every offer is at or over it)", none);
+        near("...the bank is paid fair (D34): its overFair is nothing", r.overFair(Buyback.Holder.BANK), 0, tol);
+        near("...the share is the gain at fair over the carrying value of the face taken",
+                r.gainAtFairShare(), r.carriedTaken() > 0 ? r.gainAtFair() / r.carriedTaken() : 0, 1e-12);
+    }
+
+    /** The households hold the whole line, carried at a fraction of the way from its worth at fair to what the auction pays. */
+    static Buyback.Result householdsHold(double between) {
+        Buyback.Line probe = new Buyback.Line(PRINCIPAL, flows(), fair(), 0, 0, PRINCIPAL, 0, 0, 0, false);
+        Buyback.Result r = Buyback.run(probe, calm(), Buyback.Ask.anyPrice(PRINCIPAL));
+        double worthAtFair = r.takenFace() * r.fairPer100() / 100;
+        double carriedTaken = worthAtFair + between * (r.paid() - worthAtFair);
+        double carrying = carriedTaken * PRINCIPAL / r.takenFace();
+        return Buyback.run(new Buyback.Line(PRINCIPAL, flows(), fair(), carrying, 0, PRINCIPAL, 0, 0, 0, false),
+                calm(), Buyback.Ask.anyPrice(PRINCIPAL));
+    }
+
+    static void fairAndTheAuction(Game city) {
+        out.println("\n--- 10. what the auction books and what fair would: they differ by what the holders ask over fair (BB1, CD6-C ★1) ---");
+
+        // Section 1's line: 500 of it takes the bank's 400 at fair and 100 of the dearer holders' slices.
+        Buyback.Line line = line();
+        Buyback.Result r = Buyback.run(line, calm(), Buyback.Ask.anyPrice(500));
+        int holders = 0;
+        double dearest = 0;
+        Buyback.Holder asking = null;
+        for (Buyback.Holder h : Buyback.Holder.values()) {
+            double face = switch (h) {
+                case BANK -> r.bankFace();
+                case HOUSEHOLDS -> r.householdFace();
+                case FIRMS -> r.firmFace();
+                case WORLD -> r.worldFace();
+            };
+            if (face > 0) holders++;
+            if (r.overFair(h) > dearest) { dearest = r.overFair(h); asking = h; }
+        }
+        out.printf("   500 of section 1's line: at fair %+,.3f; at the asks %+,.3f; over fair %,.3f (%s the dearest)%n",
+                r.gainAtFair(), r.gainOnCarrying(), r.overFair(), asking);
+        check("premise: the quote takes offers from more than one holder", holders > 1);
+        check("premise: some holder is paid over fair (" + asking + ", " + String.format("%.3f", dearest) + ")", dearest > 0);
+        figuresAdd("a quote of several holders", r);
+        near("...the gain at fair, by hand: the face's carrying value less its worth at fair", r.gainAtFair(), 980 * 500 / PRINCIPAL - fair() * 500 / 100, 1e-9);
+        check("...so the book's desk reads more than the auction books: the gain at fair is over the gain on the carrying value", r.gainAtFair() > r.gainOnCarrying());
+
+        // Only the bank's offers taken: all at fair, so the two figures agree.
+        Buyback.Result bank = Buyback.run(line, calm(), Buyback.Ask.anyPrice(100));
+        figuresAdd("a quote of the bank's offers alone", bank);
+        check("premise: it took the bank's face alone", bank.bankFace() == 100 && bank.takenFace() == 100);
+        near("...at fair the two agree: nothing is asked over fair", bank.overFair(), 0, 1e-9);
+        near("...and the gain at fair is the gain the auction books", bank.gainAtFair(), bank.gainOnCarrying(), 1e-9);
+
+        // Nothing taken: nothing carried, no share.
+        Buyback.Result nothing = Buyback.run(line, calm(), Buyback.Ask.anyPrice(0));
+        check("a quote that takes nothing has no gain at fair and no share of one",
+                nothing.gainAtFair() == 0 && nothing.gainAtFairShare() == 0 && nothing.overFair(Buyback.Holder.HOUSEHOLDS) == 0);
+
+        // The case CD6 saw: green at fair, red at the auction, the households holding the line.
+        Buyback.Result seen = householdsHold(.5);
+        out.printf("   the households hold the line, carried half way between fair and the asks: at fair %+,.3f (%+.1f%%), at the asks %+,.3f (%+.1f%%)%n",
+                seen.gainAtFair(), seen.gainAtFairShare() * 100, seen.gainOnCarrying(), seen.gainOnCarryingShare() * 100);
+        check("premise: the households hold all of what was taken", seen.takenFace() > 0 && seen.householdFace() == seen.takenFace());
+        check("premise: they ask over fair (" + String.format("%.3f", seen.overFair(Buyback.Holder.HOUSEHOLDS)) + ")", seen.overFair(Buyback.Holder.HOUSEHOLDS) > 0);
+        check("premise: the line is carried between its worth at fair and what the auction pays",
+                seen.carriedTaken() > seen.takenFace() * seen.fairPer100() / 100 && seen.carriedTaken() < seen.paid());
+        figuresAdd("the households' line", seen);
+        check("at fair the line reads a gain", seen.gainAtFair() > 0 && seen.gainAtFairShare() > 0);
+        check("...and the auction books a loss: the figures have opposite signs", seen.gainOnCarrying() < 0 && seen.gainOnCarryingShare() < 0);
+        near("...the households' overFair is the whole of what the auction asks over fair", seen.overFair(Buyback.Holder.HOUSEHOLDS), seen.overFair(), 1e-9);
+
+        // A played city: a line sold and settled, all of it quoted, then half.
+        DebtManager ledger = city.getDebtManager();
+        HouseholdBalance hb = city.getHouseholdBalance();
+        worldWantsPaper(city);
+        city.setCashForTest(Founding.WEALTHY_CASH);
+        double ask = Math.max(100 * PriceLevel.FACTOR, hb.spareForPaper() * 3);
+        Debt bond = sell(city, ask, 10);
+        check("fixture: the treasury sold a ten-year line", bond != null);
+        if (bond == null) return;
+        play(city);
+        check("fixture: it is settled, and held by more than the bank", bond.unsettledFace() == 0 && ledger.getDebt().contains(bond)
+                && bond.householdPrincipal() + bond.firmPrincipal() + bond.worldPrincipal() > 0);
+        double principal = bond.getOustandingPrincipal();
+        Buyback.Result all = city.quoteBuyback(bond, principal, Double.NaN);
+        check("fixture: the quote takes the line", all.takenFace() > 0);
+        out.printf("   the played line: at fair %+,.1f (%+.1f%%), at the asks %+,.1f (%+.1f%%), over fair %,.1f%n",
+                all.gainAtFair(), all.gainAtFairShare() * 100, all.gainOnCarrying(), all.gainOnCarryingShare() * 100, all.overFair());
+        figuresAdd("a played line, all of it", all);
+        Buyback.Result half = city.quoteBuyback(bond, principal / 2, Double.NaN);
+        figuresAdd("...and half of it", half);
+        check("a smaller face takes the cheaper offers first: each 100 of half costs no more over fair than each 100 of all",
+                half.overFair() / half.takenFace() <= all.overFair() / all.takenFace() + 1e-12);
     }
 }

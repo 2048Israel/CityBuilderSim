@@ -183,6 +183,29 @@ public final class Buyback {
             return paid - fairPer100 * takenFace / 100;
         }
 
+        /**
+         * What the same face taken would book at fair (BB1, Jerus CD6-C ★1): its carrying value less its worth at fair,
+         * the book's desk figure; the auction books gainOnCarrying(), which is this less overFair().
+         */
+        public double gainAtFair() {
+            return carriedTaken - fairPer100 * takenFace / 100;
+        }
+
+        /** That gain at fair as a share of the carrying value of the face taken, a fraction (BB1); 0 when nothing carried was taken. */
+        public double gainAtFairShare() {
+            return carriedTaken > 0 ? gainAtFair() / carriedTaken : 0;
+        }
+
+        /** What one holder is paid over fair for the face taken from it: its paid less its face at fair (BB1; the bank's is nothing, D34). */
+        public double overFair(Holder h) {
+            return switch (h) {
+                case BANK -> bankPaid - fairPer100 * bankFace / 100;
+                case HOUSEHOLDS -> householdPaid - fairPer100 * householdFace / 100;
+                case FIRMS -> firmPaid - fairPer100 * firmFace / 100;
+                case WORLD -> worldPaid - fairPer100 * worldFace / 100;
+            };
+        }
+
         /** The offers that were taken, in the order they were: the ladder up to the stop, the last one in part when the ask ran out. */
         public List<Offer> taken() {
             List<Offer> out = new ArrayList<>();

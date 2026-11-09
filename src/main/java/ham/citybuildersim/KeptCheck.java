@@ -4815,7 +4815,7 @@ public class KeptCheck {
             check("the city has a piece of paper to close", false);
         } else {
             KeptBench.Page close = fx(() -> bench.finances("Close it now", "The book", "Every piece"));
-            boxHeld(g, bench, "Close it now's face box", close, closeOf(piece), bench::showFinances, () -> bench.financesCloseBoxes()[0], "1,000,000", 5, "half");
+            boxHeld(g, bench, "Close it now's face box", close, closeOf(piece), bench::showFinances, () -> bench.financesCloseBoxes()[0], "1,000,000", 5, "a half");
             boxHeld(g, bench, "Close it now's price box", close, closeOf(piece), bench::showFinances, () -> bench.financesCloseBoxes()[1], "98.5", 2, "no limit");
         }
         KeptBench.Page home = fx(() -> bench.finances("Borrow at home", "Borrow", "At home"));
