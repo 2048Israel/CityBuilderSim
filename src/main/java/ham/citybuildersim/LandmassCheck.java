@@ -281,6 +281,7 @@ public class LandmassCheck {
         theMap(f);
         theWords(f);
         grown(f);
+        grownShort(f);
         theAudit(f);
         fullFile(theEarth());
 
@@ -3067,15 +3068,30 @@ public class LandmassCheck {
         // ...what the 24 months have to move for "stays unlinked" to mean something: the city builds (ground allocated, buildings standing). The island holds no field of a sited resource in the fixture (the island city below owns one across the water).
         double allocated0 = c.lm.getAllocatedSqFt();
         int buildings0 = buildingsOf(g);
+        // AL1 (2026-11-09): the auto-builder is on for these months and no longer never links: Jerus, "autobuild will build bridges and ports if sees that land is low and there is
+        // something unlinked". It orders the island's link only in a pass in which an order lacked ground (AutoBuilder.groundShort()); the months are counted, and the island's
+        // staying unlinked is held to that cue below, and the cue caused in a twin (grownShort()). The card's-path orders after them keep their premise: no terminal is on site yet.
+        AutoBuilder auto = g.getAutoBuilder();
+        int cueMonths = 0, linkOrders = 0, wrongLinks = 0;
         for (int m = 0; m < 24; m++) {
             quietly(() -> g.simulateMonths(1));
             look.run();
             if (lms.anyUnlinked()) unlinkedMonths++;
+            if (auto.groundShort()) cueMonths++;
+            for (AutoBuilder.LinkStep s : auto.linkSteps()) {
+                if (s.outcome() != AutoBuilder.Outcome.ORDERED) continue;
+                linkOrders++;
+                if (s.kind() != BuildAdvice.LinkKind.PORT || s.landmass() != 648 || !auto.groundShort()) wrongLinks++;
+            }
         }
         report("premise: the 24 months moved the city - ground was allocated and buildings stand that did not",
                 c.lm.getAllocatedSqFt() > allocated0 && buildingsOf(g) > buildings0,
                 String.format("allocated %,.0f -> %,.0f sq ft; %d -> %d buildings; linked free %,.0f, the island's %,.0f sq ft", allocated0, c.lm.getAllocatedSqFt(), buildings0, buildingsOf(g), c.lm.getAvailableSqFt(), c.lm.getUnlinkedFreeSqFt()));
-        boolean stillUnlinked = lms.anyUnlinked() && !lms.linked(648) && !lms.hasPlacements();
+        // AL1: unlinked and with no terminal placed - unless the auto-builder ordered the link in a pass that met an order short of ground, which in this fixture's strait is the island's port and home's.
+        boolean stillUnlinked = lms.anyUnlinked() && !lms.linked(648) && (!lms.hasPlacements() || linkOrders > 0);
+        report("AL1: the auto-builder orders the island's link only in a pass that met an order short of ground (the fixture's strait: ports), and every link it ordered in the 24 months was the island's",
+                wrongLinks == 0 && (linkOrders == 0 || cueMonths > 0) && (cueMonths > 0 || !lms.hasPlacements()),
+                cueMonths + " months with the cue, " + linkOrders + " link(s) ordered; linked free ground " + String.format("%,.0f", c.lm.getAvailableSqFt()) + " sq ft");
         double unlinkedFree = c.lm.getUnlinkedFreeSqFt();
         String clause = g.getBusinessInvestment().landReason(tpl(c, "House"));
         boolean island = orderOn(c, gc, 1, false, 648) == Game.BuildResult.SUCCESS;
@@ -3173,6 +3189,53 @@ public class LandmassCheck {
         for (CityMap.District dd : d.g.getCityMap().districts()) for (int q = 0; q < CityMap.SLOTS; q++) if (dd.siteRuns[q] != null) drawnMines += dd.siteRuns[q].length / 3;
         report("the map of the island city, kept up the 24 months: its site index is the model's sites (every sited resource), nothing is drawn on the mainland's ground across the water in " + dMapLooks + " looks, and the map kept up",
                 sitesAgree && dMapLooks == 2 && dMapBad == 0 && d.g.getMapFailures() == 0, drawnMines + " works placed on sites in all");
+    }
+
+    /** Months section 12's short-ground twin is given to meet an order short of ground and order the island's link: 24, as the section's first stretch. */
+    static final int SHORT_MONTHS = 24;
+
+    /**
+     * 12 (AL1, 2026-11-09). THE PREMISE ET5's call 5 HELD, RESTATED BY JERUS'S WORDS: "autobuild will build bridges and ports if sees that land is low and there is
+     * something unlinked ... if not it build a link via port". The grown city above has room, so no order of its lacks ground and its island stays unlinked; here the
+     * condition is caused in a twin: the linked free ground cut to nothing before each month, the auto-builder on, the island's square and home's coast owned. The
+     * auto-builder orders the island's link in the pass that met an order short of ground - the fixture's strait is open water, so the island's port and one at
+     * home (BuildAdvice.linkFor(); IslandLinkCheck holds the rule and the money) - and until both terminals stand the island stays unlinked, owned and counted, the books
+     * audited every month; once both stand it is linked.
+     */
+    static void grownShort(Fixtures f) {
+        out.println("\n--- 12 (continued, AL1). grown short of ground: the auto-builder orders the island's link, which links it once both terminals stand ---");
+        if (!f.ok) { check("fixtures were found", false); return; }
+        City c = portCity(f, "landmass-grown-short", true);
+        Game g = c.g;
+        Landmasses lms = c.books();
+        AutoBuilder ab = g.getAutoBuilder();
+        int home = lms.home();
+        quietly(() -> ab.setOn(true, g.getDecisions()));
+        AutoBuilder.LinkStep link = null;
+        int cueMonths = 0, bad = 0, looks = 0;
+        for (int m = 0; m < SHORT_MONTHS && link == null; m++) {
+            quietly(() -> c.lm.setAllocatedSqFt(c.lm.getLinkedOwnedSqFt() + lms.unlinkedPortsSqFt()));
+            quietly(() -> g.simulateMonths(1));
+            if (ab.groundShort()) cueMonths++;
+            for (AutoBuilder.LinkStep s : ab.linkSteps()) if (s.outcome() == AutoBuilder.Outcome.ORDERED) link = s;
+            looks++;
+            if (audit(g) != null) bad++;
+        }
+        report("the pass that met an order short of ground ordered the island's link: ports, the island's terminal and one at home, on site",
+                link != null && link.kind() == BuildAdvice.LinkKind.PORT && link.landmass() == 648 && cueMonths >= 1 && lms.portsAt(648) == 1 && lms.portsAt(home) == 1 && lms.hasPlacements(),
+                link == null ? "no link in " + SHORT_MONTHS + " months (" + cueMonths + " with the cue)" : link.line());
+        report("...until a terminal stands the island stays unlinked, owned and counted: its ground is in the books, the free ground of it is no room, and nothing more is ordered for it",
+                lms.anyUnlinked() && !lms.linked(648) && c.lm.getUnlinkedFreeSqFt() > 0 && lms.rows().size() == 2 && lms.rows().get(1).buildableSqFt() > 0 && BuildAdvice.linkFor(g) == null,
+                String.format("the island's free ground %,.0f sq ft, owned %,.0f", c.lm.getUnlinkedFreeSqFt(), c.lm.getOwnedSqFt()));
+        int month648 = -1;
+        for (int m = 0; m < TERMINAL_MONTHS && month648 < 0; m++) {
+            quietly(() -> g.simulateMonths(1));
+            looks++;
+            if (audit(g) != null) bad++;
+            if (lms.linked(648)) month648 = g.getMonth();
+        }
+        report("...and once both terminals stand it is linked, nothing is unlinked, and the books were consistent at every one of the " + looks + " looks",
+                month648 > 0 && !lms.anyUnlinked() && bad == 0, "linked in month " + month648);
     }
 
     /* =====================================================================

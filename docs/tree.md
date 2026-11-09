@@ -203,7 +203,12 @@ adds its line here, not in `CLAUDE.md`.
                                    since 0.7.101 only an order's own, and the next card in the advice's
                                    ranking where the money, the ground or the payback will not run to the
                                    first - borrowing on the funding page's bond; its log, its inbox
-                                   notices - AutoBuildCheck holds it
+                                   notices - AutoBuildCheck holds it; since AL1 (2026-11-09) the pass
+                                   that met an order short of ground links the island the city owns
+                                   ground on (BuildAdvice.linkFor(): a Highway or Road Bridge where the
+                                   survey finds a crossing, else the cheapest terminal on the island's
+                                   shore and one at home) - IslandLinkCheck holds it, with the test
+                                   player's linkIslands() (LongPlaytest) that reads the same rule
         BuildCard.java             one build card's figures for all 143 buildings (0.7.25): what it gives the
                                    city and in what unit, its money and scarce-resource bars, the group it is
                                    compared within and its tags, the investors' word and the first gate it
