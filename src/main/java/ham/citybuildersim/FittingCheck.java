@@ -821,6 +821,13 @@ public class FittingCheck {
         BuildingsTemplate fabT = fab.getBuilding();
         Equipment fabDrive = fabT.getEquipment(DRIVE);
         Sector fabSector = c.getSectors().byKey(fabT.getSector());
+        // RN1 (2026-11-09): a glut's rent no longer lifted, the town came out of the settle larger and its crews fuller (59% of the posts
+        // against 39% on 0.9.62), so four depots' month after the repairs (829) was more than the drive's work (612). The fixture retires
+        // depots, one at a time, until even every post filled would leave the crews less than the drive's work after the repairs.
+        BuildingsTemplate depot = c.getBuildingManager().getTemplateByName("Construction Depot");
+        while (c.getBuildingManager().getQuantity(depot.getId()) > 0
+                && c.getBuildingManager().getTotalConstructionCapacity() * c.getRoadRatio() * c.getHealth().getWorkRatio() - c.getMaintenancePoints() >= fabDrive.getWork())
+            quietly(() -> c.getBuildingManager().retire(depot, 1));
         fab.setUnfitted(DRIVE, 1);
         step(c, 1);
         int month = afterRepairs(c);

@@ -127,3 +127,30 @@ Built on origin/main 27801328 (MW1 merged). Baseline: docs/ensemble/0.9.57.md
   waive the lift in 0 months on the studio leg and 61 on the family leg;
   every month passed its audit and every reload matched.
 - **Process lines:** none; RN1 changes no script, check machinery or rule.
+
+## The gate's reds (0.9.62 merge, 2026-11-09)
+
+- **FittingCheck c: a fixture effect, fixed.** With a glut's rent no longer
+  lifted the town comes out of the settle larger (1,234 people against 1,142
+  on 0.9.62) and its crews fuller (59.4% of the posts against 38.97%), so
+  four depots' month after the repairs is 829 against 483, more than the
+  drive's work (612), and one press fits it. The fixture now retires depots,
+  one at a time, until even every post filled (capacity x road ratio x work
+  ratio, the bound `getConstructionOutput` cannot pass) leaves less than the
+  drive's work after the repairs. Green alone, 197 OK.
+- **HealthCheck, the poor city at three prices: main's latent fault, passed
+  by name, a fix queued (RN1-F). Not a call.** The fixture never caused its
+  general-care condition. On main (0.9.60's build) the x1 and x15 twins
+  serve 83.0% in both, read 86.20% coverage in both and price out 1,555 and
+  1,554 in general care; its four assertions (served, beds, coverage,
+  baseline) pass by hundredths of a point. The fee's bite is in hunger
+  instead (13% at x1, 20% at x15): a household above its subsistence pays
+  the dear bill and eats less, one below it is priced out whatever the fee,
+  so almost none sit between the two bills (WN3 found the same for senior
+  care). RN1 moves the twins (17,630 and 17,057 people against 13,096 and
+  13,090) and the hair tips: the beds take 99.66% at x1 and 99.69% at x15,
+  more than the fee's gap in served (under 0.03 pt). Tried fourteen clinics
+  so the beds cannot bind: 13,297 and 13,180 people, served 83.1% and
+  coverage 86.35% in both, general priced out 1,582 at x1 and 1,566 at x15,
+  four assertions red; reverted, HealthCheck is main's. The fix puts
+  general-care households between the two bills, a study like WN3's.

@@ -9227,65 +9227,65 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L806 one press on: the sites in A were given exactly the points the fitting took fewer than the sites in B, the piece's work
   - L808 ...the repairs the same in both, and the job done in the month: its count down by one and nothing left on site
   - L810 ...and with no job on site the output is the repairs' left, to the bit, as it always was
-  - L827 fixture: a Fabrication Works stands and lacks its drive, and fitting it is more work than a month's output after the repairs
-  - L833 fixture: the city orders the Works' drive first and a Bakery's second
-  - L835 fixture: the Works' share of steam is up (a building in it lacks its drive)
-  - L852 each press worked exactly what the month left the crews after the repairs, or what was owed if less
-  - L853 the Works' drive took more than one press, as the work exceeds a month's output
-  - L854 ...its count fell only in the month its points were done, not before, and the job placed second had not been touched while the first was worked
-  - L855 ...and then both are fitted, in the order placed: the Works and the Bakery, nothing left on site
-  - L857 ...and the Works' steam share went with its count, at the month's end: the counts' at rest (nothing in its sector lacks a drive now)
-- **L864 8. one at a time: a sector with a fitting on site orders no second, and a stack whose unfitted are all on site is left out of the rank**
-  - L872 fixture: the drive pays at three times the break-even coal price, two Bakeries lack it and Industry has no job on site
-  - L875 with none on site the rank holds the drive
-  - L878 one of the two is on site: the rank still holds the other (the unfitted count less the fittings on site is 1)
-  - L880 ...but the sector has a fitting on site and orders no second: its plan's decision comes back
-  - L883 three months of the real round on, the sector still orders no second: nothing Fitted and the one job is all there is
-  - L888 a stack whose unfitted are all on site (two lack it, two are being fitted by the city) is left out of the rank, and the sector orders none
-  - L891 ...and ordering one is refused
-  - L893 ...two months of the real round on, still none ordered
-- **L899 9. the depot's trucks: the trucks a fitting buys are delivered into Freight's fleet and the builders' draw of them is the same**
-  - L908 fixture: a Truck Depot lacks its trucks, the piece buys trucks and nothing else, a month is played and the carts' horse share is up
-  - L917 Freight orders the trucks: taken
-  - L918 Freight's trucks held rose by the piece's TRUCKS, added to what it held
-  - L919 the builders' draw of TRUCKS is the same units, in the market's own count
-  - L920 ...and in the market's records: the builders are the buyer
-  - L921 Freight paid the draws' cost, and the piece has no work
-  - L922 the depot is not yet fitted (a job of no points is on site): the horse share has not moved
-  - L925 the next press works it (no points): the depot is fitted and the carts' horse share is 0
-- **L932 10. the player's Fit: the city pays whatever the verdict says, not limited to one at a time, refused with nothing drawn and nothing paid**
-  - L941 fixture: three Bakeries lack the drive and, at today's prices, it does not pay (NOT_YET), and the treasury can pay
-  - L947 the player's Fit is taken though the verdict is NOT_YET: it is the player's money
-  - L948 ...the treasury fell by the total: the goods at the market and the work at the builders' price a point
-  - L949 ...a \"City\" job is on site, and the count has not moved
-  - L951 ...the units drawn are the piece's
-  - L952 ...and the builders earned the total
-  - L954 it is not limited to one at a time: a second goes on site beside the first
-  - L963 a treasury short of the total refuses it (the city does not borrow for it), with a reason that names the treasury
-  - L964 ...nothing drawn, nothing paid, no job added
-  - L974 the tractor is refused: it is not known in the city's year
-  - L975 ...nothing drawn, nothing paid, no job added
-  - L980 the third Bakery is taken, and then every one that lacks the drive is on site
-  - L985 a fourth is refused: every unfitted building of the stack is on site
-  - L986 ...nothing drawn, nothing paid, no job added
-  - L987 a template with no stack, or a piece it does not carry, is refused
-  - L992 the press after the city's three orders: the money audit closes
-  - L993 ...the national accounts' construction investment carries the three, once
-- **L1010 11. the save: no job, no key; the jobs saved are the jobs loaded, and a loaded city and the one it was saved from stay equal to the bit**
-  - L1021 a city with no job on site saves no fittings key
-  - L1025 ...and loads with none on site
-  - L1028 fixture: two jobs on site (the Works' first), ordered between two presses so that the builders' ledger holds their revenue
-  - L1032 a city with jobs on site saves them (the key is in the file)
-  - L1038 ...and loads without a failure, in the same month, with the same jobs in the same order, every field to the bit
-  - L1041 ...the builders' fitting revenue booked in the ledger is back, so that its strike names it
-  - L1043 the twin and the loaded city are equal to the bit in the treasury, every sector's cash, the counts and the jobs, before any press
-  - L1056 ...and equal to the bit after each press until the jobs are worked
-  - L1057 ...the jobs worked in both, the counts equal and down by one each
-  - L1062 ...and two presses beyond, equal still
-- **L1068 12. a default city orders none: a town founded the default way, played 24 months, has no job ever on site and no decision with a piece**
-  - L1083 fixture: nothing is unfitted in the town in any of the 24 months
-  - L1084 no job is on site in any of the 24 months, and the builders were paid no fitting
-  - L1085 no sector's line says Fitted in any month, and the choice hands every sector's plan back, the very object, every month
+  - L834 fixture: a Fabrication Works stands and lacks its drive, and fitting it is more work than a month's output after the repairs
+  - L840 fixture: the city orders the Works' drive first and a Bakery's second
+  - L842 fixture: the Works' share of steam is up (a building in it lacks its drive)
+  - L859 each press worked exactly what the month left the crews after the repairs, or what was owed if less
+  - L860 the Works' drive took more than one press, as the work exceeds a month's output
+  - L861 ...its count fell only in the month its points were done, not before, and the job placed second had not been touched while the first was worked
+  - L862 ...and then both are fitted, in the order placed: the Works and the Bakery, nothing left on site
+  - L864 ...and the Works' steam share went with its count, at the month's end: the counts' at rest (nothing in its sector lacks a drive now)
+- **L871 8. one at a time: a sector with a fitting on site orders no second, and a stack whose unfitted are all on site is left out of the rank**
+  - L879 fixture: the drive pays at three times the break-even coal price, two Bakeries lack it and Industry has no job on site
+  - L882 with none on site the rank holds the drive
+  - L885 one of the two is on site: the rank still holds the other (the unfitted count less the fittings on site is 1)
+  - L887 ...but the sector has a fitting on site and orders no second: its plan's decision comes back
+  - L890 three months of the real round on, the sector still orders no second: nothing Fitted and the one job is all there is
+  - L895 a stack whose unfitted are all on site (two lack it, two are being fitted by the city) is left out of the rank, and the sector orders none
+  - L898 ...and ordering one is refused
+  - L900 ...two months of the real round on, still none ordered
+- **L906 9. the depot's trucks: the trucks a fitting buys are delivered into Freight's fleet and the builders' draw of them is the same**
+  - L915 fixture: a Truck Depot lacks its trucks, the piece buys trucks and nothing else, a month is played and the carts' horse share is up
+  - L924 Freight orders the trucks: taken
+  - L925 Freight's trucks held rose by the piece's TRUCKS, added to what it held
+  - L926 the builders' draw of TRUCKS is the same units, in the market's own count
+  - L927 ...and in the market's records: the builders are the buyer
+  - L928 Freight paid the draws' cost, and the piece has no work
+  - L929 the depot is not yet fitted (a job of no points is on site): the horse share has not moved
+  - L932 the next press works it (no points): the depot is fitted and the carts' horse share is 0
+- **L939 10. the player's Fit: the city pays whatever the verdict says, not limited to one at a time, refused with nothing drawn and nothing paid**
+  - L948 fixture: three Bakeries lack the drive and, at today's prices, it does not pay (NOT_YET), and the treasury can pay
+  - L954 the player's Fit is taken though the verdict is NOT_YET: it is the player's money
+  - L955 ...the treasury fell by the total: the goods at the market and the work at the builders' price a point
+  - L956 ...a \"City\" job is on site, and the count has not moved
+  - L958 ...the units drawn are the piece's
+  - L959 ...and the builders earned the total
+  - L961 it is not limited to one at a time: a second goes on site beside the first
+  - L970 a treasury short of the total refuses it (the city does not borrow for it), with a reason that names the treasury
+  - L971 ...nothing drawn, nothing paid, no job added
+  - L981 the tractor is refused: it is not known in the city's year
+  - L982 ...nothing drawn, nothing paid, no job added
+  - L987 the third Bakery is taken, and then every one that lacks the drive is on site
+  - L992 a fourth is refused: every unfitted building of the stack is on site
+  - L993 ...nothing drawn, nothing paid, no job added
+  - L994 a template with no stack, or a piece it does not carry, is refused
+  - L999 the press after the city's three orders: the money audit closes
+  - L1000 ...the national accounts' construction investment carries the three, once
+- **L1017 11. the save: no job, no key; the jobs saved are the jobs loaded, and a loaded city and the one it was saved from stay equal to the bit**
+  - L1028 a city with no job on site saves no fittings key
+  - L1032 ...and loads with none on site
+  - L1035 fixture: two jobs on site (the Works' first), ordered between two presses so that the builders' ledger holds their revenue
+  - L1039 a city with jobs on site saves them (the key is in the file)
+  - L1045 ...and loads without a failure, in the same month, with the same jobs in the same order, every field to the bit
+  - L1048 ...the builders' fitting revenue booked in the ledger is back, so that its strike names it
+  - L1050 the twin and the loaded city are equal to the bit in the treasury, every sector's cash, the counts and the jobs, before any press
+  - L1063 ...and equal to the bit after each press until the jobs are worked
+  - L1064 ...the jobs worked in both, the counts equal and down by one each
+  - L1069 ...and two presses beyond, equal still
+- **L1075 12. a default city orders none: a town founded the default way, played 24 months, has no job ever on site and no decision with a piece**
+  - L1090 fixture: nothing is unfitted in the town in any of the 24 months
+  - L1091 no job is on site in any of the 24 months, and the builders were paid no fitting
+  - L1092 no sector's line says Fitted in any month, and the choice hands every sector's plan back, the very object, every month
 
 ## FloatLinkCheck.java - 253 labelled assertions
 
