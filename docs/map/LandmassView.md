@@ -1,6 +1,6 @@
 # LandmassView.java - 528 lines · 38 methods · 18 constants · model
 
-`ham/citybuildersim/LandmassView.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandmassView.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
 
 > What the screens and the investors' words say of the city's landmasses: pure functions of the model's figures, so that
 > the words are written in one place and a harness can rebuild them from getters (ET5, 2026-10-25).

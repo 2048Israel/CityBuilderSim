@@ -1,6 +1,6 @@
 # RankingsScreen.java - 1,766 lines · 81 methods · 18 constants · interface
 
-`ham/citybuildersim/ui/RankingsScreen.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/RankingsScreen.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
 
 > The Rankings tab: the active city on a board of the real world's nations and city regions (or of the
 > nations of its own world), measure by measure, in the money and at the prices the player picked, with the

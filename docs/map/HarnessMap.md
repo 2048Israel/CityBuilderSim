@@ -1,6 +1,6 @@
 # HarnessMap.java - 135 lines · 3 methods · 2 constants · tools
 
-`ham/citybuildersim/tools/HarnessMap.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/tools/HarnessMap.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
 
 > What every harness asserts, in its own words: docs/harnesses.md.
 > 

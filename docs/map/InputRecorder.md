@@ -1,6 +1,6 @@
 # InputRecorder.java - 205 lines · 14 methods · 1 constants · interface
 
-`ham/citybuildersim/ui/InputRecorder.java` - generated 2026-11-08 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/InputRecorder.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
 
 > The window's input kept for the replay's ghost (TR1, 2026-10-31): while "Record this city" is on, the mouse and the keys
 > of the sitting - and the markers beside them: the window's size, the screen open, the expanded map's view, the clock and
