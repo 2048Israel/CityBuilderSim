@@ -43,4 +43,5 @@ prototypes (`kit.md`) and tables (`out.md`) are in `docs/studies/staffing-gate/`
 
 ## Checks
 
-- `./batch-check.sh --fast`: see the ship file's commit. The merge changes only `.md` files.
+- `./batch-check.sh --fast`: exit 0 (compile OK; maps regenerated with no change to the generated docs; Stale 0
+  firm). The merge changes only `.md` files.
