@@ -19,10 +19,14 @@ import java.util.function.DoubleConsumer;
  * control can pass under one: on the Build overview (1,067 px, scrolling) "Turn automatic building off" sits
  * mid-page and went under the 33 px toast for about 50 px of scrolling (PT1, item 10,
  * PT1/build-overview-toast-covers-button.png). A padding that is always there only adds scroll after the
- * page, so it is there only while a toast is; and a page that grows by a padding while the player is part
- * way down it must not jump, so the scroll is moved to the pixel it was at (a ScrollPane keeps the
- * FRACTION of the way down, and a longer page puts that fraction further on). Screens only: nothing in the
- * model reads this.
+ * page, so it is there only while a toast is. A page that grows by a padding while the player is part way
+ * down it does not jump: the ScrollPane keeps the PIXEL offset itself when its content changes height
+ * (ToastCheck 3 holds it, so a toolkit that stopped would be heard), and this does not move the scroll - a
+ * first version did, to the fraction the new height wanted, before the layout had given the page that height,
+ * and put the page 15 px out. What it does is tell the window the fraction the page will be at once laid out
+ * (placeAt): the window keeps the player's place as a fraction (UserInterface.pageScrollAt) and a rebuild
+ * restores it from there, so a toast arriving with the rebuild would otherwise put the page back at the
+ * fraction of the shorter page. Screens only: nothing in the model reads this.
  *
  * <p>What it watches is the stack itself: its toasts coming and going, its being hidden (a game menu) and
  * its being taken out of the window (cinematic mode). Any of the three asks for a fit, and the fit is made
@@ -36,7 +40,7 @@ public final class ToastRoom {
     private final ScrollPane scroller;
     private final Region page;
     private final Pane stack;
-    private final DoubleConsumer moveTo;
+    private final DoubleConsumer placeAt;
     private final Insets base;
 
     /** What the page's foot gives now, in pixels. */
@@ -49,14 +53,14 @@ public final class ToastRoom {
      * @param scroller the page's scroller, which the toasts float over
      * @param page     the scroller's content; its padding when built is the page's own, and the room is added under it
      * @param stack    the toasts' stack, set in a StackPane over the scroller with a margin (the corner)
-     * @param moveTo   how the window moves the page: it is given the fraction of the way down to put it at
-     *                 (the window keeps that number as the player's place, so it must hear this one)
+     * @param placeAt  told the fraction of the way down the page will be at once it is laid out with the room
+     *                 (or without it): the window keeps that number as the player's place; it moves nothing
      */
-    public ToastRoom(ScrollPane scroller, Region page, Pane stack, DoubleConsumer moveTo) {
+    public ToastRoom(ScrollPane scroller, Region page, Pane stack, DoubleConsumer placeAt) {
         this.scroller = scroller;
         this.page = page;
         this.stack = stack;
-        this.moveTo = moveTo;
+        this.placeAt = placeAt;
         this.base = page.getPadding();
         stack.getChildren().addListener((ListChangeListener<javafx.scene.Node>) c -> ask());
         stack.visibleProperty().addListener((o, was, now) -> ask());
@@ -86,8 +90,8 @@ public final class ToastRoom {
     }
 
     /**
-     * Give the page the room the toasts want, and put the scroll back to the pixel it was at. Public for the
-     * harness, which runs it where the window runs it, on the FX thread; the window never calls it.
+     * Give the page the room the toasts want, and say where the page will be (the pixel it is at, as a fraction of
+     * the new length). Public for the harness, which runs it where the window runs it, on the FX thread; the window never calls it.
      */
     public void fit() {
         asked = false;
@@ -104,7 +108,6 @@ public final class ToastRoom {
 
         if (view <= 0) return;   // nothing laid out yet: there is no place to keep
         double span = page.prefHeight(w) - view;
-        double at = span > 1 ? Math.min(1, offset / span) : 0;
-        if (Math.abs(at - scroller.getVvalue()) > 1e-9) moveTo.accept(at);
+        placeAt.accept(span > 1 ? Math.min(1, offset / span) : 0);
     }
 }

@@ -816,12 +816,10 @@ public class UserInterface extends Application {
         StackPane.setAlignment(toastStack, Pos.BOTTOM_RIGHT);
         StackPane.setMargin(toastStack, new javafx.geometry.Insets(0, 24, 16, 0));
         this.stagePane.getChildren().add(toastStack);
-        // ...and the page gives the corner up while a toast stands in it (TS1; see ToastRoom). The scroll is
-        // moved through pageScrollAt too: the rebuild restores the player's place from that field.
-        this.toastRoom = new ToastRoom(menuScroller, rootMenu, toastStack, at -> {
-            pageScrollAt = at;
-            menuScroller.setVvalue(at);
-        });
+        // ...and the page gives the corner up while a toast stands in it (TS1; see ToastRoom). It is told where
+        // the page will be, which the rebuild restores the player's place from (pageScrollAt); the scroller keeps
+        // the pixel offset itself.
+        this.toastRoom = new ToastRoom(menuScroller, rootMenu, toastStack, at -> pageScrollAt = at);
 
         /* =====================================================================
            AND THE TIME CONTROLS DID NOT FLOAT, WHICH WAS A CORRECTION.
