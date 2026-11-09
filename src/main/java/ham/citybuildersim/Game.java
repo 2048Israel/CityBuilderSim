@@ -13941,16 +13941,17 @@ public class Game {
          * history.
          */
         reportSaves();
+        SaveWriter.Job autosaved = null;
         if (monthsSinceAutosave >= AUTOSAVE_MONTHS) {
             if (!autosavedYet || saveClock.getAsLong() - lastAutosaveAt >= (long) (SaveWriter.FLOOR_SECONDS * 1e9)) {
-                autosave("month " + month);
+                autosaved = autosaveJob("month " + month);
             } else {
                 // Due inside the floor (UP1): it waits for the next due month past it; no save is queued for later.
                 monthsSinceAutosave = 0;
             }
         }
-        // A recorded city keeps this whole month, beside the autosave (TR1; THE RECORDING). Moves no pool.
-        recordForReplay();
+        // A recorded city keeps this whole month, beside the autosave (TR1; THE RECORDING), from the autosave's fill when it made one (TR2). Moves no pool.
+        recordForReplay(autosaved);
         // The month's draws were shown with its fills; a draw from here on is the next month's (FW5, 2026-10-25). Last, on purpose.
         getMarkets().closeMonth();
     }
@@ -16547,8 +16548,13 @@ public class Game {
      * next month's end, or awaitSaves().
      */
     public void autosave(String reason) {
+        autosaveJob(reason);
+    }
 
-        if (!initialized) return;
+    /** The autosave, returning the job it made (null when the city is not initialised) so the month that autosaves can hand its fill to the recording (TR2). */
+    private SaveWriter.Job autosaveJob(String reason) {
+
+        if (!initialized) return null;
 
         reportSaves();
 
@@ -16565,6 +16571,7 @@ public class Game {
         lastAutosaveAt = saveClock.getAsLong();
         autosavedYet = true;
         monthsSinceAutosave = 0;
+        return job;
     }
 
     /* ===== THE AUTOSAVE OFF THE CLOCK (UP1, 2026-10-22) =====================
@@ -17134,6 +17141,9 @@ public class Game {
     /** The most recording writes the writer may be behind by (months and histories not yet on disk): the clock then records nothing that month, and a skip waits. */
     public static final int RECORD_BACKLOG = 6;
 
+    /** The name a recorded month's save carries in its header (the slot name a save has): the same whether the month was filled for the recording or shared with the autosave's. */
+    static final String RECORDING_NAME = "Recording";
+
     /** The longest a skip waits for the writer to get inside RECORD_BACKLOG, in milliseconds, before it records nothing that month: a writer that cannot write must not hold the skip for ever. */
     static final long RECORD_WAIT_MS = 30_000;
 
@@ -17163,16 +17173,24 @@ public class Game {
 
     public String getRecordingId() { return recordingId; }
 
-    /** The recording's folder, or null in a city with no id. */
+    /** The recording's folder, or null in a city with no id (or one that is not the shape Recording.newId writes: a hand-edited save cannot point outside recordings/). */
     public Path recordingFolder() {
-        return recordingId == null ? null : gameFiles.recordingsDirectory().resolve(recordingId);
+        return Recording.isId(recordingId) ? gameFiles.recordingsDirectory().resolve(recordingId) : null;
     }
+
+    /** Set on the save writer's thread when a recording's first month after a load could not clear the old timeline's later months (Recording.monthTask); read on the FX thread by recordForReplay(), which then ends the recording. */
+    private volatile boolean recordingBroken;
 
     /** Months the clock left out of the recording because the writer was behind (RECORD_BACKLOG). */
     public int getMonthsNotRecorded() { return monthsNotRecorded; }
 
     /** For ReplayCheck: the FX-thread cost of the last recorded month, in nanoseconds. */
     long lastRecordNanos() { return lastRecordNanos; }
+
+    /** For ReplayCheck: how many months the recording took from the autosave's fill instead of making a second one (TR2). */
+    int recordedFromAutosave() { return recordedFromAutosave; }
+
+    private int recordedFromAutosave;
 
     /**
      * Switches "Record this city" on or off. On: an id if the city has none, and the next month written starts the
@@ -17190,10 +17208,11 @@ public class Game {
             }
             recording = true;
             recordedSinceLoad = false;
+            recordingBroken = false;
         } else {
             boolean was = recording;
             recording = false;
-            if (was && recordedSinceLoad && recordingId != null) {
+            if (was && recordedSinceLoad && recordingFolder() != null) {
                 submitRecording(Recording.historyTask(gameFiles, recordingFolder(), historySave.snapshot()));
             }
         }
@@ -17240,11 +17259,22 @@ public class Game {
      * Keeps the month that has just ended, when "Record this city" is on (called by nextMonth(), after the autosave: the
      * counter and every month-end record agree). The FX-thread part is the fill of the save, a snapshot of it and the
      * hand-over; the writer does the rest. Writer behind by RECORD_BACKLOG: a skip waits for it, the clock records nothing
-     * this month and says so once per run. The first write since a load or since switching on drops the months past it (the
-     * rewind: the recording is the timeline last played) and takes the history with it.
+     * this month and says so once per run. The first write since a load or since switching on drops the months from it up (the
+     * rewind: the recording is the timeline last played) and takes the history with it; a drop that fails ends the recording here,
+     * on the next month (TR2). {@code autosaved} is the job this month's autosave made, or null: the month's fill is then taken
+     * once and the recording's snapshot is a copy of the autosave's, not a second fill (TR2).
      */
-    private void recordForReplay() {
+    private void recordForReplay(SaveWriter.Job autosaved) {
         if (!recording || replayCopy || recordingId == null) return;
+        if (recordingBroken) {
+            recordingBroken = false;
+            recording = false;
+            recordedSinceLoad = false;
+            System.out.println("Recording ended for " + getCityName() + " at month " + month
+                    + ": the months of the old timeline could not be deleted, and one recording keeps one timeline.");
+            return;
+        }
+        if (recordingFolder() == null) return;
         if (recordingsWaiting.size() >= RECORD_BACKLOG && !(skipping && awaitRecordingRoom())) {
             monthsNotRecorded++;
             if (!inUnrecordedRun) {
@@ -17256,15 +17286,35 @@ public class Game {
         }
         inUnrecordedRun = false;
         long began = System.nanoTime();
-        byte[] map = fillSave("Recording");
-        DataSave snapshot = dataSave.snapshot();
+        byte[] map;
+        DataSave snapshot;
+        if (autosaved != null) {
+            // The autosave's fill and snapshot stand for this month too. What the fill writes that differs is the save's name
+            // ("Autosave - month N", where the recording's is "Recording") and its stamp (the autosave's moment, the same month):
+            // the snapshot is shallow, so a copy of it is cheap and takes the recording's name without touching the autosave's.
+            map = autosaved.map();
+            snapshot = autosaved.data().snapshot();
+            snapshot.setSlotName(RECORDING_NAME);
+            recordedFromAutosave++;
+        } else {
+            map = fillSave(RECORDING_NAME);
+            snapshot = dataSave.snapshot();
+        }
         boolean first = !recordedSinceLoad;
         HistorySave history = first ? historySave.snapshot() : null;
         Path folder = recordingFolder();
         Recording.Meta meta = recordingMeta();
-        submitRecording(Recording.monthTask(gameFiles, folder, meta, month, snapshot, map, first));
+        submitRecording(Recording.monthTask(gameFiles, folder, meta, month, snapshot, map, first, () -> recordingBroken = true));
         if (first) {
-            submitRecording(Recording.historyTask(gameFiles, folder, history));
+            // Written after the month's task on the same thread: a month that could not clear the old timeline leaves its history alone too (TR2).
+            SaveWriter.Task historyTask = Recording.historyTask(gameFiles, folder, history);
+            submitRecording(new SaveWriter.Task() {
+                @Override public Path target() { return historyTask.target(); }
+                @Override public GameFiles.Result write() {
+                    return recordingBroken ? GameFiles.Result.failed(historyTask.target(), "the old timeline is still on disk, so its history is kept")
+                            : historyTask.write();
+                }
+            });
             recordedSinceLoad = true;
         }
         lastRecordNanos = System.nanoTime() - began;
@@ -17272,7 +17322,7 @@ public class Game {
 
     /** The autosave's history, handed to the recording from the snapshot the save made (autosave()); only once a month of this timeline is on disk. */
     private void recordHistoryFrom(SaveWriter.Job job) {
-        if (!recording || replayCopy || recordingId == null || !recordedSinceLoad) return;
+        if (!recording || replayCopy || recordingFolder() == null || !recordedSinceLoad) return;
         submitRecording(Recording.historyTask(gameFiles, recordingFolder(), job.history()));
     }
 
@@ -20735,6 +20785,13 @@ public class Game {
             this.recordingId = loaded.getRecordingId();
             this.recording = loaded.isRecording() && recordingId != null && !replayCopy;
             this.recordedSinceLoad = false;
+            this.recordingBroken = false;
+            if (recordingId != null && !Recording.isId(recordingId)) {
+                // An id that is not the shape Recording.newId writes could name a folder outside recordings/ (TR2): no folder, no recording.
+                System.out.println("The save's recording id \"" + recordingId + "\" is not one this game writes; recording is off for this city.");
+                this.recordingId = null;
+                this.recording = false;
+            }
             inbox.restoreFrom(loaded.getNotices());
             sectorBooks.restoreFrom(loaded.getSectorBooks(),
                     loaded.getSectorBooksBefore());

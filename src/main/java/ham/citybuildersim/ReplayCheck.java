@@ -17,7 +17,8 @@ import java.util.TreeSet;
 import ham.citybuildersim.ui.ReplayMoveProbe;
 
 /**
- * Replay of a recorded city (batch TR1, 2026-10-31): the recorder, the throwaway copy, the input log, and what recording costs.
+ * Replay of a recorded city (batch TR1, 2026-10-31): the recorder, the throwaway copy, the input log, and what recording costs;
+ * and Follow (batch TR2, 2026-11-09): the timeline of the input logs and the player that plays it, with TR1's four review fixes.
  * Timing harness (Timing.HARNESSES): section 6 judges the recorder's FX-thread cost through Timing.
  *
  * What it has to prove (the numbers are the brief's section 7, docs/queue/TR1.md):
@@ -51,7 +52,21 @@ import ham.citybuildersim.ui.ReplayMoveProbe;
  *      skipped where JavaFX cannot start, as in the cloud);
  *   6. recording costs the month only its fill and changes nothing in it: two same cities played 12 months, one recording, agree
  *      to the last digit; the recorder's FX-thread cost per month is within SaveWriter.CLOCK_MS (printed, with the size of a month's
- *      file and of the history, and of a month at deflate level 6 and 1).
+ *      file and of the history, and of a month at deflate level 6 and 1);
+ *   7. TR1's review (TR2): a log writer whose write failed takes no more events and lets go of its file (it can be deleted); a save
+ *      whose recording id is not the shape Recording.newId writes ("../escape", a drive path) gives no folder, recording off, and
+ *      records nothing outside recordings/; a first write after a load that fails leaves no month of the old timeline past it, and
+ *      one that cannot clear the old months writes nothing and ends the recording on the next month; a month that autosaves is
+ *      filled once, and the recording's month is the autosave's save but for its name;
+ *   8. the timeline (InputTimeline, FollowPlayer): two sittings with a rewind give a segment each (and a third where the recording
+ *      holds the older one's later months), startOf finds a month's segment and marker, a skipped month the marker past it, and
+ *      none a month no log reaches; a sitting that loads an earlier save is cut into runs; stateAt gives the screen, the mouse, the
+ *      window, the map and the buttons; a gap of more than IDLE_GAP_MS plays in IDLE_KEEP_MS with idle skipping on and in full with
+ *      it off; crossing a segment switches sittings; stopping and rejoining at now() lands where it stopped;
+ *   9. Follow into a headless copy: a real recording and a sitting logged with the writer, played by FollowPlayer into a Target over
+ *      a ReplayCity that loads each month whole as the log turns it: the copy is at each logged month in order, the screens arrive
+ *      in logged order at their logged times divided by the speed (to the frame), joining mid-month loads the month and catches
+ *      its input up flagged, and ends on the screen playing from the month's start reaches; nothing in the recording is written.
  */
 public class ReplayCheck {
 
@@ -854,6 +869,14 @@ public class ReplayCheck {
                 b.getMonthsNotRecorded() > 0 && recB.months().length + b.getMonthsNotRecorded() == played
                         && recB.months().length >= 1 && recB.months().length <= Game.RECORD_BACKLOG);
 
+        long sevenAt = System.nanoTime();
+        reviewChecks(a, b, filesA, filesB);
+        long eightAt = System.nanoTime();
+        timelineChecks();
+        long nineAt = System.nanoTime();
+        followChecks(rec, files);
+        System.out.printf("      sections 7, 8 and 9 took %.1f s, %.1f s and %.1f s%n", (eightAt - sevenAt) / 1e9, (nineAt - eightAt) / 1e9, (System.nanoTime() - nineAt) / 1e9);
+
         System.out.printf("%n%s: %d failure(s)%n", ReplayCheck.class.getSimpleName(), fails);
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -891,5 +914,538 @@ public class ReplayCheck {
         closed.add(InputLog.Event.month(70_000, 70));
         Thread.sleep(400);
         return closed.written() == before && InputLog.read(closed.path()).size() == 51;
+    }
+
+    /* ============ 7. TR1's review: a failed log write, an id from a save, a failed first write, a month that autosaves ============ */
+
+    /** A body that may throw: what {@link #printed} runs. */
+    interface Body {
+        void run() throws Exception;
+    }
+
+    /** What a body prints to the log, as a string (and not to the log). */
+    static String printed(Body body) throws Exception {
+        java.io.PrintStream real = System.out;
+        java.io.ByteArrayOutputStream captured = new java.io.ByteArrayOutputStream();
+        System.setOut(new java.io.PrintStream(captured, true, java.nio.charset.StandardCharsets.UTF_8));
+        try {
+            body.run();
+        } finally {
+            System.setOut(real);
+        }
+        return captured.toString(java.nio.charset.StandardCharsets.UTF_8);
+    }
+
+    /** What a task's write returns, with what it prints kept out of the log. */
+    static GameFiles.Result printedResult(java.util.function.Supplier<GameFiles.Result> write) throws Exception {
+        GameFiles.Result[] out = new GameFiles.Result[1];
+        printed(() -> out[0] = write.get());
+        return out[0];
+    }
+
+    /** Waits up to {@code ms} for a condition, polling; whether it came true. */
+    static boolean awaitTrue(java.util.function.BooleanSupplier condition, long ms) throws InterruptedException {
+        long until = System.nanoTime() + ms * 1_000_000L;
+        while (!condition.getAsBoolean()) {
+            if (System.nanoTime() > until) return false;
+            Thread.sleep(10);
+        }
+        return true;
+    }
+
+    static int occurrences(String text, String part) {
+        int n = 0;
+        for (int i = text.indexOf(part); i >= 0; i = text.indexOf(part, i + part.length())) n++;
+        return n;
+    }
+
+    /** {@code a} and {@code b}: the section 6 cities, both recording. */
+    static void reviewChecks(Game a, Game b, GameFiles filesA, GameFiles filesB) throws Exception {
+        System.out.println("\n--- 7. TR1's review: a failed log write, an id from a save, a failed first write, a month that autosaves ---");
+
+        // (1) The input log after a failed write: it stops taking events and lets go of its file.
+        Path logs = TempDirs.create("replaylog7");
+        InputLog.Writer failing = InputLog.open(logs, "tr2-20261109-120000", 1_762_000_000_000L);
+        failing.add(InputLog.Event.month(0, 1));
+        helper("fixture: a log has written its first event", awaitTrue(() -> failing.written() == 1, 3_000));
+        boolean[] ended = {false};
+        printed(() -> {
+            failing.failNextDrainForChecks();
+            failing.add(InputLog.Event.month(10, 2));
+            ended[0] = awaitTrue(failing::stopped, 3_000);
+        });
+        helper("a log whose write failed has ended its thread", ended[0]);
+        failing.add(InputLog.Event.month(20, 3));
+        helper("...takes no more events: what is added after the failure is not queued, and nothing more is written",
+                failing.queued() == 0 && failing.written() == 1);
+        long closing = System.nanoTime();
+        failing.close();
+        helper("...closes at once, not after the wait for a thread that has gone", (System.nanoTime() - closing) / 1e6 < InputLog.CLOSE_WAIT_MS / 2);
+        boolean deleted;
+        try {
+            deleted = Files.deleteIfExists(failing.path());
+        } catch (IOException e) {
+            deleted = false;
+            System.out.println("      the failed log's file could not be deleted: " + e);
+        }
+        helper("...and its file can be deleted: the failing path closed it (on Windows an open file cannot be)", deleted && !Files.exists(failing.path()));
+
+        // (2) A recording id read from a save is the shape the recorder writes, or no recording at all.
+        String escapeAbsolute = logs.resolve("elsewhere").toAbsolutePath().toString();
+        helper("an id is exactly the shape newId writes: its own ids are accepted, a path, a drive, a dot or a stray character is not",
+                Recording.isId(Recording.newId("Medellín", 0)) && Recording.isId(Recording.newId("  !! ", 0))
+                        && Recording.isId(Recording.newId("x".repeat(90), 0)) && Recording.isId("city-20261031-142355")
+                        && !Recording.isId(null) && !Recording.isId("") && !Recording.isId("../escape") && !Recording.isId("..")
+                        && !Recording.isId("a/b-20261031-142355") && !Recording.isId("a\\b-20261031-142355")
+                        && !Recording.isId("C:\\temp\\x-20261031-142355") && !Recording.isId(escapeAbsolute)
+                        && !Recording.isId("City-20261031-142355") && !Recording.isId("x-20261031-142355 ") && !Recording.isId("x-20261031-142355\n")
+                        && !Recording.isId("x-20261031-142355/..") && !Recording.isId("-20261031-142355") && !Recording.isId("a--b-20261031-142355")
+                        && !Recording.isId("x".repeat(Recording.ID_NAME_LENGTH + 1) + "-20261031-142355") && !Recording.isId("x-2026103-142355"));
+        helper("fixture: the city is recording, under an id of that shape", a.isRecording() && Recording.isId(a.getRecordingId()));
+        a.awaitSaves();
+        Map<String, String> recordingsBefore = hashes(filesA.recordingsDirectory());
+        helper("...with a recording on disk to be left alone", !recordingsBefore.isEmpty());
+        a.saveGame(ReplayCity.SLOT, "tr2 id");
+        Path slotFile = filesA.saveFile(ReplayCity.SLOT);
+        Path outside = TempDirs.create("replayoutside");
+        for (String bad : new String[] {"../escape", outside.toAbsolutePath().toString()}) {
+            boolean relative = bad.startsWith("..");
+            com.google.gson.JsonObject save = com.google.gson.JsonParser.parseString(Files.readString(slotFile)).getAsJsonObject();
+            helper("fixture: the save says it is recording, and now names a folder " + (relative ? "above recordings/" : "elsewhere"),
+                    save.get("recording").getAsBoolean() && save.has("recordingId"));
+            save.addProperty("recordingId", bad);
+            Files.writeString(slotFile, save.toString());
+            String said = printed(() -> a.loadGameSave(ReplayCity.SLOT));
+            helper("a save whose recording id is " + (relative ? "\"" + bad + "\"" : "an absolute path")
+                            + " loads, with no folder, recording off, and the log saying so once",
+                    a.getLoadFailure() == null && a.recordingFolder() == null && a.getRecordingId() == null && !a.isRecording()
+                            && occurrences(said, "is not one this game writes") == 1);
+            printed(() -> clockMonth(a));
+            a.awaitSaves();
+            String hurt = firstDifference(recordingsBefore, hashes(filesA.recordingsDirectory()));
+            boolean nothingOutside = relative ? !Files.exists(filesA.recordingsDirectory().resolve(bad).normalize()) : true;
+            try (var listing = Files.list(outside)) {
+                nothingOutside &= listing.findAny().isEmpty();
+            }
+            helper("...and a month played writes nothing outside recordings/ and nothing in the one there" + (hurt == null ? "" : " - " + hurt),
+                    nothingOutside && hurt == null);
+        }
+        a.setRecording(true);
+        helper("...and switching recording on again gives the city an id of its own, of the shape", a.isRecording() && Recording.isId(a.getRecordingId()));
+
+        // (3) The first write after a load: a failure leaves one timeline.
+        Path folder = TempDirs.create("replayold").resolve("old-20261109-120000");
+        DataSave small = new DataSave();
+        for (int m = 1; m <= 8; m++) Recording.monthTask(filesA, folder, null, m, small, null, false, null).write();
+        Recording old = Recording.at(folder);
+        helper("fixture: an old timeline of months 1 to 8", Arrays.equals(old.months(), new int[] {1, 2, 3, 4, 5, 6, 7, 8}));
+        DataSave nan = new DataSave();
+        nan.setCash(Double.NaN);
+        java.util.concurrent.atomic.AtomicBoolean broken = new java.util.concurrent.atomic.AtomicBoolean();
+        GameFiles.Result lost = printedResult(() -> Recording.monthTask(filesA, folder, null, 5, nan, null, true, () -> broken.set(true)).write());
+        helper("a first write after a load, at month 5, that fails (a number the file cannot hold) leaves no month of the old timeline past it: months 1 to 4 and none from 5",
+                !lost.ok && !broken.get() && Arrays.equals(old.months(), new int[] {1, 2, 3, 4}));
+        for (int m = 5; m <= 8; m++) Recording.monthTask(filesA, folder, null, m, small, null, false, null).write();
+        Files.delete(old.monthFile(7));
+        Files.createDirectories(old.monthFile(7));
+        Files.writeString(old.monthFile(7).resolve("keep"), "a month that cannot be deleted");
+        GameFiles.Result stuck = printedResult(() -> Recording.monthTask(filesA, folder, null, 5, small, null, true, () -> broken.set(true)).write());
+        helper("...and one that cannot clear the old months (month 7 cannot be deleted) writes nothing and tells the caller: the flag is set, month 5 is not written, the old months that could go have gone",
+                !stuck.ok && broken.get() && !Files.exists(old.monthFile(5)) && !Files.exists(old.monthFile(6)) && !Files.exists(old.monthFile(8)));
+        helper("...and in the city: a first write after a load that cannot clear the old months writes nothing, and the next month ends the recording, saying so",
+                tripFirstWrite(a));
+
+        // (4) A month that autosaves is filled once.
+        long[] tick = {0};
+        b.useSaveClockForChecks(() -> tick[0] += 60_000_000_000L);
+        b.autosave("tr2 reset");
+        b.awaitSaves();
+        int sharedBefore = b.recordedFromAutosave();
+        for (int i = 0; i < Game.AUTOSAVE_MONTHS; i++) {
+            clockMonth(b);
+            b.awaitSaves();
+        }
+        b.awaitSaves();
+        int autosaveMonth = b.getMonth();
+        Recording recB = Recording.at(b.recordingFolder());
+        SaveHeader autoHeader = filesB.readHeader(GameFiles.AUTOSAVE_SLOT);
+        String recordedJson = recB.saveJsonOf(autosaveMonth), previousJson = recB.saveJsonOf(autosaveMonth - 1);
+        helper("a recorded city that plays " + Game.AUTOSAVE_MONTHS + " months after an autosave autosaves in the last, and that month's recording is the autosave's fill, taken once"
+                        + " (shared " + (b.recordedFromAutosave() - sharedBefore) + " time(s); the autosave is month " + (autoHeader == null ? "?" : autoHeader.getMonth()) + " of " + autosaveMonth
+                        + ", named " + (autoHeader == null ? "?" : autoHeader.getSlotName()) + "; " + b.getMonthsNotRecorded() + " months left out of the recording)",
+                b.recordedFromAutosave() == sharedBefore + 1 && autoHeader != null && autoHeader.getMonth() == autosaveMonth
+                        && autoHeader.getSlotName().equals("Autosave - month " + autosaveMonth) && recordedJson != null && previousJson != null);
+        if (recordedJson == null || previousJson == null) return;
+        com.google.gson.JsonObject autosaved = com.google.gson.JsonParser.parseString(Files.readString(filesB.saveFile(GameFiles.AUTOSAVE_SLOT))).getAsJsonObject();
+        com.google.gson.JsonObject recorded = com.google.gson.JsonParser.parseString(recordedJson).getAsJsonObject();
+        String recordedName = recorded.get("slotName").getAsString();
+        String previousName = com.google.gson.JsonParser.parseString(previousJson).getAsJsonObject().get("slotName").getAsString();
+        autosaved.remove("slotName");
+        recorded.remove("slotName");
+        helper("...the recording's save of that month is the autosave's but for the name it carries, which stays \"" + Game.RECORDING_NAME + "\" as in the other months",
+                autosaved.equals(recorded) && recordedName.equals(Game.RECORDING_NAME) && previousName.equals(Game.RECORDING_NAME));
+        byte[] autoMap = Files.isRegularFile(filesB.mapFile(GameFiles.AUTOSAVE_SLOT)) ? Files.readAllBytes(filesB.mapFile(GameFiles.AUTOSAVE_SLOT)) : null;
+        helper("...and so is its map, byte for byte", autoMap != null && Arrays.equals(autoMap, recB.mapOf(autosaveMonth)));
+    }
+
+    /**
+     * The city's own first write after a load: a month written, a month past the next one made undeletable (a directory with a file
+     * in it), recording switched off and on as a load does; the first month then cannot clear the old timeline, nothing of it is
+     * written, and the month after sees the flag, ends the recording and says so.
+     */
+    static boolean tripFirstWrite(Game city) throws Exception {
+        printed(() -> clockMonth(city));
+        city.awaitSaves();
+        int first = city.getMonth();
+        Recording rec = Recording.at(city.recordingFolder());
+        Path trap = rec.monthFile(first + 5);
+        Files.createDirectories(trap);
+        Files.writeString(trap.resolve("keep"), "a month that cannot be deleted");
+        city.setRecording(false);
+        city.awaitSaves();
+        city.setRecording(true);
+        printed(() -> {
+            city.toggleNextMonth();
+            city.awaitSaves();
+        });
+        String said = printed(() -> {
+            city.toggleNextMonth();
+            city.awaitSaves();
+        });
+        return !city.isRecording() && said.contains("Recording ended") && Files.isDirectory(trap)
+                && Files.isRegularFile(rec.monthFile(first)) && !Files.exists(rec.monthFile(first + 1)) && !Files.exists(rec.monthFile(first + 2));
+    }
+
+    /* ============ 8. the timeline ============ */
+
+    /** What a Follow target was handed, in order; with a copy it loads each month whole, as Follow does in the window (sections 8 and 9). */
+    static final class Tape implements FollowPlayer.Target {
+        final ReplayCity copy;
+        final List<String> calls = new ArrayList<>();
+        final List<InputLog.Event> events = new ArrayList<>();
+        final List<Boolean> catching = new ArrayList<>();
+        final List<Integer> months = new ArrayList<>();
+        final List<String> screens = new ArrayList<>();
+        final List<Double> screenTimes = new ArrayList<>();
+        double elapsed;
+        String screen;
+        boolean loaded = true;
+
+        Tape(ReplayCity copy) { this.copy = copy; }
+
+        @Override public void loadMonth(int month) {
+            months.add(month);
+            calls.add("load " + month);
+            if (copy != null) loaded &= copy.loadWhole(month) == null && copy.game().getMonth() == month;
+        }
+
+        @Override public void event(InputLog.Event e, boolean catchingUp) {
+            events.add(e);
+            catching.add(catchingUp);
+            calls.add((catchingUp ? "catch " : "play ") + e.kind() + (e.words() == null ? "" : " " + e.words()));
+            if (e.kind() == InputLog.Kind.SCREEN) {
+                screen = e.words();
+                screens.add(e.words());
+                screenTimes.add(elapsed);
+            }
+        }
+
+        long count(InputLog.Kind kind) { return events.stream().filter(e -> e.kind() == kind).count(); }
+    }
+
+    /** Plays the timeline out in frames of {@code frameMs}; the tape's clock is the frames' end. */
+    static void playOut(FollowPlayer player, Tape tape, double frameMs) {
+        for (int guard = 0; !player.isDone() && guard < 2_000_000; guard++) {
+            tape.elapsed += frameMs;
+            player.advance(frameMs);
+        }
+    }
+
+    static int[] months(int from, int to) {
+        return java.util.stream.IntStream.rangeClosed(from, to).toArray();
+    }
+
+    static void timelineChecks() {
+        System.out.println("\n--- 8. the timeline: which sitting holds a month, where Follow starts, what the player had, idle ---");
+
+        // S1 plays months 100 to 200, a second each, twelve events a month; S2, later, loads month 149 and plays 150 to 180.
+        List<InputLog.Event> s1 = new ArrayList<>(), s2 = new ArrayList<>();
+        s1.add(InputLog.Event.window(0, 1280, 720));
+        for (int m = 100; m <= 200; m++) {
+            long t = (m - 100) * 1_000L;
+            s1.add(InputLog.Event.month(t, m));
+            s1.add(InputLog.Event.screen(t + 100, "S1 " + m));
+            for (int k = 0; k < 10; k++) s1.add(InputLog.Event.move(t + 200 + k * 30L, m, k));
+        }
+        s2.add(InputLog.Event.window(0, 1920, 1080));
+        for (int m = 150; m <= 180; m++) {
+            long t = (m - 150) * 1_000L;
+            s2.add(InputLog.Event.month(t, m));
+            s2.add(InputLog.Event.screen(t + 100, "S2 " + m));
+            if (m == 150) {
+                s2.add(InputLog.Event.mapView(t + 200, true, 1, 2, 3.5, 0));
+                s2.add(InputLog.Event.move(t + 500, 300, 300));
+                s2.add(InputLog.Event.press(t + 600, 300, 300, 1, 1, 0));
+                s2.add(InputLog.Event.move(t + 700, 301, 301));
+                s2.add(InputLog.Event.release(t + 800, 301, 301, 1, 0));
+                s2.add(InputLog.Event.mapView(t + 900, true, 1, 2, 0, 0));
+            } else {
+                s2.add(InputLog.Event.move(t + 500, m, m));
+            }
+        }
+        // Given newest first: the timeline orders the sittings itself.
+        List<InputTimeline.Sitting> sittings = List.of(new InputTimeline.Sitting(2_000, s2), new InputTimeline.Sitting(1_000, s1));
+        InputTimeline tl = InputTimeline.of(sittings, months(100, 180));
+        List<InputTimeline.Segment> segments = tl.segments();
+        helper("a later sitting that rewound into the earlier's months makes two segments: the earlier for 100 to 149, the later for 150 to 180",
+                segments.size() == 2 && segments.get(0).equals(new InputTimeline.Segment(0, 1_000, 100, 149, 0, 50_000))
+                        && segments.get(1).equals(new InputTimeline.Segment(1, 2_000, 150, 180, 0, 30_500)));
+        InputTimeline.Moment at100 = tl.startOf(100), at149 = tl.startOf(149), at150 = tl.startOf(150), at180 = tl.startOf(180);
+        helper("startOf: a month before the rewind is in the earlier sitting's segment at its marker's millisecond, a rewound one in the later's",
+                at100 != null && at149 != null && at150 != null && at180 != null && at100.segment() == 0 && at100.ms() == 0
+                        && at149.segment() == 0 && at149.ms() == 49_000 && at150.segment() == 1 && at150.ms() == 0
+                        && at180.segment() == 1 && at180.ms() == 30_000);
+        helper("...and monthAt gives the month back for each", at100 != null && tl.monthAt(at100) == 100 && tl.monthAt(at149) == 149
+                && tl.monthAt(at150) == 150 && tl.monthAt(at180) == 180 && tl.monthAt(null) == -1);
+        helper("...a month the recording does not hold, or no log reaches, is null: 99, the older sitting's 181 and 200 (the rewind deleted them), 1000",
+                tl.startOf(99) == null && tl.startOf(181) == null && tl.startOf(200) == null && tl.startOf(1_000) == null);
+        InputTimeline kept = InputTimeline.of(sittings, months(100, 200));
+        List<InputTimeline.Segment> keptSegments = kept.segments();
+        helper("a recording that still holds the older sitting's 181 to 200 gets them from it, as a third segment",
+                keptSegments.size() == 3 && keptSegments.get(2).sitting() == 0 && keptSegments.get(2).firstMonth() == 181
+                        && keptSegments.get(2).lastMonth() == 200 && keptSegments.get(2).msFrom() == 81_000 && kept.startOf(190).segment() == 2);
+
+        // A skip jumps over months: the marker past it.
+        InputTimeline jumped = InputTimeline.of(List.of(new InputTimeline.Sitting(3_000, List.of(
+                InputLog.Event.month(0, 300), InputLog.Event.move(100, 1, 1), InputLog.Event.month(10_000, 310)))), months(300, 310));
+        helper("a month a skip jumped over starts at the first marker past it: 305 at the millisecond of 310's, and the month there is 310",
+                jumped.segments().size() == 1 && jumped.startOf(305) != null && jumped.startOf(305).ms() == 10_000
+                        && jumped.monthAt(jumped.startOf(305)) == 310 && jumped.startOf(300).ms() == 0 && jumped.monthAt(jumped.startOf(300)) == 300);
+
+        // A sitting that loads an earlier save: its markers go back, and the sitting is cut there into runs.
+        InputTimeline cut = InputTimeline.of(List.of(new InputTimeline.Sitting(4_000, List.of(
+                InputLog.Event.month(0, 10), InputLog.Event.month(1_000, 11), InputLog.Event.month(2_000, 12), InputLog.Event.month(3_000, 13),
+                InputLog.Event.month(4_000, 11), InputLog.Event.month(5_000, 12)))), months(10, 12));
+        List<InputTimeline.Segment> cutSegments = cut.segments();
+        helper("a sitting whose markers go back (a Load) is cut there: month 10 from its first run, 11 and 12 from the second, the 13 the rewind deleted nobody's",
+                cutSegments.size() == 2 && cutSegments.get(0).equals(new InputTimeline.Segment(0, 4_000, 10, 10, 0, 1_000))
+                        && cutSegments.get(1).equals(new InputTimeline.Segment(0, 4_000, 11, 12, 4_000, 5_000))
+                        && cut.startOf(11).ms() == 4_000 && cut.startOf(13) == null);
+        Tape cutTape = new Tape(null);
+        playOut(new FollowPlayer(cut, cutTape), cutTape, 100);
+        helper("...and played, it loads 10, 11, 12 and stops", cutTape.months.equals(List.of(10, 11, 12)));
+
+        // What the player had at a moment.
+        InputTimeline.State inMonth = tl.stateAt(tl.momentAt(1, 700));
+        helper("stateAt, 700 ms into month 150: the screen open, the last mouse position, the window the sitting began with, the map open at its view, the button held",
+                "S2 150".equals(inMonth.screen()) && inMonth.mouseKnown() && inMonth.x() == 301 && inMonth.y() == 301
+                        && inMonth.windowWidth() == 1920 && inMonth.windowHeight() == 1080 && inMonth.mapOpen()
+                        && inMonth.mapView().globe() && inMonth.mapView().scale() == 3.5 && inMonth.down(1) && !inMonth.down(3));
+        InputTimeline.State later = tl.stateAt(tl.momentAt(1, 950));
+        helper("...at 950 ms: the button let go, and the map's view with a scale of 0 is closed",
+                !later.down(1) && !later.mapOpen() && later.mapView() != null && later.x() == 301);
+        InputTimeline.State beforeAny = tl.stateAt(tl.startOfSegment(1));
+        helper("...at the segment's start, only what came before and at its marker: the window, no screen, no mouse, no map",
+                beforeAny.windowWidth() == 1920 && beforeAny.screen() == null && !beforeAny.mouseKnown() && beforeAny.mapView() == null && !beforeAny.mapOpen());
+        InputTimeline.State late = tl.stateAt(tl.momentAt(0, 49_999));
+        helper("...and far into a long sitting (hundreds of events on, past the saved states): the last screen, the last move, the first window",
+                "S1 149".equals(late.screen()) && late.x() == 149 && late.y() == 9 && late.windowWidth() == 1280 && late.windowHeight() == 720);
+        helper("...a moment that is not in the timeline has no state, no month", tl.stateAt(null).screen() == null && !tl.stateAt(null).mouseKnown()
+                && tl.monthAt(new InputTimeline.Moment(9, 0, 0)) == -1);
+
+        // The input events are the player's; the markers are not.
+        boolean inputs = true;
+        for (InputLog.Kind k : InputLog.Kind.values()) {
+            boolean input = k == InputLog.Kind.MOVE || k == InputLog.Kind.DRAG || k == InputLog.Kind.PRESS || k == InputLog.Kind.RELEASE
+                    || k == InputLog.Kind.WHEEL || k == InputLog.Kind.KEY_DOWN || k == InputLog.Kind.KEY_UP;
+            inputs &= InputTimeline.isInput(k) == input;
+        }
+        helper("the input events are MOVE, DRAG, PRESS, RELEASE, WHEEL and the keys; WINDOW, SCREEN, MAP_VIEW, CLOCK and MONTH are markers", inputs);
+
+        // Playing across the rewind: the older sitting up to 149, the newer from its marker for 150.
+        Tape across = new Tape(null);
+        FollowPlayer acrossPlayer = new FollowPlayer(tl, across);
+        acrossPlayer.setSpeed(4);
+        acrossPlayer.start(tl.first());
+        playOut(acrossPlayer, across, 250);
+        List<Integer> expectedMonths = new ArrayList<>();
+        for (int m = 100; m <= 180; m++) expectedMonths.add(m);
+        boolean screensRight = across.screens.size() == 81;
+        for (int i = 0; screensRight && i < across.screens.size(); i++) screensRight = across.screens.get(i).equals((i < 50 ? "S1 " : "S2 ") + (100 + i));
+        helper("played across the rewind, the months load in order, 100 to 149 from the older sitting and 150 to 180 from the newer, and the older's 150 to 200 never play",
+                across.months.equals(expectedMonths) && screensRight && acrossPlayer.isDone() && !acrossPlayer.isRunning() && acrossPlayer.month() == 180);
+
+        // Idle: a gap of more than IDLE_GAP_MS plays in IDLE_KEEP_MS.
+        InputTimeline idle = InputTimeline.of(List.of(new InputTimeline.Sitting(5_000, List.of(
+                InputLog.Event.month(0, 1), InputLog.Event.move(0, 1, 1), InputLog.Event.screen(30_000, "mid-gap"), InputLog.Event.move(60_000, 2, 2),
+                InputLog.Event.month(61_000, 2), InputLog.Event.move(62_000, 3, 3)))), months(1, 2));
+        Tape skipping = new Tape(null);
+        FollowPlayer skipper = new FollowPlayer(idle, skipping);
+        skipper.start(idle.first());
+        skipper.advance(InputTimeline.IDLE_KEEP_MS - 1);
+        boolean before = skipping.count(InputLog.Kind.MOVE) == 1 && skipping.screens.equals(List.of("mid-gap"));
+        skipper.advance(1);
+        helper("with idle skipping on (the default), a 60 s gap between input plays in IDLE_KEEP_MS: the next input is not there a millisecond short, and is there at it; a marker in the gap comes in proportion",
+                before && skipping.count(InputLog.Kind.MOVE) == 2 && skipper.skipIdle());
+        Tape full = new Tape(null);
+        FollowPlayer fuller = new FollowPlayer(idle, full);
+        fuller.setSkipIdle(false);
+        fuller.start(idle.first());
+        fuller.advance(59_999);
+        boolean short1 = full.count(InputLog.Kind.MOVE) == 1;
+        fuller.advance(1);
+        helper("...with it off, the gap plays in full", short1 && full.count(InputLog.Kind.MOVE) == 2 && !fuller.skipIdle());
+        Tape quick = new Tape(null);
+        FollowPlayer quicker = new FollowPlayer(idle, quick);
+        quicker.setSpeed(4);
+        quicker.start(idle.first());
+        quicker.advance(InputTimeline.IDLE_KEEP_MS / 4.0 - 1);
+        boolean short4 = quick.count(InputLog.Kind.MOVE) == 1;
+        quicker.advance(1);
+        helper("...and at speed 4 the skipped gap takes a quarter of that", short4 && quick.count(InputLog.Kind.MOVE) == 2 && quicker.speed() == 4);
+        InputTimeline edge = InputTimeline.of(List.of(new InputTimeline.Sitting(6_000, List.of(
+                InputLog.Event.month(0, 1), InputLog.Event.move(0, 1, 1), InputLog.Event.move(InputTimeline.IDLE_GAP_MS, 2, 2),
+                InputLog.Event.move(2 * InputTimeline.IDLE_GAP_MS + 1, 3, 3)))), months(1, 1));
+        Tape edgeTape = new Tape(null);
+        FollowPlayer edger = new FollowPlayer(edge, edgeTape);
+        edger.start(edge.first());
+        edger.advance(InputTimeline.IDLE_GAP_MS);
+        boolean atGap = edgeTape.count(InputLog.Kind.MOVE) == 2;
+        edger.advance(InputTimeline.IDLE_KEEP_MS - 1);
+        boolean inGap = edgeTape.count(InputLog.Kind.MOVE) == 2;
+        edger.advance(1);
+        helper("a gap of exactly IDLE_GAP_MS plays in full, one millisecond more is idle",
+                atGap && inGap && edgeTape.count(InputLog.Kind.MOVE) == 3 && edger.isDone());
+
+        // Stop and rejoin at the same moment.
+        Tape first = new Tape(null);
+        FollowPlayer player = new FollowPlayer(tl, first);
+        player.start(tl.startOf(100));
+        player.advance(10_500);
+        InputTimeline.Moment stoppedAt = player.now();
+        int deliveredWhenStopped = first.events.size();
+        player.stop();
+        player.advance(5_000);
+        helper("a stopped player delivers nothing more", first.events.size() == deliveredWhenStopped && !player.isRunning() && player.month() == 110);
+        Tape second = new Tape(null);
+        FollowPlayer rejoined = new FollowPlayer(tl, second);
+        rejoined.start(stoppedAt);
+        boolean allCaught = !second.catching.isEmpty();
+        for (boolean c : second.catching) allCaught &= c;
+        helper("...and rejoined at now(), the month loads and its input up to the moment catches up, and the player is where the first stopped",
+                second.months.equals(List.of(110)) && allCaught && second.events.size() == 11 && stoppedAt.equals(rejoined.now())
+                        && second.screens.equals(List.of("S1 110")));
+        helper("an empty timeline is done at once, plays nothing, and starts nowhere",
+                playsNothing(InputTimeline.of(List.of(), months(1, 5))) && playsNothing(InputTimeline.of(sittings, new int[0])));
+    }
+
+    static boolean playsNothing(InputTimeline empty) {
+        Tape tape = new Tape(null);
+        FollowPlayer player = new FollowPlayer(empty, tape);
+        player.advance(1_000);
+        return empty.isEmpty() && empty.first() == null && player.isDone() && tape.calls.isEmpty() && player.now() == null
+                && empty.startOf(1) == null && empty.segments().isEmpty();
+    }
+
+    /* ============ 9. Follow into a headless copy ============ */
+
+    static void followChecks(Recording rec, GameFiles files) throws Exception {
+        System.out.println("\n--- 9. Follow into a headless copy: the copy is loaded at each logged month, the screens come in order, a join mid-month catches up ---");
+
+        int[] have = rec.months();
+        int[] logged = Arrays.copyOfRange(have, 3, 7);
+        long month = 4_000, startedAt = 1_790_000_000_000L;
+        // A sitting of four months, four seconds each: input, two screens, a click.
+        List<InputLog.Event> script = new ArrayList<>();
+        script.add(InputLog.Event.window(0, 1280, 720));
+        List<String> screensLogged = new ArrayList<>();
+        List<Long> screenAtMs = new ArrayList<>();
+        for (int i = 0; i < logged.length; i++) {
+            long t = i * month;
+            script.add(InputLog.Event.month(t, logged[i]));
+            script.add(InputLog.Event.move(t + 200, 100 + i, 200));
+            script.add(InputLog.Event.screen(t + 500, "Screen A" + i));
+            script.add(InputLog.Event.move(t + 700, 300, 400 + i));
+            script.add(InputLog.Event.press(t + 1_000, 300, 400 + i, 1, 1, 0));
+            script.add(InputLog.Event.release(t + 1_050, 300, 400 + i, 1, 0));
+            script.add(InputLog.Event.screen(t + 1_500, "Screen B" + i));
+            screensLogged.add("Screen A" + i);
+            screensLogged.add("Screen B" + i);
+            screenAtMs.add(t + 500);
+            screenAtMs.add(t + 1_500);
+        }
+        InputLog.Writer log = InputLog.open(rec.folder(), rec.id(), startedAt);
+        for (InputLog.Event e : script) log.add(e);
+        log.close();
+        helper("fixture: a sitting of " + logged.length + " months and " + script.size() + " events logged beside the recording's months",
+                InputLog.read(log.path()).equals(script) && InputLog.sittings(rec.folder()).contains(log.path()));
+
+        Map<String, String> recordingBefore = hashes(rec.folder());
+        Map<String, String> playerBefore = hashes(files.getDirectory());
+        InputTimeline tl = InputTimeline.of(rec.folder());
+        helper("the timeline of the recording's folder holds the one sitting, for the months it logged, and none for the recording's other months",
+                tl.segments().size() == 1 && tl.segments().get(0).firstMonth() == logged[0] && tl.segments().get(0).lastMonth() == logged[logged.length - 1]
+                        && tl.startOf(have[0]) == null && tl.startOf(have[have.length - 1]) == null && tl.startOf(logged[2]) != null);
+        helper("...and the state at the first month's marker is the window the sitting opened with",
+                tl.stateAt(tl.startOf(logged[0])).windowWidth() == 1280 && tl.stateAt(tl.startOf(logged[0])).screen() == null
+                        && "Screen B1".equals(tl.stateAt(tl.startOf(logged[2])).screen()));
+
+        ReplayCity copy = new ReplayCity(rec);
+        for (double speed : new double[] {1, 2}) {
+            Tape tape = new Tape(copy);
+            FollowPlayer player = new FollowPlayer(tl, tape);
+            player.setSpeed(speed);
+            player.start(tl.startOf(logged[0]));
+            double frame = 16;
+            playOut(player, tape, frame);
+            List<Integer> loadedMonths = new ArrayList<>();
+            for (int m : logged) loadedMonths.add(m);
+            helper("at speed " + speed + ", Follow loads the copy at each logged month in order, and the copy's month is the marker's each time (" + tape.months + ")",
+                    tape.months.equals(loadedMonths) && tape.loaded && copy.shown() == logged[logged.length - 1] && copy.game().getMonth() == logged[logged.length - 1]);
+            boolean timed = tape.screens.equals(screensLogged);
+            double worst = 0;
+            for (int i = 0; timed && i < tape.screenTimes.size(); i++) {
+                double late = tape.screenTimes.get(i) - screenAtMs.get(i) / speed;
+                worst = Math.max(worst, late);
+                timed &= late >= 0 && late <= frame;
+            }
+            helper("...the screens arrive in the order logged, each in the frame its logged time divided by the speed falls in (the most late " + Math.round(worst * 10) / 10.0 + " ms of a " + (int) frame + " ms frame)",
+                    timed && tape.screens.size() == 2 * logged.length && player.isDone());
+            boolean live = true;
+            for (int i = 0; live && i + 1 < tape.calls.size(); i++) live &= !tape.calls.get(i).startsWith("catch");
+            helper("...and nothing played live is flagged as catching up, and a month's load comes before the input after its marker",
+                    live && tape.catching.stream().noneMatch(c -> c) && tape.calls.get(0).equals("load " + logged[0]) && tape.calls.get(1).startsWith("play MOVE"));
+        }
+
+        // Joining mid-month: 1,200 ms into the third logged month, after screen A and the click.
+        long joinMs = 2 * month + 1_200;
+        InputTimeline.Moment join = tl.momentAt(0, joinMs);
+        Tape joined = new Tape(copy);
+        FollowPlayer joiner = new FollowPlayer(tl, joined);
+        joiner.start(join);
+        List<String> expectedCatchUp = new ArrayList<>();
+        expectedCatchUp.add("load " + logged[2]);
+        for (String s : new String[] {"MOVE", "SCREEN Screen A2", "MOVE", "PRESS", "RELEASE"}) expectedCatchUp.add("catch " + s);
+        helper("joining mid-month loads that month into the copy, then plays its input from just after its marker up to the moment, all flagged as catching up",
+                joined.calls.equals(expectedCatchUp) && joined.loaded && copy.game().getMonth() == logged[2] && joined.catching.stream().allMatch(c -> c));
+        Tape fromStart = new Tape(copy);
+        FollowPlayer starter = new FollowPlayer(tl, fromStart);
+        starter.start(tl.startOf(logged[2]));
+        starter.advance(joinMs - 2 * month);
+        boolean sameEvents = fromStart.events.equals(joined.events);
+        helper("...and the screen it ends on, " + joined.screen + ", is the one playing from the month's start reaches at the same moment, with the same events",
+                joined.screen != null && joined.screen.equals(fromStart.screen) && sameEvents && fromStart.months.equals(joined.months)
+                        && fromStart.catching.stream().noneMatch(c -> c) && joiner.now().equals(starter.now()));
+        joiner.advance(1_000);
+        helper("...and the live play after the join carries on to the month's next screen, " + joined.screen,
+                "Screen B2".equals(joined.screen) && joined.catching.get(joined.catching.size() - 1) == false && joiner.month() == logged[2]);
+        Tape atMarker = new Tape(copy);
+        new FollowPlayer(tl, atMarker).start(tl.startOf(logged[1]));
+        helper("starting exactly at a month's marker loads it and catches up on nothing", atMarker.calls.equals(List.of("load " + logged[1])));
+
+        String hurtRecording = firstDifference(recordingBefore, hashes(rec.folder()));
+        String hurtPlayer = firstDifference(playerBefore, hashes(files.getDirectory()));
+        helper("following writes nothing in the recording's folder, and nothing in the player's" + (hurtRecording == null ? "" : " - " + hurtRecording)
+                + (hurtPlayer == null ? "" : " - " + hurtPlayer), hurtRecording == null && hurtPlayer == null && Arrays.equals(rec.months(), have));
     }
 }

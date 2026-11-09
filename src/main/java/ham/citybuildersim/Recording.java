@@ -115,6 +115,19 @@ public final class Recording {
         return name + "-" + at.format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss", Locale.ROOT));
     }
 
+    /** The shape {@link #newId} writes: words of letters and digits joined by hyphens, the day, the time. */
+    private static final java.util.regex.Pattern ID_SHAPE = java.util.regex.Pattern.compile("([a-z0-9]+(?:-[a-z0-9]+)*)-\\d{8}-\\d{6}");
+
+    /**
+     * Whether {@code id} is exactly the shape {@link #newId} writes (TR2): a recording's id comes back from a save a player can
+     * edit, and it names a folder under {@code recordings/}, so nothing else - no separator, no dot, no drive - is accepted.
+     */
+    public static boolean isId(String id) {
+        if (id == null) return false;
+        java.util.regex.Matcher m = ID_SHAPE.matcher(id);
+        return m.matches() && m.group(1).length() <= ID_NAME_LENGTH;
+    }
+
     /** The recording in a folder; its meta() is null when the folder holds none that can be read. */
     public static Recording at(Path folder) {
         Meta meta = null;
@@ -265,11 +278,15 @@ public final class Recording {
 
     /**
      * A month to write: built on the FX thread from a snapshot, run on the save writer's thread. It makes the folder, writes the
-     * meta when the folder has none, then the month's file (the .tmp and the swap); with {@code dropLater} it then deletes every
-     * month file numbered above this one - the rewind: the recording is always the timeline last played, and months past the new
-     * one go when the first new month is written. {@code map} is the sidecar's bytes or null for none.
+     * meta when the folder has none, then the month's file (the .tmp and the swap). With {@code dropLater} - the rewind: the
+     * recording is always the timeline last played - it first deletes every month file numbered this month or above, BEFORE it
+     * writes its own (TR2): a write that then fails leaves the timeline up to the month before, one timeline, and never the old
+     * one's later months beside a new one's. If a delete fails the old timeline cannot be cleared, so nothing is written and
+     * {@code onTimelineBroken} (may be null) is called on the writer's thread - the caller ends the recording. {@code map} is the
+     * sidecar's bytes or null for none.
      */
-    public static SaveWriter.Task monthTask(GameFiles files, Path folder, Meta meta, int month, DataSave snapshot, byte[] map, boolean dropLater) {
+    public static SaveWriter.Task monthTask(GameFiles files, Path folder, Meta meta, int month, DataSave snapshot, byte[] map, boolean dropLater,
+                                            Runnable onTimelineBroken) {
         return new SaveWriter.Task() {
             @Override public Path target() {
                 return folder.resolve(MONTH_PREFIX + String.format(Locale.ROOT, "%07d", month) + MONTH_SUFFIX);
@@ -281,6 +298,10 @@ public final class Recording {
                     Files.createDirectories(folder);
                 } catch (IOException e) {
                     return GameFiles.Result.failed(path, e);
+                }
+                if (dropLater && !dropMonthsFrom(folder, month)) {
+                    if (onTimelineBroken != null) onTimelineBroken.run();
+                    return GameFiles.Result.failed(path, "the months of the old timeline could not all be deleted, so month " + month + " is not written");
                 }
                 Path metaFile = folder.resolve(META_FILE);
                 if (!Files.isRegularFile(metaFile) && meta != null) {
@@ -296,9 +317,7 @@ public final class Recording {
                     return GameFiles.Result.failed(path, "the city's numbers cannot be written down"
                             + snapshot.describeUnwritable() + " (" + e.getClass().getSimpleName() + ")");
                 }
-                GameFiles.Result written = files.write(path, bytes);
-                if (written.ok && dropLater) dropMonthsAfter(folder, month);
-                return written;
+                return files.write(path, bytes);
             }
         };
     }
@@ -345,24 +364,32 @@ public final class Recording {
         };
     }
 
-    /** Deletes the month files numbered above {@code month} (and a .bak or .tmp of one): the timeline last played is the one kept. */
-    private static void dropMonthsAfter(Path folder, int month) {
+    /**
+     * Deletes the month files numbered {@code month} or above (and a .bak or .tmp of one): the timeline last played is the one
+     * kept, and the month about to be written is the new timeline's, so the old one's goes too. False when any could not be deleted
+     * or the folder could not be listed - the old timeline is then not gone.
+     */
+    private static boolean dropMonthsFrom(Path folder, int month) {
+        boolean all = true;
         try (DirectoryStream<Path> entries = Files.newDirectoryStream(folder, MONTH_PREFIX + "*")) {
             for (Path entry : entries) {
                 String name = entry.getFileName().toString();
                 if (name.length() < MONTH_PREFIX.length() + 7) continue;
                 String digits = name.substring(MONTH_PREFIX.length(), MONTH_PREFIX.length() + 7);
                 boolean numbered = digits.chars().allMatch(c -> c >= '0' && c <= '9');
-                if (!numbered || Integer.parseInt(digits) <= month) continue;
+                if (!numbered || Integer.parseInt(digits) < month) continue;
                 try {
                     Files.deleteIfExists(entry);
                 } catch (IOException e) {
-                    System.out.println("A recorded month past the rewind could not be deleted: " + entry + " - " + e);
+                    System.out.println("A recorded month of the old timeline could not be deleted: " + entry + " - " + e);
+                    all = false;
                 }
             }
         } catch (IOException | RuntimeException e) {
-            System.out.println("The months past the rewind could not be listed: " + e);
+            System.out.println("The months of the old timeline could not be listed: " + e);
+            return false;
         }
+        return all;
     }
 
     /** A gzip stream at a chosen deflate level (GZIPOutputStream has no constructor for one). */
