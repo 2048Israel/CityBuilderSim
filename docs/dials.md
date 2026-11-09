@@ -1577,7 +1577,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.69"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.9.70"` | Bump on release. |
 | 8267 | `GameVersion.SAVE_FORMAT` | `51` | The save shape. |
 | 8316 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `51` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
 | 8324 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
@@ -6959,11 +6959,11 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 51 | `PegAnchorCheck.out` | `System.out` |  |
-| 53 | `PegAnchorCheck.LEAN` | `ForeignAccounts.Regime.LEAN, PEG = ForeignAccounts.Regime.PEG, FLOAT = ForeignAccounts....` |  |
-| 55 | `PegAnchorCheck.TRADE` | `CurrencyRegimeCheck.TRADE, DEEP = CurrencyRegimeCheck.DEEP` |  |
-| 58 | `PegAnchorCheck.R` | `{ 1, 1.10, 0.0070, 1.27, 0.14, 0.73, 0.65, 1.12 }` | The cross rates the sections hand: US$ per unit of the US$, euro, yen, pound, yuan, Canadian and Australian dollar and franc (VaultMoneysCheck's). |
-| 61 | `PegAnchorCheck.SLOTS` | `149` | The length of the foreign accounts' array with the peg's anchor in slot 148 (WN4b). |
+| 55 | `PegAnchorCheck.out` | `System.out` |  |
+| 57 | `PegAnchorCheck.LEAN` | `ForeignAccounts.Regime.LEAN, PEG = ForeignAccounts.Regime.PEG, FLOAT = ForeignAccounts....` |  |
+| 59 | `PegAnchorCheck.TRADE` | `CurrencyRegimeCheck.TRADE, DEEP = CurrencyRegimeCheck.DEEP` |  |
+| 62 | `PegAnchorCheck.R` | `{ 1, 1.10, 0.0070, 1.27, 0.14, 0.73, 0.65, 1.12 }` | The cross rates the sections hand: US$ per unit of the US$, euro, yen, pound, yuan, Canadian and Australian dollar and franc (VaultMoneysCheck's). |
+| 65 | `PegAnchorCheck.SLOTS` | `149` | The length of the foreign accounts' array with the peg's anchor in slot 148 (WN4b). |
 
 ### PlanCheck.java ([map](map/PlanCheck.md))
 

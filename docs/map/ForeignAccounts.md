@@ -1,4 +1,4 @@
-# ForeignAccounts.java - 3,484 lines · 225 methods · 49 constants · model
+# ForeignAccounts.java - 3,488 lines · 225 methods · 49 constants · model
 
 `ham/citybuildersim/ForeignAccounts.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
 
@@ -273,7 +273,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 98 | 3387 | **type** `public class ForeignAccounts` | The city's dealings with the rest of the world: the balance of payments, the reserve position, and the exchange rate. |
+| 98 | 3391 | **type** `public class ForeignAccounts` | The city's dealings with the rest of the world: the balance of payments, the reserve position, and the exchange rate. |
 
 ### the rate (lines 100-111)
 
@@ -576,13 +576,13 @@
 | 2850 | 6 | `public double coverWith(double localChange)` | The cover the vault would give with this much local money's worth of dollars bought into it at today's rate (negative: sold out of it) - the Exchange card's "what it would do". |
 | 2858 | 3 | `public double toCover(double months)` | What it would cost in local money, at today's rate, to bring the vault up to this many months of the trailing import bill; nothing when it is there already. |
 
-### carrying (lines 2862-3484)
+### carrying (lines 2862-3488)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 2874 | 239 | `public double[] toSaveArray()` | A STOCK, so it is saved. |
-| 3114 | 181 | `public void restore(double[] saved)` |  |
-| 3297 | 4 | `private static int ordinalOr(double saved, int length, int fallback)` | A saved ordinal, or the fallback's when it is not a whole number inside 0 to length - 1. |
-| 3302 | 95 | `public void reset()` |  |
-| 3424 | 59 | `public void redenominate(double scale)` | Every figure in the city's foreign accounts, in the new unit. |
+| 3114 | 185 | `public void restore(double[] saved)` |  |
+| 3301 | 4 | `private static int ordinalOr(double saved, int length, int fallback)` | A saved ordinal, or the fallback's when it is not a whole number inside 0 to length - 1. |
+| 3306 | 95 | `public void reset()` |  |
+| 3428 | 59 | `public void redenominate(double scale)` | Every figure in the city's foreign accounts, in the new unit. |
 

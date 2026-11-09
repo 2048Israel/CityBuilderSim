@@ -4,7 +4,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 535 files, 593,974 lines, 25,772 methods, 5,638 constants. `GameVersion.VERSION` is "0.9.69", `SAVE_FORMAT` 51.
+**The tree:** 535 files, 594,033 lines, 25,773 methods, 5,638 constants. `GameVersion.VERSION` is "0.9.70", `SAVE_FORMAT` 51.
 
 ## model (248 files)
 
@@ -92,7 +92,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [FamilyStructure.java](FamilyStructure.md) | 119 | 7 | The shapes a household comes in. | 33 |
 | [Fittings.java](Fittings.md) | 124 | 13 | The fittings on site: pieces of equipment ordered for a standing building and not yet worked, first ordered first worked. | 4 |
 | [FloatingRateNote.java](FloatingRateNote.md) | 218 | 20 | A floating-rate note: a coupon every month on the whole face, the month's policy rate plus a margin fixed at the sale, and the face at the end - at... | 6 |
-| [ForeignAccounts.java](ForeignAccounts.md) | 3,484 | 225 | The city's dealings with the rest of the world: the balance of payments, the reserve position, and the exchange rate. | 55 |
+| [ForeignAccounts.java](ForeignAccounts.md) | 3,488 | 225 | The city's dealings with the rest of the world: the balance of payments, the reserve position, and the exchange rate. | 55 |
 | [Formats.java](Formats.md) | 122 | 9 | The few formats a sector needs to describe itself, without the toolkit. | 49 |
 | [Founding.java](Founding.md) | 646 | 58 | How a city was founded: its name, its money's name, and the treasury and the vault the founders left it. | 124 |
 | [FoundingName.java](FoundingName.md) | 73 | 6 | The city's name as the Found-a-city page holds it: blank to begin with, filled by a place searched, and the player's own once they have typed one (... | 2 |
@@ -477,7 +477,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [PartnerCallsCheck.java](PartnerCallsCheck.md) | 1,320 | 40 | The ships and trains that go to their partners, as a model (batch WN7, 2026-11-01; docs/studies/spec-nations.md 9): PartnerTrade's month tonnes by ... | 0 |
 | [PartnersCheck.java](PartnersCheck.md) | 830 | 18 | The model the Trade screen's Partners board, a nation's page and The reserves read (batch WN6, "Nations: the screens"; docs/studies/spec-nations.md... | 0 |
 | [PassThroughCheck.java](PassThroughCheck.md) | 755 | 21 | Proves the city's goods are struck at a D$ that follows the D$ slowly (AN1, 2026-10-22): each month the goods' D$ closes EconomyManager.PASS_THROUG... | 0 |
-| [PegAnchorCheck.java](PegAnchorCheck.md) | 583 | 21 | The peg's anchor (batch WN4b; ForeignAccounts, THE REGIMES, THE PEG'S ANCHOR): the D$ can be pegged to any of the eight moneys, not only the US$. | 0 |
+| [PegAnchorCheck.java](PegAnchorCheck.md) | 638 | 22 | The peg's anchor (batch WN4b; ForeignAccounts, THE REGIMES, THE PEG'S ANCHOR): the D$ can be pegged to any of the eight moneys, not only the US$. | 0 |
 | [PlanCheck.java](PlanCheck.md) | 4,840 | 170 | The district plan: one street network, + junctions no nearer than eight plots, every building within reach and none on a street or beside a highway... | 4 |
 | [PlaytestFixCheck.java](PlaytestFixCheck.md) | 224 | 9 | Verifies the small fixes of a played city (PT1): words and the log, nothing the month does. | 0 |
 | [PolicyCheck.java](PolicyCheck.md) | 479 | 5 | The Policy tab: banded wage tax, per-sector offsets, the VAT, and subsidies. | 0 |

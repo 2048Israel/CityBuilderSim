@@ -1,17 +1,13 @@
-# gate of Merge batch/AL1: automatic building links the city's islands: with linked ground low and owned ground unlinked, a Highway or Road Bridge where a crossing is allowed (and rail somehow), else a port; the advice and the test player too. Overturns ET5's ★5, takes ET6-C's automatic bridges (Jerus, 2026-10-31: "autobuild will build bridges and ports if sees that land is low and there is something unliked"), 0.9.69
+# gate of Merge batch/WN4c: wN4b's review follow-ups (the stranger's review at its gate, 2026-11-09): a save whose peg anchor has lost its US$ price falls back to the US$ but keeps `pegRate` in the old anchor's units; zero it on that fallback, asserted in PegAnchorCheck section 8; and the review's two low notes settled; a small fix batch, Sonnet whole, 0.9.70
 # date: 2026-11-09
 # earth-2.bin: named
 # nightly: 2026-11-09 01:39 0.9.58 08f58a5f 4,000 months: OK in 118 s
-# suite: 190 harnesses run in 1685s: 185 passed, 5 failed
-# timing: 17 harnesses run in 952s: 13 passed, 4 failed; its red lines were judged side by side with main's, below
+# suite: 190 harnesses run in 1123s: 185 passed, 5 failed
+# timing: 17 harnesses run in 896s: 13 passed, 4 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 29.5 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 27.8 ms (gate.txt, today), batch 29.5 ms (+6.0%), budget 25 ms: main over the budget too, no round]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 29.6 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 29.5 ms (gate.txt, today), batch 29.6 ms (+0.4%), budget 25 ms: main over the budget too, no round]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): KeptCheck | exit 10   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): KeptCheck | the whole kept chrome's month is within KEPT_ALL_CHROME_MS (8.0 ms)      FAIL   [main 9.3 ms (gate.txt, today), batch 8.11 ms (-12.8%), budget 8 ms: main over the budget too, no round]
-# timing red not the batch's (paired): KeptCheck | 10 FAILED   [the harness's own count of the timing reds above]
-# figure	SaveSlotCheck	the median due month, 29.5 ms, holds the clock at most CLOCK_MS (25 ms)	29.4877	25	ms	FAIL	1	1
-# figure	KeptCheck	the whole kept chrome's month is within KEPT_ALL_CHROME_MS (8.0 ms)	8.1091	8	ms	FAIL	1	1
+# figure	SaveSlotCheck	the median due month, 29.6 ms, holds the clock at most CLOCK_MS (25 ms)	29.6068	25	ms	FAIL	1	1
 PriceLevelCheck | exit 1
 PriceLevelCheck | FAIL cash (nominal) month 101: 8.317811325 at the factor over the factor, 68.38253344 at today's prices (0.000751 apart)
 PriceLevelCheck | FAIL gdp.month (nominal) month 103: 20121.84632 at the factor over the factor, 20122.48474 at today's prices (1.95e-05 apart)
