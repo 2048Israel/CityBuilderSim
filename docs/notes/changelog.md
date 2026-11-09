@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.72 — R6, the near-future research catalogue, a study — 2026-11-09, ready, see docs/queue/R6-notes.md
+The first half of R6 (Q2, 2026-10-18): what today's pilots and public roadmaps give the research catalogue after
+2025 (docs/studies/research-near-future.md; the gatherers' fact sheets in docs/studies/research-near-future/). Eight
+rows stand on a builder's date and a measured effect, all engineering or medicine: the driverless truck (May 2025),
+sulphide heap leaching (Nov 2025), enhanced geothermal (Sep 2026) and the mRNA flu vaccine (Aug 2026) are already
+history; the small modular reactor, the hundred-hour battery and the personalised cancer vaccine (2027) and
+hydrogen-reduced iron (2028) are projections, each with its window. The evidence ends about 2030, not 2060; the
+catalogue has no row for 1996-2024, where about 45 things belong; carbon capture at a cement works and the carbon
+border tax pay only where carbon is priced, and the game prices none; every plant date traced had slipped by one to
+four years. Eight calls, each with a recommendation. No model change and no row in research.json; the trace is main's.
+
 ### 0.9.71 — BR2, Steam's store art — 2026-11-09, ready, see docs/queue/BR2-notes.md
 Steam's nine pictures are in `branding/steam/`, drawn by the new `tools/branding/make_steam.py` from our own art
 (Jerus, 2026-10-31: "From our art (AI)"), at the sizes Steamworks' asset pages give (read today): the header, small,
