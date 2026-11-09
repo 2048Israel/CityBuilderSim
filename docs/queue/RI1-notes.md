@@ -21,3 +21,15 @@ islands" (Jerus ticked "Rail on islands", 2026-10-31). Lane A, after AL1 (0.9.69
   the founding site.
 - No sidecar format bump: the rail net's pieces are written by the code that writes the highways' (FORMAT 12); an
   old sidecar reads as a railway of one piece and the islands open afresh.
+
+## What was built
+
+1. **Slice A** (`CityRuns`; Sonnet, reviewed): `islandRail`, `Pieces.anchor()` (default the hub), `crossingNear()` (start()'s
+   search, lifted, with a piece filter), `openRailPieces()`, `layPieces()`, `yardedPieces()`/`islandYardSpot()`, and `deal()`
+   lifted out of `layHighways()` so both nets are dealt by one rule (IslandNetCheck green on it). `growMainLine()` counts the
+   home piece's plots; `growPiece()` opens no corridor for a railway piece; `dropWays()` keeps the pieces' spines and recounts
+   by piece; `linePlots()`, the yards' spots and `distanceToNet()` read the islands' spines; the stamp hashes the piece count,
+   which pieces have weight and the rail hubs, not the weights. Taken back only while the lines the model's track pays for
+   (those no yard holds to the edge) are more than the model's track: the same as "only when the model's total falls", read
+   from the net itself instead of last run's figure. Review fix: the freight station is a yard whose track chains back to the
+   home hub (`chain()`), so a yard on a branch off an island's line is never it.
