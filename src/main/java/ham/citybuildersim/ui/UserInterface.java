@@ -1503,7 +1503,7 @@ public class UserInterface extends Application {
      * looked at, and a Next Month button on a title screen is a button that
      * advances a game the player has not opened yet.
      */
-    private static boolean isGameMenu(String screen) {
+    static boolean isGameMenu(String screen) {   // package-private since TR2: FollowRules asks it of the logged screen too
         switch (screen) {
             case "showMainMenu": case "showSavingMenu": case "showSaveSlotConfirm":
             case "showLoadMenu": case "loadSlot": case "showSaveResult":
@@ -2145,6 +2145,7 @@ public class UserInterface extends Application {
         });
 
         HBox clock = Kept.scope("clock", () -> clockBlock(inCity));
+        clock.getProperties().put(FollowRules.DROP, Boolean.TRUE);      // (TR2) the play button and the speed are the viewer's, not the ghost's
         // TREASURY left the tile row in 0.7.24: its own block, by the clock (THE MONEY BLOCK).
         Region money = Kept.scope("money", this::moneyBlock);
         HBox right = Kept.scope("right", () -> ratingAndInbox(inCity));
@@ -5997,6 +5998,7 @@ public class UserInterface extends Application {
         above.add(gap);
         VBox menu = Kept.scope("menu", () -> railButton(Icons.MENU, "Menu", "The game menu: save, load, settings, quit  (Esc)",
                 Palette.TEXT_HEAD, "showMainMenu".equals(currentScreen), this::showMainMenu));
+        menu.getProperties().put(FollowRules.DROP, Boolean.TRUE);       // (TR2) Menu leaves the city: the ghost never clicks it
 
         // THE MINIMAP (0.7.134, batch MM2; docs/studies/spec-globe.md 8.3): a stamp of the city above Menu, its preview on
         // hover, the land office's map over the window on a click (MiniMap; openMapOn()).
@@ -7146,7 +7148,36 @@ public class UserInterface extends Application {
 
     /** A key the replay takes (ReplayMode.key()); false when none is on. */
     private boolean replayKey(javafx.scene.input.KeyEvent e, boolean typing) {
+        // A key Follow re-enacts (TR2) reaches the game's own handlers as it did in the sitting, not the replay's camera.
+        if (reenactor != null && reenactor.isFiring()) return false;
         return replayMode != null && replayMode.key(e, typing);
+    }
+
+    /** Follow's re-enactor, made on first use (TR2). */
+    private Reenactor reenactor;
+
+    Reenactor reenactor() {
+        if (reenactor == null) reenactor = new Reenactor(this);
+        return reenactor;
+    }
+
+    /** Whether the focus is in a text field: the key handler's `typing`. */
+    boolean typingNow() {
+        return scene != null && scene.getFocusOwner() instanceof javafx.scene.control.TextInputControl field && field.getScene() == scene;
+    }
+
+    /**
+     * Whether Esc would open the game menu now (TR2: Follow drops it then). The key handler gives Esc to the quit dialog, the full
+     * chart, then the inbox's list and the drawer; the expanded map's card also takes the first Esc, and this cannot see the card,
+     * so with the map up it says yes: a dropped Esc that only closed a card costs the ghost one key.
+     */
+    boolean escapeOpensMenu() {
+        return quitDialog == null && chartFull == null && !((inboxOpen || drawerOpen) && !isGameMenu(currentScreen));
+    }
+
+    /** Whether P (not typing) would open the game menu now: it does whenever no dialog is up, and it leaves the full chart on the way. */
+    boolean pOpensMenu() {
+        return quitDialog == null;
     }
 
     /** The clock the map's boats, trains and trucks sail on in a replay (ReplayMode.clockMonths()). */
