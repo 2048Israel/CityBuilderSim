@@ -4874,6 +4874,8 @@ public class Game {
         }
         exchange.takeMonth(equity, householdBalance, bank, exchangeCompanies, book,
                 DebtManager.WORLD_BASE_RATE, bank.depositRate(), month, fundBondsValue(), debtManager.householdBookYield());
+        // ...a company at the exchange's floor a year running sends its owner family back to the working pool (BO1): this month's fair values, the census next month.
+        householdBalance.tallyOwnersAtFloor(exchange::atFloor);
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
             double k = exchange.getSplit(c);
             if (k > 1) GameLog.note(String.format("%s split its shares %,.0f for one.", Equity.COMPANIES[c], k));
@@ -5284,6 +5286,8 @@ public class Game {
         double[] cancelled = bank.cancelPreferred();
         bank.wipeOwners();
         double households = householdBalance.surrenderShares(Equity.BANK);
+        // ...and the bank's owner family, with nothing left to own, rejoins the working pool (BO1).
+        householdBalance.ownerCompanyFailed(Equity.BANK);
         double shortfall = Math.max(0, -bank.equity());
         double exit = bank.resolutionExitEquity();
         double amount = shortfall + exit;

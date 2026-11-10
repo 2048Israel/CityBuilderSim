@@ -37,6 +37,16 @@ public class OwnerHousehold extends Household {
     public static final double OWNER_SELL_A_YEAR = .05;
 
     /**
+     * A twelfth of the year's sale, compounded: a month's share of each
+     * holding the line offers on the exchange, so twelve months leave
+     * 1 - OWNER_SELL_A_YEAR of it.
+     */
+    public static final double OWNER_SELL_A_MONTH = 1 - Math.pow(1 - OWNER_SELL_A_YEAR, 1.0 / 12);
+
+    /** The line's key: the cell's name on the books, the save and the exchange's orders. */
+    public static final String KEY = "OWNER";
+
+    /**
      * Months a company's fair value sits at the exchange's floor before its
      * family gives up and joins the regular pool: the window
      * Migration.DECLINE_MONTHS gives a tier.
@@ -62,7 +72,7 @@ public class OwnerHousehold extends Household {
     @Override public int size()          { return 2; }
 
     @Override public String label() { return "Owner families"; }
-    @Override public String key()   { return "OWNER"; }
+    @Override public String key()   { return KEY; }
 
     /** No wage: "No job." Nobody's income is split to an owner family. */
     @Override public double earningWeight() { return 0; }

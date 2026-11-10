@@ -99,3 +99,16 @@ wealth study's) are other batches'. So BO1 ships the line built, tested
 (OwnerCheck switches it on in its own fixtures and in a real city) and
 off, the trace byte-identical; switching it on is a Pending row with this
 section as its brief.
+
+## 2. The People screen waits for the switch
+
+Slice C (the owner families on the People screen) was not run: with the line
+off the row never holds a family, so every place it would draw is empty, and
+KeptCheck could not see it. The switch-on batch draws it where the prisoners
+are drawn in `ui/PeopleScreen.java`: the outside tiles (`outsideTiles`, an
+"Owner families" tile, its `openOutside` case to Household money), the
+mosaic's outside strip, `belowTheRule`, `otherRows`, the outside table if its
+columns grow cleanly, and the three texts that list the groups
+(`OUTSIDE_INFO`, `BELOW_THE_RULE`, the verdict's javadoc). HS3's household
+money page names the line too. The Government screen's vouchers list only
+the rows paid, so the empty row shows nowhere today.

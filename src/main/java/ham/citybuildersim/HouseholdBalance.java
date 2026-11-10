@@ -799,6 +799,44 @@ public class HouseholdBalance {
         }
     }
 
+    /**
+     * A YEAR AT THE FLOOR SENDS A FAMILY BACK (BO1; Jerus, 2026-11-02: "if
+     * sector goes broke he just joins the regular pop pool"). Once a month,
+     * for each company with a family: its fair value at the exchange's floor
+     * (the predicate: Exchange.atFloor) is one more month at it, and at
+     * OwnerHousehold.OWNER_BROKE_MONTHS the family leaves the line; a month
+     * off the floor starts the count again. The family is dropped here and the
+     * census, next month, takes its two adults out of the owner cell: see
+     * followThePeople(). Nothing with the line off.
+     */
+    public void tallyOwnersAtFloor(java.util.function.IntPredicate atFloor) {
+        if (!ownerLine) return;
+        for (int c = 0; c < ownerFloorMonths.length; c++) {
+            if (ownerFloorMonths[c] < 0) continue;
+            if (!atFloor.test(c)) {
+                ownerFloorMonths[c] = 0;
+                continue;
+            }
+            ownerFloorMonths[c]++;
+            if (ownerFloorMonths[c] >= OwnerHousehold.OWNER_BROKE_MONTHS) {
+                ownerFloorMonths[c] = -1;
+                System.out.println("The owner family of " + Equity.COMPANIES[c] + " rejoins the working population: the company's fair value sat at the exchange's floor for "
+                        + OwnerHousehold.OWNER_BROKE_MONTHS + " months running.");
+            }
+        }
+    }
+
+    /**
+     * A company whose equity was taken (a failed bank's resolution) has
+     * nothing left to own: its family leaves the line at once, for the working
+     * population (BO1). No family, nothing to do.
+     */
+    public void ownerCompanyFailed(int company) {
+        if (ownerFloorMonths[company] < 0) return;
+        ownerFloorMonths[company] = -1;
+        System.out.println("The owner family of " + Equity.COMPANIES[company] + " rejoins the working population: the company failed and its equity was taken (a bank's resolution).");
+    }
+
     /** Every cell, in the fixed order. Read-only. */
     public java.util.List<Household> cells() { return view; }
 
@@ -1363,10 +1401,33 @@ public class HouseholdBalance {
         for (int i = 0; i < n; i++) before[i] = cells[i].households;
         double[] beforeLoans = carryGraduatesLoans(before);
 
+        /*
+         * A FAMILY LEAVING THE OWNER LINE TAKES NO SHARES (BO1): its company
+         * is broke and its shares worthless, and the other stakes stay with
+         * the families whose companies live. So while the owner cell shrinks
+         * and stays a cell, the share stocks move as if it had not (its
+         * households "before" are what they are now: no delta, nothing
+         * released into the pool), and afterwards its per-household stake is
+         * raised by before / now, so the line's total of each company is what
+         * it was. Everything else the leaver takes at the cell's average, as
+         * anyone does. A cell that empties is today's rule for all of it.
+         */
+        double[] beforeShares = before;
+        boolean ownersLeave = fresh[ownerIndex] < before[ownerIndex] && fresh[ownerIndex] >= EMPTY_CELL;
+        if (ownersLeave) {
+            beforeShares = before.clone();
+            beforeShares[ownerIndex] = fresh[ownerIndex];
+        }
+
         double[] left = new double[stocks.size()];
         for (int k = 0; k < stocks.size(); k++) {
             boolean loans = k == loanSlot;
-            left[k] = moveStock(stocks.get(k), fresh, loans ? beforeLoans : before, k == 0 ? buffer : null);
+            boolean shares = k >= 2 && k < 2 + Equity.COMPANIES.length;
+            left[k] = moveStock(stocks.get(k), fresh, loans ? beforeLoans : shares ? beforeShares : before, k == 0 ? buffer : null);
+        }
+        if (ownersLeave) {
+            double keep = before[ownerIndex] / fresh[ownerIndex];
+            for (int k = 0; k < Equity.COMPANIES.length; k++) cells[ownerIndex].shares[k] *= keep;
         }
         // Each cell's bonds total, from the bonds that moved (round 2).
         if (bondStockIds.length > 0) for (Household c : cells) c.recountBonds();
