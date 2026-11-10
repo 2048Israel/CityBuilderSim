@@ -12,3 +12,4 @@ old city's floor was the going rate and loads as a real minimum there. Passed by
 finding at m2400, a known class left for DM2 (Jerus, 2026-11-04).
 ## pending
 | WG1-M | The manual's section 2 ({next}): the wage formula on the going rate and the paragraph's "the minimum wage is the base" made a real minimum and its tie, the text in WG1's notes §6 | docs pass | docs/queue/WG1-notes.md §6 |
+| WG1-R | WG1's review: WG1-D's fixtures (CurveCheck 7, CentralBankCheck 20, HoldersCheck 12-13, HousingCheck's closed homes, KeptCheck 64) pin main's old path (the floor at the going rate) instead of causing their conditions on the new default; and two things they record about .85 deserve a look as model behaviour: a city held at 15% closes no home in 240 months (HousingCheck), and the bond desk stands still for six months (KeptCheck 64) | a small batch | docs/queue/WG1-notes.md |
