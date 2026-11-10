@@ -880,6 +880,8 @@ public class PolicyPreviewCheck {
                 && same(up.liftedShare(), move.workers() / filledAll) && same(up.liftedPayNow(), move.payNow() / move.workers())
                 && same(up.liftedPayThen(), move.payThen() / move.workers()) && up.liftedPayThen() > up.liftedPayNow()
                 && same(up.payrollMove(), move.billThen() - move.billNow()) && up.payrollMove() > 0);
+        assertTrue("...the payroll the page reads before and after is floorMoveAt()'s two bills, and the move is their difference",
+                up.payrollNow() == move.billNow() && up.payrollThen() == move.billThen() && same(up.payrollMove(), up.payrollThen() - up.payrollNow()));
 
         // ---- a job with no posts ----
         assertTrue("fixture: the played city has a job with no posts, and one with posts", noPosts > 0 && noPosts < jobTypes.length);
@@ -893,10 +895,21 @@ public class PolicyPreviewCheck {
                 !v.joined() && !pm.fillByBand().joinedAbove(lowest) && v.joinedWords(money) == null && Double.isNaN(v.joinedWage()));
         double[] ownWorkers = pm.workforceByBand();
         double imprisonedWas = pm.getImprisoned();
-        pm.setImprisoned(imprisonedWas + ownWorkers[lowest.ordinal()]);   // the unskilled are away: their posts have no one of their own to fill them
+        // The unskilled are away, so their posts have no one of their own to fill them; then, in steps, as many of the rest as it takes for the spare the bands
+        // above carry down to fall short of those posts too (the fill joins the lowest band to the one above only while it is still hiring and out-pays it).
+        double workforce = 0;
+        for (double w : ownWorkers) workforce += w;
+        double away = ownWorkers[lowest.ordinal()];
+        pm.setImprisoned(imprisonedWas + away);
+        for (int step = 0; step < 45 && !pm.fillByBand().joinedAbove(lowest) && away + workforce * .02 < workforce * .95; step++) {
+            away += workforce * .02;
+            pm.setImprisoned(imprisonedWas + away);
+        }
+        final double awayNow = away;
         try {
             FloorView joined = FloorView.of(g, lm.getMinimumWage());
-            assertTrue("fixture: with the unskilled out of the supply the lowest band is filled as one market with the diploma band above it",
+            assertTrue("fixture: with the unskilled out of the supply and the spare above too few for their posts (" + Math.round(awayNow) + " of "
+                            + Math.round(workforce) + " away), the lowest band is filled as one market with the diploma band above it",
                     pm.workforceByBand()[lowest.ordinal()] == 0 && pm.fillByBand().joinedAbove(lowest) && joined.joined());
             assertTrue("...so the words name the diploma holders in the unskilled posts and the one wage both pay, which is the unskilled wage",
                     joined.joinedWage() == lm.getWage(JobType.NO_DIPLOMA) && joined.joinedWords(money).equals(
@@ -939,6 +952,11 @@ public class PolicyPreviewCheck {
         assertTrue("...and paid + near + everyone else is still all of the posts filled",
                 same(nearBy.nearTotal(), nearByHand) && same(nearBy.paidTotal(), paidByHand)
                 && same(nearBy.paidTotal() + nearBy.nearTotal() + nearBy.everyoneElse(), nearBy.postsFilled()) && nearBy.everyoneElse() >= 0);
+        boolean bandsAdd = true;
+        for (WageBand band : WageBand.values()) bandsAdd &= same(nearBy.atOrNear(band), nearBy.paid(band) + nearBy.near(band));
+        assertTrue("...the page's shares are each count over the posts filled, and a band's line is its paid and near together",
+                bandsAdd && same(nearBy.paidShare(), nearBy.paidTotal() / nearBy.postsFilled()) && same(nearBy.nearShare(), nearBy.nearTotal() / nearBy.postsFilled())
+                && same(nearBy.everyoneElseShare(), nearBy.everyoneElse() / nearBy.postsFilled()));
 
         // The floor over the average wage: the entering share is held to the tie's range, the words say why the city reads high, and a low floor reads nothing.
         double twinAverage = twin.getPopulationManager().getAverageWage();

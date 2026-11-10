@@ -2552,15 +2552,28 @@ final class PolicyScreen {
        it clears by emigration. That trade is the screen.
 
        Where is the floor, who sits on it, and what does moving it cost? THE
-       WAGE LADDER (0.7.36): the eleven jobs under their four bands, each a
-       bar of what it pays, against a rule at the floor IN TODAY'S MONEY (the
-       spec's D6 and B7: the tab printed the founding figure as a wage - the
-       floor read $3,460 where the unskilled job is paid $3,827); each band
-       says whether it is pinned, as the model reads it (D7: LabourMarket
-       .isPinned(), against the floor in today's money since 0.7.47, B8). A staged floor
-       moves a ghost rule, and each job's ghost bar is where its wage heads
-       at the new floor. Then the dial on its card, beside the city's own
-       payroll.
+       PAGE (WS1; docs/studies/wages/mockup.html, board 1), top to bottom, every
+       figure FloorView's and none computed here. THE MINIMUM WAGE: the dial on
+       its card with the floor in today's money, what it is tied to, who is paid
+       it and the preview of the floor's own move beside the dial, and beside the
+       card two gauges - the floor against what unskilled work goes for (the going
+       rate; three zones: never binds, binds in a glut, binds always) and against
+       the average wage (and the nations of the world file); under the dial, when
+       the floor it shows is over the going rate, what the study measured of one.
+       Then three cards: what a full-time floor job pays for (the take-home
+       against one adult living alone), who is near the floor, and what to tie
+       it to (prices, the average wage at a share, nothing; staged until its
+       Apply). THE WAGE LADDER (0.7.36): the eleven jobs under their four bands,
+       each a bar of what it pays, against a rule at the floor IN TODAY'S MONEY
+       (the spec's D6 and B7: the tab printed the founding figure as a wage - the
+       floor read $3,460 where the unskilled job is paid $3,827); each band says
+       whether it is pinned, as the model reads it (D7: LabourMarket.isPinned(),
+       against the floor in today's money since 0.7.47, B8). A staged floor moves
+       a ghost rule, and the ghost bar of a job it moves is where that job's wage
+       is heading at the new floor - the floor's own move only: a job it does not
+       move has none, and a faint mark at the target a wage walks to with no change
+       made keeps the market's own drift apart from it. A job with no posts is
+       greyed. Then the city's own payroll, and the ladder as a table.
        ===================================================================== */
 
     /** P22, the floor's (i). */
@@ -2619,9 +2632,76 @@ final class PolicyScreen {
     }
 
     /** P24. */
-    static final String FLOOR_CAVEAT = "Once wages have walked there, which takes about a year. Nothing about "
+    static final String FLOOR_CAVEAT = "Once wages have walked there, which takes about a year. Only the floor's own move "
+            + "is counted: each wage's target at the floor as staged against its target now. The market's drift, where a "
+            + "wage is still walking to its target, is drawn apart on the ladder, never folded into this. Nothing about "
             + "this preview knows who leaves or who arrives because of it - a "
             + "higher floor is a bill AND a reason for skilled people to come.";
+
+    /** The dial's column takes this share of the page beside the gauges' column. */
+    static final double FLOOR_DIAL_SHARE = .45;
+
+    /** The dial's column is not let shrink under this: its 380 px dial, or its Apply bar (240 px and 170 and the gap between), and the card's padding. */
+    static final double FLOOR_DIAL_LEAST = 450;
+
+    /** What the study measured of a floor over the going rate, said under the dial while the floor it shows is over it. */
+    static final String ABOVE_GOING_NOTE = "What a floor above the going rate cost, measured: raising it 20% at month 240 held unemployment 7 to 8 points "
+            + "higher for twenty years and the city 10 to 24% smaller at month 480, with the median worker 20% better paid (four seeds, the wages study). "
+            + "The surplus cannot be priced away, so it leaves.";
+
+    /** The gauge against the going rate, behind its (i): what the three zones are, from FloorView's constants. */
+    static final String GOING_INFO = "The floor against the going rate: what an unskilled post pays where there are exactly enough workers for it. Under "
+            + pct0(FloorView.NEVER_UNDER) + " of it the floor never binds, since the market alone stops there; from " + pct0(FloorView.NEVER_UNDER) + " to "
+            + pct0(FloorView.ALWAYS_OVER) + " it binds in a glut, when there are more workers than posts; over " + pct0(FloorView.ALWAYS_OVER)
+            + " it binds even when hands are short, and the surplus of workers leaves rather than getting cheaper. The thin mark is what the unskilled job is paid now.";
+
+    /** The first zone of the gauge against the going rate, named under it. */
+    static final String ZONE_NEVER_WORDS = "under " + pct0(FloorView.NEVER_UNDER) + ": never binds (the market alone stops there)";
+
+    /** ...the second. */
+    static final String ZONE_GLUT_WORDS = pct0(FloorView.NEVER_UNDER).replace("%", "") + "–" + pct0(FloorView.ALWAYS_OVER) + ": binds in a glut";
+
+    /** ...the third. */
+    static final String ZONE_ALWAYS_WORDS = "over " + pct0(FloorView.ALWAYS_OVER) + ": binds even when hands are short";
+
+    /** The gauge against the average wage, behind its (i). */
+    static final String AVERAGE_INFO = "The floor over the average wage, the way minimum wages are compared across nations (the Kaitz index). The striped band is where "
+            + "the middle eight in ten of the world file's nations sit; the thin marks are the lowest, Canada and the highest. A city whose posts are mostly "
+            + "unskilled reads high, since its average wage is near the floor.";
+
+    /** The card of what a full-time floor job pays for, behind its (i). */
+    static final String JOB_PAYS_INFO = "A person working full time at the floor: what the payslip leaves of it, set against what one adult living alone pays for "
+            + "rent, food and fees. Under 100% such workers cannot carry a home alone and share one.";
+
+    /** ...the sentence under the cover figure. */
+    static final String COVER_WORDS = "Under 100% such workers share a home.";
+
+    /** The card of who is near the floor, behind its (i). */
+    static final String NEAR_INFO = "The posts filled that pay the floor itself, and those that pay a little over it, which a rise in the floor reaches next: "
+            + "by wage band below, and everyone else.";
+
+    /** The card that ties the floor, behind its (i). */
+    static final String TIE_INFO = "What the floor keeps pace with. Prices: the founding figure lifted by the cost of living, as it always was. The average wage: "
+            + "the floor is struck each month at a share of what the city's workers are paid, held between " + pct0(LabourMarket.MIN_TIE_SHARE) + " and "
+            + pct0(LabourMarket.MAX_TIE_SHARE) + ". Nothing: a cash figure that stays where it is set, which inflation wears down.";
+
+    /** The key a staged choice of the floor's tie is kept under until its Apply. */
+    static final String FLOOR_TIE = "floor:tie";
+
+    /** The width a gauge is taken to be when its tick names are kept apart: the narrowest it is in a page of a laptop's width. */
+    static final double GAUGE_PX = 400;
+
+    /** The width of a tick's name per letter at the caption size. */
+    static final double NAME_CHAR_PX = 5.5;
+
+    /** The room left between two tick names under a gauge. */
+    static final double NAME_GAP_PX = 8;
+
+    /** A wage's walk is marked on the ladder only when its target is this share of the wage away: nearer is the width of the bar's own end. */
+    static final double WALK_SHOWN = .01;
+
+    /** The formats that write a number that may not be one as a dash. */
+    private static final Formats FORMAT = Formats.INSTANCE;
 
     void floorPage(VBox page) {
         LabourMarket market = ui.game.getLabourMarket();
@@ -2629,20 +2709,318 @@ final class PolicyScreen {
         double floor = market.getMinimumWage();
         double want = staged("floor", floor);
         boolean moved = isStaged("floor");
+        // Every figure the page draws is the view's (FloorView): the floor in force, and the one staged.
+        FloorView view = FloorView.of(ui.game, want);
 
         String says = floorSays(market, people);
+        String joined = view.joinedWords(Money::moneyFull);
 
         addShutCard(page, PolicyDates.Lever.MINIMUM_WAGE);
+        // The dial's column (its card, and under it what the study measured when the floor it shows is over the going rate) beside the two gauges.
+        VBox dial = Kept.column(TILE_GAP, Kept.scope("floor", () -> floorCard(market, floor, view)));
+        if (view.stagedZone() == FloorView.Zone.ALWAYS) dial.getChildren().add(Kept.scope("aboveNote", () -> muted(ABOVE_GOING_NOTE)));
+        VBox gauges = Kept.column(TILE_GAP, Kept.scope("going", () -> goingGaugeCard(view, moved)),
+                Kept.scope("average", () -> averageGaugeCard(view, moved)));
+        page.getChildren().add(floorRow(dial, gauges));
+        page.getChildren().add(row(Kept.scope("jobPays", () -> jobPaysCard(view)), Kept.scope("near", () -> nearCard(view)),
+                Kept.scope("tie", () -> tieCard(market, view))));
         page.getChildren().add(sectionHead("THE WAGE LADDER", FLOOR_INFO, quiet(moved
-                ? "the ghosts: once wages have walked there (about a year)" : "what every job pays, against the floor in today's money")));
-        page.getChildren().add(card(wageLadder(market, people, floor, want, moved), noteLine(firstWords(says), says, 1100)));
-        page.getChildren().add(split(Kept.scope("floor", () -> floorCard(market, floor)), Kept.scope("payroll", this::cityPayrollCard), 2.0 / 3));
-        page.getChildren().add(fold("floor:table", "the ladder as a table, in today's money", () -> floorTable(market, want, moved)));
+                ? "the ghost: where the floor as staged takes a wage, once it has walked there (about a year)" : "what every job pays, against the floor in today's money")));
+        VBox ladder = card(wageLadder(market, view, moved), noteLine(firstWords(says), says, 1100));
+        if (joined != null) ladder.getChildren().add(Kept.scope("joined", () -> muted(joined)));
+        page.getChildren().add(ladder);
+        VBox payroll = Kept.scope("payroll", this::cityPayrollCard);
+        payroll.setMaxWidth(STATEMENT);
+        page.getChildren().add(payroll);
+        page.getChildren().add(fold("floor:table", "the ladder as a table, in today's money", () -> floorTable(market, view, moved)));
     }
 
-    /** The eleven jobs under their bands on one scale, the floor a rule across them; a band's chip says whether it is pinned (LabourMarket.isPinned(), as the model has it) and, pinned, whether it is paid the floor itself (isPaidTheFloor()) or the market's bottom over it. */
-    Node wageLadder(LabourMarket market, PopulationManager people, double floor, double want, boolean moved) {
-        double cash = market.cashMinimumWage(), cashThen = market.cashAt(want);
+    /** The dial's column beside the gauges' column: the dial's a share of the width and never under its least, the gauges' the rest. */
+    static HBox floorRow(Region dial, Region gauges) {
+        HBox both = Kept.row(TILE_GAP, dial, gauges);
+        splitWidth(dial, both, FLOOR_DIAL_SHARE);
+        splitWidth(gauges, both, 1 - FLOOR_DIAL_SHARE);
+        dial.setMinWidth(FLOOR_DIAL_LEAST);
+        gauges.setMinWidth(0);
+        HBox.setHgrow(gauges, Priority.ALWAYS);
+        both.setFillHeight(true);
+        return both;
+    }
+
+    /** A sentence's first letter in capitals. */
+    static String sentence(String words) {
+        return words.isEmpty() ? words : Character.toUpperCase(words.charAt(0)) + words.substring(1);
+    }
+
+    /**
+     * Tick names kept apart: the ticks in the order of their worth, each name kept unless it would run into one already kept, since a gauge has one line
+     * of names under it and a name is drawn centred under its tick. A tick whose name is cut is still drawn, and its tooltip says what the name did;
+     * a tick off the scale is left out.
+     */
+    static List<Tick> apartNames(List<Tick> ticks, double scale) {
+        List<Tick> out = new ArrayList<>();
+        List<double[]> kept = new ArrayList<>();
+        for (Tick t : ticks) {
+            // A tick off the scale is not drawn, so it is not made either: a kept bar's parts and a new one's are then the same ones.
+            if (!(t.at() >= 0 && t.at() <= scale)) continue;
+            if (t.name() == null) {
+                out.add(t);
+                continue;
+            }
+            double half = t.name().length() * NAME_CHAR_PX / 2;
+            double centre = Math.max(half, Math.min(GAUGE_PX - half, GAUGE_PX * t.at() / scale));
+            boolean clear = true;
+            for (double[] k : kept) clear &= Math.abs(centre - k[0]) >= half + k[1] + NAME_GAP_PX;
+            if (clear) {
+                kept.add(new double[] {centre, half});
+                out.add(t);
+            } else {
+                out.add(new Tick(t.at(), t.colour(), t.width(), null, t.tip()));
+            }
+        }
+        return out;
+    }
+
+    /** The three zones named under the gauge against the going rate, each across the stretch of the bar it names. */
+    static GridPane zoneNames() {
+        double[] share = {FloorView.NEVER_UNDER, FloorView.ALWAYS_OVER - FloorView.NEVER_UNDER, FloorView.GAUGE_TOP - FloorView.ALWAYS_OVER};
+        String[] words = {ZONE_NEVER_WORDS, ZONE_GLUT_WORDS, ZONE_ALWAYS_WORDS};
+        GridPane names = Kept.grid();
+        names.setMaxWidth(Double.MAX_VALUE);
+        for (int i = 0; i < words.length; i++) {
+            javafx.scene.layout.ColumnConstraints c = new javafx.scene.layout.ColumnConstraints();
+            c.setPercentWidth(100 * share[i] / FloorView.GAUGE_TOP);
+            c.setHgrow(Priority.ALWAYS);
+            c.setFillWidth(true);
+            names.getColumnConstraints().add(c);
+            Label zone = words(words[i], Palette.SIZE_CAPTION, Palette.TEXT_MUTED,
+                    " -fx-border-color: transparent transparent transparent " + Palette.EDGE + "; -fx-border-width: 0 0 0 1; -fx-padding: 0 4 0 4;");
+            names.add(zone, i, 0);
+        }
+        return names;
+    }
+
+    /** AGAINST WHAT UNSKILLED WORK GOES FOR: a bar from nothing to FloorView.GAUGE_TOP of the going rate in its three zones, the floor, what the unskilled job is paid and the staged floor on it. */
+    VBox goingGaugeCard(FloorView view, boolean moved) {
+        List<Segment> zones = List.of(
+                new Segment(FloorView.NEVER_UNDER, Palette.CONTROL, false, null, null, ZONE_NEVER_WORDS, null),
+                new Segment(FloorView.ALWAYS_OVER - FloorView.NEVER_UNDER, Palette.HOVER, false, null, null, ZONE_GLUT_WORDS, null),
+                new Segment(FloorView.GAUGE_TOP - FloorView.ALWAYS_OVER, Palette.WARN + "33", false, null, null, ZONE_ALWAYS_WORDS, null));
+        List<Tick> ticks = new ArrayList<>();
+        ticks.add(new Tick(view.floorOverGoing(), Palette.TEXT_HEAD, 3, FORMAT.pct(view.floorOverGoing()),
+                "The floor: " + moneyFull(view.floor()) + " a month, " + FORMAT.pct(view.floorOverGoing()) + " of the going rate"));
+        if (moved) ticks.add(new Tick(view.stagedOverGoing(), Palette.ACCENT, 3, FORMAT.pct(view.stagedOverGoing()),
+                "The floor as staged: " + moneyFull(view.staged()) + " a month, " + FORMAT.pct(view.stagedOverGoing()) + " of the going rate"));
+        ticks.add(new Tick(view.unskilledOverGoing(), Palette.TEXT_MUTED, 1, "paid " + moneyFull(view.unskilledWage()),
+                "The unskilled job is paid " + moneyFull(view.unskilledWage()) + " a month, " + FORMAT.pct(view.unskilledOverGoing()) + " of the going rate"));
+        return card(cardHead(Icons.STAFF, Palette.MONEY, "AGAINST WHAT UNSKILLED WORK GOES FOR · " + FORMAT.pct(view.floorOverGoing()), GOING_INFO, null),
+                segmentBar(zones, FloorView.GAUGE_TOP, apartNames(ticks, FloorView.GAUGE_TOP), 0, 18),
+                zoneNames(),
+                muted("The going rate (" + moneyFull(view.goingRate()) + ") is what an unskilled post pays where there are exactly enough workers for it."));
+    }
+
+    /** AGAINST THE AVERAGE WAGE: a bar from nothing to the larger of 1 and the floor's shares, the middle band of the world file's nations striped, the lowest, Canada and the highest on it, and the floor and the staged floor. */
+    VBox averageGaugeCard(FloorView view, boolean moved) {
+        double top = 1;
+        if (Double.isFinite(view.floorOverAverage())) top = Math.max(top, view.floorOverAverage());
+        if (moved && Double.isFinite(view.stagedOverAverage())) top = Math.max(top, view.stagedOverAverage());
+        FloorView.Nation low = view.bandLow(), high = view.bandHigh();
+        List<Segment> parts = new ArrayList<>();
+        if (low != null) {
+            parts.add(Segment.of(low.kaitz(), Palette.CONTROL));
+            parts.add(new Segment(high.kaitz() - low.kaitz(), Palette.GOOD + "59", false, Palette.GOOD, null,
+                    "Striped: the middle band of the world file's nations, " + pct0(low.kaitz()) + " to " + pct0(high.kaitz()) + " of the average wage", null));
+            parts.add(Segment.of(top - high.kaitz(), Palette.CONTROL));
+        } else {
+            parts.add(Segment.of(top, Palette.CONTROL));
+        }
+        List<Tick> ticks = new ArrayList<>();
+        ticks.add(new Tick(view.floorOverAverage(), Palette.TEXT_HEAD, 3, FORMAT.pct(view.floorOverAverage()),
+                "The floor: " + moneyFull(view.floor()) + " a month, " + FORMAT.pct(view.floorOverAverage()) + " of the average wage, " + moneyFull(view.averageWage())));
+        if (moved) ticks.add(new Tick(view.stagedOverAverage(), Palette.ACCENT, 3, FORMAT.pct(view.stagedOverAverage()),
+                "The floor as staged: " + moneyFull(view.staged()) + " a month, " + FORMAT.pct(view.stagedOverAverage()) + " of the average wage"));
+        Set<String> shown = new HashSet<>();
+        // The marked nations are named in the caption too, lowest first, so a name apartNames() cuts where it meets the floor's is never lost.
+        List<String> marked = new ArrayList<>();
+        for (FloorView.Nation n : new FloorView.Nation[] {view.lowestNation(), view.canada(), view.highestNation()}) {
+            if (n == null || !shown.add(n.id())) continue;
+            marked.add(n.name() + " " + pct0(n.kaitz()));
+        }
+        for (FloorView.Nation n : new FloorView.Nation[] {view.canada(), view.lowestNation(), view.highestNation()}) {
+            if (n == null || !shown.remove(n.id())) continue;
+            ticks.add(new Tick(n.kaitz(), Palette.TEXT_MUTED, 1, n.name() + " " + pct0(n.kaitz()),
+                    n.name() + ": a minimum wage of " + pct0(n.kaitz()) + " of its average wage"));
+        }
+        VBox c = card(cardHead(Icons.POPULATION, Palette.PEOPLE, "AGAINST THE AVERAGE WAGE · " + FORMAT.pct(view.floorOverAverage()), AVERAGE_INFO, null),
+                segmentBar(parts, top, apartNames(ticks, top), 0, 18));
+        if (low != null) {
+            c.getChildren().add(Kept.scope("striped", () -> muted("Striped: " + view.nationsInBand() + " of the " + view.nations().size()
+                    + " nations in the world file, " + pct0(low.kaitz()) + "–" + pct0(high.kaitz()) + " (the OECD's figures)"
+                    + (marked.isEmpty() ? "." : "; marked: " + String.join(", ", marked) + "."))));
+        }
+        String reads = view.readsHighWords();
+        if (reads != null) c.getChildren().add(Kept.scope("readsHigh", () -> muted(reads)));
+        return c;
+    }
+
+    /** One tinted square and its words, for the key under a bar. */
+    private static HBox keyOf(String colour, String words) {
+        Label swatch = Kept.label("■");
+        swatch.setStyle(Palette.words(Palette.SIZE_LABEL, colour));
+        swatch.setMinWidth(Region.USE_PREF_SIZE);
+        Label name = Kept.label(words);
+        name.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+        name.setMinWidth(Region.USE_PREF_SIZE);
+        HBox key = Kept.row(Palette.GAP_TIGHT, swatch, name);
+        key.setAlignment(Pos.CENTER_LEFT);
+        return key;
+    }
+
+
+    /** WHAT A FULL-TIME MINIMUM JOB PAYS FOR: the take-home against one adult living alone, rent, food, fees and what is left in a bar, and how far it covers them. */
+    VBox jobPaysCard(FloorView view) {
+        double scale = Math.max(view.takeHome(), view.costSum());
+        String[] names = {"rent", "food", "fees"};
+        double[] costs = {view.rent(), view.food(), view.fees()};
+        String[] tones = {Palette.ACCENT_LIGHT, Palette.PEOPLE, Palette.BUSINESS};
+        List<Segment> parts = new ArrayList<>();
+        List<Node> key = new ArrayList<>();
+        for (int i = 0; i < names.length; i++) {
+            String said = names[i] + " " + moneyFull(costs[i]);
+            String tone = tones[i];
+            parts.add(new Segment(costs[i], tone, false, null, null, sentence(said) + " a month", null));
+            key.add(Kept.scope("key:" + names[i], () -> keyOf(tone, said)));
+        }
+        if (view.left() > 0) {
+            String said = "left over " + moneyFull(view.left());
+            parts.add(new Segment(view.left(), Palette.GOOD, false, null, null, sentence(said) + " a month", null));
+            key.add(Kept.scope("key:left", () -> keyOf(Palette.GOOD, said)));
+        }
+        // Short of the costs the take-home is a mark on the bar of them, instead of a part of it.
+        List<Tick> ticks = view.left() < 0
+                ? List.of(new Tick(view.takeHome(), Palette.TEXT_HEAD, 2, "take-home", "Take-home pay: " + moneyFull(view.takeHome()) + " a month"))
+                : List.of();
+        double cover = view.cover();
+        boolean covers = cover >= 1;
+        Label covered = figure("Covers " + FORMAT.pct(cover) + ".", Palette.SIZE_LABEL + 1, Double.isNaN(cover) ? Palette.TEXT_MUTED : covers ? Palette.GOOD : Palette.BAD);
+        Label why = words(COVER_WORDS, Palette.SIZE_LABEL, covers || Double.isNaN(cover) ? Palette.TEXT_MUTED : Palette.BAD_SOFT);
+        HBox.setHgrow(why, Priority.ALWAYS);
+        why.setMaxWidth(Double.MAX_VALUE);
+        HBox cover0 = Kept.row(Palette.GAP, covered, why);
+        cover0.setAlignment(Pos.TOP_LEFT);
+        return card(cardHead(Icons.BANKNOTE, Palette.MONEY, "WHAT A FULL-TIME MINIMUM JOB PAYS FOR", JOB_PAYS_INFO, null),
+                words("Take-home " + moneyFull(view.takeHome()) + " a month (" + share1(view.payslipShare()) + " off the payslip) against one adult living alone, "
+                        + moneyFull(view.costSum()) + ":", Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL),
+                segmentBar(parts, scale, ticks, 0, 18),
+                flowOf(12, 2, key.toArray(new Node[0])),
+                cover0);
+    }
+
+    /** A count of posts and its share of the posts filled: "33,744 · 95%". */
+    static String countShare(double count, double share) {
+        return people(count) + " · " + FORMAT.pct(share);
+    }
+
+    /** WHO IS NEAR IT: the posts paid the floor, those within NEAR_FLOOR over it, by wage band, and everyone else. */
+    VBox nearCard(FloorView view) {
+        VBox c = card(cardHead(Icons.POPULATION, Palette.PEOPLE, "WHO IS NEAR IT", NEAR_INFO, null),
+                cardLine("Paid the minimum", countShare(view.paidTotal(), view.paidShare()), null),
+                cardLine("Within " + pct0(LabourMarket.NEAR_FLOOR) + " above it", countShare(view.nearTotal(), view.nearShare()), null));
+        for (WageBand band : WageBand.values()) {
+            double n = view.atOrNear(band);
+            if (Math.round(n) < 1) continue;
+            c.getChildren().add(Kept.scope("band:" + band.name(), () -> cardLine("   " + band.label() + " posts", people(n), Palette.TEXT_MUTED)));
+        }
+        c.getChildren().add(cardLine("Everyone else", countShare(view.everyoneElse(), view.everyoneElseShare()), null));
+        return c;
+    }
+
+    /** What the tie is called on its chip: the average wage's with the share choosing it holds. */
+    static String tieName(LabourMarket.FloorTie tie, double share) {
+        return switch (tie) {
+            case PRICES -> "Prices";
+            case AVERAGE_WAGE -> "The average wage, at " + pct0(share);
+            case NOTHING -> "Nothing";
+        };
+    }
+
+    /** What a tie does, under its chip. */
+    static String tieSays(LabourMarket.FloorTie tie) {
+        return switch (tie) {
+            case PRICES -> "It keeps what it buys (the default).";
+            case AVERAGE_WAGE -> "It moves with what people are paid.";
+            case NOTHING -> "A dollar figure, which inflation wears down as it does a real one.";
+        };
+    }
+
+    /** What choosing a tie does now, in words, before it is applied. */
+    String enteringWords(LabourMarket market, FloorView view, LabourMarket.FloorTie tie) {
+        return switch (tie) {
+            case AVERAGE_WAGE -> {
+                String s = "Choosing it holds the floor at " + pct0(view.enteringShare()) + " of the average wage"
+                        + (view.averageWage() > 0 ? ", " + moneyFull(view.averageWage()) + " now" : "");
+                if (view.floorOverAverage() > LabourMarket.MAX_TIE_SHARE) s += "; the floor is " + FORMAT.pct(view.floorOverAverage()) + " of it now, so this lowers it";
+                else if (view.floorOverAverage() < LabourMarket.MIN_TIE_SHARE) s += "; the floor is " + FORMAT.pct(view.floorOverAverage()) + " of it now, so this raises it";
+                yield s + ".";
+            }
+            case NOTHING -> "Choosing it holds today's cash figure, " + moneyFull(view.floor()) + " a month, until you move it; inflation wears it down.";
+            case PRICES -> "Choosing it lifts the founding figure, " + moneyFull(market.getMinimumWage()) + ", by the cost of living: the floor keeps what it buys.";
+        };
+    }
+
+    /** TIE IT TO: the three ties as the currency page's regimes are chosen, the one in force marked and a choice staged under its own key until its Apply; greyed while the lever is shut. */
+    VBox tieCard(LabourMarket market, FloorView view) {
+        LabourMarket.FloorTie[] all = LabourMarket.FloorTie.values();
+        LabourMarket.FloorTie now = view.tie(), want = stagedChoice(FLOOR_TIE, now, all);
+        boolean shut = isShut(PolicyDates.Lever.MINIMUM_WAGE);
+        double share = now == LabourMarket.FloorTie.AVERAGE_WAGE ? view.tieShare() : view.enteringShare();
+        Node[] options = new Node[all.length];
+        for (int i = 0; i < all.length; i++) {
+            LabourMarket.FloorTie tie = all[i];
+            VBox o = option(tieName(tie, share), tieSays(tie), tie == want, tie == now, () -> {
+                if (!shut) choose(FLOOR_TIE, now, tie);
+            });
+            o.setDisable(shut);
+            o.setOpacity(shut ? .5 : 1);
+            options[i] = o;
+        }
+        VBox c = card(cardHead(Icons.POLICY, Palette.MONEY, "TIE IT TO", TIE_INFO, null), Kept.column(Palette.GAP, options),
+                words(want == now ? "The floor is " + floorTieWords(market) + "." : enteringWords(market, view, want), Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
+        if (want != now) {
+            double held = want == LabourMarket.FloorTie.AVERAGE_WAGE ? view.enteringShare() : view.tieShare();
+            c.getChildren().add(Kept.scope("tieFoot", () -> tieFoot("Tie the floor to " + want.label()
+                    + (want == LabourMarket.FloorTie.AVERAGE_WAGE ? ", at " + pct0(held) : ""), () -> ui.game.setFloorTie(want, held))));
+        }
+        return c;
+    }
+
+    /** The foot of the tie's card: Apply, and "Leave it as it is", the one above the other since the card is narrow; either takes the staged tie out. */
+    private VBox tieFoot(String label, Runnable apply) {
+        Pieces.ActionButton go = actionButton(Icons.TICK, Palette.MONEY, ACTION_INLINE, new Press(Look.GO, label, null), () -> {
+            apply.run();
+            unstage(FLOOR_TIE);
+            showPolicyMenu();
+        });
+        Pieces.ActionButton no = actionButton(Icons.CLOSE, Palette.TEXT_LABEL, ACTION_INLINE, new Press(Look.CHOOSE, "Leave it as it is", null), () -> {
+            unstage(FLOOR_TIE);
+            showPolicyMenu();
+        });
+        go.setMaxWidth(Double.MAX_VALUE);
+        no.setMaxWidth(Double.MAX_VALUE);
+        VBox bar = Kept.column(6, go, no);
+        bar.setStyle("-fx-padding: 6 0 2 0;");
+        return bar;
+    }
+
+    /**
+     * The eleven jobs under their bands on one scale, the floor a rule across them. A job the staged floor moves has its ghost bar at the wage's
+     * target at the staged floor and says "target now → target staged"; one it does not move has no ghost and says its wage alone; a faint mark at
+     * a job's target at the floor in force, where that is not the wage, is the wage's own walk, apart from the ghost; a job with no posts is greyed
+     * and says so. A band's chip says whether it is pinned (LabourMarket.isPinned(), as the model has it) and, pinned, whether it is paid the floor itself (isPaidTheFloor()) or the market's bottom over it.
+     */
+    Node wageLadder(LabourMarket market, FloorView view, boolean moved) {
+        PopulationManager people = ui.game.getPopulationManager();
+        double cash = view.floor(), cashThen = view.staged();
         List<ScaleRow> rows = new ArrayList<>();
         double scale = Math.max(cash, cashThen);
         for (WageBand band : WageBand.values()) {
@@ -2655,14 +3033,24 @@ final class PolicyScreen {
                     .tag(chip, pinned && surplus > 0 ? Palette.WARN : Palette.TEXT_LABEL));
             for (JobType job : JobType.values()) {
                 if (WageBand.of(job) != band) continue;
-                double wage = market.getWage(job);
-                double then = market.targetWageAt(job, want);
-                scale = Math.max(scale, Math.max(wage, moved ? then : 0));
+                FloorView.JobRow j = view.job(job);
+                String name = ui.buildScreen.jobLabel(job);
+                scale = Math.max(scale, Math.max(Math.max(j.wage(), j.targetNow()), j.moved() ? j.targetStaged() : 0));
+                if (j.noPosts()) {
+                    // No posts, no one paid it: a faint bar for the wage it would carry, and the words in place of a figure.
+                    rows.add(ScaleRow.of(name, FloorView.NO_POSTS_WORDS, List.of(Run.of(0, j.wage(), Palette.CONTROL_EDGE)
+                            .tip(name + " has no posts here; its wage would be " + moneyFull(j.wage()) + " a month"))));
+                    continue;
+                }
                 List<Run> runs = new ArrayList<>();
-                runs.add(Run.of(0, wage, Palette.MONEY).tip(ui.buildScreen.jobLabel(job) + " is paid " + moneyFull(wage) + " a month"));
-                if (moved) runs.add(Run.of(0, then, Palette.ACCENT).outlined()
-                        .tip("once wages have walked there: " + moneyFull(then) + " a month"));
-                rows.add(ScaleRow.of(ui.buildScreen.jobLabel(job), moved ? moneyFull(wage) + " → " + moneyFull(then) : moneyFull(wage), runs));
+                runs.add(Run.of(0, j.wage(), Palette.MONEY).tip(name + " is paid " + moneyFull(j.wage()) + " a month"));
+                if (j.moved()) runs.add(Run.of(0, j.targetStaged(), Palette.ACCENT).outlined()
+                        .tip("once wages have walked there: " + moneyFull(j.targetStaged()) + " a month"));
+                List<Tick> walk = Math.abs(j.targetNow() - j.wage()) > WALK_SHOWN * j.wage()
+                        ? List.of(new Tick(j.targetNow(), Palette.TEXT_MUTED, 1, null,
+                                "where the wage is walking with no change made: " + moneyFull(j.targetNow()) + " a month"))
+                        : List.of();
+                rows.add(ScaleRow.of(name, j.moved() ? moneyFull(j.targetNow()) + " → " + moneyFull(j.targetStaged()) : moneyFull(j.wage()), runs).marks(walk));
             }
         }
         List<Rule> rules = new ArrayList<>();
@@ -2672,41 +3060,47 @@ final class PolicyScreen {
         return scaleRows(rows, scale * 1.05, rules, 220, 170, 12);
     }
 
-    /** THE FLOOR on its dial card: read in today's money, set in founding money (D6); the floor, the unskilled wage, every wage and the city's payroll before and after. */
-    VBox floorCard(LabourMarket market, double floor) {
+    /** THE MINIMUM WAGE on its dial card: read in today's money, set in founding money (D6); the tie and who is paid it under the reading, the preview of the floor's own move beside the dial. */
+    VBox floorCard(LabourMarket market, double floor, FloorView view) {
         double min = market.getMinSettable(), max = market.getMaxSettable(), step = (max - min) / 200;
         DoubleFunction<String> today = v -> moneyFull(market.cashAt(v));
         Ladder ladder = ownLadder("floor", floor, min, max, step, today).stepReads(today).greyed(isShut(PolicyDates.Lever.MINIMUM_WAGE));
         double want = staged("floor", floor);
-        double payroll = PolicyPreview.cityPayroll(ui.game);
-        DoubleFunction<List<Effect>> effects = floorEffects(market);
         String info = FLOOR_INFO + " The floor is tied to " + market.getFloorTie().label() + ": " + floorTieWords(market)
                 + ". The dial is set in founding money - " + moneyFull(floor) + " a month at founding "
                 + "prices - and read in today's: the cost of living and the "
                 + String.format("%+.0f%%", market.getMinimumWageAdjustment() * 100) + " nudge make it "
                 + moneyFull(market.cashMinimumWage()) + ". One step is a two-hundredth of the dial's range.";
-        return dialCard(new DialCard(Icons.STAFF, Palette.MONEY, "THE FLOOR", info,
-                moneyFull(market.cashMinimumWage()) + " a month",
-                "Lifts only the wages under it; unskilled work goes for " + moneyFull(market.cashGoingRate()) + " at the going rate.",
-                null, ladder, want, effects, "Once wages have walked there, about a year.", FLOOR_CAVEAT,
+        List<Node> extras = new ArrayList<>();
+        extras.add(Kept.scope("holds", () -> words(view.holdsWords(Money::moneyFull), Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL)));
+        if (view.tie() == LabourMarket.FloorTie.AVERAGE_WAGE) {
+            extras.add(Kept.scope("moves", () -> muted("The dial moves the share: at " + moneyFull(view.staged()) + " the floor is "
+                    + FORMAT.pct(view.stagedOverAverage()) + " of the average wage.")));
+        }
+        return dialCard(new DialCard(Icons.STAFF, Palette.MONEY, "THE MINIMUM WAGE", info,
+                moneyFull(market.cashMinimumWage()) + " a month", sentence(floorTieWords(market)) + ".",
+                extras, ladder, want, floorEffects(), "Once wages have walked there, about a year.", FLOOR_CAVEAT,
                 applyFoot("floor", "Set the floor to " + moneyFull(market.cashAt(want)), () -> ui.game.setMinimumWage(want))),
-                380, false);
+                380, true);
     }
 
-    /** The floor's effects at any value of its thumb (pure: the probe reads them). */
-    DoubleFunction<List<Effect>> floorEffects(LabourMarket market) {
+    /** The floor's effects at any value of its thumb (pure: the probe reads them): the floor's own move only, each from FloorView at that value. */
+    DoubleFunction<List<Effect>> floorEffects() {
         double payroll = PolicyPreview.cityPayroll(ui.game);
-        return v -> List.of(
-                Effect.of("The floor, in today's money", market.cashMinimumWage(), market.cashAt(v), Money::moneyFull)
-                        .delta(PolicyScreen::moneyMoveFull),
-                Effect.of("The unskilled job's wage", market.getWage(JobType.NO_DIPLOMA),
-                        market.targetWageAt(JobType.NO_DIPLOMA, v), Money::moneyFull).delta(PolicyScreen::moneyMoveFull),
-                Effect.of("Workers it moves", 0, PolicyPreview.floorMoveAt(ui.game, v).workers(), Money::people)
-                        .info("The people in the jobs whose wage heads for a different level at this floor: the wages under it. Everyone else's is unchanged."),
-                Effect.of("The wage bill, once walked", 1, PolicyPreview.wageBillMoveAt(ui.game, v),
-                        x -> String.format("%+.1f%%", unsigned0((x - 1) * 100, 1)).replace('-', '−')),
-                Effect.of("The city's own payroll", payroll, PolicyPreview.cityPayrollAt(ui.game, v), PolicyScreen::amount)
-                        .delta(PolicyScreen::moneyMove).info("The teachers, the doctors and nurses and the researchers in the posts its research grants buy."));
+        return v -> {
+            FloorView at = FloorView.of(ui.game, v);
+            return List.of(
+                    Effect.of("The floor, in today's money", at.floor(), at.staged(), Money::moneyFull).delta(PolicyScreen::moneyMoveFull),
+                    Effect.of("Workers lifted", 0, at.lifted(), x -> x > 0 ? people(x) + " · " + FORMAT.pct(at.liftedShare()) : "0")
+                            .info("The people in the jobs whose wage heads for a different level at this floor: the wages under it. Everyone else's is unchanged."),
+                    Effect.of("Their pay", at.liftedPayNow(), at.liftedPayThen(), x -> Double.isNaN(x) ? "—" : moneyFull(x))
+                            .delta(PolicyScreen::moneyMoveFull),
+                    Effect.of("The payroll, a month", at.payrollNow(), at.payrollThen(), PolicyScreen::amount)
+                            .delta(PolicyScreen::moneyMove).info("The city's wage bill a month once wages have walked to the floor as staged, less what it is at the floor in force."),
+                    Effect.of("Everyone above it", 0, 0, x -> "unchanged"),
+                    Effect.of("The city's own payroll", payroll, PolicyPreview.cityPayrollAt(ui.game, v), PolicyScreen::amount)
+                            .delta(PolicyScreen::moneyMove).info("The teachers, the doctors and nurses and the researchers in the posts its research grants buy."));
+        };
     }
 
     /** What the city itself pays (W4), neutral (B14: a payroll is not bad news by being one). */
@@ -2722,8 +3116,8 @@ final class PolicyScreen {
                 cardLine("Its own payroll", money(PolicyPreview.cityPayroll(ui.game)), Palette.TEXT_HEAD));
     }
 
-    /** The ladder as a table (W2), behind "details", in today's money: each job's multiple of the going rate (LabourMarket.ratio()), what it is paid, and where it heads at a staged floor. */
-    Node floorTable(LabourMarket market, double want, boolean moved) {
+    /** The ladder as a table (W2), behind "details", in today's money: each job's multiple of the going rate (LabourMarket.ratio()), what it is paid, and, for a job the staged floor moves, where it heads at it (blank for one it does not). */
+    Node floorTable(LabourMarket market, FloorView view, boolean moved) {
         GridPane ladder = grid(new double[] {220, 100, 120, 120},
                 new javafx.geometry.HPos[] {javafx.geometry.HPos.LEFT, javafx.geometry.HPos.RIGHT,
                         javafx.geometry.HPos.RIGHT, javafx.geometry.HPos.RIGHT});
@@ -2734,8 +3128,8 @@ final class PolicyScreen {
             Kept.scope("row:" + job.name(), () -> {
                 ladder.add(gridCell(ui.buildScreen.jobLabel(job), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, at);
                 ladder.add(gridCell(String.format("%.2fx", market.ratio(job)), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 1, at);
-                ladder.add(gridCell(moneyFull(market.getWage(job)), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 2, at);
-                if (moved) ladder.add(Kept.scope("heads", () -> gridCell(moneyFull(market.targetWageAt(job, want)), Palette.ACCENT, Palette.SIZE_CAPTION, true)), 3, at);
+                ladder.add(gridCell(moneyFull(view.job(job).wage()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 2, at);
+                if (moved && view.job(job).moved()) ladder.add(Kept.scope("heads", () -> gridCell(moneyFull(view.job(job).targetStaged()), Palette.ACCENT, Palette.SIZE_CAPTION, true)), 3, at);
             });
         }
         return column(ladder);

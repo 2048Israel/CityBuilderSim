@@ -89,7 +89,7 @@ public final class FloorView {
     private final double tieShare, enteringShare;
 
     // The preview, the floor's own move only.
-    private final double lifted, liftedShare, liftedPayNow, liftedPayThen, payrollMove;
+    private final double lifted, liftedShare, liftedPayNow, liftedPayThen, payrollNow, payrollThen, payrollMove;
 
     // Per job, and the joined market.
     private final List<JobRow> jobs;
@@ -191,6 +191,8 @@ public final class FloorView {
         liftedShare = over(move.workers(), postsFilled);
         liftedPayNow = move.workers() > 0 ? move.payNow() / move.workers() : Double.NaN;
         liftedPayThen = move.workers() > 0 ? move.payThen() / move.workers() : Double.NaN;
+        payrollNow = move.billNow();
+        payrollThen = move.billThen();
         payrollMove = move.billThen() - move.billNow();
 
         joined = people.fillByBand().joinedAbove(lowestBand);
@@ -287,6 +289,8 @@ public final class FloorView {
     public double paid(WageBand band) { return paid[band.ordinal()]; }
     /** The posts filled that are paid a little over the floor, in this band (PopulationManager.workersNearTheFloor()). */
     public double near(WageBand band) { return near[band.ordinal()]; }
+    /** The posts filled in this band that are paid the floor or a little over it: paid(band) and near(band) together. */
+    public double atOrNear(WageBand band) { return paid[band.ordinal()] + near[band.ordinal()]; }
     /** The posts filled that the floor is what pays, in every band. */
     public double paidTotal() { return paidTotal; }
     /** The posts filled that are paid a little over it, in every band. */
@@ -295,6 +299,12 @@ public final class FloorView {
     public double postsFilled() { return postsFilled; }
     /** The posts filled that are neither paid the floor nor near it. */
     public double everyoneElse() { return everyoneElse; }
+    /** The posts paid the floor over the posts filled; NaN with none filled. */
+    public double paidShare() { return over(paidTotal, postsFilled); }
+    /** The posts paid a little over the floor, over the posts filled; NaN with none filled. */
+    public double nearShare() { return over(nearTotal, postsFilled); }
+    /** The posts neither paid the floor nor near it, over the posts filled; NaN with none filled. */
+    public double everyoneElseShare() { return over(everyoneElse, postsFilled); }
 
     /* =====================================================================
        THE TIE
@@ -319,6 +329,10 @@ public final class FloorView {
     public double liftedPayNow() { return liftedPayNow; }
     /** Their average monthly pay at the staged floor; NaN with none lifted. */
     public double liftedPayThen() { return liftedPayThen; }
+    /** The city's wage bill a month at every job's target at the floor in force, the posts filled (FloorMove.billNow()). */
+    public double payrollNow() { return payrollNow; }
+    /** ...and at every job's target at the staged floor, once wages have walked there (FloorMove.billThen()). */
+    public double payrollThen() { return payrollThen; }
     /** The city's wage bill a month once wages have walked to the staged floor, less what it is at the floor in force. */
     public double payrollMove() { return payrollMove; }
 
