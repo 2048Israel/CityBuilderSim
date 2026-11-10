@@ -6260,8 +6260,10 @@ public class Game {
          * retail's path above: the plot back to the city, the material to the
          * builders. What the bank was founded with stays in the bank.
          */
+        // ...unless a harness holds them (BusinessInvestment.holdBranches(), ST3).
         int branchesStanding = buildingManager.countByName("Commercial Bank");
-        if (bank.closesBranch(branchesStanding)) closeBranches(bank.branchesToClose(branchesStanding));
+        if (!businessInvestment.areBranchesHeld() && bank.closesBranch(branchesStanding))
+            closeBranches(bank.branchesToClose(branchesStanding));
     }
 
     /**

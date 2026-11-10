@@ -353,7 +353,7 @@ public class ScaleCheck {
      * holds every line, the cash misses in all (1.29e-2 at best, 483), the fewest misses two (480: cash and savings; 515: the
      * growing fixture and cash). Left at 488 and red; ST3 is the fix, with the branches held in both copies as the sectors are.
      */
-    static final int FREE_FIXTURE_MONTHS = 488;
+    static final int FREE_FIXTURE_MONTHS = 175;
 
     /** Months each free copy plays, every one timed. */
     static final int FREE_MONTHS = 6;
@@ -435,22 +435,56 @@ public class ScaleCheck {
         try { r.run(); } finally { System.setOut(real); }
     }
 
-    /** One look by the playtest's player, as at each stop of its rhythm (OrderSearchCheck.playtestRhythm()): the schools seen to, its moves one a month, and two months after (0.7.58; see FREE_FIXTURE_MONTHS). */
-    static void lookAt(Game g) {
+    /** The plan's property tax, a year (ST3): the one tax open before 1916. */
+    static final double OWN_PROPERTY_TAX = .04;
+
+    /** The landlords' family pressure past which the plan builds Low-Rise Apartments (ST3). */
+    static final double OWN_PRESSURE = 1.0;
+
+    /** Section 6's town to its month (ST3): founded as the playtest's, then played a month at a time by OWN_TOWN's plan. */
+    static void ownTown(Game g, int months) {
         PrintStream was = LongPlaytest.out, real = System.out;
         LongPlaytest.out = quiet;
         System.setOut(quiet);
         try {
-            LongPlaytest.ensureSchools(g);
-            for (int move = 0; move < LongPlaytest.movesPerLook(); move++) {
-                if (LongPlaytest.advise(g) == null) break;
-                LongPlaytest.run(g, 1);
+            g.run();
+            g.getDebtManager().setAutopilot(LongPlaytest.AUTOPILOT);
+            g.setRolloverMode(LongPlaytest.ROLLOVER);
+            g.setRescueMode(LongPlaytest.RESCUE_AUTO ? TreasuryFund.RescueMode.AUTOMATIC : TreasuryFund.RescueMode.BUTTON);
+            g.setFundDial(LongPlaytest.FUND_DIAL);
+            g.getEconomyManager().getTaxPolicy().setPropertyTaxRate(OWN_PROPERTY_TAX);
+            g.setAutoSubsidised(Sectors.CONSTRUCTION, true);
+            LongPlaytest.build(g, "House", 40);
+            LongPlaytest.build(g, "Convenience Store", 3);
+            LongPlaytest.build(g, "Mixed Farm", 2);
+            while (g.getMonth() < months) {
+                int before = g.getMonth();
+                keepAhead(g);
+                g.simulateMonths(1);
+                if (g.getMonth() == before) break;
             }
-            LongPlaytest.run(g, 2);
         } finally {
             LongPlaytest.out = was;
             System.setOut(real);
         }
+    }
+
+    /** One month of OWN_TOWN's plan: the ground, then each service whose own need is on and none on site, one at a time. */
+    static void keepAhead(Game g) {
+        BuildingManager b = g.getBuildingManager();
+        long people = g.getPopulationManager().getPopulation();
+        LongPlaytest.keepGroundAhead(g);
+        ahead(g, g.getEnergyRatio() < 1, "Wind Farm");
+        ahead(g, g.getWaterRatio() < 1, "Water Treatment Plant");
+        ahead(g, g.getRoadRatio() < 1, "Paved Road");
+        ahead(g, g.getHealth().getBaselineRate() > Health.WELL_SERVED_RATE, "Walk-in Clinic");
+        ahead(g, b.getTotalConstructionCapacity() < Math.max(1500, people * .02), "Construction Depot");
+        ahead(g, people > b.getTotalStoreCoverage(), "Convenience Store");
+        ahead(g, g.getSectors().realEstate().familyPressure() > OWN_PRESSURE, "Low-Rise Apartments");
+    }
+
+    static void ahead(Game g, boolean need, String name) {
+        if (need && g.getBuildingManager().underConstructionByName(name) == 0) LongPlaytest.build(g, name, 1);
     }
 
     public static void main(String[] args) throws Exception {
@@ -459,7 +493,6 @@ public class ScaleCheck {
         // model the playtest's town stalls (3,000 to 5,300 people, its homes 1,658 from month 400, its treasury under nothing
         // from 750), and of 821 months scanned (600 to 1,300, then every tenth to 2,500) none holds every line - both copies'
         // "it builds" fail in every month past 830. ST3 gives this check a town of its own plan and turns LD2 back on here.
-        WantedPosts.carryKeptOut = false;
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
         Path root = TempDirs.create("scalecheck");
@@ -656,8 +689,7 @@ public class ScaleCheck {
         // cents (a long: 9.2e16), so the history and the audit cannot be held "to the cent"; the rate is held at the
         // founding's from the first month.
         city.getForeignAccounts().pinRate(city.getForeignAccounts().getRate());
-        OrderSearchCheck.playtestCity(city, FREE_FIXTURE_MONTHS, quiet);
-        lookAt(city);
+        ownTown(city, FREE_FIXTURE_MONTHS);
         quietly(() -> city.saveGame(10, "scalecheck grown"));
         long popGrown = city.getPopulationManager().getPopulation();
         out.printf("      month %d, %,d people in %,d household places%n", city.getMonth(), popGrown, city.getHouseholdCapacity());
@@ -984,6 +1016,8 @@ public class ScaleCheck {
             assertTrue("the copy at K = " + times[c] + " loads", g.getLoadFailure() == null);
             // Every sector held in both copies (SK1, above): a planner's order is a whole building, which no K scales.
             for (Sector s : g.getSectors().all()) g.getBusinessInvestment().holdSector(s.key());
+            // ...and the bank's branches (ST3): a branch is one building at any K, and the copy's closed 975 of 1,000 in month 1.
+            g.getBusinessInvestment().holdBranches();
             registers[c][0] = registersMiss(g);
             for (int i = 0; i < FREE_MONTHS; i++) {
                 quietly(() -> g.simulateMonths(1));
