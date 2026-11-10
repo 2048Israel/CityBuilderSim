@@ -1,10 +1,10 @@
 # The dials
 
-Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-11-10 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**5,700 constants in 543 files.**
+**5,724 constants in 545 files.**
 
-## model (2714 constants)
+## model (2732 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -1678,6 +1678,29 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 209 | `GlobePicture.KEPT` | `new HashMap<>()` | The pictures made, by the data's identity and texel: once for each Earth file, never saved. |
 | 331 | `GlobePicture.SPACE` | `TileRaster.VOID` | Space round the globe: the map's own void (TileRaster.VOID), as the plane draws past the planet's rim. |
 | 363 | `GlobePicture.MAKING` | `new HashMap<>()` | The identities whose pictures are being made, and who to tell as each is kept. |
+
+### GoldPrice.java ([map](map/GoldPrice.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 38 | `GoldPrice.PAR_1900` | `480.0 / 23.22` | US$ an ounce from 1900: the Gold Standard Act's dollar of 25.8 grains nine-tenths fine is 23.22 grains fine, so 480 grains an ounce over 23.22 (20.6718). |
+| 41 | `GoldPrice.PAR_1934` | `35.0` | US$ an ounce under Proclamation 2072, from 31 January 1934 to 15 August 1971. |
+| 44 | `GoldPrice.FLOAT_START` | `(1933 - Nations.FIRST_YEAR) * 12 + 3` | The first month off the old par: April 1933, when the dollar floated (from October the RFC bought gold at prices raised by steps). |
+| 47 | `GoldPrice.FLOAT_STEPS` | `10` | The months of the geometric path from the old par to the new, April 1933 to January 1934 (est.): month FLOAT_START + k - 1 is PAR_1900 x (PAR_1934 / PAR_1900)^(k / FLOAT_STEPS), k = 1..FLOAT_STEPS. |
+| 50 | `GoldPrice.LAST_PAR_MONTH` | `(1971 - Nations.FIRST_YEAR) * 12 + 6` | The last month at PAR_1934: July 1971 (the gold window closed 15 August). |
+| 53 | `GoldPrice.TABLE_FIRST_YEAR` | `1971` | The first year of the table. |
+| 56 | `GoldPrice.TABLE_LAST_YEAR` | `Nations.HISTORY_LAST_YEAR` | The last year of the table, the last of the nations' history (2025's price is the USGS's estimate from January to November). |
+| 59 | `GoldPrice.GRAMS_PER_TROY_OUNCE` | `31.1034768` | Grams in a troy ounce, exact by the 1959 international agreement (a metric ton is 1e6 g over it). |
+| 62 | `GoldPrice.SIGMA` | `.04749` | The monthly innovation of ln gold's real price, one sd: 4.749%, measured from the World Bank's monthly gold 1973-2024 (624 changes). |
+| 65 | `GoldPrice.HALF_LIFE_MONTHS` | `120` | The half-life of gold's real price toward its mean in months: ten years (est.: it wanders for decades, and a pull is needed only so a 2400 city has a finite price). |
+| 68 | `GoldPrice.PHI` | `StrictMath.pow(.5, 1.0 / HALF_LIFE_MONTHS)` | The monthly persistence of the AR(1): 0.5 to the 1 over the half-life. |
+| 71 | `GoldPrice.MEAN_YEARS` | `20` | The years the target is the mean real price of, counted back from the table's last (2006 to 2025). |
+| 74 | `GoldPrice.RANDOM_RULE_START` | `LAST_PAR_MONTH + 1` | The first month the rule rules on Random: August 1971, the month after the last at PAR_1934. |
+| 77 | `GoldPrice.HISTORICAL_RULE_START` | `WorldMoneys.HISTORICAL_RULE_START` | The first month the rule rules on Historical: January 2026, after the table (WorldMoneys' too). |
+| 80 | `GoldPrice.RESOURCE` | `"/gold-usd-annual.csv"` | Where the table is, on the classpath. |
+| 83 | `GoldPrice.HEADER` | `"year,value,unit,source"` | The table's header line. |
+| 86 | `GoldPrice.GOLD` | `9_998` | The draws' who: gold sits beside WorldMoneys' world (9_999), below its moneys (10_000 on) and above the nations, regions and goods. |
+| 89 | `GoldPrice.GOLD_DRAW` | `300` | The draws' what: no Nations draw (1 to 8) or WorldMoneys draw (100 to 104) is it. |
 
 ### GoodsMarket.java ([map](map/GoodsMarket.md))
 
@@ -5465,7 +5488,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 748 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1028 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1546 constants)
+## harnesses (1552 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -6292,6 +6315,17 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 2844 | `GlobeCheck.RANK` | `Pattern.compile("(\\d+)(st\|nd\|rd\|th) of(\\d+)")` |  |
 | 3028 | `GlobeCheck.EUROPE` | `{ { 54.0, - 2.0 }, { 53.4, - 8.0 }, { 64.9, - 18.6 }, { 60.5, 8.5 }, { 46.6, 2.3 }, { 4...` | Twelve partners of a Halifax city, {lat, lon}: the ten nodes of Europe that are partners at 1,000 sold and 500 bought, Poland at 100 and 100 (under MIN_LANE) and Sweden at 200 and 100 (at it). |
 | 3032 | `GlobeCheck.TRADE_ROUNDS` | `31, TRADE_WARM = 300` | The rounds a trade timing takes the median of (31), after as many as it takes to warm the JIT (300). |
+
+### GoldPriceCheck.java ([map](map/GoldPriceCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 43 | `GoldPriceCheck.out` | `System.out` | Where the harness prints: the console. |
+| 46 | `GoldPriceCheck.SEED` | `Nations.DEFAULT_SEED` | The seed the single-path sections use, and the eight (it and seven more) the rule is regressed over. |
+| 47 | `GoldPriceCheck.SEEDS` | `{ SEED, 7_001, 7_002, 7_003, 7_004, 7_005, 7_006, 7_007 }` |  |
+| 50 | `GoldPriceCheck.RUN` | `4_800, TAIL = 2_400` | The months of a regression run, and the last of them the stationary mean is read over. |
+| 53 | `GoldPriceCheck.LAST` | `at(2400, 1)` | The last month a reload is compared to: January 2400. |
+| 95 | `GoldPriceCheck.US_LINE` | `year -> 8.333 * Math.pow(1.03, year - Nations.FIRST_YEAR)` | A US price level a year to stand where a world file is not wanted: 3% a year from 8.333 (any base would do). |
 
 ### GridCheck.java ([map](map/GridCheck.md))
 

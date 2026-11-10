@@ -1,6 +1,6 @@
 # PolicyRates.java - 357 lines · 25 methods · 15 constants · model
 
-`ham/citybuildersim/PolicyRates.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PolicyRates.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > The policy rates of the eight central banks of the moneys the vault holds (XR4; spec-exchange-rates 3.8, Jerus's calls 9 and 11): the Federal
 > Reserve's, the ECB's, the Bank of Japan's, the Bank of England's, the People's Bank's, the Bank of Canada's, the Reserve Bank of Australia's and the

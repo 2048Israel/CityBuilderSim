@@ -1,6 +1,6 @@
 # WorldMoneys.java - 800 lines · 56 methods · 31 constants · model
 
-`ham/citybuildersim/WorldMoneys.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorldMoneys.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > The world's moneys against the US dollar, a month at a time (WN4; spec-exchange-rates 3.7, spec-nations 5.1): each money's rate is its
 > purchasing-power path, plus its loading on the dollar cycle, on the risk-off and on its nation's terms of trade, plus its own swing, with
@@ -24,7 +24,7 @@
 
 **Uses:** [Nations](Nations.md) (23), [WorldData](WorldData.md) (4), [CityCalendar](CityCalendar.md) (2), [ForeignAccounts](ForeignAccounts.md) (2)
 
-**Used by (29):** [DebtManager](DebtManager.md), [DebtMoneysCheck](DebtMoneysCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [FinancesScreen](FinancesScreen.md), [ForeignAccounts](ForeignAccounts.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [HistorySave](HistorySave.md), [InterestAbroadCheck](InterestAbroadCheck.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [LandFactors](LandFactors.md), [MapView](MapView.md), [PartnersCheck](PartnersCheck.md), [PartnersView](PartnersView.md), [PolicyRates](PolicyRates.md), [PolicyScreen](PolicyScreen.md), [PriceLevelCheck](PriceLevelCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealDollar](RealDollar.md), [RealDollarCheck](RealDollarCheck.md), [SaveFileCheck](SaveFileCheck.md), [TradeScreen](TradeScreen.md), [VaultMoneysCheck](VaultMoneysCheck.md), [VaultTable](VaultTable.md), [VaultView](VaultView.md), [WorldEconomy](WorldEconomy.md), [WorldMoneysCheck](WorldMoneysCheck.md), [YearBook](YearBook.md)
+**Used by (30):** [DebtManager](DebtManager.md), [DebtMoneysCheck](DebtMoneysCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [FinancesScreen](FinancesScreen.md), [ForeignAccounts](ForeignAccounts.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [GoldPrice](GoldPrice.md), [HistorySave](HistorySave.md), [InterestAbroadCheck](InterestAbroadCheck.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [LandFactors](LandFactors.md), [MapView](MapView.md), [PartnersCheck](PartnersCheck.md), [PartnersView](PartnersView.md), [PolicyRates](PolicyRates.md), [PolicyScreen](PolicyScreen.md), [PriceLevelCheck](PriceLevelCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealDollar](RealDollar.md), [RealDollarCheck](RealDollarCheck.md), [SaveFileCheck](SaveFileCheck.md), [TradeScreen](TradeScreen.md), [VaultMoneysCheck](VaultMoneysCheck.md), [VaultTable](VaultTable.md), [VaultView](VaultView.md), [WorldEconomy](WorldEconomy.md), [WorldMoneysCheck](WorldMoneysCheck.md), [YearBook](YearBook.md)
 
 ## Sections
 

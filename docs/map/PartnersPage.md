@@ -1,6 +1,6 @@
 # PartnersPage.java - 1,173 lines · 56 methods · 16 constants · interface
 
-`ham/citybuildersim/ui/PartnersPage.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/PartnersPage.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > Trade &gt; Partners (WN6; docs/studies/spec-nations.md 8, board 2) and a nation's page behind it: who the city trades with, nation by nation; for a
 > chosen good, where the next unit goes and what it nets there; the good's band this month and what moves it; and, for one nation, its figures, our trade
