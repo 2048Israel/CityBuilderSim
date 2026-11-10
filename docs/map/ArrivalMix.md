@@ -39,7 +39,7 @@
 
 **Uses:** [WageBand](WageBand.md) (11), [CityCalendar](CityCalendar.md) (1)
 
-**Used by (5):** [ArrivalMixCheck](ArrivalMixCheck.md), [BasketYearCheck](BasketYearCheck.md), [Consumption](Consumption.md), [Game](Game.md), [Migration](Migration.md)
+**Used by (6):** [ArrivalMixCheck](ArrivalMixCheck.md), [BasketYearCheck](BasketYearCheck.md), [Consumption](Consumption.md), [Game](Game.md), [Migration](Migration.md), [Sector](Sector.md)
 
 ## Sections
 

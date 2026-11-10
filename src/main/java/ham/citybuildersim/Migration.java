@@ -1229,6 +1229,69 @@ public class Migration {
         }
     }
 
+    /**
+     * The workers per wage band migration would bring for an order's posts within {@code window} months of its opening, for the staffing
+     * gate (Sector.staffing(), GW1).
+     *
+     * The posts raise the target by the jobs' draw: JOB_WEIGHT x posts x last month's residents a job x the pulls on the jobs' draw
+     * (senior care, rent and crime), as monthlyNet() builds lastTarget. A gap closes at ARRIVAL_RATE x last month's crowding a month, so
+     * {@code window} months close 1 - (1 - that)^window of it. The city's workers per resident (getWorkforceForSave() / getPopulation())
+     * turn people into workers. They split by band as composeArrivals() splits a month's arrivals, with the order's posts added to each
+     * band's open posts, and the licences to the university band. Every figure it reads is last month's and saved (LAST_SCALARS), so a
+     * loaded city's draw is its twin's. WG2 (queued) will cut it by its brake as it cuts arrivals (spec-staffing-gate §5, C4).
+     *
+     * {@code mix} is the year's, passed in and not read from yearMix: Game pushes yearMix only at the month's migration step, which runs
+     * after the planners, and never saves it, so a loaded 1900 city's first planners would read null and its gate would part from its
+     * twin's. Null is the default founding's model, as in composeArrivals(). It is a pure read: no field of Migration is written.
+     *
+     * @param wanted the order's posts per band
+     * @param mix    the year's arrival mix, or null in a city founded the default way
+     * @return the workers drawn per band, all zeros where nothing is drawn (no people, window or posts, or an empty city)
+     */
+    public double[] drawFor(double[] wanted, LabourMarket market, PopulationManager people, int window, ArrivalMix.Point mix) {
+        int n = WageBand.values().length;
+        double[] out = new double[n];
+        if (people == null || window <= 0 || wanted == null) return out;
+        double posts = 0;
+        for (double w : wanted) posts += Math.max(0, w);
+        long pop = people.getPopulation();
+        if (posts <= 0 || pop <= 0) return out;
+
+        double jobPull = lastSeniorPull * lastAffordabilityPull * lastCrimePull;
+        double drawn = JOB_WEIGHT * posts * lastResidentsPerJob * jobPull;
+        double monthly = Math.max(0, Math.min(1, ARRIVAL_RATE * lastCrowding));
+        double close = 1 - Math.pow(1 - monthly, window);
+        double workers = drawn * close * people.getWorkforceForSave() / (double) pop;
+
+        double[] postsNow = people.staffablePostsByBand();
+        double[] here = people.supplyByBand();
+        double[] weight = new double[n];
+        double total = 0;
+        for (WageBand band : WageBand.values()) {
+            int b = band.ordinal();
+            double open = (postsNow == null ? 0 : postsNow[b]) + (b < wanted.length ? Math.max(0, wanted[b]) : 0);
+            double opportunity = opportunity(open, here == null ? 0 : here[b]);
+            double pull = band == WageBand.DIPLOMA ? 1 : reach(market == null ? 1 : market.bandPremium(band));
+            weight[b] = !admits(band) ? 0 : mix == null
+                    ? band.arrivalCeiling() * pull * opportunity
+                    : (mix.ordinary(band) + mix.ceiling(band) * pull) * opportunity;
+            total += weight[b];
+        }
+        int uni = WageBand.UNIVERSITY.ordinal();
+        for (EducationType type : EducationType.values()) {
+            if (!type.isProfessional()) continue;
+            JobType job = type.licenses();
+            if (job == null) continue;
+            double pull = admits(WageBand.UNIVERSITY) ? reach(market == null ? 1 : market.licencePremium(job)) : 0;
+            double w = (mix == null ? WageBand.UNIVERSITY.arrivalCeiling() : mix.university())
+                    * type.worldLicenceShare() * pull;
+            weight[uni] += w;
+            total += w;
+        }
+        for (int b = 0; b < n; b++) out[b] = total > 0 ? workers * weight[b] / total : 0;
+        return out;
+    }
+
     /* ------------------------------- saving ------------------------------- */
 
     /*

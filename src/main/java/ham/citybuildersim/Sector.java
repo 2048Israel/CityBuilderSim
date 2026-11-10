@@ -261,8 +261,11 @@ public abstract class Sector {
        ======================================================================= */
     public static final double MIN_STAFFABLE_TO_ORDER = .80;
 
+    /** The months of arrivals the staffing gate counts beside the spare workers: the longest window in which none of the study's 16 seeds shrank (GW0; 24 months shrank two by a third). */
+    public static final int GATE_DRAW_MONTHS = 12;
+
     /**
-     * The share of a building's posts this city could actually fill today.
+     * The share of a building's posts this city could actually fill today, and since GW1 with a year's draw (Staffing.share).
      *
      * WHY THIS EXISTS (2026-09-12, measured over eight 333-year runs). The
      * planner's estimatedMonthlyProfit() costs a building at NAMEPLATE and
@@ -343,8 +346,13 @@ public abstract class Sector {
 
     /** Whether the city could staff one of a building, and if not, why not (0.7.18). */
     public static final class Staffing {
-        /** The share of its posts the city's spare workers could fill. */
+        /**
+         * The share of its posts the city's spare workers, and the workers its posts would draw within GATE_DRAW_MONTHS
+         * (Migration.drawFor()), could fill: the one passes() reads.
+         */
         public final double share;
+        /** The share of its posts the spare workers alone could fill: today's count, before GW1. */
+        public final double shareNow;
         /** A band it has posts in that nobody can fill (see passes()), or null. */
         public final WageBand unfillable;
 
@@ -354,10 +362,11 @@ public abstract class Sector {
         private final Sector owner;
         private final BuildingsTemplate template;
         private final int count;
-        private final double[] wantedCopy, spareCopy;
+        private final double[] wantedCopy, spareCopy, drawnCopy;
 
         /** Always staffable: a building with no posts, or nobody to ask. */
-        static final Staffing ANY = new Staffing(1, new double[0], new double[0], new double[0], new boolean[0]);
+        static final Staffing ANY = new Staffing(1, 1, new double[0], new double[0], new double[0], new boolean[0],
+                new double[0], null, null, 0);
 
         /**
          * @param wanted   the building's posts per band
@@ -366,17 +375,23 @@ public abstract class Sector {
          * @param comeFor  whether any migrant comes for each band (Migration.admits())
          */
         Staffing(double share, double[] wanted, double[] spare, double[] above, boolean[] comeFor) {
-            this(share, wanted, spare, above, comeFor, null, null, 0);
+            this(share, share, wanted, spare, above, comeFor, new double[wanted.length], null, null, 0);
         }
 
-        Staffing(double share, double[] wanted, double[] spare, double[] above, boolean[] comeFor,
-                 Sector owner, BuildingsTemplate template, int count) {
+        /**
+         * @param shareNow the share the spare workers alone could fill
+         * @param drawn    the workers per band migration would bring for the order within GATE_DRAW_MONTHS
+         */
+        Staffing(double share, double shareNow, double[] wanted, double[] spare, double[] above, boolean[] comeFor,
+                 double[] drawn, Sector owner, BuildingsTemplate template, int count) {
             this.owner = owner;
             this.template = template;
             this.count = count;
             this.wantedCopy = wanted.clone();
             this.spareCopy = spare.clone();
+            this.drawnCopy = drawn.clone();
             this.share = share;
+            this.shareNow = shareNow;
             WageBand none = null;
             for (int b = 0; b < wanted.length && none == null; b++) {
                 if (wanted[b] > 0 && nobodyCanFill(spare[b], above[b], comeFor[b])) none = WageBand.values()[b];
@@ -399,6 +414,9 @@ public abstract class Sector {
         /** Each band's supply less its posts, from the fill (a copy). */
         public double[] spare() { return spareCopy.clone(); }
 
+        /** The workers per band migration would bring for the order within GATE_DRAW_MONTHS, Migration.drawFor() (a copy). */
+        public double[] drawn() { return drawnCopy.clone(); }
+
         /**
          * THE ONE DEFINITION OF "NOBODY CAN FILL" (Jerus, "Truly unfillable
          * only"): "A band counts as 'nobody can fill' only when it has no spare
@@ -414,8 +432,9 @@ public abstract class Sector {
 
         /**
          * Staffable enough to order: MIN_STAFFABLE_TO_ORDER of its posts
-         * fillable from spare workers, and none of the rest in a band nobody
-         * can fill. "The 20% it allows can't be jobs nobody can fill."
+         * fillable from spare workers and a GATE_DRAW_MONTHS draw, and none of
+         * the rest in a band nobody can fill. "The 20% it allows can't be jobs
+         * nobody can fill."
          */
         public boolean passes() {
             return unfillable == null && share >= MIN_STAFFABLE_TO_ORDER;
@@ -425,10 +444,20 @@ public abstract class Sector {
         public String why(String building) {
             String a = building != null && !building.isEmpty()
                     && "AEIOUaeiou".indexOf(building.charAt(0)) >= 0 ? "an" : "a";
-            return unfillable != null
-                    ? String.format("no one could staff %s %s's %s posts", a, building, postsWord(unfillable))
-                    : String.format("the city could staff %.0f%% of %s %s; it wants %.0f%%",
-                            share * 100, a, building, MIN_STAFFABLE_TO_ORDER * 100);
+            if (unfillable != null) {
+                return String.format("no one could staff %s %s's %s posts", a, building, postsWord(unfillable));
+            }
+            // Both counts are named (GW1): what the spare workers could fill now, and what they and the draw could.
+            return Math.round(shareNow * 100) < Math.round(share * 100)
+                    ? String.format("the city could staff %.0f%% of %s %s now and %.0f%% with %s; it wants %.0f%%",
+                            shareNow * 100, a, building, share * 100, arrivalsWords(), MIN_STAFFABLE_TO_ORDER * 100)
+                    : String.format("the city could staff %.0f%% of %s %s, now or with %s; it wants %.0f%%",
+                            share * 100, a, building, arrivalsWords(), MIN_STAFFABLE_TO_ORDER * 100);
+        }
+
+        /** The window the gate counts, in words: "a year's arrivals" at GATE_DRAW_MONTHS of 12 (GW1). */
+        public static String arrivalsWords() {
+            return GATE_DRAW_MONTHS == 12 ? "a year's arrivals" : GATE_DRAW_MONTHS + " months' arrivals";
         }
     }
 
@@ -464,6 +493,21 @@ public abstract class Sector {
      * ordered, and the crews stay laid off. Seed 11 was held 1,300 months at 20,000 people by 3,187 such posts.
      * Jerus's own answer said the crews "can take other jobs"; now the gate lets them. A grace of 12 or 24
      * months before they are spare was measured and not taken (docs/queue/IC1-notes.md).
+     */
+
+    /* ----- THE GATE COUNTS THE DRAW (GW1, {next}, 2026-11-10) -----
+     * Beside each band's spare workers, the gate counts the workers Migration would bring for the order's own
+     * posts within GATE_DRAW_MONTHS of its opening (Migration.drawFor()). A drawn worker may take a post at or below
+     * their band, so what is left of a band's draw steps down to the bands below it. The band test (a band nobody can
+     * fill) is untouched: it reads the spare workers, the workers above and the migrants who come, as before.
+     *
+     * WHY. GW0 (docs/studies/spec-staffing-gate.md) found about 15 orders a month refused in a young city while a
+     * fifth of its workers were jobless: the workers a works would attract had not arrived yet, and the gate asked
+     * only for those already there. Counting a year's draw took the young city's out of work from 12.0% to 6.3%
+     * over 16 AUTO2 seeds, and the city was 58% bigger at month 240.
+     *
+     * THE SHARE STAYS AT 80%. Lowering it without asking where the workers come from built what the city could not
+     * keep: at 40% three seeds of 16 shrank by a third. Counting the draw asks it.
      */
 
     /** The staffing test every planner that builds posts asks before ordering one (0.7.18); see above. */
@@ -593,20 +637,38 @@ public abstract class Sector {
         double[] spare = new double[bands], above = new double[bands];
         boolean[] comeFor = new boolean[bands];
         Migration migration = game.getMigration();
-        double fillable = 0, higher = 0;
+        double fillableNow = 0, higher = 0;
         for (int b = bands - 1; b >= 0; b--) {
             WageBand band = WageBand.values()[b];
             spare[b] = supply[b] - posts[b];
             above[b] = higher;
             higher += Math.max(0, own[b]);
             comeFor[b] = migration != null ? migration.admits(band) : band.arrivalCeiling() > 0;
-            if (wanted[b] > 0) fillable += Math.min(wanted[b], Math.max(0, spare[b]));
+            if (wanted[b] > 0) fillableNow += Math.min(wanted[b], Math.max(0, spare[b]));
+        }
+        // THE GATE COUNTS THE DRAW (GW1): beside the spare workers, those migration would bring for this order's posts within
+        // GATE_DRAW_MONTHS of its opening, each band's drawn workers taking its own posts first and what is left of them stepping
+        // down to the bands below. The year's mix is passed in: Migration's own is pushed only at the month's migration step.
+        double[] drawn = new double[bands];
+        if (migration != null) {
+            drawn = migration.drawFor(wanted, game.getLabourMarket(), people, GATE_DRAW_MONTHS,
+                    game.foundedUnfitted() ? ArrivalMix.at(game.getMonth()) : null);
+        }
+        double fillable = 0, carry = 0;
+        for (int b = bands - 1; b >= 0; b--) {
+            double fromSpare = Math.min(wanted[b], Math.max(0, spare[b]));
+            carry += drawn[b];
+            double fromDraw = Math.max(0, Math.min(wanted[b] - fromSpare, carry));
+            carry -= fromDraw;
+            fillable += fromSpare + fromDraw;
         }
         // The lowest band nobody can fill is the one named: it is the one the fill runs out of first.
         // ...and a share within rounding of nothing is nothing (SHARE_ROUNDING).
         double share = fillable / total;
         if (share <= SHARE_ROUNDING) share = 0;
-        return new Staffing(share, wanted, spare, above, comeFor, this, t, Math.max(1, count));
+        double shareNow = fillableNow / total;
+        if (shareNow <= SHARE_ROUNDING) shareNow = 0;
+        return new Staffing(share, shareNow, wanted, spare, above, comeFor, drawn, this, t, Math.max(1, count));
     }
 
     /**

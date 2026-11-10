@@ -95,8 +95,10 @@ public final class BuildCard {
      * @param per        the noun the bars are per, for a per-unit card: "resident", "1,000 meals a month"
      * @param perTag     ...and the tag's: "1,000 meals"
      * @param staffable  the share of its posts the owner's staffing test says the city's spare workers
-     *                   could fill (Sector.staffing()); NaN for a city building
-     * @param running    what one costs to run a month (runningCost())
+     *                   alone could fill (Sector.staffing(), Staffing.shareNow); NaN for a city building
+     * @param staffableWithArrivals the share the owner's gate reads: the spare workers and a GATE_DRAW_MONTHS
+     *                   draw (Sector.Staffing.share); NaN where staffable is NaN
+     * @param running   what one costs to run a month (runningCost())
      * @param detail     the detail line's figures, by kind: HOMES {homes, home size, 1 when adults only};
      *                   BRANCH {the capital a branch brings}; POINTS {the builders' output a month};
      *                   OFFICE {the price of a seat-month}; a mine {deposits owned, mines committed,
@@ -113,7 +115,7 @@ public final class BuildCard {
                           double price, double sticker,
                           double bar1, double bar2, Bar2 bar2Kind,
                           String per, String perTag,
-                          double staffable, double running, double[] detail,
+                          double staffable, double staffableWithArrivals, double running, double[] detail,
                           int owned, int onSite, double siteMonths, double landFree) {
 
         /** No positive unit to price against: a maker whose inputs cost more than it makes, or a city building nobody could staff. Both bars read "—". */
@@ -557,7 +559,7 @@ public final class BuildCard {
                 return new Figures(t, kind, on.label(), does[0], served, does[1], served,
                         BuildAdvice.built(game, on, t), Double.NaN, null, price, sticker,
                         bar1, bar2, Bar2.LAND, ROAD_PER, perWords(on),
-                        Double.NaN, running, new double[0], owned, onSite, siteMonths, free);
+                        Double.NaN, Double.NaN, running, new double[0], owned, onSite, siteMonths, free);
             }
             // The cost per unit served at today's staffing, and the posts the
             // city likely cannot fill per 10,000 of it (0.7.24, Jerus's pick):
@@ -568,7 +570,7 @@ public final class BuildCard {
             return new Figures(t, kind, on.label(), does[0], served, does[1], served,
                     BuildAdvice.built(game, on, t), Double.NaN, null, price, sticker,
                     bar1, bar2, posts ? Bar2.UNFILLED : Bar2.NONE, perWords(on), perWords(on),
-                    Double.NaN, running, new double[0], owned, onSite, siteMonths, free);
+                    Double.NaN, Double.NaN, running, new double[0], owned, onSite, siteMonths, free);
         }
 
         if (kind == Kind.BRIDGE) {
@@ -576,11 +578,14 @@ public final class BuildCard {
             // landings', per metre of it; the span is billed per order (Game.bridgeSpan()), not on the card's price.
             double deck = BridgeWorks.deckWidthM(t.bridgeKind());
             return new Figures(t, kind, group(t), "carries a deck ", deck, " m wide", deck, Double.NaN, Double.NaN, null, price, sticker,
-                    price / deck, land / deck, Bar2.LAND, "m of deck", "m of deck", Double.NaN, running, new double[0], owned, onSite, siteMonths, free);
+                    price / deck, land / deck, Bar2.LAND, "m of deck", "m of deck", Double.NaN, Double.NaN, running, new double[0], owned, onSite, siteMonths, free);
         }
         Sector builder = ownerOf(game, t);
         // ...a landlord's block is not held to its posts being staffable (Sector.ordersOnlyWhatItCanStaff()): 1, no "could staff" words.
-        double staffable = builder.ordersOnlyWhatItCanStaff() ? builder.staffing(t).share : 1;
+        // ...asked once: the spare workers alone, and with the arrivals the gate counts (GW1).
+        Sector.Staffing staffing = builder.ordersOnlyWhatItCanStaff() ? builder.staffing(t) : null;
+        double staffable = staffing != null ? staffing.shareNow : 1;
+        double staffableWithArrivals = staffing != null ? staffing.share : 1;
         String group = group(t);
         String verb, words, per = null, perTag = null;
         double figure, unit, scale = 1, va = Double.NaN;
@@ -716,10 +721,10 @@ public final class BuildCard {
         Bar2 kind2;
         if (kind == Kind.OFFICE) {
             // Its price in months of its exports, and the posts the city
-            // could not staff of every 100: an office's three cards cost the
-            // same and use the same ground per seat, and differ in who they employ.
+            // could not staff of every 100 (with the arrivals the gate counts, as the gate reads it):
+            // an office's three cards cost the same and use the same ground per seat, and differ in who they employ.
             bar1 = unit > 0 ? price / unit : Double.NaN;
-            bar2 = unit > 0 ? (1 - staffable) * 100 : Double.NaN;
+            bar2 = unit > 0 ? (1 - staffableWithArrivals) * 100 : Double.NaN;
             kind2 = Bar2.UNSTAFFABLE;
         } else {
             // The price per unit, and the land per unit: in a city built over
@@ -732,7 +737,7 @@ public final class BuildCard {
             kind2 = Bar2.LAND;
         }
         return new Figures(t, kind, group, verb, figure, words, unit, Double.NaN, va, good, price, sticker,
-                bar1, bar2, kind2, per, perTag, staffable, running, detail, owned, onSite, siteMonths, free);
+                bar1, bar2, kind2, per, perTag, staffable, staffableWithArrivals, running, detail, owned, onSite, siteMonths, free);
     }
 
     /* =====================================================================
