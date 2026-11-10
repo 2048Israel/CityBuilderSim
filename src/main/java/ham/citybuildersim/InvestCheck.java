@@ -1980,6 +1980,9 @@ public class InvestCheck {
                         && spare[WageBand.DIPLOMA.ordinal()] < 2 * store.getJobs(JobType.DIPLOMA));
         assertTrue("fixture: nothing of the shops' is on site", bm.getUnderConstructionBySector(shops.key()) == 0);
         assertTrue("with nothing of its own on site, a store passes the staffing test", shops.staffing(store).passes());
+        // GW1: the gate counts a year's draw (Sector.GATE_DRAW_MONTHS), so a second store passes on the arrivals a year brings; what a store
+        // on site changes is who is spare, so this rule is read on the spare workers alone (shareNow), as the gate read them before.
+        assertTrue("...and the spare workers alone (shareNow) cover it: MIN_STAFFABLE_TO_ORDER of its posts", shops.staffing(store).shareNow >= Sector.MIN_STAFFABLE_TO_ORDER);
         // Another sector's building on site is not the shops' to staff.
         bm.addStack(template(g, "Diner"), 1, false);
         assertTrue("...a Diner on site (another sector's) does not touch the shops' test", shops.staffing(store).passes());
@@ -1987,7 +1990,8 @@ public class InvestCheck {
         bm.addStack(store, 1, false);
         Sector.Staffing second = shops.staffing(store);
         double[] afterOne = second.spare();
-        assertTrue("with a store of its own on site, the workers it will need are not spare: the second store fails the test", !second.passes());
+        assertTrue("with a store of its own on site, the workers it will need are not spare: the second store fails the test on the spare workers alone (shareNow)",
+                second.shareNow < Sector.MIN_STAFFABLE_TO_ORDER);
         // The diploma band's spare falls by the store's diploma posts; the unskilled band's by its own posts and by the diploma
         // posts too, since the workers a diploma post takes are the ones that would have come down the ladder to fill an unskilled one.
         assertTrue("...by the posts on site, band by band: the diploma band's spare falls by a store's diploma posts, the unskilled band's by its own and what came down to it",

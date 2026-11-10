@@ -203,6 +203,17 @@ public class WantedPostsCheck {
         return g;
     }
 
+    /**
+     * A city with no room, a month older (GW1: the gate counts a year's draw, Sector.GATE_DRAW_MONTHS, and migration brings
+     * nobody to a city that has no room, Migration.getLastCrowding() 0): the founding's first households have no homes yet,
+     * so the month after the first reads the ramp at its floor. Months are played, the market put back at its base each,
+     * until it reads so (a handful at most: homes come later), and the caller asserts the fixture.
+     */
+    static Game noRoom(Game g) {
+        for (int months = 0; months < 6 && g.getMigration().getLastCrowding() > 0; months++) atBase(g);
+        return g;
+    }
+
     /** shortCollege() with the Machine Works' refusal noted and settled, as the month's planning does. */
     static Game heldCity(Path root, String name) {
         return held(shortCollege(root, name));
@@ -347,7 +358,11 @@ public class WantedPostsCheck {
 
         // The planner's Decision carries the hold. Every works of the sector is refused here (a city of unskilled hands
         // alone), and the planner names the one the city could staff most of.
+        // GW1: the gate counts a year's draw (Sector.GATE_DRAW_MONTHS); a city with no room draws nobody, so its unskilled hands are all it has.
+        noRoom(g1);
         hands(g1, WORKFORCE, new double[] { 0, 0, 0, 0 }, 0, 0);
+        assertTrue("fixture: the city has no room (crowding 0), so migration brings nobody for the gate's year and the draw is nothing",
+                g1.getMigration().getLastCrowding() == 0);
         Sector.Staffing mostStaffable = null;
         BuildingsTemplate mostStaffableWorks = null;
         boolean everyWorksRefused = true;
@@ -421,7 +436,9 @@ public class WantedPostsCheck {
         // ...struck against the supply the posts that exist give (LD2: the refused posts are only a numerator)
         LabourMarket with = monthOn(g3, seen, existing), without = monthOn(g3, existing);
         double wasPremium = lm3.bandPremium(WageBand.COLLEGE);
-        double gateShare = man3.staffing(mw3).share;
+        // GW1: the gate counts a year's draw (Sector.GATE_DRAW_MONTHS), and a college wage over the going rate draws graduates; so what
+        // pricing must leave alone is the count of the posts that exist, the spare workers alone (shareNow), and the draw is the wage's.
+        double gateShare = man3.staffing(mw3).shareNow, drawnCollegeBefore = man3.staffing(mw3).drawn()[COLLEGE];
         g3.repriceLabour();
         close("the college band's multiple is the market's own on the posts that exist plus the refused ones, against the supply the posts that exist give",
                 lm3.getBandMultiple(WageBand.COLLEGE), with.getBandMultiple(WageBand.COLLEGE), 1e-12);
@@ -446,7 +463,10 @@ public class WantedPostsCheck {
         boolean postsUnmoved = true;
         for (int b = 0; b < after.length; b++) postsUnmoved &= after[b] == existing[b];
         assertTrue("the posts that exist are not moved by pricing the refused ones", postsUnmoved);
-        close("the gate's own test still reads only the posts that exist: the same share as before", man3.staffing(mw3).share, gateShare, 0);
+        close("the gate's own test still reads only the posts that exist: the spare workers alone (shareNow) the same share as before",
+                man3.staffing(mw3).shareNow, gateShare, 0);
+        assertTrue("...and the college wage over the going rate is what now draws graduates to the order (the draw is the wage's), none at the going rate",
+                drawnCollegeBefore == 0 && man3.staffing(mw3).drawn()[COLLEGE] > 0);
 
         /* ============ 4. never more than the band's own posts again ============ */
         out.println("\n--- never more than the band's own posts again ---");
@@ -579,11 +599,15 @@ public class WantedPostsCheck {
 
         Game g6 = city(root, "crews");
         month(g6);
+        // GW1: the gate counts a year's draw (Sector.GATE_DRAW_MONTHS), which would staff the building whatever the crews hold; a city with no room draws nobody, so the crews are what refuses it.
+        noRoom(g6);
         Sector man6 = g6.getSectors().manufacturing();
         BuildingsTemplate mw6 = template(g6, MACHINE_WORKS);
         // Hands for the Machine Works, every band, to spare: its own gate passes.
         double[] plenty6 = { 0, 600, postsIn(mw6, WageBand.COLLEGE) + 100, postsIn(mw6, WageBand.UNIVERSITY) + 20 };
         hands(g6, 1_500, plenty6, 0, 0);
+        assertTrue("fixture: the city has no room (crowding 0), so migration brings nobody for the gate's year and the draw is nothing",
+                g6.getMigration().getLastCrowding() == 0);
         BuildingManager bm6 = g6.getBuildingManager();
         BuildingsTemplate depot = template(g6, "Construction Depot");
         Construction builders6 = g6.getSectors().construction();
@@ -657,6 +681,13 @@ public class WantedPostsCheck {
         close("...and the wage walks back ADJUST_RATE of the gap",
                 lm7.bandPremium(WageBand.COLLEGE), raised + (lm7.getBandMultiple(WageBand.COLLEGE) - raised) * LabourMarket.ADJUST_RATE, 1e-12);
         assertTrue("...down from where the refused posts took it", lm7.bandPremium(WageBand.COLLEGE) < raised);
+        // GW1: the gate counts a year's draw (Sector.GATE_DRAW_MONTHS), and a college wage over the going rate draws graduates to the
+        // order, which closes the hold this section means to repeat; the wage back at its base (the going rate draws none of them), it is the hold again.
+        g7.getLabourMarket().resetToBase();
+        pm7.takeWagesFrom(g7.getLabourMarket());
+        assertTrue("fixture: the college wage is back at the going rate, which draws no graduate, and the gate refuses the Machine Works again",
+                Migration.reach(lm7.bandPremium(WageBand.COLLEGE)) == 0
+                        && !g7.getSectors().manufacturing().staffing(template(g7, MACHINE_WORKS)).passes());
         // A hold the month after, but a smaller one: the latent is that month's asks, not a sum with last month's.
         g7.getWantedPosts().beginMonth();
         g7.noteStaffingHold(g7.getSectors().manufacturing().staffing(template(g7, MACHINE_WORKS)));
@@ -667,6 +698,8 @@ public class WantedPostsCheck {
         g7.settleWantedPosts();
         boolean notSummed = true;
         for (int b = 0; b < again.length; b++) notSummed &= g7.getWantedPosts().latent()[b] == again[b];
+        assertTrue("fixture: the hold is a real one, the gate refused the Machine Works again and the college band is priced on posts (GW1: not a hold the draw has closed)",
+                g7.getWantedPosts().getHolds() == 1 && again[COLLEGE] > 0);
         assertTrue("the same hold two months running prices the same posts, not twice the posts", notSummed);
 
         /* ============ 8. it brings the band's migrants ============ */
@@ -792,6 +825,8 @@ public class WantedPostsCheck {
         // alone, and the posts they lay off are more than the city has unemployed to fill anything.
         Game g11 = city(root, "idle-crews");
         month(g11);
+        // GW1: the gate counts a year's draw (Sector.GATE_DRAW_MONTHS), which would staff the building whatever the crews hold; a city with no room draws nobody, so the crews are what refuses it.
+        noRoom(g11);
         Sector man11 = g11.getSectors().manufacturing();
         BuildingsTemplate mw11 = template(g11, MACHINE_WORKS);
         BuildingsTemplate depot11 = template(g11, "Construction Depot");
@@ -801,6 +836,8 @@ public class WantedPostsCheck {
         // Hands for the Machine Works, every band, to spare (section 6's): its own gate passes with every crew spare.
         double[] plenty11 = { 0, 600, postsIn(mw11, WageBand.COLLEGE) + 100, postsIn(mw11, WageBand.UNIVERSITY) + 20 };
         hands(g11, 1_500, plenty11, 0, 0);
+        assertTrue("fixture: the city has no room (crowding 0), so migration brings nobody for the gate's year and the draw is nothing",
+                g11.getMigration().getLastCrowding() == 0);
         double postsThatExist = 0;
         for (double band : pm11.staffablePostsByBand()) postsThatExist += band;
         long unemployed11 = Math.round(pm11.getLabourForce() - postsThatExist);
