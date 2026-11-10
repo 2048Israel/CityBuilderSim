@@ -1,13 +1,16 @@
-# gate of Merge batch/GD2: gold the vault's ninth reserve (XAU at the end of `ForeignAccounts.MONEYS`, `WorldMoneys.EIGHT` untouched): no interest, revalued monthly, a gold chip on Trade's reserves, the vault's gold row (after GD1), 0.9.84
+# gate of Merge batch/ME1: the manual's edition (Jerus, 2026-11-09, at the queue's triage: "Yes, one edition now"): the six texts already written in Pending's FC1-M, WN6-M, WN5-M, EP1-M, TR1-M and LB3-M put into the published manual (the artifact "CityBuilderSim", https://claude.ai/artifact/BkBAN1RDiQTpCj79WPbpCp), published once, then `docs/manual.html` and `docs/manual.md` pulled by `tools.ManualToMarkdown` (`--wrap` first); docs only (lane D, gated on --fast); the six rows leave Pending in its merge, 0.9.85
 # date: 2026-11-10
 # earth-2.bin: named
 # nightly: 2026-11-10 01:25 0.9.80 d9f61df3 4,000 months: OK in 178 s
-# suite: 194 harnesses run in 1126s: 189 passed, 5 failed
-# timing: 18 harnesses run in 860s: 15 passed, 3 failed; its red lines were judged side by side with main's, below
+# suite: 194 harnesses run in 1266s: 189 passed, 5 failed
+# timing: 18 harnesses run in 873s: 15 passed, 3 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 29.2 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 28.2 ms (gate.txt, today), batch 29.2 ms (+3.5%), budget 25 ms: main over the budget too, no round]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 28.5 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 29.2 ms (gate.txt, today), batch 28.5 ms (-2.7%), budget 25 ms: main over the budget too, no round]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# figure	SaveSlotCheck	the median due month, 29.2 ms, holds the clock at most CLOCK_MS (25 ms)	29.2407	25	ms	FAIL	1	1
+# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 3.7 ms, batch 4.29 ms (+15.9%), budget 5 ms: the batch within the budget]
+# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 18.6 ms, batch 18.7 ms (+1.0%), budget 19 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | 6 FAILED   [the harness's own count of the timing reds above]
+# figure	SaveSlotCheck	the median due month, 28.5 ms, holds the clock at most CLOCK_MS (25 ms)	28.4563	25	ms	FAIL	1	1
 PriceLevelCheck | exit 1
 PriceLevelCheck | FAIL cash (nominal) month 101: 8.317811325 at the factor over the factor, 68.38253344 at today's prices (0.000751 apart)
 PriceLevelCheck | FAIL gdp.month (nominal) month 103: 20121.84632 at the factor over the factor, 20122.48474 at today's prices (1.95e-05 apart)
