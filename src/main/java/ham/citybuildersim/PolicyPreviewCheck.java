@@ -197,6 +197,7 @@ public class PolicyPreviewCheck {
         atTheCitysOwn(g, "2");
         theBudget(g);
         theOtherReads(g);
+        theMinimumWagePage(root, g);
         afterALoad(root, g);
         anEiPool(g);
         appliedIsTheModel(g);
@@ -690,6 +691,281 @@ public class PolicyPreviewCheck {
                 alone > 0 && takeHome < lm.cashMinimumWage() && takeHome > 0);
         assertTrue("the floor's job cover is what a full-time job at it takes home over what living alone costs (" + PolicyPreview.floorJobCover(g) + ")",
                 hh.costOfLivingAlone() == alone && Math.abs(PolicyPreview.floorJobCover(g) - takeHome / alone) <= 1e-12);
+    }
+
+    /* ============================ 11. THE MINIMUM-WAGE PAGE (WS1) ============================ */
+
+    /** Equal to a part in a billion, or to a billionth outright: the shares and sums of a played city. */
+    static boolean same(double a, double b) {
+        return Math.abs(a - b) <= 1e-9 * Math.max(1, Math.max(Math.abs(a), Math.abs(b)));
+    }
+
+    /** The posts filled in the jobs that pass `which`, as PopulationManager.getJobsFilled() counts them (posts x fill rate, unrounded): the hand sum. */
+    static double filledWhere(Game g, java.util.function.Predicate<JobType> which) {
+        long[] posts = g.getPopulationManager().getJobs();
+        double[] fill = g.getPopulationManager().getJobFillRate();
+        double sum = 0;
+        for (JobType job : JobType.values()) {
+            if (job.ordinal() < posts.length && which.test(job)) sum += posts[job.ordinal()] * fill[job.ordinal()];
+        }
+        return sum;
+    }
+
+    /**
+     * THE MINIMUM-WAGE PAGE'S FIGURES (WS1): FloorView is what the page draws and the screen recomputes nothing, so every figure is held to a hand
+     * sum of the model's own getters in the played city, and each state the page's words name is caused: the default floor paying nobody, a floor
+     * staged 20% over the going rate (lifting workers, leaving every job over it alone) and the same floor applied for a month in a twin loaded from
+     * a save, a job with no posts, the joined market (the unskilled taken out of the supply, so their posts are filled by diploma holders), a city
+     * where nobody is employed, and the world's nations.
+     */
+    static void theMinimumWagePage(Path root, Game g) {
+        out.println("\n--- the minimum-wage page (WS1) ---");
+        LabourMarket lm = g.getLabourMarket();
+        PopulationManager pm = g.getPopulationManager();
+        HouseholdAccounts hh = g.getHouseholds();
+        JobType[] jobTypes = JobType.values();
+        WageBand lowest = WageBand.values()[0];
+        java.util.function.DoubleFunction<String> money = x -> String.format("<%.4f>", x);   // the screen's money writer, stood in for: the model writes no "$" of its own
+
+        // ---- the default floor, nothing staged ----
+        assertTrue("fixture: the floor in force is the default share of the going rate, and no tie or nudge has moved it",
+                same(lm.getMinimumWage() / lm.getGoingRate(), LabourMarket.DEFAULT_FLOOR_SHARE) && lm.getFloorTie() == LabourMarket.FloorTie.PRICES
+                && lm.getMinimumWageAdjustment() == 0);
+        FloorView v = FloorView.of(g, lm.getMinimumWage());
+        assertTrue("against the going rate: the going rate, the floor, the staged floor and the unskilled wage are the market's own, in today's money",
+                v.goingRate() == lm.cashGoingRate() && v.floor() == lm.cashMinimumWage() && v.staged() == lm.cashAt(lm.getMinimumWage())
+                && v.unskilledWage() == lm.getWage(JobType.NO_DIPLOMA) && v.stagedFloor() == lm.getMinimumWage());
+        assertTrue("...and each over the going rate (the default floor is " + LabourMarket.DEFAULT_FLOOR_SHARE + " of it)",
+                same(v.floorOverGoing(), v.floor() / v.goingRate()) && same(v.floorOverGoing(), LabourMarket.DEFAULT_FLOOR_SHARE)
+                && same(v.stagedOverGoing(), v.staged() / v.goingRate()) && same(v.unskilledOverGoing(), v.unskilledWage() / v.goingRate()));
+        assertTrue("the zones' edges are the market's: under MIN_MULTIPLE the floor never binds, over 1.0 it always does, and the gauge reaches 1.5",
+                FloorView.NEVER_UNDER == LabourMarket.MIN_MULTIPLE && FloorView.ALWAYS_OVER == 1.0 && FloorView.GAUGE_TOP == 1.5
+                && FloorView.zoneOf(LabourMarket.MIN_MULTIPLE - .01) == FloorView.Zone.NEVER && FloorView.zoneOf(LabourMarket.MIN_MULTIPLE + .01) == FloorView.Zone.GLUT
+                && FloorView.zoneOf(1.0) == FloorView.Zone.GLUT && FloorView.zoneOf(1.01) == FloorView.Zone.ALWAYS && FloorView.zoneOf(Double.NaN) == null);
+        assertTrue("the default floor is in the glut zone, and so is the floor staged at it", v.floorZone() == FloorView.Zone.GLUT && v.stagedZone() == FloorView.Zone.GLUT);
+
+        // The zones are true of the market: the unskilled wage in a glut of hands and at par, against the market alone (the law shut), for a floor in each zone.
+        double[] glutPosts = new double[WageBand.values().length], glutHands = new double[glutPosts.length], atPar = new double[glutPosts.length];
+        Arrays.fill(glutPosts, 1);
+        Arrays.fill(glutHands, 1000);
+        Arrays.fill(atPar, 1000);
+        boolean neverBinds = true, alwaysBinds = true, glutBinds = false, glutNotAtPar = false;
+        for (boolean inGlut : new boolean[] { true, false }) {
+            double[] marketPosts = inGlut ? glutPosts : atPar, marketHands = inGlut ? glutHands : atPar;
+            LabourMarket alone = new LabourMarket(), under = new LabourMarket(), between = new LabourMarket(), over = new LabourMarket();
+            alone.setFloorBinding(false);
+            under.setMinimumWage(under.getGoingRate() * (FloorView.NEVER_UNDER - .01));
+            between.setMinimumWage(between.getGoingRate() * (FloorView.NEVER_UNDER + FloorView.ALWAYS_OVER) / 2);
+            over.setMinimumWage(over.getGoingRate() * (FloorView.ALWAYS_OVER + .01));
+            for (int m = 0; m < 200; m++) {
+                for (LabourMarket each : new LabourMarket[] { alone, under, between, over }) each.advanceMonth(marketPosts, marketHands);
+            }
+            double marketAlone = alone.getWage(JobType.NO_DIPLOMA);
+            neverBinds &= under.getWage(JobType.NO_DIPLOMA) == marketAlone;
+            alwaysBinds &= over.getWage(JobType.NO_DIPLOMA) > marketAlone;
+            if (inGlut) glutBinds = between.getWage(JobType.NO_DIPLOMA) > marketAlone;
+            else glutNotAtPar = between.getWage(JobType.NO_DIPLOMA) == marketAlone;
+        }
+        assertTrue("a floor under NEVER_UNDER changes no wage, in a glut of hands or at par; one over ALWAYS_OVER lifts the unskilled wage in both",
+                neverBinds && alwaysBinds);
+        assertTrue("...and one between them lifts the unskilled wage in a glut of hands and not at par: the glut zone", glutBinds && glutNotAtPar);
+
+        double averageWage = pm.getAverageWage();
+        double filledAll = filledWhere(g, job -> true);
+        assertTrue("against the average wage: it is the Rankings' wage bill over the posts filled, the floor's and the staged floor's share of it",
+                v.averageWage() == averageWage && averageWage > 0 && same(v.floorOverAverage(), lm.cashMinimumWage() / averageWage)
+                && same(v.stagedOverAverage(), lm.cashAt(lm.getMinimumWage()) / averageWage));
+        assertTrue("...and the low bands' share is the posts filled in the two lowest wage bands over the posts filled",
+                same(v.lowBandsShare(), filledWhere(g, job -> WageBand.of(job).ordinal() < 2) / filledAll) && v.lowBandsShare() > 0 && v.lowBandsShare() < 1);
+
+        // ---- the nations ----
+        java.util.List<WorldMeasures.Place> withRatio = new java.util.ArrayList<>();
+        for (WorldMeasures.Place nation : WorldMeasures.load().nations()) if (Double.isFinite(nation.value("kaitz"))) withRatio.add(nation);
+        withRatio.sort(java.util.Comparator.comparingDouble((WorldMeasures.Place p) -> p.value("kaitz")).thenComparing(WorldMeasures.Place::id));
+        int n = withRatio.size();
+        assertTrue("the nations with a minimum-wage-to-average-wage figure are the world file's 33, lowest first: the hand count and the view's list agree",
+                n == 33 && v.nations().size() == n);
+        boolean sorted = true;
+        for (int i = 0; i < n; i++) {
+            FloorView.Nation shown = v.nations().get(i);
+            sorted &= shown.id().equals(withRatio.get(i).id()) && shown.name().equals(withRatio.get(i).name()) && shown.kaitz() == withRatio.get(i).value("kaitz")
+                    && (i == 0 || shown.kaitz() >= v.nations().get(i - 1).kaitz());
+        }
+        assertTrue("...each with its id, name and ratio from the file", sorted);
+        assertTrue("the lowest is the United States and the highest Costa Rica, and Canada is named too",
+                v.lowestNation().id().equals("USA") && v.highestNation().id().equals("CRI") && v.canada() != null && v.canada().id().equals(FloorView.CANADA)
+                && v.canada().kaitz() == WorldMeasures.load().place(FloorView.CANADA).value("kaitz"));
+        int lowAt = (int) Math.ceil(FloorView.BAND_LOW_PERCENTILE * n), highAt = (int) Math.ceil(FloorView.BAND_HIGH_PERCENTILE * n);   // nearest rank, 1-based
+        int inside = 0;
+        for (WorldMeasures.Place p : withRatio) {
+            if (p.value("kaitz") >= withRatio.get(lowAt - 1).value("kaitz") && p.value("kaitz") <= withRatio.get(highAt - 1).value("kaitz")) inside++;
+        }
+        out.println("   the middle band of nations: " + v.bandLow().name() + " " + v.bandLow().kaitz() + " to " + v.bandHigh().name() + " " + v.bandHigh().kaitz() + ", " + inside + " of " + n);
+        assertTrue("the middle band runs from the nation at the 10th percentile to the one at the 90th (nearest rank " + lowAt + " and " + highAt + " of " + n + "), and counts the nations inside it",
+                FloorView.BAND_LOW_PERCENTILE == .10 && FloorView.BAND_HIGH_PERCENTILE == .90 && v.bandLow().id().equals(withRatio.get(lowAt - 1).id())
+                && v.bandHigh().id().equals(withRatio.get(highAt - 1).id()) && v.nationsInBand() == inside && inside == highAt - lowAt + 1);
+
+        // ---- what a full-time floor job pays for ----
+        double takeHome = lm.cashMinimumWage() * (1 - g.getEconomyManager().getTaxPolicy().payslipShare(lowest));
+        assertTrue("a full-time floor job: the take-home is the floor less the lowest band's payslip share, and rent, food and fees are the households' own",
+                v.payslipShare() == g.getEconomyManager().getTaxPolicy().payslipShare(lowest) && same(v.takeHome(), takeHome)
+                && v.rent() == hh.rentPerHousehold() && v.food() == hh.shoppingPerHead() && v.fees() == hh.feesPerHead());
+        assertTrue("...their sum is what living alone costs, what is left is the take-home less it, and the cover is the floor job cover",
+                same(v.costSum(), hh.costOfLivingAlone()) && same(v.costSum(), v.rent() + v.food() + v.fees()) && same(v.left(), takeHome - hh.costOfLivingAlone())
+                && v.cover() == PolicyPreview.floorJobCover(g) && same(v.cover(), takeHome / hh.costOfLivingAlone()) && v.costSum() > 0);
+
+        // ---- who is near it ----
+        double[] paid = pm.workersPaidTheFloor(lm), near = pm.workersNearTheFloor(lm);
+        boolean byBand = true;
+        double paidSum = 0, nearSum = 0;
+        for (WageBand band : WageBand.values()) {
+            byBand &= v.paid(band) == paid[band.ordinal()] && v.near(band) == near[band.ordinal()];
+            paidSum += paid[band.ordinal()];
+            nearSum += near[band.ordinal()];
+        }
+        assertTrue("who is near it: the workers paid the floor and near it are the population's own, by band, and their totals are the sums",
+                byBand && same(v.paidTotal(), paidSum) && same(v.nearTotal(), nearSum));
+        assertTrue("...the posts filled are posts x fill rate summed over the jobs (within a person of getJobsFilled()), and paid + near + everyone else is all of them",
+                same(v.postsFilled(), filledAll) && Math.abs(v.postsFilled() - pm.getJobsFilled()) <= .5
+                && same(v.everyoneElse(), filledAll - paidSum - nearSum) && same(v.paidTotal() + v.nearTotal() + v.everyoneElse(), v.postsFilled()));
+        assertTrue("the default floor pays nobody, so the words name the unskilled wage and write the money with the screen's writer, not their own",
+                Math.round(v.paidTotal()) == 0 && v.holdsWords(money).equals("Nobody here is paid it: unskilled work goes for " + money.apply(lm.getWage(JobType.NO_DIPLOMA)) + ".")
+                && !v.holdsWords(money).contains("$"));
+
+        // ---- the tie ----
+        assertTrue("the tie is the market's own, and entering the average wage now would hold the floor's share of it, held to the tie's range",
+                v.tie() == lm.getFloorTie() && v.tieShare() == lm.getTieShare()
+                && same(v.enteringShare(), Math.max(LabourMarket.MIN_TIE_SHARE, Math.min(LabourMarket.MAX_TIE_SHARE, lm.cashMinimumWage() / averageWage))));
+
+        // ---- the preview with nothing staged, then the floor moved under every target ----
+        PolicyPreview.FloorMove stay = PolicyPreview.floorMoveAt(g, lm.getMinimumWage());
+        assertTrue("with nothing staged the floor moves no one: no job is marked, nobody lifted, no pay to average, the payroll unmoved",
+                v.lifted() == 0 && stay.workers() == 0 && Double.isNaN(v.liftedPayNow()) && Double.isNaN(v.liftedPayThen()) && v.liftedShare() == 0
+                && v.payrollMove() == 0 && v.jobs().stream().noneMatch(FloorView.JobRow::moved));
+        FloorView lower = FloorView.of(g, lm.getMinimumWage() * .9);
+        assertTrue("a floor staged under the one in force moves no one either, and its share is its own",
+                lower.lifted() == 0 && lower.payrollMove() == 0 && lower.stagedOverGoing() < lower.floorOverGoing() && same(lower.stagedOverGoing(), lower.staged() / lower.goingRate()));
+
+        // ---- the jobs, the floor staged 20% over the going rate ----
+        double stagedUp = lm.floorForCash(1.2 * lm.cashGoingRate());
+        FloorView up = FloorView.of(g, stagedUp);
+        assertTrue("fixture: a floor staged at 1.2 of the going rate reads 1.2 of it, in the always zone, with the floor in force still in the glut zone",
+                same(up.stagedOverGoing(), 1.2) && up.stagedZone() == FloorView.Zone.ALWAYS && up.floorZone() == FloorView.Zone.GLUT && up.staged() > up.floor());
+        PolicyPreview.FloorMove move = PolicyPreview.floorMoveAt(g, stagedUp);
+        long[] posts = pm.getJobs();
+        double[] fill = pm.getJobFillRate();
+        boolean rowsAreTheModels = up.jobs().size() == jobTypes.length, movedIsDiffer = true, aboveUnchanged = true, underLifted = true;
+        double movedWorkers = 0;
+        int above = 0, lifted = 0, noPosts = 0;
+        for (JobType job : jobTypes) {
+            int i = job.ordinal();
+            FloorView.JobRow row = up.job(job);
+            double now = lm.targetWageAt(job, lm.getMinimumWage()), then = lm.targetWageAt(job, stagedUp);
+            rowsAreTheModels &= row.job() == job && row.posts() == posts[i] && same(row.filled(), posts[i] * fill[i]) && row.wage() == lm.getWage(job)
+                    && row.targetNow() == now && row.targetStaged() == then && row.noPosts() == (posts[i] == 0);
+            movedIsDiffer &= row.moved() == (now != then);
+            if (row.moved()) movedWorkers += row.filled();
+            if (now >= up.staged()) { aboveUnchanged &= !row.moved() && then == now; above++; }
+            else { underLifted &= row.moved() && then == up.staged(); lifted++; }
+            if (row.noPosts()) noPosts++;
+            out.printf("   %-20s posts %,6d filled %,9.1f  wage %.5f  target %.5f -> %.5f %s%s%n", job, posts[i], row.filled(), row.wage(), now, then,
+                    row.moved() ? "moved" : "", row.noPosts() ? "  (" + FloorView.NO_POSTS_WORDS + ")" : "");
+        }
+        assertTrue("per job: the posts, the posts filled, the wage and both targets are the model's own, in JobType order", rowsAreTheModels);
+        assertTrue("fixture: the floor staged 20% over the going rate lifts some jobs and leaves some over it (" + lifted + " lifted, " + above + " over it)", lifted > 0 && above > 0);
+        assertTrue("a job is marked moved exactly when its two targets differ", movedIsDiffer);
+        assertTrue("every job under the staged floor is lifted to it, and every job over it is unchanged", underLifted && aboveUnchanged);
+        assertTrue("the preview is floorMoveAt()'s: the workers lifted are the posts filled in the moved jobs, and their share, their average pay at the two targets and the payroll's move follow",
+                up.lifted() == move.workers() && same(up.lifted(), movedWorkers) && up.lifted() > 0
+                && same(up.liftedShare(), move.workers() / filledAll) && same(up.liftedPayNow(), move.payNow() / move.workers())
+                && same(up.liftedPayThen(), move.payThen() / move.workers()) && up.liftedPayThen() > up.liftedPayNow()
+                && same(up.payrollMove(), move.billThen() - move.billNow()) && up.payrollMove() > 0);
+
+        // ---- a job with no posts ----
+        assertTrue("fixture: the played city has a job with no posts, and one with posts", noPosts > 0 && noPosts < jobTypes.length);
+        boolean noPostsRows = true;
+        for (FloorView.JobRow row : up.jobs()) noPostsRows &= !row.noPosts() || (row.posts() == 0 && row.filled() == 0);
+        assertTrue("a job with no posts reads noPosts with nothing filled, and its words are \"" + FloorView.NO_POSTS_WORDS + "\"",
+                noPostsRows && FloorView.NO_POSTS_WORDS.equals("no posts here"));
+
+        // ---- the joined market ----
+        assertTrue("the joined market: the played city's lowest band is its own market, so there are no joined words and no shared wage",
+                !v.joined() && !pm.fillByBand().joinedAbove(lowest) && v.joinedWords(money) == null && Double.isNaN(v.joinedWage()));
+        double[] ownWorkers = pm.workforceByBand();
+        double imprisonedWas = pm.getImprisoned();
+        pm.setImprisoned(imprisonedWas + ownWorkers[lowest.ordinal()]);   // the unskilled are away: their posts have no one of their own to fill them
+        try {
+            FloorView joined = FloorView.of(g, lm.getMinimumWage());
+            assertTrue("fixture: with the unskilled out of the supply the lowest band is filled as one market with the diploma band above it",
+                    pm.workforceByBand()[lowest.ordinal()] == 0 && pm.fillByBand().joinedAbove(lowest) && joined.joined());
+            assertTrue("...so the words name the diploma holders in the unskilled posts and the one wage both pay, which is the unskilled wage",
+                    joined.joinedWage() == lm.getWage(JobType.NO_DIPLOMA) && joined.joinedWords(money).equals(
+                            "One market: " + WageBand.values()[lowest.ordinal() + 1].label().toLowerCase(Locale.ROOT) + " holders fill the unskilled posts, so both pay "
+                                    + money.apply(lm.getWage(JobType.NO_DIPLOMA)) + "."));
+        } finally {
+            pm.setImprisoned(imprisonedWas);
+        }
+
+        // ---- the same floor applied: a twin loaded from a save, the floor set, a month on ----
+        quietly(() -> g.saveGame(11, "policypreviewcheck-floor"));
+        Game twin = new Game(new GameFiles(root.resolve("city"), root.resolve("city-no-legacy")));
+        quietly(() -> twin.loadGameSave(11));
+        LabourMarket twinLm = twin.getLabourMarket();
+        twin.getEconomyManager().getTaxPolicy().openAll();
+        twinLm.setMinimumWage(stagedUp);
+        quietly(() -> twin.simulateMonths(1));
+        FloorView applied = FloorView.of(twin, twinLm.getMinimumWage());
+        double heldByHand = filledWhere(twin, twinLm::isPaidTheFloor);
+        assertTrue("fixture: applied, the floor is paid to workers in the twin once a month has run (" + Math.round(heldByHand) + " of them), and the twin's real floor is still the one staged",
+                Math.round(heldByHand) >= 1 && same(twinLm.getMinimumWage(), stagedUp));
+        assertTrue("applied, the words count the workers paid the floor: " + Formats.INSTANCE.count(Math.round(heldByHand)),
+                same(applied.paidTotal(), heldByHand) && applied.holdsWords(money).equals(
+                        "Holds " + Formats.INSTANCE.count(Math.round(heldByHand)) + " " + (Math.round(heldByHand) == 1 ? "worker" : "workers") + ": they are paid the floor itself."));
+        assertTrue("...and staging that floor again moves no one: it is the floor in force, so no job is marked",
+                applied.lifted() == 0 && applied.jobs().stream().noneMatch(FloorView.JobRow::moved) && applied.floorZone() == FloorView.Zone.ALWAYS);
+
+        // Who is near it: the floor set just under the cheapest college or university job that has posts, a month on, so that job is paid a little over it.
+        JobType cheapestSkilled = null;
+        for (JobType job : jobTypes) {
+            if (WageBand.of(job).ordinal() < 2 || twin.getPopulationManager().getJobs()[job.ordinal()] == 0) continue;
+            if (cheapestSkilled == null || twinLm.getWage(job) < twinLm.getWage(cheapestSkilled)) cheapestSkilled = job;
+        }
+        twinLm.setMinimumWage(twinLm.floorForCash(twinLm.getWage(cheapestSkilled) / (1 + LabourMarket.NEAR_FLOOR / 2)));
+        quietly(() -> twin.simulateMonths(1));
+        FloorView nearBy = FloorView.of(twin, twinLm.getMinimumWage());
+        double nearByHand = filledWhere(twin, twinLm::isNearTheFloor), paidByHand = filledWhere(twin, twinLm::isPaidTheFloor);
+        assertTrue("fixture: with the floor just under the cheapest skilled job's wage, some are paid it and some are a little over it (" + Math.round(paidByHand) + " and "
+                        + Math.round(nearByHand) + ")", paidByHand > 0 && nearByHand > 0);
+        assertTrue("...and paid + near + everyone else is still all of the posts filled",
+                same(nearBy.nearTotal(), nearByHand) && same(nearBy.paidTotal(), paidByHand)
+                && same(nearBy.paidTotal() + nearBy.nearTotal() + nearBy.everyoneElse(), nearBy.postsFilled()) && nearBy.everyoneElse() >= 0);
+
+        // The floor over the average wage: the entering share is held to the tie's range, the words say why the city reads high, and a low floor reads nothing.
+        double twinAverage = twin.getPopulationManager().getAverageWage();
+        twinLm.setMinimumWage(twinLm.floorForCash(2 * twinAverage));
+        FloorView high = FloorView.of(twin, twinLm.getMinimumWage());
+        assertTrue("fixture: a floor at twice the average wage reads over it, and entering the average wage would hold its share at the top of the tie's range",
+                high.floorOverAverage() > 1 && high.enteringShare() == LabourMarket.MAX_TIE_SHARE);
+        assertTrue("a floor over the middle band's top reads high, and the words give the low bands' share of the posts and send the reader to the gauge against unskilled work",
+                high.floorOverAverage() > high.bandHigh().kaitz() && high.readsHighWords() != null
+                && high.readsHighWords().equals("This city reads high because " + Formats.INSTANCE.pct(high.lowBandsShare())
+                        + " of its posts are unskilled or diploma posts, paid near the floor; the gauge against unskilled work is the one that says whether the floor bites."));
+        twinLm.setMinimumWage(twinLm.getMinSettable());
+        FloorView bottom = FloorView.of(twin, twinLm.getMinimumWage());
+        assertTrue("fixture: the dial's bottom is under the tie's lowest share of the average wage, which is what entering the average wage would then hold",
+                bottom.floorOverAverage() < LabourMarket.MIN_TIE_SHARE && bottom.enteringShare() == LabourMarket.MIN_TIE_SHARE);
+        assertTrue("a floor under the middle band's top reads nothing extra",
+                bottom.floorOverAverage() <= bottom.bandHigh().kaitz() && bottom.readsHighWords() == null);
+
+        // ---- a city where nobody is employed ----
+        Game empty = new Game(GameFiles.scratch("floorview"));
+        quietly(empty::newGame);
+        FloorView nobody = FloorView.of(empty, empty.getLabourMarket().getMinimumWage());
+        assertTrue("fixture: a new city has nobody employed", empty.getPopulationManager().getJobsFilled() == 0 && empty.getPopulationManager().getAverageWage() == 0);
+        assertTrue("with nobody employed the shares of the average wage and of the posts are NaN, the entering share is the default, and nobody is lifted or averaged",
+                Double.isNaN(nobody.floorOverAverage()) && Double.isNaN(nobody.stagedOverAverage()) && Double.isNaN(nobody.lowBandsShare()) && Double.isNaN(nobody.liftedShare())
+                && Double.isNaN(nobody.liftedPayNow()) && nobody.enteringShare() == LabourMarket.DEFAULT_TIE_SHARE && nobody.postsFilled() == 0
+                && nobody.readsHighWords() == null);
     }
 
     /* ============================ 8. THE FUND'S WITHDRAWAL (0.7.48) ============================ */
