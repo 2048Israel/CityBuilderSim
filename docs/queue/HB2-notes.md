@@ -1,4 +1,4 @@
-# HB2 - the harbour's detail: its stock, its rail and a crane ({next}, 2026-11-09)
+# HB2 - the harbour's detail: its stock, its rail and a crane ({next}, 2026-11-10)
 
 *[The brief](HB2.md) and Jerus's picks, 1a, 2a and 3a; the renders he picked
 from are in `HB2/`, and the build's own picture of a played Bergen beside
