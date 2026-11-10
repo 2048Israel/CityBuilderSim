@@ -840,6 +840,38 @@ public class MonetaryCheck {
         return g;
     }
 
+    /** How far the groceries component of the price index may move in a month and still be settled, a fraction: a point. */
+    static final double SETTLED_STEP = .01;
+
+    /** How many months running the shelf must have moved no more than SETTLED_STEP for the town to count as settled: a year (six months settled it at month 53, the rows 12.17 / 9.27 / 8.20 / 7.85% in order, but the month-late rows differed by 0.109 / 0.092 / 0.156 points against 0.100: the town was still building; a year, month 59: 14.02 / 9.26 / 7.40 / 7.47%, late rows 0.028 / 0.042 / 0.077; on the draw of the batch's last commit the year settles the shelf only at month 46, 21 months of run-on, 503 people, rows 22.95 / 20.68 / 17.90 / 16.19% and late rows 0.000 / 0.275 / 0.369 / 0.189 points against 0.100 - the count is not what moves them, and with every sector held through the window they are 0.000 / 0.255 / 0.331 / 0.123, so the businesses' orders are not either). */
+    static final int SETTLED_MONTHS = 12;
+
+    /** The most months the founding is played on to settle, so a town that never does is read as it stands. */
+    static final int MAX_SETTLE_MONTHS = 60;
+
+    /** The months the last heldRun() played its founding on to settle (settle()): the log's figure. */
+    static int settledAfter;
+
+    /**
+     * GW1: plays the founding on at its own dial, a month at a time, until the basket is based and the groceries shelf has moved by no more than SETTLED_STEP a
+     * month for SETTLED_MONTHS running, at most MAX_SETTLE_MONTHS; returns the months played. With the draw in the staffing gate the town builds earlier and its
+     * supply (food first) arrives ahead of its people, so the shelf the basket was based on at month 38 is dearer than the cost it settles at: the groceries
+     * component falls 20 to 28% in the ten months after (0.77 by month 48 at 3%, 0.72 by month 60 at 40%), a one-off the dial times and does not set. The
+     * rows' window caught it: inflation -1.23 / -0.89 / -0.78 / -0.68% a year at 3 / 10 / 20 / 40% (main: 7.37 / 6.20 / 5.14 / 4.92%).
+     */
+    static int settle(Game g) {
+        int months = 0, calm = 0;
+        double was = g.getPriceIndex().getComponentLevel(PriceIndex.GROCERIES);
+        while (months < MAX_SETTLE_MONTHS && calm < SETTLED_MONTHS) {
+            step(g, Double.NaN, Integer.MAX_VALUE);
+            months++;
+            double now = g.getPriceIndex().getComponentLevel(PriceIndex.GROCERIES);
+            calm = g.getPriceIndex().isBased() && Math.abs(now / was - 1) <= SETTLED_STEP ? calm + 1 : 0;
+            was = now;
+        }
+        return months;
+    }
+
     /** The fewest of its posts the builders offered in any held month of the runs since the last reset (0.7.17). */
     static double fewestCrews = 1;
 
@@ -868,13 +900,17 @@ public class MonetaryCheck {
             // spare-capacity rule sells one of the town's two at month 41, the town outgrows the other, and the 20% rows held a month apart differed
             // by 0.172 points; held, the farms are the fixture's two.
             Game g = founding(root, label, false, true, Sectors.AGRICULTURE);
+            // GW1: the founding is played on at its own dial until the town's shelf has settled (settle()), and the dial is held from the month after that: the rows'
+            // window is the same length, from a settled town. The run-on is the founding's, so it is the same in every row and in the rows held a month late.
+            int runOn = settle(g);
             if (print != null) System.arraycopy(fingerprint(g), 0, print, 0, print.length);
             double indexFrom = g.getPriceIndex().getIndex();
-            while (g.getMonth() <= MEASURED_MONTHS) {
-                step(g, rate, heldFrom);
+            while (g.getMonth() <= MEASURED_MONTHS + runOn) {
+                step(g, rate, heldFrom + runOn);
                 fewestCrews = Math.min(fewestCrews, g.getSectors().construction().getPostsOfferedShare());
             }
             if (city != null) city[0] = g;
+            settledAfter = runOn;
             return Math.pow(g.getPriceIndex().getIndex() / indexFrom,
                     12.0 / (MEASURED_MONTHS - HELD_FROM + 1)) - 1;
         } finally {
@@ -919,8 +955,8 @@ public class MonetaryCheck {
             rates.append(r == 0 ? "" : " / ").append(String.format("%.0f%%", HELD_RATES[r] * 100));
             rows.append(r == 0 ? "" : " / ").append(String.format("%.2f%%", inflation[r] * 100));
         }
-        out.printf("   inflation at %s: %s a year, months %d-%d; %.3f points from the lowest dial to the highest%n",
-                rates, rows, HELD_FROM, MEASURED_MONTHS, (inflation[0] - inflation[n - 1]) * 100);
+        out.printf("   inflation at %s: %s a year, months %d-%d (the founding played on %d months to a settled shelf); %.3f points from the lowest dial to the highest%n",
+                rates, rows, HELD_FROM + settledAfter, MEASURED_MONTHS + settledAfter, settledAfter, (inflation[0] - inflation[n - 1]) * 100);
 
         /*
          * THE NOISE, MEASURED AND NOT ASSUMED: every row again with its dial

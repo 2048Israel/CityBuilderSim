@@ -18,6 +18,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.89 — GW1, the gate counts the draw — 2026-11-10, ready, see docs/queue/GW1-notes.md
+The staffing gate counts, beside the workers the city has spare, the ones a building's own posts would bring within
+a year (`Migration.drawFor()`, `Sector.GATE_DRAW_MONTHS` 12): only the part of migration's gap the order opens,
+within the doors last month left free (`lastRoom`, saved; an older save reads it as none), at the going wage. A
+drawn worker takes a post at or below their band, so a building the arrivals would staff is ordered and one whose
+graduate posts nobody would come for is still refused. The hold and the build card name both counts. New:
+StaffingDrawCheck; 31 harnesses whose fixtures assumed the spare alone cause their conditions again, no claim moved.
+The ensemble scores 24 of 26 (`docs/ensemble/GW1.md`): AUTO2 ends 6% larger, with less unemployment and a young
+city's inflation 2.74% against 3.39%, and H2 passes; A2 is main's red, A3 fails in one seed (AQ1). Red by name:
+MonetaryCheck (MQ1), HealthCheck (HX1), DeathRecordCheck (OX1), KeptCheck (KL1), MapCheck (DM2). The tie rule and
+the young towns' borrowing the first draw showed are queued (TQ1, DQ1).
+
 ### 0.9.88 — FM1, the money's sign and its place — 2026-11-10, ready, see docs/queue/FM1-notes.md
 The city's money sign is the player's, before or after the figure ("ƒ2.6M",
 "2.6M kr"), with a space only where a letter touches the number. One writer

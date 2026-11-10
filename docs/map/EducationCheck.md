@@ -1,4 +1,4 @@
-# EducationCheck.java - 1,484 lines · 11 methods · 2 constants · harnesses
+# EducationCheck.java - 1,500 lines · 12 methods · 2 constants · harnesses
 
 `ham/citybuildersim/EducationCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
@@ -53,7 +53,7 @@
 >    until 0.7.4. And the Schools page's row per kind has to add up to the
 >    totals it sits under.
 
-**Uses:** [TaxPolicy](TaxPolicy.md) (73), [EducationType](EducationType.md) (68), [Game](Game.md) (36), [WageBand](WageBand.md) (32), [Education](Education.md) (23), [PriceLevel](PriceLevel.md) (15), [GameFiles](GameFiles.md) (13), [JobType](JobType.md) (11), [Migration](Migration.md) (7), [PayTier](PayTier.md) (7), [HouseholdBalance](HouseholdBalance.md) (7), [FamilyModel](FamilyModel.md) (5), [FamilyStructure](FamilyStructure.md) (4), [Household](Household.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [PopulationManager](PopulationManager.md) (2), [EconomyManager](EconomyManager.md) (2), [StudentHousehold](StudentHousehold.md) (2), [PrisonerHousehold](PrisonerHousehold.md) (2), [TempDirs](TempDirs.md) (1), [PriceLevelCheck](PriceLevelCheck.md) (1), [NationalAccounts](NationalAccounts.md) (1), [MoneyAudit](MoneyAudit.md) (1), [TreasuryJournal](TreasuryJournal.md) (1)
+**Uses:** [TaxPolicy](TaxPolicy.md) (73), [EducationType](EducationType.md) (68), [Game](Game.md) (37), [WageBand](WageBand.md) (32), [Education](Education.md) (23), [PriceLevel](PriceLevel.md) (15), [GameFiles](GameFiles.md) (13), [JobType](JobType.md) (11), [Migration](Migration.md) (7), [PayTier](PayTier.md) (7), [HouseholdBalance](HouseholdBalance.md) (7), [FamilyModel](FamilyModel.md) (5), [FamilyStructure](FamilyStructure.md) (4), [Household](Household.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [PopulationManager](PopulationManager.md) (2), [EconomyManager](EconomyManager.md) (2), [StudentHousehold](StudentHousehold.md) (2), [PrisonerHousehold](PrisonerHousehold.md) (2), [Sectors](Sectors.md) (1), [TempDirs](TempDirs.md) (1), [PriceLevelCheck](PriceLevelCheck.md) (1), [NationalAccounts](NationalAccounts.md) (1), [MoneyAudit](MoneyAudit.md) (1), [TreasuryJournal](TreasuryJournal.md) (1)
 
 **Used by (2):** [DebtExchangeCheck](DebtExchangeCheck.md), [HistoryCheck](HistoryCheck.md)
 
@@ -61,26 +61,26 @@
 
 | line | section |
 |---:|---|
-| 144 | · 1. THE PROFESSION IS GATED |
-| 197 | · 2. AND WITH ONE, IT CAN |
-| 216 | · 3. NO SCHOOL TEACHES NOBODY |
-| 235 | · 4. AND DOES NOT EMPTY THE BAND IT DRAWS FROM |
-| 255 | · 5. A DEGREE IS A MOVE, NOT AN APPEARANCE |
-| 283 | · 6. LICENCES CANNOT OUTNUMBER GRADUATES |
-| 304 | · 6b. THE MONTH'S GRADUATES ARE THE GAINS (A6, 0.7.46) |
-| 326 | · 7. THE PIPELINE IS ITS NARROWEST STAGE |
-| 399 | · 8. THE SUBSIDY IS A REAL DIAL |
-| 454 | · 9. IT SURVIVES A SAVE |
-| 521 | · 9b. THE WAIT IS REAL |
-| 563 | · 10. AND THE TREASURY PAYS FOR IT |
-| 616 | · 11. THE UNSKILLED BAND IS A REPORT CARD |
-| 739 | · 12. THE QUEUE FOR A JOB INCLUDES THE OVERQUALIFIED |
-| 784 | · · THIS PREMISE USED TO READ `open[dip] > ownHeads[dip]` - "on its own |
-| 830 | · 13. THE GRANT IS A MENU |
-| 1014 | · 14. THE LOAN'S RATE |
-| 1168 | · 15. THE PRICE OF A PLACE |
-| 1262 | · 16. ALL THREE SURVIVE A SAVE |
-| 1332 | · 17. A PRICE PER SCHOOL (0.7.6) |
+| 158 | · 1. THE PROFESSION IS GATED |
+| 212 | · 2. AND WITH ONE, IT CAN |
+| 232 | · 3. NO SCHOOL TEACHES NOBODY |
+| 251 | · 4. AND DOES NOT EMPTY THE BAND IT DRAWS FROM |
+| 271 | · 5. A DEGREE IS A MOVE, NOT AN APPEARANCE |
+| 299 | · 6. LICENCES CANNOT OUTNUMBER GRADUATES |
+| 320 | · 6b. THE MONTH'S GRADUATES ARE THE GAINS (A6, 0.7.46) |
+| 342 | · 7. THE PIPELINE IS ITS NARROWEST STAGE |
+| 415 | · 8. THE SUBSIDY IS A REAL DIAL |
+| 470 | · 9. IT SURVIVES A SAVE |
+| 537 | · 9b. THE WAIT IS REAL |
+| 579 | · 10. AND THE TREASURY PAYS FOR IT |
+| 632 | · 11. THE UNSKILLED BAND IS A REPORT CARD |
+| 755 | · 12. THE QUEUE FOR A JOB INCLUDES THE OVERQUALIFIED |
+| 800 | · · THIS PREMISE USED TO READ `open[dip] > ownHeads[dip]` - "on its own |
+| 846 | · 13. THE GRANT IS A MENU |
+| 1030 | · 14. THE LOAN'S RATE |
+| 1184 | · 15. THE PRICE OF A PLACE |
+| 1278 | · 16. ALL THREE SURVIVE A SAVE |
+| 1348 | · 17. A PRICE PER SCHOOL (0.7.6) |
 
 ## Constants
 
@@ -99,16 +99,17 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 1425 | **type** `public class EducationCheck` | Verifies the schools: who gets taught, who is allowed to practise, and what it costs. |
+| 60 | 1441 | **type** `public class EducationCheck` | Verifies the schools: who gets taught, who is allowed to practise, and what it costs. |
 | 68 | 4 | `static void quietly(Runnable work)` |  |
 | 73 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 78 | 6 | `static BuildingsTemplate t(Game g, String name)` |  |
 | 85 | 1 | `static void build(Game g, String name, int n)` |  |
 | 88 | 45 | `static Game city(GameFiles files)` | A funded city with room, so the thing under test is never money or land. |
-| 134 | 7 | `static void schools(Game g)` |  |
-| 142 | 1310 | `public static void main(String[] args) throws Exception` |  |
-| 1457 | 3 | `static double heads(Game g, WageBand band)` | A band's headcount, which - unlike its share - no amount of immigration into the OTHER bands can move. |
-| 1462 | 6 | `static double journalLine(Game g, String label)` | Last month's journal line by its label, or NaN for none. |
-| 1470 | 6 | `static double share(Game g, WageBand band)` | A band's share of the workforce. |
-| 1477 | 7 | `static void cleanUp(Path root)` |  |
+| 144 | 3 | `static void held(Game g)` | GW1: the businesses hold, in sections 1 and 2's cities, whose subject is who can practise medicine and not what the businesses build. |
+| 148 | 7 | `static void schools(Game g)` |  |
+| 156 | 1312 | `public static void main(String[] args) throws Exception` |  |
+| 1473 | 3 | `static double heads(Game g, WageBand band)` | A band's headcount, which - unlike its share - no amount of immigration into the OTHER bands can move. |
+| 1478 | 6 | `static double journalLine(Game g, String label)` | Last month's journal line by its label, or NaN for none. |
+| 1486 | 6 | `static double share(Game g, WageBand band)` | A band's share of the workforce. |
+| 1493 | 7 | `static void cleanUp(Path root)` |  |
 

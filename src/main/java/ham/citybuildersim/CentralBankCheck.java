@@ -1738,6 +1738,12 @@ public class CentralBankCheck {
             // read a slice of $5.2k against last year's surplus, unused, of $-349.6k; with the floor at the going rate (main's path) the surplus is over the slice.
             city.getLabourMarket().setMinimumWage(city.getLabourMarket().getGoingRate());
             city.getForeignAccounts().pinRate(1.0);
+            /* ...AND EVERY SECTOR HELD, SO THE TREASURY KEEPS ITS SURPLUS (GW1). The fixture's premise is last year's surplus, and its question is how that
+               surplus pays a slice, not what the businesses build. On GW1's path (the staffing gate counts the workers an order's posts would draw,
+               Sector.GATE_DRAW_MONTHS) the businesses order their buildings earlier and borrow for them, and at month 72 the city read a slice of
+               D$5.2k against last year's surplus, unused, of D$-18.8k; with every sector held (a held sector still books, trades and pays its people,
+               and never asks to build) the same town reads D$81.5k, over the slice. */
+            for (String key : Sectors.KEYS) city.getBusinessInvestment().holdSector(key);
             // Six depots stand beside the four ordered (PT1-M4): the works department that built 400 points a month for a
             // city nobody staffed is retired, and the founding yard's 160 points built this city's houses so slowly that it
             // had 20 people at month 72, a year of deficit (D$-523k) and no surplus to pay a slice of D$200k with.

@@ -1960,6 +1960,12 @@ public class InvestCheck {
         BuildingsTemplate store = template(g, "Convenience Store");
         PopulationManager people = g.getPopulationManager();
         month(g);
+        // GW1: the gate counts a year's draw (Sector.GATE_DRAW_MONTHS), which would pass a second store on the arrivals a year brings; a city
+        // with no room draws nobody, so what a store on site changes, who is spare, is the whole of the test. Months are played until the
+        // city reads no room (WantedPostsCheck.noRoom()'s loop, which is on that harness's own print streams).
+        for (int months = 0; months < 6 && g.getMigration().getLastCrowding() > 0; months++) month(g);
+        assertTrue("fixture: the city has no room (crowding 0), so migration brings nobody for the gate's year and the draw is nothing",
+                g.getMigration().getLastCrowding() == 0);
         // Workers for one store and not two: three spare unskilled hands against a store's two posts, four with a diploma against its three.
         long none = (long) Math.ceil(people.staffablePostsByBand()[WageBand.NONE.ordinal()]);
         long diploma = (long) Math.ceil(people.staffablePostsByBand()[WageBand.DIPLOMA.ordinal()]);

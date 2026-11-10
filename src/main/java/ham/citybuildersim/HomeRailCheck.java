@@ -143,11 +143,16 @@ public class HomeRailCheck {
         return g;
     }
 
-    /** ...played on, up to a year, until the railway's room after the boundary's tonnes is short of the city's: the share in force strictly between nothing and all. */
+    /** (GW1) The most months untilFractional() plays on: the staffing gate's city fills a depot and four spurs with the boundary's tonnes only after some two years. */
+    static final int FRACTIONAL_MONTHS = 60;
+
+    /** ...played on, up to FRACTIONAL_MONTHS, until the railway's room after the boundary's tonnes is short of the city's: the share in force strictly between nothing and all. */
     static void untilFractional(Game g) {
+        // (GW1) A year was enough on main's path; with the staffing gate's draw a depot and four spurs left room for all the city's tonnes (56,135 t of room against 30,323 t offered
+        // at 12 months on, share 1.0000), the boundary's 196,275 of 248,958 t filling the railway up with the months (219,865 at 39) and the share first under 1 at 28 months (0.9948).
         Freight fr = g.getSectors().freight();
         int guard = 0;
-        while (!(fr.getHomeShare() > 0 && fr.getHomeShare() < 1) && guard++ < 12) quietly(g::toggleNextMonth);
+        while (!(fr.getHomeShare() > 0 && fr.getHomeShare() < 1) && guard++ < FRACTIONAL_MONTHS) quietly(g::toggleNextMonth);
     }
 
     /** The home and quay shares put where a fixture wants them, through the sector's own save and restore (the shares are struck at a haul, so a fixture cannot reach them by moving the room). */

@@ -156,9 +156,26 @@ public class ScaleCheck {
      * (-Dcbs.priceLevel=1) the town is the same month for month, and 170, 175 and 180 hold every line. 175 is the middle
      * of 170-180.
      *
+     * 191, GW1 (2026-11-10): THE TOWN RUNS A DIFFERENT PATH. The staffing gate counts the workers migration would bring for an
+     * order's own posts (Migration.drawFor()), so the town's businesses order at other times, and it is 10,538 people at 175 where
+     * the scan above had it at 5,821 to 8,089 through 164-196. At 172 it stalls: its posts fall by 1,035 (6,125 to 5,090, the
+     * builders' crews laid off), its landlords' family pressure stands at .97 to 1.0 and orders no apartment (OWN_PRESSURE), and
+     * to 186 it stands at 10,4xx to 10,6xx people with no arrivals. At 175 the six months read are that plateau: the affordability
+     * pull 0.9335, 1, 1, 0.9167, 0.8916 and 0.9900 ("its own rents price no migrant out" failed), 0.00 homes built per K in both
+     * copies (12.93 and 120.64 at 191), the largest order 435,101 and 696,833 (under the million; 6,513,468 and 13,026,951 at 191)
+     * and section 9's savings 1.79e-2 past the dial's .0160. The copy and the city still draw in proportion, so the fixture is the
+     * month and not the model:
+     * Migration.drawFor() and the room it is cut to (lastRoom, FamilyModel.roomLeft()) are counts of people and of doors that
+     * scale by K like the rest (at 191, K = 1,000,000, one month on, the band that takes the draw: city x K 62,635,761, copy
+     * 62,806,220; the room 5.041e9 against 5.075e9). The scan of this path was ScaleCheck's own sections 6 and 9 at every month from
+     * 189 to 200: 191 and 196 hold every line; 189 (the pull .8412 in the third month), 190 (no homes built, the largest order under
+     * a million), 192, 193, 197 and 198 (savings 2.56e-2, 2.55e-2, 2.44e-2, 2.51e-2), 194 (the largest order), 195 (no homes, savings
+     * 1.61e-2) and 200 (the pull .9106 in the sixth month) do not. 191, for its margin on the order: 6,513,468 and 13,026,951 where
+     * 196's are 2,797,090 and 1,110,316; its savings 1.37e-2 (196: 1.45e-2) and people 2.48e-3 against .015.
+     *
      * The picks' history is in git and in docs/queue/ST2-notes.md and docs/queue/RE2-notes.md.
      */
-    static final int FREE_FIXTURE_MONTHS = 175;
+    static final int FREE_FIXTURE_MONTHS = 191;
 
     /** Months each free copy plays, every one timed. */
     static final int FREE_MONTHS = 6;

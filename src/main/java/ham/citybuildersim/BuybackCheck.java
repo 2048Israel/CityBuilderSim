@@ -423,6 +423,15 @@ public class BuybackCheck {
             // town is played to, on 215k of ten-year bonds and a 414k loan, and the households' savings fell from 526k to 212k that month (the bonds
             // and the shares took them), so the households that were allotted 508k of the line at its sale could pay 148k of it at the settle.
             city.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
+            /* ...AND EVERY OTHER SECTOR HELD, SO THE SAVERS' RATE STAYS UNDER THE CLEARING YIELD (GW1). The households bid at an auction only over the savers'
+               rate: Auction.householdsAt() is HOUSEHOLD_PAPER_APPETITE of the issue for each unit of the stop over Bank.depositRate(). On GW1's path (the staffing
+               gate counts the workers an order's posts would draw, Sector.GATE_DRAW_MONTHS) the businesses order their buildings earlier and borrow for them, and
+               at section 9's callable sale (month 97) the line cleared at 6.584%, 0 bp over fair, under a savers' rate of 6.64%: the households bid nothing and
+               the line of D$10,328k went bank 10,322k, households 0, world 5k. With every sector held (a held sector still books, trades and pays its people,
+               and never asks to build) the same sale at month 97 clears at 12.816% over a savers' rate of 6.60%, the households' spare for paper is D$16,347k
+               and the line of D$49,044k goes bank 32,676k, households 16,347k, world 20k. The sections are about the paper and its holders, not the businesses'
+               building (the same cause as HoldersCheck's reopening fixture). */
+            for (String key : Sectors.KEYS) city.getBusinessInvestment().holdSector(key);
             city.buildStack(template(city, "Gravel Road"), 6, true);
             city.buildStack(template(city, "House"), 300, false);
             city.buildStack(template(city, "Convenience Store"), 6, false);
@@ -998,6 +1007,8 @@ public class BuybackCheck {
         worldWantsPaper(city);
         city.setCashForTest(Founding.WEALTHY_CASH);
         double ask = Math.max(100 * PriceLevel.FACTOR, hb.spareForPaper() * 3);
+        out.printf("   m%d: the callable sale: the households' spare for paper D$%,.1fk, the ask %,.1fk, the savers' rate %.4f%n",
+                city.getMonth(), hb.spareForPaper(), ask, city.getBank().depositRate());
         quietly(() -> city.handleLongBondLogic(ask, 10, 100 * PriceLevel.FACTOR, Auction.Cap.DEFAULT, true));
         LongTermBond found = null;
         for (Debt d : ledger.getDebt()) if (d instanceof LongTermBond l && l.isCallable() && !l.isForeign() && l.unsettledFace() > 0) found = l;
@@ -1006,6 +1017,9 @@ public class BuybackCheck {
         LongTermBond bond = found;
         check("fixture: ...unsettled until the month turns, so it cannot be called", bond.unsettledFace() > 0 && !city.canCall(bond));
         play(city);
+        out.printf("   the callable line: D$%,.0fk - the bank %,.0fk, the households %,.0fk, the businesses %,.0fk, the world %,.0fk, the central bank %,.0fk; the bank's equity %,.1f%n",
+                bond.getOustandingPrincipal(), bond.bankPrincipal(), bond.householdPrincipal(), bond.firmPrincipal(), bond.worldPrincipal(),
+                bond.centralBankPrincipal(), city.getBank().equity());
         check("fixture: it is settled, and the households, the bank and the world each hold part of it, the central bank none",
                 bond.unsettledFace() == 0 && bond.householdPrincipal() > 0 && bond.bankPrincipal() > 0 && bond.worldPrincipal() > 0
                         && bond.centralBankPrincipal() == 0);

@@ -1,4 +1,4 @@
-# WantedPostsCheck.java - 1,007 lines · 30 methods · 4 constants · harnesses
+# WantedPostsCheck.java - 1,056 lines · 31 methods · 4 constants · harnesses
 
 `ham/citybuildersim/WantedPostsCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
@@ -41,26 +41,26 @@
 > expected figure comes from the model's own calls (LabourMarket.advanceMonth() on a twin of the market, tightnessAt(),
 > the template's posts), never a number written here.
 
-**Uses:** [WageBand](WageBand.md) (133), [WantedPosts](WantedPosts.md) (65), [Game](Game.md) (44), [LabourMarket](LabourMarket.md) (35), [JobType](JobType.md) (17), [Sector](Sector.md) (16), [BuildingsTemplate](BuildingsTemplate.md) (14), [BusinessInvestment](BusinessInvestment.md) (11), [Construction](Construction.md) (10), [PopulationManager](PopulationManager.md) (10), [GameFiles](GameFiles.md) (8), [Migration](Migration.md) (4), [BusinessDebtManager](BusinessDebtManager.md) (2), [BuildingManager](BuildingManager.md) (2), [TempDirs](TempDirs.md) (1)
+**Uses:** [WageBand](WageBand.md) (136), [WantedPosts](WantedPosts.md) (65), [Game](Game.md) (47), [LabourMarket](LabourMarket.md) (36), [Sector](Sector.md) (19), [JobType](JobType.md) (17), [BuildingsTemplate](BuildingsTemplate.md) (15), [BusinessInvestment](BusinessInvestment.md) (11), [Construction](Construction.md) (10), [PopulationManager](PopulationManager.md) (10), [GameFiles](GameFiles.md) (8), [Migration](Migration.md) (4), [BusinessDebtManager](BusinessDebtManager.md) (2), [BuildingManager](BuildingManager.md) (2), [TempDirs](TempDirs.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 293 | · 1. the gate's hold carries its building |
-| 377 | · 2. only the bands it is short in |
-| 401 | · 3. the market prices it |
-| 451 | · 4. never more than the band's own posts again |
-| 493 | · 5. only as far as the business can pay |
-| 577 | · 6. a working builder's laid-off crews are not a shortage |
-| 639 | · 7. it decays |
-| 672 | · 8. it brings the band's migrants |
-| 687 | · 9. the save |
-| 752 | · 10. the month's planning notes its holds |
-| 788 | · 11. an idle builder's laid-off crews are spare for the gate: XS1's trap, released (IC1) |
-| 856 | · 12. the cap reads the month's own posts (LD2) |
-| 915 | · 13. a band that asked nothing is priced as it was (LD2) |
-| 961 | · 14. a band closed to migrants asks nothing (LD2) |
+| 304 | · 1. the gate's hold carries its building |
+| 392 | · 2. only the bands it is short in |
+| 416 | · 3. the market prices it |
+| 492 | · 4. never more than the band's own posts again |
+| 534 | · 5. only as far as the business can pay |
+| 618 | · 6. a working builder's laid-off crews are not a shortage |
+| 684 | · 7. it decays |
+| 717 | · 8. it brings the band's migrants |
+| 732 | · 9. the save |
+| 797 | · 10. the month's planning notes its holds |
+| 833 | · 11. an idle builder's laid-off crews are spare for the gate: XS1's trap, released (IC1) |
+| 905 | · 12. the cap reads the month's own posts (LD2) |
+| 964 | · 13. a band that asked nothing is priced as it was (LD2) |
+| 1010 | · 14. a band closed to migrants asks nothing (LD2) |
 
 ## Constants
 
@@ -69,7 +69,7 @@
 | 109 | `WantedPostsCheck.MACHINE_WORKS` | `"Machine Works"` |  |
 | 113 | `WantedPostsCheck.WORKFORCE` | `5_000` | The hands the fixture's city has: its workforce, and how many of them have a diploma, a college degree and a university degree. |
 | 114 | `WantedPostsCheck.DIPLOMA_HEADS` | `2_000, COLLEGE_HEADS = 200, UNIVERSITY_HEADS = 20` |  |
-| 264 | `WantedPostsCheck.DIPLOMA` | `WageBand.DIPLOMA.ordinal(), COLLEGE = WageBand.COLLEGE.ordinal(), UNIVERSITY ...` |  |
+| 275 | `WantedPostsCheck.DIPLOMA` | `WageBand.DIPLOMA.ordinal(), COLLEGE = WageBand.COLLEGE.ordinal(), UNIVERSITY ...` |  |
 
 ## Fields (state)
 
@@ -82,7 +82,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 49 | 959 | **type** `public class WantedPostsCheck` | The posts the staffing gate refused bid their band's wage up (LD1; WantedPosts). |
+| 49 | 1008 | **type** `public class WantedPostsCheck` | The posts the staffing gate refused bid their band's wage up (LD1; WantedPosts). |
 | 54 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 59 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 65 | 3 | `static BuildingsTemplate template(Game g, String name)` |  |
@@ -102,15 +102,16 @@
 | 188 | 3 | `static Game shortCollege(Path root, String name)` | A city whose Machine Works the gate refuses for want of college and university hands: the workforce and the diploma holders it needs, every college and university post taken by a graduate (so none is spare), and the l... |
 | 192 | 5 | `static Game shortCollege(Game g)` |  |
 | 199 | 6 | `static Game atBase(Game g)` | A city a month old with its labour market at its base, so no band starts under or over the going rate. |
-| 207 | 3 | `static Game heldCity(Path root, String name)` | shortCollege() with the Machine Works' refusal noted and settled, as the month's planning does. |
-| 211 | 6 | `static Game held(Game g)` |  |
-| 219 | 6 | `static LabourMarket twin(LabourMarket lm)` | A copy of a market as it stands, to ask what a month would do to it without doing it. |
-| 227 | 3 | `static LabourMarket monthOn(Game g, double[] posts)` | What the market does with a month against these posts, on a twin of it. |
-| 235 | 6 | `static LabourMarket monthOn(Game g, double[] posts, double[] supplyPosts)` | What the market does with a month priced on {@code posts} against the supply the fill gives {@code supplyPosts} (LD2: the posts that exist; LD1 filled against the posts it priced on), on a twin of it. |
-| 243 | 7 | `static Game reload(GameFiles files)` | A city loaded from the harness's own save slot (never a player's: the folder is the TempDirs root's). |
-| 252 | 5 | `static boolean sameBits(double[] a, double[] b)` | Whether two arrays hold the same doubles to the bit. |
-| 258 | 5 | `static double[] plus(double[] a, double[] b)` |  |
-| 267 | 7 | `static double marginOf(Game g, Sector owner, BuildingsTemplate t)` | The margin Game.noteStaffingHold() works out for a building: what it earns over the interest hurdle at prime and its record. |
-| 276 | 10 | `static double primeFor(Game g, BuildingsTemplate t, double hurdle)` | The prime rate at which the interest hurdle on a building's cost is {@code hurdle}, found with the model's own hurdle. |
-| 287 | 720 | `public static void main(String[] args) throws Exception` |  |
+| 212 | 4 | `static Game noRoom(Game g)` | A city with no room, a month older (GW1: the gate counts a year's draw, Sector.GATE_DRAW_MONTHS, and migration brings nobody to a city that has no room, Migration.getLastCrowding() 0): the founding's first households ... |
+| 218 | 3 | `static Game heldCity(Path root, String name)` | shortCollege() with the Machine Works' refusal noted and settled, as the month's planning does. |
+| 222 | 6 | `static Game held(Game g)` |  |
+| 230 | 6 | `static LabourMarket twin(LabourMarket lm)` | A copy of a market as it stands, to ask what a month would do to it without doing it. |
+| 238 | 3 | `static LabourMarket monthOn(Game g, double[] posts)` | What the market does with a month against these posts, on a twin of it. |
+| 246 | 6 | `static LabourMarket monthOn(Game g, double[] posts, double[] supplyPosts)` | What the market does with a month priced on {@code posts} against the supply the fill gives {@code supplyPosts} (LD2: the posts that exist; LD1 filled against the posts it priced on), on a twin of it. |
+| 254 | 7 | `static Game reload(GameFiles files)` | A city loaded from the harness's own save slot (never a player's: the folder is the TempDirs root's). |
+| 263 | 5 | `static boolean sameBits(double[] a, double[] b)` | Whether two arrays hold the same doubles to the bit. |
+| 269 | 5 | `static double[] plus(double[] a, double[] b)` |  |
+| 278 | 7 | `static double marginOf(Game g, Sector owner, BuildingsTemplate t)` | The margin Game.noteStaffingHold() works out for a building: what it earns over the interest hurdle at prime and its record. |
+| 287 | 10 | `static double primeFor(Game g, BuildingsTemplate t, double hurdle)` | The prime rate at which the interest hurdle on a building's cost is {@code hurdle}, found with the model's own hurdle. |
+| 298 | 758 | `public static void main(String[] args) throws Exception` |  |
 
