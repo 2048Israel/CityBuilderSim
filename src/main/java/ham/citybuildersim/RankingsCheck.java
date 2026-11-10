@@ -95,11 +95,17 @@ import java.util.function.Supplier;
  *      leaves out exactly what needs the land and the bands.
  *
  * LB4, THE CITY IN PLAY BESIDE ITS OWN SLOT, AND A PACKED READ. Section 17 also holds each kept series a slot keeps to be a packed one.
- *  19. THE CITY IN PLAY, AS SAVED: a slot copied from the city's own saves (same name and world seed) is marked in play on the
- *      last-saved list and is no row at your age and not listed as stopped; a copy with the seed one higher, one with no seed and
- *      one with another name are not marked and stay at your age; with no city in play (Played.NONE) none is marked or left out.
+ *  19. THE CITY IN PLAY, AS SAVED: a slot copied from the city's own saves (same name, world seed and founding cash) is marked in
+ *      play on the last-saved list and is no row at your age and not listed as stopped; a copy with the seed one higher, one with
+ *      no seed, one with another name, one founded with other cash (a re-found on the same name and world, LB5) and one with no
+ *      founding cash are not marked and stay at your age; with no city in play (Played.NONE) none is marked or left out.
  *  20. THE PACKED READ: HistorySave.readKept over a hand-built history equals slim(KEPT) of the whole parse series by series, a null
  *      entry kept where it was, a series not kept empty, foldedMonths trimmed, and a packed list refuses add and set.
+ *
+ * LB5, THE SLOT'S STAMP. Section 19 also holds a re-found (the same name and seed, other founding cash) and a save with no founding cash not to be the city in play.
+ *  21. THE STAMP FOLLOWS EACH FILE OF A SLOT: the save alone (its size moved, or its time) and the history alone each read the slot again and the
+ *      row follows; a city landing in SaveWriter's order, the save and then the history, is read at each step, not again between them, and ends
+ *      as the finished slot reads.
  *
  * Every fixture causes its condition: the founding city is a founded one, a tie is a real file with three
  * figures set equal, a missing figure a real file with one removed, a save from an older build a real save with its
@@ -260,6 +266,8 @@ public class RankingsCheck {
             // LB4: the city in play beside its own slot (copies of those slots, edited), and the packed read of a saved history.
             theCityInPlay(saves);
             thePackedRead();
+            // LB5: the stamp of a slot follows each of its files alone, and a save that lands before its history.
+            theStamp(saves);
         }
 
         out.printf("%nRankingsCheck took %.1f s%n", (System.nanoTime() - start) / 1e9);
@@ -1495,45 +1503,50 @@ public class RankingsCheck {
         out.println("--- 19. the city in play, as saved ---");
         Game g = f.game;
         SavedCities.Played played = SavedCities.Played.of(g);
-        check("the city in play is its name and its world seed: Played.of(game) carries " + g.getCityName() + " and " + g.getWorldSeed(),
-                played.name().equals(g.getCityName()) && played.seed() == g.getWorldSeed() && !played.equals(SavedCities.Played.NONE));
+        check("the city in play is its name, its world seed and its founding cash: Played.of(game) carries " + g.getCityName() + ", " + g.getWorldSeed() + " and " + g.getFoundingCash(),
+                played.name().equals(g.getCityName()) && played.seed() == g.getWorldSeed() && played.foundingCash() == g.getFoundingCash() && !played.equals(SavedCities.Played.NONE));
 
         JsonObject own = JsonParser.parseString(Files.readString(f.files.saveFile(1))).getAsJsonObject();
-        check("fixture: the save the copies are made from holds the city's name and its seed (" + own.get("cityName") + ", " + own.get("worldSeed") + ")",
-                own.has("cityName") && own.get("cityName").getAsString().equals(g.getCityName()) && own.has("worldSeed") && own.get("worldSeed").getAsLong() == g.getWorldSeed());
+        check("fixture: the save the copies are made from holds the city's name, its seed and its founding cash (" + own.get("cityName") + ", " + own.get("worldSeed") + ", " + own.get("foundingCash") + ")",
+                own.has("cityName") && own.get("cityName").getAsString().equals(g.getCityName()) && own.has("worldSeed") && own.get("worldSeed").getAsLong() == g.getWorldSeed()
+                        && own.has("foundingCash") && own.get("foundingCash").getAsDouble() == g.getFoundingCash());
         GameFiles files = GameFiles.scratch("rankingsinplay");
         copySlot(f.files, 1, files, 1, 0, true);                                                                     // the city as its first save has it
         copySlot(f.files, 2, files, 2, 0, true);                                                                     // ...and as its second has it, a longer history
         editedCopy(f.files, 1, files, 3, save -> save.addProperty("worldSeed", g.getWorldSeed() + 1));              // the same name, another world
         editedCopy(f.files, 1, files, 4, save -> save.remove("worldSeed"));                                          // the same name, a save that carries no seed
         editedCopy(f.files, 1, files, 5, save -> save.addProperty("cityName", g.getCityName() + " Again"));         // the same world, another city
+        editedCopy(f.files, 1, files, 6, save -> save.addProperty("foundingCash", g.getFoundingCash() * 2));        // the same name and world, founded with other cash: a re-found (LB5)
+        editedCopy(f.files, 1, files, 7, save -> save.remove("foundingCash"));                                       // ...and a save that carries no founding cash
         SavedCities[] read = new SavedCities[1];
         quietly(() -> read[0] = SavedCities.read(files));
         SavedCities snap = read[0];
         List<Integer> all = snap.now(SavedCities.Played.NONE).stream().map(Rankings.Saved::slot).toList();
-        check("fixture: all five copies are cities on the board, in slots 1 to 5, and none is left out (" + all + ", " + snap.left() + ")", all.equals(List.of(1, 2, 3, 4, 5)) && snap.left().total() == 0);
+        check("fixture: all seven copies are cities on the board, in slots 1 to 7, and none is left out (" + all + ", " + snap.left() + ")", all.equals(List.of(1, 2, 3, 4, 5, 6, 7)) && snap.left().total() == 0);
 
         List<Integer> marked = snap.now(played).stream().filter(Rankings.Saved::inPlay).map(Rankings.Saved::slot).toList();
-        check("a slot copied from the city's own saves (same name, same seed) is marked in play: slots 1 and 2 (" + marked + ")", marked.equals(List.of(1, 2)));
+        check("a slot copied from the city's own saves (same name, same seed, same founding cash) is marked in play: slots 1 and 2 (" + marked + ")", marked.equals(List.of(1, 2)));
         check("...and none is marked when there is no city in play (Played.NONE)", snap.now(SavedCities.Played.NONE).stream().noneMatch(Rankings.Saved::inPlay));
         check("...and the last-saved list leaves none out, marked or not: every slot is a row, in slot order",
                 snap.now(played).stream().map(Rankings.Saved::slot).toList().equals(all));
         check("a copy with the seed one higher, one with no seed and one with another name are each not marked: a save with no seed never matches",
-                snap.now(played).stream().filter(s -> s.slot() >= 3).noneMatch(Rankings.Saved::inPlay));
+                snap.now(played).stream().filter(s -> s.slot() >= 3 && s.slot() <= 5).noneMatch(Rankings.Saved::inPlay));
+        check("a re-found (slot 6: the same name and the same seed as slot 1, other founding cash) is not marked, and neither is a save that carries no founding cash (slot 7): slot 1 alone of the three is",
+                snap.now(played).stream().filter(s -> s.slot() == 6 || s.slot() == 7).noneMatch(Rankings.Saved::inPlay) && marked.contains(1));
 
         int month = f.youngLast;
         List<Integer> without = snap.at(month, SavedCities.Played.NONE).stream().map(Rankings.Saved::slot).toList();
         List<Integer> others = snap.at(month, played).stream().map(Rankings.Saved::slot).toList();
-        check("fixture: at slot 1's last month (" + month + ") every copy has a row when no city is in play (" + without + ")", without.equals(List.of(1, 2, 3, 4, 5)));
-        check("at your age the city in play, as saved, is not a row, and the seed one higher, the seed removed and the other name each stay in one: slots 3, 4 and 5 (" + others + ")",
-                others.equals(List.of(3, 4, 5)));
+        check("fixture: at slot 1's last month (" + month + ") every copy has a row when no city is in play (" + without + ")", without.equals(List.of(1, 2, 3, 4, 5, 6, 7)));
+        check("at your age the city in play, as saved, is not a row, and the seed one higher, the seed removed, the other name, the other founding cash and the cash removed each stay in one: slots 3 to 7 (" + others + ")",
+                others.equals(List.of(3, 4, 5, 6, 7)));
 
         int now = g.getMonth();
         check("fixture: the city in play is older than every copy's last month (month " + now + ", past " + f.oldLast + ")", f.youngLast < f.oldLast && f.oldLast < now);
         List<Integer> stoppedAll = snap.stoppedAt(now, SavedCities.Played.NONE).stream().map(SavedCities.Stopped::slot).toList();
         List<Integer> stoppedOthers = snap.stoppedAt(now, played).stream().map(SavedCities.Stopped::slot).toList();
-        check("a copy whose last month is before the city's month is listed as stopped when no city is in play (" + stoppedAll + ")", stoppedAll.equals(List.of(1, 2, 3, 4, 5)));
-        check("...and a slot that is the city in play is not listed as stopped: slots 3, 4 and 5 alone are (" + stoppedOthers + ")", stoppedOthers.equals(List.of(3, 4, 5)));
+        check("a copy whose last month is before the city's month is listed as stopped when no city is in play (" + stoppedAll + ")", stoppedAll.equals(List.of(1, 2, 3, 4, 5, 6, 7)));
+        check("...and a slot that is the city in play is not listed as stopped: slots 3 to 7 alone are (" + stoppedOthers + ")", stoppedOthers.equals(List.of(3, 4, 5, 6, 7)));
     }
 
     /* =====================================================================
@@ -1605,5 +1618,74 @@ public class RankingsCheck {
         }
         check("a packed list is read only: add and set on it throw UnsupportedOperationException", addThrows && setThrows);
         check("an empty document reads as no history, as Gson does", HistorySave.readKept(new StringReader(""), SavedCities.KEPT) == null);
+    }
+
+    /* =====================================================================
+       21. THE STAMP FOLLOWS EACH FILE OF A SLOT (LB5)
+       ===================================================================== */
+
+    /** Rewrites a slot's save file alone, one key changed (the history beside it is not touched), and puts its modified time at `time`. */
+    static void rewriteSave(Path save, Consumer<JsonObject> edit, FileTime time) throws IOException {
+        JsonObject json = JsonParser.parseString(Files.readString(save)).getAsJsonObject();
+        edit.accept(json);
+        Files.writeString(save, new Gson().toJson(json));
+        Files.setLastModifiedTime(save, time);
+    }
+
+    static void theStamp(Saves f) throws IOException {
+        out.println("--- 21. the stamp follows each file of a slot ---");
+        // The header is not a file of its own: SaveHeader parses the save itself, so the save's size and modified time ARE the header's, and a slot's stamp
+        // (save and history, each by size and time) already moves when either file does. LB5 asks it of each file alone, as SaveWriter lands them
+        // (the save, its map, then the history), so that a row follows a save that lands before its history.
+        GameFiles files = GameFiles.scratch("rankingsstamp");
+        copySlot(f.files, 1, files, 1, 0, true);
+        SavedCities[] read = new SavedCities[1];
+        quietly(() -> read[0] = SavedCities.read(files));
+        Rankings.City first = read[0].now(SavedCities.Played.NONE).get(0).city();
+        String name = first.name();
+        check("fixture: the slot is read once and is the founded city (" + name + ", month " + first.month() + "), reads " + read[0].reads(), read[0].reads() == 1 && name.equals(f.game.getCityName()) && first.month() == f.youngLast);
+        check("nothing moved: the next refresh reads no slot and keeps the very same city", read[0].refresh(files).reads() == 0
+                && read[0].refresh(files).now(SavedCities.Played.NONE).get(0).city() == first);
+
+        Path save = files.saveFile(1);
+        FileTime t0 = Files.getLastModifiedTime(save);
+        // The save lands alone and its size moves (a longer name), its modified time put back: the header is the save, so the size alone is enough.
+        rewriteSave(save, json -> json.addProperty("cityName", name + " II"), t0);
+        SavedCities bySize = read[0].refresh(files);
+        check("the save alone, its size moved and its time not: the slot is read again and the row has the new header's name (reads " + bySize.reads() + ")",
+                bySize.reads() == 1 && bySize.now(SavedCities.Played.NONE).get(0).city().name().equals(name + " II"));
+
+        // ...and its modified time alone: the same bytes' length (one letter changed), the time a second on.
+        rewriteSave(save, json -> json.addProperty("cityName", name + " I2"), FileTime.fromMillis(t0.toMillis() + 1000));
+        SavedCities byTime = bySize.refresh(files);
+        check("the save alone, its time moved and its size not: the slot is read again and the row has the new name (reads " + byTime.reads() + ")",
+                byTime.reads() == 1 && byTime.now(SavedCities.Played.NONE).get(0).city().name().equals(name + " I2"));
+        check("...and then nothing moved: no slot is read", byTime.refresh(files).reads() == 0);
+
+        // The history lands alone: the row follows it.
+        Files.copy(f.files.historyFile(2), files.historyFile(1), StandardCopyOption.REPLACE_EXISTING);
+        SavedCities byHistory = byTime.refresh(files);
+        check("the history alone: the slot is read again and the row ends at the longer history's last month (" + f.oldLast + "), reads " + byHistory.reads(),
+                byHistory.reads() == 1 && byHistory.now(SavedCities.Played.NONE).get(0).city().month() == f.oldLast);
+
+        // A city lands in two steps, in SaveWriter's order (the save, then the history): each step moves the stamp, the board reads between, and the end is the finished slot.
+        GameFiles landing = GameFiles.scratch("rankingsstamplanding");
+        copySlot(f.files, 1, landing, 1, 0, true);
+        GameFiles finished = GameFiles.scratch("rankingsstampfinished");
+        copySlot(f.files, 2, finished, 1, 0, true);
+        SavedCities[] before = new SavedCities[2];
+        quietly(() -> before[0] = SavedCities.read(landing));
+        quietly(() -> before[1] = SavedCities.read(finished));
+        Files.copy(f.files.saveFile(2), landing.saveFile(1), StandardCopyOption.REPLACE_EXISTING);
+        SavedCities saveLanded = before[0].refresh(landing);
+        boolean savedRead = saveLanded.reads() == 1;
+        boolean quiet = saveLanded.refresh(landing).reads() == 0;
+        Files.copy(f.files.historyFile(2), landing.historyFile(1), StandardCopyOption.REPLACE_EXISTING);
+        SavedCities historyLanded = saveLanded.refresh(landing);
+        Rankings.City end = historyLanded.now(SavedCities.Played.NONE).get(0).city(), done = before[1].now(SavedCities.Played.NONE).get(0).city();
+        check("a save that lands before its history is read (" + savedRead + "), nothing is read again while the history is owed (" + quiet + "), and the history landing moves it once more (reads " + historyLanded.reads() + ")",
+                savedRead && quiet && historyLanded.reads() == 1);
+        check("...and the row ends as the finished slot reads: its name (" + end.name() + "), its last month (" + end.month() + " of " + done.month() + ") and its people",
+                end.name().equals(done.name()) && end.month() == done.month() && end.month() == f.oldLast && end.figures().get("people").value() == done.figures().get("people").value());
     }
 }

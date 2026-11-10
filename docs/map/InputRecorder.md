@@ -1,4 +1,4 @@
-# InputRecorder.java - 205 lines · 14 methods · 1 constants · interface
+# InputRecorder.java - 207 lines · 14 methods · 1 constants · interface
 
 `ham/citybuildersim/ui/InputRecorder.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
 
@@ -18,7 +18,7 @@
 > Kept in the recording's folder beside the months, per sitting, and closed (flushed) before Quit's System.exit and when the
 > window closes, so a sitting's end is on disk.
 
-**Uses:** [InputLog](InputLog.md) (20), [Game](Game.md) (4), [UserInterface](UserInterface.md) (2)
+**Uses:** [InputLog](InputLog.md) (21), [Game](Game.md) (4), [UserInterface](UserInterface.md) (2)
 
 **Used by (1):** [UserInterface](UserInterface.md)
 
@@ -56,7 +56,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 29 | 177 | **type** `final class InputRecorder` | The window's input kept for the replay's ghost (TR1, 2026-10-31): while "Record this city" is on, the mouse and the keys of the sitting - and the markers beside them: the window's size, the screen open, the expanded m... |
+| 29 | 179 | **type** `final class InputRecorder` | The window's input kept for the replay's ghost (TR1, 2026-10-31): while "Record this city" is on, the mouse and the keys of the sitting - and the markers beside them: the window's size, the screen open, the expanded m... |
 | 56 | 3 | `InputRecorder(UserInterface ui)` |  |
 | 61 | 19 | `void install(Scene scene)` | Listens to the scene's mouse and keys, and starts the markers' timer. |
 | 82 | 7 | `void close()` | Flushes and closes the sitting's log, if one is open: before Quit's System.exit, and when the window closes. |
@@ -67,13 +67,13 @@
 | 114 | 8 | `private static int button(MouseButton b)` | The log's button numbers: 1 primary, 2 middle, 3 secondary, 0 none. |
 | 123 | 3 | `private static int mods(boolean shift, boolean ctrl, boolean alt, boolean meta)` |  |
 
-### the markers (lines 127-205)
+### the markers (lines 127-207)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 130 | 4 | `private boolean active()` | Whether the city on screen is being recorded and no replay is on. |
-| 136 | 40 | `private void tick()` | One frame: the log opened, kept or closed for the city on screen, and the markers that changed since the last frame. |
-| 178 | 14 | `private void open(Game g)` | Opens a log for the city's recording: the markers forgotten, so the new log starts with the window, the screen, the view, the clock and the month. |
-| 193 | 3 | `private static boolean differs(double a, double b)` |  |
-| 198 | 7 | `private static boolean viewMoved(double[] now, double[] was)` | Whether the map's view {globe, a, b, scale, roll} is another than the last one logged. |
+| 136 | 42 | `private void tick()` | One frame: the log opened, kept or closed for the city on screen, and the markers that changed since the last frame. |
+| 180 | 14 | `private void open(Game g)` | Opens a log for the city's recording: the markers forgotten, so the new log starts with the window, the screen, the view, the clock and the month. |
+| 195 | 3 | `private static boolean differs(double a, double b)` |  |
+| 200 | 7 | `private static boolean viewMoved(double[] now, double[] was)` | Whether the map's view {globe, a, b, scale, roll} is another than the last one logged. |
 

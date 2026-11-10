@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**191 harness files, 22,448 labelled assertions.** AllChecks runs 191 of them.
+**191 harness files, 22,526 labelled assertions.** AllChecks runs 191 of them.
 
 ## Which harnesses read which class
 
@@ -112,6 +112,9 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [FinancesScreen](map/FinancesScreen.md) | **none** |
 | [Fittings](map/Fittings.md) | FittingCheck |
 | [FloatingRateNote](map/FloatingRateNote.md) | DeskCheck, FloatLinkCheck |
+| [FollowBench](map/FollowBench.md) | ReplayCheck |
+| [FollowPlayer](map/FollowPlayer.md) | ReplayCheck |
+| [FollowRules](map/FollowRules.md) | ReplayCheck |
 | [FoodIndustry](map/FoodIndustry.md) | BooksCheck, CreditCheck, WaterCheck |
 | [FoodProcessing](map/FoodProcessing.md) | FoodProcessingCheck |
 | [ForeignAccounts](map/ForeignAccounts.md) | CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, CurrencyRegimeCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, ExchangeRateCheck, ExpectationsCheck, ForeignCheck, ForeignDebtCheck, HoldersCheck, InterestAbroadCheck, InterventionCheck, KeptCheck, LabourCheck, LandCheck, LandNationsCheck, LongPlaytest, MonetaryCheck, NewGameCheck, OilCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldMoneysCheck |
@@ -133,6 +136,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [GameVersion](map/GameVersion.md) | BridgeCheck, ChartCheck, ConstructionControlCheck, EarthDepositsCheck, EarthTerrainCheck, EnsembleCheck, LandmassCheck, MaterialsCheck, RankingsCheck, ReplayCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck, WellCheck |
 | [Gateways](map/Gateways.md) | GatewayCheck |
 | [Geology](map/Geology.md) | CoalMiningCheck, EarthDepositsCheck, EarthTerrainCheck |
+| [GhostLayer](map/GhostLayer.md) | **none** |
 | [GlobeFrame](map/GlobeFrame.md) | EarthTerrainCheck, GlobeCheck, MapCheck |
 | [GlobePicture](map/GlobePicture.md) | EarthTerrainCheck, GlobeCheck, MapCheck |
 | [Good](map/Good.md) | AgricultureCheck, BankCheck, BasketYearCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, ConstructionControlCheck, ConsumptionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DenominationCheck, DiscoveryCheck, EquipmentCheck, FittingCheck, FoodProcessingCheck, ForeignCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, NewGameCheck, OilCheck, OilViewCheck, PartnerCallsCheck, PartnersCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TruckCheck, TruckRouteCheck, VanCheck, WellCheck, WoodProductsCheck, WorldMarketCheck, WorldMoneysCheck, ZoningCheck |
@@ -163,6 +167,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [InfrastructureScreen](map/InfrastructureScreen.md) | **none** |
 | [InputLog](map/InputLog.md) | ReplayCheck |
 | [InputRecorder](map/InputRecorder.md) | **none** |
+| [InputTimeline](map/InputTimeline.md) | ReplayCheck |
 | [InterchangeGround](map/InterchangeGround.md) | JunctionCheck, MapCheck |
 | [InterimLoan](map/InterimLoan.md) | CreditCheck, LongPlaytest |
 | [Investor](map/Investor.md) | CreditCheck |
@@ -252,6 +257,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Recipe](map/Recipe.md) | BuildingDataCheck, DiscoveryCheck, RecipeCheck, ResearchCheck, ResearchViewCheck |
 | [Recipes](map/Recipes.md) | DiscoveryCheck, RecipeCheck, ResearchCheck |
 | [Recording](map/Recording.md) | ReplayCheck, SaveFileCheck |
+| [Reenactor](map/Reenactor.md) | **none** |
 | [RefineryFlow](map/RefineryFlow.md) | BuildCardCheck, BuildingDataCheck, OilCheck, OilViewCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck |
 | [RefineryView](map/RefineryView.md) | IndustryViewCheck, KeptCheck, OilViewCheck, RefineryCheck, RefineryViewCheck |
 | [Refining](map/Refining.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, LongPlaytest, OilCheck, OilViewCheck, PortCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck |
@@ -278,7 +284,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SalesTaxLedger](map/SalesTaxLedger.md) | PolicyCheck |
 | [SaveCopy](map/SaveCopy.md) | SaveSlotCheck |
 | [SaveDump](map/SaveDump.md) | **none** |
-| [SaveHeader](map/SaveHeader.md) | SaveFileCheck, SaveSlotCheck, ScaleCheck |
+| [SaveHeader](map/SaveHeader.md) | ReplayCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck |
 | [SaveWriter](map/SaveWriter.md) | ReplayCheck, SaveSlotCheck |
 | [SavedCities](map/SavedCities.md) | RankingsCheck |
 | [SeaLanes](map/SeaLanes.md) | MapCheck |
@@ -22023,7 +22029,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1904 with the works gone no plan draws a siding:
   - L1905 ...no tile carries a plot of one, and no route runs to one (
 
-## RankingsCheck.java - 199 labelled assertions
+## RankingsCheck.java - 208 labelled assertions
 
 > The Rankings board held to what it promises (batch LB2; the project's spec-leaderboards.md 3, 4, 6 and 9):
 > Rankings' pivot and display, its two boards, its ranking, its sentence and lock, and CityMeasures' reading
@@ -22039,225 +22045,235 @@ _(this harness does not label its checks through a helper - it prints its findin
 > its figures are held to the history's own reader times the named factor.
 > ...
 
-  - L215 the file -D
-- **L275 1. the pivot's identities**
-  - L289 the city's figure in its own money is X under this month's rate and PPP, and X at founding's prices under Constant (a wage's, X)
-  - L290 the live city has the five money measures (
-  - L308 Money never reorders: a board's rows and ranks are the same in the city's money, game US$ and real US$, on both boards, at every Convert
-  - L310 and the boards have rows to be the same (
-  - L313 display: the city's money is US$ over the bridge x the game dollar's price level x the rate; at PPP x parity; at Constant x the founding rate
-  - L316 display: game US$ is US$ over the bridge x the price level, and at Constant x 1; real US$ as is
-- **L327 2. at founding a game US$ is the bridge's worth of real US$**
-  - L328 a fresh city's game dollar price level is 1, and its founding rate is the rate it opens at (
-  - L351 at founding every row's real US$ is the bridge (
-  - L352 the live city's game dollar has inflated (
-  - L353 and once it has inflated, the game US$ differs from the real US$ on every board of every money measure
-- **L371 3. Constant holds a steady real figure while its rate moves**
-  - L386 the same figures at a dearer game dollar and a weaker rate are the same US$ of 2015 under Constant, and in the city's money its real figure
-  - L387 ...and are not under this month's rate or PPP, which move with the rate and the price level
-- **L395 4. Your world's rows equal Nations' figures for the month**
-  - L397 the file carries exactly ten measures for Your world:
-  - L405 Your world ranks exactly the ten D15 names and has no rows for the other 60; with no Nations it ranks none
-  - L457 Your world
-  - L458 Your world
-  - L459 Your world
-  - L460 Your world
-  - L461 Your world
+  - L221 the file -D
+- **L283 1. the pivot's identities**
+  - L297 the city's figure in its own money is X under this month's rate and PPP, and X at founding's prices under Constant (a wage's, X)
+  - L298 the live city has the five money measures (
+  - L316 Money never reorders: a board's rows and ranks are the same in the city's money, game US$ and real US$, on both boards, at every Convert
+  - L318 and the boards have rows to be the same (
+  - L321 display: the city's money is US$ over the bridge x the game dollar's price level x the rate; at PPP x parity; at Constant x the founding rate
+  - L324 display: game US$ is US$ over the bridge x the price level, and at Constant x 1; real US$ as is
+- **L335 2. at founding a game US$ is the bridge's worth of real US$**
+  - L336 a fresh city's game dollar price level is 1, and its founding rate is the rate it opens at (
+  - L359 at founding every row's real US$ is the bridge (
+  - L360 the live city's game dollar has inflated (
+  - L361 and once it has inflated, the game US$ differs from the real US$ on every board of every money measure
+- **L379 3. Constant holds a steady real figure while its rate moves**
+  - L394 the same figures at a dearer game dollar and a weaker rate are the same US$ of 2015 under Constant, and in the city's money its real figure
+  - L395 ...and are not under this month's rate or PPP, which move with the rate and the price level
+- **L403 4. Your world's rows equal Nations' figures for the month**
+  - L405 the file carries exactly ten measures for Your world:
+  - L413 Your world ranks exactly the ten D15 names and has no rows for the other 60; with no Nations it ranks none
+  - L465 Your world
+  - L466 Your world
   - L467 Your world
-  - L474 Your world
-  - L492 Your world
-  - L493 Your world
-- **L504 5. lower is better ranks ascending**
-  - L522 a DOWN measure's first row has the least value and the rows ascend (unemployment, deaths, debt, ...)
-  - L523 an UP measure's first row has the most and the rows descend (GDP, life expectancy, ...)
-  - L524 a NONE measure ranks largest first, like an UP (inflation, investment, ...)
-  - L525 on the real file:
-  - L527 unemployment, which is lower-is-better, has the city ranked by its value among the nations (rank
-- **L536 6. ties share a rank**
-  - L565 a tie in the middle (France, Germany, Italy at 80.25): one rank for the group, the next skips two, and the board is the same twice
-- **L575 7. a place with no figure is off, never 0**
-  - L598 a place without a figure of a measure is not a row (
-  - L599 and a place with one is a row of exactly its value, year and mark: the rows are the figures
-  - L600 every row's value is a finite number: none is NaN
-  - L603 a published 0 is a row and a missing figure is not: oil has
-  - L612 a copy of the file with one nation's GDP removed loses exactly that row (
-  - L621 a city with no figure for a measure is off its board (you
-  - L633 a measure nothing real publishes (D10) has the city alone, and realFigures false (
-  - L640 a published measure's table counts its rows with a mark (not the city) and the estimates among them
-- **L648 8. the real rows' pivot**
-  - L649 the CPI-U's 2015 over 2025 is the file's us_prices_2015_over_2025 (
-  - L653 a 2025 figure at this month's rate is its value times CPI-U 2015 over 2025: the US (
-  - L655 a city region's 2021 figure is its value times CPI-U 2015 over 2021: Tokyo (
-  - L678 every place's GDP and GDP per person at this month's rate: its value times CPI-U 2015 over its year's
-  - L679 under Constant GDP and GDP per person are the file's .k figure as it is, with its year
-  - L680 under PPP they are the file's .ppp figure times CPI-U 2015 over its year's
-  - L681 a row carries its figure's mark and source
-  - L706 household spending converts by gdp.k and gdp.ppp over gdp of the same place; a wage by gdp.ppp over gdp, and is this month's figure under Constant
-- **L714 9. around you and your size**
-  - L737 around the city
-  - L749 your size: the places within ten times the city's
-  - L751 ...and every one is within the factor of the city's people, in rank order
-  - L755 a city off the board has no size to match: yourSize is empty
-- **L763 10. the city's measures from History**
-  - L769 every figure is a measure of the file, with a way of being made, and is finite
-  - L771 it has every measure a city of its age has (
-  - L772 growth_10y needs 132 monthly months, which a city of
-  - L773 only gdp, gdp_pp and hh_spend_pp have a figure at founding's prices
-  - L780 gdp is the history's last 12 months times THOUSANDS (
-  - L781 ...and at founding's prices the same months each over that month's price index
-  - L782 gdp per person is that over the people now (
-  - L783 people are the history's last population
-  - L785 household spending per person is a year of consumption times THOUSANDS over the people
-  - L787 price level is parity over fx, and fx against parity its inverse (
-  - L788 the investment share is a year of investment over a year of output:
-  - L789 the debt share is the last month's debt over a year of output
-  - L791 the average wage is the book's wage bill over posts filled, times 12 and THOUSANDS (
-  - L792 the minimum wage is the floor in today's money times 12 and THOUSANDS, and the Kaitz index the one over the other (
-  - L794 inflation is the price index over its reading twelve months before
-  - L795 unemployment is the book's, over the labour force:
-  - L799 old-age dependency is seniors and elders over adults, from the city's bands
-  - L801 area is the city's dry ground, the real file's land area (
-  - L803 reserves in months of imports is the vault in dollars over a month of imports at each month's rate:
-  - L809 the six bands' deaths add up to the deaths series over a year, to its rounding (
-  - L810 the death rate is the six bands' dead over the people, not the rounded series (
-  - L812 life expectancy is finite and between 20 and 120 (
-  - L819 the life table: a flat hazard m, in every band, gives a life expectancy of 1 over m
-  - L821 ...and with no one dying in the open band there is no life expectancy (NaN), not infinity
-  - L827 a city of six months: a year of output is the six months scaled by 12 over 6, times THOUSANDS, and says so
-  - L829 ...and inflation (13 months), real growth (24), 10-year growth and life expectancy (12 months) are absent, not 0
-  - L831 an empty history has no figures
-  - L836 a history with folded years (
-- **L856 11. the lock and the sentence**
-  - L859 Prices is locked under real US$
-  - L860 ...under Constant
-  - L861 ...on a measure that is not money (
-  - L862 ...and with no saved city on the board: always in LB2
-  - L863 it is open for money in the city's or the game's money at this month's rate or PPP once a saved city is on the board (LB3's seam)
-  - L870 with no saved city Prices is locked for every measure and setting; with one, locked exactly under real US$, Constant, or a measure that is not money
-  - L875 the opening sentence names real US dollars, 2015 prices, this month's rate, 2025, the city and its month
-  - L879 Your world in the city's money under Constant names the money, founding's prices, the constant rate and the path
-  - L882 game US dollars are of the city's month, and PPP is said:
-  - L884 a wage under Constant says it has no constant series and is at this month's rate; GDP under Constant does not
-  - L887 a measure that is not money drops the money clause and names its unit:
-  - L889 the Random path is named too
-  - L890 a measure with a constant series says so: gdp, gdp_pp and hh_spend_pp, and no wage
-- **L1011 12. reading the slots**
-  - L1012 fixture: the live city was saved in slots 1, 2 and 3 with a history each, and slot 3 is after a reform by
-  - L1032 a read writes nothing: every file's bytes and modified time are as they were, none added and none removed
-  - L1036 the cities on the board are slots 1 and 2, in slot order:
-  - L1037 slot 0, the autosave, holds a good save and is left out: not on the board, not counted
-  - L1038 the empty slots (3, 4 and 10) are off the board and not counted as left out
-  - L1040 a save from an older build (format
-  - L1042 a save that cannot be read and a history that cannot be read are two damaged
-  - L1043 a save with no history file is off and counted
-  - L1044 a first read parses every save in slots 1 to
-  - L1049 a saved city's row is id saved:1, kind SAVED, the city's name, its year, mark 0, source
-  - L1052 ...and it is the city as its history left it: its month is the history's last (
-  - L1058 a second refresh with nothing changed reads no slot and reuses every one (reads
-  - L1061 slot 2 saved since is the only slot read again (reads
-  - L1063 a slot deleted is gone from the next snapshot, and counted nowhere
-- **L1077 13. Prices moves only saved rows, never under real US$**
-  - L1082 fixture: the young save's price level differs from the active city's, and the old save, of the active city's month, has the same
-  - L1122 Prices per year against static moves no row that is not a saved city's: value and shown the same, on both boards, in the city's money and the game's, at this...
-  - L1123 ...and the boards had both saved cities to move (money measures)
-  - L1124 ...it moves the saved city whose game dollar is dearer or cheaper than this city's
-  - L1125 ...and does not move the one whose price level is this city's
-  - L1126 in game US$ a saved city per year is its own year's dollars (X over its rate), static its real dollars (X over rate over its price level) times this city's l...
-  - L1144 under real US$, under Constant, and for a measure that is not money, Prices changes nothing: the whole table the same, every row, rank, value and figure shown
-  - L1145 ...with saved cities on those boards to have moved (GDP and people)
-  - L1165 a static board is one order, with the saved cities in it, in the city's money, game US$ and real US$
-  - L1169 with a saved city on the board Prices is open for money in the city's money at this month's rate
-  - L1171 with no saved city on the board the sentence is the board's alone
-  - L1176 per year it adds that the saved cities are in their own year's dollars, as last saved
-  - L1177 static at an age it adds that they are at this city's prices of its year, at its age
-  - L1180 under real US$, which Prices cannot move, it names no prices: just the saved cities as last saved
-  - L1182 a measure that is not money names none either, at an age too
-  - L1184 an age is said as years and months: 50 months is 4 years 2 months, 12 is 1 year, 13 is 1 year 1 month, 7 is 7 months
-  - L1192 the drawer opens a saved city by its row id: its GDP line is its row on each board, mark 0, source
-  - L1194 ...and with no saved cities handed over, the same id opens nothing: a line of NaN each
-- **L1203 14. a reform leaves every rank**
-  - L1207 fixture: slot 3 is slot 2's city in a money a
-  - L1239 the same city saved before and after the reform has the same rank in every measure and every Settings combination, on both boards, beside the city before and...
-  - L1240 ...and the same value, and the same figure shown, to a relative 1e-9
-  - L1241 ...and where one has no row, so has the other (no figure of that measure)
-  - L1242 ...and side by side on one board, beside the live city they were saved from, the two copies share one rank (Rankings.TIE: the reform leaves noise in the last...
-  - L1243 ...the money measures among them (
-- **L1251 15. at your age**
-  - L1253 fixture: the age (
-  - L1256 at that age the cities on the board are slots 2 and 3, and slot 1 is no row
-  - L1257 slot 1 is listed as stopped, with its name and its last month (stopped at
-  - L1260 ...and the board has no row for it, with slots 2 and 3 on it
-  - L1264 fixture: slot 2's history file holds the age as a month, with a year behind it
-  - L1267 slot 2 at the age has CityMeasures.at of its history file at that month (
-  - L1272 ...its GDP is the history's GDP over the twelve months to the age, times THOUSANDS (
-  - L1273 ...its rate, parity and the game dollar's price level are the history file's fxRate, fxParity and usPrices at that month
-  - L1276 ...and the measures that need the land and the bands are absent, never guessed
-  - L1279 at its last saved month it is the whole history's last month (
-  - L1282 ...its area is the live city's at the month it was saved (
-  - L1285 the reform reaches the saved history: slot 3 at the age has a rate a
-  - L1288 a city still on the board at the month its history ends is not stopped, one past it is: at
-  - L1290 at an age none has reached, there are no rows and every city is stopped, at its own last month, in slot order
-  - L1292 at an age before the history began there is no row either, and no city has stopped
-- **L1300 16. the rank over the years**
-  - L1306 fixture: the history is all months (nothing folded) and holds at least three Decembers
-  - L1314 fixture: the measures the real world still publishes, read from the file (
-  - L1340 ...of which the city has a figure in some December for
-  - L1341 the rank line has one point for each December the city has a figure for, oldest first, and a point for every December where the city has a figure in all of them
-  - L1342 each point is the board's own rank for the city at that December, among as many places (Real world 2025 and the city)
-  - L1343 ...a rank from 1 to the places ranked, among the real places that publish the measure (a wage is published for fewer places than output is)
-  - L1347 a measure LC1 took out (real_rate, its source
-  - L1352 Your world's settings give the same points: the line is against Real world 2025 only
-  - L1353 saved cities would change the places ranked (the board with them has more rows), and the point leaves them out
-  - L1355 a measure that needs the land has no point, since the history does not keep it: area and density
-  - L1362 a measure the city had no figure for in its first Decembers starts when it has one:
-  - L1368 under Constant the line is the board's Constant rank at each December: the last of
-  - L1370 a history of nothing, or none, has no points
-  - L1372 the city at a December is the history's: its rate, parity and price level at that month, its month and year the calendar's
-- **L1382 17. the slim history equals the full one**
-  - L1409 a slot's slim history has the full one's axis
-  - L1410 CityMeasures.of over it is the full history's, figure for figure
-  - L1411 ...and so is CityMeasures.at of it at every month of the history
-  - L1412 it keeps only the series the measures read and the pivot's three, each as the file has it, under a third of the series the file has
-  - L1413 each kept series that is not empty is a HistorySave.PackedDoubles or PackedLongs: held as primitives, not boxed
-  - L1415 every series CityMeasures reads is a series a history has, and the pivot's fxRate, fxParity and usPrices are kept
-  - L1428 usPrices is the world economy's price level, to the digit, at the end of each month played (
-  - L1430 ...and it has an entry for every month of the history (
-  - L1436 the reform divides the rate's whole history by
-- **L1445 18. CityMeasures.at**
-  - L1449 at the history's last month it is of(), figure for figure (
-  - L1450 at the first month it was asked (
-  - L1452 a month the history never reached has no figures, nor month 0 or a negative one, nor a null history
-  - L1455 a younger month has fewer measures than an older: inflation needs 13 months, so none in the history's twelfth month (
-  - L1462 Extras.UNKNOWN leaves out exactly what needs the land and the bands (
-  - L1465 ...and its minimum wage is the history's floor lifted by the price index, times 12 and THOUSANDS (
-  - L1472 fixture: three years of the history are folded (
-  - L1473 a month in a folded year has no figures (months 12 and 36), nor does the month before the fold ends
-  - L1474 the first month after the fold is read as a month: a year of output scaled from the one month it has, 12 times the month
-  - L1476 a month in the folded history's middle has the figures of that month, a year of output 12 of the month; its last month is of()
-  - L1478 valueAt reads a series at a month and is NaN where the history has no such month or series
-- **L1495 19. the city in play, as saved**
-  - L1498 the city in play is its name and its world seed: Played.of(game) carries
-  - L1502 fixture: the save the copies are made from holds the city's name and its seed (
-  - L1514 fixture: all five copies are cities on the board, in slots 1 to 5, and none is left out (
-  - L1517 a slot copied from the city's own saves (same name, same seed) is marked in play: slots 1 and 2 (
-  - L1518 ...and none is marked when there is no city in play (Played.NONE)
-  - L1519 ...and the last-saved list leaves none out, marked or not: every slot is a row, in slot order
-  - L1521 a copy with the seed one higher, one with no seed and one with another name are each not marked: a save with no seed never matches
-  - L1527 fixture: at slot 1's last month (
-  - L1528 at your age the city in play, as saved, is not a row, and the seed one higher, the seed removed and the other name each stay in one: slots 3, 4 and 5 (
-  - L1532 fixture: the city in play is older than every copy's last month (month
-  - L1535 a copy whose last month is before the city's month is listed as stopped when no city is in play (
-  - L1536 ...and a slot that is the city in play is not listed as stopped: slots 3, 4 and 5 alone are (
-- **L1562 20. the packed read of a saved history**
-  - L1572 fixture: the kept series
-  - L1583 readKept over it equals slim(KEPT) of the whole parse, series by series (equal both ways, the same hash)
-  - L1585 a null entry is kept where it was,
-  - L1589 a Double series is a PackedDoubles and a Long series a PackedLongs
-  - L1591 a kept series the JSON has as null (
-  - L1592 a series that is not kept (
-  - L1593 foldedMonths is trimmed to month's size as slim trims it (
-  - L1606 a packed list is read only: add and set on it throw UnsupportedOperationException
-  - L1607 an empty document reads as no history, as Gson does
+  - L468 Your world
+  - L469 Your world
+  - L475 Your world
+  - L482 Your world
+  - L500 Your world
+  - L501 Your world
+- **L512 5. lower is better ranks ascending**
+  - L530 a DOWN measure's first row has the least value and the rows ascend (unemployment, deaths, debt, ...)
+  - L531 an UP measure's first row has the most and the rows descend (GDP, life expectancy, ...)
+  - L532 a NONE measure ranks largest first, like an UP (inflation, investment, ...)
+  - L533 on the real file:
+  - L535 unemployment, which is lower-is-better, has the city ranked by its value among the nations (rank
+- **L544 6. ties share a rank**
+  - L573 a tie in the middle (France, Germany, Italy at 80.25): one rank for the group, the next skips two, and the board is the same twice
+- **L583 7. a place with no figure is off, never 0**
+  - L606 a place without a figure of a measure is not a row (
+  - L607 and a place with one is a row of exactly its value, year and mark: the rows are the figures
+  - L608 every row's value is a finite number: none is NaN
+  - L611 a published 0 is a row and a missing figure is not: oil has
+  - L620 a copy of the file with one nation's GDP removed loses exactly that row (
+  - L629 a city with no figure for a measure is off its board (you
+  - L641 a measure nothing real publishes (D10) has the city alone, and realFigures false (
+  - L648 a published measure's table counts its rows with a mark (not the city) and the estimates among them
+- **L656 8. the real rows' pivot**
+  - L657 the CPI-U's 2015 over 2025 is the file's us_prices_2015_over_2025 (
+  - L661 a 2025 figure at this month's rate is its value times CPI-U 2015 over 2025: the US (
+  - L663 a city region's 2021 figure is its value times CPI-U 2015 over 2021: Tokyo (
+  - L686 every place's GDP and GDP per person at this month's rate: its value times CPI-U 2015 over its year's
+  - L687 under Constant GDP and GDP per person are the file's .k figure as it is, with its year
+  - L688 under PPP they are the file's .ppp figure times CPI-U 2015 over its year's
+  - L689 a row carries its figure's mark and source
+  - L714 household spending converts by gdp.k and gdp.ppp over gdp of the same place; a wage by gdp.ppp over gdp, and is this month's figure under Constant
+- **L722 9. around you and your size**
+  - L745 around the city
+  - L757 your size: the places within ten times the city's
+  - L759 ...and every one is within the factor of the city's people, in rank order
+  - L763 a city off the board has no size to match: yourSize is empty
+- **L771 10. the city's measures from History**
+  - L777 every figure is a measure of the file, with a way of being made, and is finite
+  - L779 it has every measure a city of its age has (
+  - L780 growth_10y needs 132 monthly months, which a city of
+  - L781 only gdp, gdp_pp and hh_spend_pp have a figure at founding's prices
+  - L788 gdp is the history's last 12 months times THOUSANDS (
+  - L789 ...and at founding's prices the same months each over that month's price index
+  - L790 gdp per person is that over the people now (
+  - L791 people are the history's last population
+  - L793 household spending per person is a year of consumption times THOUSANDS over the people
+  - L795 price level is parity over fx, and fx against parity its inverse (
+  - L796 the investment share is a year of investment over a year of output:
+  - L797 the debt share is the last month's debt over a year of output
+  - L799 the average wage is the book's wage bill over posts filled, times 12 and THOUSANDS (
+  - L800 the minimum wage is the floor in today's money times 12 and THOUSANDS, and the Kaitz index the one over the other (
+  - L802 inflation is the price index over its reading twelve months before
+  - L803 unemployment is the book's, over the labour force:
+  - L807 old-age dependency is seniors and elders over adults, from the city's bands
+  - L809 area is the city's dry ground, the real file's land area (
+  - L811 reserves in months of imports is the vault in dollars over a month of imports at each month's rate:
+  - L817 the six bands' deaths add up to the deaths series over a year, to its rounding (
+  - L818 the death rate is the six bands' dead over the people, not the rounded series (
+  - L820 life expectancy is finite and between 20 and 120 (
+  - L827 the life table: a flat hazard m, in every band, gives a life expectancy of 1 over m
+  - L829 ...and with no one dying in the open band there is no life expectancy (NaN), not infinity
+  - L835 a city of six months: a year of output is the six months scaled by 12 over 6, times THOUSANDS, and says so
+  - L837 ...and inflation (13 months), real growth (24), 10-year growth and life expectancy (12 months) are absent, not 0
+  - L839 an empty history has no figures
+  - L844 a history with folded years (
+- **L864 11. the lock and the sentence**
+  - L867 Prices is locked under real US$
+  - L868 ...under Constant
+  - L869 ...on a measure that is not money (
+  - L870 ...and with no saved city on the board: always in LB2
+  - L871 it is open for money in the city's or the game's money at this month's rate or PPP once a saved city is on the board (LB3's seam)
+  - L878 with no saved city Prices is locked for every measure and setting; with one, locked exactly under real US$, Constant, or a measure that is not money
+  - L883 the opening sentence names real US dollars, 2015 prices, this month's rate, 2025, the city and its month
+  - L887 Your world in the city's money under Constant names the money, founding's prices, the constant rate and the path
+  - L890 game US dollars are of the city's month, and PPP is said:
+  - L892 a wage under Constant says it has no constant series and is at this month's rate; GDP under Constant does not
+  - L895 a measure that is not money drops the money clause and names its unit:
+  - L897 the Random path is named too
+  - L898 a measure with a constant series says so: gdp, gdp_pp and hh_spend_pp, and no wage
+- **L1019 12. reading the slots**
+  - L1020 fixture: the live city was saved in slots 1, 2 and 3 with a history each, and slot 3 is after a reform by
+  - L1040 a read writes nothing: every file's bytes and modified time are as they were, none added and none removed
+  - L1044 the cities on the board are slots 1 and 2, in slot order:
+  - L1045 slot 0, the autosave, holds a good save and is left out: not on the board, not counted
+  - L1046 the empty slots (3, 4 and 10) are off the board and not counted as left out
+  - L1048 a save from an older build (format
+  - L1050 a save that cannot be read and a history that cannot be read are two damaged
+  - L1051 a save with no history file is off and counted
+  - L1052 a first read parses every save in slots 1 to
+  - L1057 a saved city's row is id saved:1, kind SAVED, the city's name, its year, mark 0, source
+  - L1060 ...and it is the city as its history left it: its month is the history's last (
+  - L1066 a second refresh with nothing changed reads no slot and reuses every one (reads
+  - L1069 slot 2 saved since is the only slot read again (reads
+  - L1071 a slot deleted is gone from the next snapshot, and counted nowhere
+- **L1085 13. Prices moves only saved rows, never under real US$**
+  - L1090 fixture: the young save's price level differs from the active city's, and the old save, of the active city's month, has the same
+  - L1130 Prices per year against static moves no row that is not a saved city's: value and shown the same, on both boards, in the city's money and the game's, at this...
+  - L1131 ...and the boards had both saved cities to move (money measures)
+  - L1132 ...it moves the saved city whose game dollar is dearer or cheaper than this city's
+  - L1133 ...and does not move the one whose price level is this city's
+  - L1134 in game US$ a saved city per year is its own year's dollars (X over its rate), static its real dollars (X over rate over its price level) times this city's l...
+  - L1152 under real US$, under Constant, and for a measure that is not money, Prices changes nothing: the whole table the same, every row, rank, value and figure shown
+  - L1153 ...with saved cities on those boards to have moved (GDP and people)
+  - L1173 a static board is one order, with the saved cities in it, in the city's money, game US$ and real US$
+  - L1177 with a saved city on the board Prices is open for money in the city's money at this month's rate
+  - L1179 with no saved city on the board the sentence is the board's alone
+  - L1184 per year it adds that the saved cities are in their own year's dollars, as last saved
+  - L1185 static at an age it adds that they are at this city's prices of its year, at its age
+  - L1188 under real US$, which Prices cannot move, it names no prices: just the saved cities as last saved
+  - L1190 a measure that is not money names none either, at an age too
+  - L1192 an age is said as years and months: 50 months is 4 years 2 months, 12 is 1 year, 13 is 1 year 1 month, 7 is 7 months
+  - L1200 the drawer opens a saved city by its row id: its GDP line is its row on each board, mark 0, source
+  - L1202 ...and with no saved cities handed over, the same id opens nothing: a line of NaN each
+- **L1211 14. a reform leaves every rank**
+  - L1215 fixture: slot 3 is slot 2's city in a money a
+  - L1247 the same city saved before and after the reform has the same rank in every measure and every Settings combination, on both boards, beside the city before and...
+  - L1248 ...and the same value, and the same figure shown, to a relative 1e-9
+  - L1249 ...and where one has no row, so has the other (no figure of that measure)
+  - L1250 ...and side by side on one board, beside the live city they were saved from, the two copies share one rank (Rankings.TIE: the reform leaves noise in the last...
+  - L1251 ...the money measures among them (
+- **L1259 15. at your age**
+  - L1261 fixture: the age (
+  - L1264 at that age the cities on the board are slots 2 and 3, and slot 1 is no row
+  - L1265 slot 1 is listed as stopped, with its name and its last month (stopped at
+  - L1268 ...and the board has no row for it, with slots 2 and 3 on it
+  - L1272 fixture: slot 2's history file holds the age as a month, with a year behind it
+  - L1275 slot 2 at the age has CityMeasures.at of its history file at that month (
+  - L1280 ...its GDP is the history's GDP over the twelve months to the age, times THOUSANDS (
+  - L1281 ...its rate, parity and the game dollar's price level are the history file's fxRate, fxParity and usPrices at that month
+  - L1284 ...and the measures that need the land and the bands are absent, never guessed
+  - L1287 at its last saved month it is the whole history's last month (
+  - L1290 ...its area is the live city's at the month it was saved (
+  - L1293 the reform reaches the saved history: slot 3 at the age has a rate a
+  - L1296 a city still on the board at the month its history ends is not stopped, one past it is: at
+  - L1298 at an age none has reached, there are no rows and every city is stopped, at its own last month, in slot order
+  - L1300 at an age before the history began there is no row either, and no city has stopped
+- **L1308 16. the rank over the years**
+  - L1314 fixture: the history is all months (nothing folded) and holds at least three Decembers
+  - L1322 fixture: the measures the real world still publishes, read from the file (
+  - L1348 ...of which the city has a figure in some December for
+  - L1349 the rank line has one point for each December the city has a figure for, oldest first, and a point for every December where the city has a figure in all of them
+  - L1350 each point is the board's own rank for the city at that December, among as many places (Real world 2025 and the city)
+  - L1351 ...a rank from 1 to the places ranked, among the real places that publish the measure (a wage is published for fewer places than output is)
+  - L1355 a measure LC1 took out (real_rate, its source
+  - L1360 Your world's settings give the same points: the line is against Real world 2025 only
+  - L1361 saved cities would change the places ranked (the board with them has more rows), and the point leaves them out
+  - L1363 a measure that needs the land has no point, since the history does not keep it: area and density
+  - L1370 a measure the city had no figure for in its first Decembers starts when it has one:
+  - L1376 under Constant the line is the board's Constant rank at each December: the last of
+  - L1378 a history of nothing, or none, has no points
+  - L1380 the city at a December is the history's: its rate, parity and price level at that month, its month and year the calendar's
+- **L1390 17. the slim history equals the full one**
+  - L1417 a slot's slim history has the full one's axis
+  - L1418 CityMeasures.of over it is the full history's, figure for figure
+  - L1419 ...and so is CityMeasures.at of it at every month of the history
+  - L1420 it keeps only the series the measures read and the pivot's three, each as the file has it, under a third of the series the file has
+  - L1421 each kept series that is not empty is a HistorySave.PackedDoubles or PackedLongs: held as primitives, not boxed
+  - L1423 every series CityMeasures reads is a series a history has, and the pivot's fxRate, fxParity and usPrices are kept
+  - L1436 usPrices is the world economy's price level, to the digit, at the end of each month played (
+  - L1438 ...and it has an entry for every month of the history (
+  - L1444 the reform divides the rate's whole history by
+- **L1453 18. CityMeasures.at**
+  - L1457 at the history's last month it is of(), figure for figure (
+  - L1458 at the first month it was asked (
+  - L1460 a month the history never reached has no figures, nor month 0 or a negative one, nor a null history
+  - L1463 a younger month has fewer measures than an older: inflation needs 13 months, so none in the history's twelfth month (
+  - L1470 Extras.UNKNOWN leaves out exactly what needs the land and the bands (
+  - L1473 ...and its minimum wage is the history's floor lifted by the price index, times 12 and THOUSANDS (
+  - L1480 fixture: three years of the history are folded (
+  - L1481 a month in a folded year has no figures (months 12 and 36), nor does the month before the fold ends
+  - L1482 the first month after the fold is read as a month: a year of output scaled from the one month it has, 12 times the month
+  - L1484 a month in the folded history's middle has the figures of that month, a year of output 12 of the month; its last month is of()
+  - L1486 valueAt reads a series at a month and is NaN where the history has no such month or series
+- **L1503 19. the city in play, as saved**
+  - L1506 the city in play is its name, its world seed and its founding cash: Played.of(game) carries
+  - L1510 fixture: the save the copies are made from holds the city's name, its seed and its founding cash (
+  - L1525 fixture: all seven copies are cities on the board, in slots 1 to 7, and none is left out (
+  - L1528 a slot copied from the city's own saves (same name, same seed, same founding cash) is marked in play: slots 1 and 2 (
+  - L1529 ...and none is marked when there is no city in play (Played.NONE)
+  - L1530 ...and the last-saved list leaves none out, marked or not: every slot is a row, in slot order
+  - L1532 a copy with the seed one higher, one with no seed and one with another name are each not marked: a save with no seed never matches
+  - L1534 a re-found (slot 6: the same name and the same seed as slot 1, other founding cash) is not marked, and neither is a save that carries no founding cash (slot ...
+  - L1540 fixture: at slot 1's last month (
+  - L1541 at your age the city in play, as saved, is not a row, and the seed one higher, the seed removed, the other name, the other founding cash and the cash removed...
+  - L1545 fixture: the city in play is older than every copy's last month (month
+  - L1548 a copy whose last month is before the city's month is listed as stopped when no city is in play (
+  - L1549 ...and a slot that is the city in play is not listed as stopped: slots 3 to 7 alone are (
+- **L1575 20. the packed read of a saved history**
+  - L1585 fixture: the kept series
+  - L1596 readKept over it equals slim(KEPT) of the whole parse, series by series (equal both ways, the same hash)
+  - L1598 a null entry is kept where it was,
+  - L1602 a Double series is a PackedDoubles and a Long series a PackedLongs
+  - L1604 a kept series the JSON has as null (
+  - L1605 a series that is not kept (
+  - L1606 foldedMonths is trimmed to month's size as slim trims it (
+  - L1619 a packed list is read only: add and set on it throw UnsupportedOperationException
+  - L1620 an empty document reads as no history, as Gson does
+- **L1636 21. the stamp follows each file of a slot**
+  - L1646 fixture: the slot is read once and is the founded city (
+  - L1647 nothing moved: the next refresh reads no slot and keeps the very same city
+  - L1655 the save alone, its size moved and its time not: the slot is read again and the row has the new header's name (reads
+  - L1661 the save alone, its time moved and its size not: the slot is read again and the row has the new name (reads
+  - L1663 ...and then nothing moved: no slot is read
+  - L1668 the history alone: the slot is read again and the row ends at the longer history's last month (
+  - L1686 a save that lands before its history is read (
+  - L1688 ...and the row ends as the finished slot reads: its name (
 
 ## ReadPathCheck.java - 39 labelled assertions
 
@@ -22841,9 +22857,10 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L537 1. a played city, reloaded, plays its next month as the one that kept running: every history series**
 - **L543 4. on the real Earth**
 
-## ReplayCheck.java - 106 labelled assertions
+## ReplayCheck.java - 175 labelled assertions
 
-> Replay of a recorded city (batch TR1, 2026-10-31): the recorder, the throwaway copy, the input log, and what recording costs.
+> Replay of a recorded city (batch TR1, 2026-10-31): the recorder, the throwaway copy, the input log, and what recording costs;
+> and Follow (batch TR2, 2026-11-09): the timeline of the input logs and the player that plays it, with TR1's four review fixes.
 > Timing harness (Timing.HARNESSES): section 6 judges the recorder's FX-thread cost through Timing.
 > 
 > What it has to prove (the numbers are the brief's section 7, docs/queue/TR1.md):
@@ -22854,124 +22871,196 @@ _(this harness does not label its checks through a helper - it prints its findin
 >      they were; a city founded after that records nothing; and a writer held behind by the backlog never holds the clock;
 >   2. replaying month N gives the figures the city had at N: population, cash, GDP, the price level and the map's building
 >      count, at the first, a middle and the last month; a quick step swaps the map to N's count and nothing else; the
->      recording's history cut at a month is the history the city had then, series by series, and a cut is right across the
 > ...
 
-- **L174 1. a recording writes one month each, and a rewind rewrites from the next**
-  - L177 fixture: the grown city has a map and is not recording
-  - L178 ...and a replay copy is not what it is
-  - L182 switched on, the city has an id, file-safe, and its folder is under recordings/ beside saves/
-  - L187 an id is made from the name's letters and digits, without accents, and a name with none gives city
-  - L206 fixture: the clock turned the month 24 times
-  - L212 24 months played, 24 month files: m0+1 to m0+24, none missing and none twice
-  - L213 ...first and last month are the listing's ends
-  - L214 ...the meta says whose it is: the id, the city, the build, the format, and when it was started
-  - L218 ...and the recording is listed, with the folder's id
-  - L221 ...and the history is there from the first month (written with it)
-  - L222 ...a month's file has the head, its map and its save: the map and the JSON read back for every month
-  - L230 the autosave hands the recording its history, from the snapshot it made: now through the last month
-  - L240 nothing under saves/ but the autosave's files and slot 10, the slot the check saved to
-  - L245 loaded the save from m0+12: the city is back there, recording is on again, and it is the same id
-  - L250 fixture: the property tax moved off what the recording has
-  - L258 played 3 months on: the months past m0+15 are gone, m0+1 to m0+15 are what is left
-  - L262 ...months up to m0+12 are untouched: byte for byte what they were
-  - L265 ...m0+13 to m0+15 are rewritten (the city played them again, with another rate)
-  - L268 ...and month m0+13's save carries the new rate, m0+12's the old one
-  - L274 ...and no file of the recording is a leftover .tmp: the folder holds month files, .bak copies, the meta, the history
-  - L279 switching off writes the history now: through m0+15, the month the timeline ends on
-  - L284 ...and a month played with it off is not recorded
-  - L293 a city founded after that records nothing: no switch, no id
-  - L296 ...and plays a month without adding to the old city's recording
-- **L299 replaying month N gives the figures the city had at N**
-  - L304 the replay's months are the recording's, and a month it has not is a gap: nearest() finds the closest
-  - L307 a quick step before any load does nothing
-  - L312 month m0+
-  - L316 the copy is a replay copy that never records, whatever the save it loaded said
-  - L323 a quick step to a middle month swaps the map: its count is that month's, and the copy says it is not whole
-  - L325 ...and only the map: the people are still the first month's until the month is loaded whole
-  - L328 a month with no file is not stepped to
-  - L329 ...and the month loaded whole after the step is the middle month's figures
-  - L331 ...and a month that is not in the recording is refused in words, the copy as it was
-  - L341 the recording's history cut at m0+12 is the history the city had then: the axis, and all
-  - L345 ...the master is parsed once and a cut after the last month is a whole snapshot
-  - L349 ...and the copy's charts take it: the copy's history ends at the month shown
-  - L363 fixture: a history past MONTHLY_KEPT has its oldest five years folded, and all its months
-  - L368 a cut among the months after the folded years: the five years and three months, every series their prefix
-  - L370 ...the finished years of trade are those before the month's year:
-  - L373 a cut inside a folded year drops that year whole: month 30 keeps the two years that ended by it,
-  - L377 a cut among the newest months drops them: ten fewer entries, the folded years as they were, every series as long as the axis
-  - L380 ...and a cut at the last month is a whole snapshot, the trade years too, and the history it was cut from is as it was
-- **L384 3. nothing sticks**
-  - L389 the copy lives in a folder of its own: not the player's folder, not the recording's
-  - L395 on the copy at the middle month, the rate is the recorded one
-  - L398 ...a click may change the copy
-  - L399 ...a step to the next month loads it whole
-  - L400 ...and back: the rate is the recorded one, nothing stuck
-  - L404 the copy records nothing: switching it on leaves it off
-  - L407 ...and a month played on the copy writes no month into the recording
-  - L411 the player's folder (the saves and the recording in it) is byte for byte what it was
-- **L413 4. the input log round-trips; a re-enacted Save, Load, Quit writes nothing**
-  - L420 a sitting's log is named for the moment it began, in the recording's folder naming
-  - L457 every kind written through the writer, from two threads, and closed: read back event for event
-  - L461 ...and the sitting has every kind in it
-  - L462 ...the moves and drags closer than MOVE_EVERY_MS to the last one kept are dropped, those apart are kept
-  - L465 ...the header names the sitting's start
-  - L471 the sittings of a folder are listed oldest first, and nothing else in it
-  - L474 ...a log with one event reads back that one
-  - L489 a long sitting reads back whole: 2,000 events, in about
-  - L505 a copy of the file cut mid-record reads back a prefix of what was written: five cuts, the three through the body from
-  - L509 ...a file cut inside its header, or not a log at all, or missing, reads as none and throws nothing
-  - L518 a sitting still open reads up to its last flush, a crash losing no more than the flush's two seconds: 50 events
-  - L522 ...and closed it has the last one too, and add() after close is ignored
-  - L531 a re-enacted Save, Load and Quit on the copy ran: the copy wrote into its own folder
-  - L535 ...and the player's folder, with the recording in it, is byte for byte what it was
-  - L536 ...and the recording's months are the months it had
-- **L538 5. the camera's arithmetic**
-  - L546 on the
-  - L550 ...its middle scale is the geometric mean of the ends (to 1e-9)
-  - L559 ...and the scale only ever goes one way from the start to the end
-  - L570 the ease is 0 and 1 at the ends, symmetric about the middle, monotone, and still at both ends (a slope under 1e-6 at 0 and 1)
-  - L577 the centre's share at the middle for a ratio of 4 is the formula's own, (1 - r^-e) / (1 - r^-1), 2/3
-  - L580 ...and the share is the eased share itself when the scales match
-  - L583 on the globe the middle of a glide between two points on the equator 20 degrees apart is on the equator, halfway
-  - L586 ...closing in, the globe's share is the same formula on the inverse ratio: two thirds of the way
-  - L589 ...a path of no length stays at the point at every step
-  - L591 a glide's month is linear in t, not eased: a quarter of the way from 12 to 36 is 18, and the ends are the marks'
-  - L595 a glide between a globe's view and a plane's stays at its start until the end (the kinds cannot blend)
-  - L608 the fly out at t = 1 is exactly the widest scale and the city's centre, its scale grows all the way, and the month stays
-  - L610 the time a fly takes is the doublings of the view's width over the dial: a ratio squared takes twice as long, in as out
-  - L631 five notches in: the product of the steps' zooms is ZOOM_STEP^5 to 1e-6, and the hand rests after
-  - L633 ...every step zooms no more than the one before (it eases out), the first the most, about the point the wheel was at
-  - L639 two notches out are ZOOM_STEP^-2 in the same way
-  - L661 a held key's velocity rises toward its target and, let go, falls to nothing, no step jumping more than MOST_DT_S / SMOOTH_S of the target
-  - L670 a frame of a one-second hitch moves the view no more than a MOST_DT_S step does: a pause, not a jump
-  - L683 a drift moves the ground DRIFT_STEP_PX in a second and closes in by exp(DRIFT_ZOOM_STEP) about the view's middle, until still()
-  - L687 ...and still() stops it, and the zoom still to do and the keys' velocity with it
-- **L690 5b. the graphs behind the city**
-  - L698 the population line holds the recording's months in order, from its first month to its last
-  - L700 ...it draws nothing before the first month, all of it at the last, and the head is the last point
-  - L709 ...scaled to the whole recording: its highest point is 1 and none is above it, so a line rises as the months play
-  - L716 GDP is a year of output, twelve times the mean of the last twelve months, as the header quotes it
-  - L718 a month's place across the recording runs 0 at the first to 1 at the last, and a recording of one month is at 0
-- **L723 5c. a quick step leaves most of the map's pictures as they were**
-  - L742 a quick step to the next month is another map of the same world, and its tiles read the same ground the first read
-  - L745 ...and fewer than half the tiles in view have another stamp: the pictures kept are repainted only where their inputs moved
-  - L757 ...a tile whose stamp is the same paints the same pixels in both maps (
-- **L760 5d. a replay's camera move loads first, then runs with nothing unpainted and nothing asked (CM1)**
-  - L770 the normal game draws its map (at least 30 frames) with no camera, no loaded move and nothing pinned
-  - L777 Esc while a glide loads leaves the camera idle, no move held and nothing pinned (it was loading when Esc came)
-- **L781 6. recording costs the month only its fill, and changes nothing in it**
-  - L789 fixture: two cities grown the same, to the last digit
-  - L810 12 months played by both, one recording: population, cash, GDP and the price level equal in every month
-  - L812 ...and the one that records has its 12 months on disk
-  - L817 the recorder's part of the month is within SaveWriter.CLOCK_MS, the most of the twelve
-  - L835 ...and a month's file is smaller than the JSON of the save it holds
-  - L853 a writer held behind never holds the clock: the months over the backlog are counted, not kept, and the rest are on disk
-  - L876 ...and runs on
-  - L880 ...no frame of its run asked the worker, drew unpainted ground or let a picture go (asks
-  - L882 ...and every frame of its run showed a view its load had painted, whatever the frames' clock (off the plan
-  - L884 ...and it ran frame by frame to its end, at least
-  - L885 ...after it, no move is held and nothing is pinned
+- **L204 1. a recording writes one month each, and a rewind rewrites from the next**
+  - L207 fixture: the grown city has a map and is not recording
+  - L208 ...and a replay copy is not what it is
+  - L212 switched on, the city has an id, file-safe, and its folder is under recordings/ beside saves/
+  - L217 an id is made from the name's letters and digits, without accents, and a name with none gives city
+  - L236 fixture: the clock turned the month 24 times
+  - L242 24 months played, 24 month files: m0+1 to m0+24, none missing and none twice
+  - L243 ...first and last month are the listing's ends
+  - L244 ...the meta says whose it is: the id, the city, the build, the format, and when it was started
+  - L248 ...and the recording is listed, with the folder's id
+  - L251 ...and the history is there from the first month (written with it)
+  - L252 ...a month's file has the head, its map and its save: the map and the JSON read back for every month
+  - L260 the autosave hands the recording its history, from the snapshot it made: now through the last month
+  - L270 nothing under saves/ but the autosave's files and slot 10, the slot the check saved to
+  - L275 loaded the save from m0+12: the city is back there, recording is on again, and it is the same id
+  - L280 fixture: the property tax moved off what the recording has
+  - L288 played 3 months on: the months past m0+15 are gone, m0+1 to m0+15 are what is left
+  - L292 ...months up to m0+12 are untouched: byte for byte what they were
+  - L295 ...m0+13 to m0+15 are rewritten (the city played them again, with another rate)
+  - L298 ...and month m0+13's save carries the new rate, m0+12's the old one
+  - L304 ...and no file of the recording is a leftover .tmp: the folder holds month files, .bak copies, the meta, the history
+  - L309 switching off writes the history now: through m0+15, the month the timeline ends on
+  - L314 ...and a month played with it off is not recorded
+  - L323 a city founded after that records nothing: no switch, no id
+  - L326 ...and plays a month without adding to the old city's recording
+- **L329 replaying month N gives the figures the city had at N**
+  - L334 the replay's months are the recording's, and a month it has not is a gap: nearest() finds the closest
+  - L337 a quick step before any load does nothing
+  - L342 month m0+
+  - L346 the copy is a replay copy that never records, whatever the save it loaded said
+  - L353 a quick step to a middle month swaps the map: its count is that month's, and the copy says it is not whole
+  - L355 ...and only the map: the people are still the first month's until the month is loaded whole
+  - L358 a month with no file is not stepped to
+  - L359 ...and the month loaded whole after the step is the middle month's figures
+  - L361 ...and a month that is not in the recording is refused in words, the copy as it was
+  - L371 the recording's history cut at m0+12 is the history the city had then: the axis, and all
+  - L375 ...the master is parsed once and a cut after the last month is a whole snapshot
+  - L379 ...and the copy's charts take it: the copy's history ends at the month shown
+  - L393 fixture: a history past MONTHLY_KEPT has its oldest five years folded, and all its months
+  - L398 a cut among the months after the folded years: the five years and three months, every series their prefix
+  - L400 ...the finished years of trade are those before the month's year:
+  - L403 a cut inside a folded year drops that year whole: month 30 keeps the two years that ended by it,
+  - L407 a cut among the newest months drops them: ten fewer entries, the folded years as they were, every series as long as the axis
+  - L410 ...and a cut at the last month is a whole snapshot, the trade years too, and the history it was cut from is as it was
+- **L414 3. nothing sticks**
+  - L419 the copy lives in a folder of its own: not the player's folder, not the recording's
+  - L425 on the copy at the middle month, the rate is the recorded one
+  - L428 ...a click may change the copy
+  - L429 ...a step to the next month loads it whole
+  - L430 ...and back: the rate is the recorded one, nothing stuck
+  - L434 the copy records nothing: switching it on leaves it off
+  - L437 ...and a month played on the copy writes no month into the recording
+  - L441 the player's folder (the saves and the recording in it) is byte for byte what it was
+- **L443 4. the input log round-trips; a re-enacted Save, Load, Quit writes nothing**
+  - L450 a sitting's log is named for the moment it began, in the recording's folder naming
+  - L487 every kind written through the writer, from two threads, and closed: read back event for event
+  - L491 ...and the sitting has every kind in it
+  - L492 ...the moves and drags closer than MOVE_EVERY_MS to the last one kept are dropped, those apart are kept
+  - L495 ...the header names the sitting's start
+  - L501 the sittings of a folder are listed oldest first, and nothing else in it
+  - L504 ...a log with one event reads back that one
+  - L519 a long sitting reads back whole: 2,000 events, in about
+  - L535 a copy of the file cut mid-record reads back a prefix of what was written: five cuts, the three through the body from
+  - L539 ...a file cut inside its header, or not a log at all, or missing, reads as none and throws nothing
+  - L548 a sitting still open reads up to its last flush, a crash losing no more than the flush's two seconds: 50 events
+  - L552 ...and closed it has the last one too, and add() after close is ignored
+  - L561 a re-enacted Save, Load and Quit on the copy ran: the copy wrote into its own folder
+  - L565 ...and the player's folder, with the recording in it, is byte for byte what it was
+  - L566 ...and the recording's months are the months it had
+- **L568 5. the camera's arithmetic**
+  - L576 on the
+  - L580 ...its middle scale is the geometric mean of the ends (to 1e-9)
+  - L589 ...and the scale only ever goes one way from the start to the end
+  - L600 the ease is 0 and 1 at the ends, symmetric about the middle, monotone, and still at both ends (a slope under 1e-6 at 0 and 1)
+  - L607 the centre's share at the middle for a ratio of 4 is the formula's own, (1 - r^-e) / (1 - r^-1), 2/3
+  - L610 ...and the share is the eased share itself when the scales match
+  - L613 on the globe the middle of a glide between two points on the equator 20 degrees apart is on the equator, halfway
+  - L616 ...closing in, the globe's share is the same formula on the inverse ratio: two thirds of the way
+  - L619 ...a path of no length stays at the point at every step
+  - L621 a glide's month is linear in t, not eased: a quarter of the way from 12 to 36 is 18, and the ends are the marks'
+  - L625 a glide between a globe's view and a plane's stays at its start until the end (the kinds cannot blend)
+  - L638 the fly out at t = 1 is exactly the widest scale and the city's centre, its scale grows all the way, and the month stays
+  - L640 the time a fly takes is the doublings of the view's width over the dial: a ratio squared takes twice as long, in as out
+  - L661 five notches in: the product of the steps' zooms is ZOOM_STEP^5 to 1e-6, and the hand rests after
+  - L663 ...every step zooms no more than the one before (it eases out), the first the most, about the point the wheel was at
+  - L669 two notches out are ZOOM_STEP^-2 in the same way
+  - L691 a held key's velocity rises toward its target and, let go, falls to nothing, no step jumping more than MOST_DT_S / SMOOTH_S of the target
+  - L700 a frame of a one-second hitch moves the view no more than a MOST_DT_S step does: a pause, not a jump
+  - L713 a drift moves the ground DRIFT_STEP_PX in a second and closes in by exp(DRIFT_ZOOM_STEP) about the view's middle, until still()
+  - L717 ...and still() stops it, and the zoom still to do and the keys' velocity with it
+- **L720 5b. the graphs behind the city**
+  - L728 the population line holds the recording's months in order, from its first month to its last
+  - L730 ...it draws nothing before the first month, all of it at the last, and the head is the last point
+  - L739 ...scaled to the whole recording: its highest point is 1 and none is above it, so a line rises as the months play
+  - L746 GDP is a year of output, twelve times the mean of the last twelve months, as the header quotes it
+  - L748 a month's place across the recording runs 0 at the first to 1 at the last, and a recording of one month is at 0
+- **L753 5c. a quick step leaves most of the map's pictures as they were**
+  - L772 a quick step to the next month is another map of the same world, and its tiles read the same ground the first read
+  - L775 ...and fewer than half the tiles in view have another stamp: the pictures kept are repainted only where their inputs moved
+  - L787 ...a tile whose stamp is the same paints the same pixels in both maps (
+- **L790 5d. a replay's camera move loads first, then runs with nothing unpainted and nothing asked (CM1)**
+  - L800 the normal game draws its map (at least 30 frames) with no camera, no loaded move and nothing pinned
+  - L807 Esc while a glide loads leaves the camera idle, no move held and nothing pinned (it was loading when Esc came)
+- **L811 6. recording costs the month only its fill, and changes nothing in it**
+  - L819 fixture: two cities grown the same, to the last digit
+  - L840 12 months played by both, one recording: population, cash, GDP and the price level equal in every month
+  - L842 ...and the one that records has its 12 months on disk
+  - L847 the recorder's part of the month is within SaveWriter.CLOCK_MS, the most of the twelve
+  - L865 ...and a month's file is smaller than the JSON of the save it holds
+  - L883 a writer held behind never holds the clock: the months over the backlog are counted, not kept, and the rest are on disk
+  - L918 ...and runs on
+  - L922 ...no frame of its run asked the worker, drew unpainted ground or let a picture go (asks
+  - L924 ...and every frame of its run showed a view its load had painted, whatever the frames' clock (off the plan
+  - L926 ...and it ran frame by frame to its end, at least
+  - L927 ...after it, no move is held and nothing is pinned
+- **L983 7. TR1's review: a failed log write, an id from a save, a failed first write, a month that autosaves**
+  - L989 fixture: a log has written its first event
+  - L996 a log whose write failed has ended its thread
+  - L998 ...takes no more events: what is added after the failure is not queued, and nothing more is written
+  - L1002 ...closes at once, not after the wait for a thread that has gone
+  - L1010 ...and its file can be deleted: the failing path closed it (on Windows an open file cannot be)
+  - L1014 an id is exactly the shape newId writes: its own ids are accepted, a path, a drive, a dot or a stray character is not
+  - L1023 fixture: the city is recording, under an id of that shape
+  - L1026 ...with a recording on disk to be left alone
+  - L1033 fixture: the save says it is recording, and now names a folder
+  - L1038 a save whose recording id is
+  - L1049 ...and a month played writes nothing outside recordings/ and nothing in the one there
+  - L1053 ...and switching recording on again gives the city an id of its own, of the shape
+  - L1060 fixture: an old timeline of months 1 to 8
+  - L1065 a first write after a load, at month 5, that fails (a number the file cannot hold) leaves no month of the old timeline past it: months 1 to 4 and none from 5
+  - L1072 ...and one that cannot clear the old months (month 7 cannot be deleted) writes nothing and tells the caller: the flag is set, month 5 is not written, the old...
+  - L1074 ...and in the city: a first write after a load that cannot clear the old months writes nothing, and the next month ends the recording, saying so
+  - L1079 ...and the months queued behind that failing first write while the writer is held (the first and 3 more) are not written beside the old ones, nor is the hist...
+  - L1082 ...and so is the history that switching the recording off writes, behind a first month and one more
+  - L1084 ...and a recording switched off and on again behind a timeline whose first write fails is a new timeline: that failure, which comes after, does not end it,
+  - L1102 a recorded city that plays
+  - L1114 ...the recording's save of that month is the autosave's but for the name it carries, which stays \"
+  - L1117 ...and so is its map, byte for byte
+- **L1327 8. the timeline: which sitting holds a month, where Follow starts, what the player had, idle**
+  - L1358 a later sitting that rewound into the earlier's months makes two segments: the earlier for 100 to 149, the later for 150 to 180
+  - L1362 startOf: a month before the rewind is in the earlier sitting's segment at its marker's millisecond, a rewound one in the later's
+  - L1366 ...and monthAt gives the month back for each
+  - L1368 ...a month the recording does not hold, or no log reaches, is null: 99, the older sitting's 181 and 200 (the rewind deleted them), 1000
+  - L1372 a recording that still holds the older sitting's 181 to 200 gets them from it, as a third segment
+  - L1379 a month a skip jumped over starts at the first marker past it: 305 at the millisecond of 310's, and the month there is 310
+  - L1388 a sitting whose markers go back (a Load) is cut there: month 10 from its first run, 11 and 12 from the second, the 13 the rewind deleted nobody's
+  - L1394 ...and played, it loads 10, 11, 12 and stops
+  - L1398 stateAt, 700 ms into month 150: the screen open, the last mouse position, the window the sitting began with, the map open at its view, the button held
+  - L1403 ...at 950 ms: the button let go, and the map's view with a scale of 0 is closed
+  - L1406 ...at the segment's start, only what came before and at its marker: the window, no screen, no mouse, no map
+  - L1409 ...and far into a long sitting (hundreds of events on, past the saved states): the last screen, the last move, the first window
+  - L1411 ...a moment that is not in the timeline has no state, no month
+  - L1421 the input events are MOVE, DRAG, PRESS, RELEASE, WHEEL and the keys; WINDOW, SCREEN, MAP_VIEW, CLOCK and MONTH are markers
+  - L1433 played across the rewind, the months load in order, 100 to 149 from the older sitting and 150 to 180 from the newer, and the older's 150 to 200 never play
+  - L1446 with idle skipping on (the default), a 60 s gap between input plays in IDLE_KEEP_MS: the next input is not there a millisecond short, and is there at it; a m...
+  - L1455 ...with it off, the gap plays in full
+  - L1463 ...and at speed 4 the skipped gap takes a quarter of that
+  - L1475 a gap of exactly IDLE_GAP_MS plays in full, one millisecond more is idle
+  - L1487 a stopped player delivers nothing more
+  - L1493 ...and rejoined at now(), the month loads and its input up to the moment catches up, and the player is where the first stopped
+  - L1496 an empty timeline is done at once, plays nothing, and starts nowhere
+- **L1511 9. Follow into a headless copy: the copy is loaded at each logged month, the screens come in order, a join mid-month catches up**
+  - L1538 fixture: a sitting of
+  - L1544 the timeline of the recording's folder holds the one sitting, for the months it logged, and none for the recording's other months
+  - L1547 ...and the state at the first month's marker is the window the sitting opened with
+  - L1561 at speed
+  - L1570 ...the screens arrive in the order logged, each in the frame its logged time divided by the speed falls in (the most late
+  - L1574 ...and nothing played live is flagged as catching up, and a month's load comes before the input after its marker
+  - L1587 joining mid-month loads that month into the copy, then plays its input from just after its marker up to the moment, all flagged as catching up
+  - L1594 ...and the screen it ends on,
+  - L1598 ...and the live play after the join carries on to the month's next screen,
+  - L1602 starting exactly at a month's marker loads it and catches up on nothing
+  - L1606 following writes nothing in the recording's folder, and nothing in the player's
+- **L1613 10. Follow in the window: the rules drop a re-enacted Save, Load and Quit, the clock and the menu keys; then a sitting is played into the...**
+  - L1631 a move, press, release, wheel and key logged while the player was on a game menu (
+  - L1633 ...and the screens Save (the saving menu), Load (the load menu) and Quit (the main menu, which has New city and Settings too) are on are among the game menus
+  - L1635 ...so a re-enacted Save, Load and Quit never reaches the copy: their buttons are not marked, and the verdict holds with the point on no marked node and the c...
+  - L1648 with the copy on a game menu, every input logged on a city screen is dropped as the copy's menu
+  - L1649 a press, a release and a key are dropped while a dialog (Quit's) is up on the copy
+  - L1653 a press and a release on a node marked as the ghost never clicks (the rail's Menu, the clock) are dropped, and a move over it is kept
+  - L1664 Space, Left and Right, down and up, are dropped as the clock's keys
+  - L1665 ...but not in a text field, where Space types a space; and F11 is dropped as the window's key, typing or not
+  - L1671 Esc is dropped where it would open the game menu, typing or not, and kept where it closes something else
+  - L1675 P is dropped where it would open the game menu, and kept where it would not and in a text field
+  - L1685 a plain move, press, release, wheel and key on a city screen are kept, and so is any input where the screens are not known
+  - L1691 the log's markers (screen, window, month, clock, map) are kept whatever the screens: they are no input
+  - L1708 in the window:
+  - L1710 in the window:
 
 ## ResearchCheck.java - 105 labelled assertions
 
