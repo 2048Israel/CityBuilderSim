@@ -3880,6 +3880,32 @@ public class SaveFileCheck {
                     savedAccounts.getHolding(ForeignAccounts.GOLD) > 0 && savedAccounts.hasRate(ForeignAccounts.GOLD) && savedAccounts.getChosenShares()[ForeignAccounts.GOLD] > 0
                             && savedFx[149] == savedAccounts.getHolding(ForeignAccounts.GOLD) && savedFx[150] == savedAccounts.getMoneyUsd(ForeignAccounts.GOLD)
                             && savedFx[151] == savedAccounts.getChosenShares()[ForeignAccounts.GOLD]);
+            // GD3 (slots 152-155): the mint's price, its rate, whether it follows the dollar and the open event, on this city off gold and on a bare currency on gold, following with a date open.
+            assertTrue("...a city off gold saves slots 152-155 as the getters say: no mint price, no mint rate, not following, no event",
+                    savedFx[152] == savedAccounts.getMintPrice() && savedFx[153] == savedAccounts.getMintRate() && savedFx[154] == (savedAccounts.isMintFollowing() ? 1 : 0)
+                            && savedFx[155] == savedAccounts.getGoldEvent().ordinal() && savedFx[152] == 0 && savedFx[154] == 0 && savedFx[155] == 0);
+            ForeignAccounts goldLive = GoldStandardCheck.onGold(CurrencyRegimeCheck.TRADE, CurrencyRegimeCheck.TRADE, CurrencyRegimeCheck.DEEP, 5_000, 7L, 3);
+            goldLive.openGoldEvent(ForeignAccounts.GoldEvent.LEFT_1933);   // an answer needs a date open: follow the dollar, then a later date opens
+            goldLive.answerGoldEvent(ForeignAccounts.GoldChoice.FOLLOW);
+            for (int m = 0; m < 3; m++) GoldStandardCheck.month(goldLive, GoldStandardCheck.PRICE * (1 + .01 * m), CurrencyRegimeCheck.TRADE, CurrencyRegimeCheck.TRADE);
+            goldLive.openGoldEvent(ForeignAccounts.GoldEvent.WINDOW_1971);
+            double[] goldSlots = goldLive.toSaveArray();
+            ForeignAccounts goldBack = new ForeignAccounts();
+            goldBack.restore(goldSlots);
+            assertTrue("a bare currency on Gold, following the dollar with a date open: slots 152-155 are the getters (" + goldSlots[152] + " D$ an ounce struck at " + goldSlots[153] + "), and a restore returns them to the bit",
+                    goldLive.isMintFollowing() && goldLive.getGoldEvent() == ForeignAccounts.GoldEvent.WINDOW_1971 && goldLive.getRegime() == ForeignAccounts.Regime.GOLD
+                            && goldSlots[152] == goldLive.getMintPrice() && goldSlots[153] == goldLive.getMintRate() && goldSlots[154] == 1 && goldSlots[155] == ForeignAccounts.GoldEvent.WINDOW_1971.ordinal()
+                            && goldBack.getMintPrice() == goldLive.getMintPrice() && goldBack.getMintRate() == goldLive.getMintRate() && goldBack.isMintFollowing()
+                            && goldBack.getGoldEvent() == ForeignAccounts.GoldEvent.WINDOW_1971 && java.util.Arrays.equals(goldBack.toSaveArray(), goldSlots));
+            goldBack.setMoneyBase(goldLive.goldAtMint() / 3);   // the money base is handed every month and not saved
+            goldLive.setMoneyBase(goldLive.goldAtMint() / 3);
+            boolean sameRates = true;
+            for (int m = 0; m < 6; m++) {
+                GoldStandardCheck.month(goldLive, GoldStandardCheck.PRICE * (1.03 + .01 * m), CurrencyRegimeCheck.TRADE * 1.1, CurrencyRegimeCheck.TRADE);
+                GoldStandardCheck.month(goldBack, GoldStandardCheck.PRICE * (1.03 + .01 * m), CurrencyRegimeCheck.TRADE * 1.1, CurrencyRegimeCheck.TRADE);
+                sameRates &= Double.compare(goldLive.getRate(), goldBack.getRate()) == 0 && Double.compare(goldLive.getMintPrice(), goldBack.getMintPrice()) == 0;
+            }
+            assertTrue("...and its next six reprices (the rate and the mint price, gold moving, following the dollar) are the live currency's to the bit", sameRates);
             assertTrue("fixture: the vault holds euros and pounds beside its dollars on a chosen mix, the eight have moved against each other under it, and the dollars are slot 22",
                     savedAccounts.getHolding(1) > 0 && savedAccounts.getHolding(3) > 0 && savedAccounts.getHolding(0) > 0 && savedAccounts.getReserveMix() == ForeignAccounts.Mix.CHOSEN
                             && savedAccounts.getLastVaultCrossUsd() != 0 && savedFx[22] == savedAccounts.getReservesUsd() && savedFx[105 + 1] == savedAccounts.getHolding(1)
