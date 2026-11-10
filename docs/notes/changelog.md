@@ -18,6 +18,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.79 — WP1, world prices chained, a study — 2026-11-09, ready, see docs/queue/WP1-notes.md
+CU1's ★1 as Jerus took it: the January in which a made good costs its inputs in that nation plus a conversion,
+designed, prototyped and measured (docs/studies/spec-world-prices.md; the prototype, tables and the refining
+charge's record in docs/studies/world-prices/). Over thirteen worlds and 330 years rod stays on its cathode (1.00
+of the literals' ratio; main 2.4-2.7), all 60 goods calibrate as today and the chain costs no time. An input must
+be read at the cheapest maker's landed price; the price file's one-parent table mends copper only, the works' own
+recipes hold every works near its literal; the roots anchored at the reference city keep copper on its path, where
+main's falls to a third. Chained, seeds 0-3 have no copper industry and live on fabricated steel and cars, as well
+off as main's to m1800 and at half its copper seeds' income a head at m2400. No yearly record of the refining
+charge may ship as a data source; the charge is money, not a share. Main's solve can leave the numbers for good
+(crude, two drawn worlds); CU2 carries the guard. Eight calls; CU2's brief is the note's last section. No model change.
+
 ### 0.9.78 — ST3, a town of ScaleCheck's own plan — 2026-11-09, ready, see docs/queue/ST3-notes.md
 ScaleCheck section 6 no longer copies the playtest's town at a month re-picked thirteen times since 0.7.62. It plays a
 town of its own plan (`ScaleCheck.ownTown()`), no advisor: the playtest's founding, the property tax at 4% (the one tax

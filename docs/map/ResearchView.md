@@ -1,6 +1,6 @@
 # ResearchView.java - 1,050 lines · 87 methods · 10 constants · model
 
-`ham/citybuildersim/ResearchView.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ResearchView.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > What the research screens draw (R5): every discovery on a timeline by field (found here, or from abroad on history's date), the equipment each
 > sector's stacks carry with the verdict on it, the recipes in use, how a building became known to the city (the NEW mark and "where it came from"
