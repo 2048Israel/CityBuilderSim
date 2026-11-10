@@ -2356,7 +2356,7 @@ public class UserInterface extends Application {
         ForeignAccounts fx = game.getForeignAccounts();
         double rate = fx.getRate();
         String here = game.getCurrency().qualifiedSymbol();
-        String perDollar = here + (rate < .1 ? fxRate(rate) : String.format("%,.2f", rate));
+        String perDollar = game.getCurrency().writeQualified(rate < .1 ? fxRate(rate) : String.format("%,.2f", rate));
         out.add(new Headline("RATE · " + here, Palette.MONEY, pct2(market.getPolicyRate()), Palette.TEXT_HEAD,
                 words(perDollar + " per " + Currency.FOREIGN_SYMBOL, perDollar + "/" + Currency.FOREIGN_SYMBOL),
                 rateColour(fx), sparkSeries(h, "policyRate"),
@@ -2370,7 +2370,7 @@ public class UserInterface extends Application {
                                 : "The bank lends at " + pct2(game.getBank().lendingRate(market.getPolicyRate()))
                                         + " (its prime)",
                         pct2(market.getRate())),
-                moneyWhy(market, fx, here),
+                moneyWhy(market, fx),
                 new String[] {"policyRate", "fxRate"}));
         return out;
     }
@@ -2505,7 +2505,8 @@ public class UserInterface extends Application {
      * rate you borrow in" - and the currency both ways, against its parity.
      * Every figure a public getter, formatted here and not recomputed.
      */
-    private String moneyWhy(DebtManager market, ForeignAccounts fx, String here) {
+    private String moneyWhy(DebtManager market, ForeignAccounts fx) {
+        Currency city = game.getCurrency();
         Bank lender = game.getBank();
         double policy = market.getPolicyRate();
         boolean noBank = lender.getBranches() <= 0;
@@ -2518,8 +2519,8 @@ public class UserInterface extends Application {
                 + "Bank %s - its prime, what it lends a business at before that business's own spread.%n"
                 + "City %s - what the treasury pays to borrow short: the dial plus what the city's own"
                 + " debt costs it.%s%n%n"
-                + "%s1 = %s%s, and %s. Parity - where a basket costs the same here and abroad - is"
-                + " %s%.2f; the rate is %s.",
+                + "%s1 = %s, and %s. Parity - where a basket costs the same here and abroad - is"
+                + " %s; the rate is %s.",
                 pct2(policy),
                 unopened ? "opens next month" : noBank ? "none yet" : bankFailed ? "failed" : pct2(lender.lendingRate(policy)),
                 pct2(market.getRate()),
@@ -2529,13 +2530,13 @@ public class UserInterface extends Application {
                         + " outside it, priced as the central bank's window money.")
                 : bankFailed ? String.format("%nThe bank has failed: it may lend nothing until it is"
                         + " recapitalised or earns its way back.") : "",
-                Currency.FOREIGN_SYMBOL, here, rate < .1 ? fxRate(rate) : String.format("%,.2f", rate),
+                Currency.FOREIGN_SYMBOL, city.writeQualified(rate < .1 ? fxRate(rate) : String.format("%,.2f", rate)),
                 oneLocal >= 1
-                        ? here + "1 = " + Currency.FOREIGN_SYMBOL + String.format("%,.2f", oneLocal)
+                        ? city.writeQualified("1") + " = " + Currency.FOREIGN_SYMBOL + String.format("%,.2f", oneLocal)
                         : oneLocal * 100 >= .01
-                        ? here + "1 = " + Currency.FOREIGN_CENT_SYMBOL + String.format("%.2f", oneLocal * 100)
-                        : Currency.FOREIGN_CENT_SYMBOL + "1 = " + here + String.format("%,.0f", 1 / (oneLocal * 100)),
-                here, fx.getParity(),
+                        ? city.writeQualified("1") + " = " + Currency.FOREIGN_CENT_SYMBOL + String.format("%.2f", oneLocal * 100)
+                        : Currency.FOREIGN_CENT_SYMBOL + "1 = " + city.writeQualified(String.format("%,.0f", 1 / (oneLocal * 100))),
+                city.writeQualified(String.format("%.2f", fx.getParity())),
                 Math.abs(fx.deviationFromParity()) * 100 < .5 ? "at parity"
                         : String.format("%.0f%% %s than it", Math.abs(fx.deviationFromParity()) * 100,
                                 fx.deviationFromParity() > 0 ? "weaker" : "stronger"));

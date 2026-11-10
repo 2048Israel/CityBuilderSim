@@ -1334,8 +1334,8 @@ final class BuildScreen {
             case CITY:   one = f.bar2Kind() == BuildCard.Bar2.LAND ? ROAD_TAG : "cheapest per " + f.perTag();
                          two = f.bar2Kind() == BuildCard.Bar2.LAND ? "least land per " + f.perTag()
                                  : "fewest unfilled posts per " + f.perTag(); break;
-            case MAKER:  one = "adds the most per $"; two = "adds the most per m²"; break;
-            case OFFICE: one = "exports the most per $"; two = "easiest to staff"; break;
+            case MAKER:  one = "adds the most per " + Money.sign(); two = "adds the most per m²"; break;
+            case OFFICE: one = "exports the most per " + Money.sign(); two = "easiest to staff"; break;
             default:     one = "cheapest per " + f.perTag(); two = "least land per " + f.perTag();
         }
         List<String> out = new ArrayList<>();
@@ -1633,7 +1633,7 @@ final class BuildScreen {
         switch (f.bar2Kind()) {
             case LAND:
                 return new String[] {label1, value1,
-                        f.inMonths() ? "land per $1k it adds a month"
+                        f.inMonths() ? "land per " + Money.write("1k") + " it adds a month"
                                 : f.kind() == BuildCard.Kind.CITY ? "land per " + ROAD_OFF : "land per " + f.per(),
                         landWords(f.bar2())};
             case UNSTAFFABLE:
@@ -4938,9 +4938,10 @@ final class BuildScreen {
                     + " to flat or foothill ground it owns on a linked landmass, or says why there is none.",
                     BridgeView.shallowWords(), BridgeView.capWords()));
             out.add(String.format("The price on the card is its two landings, a plot of deck at each end. The span is billed per order"
-                    + " by its length and the depth of the water under it - a deck costs about $%,.0f a m² in the shallows and $%,.0f at the"
+                    + " by its length and the depth of the water under it - a deck costs about %s a m² in the shallows and %s at the"
                     + " Confederation Bridge's %.0f m, a railway's 1.42 times a highway's a metre - and takes the builders' capacity for as long as it takes.",
-                    BridgeWorks.deckUsdPerM2(0), BridgeWorks.CONFEDERATION_USD_PER_M2, BridgeWorks.CONFEDERATION_DEPTH_M));
+                    Money.write(String.format("%,.0f", BridgeWorks.deckUsdPerM2(0))), Money.write(String.format("%,.0f", BridgeWorks.CONFEDERATION_USD_PER_M2)),
+                    BridgeWorks.CONFEDERATION_DEPTH_M));
             return out;
         }
 

@@ -278,8 +278,14 @@ final class LandScreen {
     /** The city's money's mark: "D$". */
     String here() { return ui.game.getCurrency().qualifiedSymbol(); }
 
+    /** A figure the city's money wrote ("$500.74", "500.74 kr"), with the qualified mark in the sign's place: "D$500.74", "500.74 kr" (FM1; Currency.qualify()). */
+    String qualified(String shown) { return ui.game.getCurrency().qualify(shown); }
+
+    /** An already formatted number with the qualified mark put where the city placed its sign: "D$0.7072", "0.7072 kr" (FM1). */
+    String hereFig(String number) { return ui.game.getCurrency().writeQualified(number); }
+
     /** A ground price, kept a square foot, a square metre in the city's money: "D$500.74" (a square foot's D$46.52; since 0.7.68, Money.groundPrice()). */
-    String local(double thousandsPerSqFt) { return marked(here(), groundPrice(thousandsPerSqFt)); }
+    String local(double thousandsPerSqFt) { return qualified(groundPrice(thousandsPerSqFt)); }
 
     /** ...in the world's: "US$264.15". */
     static String dollars(double thousandsPerSqFt) { return marked(Currency.FOREIGN_SYMBOL, groundPrice(thousandsPerSqFt)); }
@@ -328,22 +334,21 @@ final class LandScreen {
      */
     String[] payCaption() {
         ForeignAccounts fx = ui.game.getForeignAccounts();
-        String here = here();
         if (ui.game.isLandPaidFromVault()) {
             return new String[] {
-                    "vault holds " + usd(fx.getReservesUsd()) + " (" + marked(here, money(fx.getReserves())) + ")",
+                    "vault holds " + usd(fx.getReservesUsd()) + " (" + qualified(money(fx.getReserves())) + ")",
                     String.format("Land is priced in US dollars. Paying from the vault spends its "
                             + "dollars and moves no cash; it holds %s (%s at today's rate), and a plot "
                             + "dearer than that opens the funding page: dollars borrowed abroad into the vault, or what the "
                             + "vault holds with the rest converted from cash.",
-                            usdFull(fx.getReservesUsd()), marked(here, moneyFull(fx.getReserves()))) };
+                            usdFull(fx.getReservesUsd()), qualified(moneyFull(fx.getReserves()))) };
         }
         return new String[] {
-                here + fxRate(fx.getRate()) + " per US$ · vault " + usd(fx.getReservesUsd()) + " untouched",
+                hereFig(fxRate(fx.getRate())) + " per US$ · vault " + usd(fx.getReservesUsd()) + " untouched",
                 String.format("Land is priced in US dollars. Converting buys exactly the dollars "
-                        + "a plot costs out of cash, at %s%s to the dollar today, and leaves the "
+                        + "a plot costs out of cash, at %s to the dollar today, and leaves the "
                         + "vault's %s where it is.",
-                        here, fxRate(fx.getRate()), usdFull(fx.getReservesUsd())) };
+                        hereFig(fxRate(fx.getRate())), usdFull(fx.getReservesUsd())) };
     }
 
     /* ----------------------------- the ground ----------------------------- */
@@ -491,7 +496,7 @@ final class LandScreen {
     /** A plot's price in the money the toggle pays in: "D$149.7M" converting, "US$211.7M" from the vault. */
     String priceInToggle(LandParcel p) {
         return ui.game.isLandPaidFromVault() ? usd(p.getPriceUsd())
-                : marked(here(), money(p.localPrice(ui.game.getForeignAccounts().getRate())));
+                : qualified(money(p.localPrice(ui.game.getForeignAccounts().getRate())));
     }
 
     /* ----------------------------- buy the best N ----------------------------- */
@@ -519,9 +524,9 @@ final class LandScreen {
         boolean funding = g.landNeedsFunding(ids);
         String n = nextCount == 1 ? "offer" : String.valueOf(nextCount);
         return new Next(nextCount, listed, ids,
-                vault ? usd(usdTotal) : marked(here(), money(localTotal)),
+                vault ? usd(usdTotal) : qualified(money(localTotal)),
                 g.canAffordLandParcels(ids) ? Palette.TEXT_HEAD : Palette.BAD,
-                vault ? marked(here(), money(localTotal)) + " at today's rate" : usd(usdTotal) + " listed",
+                vault ? qualified(money(localTotal)) + " at today's rate" : usd(usdTotal) + " listed",
                 // The total stands just left of the button, so the button says the count, not the price again.
                 !funding ? new Pieces.Press(Pieces.Look.GO, "Buy the best " + n, null)
                         : vault ? new Pieces.Press(Pieces.Look.CREDIT, "Buy the best " + n, "the vault is short: ways to pay")
@@ -606,7 +611,7 @@ final class LandScreen {
     /** Thousands of US dollars in the money the toggle pays in: as listed from the vault, at today's rate converting. */
     String inToggle(double usdThousands) {
         return ui.game.isLandPaidFromVault() ? usd(usdThousands)
-                : marked(here(), money(usdThousands * ui.game.getForeignAccounts().getRate()));
+                : qualified(money(usdThousands * ui.game.getForeignAccounts().getRate()));
     }
 
     /** An offer's price a dry km2, in the toggle's money: "D$5.6M"; "—" with no dry ground. */
@@ -785,7 +790,7 @@ final class LandScreen {
                 : p.isMostlySea() ? new TagWords("MOSTLY SEA", Palette.TEXT_MUTED) : null;
         boolean funding = g.landNeedsFunding(List.of(p.getId()));
         String listedUsd = usd(p.getPriceUsd());
-        String todayHere = marked(here(), money(p.localPrice(rate)));
+        String todayHere = qualified(money(p.localPrice(rate)));
         // ...and, for an offer with foothill or steep ground, its ground by class on a line of its own (ET3; empty for an all-flat offer).
         String ground = LandClassView.offerLine(p, g.getLandManager().getMarket());
         // ...and, for an offer with dry ground on a landmass no port links, the line saying so (ET5), under it: the row's tooltip and the map card's size words carry it.
@@ -871,7 +876,6 @@ final class LandScreen {
         double scale = Math.max(world, inside);
         double sold = g.getEconomyManager().getNationalAccounts().getLandSales();
         double multiple = land.getMarket().scarcityMultiplier(land.getOwnedSqFt(), land.getAllocatedSqFt());
-        String here = here();
         String info = "Outside, you buy at " + dollars(land.getGroundUsdPerSqFt()) + "/m² (" + local(world)
                 + " today): " + partsWords() + ". The more people on each km² the city owns, the dearer the"
                 + " next plot - buying ground spreads them out and makes it cheaper; a bigger city as crowded pays"
@@ -885,13 +889,13 @@ final class LandScreen {
                                 + " the world's price dear."
                         : "Land is tight enough that the city profits on every sale.") + "\n\n"
                 + String.format("Investors pay ×%.2f the ground's price at the founding rate, because %.1f%% of"
-                                + " the city's ground is built on; the world's price reaches you at %s%s to the US$.",
-                        multiple, land.getUtilisation() * 100, here, fxRate(g.getForeignAccounts().getRate()));
+                                + " the city's ground is built on; the world's price reaches you at %s to the US$.",
+                        multiple, land.getUtilisation() * 100, hereFig(fxRate(g.getForeignAccounts().getRate())));
         return new Margin(
                 new BarWords("the world, today", local(world), Palette.MONEY, scale > 0 ? world / scale : 0),
                 new BarWords("investors pay", local(inside), Palette.BUILDING, scale > 0 ? inside / scale : 0),
                 signedLocal(margin) + " a m²", margin < 0 ? Palette.BAD : Palette.GOOD,
-                sold > 0 ? "investors paid " + marked(here, money(sold)) + " for ground last month"
+                sold > 0 ? "investors paid " + qualified(money(sold)) + " for ground last month"
                         : "investors paid nothing for ground last month",
                 info, partsWords());
     }
@@ -907,7 +911,6 @@ final class LandScreen {
     List<OnTop> onTop() {
         List<OnTop> out = new ArrayList<>();
         LandManager land = ui.game.getLandManager();
-        String here = here();
         String[][] which = { { "House", "House" }, { "Bakery", "Food plant" } };
         for (String[] w : which) {
             BuildingsTemplate t = ui.game.getBuildingManager().getTemplateByName(w[0]);
@@ -917,7 +920,7 @@ final class LandScreen {
             double build = t.getCashCost();
             double all = ground + build;
             out.add(new OnTop(w[1], ground, build,
-                    "ground " + marked(here, money(ground)) + " · build " + marked(here, money(build)),
+                    "ground " + qualified(money(ground)) + " · build " + qualified(money(build)),
                     all > 0 ? String.format("%.0f%%", ground / all * 100) : "—"));
         }
         return out;
@@ -1925,16 +1928,15 @@ final class LandScreen {
 
     Funding funding(List<Integer> ids) {
         Game g = ui.game;
-        String here = here();
         String what = plots(ids.size());
         String s = ids.size() == 1 ? "s" : "";
         if (!g.isLandPaidFromVault()) {
             double gap = g.landCashGap(ids);
             double cash = g.getCash();
             return new Funding(
-                    String.format("%s cost%s %s at today's rate", what, s, marked(here, money(g.landPriceLocal(ids)))),
-                    "the treasury holds " + marked(here, money(cash)),
-                    marked(here, money(gap)),
+                    String.format("%s cost%s %s at today's rate", what, s, qualified(money(g.landPriceLocal(ids)))),
+                    "the treasury holds " + qualified(money(cash)),
+                    qualified(money(gap)),
                     Math.max(0, Math.min(cash, g.landPriceLocal(ids))), gap);
         }
         double gapUsd = g.landVaultGapUsd(ids);
@@ -1958,7 +1960,7 @@ final class LandScreen {
     /** What the funding page's buttons buy (0.7.34): "Buy · D$1.0B" for a plot, "Buy 5 plots · D$9.8B" for several, in the money the toggle pays in. */
     String buyWords(List<Integer> ids) {
         Game g = ui.game;
-        String price = g.isLandPaidFromVault() ? usd(g.landPriceUsd(ids)) : marked(here(), money(g.landPriceLocal(ids)));
+        String price = g.isLandPaidFromVault() ? usd(g.landPriceUsd(ids)) : qualified(money(g.landPriceLocal(ids)));
         return (ids.size() == 1 ? "Buy" : "Buy " + ids.size() + " plots") + " · " + price;
     }
 
@@ -2053,7 +2055,6 @@ final class LandScreen {
         Kept.scope("showLandFunding", () -> {
             Game game = ui.game;
             boolean vaultPays = game.isLandPaidFromVault();
-            String here = here();
 
             VBox page = widePage();
             page.getChildren().add(Kept.scope("head", () -> head("Funding")));
@@ -2112,7 +2113,7 @@ final class LandScreen {
 
                     /* ...and the third way, a choice and never the default. */
                     if (game.landTopUpCovers(ids)) {
-                        grid.add(Kept.scope("top up", () -> topUpCard(ids, here)), 2, 0);
+                        grid.add(Kept.scope("top up", () -> topUpCard(ids)), 2, 0);
                     } else if (!game.foreignWindowOpen()) {
                         grid.add(Kept.scope("not even cash", () -> {
                             Label none = Kept.label("The cash does not cover the rest either. Paying by "
@@ -2143,7 +2144,7 @@ final class LandScreen {
      * The third way, from the vault: what the vault holds, the rest converted
      * from cash - no debt. The 0.7.13 heading is its title, its note its line.
      */
-    VBox topUpCard(List<Integer> ids, String here) {
+    VBox topUpCard(List<Integer> ids) {
         Game game = ui.game;
         Label title = Kept.label("The vault's dollars, and the rest converted from cash");
         title.setWrapText(true);
@@ -2155,7 +2156,7 @@ final class LandScreen {
         VBox figures = Kept.column(3,
                 offerLine("From the vault", usd(game.getForeignAccounts().getReservesUsd()), Palette.TEXT_BODY),
                 offerLine("Converted from cash", usd(game.landVaultGapUsd(ids)), Palette.TEXT_BODY),
-                offerLine("...at today's rate", marked(here, money(game.landTopUpLocal(ids))), Palette.TEXT_BODY));
+                offerLine("...at today's rate", qualified(money(game.landTopUpLocal(ids))), Palette.TEXT_BODY));
         Region push = Kept.region();
         VBox.setVgrow(push, Priority.ALWAYS);
         Pieces.ActionButton topUp = actionButton(Icons.LAND, Palette.BUILDING, ACTION_TALL, topUpPress(ids),
@@ -2278,7 +2279,6 @@ final class LandScreen {
         for (LandParcel p : parcels) (p.getId() < 0 ? draftPicks : offerPicks).add(p);
         LandParcel first = offerPicks.isEmpty() ? parcels.get(0) : offerPicks.get(0);
         boolean one = parcels.size() == 1 && draftPicks.isEmpty(), vault = c.vault();
-        String here = here();
         Row row = one ? row(first, officeBest(), market.richest(Resource.IRON)) : null;
         String title = LandMap.pickTitle(parcels, market.getLevel());
         int blocks = 0;
@@ -2298,10 +2298,10 @@ final class LandScreen {
         String ground = chipped && !draftPicks.isEmpty() && !offerPicks.isEmpty()
                 ? LandMap.groundTitle(blocks) + ": " + LandMap.kindWords(dKm2, dDry, dFresh, dSea) + " · " + inToggle(dUsd) : null;
         double km2 = c.km2();
-        String price = one ? row.price() : vault ? usd(c.usd()) : marked(here, money(c.local()));
-        String other = (vault ? marked(here, money(c.local())) + " at today's rate" : usd(c.usd()) + " listed")
+        String price = one ? row.price() : vault ? usd(c.usd()) : qualified(money(c.local()));
+        String other = (vault ? qualified(money(c.local())) + " at today's rate" : usd(c.usd()) + " listed")
                 + (c.drySqFt() > 0 ? " · " + dollars(c.usd() / c.drySqFt()) + "/m² dry" : "");
-        java.util.function.DoubleFunction<String> inMoney = v -> vault ? usd(v) : marked(here, money(v));
+        java.util.function.DoubleFunction<String> inMoney = v -> vault ? usd(v) : qualified(money(v));
         String cash = (vault ? "vault " : "cash ") + inMoney.apply(c.before())
                 + (c.funding() ? " · short " + inMoney.apply(c.gap()) : " → " + inMoney.apply(c.after()));
         // The room the picks add is their dry ground less what lies on a landmass no port links (ET5): c.drySqFt() to the bit where none does,
@@ -2451,8 +2451,7 @@ final class LandScreen {
             box.getChildren().add(actionButton(Icons.LAND, Palette.BUILDING, ACTION_TALL, m.buy(), () -> map.buy(m.ids())));
         } else if (!m.loans().isEmpty()) {
             // The loans' figures in the money they are issued in, marked: the funding page's cards say whose money above them.
-            String here = here();
-            java.util.function.DoubleFunction<String> inMoney = ui.game.isLandPaidFromVault() ? Money::usd : v -> marked(here, money(v));
+            java.util.function.DoubleFunction<String> inMoney = ui.game.isLandPaidFromVault() ? Money::usd : v -> qualified(money(v));
             Offer bond = m.loans().get(0);
             box.getChildren().add(actionButton(Icons.LAND, Palette.BUILDING, ACTION_TALL,
                     new Pieces.Press(Pieces.Look.CREDIT, "Issue a " + bond.name() + " and buy · " + inMoney.apply(bond.quote().cashReceived()),
@@ -2547,7 +2546,7 @@ final class LandScreen {
     /** The money the map's head shows, as the pane covers the window's header (spec-earth 6.1): the cash, and paying from the vault its dollars first. */
     String mapHeadMoney() {
         Game g = ui.game;
-        String cash = "cash " + marked(here(), money(g.getCash()));
+        String cash = "cash " + qualified(money(g.getCash()));
         return g.isLandPaidFromVault() ? "vault " + usd(g.getForeignAccounts().getReservesUsd()) + " · " + cash : cash;
     }
 
