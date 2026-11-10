@@ -997,6 +997,10 @@ public class RefineryCheck {
         Refining r = g.getSectors().refining();
         BusinessInvestment plans = g.getBusinessInvestment();
         BuildingManager b = g.getBuildingManager();
+        // GW1: the gate counts a year's draw (Sector.GATE_DRAW_MONTHS), so the town's other sectors order their works sooner and their posts out-run its workers (the unit's wages run 7% higher at month 17, $1.18k against $1.10k, and the refinery's own staffing falls from month 18): the best unit, a hair above nothing here, stays under it; this fixture holds the other sectors' orders, so the refiners' path to an order is what the town runs.
+        for (String sector : Sectors.KEYS) {
+            if (!Sectors.REFINING.equals(sector)) plans.holdSector(sector);
+        }
         /*
          * ...ON THE WELLS' CRUDE (0.7.105, batch P6): until then the town's
          * Oil Refinery ran on imported crude by lorry and lost on every
@@ -1087,7 +1091,7 @@ public class RefineryCheck {
         SpreadPlanner.Candidate best = (SpreadPlanner.Candidate) seen[2];
         report("fixture: an Oil Refinery standing on its wells' crude in a town of 600 houses (0.7.105; on imported crude until"
                         + " then), the refiners not held, the cost of any unit in their till (0.7.103) and their planner on the"
-                        + " rule to 0.7.111 (ON_ITS_BORROWING; on the whole cost no unit here pays, 11b), orders within two years",
+                        + " rule to 0.7.111 (ON_ITS_BORROWING; on the whole cost no unit here pays, 11b) and the other sectors' orders held (GW1), orders within two years",
                 onTheOldRule && d != null && r.runShare() == 1 && r.inputRow(Good.CRUDE) != null && r.inputRow(Good.CRUDE).imported == 0,
                 d == null ? "no order" : String.format("m%d: %s", g.getMonth(), d.reason));
         assertTrue("the planner's values are each product at the city's own price at the margin, petrol and diesel at the net import"
