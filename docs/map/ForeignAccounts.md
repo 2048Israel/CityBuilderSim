@@ -428,8 +428,8 @@
 | 1643 | 1 | `public double getBandWidth()` | The share either side of the centre the edges sit. |
 | 1645 | 1 | `public double bandWeakEdge()` | The band's weak edge, D$ per US$ (a higher rate is a weaker D$): the centre and its width. |
 | 1647 | 1 | `public double bandStrongEdge()` | ...and its strong edge. |
-| 1651 | 1 | `public double mintAtToday()` | The mint price entering Gold strikes today, D$ an ounce: the day's rate times gold's price, so the D$ keeps its value; NaN where gold has no price (the regime is then refused). |
-| 1652 | 1 | `public double getMintPrice()` |  |
+| 1650 | 1 | `public double mintAtToday()` | The mint price entering Gold strikes today, D$ an ounce: the day's rate times gold's price, so the D$ keeps its value; NaN where gold has no price (the regime is then refused). |
+| 1652 | 1 | `public double getMintPrice()` | The gold's mint price, D$ a troy ounce (0 until Gold is entered). |
 | 1654 | 1 | `public double getMintRate()` | The rate the mint price was struck at, D$ per US$ (0 until Gold is entered): the mint price over gold's US$ price that month. |
 | 1656 | 1 | `public boolean isMintFollowing()` | Whether the mint price moves with the dollar (GoldChoice.FOLLOW), re-struck every month. |
 | 1658 | 1 | `public GoldEvent getGoldEvent()` | The US$ gold date open for the city to answer; NONE when none is. |
