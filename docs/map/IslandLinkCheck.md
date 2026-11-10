@@ -1,6 +1,6 @@
 # IslandLinkCheck.java - 765 lines · 25 methods · 8 constants · harnesses
 
-`ham/citybuildersim/IslandLinkCheck.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/IslandLinkCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > The island link checked (AL1, 2026-11-09; docs/queue/AL1.md): the rule that says what the city should order to link an
 > island it owns ground on, the automatic builder that orders it once its orders lack ground, and the test player that

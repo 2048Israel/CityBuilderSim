@@ -1,6 +1,6 @@
 # DenominationCheck.java - 1,214 lines · 38 methods · 4 constants · harnesses
 
-`ham/citybuildersim/DenominationCheck.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DenominationCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > A currency reform is a change of units, and this is how we know.
 > 

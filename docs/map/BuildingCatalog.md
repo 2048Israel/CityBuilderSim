@@ -1,6 +1,6 @@
 # BuildingCatalog.java - 840 lines · 28 methods · 1 constants · model
 
-`ham/citybuildersim/BuildingCatalog.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildingCatalog.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > Reads the building definitions out of buildings.json.
 > 

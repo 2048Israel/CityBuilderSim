@@ -1,6 +1,6 @@
 # ResearchViewCheck.java - 1,713 lines · 48 methods · 4 constants · harnesses
 
-`ham/citybuildersim/ResearchViewCheck.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ResearchViewCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > What the research screens read (R5, slice A: ResearchView, three series in HistorySave, ChartModel.flags(log, more), Recipes.chosen()).
 > 

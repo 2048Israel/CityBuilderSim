@@ -1,8 +1,8 @@
 # The harnesses
 
-Generated 2026-11-09 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-11-10 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**191 harness files, 22,526 labelled assertions.** AllChecks runs 191 of them.
+**193 harness files, 22,621 labelled assertions.** AllChecks runs 193 of them.
 
 ## Which harnesses read which class
 
@@ -20,7 +20,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BalanceSheet](map/BalanceSheet.md) | BooksCheck, CreditCheck, SupplierCreditCheck |
 | [Bank](map/Bank.md) | AuctionCheck, BankCheck, BondCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CentralBankCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FloatLinkCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HoldersCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, MarketCheck, MonetaryCheck, MortgageCheck, PolicyPreviewCheck, QuarryingCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorStatementCheck, ShortSellingCheck, WoodProductsCheck |
 | [BankScreen](map/BankScreen.md) | **none** |
-| [BoatSchedule](map/BoatSchedule.md) | FreightViewCheck, LongPlaytest, MapCheck, PartnerCallsCheck, PortCheck, ReadPathCheck |
+| [BoatSchedule](map/BoatSchedule.md) | FreightViewCheck, LongPlaytest, MapCheck, PartnerCallsCheck, PortCheck, QuayCraneCheck, ReadPathCheck |
 | [BondMarket](map/BondMarket.md) | BondCheck, CurveCheck, FundCheck, FundLedgerCheck, LongPlaytest, MortgageCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
 | [BookDesk](map/BookDesk.md) | DebtExchangeCheck, DeskCheck, ReadPathCheck |
 | [Branding](map/Branding.md) | BrandingCheck |
@@ -67,8 +67,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CityMap](map/CityMap.md) | BridgeCheck, BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, IslandRailCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck |
 | [CityMeasures](map/CityMeasures.md) | RankingsCheck |
 | [CityNeeds](map/CityNeeds.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ChildcareCheck, LandCheck, LongPlaytest, PlaytestFixCheck, PolicyPreviewCheck, ReadPathCheck, RoadCheck, WaterCheck, ZoningViewCheck |
-| [CityRuns](map/CityRuns.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, IslandRailCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, TruckRouteCheck |
-| [CityShore](map/CityShore.md) | IslandRailCheck, LandmassCheck, MapCheck, PortCheck, RailDrawCheck, TruckRouteCheck |
+| [CityRuns](map/CityRuns.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, IslandRailCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, QuayRailCheck, RailDrawCheck, TruckRouteCheck |
+| [CityShore](map/CityShore.md) | IslandRailCheck, LandmassCheck, MapCheck, PortCheck, QuayCraneCheck, QuayRailCheck, RailDrawCheck, TruckRouteCheck |
 | [ClockPace](map/ClockPace.md) | ClockCheck, KeptCheck |
 | [CoalMining](map/CoalMining.md) | BuildCardCheck, BuildingDataCheck, CoalMiningCheck, IndustryViewCheck, LandCheck |
 | [CodeMap](map/CodeMap.md) | **none** |
@@ -145,6 +145,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [GridConversion](map/GridConversion.md) | ConversionCheck, EarthTerrainCheck, LandCheck |
 | [GridOffers](map/GridOffers.md) | BuildCardCheck, ConversionCheck, GridCheck, LandCheck, LandmassCheck, MapCheck |
 | [HarbourRenders](map/HarbourRenders.md) | **none** |
+| [HarbourYard](map/HarbourYard.md) | PortCheck, QuayRailCheck |
 | [HarnessMap](map/HarnessMap.md) | **none** |
 | [Haulage](map/Haulage.md) | BondCheck, BuildCardCheck, EquipmentCheck, Forms1900Check, FreightViewCheck, HaulageCheck, HealthCheck, HomeRailCheck, LandlordPortCheck, LongPlaytest, MapCheck, MaterialsCheck, RailCheck, TradeBandCheck, TruckCheck, TruckRouteCheck |
 | [Health](map/Health.md) | BuildAdviceCheck, CausesOfDeathCheck, ChartCheck, ChildcareCheck, DeathCareFirstCheck, HealthCheck, LongPlaytest, OutsideCheck, SicknessCheck, YearBookCheck |
@@ -244,12 +245,14 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [PopulationCohorts](map/PopulationCohorts.md) | ArrivalMixCheck, CausesOfDeathCheck, ChildcareCheck, CrimeCheck, DeathRecordCheck, HealthCheck, HouseholdMemoryCheck, LongPlaytest, OutsideCheck, PopulationCheck, ReadPathCheck, SaveFileCheck, SicknessCheck |
 | [PopulationManager](map/PopulationManager.md) | BankCheck, BusinessServicesCheck, ConstructionControlCheck, CrimeCheck, EducationCheck, HealthCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, NewGameCheck, OutsideCheck, PopulationCheck, SaveFileCheck, ScaleCheck, WageLadderCheck, WantedPostsCheck, YearBookCheck, ZoningCheck |
 | [PortDivision](map/PortDivision.md) | FreightViewCheck, LandlordPortCheck, LongPlaytest, PolicyPreviewCheck |
-| [Ports](map/Ports.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, CopperMiningCheck, ForestryCheck, FreightViewCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, IslandLinkCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PartnerCallsCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, RefineryCheck, SaveFileCheck, TradeBandCheck, WoodProductsCheck |
+| [Ports](map/Ports.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, CopperMiningCheck, ForestryCheck, FreightViewCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, IslandLinkCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PartnerCallsCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, QuayCraneCheck, RailCheck, ReadPathCheck, RefineryCheck, SaveFileCheck, TradeBandCheck, WoodProductsCheck |
 | [PriceIndex](map/PriceIndex.md) | CurrencyCheck, ExchangeRateCheck, ExpectationsCheck, GroceryCheck, LabourCheck, LongPlaytest, MonetaryCheck, PassThroughCheck, ReadPathCheck, SaveFileCheck, ScaleCheck |
 | [PriceLevel](map/PriceLevel.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BridgeCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CarCheck, CementConcreteCheck, CentralBankCheck, CoalMiningCheck, ConsumptionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyRegimeCheck, CurveCheck, DebtExchangeCheck, DenominationCheck, DeskCheck, DiscoveryCheck, EducationCheck, ExchangeCheck, ExchangeRateCheck, FloatLinkCheck, FoodProcessingCheck, ForeignDebtCheck, ForestryCheck, FundCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HousingCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, LabourCheck, LandCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, NationsCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RestaurantsCheck, RestructureCheck, SaveFileCheck, SectorFlowCheck, TradeCostCheck, TreasuryCheck, VanCheck, WaterCheck, WoodProductsCheck, WorldDataCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [PrisonerHousehold](map/PrisonerHousehold.md) | CrimeCheck, EducationCheck |
 | [ProcessingSector](map/ProcessingSector.md) | BuildCardCheck, CementConcreteCheck, CopperRefiningCheck, HaulageCheck, IndustryViewCheck, MaterialsCheck, RecipeCheck, WoodProductsCheck |
 | [Quarrying](map/Quarrying.md) | BuildCardCheck, BuildingDataCheck, CementConcreteCheck, IndustryViewCheck, QuarryingCheck |
+| [QuayCrane](map/QuayCrane.md) | QuayCraneCheck |
+| [QuayRail](map/QuayRail.md) | QuayRailCheck |
 | [Rankings](map/Rankings.md) | PriceLevelCheck, RankingsCheck |
 | [RankingsScreen](map/RankingsScreen.md) | **none** |
 | [RealDollar](map/RealDollar.md) | PriceLevelCheck, RankingsCheck, RealDollarCheck |
@@ -318,11 +321,11 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SupplierCredit](map/SupplierCredit.md) | BondCheck, SupplierCreditCheck |
 | [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, CarCheck, ChartCheck, ConstructionControlCheck, ConstructionTrapCheck, DebtExchangeCheck, DenominationCheck, DiscoveryCheck, EducationCheck, ExpectationsCheck, FoodProcessingCheck, Forms1900Check, GroceryCheck, HealthCheck, HomeRailCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LandlordPortCheck, LongPlaytest, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, TradeCostCheck, TreasuryCheck, WageLadderCheck, ZoningCheck, ZoningViewCheck |
 | [TempDirs](map/TempDirs.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CapitalFlowCheck, CarryTradeCheck, ChartCheck, ChildcareCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DeterminismCheck, EarthFoundingCheck, EducationCheck, EnsembleCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, FoundingYardCheck, GroceryCheck, HealthCheck, HistoryCheck, HouseholdCheck, HouseholdMemoryCheck, HydroCheck, InboxCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, KnownRedsCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MapCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PriceLevelCheck, ReadPathCheck, ReplayCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, StaleCheck, SupplierCreditCheck, TimingCheck, WantedPostsCheck, ZoningCheck, ZoningViewCheck |
-| [TilePainter](map/TilePainter.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, JunctionCheck, LandmassCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, RunWorksCheck, TruckRouteCheck |
-| [TileRaster](map/TileRaster.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GlobeCheck, JunctionCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck |
+| [TilePainter](map/TilePainter.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, JunctionCheck, LandmassCheck, MainLineCheck, MapCheck, PlanCheck, QuayRailCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, RunWorksCheck, TruckRouteCheck |
+| [TileRaster](map/TileRaster.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GlobeCheck, JunctionCheck, MainLineCheck, MapCheck, PortCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck |
 | [TimeChart](map/TimeChart.md) | **none** |
 | [TimeSkipReport](map/TimeSkipReport.md) | AuctionCheck, HealthCheck, ReloadCheck, SkipReportCheck |
-| [Timing](map/Timing.md) | BridgeCheck, BridgeMapCheck, EarthCheck, EarthTerrainCheck, GlobeCheck, GridCheck, IslandLinkCheck, IslandNetCheck, KeptCheck, LandNationsCheck, MapCheck, PartnerCallsCheck, PlanCheck, PortCheck, ReplayCheck, SaveSlotCheck, ScaleCheck, TimingCheck, WorldCheck, WorldMarketCheck |
+| [Timing](map/Timing.md) | BridgeCheck, BridgeMapCheck, EarthCheck, EarthTerrainCheck, GlobeCheck, GridCheck, IslandLinkCheck, IslandNetCheck, KeptCheck, LandNationsCheck, MapCheck, PartnerCallsCheck, PlanCheck, PortCheck, QuayCraneCheck, ReplayCheck, SaveSlotCheck, ScaleCheck, TimingCheck, WorldCheck, WorldMarketCheck |
 | [ToastRoom](map/ToastRoom.md) | ToastCheck |
 | [TrackCurves](map/TrackCurves.md) | GatewayCheck, JunctionCheck, MapCheck, PlanCheck, RailDrawCheck |
 | [Trade](map/Trade.md) | BooksCheck, CopperRefiningCheck, CreditCheck, FittingCheck, IndustryViewCheck, MaterialsCheck, MiningCheck, OilCheck, OilViewCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, SupplierCreditCheck |
@@ -350,7 +353,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Where](map/Where.md) | KeptCheck |
 | [WoodProducts](map/WoodProducts.md) | BuildCardCheck, BuildingDataCheck, GdpCheck, IndustryViewCheck, WoodProductsCheck |
 | [WorkingHousehold](map/WorkingHousehold.md) | DenominationCheck, HoldersCheck, HouseholdCheck |
-| [World](map/World.md) | BridgeCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, CrossingCheck, EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, FittingCheck, ForestryCheck, GatewayCheck, GlobeCheck, GridCheck, HydroCheck, InterestAbroadCheck, IslandLinkCheck, IslandNetCheck, IslandRailCheck, JunctionCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, MiningCheck, NewGameCheck, OilCheck, PartnerCallsCheck, PlanCheck, PortCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck, WaterCheck, WellCheck, WorldCheck, ZoningCheck |
+| [World](map/World.md) | BridgeCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, CrossingCheck, EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, FittingCheck, ForestryCheck, GatewayCheck, GlobeCheck, GridCheck, HydroCheck, InterestAbroadCheck, IslandLinkCheck, IslandNetCheck, IslandRailCheck, JunctionCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, MiningCheck, NewGameCheck, OilCheck, PartnerCallsCheck, PlanCheck, PortCheck, QuarryingCheck, QuayRailCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck, WaterCheck, WellCheck, WorldCheck, ZoningCheck |
 | [WorldData](map/WorldData.md) | DenominationCheck, DeterminismCheck, GlobeCheck, InterestAbroadCheck, LandNationsCheck, MapCheck, NationsCheck, PartnerCallsCheck, PartnersCheck, PegAnchorCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldDataCheck, WorldMarketCheck, WorldMeasuresCheck, WorldMoneysCheck |
 | [WorldEconomy](map/WorldEconomy.md) | CentralBankCheck, FundCheck, LongPlaytest, MonetaryCheck, NewGameCheck, RealDollarCheck, SaveFileCheck, SkipReportCheck |
 | [WorldMarket](map/WorldMarket.md) | DenominationCheck, GlobeCheck, InterestAbroadCheck, PartnerCallsCheck, PartnersCheck, PriceLevelCheck, ReadPathCheck, SaveFileCheck, WorldMarketCheck, WorldMoneysCheck |
@@ -21048,7 +21051,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1381 ...and it put somebody in the ring
   - L1384 a ring is refused whole when the width does not match its names
 
-## PortCheck.java - 146 labelled assertions
+## PortCheck.java - 170 labelled assertions
 
 > The city's ports and their boats (0.7.86, batch O9; docs/studies/spec-oil.md
 > 2.9, 2.10 and 4's PortCheck; runs/research-freight.md 5).
@@ -21064,164 +21067,189 @@ _(this harness does not label its checks through a helper - it prints its findin
 >      writes it; the ships' cargoes [P30][P40][P42][P46]; a tanker the
 > ...
 
-- **L257 1. the freight rule: each kind's sea freight against a lorry's, at 5,000 km, from the research's rows**
-  - L267 each kind's constant is its own: liquid .08, dry bulk .07, containers .16, general cargo .20
-  - L274 SEA IS USED ONLY WHERE IT IS CHEAPER: every kind's sea freight is under the railway's floor, so the
-- **L281 2. the cargo, the ships and the terminals**
-  - L297 liquid is crude, the eight litre goods and bitumen; dry bulk iron, crops, grains, materials and coke;
-  - L299 ...containers the rest of what the goods stream carries
-  - L300 ...and no kind for a good that never crosses the boundary as freight
-  - L301 the ships carry the research's cargoes: MR 37,500 t, LR1 60,000, Aframax 75,000, LR2 82,500, Suezmax
-  - L315 THE CLASS FITS THE FREE ROOM: a tanker is the largest whose cargo the room takes, none under an MR's
-  - L318 ...and a bulk carrier a Capesize when the month's tonnes fill one, a Panamax when not (the Bulk Terminal's classes)
-  - L323 the Bulk Berth's ships are dry bulk carriers [P37]: a Handysize 32,500 t and a Supramax 57,500, the middles of
-  - L329 ...with the Bulk Berth's classes a month's tonnes one way go in a Supramax when they fill one, else a Handysize
-  - L334 ...with the Bulk Terminal's, a Capesize at its cargo and a Panamax under it, as before FR3
-  - L342 THE BULK TERMINAL'S CLASSES ARE TODAY'S RULE EXACTLY: tonnes >= a Capesize's cargo is a Capesize, else a Panamax,
-  - L347 THE LARGEST DRY BULK BERTH STANDING DECIDES: with none, the Bulk Terminal's classes (today's rule)
-  - L351 ...a tanker or a general cargo berth is not a dry bulk berth, and decides nothing
-  - L354 ...a Bulk Berth alone: Handysize and Supramax
-  - L356 ...a Bulk Terminal beside it, the larger berth: Panamax and Capesize
-  - L362 ...and a Bulk Terminal alone, the same
-  - L383 four terminals, ids 94-97, the city's, large and modern (SL1) - liquid 30 Mt, dry bulk 50 Mt, boxes 2.7M TEU,
-  - L385 ...a terminal's month is its year over twelve
-  - L386 WORTH_A_BERTH, the test player's line, is the railway's own MIN_LINE_UTILISATION
-- **L393 the Bulk Berth (FR3)**
-  - L412 id 142 is the Bulk Berth, in the code and in the file alike: the city's, PORTS, a DRY_BULK berth of 2.5 Mt a year,
-  - L415 ...the Bulk Terminal's \"ships\" line is Panamax and Capesize, in the code and in the file
-  - L425 ...a terminal with no list takes every class of its kind: the tanker, container and general terminals, unchanged
-  - L426 ...and a building that is not a berth takes none
-  - L438 ONE BULK BERTH STANDING ADDS 2,500,000 / 12 TONNES A MONTH to the dry bulk berths and nothing to any other kind
-  - L441 ...two add twice that, and the same beside a Bulk Terminal's 50,000,000 / 12
-  - L455 THE SCHEDULE CALLS IN THE CLASSES IT IS GIVEN: three Supramaxes' tonnes in with a Bulk Berth standing are three calls
-  - L457 ...a schedule given no classes is the Bulk Terminal's, as before FR3
-- **L475 2c. a terminal of several berths (SL1): its cost moved with its tonnes, and the count the tonnes pay back**
-  - L503 EACH TERMINAL'S COST LINES MOVED BY ITS TONNES' RATIO, in the code and in the file: the ground and every job line are main's times
-  - L505 ...so a tonne a year costs what it did, to the rounding (the port dues a tonne are the price over the tonnes)
-  - L507 ...and the Bulk Berth, dry bulk's small terminal for the young city, is as it was: 2.5 Mt a year, D$60M
-  - L513 fixture: the default dial is 1, so the break-even is WORTH_A_BERTH of a month; 2.6 months leave the line after two
-  - L518 JUST UNDER THE BREAK-EVEN: no terminal pays back
-  - L519 AT THE BREAK-EVEN: one
-  - L520 ...one still a hair under the second's break-even (a month more), two at it
-  - L522 2.6 MONTHS OF A TERMINAL'S TONNES: three, each counted after the ones before it (the third faces .60 of a month left)
-  - L525 THE DIAL AT 2 HALVES THE THRESHOLD: none a hair under half a month's .60, one at it, where the default dial pays none
-  - L528 ...2.6 months at the dial 2 are three and 3.3 months four, the dial 3 a third of the line
-  - L531 NO DUES, NO BERTH, NO TONNES: none - the dial at 0 or under it or NaN, a terminal of no month or NaN, the tonnes NaN or negative
-  - L564 berthPaysBack() IS payingCount() >= 1 and is the old line, to the bit, on a sweep of dials, terminals and tonnes, edges a hair either side
-  - L566 ...and payingCount() is the largest n with the tonnes less the n - 1 before it at the line - n pays, n + 1 does not - and never falls as the tonnes rise
-  - L573 fixture: main's 35 berths' worth of general cargo, 35 x 450,000 / 12 t a month, is between 7 and 8 of the catalogue's General Cargo Terminal's month,
-  - L578 THE SAME TRADE TAKES 8 GENERAL CARGO TERMINALS, not main's 35: under a quarter of them, enough to carry it, and not one more than the tonnes pay for
-  - L580 ...payingTerminal() picks the General Cargo Terminal for it, the kind's only terminal, and orderCount() orders those 8
-  - L583 ...and the first waits for .60 of its month, 100,000 t a month: two of main's berths' worth (75,000) is none yet
-  - L595 fixture: 3.5 Bulk Berths' month uncovered pays a Bulk Berth back (three, each after the ones before it) and not a Bulk Terminal;
-  - L601 A TRADE PAST THE BULK TERMINAL'S BREAK-EVEN WITH A FEW BULK BERTHS' MONTH UNCOVERED: the Bulk Terminal, and ONE of it - the uncovered
-  - L605 THE SAME UNCOVERED WITH THE TRADE UNDER IT (all of the trade uncovered): the Bulk Berth, and as many of it as Ports.payingCount()
-  - L608 ...the trade a hair under the Bulk Terminal's break-even is Bulk Berths still, at it the Bulk Terminal
-  - L611 NO NEED, NOTHING: the uncovered a hair under a Bulk Berth's break-even is none, however large the trade (its berths stand), and no tonnes or no dues the same
-  - L616 ...at a Bulk Berth's break-even exactly there is a need, and a trade past the Terminal's has it a Bulk Terminal
-  - L619 A TERMINAL PASSED OVER (skip) LEAVES THE OTHER: the Bulk Terminal skipped is the Bulk Berth, both skipped none, and a Bulk Berth skipped has the need
-  - L625 THE DIAL AT 2 HALVES BOTH LINES: the trade at half the Bulk Terminal's break-even is Bulk Berths at the default dial, the Bulk Terminal at 2
-  - L628 ...a trade is never taken for less than what is left uncovered of it (a caller's lower figure is held to it), and the order is one at least
-- **L636 3. the factor equals its formula, and nothing at sea is the railway's band, to the bit**
-  - L649 THE FACTOR EQUALS ITS FORMULA EXACTLY: 1 - rail - sea + sea x SEA_FREIGHT_SHARE, every share on a grid
-  - L650 ...and with nothing at sea it is the railway's own 1 - rail, to the bit
-  - L661 WITH NO PORT the railway's share of every good is its carried share and the ships' nothing, to the bit
-  - L663 ...and the road's rail share is its carried share, the ships' nothing
-- **L676 4. the shares: berths shared by tonnes; before the railway, or after it; crude and its room**
-  - L695 A KIND'S BERTHS ARE SHARED AMONG ITS GOODS BY THEIR TONNES: steel and machinery each go by sea in the
-  - L698 ...under the quote, before the railway: the railway hauls its carried share of what the berths leave
-  - L700 ...and the tonnes they take come off what the railway is offered, by stream, with their lorry freight
-  - L702 a kind with no berth goes nowhere by sea, and the railway's share of it is its carried share
-  - L706 CRUDE WITH NO TANK ROOM IS HELD BACK: the tanker berth takes the other liquids, all of the petrol, and the
-  - L713 ...and the road's two shares are what the berths take of each stream, before the railway and in all
-  - L722 WITH ROOM FOR A CARGO crude goes by sea in the largest class the room takes, an LR2 in 100,000 t, the
-  - L734 A KIND NOT UNDER THE QUOTE GOES AFTER THE RAILWAY: it takes nothing off what the railway is offered
-  - L736 ...its berths shared over what the railway leaves, and the railway's share its carried share, whole
-- **L745 5. no port gives a bit-identical band: a town with a railway and no terminal**
-  - L760 fixture: two steel foundries and a rail spur stood
-  - L775 fixture: the railway carries the town's freight, and no terminal stands
-  - L778 EVERY GOOD'S BAND IS 0.7.85'S: 1 - carried and carried x the quote, to the bit
-  - L782 ...the road's rail share the railway's carried share and the ships' nothing
-  - L784 ...and nothing went by sea, and no boat called
-- **L793 6. a port on a town: the coast, the band, the road, the crews, the calls, the audit**
-  - L807 fixture: the town's two foundries ship steel and land iron, and it owns no sea
-  - L811 A TERMINAL WITH NO SEA IS REFUSED NO_COAST, before land and money
-  - L813 ...the card's verdict says so before the click
-  - L817 ...and a run stops at it
-  - L819 fixture: the city buys an offer that runs out to the sea
-  - L821 WITH SEA THE ORDER PASSES THE COAST
-  - L827 fixture: the terminal stood
-  - L842 ITS KIND GOES BY SEA IN ITS SHARE: the berth's month over the general cargo that crossed the boundary
-  - L864 EACH GOOD'S BAND IS ITS FORMULA: Ports.factor() of its rail and sea shares, to the bit
-  - L865 ...narrower than the lorries': it lands cheaper and ships dearer than the world's delivered prices
-  - L867 ...and a kind with no berth keeps the lorries' band
-  - L870 THE ROAD IS TOLD THE SHIPS' SHARE of each stream, relieved at the railway's RAIL_ROAD_RELIEF
-  - L885 ITS CREWS ARE PAID BY FREIGHT: a town with no line pays only its terminal's upkeep with transit's, Freight's wage bill
-  - L899 CALLS = TONNES ÷ CARGO: the month's general cargo by sea, each way, over a 5,500 t ship, whole
-  - L903 ...the month's sea tonnes are the share that was in force while it moved, of what crossed
-  - L910 ...and the audit closes every month of a year with the port: its residual within MoneyAudit.tolerance() of
-- **L918 7. crude needs room: held back without a Tank Farm, in the largest class the room takes with one**
-  - L931 fixture: a refinery on imported crude, a tanker berth, and no Tank Farm
-  - L936 ITS CRUDE IS HELD BACK FOR ROOM: none by sea, what the berth would take held back
-  - L943 ...and the refiners' page says so
-  - L953 A TANK FARM IS WEIGHED while a port holds the refiners' crude back for room: their part of it, at the freight a
-  - L963 ...and the refiners order it only when it passes every gate and earns more on its cost than any unit
-  - L977 ...a Crude Unit's crude held back pays for one where an Oil Refinery's does not (a fixture's gates); nothing
-  - L987 fixture: a Tank Farm stood beside it
-  - L990 WITH A TANK FARM ITS CRUDE GOES BY SEA, in the largest class the free room takes
-  - L994 ...its calls in that class
-  - L1007 fixture: one Crude Unit's month beside one Tank Farm's room: kept as far as the room held it (until 0.7.105) it
-  - L1016 THE ROOM AN MR'S CARGO NEEDS IS KEPT FREE (Refining.CARGO_KEPT_FREE): the refiners keep the rest of the room,
-  - L1025 ...and a month on, the store kept, its crude goes by sea in an MR, none held back for room
-  - L1045 A FRACTION OF A CALL IS A WHOLE ONE in the share of months it says: 12,345 t in 5,500 t ships is 2 or 3
-  - L1048 ...no tonnes, no call
-  - L1060 the schedule is pure in the month and the trade: built twice, the same calls
-  - L1062 ...each call's whole visit inside its month, on a quay of its own kind
-  - L1064 ...and another month hashes its arrivals afresh
-  - L1066 A LANE RUNS STRAIGHT OUT TO SEA AWAY FROM THE SITE, LANE_PLOTS long
-  - L1083 A BOAT IS PURE IN (CALL, t): asked twice, the same place; on the water only from a leg before it berths to
-  - L1085 ...halfway in, halfway along its lane; at the quay while it berths; halfway out on the way back
-  - L1096 ...an import comes in loaded and leaves empty, an export the other way, a box ship loaded both ways
-  - L1118 A FRAME TOUCHES ONLY THE ROUTES ON SCREEN, and finds every boat on them, a district and eight by eight
-- **L1169 9. the shares and the month cross a save; a save from before them has nothing at sea**
-  - L1183 the shares in force and the month's tonnes cross a save, to the bit
-  - L1194 ...the band put back on every market, and the road's two shares, to the bit
-  - L1195 ...the month's boats the same
-  - L1199 ...and a month on the city and its reload ship the same tonnes by sea and strike the same shares, to the bit
-  - L1213 A SAVE FROM BEFORE 0.7.86 (no portMonth) loads with nothing at sea
-  - L1216 ...and its terminal takes its share the first month it plays, the audit closing
-- **L1273 10. the harbour's quay (HB1): from the detail zoom in a boat at its berth lies alongside its quay and the terminals' quays are one wall**
-  - L1285 the dial: the bar reads 1,000 m at DETAIL_FROM, 500 m at 1% past it, 1,000 m just under it
-  - L1335 alongside: the heading is along the quay face, the sea's direction turned a quarter the same way every time
-  - L1336 ...every hull point seaward of the face, none in the work's box or its quay's plots
-  - L1337 ...the hull's side on the face, its far side a beam out (hulls narrower and wider than a plot)
-  - L1338 ...the boat on the berth's line out from the work, its call, load and docking as they were
-  - L1354 ...at DETAIL_FROM and below, for a boat afloat, and for a berth whose side is not known: the boat itself
-  - L1369 the berth carries its work's side from CityShore.berths(), -1 for a berth made by hand
-  - L1393 walls: two works side by side within the gap (WALL_JOIN_GAP, from CLEAR), on each of the four sides: one wall over both sea sides and the gap
-  - L1394 ...the same two farther apart than the gap: two walls, the gap not covered
-  - L1407 ...a third facing another way has its own, the same side on another line has its own, a pier of its own and a tank farm have none
-  - L1419 ...no plot of any work's box is in a wall: a box in a strip cuts the wall round it, the rest of the strip still walled
-  - L1433 ...made again when a work is laid (a third joins the wall), the same in whatever order they were laid, asked by the window
-- **L1575 10b. (HB1 slice E) the boats lie alongside, else stern-to, else as placed, only where their hulls cross no box, wall or other docked boat**
-  - L1583 slice E: from the detail zoom in boats are drawn at true size (ShipShapes.TRUE_FROM is DETAIL_FROM), so the fixtures' scales draw a Capesize one length
-  - L1606 three Capesizes at Bulk Berths side by side facing one way, 5 plots apart and 6, at 4 px and 8: no two drawn hulls overlap, none alongside or stern-to crosse...
-  - L1608 ...5 apart a neighbour's hull as placed lies across every one's place alongside (a Capesize is more than 5 plots long), but each is clear stern-to: all three...
-  - L1610 ...6 apart, a box and CLEAR: the first and third of a row lie alongside (a neighbour's hull as placed clears them by less than the tolerance) and the middle ...
-  - L1634 two Capesizes 8 plots apart, a pitch between where a bow-out hull is clear of the other's place and where two lie nose to tail: the first to arrive lies alon...
-  - L1636 ...the answer is the same whatever order the boats are handed in (the order they arrived decides, not the list's)
-  - L1652 the same three Bulk Berths spaced far apart (a Capesize's length and beam and a plot): every boat alongside, as alongside() gives it, none crossing anything
-  - L1674 a lone berth: the boat lies alongside exactly as alongside() gives it, on each side, for five classes of ship, at three scales (slice C's case unchanged)
-  - L1712 stern-to: the heading is the sea's direction, the hull's stern on the quay's face (least depth the face, its length the drawn length), on the berth's line ou...
-  - L1713 ...none of the hull in the work's box, the call, load and docking as they were; the boat itself at DETAIL_FROM and below, afloat, and for a side not known
-  - L1738 a box in the way, or a neighbour's wall (its box clear): a Capesize lies stern-to, crossing nothing, though alone it lies alongside; a Panamax, which clears ...
-  - L1754 a box on the water straight out from the berth, across both its place alongside and its stern-to place: a Capesize and a Panamax stay as the schedule placed ...
-  - L1776 a corner, two works at right angles with 3 plots between a wall and a box, where the ships lying alongside would cross: no two drawn hulls overlap, none laid...
-  - L1778 ...the east ship, clear of the south's place, lies alongside; the south ship lies stern-to when the east ship came first, and as placed when it came second (...
-  - L1798 at DETAIL_FROM and below every boat comes back as given (the list itself); above it a boat afloat is untouched, and a boat whose berth's side is not known st...
-  - L1857 the window, a bay of
-  - L1860 ...berthed() over a window's boats alone would have turned some of them (the window matters, so drawn() weighs every boat docked):
-  - L1877 a frame's boats drawn() over the whole bay of 64 berths take no more than MapCheck.BOAT_FRAME_MS (0.5 ms)
+- **L274 1. the freight rule: each kind's sea freight against a lorry's, at 5,000 km, from the research's rows**
+  - L284 each kind's constant is its own: liquid .08, dry bulk .07, containers .16, general cargo .20
+  - L291 SEA IS USED ONLY WHERE IT IS CHEAPER: every kind's sea freight is under the railway's floor, so the
+- **L298 2. the cargo, the ships and the terminals**
+  - L314 liquid is crude, the eight litre goods and bitumen; dry bulk iron, crops, grains, materials and coke;
+  - L316 ...containers the rest of what the goods stream carries
+  - L317 ...and no kind for a good that never crosses the boundary as freight
+  - L318 the ships carry the research's cargoes: MR 37,500 t, LR1 60,000, Aframax 75,000, LR2 82,500, Suezmax
+  - L332 THE CLASS FITS THE FREE ROOM: a tanker is the largest whose cargo the room takes, none under an MR's
+  - L335 ...and a bulk carrier a Capesize when the month's tonnes fill one, a Panamax when not (the Bulk Terminal's classes)
+  - L340 the Bulk Berth's ships are dry bulk carriers [P37]: a Handysize 32,500 t and a Supramax 57,500, the middles of
+  - L346 ...with the Bulk Berth's classes a month's tonnes one way go in a Supramax when they fill one, else a Handysize
+  - L351 ...with the Bulk Terminal's, a Capesize at its cargo and a Panamax under it, as before FR3
+  - L359 THE BULK TERMINAL'S CLASSES ARE TODAY'S RULE EXACTLY: tonnes >= a Capesize's cargo is a Capesize, else a Panamax,
+  - L364 THE LARGEST DRY BULK BERTH STANDING DECIDES: with none, the Bulk Terminal's classes (today's rule)
+  - L368 ...a tanker or a general cargo berth is not a dry bulk berth, and decides nothing
+  - L371 ...a Bulk Berth alone: Handysize and Supramax
+  - L373 ...a Bulk Terminal beside it, the larger berth: Panamax and Capesize
+  - L379 ...and a Bulk Terminal alone, the same
+  - L400 four terminals, ids 94-97, the city's, large and modern (SL1) - liquid 30 Mt, dry bulk 50 Mt, boxes 2.7M TEU,
+  - L402 ...a terminal's month is its year over twelve
+  - L403 WORTH_A_BERTH, the test player's line, is the railway's own MIN_LINE_UTILISATION
+- **L410 the Bulk Berth (FR3)**
+  - L429 id 142 is the Bulk Berth, in the code and in the file alike: the city's, PORTS, a DRY_BULK berth of 2.5 Mt a year,
+  - L432 ...the Bulk Terminal's \"ships\" line is Panamax and Capesize, in the code and in the file
+  - L442 ...a terminal with no list takes every class of its kind: the tanker, container and general terminals, unchanged
+  - L443 ...and a building that is not a berth takes none
+  - L455 ONE BULK BERTH STANDING ADDS 2,500,000 / 12 TONNES A MONTH to the dry bulk berths and nothing to any other kind
+  - L458 ...two add twice that, and the same beside a Bulk Terminal's 50,000,000 / 12
+  - L472 THE SCHEDULE CALLS IN THE CLASSES IT IS GIVEN: three Supramaxes' tonnes in with a Bulk Berth standing are three calls
+  - L474 ...a schedule given no classes is the Bulk Terminal's, as before FR3
+- **L492 2c. a terminal of several berths (SL1): its cost moved with its tonnes, and the count the tonnes pay back**
+  - L520 EACH TERMINAL'S COST LINES MOVED BY ITS TONNES' RATIO, in the code and in the file: the ground and every job line are main's times
+  - L522 ...so a tonne a year costs what it did, to the rounding (the port dues a tonne are the price over the tonnes)
+  - L524 ...and the Bulk Berth, dry bulk's small terminal for the young city, is as it was: 2.5 Mt a year, D$60M
+  - L530 fixture: the default dial is 1, so the break-even is WORTH_A_BERTH of a month; 2.6 months leave the line after two
+  - L535 JUST UNDER THE BREAK-EVEN: no terminal pays back
+  - L536 AT THE BREAK-EVEN: one
+  - L537 ...one still a hair under the second's break-even (a month more), two at it
+  - L539 2.6 MONTHS OF A TERMINAL'S TONNES: three, each counted after the ones before it (the third faces .60 of a month left)
+  - L542 THE DIAL AT 2 HALVES THE THRESHOLD: none a hair under half a month's .60, one at it, where the default dial pays none
+  - L545 ...2.6 months at the dial 2 are three and 3.3 months four, the dial 3 a third of the line
+  - L548 NO DUES, NO BERTH, NO TONNES: none - the dial at 0 or under it or NaN, a terminal of no month or NaN, the tonnes NaN or negative
+  - L581 berthPaysBack() IS payingCount() >= 1 and is the old line, to the bit, on a sweep of dials, terminals and tonnes, edges a hair either side
+  - L583 ...and payingCount() is the largest n with the tonnes less the n - 1 before it at the line - n pays, n + 1 does not - and never falls as the tonnes rise
+  - L590 fixture: main's 35 berths' worth of general cargo, 35 x 450,000 / 12 t a month, is between 7 and 8 of the catalogue's General Cargo Terminal's month,
+  - L595 THE SAME TRADE TAKES 8 GENERAL CARGO TERMINALS, not main's 35: under a quarter of them, enough to carry it, and not one more than the tonnes pay for
+  - L597 ...payingTerminal() picks the General Cargo Terminal for it, the kind's only terminal, and orderCount() orders those 8
+  - L600 ...and the first waits for .60 of its month, 100,000 t a month: two of main's berths' worth (75,000) is none yet
+  - L612 fixture: 3.5 Bulk Berths' month uncovered pays a Bulk Berth back (three, each after the ones before it) and not a Bulk Terminal;
+  - L618 A TRADE PAST THE BULK TERMINAL'S BREAK-EVEN WITH A FEW BULK BERTHS' MONTH UNCOVERED: the Bulk Terminal, and ONE of it - the uncovered
+  - L622 THE SAME UNCOVERED WITH THE TRADE UNDER IT (all of the trade uncovered): the Bulk Berth, and as many of it as Ports.payingCount()
+  - L625 ...the trade a hair under the Bulk Terminal's break-even is Bulk Berths still, at it the Bulk Terminal
+  - L628 NO NEED, NOTHING: the uncovered a hair under a Bulk Berth's break-even is none, however large the trade (its berths stand), and no tonnes or no dues the same
+  - L633 ...at a Bulk Berth's break-even exactly there is a need, and a trade past the Terminal's has it a Bulk Terminal
+  - L636 A TERMINAL PASSED OVER (skip) LEAVES THE OTHER: the Bulk Terminal skipped is the Bulk Berth, both skipped none, and a Bulk Berth skipped has the need
+  - L642 THE DIAL AT 2 HALVES BOTH LINES: the trade at half the Bulk Terminal's break-even is Bulk Berths at the default dial, the Bulk Terminal at 2
+  - L645 ...a trade is never taken for less than what is left uncovered of it (a caller's lower figure is held to it), and the order is one at least
+- **L653 3. the factor equals its formula, and nothing at sea is the railway's band, to the bit**
+  - L666 THE FACTOR EQUALS ITS FORMULA EXACTLY: 1 - rail - sea + sea x SEA_FREIGHT_SHARE, every share on a grid
+  - L667 ...and with nothing at sea it is the railway's own 1 - rail, to the bit
+  - L678 WITH NO PORT the railway's share of every good is its carried share and the ships' nothing, to the bit
+  - L680 ...and the road's rail share is its carried share, the ships' nothing
+- **L693 4. the shares: berths shared by tonnes; before the railway, or after it; crude and its room**
+  - L712 A KIND'S BERTHS ARE SHARED AMONG ITS GOODS BY THEIR TONNES: steel and machinery each go by sea in the
+  - L715 ...under the quote, before the railway: the railway hauls its carried share of what the berths leave
+  - L717 ...and the tonnes they take come off what the railway is offered, by stream, with their lorry freight
+  - L719 a kind with no berth goes nowhere by sea, and the railway's share of it is its carried share
+  - L723 CRUDE WITH NO TANK ROOM IS HELD BACK: the tanker berth takes the other liquids, all of the petrol, and the
+  - L730 ...and the road's two shares are what the berths take of each stream, before the railway and in all
+  - L739 WITH ROOM FOR A CARGO crude goes by sea in the largest class the room takes, an LR2 in 100,000 t, the
+  - L751 A KIND NOT UNDER THE QUOTE GOES AFTER THE RAILWAY: it takes nothing off what the railway is offered
+  - L753 ...its berths shared over what the railway leaves, and the railway's share its carried share, whole
+- **L762 5. no port gives a bit-identical band: a town with a railway and no terminal**
+  - L777 fixture: two steel foundries and a rail spur stood
+  - L792 fixture: the railway carries the town's freight, and no terminal stands
+  - L795 EVERY GOOD'S BAND IS 0.7.85'S: 1 - carried and carried x the quote, to the bit
+  - L799 ...the road's rail share the railway's carried share and the ships' nothing
+  - L801 ...and nothing went by sea, and no boat called
+- **L810 6. a port on a town: the coast, the band, the road, the crews, the calls, the audit**
+  - L824 fixture: the town's two foundries ship steel and land iron, and it owns no sea
+  - L828 A TERMINAL WITH NO SEA IS REFUSED NO_COAST, before land and money
+  - L830 ...the card's verdict says so before the click
+  - L834 ...and a run stops at it
+  - L836 fixture: the city buys an offer that runs out to the sea
+  - L838 WITH SEA THE ORDER PASSES THE COAST
+  - L844 fixture: the terminal stood
+  - L859 ITS KIND GOES BY SEA IN ITS SHARE: the berth's month over the general cargo that crossed the boundary
+  - L881 EACH GOOD'S BAND IS ITS FORMULA: Ports.factor() of its rail and sea shares, to the bit
+  - L882 ...narrower than the lorries': it lands cheaper and ships dearer than the world's delivered prices
+  - L884 ...and a kind with no berth keeps the lorries' band
+  - L887 THE ROAD IS TOLD THE SHIPS' SHARE of each stream, relieved at the railway's RAIL_ROAD_RELIEF
+  - L902 ITS CREWS ARE PAID BY FREIGHT: a town with no line pays only its terminal's upkeep with transit's, Freight's wage bill
+  - L916 CALLS = TONNES ÷ CARGO: the month's general cargo by sea, each way, over a 5,500 t ship, whole
+  - L920 ...the month's sea tonnes are the share that was in force while it moved, of what crossed
+  - L927 ...and the audit closes every month of a year with the port: its residual within MoneyAudit.tolerance() of
+- **L935 7. crude needs room: held back without a Tank Farm, in the largest class the room takes with one**
+  - L948 fixture: a refinery on imported crude, a tanker berth, and no Tank Farm
+  - L953 ITS CRUDE IS HELD BACK FOR ROOM: none by sea, what the berth would take held back
+  - L960 ...and the refiners' page says so
+  - L970 A TANK FARM IS WEIGHED while a port holds the refiners' crude back for room: their part of it, at the freight a
+  - L980 ...and the refiners order it only when it passes every gate and earns more on its cost than any unit
+  - L994 ...a Crude Unit's crude held back pays for one where an Oil Refinery's does not (a fixture's gates); nothing
+  - L1004 fixture: a Tank Farm stood beside it
+  - L1007 WITH A TANK FARM ITS CRUDE GOES BY SEA, in the largest class the free room takes
+  - L1011 ...its calls in that class
+  - L1024 fixture: one Crude Unit's month beside one Tank Farm's room: kept as far as the room held it (until 0.7.105) it
+  - L1033 THE ROOM AN MR'S CARGO NEEDS IS KEPT FREE (Refining.CARGO_KEPT_FREE): the refiners keep the rest of the room,
+  - L1042 ...and a month on, the store kept, its crude goes by sea in an MR, none held back for room
+  - L1062 A FRACTION OF A CALL IS A WHOLE ONE in the share of months it says: 12,345 t in 5,500 t ships is 2 or 3
+  - L1065 ...no tonnes, no call
+  - L1077 the schedule is pure in the month and the trade: built twice, the same calls
+  - L1079 ...each call's whole visit inside its month, on a quay of its own kind
+  - L1081 ...and another month hashes its arrivals afresh
+  - L1083 A LANE RUNS STRAIGHT OUT TO SEA AWAY FROM THE SITE, LANE_PLOTS long
+  - L1100 A BOAT IS PURE IN (CALL, t): asked twice, the same place; on the water only from a leg before it berths to
+  - L1102 ...halfway in, halfway along its lane; at the quay while it berths; halfway out on the way back
+  - L1113 ...an import comes in loaded and leaves empty, an export the other way, a box ship loaded both ways
+  - L1135 A FRAME TOUCHES ONLY THE ROUTES ON SCREEN, and finds every boat on them, a district and eight by eight
+- **L1186 9. the shares and the month cross a save; a save from before them has nothing at sea**
+  - L1200 the shares in force and the month's tonnes cross a save, to the bit
+  - L1211 ...the band put back on every market, and the road's two shares, to the bit
+  - L1212 ...the month's boats the same
+  - L1216 ...and a month on the city and its reload ship the same tonnes by sea and strike the same shares, to the bit
+  - L1230 A SAVE FROM BEFORE 0.7.86 (no portMonth) loads with nothing at sea
+  - L1233 ...and its terminal takes its share the first month it plays, the audit closing
+- **L1290 10. the harbour's quay (HB1): from the detail zoom in a boat at its berth lies alongside its quay and the terminals' quays are one wall**
+  - L1302 the dial: the bar reads 1,000 m at DETAIL_FROM, 500 m at 1% past it, 1,000 m just under it
+  - L1352 alongside: the heading is along the quay face, the sea's direction turned a quarter the same way every time
+  - L1353 ...every hull point seaward of the face, none in the work's box or its quay's plots
+  - L1354 ...the hull's side on the face, its far side a beam out (hulls narrower and wider than a plot)
+  - L1355 ...the boat on the berth's line out from the work, its call, load and docking as they were
+  - L1371 ...at DETAIL_FROM and below, for a boat afloat, and for a berth whose side is not known: the boat itself
+  - L1386 the berth carries its work's side from CityShore.berths(), -1 for a berth made by hand
+  - L1410 walls: two works side by side within the gap (WALL_JOIN_GAP, from CLEAR), on each of the four sides: one wall over both sea sides and the gap
+  - L1411 ...the same two farther apart than the gap: two walls, the gap not covered
+  - L1424 ...a third facing another way has its own, the same side on another line has its own, a pier of its own and a tank farm have none
+  - L1436 ...no plot of any work's box is in a wall: a box in a strip cuts the wall round it, the rest of the strip still walled
+  - L1450 ...made again when a work is laid (a third joins the wall), the same in whatever order they were laid, asked by the window
+- **L1592 10b. (HB1 slice E) the boats lie alongside, else stern-to, else as placed, only where their hulls cross no box, wall or other docked boat**
+  - L1600 slice E: from the detail zoom in boats are drawn at true size (ShipShapes.TRUE_FROM is DETAIL_FROM), so the fixtures' scales draw a Capesize one length
+  - L1623 three Capesizes at Bulk Berths side by side facing one way, 5 plots apart and 6, at 4 px and 8: no two drawn hulls overlap, none alongside or stern-to crosse...
+  - L1625 ...5 apart a neighbour's hull as placed lies across every one's place alongside (a Capesize is more than 5 plots long), but each is clear stern-to: all three...
+  - L1627 ...6 apart, a box and CLEAR: the first and third of a row lie alongside (a neighbour's hull as placed clears them by less than the tolerance) and the middle ...
+  - L1651 two Capesizes 8 plots apart, a pitch between where a bow-out hull is clear of the other's place and where two lie nose to tail: the first to arrive lies alon...
+  - L1653 ...the answer is the same whatever order the boats are handed in (the order they arrived decides, not the list's)
+  - L1669 the same three Bulk Berths spaced far apart (a Capesize's length and beam and a plot): every boat alongside, as alongside() gives it, none crossing anything
+  - L1691 a lone berth: the boat lies alongside exactly as alongside() gives it, on each side, for five classes of ship, at three scales (slice C's case unchanged)
+  - L1729 stern-to: the heading is the sea's direction, the hull's stern on the quay's face (least depth the face, its length the drawn length), on the berth's line ou...
+  - L1730 ...none of the hull in the work's box, the call, load and docking as they were; the boat itself at DETAIL_FROM and below, afloat, and for a side not known
+  - L1755 a box in the way, or a neighbour's wall (its box clear): a Capesize lies stern-to, crossing nothing, though alone it lies alongside; a Panamax, which clears ...
+  - L1771 a box on the water straight out from the berth, across both its place alongside and its stern-to place: a Capesize and a Panamax stay as the schedule placed ...
+  - L1793 a corner, two works at right angles with 3 plots between a wall and a box, where the ships lying alongside would cross: no two drawn hulls overlap, none laid...
+  - L1795 ...the east ship, clear of the south's place, lies alongside; the south ship lies stern-to when the east ship came first, and as placed when it came second (...
+  - L1815 at DETAIL_FROM and below every boat comes back as given (the list itself); above it a boat afloat is untouched, and a boat whose berth's side is not known st...
+  - L1874 the window, a bay of
+  - L1877 ...berthed() over a window's boats alone would have turned some of them (the window matters, so drawn() weighs every boat docked):
+  - L1894 a frame's boats drawn() over the whole bay of 64 berths take no more than MapCheck.BOAT_FRAME_MS (0.5 ms)
+- **L1991 11. the yard's picture (HB2): a work's box painted, its stock by the level, the quay track, lead and train by the rail bits, the cells be...**
+  - L2029 a picture is w*PX by h*PX, opaque and the same on a second call, for each of the five kinds, a small box and a large, on all four sea sides
+  - L2030 ...and the work's own: the same box at another place, or of another type, is another picture (the seed), for the yards that scatter: boxes, heaps and crates
+  - L2073 the yard fills: for each port kind, stock at step k (the pixels that differ from step 0's) holds step k-1's, step 1 has some and step LEVELS shows more, bare...
+  - L2075 ...a level below nothing is step 0 and one above LEVELS is step LEVELS
+  - L2076 ...a tank farm (TANKS) has its tanks on the ground and shows the same picture at every step and with every rail bit
+  - L2097 step(): 0 at no busy, at least 1 for any busy above 0 however small, LEVELS at 1 and beyond
+  - L2098 ...never falling as busy rises from 0 to 2, and every step from 0 to LEVELS is the step of some busy
+  - L2148 the quay track (RAIL \| OPEN_LOW \| OPEN_HIGH): the box's LOW and HIGH edge lines hold steel in the sea-most plot row, at the same offsets, and the rails run u...
+  - L2150 ...with RAIL alone neither edge holds any (the buffer stops); OPEN_LOW opens the LOW end only, OPEN_HIGH the HIGH
+  - L2151 ...OPEN_LOW changes pixels only within the first plot along the shore and OPEN_HIGH only within the last
+  - L2152 ...without RAIL no rail bit changes a picture and the sea-most row holds no track at the edges
+  - L2153 ...no stock stands in the track's rows: the sea-most plot row, and at a box 10 plots deep the two, are the same at step 0 and at LEVELS
+  - L2184 the lead (RAIL \| LEAD_LOW, LEAD_HIGH): the land edge line holds steel inside the LOW column's plot (the HIGH's) and nowhere else, and none with no lead
+  - L2186 ...its rails run unbroken from the land edge to the quay track's land-side rail, which they join
+  - L2187 ...and the yard gives its column up: the lead's plot column is the same at step 0 and at LEVELS
+  - L2217 a train (TRAIN with RAIL) changes pixels, and only inside the track rows: the sea-most plot row, and at a box 10 plots deep the two
+  - L2218 ...and without RAIL TRAIN changes nothing
+  - L2265 gapCell() and leadCell() are PX by PX, transparent (0) off the track and opaque on it, on each side
+  - L2266 a gap cell's two shore-wise edge lines hold steel at the offsets of an open picture's edge line in its sea-most row, and its track where the picture's is
+  - L2267 a lead cell's land-side and sea-side edge lines hold steel at the offsets of the picture's land edge line in the LOW (HIGH) lead's column, and its track wher...
+  - L2294 kindOf(): each terminal of the catalogue is the kind of its berth's cargo, a tank farm (shore()) is TANKS, any other type is null, and null is null
+  - L2318 Ports.busy(): a kind's sea tonnes both ways over its berths' month - 150 of 300 t is 0.5, exactly the berths' is 1, three times is 1, no berth standing is 0,...
+  - L2328 ...and never falls as the tonnes rise nor leaves 0 to 1; with step() the kind at its berths' month shows full
+  - L2343 painting the large box's picture (a full container yard, RAIL \| OPEN_LOW \| TRAIN) takes no more than HarbourYard.PICTURE_MS (0.5 ms)
 
 ## PriceLevelCheck.java - 60 labelled assertions
 
@@ -21626,6 +21654,118 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L540 one more Quarry on a limestone town adds 40,000 t of limestone; its estimate the city's room for limestone at the
   - L553 the plan: the best earnings on the whole cost of the quarries that fit, staff and pay - or none, and why
   - L557 ...the Dimension Stone Quarry weighed only where it fits: never on a limestone town
+
+## QuayCraneCheck.java - 23 labelled assertions
+
+> The quay crane (HB2, 2026-11-09; QuayCrane, BoatSchedule.atQuay()): a boat at its terminal's quay is worked by a light line from over
+> the ship to the apron and a box that slides along it, as Jerus picked look 3a from the renders. Pure geometry, so every fixture is a
+> work, a boat's point and a share.
+> 
+> WHAT THIS HAS TO PROVE:
+> 
+>   1. THE SHARE: BoatSchedule.atQuay() is 0 or more exactly when position() has the boat docked, over a month's calls and times about
+>      each call's arrival and departure; it is 0 at the arrival, 1 at the end of BERTH_SECONDS, -1 before and after.
+> 
+>   2. WHERE THE LINE LIES, on each of the four sides: one crane at a small berth; its apron end is inside the box, in its sea-most row;
+>      its ship end is on the water beyond the wall, past the boat; the line crosses the wall square to the shore; the hook is on it.
+> 
+> ...
+
+  - L113 1. THE SHARE: atQuay() is a boat's share of its time at the quay, and -1 when it is not at it
+  - L144 atQuay() >= 0 exactly when position() has the boat docked:
+  - L146 ...and it is (t - arrives) over BERTH_SECONDS / MONTH_SECONDS at the quay, -1 away from it
+  - L147 ...0 at arrives(), 1 at arrives() + BERTH_SECONDS / MONTH_SECONDS, -1 just before and just after
+  - L148 ...-1 for no call
+  - L155 2. WHERE THE LINE LIES: from over the ship across the quay's wall to the apron, square to the shore, on all four sides
+  - L240 3. THE MOVES: carried out to the apron MOVES times and back bare; a second crane loads where the first unloads
+  - L271 4. THE CARGO: a grab of ore, a box, a tanker's two arms; no crane for a pier of its own, a share outside 0..1 or no cargo
+  - L294 LIQUID is two loading arms (ARM), at every one of 50 shares
+  - L295 ...they do not move: the same at every share
+  - L296 ...they stand 2 x ARM_APART plots apart, with no hook but the ship end
+  - L297 ...and run from the wall's outer edge less half a plot out to the boat's distance
+  - L309 a work with a pier of its own (a quay that is not HARBOUR_QUAY_PLOTS: 0, one under, one over) has no crane,
+  - L314 a share of -1 (the boat is not at the quay), or any outside 0..1, gives none, whatever the cargo
+  - L315 ...and so does a null cargo or a null work
+  - L317 ...but the ends of 0..1 give the cranes
+  - L325 5. THE TERMINAL: worksByBerth() finds a berthed work by its berth's point
+  - L339 side
+  - L341 side
+  - L347 berthKey() is one key for a point: 21 x 21 points about the origin (negative coordinates too) give
+  - L355 6. THE COST: a frame's boats drawn() and the cranes of every docked one, over a bay of 64 berths
+  - L385 the frames gave cranes to work:
+  - L386 a frame's boats drawn() and the reaches() of every docked one take no more than MapCheck.BOAT_FRAME_MS (
+
+## QuayRailCheck.java - 48 labelled assertions
+
+> The quay lines of the harbour, the spur the railway lays to each, and the railed terminals QuayRail reads from them (batch HB2, Jerus
+> 2026-11-09: "tracks on the quay, with the railway leaning toward a port so a line reaches those tracks").
+> 
+> WHAT THIS HAS TO PROVE:
+> 
+>   1. THE QUAY LINES: CityShore.quayLines() groups the berthed works whose strips join into one wall: a bay of berths WALL_JOIN_GAP apart is
+>      one line of its works in shore order in each of the four sides, berths farther apart are a line each, the line's span and outer
+>      edge are the strip's, and the union of walls() plots is the lines' strips less every box (the walls did not move when they and the lines
+>      came from one grouping); the lines are cached with the walls.
+> 
+>   2. THE ENDS: QuayRail.ends() gives two plots a work, BEHIND its land edge at its first and its last column along the shore, none of them
+>      blocked, one past the verge the shore keeps clear; an end a neighbour's verge covers is left out.
+> ...
+
+- **L284 1. quayLines(): the works whose strips join into one wall, from the one grouping the walls are made from**
+  - L302 ...its span runs from the first box's low edge to the last box's high edge, and its line is the strip's outer edge
+  - L306 ...the works laid in the reverse order are the same line, in shore order
+  - L311 ...three berths APART (
+  - L312 ...the walls' plots are the lines' strips less the boxes, joined and apart: the walls did not move
+  - L319 a box standing in the strip (a work with no quay) cuts the wall in pieces round it and not the line: still one line of three
+  - L327 the lines are cached with the walls (the same list while nothing moves) and made again when a work is laid
+  - L331 a work on a pier of its own (a quay of QUAY_PLOTS, laid before MF1) is on no line
+- **L354 2. QuayRail.ends(): two a work, BEHIND the land edge at its first and last column, none blocked**
+  - L368 ...none of them blocked by the shore
+  - L375 ...one past the verge: the plot a work's verge keeps clear is blocked, the end itself is not
+  - L382 a berth built close behind another covers its ends with its verge: they are left out, the second's two stay (line 1)
+  - L384 an empty shore has no ends
+- **L390 3. the spur: one, from the main line to an end of the line, the shortest, and the model's railway untouched**
+  - L400 the railway laid with the ends has one quay spur, the one laid with none has none
+  - L404 ...it starts on the main line (a plot of the gate arm the plain railway has too)
+  - L406 ...ends on one of the line's ends
+  - L409 ...every plot of it is dry ground the shore leaves free
+  - L412 ...its length is the least over the ends: the Manhattan distance to the nearest plot of the main line (open ground)
+  - L415 the model's railway is untouched: sidings, branches, yards and the surplus are those of the railway laid with no ends
+  - L419 ...the railway has the spur's plots more, exactly quayPlots(), and the surplus does not count them
+  - L423 ...the siding still ends in its loading shed (M_SHED), the only shed there is, and the spur's last plot has none
+- **L441 4. no spur: out of reach, behind ground no run can take, and two bays in reach get one each**
+  - L448 a bay farther from the main line than QUAY_REACH (
+  - L457 the same bay behind a band of ground the runs cannot take, right across the city: no spur and the railway is the one with none
+  - L459 ...and with the band gone the same ends get their spur (the band is what stopped it)
+  - L465 two bays in reach on either side of the main line are two lines, and the line between them runs between the two rows of ends
+  - L467 ...they get a spur each, in the order of the lines
+  - L477 ...each ends at an end of its own line and starts on the main line
+  - L482 ...and share no plot after the main line's (a spur laid is rail the next line's way sees)
+- **L491 5. the stamp: the ends are what the spurs are laid for**
+  - L497 the fixture lays a spur
+  - L498 laid again to the same ends and counts, nothing moves
+  - L500 a railway with no harbour is not moved by being told so: no ends set, then none, lays nothing again
+  - L504 the first end taken away (the ground the same): the spur is laid again, to the next end of the line
+  - L508 ...given back, it returns to the first end: the net is the one laid at first
+  - L515 a berth laid ahead of the bay (new ends:
+  - L518 ...and laid again to those, nothing moves
+  - L523 the ends cleared: the spur is taken off, and the railway is the one laid with none
+- **L531 6. the sidecar: the spurs read back as laid, and laying again moves nothing**
+  - L535 the fixture lays two spurs
+  - L540 the net with its quay spurs reads back (an arm of a corridor the net does not list is not a corrupt one)
+  - L543 ...equal to the net written, and its quaySpurs() the same
+  - L546 ...and laid again to the same ends and counts it moves nothing
+  - L549 ...the ends cleared, the spurs come off the net read back as they do off the one laid
+  - L551 the sidecar round trip:
+- **L599 7. QuayRail.of(): the railed terminals, their quay track, the lead and the plots between the boxes**
+  - L610 ...the first is open to its high side only, the last to its low side only, the middle to both
+  - L613 ...the lead is the middle berth's alone, at its low column
+  - L625 ...the cells: a GAP for each plot between the boxes in the sea-most row (
+  - L627 ...and CLEAR (
+  - L633 a spur behind the last berth's high column: it has LEAD_HIGH and the first two do not, with LEAD_AT_HIGH cells
+  - L641 with no spur, or a spur that ends at none of the line's ends: empty, every work's bits 0, no cells
+  - L653 a second line no spur ends at stays unrailed: its works' bits are 0 and none of the cells is its
+  - L655 a work on no line of the shore has bits 0
 
 ## RailCheck.java - 50 labelled assertions
 

@@ -1,6 +1,6 @@
 # BuildLog.java - 162 lines · 10 methods · 2 constants · model
 
-`ham/citybuildersim/BuildLog.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildLog.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > What the city has gained, and when. The other half of DemolitionLog.
 > 

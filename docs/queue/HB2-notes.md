@@ -94,14 +94,22 @@ need no rail and show at every terminal.
   run can take; the stamp; the sidecar; `QuayRail.of()`'s bits and cells.
 - **QuayCraneCheck** (new, 62 lines, in `Timing.HARNESSES`): `atQuay()`
   against `position()`; where the line lies on all four sides; the hook's
-  moves; two cranes; the arms; a frame's cost against `MapCheck.BOAT_FRAME_MS`.
+  moves; two cranes; the arms; a frame's cost against `MapCheck.BOAT_FRAME_MS`
+  (0.19 ms for a bay of 64 berths with its boats, 0.5 allowed).
 - **The trace:** the default playtest (`-Dplaytest.trace`, both data files
   named) on main's classes (3bdffb1b, built apart) and the branch's after
   the merge: the eight files byte-identical, the two reports alike but for
   the run-time line, each ending "Nothing. Every month passed the audit and
   every reload matched", the layout watch at 0 boxes moved of 190,223 in
   both. No ensemble.
-- **`./batch-check.sh --pick`:** PICK_LINE
+- **`./batch-check.sh --pick`** (both data files named), on the final tree:
+  exit 3. 50 of 193 harnesses picked; nothing red but main's recorded reds,
+  word for word (ScaleCheck's two lines, MapCheck's four on a yard laid
+  across a district, KeptCheck); three timing assertions soft beside other
+  sessions (SaveSlotCheck 1, MapCheck 1, KeptCheck 1), none of them this
+  batch's lines; Stale 0 firm; the review line "not needed - no money, saves
+  or threading" (`CityMap.quayRail()`'s cache is the screen's thread's, as
+  `trainRoutes()`' is, and the month runs on that thread).
 
 ## 5. To look at, in the window
 

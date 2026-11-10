@@ -1,6 +1,6 @@
 # IslandRailRenders.java - 123 lines · 7 methods · 1 constants · tools
 
-`ham/citybuildersim/tools/IslandRailRenders.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/tools/IslandRailRenders.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > Renders what RI1 did for an island the city's port links, for review: the island's own railway, a rail hub nearest the terminal with
 > its track and yard, beside the home hub's, drawn by the game's own painters, headless.

@@ -7506,7 +7506,8 @@ public final class CityMap {
     /** The quay rail as it was worked out, and what it was worked out from: the shore and the runs, with their versions. */
     private record QuayRailKept(CityShore shore, long shoreVersion, CityRuns runs, long runsVersion, QuayRail rail) { }
 
-    private volatile QuayRailKept quayRailKept;
+    /** The quay rail last worked out: the screen's thread's alone, as trainRoutes()' cache is (the month that moves the shore and the runs is that thread's too). */
+    private QuayRailKept quayRailKept;
 
     /** The terminals the railway reaches (HB2): QuayRail.of() the shore and the ends of the quay spurs laid, worked out again only when the shore or the runs move. */
     public QuayRail quayRail() {
