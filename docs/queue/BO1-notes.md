@@ -112,3 +112,42 @@ columns grow cleanly, and the three texts that list the groups
 (`OUTSIDE_INFO`, `BELOW_THE_RULE`, the verdict's javadoc). HS3's household
 money page names the line too. The Government screen's vouchers list only
 the rows paid, so the empty row shows nowhere today.
+
+## 3. The slices, the review, the checks
+
+- **Slice A** (Sonnet 5.5, `brief-BO1-A`): the row, the cell, the line's state
+  and save, the grant, the census, the labour force, OwnerCheck 1-5. Amended
+  in review: the owner adults saved (section 0), the dial, two premises the
+  new cell moves (HouseholdCheck counts 79 cells; CrimeCheck's fixture names
+  the cell before the prisoners', which was the last but one).
+- **Slice B** (Sonnet 5.5, `brief-BO1-B`): the sale, the broke rule, the
+  leaver, OwnerCheck 6-9. Taken as written. It skips the owner cell in the
+  exchange's three household loops by type, not by `tradesShares()`, since a
+  prisoners' cell trades none by that rule either and a default city must
+  not move. What section 9's real city found (the line switched on, 120
+  months, 5 s):
+  - 5 families formed, none dropped, the cell empty 3 months (before the first);
+  - six companies were in issue with no family: their first shares were not
+    founders' (the bank's desk issues its own; four offered on a book of
+    nothing), so "one per listed company" is one per company that listed
+    with a founding book, as the study's grant has it;
+  - a growing owner cell takes the pool's average of every stock, shares
+    included ("they bring what the pool gives them", the study's 3.5), so
+    it can hold crumbs of a company without a family: at most 1.2e-5 of an
+    issue, asserted under a thousandth;
+  - the owners offered $6,199 in the run and sold $1,803 (29%).
+- **The trace**: the default playtest traced (`-Dplaytest.trace`) on main's
+  classes (a1008449) and on the batch's last model (96487da1): the eight
+  files byte-identical, the reports apart only in run time (60 s, 70 s, the
+  second beside `--pick`) and both exiting 1 alike. The ensemble is skipped
+  (EN1).
+- **Review lines** for the gate: the save gains two fields (`ownerFamilies`,
+  `ownerAdults`, both null on an old save) and two numbers at the end of the
+  exchange's life array (read only from a save that has them); no format
+  bump. The money: with the line off nothing moves; with it on the grant,
+  the sale and the leaver conserve the shares (OwnerCheck 3, 6, 8). No
+  threading.
+- **`--pick`** (the data files named): exit 3, the reds main's recorded ones
+  (HealthCheck 1, MapCheck 4, LongPlaytest with no FAIL line), no new red,
+  74 of 198 harnesses run for the 45 files changed; `review needed - saves:
+  DataSave.java` is the two fields above. Not run here: `--timing` (the gate's).
