@@ -18,6 +18,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.74 — CU1, Copper Refining's margin, a study — 2026-11-09, ready, see docs/queue/CU1-notes.md
+A study, no model change. LS1 found Copper Refining buying its input at 52% of its sales and keeping 35%. The sector is
+Rod Mills on imported cathode, exporting rod (276 by m2400 and 1,679 by m3996 in LS1's city; 363-446 by m2400 on seeds
+1-3 of main, 251 on the Historical path; no smelter in any run), and its books are the world's rod standing 2.6 over
+its literal ratio to cathode by 2100: each good is solved alone, the mean mill price is held to the path, and the city
+buys from the cheapest maker (DR Congo's cathode) and sells to the best buyer. A real smelter, refinery or rod mill
+buys 67-86% of its sales (USGS, the Economic Census): the literals are right and the played world leaves them. A
+prototype that re-anchors a series' followers on its own good at the city's site, wire and cable as rod plus
+fabrication, ends the mills on four seeds, keeps the people and halves GDP a head on the three that had them. The note
+is docs/studies/spec-copper-margin.md, its probes and tables in docs/studies/copper-margin/. Queued: CU2 (the batch
+that sets the margin), WP1 (a study), DS1 (a look). Seven calls, each with a recommendation. No trace moves.
+
 ### 0.9.73 — RI1, rail on islands — 2026-11-09, ready, see docs/queue/RI1-notes.md
 Every linked piece of the city's ground now grows its own railway, as CL5 gave each its highways (Jerus ticked "Rail
 on islands", 2026-10-31; CL5-C's call 1). A piece's rail hub is the railway crossing nearest its anchor, and an island

@@ -4,7 +4,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 537 files, 595,509 lines, 25,839 methods, 5,649 constants. `GameVersion.VERSION` is "0.9.73", `SAVE_FORMAT` 51.
+**The tree:** 537 files, 595,509 lines, 25,839 methods, 5,649 constants. `GameVersion.VERSION` is "0.9.74", `SAVE_FORMAT` 51.
 
 ## model (248 files)
 
