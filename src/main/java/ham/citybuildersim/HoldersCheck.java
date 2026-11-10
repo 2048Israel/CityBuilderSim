@@ -1676,6 +1676,9 @@ public class HoldersCheck {
 
     /* ================= 12. the pooled discount re-struck (BK1) ================= */
 
+    /** A holder took part of a sale, and not the rounding left when the others paid in full, when it holds over this share of the face sold (GW1: the bank's 3.2e-14 of a face of 54 passed "took face" on noise). */
+    static final double MATERIAL_PART = .01;
+
     /** One city of section 12 (BK1): the city, the line it sold once and settled, its split going in, and the line at the two edges of that first settle (BK2: Edge, null if no line was sold). */
     record Reopening(Game city, Debt line, double splitStart, Edge[] firstSettle) { }
 
@@ -1720,6 +1723,17 @@ public class HoldersCheck {
             city.getForeignAccounts().pinRate(1.0);
             city.getBusinessInvestment().holdSector(Sectors.CONSTRUCTION);
             city.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);   // EP1: see main(), where the town is built first
+            /* ...AND EVERY OTHER SECTOR HELD, SO THE BANK KEEPS ITS ROOM TO BID (GW1). The bank is the residual buyer of the sections below, and a bid
+               needs equity: its room is its risk-weighted capital less its book (Game.auctionBidders()). On GW1's path (the staffing gate counts the
+               workers an order's posts would draw, Sector.GATE_DRAW_MONTHS) the businesses order their buildings earlier and borrow for them, and at
+               the first sale (month 61) the bank stood at equity -5,786.7 on a weighted book of 3,412.6 (main before GW1: +764.1 on 575.7), insolvent,
+               its room nothing (44,878 before) and the businesses' idle money 1,396.3 (377.5 before): the sale of 82.83 face went households 62.88,
+               firms 16.96, world 2.99, bank 0.0000, and the firms and the world paid their allotments in full at the settle, so the bank, the
+               residual buyer, took 3.2e-14 of face - rounding, where every line below asks it for a part. With every sector held, as the
+               staffing harnesses hold them, the bank stands at equity 1,589.1 on 183.9, its room 98,399: the first sale of 1,159.58 face went
+               bank 273.85 (23.6%; before GW1 30.61 of 129.42, 23.6%) and the second sale of 1,024.99 bank 191.30 (18.7%; before 22.53 of 111.30,
+               20.2%). The sections are about the paper and its holders, not the businesses' building. */
+            for (String key : Sectors.KEYS) city.getBusinessInvestment().holdSector(key);
             city.buildStack(template(city, "Gravel Road"), 6, true);
             city.buildStack(template(city, "House"), 300, false);
             city.buildStack(template(city, "Convenience Store"), 6, false);
@@ -1855,8 +1869,9 @@ public class HoldersCheck {
         close("...its equity's movement leaves nothing unexplained", fresh.residual(), 0, Math.max(1e-6, 1e-9 * fresh.scale()));
         close("...and its equity's two parts and the preferred still add up to its equity, as they did",
                 bank.equitySplitResidual(), fix.splitStart(), Math.max(1e-6, 1e-9 * Math.abs(bank.equity())));
-        assertTrue("fixture: the households and the bank each hold part of the line",
-                line.householdPrincipal() > 0 && line.bankPrincipal() > 0);
+        assertTrue("fixture: the households and the bank each hold a material part of the line",
+                line.householdPrincipal() > MATERIAL_PART * line.getOustandingPrincipal()
+                        && line.bankPrincipal() > MATERIAL_PART * line.getOustandingPrincipal());
         String goingIn = firstDifference(cityFigures(city), cityFigures(twin));
         if (!goingIn.isEmpty()) out.println("   first figure apart going in: " + goingIn);
         assertTrue("fixture: the twin is the same city going in", goingIn.isEmpty() && fix.splitStart() == twinFix.splitStart());
@@ -1917,8 +1932,9 @@ public class HoldersCheck {
                 Math.max(1e-6, 1e-9 * Math.abs(twinBank.equity())));
         close("...and its movement's residual is nothing", twinBank.equityMovement().residual(), 0,
                 Math.max(1e-6, 1e-9 * twinBank.equityMovement().scale()));
-        assertTrue("fixture: at the settle the bank took face and the households took more of the line",
-                bankFaceTaken > 0 && hhFaceTaken > 0 && hhPaid > 0 && bankPaid > 0);
+        assertTrue("fixture: at the settle the bank took a material part of the sale's face and the households took more of the line",
+                bankFaceTaken > MATERIAL_PART * before.unsettledFace() && hhFaceTaken > 0 && hhPaid > 0
+                        && bankPaid > MATERIAL_PART * before.unsettledFace());
         closeRel("the households' own discount per face of the line is what it was before the reopening, going into the settle",
                 before.discountOf(Debt.Holder.HOUSEHOLDS) / before.faceOf(Debt.Holder.HOUSEHOLDS), hhPerFaceBefore, 1e-12);
         closeRel("...the households' own discount rose by the face they took less what they paid for it",
@@ -2027,7 +2043,7 @@ public class HoldersCheck {
         Standing going = standing(city), twinGoing = standing(twin);
         double splitGoingIn = bank.equitySplitResidual();
         assertTrue("fixture: the bank holds part of a settled line, the line has discount left and the book carries the bank's share of it",
-                line != null && line.bankPrincipal() > 0 && line.getDiscountLeft() > 0 && going.book() > 0);
+                line != null && line.bankPrincipal() > MATERIAL_PART * line.getOustandingPrincipal() && line.getDiscountLeft() > 0 && going.book() > 0);
         close("fixture: ...the bank's unearned discount is the book's going in, in the city", going.carried(), going.book(), 1e-9);
         assertTrue("fixture: ...and the twin's is the same city", going.book() == twinGoing.book() && going.carried() == twinGoing.carried());
         double bankOwnBefore = line.discountOf(Debt.Holder.BANK);
@@ -2395,7 +2411,7 @@ public class HoldersCheck {
         closeRel("fixture: ...the sale's discount is the unsettled sale's: its face less what it raised",
                 in.unsettledDiscount(), sold - raised, 1e-9);
         assertTrue("fixture: ...the households and the bank each took part of it, and the central bank none",
-                settled.faceOf(HH) > 0 && settled.faceOf(BANK) > 0 && settled.faceOf(CB) == 0);
+                settled.faceOf(HH) > 0 && settled.faceOf(BANK) > MATERIAL_PART * sold && settled.faceOf(CB) == 0);
         for (Debt.Holder h : new Debt.Holder[]{ HH, FIRMS, WORLD }) {
             double face = settled.faceOf(h) - in.faceOf(h), paid = in.paid(h, settled);
             out.printf("   %s took $%,.4fk of face for $%,.4fk: its own discount $%,.6fk%n", h, face, paid, settled.discountOf(h));
