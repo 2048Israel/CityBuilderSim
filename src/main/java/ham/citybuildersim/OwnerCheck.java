@@ -35,6 +35,9 @@ import java.util.Locale;
  *      each company is what it was, the savings and money abroad go to the
  *      cell that grew.
  *   9. A REAL CITY: the playtest's city with the line on, 120 months, counted.
+ *  10. A SAVE FROM BEFORE THE OWNER FAMILIES LOADS ITS ROWS: main's statement
+ *      and row array, one row short, fed to the readers; the marked figures
+ *      come back where the save put them, the owners' row empty.
  */
 public class OwnerCheck {
 
@@ -155,7 +158,7 @@ public class OwnerCheck {
             check("the owner cell is its own row, after the prisoners",
                     Household.OWNER_ROW == Household.PRISON_ROW + 1 && ownerCell.row() == Household.OWNER_ROW
                     && Household.ROWS == Household.OWNER_ROW + 1);
-            check("...and a save from before the prisons still reads ten rows, not eleven",
+            check("...and the rows an older save carries are pinned: ten before the prisons, eleven before the owners (section 10 reads them)",
                     Household.ROWS_BEFORE_PRISON == Household.RETIRED_ROW + 4
                     && Household.ROWS_BEFORE_OWNER == Household.RETIRED_ROW + 5);
             check("...two adults, no wage, no job to split an income by",
@@ -263,6 +266,7 @@ public class OwnerCheck {
         sendsBack(IND, RETAIL);
         takesMoneyNotShares(IND, RETAIL);
         realCity();
+        oldSaves();
 
         System.out.println(fails == 0 ? "\nOwnerCheck: all OK" : "\nOwnerCheck: " + fails + " FAIL");
         System.exit(fails == 0 ? 0 : 1);
@@ -679,5 +683,58 @@ public class OwnerCheck {
         double s = 0;
         for (double x : v) s += x;
         return s;
+    }
+
+    /* ============ 10. a save from before the owner families loads its rows ============ */
+
+    /**
+     * Main's shapes fed to the two readers keyed to the rows: the statement
+     * and the row array of a 0.9.88 save, each row array one row short (the
+     * owner row cut from today's). The stranger's review, 2026-11-10: both
+     * readers refused them whole, and a constants-only line passed with both
+     * faults standing.
+     */
+    static void oldSaves() {
+        System.out.println("\n--- a save from before the owner families loads its rows ---");
+        final int now = Household.ROWS, old = Household.ROWS_BEFORE_OWNER, P = Household.PRISON_ROW;
+
+        // The statement: today's state with every figure marked by its place, then the owner row cut from each row array.
+        double[] full = new HouseholdAccounts().getStatementState();
+        int arrays = 20, scalars = full.length - arrays * now;
+        for (int k = 0; k < full.length; k++) full[k] = k + 1;
+        double[] cut = new double[scalars + arrays * old];
+        double[] expected = full.clone();
+        System.arraycopy(full, 0, cut, 0, scalars);
+        for (int j = 0; j < arrays; j++) {
+            System.arraycopy(full, scalars + j * now, cut, scalars + j * old, old);
+            for (int r = old; r < now; r++) expected[scalars + j * now + r] = 0;
+        }
+        HouseholdAccounts back = new HouseholdAccounts();
+        check("fixture: a 0.9.88 statement is the scalars and twenty row arrays of eleven rows (" + cut.length + " numbers)",
+                scalars == 19 && cut.length == 19 + 20 * 11 && old == 11);
+        check("the statement from before the owner families is read, not refused", back.restoreStatement(cut));
+        check("...every figure where the save put it, and the owners' row empty", java.util.Arrays.equals(back.getStatementState(), expected));
+        close("...the households' fuel, the last scalar", back.getFuel(), full[scalars - 1], 0);
+        close("...the prisoners' fuel, the last row the save carries in its last array", back.getRowFuel(P), full[scalars + (arrays - 1) * now + P], 0);
+        close("...and the owners' wages none", back.getRowWages(Household.OWNER_ROW), 0, 0);
+
+        // The row array: the two halves of the hunger and the prisoners' row, marked.
+        double[] rows = new double[old * 8 + 5];
+        rows[P] = 3.5;                 // the prisoners' savings
+        rows[old * 7 + P] = 9;         // ...and their subsistence
+        rows[old * 8 + 3] = 0.25;      // the share the shops handed over
+        rows[old * 8 + 4] = 17;        // the hungry at full shelves
+        HouseholdBalance hb = new HouseholdBalance();
+        hb.restore(rows, null);
+        close("the row array from before the owner families: the delivered share comes back", hb.getDeliveredShare(), 0.25, 0);
+        close("...and the hungry at full shelves", hb.getHungryAtFullShelves(), 17, 0);
+        close("...the prisoners' savings from their own row", hb.prisoners().savings(), 3.5, 0);
+        close("...and their subsistence, seven blocks on: the save's rows, not today's", hb.prisoners().subsistence(), 9, 0);
+        close("...and the owners' cell empty", hb.owners().savings(), 0, 0);
+        double[] working = new double[old * 8 + 3];
+        working[P] = 2.5;
+        HouseholdBalance hb3 = new HouseholdBalance();
+        hb3.restore(working, null);
+        close("...the shape from before the hunger's halves, eleven rows, read the same way", hb3.prisoners().savings(), 2.5, 0);
     }
 }

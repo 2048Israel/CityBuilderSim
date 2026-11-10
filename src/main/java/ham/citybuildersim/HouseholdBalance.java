@@ -1176,11 +1176,12 @@ public class HouseholdBalance {
     /**
      * A seven-row array - the tiers and the retired, from a caller written
      * before the people outside the families had rows - padded with empty
-     * rows. Nobody is in them unless the outside census says so.
+     * rows (or a ten-row one from before the prisons, an eleven-row one from
+     * before the owner families). Nobody is in them unless the outside census says so.
      */
     private static double[] padRows(double[] rows) {
         if (rows == null || (rows.length != ROWS_BEFORE_OUTSIDE
-                && rows.length != Household.ROWS_BEFORE_PRISON)) return rows;
+                && rows.length != Household.ROWS_BEFORE_PRISON && rows.length != Household.ROWS_BEFORE_OWNER)) return rows;
         return java.util.Arrays.copyOf(rows, ROWS);
     }
 
@@ -4736,8 +4737,11 @@ public class HouseholdBalance {
      *               hunger after the working), ROWS*8+3 from a build with the
      *               row working, or ROWS*3 from
      *               one before the household counts and the working were
-     *               appended. A short array restores what it carries and
-     *               leaves the rest to the rebuild.
+     *               appended; each of the three with eleven rows too, from
+     *               before the owner families (BO1), or with ten or seven
+     *               from before the prisons or the people outside. A short
+     *               array restores what it carries and leaves the rest to
+     *               the rebuild.
      * @param census the household counts to seed the cells with, or null to
      *               leave them empty for the plan to fill - see Game's load
      *               path, which restores once before the family model is back
@@ -4754,11 +4758,16 @@ public class HouseholdBalance {
         int rows;
         boolean current;
         int beforePrison = Household.ROWS_BEFORE_PRISON;
+        int beforeOwner = Household.ROWS_BEFORE_OWNER;
         // ...and since 0.7.27 the two halves of the hunger after the working.
-        boolean halves = saved.length == ROWS * 8 + 5;
-        if (halves)                                           { rows = ROWS; current = true; }
+        boolean halves = saved.length == ROWS * 8 + 5 || saved.length == beforeOwner * 8 + 5;
+        if (saved.length == ROWS * 8 + 5)                     { rows = ROWS; current = true; }
         else if (saved.length == ROWS * 8 + 3)                { rows = ROWS; current = true; }
         else if (saved.length == ROWS * 3)                    { rows = ROWS; current = false; }
+        // ...or from before the owner families had a row (BO1): every 0.9.88 save, one row short, the owners' empty.
+        else if (saved.length == beforeOwner * 8 + 5)         { rows = beforeOwner; current = true; }
+        else if (saved.length == beforeOwner * 8 + 3)         { rows = beforeOwner; current = true; }
+        else if (saved.length == beforeOwner * 3)             { rows = beforeOwner; current = false; }
         // ...or from the day before the prisons, with no prisoners' row.
         else if (saved.length == beforePrison * 8 + 3)        { rows = beforePrison; current = true; }
         else if (saved.length == beforePrison * 3)            { rows = beforePrison; current = false; }
