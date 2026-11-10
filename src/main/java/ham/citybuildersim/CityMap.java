@@ -7080,6 +7080,7 @@ public final class CityMap {
         // CL5: the city's ground in pieces, worked out again only when the ground has moved (MapPieces), and asked only when the highways have plots to lay.
         pieces.begin();
         runs.setMonth(month);   // MF1: what an idle yard's time is counted from
+        runs.setQuayEnds(QuayRail.ends(shore));   // HB2: the harbour's quay lines, each to have a spur
         boolean moved = runs.layTo(highway, track, yardSizes, spurs, runGround, siteX, siteY, rx, ry, mines, works, pieces) | bridged;
         if (moved) {
             changes++;
@@ -7501,6 +7502,25 @@ public final class CityMap {
 
     /** The city's works on its shore (0.7.97). */
     public CityShore shore() { return shore; }
+
+    /** The quay rail as it was worked out, and what it was worked out from: the shore and the runs, with their versions. */
+    private record QuayRailKept(CityShore shore, long shoreVersion, CityRuns runs, long runsVersion, QuayRail rail) { }
+
+    private volatile QuayRailKept quayRailKept;
+
+    /** The terminals the railway reaches (HB2): QuayRail.of() the shore and the ends of the quay spurs laid, worked out again only when the shore or the runs move. */
+    public QuayRail quayRail() {
+        CityShore s = shore;
+        CityRuns r = runs;
+        long sv = s.version(), rv = r.version();
+        QuayRailKept k = quayRailKept;
+        if (k != null && k.shore() == s && k.shoreVersion() == sv && k.runs() == r && k.runsVersion() == rv) return k.rail();
+        List<long[]> ends = new ArrayList<>();
+        for (long[] q : r.quaySpurs()) ends.add(new long[] { q[3], q[4] });
+        QuayRail made = QuayRail.of(s, ends);
+        quayRailKept = new QuayRailKept(s, sv, r, rv, made);
+        return made;
+    }
 
     /** The shore's types, by id: worked out once a table. */
     private int[] shoreTypes;

@@ -578,8 +578,12 @@ public final class CityRuns {
         return c.length > 3 ? (int) c[3] : CROSSING;
     }
 
-    /** The piece arm a belongs to: its corridor's (0 for an arm whose corridor the net does not list). */
+    /** The piece arm a belongs to: its corridor's (0 for an arm whose corridor the net does not list), and (HB2) a quay spur's the piece of the arm it leaves, for it has a corridor of no piece's. */
     static int pieceOf(Net n, Arm a) {
+        if (a.corridor == QUAY) {
+            int[] on = locate(n, a.sx, a.sy);
+            return on == null || n.arms.get(on[0]) == a ? 0 : pieceOf(n, n.arms.get(on[0]));
+        }
         return a.corridor < n.corridors.size() ? corridorPiece(n.corridors.get(a.corridor)) : 0;
     }
 
@@ -2445,7 +2449,7 @@ public final class CityRuns {
         java.util.Set<Long> seen = new java.util.HashSet<>();
         List<long[]> cell = new ArrayList<>(2);
         for (Arm a : rail.arms) {
-            if (a.corridor == SIDING) continue;   // (RI1) the railway pieces' spines, past the ways' placeholders, are lines for a yard
+            if (endsAtADoor(a.corridor)) continue;   // (RI1) the railway pieces' spines, past the ways' placeholders, are lines for a yard
             for (int s = 0; s < a.segs; s++) {
                 int hd = a.segHead[s], dx = DX[hd], dy = DY[hd];
                 if (dx != 0 && dy != 0) continue;
@@ -2539,7 +2543,7 @@ public final class CityRuns {
                 if (inside && !dry(g.at(x, y, -1))) return false;
                 if (inside) {
                     int c = coverer(rail, x, y, -1);
-                    if (c >= 0 && rail.arms.get(c).corridor == SIDING) return false;
+                    if (c >= 0 && endsAtADoor(rail.arms.get(c).corridor)) return false;
                 }
             }
         }
@@ -2807,6 +2811,8 @@ public final class CityRuns {
             }
             // (MF1) ...and an idle yard keeps the branch it had.
             if (!ctx.works.isEmpty()) for (int i = Math.max(1, yardsActive()); i < yards.size(); i++) reachYard(yards.get(i), g, ctx, budget);
+            // (HB2) Last, a spur to each of the harbour's quay lines: after all the model's track, none of it the model's.
+            layQuaySpurs(ctx, g);
         }
         yardsShort = Math.max(0, sizes.size() - yardsActive());
         railStamp = stamp;
@@ -2954,6 +2960,7 @@ public final class CityRuns {
     /**
      * A hash of everything layRail() reads: the track plots, the yards' sizes, the spurs, the ground's version, the gateway, the hub's seed, the mines and works, and the highways laid.
      * (RI1) With the railway started and islandRail on also the city's pieces: their count and which have weight - not the weights, which drift every month and would lay the ways afresh every month - and the railway's own pieces' hubs.
+     * (HB2) And the quay ends, only while there are any, so a city with no harbour keeps the stamp it has.
      */
     private long railStampOf(long trackPlots, List<int[]> sizes, int spurs, Ground g, long rx, long ry, List<long[]> mines, List<long[]> works, Pieces pieces) {
         long h = World.mix(0x5241494CL ^ trackPlots);
@@ -2970,6 +2977,10 @@ public final class CityRuns {
             h = World.mix(h ^ 0x49534C45L ^ count);
             for (int j = 1; j < rail.pieceHubs.size(); j++) h = World.mix(h ^ rail.pieceHubs.get(j)[0] * 0x9E3779B97F4A7C15L ^ rail.pieceHubs.get(j)[1] ^ ((long) j << 56));
             for (int m = 1; m < count; m++) if (pieces.weight(m) > 0) h = World.mix(h ^ m);
+        }
+        if (!quayEnds.isEmpty()) {
+            h = World.mix(h ^ 0x51554159L ^ ((long) quayEnds.size() << 32));
+            for (long[] e : quayEnds) h = World.mix(h ^ e[0] * 0x9E3779B97F4A7C15L ^ (e[1] << 20) ^ e[2]);
         }
         return h;
     }
@@ -3454,6 +3465,93 @@ public final class CityRuns {
         return n;
     }
 
+    /* ----- the quay spur (HB2, 2026-11-09) ----- */
+
+    /*
+     * Before HB2 no port had rail: the hub is the mine nearest the founding site and sidings go to mines and works. A harbour's quay line
+     * (CityShore.quayLines(): the terminals standing side by side on one wall) now gets ONE spur, an arm of the net laid like a siding - the
+     * shortest clear way from a plot of the main line to a plot BEHIND one of the line's boxes (QuayRail.ends()) - so the map can draw tracks
+     * on the quay of a terminal a line reaches. It comes from the land side and ends one plot past the verge the shore keeps clear, never along
+     * the shore, for the map refuses a new terminal's box on a run's plot and a spur beside the flank would take the next terminal's place.
+     * It is the railway's map, read by nothing in the model: it is laid last, after the sidings, the yards and the branches, takes none of the
+     * model's track (trackSurplus() leaves its plots out, as FX5's main line is grown whatever the track) and is no siding (QUAY).
+     */
+
+    /** The corridor of the arms laid to a harbour's quay lines: one the net never lists, so a quay spur is no siding, branch or spine to anything that reads the net (sidings(), the Rail Spurs, the loading sheds, the sidecar's format) and dropWays() takes it off with any arm past SIDING that is no piece's spine. */
+    static final int QUAY = Integer.MAX_VALUE;
+
+    /** How far from the main line a quay spur's end may lie, in plots, counted along its way: half a district. */
+    public static final int QUAY_REACH = CityMap.DISTRICT / 2;
+
+    /** The plots the railway lays a quay spur to, {line, x, y} as QuayRail.ends() gives them: handed over by the map every month and not saved. */
+    private List<long[]> quayEnds = List.of();
+
+    /** Sets the plots a quay spur may end at ({line, x, y} as QuayRail.ends(), kept as a copy; none by default): one spur a line, laid at the next layTo(). */
+    public void setQuayEnds(List<long[]> ends) {
+        List<long[]> copy = new ArrayList<>(ends.size());
+        for (long[] e : ends) copy.add(e.clone());
+        quayEnds = copy;
+    }
+
+    /** Whether corridor c is a siding's or a quay spur's: a track that ends at a door, and is no line for a yard, no ground for a box and no distance to the net. */
+    static boolean endsAtADoor(int c) {
+        return c == SIDING || c == QUAY;
+    }
+
+    /**
+     * Lays the quay spurs, one for each line among the ends, in the order of the ends: the shortest clear way (layWay(), checked by
+     * wayClear() as a siding's is) from a plot of the main line to one of the line's ends, as the line's order and the ends' give ties. A
+     * spur laid is rail that the next line's way sees. A line with no way in QUAY_REACH gets none.
+     */
+    private void layQuaySpurs(Ctx ctx, Ground g) {
+        if (quayEnds.isEmpty()) return;
+        List<long[]> line = linePlots();
+        if (line.isEmpty()) return;
+        java.util.Map<Long, List<long[]>> byLine = new java.util.LinkedHashMap<>();
+        for (long[] e : quayEnds) byLine.computeIfAbsent(e[0], k -> new ArrayList<>()).add(e);
+        for (List<long[]> ends : byLine.values()) {
+            List<long[]> cands = new ArrayList<>();   // {length, shape (0 straight, 1 east-west first, 2 north-south first), end's order, line index}
+            for (int i = 0; i < line.size(); i++) {
+                long px = line.get(i)[0], py = line.get(i)[1];
+                for (int k = 0; k < ends.size(); k++) {
+                    long ex = ends.get(k)[1], ey = ends.get(k)[2];
+                    long len = Math.abs(ex - px) + Math.abs(ey - py);
+                    if (len < 1 || len > QUAY_REACH) continue;
+                    if (ex == px || ey == py) cands.add(new long[] { len, 0, k, i });
+                    else {
+                        cands.add(new long[] { len, 1, k, i });
+                        cands.add(new long[] { len, 2, k, i });
+                    }
+                }
+            }
+            cands.sort((p, q) -> p[0] != q[0] ? Long.compare(p[0], q[0]) : p[1] != q[1] ? Long.compare(p[1], q[1]) : p[2] != q[2] ? Long.compare(p[2], q[2]) : Long.compare(p[3], q[3]));
+            for (long[] c : cands) {
+                long px = line.get((int) c[3])[0], py = line.get((int) c[3])[1];
+                int[][] legs = legsOf(px, py, ends.get((int) c[2])[1], ends.get((int) c[2])[2], c[1] == 2);
+                if (!wayClear(px, py, legs, g, ctx.blocked())) continue;
+                layWay(QUAY, px, py, legs);
+                break;
+            }
+        }
+    }
+
+    /** The quay spurs laid, each {arm index, start x, start y, end x, end y, plots}, in the order laid: the arms of the QUAY corridor with steps. */
+    public List<long[]> quaySpurs() {
+        List<long[]> out = new ArrayList<>();
+        for (int i = 0; i < rail.arms.size(); i++) {
+            Arm a = rail.arms.get(i);
+            if (a.corridor == QUAY && a.steps > 0) out.add(new long[] { i, a.sx, a.sy, a.x, a.y, a.steps });
+        }
+        return out;
+    }
+
+    /** The plots the quay spurs lay in all: the railway's plots that are no part of the model's track. */
+    public long quayPlots() {
+        long n = 0;
+        for (Arm a : rail.arms) if (a.corridor == QUAY) n += a.steps;
+        return n;
+    }
+
     /**
      * The cells of a grid of `side` plots a side, each as (cx << 32) ^ (cy &
      * 0xffffffff), whose own plots (not their first row or column, which the
@@ -3494,7 +3592,7 @@ public final class CityRuns {
     private double distanceToNet(double x, double y) {
         double best = rail.hubLaid ? Math.hypot(x - rail.hubX, y - rail.hubY) : Double.MAX_VALUE;
         for (Arm a : rail.arms) {
-            if (a.corridor == SIDING) continue;
+            if (endsAtADoor(a.corridor)) continue;
             for (int s = 0; s < a.segs; s++) {
                 double x0 = a.segX[s], y0 = a.segY[s], x1 = x0 + (double) DX[a.segHead[s]] * a.segSteps[s], y1 = y0 + (double) DY[a.segHead[s]] * a.segSteps[s];
                 double vx = x1 - x0, vy = y1 - y0, len2 = vx * vx + vy * vy;
@@ -3553,7 +3651,7 @@ public final class CityRuns {
                 if (inside && !dry(g.at(x, y, -1))) return false;
                 if (inside) {
                     int c = coverer(rail, x, y, -1);
-                    if (c >= 0 && rail.arms.get(c).corridor == SIDING) return false;
+                    if (c >= 0 && endsAtADoor(rail.arms.get(c).corridor)) return false;
                 }
             }
         }
@@ -4131,7 +4229,7 @@ public final class CityRuns {
         if (highwayPlots == 0 && highways.plots == 0 && highways.started) highways.reset();
         bindReserves(g);
         highwayShort = Math.max(0, highwayPlots - highways.plots);
-        trackSurplus = Math.max(0, trackPlots - rail.plots);
+        trackSurplus = Math.max(0, trackPlots - (rail.plots - quayPlots()));
         long v1 = signature();
         version = v1;
         return v1 != v0;
@@ -4962,7 +5060,7 @@ public final class CityRuns {
             for (int i = 0; i < na; i++) {
                 int corridor = in.readInt(), home = in.readByte(), head = in.readByte();
                 long sx = in.readLong(), sy = in.readLong();
-                if (home < 0 || home > 7 || head < 0 || head > 7 || corridor < 0 || corridor >= nc) return null;
+                if (home < 0 || home > 7 || head < 0 || head > 7 || corridor < 0 || (corridor >= nc && corridor != QUAY)) return null;
                 Arm a = new Arm(corridor, home, sx, sy);
                 a.joined = in.readBoolean();
                 int segs = in.readInt();
