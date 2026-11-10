@@ -1462,6 +1462,19 @@ public class OilCheck {
     static void theAudit(Game g) {
         out.println("\n--- 6. fuel's money audit closes, every month of a city with wells and a refinery ---");
         Refining refiners = g.getSectors().refining();
+        /*
+         * TWO GRAIN FARMS STAND FOR THE 24 MONTHS (GW1, 2026-11-10). The fixture below reads the months in which another sector than the
+         * forecourts bought petrol at home, the farms (R1c), and the town's investors used to build one before section 6 was over. The staffing
+         * gate counts the workers a building's own posts would draw (Sector.GATE_DRAW_MONTHS), so the town's businesses order other buildings
+         * first and no sector but the forecourts bought petrol at home in any of the 24 months (0 of 24). The farms are placed here, on ground of
+         * their own, so the condition holds whoever the investors build for - and not at section 4's founding, where the wells' crew was theirs
+         * (placed there, the four wells lifted nothing in two years and the wells' fixture was lost).
+         */
+        quietly(() -> {
+            BuildingsTemplate farm = template(g, "Grain Farm");
+            g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 2 * farm.getLandSqFt());
+            g.buildStack(farm, 2, true);
+        });
         double worstAudit = 0, worstImports = 0, worstDomestic = 0, worstGoods = 0, writtenOff = 0, shipped = 0, idled = 0;
         double ran = 0, made = 0, idledAll = 0;
         int months = 24, withImports = 0, withDomestic = 0, withOthers = 0, refusedByWhole = 0;

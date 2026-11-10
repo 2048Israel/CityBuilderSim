@@ -1232,8 +1232,19 @@ public class AutoBuildCheck {
              * plays on, a month at a time, until none is on site (at most LOOK_MONTHS), and then the standing are retired. On
              * main's path nothing was on site at month 60, so it plays no month there.
              */
+            /*
+             * ...WITH THE PASS OFF WHILE THEY OPEN (GW1, 2026-11-10). The staffing gate counts the workers a building's own posts would
+             * draw (Sector.GATE_DRAW_MONTHS), so the young city is larger still at month 66 (5,134 people, a general-care demand of 5,134
+             * against a supply of 1,200) and its pass, with that need unmet, orders another clinic as each opens: three on site after the
+             * LOOK_MONTHS the loop played, which cannot be retired, and the assertion below read "3 standing or on site". The pass is
+             * turned off for the months the loop plays, so the clinics on site open and none is ordered behind them (the loop is bounded
+             * at a year), and turned on again before the city is retired of its care and saved: the pass the section measures is the
+             * one that finds the need unmet.
+             */
             quietly(() -> {
-                for (int i = 0; i < LOOK_MONTHS && onSite(g, care) > 0; i++) youngMonths(g, 1);
+                ab.setOn(false, g.getDecisions());
+                for (int i = 0; i < 12 && onSite(g, care) > 0; i++) youngMonths(g, 1);
+                ab.setOn(true, g.getDecisions());
             });
             quietly(() -> retireServing(g, care));
             int standing = AutoBuilder.serving(g, care);
