@@ -1,4 +1,4 @@
-# ReplayGraphLayer.java - 194 lines · 8 methods · 6 constants · interface
+# ReplayGraphLayer.java - 197 lines · 9 methods · 6 constants · interface
 
 `ham/citybuildersim/ui/ReplayGraphLayer.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
 
@@ -48,13 +48,14 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 31 | 164 | **type** `final class ReplayGraphLayer` | The faint GDP and population lines behind the city in a replay (TR1, 2026-10-31): one mouse-transparent canvas laid over the window's content and under the time bar, drawn from the recording's first month to the month... |
+| 31 | 167 | **type** `final class ReplayGraphLayer` | The faint GDP and population lines behind the city in a replay (TR1, 2026-10-31): one mouse-transparent canvas laid over the window's content and under the time bar, drawn from the recording's first month to the month... |
 | 60 | 4 | `ReplayGraphLayer(ReplayMode mode, UserInterface ui)` |  |
 | 65 | 1 | `boolean isOn()` |  |
 | 68 | 8 | `void load(ReplayCity city)` | The lines read from the recording's history (ReplayCity.master()), once: the recording's first and last month bound them. |
 | 80 | 17 | `boolean toggle()` | G: the lines on or off. |
 | 99 | 5 | `void leave()` | The replay is left: the canvas comes off the window, the switch goes back to off for the next one. |
-| 106 | 11 | `void keepUnder(Node bar)` | The canvas kept just under the time bar in the window's stack, above the content and the expanded map. |
-| 119 | 11 | `void frame(int month, double barRoom)` | A frame: the lines drawn again if the month on screen, the window or the bar's room moved. |
-| 131 | 63 | `private void draw(int month, double w, double h)` |  |
+| 106 | 1 | `Node layer()` | The canvas, or null before the graphs were first switched on (ReplayMode tells the Reenactor never to pick it). |
+| 109 | 11 | `void keepUnder(Node bar)` | The canvas kept just under the node it is given (the ghost layer, which lies just under the time bar) in the window's stack, above the content and the expanded map. |
+| 122 | 11 | `void frame(int month, double barRoom)` | A frame: the lines drawn again if the month on screen, the window or the bar's room moved. |
+| 134 | 63 | `private void draw(int month, double w, double h)` |  |
 

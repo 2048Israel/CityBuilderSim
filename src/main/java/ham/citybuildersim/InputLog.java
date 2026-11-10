@@ -325,6 +325,7 @@ public final class InputLog {
         private final ConcurrentLinkedQueue<Event> queue = new ConcurrentLinkedQueue<>();
         private final Object moveLock = new Object();
         private final Object wake = new Object();
+        private final OutputStream raw;
         private final DataOutputStream out;
         private final GZIPOutputStream gzip;
         private final Thread thread;
@@ -333,10 +334,13 @@ public final class InputLog {
         private volatile boolean closing;
         private volatile boolean finished;
         private volatile long written;
+        /** For ReplayCheck (TR2): the next drain throws as a failed write does. */
+        private volatile boolean failNextDrain;
 
         /** A writer that keeps nothing: the log would not open. */
         private Writer(Path file) {
             this.file = file;
+            this.raw = null;
             this.out = null;
             this.gzip = null;
             this.thread = null;
@@ -345,7 +349,7 @@ public final class InputLog {
 
         private Writer(Path file, String recordingId, long epochMs) throws IOException {
             this.file = file;
-            OutputStream raw = new BufferedOutputStream(Files.newOutputStream(file), 1 << 16);
+            this.raw = new BufferedOutputStream(Files.newOutputStream(file), 1 << 16);
             this.gzip = new GZIPOutputStream(raw, 1 << 14, true);
             this.out = new DataOutputStream(gzip);
             out.writeInt(MAGIC);
@@ -364,9 +368,12 @@ public final class InputLog {
         /** How many events the thread has written so far (a harness waits on it). */
         public long written() { return written; }
 
-        /** Queues an event and returns at once. A MOVE or DRAG within {@link #MOVE_EVERY_MS} of the last one kept is dropped; anything added after close() is ignored. */
+        /**
+         * Queues an event and returns at once. A MOVE or DRAG within {@link #MOVE_EVERY_MS} of the last one kept is dropped;
+         * anything added after close(), or after a write has failed (the thread has stopped and nothing would drain it), is ignored.
+         */
         public void add(Event e) {
-            if (e == null || closing || thread == null) return;
+            if (e == null || closing || finished || thread == null) return;
             if (e.kind() == Kind.MOVE || e.kind() == Kind.DRAG) {
                 synchronized (moveLock) {
                     if (lastMoveMs != Long.MIN_VALUE && e.ms() - lastMoveMs < MOVE_EVERY_MS) return;
@@ -399,12 +406,38 @@ public final class InputLog {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             } finally {
+                // A failed write leaves the file open (a gzip that cannot finish does not close what it wraps): shut every layer before
+                // saying so, so the handle is released - on Windows an open file cannot be deleted - and drop what no thread will now write (TR2).
+                closeQuietly(out);
+                closeQuietly(raw);
                 finished = true;
+                queue.clear();
                 synchronized (wake) { wake.notifyAll(); }
             }
         }
 
+        private static void closeQuietly(OutputStream stream) {
+            try {
+                if (stream != null) stream.close();
+            } catch (IOException e) {
+                // the write that failed has said so already
+            }
+        }
+
+        /** For ReplayCheck (TR2): makes the next drain fail as a full disk would, so the failing path can be walked. */
+        void failNextDrainForChecks() { failNextDrain = true; }
+
+        /** For ReplayCheck (TR2): whether the thread has ended, by close() or by a failure. */
+        boolean stopped() { return finished; }
+
+        /** For ReplayCheck (TR2): how many events are queued and not yet written. */
+        int queued() { return queue.size(); }
+
         private void drain() throws IOException {
+            if (failNextDrain) {
+                failNextDrain = false;
+                throw new IOException("a write the check made fail");
+            }
             Event e;
             while ((e = queue.poll()) != null) {
                 out.writeByte(e.kind().ordinal());

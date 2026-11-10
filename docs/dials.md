@@ -2,9 +2,9 @@
 
 Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**5,649 constants in 537 files.**
+**5,698 constants in 543 files.**
 
-## model (2706 constants)
+## model (2714 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -1381,6 +1381,14 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 38 | `FloatingRateNote.MATURITIES` | `{ 2, 5 }` | The only terms a floating-rate note is issued at, in years (D25). |
 | 41 | `FloatingRateNote.REFUSAL` | `"Floating-rate notes are issued at 2 or 5 years."` | What the treasury is told when it asks for any other term. |
 
+### FollowPlayer.java ([map](map/FollowPlayer.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 30 | `FollowPlayer.SPEEDS` | `{ 0.5, 1, 2, 4 }` | The speeds Follow offers, as multiples of the player's own time. |
+| 33 | `FollowPlayer.DEFAULT_SPEED` | `1` | The speed a player starts at. |
+| 36 | `FollowPlayer.SLACK_MS` | `1e-6` | How close to the cursor an event's millisecond may be to count as due, in milliseconds: floating-point slack. |
+
 ### ForeignAccounts.java ([map](map/ForeignAccounts.md))
 
 | line | constant | value | says |
@@ -1528,16 +1536,17 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 12243 | `Game.NO_DOLLAR_FLOAT_OR_LINKED` | `"Floating-rate notes and inflation-linked bonds are issued at home only."` | What the treasury is told when it asks for a dollar floater or linker. |
 | 12287 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
 | 12447 | `Game.BUILD_NOTE_GRANULE` | `1000 * PriceLevel.FACTOR` | The granule the build screen's note's face is rounded up to, in thousands: $1M, the step the Finances tab's notes are sold in (its Note instrument's rounding). |
-| 14312 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
-| 14324 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
-| 14327 | `Game.BUILD_BOND_GRANULE` | `100 * PriceLevel.FACTOR` | The granule the build screen's bond's face is rounded up to, in thousands: $100k, what the playtest's own term bonds round to. |
-| 14344 | `Game.FIXED_ISSUE_COST` | `12 * PriceLevel.FACTOR` | Bond counsel, rating and printing. |
-| 14355 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
-| 14395 | `Game.MINIMUM_ISSUE_FLOOR` | `50 * PriceLevel.FACTOR` | The floor under minimumIssueSize(), in thousands: $50k, so a brand new city can still borrow. |
-| 16118 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
-| 16522 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
-| 17135 | `Game.RECORD_BACKLOG` | `6` | The most recording writes the writer may be behind by (months and histories not yet on disk): the clock then records nothing that month, and a skip waits. |
-| 17138 | `Game.RECORD_WAIT_MS` | `30_000` | The longest a skip waits for the writer to get inside RECORD_BACKLOG, in milliseconds, before it records nothing that month: a writer that cannot write must not hold the skip for ever. |
+| 14313 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
+| 14325 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
+| 14328 | `Game.BUILD_BOND_GRANULE` | `100 * PriceLevel.FACTOR` | The granule the build screen's bond's face is rounded up to, in thousands: $100k, what the playtest's own term bonds round to. |
+| 14345 | `Game.FIXED_ISSUE_COST` | `12 * PriceLevel.FACTOR` | Bond counsel, rating and printing. |
+| 14356 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
+| 14396 | `Game.MINIMUM_ISSUE_FLOOR` | `50 * PriceLevel.FACTOR` | The floor under minimumIssueSize(), in thousands: $50k, so a brand new city can still borrow. |
+| 16119 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
+| 16523 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
+| 17142 | `Game.RECORD_BACKLOG` | `6` | The most recording writes the writer may be behind by (months and histories not yet on disk): the clock then records nothing that month, and a skip waits. |
+| 17145 | `Game.RECORDING_NAME` | `"Recording"` | The name a recorded month's save carries in its header (the slot name a save has): the same whether the month was filled for the recording or shared with the autosave's. |
+| 17148 | `Game.RECORD_WAIT_MS` | `30_000` | The longest a skip waits for the writer to get inside RECORD_BACKLOG, in milliseconds, before it records nothing that month: a writer that cannot write must not hold the skip for ever. |
 
 ### GameFiles.java ([map](map/GameFiles.md))
 
@@ -1578,7 +1587,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.76"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.9.77"` | Bump on release. |
 | 8267 | `GameVersion.SAVE_FORMAT` | `51` | The save shape. |
 | 8316 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `51` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
 | 8324 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
@@ -1961,6 +1970,14 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 56 | `InputLog.FLUSH_MS` | `2_000` | The longest a written event waits before it is flushed through the gzip to the disk, in milliseconds: what a crash can lose. |
 | 59 | `InputLog.CLOSE_WAIT_MS` | `2_000` | The longest {@link Writer#close} waits for the thread to finish the file, in milliseconds. |
 | 62 | `InputLog.SHIFT` | `1, CTRL = 2, ALT = 4, META = 8` | A modifier mask's bits. |
+
+### InputTimeline.java ([map](map/InputTimeline.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 31 | `InputTimeline.IDLE_GAP_MS` | `5_000` | The longest a gap between two input events plays as it was, in milliseconds of the sitting: a longer gap is an idle stretch. |
+| 34 | `InputTimeline.IDLE_KEEP_MS` | `1_000` | How long an idle stretch plays for when idle skipping is on, in milliseconds at speed 1. |
+| 37 | `InputTimeline.CHECKPOINT_EVERY` | `256` | How many events apart stateAt's saved states are, so that it folds this many at most. |
 
 ### InterchangeGround.java ([map](map/InterchangeGround.md))
 
@@ -2664,6 +2681,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 73 | `Recording.DEFLATE_LEVEL` | `java.util.zip.Deflater.DEFAULT_COMPRESSION` | How hard the save's JSON is deflated (java.util.zip): the default, 6 - ReplayCheck prints the size and time of 6 and of 1 on a grown city. |
 | 76 | `Recording.ID_NAME_LENGTH` | `40` | The longest the name part of an id is, so a long city name does not make a long folder name. |
 | 81 | `Recording.GSON` | `new Gson()` |  |
+| 119 | `Recording.ID_SHAPE` | `java.util.regex.Pattern.compile("([a-z0-9]+(?:-[a-z0-9]+)*)-\\d{8}-\\d{6}")` | The shape {@link #newId} writes: words of letters and digits joined by hyphens, the day, the time. |
 
 ### RefineryView.java ([map](map/RefineryView.md))
 
@@ -4024,7 +4042,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 77 | `WoodProducts.PAPER_MILL` | `137` | The Paper Mill's (0.7.140): 5,500 t of paper a month from 5,775 t of pulp and 850,000 litres of fuel oil. |
 | 80 | `WoodProducts.PELLET_MILL` | `138` | The Wood Pellet Mill's (0.7.140): 6,000 t of pellets a month from 13,200 m3 of residues. |
 
-## interface (1140 constants)
+## interface (1181 constants)
 
 ### BankScreen.java ([map](map/BankScreen.md))
 
@@ -4238,6 +4256,36 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 6686 | `FinancesScreen.BOND_HOLDER_COLOURS` | `{ Palette.PEOPLE, Palette.MONEY, Palette.BUSINESS, Palette.ORE, Palette.MONEY_DARK }` | ...and their colours on it. |
 | 6867 | `FinancesScreen.DEPTH_INFO` | `"What rests on the book after the month's step: a bid under every ask, since " + "whate...` | A bond's book's (i): the spec's T75, T77 and T78. |
 
+### FollowBench.java ([map](map/FollowBench.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 62 | `FollowBench.WIDTH` | `1600` | The window's width the bench lays the scene out at. |
+| 65 | `FollowBench.HEIGHT` | `900` | The window's height the bench lays the scene out at. |
+| 416 | `FollowBench.RAIL_WORDS` | `{ "People", "Policy", "Services", "Bank", "Trade", "Finances", "Sectors" }` | The rail's words the sitting clicks, in the order tried: the first few the window has, whose clicks open different screens. |
+| 419 | `FollowBench.LOGGED_MONTHS` | `4` | How many of the recording's months the sitting logs, one after the other from its fourth. |
+| 422 | `FollowBench.MONTH_MS` | `2_400` | How long a month lasts in the sitting's own time, ms. |
+| 425 | `FollowBench.MENU_MONTH` | `1` | The month of the sitting (counting from 0) in which the player also clicked the rail's Menu. |
+| 428 | `FollowBench.REJOIN_MONTH` | `2` | The month of the sitting (counting from 0) in which Follow is stopped and joined again. |
+| 431 | `FollowBench.REJOIN_STOP_FRAMES` | `30` | The frames of the rejoin's first stretch: 990 ms into the month, after the click (560 ms) and its SCREEN marker (760 ms). |
+| 434 | `FollowBench.REJOIN_END_FRAMES` | `60` | The frames from the month's start to where the rejoin and the run without a stop are compared: 1,980 ms, after the month's last move (1,800 ms). |
+| 437 | `FollowBench.FRAME_MS` | `33` | One Follow frame, in ms of the player's time (about 30 a second); the window check steps by it. |
+| 440 | `FollowBench.MAX_FRAMES` | `3_000` | The most frames one stretch of stepping may take: a Follow that never gets going ends the check rather than hangs it. |
+| 443 | `FollowBench.SITTING_AT` | `1_790_000_000_000L` | The epoch of the sitting's start in its file's name: any, but one no real sitting has. |
+| 446 | `FollowBench.GHOST_PX` | `2` | How near, in pixels, the ghost's tip has to be to the logged pointer. |
+
+### FollowRules.java ([map](map/FollowRules.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 24 | `FollowRules.DROP` | `"follow.drop"` | The node property that marks a node (or, set on an ancestor, everything in it) the ghost never clicks: it opens a game menu, leaves the city, quits or moves the clock. |
+| 27 | `FollowRules.SPACE` | `InputLog.keyCode("Space")` | The log's code of the Space key, which runs the clock: the toolkit's key name, as {@link InputLog#keyCode} makes it. |
+| 30 | `FollowRules.LEFT` | `InputLog.keyCode("Left")` | The log's code of the Left key, which slows the clock. |
+| 33 | `FollowRules.RIGHT` | `InputLog.keyCode("Right")` | The log's code of the Right key, which speeds the clock. |
+| 36 | `FollowRules.F11` | `InputLog.keyCode("F11")` | The log's code of the F11 key, which is the window's full screen. |
+| 39 | `FollowRules.ESC` | `InputLog.keyCode("Esc")` | The log's code of the Esc key, which opens the game menu. |
+| 42 | `FollowRules.P` | `InputLog.keyCode("P")` | The log's code of the P key, which opens the game menu too when nobody is typing. |
+
 ### FoundingScreen.java ([map](map/FoundingScreen.md))
 
 | line | constant | value | says |
@@ -4290,6 +4338,19 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 2354 | `FundScreen.WITHDRAWAL_CAVEAT` | `"next month's on the fund as it stands - its prices and what the book takes will move it"` | The withdrawal's caveat, under what it would do. |
 | 2356 | `FundScreen.WITHDRAWAL_CAVEAT_INFO` | `"Next month's withdrawal is struck on what the fund is worth at the top of " + "next mo...` | ...and the sentence behind it, its (i). |
 | 2469 | `FundScreen.RESCUE_BOOK_INFO` | `"What the city holds from rescuing its bank: the shares it took when it " + "resolved i...` | The rescue book's (i). |
+
+### GhostLayer.java ([map](map/GhostLayer.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 26 | `GhostLayer.FILL_ALPHA` | `0.55` | How opaque the arrow's body is, 0 to 1: 0.55, so the page shows through it and it still stands out on the stage's dark ground. |
+| 29 | `GhostLayer.EDGE_ALPHA` | `0.9` | How opaque the arrow's outline is, 0 to 1: 0.9, so a see-through body still has an edge to find. |
+| 32 | `GhostLayer.RIPPLE_MS` | `400` | How long a click's ripple lasts, in milliseconds: 400, long enough to be seen at 4x and short enough that two clicks never share a ring. |
+| 35 | `GhostLayer.RIPPLE_FROM_PX` | `4` | The radius a ripple starts at, in pixels: 4. |
+| 38 | `GhostLayer.RIPPLE_TO_PX` | `30` | The radius a ripple has grown to when it fades out, in pixels: 30. |
+| 41 | `GhostLayer.RIPPLE_WIDTH_PX` | `2.5` | How thick a ripple's ring is, in pixels: 2.5. |
+| 44 | `GhostLayer.MAX_RIPPLES` | `12` | The most ripples shown at once, the oldest dropped: 12 - a burst of fast clicks at 4x. |
+| 47 | `GhostLayer.ARROW` | `"M0 0 L0 16 L4 12.5 L6.8 19 L9.2 18 L6.5 11.6 L11.5 11.6 Z"` | The pointer's outline with its tip at the origin, in pixels: the usual arrow, 19 px tall. |
 
 ### GovernmentScreen.java ([map](map/GovernmentScreen.md))
 
@@ -4641,11 +4702,11 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 5152 | `MapView.LEGEND_FOLD_WORDS` | `"· click to fold"` | The head line's words when the legend is open, after its chevron and "Legend" (the board's .lh). |
 | 5328 | `MapView.REPLAY_FRAME_MS` | `24` | The most a frame spends painting tiles in a replay, in ms: 24 - a replay computes no month, so a frame's whole share is the picture's, and a view reached by the camera comes in over two or three fr... |
 | 5331 | `MapView.CAMERA_PAUSE_S` | `0.25` | A gap between two camera frames longer than this, in seconds, is not time the camera moved in: 0.25 - the pump stops when the view is idle and a glide or a fly must not find the minutes gone by in ... |
-| 5492 | `MapView.STUCK_S` | `2` | How long the worker may sit idle while a view of the load still lacks something before the load passes it, in seconds: 2 - a far node or chart the worker cannot ground never comes back, and the loa... |
-| 5495 | `MapView.LOAD_HEAP_SHARE` | `0.8` | The share of the most the heap may hold at which a load stops, saying so: 0.8 - a move too long or too wide to hold in memory is refused, not run half loaded. |
-| 5498 | `MapView.LOAD_WORDS_PX` | `28` | The height of the words written over the map while a move loads or waits for its click, in pixels: 28. |
-| 5658 | `MapView.NO_MOVE` | `new MoveLoad(0, 0, false)` | A move with nothing passed and nothing kept, for viewSettled(). |
-| 5913 | `MapView.MoveTally.WHERES` | `{ "L0", "L1", "L2", "FAR", "GROUND", "PICTURE" }` |  |
+| 5498 | `MapView.STUCK_S` | `2` | How long the worker may sit idle while a view of the load still lacks something before the load passes it, in seconds: 2 - a far node or chart the worker cannot ground never comes back, and the loa... |
+| 5501 | `MapView.LOAD_HEAP_SHARE` | `0.8` | The share of the most the heap may hold at which a load stops, saying so: 0.8 - a move too long or too wide to hold in memory is refused, not run half loaded. |
+| 5504 | `MapView.LOAD_WORDS_PX` | `28` | The height of the words written over the map while a move loads or waits for its click, in pixels: 28. |
+| 5664 | `MapView.NO_MOVE` | `new MoveLoad(0, 0, false)` | A move with nothing passed and nothing kept, for viewSettled(). |
+| 5919 | `MapView.MoveTally.WHERES` | `{ "L0", "L1", "L2", "FAR", "GROUND", "PICTURE" }` |  |
 
 ### MiniMap.java ([map](map/MiniMap.md))
 
@@ -4709,39 +4770,40 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 233 | `Palette.BUILDING` | `"#f17cb0"` | Building and land: Build, the land office. |
 | 242 | `Palette.CATEGORIES` | `{ MONEY, PEOPLE, BUILDING, BUSINESS, "#c9b68f" }` | Categories told apart (0.7.21): the Government's two rings, whose three biggest revenue slices were three steps of one blue and read as one. |
 | 253 | `Palette.ORE` | `"#c9b68f"` | Ore (0.7.26): the land office's deposits - a plot's ORE tag, the sand stripe on the ground bar, the Ore card. |
-| 278 | `Palette.MONEY_LIGHT` | `"#a9d1ff", MONEY_DARK = "#2f80d9"` | The money blue, a step lighter and a step darker: the money area's second and third lines. |
-| 281 | `Palette.PEOPLE_LIGHT` | `"#93e2da", PEOPLE_DARK = "#1c968b"` | The people teal, lighter and darker. |
-| 284 | `Palette.BUSINESS_LIGHT` | `"#d3c5fd", BUSINESS_DARK = "#8669e8"` | The business violet, lighter and darker. |
-| 287 | `Palette.BUILDING_LIGHT` | `"#f9bcd7", BUILDING_DARK = "#cf5590"` | The building pink, lighter and darker. |
-| 290 | `Palette.LINE_COLOURS` | `13` | How many lines one chart can draw before a colour repeats: the five CATEGORIES and two steps of each of the four areas. |
-| 361 | `Palette.REVENUE_RAMP` | `{ "#afd5fe", "#8dbef1", "#6aa6e4", "#468fd6", "#1577c8" }` | Money coming in. |
-| 366 | `Palette.SPENDING_RAMP` | `{ "#efca9f", "#deaf78", "#cd954f", "#bc7a19", "#aa6000" }` | Money going out. |
-| 385 | `Palette.LADDER` | `{ REVENUE_RAMP [ 0 ], REVENUE_RAMP [ 2 ], REVENUE_RAMP [ 4 ] }` | The three instruments on the maturity ladder, short to long. |
-| 396 | `Palette.GDP_LAYERS` | `{ REVENUE_RAMP [ 0 ], REVENUE_RAMP [ 2 ], REVENUE_RAMP [ 4 ] }` | GDP's three stacked layers on the Reports page (0.7.6) - consumption, investment, government, bottom to top - on the same three validated steps as the maturity ladder, and for the same reason: they... |
-| 401 | `Palette.RAMP_REST` | `"#5c6b75"` | Everything too small to have its own step. |
-| 404 | `Palette.RING` | `26` | How thick a donut's ring is drawn, and how wide the hole is. |
-| 434 | `Palette.SIZE_TITLE` | `20` | A screen's title. |
-| 437 | `Palette.SIZE_LEAD` | `17` | A figure that is the point of its panel. |
-| 440 | `Palette.SIZE_SECTION` | `14` | A section heading inside a screen. |
-| 443 | `Palette.SIZE_HEADING` | `12` | A panel's own heading. |
-| 446 | `Palette.SIZE_BODY` | `11` | Body text, and the figure in a row. |
-| 449 | `Palette.SIZE_LABEL` | `10` | The label in a row, and a button in a dense list. |
-| 452 | `Palette.SIZE_CAPTION` | `9` | A caption under something, and a unit after something. |
-| 460 | `Palette.GAP_TIGHT` | `4` |  |
-| 461 | `Palette.GAP` | `8` |  |
-| 462 | `Palette.GAP_LOOSE` | `12` |  |
-| 463 | `Palette.GAP_SECTION` | `20` |  |
-| 466 | `Palette.RADIUS` | `4` | Corner of a block, a chip, a control. |
-| 469 | `Palette.RADIUS_TIGHT` | `3` | Corner of something small - a row, a badge. |
-| 479 | `Palette.RAIL` | `76` | The navigation rail, at the window's left edge: an icon over its name (0.7.21). |
-| 482 | `Palette.HEADER` | `84` | The header across the top: the clock, the money block, five headline tiles, the "Needs you" chip, the rating and the inbox (0.7.21; the money block and the chip 0.7.24). |
-| 485 | `Palette.CITY_PANEL` | `290` | The city panel, not counting the rail: the drawer over the stage's left since 0.7.24. |
-| 488 | `Palette.BUILD_PANEL` | `280` | The construction panel down the right: over the stage while open, a tab while folded, since 0.7.24. |
-| 491 | `Palette.BUILD_ROW` | `400` | A building row, so the price column lines up down the list. |
-| 494 | `Palette.INBOX` | `470` | The inbox, sized to the 62-character lines the notices are written at. |
-| 600 | `Palette.Fonts.FOLDER` | `"/fonts/"` | Where the files sit on the classpath. |
-| 603 | `Palette.Fonts.SYSTEM_FACE` | `"System"` | The platform's own face, for words when Plex Sans did not load. |
-| 606 | `Palette.Fonts.FIGURE_FACE` | `"Courier New"` | The face figures used before 0.7.21, and use again when Plex Mono did not load. |
+| 260 | `Palette.GHOST` | `"#e040fb"` | The ghost cursor (TR2, 2026-11-09): the pointer of the player's that a replay's Follow draws, and the ripple of his clicks. |
+| 285 | `Palette.MONEY_LIGHT` | `"#a9d1ff", MONEY_DARK = "#2f80d9"` | The money blue, a step lighter and a step darker: the money area's second and third lines. |
+| 288 | `Palette.PEOPLE_LIGHT` | `"#93e2da", PEOPLE_DARK = "#1c968b"` | The people teal, lighter and darker. |
+| 291 | `Palette.BUSINESS_LIGHT` | `"#d3c5fd", BUSINESS_DARK = "#8669e8"` | The business violet, lighter and darker. |
+| 294 | `Palette.BUILDING_LIGHT` | `"#f9bcd7", BUILDING_DARK = "#cf5590"` | The building pink, lighter and darker. |
+| 297 | `Palette.LINE_COLOURS` | `13` | How many lines one chart can draw before a colour repeats: the five CATEGORIES and two steps of each of the four areas. |
+| 368 | `Palette.REVENUE_RAMP` | `{ "#afd5fe", "#8dbef1", "#6aa6e4", "#468fd6", "#1577c8" }` | Money coming in. |
+| 373 | `Palette.SPENDING_RAMP` | `{ "#efca9f", "#deaf78", "#cd954f", "#bc7a19", "#aa6000" }` | Money going out. |
+| 392 | `Palette.LADDER` | `{ REVENUE_RAMP [ 0 ], REVENUE_RAMP [ 2 ], REVENUE_RAMP [ 4 ] }` | The three instruments on the maturity ladder, short to long. |
+| 403 | `Palette.GDP_LAYERS` | `{ REVENUE_RAMP [ 0 ], REVENUE_RAMP [ 2 ], REVENUE_RAMP [ 4 ] }` | GDP's three stacked layers on the Reports page (0.7.6) - consumption, investment, government, bottom to top - on the same three validated steps as the maturity ladder, and for the same reason: they... |
+| 408 | `Palette.RAMP_REST` | `"#5c6b75"` | Everything too small to have its own step. |
+| 411 | `Palette.RING` | `26` | How thick a donut's ring is drawn, and how wide the hole is. |
+| 441 | `Palette.SIZE_TITLE` | `20` | A screen's title. |
+| 444 | `Palette.SIZE_LEAD` | `17` | A figure that is the point of its panel. |
+| 447 | `Palette.SIZE_SECTION` | `14` | A section heading inside a screen. |
+| 450 | `Palette.SIZE_HEADING` | `12` | A panel's own heading. |
+| 453 | `Palette.SIZE_BODY` | `11` | Body text, and the figure in a row. |
+| 456 | `Palette.SIZE_LABEL` | `10` | The label in a row, and a button in a dense list. |
+| 459 | `Palette.SIZE_CAPTION` | `9` | A caption under something, and a unit after something. |
+| 467 | `Palette.GAP_TIGHT` | `4` |  |
+| 468 | `Palette.GAP` | `8` |  |
+| 469 | `Palette.GAP_LOOSE` | `12` |  |
+| 470 | `Palette.GAP_SECTION` | `20` |  |
+| 473 | `Palette.RADIUS` | `4` | Corner of a block, a chip, a control. |
+| 476 | `Palette.RADIUS_TIGHT` | `3` | Corner of something small - a row, a badge. |
+| 486 | `Palette.RAIL` | `76` | The navigation rail, at the window's left edge: an icon over its name (0.7.21). |
+| 489 | `Palette.HEADER` | `84` | The header across the top: the clock, the money block, five headline tiles, the "Needs you" chip, the rating and the inbox (0.7.21; the money block and the chip 0.7.24). |
+| 492 | `Palette.CITY_PANEL` | `290` | The city panel, not counting the rail: the drawer over the stage's left since 0.7.24. |
+| 495 | `Palette.BUILD_PANEL` | `280` | The construction panel down the right: over the stage while open, a tab while folded, since 0.7.24. |
+| 498 | `Palette.BUILD_ROW` | `400` | A building row, so the price column lines up down the list. |
+| 501 | `Palette.INBOX` | `470` | The inbox, sized to the 62-character lines the notices are written at. |
+| 607 | `Palette.Fonts.FOLDER` | `"/fonts/"` | Where the files sit on the classpath. |
+| 610 | `Palette.Fonts.SYSTEM_FACE` | `"System"` | The platform's own face, for words when Plex Sans did not load. |
+| 613 | `Palette.Fonts.FIGURE_FACE` | `"Courier New"` | The face figures used before 0.7.21, and use again when Plex Mono did not load. |
 
 ### PartnersPage.java ([map](map/PartnersPage.md))
 
@@ -4960,6 +5022,16 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1564 | `RankingsScreen.RankLine.H` | `76, SIDE = 36, TOP = 12, BOTTOM = 18, YEAR_GAP = 40` |  |
 | 1566 | `RankingsScreen.RankLine.LINE` | `Color.web(Palette.MONEY), FLOOR = Color.web(Palette.EDGE), RANK = Color.web(Palette.TEX...` |  |
 
+### Reenactor.java ([map](map/Reenactor.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 44 | `Reenactor.CLICK_SLOP` | `3` | How far, in pixels, a press may be dragged and still count as one that has not moved (the click's "still since press"). |
+| 47 | `Reenactor.BOUNDS_SLACK` | `1` | How far outside a parent's bounds a point may lie and still be looked for in its children: the bounds' own rounding. |
+| 50 | `Reenactor.SET_HOVER` | `nodeSetter("setHover")` | Node.setHover, which is protected: found by reflection, or null where the platform will not allow it. |
+| 53 | `Reenactor.SET_PRESSED` | `nodeSetter("setPressed")` | Node.setPressed, which is protected too: found the same way, or null. |
+| 56 | `Reenactor.KEYS` | `new HashMap<>()` | The toolkit's key for each log code (InputLog.keyCode of the key's name). |
+
 ### ReplayCamera.java ([map](map/ReplayCamera.md))
 
 | line | constant | value | says |
@@ -4985,12 +5057,18 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 65 | `ReplayMode.LIST` | `"showReplayList"` | The list of recordings, as a screen's name (clearMenu()): a screen of the menu's own, like the Load list. |
-| 68 | `ReplayMode.REST_MS` | `300` | How long the month on screen must have stood still before it is loaded whole, in milliseconds: long enough that a drag, a held key or a play never pays for a load it will not show, short enough tha... |
-| 71 | `ReplayMode.SPEEDS` | `{ 1, 2, 4, 8, 16 }` | The bar's speeds, in recorded months a second. |
-| 74 | `ReplayMode.START_SPEED` | `2` | The speed the bar starts at: an index into {@link #SPEEDS}, 4 months a second. |
-| 77 | `ReplayMode.NOTE_MS` | `4_000` | How long a note stays on the bar, in milliseconds. |
-| 80 | `ReplayMode.FILM_W` | `1920, FILM_H = 1080` | The scene the screen recorder is given, in pixels: the bar's "1920 x 1080" button sets the window to exactly it. |
+| 83 | `ReplayMode.LIST` | `"showReplayList"` | The list of recordings, as a screen's name (clearMenu()): a screen of the menu's own, like the Load list. |
+| 86 | `ReplayMode.REST_MS` | `300` | How long the month on screen must have stood still before it is loaded whole, in milliseconds: long enough that a drag, a held key or a play never pays for a load it will not show, short enough tha... |
+| 89 | `ReplayMode.SPEEDS` | `{ 1, 2, 4, 8, 16 }` | The bar's speeds, in recorded months a second. |
+| 92 | `ReplayMode.START_SPEED` | `2` | The speed the bar starts at: an index into {@link #SPEEDS}, 4 months a second. |
+| 95 | `ReplayMode.NOTE_MS` | `4_000` | How long a note stays on the bar, in milliseconds. |
+| 98 | `ReplayMode.FILM_W` | `1920, FILM_H = 1080` | The scene the screen recorder is given, in pixels: the bar's "1920 x 1080" button sets the window to exactly it. |
+| 101 | `ReplayMode.RESYNC_MS` | `300` | How long after a logged SCREEN marker the copy's screen is looked at against the logged one, in milliseconds of the viewer's time: 300, long enough for the re-enacted click that changes it to have ... |
+| 104 | `ReplayMode.VIEWER_MOVE_PX` | `8` | How far the viewer's pointer must move from where it first was after Follow began to end Follow, in pixels: 8, so a nudge of the desk while filming does not end the shot. |
+| 107 | `ReplayMode.VIEWER_GRACE_MS` | `1_500` | How long after Follow begins, or after a press on its group, the viewer's pointer may move without ending it, in milliseconds: time to take the hand off the button and the pointer out of the shot. |
+| 110 | `ReplayMode.FOLLOW_START_SPEED` | `1` | The speed Follow starts at: an index into FollowPlayer.SPEEDS, 1x. |
+| 113 | `ReplayMode.WINDOW_SETTLE_MS` | `400` | How long the window is given to settle after Follow set it and the screen could not hold the size, in milliseconds: 400, the wait filmSize() gives the window's own restore. |
+| 116 | `ReplayMode.STAMP` | `DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault())` | How a sitting's moment is read on the bar: the player's date and time of day. |
 
 ### ReplayMoveProbe.java ([map](map/ReplayMoveProbe.md))
 
@@ -5310,43 +5388,44 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 498 | `UserInterface.COUNT_UP_TOP` | `10` | The fastest speed a figure still counts up at when a month lands (Jerus, 2026-10-23, the study's UP4 star 4: "Count up at 1x-10x only"); above it the figure is set at once. |
 | 554 | `UserInterface.PRESS_HELD` | `"UserInterface.pressHeld"` | The scene property that says a button is down (0.7.40), for what waits on a timer outside this class (TimeChart's settle). |
 | 1475 | `UserInterface.WHEEL_STEP` | `48` | The least the first wheel event of a gesture may move the page, in pixels (since 2026-09-18 the first only; see scrollPageBy). |
-| 1909 | `UserInterface.WHEEL_GESTURE_GAP_NANOS` | `150_000_000L` | A wheel event this long after the last one starts a new gesture; a burst is closer than this. |
-| 1984 | `UserInterface.STRIP_INFLATION_QUIET` | `.03` | Inflation within this many points of the player's target (DebtManager.getInflationTarget()), either side, reads as on target. |
-| 1987 | `UserInterface.STRIP_INFLATION_OVER_TARGET` | `.05` | Inflation more than this many points over the player's target reads red: prices running away from what the player asked for. |
-| 1990 | `UserInterface.STRIP_DEFLATION_ALARM` | `.10` | Deflation past this reads red, whatever the target: prices collapsing. |
-| 2002 | `UserInterface.DATE_WIDTH` | `164` | How wide the clock's date is held, so the tiles do not move as the day's name changes width: "28 September 2151" at the date's size, and a little over (0.7.24: at 17 px, so the money block and five... |
-| 2005 | `UserInterface.DATE_SIZE` | `17` | The date's size in the clock (0.7.24; it was 19). |
-| 2008 | `UserInterface.SPARK_MONTHS` | `120` | How many months a tile's sparkline draws: ten years, or everything recorded if less. |
-| 2011 | `UserInterface.SPARK_WIDTH` | `72` | A tile's sparkline at full size: on the label's row since 0.7.24, as the mockups draw it (it was 84 by 30, beside the words). |
-| 2013 | `UserInterface.SPARK_HEIGHT` | `16` | ...and its height, the label's row (0.7.24; it was 30). |
-| 2016 | `UserInterface.SPARK_MIN` | `30` | Narrower than this and a tile draws no sparkline: a line the width of a word says nothing. |
-| 2019 | `UserInterface.TILE_FIGURE` | `15` | The size of a tile's figure (0.7.24: 15, so the money block and five tiles fit a 1,280 window whole; it was 17). |
-| 2021 | `UserInterface.TILE_LABEL` | `10.5` | The size of a tile's label, and of the money block's. |
-| 2023 | `UserInterface.TILE_CHANGE` | `10.5` | The size of a tile's change line (0.7.24; it was 11). |
-| 2496 | `UserInterface.MONEY_FIGURE` | `28` | The cash in the money block: the mockups' 28 px. |
-| 3233 | `UserInterface.BACKDROP_BLOCK` | `"#121c28"` | The building blocks' fill and edge, and an unlit window, on the backdrop: the skyline's own darks, under the panels' ground. |
-| 3234 | `UserInterface.BACKDROP_EDGE` | `"#1d2b3c"` |  |
-| 3235 | `UserInterface.BACKDROP_WINDOW` | `"#22344a"` |  |
-| 3238 | `UserInterface.FOUNDING_DIM` | `.72` | How dark the founding screen dims the backdrop under its panel: the mockups' 0.72. |
-| 3241 | `UserInterface.MENU_CITIES` | `3` | Up to this many of the cities saved last, as cards at the menu's bottom right. |
-| 3588 | `UserInterface.MENU_LEFT` | `96` | How far in from the window's left the menu's column and version sit. |
-| 3591 | `UserInterface.MENU_BUTTON` | `360` | The menu's buttons' width, as the mockups draw them. |
-| 3682 | `UserInterface.CITY_CARD` | `250` | A city card's width, as the mockups draw it. |
-| 3731 | `UserInterface.SAVED_AT` | `java.time.format.DateTimeFormatter.ofPattern("d MMM HH:mm")` |  |
-| 4305 | `UserInterface.TIP_WIDTH` | `420` | The width a tooltip's text wraps at, unless it asked for its own. |
-| 4552 | `UserInterface.PAGE_FOOT` | `24` | Room left under the end of every scrolled page: a margin, since nothing floats over the stage's foot (0.7.21; it was 90, the dome's 74 and a margin). |
-| 4622 | `UserInterface.SCROLLED_CHROME` | `"scrolled.chrome"` | The key in a scroller's properties for the chrome its height is bound to (scrolled()). |
-| 5263 | `UserInterface.CONSTRUCTION_TAB` | `44` | How wide the construction panel's tab is. |
-| 5585 | `UserInterface.PANEL_TEXT` | `256` | How wide the construction panel's lines wrap: the panel less its padding. |
-| 5742 | `UserInterface.RAIL_WIDTH` | `Palette.RAIL` | The rail's width: an icon over its name, as the mockups draw it (0.7.21; it was 46). |
-| 5745 | `UserInterface.RAIL_BUTTON` | `54` | A rail button's height, and the least it may shrink to on a short window. |
-| 5746 | `UserInterface.RAIL_BUTTON_MIN` | `40` |  |
-| 5749 | `UserInterface.RAIL_ICON` | `20` | How big a rail icon is drawn: its 24-unit grid at 20 pixels. |
-| 6237 | `UserInterface.INBOX_WIDTH` | `530` | See refreshInbox: sized to the notice bodies, not to the corner. |
-| 6590 | `UserInterface.TOAST_SECONDS` | `8` | How long a toast stays before it fades, in seconds. |
-| 6593 | `UserInterface.TOAST_MAX` | `3` | How many toasts at once. |
-| 6596 | `UserInterface.TOAST_WIDTH` | `340` | How wide a toast's text wraps. |
-| 6817 | `UserInterface.SPEED_MIN_WIDTH` | `34` | The least the reading is wide, in pixels: the width it held before UP7, so that at pace it sits where it did. |
+| 1511 | `UserInterface.GAME_MENUS` | `List.of("showMainMenu", "showSavingMenu", "showSaveSlotConfirm", "showLoadMenu", "loadS...` | The screens isGameMenu() names, in one list so a check can walk them (TR2's review: ReplayCheck kept a copy of it). |
+| 1906 | `UserInterface.WHEEL_GESTURE_GAP_NANOS` | `150_000_000L` | A wheel event this long after the last one starts a new gesture; a burst is closer than this. |
+| 1981 | `UserInterface.STRIP_INFLATION_QUIET` | `.03` | Inflation within this many points of the player's target (DebtManager.getInflationTarget()), either side, reads as on target. |
+| 1984 | `UserInterface.STRIP_INFLATION_OVER_TARGET` | `.05` | Inflation more than this many points over the player's target reads red: prices running away from what the player asked for. |
+| 1987 | `UserInterface.STRIP_DEFLATION_ALARM` | `.10` | Deflation past this reads red, whatever the target: prices collapsing. |
+| 1999 | `UserInterface.DATE_WIDTH` | `164` | How wide the clock's date is held, so the tiles do not move as the day's name changes width: "28 September 2151" at the date's size, and a little over (0.7.24: at 17 px, so the money block and five... |
+| 2002 | `UserInterface.DATE_SIZE` | `17` | The date's size in the clock (0.7.24; it was 19). |
+| 2005 | `UserInterface.SPARK_MONTHS` | `120` | How many months a tile's sparkline draws: ten years, or everything recorded if less. |
+| 2008 | `UserInterface.SPARK_WIDTH` | `72` | A tile's sparkline at full size: on the label's row since 0.7.24, as the mockups draw it (it was 84 by 30, beside the words). |
+| 2010 | `UserInterface.SPARK_HEIGHT` | `16` | ...and its height, the label's row (0.7.24; it was 30). |
+| 2013 | `UserInterface.SPARK_MIN` | `30` | Narrower than this and a tile draws no sparkline: a line the width of a word says nothing. |
+| 2016 | `UserInterface.TILE_FIGURE` | `15` | The size of a tile's figure (0.7.24: 15, so the money block and five tiles fit a 1,280 window whole; it was 17). |
+| 2018 | `UserInterface.TILE_LABEL` | `10.5` | The size of a tile's label, and of the money block's. |
+| 2020 | `UserInterface.TILE_CHANGE` | `10.5` | The size of a tile's change line (0.7.24; it was 11). |
+| 2494 | `UserInterface.MONEY_FIGURE` | `28` | The cash in the money block: the mockups' 28 px. |
+| 3231 | `UserInterface.BACKDROP_BLOCK` | `"#121c28"` | The building blocks' fill and edge, and an unlit window, on the backdrop: the skyline's own darks, under the panels' ground. |
+| 3232 | `UserInterface.BACKDROP_EDGE` | `"#1d2b3c"` |  |
+| 3233 | `UserInterface.BACKDROP_WINDOW` | `"#22344a"` |  |
+| 3236 | `UserInterface.FOUNDING_DIM` | `.72` | How dark the founding screen dims the backdrop under its panel: the mockups' 0.72. |
+| 3239 | `UserInterface.MENU_CITIES` | `3` | Up to this many of the cities saved last, as cards at the menu's bottom right. |
+| 3586 | `UserInterface.MENU_LEFT` | `96` | How far in from the window's left the menu's column and version sit. |
+| 3589 | `UserInterface.MENU_BUTTON` | `360` | The menu's buttons' width, as the mockups draw them. |
+| 3680 | `UserInterface.CITY_CARD` | `250` | A city card's width, as the mockups draw it. |
+| 3729 | `UserInterface.SAVED_AT` | `java.time.format.DateTimeFormatter.ofPattern("d MMM HH:mm")` |  |
+| 4303 | `UserInterface.TIP_WIDTH` | `420` | The width a tooltip's text wraps at, unless it asked for its own. |
+| 4550 | `UserInterface.PAGE_FOOT` | `24` | Room left under the end of every scrolled page: a margin, since nothing floats over the stage's foot (0.7.21; it was 90, the dome's 74 and a margin). |
+| 4620 | `UserInterface.SCROLLED_CHROME` | `"scrolled.chrome"` | The key in a scroller's properties for the chrome its height is bound to (scrolled()). |
+| 5261 | `UserInterface.CONSTRUCTION_TAB` | `44` | How wide the construction panel's tab is. |
+| 5583 | `UserInterface.PANEL_TEXT` | `256` | How wide the construction panel's lines wrap: the panel less its padding. |
+| 5740 | `UserInterface.RAIL_WIDTH` | `Palette.RAIL` | The rail's width: an icon over its name, as the mockups draw it (0.7.21; it was 46). |
+| 5743 | `UserInterface.RAIL_BUTTON` | `54` | A rail button's height, and the least it may shrink to on a short window. |
+| 5744 | `UserInterface.RAIL_BUTTON_MIN` | `40` |  |
+| 5747 | `UserInterface.RAIL_ICON` | `20` | How big a rail icon is drawn: its 24-unit grid at 20 pixels. |
+| 6236 | `UserInterface.INBOX_WIDTH` | `530` | See refreshInbox: sized to the notice bodies, not to the corner. |
+| 6589 | `UserInterface.TOAST_SECONDS` | `8` | How long a toast stays before it fades, in seconds. |
+| 6592 | `UserInterface.TOAST_MAX` | `3` | How many toasts at once. |
+| 6595 | `UserInterface.TOAST_WIDTH` | `340` | How wide a toast's text wraps. |
+| 6816 | `UserInterface.SPEED_MIN_WIDTH` | `34` | The least the reading is wide, in pixels: the width it held before UP7, so that at pace it sits where it did. |
 
 ### VaultTable.java ([map](map/VaultTable.md))
 
@@ -7239,8 +7318,8 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 61 | `ReplayCheck.GROWN` | `48` | The month the section 1 to 4 city is grown to before it is recorded. |
-| 64 | `ReplayCheck.GROWN_SIX` | `36` | The month the section 6 cities are grown to. |
+| 91 | `ReplayCheck.GROWN` | `48` | The month the section 1 to 4 city is grown to before it is recorded. |
+| 94 | `ReplayCheck.GROWN_SIX` | `36` | The month the section 6 cities are grown to. |
 
 ### ResearchCheck.java ([map](map/ResearchCheck.md))
 

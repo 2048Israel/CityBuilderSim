@@ -252,6 +252,13 @@ public final class Palette {
      */
     public static final String ORE = "#c9b68f";
 
+    /**
+     * The ghost cursor (TR2, 2026-11-09): the pointer of the player's that a replay's Follow draws, and the ripple of his clicks.
+     * A fuchsia, which no screen uses for anything: it is neither an area (blue, teal, violet, pink), nor a verdict (green,
+     * amber, red), nor the accent, so it reads as somebody else's hand and not as the interface's.
+     */
+    public static final String GHOST = "#e040fb";
+
     /* =====================================================================
        THE CHART'S LINES (0.7.23)
 
