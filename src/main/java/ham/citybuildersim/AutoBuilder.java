@@ -1404,9 +1404,10 @@ public final class AutoBuilder {
         double bondMoney = from == null ? raised : raised + from.raised;
         steps.add(new Step(m, Outcome.ORDERED, name, wanted, n, cut, cost, bondMoney, landShort, List.copyOf(got), landCost,
                 weighed));
-        GameLog.note(String.format("Automatic building: %d %s for %s, $%,.0fk%s. %s", n, name,
-                m.label().toLowerCase(), cost, bondMoney > 0 ? String.format(" ($%,.0fk of it on a %d-year bond)",
-                        bondMoney, Game.BUILD_BOND_YEARS) : "", why));
+        Currency w = Currency.writing();
+        GameLog.note(String.format("Automatic building: %d %s for %s, %s%s. %s", n, name,
+                m.label().toLowerCase(), w.write(String.format("%,.0fk", cost)), bondMoney > 0 ? String.format(" (%s of it on a %d-year bond)",
+                        w.write(String.format("%,.0fk", bondMoney)), Game.BUILD_BOND_YEARS) : "", why));
         return true;
     }
 
@@ -1543,8 +1544,10 @@ public final class AutoBuilder {
             return;
         }
         String crossing = l.kind() == BuildAdvice.LinkKind.BRIDGE ? " (" + BridgeView.lengthWords(l.survey().lengthM()) + ")" : "";
-        String line = String.format("Automatic building: %s to link %s%s, $%,.0fk%s. %s", building, l.name(), crossing, cost,
-                raised > 0 ? String.format(" ($%,.0fk of it on a %d-year bond)", raised, Game.BUILD_BOND_YEARS) : "", why);
+        Currency w = Currency.writing();
+        String line = String.format("Automatic building: %s to link %s%s, %s%s. %s", building, l.name(), crossing,
+                w.write(String.format("%,.0fk", cost)),
+                raised > 0 ? String.format(" (%s of it on a %d-year bond)", w.write(String.format("%,.0fk", raised)), Game.BUILD_BOND_YEARS) : "", why);
         linkSteps.add(new LinkStep(game.getMonth(), l.landmass(), l.kind(), Outcome.ORDERED, building, cost, line));
         GameLog.note(line);
     }
@@ -1792,8 +1795,8 @@ public final class AutoBuilder {
         double after = ratioAfter(game, q);
         if (!Double.isFinite(after)) return "the cash over a month's tax is short of " + one + " and the city has no GDP"
                 + " recorded to borrow against.";
-        return String.format("borrowing $%,.0fk for %s would take the city's debt to %s of a year's GDP, past your"
-                + " limit of %s.", gap, one, gdpShare(after), gdpShare(debtLimit));
+        return String.format("borrowing %s for %s would take the city's debt to %s of a year's GDP, past your"
+                + " limit of %s.", Currency.writing().write(String.format("%,.0fk", gap)), one, gdpShare(after), gdpShare(debtLimit));
     }
 
     /** Why the cash pays for no first of a kind (0.7.101): built from the cash alone, and the cash over a month's tax short of one and its ground. */

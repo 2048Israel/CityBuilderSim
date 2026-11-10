@@ -5470,8 +5470,9 @@ public class Bank {
                     customers, standing, standing == 1 ? "" : "es", CUSTOMERS_PER_BRANCH);
         }
         if (!feesWouldCoverAnother(standing)) {
-            return String.format("another branch's customers would pay $%,.1fk a month in fees against the $%,.1fk a branch costs",
-                    feesPerBranchWithAnother(standing), laterBranchCost());
+            return String.format("another branch's customers would pay %s a month in fees against the %s a branch costs",
+                    Currency.writing().write(String.format("%,.1fk", feesPerBranchWithAnother(standing))),
+                    Currency.writing().write(String.format("%,.1fk", laterBranchCost())));
         }
         return null;
     }
@@ -5479,8 +5480,9 @@ public class Bank {
     /** ...and the case for one that would: its customers and its fees against its cost. */
     public String branchOpenReason(double standing) {
         if (standing <= 0) return "nowhere in the city to bank - its credit comes from outside, at the window's price";
-        return String.format("%,.0f customers - another branch's fees of $%,.1fk a month would cover the $%,.1fk it costs",
-                customers, feesPerBranchWithAnother(standing), laterBranchCost());
+        return String.format("%,.0f customers - another branch's fees of %s a month would cover the %s it costs",
+                customers, Currency.writing().write(String.format("%,.1fk", feesPerBranchWithAnother(standing))),
+                Currency.writing().write(String.format("%,.1fk", laterBranchCost())));
     }
 
     /* ----------------- a branch whose fees do not cover it is closed (0.7.19) -----------------

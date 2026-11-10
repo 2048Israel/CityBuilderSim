@@ -121,29 +121,29 @@ public record DebtQuote(
     public String summary() {
         // A tiny sale (Game.isTinySale()): no face, but the auction's result, which says why it is not done.
         if (isEmpty() && auction != null && auction.sold() > 0) {
-            return String.format("Nothing sold: the bids reached only $%s of the $%s asked, at the highest yield the city took"
-                    + " (%.3f%%), and a sale of $%s raising $%s is under the smallest deal worth arranging.",
+            return String.format("Nothing sold: the bids reached only %s of the %s asked, at the highest yield the city took"
+                    + " (%.3f%%), and a sale of %s raising %s is under the smallest deal worth arranging.",
                     f(auction.sold()), f(auction.ask().face()), auction.ceiling() * 100,
                     f(auction.sold()), f(Math.max(0, auction.proceeds())));
         }
         String sale = saleLines();
         return switch (instrument) {
             case "Note" -> String.format(
-                    "Par value (repay):    $%s%n"
-                    + "Cash received:        $%s%n"
+                    "Par value (repay):    %s%n"
+                    + "Cash received:        %s%n"
                     + "Issued at:            %.2f of par  (a discount - the bill pays no coupon)%n"
-                    + "Cost of the credit:   $%s%n"
+                    + "Cost of the credit:   %s%n"
                     + "Term:                 %d months, sold at a yield of %.2f%%/yr%s",
                     f(faceValue), f(cashReceived), pricePerPar(),
                     f(totalCost), duration, marketRate * 100, sale);
 
             case "Serial" -> String.format(
-                    "Par value:            $%s%n"
-                    + "Cash received:        $%s   (issued at %.2f of par)%n"
+                    "Par value:            %s%n"
+                    + "Cash received:        %s   (issued at %.2f of par)%n"
                     + "Coupon:               %.3f%%, paid monthly on the balance outstanding%n"
-                    + "First payment:        $%s   (it falls as principal amortises)%n"
+                    + "First payment:        %s   (it falls as principal amortises)%n"
                     + "Principal:            repaid in %d annual slices - no lump at the end%n"
-                    + "Total cost of credit: $%s over %d years%s",
+                    + "Total cost of credit: %s over %d years%s",
                     f(faceValue), f(cashReceived), pricePerPar(),
                     couponRate() * 100, f(monthlyInterest),
                     Math.max(1, duration), f(totalCost), duration, sale);
@@ -151,33 +151,33 @@ public record DebtQuote(
             // CD5 (spec-city-debt.md sections 2.4 and 2.5): the coupon field is the margin over the policy rate,
             // and the real coupon; the monthly figure is at today's dial, and at an index ratio of 1.
             case "Float" -> String.format(
-                    "Par value (repay):    $%s%n"
-                    + "Cash received:        $%s   (issued at %.2f of par)%n"
+                    "Par value (repay):    %s%n"
+                    + "Cash received:        %s   (issued at %.2f of par)%n"
                     + "Coupon:               policy rate %s %.3f%% (now %.3f%%), reset monthly%n"
-                    + "Monthly payment:      $%s at today's dial%n"
+                    + "Monthly payment:      %s at today's dial%n"
                     + "Principal:            the WHOLE par value falls due in %d years%n"
-                    + "Total cost of credit: $%s at today's dial%s",
+                    + "Total cost of credit: %s at today's dial%s",
                     f(faceValue), f(cashReceived), pricePerPar(),
                     coupon < 0 ? "less" : "+", Math.abs(coupon) * 100, faceValue > 0 ? monthlyInterest * 12 / faceValue * 100 : 0,
                     f(monthlyInterest), duration, f(totalCost), sale);
 
             case "Linked" -> String.format(
-                    "Par value (repay):    $%s   (the principal follows the price index)%n"
-                    + "Cash received:        $%s   (issued at %.2f of par)%n"
+                    "Par value (repay):    %s   (the principal follows the price index)%n"
+                    + "Cash received:        %s   (issued at %.2f of par)%n"
                     + "Real coupon:          %.3f%% on a principal that follows the price index; at maturity never under the face%n"
-                    + "Monthly payment:      $%s at today's index%n"
+                    + "Monthly payment:      %s at today's index%n"
                     + "Principal:            the face, or the indexed principal if that is more, falls due in %d years%n"
-                    + "Total cost of credit: $%s before any indexation%s",
+                    + "Total cost of credit: %s before any indexation%s",
                     f(faceValue), f(cashReceived), pricePerPar(),
                     coupon * 100, f(monthlyInterest), duration, f(totalCost), sale);
 
             default -> String.format(
-                    "Par value (repay):    $%s%n"
-                    + "Cash received:        $%s   (issued at %.2f of par)%n"
+                    "Par value (repay):    %s%n"
+                    + "Cash received:        %s   (issued at %.2f of par)%n"
                     + "Coupon:               %.3f%%, paid monthly on the full par value%n"
-                    + "Monthly payment:      $%s%n"
+                    + "Monthly payment:      %s%n"
                     + "Principal:            the WHOLE par value falls due in %d years%n"
-                    + "Total cost of credit: $%s%s",
+                    + "Total cost of credit: %s%s",
                     f(faceValue), f(cashReceived), pricePerPar(),
                     couponRate() * 100, f(monthlyInterest), duration, f(totalCost), sale);
         };
@@ -203,7 +203,7 @@ public record DebtQuote(
             out.append(String.format("%nCallable:              at 100, from month %d - the coupon carries the option", firstCallMonth));
         }
         if (auction.shortSale()) {
-            out.append(String.format("%nSOLD SHORT:           sold $%s of $%s - the bids did not reach the issue at %.3f%%, the highest yield the city took",
+            out.append(String.format("%nSOLD SHORT:           sold %s of %s - the bids did not reach the issue at %.3f%%, the highest yield the city took",
                     f(auction.sold()), f(auction.ask().face()), auction.ceiling() * 100));
         }
         return out.toString();
@@ -287,7 +287,7 @@ public record DebtQuote(
     }
 
     /**
-     * A figure on this quote, in dollars.
+     * A figure on this quote, in the city's money, with its sign (Currency.writing()), not in dollars.
      *
      * THE MODEL COUNTS IN THOUSANDS and this class was printing the raw number
      * with a dollar sign in front of it, so a $2.3B bond read as "$2,300,000"
@@ -296,7 +296,7 @@ public record DebtQuote(
      * money in the same unit.
      */
     private static String f(double v) {
-        return FORMAT.format(v * 1000);
+        return Currency.writing().write(FORMAT.format(v * 1000));
     }
 
     private static final NumberFormat FORMAT = NumberFormat.getNumberInstance(Locale.CANADA);

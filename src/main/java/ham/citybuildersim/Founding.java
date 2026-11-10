@@ -447,7 +447,8 @@ public final class Founding {
     /** Why a treasury will not do, or null. */
     public static String cashProblem(double cash) {
         if (!Double.isFinite(cash) || cash < MIN_CASH || cash > MAX_CASH) {
-            return String.format("The treasury has to be between $%sM and $%sM.", millions(MIN_CASH), millions(MAX_CASH));
+            Currency w = Currency.writing();
+            return String.format("The treasury has to be between %s and %s.", w.write(millions(MIN_CASH) + "M"), w.write(millions(MAX_CASH) + "M"));
         }
         return null;
     }

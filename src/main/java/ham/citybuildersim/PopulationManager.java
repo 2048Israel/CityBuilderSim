@@ -1230,12 +1230,12 @@ public class PopulationManager {
 
                 double payroll = jobWage[i] * jobs[i];
 
-                System.out.printf("%-20s | %,14d | %,9d | %8.1f%% | $%13s%n",
+                System.out.printf("%-20s | %,14d | %,9d | %8.1f%% | %14s%n",
                         jobName,
                         jobs[i],
                         vacancies[i],
                         fillRates[i] * 100,
-                        formatter.format(payroll)
+                        Currency.writing().write(formatter.format(payroll))
                 );
             }
         }

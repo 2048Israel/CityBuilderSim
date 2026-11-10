@@ -3,6 +3,7 @@ package ham.citybuildersim.sectors;
 import ham.citybuildersim.BuildingType;
 import ham.citybuildersim.BuildingsTemplate;
 import ham.citybuildersim.BusinessInvestment;
+import ham.citybuildersim.Currency;
 import ham.citybuildersim.Deposit;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
@@ -1789,13 +1790,14 @@ public final class Refining extends Sector {
         SpreadPlanner.Candidate farm = farmCandidate(plans, game);
         if (farm != null && farm.passes() && farm.earns() > 0 && farm.cost() > 0 && (best == null || farm.score() > best.score())) {
             return new BusinessInvestment.Decision(sector, farm.template(), 1, String.format(
-                    "a Tank Farm saves $%,.1fk a month of freight on the crude a port holds back for room, on $%,.0fk, %.2f%%"
-                            + " a month", farm.earns(), farm.cost(), 100 * farm.score()), true);
+                    "a Tank Farm saves %s a month of freight on the crude a port holds back for room, on %s, %.2f%%"
+                            + " a month", Currency.writing().write(String.format("%,.1fk", farm.earns())),
+                            Currency.writing().write(String.format("%,.0fk", farm.cost())), 100 * farm.score()), true);
         }
         if (best != null) {
             return new BusinessInvestment.Decision(sector, best.template(), 1, String.format(
-                    "%s earns $%,.1fk a month on $%,.0fk at the city's prices, %.2f%% a month", named(best), best.earns(),
-                    best.cost(), 100 * best.score()), true);
+                    "%s earns %s a month on %s at the city's prices, %.2f%% a month", named(best), Currency.writing().write(String.format("%,.1fk", best.earns())),
+                    Currency.writing().write(String.format("%,.0fk", best.cost())), 100 * best.score()), true);
         }
         SpreadPlanner.Candidate land = SpreadPlanner.bestBlockedByLand(all);
         if (land != null) return BusinessInvestment.Decision.noLand(sector, plans.landReason(land.template()));

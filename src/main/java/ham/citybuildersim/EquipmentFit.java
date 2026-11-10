@@ -279,9 +279,10 @@ public final class EquipmentFit {
         if (!wins) return plan;
         String name = fitted.getName(), what = piece.getName();
         return BusinessInvestment.Decision.fit(sector.key(), fitted, piece, String.format(
-                "the %s on %s %s earns $%,.1fk a month on $%,.1fk at the city's prices, %.2f%% a month",
+                "the %s on %s %s earns %s a month on %s at the city's prices, %.2f%% a month",
                 what.isEmpty() ? what : Character.toLowerCase(what.charAt(0)) + what.substring(1),
                 "AEIOUaeiou".indexOf(name.isEmpty() ? 'x' : name.charAt(0)) >= 0 ? "an" : "a", name,
-                best.gain(), best.cost(), best.earningsOnCost() * 100));
+                Currency.writing().write(String.format("%,.1fk", best.gain())), Currency.writing().write(String.format("%,.1fk", best.cost())),
+                best.earningsOnCost() * 100));
     }
 }

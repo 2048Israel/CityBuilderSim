@@ -929,7 +929,7 @@ public final class YearBook {
         out.append("Written from the city's own history. Nothing here is recomputed from the city,")
            .append(" so this file and the graphs cannot disagree.\n\n");
 
-        out.append("MONEY IS IN THOUSANDS throughout, as everywhere in this game: a gdp of 693 is $693,000.\n");
+        out.append("MONEY IS IN THOUSANDS throughout, as everywhere in this game: a gdp of 693 is " + money.write("693,000") + ".\n");
         out.append("RATES ARE FRACTIONS: 0.124 is 12.4%. The exceptions are crimeRate, which is crimes per 100,000 people a year,\n");
         out.append("and fxRate, which is ").append(money.plural())
            .append(" per US dollar - 1.000 at founding, HIGHER means the currency has fallen.\n\n");

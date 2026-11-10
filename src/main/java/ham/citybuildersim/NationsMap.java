@@ -916,10 +916,10 @@ public final class NationsMap {
      */
     static String moneyWords(Nations.Year y, double dollarsAUsd, double monthRate) {
         boolean known = dollarsAUsd > 0 && !Double.isInfinite(dollarsAUsd);
-        if (Nations.DOLLAR.equals(y.money())) return "the US dollar" + (known ? " · US$1 = D$" + sig3(dollarsAUsd) : "");
+        if (Nations.DOLLAR.equals(y.money())) return "the US dollar" + (known ? " · US$1 = " + Currency.writing().writeQualified(sig3(dollarsAUsd)) : "");
         double rate = monthRate > 0 && !Double.isInfinite(monthRate) ? monthRate : y.rateToUsd();
         if (!(rate > 0) || Double.isInfinite(rate)) return y.money() == null ? "-" : y.money();
-        return y.money() + " " + sig3(rate) + " a US$" + (known ? " · " + y.money() + " 1 = D$" + sig3(dollarsAUsd / rate) : "");
+        return y.money() + " " + sig3(rate) + " a US$" + (known ? " · " + y.money() + " 1 = " + Currency.writing().writeQualified(sig3(dollarsAUsd / rate)) : "");
     }
 
     static String markWords(int mark) {
@@ -942,19 +942,26 @@ public final class NationsMap {
      */
     public static String usd(double v) { return money("US$", v); }
 
-    /** Money as words in any sign, as usd() writes the US dollar's: "D$25M", and below a million the whole number, "D$580,000"; "-" for NaN. */
+    /** Money as words in any sign, as usd() writes the US dollar's: "US$25M", and below a million the whole number, "US$580,000"; "-" for NaN. The sign goes before. */
     static String money(String sign, double v) {
-        if (Double.isNaN(v)) return "-";
-        if (v >= 1e12) return sign + String.format(Locale.US, "%.2f", v / 1e12) + "T";
-        String s;
-        if (v >= 1e9) return (s = three(v / 1e9)) != null ? sign + s + "B" : sign + "1.00T";
-        if (v >= 1e6) return (s = three(v / 1e6)) != null ? sign + s + "M" : sign + "1.00B";
-        long whole = Math.round(v);
-        return whole >= 1_000_000 ? sign + "1.00M" : sign + String.format(Locale.US, "%,d", whole);
+        return Double.isNaN(v) ? "-" : sign + figure(v);
     }
 
-    /** The city's money, given in thousands (the trade's unit), as words: 25,000 is "D$25M"; "-" for NaN. */
-    public static String city(double thousands) { return money("D$", thousands * 1000); }
+    /** The figure of money(): "25M", "580,000", "2.24T", the unit but no sign. */
+    private static String figure(double v) {
+        if (v >= 1e12) return String.format(Locale.US, "%.2f", v / 1e12) + "T";
+        String s;
+        if (v >= 1e9) return (s = three(v / 1e9)) != null ? s + "B" : "1.00T";
+        if (v >= 1e6) return (s = three(v / 1e6)) != null ? s + "M" : "1.00B";
+        long whole = Math.round(v);
+        return whole >= 1_000_000 ? "1.00M" : String.format(Locale.US, "%,d", whole);
+    }
+
+    /** The city's money, given in thousands (the trade's unit), as words: 25,000 is "D$25M" (the qualified sign, put where the city puts it: "25M kr"); "-" for NaN. */
+    public static String city(double thousands) {
+        double v = thousands * 1000;
+        return Double.isNaN(v) ? "-" : Currency.writing().writeQualified(figure(v));
+    }
 
     /** The haul as words: the tonnes sold and the tonnes bought, each as people() writes a count, " t out" and " t in", only those that are more than none; "-" for neither. */
     public static String haulWords(double tonnesOut, double tonnesIn) {

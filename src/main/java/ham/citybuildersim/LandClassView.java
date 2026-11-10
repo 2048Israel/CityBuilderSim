@@ -140,8 +140,7 @@ public final class LandClassView {
 
     /** Money.marked(): the mark replaces the "$" of the amount. */
     public static String marked(String prefix, String amount) {
-        int at = amount.indexOf('$');
-        return at < 0 ? prefix + amount : amount.substring(0, at) + prefix + amount.substring(at + 1);
+        return Currency.marked(prefix, amount);
     }
 
     /** Money.money(): thousands as the screens abbreviate city money. */
@@ -152,10 +151,11 @@ public final class LandClassView {
         double d = thousands * 1000;
         double a = Math.abs(d);
         if (a >= 1_000) return tight(d, false);
-        if (a >= 1) return String.format("$%,.2f", d);
-        if (a >= .001) return String.format("$%.4f", unsigned0(d, 4));
-        if (a > 0) return String.format("$%.6f", unsigned0(d, 6));   // Money.unitPrice() (EP1)
-        return "$0";
+        Currency w = Currency.writing();
+        if (a >= 1) return w.write(String.format("%,.2f", d));
+        if (a >= .001) return w.write(String.format("%.4f", unsigned0(d, 4)));
+        if (a > 0) return w.write(String.format("%.6f", unsigned0(d, 6)));   // Money.unitPrice() (EP1)
+        return w.write("0");
     }
 
     private static final NumberFormat GROUPED = NumberFormat.getNumberInstance(Locale.CANADA);
@@ -168,13 +168,14 @@ public final class LandClassView {
     private static String tight(double value, boolean compact) {
         double a = Math.abs(value);
         String sign = value < 0 ? "-" : "";
-        if (a >= 1e15 || tenths(a / 1e12) >= 1000) return String.format("%s$%,.1fQ", sign, a / 1e15);
-        if (a >= 1e12 || tenths(a / 1e9) >= 1000) return String.format("%s$%.1fT", sign, a / 1e12);
-        if (a >= 1_000_000_000 || tenths(a / 1e6) >= 1000) return String.format("%s$%.1fB", sign, a / 1_000_000_000);
-        if (a >= 1_000_000 || (compact && Math.round(a / 1e3) >= 1000)) return String.format("%s$%.1fM", sign, a / 1_000_000);
-        if (compact && a >= 10_000) return String.format("%s$%.0fk", sign, a / 1_000);
+        Currency w = Currency.writing();
+        if (a >= 1e15 || tenths(a / 1e12) >= 1000) return sign + w.write(String.format("%,.1fQ", a / 1e15));
+        if (a >= 1e12 || tenths(a / 1e9) >= 1000) return sign + w.write(String.format("%.1fT", a / 1e12));
+        if (a >= 1_000_000_000 || tenths(a / 1e6) >= 1000) return sign + w.write(String.format("%.1fB", a / 1_000_000_000));
+        if (a >= 1_000_000 || (compact && Math.round(a / 1e3) >= 1000)) return sign + w.write(String.format("%.1fM", a / 1_000_000));
+        if (compact && a >= 10_000) return sign + w.write(String.format("%.0fk", a / 1_000));
         long whole = Math.round(a);
-        return (whole == 0 ? "" : sign) + "$" + GROUPED.format(whole);
+        return (whole == 0 ? "" : sign) + w.write(GROUPED.format(whole));
     }
 
     private static double tenths(double v) { return Math.round(v * 10) / 10.0; }

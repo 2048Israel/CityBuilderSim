@@ -3063,8 +3063,8 @@ public class LandManager {
         System.out.printf("Available:          %s%n", areaWords(getAvailableSqFt()));
         System.out.printf("Utilisation:        %.1f%%%n", getUtilisation() * 100);
         System.out.println();
-        System.out.printf("Market rate:        $%s /m\u00b2 (US$%s)%n",
-                formatter.format(perM2(getAcquisitionCostPerSqFt())),
+        System.out.printf("Market rate:        %s (US$%s)%n",
+                Currency.writing().write(formatter.format(perM2(getAcquisitionCostPerSqFt())) + " /m\u00b2"),
                 formatter.format(perM2(getGroundUsdPerSqFt())));
         if (getIronDeposits() > 0) {
             System.out.printf("Iron deposits:      %d, %s tonnes left%n",
@@ -3075,10 +3075,10 @@ public class LandManager {
             System.out.printf("  #%-4d %s%n", parcel.getId(), parcel.describe());
         }
         System.out.println();
-        System.out.printf("Sale price:         $%s /m\u00b2%n", formatter.format(perM2(pricePerSqFt)));
-        System.out.printf("Margin:             $%s /m\u00b2%n", formatter.format(perM2(getMarginPerSqFt())));
-        System.out.printf("Sold this month:    %s for $%s%n",
-                areaWords(sqFtSoldThisMonth), formatter.format(landSalesThisMonth));
+        System.out.printf("Sale price:         %s%n", Currency.writing().write(formatter.format(perM2(pricePerSqFt)) + " /m\u00b2"));
+        System.out.printf("Margin:             %s%n", Currency.writing().write(formatter.format(perM2(getMarginPerSqFt())) + " /m\u00b2"));
+        System.out.printf("Sold this month:    %s for %s%n",
+                areaWords(sqFtSoldThisMonth), Currency.writing().write(formatter.format(landSalesThisMonth)));
         System.out.println("=========================================================\n");
     }
 

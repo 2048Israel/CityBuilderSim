@@ -3555,8 +3555,8 @@ public class BusinessDebtManager {
 
         for (String sector : SECTORS) {
             System.out.printf("%n%s%n", sector.toUpperCase());
-            System.out.printf("  Outstanding Principal:  $%s%n", formatter.format(getPrincipal(sector)));
-            System.out.printf("  Monthly Interest:       $%s%n", formatter.format(getMonthlyInterest(sector)));
+            System.out.printf("  Outstanding Principal:  %s%n", Currency.writing().write(formatter.format(getPrincipal(sector))));
+            System.out.printf("  Monthly Interest:       %s%n", Currency.writing().write(formatter.format(getMonthlyInterest(sector))));
             System.out.printf("  Leverage (debt/assets): %.2f%n", getLeverage(sector));
             System.out.printf("  New Borrowing Rate:     %.2f%%  (prime %.2f%% + %.2f%% spread)%n",
                     getRate(sector) * 100, primeRate * 100, getSpread(sector) * 100);
@@ -3564,17 +3564,17 @@ public class BusinessDebtManager {
             System.out.printf("  Loans Outstanding:      %d%n", getLoanCount(sector));
 
             for (BusinessDebt loan : getLoans(sector)) {
-                System.out.printf("    Month %-4d | $%-12s @ %.2f%%%s%n",
+                System.out.printf("    Month %-4d | %-13s @ %.2f%%%s%n",
                         loan.getMaturityMonth(),
-                        formatter.format(loan.getOutstandingPrincipal()),
+                        Currency.writing().write(formatter.format(loan.getOutstandingPrincipal())),
                         loan.getAnnualRate() * 100,
                         loan instanceof Mortgage ? "  insured mortgage, renews" : "");
             }
         }
 
         System.out.println("-----------------------------------------------------");
-        System.out.printf("TOTAL PRIVATE CREDIT:     $%s%n", formatter.format(getTotalPrincipal()));
-        System.out.printf("TOTAL MONTHLY INTEREST:   $%s%n", formatter.format(getTotalMonthlyInterest()));
+        System.out.printf("TOTAL PRIVATE CREDIT:     %s%n", Currency.writing().write(formatter.format(getTotalPrincipal())));
+        System.out.printf("TOTAL MONTHLY INTEREST:   %s%n", Currency.writing().write(formatter.format(getTotalMonthlyInterest())));
         System.out.println("=====================================================\n");
     }
 

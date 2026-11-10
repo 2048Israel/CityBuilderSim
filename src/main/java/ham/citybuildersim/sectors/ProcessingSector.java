@@ -3,6 +3,7 @@ package ham.citybuildersim.sectors;
 import ham.citybuildersim.BuildingType;
 import ham.citybuildersim.BuildingsTemplate;
 import ham.citybuildersim.BusinessInvestment;
+import ham.citybuildersim.Currency;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
 import ham.citybuildersim.Sector;
@@ -406,8 +407,8 @@ public abstract class ProcessingSector extends Sector {
         SpreadPlanner.Candidate best = SpreadPlanner.best(all);
         if (best != null) {
             return new BusinessInvestment.Decision(sector, best.template(), 1, String.format(
-                    "%s earns $%,.1fk a month on $%,.0fk at the city's prices, %.2f%% a month", a(best.template().getName()),
-                    best.earns(), best.cost(), 100 * best.score()), true);
+                    "%s earns %s a month on %s at the city's prices, %.2f%% a month", a(best.template().getName()),
+                    Currency.writing().write(String.format("%,.1fk", best.earns())), Currency.writing().write(String.format("%,.0fk", best.cost())), 100 * best.score()), true);
         }
         SpreadPlanner.Candidate land = SpreadPlanner.bestBlockedByLand(all);
         if (land != null) return BusinessInvestment.Decision.noLand(sector, plans.landReason(land.template()));

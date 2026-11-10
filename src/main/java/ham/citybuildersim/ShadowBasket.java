@@ -108,11 +108,12 @@ public class ShadowBasket {
 
         real.printf("A city of %,d at month %d.%n", g.getPopulationManager().getPopulation(), g.getMonth());
         real.printf("The exchange rate is %.3f, so the world's prices are that much dearer here.%n", fx);
-        real.printf("Subsistence costs $%.2f at the world's prices, $%.2f in this city's money.%n",
-                subsistenceWorld * 1000, subsistence * 1000);
-        real.printf("A month of food costs $%.2f landed here across %d goods;"
-                + " the shops charge $%.2f a head, which is Retail's markup on it.%n%n",
-                shops.getImportPrice() * 1000, Retail.SHELF.length, shoppingPerHead * 1000);
+        Currency cur = Currency.writing();
+        real.printf("Subsistence costs %s at the world's prices, %s in this city's money.%n",
+                cur.write(String.format("%.2f", subsistenceWorld * 1000)), cur.write(String.format("%.2f", subsistence * 1000)));
+        real.printf("A month of food costs %s landed here across %d goods;"
+                + " the shops charge %s a head, which is Retail's markup on it.%n%n",
+                cur.write(String.format("%.2f", shops.getImportPrice() * 1000)), Retail.SHELF.length, cur.write(String.format("%.2f", shoppingPerHead * 1000)));
 
         real.printf("%-34s %8s %9s %8s %9s %8s %7s%n",
                 "cell", "people", "income/hd", "x", "would buy", "kcal/day", "diet");
@@ -161,12 +162,12 @@ public class ShadowBasket {
         }
 
         real.printf("%n=== THE CITY ===%n");
-        real.printf("  the model says  $%,.0f a month at world prices%n", wouldSpend * 1000);
-        real.printf("  the shops bought $%,.0f a month at world prices%n", doesSpend * 1000);
+        real.printf("  the model says  %s a month at world prices%n", cur.write(String.format("%,.0f", wouldSpend * 1000)));
+        real.printf("  the shops bought %s a month at world prices%n", cur.write(String.format("%,.0f", doesSpend * 1000)));
         real.printf("  RATIO           %.2fx   <- one means the shelf keeps up with the model%n",
                 doesSpend > 0 ? wouldSpend / doesSpend : 0);
-        real.printf("  the shops' till $%,.0f, which is the same food with Retail's markup on it%n",
-                shoppingPerHead * cityPeople * 1000);
+        real.printf("  the shops' till %s, which is the same food with Retail's markup on it%n",
+                cur.write(String.format("%,.0f", shoppingPerHead * cityPeople * 1000)));
         real.printf("  eating          %,.0f kcal a person a day, diet quality %.2f%n",
                 cityPeople > 0 ? model.caloriesOf(cityBasket) / cityPeople / 30 : 0,
                 model.dietQuality(cityBasket));

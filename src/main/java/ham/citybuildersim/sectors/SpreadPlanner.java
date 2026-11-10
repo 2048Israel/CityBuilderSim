@@ -3,6 +3,7 @@ package ham.citybuildersim.sectors;
 import ham.citybuildersim.BuildingsTemplate;
 import ham.citybuildersim.BusinessDebtManager;
 import ham.citybuildersim.BusinessInvestment;
+import ham.citybuildersim.Currency;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
 import ham.citybuildersim.GoodsMarket;
@@ -571,9 +572,10 @@ public final class SpreadPlanner {
             // ...with the wait for the building in the interest (BA1, 2026-11-02; passesMoney()).
             @Override public String money(BuildingsTemplate t, double earns, double cost) {
                 if (passesMoney(sector, plans, game, t, 1, earns, cost)) return null;
-                if (!(earns > 0)) return String.format("would lose $%,.1fk a month on it", -earns);
-                return String.format("would earn $%,.1fk a month on $%,.0fk, which would not clear %s ($%,.1fk)",
-                        earns, cost, moneyGate.words(), hurdle(sector, plans, game, t, 1, cost));
+                if (!(earns > 0)) return String.format("would lose %s a month on it", Currency.writing().write(String.format("%,.1fk", -earns)));
+                return String.format("would earn %s a month on %s, which would not clear %s (%s)",
+                        Currency.writing().write(String.format("%,.1fk", earns)), Currency.writing().write(String.format("%,.0fk", cost)), moneyGate.words(),
+                        Currency.writing().write(String.format("%,.1fk", hurdle(sector, plans, game, t, 1, cost))));
             }
         };
     }
