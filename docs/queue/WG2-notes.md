@@ -18,6 +18,10 @@ A model batch: Opus, with Sonnet slices for the code.
   on the **labour force** (what `getUnemploymentRate()` divides by; the prototype multiplied by the workforce, which
   counts the students and prisoners and overstates it), and the leavers are spread on each band's **surplus over its
   own posts** (`surplusInBand()`: who is out of work at their level), not on the city's band share.
+- **Parts 2 and 3 from the city's 240th month** (`Migration.BRAKE_FROM_MONTH`, `brakeApplies()`,
+  `arrivalBrakeNow()`): before it the young city's share swings with every works that opens, and a brake read off
+  it cost the city two thirds of its people at month 240 (section 3). The age is the months `recordWages()` has
+  counted, saved with the rest.
 - **The gate's draw reads both** (GW0-C C4a): `drawFor()`'s jobs' pull is `jobsPull()`, and the people it draws are
   braked after the room cap, as the month's arrivals are. No new saved figure: the pulls are saved
   (`LAST_SCALARS`), and the brake reads the city's unemployment, which a load restores.
@@ -27,7 +31,7 @@ A model batch: Opus, with Sonnet slices for the code.
 
 - The verdict: green 3-7%, amber to 12%, red past it (`PeopleScreen.OUT_OF_WORK_HIGH` .07, `_FAR` =
   `Migration.ARRIVALS_STOP_OUT_OF_WORK`), the header's tip with what migration does at 6% and 12% and the cities
-  beside it (spec-wages S4, the mockup's wording). SummaryScreen's unemployed line read a bare `.15`; it reads the
+  beside it (spec-wages S4, the mockup's wording), "once the city is 20 years old" from the dial. SummaryScreen's unemployed line read a bare `.15`; it reads the
   dial now.
 - The People screen's draw card drew `(jobs + homes) x the pulls`; it draws each half with its own pulls (the
   "jobs and homes" box went: nothing else read `getLastDrawBeforePulls()` on the screen). Its why-sentence gains
@@ -48,10 +52,16 @@ A model batch: Opus, with Sonnet slices for the code.
   the spare share unchanged; sections 8-9 multiply by the brake; section 10 is new (the pull rule: senior care
   draws the same to the bit; the brake: whole, the middle, past the stop nothing and the order refused).
 - **HealthCheck 9** restated: caring minus plain is `HOME_WEIGHT x homes x SENIOR_CARE_PULL` (.30), the other pulls
-  premised at 1. Its shelf section (L448) lost its premise: WG2's played city is smaller (1,655 people against
-  2,094), so the shops' hands no longer bound; the fixture now stocks the shelf x10, so the condition is caused,
-  not inherited.
+  premised at 1. Its shelf section (L448) lost its premise when the brake acted from month 1 (the played city
+  1,655 people against 2,094, the shops' hands no longer binding); the fixture now stocks the shelf x10, so the
+  condition is caused, not inherited. From month 240 its 36-month city has 1,872; with senior care lifting the
+  jobs' draw in the target again it has 1,901, so part 1 there is 29 people, and the rest of the gap to 2,094 was
+  not measured (2,094 may be from before GW1).
 - **PopulationCheck**'s WG2 section (three parts, each fixture causing it); its slack premise held as written.
+  The braked and leaving fixtures are old cities (`oldMigration()`: `BRAKE_FROM_MONTH` months of steady wages,
+  asserted); young twins past the stop and at 20% out of work assert the brake and the drift do not act, and the
+  boundary at 239 and 240 months is asserted. StaffingDrawCheck 10 ages its villages the same way (`makeOld()`) and
+  adds (c): a young village past the stop draws the unbraked draw, whole, and passes on it.
 - Not covered by a fixture: the leavers' fallback to the band shares when no band has a surplus over its posts
   (unemployment past 6% with no band over its posts is a contradiction the model should not reach).
 
@@ -90,3 +100,42 @@ the share out of work as the seeds' mean over the span, medians. Variants as unc
   "smaller in its young decades".
 - AQ1's seed (AUTO2-2, GW1: 50.1% out of work in months 560-700, a 12-month deflation spell ending at month 632):
   14.0% and 7 months as first written; 12.2% and 3 months from month 240. A3 passes in every seed in both.
+
+## 4. The ensemble (`docs/ensemble/WG2.md`, 843ebffb, 80 of 80 runs)
+
+24 of 26, against GW1's 24 of 26. The AUTO2 runs are byte-identical to the month-240 prototype's (section 3).
+
+| measure (median [min to max]) | GW1 (0.9.89) | WG2 |
+|---|---|---|
+| AUTO2 inflation m240-end, a year (A1) | 2.08% | 2.24% |
+| AUTO2 young city, inflation m240-600 | 2.74% | 3.18% |
+| AUTO2 founding m120-240, longest spell of yoy > 10% | 13 [0 to 27] | 4 [0 to 20] |
+| A2: longest spell of yoy > 10% from m240 (< 12 in every seed) | 10 [7 to 24], FAIL | 10 [8 to 26], FAIL |
+| A3: longest spell of yoy < -10% from m240 (< 12 in every seed) | 1 [0 to 12], FAIL | 2 [0 to 8], PASS |
+| H2: ZERO_HOT m342-402 minus its twin | 0.13%, 15/16 | -0.27%, 13/16 |
+| AUTO2 bank, months under `CAPITAL_RATIO` to m600 | 2 [0 to 21] | 0 [0 to 8] |
+| AUTO2 out of work m24-240; m240-600; from m600 | 6.0%; 12.9%; 10.7% | 5.4%; 8.9%; 8.6% |
+| AUTO2 final population (T2) | 618,792 | 592,212 |
+| ZERO_SLACK final population | 409,599 | 402,986 |
+| ZERO_HOT final population (T2, at least 75% of GW1's) | 12,898 | 9,518, FAIL (73.8%) |
+| SHOCK final population | 34,660 | 28,526 |
+| HIGH final population | 14,570 | 11,957 |
+
+- **AQ1 clears on this run.** Its seed, AUTO2-2, peaks at 12.2% out of work in months 560-700 (GW1: 50.1%) and its
+  longest spell under -10% a year is 3 months (GW1: 12); A3 passes in every seed. The town is a different town by
+  then (18,684 people at month 600 against 20,534), so this is the bust not happening, not the bust explained:
+  AQ1's question (what laid off 30 points in ten months) is unanswered, and the row is the orchestrator's to close
+  or keep.
+- **ZERO_HOT's T2 is new red**, 73.8% of GW1's against the 75% floor. ZERO_HOT's city ends at month 402, a young
+  city, and tracks its AUTO2 twin (96.5% of it): this is part 1's cost to the young decades, which C2(a) accepted
+  ("smaller in its young decades"). It is above 0.9.83's 9,262; GW1 had raised it 39%. Not moved: T2 is the
+  ensemble's premise.
+
+## 5. Calls
+
+- Taken, with its recommendation (spec-wages section 6): the brake and the drift from month 240 (section 3).
+- **★ ZERO_HOT's T2** (section 4): accept it as part 1's cost to the young city, as C2(a) chose (recommended), or
+  hold WG2 for a young-city remedy to part 1 (none is studied: every rule that brought fewer people cost the young
+  city, spec-wages 10).
+- Not done here: the write-up for the project (`claude/<title>.md`; this batch changes how the game plays). This
+  session has no way to write to the project; sections 1-5 are its matter.
