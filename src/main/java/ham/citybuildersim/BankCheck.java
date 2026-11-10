@@ -2928,6 +2928,19 @@ public class BankCheck {
              * out, as IC1 held Freight and Copper Refining in the fixture above, the town's bank stands (equity 733 at month 34).
              */
             town.getBusinessInvestment().holdSector(Sectors.MANUFACTURING);
+            /*
+             * ...AND WOOD PRODUCTS, CEMENT & CONCRETE AND MATERIALS (GW1), for the same premise. On the tree whose staffing gate counts
+             * the draw these three order their works in this young town and borrow for them; in game month 44 Wood Products writes off
+             * $1,821 against the bank's equity of $1,742 (equity -$114), the month after Wood Products $2,053, Cement & Concrete $832 and
+             * Materials $402 (equity -$3,223, and -$8,926 at the worst, in month 55), and the bank is in resolution from month 44 to the end
+             * (Bank.branchesToClose() is 0 in resolution), so the rule closed none of the branches the cost's rise left uncovered: 2 standing
+             * a month after the rise, 18 short months, none followed by a closure. Held out, the three build nothing here and the bank
+             * stands (equity $1,642 in month 41, never in resolution), as with Manufacturing above.
+             */
+            // GW1: the gate counts a year's draw (Sector.GATE_DRAW_MONTHS), so these three sectors' works came earlier and their defaults put the bank in resolution; held out, they build nothing here and the bank stands.
+            town.getBusinessInvestment().holdSector(Sectors.WOOD_PRODUCTS);
+            town.getBusinessInvestment().holdSector(Sectors.CEMENT_CONCRETE);
+            town.getBusinessInvestment().holdSector(Sectors.MATERIALS);
             town.setCashForTest(Founding.WEALTHY_CASH);
             town.getForeignAccounts().pinRate(1.0);
             town.getLandManager().setOwnedSqFt(30_000_000);

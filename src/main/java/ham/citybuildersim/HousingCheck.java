@@ -826,6 +826,8 @@ public class HousingCheck {
      * rent. The city grows on its own dial for GROWN months (the ensemble's
      * own "pre" phase, which runs to MATURE), then the dial is held and the
      * people go, and a leg falls under GLUT_PRESSURE some 25 months into it.
+     * Since GW1 the people no longer go (the staffing gate counts the draw), so
+     * the glut is placed as the dial is held: homes for twice the seekers.
      */
     static void heldRateRentsItsGlutAtNoLift() {
         System.out.println("\n--- a city at a held 15% rents its glut at no lift ---");
@@ -845,6 +847,20 @@ public class HousingCheck {
         for (int i = 0; i < MONTHS; i++) {
             // The advisor nudges a hand-held dial between looks; the hand takes it back.
             if (i >= GROWN && (dm.isAutopilot() || dm.getPolicyRate() != HELD)) dm.takeTheDial(HELD);
+            // GW1: the gate counts a year's draw (Sector.GATE_DRAW_MONTHS), so this city's works come earlier and its people stay and grow under the held dial (384 at month 121,
+            // 569 at 169, no leg in glut in 240 months, the largest lift 1.449); the fixture now causes the glut where the people were to go: as the dial is held it places studio
+            // and low-rise blocks until each leg has twice the doors its seekers need (the new homes then draw 3,378 people by month 175, and the held dial closes 431 homes after).
+            if (i == GROWN) {
+                held.setCashForTest(Founding.WEALTHY_CASH);
+                held.getLandManager().setOwnedSqFt(held.getLandManager().getOwnedSqFt() + 20_000_000L);
+                BuildingsTemplate studioBlock = template(held, "Studio Apartments"), familyBlock = template(held, "Low-Rise Apartments");
+                int studioBlocks = (int) Math.max(1, Math.ceil((2 * re.getStudioSeekers() - re.getStudioHomes()) / studioBlock.getDwellings()));
+                int familyBlocks = (int) Math.max(1, Math.ceil((2 * re.getFamilySeekers() - re.getFamilyHomes()) / familyBlock.getDwellings()));
+                System.out.printf("   the glut caused as the dial is held: studio seekers %.1f against %d doors, %d block(s); family seekers %.1f against %d doors, %d block(s)%n",
+                        re.getStudioSeekers(), re.getStudioHomes(), studioBlocks, re.getFamilySeekers(), re.getFamilyHomes(), familyBlocks);
+                held.buildStack(studioBlock, studioBlocks, true);
+                held.buildStack(familyBlock, familyBlocks, true);
+            }
             held.toggleNextMonth();
             run++;
             int month = held.getMonth();
