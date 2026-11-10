@@ -65,6 +65,39 @@ A model batch: Opus, with Sonnet slices for the code.
 - Not covered by a fixture: the leavers' fallback to the band shares when no band has a surplus over its posts
   (unemployment past 6% with no band over its posts is a contradiction the model should not reach).
 
+### The fixtures part 1 moved (slice D, 46a06b9e)
+
+Four harnesses' fixtures fell short on the smaller young cities part 1 makes. Their cities are younger than
+`BRAKE_FROM_MONTH`, so the brake does not act in them. Each fixture now causes its condition through the model's
+own calls, and no claim moved.
+
+- **SaveFileCheck**:
+  - What moved: its city's bank stood open at month 150 on GW1. It now failed twice before month 51 (1,966 people
+    at month 21) and was frozen at month 151, with equity at -215, falling to -892 by month 382. The treasury's
+    BUTTON setting waits for the player, so the 13 bank `fixture:` lines were never caused.
+  - The fixture now: it resolves the failed bank as the Bank tab's button does (`canResolveBank()`,
+    `resolveBank()`) and waits for a year of paying, as before. A young town borrowing ahead of its people is
+    DQ1's class.
+- **PrizeCheck 12 and 20**:
+  - What moved: a village's bank had failed once by month 81 and had no capital for its desk. Business Services'
+    last trade was month 31's, at 27% of fair value, so the Exchange refused the owners' issue ($0.00 of the lab's
+    $1.0M).
+  - The fixture now: `labCityWithAMarket()` has the city's fund buy `FUND_BUYS_SHARE_OF_CAP` (10%) of the sector's
+    market value three months before the lab, taking the households' asks, so the quote supports an issue. Every
+    village of a section gets it alike.
+- **BuildAdviceCheck 5 and 10**:
+  - Section 5: the one job type the city fills whole is one a clinic has no posts of, so both clones are built on
+    a base of at least k of those posts.
+  - Section 10: the short city (3,902 people) had no card that the 2% rising history raised. 3% (`RISE_A_MONTH`)
+    is the least whole per cent that raises one (Paved Road, 5 to 6).
+- **ScaleCheck 9**:
+  - What moved: the town's path moved again, and month 191 missed the savings line by 3.37e-2 (dial .016) in its
+    fourth month.
+  - The scan: months 160-190, recorded in the comment. The misses fall on the savings line alone, at scattered
+    months: a granule of the town, as at months 122-143 before, and none of them a drift in the copy. Nothing WG2
+    reads is left unscaled (the brake acts from month 240, and the pulls are shares).
+  - The fixture now: `FREE_FIXTURE_MONTHS` is 172, the middle of months 170-175.
+
 ## 3. The young city, measured first
 
 The ensemble's 16 AUTO2 cities (`tools/ensemble/ensemble.sh`, 2,400 months each), each seed's people over GW1's
@@ -134,8 +167,39 @@ the share out of work as the seeds' mean over the span, medians. Variants as unc
 ## 5. Calls
 
 - Taken, with its recommendation (spec-wages section 6): the brake and the drift from month 240 (section 3).
-- **★ ZERO_HOT's T2** (section 4): accept it as part 1's cost to the young city, as C2(a) chose (recommended), or
-  hold WG2 for a young-city remedy to part 1 (none is studied: every rule that brought fewer people cost the young
-  city, spec-wages 10).
+- **★ ZERO_HOT's T2** (section 4), taken with its recommendation: it is accepted as part 1's cost to the young
+  city, as C2(a) chose. Jerus can overturn it. The other way is to hold WG2 for a young-city remedy to part 1, and
+  none is studied: every rule that brought fewer people cost the young city (spec-wages 10).
 - Not done here: the write-up for the project (`claude/<title>.md`; this batch changes how the game plays). This
   session has no way to write to the project; sections 1-5 are its matter.
+
+## 6. The checks (`./batch-check.sh --pick` on 46a06b9e, with the Earth and world files named)
+
+The run picked 32 of the 198 harnesses and exited 4. Two harnesses are red, and both are passed by name. Neither is
+caused by WG2's code:
+
+- **HealthCheck**: `...its old first, whom a fee on senior care turns away FAIL` is main's HX1 line, `[known]`. The
+  count line `HealthCheck | 1 FAILED` is NEW against main's `2 FAILED` only because HX1's other line (the
+  households who skipped a bill) passes on this path. HX1's row says those two lines compare the twins' noise.
+- **MapCheck**, `6 FAILED` against main's `3 FAILED`. WG2 changes no map code. Its cities grow on another path,
+  and the map's latent faults show there:
+  - Section 1, `at every 30th month the map draws exactly what the city has ... FAIL`: at month 91 the map draws
+    769 of the model's 796 buildings, with 491 packed at the city's edge. It is whole again at month 121 (798 of
+    798). This symptom is new, and DM3 is queued for it.
+  - Section 2d's yard lines, DM2's class (boxes moved when a run is laid, which DM2's row names):
+    - `a yard laid across a district's buildings moves off it the boxes under it and no others: 66 of the plan
+      before's 369 boxes lie under the yard and the railway, and 84 are not in the plan after ... FAIL` (main: 53
+      of 590, and 60);
+    - `...and the arrivals after it go on with the yard's ground left as it is: every box stands four months on
+      (369 of them, 11 moved) FAIL`;
+    - `...and the layout watch ... counts them apart and flags none: 66 boxes left a district in the yard's month
+      ..., 18 are counted as moved FAIL` (main: 53, and 7);
+    - `a yard that goes moves none of the buildings: every box of the plan before stands in the plan after (510
+      of them, 45 moved) FAIL`;
+    - `a yard laid again across the buildings that stand moves off it the boxes under it and no others: 72 of the
+      plan before's 589 boxes lie under the yard and the railway, 129 are not in the plan after FAIL`.
+  - Main's 2h line (the highways reaching a street) passes on this path.
+- **Review flag**: `review needed - threading: ui/UserInterface.java (UI-wide)`. The change there is the OUT OF
+  WORK tip's format string and its arguments (dials, read on the thread that drew it before). Nothing in it
+  touches threading, money or saves.
+- Saves: no new field (the brake's age is `monthsRecorded`, saved already) and no format bump.
