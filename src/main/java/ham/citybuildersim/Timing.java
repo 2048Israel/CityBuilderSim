@@ -69,7 +69,7 @@ public final class Timing {
     static final List<String> HARNESSES = List.of(
             "WorldCheck", "MapCheck", "ScaleCheck", "PlanCheck", "EarthCheck",
             "GlobeCheck", "EarthTerrainCheck", "GridCheck", "SaveSlotCheck", "KeptCheck", "IslandNetCheck", "BridgeCheck",
-            "WorldMarketCheck", "ReplayCheck", "PartnerCallsCheck", "LandNationsCheck", "PortCheck");
+            "WorldMarketCheck", "ReplayCheck", "PartnerCallsCheck", "LandNationsCheck", "PortCheck", "QuayCraneCheck");
 
     /** A harness's assertion line that went soft, as {@link #verdict} words it: what AllChecks counts in a run's logs. */
     static final Pattern SOFT_LINE = Pattern.compile("\\sSOFT - ");

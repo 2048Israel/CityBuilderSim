@@ -21,7 +21,7 @@ import java.util.Random;
  * his rule is detail from DETAIL_FROM (the 500 m bar), because a level that
  * steps with the month would dirty tiles every month, and because the look was
  * drawn at 8 px a plot where the tile is 4 below zoom 6. The reference look is
- * docs/queue/HB2/RenderHB2.java.
+ * the render tool beside the pictures in docs/queue/HB2/.
  */
 public final class HarbourYard {
 
