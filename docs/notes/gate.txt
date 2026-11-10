@@ -1,24 +1,16 @@
-# gate of Merge batch/GD1: gold's price: US$20.6718 an ounce (the 1900 Act) to 1933, US$35 (Proclamation 2072) to Aug 1971, USGS's annual price to 2025, then an AR(1) with the Pink Sheet's 4.749% a month as a dial (its series is the LBMA's and does not ship); pure, never saved (Jerus, 2026-11-02: "All four, mines last (Recommended)"), 0.9.81
+# gate of Merge batch/HB2: the harbour's detail: the quay showing its stock, rail sidings on the quay with the placement leaning rail toward ports, and a near-view crane moving a box between ship, quay and train; each put to Jerus with renders first, within MapView.FRAME_MS and BOAT_FRAME_MS (Jerus, 2026-10-31: "just some ideas, if its too much no worries"); the harbour's look is (b), the open cargo yard by cargo (HB1-S, settled 2026-11-08 on its recommendation), built with it; after HB1, 0.9.82
 # date: 2026-11-10
 # earth-2.bin: named
 # nightly: 2026-11-10 01:25 0.9.80 d9f61df3 4,000 months: OK in 178 s
-# suite: 192 harnesses run in 1150s: 188 passed, 4 failed
-# timing: 17 harnesses run in 1206s: 14 passed, 3 failed; its red lines were judged side by side with main's, below
+# suite: 194 harnesses run in 1101s: 190 passed, 4 failed
+# timing: 18 harnesses run in 878s: 15 passed, 3 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 34.7 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 31.3 ms, batch 31.4 ms (+0.3%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 27.9 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 31.4 ms (gate.txt, today), batch 27.9 ms (-11.0%), budget 25 ms: main over the budget too, no round]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 19.0 ms, batch 23.7 ms (+24.6%), budget 19 ms: main over the budget too]
+# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 23.7 ms (gate.txt, today), batch 19.1 ms (-19.5%), budget 19 ms: main over the budget too, no round]
 # timing red not the batch's (paired): MapCheck | 5 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): KeptCheck | exit 15   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): KeptCheck | the kept month on the Sectors list is within KEPT_SECTORS_MS (18.0 ms)   FAIL   [main 6.63 ms, batch 7.98 ms (+20.3%), budget 18 ms: the batch within the budget]
-# timing red not the batch's (paired): KeptCheck | the kept month on Retail's Operations page is within KEPT_SECTOR_MS (15.0 ms) FAIL   [main 8.33 ms, batch 13.3 ms (+59.2%), budget 15 ms: the batch within the budget]
-# timing red not the batch's (paired): KeptCheck | the kept month on Borrow, At home is within KEPT_FINANCES_MS (18.0 ms)   FAIL   [main 12.0 ms, batch 7.09 ms (-41.2%), budget 18 ms: within 15% of main's]
-# timing red not the batch's (paired): KeptCheck | the kept month on the fund's Search is within KEPT_FUND_MS (321.0 ms)    FAIL   [main 157 ms, batch 158 ms (+0.9%), budget 321 ms: within 15% of main's]
-# timing red not the batch's (paired): KeptCheck | the kept month on the fund's Activity is within KEPT_FUND_MS (321.0 ms)  FAIL   [main 168 ms, batch 210 ms (+24.7%), budget 321 ms: the batch within the budget]
-# timing red not the batch's (paired): KeptCheck | the kept month on the Government Overview is within KEPT_GOVERNMENT_MS (7.0 ms) FAIL   [main 2.85 ms, batch 2.34 ms (-17.9%), budget 7 ms: within 15% of main's]
-# timing red not the batch's (paired): KeptCheck | 15 FAILED   [the harness's own count of the timing reds above]
-# figure	SaveSlotCheck	the median due month, 34.7 ms, holds the clock at most CLOCK_MS (25 ms)	31.3882	25	ms	FAIL	1	1
-# figure	MapCheck	a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month	23.6737	19	ms	FAIL	1	1
+# figure	SaveSlotCheck	the median due month, 27.9 ms, holds the clock at most CLOCK_MS (25 ms)	27.9495	25	ms	FAIL	1	1
+# figure	MapCheck	a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month	19.0663	19	ms	FAIL	1	1
 PriceLevelCheck | exit 1
 PriceLevelCheck | FAIL cash (nominal) month 101: 8.317811325 at the factor over the factor, 68.38253344 at today's prices (0.000751 apart)
 PriceLevelCheck | FAIL gdp.month (nominal) month 103: 20121.84632 at the factor over the factor, 20122.48474 at today's prices (1.95e-05 apart)

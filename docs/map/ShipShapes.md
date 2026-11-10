@@ -30,7 +30,7 @@
 
 **Uses:** [BoatSchedule](BoatSchedule.md) (7), [Ports](Ports.md) (2), [World](World.md) (2), [MapFrame](MapFrame.md) (1)
 
-**Used by (7):** [BoatSchedule](BoatSchedule.md), [HarbourRenders](HarbourRenders.md), [LandMap](LandMap.md), [MapView](MapView.md), [PortCheck](PortCheck.md), [TrainShapes](TrainShapes.md), [TruckShapes](TruckShapes.md)
+**Used by (8):** [BoatSchedule](BoatSchedule.md), [HarbourRenders](HarbourRenders.md), [HarbourYard](HarbourYard.md), [LandMap](LandMap.md), [MapView](MapView.md), [PortCheck](PortCheck.md), [TrainShapes](TrainShapes.md), [TruckShapes](TruckShapes.md)
 
 ## Constants
 

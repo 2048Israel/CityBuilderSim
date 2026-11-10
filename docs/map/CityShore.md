@@ -1,4 +1,4 @@
-# CityShore.java - 636 lines · 41 methods · 17 constants · model
+# CityShore.java - 655 lines · 42 methods · 17 constants · model
 
 `ham/citybuildersim/CityShore.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
@@ -66,7 +66,7 @@
 
 **Uses:** [World](World.md) (4), [BoatSchedule](BoatSchedule.md) (3), [BuildingVisual](BuildingVisual.md) (1), [Ports](Ports.md) (1)
 
-**Used by (13):** [BoatSchedule](BoatSchedule.md), [CityMap](CityMap.md), [HarbourRenders](HarbourRenders.md), [InfrastructureScreen](InfrastructureScreen.md), [IslandRailCheck](IslandRailCheck.md), [LandmassCheck](LandmassCheck.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [PortCheck](PortCheck.md), [RailDrawCheck](RailDrawCheck.md), [SeaRoutes](SeaRoutes.md), [TruckRouteCheck](TruckRouteCheck.md)
+**Used by (18):** [BoatSchedule](BoatSchedule.md), [CityMap](CityMap.md), [HarbourRenders](HarbourRenders.md), [HarbourYard](HarbourYard.md), [InfrastructureScreen](InfrastructureScreen.md), [IslandRailCheck](IslandRailCheck.md), [LandmassCheck](LandmassCheck.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [PortCheck](PortCheck.md), [QuayCrane](QuayCrane.md), [QuayCraneCheck](QuayCraneCheck.md), [QuayRail](QuayRail.md), [QuayRailCheck](QuayRailCheck.md), [RailDrawCheck](RailDrawCheck.md), [SeaRoutes](SeaRoutes.md), [TruckRouteCheck](TruckRouteCheck.md)
 
 ## Sections
 
@@ -75,7 +75,7 @@
 | 98 | · the harbour (MF1, 2026-10-28) |
 | 311 | · the index (SL1) |
 | 459 | · the harbour's quay and its boats alongside (HB1, 2026-11-08) |
-| 598 | · the sidecar |
+| 617 | · the sidecar |
 
 ## Constants
 
@@ -113,13 +113,13 @@
 | 327 | `int count` |  |
 | 329 | `int indexed` | The works' count it was built to. |
 | 331 | `Work[] wide` | The works that span more than CELLS_MOST cells, in the order laid: asked of every plot. |
-| 485 | `private volatile Walls walls` | The walls, or null when they are to be made again: a reader takes the set it finds, so a rebuild beside it costs it a stale answer, never a failed one. |
+| 485 | `private volatile Walls walls` | The walls and lines, or null when they are to be made again: a reader takes the set it finds, so a rebuild beside it costs it a stale answer, never a failed one. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 79 | 558 | **type** `public final class CityShore` | The city's works on its shore as the map draws them: each sea terminal's box on owned dry ground at the water with its quay run straight out over owned sea, and each tank farm's box at the water, laid city-wide in the... |
+| 79 | 577 | **type** `public final class CityShore` | The city's works on its shore as the map draws them: each sea terminal's box on owned dry ground at the water with its quay run straight out over owned sea, and each tank farm's box at the water, laid city-wide in the... |
 
 ### the harbour (MF1, 2026-10-28) (lines 98-310)
 
@@ -163,28 +163,31 @@
 | 439 | 8 | `public long frameHash(long x0, long y0, int w, int h)` | ...the same hash without drawing them: what a district's plan is kept against. |
 | 449 | 9 | `public List<BoatSchedule.Berth> berths(BuildingVisual.Type[] types)` | The works that are berths: each terminal's quay end as BoatSchedule's berth, in the order laid. |
 
-### the harbour's quay and its boats alongside (HB1, 2026-11-08) (lines 459-597)
+### the harbour's quay and its boats alongside (HB1, 2026-11-08) (lines 459-616)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 468 | 12 | **type** `public record Wall(long x0, long y0, int w, int h, int side)` | One run of a harbour's quay, drawn as a wall from DETAIL_FROM in: world plots (x0, y0) to (x0 + w, y0 + h) not included, on the sea side `side` of the works it stands before (0 north to 3 west). |
 | 471 | 3 | `public boolean meets(long wx0, long wy0, long wx1, long wy1)` _(in CityShore.Wall)_ | Whether it meets the plots from (x0, y0) up to, not including, (x1, y1). |
 | 476 | 3 | `public boolean holds(long x, long y)` _(in CityShore.Wall)_ | Whether world plot (x, y) is in it. |
-| 482 | 1 | **type** `private record Walls(long version, int works, Wall[] walls)` | The walls as they were made, and what they were made against: the version and the count of works (a list edited by hand moves the count, as the index checks). |
+| 482 | 1 | **type** `private record Walls(long version, int works, Wall[] walls, List<QuayLine> lines)` | The walls and the quay lines as they were made, and what they were made against: the version and the count of works (a list edited by hand moves the count, as the index checks). |
 | 494 | 3 | `public List<Wall> walls()` | The harbour's quays as walls, cached on version(): for each berthed work with quay() == HARBOUR_QUAY_PLOTS the strip of plots along its box's whole sea side, quay() plots deep; and between two such works facing the sa... |
 | 499 | 5 | `public List<Wall> wallsIn(long x0, long y0, long x1, long y1)` | The walls that meet the plots from (x0, y0) up to, not including, (x1, y1): a frame's, from the cached set, in the order of walls(). |
-| 505 | 9 | `private Walls wallsNow()` |  |
-| 516 | 9 | `private static long[] strip(Work k)` | One work's strip before its sea side, as {side, line, from, to, depth}: `line` the strip's outer edge, `from` to `to` (not included) along the shore. |
-| 527 | 29 | `private Wall[] makeWalls()` | The walls of walls(): the strips sorted by side, line and place, joined across WALL_JOIN_GAP, each cut round the boxes it meets. |
-| 558 | 3 | `private static boolean meetsBox(Wall wall, Work k)` | Whether the wall meets work k's box. |
-| 563 | 34 | `private void cutRound(List<Wall> out, Wall wall)` | `wall` added to `out` less every plot of every work's box: the works that stand in its plots, and the pieces of it round their boxes. |
+| 506 | 1 | **type** `public record QuayLine(int side, long line, long from, long to, List<Work> works)` | One quay line: the works whose strips join into one wall, in order along the shore. |
+| 509 | 3 | `public List<QuayLine> quayLines()` | The quay lines, cached with the walls and made in the same pass: one for each wall before it is cut round the boxes, in the order of side, line and place along the shore. |
+| 513 | 11 | `private Walls wallsNow()` |  |
+| 526 | 9 | `private static long[] strip(Work k)` | One work's strip before its sea side, as {side, line, from, to, depth}: `line` the strip's outer edge, `from` to `to` (not included) along the shore. |
+| 537 | 1 | **type** `private record Strip(long[] s, Work work)` | One berthed harbour work and its strip(). |
+| 540 | 35 | `private Wall[] makeWalls(List<QuayLine> lines)` | The walls of walls(), and into `lines` the quay lines: the strips sorted by side, line and place, joined across WALL_JOIN_GAP (a group is a line), each group's wall cut round the boxes it meets. |
+| 577 | 3 | `private static boolean meetsBox(Wall wall, Work k)` | Whether the wall meets work k's box. |
+| 582 | 34 | `private void cutRound(List<Wall> out, Wall wall)` | `wall` added to `out` less every plot of every work's box: the works that stand in its plots, and the pieces of it round their boxes. |
 
-### the sidecar (lines 598-636)
+### the sidecar (lines 617-655)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 601 | 12 | `void write(DataOutputStream out) throws IOException` | Writes the works (CityMap FORMAT 6): their count, then each one's box, type, side and quay. |
-| 615 | 12 | `static CityShore read(DataInputStream in) throws IOException` | The works read back, or null when they do not add up. |
-| 629 | 3 | `public boolean same(CityShore o)` | Whether two cities' works are the same, in the same order. |
-| 633 | 3 | `public String toString()` |  |
+| 620 | 12 | `void write(DataOutputStream out) throws IOException` | Writes the works (CityMap FORMAT 6): their count, then each one's box, type, side and quay. |
+| 634 | 12 | `static CityShore read(DataInputStream in) throws IOException` | The works read back, or null when they do not add up. |
+| 648 | 3 | `public boolean same(CityShore o)` | Whether two cities' works are the same, in the same order. |
+| 652 | 3 | `public String toString()` |  |
 

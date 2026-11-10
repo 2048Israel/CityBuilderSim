@@ -7,6 +7,7 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -87,7 +88,22 @@ import java.util.List;
  *      same whatever window it is drawn in (BoatSchedule.drawn()), within
  *      a frame's boat budget, and below DETAIL_FROM nothing moves.
  *
- * Timing harness (Timing.HARNESSES, since HB1): 10b judges a frame's boats drawn() through Timing, so the line is soft under
+ *  11. THE YARD'S PICTURE (HB2, 2026-11-09; Jerus picked the near look from
+ *      renders: 1a the yard fills, 2a tracks on the quay): HarbourYard paints
+ *      a work's box as w*PX by h*PX opaque pixels, the same each call and
+ *      another at another place, on each of the four sides; each port kind's
+ *      stock grows with the step (each step holds the one before's, step
+ *      LEVELS has more than step 1) and a tank farm's does not move; step()
+ *      shows any cargo at all; the quay track runs to a box's edge where it
+ *      is open and stops short at a buffer where it is not, the lead comes up
+ *      its end's column from the land edge to the track, a train stands on
+ *      the track and nowhere else; gapCell() and leadCell() are the track and
+ *      the lead at the offsets the picture has them; kindOf() reads a type
+ *      by its berth's cargo or its shore; Ports.busy() is the month's sea
+ *      tonnes over the berths'; and a large box's picture is painted within
+ *      HarbourYard.PICTURE_MS.
+ *
+ * Timing harness (Timing.HARNESSES, since HB1): 10b judges a frame's boats drawn() and 11 a picture's painting through Timing, so the lines are soft under
  * -Dcbs.timing=soft and hard at the gate.
  *
  * Every fixture CAUSES its condition: the coast is bought (the offer nearest
@@ -240,6 +256,7 @@ public class PortCheck {
         theBoats();
         acrossASave(port);
         theHarbourQuay();
+        theYardsPicture();
 
         for (GameFiles f : FILES.values()) LongPlaytest.cleanUp(f.getDirectory().getParent());
         out.println();
@@ -1877,5 +1894,453 @@ public class PortCheck {
             timed("a frame's boats drawn() over the whole bay of 64 berths take no more than MapCheck.BOAT_FRAME_MS (0.5 ms)",
                     Timing.within(best, MapCheck.BOAT_FRAME_MS) && shown > 0, String.format("%.3f ms a frame, %,d boats over %d frames", best, shown, frames));
         }
+    }
+
+    /* ----- 11. THE YARD'S PICTURE (HB2, 2026-11-09) ----- */
+
+    /** The fixture's boxes, {along the shore, deep} in plots: a Bulk Berth's (BULK_ALONG by BULK_DEEP) and a large terminal's, deep enough for a loop. */
+    static final int[][] YARD_BOXES = { { BULK_ALONG, BULK_DEEP }, { 16, 15 } };
+
+    /** What a box of YARD_BOXES is called in a line. */
+    static final String[] YARD_BOX_NAMES = { "small", "large" };
+
+    /** The kinds of a terminal, whose yards fill with stock. */
+    static final HarbourYard.Kind[] PORT_KINDS = { HarbourYard.Kind.CONTAINER, HarbourYard.Kind.DRY_BULK, HarbourYard.Kind.LIQUID, HarbourYard.Kind.GENERAL };
+
+    /** The rail bits of a picture whose quay track runs on past both ends of its box. */
+    static final int RAIL_OPEN = HarbourYard.RAIL | HarbourYard.OPEN_LOW | HarbourYard.OPEN_HIGH;
+
+    /** A work of the fixture: box `box` of YARD_BOXES at (x0, y0), of type `type`, the harbour's quay, the sea on `side`. */
+    static CityShore.Work yardWork(long x0, long y0, int box, int side, int type) {
+        boolean ns = side % 2 == 0;
+        int along = YARD_BOXES[box][0], deep = YARD_BOXES[box][1];
+        return new CityShore.Work(x0, y0, ns ? along : deep, ns ? deep : along, type, side, CityShore.HARBOUR_QUAY_PLOTS);
+    }
+
+    /**
+     * A picture's geometry for a sea side: its pixels `w` by `h`, read in the shore's own axes - `a` along the shore (x for a sea side of
+     * north or south, else y, so a small `a` is the LOW end) and `c` across it (the other).
+     */
+    record YardGrid(int side, int w, int h) {
+        static YardGrid of(CityShore.Work k) { return new YardGrid(k.side(), k.w() * HarbourYard.PX, k.h() * HarbourYard.PX); }
+
+        int along() { return side % 2 == 0 ? w : h; }
+
+        int across() { return side % 2 == 0 ? h : w; }
+
+        int at(int[] pic, int a, int c) { return side % 2 == 0 ? pic[c * w + a] : pic[a * w + c]; }
+
+        /** The first c of the `rows` sea-most plot rows. */
+        int seaFrom(int rows) { return side == 0 || side == 3 ? 0 : across() - rows * HarbourYard.PX; }
+
+        /** The c of the land edge line. */
+        int land() { return side == 0 || side == 3 ? across() - 1 : 0; }
+
+        /** The c of the pixel row v out from the land side. */
+        int cOfV(int v) { return side == 0 || side == 3 ? across() - 1 - v : v; }
+
+        /** The a of pixel i of a picture. */
+        int aOf(int i) { return side % 2 == 0 ? i % w : i / w; }
+
+        /** The c of pixel i of a picture. */
+        int cOf(int i) { return side % 2 == 0 ? i / w : i % w; }
+    }
+
+    /** Whether a pixel is a track's: its ballast, a sleeper or a steel rail. */
+    static boolean onTrack(int argb) { return argb == TileRaster.BALLAST || argb == TileRaster.SLEEPER || argb == TileRaster.STEEL; }
+
+    /** The offsets from `from` of the pixels of a line of a picture that are steel (`onlySteel`) or any track's: the line across at c = `fixed` (`acrossLine`, p running along the shore), else along at a = `fixed`. */
+    static List<Integer> yardLine(YardGrid g, int[] pic, boolean acrossLine, int fixed, int from, int to, boolean onlySteel) {
+        List<Integer> at = new ArrayList<>();
+        for (int p = from; p < to; p++) {
+            int argb = acrossLine ? g.at(pic, p, fixed) : g.at(pic, fixed, p);
+            if (onlySteel ? argb == TileRaster.STEEL : onTrack(argb)) at.add(p - from);
+        }
+        return at;
+    }
+
+    /** Whether two pictures agree on every pixel of the part a in [a0, a1), c in [c0, c1). */
+    static boolean yardSame(YardGrid g, int[] x, int[] y, int a0, int a1, int c0, int c1) {
+        for (int a = a0; a < a1; a++) for (int c = c0; c < c1; c++) if (g.at(x, a, c) != g.at(y, a, c)) return false;
+        return true;
+    }
+
+    /** Which pixels of two pictures differ. */
+    static boolean[] yardDiff(int[] a, int[] b) {
+        boolean[] d = new boolean[a.length];
+        for (int i = 0; i < a.length; i++) d[i] = a[i] != b[i];
+        return d;
+    }
+
+    /** How far a picture is from a base, in all: the channels' differences summed. */
+    static long yardFar(int[] a, int[] base) {
+        long sum = 0;
+        for (int i = 0; i < a.length; i++) {
+            for (int sh = 0; sh < 24; sh += 8) sum += Math.abs(((a[i] >> sh) & 255) - ((base[i] >> sh) & 255));
+        }
+        return sum;
+    }
+
+    /** The first case of a loop that fails, kept: `was` if there is one, else `what` when `ok` is not. */
+    static String yardWhy(String was, boolean ok, String what) { return was != null || ok ? was : what; }
+
+    /** A case's words: the box, the sea side, and the kind. */
+    static String yardCase(int box, int side, Object kind) { return YARD_BOX_NAMES[box] + " box, sea side " + side + ", " + kind; }
+
+    static void theYardsPicture() {
+        out.println("\n--- 11. the yard's picture (HB2): a work's box painted, its stock by the level, the quay track, lead and train by the rail bits, the cells between, a type's kind, a kind's busy ---");
+        yardShape();
+        yardFills();
+        yardSteps();
+        yardQuayTrack();
+        yardLead();
+        yardTrain();
+        yardCells();
+        yardKinds();
+        yardBusy();
+        yardCost();
+    }
+
+    /** The picture is the box's pixels, opaque, the same each call, and the work's own: another place or another type paints another. */
+    static void yardShape() {
+        int cases = 0;
+        String why = null, seed = null;
+        for (int box = 0; box < YARD_BOXES.length; box++) {
+            for (int side = 0; side < 4; side++) {
+                CityShore.Work k = yardWork(3000, 3000, box, side, 7);
+                for (HarbourYard.Kind kind : HarbourYard.Kind.values()) {
+                    int bits = RAIL_OPEN | HarbourYard.TRAIN;
+                    int[] p = HarbourYard.picture(k, kind, HarbourYard.LEVELS / 2, bits);
+                    boolean opaque = true;
+                    for (int px : p) opaque &= (px >>> 24) == 0xff;
+                    String at = yardCase(box, side, kind);
+                    why = yardWhy(why, p.length == k.w() * HarbourYard.PX * k.h() * HarbourYard.PX, at + ": " + p.length + " pixels for a box of " + k.w() + " by " + k.h() + " plots");
+                    why = yardWhy(why, opaque, at + ": a pixel is not opaque");
+                    why = yardWhy(why, Arrays.equals(p, HarbourYard.picture(k, kind, HarbourYard.LEVELS / 2, bits)), at + ": not the same on a second call");
+                    cases++;
+                }
+                for (HarbourYard.Kind kind : new HarbourYard.Kind[] { HarbourYard.Kind.CONTAINER, HarbourYard.Kind.DRY_BULK, HarbourYard.Kind.GENERAL }) {         // the kinds that scatter: tanks stand on a plain grid
+                    int[] here = HarbourYard.picture(k, kind, HarbourYard.LEVELS, 0);
+                    seed = yardWhy(seed, !Arrays.equals(here, HarbourYard.picture(yardWork(3037, 3011, box, side, 7), kind, HarbourYard.LEVELS, 0)), yardCase(box, side, kind) + ": the same box 37 plots east and 11 south is the same picture");
+                    seed = yardWhy(seed, !Arrays.equals(here, HarbourYard.picture(yardWork(3000, 3000, box, side, 8), kind, HarbourYard.LEVELS, 0)), yardCase(box, side, kind) + ": the same box of another type is the same picture");
+                }
+            }
+        }
+        report("a picture is w*PX by h*PX, opaque and the same on a second call, for each of the five kinds, a small box and a large, on all four sea sides", why == null, why == null ? cases + " pictures" : why);
+        report("...and the work's own: the same box at another place, or of another type, is another picture (the seed), for the yards that scatter: boxes, heaps and crates", seed == null, seed == null ? "" : seed);
+    }
+
+    /** The yard fills: each step's stock holds the step before's, bare and with the tracks and a train; a tank farm shows no level and no rail; below nothing is bare, above LEVELS is full. */
+    static void yardFills() {
+        int cases = 0;
+        String why = null, farm = null, clampWhy = null;
+        for (int bits : new int[] { 0, RAIL_OPEN | HarbourYard.LEAD_HIGH | HarbourYard.TRAIN }) {
+            for (int box = 0; box < YARD_BOXES.length; box++) {
+                for (int side = 0; side < 4; side++) {
+                    CityShore.Work k = yardWork(3000, 3000, box, side, 7);
+                    for (HarbourYard.Kind kind : PORT_KINDS) {
+                        int[][] pics = new int[HarbourYard.LEVELS + 1][];
+                        for (int lv = 0; lv <= HarbourYard.LEVELS; lv++) pics[lv] = HarbourYard.picture(k, kind, lv, bits);
+                        String at = yardCase(box, side, kind) + (bits == 0 ? ", bare" : ", with its tracks");
+                        int first = -1;
+                        for (int lv = 1; lv <= HarbourYard.LEVELS && first < 0; lv++) {
+                            for (int i = 0; i < pics[0].length; i++) {
+                                if (pics[lv - 1][i] != pics[0][i] && pics[lv][i] == pics[0][i]) {
+                                    first = lv;
+                                    break;
+                                }
+                            }
+                        }
+                        int some = 0;
+                        for (boolean d : yardDiff(pics[1], pics[0])) if (d) some++;
+                        why = yardWhy(why, first < 0, at + ": step " + first + " has bare ground where step " + (first - 1) + " had stock");
+                        why = yardWhy(why, some > 0, at + ": step 1 shows no stock");
+                        why = yardWhy(why, yardFar(pics[HarbourYard.LEVELS], pics[0]) > yardFar(pics[1], pics[0]), at + ": step LEVELS shows no more stock than step 1");
+                        clampWhy = yardWhy(clampWhy, Arrays.equals(HarbourYard.picture(k, kind, -3, bits), pics[0]) && Arrays.equals(HarbourYard.picture(k, kind, HarbourYard.LEVELS + 5, bits), pics[HarbourYard.LEVELS]),
+                                at + ": a level below nothing is not step 0, or one above LEVELS is not step LEVELS");
+                        cases++;
+                    }
+                    int[] bare = HarbourYard.picture(k, HarbourYard.Kind.TANKS, 0, 0);
+                    boolean still = true;
+                    for (int lv = 0; lv <= HarbourYard.LEVELS; lv++) still &= Arrays.equals(HarbourYard.picture(k, HarbourYard.Kind.TANKS, lv, bits), bare);
+                    farm = yardWhy(farm, still, yardCase(box, side, HarbourYard.Kind.TANKS) + ": the picture moves with the level or the rail bits");
+                    int tanks = 0;
+                    for (boolean d : yardDiff(bare, HarbourYard.picture(k, null, 0, 0))) if (d) tanks++;
+                    farm = yardWhy(farm, tanks > 0, yardCase(box, side, HarbourYard.Kind.TANKS) + ": no tank on the ground");
+                }
+            }
+        }
+        report("the yard fills: for each port kind, stock at step k (the pixels that differ from step 0's) holds step k-1's, step 1 has some and step LEVELS shows more, bare and with the tracks, a small box and a large, four sides",
+                why == null, why == null ? cases + " yards over " + HarbourYard.LEVELS + " steps" : why);
+        report("...a level below nothing is step 0 and one above LEVELS is step LEVELS", clampWhy == null, clampWhy == null ? "" : clampWhy);
+        report("...a tank farm (TANKS) has its tanks on the ground and shows the same picture at every step and with every rail bit", farm == null, farm == null ? "" : farm);
+    }
+
+    /** step() shows any cargo at all and never falls as busy rises. */
+    static void yardSteps() {
+        int top = HarbourYard.LEVELS;
+        boolean ends = HarbourYard.step(0) == 0 && HarbourYard.step(-0.5) == 0 && HarbourYard.step(Double.NaN) == 0;
+        boolean any = true;
+        for (double busy = 1e-12; busy < 0.1; busy *= 3) any &= HarbourYard.step(busy) >= 1;
+        boolean full = HarbourYard.step(1) == top && HarbourYard.step(1.7) == top && HarbourYard.step(1e9) == top && HarbourYard.step(Double.POSITIVE_INFINITY) == top;
+        boolean rises = true;
+        boolean[] seen = new boolean[top + 1];
+        int last = 0;
+        for (int i = 0; i <= 2000; i++) {
+            int s = HarbourYard.step(i / 1000.0);
+            rises &= s >= last && s >= 0 && s <= top;
+            seen[Math.max(0, Math.min(top, s))] = true;
+            last = s;
+        }
+        boolean all = true;
+        for (boolean s : seen) all &= s;
+        report("step(): 0 at no busy, at least 1 for any busy above 0 however small, LEVELS at 1 and beyond", ends && any && full, "step(0.01) = " + HarbourYard.step(0.01) + ", step(1) = " + HarbourYard.step(1));
+        report("...never falling as busy rises from 0 to 2, and every step from 0 to LEVELS is the step of some busy", rises && all, "");
+    }
+
+    /** The quay track runs to a box's edge where it is open and stops short at a buffer where it is not; OPEN_x paints only in its end's plot; no RAIL, no track; no stock on it. */
+    static void yardQuayTrack() {
+        int cases = 0;
+        String edges = null, stops = null, ends = null, bare = null, whole = null, stock = null;
+        int px = HarbourYard.PX, lv = HarbourYard.LEVELS;
+        for (int box = 0; box < YARD_BOXES.length; box++) {
+            for (int side = 0; side < 4; side++) {
+                CityShore.Work k = yardWork(3000, 3000, box, side, 7);
+                YardGrid g = YardGrid.of(k);
+                int s0 = g.seaFrom(1), last = g.along() - 1, rows = YARD_BOXES[box][1] >= HarbourYard.LOOP_PLOTS ? 2 : 1;
+                for (HarbourYard.Kind kind : PORT_KINDS) {
+                    String at = yardCase(box, side, kind);
+                    int[] open = HarbourYard.picture(k, kind, lv, RAIL_OPEN), shut = HarbourYard.picture(k, kind, lv, HarbourYard.RAIL);
+                    int[] lowOnly = HarbourYard.picture(k, kind, lv, HarbourYard.RAIL | HarbourYard.OPEN_LOW), highOnly = HarbourYard.picture(k, kind, lv, HarbourYard.RAIL | HarbourYard.OPEN_HIGH);
+                    List<Integer> lowRails = yardLine(g, open, false, 0, s0, s0 + px, true), highRails = yardLine(g, open, false, last, s0, s0 + px, true);
+                    edges = yardWhy(edges, !lowRails.isEmpty() && !highRails.isEmpty(), at + ": an open box's LOW or HIGH edge line holds no steel in the sea-most row");
+                    edges = yardWhy(edges, lowRails.equals(highRails), at + ": the rails are at " + lowRails + " on the LOW edge and " + highRails + " on the HIGH");
+                    boolean through = true;
+                    for (int a = 0; a <= last; a++) for (int r : lowRails) through &= g.at(open, a, s0 + r) == TileRaster.STEEL;
+                    whole = yardWhy(whole, through, at + ": a rail of the quay track breaks between the box's two edges");
+                    stops = yardWhy(stops, yardLine(g, shut, false, 0, s0, s0 + px, true).isEmpty() && yardLine(g, shut, false, last, s0, s0 + px, true).isEmpty(), at + ": a track that is not open reaches the edge of the box");
+                    stops = yardWhy(stops, yardLine(g, lowOnly, false, last, s0, s0 + px, true).isEmpty() && yardLine(g, highOnly, false, 0, s0, s0 + px, true).isEmpty(), at + ": OPEN_LOW opens the HIGH end or OPEN_HIGH the LOW");
+                    stops = yardWhy(stops, !yardLine(g, lowOnly, false, 0, s0, s0 + px, true).isEmpty() && !yardLine(g, highOnly, false, last, s0, s0 + px, true).isEmpty(), at + ": OPEN_LOW or OPEN_HIGH leaves its end shut");
+                    boolean lowIn = false, highIn = false, lowOut = true, highOut = true;
+                    boolean[] dl = yardDiff(lowOnly, shut), dh = yardDiff(highOnly, shut);
+                    for (int i = 0; i < dl.length; i++) {
+                        if (dl[i]) {
+                            lowIn = true;
+                            lowOut &= g.aOf(i) < px;
+                        }
+                        if (dh[i]) {
+                            highIn = true;
+                            highOut &= g.aOf(i) >= g.along() - px;
+                        }
+                    }
+                    ends = yardWhy(ends, lowIn && highIn && lowOut && highOut, at + ": OPEN_LOW or OPEN_HIGH changes nothing, or pixels beyond the first plot along the shore (the last)");
+                    int[] plain = HarbourYard.picture(k, kind, lv, 0);
+                    int[] inert = HarbourYard.picture(k, kind, lv, HarbourYard.OPEN_LOW | HarbourYard.OPEN_HIGH | HarbourYard.LEAD_LOW | HarbourYard.LEAD_HIGH | HarbourYard.TRAIN);
+                    bare = yardWhy(bare, Arrays.equals(plain, inert), at + ": rail bits without RAIL change the picture");
+                    bare = yardWhy(bare, yardLine(g, plain, false, 0, s0, s0 + px, true).isEmpty() && yardLine(g, plain, false, last, s0, s0 + px, true).isEmpty(), at + ": steel at the edges of the sea-most row with no RAIL");
+                    int[] empty = HarbourYard.picture(k, kind, 0, RAIL_OPEN);
+                    int rowsFrom = g.seaFrom(rows);
+                    stock = yardWhy(stock, yardSame(g, empty, open, 0, g.along(), rowsFrom, rowsFrom + rows * px), at + ": stock stands in the rows of the track");
+                    cases++;
+                }
+            }
+        }
+        report("the quay track (RAIL | OPEN_LOW | OPEN_HIGH): the box's LOW and HIGH edge lines hold steel in the sea-most plot row, at the same offsets, and the rails run unbroken between them",
+                edges == null && whole == null, edges != null ? edges : whole != null ? whole : cases + " pictures");
+        report("...with RAIL alone neither edge holds any (the buffer stops); OPEN_LOW opens the LOW end only, OPEN_HIGH the HIGH", stops == null, stops == null ? "" : stops);
+        report("...OPEN_LOW changes pixels only within the first plot along the shore and OPEN_HIGH only within the last", ends == null, ends == null ? "" : ends);
+        report("...without RAIL no rail bit changes a picture and the sea-most row holds no track at the edges", bare == null, bare == null ? "" : bare);
+        report("...no stock stands in the track's rows: the sea-most plot row, and at a box 10 plots deep the two, are the same at step 0 and at LEVELS", stock == null, stock == null ? "" : stock);
+    }
+
+    /** The lead comes up the first or last plot column from the land edge to the quay track, and no stock stands in its column. */
+    static void yardLead() {
+        int cases = 0;
+        String why = null, joined = null, neither = null, stock = null;
+        int px = HarbourYard.PX, lv = HarbourYard.LEVELS;
+        for (int box = 0; box < YARD_BOXES.length; box++) {
+            for (int side = 0; side < 4; side++) {
+                CityShore.Work k = yardWork(3000, 3000, box, side, 7);
+                YardGrid g = YardGrid.of(k);
+                int lowFrom = 0, highFrom = g.along() - px, v1 = g.across() - 5;        // the quay track's middle lies 5 px from the sea
+                for (HarbourYard.Kind kind : PORT_KINDS) {
+                    String at = yardCase(box, side, kind);
+                    int[] none = HarbourYard.picture(k, kind, lv, HarbourYard.RAIL), low = HarbourYard.picture(k, kind, lv, HarbourYard.RAIL | HarbourYard.LEAD_LOW);
+                    int[] high = HarbourYard.picture(k, kind, lv, HarbourYard.RAIL | HarbourYard.LEAD_HIGH);
+                    neither = yardWhy(neither, yardLine(g, none, true, g.land(), 0, g.along(), true).isEmpty(), at + ": steel on the land edge line with no lead");
+                    List<Integer> inLow = yardLine(g, low, true, g.land(), lowFrom, lowFrom + px, true), inHigh = yardLine(g, high, true, g.land(), highFrom, highFrom + px, true);
+                    why = yardWhy(why, !inLow.isEmpty() && yardLine(g, low, true, g.land(), lowFrom + px, g.along(), true).isEmpty(), at + ": LEAD_LOW's steel is not in the LOW column's plot alone");
+                    why = yardWhy(why, !inHigh.isEmpty() && yardLine(g, high, true, g.land(), 0, highFrom, true).isEmpty(), at + ": LEAD_HIGH's steel is not in the HIGH column's plot alone");
+                    boolean up = true;
+                    for (int r : inLow) for (int v = 0; v < v1; v++) up &= g.at(low, lowFrom + r, g.cOfV(v)) == TileRaster.STEEL;
+                    for (int r : inHigh) for (int v = 0; v < v1; v++) up &= g.at(high, highFrom + r, g.cOfV(v)) == TileRaster.STEEL;
+                    joined = yardWhy(joined, up, at + ": a lead's rail breaks before it reaches the quay track");
+                    int[] emptyLow = HarbourYard.picture(k, kind, 0, HarbourYard.RAIL | HarbourYard.LEAD_LOW), emptyHigh = HarbourYard.picture(k, kind, 0, HarbourYard.RAIL | HarbourYard.LEAD_HIGH);
+                    stock = yardWhy(stock, yardSame(g, emptyLow, low, lowFrom, lowFrom + px, 0, g.across()) && yardSame(g, emptyHigh, high, highFrom, highFrom + px, 0, g.across()), at + ": stock stands in a lead's column");
+                    cases++;
+                }
+            }
+        }
+        report("the lead (RAIL | LEAD_LOW, LEAD_HIGH): the land edge line holds steel inside the LOW column's plot (the HIGH's) and nowhere else, and none with no lead",
+                why == null && neither == null, why != null ? why : neither != null ? neither : cases + " pictures");
+        report("...its rails run unbroken from the land edge to the quay track's land-side rail, which they join", joined == null, joined == null ? "" : joined);
+        report("...and the yard gives its column up: the lead's plot column is the same at step 0 and at LEVELS", stock == null, stock == null ? "" : stock);
+    }
+
+    /** A train changes pixels only on the track's rows, and only with RAIL. */
+    static void yardTrain() {
+        int cases = 0;
+        String why = null, none = null;
+        int px = HarbourYard.PX, lv = HarbourYard.LEVELS;
+        for (int box = 0; box < YARD_BOXES.length; box++) {
+            for (int side = 0; side < 4; side++) {
+                CityShore.Work k = yardWork(3000, 3000, box, side, 7);
+                YardGrid g = YardGrid.of(k);
+                int rows = YARD_BOXES[box][1] >= HarbourYard.LOOP_PLOTS ? 2 : 1, from = g.seaFrom(rows);
+                for (HarbourYard.Kind kind : PORT_KINDS) {
+                    String at = yardCase(box, side, kind);
+                    for (int bits : new int[] { RAIL_OPEN, HarbourYard.RAIL | HarbourYard.OPEN_LOW | HarbourYard.LEAD_HIGH }) {
+                        boolean[] d = yardDiff(HarbourYard.picture(k, kind, lv, bits | HarbourYard.TRAIN), HarbourYard.picture(k, kind, lv, bits));
+                        boolean any = false, inside = true;
+                        for (int i = 0; i < d.length; i++) {
+                            if (!d[i]) continue;
+                            any = true;
+                            inside &= g.cOf(i) >= from && g.cOf(i) < from + rows * px;
+                        }
+                        why = yardWhy(why, any && inside, at + ": the train " + (any ? "paints outside the " + rows + " sea-most plot rows" : "paints nothing"));
+                    }
+                    none = yardWhy(none, Arrays.equals(HarbourYard.picture(k, kind, lv, HarbourYard.TRAIN), HarbourYard.picture(k, kind, lv, 0)), at + ": TRAIN without RAIL changes the picture");
+                    cases++;
+                }
+            }
+        }
+        report("a train (TRAIN with RAIL) changes pixels, and only inside the track rows: the sea-most plot row, and at a box 10 plots deep the two", why == null, why == null ? cases + " boxes" : why);
+        report("...and without RAIL TRAIN changes nothing", none == null, none == null ? "" : none);
+    }
+
+    /** gapCell() and leadCell() are the track and the lead at the offsets across the plot that the picture has them. */
+    static void yardCells() {
+        String shape = null, gap = null, lead = null;
+        int px = HarbourYard.PX, lv = HarbourYard.LEVELS;
+        for (int side = 0; side < 4; side++) {
+            YardGrid cell = new YardGrid(side, px, px);
+            int[] gapCell = HarbourYard.gapCell(side);
+            int[][] leads = { HarbourYard.leadCell(side, false), HarbourYard.leadCell(side, true) };
+            for (int[] c : new int[][] { gapCell, leads[0], leads[1] }) {
+                boolean clear = false, track = false, opaque = true;
+                for (int argb : c) {
+                    clear |= argb == 0;
+                    track |= argb != 0;
+                    opaque &= argb == 0 || (argb >>> 24) == 0xff;
+                }
+                shape = yardWhy(shape, c.length == px * px && clear && track && opaque, "sea side " + side + ": a cell is not PX by PX, transparent off the track and opaque on it");
+            }
+            for (int box = 0; box < YARD_BOXES.length; box++) {
+                CityShore.Work k = yardWork(3000, 3000, box, side, 7);
+                YardGrid g = YardGrid.of(k);
+                int s0 = g.seaFrom(1), last = g.along() - 1;
+                String at = yardCase(box, side, "its cells");
+                int[] open = HarbourYard.picture(k, HarbourYard.Kind.CONTAINER, lv, RAIL_OPEN);
+                for (int[] line : new int[][] { { 0, 0 }, { last, px - 1 } }) {
+                    List<Integer> steel = yardLine(g, open, false, line[0], s0, s0 + px, true), bed = yardLine(g, open, false, line[0], s0, s0 + px, false);
+                    List<Integer> cellSteel = yardLine(cell, gapCell, false, line[1], 0, px, true), cellBed = new ArrayList<>();
+                    for (int c = 0; c < px; c++) if (cell.at(gapCell, line[1], c) != 0) cellBed.add(c);
+                    gap = yardWhy(gap, !steel.isEmpty() && steel.equals(cellSteel), at + ": the gap cell's rails at " + cellSteel + " on its edge line " + line[1] + ", the picture's at " + steel);
+                    gap = yardWhy(gap, bed.equals(cellBed), at + ": the gap cell's track at " + cellBed + " on its edge line " + line[1] + ", the picture's at " + bed);
+                }
+                for (int h = 0; h < 2; h++) {
+                    boolean high = h == 1;
+                    int bits = HarbourYard.RAIL | (high ? HarbourYard.LEAD_HIGH : HarbourYard.LEAD_LOW), plot = high ? g.along() - px : 0;
+                    int[] pic = HarbourYard.picture(k, HarbourYard.Kind.CONTAINER, lv, bits);
+                    List<Integer> steel = yardLine(g, pic, true, g.land(), plot, plot + px, true), bed = yardLine(g, pic, true, g.land(), plot, plot + px, false);
+                    for (int cLine : new int[] { cell.land(), cell.cOfV(px - 1) }) {
+                        List<Integer> cellSteel = yardLine(cell, leads[h], true, cLine, 0, px, true), cellBed = new ArrayList<>();
+                        for (int a = 0; a < px; a++) if (cell.at(leads[h], a, cLine) != 0) cellBed.add(a);
+                        lead = yardWhy(lead, !steel.isEmpty() && steel.equals(cellSteel), at + ": the " + (high ? "HIGH" : "LOW") + " lead cell's rails at " + cellSteel + " on the line across " + cLine + ", the picture's at " + steel);
+                        lead = yardWhy(lead, bed.equals(cellBed), at + ": the " + (high ? "HIGH" : "LOW") + " lead cell's track at " + cellBed + " on the line across " + cLine + ", the picture's at " + bed);
+                    }
+                }
+            }
+        }
+        report("gapCell() and leadCell() are PX by PX, transparent (0) off the track and opaque on it, on each side", shape == null, shape == null ? "" : shape);
+        report("a gap cell's two shore-wise edge lines hold steel at the offsets of an open picture's edge line in its sea-most row, and its track where the picture's is", gap == null, gap == null ? "" : gap);
+        report("a lead cell's land-side and sea-side edge lines hold steel at the offsets of the picture's land edge line in the LOW (HIGH) lead's column, and its track where the picture's is", lead == null, lead == null ? "" : lead);
+    }
+
+    /** kindOf() reads a type by its berth's cargo, a tank farm by its shore, and nothing else. */
+    static void yardKinds() {
+        BuildingVisual.Type[] types = BuildingVisual.table(new BuildingCatalog().load());
+        int terminals = 0, farms = 0, others = 0;
+        boolean[] kinds = new boolean[PORT_KINDS.length];
+        String why = null;
+        for (BuildingVisual.Type t : types) {
+            if (t == null) continue;
+            HarbourYard.Kind kind = HarbourYard.kindOf(t);
+            if (t.berth() >= 0) {
+                terminals++;
+                HarbourYard.Kind expect = HarbourYard.Kind.valueOf(Ports.Cargo.values()[t.berth()].name());
+                why = yardWhy(why, kind == expect, "type " + t.id() + " (berth of " + Ports.Cargo.values()[t.berth()] + ") is " + kind);
+                for (int i = 0; i < PORT_KINDS.length; i++) kinds[i] |= kind == PORT_KINDS[i];
+            } else if (t.shore()) {
+                farms++;
+                why = yardWhy(why, kind == HarbourYard.Kind.TANKS, "type " + t.id() + " (a tank farm) is " + kind);
+            } else {
+                others++;
+                why = yardWhy(why, kind == null, "type " + t.id() + " (neither) is " + kind);
+            }
+        }
+        boolean every = true;
+        for (boolean s : kinds) every &= s;
+        report("kindOf(): each terminal of the catalogue is the kind of its berth's cargo, a tank farm (shore()) is TANKS, any other type is null, and null is null",
+                why == null && every && farms > 0 && HarbourYard.kindOf(null) == null, why != null ? why : terminals + " terminals of all four kinds, " + farms + " tank farms, " + others + " other types");
+    }
+
+    /** The first good of a kind that is not crude, as MapCheck.tradeAtSea() takes it. */
+    static Good yardGood(Ports.Cargo c) {
+        for (Good g : Good.values()) if (g != Good.CRUDE && g.cargo() == c) return g;
+        return null;
+    }
+
+    /** Ports.busy() is the month's sea tonnes both ways over the berths', 1 when over, 0 with no berth. */
+    static void yardBusy() {
+        double[] berths = new double[Ports.Cargo.values().length];
+        berths[Ports.Cargo.LIQUID.ordinal()] = 300;
+        berths[Ports.Cargo.DRY_BULK.ordinal()] = 400;
+        berths[Ports.Cargo.GENERAL.ordinal()] = 100;
+        Ports p = MapCheck.tradeAtSea(100, 400, 300, 50);              // liquid 100 out, dry bulk 400 out (what its berths handle), general 300 out (three times), containers 50 out with no berth
+        p.tally(yardGood(Ports.Cargo.LIQUID), 50, 0, 1);               // and liquid 50 in: both ways, 150 of 300
+        double eps = 1e-9;
+        boolean half = Math.abs(p.busy(Ports.Cargo.LIQUID, berths) - 0.5) < eps;
+        boolean exact = Math.abs(p.busy(Ports.Cargo.DRY_BULK, berths) - 1) < eps;
+        boolean over = Math.abs(p.busy(Ports.Cargo.GENERAL, berths) - 1) < eps;
+        boolean none = p.busy(Ports.Cargo.CONTAINER, berths) == 0 && p.busy(Ports.Cargo.CONTAINER, null) == 0 && p.busy(Ports.Cargo.LIQUID, new double[0]) == 0;
+        boolean quiet = MapCheck.tradeAtSea(0, 0, 0, 0).busy(Ports.Cargo.LIQUID, berths) == 0;
+        report("Ports.busy(): a kind's sea tonnes both ways over its berths' month - 150 of 300 t is 0.5, exactly the berths' is 1, three times is 1, no berth standing is 0, a month with no trade is 0",
+                half && exact && over && none && quiet,
+                String.format("liquid %.3f, dry bulk %.3f, general %.3f", p.busy(Ports.Cargo.LIQUID, berths), p.busy(Ports.Cargo.DRY_BULK, berths), p.busy(Ports.Cargo.GENERAL, berths)));
+        boolean never = true;
+        double before = 0;
+        for (int i = 0; i < 8; i++) {
+            double b = MapCheck.tradeAtSea(0, 80.0 * i, 0, 0).busy(Ports.Cargo.DRY_BULK, berths);
+            never &= b >= before && b >= 0 && b <= 1;
+            before = b;
+        }
+        report("...and never falls as the tonnes rise nor leaves 0 to 1; with step() the kind at its berths' month shows full", never && HarbourYard.step(p.busy(Ports.Cargo.DRY_BULK, berths)) == HarbourYard.LEVELS, "");
+    }
+
+    /** Painting the large box's picture (a container yard, full, its track and train) costs no more than HarbourYard.PICTURE_MS. */
+    static void yardCost() {
+        CityShore.Work big = yardWork(3000, 3000, 1, 0, 7);
+        int bits = HarbourYard.RAIL | HarbourYard.OPEN_LOW | HarbourYard.TRAIN, reps = 20;
+        double best = Double.MAX_VALUE;
+        long sink = 0;
+        for (int round = 0; round < MapCheck.WARM_ROUNDS + MapCheck.TIMED_ROUNDS; round++) {
+            long t0 = System.nanoTime();
+            for (int i = 0; i < reps; i++) sink += HarbourYard.picture(big, HarbourYard.Kind.CONTAINER, HarbourYard.LEVELS, bits)[i];
+            double ms = (System.nanoTime() - t0) / 1e6 / reps;
+            if (round >= MapCheck.WARM_ROUNDS) best = Math.min(best, ms);
+        }
+        timed("painting the large box's picture (a full container yard, RAIL | OPEN_LOW | TRAIN) takes no more than HarbourYard.PICTURE_MS (0.5 ms)",
+                Timing.within(best, HarbourYard.PICTURE_MS) && sink != 0, String.format("%.3f ms a picture", best));
     }
 }

@@ -670,6 +670,14 @@ public final class BoatSchedule {
         return null;
     }
 
+    /** The share of its time at the quay a call's boat has lain there at t (month fractions), 0 as it arrives to 1 as it leaves: (t - arrives) over BERTH_SECONDS / MONTH_SECONDS; -1 when it is not at the quay. What the quay's crane moves by (HB2, QuayCrane). Pure. */
+    public static double atQuay(Call call, double t) {
+        if (call == null) return -1;
+        double berth = BERTH_SECONDS / MONTH_SECONDS, a = call.arrives();
+        if (t < a || t > a + berth) return -1;      // position()'s own test for a boat at the quay
+        return Math.min(1, (t - a) / berth);
+    }
+
     /**
      * A call's boat at a share f of its route from the quay (0 at the quay,
      * lying there; 1 at the far end), coming in or going out: its place on
