@@ -2,18 +2,18 @@
 ### {next} — GW1, the gate counts the draw — 2026-11-10, ready, see docs/queue/GW1-notes.md
 The staffing gate counts, beside the workers the city has spare, the ones a building's own posts would bring within
 a year (`Migration.drawFor()`, `Sector.GATE_DRAW_MONTHS` 12): only the part of migration's gap the order opens,
-within the doors last month left free (`lastRoom`, saved), at the going wage. A drawn worker takes a post at or
-below their band, so a building the arrivals would staff is ordered and one whose graduate posts nobody would come
-for is still refused. The hold and the build card name both counts. New: StaffingDrawCheck; 31 harnesses whose
-fixtures assumed the spare alone cause their conditions again, no claim moved. The ensemble scores 24 of 26
-(`docs/ensemble/GW1.md`): AUTO2 ends 6% larger, with less unemployment and a young city's inflation 2.74% against
-3.39%, and H2 passes; A2 is main's red, A3 fails in one seed (AQ1). Red by name: MonetaryCheck (MQ1), HealthCheck
-(HX1), DeathRecordCheck (OX1), KeptCheck (KL1), MapCheck (DM2). The tie rule and the young towns' borrowing the first
-draw showed are queued (TQ1, DQ1).
+within the doors last month left free (`lastRoom`, saved; an older save reads it as none), at the going wage. A
+drawn worker takes a post at or below their band, so a building the arrivals would staff is ordered and one whose
+graduate posts nobody would come for is still refused. The hold and the build card name both counts. New:
+StaffingDrawCheck; 31 harnesses whose fixtures assumed the spare alone cause their conditions again, no claim moved.
+The ensemble scores 24 of 26 (`docs/ensemble/GW1.md`): AUTO2 ends 6% larger, with less unemployment and a young
+city's inflation 2.74% against 3.39%, and H2 passes; A2 is main's red, A3 fails in one seed (AQ1). Red by name:
+MonetaryCheck (MQ1), HealthCheck (HX1), DeathRecordCheck (OX1), KeptCheck (KL1), MapCheck (DM2). The tie rule and
+the young towns' borrowing the first draw showed are queued (TQ1, DQ1).
 ## queued
 | TQ1 | The staffing gate's tie rule: in a city with no spare every template at or below the diploma band shares drawn/posts (about 0.60), so refused templates tie, and `staffing.share > staffingHold.share` in thirteen planners (`sectors/Construction.java:796`, `BusinessInvestment.java:923` and eleven more) gives every hold to the first template, which WantedPosts then prices. On GW1's first draw this made H2 vacuous, deflated the founding and lengthened A2. A tie broken by a rule that names it (or the holds shared), one place for the thirteen, and a harness that two tied templates are treated alike | [GW1 notes §5](docs/queue/GW1-notes.md) |
 | DQ1 | Young towns borrow ahead of their people and default: six GW1 fixtures held sectors so a young town's bank stayed solvent (BankCheck 19, HoldersCheck, SaveFileCheck, CurveCheck, PolicyPreviewCheck, BondCheck 7c). The ensemble's AUTO2 bank, months under `CAPITAL_RATIO` to m600: a median of 17 on GW1's first draw against 4 unsnapped, 2 [0 to 21] on the reviewed draw (0.9.55 had 15). Read what lending to a young town's businesses rests on, a harness of a young town's bank, and the six holds released where they are no longer needed | [GW1 notes §5](docs/queue/GW1-notes.md) |
-| AQ1 | A3's one seed on GW1: AUTO2-2, a town of 20,500 with 17% out of work, goes to 48% unemployment at months 610-620 (the policy rate 7% to 0), a year's prices then read below -10% for 12 months (621-632, A3's limit) and its people fall 13%. Read what laid off 30 points of the workforce in ten months; A3 under 12 in every seed | [GW1 notes §5](docs/queue/GW1-notes.md) |
+| AQ1 | A3's one seed on GW1: AUTO2-2, a town of 20,500 with 17% out of work, goes to 48% unemployment at months 610-620 (the policy rate 7% to 0), a year's prices then read below -10% for 12 months (621-632, A3's limit) and its people fall 13%. Read what laid off 30 points of the workforce in ten months; WG2's brake on the draw (next in lane B) is the first place to look, since the bust takes unemployment from 19% to 48%; A3 under 12 in every seed | [GW1 notes §5](docs/queue/GW1-notes.md) |
 | MQ1 | MonetaryCheck's settled town on GW1's path: the shelf settles at month 46 but the town inflates 16-23% a year over the window, so a month's delay moves the dial rows 0.19-0.37 points against the 0.100 allowance (a fixture line, red). A settle test on the price index, not the shelf, so the rows are read on a steady town; MonetaryCheck green | [GW1 notes §4](docs/queue/GW1-notes.md) |
 | KL1 | KeptCheck's BuybackLadder line ("no month draws it again with nothing changed in it") on GW1's path: `FinancesScreen.drawsAlike()` (ui/FinancesScreen.java:4950) compares the ladder and `takenFace` bit for bit, so a 1e-8 drift in the holders' faces redraws a picture drawn to four decimals. Compared at the picture's resolution; KeptCheck's line green | [GW1 notes §4](docs/queue/GW1-notes.md) |
 | OX1 | The orphans behind a wave that ends at once: a closed town that takes its 319 out of work back in one month has 27.7 orphans against its open twin's 21.5 (DeathRecordCheck, "the orphan section does not fill behind it"). The 149 children come back to the family builder together; its half-a-shape take (`FamilyModel`, a bare `.5`) and the family memory (`REFORMING_EACH_MONTH`, .01) leave them unplaced for months. The children of re-employed adults go home with them; DeathRecordCheck green | [GW1 notes §4](docs/queue/GW1-notes.md) |
