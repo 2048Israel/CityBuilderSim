@@ -4865,7 +4865,7 @@ final class MapView {
         // Under the window's header, which stays in view and says the clock (MS1): the head here has no clock line.
         ui.showChartFullScreen(bigPane, null, this::collapse, true);
         ui.panKeysTo(this);
-        setCinematic(ui.isCinematic());     // (TR1) a replay's cinematic mode that is on holds for a map expanded in it
+        setCinematic(ui.cinematicHidesChrome());     // (TR1) a replay's cinematic mode that is on holds for a map expanded in it (TR2: not the form Follow keeps)
         canvas.setCursor(javafx.scene.Cursor.OPEN_HAND);
         boolean before = big != null;
         fitPane();
@@ -5391,6 +5391,12 @@ final class MapView {
         }
         if (card != null) card.setVisible(false);
         dirty = true;
+    }
+
+    /** A view put on the expanded map by hand (TR2: Follow's logged view), as the camera's is; nothing when the map is not over the window or the view is of the other kind of ground. */
+    void replayShowView(CameraPath.View v) {
+        if (!expanded || v == null || (globe == null && big == null)) return;
+        applyCameraView(v);
     }
 
     /** The smooth hand's step: the zoom about its anchor as the wheel's notch is applied, then the pan as a drag's. */

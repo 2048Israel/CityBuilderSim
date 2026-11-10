@@ -1503,16 +1503,13 @@ public class UserInterface extends Application {
      * looked at, and a Next Month button on a title screen is a button that
      * advances a game the player has not opened yet.
      */
-    private static boolean isGameMenu(String screen) {
-        switch (screen) {
-            case "showMainMenu": case "showSavingMenu": case "showSaveSlotConfirm":
-            case "showLoadMenu": case "loadSlot": case "showSaveResult":
-            case "showSettingsMenu": case "showCreditsMenu": case FoundingScreen.SCREEN: case ReplayMode.LIST:
-                return true;
-            default:
-                return false;
-        }
+    static boolean isGameMenu(String screen) {   // package-private since TR2: FollowRules asks it of the logged screen too
+        return screen != null && GAME_MENUS.contains(screen);
     }
+
+    /** The screens isGameMenu() names, in one list so a check can walk them (TR2's review: ReplayCheck kept a copy of it). */
+    static final List<String> GAME_MENUS = List.of("showMainMenu", "showSavingMenu", "showSaveSlotConfirm",
+            "showLoadMenu", "loadSlot", "showSaveResult", "showSettingsMenu", "showCreditsMenu", FoundingScreen.SCREEN, ReplayMode.LIST);
 
     /**
      * Where a scroller inside the CURRENT screen was left, by name.
@@ -2145,6 +2142,7 @@ public class UserInterface extends Application {
         });
 
         HBox clock = Kept.scope("clock", () -> clockBlock(inCity));
+        clock.getProperties().put(FollowRules.DROP, Boolean.TRUE);      // (TR2) the play button and the speed are the viewer's, not the ghost's
         // TREASURY left the tile row in 0.7.24: its own block, by the clock (THE MONEY BLOCK).
         Region money = Kept.scope("money", this::moneyBlock);
         HBox right = Kept.scope("right", () -> ratingAndInbox(inCity));
@@ -5997,6 +5995,7 @@ public class UserInterface extends Application {
         above.add(gap);
         VBox menu = Kept.scope("menu", () -> railButton(Icons.MENU, "Menu", "The game menu: save, load, settings, quit  (Esc)",
                 Palette.TEXT_HEAD, "showMainMenu".equals(currentScreen), this::showMainMenu));
+        menu.getProperties().put(FollowRules.DROP, Boolean.TRUE);       // (TR2) Menu leaves the city: the ghost never clicks it
 
         // THE MINIMAP (0.7.134, batch MM2; docs/studies/spec-globe.md 8.3): a stamp of the city above Menu, its preview on
         // hover, the land office's map over the window on a click (MiniMap; openMapOn()).
@@ -7108,8 +7107,11 @@ public class UserInterface extends Application {
     /** The expanded map's pane while cinematic mode holds it at the window's top (it lay under the header), to put back under the header when cinematic mode ends. */
     private javafx.scene.Node cinematicLifted;
 
-    /** The replay's mode, made when first asked for: the first main menu is drawn in start() before the recorder is, and a harness's window never starts. */
-    private ReplayMode replayMode() {
+    /** Whether cinematic mode that is on keeps the header and the rail (TR2: Follow's clicks land where the player's layout put them). */
+    private boolean cinematicKeepsChrome;
+
+    /** The replay's mode, made when first asked for: the first main menu is drawn in start() before the recorder is, and a harness's window never starts. Package-private since TR2: FollowBench enters a recording through it. */
+    ReplayMode replayMode() {
         if (replayMode == null) replayMode = new ReplayMode(this);
         return replayMode;
     }
@@ -7146,7 +7148,36 @@ public class UserInterface extends Application {
 
     /** A key the replay takes (ReplayMode.key()); false when none is on. */
     private boolean replayKey(javafx.scene.input.KeyEvent e, boolean typing) {
+        // A key Follow re-enacts (TR2) reaches the game's own handlers as it did in the sitting, not the replay's camera.
+        if (reenactor != null && reenactor.isFiring()) return false;
         return replayMode != null && replayMode.key(e, typing);
+    }
+
+    /** Follow's re-enactor, made on first use (TR2). */
+    private Reenactor reenactor;
+
+    Reenactor reenactor() {
+        if (reenactor == null) reenactor = new Reenactor(this);
+        return reenactor;
+    }
+
+    /** Whether the focus is in a text field: the key handler's `typing`. */
+    boolean typingNow() {
+        return scene != null && scene.getFocusOwner() instanceof javafx.scene.control.TextInputControl field && field.getScene() == scene;
+    }
+
+    /**
+     * Whether Esc would open the game menu now (TR2: Follow drops it then). The key handler gives Esc to the quit dialog, the full
+     * chart, then the inbox's list and the drawer; the expanded map's card also takes the first Esc, and this cannot see the card,
+     * so with the map up it says yes: a dropped Esc that only closed a card costs the ghost one key.
+     */
+    boolean escapeOpensMenu() {
+        return quitDialog == null && chartFull == null && !((inboxOpen || drawerOpen) && !isGameMenu(currentScreen));
+    }
+
+    /** Whether P (not typing) would open the game menu now: it does whenever no dialog is up, and it leaves the full chart on the way. */
+    boolean pOpensMenu() {
+        return quitDialog == null;
     }
 
     /** The clock the map's boats, trains and trucks sail on in a replay (ReplayMode.clockMonths()). */
@@ -7212,6 +7243,37 @@ public class UserInterface extends Application {
     /** The land office's map over the window on the city, as Expand opens it (the replay's M key). */
     void replayOpenMap() { openMapOn(null); }
 
+    /** Whether the land office's map is over the window (TR2: Follow opens, closes and moves it as the log says). */
+    boolean replayMapOpen() { return panKeys != null; }
+
+    /** The expanded map closed, the office drawn again, as Esc does it; nothing when it is not over the window. */
+    void replayCloseMap() {
+        if (panKeys != null) panKeys.collapse(true);
+    }
+
+    /** A logged view put on the expanded map, as the camera puts a view (MapView.replayShowView()); nothing when the map is not over the window or is on the other kind of ground. */
+    void replaySetMapView(CameraPath.View view) {
+        if (panKeys != null) panKeys.replayShowView(view);
+    }
+
+    /** The rail tab a screen belongs to ("land", "bank"...), or "" for a screen that is on no tab (the game menus, the funding pages...). */
+    String replayTabOf(String screen) {
+        return screen == null ? "" : tabFor(screen);
+    }
+
+    /** Goes to the rail tab a screen belongs to, as pressing its rail button does (goHome); false when the screen is on no tab. */
+    boolean replayGoTab(String screen) {
+        String key = replayTabOf(screen);
+        if (key.isEmpty()) return false;
+        for (Tab t : tabs()) {
+            if (t.key().equals(key)) {
+                goHome(t);
+                return true;
+            }
+        }
+        return false;
+    }
+
     // What ReplayMode needs of this class's private parts, one small method each.
 
     Stage replayStage() { return stage; }
@@ -7266,6 +7328,9 @@ public class UserInterface extends Application {
     /** Whether cinematic mode is on. */
     boolean isCinematic() { return cinematic; }
 
+    /** Whether cinematic mode is on and takes the chrome away (not the form Follow keeps, TR2): what a map expanded in it follows. */
+    boolean cinematicHidesChrome() { return cinematic && !cinematicKeepsChrome; }
+
     /**
      * Cinematic mode on or off (ReplayMode: the C key and the bar's button). On, the header, the rail (the minimap at its foot),
      * the construction panel and its tab, the toasts and the inbox's list are taken off the window - taken out of their parents
@@ -7275,31 +7340,51 @@ public class UserInterface extends Application {
      * show stays. The time bar is ReplayMode's.
      */
     void replayCinematic(boolean on) {
+        replayCinematic(on, false);
+    }
+
+    /**
+     * ...and, with {@code keepChrome} (TR2, while Follow plays), the header and the rail stay and the map's pane stays under the
+     * header: the player's clicks that Follow re-enacts land where his layout put them. Asked for the other form while one is on,
+     * it takes the first back and then makes the second.
+     */
+    void replayCinematic(boolean on, boolean keepChrome) {
         BorderPane root = replayRoot();
-        if (on == cinematic || root == null || stagePane == null) return;
-        cinematic = on;
-        if (on) {
-            hideTooltips();
-            root.setTop(null);
-            root.setLeft(null);
-            root.setRight(null);
-            stagePane.getChildren().removeAll(drawer, constructionPanel, inboxCorner, toastStack);
-            scene.setCursor(javafx.scene.Cursor.NONE);
-            liftChartPane(true);
-        } else {
-            root.setTop(header);
-            root.setLeft(tabRail);
-            root.setRight(constructionTab);
-            stagePane.getChildren().addAll(drawer, constructionPanel, inboxCorner, toastStack);
+        if (root == null || stagePane == null) return;
+        if (on == cinematic && (!on || keepChrome == cinematicKeepsChrome)) return;
+        if (cinematic) {
+            if (!cinematicKeepsChrome) {       // the kept form took nothing off
+                root.setTop(header);
+                root.setLeft(tabRail);
+                root.setRight(constructionTab);
+                stagePane.getChildren().addAll(drawer, constructionPanel, inboxCorner, toastStack);
+                liftChartPane(false);
+            }
             scene.setCursor(null);
-            liftChartPane(false);
+            cinematic = false;
+            cinematicKeepsChrome = false;
         }
-        if (panKeys != null) panKeys.setCinematic(on);
+        if (on) {
+            cinematic = true;
+            cinematicKeepsChrome = keepChrome;
+            hideTooltips();
+            // Kept, the whole layout stays as the player had it: the header, the rail, the construction tab and the panels over the page.
+            if (!keepChrome) {
+                root.setTop(null);
+                root.setLeft(null);
+                root.setRight(null);
+                stagePane.getChildren().removeAll(drawer, constructionPanel, inboxCorner, toastStack);
+            }
+            scene.setCursor(javafx.scene.Cursor.NONE);
+            if (!keepChrome) liftChartPane(true);
+        }
+        // The expanded map keeps its own chrome in the kept form too: its canvas is then the size the player's clicks were made on.
+        if (panKeys != null) panKeys.setCinematic(on && !keepChrome);
     }
 
     /** A pane laid under the header while cinematic mode is on (showChartFullScreen()) starts at the window's top. */
     private void replayCinematicPane(boolean underHeader) {
-        if (cinematic && underHeader) liftChartPane(true);
+        if (cinematic && !cinematicKeepsChrome && underHeader) liftChartPane(true);
     }
 
     /** The expanded map's pane at the window's top (chartFullTop() 0, no margin) or, ending cinematic mode, back under the header as it was. */
