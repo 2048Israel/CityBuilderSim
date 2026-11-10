@@ -1,4 +1,4 @@
-# NationsMap.java - 1,078 lines · 68 methods · 37 constants · model
+# NationsMap.java - 1,085 lines · 69 methods · 37 constants · model
 
 `ham/citybuildersim/NationsMap.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
@@ -32,7 +32,7 @@
 > view, the lines crossing the last box of the city's plane, and the last year's figures and ranks - which are used from the screen's thread alone.
 > It keeps the WorldData it was built from for the exact ownerAt(), so the caller keeps that open.
 
-**Uses:** [Nations](Nations.md) (17), [WorldData](WorldData.md) (13), [EarthProj](EarthProj.md) (9), [GlobeFrame](GlobeFrame.md) (8), [TradeLanes](TradeLanes.md) (3), [World](World.md) (2), [PolicyRates](PolicyRates.md) (2), [MapFrame](MapFrame.md) (1)
+**Uses:** [Nations](Nations.md) (17), [WorldData](WorldData.md) (13), [EarthProj](EarthProj.md) (9), [GlobeFrame](GlobeFrame.md) (8), [TradeLanes](TradeLanes.md) (3), [Currency](Currency.md) (3), [World](World.md) (2), [PolicyRates](PolicyRates.md) (2), [MapFrame](MapFrame.md) (1)
 
 **Used by (10):** [GlobeCheck](GlobeCheck.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PartnersCheck](PartnersCheck.md), [PartnersPage](PartnersPage.md), [PartnersView](PartnersView.md), [PriceLevelCheck](PriceLevelCheck.md), [TradeLanes](TradeLanes.md), [UserInterface](UserInterface.md)
 
@@ -47,7 +47,7 @@
 | 683 | THE NATIONS' DOTS AND LABELS - on the globe |
 | 801 | THE HOVER AND THE CARD |
 | 935 | THE WORDS |
-| 993 | A YEAR'S FIGURES AND RANKS - computed once for a Nations and a year |
+| 1000 | A YEAR'S FIGURES AND RANKS - computed once for a Nations and a year |
 
 ## Constants
 
@@ -119,20 +119,20 @@
 | 618 | `private int points, runs` |  |
 | 619 | `private double xmin, ymin, xmax, ymax` |  |
 | 620 | `private boolean open` |  |
-| 1003 | `final double[] output, people, head` |  |
-| 1004 | `final int[] rankOutput, rankPeople, rankHead` |  |
-| 1038 | `final Nations nations` |  |
-| 1039 | `final int year` |  |
-| 1040 | `final double[] output, people, head` |  |
-| 1041 | `final int[] rankOutput, rankPeople, rankHead` |  |
-| 1042 | `final int[] order` | the nations' numbers, largest output first, ties by number |
-| 1043 | `final String[] names, figures` | the nations' numbers, largest output first, ties by number |
+| 1010 | `final double[] output, people, head` |  |
+| 1011 | `final int[] rankOutput, rankPeople, rankHead` |  |
+| 1045 | `final Nations nations` |  |
+| 1046 | `final int year` |  |
+| 1047 | `final double[] output, people, head` |  |
+| 1048 | `final int[] rankOutput, rankPeople, rankHead` |  |
+| 1049 | `final int[] order` | the nations' numbers, largest output first, ties by number |
+| 1050 | `final String[] names, figures` | the nations' numbers, largest output first, ties by number |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 43 | 1036 | **type** `public final class NationsMap` | The nations on the map, without the toolkit: the borders simplified and cut to a view, each nation's dot and the name written on its land, what lies under a point, and the card a click opens - everything ui/MapView dr... |
+| 43 | 1043 | **type** `public final class NationsMap` | The nations on the map, without the toolkit: the borders simplified and cut to a view, each nation's dot and the name written on its land, what lies under a point, and the card a click opens - everything ui/MapView dr... |
 
 ### THE DIALS (lines 45-147)
 
@@ -222,27 +222,28 @@
 | 925 | 3 | `static String markWords(int mark)` |  |
 | 930 | 4 | `public static String ordinal(int k)` | 1st, 2nd, 3rd, 4th ... |
 
-### THE WORDS (lines 935-992)
+### THE WORDS (lines 935-999)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 943 | 1 | `public static String usd(double v)` | US$ as words: "US$2.24T" from a trillion (two decimals), "US$580B", "US$58.1B" and "US$5.81B" from a billion (three significant figures, a trailing ".0" dropped), the same in M from a million, and below that "US$" and... |
-| 946 | 9 | `static String money(String sign, double v)` | Money as words in any sign, as usd() writes the US dollar's: "D$25M", and below a million the whole number, "D$580,000"; "-" for NaN. |
-| 957 | 1 | `public static String city(double thousands)` | The city's money, given in thousands (the trade's unit), as words: 25,000 is "D$25M"; "-" for NaN. |
-| 960 | 4 | `public static String haulWords(double tonnesOut, double tonnesIn)` | The haul as words: the tonnes sold and the tonnes bought, each as people() writes a count, " t out" and " t in", only those that are more than none; "-" for neither. |
-| 966 | 9 | `public static String people(double v)` | People as words: "1.43B", "41.5M", "390k", "57k" (three significant figures, a trailing ".0" dropped), below a thousand the whole number. |
-| 977 | 6 | `private static String three(double x)` | A number of [1, 1000) to three significant figures with a trailing ".0" dropped; null if it rounds up to 1000. |
-| 985 | 7 | `static String sig3(double v)` | A positive figure to three significant figures: thousands separated from 1,000 ("54,300"), a trailing zero kept from 1 up ("1.30") and dropped under it ("0.86"). |
+| 946 | 3 | `static String money(String sign, double v)` | Money as words in any sign, as usd() writes the US dollar's: "US$25M", and below a million the whole number, "US$580,000"; "-" for NaN. |
+| 951 | 8 | `private static String figure(double v)` | The figure of money(): "25M", "580,000", "2.24T", the unit but no sign. |
+| 961 | 4 | `public static String city(double thousands)` | The city's money, given in thousands (the trade's unit), as words: 25,000 is "D$25M" (the qualified sign, put where the city puts it: "25M kr"); "-" for NaN. |
+| 967 | 4 | `public static String haulWords(double tonnesOut, double tonnesIn)` | The haul as words: the tonnes sold and the tonnes bought, each as people() writes a count, " t out" and " t in", only those that are more than none; "-" for neither. |
+| 973 | 9 | `public static String people(double v)` | People as words: "1.43B", "41.5M", "390k", "57k" (three significant figures, a trailing ".0" dropped), below a thousand the whole number. |
+| 984 | 6 | `private static String three(double x)` | A number of [1, 1000) to three significant figures with a trailing ".0" dropped; null if it rounds up to 1000. |
+| 992 | 7 | `static String sig3(double v)` | A positive figure to three significant figures: thousands separated from 1,000 ("54,300"), a trailing zero kept from 1 up ("1.30") and dropped under it ("0.86"). |
 
-### A YEAR'S FIGURES AND RANKS - computed once for a Nations and a year (lines 993-1078)
+### A YEAR'S FIGURES AND RANKS - computed once for a Nations and a year (lines 1000-1085)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1002 | 33 | **type** `static final class YearFigures` | A year's output, people and output a head for all the nations (index nation - 1), and each one's rank in each: the count of nations strictly larger, plus one (ties share it), a figure that is not a number last. |
-| 1006 | 15 | `YearFigures(Nations nations, int year)` _(in NationsMap.YearFigures)_ |  |
-| 1023 | 1 | `private static double key(double v)` _(in NationsMap.YearFigures)_ | A figure as it ranks: NaN last. |
-| 1026 | 8 | `static int[] ranks(double[] v)` _(in NationsMap.YearFigures)_ | The rank of each figure: the count strictly larger, plus one (ties share it); NaN last. |
-| 1037 | 36 | **type** `private static final class Table` | The figures of a year for all the nations, and each one's rank (YearFigures'), with the nations in order of output and each one's label. |
-| 1045 | 27 | `Table(Nations nations, int year)` _(in NationsMap.Table)_ |  |
-| 1074 | 4 | `private Table table(Nations nations, int year)` |  |
+| 1009 | 33 | **type** `static final class YearFigures` | A year's output, people and output a head for all the nations (index nation - 1), and each one's rank in each: the count of nations strictly larger, plus one (ties share it), a figure that is not a number last. |
+| 1013 | 15 | `YearFigures(Nations nations, int year)` _(in NationsMap.YearFigures)_ |  |
+| 1030 | 1 | `private static double key(double v)` _(in NationsMap.YearFigures)_ | A figure as it ranks: NaN last. |
+| 1033 | 8 | `static int[] ranks(double[] v)` _(in NationsMap.YearFigures)_ | The rank of each figure: the count strictly larger, plus one (ties share it); NaN last. |
+| 1044 | 36 | **type** `private static final class Table` | The figures of a year for all the nations, and each one's rank (YearFigures'), with the nations in order of output and each one's label. |
+| 1052 | 27 | `Table(Nations nations, int year)` _(in NationsMap.Table)_ |  |
+| 1081 | 4 | `private Table table(Nations nations, int year)` |  |
 

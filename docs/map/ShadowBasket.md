@@ -1,4 +1,4 @@
-# ShadowBasket.java - 201 lines · 1 methods · 0 constants · model
+# ShadowBasket.java - 202 lines · 1 methods · 0 constants · model
 
 `ham/citybuildersim/ShadowBasket.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
@@ -23,12 +23,12 @@
 > 
 >     java ham.citybuildersim.ShadowBasket [months]
 
-**Uses:** [LongPlaytest](LongPlaytest.md) (9), [Consumption](Consumption.md) (7), [Retail](Retail.md) (3), [Game](Game.md) (2), [GameFiles](GameFiles.md) (1), [HouseholdBalance](HouseholdBalance.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1), [Household](Household.md) (1), [Good](Good.md) (1), [Sector](Sector.md) (1)
+**Uses:** [LongPlaytest](LongPlaytest.md) (9), [Consumption](Consumption.md) (7), [Retail](Retail.md) (3), [Game](Game.md) (2), [Currency](Currency.md) (2), [GameFiles](GameFiles.md) (1), [HouseholdBalance](HouseholdBalance.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1), [Household](Household.md) (1), [Good](Good.md) (1), [Sector](Sector.md) (1)
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 32 | 170 | **type** `public class ShadowBasket` | What a played city WOULD buy, measured against what it spends today. |
-| 34 | 167 | `public static void main(String[] args) throws Exception` |  |
+| 32 | 171 | **type** `public class ShadowBasket` | What a played city WOULD buy, measured against what it spends today. |
+| 34 | 168 | `public static void main(String[] args) throws Exception` |  |
 

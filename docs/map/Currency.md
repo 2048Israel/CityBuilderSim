@@ -1,4 +1,4 @@
-# Currency.java - 436 lines · 36 methods · 11 constants · model
+# Currency.java - 458 lines · 37 methods · 11 constants · model
 
 `ham/citybuildersim/Currency.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
@@ -66,7 +66,7 @@
 
 **Uses:** [ForeignAccounts](ForeignAccounts.md) (1)
 
-**Used by (29):** [DataSave](DataSave.md), [Denomination](Denomination.md), [DenominationCheck](DenominationCheck.md), [FinancesScreen](FinancesScreen.md), [FittingCheck](FittingCheck.md), [Formats](Formats.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [HistoryCheck](HistoryCheck.md), [HistoryScreen](HistoryScreen.md), [LandClassCheck](LandClassCheck.md), [LandClassView](LandClassView.md), [LandMap](LandMap.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [Money](Money.md), [MoneySignCheck](MoneySignCheck.md), [NewGameCheck](NewGameCheck.md), [PolicyScreen](PolicyScreen.md), [RankingsScreen](RankingsScreen.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SavedCities](SavedCities.md), [SummaryScreen](SummaryScreen.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md), [YearBook](YearBook.md), [YearBookCheck](YearBookCheck.md)
+**Used by (52):** [AutoBuilder](AutoBuilder.md), [Bank](Bank.md), [BusinessDebtManager](BusinessDebtManager.md), [BusinessInvestment](BusinessInvestment.md), [DataSave](DataSave.md), [DebtQuote](DebtQuote.md), [Denomination](Denomination.md), [DenominationCheck](DenominationCheck.md), [EconomyManager](EconomyManager.md), [EquipmentFit](EquipmentFit.md), [FinancesScreen](FinancesScreen.md), [FittingCheck](FittingCheck.md), [Formats](Formats.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [HistoryCheck](HistoryCheck.md), [HistoryScreen](HistoryScreen.md), [Household](Household.md), [Inbox](Inbox.md), [IndustryView](IndustryView.md), [LandClassCheck](LandClassCheck.md), [LandClassView](LandClassView.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [MapView](MapView.md), [Money](Money.md), [MoneySignCheck](MoneySignCheck.md), [MoneyWordsCheck](MoneyWordsCheck.md), [NationsMap](NationsMap.md), [NewGameCheck](NewGameCheck.md), [OilView](OilView.md), [PolicyScreen](PolicyScreen.md), [PopulationManager](PopulationManager.md), [ProcessingSector](ProcessingSector.md), [RankingsScreen](RankingsScreen.md), [ReadPathCheck](ReadPathCheck.md), [RefineryView](RefineryView.md), [Refining](Refining.md), [SaveFileCheck](SaveFileCheck.md), [SavedCities](SavedCities.md), [ShadowBasket](ShadowBasket.md), [SpreadPlanner](SpreadPlanner.md), [SummaryScreen](SummaryScreen.md), [TaxPolicy](TaxPolicy.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md), [UtilitiesHandler](UtilitiesHandler.md), [YearBook](YearBook.md), [YearBookCheck](YearBookCheck.md)
 
 ## Sections
 
@@ -76,9 +76,9 @@
 | 103 | · the rules |
 | 129 | · the one a city had before 0.7.10 |
 | 141 | · the value |
-| 274 | · derived from the city |
-| 338 | · typed by hand |
-| 422 | · as a value |
+| 296 | · derived from the city |
+| 360 | · typed by hand |
+| 444 | · as a value |
 
 ## Constants
 
@@ -108,7 +108,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 88 | 349 | **type** `public final class Currency` | What the city's money is called, and how it is written. |
+| 88 | 371 | **type** `public final class Currency` | What the city's money is called, and how it is written. |
 
 ### the world's (lines 90-102)
 
@@ -120,58 +120,59 @@
 
 ### the one a city had before 0.7.10 (lines 129-140)
 
-### the value (lines 141-273)
+### the value (lines 141-295)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 160 | 1 | `public static Currency writing()` | The money the static formatters are writing now: "$" before until a city says otherwise. |
 | 163 | 1 | `public static void use(Currency c)` | The city whose money the static formatters write from here (null: the Danzik dollar). |
-| 166 | 3 | `public Currency(String name, String plural, String code, String symbol, String qualifiedSymbol)` | A currency exactly as given, its sign before the figure - the load path's door, which reads back what was saved without judging it. |
-| 171 | 8 | `public Currency(String name, String plural, String code, String symbol, String qualifiedSymbol, boolean signAfter)` | A currency exactly as given, its sign before the figure or after it. |
-| 181 | 1 | `public String name()` | "Arden dollar". |
-| 183 | 1 | `public String plural()` | "Arden dollars". |
-| 185 | 1 | `public String code()` | "ARD". |
-| 187 | 1 | `public String symbol()` | "$" - written alone. |
-| 189 | 1 | `public String qualifiedSymbol()` | "A$" - written where a foreign figure is on the same line. |
-| 191 | 1 | `public boolean signAfter()` | Whether the sign follows the figure ("2.6M kr") rather than leads it ("$2.6M"). |
-| 204 | 1 | `public String write(String number)` | An already formatted number with this money's sign put around it: before, sign + separator + number; after, number + separator + sign. |
-| 207 | 1 | `public String writeQualified(String number)` | The same with the qualified sign, where a foreign figure is in sight. |
-| 210 | 1 | `public String local(String amount)` | Local money, on a screen with no foreign figure on it. |
-| 213 | 1 | `public String qualified(String amount)` | Local money, on a screen that also shows dollars. |
-| 215 | 3 | `private String place(String sign, String number)` |  |
-| 220 | 5 | `private String gap(String sign)` | The space between a sign and the figure beside it: one where the sign's letter touches the number. |
-| 232 | 6 | `public String qualify(String written)` | A figure this money wrote with its sign, rewritten with its qualified sign in its place: "$5" is "D$5", "-$5" is "-D$5", "5¥" is "5 T¥", "5 kr" stays "5 kr". |
-| 252 | 3 | `public static String marked(String mark, String written)` | A figure written in writing()'s money, rewritten in a foreign money's mark, which always goes BEFORE the figure with no space added (the marks carry their own: ForeignAccounts.MONEY_MARK has "CHF " and "XAU "). |
-| 256 | 11 | `private String markedIn(String mark, String written)` |  |
-| 269 | 1 | `public String rateUnit()` | "Arden dollars per USD", as the exchange rate's unit. |
-| 272 | 1 | `public String describe()` | "the Arden dollar, A$, ARD" - the founding screen's line. |
+| 166 | 9 | `public static<T> T using(Currency c, java.util.function.Supplier<T> draw)` | Runs a drawing with the static formatters writing c's money, and puts back the money they were writing, also when the drawing throws. |
+| 177 | 3 | `public Currency(String name, String plural, String code, String symbol, String qualifiedSymbol)` | A currency exactly as given, its sign before the figure - the load path's door, which reads back what was saved without judging it. |
+| 182 | 8 | `public Currency(String name, String plural, String code, String symbol, String qualifiedSymbol, boolean signAfter)` | A currency exactly as given, its sign before the figure or after it. |
+| 192 | 1 | `public String name()` | "Arden dollar". |
+| 194 | 1 | `public String plural()` | "Arden dollars". |
+| 196 | 1 | `public String code()` | "ARD". |
+| 198 | 1 | `public String symbol()` | "$" - written alone. |
+| 200 | 1 | `public String qualifiedSymbol()` | "A$" - written where a foreign figure is on the same line. |
+| 202 | 1 | `public boolean signAfter()` | Whether the sign follows the figure ("2.6M kr") rather than leads it ("$2.6M"). |
+| 215 | 1 | `public String write(String number)` | An already formatted number with this money's sign put around it: before, sign + separator + number; after, number + separator + sign. |
+| 218 | 1 | `public String writeQualified(String number)` | The same with the qualified sign, where a foreign figure is in sight. |
+| 221 | 1 | `public String local(String amount)` | Local money, on a screen with no foreign figure on it. |
+| 224 | 1 | `public String qualified(String amount)` | Local money, on a screen that also shows dollars. |
+| 226 | 3 | `private String place(String sign, String number)` |  |
+| 231 | 5 | `private String gap(String sign)` | The space between a sign and the figure beside it: one where the sign's letter touches the number. |
+| 243 | 6 | `public String qualify(String written)` | A figure this money wrote with its sign, rewritten with its qualified sign in its place: "$5" is "D$5", "-$5" is "-D$5", "5¥" is "5 T¥", "5 kr" stays "5 kr". |
+| 270 | 3 | `public static String marked(String mark, String written)` | A figure written in writing()'s money, rewritten in a foreign money's mark, which always goes BEFORE the figure with no space added (the marks carry their own: ForeignAccounts.MONEY_MARK has "CHF " and "XAU "). |
+| 274 | 15 | `private String markedIn(String mark, String written)` |  |
+| 291 | 1 | `public String rateUnit()` | "Arden dollars per USD", as the exchange rate's unit. |
+| 294 | 1 | `public String describe()` | "the Arden dollar, A$, ARD" - the founding screen's line. |
 
-### derived from the city (lines 274-337)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 281 | 5 | `public static Currency fromCityName(String city)` | The city's money named after the city: "Arden" gives the Arden dollar, A$, ARD. |
-| 303 | 10 | `public static String deriveCode(String city)` | The code a city's name gives its money: its first three letters A-Z, upper-cased. |
-| 315 | 10 | `static String initial(String name)` | The first letter of a name, upper-cased - any script - or the pad when it has none. |
-| 327 | 10 | `private static String asciiLetters(String s)` | The name's letters A-Z, accents folded and upper-cased, everything else dropped. |
-
-### typed by hand (lines 338-421)
+### derived from the city (lines 296-359)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 345 | 3 | `public static Currency typed(String name, String code)` | The money as the player named it, with the "$" before the figure, or null when either half does not pass (nameProblem(), codeProblem()). |
-| 355 | 8 | `public static Currency typed(String name, String code, String sign, boolean after)` | The money as the player named it and signed it, or null when any of the three does not pass (nameProblem(), codeProblem(), signProblem()). |
-| 371 | 10 | `public static String signProblem(String sign)` | Why a typed sign will not do, in the player's words, or null when it will: at least one and at most MAX_SIGN_LENGTH characters once trimmed, none of them a digit, a space or one of + - − . |
-| 389 | 6 | `public static boolean needsLetter(String sign)` | Whether a sign is also one the vault's moneys are written with, so a figure in it is ambiguous the moment a foreign one is in sight: "$", or a sign that is, or ends, one of ForeignAccounts.MONEY_MARK trimmed ("¥" ends... |
-| 397 | 3 | `public static String qualifiedFor(String name, String sign)` | The sign a figure is written with where a foreign figure is in sight: the money's first letter before it where needsLetter() says so (D$, T¥), else the sign alone. |
-| 402 | 7 | `public static String nameProblem(String name)` | Why a typed name will not do, in the player's words, or null when it will. |
-| 415 | 6 | `public static String codeProblem(String code)` | Why a typed code will not do, in the player's words, or null when it will: exactly CODE_LENGTH letters A-Z (upper-cased first), and never FOREIGN_CODE - the world's money is not the city's to issue. |
+| 303 | 5 | `public static Currency fromCityName(String city)` | The city's money named after the city: "Arden" gives the Arden dollar, A$, ARD. |
+| 325 | 10 | `public static String deriveCode(String city)` | The code a city's name gives its money: its first three letters A-Z, upper-cased. |
+| 337 | 10 | `static String initial(String name)` | The first letter of a name, upper-cased - any script - or the pad when it has none. |
+| 349 | 10 | `private static String asciiLetters(String s)` | The name's letters A-Z, accents folded and upper-cased, everything else dropped. |
 
-### as a value (lines 422-436)
+### typed by hand (lines 360-443)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 425 | 5 | `public boolean equals(Object o)` |  |
-| 432 | 1 | `public int hashCode()` |  |
-| 435 | 1 | `public String toString()` |  |
+| 367 | 3 | `public static Currency typed(String name, String code)` | The money as the player named it, with the "$" before the figure, or null when either half does not pass (nameProblem(), codeProblem()). |
+| 377 | 8 | `public static Currency typed(String name, String code, String sign, boolean after)` | The money as the player named it and signed it, or null when any of the three does not pass (nameProblem(), codeProblem(), signProblem()). |
+| 393 | 10 | `public static String signProblem(String sign)` | Why a typed sign will not do, in the player's words, or null when it will: at least one and at most MAX_SIGN_LENGTH characters once trimmed, none of them a digit, a space or one of + - − . |
+| 411 | 6 | `public static boolean needsLetter(String sign)` | Whether a sign is also one the vault's moneys are written with, so a figure in it is ambiguous the moment a foreign one is in sight: "$", or a sign that is, or ends, one of ForeignAccounts.MONEY_MARK trimmed ("¥" ends... |
+| 419 | 3 | `public static String qualifiedFor(String name, String sign)` | The sign a figure is written with where a foreign figure is in sight: the money's first letter before it where needsLetter() says so (D$, T¥), else the sign alone. |
+| 424 | 7 | `public static String nameProblem(String name)` | Why a typed name will not do, in the player's words, or null when it will. |
+| 437 | 6 | `public static String codeProblem(String code)` | Why a typed code will not do, in the player's words, or null when it will: exactly CODE_LENGTH letters A-Z (upper-cased first), and never FOREIGN_CODE - the world's money is not the city's to issue. |
+
+### as a value (lines 444-458)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 447 | 5 | `public boolean equals(Object o)` |  |
+| 454 | 1 | `public int hashCode()` |  |
+| 457 | 1 | `public String toString()` |  |
 

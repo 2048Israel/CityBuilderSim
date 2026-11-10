@@ -1,4 +1,4 @@
-# GovernmentScreen.java - 2,703 lines · 113 methods · 45 constants · interface
+# GovernmentScreen.java - 2,703 lines · 116 methods · 42 constants · interface
 
 `ham/citybuildersim/ui/GovernmentScreen.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
@@ -25,7 +25,7 @@
 > behind an (i). The rail opens showGovernmentMenu(); open() is every other
 > door in.
 
-**Uses:** [Palette](Palette.md) (211), [Kept](Kept.md) (139), [Icons](Icons.md) (55), [NationalAccounts](NationalAccounts.md) (33), [Money](Money.md) (30), [CityNeeds](CityNeeds.md) (24), [CareType](CareType.md) (16), [EconomyManager](EconomyManager.md) (12), [HistoryScreen](HistoryScreen.md) (8), [HouseholdAccounts](HouseholdAccounts.md) (7), [EducationType](EducationType.md) (6), [TimeChart](TimeChart.md) (5), [HistorySave](HistorySave.md) (4), [BuildScreen](BuildScreen.md) (4), [FinancesScreen](FinancesScreen.md) (3), [ServicesScreen](ServicesScreen.md) (3), [TreasuryJournal](TreasuryJournal.md) (3), [TaxPolicy](TaxPolicy.md) (3), [Sector](Sector.md) (3), [DebtManager](DebtManager.md) (3), [UserInterface](UserInterface.md) (2), [PolicyScreen](PolicyScreen.md) (2), [CentralBank](CentralBank.md) (2), [TreasuryLine](TreasuryLine.md) (2), [TreasuryFund](TreasuryFund.md) (2), [BuildingManager](BuildingManager.md) (2), [SummaryScreen](SummaryScreen.md) (1), [PolicyPreview](PolicyPreview.md) (1), [CityCalendar](CityCalendar.md) (1), [SectorBooks](SectorBooks.md) (1)... and 10 more
+**Uses:** [Palette](Palette.md) (211), [Kept](Kept.md) (139), [Icons](Icons.md) (55), [Money](Money.md) (37), [NationalAccounts](NationalAccounts.md) (33), [CityNeeds](CityNeeds.md) (24), [CareType](CareType.md) (16), [EconomyManager](EconomyManager.md) (12), [HistoryScreen](HistoryScreen.md) (8), [HouseholdAccounts](HouseholdAccounts.md) (7), [EducationType](EducationType.md) (6), [TimeChart](TimeChart.md) (5), [HistorySave](HistorySave.md) (4), [BuildScreen](BuildScreen.md) (4), [FinancesScreen](FinancesScreen.md) (3), [ServicesScreen](ServicesScreen.md) (3), [TreasuryJournal](TreasuryJournal.md) (3), [TaxPolicy](TaxPolicy.md) (3), [Sector](Sector.md) (3), [DebtManager](DebtManager.md) (3), [UserInterface](UserInterface.md) (2), [PolicyScreen](PolicyScreen.md) (2), [CentralBank](CentralBank.md) (2), [TreasuryLine](TreasuryLine.md) (2), [TreasuryFund](TreasuryFund.md) (2), [BuildingManager](BuildingManager.md) (2), [SummaryScreen](SummaryScreen.md) (1), [PolicyPreview](PolicyPreview.md) (1), [CityCalendar](CityCalendar.md) (1), [SectorBooks](SectorBooks.md) (1)... and 10 more
 
 **Used by (3):** [FinancesScreen](FinancesScreen.md), [KeptBench](KeptBench.md), [UserInterface](UserInterface.md)
 
@@ -72,15 +72,12 @@
 | 475 | `GovernmentScreen.DEBT_EXCHANGE_KEY` | `"debtExchange"` | ...and the exchange gain (loss) on the city's foreign-currency paper, which the balance carries and spending does not (CD7). |
 | 838 | `GovernmentScreen.SURPLUS_INFO` | `"It took in more than it spent.A surplus pays down debt or buys the next " + ...` | P1's rest: what a surplus is for. |
 | 842 | `GovernmentScreen.DEFICIT_INFO` | `"It spent more than it took in.That gap is borrowed, and next month's " + "in...` | ...and what a deficit costs. |
-| 1020 | `GovernmentScreen.BRIDGE_INFO` | `"EARNED is the header's figure: taxes and fees less the running programmes " ...` | The bridge card's (i): P2, rewritten, and P3. |
 | 1036 | `GovernmentScreen.DIALS_INFO` | `"EARNED is read at today's tax rates; the budget was struck at the month's." ...` | The dials' step's tooltip (the spec's B7). |
 | 1041 | `GovernmentScreen.RESIDUAL_INFO` | `"What the named steps do not explain: timing between the books and the money,...` | The "not accounted for" step's tooltip. |
 | 1047 | `GovernmentScreen.NOT_CASH_INTEREST_INFO` | `"The budget charges the discount wearing off the city's paper as " + "interes...` | The not-cash interest step's tooltip: the discount wearing off the city's paper, charged to the budget and paid to nobody yet. |
 | 1053 | `GovernmentScreen.NOT_CASH_GAIN_INFO` | `"Buying paper back for less than it is carried at books a gain, and for " + "...` | The not-cash gain step's tooltip: the gain on paper bought back, booked against what it was carried at, paid by nobody. |
 | 1058 | `GovernmentScreen.NOT_CASH_UPLIFT_INFO` | `"A linked bond's principal follows the price index, and the budget " + "charg...` | The not-cash uplift step's tooltip (CD5): the indexation of the linked bonds, charged to the budget and paid in the bond's last month. |
 | 1065 | `GovernmentScreen.RETIRED_GAIN_INFO` | `"Paper bought back before it falls due is booked at what it was carried " + "...` | The gain (loss) on debt retired: the line under the budget's operating lines, and what is in the balance. |
-| 1071 | `GovernmentScreen.DEBT_EXCHANGE_INFO` | `"The city owes its dollar paper in US$, and the books carry each piece at " +...` | CD7: the exchange gain (loss) on the city's foreign-currency paper: the line under the budget's operating lines, and what is in the balance. |
-| 1079 | `GovernmentScreen.NOT_CASH_EXCHANGE_INFO` | `"The budget books the D$'s move on the city's dollar paper every " + "month: ...` | CD7: the exchange step's tooltip: the D$'s move on the dollar paper, booked in the budget, paid by nobody. |
 | 1322 | `GovernmentScreen.ARREARS_INFO` | `"What the ceiling cut: owed, with no interest on it, and paid down out of the...` | P6: the arrears. |
 | 1369 | `GovernmentScreen.ECONOMY_INFO` | `"A year of revenue against a year of output is the only honest way to " + "co...` | P8: why a month against a year. |
 | 1376 | `GovernmentScreen.NO_YEAR` | `"There is no output recorded yet, so nothing here can be put in " + "proporti...` | P7: no month of output yet. |
@@ -211,10 +208,16 @@
 
 ### from EARNED to BANKED (lines 1017-1043)
 
+| line | len | member | says |
+|---:|---:|---|---|
+| 1020 | 14 | `static String bridgeInfo()` | The bridge card's (i): P2, rewritten, and P3. |
+
 ### the books (CD3) (lines 1044-1309)
 
 | line | len | member | says |
 |---:|---:|---|---|
+| 1071 | 6 | `static String debtExchangeInfo()` | CD7: the exchange gain (loss) on the city's foreign-currency paper: the line under the budget's operating lines, and what is in the balance. |
+| 1079 | 4 | `static String notCashExchangeInfo()` | CD7: the exchange step's tooltip: the D$'s move on the dollar paper, booked in the budget, paid by nobody. |
 | 1091 | 47 | `VBox bridgeCard(NationalAccounts na)` | FROM EARNED TO BANKED: three tiles - the header's figure, the budget, the cash - and the steps between each pair, every one a model figure by name (Game.getEarnedToBudget() and its residual; the bridge's raised and re... |
 | 1140 | 12 | `List<BridgeStep> earnedSteps()` | The steps from EARNED to the budget: Game.getEarnedToBudget() a line each, and what they leave - today's dials. |
 | 1154 | 32 | `List<BridgeStep> cashSteps()` | The steps from the budget to the cash: paper raised and repaid, the journal's lines in the player's words, and what is not accounted for. |

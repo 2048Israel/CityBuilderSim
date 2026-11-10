@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**196 harness files, 23,135 labelled assertions.** AllChecks runs 196 of them.
+**197 harness files, 23,153 labelled assertions.** AllChecks runs 197 of them.
 
 ## Which harnesses read which class
 
@@ -81,7 +81,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CorporateBond](map/CorporateBond.md) | BondCheck, FundCheck, FundLedgerCheck, KeptCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
 | [Credits](map/Credits.md) | CreditsCheck |
 | [Crime](map/Crime.md) | BuildAdviceCheck, CrimeCheck, LongPlaytest, ScaleCheck |
-| [Currency](map/Currency.md) | DenominationCheck, FittingCheck, HistoryCheck, LandClassCheck, LongPlaytest, MoneySignCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, YearBookCheck |
+| [Currency](map/Currency.md) | DenominationCheck, FittingCheck, HistoryCheck, LandClassCheck, LongPlaytest, MoneySignCheck, MoneyWordsCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, YearBookCheck |
 | [DataSave](map/DataSave.md) | EarthTerrainCheck, FittingCheck, LandmassCheck, MapCheck, MoneySignCheck, PopulationCheck, ReplayCheck, SaveFileCheck, SaveSlotCheck |
 | [Debt](map/Debt.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CentralBankCheck, ChartCheck, CreditCheck, CurrencyCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, GdpCheck, HoldersCheck, KeptCheck, LongPlaytest, MoneyCheck, NewGameCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, SectorStatementCheck, TreasuryCheck |
 | [DebtManager](map/DebtManager.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarryTradeCheck, CentralBankCheck, CreditCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FloatLinkCheck, ForeignDebtCheck, GoldStandardCheck, HoldersCheck, HousingCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, MonetaryCheck, MoneyCheck, MortgageCheck, PartnersCheck, PegAnchorCheck, PolicyPreviewCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, TreasuryCheck |
@@ -118,10 +118,10 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [FollowRules](map/FollowRules.md) | ReplayCheck |
 | [FoodIndustry](map/FoodIndustry.md) | BooksCheck, CreditCheck, WaterCheck |
 | [FoodProcessing](map/FoodProcessing.md) | FoodProcessingCheck |
-| [ForeignAccounts](map/ForeignAccounts.md) | CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, CurrencyRegimeCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, ExchangeRateCheck, ExpectationsCheck, ForeignCheck, ForeignDebtCheck, GoldStandardCheck, HoldersCheck, InterestAbroadCheck, InterventionCheck, KeptCheck, LabourCheck, LandCheck, LandNationsCheck, LongPlaytest, MonetaryCheck, MoneySignCheck, NewGameCheck, OilCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldMoneysCheck |
+| [ForeignAccounts](map/ForeignAccounts.md) | CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, CurrencyRegimeCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, ExchangeRateCheck, ExpectationsCheck, ForeignCheck, ForeignDebtCheck, GoldStandardCheck, HoldersCheck, InterestAbroadCheck, InterventionCheck, KeptCheck, LabourCheck, LandCheck, LandNationsCheck, LongPlaytest, MonetaryCheck, MoneySignCheck, MoneyWordsCheck, NewGameCheck, OilCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldMoneysCheck |
 | [Forestry](map/Forestry.md) | BuildCardCheck, BuildingDataCheck, ForestryCheck, IndustryViewCheck, WoodProductsCheck, ZoningCheck |
 | [Formats](map/Formats.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, CarCheck, FoodProcessingCheck, LandCheck, MoneySignCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck, SectorFlowCheck, TradeCostCheck, WellCheck, ZoningCheck |
-| [Founding](map/Founding.md) | ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BasketYearCheck, BondCheck, BridgeCheck, BridgeMapCheck, BuildAdviceCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, DeathCareFirstCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ExchangeRateCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, GatewayCheck, GdpCheck, GoldStandardCheck, GridCheck, GroceryCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HydroCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, IslandNetCheck, IslandRailCheck, JunctionCheck, KeptCheck, LandCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MoneySignCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OutsideCheck, PartnerCallsCheck, PartnersCheck, PassThroughCheck, PlanCheck, PolicyDatesCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDrawCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchViewCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WageLadderCheck, WellCheck, WorldCheck, WorldMoneysCheck, ZoningCheck, ZoningViewCheck |
+| [Founding](map/Founding.md) | ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BasketYearCheck, BondCheck, BridgeCheck, BridgeMapCheck, BuildAdviceCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, DeathCareFirstCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ExchangeRateCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, GatewayCheck, GdpCheck, GoldStandardCheck, GridCheck, GroceryCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HydroCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, IslandNetCheck, IslandRailCheck, JunctionCheck, KeptCheck, LandCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OutsideCheck, PartnerCallsCheck, PartnersCheck, PassThroughCheck, PlanCheck, PolicyDatesCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDrawCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchViewCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WageLadderCheck, WellCheck, WorldCheck, WorldMoneysCheck, ZoningCheck, ZoningViewCheck |
 | [FoundingName](map/FoundingName.md) | NewGameCheck |
 | [FoundingScreen](map/FoundingScreen.md) | **none** |
 | [Freight](map/Freight.md) | BuildCardCheck, EquipmentCheck, FittingCheck, Forms1900Check, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, LandlordPortCheck, LongPlaytest, MapCheck, OilCheck, PortCheck, RailCheck, RailDepotCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, TradeBandCheck, TruckCheck, TruckRouteCheck, WorldDataCheck |
@@ -130,8 +130,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [FundLedger](map/FundLedger.md) | FundLedgerCheck, LongPlaytest, ReadPathCheck, SaveFileCheck, ShortSellingCheck |
 | [FundScreen](map/FundScreen.md) | **none** |
 | [FundView](map/FundView.md) | FundCheck, FundLedgerCheck, LongPlaytest, PriceLevelCheck, ReadPathCheck, ShortSellingCheck |
-| [Game](map/Game.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DebtMoneysCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GoldStandardCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MoneySignCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, TruckRouteCheck, VanCheck, VaultMoneysCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
-| [GameFiles](map/GameFiles.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DenominationCheck, DeterminismCheck, DiscoveryCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, IslandLinkCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MoneySignCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PartnersCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, TruckRouteCheck, VanCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [Game](map/Game.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DebtMoneysCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GoldStandardCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, TruckRouteCheck, VanCheck, VaultMoneysCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [GameFiles](map/GameFiles.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DenominationCheck, DeterminismCheck, DiscoveryCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, IslandLinkCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PartnersCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, TruckRouteCheck, VanCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [GameLog](map/GameLog.md) | RobustnessCheck |
 | [GamePrefs](map/GamePrefs.md) | TruckCheck |
 | [GameVersion](map/GameVersion.md) | BridgeCheck, ChartCheck, ConstructionControlCheck, EarthDepositsCheck, EarthTerrainCheck, EnsembleCheck, LandmassCheck, MaterialsCheck, RankingsCheck, ReplayCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck, WellCheck |
@@ -179,7 +179,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [JavaScan](map/JavaScan.md) | **none** |
 | [JobType](map/JobType.md) | AgricultureCheck, ArrivalMixCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, BusinessServicesCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, DiscoveryCheck, EducationCheck, EquipmentCheck, FoodProcessingCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FundCheck, HaulageCheck, HealthCheck, HouseholdCheck, HousingCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, ResearchPreviewCheck, RestaurantsCheck, ScaleCheck, SectorStatementCheck, WageLadderCheck, WantedPostsCheck, WellCheck, WoodProductsCheck |
 | [Kept](map/Kept.md) | **none** |
-| [KeptBench](map/KeptBench.md) | KeptCheck |
+| [KeptBench](map/KeptBench.md) | KeptCheck, MoneyWordsCheck |
 | [LabourMarket](map/LabourMarket.md) | ArrivalMixCheck, DiscoveryCheck, ExpectationsCheck, LabourCheck, LongPlaytest, PolicyDatesCheck, PolicyPreviewCheck, PriceLevelCheck, WageLadderCheck, WantedPostsCheck |
 | [Ladder](map/Ladder.md) | BankCheck, ForeignDebtCheck, MortgageCheck |
 | [LandClassRenders](map/LandClassRenders.md) | **none** |
@@ -294,19 +294,20 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SavedCities](map/SavedCities.md) | RankingsCheck |
 | [SeaLanes](map/SeaLanes.md) | MapCheck |
 | [SeaRoutes](map/SeaRoutes.md) | GatewayCheck, MapCheck, PartnerCallsCheck |
-| [Sector](map/Sector.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, DeterminismCheck, EquipmentCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, Forms1900Check, FreightViewCheck, GdpCheck, HaulageCheck, HistoryCheck, HomeRailCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyCheck, NewGameCheck, OilCheck, OilViewCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, RestaurantsCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, SupplierCreditCheck, TruckCheck, TruckRouteCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
+| [Sector](map/Sector.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, DeterminismCheck, EquipmentCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, Forms1900Check, FreightViewCheck, GdpCheck, HaulageCheck, HistoryCheck, HomeRailCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyCheck, MoneyWordsCheck, NewGameCheck, OilCheck, OilViewCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, RestaurantsCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, SupplierCreditCheck, TruckCheck, TruckRouteCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
 | [SectorBooks](map/SectorBooks.md) | BankCheck, BusinessServicesCheck, CapitalFlowCheck, CentralBankCheck, CreditCheck, CrimeCheck, HistoryCheck, HoldersCheck, LandClassCheck, LongPlaytest, ManufacturingCheck, MortgageCheck, PolicyPreviewCheck, PrizeCheck, ReloadCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck |
 | [SectorFlow](map/SectorFlow.md) | IndustryViewCheck, KeptCheck, ReadPathCheck, SectorFlowCheck |
 | [SectorScreen](map/SectorScreen.md) | **none** |
 | [SectorState](map/SectorState.md) | BooksCheck, FreightViewCheck, HomeRailCheck, RailCheck, SectorBooksCheck, TruckCheck, VanCheck |
 | [SectorStatements](map/SectorStatements.md) | CapitalFlowCheck, CentralBankCheck, LandClassCheck, ReloadCheck, SectorStatementCheck |
-| [Sectors](map/Sectors.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, ChartCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, DeterminismCheck, EquityCheck, ExchangeCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, GdpCheck, HaulageCheck, HealthCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HousingCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MarketCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, OilCheck, OilViewCheck, PartnersCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PortCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, VanCheck, WellCheck, WoodProductsCheck, ZoningCheck, ZoningViewCheck |
+| [Sectors](map/Sectors.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, ChartCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, DeterminismCheck, EquityCheck, ExchangeCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, GdpCheck, HaulageCheck, HealthCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HousingCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MarketCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MoneyWordsCheck, MortgageCheck, OilCheck, OilViewCheck, PartnersCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PortCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, VanCheck, WellCheck, WoodProductsCheck, ZoningCheck, ZoningViewCheck |
 | [ServicesManager](map/ServicesManager.md) | BuildAdviceCheck, NewGameCheck, ReadPathCheck, WaterCheck |
 | [ServicesScreen](map/ServicesScreen.md) | **none** |
 | [ShadowBasket](map/ShadowBasket.md) | **none** |
 | [ShipShapes](map/ShipShapes.md) | PortCheck |
 | [ShortTermTBill](map/ShortTermTBill.md) | AuctionCheck, BankCheck, CentralBankCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, LongPlaytest, RestructureCheck, TreasuryCheck |
 | [Sickness](map/Sickness.md) | CausesOfDeathCheck, LongPlaytest, PopulationCheck, ReadPathCheck, ScaleCheck, SicknessCheck |
+| [SignFont](map/SignFont.md) | MoneySignCheck |
 | [SimulationEngine](map/SimulationEngine.md) | **none** |
 | [SitePreparation](map/SitePreparation.md) | LandClassCheck, PriceLevelCheck, RunWorksCheck, SlopeCheck |
 | [SlopeRenders](map/SlopeRenders.md) | **none** |
@@ -18957,7 +18958,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L577 the books' interest less the amortisation is the coupons the month paid in cash, holder by holder, every month: the amortisation moved no pool
   - L579 ...and it is the cash coupons the budget calls its cash interest
 
-## MoneySignCheck.java - 57 labelled assertions
+## MoneySignCheck.java - 70 labelled assertions
 
 > The money's sign is the city's to choose and place, and with the default it
 > writes what it always wrote (FM1). Not part of the game.
@@ -18973,70 +18974,109 @@ _(this harness does not label its checks through a helper - it prints its findin
 >     by a "$" the code now routes through the writer. Section 1 holds the
 > ...
 
-- **L149 MoneySignCheck: the money's sign, before or after the figure, one writer, and the default unchanged (FM1)**
-- **L161 1**
-  - L163 fixture: the static formatters write the Danzik dollar, \"$\" before
-  - L182 marked() with the \"$\" before is the old code's text for every mark and every shape of text
-  - L183 ...the foreign mark placed in the sign's place, a minus staying outside it: \"-$5\" is \"-US$5\", \"$-5\" is \"US$-5\"
-- **L186 2**
-  - L193 a \"$\" before is \"$2.6M\"
-  - L194 a letter before gets a space: \"CHF 2.6M\"
-  - L195 a sign ending in a symbol does not: \"R$2.6M\"
-  - L196 a letter after gets a space: \"2.6M kr\"
-  - L197 a symbol after does not: \"2.6M€\"
-  - L198 a sign that starts with a letter, after, does: \"2.6M T¥\"; the yen alone does not, its qualified sign does
-  - L200 write() never moves a minus: \"$\" before writes \"-5\" as \"$-5\", as String.format(\"$%,.0f\", -5.0) printed
-  - L202 ...a sign after leaves it in front of the figure: \"-5 kr\"; a caller's \"-\" + write(\"5\") is \"-$5\"
-  - L204 writeQualified() is the same with the qualified sign: \"D$2.6M\", \"2.6M A€\"
-  - L206 local() and qualified() are write() and writeQualified()
-- **L209 3**
-  - L215 a sign the vault's moneys use takes the money's initial: $ ¥ € £ C$ A$ S$
-  - L218 a sign of the city's own stands alone: kr zł R$ Kč Fr ₹
-  - L219 the Danzik dollar's is \"D$\", a derived money's the city's initial and \"$\": \"A$\" for Arden
-  - L221 a typed money with the old two arguments keeps the initial and \"$\", the sign before
-  - L223 qualify() rewrites a figure its money wrote: \"$5\" is \"D$5\", \"-$5\" is \"-D$5\"
-  - L225 ...leaves a sign that is its own qualified one alone: \"5 kr\"
-  - L226 ...and writes the space a letter needs: \"5¥\" is \"5 T¥\", the same as writeQualified()
-  - L228 ...the text unchanged where its sign is not found
-- **L230 4**
-  - L233 fixture: a krona, \"kr\" after, which stands alone when qualified
-  - L239 the formatters write the krona
-  - L258 no \"$\" in money, moneyFull, cash, unitPrice, signed, signedTight, Formats.cash and amount, at all
-  - L259 ...each ends in \" kr\" (a \"+\", \"-\" or \"−\" in front of it)
-  - L260 usd() and usdFull() are what a \"$\" city writes, and marked(mark, money(x)) for each of the nine marks
-  - L261 qualify() of money(x) is unchanged for a sign that stands alone
-  - L262 a minus stays in front: \"-5,000 kr\", \"−5,000 kr\" and \"+5,000 kr\"
-  - L264 a figure that rounds to nothing is \"0 kr\", with no sign on it
-  - L265 the foreign mark takes the sign's place: \"-5 kr\" is \"-US$5\", \"2.6M kr a month\" is \"US$2.6M a month\"
-  - L267 ...a mark that carries its own space keeps it: \"CHF 2.6M\"; no sign found, the mark and the text
-  - L269 isZero(money(0)) is true and isZero(money(5)) false
-  - L270 write(), ours() and sign() speak for the city: \"12 kr\", \"kr\", \"kr\"
-  - L273 ...and with the \"$\" before: isZero(money(0)) true, isZero(money(5)) false, \"$12\", \"D$\", \"$\"
-  - L277 a letter before, \"CHF\": \"CHF 2.6M\" marked is \"US$2.6M\", \"-CHF 5\" is \"-US$5\"
-  - L280 a symbol after: \"2.6M€\" marked is \"US$2.6M\"
-  - L282 a letter-first sign after: \"2.6M T¥ a month\" marked is \"US$2.6M a month\"
-  - L286 the Danzik dollar is back for what comes after
-- **L288 5**
-  - L294 a sign of one to three characters passes ($ kr zł CHF T¥ € R$ ₹, trimmed, three letters outside the BMP)
-  - L298 empty, longer than
-  - L299 MAX_SIGN_LENGTH is three
-  - L300 a refusal says why in a sentence
-  - L303 typed(name, code, sign, after) takes the sign trimmed and its place, the code upper-cased
-  - L306 ...with a sign that needs the letter, the initial in front of it: \"T¥\"
-  - L307 ...null when the sign, the name or the code does not pass
-  - L311 the old typed(name, code) is the \"$\" before
-  - L312 a money's place is part of what it is: kr after is not kr before
-  - L316 a currency with no place given is before
-- **L318 6**
-  - L323 fixture: a city founded with the krona; the formatters write it
-  - L324 saved
-  - L328 the load reads the place back: kr, after, qualified \"kr\"
-  - L329 ...the whole money, as it was founded
-  - L330 ...and Currency.writing() after the load is that money
-  - L333 a city on the default founding writes \"$\" before, and founding it sets the formatters to it
-  - L335 saved
-  - L337 ...and loaded, the default comes back with its \"$\" before the figure
-  - L341 a save from before FM1 has no place on file and reads before
+- **L154 MoneySignCheck: the money's sign, before or after the figure, one writer, and the default unchanged (FM1)**
+- **L166 1**
+  - L168 fixture: the static formatters write the Danzik dollar, \"$\" before
+  - L187 marked() with the \"$\" before is the old code's text for every mark and every shape of text
+  - L188 ...the foreign mark placed in the sign's place, a minus staying outside it: \"-$5\" is \"-US$5\", \"$-5\" is \"US$-5\"
+- **L191 2**
+  - L198 a \"$\" before is \"$2.6M\"
+  - L199 a letter before gets a space: \"CHF 2.6M\"
+  - L200 a sign ending in a symbol does not: \"R$2.6M\"
+  - L201 a letter after gets a space: \"2.6M kr\"
+  - L202 a symbol after does not: \"2.6M€\"
+  - L203 a sign that starts with a letter, after, does: \"2.6M T¥\"; the yen alone does not, its qualified sign does
+  - L205 write() never moves a minus: \"$\" before writes \"-5\" as \"$-5\", as String.format(\"$%,.0f\", -5.0) printed
+  - L207 ...a sign after leaves it in front of the figure: \"-5 kr\"; a caller's \"-\" + write(\"5\") is \"-$5\"
+  - L209 writeQualified() is the same with the qualified sign: \"D$2.6M\", \"2.6M A€\"
+  - L211 local() and qualified() are write() and writeQualified()
+- **L214 3**
+  - L220 a sign the vault's moneys use takes the money's initial: $ ¥ € £ C$ A$ S$
+  - L223 a sign of the city's own stands alone: kr zł R$ Kč Fr ₹
+  - L224 the Danzik dollar's is \"D$\", a derived money's the city's initial and \"$\": \"A$\" for Arden
+  - L226 a typed money with the old two arguments keeps the initial and \"$\", the sign before
+  - L228 qualify() rewrites a figure its money wrote: \"$5\" is \"D$5\", \"-$5\" is \"-D$5\"
+  - L230 ...leaves a sign that is its own qualified one alone: \"5 kr\"
+  - L231 ...and writes the space a letter needs: \"5¥\" is \"5 T¥\", the same as writeQualified()
+  - L233 ...the text unchanged where its sign is not found
+- **L235 4**
+  - L238 fixture: a krona, \"kr\" after, which stands alone when qualified
+  - L244 the formatters write the krona
+  - L263 no \"$\" in money, moneyFull, cash, unitPrice, signed, signedTight, Formats.cash and amount, at all
+  - L264 ...each ends in \" kr\" (a \"+\", \"-\" or \"−\" in front of it)
+  - L265 usd() and usdFull() are what a \"$\" city writes, and marked(mark, money(x)) for each of the nine marks
+  - L266 qualify() of money(x) is unchanged for a sign that stands alone
+  - L267 a minus stays in front: \"-5,000 kr\", \"−5,000 kr\" and \"+5,000 kr\"
+  - L269 a figure that rounds to nothing is \"0 kr\", with no sign on it
+  - L270 the foreign mark takes the sign's place: \"-5 kr\" is \"-US$5\", \"2.6M kr a month\" is \"US$2.6M a month\"
+  - L272 ...a mark that carries its own space keeps it: \"CHF 2.6M\"; no sign found, the mark and the text
+  - L274 the city's own sign as the mark (the screens' marked(sym(), shown)) keeps its place: \"2.6M kr\", not \"kr2.6M\"
+  - L278 ...and its qualified sign after: a yen after, \"2.6M¥\" marked \"T¥\" is \"2.6M T¥\"; \"US$\" still goes in front
+  - L281 isZero(money(0)) is true and isZero(money(5)) false
+  - L282 write(), ours() and sign() speak for the city: \"12 kr\", \"kr\", \"kr\"
+  - L285 ...and with the \"$\" before: isZero(money(0)) true, isZero(money(5)) false, \"$12\", \"D$\", \"$\"
+  - L289 a letter before, \"CHF\": \"CHF 2.6M\" marked is \"US$2.6M\", \"-CHF 5\" is \"-US$5\"
+  - L292 a symbol after: \"2.6M€\" marked is \"US$2.6M\"
+  - L294 a letter-first sign after: \"2.6M T¥ a month\" marked is \"US$2.6M a month\"
+  - L298 the Danzik dollar is back for what comes after
+- **L300 5**
+  - L306 a sign of one to three characters passes ($ kr zł CHF T¥ € R$ ₹, trimmed, three letters outside the BMP)
+  - L310 empty, longer than
+  - L311 MAX_SIGN_LENGTH is three
+  - L312 a refusal says why in a sentence
+  - L315 typed(name, code, sign, after) takes the sign trimmed and its place, the code upper-cased
+  - L318 ...with a sign that needs the letter, the initial in front of it: \"T¥\"
+  - L319 ...null when the sign, the name or the code does not pass
+  - L323 the old typed(name, code) is the \"$\" before
+  - L324 a money's place is part of what it is: kr after is not kr before
+  - L328 a currency with no place given is before
+- **L330 6**
+  - L335 fixture: a city founded with the krona; the formatters write it
+  - L336 saved
+  - L340 the load reads the place back: kr, after, qualified \"kr\"
+  - L341 ...the whole money, as it was founded
+  - L342 ...and Currency.writing() after the load is that money
+  - L345 a city on the default founding writes \"$\" before, and founding it sets the formatters to it
+  - L347 saved
+  - L349 ...and loaded, the default comes back with its \"$\" before the figure
+  - L353 a save from before FM1 has no place on file and reads before
+- **L355 7**
+  - L361 fixture: the font can refuse a sign - a Chinese character and a money bag are not in Plex
+  - L363 every sign the founding row offers is one the font draws
+  - L364 every candidate it dropped is one the font refuses
+  - L367 ...the offered ones are the candidates in their own order
+  - L368 \"$\", \"€\", \"£\", \"¥\" and \"kr\" are offered
+  - L376 a city founded with a typed \"kr\"-after money has its place
+  - L377 ...and the static formatters write that money once it is founded
+  - L383 using() draws in the money it is given
+  - L384 ...and restores the one it found
+  - L387 ...whichever that was: a drawing of the \"$\" inside a krona's window
+  - L394 ...also when the drawing throws, and the throw is the caller's
+
+## MoneyWordsCheck.java - 5 labelled assertions
+
+> The words of every page, read off the nodes, in a city whose money is written after the figure (FM1). Not part of the game.
+> 
+> WHY THIS EXISTS. Jerus, 2026-11-02: the "$" was a literal in a hundred places, so a money with another sign ("2.6M kr") was
+> right on the screens that asked the money for its sign and wrong on every one that typed the character. MoneySignCheck holds
+> the writer; this holds the screens. It draws every page ui/KeptBench can draw - the rail's tabs and their pages, People, City
+> History, the header, the rail and the three panels - for a city founded with the Krona (KRO, "kr", after the figure), reads every
+> word off every node (a label's text and its graphic's, a text, a field's text and prompt, a tooltip, a tab, a choice) and says
+> which of them still hold a "$" that is not the mark of a foreign money. What a canvas draws is not a node and is not read.
+> 
+> What it proves, a section each; every one a fixture that causes the condition:
+> 
+>   1. The fixture: the same pages of a "$" city show "$", and the Krona's show " kr" - a page that draws nothing would pass
+> ...
+
+- **L285 MoneyWordsCheck: every word of every page, in a city whose money is written \"2.6M kr\" (FM1)**
+- **L311 1**
+  - L319 the Krona's money is the one founded: written after the figure, \"kr\"
+  - L320 both cities drew the same pages
+  - L321 the \"$\" city's pages show \"$\" (at least
+  - L322 the Krona's pages show \" kr\" (at least
+- **L324 2**
+  - L342 no string of any page holds a \"$\" that is not a foreign mark's
 
 ## MortgageCheck.java - 187 labelled assertions
 

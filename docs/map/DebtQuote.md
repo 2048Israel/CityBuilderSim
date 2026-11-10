@@ -48,7 +48,7 @@
 >                        carries the city's right to call it whole at 100
 >                        reopened keeps its own); -1 when not callable
 
-**Uses:** [Auction](Auction.md) (2)
+**Uses:** [Auction](Auction.md) (2), [Currency](Currency.md) (1)
 
 **Used by (24):** [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [CallCheck](CallCheck.md), [CreditCheck](CreditCheck.md), [CurveCheck](CurveCheck.md), [DebtMoneysCheck](DebtMoneysCheck.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [KeptBench](KeptBench.md), [LandCheck](LandCheck.md), [LandMap](LandMap.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [NewGameCheck](NewGameCheck.md), [Pieces](Pieces.md), [RestructureCheck](RestructureCheck.md)
 
@@ -74,6 +74,6 @@
 | 233 | 3 | `public boolean isShort()` | True when this was sold at auction and the bids did not reach the issue at the highest yield the city took: the quote is what it sold. |
 | 238 | 3 | `public boolean isEmpty()` | True if the city is receiving nothing worth booking. |
 | 256 | 32 | `public double[] schedule(double toLocal)` | Every payment this paper would ask, month by month, index i paid i + 1 months after it is issued, times `toLocal` (1 for the city's own paper; the exchange rate, for a dollar quote's figures into local money): a bill'... |
-| 298 | 3 | `private static String f(double v)` | A figure on this quote, in dollars. |
+| 298 | 3 | `private static String f(double v)` | A figure on this quote, in the city's money, with its sign (Currency.writing()), not in dollars. |
 | 304 | 4 | `static { ... }` |  |
 
