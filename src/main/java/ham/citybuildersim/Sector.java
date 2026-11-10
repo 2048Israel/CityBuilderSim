@@ -544,6 +544,15 @@ public abstract class Sector {
      */
     static final double SHARE_ROUNDING = 1e-12;
 
+    /**
+     * The grid a share the drawn workers filled is snapped to (GW1, 2026-11-10): where every band's chance is whole
+     * (Migration.opportunity() at 1) the draw grows with the posts, so two templates whose posts only the draw fills share
+     * alike but for the last bit, and the bit is the price level's. Construction keeps the held template with the larger
+     * share, and DenominationCheck's twins asked for a Construction Depot in one and a Builders' Yard in the other (month
+     * 123, the unskilled wage 3e-4 apart the month after). A share the spare alone filled is the ratio of counts, unsnapped.
+     */
+    static final double DRAWN_SHARE_GRID = 1e-9;
+
     /** The same test for {@code count} of these at once. */
     public Staffing staffing(BuildingsTemplate t, int count) {
         return staffing(t, count, true, false);
@@ -654,17 +663,20 @@ public abstract class Sector {
             drawn = migration.drawFor(wanted, game.getLabourMarket(), people, GATE_DRAW_MONTHS,
                     game.foundedUnfitted() ? ArrivalMix.at(game.getMonth()) : null);
         }
-        double fillable = 0, carry = 0;
+        double fillable = 0, carry = 0, fromDrawn = 0;
         for (int b = bands - 1; b >= 0; b--) {
             double fromSpare = Math.min(wanted[b], Math.max(0, spare[b]));
             carry += drawn[b];
             double fromDraw = Math.max(0, Math.min(wanted[b] - fromSpare, carry));
             carry -= fromDraw;
+            fromDrawn += fromDraw;
             fillable += fromSpare + fromDraw;
         }
         // The lowest band nobody can fill is the one named: it is the one the fill runs out of first.
+        // ...a share the draw filled part of on DRAWN_SHARE_GRID, so a tie is a tie at every price level...
         // ...and a share within rounding of nothing is nothing (SHARE_ROUNDING).
         double share = fillable / total;
+        if (fromDrawn > 0) share = Math.round(share / DRAWN_SHARE_GRID) * DRAWN_SHARE_GRID;
         if (share <= SHARE_ROUNDING) share = 0;
         double shareNow = fillableNow / total;
         if (shareNow <= SHARE_ROUNDING) shareNow = 0;
