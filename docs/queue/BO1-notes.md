@@ -151,3 +151,39 @@ the rows paid, so the empty row shows nowhere today.
   (HealthCheck 1, MapCheck 4, LongPlaytest with no FAIL line), no new red,
   74 of 198 harnesses run for the 45 files changed; `review needed - saves:
   DataSave.java` is the two fields above. Not run here: `--timing` (the gate's).
+
+## 4. The stranger's review sent it back (2026-11-10), and the fixes
+
+- **Two blockers, one cause: a 0.9.88 save's rows were refused whole.**
+  The new row takes `Household.ROWS` from 11 to 12, and two readers keyed
+  to it accepted only twelve-row shapes: `HouseholdAccounts.restoreStatement`
+  (239 numbers against 259; the statement fell back to the rebuild) and
+  `HouseholdBalance.restore` (93 against 101; the delivered share read 1.0
+  instead of the saved figure, the hungry at full shelves 0). Both now read
+  every shape with eleven rows per array as well (`ROWS_BEFORE_OWNER`, as
+  `ROWS_BEFORE_PRISON` was read), the owners' row empty; `padOlder` and
+  `padRows` take eleven too. The lengths were checked for collisions: none.
+  No format bump: the readers take the old shapes.
+- **The check that missed it.** OwnerCheck's "save from before" line compared
+  constants. Section 10 feeds main's two shapes (today's statement with every
+  figure marked by its place and the owner row cut from each of its twenty
+  arrays; a row array of eleven rows with the hunger's halves and the
+  prisoners' row marked) and asserts each figure comes back where the save
+  put it. Against the readers before the fix: 9 FAIL, every line of the
+  section; after: all OK.
+- **The low item, fixed** (a few lines): a family reserved for a company
+  that never lists sat in the line, out of the labour force, until a year at
+  a floor it never had. `tallyOwnersAtFloor` now takes the company in issue
+  (`Equity.getShares > 0`): a company not in issue counts no floor months,
+  and once the owner cell holds families and it has still not listed, the
+  listing was not retried and the family is let go at once. OwnerCheck 7
+  has the wait, the listing and the lapse; section 9's city still forms 5
+  families and drops none.
+- **The trace**, retraced on the fixed classes (6eb366e5): the eight files
+  byte-identical to main's, exiting 1 alike; unmoved by construction too (the
+  tally returns before either
+  predicate with the line off; the readers run only on a load).
+- **`--pick`** again, with SaveFileCheck, ReadPathCheck, OwnerCheck and
+  HouseholdCheck named: exit 3, main's recorded reds only (HealthCheck 1,
+  MapCheck 4, LongPlaytest with no FAIL line), the four named all OK. Main
+  had not moved (0.9.88), so nothing was merged.
