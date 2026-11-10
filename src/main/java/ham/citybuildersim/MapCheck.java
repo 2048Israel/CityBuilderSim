@@ -613,6 +613,7 @@ public class MapCheck {
             g.setRescueMode(LongPlaytest.RESCUE_AUTO ? TreasuryFund.RescueMode.AUTOMATIC : TreasuryFund.RescueMode.BUTTON);
             g.setFundDial(LongPlaytest.FUND_DIAL);
             CityMap first = g.getCityMap();
+            foundedLand = g.getCityLand().copy();
             startDistricts = first.districts().size();
             for (CityMap.District d : first.districts()) ownedAtFounding += d.owned();
             int purchases0 = g.getCityLand().purchases().size();
@@ -881,6 +882,13 @@ public class MapCheck {
 
     /** The played city's save folder. */
     static GameFiles cityFiles;
+
+    /**
+     * (GW1) The played city's land as it was founded, a copy, before any of its months: a fixture that buys blocks inside a district (2c) needs unowned dry ground in the
+     * district's open cells, and the staffing gate's draw (Sector.staffing()) grows the played city earlier, so after its 120 months it owns the dry ground round the site solid
+     * (district (0,0) of the founding site: 8 sound 64-plot windows, all in one corner, none in an open cell). Null before section 1 has run.
+     */
+    static CityLand foundedLand;
 
     /** Whether district d has room for one more of a type at a road share: CityMap.hasRoomFor()'s rule (buildingRoom()), at the share given rather than the map's own. */
     static boolean roomAt(CityMap.District d, BuildingVisual.Type type, double share) {
@@ -1212,7 +1220,10 @@ public class MapCheck {
         int house = g.getBuildingManager().getTemplateByName("House").getId();
         int each = BuildingVisual.cells(types[house]);
         // The played city's ground, a copy, drawn canonically with nothing built; the fixture's months follow the played city's own, so every purchase it made is before them.
-        CityLand land = g.getCityLand().copy();
+        // (GW1) ...but as it was founded, not as the played months left it: with the staffing gate's draw the city grows earlier and buys the dry ground round its site solid, so
+        // that after 120 months the founding district has no unowned window inside an open cell and room for one 64-plot block, not two (8 windows, all overlapping, 66 plots
+        // out); the founded ground has both, as the played city's had when this was written.
+        CityLand land = foundedLand.copy();
         long[] model = new long[types.length];
         CityMap m = CityMap.canonical(land, r -> land.amountsInOrder(r), types, new long[types.length], g.getMonth());
         Months h = new Months(m, model, house, g.getMonth() + 1);
@@ -2548,7 +2559,11 @@ public class MapCheck {
         int house = idOf(g, "House"), highway = idOf(g, "Elevated Highway");
         int[] mix = new int[MIX.length];
         for (int i = 0; i < mix.length; i++) mix[i] = idOf(g, MIX[i]);
-        CityLand land = g.getCityLand().copy();
+        // (GW1) The scenario that leaves one block of the reserve's box out needs a box short of ground: on the played city's land, which the staffing gate's draw has grown earlier,
+        // the crossing was never a stack (60 months of highways, no site without its reserve), the reserve stood at 324 plots in the month before the block was "bought" and no month
+        // was the one it came in (7 lines read 0 or -1). So it is cut from the founded ground, as 2c's is (there: the ground round the crossing, 4,240 plots, handed in month 128,
+        // the reserve laid in month 132, none before); the scenario that hands all the ground reads the played city's as before.
+        CityLand land = (blockLeft ? foundedLand : g.getCityLand()).copy();
         long[] model = new long[types.length];
         CityMap m = CityMap.canonical(land, r -> land.amountsInOrder(r), types, new long[types.length], g.getMonth());
         Months h = new Months(m, model, house, g.getMonth() + 1);
@@ -4841,6 +4856,27 @@ public class MapCheck {
     /** The land office's small map, in pixels (spec-land 2.8). */
     static final int SMALL_W = 600, SMALL_H = 400;
 
+    /**
+     * (GW1) The land office's map opened on a city that fits it at the opening zoom: LandMap.open() draws closer than the fit - on the city's middle - when the smallest offer
+     * standing would be drawn under MapFrame.OPENING_OFFER_PX across ("A CITY TALLER THAN ITS SMALLEST OFFERS ALLOW"), and the staffing gate's draw grows the played city out of the
+     * 600 x 400 map at that zoom (it fits at 1.863 px a plot, its smallest offer 4 plots across wants 3.000: 94 of its 100 runs in view). So the claims that the opening view
+     * holds the whole city, and that its outline is drawn crisp, are made on a map k times the small map's each way, k the least (from 1: the small map itself, as before) that
+     * fits the city at the zoom the smallest offer wants, opened by LandMap.open() all the same.
+     */
+    static MapFrame openedWhole(CityLand land, LandMarket market) {
+        double[] box = LandMap.openingBox(land);
+        long side = LandMap.smallestOfferSide(market);
+        double wanted = side > 0 ? MapFrame.OPENING_OFFER_PX / side : 0;
+        MapFrame f = new MapFrame(SMALL_W, SMALL_H);
+        for (int k = 1; k <= 64; k++) {
+            f = new MapFrame(SMALL_W * k, SMALL_H * k);
+            f.fit(box[0], box[1], box[2], box[3]);
+            if (f.scale() >= wanted) break;
+        }
+        LandMap.open(f, land, market);
+        return f;
+    }
+
     /** Points across the screen the transforms are tried at. */
     static final double[][] SCREEN_POINTS = { { 0, 0 }, { 300, 200 }, { 1344, 805 }, { 17.25, 640.5 }, { 1000, 3 } };
 
@@ -5013,13 +5049,16 @@ public class MapCheck {
         MapFrame small = new MapFrame(SMALL_W, SMALL_H);
         LandMap.open(small, land, market);
         out.printf("      the land office opens on it at %.2f px a plot (L%d), %d tiles%n", small.scale(), small.level(), small.tilesInView());
+        // (GW1) On a map the city fits at the opening zoom (openedWhole()): the 600 x 400 map opens on the city's middle when the smallest offer wants more than the fit gives.
+        MapFrame wide = openedWhole(land, market);
         boolean whole = true;
         for (int i = 0; i < edge[0].length; i++) {
             for (int e = 0; e < 2; e++) {
                 double ex = edge[2 * e][i], ey = edge[2 * e + 1][i];
-                whole &= small.screenX(ex) >= 0 && small.screenX(ex) <= SMALL_W && small.screenY(ey) >= 0 && small.screenY(ey) <= SMALL_H;
+                whole &= wide.screenX(ex) >= 0 && wide.screenX(ex) <= wide.width() && wide.screenY(ey) >= 0 && wide.screenY(ey) <= wide.height();
             }
         }
+        out.printf("      the whole city in view on a map %.0f x %.0f (the small map is %d x %d), opened at %.3f px a plot%n", wide.width(), wide.height(), SMALL_W, SMALL_H, wide.scale());
         check("the land office's small map opens on the whole city: every point of its outline in view", whole);
         // The hover's words, three places.
         List<String> centre = LandMap.hoverWords(land, market, sx, sy);
@@ -5108,24 +5147,26 @@ public class MapCheck {
                 fitted.scale(), leastSide, MapFrame.OPENING_OFFER_PX, MapFrame.OPENING_OFFER_PX / leastSide, small.scale());
         check("the land office opens at its fit, or closer while its smallest offer would be drawn under OPENING_OFFER_PX - to that, on the"
                 + " fit's centre", leastSide > 0 && small.scale() == opens && small.centreX() == fitted.centreX() && small.centreY() == fitted.centreY());
+        // (GW1) Drawn on the map the city fits at the opening zoom (openedWhole()): on the 600 x 400 map the view opens on the middle and the runs off screen are not drawn (94 of 100).
+        MapFrame crisp = openedWhole(land, market);
         boolean whole = true, inside = true, met = true;
         int drawn = 0, corners = 0, long1 = 0;
         java.util.Map<String, List<double[]>> byStart = new java.util.HashMap<>();
         double[][] boxes = new double[n][];
         for (int k = 0; k < n; k++) {
             double x0 = edge[0][k], y0 = edge[1][k], x1 = edge[2][k], y1 = edge[3][k];
-            double[] r = small.runOnScreen(x0, y0, x1, y1);
+            double[] r = crisp.runOnScreen(x0, y0, x1, y1);
             boxes[k] = r;
             byStart.computeIfAbsent((long) x0 + "," + (long) y0, key -> new ArrayList<>()).add(r);
             boolean flat0 = y0 == y1;
-            if ((flat0 ? Math.abs(small.pixelX(x1) - small.pixelX(x0)) : Math.abs(small.pixelY(y1) - small.pixelY(y0))) >= 1) long1++;
+            if ((flat0 ? Math.abs(crisp.pixelX(x1) - crisp.pixelX(x0)) : Math.abs(crisp.pixelY(y1) - crisp.pixelY(y0))) >= 1) long1++;
             if (r == null) continue;
             drawn++;
             for (double v : r) whole &= v == Math.rint(v);
             boolean flat = y0 == y1;
             whole &= flat ? r[3] == 1 && r[2] >= 1 : r[2] == 1 && r[3] >= 1;
             // The pixels just inside: the row after a run east's pixel line, the row before a run west's, and so on.
-            double line = flat ? small.pixelY(y0) : small.pixelX(x0);
+            double line = flat ? crisp.pixelY(y0) : crisp.pixelX(x0);
             double at = flat ? r[1] : r[0];
             inside &= flat ? at == (x1 > x0 ? line : line - 1) : at == (y1 > y0 ? line - 1 : line);
         }
@@ -5137,7 +5178,7 @@ public class MapCheck {
                 met &= touch(boxes[k], next);
             }
         }
-        out.printf("      at the opening zoom (%.2f px a plot): %,d runs drawn (%,d a pixel long or more), %,d corners met%n", small.scale(),
+        out.printf("      at the opening zoom (%.2f px a plot): %,d runs drawn (%,d a pixel long or more), %,d corners met%n", crisp.scale(),
                 drawn, long1, corners);
         check("drawn crisp at the opening zoom: every run a pixel long on whole pixels, a pixel thick, on the pixels just inside the city's ground",
                 drawn == long1 && drawn > 0 && whole && inside);
