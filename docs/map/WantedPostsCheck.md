@@ -1,4 +1,4 @@
-# WantedPostsCheck.java - 1,044 lines · 31 methods · 4 constants · harnesses
+# WantedPostsCheck.java - 1,056 lines · 31 methods · 4 constants · harnesses
 
 `ham/citybuildersim/WantedPostsCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
@@ -41,7 +41,7 @@
 > expected figure comes from the model's own calls (LabourMarket.advanceMonth() on a twin of the market, tightnessAt(),
 > the template's posts), never a number written here.
 
-**Uses:** [WageBand](WageBand.md) (134), [WantedPosts](WantedPosts.md) (65), [Game](Game.md) (46), [LabourMarket](LabourMarket.md) (35), [JobType](JobType.md) (17), [Sector](Sector.md) (16), [BuildingsTemplate](BuildingsTemplate.md) (14), [BusinessInvestment](BusinessInvestment.md) (11), [Construction](Construction.md) (10), [PopulationManager](PopulationManager.md) (10), [GameFiles](GameFiles.md) (8), [Migration](Migration.md) (5), [BusinessDebtManager](BusinessDebtManager.md) (2), [BuildingManager](BuildingManager.md) (2), [TempDirs](TempDirs.md) (1)
+**Uses:** [WageBand](WageBand.md) (136), [WantedPosts](WantedPosts.md) (65), [Game](Game.md) (47), [LabourMarket](LabourMarket.md) (36), [Sector](Sector.md) (19), [JobType](JobType.md) (17), [BuildingsTemplate](BuildingsTemplate.md) (15), [BusinessInvestment](BusinessInvestment.md) (11), [Construction](Construction.md) (10), [PopulationManager](PopulationManager.md) (10), [GameFiles](GameFiles.md) (8), [Migration](Migration.md) (4), [BusinessDebtManager](BusinessDebtManager.md) (2), [BuildingManager](BuildingManager.md) (2), [TempDirs](TempDirs.md) (1)
 
 ## Sections
 
@@ -50,17 +50,17 @@
 | 304 | · 1. the gate's hold carries its building |
 | 392 | · 2. only the bands it is short in |
 | 416 | · 3. the market prices it |
-| 471 | · 4. never more than the band's own posts again |
-| 513 | · 5. only as far as the business can pay |
-| 597 | · 6. a working builder's laid-off crews are not a shortage |
-| 663 | · 7. it decays |
-| 705 | · 8. it brings the band's migrants |
-| 720 | · 9. the save |
-| 785 | · 10. the month's planning notes its holds |
-| 821 | · 11. an idle builder's laid-off crews are spare for the gate: XS1's trap, released (IC1) |
-| 893 | · 12. the cap reads the month's own posts (LD2) |
-| 952 | · 13. a band that asked nothing is priced as it was (LD2) |
-| 998 | · 14. a band closed to migrants asks nothing (LD2) |
+| 492 | · 4. never more than the band's own posts again |
+| 534 | · 5. only as far as the business can pay |
+| 618 | · 6. a working builder's laid-off crews are not a shortage |
+| 684 | · 7. it decays |
+| 717 | · 8. it brings the band's migrants |
+| 732 | · 9. the save |
+| 797 | · 10. the month's planning notes its holds |
+| 833 | · 11. an idle builder's laid-off crews are spare for the gate: XS1's trap, released (IC1) |
+| 905 | · 12. the cap reads the month's own posts (LD2) |
+| 964 | · 13. a band that asked nothing is priced as it was (LD2) |
+| 1010 | · 14. a band closed to migrants asks nothing (LD2) |
 
 ## Constants
 
@@ -82,7 +82,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 49 | 996 | **type** `public class WantedPostsCheck` | The posts the staffing gate refused bid their band's wage up (LD1; WantedPosts). |
+| 49 | 1008 | **type** `public class WantedPostsCheck` | The posts the staffing gate refused bid their band's wage up (LD1; WantedPosts). |
 | 54 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 59 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 65 | 3 | `static BuildingsTemplate template(Game g, String name)` |  |
@@ -113,5 +113,5 @@
 | 269 | 5 | `static double[] plus(double[] a, double[] b)` |  |
 | 278 | 7 | `static double marginOf(Game g, Sector owner, BuildingsTemplate t)` | The margin Game.noteStaffingHold() works out for a building: what it earns over the interest hurdle at prime and its record. |
 | 287 | 10 | `static double primeFor(Game g, BuildingsTemplate t, double hurdle)` | The prime rate at which the interest hurdle on a building's cost is {@code hurdle}, found with the model's own hurdle. |
-| 298 | 746 | `public static void main(String[] args) throws Exception` |  |
+| 298 | 758 | `public static void main(String[] args) throws Exception` |  |
 

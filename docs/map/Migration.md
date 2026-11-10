@@ -1,4 +1,4 @@
-# Migration.java - 1,403 lines · 59 methods · 16 constants · model
+# Migration.java - 1,434 lines · 59 methods · 16 constants · model
 
 `ham/citybuildersim/Migration.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
@@ -68,7 +68,7 @@
 | 553 | · recording |
 | 565 | IN REAL TERMS, OR EVERY DEFLATION IS AN EXODUS |
 | 695 | · deciding |
-| 1295 | · saving |
+| 1320 | · saving |
 
 ## Constants
 
@@ -88,8 +88,8 @@
 | 360 | `Migration.DEPARTURE_RATE` | `.05` |  |
 | 363 | `Migration.DECLINE_MONTHS` | `12` | Consecutive months of falling wages before a tier's people give up. |
 | 367 | `Migration.TIERS` | `PayTier.values().length` |  |
-| 1312 | `Migration.HISTORY_SLOTS` | `TIERS * DECLINE_MONTHS + TIERS + 1` | The wage history, its streaks and the months recorded: the array before 0.7.27. |
-| 1315 | `Migration.LAST_SCALARS` | `16` | The month's scalars that follow it, in toSaveArray()'s order. |
+| 1340 | `Migration.HISTORY_SLOTS` | `TIERS * DECLINE_MONTHS + TIERS + 1` | The wage history, its streaks and the months recorded: the array before 0.7.27. |
+| 1343 | `Migration.LAST_SCALARS` | `17` | The month's scalars that follow it, in toSaveArray()'s order. |
 
 ## Fields (state)
 
@@ -130,7 +130,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 50 | 1354 | **type** `public class Migration` | Why people move to this city, and the much narrower question of why they leave. |
+| 50 | 1385 | **type** `public class Migration` | Why people move to this city, and the much narrower question of why they leave. |
 
 ### the dials (lines 52-53)
 
@@ -218,7 +218,7 @@
 | 664 | 7 | `public double severity(PayTier tier)` | How far a tier has fallen over the year, 0 to 1. |
 | 681 | 13 | `public double decliningPressure()` | The share of the city's payroll that has actually been destroyed, as opposed to merely sitting in a tier that qualifies. |
 
-### deciding (lines 695-1294)
+### deciding (lines 695-1319)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -236,14 +236,14 @@
 | 1081 | 1 | `public void setYearMix(ArrivalMix.Point mix)` | Game, each month of a city founded the 1900 way: the mix of skills the month's arrivals are drawn from (ArrivalMix.at()); null for any other city. |
 | 1084 | 1 | `public ArrivalMix.Point getYearMix()` | The year's skill mix set for this month, or null where the arrivals are drawn from today's ceilings alone. |
 | 1099 | 132 | `private void composeArrivals(LabourMarket market, PopulationManager people)` | Splits this month's arrivals across the skill bands. |
-| 1251 | 43 | `public double[] drawFor(double[] wanted, LabourMarket market, PopulationManager people, int window, ArrivalMix.Point mix)` | The workers per wage band migration would bring for an order's posts within {@code window} months of its opening, for the staffing gate (Sector.staffing(), GW1). |
+| 1272 | 47 | `public double[] drawFor(double[] wanted, LabourMarket market, PopulationManager people, int window, ArrivalMix.Point mix)` | The workers per wage band migration would bring for an order's posts within {@code window} months of its opening, for the staffing gate (Sector.staffing(), GW1). |
 
-### saving (lines 1295-1403)
+### saving (lines 1320-1434)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1318 | 3 | `private static int lastSlots()` | ...then the arrival mix and the departure mix by band, and the licences by job. |
-| 1322 | 19 | `public double[] toSaveArray()` |  |
-| 1342 | 33 | `public void restore(double[] saved)` |  |
-| 1376 | 27 | `public void reset()` |  |
+| 1346 | 3 | `private static int lastSlots()` | ...then the arrival mix and the departure mix by band, and the licences by job. |
+| 1350 | 20 | `public double[] toSaveArray()` |  |
+| 1371 | 35 | `public void restore(double[] saved)` |  |
+| 1407 | 27 | `public void reset()` |  |
 

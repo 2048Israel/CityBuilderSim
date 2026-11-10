@@ -115,16 +115,17 @@ same way, each fixture was made to cause its condition on the draw's path, with 
   the planners' first group, `plan()` threw. The harness orders from the city's own template, as the game always
   does. Its bank (in resolution from month 151) is waited for until it has paid a year running before the squeeze,
   and the month's hot money is placed (40, the order the loop's months brought before), since the history's world
-  rate (23% at months 227-242 against the city's 3.6%) leaves no spread for any to arrive for.
+  rate (23% at months 227-242 against the city's 3.6%) leaves no spread for any to arrive for. It is placed through
+  the raw indices of `CapitalFlows.toSaveArray()` ([0], [3], [16]), which a reordering would move silently
+  (queued, low: `HZ1`).
 - **CurveCheck** holds Manufacturing and Wood Products (a plant on a bank loan before month 26 had the bank at the
   central bank's window and the curve flat) and runs on to a month where Strict and Standard advise apart (the
   founding was deflating at month 54). **PassThroughCheck** holds every sector in both twins, as its `month()` says
   nobody builds. **MonetaryCheck** plays the founding on until the groceries shelf has moved under a point a month
-  for a year (34 months, to month 59), then runs the dial rows over the same 36 months: the shelf based at month 38
-  fell 20-28% as the food came ahead of the people, and the window measured that, not the dial. Six settled months
-  (month 53) gave the ladder but failed the month-late rows (0.109 against the 0.100 allowance, the town still
-  building and its mortgages fixed at the hold month); twelve were taken with both seen, and both are in the
-  `SETTLED_MONTHS` comment. **CurrencyRegimeCheck** waits for a price rate read before it pegs, and pegs its climbing
+  for a year (`SETTLED_MONTHS`), then runs the dial rows over the same 36 months: the shelf based at month 38 fell
+  20-28% as the food came ahead of the people, and the window measured that, not the dial. On the first draw that
+  was month 59 and every line held; on the reviewed draw it is month 46 (503 people), and one fixture line is red
+  (below). **CurrencyRegimeCheck** waits for a price rate read before it pegs, and pegs its climbing
   town in the one run of months its own path keeps in the band: a probe of the same town (`climbMonth()`) finds months
   100-111, the only run of 200 played long enough for the eight months the doubt's money gathers and the three after
   the revaluation a break can use (`DOUBT_CRAWL_MONTHS`, `BREAK_LOOK_MONTHS`). The young town's groceries swing as
@@ -134,14 +135,14 @@ same way, each fixture was made to cause its condition on the draw's path, with 
   overwrite of the model, and it is gone.
 - **BondCheck** 7c runs on a city of its own with Construction held (it borrowed in the young town). **FloatLinkCheck**
   hands the driven index over at the linkers' base (prices fell 3.9% after they were sold). **GdpCheck** hands the
-  town back the cost of the sheds it places. **HoldersCheck** waits for the savers' rate to stand under the bond's
-  fair yield, sizes the two-year bond to its bidders, and reopens section 12 six points up instead of four. Its
-  reopening fixture holds every sector: the businesses' borrowing had the bank insolvent at the first sale (equity
-  -5,787, its room to bid nothing), the firms and the world paid in full and the bank, the residual buyer, took
-  3.2e-14 of the face. Held, it takes 23.6% of the first sale, as before GW1. Its four fixtures that "the bank took
-  part" now ask for over `MATERIAL_PART` (1%) of the face, so rounding can no longer pass them. With the bank's
-  share real, "a fresh line's settle re-strikes nothing" passes too. `restrikeDiscount` still books float noise
-  (3.55e-15) where a take is rounding, because it skips only a gain of exactly 0; that is harmless and not queued.
+  town back the cost of the sheds it places. **HoldersCheck**, on the reviewed draw, is
+  main's but for three holds. Section 6's reloaded twin holds the sector the live city holds (a hold is the harness's
+  and is not saved, and with Heavy Industry unheld in the twin the households' savings parted, 686.9 against 303.3, a
+  month after the load). Section 9 holds every sector (the month between sale and settle took the households' spare to
+  0.00). The reopening fixture of section 12 holds every sector (unheld, the first sale is 31.06 of face, the
+  households 0.00, the bank 31.04; held, 367.55, the households 279.32 and the bank 88.19, 24.0%). Its four fixtures
+  that "the bank took part" ask for over `MATERIAL_PART` (1%) of the face: on the first draw the bank's 3.2e-14 of a
+  sale passed them as rounding. The first draw's savers' wait, two-year sizing and six-point reopening are gone.
 - **AutoBuildCheck** turns the pass off while its clinics open. **FittingCheck** prices bread to put a Bakery between
   the two drives, and the coal at half the break-even. **OilCheck** places two Grain Farms. **YearBookCheck** holds
   every sector (the posts had outrun the workers and nobody was out of work). **HealthCheck** adds two clinics at the
@@ -150,7 +151,8 @@ same way, each fixture was made to cause its condition on the draw's path, with 
 - **MapCheck** 2c and 2h cut their blocks from the founded ground, and its land-office claims are read on a map the
   city fits at the opening zoom. **HomeRailCheck** plays the railway's share on to fractional (60 months, not 12).
 
-Run on the draw the review asked for (49c2d522), eight more went red, read the same way:
+Run on the draw the review asked for (49c2d522), eleven went red. Six are restated here, with CurrencyRegimeCheck,
+which the review sent back; five stay red by name (below), MonetaryCheck among them:
 
 - **CentralBankCheck 20** and **BuybackCheck**'s played city hold every sector: their subject is the paper, and the
   businesses' earlier borrowing took the treasury's surplus (D$-18.8k at month 72 against a slice of D$5.2k; held,
@@ -163,7 +165,7 @@ Run on the draw the review asked for (49c2d522), eight more went red, read the s
   not the rents' pull, which priced the filled city (1,819 at month 67) back to 1,457. Held, 1,138 against 1,201.
 - **EducationCheck** 1-2 hold every sector: the bare city grew to 87,053 (main's 40,781), its licensed doctors
   arriving with the people (1.449 graduates to one licensed, the claim's 1.5). Held, it stays the fixture's city.
-- **CurrencyRegimeCheck**, above.
+- **HoldersCheck** and **CurrencyRegimeCheck**, above.
 
 **Red, and not GW1's to mend.** Each is a fault of main's that GW1's path is the first to reach, or a class main
 already records, and each claim fails while its fixture holds:
@@ -190,6 +192,13 @@ already records, and each claim fails while its fixture holds:
 - **PlanCheck**, **SlopeCheck** and **PriceLevelCheck** went red on the first draw (a shore street crossing an estate
   cell's line at month 121; a purchase of 384 plots moving 10 boxes at months 610-611; the twins parting at month
   105). On the reviewed draw all three are green, so no row is queued for them.
+- **MonetaryCheck**, "...and a month's delay in the hand moves them less than the allowance" (a fixture line): the
+  town the settle finds at month 46 inflates 22.95% / 20.68% / 17.90% / 16.19% a year at the four dials over months
+  46-81, and the same rows a month late differ by 0.000 / 0.275 / 0.369 / 0.189 points against the 0.100 allowance.
+  With every sector held through the window they differ by 0.000 / 0.255 / 0.331 / 0.123, so the businesses' orders
+  are not the cause. The shelf has settled and the prices have not: the fixture's premise, a steady town, does not hold
+  on this path, and a settle test on the price index rather than the shelf is the restatement. Not mended here (it is
+  not a re-tuning of the dials); queued (`MQ1`).
 - **KeptCheck**, "the BuybackLadder on Close it now: no month draws it again with nothing changed in it": in months 2
   and 6, with nothing typed, the quote is the same (most to pay 98.5, fair 100.0, taken 0) but the holders' faces
   drift by about 1e-8 (18,935 of 1.3265e12). `FinancesScreen.drawsAlike()` (ui/FinancesScreen.java:4950) compares the
@@ -199,7 +208,8 @@ already records, and each claim fails while its fixture holds:
 ## 5. Measured
 
 The 80-run ensemble on 49c2d522 (the draw of §1), `docs/ensemble/GW1.md`, against main's newest baseline
-(`docs/ensemble/0.9.83.md`): 24 of 26 criteria pass, against main's 25 of 26. A2 fails as it fails on main, A3 fails
+(`docs/ensemble/0.9.83.md`): 24 of 26 criteria pass, against main's 25 of 26. The model has not moved since: the
+commits after it are harnesses, and GD3, merged after it, leaves main's trace as it was. A2 fails as it fails on main, A3 fails
 in one seed (below), H1 is retired (Jerus, CD1). The third column is GW1's first ensemble (99429bf8: the snapped share
 and the first draw, which counted the whole of migration's gap at the band's premium):
 
