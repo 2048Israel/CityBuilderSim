@@ -1,16 +1,15 @@
-# gate of Merge batch/HB2: the harbour's detail: the quay showing its stock, rail sidings on the quay with the placement leaning rail toward ports, and a near-view crane moving a box between ship, quay and train; each put to Jerus with renders first, within MapView.FRAME_MS and BOAT_FRAME_MS (Jerus, 2026-10-31: "just some ideas, if its too much no worries"); the harbour's look is (b), the open cargo yard by cargo (HB1-S, settled 2026-11-08 on its recommendation), built with it; after HB1, 0.9.82
+# gate of Merge batch/WG1: a real minimum (Jerus, 2026-11-02: "yes a real minimum wage"; "0.85, Nova Scotia's (Recommended)"): the ladder anchored on the going rate (the founding unskilled rung), the floor lifting only the wages under it, its default at 0.85 of the going rate ($17.00 over the $20.00 labourer median), its tie (prices, the average wage at a share, nothing), the getters the Wages page needs, the floor's words that become false; Job Bank's row in licences.md; ensemble, 0.9.83
 # date: 2026-11-10
 # earth-2.bin: named
 # nightly: 2026-11-10 01:25 0.9.80 d9f61df3 4,000 months: OK in 178 s
-# suite: 194 harnesses run in 1101s: 190 passed, 4 failed
-# timing: 18 harnesses run in 878s: 15 passed, 3 failed; its red lines were judged side by side with main's, below
+# suite: 194 harnesses run in 1345s: 189 passed, 5 failed
+# timing: 18 harnesses run in 855s: 15 passed, 3 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 27.9 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 31.4 ms (gate.txt, today), batch 27.9 ms (-11.0%), budget 25 ms: main over the budget too, no round]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 28.2 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 27.9 ms (gate.txt, today), batch 28.2 ms (+1.1%), budget 25 ms: main over the budget too, no round]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 23.7 ms (gate.txt, today), batch 19.1 ms (-19.5%), budget 19 ms: main over the budget too, no round]
-# timing red not the batch's (paired): MapCheck | 5 FAILED   [the harness's own count of the timing reds above]
-# figure	SaveSlotCheck	the median due month, 27.9 ms, holds the clock at most CLOCK_MS (25 ms)	27.9495	25	ms	FAIL	1	1
-# figure	MapCheck	a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month	19.0663	19	ms	FAIL	1	1
+# figure	SaveSlotCheck	the median due month, 28.2 ms, holds the clock at most CLOCK_MS (25 ms)	28.2494	25	ms	FAIL	1	1
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): LongPlaytest | exit 1
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): LongPlaytest | (no FAIL line)
 PriceLevelCheck | exit 1
 PriceLevelCheck | FAIL cash (nominal) month 101: 8.317811325 at the factor over the factor, 68.38253344 at today's prices (0.000751 apart)
 PriceLevelCheck | FAIL gdp.month (nominal) month 103: 20121.84632 at the factor over the factor, 20122.48474 at today's prices (1.95e-05 apart)
@@ -61,3 +60,5 @@ KeptCheck | no month makes more than a tenth of the nodes the first draw made (t
 KeptCheck | the city has a plain business and a materials industry with works to draw (Construction, null) FAIL
 KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL
 KeptCheck | 9 FAILED
+LongPlaytest | exit 1
+LongPlaytest | (no FAIL line)

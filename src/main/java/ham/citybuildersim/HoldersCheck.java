@@ -1688,6 +1688,11 @@ public class HoldersCheck {
             // at the reopening, the reopening over its face and the discount down from 1.98 to 1.67.
             city.getEconomyManager().getTaxPolicy().reset();
             city.getEconomyManager().getTaxPolicy().openAll();
+            // WG1 (2026-11-10): the floor at the going rate, the wage these sections were written against, before a month has run. A new city's floor is
+            // .85 of the going rate now (a real minimum, WG1), and on that path section 12's second sale moved the line's discount per unit of face 0.0122 to
+            // 0.0204, .0082 where its fixture asks over .01, and 13a's second sale raised $59.2496k on $59.5320k of face, under it where its fixture needs the
+            // proceeds over it; with the floor at the going rate, main's path, both come as they were written.
+            city.getLabourMarket().setMinimumWage(city.getLabourMarket().getGoingRate());
             // The treasury, the ground and the held builders the other sections were written against (see main(), theWholeBook()).
             city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 50_000_000L);

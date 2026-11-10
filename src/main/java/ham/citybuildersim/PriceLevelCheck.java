@@ -363,7 +363,10 @@ public class PriceLevelCheck {
         }
         assertTrue("PayTier: each of the " + PayTier.values().length + " rungs is its literal times the factor", rungs && PayTier.values().length == 6);
         assertTrue("...and the ladder's shape (each rung over the unskilled) is today's", ladder);
-        assertTrue("LabourMarket.DEFAULT_MINIMUM_WAGE is the unskilled rung, not scaled again", LabourMarket.DEFAULT_MINIMUM_WAGE == PayTier.UNSKILLED.getMonthlyWage());
+        // WG1: the going rate is the unskilled rung, and the default floor its share of it (the floor no longer anchors the ladder).
+        assertTrue("LabourMarket.GOING_RATE is the unskilled rung, not scaled again", LabourMarket.GOING_RATE == PayTier.UNSKILLED.getMonthlyWage());
+        relative("...and DEFAULT_MINIMUM_WAGE its share of it, not scaled again", LabourMarket.DEFAULT_MINIMUM_WAGE,
+                LabourMarket.DEFAULT_FLOOR_SHARE * PayTier.UNSKILLED.getMonthlyWage(), 1e-15);
         relative("...and its dial's bounds are the rung's x.25 and x5", LabourMarket.MAX_SETTABLE / LabourMarket.MIN_SETTABLE,
                 LabourMarket.MAX_SETTABLE_MULTIPLE / LabourMarket.MIN_SETTABLE_SHARE, 1e-12);
         relative("TaxPolicy.DEFAULT_FIXED_GRANT is its share of the unskilled rung, not scaled again", TaxPolicy.DEFAULT_FIXED_GRANT,

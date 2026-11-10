@@ -221,7 +221,7 @@ public final class YearBook {
 
         /* ---- rates, prices and indices: a row is the AVERAGE ---- */
         rate(m, "interestRate", "what the city pays to borrow, a fraction a year");
-        rate(m, "minimumWage", "the dial, in founding money: thousands a month at founding prices - the base of every wage in the city, before the cost of living lifts it");
+        rate(m, "minimumWage", "the dial, in founding money: thousands a month at founding prices - the least any job may pay, before the cost of living lifts it");
         rate(m, "unskilledPremium", "what an unskilled post pays over its band's base, a multiple");
         rate(m, "skilledShare", "share of adults holding at least a diploma");
         rate(m, "schoolCoverage", "basic schooling coverage, at the narrowest of the three stages");

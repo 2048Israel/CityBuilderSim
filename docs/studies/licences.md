@@ -14,6 +14,15 @@
 
 ## 1. What the game ships today
 
+### The wage ladder and the minimum wage: `PayTier` and `LabourMarket` (in the code; WG1, 2026-11-10)
+
+The ladder's rungs are Job Bank's Nova Scotia occupation medians at 173 hours a month (PayTier's header), shipped since 2026-09-09; WG1 starts a new city's minimum wage at 0.85 of the unskilled rung (`LabourMarket.DEFAULT_FLOOR_SHARE`), the province's legal minimum over the labourer's median (`docs/studies/spec-wages.md`, S2 and S3). Their credits are in `tools/world/ATTRIBUTION.txt`, which the Credits page shows.
+
+| source | licence | read at | commercial | attribution it asks |
+|---|---|---|---|---|
+| Employment and Social Development Canada, Job Bank, "Wages" (Nova Scotia occupation medians; dataset adad580f-76b0-4502-bd05-20c125de9116) | Open Government Licence - Canada | https://open.canada.ca/en/open-government-licence-canada | yes: any lawful purpose, commercial too | "Contains information licensed under the Open Government Licence - Canada." |
+| Nova Scotia's minimum wage, $17.00 an hour from 1 October 2026 (the province's Labour Standards page) | a rate fixed in regulation: a fact | https://novascotia.ca/lae/employmentrights/minimumwage.asp | yes | none |
+
 ### The Rankings: `src/main/resources/world/world-2025.json` (in the jar)
 
 | source | licence | read at | commercial | attribution it asks |
