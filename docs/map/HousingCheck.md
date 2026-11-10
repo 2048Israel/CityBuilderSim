@@ -1,4 +1,4 @@
-# HousingCheck.java - 943 lines · 9 methods · 1 constants · harnesses
+# HousingCheck.java - 947 lines · 9 methods · 1 constants · harnesses
 
 `ham/citybuildersim/HousingCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
@@ -93,14 +93,14 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 63 | 881 | **type** `public class HousingCheck` | Audits the three subsystems that describe the same housing, every month, and makes them agree. |
+| 63 | 885 | **type** `public class HousingCheck` | Audits the three subsystems that describe the same housing, every month, and makes them agree. |
 | 70 | 8 | `static void near(String what, int month, double actual, double expected)` |  |
 | 79 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 84 | 705 | `public static void main(String[] args)` |  |
 | 790 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 | 803 | 15 | `static boolean assertGlutLegsNotLifted(ham.citybuildersim.sectors.RealEstate re, int month)` | A leg under GLUT_PRESSURE is its own cost times its scarcity and is not lifted to cover the carry (RN1, 2026-11-09). |
-| 830 | 56 | `static void heldRateRentsItsGlutAtNoLift()` | RN1, 2026-11-09. |
-| 893 | 36 | `static void aClosedHomesDebtIsTheLandlordsLoss()` | RN1, 2026-11-09. |
-| 931 | 3 | `static void isNear(String label, double actual, double expected)` | assertTrue, said as an equality within TOLERANCE, so a figure that is right prints its line. |
-| 935 | 8 | `static void assertNotMore(String what, int month, double actual, double ceiling)` |  |
+| 830 | 60 | `static void heldRateRentsItsGlutAtNoLift()` | RN1, 2026-11-09. |
+| 897 | 36 | `static void aClosedHomesDebtIsTheLandlordsLoss()` | RN1, 2026-11-09. |
+| 935 | 3 | `static void isNear(String label, double actual, double expected)` | assertTrue, said as an equality within TOLERANCE, so a figure that is right prints its line. |
+| 939 | 8 | `static void assertNotMore(String what, int month, double actual, double ceiling)` |  |
 

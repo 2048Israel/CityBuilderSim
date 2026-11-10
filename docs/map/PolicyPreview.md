@@ -1,4 +1,4 @@
-# PolicyPreview.java - 592 lines · 50 methods · 0 constants · model
+# PolicyPreview.java - 656 lines · 54 methods · 0 constants · model
 
 `ham/citybuildersim/PolicyPreview.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
@@ -54,7 +54,7 @@
 > fills; that arrives in the month's own books, and every card on the tab
 > says so behind its (i). Pure: it reads the city and changes nothing.
 
-**Uses:** [Game](Game.md) (37), [TaxPolicy](TaxPolicy.md) (17), [EconomyManager](EconomyManager.md) (8), [WageBand](WageBand.md) (7), [Ports](Ports.md) (6), [Sectors](Sectors.md) (6), [TreasuryFund](TreasuryFund.md) (6), [Zoning](Zoning.md) (5), [DebtManager](DebtManager.md) (5), [Freight](Freight.md) (4), [Sector](Sector.md) (3), [Healthcare](Healthcare.md) (3), [JobType](JobType.md) (3), [LandManager](LandManager.md) (3), [HouseholdBalance](HouseholdBalance.md) (2), [Retail](Retail.md) (2), [PortDivision](PortDivision.md) (2), [LabourMarket](LabourMarket.md) (2), [Unemployment](Unemployment.md) (1), [EducationType](EducationType.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1), [Resource](Resource.md) (1), [PriceIndex](PriceIndex.md) (1)
+**Uses:** [Game](Game.md) (41), [TaxPolicy](TaxPolicy.md) (17), [WageBand](WageBand.md) (8), [EconomyManager](EconomyManager.md) (8), [Ports](Ports.md) (6), [Sectors](Sectors.md) (6), [TreasuryFund](TreasuryFund.md) (6), [Zoning](Zoning.md) (5), [DebtManager](DebtManager.md) (5), [Freight](Freight.md) (4), [JobType](JobType.md) (4), [Sector](Sector.md) (3), [Healthcare](Healthcare.md) (3), [LandManager](LandManager.md) (3), [HouseholdBalance](HouseholdBalance.md) (2), [Retail](Retail.md) (2), [PortDivision](PortDivision.md) (2), [LabourMarket](LabourMarket.md) (2), [BuildingType](BuildingType.md) (2), [ResearchCatalog](ResearchCatalog.md) (2), [Unemployment](Unemployment.md) (1), [Research](Research.md) (1), [EducationType](EducationType.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1), [Resource](Resource.md) (1), [PriceIndex](PriceIndex.md) (1)
 
 **Used by (14):** [CentralBankCheck](CentralBankCheck.md), [DiscoveryCheck](DiscoveryCheck.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [GroceryCheck](GroceryCheck.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [ZoningScreen](ZoningScreen.md), [ZoningView](ZoningView.md), [ZoningViewCheck](ZoningViewCheck.md)
 
@@ -67,16 +67,16 @@
 | 173 | THE FUEL DUTY (0.7.103, batch P4; Jerus's A7) |
 | 204 | THE PORT DUES (FR4; the dial is FR3's) |
 | 279 | THE POLICY RATE, THE FLOOR AND THE PENSIONER |
-| 320 | THE PROMISES, THE CLINIC AND THE SCHOOLS |
-| 466 | THE FUND'S WITHDRAWAL (0.7.48, C2) |
-| 500 | ZONING (0.7.107, batch Z1; the project's spec-zoning.md 4) |
-| 570 | THE RULE'S STRICTNESS (0.7.52) |
+| 384 | THE PROMISES, THE CLINIC AND THE SCHOOLS |
+| 530 | THE FUND'S WITHDRAWAL (0.7.48, C2) |
+| 564 | ZONING (0.7.107, batch Z1; the project's spec-zoning.md 4) |
+| 634 | THE RULE'S STRICTNESS (0.7.52) |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 533 | **type** `public final class PolicyPreview` | What a staged set of the Policy tab's dials would do, by the model's own arithmetic (0.7.36): the tax take under another policy, line by line, and THE BUDGET before and after it - advice, not a model change. |
+| 60 | 597 | **type** `public final class PolicyPreview` | What a staged set of the Policy tab's dials would do, by the model's own arithmetic (0.7.36): the tax take under another policy, line by line, and THE BUDGET before and after it - advice, not a model change. |
 | 62 | 1 | `private PolicyPreview()` |  |
 
 ### THE TAX TAKE UNDER A POLICY (M2) (lines 64-117)
@@ -124,59 +124,64 @@
 | 268 | 4 | `public static double tuitionPaid(Game g, TaxPolicy p, double share)` | What households would pay for tuition a month at a policy's scales and a share the city waives: Education.billedAt() less the waiver. |
 | 274 | 4 | `public static double tuitionWaived(Game g, TaxPolicy p, double share)` | ...and what the city would waive of it. |
 
-### THE POLICY RATE, THE FLOOR AND THE PENSIONER (lines 279-319)
+### THE POLICY RATE, THE FLOOR AND THE PENSIONER (lines 279-383)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 284 | 3 | `public static double realDepositRateAt(Game g, double policy)` | What savers would earn after inflation next month at this dial (M7): the bank's own choice at it, less the inflation savers expect - Game.realDepositRate()'s rule since 0.7.42, so at the dial in force it parts from th... |
 | 289 | 3 | `public static double spendFactorAt(Game g, double policy)` | ...and the share of their spending above a basket a head the households would plan at it: HouseholdBalance.spendFactor() on that. |
-| 300 | 5 | `public static double wageMoveAt(Game g, double floor)` | The factor every wage heads for with the real floor at `floor` (M6): a job's target is its base at the floor times multiples that do not move with it, and never under the floor in today's money, both in proportion to ... |
-| 311 | 3 | `public static double cityPayroll(Game g)` | What the city's own staff - teachers, doctors and nurses, and the research posts its grants buy (R3b: city-paid jobs, EconomyManager.getResearchPayroll()) - cost a month at today's wages: the figure cityPayrollAt() mo... |
-| 316 | 3 | `public static double cityPayrollAt(Game g, double floor)` | What the city's own staff - teachers, doctors and nurses, and the research posts its grants buy (R3b) - would cost a month with every wage moved by wageMoveAt(): today's posts, paid at the targets of the new floor. |
+| 300 | 1 | **type** `public record FloorMove(double workers, double payNow, double payThen, double billNow, double billThen)` | What a real floor at `floor` does to the wages, once they have walked there (about a year at ADJUST_RATE), WG1: the floor lifts only the wages under it (LabourMarket.targetWageAt() has it only in its max()), so it mov... |
+| 303 | 7 | `private static double[] targetsAt(Game g, double floor)` | Every job's target wage at a real floor, by JobType ordinal: LabourMarket.targetWageAt(), the figure the wages walk to. |
+| 312 | 18 | `public static FloorMove floorMoveAt(Game g, double floor)` | The floor's own move at a staged real floor: see FloorMove. |
+| 332 | 4 | `public static double wageBillMoveAt(Game g, double floor)` | The city's whole wage bill once wages have walked to a real floor at `floor`, over what it is at the floor in force: FloorMove.billThen() over billNow(), 1 when there is no bill. |
+| 341 | 6 | `public static double floorJobCover(Game g)` | What a full-time job at the floor takes home over what living alone costs (WG1): the cash floor less the payslip's share at the lowest band (the wage tax and the three premiums, TaxPolicy.payslipShare()) over Househol... |
+| 353 | 3 | `public static double cityPayroll(Game g)` | What the city's own staff - teachers, doctors and nurses, and the research posts its grants buy (R3b: city-paid jobs, EconomyManager.getResearchPayroll()) - cost a month at today's wages: the figure cityPayrollAt() mo... |
+| 364 | 5 | `public static double cityPayrollAt(Game g, double floor)` | What the city's own staff - teachers, doctors and nurses, and the research posts its grants buy (R3b) - would cost a month once wages have walked to a real floor at `floor` (WG1): cityPayroll() plus what the staff's p... |
+| 371 | 12 | `private static double staffPay(Game g, double[] wage)` | The city's staff's pay a month at `wage` a job type: the schools', the care's and the research posts', today's posts, at the fills the month's own sums use. |
 
-### THE PROMISES, THE CLINIC AND THE SCHOOLS (lines 320-465)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 334 | 4 | **type** `public record Promises(double pensionGap, double eiPastPremiums, double subsidies, double grants, double fo...` | What the promises cost the treasury in a month, net of what they collect: the pension's gap, the sectors kept alive, EI past its premiums, the students' grants and - since 0.7.43 - the food vouchers paid at the month'... |
-| 336 | 1 | `public double total()` _(in PolicyPreview.Promises)_ |  |
-| 340 | 5 | `public static Promises promises(Game g)` | ...this month's. |
-| 359 | 3 | `public static double foodAssistanceAt(Game g, double share)` | What the food vouchers would have cost at the last sale at a dial of the caller's (0.7.43): each eligible household's voucher at that share of its baskets at the price that sale charged, up to the baskets it got - Hou... |
-| 364 | 3 | `public static double foodAssistanceHouseholds(Game g)` | ...and the households a voucher would go to at that price, at any dial over 0. |
-| 369 | 3 | `public static double foodAssistanceHouseholdsAt(Game g, double share)` | ...the same at a dial of the caller's (0.7.45): none at 0, every eligible household at any dial over it. |
-| 374 | 3 | `public static double foodAssistanceBasketsAt(Game g, double share)` | ...and the baskets the vouchers would have paid for at it (0.7.45): foodAssistanceAt() over the price. |
-| 379 | 3 | `public static double lastSalePrice(Game g)` | The price a basket was charged at the last sale, which the vouchers were struck at (Retail.getChargedPrice()). |
-| 384 | 5 | `public static double careTreasuryShare(Game g)` | What the treasury paid towards care this month: the service's cost less the fees it collected, the funerals' and the health premium (the Health page's "the treasury's share"). |
-| 395 | 5 | `public static double careTreasuryShareAt(Game g, double feeScale, double premiumRate)` | ...at a fee scale and a premium of the caller's, with every patient paying (the spec's B13: the fees at full on both sides of a move, so the move is the dial's and not who was priced out this month). |
-| 408 | 7 | `public static double schoolBurden(Game g, EducationType kind, double scale, double share)` | What a place on a course costs a family as a share of a month's wage at a tuition scale and a city share of the caller's: the fee at the scale, less the share, over the best wage somebody who could take the course ear... |
-| 417 | 5 | `public static double farmlandOnRoll(Game g, TaxPolicy p)` | The fields' ground on the property roll under a policy (the farmland relief, T15): today's land price on the share the policy assesses. |
-| 424 | 6 | `public static double farmlandForgone(Game g, TaxPolicy p)` | ...and the tax a month the relief forgoes on the rest of it, at the fields' own monthly rate. |
-| 432 | 4 | `public static double eiTreasuryAt(Game g, double premiumRate, double benefitRate)` | What EI and the grants take from the treasury a month at a premium and a benefit rate of the caller's: the pool's bill at the rate and the grants, less the premiums off the wage bill. |
-| 438 | 4 | `public static double pensionGapUnder(Game g, TaxPolicy p)` | The pension's gap under a policy: the pensions at its rate less the contributions at its rate off the wage bill - getPensionShortfall()'s rule (M3, M4). |
-| 444 | 5 | `public static double pensionCoverageUnder(Game g, TaxPolicy p)` | ...and what the contributions cover of the pensions under it - getPensionCoverage()'s rule; 1 with nothing owed. |
-| 460 | 5 | `public static double pensionerHasUnder(Game g, TaxPolicy after)` | What one pensioner household would have to spend under `after` (M11): the retired row, whose income is the pension bill, with the bill moved by what the dial's move would change it by at today's seniors - HouseholdBal... |
-
-### THE FUND'S WITHDRAWAL (0.7.48, C2) (lines 466-499)
+### THE PROMISES, THE CLINIC AND THE SCHOOLS (lines 384-529)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 477 | 1 | **type** `public record Withdrawal(double due, double fromCash, double toSell, double unpaid, double yearOn)` | What the fund's withdrawal would pay the treasury next month at a dial of the caller's, on the fund as it stands: the due; what its cash would pay of it; the rest - over the default sold from its market book (toSell),... |
-| 488 | 11 | `public static Withdrawal fundWithdrawalAt(Game g, double rate)` | ...struck as TreasuryFund.payTransfer() strikes it: the due at the rate's whole steps on Game.fundValue() (TreasuryFund.withdrawalAt() - Game.fundTransferDue() at the dial in force, to the bit); its cash after what la... |
+| 398 | 4 | **type** `public record Promises(double pensionGap, double eiPastPremiums, double subsidies, double grants, double fo...` | What the promises cost the treasury in a month, net of what they collect: the pension's gap, the sectors kept alive, EI past its premiums, the students' grants and - since 0.7.43 - the food vouchers paid at the month'... |
+| 400 | 1 | `public double total()` _(in PolicyPreview.Promises)_ |  |
+| 404 | 5 | `public static Promises promises(Game g)` | ...this month's. |
+| 423 | 3 | `public static double foodAssistanceAt(Game g, double share)` | What the food vouchers would have cost at the last sale at a dial of the caller's (0.7.43): each eligible household's voucher at that share of its baskets at the price that sale charged, up to the baskets it got - Hou... |
+| 428 | 3 | `public static double foodAssistanceHouseholds(Game g)` | ...and the households a voucher would go to at that price, at any dial over 0. |
+| 433 | 3 | `public static double foodAssistanceHouseholdsAt(Game g, double share)` | ...the same at a dial of the caller's (0.7.45): none at 0, every eligible household at any dial over it. |
+| 438 | 3 | `public static double foodAssistanceBasketsAt(Game g, double share)` | ...and the baskets the vouchers would have paid for at it (0.7.45): foodAssistanceAt() over the price. |
+| 443 | 3 | `public static double lastSalePrice(Game g)` | The price a basket was charged at the last sale, which the vouchers were struck at (Retail.getChargedPrice()). |
+| 448 | 5 | `public static double careTreasuryShare(Game g)` | What the treasury paid towards care this month: the service's cost less the fees it collected, the funerals' and the health premium (the Health page's "the treasury's share"). |
+| 459 | 5 | `public static double careTreasuryShareAt(Game g, double feeScale, double premiumRate)` | ...at a fee scale and a premium of the caller's, with every patient paying (the spec's B13: the fees at full on both sides of a move, so the move is the dial's and not who was priced out this month). |
+| 472 | 7 | `public static double schoolBurden(Game g, EducationType kind, double scale, double share)` | What a place on a course costs a family as a share of a month's wage at a tuition scale and a city share of the caller's: the fee at the scale, less the share, over the best wage somebody who could take the course ear... |
+| 481 | 5 | `public static double farmlandOnRoll(Game g, TaxPolicy p)` | The fields' ground on the property roll under a policy (the farmland relief, T15): today's land price on the share the policy assesses. |
+| 488 | 6 | `public static double farmlandForgone(Game g, TaxPolicy p)` | ...and the tax a month the relief forgoes on the rest of it, at the fields' own monthly rate. |
+| 496 | 4 | `public static double eiTreasuryAt(Game g, double premiumRate, double benefitRate)` | What EI and the grants take from the treasury a month at a premium and a benefit rate of the caller's: the pool's bill at the rate and the grants, less the premiums off the wage bill. |
+| 502 | 4 | `public static double pensionGapUnder(Game g, TaxPolicy p)` | The pension's gap under a policy: the pensions at its rate less the contributions at its rate off the wage bill - getPensionShortfall()'s rule (M3, M4). |
+| 508 | 5 | `public static double pensionCoverageUnder(Game g, TaxPolicy p)` | ...and what the contributions cover of the pensions under it - getPensionCoverage()'s rule; 1 with nothing owed. |
+| 524 | 5 | `public static double pensionerHasUnder(Game g, TaxPolicy after)` | What one pensioner household would have to spend under `after` (M11): the retired row, whose income is the pension bill, with the bill moved by what the dial's move would change it by at today's seniors - HouseholdBal... |
 
-### ZONING (0.7.107, batch Z1; the project's spec-zoning.md 4) (lines 500-569)
+### THE FUND'S WITHDRAWAL (0.7.48, C2) (lines 530-563)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 524 | 2 | **type** `public record ZoneAt(String sector, double sizeSqFt, double usedSqFt, double heldSqFt, double priceShare, d...` | One zone under a zoning, on the land as it stands: its size and what its sector has built in it, square feet; what it holds of the free ground; its price share; the held ground at the going price; the price given up s... |
-| 528 | 14 | `public static ZoneAt zoneAt(Game g, Zoning z, String sector)` | ...struck from LandManager.heldUnder() and the roll's rule: the relief is the zone's built ground (never more than the sector stands on) at the roll's price less the zone's, on the share the roll carries, at the secto... |
-| 544 | 6 | `public static double zoningTaxChange(Game g, Zoning after)` | What a staged zoning would change in the property tax a month: every zone's relief at the city's own zoning less at the staged one's. |
-| 558 | 2 | **type** `public record ForestAt(double protectedSqFt, double workingSqFt, double openSqFt, double freeForAnyone, dou...` | The forest law under a zoning, on the land as it stands: the protected, working and open forest and the ground free for anyone, square feet; the wood it keeps standing for ever and the wood that may be cut, cubic metr... |
-| 562 | 7 | `public static ForestAt forestAt(Game g, Zoning z)` | ...struck by LandManager.groundUnder(). |
+| 541 | 1 | **type** `public record Withdrawal(double due, double fromCash, double toSell, double unpaid, double yearOn)` | What the fund's withdrawal would pay the treasury next month at a dial of the caller's, on the fund as it stands: the due; what its cash would pay of it; the rest - over the default sold from its market book (toSell),... |
+| 552 | 11 | `public static Withdrawal fundWithdrawalAt(Game g, double rate)` | ...struck as TreasuryFund.payTransfer() strikes it: the due at the rate's whole steps on Game.fundValue() (TreasuryFund.withdrawalAt() - Game.fundTransferDue() at the dial in force, to the bit); its cash after what la... |
 
-### THE RULE'S STRICTNESS (0.7.52) (lines 570-592)
+### ZONING (0.7.107, batch Z1; the project's spec-zoning.md 4) (lines 564-633)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 582 | 1 | **type** `public record RuleAt(DebtManager.Strictness step, String aims, double onTarget, double advised)` | What the rule would do at one step of the strictness dial, at the city's target: the step; what it aims at, in words (DebtManager.aimWords(): "aims under 2.0%, at 1.0%", "acts only past 4.0% (or under 2.0%)"); the rat... |
-| 585 | 7 | `public static RuleAt ruleAt(Game g, DebtManager.Strictness step)` | ...struck by DebtManager.ruleRate() and advisedPolicyRate() at that step; at the step in force, the rule's own to the bit. |
+| 588 | 2 | **type** `public record ZoneAt(String sector, double sizeSqFt, double usedSqFt, double heldSqFt, double priceShare, d...` | One zone under a zoning, on the land as it stands: its size and what its sector has built in it, square feet; what it holds of the free ground; its price share; the held ground at the going price; the price given up s... |
+| 592 | 14 | `public static ZoneAt zoneAt(Game g, Zoning z, String sector)` | ...struck from LandManager.heldUnder() and the roll's rule: the relief is the zone's built ground (never more than the sector stands on) at the roll's price less the zone's, on the share the roll carries, at the secto... |
+| 608 | 6 | `public static double zoningTaxChange(Game g, Zoning after)` | What a staged zoning would change in the property tax a month: every zone's relief at the city's own zoning less at the staged one's. |
+| 622 | 2 | **type** `public record ForestAt(double protectedSqFt, double workingSqFt, double openSqFt, double freeForAnyone, dou...` | The forest law under a zoning, on the land as it stands: the protected, working and open forest and the ground free for anyone, square feet; the wood it keeps standing for ever and the wood that may be cut, cubic metr... |
+| 626 | 7 | `public static ForestAt forestAt(Game g, Zoning z)` | ...struck by LandManager.groundUnder(). |
+
+### THE RULE'S STRICTNESS (0.7.52) (lines 634-656)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 646 | 1 | **type** `public record RuleAt(DebtManager.Strictness step, String aims, double onTarget, double advised)` | What the rule would do at one step of the strictness dial, at the city's target: the step; what it aims at, in words (DebtManager.aimWords(): "aims under 2.0%, at 1.0%", "acts only past 4.0% (or under 2.0%)"); the rat... |
+| 649 | 7 | `public static RuleAt ruleAt(Game g, DebtManager.Strictness step)` | ...struck by DebtManager.ruleRate() and advisedPolicyRate() at that step; at the step in force, the rule's own to the bit. |
 
