@@ -1,13 +1,19 @@
-# gate of Merge batch/TR2: the ghost cursor and Follow in replay: the input log TR1 writes played back in real time, the player's clicks re-enacted on the copy, months turning where the log turned them; and the district plans carried across quick steps if TR1's recordings show the map lagging, 0.9.77
-# date: 2026-11-09
+# gate of Merge batch/ST3: scaleCheck section 6 gets a town of its own plan: calm, growing and small enough that K reaches a million (a free copy's largest order is about one building per K), held over a band of months at the factor and at factor 1, so FREE_FIXTURE_MONTHS stops being re-picked (ST2: no band on EP1+IC1+LD1, 718 a draw); the premise and the million unmoved, no model change, 0.9.78
+# date: 2026-11-10
 # earth-2.bin: named
 # nightly: 2026-11-09 01:39 0.9.58 08f58a5f 4,000 months: OK in 118 s
-# suite: 191 harnesses run in 1416s: 186 passed, 5 failed
-# timing: 17 harnesses run in 946s: 13 passed, 4 failed; its red lines were judged side by side with main's, below
+# suite: 191 harnesses run in 1301s: 187 passed, 4 failed
+# timing: 17 harnesses run in 1104s: 13 passed, 4 failed; its red lines were judged side by side with main's, below
+# timing red not the batch's (paired): EarthTerrainCheck | exit 1   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): EarthTerrainCheck | the Earth screen: 198 tiles at Rotterdam's site - ground, plans, paint and raster - in no more than MapCheck.SCREEN_MS FAIL  89.8 ms (0.453 a tile), 17,690 buildings; the first time, its plans made, 1373 ms; the square city 121 districts a side, laid in 40594 ms; the screen 3% sea, 4% fresh   [main 49.2 ms, batch 47.8 ms (-2.7%), budget 80 ms: within 15% of main's]
+# timing red not the batch's (paired): EarthTerrainCheck | 1 FAILED   [the harness's own count of the timing reds above]
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 63.3 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 56.7 ms (gate.txt, today), batch 63.3 ms (+11.6%), budget 25 ms: main over the budget too, no round]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 35.2 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 35.9 ms, batch 31.6 ms (-12.2%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# figure	SaveSlotCheck	the median due month, 63.3 ms, holds the clock at most CLOCK_MS (25 ms)	63.2593	25	ms	FAIL	1	1
+# figure	SaveSlotCheck	the median due month, 35.2 ms, holds the clock at most CLOCK_MS (25 ms)	31.5514	25	ms	FAIL	1	1
+# figure	MapCheck	a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month	21.1396	19	ms	FAIL	1	1
+# timing red passed on Jerus's word, over main's by more than 15% or not a timing red (always, if checks were not caused by its own code, then it should always pass): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [over main's by more than 15%: main 18.3 ms, batch 21.1 ms (+15.2%), budget 19 ms]
+# timing red passed on Jerus's word, over main's by more than 15% or not a timing red (always, if checks were not caused by its own code, then it should always pass): MapCheck | 5 FAILED   [the harness's own count, with a red above that is not a timing red that passes]
 PriceLevelCheck | exit 1
 PriceLevelCheck | FAIL cash (nominal) month 101: 8.317811325 at the factor over the factor, 68.38253344 at today's prices (0.000751 apart)
 PriceLevelCheck | FAIL gdp.month (nominal) month 103: 20121.84632 at the factor over the factor, 20122.48474 at today's prices (1.95e-05 apart)
@@ -42,10 +48,6 @@ PriceLevelCheck | 356 FAILED
 HealthCheck | exit 1
 HealthCheck | fixture: so the beds are not what differs: at the dial's top they take no larger a share by more than the fee turns away FAIL
 HealthCheck | 1 FAILED
-ScaleCheck | exit 1
-ScaleCheck | its rents pull migrants as the city's do, every month (the affordability pull within 0.01; worst 0.070) FAIL
-ScaleCheck | ...cash: the copy is K times the city's within 0.0125 in all 6 months (worst 1.54e-02) FAIL
-ScaleCheck | 2 FAILED
 MapCheck | exit 1
 MapCheck | a yard laid across a district's buildings moves off it the boxes under it and no others: 71 of the plan before's 520 boxes lie under the yard and the railway, and 77 are not in the plan after (each of the rest stands where it stood) FAIL
 MapCheck | ...and the layout watch (LongPlaytest, as the map draws the district) counts them apart and flags none: 71 boxes left a district in the yard's month because a run laid in it lies across them, 6 are counted as moved FAIL
