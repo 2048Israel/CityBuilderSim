@@ -187,3 +187,22 @@ the rows paid, so the empty row shows nowhere today.
   HouseholdCheck named: exit 3, main's recorded reds only (HealthCheck 1,
   MapCheck 4, LongPlaytest with no FAIL line), the four named all OK. Main
   had not moved (0.9.88), so nothing was merged.
+
+## 5. Merged with 0.9.89 (GW1), 2026-11-10
+
+- **The gate stopped on a conflict** in `AllChecks.HARNESSES`: GW1's
+  `StaffingDrawCheck` where OwnerCheck went. Both kept; the generated docs
+  taken from main and regenerated. Nothing of BO1's touches GW1's code
+  (Migration, `Sector.staffing()`, the draw).
+- **The fixtures on the faster city**: OwnerCheck and HouseholdCheck all OK.
+  Section 9's city (563 people at month 120) still forms 5 families and
+  drops none; the owners sold 38% of what they offered (29% on 0.9.88), and
+  the largest crumb in a company without a family is 1.3e-4 of its issue
+  (1.2e-5 before), still under CRUMB.
+- **The trace against 0.9.89** (main built from ee6130b1 in the scratchpad,
+  the batch at the merge): the eight files byte-identical, both exiting 0,
+  the reports apart only in run time (86 s, 87 s).
+- **`--pick`** with SaveFileCheck, ReadPathCheck, OwnerCheck and
+  HouseholdCheck named: exit 3, main's recorded reds only (HealthCheck 2,
+  MapCheck 3, GW1's lines in gate.txt), the four named all OK; 75 of 199
+  harnesses for 45 files.
