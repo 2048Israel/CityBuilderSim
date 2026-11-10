@@ -1,15 +1,41 @@
-# gate of Merge batch/BR2: steam's store art: the capsules at Steam's sizes and a transparent logo, drawn by a script from `branding/`'s title art and icon; Steamworks verification stays his (Jerus, 2026-10-31: "From our art (AI)"), 0.9.71
+# gate of Merge batch/RI1: rail on islands: a linked island's hub at its port and its own track and yards from it, as CL5 gave each piece its highways (CL5-C's call 1, ET5-C; Jerus ticked "Rail on islands", 2026-10-31), 0.9.73
 # date: 2026-11-09
 # earth-2.bin: named
 # nightly: 2026-11-09 01:39 0.9.58 08f58a5f 4,000 months: OK in 118 s
-# suite: 190 harnesses run in 1397s: 185 passed, 5 failed
-# timing: 17 harnesses run in 918s: 13 passed, 4 failed; its red lines were judged side by side with main's, below
+# suite: 191 harnesses run in 1337s: 186 passed, 5 failed
+# timing: 17 harnesses run in 1540s: 12 passed, 5 failed; its red lines were judged side by side with main's, below
+# timing red not the batch's (paired): EarthTerrainCheck | exit 1   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): EarthTerrainCheck | the cells pass in no more than CELLS_PASS_MS of the wall clock, its tiles read from the file the first time FAIL  1014 ms of the wall clock (this JVM cannot read a thread's CPU finely enough) the first time (1014 on the wall clock), 682 again (682 on the wall clock); the study 370-450 on the wall clock   [main 907 ms, batch 914 ms (+0.8%), budget 1000 ms: within 15% of main's]
+# timing red not the batch's (paired): EarthTerrainCheck | a hilly tile's ground and its relief together in no more than TILE_MS (the median of 3 rounds over 32 x 32 tiles about Medellin) FAIL  0.858 ms a tile: 0.339 for the cover and 0.519 for the relief beside it (cover kept; rounds 0.299 to 0.571)   [main 0.162 ms, batch 0.212 ms (+30.8%), budget 0.3 ms: the batch within the budget]
+# timing red not the batch's (paired): EarthTerrainCheck | ...and at 1024 plots a pixel it is drawn in no more than SCREEN_MS                                   FAIL  254.9 ms with the relief, 232.2 without, 2119 ms the first time over fresh data   [main 59.5 ms, batch 76.4 ms (+28.5%), budget 80 ms: the batch within the budget]
+# timing red not the batch's (paired): EarthTerrainCheck | Rotterdam: a tile's landmass in no more than LANDMASS_TILE_MS, over tiles that hold land and dry plots on a cell with none FAIL  0.336 ms a tile (rounds 0.219 to 0.380), 995,361 land plots in the 1024 tiles, 7,588 of them dry on a cell with no land   [main 0.0551 ms, batch 0.082 ms (+48.8%), budget 0.3 ms: the batch within the budget]
+# timing red not the batch's (paired): EarthTerrainCheck | 4 FAILED   [the harness's own count of the timing reds above]
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 28.5 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 29.6 ms (gate.txt, today), batch 28.5 ms (-3.9%), budget 25 ms: main over the budget too, no round]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 53.4 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 51.9 ms, batch 59.2 ms (+14.0%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 17.6 ms, batch 16.8 ms (-4.6%), budget 19 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | 5 FAILED   [the harness's own count of the timing reds above]
-# figure	SaveSlotCheck	the median due month, 28.5 ms, holds the clock at most CLOCK_MS (25 ms)	28.4593	25	ms	FAIL	1	1
+# timing red not the batch's (paired): MapCheck | at 5 billion a month's change takes no more than 5 ms of the wall clock        FAIL   [main 6.74 ms, batch 6.9 ms (+2.3%), budget 5 ms: within 15% of main's; main 5.66 ms, batch 9.32 ms (+64.7%), budget 5 ms: main over the budget too]
+# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 6.74 ms, batch 6.9 ms (+2.3%), budget 5 ms: within 15% of main's; main 5.66 ms, batch 9.32 ms (+64.7%), budget 5 ms: main over the budget too]
+# timing red not the batch's (paired): MapCheck | on the full file, every stride's far node over Rotterdam is drawn in no more than SCREEN_MS FAIL   [main 116 ms, batch 111 ms (-4.6%), budget 80 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 37.5 ms, batch 55.6 ms (+48.2%), budget 19 ms: main over the budget too]
+# timing red not the batch's (paired): MapCheck | 8 FAILED   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): KeptCheck | exit 16   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): KeptCheck | the whole kept chrome's month is within KEPT_ALL_CHROME_MS (8.0 ms)      FAIL   [main 9.77 ms, batch 11.5 ms (+18.0%), budget 8 ms: main over the budget too]
+# timing red not the batch's (paired): KeptCheck | the kept City History month is within KEPT_HISTORY_MS (13.0 ms)          FAIL   [main 9.87 ms, batch 11.1 ms (+12.8%), budget 13 ms: within 15% of main's]
+# timing red not the batch's (paired): KeptCheck | the kept month on Services is within KEPT_SERVICES_MS (13.0 ms)          FAIL   [main 8.33 ms, batch 10.4 ms (+24.7%), budget 13 ms: the batch within the budget]
+# timing red not the batch's (paired): KeptCheck | the kept month on the construction page is within KEPT_CONSTRUCTION_MS (4.0 ms) FAIL   [main 4.82 ms, batch 7.15 ms (+48.3%), budget 4 ms: main over the budget too]
+# timing red not the batch's (paired): KeptCheck | the kept month on the Sectors list is within KEPT_SECTORS_MS (18.0 ms)   FAIL   [main 18.9 ms, batch 15.3 ms (-18.8%), budget 18 ms: within 15% of main's]
+# timing red not the batch's (paired): KeptCheck | the kept month on Retail's Operations page is within KEPT_SECTOR_MS (15.0 ms) FAIL   [main 21.4 ms, batch 18.5 ms (-13.5%), budget 15 ms: within 15% of main's]
+# timing red not the batch's (paired): KeptCheck | the kept month on the fund's Activity is within KEPT_FUND_MS (321.0 ms)  FAIL   [main 407 ms, batch 347 ms (-14.6%), budget 321 ms: within 15% of main's]
+# timing red not the batch's (paired): KeptCheck | 16 FAILED   [the harness's own count of the timing reds above]
+# figure	SaveSlotCheck	the median due month, 53.4 ms, holds the clock at most CLOCK_MS (25 ms)	59.1815	25	ms	FAIL	1	1
+# figure	MapCheck	at 5 billion a month's change takes no more than 5 ms of the wall clock	6.8973	5	ms	FAIL	1	1
+# figure	MapCheck	at 10 billion a month's change takes no more than 5 ms of the wall clock	9.3171	5	ms	FAIL	1	2
+# figure	MapCheck	on the full file, every stride's far node over Rotterdam is drawn in no more than SCREEN_MS	110.695	80	ms	FAIL	10	1
+# figure	MapCheck	a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month	55.5954	19	ms	FAIL	1	1
+# figure	KeptCheck	the whole kept chrome's month is within KEPT_ALL_CHROME_MS (8.0 ms)	11.5208	8	ms	FAIL	1	1
+# figure	KeptCheck	the kept month on the construction page is within KEPT_CONSTRUCTION_MS (4.0 ms)	7.1494	4	ms	FAIL	1	1
+# figure	KeptCheck	the kept month on Retail's Operations page is within KEPT_SECTOR_MS (15.0 ms)	18.5005	15	ms	FAIL	1	1
+# figure	KeptCheck	the kept month on the fund's Activity is within KEPT_FUND_MS (321.0 ms)	347.489	321	ms	FAIL	1	1
 PriceLevelCheck | exit 1
 PriceLevelCheck | FAIL cash (nominal) month 101: 8.317811325 at the factor over the factor, 68.38253344 at today's prices (0.000751 apart)
 PriceLevelCheck | FAIL gdp.month (nominal) month 103: 20121.84632 at the factor over the factor, 20122.48474 at today's prices (1.95e-05 apart)

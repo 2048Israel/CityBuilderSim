@@ -18,6 +18,29 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.74 — CU1, Copper Refining's margin, a study — 2026-11-09, ready, see docs/queue/CU1-notes.md
+A study, no model change. LS1 found Copper Refining buying its input at 52% of its sales and keeping 35%. The sector is
+Rod Mills on imported cathode, exporting rod (276 by m2400 and 1,679 by m3996 in LS1's city; 363-446 by m2400 on seeds
+1-3 of main, 251 on the Historical path; no smelter in any run), and its books are the world's rod standing 2.6 over
+its literal ratio to cathode by 2100: each good is solved alone, the mean mill price is held to the path, and the city
+buys from the cheapest maker (DR Congo's cathode) and sells to the best buyer. A real smelter, refinery or rod mill
+buys 67-86% of its sales (USGS, the Economic Census): the literals are right and the played world leaves them. A
+prototype that re-anchors a series' followers on its own good at the city's site, wire and cable as rod plus
+fabrication, ends the mills on four seeds, keeps the people and halves GDP a head on the three that had them. The note
+is docs/studies/spec-copper-margin.md, its probes and tables in docs/studies/copper-margin/. Queued: CU2 (the batch
+that sets the margin), WP1 (a study), DS1 (a look). Seven calls, each with a recommendation. No trace moves.
+
+### 0.9.73 — RI1, rail on islands — 2026-11-09, ready, see docs/queue/RI1-notes.md
+Every linked piece of the city's ground now grows its own railway, as CL5 gave each its highways (Jerus ticked "Rail
+on islands", 2026-10-31; CL5-C's call 1). A piece's rail hub is the railway crossing nearest its anchor, and an island
+linked by a port has its berthed terminal for its anchor, so both its nets start at the port (ET5's "a linked island's
+hub at its port"); home and a bridge-linked island keep the founding site's side. Track is dealt by built weight as
+the highways are; a new yard goes first to an island railway with none, on its own line nearest its hub, and that
+line grows to its edges as a station's does; sidings leave from an island's line. The first yard and the freight
+station stay home, and no train is routed to an island yard (ET6-C's rail bridge row stands). Unlinked ground gets
+none. IslandRailCheck (new, nine sections) on synthetic ground and the Rotterdam fixture; renders in docs/queue/RI1/.
+Nothing in the model reads the map: the playtest's trace is byte-identical, no ensemble, no format change.
+
 ### 0.9.72 — R6, the near-future research catalogue, a study — 2026-11-09, ready, see docs/queue/R6-notes.md
 The first half of R6 (Q2, 2026-10-18): what today's pilots and public roadmaps give the research catalogue after
 2025 (docs/studies/research-near-future.md; the gatherers' fact sheets in docs/studies/research-near-future/). Eight
