@@ -2853,7 +2853,7 @@ final class PolicyScreen {
         // Kept (KP6): every card is a scope of its own; the dial's is keyed by the regime, since a peg draws another card.
         page.getChildren().add(split(Kept.scope("anchor", this::anchorCard), Kept.scope("gap", this::gapCard), 2.0 / 3));
 
-        boolean peg = ui.game.getForeignAccounts().getRegime() == ForeignAccounts.Regime.PEG;
+        boolean peg = market.isTied();   // a peg, or the gold unless the rule aims at inflation (GD3)
         VBox dial = Kept.scope(peg ? "tiedDial" : "dial", () -> theDialCard(market, px, rate, want));
         VBox rule = Kept.scope("rule", () -> ruleCard(market, px));
         VBox bank = Kept.column(TILE_GAP, Kept.scope("holdings", () -> holdingsCard(market)), Kept.scope("ceiling", this::ceilingCard));
@@ -3017,7 +3017,7 @@ final class PolicyScreen {
      * takes the dial from the rule (DebtManager.takeTheDial()).
      */
     VBox theDialCard(DebtManager market, PriceIndex px, double rate, double want) {
-        if (ui.game.getForeignAccounts().getRegime() == ForeignAccounts.Regime.PEG) return tiedDialCard(market, rate);
+        if (market.isTied()) return tiedDialCard(market, rate);
         Bank bank = ui.game.getBank();
         Ladder ladder = ownLadder("policy", rate, DebtManager.MIN_POLICY_RATE, DebtManager.MAX_POLICY_RATE, .0005, Money::pct2);
         double advised = px.hasRate() ? market.advisedPolicyRate(px.inflation()) : Double.NaN;
@@ -3056,7 +3056,8 @@ final class PolicyScreen {
      */
     VBox tiedDialCard(DebtManager market, double rate) {
         ForeignAccounts fx = ui.game.getForeignAccounts();
-        double tied = market.tiedRate(fx.currencyGap());
+        double tied = tiedNow(market, fx);
+        boolean gold = fx.getRegime() == ForeignAccounts.Regime.GOLD;
         boolean ruleSetsSpread = market.isAutopilot() && market.getAim() != DebtManager.Aim.INFLATION;
         double spread = ruleSetsSpread ? tied - market.tieRate() : market.getPegSpread();
         boolean ruleHasIt = market.isAutopilot();
@@ -3068,8 +3069,9 @@ final class PolicyScreen {
         hand.setAlignment(Pos.CENTER_LEFT);
         return card(cardHead(Icons.BANK, Palette.MONEY, "THE DIAL", rateInfo(), quiet("tied to " + tieOwner(fx) + " rate")),
                 figure(pct2(rate), Palette.SIZE_LEAD, Palette.TEXT_HEAD),
-                line("Tied to " + tieOwner(fx) + " rate under the peg: " + tiedWords(tied, spread, " plus ", " less ")
-                        + ". Set the spread on Policy › Money › The currency.", null),
+                line("Tied to " + tieOwner(fx) + " rate under " + (gold ? "gold" : "the peg") + ": " + tiedWords(tied, spread, " plus ", " less ")
+                        + (gold && ruleSetsSpread && market.getAim() == DebtManager.Aim.GOLD ? ". The rule sets the spread from the gold cover."
+                                : ". Set the spread on Policy › Money › The currency."), null),
                 doorPill("The currency · Policy", Icons.EXCHANGE, Palette.MONEY, () -> open(MONEY, CURRENCY_PAGE)),
                 hand);
     }
@@ -3636,10 +3638,13 @@ final class PolicyScreen {
     /** The staged keys of the currency page: the regime, who pays at the strong edge and what the dial aims at by ordinal; the peg; the band's centre, slope and width; the spread over the anchor's rate under a peg; the money the peg is kept in (WN4b), by its index in the eight. */
     static final String XR_REGIME = "xr:regime", XR_PAYER = "xr:payer", XR_AIM = "xr:aim", XR_PEG = "xr:peg",
             XR_CENTRE = "xr:centre", XR_SLOPE = "xr:slope", XR_WIDTH = "xr:width", XR_SPREAD = "xr:spread",
-            XR_ANCHOR = "xr:anchor";
+            XR_ANCHOR = "xr:anchor", XR_MINT = "xr:mint";
 
     /** One step of the peg's chips: a hundredth of the peg, up to devalue and down to revalue. */
     static final double PEG_STEP = .01;
+
+    /** One step of the mint price, D$ an ounce: a hundredth of it, up to devalue and down to revalue. */
+    static final double MINT_STEP = .01;
 
     /** One step of the band's centre: a hundredth of it. */
     static final double CENTRE_STEP = .01;
@@ -3681,6 +3686,7 @@ final class PolicyScreen {
 
     /** Whose rate the tied dial stands over (WN4b): "the US's" for a peg kept in the US$, else the money's own name: "the euro's" (pure). */
     static String tieOwner(ForeignAccounts fx) {
+        if (fx.getRegime() == ForeignAccounts.Regime.GOLD) return "the US's";   // GD3: the gold's tie is the US$'s whatever money the peg was kept in
         int k = fx.getPegAnchor();
         return k == 0 ? "the US's" : ForeignAccounts.MONEY_NAME[k] + "'s";
     }
@@ -3742,9 +3748,14 @@ final class PolicyScreen {
         if (now == ForeignAccounts.Regime.BAND || want == ForeignAccounts.Regime.BAND) {
             page.getChildren().add(Kept.scope(now == ForeignAccounts.Regime.BAND ? "band" : "bandNote", () -> bandCard(fx, now)));
         }
+        // ...and the gold's (GD3): the card of the standard when it is in force, a note when it is only staged.
+        if (now == ForeignAccounts.Regime.GOLD || want == ForeignAccounts.Regime.GOLD) {
+            page.getChildren().add(Kept.scope(now == ForeignAccounts.Regime.GOLD ? "gold" : "goldNote", () -> goldCard(fx, now)));
+        }
         page.getChildren().add(row(Kept.scope("payer", () -> payerCard(fx)), Kept.scope("aim", () -> aimCard(fx))));
         // ...the deal card's scope is keyed by whether a row holds it (a row sets its card's height, and a peg that breaks takes the row away).
-        if (now == ForeignAccounts.Regime.PEG) {
+        // Under gold the dial is tied to the US's rate too, unless the autopilot aims at inflation (DebtManager.isTied()): then the tied card has nothing to say.
+        if (now == ForeignAccounts.Regime.PEG || (now == ForeignAccounts.Regime.GOLD && ui.game.getDebtManager().isTied())) {
             page.getChildren().add(row(Kept.scope("pegDial", () -> pegDialCard(fx)), Kept.scope("dealInRow", () -> dealCard(fx))));
         } else {
             page.getChildren().add(Kept.scope("deal", () -> dealCard(fx)));
@@ -3778,13 +3789,18 @@ final class PolicyScreen {
 
     /** One figure on a panel, as the rate line's cells are: its label (with an (i) when `info` is given), its figure and a line under it. */
     private static VBox fxCell(String label, String value, String line, String info) {
+        return fxCell(label, value, line, info, Palette.TEXT_HEAD);
+    }
+
+    /** ...its figure in the colour given: a verdict's where the figure is one (the gold cover under the law's). */
+    private static VBox fxCell(String label, String value, String line, String info, String tone) {
         Label l = Kept.label(label);
         l.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
         l.setMinWidth(Region.USE_PREF_SIZE);
         HBox head = Kept.row(Palette.GAP_TIGHT, l);
         if (info != null) head.getChildren().add(Kept.scope("info", () -> infoButton(info, true)));
         head.setAlignment(Pos.CENTER_LEFT);
-        VBox c = Kept.column(2, head, figure(value, Palette.SIZE_HEADING + 2, Palette.TEXT_HEAD), muted(line));
+        VBox c = Kept.column(2, head, figure(value, Palette.SIZE_HEADING + 2, tone), muted(line));
         c.setStyle("-fx-padding: 8 10 8 10; -fx-background-color: " + Palette.PANEL + "; -fx-background-radius: 6;");
         c.setMinWidth(0);
         return c;
@@ -3848,7 +3864,7 @@ final class PolicyScreen {
             case LEAN -> "The vault sells dollars against a fall: the city's way until now, and the default.";
             case BAND -> "Free inside a band you set. The vault holds its edges.";
             case PEG -> "Held at one rate. The vault pays what holding it takes.";
-            case GOLD -> "Worth a weight of gold. The vault holds the rate inside the gold points; the gold covers the notes.";   // GD3 slice 1 stopgap: slice 3 writes the screen
+            case GOLD -> "So many to an ounce of gold: the rate held at the gold points, the vault's gold covering the money.";
         };
     }
 
@@ -3861,7 +3877,11 @@ final class PolicyScreen {
                 + "that holding the weak one takes and buying those that holding the strong one takes, as the Monetary Authority of "
                 + "Singapore does (its band is thought to be about 2% either side). Peg: held at one rate, the vault paying "
                 + "what holding it takes, until it cannot. A peg breaks when the vault would fall under " + curMonths(ForeignAccounts.VAULT_FLOOR)
-                + " of imports, or by chance as the shadow rate - where the float would be - sits further from it. History: "
+                + " of imports, or by chance as the shadow rate - where the float would be - sits further from it. Gold: the " + sym()
+                + " is so many to an ounce of gold, the mint price, and the vault holds the rate inside the gold points (" + share1(ForeignAccounts.GOLD_POINTS)
+                + " either side of the mint's rate, the cost of shipping gold), selling its gold first when the rate is weak and taking gold in when it is strong. "
+                + "The gold must cover " + pct0(ForeignAccounts.COVER_RATIO) + " of the money at the mint price, as the Federal Reserve Act asked of the notes: "
+                + "the first sale that would leave it under that suspends the gold and the " + sym() + " floats, as sterling's did in 1931 and the US$'s in 1933 and 1971. History: "
                 + "sterling in 1992 fell 10% against the mark in two weeks and 24% against the dollar in four months; the baht "
                 + "in 1997 lost 55% in six and a half months; Argentina in 2002 about two thirds. Among 125 countries the "
                 + "median peg lasted two years. Pegs at 2, 5 and 10 points of inflation over the US's last a median 7.4, 4.5 "
@@ -3881,7 +3901,8 @@ final class PolicyScreen {
             case PEG -> "Pegged at " + curRate(fx.getPegPerAnchor()) + " per " + anchorMark(fx.getPegAnchor())
                     + (fx.getPegAnchor() == 0 ? "" : ", " + curRate(fx.getPegRate()) + " per " + Currency.FOREIGN_SYMBOL + " this month")
                     + ": the vault pays what holding it takes.";
-            case GOLD -> "On gold at " + curRate(fx.getMintPrice()) + " an ounce, held inside the gold points.";   // GD3 slice 1 stopgap
+            case GOLD -> "On gold at " + mintWords(fx.getMintPrice()) + " an ounce: the rate is held between " + curRate(fx.goldStrongEdge()) + " and "
+                    + curRate(fx.goldWeakEdge()) + " per " + Currency.FOREIGN_SYMBOL + " (the gold points), the vault's gold covering the money.";
         };
     }
 
@@ -3897,7 +3918,7 @@ final class PolicyScreen {
             case PEG -> "Entering the peg pegs the " + sym() + " at today's rate, " + curRate(rateIn(fx, stagedAnchor(fx))) + " per "
                     + anchorMark(stagedAnchor(fx)) + ". The vault then pays what holding it takes, until paying would take it "
                     + "under " + curMonths(ForeignAccounts.VAULT_FLOOR) + " of imports.";
-            case GOLD -> "Entering gold strikes the mint price at today's rate times gold's price.";   // GD3 slice 1 stopgap
+            case GOLD -> goldEntering(fx);
         };
     }
 
@@ -3939,7 +3960,7 @@ final class PolicyScreen {
             case PEG -> stagedAnchor(fx) == 0 ? "Peg the " + sym() + " at " + curRate(fx.getRate())
                     : "Peg the " + sym() + " to " + ForeignAccounts.MONEY_NAME[stagedAnchor(fx)] + " at "
                     + curRate(rateIn(fx, stagedAnchor(fx))) + " per " + anchorMark(stagedAnchor(fx));
-            case GOLD -> "Put the " + sym() + " on gold";   // GD3 slice 1 stopgap
+            case GOLD -> "Put the " + sym() + " on gold at " + mintWords(goldPar(fx)) + " an ounce";
         };
     }
 
@@ -3948,7 +3969,9 @@ final class PolicyScreen {
         if (fx.getBreaks() <= 0) return null;
         String times = fx.getBreaks() == 1 ? "A peg has broken once since founding" : "Pegs have broken " + fx.getBreaks()
                 + " times since founding";
-        return times + ". The last gave way because " + fx.getLastBreakCause().words + ": the " + sym() + " jumped "
+        // A break by the gold's cover (GD3) is the gold's, not a peg's: said so.
+        String last = fx.getLastBreakCause() == ForeignAccounts.BreakCause.COVER ? ". The last, the gold's, gave way because " : ". The last gave way because ";
+        return times + last + fx.getLastBreakCause().words + ": the " + sym() + " jumped "
                 + share1(Math.abs(Math.expm1(fx.getLastBreakJump()))) + (fx.getLastBreakJump() >= 0 ? " weaker" : " stronger")
                 + " that month; the float's rule had it at " + curRate(fx.getLastBreakShadow()) + ".";
     }
@@ -3962,9 +3985,17 @@ final class PolicyScreen {
         Node[] cols = new Node[all.length];
         for (int i = 0; i < all.length; i++) {
             ForeignAccounts.Regime r = all[i];
+            // Gold cannot be entered in a month it has no price (no world file, or no month played yet): the chip says why and does nothing (GD3).
+            if (r == ForeignAccounts.Regime.GOLD && r != now && !goldPriced(fx)) {
+                cols[i] = option(r.words, "Not now: gold has no price this month (the city needs the world's file, and a month played), so the mint "
+                        + "has nothing to be struck against.", false, false, () -> { });
+                continue;
+            }
             cols[i] = option(r.words, regimeSays(r), r == want, r == now, () -> {
                 // A money staged for a peg the city is not entering (and is not in) has nothing to apply to: it goes with the choice (WN4b).
                 if (now != ForeignAccounts.Regime.PEG && r != ForeignAccounts.Regime.PEG) unstage(XR_ANCHOR);
+                // ...and so does a par staged for gold the city is not entering (GD3).
+                if (now != ForeignAccounts.Regime.GOLD && r != ForeignAccounts.Regime.GOLD) unstage(XR_MINT);
                 choose(XR_REGIME, now, r);
             });
         }
@@ -3977,11 +4008,19 @@ final class PolicyScreen {
         String broke = breakLine(fx);
         if (broke != null && now != ForeignAccounts.Regime.PEG) c.getChildren().add(Kept.scope("broke", () -> muted(broke)));
         // Out of a peg, the money staged for the next one goes with the regime's Apply or its "Leave it as it is" (WN4b); in one it is the peg card's own.
-        String[] keys = now == ForeignAccounts.Regime.PEG ? new String[] {XR_REGIME} : new String[] {XR_REGIME, XR_ANCHOR};
+        // ...and the par staged for the gold it is entering (GD3); in the gold it is the gold card's own.
+        String[] keys = now == ForeignAccounts.Regime.PEG || now == ForeignAccounts.Regime.GOLD ? new String[] {XR_REGIME}
+                : new String[] {XR_REGIME, XR_ANCHOR, XR_MINT};
         c.getChildren().addAll(currencyFoot(regimeApplies(fx, want), () -> {
             // The money staged for the peg it is entering is the one it is kept in (WN4b): set before the regime, so the peg is struck in it.
             if (want == ForeignAccounts.Regime.PEG && isStaged(XR_ANCHOR)) ui.game.setPegAnchor(WorldMoneys.EIGHT.get(stagedAnchor(fx)));
+            double par = goldPar(fx);
+            boolean otherPar = want == ForeignAccounts.Regime.GOLD && isStaged(XR_MINT);
             ui.game.setCurrencyRegime(want);
+            // The gold is struck at the day's rate; a par other than the day's staged is struck after it (GD3: setMintPrice, which is refused outside Gold).
+            if (otherPar && ui.game.getForeignAccounts().getRegime() == ForeignAccounts.Regime.GOLD) ui.game.setMintPrice(par);
+            if (want == ForeignAccounts.Regime.GOLD) unstage(XR_AIM);   // entering gold sets the aim to defend it: a staged one is stale
+            unstage(XR_MINT);
             // A peg or a band staged for the regime that just left has nothing to apply to.
             unstage(XR_PEG);
             unstage(XR_CENTRE);
@@ -4322,6 +4361,195 @@ final class PolicyScreen {
                         keySwatch(Palette.TEXT_LABEL, "the band as set now: the weak edge above, the strong below")));
     }
 
+    /* ----- THE GOLD STANDARD ----- */
+
+    /** Whether gold has a price this month, so the mint can be struck against it: the city has the world's file and has played a month (pure). */
+    private static boolean goldPriced(ForeignAccounts fx) {
+        return fx.hasRate(ForeignAccounts.GOLD) && fx.getMoneyUsd(ForeignAccounts.GOLD) > 0;
+    }
+
+    /** A mint price with the money's mark, to the four places the mint strikes at: "D$20.6718" (pure). */
+    private String mintWords(double price) {
+        return Double.isFinite(price) ? sym() + String.format("%,.4f", price) : "no price";
+    }
+
+    /** Gold's price this month, US$ an ounce, as Trade says it: "US$20.67 an ounce" (pure). */
+    private static String goldPriceWords(ForeignAccounts fx) {
+        double price = fx.getMoneyUsd(ForeignAccounts.GOLD);
+        return Double.isFinite(price) ? TradeScreen.goldPrice(price, "ounce") : "no price";
+    }
+
+    /** The par gold would be struck at: the one staged, else the day's rate times gold's price, D$ an ounce; NaN where gold has no price (pure). */
+    private double goldPar(ForeignAccounts fx) {
+        return staged(XR_MINT, fx.mintAtToday());
+    }
+
+    /** What entering gold does today: strikes the mint at the par, and the rate that is against the US$ (pure). */
+    String goldEntering(ForeignAccounts fx) {
+        if (!goldPriced(fx)) return "Gold has no price this month, so it cannot be entered: the mint has nothing to be struck against.";
+        double price = fx.getMoneyUsd(ForeignAccounts.GOLD), par = goldPar(fx);
+        return "Entering gold strikes the mint at " + mintWords(par) + " an ounce: " + curRate(par / price) + " per "
+                + Currency.FOREIGN_SYMBOL + " at gold's " + goldPriceWords(fx) + ". The vault then holds the rate inside the gold points, "
+                + share1(ForeignAccounts.GOLD_POINTS) + " either side, and the dial defends the gold." + (isStaged(XR_MINT) ? " The par is the one staged below." : "");
+    }
+
+    /** The gold cover in words: "45.3%", or that there is no money to cover (pure). */
+    private static String coverShare(double cover) {
+        return Double.isInfinite(cover) ? "no money to cover" : share1(cover);
+    }
+
+    /** How long the gold above the law's cover lasts at the last reprice's sales, in words (floorWords' style): "8 months" (to the law's cover), "under the law's cover", "not falling" (pure). */
+    static String coverPace(double months) {
+        if (Double.isInfinite(months)) return "not falling";
+        if (months <= 0) return "under the law's cover";
+        if (months < 1) return "under a month";
+        if (months >= 120) return "over 10 years";
+        return String.format("%.0f month%s", months, Math.round(months) == 1 ? "" : "s");
+    }
+
+    /** A US$ sum with a true minus: "US$1.2M", "−US$340k" (pure). */
+    private static String signedUsd(double thousands) {
+        String shown = money(Math.abs(thousands));
+        return (thousands < 0 && !"$0".equals(shown) ? "−" : "") + marked(Currency.FOREIGN_SYMBOL, shown);
+    }
+
+    /** THE GOLD STANDARD's (i): the mint, the points, the cover and the break. */
+    String goldInfo() {
+        return "Under gold the " + sym() + " is so many to an ounce: the mint price. That strikes a rate against the US$, the mint price over gold's price "
+                + "in US$, and the vault holds the rate inside the gold points, " + share1(ForeignAccounts.GOLD_POINTS) + " either side of it (the cost of "
+                + "shipping gold between New York and London; an estimate, about half a percent). At the weak point it sells gold, before any other money; at the "
+                + "strong point it takes gold in, the mint's free coinage, paid by the payer chosen below. The gold must cover " + pct0(ForeignAccounts.COVER_RATIO)
+                + " of the money (M0) at the mint price, as the Federal Reserve Act asked of the notes: the first month a sale would leave it under that, "
+                + "the gold is suspended and the " + sym() + " comes off it. Doubt can break it too: the peg's chance, scaled by how thin the cover is - none at "
+                + "a full cover, the peg's own at the law's. A higher mint price is a devaluation, a lower one a revaluation; a higher rate is a weaker " + sym() + ".";
+    }
+
+    /** What the US$ did on one of the dates of its own gold history, and what each answer does to the city's money, in a paragraph (pure). */
+    String goldEventWords(ForeignAccounts fx, ForeignAccounts.GoldEvent e) {
+        String did = switch (e) {
+            case LEFT_1933 -> "In April 1933 the United States took the dollar off gold, and it began to fall against it. ";
+            case PAR_1934 -> "In February 1934 the dollar was fixed to gold again, at " + Currency.FOREIGN_SYMBOL + String.format("%.0f", GoldPrice.PAR_1934)
+                    + " an ounce, " + pct0(GoldPrice.PAR_1900 / GoldPrice.PAR_1934) + " of the weight it had had. ";
+            case WINDOW_1971 -> "In August 1971 the United States closed its gold window: it no longer paid gold out for dollars, and the dollar was no longer worth a weight of it. ";
+            default -> "";
+        };
+        return did + "Stay on gold: the mint price stays where it is, the " + sym() + " keeps its weight of gold, and its rate against the dollar goes where the "
+                + "dollar's price of gold takes it. Move the mint price with the dollar: the mint is struck again now at the rate it was first struck at, "
+                + curRate(fx.getMintRate()) + " per " + Currency.FOREIGN_SYMBOL + ", times gold's price, and kept there every month - a devaluation with the "
+                + "dollar's. Leave gold: the " + sym() + " goes to Lean, the city's own way, and the gold stays in the vault at gold's price.";
+    }
+
+    /** The US$'s decision, when one of its dates has opened it: the event, a paragraph, and the three answers (GD3). */
+    private VBox goldDecision(ForeignAccounts fx) {
+        ForeignAccounts.GoldEvent e = fx.getGoldEvent();
+        HBox answers = Kept.row(8);
+        for (ForeignAccounts.GoldChoice choice : ForeignAccounts.GoldChoice.values()) {
+            String icon = choice == ForeignAccounts.GoldChoice.LEAVE ? Icons.CLOSE : choice == ForeignAccounts.GoldChoice.FOLLOW ? Icons.EXCHANGE : Icons.TICK;
+            answers.getChildren().add(Kept.scope("answer:" + choice.name(), () -> {
+                Pieces.ActionButton go = actionButton(icon, Palette.MONEY, ACTION_INLINE, new Press(Look.CHOOSE, choice.words, null), () -> {
+                    ui.game.answerGoldEvent(choice);
+                    showPolicyMenu();
+                });
+                go.setMinWidth(260);
+                return go;
+            }));
+        }
+        VBox box = Kept.column(8, words("THE US$'S DECISION, AND YOURS", Palette.SIZE_LABEL, Palette.TEXT_LABEL),
+                words(e.words, Palette.SIZE_HEADING, Palette.WARN), line(goldEventWords(fx, e), null),
+                muted("Until it is answered the city stays at the mint price it has."), answers);
+        box.setStyle("-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.PANEL + "; -fx-background-radius: 6;");
+        return box;
+    }
+
+    /**
+     * THE GOLD STANDARD (when it is in force; a short note when it is only staged): the mint price with steps to re-strike it, the centre and the
+     * gold points either side, gold's price; the cover against the law's, the gold free, what last month's sale leaves; whether the mint follows the
+     * dollar; doubt's chance; and, when one of the US$'s dates has opened it, the decision.
+     */
+    VBox goldCard(ForeignAccounts fx, ForeignAccounts.Regime now) {
+        if (now != ForeignAccounts.Regime.GOLD) return goldNote(fx);
+        double mint = fx.getMintPrice(), want = staged(XR_MINT, mint), step = mint * MINT_STEP;
+        double m0 = ui.game.getCentralBank().m0(), cover = ui.game.getGoldCover(), free = ui.game.getFreeGoldUsd();
+        boolean under = cover < ForeignAccounts.COVER_RATIO;
+        VBox cMint = fxCell("THE MINT PRICE", mintWords(want), "an ounce" + (isStaged(XR_MINT) ? " · staged" : ""), null);
+        cMint.getChildren().add(stepper(XR_MINT, mint, step, step, Double.MAX_VALUE, pct0(MINT_STEP) + " · revalue", pct0(MINT_STEP) + " · devalue"));
+        VBox cCentre = fxCell("THE CENTRE", curRate(fx.goldCentre()), "per " + Currency.FOREIGN_SYMBOL + ": the mint price over gold's", null);
+        VBox cWeak = fxCell("THE WEAK POINT", curRate(fx.goldWeakEdge()), "the vault sells gold here", null);
+        VBox cStrong = fxCell("THE STRONG POINT", curRate(fx.goldStrongEdge()), "the vault buys gold here", null);
+        VBox cPrice = fxCell("GOLD'S PRICE", goldPriceWords(fx), "this month", null);
+        VBox cCover = fxCell("THE COVER", coverShare(cover), "the vault's gold at the mint price, " + curLocal(fx.goldAtMint()) + ", over M0, " + curLocal(m0)
+                + "; the law asks " + pct0(ForeignAccounts.COVER_RATIO), null, under ? Palette.BAD : Palette.TEXT_HEAD);
+        VBox cOunces = fxCell("THE VAULT'S GOLD", TradeScreen.ownMoney(ForeignAccounts.GOLD, fx.getHolding(ForeignAccounts.GOLD)),
+                "worth " + usd(fx.getHoldingUsd(ForeignAccounts.GOLD)) + " at gold's price", null);
+        VBox cFree = fxCell("FREE GOLD", signedUsd(free), curLocal(fx.toLocal(free)) + (free >= 0 ? ", free to leave the vault" : ", short of the law's cover"),
+                null, free < 0 ? Palette.BAD : Palette.TEXT_HEAD);
+        double months = fx.monthsToFloor();
+        VBox cPace = fxCell("AT THIS PACE", coverPace(months), Double.isInfinite(months)
+                ? "the gold is not falling: the vault sold none at the last reprice"
+                : months <= 0 ? "last month's sale of " + usd(fx.getDefenceUsd()) + " leaves it there"
+                : "to the law's cover, at last month's sale of " + usd(fx.getDefenceUsd()), null);
+        VBox c = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "THE GOLD STANDARD", goldInfo(), quiet("a higher mint price is a weaker " + sym())));
+        if (fx.getGoldEvent() != ForeignAccounts.GoldEvent.NONE) c.getChildren().add(Kept.scope("decision", () -> goldDecision(fx)));
+        c.getChildren().add(row(cMint, cCentre, cWeak, cStrong, cPrice));
+        if (isStaged(XR_MINT)) {
+            c.getChildren().add(Kept.scope("staged", () -> muted("Staged: " + (want > mint ? "devalue" : "revalue") + " the mint price to " + mintWords(want)
+                    + " an ounce from " + mintWords(mint) + ". The rate follows at the next reprice.")));
+        }
+        c.getChildren().add(row(cCover, cOunces, cFree, cPace));
+        if (under) {
+            c.getChildren().add(Kept.scope("under", () -> words("Under the law's " + pct0(ForeignAccounts.COVER_RATIO) + ": the first month gold leaves the vault, the "
+                    + sym() + " comes off gold.", Palette.SIZE_LABEL + 1, Palette.BAD)));
+        }
+        c.getChildren().add(line(fx.isMintFollowing()
+                ? "The mint follows the dollar: the " + sym() + " stays at " + fxRate(fx.getMintRate()) + " per " + Currency.FOREIGN_SYMBOL + " as gold's price moves."
+                : "The mint price stays where it was struck: the centre moves with gold's price, " + curRate(fx.goldCentre()) + " per " + Currency.FOREIGN_SYMBOL
+                        + " now against " + curRate(fx.getMintRate()) + " when it was struck.", null));
+        c.getChildren().add(line("The shadow rate, where the float would be, " + curRate(fx.getShadowRate()) + ", sits " + curGap(fx.currencyGap(), "the centre") + ".", null));
+        c.getChildren().add(line("Doubt's chance of breaking the gold this month: " + share1(fx.getLastHazard()) + ". A full cover is never doubted; at the law's "
+                + pct0(ForeignAccounts.COVER_RATIO) + " it is the peg's own chance.", null));
+        c.getChildren().addAll(currencyFoot((want > mint ? "Devalue" : "Revalue") + " the mint price to " + mintWords(want),
+                () -> ui.game.setMintPrice(want), XR_MINT));
+        return c;
+    }
+
+    /** THE GOLD STANDARD while only staged: the par to strike, what the vault's gold would cover at it, and where to buy gold first. */
+    private VBox goldNote(ForeignAccounts fx) {
+        VBox note = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "THE GOLD STANDARD", goldInfo(), quiet("if chosen · not in force")));
+        if (!goldPriced(fx)) {
+            note.getChildren().add(line(goldEntering(fx), null));
+            return note;
+        }
+        double price = fx.getMoneyUsd(ForeignAccounts.GOLD), day = fx.mintAtToday(), par = goldPar(fx), old = fx.getMintPrice(), step = day * MINT_STEP;
+        HBox big = Kept.row(8, figure(mintWords(par), Palette.SIZE_LEAD, Palette.TEXT_HEAD), words("an ounce", Palette.SIZE_BODY, Palette.TEXT_LABEL),
+                Kept.scope("steps", () -> stepper(XR_MINT, day, step, step, Double.MAX_VALUE, pct0(MINT_STEP) + " · revalue", pct0(MINT_STEP) + " · devalue")));
+        big.setAlignment(Pos.CENTER_LEFT);
+        note.getChildren().add(big);
+        // A mint price kept from an earlier time on gold is the old par (Britain's 1925): a chip stages it.
+        if (old > 0 && moved(old, day, step)) {
+            note.getChildren().add(Kept.scope("oldPar", () -> flowOf(6, 4, stepChip("the old par, " + mintWords(old), () -> {
+                stage(XR_MINT, old);
+                showPolicyMenu();
+            }, false, Math.abs(par - old) < 1e-9))));
+        }
+        note.getChildren().add(line("If chosen, the " + sym() + " is put on gold at " + mintWords(par) + " an ounce: " + curRate(par / price) + " per "
+                + Currency.FOREIGN_SYMBOL + " at gold's " + goldPriceWords(fx) + (isStaged(XR_MINT) ? ", " + (par > day ? "a devaluation" : "a revaluation")
+                + " from today's " + curRate(fx.getRate()) + " per " + Currency.FOREIGN_SYMBOL : ", the " + sym() + " keeping its value")
+                + ". The Apply button under HOW THE " + sym() + " IS SET strikes it.", null));
+        double ounces = fx.getHolding(ForeignAccounts.GOLD), m0 = ui.game.getCentralBank().m0();
+        // The cover at that par (Game.getGoldCoverAt(): goldCover() reads the mint price in force, which gold not yet entered has not got).
+        double cover = ui.game.getGoldCoverAt(par);
+        note.getChildren().add(line("The vault holds " + TradeScreen.ownMoney(ForeignAccounts.GOLD, ounces) + " of gold, " + usd(fx.getHoldingUsd(ForeignAccounts.GOLD))
+                + " at gold's price. At " + mintWords(par) + " an ounce that covers " + coverShare(cover) + " of the money (M0, " + curLocal(m0) + "); the law asks "
+                + pct0(ForeignAccounts.COVER_RATIO) + ".", null));
+        if (cover < ForeignAccounts.COVER_RATIO) {
+            note.getChildren().add(Kept.scope("buyFirst", () -> words("Under the law's " + pct0(ForeignAccounts.COVER_RATIO) + ": the first month gold leaves the vault, the "
+                    + sym() + " comes off gold. Buy gold first on Trade › The reserves (the Gold chip).", Palette.SIZE_LABEL + 1, Palette.WARN)));
+            note.getChildren().add(Kept.scope("buyDoor", () -> doorPill("Buy gold · Trade › The reserves", Icons.EXCHANGE, Palette.MONEY,
+                    () -> ui.tradeScreen.open(TradeScreen.RESERVES, TradeScreen.EXCHANGE_CARD))));
+        }
+        return note;
+    }
+
     /* ----- WHO BUYS AT THE STRONG EDGE ----- */
 
     /** Each payer's line, under its chip: what paying that way does (star 6's own words). */
@@ -4347,7 +4575,7 @@ final class PolicyScreen {
                 + "month. Paid by the central bank it is new money, so M0 rises and the city's money supply with it, as the "
                 + "Swiss National Bank's did buying euros from 2011 to 2015. Paid by the treasury it comes out of its "
                 + "cash, a reserve purchase like any other: money that could have built something. What the treasury "
-                + "cannot pay the central bank does. It acts only under a band or a peg.";
+                + "cannot pay the central bank does. It acts only under a band, a peg or gold (where the dollars bought are bought into gold).";
     }
 
     /** WHO BUYS AT THE STRONG EDGE (star 6): the two payers as chips, the default marked, what is owed now and what has been bought since founding. */
@@ -4361,7 +4589,7 @@ final class PolicyScreen {
         VBox c = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "WHO BUYS AT THE STRONG EDGE", payerInfo(), null), options);
         ForeignAccounts.Regime regime = fx.getRegime();
         if (regime == ForeignAccounts.Regime.FLOAT || regime == ForeignAccounts.Regime.LEAN) {
-            c.getChildren().add(Kept.scope("acts", () -> muted("It acts only under a band or a peg: under "
+            c.getChildren().add(Kept.scope("acts", () -> muted("It acts only under a band, a peg or gold: under "
                     + (regime == ForeignAccounts.Regime.FLOAT ? "a float" : "leaning against falls")
                     + " the vault buys nothing at an edge.")));
         }
@@ -4381,12 +4609,15 @@ final class PolicyScreen {
     /** Each aim's line, from the model's constants (star 13). */
     String aimSays(DebtManager.Aim a) {
         return switch (a) {
-            case INFLATION -> "The Taylor rule, as before: the Fed's and the ECB's way.";
-            case CURRENCY -> "The dial holds the band or the peg: " + aimsOwner(ui.game.getForeignAccounts()) + " rate, " + pct2(ui.game.getDebtManager().tieRate())
+            case INFLATION -> ui.game.getForeignAccounts().getRegime() == ForeignAccounts.Regime.GOLD
+                    ? "The Taylor rule alone: the dial follows the inflation rule, not tied to the US's rate, and the gold is not defended."
+                    : "The Taylor rule, as before: the Fed's and the ECB's way.";
+            case CURRENCY -> "The dial holds " + (ui.game.getForeignAccounts().getRegime() == ForeignAccounts.Regime.GOLD ? "the gold points" : "the band or the peg") + ": " + aimsOwner(ui.game.getForeignAccounts()) + " rate, " + pct2(ui.game.getDebtManager().tieRate())
                     + ", plus " + pointsOf(DebtManager.CURRENCY_WEIGHT) + " for each 1% the " + sym() + " sits past its target.";
             case MIX -> "The inflation rule plus that: " + pointsOf(DebtManager.CURRENCY_WEIGHT)
                     + " for each 1% the " + sym() + " sits past its target.";
-            case GOLD -> "The dial defends the gold: the US's rate plus up to " + pointsOf(DebtManager.GOLD_DEFENCE) + " as the cover thins.";   // GD3 slice 1 stopgap
+            case GOLD -> "Raises the dial over the US's rate as the cover falls: nothing at " + pct0(DebtManager.GOLD_DEFENCE_FROM) + ", "
+                    + pointsOf(DebtManager.GOLD_DEFENCE * 100) + " at the law's " + pct0(ForeignAccounts.COVER_RATIO) + ".";
         };
     }
 
@@ -4399,7 +4630,10 @@ final class PolicyScreen {
                 + "rate plus " + pointsOf(DebtManager.CURRENCY_WEIGHT) + " for each 1% the " + sym() + "'s shadow rate sits past its "
                 + "target (the peg, or the band's centre) - an open-economy Taylor rule, as small open economies run. A "
                 + "mix: the inflation rule plus that. Under a peg the dial is tied to " + tieOwner(fx) + " rate whatever is chosen: "
-                + "only the spread is the aim's. The aim acts only with the autopilot on; a float has no target for the "
+                + "only the spread is the aim's. Under gold the dial is tied to the US's rate too, and the aim at the gold is the one that sets the spread by "
+                + "the cover (" + pointsOf(DebtManager.GOLD_DEFENCE * 100) + " at the law's " + pct0(ForeignAccounts.COVER_RATIO) + ", nothing at "
+                + pct0(DebtManager.GOLD_DEFENCE_FROM) + "); aiming at inflation instead leaves the dial to the rule and the gold undefended. "
+                + "The aim acts only with the autopilot on; a float has no target for the "
                 + "currency to aim at, so there the dial follows inflation whatever is chosen. " + usRateInfo();
     }
 
@@ -4428,6 +4662,8 @@ final class PolicyScreen {
         PriceIndex px = ui.game.getPriceIndex();
         double gap = fx.currencyGap();
         if (fx.getRegime() == ForeignAccounts.Regime.PEG) return pct2(market.tiedRate(gap));
+        // Under gold (GD3) the dial in force is the tied one unless the rule aims at inflation: the gold's rate, the aim in force's spread; the inflation aim's is the rule's.
+        if (fx.getRegime() == ForeignAccounts.Regime.GOLD && a != DebtManager.Aim.INFLATION) return pct2(market.goldRate(gap, ui.game.getGoldCover()));
         boolean aims = fx.getRegime() == ForeignAccounts.Regime.BAND;
         if (a == DebtManager.Aim.CURRENCY && aims) return pct2(market.currencyRate(gap));
         if (!px.hasRate()) return null;
@@ -4456,7 +4692,10 @@ final class PolicyScreen {
         // one rule sets it whatever is chosen, and it is said once under the chips.
         boolean eachSets = regime == ForeignAccounts.Regime.BAND;
         VBox options = Kept.column(10);
+        // Defend the gold is offered only while gold is in force or staged, or the aim is still it (GD3): it means nothing to any other regime.
+        boolean goldOffered = regime == ForeignAccounts.Regime.GOLD || stagedRegime(regime) == ForeignAccounts.Regime.GOLD || now == DebtManager.Aim.GOLD;
         for (DebtManager.Aim a : DebtManager.Aim.values()) {
+            if (a == DebtManager.Aim.GOLD && !goldOffered) continue;
             options.getChildren().add(Kept.scope("option:" + a.name(), () -> option(a.words, aimSays(a) + (eachSets ? " " + aimWouldSet(a, fx) : ""),
                     a == want, a == now, () -> choose(XR_AIM, now, a))));
         }
@@ -4464,10 +4703,17 @@ final class PolicyScreen {
         if (regime == ForeignAccounts.Regime.FLOAT || regime == ForeignAccounts.Regime.LEAN) {
             c.getChildren().add(Kept.scope("float", () -> muted("A float has no target for the currency to aim at: the dial follows inflation "
                     + "whatever is chosen. " + aimWouldSet(DebtManager.Aim.INFLATION, fx).replace("It would", "The rule would")
-                    + " The aim waits for a band or a peg.")));
+                    + " The aim waits for a band, a peg or gold.")));
         } else if (regime == ForeignAccounts.Regime.PEG) {
             c.getChildren().add(Kept.scope("peg", () -> muted("Under the peg the dial is tied to " + tieOwner(fx) + " rate whatever is chosen: "
                     + aimWouldSet(now, fx).replace("It would", "it would") + " The aim only decides who sets the spread, you or the rule.")));
+        } else if (regime == ForeignAccounts.Regime.GOLD) {
+            // Under gold the dial is tied to the US's rate too, unless the rule aims at inflation (GD3): then the rule's own, and the gold is not defended.
+            c.getChildren().add(Kept.scope("gold", () -> muted(ui.game.getDebtManager().isTied()
+                    ? "Under gold the dial is tied to the US's rate whatever is chosen but inflation: " + aimWouldSet(now, fx).replace("It would", "it would")
+                            + " The aim decides who sets the spread: the gold's, from the cover; the currency's, from the gap; or yours, with the autopilot off."
+                    : "Aiming at inflation under gold leaves the dial to the inflation rule, not tied to the US's rate, and the gold is not defended. "
+                            + aimWouldSet(DebtManager.Aim.INFLATION, fx).replace("It would", "The rule would"))));
         }
         HBox hand = Kept.row(8, words(market.isAutopilot()
                         ? "The autopilot is on: the dial follows the aim."
@@ -4476,7 +4722,7 @@ final class PolicyScreen {
                 doorPill("Policy rate · the autopilot", Icons.BANK, Palette.MONEY, () -> open(MONEY, "The policy rate")));
         hand.setAlignment(Pos.CENTER_LEFT);
         c.getChildren().add(hand);
-        c.getChildren().addAll(currencyFoot("The dial aims at " + want.words.toLowerCase(),
+        c.getChildren().addAll(currencyFoot(want == DebtManager.Aim.GOLD ? "The dial defends the gold" : "The dial aims at " + want.words.toLowerCase(),
                 () -> market.setAim(want), XR_AIM));
         return c;
     }
@@ -4487,44 +4733,62 @@ final class PolicyScreen {
     String pegDialInfo() {
         ForeignAccounts fx = ui.game.getForeignAccounts();
         String owner = tieOwner(fx);
+        boolean gold = fx.getRegime() == ForeignAccounts.Regime.GOLD;
         // The anchor's rate (WN4b): a money other than the US$ has a rate only with the world file, its central bank's; the US$'s text is what it was.
-        return "Under a peg the dial is tied to " + owner + " rate: the policy rate is " + owner + ", " + pct2(ui.game.getDebtManager().tieRate())
-                + (fx.getPegAnchor() != 0 ? " this month (its central bank's)"
+        return "Under " + (gold ? "gold" : "a peg") + " the dial is tied to " + owner + " rate: the policy rate is " + owner + ", " + pct2(ui.game.getDebtManager().tieRate())
+                + (!gold && fx.getPegAnchor() != 0 ? " this month (its central bank's)"
                         : hasUsRate() ? " this month (the Federal Reserve's)" : " (this city has no world file, so a figure of the world's own)")
                 + ", plus a spread. The spread is yours to set - up against money "
                 + "leaving, down against money arriving - or, with the autopilot aiming at the currency or a mix, the "
-                + "rule's: " + plain(DebtManager.CURRENCY_WEIGHT) + " times the gap of the shadow rate from the peg. Hong "
-                + "Kong's rate follows the US's by this working. A free dial, an open border and a fixed rate cannot all "
-                + "hold at once: under the peg the city gives up the first.";
+                + "rule's: " + plain(DebtManager.CURRENCY_WEIGHT) + " times the gap of the shadow rate from the " + (gold ? "centre" : "peg")
+                + (gold ? ", or, aiming at the gold, the cover's: " + pointsOf(DebtManager.GOLD_DEFENCE * 100) + " at the law's " + pct0(ForeignAccounts.COVER_RATIO)
+                        + ", nothing at " + pct0(DebtManager.GOLD_DEFENCE_FROM) + ". Aiming at inflation leaves the dial to the inflation rule, untied" : "")
+                + ". Hong Kong's rate follows the US's by this working. A free dial, an open border and a fixed rate cannot all "
+                + "hold at once: under " + (gold ? "gold" : "the peg") + " the city gives up the first.";
     }
 
-    /** The tied dial in words: "2.50% = the US's 2.00% + the spread 0.50%" (the anchor's, "the euro's 2.00%", under a peg kept in another money), or with the joiners "plus" and "less" (pure). */
+    /** The tied dial in words: "2.50% = the US's 2.00% + the spread 0.50%" (the anchor's, "the euro's 2.00%", under a peg kept in another money; "the gold's spread" when the rule aims at the gold), or with the joiners "plus" and "less" (pure). */
     String tiedWords(double dial, double spread, String plus, String minus) {
-        return pct2(dial) + " = " + tieOwner(ui.game.getForeignAccounts()) + " " + pct2(ui.game.getDebtManager().tieRate()) + (spread < 0 ? minus : plus)
-                + "the spread " + pct2(Math.abs(spread));
+        DebtManager market = ui.game.getDebtManager();
+        boolean goldAim = ui.game.getForeignAccounts().getRegime() == ForeignAccounts.Regime.GOLD && market.isAutopilot() && market.getAim() == DebtManager.Aim.GOLD;
+        return pct2(dial) + " = " + tieOwner(ui.game.getForeignAccounts()) + " " + pct2(market.tieRate()) + (spread < 0 ? minus : plus)
+                + (goldAim ? "the gold's spread " : "the spread ") + pct2(Math.abs(spread));
+    }
+
+    /** The tied dial now: the peg's (DebtManager.tiedRate()), or the gold's from the cover (goldRate()) under gold (pure). */
+    private double tiedNow(DebtManager market, ForeignAccounts fx) {
+        return fx.getRegime() == ForeignAccounts.Regime.GOLD ? market.goldRate(fx.currencyGap(), ui.game.getGoldCover()) : market.tiedRate(fx.currencyGap());
     }
 
     /**
      * THE DIAL UNDER A PEG (star 5; the board's "the dial is still yours" became
      * the tie): the dial as the US's rate plus the spread, the spread with
      * quarter-point steps - or the rule's, with the autopilot aiming at the
-     * currency - and the trinity.
+     * currency - and the trinity. Under gold (GD3) it is the same card with the
+     * gold's words, the rule's spread being the cover's when the autopilot aims
+     * at the gold.
      */
     VBox pegDialCard(ForeignAccounts fx) {
         DebtManager market = ui.game.getDebtManager();
-        double gap = fx.currencyGap(), tied = market.tiedRate(gap);
-        boolean ruleHas = market.isAutopilot() && market.getAim() != DebtManager.Aim.INFLATION;
+        boolean gold = fx.getRegime() == ForeignAccounts.Regime.GOLD;
+        double gap = fx.currencyGap(), tied = tiedNow(market, fx), cover = ui.game.getGoldCover();
+        // The gold aim means nothing under a peg (DebtManager.tiedRate()): there the player's spread.
+        boolean ruleHas = market.isAutopilot() && market.getAim() != DebtManager.Aim.INFLATION && (gold || market.getAim() != DebtManager.Aim.GOLD);
         double spread = ruleHas ? tied - market.tieRate() : market.getPegSpread();
-        VBox c = card(cardHead(Icons.BANK, Palette.MONEY, "THE DIAL UNDER A PEG", pegDialInfo(), null),
+        VBox c = card(cardHead(Icons.BANK, Palette.MONEY, gold ? "THE DIAL UNDER GOLD" : "THE DIAL UNDER A PEG", pegDialInfo(), null),
                 words(tiedWords(tied, spread, " + ", " − "), Palette.SIZE_HEADING + 3, Palette.TEXT_HEAD));
         if (Math.abs(market.getPolicyRate() - tied) > 1e-9) {
             c.getChildren().add(Kept.scope("standing", () -> muted("The dial stands at " + pct2(market.getPolicyRate())
                     + " until the month turns, then goes to " + pct2(tied) + ".")));
         }
         if (ruleHas) {
+            boolean goldAim = gold && market.getAim() == DebtManager.Aim.GOLD;
             c.getChildren().addAll(Kept.scope("ruleSets", () -> List.<Node>of(
-                    line("The rule sets the spread: " + plain(DebtManager.CURRENCY_WEIGHT) + " × the gap (the "
-                            + "shadow rate " + curGap(gap, "the peg") + ") = " + points(spread) + ".", null),
+                    line(goldAim
+                            ? "The rule sets the spread from the cover: " + pointsOf(DebtManager.GOLD_DEFENCE * 100) + " at the law's " + pct0(ForeignAccounts.COVER_RATIO)
+                                    + ", nothing at " + pct0(DebtManager.GOLD_DEFENCE_FROM) + "; the cover is " + coverShare(cover) + ", so " + points(spread) + "."
+                            : "The rule sets the spread: " + plain(DebtManager.CURRENCY_WEIGHT) + " × the gap (the "
+                                    + "shadow rate " + curGap(gap, gold ? "the centre" : "the peg") + ") = " + points(spread) + ".", null),
                     stepChip("the rule has it", () -> { }, true))));
         } else {
             c.getChildren().addAll(Kept.scope("spread", () -> {
@@ -4539,7 +4803,7 @@ final class PolicyScreen {
                 return out;
             }));
         }
-        c.getChildren().add(line("A free dial, an open border and a fixed rate cannot all hold at once: under the peg the "
+        c.getChildren().add(line("A free dial, an open border and a fixed rate cannot all hold at once: under " + (gold ? "gold" : "the peg") + " the "
                 + "city gives up the first.", null));
         return c;
     }
@@ -4554,6 +4818,9 @@ final class PolicyScreen {
         String half = "half of that gone in " + plain(ForeignAccounts.INTERVENTION_HALF_LIFE) + " months";
         String sale = "a sale would make the " + sym() + " about " + share1(-Math.expm1(-effect)) + " dearer, " + half
                 + "; a purchase about " + share1(Math.expm1(effect)) + " cheaper.";
+        if (fx.getRegime() == ForeignAccounts.Regime.GOLD) {
+            return size + "under gold the rate stays inside the gold points: " + sale + " Past a gold point the vault holds the rate, and a sale ships gold first.";
+        }
         return fx.getRegime() == ForeignAccounts.Regime.PEG
                 ? size + "under the peg it moves nothing: the rate is held, and a sale is more of the vault spent holding it. "
                         + "Floating, leaning or in a band, " + sale

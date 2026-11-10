@@ -156,8 +156,10 @@ public class GoldStandardCheck {
         double rate = fx.getRate();
         assertTrue("fixture: a settled currency on Lean at a rate of 1.00, gold rated at GoldPrice.PAR_1900, no mint struck", Math.abs(rate - 1) < 1e-9 && fx.hasRate(GOLD)
                 && fx.getRegime() == LEAN && fx.getMintPrice() == 0 && fx.getMintRate() == 0 && !fx.isMintFollowing() && fx.getGoldEvent() == NO_EVENT);
+        double atToday = fx.mintAtToday();   // read before entering: what the screen offers as the par
         fx.setRegime(ON_GOLD);
         assertTrue("setRegime(GOLD) enters Gold", fx.getRegime() == ON_GOLD);
+        same("...at the par mintAtToday() said before it was entered (the screen's staged par starts there)", fx.getMintPrice(), atToday);
         same("the mint price is the day's rate times gold's US$ price", fx.getMintPrice(), rate * PRICE);
         same("...the mint rate is the day's rate", fx.getMintRate(), rate);
         close("...and the centre is the day's rate: goldCentre() is getRate()", fx.goldCentre(), rate, 1e-12);
@@ -172,6 +174,7 @@ public class GoldStandardCheck {
         never.setRegime(ON_GOLD);
         assertTrue("a currency never handed a gold price cannot enter Gold: setRegime(GOLD) is refused, it stays on Lean and no mint is struck",
                 never.getRegime() == LEAN && never.getMintPrice() == 0 && never.getMintRate() == 0 && !never.hasRate(GOLD));
+        assertTrue("...and its mintAtToday() is NaN: there is no par to offer", Double.isNaN(never.mintAtToday()));
         ForeignAccounts eight = CurrencyRegimeCheck.book(TRADE, TRADE, DEEP, 0, LEAN);
         eight.setMoneyRates(Arrays.copyOf(rates(PRICE), WorldMoneys.EIGHT.size()));
         eight.setRegime(ON_GOLD);
@@ -180,6 +183,7 @@ public class GoldStandardCheck {
         nan.setMoneyRates(rates(Double.NaN));
         nan.setRegime(ON_GOLD);
         assertTrue("...nor one handed a gold price that is no number", nan.getRegime() == LEAN && !nan.hasRate(GOLD) && nan.getMintPrice() == 0);
+        assertTrue("...whose mintAtToday() is NaN too", Double.isNaN(nan.mintAtToday()));
         nan.setMoneyRates(rates(PRICE));
         nan.setRegime(ON_GOLD);
         assertTrue("...and the refusal cleared nothing: once the price is handed it enters", nan.getRegime() == ON_GOLD && nan.getMintPrice() > 0);
@@ -218,6 +222,13 @@ public class GoldStandardCheck {
         assertTrue("leaving Gold clears the following and the open date", held.getRegime() == LEAN && !held.isMintFollowing() && held.getGoldEvent() == NO_EVENT);
         same("...and keeps the gold in the vault: the ounces are what they were", held.getHolding(GOLD), ounces);
         same("...worth gold's price an ounce", held.getHoldingUsd(GOLD), ounces * PRICE);
+
+        // The cover at a par not yet struck (Policy's staged note): goldCover() when the par is the one in force, and the ounces at the par over M0 off Gold.
+        ForeignAccounts at = onGold(TRADE, TRADE, 1_000, 20_000, 0, 2.0);
+        double m0 = at.goldAtMint() / 2.0;
+        close("goldCoverAt() at the mint price in force is goldCover() (" + String.format("%.4f", at.goldCover(m0)) + ")", at.goldCoverAt(at.getMintPrice(), m0), at.goldCover(m0), 1e-12);
+        close("...at twice that par, twice the cover", at.goldCoverAt(2 * at.getMintPrice(), m0), 2 * at.goldCover(m0), 1e-12);
+        close("...and off Gold, the vault's ounces at the par over M0: what entering at it would give", held.goldCoverAt(PRICE, ounces * PRICE / 2), 2, 1e-12);
     }
 
     /* =====================================================================

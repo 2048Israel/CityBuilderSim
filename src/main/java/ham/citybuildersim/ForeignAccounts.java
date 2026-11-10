@@ -1511,7 +1511,7 @@ public class ForeignAccounts {
             bandSlope = 0;
             bandWidth = BAND_WIDTH;
         } else if (r == Regime.GOLD) {
-            mintPrice = rate * usdPer[GOLD];
+            mintPrice = mintAtToday();
             mintRate = rate;
             mintFollows = false;
             goldEvent = GoldEvent.NONE;
@@ -1646,6 +1646,8 @@ public class ForeignAccounts {
     /** ...and its strong edge. */
     public double bandStrongEdge()    { return bandCentre * (1 - bandWidth); }
 
+    /** The mint price entering Gold strikes today, D$ an ounce: the day's rate times gold's price, so the D$ keeps its value; NaN where gold has no price (the regime is then refused). The screen's staged par starts from it. Pure. */
+    public double mintAtToday() { return hasRate(GOLD) && usdPer[GOLD] > 0 ? rate * usdPer[GOLD] : Double.NaN; }
     /** The gold's mint price, D$ a troy ounce (0 until Gold is entered). */
     public double getMintPrice()      { return mintPrice; }
     /** The rate the mint price was struck at, D$ per US$ (0 until Gold is entered): the mint price over gold's US$ price that month. */
@@ -1671,6 +1673,12 @@ public class ForeignAccounts {
      */
     public double goldCover(double m0) {
         return coverOf(vault[GOLD], m0);
+    }
+
+    /** The cover the vault's gold would make at this mint price, D$ an ounce, over this M0: goldCover() at a par not yet struck (the par a city entering Gold has staged). Pure. */
+    public double goldCoverAt(double price, double m0) {
+        if (!(m0 > 0)) return vault[GOLD] > 0 ? Double.POSITIVE_INFINITY : 0;
+        return vault[GOLD] * price / m0;
     }
 
     /** The cover of this many thousands of ounces at the mint price over this M0: goldCover()'s rule for any weight. Pure. */

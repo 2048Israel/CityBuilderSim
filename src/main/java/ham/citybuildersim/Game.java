@@ -6000,6 +6000,9 @@ public class Game {
     /** The gold cover: the vault's gold at the mint price over M0 (ForeignAccounts.goldCover()); infinite with gold and no M0, 0 without gold. */
     public double getGoldCover() { return foreign.goldCover(centralBank.m0()); }
 
+    /** The cover the vault's gold would make at this par, D$ an ounce, over M0 (ForeignAccounts.goldCoverAt()): what entering Gold at a staged par would give. */
+    public double getGoldCoverAt(double price) { return foreign.goldCoverAt(price, centralBank.m0()); }
+
     /** The gold above the law's cover, in US$ at gold's price (ForeignAccounts.freeGoldUsd()); 0 outside Gold. */
     public double getFreeGoldUsd() { return foreign.freeGoldUsd(centralBank.m0()); }
 
