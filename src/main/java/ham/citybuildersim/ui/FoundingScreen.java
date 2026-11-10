@@ -9,9 +9,11 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -68,8 +70,9 @@ import static ham.citybuildersim.ui.Pieces.*;
  *
  * TYPING DOES NOT REDRAW THE PAGE. The page is rebuilt when a card, a link or
  * a choice of world changes it; a keystroke only refreshes the lines that
- * depend on it - the currency, and whether Found is lit and why not - so the
- * field being typed in keeps its focus and its caret.
+ * depend on it - the currency, the figures of the cards and the bounds written
+ * in its sign (FM1), the sign's place chips, and whether Found is lit and why
+ * not - so the field being typed in keeps its focus and its caret.
  *
  * AND THE GROUND IT STANDS ON (0.7.56, batch J1a). A row for the World: the
  * seed of the city's coast, lakes, river and ore (World, the project's
@@ -140,6 +143,9 @@ public final class FoundingScreen {
     private final FoundingName name = new FoundingName();
     private boolean ownCurrency;
     private String typedName = "", typedCode = "";
+    /** The typed money's sign and its place (FM1): "$" before the figure until the player types another or moves it. */
+    private String typedSign = Currency.SYMBOL;
+    private boolean signAfter;
     private Founding.Preset preset = Founding.Preset.STANDARD;
     /** A custom founding, as typed: millions of the city's money, and millions of US dollars. */
     private String customCash = "", customUsd = "";
@@ -166,8 +172,11 @@ public final class FoundingScreen {
 
     /* ------------------------------------------------ what a keystroke refreshes */
 
-    private Label currencyLine, whyNot;
-    private Button found;
+    private Label currencyLine, whyNot, boundsLine;
+    private Button found, beforeChip, afterChip;
+    /** The preset cards' figures and tips, written in the money being chosen: refresh() rewrites them on a keystroke, which redraws nothing. */
+    private final java.util.Map<Founding.Preset, Label> cardFigures = new java.util.EnumMap<>(Founding.Preset.class);
+    private final java.util.Map<Founding.Preset, Tooltip> cardTips = new java.util.EnumMap<>(Founding.Preset.class);
     private TextField nameField, searchField;
     private VBox cardBox, hitsBox;
 
@@ -191,6 +200,8 @@ public final class FoundingScreen {
         ownCurrency = false;
         typedName = "";
         typedCode = "";
+        typedSign = Currency.SYMBOL;
+        signAfter = false;
         preset = Founding.Preset.STANDARD;
         // Custom opens on the Standard figures, in millions, for the player to move.
         customCash = trim(Founding.Preset.STANDARD.cash() / 1000);
@@ -257,6 +268,11 @@ public final class FoundingScreen {
        ===================================================================== */
     void draw() {
         ui.clearMenu(SCREEN, this::draw);
+        // This page's controls are new; the ones the last page left for refresh() to write are gone.
+        cardFigures.clear();
+        cardTips.clear();
+        boundsLine = null;
+        beforeChip = afterChip = null;
         boolean two = earth;
         double wide = two ? LEFT : PANEL - 2 * PANEL_PAD;
 
@@ -277,8 +293,8 @@ public final class FoundingScreen {
         currencyLine = new Label("");
         currencyLine.setStyle(Palette.words(Palette.SIZE_SECTION - 1, Palette.TEXT_MUTED));
         Tooltip.install(currencyLine, new Tooltip(ownCurrency
-                ? String.format("A name, and a code of exactly %d letters A to Z - %s is the world's money,"
-                        + " not the city's.", Currency.CODE_LENGTH, Currency.FOREIGN_CODE)
+                ? String.format("A name, a code of exactly %d letters A to Z - %s is the world's money,"
+                        + " not the city's - and the sign it is written with.", Currency.CODE_LENGTH, Currency.FOREIGN_CODE)
                 : "Named after the city: its first three letters are the code, and its initial and $"
                         + " mark it wherever a US dollar is beside it."));
         Hyperlink own = new Hyperlink(ownCurrency ? "name it after the city" : "name it yourself");
@@ -286,6 +302,7 @@ public final class FoundingScreen {
         own.setOnAction(e -> { ownCurrency = !ownCurrency; draw(); });
         HBox moneyRow = new HBox(0, currencyLine, own);
         moneyRow.setAlignment(Pos.BASELINE_LEFT);
+        // Room beside moneyRow for a "start on gold" box (Pending GD3-F): not built here.
 
         VBox nameBlock = new VBox(6, caption("ITS NAME"), nameField, moneyRow);
         if (ownCurrency) {
@@ -300,15 +317,41 @@ public final class FoundingScreen {
             code.textProperty().addListener((o, was, now) -> { typedCode = now; refresh(); });
             HBox pair = new HBox(Palette.GAP, money, code);
             pair.setAlignment(Pos.CENTER_LEFT);
+            nameBlock.getChildren().add(pair);
+
+            // The sign (FM1): typed, or picked from the signs the interface's font draws; and where it goes.
+            TextField sign = new TextField(typedSign);
+            sign.setPromptText("$");
+            sign.setPrefWidth(70);
+            sign.setTextFormatter(new TextFormatter<String>(change -> {
+                String t = change.getControlNewText();
+                return t.codePointCount(0, t.length()) > Currency.MAX_SIGN_LENGTH ? null : change;
+            }));
+            sign.setTooltip(new Tooltip(String.format("The sign the money is written with, up to %d characters:"
+                    + " the interface's font must draw it.", Currency.MAX_SIGN_LENGTH)));
+            sign.textProperty().addListener((o, was, now) -> { typedSign = now; refresh(); });
+            beforeChip = kindChip("", !signAfter, true, true);
+            beforeChip.setOnAction(x -> { if (signAfter) { signAfter = false; draw(); } });
+            afterChip = kindChip("", signAfter, false, true);
+            afterChip.setOnAction(x -> { if (!signAfter) { signAfter = true; draw(); } });
+            HBox place = new HBox(0, beforeChip, afterChip);
+            HBox signRow = new HBox(Palette.GAP, sign, place);
+            signRow.setAlignment(Pos.CENTER_LEFT);
+            FlowPane offered = new FlowPane(6, 6);
+            offered.setPrefWrapLength(wide);
+            for (String s : SignFont.offered()) offered.getChildren().add(signChip(s, sign));
+            nameBlock.getChildren().addAll(signRow, offered);
+
             Label note = new Label(String.format(
-                    "A name, and a code of exactly %d letters A to Z - %s is the world's money, "
-                    + "not the city's. Its plural adds an s, unless it ends in one; on the screens it is "
-                    + "written $, and its initial and $ wherever a US dollar is beside it.",
-                    Currency.CODE_LENGTH, Currency.FOREIGN_CODE));
+                    "A name, a code of exactly %d letters A to Z - %s is the world's money, not the city's - "
+                    + "and a sign of up to %d characters, typed or picked, written before the figure or after it. "
+                    + "Its plural adds an s, unless it ends in one. Wherever a US dollar is beside it, a sign "
+                    + "that other moneys use too carries the money's initial; one that is nobody else's stands alone.",
+                    Currency.CODE_LENGTH, Currency.FOREIGN_CODE, Currency.MAX_SIGN_LENGTH));
             note.setWrapText(true);
             note.setMaxWidth(wide);
             note.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-            nameBlock.getChildren().addAll(pair, note);
+            nameBlock.getChildren().add(note);
         }
 
         /* ----------------------- what it starts with ------------------------ */
@@ -336,11 +379,8 @@ public final class FoundingScreen {
             inUsd.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
             HBox fields = new HBox(Palette.GAP, cash, inCash, usd, inUsd);
             fields.setAlignment(Pos.CENTER_LEFT);
-            Label bounds = new Label(String.format(
-                    "Between %s and %s in the treasury, and between %s and %s in the vault - "
-                    + "room to try a city poorer or richer than any preset, not advice.",
-                    money(Founding.MIN_CASH), money(Founding.MAX_CASH),
-                    usd(Founding.MIN_RESERVE_USD), usd(Founding.MAX_RESERVE_USD)));
+            Label bounds = new Label(boundsWords());
+            boundsLine = bounds;
             bounds.setWrapText(true);
             bounds.setMaxWidth(wide);
             bounds.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
@@ -456,6 +496,16 @@ public final class FoundingScreen {
         HBox row = new HBox(0, e, g);
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
+    }
+
+    /** One of the signs the font draws, as a small button that types itself into the sign's field. */
+    private static Button signChip(String sign, TextField into) {
+        Button b = new Button(sign);
+        b.setStyle("-fx-font-size: 13px; -fx-text-fill: " + Palette.TEXT_HEAD + ";"
+                + " -fx-background-color: " + Palette.RAISED + "; -fx-background-radius: 6;"
+                + " -fx-border-color: " + Palette.EDGE + "; -fx-border-radius: 6; -fx-padding: 4 10 4 10; -fx-cursor: hand;");
+        b.setOnAction(e -> into.setText(sign));
+        return b;
     }
 
     private static Button kindChip(String words, boolean on, boolean first, boolean usable) {
@@ -789,10 +839,8 @@ public final class FoundingScreen {
             top.getChildren().add(chip);
         }
 
-        Currency money = currency();
-        String here = money == null ? Currency.SYMBOL : money.qualifiedSymbol();
-        Label figures = new Label(p == Founding.Preset.INSANE ? "nothing"
-                : compact(marked(here, money(p.cash()))) + " · " + compact(usd(p.reserveUsd())));
+        Label figures = new Label(p == Founding.Preset.INSANE ? "nothing" : cardWords(p));
+        if (p != Founding.Preset.INSANE) cardFigures.put(p, figures);
         figures.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 14px;"
                 + " -fx-text-fill: " + Palette.TEXT_HEAD + ";");
         figures.setWrapText(true);
@@ -814,11 +862,11 @@ public final class FoundingScreen {
         card.setStyle("-fx-padding: 14; -fx-background-radius: 10; -fx-border-radius: 10; -fx-border-width: 2;"
                 + " -fx-cursor: hand; -fx-background-color: " + (on ? Palette.PINNED : Palette.RAISED) + ";"
                 + " -fx-border-color: " + (on ? Palette.MONEY : Palette.EDGE) + ";");
-        Tooltip tip = new Tooltip(p == Founding.Preset.INSANE ? "Nothing in hand."
-                : "In the treasury " + marked(here, money(p.cash())) + ", in the vault " + usd(p.reserveUsd()) + ".");
+        Tooltip tip = new Tooltip(p == Founding.Preset.INSANE ? "Nothing in hand." : tipWords(p));
+        if (p != Founding.Preset.INSANE) cardTips.put(p, tip);
         // Insane's bond is the plots the world's centre holds (0.7.106): priced on the seed as typed when the
         // tip opens, not on every keystroke - drawing a new world's centre takes a moment.
-        if (p == Founding.Preset.INSANE) tip.setOnShowing(e -> tip.setText(insaneWords()));
+        if (p == Founding.Preset.INSANE) tip.setOnShowing(e -> tip.setText(Currency.using(chosenMoney(), this::insaneWords)));
         Tooltip.install(card, tip);
         card.setOnMouseClicked(e -> { preset = p; draw(); });
         return card;
@@ -837,9 +885,36 @@ public final class FoundingScreen {
         return head + ": " + usd(Founding.landBondUsd(typed == null ? Founding.DEFAULT_WORLD_SEED : typed)) + ".";
     }
 
-    /** A whole amount without its ".0": "D$100.0M" is "D$100M" on a card, where the room is a card's. */
+    /** The money the page is choosing now: the typed one, the city's derived one, or the "$" before while a typed pair does not pass yet. */
+    private Currency chosenMoney() {
+        Currency c = currency();
+        return c != null ? c : new Currency("money", "money", "XXX", Currency.SYMBOL, Currency.SYMBOL);
+    }
+
+    /** A card's figures, the treasury (with the money's qualified sign, as the vault is beside it) and the vault, written in the money being chosen. */
+    private String cardWords(Founding.Preset p) {
+        Currency c = chosenMoney();
+        return Currency.using(c, () -> compact(c.qualify(money(p.cash()))) + " · " + compact(usd(p.reserveUsd())));
+    }
+
+    /** A card's tip: the same figures in full. */
+    private String tipWords(Founding.Preset p) {
+        Currency c = chosenMoney();
+        return Currency.using(c, () -> "In the treasury " + c.qualify(money(p.cash())) + ", in the vault " + usd(p.reserveUsd()) + ".");
+    }
+
+    /** The Custom fields' bounds, in the money being chosen. */
+    private String boundsWords() {
+        return Currency.using(chosenMoney(), () -> String.format(
+                "Between %s and %s in the treasury, and between %s and %s in the vault - "
+                + "room to try a city poorer or richer than any preset, not advice.",
+                money(Founding.MIN_CASH), money(Founding.MAX_CASH),
+                usd(Founding.MIN_RESERVE_USD), usd(Founding.MAX_RESERVE_USD)));
+    }
+
+    /** A whole amount without its ".0": "D$100.0M" is "D$100M", and "2.0B kr" "2B kr", on a card, where the room is a card's. */
     private static String compact(String amount) {
-        return amount.replaceAll("\\.0([kMBT])$", "$1");
+        return amount.replaceAll("\\.0([kMBT])(?!\\d)", "$1");
     }
 
     /* =====================================================================
@@ -914,6 +989,15 @@ public final class FoundingScreen {
                 ? (ownCurrency ? "Its money: not named yet · " : "Its money: named after the city, once it has a name · ")
                 : "Its money: the " + money.name() + ", " + money.qualifiedSymbol() + " · ");
 
+        // ...and every figure written in that money, in the labels the page already holds, so the field being typed in keeps its focus.
+        for (java.util.Map.Entry<Founding.Preset, Label> e : cardFigures.entrySet()) e.getValue().setText(cardWords(e.getKey()));
+        for (java.util.Map.Entry<Founding.Preset, Tooltip> e : cardTips.entrySet()) e.getValue().setText(tipWords(e.getKey()));
+        if (boundsLine != null) boundsLine.setText(boundsWords());
+        if (beforeChip != null && afterChip != null) {
+            beforeChip.setText("before: " + signedAs(false).write(SIGN_EXAMPLE));
+            afterChip.setText("after: " + signedAs(true).write(SIGN_EXAMPLE));
+        }
+
         String problem = problem();
         found.setDisable(problem != null);
         whyNot.setText(problem == null ? "" : problem);
@@ -925,10 +1009,20 @@ public final class FoundingScreen {
        THE CHOICES, AS THE MODEL READS THEM
        ===================================================================== */
 
-    /** The money as chosen, or null when a typed pair does not pass. */
+    /** The money as chosen, or null when a typed name, code or sign does not pass. */
     private Currency currency() {
-        if (ownCurrency) return Currency.typed(typedName, typedCode);
+        if (ownCurrency) return Currency.typed(typedName, typedCode, typedSign, signAfter);
         return Currency.fromCityName(cityName);
+    }
+
+    /** The figure the place chips show the sign beside. */
+    private static final String SIGN_EXAMPLE = "2.6M";
+
+    /** A money that is only the typed sign, in the given place, for the place chips' captions: the "$" where the sign does not pass yet. */
+    private Currency signedAs(boolean after) {
+        String s = typedSign == null ? "" : typedSign.trim();
+        if (Currency.signProblem(s) != null) s = Currency.SYMBOL;
+        return new Currency("money", "money", "XXX", s, s, after);
     }
 
     /** The treasury in thousands, or NaN when a custom figure will not parse. */
@@ -964,10 +1058,13 @@ public final class FoundingScreen {
             if (p != null) return p;
             p = Currency.codeProblem(typedCode);
             if (p != null) return p;
+            p = Currency.signProblem(typedSign);
+            if (p != null) return p;
+            if (!SignFont.draws(typedSign.trim())) return "The interface's font cannot draw " + typedSign.trim() + ".";
         }
         if (preset == Founding.Preset.CUSTOM) {
-            if (!Double.isFinite(cash())) return "Type the treasury in millions: 100 is " + money(100_000) + ".";
-            if (!Double.isFinite(reserveUsd())) return "Type the vault in millions of US dollars: 25 is " + usd(25_000) + ".";
+            if (!Double.isFinite(cash())) return Currency.using(chosenMoney(), () -> "Type the treasury in millions: 100 is " + money(100_000) + ".");
+            if (!Double.isFinite(reserveUsd())) return Currency.using(chosenMoney(), () -> "Type the vault in millions of US dollars: 25 is " + usd(25_000) + ".");
         }
         if (seed() == null) return "Type the world as a whole number, like " + Founding.DEFAULT_WORLD_SEED + ", or roll the dice.";
         if (pathSeed() == null) return "Type the path's seed as a whole number, like " + Nations.DEFAULT_SEED + ", or roll the dice.";

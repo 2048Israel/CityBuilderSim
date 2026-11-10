@@ -1428,6 +1428,8 @@ public abstract class Household {
 
     @Override
     public String toString() {
-        return String.format("%s x%.1f: $%.3fk saved, $%.3fk owed", label(), households, savings, debt);
+        Currency w = Currency.writing();
+        return String.format("%s x%.1f: %s saved, %s owed", label(), households,
+                w.write(String.format("%.3fk", savings)), w.write(String.format("%.3fk", debt)));
     }
 }

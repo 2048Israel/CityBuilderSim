@@ -1417,8 +1417,8 @@ public class EconomyManager {
             if (interim > 0) {
                 s.addCash(interim);
                 GameLog.note(String.format(
-                        "%s could not pay its bills: its creditors took a loss, and the bank lent the $%,.0fk still unpaid as interim financing, ranked ahead of its other debt.",
-                        s.key(), interim));
+                        "%s could not pay its bills: its creditors took a loss, and the bank lent the %s still unpaid as interim financing, ranked ahead of its other debt.",
+                        s.key(), Currency.writing().write(String.format("%,.0fk", interim))));
             }
             double forgiven = businessDebtManager.takeOverdraftForgiven(s.key());
             overdraftForgivenThisMonthBySector.put(s.key(), forgiven);
@@ -1427,8 +1427,8 @@ public class EconomyManager {
                 overdraftForgivenThisMonth += forgiven;
                 overdraftForgivenBySector.merge(s.key(), forgiven, Double::sum);
                 GameLog.note(String.format(
-                        "%s went bankrupt: $%,.0fk of bills it could not pay were written off.",
-                        s.key(), forgiven));
+                        "%s went bankrupt: %s of bills it could not pay were written off.",
+                        s.key(), Currency.writing().write(String.format("%,.0fk", forgiven))));
             }
         }
         return writtenOff;
@@ -2549,40 +2549,40 @@ public class EconomyManager {
        =================================================================== */
 
     public void printWageTaxInfo() {
-        System.out.printf("\nTOTAL WAGE TAX INCOME: $%s%n", formatter.format(totalWageTax));
+        System.out.printf("\nTOTAL WAGE TAX INCOME: %s%n", Currency.writing().write(formatter.format(totalWageTax)));
     }
 
     public void printCityStats() {
         System.out.println("\n====================== CITY FINANCIAL REPORT ======================");
         double totalRev = getBusinessTax() + getIndustrialTax() + salesTax + totalWageTax;
         System.out.println("\n--------------------------- REVENUES ---------------------------");
-        System.out.printf("Business Tax Revenue:        $%s Thousand%n", formatter.format(getBusinessTax()));
-        System.out.printf("Industrial Tax Revenue:      $%s Thousand%n", formatter.format(getIndustrialTax()));
-        System.out.printf("Sales Tax Revenue:           $%s Thousand%n", formatter.format(salesTax));
-        System.out.printf("Wage Tax Revenue:            $%s Thousand%n", formatter.format(totalWageTax));
+        System.out.printf("Business Tax Revenue:        %s%n", Currency.writing().write(formatter.format(getBusinessTax()) + " Thousand"));
+        System.out.printf("Industrial Tax Revenue:      %s%n", Currency.writing().write(formatter.format(getIndustrialTax()) + " Thousand"));
+        System.out.printf("Sales Tax Revenue:           %s%n", Currency.writing().write(formatter.format(salesTax) + " Thousand"));
+        System.out.printf("Wage Tax Revenue:            %s%n", Currency.writing().write(formatter.format(totalWageTax) + " Thousand"));
         if (utilityIncome >= 0) {
-            System.out.printf("Municipal Services Profit:    $%s Thousand%n", formatter.format(utilityIncome));
+            System.out.printf("Municipal Services Profit:    %s%n", Currency.writing().write(formatter.format(utilityIncome) + " Thousand"));
             totalRev += utilityIncome;
         }
         System.out.println("---------------------------------------------------------------");
-        System.out.printf("TOTAL GOVERNMENT REVENUE:    $%s Thousand%n", formatter.format(totalRev));
+        System.out.printf("TOTAL GOVERNMENT REVENUE:    %s%n", Currency.writing().write(formatter.format(totalRev) + " Thousand"));
         double totalExp = 0;
         System.out.println("\n--------------------------- EXPENSES ---------------------------");
         if (utilityIncome < 0) {
-            System.out.printf("Municipal Services Loss:      $%s Thousand%n", formatter.format(utilityIncome));
+            System.out.printf("Municipal Services Loss:      %s%n", Currency.writing().write(formatter.format(utilityIncome) + " Thousand"));
             totalExp -= utilityIncome;
         }
-        System.out.printf("Debt Interest Payments:      $%s Thousand%n", formatter.format(interest));
+        System.out.printf("Debt Interest Payments:      %s%n", Currency.writing().write(formatter.format(interest) + " Thousand"));
         totalExp += interest;
         System.out.println("---------------------------------------------------------------");
-        System.out.printf("TOTAL GOVERNMENT EXPENSES:   $%s Thousand%n", formatter.format(totalExp));
+        System.out.printf("TOTAL GOVERNMENT EXPENSES:   %s%n", Currency.writing().write(formatter.format(totalExp) + " Thousand"));
         System.out.println("\n----------------------- BUDGET BALANCE ------------------------");
-        System.out.printf("Monthly Budget Balance:      $%s Thousand%n", formatter.format(totalRev - totalExp));
+        System.out.printf("Monthly Budget Balance:      %s%n", Currency.writing().write(formatter.format(totalRev - totalExp) + " Thousand"));
         System.out.println("\n--------------------- ECONOMIC INDICATORS ---------------------");
-        System.out.printf("Monthly GDP:                 $%s Thousand%n", formatter.format(GDP / 12));
-        System.out.printf("Annualized GDP:              $%s Thousand%n", formatter.format(yearGDP));
+        System.out.printf("Monthly GDP:                 %s%n", Currency.writing().write(formatter.format(GDP / 12) + " Thousand"));
+        System.out.printf("Annualized GDP:              %s%n", Currency.writing().write(formatter.format(yearGDP) + " Thousand"));
         if (population > 0) {
-            System.out.printf("GDP per Capita:              $%s%n", formatter.format(((yearGDP) / population) * 1000));
+            System.out.printf("GDP per Capita:              %s%n", Currency.writing().write(formatter.format(((yearGDP) / population) * 1000)));
         }
         System.out.println(debtToGdpLine(debt, yearGDP));
         System.out.println("================================================================\n");

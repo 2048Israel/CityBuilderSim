@@ -632,9 +632,9 @@ public class UtilitiesHandler {
         double elecPay = getElectricityPayroll();
 
         System.out.println("\nINCOME STATEMENT (ELECTRIC POWER)");
-        System.out.printf("  Electricity Sales:              $%s%n", formatter.format(elecRev));
-        System.out.printf("  Payroll Expense:                -$%s%n", formatter.format(elecPay));
-        System.out.printf("  NET INCOME (ELECTRIC):          $%s%n", formatter.format(elecRev - elecPay));
+        System.out.printf("  Electricity Sales:              %s%n", Currency.writing().write(formatter.format(elecRev)));
+        System.out.printf("  Payroll Expense:                -%s%n", Currency.writing().write(formatter.format(elecPay)));
+        System.out.printf("  NET INCOME (ELECTRIC):          %s%n", Currency.writing().write(formatter.format(elecRev - elecPay)));
 
         if (energyRatio < 1.0) {
             System.out.println("\n[CRITICAL] ELECTRICAL GRID SHORTAGE");
@@ -664,7 +664,7 @@ public class UtilitiesHandler {
                     formatter.format(freshCap), getFreshIdleShare() * 100);
         }
         System.out.printf("Current Output:           %s units%n", formatter.format(waterProduction));
-        System.out.printf("Price per Unit:           $%s%n", formatter.format(pricePerWaterUnit));
+        System.out.printf("Price per Unit:           %s%n", Currency.writing().write(formatter.format(pricePerWaterUnit)));
 
         double waterRev = getWaterRevenue();
         double waterPay = getWaterPayroll();
@@ -672,9 +672,9 @@ public class UtilitiesHandler {
         System.out.println("\nINCOME STATEMENT (WATER)");
         System.out.println("  (Only commercial and industrial draw is invoiced -");
         System.out.println("   households have no cash, so resident water is unbilled.)");
-        System.out.printf("  Water Sales:                    $%s%n", formatter.format(waterRev));
-        System.out.printf("  Payroll Expense:                -$%s%n", formatter.format(waterPay));
-        System.out.printf("  NET INCOME (WATER):             $%s%n", formatter.format(waterRev - waterPay));
+        System.out.printf("  Water Sales:                    %s%n", Currency.writing().write(formatter.format(waterRev)));
+        System.out.printf("  Payroll Expense:                -%s%n", Currency.writing().write(formatter.format(waterPay)));
+        System.out.printf("  NET INCOME (WATER):             %s%n", Currency.writing().write(formatter.format(waterRev - waterPay)));
 
         if (waterRatio < 1.0) {
             System.out.println("\n[CRITICAL] WATER SUPPLY SHORTAGE");
@@ -695,16 +695,16 @@ public class UtilitiesHandler {
         double netIncome = totalRev - totalPay;
 
         System.out.println("\n------------------ CONSOLIDATED (ALL UTILITIES) ------------------------");
-        System.out.printf("Total Revenue:                    $%s%n", formatter.format(totalRev));
-        System.out.printf("Total Operating Expenses:         -$%s%n", formatter.format(totalPay));
-        System.out.printf("NET INCOME (UTILITIES):           $%s%n", formatter.format(netIncome));
+        System.out.printf("Total Revenue:                    %s%n", Currency.writing().write(formatter.format(totalRev)));
+        System.out.printf("Total Operating Expenses:         -%s%n", Currency.writing().write(formatter.format(totalPay)));
+        System.out.printf("NET INCOME (UTILITIES):           %s%n", Currency.writing().write(formatter.format(netIncome)));
 
         /* Tax Summary */
         double taxIncome = netIncome; //* pTaxRate;
 
         System.out.println("\n----------------------------- TAX SUMMARY -----------------------------");
-        System.out.printf("Utility Net Income:               $%s%n", formatter.format(netIncome));
-        System.out.printf("Government Tax Revenue:           $%s%n", formatter.format(taxIncome));
+        System.out.printf("Utility Net Income:               %s%n", Currency.writing().write(formatter.format(netIncome)));
+        System.out.printf("Government Tax Revenue:           %s%n", Currency.writing().write(formatter.format(taxIncome)));
 
         System.out.println("=======================================================================\n");
     }

@@ -1324,17 +1324,18 @@ public final class RefineryView {
     public static String price(double thousands) {
         if (!Double.isFinite(thousands)) return "—";
         double d = thousands * 1000, a = Math.abs(d);
-        if (a >= 1_000) return String.format("$%,.0f", d);
-        if (a >= 1) return String.format("$%,.2f", d);
-        if (a > 0) return String.format("$%.4f", d);
-        return "$0";
+        Currency w = Currency.writing();
+        if (a >= 1_000) return w.write(String.format("%,.0f", d));
+        if (a >= 1) return w.write(String.format("%,.2f", d));
+        if (a > 0) return w.write(String.format("%.4f", d));
+        return w.write("0");
     }
 
     /** A spread a litre, signed: "+$0.0840", "−$0.0310". */
     public static String spreadWords(double thousands) {
         if (!Double.isFinite(thousands)) return "—";
         String p = price(Math.abs(thousands));
-        return (thousands < 0 && !"$0".equals(p) ? "−" : "+") + p;
+        return (thousands < 0 && !Currency.writing().write("0").equals(p) ? "−" : "+") + p;
     }
 
     /** Barrels a day of a feed a month, to three figures: "2,000 b/d" (an Oil Refinery's 8,300 t), "240 b/d". */

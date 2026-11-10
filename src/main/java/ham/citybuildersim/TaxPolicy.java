@@ -1278,8 +1278,8 @@ public class TaxPolicy {
         double was = fuelDuty;
         fuelDuty = Double.isFinite(dutyALitre) ? Math.max(0, Math.min(maxFuelDuty(), dutyALitre)) : 0;
         if (DecisionLog.moved(was, fuelDuty)) {
-            decided(DecisionLog.TAX, String.format(java.util.Locale.ROOT, "Fuel duty to $%.2f a litre at founding prices",
-                    fuelDuty * 1000));
+            decided(DecisionLog.TAX, String.format(java.util.Locale.ROOT, "Fuel duty to %s a litre at founding prices",
+                    Currency.writing().write(String.format(java.util.Locale.ROOT, "%.2f", fuelDuty * 1000))));
         }
     }
 

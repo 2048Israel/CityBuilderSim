@@ -1,4 +1,4 @@
-# LandScreen.java - 2,576 lines · 102 methods · 22 constants · interface
+# LandScreen.java - 2,575 lines · 104 methods · 22 constants · interface
 
 `ham/citybuildersim/ui/LandScreen.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
@@ -73,48 +73,48 @@
 | 88 | THE LAND OFFICE (0.7.26) |
 | 132 | · what the page remembers between draws (0.7.26) |
 | 272 | THE WORDS. Everything the office says, worked out without a node - |
-| 309 | · the head |
-| 349 | · the ground |
-| 497 | · buy the best N |
-| 568 | · THE CITY AND ITS SIDES (0.7.61) |
-| 826 | · what the ground is worth |
-| 996 | · details |
-| 1011 | THE DRAWING |
-| 1094 | · THE GROUND |
-| 1220 | · THE LANDMASSES (ET5, 2026-10-25) |
-| 1285 | · BUY THE BEST N (0.7.13; "the next N" until 0.7.61) |
-| 1366 | · THE HERO ROW (0.7.61) |
-| 1647 | · WHAT THE GROUND IS WORTH |
-| 1869 | · details |
-| 1895 | WHEN THE CITY IS SHORT (0.7.13), the land office's own page since 0.7.26 |
-| 2221 | THE CARD ON THE MAP (0.7.137, batch M6; docs/studies/spec-earth.md 3) |
+| 315 | · the head |
+| 354 | · the ground |
+| 502 | · buy the best N |
+| 573 | · THE CITY AND ITS SIDES (0.7.61) |
+| 831 | · what the ground is worth |
+| 999 | · details |
+| 1014 | THE DRAWING |
+| 1097 | · THE GROUND |
+| 1223 | · THE LANDMASSES (ET5, 2026-10-25) |
+| 1288 | · BUY THE BEST N (0.7.13; "the next N" until 0.7.61) |
+| 1369 | · THE HERO ROW (0.7.61) |
+| 1650 | · WHAT THE GROUND IS WORTH |
+| 1872 | · details |
+| 1898 | WHEN THE CITY IS SHORT (0.7.13), the land office's own page since 0.7.26 |
+| 2222 | THE CARD ON THE MAP (0.7.137, batch M6; docs/studies/spec-earth.md 3) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 312 | `LandScreen.WHO_PAYS` | `"Investors build only on ground the city owns, and pay the city for each " + ...` | The page's (i): who pays for the ground, and who does not. |
-| 321 | `LandScreen.PAY_TIPS` | `{ "Pay by converting cash", "Pay from the vault" }` | The toggle's tooltips: its 0.7.6 names, which the chips shortened. |
-| 538 | `LandScreen.BEST_HEAD` | `"THE BEST OFFERS · cheapest dry ground first, from every side"` | The section's head over THE GROUND: the best N, from every side. |
-| 679 | `LandScreen.EMPTY_PLACE` | `"no room on this edge yet: it lists when the city grows here"` | A place waiting for room, as its row says it (spec-grid 2.5): one muted line where its offer would stand. |
-| 682 | `LandScreen.ROW_DEPOSITS` | `2` | Deposits a row shows by name before "+N": 2... |
-| 685 | `LandScreen.ROW_DEPOSIT_CHARS` | `20` | ...while their words run to no more than this many characters together, else one: 20 - "8 · 136 Mt" and "1 · 179 kt" and "+1" measured 152.8 px in the column's 158 at 9 px Plex Mono. |
-| 821 | `LandScreen.WHOLE_FIELDS` | `" in the ground: every field of it centred in this offer, whole, paid for in ...` | What a row's tooltip says after each resource's sites and tonnes (0.7.64, batch L): an offer holds every field centred on its ground whole, all its sites and tonnes, wherever its sites lie (CityLand) - Jerus: "whole i... |
-| 927 | `LandScreen.ON_TOP_INFO` | `"The ground is charged on top of the build, so a cheap building on" + " expen...` | The second card's (i), the 0.7.6 note word for word, and what the bars are. |
-| 973 | `LandScreen.ORE_INFO` | `"A mine stands on one deposit, a large one on twenty of one field, and each d...` | The Ore card's (i). |
-| 993 | `LandScreen.WAITING_INFO` | `"As of last month — the sectors decide once a month, so ground bought" + " no...` | The Waiting card's (i), the 0.7.6 note word for word. |
-| 1006 | `LandScreen.DETAILS_INFO` | `"What the world asks for a square metre of ground, as each month recorded" + ...` | The chart's (i). |
-| 1384 | `LandScreen.MAP_W` | `MapView.SMALL_W, HERO_H = MapView.SMALL_H` | The map's width and the hero row's height (spec-land 2.8). |
-| 1387 | `LandScreen.HERO_GAP` | `16` | The gap between the map and THE CITY... |
-| 1390 | `LandScreen.CITY_PANEL` | `657` | ...and THE CITY's width: what the content area's 1,273 px leave at 1,389 x 868 (spec-land 2.8's 657). |
-| 1393 | `LandScreen.ROW_H` | `28` | A row's height: 28 px (spec-land 2.8), six of them, their heads and THE CITY's inside HERO_H. |
-| 1396 | `LandScreen.ROW_COLUMNS` | `{ 24, 74, 64, 158, 82, 78, 76, 58 }` | The rows' columns, in pixels: the place (#), size, ground and water, deposits, price, a dry km2, tag, button - with the gaps, CITY_PANEL. |
-| 1399 | `LandScreen.ROW_GAP` | `4` | The gap between a row's columns. |
-| 1402 | `LandScreen.ROW_HEADS` | `{ "#", "size", "dry · fresh · sea", "deposits", "price", "a dry km²", "", "" }` | The rows' column names. |
-| 1688 | `LandScreen.WORTH_CARD` | `"-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.RAISED + ";" + "...` | A worth card's style, its edge's colour last. |
-| 1950 | `LandScreen.ABROAD_INFO` | `"Issued abroad; the dollars are in reserve, and the " + "vault pays for the l...` | The dollar offers' (i), the 0.7.13 note word for word. |
-| 2241 | `LandScreen.MAP_CARD_W` | `320` | The map's card, its width: 320 px, the pay toggle's wrap (payToggle()), so the toggle lies on one line in it. |
-| 2244 | `LandScreen.MAP_CARD_PAD` | `12` | The map's card's padding, a side: the hover card's 9 px, and 3 more for the buttons' edges. |
+| 318 | `LandScreen.WHO_PAYS` | `"Investors build only on ground the city owns, and pay the city for each " + ...` | The page's (i): who pays for the ground, and who does not. |
+| 327 | `LandScreen.PAY_TIPS` | `{ "Pay by converting cash", "Pay from the vault" }` | The toggle's tooltips: its 0.7.6 names, which the chips shortened. |
+| 543 | `LandScreen.BEST_HEAD` | `"THE BEST OFFERS · cheapest dry ground first, from every side"` | The section's head over THE GROUND: the best N, from every side. |
+| 684 | `LandScreen.EMPTY_PLACE` | `"no room on this edge yet: it lists when the city grows here"` | A place waiting for room, as its row says it (spec-grid 2.5): one muted line where its offer would stand. |
+| 687 | `LandScreen.ROW_DEPOSITS` | `2` | Deposits a row shows by name before "+N": 2... |
+| 690 | `LandScreen.ROW_DEPOSIT_CHARS` | `20` | ...while their words run to no more than this many characters together, else one: 20 - "8 · 136 Mt" and "1 · 179 kt" and "+1" measured 152.8 px in the column's 158 at 9 px Plex Mono. |
+| 826 | `LandScreen.WHOLE_FIELDS` | `" in the ground: every field of it centred in this offer, whole, paid for in ...` | What a row's tooltip says after each resource's sites and tonnes (0.7.64, batch L): an offer holds every field centred on its ground whole, all its sites and tonnes, wherever its sites lie (CityLand) - Jerus: "whole i... |
+| 930 | `LandScreen.ON_TOP_INFO` | `"The ground is charged on top of the build, so a cheap building on" + " expen...` | The second card's (i), the 0.7.6 note word for word, and what the bars are. |
+| 976 | `LandScreen.ORE_INFO` | `"A mine stands on one deposit, a large one on twenty of one field, and each d...` | The Ore card's (i). |
+| 996 | `LandScreen.WAITING_INFO` | `"As of last month — the sectors decide once a month, so ground bought" + " no...` | The Waiting card's (i), the 0.7.6 note word for word. |
+| 1009 | `LandScreen.DETAILS_INFO` | `"What the world asks for a square metre of ground, as each month recorded" + ...` | The chart's (i). |
+| 1387 | `LandScreen.MAP_W` | `MapView.SMALL_W, HERO_H = MapView.SMALL_H` | The map's width and the hero row's height (spec-land 2.8). |
+| 1390 | `LandScreen.HERO_GAP` | `16` | The gap between the map and THE CITY... |
+| 1393 | `LandScreen.CITY_PANEL` | `657` | ...and THE CITY's width: what the content area's 1,273 px leave at 1,389 x 868 (spec-land 2.8's 657). |
+| 1396 | `LandScreen.ROW_H` | `28` | A row's height: 28 px (spec-land 2.8), six of them, their heads and THE CITY's inside HERO_H. |
+| 1399 | `LandScreen.ROW_COLUMNS` | `{ 24, 74, 64, 158, 82, 78, 76, 58 }` | The rows' columns, in pixels: the place (#), size, ground and water, deposits, price, a dry km2, tag, button - with the gaps, CITY_PANEL. |
+| 1402 | `LandScreen.ROW_GAP` | `4` | The gap between a row's columns. |
+| 1405 | `LandScreen.ROW_HEADS` | `{ "#", "size", "dry · fresh · sea", "deposits", "price", "a dry km²", "", "" }` | The rows' column names. |
+| 1691 | `LandScreen.WORTH_CARD` | `"-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.RAISED + ";" + "...` | A worth card's style, its edge's colour last. |
+| 1952 | `LandScreen.ABROAD_INFO` | `"Issued abroad; the dollars are in reserve, and the " + "vault pays for the l...` | The dollar offers' (i), the 0.7.13 note word for word. |
+| 2242 | `LandScreen.MAP_CARD_W` | `320` | The map's card, its width: 320 px, the pay toggle's wrap (payToggle()), so the toggle lies on one line in it. |
+| 2245 | `LandScreen.MAP_CARD_PAD` | `12` | The map's card's padding, a side: the hover card's 9 px, and 3 more for the buttons' edges. |
 
 ## Fields (state)
 
@@ -139,7 +139,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 81 | 2496 | **type** `final class LandScreen` | The land office: whether the city has room to grow, and which ground to buy - since 0.7.61 round the city's map (batch J4; the project's spec-land.md 2.8): a head with how the city pays; the HERO ROW, the map (MapView... |
+| 81 | 2495 | **type** `final class LandScreen` | The land office: whether the city has room to grow, and which ground to buy - since 0.7.61 round the city's map (batch J4; the project's spec-land.md 2.8): a head with how the city pays; the HERO ROW, the map (MapView... |
 | 86 | 1 | `LandScreen(UserInterface ui)` |  |
 
 ### THE LAND OFFICE (0.7.26) (lines 88-131)
@@ -154,193 +154,195 @@
 | 253 | 13 | `void noteShelf()` | NEW, worked out: when the shelf's ids differ from the last draw's, the plots above the last draw's highest id arrived since - the refill after a purchase (LandManager.buyParcel() refills the window at once). |
 | 268 | 3 | `boolean isNew(LandParcel p)` | Whether this plot came onto the shelf since the player last saw it, this month. |
 
-### THE WORDS. Everything the office says, worked out without a node - (lines 272-308)
+### THE WORDS. Everything the office says, worked out without a node - (lines 272-314)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 279 | 1 | `String here()` | The city's money's mark: "D$". |
-| 282 | 1 | `String local(double thousandsPerSqFt)` | A ground price, kept a square foot, a square metre in the city's money: "D$500.74" (a square foot's D$46.52; since 0.7.68, Money.groundPrice()). |
-| 285 | 1 | `static String dollars(double thousandsPerSqFt)` | ...in the world's: "US$264.15". |
-| 288 | 3 | `String signedLocal(double thousandsPerSqFt)` | A ground price a square metre with its direction: "+D$313.88", "−D$33.37". |
-| 293 | 4 | `double houseSqFt()` | The House's plot, in square feet: what "room for N houses" divides by; 0 if the catalogue has none. |
-| 299 | 6 | `String room(double sqFt)` | "room for 1,209 houses", or "" when there is no House to count in. |
-| 307 | 1 | `static String plots(int n)` | Some plots, as the office's notes say them: "The plot", "5 plots". |
+| 282 | 1 | `String qualified(String shown)` | A figure the city's money wrote ("$500.74", "500.74 kr"), with the qualified mark in the sign's place: "D$500.74", "500.74 kr" (FM1; Currency.qualify()). |
+| 285 | 1 | `String hereFig(String number)` | An already formatted number with the qualified mark put where the city placed its sign: "D$0.7072", "0.7072 kr" (FM1). |
+| 288 | 1 | `String local(double thousandsPerSqFt)` | A ground price, kept a square foot, a square metre in the city's money: "D$500.74" (a square foot's D$46.52; since 0.7.68, Money.groundPrice()). |
+| 291 | 1 | `static String dollars(double thousandsPerSqFt)` | ...in the world's: "US$264.15". |
+| 294 | 3 | `String signedLocal(double thousandsPerSqFt)` | A ground price a square metre with its direction: "+D$313.88", "−D$33.37". |
+| 299 | 4 | `double houseSqFt()` | The House's plot, in square feet: what "room for N houses" divides by; 0 if the catalogue has none. |
+| 305 | 6 | `String room(double sqFt)` | "room for 1,209 houses", or "" when there is no House to count in. |
+| 313 | 1 | `static String plots(int n)` | Some plots, as the office's notes say them: "The plot", "5 plots". |
 
-### the head (lines 309-348)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 316 | 3 | `String[] payNames()` | The pay toggle's two chips: "Convert D$" and "From the vault". |
-| 329 | 19 | `String[] payCaption()` | The line under the toggle, and the whole sentence behind its (i) - the "how" sentence (0.7.6; its vault half 0.7.13's), word for word: converting, "D$0.7072 per US$ · vault US$6.8M untouched"; from the vault, "vault h... |
-
-### the ground (lines 349-496)
+### the head (lines 315-353)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 352 | 1 | **type** `record Cell(String label, String value, String note, String tone)` | One cell of THE GROUND's strip: its label, its figure, its line, and the figure's colour. |
-| 361 | 23 | `Cell[] strip()` | The four cells. |
-| 386 | 9 | `List<LandParcel> nextShelf(Next next)` | The offers "the best N" buys, in the shelf's order. |
-| 404 | 11 | `String[] groundFigures(Next next)` | The big figures beside the strip: the ground free and what it holds, then what the best N would leave free - "0.0301 km² free", "room for 40 houses", "→ 3.49 km² free after the best 5", "room for 4,704 houses" (square... |
-| 421 | 13 | `List<String> reliefLines()` | What the city's relief asks of its ground (ET2), one line for each kind it owns, empty for a city whose ground is all flat: the steep ground only a works may stand on and how much of it works stand on, then the foothi... |
-| 440 | 3 | `List<String> officeLines()` | What the office charges for each class of ground (ET3, spec-earth2-terrain 5.3), one line for each class the city owns or the shelf offers, empty while neither has any foothill or steep ground: LandClassView's words, ... |
-| 445 | 8 | `double groundScale(Next next)` | The bar's scale: the ground free and the best N together. |
-| 460 | 23 | `List<Segment> groundSegments(Next next, java.util.function.IntFunction<Runnable> go)` | The bar's segments: the ground free, solid pink; then the best N, each a ghost in the light pink, numbered in the shelf's order, with a sand stripe where it holds ore, its side and place, size and price on hover, and ... |
-| 485 | 5 | `List<Tick> groundTicks()` | The bar's one tick: NEEDS YOU's line, the free ground under which the GROUND row is listed. |
-| 492 | 4 | `String priceInToggle(LandParcel p)` | A plot's price in the money the toggle pays in: "D$149.7M" converting, "US$211.7M" from the vault. |
+| 322 | 3 | `String[] payNames()` | The pay toggle's two chips: "Convert D$" and "From the vault". |
+| 335 | 18 | `String[] payCaption()` | The line under the toggle, and the whole sentence behind its (i) - the "how" sentence (0.7.6; its vault half 0.7.13's), word for word: converting, "D$0.7072 per US$ · vault US$6.8M untouched"; from the vault, "vault h... |
 
-### buy the best N (lines 497-567)
+### the ground (lines 354-501)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 508 | 2 | **type** `record Next(int n, int listed, List<Integer> ids, String total, String totalTone, String other, Pieces.Pres...` | What "Buy the best N" buys and says: how many, out of how many listed, their ids, the total in the toggle's money (neutral, red only when no way pays without debt - canAffordLandParcels()), the other money small, the ... |
-| 511 | 25 | `Next next()` |  |
-| 546 | 14 | `String offerInfo()` | The section's (i): the twenty-four offers, six a side, place by place; how the office ranks them (BEST VALUE, the best N); and the blocks every offer is made of, as LandMarket lists them (0.7.67: whole blocks of the c... |
-| 562 | 5 | `static String blockSide(int level)` | A block's side in words (0.7.69): metres under a kilometre - "120 m", "960 m" - and kilometres from it - "1.92 km", "245.76 km" - exact, as a block is 2^level plots of World.PLOT_M. |
+| 357 | 1 | **type** `record Cell(String label, String value, String note, String tone)` | One cell of THE GROUND's strip: its label, its figure, its line, and the figure's colour. |
+| 366 | 23 | `Cell[] strip()` | The four cells. |
+| 391 | 9 | `List<LandParcel> nextShelf(Next next)` | The offers "the best N" buys, in the shelf's order. |
+| 409 | 11 | `String[] groundFigures(Next next)` | The big figures beside the strip: the ground free and what it holds, then what the best N would leave free - "0.0301 km² free", "room for 40 houses", "→ 3.49 km² free after the best 5", "room for 4,704 houses" (square... |
+| 426 | 13 | `List<String> reliefLines()` | What the city's relief asks of its ground (ET2), one line for each kind it owns, empty for a city whose ground is all flat: the steep ground only a works may stand on and how much of it works stand on, then the foothi... |
+| 445 | 3 | `List<String> officeLines()` | What the office charges for each class of ground (ET3, spec-earth2-terrain 5.3), one line for each class the city owns or the shelf offers, empty while neither has any foothill or steep ground: LandClassView's words, ... |
+| 450 | 8 | `double groundScale(Next next)` | The bar's scale: the ground free and the best N together. |
+| 465 | 23 | `List<Segment> groundSegments(Next next, java.util.function.IntFunction<Runnable> go)` | The bar's segments: the ground free, solid pink; then the best N, each a ghost in the light pink, numbered in the shelf's order, with a sand stripe where it holds ore, its side and place, size and price on hover, and ... |
+| 490 | 5 | `List<Tick> groundTicks()` | The bar's one tick: NEEDS YOU's line, the free ground under which the GROUND row is listed. |
+| 497 | 4 | `String priceInToggle(LandParcel p)` | A plot's price in the money the toggle pays in: "D$149.7M" converting, "US$211.7M" from the vault. |
 
-### THE CITY AND ITS SIDES (0.7.61) (lines 568-825)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 581 | 5 | `static String km2Figure(double km2)` | A size in km2 as THE CITY writes it: a decimal from 1 km2 up, grouped - "107.8", "1,760,034.2" - three figures under it, "0.312". |
-| 588 | 7 | `String cityLine()` | THE CITY's size, the land's five areas but forest: "107.8 km² · 89.6 dry · 0 fresh · 18.2 sea" (spec-land 2.8) - and since 0.7.109 (Z2), with a zone standing, the zones' sizes: "· 3.2 zoned" (ZoningView's ZONED). |
-| 597 | 8 | `String worldLine()` | The world's line: "of the world's 1.12 Pt of iron, the city owns 0.0000452%" - its share of the world's tonnes, to three figures. |
-| 607 | 4 | `String inToggle(double usdThousands)` | Thousands of US dollars in the money the toggle pays in: as listed from the vault, at today's rate converting. |
-| 613 | 3 | `String perDryKm2(LandParcel p)` | An offer's price a dry km2, in the toggle's money: "D$5.6M"; "—" with no dry ground. |
-| 618 | 4 | `LandParcel officeBest()` | The office's best offer, the shelf's first (BEST VALUE), or null with nothing listed. |
-| 624 | 6 | `void chooseSide()` | The side shown before the player picks one: the office's best's, or the north. |
-| 637 | 1 | **type** `record SideChip(int side, String name, String label, int listed, String best, boolean bestValue, String tip)` | One side's chip: the side, its name and the chip's words - the name, and since 0.7.69 " · N" when it lists fewer than six (spec-grid 2.5, "North · 4") - how many it lists, its cheapest dry ground a km2 in the toggle's... |
-| 639 | 21 | `List<SideChip> sideChips()` |  |
-| 662 | 1 | **type** `record DepositWords(String colour, String words, String tip)` | A deposit on a row: its resource's colour, its sites and amount - "3 · 38.4 Mt" - and the tooltip's line. |
-| 674 | 3 | **type** `record Row(LandParcel parcel, String place, String km2, String sizeTip, double dry, double fresh, double se...` | One place as its row: its offer, its place (1 to 6), its size in km2 and the size's tooltip - its blocks and its ground (0.7.69, spec-grid 2.5) - its dry, fresh and sea shares for the bar, its deposits (the first ROW_... |
-| 688 | 10 | `List<Row> sideRows(int side)` | A side's six places, 1 to 6: its offers, and a place waiting for room as its one muted line. |
-| 700 | 6 | `Row emptyRow(int side, int at)` | A place waiting for room: its number, EMPTY_PLACE, and a tooltip naming it. |
-| 713 | 10 | `static String sizeWords(LandParcel p)` | An offer's size, its blocks and its ground (0.7.69, spec-grid 2.5): "1 × 2 blocks of 120 m · 0.0288 km² · 0.0273 dry, 0.0015 fresh" - its blocks across and out, each part in its whole's unit (LandManager.partFigure())... |
-| 725 | 3 | `static List<DepositWords> depositWords(java.util.function.ToIntFunction<Resource> sites, java.util.function.ToDoubleFunction<Re...` | Each resource in fields that ground holds - its colour, its sites and amount, the tooltip's line - in Resource's order: a row's (one offer's), and since 0.7.137 the map's card's (several summed, LandMap.card()). |
-| 736 | 13 | `static List<DepositWords> depositWords(java.util.function.ToIntFunction<Resource> sites, java.util.function.ToDoubleFunction<Re...` | ...with a typed resource's sites by type on its tooltip's line (0.7.142, batch I13; spec-materials 5's I13 row, "the land office's hover - field types"): "Iron ore: 3 sites, 38.4 Mt - 2 hematite, 1 magnetite", off Cit... |
-| 751 | 8 | `static String typeWords(Resource r, long[] byType)` | A typed resource's sites by type, each with any: "2 hematite, 1 magnetite", "4 limestone"; "" with none. |
-| 761 | 8 | `static long[] typesOn(CityLand land, List<LandParcel> parcels, Resource r)` | The sites of each type of a resource several offers hold together (0.7.142): CityLand.sitesOnByType() summed. |
-| 770 | 43 | `Row row(LandParcel p, LandParcel office, LandParcel richest)` |  |
-| 824 | 1 | **type** `record TagWords(String text, String colour)` | A tag's words and colour. |
-
-### what the ground is worth (lines 826-995)
+### buy the best N (lines 502-572)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 829 | 1 | **type** `record BarWords(String name, String figure, String colour, double share)` | One of a card's bars: its name, its figure, its colour and its share of the card's scale. |
-| 839 | 2 | **type** `record Margin(BarWords world, BarWords investors, String chip, String chipTone, String lastMonth, String in...` | The Margin card: the world's price today and what investors pay, on one scale; the margin; what investors paid for ground last month (NationalAccounts.getLandSales() - LandManager's own month's flow is cleared at the ... |
-| 851 | 7 | `String partsWords()` | THE WORLD'S PRICE, IN ITS PARTS (0.7.55): the founding's dollars, what US prices have done since, and the premium for the city's crowding - "US$7.53 × 1.14 US prices × 104 crowding: 5,684 people a km² of the city's la... |
-| 860 | 4 | `static String times(double multiple)` | A multiple as the land office writes it: "×1.65", "×36.0", "×104". |
-| 865 | 33 | `Margin margin()` |  |
-| 900 | 1 | **type** `record OnTop(String name, double ground, double build, String words, String share)` | One stacked bar on the second card: the building, its ground and its build, and the ground's share. |
-| 907 | 18 | `List<OnTop> onTop()` | On top of the build: a House's plot and a food plant's (the Bakery's) at what investors pay today, each against the building's own cash cost - "House: ground D$372k · build D$266k · 58%". |
-| 933 | 1 | **type** `record Ore(String deposits, String tonnes, String mines, boolean undug, String popped, String oil)` | The Ore card: iron's deposits, tonnes, those under mines (since 0.7.124 the sites the mines take, a large mine's twenty: Game.minesCommitted()), whether ore lies undug, and the oil (0.7.61); the other ores are otherOr... |
-| 935 | 14 | `Ore ore()` |  |
-| 955 | 1 | **type** `record OreLine(String name, String deposits, String tonnes, String mines, boolean undug, String undugWords,...` | One of the Ore card's other ores (I13-L): coal, stone, copper or uranium, where the city owns a site of it - its name, its deposits and tonnes, the sites its mines take, whether it lies undug and the words for that, a... |
-| 958 | 13 | `List<OreLine> otherOres()` | The other ores the city's ground holds, each as the card words it; none while the city owns only iron (OreView.ores() past its first row). |
-| 983 | 8 | `List<String> waitingNames()` | The sectors waiting on ground, by name: Game.getLandBlockedSectors(), as the sector pages and the inbox read it. |
+| 513 | 2 | **type** `record Next(int n, int listed, List<Integer> ids, String total, String totalTone, String other, Pieces.Pres...` | What "Buy the best N" buys and says: how many, out of how many listed, their ids, the total in the toggle's money (neutral, red only when no way pays without debt - canAffordLandParcels()), the other money small, the ... |
+| 516 | 25 | `Next next()` |  |
+| 551 | 14 | `String offerInfo()` | The section's (i): the twenty-four offers, six a side, place by place; how the office ranks them (BEST VALUE, the best N); and the blocks every offer is made of, as LandMarket lists them (0.7.67: whole blocks of the c... |
+| 567 | 5 | `static String blockSide(int level)` | A block's side in words (0.7.69): metres under a kilometre - "120 m", "960 m" - and kilometres from it - "1.92 km", "245.76 km" - exact, as a block is 2^level plots of World.PLOT_M. |
 
-### details (lines 996-1010)
+### THE CITY AND ITS SIDES (0.7.61) (lines 573-830)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 999 | 5 | `String spentLine()` | The line under the chart: what the city has paid the world for ground, and how much of it the vault paid. |
+| 586 | 5 | `static String km2Figure(double km2)` | A size in km2 as THE CITY writes it: a decimal from 1 km2 up, grouped - "107.8", "1,760,034.2" - three figures under it, "0.312". |
+| 593 | 7 | `String cityLine()` | THE CITY's size, the land's five areas but forest: "107.8 km² · 89.6 dry · 0 fresh · 18.2 sea" (spec-land 2.8) - and since 0.7.109 (Z2), with a zone standing, the zones' sizes: "· 3.2 zoned" (ZoningView's ZONED). |
+| 602 | 8 | `String worldLine()` | The world's line: "of the world's 1.12 Pt of iron, the city owns 0.0000452%" - its share of the world's tonnes, to three figures. |
+| 612 | 4 | `String inToggle(double usdThousands)` | Thousands of US dollars in the money the toggle pays in: as listed from the vault, at today's rate converting. |
+| 618 | 3 | `String perDryKm2(LandParcel p)` | An offer's price a dry km2, in the toggle's money: "D$5.6M"; "—" with no dry ground. |
+| 623 | 4 | `LandParcel officeBest()` | The office's best offer, the shelf's first (BEST VALUE), or null with nothing listed. |
+| 629 | 6 | `void chooseSide()` | The side shown before the player picks one: the office's best's, or the north. |
+| 642 | 1 | **type** `record SideChip(int side, String name, String label, int listed, String best, boolean bestValue, String tip)` | One side's chip: the side, its name and the chip's words - the name, and since 0.7.69 " · N" when it lists fewer than six (spec-grid 2.5, "North · 4") - how many it lists, its cheapest dry ground a km2 in the toggle's... |
+| 644 | 21 | `List<SideChip> sideChips()` |  |
+| 667 | 1 | **type** `record DepositWords(String colour, String words, String tip)` | A deposit on a row: its resource's colour, its sites and amount - "3 · 38.4 Mt" - and the tooltip's line. |
+| 679 | 3 | **type** `record Row(LandParcel parcel, String place, String km2, String sizeTip, double dry, double fresh, double se...` | One place as its row: its offer, its place (1 to 6), its size in km2 and the size's tooltip - its blocks and its ground (0.7.69, spec-grid 2.5) - its dry, fresh and sea shares for the bar, its deposits (the first ROW_... |
+| 693 | 10 | `List<Row> sideRows(int side)` | A side's six places, 1 to 6: its offers, and a place waiting for room as its one muted line. |
+| 705 | 6 | `Row emptyRow(int side, int at)` | A place waiting for room: its number, EMPTY_PLACE, and a tooltip naming it. |
+| 718 | 10 | `static String sizeWords(LandParcel p)` | An offer's size, its blocks and its ground (0.7.69, spec-grid 2.5): "1 × 2 blocks of 120 m · 0.0288 km² · 0.0273 dry, 0.0015 fresh" - its blocks across and out, each part in its whole's unit (LandManager.partFigure())... |
+| 730 | 3 | `static List<DepositWords> depositWords(java.util.function.ToIntFunction<Resource> sites, java.util.function.ToDoubleFunction<Re...` | Each resource in fields that ground holds - its colour, its sites and amount, the tooltip's line - in Resource's order: a row's (one offer's), and since 0.7.137 the map's card's (several summed, LandMap.card()). |
+| 741 | 13 | `static List<DepositWords> depositWords(java.util.function.ToIntFunction<Resource> sites, java.util.function.ToDoubleFunction<Re...` | ...with a typed resource's sites by type on its tooltip's line (0.7.142, batch I13; spec-materials 5's I13 row, "the land office's hover - field types"): "Iron ore: 3 sites, 38.4 Mt - 2 hematite, 1 magnetite", off Cit... |
+| 756 | 8 | `static String typeWords(Resource r, long[] byType)` | A typed resource's sites by type, each with any: "2 hematite, 1 magnetite", "4 limestone"; "" with none. |
+| 766 | 8 | `static long[] typesOn(CityLand land, List<LandParcel> parcels, Resource r)` | The sites of each type of a resource several offers hold together (0.7.142): CityLand.sitesOnByType() summed. |
+| 775 | 43 | `Row row(LandParcel p, LandParcel office, LandParcel richest)` |  |
+| 829 | 1 | **type** `record TagWords(String text, String colour)` | A tag's words and colour. |
 
-### THE DRAWING (lines 1011-1093)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1019 | 14 | `private Label doorTitle(String text)` | UserInterface.pageTitle()'s title - the building area's swatch before it (the land office is on the building tab), strong, padded - with the hand a way back has, written once. |
-| 1041 | 29 | `HBox head(String sub)` | The head: "Land office" with the building area's swatch and the page's (i), and at the right the pay toggle with its line, and "‹ Build". |
-| 1072 | 21 | `VBox payToggle()` | The pay toggle, applied at once and saved with the city, and the line under it with its (i). |
-
-### THE GROUND (lines 1094-1219)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1101 | 103 | `VBox groundPanel(Next next)` | THE GROUND: the strip and the big figures, then the bar and its scale - one panel, the shape of Construction's builders' gauge. |
-| 1206 | 13 | `static HBox ghostSwatch(String colour, String name)` | A key's swatch for a ghost: tinted and outlined as the ghost is drawn. |
-
-### THE LANDMASSES (ET5, 2026-10-25) (lines 1220-1284)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1223 | 8 | `static String toneColour(LandmassView.Tone tone)` | A table cell's tone as a colour. |
-| 1238 | 15 | `VBox landmassesTable()` | The city's ground by landmass, a row each in SectorScreen.oilTable()'s shape: its dry ground, its free ground (the linked landmasses share one figure, an island no port links says its own and "only a port"), the termi... |
-| 1255 | 17 | `private void landmassRow(javafx.scene.layout.GridPane t, LandmassView.Line l, int row)` | One landmass's two grid rows, a rule and its cells, from grid row `row` of the table. |
-| 1274 | 10 | `private void scrollTo(javafx.scene.Node target)` | The page brought to a card: the menu's scroller set so it sits near the top. |
-
-### BUY THE BEST N (0.7.13; "the next N" until 0.7.61) (lines 1285-1365)
+### what the ground is worth (lines 831-998)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1297 | 30 | `HBox nextPlots(Next next)` |  |
-| 1329 | 12 | `HBox receiptLine(String receipt)` | This month's receipt, under ON OFFER: a pink tick and the receipt, wrapped rather than cut. |
-| 1350 | 9 | `void buyOrFund(List<Integer> ids)` | Buys these plots the way the toggle pays, or - the city short - opens the funding page for them. |
-| 1361 | 4 | `void rememberBeforeBuying()` | What a purchase is measured against when the page is drawn after it. |
+| 834 | 1 | **type** `record BarWords(String name, String figure, String colour, double share)` | One of a card's bars: its name, its figure, its colour and its share of the card's scale. |
+| 844 | 2 | **type** `record Margin(BarWords world, BarWords investors, String chip, String chipTone, String lastMonth, String in...` | The Margin card: the world's price today and what investors pay, on one scale; the margin; what investors paid for ground last month (NationalAccounts.getLandSales() - LandManager's own month's flow is cleared at the ... |
+| 856 | 7 | `String partsWords()` | THE WORLD'S PRICE, IN ITS PARTS (0.7.55): the founding's dollars, what US prices have done since, and the premium for the city's crowding - "US$7.53 × 1.14 US prices × 104 crowding: 5,684 people a km² of the city's la... |
+| 865 | 4 | `static String times(double multiple)` | A multiple as the land office writes it: "×1.65", "×36.0", "×104". |
+| 870 | 32 | `Margin margin()` |  |
+| 904 | 1 | **type** `record OnTop(String name, double ground, double build, String words, String share)` | One stacked bar on the second card: the building, its ground and its build, and the ground's share. |
+| 911 | 17 | `List<OnTop> onTop()` | On top of the build: a House's plot and a food plant's (the Bakery's) at what investors pay today, each against the building's own cash cost - "House: ground D$372k · build D$266k · 58%". |
+| 936 | 1 | **type** `record Ore(String deposits, String tonnes, String mines, boolean undug, String popped, String oil)` | The Ore card: iron's deposits, tonnes, those under mines (since 0.7.124 the sites the mines take, a large mine's twenty: Game.minesCommitted()), whether ore lies undug, and the oil (0.7.61); the other ores are otherOr... |
+| 938 | 14 | `Ore ore()` |  |
+| 958 | 1 | **type** `record OreLine(String name, String deposits, String tonnes, String mines, boolean undug, String undugWords,...` | One of the Ore card's other ores (I13-L): coal, stone, copper or uranium, where the city owns a site of it - its name, its deposits and tonnes, the sites its mines take, whether it lies undug and the words for that, a... |
+| 961 | 13 | `List<OreLine> otherOres()` | The other ores the city's ground holds, each as the card words it; none while the city owns only iron (OreView.ores() past its first row). |
+| 986 | 8 | `List<String> waitingNames()` | The sectors waiting on ground, by name: Game.getLandBlockedSectors(), as the sector pages and the inbox read it. |
 
-### THE HERO ROW (0.7.61) (lines 1366-1646)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1404 | 13 | `HBox hero()` |  |
-| 1423 | 3 | `void ensureMap()` | The map, made the first time it is asked for. |
-| 1428 | 3 | `void expandMapOn(MiniMapFrame.Box box)` | The map over the window on a box of plots (0.7.134: the minimap's click, UserInterface.openMapOn()), once the office is drawn. |
-| 1433 | 3 | `void replayMapChanged()` | A replay's quick step swapped the city's map (TR1, ReplayMode): the office's map, small or over the window, draws it. |
-| 1438 | 5 | `void picked(int side, int place)` | The map picked a side, and an offer's place on it (-1 for none): its rows, the offer's lit. |
-| 1445 | 17 | `VBox cityPanel()` | THE CITY, its sides, and the chosen side's offers. |
-| 1464 | 37 | `javafx.scene.layout.FlowPane sideChipsNode()` | The four sides as Pieces' chips, each its cheapest dry ground a km2 after its name - and its count when it lists fewer than six - and BEST VALUE on the best's side. |
-| 1503 | 17 | `VBox rowsNode(List<Row> rows, boolean turned)` | The rows: the column names, then the side's six places, 1 to 6; `turned`, their local prices pop. |
-| 1522 | 6 | `private static Region column(Region cell, int c)` | A cell held to its column's width. |
-| 1530 | 102 | `HBox rowNode(Row r, boolean turned)` | One offer's row: hover lights it on the map, a click picks it, its button buys it or opens the funding page; a place waiting for room, its muted line. |
-| 1634 | 12 | `HBox emptyRowNode(Row r)` | A place waiting for room (spec-grid 2.5): its number, then EMPTY_PLACE across the rest of the row, muted. |
-
-### WHAT THE GROUND IS WORTH (lines 1647-1868)
+### details (lines 999-1013)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1650 | 11 | `javafx.scene.layout.GridPane worthCards()` | The four cards, a quarter of the page each. |
-| 1663 | 3 | `VBox worthCard(String svg, String colour, String name, String info, javafx.scene.Node...body)` | A worth card's frame: its icon square, its name and its (i), then what it says. |
-| 1668 | 18 | `VBox worthCardIn(java.util.function.Function<VBox, String> style, String svg, String colour, String name, String info, javafx.s...` | ...in the style `style` gives once the card is made (KP2b: the ore card's, a door's look, chosen from its hover): written once, not written plain and then again. |
-| 1692 | 14 | `VBox namedBar(BarWords w)` | One labelled bar on a worth card: its name and figure on a line, the bar under them. |
-| 1707 | 22 | `VBox marginCard()` |  |
-| 1730 | 27 | `VBox onTopCard()` |  |
-| 1758 | 44 | `VBox oreCard()` |  |
-| 1804 | 26 | `VBox oreBlock(OreLine l)` | One of the other ores on the Ore card (I13-L): its figures in two lines, a warning where nothing is digging it, and a click to the industry that digs it. |
-| 1831 | 37 | `VBox waitingCard()` |  |
+| 1002 | 5 | `String spentLine()` | The line under the chart: what the city has paid the world for ground, and how much of it the vault paid. |
 
-### details (lines 1869-1894)
+### THE DRAWING (lines 1014-1096)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1872 | 22 | `VBox details()` | "details ▸": the world's price of ground over the city's life, and what the city has paid for it. |
+| 1022 | 14 | `private Label doorTitle(String text)` | UserInterface.pageTitle()'s title - the building area's swatch before it (the land office is on the building tab), strong, padded - with the hand a way back has, written once. |
+| 1044 | 29 | `HBox head(String sub)` | The head: "Land office" with the building area's swatch and the page's (i), and at the right the pay toggle with its line, and "‹ Build". |
+| 1075 | 21 | `VBox payToggle()` | The pay toggle, applied at once and saved with the city, and the line under it with its (i). |
 
-### WHEN THE CITY IS SHORT (0.7.13), the land office's own page since 0.7.26 (lines 1895-2220)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1924 | 1 | **type** `record Funding(String priceLine, String heldWords, String gapMoney, double held, double gap)` | What the funding page's card says: the price, what is held, the gap in money, and the bar's two parts. |
-| 1926 | 22 | `Funding funding(List<Integer> ids)` |  |
-| 1955 | 2 | **type** `record Offer(String name, String info, DebtQuote quote, String rate, String tone, String ending, Pieces.Pre...` | One loan on the funding page, worded - what Pieces.offerCard() draws: its name, its (i), its quote, the rate's words and colour, its ending, its button (a Pieces.Press since 0.7.34: the purchase, and the paper under i... |
-| 1959 | 5 | `String buyWords(List<Integer> ids)` | What the funding page's buttons buy (0.7.34): "Buy · D$1.0B" for a plot, "Buy 5 plots · D$9.8B" for several, in the money the toggle pays in. |
-| 1975 | 61 | `List<Offer> offers(List<Integer> ids)` | The loans the funding page offers for these plots, in the build page's order - the bond, then the note: converting, in local money for the cash gap; from the vault, in dollars on the world's curve for the vault's gap,... |
-| 2037 | 9 | `void showLandFunding(List<Integer> ids)` |  |
-| 2052 | 89 | `void drawFunding(List<Integer> ids)` | The funding page itself, put in the window through setPage(): what keepMenu runs as a kept draw from the pool, and what KeptBench runs kept and built new for KeptCheck. |
-| 2146 | 23 | `VBox topUpCard(List<Integer> ids, String here)` | The third way, from the vault: what the vault holds, the rest converted from cash - no debt. |
-| 2171 | 3 | `Pieces.Press topUpPress(List<Integer> ids)` | The third way's button (0.7.34): the purchase, and what it takes - the 0.7.13 button's words, under it. |
-| 2183 | 14 | `private void buyOnTheLoan(List<Integer> ids, String paper)` | The money is in: the plots are bought, each as its own button would buy it, and whatever the purchase answers is shown - the build screen's rule that a refusal nobody reads is a silent one (BuildScreen.goAhead()). |
-| 2203 | 17 | `void drawFellShort(String paper, int bought, int asked)` | The page for when the city fell short, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs kept and built new. |
-
-### THE CARD ON THE MAP (0.7.137, batch M6; docs/studies/spec-earth.md 3) (lines 2221-2576)
+### THE GROUND (lines 1097-1222)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2263 | 4 | **type** `record MapCard(List<Integer> ids, LandParcel first, String title, TagWords tag, List<LandParcel> chips, Str...` | What the map's card says for some picks, worked out without a node: the picks still listed and the first of them, the title (the place, or "3 offers") and one offer's tag, the chips of several, the size, the ground's ... |
-| 2269 | 60 | `MapCard mapCard(List<Integer> picks)` | The card for these picks, or null with none of them listed. |
+| 1104 | 103 | `VBox groundPanel(Next next)` | THE GROUND: the strip and the big figures, then the bar and its scale - one panel, the shape of Construction's builders' gauge. |
+| 1209 | 13 | `static HBox ghostSwatch(String colour, String name)` | A key's swatch for a ghost: tinted and outlined as the ghost is drawn. |
+
+### THE LANDMASSES (ET5, 2026-10-25) (lines 1223-1287)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1226 | 8 | `static String toneColour(LandmassView.Tone tone)` | A table cell's tone as a colour. |
+| 1241 | 15 | `VBox landmassesTable()` | The city's ground by landmass, a row each in SectorScreen.oilTable()'s shape: its dry ground, its free ground (the linked landmasses share one figure, an island no port links says its own and "only a port"), the termi... |
+| 1258 | 17 | `private void landmassRow(javafx.scene.layout.GridPane t, LandmassView.Line l, int row)` | One landmass's two grid rows, a rule and its cells, from grid row `row` of the table. |
+| 1277 | 10 | `private void scrollTo(javafx.scene.Node target)` | The page brought to a card: the menu's scroller set so it sits near the top. |
+
+### BUY THE BEST N (0.7.13; "the next N" until 0.7.61) (lines 1288-1368)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1300 | 30 | `HBox nextPlots(Next next)` |  |
+| 1332 | 12 | `HBox receiptLine(String receipt)` | This month's receipt, under ON OFFER: a pink tick and the receipt, wrapped rather than cut. |
+| 1353 | 9 | `void buyOrFund(List<Integer> ids)` | Buys these plots the way the toggle pays, or - the city short - opens the funding page for them. |
+| 1364 | 4 | `void rememberBeforeBuying()` | What a purchase is measured against when the page is drawn after it. |
+
+### THE HERO ROW (0.7.61) (lines 1369-1649)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1407 | 13 | `HBox hero()` |  |
+| 1426 | 3 | `void ensureMap()` | The map, made the first time it is asked for. |
+| 1431 | 3 | `void expandMapOn(MiniMapFrame.Box box)` | The map over the window on a box of plots (0.7.134: the minimap's click, UserInterface.openMapOn()), once the office is drawn. |
+| 1436 | 3 | `void replayMapChanged()` | A replay's quick step swapped the city's map (TR1, ReplayMode): the office's map, small or over the window, draws it. |
+| 1441 | 5 | `void picked(int side, int place)` | The map picked a side, and an offer's place on it (-1 for none): its rows, the offer's lit. |
+| 1448 | 17 | `VBox cityPanel()` | THE CITY, its sides, and the chosen side's offers. |
+| 1467 | 37 | `javafx.scene.layout.FlowPane sideChipsNode()` | The four sides as Pieces' chips, each its cheapest dry ground a km2 after its name - and its count when it lists fewer than six - and BEST VALUE on the best's side. |
+| 1506 | 17 | `VBox rowsNode(List<Row> rows, boolean turned)` | The rows: the column names, then the side's six places, 1 to 6; `turned`, their local prices pop. |
+| 1525 | 6 | `private static Region column(Region cell, int c)` | A cell held to its column's width. |
+| 1533 | 102 | `HBox rowNode(Row r, boolean turned)` | One offer's row: hover lights it on the map, a click picks it, its button buys it or opens the funding page; a place waiting for room, its muted line. |
+| 1637 | 12 | `HBox emptyRowNode(Row r)` | A place waiting for room (spec-grid 2.5): its number, then EMPTY_PLACE across the rest of the row, muted. |
+
+### WHAT THE GROUND IS WORTH (lines 1650-1871)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1653 | 11 | `javafx.scene.layout.GridPane worthCards()` | The four cards, a quarter of the page each. |
+| 1666 | 3 | `VBox worthCard(String svg, String colour, String name, String info, javafx.scene.Node...body)` | A worth card's frame: its icon square, its name and its (i), then what it says. |
+| 1671 | 18 | `VBox worthCardIn(java.util.function.Function<VBox, String> style, String svg, String colour, String name, String info, javafx.s...` | ...in the style `style` gives once the card is made (KP2b: the ore card's, a door's look, chosen from its hover): written once, not written plain and then again. |
+| 1695 | 14 | `VBox namedBar(BarWords w)` | One labelled bar on a worth card: its name and figure on a line, the bar under them. |
+| 1710 | 22 | `VBox marginCard()` |  |
+| 1733 | 27 | `VBox onTopCard()` |  |
+| 1761 | 44 | `VBox oreCard()` |  |
+| 1807 | 26 | `VBox oreBlock(OreLine l)` | One of the other ores on the Ore card (I13-L): its figures in two lines, a warning where nothing is digging it, and a click to the industry that digs it. |
+| 1834 | 37 | `VBox waitingCard()` |  |
+
+### details (lines 1872-1897)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1875 | 22 | `VBox details()` | "details ▸": the world's price of ground over the city's life, and what the city has paid for it. |
+
+### WHEN THE CITY IS SHORT (0.7.13), the land office's own page since 0.7.26 (lines 1898-2221)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1927 | 1 | **type** `record Funding(String priceLine, String heldWords, String gapMoney, double held, double gap)` | What the funding page's card says: the price, what is held, the gap in money, and the bar's two parts. |
+| 1929 | 21 | `Funding funding(List<Integer> ids)` |  |
+| 1957 | 2 | **type** `record Offer(String name, String info, DebtQuote quote, String rate, String tone, String ending, Pieces.Pre...` | One loan on the funding page, worded - what Pieces.offerCard() draws: its name, its (i), its quote, the rate's words and colour, its ending, its button (a Pieces.Press since 0.7.34: the purchase, and the paper under i... |
+| 1961 | 5 | `String buyWords(List<Integer> ids)` | What the funding page's buttons buy (0.7.34): "Buy · D$1.0B" for a plot, "Buy 5 plots · D$9.8B" for several, in the money the toggle pays in. |
+| 1977 | 61 | `List<Offer> offers(List<Integer> ids)` | The loans the funding page offers for these plots, in the build page's order - the bond, then the note: converting, in local money for the cash gap; from the vault, in dollars on the world's curve for the vault's gap,... |
+| 2039 | 9 | `void showLandFunding(List<Integer> ids)` |  |
+| 2054 | 88 | `void drawFunding(List<Integer> ids)` | The funding page itself, put in the window through setPage(): what keepMenu runs as a kept draw from the pool, and what KeptBench runs kept and built new for KeptCheck. |
+| 2147 | 23 | `VBox topUpCard(List<Integer> ids)` | The third way, from the vault: what the vault holds, the rest converted from cash - no debt. |
+| 2172 | 3 | `Pieces.Press topUpPress(List<Integer> ids)` | The third way's button (0.7.34): the purchase, and what it takes - the 0.7.13 button's words, under it. |
+| 2184 | 14 | `private void buyOnTheLoan(List<Integer> ids, String paper)` | The money is in: the plots are bought, each as its own button would buy it, and whatever the purchase answers is shown - the build screen's rule that a refusal nobody reads is a silent one (BuildScreen.goAhead()). |
+| 2204 | 17 | `void drawFellShort(String paper, int bought, int asked)` | The page for when the city fell short, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs kept and built new. |
+
+### THE CARD ON THE MAP (0.7.137, batch M6; docs/studies/spec-earth.md 3) (lines 2222-2575)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2264 | 4 | **type** `record MapCard(List<Integer> ids, LandParcel first, String title, TagWords tag, List<LandParcel> chips, Str...` | What the map's card says for some picks, worked out without a node: the picks still listed and the first of them, the title (the place, or "3 offers") and one offer's tag, the chips of several, the size, the ground's ... |
+| 2270 | 59 | `MapCard mapCard(List<Integer> picks)` | The card for these picks, or null with none of them listed. |
 | 2331 | 7 | `static String sizeWords(LandMap.Card c)` | Several offers' size as one: "0.0864 km² · 0.0819 dry, 0.0045 fresh" - sizeWords()' ground, its parts in the whole's unit. |
 | 2340 | 5 | `void mapCardPress(MapCard m, MapView map)` | What the card's main button - and Enter - does: buy them, or short issue the bond and buy them, or with no loan on offer open the funding page. |
-| 2347 | 142 | `VBox mapCardNode(MapCard m, MapView map)` | The card as a node, its buttons the map's (MapView): the drawing of mapCard(). |
-| 2491 | 32 | `VBox mapReceiptNode(String title, List<int[]> places, MapView map)` | A purchase made from the map, its receipt by the ground (spec-earth 3.1, board 6): what was bought - its title and its places, side and place - drawn as the office's receipt, the city's size now and each place listing... |
-| 2525 | 21 | `private VBox mapCardFrame(String title, MapView map)` | The card's frame: its width and padding, a title line with a close at its right. |
-| 2548 | 5 | `String mapHeadMoney()` | The money the map's head shows, as the pane covers the window's header (spec-earth 6.1): the cash, and paying from the vault its dollars first. |
-| 2555 | 21 | `javafx.scene.layout.FlowPane mapPayChips(MapView map)` | The pay toggle on the map, its head's and its card's: the office's chips, applied at once - the office drawn again under the map, which stays - and the map told; the caller sets where they wrap. |
+| 2347 | 141 | `VBox mapCardNode(MapCard m, MapView map)` | The card as a node, its buttons the map's (MapView): the drawing of mapCard(). |
+| 2490 | 32 | `VBox mapReceiptNode(String title, List<int[]> places, MapView map)` | A purchase made from the map, its receipt by the ground (spec-earth 3.1, board 6): what was bought - its title and its places, side and place - drawn as the office's receipt, the city's size now and each place listing... |
+| 2524 | 21 | `private VBox mapCardFrame(String title, MapView map)` | The card's frame: its width and padding, a title line with a close at its right. |
+| 2547 | 5 | `String mapHeadMoney()` | The money the map's head shows, as the pane covers the window's header (spec-earth 6.1): the cash, and paying from the vault its dollars first. |
+| 2554 | 21 | `javafx.scene.layout.FlowPane mapPayChips(MapView map)` | The pay toggle on the map, its head's and its card's: the office's chips, applied at once - the office drawn again under the map, which stays - and the map told; the caller sets where they wrap. |
 

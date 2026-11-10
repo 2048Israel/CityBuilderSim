@@ -44,7 +44,7 @@ public final class PolicyDates {
         /** Taxes, 1916: the first of the game's three income taxes. */
         PROFIT_TAX("profit tax", 1916, "PL2", "the Business Profits War Tax", "25% of profits above 7% of capital (companies)"),
         /** Taxes, 1917: the game's wage tax, banded, is the personal income tax, so the Income War Tax Act is its date. */
-        WAGE_TAX("income tax", 1917, "PL3", "the Income War Tax Act", "4% above $1,500 (single) or $3,000; a supertax of 2% to 25%"),
+        WAGE_TAX("income tax", 1917, "PL3", "the Income War Tax Act", "4% above C$1,500 (single) or C$3,000; a supertax of 2% to 25%"),
         /** Wages, 1918: Manitoba and British Columbia, for women (1917 by one source); men mostly in the 1930s (unverified). */
         MINIMUM_WAGE("minimum wage", 1918, "PL4", "Manitoba and British Columbia, for women", "weekly rates by trade and city"),
         /** Taxes, 1920. */
@@ -53,7 +53,7 @@ public final class PolicyDates {
         ZONING("zoning", 1924, "PL6", "Kitchener, unverified", "use districts"),
         /** Promises, 1927: the pension's replacement, the promise; its contribution is PENSION_CONTRIBUTION's. */
         PENSION_REPLACEMENT("old-age pension", 1927, "PL7", "the Old Age Pensions Act",
-                "up to $20 a month at 70; income under $365; Ottawa paid half"),
+                "up to C$20 a month at 70; income under C$365; Ottawa paid half"),
         /** Money, 11 March 1935: the Bank of Canada opens the rest of Money (the policy rate having opened in 1914). */
         CENTRAL_BANK("central bank", 1935, 3, "PL8", "the Bank of Canada", "Bank Rate 2.5%"),
         /** Taxes and Promises, 1939: the grant and the loan rate together. */
@@ -63,7 +63,7 @@ public final class PolicyDates {
                 "9 to 36 cents a week by wage class, plus 20% from the government; benefit 34 to 40 times the average contribution;"
                         + " about 42% of workers covered; contributions from 1 July 1941"),
         /** Taxes, 1 January 1947: Saskatchewan's public hospital insurance (national cost-sharing followed in 1958). */
-        HEALTH_PREMIUM("health premium", 1947, 1, "PL12", "Saskatchewan's public hospital insurance", "a premium of $5 a person (unverified)"),
+        HEALTH_PREMIUM("health premium", 1947, 1, "PL12", "Saskatchewan's public hospital insurance", "a premium of C$5 a person (unverified)"),
         /** Taxes, 1 January 1966: the contribution, the half of the pension the worker and the employer pay. */
         PENSION_CONTRIBUTION("pension contribution", 1966, 1, "L5", "the Canada Pension Plan", "1.8% from the worker, 1.8% from the employer"),
 

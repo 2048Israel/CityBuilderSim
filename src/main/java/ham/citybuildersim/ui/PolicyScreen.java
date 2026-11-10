@@ -1172,14 +1172,14 @@ final class PolicyScreen {
 
     /** ...every digit, for one household's or one person's money: "+$173", "−$41", "$0" under half a dollar. */
     static String moneyMoveFull(double d) {
-        if (Math.abs(d) * 1000 < .5) return "$0";
+        if (Math.abs(d) * 1000 < .5) return Money.write("0");
         return (d < 0 ? "\u2212" : "+") + moneyFull(Math.abs(d));
     }
 
     /** Money that can be below nothing - a sector in refund, a surplus where a cost was - with a true minus: "$2.5M", "−$365k". */
     static String amount(double v) {
         String shown = money(Math.abs(v));
-        return (v < 0 && !"$0".equals(shown) ? "\u2212" : "") + shown;
+        return (v < 0 && !Money.isZero(shown) ? "\u2212" : "") + shown;
     }
 
     /** A rate's move in points: "+0.25 points". */
@@ -4093,7 +4093,7 @@ final class PolicyScreen {
     /** Local money with its mark and a true minus: "D$2.4M", "−D$725k". */
     private String curLocal(double thousands) {
         String shown = money(Math.abs(thousands));
-        return (thousands < 0 && !"$0".equals(shown) ? "−" : "") + marked(sym(), shown);
+        return (thousands < 0 && !Money.isZero(shown) ? "−" : "") + marked(sym(), shown);
     }
 
     /** A gap of the shadow from its target in words: "8.5% weaker than the peg", "3.0% stronger than the centre", "level with the peg" (pure). */
@@ -4804,7 +4804,7 @@ final class PolicyScreen {
     /** A US$ sum with a true minus: "US$1.2M", "−US$340k" (pure). */
     private static String signedUsd(double thousands) {
         String shown = money(Math.abs(thousands));
-        return (thousands < 0 && !"$0".equals(shown) ? "−" : "") + marked(Currency.FOREIGN_SYMBOL, shown);
+        return (thousands < 0 && !Money.isZero(shown) ? "−" : "") + marked(Currency.FOREIGN_SYMBOL, shown);
     }
 
     /** THE GOLD STANDARD's (i): the mint, the points, the cover and the break. */
@@ -5574,7 +5574,7 @@ final class PolicyScreen {
 
     /** Money a line takes out of the treasury, a surplus with a true minus: "$2.5M", "−$1.0M". */
     static String cost(double v) {
-        return v < 0 && !"$0".equals(money(-v)) ? "−" + money(-v) : money(Math.max(0, v));
+        return v < 0 && !Money.isZero(money(-v)) ? "−" + money(-v) : money(Math.max(0, v));
     }
 
     void outOfWorkPage(VBox page) {

@@ -32,7 +32,7 @@
 
 **Uses:** [Kept](Kept.md) (75), [FinancesScreen](FinancesScreen.md) (31), [SectorScreen](SectorScreen.md) (23), [Pieces](Pieces.md) (22), [RankingsScreen](RankingsScreen.md) (22), [BuildAdvice](BuildAdvice.md) (21), [FundScreen](FundScreen.md) (19), [BuildScreen](BuildScreen.md) (18), [TimeChart](TimeChart.md) (17), [FreightView](FreightView.md) (17), [UserInterface](UserInterface.md) (15), [Game](Game.md) (15), [Palette](Palette.md) (15), [Rankings](Rankings.md) (15), [TradeScreen](TradeScreen.md) (14), [BuildingsTemplate](BuildingsTemplate.md) (13), [ResearchScreen](ResearchScreen.md) (13), [PolicyScreen](PolicyScreen.md) (12), [Auction](Auction.md) (10), [PartnersView](PartnersView.md) (9), [WorldMeasures](WorldMeasures.md) (9), [HistoryScreen](HistoryScreen.md) (7), [ServicesScreen](ServicesScreen.md) (6), [GovernmentScreen](GovernmentScreen.md) (6), [BankScreen](BankScreen.md) (5), [Sector](Sector.md) (5), [CityNeeds](CityNeeds.md) (4), [LandScreen](LandScreen.md) (4), [BuildingType](BuildingType.md) (4), [ConstructionScreen](ConstructionScreen.md) (4)... and 38 more
 
-**Used by (1):** [KeptCheck](KeptCheck.md)
+**Used by (2):** [KeptCheck](KeptCheck.md), [MoneyWordsCheck](MoneyWordsCheck.md)
 
 ## Sections
 

@@ -148,7 +148,7 @@ public final class Money {
 
     /** A wage or a price the model holds in thousands, in the dollars it is. */
     public static String cash(double thousands) {
-        return "$" + formatter.format(Math.round(toDollars(thousands)));
+        return Currency.writing().write(formatter.format(Math.round(toDollars(thousands))));
     }
 
     /**
@@ -192,18 +192,19 @@ public final class Money {
     public static String tightMoney(double value, boolean compact) {
         double a = Math.abs(value);
         String sign = value < 0 ? "-" : "";
+        Currency w = Currency.writing();
         // Trillions (0.7.20): the load list printed a big city as "$3108.1B".
         // And each unit from where the one below it would print a thousand (0.7.40): 999.97B is
         // "$1.0T", not "$1000.0B", and 999,600 in a compact column "$1.0M", not "$1000k".
         // ...and quadrillions (0.7.54), grouped past a thousand of them: a 10 billion city.
-        if (a >= 1e15 || tenths(a / 1e12) >= 1000)         return String.format("%s$%,.1fQ", sign, a / 1e15);
-        if (a >= 1e12 || tenths(a / 1e9) >= 1000)          return String.format("%s$%.1fT", sign, a / 1e12);
-        if (a >= 1_000_000_000 || tenths(a / 1e6) >= 1000) return String.format("%s$%.1fB", sign, a / 1_000_000_000);
-        if (a >= 1_000_000 || (compact && Math.round(a / 1e3) >= 1000)) return String.format("%s$%.1fM", sign, a / 1_000_000);
-        if (compact && a >= 10_000) return String.format("%s$%.0fk", sign, a / 1_000);
+        if (a >= 1e15 || tenths(a / 1e12) >= 1000)         return sign + w.write(String.format("%,.1fQ", a / 1e15));
+        if (a >= 1e12 || tenths(a / 1e9) >= 1000)          return sign + w.write(String.format("%.1fT", a / 1e12));
+        if (a >= 1_000_000_000 || tenths(a / 1e6) >= 1000) return sign + w.write(String.format("%.1fB", a / 1_000_000_000));
+        if (a >= 1_000_000 || (compact && Math.round(a / 1e3) >= 1000)) return sign + w.write(String.format("%.1fM", a / 1_000_000));
+        if (compact && a >= 10_000) return sign + w.write(String.format("%.0fk", a / 1_000));
         // ...and no sign on a figure that rounds to no dollars at all: "-$0" is a direction.
         long whole = Math.round(a);
-        return (whole == 0 ? "" : sign) + "$" + formatter.format(whole);
+        return (whole == 0 ? "" : sign) + w.write(formatter.format(whole));
     }
 
     /** A figure to one place, as "%.1f" prints it: where a unit's figure would read a thousand. */
@@ -229,22 +230,35 @@ public final class Money {
     public static boolean something(double thousands) { return Math.abs(thousands) >= NOTHING; }
 
     /**
-     * Somebody else's money, marked as such: "US$" in place of the "$".
+     * Somebody else's money, marked as such: "US$" in place of the city's sign.
      *
      * Currency.foreign() prepends "US$" and expects a BARE figure, while every
-     * money function in this file already carries a "$". Written together they
-     * produced "US$$723.2M", which is the kind of thing that gets past a
-     * reviewer and never past a player.
+     * money function in this file already carries the city's sign. Written
+     * together they produced "US$$723.2M", which is the kind of thing that gets
+     * past a reviewer and never past a player.
      *
-     * So the mark REPLACES the symbol rather than sitting in front of it, and
-     * a negative keeps its sign outside: "-$5" becomes "-US$5" rather than
-     * "US$-5".
+     * So the mark REPLACES the sign rather than sitting in front of it, and
+     * a negative keeps its minus outside: "-$5" becomes "-US$5" rather than
+     * "US$-5". SIGN-AWARE since FM1 (Currency.marked()): the city's sign may be
+     * after the figure ("2.6M kr"), and the foreign mark is always before it -
+     * "US$2.6M" whatever the city's sign is. With the "$" before, the text is
+     * what this always wrote.
      */
     public static String marked(String prefix, String amount) {
-        int at = amount.indexOf('$');
-        return at < 0 ? prefix + amount
-                : amount.substring(0, at) + prefix + amount.substring(at + 1);
+        return Currency.marked(prefix, amount);
     }
+
+    /** Whether a money figure as the screens show it is the city's zero: what money(0) writes, "$0" with the "$" before (FM1: not a test for the character). */
+    public static boolean isZero(String shown) { return money(0).equals(shown); }
+
+    /** An already formatted number with the city's sign put around it (Currency.write()): the one door a screen's own figure takes to be money. */
+    public static String write(String number) { return Currency.writing().write(number); }
+
+    /** The city's qualified sign, for prose that names the city's money where a foreign one is in sight: "D$" for the Danzik dollar, "kr" for a krona. */
+    public static String ours() { return Currency.writing().qualifiedSymbol(); }
+
+    /** The city's bare sign, "$" unless it chose another (FM1): for a legend or a field's caption, never for a figure - write() places the sign. */
+    public static String sign() { return Currency.writing().symbol(); }
 
     /**
      * signed(), in the k/M column a city-scale statement wants.
@@ -294,11 +308,12 @@ public final class Money {
     public static String unitPrice(double thousands) {
         double d = toDollars(thousands);
         double a = Math.abs(d);
+        Currency w = Currency.writing();
         if (a >= 1_000) return tightMoney(d, false);
-        if (a >= 1)     return String.format("$%,.2f", d);
-        if (a >= .001)  return String.format("$%.4f", unsigned0(d, 4));
-        if (a > 0)      return String.format("$%.6f", unsigned0(d, 6));   // EP1: at 1900's prices a price under a tenth of a cent is common, and four decimals left it one figure ($0.0003)
-        return "$0";
+        if (a >= 1)     return w.write(String.format("%,.2f", d));
+        if (a >= .001)  return w.write(String.format("%.4f", unsigned0(d, 4)));
+        if (a > 0)      return w.write(String.format("%.6f", unsigned0(d, 6)));   // EP1: at 1900's prices a price under a tenth of a cent is common, and four decimals left it one figure ($0.0003)
+        return w.write("0");
     }
 
     /**

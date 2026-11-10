@@ -845,7 +845,8 @@ public final class LandMap {
 
     /** Thousands of US dollars as the screens write them: "US$12.1M". */
     public static String usd(double thousands) {
-        return Formats.INSTANCE.amount(thousands).replace("$", Currency.FOREIGN_SYMBOL);
+        String written = Formats.INSTANCE.amount(thousands);
+        return Double.isFinite(thousands) ? Currency.marked(Currency.FOREIGN_SYMBOL, written) : written;
     }
 
     /** An area given in km2, as the player reads it (LandManager.areaWords(), since 0.7.68): "0.842 km²", "7,200 m²". */

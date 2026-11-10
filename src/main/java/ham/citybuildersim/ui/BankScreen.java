@@ -196,13 +196,13 @@ final class BankScreen {
     /** Money with a true minus when below nothing, abbreviated: "−$2.1M". */
     static String m(double thousands) {
         String shown = money(Math.abs(thousands));
-        return (thousands < 0 && !"$0".equals(shown) ? "−" : "") + shown;
+        return (thousands < 0 && !Money.isZero(shown) ? "−" : "") + shown;
     }
 
     /** ...with every digit. */
     static String mFull(double thousands) {
         String shown = moneyFull(Math.abs(thousands));
-        return (thousands < 0 && !"$0".equals(shown) ? "−" : "") + shown;
+        return (thousands < 0 && !Money.isZero(shown) ? "−" : "") + shown;
     }
 
     /* ------------------------------ the frame ------------------------------ */

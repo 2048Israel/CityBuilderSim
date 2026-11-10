@@ -19,7 +19,7 @@
 > abbreviated - a statement whose column reads 13.6M over 940k does not
 > line up.
 
-**Uses:** [Palette](Palette.md) (109), [Kept](Kept.md) (62), [SectorStatements](SectorStatements.md) (36), [Statement](Statement.md) (2), [SectorScreen](SectorScreen.md) (1)
+**Uses:** [Palette](Palette.md) (109), [Kept](Kept.md) (62), [SectorStatements](SectorStatements.md) (36), [Money](Money.md) (3), [Statement](Statement.md) (2), [SectorScreen](SectorScreen.md) (1)
 
 **Used by (3):** [BankScreen](BankScreen.md), [KeptBench](KeptBench.md), [SectorScreen](SectorScreen.md)
 

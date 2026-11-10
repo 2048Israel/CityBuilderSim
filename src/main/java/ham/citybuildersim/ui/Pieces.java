@@ -1061,7 +1061,7 @@ public final class Pieces {
             // A true minus (0.7.31, the Government spec's B15: tightMoney() writes a
             // hyphen, and a refund sat under figures signed with a minus).
             String shown = tightMoney(toDollars(Math.abs(amount)));
-            Label money = Kept.label(amount < 0 && !"$0".equals(shown) ? "−" + shown : shown);
+            Label money = Kept.label(amount < 0 && !Money.isZero(shown) ? "−" + shown : shown);
             money.setPrefWidth(94);
             money.setMinWidth(94);
             money.setAlignment(Pos.CENTER_RIGHT);
@@ -6571,7 +6571,7 @@ public final class Pieces {
     public static Pnl pnl(String sym, double amount, double share) {
         if (!Double.isFinite(amount)) return new Pnl("not known", Palette.TEXT_MUTED);
         String shown = tidyMoney(Money.money(Math.abs(amount)));
-        boolean nothing = "$0".equals(shown);
+        boolean nothing = Money.isZero(shown);
         String figure = Money.marked(sym, shown);
         String sign = nothing ? "" : amount < 0 ? "\u2212" : "+";
         String arrow = nothing ? "" : amount > 0 ? "\u25B2 " : "\u25BC ";
@@ -6587,7 +6587,7 @@ public final class Pieces {
     /** Money.money()'s words at a unit's edge in the next unit's: "$1000k" is "$1.0M", "$1000.0M" "$1.0B", "$1000.0B" "$1.0T" (0.7.39) - none of which Money writes since 0.7.40 (tightMoney()), so it changes nothing now. */
     public static String tidyMoney(String shown) {
         if (shown == null) return null;
-        return shown.replace("$1000k", "$1.0M").replace("$1000.0M", "$1.0B").replace("$1000.0B", "$1.0T");
+        return shown.replace(Money.write("1000k"), Money.write("1.0M")).replace(Money.write("1000.0M"), Money.write("1.0B")).replace(Money.write("1000.0B"), Money.write("1.0T"));
     }
 
     /** ...as a figure that is never cut, at a size. */

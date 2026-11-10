@@ -18,6 +18,19 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.88 — FM1, the money's sign and its place — 2026-11-10, ready, see docs/queue/FM1-notes.md
+The city's money sign is the player's, before or after the figure ("ƒ2.6M",
+"2.6M kr"), with a space only where a letter touches the number. One writer
+(`Currency.write`, `qualify`, `marked`) writes every money figure on the
+screens and in the model's text, so the sign chosen at founding reaches every
+page; beside a foreign figure the city's initial qualifies it only where a
+vault mark could be mistaken for it ("D$", "T¥"), and "kr", "zł", "R$" stand
+alone. The founding screen has a sign field (three characters, typed or picked
+from the signs the interface's font draws), before/after chips, and its
+figures shown in the money being chosen. History's own figures keep their own
+marks (C$, US$). With "$" before, every string is the old one byte for byte
+and the playtest's trace is main's; `MoneySignCheck` and `MoneyWordsCheck` new.
+
 ### 0.9.87 — GD3, the gold standard — 2026-11-10, ready, see docs/queue/GD3-notes.md
 Gold is the fifth regime on Policy › The currency (spec-gold-money 4.3; Jerus, 2026-11-02, every call as recommended).
 Entering it strikes the mint at the day's rate times gold's price, so the D$ keeps its value (D$20.6718 an ounce at

@@ -1,4 +1,4 @@
-# Household.java - 1,433 lines · 122 methods · 9 constants · model
+# Household.java - 1,435 lines · 122 methods · 9 constants · model
 
 `ham/citybuildersim/Household.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
@@ -56,7 +56,7 @@
 > places, all of them named, none of them in a screen. The shares in the
 > city's companies were the first to go in that way, the same evening.
 
-**Uses:** [HouseholdBalance](HouseholdBalance.md) (17), [Bank](Bank.md) (6), [FamilyStructure](FamilyStructure.md) (3), [PayTier](PayTier.md) (2), [Equity](Equity.md) (1)
+**Uses:** [HouseholdBalance](HouseholdBalance.md) (17), [Bank](Bank.md) (6), [FamilyStructure](FamilyStructure.md) (3), [PayTier](PayTier.md) (2), [Currency](Currency.md) (2), [Equity](Equity.md) (1)
 
 **Used by (42):** [BankCheck](BankCheck.md), [BasketYearCheck](BasketYearCheck.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CarCheck](CarCheck.md), [CityBasket](CityBasket.md), [DenominationCheck](DenominationCheck.md), [EducationCheck](EducationCheck.md), [EquityCheck](EquityCheck.md), [Exchange](Exchange.md), [ExchangeCheck](ExchangeCheck.md), [Forms1900Check](Forms1900Check.md), [FundCheck](FundCheck.md), [FundLedgerCheck](FundLedgerCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [GroceryCheck](GroceryCheck.md), [HealthCheck](HealthCheck.md), [HistoryCheck](HistoryCheck.md), [HoldersCheck](HoldersCheck.md), [HouseholdAccounts](HouseholdAccounts.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [InvestCheck](InvestCheck.md), [KeptBench](KeptBench.md), [LongPlaytest](LongPlaytest.md), [MarketCheck](MarketCheck.md), [Offending](Offending.md), [OrphanHousehold](OrphanHousehold.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PrisonerHousehold](PrisonerHousehold.md), [ReadPathCheck](ReadPathCheck.md), [RestaurantsCheck](RestaurantsCheck.md), [RetiredHousehold](RetiredHousehold.md), [SaveFileCheck](SaveFileCheck.md), [ShadowBasket](ShadowBasket.md), [ShortSellingCheck](ShortSellingCheck.md), [StudentHousehold](StudentHousehold.md), [UnemployedHousehold](UnemployedHousehold.md), [WorkingHousehold](WorkingHousehold.md)
 
@@ -159,7 +159,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 58 | 1376 | **type** `public abstract class Household` | Every household of one shape at one pay tier, as one ledger. |
+| 58 | 1378 | **type** `public abstract class Household` | Every household of one shape at one pay tier, as one ledger. |
 
 ### THE LOAN'S RATE (2026-09-21) (lines 96-132)
 
@@ -295,7 +295,7 @@
 | 813 | 1 | `public double totalWant()` |  |
 | 819 | 1 | `public double netWorth()` | Net worth of one of these households: what it has less what it owes. |
 
-### the month (lines 821-1433)
+### the month (lines 821-1435)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -321,5 +321,5 @@
 | 1344 | 12 | `void clearWorking()` | Nothing to strike: the working is blank, the position stands. |
 | 1358 | 9 | `void clearAll()` | The cell is empty: no position either. |
 | 1369 | 59 | `void redenominate(double scale)` | Everything in money, in the new unit. |
-| 1430 | 3 | `public String toString()` |  |
+| 1430 | 5 | `public String toString()` |  |
 

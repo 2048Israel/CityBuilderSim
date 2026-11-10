@@ -49,7 +49,7 @@
 > PAY MEANS DEFAULT), and what is still unpaid is lent as an InterimLoan
 > ranked ahead of its other debt (INTERIM FINANCING).
 
-**Uses:** [Mortgage](Mortgage.md) (35), [BusinessDebt](BusinessDebt.md) (27), [InterimLoan](InterimLoan.md) (12), [Bank](Bank.md) (8), [BusinessLoan](BusinessLoan.md) (5), [Sectors](Sectors.md) (1)
+**Uses:** [Mortgage](Mortgage.md) (35), [BusinessDebt](BusinessDebt.md) (27), [InterimLoan](InterimLoan.md) (12), [Bank](Bank.md) (8), [BusinessLoan](BusinessLoan.md) (5), [Currency](Currency.md) (5), [Sectors](Sectors.md) (1)
 
 **Used by (33):** [AuctionCheck](AuctionCheck.md), [Bank](Bank.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [BooksCheck](BooksCheck.md), [BuildCardCheck](BuildCardCheck.md), [CreditCheck](CreditCheck.md), [EconomyManager](EconomyManager.md), [EquipmentFit](EquipmentFit.md), [FinancesScreen](FinancesScreen.md), [FittingCheck](FittingCheck.md), [FundLedgerCheck](FundLedgerCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [Inbox](Inbox.md), [InvestCheck](InvestCheck.md), [LongPlaytest](LongPlaytest.md), [MoneyCheck](MoneyCheck.md), [MortgageCheck](MortgageCheck.md), [OrderSearchCheck](OrderSearchCheck.md), [OutwardInvestment](OutwardInvestment.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [RefineryCheck](RefineryCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorBooks](SectorBooks.md), [SectorScreen](SectorScreen.md), [SectorStatements](SectorStatements.md), [SpreadPlanner](SpreadPlanner.md), [SupplierCreditCheck](SupplierCreditCheck.md), [WantedPostsCheck](WantedPostsCheck.md)
 

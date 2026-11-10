@@ -414,7 +414,7 @@ final class GovernmentScreen {
     /** Money with a true minus (B15: tightMoney() writes a hyphen, signedTight() a minus, and both stood on one page). */
     static String m(double thousands) {
         String shown = money(Math.abs(thousands));
-        return thousands < 0 && !"$0".equals(shown) ? "−" + shown : shown;
+        return thousands < 0 && !Money.isZero(shown) ? "−" + shown : shown;
     }
 
     /** Money signed, as a movement: "+$1.2M", "−$3.5M", "$0". */
@@ -931,7 +931,7 @@ final class GovernmentScreen {
     static Node debtExchangeLine(NationalAccounts na, double wide) {
         double gain = na.getDebtExchangeGain();
         if (Money.nothing(gain)) return null;
-        return infoLine("Exchange gain (loss) on foreign debt " + s(gain) + ", in the balance", DEBT_EXCHANGE_INFO, true,
+        return infoLine("Exchange gain (loss) on foreign debt " + s(gain) + ", in the balance", debtExchangeInfo(), true,
                 Palette.SIZE_LABEL, Palette.TEXT_MUTED, wide);
     }
 
@@ -956,7 +956,7 @@ final class GovernmentScreen {
         Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
         HBox row = Kept.row(Palette.GAP,
-                infoLine("Exchange gain (loss) on foreign debt", DEBT_EXCHANGE_INFO, true, Palette.SIZE_BODY, Palette.TEXT_BODY, 300),
+                infoLine("Exchange gain (loss) on foreign debt", debtExchangeInfo(), true, Palette.SIZE_BODY, Palette.TEXT_BODY, 300),
                 gap, figure(s(gain), Palette.SIZE_BODY + 1, Palette.TEXT_BODY));
         row.setAlignment(Pos.CENTER_LEFT);
         row.setStyle("-fx-padding: 4 6 0 6;");
@@ -1017,7 +1017,7 @@ final class GovernmentScreen {
     /* ------------------------------ from EARNED to BANKED ------------------------------ */
 
     /** The bridge card's (i): P2, rewritten, and P3. */
-    static final String BRIDGE_INFO = "EARNED is the header's figure: taxes and fees less the running programmes "
+    static String bridgeInfo() { return "EARNED is the header's figure: taxes and fees less the running programmes "
             + "- interest, pensions, EI, the grants, care, schools, the police and transit - plus the utilities' net, at "
             + "today's tax rates. The budget adds land, buildings and the smaller lines; the cash adds borrowing "
             + "and your own moves.\n\n"
@@ -1027,10 +1027,10 @@ final class GovernmentScreen {
             + "bank, bonds bought back, the students' loans and the fund's pay-ins - each a loan, a saving or a "
             + "debt, not spending. Some steps are the books and not money: the discount wearing off the city's "
             + "paper, which the budget charges as interest and nobody has been paid yet, the gain on paper "
-            + "bought back, the inflation uplift not yet paid, and (CD7) the D$'s move on the city's dollar paper. "
+            + "bought back, the inflation uplift not yet paid, and (CD7) the " + Money.ours() + "'s move on the city's dollar paper. "
             + "“Not accounted for” is what is left after them - timing between the books and the money, "
             + "such as a coupon booked the month it is charged and paid the month after, and anything not yet "
-            + "journalled - printed rather than folded in, because a bridge that hides its own gap is not a bridge.";
+            + "journalled - printed rather than folded in, because a bridge that hides its own gap is not a bridge."; }
 
     /** The dials' step's tooltip (the spec's B7). */
     static final String DIALS_INFO = "EARNED is read at today's tax rates; the budget was struck at the month's. "
@@ -1068,18 +1068,18 @@ final class GovernmentScreen {
             + "buyback line on the bridge.";
 
     /** CD7: the exchange gain (loss) on the city's foreign-currency paper: the line under the budget's operating lines, and what is in the balance. */
-    static final String DEBT_EXCHANGE_INFO = "The city owes its dollar paper in US$, and the books carry each piece at "
-            + "what it is carried at in US$, read at the month's exchange rate. When the D$ falls the same dollars cost "
-            + "more D$ and the month books a loss; when it rises, a gain. It is below the lines above and in the "
+    static String debtExchangeInfo() { return "The city owes its dollar paper in US$, and the books carry each piece at "
+            + "what it is carried at in US$, read at the month's exchange rate. When the " + Money.ours() + " falls the same dollars cost "
+            + "more " + Money.ours() + " and the month books a loss; when it rises, a gain. It is below the lines above and in the "
             + "balance, not in what was paid out. It moves no cash: coupons and principal are paid at the rate of the "
             + "month they fall due. The rollover and the fund's pay-in leave it out, because it is not a surplus "
-            + "anyone could spend.";
+            + "anyone could spend."; }
 
     /** CD7: the exchange step's tooltip: the D$'s move on the dollar paper, booked in the budget, paid by nobody. */
-    static final String NOT_CASH_EXCHANGE_INFO = "The budget books the D$'s move on the city's dollar paper every "
-            + "month: a loss when the D$ fell and the same dollars cost more, a gain when it rose. No cash came in "
+    static String notCashExchangeInfo() { return "The budget books the " + Money.ours() + "'s move on the city's dollar paper every "
+            + "month: a loss when the " + Money.ours() + " fell and the same dollars cost more, a gain when it rose. No cash came in "
             + "or went out for it, so the budget is higher than the cash by a gain, and this step takes it off; a "
-            + "loss it puts back. The cash moves when a coupon or the principal is paid, at that month's rate.";
+            + "loss it puts back. The cash moves when a coupon or the principal is paid, at that month's rate."; }
 
     /**
      * FROM EARNED TO BANKED: three tiles - the header's figure, the budget,
@@ -1122,7 +1122,7 @@ final class GovernmentScreen {
 
         Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
-        HBox head = Kept.row(Palette.GAP, caption("FROM EARNED TO BANKED", BRIDGE_INFO), gap,
+        HBox head = Kept.row(Palette.GAP, caption("FROM EARNED TO BANKED", bridgeInfo()), gap,
                 hint(banked ? "last month, press to press" : "the cash after the first month closes"));
         head.setAlignment(Pos.CENTER_LEFT);
 
@@ -1173,7 +1173,7 @@ final class GovernmentScreen {
         // ...and the D$'s move on the dollar paper (CD7): booked in the budget every month and paid by nobody, so a gain
         // comes off and a loss goes back. The four steps sum to Game.getTreasuryNotCash() (interest + uplift - gain - exchange).
         out.add(BridgeStep.of("Exchange gain (loss) on foreign debt", -na.getDebtExchangeGain(), Icons.FINANCES)
-                .tip(NOT_CASH_EXCHANGE_INFO).go(() -> openFinances("The book", "Every piece")));
+                .tip(notCashExchangeInfo()).go(() -> openFinances("The book", "Every piece")));
         for (TreasuryJournal.Entry e : ui.game.getTreasuryJournal()) {
             BridgeStep step = BridgeStep.of(e.label(), e.amount(), journalIcon(e.label()));
             Runnable go = journalDoor(e.label());
@@ -1258,7 +1258,7 @@ final class GovernmentScreen {
         }
         // CD7: the D$'s move on the dollar paper, booked in the budget and paid by nobody.
         if (Money.something(na.getDebtExchangeGain())) {
-            row = moved(grid, row, "Exchange gain (loss) on foreign debt (no cash: the D$'s move on the dollar paper)",
+            row = moved(grid, row, "Exchange gain (loss) on foreign debt (no cash: the " + Money.ours() + "'s move on the dollar paper)",
                     -na.getDebtExchangeGain(), false);
         }
         if (Money.something(na.getUpliftNotCash())) {

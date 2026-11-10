@@ -665,7 +665,12 @@ final class RankingsScreen {
     /** A measure's figure as the screen writes it; "—" where there is none. */
     private String figure(WorldMeasures.Measure m, double v) {
         if (!Double.isFinite(v)) return "—";
-        if (m.money()) return Money.marked(symbol(), Money.tightMoney(v, false)).replace('-', '−');
+        if (m.money()) {
+            // FM1: the city's own money is written by the city's sign, where it placed it; the world's two dollars take "US$" before the figure.
+            String tight = Money.tightMoney(v, false);
+            return (settings.money() == Rankings.Money.CITY ? ui.game.getCurrency().qualify(tight)
+                    : Money.marked(Currency.FOREIGN_SYMBOL, tight)).replace('-', '−');
+        }
         return plain(m.unit(), v);
     }
 

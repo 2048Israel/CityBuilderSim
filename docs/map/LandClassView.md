@@ -1,4 +1,4 @@
-# LandClassView.java - 187 lines · 16 methods · 1 constants · model
+# LandClassView.java - 188 lines · 16 methods · 1 constants · model
 
 `ham/citybuildersim/LandClassView.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
@@ -20,7 +20,7 @@
 > the world's "US$". They are copied here, since the model never imports the interface, and LandClassCheck 7 holds
 > the copy against ui.Money on a spread of figures so the two cannot drift.
 
-**Uses:** [LandManager](LandManager.md) (9), [CityLand](CityLand.md) (7), [SectorStatements](SectorStatements.md) (5), [LandMarket](LandMarket.md) (3), [Game](Game.md) (2), [LandParcel](LandParcel.md) (2), [SectorBooks](SectorBooks.md) (2), [Currency](Currency.md) (2)
+**Uses:** [LandManager](LandManager.md) (9), [CityLand](CityLand.md) (7), [Currency](Currency.md) (7), [SectorStatements](SectorStatements.md) (5), [LandMarket](LandMarket.md) (3), [Game](Game.md) (2), [LandParcel](LandParcel.md) (2), [SectorBooks](SectorBooks.md) (2)
 
 **Used by (4):** [LandClassCheck](LandClassCheck.md), [LandClassRenders](LandClassRenders.md), [LandScreen](LandScreen.md), [SectorScreen](SectorScreen.md)
 
@@ -43,7 +43,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 27 | 161 | **type** `public final class LandClassView` | What the land office and the sector statements say about the CLASSES of ground (ET3, spec-earth2-terrain 5.3), in words, worked out without a node: the office's prices for flat, foothill and steep ground, an offer's g... |
+| 27 | 162 | **type** `public final class LandClassView` | What the land office and the sector statements say about the CLASSES of ground (ET3, spec-earth2-terrain 5.3), in words, worked out without a node: the office's prices for flat, foothill and steep ground, an offer's g... |
 | 29 | 1 | `private LandClassView()` |  |
 
 ### THE LAND OFFICE'S PRICES BY CLASS (lines 31-67)
@@ -66,7 +66,7 @@
 | 117 | 3 | `public static List<String> landNoteLines(Game g, SectorBooks.SectorMonth now)` | ...for a game's city (its money's mark). |
 | 122 | 4 | `public static String landNoteLabel(SectorStatements.Row r, String mark)` | One of note 11's rows without its value, which the statement's own column writes: "Flat 1.24 km² at D$41.20 a m²". |
 
-### THE MONEY WORDS (ui.Money's, copied; LandClassCheck 7 holds them to it) (lines 127-187)
+### THE MONEY WORDS (ui.Money's, copied; LandClassCheck 7 holds them to it) (lines 127-188)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -74,11 +74,11 @@
 | 133 | 1 | `public static String usd(double thousandsPerSqFt)` | ...in the world's: "US$3.10". |
 | 136 | 1 | `public static String usd0(double thousands)` | A sum in thousands of US dollars: "US$1.2M" (Money.usd()). |
 | 139 | 1 | `static String groundPrice(double thousandsPerSqFt)` | Money.groundPrice(): a square metre of what the model keeps a square foot, as unitPrice() writes it, no mark. |
-| 142 | 4 | `public static String marked(String prefix, String amount)` | Money.marked(): the mark replaces the "$" of the amount. |
-| 148 | 1 | `public static String money(double thousands)` | Money.money(): thousands as the screens abbreviate city money. |
-| 151 | 9 | `static String unitPrice(double thousands)` | Money.unitPrice(): a price small enough that the cents matter - "$20,882", "$41.20", "$0.7500". |
+| 142 | 3 | `public static String marked(String prefix, String amount)` | Money.marked(): the mark replaces the "$" of the amount. |
+| 147 | 1 | `public static String money(double thousands)` | Money.money(): thousands as the screens abbreviate city money. |
+| 150 | 10 | `static String unitPrice(double thousands)` | Money.unitPrice(): a price small enough that the cents matter - "$20,882", "$41.20", "$0.7500". |
 | 162 | 4 | `static { ... }` |  |
-| 168 | 11 | `private static String tight(double value, boolean compact)` | Money.tightMoney(): `compact` abbreviates from ten thousand dollars (k), else only from a million (M). |
-| 180 | 1 | `private static double tenths(double v)` |  |
-| 182 | 5 | `private static double unsigned0(double value, int decimals)` |  |
+| 168 | 12 | `private static String tight(double value, boolean compact)` | Money.tightMoney(): `compact` abbreviates from ten thousand dollars (k), else only from a million (M). |
+| 181 | 1 | `private static double tenths(double v)` |  |
+| 183 | 5 | `private static double unsigned0(double value, int decimals)` |  |
 

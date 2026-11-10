@@ -280,10 +280,13 @@ public class Inbox {
             default -> "The US$'s gold window has closed: gold is no longer a fixed number of US$, and its price floats.";
         };
         List<String> lines = wrapped(did, BODY_COLUMNS);
-        lines.addAll(wrapped(String.format("The D$ stands on gold at D$%.4f an ounce, so its centre is D$%.4f to the US$ and the rate D$%.4f.",
-                fx.getMintPrice(), fx.goldCentre(), fx.getRate()), BODY_COLUMNS));
-        lines.addAll(wrapped(String.format("Answer on Policy › The currency: \"%s\", \"%s\" or \"%s\". Until you do, the D$ stays at its mint price.",
-                ForeignAccounts.GoldChoice.STAY.words, ForeignAccounts.GoldChoice.FOLLOW.words, ForeignAccounts.GoldChoice.LEAVE.words), BODY_COLUMNS));
+        Currency c = game.getCurrency();
+        lines.addAll(wrapped(String.format("The %s stands on gold at %s an ounce, so its centre is %s to the US$ and the rate %s.",
+                c.qualifiedSymbol(), c.writeQualified(String.format("%.4f", fx.getMintPrice())),
+                c.writeQualified(String.format("%.4f", fx.goldCentre())), c.writeQualified(String.format("%.4f", fx.getRate()))), BODY_COLUMNS));
+        lines.addAll(wrapped(String.format("Answer on Policy › The currency: \"%s\", \"%s\" or \"%s\". Until you do, the %s stays at its mint price.",
+                ForeignAccounts.GoldChoice.STAY.words, ForeignAccounts.GoldChoice.FOLLOW.words, ForeignAccounts.GoldChoice.LEAVE.words,
+                c.qualifiedSymbol()), BODY_COLUMNS));
         return lines;
     }
 
@@ -676,9 +679,10 @@ public class Inbox {
         lines.add("");
         // TIMES A THOUSAND: the model counts in thousands and this was the one
         // place in the inbox that printed the raw figure with a dollar sign.
-        lines.add(String.format("To resolve it:      $%,.0f",
-                bank.recapitalisationNeeded() * 1000));
-        lines.add(String.format("The treasury holds: $%,.0f", game.getCash() * 1000));
+        Currency w = game.getCurrency();
+        lines.add(String.format("To resolve it:      %s",
+                w.write(String.format("%,.0f", bank.recapitalisationNeeded() * 1000))));
+        lines.add(String.format("The treasury holds: %s", w.write(String.format("%,.0f", game.getCash() * 1000))));
         lines.add("");
         lines.add("Resolving it pays the hole and the capital to reopen, from");
         lines.add("the treasury's cash and the rest advanced by the central");
@@ -782,11 +786,12 @@ public class Inbox {
     /** Thousands - the unit the model counts in - as a player reads money: $1.3M, $450k. */
     private static String money(double thousands) {
         double d = thousands * 1000, a = Math.abs(d);
+        Currency w = Currency.writing();
         String sign = d < 0 ? "-" : "";
-        if (a >= 1e9) return String.format("%s$%.1fB", sign, a / 1e9);
-        if (a >= 1e6) return String.format("%s$%.1fM", sign, a / 1e6);
-        if (a >= 1e4) return String.format("%s$%.0fk", sign, a / 1e3);
-        return String.format("%s$%,.0f", sign, a);
+        if (a >= 1e9) return sign + w.write(String.format("%.1fB", a / 1e9));
+        if (a >= 1e6) return sign + w.write(String.format("%.1fM", a / 1e6));
+        if (a >= 1e4) return sign + w.write(String.format("%.0fk", a / 1e3));
+        return sign + w.write(String.format("%,.0f", a));
     }
 
     /**
@@ -818,7 +823,7 @@ public class Inbox {
                     crime.getCoverage() * 100));
             lines.add("the rest - never all of it. Only work, homes and money remove the reasons.");
             lines.add(String.format("%.1f people were killed last month; %s was stolen.",
-                    crime.getKilled(), String.format("$%,.0f", crime.getStolen() * 1000)));
+                    crime.getKilled(), game.getCurrency().write(String.format("%,.0f", crime.getStolen() * 1000))));
             lines.add("");
         }
         if (unheld) {

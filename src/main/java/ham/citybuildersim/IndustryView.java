@@ -831,7 +831,7 @@ public final class IndustryView {
         SpreadPlanner.Candidate c = u.oneMore();
         if (c == null) return "";
         if (c.passes()) {
-            return String.format("one more earns $%,.1fk a month on $%,.0fk at the city's prices, %.2f%% a month", c.earns(), c.cost(),
+            return String.format("one more earns %s a month on %s at the city's prices, %.2f%% a month", Currency.writing().write(String.format("%,.1fk", c.earns())), Currency.writing().write(String.format("%,.0fk", c.cost())),
                     100 * c.score());
         }
         return "one more: " + c.why();

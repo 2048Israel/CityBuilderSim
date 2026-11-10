@@ -805,14 +805,15 @@ public final class OilView {
     /** A sentence's money (Formats.amount()): "$78.8M"; what rounds to nothing, "$0". */
     static String money(double thousands) {
         String m = Formats.INSTANCE.amount(thousands);
-        return "$0.00".equals(m) || "-$0.00".equals(m) ? "$0" : m;
+        Currency w = Currency.writing();
+        return w.write("0.00").equals(m) || ("-" + w.write("0.00")).equals(m) ? w.write("0") : m;
     }
 
     /** ...signed: "+$11.5M", "−$2.0M". */
     static String signedMoney(double thousands) {
         if (!Double.isFinite(thousands)) return "—";
         String m = money(Math.abs(thousands));
-        return ("$0".equals(m) ? "" : thousands < 0 ? "−" : "+") + m;
+        return (Currency.writing().write("0").equals(m) ? "" : thousands < 0 ? "−" : "+") + m;
     }
 
     /** What the page says while the month is not counted. */

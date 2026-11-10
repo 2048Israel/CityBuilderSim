@@ -198,36 +198,42 @@ final class TradeScreen {
     /** The city's money's mark: "D$". */
     String sym() { return ui.game.getCurrency().qualifiedSymbol(); }
 
+    /** A figure the city's money has, an already formatted number, with the qualified mark put where the city placed its sign: "D$0.7072", "0.7072 kr" (FM1). */
+    String symFig(String number) { return ui.game.getCurrency().writeQualified(number); }
+
+    /** A figure the city's money wrote ("$2.4M", "2.4M kr"), with the qualified mark in the sign's place: "D$2.4M", "2.4M kr" (FM1). */
+    String qualified(String shown) { return ui.game.getCurrency().qualify(shown); }
+
     /** Local money with its mark and a true minus: "D$2.4M", "−D$725k" (FinancesScreen's, the spec's D9). */
     String d(double thousands) {
         String shown = money(Math.abs(thousands));
-        return (thousands < 0 && !"$0".equals(shown) ? "−" : "") + marked(sym(), shown);
+        return (thousands < 0 && !Money.isZero(shown) ? "−" : "") + qualified(shown);
     }
 
     /** ...with every digit. */
     String dFull(double thousands) {
         String shown = moneyFull(Math.abs(thousands));
-        return (thousands < 0 && !"$0".equals(shown) ? "−" : "") + marked(sym(), shown);
+        return (thousands < 0 && !Money.isZero(shown) ? "−" : "") + qualified(shown);
     }
 
     /** ...signed, as a movement: "+D$1.2M", "−D$3.5M", "D$0". */
     String signedD(double thousands) {
         String shown = money(Math.abs(thousands));
-        if ("$0".equals(shown)) return marked(sym(), shown);
-        return (thousands < 0 ? "−" : "+") + marked(sym(), shown);
+        if (Money.isZero(shown)) return qualified(shown);
+        return (thousands < 0 ? "−" : "+") + qualified(shown);
     }
 
     /** A price a unit, with its mark: "D$29,559", "D$1.31". */
-    String unitD(double thousands) { return marked(sym(), unitPrice(thousands)); }
+    String unitD(double thousands) { return qualified(unitPrice(thousands)); }
 
     /** An exchange rate with its unit, the header's way: "D$0.7072 per US$" (the spec's B4). */
-    String perUsd(double rate) { return sym() + fxRate(rate) + " per " + Currency.FOREIGN_SYMBOL; }
+    String perUsd(double rate) { return symFig(fxRate(rate)) + " per " + Currency.FOREIGN_SYMBOL; }
 
     /** One of ours in theirs: "D$1 = US$1.41", "D$1 = US¢0.27" for a currency worth under a cent of theirs. */
     String oneOfOurs() {
         double usd = ui.game.getForeignAccounts().toUsd(1);
-        if (usd >= .01) return sym() + "1 = " + Currency.FOREIGN_SYMBOL + String.format("%,.2f", usd);
-        return sym() + "1 = " + Currency.FOREIGN_CENT_SYMBOL + String.format("%.2f", usd * 100);
+        if (usd >= .01) return symFig("1") + " = " + Currency.FOREIGN_SYMBOL + String.format("%,.2f", usd);
+        return symFig("1") + " = " + Currency.FOREIGN_CENT_SYMBOL + String.format("%.2f", usd * 100);
     }
 
     /** How far from parity, in words: "26.2% stronger than parity", "at parity", "held fixed" - and "1.2M times parity" for a rate at its guard (farFrom()). */
@@ -1136,12 +1142,12 @@ final class TradeScreen {
     VBox currencyCard() {
         ForeignAccounts fx = ui.game.getForeignAccounts();
         HistorySave h = ui.game.getHistorySave();
-        Label rate = figure(sym() + fxRate(fx.getRate()), 28, Palette.TEXT_HEAD);
+        Label rate = figure(symFig(fxRate(fx.getRate())), 28, Palette.TEXT_HEAD);
         Label per = words("per " + Currency.FOREIGN_SYMBOL, 13, Palette.TEXT_LABEL);
         HBox big = Kept.row(6, rate, per);
         big.setAlignment(Pos.BASELINE_LEFT);
         VBox c = doorCard(() -> open(CURRENCY), cardHead(Icons.EXCHANGE, Palette.MONEY, "THE CURRENCY", RATE_INFO, null), big,
-                muted(oneOfOurs() + " · parity " + sym() + fxRate(fx.getParity())));
+                muted(oneOfOurs() + " · parity " + symFig(fxRate(fx.getParity()))));
         addRegimeLine(c);
         int level = fx.isPinned() ? 0 : ForeignAccounts.parityLevel(fx.deviationFromParity());
         c.getChildren().add(chips(chip(parityWords(fx), level == 0 ? Palette.TEXT_MUTED : parityTone(level))));
@@ -1165,14 +1171,14 @@ final class TradeScreen {
         return switch (fx.getRegime()) {
             case LEAN -> null;
             case FLOAT -> "Floating freely";
-            case BAND -> "In a band of " + sym() + fxRate(fx.bandStrongEdge()) + "-" + sym() + fxRate(fx.bandWeakEdge());
+            case BAND -> "In a band of " + symFig(fxRate(fx.bandStrongEdge())) + "-" + symFig(fxRate(fx.bandWeakEdge()));
             // The peg kept in another money than the US$ (WN4b): the D$ per US$ it holds this month, and the peg itself in its own money.
-            case PEG -> "Held at a peg of " + sym() + fxRate(fx.getPegRate())
-                    + (fx.getPegAnchor() == 0 ? "" : " per " + Currency.FOREIGN_SYMBOL + " this month, " + sym() + fxRate(fx.getPegPerAnchor())
+            case PEG -> "Held at a peg of " + symFig(fxRate(fx.getPegRate()))
+                    + (fx.getPegAnchor() == 0 ? "" : " per " + Currency.FOREIGN_SYMBOL + " this month, " + symFig(fxRate(fx.getPegPerAnchor()))
                             + " per " + PolicyScreen.anchorMark(fx.getPegAnchor()));
             // Gold (GD3) is a band at the gold points: the rate held between them, around the centre the mint price makes against gold's price.
-            case GOLD -> "On gold at " + sym() + fxRate(fx.getMintPrice()) + " an ounce, held at the gold points of " + sym() + fxRate(fx.goldStrongEdge())
-                    + "-" + sym() + fxRate(fx.goldWeakEdge());
+            case GOLD -> "On gold at " + symFig(fxRate(fx.getMintPrice())) + " an ounce, held at the gold points of " + symFig(fxRate(fx.goldStrongEdge()))
+                    + "-" + symFig(fxRate(fx.goldWeakEdge()));
         };
     }
 
@@ -1452,8 +1458,8 @@ final class TradeScreen {
     /** "+D$1,234,567" or "−D$…", every digit. */
     String signedFull(double thousands) {
         String shown = moneyFull(Math.abs(thousands));
-        if ("$0".equals(shown)) return marked(sym(), shown);
-        return (thousands < 0 ? "−" : "+") + marked(sym(), shown);
+        if (Money.isZero(shown)) return qualified(shown);
+        return (thousands < 0 ? "−" : "+") + qualified(shown);
     }
 
     /** The two goods that moved most one way, for a tooltip and the river's note (the spec's B8: the words were static and untrue). */
@@ -2582,7 +2588,7 @@ final class TradeScreen {
         if (parity < h.months()) {
             right.getChildren().add(Kept.scope("parity note", () -> noteLine(parity == 0
                             ? "Parity is recorded from 0.7.35 on: none yet in this city's history - today's is "
-                              + sym() + fxRate(ui.game.getForeignAccounts().getParity()) + "."
+                              + symFig(fxRate(ui.game.getForeignAccounts().getParity())) + "."
                             : "Parity is recorded from 0.7.35 on: " + parity + " month" + (parity == 1 ? "" : "s") + " so far.",
                     "Parity is where a basket costs the same here and abroad. History kept the rate from the "
                             + "founding and parity only since 0.7.35, so an older city's parity line starts the "
@@ -2592,7 +2598,7 @@ final class TradeScreen {
         if (fair < h.months()) {
             right.getChildren().add(Kept.scope("fair note", () -> noteLine(fair == 0
                             ? "The fair level is recorded from 0.8.19 on: none yet in this city's history - today's is "
-                              + sym() + fxRate(fx.getFairLevel()) + "."
+                              + symFig(fxRate(fx.getFairLevel())) + "."
                             : "The fair level is recorded from 0.8.19 on: " + fair + " month" + (fair == 1 ? "" : "s") + " so far.",
                     "The fair level is where the fundamentals alone put the currency: parity's trend, the real rate, the "
                             + "vault's cover and the balance, with nothing for the market's swing or any dealing. History "
@@ -2613,7 +2619,7 @@ final class TradeScreen {
      */
     VBox rateCard() {
         ForeignAccounts fx = ui.game.getForeignAccounts();
-        Label rate = figure(sym() + fxRate(fx.getRate()), 28, Palette.TEXT_HEAD);
+        Label rate = figure(symFig(fxRate(fx.getRate())), 28, Palette.TEXT_HEAD);
         Label per = words("per " + Currency.FOREIGN_SYMBOL, 13, Palette.TEXT_LABEL);
         HBox big = Kept.row(6, rate, per);
         big.setAlignment(Pos.BASELINE_LEFT);
@@ -2625,7 +2631,7 @@ final class TradeScreen {
         double struck = ui.game.getEconomyManager().getStruckRate(), gap = ui.game.struckFromRate();
         if (struck > 0) {
             Kept.scope("struck", () -> {
-                c.getChildren().add(cardLine("The goods are struck at", sym() + fxRate(struck), null, STRUCK_INFO));
+                c.getChildren().add(cardLine("The goods are struck at", symFig(fxRate(struck)), null, STRUCK_INFO));
                 c.getChildren().add(muted(Math.abs(gap) < .0005 ? "Level with the rate: the goods have caught up."
                         : farFrom(gap, "the rate") + ", closing " + String.format("1/%.0f", 1 / EconomyManager.PASS_THROUGH) + " of the gap a month"));
             });
@@ -2635,7 +2641,7 @@ final class TradeScreen {
         // D29 (WN6): the other US dollar, the real 2015 one the nations' output is counted in, and the D$'s real effective rate against the partners'.
         double real = ui.game.dollarsPer2015Usd(), effective = ui.game.realEffectiveRate();
         if (Double.isFinite(real)) {
-            c.getChildren().add(Kept.scope("real", () -> cardLine("A real 2015 " + Currency.FOREIGN_SYMBOL + " costs", sym() + fxRate(real), null, REAL_USD_INFO)));
+            c.getChildren().add(Kept.scope("real", () -> cardLine("A real 2015 " + Currency.FOREIGN_SYMBOL + " costs", symFig(fxRate(real)), null, REAL_USD_INFO)));
         }
         if (Double.isFinite(effective)) {
             c.getChildren().add(Kept.scope("effective", () -> cardLine("The real effective rate", String.format("%.1f", effective) + " (100 at founding)", null, REAL_EFFECTIVE_INFO)));
@@ -2853,7 +2859,7 @@ final class TradeScreen {
                 : move > 0 ? "rose faster than the world's, so the " + d + " buys less"
                 : "rose slower than the world's, so the " + d + " buys more";
         return "Prices here, with rent held to a third of the basket, " + ran + ". Followed one for one, with no lag: parity "
-                + "stands at " + d + fxRate(fx.getParity()) + ", its trend at " + d + fxRate(fx.getParityTrend()) + ".";
+                + "stands at " + symFig(fxRate(fx.getParity())) + ", its trend at " + symFig(fxRate(fx.getParityTrend())) + ".";
     }
 
     /** THE REAL RATE (pure): the dial, the inflation people expect, the gap to the world's real rate, where that holds the currency, and how fast. */
@@ -2949,9 +2955,9 @@ final class TradeScreen {
             double jump = Math.expm1(fx.getLastBreakJump());
             // The gold's own break, by its cover (GD3): the gold standard giving way, not a peg.
             boolean gold = fx.getLastBreakCause() == ForeignAccounts.BreakCause.COVER;
-            return (gold ? "The gold gave way, because " : "The peg gave way, because ") + fx.getLastBreakCause().words + ": the " + d + " landed at " + d
-                    + fxRate(fx.getRate()) + ", " + share1(Math.abs(jump)) + (jump >= 0 ? " weaker" : " stronger")
-                    + " in the month, where the float's rule had it at " + d + fxRate(fx.getLastBreakShadow())
+            return (gold ? "The gold gave way, because " : "The peg gave way, because ") + fx.getLastBreakCause().words + ": the " + d + " landed at "
+                    + symFig(fxRate(fx.getRate())) + ", " + share1(Math.abs(jump)) + (jump >= 0 ? " weaker" : " stronger")
+                    + " in the month, where the float's rule had it at " + symFig(fxRate(fx.getLastBreakShadow()))
                     + (gold ? ". This is the gold standard letting go of the rate it had held." : ". This is the peg letting go of the rate it had held.");
         }
         ForeignAccounts.Regime regime = fx.getRegime();
@@ -2959,43 +2965,43 @@ final class TradeScreen {
             // Gold is held as a band is, at the gold points (GD3): inside them nothing is held; at one the vault deals, gold first.
             boolean inside = fx.getRate() < fx.goldWeakEdge() * (1 - 1e-9) && fx.getRate() > fx.goldStrongEdge() * (1 + 1e-9);
             if (fx.isHeld() && inside) {
-                return "What the vault dealt at a gold point still leans on the rate, " + d + fxRate(fx.getRate()) + " against "
-                        + d + fxRate(fx.getShadowRate()) + " where the float's rule put it, fading by half in about "
+                return "What the vault dealt at a gold point still leans on the rate, " + symFig(fxRate(fx.getRate())) + " against "
+                        + symFig(fxRate(fx.getShadowRate())) + " where the float's rule put it, fading by half in about "
                         + String.format("%.0f", ForeignAccounts.INTERVENTION_HALF_LIFE) + " months: the part of the month's "
                         + "move that dealing kept off the rate.";
             }
             return fx.isHeld()
-                    ? "The rate reached a gold point and the vault held it there, " + d + fxRate(fx.getRate()) + ", away "
-                      + "from where the float's rule put it, " + d + fxRate(fx.getShadowRate()) + ": the part of the month's "
+                    ? "The rate reached a gold point and the vault held it there, " + symFig(fxRate(fx.getRate())) + ", away "
+                      + "from where the float's rule put it, " + symFig(fxRate(fx.getShadowRate())) + ": the part of the month's "
                       + "move the gold kept off the rate. A sale ships gold first."
-                    : "The rate stayed inside the gold points, " + d + fxRate(fx.goldStrongEdge()) + " to " + d
-                      + fxRate(fx.goldWeakEdge()) + ": nothing to hold this month.";
+                    : "The rate stayed inside the gold points, " + symFig(fxRate(fx.goldStrongEdge())) + " to "
+                      + symFig(fxRate(fx.goldWeakEdge())) + ": nothing to hold this month.";
         }
         if (regime == ForeignAccounts.Regime.PEG) {
             // Kept in another money than the US$ (WN4b), the rate is said to be that money's peg; for the US$ the sentences are what they were.
             String to = fx.getPegAnchor() == 0 ? "" : " (the peg is to " + ForeignAccounts.MONEY_NAME[fx.getPegAnchor()] + ")";
             return fx.isHeld()
-                    ? "The vault held the " + d + " at the peg, " + d + fxRate(fx.getPegRate()) + to + ", away from where the "
-                      + "float's rule put it, " + d + fxRate(fx.getShadowRate()) + ": the part of the month's move the peg "
+                    ? "The vault held the " + d + " at the peg, " + symFig(fxRate(fx.getPegRate())) + to + ", away from where the "
+                      + "float's rule put it, " + symFig(fxRate(fx.getShadowRate())) + ": the part of the month's move the peg "
                       + "kept off the rate."
-                    : "The float's rule and the peg were in step, " + d + fxRate(fx.getPegRate()) + to + ": nothing to hold "
+                    : "The float's rule and the peg were in step, " + symFig(fxRate(fx.getPegRate())) + to + ": nothing to hold "
                       + "this month.";
         }
         if (regime == ForeignAccounts.Regime.BAND) {
             // Inside the edges and still held (XR5): the rate is not at an edge but leans on what the vault dealt at one, which fades.
             boolean inside = fx.getRate() < fx.bandWeakEdge() * (1 - 1e-9) && fx.getRate() > fx.bandStrongEdge() * (1 + 1e-9);
             if (fx.isHeld() && inside) {
-                return "What the vault dealt at the band's edge still leans on the rate, " + d + fxRate(fx.getRate()) + " against "
-                        + d + fxRate(fx.getShadowRate()) + " where the float's rule put it, fading by half in about "
+                return "What the vault dealt at the band's edge still leans on the rate, " + symFig(fxRate(fx.getRate())) + " against "
+                        + symFig(fxRate(fx.getShadowRate())) + " where the float's rule put it, fading by half in about "
                         + String.format("%.0f", ForeignAccounts.INTERVENTION_HALF_LIFE) + " months: the part of the month's "
                         + "move that dealing kept off the rate.";
             }
             return fx.isHeld()
-                    ? "The rate reached the band's edge and the vault held it there, " + d + fxRate(fx.getRate()) + ", away "
-                      + "from where the float's rule put it, " + d + fxRate(fx.getShadowRate()) + ": the part of the month's "
+                    ? "The rate reached the band's edge and the vault held it there, " + symFig(fxRate(fx.getRate())) + ", away "
+                      + "from where the float's rule put it, " + symFig(fxRate(fx.getShadowRate())) + ": the part of the month's "
                       + "move the band kept off the rate."
-                    : "The rate stayed inside the band, " + d + fxRate(fx.bandStrongEdge()) + " to " + d
-                      + fxRate(fx.bandWeakEdge()) + ": nothing to hold this month.";
+                    : "The rate stayed inside the band, " + symFig(fxRate(fx.bandStrongEdge())) + " to "
+                      + symFig(fxRate(fx.bandWeakEdge())) + ": nothing to hold this month.";
         }
         return "The hold moved the rate last month, under a regime the city has since left; nothing is held now.";
     }
@@ -3013,9 +3019,9 @@ final class TradeScreen {
         ForeignAccounts fx = ui.game.getForeignAccounts();
         double now = fx.getRate(), move = fx.getLastMove(), before = now / Math.exp(move);
         if (!Double.isFinite(before) || Math.abs(move) < 5e-6) {
-            return Currency.FOREIGN_SYMBOL + "1 stayed at " + sym() + fxRate(now) + ": nothing to add up.";
+            return Currency.FOREIGN_SYMBOL + "1 stayed at " + symFig(fxRate(now)) + ": nothing to add up.";
         }
-        return Currency.FOREIGN_SYMBOL + "1 went from " + sym() + fxRate(before) + " to " + sym() + fxRate(now)
+        return Currency.FOREIGN_SYMBOL + "1 went from " + symFig(fxRate(before)) + " to " + symFig(fxRate(now))
                 + (showsHold(fx) ? ". The forces and the hold add up to it." : ". The forces add up to it.");
     }
 
@@ -3093,14 +3099,14 @@ final class TradeScreen {
                 quiet(Currency.FOREIGN_SYMBOL + "1 in " + sym() + ", built up step by step")));
         if (fx.isPinned()) {
             c.getChildren().add(Kept.scope("pinned", () -> line("The rate is pinned: these steps are not driving it. Left to the fundamentals the "
-                    + sym() + " would stand at " + sym() + fxRate(fx.getFairLevel()) + " per " + Currency.FOREIGN_SYMBOL + ".",
+                    + sym() + " would stand at " + symFig(fxRate(fx.getFairLevel())) + " per " + Currency.FOREIGN_SYMBOL + ".",
                     null)));
             return c;
         }
         List<FairStep> steps = fairSteps();
         double base = fairBase(steps);
         c.getChildren().add(Kept.scope("table", () -> fairTable(steps, base)));
-        c.getChildren().add(Kept.scope("bars start", () -> muted("Bars start at " + sym() + fxRate(base) + ", on a log scale: a cheaper " + sym()
+        c.getChildren().add(Kept.scope("bars start", () -> muted("Bars start at " + symFig(fxRate(base)) + ", on a log scale: a cheaper " + sym()
                 + " is a longer bar.")));
         c.getChildren().add(Kept.scope("fade", () -> line(fadeSentence(), null)));
         return c;
@@ -3202,7 +3208,7 @@ final class TradeScreen {
                         barSpan > 0 ? barSpan : 1, null, 0, 8);
                 GridPane.setValignment(bar, javafx.geometry.VPos.CENTER);
                 g.add(bar, 2, at);
-                Label after = figure(sym() + fxRate(r.after()), Palette.SIZE_LABEL + 1, r.total() ? Palette.TEXT_HEAD : Palette.TEXT_LABEL);
+                Label after = figure(symFig(fxRate(r.after())), Palette.SIZE_LABEL + 1, r.total() ? Palette.TEXT_HEAD : Palette.TEXT_LABEL);
                 GridPane.setHalignment(after, javafx.geometry.HPos.RIGHT);
                 g.add(after, 3, at);
             });
@@ -3222,8 +3228,7 @@ final class TradeScreen {
         }
         double half = fair * Math.exp(Math.log(rate / fair) / 2);
         int by = ui.game.getMonth() + (int) ForeignAccounts.MARKET_HALF_LIFE;
-        return "A market swing fades by half in about " + years + " years. From here it is about halfway back (" + sym()
-                + fxRate(half) + ", if the fair level stood still) by month " + String.format("%,d", by) + ".";
+        return "A market swing fades by half in about " + years + " years. From here it is about halfway back (" + symFig(fxRate(half)) + ", if the fair level stood still) by month " + String.format("%,d", by) + ".";
     }
 
     /** The steps card's (i): how to read the table. */
@@ -3592,9 +3597,9 @@ final class TradeScreen {
         }
         if (ui.game.getMonth() <= Game.FOUNDERS_NOTE_MONTHS && fx.getReservesUsd() > 0 && ui.game.getFoundingReserveUsd() > 0) {
             out.add(new Moved("the founders left " + usd(ui.game.getFoundingReserveUsd()) + " in it", Palette.TEXT_LABEL,
-                    String.format("The founders left %s in this vault on the first day, bought at %s%.2f to the dollar out "
-                            + "of the city's endowment. %s", usdFull(ui.game.getFoundingReserveUsd()), sym(),
-                            ForeignAccounts.OPENING_RATE, fx.monthlyImports() > 0
+                    String.format("The founders left %s in this vault on the first day, bought at %s to the dollar out "
+                            + "of the city's endowment. %s", usdFull(ui.game.getFoundingReserveUsd()),
+                            symFig(String.format("%.2f", ForeignAccounts.OPENING_RATE)), fx.monthlyImports() > 0
                                     ? "What the vault holds now would pay for " + coverMonths(fx.importCover())
                                       + " of what the city buys abroad."
                                     : "The city is not buying anything abroad yet.")));
@@ -3658,23 +3663,23 @@ final class TradeScreen {
         String fades = String.format("half of that gone in %.0f months", ForeignAccounts.INTERVENTION_HALF_LIFE);
         ForeignAccounts.Regime regime = fx.getRegime();
         if (regime == ForeignAccounts.Regime.PEG) {
-            whole.append(String.format("Under the peg the rate stays at %s%s, held. %s would move the float's own rate behind it about %s, and the "
+            whole.append(String.format("Under the peg the rate stays at %s, held. %s would move the float's own rate behind it about %s, and the "
                             + "vault deals to hold the peg against that (a peg gives way if holding it would take the vault under its floor).",
-                    sym(), fxRate(fx.rateAfterDeal(piece)), own, mult));
+                    symFig(fxRate(fx.rateAfterDeal(piece))), own, mult));
         } else if (regime == ForeignAccounts.Regime.BAND && fx.regimeHoldsDeal(piece)) {
-            whole.append(String.format("Under the band the rate stops at its edge, %s%s. %s would move the float's own rate about %s, and the vault "
-                            + "deals to hold the rest.", sym(), fxRate(fx.rateAfterDeal(piece)), own, mult));
+            whole.append(String.format("Under the band the rate stops at its edge, %s. %s would move the float's own rate about %s, and the vault "
+                            + "deals to hold the rest.", symFig(fxRate(fx.rateAfterDeal(piece))), own, mult));
         } else if (regime == ForeignAccounts.Regime.BAND) {
-            whole.append(String.format("Under the band the rate stays inside it. %s would move it about %s (%s per %s) in its month, to %s%s, %s.",
-                    own, mult, sym(), Currency.FOREIGN_SYMBOL, sym(), fxRate(fx.rateAfterDeal(piece)), fades));
+            whole.append(String.format("Under the band the rate stays inside it. %s would move it about %s (%s per %s) in its month, to %s, %s.",
+                    own, mult, sym(), Currency.FOREIGN_SYMBOL, symFig(fxRate(fx.rateAfterDeal(piece))), fades));
         } else if (regime == ForeignAccounts.Regime.GOLD && fx.regimeHoldsDeal(piece)) {
             // Gold is a band at the gold points (GD3): a purchase of dollars weakens the rate, and what the vault sells to hold it is gold first; a sale strengthens it, and the vault takes gold in.
-            whole.append(String.format("Under gold the rate stops at its gold point, %s%s. %s would move the float's own rate about %s, and the vault "
-                            + "deals to hold the rest, %s.", sym(), fxRate(fx.rateAfterDeal(piece)), own, mult,
+            whole.append(String.format("Under gold the rate stops at its gold point, %s. %s would move the float's own rate about %s, and the vault "
+                            + "deals to hold the rest, %s.", symFig(fxRate(fx.rateAfterDeal(piece))), own, mult,
                     piece > 0 ? "selling its gold first: the cover falls with it" : "taking gold in"));
         } else if (regime == ForeignAccounts.Regime.GOLD) {
-            whole.append(String.format("Under gold the rate stays inside the gold points. %s would move it about %s (%s per %s) in its month, to %s%s, %s.",
-                    own, mult, sym(), Currency.FOREIGN_SYMBOL, sym(), fxRate(fx.rateAfterDeal(piece)), fades));
+            whole.append(String.format("Under gold the rate stays inside the gold points. %s would move it about %s (%s per %s) in its month, to %s, %s.",
+                    own, mult, sym(), Currency.FOREIGN_SYMBOL, symFig(fxRate(fx.rateAfterDeal(piece))), fades));
         } else {
             whole.append(String.format("%s would move the rate about %s (%s per %s) in its month, %s.", own, mult, sym(), Currency.FOREIGN_SYMBOL, fades));
         }
@@ -3702,7 +3707,7 @@ final class TradeScreen {
      * The names on the exchange's chips, and the mark each money's amounts carry (WN4), in ForeignAccounts' order: WorldMoneys.EIGHT's, then
      * gold's (GD2, the ninth: its mark is ounces, which ownMoney writes after the figure).
      */
-    static final String[] MONEY_CHIP = {"US$", "Euro", "Yen", "Pound", "Yuan", "Canadian $", "Australian $", "Franc", "Gold"};
+    static final String[] MONEY_CHIP = {"US$", "Euro", "Yen", "Pound", "Yuan", "C$", "A$", "Franc", "Gold"};
     static final String[] MONEY_MARK = {"US$", "€", "¥", "£", "CN¥", "C$", "A$", "CHF ", "XAU "};
 
     /**

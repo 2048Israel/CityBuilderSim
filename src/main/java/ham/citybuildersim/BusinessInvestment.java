@@ -783,7 +783,7 @@ public class BusinessInvestment {
                 Math.max(1, (int) Math.ceil(mostHeld * MAX_RETIREMENT_FRACTION)));
 
         return new Decision(key, worst, quantity,
-                String.format("%d months of losses, $%,.0fk overdrawn and no lender", losses, -cash),
+                String.format("%d months of losses, %s overdrawn and no lender", losses, Currency.writing().write(String.format("%,.0fk", -cash))),
                 true);
     }
 

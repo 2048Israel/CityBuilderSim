@@ -1,4 +1,4 @@
-# RankingsScreen.java - 1,773 lines · 81 methods · 18 constants · interface
+# RankingsScreen.java - 1,778 lines · 81 methods · 18 constants · interface
 
 `ham/citybuildersim/ui/RankingsScreen.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
@@ -20,7 +20,7 @@
 > own, Prices open beside them: D2, D3, D5), read off the screen's thread by SavedCities, and the city's rank over the
 > years on its card (D12).
 
-**Uses:** [Palette](Palette.md) (167), [Rankings](Rankings.md) (116), [Kept](Kept.md) (104), [WorldMeasures](WorldMeasures.md) (58), [SavedCities](SavedCities.md) (15), [Pieces](Pieces.md) (11), [Money](Money.md) (10), [CityCalendar](CityCalendar.md) (9), [HistoryScreen](HistoryScreen.md) (9), [Nations](Nations.md) (6), [Icons](Icons.md) (5), [UserInterface](UserInterface.md) (2), [Game](Game.md) (2), [Currency](Currency.md) (2), [GameFiles](GameFiles.md) (1), [GameLog](GameLog.md) (1), [CityMeasures](CityMeasures.md) (1)
+**Uses:** [Palette](Palette.md) (167), [Rankings](Rankings.md) (117), [Kept](Kept.md) (104), [WorldMeasures](WorldMeasures.md) (58), [SavedCities](SavedCities.md) (15), [Money](Money.md) (11), [Pieces](Pieces.md) (11), [CityCalendar](CityCalendar.md) (9), [HistoryScreen](HistoryScreen.md) (9), [Nations](Nations.md) (6), [Icons](Icons.md) (5), [Currency](Currency.md) (3), [UserInterface](UserInterface.md) (2), [Game](Game.md) (2), [GameFiles](GameFiles.md) (1), [GameLog](GameLog.md) (1), [CityMeasures](CityMeasures.md) (1)
 
 **Used by (2):** [KeptBench](KeptBench.md), [UserInterface](UserInterface.md)
 
@@ -34,11 +34,11 @@
 | 483 | THE RANKINGS TAB (LB2): THE HEAD, THE CONTROLS AND THE SENTENCE |
 | 615 | THE RANKINGS TAB (LB2): THE (i) |
 | 650 | THE RANKINGS TAB (LB2): FIGURES AS WORDS |
-| 763 | THE RANKINGS TAB (LB2): THE MEASURES COLUMN |
-| 858 | THE RANKINGS TAB (LB2): THE TABLE |
-| 1119 | THE RANKINGS TAB (LB2): THE ROWS, DRAWN |
-| 1384 | THE RANKINGS TAB (LB2): THE CARD AND THE DRAWER |
-| 1524 | · rank over the years (LB3, D12) |
+| 768 | THE RANKINGS TAB (LB2): THE MEASURES COLUMN |
+| 863 | THE RANKINGS TAB (LB2): THE TABLE |
+| 1124 | THE RANKINGS TAB (LB2): THE ROWS, DRAWN |
+| 1389 | THE RANKINGS TAB (LB2): THE CARD AND THE DRAWER |
+| 1529 | · rank over the years (LB3, D12) |
 
 ## Enum constants
 
@@ -62,16 +62,16 @@
 | 319 | `RankingsScreen.STAGE_REST` | `36` | What the stage keeps under the scroller once the frame is laid out: City History's. |
 | 322 | `RankingsScreen.FIRST_WIDTH` | `1100, MEASURES_W = 250, CARD_W = 400, TABLE_MIN = 560, COLUMN_GAP = 16` | The page's width before the scroller says it, and the widths of the columns. |
 | 395 | `RankingsScreen.BOUND_TO_FRAME` | `"rankings.frame", BOUND_TO_SCROLLER = "rankings.scroller", FOLLOWS = "ranking...` | The keys in a node's properties for what frameOver() has bound it to or added to it: the scroller's height to the frame, a box's width to the scroller, the scroller's width listener. |
-| 813 | `RankingsScreen.PIN_ROOM` | `new javafx.geometry.Insets(0, 2, 0, 4), BROWSE_ROOM = new javafx.geometry.Ins...` | The room round a measure line's pin, and over Browse all: one object each (KP2b). |
-| 881 | `RankingsScreen.RANK_W` | `40, KIND_W = 16, OF_W = 84, ASOF_W = 54, VALUE_W = 80, BAR_W = 52, MARK_W = 1...` |  |
-| 1138 | `RankingsScreen.ROW_H` | `24, PAD = 8, SPACE = 6` |  |
-| 1141 | `RankingsScreen.TILE_ROWS` | `40` | Rows to a canvas: 40 of 24 pixels is under a thousand, well inside any texture. |
-| 1146 | `RankingsScreen.Entry.GAP` | `new Entry(null, "", "", false, "", "", "", "", Double.NaN, "")` |  |
-| 1153 | `RankingsScreen.RowsPicture.TEXT` | `Color.web(Palette.TEXT), HEAD = Color.web(Palette.TEXT_HEAD), BODY = Color.we...` |  |
-| 1159 | `RankingsScreen.RowsPicture.RULER` | `new javafx.scene.text.Text()` | Measures a string against a column; one node, on the FX thread, where the drawing is. |
-| 1399 | `RankingsScreen.D_NAME` | `128, D_REAL = 66, D_MARK = 12, D_SOURCE = 66, D_YOURS = 60` | The drawer's columns: the measure, the real figure and its mark and source, Your world's figure and its mark. |
-| 1564 | `RankingsScreen.RankLine.H` | `76, SIDE = 36, TOP = 12, BOTTOM = 18, YEAR_GAP = 40` |  |
-| 1566 | `RankingsScreen.RankLine.LINE` | `Color.web(Palette.MONEY), FLOOR = Color.web(Palette.EDGE), RANK = Color.web(P...` |  |
+| 818 | `RankingsScreen.PIN_ROOM` | `new javafx.geometry.Insets(0, 2, 0, 4), BROWSE_ROOM = new javafx.geometry.Ins...` | The room round a measure line's pin, and over Browse all: one object each (KP2b). |
+| 886 | `RankingsScreen.RANK_W` | `40, KIND_W = 16, OF_W = 84, ASOF_W = 54, VALUE_W = 80, BAR_W = 52, MARK_W = 1...` |  |
+| 1143 | `RankingsScreen.ROW_H` | `24, PAD = 8, SPACE = 6` |  |
+| 1146 | `RankingsScreen.TILE_ROWS` | `40` | Rows to a canvas: 40 of 24 pixels is under a thousand, well inside any texture. |
+| 1151 | `RankingsScreen.Entry.GAP` | `new Entry(null, "", "", false, "", "", "", "", Double.NaN, "")` |  |
+| 1158 | `RankingsScreen.RowsPicture.TEXT` | `Color.web(Palette.TEXT), HEAD = Color.web(Palette.TEXT_HEAD), BODY = Color.we...` |  |
+| 1164 | `RankingsScreen.RowsPicture.RULER` | `new javafx.scene.text.Text()` | Measures a string against a column; one node, on the FX thread, where the drawing is. |
+| 1404 | `RankingsScreen.D_NAME` | `128, D_REAL = 66, D_MARK = 12, D_SOURCE = 66, D_YOURS = 60` | The drawer's columns: the measure, the real figure and its mark and source, Your world's figure and its mark. |
+| 1569 | `RankingsScreen.RankLine.H` | `76, SIDE = 36, TOP = 12, BOTTOM = 18, YEAR_GAP = 40` |  |
+| 1571 | `RankingsScreen.RankLine.LINE` | `Color.web(Palette.MONEY), FLOOR = Color.web(Palette.EDGE), RANK = Color.web(P...` |  |
 
 ## Fields (state)
 
@@ -108,23 +108,23 @@
 | 324 | `private double pageWidth` |  |
 | 325 | `private VBox columns, measuresBox, tableBox, cardBox` |  |
 | 327 | `private HBox across, pair` | The two rows the columns go across in (KP7): made at every draw and kept, empty when not in use, so a width that moves moves the boxes between them and makes no node. |
-| 1162 | `private List<Entry> entries` | What it draws now, told by set() (KP7: a picture is kept and told its figures, not made again for them). |
-| 1163 | `private boolean signed` |  |
-| 1164 | `private String open` |  |
-| 1165 | `private final List<Canvas> tiles` |  |
-| 1166 | `private final Region hover` |  |
-| 1173 | `private double pointerSceneY` | Where the pointer was last over the rows, in the scene (NaN when it is not over them), so that the row it is over is worked out from where it is and not from a place in the picture: the page scrolls under a still poin... |
-| 1174 | `private final javafx.scene.text.Font words` |  |
-| 1179 | `private double nameX, nameW, ofX, asOfX, valueX, barX, markX` | The columns' left edges and the name's room, laid from the right at the width drawn. |
-| 1570 | `private List<Rankings.RankPoint> points` | The points it draws now, told by set() (KP7: a picture is kept and told its figures). |
-| 1571 | `private final Canvas canvas` |  |
-| 1572 | `private final javafx.scene.text.Font ranks` |  |
+| 1167 | `private List<Entry> entries` | What it draws now, told by set() (KP7: a picture is kept and told its figures, not made again for them). |
+| 1168 | `private boolean signed` |  |
+| 1169 | `private String open` |  |
+| 1170 | `private final List<Canvas> tiles` |  |
+| 1171 | `private final Region hover` |  |
+| 1178 | `private double pointerSceneY` | Where the pointer was last over the rows, in the scene (NaN when it is not over them), so that the row it is over is worked out from where it is and not from a place in the picture: the page scrolls under a still poin... |
+| 1179 | `private final javafx.scene.text.Font words` |  |
+| 1184 | `private double nameX, nameW, ofX, asOfX, valueX, barX, markX` | The columns' left edges and the name's room, laid from the right at the width drawn. |
+| 1575 | `private List<Rankings.RankPoint> points` | The points it draws now, told by set() (KP7: a picture is kept and told its figures). |
+| 1576 | `private final Canvas canvas` |  |
+| 1577 | `private final javafx.scene.text.Font ranks` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 56 | 1718 | **type** `final class RankingsScreen` | The Rankings tab: the active city on a board of the real world's nations and city regions (or of the nations of its own world), measure by measure, in the money and at the prices the player picked, with the sentence t... |
+| 56 | 1723 | **type** `final class RankingsScreen` | The Rankings tab: the active city on a board of the real world's nations and city regions (or of the nations of its own world), measure by measure, in the money and at the prices the player picked, with the sentence t... |
 
 ### THE RANKINGS TAB (LB2): THE STATE (lines 58-142)
 
@@ -181,88 +181,88 @@
 | 639 | 4 | `private static String mark(WorldMeasures wm, int mark)` | A mark as the file writes it: its symbol and its name. |
 | 645 | 4 | `private static String glyph(WorldMeasures wm, int mark)` | A row's mark: the symbol alone, nothing for the city (mark 0). |
 
-### THE RANKINGS TAB (LB2): FIGURES AS WORDS (lines 650-762)
+### THE RANKINGS TAB (LB2): FIGURES AS WORDS (lines 650-767)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 661 | 3 | `private String symbol()` |  |
-| 666 | 5 | `private String figure(WorldMeasures.Measure m, double v)` | A measure's figure as the screen writes it; "—" where there is none. |
-| 673 | 24 | `static String plain(String unit, double v)` | A figure that is not money, by its unit: a percent to a place, a ratio to two, anything else abbreviated from a million. |
-| 699 | 3 | `private String unitText(WorldMeasures.Measure m)` | A measure's unit as the screen names it: the money picked in place of "US$". |
-| 703 | 7 | `private static String arrowWords(WorldMeasures.Measure m)` |  |
-| 712 | 5 | `private String withUnit(WorldMeasures.Measure m, double v)` | A figure with its unit after it, as a sentence wants it: "US$30.8T", "12.3% of GDP", "78.4 years". |
-| 719 | 5 | `private String gapText(WorldMeasures.Measure m, double gap)` | A gap between two figures of a measure: money as money, a percent in points, any other figure with its unit. |
-| 725 | 3 | `private static String up(String s)` |  |
-| 729 | 5 | `private static Label words(String text, int size, String colour)` |  |
-| 735 | 3 | `private static Label wrapped(String text, int size, String colour)` |  |
-| 740 | 8 | `private static Label wrapped(String text, String style)` | ...in a style of the caller's own (KP7: set once, whole, so that a label wanting more than the words' look builds it in one go). |
-| 750 | 5 | `private static VBox panel(double spacing)` | A column's block: the panel ground, padded. |
-| 757 | 5 | `private static Label caption(String text)` | A small heading inside a column. |
+| 666 | 10 | `private String figure(WorldMeasures.Measure m, double v)` | A measure's figure as the screen writes it; "—" where there is none. |
+| 678 | 24 | `static String plain(String unit, double v)` | A figure that is not money, by its unit: a percent to a place, a ratio to two, anything else abbreviated from a million. |
+| 704 | 3 | `private String unitText(WorldMeasures.Measure m)` | A measure's unit as the screen names it: the money picked in place of "US$". |
+| 708 | 7 | `private static String arrowWords(WorldMeasures.Measure m)` |  |
+| 717 | 5 | `private String withUnit(WorldMeasures.Measure m, double v)` | A figure with its unit after it, as a sentence wants it: "US$30.8T", "12.3% of GDP", "78.4 years". |
+| 724 | 5 | `private String gapText(WorldMeasures.Measure m, double gap)` | A gap between two figures of a measure: money as money, a percent in points, any other figure with its unit. |
+| 730 | 3 | `private static String up(String s)` |  |
+| 734 | 5 | `private static Label words(String text, int size, String colour)` |  |
+| 740 | 3 | `private static Label wrapped(String text, int size, String colour)` |  |
+| 745 | 8 | `private static Label wrapped(String text, String style)` | ...in a style of the caller's own (KP7: set once, whole, so that a label wanting more than the words' look builds it in one go). |
+| 755 | 5 | `private static VBox panel(double spacing)` | A column's block: the panel ground, padded. |
+| 762 | 5 | `private static Label caption(String text)` | A small heading inside a column. |
 
-### THE RANKINGS TAB (LB2): THE MEASURES COLUMN (lines 763-857)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 773 | 35 | `private VBox measuresColumn(WorldMeasures wm, WorldMeasures.Measure shown)` |  |
-| 815 | 42 | `private Node measureLine(WorldMeasures.Measure p, WorldMeasures.Measure shown, boolean yourWorldBoard)` |  |
-
-### THE RANKINGS TAB (LB2): THE TABLE (lines 858-1118)
+### THE RANKINGS TAB (LB2): THE MEASURES COLUMN (lines 768-862)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 883 | 46 | `private VBox tableColumn(WorldMeasures wm, Rankings.City now, Rankings.Table t, WorldMeasures.Measure m)` |  |
-| 931 | 15 | `private List<Rankings.Row> filtered(Rankings.Table t)` | The rows a filter keeps: a kind's, the city's own among them (the saved cities are in Your cities and not in Nations or Cities: they are not the real world's places). |
-| 948 | 11 | `private void savedNotes(VBox box)` | The quiet lines under the rows about the saved cities: the ones that stopped short of the active city's age, and the saves the board left out. |
-| 961 | 5 | `private static Rankings.Table listOf(Rankings.Table t, List<Rankings.Row> rows)` | The board's table cut to a list of its rows, for Rankings.around(): the city's place in it found again. |
-| 968 | 28 | `private Node filters(Rankings.Table t, Rankings.City now)` | The filter chips with the number of places each keeps, and Full list \| Around you beside them. |
-| 998 | 8 | `private Node ageControl(Rankings.City now)` | Your cities at: Now \| Your age (D3), beside the Your cities chip; shown only when a saved city is readable. |
-| 1007 | 37 | `private void rows(VBox box, WorldMeasures wm, Rankings.City now, WorldMeasures.Measure m, List<Rankings.Row> list, List<Ranking...` |  |
-| 1046 | 11 | `private Entry entry(WorldMeasures wm, Rankings.City now, WorldMeasures.Measure m, Rankings.Row r, double largest)` | One row of the table as the picture draws it: the figures already written. |
-| 1058 | 8 | `private static String kindIcon(Rankings.Kind kind)` |  |
-| 1067 | 19 | `private Node header()` |  |
-| 1088 | 9 | `private static Label fixed(String text, double w, Pos at, String style)` | A label of one width, its text clipped to it. |
-| 1099 | 3 | `private static Label fixedMaybe(String role, String text, double w, Pos at, String style)` | ...for a cell whose words may be none: one scope while there are words, another while there are not (KP7: an emptied label keeps the height of the words it had). |
-| 1104 | 14 | `private Node legend(WorldMeasures wm, Rankings.Table t)` | The legend under the table: the marks, each a few words, and how many of the figures are the game's own estimates. |
+| 778 | 35 | `private VBox measuresColumn(WorldMeasures wm, WorldMeasures.Measure shown)` |  |
+| 820 | 42 | `private Node measureLine(WorldMeasures.Measure p, WorldMeasures.Measure shown, boolean yourWorldBoard)` |  |
 
-### THE RANKINGS TAB (LB2): THE ROWS, DRAWN (lines 1119-1383)
+### THE RANKINGS TAB (LB2): THE TABLE (lines 863-1123)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1144 | 6 | **type** `private record Entry(String id, String rank, String kindIcon, boolean you, String name, String of, String a...` | A row of the table as the picture draws it, its figures already written; GAP stands for the rows a list skips. |
-| 1148 | 1 | `boolean gap()` _(in RankingsScreen.Entry)_ |  |
-| 1151 | 232 | **type** `private static final class RowsPicture extends Pane` |  |
-| 1186 | 16 | `RowsPicture()` _(in RankingsScreen.RowsPicture)_ | The hover's region, the hand, and the width and scroll listeners, made once in the picture's life; the rows come with set(). |
-| 1207 | 49 | `void set(List<Entry> entries, boolean signed, Consumer<String> pick, String open)` _(in RankingsScreen.RowsPicture)_ | The rows it draws now, and what a click on one does. |
-| 1258 | 5 | `private void lightUnderPointer()` _(in RankingsScreen.RowsPicture)_ | The row the pointer is over now lit, from where it last was in the scene (the rows may have moved since), and none when it is not over them. |
-| 1264 | 4 | `private Entry rowAt(double y)` _(in RankingsScreen.RowsPicture)_ |  |
-| 1270 | 6 | `private void lightRowAt(double y)` _(in RankingsScreen.RowsPicture)_ | The row under the pointer lit, unless it is the city's or the open one, which are raised already. |
-| 1277 | 19 | `private void draw(double w)` _(in RankingsScreen.RowsPicture)_ |  |
-| 1297 | 67 | `private void paint(GraphicsContext gc, Entry e, double y, double w)` _(in RankingsScreen.RowsPicture)_ |  |
-| 1366 | 10 | `private static String fit(String text, javafx.scene.text.Font font, double room)` _(in RankingsScreen.RowsPicture)_ | A string cut to a column's room with an ellipsis, measured in the font it is drawn in. |
-| 1377 | 5 | `private static double widthOf(String text, javafx.scene.text.Font font)` _(in RankingsScreen.RowsPicture)_ |  |
+| 888 | 46 | `private VBox tableColumn(WorldMeasures wm, Rankings.City now, Rankings.Table t, WorldMeasures.Measure m)` |  |
+| 936 | 15 | `private List<Rankings.Row> filtered(Rankings.Table t)` | The rows a filter keeps: a kind's, the city's own among them (the saved cities are in Your cities and not in Nations or Cities: they are not the real world's places). |
+| 953 | 11 | `private void savedNotes(VBox box)` | The quiet lines under the rows about the saved cities: the ones that stopped short of the active city's age, and the saves the board left out. |
+| 966 | 5 | `private static Rankings.Table listOf(Rankings.Table t, List<Rankings.Row> rows)` | The board's table cut to a list of its rows, for Rankings.around(): the city's place in it found again. |
+| 973 | 28 | `private Node filters(Rankings.Table t, Rankings.City now)` | The filter chips with the number of places each keeps, and Full list \| Around you beside them. |
+| 1003 | 8 | `private Node ageControl(Rankings.City now)` | Your cities at: Now \| Your age (D3), beside the Your cities chip; shown only when a saved city is readable. |
+| 1012 | 37 | `private void rows(VBox box, WorldMeasures wm, Rankings.City now, WorldMeasures.Measure m, List<Rankings.Row> list, List<Ranking...` |  |
+| 1051 | 11 | `private Entry entry(WorldMeasures wm, Rankings.City now, WorldMeasures.Measure m, Rankings.Row r, double largest)` | One row of the table as the picture draws it: the figures already written. |
+| 1063 | 8 | `private static String kindIcon(Rankings.Kind kind)` |  |
+| 1072 | 19 | `private Node header()` |  |
+| 1093 | 9 | `private static Label fixed(String text, double w, Pos at, String style)` | A label of one width, its text clipped to it. |
+| 1104 | 3 | `private static Label fixedMaybe(String role, String text, double w, Pos at, String style)` | ...for a cell whose words may be none: one scope while there are words, another while there are not (KP7: an emptied label keeps the height of the words it had). |
+| 1109 | 14 | `private Node legend(WorldMeasures wm, Rankings.Table t)` | The legend under the table: the marks, each a few words, and how many of the figures are the game's own estimates. |
 
-### THE RANKINGS TAB (LB2): THE CARD AND THE DRAWER (lines 1384-1523)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1401 | 10 | `private VBox cardColumn(WorldMeasures wm, Nations nations, Rankings.City now, Rankings.Table t, WorldMeasures.Measure m)` |  |
-| 1412 | 5 | `private static VBox raised()` |  |
-| 1418 | 49 | `private Node rankCard(WorldMeasures wm, Nations nations, Rankings.City now, Rankings.Table t, WorldMeasures.Measure m)` |  |
-| 1469 | 25 | `private Node neighbour(String which, Rankings.Row r, WorldMeasures.Measure m, String none)` | The place above or below the city: what it is, its name and its figure; a click opens its drawer. |
-| 1496 | 27 | `private Node pinnedRank(WorldMeasures wm, Nations nations, Rankings.City now, Rankings.Table shownTable, WorldMeasures.Measure p)` | The city's rank on a pinned measure, "5 of 259", on the board and the money shown; a click shows that measure. |
-
-### rank over the years (LB3, D12) (lines 1524-1773)
+### THE RANKINGS TAB (LB2): THE ROWS, DRAWN (lines 1124-1388)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1532 | 28 | `private Node rankOverYears(WorldMeasures wm, Rankings.City now, WorldMeasures.Measure m)` | The city's rank on the measure shown at each December of its history, against Real world 2025 (which holds still, so the line moves only because the city did): one point a December, rank 1 at the top, the years along ... |
-| 1562 | 90 | **type** `private static final class RankLine extends Pane` | The rank over the years drawn on one canvas: no nodes to the point, and it draws again when its width moves. |
-| 1575 | 9 | `RankLine()` _(in RankingsScreen.RankLine)_ | The canvas and the width listener, made once in the picture's life; the points come with set(). |
-| 1586 | 5 | `void set(List<Rankings.RankPoint> points)` _(in RankingsScreen.RankLine)_ | The points it draws now: painted again only when they are not the ones it was told last. |
-| 1592 | 59 | `private void draw(double w)` _(in RankingsScreen.RankLine)_ |  |
-| 1653 | 56 | `private Node drawerCard(WorldMeasures wm, Nations nations, Rankings.City now, Rankings.Table t)` |  |
-| 1711 | 9 | `private String placeName(WorldMeasures wm, Rankings.City now, Rankings.Table t)` | A place's name: the city's, a saved city's, the file's, or the row's on the board (a nation of the game's world the file does not know). |
-| 1722 | 30 | `private Node drawerLine(WorldMeasures wm, Rankings.City owner, Rankings.Line line)` | One measure in the drawer; owner is the city whose figure it is (the active city or a saved one: its own words for how it was worked out), null for a place of the file. |
-| 1754 | 10 | `private static String sourceName(WorldMeasures wm, String id)` | A source's name in a few words: the game's world and the city by what they are, a published source by its name up to the first comma. |
-| 1766 | 7 | `private static String sourceFull(WorldMeasures wm, String id)` | ...and in full, for the tooltip: its name and its licence. |
+| 1149 | 6 | **type** `private record Entry(String id, String rank, String kindIcon, boolean you, String name, String of, String a...` | A row of the table as the picture draws it, its figures already written; GAP stands for the rows a list skips. |
+| 1153 | 1 | `boolean gap()` _(in RankingsScreen.Entry)_ |  |
+| 1156 | 232 | **type** `private static final class RowsPicture extends Pane` |  |
+| 1191 | 16 | `RowsPicture()` _(in RankingsScreen.RowsPicture)_ | The hover's region, the hand, and the width and scroll listeners, made once in the picture's life; the rows come with set(). |
+| 1212 | 49 | `void set(List<Entry> entries, boolean signed, Consumer<String> pick, String open)` _(in RankingsScreen.RowsPicture)_ | The rows it draws now, and what a click on one does. |
+| 1263 | 5 | `private void lightUnderPointer()` _(in RankingsScreen.RowsPicture)_ | The row the pointer is over now lit, from where it last was in the scene (the rows may have moved since), and none when it is not over them. |
+| 1269 | 4 | `private Entry rowAt(double y)` _(in RankingsScreen.RowsPicture)_ |  |
+| 1275 | 6 | `private void lightRowAt(double y)` _(in RankingsScreen.RowsPicture)_ | The row under the pointer lit, unless it is the city's or the open one, which are raised already. |
+| 1282 | 19 | `private void draw(double w)` _(in RankingsScreen.RowsPicture)_ |  |
+| 1302 | 67 | `private void paint(GraphicsContext gc, Entry e, double y, double w)` _(in RankingsScreen.RowsPicture)_ |  |
+| 1371 | 10 | `private static String fit(String text, javafx.scene.text.Font font, double room)` _(in RankingsScreen.RowsPicture)_ | A string cut to a column's room with an ellipsis, measured in the font it is drawn in. |
+| 1382 | 5 | `private static double widthOf(String text, javafx.scene.text.Font font)` _(in RankingsScreen.RowsPicture)_ |  |
+
+### THE RANKINGS TAB (LB2): THE CARD AND THE DRAWER (lines 1389-1528)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1406 | 10 | `private VBox cardColumn(WorldMeasures wm, Nations nations, Rankings.City now, Rankings.Table t, WorldMeasures.Measure m)` |  |
+| 1417 | 5 | `private static VBox raised()` |  |
+| 1423 | 49 | `private Node rankCard(WorldMeasures wm, Nations nations, Rankings.City now, Rankings.Table t, WorldMeasures.Measure m)` |  |
+| 1474 | 25 | `private Node neighbour(String which, Rankings.Row r, WorldMeasures.Measure m, String none)` | The place above or below the city: what it is, its name and its figure; a click opens its drawer. |
+| 1501 | 27 | `private Node pinnedRank(WorldMeasures wm, Nations nations, Rankings.City now, Rankings.Table shownTable, WorldMeasures.Measure p)` | The city's rank on a pinned measure, "5 of 259", on the board and the money shown; a click shows that measure. |
+
+### rank over the years (LB3, D12) (lines 1529-1778)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1537 | 28 | `private Node rankOverYears(WorldMeasures wm, Rankings.City now, WorldMeasures.Measure m)` | The city's rank on the measure shown at each December of its history, against Real world 2025 (which holds still, so the line moves only because the city did): one point a December, rank 1 at the top, the years along ... |
+| 1567 | 90 | **type** `private static final class RankLine extends Pane` | The rank over the years drawn on one canvas: no nodes to the point, and it draws again when its width moves. |
+| 1580 | 9 | `RankLine()` _(in RankingsScreen.RankLine)_ | The canvas and the width listener, made once in the picture's life; the points come with set(). |
+| 1591 | 5 | `void set(List<Rankings.RankPoint> points)` _(in RankingsScreen.RankLine)_ | The points it draws now: painted again only when they are not the ones it was told last. |
+| 1597 | 59 | `private void draw(double w)` _(in RankingsScreen.RankLine)_ |  |
+| 1658 | 56 | `private Node drawerCard(WorldMeasures wm, Nations nations, Rankings.City now, Rankings.Table t)` |  |
+| 1716 | 9 | `private String placeName(WorldMeasures wm, Rankings.City now, Rankings.Table t)` | A place's name: the city's, a saved city's, the file's, or the row's on the board (a nation of the game's world the file does not know). |
+| 1727 | 30 | `private Node drawerLine(WorldMeasures wm, Rankings.City owner, Rankings.Line line)` | One measure in the drawer; owner is the city whose figure it is (the active city or a saved one: its own words for how it was worked out), null for a place of the file. |
+| 1759 | 10 | `private static String sourceName(WorldMeasures wm, String id)` | A source's name in a few words: the game's world and the city by what they are, a published source by its name up to the first comma. |
+| 1771 | 7 | `private static String sourceFull(WorldMeasures wm, String id)` | ...and in full, for the tooltip: its name and its licence. |
 

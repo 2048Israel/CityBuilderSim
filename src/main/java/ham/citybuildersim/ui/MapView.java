@@ -602,6 +602,8 @@ final class MapView {
 
     /** A new city or a load: everything drawn is another city's. */
     void forget() {
+        // FM1: the trade chip's tip names the city's money, and the city has changed.
+        if (tradeChip != null && Kept.tipOf(tradeChip) != null) Kept.tipOf(tradeChip).setText(tradeTip());
         backFromFunding = false;
         if (expanded) collapse(false);
         picks.clear();
@@ -4208,8 +4210,11 @@ final class MapView {
     static final String BORDERS_TIP = "The nations' borders, dashed white, at the far views; up close only where one crosses the city's ground.";
 
     /** ...and the Trade routes chip's (WN3). */
-    static final String TRADE_TIP = "This month's trade as routes from the city: violet what we sell, sand what we buy, the width by money, none for a partner under D$0.3M a month at 2025's prices (the same trade in the money of the day)."
-            + " Partners the same way share a lane. On a generated world, the biggest partners as arrows at the map's edge.";
+    static String tradeTip() {
+        return "This month's trade as routes from the city: violet what we sell, sand what we buy, the width by money, none for a partner under "
+                + Currency.writing().writeQualified("0.3M") + " a month at 2025's prices (the same trade in the money of the day)."
+                + " Partners the same way share a lane. On a generated world, the biggest partners as arrows at the map's edge.";
+    }
 
     /** The legend's words for the two kinds of route (the board's, less its "it"). */
     static final String TRADE_SELL_WORDS = "What we sell, a month", TRADE_BUY_WORDS = "What we buy";
@@ -5131,7 +5136,7 @@ final class MapView {
         Label close = stepChip("Back to the land office · Esc", () -> collapse(true), true);
         close.setMinWidth(Region.USE_PREF_SIZE);
         nationsChip = layerChip("Nations", NATIONS_TIP, this::flipNations);
-        tradeChip = layerChip("Trade routes", TRADE_TIP, this::flipTrade);
+        tradeChip = layerChip("Trade routes", tradeTip(), this::flipTrade);
         bordersChip = layerChip("Borders", BORDERS_TIP, this::flipBorders);
         nationsGroup = new HBox(Palette.GAP_TIGHT, nationsChip, tradeChip, bordersChip);
         nationsGroup.setAlignment(Pos.CENTER_LEFT);

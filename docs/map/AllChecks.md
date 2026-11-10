@@ -18,7 +18,7 @@
 >     java -Dcbs.parallel=1 -cp <classes> ham.citybuildersim.AllChecks -f   one at a time
 > 
 > Exit status is the number of harnesses that failed, so a build script can
-> stop on it. BuildMenuCheck, KeptCheck, ChartFitCheck and ToastCheck need JavaFX on the classpath and are skipped,
+> stop on it. BuildMenuCheck, KeptCheck, ChartFitCheck, ToastCheck and MoneyWordsCheck need JavaFX on the classpath and are skipped,
 > with a note, when it is not there.
 > 
 > -f is for an AI session, where every line printed is read and paid for
@@ -70,7 +70,7 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 89 | `AllChecks.HARNESSES` | `{ "BuildingDataCheck", "BrandingCheck", "CreditsCheck", "NewGameCheck", "Worl...` | In the order they are cheapest to fail. |
+| 89 | `AllChecks.HARNESSES` | `{ "BuildingDataCheck", "BrandingCheck", "CreditsCheck", "MoneySignCheck", "Ne...` | In the order they are cheapest to fail. |
 | 106 | `AllChecks.FAIL_LINES` | `40` | The most lines -f prints for one failed harness; the rest stays in its log. |
 | 109 | `AllChecks.PARALLEL` | `3` | How many harnesses a soft, logged run runs at once (SP1); memory, not the cores, bounds it. |
 | 112 | `AllChecks.PARALLEL_PROPERTY` | `"cbs.parallel"` | The property that sets it for one run: -Dcbs.parallel=1 runs them one at a time (given on the java command line or in JDK_JAVA_OPTIONS). |

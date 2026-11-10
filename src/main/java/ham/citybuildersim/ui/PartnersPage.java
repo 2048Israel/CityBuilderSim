@@ -135,9 +135,12 @@ final class PartnersPage {
         Kept.scope("next", () -> nextSection(page));
     }
 
-    static final String WHO_INFO = "Every nation the city sold to or bought from, ranked by the two together. Money is the city's own, "
-            + "D$; the nation's money and what one of it is worth in D$ are the rates the currency page uses. The haul is the tonnes that "
-            + "crossed, out and in, and the distance runs from the city's site to the nation's trading point. Tap a nation for its page.";
+    /** The who-card's help, written when it is drawn so it names the city's money with the sign the city chose (FM1). */
+    static String whoInfo() {
+        return "Every nation the city sold to or bought from, ranked by the two together. Money is the city's own, "
+                + Money.ours() + "; the nation's money and what one of it is worth in " + Money.ours() + " are the rates the currency page uses. The haul is the tonnes that "
+                + "crossed, out and in, and the distance runs from the city's site to the nation's trading point. Tap a nation for its page.";
+    }
 
     /** WHO WE TRADE WITH: the table, the month or the year so far, twelve rows and then the rest. */
     private VBox whoCard(PartnersView.Table table) {
@@ -150,7 +153,7 @@ final class PartnersPage {
         pick.setPrefWrapLength(180);
         HBox right = Kept.row(Palette.GAP, quiet(month ? "the month last counted" : "the year so far, " + table.year()), pick);
         right.setAlignment(Pos.CENTER_RIGHT);
-        VBox c = card(cardHead(Icons.FLAG, Palette.BUSINESS, "WHO WE TRADE WITH", WHO_INFO, right));
+        VBox c = card(cardHead(Icons.FLAG, Palette.BUSINESS, "WHO WE TRADE WITH", whoInfo(), right));
         List<PartnersView.Row> rows = table.rows();
         if (rows.isEmpty()) {
             c.getChildren().add(Kept.scope("nothing crossed", () -> line(month ? "Nothing crossed the city's edge to a nation in the month last counted."
@@ -187,7 +190,7 @@ final class PartnersPage {
         GridPane table = Pieces.grid(widths, align);
         table.setHgap(10);
         table.setVgap(5);
-        List<String> head = new ArrayList<>(List.of("", "nation", "we sold it", "we bought", "its money", "D$ a unit", "policy rate", "the haul, out · in",
+        List<String> head = new ArrayList<>(List.of("", "nation", "we sold it", "we bought", "its money", Money.ours() + " a unit", "policy rate", "the haul, out · in",
                 "distance"));
         if (land) {
             head.add("land factor");
@@ -206,7 +209,7 @@ final class PartnersPage {
                 table.add(gridCell(r.sold() > 0 ? trade.d(r.sold()) : "–", r.sold() > 0 ? Palette.TEXT_HEAD : Palette.TEXT_MUTED, Palette.SIZE_LABEL, true), col++, line);
                 table.add(gridCell(r.bought() > 0 ? trade.d(r.bought()) : "–", r.bought() > 0 ? Palette.TEXT_HEAD : Palette.TEXT_MUTED, Palette.SIZE_LABEL, true), col++, line);
                 table.add(gridCell(r.mark().isEmpty() ? "–" : r.mark(), Palette.TEXT_LABEL, Palette.SIZE_LABEL, true), col++, line);
-                table.add(gridCell(Double.isFinite(r.dollarsPerUnit()) ? trade.sym() + fxRate(r.dollarsPerUnit()) : "–", Palette.TEXT_LABEL, Palette.SIZE_LABEL, true), col++, line);
+                table.add(gridCell(Double.isFinite(r.dollarsPerUnit()) ? trade.symFig(fxRate(r.dollarsPerUnit())) : "–", Palette.TEXT_LABEL, Palette.SIZE_LABEL, true), col++, line);
                 table.add(gridCell(Double.isFinite(r.policyRate()) ? ratePct(r.policyRate()) : "·", Palette.TEXT_LABEL, Palette.SIZE_LABEL, true), col++, line);
                 table.add(gridCell(tonnes(r.tonnesOut()) + " · " + tonnes(r.tonnesIn()), Palette.TEXT_LABEL, Palette.SIZE_LABEL, true), col++, line);
                 table.add(gridCell(Double.isFinite(r.distanceKm()) ? String.format("%,.0f km", r.distanceKm()) : "–", Palette.TEXT_LABEL, Palette.SIZE_LABEL, true), col++, line);
@@ -576,7 +579,7 @@ final class PartnersPage {
     private VBox bandCard(PartnersView.GoodBoard b) {
         Nations nations = game().getNations();
         Good g = b.good();
-        VBox c = card(cardHead(Icons.ofGood(g), Palette.ORE, "THE BAND THIS MONTH", BAND_INFO, quiet("D$ a " + g.unit())));
+        VBox c = card(cardHead(Icons.ofGood(g), Palette.ORE, "THE BAND THIS MONTH", BAND_INFO, quiet(Money.ours() + " a " + g.unit())));
         boolean any = false;
         // Kept (KP6): a row a figure the market has, a scope keyed by its name, which the rows that come and go leave alone.
         if (Double.isFinite(b.floor())) {
@@ -615,7 +618,7 @@ final class PartnersPage {
     /** WHAT MOVES IT: our own selling, the world's answer, the freight to the first buyer, each a small diverging line in D$ a unit. */
     private VBox movesCard(PartnersView.GoodBoard b) {
         Good g = b.good();
-        VBox c = card(cardHead(Icons.ofGood(g), Palette.BUSINESS, "WHAT MOVES IT", MOVES_INFO, quiet("D$ a " + g.unit() + " off what the next one nets")));
+        VBox c = card(cardHead(Icons.ofGood(g), Palette.BUSINESS, "WHAT MOVES IT", MOVES_INFO, quiet(Money.ours() + " a " + g.unit() + " off what the next one nets")));
         PartnersView.Moves m = b.moves();
         List<Pieces.Force> rows = new ArrayList<>();
         double scale = 0;
@@ -670,7 +673,7 @@ final class PartnersPage {
                 return doorCard(() -> open(r.nation()), name,
                         muted("sold " + (r.sold() > 0 ? trade.d(r.sold()) : "–") + " · bought " + (r.bought() > 0 ? trade.d(r.bought()) : "–")),
                         muted("its money " + (r.mark().isEmpty() ? "–" : r.mark())
-                                + (Double.isFinite(r.dollarsPerUnit()) ? " · 1 = " + trade.sym() + fxRate(r.dollarsPerUnit()) : "")));
+                                + (Double.isFinite(r.dollarsPerUnit()) ? " · 1 = " + trade.symFig(fxRate(r.dollarsPerUnit())) : "")));
             }));
         }
         VBox box = Kept.column(Palette.GAP, sectionHead("OUR PARTNERS THIS MONTH", STRIP_INFO,
@@ -694,11 +697,17 @@ final class PartnersPage {
             + "and the output a head, each with its rank among all of them, its growth and prices this year, and its money. A ring or a half-moon "
             + "beside a figure means the game estimated or projected it; none means a published figure. They are the very rows the map card shows.";
 
-    static final String OURS_INFO = "What the city sold this nation and bought from it, in D$ and in tonnes, this month and so far this year, "
-            + "and by good. Sold goes to the right of the bars and bought to the left, as on the Overview. The finished years are the history's.";
+    /** Written when drawn, so the city's money is named with the sign the city chose (FM1). */
+    static String oursInfo() {
+        return "What the city sold this nation and bought from it, in " + Money.ours() + " and in tonnes, this month and so far this year, "
+                + "and by good. Sold goes to the right of the bars and bought to the left, as on the Overview. The finished years are the history's.";
+    }
 
-    static final String MONEY_INFO = "What this nation's money is worth against the US$ and in D$, its central bank's policy rate where it is one of "
-            + "the eight the vault can hold, and what the vault holds of it and the city owes in it.";
+    /** Written when drawn, so the city's money is named with the sign the city chose (FM1). */
+    static String moneyInfo() {
+        return "What this nation's money is worth against the US$ and in " + Money.ours() + ", its central bank's policy rate where it is one of "
+                + "the eight the vault can hold, and what the vault holds of it and the city owes in it.";
+    }
 
     static final String LAND_INFO = "Land is bought from the nation it lies in, at that nation's land price, in its money. The factor is its price "
             + "against Canada's, the reference; the published price is the nation's own a hectare. The mark says how sure the table is of it.";
@@ -789,7 +798,7 @@ final class PartnersPage {
 
     /** OUR TRADE WITH IT: the month, the year so far, by good, and the finished years. */
     private VBox oursCard(PartnersView.Page p) {
-        VBox c = card(cardHead(Icons.LORRY, Palette.BUSINESS, "OUR TRADE WITH IT", OURS_INFO, quiet("bought left, sold right")));
+        VBox c = card(cardHead(Icons.LORRY, Palette.BUSINESS, "OUR TRADE WITH IT", oursInfo(), quiet("bought left, sold right")));
         c.getChildren().add(cardLine("this month", "sold " + trade.d(p.monthSold()) + " · bought " + trade.d(p.monthBought()), null));
         c.getChildren().add(cardLine("this year so far", "sold " + trade.d(p.yearSold()) + " · bought " + trade.d(p.yearBought()), null));
         c.getChildren().add(cardLine("the haul this year", tonnes(p.yearTonnesOut()) + " out · " + tonnes(p.yearTonnesIn()) + " in", null));
@@ -841,7 +850,7 @@ final class PartnersPage {
 
     /** ITS MONEY: the rate, what one is worth in D$, the policy rate, the vault's holding and what the city owes in it. */
     private VBox moneyCard(PartnersView.Page p) {
-        VBox c = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "ITS MONEY", MONEY_INFO, quiet(p.money() == null ? "" : p.money())));
+        VBox c = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "ITS MONEY", moneyInfo(), quiet(p.money() == null ? "" : p.money())));
         if (p.money() == null) {
             c.getChildren().add(Kept.scope("no money", () -> line("The file names no money for this nation this year.", null)));
             return c;
@@ -852,7 +861,7 @@ final class PartnersPage {
             c.getChildren().add(cardLine("the rate", fxRate(p.unitsPerUsd()) + " " + p.money() + " a US$", null));
         }
         if (Double.isFinite(p.dollarsPerUnit())) {
-            c.getChildren().add(cardLine("one of it is worth", trade.sym() + fxRate(p.dollarsPerUnit()), null));
+            c.getChildren().add(cardLine("one of it is worth", trade.symFig(fxRate(p.dollarsPerUnit())), null));
         }
         if (Double.isFinite(p.policyRate())) {
             c.getChildren().add(cardLine("its policy rate", ratePct(p.policyRate()) + " a year", null));
@@ -960,7 +969,7 @@ final class PartnersPage {
             dotLabel.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_HEAD) + " -fx-background-color: " + Pieces.tint(Palette.RAISED, .92)
                     + "; -fx-background-radius: 3; -fx-padding: 1 5 1 5;");
             xCaption.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-            yCaption.setText("what the next one nets, D$ a unit");
+            yCaption.setText("what the next one nets, " + Money.ours() + " a unit");
             yCaption.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
         }
 

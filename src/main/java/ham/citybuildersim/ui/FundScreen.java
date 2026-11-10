@@ -249,14 +249,14 @@ final class FundScreen {
     static String d(Game g, double thousands) {
         if (!Double.isFinite(thousands)) return "—";
         String shown = tidyMoney(money(Math.abs(thousands)));
-        return (thousands < 0 && !"$0".equals(shown) ? "−" : "") + marked(sym(g), shown);
+        return (thousands < 0 && !Money.isZero(shown) ? "−" : "") + marked(sym(g), shown);
     }
 
     /** ...signed, as a movement: "+D$1.2M", "−D$3.5M", "D$0". */
     static String signed(Game g, double thousands) {
         if (!Double.isFinite(thousands)) return "—";
         String shown = tidyMoney(money(Math.abs(thousands)));
-        if ("$0".equals(shown)) return marked(sym(g), shown);
+        if (Money.isZero(shown)) return marked(sym(g), shown);
         return (thousands < 0 ? "−" : "+") + marked(sym(g), shown);
     }
 
@@ -449,7 +449,7 @@ final class FundScreen {
             String tag = p.seeded() ? "cost from " + month(p.since()) : null;
             String bargain = bargain(lot);
             if (bargain != null) tag = tag == null ? bargain : tag + " · " + bargain;
-            String paidNow = lot != null && lot.lastIncomeMonth() == now && !"$0".equals(tidyMoney(money(lot.lastIncome())))
+            String paidNow = lot != null && lot.lastIncomeMonth() == now && !Money.isZero(tidyMoney(money(lot.lastIncome())))
                     ? "paid +" + d(g, lot.lastIncome()) + " this month" : null;
             String unitsWords = FundView.PREFERRED.equals(p.kind()) ? d(g, p.units()) + " at par"
                     : FundView.WARRANTS.equals(p.kind()) ? shares(p.units()) + " shares' worth" : units(g, bond, p.units());
@@ -2313,7 +2313,7 @@ final class FundScreen {
         // CD7: the surplus above leaves out the D$'s move on the foreign debt (it moved no cash), so the budget's own surplus can differ from it by that.
         double exchange = g.debtExchangeThisYearSoFar();
         if (Money.something(exchange)) {
-            card.getChildren().add(Kept.scope("exchange", () -> muted("the D$'s move on the foreign debt, " + signed(g, exchange) + ", left out: it moved no cash")));
+            card.getChildren().add(Kept.scope("exchange", () -> muted("the " + Money.ours() + "'s move on the foreign debt, " + signed(g, exchange) + ", left out: it moved no cash")));
         }
         card.getChildren().add(cardLine("...kept for the fund from the rollover", d(g, g.fundReservation()), null));
         card.getChildren().add(cardLine("A month of the treasury's spending, the floor", d(g, g.monthOfSpending()), null));

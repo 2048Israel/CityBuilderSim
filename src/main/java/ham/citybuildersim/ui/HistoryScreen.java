@@ -2135,10 +2135,10 @@ final class HistoryScreen {
             case "money"     -> sign + shortCash(a);
             // Somebody else's money, and it says so - the same rule fmtUnit
             // follows, for the same reason.
-            case "usd"       -> sign + "US" + shortCash(a);
+            case "usd"       -> sign + Money.marked(Currency.FOREIGN_SYMBOL, shortCash(a));
             // Prices, which live in the range where the cents can be the news.
             // Ground is the world's price, in its money since 0.7.6.
-            case "land"      -> sign + "US" + priceTick(a, step);
+            case "land"      -> sign + Money.marked(Currency.FOREIGN_SYMBOL, priceTick(a, step));
             case "unitprice", "rent", "share" -> sign + priceTick(a, step);
             case "percent"   -> sign + trim(a) + "%";
             case "ratio"     -> sign + trim(a) + "x";
@@ -2162,16 +2162,16 @@ final class HistoryScreen {
      */
     static String priceTick(double a, double step) {
         if (step >= 1_000) return shortCash(a);
-        if (step < 1) return String.format("$%.2f", a);
-        return "$" + formatter.format(Math.round(a));
+        if (step < 1) return Money.write(String.format("%.2f", a));
+        return Money.write(formatter.format(Math.round(a)));
     }
 
     /** Dollars, abbreviated from a thousand up - an axis has no room for digits. */
     static String shortCash(double a) {
-        if (a >= 1_000_000_000) return "$" + trim(a / 1_000_000_000) + "B";
-        if (a >= 1_000_000)     return "$" + trim(a / 1_000_000) + "M";
-        if (a >= 1_000)         return "$" + trim(a / 1_000) + "k";
-        return "$" + trim(a);
+        if (a >= 1_000_000_000) return Money.write(trim(a / 1_000_000_000) + "B");
+        if (a >= 1_000_000)     return Money.write(trim(a / 1_000_000) + "M");
+        if (a >= 1_000)         return Money.write(trim(a / 1_000) + "k");
+        return Money.write(trim(a));
     }
 
     /** People, homes, jobs - the same abbreviation without the dollar. */
@@ -2782,7 +2782,7 @@ final class HistoryScreen {
             // A world price - food, materials, ore - kept in thousands like
             // every other price in the game. Multiplied out for the same reason
             // rent is: printed raw it reads as cents.
-            case "unitprice": return String.format("$%,.2f", unsigned0(v * 1000, 2));
+            case "unitprice": return Money.write(String.format("%,.2f", unsigned0(v * 1000, 2)));
             case "ratio":     return String.format("%.2fx", unsigned0(v, 2));
             // Four places, because the whole point of watching a currency is
             // the small moves - a rate that reads 1.20 for thirty months is a
@@ -2791,7 +2791,7 @@ final class HistoryScreen {
             // Somebody else's money, and it says so. A dollar figure printed
             // with the same $ as the local one is the single most confusing
             // thing this screen could do.
-            case "usd":       return "US" + tightMoney(v * 1000);
+            case "usd":       return Money.marked(Currency.FOREIGN_SYMBOL, tightMoney(v * 1000));
             case "index":     return String.format("%.3f", unsigned0(v, 3));
             /*
              * Rent is a price per person of housing capacity, kept in thousands
@@ -2800,7 +2800,7 @@ final class HistoryScreen {
              * which is what the play-test showed. Multiplied out it is the
              * figure a player recognises: about $82 a head a month.
              */
-            case "rent":      return String.format("$%.2f", unsigned0(v * 1000, 2));
+            case "rent":      return Money.write(String.format("%.2f", unsigned0(v * 1000, 2)));
             // A share's price, kept in thousands like every price here, and
             // per FOUNDING share so a split is not a cliff on the chart.
             case "share":     return tightMoney(v * 1000, false);
@@ -3217,7 +3217,7 @@ final class HistoryScreen {
     /** A good's price, to the cent: "$296.67", "$11,454.16" - tiny ones to the place that shows them. */
     static String goodPrice(double thousands) {
         double d = thousands * 1000;
-        if (Math.abs(d) >= .01) return String.format("$%,.2f", unsigned0(d, 2));
+        if (Math.abs(d) >= .01) return Money.write(String.format("%,.2f", unsigned0(d, 2)));
         return unitPrice(thousands);
     }
 

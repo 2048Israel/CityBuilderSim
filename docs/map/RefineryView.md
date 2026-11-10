@@ -1,4 +1,4 @@
-# RefineryView.java - 1,617 lines · 82 methods · 43 constants · model
+# RefineryView.java - 1,618 lines · 82 methods · 43 constants · model
 
 `ham/citybuildersim/RefineryView.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
@@ -40,7 +40,7 @@
 > Pure: it reads the city and changes nothing (the planner's appraisals of
 > one more unit are the build card's reads).
 
-**Uses:** [Good](Good.md) (71), [Refining](Refining.md) (17), [RefineryFlow](RefineryFlow.md) (9), [SpreadPlanner](SpreadPlanner.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (6), [Sector](Sector.md) (4), [Deposit](Deposit.md) (4), [Freight](Freight.md) (3), [Game](Game.md) (2), [Sectors](Sectors.md) (2), [GoodsMarket](GoodsMarket.md) (2), [Trade](Trade.md) (2), [Formats](Formats.md) (2), [BuildingManager](BuildingManager.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [Oil](Oil.md) (1), [Haulage](Haulage.md) (1), [Retail](Retail.md) (1)
+**Uses:** [Good](Good.md) (71), [Refining](Refining.md) (17), [RefineryFlow](RefineryFlow.md) (9), [SpreadPlanner](SpreadPlanner.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (6), [Sector](Sector.md) (4), [Deposit](Deposit.md) (4), [Freight](Freight.md) (3), [Currency](Currency.md) (3), [Game](Game.md) (2), [Sectors](Sectors.md) (2), [GoodsMarket](GoodsMarket.md) (2), [Trade](Trade.md) (2), [Formats](Formats.md) (2), [BuildingManager](BuildingManager.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [Oil](Oil.md) (1), [Haulage](Haulage.md) (1), [Retail](Retail.md) (1)
 
 **Used by (9):** [IndustryPicture](IndustryPicture.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [KeptCheck](KeptCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [RefineryCheck](RefineryCheck.md), [RefineryViewCheck](RefineryViewCheck.md), [SectorScreen](SectorScreen.md)
 
@@ -67,7 +67,7 @@
 | 1017 | · · the tank's takers: each product's band to its takers, out of the tanks and landed, each taker's own |
 | 1056 | · · the nodes over the ribbons |
 | 1287 | THE WORDS |
-| 1563 | THE STRIP: THIS MONTH, BY PRODUCT |
+| 1564 | THE STRIP: THIS MONTH, BY PRODUCT |
 
 ## Enum constants
 
@@ -154,10 +154,10 @@
 | 1240 | `RefineryView.FIGURE_IN_BAND` | `46` | The room a product's figure has at the right of its band in the tank. |
 | 1243 | `RefineryView.BLOCK_FIGURE` | `52` | ...and a block's litres at the right of its line under it. |
 | 1246 | `RefineryView.FIGURE_ROOM` | `58` | The room a figure has at the right of a band or a taker's name. |
-| 1524 | `RefineryView.LIST_MOST` | `3` | The most products a taker's line names before "and more". |
-| 1576 | `RefineryView.STRIP_HEAD` | `"THIS MONTH, BY PRODUCT"` | The strip's heading words. |
-| 1579 | `RefineryView.STRIP_WORDS` | `"litres(M a million, k a thousand), bitumen and coke in tonnes · bar: taken h...` | ...and its line. |
-| 1597 | `RefineryView.CELL_LINES` | `{ "made here", "imported", "exported", "tanks", "price here" }` | The strip's line names, in a cell's order. |
+| 1525 | `RefineryView.LIST_MOST` | `3` | The most products a taker's line names before "and more". |
+| 1577 | `RefineryView.STRIP_HEAD` | `"THIS MONTH, BY PRODUCT"` | The strip's heading words. |
+| 1580 | `RefineryView.STRIP_WORDS` | `"litres(M a million, k a thousand), bitumen and coke in tonnes · bar: taken h...` | ...and its line. |
+| 1598 | `RefineryView.CELL_LINES` | `{ "made here", "imported", "exported", "tanks", "price here" }` | The strip's line names, in a cell's order. |
 
 ## Fields (state)
 
@@ -174,7 +174,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 58 | 1560 | **type** `public final class RefineryView` | The refinery's month as a picture (0.7.95, batch O11; docs/studies/spec-oil.md 2.12): the crude it ran and where that came from, the column's cuts, each conversion unit's run, spread and gate, the products and who too... |
+| 58 | 1561 | **type** `public final class RefineryView` | The refinery's month as a picture (0.7.95, batch O11; docs/studies/spec-oil.md 2.12): the crude it ran and where that came from, the column's cuts, each conversion unit's run, spread and gate, the products and who too... |
 | 60 | 1 | `private RefineryView()` |  |
 
 ### THE FIGURES (lines 62-451)
@@ -267,7 +267,7 @@
 | 1266 | 5 | `private static double departureY(Link l, java.util.function.Function<End, Node> source, Map<Link, Node> passOf)` | Where a link leaves, for the order its end takes it in: the band it ran through, or its source. |
 | 1273 | 13 | `static void spread(double[] at, double least, double top, double bottom)` | The takers' labels spread apart: each pair closer than `least` pushed apart evenly, held between `top` and `bottom` (mockup 1's sixty rounds). |
 
-### THE WORDS (lines 1287-1562)
+### THE WORDS (lines 1287-1563)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -276,36 +276,36 @@
 | 1302 | 9 | `static String compact(double v)` | A quantity in three or four figures: "9.68M", "830k", "640", "23.0B". |
 | 1313 | 4 | `public static String figure(Good g, double units)` | A product's quantity in its own unit, short, for a band or a strip's cell: litres "2.00M" ("830k", "640"), tonnes "1,234 t" ("830k t"). |
 | 1319 | 3 | `public static String unitsWords(Good g, double units)` | ...and with its unit: "2.00M L", "1,234 t". |
-| 1324 | 8 | `public static String price(double thousands)` | A price a litre or a tonne, as the screens write one (ui/Money.unitPrice()): "$0.5620", "$642.50". |
-| 1334 | 5 | `public static String spreadWords(double thousands)` | A spread a litre, signed: "+$0.0840", "−$0.0310". |
-| 1341 | 6 | `public static String barrels(double litresAMonth)` | Barrels a day of a feed a month, to three figures: "2,000 b/d" (an Oil Refinery's 8,300 t), "240 b/d". |
-| 1349 | 3 | `static String columnWords(View v)` | The column's line: its barrels a day and the share it ran: "2,000 b/d · runs 100%". |
-| 1354 | 13 | `public static String gradeWords(double[] mix)` | A mix of grades in words: "medium crude", "light 62% · medium 38%". |
-| 1369 | 9 | `public static String sourceName(Source s)` | A source's name: "Land wells ×22", "Platform wells ×4", "Strategic reserve", "Imported crude", "Tank farm". |
-| 1380 | 8 | `public static String sourceWords(Source s)` | ...its line: the tonnes and the grade - "8,306 t · light", "8,306 t · mixed grades" (the column gives the run's shares), "1,200 t released". |
-| 1390 | 4 | `static String oneGrade(double[] mix)` | A mix's one grade in a word, or "mixed grades". |
-| 1395 | 9 | `static Icon sourceIcon(SourceKind k)` |  |
-| 1406 | 3 | `public static String unitName(Unit u)` | A unit's name over its box: "Reformer", "Cracking Unit ×2". |
-| 1411 | 5 | `public static String unitWords(Unit u)` | ...and its line after its name (mockup 1's): "300 b/d · 100%", "300 b/d · idle" - its spread and its gate are under the pointer (unitTip()). |
-| 1418 | 24 | `public static String unitTip(Unit u)` | Under the pointer, a unit: its run, its spread at the local and at the city's own prices, what idles it, and one more weighed by the planner. |
-| 1444 | 9 | `public static String gateName(SpreadPlanner.Gate g)` | A planner's gate in a word. |
-| 1455 | 8 | `static String productTip(Product p)` | Under the pointer, a product's band: made, idled, its takers. |
-| 1465 | 13 | `public static String buyerName(Buyer b)` | A taker's name: "Cars", "Vans & lorries", "Rail", "Factories", "Roads", a sector's label, "Into the tanks", "Idled", "Abroad". |
-| 1479 | 13 | `static Icon buyerIcon(BuyerKind k)` |  |
-| 1494 | 8 | `public static String buyerFigure(Buyer b)` | A taker's figure: its litres, or its tonnes when it took only bitumen or coke. |
-| 1508 | 14 | `public static String buyerWords(Buyer b)` | ...and its line: what it took (mockup 1's), and with some of it imported, the product and how much - "petrol at the pump", "diesel · 0.10M L of it imported". |
-| 1527 | 12 | `static String goodsWords(Buyer b, int most)` | The goods a taker took, largest first, at most `most`, by their short names: "fuel oil, jet fuel, gas and more". |
-| 1541 | 3 | `static String shortName(Good g)` | A product in a list: its name, the gas and the coke shortened as mockup 1 shortens them. |
-| 1546 | 11 | `static String buyerTip(Buyer b)` | Under the pointer, a taker: each product it took, home and imported. |
-| 1559 | 3 | `public static String scaleWords(double pxALitre)` | The scale, for the heading's right: "10 px of ribbon = 1.30M L". |
+| 1324 | 9 | `public static String price(double thousands)` | A price a litre or a tonne, as the screens write one (ui/Money.unitPrice()): "$0.5620", "$642.50". |
+| 1335 | 5 | `public static String spreadWords(double thousands)` | A spread a litre, signed: "+$0.0840", "−$0.0310". |
+| 1342 | 6 | `public static String barrels(double litresAMonth)` | Barrels a day of a feed a month, to three figures: "2,000 b/d" (an Oil Refinery's 8,300 t), "240 b/d". |
+| 1350 | 3 | `static String columnWords(View v)` | The column's line: its barrels a day and the share it ran: "2,000 b/d · runs 100%". |
+| 1355 | 13 | `public static String gradeWords(double[] mix)` | A mix of grades in words: "medium crude", "light 62% · medium 38%". |
+| 1370 | 9 | `public static String sourceName(Source s)` | A source's name: "Land wells ×22", "Platform wells ×4", "Strategic reserve", "Imported crude", "Tank farm". |
+| 1381 | 8 | `public static String sourceWords(Source s)` | ...its line: the tonnes and the grade - "8,306 t · light", "8,306 t · mixed grades" (the column gives the run's shares), "1,200 t released". |
+| 1391 | 4 | `static String oneGrade(double[] mix)` | A mix's one grade in a word, or "mixed grades". |
+| 1396 | 9 | `static Icon sourceIcon(SourceKind k)` |  |
+| 1407 | 3 | `public static String unitName(Unit u)` | A unit's name over its box: "Reformer", "Cracking Unit ×2". |
+| 1412 | 5 | `public static String unitWords(Unit u)` | ...and its line after its name (mockup 1's): "300 b/d · 100%", "300 b/d · idle" - its spread and its gate are under the pointer (unitTip()). |
+| 1419 | 24 | `public static String unitTip(Unit u)` | Under the pointer, a unit: its run, its spread at the local and at the city's own prices, what idles it, and one more weighed by the planner. |
+| 1445 | 9 | `public static String gateName(SpreadPlanner.Gate g)` | A planner's gate in a word. |
+| 1456 | 8 | `static String productTip(Product p)` | Under the pointer, a product's band: made, idled, its takers. |
+| 1466 | 13 | `public static String buyerName(Buyer b)` | A taker's name: "Cars", "Vans & lorries", "Rail", "Factories", "Roads", a sector's label, "Into the tanks", "Idled", "Abroad". |
+| 1480 | 13 | `static Icon buyerIcon(BuyerKind k)` |  |
+| 1495 | 8 | `public static String buyerFigure(Buyer b)` | A taker's figure: its litres, or its tonnes when it took only bitumen or coke. |
+| 1509 | 14 | `public static String buyerWords(Buyer b)` | ...and its line: what it took (mockup 1's), and with some of it imported, the product and how much - "petrol at the pump", "diesel · 0.10M L of it imported". |
+| 1528 | 12 | `static String goodsWords(Buyer b, int most)` | The goods a taker took, largest first, at most `most`, by their short names: "fuel oil, jet fuel, gas and more". |
+| 1542 | 3 | `static String shortName(Good g)` | A product in a list: its name, the gas and the coke shortened as mockup 1 shortens them. |
+| 1547 | 11 | `static String buyerTip(Buyer b)` | Under the pointer, a taker: each product it took, home and imported. |
+| 1560 | 3 | `public static String scaleWords(double pxALitre)` | The scale, for the heading's right: "10 px of ribbon = 1.30M L". |
 
-### THE STRIP: THIS MONTH, BY PRODUCT (lines 1563-1617)
+### THE STRIP: THIS MONTH, BY PRODUCT (lines 1564-1618)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1572 | 2 | **type** `public record Cell(Good good, String name, String made, String imported, boolean hot, String exported, Stri...` | One product's cell under the picture (mockup 1's strip). |
-| 1583 | 12 | `public static List<Cell> strip(View v)` | The strip's cells, in TANK_ORDER: every product the month made, took or shipped. |
-| 1600 | 6 | `public static String emptyWords(View v)` | What the card says when there is no month to draw: no crude unit, a month not counted, a month that ran nothing - and since 0.7.105 why, when the run stopped it (Refining.runWords()). |
-| 1608 | 4 | `public static String runTip(View v)` | The run in a sentence or two (0.7.105): its share of nameplate and why (Refining.runWords()); empty with no crude unit. |
-| 1614 | 3 | `static String withRun(View v)` | ...on a line of its own under a cut's or a unit's pointer while the run is short of nameplate; nothing at the whole run. |
+| 1573 | 2 | **type** `public record Cell(Good good, String name, String made, String imported, boolean hot, String exported, Stri...` | One product's cell under the picture (mockup 1's strip). |
+| 1584 | 12 | `public static List<Cell> strip(View v)` | The strip's cells, in TANK_ORDER: every product the month made, took or shipped. |
+| 1601 | 6 | `public static String emptyWords(View v)` | What the card says when there is no month to draw: no crude unit, a month not counted, a month that ran nothing - and since 0.7.105 why, when the run stopped it (Refining.runWords()). |
+| 1609 | 4 | `public static String runTip(View v)` | The run in a sentence or two (0.7.105): its share of nameplate and why (Refining.runWords()); empty with no crude unit. |
+| 1615 | 3 | `static String withRun(View v)` | ...on a line of its own under a cut's or a unit's pointer while the run is short of nameplate; nothing at the whole run. |
 

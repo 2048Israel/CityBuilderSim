@@ -84,7 +84,7 @@ did not work.
 `AllChecks` runs the lot, one JVM each — **every harness in
 `AllChecks.HARNESSES` and the 2,400-month playtest** (the full 4,000 once a
 night on main, `tools/nightly.sh`); where JavaFX is not on the classpath it
-skips `BuildMenuCheck`, `KeptCheck`, `ChartFitCheck` and `ToastCheck`. README states no
+skips `BuildMenuCheck`, `KeptCheck`, `ChartFitCheck`, `ToastCheck` and `MoneyWordsCheck`. README states no
 count of them (GT1: two batches that each added a harness both wrote it up by one).
 `docs/harnesses.md` lists what each one asserts. In
 NetBeans, right-click `AllChecks.java` → **Run File**. From a command line, with
