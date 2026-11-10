@@ -605,6 +605,15 @@ adds its line here, not in `CLAUDE.md`.
                                    world the constant, the save, the vault earning each money's rate to the
                                    cent, and a risk-off unwinding the hot money and the carry by their
                                    stocks with the audit closing (XR4)
+        GoldPrice.java             gold's price, US$ a fine troy ounce a month (batch GD1; spec-gold-money
+                                   4.1): the 1900 par to March 1933, a ten-month path to Proclamation
+                                   2072's $35, $35 to July 1971, then on Historical the USGS's annual price
+                                   to 2025 (resources/gold-usd-annual.csv), and an AR(1) in gold's real
+                                   price after (on Random from August 1971); pure, never saved, read by
+                                   nothing yet (GD2 hands it to the vault)
+        GoldPriceCheck.java        the pars to the digit, the table's months, a broken table refused, the
+                                   rule's sigma and pull, a reload continuing the path, the paths agreeing
+                                   to 1971 (GD1)
         GlobeFrame.java, GlobePicture.java
                                    the Earth's map as a globe, its model half (0.7.132, batch E8;
                                    docs/studies/spec-globe.md 3): the view - its centre in latitude and
@@ -789,6 +798,18 @@ adds its line here, not in `CLAUDE.md`.
                                    and pulled straight to the offing and the abyss; a boat's hull, deck
                                    and colours by its class - the map's, nothing in the model reads them
                                    (spec-roads-and-ports.md 2.8, 4) - MapCheck 9 holds them
+        HarbourYard.java, QuayRail.java, QuayCrane.java
+                                   the harbour's near view (batch HB2, 2026-11-09), the map's alone and
+                                   toolkit-free: a shore work's open yard as a picture at 8 px a plot, its
+                                   stock at the step its kind's terminals were busy (Ports.busy()), the
+                                   quay track, its leads and a train by its rail bits; which terminals the
+                                   railway reaches - CityRuns lays one quay spur a quay line
+                                   (CityShore.quayLines()) from behind, a QUAY arm on none of the model's
+                                   track - and the plots of track between the boxes; a crane's line, hook
+                                   and load over a docked boat at a share of its time at the quay
+                                   (BoatSchedule.atQuay()). MapView draws all three from
+                                   MapFrame.DETAIL_FROM in - PortCheck 11, QuayRailCheck and
+                                   QuayCraneCheck hold them (docs/queue/HB2-notes.md)
         TrainSchedule.java, TrainShapes.java
                                    the trains (0.8.2, batch FR1; spec-freight 4.4): the month's trains as
                                    a pure function of time, BoatSchedule's shape - the railway's tonnes

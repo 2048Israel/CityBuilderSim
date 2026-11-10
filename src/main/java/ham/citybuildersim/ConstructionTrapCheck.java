@@ -9,8 +9,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * The builders short (FC1): what an order pays a point of work as the repairs leave the builders fewer points for the
@@ -164,11 +162,10 @@ public class ConstructionTrapCheck {
         return row;
     }
 
-    /** A line of the audit's detail by its label, as the audit printed it (two decimals); 0 when it printed none. */
+    /** A line of the audit by its label, as the model recorded it (EP2: Result.figure(), not the detail's two printed decimals); 0 when it struck none.
+     *  The 0.01 that stood beside the Imports line in the checks above, for the two printed places, is MoneyAudit.CENT now (tradeOut's was never read from text and stays). */
     static double auditLine(MoneyAudit.Result r, String label) {
-        if (r == null || r.detail == null) return 0;
-        Matcher m = Pattern.compile("(?m)^\\s*" + Pattern.quote(label) + "\\s+(-?[\\d,]+\\.\\d+)\\s*$").matcher(r.detail);
-        return m.find() ? Double.parseDouble(m.group(1).replace(",", "")) : 0;
+        return r == null ? 0 : r.figure(label);
     }
 
     /** The files DeathCareFirstCheck.city() gives a city of that name, so a second Game can be pointed at its folder. */
@@ -553,7 +550,7 @@ public class ConstructionTrapCheck {
         Row second = play(g, rows);
         close("the builders' statement the month after carries that bill, named for the contractor, as an import", second.stmtForeign, first.bill, 1e-12);
         assertTrue("...in their imports line, which the audit's TRADE scope reads", second.stmtImports >= first.bill - 1e-9
-                && second.auditImports >= first.bill - 0.01 && Math.abs(second.auditImports - second.stmtImports) < 0.01);
+                && second.auditImports >= first.bill - MoneyAudit.CENT && Math.abs(second.auditImports - second.stmtImports) < MoneyAudit.CENT);
         assertTrue("...and the city climbed out in the month: its own sites at every post over the floor, the contractor not taking orders",
                 !bm.foreignCrewsTakeOrders() && first.sites >= BuildersShort.FOREIGN_FLOOR * first.output);
     }
@@ -640,8 +637,8 @@ public class ConstructionTrapCheck {
             carried += r.stmtForeign;
             next &= Math.abs(r.stmtForeign - before.bill) <= 1e-9 * Math.max(1, before.bill);
             imports &= r.stmtImports >= r.stmtForeign - 1e-9;
-            onTheAudit &= r.tradeOut >= r.stmtForeign - 0.01 && r.auditImports >= r.stmtForeign - 0.01
-                    && Math.abs(r.auditImports - r.stmtImports) < 0.01;
+            onTheAudit &= r.tradeOut >= r.stmtForeign - 0.01 && r.auditImports >= r.stmtForeign - MoneyAudit.CENT
+                    && Math.abs(r.auditImports - r.stmtImports) < MoneyAudit.CENT;
             // a month he built nothing in leaves nothing abroad the month after
             if (before.points == 0) none &= r.stmtForeign == 0;
         }

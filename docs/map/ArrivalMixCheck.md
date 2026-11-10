@@ -1,6 +1,6 @@
 # ArrivalMixCheck.java - 375 lines · 21 methods · 7 constants · harnesses
 
-`ham/citybuildersim/ArrivalMixCheck.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ArrivalMixCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > The skill mix of the arrivals by year (R0d slice 2): the year's mix in a city founded the 1900 way, and WageBand's ceilings in every
 > other city. Not part of the game.

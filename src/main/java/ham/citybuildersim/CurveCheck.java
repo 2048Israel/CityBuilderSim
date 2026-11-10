@@ -254,9 +254,15 @@ public class CurveCheck {
 
     /** The playtest's founding with the rule's hand on the dial, played on to this month. */
     static Game city(Path root, String label, int toMonth) {
+        return city(root, label, toMonth, false);
+    }
+
+    /** ...with the minimum wage set at the going rate before the first month where asked (steepCity()'s fixture, WG1). */
+    static Game city(Path root, String label, int toMonth, boolean floorAtTheGoingRate) {
         Game[] g = new Game[1];
         quietly(() -> {
             g[0] = MonetaryCheck.founding(root, label);
+            if (floorAtTheGoingRate) g[0].getLabourMarket().setMinimumWage(g[0].getLabourMarket().getGoingRate());
             g[0].getDebtManager().setAutopilot(true);
             while (g[0].getMonth() < toMonth) press(g[0]);
         });
@@ -498,7 +504,11 @@ public class CurveCheck {
         // on the literals: on the band at 0.8.75 a cement works' bank loan sent the young bank to the central bank's window, and its cost
         // of funds plus Bank.MIN_MARGIN floored the 1-month at 2.1% on a dial of 1%, the 10-year 1.3 points over it. On 0.9.55 the band's
         // founding is the steep city: at month 39 the 1-month 1.31%, the 1-year 2.21%, the 10-year 3.41%, 2.1 points over the 1-month.
-        Game g = city(root, label, 38);
+        // WG1 (2026-11-10): the floor is set at the going rate before the first month, the wage this fixture was written against. A new city's floor
+        // is .85 of the going rate now (WG1, a real minimum), and the unskilled wage then falls to the market's own level in a glut: this city at month 39
+        // read 1-month 1.8021, 1-year 2.4377, 10-year 3.4350, the 10-year 1.63 points over the 1-month, under the 2 the fixture asks; with the floor at the
+        // going rate (main's path, the old default) it is the steep city above.
+        Game g = city(root, label, 38, true);
         DebtManager dm = g.getDebtManager();
         double rule = dm.advisedPolicyRate(inflationRead(g));
         dm.takeTheDial(Math.max(0, rule - .02));

@@ -1361,10 +1361,39 @@ public class DiscoveryCheck {
         double floor = labour.getMinimumWage(), schools = g.getEducation().getPayroll(), care = g.getHealthcare().getPayroll(), posts = e.getResearchPayroll();
         check("fixture: a grant has bought posts that are filled and paid (" + r.posts(Field.ENGINEERING) + " posts, a research payroll of " + posts + ")", r.posts(Field.ENGINEERING) == 5 && posts > 0);
 
-        double move = PolicyPreview.wageMoveAt(g, floor * 1.1);
-        near("the city's own payroll at a floor ten per cent up is its teachers', its doctors' and nurses' and its research posts', every wage moved by the floor's ratio", PolicyPreview.cityPayrollAt(g, floor * 1.1),
-                (schools + care + posts) * move, 1e-9 * (schools + care + posts) * move);
-        near("...so it is that much above what it was when it left the posts out", PolicyPreview.cityPayrollAt(g, floor * 1.1) - (schools + care) * move, posts * move, 1e-9 * posts * move);
+        // WG1: the floor lifts only the wages under it, so the posts' pay moves only once the floor is raised past the scientists' target (their jobs are
+        // among the dearest): a floor a fifth past the dearest job's target in force reaches every job, the research posts' among them. And only under the
+        // law (R0): this 1900 village has none yet, where the floor binds nobody and a floor raised moves no one's pay, the city's own staff's included.
+        JobType[] jobTypes = JobType.values();
+        double[] now = new double[jobTypes.length], then = new double[jobTypes.length];
+        double dearest = 0;
+        for (JobType job : jobTypes) dearest = Math.max(dearest, labour.targetWageAt(job, floor));
+        double raised = labour.floorForCash(1.2 * dearest);
+        check("fixture: the village has no minimum wage law yet, so the floor binds nobody", !labour.isFloorBinding());
+        check("...and a floor raised past every job's target moves the city's own payroll by nothing, the posts' pay in it", PolicyPreview.cityPayrollAt(g, raised) == PolicyPreview.cityPayroll(g));
+        labour.setFloorBinding(true);
+        for (JobType job : jobTypes) {
+            now[job.ordinal()] = labour.targetWageAt(job, floor);
+            then[job.ordinal()] = labour.targetWageAt(job, raised);
+        }
+        double[] jobFill = g.getPopulationManager().getJobFillRate();
+        double[] researchFill = g.getResearchFill() != null ? g.getResearchFill() : jobFill;
+        long[] postJobs = Research.jobs(Field.ENGINEERING, r.posts(Field.ENGINEERING));
+        double postsMove = 0;
+        boolean pastThem = true;
+        for (int i = 0; i < jobTypes.length; i++) {
+            if (postJobs[i] <= 0) continue;
+            pastThem &= labour.cashAt(raised) > now[i];
+            postsMove += postJobs[i] * (then[i] - now[i]) * researchFill[i];
+        }
+        BuildingManager bm = g.getBuildingManager();
+        double careMove = bm.getCategoryPayroll(BuildingType.EDUCATION, then, jobFill) - bm.getCategoryPayroll(BuildingType.EDUCATION, now, jobFill)
+                + bm.getCategoryPayroll(BuildingType.HEALTHCARE, then, jobFill) - bm.getCategoryPayroll(BuildingType.HEALTHCARE, now, jobFill);
+        check("fixture: the floor raised is past the target of every job the research posts hold, so the posts' pay moves (by " + postsMove + ")", pastThem && postsMove > 0);
+        near("the city's own payroll at that floor is what it is today plus the move of its teachers', its doctors' and nurses' and its research posts' pay, job by job", PolicyPreview.cityPayrollAt(g, raised),
+                schools + care + posts + careMove + postsMove, 1e-9 * (schools + care + posts + careMove + postsMove));
+        near("...so it is that much above what it was when it left the posts out: the posts' share is their jobs times what the floor lifts each to", PolicyPreview.cityPayrollAt(g, raised) - (schools + care + careMove) - posts, postsMove,
+                1e-9 * (postsMove + posts));
         near("at the floor in force it is the payroll the city pays today, the posts' pay in it", PolicyPreview.cityPayrollAt(g, floor), schools + care + posts, 1e-9 * (schools + care + posts));
         near("...and PolicyPreview.cityPayroll() is that figure, the one a screen sets the effect against", PolicyPreview.cityPayroll(g), schools + care + posts, 1e-9 * (schools + care + posts));
 

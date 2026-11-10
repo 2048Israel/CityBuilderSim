@@ -1,6 +1,6 @@
 # TileRaster.java - 4,347 lines · 160 methods · 104 constants · model
 
-`ham/citybuildersim/TileRaster.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TileRaster.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > A painted tile as pixels: an int[] of 0xAARRGGBB, a row at a time, at a whole number of pixels a plot - what the map view hands PixelWriter.setPixels() for a tile's image.
 > 
@@ -66,7 +66,7 @@
 
 **Uses:** [TilePainter](TilePainter.md) (600), [BuildingVisual](BuildingVisual.md) (130), [World](World.md) (37), [CityRuns](CityRuns.md) (32), [TrackCurves](TrackCurves.md) (26), [DistrictPlan](DistrictPlan.md) (8), [Resource](Resource.md) (3), [StreetCurves](StreetCurves.md) (1), [InterchangeGround](InterchangeGround.md) (1)
 
-**Used by (29):** [BridgeMapCheck](BridgeMapCheck.md), [BuildingVisual](BuildingVisual.md), [CityMap](CityMap.md), [CityRuns](CityRuns.md), [CrossingCheck](CrossingCheck.md), [DistrictPicture](DistrictPicture.md), [EarthTerrainCheck](EarthTerrainCheck.md), [FoundingScreen](FoundingScreen.md), [GlobeCheck](GlobeCheck.md), [GlobePicture](GlobePicture.md), [HarbourRenders](HarbourRenders.md), [IslandRailRenders](IslandRailRenders.md), [JunctionCheck](JunctionCheck.md), [LandMap](LandMap.md), [LandScreen](LandScreen.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapFrame](MapFrame.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [MiniMap](MiniMap.md), [RailDrawCheck](RailDrawCheck.md), [ReadPathCheck](ReadPathCheck.md), [ReliefRenders](ReliefRenders.md), [RunRenders](RunRenders.md), [RunWorksCheck](RunWorksCheck.md), [SlopeRenders](SlopeRenders.md), [TrainSchedule](TrainSchedule.md), [TrainShapes](TrainShapes.md)
+**Used by (32):** [BridgeMapCheck](BridgeMapCheck.md), [BuildingVisual](BuildingVisual.md), [CityMap](CityMap.md), [CityRuns](CityRuns.md), [CrossingCheck](CrossingCheck.md), [DistrictPicture](DistrictPicture.md), [EarthTerrainCheck](EarthTerrainCheck.md), [FoundingScreen](FoundingScreen.md), [GlobeCheck](GlobeCheck.md), [GlobePicture](GlobePicture.md), [HarbourRenders](HarbourRenders.md), [HarbourYard](HarbourYard.md), [IslandRailRenders](IslandRailRenders.md), [JunctionCheck](JunctionCheck.md), [LandMap](LandMap.md), [LandScreen](LandScreen.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapFrame](MapFrame.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [MiniMap](MiniMap.md), [PortCheck](PortCheck.md), [QuayCrane](QuayCrane.md), [RailDrawCheck](RailDrawCheck.md), [ReadPathCheck](ReadPathCheck.md), [ReliefRenders](ReliefRenders.md), [RunRenders](RunRenders.md), [RunWorksCheck](RunWorksCheck.md), [SlopeRenders](SlopeRenders.md), [TrainSchedule](TrainSchedule.md), [TrainShapes](TrainShapes.md)
 
 ## Sections
 

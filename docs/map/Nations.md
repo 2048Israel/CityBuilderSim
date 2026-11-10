@@ -1,6 +1,6 @@
 # Nations.java - 780 lines · 44 methods · 42 constants · model
 
-`ham/citybuildersim/Nations.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Nations.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > The nations beyond the city, each on the world's path: its year - output,
 > people, prices and its money's rate to the US dollar - from the path
@@ -41,7 +41,7 @@
 
 **Uses:** [WorldData](WorldData.md) (14), [World](World.md) (4), [CityCalendar](CityCalendar.md) (2)
 
-**Used by (39):** [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [DataSave](DataSave.md), [DenominationCheck](DenominationCheck.md), [FittingCheck](FittingCheck.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [HistorySave](HistorySave.md), [InterestAbroadCheck](InterestAbroadCheck.md), [LandFactors](LandFactors.md), [LandNationsCheck](LandNationsCheck.md), [LongPlaytest](LongPlaytest.md), [MapView](MapView.md), [NationsCheck](NationsCheck.md), [NationsMap](NationsMap.md), [NewGameCheck](NewGameCheck.md), [PartnerTrade](PartnerTrade.md), [PartnersCheck](PartnersCheck.md), [PartnersPage](PartnersPage.md), [PartnersView](PartnersView.md), [PolicyRates](PolicyRates.md), [PriceLevelCheck](PriceLevelCheck.md), [Rankings](Rankings.md), [RankingsCheck](RankingsCheck.md), [RankingsScreen](RankingsScreen.md), [RealDollar](RealDollar.md), [RealDollarCheck](RealDollarCheck.md), [SaveFileCheck](SaveFileCheck.md), [TradeScreen](TradeScreen.md), [VaultMoneysCheck](VaultMoneysCheck.md), [VaultView](VaultView.md), [WorldDataCheck](WorldDataCheck.md), [WorldEconomy](WorldEconomy.md), [WorldMarket](WorldMarket.md), [WorldMarketCheck](WorldMarketCheck.md), [WorldMoneys](WorldMoneys.md), [WorldMoneysCheck](WorldMoneysCheck.md), [YearBook](YearBook.md)
+**Used by (41):** [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [DataSave](DataSave.md), [DenominationCheck](DenominationCheck.md), [FittingCheck](FittingCheck.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [GoldPrice](GoldPrice.md), [GoldPriceCheck](GoldPriceCheck.md), [HistorySave](HistorySave.md), [InterestAbroadCheck](InterestAbroadCheck.md), [LandFactors](LandFactors.md), [LandNationsCheck](LandNationsCheck.md), [LongPlaytest](LongPlaytest.md), [MapView](MapView.md), [NationsCheck](NationsCheck.md), [NationsMap](NationsMap.md), [NewGameCheck](NewGameCheck.md), [PartnerTrade](PartnerTrade.md), [PartnersCheck](PartnersCheck.md), [PartnersPage](PartnersPage.md), [PartnersView](PartnersView.md), [PolicyRates](PolicyRates.md), [PriceLevelCheck](PriceLevelCheck.md), [Rankings](Rankings.md), [RankingsCheck](RankingsCheck.md), [RankingsScreen](RankingsScreen.md), [RealDollar](RealDollar.md), [RealDollarCheck](RealDollarCheck.md), [SaveFileCheck](SaveFileCheck.md), [TradeScreen](TradeScreen.md), [VaultMoneysCheck](VaultMoneysCheck.md), [VaultView](VaultView.md), [WorldDataCheck](WorldDataCheck.md), [WorldEconomy](WorldEconomy.md), [WorldMarket](WorldMarket.md), [WorldMarketCheck](WorldMarketCheck.md), [WorldMoneys](WorldMoneys.md), [WorldMoneysCheck](WorldMoneysCheck.md), [YearBook](YearBook.md)
 
 ## Sections
 

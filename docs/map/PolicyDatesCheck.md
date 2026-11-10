@@ -1,6 +1,6 @@
-# PolicyDatesCheck.java - 905 lines · 10 methods · 4 constants · harnesses
+# PolicyDatesCheck.java - 909 lines · 10 methods · 4 constants · harnesses
 
-`ham/citybuildersim/PolicyDatesCheck.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PolicyDatesCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > Every Policy lever opens on the date Canada first had it, and no lever may open more than the law field's four years early (R0, slice 1:
 > PolicyDates), and the levers TaxPolicy holds are held shut at zero until then and open on their date: the three income taxes at the city's
@@ -38,8 +38,9 @@
 >      is skipped; a lever the map does not name keeps history's month; a saved policy state comes back as saved into a policy that has only
 >      heard month 1, and is held again only when the month says so; a restore and a reset empty what the policy held, so a rate they put
 >      back is never overwritten by a later opening; a reset policy is back on history's dates.
->  10. THE MINIMUM WAGE'S FLOOR (R0, call 12). The dial is also the wage ladder's anchor, so it is not zeroed: before the law the floor binds
->      no wage (a glut takes the unskilled wage under the figure, to the band's own bottom) while the anchor and every base wage stand; the
+>  10. THE MINIMUM WAGE'S FLOOR (R0, call 12). The dial was also the wage ladder's anchor, so it was not zeroed (since WG1, 2026-11-10 the
+>      going rate anchors it): before the law the floor binds
+>      no wage (a glut takes the unskilled wage under the going rate, to the band's own bottom) while the anchor and every base wage stand; the
 >      player's dial and its nudge, through Game, are refused in month 1 and taken from the opening month; a load pushes the month to the
 >      labour market; the inbox raises the opening notice once; a city saved the month before the wage tax opens, read back and told the
 >      next month, opens it at the founding rate (the load tells the month after the restore, not before).
@@ -54,62 +55,62 @@
 >      names the date, the lever with the article Inbox.leverTitle() uses and the terms, its second where the lever opens, and a city whose
 >      opening a find moved is told history's date and the find.
 
-**Uses:** [PolicyDates](PolicyDates.md) (128), [TaxPolicy](TaxPolicy.md) (116), [CityCalendar](CityCalendar.md) (14), [Game](Game.md) (13), [Notice](Notice.md) (9), [WageBand](WageBand.md) (8), [Sectors](Sectors.md) (8), [DecisionLog](DecisionLog.md) (6), [LabourMarket](LabourMarket.md) (6), [JobType](JobType.md) (6), [GameFiles](GameFiles.md) (5), [Zoning](Zoning.md) (5), [StudentHousehold](StudentHousehold.md) (2), [Inbox](Inbox.md) (2), [Founding](Founding.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1), [HouseholdBalance](HouseholdBalance.md) (1)
+**Uses:** [PolicyDates](PolicyDates.md) (128), [TaxPolicy](TaxPolicy.md) (116), [CityCalendar](CityCalendar.md) (14), [Game](Game.md) (13), [Notice](Notice.md) (9), [WageBand](WageBand.md) (8), [Sectors](Sectors.md) (8), [JobType](JobType.md) (7), [DecisionLog](DecisionLog.md) (6), [LabourMarket](LabourMarket.md) (6), [GameFiles](GameFiles.md) (5), [Zoning](Zoning.md) (5), [StudentHousehold](StudentHousehold.md) (2), [Inbox](Inbox.md) (2), [Founding](Founding.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1), [HouseholdBalance](HouseholdBalance.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 104 | · the gate's fixtures |
-| 183 | · 1. the table's dates |
-| 204 | · 2. founding |
-| 217 | · 3. the day |
-| 231 | · 4. the early-opening bound |
-| 254 | · 5. what the player is told |
-| 292 | · 6. history's order |
-| 327 | · 7. the gate on a bare policy |
-| 500 | · 8. a city |
-| 564 | · 9. the save |
-| 671 | · 10. the minimum wage's floor |
-| 749 | · 11. two readers that quoted a shut lever, and the student loans |
-| 789 | · 12. zoning's gate |
-| 866 | · 13. the shut lever's words |
+| 105 | · the gate's fixtures |
+| 184 | · 1. the table's dates |
+| 205 | · 2. founding |
+| 218 | · 3. the day |
+| 232 | · 4. the early-opening bound |
+| 255 | · 5. what the player is told |
+| 293 | · 6. history's order |
+| 328 | · 7. the gate on a bare policy |
+| 501 | · 8. a city |
+| 565 | · 9. the save |
+| 672 | · 10. the minimum wage's floor |
+| 753 | · 11. two readers that quoted a shut lever, and the student loans |
+| 793 | · 12. zoning's gate |
+| 870 | · 13. the shut lever's words |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 81 | `PolicyDatesCheck.TABLE` | `List.of(new Row(Lever.POLICY_RATE, 1914, 8, true, ""), new Row(Lever.PROFIT_T...` | research-1900.md 7.1 and 7.2, in history's order: the specification the class is held to. |
-| 96 | `PolicyDatesCheck.OPEN` | `List.of(Lever.PROPERTY_TAX, Lever.FARMLAND_RELIEF, Lever.FOOD_ASSISTANCE, Lev...` | The levers the study leaves open from the first day (7.1: "open"; the others by its 1900 rule, R0's notes, call 5). |
-| 147 | `PolicyDatesCheck.INCOME_TAXES` | `List.of(Lever.PROFIT_TAX, Lever.WAGE_TAX, Lever.SALES_TAX)` | The three income taxes, typed here as the specification of PolicyDates.opensAtFoundingRate() (call 16): the levers that fund the city. |
-| 173 | `PolicyDatesCheck.SETTING` | `TaxPolicy.DEFAULT_INCOME_TAX +.10` | A wage tax rate that is neither zero nor the rate an income tax opens at: a setting that took is told from an opening. |
+| 82 | `PolicyDatesCheck.TABLE` | `List.of(new Row(Lever.POLICY_RATE, 1914, 8, true, ""), new Row(Lever.PROFIT_T...` | research-1900.md 7.1 and 7.2, in history's order: the specification the class is held to. |
+| 97 | `PolicyDatesCheck.OPEN` | `List.of(Lever.PROPERTY_TAX, Lever.FARMLAND_RELIEF, Lever.FOOD_ASSISTANCE, Lev...` | The levers the study leaves open from the first day (7.1: "open"; the others by its 1900 rule, R0's notes, call 5). |
+| 148 | `PolicyDatesCheck.INCOME_TAXES` | `List.of(Lever.PROFIT_TAX, Lever.WAGE_TAX, Lever.SALES_TAX)` | The three income taxes, typed here as the specification of PolicyDates.opensAtFoundingRate() (call 16): the levers that fund the city. |
+| 174 | `PolicyDatesCheck.SETTING` | `TaxPolicy.DEFAULT_INCOME_TAX +.10` | A wage tax rate that is neither zero nor the rate an income tax opens at: a setting that took is told from an opening. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 69 | `private static int fails` |  |
-| 70 | `private static int passes` |  |
+| 70 | `private static int fails` |  |
+| 71 | `private static int passes` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 67 | 839 | **type** `public class PolicyDatesCheck` | Every Policy lever opens on the date Canada first had it, and no lever may open more than the law field's four years early (R0, slice 1: PolicyDates), and the levers TaxPolicy holds are held shut at zero until then an... |
-| 72 | 4 | `static void check(String label, boolean ok)` |  |
-| 78 | 1 | **type** `record Row(Lever lever, int year, int month, boolean monthKnown, String entry)` | One row of research-1900.md 7.1: the year and month Canada first had the lever (monthKnown false: the study gives the year only). |
-| 100 | 3 | `static int monthOf(int year, int monthOfYear)` | The game month of a real calendar month, worked out here and not by PolicyDates. |
+| 68 | 842 | **type** `public class PolicyDatesCheck` | Every Policy lever opens on the date Canada first had it, and no lever may open more than the law field's four years early (R0, slice 1: PolicyDates), and the levers TaxPolicy holds are held shut at zero until then an... |
+| 73 | 4 | `static void check(String label, boolean ok)` |  |
+| 79 | 1 | **type** `record Row(Lever lever, int year, int month, boolean monthKnown, String entry)` | One row of research-1900.md 7.1: the year and month Canada first had the lever (monthKnown false: the study gives the year only). |
+| 101 | 3 | `static int monthOf(int year, int monthOfYear)` | The game month of a real calendar month, worked out here and not by PolicyDates. |
 
-### the gate's fixtures (lines 104-905)
+### the gate's fixtures (lines 105-909)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 107 | 15 | `static void setEveryGatedDial(TaxPolicy p)` | Every gated dial set to a non-zero setting through the setters: what stays zero is what the gate refused. |
-| 124 | 14 | `static double dialOf(TaxPolicy p, Lever lever)` | What one lever owns, as one number: the sum of the dials and offsets the gate holds for it (zero while it is held). |
-| 140 | 5 | `static int zoningLines(Game g)` | How many lines the city's decision log holds under the zoning kind: what a zone, or the forest law, writes when it is taken. |
-| 150 | 8 | `static double baseRateOf(TaxPolicy p, Lever tax)` | An income tax's base rate alone, which is what opens at the founding rate; an income tax's offsets open at zero. |
-| 160 | 3 | `static double offsetOf(TaxPolicy p, Lever tax)` | An income tax's offsets summed over the fixture's band and sector: dialOf() less the base rate. |
-| 165 | 6 | `static double dialsAfterSetting(TaxPolicy p)` | Sets every gated dial on a policy and returns what the gated levers own after it, summed. |
-| 176 | 4 | `static double wageRateAfterSetting(TaxPolicy p)` | Tries the wage tax base at SETTING and returns what it reads. |
-| 181 | 724 | `public static void main(String[] args)` |  |
+| 108 | 15 | `static void setEveryGatedDial(TaxPolicy p)` | Every gated dial set to a non-zero setting through the setters: what stays zero is what the gate refused. |
+| 125 | 14 | `static double dialOf(TaxPolicy p, Lever lever)` | What one lever owns, as one number: the sum of the dials and offsets the gate holds for it (zero while it is held). |
+| 141 | 5 | `static int zoningLines(Game g)` | How many lines the city's decision log holds under the zoning kind: what a zone, or the forest law, writes when it is taken. |
+| 151 | 8 | `static double baseRateOf(TaxPolicy p, Lever tax)` | An income tax's base rate alone, which is what opens at the founding rate; an income tax's offsets open at zero. |
+| 161 | 3 | `static double offsetOf(TaxPolicy p, Lever tax)` | An income tax's offsets summed over the fixture's band and sector: dialOf() less the base rate. |
+| 166 | 6 | `static double dialsAfterSetting(TaxPolicy p)` | Sets every gated dial on a policy and returns what the gated levers own after it, summed. |
+| 177 | 4 | `static double wageRateAfterSetting(TaxPolicy p)` | Tries the wage tax base at SETTING and returns what it reads. |
+| 182 | 727 | `public static void main(String[] args)` |  |
 

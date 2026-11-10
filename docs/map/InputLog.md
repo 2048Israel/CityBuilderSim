@@ -1,6 +1,6 @@
-# InputLog.java - 438 lines · 35 methods · 7 constants · model
+# InputLog.java - 471 lines · 39 methods · 7 constants · model
 
-`ham/citybuildersim/InputLog.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/InputLog.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > What the player did in a sitting, as a file (TR1, 2026-10-31): the mouse, the keys and the markers beside them - the window's
 > size, the screen open, the expanded map's view, the clock, and the moment each month turned - each with its time in
@@ -22,7 +22,7 @@
 
 **Uses:** [Recording](Recording.md) (8)
 
-**Used by (2):** [InputRecorder](InputRecorder.md), [ReplayCheck](ReplayCheck.md)
+**Used by (8):** [FollowBench](FollowBench.md), [FollowPlayer](FollowPlayer.md), [FollowRules](FollowRules.md), [InputRecorder](InputRecorder.md), [InputTimeline](InputTimeline.md), [Reenactor](Reenactor.md), [ReplayCheck](ReplayCheck.md), [ReplayMode](ReplayMode.md)
 
 ## Sections
 
@@ -69,20 +69,22 @@
 | 325 | `private final ConcurrentLinkedQueue<Event> queue` |  |
 | 326 | `private final Object moveLock` |  |
 | 327 | `private final Object wake` |  |
-| 328 | `private final DataOutputStream out` |  |
-| 329 | `private final GZIPOutputStream gzip` |  |
-| 330 | `private final Thread thread` |  |
-| 331 | `private long lastMoveMs` |  |
-| 332 | `private long lastWrittenMs` |  |
-| 333 | `private volatile boolean closing` |  |
-| 334 | `private volatile boolean finished` |  |
-| 335 | `private volatile long written` |  |
+| 328 | `private final OutputStream raw` |  |
+| 329 | `private final DataOutputStream out` |  |
+| 330 | `private final GZIPOutputStream gzip` |  |
+| 331 | `private final Thread thread` |  |
+| 332 | `private long lastMoveMs` |  |
+| 333 | `private long lastWrittenMs` |  |
+| 334 | `private volatile boolean closing` |  |
+| 335 | `private volatile boolean finished` |  |
+| 336 | `private volatile long written` |  |
+| 338 | `private volatile boolean failNextDrain` | For ReplayCheck (TR2): the next drain throws as a failed write does. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 39 | 400 | **type** `public final class InputLog` | What the player did in a sitting, as a file (TR1, 2026-10-31): the mouse, the keys and the markers beside them - the window's size, the screen open, the expanded map's view, the clock, and the moment each month turned... |
+| 39 | 433 | **type** `public final class InputLog` | What the player did in a sitting, as a file (TR1, 2026-10-31): the mouse, the keys and the markers beside them - the window's size, the screen open, the expanded map's view, the clock, and the moment each month turned... |
 | 41 | 1 | `private InputLog()` |  |
 | 65 | 1 | **type** `public enum Kind` | What an event is. |
 | 74 | 51 | **type** `public record Event(long ms, Kind kind, double x, double y, int code, int mods, double a, double b, double ...` | One thing the player did or the game marked. |
@@ -122,18 +124,22 @@
 | 282 | 11 | `public static List<Path> sittings(Path folder)` | The sittings' logs in a recording's folder, oldest first (by the moment in the name). |
 | 295 | 8 | `private static long startedAt(Path file)` | The moment in a log's file name, or -1 when the name is not one. |
 
-### writing (lines 304-438)
+### writing (lines 304-471)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 307 | 10 | `public static Writer open(Path folder, String recordingId, long epochMs)` | Opens a sitting's log in {@code folder} (made if it is missing); a log that cannot be opened is said once and returns a writer that keeps nothing, because the game never waits on it. |
-| 322 | 116 | **type** `public static final class Writer implements AutoCloseable` | One sitting's log being written. |
-| 338 | 7 | `private Writer(Path file)` _(in InputLog.Writer)_ | A writer that keeps nothing: the log would not open. |
-| 346 | 14 | `private Writer(Path file, String recordingId, long epochMs) throws IOException` _(in InputLog.Writer)_ |  |
-| 362 | 1 | `public Path path()` _(in InputLog.Writer)_ | The file this sitting writes. |
-| 365 | 1 | `public long written()` _(in InputLog.Writer)_ | How many events the thread has written so far (a harness waits on it). |
-| 368 | 10 | `public void add(Event e)` _(in InputLog.Writer)_ | Queues an event and returns at once. |
-| 379 | 27 | `private void run()` _(in InputLog.Writer)_ |  |
-| 407 | 10 | `private void drain() throws IOException` _(in InputLog.Writer)_ |  |
-| 420 | 17 | `public void close()` _(in InputLog.Writer)_ | Drains what is queued, finishes the gzip and closes the file; waits for the thread at most {@link #CLOSE_WAIT_MS}. |
+| 322 | 149 | **type** `public static final class Writer implements AutoCloseable` | One sitting's log being written. |
+| 341 | 8 | `private Writer(Path file)` _(in InputLog.Writer)_ | A writer that keeps nothing: the log would not open. |
+| 350 | 14 | `private Writer(Path file, String recordingId, long epochMs) throws IOException` _(in InputLog.Writer)_ |  |
+| 366 | 1 | `public Path path()` _(in InputLog.Writer)_ | The file this sitting writes. |
+| 369 | 1 | `public long written()` _(in InputLog.Writer)_ | How many events the thread has written so far (a harness waits on it). |
+| 375 | 10 | `public void add(Event e)` _(in InputLog.Writer)_ | Queues an event and returns at once. |
+| 386 | 32 | `private void run()` _(in InputLog.Writer)_ |  |
+| 419 | 7 | `private static void closeQuietly(OutputStream stream)` _(in InputLog.Writer)_ |  |
+| 428 | 1 | `void failNextDrainForChecks()` _(in InputLog.Writer)_ | For ReplayCheck (TR2): makes the next drain fail as a full disk would, so the failing path can be walked. |
+| 431 | 1 | `boolean stopped()` _(in InputLog.Writer)_ | For ReplayCheck (TR2): whether the thread has ended, by close() or by a failure. |
+| 434 | 1 | `int queued()` _(in InputLog.Writer)_ | For ReplayCheck (TR2): how many events are queued and not yet written. |
+| 436 | 14 | `private void drain() throws IOException` _(in InputLog.Writer)_ |  |
+| 453 | 17 | `public void close()` _(in InputLog.Writer)_ | Drains what is queued, finishes the gzip and closes the file; waits for the thread at most {@link #CLOSE_WAIT_MS}. |
 

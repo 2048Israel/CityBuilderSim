@@ -1,6 +1,6 @@
-# InterestAbroadCheck.java - 1,185 lines · 39 methods · 11 constants · harnesses
+# InterestAbroadCheck.java - 1,186 lines · 39 methods · 11 constants · harnesses
 
-`ham/citybuildersim/InterestAbroadCheck.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/InterestAbroadCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > The central banks of the eight moneys the vault holds and the price of money the city reads (batch XR4, interest abroad; spec-exchange-rates 3.8,
 > Jerus's calls 9 and 11): PolicyRates' monthly rate of each bank - the real table to December 2025 on Historical (its January 2000 rate held through
@@ -51,7 +51,7 @@
 > Every fixture causes its condition: a Historical moneys for the table's replay, a Random one for the rule from month 1, a town for the city's
 > reading, and a table with one line wrong for each refusal.
 
-**Uses:** [PolicyRates](PolicyRates.md) (106), [WorldMoneys](WorldMoneys.md) (41), [CapitalFlows](CapitalFlows.md) (39), [DebtManager](DebtManager.md) (36), [ForeignAccounts](ForeignAccounts.md) (23), [Game](Game.md) (19), [Nations](Nations.md) (18), [WorldData](WorldData.md) (11), [World](World.md) (10), [ForeignCheck](ForeignCheck.md) (9), [HistorySave](HistorySave.md) (6), [PriceLevel](PriceLevel.md) (4), [Founding](Founding.md) (3), [WorldMarket](WorldMarket.md) (2), [Equity](Equity.md) (2), [GameFiles](GameFiles.md) (1), [Bank](Bank.md) (1), [YearBook](YearBook.md) (1), [MoneyAudit](MoneyAudit.md) (1)
+**Uses:** [PolicyRates](PolicyRates.md) (106), [WorldMoneys](WorldMoneys.md) (44), [CapitalFlows](CapitalFlows.md) (39), [DebtManager](DebtManager.md) (36), [ForeignAccounts](ForeignAccounts.md) (21), [Game](Game.md) (19), [Nations](Nations.md) (18), [WorldData](WorldData.md) (11), [World](World.md) (10), [ForeignCheck](ForeignCheck.md) (9), [HistorySave](HistorySave.md) (6), [PriceLevel](PriceLevel.md) (4), [Founding](Founding.md) (3), [WorldMarket](WorldMarket.md) (2), [Equity](Equity.md) (2), [GameFiles](GameFiles.md) (1), [Bank](Bank.md) (1), [YearBook](YearBook.md) (1), [MoneyAudit](MoneyAudit.md) (1)
 
 **Used by (2):** [DebtMoneysCheck](DebtMoneysCheck.md), [PegAnchorCheck](PegAnchorCheck.md)
 
@@ -101,7 +101,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 58 | 1128 | **type** `public class InterestAbroadCheck` | The central banks of the eight moneys the vault holds and the price of money the city reads (batch XR4, interest abroad; spec-exchange-rates 3.8, Jerus's calls 9 and 11): PolicyRates' monthly rate of each bank - the r... |
+| 58 | 1129 | **type** `public class InterestAbroadCheck` | The central banks of the eight moneys the vault holds and the price of money the city reads (batch XR4, interest abroad; spec-exchange-rates 3.8, Jerus's calls 9 and 11): PolicyRates' monthly rate of each bank - the r... |
 | 81 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 87 | 4 | `static void close(String label, double got, double wanted, double tol)` | Two figures that should be one, to a tolerance. |
 | 93 | 12 | **type** `static final class Tally` | Figures compared one by one, reported as one line: every one has to agree, and at least one has to have been read. |
@@ -191,11 +191,11 @@
 | 915 | 5 | `static double riskOffAt(double level)` | What a risk-off of this level sends home from a settled hot money at 10,000 GDP. |
 | 921 | 110 | `static void theUnwind()` |  |
 
-### 9. IN A CITY: THE VAULT EARNS, MONEY RUNS HOME, THE AUDIT CLOSES (lines 1032-1185)
+### 9. IN A CITY: THE VAULT EARNS, MONEY RUNS HOME, THE AUDIT CLOSES (lines 1032-1186)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 1040 | 9 | `static Game hotTown(String label, boolean quietForTheD)` | A town with banks to take hot money into, as CapitalFlowCheck's city has them. |
 | 1051 | 11 | `static String playCaptured(Game city)` | One month of a city with what it printed captured. |
-| 1063 | 122 | `static void inACity()` |  |
+| 1063 | 123 | `static void inACity()` |  |
 

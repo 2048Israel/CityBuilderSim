@@ -1249,26 +1249,17 @@ public class HoldersCheck {
         return Math.abs(book - paper) <= 1e-9 * Math.max(1, paper);
     }
 
-    /** One line of the month's audit by its label, to the cent: 0 when the month has none. */
+    /** One line of the month's audit by its label, as the model recorded it (EP2: the figure itself, not the printed detail's two places): 0 when the month has none. */
     static double auditLine(MoneyAudit.Result r, String label) {
-        for (String line : r.detail.split("\n")) {
-            String t = line.trim();
-            if (!t.startsWith(label + " ")) continue;
-            try {
-                return Double.parseDouble(t.substring(label.length()).trim().replace(",", ""));
-            } catch (NumberFormatException e) {
-                return Double.NaN;
-            }
-        }
-        return 0;
+        return r.figure(label);
     }
 
     /**
-     * The audit's tolerance for a figure read to the cent: auditLine() reads a figure back from the audit's printed detail, which prints thousands to two
-     * places (MoneyAudit, "%,14.2f"), a step of 0.01 whatever the price level, so half a step and a hair is the reading's rounding and not a money
-     * tolerance: it stays .0051 at the factor (EP1's gate review scaled it by the factor, and four assertions failed on the printed 0.06 for 0.0575).
+     * The audit's tolerance for a figure read from it: the model's own cent, MoneyAudit.CENT (EP2). Until EP2 auditLine() parsed the figure back from the
+     * audit's printed detail, which prints thousands to two places, a step of $10 at the factor, so this was .0051, half a step and a hair, the reading's
+     * rounding; the reading no longer rounds (MoneyAudit.Result.figures), so what is left is the money's cent.
      */
-    static final double CENT = .0051;
+    static final double CENT = MoneyAudit.CENT;
 
     static void theWorld() throws Exception {
         out.println("\n--- 11. the world is a holder: it buys from abroad, is paid abroad, leaves with its money, and the books agree ---");
@@ -1697,6 +1688,11 @@ public class HoldersCheck {
             // at the reopening, the reopening over its face and the discount down from 1.98 to 1.67.
             city.getEconomyManager().getTaxPolicy().reset();
             city.getEconomyManager().getTaxPolicy().openAll();
+            // WG1 (2026-11-10): the floor at the going rate, the wage these sections were written against, before a month has run. A new city's floor is
+            // .85 of the going rate now (a real minimum, WG1), and on that path section 12's second sale moved the line's discount per unit of face 0.0122 to
+            // 0.0204, .0082 where its fixture asks over .01, and 13a's second sale raised $59.2496k on $59.5320k of face, under it where its fixture needs the
+            // proceeds over it; with the floor at the going rate, main's path, both come as they were written.
+            city.getLabourMarket().setMinimumWage(city.getLabourMarket().getGoingRate());
             // The treasury, the ground and the held builders the other sections were written against (see main(), theWholeBook()).
             city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 50_000_000L);

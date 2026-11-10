@@ -849,7 +849,7 @@ public class InterestAbroadCheck {
 
         // The save: the month's and the lifetime ride the array at slots 142 to 146; a save without them reads nothing earned.
         double[] saved = fx.toSaveArray();
-        assertTrue("the array runs to slot 148, the peg's anchor (WN4b) (" + saved.length + " slots)", saved.length == 149);
+        assertTrue("the array runs to slot 151, gold's chosen share (GD2), after the peg's anchor in 148 (WN4b) (" + saved.length + " slots)", saved.length == 152);
         assertTrue("slots 142-146 are the month's interest, the lifetime, the driver, its US$ and the base the yield is struck on",
                 same(saved[142], fx.getVaultInterestUsd()) && same(saved[143], fx.getVaultInterestUsdLifetime()) && saved[144] == fx.getVaultInterestDriver()
                         && same(saved[145], fx.getVaultInterestDriverUsd()) && saved[146] > 0);
@@ -1075,14 +1075,15 @@ public class InterestAbroadCheck {
         out.printf("   the purchase is %.2f years of the town's output (INTERVENTION_LINEAR %.2f: past it XI1's bound reads it)%n",
                 fx.yearsOfOutput(spend), ForeignAccounts.INTERVENTION_LINEAR);
         int held = 0;
-        for (int k = 0; k < ForeignAccounts.MONEYS; k++) if (fx.getHolding(k) > 0) held++;
-        assertTrue("fixture: a purchase by the world's mix puts a balance in each of the eight (" + held + ")", held == ForeignAccounts.MONEYS);
+        for (int k = 0; k < WorldMoneys.EIGHT.size(); k++) if (fx.getHolding(k) > 0) held++;
+        assertTrue("fixture: a purchase by the world's mix puts a balance in each of the eight (" + held + ") and none in gold, which no COFER mix holds",
+                held == WorldMoneys.EIGHT.size() && fx.getHolding(ForeignAccounts.GOLD) == 0);
 
         int months = 24, earned = 0, positive = 0;
         double worst = 0, lifetime = fx.getVaultInterestUsdLifetime(), yield = 0;
         Tally each = new Tally();
         for (int m = 1; m <= months; m++) {
-            double[] before = new double[ForeignAccounts.MONEYS];
+            double[] before = new double[WorldMoneys.EIGHT.size()];   // the eight: gold earns nothing and has no policy rate
             for (int k = 0; k < before.length; k++) before[k] = fx.getHolding(k);
             play(g);
             PolicyRates p = g.getPolicyRates();

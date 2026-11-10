@@ -1,6 +1,6 @@
 # Timing.java - 215 lines · 14 methods · 8 constants · model
 
-`ham/citybuildersim/Timing.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Timing.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > The one helper every timing assertion in the suite goes through: a figure
 > on a clock against its budget, hard as the harness wrote it, or soft while
@@ -39,7 +39,7 @@
 > assertion's line goes through {@link #verdict(boolean, String)}, which
 > appends its figures to the file {@link #TSV_PROPERTY} names.
 
-**Used by (22):** [AllChecks](AllChecks.md), [BridgeCheck](BridgeCheck.md), [BridgeMapCheck](BridgeMapCheck.md), [EarthCheck](EarthCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [GlobeCheck](GlobeCheck.md), [GridCheck](GridCheck.md), [IslandLinkCheck](IslandLinkCheck.md), [IslandNetCheck](IslandNetCheck.md), [KeptCheck](KeptCheck.md), [LandNationsCheck](LandNationsCheck.md), [MapCheck](MapCheck.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PlanCheck](PlanCheck.md), [PortCheck](PortCheck.md), [ReplayCheck](ReplayCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [ScaleCheck](ScaleCheck.md), [TimingCheck](TimingCheck.md), [UiProbe](UiProbe.md), [WorldCheck](WorldCheck.md), [WorldMarketCheck](WorldMarketCheck.md)
+**Used by (23):** [AllChecks](AllChecks.md), [BridgeCheck](BridgeCheck.md), [BridgeMapCheck](BridgeMapCheck.md), [EarthCheck](EarthCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [GlobeCheck](GlobeCheck.md), [GridCheck](GridCheck.md), [IslandLinkCheck](IslandLinkCheck.md), [IslandNetCheck](IslandNetCheck.md), [KeptCheck](KeptCheck.md), [LandNationsCheck](LandNationsCheck.md), [MapCheck](MapCheck.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PlanCheck](PlanCheck.md), [PortCheck](PortCheck.md), [QuayCraneCheck](QuayCraneCheck.md), [ReplayCheck](ReplayCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [ScaleCheck](ScaleCheck.md), [TimingCheck](TimingCheck.md), [UiProbe](UiProbe.md), [WorldCheck](WorldCheck.md), [WorldMarketCheck](WorldMarketCheck.md)
 
 ## Constants
 

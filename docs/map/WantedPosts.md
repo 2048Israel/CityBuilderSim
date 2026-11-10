@@ -1,6 +1,6 @@
 # WantedPosts.java - 222 lines · 19 methods · 1 constants · model
 
-`ham/citybuildersim/WantedPosts.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WantedPosts.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > The posts the city's businesses wanted this month and the staffing gate would not let them open, and the part of
 > them the labour market prices as if they were offered (LD1).
@@ -39,7 +39,7 @@
 
 **Uses:** [WageBand](WageBand.md) (2), [LabourMarket](LabourMarket.md) (2)
 
-**Used by (11):** [AutoBuildCheck](AutoBuildCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [CurveCheck](CurveCheck.md), [DeathRecordCheck](DeathRecordCheck.md), [DeskCheck](DeskCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [OrderSearchCheck](OrderSearchCheck.md), [PeopleScreen](PeopleScreen.md), [ScaleCheck](ScaleCheck.md), [WantedPostsCheck](WantedPostsCheck.md)
+**Used by (10):** [AutoBuildCheck](AutoBuildCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [CurveCheck](CurveCheck.md), [DeathRecordCheck](DeathRecordCheck.md), [DeskCheck](DeskCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [OrderSearchCheck](OrderSearchCheck.md), [PeopleScreen](PeopleScreen.md), [WantedPostsCheck](WantedPostsCheck.md)
 
 ## Constants
 

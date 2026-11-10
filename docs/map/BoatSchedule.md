@@ -1,6 +1,6 @@
-# BoatSchedule.java - 1,060 lines · 61 methods · 16 constants · model
+# BoatSchedule.java - 1,068 lines · 62 methods · 16 constants · model
 
-`ham/citybuildersim/BoatSchedule.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BoatSchedule.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > The month's ships, as a pure function of time: which calls the city's sea
 > trade makes, when each arrives, and where each boat is at any moment
@@ -66,7 +66,7 @@
 
 **Uses:** [Ports](Ports.md) (40), [World](World.md) (25), [SeaRoutes](SeaRoutes.md) (24), [CityShore](CityShore.md) (11), [CallPartners](CallPartners.md) (10), [ShipShapes](ShipShapes.md) (6), [MapFrame](MapFrame.md) (4)
 
-**Used by (19):** [CallPartners](CallPartners.md), [CityMap](CityMap.md), [CityShore](CityShore.md), [FreightView](FreightView.md), [FreightViewCheck](FreightViewCheck.md), [Game](Game.md), [HarbourRenders](HarbourRenders.md), [InfrastructureScreen](InfrastructureScreen.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PortCheck](PortCheck.md), [ReadPathCheck](ReadPathCheck.md), [SeaLanes](SeaLanes.md), [SeaRoutes](SeaRoutes.md), [ShipShapes](ShipShapes.md), [TrainSchedule](TrainSchedule.md), [TruckSchedule](TruckSchedule.md)
+**Used by (21):** [CallPartners](CallPartners.md), [CityMap](CityMap.md), [CityShore](CityShore.md), [FreightView](FreightView.md), [FreightViewCheck](FreightViewCheck.md), [Game](Game.md), [HarbourRenders](HarbourRenders.md), [HarbourYard](HarbourYard.md), [InfrastructureScreen](InfrastructureScreen.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PortCheck](PortCheck.md), [QuayCraneCheck](QuayCraneCheck.md), [ReadPathCheck](ReadPathCheck.md), [SeaLanes](SeaLanes.md), [SeaRoutes](SeaRoutes.md), [ShipShapes](ShipShapes.md), [TrainSchedule](TrainSchedule.md), [TruckSchedule](TruckSchedule.md)
 
 ## Sections
 
@@ -75,8 +75,8 @@
 | 259 | THE MONTH'S CALLS |
 | 512 | THE FORKS AT THE OFFING (WN7, slice U) |
 | 654 | WHERE A BOAT IS |
-| 736 | · the harbour's quay and its boats alongside (HB1, 2026-11-08) |
-| 1033 | · reads |
+| 744 | · the harbour's quay and its boats alongside (HB1, 2026-11-08) |
+| 1041 | · reads |
 
 ## Constants
 
@@ -97,7 +97,7 @@
 | 217 | `BoatSchedule.NO_LEGS` | `new double [ 0 ]` |  |
 | 452 | `BoatSchedule.DRAWN_SET` | `1<<30, DRAWN_PARTNER = 10` | drawn[]'s layout: set once drawn; the partner from this bit up (a nation's number, under 2^20); the exit + 1 (0 to 360) below it. |
 | 471 | `BoatSchedule.EXIT_X` | `new double [ SeaRoutes.EXITS ], EXIT_Y = new double [ SeaRoutes.EXITS ], EXIT...` | The plane's step and heading (radians, east 0, south a quarter turn) along each exit's bearing, worked out once: a frame's boats on exits do not take a sine and an arctangent a boat. |
-| 774 | `BoatSchedule.CROSS_TOLERANCE` | `0.25` | How deep a hull may go into a box, a wall or another hull and still not cross it, in plots: 0.25 - a boat alongside lies on its quay's face, which touches the wall there, and a quarter of a plot is the width of a draw... |
+| 782 | `BoatSchedule.CROSS_TOLERANCE` | `0.25` | How deep a hull may go into a box, a wall or another hull and still not cross it, in plots: 0.25 - a boat alongside lies on its quay's face, which touches the wall there, and a quarter of a plot is the width of a draw... |
 
 ## Fields (state)
 
@@ -128,7 +128,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 75 | 986 | **type** `public final class BoatSchedule` | The month's ships, as a pure function of time: which calls the city's sea trade makes, when each arrives, and where each boat is at any moment (0.7.86, batch O9; docs/studies/spec-oil.md 2.10, the research's 4.3-4.4 a... |
+| 75 | 994 | **type** `public final class BoatSchedule` | The month's ships, as a pure function of time: which calls the city's sea trade makes, when each arrives, and where each boat is at any moment (0.7.86, batch O9; docs/studies/spec-oil.md 2.10, the research's 4.3-4.4 a... |
 | 106 | 7 | **type** `public record Berth(Ports.Cargo cargo, long x, long y, int side)` | One terminal's quay: its kind, where on the map it stands in plots (the plot just past its quay's end), and (HB1) the side its sea is on, CityShore.Work.side(): 0 north to 3 west, or -1 when it is not known (a berth m... |
 | 109 | 3 | `public Berth(Ports.Cargo cargo, long x, long y)` _(in BoatSchedule.Berth)_ | A berth whose side is not known: its boats lie at its point as they did before HB1 (alongside() leaves them). |
 | 129 | 39 | **type** `public record Route(Berth berth, long x1, long y1, double[] xs, double[] ys, double[] along, int offing, in...` | A berth's route: its quay, its far end (x1, y1) out at sea, and the way between as points in plots - the berth first, its turns, the offing (point `offing`), the abyss's end last - with each point's distance along it ... |
@@ -182,44 +182,45 @@
 | 601 | 11 | `private int forksInto(int n, Offing o, long x0, long y0, long x1, long y1)` | An offing's forks whose legs' boxes meet the rectangle, added to the frame's after its first n doubles; the new count. |
 | 617 | 36 | `private void buildOffings()` | The offings that fork, made once from the routes: each distinct offing point of a route with forks, with the union of the forks of the routes that share it (a lane's kinds of cargo each take their own partners' exits)... |
 
-### WHERE A BOAT IS (lines 654-735)
+### WHERE A BOAT IS (lines 654-743)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 663 | 9 | `public static Boat position(Call call, Route route, double t)` | Where a call's boat is at t (month fractions), or null when it is not on the water: running in over its leg, at the quay, or running out. |
-| 679 | 22 | `static Boat along(Call call, Route route, double f, boolean coming, boolean loaded, boolean docked)` | A call's boat at a share f of its route from the quay (0 at the quay, lying there; 1 at the far end), coming in or going out: its place on the way, turned about the pivot by the call's spread past it, its heading, and... |
-| 707 | 28 | `private static Boat alongExit(Call call, Route route, double run, double f, boolean coming, boolean loaded, boolean docked)` | ...for a call that leaves by an exit (WN7), `run` plots of open sea from the offing on its bearing: f is a share of the way from the quay (0) to the exit's end (1), so the boat rides the route's own points up to the o... |
+| 674 | 6 | `public static double atQuay(Call call, double t)` | The share of its time at the quay a call's boat has lain there at t (month fractions), 0 as it arrives to 1 as it leaves: (t - arrives) over BERTH_SECONDS / MONTH_SECONDS; -1 when it is not at the quay. |
+| 687 | 22 | `static Boat along(Call call, Route route, double f, boolean coming, boolean loaded, boolean docked)` | A call's boat at a share f of its route from the quay (0 at the quay, lying there; 1 at the far end), coming in or going out: its place on the way, turned about the pivot by the call's spread past it, its heading, and... |
+| 715 | 28 | `private static Boat alongExit(Call call, Route route, double run, double f, boolean coming, boolean loaded, boolean docked)` | ...for a call that leaves by an exit (WN7), `run` plots of open sea from the offing on its bearing: f is a share of the way from the quay (0) to the exit's end (1), so the boat rides the route's own points up to the o... |
 
-### the harbour's quay and its boats alongside (HB1, 2026-11-08) (lines 736-1032)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 752 | 6 | `public static Boat alongside(Boat b, int side, double scale)` | A docked boat lying alongside its quay, not bow-on to it (HB1; Jerus, 2026-10-31: "and that ships dock properly"), from the detail zoom in: above MapFrame.DETAIL_FROM px a plot, strictly; at it and below, and for a bo... |
-| 766 | 6 | `public static Boat sternTo(Boat b, int side, double scale)` | A docked boat lying stern-to its quay (HB1 slice E): its stern on the quay's face and its bow straight out to sea along its berth's side, heading the sea's direction (CityShore.DX, DY of `side`). |
-| 797 | 48 | `public static List<Boat> berthed(List<Boat> boats, List<Route> routes, double scale, CityShore shore)` | The boats as they are drawn at a scale (HB1, 2026-11-08, slice E): `boats` as given at or below MapFrame.DETAIL_FROM and for a boat afloat; above it each docked boat, in the order it arrived (Call.arrives(), a tie by ... |
-| 847 | 6 | `private static int sideOf(Boat b, List<Route> routes)` | The side of the berth a docked boat's call starts from, 0 to 3, or -1 when its route or its berth's side is not known. |
-| 855 | 3 | `private static double[][] rectangle(double x, double y, double w, double h)` | A rectangle's outline as {xs, ys}, in the order a hull's is. |
-| 860 | 3 | `static boolean deeper(double[][] a, double[][] b)` | Whether two convex outlines {xs, ys} go deeper into one another than CROSS_TOLERANCE: along every normal of every edge of either, their shadows overlap by more than it. |
-| 869 | 6 | `private static boolean apart(double[] a, double[] b)` | Whether two outlines' shadows on one axis (their xs, or their ys) overlap by no more than CROSS_TOLERANCE: the bounding boxes' test, first, so that the far boxes, walls and hulls berthed() weighs cost a few comparison... |
-| 877 | 23 | `private static boolean apart(double[][] a, double[][] b)` | Whether some edge of `a` has a normal along which a's shadow and b's overlap by no more than CROSS_TOLERANCE. |
-| 905 | 17 | `public List<Boat> docked(double t)` | Every boat lying at its quay at t (month fractions), on any route, in the order of route and arrival: the boats berthed() weighs against one another, whatever part of the map is on screen. |
-| 927 | 12 | `public List<Boat> drawn(List<Boat> frame, double t, double scale, CityShore shore)` | A window's boats (frame()'s at t) as they are drawn at a scale: berthed() over every boat docked at t (docked()), not the window's, so a boat's place never depends on what is on screen. |
-| 941 | 4 | `static double turnOf(Call call, Route route)` | A call's turn of its route's last leg, in radians: within its route's spread either way, by the call's own hash (its arrival and its route). |
-| 952 | 34 | `public List<Boat> frame(long x0, long y0, long x1, long y1, double t)` | The boats on the water at t whose routes cross the rectangle [x0, x1) x [y0, y1) in plots: the routes indexed by the district cells the rectangle covers, and on each a binary search of its arrivals. |
-| 988 | 3 | `public static boolean crosses(Route rt, long x0, long y0, long x1, long y1)` | Whether a route meets the rectangle: one of its legs' boxes does (legBoxes()) - a lane's, its one box. |
-| 993 | 4 | `static boolean crosses(double[][] legs, long x0, long y0, long x1, long y1)` | ...by its legs' boxes, worked out already. |
-| 1005 | 20 | `static double[][] legBoxes(Route rt)` | Each leg's box, {x0, y0, x1, y1} in plots, inclusive: its two points' - past the pivot widened by how far the call's spread can swing it (its far end's distance from the pivot x sin(spread), and a plot). |
-| 1027 | 5 | `static int lower(long[] a, int from, int to, long v)` | The first index in [from, to) whose key is at least v. |
-
-### reads (lines 1033-1060)
+### the harbour's quay and its boats alongside (HB1, 2026-11-08) (lines 744-1040)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1035 | 1 | `public int month()` |  |
-| 1036 | 1 | `public List<Route> routes()` |  |
-| 1039 | 6 | `public List<Call> calls()` | Every call of the month, by route and arrival (those with no route first). |
-| 1047 | 1 | `public int callCount()` | The month's calls, all kinds: counted when the schedule is made, nothing built. |
-| 1050 | 1 | `public int touched()` | The routes the last frame() looked at. |
-| 1053 | 5 | `public int callsOf(Ports.Cargo c)` | The calls of one kind. |
-| 1059 | 1 | `public String toString()` |  |
+| 760 | 6 | `public static Boat alongside(Boat b, int side, double scale)` | A docked boat lying alongside its quay, not bow-on to it (HB1; Jerus, 2026-10-31: "and that ships dock properly"), from the detail zoom in: above MapFrame.DETAIL_FROM px a plot, strictly; at it and below, and for a bo... |
+| 774 | 6 | `public static Boat sternTo(Boat b, int side, double scale)` | A docked boat lying stern-to its quay (HB1 slice E): its stern on the quay's face and its bow straight out to sea along its berth's side, heading the sea's direction (CityShore.DX, DY of `side`). |
+| 805 | 48 | `public static List<Boat> berthed(List<Boat> boats, List<Route> routes, double scale, CityShore shore)` | The boats as they are drawn at a scale (HB1, 2026-11-08, slice E): `boats` as given at or below MapFrame.DETAIL_FROM and for a boat afloat; above it each docked boat, in the order it arrived (Call.arrives(), a tie by ... |
+| 855 | 6 | `private static int sideOf(Boat b, List<Route> routes)` | The side of the berth a docked boat's call starts from, 0 to 3, or -1 when its route or its berth's side is not known. |
+| 863 | 3 | `private static double[][] rectangle(double x, double y, double w, double h)` | A rectangle's outline as {xs, ys}, in the order a hull's is. |
+| 868 | 3 | `static boolean deeper(double[][] a, double[][] b)` | Whether two convex outlines {xs, ys} go deeper into one another than CROSS_TOLERANCE: along every normal of every edge of either, their shadows overlap by more than it. |
+| 877 | 6 | `private static boolean apart(double[] a, double[] b)` | Whether two outlines' shadows on one axis (their xs, or their ys) overlap by no more than CROSS_TOLERANCE: the bounding boxes' test, first, so that the far boxes, walls and hulls berthed() weighs cost a few comparison... |
+| 885 | 23 | `private static boolean apart(double[][] a, double[][] b)` | Whether some edge of `a` has a normal along which a's shadow and b's overlap by no more than CROSS_TOLERANCE. |
+| 913 | 17 | `public List<Boat> docked(double t)` | Every boat lying at its quay at t (month fractions), on any route, in the order of route and arrival: the boats berthed() weighs against one another, whatever part of the map is on screen. |
+| 935 | 12 | `public List<Boat> drawn(List<Boat> frame, double t, double scale, CityShore shore)` | A window's boats (frame()'s at t) as they are drawn at a scale: berthed() over every boat docked at t (docked()), not the window's, so a boat's place never depends on what is on screen. |
+| 949 | 4 | `static double turnOf(Call call, Route route)` | A call's turn of its route's last leg, in radians: within its route's spread either way, by the call's own hash (its arrival and its route). |
+| 960 | 34 | `public List<Boat> frame(long x0, long y0, long x1, long y1, double t)` | The boats on the water at t whose routes cross the rectangle [x0, x1) x [y0, y1) in plots: the routes indexed by the district cells the rectangle covers, and on each a binary search of its arrivals. |
+| 996 | 3 | `public static boolean crosses(Route rt, long x0, long y0, long x1, long y1)` | Whether a route meets the rectangle: one of its legs' boxes does (legBoxes()) - a lane's, its one box. |
+| 1001 | 4 | `static boolean crosses(double[][] legs, long x0, long y0, long x1, long y1)` | ...by its legs' boxes, worked out already. |
+| 1013 | 20 | `static double[][] legBoxes(Route rt)` | Each leg's box, {x0, y0, x1, y1} in plots, inclusive: its two points' - past the pivot widened by how far the call's spread can swing it (its far end's distance from the pivot x sin(spread), and a plot). |
+| 1035 | 5 | `static int lower(long[] a, int from, int to, long v)` | The first index in [from, to) whose key is at least v. |
+
+### reads (lines 1041-1068)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1043 | 1 | `public int month()` |  |
+| 1044 | 1 | `public List<Route> routes()` |  |
+| 1047 | 6 | `public List<Call> calls()` | Every call of the month, by route and arrival (those with no route first). |
+| 1055 | 1 | `public int callCount()` | The month's calls, all kinds: counted when the schedule is made, nothing built. |
+| 1058 | 1 | `public int touched()` | The routes the last frame() looked at. |
+| 1061 | 5 | `public int callsOf(Ports.Cargo c)` | The calls of one kind. |
+| 1067 | 1 | `public String toString()` |  |
 

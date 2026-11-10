@@ -1,6 +1,6 @@
 # WageLadder.java - 145 lines · 10 methods · 7 constants · model
 
-`ham/citybuildersim/WageLadder.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WageLadder.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > The wage ladder a city is founded on: today's (PayTier's) or 1901's (the census's).
 > 
@@ -33,7 +33,7 @@
 
 **Uses:** [PayTier](PayTier.md) (17), [Founding](Founding.md) (1), [JobType](JobType.md) (1)
 
-**Used by (6):** [Game](Game.md), [LabourMarket](LabourMarket.md), [PopulationManager](PopulationManager.md), [PrizeCheck](PrizeCheck.md), [TaxPolicy](TaxPolicy.md), [WageLadderCheck](WageLadderCheck.md)
+**Used by (7):** [Game](Game.md), [LabourCheck](LabourCheck.md), [LabourMarket](LabourMarket.md), [PopulationManager](PopulationManager.md), [PrizeCheck](PrizeCheck.md), [TaxPolicy](TaxPolicy.md), [WageLadderCheck](WageLadderCheck.md)
 
 ## Sections
 

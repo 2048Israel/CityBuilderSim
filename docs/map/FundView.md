@@ -1,6 +1,6 @@
 # FundView.java - 875 lines · 39 methods · 8 constants · model
 
-`ham/citybuildersim/FundView.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FundView.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > The city's fund as the screens read it (0.7.39): every holding with its average cost and P&L, what the fund has made since it began and by kind, its return over a chart's window, the market to search, a hand order's quote on today's book, and its record - pure, and the screens' only door to the fund's cost basis.
 > 
@@ -22,9 +22,9 @@
 > whatever the ledger knows. Nothing here writes anything: BuildCard's shape,
 > so a probe reads every figure a page draws.
 
-**Uses:** [FundLedger](FundLedger.md) (58), [Equity](Equity.md) (19), [Game](Game.md) (17), [HistorySave](HistorySave.md) (13), [Exchange](Exchange.md) (11), [BondMarket](BondMarket.md) (10), [OrderBook](OrderBook.md) (10), [TreasuryFund](TreasuryFund.md) (9), [ChartModel](ChartModel.md) (9), [CorporateBond](CorporateBond.md) (7), [DecisionLog](DecisionLog.md) (7), [Bank](Bank.md) (3), [CityCalendar](CityCalendar.md) (3), [PriceLevel](PriceLevel.md) (1)
+**Uses:** [FundLedger](FundLedger.md) (58), [Equity](Equity.md) (19), [Game](Game.md) (17), [HistorySave](HistorySave.md) (13), [Exchange](Exchange.md) (11), [BondMarket](BondMarket.md) (10), [OrderBook](OrderBook.md) (10), [TreasuryFund](TreasuryFund.md) (9), [ChartModel](ChartModel.md) (9), [CorporateBond](CorporateBond.md) (7), [DecisionLog](DecisionLog.md) (7), [Bank](Bank.md) (3), [CityCalendar](CityCalendar.md) (3), [PriceLevel](PriceLevel.md) (2)
 
-**Used by (6):** [FundCheck](FundCheck.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [LongPlaytest](LongPlaytest.md), [ReadPathCheck](ReadPathCheck.md), [ShortSellingCheck](ShortSellingCheck.md)
+**Used by (7):** [FundCheck](FundCheck.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [LongPlaytest](LongPlaytest.md), [PriceLevelCheck](PriceLevelCheck.md), [ReadPathCheck](ReadPathCheck.md), [ShortSellingCheck](ShortSellingCheck.md)
 
 ## Sections
 
@@ -45,7 +45,7 @@
 |---:|---|---|---|
 | 36 | `FundView.STALE_MONTHS` | `3` | A share's quote that is its last trade (Exchange.quoteIsLastTrade(): no bid or ask rests that sets or bounds it, EM2), older than this many months, is called stale on every page that shows it (the spec's B3: a price i... |
 | 39 | `FundView.MIN_RECORDED_PRICE` | `.01 * PriceLevel.FACTOR` | The least a price per founding share, as the history records it to four places, can be and still carry three significant figures: a move off less is not shown (the spec's B6 - a consolidated share records 0.0000). |
-| 42 | `FundView.FOLD_UNDER` | `1` | A holding worth less than this, money, is folded into "and N more" on the Portfolio page: a thousand dollars. |
+| 42 | `FundView.FOLD_UNDER` | `1 * PriceLevel.FACTOR` | A holding worth less than this, money, is folded into "and N more" on the Portfolio page: a thousand of today's (2025's) dollars, priced at the founding's level (times PriceLevel.FACTOR: EP2). |
 | 45 | `FundView.MOVE_MONTHS` | `12` | The months a hit's sparkline and its move cover: a year. |
 | 48 | `FundView.SHARE` | `"share", RESCUE = "rescue", BOND = "bond", PREFERRED = "preferred", WARRANTS ...` | What a holding is. |
 | 51 | `FundView.CLOSED` | `"closed"` | A search hit that is a lot the fund closed on a bond no longer on any book: found only when named (the spec's D1). |

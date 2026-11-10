@@ -122,6 +122,24 @@ public class BusinessInvestment {
     /** Whether a sector has been held out by a fixture. */
     public boolean isHeld(String key) { return key != null && held.contains(key); }
 
+    /*
+     * THE BANK'S BRANCHES, HELD (ST3, 2026-11-09). A branch is retail's
+     * building, but the bank opens it (planBank()) and closes it
+     * (Game.closeBranches()) by rules of its own, so holding retail held
+     * neither. ScaleCheck section 9 holds every sector in a city and in its
+     * copy 1,000 times over, and the copy's bank still closed 975 of its 1,000
+     * branches in its first month where the city's one, the first, never
+     * closes (RE2's notes): a branch is one building at any K, as a planner's
+     * order is. Harnesses only, like holdSector(); not saved.
+     */
+    private boolean branchesHeld;
+
+    /** Harnesses only (ST3): the bank's branches neither open nor close for the rest of the run. */
+    public void holdBranches() { branchesHeld = true; }
+
+    /** Whether a fixture has held the bank's branches (holdBranches()). */
+    public boolean areBranchesHeld() { return branchesHeld; }
+
     /** Months of construction backlog above which the builders build themselves more capacity. */
     public static final double BACKLOG_MONTHS_BEFORE_EXPANDING = 9;
 
@@ -1119,6 +1137,7 @@ public class BusinessInvestment {
         String sector = economyManager.getSectors().retail().key();
 
         if (bank == null) return Decision.no(sector, "no bank");
+        if (branchesHeld) return Decision.no(sector, "the branches are held");
 
         if (buildingManager.underConstructionByName("Commercial Bank") > 0) {
             return Decision.no(sector, "a branch is already going up");

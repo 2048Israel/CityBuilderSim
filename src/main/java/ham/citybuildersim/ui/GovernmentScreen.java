@@ -315,7 +315,7 @@ final class GovernmentScreen {
                                : "no month closed yet",
                         Palette.TEXT_HEAD, "What the cash did, press to press"),
                 new Kpi("OWED", m(owed),
-                        owed < .5 ? "nothing owed · " + rated
+                        owed < Money.NOTHING ? "nothing owed · " + rated
                                 : annual > 0 ? String.format("%.0f%% %s · %s", owed / annual * 100, ofAnnualGdp(na), rated)
                                 : rated,
                         needLevel(all, CityNeeds.Kind.BORROWING) >= 2 ? Palette.BAD : Palette.TEXT_HEAD,
@@ -387,7 +387,7 @@ final class GovernmentScreen {
         }
         if (!Double.isFinite(last) || !Double.isFinite(before)) return null;
         double d = last - before;
-        if (Math.abs(d) < .5) return "no change on last month";
+        if (Money.nothing(d)) return "no change on last month";
         return (d > 0 ? "▲ " : "▼ ") + money(Math.abs(d)) + " on last month";
     }
 
@@ -509,7 +509,7 @@ final class GovernmentScreen {
      */
     static List<Double> drawn(List<Double> amounts) {
         List<Double> out = new ArrayList<>();
-        for (double v : amounts) out.add(Math.abs(v) < .5 ? 0.0 : v);
+        for (double v : amounts) out.add(Money.nothing(v) ? 0.0 : v);
         return out;
     }
 
@@ -823,7 +823,7 @@ final class GovernmentScreen {
     static List<Node> netted(List<String> names, List<Double> amounts) {
         List<Node> out = new ArrayList<>();
         for (int i = 0; i < names.size(); i++) {
-            if (amounts.get(i) <= -.5) {
+            if (amounts.get(i) <= -Money.NOTHING) {
                 final String name = names.get(i);
                 final double amount = amounts.get(i);
                 // Kept (KP6): a netted line is a scope keyed by the line it names.
@@ -872,7 +872,7 @@ final class GovernmentScreen {
                 balanceBar("Taken in", revenue, spending, scale, Palette.MONEY, tone, true)));
         block.getChildren().add(Kept.scope("Paid out", () ->
                 balanceBar("Paid out", spending, revenue, scale, Palette.MONEY_DARK, tone, false)));
-        if (Math.abs(balance) >= .5) {
+        if (Money.something(balance)) {
             block.getChildren().add(Kept.scope("kept", () -> {
                 Region swatch = Kept.region();
                 swatch.setMinSize(12, 8);
@@ -918,7 +918,7 @@ final class GovernmentScreen {
      */
     static Node retiredGainLine(NationalAccounts na, double wide) {
         double gain = na.getRetiredGain();
-        if (Math.abs(gain) < .5) return null;
+        if (Money.nothing(gain)) return null;
         return infoLine("Gain (loss) on debt retired " + s(gain) + ", in the balance", RETIRED_GAIN_INFO, true,
                 Palette.SIZE_LABEL, Palette.TEXT_MUTED, wide);
     }
@@ -930,7 +930,7 @@ final class GovernmentScreen {
      */
     static Node debtExchangeLine(NationalAccounts na, double wide) {
         double gain = na.getDebtExchangeGain();
-        if (Math.abs(gain) < .5) return null;
+        if (Money.nothing(gain)) return null;
         return infoLine("Exchange gain (loss) on foreign debt " + s(gain) + ", in the balance", DEBT_EXCHANGE_INFO, true,
                 Palette.SIZE_LABEL, Palette.TEXT_MUTED, wide);
     }
@@ -938,7 +938,7 @@ final class GovernmentScreen {
     /** ...and as a row under the Spending page's total, its own line below the operating lines: the words, an (i), the figure on the right. Null at nothing. */
     static Node retiredGainRow(NationalAccounts na) {
         double gain = na.getRetiredGain();
-        if (Math.abs(gain) < .5) return null;
+        if (Money.nothing(gain)) return null;
         Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
         HBox row = Kept.row(Palette.GAP,
@@ -952,7 +952,7 @@ final class GovernmentScreen {
     /** CD7: ...and the same exchange gain (loss) as a row under the Spending page's total, beside the retired gain's. Null at nothing. */
     static Node debtExchangeRow(NationalAccounts na) {
         double gain = na.getDebtExchangeGain();
-        if (Math.abs(gain) < .5) return null;
+        if (Money.nothing(gain)) return null;
         Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
         HBox row = Kept.row(Palette.GAP,
@@ -1192,7 +1192,7 @@ final class GovernmentScreen {
         for (BridgeStep st : cashSteps()) {
             if (most == null || Math.abs(st.amount()) > Math.abs(most.amount())) most = st;
         }
-        return most == null || Math.abs(most.amount()) < .5 ? null : most;
+        return most == null || Money.nothing(most.amount()) ? null : most;
     }
 
     /** A journal line's icon, by the words TreasuryJournal records it in. */
@@ -1249,19 +1249,19 @@ final class GovernmentScreen {
         row = moved(grid, row, "Principal repaid to lenders", -ui.game.getTreasuryRepaid(), false);
         // The books (CD3): the two rows the budget carries and the cash does not, so the sum still foots.
         NationalAccounts na = ui.game.getEconomyManager().getNationalAccounts();
-        if (Math.abs(na.getInterestNotCash()) >= .5) {
+        if (Money.something(na.getInterestNotCash())) {
             row = moved(grid, row, "Interest that was no cash (the discount wearing off)", na.getInterestNotCash(), false);
         }
-        if (Math.abs(na.getRetiredGain()) >= .5) {
+        if (Money.something(na.getRetiredGain())) {
             row = moved(grid, row, "Gain (loss) on paper bought back (no cash: the price is in the buyback line)",
                     -na.getRetiredGain(), false);
         }
         // CD7: the D$'s move on the dollar paper, booked in the budget and paid by nobody.
-        if (Math.abs(na.getDebtExchangeGain()) >= .5) {
+        if (Money.something(na.getDebtExchangeGain())) {
             row = moved(grid, row, "Exchange gain (loss) on foreign debt (no cash: the D$'s move on the dollar paper)",
                     -na.getDebtExchangeGain(), false);
         }
-        if (Math.abs(na.getUpliftNotCash()) >= .5) {
+        if (Money.something(na.getUpliftNotCash())) {
             row = moved(grid, row, "Inflation uplift not yet paid (the linked bonds' indexation, no cash until they fall due)",
                     na.getUpliftNotCash(), false);
         }
@@ -1301,7 +1301,7 @@ final class GovernmentScreen {
             // (A style is set whole, never built on getStyle(): the cell's own, with the indent.)
             if (under) what.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED) + " -fx-padding: 0 0 0 16;");
             grid.add(what, 0, row);
-            grid.add(gridCell(s(amount), Math.abs(amount) < .5 ? Palette.TEXT_SPENT : Palette.TEXT_BODY,
+            grid.add(gridCell(s(amount), Money.nothing(amount) ? Palette.TEXT_SPENT : Palette.TEXT_BODY,
                     Palette.SIZE_CAPTION, true), 1, row);
         });
         return row + 1;
@@ -1594,7 +1594,7 @@ final class GovernmentScreen {
         List<Integer> order = new ArrayList<>();
         List<String> nothing = new ArrayList<>();
         for (int i = 0; i < names.size(); i++) {
-            if (Math.abs(amounts.get(i)) < .5) nothing.add(names.get(i));
+            if (Money.nothing(amounts.get(i))) nothing.add(names.get(i));
             else order.add(i);
         }
         order.sort((a, b) -> Double.compare(amounts.get(b), amounts.get(a)));
@@ -2036,7 +2036,7 @@ final class GovernmentScreen {
         List<Payer> who = new ArrayList<>();
         for (PaperKind k : paperKinds()) {
             // A kind whose last piece fell due in the month still booked its interest (CD6), so it stays on the list.
-            if (k.count() == 0 && Math.abs(k.expense()) < .5) continue;
+            if (k.count() == 0 && Money.nothing(k.expense())) continue;
             // The interest each kind cost (CD3): the coupons and the discount wearing off, which a note's coupon
             // alone (nothing) left off this list.
             who.add(new Payer(k.name() + "  ×" + k.count(), k.expense(),
@@ -2049,16 +2049,16 @@ final class GovernmentScreen {
         // Kept (KP6): each row added here is a scope keyed by what it says, for the months it comes and goes.
         box.getChildren().add(Kept.scope("coupons", () ->
                 payerRow("...of which the coupons, paid in cash", na.getInterestPaidInCash(), total, "left the treasury")));
-        if (Math.abs(na.getInterestNotCash()) >= .5) {
+        if (Money.something(na.getInterestNotCash())) {
             box.getChildren().add(Kept.scope("not cash", () -> payerRow(na.getInterestNotCash() > 0
                     ? "...and the discount wearing off" : "...less the premium wearing off",
                     na.getInterestNotCash(), total, "no cash")));
         }
         // The linked bonds' indexation (CD5) is a line of its own on this list, beside the interest; named here where the interest is split.
         double uplift = na.getInflationUplift();
-        if (Math.abs(uplift) >= .5) {
+        if (Money.something(uplift)) {
             box.getChildren().add(Kept.scope("uplift", () -> payerRow("Inflation uplift — its own line", uplift, 0,
-                    na.getUpliftPaidInCash() >= .5 ? "at maturity" : "no cash")));
+                    na.getUpliftPaidInCash() >= Money.NOTHING ? "at maturity" : "no cash")));
         }
         /* --------------- and the money that is not on this statement --------------- */
         if (repaid > 0) box.getChildren().add(Kept.scope("repaid", () ->
@@ -2317,14 +2317,14 @@ final class GovernmentScreen {
         // The interest on the city's paper (CD3, spec-city-debt.md 5.4): the coupons paid in cash and the discount
         // wearing off (below nothing for paper sold over its face), the month's effective interest.
         double cash = na.getInterestPaidInCash(), notCash = na.getInterestNotCash();
-        String parts = Math.abs(notCash) < .5 ? ""
+        String parts = Money.nothing(notCash) ? ""
                 : " (coupons " + m(cash) + (notCash > 0 ? " + the discount wearing off " + m(notCash)
                         : " − the premium wearing off " + m(-notCash)) + ")";
         // ...and the linked bonds' indexation (CD5), beside the interest and not part of it: a month the index fell takes it off.
         double uplift = na.getInflationUplift();
-        String upliftWords = Math.abs(uplift) < .5 ? ""
+        String upliftWords = Money.nothing(uplift) ? ""
                 : (uplift > 0 ? " · inflation uplift on linked bonds " : " · less the index's fall on linked bonds ") + m(Math.abs(uplift))
-                        + (na.getUpliftPaidInCash() >= .5 ? " (" + m(na.getUpliftPaidInCash()) + " paid at maturity)" : " (no cash)");
+                        + (na.getUpliftPaidInCash() >= Money.NOTHING ? " (" + m(na.getUpliftPaidInCash()) + " paid at maturity)" : " (no cash)");
         out.add(new String[] {"owed " + m(ui.game.getDebtManager().getAllPrincipal())
                 + " · interest on the city's paper " + m(na.getInterestExpense()) + " a month" + parts + upliftWords, null});
         if (notes.count() > 0) {
@@ -2363,7 +2363,7 @@ final class GovernmentScreen {
         gridHead(table, "", "pieces", "owed", "carried", "interest /mo", "of spending");
         int line = 1;
         for (PaperKind k : paperKinds()) {
-            if (k.count() == 0 && Math.abs(k.expense()) < .5) continue;
+            if (k.count() == 0 && Money.nothing(k.expense())) continue;
             final int at = line;
             // Kept (KP6): a kind's row of cells is a scope keyed by the kind, for the kinds that come and go.
             Kept.scope(k.name(), () -> {
@@ -2427,8 +2427,8 @@ final class GovernmentScreen {
 
     /** One service's words: what its fees cover and its net cost, what they ran over by, or that there was no bill (B3, B16). */
     static String serviceWords(String name, double bill, double fees, double net) {
-        if (bill < .5 && fees < .5) return name + ": no bill this month";
-        if (bill < .5) return name + ": fees " + m(fees) + " with no bill this month";
+        if (bill < Money.NOTHING && fees < Money.NOTHING) return name + ": no bill this month";
+        if (bill < Money.NOTHING) return name + ": fees " + m(fees) + " with no bill this month";
         if (net > 0) return String.format("%s: fees cover %.0f%% of %s · net cost %s", name, fees / bill * 100, m(bill), m(net));
         return String.format("%s: fees ran %s over its %s bill", name, m(-net), m(bill));
     }
@@ -2436,7 +2436,7 @@ final class GovernmentScreen {
     /** One service: its fees against its bill as a bar, and its words. */
     static VBox serviceLine(String name, double bill, double fees, double net) {
         VBox box = Kept.column(3, words(serviceWords(name, bill, fees, net), Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
-        if (bill >= .5 || fees >= .5) {
+        if (bill >= Money.NOTHING || fees >= Money.NOTHING) {
             box.getChildren().add(Kept.scope("bar", () -> bar(bill > 0 ? fees / bill : 1, Palette.MONEY, 300, 8)));
         }
         return box;
@@ -2466,7 +2466,7 @@ final class GovernmentScreen {
         if (paid > 0) card.getChildren().add(Kept.scope("bar", () -> bar(in / paid, Palette.PEOPLE, 300, 8)));
         card.getChildren().add(words(people(em.getSeniors()) + " seniors at " + cash(em.getTaxPolicy().pensionPerSenior()),
                 Palette.SIZE_LABEL + 1, Palette.TEXT_MUTED));
-        card.getChildren().add(words(gap > .5 ? m(gap) + " from general revenue" : "contributions pay for all of it",
+        card.getChildren().add(words(gap > Money.NOTHING ? m(gap) + " from general revenue" : "contributions pay for all of it",
                 Palette.SIZE_LABEL + 1, Palette.TEXT_MUTED));
         CityNeeds.Need row = need(all, CityNeeds.Kind.PENSIONS);
         if (row != null && row.level() >= 1) card.getChildren().add(Kept.scope("needs you", () ->

@@ -1,6 +1,6 @@
 # NationsMap.java - 1,078 lines · 68 methods · 37 constants · model
 
-`ham/citybuildersim/NationsMap.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/NationsMap.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > The nations on the map, without the toolkit: the borders simplified and cut to a view, each nation's dot and the name written on its land, what lies
 > under a point, and the card a click opens - everything ui/MapView draws the nations by, as arithmetic a harness can hold (GlobeCheck 9 to 12 and
@@ -34,7 +34,7 @@
 
 **Uses:** [Nations](Nations.md) (17), [WorldData](WorldData.md) (13), [EarthProj](EarthProj.md) (9), [GlobeFrame](GlobeFrame.md) (8), [TradeLanes](TradeLanes.md) (3), [World](World.md) (2), [PolicyRates](PolicyRates.md) (2), [MapFrame](MapFrame.md) (1)
 
-**Used by (9):** [GlobeCheck](GlobeCheck.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PartnersCheck](PartnersCheck.md), [PartnersPage](PartnersPage.md), [PartnersView](PartnersView.md), [TradeLanes](TradeLanes.md), [UserInterface](UserInterface.md)
+**Used by (10):** [GlobeCheck](GlobeCheck.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PartnersCheck](PartnersCheck.md), [PartnersPage](PartnersPage.md), [PartnersView](PartnersView.md), [PriceLevelCheck](PriceLevelCheck.md), [TradeLanes](TradeLanes.md), [UserInterface](UserInterface.md)
 
 ## Sections
 

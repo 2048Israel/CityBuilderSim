@@ -1,6 +1,6 @@
-# PartnersCheck.java - 830 lines · 18 methods · 3 constants · harnesses
+# PartnersCheck.java - 838 lines · 18 methods · 3 constants · harnesses
 
-`ham/citybuildersim/PartnersCheck.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PartnersCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > The model the Trade screen's Partners board, a nation's page and The reserves read (batch WN6, "Nations: the screens"; docs/studies/spec-nations.md 8,
 > boards 2 and 3, 9, D29): each good's curve at the city's site (WorldMarket.Curve), the partners table and a nation's page (PartnersView), and the
@@ -36,7 +36,7 @@
 >      a curve (the sold ones, by the books, largest first), the parts of a sale or a purchase the curve's allocation, adding to 1, and what moves it the
 >      curve's three differences; and Game's year of real GDP is the page's.
 
-**Uses:** [PartnersView](PartnersView.md) (51), [WorldMarket](WorldMarket.md) (30), [Game](Game.md) (20), [Good](Good.md) (18), [ForeignAccounts](ForeignAccounts.md) (12), [VaultView](VaultView.md) (11), [PartnerTrade](PartnerTrade.md) (10), [Nations](Nations.md) (9), [LandNationsCheck](LandNationsCheck.md) (9), [NationsMap](NationsMap.md) (7), [WorldData](WorldData.md) (6), [Founding](Founding.md) (2), [PolicyRates](PolicyRates.md) (2), [EarthProj](EarthProj.md) (2), [LandSellers](LandSellers.md) (2), [LandFactors](LandFactors.md) (2), [DebtMoneysCheck](DebtMoneysCheck.md) (2), [DebtManager](DebtManager.md) (2), [HistorySave](HistorySave.md) (2), [EarthSite](EarthSite.md) (2), [RealDollarCheck](RealDollarCheck.md) (1), [GameFiles](GameFiles.md) (1), [WorldMoneys](WorldMoneys.md) (1), [GoodsMarket](GoodsMarket.md) (1), [Sectors](Sectors.md) (1)
+**Uses:** [PartnersView](PartnersView.md) (51), [WorldMarket](WorldMarket.md) (30), [Game](Game.md) (20), [Good](Good.md) (18), [ForeignAccounts](ForeignAccounts.md) (17), [VaultView](VaultView.md) (11), [PartnerTrade](PartnerTrade.md) (10), [Nations](Nations.md) (9), [LandNationsCheck](LandNationsCheck.md) (9), [NationsMap](NationsMap.md) (7), [WorldData](WorldData.md) (6), [Founding](Founding.md) (2), [PolicyRates](PolicyRates.md) (2), [EarthProj](EarthProj.md) (2), [LandSellers](LandSellers.md) (2), [LandFactors](LandFactors.md) (2), [DebtMoneysCheck](DebtMoneysCheck.md) (2), [DebtManager](DebtManager.md) (2), [HistorySave](HistorySave.md) (2), [EarthSite](EarthSite.md) (2), [RealDollarCheck](RealDollarCheck.md) (1), [GameFiles](GameFiles.md) (1), [GoodsMarket](GoodsMarket.md) (1), [Sectors](Sectors.md) (1)
 
 ## Sections
 
@@ -47,9 +47,9 @@
 | 338 | · 3 |
 | 442 | · 4 |
 | 568 | · 5 |
-| 649 | · 6 |
-| 719 | · 8 |
-| 793 | · 7 |
+| 657 | · 6 |
+| 727 | · 8 |
+| 801 | · 7 |
 
 ## Constants
 
@@ -71,7 +71,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 51 | 780 | **type** `public class PartnersCheck` | The model the Trade screen's Partners board, a nation's page and The reserves read (batch WN6, "Nations: the screens"; docs/studies/spec-nations.md 8, boards 2 and 3, 9, D29): each good's curve at the city's site (Wor... |
+| 51 | 788 | **type** `public class PartnersCheck` | The model the Trade screen's Partners board, a nation's page and The reserves read (batch WN6, "Nations: the screens"; docs/studies/spec-nations.md 8, boards 2 and 3, 9, D29): each good's curve at the city's site (Wor... |
 | 60 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 66 | 3 | `static void close(String label, double got, double want, double tol)` | A figure the arithmetic gives, judged to a tolerance (relative to the larger, with an absolute floor of the tolerance). |
 | 71 | 12 | **type** `static final class Tally` | Figures compared one by one, reported as one line: every one has to agree, and at least one has to have been read. |
@@ -108,27 +108,27 @@
 |---:|---:|---|---|
 | 444 | 123 | `static void aNationsPage(Game city, Path file)` |  |
 
-### 5 (lines 568-648)
+### 5 (lines 568-656)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 570 | 78 | `static void theVaultInEight(Game city)` |  |
+| 570 | 86 | `static void theVaultInEight(Game city)` |  |
 
-### 6 (lines 649-718)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 651 | 67 | `static void aPublishedCurveNeverChanges(Game city, Game back)` |  |
-
-### 8 (lines 719-792)
+### 6 (lines 657-726)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 721 | 71 | `static void aGoodsBoard(Game city)` |  |
+| 659 | 67 | `static void aPublishedCurveNeverChanges(Game city, Game back)` |  |
 
-### 7 (lines 793-830)
+### 8 (lines 727-800)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 795 | 35 | `static void anEarthCity()` |  |
+| 729 | 71 | `static void aGoodsBoard(Game city)` |  |
+
+### 7 (lines 801-838)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 803 | 35 | `static void anEarthCity()` |  |
 

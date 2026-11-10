@@ -1,6 +1,6 @@
-# OrderSearchCheck.java - 941 lines · 23 methods · 17 constants · harnesses
+# OrderSearchCheck.java - 942 lines · 23 methods · 17 constants · harnesses
 
-`ham/citybuildersim/OrderSearchCheck.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OrderSearchCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > The order searches against the countdowns they replaced (0.7.54; the order's size is a formula since BA1).
 > 
@@ -62,7 +62,7 @@
 
 **Uses:** [Game](Game.md) (45), [LongPlaytest](LongPlaytest.md) (33), [Mortgage](Mortgage.md) (20), [BusinessInvestment](BusinessInvestment.md) (16), [BuildingsTemplate](BuildingsTemplate.md) (13), [GameFiles](GameFiles.md) (8), [SpreadPlanner](SpreadPlanner.md) (3), [BusinessDebtManager](BusinessDebtManager.md) (3), [ScaleCheck](ScaleCheck.md) (2), [TreasuryFund](TreasuryFund.md) (2), [LandManager](LandManager.md) (2), [WantedPosts](WantedPosts.md) (1), [TempDirs](TempDirs.md) (1)
 
-**Used by (3):** [InvestCheck](InvestCheck.md), [ScaleCheck](ScaleCheck.md), [ShortSellingCheck](ShortSellingCheck.md)
+**Used by (2):** [InvestCheck](InvestCheck.md), [ShortSellingCheck](ShortSellingCheck.md)
 
 ## Sections
 
@@ -70,12 +70,12 @@
 |---:|---|
 | 197 | · 1. a long run, every order watched |
 | 235 | · 2. the same city, a thousand times over |
-| 406 | 3. the trim's search on its own |
-| 473 | 4. Mortgage.decide() on a grid |
-| 537 | 5. a window a bond opens, caused (OS1) |
-| 666 | 6. the order's size is the gap and the plots (BA1) |
-| 742 | THE WATCH: every order the game decides, asked of the countdown too |
-| 856 | THE COUNTDOWNS, AS THEY STOOD IN 0.7.53 (and the size's, as BA1's formula counts it) |
+| 407 | 3. the trim's search on its own |
+| 474 | 4. Mortgage.decide() on a grid |
+| 538 | 5. a window a bond opens, caused (OS1) |
+| 667 | 6. the order's size is the gap and the plots (BA1) |
+| 743 | THE WATCH: every order the game decides, asked of the countdown too |
+| 857 | THE COUNTDOWNS, AS THEY STOOD IN 0.7.53 (and the size's, as BA1's formula counts it) |
 
 ## Constants
 
@@ -92,12 +92,12 @@
 | 155 | `OrderSearchCheck.TWIN_RATE` | `.40` | The policy rate the twin's months are held at (FW9, 2026-10-25). |
 | 303 | `OrderSearchCheck.TWIN_TILLS` | `{.25,.5 }` | The shares of its whole cost the twin's till is put at under its largest order (tillsAsTheLine()). |
 | 312 | `OrderSearchCheck.TWIN_LEAST_ORDER` | `4 * Game.COUNTDOWN_SLICES` | ...AT LEAST THIS MANY OF ITS KIND (FC1, 2026-11-02). |
-| 540 | `OrderSearchCheck.WINDOW_ORDER` | `94` | The order the window is caused in: Retail's Convenience Stores, more than the counted slices and past the doubling's steps (94, 78, 76, 72, 64, 48, 16, 1) of the window. |
-| 542 | `OrderSearchCheck.WINDOW_TILLS` | `{ 2, 4 }` | The slices the till pays for, which fail at the sector's own rate: two and four, so the doubling's last step (slice 1) is not in the window... |
-| 544 | `OrderSearchCheck.WINDOW_ROOMS` | `{ 3, 6, 9 }` | ...and how many slices past the till the bank's room reaches, which a bond raises whole and may pass: a window of that many at most. |
-| 546 | `OrderSearchCheck.WINDOW_PROFIT_FROM` | `.005` | The profit of a building the sweep starts at, as a share of a twelfth of its cost (a building that earns its cost a year at 100%)... |
-| 548 | `OrderSearchCheck.WINDOW_PROFIT_TO` | `1` | ...ends at... |
-| 550 | `OrderSearchCheck.WINDOW_PROFIT_STEP` | `1.04` | ...and steps by. |
+| 541 | `OrderSearchCheck.WINDOW_ORDER` | `94` | The order the window is caused in: Retail's Convenience Stores, more than the counted slices and past the doubling's steps (94, 78, 76, 72, 64, 48, 16, 1) of the window. |
+| 543 | `OrderSearchCheck.WINDOW_TILLS` | `{ 2, 4 }` | The slices the till pays for, which fail at the sector's own rate: two and four, so the doubling's last step (slice 1) is not in the window... |
+| 545 | `OrderSearchCheck.WINDOW_ROOMS` | `{ 3, 6, 9 }` | ...and how many slices past the till the bank's room reaches, which a bond raises whole and may pass: a window of that many at most. |
+| 547 | `OrderSearchCheck.WINDOW_PROFIT_FROM` | `.005` | The profit of a building the sweep starts at, as a share of a twelfth of its cost (a building that earns its cost a year at 100%)... |
+| 549 | `OrderSearchCheck.WINDOW_PROFIT_TO` | `1` | ...ends at... |
+| 551 | `OrderSearchCheck.WINDOW_PROFIT_STEP` | `1.04` | ...and steps by. |
 
 ## Fields (state)
 
@@ -106,73 +106,73 @@
 | 71 | `static int fails` |  |
 | 72 | `static PrintStream out` |  |
 | 73 | `static PrintStream quiet` |  |
-| 747 | `final Game g` |  |
-| 748 | `int invested, investedDiffer, trimmed, refused, searched, deepest, largestInvested` |  |
-| 749 | `int mostDeskCalls, mostCountDeskCalls, overBound` |  |
-| 750 | `int mortgaged, mortgagedDiffer, mortgagedTrimmed, mortgagedRefused, largestMortgage` |  |
-| 752 | `int carried, mortgageCarried` | BA1: orders whose whole size carried an interest over its cost's own (the carry over 1), judged on their interest and on a mortgage; the most the carry grew a cost by. |
-| 753 | `double mostCarry` |  |
-| 755 | `int mortgageUnnamed` | BA1: landlords' orders whose building the hook's costs did not name to one template. |
-| 756 | `String firstDiffer` |  |
-| 758 | `BusinessInvestment.Decision biggest` | The largest order judged on its interest so far (FR8, tillsAsTheLine()). |
+| 748 | `final Game g` |  |
+| 749 | `int invested, investedDiffer, trimmed, refused, searched, deepest, largestInvested` |  |
+| 750 | `int mostDeskCalls, mostCountDeskCalls, overBound` |  |
+| 751 | `int mortgaged, mortgagedDiffer, mortgagedTrimmed, mortgagedRefused, largestMortgage` |  |
+| 753 | `int carried, mortgageCarried` | BA1: orders whose whole size carried an interest over its cost's own (the carry over 1), judged on their interest and on a mortgage; the most the carry grew a cost by. |
+| 754 | `double mostCarry` |  |
+| 756 | `int mortgageUnnamed` | BA1: landlords' orders whose building the hook's costs did not name to one template. |
+| 757 | `String firstDiffer` |  |
+| 759 | `BusinessInvestment.Decision biggest` | The largest order judged on its interest so far (FR8, tillsAsTheLine()). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 69 | 873 | **type** `public class OrderSearchCheck` | The order searches against the countdowns they replaced (0.7.54; the order's size is a formula since BA1). |
+| 69 | 874 | **type** `public class OrderSearchCheck` | The order searches against the countdowns they replaced (0.7.54; the order's size is a formula since BA1). |
 | 157 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 162 | 5 | `static void same(String label, long actual, long expected)` |  |
 | 168 | 5 | `static void quietly(Runnable r)` |  |
 | 174 | 20 | `public static void main(String[] args) throws Exception` |  |
 | 195 | 106 | `static void run(Path root) throws Exception` |  |
 | 324 | 18 | `static void tillsAsTheLine(Game twin, Watch w)` | THE TWIN'S DEEP TRIMS, CAUSED (FR8, 2026-10-28). |
-| 348 | 30 | `static void playtestCity(Game g, int months, PrintStream quiet)` | The default playtest's city (LongPlaytest.main's seed 0): its founding by hand, then its rhythm to `months` (playtestRhythm()), all of it told to `quiet`. |
-| 380 | 25 | `static void playtestRhythm(Game g, int months, PrintStream quiet)` | ...and the playtest's rhythm to `months`: a skip of its lengths, the schools, the advisor's moves and two months. |
+| 349 | 30 | `static void playtestCity(Game g, int months, PrintStream quiet)` | The default playtest's city (LongPlaytest.main's seed 0): its founding by hand, then its rhythm to `months` (playtestRhythm()), all of it told to `quiet`. |
+| 381 | 25 | `static void playtestRhythm(Game g, int months, PrintStream quiet)` | ...and the playtest's rhythm to `months`: a skip of its lengths, the schools, the advisor's moves and two months. |
 
-### 3. the trim's search on its own (lines 406-472)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 408 | 64 | `static void search()` |  |
-
-### 4. Mortgage.decide() on a grid (lines 473-536)
+### 3. the trim's search on its own (lines 407-473)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 475 | 61 | `static void grid()` |  |
+| 409 | 64 | `static void search()` |  |
 
-### 5. a window a bond opens, caused (OS1) (lines 537-665)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 562 | 10 | `static ham.citybuildersim.sectors.SpreadPlanner.MoneyGate windowGate(double room)` | THE WINDOW'S GATE (OS1). |
-| 584 | 81 | `static void window(Path root) throws Exception` | THE WINDOW, CAUSED (OS1, 2026-11-01). |
-
-### 6. the order's size is the gap and the plots (BA1) (lines 666-741)
+### 4. Mortgage.decide() on a grid (lines 474-537)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 676 | 65 | `static void orderSizes(Game g)` | ORDER SIZE, A FORMULA (BA1). |
+| 476 | 61 | `static void grid()` |  |
 
-### THE WATCH: every order the game decides, asked of the countdown too (lines 742-855)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 746 | 109 | **type** `static final class Watch implements BusinessInvestment.OrderWatch` |  |
-| 760 | 1 | `Watch(Game g)` _(in OrderSearchCheck.Watch)_ |  |
-| 763 | 27 | `public void invested(BusinessInvestment.Decision d, double cash, double perUnitProfit, Game.Afford found)` _(in OrderSearchCheck.Watch)_ |  |
-| 792 | 20 | `public void mortgaged(int asked, IntToDoubleFunction costOf, double cash, double noiPerUnit, double annualRate, Mortgage.Decisi...` _(in OrderSearchCheck.Watch)_ |  |
-| 819 | 15 | `IntToDoubleFunction carryOfTheOrder(int asked, IntToDoubleFunction costOf)` _(in OrderSearchCheck.Watch)_ | The carry the game grew the landlord's shortfall by (Game.lenderReads(): BusinessInvestment.carryOf() of the building at the insured rate). |
-| 835 | 1 | `void note(String s)` _(in OrderSearchCheck.Watch)_ |  |
-| 837 | 11 | `void report(String what)` _(in OrderSearchCheck.Watch)_ |  |
-| 849 | 5 | `void verdicts(String what)` _(in OrderSearchCheck.Watch)_ |  |
-
-### THE COUNTDOWNS, AS THEY STOOD IN 0.7.53 (and the size's, as BA1's formula counts it) (lines 856-941)
+### 5. a window a bond opens, caused (OS1) (lines 538-666)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 865 | 7 | `static int sizedByCount(BusinessInvestment plans, BuildingsTemplate template, double shortfall, double capacityPerUnit)` | BusinessInvestment.orderSize()'s count (BA1): up from one, the first number of buildings whose capacity covers the shortfall, never more than the plots, and one for a building with no capacity to count. |
-| 874 | 23 | `static Mortgage.Decision decidedByCount(int asked, IntToDoubleFunction costOf, double cash, double noiPerUnit, double annualRat...` | Mortgage.decide()'s count: down from what was asked, the lender's test on the shortfall grown by the order's carry (BA1; n -> 1 for none). |
-| 906 | 35 | `static Game.Afford investedByCount(Game g, BusinessInvestment.Decision decision, double cash, double perUnitProfit)` | Game.consider()'s countdown: down from the whole order, the bond desk asked for every slice that borrows - and since 0.7.113 each slice asked the test on what the game's rule tests (Game.orderGate()): its whole cost, ... |
+| 563 | 10 | `static ham.citybuildersim.sectors.SpreadPlanner.MoneyGate windowGate(double room)` | THE WINDOW'S GATE (OS1). |
+| 585 | 81 | `static void window(Path root) throws Exception` | THE WINDOW, CAUSED (OS1, 2026-11-01). |
+
+### 6. the order's size is the gap and the plots (BA1) (lines 667-742)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 677 | 65 | `static void orderSizes(Game g)` | ORDER SIZE, A FORMULA (BA1). |
+
+### THE WATCH: every order the game decides, asked of the countdown too (lines 743-856)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 747 | 109 | **type** `static final class Watch implements BusinessInvestment.OrderWatch` |  |
+| 761 | 1 | `Watch(Game g)` _(in OrderSearchCheck.Watch)_ |  |
+| 764 | 27 | `public void invested(BusinessInvestment.Decision d, double cash, double perUnitProfit, Game.Afford found)` _(in OrderSearchCheck.Watch)_ |  |
+| 793 | 20 | `public void mortgaged(int asked, IntToDoubleFunction costOf, double cash, double noiPerUnit, double annualRate, Mortgage.Decisi...` _(in OrderSearchCheck.Watch)_ |  |
+| 820 | 15 | `IntToDoubleFunction carryOfTheOrder(int asked, IntToDoubleFunction costOf)` _(in OrderSearchCheck.Watch)_ | The carry the game grew the landlord's shortfall by (Game.lenderReads(): BusinessInvestment.carryOf() of the building at the insured rate). |
+| 836 | 1 | `void note(String s)` _(in OrderSearchCheck.Watch)_ |  |
+| 838 | 11 | `void report(String what)` _(in OrderSearchCheck.Watch)_ |  |
+| 850 | 5 | `void verdicts(String what)` _(in OrderSearchCheck.Watch)_ |  |
+
+### THE COUNTDOWNS, AS THEY STOOD IN 0.7.53 (and the size's, as BA1's formula counts it) (lines 857-942)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 866 | 7 | `static int sizedByCount(BusinessInvestment plans, BuildingsTemplate template, double shortfall, double capacityPerUnit)` | BusinessInvestment.orderSize()'s count (BA1): up from one, the first number of buildings whose capacity covers the shortfall, never more than the plots, and one for a building with no capacity to count. |
+| 875 | 23 | `static Mortgage.Decision decidedByCount(int asked, IntToDoubleFunction costOf, double cash, double noiPerUnit, double annualRat...` | Mortgage.decide()'s count: down from what was asked, the lender's test on the shortfall grown by the order's carry (BA1; n -> 1 for none). |
+| 907 | 35 | `static Game.Afford investedByCount(Game g, BusinessInvestment.Decision decision, double cash, double perUnitProfit)` | Game.consider()'s countdown: down from the whole order, the bond desk asked for every slice that borrows - and since 0.7.113 each slice asked the test on what the game's rule tests (Game.orderGate()): its whole cost, ... |
 

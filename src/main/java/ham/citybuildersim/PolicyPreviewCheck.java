@@ -40,8 +40,10 @@ import java.util.Locale;
  *      the city's own dial the month's duty.
  *   4. THE OTHER READS: the savers' rate the bank would choose, between where
  *      it is and where it heads; the compression and the ceiling at another
- *      setting; the floor's cash and founding figures one way and back; every
- *      wage's target moving by the floor's own ratio.
+ *      setting; the floor's cash and founding figures one way and back; the
+ *      floor lifting only the wages under it (WG1: the posts filled in the jobs
+ *      it reaches, none when it stays under every target, the city's own payroll
+ *      job by job, the job cover).
  *   5. AFTER A LOAD the take at the city's own policy is the saved month's.
  *   6. APPLIED, THE PREVIEW IS THE MODEL: the same dials set on the city
  *      read as the copy did; the take struck on the copy is the take struck
@@ -577,17 +579,117 @@ public class PolicyPreviewCheck {
         LabourMarket lm = g.getLabourMarket();
         double floor = lm.getMinimumWage();
         assertTrue("the floor in founding money comes back from its cash figure", Math.abs(lm.floorForCash(lm.cashAt(floor * 1.3)) - floor * 1.3) <= 1e-12);
-        boolean targets = true;
-        for (JobType job : JobType.values()) {
-            targets &= Math.abs(lm.targetWageAt(job, floor * 1.1) - 1.1 * lm.targetWageAt(job, floor)) <= 1e-9
-                    && lm.targetWageAt(job, floor * 1.1) >= lm.cashAt(floor * 1.1) - 1e-12;
+        theFloorsMove(g);
+    }
+
+    /**
+     * THE FLOOR LIFTS ONLY THE WAGES UNDER IT (WG1; it moved every wage by its own ratio until then): a job's target at a floor is its own, or the floor in
+     * today's money where that is more (LabourMarket.targetWageAt() has the floor only in its max(), and targetWageAt(job, 0) is the ladder's own). So a
+     * floor raised past the lowest rungs and under college's moves the posts filled in those rungs alone, one under every target moves nobody and the
+     * wage bill not at all, the city's own payroll moves job by job through the three sums the month makes, and the floor takes home what a full-time job
+     * at it takes home.
+     */
+    static void theFloorsMove(Game g) {
+        LabourMarket lm = g.getLabourMarket();
+        PopulationManager pm = g.getPopulationManager();
+        double floor = lm.getMinimumWage();
+        JobType[] jobTypes = JobType.values();
+        long[] posts = pm.getJobs();
+        double[] fill = pm.getJobFillRate();
+        double[] own = new double[jobTypes.length], inForce = new double[jobTypes.length];
+        double dearest = 0, cheapestCollege = Double.MAX_VALUE;
+        for (JobType job : jobTypes) {
+            int i = job.ordinal();
+            own[i] = lm.targetWageAt(job, 0);
+            inForce[i] = lm.targetWageAt(job, floor);
+            dearest = Math.max(dearest, own[i]);
+            if (WageBand.of(job) == WageBand.COLLEGE || WageBand.of(job) == WageBand.UNIVERSITY) cheapestCollege = Math.min(cheapestCollege, own[i]);
         }
-        assertTrue("every job's target moves by the floor's own ratio, and none is under the floor in today's money", targets);
-        assertTrue("...so a floor ten per cent up moves every wage, and the city's own payroll - the teachers', the doctors' and nurses' and the research posts' (R3b) - by ten per cent once walked",
-                Math.abs(PolicyPreview.wageMoveAt(g, floor * 1.1) - 1.1) <= 1e-12
-                && near(PolicyPreview.cityPayrollAt(g, floor * 1.1),
-                        (g.getEducation().getPayroll() + g.getHealthcare().getPayroll() + g.getEconomyManager().getResearchPayroll()) * PolicyPreview.wageMoveAt(g, floor * 1.1))
-                && near(PolicyPreview.cityPayrollAt(g, floor), g.getEducation().getPayroll() + g.getHealthcare().getPayroll() + g.getEconomyManager().getResearchPayroll()));
+        boolean targets = true;
+        for (JobType job : jobTypes) {
+            int i = job.ordinal();
+            double staged = lm.cashAt(floor * 1.1);
+            targets &= Math.abs(lm.targetWageAt(job, floor * 1.1) - Math.max(own[i], staged)) <= 1e-9
+                    && lm.targetWageAt(job, floor * 1.1) >= staged - 1e-12 && inForce[i] >= lm.cashMinimumWage() - 1e-12;
+        }
+        assertTrue("every job's target is its own or the floor in today's money, whichever is more - the floor is in the max and nowhere else - and none is under the floor", targets);
+
+        // (a) a floor raised past the unskilled and diploma wages and under college's
+        double lowRungs = Math.max(own[JobType.NO_DIPLOMA.ordinal()], own[JobType.DIPLOMA.ordinal()]);
+        double stagedA = lm.floorForCash((lowRungs + cheapestCollege) / 2);
+        out.println("   the ladder's own wages: unskilled " + own[JobType.NO_DIPLOMA.ordinal()] + ", diploma " + own[JobType.DIPLOMA.ordinal()] + ", the cheapest college and up "
+                + cheapestCollege + "; the floor in force " + lm.cashMinimumWage() + ", staged " + lm.cashAt(stagedA));
+        assertTrue("fixture: the lowest rungs sit under college and up on the ladder, and the staged floor is past the floor in force", lowRungs < cheapestCollege && lm.cashAt(stagedA) > lm.cashMinimumWage());
+        PolicyPreview.FloorMove move = PolicyPreview.floorMoveAt(g, stagedA);
+        double expectedWorkers = 0, payNow = 0, payThen = 0, billNow = 0, billThen = 0;
+        boolean collegeStill = true;
+        for (JobType job : jobTypes) {
+            int i = job.ordinal();
+            double filled = posts[i] * fill[i], then = Math.max(own[i], lm.cashAt(stagedA));
+            billNow += filled * inForce[i];
+            billThen += filled * then;
+            if (own[i] < lm.cashAt(stagedA)) {
+                expectedWorkers += filled;
+                payNow += filled * inForce[i];
+                payThen += filled * then;
+            } else {
+                collegeStill &= lm.targetWageAt(job, stagedA) == inForce[i];
+            }
+        }
+        assertTrue("fixture: there are people in the lowest rungs, and in college and up", expectedWorkers > 0 && collegeStill);
+        assertTrue("the floor moves the posts filled in the jobs whose wage is under it (" + move.workers() + " of them), and no one in college and up",
+                Math.abs(move.workers() - expectedWorkers) <= 1e-9 * expectedWorkers);
+        assertTrue("...their pay a month at the floor in force and at the staged one are the hand sums, and it rises",
+                Math.abs(move.payNow() - payNow) <= 1e-9 * payNow && Math.abs(move.payThen() - payThen) <= 1e-9 * payThen && move.payThen() > move.payNow());
+        assertTrue("...and the city's whole wage bill moves by the same money, no one else's pay moving: billThen - billNow = payThen - payNow",
+                Math.abs(move.billNow() - billNow) <= 1e-9 * billNow && Math.abs(move.billThen() - billThen) <= 1e-9 * billThen
+                && Math.abs((move.billThen() - move.billNow()) - (move.payThen() - move.payNow())) <= 1e-9 * move.billNow()
+                && Math.abs(PolicyPreview.wageBillMoveAt(g, stagedA) - billThen / billNow) <= 1e-12);
+        PolicyPreview.FloorMove everyone = PolicyPreview.floorMoveAt(g, lm.floorForCash(1.2 * dearest));
+        assertTrue("a floor past the dearest job moves every post filled, as PopulationManager.getJobsFilled() counts them",
+                Math.abs(everyone.workers() - pm.getJobsFilled()) <= .5 && Math.abs(everyone.payThen() - everyone.billThen()) <= 1e-9 * everyone.billThen());
+
+        // (b) a floor moved under every target: the floor in force binds no job, so none is moved by a floor that stays under them all
+        double cheapest = Double.MAX_VALUE;
+        for (JobType job : jobTypes) if (posts[job.ordinal()] > 0) cheapest = Math.min(cheapest, own[job.ordinal()]);
+        double stagedB = floor * .9;
+        assertTrue("fixture: the floor in force and the one staged under it are both under every target of a job with posts (the cheapest is " + cheapest + ", the floor " + lm.cashMinimumWage() + ")",
+                lm.cashMinimumWage() < cheapest && lm.cashAt(stagedB) < lm.cashMinimumWage());
+        PolicyPreview.FloorMove none = PolicyPreview.floorMoveAt(g, stagedB);
+        assertTrue("a floor moved under every target moves no one, and the wage bill not at all",
+                none.workers() == 0 && none.payNow() == none.payThen() && none.billNow() == none.billThen() && PolicyPreview.wageBillMoveAt(g, stagedB) == 1);
+
+        // (c) the city's own payroll, job by job
+        assertTrue("the city's own payroll at the floor in force is the payroll the city pays", PolicyPreview.cityPayrollAt(g, floor) == PolicyPreview.cityPayroll(g));
+        assertTrue("...and a floor that reaches none of the staff's jobs moves it by nothing", PolicyPreview.cityPayrollAt(g, stagedB) == PolicyPreview.cityPayroll(g));
+        double raised = lm.floorForCash(1.2 * dearest);
+        double[] now = new double[jobTypes.length], then = new double[jobTypes.length];
+        for (JobType job : jobTypes) {
+            now[job.ordinal()] = lm.targetWageAt(job, floor);
+            then[job.ordinal()] = lm.targetWageAt(job, raised);
+        }
+        BuildingManager bm = g.getBuildingManager();
+        double staffMove = 0, teachers = bm.getCategoryPayroll(BuildingType.EDUCATION, then, fill) - bm.getCategoryPayroll(BuildingType.EDUCATION, now, fill),
+                nurses = bm.getCategoryPayroll(BuildingType.HEALTHCARE, then, fill) - bm.getCategoryPayroll(BuildingType.HEALTHCARE, now, fill);
+        double[] researchFill = g.getResearchFill() != null ? g.getResearchFill() : fill;
+        for (ResearchCatalog.Field f : ResearchCatalog.Field.values()) {
+            int held = g.getResearch().posts(f);
+            if (held > 0) staffMove += Research.payroll(f, held, then, researchFill) - Research.payroll(f, held, now, researchFill);
+        }
+        staffMove += teachers + nurses;
+        assertTrue("fixture: a floor past the dearest job lifts the teachers' and the nurses' pay (by " + teachers + " and " + nurses + ")", teachers > 0 && nurses > 0);
+        assertTrue("...and the city's own payroll rises by those staff's posts filled times their move, the hand sum through getCategoryPayroll at the two target arrays",
+                Math.abs(PolicyPreview.cityPayrollAt(g, raised) - (PolicyPreview.cityPayroll(g) + staffMove)) <= 1e-9 * (PolicyPreview.cityPayroll(g) + staffMove)
+                && PolicyPreview.cityPayrollAt(g, raised) > PolicyPreview.cityPayroll(g));
+
+        // (d) what the floor takes home against what living alone costs
+        HouseholdAccounts hh = g.getHouseholds();
+        double alone = hh.rentPerHousehold() + hh.shoppingPerHead() + hh.feesPerHead();
+        double takeHome = lm.cashMinimumWage() * (1 - g.getEconomyManager().getTaxPolicy().payslipShare(WageBand.NONE));
+        assertTrue("fixture: living alone costs something in this city (" + alone + ") and the payslip takes a share of the floor",
+                alone > 0 && takeHome < lm.cashMinimumWage() && takeHome > 0);
+        assertTrue("the floor's job cover is what a full-time job at it takes home over what living alone costs (" + PolicyPreview.floorJobCover(g) + ")",
+                hh.costOfLivingAlone() == alone && Math.abs(PolicyPreview.floorJobCover(g) - takeHome / alone) <= 1e-12);
     }
 
     /* ============================ 8. THE FUND'S WITHDRAWAL (0.7.48) ============================ */

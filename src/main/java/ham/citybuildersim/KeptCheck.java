@@ -8664,6 +8664,15 @@ public class KeptCheck {
         }
         GameFiles files = GameFiles.scratch("keptcheck");
         Game g = fx(() -> LongPlaytest.probeCity(files, null));
+        // WG1 (2026-11-10): the floor at the going rate, the wage this city was written against, set before the months that matter (a 1900 town has no floor
+        // law to 1918, and a floor that is not law moves no one's pay). A new city's floor is .85 of the going rate now (a real minimum, WG1), and on that path
+        // the desk's pictures stood still for the six months watched in section 64: the DeskBars on The book, the PathChart on a line's page, the BuybackLadder
+        // on Close it now and the Columns on the Finances hub drew again in 0 of 6 months, and the DeskCurve on The book kept 5 of 6 of its pictures; with the
+        // floor at the going rate, main's path, they move and the section reads as it was written.
+        fx(() -> {
+            g.getLabourMarket().setMinimumWage(g.getLabourMarket().getGoingRate());
+            return null;
+        });
         fx(() -> {
             LongPlaytest.probePlay(g, CITY_MONTHS);
             return null;

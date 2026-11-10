@@ -1,6 +1,6 @@
-# KeptCheck.java - 8,853 lines · 201 methods · 43 constants · harnesses
+# KeptCheck.java - 8,862 lines · 201 methods · 43 constants · harnesses
 
-`ham/citybuildersim/KeptCheck.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/KeptCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each
 > month's redraw run over last month's nodes ends exactly where a page built new would, and costs
@@ -166,7 +166,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 332 | 8522 | **type** `public class KeptCheck` | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exactly where a page built new would, and costs a fraction of it. |
+| 332 | 8531 | **type** `public class KeptCheck` | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exactly where a page built new would, and costs a fraction of it. |
 | 336 | 5 | `static void check(String label, boolean ok)` |  |
 | 343 | 4 | `static void check(String label, boolean ok, String found)` | The same, with what was found printed under a failure (R3b, sections 99 to 101). |
 | 360 | 5 | `static<T> T fx(Callable<T> c) throws Exception` |  |
@@ -481,7 +481,7 @@
 | 8099 | 24 | `static void kp2bRowsPicture(Game g, KeptBench bench) throws Exception` | Section 93: the Rankings table's picture (KP2b), the one node on the page that paints its rows. |
 | 8129 | 53 | `static void kp2bRankings(Game g, KeptBench bench) throws Exception` | Section 92 on the Rankings tab (KP7, taken into KP2b): the page as it opens, each board, money, prices and conversion, some measures (every tenth, the last and the first no real place is ranked on), each filter, Aroun... |
 
-### THE DRAWER'S BAR, THE CONSTRUCTION TAB AND THE SPEED'S READING (UP7): sections 94 and 98 (lines 8183-8853)
+### THE DRAWER'S BAR, THE CONSTRUCTION TAB AND THE SPEED'S READING (UP7): sections 94 and 98 (lines 8183-8862)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -492,5 +492,5 @@
 | 8453 | 4 | `static void drawHeader(KeptBench bench) throws Exception` | The header drawn kept and laid out, as the clock's redraw leaves it. |
 | 8463 | 183 | `static void up7Speed(Game g, KeptBench bench) throws Exception` | Section 98: the speed's reading (UP7). |
 | 8648 | 9 | `static boolean onceEach(KeptBench.Sets s)` | Whether a draw wrote the reading's words once and its style once, and nothing else. |
-| 8658 | 195 | `public static void main(String[] args) throws Exception` |  |
+| 8658 | 204 | `public static void main(String[] args) throws Exception` |  |
 

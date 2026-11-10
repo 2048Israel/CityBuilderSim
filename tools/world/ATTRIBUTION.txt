@@ -154,6 +154,22 @@ Consumer Price Index for All Urban Consumers, CPI-U (US Bureau of Labor Statisti
   Licence: Public domain (a US government work)
   Used for: the US's prices 2015-2025, which turn a year's US$ into 2015 dollars
 
+The wage ladder and the minimum wage (the game's code: PayTier, LabourMarket; WG1, 2026-11-10)
+
+Not part of world-1.bin: the figures are in the game's code. The ladder's rungs are occupation medians at 173 hours a
+month; the minimum wage starts at 0.85 of the unskilled rung, Nova Scotia's legal minimum over the labourer's median.
+
+Wages (Employment and Social Development Canada, Job Bank), Nova Scotia occupation medians
+  Credit:  Contains information licensed under the Open Government Licence - Canada.
+  Licence: Open Government Licence - Canada (https://open.canada.ca/en/open-government-licence-canada)
+  Used for: every rung of the wage ladder (PayTier), from the material-handling labourer's $20.00 an hour up
+  Source:  https://open.canada.ca/data/en/dataset/adad580f-76b0-4502-bd05-20c125de9116
+
+Nova Scotia's minimum wage ($17.00 an hour from 1 October 2026)
+  Credit:  none required: a rate fixed in regulation is a fact
+  Used for: where a new city's minimum wage starts, $17.00 over $20.00 of the unskilled rung
+  Source:  https://novascotia.ca/lae/employmentrights/minimumwage.asp
+
 land-2024: the nations' land prices (WN5, 2026-11-01)
 
 land-2024.json (src/main/resources/world/) is each nation's land a hectare in US dollars of 2024: 25 published
@@ -181,3 +197,26 @@ Foreign Exchange Rates, G.5A (Federal Reserve)
   Credit:  Board of Governors of the Federal Reserve System, G.5A Foreign Exchange Rates (annual), January 5, 2026
   Licence: Public domain (a US government work)
   Used for: the euro's and the Canadian dollar's 2024 averages, which turn the published prices into US dollars
+
+gold-usd-annual: gold's price (GD1, 2026-11-10)
+
+gold-usd-annual.csv (src/main/resources/) is gold's price a year, 1971 to 2025, as the US Geological Survey publishes it.
+Before 1971 the game's gold is at the US statutes' prices: the Gold Standard Act of 14 March 1900 and Proclamation
+2072 of 31 January 1934 under the Gold Reserve Act, US federal law in the public domain. After 2025, and on the
+Random path after July 1971, its price is the game's own rule, whose monthly swing is a figure measured from the
+World Bank's monthly gold price; no figure of that series ships.
+
+Gold Statistics, Data Series 140 (US Geological Survey)
+  Credit:  U.S. Geological Survey, Gold statistics, compiled by K.E. Porter, E.B. Amey, M.W. George and K.N.
+           Sheaffer, in Historical statistics for mineral and material commodities in the United States: U.S.
+           Geological Survey Data Series 140 (ds140-gold-2022.xlsx, last modified November 20, 2023)
+  Licence: Public domain (a US government work; the page's Sources/Usage: Public Domain)
+  Used for: gold's price 1971-2022, the unit value of a metric ton (Engelhard's average quotation from 1968)
+  Source:  https://www.usgs.gov/media/files/gold-historical-statistics-data-series-140
+
+Mineral Commodity Summaries 2026 (US Geological Survey)
+  Credit:  National Minerals Information Center, 2026, U.S. Geological Survey Mineral Commodity Summaries 2026 Data
+           Release: U.S. Geological Survey data release, https://doi.org/10.5066/P1WKQ63T
+  Licence: CC0 1.0 (the data release's rights statement); the publication is a US government work
+  Used for: gold's price 2023-2025, dollars a troy ounce (2025 estimated by the USGS from January to November)
+  Source:  https://www.usgs.gov/centers/national-minerals-information-center/mineral-commodity-summaries

@@ -459,6 +459,28 @@ final class MapView {
     /** Whether boats - or since 0.8.2 trains, and since 0.8.8 trucks - are in view (the frame goes on), and the clock they were last drawn at. */
     private boolean boatsLive;
     private double drawnClock = Double.NaN;
+
+    /** The most yard pictures kept at once (HB2): each is one box of pixels, so the cap bounds what a pan over a big harbour holds. */
+    private static final int YARD_IMAGES_KEPT = 256;
+    /** The most new yard pictures painted in one frame (HB2): a first frame over a big harbour paints them over several, the rest left as the tile drew them. */
+    private static final int YARDS_A_FRAME = 12;
+    /** What a yard picture is made from (HB2): the box, its side and type, and the kind, stock level and rail bits it is drawn at. */
+    private record YardKey(long x0, long y0, int w, int h, int type, int side, HarbourYard.Kind kind, int level, int rail) { }
+    /** The yard pictures, the latest used kept (YARD_IMAGES_KEPT): the screen's thread's. */
+    private final Map<YardKey, WritableImage> yardImages = new LinkedHashMap<>(64, 0.75f, true) {
+        @Override protected boolean removeEldestEntry(Map.Entry<YardKey, WritableImage> e) { return size() > YARD_IMAGES_KEPT; }
+    };
+    /** The one-plot pictures of the quay track between two boxes, by sea side, and of a lead behind a box, by sea side and end (side * 2, one more for the high end); made when first drawn. */
+    private final WritableImage[] gapImages = new WritableImage[4], leadImages = new WritableImage[8];
+    /** The tonnes a month the terminals standing handle by kind (Ports.berths()), the game month and the shore (and its version) they were found for: found once a month, not once a work. */
+    private double[] yardBerths;
+    private int yardBerthsMonth = Integer.MIN_VALUE;
+    private CityShore yardBerthsShore;
+    private long yardBerthsVersion;
+    /** The works by their berth (QuayCrane.worksByBerth()), and the shore (and its version) they were found for: found again only when the shore moves. */
+    private Map<Long, CityShore.Work> craneWorks = Map.of();
+    private CityShore craneShore;
+    private long craneVersion;
     private final AnimationTimer pump = new AnimationTimer() {
         @Override public void handle(long now) { tick(); }
     };
@@ -1101,6 +1123,7 @@ final class MapView {
             if (level == MapFrame.FAR) drawNodes(gc, f);
             else {
                 drawTiles(gc, f, level);
+                harbourYards(gc, f);
                 harbourQuay(gc, f);
                 boats(gc, f, level);
                 trains(gc, f, level);
@@ -1296,7 +1319,8 @@ final class MapView {
         double s = f.scale();
         // From MapFrame.DETAIL_FROM in a docked boat lies alongside its quay where it fits (BoatSchedule.berthed()), weighed against every boat docked
         // at t, not the frame's, so panning never turns a boat; the lookup is a binary search a route, and only a frame that holds a docked boat asks.
-        for (BoatSchedule.Boat b : schedule.drawn(schedule.frame(x0, y0, x1, y1, t), t, s, shownMap.shore())) {
+        List<BoatSchedule.Boat> shown = schedule.drawn(schedule.frame(x0, y0, x1, y1, t), t, s, shownMap.shore());
+        for (BoatSchedule.Boat b : shown) {
             double bx = f.screenX(b.x()), by = f.screenY(b.y());
             if (bx < -margin * s || by < -margin * s || bx > f.width() + margin * s || by > f.height() + margin * s) continue;
             int c = ShipShapes.colour(b);
@@ -1320,6 +1344,7 @@ final class MapView {
             gc.setLineWidth(1.2);
             gc.strokePolygon(screenXs(f, hull[0]), screenYs(f, hull[1]), hull[0].length);
         }
+        if (s > MapFrame.DETAIL_FROM) cranes(gc, f, shown, routes, t);
     }
 
     /* ----- the harbour's quay and its boats alongside (HB1, 2026-11-08) ----- */
@@ -1349,6 +1374,157 @@ final class MapView {
             double sx = f.screenX(w.x0()), sy = f.screenY(w.y0());
             gc.strokeRect(sx + 0.5, sy + 0.5, f.screenX(w.x0() + w.w()) - sx - 1, f.screenY(w.y0() + w.h()) - sy - 1);
         }
+    }
+
+    /* ----- the harbour's yards, their stock and the quay's rail (HB2, 2026-11-09) ----- */
+
+    /**
+     * The terminals' yards and the quay's rail as pictures over the tiles' flat boxes and under the walls and the boats, from
+     * MapFrame.DETAIL_FROM in and not below it: each work of the shore that meets the frame as HarbourYard.picture() paints it - its kind
+     * (HarbourYard.kindOf()), its stock at the step its kind's terminals were busy this month (Ports.busy() of the berths found once a game
+     * month, HarbourYard.step()), its rail bits from the map's QuayRail and a train standing on a railed yard that moved cargo - then the
+     * plots of track between the boxes (QuayRail.cells()). It is a picture over the box and not tile paint because the tiles draw from
+     * 3.2 px a plot and the detail starts at DETAIL_FROM, and a stock that steps with the month would make every tile dirty every month.
+     * The pictures are kept (YARD_IMAGES_KEPT) by what they are made from, so a pan or a zoom paints none; a frame paints at most
+     * YARDS_A_FRAME new ones, a work past that is left as the tile drew it and the canvas asked to draw again. Every figure is the model's.
+     */
+    private void harbourYards(GraphicsContext gc, MapFrame f) {
+        if (shownMap == null || ui.game == null || !(f.scale() > MapFrame.DETAIL_FROM)) return;
+        CityShore shore = shownMap.shore();
+        if (shore.isEmpty()) return;
+        Game g = ui.game;
+        if (yardBerths == null || yardBerthsMonth != g.getMonth() || yardBerthsShore != shore || yardBerthsVersion != shore.version()) {
+            yardBerths = Ports.berths(g.getBuildingManager());
+            yardBerthsMonth = g.getMonth();
+            yardBerthsShore = shore;
+            yardBerthsVersion = shore.version();
+        }
+        Ports ports = g.getPorts();
+        QuayRail railed = shownMap.quayRail();
+        BuildingVisual.Type[] types = shownMap.types();
+        Ports.Cargo[] cargos = Ports.Cargo.values();
+        double fx0 = f.plotX(0), fy0 = f.plotY(0), fx1 = f.plotX(f.width()), fy1 = f.plotY(f.height());
+        int fresh = 0;
+        boolean later = false;
+        gc.setImageSmoothing(f.scale() < HarbourYard.PX);
+        for (CityShore.Work w : shore.works()) {
+            if (w.x0() + w.w() <= fx0 || w.x0() >= fx1 || w.y0() + w.h() <= fy0 || w.y0() >= fy1) continue;
+            BuildingVisual.Type type = w.type() >= 0 && w.type() < types.length ? types[w.type()] : null;
+            HarbourYard.Kind kind = HarbourYard.kindOf(type);
+            if (kind == null) continue;
+            int level = 0;
+            if (kind != HarbourYard.Kind.TANKS && type.berth() >= 0 && type.berth() < cargos.length) {
+                level = HarbourYard.step(ports.busy(cargos[type.berth()], yardBerths));
+            }
+            int rail = railed.bits(w);
+            if (rail != 0 && level > 0) rail |= HarbourYard.TRAIN;
+            YardKey key = new YardKey(w.x0(), w.y0(), w.w(), w.h(), w.type(), w.side(), kind, level, rail);
+            WritableImage img = yardImages.get(key);
+            if (img == null) {
+                if (fresh >= YARDS_A_FRAME) {
+                    later = true;
+                    continue;
+                }
+                fresh++;
+                img = imageOf(HarbourYard.picture(w, kind, level, rail), w.w() * HarbourYard.PX, w.h() * HarbourYard.PX);
+                yardImages.put(key, img);
+            }
+            double sx0 = Math.floor(f.screenX(w.x0())), sy0 = Math.floor(f.screenY(w.y0()));
+            double sx1 = Math.floor(f.screenX(w.x0() + w.w())), sy1 = Math.floor(f.screenY(w.y0() + w.h()));
+            gc.drawImage(img, sx0, sy0, sx1 - sx0, sy1 - sy0);
+        }
+        for (long[] c : railed.cells()) {
+            int side = (int) c[3];
+            if (side < 0 || side >= gapImages.length || c[0] + 1 <= fx0 || c[0] >= fx1 || c[1] + 1 <= fy0 || c[1] >= fy1) continue;
+            WritableImage img;
+            if (c[2] == QuayRail.GAP) {
+                img = gapImages[side];
+                if (img == null) img = gapImages[side] = imageOf(HarbourYard.gapCell(side), HarbourYard.PX, HarbourYard.PX);
+            } else {
+                boolean high = c[2] == QuayRail.LEAD_AT_HIGH;
+                int i = side * 2 + (high ? 1 : 0);
+                img = leadImages[i];
+                if (img == null) img = leadImages[i] = imageOf(HarbourYard.leadCell(side, high), HarbourYard.PX, HarbourYard.PX);
+            }
+            double sx0 = Math.floor(f.screenX(c[0])), sy0 = Math.floor(f.screenY(c[1]));
+            gc.drawImage(img, sx0, sy0, Math.floor(f.screenX(c[0] + 1)) - sx0, Math.floor(f.screenY(c[1] + 1)) - sy0);
+        }
+        gc.setImageSmoothing(true);
+        if (later) requestDraw();
+    }
+
+    /** An image of w by h ARGB pixels (non-premultiplied, row by row) for the canvas to draw: a yard's picture or a plot of the quay's rail. */
+    private static WritableImage imageOf(int[] argb, int w, int h) {
+        WritableImage img = new WritableImage(w, h);
+        img.getPixelWriter().setPixels(0, 0, w, h, PixelFormat.getIntArgbInstance(), argb, 0, w);
+        return img;
+    }
+
+    /* ----- the quay's crane (HB2, 2026-11-09) ----- */
+
+    /**
+     * The cranes over the boats docked in the frame (the caller's test is MapView's DETAIL_FROM: not below it), over their ships: for each
+     * docked boat the terminal at the berth its route ends in (QuayCrane.worksByBerth(), found again only when the shore's version moves)
+     * and each of QuayCrane.reaches() at the share of its time at the quay (BoatSchedule.atQuay()), snapped to whole pixels - a line from
+     * the ship to the apron a line-width thick (s / HarbourYard.PX px, at least one) and capped at both ends; on it a box (a grab of ore
+     * for dry bulk) at the hook, or for the hook back bare a bar across the line; a tanker's arm is the line and a block at the apron end.
+     * Where the line, hook and load stand is the model's; this only turns plots into pixels.
+     */
+    private void cranes(GraphicsContext gc, MapFrame f, List<BoatSchedule.Boat> boats, List<BoatSchedule.Route> routes, double t) {
+        CityShore shore = shownMap.shore();
+        if (craneShore != shore || craneVersion != shore.version()) {
+            craneWorks = QuayCrane.worksByBerth(shore);
+            craneShore = shore;
+            craneVersion = shore.version();
+        }
+        if (craneWorks.isEmpty()) return;
+        double s = f.scale();
+        long lw = Math.max(1, Math.round(s / HarbourYard.PX)), box = Math.max(3, Math.round(0.625 * s)), fill = Math.max(1, Math.round(0.375 * s));
+        for (BoatSchedule.Boat b : boats) {
+            int ri = b.call().route();
+            if (!b.docked() || ri < 0 || ri >= routes.size()) continue;
+            BoatSchedule.Berth berth = routes.get(ri).berth();
+            CityShore.Work work = craneWorks.get(QuayCrane.berthKey(berth.x(), berth.y()));
+            double share = BoatSchedule.atQuay(b.call(), t);
+            if (work == null || share < 0) continue;
+            for (QuayCrane.Reach r : QuayCrane.reaches(work, b.call().cargo(), b.x(), b.y(), share)) {
+                // The line is at a right angle to the shore: vertical on the screen (along its y) or horizontal (along its x).
+                boolean vertical = Math.abs(r.y1() - r.y0()) >= Math.abs(r.x1() - r.x0());
+                double sx0 = f.screenX(r.x0()), sy0 = f.screenY(r.y0()), sx1 = f.screenX(r.x1()), sy1 = f.screenY(r.y1());
+                double a0 = Math.round(vertical ? sy0 : sx0), a1 = Math.round(vertical ? sy1 : sx1), dir = a1 >= a0 ? 1 : -1;
+                double left = Math.round((vertical ? sx0 : sy0) - lw / 2.0);
+                gc.setFill(colour(QuayCrane.LINE));
+                fillSpan(gc, vertical, left, left + lw, a0, a1);
+                if (r.load() == QuayCrane.ARM) {
+                    double end = Math.round((vertical ? sy1 : sx1) - 1.5 * lw);
+                    gc.setFill(colour(QuayCrane.BOX_EDGE));
+                    fillSpan(gc, vertical, left - lw, left + 2 * lw, end, end + 3 * lw);
+                    continue;
+                }
+                gc.setFill(colour(QuayCrane.HOOK));
+                fillSpan(gc, vertical, left - lw, left + 2 * lw, a0 - dir * lw, a0);
+                fillSpan(gc, vertical, left - lw, left + 2 * lw, a1, a1 + dir * lw);
+                double hx = f.screenX(r.hx()), hy = f.screenY(r.hy());
+                if (r.load() == QuayCrane.BARE) {
+                    long bar = Math.max(3, fill);
+                    double across = Math.round((vertical ? hx : hy) - bar / 2.0), along = Math.round((vertical ? hy : hx) - lw / 2.0);
+                    fillSpan(gc, vertical, across, across + bar, along, along + lw);
+                    continue;
+                }
+                double bx = Math.round(hx - box / 2.0), by = Math.round(hy - box / 2.0), inset = (box - fill) / 2;
+                gc.setFill(colour(QuayCrane.BOX_EDGE));
+                gc.fillRect(bx, by, box, box);
+                gc.setFill(colour(r.load() == QuayCrane.GRAB ? TileRaster.ORE_HEAP : QuayCrane.BOX_FILL));
+                gc.fillRect(bx + inset, by + inset, fill, fill);
+            }
+        }
+    }
+
+    /** Fills, in the colour set, the rectangle from across0 to across1 and along0 to along1 (the along pair either way round): x is across for a vertical line and y along it, the other way for a horizontal one. */
+    private static void fillSpan(GraphicsContext gc, boolean vertical, double across0, double across1, double along0, double along1) {
+        double lo = Math.min(along0, along1), len = Math.abs(along1 - along0), wide = across1 - across0;
+        if (vertical) gc.fillRect(across0, lo, wide, len);
+        else gc.fillRect(lo, across0, len, wide);
     }
 
     /* =====================================================================
@@ -4865,7 +5041,7 @@ final class MapView {
         // Under the window's header, which stays in view and says the clock (MS1): the head here has no clock line.
         ui.showChartFullScreen(bigPane, null, this::collapse, true);
         ui.panKeysTo(this);
-        setCinematic(ui.isCinematic());     // (TR1) a replay's cinematic mode that is on holds for a map expanded in it
+        setCinematic(ui.cinematicHidesChrome());     // (TR1) a replay's cinematic mode that is on holds for a map expanded in it (TR2: not the form Follow keeps)
         canvas.setCursor(javafx.scene.Cursor.OPEN_HAND);
         boolean before = big != null;
         fitPane();
@@ -5391,6 +5567,12 @@ final class MapView {
         }
         if (card != null) card.setVisible(false);
         dirty = true;
+    }
+
+    /** A view put on the expanded map by hand (TR2: Follow's logged view), as the camera's is; nothing when the map is not over the window or the view is of the other kind of ground. */
+    void replayShowView(CameraPath.View v) {
+        if (!expanded || v == null || (globe == null && big == null)) return;
+        applyCameraView(v);
     }
 
     /** The smooth hand's step: the zoom about its anchor as the wheel's notch is applied, then the pan as a drag's. */

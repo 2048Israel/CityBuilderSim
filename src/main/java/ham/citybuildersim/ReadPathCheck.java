@@ -2315,7 +2315,7 @@ public class ReadPathCheck {
         vault.getVaultInterestUsd(); vault.getVaultInterestUsdLifetime(); vault.getVaultInterest(); vault.getVaultInterestDriver(); vault.getVaultInterestDriverUsd(); vault.getVaultYield();
         for (int k = 0; k < ForeignAccounts.MONEYS; k++) {
             vault.getHolding(k); vault.getHoldingUsd(k); vault.getMoneyUsd(k); vault.hasRate(k);
-            vault.sellableReserves(WorldMoneys.EIGHT.get(k));
+            vault.sellableReserves(ForeignAccounts.codeOf(k));
         }
         TradeLanes.Feed feed = g.getTradeFeed();
         feed.month(); feed.exportsByNation(); feed.importsByNation(); feed.standInLat(); feed.standInLon(); feed.yearToDate(1); feed.nameOf(1);

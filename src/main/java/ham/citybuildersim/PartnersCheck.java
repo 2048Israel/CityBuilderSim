@@ -573,11 +573,11 @@ public class PartnersCheck {
         PolicyRates policy = city.getPolicyRates();
         DebtManager dm = city.getDebtManager();
         VaultView v = VaultView.of(city);
-        assertTrue("eight rows, in the eight's order, named and marked as the vault names them", v.rows().size() == ForeignAccounts.MONEYS);
+        assertTrue("nine rows (ForeignAccounts.MONEYS): the eight in the eight's order, then gold, named and marked as the vault names them", v.rows().size() == ForeignAccounts.MONEYS);
         boolean named = true;
         for (VaultView.Row r : v.rows())
-            named &= r.index() == v.rows().indexOf(r) && r.code().equals(WorldMoneys.EIGHT.get(r.index())) && r.name().equals(ForeignAccounts.MONEY_NAME[r.index()]) && r.mark().equals(ForeignAccounts.MONEY_MARK[r.index()]);
-        assertTrue("...each row's code, name and mark the eight's", named);
+            named &= r.index() == v.rows().indexOf(r) && r.code().equals(ForeignAccounts.codeOf(r.index())) && r.name().equals(ForeignAccounts.MONEY_NAME[r.index()]) && r.mark().equals(ForeignAccounts.MONEY_MARK[r.index()]);
+        assertTrue("...each row's code, name and mark the vault's, and gold's row is the last, XAU", named && v.rows().get(ForeignAccounts.GOLD).code().equals("XAU"));
         assertTrue("the worths add to getReservesUsd() to the bit, and the D$ worth is getReserves()", same(v.worthUsd(), fx.getReservesUsd()) && same(v.worthD(), fx.getReserves()) && v.worthUsd() > 0);
         // a vault of dollars and euros (the euros bought by the last section), and the yen caused now: three moneys
         double spend = Math.min(60_000, city.getCash() / 10);
@@ -600,17 +600,17 @@ public class PartnersCheck {
         close("the shares add to 1", share, 1, 1e-12);
         VaultView.Row usdRow = v.rows().get(0), eur = v.rows().get(1), jpy = v.rows().get(2);
         assertTrue("a vault of three moneys shows all three, their shares as their worths over the vault's (" + String.format("%.3f", usdRow.share()) + ", " + String.format("%.3f", eur.share()) + ", "
-                + String.format("%.3f", jpy.share()) + ") and the other five nothing",
+                + String.format("%.3f", jpy.share()) + ") and the other five, and gold, nothing",
                 usdRow.share() > 0 && eur.share() > 0 && jpy.share() > 0 && Math.abs(eur.share() - eur.worthUsd() / v.worthUsd()) < 1e-12
-                        && v.rows().subList(3, 8).stream().allMatch(r -> r.held() == 0 && r.share() == 0 && r.worthUsd() == 0));
+                        && v.rows().subList(3, ForeignAccounts.MONEYS).stream().allMatch(r -> r.held() == 0 && r.share() == 0 && r.worthUsd() == 0));
         // what is owed, and the policy rates
         boolean owes = true, policies = true;
         for (VaultView.Row r : v.rows()) {
             owes &= same(r.owedOwn(), dm.getForeignPrincipalIn(r.code())) && (r.owedOwn() == 0 ? r.owedUsd() == 0 : same(r.owedUsd(), r.owedOwn() * fx.getMoneyUsd(r.index())));
-            policies &= same(r.policyRate(), policy.rate(r.code())) && Double.isFinite(r.policyRate());
+            policies &= r.index() == ForeignAccounts.GOLD ? Double.isNaN(r.policyRate()) : same(r.policyRate(), policy.rate(r.code())) && Double.isFinite(r.policyRate());
         }
         assertTrue("what the city owes in each is DebtManager's (CD8), in its own units and in US$ (the euro bond: " + String.format("%,.2f", eur.owedOwn()) + " euros)", owes && eur.owedOwn() > 0);
-        assertTrue("each row's policy rate is its central bank's", policies);
+        assertTrue("each row's policy rate is its central bank's, and gold's, which no bank pays, is no number", policies);
         // THE MONTH'S MOVE: a month on, the history's two last figures
         play(city);
         v = VaultView.of(city);
@@ -621,13 +621,21 @@ public class PartnersCheck {
                 moves.see(r.move() == 0, () -> "the US$ moved " + r.move());
                 continue;
             }
+            if (r.index() == ForeignAccounts.GOLD) {
+                // gold's move is the price's own, not the history's (which holds no gold series): this month's price over last month's, less one
+                int at = city.getWorldMoneys().month();
+                double goldWas = city.goldUsdPerOunce(at - 1), goldNow = city.goldUsdPerOunce(at);
+                moves.see(same(r.move(), goldNow / goldWas - 1) && same(r.move(), city.getGoldMove()), () -> "gold moved " + r.move() + ", the price's " + (goldNow / goldWas - 1));
+                finite.see(Double.isFinite(r.move()), () -> "gold has no move");
+                continue;
+            }
             double[] series = history.aligned(HistorySave.worldRateKey(r.code()));
             double was = series[series.length - 2], now = series[series.length - 1];
             moves.see(same(r.move(), was / now - 1), () -> r.code() + " moved " + r.move() + ", the history's " + (was / now - 1));
             finite.see(Double.isFinite(r.move()), () -> r.code() + " has no move");
         }
-        tally("this month's move is the history's units a US$ of last month over this month's, less one (the US$ itself 0)", moves);
-        tally("...and every one of the seven has one", finite);
+        tally("this month's move is the history's units a US$ of last month over this month's, less one (the US$ itself 0; gold's the price's, this month's over last month's, less one)", moves);
+        tally("...and every one of the seven, and gold, has one", finite);
         ForeignAccounts.CrossDriver driver = v.crossDriver();
         assertTrue("the month's cross revaluation (" + String.format("%+,.3f", v.crossUsd()) + " thousand) and its driver (" + (driver == null ? "none" : driver.code()) + ") are the vault's, and its D$ revaluation is too",
                 same(v.crossUsd(), fx.getLastVaultCrossUsd()) && driver != null && driver.equals(fx.getLastVaultCrossDriver()) && same(v.revaluationD(), fx.getLastVaultRevaluation()) && v.crossUsd() != 0);

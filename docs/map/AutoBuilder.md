@@ -1,6 +1,6 @@
 # AutoBuilder.java - 2,381 lines · 153 methods · 13 constants · model
 
-`ham/citybuildersim/AutoBuilder.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/AutoBuilder.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > Automatic building (0.7.73): the city's own works ordered for the player
 > once a month - power, water, the roads and their lines, care, schools and

@@ -478,10 +478,10 @@ public final class CityShore {
         }
     }
 
-    /** The walls as they were made, and what they were made against: the version and the count of works (a list edited by hand moves the count, as the index checks). */
-    private record Walls(long version, int works, Wall[] walls) { }
+    /** The walls and the quay lines as they were made, and what they were made against: the version and the count of works (a list edited by hand moves the count, as the index checks). */
+    private record Walls(long version, int works, Wall[] walls, List<QuayLine> lines) { }
 
-    /** The walls, or null when they are to be made again: a reader takes the set it finds, so a rebuild beside it costs it a stale answer, never a failed one. */
+    /** The walls and lines, or null when they are to be made again: a reader takes the set it finds, so a rebuild beside it costs it a stale answer, never a failed one. */
     private volatile Walls walls;
 
     /**
@@ -502,12 +502,22 @@ public final class CityShore {
         return out;
     }
 
+    /** One quay line: the works whose strips join into one wall, in order along the shore. `from`..`to` (not included) is its span along the shore, `line` its strip's outer edge, as strip() gives them. */
+    public record QuayLine(int side, long line, long from, long to, List<Work> works) { }
+
+    /** The quay lines, cached with the walls and made in the same pass: one for each wall before it is cut round the boxes, in the order of side, line and place along the shore. */
+    public List<QuayLine> quayLines() {
+        return wallsNow().lines;
+    }
+
     private Walls wallsNow() {
         Walls c = walls;
         long v = version;
         int n = works.size();
         if (c != null && c.version() == v && c.works() == n) return c;
-        c = new Walls(v, n, makeWalls());
+        List<QuayLine> lines = new ArrayList<>();
+        Wall[] made = makeWalls(lines);
+        c = new Walls(v, n, made, List.copyOf(lines));
         walls = c;
         return c;
     }
@@ -523,22 +533,31 @@ public final class CityShore {
         }
     }
 
-    /** The walls of walls(): the strips sorted by side, line and place, joined across WALL_JOIN_GAP, each cut round the boxes it meets. */
-    private Wall[] makeWalls() {
-        List<long[]> strips = new ArrayList<>();
+    /** One berthed harbour work and its strip(). */
+    private record Strip(long[] s, Work work) { }
+
+    /** The walls of walls(), and into `lines` the quay lines: the strips sorted by side, line and place, joined across WALL_JOIN_GAP (a group is a line), each group's wall cut round the boxes it meets. */
+    private Wall[] makeWalls(List<QuayLine> lines) {
+        List<Strip> strips = new ArrayList<>();
         for (Work k : works) {
-            if (k.berthed() && k.quay() == HARBOUR_QUAY_PLOTS && k.side() >= 0 && k.side() < DX.length) strips.add(strip(k));
+            if (k.berthed() && k.quay() == HARBOUR_QUAY_PLOTS && k.side() >= 0 && k.side() < DX.length) strips.add(new Strip(strip(k), k));
         }
-        strips.sort((a, b) -> a[0] != b[0] ? Long.compare(a[0], b[0]) : a[1] != b[1] ? Long.compare(a[1], b[1]) : Long.compare(a[2], b[2]));
+        strips.sort((x, y) -> {
+            long[] a = x.s(), b = y.s();
+            return a[0] != b[0] ? Long.compare(a[0], b[0]) : a[1] != b[1] ? Long.compare(a[1], b[1]) : Long.compare(a[2], b[2]);
+        });
         List<Wall> out = new ArrayList<>();
         for (int i = 0; i < strips.size(); ) {
-            long[] a = strips.get(i);
+            long[] a = strips.get(i).s();
             long to = a[3];
             int j = i + 1;
-            while (j < strips.size() && strips.get(j)[0] == a[0] && strips.get(j)[1] == a[1] && strips.get(j)[2] - to <= WALL_JOIN_GAP) {
-                to = Math.max(to, strips.get(j)[3]);
+            while (j < strips.size() && strips.get(j).s()[0] == a[0] && strips.get(j).s()[1] == a[1] && strips.get(j).s()[2] - to <= WALL_JOIN_GAP) {
+                to = Math.max(to, strips.get(j).s()[3]);
                 j++;
             }
+            List<Work> on = new ArrayList<>();
+            for (int m = i; m < j; m++) on.add(strips.get(m).work());
+            lines.add(new QuayLine((int) a[0], a[1], a[2], to, List.copyOf(on)));
             int depth = (int) a[4], len = (int) (to - a[2]);
             long x0, y0;
             int w, h;

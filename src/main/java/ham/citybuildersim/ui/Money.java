@@ -219,6 +219,15 @@ public final class Money {
         return tightMoney(toDollars(thousands), false);
     }
 
+    /** A money figure under this either way, thousands, is too small for a line or a word of its own on a screen: half a thousand of today's (2025's) dollars, priced at the founding's level (times PriceLevel.FACTOR, as every nominal anchor is: EP2), $12.95 of 1900. */
+    public static final double NOTHING = .5 * PriceLevel.FACTOR;
+
+    /** Whether a money figure, thousands, is under NOTHING either way, so a screen says nothing of it (EP2: the literal half-thousand the screens held hid a 1900 city's lines). */
+    public static boolean nothing(double thousands) { return Math.abs(thousands) < NOTHING; }
+
+    /** Whether a money figure, thousands, is NOTHING or more either way, so a screen gives it a line or a word: nothing()'s other side, and false for a figure that is not a number, as the literal test was (EP2). */
+    public static boolean something(double thousands) { return Math.abs(thousands) >= NOTHING; }
+
     /**
      * Somebody else's money, marked as such: "US$" in place of the "$".
      *
@@ -243,9 +252,10 @@ public final class Money {
      * The balance-of-payments ledger reads in millions on every line but one,
      * and moneyFull() printed that one as "-$336,443" beside "+$51.2M". A
      * column that changes units line to line is a column nobody can scan.
+     * A figure that rounds to no dollars prints "$0", and only that one (EP2).
      */
     public static String signedTight(double thousands, boolean negate) {
-        if (Math.abs(thousands) < .5) return "$0";
+        if (Math.round(Math.abs(toDollars(thousands))) == 0) return money(0);
         boolean minus = negate != (thousands < 0);
         return (minus ? "\u2212" : "+") + money(Math.abs(thousands));
     }
@@ -255,9 +265,10 @@ public final class Money {
      *
      * "-$0" reads as a direction, and there was not one. Same rule as the
      * treasury bridge, which learned it first.
+     * A figure that rounds to no dollars prints "$0", and only that one (EP2).
      */
     public static String signed(double thousands, boolean negate) {
-        if (Math.abs(thousands) < .5) return "$0";
+        if (Math.round(Math.abs(toDollars(thousands))) == 0) return money(0);
         boolean minus = negate != (thousands < 0);
         return (minus ? "\u2212" : "+") + moneyFull(Math.abs(thousands));
     }

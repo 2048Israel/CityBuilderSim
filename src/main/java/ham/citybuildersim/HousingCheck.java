@@ -834,6 +834,10 @@ public class HousingCheck {
         long started = System.currentTimeMillis();
         Game held = new Game(GameFiles.scratch("housing-held-rate"));
         held.newGame();
+        // WG1 (2026-11-10): the floor at the going rate, the wage this fixture was written against (RN1, 2026-11-09), before a month has run. A new city's
+        // floor is .85 of the going rate now (a real minimum, WG1), and on that path the city held at 15% closed no home in its 240 months (the landlords' debt on
+        // closed homes at the end 0.000 of it, the largest lift on a leg that took it 1.725); with the floor at the going rate, main's path, 0.106 of it.
+        held.getLabourMarket().setMinimumWage(held.getLabourMarket().getGoingRate());
         ham.citybuildersim.sectors.RealEstate re = held.getSectors().realEstate();
         DebtManager dm = held.getDebtManager();
         int run = 0, studioWaived = 0, familyWaived = 0, glutMonths = 0, neitherMonths = 0;

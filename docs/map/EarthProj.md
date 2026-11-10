@@ -1,6 +1,6 @@
 # EarthProj.java - 446 lines · 34 methods · 3 constants · model
 
-`ham/citybuildersim/EarthProj.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EarthProj.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > The real Earth flattened round a city's spot: Lambert's azimuthal
 > equal-area projection on a sphere, forward and inverse, the world's plots
@@ -58,7 +58,7 @@
 
 **Uses:** [World](World.md) (12)
 
-**Used by (25):** [CallPartners](CallPartners.md), [EarthCheck](EarthCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthSite](EarthSite.md), [EarthTerrain](EarthTerrain.md), [EarthTerrainCheck](EarthTerrainCheck.md), [FoundingScreen](FoundingScreen.md), [Geology](Geology.md), [GlobeCheck](GlobeCheck.md), [GlobeFrame](GlobeFrame.md), [GlobePicture](GlobePicture.md), [HydroSites](HydroSites.md), [LandMap](LandMap.md), [LandNationsCheck](LandNationsCheck.md), [LandSellers](LandSellers.md), [LandmassCheck](LandmassCheck.md), [Landmasses](Landmasses.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [NationsMap](NationsMap.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PartnersCheck](PartnersCheck.md), [PartnersView](PartnersView.md), [TradeLanes](TradeLanes.md)
+**Used by (26):** [CallPartners](CallPartners.md), [EarthCheck](EarthCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthSite](EarthSite.md), [EarthTerrain](EarthTerrain.md), [EarthTerrainCheck](EarthTerrainCheck.md), [FoundingScreen](FoundingScreen.md), [Geology](Geology.md), [GlobeCheck](GlobeCheck.md), [GlobeFrame](GlobeFrame.md), [GlobePicture](GlobePicture.md), [HydroSites](HydroSites.md), [LandMap](LandMap.md), [LandNationsCheck](LandNationsCheck.md), [LandSellers](LandSellers.md), [LandmassCheck](LandmassCheck.md), [Landmasses](Landmasses.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [NationsMap](NationsMap.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PartnersCheck](PartnersCheck.md), [PartnersView](PartnersView.md), [PriceLevelCheck](PriceLevelCheck.md), [TradeLanes](TradeLanes.md)
 
 ## Sections
 

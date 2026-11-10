@@ -1733,6 +1733,10 @@ public class CentralBankCheck {
             // put back, before a month has run (MonetaryCheck 5).
             city.getEconomyManager().getTaxPolicy().reset();
             city.getEconomyManager().getTaxPolicy().openAll();
+            // WG1 (2026-11-10): the floor at the going rate, the wage this fixture was written against, before a month has run. A new city's floor is .85 of
+            // the going rate now (a real minimum, WG1), and the unskilled wage then falls to the market's own level in a glut, so the same town at month 72
+            // read a slice of $5.2k against last year's surplus, unused, of $-349.6k; with the floor at the going rate (main's path) the surplus is over the slice.
+            city.getLabourMarket().setMinimumWage(city.getLabourMarket().getGoingRate());
             city.getForeignAccounts().pinRate(1.0);
             // Six depots stand beside the four ordered (PT1-M4): the works department that built 400 points a month for a
             // city nobody staffed is retired, and the founding yard's 160 points built this city's houses so slowly that it

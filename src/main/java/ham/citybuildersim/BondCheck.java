@@ -100,11 +100,14 @@ public class BondCheck {
         out.printf("%-92s %s  %,.9f against %,.9f%n", label, ok ? "OK" : "FAIL", actual, expected);
     }
 
-    /** An audit line against the figure it declares: the audit's detail is written to the cent. */
+    /**
+     * An audit line against the figure it declares, within the model's cent. Until EP2 the line was read from the audit's printed detail, two places of
+     * thousands (a step of $10 at the factor), so this held half a step and a billionth; the line is now the figure the audit recorded (line()), unrounded.
+     */
     static void cents(String label, double line, double figure) {
-        boolean ok = Math.abs(line - figure) <= .005 + 1e-9;
+        boolean ok = Math.abs(line - figure) <= MoneyAudit.CENT;
         if (!ok) fails++;
-        out.printf("%-92s %s  %,.2f against %,.4f%n", label, ok ? "OK" : "FAIL", line, figure);
+        out.printf("%-92s %s  %,.6f against %,.6f%n", label, ok ? "OK" : "FAIL", line, figure);
     }
 
     static void quietly(Runnable r) {
@@ -167,15 +170,9 @@ public class BondCheck {
         return r != null && (Math.abs(r.residual) <= MoneyAudit.CENT || r.relative() <= 1e-7);
     }
 
-    /** One line of a month's audit, by its label: what MoneyAudit declared under it, 0 when it declared nothing. */
+    /** One line of a month's audit, by its label: what MoneyAudit declared under it, as it recorded it (EP2: Result.figure()), 0 when it declared nothing. */
     static double line(MoneyAudit.Result r, String label) {
-        for (String l : r.detail.split("\n")) {
-            String t = l.trim();
-            if (!t.startsWith(label + " ")) continue;
-            String rest = t.substring(label.length()).trim();
-            try { return Double.parseDouble(rest.replace(",", "")); } catch (NumberFormatException e) { return Double.NaN; }
-        }
-        return 0;
+        return r.figure(label);
     }
 
     public static void main(String[] args) throws Exception {
@@ -1635,13 +1632,30 @@ public class BondCheck {
 
     /* ============================ 1c. MATURITY ============================ */
 
+    static CorporateBond largestTheFundHoldsNone(BondMarket bm) {
+        CorporateBond bond = null;
+        for (CorporateBond b : bm.getBonds()) if (!(b.city() > 0) && (bond == null || b.face() > bond.face())) bond = b;
+        return bond;
+    }
+
     static void maturity(Game g) {
         out.println("\n--- 1c. at maturity the issuer pays every holder its face, and the bond and its book go ---");
         BondMarket bm = g.getBondMarket();
+        EconomyManager em = g.getEconomyManager();
         // The largest the city's fund holds none of (0.7.43): 5c's hand
         // bought some, and the classes summed below are the other four.
-        CorporateBond bond = null;
-        for (CorporateBond b : bm.getBonds()) if (!(b.city() > 0) && (bond == null || b.face() > bond.face())) bond = b;
+        CorporateBond bond = largestTheFundHoldsNone(bm);
+        if (bond == null) {
+            // WG1 (2026-11-10): a bond the fund holds none of is issued here, as 7a issues one (the issuer short of cash between months, the desk asked, a month
+            // played). 5c's hand buys part of every bond the company it hands the world's half does not issue; on a new city's .85 floor (a real minimum, WG1) that
+            // company issued none of the seven bonds outstanding at month 39 and the fund held some of each, where on main's path (the floor at the going rate)
+            // one stood unheld. The fixture is the bond, not the company that happened to issue it.
+            em.setSectorCash(ISSUER, -5_000 * PriceLevel.FACTOR - em.getForeignAssets(ISSUER) - bm.faceHeldBy(ISSUER));
+            g.getBusinessInvestment().holdSector(ISSUER);
+            int issues = bm.getLifeIssues();
+            assertTrue("fixture: short of $5M, " + ISSUER + " issued a bond in the month", closes(play(g)) && bm.getLifeIssues() > issues);
+            bond = largestTheFundHoldsNone(bm);
+        }
         assertTrue("fixture: a bond outstanding", bond != null);
         if (bond == null) return;
         bond.maturityMonth = g.getMonth() + 1;

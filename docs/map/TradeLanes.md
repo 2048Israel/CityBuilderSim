@@ -1,6 +1,6 @@
 # TradeLanes.java - 907 lines · 74 methods · 14 constants · model
 
-`ham/citybuildersim/TradeLanes.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TradeLanes.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > The city's trade as routes on the Earth's map, without the toolkit: one lane from the city toward each partner, the lanes that go the same way
 > shared and branching where they part, cut to a view and projected to pixels, each edge once, with the widths of what is sold and what is bought
@@ -28,7 +28,7 @@
 
 **Uses:** [NationsMap](NationsMap.md) (12), [GlobeFrame](GlobeFrame.md) (4), [EarthProj](EarthProj.md) (2), [PriceLevel](PriceLevel.md) (1)
 
-**Used by (10):** [CallPartners](CallPartners.md), [DenominationCheck](DenominationCheck.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [MapView](MapView.md), [NationsMap](NationsMap.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PartnerTrade](PartnerTrade.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
+**Used by (11):** [CallPartners](CallPartners.md), [DenominationCheck](DenominationCheck.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [MapView](MapView.md), [NationsMap](NationsMap.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PartnerTrade](PartnerTrade.md), [PriceLevelCheck](PriceLevelCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
 ## Sections
 

@@ -18,6 +18,101 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.84 — GD2, gold in the vault — 2026-11-10, ready, see docs/queue/GD2-notes.md
+Gold is the vault's ninth reserve, XAU, at the end of its moneys (spec-gold-money 4.2; Jerus, 2026-11-02: "All four,
+mines last (Recommended)"). Game hands GD1's price for the month with the cross rates. Gold earns nothing, is revalued
+as the other moneys are, and leaves largest-first. It comes in only by name or under Choose: the default All US$, the
+world's mix and the trade's never buy it, and it anchors no peg. WorldMoneys.EIGHT stays eight, so the debt and the
+policy rates know no gold. On Trade › The reserves, the exchange gets a Gold chip (the card shows the ounces and gold's
+price), the chosen mix a "Gold (no interest)" row, and the vault table a gold row in ounces and US$. It is saved in
+foreignAccounts' slots 149-151; an older save loads with no gold, and there is no format bump. VaultMoneysCheck 8-12,
+and SaveFileCheck's fixture holds gold. The default mix buys no gold, so the trace is main's: no ensemble.
+
+### 0.9.83 — WG1, a real minimum wage — 2026-11-10, ready, see docs/queue/WG1-notes.md
+The minimum wage was the ladder's anchor: every wage was the floor times its job's ratio, so the dial moved the
+doctor's pay with the labourer's and 94% of workers were paid exactly the floor. The ladder now rests on the going
+rate, what an unskilled post pays where there are exactly enough workers, and the floor lifts only the wages under
+it; a new city's starts at 85% of the going rate, Nova Scotia's $17.00 over a labourer's $20.00 Job Bank median
+(Jerus, 2026-11-02). The floor can be tied to prices (the default, as before), to the average wage at a share, or to
+nothing, a cash figure inflation wears down; the tie is saved. The Policy floor page says who it holds: pinned at the
+floor or at the market's own bottom over it; its preview counts the workers a staged floor moves, the wage bill
+and the city's own payroll, job by job. The ensemble scores 25/26 against 0.9.63's 24/26. No save format change: an
+old city's floor was the going rate and loads as a real minimum there. Passed by name: LongPlaytest's layout-ring
+finding at m2400, a known class left for DM2 (Jerus, 2026-11-04).
+
+### 0.9.82 — HB2, the harbour's detail: its stock, its rail and a crane — 2026-11-10, ready, see docs/queue/HB2-notes.md
+Jerus's picks from the renders, 1a, 2a and 3a, on the map from the 500 m scale bar in. Each terminal's box is HB1's open
+yard as a picture (`HarbourYard`), its stock at one of eight steps by how busy its kind's terminals were in the month
+billed (`Ports.busy()`: sea tonnes both ways over the standing berths' month; nothing saved). The railway lays a quay
+spur to each quay line within half a district of the main line, from behind a box (`CityRuns.QUAY`, an arm on none of
+the model's track, the sidecar's format as it was); the terminals on a railed line show their quay track, joined across
+the gaps, and a train of wagons in a month their kind moved cargo (`QuayRail`). At a docked boat a crane's line carries
+a box, or a grab of ore, between ship and apron, two moves a call, two cranes at a long berth, a tanker two still arms
+(`QuayCrane`, `BoatSchedule.atQuay()`). PortCheck 11 and the new QuayRailCheck and QuayCraneCheck hold the model; the
+screen (`MapView.harbourYards`, `cranes`) was not seen in the window. A Bergen played 2,400 months gets two spurs and
+five railed terminals, Sydney and Perth none (their ports lie past the reach). The default trace is main's: no ensemble.
+
+### 0.9.81 — GD1, gold's price — 2026-11-10, ready, see docs/queue/GD1-notes.md
+`GoldPrice` gives US$ a fine troy ounce for any month of either path, a pure function of the path, the seed and the
+month, never saved (spec-gold-money 4.1; Jerus, 2026-11-02: "All four, mines last (Recommended)"). The Gold Standard
+Act's US$20.6718 from 1900, a ten-month path from April 1933 to Proclamation 2072's US$35, US$35 to July 1971. On
+Historical, the USGS's annual price to 2025 at each July, the months between them log-linear (gold-usd-annual.csv:
+Data Series 140, public domain; Mineral Commodity Summaries 2026, CC0). After it, and on Random from August 1971, an
+AR(1) in gold's real price toward 2006-2025's mean, US$48.3 of 1900: 4.749% a month, a half-life of ten years. The
+Credits page carries the two USGS sources. GoldPriceCheck: the pars to the bit, the table's months, a broken table
+refused, the rule's slope 0.99405 against PHI 0.99424 and its sd 0.04754 against SIGMA 0.04749, a reload continuing
+the path. Nothing reads it yet (GD2 puts it in the vault), so the trace is main's: no ensemble.
+
+### 0.9.80 — EP2, the figures a screen hides under a threshold, at 1900's price level — 2026-11-10, ready, see docs/queue/EP2-notes.md
+The screens said nothing of a money line under a literal half-thousand, $500 at today's prices and $19,300 of today
+at 1900's: a young city's interest not in cash, its uplift, a coupon or a holder's share said "nothing owed", "none"
+or nothing at all. One cut-off now, `Money.NOTHING`, half a thousand of today's dollars at the founding's level
+($12.95 of 1900), in 66 tests on the Government, Finances, Trade, Bank and Fund pages and the window. The signed
+ledger formats print "$0" only for a figure that rounds to no dollars (they printed it up to $499), and the Portfolio
+folds a holding under a thousand of today's dollars at the founding's level ($26). The trade map's floor was already
+in real terms (TP1). The audit's figures are kept by label beside its printed lines, so HoldersCheck, BondCheck and
+ConstructionTrapCheck read them unrounded, at the model's cent. NewGameCheck's water-plant bond runs on the Random
+path again as well as Historical. PriceLevelCheck 10 counts the lanes drawn, the holdings folded and every live line
+shown, the same at the factor and at today's prices every month: 0 of 50,544 flags differ, and 11,050 lines the old
+cut-off hid now show. The model is untouched.
+
+### 0.9.79 — WP1, world prices chained, a study — 2026-11-09, ready, see docs/queue/WP1-notes.md
+CU1's ★1 as Jerus took it: the January in which a made good costs its inputs in that nation plus a conversion,
+designed, prototyped and measured (docs/studies/spec-world-prices.md; the prototype, tables and the refining
+charge's record in docs/studies/world-prices/). Over thirteen worlds and 330 years rod stays on its cathode (1.00
+of the literals' ratio; main 2.4-2.7), all 60 goods calibrate as today and the chain costs no time. An input must
+be read at the cheapest maker's landed price; the price file's one-parent table mends copper only, the works' own
+recipes hold every works near its literal; the roots anchored at the reference city keep copper on its path, where
+main's falls to a third. Chained, seeds 0-3 have no copper industry and live on fabricated steel and cars, as well
+off as main's to m1800 and at half its copper seeds' income a head at m2400. No yearly record of the refining
+charge may ship as a data source; the charge is money, not a share. Main's solve can leave the numbers for good
+(crude, two drawn worlds); CU2 carries the guard. Eight calls; CU2's brief is the note's last section. No model change.
+
+### 0.9.78 — ST3, a town of ScaleCheck's own plan — 2026-11-09, ready, see docs/queue/ST3-notes.md
+ScaleCheck section 6 no longer copies the playtest's town at a month re-picked thirteen times since 0.7.62. It plays a
+town of its own plan (`ScaleCheck.ownTown()`), no advisor: the playtest's founding, the property tax at 4% (the one tax
+open before 1916; at 1.5% the treasury stood at 100-400, and section 9's cash and the free ground missed), the advisor's
+services each kept ahead on its own need, and Low-Rise Apartments when the landlords' family pressure passes 1. Every
+line holds in 26 of the 33 months from 164 to 196 (5,800-8,100 people), at the factor and at factor 1;
+`FREE_FIXTURE_MONTHS` is 175, the middle of 170-180. Section 9 holds the bank's branches in both copies as it holds the
+sectors (`BusinessInvestment.holdBranches()`, harness-only; RE2's 975 of 1,000 closed in month 1), and ScaleCheck plays
+LD2's wage. Main's two ScaleCheck reds are gone. Found: a building stack's quantity is an int, which a ten-billion city
+housed in Houses reaches (SQ1 queued), and a town of 4,000 in 1910 buys whole cars, which parts a copy's savings. No
+model change; the trace is main's.
+
+### 0.9.77 — TR2, the ghost cursor and Follow in replay — 2026-11-09, ready, see docs/queue/TR2-notes.md
+Replay can play the player's own input back: Follow (the bar's button, or L) runs the month on view in real time of
+play at 0.5x to 4x, idle stretches skipped by default, and his clicks, drags, the wheel and his keys land in the copy as
+the scene would deliver them (`ui/Reenactor`), so tabs switch, pages scroll, the map pans and hover cards show; months
+turn when the log says, each loaded whole, and a join mid-month starts from its marker. The window is set to the logged
+size first. The ghost cursor (H) is his pointer with a ripple at each press, shown while the copy is on his screen.
+Nothing on a game menu (Save, Load, New city, Quit), under a dialog, on the rail's Menu or the clock, the clock's keys,
+F11, or Esc and P where they open the menu is re-enacted (`ui/FollowRules`); the viewer's press, wheel, key or a move of
+8 px ends Follow. TR1's review's four follow-ups are in (a failed log write stops, a save's recording id only of the
+recorder's shape, a first write after a load clears the later months first and every task queued behind one that cannot
+writes nothing, a month that autosaves filled once). ReplayCheck 7-10 (10 in the real window). Recording is off by
+default and Follow lives in replay: no ensemble.
+
 ### 0.9.76 — LB5, the city in play is matched on its founding cash too — 2026-11-09, ready, see docs/queue/LB5-notes.md
 LB4's review follow-ups. `SavedCities.Played` took a saved slot for the city in play on its name and world seed alone,
 so a re-found on the same name and world (a second try) was marked "this city, as saved" beside the city it replaced;

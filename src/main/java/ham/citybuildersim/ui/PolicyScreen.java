@@ -404,9 +404,9 @@ final class PolicyScreen {
     /** Each area's (i): what it holds (the landing's row blurbs until 0.7.36). */
     static String areaInfo(String area) {
         return switch (area) {
-            case WAGES -> "The floor under every wage in the city, including the city's own. Every other wage is a "
-                    + "multiple of it, so moving it moves all of them - and it is why unemployment exists in this "
-                    + "game at all: a surplus at the floor cannot be priced away, so it leaves.";
+            case WAGES -> "The least any job in the city may pay, the city's own included. The ladder rests on the going "
+                    + "rate and the floor lifts only the wages under it - and it is why unemployment exists in this "
+                    + "game at all: a surplus paid the floor cannot be priced away, so it leaves.";
             case MONEY -> "The price of money, and the units it is counted in: the policy rate under every other "
                     + "rate in the city, the rule beside it, what people expect prices to do and how far they trust "
                     + "the bank, the central bank's holdings and its ceiling, how the currency is held - floating, leaning, in a "
@@ -1328,7 +1328,7 @@ final class PolicyScreen {
         return areaCard(Icons.STAFF, "WAGES", moneyFull(floor) + " a month",
                 bulletBar(labour.getWage(JobType.NO_DIPLOMA), floor, Palette.MONEY, 0,
                         "the unskilled wage, " + moneyFull(labour.getWage(JobType.NO_DIPLOMA)) + ", against the floor's tick"),
-                "every wage is a multiple of it · " + (pinned == 0 ? "no band is pinned"
+                "the least any job may pay · " + (pinned == 0 ? "no band is pinned"
                         : pinned + (pinned == 1 ? " band is" : " bands are") + " pinned to it"),
                 "the city's own payroll " + money(payroll) + " · teachers, doctors, nurses and researchers", () -> open(WAGES, null));
     }
@@ -1442,7 +1442,8 @@ final class PolicyScreen {
             if (labour.isPinned(band) && surplus > 0) {
                 out.add(new Flag(Palette.WARN, band.label() + " cannot get any cheaper",
                         String.format("%,.0f more of them than there is work, and their wage "
-                        + "is already at the floor. They leave the city instead of taking "
+                        + "is already " + (labour.isPaidTheFloor(band) ? "at the floor" : "as low as the market goes")
+                        + ". They leave the city instead of taking "
                         + "less.", surplus), WAGES, "The floor", "The floor"));
             }
         }
@@ -2537,13 +2538,14 @@ final class PolicyScreen {
     /* =====================================================================
        WAGES - the floor
 
-       EVERY OTHER WAGE IS A MULTIPLE OF THIS ONE, which is what makes it a
-       decision rather than a dial: raising it does not merely protect
-       labourers, it lifts the doctor's pay in the same proportion and the
-       city's own hospital payroll with it.
+       THE LEAST ANY JOB MAY PAY (WG1), which is what makes it a decision
+       rather than a dial: the ladder rests on the going rate and the floor
+       lifts only the wages under it, so raising it protects the labourers and
+       the lowest rungs and reaches the doctor's pay, and the city's own
+       payroll with it, only once it is raised past them.
 
-       And it is the reason unemployment exists in this game at all. The
-       unskilled band's base IS the minimum wage, so an oversupply of labourers
+       And it is the reason unemployment exists in this game at all. Where the
+       floor is over the unskilled band's own bottom, an oversupply of labourers
        cannot be priced away - the wage has nowhere to fall. The adjustment has
        to happen in people instead, and Migration turns that surplus into
        departures. Lower the floor and the market clears by price; raise it and
@@ -2562,20 +2564,59 @@ final class PolicyScreen {
        ===================================================================== */
 
     /** P22, the floor's (i). */
-    static final String FLOOR_INFO = "Every wage in the city is a multiple of this number, so moving it moves "
-            + "all of them - including the doctors, nurses and teachers the city pays out of its "
-            + "own treasury, and the researchers in the posts its research grants buy. Wages walk to their new level over about a year rather "
-            + "than jumping, so a change made now is a bill met slowly.";
+    static final String FLOOR_INFO = "The least any job may pay. The ladder rests on the going rate - what an unskilled "
+            + "post pays where there are exactly enough workers - and the floor lifts only the wages under it: under the "
+            + "going rate it binds only in a glut, and over it it holds the bottom of the ladder up, the surplus leaving "
+            + "rather than getting cheaper. The doctors, nurses and teachers the city pays out of its own treasury, and the "
+            + "researchers in the posts its research grants buy, are paid above it, so it reaches them only if it is raised "
+            + "past their pay. Wages walk to their new level over about a year rather than jumping, so a change made now is "
+            + "a bill met slowly.";
 
-    /** P23, both forms. */
+    /** P23, three forms (WG1): a band pinned with people spare AND paid the floor itself - the binding minimum wage. */
     static final String PINNED_WORDS = "At least one skill level is oversupplied AND cannot get any cheaper, so "
             + "those workers are leaving the city rather than taking a pay cut. That is "
             + "what a binding minimum wage does: the market clears in people instead of "
             + "in price. Lowering the floor would keep them, and pay them less.";
-    /** ...the other: no band pinned. */
+    /** ...a band pinned with people spare at the market's own bottom, above the floor: the floor is under them. */
+    static final String PINNED_ABOVE_WORDS = "At least one skill level is oversupplied and paid as little as the market "
+            + "goes, so those workers are leaving the city rather than taking a pay cut. The floor is under them, not "
+            + "at them: lowering it would change nothing.";
+    /** ...no band pinned and nobody paid the floor. */
     static final String FREE_WORDS = "No skill level is pinned against the floor, so the labour market is "
             + "clearing on price alone and the minimum wage is not currently binding "
             + "on anybody.";
+
+    /** ...no band pinned, but some are paid the floor itself: how many, and that none is short of work at it. */
+    static String paidTheFloorWords(double workers) {
+        long n = Math.round(workers);
+        return people(workers) + (n == 1 ? " worker is" : " workers are") + " paid the floor itself, and no skill level "
+                + "is short of work at it: the minimum wage is lifting their pay, and the labour market is still "
+                + "clearing on price.";
+    }
+
+    /** What the floor page says of the labour market, one of the four forms above (the model's isPinned(), isPaidTheFloor() and workersPaidTheFloor()). */
+    static String floorSays(LabourMarket market, PopulationManager people) {
+        boolean pinnedAtFloor = false, pinnedAbove = false;
+        for (WageBand band : WageBand.values()) {
+            if (!market.isPinned(band) || people.surplusInBand(band) <= 0) continue;
+            if (market.isPaidTheFloor(band)) pinnedAtFloor = true;
+            else pinnedAbove = true;
+        }
+        if (pinnedAtFloor) return PINNED_WORDS;
+        if (pinnedAbove) return PINNED_ABOVE_WORDS;
+        double paid = 0;
+        for (double w : people.workersPaidTheFloor(market)) paid += w;
+        return paid > 0 ? paidTheFloorWords(paid) : FREE_WORDS;
+    }
+
+    /** What the floor is tied to, in words (WG1): the tip on its rule and the dial card's (i) say it the same way. */
+    String floorTieWords(LabourMarket market) {
+        return switch (market.getFloorTie()) {
+            case PRICES -> moneyFull(market.getMinimumWage()) + " at founding prices, lifted by the cost of living";
+            case AVERAGE_WAGE -> pct0(market.getTieShare()) + " of the average wage, " + moneyFull(ui.game.getPopulationManager().getAverageWage());
+            case NOTHING -> "a cash figure, fixed until moved: inflation wears it down";
+        };
+    }
 
     /** P24. */
     static final String FLOOR_CAVEAT = "Once wages have walked there, which takes about a year. Nothing about "
@@ -2589,9 +2630,7 @@ final class PolicyScreen {
         double want = staged("floor", floor);
         boolean moved = isStaged("floor");
 
-        boolean anyPinned = false;
-        for (WageBand band : WageBand.values()) anyPinned |= market.isPinned(band) && people.surplusInBand(band) > 0;
-        String says = anyPinned ? PINNED_WORDS : FREE_WORDS;
+        String says = floorSays(market, people);
 
         addShutCard(page, PolicyDates.Lever.MINIMUM_WAGE);
         page.getChildren().add(sectionHead("THE WAGE LADDER", FLOOR_INFO, quiet(moved
@@ -2601,7 +2640,7 @@ final class PolicyScreen {
         page.getChildren().add(fold("floor:table", "the ladder as a table, in today's money", () -> floorTable(market, want, moved)));
     }
 
-    /** The eleven jobs under their bands on one scale, the floor a rule across them; a band's chip says whether it is pinned (LabourMarket.isPinned(), as the model has it). */
+    /** The eleven jobs under their bands on one scale, the floor a rule across them; a band's chip says whether it is pinned (LabourMarket.isPinned(), as the model has it) and, pinned, whether it is paid the floor itself (isPaidTheFloor()) or the market's bottom over it. */
     Node wageLadder(LabourMarket market, PopulationManager people, double floor, double want, boolean moved) {
         double cash = market.cashMinimumWage(), cashThen = market.cashAt(want);
         List<ScaleRow> rows = new ArrayList<>();
@@ -2610,7 +2649,8 @@ final class PolicyScreen {
             boolean pinned = market.isPinned(band);
             double surplus = people.surplusInBand(band);
             String chip = pinned && surplus > 0 ? "pinned · " + people(surplus) + " spare"
-                    : pinned ? "at the floor" : "has room" + (surplus > 0 ? " · " + people(surplus) + " spare" : "");
+                    : pinned ? (market.isPaidTheFloor(band) ? "at the floor" : "at the market's bottom")
+                    : "has room" + (surplus > 0 ? " · " + people(surplus) + " spare" : "");
             rows.add(ScaleRow.of(band.label(), null, List.of()).strong()
                     .tag(chip, pinned && surplus > 0 ? Palette.WARN : Palette.TEXT_LABEL));
             for (JobType job : JobType.values()) {
@@ -2627,7 +2667,7 @@ final class PolicyScreen {
         }
         List<Rule> rules = new ArrayList<>();
         rules.add(new Rule(cash, Palette.TEXT_HEAD, false, "the floor " + moneyFull(cash),
-                "The floor in today's money: " + moneyFull(market.getMinimumWage()) + " at founding prices, lifted by the cost of living.", null));
+                "The floor in today's money: " + floorTieWords(market) + ".", null));
         if (moved) rules.add(new Rule(cashThen, Palette.ACCENT, true, "staged " + moneyFull(cashThen), "The floor as staged, in today's money.", null));
         return scaleRows(rows, scale * 1.05, rules, 220, 170, 12);
     }
@@ -2640,12 +2680,14 @@ final class PolicyScreen {
         double want = staged("floor", floor);
         double payroll = PolicyPreview.cityPayroll(ui.game);
         DoubleFunction<List<Effect>> effects = floorEffects(market);
-        String info = FLOOR_INFO + " The dial is set in founding money - " + moneyFull(floor) + " a month at founding "
+        String info = FLOOR_INFO + " The floor is tied to " + market.getFloorTie().label() + ": " + floorTieWords(market)
+                + ". The dial is set in founding money - " + moneyFull(floor) + " a month at founding "
                 + "prices - and read in today's: the cost of living and the "
                 + String.format("%+.0f%%", market.getMinimumWageAdjustment() * 100) + " nudge make it "
                 + moneyFull(market.cashMinimumWage()) + ". One step is a two-hundredth of the dial's range.";
         return dialCard(new DialCard(Icons.STAFF, Palette.MONEY, "THE FLOOR", info,
-                moneyFull(market.cashMinimumWage()) + " a month", "Every wage in the city is a multiple of this number.",
+                moneyFull(market.cashMinimumWage()) + " a month",
+                "Lifts only the wages under it; unskilled work goes for " + moneyFull(market.cashGoingRate()) + " at the going rate.",
                 null, ladder, want, effects, "Once wages have walked there, about a year.", FLOOR_CAVEAT,
                 applyFoot("floor", "Set the floor to " + moneyFull(market.cashAt(want)), () -> ui.game.setMinimumWage(want))),
                 380, false);
@@ -2659,7 +2701,9 @@ final class PolicyScreen {
                         .delta(PolicyScreen::moneyMoveFull),
                 Effect.of("The unskilled job's wage", market.getWage(JobType.NO_DIPLOMA),
                         market.targetWageAt(JobType.NO_DIPLOMA, v), Money::moneyFull).delta(PolicyScreen::moneyMoveFull),
-                Effect.of("Every wage, once walked", 1, PolicyPreview.wageMoveAt(ui.game, v),
+                Effect.of("Workers it moves", 0, PolicyPreview.floorMoveAt(ui.game, v).workers(), Money::people)
+                        .info("The people in the jobs whose wage heads for a different level at this floor: the wages under it. Everyone else's is unchanged."),
+                Effect.of("The wage bill, once walked", 1, PolicyPreview.wageBillMoveAt(ui.game, v),
                         x -> String.format("%+.1f%%", unsigned0((x - 1) * 100, 1)).replace('-', '−')),
                 Effect.of("The city's own payroll", payroll, PolicyPreview.cityPayrollAt(ui.game, v), PolicyScreen::amount)
                         .delta(PolicyScreen::moneyMove).info("The teachers, the doctors and nurses and the researchers in the posts its research grants buy."));
@@ -2670,15 +2714,15 @@ final class PolicyScreen {
         Education schools = ui.game.getEducation();
         Healthcare hospitals = ui.game.getHealthcare();
         return card(cardHead(Icons.GOVERNMENT, Palette.MONEY, "WHAT THE CITY ITSELF PAYS",
-                        "The teachers, doctors and nurses, and the researchers in the posts its research grants buy, on the city's own payroll: every one "
-                        + "of their wages is a multiple of the floor too, so the floor is a bill the treasury pays as well as one it sets.", null),
+                        "The teachers, doctors and nurses, and the researchers in the posts its research grants buy, on the city's own payroll. They are paid "
+                        + "above the floor, so it reaches their pay only where it is over it: then the floor is a bill the treasury pays as well as one it sets.", null),
                 cardLine("Teachers", money(schools.getPayroll()), null),
                 cardLine("Doctors and nurses", money(hospitals.getPayroll()), null),
                 cardLine("Researchers in the research posts", money(ui.game.getEconomyManager().getResearchPayroll()), null),
                 cardLine("Its own payroll", money(PolicyPreview.cityPayroll(ui.game)), Palette.TEXT_HEAD));
     }
 
-    /** The ladder as a table (W2), behind "details", in today's money: each job's multiple of the floor, what it is paid, and where it heads at a staged floor. */
+    /** The ladder as a table (W2), behind "details", in today's money: each job's multiple of the going rate (LabourMarket.ratio()), what it is paid, and where it heads at a staged floor. */
     Node floorTable(LabourMarket market, double want, boolean moved) {
         GridPane ladder = grid(new double[] {220, 100, 120, 120},
                 new javafx.geometry.HPos[] {javafx.geometry.HPos.LEFT, javafx.geometry.HPos.RIGHT,
@@ -3626,7 +3670,7 @@ final class PolicyScreen {
         int kept = fx.getPegAnchor();
         if (!isStaged(XR_ANCHOR)) return kept;
         int k = (int) Math.round(staged(XR_ANCHOR, kept));
-        return k >= 0 && k < ForeignAccounts.MONEYS && (k == 0 || fx.hasRate(k)) ? k : kept;
+        return k >= 0 && k < WorldMoneys.EIGHT.size() && (k == 0 || fx.hasRate(k)) ? k : kept;
     }
 
     /** A money's mark as the page shows it (WN4b): the US$'s as the page has always written it (Currency.FOREIGN_SYMBOL), the others' without the franc's trailing space: "€", "CHF" (pure). */
@@ -4027,13 +4071,13 @@ final class PolicyScreen {
      */
     private List<Node> anchorPicker(ForeignAccounts fx, boolean inForce) {
         boolean choice = false;
-        for (int k = 1; k < ForeignAccounts.MONEYS; k++) choice |= fx.hasRate(k);
+        for (int k = 1; k < WorldMoneys.EIGHT.size(); k++) choice |= fx.hasRate(k);
         if (!choice) return List.of();
         int kept = fx.getPegAnchor(), want = stagedAnchor(fx);
         // Kept (KP6): a chip is a scope of its own per money, so a rate that appears or goes is one chip more or less and not a page rebuilt.
         return Kept.scope("anchors", () -> {
             FlowPane chips = Kept.flow(8, 6);
-            for (int k = 0; k < ForeignAccounts.MONEYS; k++) {
+            for (int k = 0; k < WorldMoneys.EIGHT.size(); k++) {
                 if (k != 0 && !fx.hasRate(k)) continue;
                 int money = k;
                 chips.getChildren().add(Kept.scope("anchor:" + money, () -> {

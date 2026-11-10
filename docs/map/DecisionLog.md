@@ -1,6 +1,6 @@
 # DecisionLog.java - 213 lines · 24 methods · 10 constants · model
 
-`ham/citybuildersim/DecisionLog.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DecisionLog.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > What the player decided, and when: every change of a policy and every
 > spend at scale, one short line each, at the month it was made (0.7.23).
@@ -46,7 +46,7 @@
 
 **Uses:** [Formats](Formats.md) (1)
 
-**Used by (40):** [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [CentralBank](CentralBank.md), [CentralBankCheck](CentralBankCheck.md), [ChartCheck](ChartCheck.md), [ChartModel](ChartModel.md), [DataSave](DataSave.md), [DebtManager](DebtManager.md), [Education](Education.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundCheck](FundCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [HistoryScreen](HistoryScreen.md), [Icons](Icons.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [LabourMarket](LabourMarket.md), [LongPlaytest](LongPlaytest.md), [OilCheck](OilCheck.md), [PegAnchorCheck](PegAnchorCheck.md), [PolicyDates](PolicyDates.md), [PolicyDatesCheck](PolicyDatesCheck.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [ResearchScreen](ResearchScreen.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md), [SaveFileCheck](SaveFileCheck.md), [TaxPolicy](TaxPolicy.md), [TimeChart](TimeChart.md), [TimeSkipReport](TimeSkipReport.md), [TradeScreen](TradeScreen.md), [YearBook](YearBook.md), [YearBookCheck](YearBookCheck.md), [ZoningViewCheck](ZoningViewCheck.md)
+**Used by (41):** [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [CentralBank](CentralBank.md), [CentralBankCheck](CentralBankCheck.md), [ChartCheck](ChartCheck.md), [ChartModel](ChartModel.md), [DataSave](DataSave.md), [DebtManager](DebtManager.md), [Education](Education.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundCheck](FundCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [HistoryScreen](HistoryScreen.md), [Icons](Icons.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [LabourCheck](LabourCheck.md), [LabourMarket](LabourMarket.md), [LongPlaytest](LongPlaytest.md), [OilCheck](OilCheck.md), [PegAnchorCheck](PegAnchorCheck.md), [PolicyDates](PolicyDates.md), [PolicyDatesCheck](PolicyDatesCheck.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [ResearchScreen](ResearchScreen.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md), [SaveFileCheck](SaveFileCheck.md), [TaxPolicy](TaxPolicy.md), [TimeChart](TimeChart.md), [TimeSkipReport](TimeSkipReport.md), [TradeScreen](TradeScreen.md), [YearBook](YearBook.md), [YearBookCheck](YearBookCheck.md), [ZoningViewCheck](ZoningViewCheck.md)
 
 ## Sections
 

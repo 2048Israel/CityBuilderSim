@@ -1,6 +1,6 @@
-# PriceLevelCheck.java - 1,093 lines · 42 methods · 19 constants · harnesses
+# PriceLevelCheck.java - 1,326 lines · 50 methods · 20 constants · harnesses
 
-`ham/citybuildersim/PriceLevelCheck.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PriceLevelCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > A city founded at 1900's prices is today's real economy with every dollar multiplied by one factor, and this is how we know (EP1, Jerus
 > 2026-10-30: "1900 price level"; docs/studies/spec-1900-start.md 2).
@@ -42,11 +42,15 @@
 >      the history rounded a table's money to a fixed hundredth of a thousand (PartnerTrade.HISTORY_ROUND), a thirty-eight times coarser
 >      rounding at the factor, and Game.cityExportPriceLevel() weights the world's prices by those rounded exports, so the second January's
 >      terms of trade, and the D$, were another's by month 24.
+>  10. THE SCREENS' CUT-OFFS (EP2), at the factor and at today's prices, over the default founding's two children, the built city's and the town's: the partners given
+>      a lane (TradeLanes.of over the feed, at minLane()), the holdings folded and shown (FundView.FOLD_UNDER) and every live nominal line
+>      ui.Money.something() shows are the same every month, a lane is drawn somewhere, and the lines the old half-thousand would have hidden
+>      are there at the factor and none at today's prices. Section 8 is left out: its twin parts on series of its own (main's record).
 > 
 > The one oracle for "today's figure" is the child at today's prices: a constant that is read there is the figure as the class writes it, so
 > nothing in this file copies a literal from the model.
 
-**Uses:** [PriceLevel](PriceLevel.md) (50), [LongPlaytest](LongPlaytest.md) (35), [Game](Game.md) (19), [Good](Good.md) (16), [WorldData](WorldData.md) (13), [PayTier](PayTier.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (10), [RealDollar](RealDollar.md) (8), [Nations](Nations.md) (6), [Consumption](Consumption.md) (6), [GameFiles](GameFiles.md) (6), [LabourMarket](LabourMarket.md) (5), [EducationType](EducationType.md) (5), [BuildingManager](BuildingManager.md) (4), [Education](Education.md) (4), [UtilitiesHandler](UtilitiesHandler.md) (4), [BuildingCatalog](BuildingCatalog.md) (3), [HistorySave](HistorySave.md) (3), [CityCalendar](CityCalendar.md) (2), [WorldMoneys](WorldMoneys.md) (2), [TaxPolicy](TaxPolicy.md) (2), [Rankings](Rankings.md) (2), [Mining](Mining.md) (2), [MiningCheck](MiningCheck.md) (2), [TreasuryFund](TreasuryFund.md) (2), [RunWorks](RunWorks.md) (2), [BridgeWorks](BridgeWorks.md) (2), [Sector](Sector.md) (2), [WorldMarket](WorldMarket.md) (1), [WorldDataCheck](WorldDataCheck.md) (1)... and 7 more
+**Uses:** [PriceLevel](PriceLevel.md) (50), [LongPlaytest](LongPlaytest.md) (35), [Game](Game.md) (21), [Good](Good.md) (16), [WorldData](WorldData.md) (15), [PayTier](PayTier.md) (14), [BuildingsTemplate](BuildingsTemplate.md) (10), [RealDollar](RealDollar.md) (8), [LabourMarket](LabourMarket.md) (7), [NationsMap](NationsMap.md) (7), [Nations](Nations.md) (6), [Consumption](Consumption.md) (6), [GameFiles](GameFiles.md) (6), [EducationType](EducationType.md) (5), [TradeLanes](TradeLanes.md) (5), [BuildingManager](BuildingManager.md) (4), [Education](Education.md) (4), [UtilitiesHandler](UtilitiesHandler.md) (4), [BuildingCatalog](BuildingCatalog.md) (3), [HistorySave](HistorySave.md) (3), [FundView](FundView.md) (3), [CityCalendar](CityCalendar.md) (2), [WorldMoneys](WorldMoneys.md) (2), [TaxPolicy](TaxPolicy.md) (2), [Money](Money.md) (2), [Rankings](Rankings.md) (2), [Mining](Mining.md) (2), [MiningCheck](MiningCheck.md) (2), [TreasuryFund](TreasuryFund.md) (2), [RunWorks](RunWorks.md) (2)... and 12 more
 
 **Used by (12):** [BondCheck](BondCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [CreditCheck](CreditCheck.md), [EducationCheck](EducationCheck.md), [ForestryCheck](ForestryCheck.md), [MaterialsCheck](MaterialsCheck.md), [QuarryingCheck](QuarryingCheck.md), [TreasuryCheck](TreasuryCheck.md), [WoodProductsCheck](WoodProductsCheck.md)
 
@@ -54,152 +58,173 @@
 
 | line | section |
 |---:|---|
-| 216 | (untitled) |
-| 270 | 1. THE SERIES |
-| 295 | 2. THE WORLD FILE |
-| 343 | 3. THE FUNNELS |
-| 469 | 4. THE RANKINGS' BRIDGE |
-| 483 | 5. THE NAMED LITERALS AND THE RATIOS |
-| 548 | 6. THE TWIN |
-| 666 | (untitled) |
-| 748 | THE CHILD: found the default city, run it, print what happened |
+| 223 | (untitled) |
+| 279 | 1. THE SERIES |
+| 304 | 2. THE WORLD FILE |
+| 352 | 3. THE FUNNELS |
+| 481 | 4. THE RANKINGS' BRIDGE |
+| 495 | 5. THE NAMED LITERALS AND THE RATIOS |
+| 561 | 6. THE TWIN |
+| 679 | 10. THE SCREENS' CUT-OFFS |
+| 781 | (untitled) |
+| 871 | THE CHILD: found the default city, run it, print what happened |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 73 | `PriceLevelCheck.TWIN_MONTHS` | `60` | The months each twin runs: five years, enough for the founding's wages, rents, builds, loans, trade and the first inflation to act, short enough for a minute or two a child. |
-| 76 | `PriceLevelCheck.BUILT_MONTHS` | `120` | ...and the built city's: ten years, as DenominationCheck's reformed town is run (its fixture reads the loans, the schools and the first replacements). |
-| 94 | `PriceLevelCheck.TOWN_MONTHS` | `33` | ...and the town's: ScaleCheck's founded city (its section 1), to month 33 (55 until FC1, 34 until BA1, below) - EP1's gate review found that this town parts from its twin at the factor where the three cities above did... |
-| 110 | `PriceLevelCheck.PLAYED_MONTHS` | `103` | ...and the played city's: past its demolition (PLAYED_DEMOLITION), its iron mine (PLAYED_IRON) and the land the advisor keeps buying ahead of the city (month 96 was the first to part), to month 103 (105 until RT1, bel... |
-| 113 | `PriceLevelCheck.PLAYED_DEMOLITION` | `60` | The month the played city pulls down ten houses: month 60, as when the horizon was 120 months and the demolition its half. |
-| 116 | `PriceLevelCheck.PLAYED_IRON` | `40` | The month the played city is given its iron mine: month 40, as when the horizon was 120 months and the mine its third. |
-| 124 | `PriceLevelCheck.US_LEVEL_TOLERANCE` | `.003` | How far the world file's US price level from founding to 2025, times PriceLevel.FACTOR, may be from 1, as a share. |
-| 127 | `PriceLevelCheck.STAND_IN_TOLERANCE` | `1e-9` | The stand-in century follows the series to this share: floating point of one logarithm, nothing the model rounds. |
-| 138 | `PriceLevelCheck.TWIN_NOMINAL_TOLERANCE` | `1e-9` | How far a nominal series of the factor's city, divided by the factor, may be from the same series in the city at today's prices, as a share of the larger of the two series' largest size so far (a balance is a sum of f... |
-| 141 | `PriceLevelCheck.TWIN_REAL_TOLERANCE` | `1e-9` | ...and a real one (a count, a ratio, a quantity in units), the same band: nothing real is rounded differently by a change of price level. |
-| 147 | `PriceLevelCheck.TWIN_MONEY_FLOOR` | `1e-9` | A nominal series' value below this, in today's thousands, is zero for the comparison (a millionth of a dollar): the model's own numeric floors are at 1e-9 (OrderBook.DUST, Exchange.MIN_FAIR), and a balance that is rou... |
-| 156 | `PriceLevelCheck.HISTORY_SIG_TOLERANCE` | `1.1e-5` | The history records money to a fixed grid (HistorySave.round2, round4, round6) or to six significant figures (roundSig), so a nominal history series of the factor's city, divided by the factor, is on its grid scaled b... |
-| 163 | `PriceLevelCheck.TWIN_QUANTITY_FLOOR` | `1e-9` | A real quantity below this, in units, is zero for the comparison: a billionth of a unit, the size of the model's own numeric floors (OrderBook.DUST, Exchange.MIN_FAIR). |
-| 170 | `PriceLevelCheck.TIE_FLIPS` | `2` | A real series the history records to a grid may be one step apart in at most this many months: a value that sits on the middle of two steps (0.00175 recorded to four places, the bank's deposit rate at month 0) rounds ... |
-| 173 | `PriceLevelCheck.CONSTANT_TOLERANCE` | `1e-12` | The relative gap allowed between a constant that carries the factor and today's figure times it, and between a ratio and today's ratio: one rounding of one product. |
-| 176 | `PriceLevelCheck.DOOR` | `"cbs.priceLevel"` | The child property that stands in for the factor (PriceLevel's one door). |
-| 488 | `PriceLevelCheck.NOMINAL_CONSTANTS` | `{ "Game.FOUNDING_CASH", "Game.FOUNDING_RESERVE_USD", "Game.FIXED_ISSUE_COST",...` | The nominal amounts struck as constants, each a class and a name: today's figure times the factor, in both children. |
-| 640 | `PriceLevelCheck.SIG_RECORDED` | `java.util.regex.Pattern.compile("h\\.(minimumWage\|landPrice\|foodPrice\|materia...` | The history series recorded to six significant figures (HistorySave.roundSig) rather than to a grid: the share prices and the household-scale prices. |
-| 676 | `PriceLevelCheck.CHILD_MINUTES` | `10` | How long a child JVM may run before the check kills it and fails: the longest (the played city) takes a few minutes. |
+| 77 | `PriceLevelCheck.TWIN_MONTHS` | `60` | The months each twin runs: five years, enough for the founding's wages, rents, builds, loans, trade and the first inflation to act, short enough for a minute or two a child. |
+| 80 | `PriceLevelCheck.BUILT_MONTHS` | `120` | ...and the built city's: ten years, as DenominationCheck's reformed town is run (its fixture reads the loans, the schools and the first replacements). |
+| 98 | `PriceLevelCheck.TOWN_MONTHS` | `33` | ...and the town's: ScaleCheck's founded city (its section 1), to month 33 (55 until FC1, 34 until BA1, below) - EP1's gate review found that this town parts from its twin at the factor where the three cities above did... |
+| 114 | `PriceLevelCheck.PLAYED_MONTHS` | `103` | ...and the played city's: past its demolition (PLAYED_DEMOLITION), its iron mine (PLAYED_IRON) and the land the advisor keeps buying ahead of the city (month 96 was the first to part), to month 103 (105 until RT1, bel... |
+| 117 | `PriceLevelCheck.PLAYED_DEMOLITION` | `60` | The month the played city pulls down ten houses: month 60, as when the horizon was 120 months and the demolition its half. |
+| 120 | `PriceLevelCheck.PLAYED_IRON` | `40` | The month the played city is given its iron mine: month 40, as when the horizon was 120 months and the mine its third. |
+| 128 | `PriceLevelCheck.US_LEVEL_TOLERANCE` | `.003` | How far the world file's US price level from founding to 2025, times PriceLevel.FACTOR, may be from 1, as a share. |
+| 131 | `PriceLevelCheck.STAND_IN_TOLERANCE` | `1e-9` | The stand-in century follows the series to this share: floating point of one logarithm, nothing the model rounds. |
+| 142 | `PriceLevelCheck.TWIN_NOMINAL_TOLERANCE` | `1e-9` | How far a nominal series of the factor's city, divided by the factor, may be from the same series in the city at today's prices, as a share of the larger of the two series' largest size so far (a balance is a sum of f... |
+| 145 | `PriceLevelCheck.TWIN_REAL_TOLERANCE` | `1e-9` | ...and a real one (a count, a ratio, a quantity in units), the same band: nothing real is rounded differently by a change of price level. |
+| 151 | `PriceLevelCheck.TWIN_MONEY_FLOOR` | `1e-9` | A nominal series' value below this, in today's thousands, is zero for the comparison (a millionth of a dollar): the model's own numeric floors are at 1e-9 (OrderBook.DUST, Exchange.MIN_FAIR), and a balance that is rou... |
+| 160 | `PriceLevelCheck.HISTORY_SIG_TOLERANCE` | `1.1e-5` | The history records money to a fixed grid (HistorySave.round2, round4, round6) or to six significant figures (roundSig), so a nominal history series of the factor's city, divided by the factor, is on its grid scaled b... |
+| 167 | `PriceLevelCheck.TWIN_QUANTITY_FLOOR` | `1e-9` | A real quantity below this, in units, is zero for the comparison: a billionth of a unit, the size of the model's own numeric floors (OrderBook.DUST, Exchange.MIN_FAIR). |
+| 174 | `PriceLevelCheck.TIE_FLIPS` | `2` | A real series the history records to a grid may be one step apart in at most this many months: a value that sits on the middle of two steps (0.00175 recorded to four places, the bank's deposit rate at month 0) rounds ... |
+| 177 | `PriceLevelCheck.CONSTANT_TOLERANCE` | `1e-12` | The relative gap allowed between a constant that carries the factor and today's figure times it, and between a ratio and today's ratio: one rounding of one product. |
+| 180 | `PriceLevelCheck.OLD_CUT` | `.5` | The literal half-thousand the screens held before EP2 as their "nothing" (ui.Money, FundView's fold), in thousands as written: the figures between it and the factor's own cut-off are the ones the old cut-off would hav... |
+| 183 | `PriceLevelCheck.DOOR` | `"cbs.priceLevel"` | The child property that stands in for the factor (PriceLevel's one door). |
+| 500 | `PriceLevelCheck.NOMINAL_CONSTANTS` | `{ "Game.FOUNDING_CASH", "Game.FOUNDING_RESERVE_USD", "Game.FIXED_ISSUE_COST",...` | The nominal amounts struck as constants, each a class and a name: today's figure times the factor, in both children. |
+| 653 | `PriceLevelCheck.SIG_RECORDED` | `java.util.regex.Pattern.compile("h\\.(minimumWage\|landPrice\|foodPrice\|materia...` | The history series recorded to six significant figures (HistorySave.roundSig) rather than to a grid: the share prices and the household-scale prices. |
+| 791 | `PriceLevelCheck.CHILD_MINUTES` | `10` | How long a child JVM may run before the check kills it and fails: the longest (the played city) takes a few minutes. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 178 | `static int fails` |  |
-| 179 | `static PrintStream out` |  |
-| 670 | `final char kind` |  |
-| 671 | `final double[] v` |  |
-| 680 | `double factor` |  |
-| 681 | `boolean ok` |  |
-| 682 | `final Map<String, Double> consts` |  |
-| 683 | `final Map<String, Double> ratios` |  |
-| 684 | `final Map<String, Series> series` |  |
-| 972 | `final int months` |  |
-| 973 | `final Map<String, Character> kinds` |  |
-| 974 | `final Map<String, double[]> values` |  |
-| 977 | `String prefix` | A prefix for every series name, so a second city's one month rides in the first's digest. |
+| 185 | `static int fails` |  |
+| 186 | `static PrintStream out` |  |
+| 785 | `final char kind` |  |
+| 786 | `final double[] v` |  |
+| 795 | `double factor` |  |
+| 796 | `boolean ok` |  |
+| 797 | `final Map<String, Double> consts` |  |
+| 798 | `final Map<String, Double> ratios` |  |
+| 799 | `final Map<String, Series> series` |  |
+| 801 | `final Map<String, double[]> counts` | What the screens' cut-offs did each month (EP2, the K lines: Counts); kept apart from the series so that theTwin never sees them. |
+| 1099 | `final int months` |  |
+| 1100 | `final Map<String, Character> kinds` |  |
+| 1101 | `final Map<String, double[]> values` |  |
+| 1104 | `String prefix` | A prefix for every series name, so a second city's one month rides in the first's digest. |
+| 1227 | `final int months` |  |
+| 1228 | `final Map<String, double[]> values` |  |
+| 1229 | `NationsMap map` |  |
+| 1230 | `boolean mapTried` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 70 | 1024 | **type** `public class PriceLevelCheck` | A city founded at 1900's prices is today's real economy with every dollar multiplied by one factor, and this is how we know (EP1, Jerus 2026-10-30: "1900 price level"; docs/studies/spec-1900-start.md 2). |
-| 181 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 186 | 5 | `static void relative(String label, double actual, double expected, double band)` |  |
-| 193 | 7 | `static double gap(double a, double b)` | The relative gap of two figures: \|a - b\| over the larger; 0 for two NaNs, two equal infinities or two zeros, infinite for one NaN. |
-| 205 | 5 | `static double[] atFounding(double...today)` | Today's figures priced at the founding's level: each times PriceLevel.FACTOR (EP1). |
-| 212 | 3 | `static boolean sameMoney(double a, double b)` | Two money figures built differently (a price and a price times units, against the study's product) are the same to a billionth: floating point only. |
+| 74 | 1253 | **type** `public class PriceLevelCheck` | A city founded at 1900's prices is today's real economy with every dollar multiplied by one factor, and this is how we know (EP1, Jerus 2026-10-30: "1900 price level"; docs/studies/spec-1900-start.md 2). |
+| 188 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 193 | 5 | `static void relative(String label, double actual, double expected, double band)` |  |
+| 200 | 7 | `static double gap(double a, double b)` | The relative gap of two figures: \|a - b\| over the larger; 0 for two NaNs, two equal infinities or two zeros, infinite for one NaN. |
+| 212 | 5 | `static double[] atFounding(double...today)` | Today's figures priced at the founding's level: each times PriceLevel.FACTOR (EP1). |
+| 219 | 3 | `static boolean sameMoney(double a, double b)` | Two money figures built differently (a price and a price times units, against the study's product) are the same to a billionth: floating point only. |
 
-### (untitled) (lines 216-269)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 218 | 51 | `public static void main(String[] args) throws Exception` |  |
-
-### 1. THE SERIES (lines 270-294)
+### (untitled) (lines 223-278)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 274 | 20 | `static void theSeries()` |  |
+| 225 | 53 | `public static void main(String[] args) throws Exception` |  |
 
-### 2. THE WORLD FILE (lines 295-342)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 299 | 21 | `static void theWorldFile() throws Exception` |  |
-| 322 | 20 | `static void usLevels(String scope, WorldData data)` | A Historical city's US price level from its founding (month 0, January 1900) to 2025, against the series. |
-
-### 3. THE FUNNELS (lines 343-468)
+### 1. THE SERIES (lines 279-303)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 347 | 111 | `static void theFunnels() throws Exception` |  |
-| 459 | 5 | `static JsonObject readResource(String name) throws Exception` |  |
-| 465 | 3 | `static double num(JsonObject o, String key)` |  |
+| 283 | 20 | `static void theSeries()` |  |
 
-### 4. THE RANKINGS' BRIDGE (lines 469-482)
+### 2. THE WORLD FILE (lines 304-351)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 473 | 9 | `static void theBridge()` |  |
+| 308 | 21 | `static void theWorldFile() throws Exception` |  |
+| 331 | 20 | `static void usLevels(String scope, WorldData data)` | A Historical city's US price level from its founding (month 0, January 1900) to 2025, against the series. |
 
-### 5. THE NAMED LITERALS AND THE RATIOS (lines 483-547)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 504 | 26 | `static void theLiterals(Child plain, Child today)` |  |
-| 531 | 16 | `static void theRatios(Child plain, Child today)` |  |
-
-### 6. THE TWIN (lines 548-665)
+### 3. THE FUNNELS (lines 352-480)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 552 | 86 | `static void theTwin(Child plain, Child today, int monthsRun)` |  |
-| 643 | 4 | `static boolean allZero(double[] v)` |  |
-| 649 | 16 | `static double gridOf(double[] v)` | The grid a recorded series sits on, 1, .01, 1e-4 or 1e-6, the coarsest every value is a multiple of; 0 for none (six significant figures) or a series of zeros. |
+| 356 | 114 | `static void theFunnels() throws Exception` |  |
+| 471 | 5 | `static JsonObject readResource(String name) throws Exception` |  |
+| 477 | 3 | `static double num(JsonObject o, String key)` |  |
 
-### (untitled) (lines 666-747)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 669 | 5 | **type** `static final class Series` | One series of the digest: a month-by-month list of values and whether it is money (N) or not (R). |
-| 672 | 1 | `Series(char kind, double[] v)` _(in PriceLevelCheck.Series)_ |  |
-| 679 | 68 | **type** `static final class Child` | What a child printed: its factor, the constants it read, the ratios, and the series. |
-| 687 | 3 | `static Child run(boolean todaysPrices, boolean built) throws Exception` _(in PriceLevelCheck.Child)_ | A child JVM started as AllChecks starts a harness, with the one door open or not; one after the other, never at once. |
-| 692 | 37 | `static Child run(boolean todaysPrices, String flag) throws Exception` _(in PriceLevelCheck.Child)_ | ...of the scenario the flag names: --twin, --twin-built, --twin-played. |
-| 730 | 16 | `void read(String line)` _(in PriceLevelCheck.Child)_ |  |
-
-### THE CHILD: found the default city, run it, print what happened (lines 748-1093)
+### 4. THE RANKINGS' BRIDGE (lines 481-494)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 753 | 216 | **type** `static final class Twin` | The city, run in a JVM of its own. |
-| 755 | 41 | `static void run(String flag) throws Exception` _(in PriceLevelCheck.Twin)_ |  |
-| 798 | 5 | `static Game foundedCity()` _(in PriceLevelCheck.Twin)_ | The default founding, as a player starts it. |
-| 809 | 25 | `static Game builtCity()` _(in PriceLevelCheck.Twin)_ | DenominationCheck's town (its buses variant): the Wealthy treasury and a build list that puts a bit of everything in the city, so the anchors a default founding never reaches (tuition, fees, loans, a mine's ore, a fur... |
-| 840 | 10 | `static Game townCity(PrintStream sink, GameFiles files)` _(in PriceLevelCheck.Twin)_ | ScaleCheck's founded town (its section 1): the playtest's founding, forty houses, three stores and two farms at the start, twenty houses after three months, two stores and a depot after seven, to the month ScaleCheck ... |
-| 852 | 8 | `static void townMonth(Game g, int m)` _(in PriceLevelCheck.Twin)_ | One month of the town, ScaleCheck's script: month m is the m-th since the founding. |
-| 865 | 14 | `static Game playedCity(PrintStream sink)` _(in PriceLevelCheck.Twin)_ | MapCheck's played city (its playedCity()): MiningCheck's iron world, the playtest's autopilot, rollover and fund dial, forty houses, three stores and two farms. |
-| 881 | 17 | `static void playedMonth(Game g, int m)` _(in PriceLevelCheck.Twin)_ | One month of it, as MapCheck plays it: the advisor and the schools every sixth month, a demolition at the half, an iron mine a third in. |
-| 899 | 7 | `static double constant(String qualified) throws Exception` _(in PriceLevelCheck.Twin)_ |  |
-| 907 | 13 | `static void constants(PrintStream o) throws Exception` _(in PriceLevelCheck.Twin)_ |  |
-| 922 | 44 | `static void ratios(PrintStream o) throws Exception` _(in PriceLevelCheck.Twin)_ | Ratios between files: dimensionless, so today's and the factor's are one number (study 2.7, item 4). |
-| 967 | 1 | `static void q(PrintStream o, String name, double v)` _(in PriceLevelCheck.Twin)_ |  |
-| 971 | 122 | **type** `static final class Digest` | The month-by-month record: a name, whether it is money, and a value for every month. |
-| 979 | 1 | `Digest(int months)` _(in PriceLevelCheck.Digest)_ |  |
-| 981 | 6 | `void put(String name, char kind, int m, double x)` _(in PriceLevelCheck.Digest)_ |  |
-| 988 | 32 | `void sample(Game g, int m)` _(in PriceLevelCheck.Digest)_ |  |
-| 1026 | 24 | `void history(Game g) throws Exception` _(in PriceLevelCheck.Digest)_ | The history the game keeps, every series of it, classified by the model's own definition of money: the series HistorySave.redenominate() divides are money, but for the four rates it divides by the unit (the D$ per US$... |
-| 1051 | 1 | `static boolean hasNumber(List<?> l)` _(in PriceLevelCheck.Digest)_ |  |
-| 1053 | 4 | `static boolean isListMap(Field f)` _(in PriceLevelCheck.Digest)_ |  |
-| 1059 | 10 | `static boolean halved(List<?> before, List<?> after)` _(in PriceLevelCheck.Digest)_ | Whether redenominating by one half halved the series: at least one nonzero entry, and every nonzero one halved. |
-| 1070 | 11 | `void addList(String name, char kind, List<?> l)` _(in PriceLevelCheck.Digest)_ |  |
-| 1082 | 10 | `void print(PrintStream o)` _(in PriceLevelCheck.Digest)_ |  |
+| 485 | 9 | `static void theBridge()` |  |
+
+### 5. THE NAMED LITERALS AND THE RATIOS (lines 495-560)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 517 | 26 | `static void theLiterals(Child plain, Child today)` |  |
+| 544 | 16 | `static void theRatios(Child plain, Child today)` |  |
+
+### 6. THE TWIN (lines 561-678)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 565 | 86 | `static void theTwin(Child plain, Child today, int monthsRun)` |  |
+| 656 | 4 | `static boolean allZero(double[] v)` |  |
+| 662 | 16 | `static double gridOf(double[] v)` | The grid a recorded series sits on, 1, .01, 1e-4 or 1e-6, the coarsest every value is a multiple of; 0 for none (six significant figures) or a series of zeros. |
+
+### 10. THE SCREENS' CUT-OFFS (lines 679-780)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 693 | 72 | `static void theCutOffs(Child plain, Child today, Child builtPlain, Child builtToday, Child townPlain, Child townToday)` | What the screens do at a dollar cut-off (EP2: ui.Money.NOTHING says nothing of a figure under it, FundView.FOLD_UNDER folds a holding under it into "and N more", TradeLanes.minLane() gives a partner under it no lane) ... |
+| 770 | 10 | `static int unequal(double[] x, double[] y, List<String> first)` | How many months two rows part (a row of a different length parts in every month it does not share), and the first few as lines. |
+
+### (untitled) (lines 781-870)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 784 | 5 | **type** `static final class Series` | One series of the digest: a month-by-month list of values and whether it is money (N) or not (R). |
+| 787 | 1 | `Series(char kind, double[] v)` _(in PriceLevelCheck.Series)_ |  |
+| 794 | 76 | **type** `static final class Child` | What a child printed: its factor, the constants it read, the ratios, and the series. |
+| 804 | 3 | `static Child run(boolean todaysPrices, boolean built) throws Exception` _(in PriceLevelCheck.Child)_ | A child JVM started as AllChecks starts a harness, with the one door open or not; one after the other, never at once. |
+| 809 | 37 | `static Child run(boolean todaysPrices, String flag) throws Exception` _(in PriceLevelCheck.Child)_ | ...of the scenario the flag names: --twin, --twin-built, --twin-played. |
+| 847 | 22 | `void read(String line)` _(in PriceLevelCheck.Child)_ |  |
+
+### THE CHILD: found the default city, run it, print what happened (lines 871-1326)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 876 | 220 | **type** `static final class Twin` | The city, run in a JVM of its own. |
+| 878 | 45 | `static void run(String flag) throws Exception` _(in PriceLevelCheck.Twin)_ |  |
+| 925 | 5 | `static Game foundedCity()` _(in PriceLevelCheck.Twin)_ | The default founding, as a player starts it. |
+| 936 | 25 | `static Game builtCity()` _(in PriceLevelCheck.Twin)_ | DenominationCheck's town (its buses variant): the Wealthy treasury and a build list that puts a bit of everything in the city, so the anchors a default founding never reaches (tuition, fees, loans, a mine's ore, a fur... |
+| 967 | 10 | `static Game townCity(PrintStream sink, GameFiles files)` _(in PriceLevelCheck.Twin)_ | ScaleCheck's founded town (its section 1): the playtest's founding, forty houses, three stores and two farms at the start, twenty houses after three months, two stores and a depot after seven, to the month ScaleCheck ... |
+| 979 | 8 | `static void townMonth(Game g, int m)` _(in PriceLevelCheck.Twin)_ | One month of the town, ScaleCheck's script: month m is the m-th since the founding. |
+| 992 | 14 | `static Game playedCity(PrintStream sink)` _(in PriceLevelCheck.Twin)_ | MapCheck's played city (its playedCity()): MiningCheck's iron world, the playtest's autopilot, rollover and fund dial, forty houses, three stores and two farms. |
+| 1008 | 17 | `static void playedMonth(Game g, int m)` _(in PriceLevelCheck.Twin)_ | One month of it, as MapCheck plays it: the advisor and the schools every sixth month, a demolition at the half, an iron mine a third in. |
+| 1026 | 7 | `static double constant(String qualified) throws Exception` _(in PriceLevelCheck.Twin)_ |  |
+| 1034 | 13 | `static void constants(PrintStream o) throws Exception` _(in PriceLevelCheck.Twin)_ |  |
+| 1049 | 44 | `static void ratios(PrintStream o) throws Exception` _(in PriceLevelCheck.Twin)_ | Ratios between files: dimensionless, so today's and the factor's are one number (study 2.7, item 4). |
+| 1094 | 1 | `static void q(PrintStream o, String name, double v)` _(in PriceLevelCheck.Twin)_ |  |
+| 1098 | 122 | **type** `static final class Digest` | The month-by-month record: a name, whether it is money, and a value for every month. |
+| 1106 | 1 | `Digest(int months)` _(in PriceLevelCheck.Digest)_ |  |
+| 1108 | 6 | `void put(String name, char kind, int m, double x)` _(in PriceLevelCheck.Digest)_ |  |
+| 1115 | 32 | `void sample(Game g, int m)` _(in PriceLevelCheck.Digest)_ |  |
+| 1153 | 24 | `void history(Game g) throws Exception` _(in PriceLevelCheck.Digest)_ | The history the game keeps, every series of it, classified by the model's own definition of money: the series HistorySave.redenominate() divides are money, but for the four rates it divides by the unit (the D$ per US$... |
+| 1178 | 1 | `static boolean hasNumber(List<?> l)` _(in PriceLevelCheck.Digest)_ |  |
+| 1180 | 4 | `static boolean isListMap(Field f)` _(in PriceLevelCheck.Digest)_ |  |
+| 1186 | 10 | `static boolean halved(List<?> before, List<?> after)` _(in PriceLevelCheck.Digest)_ | Whether redenominating by one half halved the series: at least one nonzero entry, and every nonzero one halved. |
+| 1197 | 11 | `void addList(String name, char kind, List<?> l)` _(in PriceLevelCheck.Digest)_ |  |
+| 1209 | 10 | `void print(PrintStream o)` _(in PriceLevelCheck.Digest)_ |  |
+| 1226 | 100 | **type** `static final class Counts` | What the screens' cut-offs did to the city each month (EP2): counts the model's own code gives, a row of one per month for each, printed as K lines for section 10. |
+| 1232 | 1 | `Counts(int months)` _(in PriceLevelCheck.Counts)_ |  |
+| 1234 | 1 | `void put(String name, int m, double x)` _(in PriceLevelCheck.Counts)_ |  |
+| 1237 | 14 | `NationsMap map()` _(in PriceLevelCheck.Counts)_ | The nations' map of the world file, built once the first time it is wanted (as MapView builds it); null where there is no file or it will not open. |
+| 1252 | 22 | `void sample(Game g, Digest d, int m)` _(in PriceLevelCheck.Counts)_ |  |
+| 1281 | 33 | `void lanes(Game g, int m)` _(in PriceLevelCheck.Counts)_ | The partners given a lane this month, built as ui/MapView.lanesNow() builds them: TradeLanes.of over the feed's exports and imports by nation and its minLane(), at the city's place (the Earth's key where the map draws... |
+| 1315 | 10 | `void print(PrintStream o)` _(in PriceLevelCheck.Counts)_ |  |
 

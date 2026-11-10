@@ -28,6 +28,15 @@ import java.nio.file.Path;
  *
  * Both failures produce a city that looks completely normal, which is why every
  * assertion here is about a QUANTITY rather than about a screen.
+ *
+ * AND THE FLOOR IS A REAL MINIMUM (WG1, 2026-11-10). What this proves about it:
+ * the ladder is anchored on the going rate and pays what PayTier paid; a new
+ * city's floor starts at DEFAULT_FLOOR_SHARE of the going rate, with no job paid
+ * it; the dial lifts only the wages under it and leaves the ladder's bases
+ * alone; the floor's tie (prices, the average wage, nothing) holds the floor
+ * where each says, to the dial's bounds, in both forms of the cost of living's
+ * walk; the going rate is redenominated with the floor; and the tie is saved,
+ * an older array reading prices at the default share.
  */
 public class LabourCheck {
 
@@ -63,45 +72,277 @@ public class LabourCheck {
 
     public static void main(String[] args) throws Exception {
 
-        /* ============ 1. THE LADDER IS NEUTRAL AT ITS DEFAULT ============
+        /* ============ 1. THE GOING RATE ANCHORS THE LADDER, AND THE FLOOR STARTS UNDER IT ============
 
            The wage market anchors to PayTier rather than replacing it, and the
-           minimum wage starts at the unskilled tier - so a brand new city pays
-           exactly what it paid before this class existed. Every balance
-           measurement already taken survives, and that is not a hope, it is
-           this assertion.
-           ============================================================== */
-        System.out.println("--- at the default minimum wage, nothing has changed ---");
+           ladder is anchored on the going rate - the unskilled tier, what an
+           unskilled post pays where there are exactly enough workers - so a
+           brand new city pays exactly what it paid before this class existed.
+           Every balance measurement already taken survives, and that is not a
+           hope, it is this assertion. (Until WG1, 2026-11-10, the minimum wage
+           WAS the anchor and started on the unskilled tier; Jerus: "yes a real
+           minimum wage", "0.85, Nova Scotia's". The anchor's neutrality is
+           restated on the going rate, not bent: the bases are unmoved, and the
+           floor is a figure of its own, under them.)
+           ======================================================================================= */
+        System.out.println("--- the going rate anchors the ladder, and the floor starts under it ---");
 
         LabourMarket market = new LabourMarket();
-        close("the dial starts on the unskilled tier",
-                market.getMinimumWage(), PayTier.UNSKILLED.getMonthlyWage(), 1e-12);
+        close("the going rate is the unskilled tier",
+                market.getGoingRate(), PayTier.UNSKILLED.getMonthlyWage(), 1e-12);
+        close("the floor starts at the default share of the going rate",
+                market.getMinimumWage(), market.getGoingRate() * LabourMarket.DEFAULT_FLOOR_SHARE, 1e-12);
+        assertTrue("...which is under the going rate, a floor of its own",
+                market.getMinimumWage() < market.getGoingRate());
+        close("the going rate in today's money is the going rate lifted by the cost of living",
+                market.cashGoingRate(), market.getGoingRate() * market.getCostOfLiving(), 1e-12);
 
         for (JobType job : JobType.values()) {
             close("  " + job.name() + " pays what PayTier says",
                     market.baseWage(job), PayTier.wageOf(job), 1e-12);
         }
+        boolean someoneOnTheFloor = false;
+        for (JobType job : JobType.values()) {
+            if (market.isPaidTheFloor(job)) someoneOnTheFloor = true;
+        }
+        assertTrue("a new city has no job paid the floor", !someoneOnTheFloor);
 
-        /* ============ 2. THE DIAL MOVES EVERYTHING ============ */
-        System.out.println("\n--- and raising it lifts the whole ladder ---");
+        // A city founded on a ladder anchors on that ladder's going rate and starts its floor under it, the 1901 way as today's.
+        for (WageLadder ladder : new WageLadder[] { WageLadder.TODAY, WageLadder.Y1901 }) {
+            LabourMarket founded = new LabourMarket();
+            founded.foundOn(ladder);
+            close("  founded on " + ladder.name() + " ladder, the going rate is its anchor",
+                    founded.getGoingRate(), ladder.anchor(), 1e-12);
+            close("  ...the floor starts at the default share of it",
+                    founded.getMinimumWage(), ladder.anchor() * LabourMarket.DEFAULT_FLOOR_SHARE, 1e-12);
+            close("  ...and the unskilled base is the anchor, as the ladder pays it",
+                    founded.baseWage(JobType.NO_DIPLOMA), ladder.anchor(), 1e-12);
+        }
 
-        double doctorBefore = market.baseWage(JobType.UNIV_DOCTOR);
-        market.setMinimumWage(PayTier.UNSKILLED.getMonthlyWage() * 2);
+        // A reform moves the going rate with the floor and every base, and the floor's share of the going rate stays what it was.
+        LabourMarket reformed = new LabourMarket();
+        double shareBefore = reformed.getMinimumWage() / reformed.getGoingRate();
+        reformed.redenominate(.01);
+        close("a currency reform takes the going rate with it", reformed.getGoingRate(), market.getGoingRate() * .01, 1e-15);
+        boolean basesFollow = true;
+        for (JobType job : JobType.values()) {
+            if (Math.abs(reformed.baseWage(job) - market.baseWage(job) * .01) > 1e-15) basesFollow = false;
+        }
+        assertTrue("...and every base", basesFollow);
+        close("...and the floor's share of the going rate is unchanged",
+                reformed.getMinimumWage() / reformed.getGoingRate(), shareBefore, 1e-12);
 
-        System.out.printf("   minimum wage doubled: labourer %.3f -> %.3f, doctor %.3f -> %.3f%n",
-                PayTier.UNSKILLED.getMonthlyWage(), market.baseWage(JobType.NO_DIPLOMA),
-                doctorBefore, market.baseWage(JobType.UNIV_DOCTOR));
+        /* ============ 2. THE DIAL MOVES ONLY THE WAGES UNDER IT ============
 
-        close("the doctor's base doubled too", market.baseWage(JobType.UNIV_DOCTOR),
-                doctorBefore * 2, 1e-12);
-        assertTrue("the ladder kept its shape",
-                Math.abs(market.baseWage(JobType.UNIV_DOCTOR)
-                        / market.baseWage(JobType.NO_DIPLOMA)
-                        - PayTier.wageOf(JobType.UNIV_DOCTOR)
-                        / PayTier.wageOf(JobType.NO_DIPLOMA)) < 1e-12);
+           It used to move the whole ladder ("THE DIAL MOVES EVERYTHING": the
+           doctor's base doubled with it, the ladder kept its shape), because
+           the floor was the anchor. It is only a floor now (WG1, 2026-11-10):
+           it lifts the wages under it and nothing over it. The fixture puts
+           the floor between the diploma's base and the lowest college job's,
+           computed from the ladder's ratios and the going rate, and walks the
+           months so the wages have had the time to arrive.
+           ============================================================== */
+        System.out.println("\n--- the dial moves only the wages under it ---");
+
+        double goingRate = market.getGoingRate();
+        double diplomaBase = goingRate * market.ratio(JobType.DIPLOMA);
+        double lowestCollegeBase = Double.MAX_VALUE;
+        JobType lowestCollege = null;
+        for (JobType job : JobType.values()) {
+            if (WageBand.of(job) == WageBand.COLLEGE && goingRate * market.ratio(job) < lowestCollegeBase) {
+                lowestCollegeBase = goingRate * market.ratio(job);
+                lowestCollege = job;
+            }
+        }
+        double between = (diplomaBase + lowestCollegeBase) / 2;
+        assertTrue("fixture: the floor sits between the diploma's base and the college jobs', inside the dial's bounds",
+                between > diplomaBase && between < lowestCollegeBase
+                        && between >= market.getMinSettable() && between <= market.getMaxSettable());
+
+        double[] atPar = new double[WageBand.values().length];
+        java.util.Arrays.fill(atPar, 1000);   // posts equal to workers in every band: a multiple of one, wages at their bases
+        LabourMarket lifted = new LabourMarket();
+        LabourMarket twin = new LabourMarket();   // the same city at the default floor
+        double doctorBefore = lifted.baseWage(JobType.UNIV_DOCTOR);
+        lifted.setMinimumWage(between);
+        for (int m = 0; m < 200; m++) { lifted.advanceMonth(atPar, atPar); twin.advanceMonth(atPar, atPar); }
+
+        System.out.printf("   floor between the diploma's base and the college jobs': labourer %.4f -> %.4f, doctor %.4f -> %.4f%n",
+                twin.getWage(JobType.NO_DIPLOMA), lifted.getWage(JobType.NO_DIPLOMA),
+                twin.getWage(JobType.UNIV_DOCTOR), lifted.getWage(JobType.UNIV_DOCTOR));
+
+        close("the no-diploma wage is lifted to the floor", lifted.getWage(JobType.NO_DIPLOMA), lifted.cashMinimumWage(), 1e-9);
+        close("the diploma wage is lifted to the floor", lifted.getWage(JobType.DIPLOMA), lifted.cashMinimumWage(), 1e-9);
+        boolean overTheFloor = true;
+        for (JobType job : JobType.values()) {
+            if (WageBand.of(job) != WageBand.COLLEGE && WageBand.of(job) != WageBand.UNIVERSITY) continue;
+            close("  the " + job.name() + " wage equals a twin city's at the default floor",
+                    lifted.getWage(job), twin.getWage(job), 1e-9);
+            if (lifted.getWage(job) <= lifted.cashMinimumWage()) overTheFloor = false;
+        }
+        assertTrue("fixture: every college and university wage is over the floor, so it is no floor to them", overTheFloor);
+        close("the doctor's base is unchanged", lifted.baseWage(JobType.UNIV_DOCTOR), doctorBefore, 1e-12);
+        assertTrue("...and the ladder's bases kept their shape",
+                Math.abs(lifted.baseWage(JobType.UNIV_DOCTOR) / lifted.baseWage(JobType.NO_DIPLOMA)
+                        - PayTier.wageOf(JobType.UNIV_DOCTOR) / PayTier.wageOf(JobType.NO_DIPLOMA)) < 1e-12);
+        assertTrue("the no-diploma and diploma bands are the ones paid the floor",
+                lifted.isPaidTheFloor(WageBand.NONE) && lifted.isPaidTheFloor(WageBand.DIPLOMA)
+                        && !lifted.isPaidTheFloor(WageBand.COLLEGE) && !lifted.isPaidTheFloor(WageBand.UNIVERSITY));
         assertTrue("and the dial is bounded",
                 new LabourMarket() {{ setMinimumWage(-5); }}.getMinimumWage()
                         >= LabourMarket.MIN_SETTABLE);
+
+        // Before the law the floor is paid to nobody, whatever the wage: floorBinding off, no job is paid it or near it.
+        LabourMarket lawless = new LabourMarket();
+        lawless.setFloorBinding(false);
+        lawless.setMinimumWage(between);
+        assertTrue("without the law no job is paid the floor or near it",
+                !lawless.isPaidTheFloor(JobType.NO_DIPLOMA) && !lawless.isNearTheFloor(JobType.NO_DIPLOMA));
+
+        // A floor just under the lowest college job: its wage is over the floor by half of NEAR_FLOOR, so it is near it and is not paid it.
+        LabourMarket nearby = new LabourMarket();
+        nearby.setMinimumWage(lowestCollegeBase / (1 + LabourMarket.NEAR_FLOOR / 2));
+        for (int m = 0; m < 200; m++) nearby.advanceMonth(atPar, atPar);
+        assertTrue("a wage a little over the floor is near it, and not paid it",
+                nearby.isNearTheFloor(lowestCollege) && !nearby.isPaidTheFloor(lowestCollege));
+        assertTrue("...and the doctor's, far over it, is neither",
+                !nearby.isNearTheFloor(JobType.UNIV_DOCTOR) && !nearby.isPaidTheFloor(JobType.UNIV_DOCTOR));
+        assertTrue("...and the job paid the floor is not near it",
+                nearby.isPaidTheFloor(JobType.NO_DIPLOMA) && !nearby.isNearTheFloor(JobType.NO_DIPLOMA));
+
+        /* ============ 2b. THE FLOOR'S TIE ============
+
+           What the floor keeps pace with (WG1, 2026-11-10; spec-wages 3.2):
+           prices (the default, and the only rule there was), the average wage
+           at a share, or nothing - a cash figure inflation wears down. Each
+           fixture causes the condition it reads: the cost of living is raised
+           over months by the market's own updateCostOfLiving(), and the average
+           wage is said by followAverageWage(), as Game says it each month.
+           ============================================================== */
+        System.out.println("\n--- the floor's tie ---");
+        {
+            assertTrue("a new market's floor is tied to prices, at the default share",
+                    new LabourMarket().getFloorTie() == LabourMarket.FloorTie.PRICES
+                            && new LabourMarket().getTieShare() == LabourMarket.DEFAULT_TIE_SHARE);
+            assertTrue("the ties have their words",
+                    LabourMarket.FloorTie.PRICES.label().equals("prices")
+                            && LabourMarket.FloorTie.AVERAGE_WAGE.label().equals("the average wage")
+                            && LabourMarket.FloorTie.NOTHING.label().equals("nothing"));
+
+            // Both overloads of updateCostOfLiving() walk the cost of living, so both are held to the tie: prices rising 50% over the months.
+            for (int overload = 0; overload < 2; overload++) {
+                final boolean based = overload == 1;
+                String how = based ? "once the basket is based" : "before the basket is based";
+
+                LabourMarket byPrices = new LabourMarket();
+                double realFloor = byPrices.getMinimumWage(), cashFloor = byPrices.cashMinimumWage();
+                for (int m = 0; m < 120; m++) {
+                    if (based) byPrices.updateCostOfLiving(1.5, 0); else byPrices.updateCostOfLiving(1.5);
+                }
+                assertTrue("fixture: the cost of living rose (" + how + ")", byPrices.getCostOfLiving() > 1.2);
+                close("tied to prices, the real floor is unchanged while prices rise (" + how + ")",
+                        byPrices.getMinimumWage(), realFloor, 1e-12);
+                assertTrue("...and the cash floor rises with them",
+                        byPrices.cashMinimumWage() > cashFloor * 1.2);
+                close("...by the cost of living", byPrices.cashMinimumWage(), cashFloor * byPrices.getCostOfLiving(), 1e-12);
+
+                LabourMarket byNothing = new LabourMarket();
+                byNothing.setFloorTie(LabourMarket.FloorTie.NOTHING, LabourMarket.DEFAULT_TIE_SHARE);
+                for (int m = 0; m < 120; m++) {
+                    if (based) byNothing.updateCostOfLiving(1.5, 0); else byNothing.updateCostOfLiving(1.5);
+                }
+                assertTrue("fixture: the same rise in the cost of living (" + how + ")", byNothing.getCostOfLiving() > 1.2);
+                close("tied to nothing, the cash floor holds while prices rise (" + how + ")",
+                        byNothing.cashMinimumWage(), cashFloor, 1e-9);
+                assertTrue("...so the real floor falls with them",
+                        byNothing.getMinimumWage() < realFloor / 1.2);
+                close("...by the cost of living", byNothing.getMinimumWage(), realFloor / byNothing.getCostOfLiving(), 1e-9);
+
+                // The cash figure fixed through a fall in prices too: the real floor rises, held at the dial's top.
+                LabourMarket deflated = new LabourMarket();
+                deflated.setFloorTie(LabourMarket.FloorTie.NOTHING, LabourMarket.DEFAULT_TIE_SHARE);
+                for (int m = 0; m < 240; m++) {
+                    if (based) deflated.updateCostOfLiving(.1, 0); else deflated.updateCostOfLiving(.1);
+                }
+                assertTrue("fixture: prices fell far enough to take a cash floor past the top of the dial",
+                        cashFloor / deflated.getCostOfLiving() > deflated.getMaxSettable());
+                close("tied to nothing, a cash floor that prices would take over the dial's top is held at the top (" + how + ")",
+                        deflated.getMinimumWage(), deflated.getMaxSettable(), 1e-12);
+            }
+
+            // setCostOfLiving() is the load path's setter: it puts the figure back and moves no floor.
+            LabourMarket loading = new LabourMarket();
+            loading.setFloorTie(LabourMarket.FloorTie.NOTHING, LabourMarket.DEFAULT_TIE_SHARE);
+            double floorOnLoad = loading.getMinimumWage();
+            loading.setCostOfLiving(1.7);
+            close("setting the cost of living (the load path) does not strike a cash floor", loading.getMinimumWage(), floorOnLoad, 1e-15);
+
+            // THE AVERAGE WAGE: followAverageWage(a) puts the cash floor at share x a, at any cost of living and nudge.
+            LabourMarket byAverage = new LabourMarket();
+            double floorBeforeTie = byAverage.getMinimumWage();
+            byAverage.setFloorTie(LabourMarket.FloorTie.AVERAGE_WAGE, .5);
+            close("tying the floor does not move it that month", byAverage.getMinimumWage(), floorBeforeTie, 1e-15);
+            double average = byAverage.cashGoingRate() * 1.2;
+            byAverage.followAverageWage(average);
+            close("tied to the average wage, the cash floor is the share of it", byAverage.cashMinimumWage(), .5 * average, 1e-12);
+            byAverage.setCostOfLiving(1.3);
+            byAverage.setMinimumWageAdjustment(.1);
+            byAverage.followAverageWage(average);
+            close("...whatever the cost of living and the player's nudge", byAverage.cashMinimumWage(), .5 * average, 1e-12);
+
+            double movedTo = .6 * average;
+            byAverage.setMinimumWage(byAverage.floorForCash(movedTo));
+            close("setting the floor under it moves the share to match", byAverage.getTieShare(), .6, 1e-9);
+            close("...and the cash floor is what was set", byAverage.cashMinimumWage(), movedTo, 1e-12);
+            byAverage.followAverageWage(average);
+            close("...and the next month's strike keeps it", byAverage.cashMinimumWage(), movedTo, 1e-12);
+
+            double struck = byAverage.getMinimumWage();
+            byAverage.followAverageWage(0);
+            byAverage.followAverageWage(Double.NaN);
+            byAverage.followAverageWage(Double.POSITIVE_INFINITY);
+            close("a month with no average wage (nobody paid, or not a number) leaves the floor where it was",
+                    byAverage.getMinimumWage(), struck, 1e-15);
+
+            // A floor the tie would take outside the dial is held at the bound.
+            byAverage.followAverageWage(byAverage.getMaxSettable() * 1e6);
+            close("a tie that would take the floor over the dial's top holds it at the top",
+                    byAverage.getMinimumWage(), byAverage.getMaxSettable(), 1e-12);
+            byAverage.followAverageWage(byAverage.getMinSettable() * 1e-6);
+            close("...and one that would take it under the dial's bottom holds it at the bottom",
+                    byAverage.getMinimumWage(), byAverage.getMinSettable(), 1e-12);
+            byAverage.setMinimumWage(byAverage.getMaxSettable() * 1e6);
+            close("setting the floor over the dial holds the share at its top too", byAverage.getTieShare(), LabourMarket.MAX_TIE_SHARE, 1e-12);
+
+            // Under the other ties the dial leaves the share alone, and the average wage moves nothing.
+            LabourMarket aside = new LabourMarket();
+            aside.followAverageWage(aside.cashGoingRate());
+            close("tied to prices, the average wage moves no floor",
+                    aside.getMinimumWage(), LabourMarket.DEFAULT_MINIMUM_WAGE, 1e-15);
+            aside.setMinimumWage(aside.getGoingRate());
+            close("...and the dial leaves the share alone", aside.getTieShare(), LabourMarket.DEFAULT_TIE_SHARE, 1e-15);
+
+            // The share is held to its range, a null tie reads prices, and each move is one decision in the log.
+            DecisionLog log = new DecisionLog();
+            LabourMarket decided = new LabourMarket();
+            decided.recordTo(log);
+            decided.setFloorTie(LabourMarket.FloorTie.AVERAGE_WAGE, 5);
+            close("a share over the top of the range is held to it", decided.getTieShare(), LabourMarket.MAX_TIE_SHARE, 1e-15);
+            decided.setFloorTie(LabourMarket.FloorTie.AVERAGE_WAGE, .01);
+            close("...and one under the bottom of it", decided.getTieShare(), LabourMarket.MIN_TIE_SHARE, 1e-15);
+            decided.setFloorTie(LabourMarket.FloorTie.AVERAGE_WAGE, LabourMarket.DEFAULT_TIE_SHARE);
+            assertTrue("a tie to the average wage is said at its share",
+                    log.last().label().equals("Wage floor tied to the average wage at 45%"));
+            int said = log.size();
+            decided.setFloorTie(LabourMarket.FloorTie.AVERAGE_WAGE, LabourMarket.DEFAULT_TIE_SHARE);
+            assertTrue("...and said once: the same tie again is no decision", log.size() == said);
+            decided.setFloorTie(LabourMarket.FloorTie.NOTHING, LabourMarket.DEFAULT_TIE_SHARE);
+            assertTrue("a tie to nothing is said as a cash figure",
+                    log.last().label().equals("Wage floor tied to nothing: a cash figure"));
+            decided.setFloorTie(null, LabourMarket.DEFAULT_TIE_SHARE);
+            assertTrue("a null tie reads prices, and is said so",
+                    decided.getFloorTie() == LabourMarket.FloorTie.PRICES && log.last().label().equals("Wage floor tied to prices"));
+        }
 
         /* ============ 3. SCARCITY RAISES IT, SURPLUS LOWERS IT ============
 
@@ -136,15 +377,23 @@ public class LabourCheck {
 
         /*
          * NOBODY IS PAID UNDER THE MINIMUM, which is what makes an unskilled
-         * glut unfixable by price. The band's own floor would be 0.7x base, but
-         * base IS the minimum wage for the unskilled - so the two collide and
-         * the wage cannot move at all. That collision is the mechanism, not a
-         * rounding artefact: it is what forces the adjustment into departures.
+         * glut unfixable by price. The band's own floor is MIN_MULTIPLE (0.7x)
+         * of the going rate, and the default minimum wage is DEFAULT_FLOOR_SHARE
+         * (0.85x) of it, over it - so the glut stops at the minimum, not at its
+         * own floor, and the wage cannot fall further. That is the mechanism, not
+         * a rounding artefact: it is what forces the adjustment into departures.
+         * (Until WG1, 2026-11-10, the two were the same number, by construction,
+         * because the floor was the unskilled base itself; now it holds only for
+         * a floor over MIN_MULTIPLE of the going rate, which the default is.)
          */
+        assertTrue("fixture: the default floor is over the unskilled band's own floor of the going rate",
+                LabourMarket.DEFAULT_FLOOR_SHARE > LabourMarket.MIN_MULTIPLE);
         assertTrue("no wage falls below the minimum",
-                slack.getWage(JobType.NO_DIPLOMA) >= slack.getMinimumWage() - 1e-9);
-        assertTrue("...so an unskilled glut is pinned, by construction",
+                slack.getWage(JobType.NO_DIPLOMA) >= slack.cashMinimumWage() - 1e-9);
+        assertTrue("...so an unskilled glut is pinned, at a floor over its own",
                 slack.isPinned(WageBand.NONE));
+        assertTrue("...and paid the floor",
+                slack.isPaidTheFloor(JobType.NO_DIPLOMA));
 
         /*
          * ...AND PINNED AT THE FLOOR IN TODAY'S MONEY (B8, 0.7.47). Wages are
@@ -155,6 +404,10 @@ public class LabourCheck {
          */
         LabourMarket dearer = new LabourMarket();
         dearer.setCostOfLiving(1.1);
+        // THE FLOOR AT THE GOING RATE, for this fixture (WG1, 2026-11-10). It meant "the floor is the unskilled base", which held the Diploma
+        // glut (0.70 x 1.30 = .91 of the going rate) at the floor; the default floor is .85 of it, under the Diploma glut's own, which would
+        // hold nobody here. A floor at the going rate is over .91 and holds the Diploma glut, and so causes the condition the section needs.
+        dearer.setMinimumWage(dearer.getGoingRate());
         for (int m = 0; m < 200; m++) dearer.advanceMonth(posts, many);
         double diploma = dearer.getWage(JobType.DIPLOMA), cashFloor = dearer.cashMinimumWage();
         System.out.printf("   living x1.1: Diploma paid %.4f, the floor in today's money %.4f, in founding money %.4f%n",
@@ -316,10 +569,17 @@ public class LabourCheck {
         double[] wagesBefore = lived.getLabourMarket().getWages().clone();
         double[] skillsBefore = lived.getPopulationManager().workforceByBand().clone();
 
+        // THE FLOOR'S TIE (WG1): a tie of NOTHING at a share moved, set before the save so the real save below carries it.
+        final double tieShareSaved = .33;
+        lived.getLabourMarket().setFloorTie(LabourMarket.FloorTie.NOTHING, tieShareSaved);
+
         assertTrue("the city saved", lived.saveGame(1, "labour").ok);
 
         Game back = new Game(files);
         quietly(() -> back.loadGameSave(1));
+
+        assertTrue("the floor's tie came back through a real save", back.getLabourMarket().getFloorTie() == LabourMarket.FloorTie.NOTHING);
+        close("...and its share", back.getLabourMarket().getTieShare(), tieShareSaved, 1e-12);
 
         double[] wagesAfter = back.getLabourMarket().getWages();
         double[] skillsAfter = back.getPopulationManager().workforceByBand();
@@ -332,6 +592,26 @@ public class LabourCheck {
             close("  the " + b.label() + " workers came back",
                     skillsAfter[b.ordinal()], skillsBefore[b.ordinal()], 1.0);
         }
+
+        // The tie through state() and restore() alone, and an array cut before the two values the tie added: an older save, which is prices.
+        LabourMarket tiedMarket = new LabourMarket();
+        tiedMarket.setFloorTie(LabourMarket.FloorTie.AVERAGE_WAGE, .61);
+        double[] tiedState = tiedMarket.state();
+        LabourMarket tiedBack = new LabourMarket();
+        tiedBack.restore(tiedState);
+        assertTrue("a tie to the average wage survives state() and restore()", tiedBack.getFloorTie() == LabourMarket.FloorTie.AVERAGE_WAGE);
+        close("...with its share", tiedBack.getTieShare(), .61, 1e-12);
+        LabourMarket olderBack = new LabourMarket();
+        olderBack.setFloorTie(LabourMarket.FloorTie.NOTHING, .77);
+        olderBack.restore(java.util.Arrays.copyOf(tiedState, tiedState.length - 2));
+        assertTrue("an array cut before the tie restores prices", olderBack.getFloorTie() == LabourMarket.FloorTie.PRICES);
+        close("...at the default share", olderBack.getTieShare(), LabourMarket.DEFAULT_TIE_SHARE, 1e-15);
+        double[] outOfRange = tiedState.clone();
+        outOfRange[outOfRange.length - 2] = LabourMarket.FloorTie.values().length;
+        LabourMarket garbledBack = new LabourMarket();
+        garbledBack.setFloorTie(LabourMarket.FloorTie.NOTHING, .77);
+        garbledBack.restore(outOfRange);
+        assertTrue("a tie out of range reads prices", garbledBack.getFloorTie() == LabourMarket.FloorTie.PRICES);
 
         /*
          * NOT THE SAME AS RECOMPUTING IT. If the wage were rebuilt from
@@ -390,6 +670,9 @@ public class LabourCheck {
          * MonetaryCheck, on a handler with numbers put into it by hand.
          */
 
+        // The tie the save above carried is put back to prices: this section asks what a floor that moves wages does to rent, and a floor tied
+        // to nothing would be restruck by the cost of living this month too.
+        back.getLabourMarket().setFloorTie(LabourMarket.FloorTie.PRICES, LabourMarket.DEFAULT_TIE_SHARE);
         double floorBefore = back.getLabourMarket().getMinimumWage();
         double targetBefore = rents.getRentTarget();
         // THE MINIMUM WAGE OPENED IN THE FIXTURE (R0): the question is whether rent follows a floor that moves wages, and a city on history's
@@ -398,6 +681,9 @@ public class LabourCheck {
         back.getLabourMarket().setMinimumWage(floorBefore * 2);
         quietly(() -> back.simulateMonths(1));
         double unskilledNow = back.getLabourMarket().getWage(JobType.NO_DIPLOMA);
+        // (WG1, 2026-11-10) The floor is a real minimum now: doubling it lifts the wages under it, not the whole ladder. The unskilled wage is
+        // one of them - the default floor is .85 of the going rate, the doubled one 1.7 of it, over what the unskilled are paid unless they
+        // are very scarce - and the unskilled wage is the one the old rent formula read, so the fixture still causes what the section asks.
         assertTrue("fixture: doubling the floor moved the unskilled wage", unskilledNow > floorBefore * 1.5);
 
         /*

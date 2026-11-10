@@ -63,6 +63,10 @@ import java.util.concurrent.TimeUnit;
  *      the history rounded a table's money to a fixed hundredth of a thousand (PartnerTrade.HISTORY_ROUND), a thirty-eight times coarser
  *      rounding at the factor, and Game.cityExportPriceLevel() weights the world's prices by those rounded exports, so the second January's
  *      terms of trade, and the D$, were another's by month 24.
+ *  10. THE SCREENS' CUT-OFFS (EP2), at the factor and at today's prices, over the default founding's two children, the built city's and the town's: the partners given
+ *      a lane (TradeLanes.of over the feed, at minLane()), the holdings folded and shown (FundView.FOLD_UNDER) and every live nominal line
+ *      ui.Money.something() shows are the same every month, a lane is drawn somewhere, and the lines the old half-thousand would have hidden
+ *      are there at the factor and none at today's prices. Section 8 is left out: its twin parts on series of its own (main's record).
  *
  * The one oracle for "today's figure" is the child at today's prices: a constant that is read there is the figure as the class writes it, so
  * nothing in this file copies a literal from the model.
@@ -172,6 +176,9 @@ public class PriceLevelCheck {
     /** The relative gap allowed between a constant that carries the factor and today's figure times it, and between a ratio and today's ratio: one rounding of one product. */
     static final double CONSTANT_TOLERANCE = 1e-12;
 
+    /** The literal half-thousand the screens held before EP2 as their "nothing" (ui.Money, FundView's fold), in thousands as written: the figures between it and the factor's own cut-off are the ones the old cut-off would have hidden. */
+    static final double OLD_CUT = .5;
+
     /** The child property that stands in for the factor (PriceLevel's one door). */
     static final String DOOR = "cbs.priceLevel";
 
@@ -260,6 +267,8 @@ public class PriceLevelCheck {
             Child townToday = Child.run(true, "--twin-town");
             out.println("\n--- 9. the twin on ScaleCheck's town (the playtest's founding, forty houses, stores and farms, twenty houses more, a depot; saved and loaded as ScaleCheck loads it), " + TOWN_MONTHS + " months ---");
             theTwin(townPlain, townToday, TOWN_MONTHS);
+            out.println("\n--- 10. the screens' cut-offs, at the factor and at today's prices: the lanes drawn, the holdings folded, the lines shown ---");
+            theCutOffs(plain, today, builtPlain, builtToday, townPlain, townToday);
         }
 
         out.printf("%nPriceLevelCheck took %.1f s%n", (System.nanoTime() - start) / 1e9);
@@ -354,7 +363,10 @@ public class PriceLevelCheck {
         }
         assertTrue("PayTier: each of the " + PayTier.values().length + " rungs is its literal times the factor", rungs && PayTier.values().length == 6);
         assertTrue("...and the ladder's shape (each rung over the unskilled) is today's", ladder);
-        assertTrue("LabourMarket.DEFAULT_MINIMUM_WAGE is the unskilled rung, not scaled again", LabourMarket.DEFAULT_MINIMUM_WAGE == PayTier.UNSKILLED.getMonthlyWage());
+        // WG1: the going rate is the unskilled rung, and the default floor its share of it (the floor no longer anchors the ladder).
+        assertTrue("LabourMarket.GOING_RATE is the unskilled rung, not scaled again", LabourMarket.GOING_RATE == PayTier.UNSKILLED.getMonthlyWage());
+        relative("...and DEFAULT_MINIMUM_WAGE its share of it, not scaled again", LabourMarket.DEFAULT_MINIMUM_WAGE,
+                LabourMarket.DEFAULT_FLOOR_SHARE * PayTier.UNSKILLED.getMonthlyWage(), 1e-15);
         relative("...and its dial's bounds are the rung's x.25 and x5", LabourMarket.MAX_SETTABLE / LabourMarket.MIN_SETTABLE,
                 LabourMarket.MAX_SETTABLE_MULTIPLE / LabourMarket.MIN_SETTABLE_SHARE, 1e-12);
         relative("TaxPolicy.DEFAULT_FIXED_GRANT is its share of the unskilled rung, not scaled again", TaxPolicy.DEFAULT_FIXED_GRANT,
@@ -499,6 +511,7 @@ public class PriceLevelCheck {
         "SitePreparation.EARTH_USD_PER_M3", "SitePreparation.WALL_USD_PER_M2", "SitePreparation.USD_PER_M2",
         "RunWorks.DECK_USD_PER_M2", "RunWorks.TUNNEL_BORE_USD_PER_KM", "RunWorks.FOOTHILL_USD_PER_M2", "RunWorks.STEEP_USD_PER_M2", "RunWorks.VERY_STEEP_USD_PER_M2",
         "BridgeWorks.BASE_USD_PER_M2", "BridgeWorks.CONFEDERATION_USD_PER_M2",
+        "FundView.FOLD_UNDER", "ui.Money.NOTHING",
     };
 
     static void theLiterals(Child plain, Child today) {
@@ -663,6 +676,108 @@ public class PriceLevelCheck {
         return 0;
     }
 
+    /* =================================================================
+       10. THE SCREENS' CUT-OFFS
+       ================================================================= */
+
+    /**
+     * What the screens do at a dollar cut-off (EP2: ui.Money.NOTHING says nothing of a figure under it, FundView.FOLD_UNDER folds a holding under it
+     * into "and N more", TradeLanes.minLane() gives a partner under it no lane) is the same at the factor as at today's prices: the children counted
+     * each month, with the model's own code, the partners given a lane, the holdings folded and shown and, for every live nominal series the digest
+     * sampled, whether ui.Money.something() shows it. Section 8 is left out on purpose: main records it red, its twin parting at months 91 to 103 on
+     * series of its own (the gate's PriceLevelCheck lines), and a count taken over those months would carry the parting and not the cut-off. 6 and 7
+     * are green, and 9 is red on main by one series nine billionths apart (sector.Retail.cash, month 29), far inside any cut-off, so a count that
+     * differs in any of the three is the cut-off's. None of the three trades much with any one partner: a lane is drawn in one month of their 216
+     * (the town's), at either level, so the lanes' count is mostly zeros, and the floor's own figure at the factor is DenominationCheck's to assert.
+     */
+    static void theCutOffs(Child plain, Child today, Child builtPlain, Child builtToday, Child townPlain, Child townToday) {
+        String[] cities = { "the default founding", "the built city", "the town" };
+        Child[][] pairs = { { plain, today }, { builtPlain, builtToday }, { townPlain, townToday } };
+        int lanesMonths = 0, lanesMost = 0, held = 0, heldMost = 0, foldedMost = 0, bandAtFactor = 0;
+        for (int c = 0; c < pairs.length; c++) {
+            Child a = pairs[c][0], b = pairs[c][1];
+            String city = cities[c];
+            boolean counted = a.ok && b.ok && !a.counts.isEmpty() && a.counts.keySet().equals(b.counts.keySet()) && a.counts.containsKey("lanes") && a.counts.containsKey("band");
+            assertTrue(city + ": both children counted the cut-offs, the same rows (" + a.counts.size() + " at the factor, " + b.counts.size() + " at today's prices)", counted);
+            if (!counted) continue;
+            int months = a.counts.get("lanes").length;
+            for (String row : new String[] { "lanes", "arrows", "holdings.folded", "holdings.shown" }) {
+                List<String> first = new ArrayList<>();
+                int off = unequal(a.counts.get(row), b.counts.get(row), first);
+                String what = row.equals("lanes") ? "the partners given a lane (TradeLanes.of over the feed, at minLane())"
+                        : row.equals("arrows") ? "the arrows drawn for a generated world's partners"
+                        : row.equals("holdings.folded") ? "the holdings folded into \"and N more\" (FundView.FOLD_UNDER)" : "the holdings shown";
+                assertTrue(city + ": " + what + " are the same at the factor and at today's prices every month (" + months + " months)", off == 0);
+                for (String line : first) out.println("      " + row + " " + line);
+            }
+            double[] lanes = a.counts.get("lanes"), folded = a.counts.get("holdings.folded"), shown = a.counts.get("holdings.shown");
+            int drew = 0, most = 0, heldHere = 0, heldAt = 0, foldedAt = 0;
+            for (int m = 0; m < months; m++) {
+                if (lanes[m] > 0) drew++;
+                most = Math.max(most, (int) lanes[m]);
+                heldHere = Math.max(heldHere, (int) (folded[m] + shown[m]));
+                foldedAt = Math.max(foldedAt, (int) folded[m]);
+                heldAt += folded[m] + shown[m] > 0 ? 1 : 0;
+            }
+            lanesMonths += drew;
+            lanesMost = Math.max(lanesMost, most);
+            held += heldAt;
+            heldMost = Math.max(heldMost, heldHere);
+            foldedMost = Math.max(foldedMost, foldedAt);
+            out.printf("   %s: a lane drawn in %d of %d months (at most %d partners); the fund held something in %d months (at most %d holdings, %d folded)%n",
+                    city, drew, months, most, heldAt, heldHere, foldedAt);
+
+            // every line a screen gives a word or a line: shown at one level, shown at the other
+            List<String> firstFlips = new ArrayList<>();
+            int series = 0, flags = 0, flips = 0, shownFlags = 0;
+            for (String row : a.counts.keySet()) {
+                if (!row.startsWith("shown.")) continue;
+                series++;
+                double[] x = a.counts.get(row), y = b.counts.get(row);
+                for (int m = 0; m < Math.min(x.length, y.length); m++) {
+                    flags++;
+                    if (x[m] != 0) shownFlags++;
+                    if (x[m] != y[m]) {
+                        flips++;
+                        if (firstFlips.size() < 5) firstFlips.add(row.substring("shown.".length()) + " month " + m + ": " + (x[m] != 0 ? "shown" : "left out") + " at the factor, "
+                                + (y[m] != 0 ? "shown" : "left out") + " at today's prices");
+                    }
+                }
+            }
+            assertTrue(city + ": every live nominal line is shown or left out alike at both levels, " + series + " series over " + months + " months (" + flips + " of "
+                    + flags + " differ; " + shownFlags + " shown)", series > 0 && flips == 0);
+            for (String line : firstFlips) out.println("      " + line);
+
+            // the lines the old literal hid: at the factor a figure between the factor's cut-off and the half-thousand; at today's prices none can be
+            int bandHere = 0, bandThere = 0;
+            for (double v : a.counts.get("band")) bandHere += (int) v;
+            for (double v : b.counts.get("band")) bandThere += (int) v;
+            if (c == 0) bandAtFactor = bandHere;
+            out.printf("   %s: lines shown that the old half-thousand would have hidden, %d series-months at the factor, %d at today's prices%n", city, bandHere, bandThere);
+            assertTrue(city + ": at today's prices no line sits between ui.Money.NOTHING and the old half-thousand (it is the half-thousand)", bandThere == 0);
+        }
+        assertTrue("some partner is given a lane in some month of at least one of the two cities (the floor at the factor draws them): " + lanesMonths
+                + " city-months, at most " + lanesMost + " partners", lanesMonths > 0);
+        out.printf("   the fund: %s%n", held == 0 ? "held nothing in either city, so the fold is counted over no holding"
+                : "held something in " + held + " city-months, at most " + heldMost + " holdings and " + foldedMost + " folded");
+        assertTrue("the default founding shows lines at the factor that the old half-thousand would have hidden: " + bandAtFactor + " series-months", bandAtFactor > 0);
+    }
+
+    /**
+     * How many months two rows part (a row of a different length parts in every month it does not share), and the first few as lines. A count is an
+     * integer, so equal is equal.
+     */
+    static int unequal(double[] x, double[] y, List<String> first) {
+        if (x == null || y == null) { first.add("is missing from one child"); return Integer.MAX_VALUE; }
+        int off = 0;
+        for (int m = 0; m < Math.max(x.length, y.length); m++) {
+            if (m < x.length && m < y.length && x[m] == y[m]) continue;
+            off++;
+            if (first.size() < 5) first.add("month " + m + ": " + (m < x.length ? x[m] : Double.NaN) + " at the factor, " + (m < y.length ? y[m] : Double.NaN) + " at today's prices");
+        }
+        return off;
+    }
+
     /* ================================================================== */
 
     /** One series of the digest: a month-by-month list of values and whether it is money (N) or not (R). */
@@ -682,6 +797,8 @@ public class PriceLevelCheck {
         final Map<String, Double> consts = new LinkedHashMap<>();
         final Map<String, Double> ratios = new LinkedHashMap<>();
         final Map<String, Series> series = new LinkedHashMap<>();
+        /** What the screens' cut-offs did each month (EP2, the K lines: Counts); kept apart from the series so that theTwin never sees them. */
+        final Map<String, double[]> counts = new LinkedHashMap<>();
 
         /** A child JVM started as AllChecks starts a harness, with the one door open or not; one after the other, never at once. */
         static Child run(boolean todaysPrices, boolean built) throws Exception {
@@ -740,6 +857,12 @@ public class PriceLevelCheck {
                     for (int i = 0; i < v.length; i++) v[i] = Double.parseDouble(parts[i]);
                     series.put(f[1], new Series(f[2].charAt(0), v));
                 }
+                case "K" -> {
+                    String[] parts = f.length > 2 ? f[2].split(",") : new String[0];
+                    double[] v = new double[parts.length];
+                    for (int i = 0; i < v.length; i++) v[i] = Double.parseDouble(parts[i]);
+                    counts.put(f[1], v);
+                }
                 default -> { if (line.startsWith("E\t")) out.println("   child: " + line.substring(2)); }
             }
         }
@@ -763,14 +886,17 @@ public class PriceLevelCheck {
                 ratios(real);
                 int months = town ? TOWN_MONTHS : played ? PLAYED_MONTHS : built ? BUILT_MONTHS : TWIN_MONTHS;
                 Digest d = new Digest(months + 1);
+                Counts k = new Counts(months + 1);
                 GameFiles townFiles = town ? GameFiles.scratch("pricelevel-town") : null;
                 Game g = town ? townCity(sink, townFiles) : played ? playedCity(sink) : built ? builtCity() : foundedCity();
                 d.sample(g, 0);
+                k.sample(g, d, 0);
                 for (int m = 1; m <= months; m++) {
                     if (town) townMonth(g, m);
                     else if (played) playedMonth(g, m - 1);
                     else g.simulateMonths(1);
                     d.sample(g, m);
+                    k.sample(g, d, m);
                 }
                 d.history(g);
                 if (town) {
@@ -785,6 +911,7 @@ public class PriceLevelCheck {
                     d.kinds.putAll(r.kinds);
                 }
                 d.print(real);
+                k.print(real);
                 real.flush();
             } catch (Throwable t) {
                 t.printStackTrace(real);
@@ -1084,6 +1211,112 @@ public class PriceLevelCheck {
             for (Map.Entry<String, double[]> e : values.entrySet()) {
                 b.setLength(0);
                 b.append("S\t").append(e.getKey()).append('\t').append(kinds.get(e.getKey())).append('\t');
+                double[] row = e.getValue();
+                for (int i = 0; i < row.length; i++) { if (i > 0) b.append(','); b.append(row[i]); }
+                o.println(b);
+            }
+        }
+    }
+
+    /**
+     * What the screens' cut-offs did to the city each month (EP2): counts the model's own code gives, a row of one per month for each, printed as K
+     * lines for section 10. Never a copy of a formula: the lanes are TradeLanes' own over the feed the map is given, the holdings are FundView's own,
+     * the lines shown are ui.Money.something()'s own over the series the digest sampled the same month.
+     */
+    static final class Counts {
+        final int months;
+        final Map<String, double[]> values = new LinkedHashMap<>();
+        NationsMap map;
+        boolean mapTried;
+
+        Counts(int months) { this.months = months; }
+
+        void put(String name, int m, double x) { values.computeIfAbsent(name, key -> new double[months])[m] = x; }
+
+        /** The nations' map of the world file, built once the first time it is wanted (as MapView builds it); null where there is no file or it will not open. */
+        NationsMap map() {
+            if (!mapTried) {
+                mapTried = true;
+                java.nio.file.Path file = WorldData.locate();
+                if (file != null) {
+                    try {
+                        map = NationsMap.of(WorldData.open(file));
+                    } catch (java.io.IOException | RuntimeException e) {
+                        map = null;
+                    }
+                }
+            }
+            return map;
+        }
+
+        void sample(Game g, Digest d, int m) {
+            lanes(g, m);
+            // holdings, as FundScreen folds them: under FOLD_UNDER goes into "and N more"
+            int folded = 0, shown = 0;
+            for (FundView.Position p : FundView.positions(g)) {
+                if (p.value() < FundView.FOLD_UNDER) folded++;
+                else shown++;
+            }
+            put("holdings.folded", m, folded);
+            put("holdings.shown", m, shown);
+            // the lines shown: every live nominal series the digest sampled this month (the history is recorded rounded, so not those)
+            int band = 0;
+            for (Map.Entry<String, Character> e : d.kinds.entrySet()) {
+                String name = e.getKey();
+                if (e.getValue() != 'N' || name.startsWith("h.")) continue;
+                double v = d.values.get(name)[m];
+                boolean shows = ham.citybuildersim.ui.Money.something(v);
+                put("shown." + name, m, shows ? 1 : 0);
+                if (shows && Math.abs(v) < OLD_CUT) band++;
+            }
+            put("band", m, band);
+        }
+
+        /**
+         * The partners given a lane this month, built as ui/MapView.lanesNow() builds them: TradeLanes.of over the feed's exports and imports by
+         * nation and its minLane(), at the city's place (the Earth's key where the map draws on it, else a generated world's stand-in the feed
+         * names; MapView draws arrows for that, TradeLanes.Arrows.of over the same figures, counted in "arrows"). Where the child cannot get a
+         * NationsMap (no world file) the same call is made over finite stand-in nodes spread over the globe; only the floor matters to the count.
+         */
+        void lanes(Game g, int m) {
+            TradeLanes.Feed f = g.getTradeFeed();
+            double[] none = new double[0];
+            double[] ex = f.exportsByNation() == null ? none : f.exportsByNation(), im = f.importsByNation() == null ? none : f.importsByNation();
+            World.Key key = g.getCityLand().key();
+            boolean stands = false;
+            double lat = 0, lon = 0;
+            if (NationsMap.drawsOn(key)) {
+                lat = key.lat();
+                lon = EarthProj.normaliseLon(key.lon());
+            } else if (Double.isFinite(f.standInLat()) && Double.isFinite(f.standInLon())) {
+                lat = f.standInLat();
+                lon = f.standInLon();
+                stands = true;
+            }
+            NationsMap nm = map();
+            int lanes, arrows = 0;
+            if (nm != null) {
+                lanes = TradeLanes.of(nm, lat, lon, f.month(), ex, im, f.minLane()).partners();
+                if (stands) arrows = TradeLanes.Arrows.of(nm, lat, lon, f.month(), ex, im, f.minLane()).count();
+            } else {
+                int n = Math.max(ex.length, im.length);
+                double[] nodeLat = new double[n], nodeLon = new double[n];
+                for (int i = 0; i < n; i++) {
+                    nodeLat[i] = -60 + (i * 37) % 120;
+                    nodeLon[i] = -170 + (i * 53) % 340;
+                }
+                lanes = TradeLanes.of(lat, lon, f.month(), nodeLat, nodeLon, ex, im, f.minLane()).partners();
+                if (stands) arrows = TradeLanes.Arrows.of(lat, lon, f.month(), nodeLat, nodeLon, ex, im, f.minLane()).count();
+            }
+            put("lanes", m, lanes);
+            put("arrows", m, arrows);
+        }
+
+        void print(PrintStream o) {
+            StringBuilder b = new StringBuilder();
+            for (Map.Entry<String, double[]> e : values.entrySet()) {
+                b.setLength(0);
+                b.append("K\t").append(e.getKey()).append('\t');
                 double[] row = e.getValue();
                 for (int i = 0; i < row.length; i++) { if (i > 0) b.append(','); b.append(row[i]); }
                 o.println(b);
