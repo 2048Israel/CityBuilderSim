@@ -486,11 +486,22 @@ public class ManufacturingCheck {
         // built on; the machine works is the one that closes.
         double cheapMach = man.estimatedMonthlyProfit(mach, plans);
         double cheapShop = man.estimatedMonthlyProfit(shop, plans);
+        // WG1 (2026-11-10): the floor lifts only the wages under it, and only where it is law. This 1900 town has no minimum wage until 1918 (R0),
+        // where until WG1 the dial was the ladder's anchor and moved every wage fourfold, law or none; so the fixture opens that one lever before
+        // the floor is raised. Four times the floor in force is 3.4 times the going rate, past the rungs nearly every post is paid (spec-wages 3.8).
         double floor = city.getLabourMarket().getMinimumWage();
         quietly(() -> {
+            city.getEconomyManager().getTaxPolicy().openNow(PolicyDates.Lever.MINIMUM_WAGE);
+            city.getLabourMarket().setFloorBinding(true);
             city.getLabourMarket().setMinimumWage(floor * 4);
             for (int i = 0; i < 36; i++) city.simulateMonths(1);
         });
+        double heldByFloor = 0;
+        for (double w : city.getPopulationManager().workersPaidTheFloor(city.getLabourMarket())) heldByFloor += w;
+        double employed = city.getPopulationManager().getJobsFilled();
+        out.printf("   the floor x4 is law: %,.0f of %,.0f workers paid it%n", heldByFloor, employed);
+        assertTrue("fixture: the floor four times over is law, and most of the city's workers are paid it",
+                city.getLabourMarket().isFloorBinding() && employed > 0 && heldByFloor > .5 * employed);
         double dearWageMach = man.estimatedMonthlyProfit(mach, plans);
         double dearWageShop = man.estimatedMonthlyProfit(shop, plans);
         out.printf("   wages x4: a machine works goes $%,.0fk -> $%,.0fk, a shop $%,.0fk -> $%,.0fk%n",
