@@ -595,6 +595,14 @@ public final class Ports {
         return Math.max(0, t);
     }
 
+    /** How busy a kind's terminals were the month billed, 0 to 1: its sea tonnes both ways over what the terminals standing handle in a month (berths()), 0 with none standing (HB2: what a yard shows as its stock - the ports hold none, so the map shows how hard they worked). */
+    public double busy(Cargo k, double[] berths) {
+        int i = k.ordinal();
+        double have = berths != null && i < berths.length ? berths[i] : 0;
+        if (!(have > 0)) return 0;
+        return Math.min(1, (seaIn[i] + seaOut[i]) / have);
+    }
+
     /** All sea tonnes, both ways, the month billed. */
     public double seaTonnes() {
         double t = 0;
