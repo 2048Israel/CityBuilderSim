@@ -2228,7 +2228,18 @@ final class BuildScreen {
             line.append(formatter.format(n)).append(" ").append(n == 1 ? jobLabel(job) : jobPlural(job));
         }
         if (line.length() == 0) line.append("needs no staff");
-        else if (f.market() && f.staffable() < .995) line.append(String.format(" · the city could staff %.0f%%", f.staffable() * 100));
+        else if (f.market() && f.staffable() < .995) {
+            // The spare workers alone, and with the arrivals the owner's gate counts (GW1).
+            String arrivals = Sector.Staffing.arrivalsWords();
+            double now = f.staffable() * 100, with = f.staffableWithArrivals() * 100;
+            if (f.staffableWithArrivals() >= .995) {
+                line.append(String.format(" · the city could staff %.0f%% now, all of it with %s", now, arrivals));
+            } else if (Math.round(now) == Math.round(with)) {
+                line.append(String.format(" · the city could staff %.0f%%, now or with %s", now, arrivals));
+            } else {
+                line.append(String.format(" · the city could staff %.0f%% now, %.0f%% with %s", now, with, arrivals));
+            }
+        }
         double free = f.landFree();
         double land = t.getLandSqFt();
         boolean noRoom = land > free;

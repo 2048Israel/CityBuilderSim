@@ -860,6 +860,19 @@ public class LabourCheck {
                     && short_.getMigration().getLastArrivals() <= 1; extra++) {
                 short_.simulateMonths(1);
             }
+            /*
+             * ...AND UNTIL ITS LABOURERS ARE PAID NO MORE THAN THE GOING RATE (GW1). The claim below is about a city that pays the going
+             * rate for them; this city pays over it for the first ten years on the tree whose staffing gate counts the draw: its unskilled
+             * posts outrun the labourers it has (month 61: the unskilled premium 1.072, 3,578 posts against 3,144 workers; month 100:
+             * 1.043, 5,441 against 4,715), and they are filled at month 121 (0.995, 5,781 against 6,053; 0.94 from month 131). Bounded,
+             * so a city that never settles fails the fixture's own assertion instead of hanging.
+             */
+            // GW1: the gate counts a year's draw (Sector.GATE_DRAW_MONTHS), so this city's works come earlier and its unskilled posts outrun its labourers for ten years; the fixture now runs on to a month somebody moves in and the labourers are paid no more than the going rate.
+            for (int extra = 0; extra < 180
+                    && (short_.getMigration().getLastArrivals() <= 1
+                            || short_.getLabourMarket().bandPremium(WageBand.NONE) > 1); extra++) {
+                short_.simulateMonths(1);
+            }
         });
         LabourMarket m2 = short_.getLabourMarket();
         long doctorPosts = short_.getPopulationManager().getJobs()[JobType.UNIV_DOCTOR.ordinal()];

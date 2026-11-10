@@ -537,6 +537,21 @@ public class FittingCheck {
         return g;
     }
 
+    /**
+     * Moves bread's world price (EquipmentCheck.priceAt's way) to where the investors' estimate of a Bakery over the cost of one is `target`: the score rises
+     * with bread's price, found by bisection between the price as it stands and eight times it. False if a price would not move or the target is out of reach.
+     */
+    static boolean breadForBakeryScore(Game g, BusinessInvestment plans, String key, BuildingsTemplate t, double target) {
+        double bread0 = SpreadPlanner.cityValue(g.getMarkets().get(Good.BREAD));
+        double lo = 1, hi = 8;
+        for (int i = 0; i < 60; i++) {
+            double mid = (lo + hi) / 2;
+            if (!EquipmentCheck.priceAt(g, Good.BREAD, bread0 * mid)) return false;
+            if (plans.estimatedMonthlyProfit(key, t) / plans.getCostOf(t, 1) < target) lo = mid; else hi = mid;
+        }
+        return EquipmentCheck.priceAt(g, Good.BREAD, bread0 * hi) && hi < 8;
+    }
+
     /** Holds every sector: none asks its plan or fits anything in the round, so that the fixture's only orders are the ones the harness places. */
     static void holdAll(Game g) {
         for (Sector s : g.getSectors().all()) g.getBusinessInvestment().holdSector(s.key());
@@ -618,7 +633,21 @@ public class FittingCheck {
         check("the plan builds a Bakery and the fitting earns more on its cost: the month's decision is the fitting, and not the plan's", wins != builds && wins.piece == drive && wins.template == t);
         check("fixture: the price of coal moves to one and a half times the break-even", EquipmentCheck.priceCoalAt(g, even * 1.5));
         EquipmentFit.Verdict middling = EquipmentFit.verdict(g, bakery, drive);
+        /*
+         * ...WITH BREAD AT THE PRICE THAT PUTS A BAKERY BETWEEN THE TWO (GW1, 2026-11-10). A drive that pays earns on its cost at least the annuity's
+         * and the hurdle's share of it (0.0058 a month here), and the claim below needs a Bakery that earns more than that. The staffing gate counts the
+         * workers a building's own posts would draw (Sector.GATE_DRAW_MONTHS), so this village's businesses build earlier and its wages stand higher
+         * at the order, and a Bakery earns 0.00154 a month on its cost (the investors' estimate over the cost of one) - under the drive at any price
+         * at which it pays (0.00904 at one and a half times the break-even, 0.01881 at three times): the Bakery could not earn more than a fitting
+         * that pays. Bread's price is moved (world prices, the way the coal's is) to where a Bakery earns the mean of those two, so the drive at
+         * three times earns more than a Bakery, as the fixture above read, and at one and a half times earns less, as the claim below needs.
+         */
+        double wanted = (middling.earningsOnCost() + rich.earningsOnCost()) / 2;
+        boolean breadMoved = breadForBakeryScore(g, plans, key, t, wanted);
         double buildScore2 = plans.estimatedMonthlyProfit(key, t) / plans.getCostOf(t, 1);
+        check("fixture: bread's price moves until a Bakery earns on its cost the mean of what the drive earns at one and a half times and at three times the break-even",
+                breadMoved && Math.abs(buildScore2 - wanted) <= 1e-6 * wanted && middling.earningsOnCost() < buildScore2 && buildScore2 < rich.earningsOnCost(),
+                buildScore2 + " vs " + middling.earningsOnCost() + " / " + rich.earningsOnCost());
         check("...where the drive still pays but earns less on its cost than a Bakery would", middling.kind() == EquipmentFit.Kind.PAYS && middling.earningsOnCost() < buildScore2,
                 middling.earningsOnCost() + " vs " + buildScore2);
         check("the plan builds a Bakery and the building earns more on its cost: the plan's own decision comes back, the very object", EquipmentFit.choose(g, industry, builds) == builds);
@@ -944,9 +973,17 @@ public class FittingCheck {
         Equipment drive = t.getEquipment(DRIVE);
         ham.citybuildersim.sectors.Construction builders = g.getSectors().construction();
         GoodsMarket machinery = g.getMarkets().get(Good.MACHINERY);
+        /*
+         * ...WITH THE CITY'S COAL AT HALF THE BREAK-EVEN (GW1, 2026-11-10). At the prices this village stands at after its settling months the drive paid
+         * (Verdict PAYS, a gain of 0.0531 a month on a cost of 8.64, earning back 9.18, the hurdle 0.0441): the staffing gate counts the workers a building's own
+         * posts would draw (Sector.GATE_DRAW_MONTHS), so the village's businesses build earlier and its wages and prices part from where the drive did not pay.
+         * The player's Fit is taken whatever the verdict says, and the claim needs a verdict that says NOT_YET: the coal is priced at half the break-even the
+         * stack's own verdict gives, as section 5 prices it for the drive that does not pay.
+         */
+        boolean coalMoved = EquipmentCheck.priceCoalAt(g, breakEven(g, bakery) * 0.5);
         EquipmentFit.Verdict v = EquipmentFit.verdict(g, bakery, drive);
-        check("fixture: three Bakeries lack the drive and, at today's prices, it does not pay (NOT_YET), and the treasury can pay", bakery.getUnfitted(DRIVE) == 3
-                && v.kind() == EquipmentFit.Kind.NOT_YET && g.getCash() > 100 * expectedCost(g, drive), v.toString());
+        check("fixture: three Bakeries lack the drive and, with the city's coal at half the break-even, it does not pay (NOT_YET), and the treasury can pay", bakery.getUnfitted(DRIVE) == 3
+                && coalMoved && v.kind() == EquipmentFit.Kind.NOT_YET && g.getCash() > 100 * expectedCost(g, drive), v.toString());
 
         double expected = expectedCost(g, drive);
         double cash0 = g.getCash(), drawn0 = machinery.getDrawn(), revenue0 = builders.getFittingThisMonth();

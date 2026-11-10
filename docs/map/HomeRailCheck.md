@@ -1,4 +1,4 @@
-# HomeRailCheck.java - 921 lines · 28 methods · 5 constants · harnesses
+# HomeRailCheck.java - 926 lines · 28 methods · 6 constants · harnesses
 
 `ham/citybuildersim/HomeRailCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
@@ -60,17 +60,17 @@
 | line | section |
 |---:|---|
 | 102 | THE FIXTURES |
-| 190 | · the next haul's bill, worked out before it runs |
-| 281 | THE RUN |
-| 321 | 1. NO RAILWAY, NO CHANGE |
-| 382 | 2. DEALT AFTER THE BOUNDARY |
-| 476 | 3. EACH LEG ONCE |
-| 539 | 4. THE PORT YARD |
-| 624 | 5. THE BILL |
-| 682 | 6. THE DIESEL |
-| 711 | 7. THE WEIGHING |
-| 766 | 8. THE SAVE |
-| 811 | 9. A REAL RUN |
+| 195 | · the next haul's bill, worked out before it runs |
+| 286 | THE RUN |
+| 326 | 1. NO RAILWAY, NO CHANGE |
+| 387 | 2. DEALT AFTER THE BOUNDARY |
+| 481 | 3. EACH LEG ONCE |
+| 544 | 4. THE PORT YARD |
+| 629 | 5. THE BILL |
+| 687 | 6. THE DIESEL |
+| 716 | 7. THE WEIGHING |
+| 771 | 8. THE SAVE |
+| 816 | 9. A REAL RUN |
 
 ## Constants
 
@@ -81,28 +81,29 @@
 | 94 | `HomeRailCheck.CITY_LITRES` | `Freight.CITY_LITRES_A_TONNE` | The diesel a railed city tonne burns, in litres. |
 | 97 | `HomeRailCheck.BASE_MONTHS` | `14` | Months a fixture city is played before a railway is handed to it: HaulageCheck's, long enough for the trucks to be seeded and the books settled. |
 | 100 | `HomeRailCheck.REAL_RUN_MONTHS` | `1250` | Months of a real run section 9 plays: the advisor lays its first station at about month 990 in this city (the run's own count prints it) and the run takes about half a minute. |
+| 147 | `HomeRailCheck.FRACTIONAL_MONTHS` | `60` | (GW1) The most months untilFractional() plays on: the staffing gate's city fills a depot and four spurs with the boundary's tonnes only after some two years. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
 | 65 | `static int fails` |  |
-| 173 | `final BuildingManager bm` |  |
-| 174 | `final Freight fr` |  |
-| 194 | `double h, q, rq, hq` |  |
-| 195 | `final Map<Sector, Double> boundary` |  |
-| 196 | `double homeTonnes, quayTonnes` |  |
-| 236 | `Plan plan` |  |
-| 237 | `double lines, haulageBilled, railRevenue, homeRailed, quayRailed, homeBill, cityLitres, fuelLitres, hauled` |  |
-| 238 | `double worstMiss` |  |
-| 239 | `String worstWhere` |  |
-| 240 | `double constructionExcess` |  |
+| 178 | `final BuildingManager bm` |  |
+| 179 | `final Freight fr` |  |
+| 199 | `double h, q, rq, hq` |  |
+| 200 | `final Map<Sector, Double> boundary` |  |
+| 201 | `double homeTonnes, quayTonnes` |  |
+| 241 | `Plan plan` |  |
+| 242 | `double lines, haulageBilled, railRevenue, homeRailed, quayRailed, homeBill, cityLitres, fuelLitres, hauled` |  |
+| 243 | `double worstMiss` |  |
+| 244 | `String worstWhere` |  |
+| 245 | `double constructionExcess` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 63 | 859 | **type** `public class HomeRailCheck` | The railway's carriage of the city's own bulk, and the port yard, held to FR6's brief: a bulk tonne bought at home rides a siding at the city leg's rate on the room the boundary's tonnes leave, a tonne that crossed a ... |
+| 63 | 864 | **type** `public class HomeRailCheck` | The railway's carriage of the city's own bulk, and the port yard, held to FR6's brief: a bulk tonne bought at home rides a siding at the city leg's rate on the room the boundary's tonnes leave, a tonne that crossed a ... |
 | 67 | 1 | `static void quietly(Runnable r)` |  |
 | 69 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 74 | 4 | `static void report(String label, boolean ok, String detail)` |  |
@@ -110,88 +111,88 @@
 | 82 | 1 | `static boolean near(double a, double b, double tol)` |  |
 | 85 | 1 | `static boolean isZero(double x)` | A positive zero, bit for bit: what "exactly nothing" means for a deal. |
 
-### THE FIXTURES (lines 102-189)
+### THE FIXTURES (lines 102-194)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 110 | 3 | `static Game railed(GameFiles files, int depots, int spurs, int lines, String berth, int months)` | HaulageCheck's played city with a railway handed to it and played on: `depots` Rail Depots, `spurs` Rail Spurs, `lines` Freight Lines and one building from the ports (`berth`, or none) laid on their ground (HaulageChe... |
 | 120 | 25 | `static Game railed(GameFiles files, int depots, int spurs, int lines, String berth, int months, boolean pelletsPay)` | ...and, with `pelletsPay`, on the literals with pellets' world prices doubled (FL1): the Pelletising Plant's pellets net under its ore and coal abroad, and THE ORDER no longer buys ore for an export at a loss, so the ... |
-| 147 | 5 | `static void untilFractional(Game g)` | ...played on, up to a year, until the railway's room after the boundary's tonnes is short of the city's: the share in force strictly between nothing and all. |
-| 154 | 6 | `static void setShares(Freight fr, double home, double quay)` | The home and quay shares put where a fixture wants them, through the sector's own save and restore (the shares are struck at a haul, so a fixture cannot reach them by moving the room). |
-| 162 | 1 | `static double railLine(Sector s)` | What a sector pays the railway, in the statement's input line (Freight bills it "Rail freight"). |
-| 165 | 5 | `static double beforeFr6(Sector s, Good g, double railShare)` | The pre-FR6 city leg of a good: the old three-argument form, written out from FR2's brief. |
-| 172 | 17 | **type** `static final class Bare` | A bare Freight on a catalogue with these buildings standing (RailDepotCheck's fixture): no city, so only the buildings decide a port yard. |
-| 176 | 5 | `Bare(String...standing)` _(in HomeRailCheck.Bare)_ |  |
-| 183 | 5 | `double berthTonnes()` _(in HomeRailCheck.Bare)_ | The tonnes a month of berth standing, over every kind of cargo. |
+| 150 | 7 | `static void untilFractional(Game g)` | ...played on, up to FRACTIONAL_MONTHS, until the railway's room after the boundary's tonnes is short of the city's: the share in force strictly between nothing and all. |
+| 159 | 6 | `static void setShares(Freight fr, double home, double quay)` | The home and quay shares put where a fixture wants them, through the sector's own save and restore (the shares are struck at a haul, so a fixture cannot reach them by moving the room). |
+| 167 | 1 | `static double railLine(Sector s)` | What a sector pays the railway, in the statement's input line (Freight bills it "Rail freight"). |
+| 170 | 5 | `static double beforeFr6(Sector s, Good g, double railShare)` | The pre-FR6 city leg of a good: the old three-argument form, written out from FR2's brief. |
+| 177 | 17 | **type** `static final class Bare` | A bare Freight on a catalogue with these buildings standing (RailDepotCheck's fixture): no city, so only the buildings decide a port yard. |
+| 181 | 5 | `Bare(String...standing)` _(in HomeRailCheck.Bare)_ |  |
+| 188 | 5 | `double berthTonnes()` _(in HomeRailCheck.Bare)_ | The tonnes a month of berth standing, over every kind of cargo. |
 
-### the next haul's bill, worked out before it runs (lines 190-280)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 193 | 10 | **type** `static final class Plan` | What the next haul will bill each sector, from the rows the last month left and the state in force: the brief's rule, not the code's loop. |
-| 199 | 1 | `double city(Sector s)` _(in HomeRailCheck.Plan)_ | The city part of a sector's line: its railed city tonnes x the railway's quote x Haulage's. |
-| 201 | 1 | `double expected(Sector s)` _(in HomeRailCheck.Plan)_ |  |
-| 204 | 29 | `static Plan plan(Game game)` |  |
-| 235 | 7 | **type** `static final class Month` | One month run with its bill worked out first: the plan, then what the haul in the month billed and burned. |
-| 244 | 36 | `static Month runMonth(Game city, double setHome, double setQuay)` | NaN leaves the shares as they stand. |
-
-### THE RUN (lines 281-320)
+### the next haul's bill, worked out before it runs (lines 195-285)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 285 | 35 | `public static void main(String[] args)` |  |
+| 198 | 10 | **type** `static final class Plan` | What the next haul will bill each sector, from the rows the last month left and the state in force: the brief's rule, not the code's loop. |
+| 204 | 1 | `double city(Sector s)` _(in HomeRailCheck.Plan)_ | The city part of a sector's line: its railed city tonnes x the railway's quote x Haulage's. |
+| 206 | 1 | `double expected(Sector s)` _(in HomeRailCheck.Plan)_ |  |
+| 209 | 29 | `static Plan plan(Game game)` |  |
+| 240 | 7 | **type** `static final class Month` | One month run with its bill worked out first: the plan, then what the haul in the month billed and burned. |
+| 249 | 36 | `static Month runMonth(Game city, double setHome, double setQuay)` | NaN leaves the shares as they stand. |
 
-### 1. NO RAILWAY, NO CHANGE (lines 321-381)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 325 | 56 | `static void noRailway(Game plain, Game trackOnly)` |  |
-
-### 2. DEALT AFTER THE BOUNDARY (lines 382-475)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 386 | 89 | `static void dealt(Game tight, Game rail)` |  |
-
-### 3. EACH LEG ONCE (lines 476-538)
+### THE RUN (lines 286-325)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 480 | 58 | `static void eachLegOnce(Game rail, Game yard)` |  |
+| 290 | 35 | `public static void main(String[] args)` |  |
 
-### 4. THE PORT YARD (lines 539-623)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 543 | 80 | `static void portYard(Game rail, Game yard, Game spurBerth)` |  |
-
-### 5. THE BILL (lines 624-681)
+### 1. NO RAILWAY, NO CHANGE (lines 326-386)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 628 | 53 | `static Month[] bill(Game rail, Game yard)` |  |
+| 330 | 56 | `static void noRailway(Game plain, Game trackOnly)` |  |
 
-### 6. THE DIESEL (lines 682-710)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 686 | 24 | `static void diesel(Game plain, Month[] months)` |  |
-
-### 7. THE WEIGHING (lines 711-765)
+### 2. DEALT AFTER THE BOUNDARY (lines 387-480)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 715 | 50 | `static void weighing(Game rail, Game yard)` |  |
+| 391 | 89 | `static void dealt(Game tight, Game rail)` |  |
 
-### 8. THE SAVE (lines 766-810)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 770 | 40 | `static void save(Game yard, GameFiles files)` |  |
-
-### 9. A REAL RUN (lines 811-921)
+### 3. EACH LEG ONCE (lines 481-543)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 815 | 106 | `static void realRun(Game rail)` |  |
+| 485 | 58 | `static void eachLegOnce(Game rail, Game yard)` |  |
+
+### 4. THE PORT YARD (lines 544-628)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 548 | 80 | `static void portYard(Game rail, Game yard, Game spurBerth)` |  |
+
+### 5. THE BILL (lines 629-686)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 633 | 53 | `static Month[] bill(Game rail, Game yard)` |  |
+
+### 6. THE DIESEL (lines 687-715)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 691 | 24 | `static void diesel(Game plain, Month[] months)` |  |
+
+### 7. THE WEIGHING (lines 716-770)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 720 | 50 | `static void weighing(Game rail, Game yard)` |  |
+
+### 8. THE SAVE (lines 771-815)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 775 | 40 | `static void save(Game yard, GameFiles files)` |  |
+
+### 9. A REAL RUN (lines 816-926)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 820 | 106 | `static void realRun(Game rail)` |  |
 

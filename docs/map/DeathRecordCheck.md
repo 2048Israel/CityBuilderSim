@@ -1,4 +1,4 @@
-# DeathRecordCheck.java - 251 lines · 6 methods · 0 constants · harnesses
+# DeathRecordCheck.java - 275 lines · 6 methods · 0 constants · harnesses
 
 `ham/citybuildersim/DeathRecordCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
@@ -30,11 +30,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 11 | 241 | **type** `public class DeathRecordCheck` | The running totals of the dead, by age and for the orphans and the unhoused. |
+| 11 | 265 | **type** `public class DeathRecordCheck` | The running totals of the dead, by age and for the orphans and the unhoused. |
 | 15 | 5 | `static void check(String label, double actual, double expected, double tol)` |  |
 | 21 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 26 | 5 | `static void quietly(Runnable work)` |  |
 | 33 | 15 | `static Game town(java.nio.file.Path root, String data, String legacy)` | Section 3's city: a founding with its houses, shops, mill and works stood free, 48 months played; a second one is its twin (same months, same path). |
 | 49 | 4 | `static double last(HistorySave h, String key)` |  |
-| 54 | 197 | `public static void main(String[] args) throws Exception` |  |
+| 54 | 221 | `public static void main(String[] args) throws Exception` |  |
 

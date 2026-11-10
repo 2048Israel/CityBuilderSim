@@ -131,6 +131,20 @@ public class EducationCheck {
         return g;
     }
 
+    /**
+     * GW1: the businesses hold, in sections 1 and 2's cities, whose subject is who can practise medicine and not what the
+     * businesses build. The staffing gate counts the workers migration would bring (Migration.drawFor()), so the businesses order
+     * sooner and the bare city grew to 87,053 people at month 360 (the merge base's 40,781), its doctors arriving with the
+     * arrivals at the world's share: at the month its graduates were most plentiful (171.1, month 294) 118.1 were licensed, 1.449
+     * of the graduates' 1.5 (the merge base's 176.7 and 102.0, 1.733). Held, the city is the one the fixture places (the hospitals
+     * and the rest, city()): its graduates are most plentiful at month 16 (154.7, 27.8 licensed, 5.57 times) and stand at 111.0
+     * with 93.4 licensed and 42 posts unfilled at month 360; with the school and the medical school it licenses 794.9 and
+     * leaves no post empty.
+     */
+    static void held(Game g) {
+        for (String sector : Sectors.KEYS) g.getBusinessInvestment().holdSector(sector);
+    }
+
     static void schools(Game g) {
         build(g, "Elementary School", 14);
         build(g, "Middle School", 14);
@@ -151,6 +165,7 @@ public class EducationCheck {
         System.out.println("--- without a medical school, a city cannot make a doctor ---");
 
         Game bare = city(null);
+        held(bare);
         /*
          * THIRTY YEARS, WATCHED. This city has no schools and shrinks for
          * three decades, and the graduates it has are whoever moved in; by
@@ -198,6 +213,7 @@ public class EducationCheck {
         System.out.println("\n--- build the school and it staffs itself ---");
 
         Game taught = city(null);
+        held(taught);   // GW1: as the bare city of section 1 it is compared with is
         quietly(() -> {
             schools(taught);
             build(taught, "Medical School", 1);

@@ -412,6 +412,15 @@ public class YearBookCheck {
          */
         Game game = new Game(GameFiles.scratch("year-book-check-model"));
         game.newGame();
+        /*
+         * NO BUSINESS ORDERS, so the city has the out of work the premise below needs (GW1, 2026-11-10). The staffing gate counts the workers a
+         * building's own posts would draw (Sector.GATE_DRAW_MONTHS), so the businesses order the posts ahead of the workers: at month 60 the
+         * city stood at 7,738 posts against a labour force of 6,326, nobody out of work, and the formula this replaced (workforce less posts, over
+         * workforce, floored at nothing) and the model's (the unemployed over the labour force) both read 0. Every sector is held from the founding
+         * (BusinessInvestment.holdSector(): the question is the book's, not the businesses') and the city has what is placed below: 9,840 people,
+         * 6,197 in the workforce against 4,023 posts, 1,349 out of work, 967 studying, the old way 0.351 and the model 0.258.
+         */
+        for (String key : Sectors.KEYS) game.getBusinessInvestment().holdSector(key);
         game.getGovernmentInvestor().spend(-900_000_000 * PriceLevel.FACTOR);
         game.getLandManager().setOwnedSqFt(game.getLandManager().getOwnedSqFt() + 400_000_000L);
         put(game, "Low-Rise Apartments", 120);
@@ -438,6 +447,9 @@ public class YearBookCheck {
         double[] jobs      = h.aligned("jobs");
         double theOldWay = Math.max(0, (workforce[last] - jobs[last]) / workforce[last]);
         double theModel  = people.getUnemployed() / people.getLabourForce();
+        System.out.printf("  workforce %,.1f, jobs %,.1f, labour force %,.1f, unemployed %s, students %,.1f, posts %s and filled %s: the old way %.6f, the model %.6f%n",
+                workforce[last], jobs[last], people.getLabourForce(), people.getUnemployed(), people.getStudyingTotal(),
+                people.getTotalJobs(), people.getJobsFilled(), theOldWay, theModel);
         yes("...so the formula this replaced actually disagrees with the model here",
                 Math.abs(theOldWay - theModel) > 1e-6);
 

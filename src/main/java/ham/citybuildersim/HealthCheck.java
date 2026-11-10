@@ -1213,7 +1213,12 @@ public class HealthCheck {
         // same beds would raise at full service (0.7.103, see THE MONTHS THE
         // FEE TURNED SOMEBODY AWAY below).
         double[] feesShortMonths = new double[scales.length];
-        final int clinics = 10;   // see TEN CLINICS below
+        // TEN CLINICS AT THE FOUNDING AND TWO MORE AT THE DRAIN (GW1): the staffing gate counts the workers a building's own posts would draw, so the
+        // businesses order earlier and the free twin peaks at 25,609 people, past the ten clinics' 25,000 places (the dear ones at 23,774 and 23,768).
+        // Two more at the drain make 30,000 places in every twin; two more at the founding put 18,000 people in the city (11 and 12 clinics: 19,387 and
+        // 18,537 at the peak) and the twins' paths part from the one the fixture was written on, so the first forty-eight months are left as they were.
+        final int clinics = 10;
+        final int extraClinics = 2;
         for (int k = 0; k < scales.length; k++) {
             Game town = new Game(files);
             towns[k] = town;
@@ -1307,6 +1312,8 @@ public class HealthCheck {
                     trucksKeepUp(town);
                     town.simulateMonths(1);
                 }
+                // ...and the clinics' two more, with a place for the peak the twins now reach (GW1; see the note at clinics).
+                b.addStack(b.getTemplateByName("Walk-in Clinic"), extraClinics, true);
                 // The drain: nothing saved, nothing abroad, no shares, and
                 // the bank not lending - the waterfall's every step before
                 // "eat less" already spent.
@@ -1426,8 +1433,10 @@ public class HealthCheck {
         }
         System.out.printf("  the beds took %.2f%% of those general care serves at x%.2f and %.2f%% at x%.2f; the fee left coverage at %.2f%% and %.2f%%%n",
                 bedCover[1] * 100, scales[1], bedCover[2] * 100, scales[2], coverRead[1] * 100, coverRead[2] * 100);
-        double places = clinics
+        double places = (clinics + extraClinics)
                 * (double) towns[0].getBuildingManager().getTemplateByName("Walk-in Clinic").getCapacity();
+        System.out.printf("  the clinics' %,.0f places against the peaks of %,.0f, %,.0f and %,.0f people%n",
+                places, peakPeople[0], peakPeople[1], peakPeople[2]);
         assertTrue("fixture: the same clinics in every twin, a place for more people than any of them holds",
                 places > Math.max(peakPeople[0], Math.max(peakPeople[1], peakPeople[2])));
         assertTrue("fixture: so the beds are not what differs: at the dial's top they take no larger a share by more than the fee turns away",

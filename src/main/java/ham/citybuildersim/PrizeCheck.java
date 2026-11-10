@@ -1300,6 +1300,27 @@ public class PrizeCheck {
         }
     }
 
+    /** The college heads handed besides hand()'s 2,000 (MaterialsCheck.handWorkers()) to the village that orders a medical lab (section 12), where the gate's year of arrivals leaves its college posts out-running them. */
+    static final double LAB_COLLEGE_HEADS_MORE = 200;
+
+    /** hand(), and LAB_COLLEGE_HEADS_MORE college heads besides, in the workforce as well: they too last one month. */
+    static void handMore(Game g) {
+        hand(g);
+        PopulationManager hands = g.getPopulationManager();
+        double[] heads = hands.getSkilledHeads().clone();
+        heads[WageBand.COLLEGE.ordinal()] += LAB_COLLEGE_HEADS_MORE;
+        hands.restoreWorkforce(hands.getWorkforceForSave() + Math.round(LAB_COLLEGE_HEADS_MORE));
+        hands.restoreSkilledHeads(heads);
+    }
+
+    /** `months` presses of the clock, the hands and the college heads besides handed afresh before each. */
+    static void playHandedMore(Game g, int months) {
+        for (int i = 0; i < months; i++) {
+            handMore(g);
+            DiscoveryCheck.play(g, 1);
+        }
+    }
+
     /** The first month in which a fresh Research with a prize no problem escapes wants `labs` labs in a field (Research.labsWanted() at the wages), or -1 for none in all of history. */
     static int monthWantingALab(Field f, int labs) {
         Research fresh = new Research();
@@ -1518,12 +1539,16 @@ public class PrizeCheck {
         rd.setPrize(Field.MEDICINE, most);
         int wanted = rd.labsWanted(Field.MEDICINE, md, wd);
         check("fixture: a prize that covers every problem the world leaves a team time for makes the model want " + wanted + " medical labs at once, with none yet", wanted >= 2 && labsInAll(d) == 0);
-        playHanded(d, 1);
+        // GW1: the gate counts a year's draw (Sector.GATE_DRAW_MONTHS), so the village's works stand sooner and their college posts out-run hand()'s 2,000 heads (spare -56 against +87 before): a medical lab's 43 are left at 70% of the 80% the gate asks; the village is handed LAB_COLLEGE_HEADS_MORE more for these two months, so it can staff one.
+        handMore(d);
+        Sector.Staffing staffsALab = d.getSectors().businessServices().staffing(d.labTemplate(Field.MEDICINE));
+        check("fixture: the village, handed its heads, can staff a medical lab", staffsALab.passes(), staffsALab.why("lab"));
+        playHandedMore(d, 1);
         int first = d.labsOnSite(Field.MEDICINE) + d.labsStanding(Field.MEDICINE);
         check("...yet the investors order one that month, never two: at most one lab a field a month", first == 1, labsOf(d));
         int wantedNext = rd.labsWanted(Field.MEDICINE, d.getMonth() + 1, d.getPopulationManager().getWagesPerType().clone());
-        playHanded(d, 1);
-        int second = d.labsOnSite(Field.MEDICINE) + d.labsStanding(Field.MEDICINE);
+        playHandedMore(d, 1);
+        int second =d.labsOnSite(Field.MEDICINE) + d.labsStanding(Field.MEDICINE);
         check("...and the next month one more only if the model still wants more than the one it has (wanted " + wantedNext + "): " + second + " labs", second - first <= 1 && (wantedNext > first ? second == first + 1 : second == first), labsOf(d));
     }
 

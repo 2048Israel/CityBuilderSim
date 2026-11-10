@@ -829,14 +829,23 @@ public class BuildCardCheck {
                 gate != null && gate.kind() == BuildCard.GateKind.LICENCE && gate.licence() == eso.getRequiresLicence()
                 && gate.a() == g.licencesNeededFor(eso, 1) && gate.b() == spare);
 
-        // A building the town could not staff: a rail terminal's 1,482 posts.
-        BuildingsTemplate terminal = template(g, "Rail Terminal");
-        Sector.Staffing staffing = BuildCard.ownerOf(g, terminal).staffing(terminal);
-        gate = BuildCard.investors(g, terminal).own();
-        assertTrue("fixture: the town could staff " + Math.round(staffing.share * 100) + "% of a rail terminal",
-                !staffing.passes());
+        // A building the town could not staff, with a year's arrivals either (GW1: the gate counts the draw, Sector.GATE_DRAW_MONTHS; a
+        // rail terminal's 1,482 posts it now staffs): a shared services centre, 210 of whose 300 posts are college and university ones,
+        // which the draw does not bring at the going rate.
+        BuildingsTemplate office = template(g, "Shared Services Centre");
+        double graduatePosts = 0, allPosts = 0;
+        for (JobType job : JobType.values()) {
+            allPosts += office.getJobs(job);
+            if (WageBand.of(job) == WageBand.COLLEGE || WageBand.of(job) == WageBand.UNIVERSITY) graduatePosts += office.getJobs(job);
+        }
+        assertTrue("fixture: more than a fifth of a shared services centre's posts are college and university ones (" + Math.round(graduatePosts)
+                + " of " + Math.round(allPosts) + ")", graduatePosts > (1 - Sector.MIN_STAFFABLE_TO_ORDER) * allPosts);
+        Sector.Staffing staffing = BuildCard.ownerOf(g, office).staffing(office);
+        gate = BuildCard.investors(g, office).own();
+        assertTrue("fixture: the town could staff " + Math.round(staffing.shareNow * 100) + "% of a shared services centre now and "
+                + Math.round(staffing.share * 100) + "% with a year's arrivals", !staffing.passes());
         assertTrue("its gate is the staffing test, in the test's own words: " + (gate == null ? null : gate.why()),
-                gate != null && gate.kind() == BuildCard.GateKind.STAFFING && gate.why().equals(staffing.why(terminal.getName())));
+                gate != null && gate.kind() == BuildCard.GateKind.STAFFING && gate.why().equals(staffing.why(office.getName())));
 
         // No land: the free ground cut below a house's.
         BuildingsTemplate house = template(g, "House");

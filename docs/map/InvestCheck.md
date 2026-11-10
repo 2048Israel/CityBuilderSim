@@ -1,4 +1,4 @@
-# InvestCheck.java - 2,067 lines · 20 methods · 1 constants · harnesses
+# InvestCheck.java - 2,073 lines · 20 methods · 1 constants · harnesses
 
 `ham/citybuildersim/InvestCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
@@ -47,13 +47,13 @@
 | 1824 | · (d) the interest on the wait |
 | 1900 | · (e) the wait counts |
 | 1953 | · (f) the sector's own posts on site are spoken for |
-| 2006 | · (h) how often it happens in a real run |
+| 2012 | · (h) how often it happens in a real run |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 2009 | `InvestCheck.AHEAD_MONTHS` | `360` | Months the playtest's city is played with every order watched. |
+| 2015 | `InvestCheck.AHEAD_MONTHS` | `360` | Months the playtest's city is played with every order watched. |
 
 ## Fields (state)
 
@@ -61,18 +61,18 @@
 |---:|---|---|
 | 26 | `static int fails` |  |
 | 27 | `static PrintStream out, quiet` |  |
-| 2012 | `final Game g` |  |
-| 2013 | `int judged, cleared, clearedAhead` |  |
-| 2014 | `int largestCleared` |  |
-| 2015 | `String largestSector` |  |
-| 2016 | `final java.util.Set<Integer> monthsJudged` |  |
-| 2017 | `final java.util.Map<String, Integer> aheadBySector` |  |
+| 2018 | `final Game g` |  |
+| 2019 | `int judged, cleared, clearedAhead` |  |
+| 2020 | `int largestCleared` |  |
+| 2021 | `String largestSector` |  |
+| 2022 | `final java.util.Set<Integer> monthsJudged` |  |
+| 2023 | `final java.util.Map<String, Integer> aheadBySector` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 24 | 2044 | **type** `public class InvestCheck` | Verifies the private investment engine: forecasting, the demand tests, and the brake. |
+| 24 | 2050 | **type** `public class InvestCheck` | Verifies the private investment engine: forecasting, the demand tests, and the brake. |
 | 29 | 6 | `static void check(String label, double actual, double expected)` |  |
 | 37 | 6 | `static void check(String label, double actual, double expected, double tolerance)` | The same, within a stated tolerance - for sums of shares, whose rounding scales with the output. |
 | 44 | 4 | `static void assertTrue(String label, boolean ok)` |  |
@@ -113,20 +113,20 @@
 |---:|---:|---|---|
 | 1902 | 50 | `static void theWaitCounts(Path root)` |  |
 
-### (f) the sector's own posts on site are spoken for (lines 1953-2005)
+### (f) the sector's own posts on site are spoken for (lines 1953-2011)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1955 | 50 | `static void postsOnSite(Path root)` |  |
+| 1955 | 56 | `static void postsOnSite(Path root)` |  |
 
-### (h) how often it happens in a real run (lines 2006-2067)
+### (h) how often it happens in a real run (lines 2012-2073)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2011 | 38 | **type** `static final class AheadWatch implements BusinessInvestment.OrderWatch` |  |
-| 2019 | 1 | `AheadWatch(Game g)` _(in InvestCheck.AheadWatch)_ |  |
-| 2021 | 16 | `void saw(String sector, int quantity, int built, boolean mortgage)` _(in InvestCheck.AheadWatch)_ |  |
-| 2039 | 3 | `public void invested(BusinessInvestment.Decision d, double cash, double perUnitProfit, Game.Afford found)` _(in InvestCheck.AheadWatch)_ |  |
-| 2044 | 4 | `public void mortgaged(int asked, java.util.function.IntToDoubleFunction costOf, double cash, double noiPerUnit, double annualRa...` _(in InvestCheck.AheadWatch)_ |  |
-| 2050 | 17 | `static void howOftenInARun(Path root)` |  |
+| 2017 | 38 | **type** `static final class AheadWatch implements BusinessInvestment.OrderWatch` |  |
+| 2025 | 1 | `AheadWatch(Game g)` _(in InvestCheck.AheadWatch)_ |  |
+| 2027 | 16 | `void saw(String sector, int quantity, int built, boolean mortgage)` _(in InvestCheck.AheadWatch)_ |  |
+| 2045 | 3 | `public void invested(BusinessInvestment.Decision d, double cash, double perUnitProfit, Game.Afford found)` _(in InvestCheck.AheadWatch)_ |  |
+| 2050 | 4 | `public void mortgaged(int asked, java.util.function.IntToDoubleFunction costOf, double cash, double noiPerUnit, double annualRa...` _(in InvestCheck.AheadWatch)_ |  |
+| 2056 | 17 | `static void howOftenInARun(Path root)` |  |
 

@@ -167,8 +167,20 @@ public class DeathRecordCheck {
         }
         double atHomeBefore = g.getFamilies().getAtHomeAdults();
         double[] peakOutOfWork = { atHomeBefore };
+        /*
+         * THE CHILDREN WITH THE OUT OF WORK, READ AT THE MONTH THEIR NUMBER PEAKS (GW1, 2026-11-10). The staffing gate counts the workers a
+         * building's own posts would draw (Sector.GATE_DRAW_MONTHS), so the businesses order sooner and the city takes the laid-off back into work
+         * inside the two years: the out of work at home peaked at 319 and stood at 0.00 at the end, and the rate of children per outside
+         * household (dependantsPerOutsideHousehold(), zero with nobody outside) and the children with them (getOutsideDependantsTotal()) read at
+         * the end were 0.0. The wave is what the fixture is about and it is read where it stands: the rate and the children are kept from the
+         * month the count of the out of work is highest.
+         */
+        double[] rateAtPeak = { g.getFamilies().dependantsPerOutsideHousehold() };
+        double[] childrenAtPeak = { g.getFamilies().getOutsideDependantsTotal() };
         double[] peakOrphans = { orphansBefore };
         double[] orphanDeathsEver = new double[1];
+        double[] closedTrace = new double[24];
+        double[] closedAtHome = new double[24];
         quietly(() -> {
             BuildingsTemplate mill = g.getBuildingManager().getTemplateByName("Industrial Bakery");
             g.getBuildingManager().retire(mill, g.getBuildingManager().getQuantity(mill.getId()));
@@ -184,8 +196,14 @@ public class DeathRecordCheck {
                  * because the city shrank instead. The claim is about the
                  * months in between and has to be measured there.
                  */
-                peakOutOfWork[0] = Math.max(peakOutOfWork[0], g.getFamilies().getAtHomeAdults());
+                if (g.getFamilies().getAtHomeAdults() > peakOutOfWork[0]) {
+                    peakOutOfWork[0] = g.getFamilies().getAtHomeAdults();
+                    rateAtPeak[0] = g.getFamilies().dependantsPerOutsideHousehold();
+                    childrenAtPeak[0] = g.getFamilies().getOutsideDependantsTotal();
+                }
                 peakOrphans[0] = Math.max(peakOrphans[0], g.getFamilies().getOrphansTotal());
+                closedTrace[m] = g.getFamilies().getOrphansTotal();
+                closedAtHome[m] = g.getFamilies().getAtHomeAdults();
             }
         });
         System.out.printf("   orphans %,.2f before the mill closed, %,.2f after; %,.2f of them died in two years%n",
@@ -208,7 +226,7 @@ public class DeathRecordCheck {
          * have at least doubled it, this fixture is not testing the fix.
          */
         double wouldHaveOrphaned = (peakOutOfWork[0] - atHomeBefore)
-                * g.getFamilies().dependantsPerOutsideHousehold();
+                * rateAtPeak[0];
         System.out.printf("   under the old rule the wave would have orphaned %,.1f children,"
                 + " against the %,.2f the city had%n", wouldHaveOrphaned, orphansBefore);
         assertTrue("...and big enough that the old rule would have at least doubled the orphans",
@@ -222,17 +240,23 @@ public class DeathRecordCheck {
          */
         Game open = town(root, "open-data", "open-no-legacy");
         double[] openPeak = { open.getFamilies().getOrphansTotal() };
+        double[] openTrace = new double[24];
         quietly(() -> {
             for (int m = 0; m < 24; m++) {
                 open.simulateMonths(1);
                 openPeak[0] = Math.max(openPeak[0], open.getFamilies().getOrphansTotal());
+                openTrace[m] = open.getFamilies().getOrphansTotal();
             }
         });
+        StringBuilder trace = new StringBuilder("   orphans by month, the closed town / its open twin (out of work at home):");
+        for (int m = 0; m < 24; m++) trace.append(String.format(" %.1f/%.1f(%.0f)", closedTrace[m], openTrace[m], closedAtHome[m]));
+        System.out.println(trace);
         System.out.printf("   the twin with the mill open: orphans peaked at %,.2f%n", openPeak[0]);
         assertTrue("the orphan section does not fill behind it, in any month of the two years",
                 peakOrphans[0] <= openPeak[0] + 1);
+        System.out.printf("   at the peak of the out of work the children with them were %,.2f, %,.4f to an adult%n", childrenAtPeak[0], rateAtPeak[0]);
         assertTrue("...because the children went with their parents",
-                g.getFamilies().getOutsideDependantsTotal() > 0);
+                childrenAtPeak[0] > 0);
         assertTrue("fixture: the city still has orphans for the record to count",
                 g.getFamilies().getOrphansTotal() > 0);
         assertTrue("...and some of them died", orphanDeathsEver[0] > 0);

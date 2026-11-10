@@ -166,6 +166,8 @@ public class PolicyPreviewCheck {
             // -1,693k, -4,546k) and again from month 73: bankTaxUnder() is nothing in the month section 6 reads. Same cause as the Lime
             // Kiln above and the same remedy; the previews are the fixture's subject, not the credit cycle.
             g.getBusinessInvestment().holdSector(Sectors.FREIGHT);
+            // GW1: the gate counts a year's draw (Sector.GATE_DRAW_MONTHS), so the Blast Furnace Heavy Industry was held for want of staff ("could staff 35%") is ordered in month 60 ($44.7M: $8.4M of bonds, $37.0M from the bank) and the bank's profit is a loss in months 60 and 61 (-576k, -986k) where it was +59k: bankTaxUnder() is nothing in the month section 6 reads. Same cause as the Lime Kiln and the Rail Depot above and the same remedy: Heavy Industry builds nothing here.
+            g.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
             g.setCashForTest(Founding.WEALTHY_CASH);
             g.getGovernmentInvestor().spend(-2_000_000 * PriceLevel.FACTOR);
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 200_000_000L);
@@ -891,8 +893,21 @@ public class PolicyPreviewCheck {
                 noPostsRows && FloorView.NO_POSTS_WORDS.equals("no posts here"));
 
         // ---- the joined market ----
-        assertTrue("the joined market: the played city's lowest band is its own market, so there are no joined words and no shared wage",
-                !v.joined() && !pm.fillByBand().joinedAbove(lowest) && v.joinedWords(money) == null && Double.isNaN(v.joinedWage()));
+        // GW1: the gate counts a year's draw (Sector.GATE_DRAW_MONTHS), so the played city's works stand sooner and its unskilled posts outrun its unskilled workers: diploma holders fill them and the lowest band is joined; the not-joined state is caused by handing the city unskilled workers (2% of the workforce a step), put back after.
+        long workforceWas = pm.getWorkforceForSave(), handed = 0;
+        try {
+            for (int step = 0; step < 45 && pm.fillByBand().joinedAbove(lowest); step++) {
+                handed += Math.max(1, Math.round(workforceWas * .02));
+                pm.restoreWorkforce(workforceWas + handed);
+            }
+            FloorView own = FloorView.of(g, lm.getMinimumWage());
+            assertTrue("fixture: with " + handed + " unskilled workers handed to the played city (GW1: its tighter market fills the unskilled posts with diploma holders at month "
+                    + g.getMonth() + "), its lowest band is its own market", !pm.fillByBand().joinedAbove(lowest) && !own.joined());
+            assertTrue("the joined market: the played city's lowest band is its own market, so there are no joined words and no shared wage",
+                    !own.joined() && !pm.fillByBand().joinedAbove(lowest) && own.joinedWords(money) == null && Double.isNaN(own.joinedWage()));
+        } finally {
+            pm.restoreWorkforce(workforceWas);
+        }
         double[] ownWorkers = pm.workforceByBand();
         double imprisonedWas = pm.getImprisoned();
         // The unskilled are away, so their posts have no one of their own to fill them; then, in steps, as many of the rest as it takes for the spare the bands

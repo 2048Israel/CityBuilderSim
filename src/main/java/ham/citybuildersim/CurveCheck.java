@@ -259,9 +259,14 @@ public class CurveCheck {
 
     /** ...with the minimum wage set at the going rate before the first month where asked (steepCity()'s fixture, WG1). */
     static Game city(Path root, String label, int toMonth, boolean floorAtTheGoingRate) {
+        return city(root, label, toMonth, floorAtTheGoingRate, new String[0]);
+    }
+
+    /** ...and with the sectors named held out of the investor's building from the founding's first month (BusinessInvestment.holdSector(), GW1: steepCity()'s fixture). */
+    static Game city(Path root, String label, int toMonth, boolean floorAtTheGoingRate, String... held) {
         Game[] g = new Game[1];
         quietly(() -> {
-            g[0] = MonetaryCheck.founding(root, label);
+            g[0] = MonetaryCheck.founding(root, label, false, held);
             if (floorAtTheGoingRate) g[0].getLabourMarket().setMinimumWage(g[0].getLabourMarket().getGoingRate());
             g[0].getDebtManager().setAutopilot(true);
             while (g[0].getMonth() < toMonth) press(g[0]);
@@ -397,16 +402,35 @@ public class CurveCheck {
         out.println("\n--- 5. the autopilot's gap is nothing ---");
         Game c = city(root, "x5", 54);
         DebtManager dm = c.getDebtManager();
+        // GW1: the draw lets a young city's businesses order earlier, and this founding (pop 1,273 at month 54, 413 on main's path) is deflating at 54:
+        // inflation -2.27%, the year's prices having fallen, so the rule at Standard and at Strict both sit on the 0% floor and agree - the fixture below
+        // asks for a month where the dial's strictness matters. Run on, a month at a time (at most MAX_RUN_ON), to the first month where Strict and Standard
+        // advise different rates at the inflation the city reads; this founding is at 2.58% a year at month 56 (Standard 3.87%, Strict 4.39%).
+        for (int m = 0; m < MAX_RUN_ON && !strictnessMatters(c); m++) pressQuietly(c);
+        out.printf("   the autopilot city at month %d: inflation %.4f, Standard's rule %.4f, Strict's %.4f%n", c.getMonth(),
+                c.getPriceIndex().hasRate() ? c.getPriceIndex().inflation() : Double.NaN,
+                dm.advisedPolicyRate(c.getPriceIndex().inflation(), DebtManager.Strictness.STANDARD),
+                dm.advisedPolicyRate(c.getPriceIndex().inflation(), DebtManager.Strictness.STRICT));
         check("fixture: the city is past its base month with a year of prices, and the rule has the dial",
                 c.getPriceIndex().isBased() && c.getPriceIndex().hasRate() && dm.isAutopilot());
         autopilotMonth(c, "Standard");
 
         dm.setStrictness(DebtManager.Strictness.STRICT);
-        double inflation = c.getPriceIndex().inflation();
         check("fixture: at Strict the rule says something other than Standard's at this inflation, so the curve's rule matters",
-                Math.abs(dm.advisedPolicyRate(inflation, DebtManager.Strictness.STRICT)
-                        - dm.advisedPolicyRate(inflation, DebtManager.Strictness.STANDARD)) > .001);
+                strictnessMatters(c));
         autopilotMonth(c, "Strict");
+    }
+
+    /** The most months section 5 runs its city on to find one where the dial's strictness changes the rule (GW1). */
+    static final int MAX_RUN_ON = 60;
+
+    /** Whether, at the inflation the price index reads now, Strict advises a rate more than a tenth of a point from Standard's. */
+    static boolean strictnessMatters(Game c) {
+        if (!c.getPriceIndex().hasRate()) return false;
+        double inflation = c.getPriceIndex().inflation();
+        DebtManager dm = c.getDebtManager();
+        return Math.abs(dm.advisedPolicyRate(inflation, DebtManager.Strictness.STRICT)
+                - dm.advisedPolicyRate(inflation, DebtManager.Strictness.STANDARD)) > .001;
     }
 
     /** One press of the autopilot city, read against what the month's top read just before it. */
@@ -508,7 +532,14 @@ public class CurveCheck {
         // is .85 of the going rate now (WG1, a real minimum), and the unskilled wage then falls to the market's own level in a glut: this city at month 39
         // read 1-month 1.8021, 1-year 2.4377, 10-year 3.4350, the 10-year 1.63 points over the 1-month, under the 2 the fixture asks; with the floor at the
         // going rate (main's path, the old default) it is the steep city above.
-        Game g = city(root, label, 38, true);
+        // GW1 (2026-11-10): Manufacturing and Wood Products held from the founding, as WN3 held the cement works. With the draw in the staffing gate the
+        // founding's manufacturers order a plant on a bank loan before month 26 (Manufacturing 549 on the bank's book; main's path had Wood Products 430 at
+        // month 33), and the retailers and restaurants that follow it at months 34 to 38 take the bank to 1,104 borrowed against 986 of deposits: the bank
+        // is at the central bank's window, its cost of funds 2.16% and the floor of the 1-month 3.16% on a dial the fixture set at 1%. Month 39 read 1-month
+        // 2.25, 1-year 2.65, 10-year 3.46 (the 10-year 1.21 points over the 1-month, under the 2 the fixture asks, and the 1-year 0.40 under its 0.5). Holding
+        // Wood Products alone changes nothing (the Manufacturing loan is the cause); both held, the bank has 158 borrowed against 1,599 of deposits at month
+        // 38, its cost of funds 0.00%, and month 39 reads 1-month 1.00, 1-year 2.06, 10-year 3.39, the 10-year 2.39 points over the 1-month.
+        Game g = city(root, label, 38, true, Sectors.MANUFACTURING, Sectors.WOOD_PRODUCTS);
         DebtManager dm = g.getDebtManager();
         double rule = dm.advisedPolicyRate(inflationRead(g));
         dm.takeTheDial(Math.max(0, rule - .02));
