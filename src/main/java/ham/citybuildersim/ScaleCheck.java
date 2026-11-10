@@ -173,9 +173,18 @@ public class ScaleCheck {
      * 1.61e-2) and 200 (the pull .9106 in the sixth month) do not. 191, for its margin on the order: 6,513,468 and 13,026,951 where
      * 196's are 2,797,090 and 1,110,316; its savings 1.37e-2 (196: 1.45e-2) and people 2.48e-3 against .015.
      *
+     * 172, WG2 (2026-11-10): THE TOWN RUNS ANOTHER PATH AGAIN. The pulls lift the homes' draw only (Migration.homesPull(), jobsPull()), so
+     * the town's people and orders moved once more, and 191 missed section 9's savings by 3.37e-2 (past .0160, in the fourth month; its
+     * people held to 4.5e-5). Nothing WG2 reads is in this town unscaled: the brake and the drift act from Migration.BRAKE_FROM_MONTH
+     * (240) months and the town is younger, and the pulls are shares, the same at any K. The scan was this check's
+     * section 9 at every month from 160 to 190 with the month the only thing moved: it misses on the savings line alone, a granule of
+     * the town and not a drift in the copy (as at 122-143 above, where it was whole cars), at 163, 164, 169, 176, 178, 185, 188 and 191 (1.88e-2, 2.39e-2, 1.81e-2, 2.71e-2,
+     * 1.88e-2, 2.04e-2, 4.00e-2, 3.37e-2), and at 190 the deposits too; it holds every line at 160 to 162, 165 to 168, 170 to 175, 177,
+     * 179 to 184, 186, 187 and 189. 172 is the middle of 170 to 175, and its worst line is the GDP's, at .49 of its dial.
+     *
      * The picks' history is in git and in docs/queue/ST2-notes.md and docs/queue/RE2-notes.md.
      */
-    static final int FREE_FIXTURE_MONTHS = 191;
+    static final int FREE_FIXTURE_MONTHS = 172;
 
     /** Months each free copy plays, every one timed. */
     static final int FREE_MONTHS = 6;

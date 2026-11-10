@@ -777,8 +777,16 @@ public class BuildAdviceCheck {
         assertTrue("fixture: and one job type whole", full != null);
         if (scarce == null || full == null || fill[scarce.ordinal()] >= .999) return;
         int k = clinic.getJobs(scarce);
-        BuildingsTemplate fewer = clone(clinic, "Clinic with fewer", scarce, 0, full, clinic.getJobs(full) + k);
-        BuildingsTemplate more = clone(clinic, "Clinic with more", scarce, 2 * k, full, Math.max(0, clinic.getJobs(full) - k));
+        /*
+         * WG2, {next}, 2026-11-10: the one job type this city fills whole is UNIV_HIGHTECH_ENG, of which a clinic has no posts (the scarcest
+         * post is UNIV_DOCTOR, at .059, k 2), so the clone that gives up k of them for the scarce post's 2k could not, and the two came out k
+         * posts apart (it is the same fixture the R0 note in shortCity() records, come back). Both clones are built on a base of at least k
+         * of the whole job's posts, the clinic's own where it has that many: the fewer takes k more of them for the k it gives up, the
+         * more gives up k for the k it takes, and the two stand alike in all.
+         */
+        int wholePosts = Math.max(clinic.getJobs(full), k);
+        BuildingsTemplate fewer = clone(clinic, "Clinic with fewer", scarce, 0, full, wholePosts + k);
+        BuildingsTemplate more = clone(clinic, "Clinic with more", scarce, 2 * k, full, wholePosts - k);
         assertTrue("fixture: the two have the same posts in all", posts(fewer) == posts(more));
         bits("fixture: and the same price", g.quoteBuild(fewer, 1).total, g.quoteBuild(more, 1).total);
         List<BuildingsTemplate> catalogue = g.getBuildingManager().getTemplates();
@@ -1192,8 +1200,19 @@ public class BuildAdviceCheck {
     /* ============================ 10. SIZED TO THE PROJECTION ============================ */
 
     /**
+     * The share of its people the short city's rising history gains a month in section 10, over the businesses' window.
+     *
+     * WG2, {next}, 2026-11-10: two per cent (k 1.12 over the horizon) until senior care stopped lifting the jobs' draw: the short city
+     * then stood at 3,902 people with three cards, Police Station 1, Paved Road 5 and Walk-in Clinic 2, and the trend raised none of
+     * them (1, 5 and 2 flat and rising), so the fixture's condition, that the projection raises one count, was not caused. Three per
+     * cent (k 1.18) is the least whole per cent that raises one (Paved Road 5 to 6; four, 1.24, the same; six, 1.36, adds a second,
+     * Walk-in Clinic 2 to 3), and the claims that follow are as they were.
+     */
+    static final double RISE_A_MONTH = .03;
+
+    /**
      * SIZED TO THE PROJECTION (0.7.51): the short city's population history
-     * rising - two per cent a month over the businesses' window to the
+     * rising - RISE_A_MONTH a month over the businesses' window to the
      * people it has - against the same history flat. Every card's growth is
      * BusinessInvestment.growthFactor() over its wait and the horizon they
      * plan past it, to the bit: the wait as it is (BA1 took the twelve-month
@@ -1210,7 +1229,7 @@ public class BuildAdviceCheck {
         List<Long> flat = new ArrayList<>(), rising = new ArrayList<>();
         for (int i = 0; i < BusinessInvestment.TREND_WINDOW; i++) {
             flat.add(pop);
-            rising.add(Math.round(pop * (1 - .02 * (BusinessInvestment.TREND_WINDOW - 1 - i))));
+            rising.add(Math.round(pop * (1 - RISE_A_MONTH * (BusinessInvestment.TREND_WINDOW - 1 - i))));
         }
         bi.restorePopulationHistory(flat);
         List<BuildAdvice.Suggestion> still = BuildAdvice.suggest(g);
