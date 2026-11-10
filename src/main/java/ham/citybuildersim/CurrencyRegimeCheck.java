@@ -1737,8 +1737,8 @@ public class CurrencyRegimeCheck {
         close("...and the vault is the saved vault, in dollars", Math.abs(old.getReservesUsd() - band.getReservesUsd()), 0, 1e-6 * band.getReservesUsd());
 
         // The hold's support is slot 147, the last (XR5): a band whose edges dealt carries one, and an array cut before it restores a hold with none.
-        assertTrue("fixture: the band's edges have dealt and it carries a support (getHoldFelt() " + String.format("%.4f", band.getHoldFelt()) + "), the array 152 slots long, gold's three (149-151, GD2) after the peg's anchor (slot 148, WN4b)",
-                band.getHoldFelt() != 0 && full.length == 152);
+        assertTrue("fixture: the band's edges have dealt and it carries a support (getHoldFelt() " + String.format("%.4f", band.getHoldFelt()) + "), the array 156 slots long, gold's three (149-151, GD2) and the mint's four (152-155, GD3) after the peg's anchor (slot 148, WN4b)",
+                band.getHoldFelt() != 0 && full.length == 156);
         same("slot 147 is the hold's support, and restore() reads it back to the bit", full[147], band.getHoldFelt());
         ForeignAccounts cut = new ForeignAccounts();
         cut.restore(Arrays.copyOf(full, 147));

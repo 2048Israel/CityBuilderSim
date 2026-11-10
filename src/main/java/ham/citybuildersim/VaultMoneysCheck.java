@@ -63,8 +63,8 @@ public class VaultMoneysCheck {
     /** The cross rates the sections hand: US$ per unit of the US$, euro, yen, pound, yuan, Canadian and Australian dollar and franc. */
     static final double[] R = {1, 1.10, 0.0070, 1.27, 0.14, 0.73, 0.65, 1.12};
 
-    /** The length of the foreign accounts' array: slots 0 to 141 and, after them, what the vault earned (142-146, XR4; InterestAbroadCheck's section 7 asserts them), the hold's support (147, XR5; CurrencyRegimeCheck 10), the peg's anchor (148, WN4b; PegAnchorCheck 8) and gold's balance, price and chosen share (149-151, GD2; section 11). */
-    static final int SLOTS = 152;
+    /** The length of the foreign accounts' array: slots 0 to 141 and, after them, what the vault earned (142-146, XR4; InterestAbroadCheck's section 7 asserts them), the hold's support (147, XR5; CurrencyRegimeCheck 10), the peg's anchor (148, WN4b; PegAnchorCheck 8), gold's balance, price and chosen share (149-151, GD2; section 11) and the mint (152-155, GD3; GoldStandardCheck). */
+    static final int SLOTS = 156;
 
     /** Gold's index in the vault (ForeignAccounts.GOLD), and the two prices the gold sections hand it, US$ an ounce: the 1900 statute's par and Proclamation 2072's (GoldPrice). */
     static final int GOLD = ForeignAccounts.GOLD;
@@ -654,7 +654,7 @@ public class VaultMoneysCheck {
         a.revalueVault();
 
         double[] saved = a.toSaveArray();
-        assertTrue("the array runs to slot 148, the vault's (105-141), what it earned (142-146), the hold's support (147) and the peg's anchor (148, WN4b) (" + saved.length + " slots)", saved.length == SLOTS);
+        assertTrue("the array runs to slot 148, the vault's (105-141), what it earned (142-146), the hold's support (147) and the peg's anchor (148, WN4b), then gold's three (149-151, GD2) and the mint's four (152-155, GD3) (" + saved.length + " slots)", saved.length == SLOTS);
         same("slot 22 is still the vault's dollars, the total", saved[22], a.getReservesUsd());
         same("...and slot 19 its worth at home", saved[19], a.getReserves());
         boolean eight = true;
@@ -983,8 +983,8 @@ public class VaultMoneysCheck {
         double[] full = a.toSaveArray();
         double[] chosenWas = a.getChosenShares();
         ForeignAccounts old = new ForeignAccounts();
-        old.restore(Arrays.copyOf(full, SLOTS - 3));
-        assertTrue("an array cut to " + (SLOTS - 3) + " slots, as it was before gold, loads with no gold, no gold rate and a chosen share of 0",
+        old.restore(Arrays.copyOf(full, SLOTS - 7));
+        assertTrue("an array cut to " + (SLOTS - 7) + " slots, as it was before gold, loads with no gold, no gold rate and a chosen share of 0",
                 old.getHolding(GOLD) == 0 && !old.hasRate(GOLD) && Double.isNaN(old.getMoneyUsd(GOLD)) && old.getChosenShares()[GOLD] == 0);
         boolean eight = true;
         for (int k = 0; k < WorldMoneys.EIGHT.size(); k++)
@@ -997,7 +997,7 @@ public class VaultMoneysCheck {
         // The array with gold.
         a.setChosenShares(new double[] {.3, .2, 0, .2, 0, 0, 0, 0, .3});
         double[] saved = a.toSaveArray();
-        assertTrue("the array runs to slot 151, gold's three after the peg's anchor in 148 (" + saved.length + " slots)", saved.length == SLOTS);
+        assertTrue("the array runs to slot 155, gold's three (149-151, GD2) and the mint's four (152-155, GD3) after the peg's anchor in 148 (" + saved.length + " slots)", saved.length == SLOTS);
         same("slot 149 is gold's balance, in thousands of ounces", saved[149], a.getHolding(GOLD));
         same("slot 150 is gold's price, US$ an ounce", saved[150], NEW_PRICE);
         same("slot 151 is gold's chosen share", saved[151], a.getChosenShares()[GOLD]);

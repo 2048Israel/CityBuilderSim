@@ -1170,6 +1170,9 @@ final class TradeScreen {
             case PEG -> "Held at a peg of " + sym() + fxRate(fx.getPegRate())
                     + (fx.getPegAnchor() == 0 ? "" : " per " + Currency.FOREIGN_SYMBOL + " this month, " + sym() + fxRate(fx.getPegPerAnchor())
                             + " per " + PolicyScreen.anchorMark(fx.getPegAnchor()));
+            // Gold (GD3) is a band at the gold points: the rate held between them, around the centre the mint price makes against gold's price.
+            case GOLD -> "On gold at " + sym() + fxRate(fx.getMintPrice()) + " an ounce, held at the gold points of " + sym() + fxRate(fx.goldStrongEdge())
+                    + "-" + sym() + fxRate(fx.goldWeakEdge());
         };
     }
 
@@ -2787,9 +2790,9 @@ final class TradeScreen {
         return ui.game.getWorldMoneys() != null || fx.getMoveWorld() != 0 || fx.getWorldLevel() != 0;
     }
 
-    /** Whether THE HOLD is a row: the regime is a band or a peg, or the hold moved the rate last month (a peg that broke, a regime since left). */
+    /** Whether THE HOLD is a row: the regime is a band, a peg or the gold, or the hold moved the rate last month (a peg that broke, a regime since left). */
     static boolean showsHold(ForeignAccounts fx) {
-        return fx.getRegime() == ForeignAccounts.Regime.BAND || fx.getRegime() == ForeignAccounts.Regime.PEG
+        return fx.getRegime() == ForeignAccounts.Regime.BAND || fx.getRegime() == ForeignAccounts.Regime.PEG || fx.getRegime() == ForeignAccounts.Regime.GOLD
                 || fx.getMoveHeld() != 0;
     }
 
@@ -2944,12 +2947,30 @@ final class TradeScreen {
         String d = sym();
         if (fx.brokeThisMonth()) {
             double jump = Math.expm1(fx.getLastBreakJump());
-            return "The peg gave way, because " + fx.getLastBreakCause().words + ": the " + d + " landed at " + d
+            // The gold's own break, by its cover (GD3): the gold standard giving way, not a peg.
+            boolean gold = fx.getLastBreakCause() == ForeignAccounts.BreakCause.COVER;
+            return (gold ? "The gold gave way, because " : "The peg gave way, because ") + fx.getLastBreakCause().words + ": the " + d + " landed at " + d
                     + fxRate(fx.getRate()) + ", " + share1(Math.abs(jump)) + (jump >= 0 ? " weaker" : " stronger")
                     + " in the month, where the float's rule had it at " + d + fxRate(fx.getLastBreakShadow())
-                    + ". This is the peg letting go of the rate it had held.";
+                    + (gold ? ". This is the gold standard letting go of the rate it had held." : ". This is the peg letting go of the rate it had held.");
         }
         ForeignAccounts.Regime regime = fx.getRegime();
+        if (regime == ForeignAccounts.Regime.GOLD) {
+            // Gold is held as a band is, at the gold points (GD3): inside them nothing is held; at one the vault deals, gold first.
+            boolean inside = fx.getRate() < fx.goldWeakEdge() * (1 - 1e-9) && fx.getRate() > fx.goldStrongEdge() * (1 + 1e-9);
+            if (fx.isHeld() && inside) {
+                return "What the vault dealt at a gold point still leans on the rate, " + d + fxRate(fx.getRate()) + " against "
+                        + d + fxRate(fx.getShadowRate()) + " where the float's rule put it, fading by half in about "
+                        + String.format("%.0f", ForeignAccounts.INTERVENTION_HALF_LIFE) + " months: the part of the month's "
+                        + "move that dealing kept off the rate.";
+            }
+            return fx.isHeld()
+                    ? "The rate reached a gold point and the vault held it there, " + d + fxRate(fx.getRate()) + ", away "
+                      + "from where the float's rule put it, " + d + fxRate(fx.getShadowRate()) + ": the part of the month's "
+                      + "move the gold kept off the rate. A sale ships gold first."
+                    : "The rate stayed inside the gold points, " + d + fxRate(fx.goldStrongEdge()) + " to " + d
+                      + fxRate(fx.goldWeakEdge()) + ": nothing to hold this month.";
+        }
         if (regime == ForeignAccounts.Regime.PEG) {
             // Kept in another money than the US$ (WN4b), the rate is said to be that money's peg; for the US$ the sentences are what they were.
             String to = fx.getPegAnchor() == 0 ? "" : " (the peg is to " + ForeignAccounts.MONEY_NAME[fx.getPegAnchor()] + ")";
@@ -2983,8 +3004,9 @@ final class TradeScreen {
     static final String HOLD_INFO = "The part of the month's move the vault's hold made: under a peg the rate stays at the "
             + "peg, and under a band it stops at the edge, away from where the float's rule - the other forces - would "
             + "have put it. So this line undoes what they added, and all of them still add to the month's move. In a month a "
-            + "peg gave way it is the peg letting go of the rate it had held. Nothing under Lean and Float, and "
-            + "inside a band once what the vault dealt at its edge has faded. Policy › Money › The currency is where it is set.";
+            + "peg gave way it is the peg letting go of the rate it had held. Under gold it is a band at the gold points, "
+            + "the vault selling its gold first at the weak one. Nothing under Lean and Float, and "
+            + "inside a band or the gold points once what the vault dealt at their edge has faded. Policy › Money › The currency is where it is set.";
 
     /** THE MONTH'S MOVE (pure): where US$1 stood and where it stands, which the forces (and the hold, when it is a row) add up to. */
     String totalSentence() {
@@ -3645,6 +3667,14 @@ final class TradeScreen {
         } else if (regime == ForeignAccounts.Regime.BAND) {
             whole.append(String.format("Under the band the rate stays inside it. %s would move it about %s (%s per %s) in its month, to %s%s, %s.",
                     own, mult, sym(), Currency.FOREIGN_SYMBOL, sym(), fxRate(fx.rateAfterDeal(piece)), fades));
+        } else if (regime == ForeignAccounts.Regime.GOLD && fx.regimeHoldsDeal(piece)) {
+            // Gold is a band at the gold points (GD3): a purchase of dollars weakens the rate, and what the vault sells to hold it is gold first; a sale strengthens it, and the vault takes gold in.
+            whole.append(String.format("Under gold the rate stops at its gold point, %s%s. %s would move the float's own rate about %s, and the vault "
+                            + "deals to hold the rest, %s.", sym(), fxRate(fx.rateAfterDeal(piece)), own, mult,
+                    piece > 0 ? "selling its gold first: the cover falls with it" : "taking gold in"));
+        } else if (regime == ForeignAccounts.Regime.GOLD) {
+            whole.append(String.format("Under gold the rate stays inside the gold points. %s would move it about %s (%s per %s) in its month, to %s%s, %s.",
+                    own, mult, sym(), Currency.FOREIGN_SYMBOL, sym(), fxRate(fx.rateAfterDeal(piece)), fades));
         } else {
             whole.append(String.format("%s would move the rate about %s (%s per %s) in its month, %s.", own, mult, sym(), Currency.FOREIGN_SYMBOL, fades));
         }
@@ -3663,7 +3693,9 @@ final class TradeScreen {
                 : "Sell " + d(tradeExchange) + " of " + (plural != null ? plural : "the vault"), tradeBuying
                 ? "cash out of the treasury, " + usd(ui.game.getForeignAccounts().toUsd(tradeExchange)) + " into the vault"
                         + (plural != null ? ", as " + plural : "")
-                : usd(ui.game.getForeignAccounts().toUsd(tradeExchange)) + " out of the vault, cash into the treasury");
+                // Under gold (GD3) a sale of the vault's largest money ships the gold first, whatever else the vault holds (ForeignAccounts.vaultRemove()).
+                : usd(ui.game.getForeignAccounts().toUsd(tradeExchange)) + " out of the vault"
+                        + (money < 0 && ui.game.getForeignAccounts().getRegime() == ForeignAccounts.Regime.GOLD ? ", gold first" : "") + ", cash into the treasury");
     }
 
     /**
@@ -3898,6 +3930,10 @@ final class TradeScreen {
                 if (moneyAt == ForeignAccounts.GOLD) {
                     box.getChildren().add(3, cardLine("gold's price this month", goldPrice(fx.getMoneyUsd(ForeignAccounts.GOLD), "ounce"), null));
                 }
+            }
+            // Under gold (GD3) a sale of the largest money ships the gold first, and the cover goes with it.
+            if (!tradeBuying && moneyAt < 0 && fx.getRegime() == ForeignAccounts.Regime.GOLD) {
+                box.getChildren().add(Kept.scope("gold first", () -> muted("Under gold a sale ships the vault's gold first: the gold cover falls with it.")));
             }
             if (imports) {
                 box.getChildren().add(Kept.scope("cover bar", () -> bulletBar(Math.min(COVER_SCALE, coverAfter), ForeignAccounts.THIN_COVER, Palette.MONEY, 0,

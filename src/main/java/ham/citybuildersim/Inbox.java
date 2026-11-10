@@ -205,6 +205,8 @@ public class Inbox {
 
         takeLevers(game, month);
 
+        takeGold(game, month);
+
         takeResearch(game, month);
 
         cull(month);
@@ -249,6 +251,40 @@ public class Inbox {
                     leverTitle(lever),
                     opensNow ? wrapped(PolicyDates.notice(lever), BODY_COLUMNS) : new ArrayList<>());
         }
+    }
+
+    /**
+     * The US$'s gold dates (GD3), one condition each, keyed "gold:" and the date's name (gold:LEFT_1933, gold:PAR_1934, gold:WINDOW_1971): a city on
+     * Gold has a decision to make in the month the dollar left gold, came back at its par or closed its window (Game.takeTheDollarsGoldDates() opens
+     * it), and the notice stands for as long as the date is open - it is refreshed each month with where the D$ stands - and is settled the month after
+     * the city answers it (or comes off gold, which closes it), like a lever's, and kept two years. A city not on Gold has none: its date never opens.
+     */
+    private void takeGold(Game game, int month) {
+        for (ForeignAccounts.GoldEvent e : ForeignAccounts.GoldEvent.values()) {
+            if (e == ForeignAccounts.GoldEvent.NONE) continue;
+            boolean open = game.getGoldEvent() == e;
+            take(game, month, "gold:" + e.name(), open, e.words, open ? goldBody(game, e) : new ArrayList<>());
+        }
+    }
+
+    /**
+     * What a gold date's notice says, wrapped to the list's width: what the US$ did, where the D$ stands (the mint price, the centre it holds the rate
+     * around and the rate itself), and the three answers by their words, answered on Policy › The currency - until the city does, it stays at its mint price.
+     */
+    private static List<String> goldBody(Game game, ForeignAccounts.GoldEvent e) {
+        ForeignAccounts fx = game.getForeignAccounts();
+        String did = switch (e) {
+            case LEFT_1933 -> String.format("The US$ has left gold, and its price of gold will climb from US$%.2f to US$%.2f an ounce over the next %d months.",
+                    GoldPrice.PAR_1900, GoldPrice.PAR_1934, GoldPrice.FLOAT_STEPS);
+            case PAR_1934 -> String.format("The US$ is back on gold, at US$%.2f an ounce: its price of gold stays there until the window closes in 1971.", GoldPrice.PAR_1934);
+            default -> "The US$'s gold window has closed: gold is no longer a fixed number of US$, and its price floats.";
+        };
+        List<String> lines = wrapped(did, BODY_COLUMNS);
+        lines.addAll(wrapped(String.format("The D$ stands on gold at D$%.4f an ounce, so its centre is D$%.4f to the US$ and the rate D$%.4f.",
+                fx.getMintPrice(), fx.goldCentre(), fx.getRate()), BODY_COLUMNS));
+        lines.addAll(wrapped(String.format("Answer on Policy › The currency: \"%s\", \"%s\" or \"%s\". Until you do, the D$ stays at its mint price.",
+                ForeignAccounts.GoldChoice.STAY.words, ForeignAccounts.GoldChoice.FOLLOW.words, ForeignAccounts.GoldChoice.LEAVE.words), BODY_COLUMNS));
+        return lines;
     }
 
     /**
