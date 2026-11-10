@@ -633,7 +633,13 @@ public class SaveFileCheck {
         warned.toggleReports();      // eight months of city reports is not the point
         warned.toggleGraphs();
         warned.buildStack(template(warned, "House"), 60, false);
-        warned.buildStack(depot, 2, false);
+        // GW1: the depots are this city's own template, not `depot` of the first city above. A stack keeps
+        // the template instance it was ordered with and ConstructionControl.keyOf() names it by id, while
+        // BuildingManager.stackOfKey() finds it through getTemplate(id) and getStack()'s template.equals
+        // (identity); a depot of another city's instance has a key that resolves to no stack, and the month
+        // the builders' own depots go first (the staffing gate now counts the draw) throws in plan() - 8 months
+        // of this city, month 7 - and is caught as a failed skip. The game never orders from another manager's template.
+        warned.buildStack(template(warned, "Construction Depot"), 2, false);
         warned.simulateMonths(8);
 
         /*
@@ -696,7 +702,7 @@ public class SaveFileCheck {
 
         Game brandNew = new Game(freshFiles);
         brandNew.run();
-        brandNew.buildStack(depot, 1, false);
+        brandNew.buildStack(template(brandNew, "Construction Depot"), 1, false);
 
         assertEquals("nothing is finished yet",
                 brandNew.getBuildingManager().getQuantity(depot.getId()), 0);
@@ -1405,11 +1411,23 @@ public class SaveFileCheck {
          */
         full.simulateMonths(150);
 
-        for (int extra = 0; extra < 240 && full.getBank().depositRate() <= 0; extra++) {
+        /*
+         * ...A BANK THAT HAS PAID A YEAR RUNNING, NOT ONE THAT PAID ONCE (GW1): the staffing gate counts the draw, so the businesses
+         * of this young city build and borrow earlier and the bank's book is worse for it. It stood in resolution from month 151 to
+         * 165 and was recapitalised at 166; the first month it paid (167, 0.45%) had it 25.5k of equity, and the squeeze the next
+         * month put it back in resolution at 169 (-7.3k) and it paid nothing for the 240 months the loop below may wait - no
+         * hunger-and-paying month, and the bank, the bonds and the mortgages gone from every fixture after it. It paid and stood
+         * out of resolution again from month 224 to 236 (48.8k of equity, 74.3k book); a dozen such months running is the
+         * "profitable and paying" the note above asks of it, and the squeeze then took it eight more to fail (month 247).
+         */
+        final int MONTHS_PAYING_BEFORE_THE_SQUEEZE = 12;
+        int payingFor = 0;
+        for (int extra = 0; extra < 240 && payingFor < MONTHS_PAYING_BEFORE_THE_SQUEEZE; extra++) {
             full.simulateMonths(1);
+            payingFor = full.getBank().depositRate() > 0 && !full.getBank().isInResolution() ? payingFor + 1 : 0;
         }
         assertTrue("fixture: the bank opened and started paying its savers",
-                full.getBank().depositRate() > 0);
+                full.getBank().depositRate() > 0 && !full.getBank().isInResolution());
 
         TaxPolicy squeeze = full.getEconomyManager().getTaxPolicy();
         squeeze.setIncomeTaxRate(TaxPolicy.MAX_INCOME_TAX);
@@ -1508,8 +1526,26 @@ public class SaveFileCheck {
                 && (full.getHealth().getHungerRate() <= 0
                     || full.getTotalSubsidyPaid() <= 0
                     || full.getBank().depositRate() <= 0
-                    || full.getHouseholdBalance().getDeliveredShare() >= 1
-                    || full.getCapitalFlows().getArrived() <= 0));
+                    || full.getHouseholdBalance().getDeliveredShare() >= 1));
+        /*
+         * ...AND THE MONTH'S ARRIVAL PLACED when the month brought none (GW1). Hot money comes for a spread of the city's rate (or its
+         * savers') over the world's, and the world's rate is the history's: this path stands in the years it spiked, 23.0% at month
+         * 227 to 242 against the city's 3.5 to 3.7%, so the target and the spread read 0 in every month from the squeeze (237) to
+         * the bank's failure (247) and nothing could arrive; the half-target stock above is half of nothing. The only months the
+         * city's rate stood over the world's were 167 to 182, and the squeeze in them (a probe) had the bank in resolution by 169.
+         * What the section asks of the month is that it be SAVED, so the month's arrival is put in the slots a month of arrivals
+         * fills (the stock, its life and the month's flow), of the order the loop's months brought before the bank went (39.6k at
+         * month 181), and the loop's own condition for it is dropped. A month that did bring some is left as it is.
+         */
+        final double PLACED_ARRIVAL = 40;
+        if (full.getCapitalFlows().getArrived() <= 0) {
+            double[] hot = full.getCapitalFlows().toSaveArray();
+            hot[0] += PLACED_ARRIVAL; hot[3] += PLACED_ARRIVAL; hot[16] = PLACED_ARRIVAL;
+            full.getCapitalFlows().restore(hot);
+            // ...and into the bank it funds, as Game does when a month's stock grows (its cash, the month's hot money in, the foreign deposits): a load sets those deposits from the stock, so a stock the bank never took reloads 40k short in equity.
+            full.getBank().receiveHotMoney(PLACED_ARRIVAL);
+            full.getBank().setForeignDeposits(full.getCapitalFlows().getStock());
+        }
 
         // The treasury's rollover (0.7.13), set after the city has played to
         // the one setting no city founds with, so the round trip can fail.
@@ -2831,11 +2867,16 @@ public class SaveFileCheck {
                 && bought.getFund().getOffersAccepted() == fundCity.getFund().getOffersAccepted());
         same("...the preferred outstanding", bought.getBank().preferredOutstanding(), fb.preferredOutstanding());
         same("...its arrears", bought.getBank().getPreferredArrears(), fb.getPreferredArrears());
-        Bank.Preferred was = fb.getPreferred().get(0), is = bought.getBank().getPreferred().get(0);
-        assertTrue("...its anniversary, its cap on the dividend and its warrants",
-                is.issued() == was.issued() && is.capPerShare() == was.capPerShare()
-                        && is.warrantShares() == was.warrantShares() && is.strike() == was.strike()
-                        && is.warrantsExpire() == was.warrantsExpire() && is.warrantsOut() == was.warrantsOut());
+        // ...a city that did not buy it fails here, on its own line, and not on the first of its list that is not there.
+        boolean preferredOnBothBooks = !fb.getPreferred().isEmpty() && !bought.getBank().getPreferred().isEmpty();
+        assertTrue("fixture: the preferred the city bought is on the bank's books, live and reloaded", preferredOnBothBooks);
+        if (preferredOnBothBooks) {
+            Bank.Preferred was = fb.getPreferred().get(0), is = bought.getBank().getPreferred().get(0);
+            assertTrue("...its anniversary, its cap on the dividend and its warrants",
+                    is.issued() == was.issued() && is.capPerShare() == was.capPerShare()
+                            && is.warrantShares() == was.warrantShares() && is.strike() == was.strike()
+                            && is.warrantsExpire() == was.warrantsExpire() && is.warrantsOut() == was.warrantsOut());
+        }
         same("...the desk's inventory as the bank carried it, not re-marked from the quote", bought.getBank().getSecurities(), fb.getSecurities());
         same("...and the bank's equity with it in", bought.getBank().equity(), fb.equity());
         same("...its three parts still adding up", bought.getBank().equitySplitResidual(), fb.equitySplitResidual());
