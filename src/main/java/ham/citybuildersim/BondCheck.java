@@ -1632,13 +1632,30 @@ public class BondCheck {
 
     /* ============================ 1c. MATURITY ============================ */
 
+    static CorporateBond largestTheFundHoldsNone(BondMarket bm) {
+        CorporateBond bond = null;
+        for (CorporateBond b : bm.getBonds()) if (!(b.city() > 0) && (bond == null || b.face() > bond.face())) bond = b;
+        return bond;
+    }
+
     static void maturity(Game g) {
         out.println("\n--- 1c. at maturity the issuer pays every holder its face, and the bond and its book go ---");
         BondMarket bm = g.getBondMarket();
+        EconomyManager em = g.getEconomyManager();
         // The largest the city's fund holds none of (0.7.43): 5c's hand
         // bought some, and the classes summed below are the other four.
-        CorporateBond bond = null;
-        for (CorporateBond b : bm.getBonds()) if (!(b.city() > 0) && (bond == null || b.face() > bond.face())) bond = b;
+        CorporateBond bond = largestTheFundHoldsNone(bm);
+        if (bond == null) {
+            // WG1 (2026-11-10): a bond the fund holds none of is issued here, as 7a issues one (the issuer short of cash between months, the desk asked, a month
+            // played). 5c's hand buys part of every bond the company it hands the world's half does not issue; on a new city's .85 floor (a real minimum, WG1) that
+            // company issued none of the seven bonds outstanding at month 39 and the fund held some of each, where on main's path (the floor at the going rate)
+            // one stood unheld. The fixture is the bond, not the company that happened to issue it.
+            em.setSectorCash(ISSUER, -5_000 * PriceLevel.FACTOR - em.getForeignAssets(ISSUER) - bm.faceHeldBy(ISSUER));
+            g.getBusinessInvestment().holdSector(ISSUER);
+            int issues = bm.getLifeIssues();
+            assertTrue("fixture: short of $5M, " + ISSUER + " issued a bond in the month", closes(play(g)) && bm.getLifeIssues() > issues);
+            bond = largestTheFundHoldsNone(bm);
+        }
         assertTrue("fixture: a bond outstanding", bond != null);
         if (bond == null) return;
         bond.maturityMonth = g.getMonth() + 1;
