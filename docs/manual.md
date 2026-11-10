@@ -2147,7 +2147,7 @@ The other slots, 1 to 10, rank beside the city, read and never written; the auto
 
 **Your cities at: now · your age.** Now shows each saved city as last saved. Your age reads each one's history at the active city's age in months: two cities compared at the same point in their lives. A city that never got that far is no row, and the line under the table says when it stopped (*"Riverton (slot 5) stopped at Feb 2031"*). At your age the figures a history does not keep a month at a time are absent rather than guessed.
 
-**The city in play, as saved** (0.9.64, batch LB4). A slot that holds the city in play, the same city name and world seed in its header, reads *this city, as saved · slot N* on the board and in its drawer. At Your age it is left out, where it only tied with itself, and the line under the table names it. The saved histories are read skipping every series the board does not keep: ten 6,000-month cities hold 32 MB after the read, where they held 97.
+**The city in play, as saved** (0.9.64, batch LB4). A slot that holds the city in play reads *this city, as saved · slot N* on the board and in its drawer. It is known by its header: the same city name, the same world seed and, since 0.9.76 (batch LB5), the same founding cash, so a city founded again on the same name and world is not taken for the one it replaced. At Your age it is left out, where it only tied with itself, and the line under the table names it. The saved histories are read skipping every series the board does not keep: ten 6,000-month cities hold 32 MB after the read, where they held 97.
 
 ### Rank over the years
 
@@ -2459,4 +2459,4 @@ CityBuilderSim · Java 21 / JavaFX / Maven · build 0.7.135, save format 39 · u
 
 From the source at time of writing: 339 files, 340,058 lines, 129 building templates, twenty-two sectors, 59 goods, seven resources, 105 harnesses plus the playtest in 1,048 seconds at 0.7.135 (all 105 that run in the cloud green, HealthCheck among them since 0.7.102, the JavaFX one skipped in the suite and passing 129 of 129 on its own), LongPlaytest 4,000 months audited every month.
 
-Edition of 9 November 2026, at build 0.9.75 (batch ME1): six texts added — when the builders are short (section 9), the nations on the Trade tab (16), founded in 1900 (17, and the calendar in 24), land sold by its nation (18), Rankings (23, new) and recording and replay (24). The rest of the page is as its masthead dates it.
+Edition of 9 November 2026, at build 0.9.76 (batch ME1): six texts added — when the builders are short (section 9), the nations on the Trade tab (16), founded in 1900 (17, and the calendar in 24), land sold by its nation (18), Rankings (23, new) and recording and replay (24). The rest of the page is as its masthead dates it.

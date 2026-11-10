@@ -19,11 +19,12 @@ moved down one (the contents, the section numbers and the separators with them).
 | LB3-M | 23, Rankings, new, after "The screen": seven subsections | `LB3-manual.md` |
 | TR1-M | 24, Time, saves & logs: "Recording and replay", under the left column | `TR1-notes.md` §6 |
 
-The footer gained one line that says what this edition is (9 November 2026, at build 0.9.75, the six texts).
+The footer gained one line that says what this edition is (9 November 2026, at build 0.9.76, the six texts).
 
 ## 2. What changed against the texts
 
-Each text's builds, counts and figures were checked against main at 0.9.75 (b69bc612). The newer figure won.
+Each text's builds, counts and figures were checked against main at 0.9.75 (b69bc612), and again when main
+came in at 0.9.76 (LB5, the one batch that landed meanwhile). The newer figure won.
 
 - **FC1.** `BuildersShort`'s dials are as written (knee nine months, half at 24, ceiling +80%, the foreign
   floor 5%, price ×2, a quarter of the capacity), and `ConstructionTrapCheck` still gives 441.6 of 458 on
@@ -48,7 +49,10 @@ Each text's builds, counts and figures were checked against main at 0.9.75 (b69b
   0.8.85, took 17 out; LC2, 0.9.58, brought 9 back), and Your world carries ten. (b) "A founding game dollar
   counts as one 2015 dollar" was true until EP1; it is a 1900 US$ worth 28.4 of 2015's (`RealDollar.BRIDGE`),
   and the three formulas carry the bridge. (c) The controls' labels are the screen's. Added: LB4 (0.9.64,
-  the city in play as saved, the leaner read).
+  the city in play as saved, the leaner read), and LB5 (0.9.76), which reached main while this batch waited
+  for its row: a slot is the city in play on its name, world seed and founding cash
+  (`SavedCities.Played.matches`), where the page, published an hour before, said name and seed. That
+  sentence and the footer's build were set to it and the page was published once more.
 
 ## 3. The page
 
@@ -58,9 +62,11 @@ Each text's builds, counts and figures were checked against main at 0.9.75 (b69b
   separators 1 to 26, the added tags balanced, no character the page did not use before). The Artifact tool
   takes a republish only from a session that has read every line of the live version, so a subagent with its
   own context read it, rebuilt the page from the script, compared it byte for byte and published.
-- Published in place to the same URL as its Version 21, `1794278327-4899`, 1,189,170 bytes as published
-  (+23,205); no second artifact. The pull is byte for byte what was built. The subagent found no script on
-  the page, no outside resource but its three Google Fonts links, and no text addressed to an assistant.
+- Published in place to the same URL as its Version 21, `1794278327-4899`; no second artifact. The subagent
+  found no script on the page, no outside resource but its three Google Fonts links, and no text addressed
+  to an assistant. Version 22, `1794279014-df0c`, is Version 21 with two lines changed for LB5 (above),
+  published from this session: 1,189,331 bytes as published (+23,366 on the page before the edition).
+  `docs/manual.*` are pulled from Version 22, and the pull is byte for byte what was built.
 - `ManualToMarkdown`: 26 sections, 36 tables, 34 formulas, 27 notes, 15 steps of the month, 2,462 lines.
   Besides the six texts, `docs/manual.md` changes about sixty lines by one thing only: their links to the
   three renumbered sections (`#23-time-saves--logs` is `#24-...` now). With those anchors set aside, seven
@@ -70,7 +76,7 @@ Each text's builds, counts and figures were checked against main at 0.9.75 (b69b
 
 - ★ **The masthead is left as it was** ("Build 0.8.11 · Save format 40 · 20 October 2026", the vitals
   under it, and the footer's first lines at 0.7.135). Recommended: leave it. This edition adds six texts and
-  checks only them; setting the masthead to 0.9.75 would claim the other twenty sections were checked too.
+  checks only them; setting the masthead to 0.9.76 would claim the other twenty sections were checked too.
   The footer's new line says exactly what was. A full edition, the page read against 0.9.x, is a batch of
   its own and is not queued here.
 - ★ **The pinned version.** The Artifact tool reports the page as "shared with anyone with the link
@@ -82,7 +88,7 @@ Each text's builds, counts and figures were checked against main at 0.9.75 (b69b
 
 ## 5. Checks
 
-`./batch-check.sh --fast`: exit 0 (compile, the maps unchanged, Stale with no firm finding and none that
-names the manual). `ConstructionTrapCheck` and `LandNationsCheck` were run alone for the figures above and
+`./batch-check.sh --fast`, with main merged at 0.9.76: exit 0 (compile, the maps unchanged, Stale with no
+firm finding and none that names the manual). `ConstructionTrapCheck` and `LandNationsCheck` were run alone for the figures above and
 passed. No save was read and no slot written; the scratch probe that printed the land
 factors stayed in the scratchpad.
