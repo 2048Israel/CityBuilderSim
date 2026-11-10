@@ -36,7 +36,9 @@ import java.nio.file.Path;
  * alone; the floor's tie (prices, the average wage, nothing) holds the floor
  * where each says, to the dial's bounds, in both forms of the cost of living's
  * walk; the going rate is redenominated with the floor; and the tie is saved,
- * an older array reading prices at the default share.
+ * an older array reading prices at the default share. And (WS1, 2026-11-10) the average the tie last read is saved and scaled by a reform, so a
+ * dial move after a load or in a reform month reads its share against the right average, and the tie's share stops short of the ratchet: the range
+ * is the world file's ratios, never 1, and a floor tied at its top settles under the mean of the wages it does not hold.
  */
 public class LabourCheck {
 
@@ -593,7 +595,7 @@ public class LabourCheck {
                     skillsAfter[b.ordinal()], skillsBefore[b.ordinal()], 1.0);
         }
 
-        // The tie through state() and restore() alone, and an array cut before the two values the tie added: an older save, which is prices.
+        // The tie through state() and restore() alone, and an array cut before the three values the tie and its average added: an older save, which is prices.
         LabourMarket tiedMarket = new LabourMarket();
         tiedMarket.setFloorTie(LabourMarket.FloorTie.AVERAGE_WAGE, .61);
         double[] tiedState = tiedMarket.state();
@@ -603,11 +605,11 @@ public class LabourCheck {
         close("...with its share", tiedBack.getTieShare(), .61, 1e-12);
         LabourMarket olderBack = new LabourMarket();
         olderBack.setFloorTie(LabourMarket.FloorTie.NOTHING, .77);
-        olderBack.restore(java.util.Arrays.copyOf(tiedState, tiedState.length - 2));
+        olderBack.restore(java.util.Arrays.copyOf(tiedState, tiedState.length - 3));
         assertTrue("an array cut before the tie restores prices", olderBack.getFloorTie() == LabourMarket.FloorTie.PRICES);
         close("...at the default share", olderBack.getTieShare(), LabourMarket.DEFAULT_TIE_SHARE, 1e-15);
         double[] outOfRange = tiedState.clone();
-        outOfRange[outOfRange.length - 2] = LabourMarket.FloorTie.values().length;
+        outOfRange[outOfRange.length - 3] = LabourMarket.FloorTie.values().length;   // the tie is the third value from the end (WS1: the last average follows its share)
         LabourMarket garbledBack = new LabourMarket();
         garbledBack.setFloorTie(LabourMarket.FloorTie.NOTHING, .77);
         garbledBack.restore(outOfRange);
@@ -1015,6 +1017,183 @@ public class LabourCheck {
         assertTrue("the graduate ceilings stay under it - the world has few to spare",
                 WageBand.COLLEGE.arrivalCeiling() < 1
                         && WageBand.UNIVERSITY.arrivalCeiling() < WageBand.COLLEGE.arrivalCeiling());
+
+        /* ============ 7. THE TIE'S AVERAGE SURVIVES A LOAD AND A REFORM (WS1) ============
+
+           WG1's review found the average wage the tie last read was neither
+           saved nor scaled by a reform: after a load it was 0, so the dial
+           could not move the tie's share and the next month's strike undid the
+           move; in a reform month the dial divided a new-unit floor by an
+           old-unit average. Each fixture causes its condition. (a) is a played
+           city under the tie, saved by the real save path and loaded into the
+           harness's temp folder: the live city and the loaded one are given the
+           same dial move before the loaded one has run a month. (b) is a market
+           that has read an average, set a floor, and gone through a reform.
+           ================================================================== */
+        System.out.println("\n--- the tie's average survives a load and a reform (WS1) ---");
+        {
+            final double tiedAt = .5, movedTo = .6;
+            LabourMarket live = lived.getLabourMarket();
+            live.setFloorTie(LabourMarket.FloorTie.AVERAGE_WAGE, tiedAt);
+            quietly(() -> lived.simulateMonths(1));
+            double lastAverage = lastAverageOf(live);
+            assertTrue("fixture: the month struck the floor on an average of the played city's wages", lastAverage > 0 && Double.isFinite(lastAverage));
+            assertTrue("fixture: the floor was struck, not held at a bound of the dial",
+                    live.getMinimumWage() > live.getMinSettable() && live.getMinimumWage() < live.getMaxSettable());
+            close("the floor the month struck is the share of the average it read", live.cashMinimumWage(), tiedAt * lastAverage, 1e-9);
+
+            assertTrue("the played city under the tie saved", lived.saveGame(2, "labour-tie").ok);
+            Game tiedBack2 = new Game(files);
+            quietly(() -> tiedBack2.loadGameSave(2));
+            LabourMarket loaded = tiedBack2.getLabourMarket();
+            assertTrue("the tie came back through the real save path, at its share",
+                    loaded.getFloorTie() == LabourMarket.FloorTie.AVERAGE_WAGE && Math.abs(loaded.getTieShare() - tiedAt) < 1e-12);
+            close("...and the average it last read came back with it", lastAverageOf(loaded), lastAverage, 1e-9);
+
+            // The same dial move on both cities, before the loaded one has run a month.
+            double asked = live.floorForCash(movedTo * lastAverage);
+            live.setMinimumWage(asked);
+            loaded.setMinimumWage(asked);
+            close("the live city's dial move puts the share at the move's cash over the last average", live.getTieShare(), movedTo, 1e-9);
+            close("the loaded city's, before any month, puts it at the move's cash over the last average",
+                    loaded.getTieShare(), loaded.cashAt(asked) / lastAverage, 1e-9);
+            close("...the same share the live city gets from the same move, not the share before it", loaded.getTieShare(), live.getTieShare(), 1e-9);
+
+            quietly(() -> tiedBack2.simulateMonths(1));
+            double newAverage = lastAverageOf(loaded);
+            assertTrue("fixture: the month read an average of its own", newAverage > 0 && Double.isFinite(newAverage));
+            assertTrue("fixture: the floor was struck again, not held at a bound of the dial",
+                    loaded.getMinimumWage() > loaded.getMinSettable() && loaded.getMinimumWage() < loaded.getMaxSettable());
+            close("after a month the loaded city's floor is still the dial's share of the new average (not undone to the share before)",
+                    loaded.cashMinimumWage() / newAverage, movedTo, 1e-9);
+
+            // The array alone: cut before the average, an older save reads 0 and the dial moves no share, as it did; a month with nobody employed saves 0.
+            LabourMarket withAverage = new LabourMarket();
+            withAverage.setFloorTie(LabourMarket.FloorTie.AVERAGE_WAGE, .61);
+            withAverage.followAverageWage(withAverage.cashGoingRate() * 1.3);
+            double[] withState = withAverage.state();
+            LabourMarket withBack = new LabourMarket();
+            withBack.restore(withState);
+            close("the average survives state() and restore()", lastAverageOf(withBack), withAverage.cashGoingRate() * 1.3, 1e-12);
+            LabourMarket olderAverage = new LabourMarket();
+            olderAverage.restore(java.util.Arrays.copyOf(withState, withState.length - 1));
+            assertTrue("an array cut before the average keeps the tie it carries",
+                    olderAverage.getFloorTie() == LabourMarket.FloorTie.AVERAGE_WAGE && Math.abs(olderAverage.getTieShare() - .61) < 1e-12);
+            close("...and reads no average, as before", lastAverageOf(olderAverage), 0, 1e-15);
+            olderAverage.setMinimumWage(olderAverage.getMinimumWage() * 1.5);
+            close("...so a dial move leaves its share alone", olderAverage.getTieShare(), .61, 1e-12);
+            LabourMarket nobody = new LabourMarket();
+            nobody.followAverageWage(Double.NaN);
+            close("a month with no average wage saves 0, never a NaN", lastAverageOf(nobody), 0, 1e-15);
+
+            // (b) A reform: the same real floor, in the new unit, has the same share of an average that is in the new unit too.
+            for (double scale : new double[] { .01, 4 }) {
+                LabourMarket reform = new LabourMarket();
+                reform.setFloorTie(LabourMarket.FloorTie.AVERAGE_WAGE, tiedAt);
+                double average = reform.cashGoingRate() * 1.4;
+                reform.followAverageWage(average);
+                double realFloor = reform.floorForCash(movedTo * average);
+                reform.setMinimumWage(realFloor);
+                double shareBeforeReform = reform.getTieShare();
+                assertTrue("fixture (reform x" + scale + "): the dial's move put the share at its own", Math.abs(shareBeforeReform - movedTo) < 1e-9);
+                reform.redenominate(scale);
+                close("a reform x" + scale + " scales the average the tie last read with the wages", lastAverageOf(reform), average * scale, 1e-12);
+                reform.setMinimumWage(realFloor * scale);
+                close("...so the same real floor times the scale has the same tie share as before it",
+                        reform.getTieShare(), shareBeforeReform, 1e-9);
+            }
+        }
+
+        /* ============ 8. THE TIE'S SHARE STOPS SHORT OF THE RATCHET (WS1) ============
+
+           WG1's review: at 1.0 the floor is last month's average itself, so
+           each month it lifts every wage under the average, the average rises
+           with them, and the ladder ratchets toward its top. Under 1 a floor
+           struck at share s of an average that includes it settles: with a
+           share p of the posts held at the floor f and the rest at a mean w,
+           f = s (p f + (1 - p) w), so f = s (1 - p) w / (1 - s p) < w.
+           The range is the world file's: the ratios run from the United States
+           to Costa Rica, and the range holds every one and no more.
+           ================================================================== */
+        System.out.println("\n--- the tie's share stops short of the ratchet (WS1) ---");
+        {
+            LabourMarket asking = new LabourMarket();
+            asking.setFloorTie(LabourMarket.FloorTie.AVERAGE_WAGE, 1.0);
+            close("asking the average wage itself holds the share at the top of the range", asking.getTieShare(), LabourMarket.MAX_TIE_SHARE, 1e-15);
+            asking.setFloorTie(LabourMarket.FloorTie.AVERAGE_WAGE, .05);
+            close("...and asking .05 holds it at the bottom", asking.getTieShare(), LabourMarket.MIN_TIE_SHARE, 1e-15);
+            assertTrue("the top of the range stops short of the average wage itself", LabourMarket.MAX_TIE_SHARE < 1.0);
+
+            double lowestRatio = Double.POSITIVE_INFINITY, highestRatio = Double.NEGATIVE_INFINITY;
+            int nationsCounted = 0;
+            for (WorldMeasures.Place nation : WorldMeasures.load().nations()) {
+                double ratio = nation.value("kaitz");
+                if (!Double.isFinite(ratio)) continue;
+                nationsCounted++;
+                lowestRatio = Math.min(lowestRatio, ratio);
+                highestRatio = Math.max(highestRatio, ratio);
+            }
+            assertTrue("fixture: the world file has nations with a minimum-wage-to-average-wage ratio", nationsCounted > 0);
+            assertTrue("the range reaches the lowest nation's ratio, so it can be copied", LabourMarket.MIN_TIE_SHARE <= lowestRatio);
+            assertTrue("...and the highest, so none is out of reach", LabourMarket.MAX_TIE_SHARE >= highestRatio);
+
+            // A city whose average is well over its bottom rung: posts by job, so many unskilled and diploma posts and a spread of skilled ones. At par
+            // (posts equal to workers in every band) every wage is at its base, and the average wage is the posts' wage bill over the posts, as
+            // PopulationManager.getAverageWage() reads it with every post filled.
+            JobType[] ladderJobs = JobType.values();
+            double[] postsByJob = new double[ladderJobs.length];
+            double[] postsByBand = new double[WageBand.values().length];
+            double postsTotal = 0;
+            for (JobType job : ladderJobs) {
+                double postsOfJob = switch (WageBand.of(job)) { case NONE -> 300; case DIPLOMA -> 300; case COLLEGE -> 100; case UNIVERSITY -> 50; };
+                postsByJob[job.ordinal()] = postsOfJob;
+                postsByBand[WageBand.of(job).ordinal()] += postsOfJob;
+                postsTotal += postsOfJob;
+            }
+            LabourMarket tied = new LabourMarket();
+            tied.setFloorTie(LabourMarket.FloorTie.AVERAGE_WAGE, LabourMarket.MAX_TIE_SHARE);
+            LabourMarket untied = new LabourMarket();   // the same city at the default floor: what the market alone pays
+            double startingBill = 0;
+            for (JobType job : ladderJobs) startingBill += postsByJob[job.ordinal()] * tied.getWage(job);
+            assertTrue("fixture: the average wage is over the unskilled wage by more than the top of the range lets the floor reach",
+                    LabourMarket.MAX_TIE_SHARE * startingBill / postsTotal > tied.getWage(JobType.NO_DIPLOMA));
+
+            final int tiedMonths = 150;
+            int bound = 0;
+            boolean underUnheldMean = true, underTop = true, rungAbove = true;
+            double floorNow = 0, floorLastMonth = 0, unheldMean = 0, lowestUniversity = 0;
+            for (int m = 0; m < tiedMonths; m++) {
+                double bill = 0;
+                for (JobType job : ladderJobs) bill += postsByJob[job.ordinal()] * tied.getWage(job);
+                tied.followAverageWage(bill / postsTotal);
+                tied.advanceMonth(postsByBand, postsByBand);
+                untied.advanceMonth(postsByBand, postsByBand);
+
+                floorLastMonth = floorNow;
+                floorNow = tied.cashMinimumWage();
+                double unheldBill = 0, unheldPosts = 0;
+                lowestUniversity = Double.MAX_VALUE;
+                for (JobType job : ladderJobs) {
+                    if (!tied.isPaidTheFloor(job)) {
+                        unheldBill += postsByJob[job.ordinal()] * tied.getWage(job);
+                        unheldPosts += postsByJob[job.ordinal()];
+                    }
+                    if (WageBand.of(job) == WageBand.UNIVERSITY) lowestUniversity = Math.min(lowestUniversity, tied.getWage(job));
+                }
+                unheldMean = unheldBill / unheldPosts;
+                if (tied.getWage(JobType.NO_DIPLOMA) > untied.getWage(JobType.NO_DIPLOMA) * (1 + 1e-9)) bound++;
+                if (!(floorNow < unheldMean)) underUnheldMean = false;
+                if (tied.getMinimumWage() >= tied.getMaxSettable()) underTop = false;
+                if (!(lowestUniversity > floorNow)) rungAbove = false;
+            }
+            System.out.printf("   tied at %.2f for %d months: floor %.4f (the going rate %.4f), mean of the posts it does not hold %.4f, bound %d months%n",
+                    LabourMarket.MAX_TIE_SHARE, tiedMonths, floorNow, tied.cashGoingRate(), unheldMean, bound);
+            assertTrue("the floor bound in most of the months (it lifted the unskilled wage over what the market alone pays)", bound > tiedMonths * 9 / 10);
+            assertTrue("the floor settles: its month-on-month move is under 0.1% by the end", Math.abs(floorNow - floorLastMonth) / floorLastMonth < .001);
+            assertTrue("the floor stayed under the mean wage of the posts it does not hold, every month", underUnheldMean);
+            assertTrue("the floor never reached the top of the dial", underTop);
+            assertTrue("the university band's lowest wage stayed above the floor, every month", rungAbove);
+        }
 
         wagesAgainstTheIndex();
         payrollByJobType();
@@ -1490,6 +1669,12 @@ public class LabourCheck {
             filled += jobs[job.ordinal()] - vacancy[job.ordinal()];
         }
         return filled;
+    }
+
+    /** The average wage a market's tie last read: the last value of its state array (WS1; there is no getter for it). */
+    static double lastAverageOf(LabourMarket m) {
+        double[] state = m.state();
+        return state[state.length - 1];
     }
 
     static void cleanUp(Path root) {

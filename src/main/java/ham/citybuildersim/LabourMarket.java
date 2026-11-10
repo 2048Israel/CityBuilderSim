@@ -106,11 +106,15 @@ public class LabourMarket {
     /** The floor's share of the average wage when it is tied to it: the middle of the OECD's 37-55% (28 of the 33 nations in the world file), an estimate (spec-wages 3.2). */
     public static final double DEFAULT_TIE_SHARE = .45;
 
-    /** The lowest share of the average wage a tie to it can ask. */
-    public static final double MIN_TIE_SHARE = .20;
+    /** The lowest share of the average wage a tie to it can ask: under the world file's lowest minimum-to-average ratio (.17, the United States), so even that nation can be copied. */
+    public static final double MIN_TIE_SHARE = .15;
 
-    /** The highest share of the average wage a tie to it can ask: a floor at the average wage is the most. */
-    public static final double MAX_TIE_SHARE = 1.0;
+    /**
+     * The highest share of the average wage a tie to it can ask: over the world file's highest minimum-to-average ratio (.69, Costa Rica), so every nation can be copied and none
+     * exceeded, and under 1, where the floor is last month's average itself and lifts every wage under it each month - a floor struck at share s of an average that includes it
+     * settles at most s of the mean of the wages over it.
+     */
+    public static final double MAX_TIE_SHARE = .70;
 
     /* =====================================================================
        THE BOUNDS ARE MULTIPLES OF THE GOING WAGE, NOT DOLLAR FIGURES.
@@ -942,8 +946,11 @@ public class LabourMarket {
     /** The floor's share of the average wage when it is tied to it (AVERAGE_WAGE); kept, unused, under another tie. */
     private double tieShare = DEFAULT_TIE_SHARE;
 
-    /** The average wage the tie last read, in today's money. Never saved: Game says it every month before the wages are walked. */
-    private transient double lastAverageWage;
+    /**
+     * The average wage the tie last read, in today's money (0 before any month has said one, and for a nobody-employed month). Game says it every month before the
+     * wages are walked; it is saved (WS1) so that a dial move before the first month after a load still reads the share against it, and scaled by a reform like the wages.
+     */
+    private double lastAverageWage;
 
     /** What the floor keeps pace with. */
     public FloorTie getFloorTie() { return floorTie; }
@@ -994,7 +1001,7 @@ public class LabourMarket {
 
     public double[] state() {
         int bands = WageBand.values().length;
-        double[] out = new double[wage.length + 3 + diagnosticsLength() + 2];
+        double[] out = new double[wage.length + 3 + diagnosticsLength() + 3];
         out[0] = minimumWage;
         System.arraycopy(wage, 0, out, 1, wage.length);
         // The real floor and the player's nudge, appended so an older save
@@ -1019,6 +1026,8 @@ public class LabourMarket {
         // The floor's tie and its share (WG1), appended after the diagnostics: an older array restores PRICES at the default share.
         out[i + 1] = floorTie.ordinal();
         out[i + 2] = tieShare;
+        // The average wage the tie last read (WS1), appended after the tie and its share: an older array restores 0, as before. Never NaN in a save.
+        out[i + 3] = Double.isFinite(lastAverageWage) ? lastAverageWage : 0;
         return out;
     }
 
@@ -1071,6 +1080,9 @@ public class LabourMarket {
             floorTie = FloorTie.PRICES;
             tieShare = DEFAULT_TIE_SHARE;
         }
+        // The average wage the tie last read (WS1), when the save carries it; 0 otherwise, which is what an older save was already reading.
+        int averageAt = wage.length + 3 + diagnosticsLength() + 2;
+        lastAverageWage = saved.length > averageAt && Double.isFinite(saved[averageAt]) && saved[averageAt] > 0 ? saved[averageAt] : 0;
     }
 
     /**
@@ -1078,9 +1090,13 @@ public class LabourMarket {
      *
      * costOfLiving and livingTarget are INDICES - ratios against a base year -
      * so they do not move, and moving them would be the bug. The same reform
-     * that halves every price halves the base it is measured against.
+     * that halves every price halves the base it is measured against. The
+     * average wage the tie last read is cash in today's money, like the wages,
+     * so it moves with them (WS1): setMinimumWage() in a reform month divides a
+     * new-unit floor by it.
      */
     public void redenominate(double scale) {
+        lastAverageWage *= scale;
         minimumWage *= scale;
         goingRate *= scale;
         minSettable *= scale;
