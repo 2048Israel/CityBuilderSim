@@ -180,6 +180,23 @@ public class QuayCraneCheck {
             check(names[side] + ": its apron end is inside the box, in the plot row nearest the sea", apron);
             check(names[side] + ": its ship end is on the water, outside the box and the quay's strip, past the boat's distance from the land", ship);
             check(names[side] + ": the line crosses the wall square to the shore (the same place along it at both ends), and the hook is on it between its ends", square && onIt);
+            // A boat moored stern-to: its middle lies well past the crane's reach, at the same place along the shore.
+            double far = depth(w) + w.quay() + QuayCrane.OUTREACH + 3, off = far - shipAt;
+            double fx = boat[0] + CityShore.DX[side] * off, fy = boat[1] + CityShore.DY[side] * off;
+            boolean reach = Math.abs(seaward(w, fx, fy) - far) < 1e-9 && shipAt <= depth(w) + w.quay() + QuayCrane.OUTREACH, sameApron = true;
+            for (int k = 0; k <= 20; k++) {
+                List<QuayCrane.Reach> near = QuayCrane.reaches(w, Ports.Cargo.GENERAL, boat[0], boat[1], k / 20.0), rs = QuayCrane.reaches(w, Ports.Cargo.GENERAL, fx, fy, k / 20.0);
+                if (rs.size() != 1 || near.size() != 1) {
+                    reach = false;
+                    continue;
+                }
+                QuayCrane.Reach r = rs.get(0);
+                reach &= Math.abs(seaward(w, r.x0(), r.y0()) - (depth(w) + w.quay() + QuayCrane.OUTREACH + QuayCrane.LINE_SEAWARD)) < 1e-9
+                        && seaward(w, r.hx(), r.hy()) <= depth(w) + w.quay() + QuayCrane.OUTREACH + 1e-9;
+                sameApron &= r.x1() == near.get(0).x1() && r.y1() == near.get(0).y1();
+            }
+            check(names[side] + ": a boat whose middle lies " + (QuayCrane.OUTREACH + 3) + " plots off the wall (moored stern-to) is worked at OUTREACH (" + QuayCrane.OUTREACH
+                    + " plots) from the wall's outer edge and not at its middle, the hook never past it, the apron end where it was", reach && sameApron);
         }
     }
 

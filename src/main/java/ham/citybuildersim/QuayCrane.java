@@ -49,6 +49,9 @@ public final class QuayCrane {
     /** How far either side of the boat's place along the shore a tanker's loading arm stands, in plots. */
     static final double ARM_APART = 1.5;
 
+    /** How far out from the quay wall's outer edge a crane reaches for its ship, in plots: a boat moored stern-to has its middle farther out than any boom, and is worked at its stern. */
+    static final double OUTREACH = 2.0;
+
     /** How far a crane stands inside the box's two ends, in plots. */
     private static final double END_MARGIN = 1.0;
 
@@ -67,13 +70,14 @@ public final class QuayCrane {
 
     /**
      * The cranes working a boat that lies at (boatX, boatY) off the quay of work w, at `share` of its time there (BoatSchedule.atQuay()): none
-     * for a work with no harbour quay (a pier of its own has no wall to stand on), for a share outside 0..1 or a null cargo.
+     * for a work with no harbour quay (a pier of its own has no wall to stand on), for a share outside 0..1 or a null cargo. The ship point is
+     * the boat's place, or OUTREACH from the wall's outer edge when the boat lies farther out than that.
      */
     public static List<Reach> reaches(CityShore.Work w, Ports.Cargo cargo, double boatX, double boatY, double share) {
         List<Reach> out = new ArrayList<>(2);
         if (w == null || cargo == null || w.quay() != CityShore.HARBOUR_QUAY_PLOTS || w.side() < 0 || w.side() >= CityShore.DX.length || !(share >= 0 && share <= 1)) return out;
         double[] boat = localOf(w, boatX, boatY);
-        double c = boat[0], vShip = boat[1], depth = depthOf(w), length = lengthOf(w);
+        double c = boat[0], depth = depthOf(w), length = lengthOf(w), vShip = Math.min(boat[1], depth + w.quay() + OUTREACH);
         if (cargo == Ports.Cargo.LIQUID) {
             double wall = depth + w.quay() - APRON_IN;      // the wall's outer edge less half a plot
             for (int k = -1; k <= 1; k += 2) {
