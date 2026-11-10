@@ -4027,7 +4027,7 @@ final class PeopleScreen {
     /** A cost, printed negative - but a cost of nothing reads "$0", never "-$0". */
     String costMoney(double dollars) {
         double a = Math.abs(dollars);
-        return a < .005 ? "$0" : tightMoney(-a, false);
+        return a < .005 ? Money.write("0") : tightMoney(-a, false);
     }
 
     /** A stake, with enough decimals left on it to still say something. */

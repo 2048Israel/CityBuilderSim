@@ -927,19 +927,19 @@ final class FinancesScreen {
     /** Local money with its mark and a true minus: "D$2.4M", "−D$725k" (the spec's D9, B9). */
     String d(double thousands) {
         String shown = money(Math.abs(thousands));
-        return (thousands < 0 && !"$0".equals(shown) ? "−" : "") + marked(sym(), shown);
+        return (thousands < 0 && !Money.isZero(shown) ? "−" : "") + marked(sym(), shown);
     }
 
     /** ...with every digit. */
     String dFull(double thousands) {
         String shown = moneyFull(Math.abs(thousands));
-        return (thousands < 0 && !"$0".equals(shown) ? "−" : "") + marked(sym(), shown);
+        return (thousands < 0 && !Money.isZero(shown) ? "−" : "") + marked(sym(), shown);
     }
 
     /** ...signed, as a movement: "+D$1.2M", "−D$3.5M", "D$0". */
     String signedD(double thousands) {
         String shown = money(Math.abs(thousands));
-        if ("$0".equals(shown)) return marked(sym(), shown);
+        if (Money.isZero(shown)) return marked(sym(), shown);
         return (thousands < 0 ? "−" : "+") + marked(sym(), shown);
     }
 
@@ -2317,10 +2317,10 @@ final class FinancesScreen {
             + "makes it smaller. It works both ways and it is not income either way.";
 
     /** ...and once the city owes in another of the eight (CD8): the same card, every money counted in US$. */
-    static final String ABROAD_INFO = "Owed abroad in US$ and the other moneys the city has sold paper in, each of which "
+    static String abroadInfo() { return "Owed abroad in US$ and the other moneys the city has sold paper in, each of which "
             + "does not move in its own money; counted here in US$ at this month's rates between them, and worth in the "
-            + "city's money whatever the exchange rates say. A weaker D$ makes the same paper a bigger debt, and so does "
-            + "the money it is owed in rising against the US$. It works both ways and it is not income either way.";
+            + "city's money whatever the exchange rates say. A weaker " + Money.ours() + " makes the same paper a bigger debt, and so does "
+            + "the money it is owed in rising against the US$. It works both ways and it is not income either way."; }
 
     /** THE DOLLAR DEBT: dollars times the rate is the local figure; what the currency did to it last month as a chip. */
     VBox dollarDebtCard() {
@@ -2328,7 +2328,7 @@ final class FinancesScreen {
         // CD8: the card counts every money abroad in US$ at the month's crosses, so it says so once the city owes in another of the eight.
         boolean others = false;
         for (int k = 1; k < WorldMoneys.EIGHT.size(); k++) others |= ledger.hasForeignDebtIn(WorldMoneys.EIGHT.get(k));
-        VBox card = card(caption(others ? "THE DEBT ABROAD" : "THE DOLLAR DEBT", others ? ABROAD_INFO : DOLLAR_INFO, door("The currency", Palette.ACCENT,
+        VBox card = card(caption(others ? "THE DEBT ABROAD" : "THE DOLLAR DEBT", others ? abroadInfo() : DOLLAR_INFO, door("The currency", Palette.ACCENT,
                 () -> openTrade("The currency", TradeScreen.TRADE_MONEY_PAGES[0]))));
         card.getChildren().add(figure(usd(ledger.getForeignPrincipalUsd()) + " × " + perUsd(ledger.getExchangeRate())
                 + " = " + d(ledger.getForeignPrincipal()), Palette.SIZE_BODY + 2, Palette.TEXT_HEAD));
@@ -3046,39 +3046,39 @@ final class FinancesScreen {
             + "not this one: its dot is hollow.";
 
     /** THE THREE BARS' (i): the board's paragraph. */
-    static final String DESK_BARS_INFO = "Carried is what the books say the city owes: what it raised, plus the discount "
+    static String deskBarsInfo() { return "Carried is what the books say the city owes: what it raised, plus the discount "
             + "amortised since at each line's effective rate. Worth is what the remaining payments are worth on today's "
-            + "curve. The gap is what closing the whole book at today's fair prices would book: carried less worth, in D$ "
+            + "curve. The gap is what closing the whole book at today's fair prices would book: carried less worth, in " + Money.ours() + " "
             + "and as a share of what is carried, in green when the books carry the paper at more than it is worth (a gain "
             + "the statement books) and in red when at less (a loss). The reverse auction pays holders who ask more than "
             + "fair, so what a buyback really books is a line's page's figure. The dashed line marks what the book is "
-            + "worth today across all three.";
+            + "worth today across all three."; }
 
     /** The (i) beside a gain or a loss on a line's page (CD6, Jerus 2026-10-23): what the colours mean. */
-    static final String GAIN_INFO = "Green is a gain and red a loss. It is what the books carry the line at less what "
-            + "closing it costs, in D$ and as a share of the carrying value. A gain: the line is carried at more than it "
+    static String gainInfo() { return "Green is a gain and red a loss. It is what the books carry the line at less what "
+            + "closing it costs, in " + Money.ours() + " and as a share of the carrying value. A gain: the line is carried at more than it "
             + "is worth - rates have risen since it was sold - so buying it back at today's fair price books a gain on "
             + "the statement. A loss: it is worth more than it is carried at, so closing it books a loss. The reverse "
             + "auction pays every holder who asks more than fair (the households and the businesses do, CD4); the "
-            + "figure beside it is what that auction itself would book.";
+            + "figure beside it is what that auction itself would book."; }
 
     /** The (i) beside the D$'s move since a dollar piece was sold, on the desk's card and a line's page (CD7): what the figure and its colours mean. */
-    static final String EXCHANGE_INFO = "Paper abroad is owed in its own money - the US$ or another of the eight - and what it costs in D$ moves "
-            + "with the exchange rate. Green is a gain: the D$ has risen against that money since the piece was sold, so the "
-            + "same coupons and face cost fewer D$. Red is a loss: the D$ has fallen and they cost more. The share is of what "
-            + "the line is carried at, so −10% is a D$ that has lost a tenth against the piece's money since the sale. The budget books the move month by month as "
+    static String exchangeInfo() { return "Paper abroad is owed in its own money - the US$ or another of the eight - and what it costs in " + Money.ours() + " moves "
+            + "with the exchange rate. Green is a gain: the " + Money.ours() + " has risen against that money since the piece was sold, so the "
+            + "same coupons and face cost fewer " + Money.ours() + ". Red is a loss: the " + Money.ours() + " has fallen and they cost more. The share is of what "
+            + "the line is carried at, so −10% is a " + Money.ours() + " that has lost a tenth against the piece's money since the sale. The budget books the move month by month as "
             + "the exchange gain (loss) on foreign debt; no cash moves until a coupon or the principal is paid, and "
-            + "that is paid at that month's rate.";
+            + "that is paid at that month's rate."; }
 
     /** THE DESK's (i): the two readings under the table. */
-    static final String DESK_INFO = "If closed now: the carrying value less the worth, in D$ and as a share of the "
+    static String deskInfo() { return "If closed now: the carrying value less the worth, in " + Money.ours() + " and as a share of the "
             + "carrying value, green for a gain and red for a loss, with Close it now beside it. A gain is what the "
             + "statement books buying the line back at today's fair price: the paper is worth less than it is carried "
             + "at, which happens when rates have risen since the line was sold. A loss is the reverse - rates have "
             + "fallen and the line is worth more than the books carry it at. It is before the premium a buyback pays: the "
             + "reverse auction pays holders who ask more than fair (the households and the businesses do), so the line's "
             + "page shows what the auction itself would book. Vs face: the face less the worth, what the market's price "
-            + "saves against what is owed; it stays plain.";
+            + "saves against what is owed; it stays plain."; }
 
     /**
      * THE BOOK, AS A DESK (CD6, spec-city-debt.md section 7, board 1): the book's six figures, where each line sits on
@@ -3222,15 +3222,15 @@ final class FinancesScreen {
         }
         DeskBars picture = Kept.of(DeskBars.class, DeskBars::new);
         picture.set(by, desk.worth(), this::d);
-        VBox card = card(caption("AT FACE, CARRIED, AND WORTH TODAY", DESK_BARS_INFO),
+        VBox card = card(caption("AT FACE, CARRIED, AND WORTH TODAY", deskBarsInfo()),
                 muted("one scale · each bar by kind · the dashed line is the book's worth"),
                 picture, keyRow(kindKey(present).toArray(new Node[0])),
-                gainLine("Carried less worth · what closing the book at fair would book", gainOf(desk.ifClosedNow(), desk.ifClosedNowShare()), GAIN_INFO),
+                gainLine("Carried less worth · what closing the book at fair would book", gainOf(desk.ifClosedNow(), desk.ifClosedNowShare()), gainInfo()),
                 cardLine("Face less worth · what the market's price saves against what is owed", signedD(desk.vsFace()), null));
         // CD7: with dollar paper in the book, the D$'s move since the sales, and what the budget booked of it this month.
         if (holdsDollars(desk)) {
-            card.getChildren().add(Kept.scope("exchange", () -> gainLine("The D$'s move since the paper abroad was sold",
-                    gainOf(desk.exchangeSinceSold(), desk.exchangeShare()), EXCHANGE_INFO)));
+            card.getChildren().add(Kept.scope("exchange", () -> gainLine("The " + Money.ours() + "'s move since the paper abroad was sold",
+                    gainOf(desk.exchangeSinceSold(), desk.exchangeShare()), exchangeInfo())));
             card.getChildren().add(Kept.scope("exchange month", () -> cardLine("...this month, in the budget's result",
                     signedD(ui.game.getEconomyManager().getNationalAccounts().getDebtExchangeGain()), null)));
         }
@@ -3260,7 +3260,7 @@ final class FinancesScreen {
         t.getColumnConstraints().get(0).setHgrow(Priority.ALWAYS);
         // The headings are words, in the words' face: the figures' face is wider than a heading's column (KP2b: made so, not made in the
         // figures' face and set again).
-        if (dollars) gridHead(t, true, "Line", "If closed now", "D$'s move since sold", "Face", "Coupon", "Issue yield", "Price", "Yield", "Worth", "Carried", "vs face", "Duration", "Holders");
+        if (dollars) gridHead(t, true, "Line", "If closed now", Money.ours() + "'s move since sold", "Face", "Coupon", "Issue yield", "Price", "Yield", "Worth", "Carried", "vs face", "Duration", "Holders");
         else gridHead(t, true, "Line", "If closed now", "Face", "Coupon", "Issue yield", "Price", "Yield", "Worth", "Carried", "vs face", "Duration", "Holders");
         for (Node head : t.getChildren()) {
             // The heading of the gain's column stands over the gains, not over the doors beside them.
@@ -3362,8 +3362,8 @@ final class FinancesScreen {
         Node holdersKey = keyRow(muted("Holders:"), swatch(Palette.PEOPLE, "households", false), swatch(Palette.MONEY, "the bank", false),
                 swatch(Palette.MONEY_DARK, "the central bank", false), swatch(Palette.BUSINESS_DARK, "the businesses", false),
                 swatch(Palette.BUILDING_DARK, "the world", false));
-        return card(caption("EVERY LINE", DESK_INFO, hint("by when it falls due · click a line for its page")), acrossWhenNarrow(t),
-                holdersKey, muted("If closed now: the carrying value less the worth, in D$ and as a share of the carrying value. "
+        return card(caption("EVERY LINE", deskInfo(), hint("by when it falls due · click a line for its page")), acrossWhenNarrow(t),
+                holdersKey, muted("If closed now: the carrying value less the worth, in " + Money.ours() + " and as a share of the carrying value. "
                         + "Green is a gain the statement would book buying the line back at today's fair price, red a loss; the reverse "
                         + "auction pays holders who ask more than fair, so a line's page shows what the auction itself would book."));
     }
@@ -3612,13 +3612,13 @@ final class FinancesScreen {
             + "after the sale.";
 
     /** IF YOU CLOSED IT TODAY's (i): board 2, note B. */
-    static final String LINE_CLOSE_INFO = "Worth is what closing the line would cost at its fair price; a buyback pays "
+    static String lineCloseInfo() { return "Worth is what closing the line would cost at its fair price; a buyback pays "
             + "more, since every holder offers at or over fair, and the reverse auction below prices what it really "
-            + "would. The gain or loss is the statement's: the carrying value less what it costs, in D$ and as a share "
+            + "would. The gain or loss is the statement's: the carrying value less what it costs, in " + Money.ours() + " and as a share "
             + "of the carrying value - green when the books carry the line at more than it costs to close (a gain), "
             + "red when at less (a loss). The first is at fair; the second is what the auction itself would book, "
             + "since it pays holders who ask more than fair (the households and the businesses do, CD4). It is real on "
-            + "the statement, but the cash to pay for it costs today's rate - the honest line says both.";
+            + "the statement, but the cash to pay for it costs today's rate - the honest line says both."; }
 
     /** THE NEXT SIX MONTHS' (i): board 2, note C. */
     static final String LINE_BOOKS_INFO = "The books in full: what the line is carried at when the month opens, the "
@@ -3789,17 +3789,17 @@ final class FinancesScreen {
             boolean taken = whole.takenFace() > 0 && whole.paid() > 0;
             double against = l.vsFace();
             String againstWords = Money.nothing(against) ? "at its face" : against > 0 ? d(against) + " under face" : "a premium of " + d(-against);
-            VBox card = Kept.column(8, caption("IF YOU CLOSED IT TODAY", LINE_CLOSE_INFO),
+            VBox card = Kept.column(8, caption("IF YOU CLOSED IT TODAY", lineCloseInfo()),
                     cardLine("Worth today · the fair price", d(l.worth()), null),
                     cardLine("Carried · what the books hold it at", d(l.carried()), null),
-                    gainLine("Carried less worth · what the books would show at fair", gainOf(l.ifClosedNow(), l.ifClosedNowShare()), GAIN_INFO),
+                    gainLine("Carried less worth · what the books would show at fair", gainOf(l.ifClosedNow(), l.ifClosedNowShare()), gainInfo()),
                     cardLine("Against its face of " + d(l.face()), againstWords, null, PREMIUM_INFO));
             // CD7: a dollar line's own exchange, since it was sold - the D$'s move on what is carried - and the rates it spans.
             if (debt.isForeign()) {
-                card.getChildren().add(Kept.scope("exchange", () -> gainLine("The D$'s move since it was sold · on what is carried",
-                        gainOf(l.exchangeSinceSold(), l.exchangeShare()), EXCHANGE_INFO)));
+                card.getChildren().add(Kept.scope("exchange", () -> gainLine("The " + Money.ours() + "'s move since it was sold · on what is carried",
+                        gainOf(l.exchangeSinceSold(), l.exchangeShare()), exchangeInfo())));
                 if (debt.soldAtRate() > 0) {
-                    card.getChildren().add(Kept.scope("sold at", () -> cardLine("Sold with the D$ at", perMoney(debt.getMoney(), debt.soldAtRate()) + ", now " + perMoney(debt.getMoney(), debt.getExchangeRate()), null)));
+                    card.getChildren().add(Kept.scope("sold at", () -> cardLine("Sold with the " + Money.ours() + " at", perMoney(debt.getMoney(), debt.soldAtRate()) + ", now " + perMoney(debt.getMoney(), debt.getExchangeRate()), null)));
                 }
             }
             if (taken) {
@@ -5146,7 +5146,7 @@ final class FinancesScreen {
     static String dollarsInfo(String money) {
         if (ForeignAccounts.moneyIndex(money) <= 0) return DOLLARS_INFO;
         String in = moneyWords(money);
-        return "Spending it leaves a debt in " + in + " with nothing behind it, and the next fall of the D$ against "
+        return "Spending it leaves a debt in " + in + " with nothing behind it, and the next fall of the " + Money.ours() + " against "
                 + ForeignAccounts.MONEY_NAME[ForeignAccounts.moneyIndex(money)] + " makes that debt bigger for free. "
                 + "Holding it keeps the " + in + " in the vault, in " + in + ": the debt and the holding are one money, "
                 + "so the net position is unchanged and the next bond cheaper - and it buys nothing today. Every "
@@ -5221,11 +5221,11 @@ final class FinancesScreen {
     }
 
     /** IN WHICH MONEY's (i): what the figure under a money is, and what owing in it risks. */
-    static final String MONEY_INFO = "The city can sell its paper abroad in any of the eight moneys, each priced on its own curve: "
+    static String whichMoneyInfo() { return "The city can sell its paper abroad in any of the eight moneys, each priced on its own curve: "
             + "its central bank's policy rate, the city's country premium and the term premium at the term chosen - the "
-            + "figure under each money. A money with low rates is cheaper to owe, and it is owed in that money: if the D$ "
-            + "falls against it, every coupon and the face cost more D$, and if the D$ rises they cost less. A money the "
-            + "world has no rate for this month cannot be borrowed in.";
+            + "figure under each money. A money with low rates is cheaper to owe, and it is owed in that money: if the " + Money.ours() + " "
+            + "falls against it, every coupon and the face cost more " + Money.ours() + ", and if the " + Money.ours() + " rises they cost less. A money the "
+            + "world has no rate for this month cannot be borrowed in."; }
 
     /** A money on its chip: its mark and code, "€ EUR"; the code alone where the mark is the code ("CHF"). */
     static String moneyChip(String code) {
@@ -5274,15 +5274,15 @@ final class FinancesScreen {
             tip.setWrapText(true);
             tip.setMaxWidth(POPOVER_WIDTH);
         }
-        VBox card = card(caption("IN WHICH MONEY", MONEY_INFO), chips);
+        VBox card = card(caption("IN WHICH MONEY", whichMoneyInfo()), chips);
         if (!world) card.getChildren().add(Kept.scope("noWorld", () -> muted("The other seven moneys come with the world; this city has none, so its paper abroad is in US dollars.")));
         // The risk, plainly: the D$ today, what the paper is owed in, and what a fall of the D$ does to it.
         String code = borrowMoney;
         String name = ForeignAccounts.MONEY_NAME[Math.max(0, ForeignAccounts.moneyIndex(code))];
         card.getChildren().add(line("Today's rate: " + perMoney(code, ledger.rateOf(code)) + ". The paper is owed in "
-                + ForeignAccounts.MONEY_PLURAL[Math.max(0, ForeignAccounts.moneyIndex(code))] + ", whatever the D$ does."));
-        card.getChildren().add(line("If the D$ falls against " + name + ", every coupon and the face cost more D$: when " + name
-                + " costs 10% more D$, each costs 10% more."));
+                + ForeignAccounts.MONEY_PLURAL[Math.max(0, ForeignAccounts.moneyIndex(code))] + ", whatever the " + Money.ours() + " does."));
+        card.getChildren().add(line("If the " + Money.ours() + " falls against " + name + ", every coupon and the face cost more " + Money.ours() + ": when " + name
+                + " costs 10% more " + Money.ours() + ", each costs 10% more."));
         if (ledger.hasForeignDebtIn(code)) {
             double owed = ledger.getForeignPrincipalIn(code);
             card.getChildren().add(Kept.scope("owed", () -> line("Already owed in " + moneyWords(code) + ": " + inMoney(code, owed) + ", which is "
@@ -5343,7 +5343,7 @@ final class FinancesScreen {
 
         double minimum = g.minimumIssueSize();
         card.getChildren().add(caption(foreign ? "HOW MANY " + borrowMoney
-                : "Note".equals(kit.key()) ? "HOW MUCH CASH" : "HOW MUCH FACE", foreign ? askTypedInfo(borrowMoney) : ASK_TYPED_INFO));
+                : "Note".equals(kit.key()) ? "HOW MUCH CASH" : "HOW MUCH FACE", foreign ? askTypedInfo(borrowMoney) : askTypedInfo()));
         /*
          * TYPED, AND BUTTONS THAT SCALE WITH IT (0.7.40). Jerus: "there should
          * be an option to raise trillions or tens of trillions right now max
@@ -5484,29 +5484,40 @@ final class FinancesScreen {
 
     /* ----------------------------- the ask, typed (0.7.40) ----------------------------- */
 
-    /** HOW MUCH's (i): what the box takes - the case rules - and what the buttons do. */
-    static final String ASK_TYPED_INFO = "Type an amount in dollars: digits, with or without commas, a decimal "
+    /** HOW MUCH's (i): what the box takes - the case rules - and what the buttons do. The city's own marks are the city's (FM1): "A D$, $ or US$ in front" with the "$" before, and a sign after the amount ignored too where the city writes it there. */
+    static String askTypedInfo() {
+        String own = Money.sign().equals(Money.ours()) ? Money.ours() : Money.ours() + ", " + Money.sign();
+        String where = Currency.writing().signAfter() ? " in front, or " + Money.sign() + " after the amount, is ignored. " : " in front is ignored. ";
+        return "Type an amount in dollars: digits, with or without commas, a decimal "
             + "point if you like, and k, M, B or T after them for thousands, millions, billions or trillions - "
-            + "capital or small, so 40b is 40B and 750m is 750M (an m is never a thousandth). A D$, $ or US$ in "
-            + "front is ignored. Enter, or leaving the box, sets the ask; what cannot be read is said under the box "
+            + "capital or small, so 40b is 40B and 750m is 750M (an m is never a thousandth). A " + own + " or US$"
+            + where + "Enter, or leaving the box, sets the ask; what cannot be read is said under the box "
             + "and the ask stays as it was. ÷10 and ×10 scale it; the steps are one unit of its leading digit and "
             + "a tenth of that, never less than a lot; the presets are the city's own figures.";
-
-    /** ...abroad in one of the eight's moneys (CD8): the same rules, the amount in that money, its mark ignored in front. The US$'s is ASK_TYPED_INFO to the letter. */
-    static String askTypedInfo(String money) {
-        if (ForeignAccounts.moneyIndex(money) <= 0) return ASK_TYPED_INFO;
-        return ASK_TYPED_INFO.replace("Type an amount in dollars", "Type an amount in " + moneyWords(money))
-                .replace("A D$, $ or US$ in front", "A D$, $ or " + markOf(money).trim() + " in front");
     }
 
-    /** A typed amount: an optional mark (D$, US$, $, or one of the eight's - €, ¥, £, CN¥, C$, A$, CHF), digits (grouped by commas or not), an optional fraction, an optional unit. */
-    private static final java.util.regex.Pattern ASK_WORDS = java.util.regex.Pattern.compile(
-            "(?:[A-Za-z]{0,3}[$€¥£]|(?i:chf))?\\s*((?:\\d{1,3}(?:,\\d{3})+|\\d+)(?:\\.\\d+)?|\\.\\d+)\\s*([kKmMbBtT])?");
+    /** ...abroad in one of the eight's moneys (CD8): the same rules, the amount in that money, its mark ignored in front. The US$'s is askTypedInfo() to the letter. */
+    static String askTypedInfo(String money) {
+        if (ForeignAccounts.moneyIndex(money) <= 0) return askTypedInfo();
+        return askTypedInfo().replace("Type an amount in dollars", "Type an amount in " + moneyWords(money))
+                .replace(" or US$ in front", " or " + markOf(money).trim() + " in front");
+    }
 
-    /** The ask a typed amount sets, in the model's thousands (Money.toDollars()'s unit), by ASK_TYPED_INFO's rules; NaN when it is not an amount. Pure. */
+    /**
+     * A typed amount: an optional mark (D$, US$, $, or one of the eight's - €, ¥, £, CN¥, C$, A$, CHF), digits (grouped by commas or not), an optional fraction, an optional unit.
+     * The city's own sign is a mark too (FM1), in front or after the unit ("2.6M kr"), and its qualified sign in front; built for each reading, as the sign is the city's to choose.
+     */
+    private static java.util.regex.Pattern askWords() {
+        String own = java.util.regex.Pattern.quote(Money.sign());
+        String qualified = java.util.regex.Pattern.quote(Money.ours());
+        return java.util.regex.Pattern.compile(
+            "(?:[A-Za-z]{0,3}[$€¥£]|(?i:chf)|" + own + "|" + qualified + ")?\\s*((?:\\d{1,3}(?:,\\d{3})+|\\d+)(?:\\.\\d+)?|\\.\\d+)\\s*([kKmMbBtT])?(?:\\s*" + own + ")?");
+    }
+
+    /** The ask a typed amount sets, in the model's thousands (Money.toDollars()'s unit), by askTypedInfo()'s rules; NaN when it is not an amount. Pure. */
     static double askFromWords(String typed) {
         if (typed == null) return Double.NaN;
-        java.util.regex.Matcher m = ASK_WORDS.matcher(typed.trim());
+        java.util.regex.Matcher m = askWords().matcher(typed.trim());
         if (!m.matches()) return Double.NaN;
         double scale = switch (m.group(2) == null ? "" : m.group(2).toLowerCase(java.util.Locale.ROOT)) {
             case "k" -> 1e3;

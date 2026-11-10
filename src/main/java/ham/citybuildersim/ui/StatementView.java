@@ -139,7 +139,7 @@ final class StatementView {
 
     /** The units line: "in $ thousands", or millions past seven digits (D2). */
     static String units(boolean millions) {
-        return millions ? "in $ millions" : "in $ thousands";
+        return millions ? "in " + Money.sign() + " millions" : "in " + Money.sign() + " thousands";
     }
 
     /* --------------------------------------------------------------- the title block */
@@ -597,7 +597,7 @@ final class StatementView {
 
     private static VBox inShortOf(String[] labels, double[] now, double[] then, boolean known, String info) {
         VBox c = Kept.column(4, SectorScreen.head("IN SHORT", info, null));
-        HBox heads = Kept.scope("heads", () -> Kept.row(GAP, cell("$ millions", SHORT_LABEL, headStyle(), Pos.CENTER_LEFT),
+        HBox heads = Kept.scope("heads", () -> Kept.row(GAP, cell(Money.sign() + " millions", SHORT_LABEL, headStyle(), Pos.CENTER_LEFT),
                 cell("this month", SHORT_FIGURE, headStyle(), Pos.CENTER_RIGHT),
                 cell("last month", SHORT_FIGURE, headStyle(), Pos.CENTER_RIGHT),
                 cell("change", SHORT_FIGURE, headStyle(), Pos.CENTER_RIGHT)));
