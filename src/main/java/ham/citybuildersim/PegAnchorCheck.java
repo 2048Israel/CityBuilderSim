@@ -61,8 +61,8 @@ public class PegAnchorCheck {
     /** The cross rates the sections hand: US$ per unit of the US$, euro, yen, pound, yuan, Canadian and Australian dollar and franc (VaultMoneysCheck's). */
     static final double[] R = {1, 1.10, 0.0070, 1.27, 0.14, 0.73, 0.65, 1.12};
 
-    /** The length of the foreign accounts' array: the peg's anchor in slot 148 (WN4b), then gold's balance, price and chosen share in 149-151 (GD2). */
-    static final int SLOTS = 152;
+    /** The length of the foreign accounts' array: the peg's anchor in slot 148 (WN4b), then gold's balance, price and chosen share in 149-151 (GD2) and the mint in 152-155 (GD3). */
+    static final int SLOTS = 156;
 
     static void assertTrue(String label, boolean ok) {
         if (!ok) fails++;
@@ -479,7 +479,7 @@ public class PegAnchorCheck {
         double[] saved = fx.toSaveArray();
         assertTrue("fixture: a euro peg that has dealt for eight months and carries a support (" + String.format("%.4f", fx.getHoldFelt()) + "), held",
                 fx.getRegime() == PEG && fx.getPegAnchor() == 1 && fx.getHoldFelt() != 0 && fx.getDefenceUsdLifetime() > 0);
-        assertTrue("the array runs to slot 148, the peg's anchor (WN4b), and gold's three after it (" + saved.length + " slots)", saved.length == SLOTS);
+        assertTrue("the array runs to slot 148, the peg's anchor (WN4b), gold's three (GD2) and the mint's four (GD3) after it (" + saved.length + " slots)", saved.length == SLOTS);
         same("slot 148 is the anchor's index, the euro's", saved[148], 1);
         same("slot 147 is still the hold's support", saved[147], fx.getHoldFelt());
         same("slot 76 is still the peg, now D$ per euro", saved[76], fx.getPegPerAnchor());

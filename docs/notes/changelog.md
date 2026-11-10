@@ -18,6 +18,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.87 — GD3, the gold standard — 2026-11-10, ready, see docs/queue/GD3-notes.md
+Gold is the fifth regime on Policy › The currency (spec-gold-money 4.3; Jerus, 2026-11-02, every call as recommended).
+Entering it strikes the mint at the day's rate times gold's price, so the D$ keeps its value (D$20.6718 an ounce at
+1.00 in 1900), or at a par typed. The rate is held at the gold points, 0.5% either side of the mint price over gold's:
+gold is sold first at the weak point and bought at the strong. The law's cover is 40% of M0: a sale that would leave
+less takes the D$ off gold (the break's new cause), and the peg's doubt is scaled by how far the cover is short of
+full. Defend the gold, the autopilot's new aim under Gold, ties the dial to the US's rate and lifts it as the cover
+falls, ten points at the floor. In April 1933, February 1934 and August 1971 a city on gold is asked to stay at its
+par, follow the dollar or leave gold for Lean (a notice; the buttons on Policy). Slots 152-155 of foreignAccounts, no
+format bump; GoldStandardCheck. GD2's two findings mended (gold's price never throws; eightOf never finds gold).
+Lean is the default and the trace is main's: no ensemble.
+
 ### 0.9.86 — WS1, the minimum-wage page — 2026-11-10, ready, see docs/queue/WS1-notes.md
 Policy › Wages gets the minimum wage's page (spec-wages 3.6; Jerus, 2026-11-02: a floor that says whether it is too
 much or too little). Two gauges set the floor against what unskilled work goes for (under 70% it never binds, to 100%

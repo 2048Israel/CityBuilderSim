@@ -351,8 +351,10 @@ public class Game {
         debtManager = new DebtManager();
         debtManager.setRateVolatility(this::rateVolatility);   // a callable piece is valued at the city's own volatility (CD4)
         debtManager.setPriceIndexSource(() -> priceIndex.getIndex());   // a linked bond is indexed on the city's price index (CD5)
-        debtManager.setTiedSource(() -> foreign.getRegime() == ForeignAccounts.Regime.PEG);   // a peg ties the dial to the US's, and the curve is priced on the tied path (XR5)
-        debtManager.setTieMoneySource(foreign::getPegAnchorCode);   // ...to its anchor's rate: the money the peg is kept in (WN4b), the US$ unless the player chose another
+        debtManager.setTiedSource(() -> foreign.getRegime() == ForeignAccounts.Regime.PEG
+                || (foreign.getRegime() == ForeignAccounts.Regime.GOLD
+                && !(debtManager.isAutopilot() && debtManager.getAim() == DebtManager.Aim.INFLATION)));   // a peg ties the dial to the US's, and the curve is priced on the tied path (XR5); so does the gold, unless the autopilot aims at inflation (GD3)
+        debtManager.setTieMoneySource(() -> foreign.getRegime() == ForeignAccounts.Regime.GOLD ? "USD" : foreign.getPegAnchorCode());   // ...to its anchor's rate: the money the peg is kept in (WN4b), the US$ unless the player chose another; the gold's is always the US$ (GD3)
         businessInvestment = new BusinessInvestment(buildingManager, economyManager);
         businessInvestment.watchOrders(orderWatch);   // a harness's watch outlives a load (0.7.54)
         businessInvestment.setRunWorksCost(this::runWorksCost);   // a railway line's cuts, viaducts and tunnels are in its price (ET4)
@@ -1874,6 +1876,8 @@ public class Game {
         stepTheWorldMoneys(market, solved, year);
         // ...AND THE EIGHT'S CROSS RATES TO THE VAULT, before anything buys or sells (WN4, THE VAULT IN EIGHT).
         handTheMoneysToTheVault();
+        // ...AND THE US$'S GOLD DATES TO A CITY ON GOLD, once the month's gold price is the vault's (GD3).
+        takeTheDollarsGoldDates();
         // ...AND THE US'S POLICY RATE TO THE CITY, the world's price of money for everything that reads it (XR4).
         handTheUsRate();
         PartnerTrade last = partnerTrade;
@@ -2138,6 +2142,26 @@ public class Game {
         }
     }
 
+    /**
+     * THE US$'S GOLD DATES (GD3, spec-gold-money 4.3), right after the moneys are handed to the vault: a city on Gold has a decision opened in the month the
+     * US$ left gold (April 1933, GoldPrice.FLOAT_START), in the month it came back at $35 (FLOAT_START + FLOAT_STEPS, February 1934) and in the month its
+     * window closed (LAST_PAR_MONTH + 1, August 1971). The first two open only for a city not already following the dollar (it has moved its mint price with
+     * the dollar and has nothing to decide); the last whatever it did. The same months on Historical and Random, because GoldPrice's are. Nothing without
+     * world moneys, outside Gold, or in any other month; the city answers with answerGoldEvent(), and until it does it stays at its mint price.
+     */
+    private void takeTheDollarsGoldDates() {
+        WorldMoneys moneys = worldMoneys;
+        if (moneys == null || foreign.getRegime() != ForeignAccounts.Regime.GOLD) return;
+        int month = moneys.month();
+        ForeignAccounts.GoldEvent date = ForeignAccounts.GoldEvent.NONE;
+        if (month == GoldPrice.FLOAT_START && !foreign.isMintFollowing()) date = ForeignAccounts.GoldEvent.LEFT_1933;
+        else if (month == GoldPrice.FLOAT_START + GoldPrice.FLOAT_STEPS && !foreign.isMintFollowing()) date = ForeignAccounts.GoldEvent.PAR_1934;
+        else if (month == GoldPrice.LAST_PAR_MONTH + 1) date = ForeignAccounts.GoldEvent.WINDOW_1971;
+        if (date == ForeignAccounts.GoldEvent.NONE) return;
+        foreign.openGoldEvent(date);
+        GameLog.note(String.format("%s: the city on gold decides whether to stay at the mint price, follow the dollar or leave gold.", date.words));
+    }
+
     /** Gold's price (GD2), built from the nations the first time it is asked and again when their path or seed differs; pure, so never saved. */
     private transient GoldPrice goldPrice;
 
@@ -2153,9 +2177,20 @@ public class Game {
 
     /** Gold's price in a month, US$ a troy ounce (GoldPrice): the month is an index as the moneys' are, months since January of Nations.FIRST_YEAR (WorldMoneys.monthIndex). NaN with no nations or a month before the first. */
     public double goldUsdPerOunce(int month) {
-        if (month < 0) return Double.NaN;
-        GoldPrice gold = goldPrice();
-        return gold == null ? Double.NaN : gold.usdPerOunce(month);
+        return priceOrNaN(goldPrice(), month);
+    }
+
+    /**
+     * Gold's price in a month, or NaN where there is none (GD2's review, finding 1): no price (null), a month before the calendar, or a world whose US price
+     * level is not positive and finite (GoldPrice.level() throws IllegalStateException there, and that reached nextMonth). Package-private for the check.
+     */
+    static double priceOrNaN(GoldPrice gold, int month) {
+        if (gold == null || month < 0) return Double.NaN;
+        try {
+            return gold.usdPerOunce(month);
+        } catch (IllegalStateException e) {
+            return Double.NaN;
+        }
     }
 
     /** Gold's move against the US$ in the last month, at the month the vault's rates stand at: its price over last month's, less one (a rise is +, as VaultView.move's). NaN with no world moneys, at month 0 or with no price. */
@@ -2239,7 +2274,7 @@ public class Game {
     static int eightOf(WorldMoneys moneys, String code) {
         String at = code;
         for (int hops = 0; at != null && hops < 16; hops++) {
-            int k = ForeignAccounts.moneyIndex(at);
+            int k = WorldMoneys.EIGHT.indexOf(at);   // the eight, not moneyIndex(): that knows "XAU" since GD2, and gold is no money of the eight's trade
             if (k >= 0) return k;
             at = moneys.pegAnchor(at);
         }
@@ -5917,14 +5952,62 @@ public class Game {
        DebtManager's own (setAim(), setPegSpread()), which record theirs.
        ======================================================================= */
 
-    /** Chooses how the D$ is held: Float, Lean against falls (the default), Band or Peg. Entering a peg pegs at today's rate; entering a band centres on it. */
+    /**
+     * Chooses how the D$ is held: Float, Lean against falls (the default), Band, Peg or Gold. Entering a peg pegs at today's rate; entering a band centres on it;
+     * entering gold strikes the mint price at today's rate times gold's price (refused in a month gold has none) and sets the central bank's aim to Defend the
+     * gold; leaving gold by choice, with that aim, sets it to Inflation (GD3).
+     */
     public void setCurrencyRegime(ForeignAccounts.Regime regime) {
         ForeignAccounts.Regime was = foreign.getRegime();
         foreign.setRegime(regime);
-        if (foreign.getRegime() != was) {
-            decisions.record(DecisionLog.CURRENCY, "Currency regime to " + foreign.regimeWords());
+        ForeignAccounts.Regime now = foreign.getRegime();
+        if (now != was) {
+            if (now == ForeignAccounts.Regime.GOLD) {
+                decisions.record(DecisionLog.CURRENCY, String.format("Currency regime to Gold at D$%.4f an ounce", foreign.getMintPrice()));
+                if (debtManager.getAim() != DebtManager.Aim.GOLD) debtManager.setAim(DebtManager.Aim.GOLD);
+            } else {
+                decisions.record(DecisionLog.CURRENCY, "Currency regime to " + foreign.regimeWords());
+                if (was == ForeignAccounts.Regime.GOLD && debtManager.getAim() == DebtManager.Aim.GOLD) debtManager.setAim(DebtManager.Aim.INFLATION);
+            }
         }
     }
+
+    /** Sets the mint price under Gold, D$ a troy ounce (Britain's 1925 "old par"); nothing outside Gold. Recorded when it moved (GD3). */
+    public void setMintPrice(double price) {
+        double was = foreign.getMintPrice();
+        foreign.setMintPrice(price);
+        if (DecisionLog.moved(was, foreign.getMintPrice())) {
+            decisions.record(DecisionLog.CURRENCY, String.format("Mint price to D$%.4f an ounce", foreign.getMintPrice()));
+        }
+    }
+
+    /**
+     * Answers the open gold date (GD3): stay on gold at the mint price, move the mint price with the dollar, or leave gold (the regime goes to Lean, through
+     * setCurrencyRegime() so the central bank's aim follows). Nothing outside Gold or with no date open.
+     */
+    public void answerGoldEvent(ForeignAccounts.GoldChoice choice) {
+        if (choice == null || foreign.getRegime() != ForeignAccounts.Regime.GOLD || foreign.getGoldEvent() == ForeignAccounts.GoldEvent.NONE) return;
+        if (choice == ForeignAccounts.GoldChoice.LEAVE) {
+            decisions.record(DecisionLog.CURRENCY, "Left gold");
+            setCurrencyRegime(ForeignAccounts.Regime.LEAN);
+            return;
+        }
+        foreign.answerGoldEvent(choice);
+        decisions.record(DecisionLog.CURRENCY, String.format(choice == ForeignAccounts.GoldChoice.STAY ? "Stayed on gold at D$%.4f an ounce"
+                : "Moved the mint price with the dollar, to D$%.4f an ounce", foreign.getMintPrice()));
+    }
+
+    /** The gold cover: the vault's gold at the mint price over M0 (ForeignAccounts.goldCover()); infinite with gold and no M0, 0 without gold. */
+    public double getGoldCover() { return foreign.goldCover(centralBank.m0()); }
+
+    /** The cover the vault's gold would make at this par, D$ an ounce, over M0 (ForeignAccounts.goldCoverAt()): what entering Gold at a staged par would give. */
+    public double getGoldCoverAt(double price) { return foreign.goldCoverAt(price, centralBank.m0()); }
+
+    /** The gold above the law's cover, in US$ at gold's price (ForeignAccounts.freeGoldUsd()); 0 outside Gold. */
+    public double getFreeGoldUsd() { return foreign.freeGoldUsd(centralBank.m0()); }
+
+    /** The US$ gold date open for the city to answer; NONE when none is. */
+    public ForeignAccounts.GoldEvent getGoldEvent() { return foreign.getGoldEvent(); }
 
     /** Moves the peg (a higher rate is a devaluation); nothing outside a peg. The rate is in the peg's anchor's money (WN4b): D$ per unit of it, D$ per US$ for the US$. */
     public void repeg(double rate) {
@@ -13254,10 +13337,16 @@ public class Game {
          * US's rate plus the gap's quarter point), or a Mix (the inflation rule
          * plus it). Under Lean and Float it is today's line: the inflation rule.
          * The US's rate is debtManager.worldRate() (PolicyRates, XR4); WORLD_BASE_RATE where the city has no world file.
+         * Under GOLD (GD3) the dial is tied to the US's rate too, whatever the peg's anchor (DebtManager.goldRate()): the player's spread, or with the autopilot
+         * aiming at the gold the spread the cover asks (goldSpread()), at the currency or a mix the one the gap asks - unless the autopilot aims at inflation,
+         * when it is today's line, the inflation rule, untied: "aim at inflation instead and watch the gold go".
          */
         ForeignAccounts.Regime fxRegime = foreign.getRegime();
         if (fxRegime == ForeignAccounts.Regime.PEG) {
             debtManager.setPolicyRate(debtManager.tiedRate(foreign.currencyGap()));
+        } else if (fxRegime == ForeignAccounts.Regime.GOLD
+                && !(debtManager.isAutopilot() && debtManager.getAim() == DebtManager.Aim.INFLATION)) {
+            debtManager.setPolicyRate(debtManager.goldRate(foreign.currencyGap(), getGoldCover()));
         } else if (debtManager.isAutopilot() && fxRegime == ForeignAccounts.Regime.BAND
                 && debtManager.getAim() == DebtManager.Aim.CURRENCY) {
             debtManager.setPolicyRate(debtManager.currencyRate(foreign.currencyGap()));
@@ -13810,18 +13899,23 @@ public class Game {
         // REACHES THE D$); zeros with no world.
         handTheWorldToTheD();
         double rateBeforeReprice = foreign.getRate();
+        boolean onGoldBeforeReprice = foreign.getRegime() == ForeignAccounts.Regime.GOLD;
+        foreign.setMoneyBase(centralBank.m0());   // M0 is the gold cover's base, handed right before the reprice (GD3)
         foreign.repriceCurrency();
         /*
          * ...AND A PEG THAT BROKE (XR2, star 4): credibility takes its dent, and
          * the log says so - by the vault or by doubt, and where the D$ landed. The
          * city's fate and not the player's decision, so it is not in the decision
-         * log.
+         * log. The same for the gold (GD3), by the cover or by doubt: the D$ came
+         * off gold, and the central bank's aim at the gold goes with it.
          */
         if (foreign.brokeThisMonth()) {
             expectations.pegBroke();
-            GameLog.note(String.format("The peg broke, by %s: the D$ went from %.4f to %.4f per US$ (%+.1f%%).",
+            GameLog.note(String.format(onGoldBeforeReprice ? "The D$ came off gold, by %s: the D$ went from %.4f to %.4f per US$ (%+.1f%%)."
+                            : "The peg broke, by %s: the D$ went from %.4f to %.4f per US$ (%+.1f%%).",
                     foreign.getLastBreakCause().words, rateBeforeReprice, foreign.getRate(),
                     100 * (foreign.getRate() / rateBeforeReprice - 1)));
+            if (onGoldBeforeReprice) debtManager.dropGoldAim();
         }
         // ...AND THE WORLD'S NEWS (WN4): money that ran to safety abroad, a world peg that broke.
         noteTheWorldMoneys(rateBeforeReprice);

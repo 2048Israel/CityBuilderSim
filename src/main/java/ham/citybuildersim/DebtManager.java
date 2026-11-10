@@ -148,17 +148,36 @@ public class DebtManager {
        shadow past its target (the peg, the band's centre), a share, positive
        weaker; Lean and Float have no target, so the aim has nothing to read
        there (a call for Jerus whether a float should aim at the real rate).
+
+       DEFEND THE GOLD (GD3, 2026-11-10): under Gold the dial is tied to the
+       US's rate, whatever the peg's anchor (the tie money is "USD"), and the
+       autopilot may aim at the gold: the spread over it widens as the gold
+       cover thins (goldSpread(): nothing at twice the legal floor, the whole
+       GOLD_DEFENCE at it), the central bank raising its rate to keep the gold
+       from leaving, as the Bank of England did to hold the 1925 par. Aimed at
+       the currency or a mix, the dial reads the gap as under a peg; with the
+       autopilot off, the player's spread; aimed at inflation, the rule's dial,
+       untied (Game): "aim at inflation instead and watch the gold go". The aim
+       means nothing outside Gold. Entering Gold sets it, leaving by choice
+       sets Inflation, and a break drops it to Inflation without a decision
+       line (dropGoldAim(): a break is the city's fate, not a choice).
        ----------------------------------------------------------------------- */
 
-    /** What the autopilot sets the dial to hold (XR2; the study's star 13). */
+    /** What the autopilot sets the dial to hold (XR2; the study's star 13; Defend the gold, GD3, last: saved by name). */
     public enum Aim {
-        INFLATION("Inflation"), CURRENCY("The currency"), MIX("A mix");
+        INFLATION("Inflation"), CURRENCY("The currency"), MIX("A mix"), GOLD("Defend the gold");
         public final String words;
         Aim(String words) { this.words = words; }
     }
 
     /** A quarter point of rate for each 1% the D$ sits past its target: the open-economy Taylor rule's weight on the exchange rate (the study's star 13, R39). */
     public static final double CURRENCY_WEIGHT = .25;
+
+    /** The most the dial stands over the US's rate to defend the gold, a fraction a year (10 points; est.: inside the probe's K 10 and K 25, spec-gold-money 3.2). */
+    public static final double GOLD_DEFENCE = .10;
+
+    /** The gold cover the defence starts from: twice the legal floor, where the spread is nothing; it reaches GOLD_DEFENCE at the floor itself. */
+    public static final double GOLD_DEFENCE_FROM = 2 * ForeignAccounts.COVER_RATIO;
 
     private Aim aim = Aim.INFLATION;
 
@@ -204,8 +223,29 @@ public class DebtManager {
 
     /** The dial under a peg (star 5): the anchor's rate (tieRate(): the US's for a peg to the US$) plus the spread - the player's, or with the autopilot aiming at the currency (or a mix) the one the gap asks - inside the dial's bounds. Pure. */
     public double tiedRate(double gap) {
-        double spread = autopilot && aim != Aim.INFLATION ? CURRENCY_WEIGHT * gap : pegSpread;
+        double spread = autopilot && aim != Aim.INFLATION && aim != Aim.GOLD ? CURRENCY_WEIGHT * gap : pegSpread;   // the gold aim means nothing under a peg: the player's spread
         return Math.max(MIN_POLICY_RATE, Math.min(MAX_POLICY_RATE, tieRate() + spread));
+    }
+
+    /** The spread over the US's rate that defends the gold at this cover (the vault's gold at the mint price over M0): GOLD_DEFENCE x how far the cover is below GOLD_DEFENCE_FROM, as a share of the way down to the legal floor, from nothing at twice the floor to the whole at it (and under it). Pure. */
+    public static double goldSpread(double cover) {
+        return GOLD_DEFENCE * Math.max(0, Math.min(1, (GOLD_DEFENCE_FROM - cover) / (GOLD_DEFENCE_FROM - ForeignAccounts.COVER_RATIO)));
+    }
+
+    /**
+     * The dial under Gold: the US's rate (tieRate(): the tie money is "USD" whatever the peg's anchor) plus the spread - with the autopilot
+     * aiming at the gold, goldSpread(cover); aiming at the currency or a mix, CURRENCY_WEIGHT for each unit of gap; with the autopilot off,
+     * the player's (pegSpread) - inside the dial's bounds. Game calls it under Gold unless the autopilot aims at inflation (then the rule's dial,
+     * untied). Pure.
+     */
+    public double goldRate(double gap, double cover) {
+        double spread = autopilot ? (aim == Aim.GOLD ? goldSpread(cover) : CURRENCY_WEIGHT * gap) : pegSpread;
+        return Math.max(MIN_POLICY_RATE, Math.min(MAX_POLICY_RATE, tieRate() + spread));
+    }
+
+    /** A break took the city off gold: an autopilot aim at the gold becomes Inflation, with no decision line (a break is the city's fate, not a decision). Nothing for another aim. */
+    public void dropGoldAim() {
+        if (aim == Aim.GOLD) aim = Aim.INFLATION;
     }
 
     /**

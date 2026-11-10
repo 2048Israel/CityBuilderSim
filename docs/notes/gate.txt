@@ -1,13 +1,18 @@
-# gate of Merge batch/WS1: the minimum-wage page (after WG1): the floor against the going rate, the average wage (the OECD's 33 from the world file) and living alone; who is near it; the tie; the preview as the floor's own move; jobs with no posts greyed; the joined market named, 0.9.86
+# gate of Merge batch/GD3: the Gold regime: the D$ fixed to an ounce at a mint price, held at the gold points, gold paid first, a 40% cover of M0, Defend the gold (the dial rising as the cover falls), the break by the cover and doubt scaled by it, the US$'s 1933, 1934 and 1971 decisions; Lean stays the default (after GD2 and XR5), 0.9.87
 # date: 2026-11-10
 # earth-2.bin: named
 # nightly: 2026-11-10 01:25 0.9.80 d9f61df3 4,000 months: OK in 178 s
-# suite: 194 harnesses run in 1297s: 189 passed, 5 failed
-# timing: 18 harnesses run in 874s: 15 passed, 3 failed; its red lines were judged side by side with main's, below
+# suite: 195 harnesses run in 1154s: 190 passed, 5 failed
+# timing: 18 harnesses run in 940s: 15 passed, 3 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 28.6 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 28.5 ms (gate.txt, today), batch 28.6 ms (+0.4%), budget 25 ms: main over the budget too, no round]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 28.2 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 28.6 ms (gate.txt, today), batch 28.2 ms (-1.3%), budget 25 ms: main over the budget too, no round]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# figure	SaveSlotCheck	the median due month, 28.6 ms, holds the clock at most CLOCK_MS (25 ms)	28.5561	25	ms	FAIL	1	1
+# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 3.22 ms, batch 3.08 ms (-4.5%), budget 5 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 17.6 ms, batch 17.7 ms (+0.7%), budget 19 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | 6 FAILED   [the harness's own count of the timing reds above]
+# figure	SaveSlotCheck	the median due month, 28.2 ms, holds the clock at most CLOCK_MS (25 ms)	28.1734	25	ms	FAIL	1	1
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | exit 8
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | 8 FAILED
 PriceLevelCheck | exit 1
 PriceLevelCheck | FAIL cash (nominal) month 101: 8.317811325 at the factor over the factor, 68.38253344 at today's prices (0.000751 apart)
 PriceLevelCheck | FAIL gdp.month (nominal) month 103: 20121.84632 at the factor over the factor, 20122.48474 at today's prices (1.95e-05 apart)
@@ -48,7 +53,7 @@ MapCheck | ...and the layout watch (LongPlaytest, as the map draws the district)
 MapCheck | a yard that goes moves none of the buildings: every box of the plan before stands in the plan after (726 of them, 22 moved) FAIL
 MapCheck | a yard laid again across the buildings that stand moves off it the boxes under it and no others: 67 of the plan before's 916 boxes lie under the yard and the railway, 121 are not in the plan after FAIL
 MapCheck | 4 FAILED
-KeptCheck | exit 9
+KeptCheck | exit 8
 KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
 KeptCheck | most months make no node at all (10 of 25)                               FAIL
 KeptCheck | most months make no node at all (12 of 25)                               FAIL
@@ -56,7 +61,6 @@ KeptCheck | the city has a piece of paper to close                              
 KeptCheck | a bookRow was found on a money page of this city, to put the pointer on  FAIL
 KeptCheck | no month makes more than a tenth of the nodes the first draw made (the most made in one: 34 of 330; 14 of 25 months made none) FAIL
 KeptCheck | the city has a plain business and a materials industry with works to draw (Construction, null) FAIL
-KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL
-KeptCheck | 9 FAILED
+KeptCheck | 8 FAILED
 LongPlaytest | exit 1
 LongPlaytest | (no FAIL line)
