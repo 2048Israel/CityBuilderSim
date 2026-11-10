@@ -1,0 +1,69 @@
+# Gold's price a year, 1971 to 2025, the US dollar's after it left the statute (GD1; docs/studies/spec-gold-money.md 4.1).
+# Read by GoldPrice. Each line is a year, its figure, the figure's unit and its source:
+#   usd_per_t    US dollars a metric ton of gold, as the source prints it (three significant figures); GoldPrice
+#                divides by the troy ounces in a ton, 1,000,000 g over 31.1034768 g.
+#   usd_per_ozt  US dollars a troy ounce, as the source prints it.
+# The sources, both the US Geological Survey's, both in the public domain:
+#   DS140    Data Series 140, Gold Statistics (ds140-gold-2022.xlsx, last modified 20 November 2023), the "Unit value ($/t)"
+#            column: the average world market price to 1967 and Engelhard's average gold price quotation of refined
+#            gold from 1968. https://www.usgs.gov/media/files/gold-historical-statistics-data-series-140
+#   MCS2026  Mineral Commodity Summaries 2026, gold, "Price, dollars per troy ounce": Engelhard's average gold price
+#            quotation for the year; 2025 estimated by the USGS from January to November. Its data release
+#            (https://doi.org/10.5066/P1WKQ63T, MCS2026_Commodities_Data.csv) is marked CC0 1.0.
+# 1971's figure is the free market's year; the path holds the statute's $35 to July 1971 (the window closed 15 August).
+year,value,unit,source
+1971,1330000,usd_per_t,DS140
+1972,1880000,usd_per_t,DS140
+1973,3140000,usd_per_t,DS140
+1974,5140000,usd_per_t,DS140
+1975,5190000,usd_per_t,DS140
+1976,4030000,usd_per_t,DS140
+1977,4770000,usd_per_t,DS140
+1978,6220000,usd_per_t,DS140
+1979,9890000,usd_per_t,DS140
+1980,19700000,usd_per_t,DS140
+1981,14800000,usd_per_t,DS140
+1982,12100000,usd_per_t,DS140
+1983,13600000,usd_per_t,DS140
+1984,11600000,usd_per_t,DS140
+1985,10200000,usd_per_t,DS140
+1986,11800000,usd_per_t,DS140
+1987,15400000,usd_per_t,DS140
+1988,14100000,usd_per_t,DS140
+1989,12300000,usd_per_t,DS140
+1990,12400000,usd_per_t,DS140
+1991,11700000,usd_per_t,DS140
+1992,11100000,usd_per_t,DS140
+1993,11600000,usd_per_t,DS140
+1994,12400000,usd_per_t,DS140
+1995,12400000,usd_per_t,DS140
+1996,12500000,usd_per_t,DS140
+1997,10700000,usd_per_t,DS140
+1998,9490000,usd_per_t,DS140
+1999,9000000,usd_per_t,DS140
+2000,9010000,usd_per_t,DS140
+2001,8750000,usd_per_t,DS140
+2002,10000000,usd_per_t,DS140
+2003,11700000,usd_per_t,DS140
+2004,13200000,usd_per_t,DS140
+2005,14300000,usd_per_t,DS140
+2006,19500000,usd_per_t,DS140
+2007,22500000,usd_per_t,DS140
+2008,28100000,usd_per_t,DS140
+2009,31300000,usd_per_t,DS140
+2010,39500000,usd_per_t,DS140
+2011,50600000,usd_per_t,DS140
+2012,53800000,usd_per_t,DS140
+2013,45500000,usd_per_t,DS140
+2014,40800000,usd_per_t,DS140
+2015,37400000,usd_per_t,DS140
+2016,40300000,usd_per_t,DS140
+2017,40500000,usd_per_t,DS140
+2018,40900000,usd_per_t,DS140
+2019,44900000,usd_per_t,DS140
+2020,57000000,usd_per_t,DS140
+2021,57900000,usd_per_t,DS140
+2022,57900000,usd_per_t,DS140
+2023,1945,usd_per_ozt,MCS2026
+2024,2388,usd_per_ozt,MCS2026
+2025,3300,usd_per_ozt,MCS2026
