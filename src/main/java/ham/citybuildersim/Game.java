@@ -2039,7 +2039,7 @@ public class Game {
         PolicyRates rates = policyRates;
         debtManager.setWorldRate(rates == null || worldQuietForTheD ? DebtManager.WORLD_BASE_RATE : rates.usRate());
         // ...and the other seven banks' (CD8): what the city's paper in each money is priced on, the US$'s staying on the line above.
-        double[] annual = new double[ForeignAccounts.MONEYS];
+        double[] annual = new double[WorldMoneys.EIGHT.size()];
         for (int k = 0; k < annual.length; k++) annual[k] = rates == null || worldQuietForTheD ? DebtManager.WORLD_BASE_RATE : rates.rate(k);
         debtManager.setMoneyRates(annual);
     }
@@ -2109,17 +2109,20 @@ public class Game {
 
     /**
      * THE MONEYS TO THE VAULT (WN4, right after the step, before anything buys or sells): the eight's US$ per unit - 1 / rate(code), NaN
-     * for a money with no rate this month - and the city's trade by money, for the reserve mix MATCH_TRADE. The vault revalues across the
-     * moneys on the first call (ForeignAccounts.setMoneyRates()). With no moneys, nothing is handed and the vault is US$ only.
+     * for a money with no rate this month - and, as the ninth, gold's US$ an ounce (GD2: GoldPrice at the month the moneys stand in, NaN where
+     * there are no nations), and the city's trade by money, for the reserve mix MATCH_TRADE. The vault revalues across the moneys on the first
+     * call (ForeignAccounts.setMoneyRates()). With no moneys, nothing is handed and the vault is US$ only.
      */
     private void handTheMoneysToTheVault() {
         WorldMoneys moneys = worldMoneys;
         if (moneys == null) return;
         double[] usdPerUnit = new double[ForeignAccounts.MONEYS];
-        for (int k = 0; k < usdPerUnit.length; k++) {
+        for (int k = 0; k < WorldMoneys.EIGHT.size(); k++) {
             double r = moneys.rate(WorldMoneys.EIGHT.get(k));
             usdPerUnit[k] = r > 0 && Double.isFinite(r) ? 1 / r : Double.NaN;
         }
+        // Gold's month is the moneys' own: WorldMoneys.month() and GoldPrice's t are both months since January of Nations.FIRST_YEAR.
+        usdPerUnit[ForeignAccounts.GOLD] = goldUsdPerOunce(moneys.month());
         foreign.setMoneyRates(usdPerUnit);
         // ...and to the city's debt (CD8): the moneys its paper can be written in this month, and what each piece is valued at.
         debtManager.setMoneyUsd(usdPerUnit);
@@ -2129,9 +2132,38 @@ public class Game {
         PolicyRates rates = policyRates;
         if (rates != null && !worldQuietForTheD) {
             double[] annual = new double[ForeignAccounts.MONEYS];
-            for (int k = 0; k < annual.length; k++) annual[k] = rates.rate(k);
+            for (int k = 0; k < WorldMoneys.EIGHT.size(); k++) annual[k] = rates.rate(k);
+            annual[ForeignAccounts.GOLD] = Double.NaN;   // no central bank pays on gold
             foreign.earnVaultInterest(annual);
         }
+    }
+
+    /** Gold's price (GD2), built from the nations the first time it is asked and again when their path or seed differs; pure, so never saved. */
+    private transient GoldPrice goldPrice;
+
+    private synchronized GoldPrice goldPrice() {
+        Nations beyond = getNations();
+        if (beyond == null) {
+            goldPrice = null;
+            return null;
+        }
+        if (goldPrice == null || goldPrice.path() != beyond.path() || goldPrice.seed() != beyond.seed()) goldPrice = new GoldPrice(beyond);
+        return goldPrice;
+    }
+
+    /** Gold's price in a month, US$ a troy ounce (GoldPrice): the month is an index as the moneys' are, months since January of Nations.FIRST_YEAR (WorldMoneys.monthIndex). NaN with no nations or a month before the first. */
+    public double goldUsdPerOunce(int month) {
+        if (month < 0) return Double.NaN;
+        GoldPrice gold = goldPrice();
+        return gold == null ? Double.NaN : gold.usdPerOunce(month);
+    }
+
+    /** Gold's move against the US$ in the last month, at the month the vault's rates stand at: its price over last month's, less one (a rise is +, as VaultView.move's). NaN with no world moneys, at month 0 or with no price. */
+    public double getGoldMove() {
+        WorldMoneys moneys = worldMoneys;
+        if (moneys == null || moneys.month() < 1) return Double.NaN;
+        double now = goldUsdPerOunce(moneys.month()), before = goldUsdPerOunce(moneys.month() - 1);
+        return now > 0 && before > 0 && Double.isFinite(now) && Double.isFinite(before) ? now / before - 1 : Double.NaN;
     }
 
     /** The risk-off level the carry and the hot money are told this month (XR4): the moneys' own, 0 with no moneys or a world quieted for the D$. */

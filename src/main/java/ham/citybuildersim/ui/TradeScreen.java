@@ -155,7 +155,7 @@ final class TradeScreen {
     boolean tradeBuying = true;
     double tradeExchange = 0;
 
-    /** ...and in which money (WN4): a code of the eight, or null for the reserve mix when buying and the largest holding when selling. Kept as tradeExchange is, so a redraw on the clock leaves it. */
+    /** ...and in which money (WN4): a code of the nine (the eight and "XAU"), or null for the reserve mix when buying and the largest holding when selling. Kept as tradeExchange is, so a redraw on the clock leaves it. */
     String tradeMoney = null;
 
     /** Where the page is to be scrolled to once it is drawn - a card's key - or null for its top. */
@@ -436,7 +436,7 @@ final class TradeScreen {
                 + "history with the city's decisions on it, what moved it this month force by force - parity's trend, the "
                 + "real rate, the balance, the vault's cover, interventions and the market - and the steps from parity to "
                 + "the rate. Then what the rate is doing to the dollar debt and the vault.",
-        "What the vault holds in each of the eight moneys, whose it is and how long it would last; the money that "
+        "What the vault holds in each of the eight moneys and in gold, whose it is and how long it would last; the money that "
                 + "can leave on no notice; what else moved the vault; and the exchange - cash into the vault, or the "
                 + "vault into cash.",
     };
@@ -3521,7 +3521,7 @@ final class TradeScreen {
                     driver.move() < 0 ? "fell" : "rose", Math.abs(driver.move()) * 100);
             out.add(new Moved("the moneys moved it by " + (cross < 0 ? "−" : "+") + usd(Math.abs(cross)) + who, Palette.TEXT_LABEL,
                     "The vault keeps a balance in each of the eight moneys, and the dollar value of each moves when it moves against the "
-                            + "dollar. Nobody was paid anything and nothing left the vault: it is not cash until a balance is sold, "
+                            + "dollar (gold, if the vault holds any, is worth the dollars an ounce fetches, and moves the same way). Nobody was paid anything and nothing left the vault: it is not cash until a balance is sold, "
                             + "and a sale is at that day's rate. A vault that is all dollars has none of this."));
         }
         // ...AND WHAT THE BALANCES EARNED (XR4, THE VAULT EARNS ITS MONEYS' RATES): each at its central bank's policy rate, kept in the vault in that
@@ -3537,7 +3537,7 @@ final class TradeScreen {
             out.add(new Moved("the vault " + (interest < 0 ? "paid " : "earned ") + usd(Math.abs(interest)) + " in interest this month" + who,
                     Palette.TEXT_LABEL,
                     String.format("The vault keeps a balance in each of the eight moneys, and each balance earns its central bank's "
-                            + "policy rate - the Fed's on the dollars, the ECB's on the euros, and so on - a twelfth of it a month. The "
+                            + "policy rate - the Fed's on the dollars, the ECB's on the euros, and so on - a twelfth of it a month (gold earns none). The "
                             + "interest stays in the vault, in that money: no %s is made for it, and it reaches the city only when the "
                             + "vault sells. The vault's yield this month is %s a year, the interest over what the earning balances were "
                             + "worth; %s has been earned since founding. A bank whose rate is below nothing takes from its balance "
@@ -3666,16 +3666,30 @@ final class TradeScreen {
                 : usd(ui.game.getForeignAccounts().toUsd(tradeExchange)) + " out of the vault, cash into the treasury");
     }
 
-    /** The eight's names on the exchange's chips, and the mark each money's amounts carry (WN4), in WorldMoneys.EIGHT's order. */
-    static final String[] MONEY_CHIP = {"US$", "Euro", "Yen", "Pound", "Yuan", "Canadian $", "Australian $", "Franc"};
-    static final String[] MONEY_MARK = {"US$", "€", "¥", "£", "CN¥", "C$", "A$", "CHF "};
+    /**
+     * The names on the exchange's chips, and the mark each money's amounts carry (WN4), in ForeignAccounts' order: WorldMoneys.EIGHT's, then
+     * gold's (GD2, the ninth: its mark is ounces, which ownMoney writes after the figure).
+     */
+    static final String[] MONEY_CHIP = {"US$", "Euro", "Yen", "Pound", "Yuan", "Canadian $", "Australian $", "Franc", "Gold"};
+    static final String[] MONEY_MARK = {"US$", "€", "¥", "£", "CN¥", "C$", "A$", "CHF ", "XAU "};
 
-    /** A balance of one of the eight in its own money, abbreviated and marked: "€3.4M". */
-    static String ownMoney(int k, double thousands) { return marked(MONEY_MARK[k], money(thousands)); }
+    /**
+     * A balance of one of the nine in its own money, abbreviated and marked: "€3.4M". Gold's (GD2) is thousands of troy ounces, written as the
+     * others' figures are, with " oz" after and no sign: "12.3k oz", "1.2M oz".
+     */
+    static String ownMoney(int k, double thousands) {
+        return k == ForeignAccounts.GOLD ? marked("", money(thousands)) + " oz" : marked(MONEY_MARK[k], money(thousands));
+    }
+
+    /** Gold's price this month, US$ an ounce (ForeignAccounts.getMoneyUsd(GOLD)), as the screens say it: "US$20.67 an ounce", or with the unit "oz", "US$20.67 an oz". */
+    static String goldPrice(double usdPerOunce, String unit) {
+        return Currency.FOREIGN_SYMBOL + String.format("%,.2f an %s", usdPerOunce, unit);
+    }
 
     /**
      * THE MONEY PICKER (WN4, under the toggle): "By the mix" when buying and "The largest" when selling, then the eight that have a rate
-     * this month (just the US$ with no world file). The chosen one is what a press deals in (tradeMoney, null for the first chip).
+     * this month (just the US$ with no world file), and Gold last when it has a price (GD2: gold is bought by name, as the dollars are).
+     * The chosen one is what a press deals in (tradeMoney, null for the first chip).
      */
     FlowPane moneyPicker(ForeignAccounts fx) {
         String first = tradeBuying ? "By the mix" : "The largest";
@@ -3686,7 +3700,7 @@ final class TradeScreen {
         FlowPane strip = Kept.scope("money picker", () -> chipStrip(names.toArray(new String[0]), now < 0 ? first : MONEY_CHIP[now],
                 Palette.SIZE_LABEL, pick -> {
                     tradeMoney = null;
-                    for (int k = 0; k < ForeignAccounts.MONEYS; k++) if (MONEY_CHIP[k].equals(pick)) tradeMoney = WorldMoneys.EIGHT.get(k);
+                    for (int k = 0; k < ForeignAccounts.MONEYS; k++) if (MONEY_CHIP[k].equals(pick)) tradeMoney = ForeignAccounts.codeOf(k);
                     showForeignMenu();
                 }));
         strip.setAlignment(Pos.CENTER_LEFT);
@@ -3695,7 +3709,7 @@ final class TradeScreen {
 
     /**
      * THE RESERVE MIX (WN4, D20): where a purchase of the treasury's, the strong edge's or a peg's goes - All US$ (the default), Match our
-     * trade, The world's mix, or Choose - read from and written to ForeignAccounts; under Choose eight rows of the money, its share and
+     * trade, The world's mix, or Choose - read from and written to ForeignAccounts; under Choose nine rows of the money (the eight, then gold: no interest, GD2), its share and
      * two small buttons, the model keeping the shares at 100%; (what the vault holds in each money is VaultTable's card, since WN6). Empty where
      * no money but the dollar has a rate and the vault holds nothing else: there is nothing to mix.
      */
@@ -3721,7 +3735,7 @@ final class TradeScreen {
                 // Kept (KP6): a row a money, a scope keyed by it.
                 box.getChildren().add(Kept.scope("mix:" + k, () -> {
                     Label name = words(ForeignAccounts.MONEY_PLURAL[money].substring(0, 1).toUpperCase() + ForeignAccounts.MONEY_PLURAL[money].substring(1)
-                            + (fx.hasRate(money) ? "" : " (no rate yet)"), Palette.SIZE_LABEL, fx.hasRate(money) ? Palette.TEXT_LABEL : Palette.TEXT_MUTED);
+                            + (!fx.hasRate(money) ? " (no rate yet)" : money == ForeignAccounts.GOLD ? " (no interest)" : ""), Palette.SIZE_LABEL, fx.hasRate(money) ? Palette.TEXT_LABEL : Palette.TEXT_MUTED);
                     HBox.setHgrow(name, Priority.ALWAYS);
                     name.setMaxWidth(Double.MAX_VALUE);
                     HBox row = Kept.row(Palette.GAP, name, figure(String.format("%.0f%%", shares[money] * 100), Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD),
@@ -3880,6 +3894,10 @@ final class TradeScreen {
                 double ownChange = fx.toUsd(tradeExchange) / fx.getMoneyUsd(moneyAt);
                 box.getChildren().add(2, cardLine("of which " + ForeignAccounts.MONEY_PLURAL[moneyAt], ownMoney(moneyAt, fx.getHolding(moneyAt)) + "  →  "
                         + ownMoney(moneyAt, Math.max(0, fx.getHolding(moneyAt) + sign * ownChange)), null));
+                // Gold (GD2): the ounces above are the deal at the month's price, which is the line under them.
+                if (moneyAt == ForeignAccounts.GOLD) {
+                    box.getChildren().add(3, cardLine("gold's price this month", goldPrice(fx.getMoneyUsd(ForeignAccounts.GOLD), "ounce"), null));
+                }
             }
             if (imports) {
                 box.getChildren().add(Kept.scope("cover bar", () -> bulletBar(Math.min(COVER_SCALE, coverAfter), ForeignAccounts.THIN_COVER, Palette.MONEY, 0,

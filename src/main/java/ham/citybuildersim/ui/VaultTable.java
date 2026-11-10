@@ -27,8 +27,8 @@ import static ham.citybuildersim.ui.TradeScreen.muted;
 import static ham.citybuildersim.ui.TradeScreen.quiet;
 
 /**
- * The vault in eight moneys (WN6; docs/studies/spec-nations.md 8, board 3): the first card of Trade &gt; The reserves where the vault holds, or can hold,
- * more than the dollar - a table of the eight (what it holds of each in the money's own mark, what that is worth in US$, its share, how it moved against
+ * The vault in eight moneys and gold (WN6, GD2; docs/studies/spec-nations.md 8, board 3): the first card of Trade &gt; The reserves where the vault holds, or can hold,
+ * more than the dollar - a table of the eight and gold (what it holds of each in the money's own mark, gold's in ounces, what that is worth in US$, its share, how it moved against
  * the US$ this month, its central bank's policy rate and, where anything is owed in it, what the city owes), the total, the month's revaluation across the
  * moneys in words, and under a fold the seven against the US$ and the eight's policy rates over the years. Every figure is VaultView's.
  * <p>
@@ -58,7 +58,9 @@ final class VaultTable {
     static final String EIGHT_INFO = "The vault keeps a balance in each of the eight moneys central banks keep: the US dollar, the euro, the yen, "
             + "the pound, the yuan, the Canadian and Australian dollars and the Swiss franc. Each is held in its own money and worth what the "
             + "day's rate says, so the worth moves when the moneys move against each other, and nobody is paid for it. Each balance earns its "
-            + "central bank's policy rate. Where the city owes in one of them, it is in the last column.";
+            + "central bank's policy rate. Where the city owes in one of them, it is in the last column. Gold is kept too, in troy ounces at the "
+            + "month's price (the US statute price, US$20.67 an ounce to 1933 and US$35 from 1934 to 1971, the market's after), and earns nothing: "
+            + "it goes in only when you pick it on the exchange, or give it a share of a mix you choose.";
 
     static final String YEARS_INFO = "The seven against the US dollar since the city was founded, as how many US dollars one of each buys, "
             + "100 at the start: a rise is a stronger money. The second chart is the eight central banks' policy rates.";
@@ -71,11 +73,11 @@ final class VaultTable {
         return others;
     }
 
-    /** IN THE VAULT, IN EIGHT MONEYS; null where only the dollar can be held. */
+    /** IN THE VAULT, IN EIGHT MONEYS AND GOLD; null where only the dollar can be held. */
     VBox eightCard() {
         if (!applies()) return null;
         VaultView v = VaultView.of(game());
-        VBox c = card(cardHead(Icons.SAFE, Palette.MONEY, "IN THE VAULT, IN EIGHT MONEYS", EIGHT_INFO,
+        VBox c = card(cardHead(Icons.SAFE, Palette.MONEY, "IN THE VAULT, IN EIGHT MONEYS AND GOLD", EIGHT_INFO,
                 quiet("worth " + usd(v.worthUsd()) + " · " + trade.d(v.worthD()))));
         boolean owed = false;
         for (VaultView.Row r : v.rows()) owed |= r.owedOwn() > 0;
@@ -100,8 +102,9 @@ final class VaultTable {
             boolean held = r.held() > 0;
             String tone = held ? Palette.TEXT_HEAD : Palette.TEXT_MUTED;
             int col = 0;
-            t.add(gridCell(capital(r.name()) + (r.rated() ? "" : " (no rate yet)"), r.rated() || held ? Palette.TEXT_BODY : Palette.TEXT_MUTED,
-                    Palette.SIZE_LABEL + 1, false), col++, at);
+            // Gold (GD2) carries its price this month in its name, since its held cell is ounces and its worth is the dollars they fetch.
+            String named = capital(r.name()) + (!r.rated() ? " (no rate yet)" : r.index() == ForeignAccounts.GOLD ? " · " + TradeScreen.goldPrice(r.usdPerUnit(), "oz") : "");
+            t.add(gridCell(named, r.rated() || held ? Palette.TEXT_BODY : Palette.TEXT_MUTED, Palette.SIZE_LABEL + 1, false), col++, at);
             t.add(gridCell(held ? TradeScreen.ownMoney(r.index(), r.held()) : "–", tone, Palette.SIZE_LABEL + 1, true), col++, at);
             t.add(gridCell(held ? usd(r.worthUsd()) : "–", tone, Palette.SIZE_LABEL + 1, true), col++, at);
             t.add(gridCell(held ? Money.share1(r.share()) : "–", tone, Palette.SIZE_LABEL + 1, true), col++, at);
@@ -115,7 +118,7 @@ final class VaultTable {
         }
         // the total: worth in US$ and in D$, the whole share, and the month's move across the moneys
         int col = 0;
-        t.add(gridCell("All eight", Palette.TEXT_HEAD, Palette.SIZE_LABEL + 1, false), col++, at);
+        t.add(gridCell("In all", Palette.TEXT_HEAD, Palette.SIZE_LABEL + 1, false), col++, at);
         t.add(gridCell("", Palette.TEXT_HEAD, Palette.SIZE_LABEL + 1, true), col++, at);
         t.add(gridCell(usd(v.worthUsd()) + " · " + trade.d(v.worthD()), Palette.TEXT_HEAD, Palette.SIZE_LABEL + 1, true), col++, at);
         t.add(gridCell(v.worthUsd() > 0 ? "100%" : "–", Palette.TEXT_HEAD, Palette.SIZE_LABEL + 1, true), col++, at);
@@ -166,10 +169,10 @@ final class VaultTable {
             box.getChildren().add(muted("Two months have to be recorded before there is a line to draw."));
             return box;
         }
-        String[] colours = Palette.lineColours(Collections.nCopies(ForeignAccounts.MONEYS, null));
+        String[] colours = Palette.lineColours(Collections.nCopies(WorldMoneys.EIGHT.size(), null));
         List<TimeChart.Line> rates = new ArrayList<>(), policies = new ArrayList<>();
         List<TimeChart> charts = new ArrayList<>();
-        for (int k = 0; k < ForeignAccounts.MONEYS; k++) {
+        for (int k = 0; k < WorldMoneys.EIGHT.size(); k++) {
             String code = WorldMoneys.EIGHT.get(k);
             String name = capital(ForeignAccounts.MONEY_NAME[k]);
             double[] policy = h.aligned(HistorySave.policyRateKey(code));

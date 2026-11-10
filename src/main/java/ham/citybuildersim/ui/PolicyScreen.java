@@ -4064,7 +4064,7 @@ final class PolicyScreen {
         int kept = fx.getPegAnchor();
         if (!isStaged(XR_ANCHOR)) return kept;
         int k = (int) Math.round(staged(XR_ANCHOR, kept));
-        return k >= 0 && k < ForeignAccounts.MONEYS && (k == 0 || fx.hasRate(k)) ? k : kept;
+        return k >= 0 && k < WorldMoneys.EIGHT.size() && (k == 0 || fx.hasRate(k)) ? k : kept;
     }
 
     /** A money's mark as the page shows it (WN4b): the US$'s as the page has always written it (Currency.FOREIGN_SYMBOL), the others' without the franc's trailing space: "€", "CHF" (pure). */
@@ -4465,13 +4465,13 @@ final class PolicyScreen {
      */
     private List<Node> anchorPicker(ForeignAccounts fx, boolean inForce) {
         boolean choice = false;
-        for (int k = 1; k < ForeignAccounts.MONEYS; k++) choice |= fx.hasRate(k);
+        for (int k = 1; k < WorldMoneys.EIGHT.size(); k++) choice |= fx.hasRate(k);
         if (!choice) return List.of();
         int kept = fx.getPegAnchor(), want = stagedAnchor(fx);
         // Kept (KP6): a chip is a scope of its own per money, so a rate that appears or goes is one chip more or less and not a page rebuilt.
         return Kept.scope("anchors", () -> {
             FlowPane chips = Kept.flow(8, 6);
-            for (int k = 0; k < ForeignAccounts.MONEYS; k++) {
+            for (int k = 0; k < WorldMoneys.EIGHT.size(); k++) {
                 if (k != 0 && !fx.hasRate(k)) continue;
                 int money = k;
                 chips.getChildren().add(Kept.scope("anchor:" + money, () -> {

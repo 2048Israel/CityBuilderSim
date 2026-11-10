@@ -1,15 +1,13 @@
-# gate of Merge batch/WG1: a real minimum (Jerus, 2026-11-02: "yes a real minimum wage"; "0.85, Nova Scotia's (Recommended)"): the ladder anchored on the going rate (the founding unskilled rung), the floor lifting only the wages under it, its default at 0.85 of the going rate ($17.00 over the $20.00 labourer median), its tie (prices, the average wage at a share, nothing), the getters the Wages page needs, the floor's words that become false; Job Bank's row in licences.md; ensemble, 0.9.83
+# gate of Merge batch/GD2: gold the vault's ninth reserve (XAU at the end of `ForeignAccounts.MONEYS`, `WorldMoneys.EIGHT` untouched): no interest, revalued monthly, a gold chip on Trade's reserves, the vault's gold row (after GD1), 0.9.84
 # date: 2026-11-10
 # earth-2.bin: named
 # nightly: 2026-11-10 01:25 0.9.80 d9f61df3 4,000 months: OK in 178 s
-# suite: 194 harnesses run in 1345s: 189 passed, 5 failed
-# timing: 18 harnesses run in 855s: 15 passed, 3 failed; its red lines were judged side by side with main's, below
+# suite: 194 harnesses run in 1126s: 189 passed, 5 failed
+# timing: 18 harnesses run in 860s: 15 passed, 3 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 28.2 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 27.9 ms (gate.txt, today), batch 28.2 ms (+1.1%), budget 25 ms: main over the budget too, no round]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 29.2 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 28.2 ms (gate.txt, today), batch 29.2 ms (+3.5%), budget 25 ms: main over the budget too, no round]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# figure	SaveSlotCheck	the median due month, 28.2 ms, holds the clock at most CLOCK_MS (25 ms)	28.2494	25	ms	FAIL	1	1
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): LongPlaytest | exit 1
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): LongPlaytest | (no FAIL line)
+# figure	SaveSlotCheck	the median due month, 29.2 ms, holds the clock at most CLOCK_MS (25 ms)	29.2407	25	ms	FAIL	1	1
 PriceLevelCheck | exit 1
 PriceLevelCheck | FAIL cash (nominal) month 101: 8.317811325 at the factor over the factor, 68.38253344 at today's prices (0.000751 apart)
 PriceLevelCheck | FAIL gdp.month (nominal) month 103: 20121.84632 at the factor over the factor, 20122.48474 at today's prices (1.95e-05 apart)

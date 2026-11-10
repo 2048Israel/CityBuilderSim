@@ -1,4 +1,4 @@
-# TradeScreen.java - 3,942 lines · 164 methods · 67 constants · interface
+# TradeScreen.java - 3,960 lines · 165 methods · 67 constants · interface
 
 `ham/citybuildersim/ui/TradeScreen.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
@@ -48,7 +48,7 @@
 > the folds, the river's toggle, the goods' toggle and the exchange's ask
 > all survive a redraw.
 
-**Uses:** [Palette](Palette.md) (358), [Kept](Kept.md) (210), [ForeignAccounts](ForeignAccounts.md) (180), [Icons](Icons.md) (49), [TradeBand](TradeBand.md) (25), [Currency](Currency.md) (21), [Sectors](Sectors.md) (18), [TimeChart](TimeChart.md) (15), [CapitalFlows](CapitalFlows.md) (14), [SectorScreen](SectorScreen.md) (10), [Good](Good.md) (8), [ChartModel](ChartModel.md) (8), [HistorySave](HistorySave.md) (7), [BuildScreen](BuildScreen.md) (7), [HistoryScreen](HistoryScreen.md) (7), [Sector](Sector.md) (5), [FreightView](FreightView.md) (4), [PolicyScreen](PolicyScreen.md) (3), [EconomyManager](EconomyManager.md) (3), [Money](Money.md) (3), [WorldMoneys](WorldMoneys.md) (3), [UserInterface](UserInterface.md) (2), [PartnersPage](PartnersPage.md) (2), [VaultTable](VaultTable.md) (2), [Statement](Statement.md) (2), [GoodsMarket](GoodsMarket.md) (2), [Retail](Retail.md) (2), [RealDollar](RealDollar.md) (2), [YearBook](YearBook.md) (2), [BondMarket](BondMarket.md) (2)... and 9 more
+**Uses:** [Palette](Palette.md) (358), [Kept](Kept.md) (210), [ForeignAccounts](ForeignAccounts.md) (185), [Icons](Icons.md) (49), [TradeBand](TradeBand.md) (25), [Currency](Currency.md) (22), [Sectors](Sectors.md) (18), [TimeChart](TimeChart.md) (15), [CapitalFlows](CapitalFlows.md) (14), [SectorScreen](SectorScreen.md) (10), [Good](Good.md) (8), [ChartModel](ChartModel.md) (8), [HistorySave](HistorySave.md) (7), [BuildScreen](BuildScreen.md) (7), [HistoryScreen](HistoryScreen.md) (7), [Sector](Sector.md) (5), [FreightView](FreightView.md) (4), [PolicyScreen](PolicyScreen.md) (3), [EconomyManager](EconomyManager.md) (3), [Money](Money.md) (3), [UserInterface](UserInterface.md) (2), [PartnersPage](PartnersPage.md) (2), [VaultTable](VaultTable.md) (2), [Statement](Statement.md) (2), [GoodsMarket](GoodsMarket.md) (2), [Retail](Retail.md) (2), [RealDollar](RealDollar.md) (2), [YearBook](YearBook.md) (2), [BondMarket](BondMarket.md) (2), [OutwardInvestment](OutwardInvestment.md) (2)... and 9 more
 
 **Used by (7):** [FinancesScreen](FinancesScreen.md), [KeptBench](KeptBench.md), [PartnersPage](PartnersPage.md), [PolicyScreen](PolicyScreen.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md), [VaultTable](VaultTable.md)
 
@@ -148,8 +148,8 @@
 | 3216 | `TradeScreen.RULE` | `String.format("The rate is parity's trend, times where the fundamentals put t...` | THE RULE, folded at the page's foot: the board's paragraph in the model's words and dials. |
 | 3293 | `TradeScreen.VAULT_MOVED_INFO` | `"The vault is kept in dollars, so its dollar figure stays put and its local f...` | What the currency does to the vault (the spec's E2 note, both ways). |
 | 3374 | `TradeScreen.ONE_POT_INFO` | `"The vault is one pot — the game does not tag a dollar as borrowed or earned,...` | WHOSE IT IS's (i) (the spec's R4, and B11: the method's name is out of it). |
-| 3670 | `TradeScreen.MONEY_CHIP` | `{ "US$", "Euro", "Yen", "Pound", "Yuan", "Canadian $", "Australian $", "Franc" }` | The eight's names on the exchange's chips, and the mark each money's amounts carry (WN4), in WorldMoneys.EIGHT's order. |
-| 3671 | `TradeScreen.MONEY_MARK` | `{ "US$", "€", "¥", "£", "CN¥", "C$", "A$", "CHF " }` |  |
+| 3673 | `TradeScreen.MONEY_CHIP` | `{ "US$", "Euro", "Yen", "Pound", "Yuan", "Canadian $", "Australian $", "Franc...` | The names on the exchange's chips, and the mark each money's amounts carry (WN4), in ForeignAccounts' order: WorldMoneys.EIGHT's, then gold's (GD2, the ninth: its mark is ounces, which ownMoney writes after the figure). |
+| 3674 | `TradeScreen.MONEY_MARK` | `{ "US$", "€", "¥", "£", "CN¥", "C$", "A$", "CHF ", "XAU " }` |  |
 
 ## Fields (state)
 
@@ -166,7 +166,7 @@
 | 152 | `boolean byBusiness` | What we trade draws a row a business rather than a row a good (D19), kept while the game runs. |
 | 155 | `boolean tradeBuying` | The exchange: buying foreign money rather than selling it, and how much is asked, in local money. |
 | 156 | `double tradeExchange` |  |
-| 159 | `String tradeMoney` | ...and in which money (WN4): a code of the eight, or null for the reserve mix when buying and the largest holding when selling. |
+| 159 | `String tradeMoney` | ...and in which money (WN4): a code of the nine (the eight and "XAU"), or null for the reserve mix when buying and the largest holding when selling. |
 | 162 | `private String scrollTarget` | Where the page is to be scrolled to once it is drawn - a card's key - or null for its top. |
 | 165 | `private Good popGood` | A good whose popover opens once What we trade is drawn - an Overview row's click - or null. |
 | 168 | `private final Map<String, Node> targets` | The nodes a door on this tab can scroll to, by key, as the page draws them. |
@@ -186,7 +186,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 75 | 3868 | **type** `final class TradeScreen` | The Trade & the world tab: how the city stands against the world this month - what it sells and buys abroad, the month's balance of payments, what a US dollar costs and which way it is going, and the vault - on an Ove... |
+| 75 | 3886 | **type** `final class TradeScreen` | The Trade & the world tab: how the city stands against the world this month - what it sells and buys abroad, the month's balance of payments, what a US dollar costs and which way it is going, and the vault - on an Ove... |
 | 86 | 5 | `TradeScreen(UserInterface ui)` |  |
 | 96 | 3 | `void forget()` | Every node is made new at the next draw: another city opened (UserInterface.anotherCity()). |
 
@@ -455,17 +455,18 @@
 | 3504 | 78 | `List<Moved> moved()` | WHAT ELSE MOVED THE VAULT (pure; the spec's E2-E5): the currency's move on its dollars, the central bank's defence - amber the month it sold, an event (section 5) - the land office's dollars out of it, and on a young ... |
 | 3583 | 15 | `VBox movedCard()` |  |
 
-### the exchange (lines 3599-3942)
+### the exchange (lines 3599-3960)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 3602 | 1 | **type** `record PastBound(String title, String line, String whole)` | The warning past the bound (XI2): its title, its line and what sits behind its (i). |
 | 3611 | 42 | `PastBound pastBound()` | The warning for an ask that takes the month's dealing past INTERVENTION_LINEAR of a year's output, or null (pure: the model's figures only). |
 | 3655 | 13 | `Press exchangePress()` | What a press on the exchange's button says (pure: the probe reads it): GO with the amount; CHOOSE with nothing asked yet - a press asks the smallest step and prices it, and never trades. |
-| 3674 | 1 | `static String ownMoney(int k, double thousands)` | A balance of one of the eight in its own money, abbreviated and marked: "€3.4M". |
-| 3680 | 15 | `FlowPane moneyPicker(ForeignAccounts fx)` | THE MONEY PICKER (WN4, under the toggle): "By the mix" when buying and "The largest" when selling, then the eight that have a rate this month (just the US$ with no world file). |
-| 3702 | 42 | `VBox reserveMix(ForeignAccounts fx)` | THE RESERVE MIX (WN4, D20): where a purchase of the treasury's, the strong edge's or a peg's goes - All US$ (the default), Match our trade, The world's mix, or Choose - read from and written to ForeignAccounts; under ... |
-| 3746 | 10 | `List<double[]> exchangeSteps(double ceiling)` | The exchange's "to N months" steps (pure, D12): buying and short, each cover line the cash can reach, as {months, local money}; the shares, all of it and clear are the card's own. |
-| 3765 | 148 | `VBox exchangeCard()` | BUY OR SELL FOREIGN MONEY (the Exchange page until 0.7.35): the toggle, the first sentence with the rest behind the (i), what can be spent or sold, the ask and its steps, what it would do - before and after, the cover... |
-| 3915 | 27 | `Node claimsGrid()` | The two claims, side by side (the spec's R5, under "details"), and what was walked away from (R6). |
+| 3680 | 3 | `static String ownMoney(int k, double thousands)` | A balance of one of the nine in its own money, abbreviated and marked: "€3.4M". |
+| 3685 | 3 | `static String goldPrice(double usdPerOunce, String unit)` | Gold's price this month, US$ an ounce (ForeignAccounts.getMoneyUsd(GOLD)), as the screens say it: "US$20.67 an ounce", or with the unit "oz", "US$20.67 an oz". |
+| 3694 | 15 | `FlowPane moneyPicker(ForeignAccounts fx)` | THE MONEY PICKER (WN4, under the toggle): "By the mix" when buying and "The largest" when selling, then the eight that have a rate this month (just the US$ with no world file), and Gold last when it has a price (GD2: ... |
+| 3716 | 42 | `VBox reserveMix(ForeignAccounts fx)` | THE RESERVE MIX (WN4, D20): where a purchase of the treasury's, the strong edge's or a peg's goes - All US$ (the default), Match our trade, The world's mix, or Choose - read from and written to ForeignAccounts; under ... |
+| 3760 | 10 | `List<double[]> exchangeSteps(double ceiling)` | The exchange's "to N months" steps (pure, D12): buying and short, each cover line the cash can reach, as {months, local money}; the shares, all of it and clear are the card's own. |
+| 3779 | 152 | `VBox exchangeCard()` | BUY OR SELL FOREIGN MONEY (the Exchange page until 0.7.35): the toggle, the first sentence with the rest behind the (i), what can be spent or sold, the ask and its steps, what it would do - before and after, the cover... |
+| 3933 | 27 | `Node claimsGrid()` | The two claims, side by side (the spec's R5, under "details"), and what was walked away from (R6). |
 

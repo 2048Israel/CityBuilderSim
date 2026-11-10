@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**194 harness files, 22,851 labelled assertions.** AllChecks runs 194 of them.
+**194 harness files, 22,854 labelled assertions.** AllChecks runs 194 of them.
 
 ## Which harnesses read which class
 
@@ -112,7 +112,6 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [FinancesScreen](map/FinancesScreen.md) | **none** |
 | [Fittings](map/Fittings.md) | FittingCheck |
 | [FloatingRateNote](map/FloatingRateNote.md) | DeskCheck, FloatLinkCheck |
-| [FloorView](map/FloorView.md) | PolicyPreviewCheck |
 | [FollowBench](map/FollowBench.md) | ReplayCheck |
 | [FollowPlayer](map/FollowPlayer.md) | ReplayCheck |
 | [FollowRules](map/FollowRules.md) | ReplayCheck |
@@ -140,7 +139,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [GhostLayer](map/GhostLayer.md) | **none** |
 | [GlobeFrame](map/GlobeFrame.md) | EarthTerrainCheck, GlobeCheck, MapCheck |
 | [GlobePicture](map/GlobePicture.md) | EarthTerrainCheck, GlobeCheck, MapCheck |
-| [GoldPrice](map/GoldPrice.md) | GoldPriceCheck |
+| [GoldPrice](map/GoldPrice.md) | GoldPriceCheck, PegAnchorCheck, VaultMoneysCheck |
 | [Good](map/Good.md) | AgricultureCheck, BankCheck, BasketYearCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, ConstructionControlCheck, ConsumptionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DenominationCheck, DiscoveryCheck, EquipmentCheck, FittingCheck, FoodProcessingCheck, ForeignCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, NewGameCheck, OilCheck, OilViewCheck, PartnerCallsCheck, PartnersCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TruckCheck, TruckRouteCheck, VanCheck, WellCheck, WoodProductsCheck, WorldMarketCheck, WorldMoneysCheck, ZoningCheck |
 | [GoodsMarket](map/GoodsMarket.md) | AgricultureCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CopperRefiningCheck, EquipmentCheck, FittingCheck, FoodProcessingCheck, ForeignCheck, Forms1900Check, GdpCheck, InfrastructureCheck, InvestCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PartnersCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ReloadCheck, RoadCheck, SaveFileCheck, TradeBandCheck, VanCheck, WellCheck, WoodProductsCheck |
 | [GovernmentScreen](map/GovernmentScreen.md) | **none** |
@@ -359,8 +358,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [WorldData](map/WorldData.md) | DenominationCheck, DeterminismCheck, GlobeCheck, GoldPriceCheck, InterestAbroadCheck, LandNationsCheck, MapCheck, NationsCheck, PartnerCallsCheck, PartnersCheck, PegAnchorCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldDataCheck, WorldMarketCheck, WorldMeasuresCheck, WorldMoneysCheck |
 | [WorldEconomy](map/WorldEconomy.md) | CentralBankCheck, FundCheck, LongPlaytest, MonetaryCheck, NewGameCheck, RealDollarCheck, SaveFileCheck, SkipReportCheck |
 | [WorldMarket](map/WorldMarket.md) | DenominationCheck, GlobeCheck, InterestAbroadCheck, PartnerCallsCheck, PartnersCheck, PriceLevelCheck, ReadPathCheck, SaveFileCheck, WorldMarketCheck, WorldMoneysCheck |
-| [WorldMeasures](map/WorldMeasures.md) | LabourCheck, PolicyPreviewCheck, RankingsCheck, WorldMeasuresCheck |
-| [WorldMoneys](map/WorldMoneys.md) | DebtMoneysCheck, ExchangeRateCheck, GlobeCheck, InterestAbroadCheck, KeptCheck, PartnersCheck, PriceLevelCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldMoneysCheck |
+| [WorldMeasures](map/WorldMeasures.md) | RankingsCheck, WorldMeasuresCheck |
+| [WorldMoneys](map/WorldMoneys.md) | DebtMoneysCheck, ExchangeRateCheck, GlobeCheck, InterestAbroadCheck, KeptCheck, PriceLevelCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldMoneysCheck |
 | [YearBook](map/YearBook.md) | ChartCheck, ClockCheck, HistoryCheck, InterestAbroadCheck, RankingsCheck, ReadPathCheck, ResearchViewCheck, ScaleCheck, WorldMoneysCheck, YearBookCheck |
 | [YieldCurve](map/YieldCurve.md) | AuctionCheck, CallCheck, CurrencyRegimeCheck, CurveCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, LongPlaytest |
 | [Zoning](map/Zoning.md) | ForestryCheck, KeptCheck, LandCheck, LandClassCheck, LandmassCheck, PolicyDatesCheck, PolicyPreviewCheck, ZoningCheck, ZoningViewCheck |
@@ -13861,7 +13860,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L843 a month the world did not hand it reads 0 (the next month's rates start it from nothing), with no driver and no yield
   - L845 ...and the lifetime is kept
   - L847 the month after earns again on the grown balances, and the lifetime is the sum of the two
-  - L852 the array runs to slot 148, the peg's anchor (WN4b) (
+  - L852 the array runs to slot 151, gold's chosen share (GD2), after the peg's anchor in 148 (WN4b) (
   - L853 slots 142-146 are the month's interest, the lifetime, the driver, its US$ and the base the yield is struck on
   - L858 restored, every slot reads back to the bit
   - L859 ...the month's interest, the lifetime, the driver and the yield as they were
@@ -13904,29 +13903,29 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1028 ...the lifetime too, the count left alone
 - **L1064 9. in a city: the vault earns each bank's rate every month, a risk-off sends hot money home, and the month's money audit closes**
   - L1079 fixture: a purchase by the world's mix puts a balance in each of the eight (
-  - L1103 the vault's interest each month is the sum over the eight of the balance before x that bank's rate / 12 at the month's cross rates,
-  - L1104 ...it earned in every one (
-  - L1106 ...the yield is the interest times twelve over the US$ it was earned on
-  - L1107 ...and the audit closed every month of it (worst residual
-  - L1113 fixture: the city holds hot money to unwind (D$
-  - L1119 the world is in a risk-off of at least the size forced (
-  - L1120 the hot money's risk-off departure the month is over zero (D$
-  - L1121 ...the share of the stock it took is the dial times the level (capped at the whole):
-  - L1123 ...inside the month's departures
-  - L1130 ...the audit saw the month's hot money cross the edge, net of what still came (
-  - L1133 ...the bank's foreign deposits are the stock that is left
-  - L1134 ...and the log says money ran home
-  - L1135 the risk-off is counted, with the lifetime
-  - L1143 the month after the level has faded (
-  - L1144 ...four more months, and every one's audit closed (worst
-  - L1155 fixture: the quieted city holds hot money (D$
-  - L1158 the quieted city's vault earned nothing, month or lifetime
-  - L1159 ...and the risk-off unwound none of its hot money or its carry
-  - L1165 a city on the literals (no world, no policy rates) earns nothing and unwinds nothing
-  - L1170 saved, to its scratch folder
-  - L1173 the loaded city has the vault's balances and what it earned, to the bit, so the saved month is not earned a second time
-  - L1175 ...and the hot money's unwinding as it was
-  - L1180 both play three months more and stand in the same state, the vault and the hot money to the bit
+  - L1104 the vault's interest each month is the sum over the eight of the balance before x that bank's rate / 12 at the month's cross rates,
+  - L1105 ...it earned in every one (
+  - L1107 ...the yield is the interest times twelve over the US$ it was earned on
+  - L1108 ...and the audit closed every month of it (worst residual
+  - L1114 fixture: the city holds hot money to unwind (D$
+  - L1120 the world is in a risk-off of at least the size forced (
+  - L1121 the hot money's risk-off departure the month is over zero (D$
+  - L1122 ...the share of the stock it took is the dial times the level (capped at the whole):
+  - L1124 ...inside the month's departures
+  - L1131 ...the audit saw the month's hot money cross the edge, net of what still came (
+  - L1134 ...the bank's foreign deposits are the stock that is left
+  - L1135 ...and the log says money ran home
+  - L1136 the risk-off is counted, with the lifetime
+  - L1144 the month after the level has faded (
+  - L1145 ...four more months, and every one's audit closed (worst
+  - L1156 fixture: the quieted city holds hot money (D$
+  - L1159 the quieted city's vault earned nothing, month or lifetime
+  - L1160 ...and the risk-off unwound none of its hot money or its carry
+  - L1166 a city on the literals (no world, no policy rates) earns nothing and unwinds nothing
+  - L1171 saved, to its scratch folder
+  - L1174 the loaded city has the vault's balances and what it earned, to the bit, so the saved month is not earned a second time
+  - L1176 ...and the hot money's unwinding as it was
+  - L1181 both play three months more and stand in the same state, the vault and the hot money to the bit
 
 ## InterventionCheck.java - 77 labelled assertions
 
@@ -15497,7 +15496,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L308 a header whose count is not the one batch-check.sh finds is refused, exit 1
   - L309 and the line says the two judges disagree
 
-## LabourCheck.java - 186 labelled assertions
+## LabourCheck.java - 154 labelled assertions
 
 > Verifies the labour market: who can hold a job, and what it costs. Not part
 > of the game.
@@ -15513,224 +15512,188 @@ _(this harness does not label its checks through a helper - it prints its findin
 > workers sat idle. The eleven job types were real on the demand side and
 > ...
 
-- **L77 1. THE GOING RATE ANCHORS THE LADDER, AND THE FLOOR STARTS UNDER IT**
-- **L90 the going rate anchors the ladder, and the floor starts under it**
-  - L93 the going rate is the unskilled tier
-  - L95 the floor starts at the default share of the going rate
-  - L97 ...which is under the going rate, a floor of its own
-  - L99 the going rate in today's money is the going rate lifted by the cost of living
-  - L103 
-  - L110 a new city has no job paid the floor
-  - L116 founded on
-  - L118 ...the floor starts at the default share of it
-  - L120 ...and the unskilled base is the anchor, as the ladder pays it
-  - L128 a currency reform takes the going rate with it
-  - L133 ...and every base
-  - L134 ...and the floor's share of the going rate is unchanged
-- **L137 2. THE DIAL MOVES ONLY THE WAGES UNDER IT**
-- **L147 the dial moves only the wages under it**
-  - L160 fixture: the floor sits between the diploma's base and the college jobs', inside the dial's bounds
-  - L176 the no-diploma wage is lifted to the floor
-  - L177 the diploma wage is lifted to the floor
-  - L181 the
-  - L185 fixture: every college and university wage is over the floor, so it is no floor to them
-  - L186 the doctor's base is unchanged
-  - L187 ...and the ladder's bases kept their shape
-  - L190 the no-diploma and diploma bands are the ones paid the floor
-  - L193 and the dial is bounded
-  - L201 without the law no job is paid the floor or near it
-  - L208 a wage a little over the floor is near it, and not paid it
-  - L210 ...and the doctor's, far over it, is neither
-  - L212 ...and the job paid the floor is not near it
-- **L215 2b. THE FLOOR'S TIE**
-- **L224 the floor's tie**
-  - L226 a new market's floor is tied to prices, at the default share
-  - L229 the ties have their words
-  - L244 fixture: the cost of living rose (
-  - L245 tied to prices, the real floor is unchanged while prices rise (
-  - L247 ...and the cash floor rises with them
-  - L249 ...by the cost of living
-  - L256 fixture: the same rise in the cost of living (
-  - L257 tied to nothing, the cash floor holds while prices rise (
-  - L259 ...so the real floor falls with them
-  - L261 ...by the cost of living
-  - L269 fixture: prices fell far enough to take a cash floor past the top of the dial
-  - L271 tied to nothing, a cash floor that prices would take over the dial's top is held at the top (
-  - L280 setting the cost of living (the load path) does not strike a cash floor
-  - L286 tying the floor does not move it that month
-  - L289 tied to the average wage, the cash floor is the share of it
-  - L293 ...whatever the cost of living and the player's nudge
-  - L297 setting the floor under it moves the share to match
-  - L298 ...and the cash floor is what was set
-  - L300 ...and the next month's strike keeps it
-  - L306 a month with no average wage (nobody paid, or not a number) leaves the floor where it was
-  - L311 a tie that would take the floor over the dial's top holds it at the top
-  - L314 ...and one that would take it under the dial's bottom holds it at the bottom
-  - L317 setting the floor over the dial holds the share at its top too
-  - L322 tied to prices, the average wage moves no floor
-  - L325 ...and the dial leaves the share alone
-  - L332 a share over the top of the range is held to it
-  - L334 ...and one under the bottom of it
-  - L336 a tie to the average wage is said at its share
-  - L340 ...and said once: the same tie again is no decision
-  - L342 a tie to nothing is said as a cash figure
-  - L345 a null tie reads prices, and is said so
-- **L349 3. SCARCITY RAISES IT, SURPLUS LOWERS IT**
-- **L354 a shortage raises the wage, a glut lowers it**
-  - L371 a shortage pays over the odds
-  - L373 ...but not without limit
-  - L375 a glut pays under them
-  - L377 ...and stops at the bottom of the range
-  - L391 fixture: the default floor is over the unskilled band's own floor of the going rate
-  - L393 no wage falls below the minimum
-  - L395 ...so an unskilled glut is pinned, at a floor over its own
-  - L397 ...and paid the floor
-  - L417 fixture: the Diploma glut is held at the indexed floor, over the founding one and its tolerance
-  - L420 a band held at the indexed floor with people spare is pinned at a cost of living of 1.1
-- **L423 4. IT IS LAGGED, WHICH IS THE POINT**
-- **L431 and it gets there slowly**
-  - L455 one month does not close the gap
-  - L456 ...it closes ADJUST_RATE of it
-  - L464 a shortage takes a year or more to price in
-  - L465 ...and does get there eventually
-- **L467 5. NOBODY IS A DOCTOR WHO IS NOT A DOCTOR**
-- **L472 and a city cannot staff what it has not attracted**
-  - L516 no more
-  - L528 graduates with no graduate work cascade downward
-  - L531 ...and nothing cascades up
-  - L541 skilled workers exist at all - migration supplied them
-- **L544 6. AND IT SURVIVES A SAVE**
-- **L551 through a save**
-  - L578 the city saved
-  - L583 the floor's tie came back through a real save
-  - L584 ...and its share
-  - L590 
-  - L594 the
-  - L604 a tie to the average wage survives state() and restore()
-  - L605 ...with its share
-  - L609 an array cut before the tie restores prices
-  - L610 ...at the default share
-  - L616 a tie out of range reads prices
-  - L631 ...and a recomputed market would NOT have matched
-- **L633 RENT NO LONGER FOLLOWS THE UNSKILLED WAGE (2026-09-07).**
-- **L656 rent is a market, not a wage formula**
-  - L659 a reloaded city charges the rent it was charging
-  - L662 fixture: the city has a housing cost to price against
-  - L689 fixture: doubling the floor moved the unskilled wage
-  - L698 doubling the minimum wage does not double rent
-  - L700 ...and rent is not the wage formula any more
-  - L711 the rent TARGET is not a wage formula either
-- **L714 ARRIVING CHILDREN ARE NOT GRADUATES (2026-09-06).**
-- **L725 arriving children are not graduates**
-- **L741 HUNTED FOR, NOT ASSUMED.**
-  - L788 fixture: found a month with skilled arrivals in it
-  - L789 fixture: the city is not all adults
-  - L797 the skilled counts gained the ADULT share of the skilled arrivals
-  - L811 fixture: the two explanations are far enough apart to tell apart
-  - L813 ...and not the whole mix
-- **L816 A DOCTOR SHORTAGE IS PRICED ON DOCTORS (2026-09-06).**
-- **L825 a doctor shortage is priced on doctors**
-  - L870 fixture: more doctor posts than licence holders
-  - L872 the market reports a licence shortage
-  - L874 doctors are paid over the band
-  - L876 ...and never over the ceiling
-  - L878 an ungated graduate job carries no licence premium
-  - L880 licence holders arrive in response to the price
-- **L883 WHO MOVES IN, AND WHY (2026-09-07).**
-- **L901 who moves in, and why**
-  - L914 fixture: somebody moved in at all
-  - L915 fixture: this city pays its labourers no more than the going rate
-  - L917 NOBODY ARRIVES WITHOUT A DIPLOMA into a city paying the going rate for them
-  - L923 ...and at the ceiling they are the world's share of migrants with no diploma, 7.5%
-- **L926 SOME ARRIVE WITHOUT A DIPLOMA, FOR THE WAGE (0.7.18).**
-- **L936 some arrive without a diploma, for the wage**
-  - L958 fixture: the town pays its labourers over the going rate
-  - L959 fixture: somebody moved in
-  - L960 a dear unskilled wage brings arrivals without a diploma
-  - L963 ...against the diploma arrivals, the ceiling times reach() times the chance of work - the graduates' own terms
-  - L980 fixture: the graduate band is NOT bid up - only doctors are
-  - L982 a doctor shortage brings doctors on its own
-  - L993 a licence holder is one of the university arrivals, not an extra head
-- **L1005 the pull curve**
-  - L1006 at the going rate a graduate has no reason to come
-  - L1008 ...nor below it
-  - L1009 at twice the going rate, a third of the ceiling
-  - L1011 at the wage ceiling, all of it
-  - L1013 ...and never more, however far a premium is pushed
-  - L1015 a diploma is the base and is not competed for
-  - L1017 the graduate ceilings stay under it - the world has few to spare
-- **L1021 7. THE TIE'S AVERAGE SURVIVES A LOAD AND A REFORM (WS1)**
-- **L1033 the tie's average survives a load and a reform (WS1)**
-  - L1040 fixture: the month struck the floor on an average of the played city's wages
-  - L1041 fixture: the floor was struck, not held at a bound of the dial
-  - L1043 the floor the month struck is the share of the average it read
-  - L1045 the played city under the tie saved
-  - L1049 the tie came back through the real save path, at its share
-  - L1051 ...and the average it last read came back with it
-  - L1057 the live city's dial move puts the share at the move's cash over the last average
-  - L1058 the loaded city's, before any month, puts it at the move's cash over the last average
-  - L1060 ...the same share the live city gets from the same move, not the share before it
-  - L1064 fixture: the month read an average of its own
-  - L1065 fixture: the floor was struck again, not held at a bound of the dial
-  - L1067 after a month the loaded city's floor is still the dial's share of the new average (not undone to the share before)
-  - L1077 the average survives state() and restore()
-  - L1080 an array cut before the average keeps the tie it carries
-  - L1082 ...and reads no average, as before
-  - L1084 ...so a dial move leaves its share alone
-  - L1087 a month with no average wage saves 0, never a NaN
-  - L1098 fixture (reform x
-  - L1100 a reform x
-  - L1102 ...so the same real floor times the scale has the same tie share as before it
-- **L1107 8. THE TIE'S SHARE STOPS SHORT OF THE RATCHET (WS1)**
-- **L1118 the tie's share stops short of the ratchet (WS1)**
-  - L1122 asking the average wage itself holds the share at the top of the range
-  - L1124 ...and asking .05 holds it at the bottom
-  - L1125 the top of the range stops short of the average wage itself
-  - L1136 fixture: the world file has nations with a minimum-wage-to-average-wage ratio
-  - L1137 the range reaches the lowest nation's ratio, so it can be copied
-  - L1138 ...and the highest, so none is out of reach
-  - L1158 fixture: the average wage is over the unskilled wage by more than the top of the range lets the floor reach
-  - L1191 the floor bound in most of the months (it lifted the unskilled wage over what the market alone pays)
-  - L1192 the floor settles: its month-on-month move is under 0.1% by the end
-  - L1193 the floor stayed under the mean wage of the posts it does not hold, every month
-  - L1194 the floor never reached the top of the dial
-  - L1195 the university band's lowest wage stayed above the floor, every month
-- **L1292 wages against the index they chase**
-  - L1367 fixture: the basket is based, so there is an index to chase
-  - L1393 fixture: the crawl really did inflate the basket, steadily
-  - L1395 every month wages chased the index the city published
-  - L1397 ...and moved by the expected month to EXPECTED_SHARE and the chase to the rest - one indexation, not two
-  - L1399 so the wage index sits inside the lag's window, every month
-  - L1401 ...which under a rising index is BELOW it, not a third above
-  - L1409 fixture: the currency was reformed
-  - L1410 a reform leaves the wage index where it was
-  - L1411 ...and the level it is walking toward
-  - L1412 ...and the price index it walks toward
-  - L1420 ...and two years on, wages still chase the index the city published
-  - L1422 ...the expected month and the chase at a time
-  - L1423 ...inside the lag's window
-  - L1428 fixture: the reformed city saved
-  - L1431 the wage index reloads
-  - L1433 ...and the level it is walking toward
-  - L1435 ...and the price index it is handed
-  - L1449 and a reloaded city's wages chase the index it publishes
-  - L1451 ...the expected month and the chase at a time
-  - L1452 ...inside the lag's window
-- **L1476 every employer pays each job type's wage for the posts filled, the sick included**
-  - L1508 fixture: the city's job types fill unevenly
-  - L1519 (a) every employer's payroll is what the households are paid
-  - L1520 (c) ...and the average-fill figure is not the sectors' payroll on this city
-  - L1532 (a) ...and each sector's payroll is its filled posts at the households' wage
-  - L1547 (b) half the city off sick, fill held: no sector's payroll moves
-  - L1548 ...while every working sector's output falls with it
-  - L1549 ...and the households are paid what they were
-  - L1600 fixture: the builders have less work than crews, and lay some off
-  - L1604 ...offering the share of their posts the work needs over their fill, never fewer than the core crew
-  - L1611 ...each job type's posts at that share, rounded once
-  - L1617 the posts not offered are not in the city's count
-  - L1620 (a) ...and the households are paid what the employers paid, the laid-off posts in nobody's pay
-  - L1633 a month with the work for them hires every crew back
-  - L1637 (a) ...and the households are paid what the employers paid, that month too
+- **L75 1. THE GOING RATE ANCHORS THE LADDER, AND THE FLOOR STARTS UNDER IT**
+- **L88 the going rate anchors the ladder, and the floor starts under it**
+  - L91 the going rate is the unskilled tier
+  - L93 the floor starts at the default share of the going rate
+  - L95 ...which is under the going rate, a floor of its own
+  - L97 the going rate in today's money is the going rate lifted by the cost of living
+  - L101 
+  - L108 a new city has no job paid the floor
+  - L114 founded on
+  - L116 ...the floor starts at the default share of it
+  - L118 ...and the unskilled base is the anchor, as the ladder pays it
+  - L126 a currency reform takes the going rate with it
+  - L131 ...and every base
+  - L132 ...and the floor's share of the going rate is unchanged
+- **L135 2. THE DIAL MOVES ONLY THE WAGES UNDER IT**
+- **L145 the dial moves only the wages under it**
+  - L158 fixture: the floor sits between the diploma's base and the college jobs', inside the dial's bounds
+  - L174 the no-diploma wage is lifted to the floor
+  - L175 the diploma wage is lifted to the floor
+  - L179 the
+  - L183 fixture: every college and university wage is over the floor, so it is no floor to them
+  - L184 the doctor's base is unchanged
+  - L185 ...and the ladder's bases kept their shape
+  - L188 the no-diploma and diploma bands are the ones paid the floor
+  - L191 and the dial is bounded
+  - L199 without the law no job is paid the floor or near it
+  - L206 a wage a little over the floor is near it, and not paid it
+  - L208 ...and the doctor's, far over it, is neither
+  - L210 ...and the job paid the floor is not near it
+- **L213 2b. THE FLOOR'S TIE**
+- **L222 the floor's tie**
+  - L224 a new market's floor is tied to prices, at the default share
+  - L227 the ties have their words
+  - L242 fixture: the cost of living rose (
+  - L243 tied to prices, the real floor is unchanged while prices rise (
+  - L245 ...and the cash floor rises with them
+  - L247 ...by the cost of living
+  - L254 fixture: the same rise in the cost of living (
+  - L255 tied to nothing, the cash floor holds while prices rise (
+  - L257 ...so the real floor falls with them
+  - L259 ...by the cost of living
+  - L267 fixture: prices fell far enough to take a cash floor past the top of the dial
+  - L269 tied to nothing, a cash floor that prices would take over the dial's top is held at the top (
+  - L278 setting the cost of living (the load path) does not strike a cash floor
+  - L284 tying the floor does not move it that month
+  - L287 tied to the average wage, the cash floor is the share of it
+  - L291 ...whatever the cost of living and the player's nudge
+  - L295 setting the floor under it moves the share to match
+  - L296 ...and the cash floor is what was set
+  - L298 ...and the next month's strike keeps it
+  - L304 a month with no average wage (nobody paid, or not a number) leaves the floor where it was
+  - L309 a tie that would take the floor over the dial's top holds it at the top
+  - L312 ...and one that would take it under the dial's bottom holds it at the bottom
+  - L315 setting the floor over the dial holds the share at its top too
+  - L320 tied to prices, the average wage moves no floor
+  - L323 ...and the dial leaves the share alone
+  - L330 a share over the top of the range is held to it
+  - L332 ...and one under the bottom of it
+  - L334 a tie to the average wage is said at its share
+  - L338 ...and said once: the same tie again is no decision
+  - L340 a tie to nothing is said as a cash figure
+  - L343 a null tie reads prices, and is said so
+- **L347 3. SCARCITY RAISES IT, SURPLUS LOWERS IT**
+- **L352 a shortage raises the wage, a glut lowers it**
+  - L369 a shortage pays over the odds
+  - L371 ...but not without limit
+  - L373 a glut pays under them
+  - L375 ...and stops at the bottom of the range
+  - L389 fixture: the default floor is over the unskilled band's own floor of the going rate
+  - L391 no wage falls below the minimum
+  - L393 ...so an unskilled glut is pinned, at a floor over its own
+  - L395 ...and paid the floor
+  - L415 fixture: the Diploma glut is held at the indexed floor, over the founding one and its tolerance
+  - L418 a band held at the indexed floor with people spare is pinned at a cost of living of 1.1
+- **L421 4. IT IS LAGGED, WHICH IS THE POINT**
+- **L429 and it gets there slowly**
+  - L453 one month does not close the gap
+  - L454 ...it closes ADJUST_RATE of it
+  - L462 a shortage takes a year or more to price in
+  - L463 ...and does get there eventually
+- **L465 5. NOBODY IS A DOCTOR WHO IS NOT A DOCTOR**
+- **L470 and a city cannot staff what it has not attracted**
+  - L514 no more
+  - L526 graduates with no graduate work cascade downward
+  - L529 ...and nothing cascades up
+  - L539 skilled workers exist at all - migration supplied them
+- **L542 6. AND IT SURVIVES A SAVE**
+- **L549 through a save**
+  - L576 the city saved
+  - L581 the floor's tie came back through a real save
+  - L582 ...and its share
+  - L588 
+  - L592 the
+  - L602 a tie to the average wage survives state() and restore()
+  - L603 ...with its share
+  - L607 an array cut before the tie restores prices
+  - L608 ...at the default share
+  - L614 a tie out of range reads prices
+  - L629 ...and a recomputed market would NOT have matched
+- **L631 RENT NO LONGER FOLLOWS THE UNSKILLED WAGE (2026-09-07).**
+- **L654 rent is a market, not a wage formula**
+  - L657 a reloaded city charges the rent it was charging
+  - L660 fixture: the city has a housing cost to price against
+  - L687 fixture: doubling the floor moved the unskilled wage
+  - L696 doubling the minimum wage does not double rent
+  - L698 ...and rent is not the wage formula any more
+  - L709 the rent TARGET is not a wage formula either
+- **L712 ARRIVING CHILDREN ARE NOT GRADUATES (2026-09-06).**
+- **L723 arriving children are not graduates**
+- **L739 HUNTED FOR, NOT ASSUMED.**
+  - L786 fixture: found a month with skilled arrivals in it
+  - L787 fixture: the city is not all adults
+  - L795 the skilled counts gained the ADULT share of the skilled arrivals
+  - L809 fixture: the two explanations are far enough apart to tell apart
+  - L811 ...and not the whole mix
+- **L814 A DOCTOR SHORTAGE IS PRICED ON DOCTORS (2026-09-06).**
+- **L823 a doctor shortage is priced on doctors**
+  - L868 fixture: more doctor posts than licence holders
+  - L870 the market reports a licence shortage
+  - L872 doctors are paid over the band
+  - L874 ...and never over the ceiling
+  - L876 an ungated graduate job carries no licence premium
+  - L878 licence holders arrive in response to the price
+- **L881 WHO MOVES IN, AND WHY (2026-09-07).**
+- **L899 who moves in, and why**
+  - L912 fixture: somebody moved in at all
+  - L913 fixture: this city pays its labourers no more than the going rate
+  - L915 NOBODY ARRIVES WITHOUT A DIPLOMA into a city paying the going rate for them
+  - L921 ...and at the ceiling they are the world's share of migrants with no diploma, 7.5%
+- **L924 SOME ARRIVE WITHOUT A DIPLOMA, FOR THE WAGE (0.7.18).**
+- **L934 some arrive without a diploma, for the wage**
+  - L956 fixture: the town pays its labourers over the going rate
+  - L957 fixture: somebody moved in
+  - L958 a dear unskilled wage brings arrivals without a diploma
+  - L961 ...against the diploma arrivals, the ceiling times reach() times the chance of work - the graduates' own terms
+  - L978 fixture: the graduate band is NOT bid up - only doctors are
+  - L980 a doctor shortage brings doctors on its own
+  - L991 a licence holder is one of the university arrivals, not an extra head
+- **L1003 the pull curve**
+  - L1004 at the going rate a graduate has no reason to come
+  - L1006 ...nor below it
+  - L1007 at twice the going rate, a third of the ceiling
+  - L1009 at the wage ceiling, all of it
+  - L1011 ...and never more, however far a premium is pushed
+  - L1013 a diploma is the base and is not competed for
+  - L1015 the graduate ceilings stay under it - the world has few to spare
+- **L1113 wages against the index they chase**
+  - L1188 fixture: the basket is based, so there is an index to chase
+  - L1214 fixture: the crawl really did inflate the basket, steadily
+  - L1216 every month wages chased the index the city published
+  - L1218 ...and moved by the expected month to EXPECTED_SHARE and the chase to the rest - one indexation, not two
+  - L1220 so the wage index sits inside the lag's window, every month
+  - L1222 ...which under a rising index is BELOW it, not a third above
+  - L1230 fixture: the currency was reformed
+  - L1231 a reform leaves the wage index where it was
+  - L1232 ...and the level it is walking toward
+  - L1233 ...and the price index it walks toward
+  - L1241 ...and two years on, wages still chase the index the city published
+  - L1243 ...the expected month and the chase at a time
+  - L1244 ...inside the lag's window
+  - L1249 fixture: the reformed city saved
+  - L1252 the wage index reloads
+  - L1254 ...and the level it is walking toward
+  - L1256 ...and the price index it is handed
+  - L1270 and a reloaded city's wages chase the index it publishes
+  - L1272 ...the expected month and the chase at a time
+  - L1273 ...inside the lag's window
+- **L1297 every employer pays each job type's wage for the posts filled, the sick included**
+  - L1329 fixture: the city's job types fill unevenly
+  - L1340 (a) every employer's payroll is what the households are paid
+  - L1341 (c) ...and the average-fill figure is not the sectors' payroll on this city
+  - L1353 (a) ...and each sector's payroll is its filled posts at the households' wage
+  - L1368 (b) half the city off sick, fill held: no sector's payroll moves
+  - L1369 ...while every working sector's output falls with it
+  - L1370 ...and the households are paid what they were
+  - L1421 fixture: the builders have less work than crews, and lay some off
+  - L1425 ...offering the share of their posts the work needs over their fill, never fewer than the core crew
+  - L1432 ...each job type's posts at that share, rounded once
+  - L1438 the posts not offered are not in the city's count
+  - L1441 (a) ...and the households are paid what the employers paid, the laid-off posts in nobody's pay
+  - L1454 a month with the work for them hires every crew back
+  - L1458 (a) ...and the households are paid what the employers paid, that month too
 
 ## LandCheck.java - 546 labelled assertions
 
@@ -20104,8 +20067,8 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L563 a nation on a money that is none of the eight (
   - L565 a number that is no nation has no page
 - **L571 5. the vault in eight: the worths add to the vault, the move is the history's**
-  - L576 eight rows, in the eight's order, named and marked as the vault names them
-  - L580 ...each row's code, name and mark the eight's
+  - L576 nine rows (ForeignAccounts.MONEYS): the eight in the eight's order, then gold, named and marked as the vault names them
+  - L580 ...each row's code, name and mark the vault's, and gold's row is the last, XAU
   - L581 the worths add to getReservesUsd() to the bit, and the D$ worth is getReserves()
   - L586 fixture: the vault holds US$, euros and yen now
   - L596 each row holds what the vault holds of the money, in its own units, in US$ and in D$ at the rate
@@ -20115,34 +20078,34 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L600 the shares add to 1
   - L602 a vault of three moneys shows all three, their shares as their worths over the vault's (
   - L612 what the city owes in each is DebtManager's (CD8), in its own units and in US$ (the euro bond:
-  - L613 each row's policy rate is its central bank's
-  - L629 this month's move is the history's units a US$ of last month over this month's, less one (the US$ itself 0)
-  - L630 ...and every one of the seven has one
-  - L632 the month's cross revaluation (
-  - L636 the driver's move against the US$ (
-  - L640 saved after the month
-  - L646 a loaded city shows the same month's move for each money, and holds the same balances
-- **L652 6. a published curve never changes: a curve read before a solve is the same after, and a reader sees only whole curves**
-  - L662 fixture: a good with a curve of several buyers to watch (
-  - L707 the market solved
-  - L709 the curve read before the solves is the same after them: its floor
-  - L714 the years' floors differ (
-  - L715 a thread reading all the while (
-- **L722 8. a good's board: the volumes are the tally's month, the band the curve's at them, the conversion the market's own, the parts the alloca...**
-  - L731 a good with no curve (
-  - L773 each board's volumes are the tally's month (the snapshot's and the live record's agree)
-  - L774 ...its floor and ceiling the curve's at them, the rate and the prices the market's own, the nations the curve's
-  - L775 ...what moves it the curve's own selling, the world's answer and the first sink's freight
-  - L776 ...the parts of a sale or a purchase the allocation's, largest first, adding to what was sold or bought
-  - L785 the board offers every good with a curve once (
-  - L787 ...the sold ones those the books sold abroad, largest first
-  - L789 Game's year of real GDP is the month's times twelve in whole US$, and the nation's page sets that beside its output
-- **L796 7. an Earth city: distances from its own spot, land factors from the land sellers**
-  - L806 fixture: the city stands on the real Earth at Halifax and its ground is sold by nations
-  - L820 each row's distance is the great circle from Halifax's own spot to the nation's node
-  - L821 ...and its land factor and mark are the land sellers' for the month
-  - L824 the host nation's (
-  - L827 ...and a distance of its node from the spot that is not nothing and not the world's width (
+  - L613 each row's policy rate is its central bank's, and gold's, which no bank pays, is no number
+  - L637 this month's move is the history's units a US$ of last month over this month's, less one (the US$ itself 0; gold's the price's, this month's over last month'...
+  - L638 ...and every one of the seven, and gold, has one
+  - L640 the month's cross revaluation (
+  - L644 the driver's move against the US$ (
+  - L648 saved after the month
+  - L654 a loaded city shows the same month's move for each money, and holds the same balances
+- **L660 6. a published curve never changes: a curve read before a solve is the same after, and a reader sees only whole curves**
+  - L670 fixture: a good with a curve of several buyers to watch (
+  - L715 the market solved
+  - L717 the curve read before the solves is the same after them: its floor
+  - L722 the years' floors differ (
+  - L723 a thread reading all the while (
+- **L730 8. a good's board: the volumes are the tally's month, the band the curve's at them, the conversion the market's own, the parts the alloca...**
+  - L739 a good with no curve (
+  - L781 each board's volumes are the tally's month (the snapshot's and the live record's agree)
+  - L782 ...its floor and ceiling the curve's at them, the rate and the prices the market's own, the nations the curve's
+  - L783 ...what moves it the curve's own selling, the world's answer and the first sink's freight
+  - L784 ...the parts of a sale or a purchase the allocation's, largest first, adding to what was sold or bought
+  - L793 the board offers every good with a curve once (
+  - L795 ...the sold ones those the books sold abroad, largest first
+  - L797 Game's year of real GDP is the month's times twelve in whole US$, and the nation's page sets that beside its output
+- **L804 7. an Earth city: distances from its own spot, land factors from the land sellers**
+  - L814 fixture: the city stands on the real Earth at Halifax and its ground is sold by nations
+  - L828 each row's distance is the great circle from Halifax's own spot to the nation's node
+  - L829 ...and its land factor and mark are the land sellers' for the month
+  - L832 the host nation's (
+  - L835 ...and a distance of its node from the spot that is not nothing and not the world's width (
 
 ## PassThroughCheck.java - 58 labelled assertions
 
@@ -20226,7 +20189,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L718 ...and the reading is the struck rate over the D$, less one (
   - L737 every month, the gap the line reads at a month's end is the one the next strike closes PASS_THROUGH of, in logs (off in
 
-## PegAnchorCheck.java - 144 labelled assertions
+## PegAnchorCheck.java - 147 labelled assertions
 
 > The peg's anchor (batch WN4b; ForeignAccounts, THE REGIMES, THE PEG'S ANCHOR): the D$ can be pegged to any of the eight moneys, not
 > only the US$. The peg is kept in the anchor's money (D$ per unit of it); the rate the hold keeps, D$ per US$, is the peg over the anchor's
@@ -20292,110 +20255,113 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L304 a ForeignAccounts never handed rates refuses the euro: the anchor stays the US$
   - L310 fixture: the yen has no rate this month
   - L311 a money with no rate this month is refused
-  - L313 an index outside 0 to 7 is refused
+  - L313 an index outside 0 to 7 is refused, and so is gold's (index
   - L315 ...and so is a code that is none of the eight (moneyIndex() reads -1)
-  - L322 outside a peg (Lean), setPegAnchor(3) keeps the setting and does not move the rate or the regime
-  - L324 ...and under Lean the words are the regime's own
-  - L326 entering the peg pegs at the day's rate in pounds: getPegPerAnchor() is the rate times the pound's price
-  - L327 ...so the rate held is the rate of the day
-  - L328 ...and the words are \"Peg to the pound\"
-  - L330 leaving the peg keeps the anchor
-  - L331 the Peg regime's own words no longer name a money
-- **L339 5. a devaluation in the anchor's money: repeg() is D$ per euro, the held rate is that over the euro's price**
-  - L343 fixture: a euro peg, held
-  - L346 repeg(x) sets the peg per euro to x
-  - L347 ...and the held rate to x over the euro's price
-  - L348 ...a higher x is a higher held rate (a weaker D$)
-  - L351 fixture: the peg held through the month
-  - L352 the next month the rate is the new peg over the euro's price that month
-  - L355 a revaluation lowers the held rate
-  - L360 outside a peg repeg() does nothing
-- **L368 6. the break under a euro peg: a euro peg with no vault breaks for want of one, at the held rate's gap**
-  - L374 fixture: a euro peg with no vault, revalued to 0.8 of itself so the hold must sell dollars it has not got, quiet (no chance of doubt)
-  - L377 the peg broke that month
-  - L378 ...for want of the vault
-  - L379 ...the regime is Float after it
-  - L380 ...and the anchor is still the euro, kept when the regime is left
-  - L383 fixture: the shadow was the weaker side of the held rate (
-  - L385 the rate it lands at is the shadow times exp(OVERSHOOT x the gap against the held rate):
-- **L393 7. the dial ties to the anchor's rate: a bare DebtManager, tied to the euro, to the US$, and not at all**
-  - L407 fixture: the US's rate is 4%, the euro area's 2% and the yen's 0.1%
-  - L409 tied with the euro the anchor, tieMoney() is EUR
-  - L410 ...tieRate() is the euro area's rate
-  - L412 ...a spread of half a point is kept
-  - L413 ...and tiedRate(0) is the euro area's rate plus the spread, inside the dial's bounds
-  - L415 ...which is not the US's rate plus the spread
-  - L417 ...and the decision names the euro's rate: \"
-  - L420 a spread of 100 points is clamped to the dial's ceiling over the euro area's rate
-  - L422 ...and a spread under it to the floor over the euro area's rate
-  - L426 moved to the yen, tieRate() is the yen's rate
-  - L429 tied with the US$ the anchor, tieMoney() is USD
-  - L430 ...tieRate() is worldRate() to the bit
-  - L431 ...tiedRate(0) is the old expression: the US's rate plus the spread, inside the bounds, to the bit
-  - L435 ...and the decision reads as it did: \"
-  - L437 ...a spread of 100 points is clamped over the US's rate
-  - L443 with the autopilot aiming at the currency under a euro peg, tiedRate(gap) is the euro area's rate plus the gap's quarter point
-  - L445 ...and currencyRate(), a band's aim, stays on the US's rate
-  - L449 untied, tieMoney() is null
-  - L450 ...and tieRate() is the US's rate
-  - L453 a manager nobody handed a source is untied, and tieMoney() is null
-  - L454 ...with tieRate() the US's rate
-  - L456 tied with no money source, it is still null and the US's
-  - L457 ...and tieRate() the US's rate
-- **L465 8. the save: slot 148 is the anchor; a restored euro peg plays the same, and a save without the slot reads the US$**
-  - L470 fixture: a euro peg that has dealt for eight months and carries a support (
-  - L472 the array runs to slot 148, the peg's anchor (
-  - L473 slot 148 is the anchor's index, the euro's
-  - L474 slot 147 is still the hold's support
-  - L475 slot 76 is still the peg, now D$ per euro
-  - L479 restored, the anchor is the euro
-  - L480 ...the peg per euro is the saved one
-  - L481 ...and so is the rate held
-  - L482 ...and every slot reads back to the bit
-  - L486 fixture: both held the peg the next month
-  - L487 the next month, with the same rates and trade, the rate is the unsaved twin's
-  - L488 ...the deal
-  - L489 ...the support
-  - L490 ...the gap
-  - L491 ...and the shadow
-  - L495 a save cut to 148 slots, as WN4 wrote it, restores the US$ as the anchor, the peg still held
-  - L500 fixture: that save has no rate for the euro
-  - L501 a save whose slot 148 is the euro but whose euro rate is 0 restores the US$: a money with no rate cannot anchor a peg
-  - L503 fixture: the saved peg is D$ per euro,
-  - L505 ...the fallback keeps the peg: still a peg, on the US$
-  - L506 ...its held rate is the loaded rate, not the euro figure
-  - L507 ...and the peg per US$ is that rate
-  - L509 fixture: that peg held the next month
-  - L510 ...and held the loaded rate, as a US$ peg of that rate does
-  - L515 an anchor outside the eight reads the US$
-  - L518 ...and so does one that is not a number
-  - L520 reset() puts the anchor back on the US$
-  - L522 restoring a shorter save over a euro peg starts from the US$ (restore() resets first)
-- **L537 9. in a city (the full file): a trading town pegged to the euro holds the peg per euro, ties its dial to the euro area and says so**
-  - L546 fixture: the town has played until the eight have rates, on the US$ for its anchor and Lean
-  - L550 fixture: pegged to the euro at the day's cross, the peg per euro the rate times the euro's price
-  - L554 the decision log names the euro: \"
-  - L556 fixture: the dial is on the Inflation aim, so a tied dial is the anchor's rate plus the spread, and the euro area's rate is not the US's
-  - L574 three months on, the peg held (not broken)
-  - L575 each month the rate is the peg per euro over the euro's US$ price
-  - L576 ...the euro's price is the world's rate for it
-  - L577 ...the dial is the euro area's rate plus the spread, which is what tiedRate() gives
-  - L578 ...and tieRate() is the euro area's rate and tieMoney() EUR
-  - L584 a devaluation in the euro's money is logged in it: \"
-  - L588 moving the anchor under a peg re-pegs at the day's cross and says so: \"
-  - L590 ...the held rate did not move on the switch
-  - L593 ...and the next month's rate is the peg per pound over the pound's price
-  - L594 ...with the dial on the pound's rate as the month began with it
-- **L603 10. the review's two low notes: the hold's support is the held rate's log over the shadow in every held month; the dial's gap is read at ...**
-  - L618 fixture: a quiet euro peg on a deep vault held all
-  - L619 fixture: the hold's support took both signs and was never zero for want of work (
-  - L620 note 1: in every held month the support is the log of the held rate over the shadow to 1e-9 (worst
-  - L622 ...and it is as wide as the gap the hold paid for, inside the euro's whole swing (ln(1.06/.94)), the widest being
-  - L625 fixture: still a held peg for the dial's month
-  - L630 note 2: the month's rates handed, the shadow is still the last reprice's
-  - L631 ...and the dial's gap is that shadow over the held rate at the NEW euro: the peg per euro over
-  - L633 ...so a euro that rose a tenth moved the gap's ratio by a tenth
-  - L635 ...and the gap the reprice then measures is against that same held rate, with the shadow the reprice found
+  - L322 fixture: gold has a rate this month, and so has the euro
+  - L323 gold anchors no peg: setPegAnchor(GOLD) is refused even with a rate for it, and the anchor stays the US$
+  - L325 ...and so is the code \"XAU\" (moneyIndex() reads the ninth, which is no anchor)
+  - L332 outside a peg (Lean), setPegAnchor(3) keeps the setting and does not move the rate or the regime
+  - L334 ...and under Lean the words are the regime's own
+  - L336 entering the peg pegs at the day's rate in pounds: getPegPerAnchor() is the rate times the pound's price
+  - L337 ...so the rate held is the rate of the day
+  - L338 ...and the words are \"Peg to the pound\"
+  - L340 leaving the peg keeps the anchor
+  - L341 the Peg regime's own words no longer name a money
+- **L349 5. a devaluation in the anchor's money: repeg() is D$ per euro, the held rate is that over the euro's price**
+  - L353 fixture: a euro peg, held
+  - L356 repeg(x) sets the peg per euro to x
+  - L357 ...and the held rate to x over the euro's price
+  - L358 ...a higher x is a higher held rate (a weaker D$)
+  - L361 fixture: the peg held through the month
+  - L362 the next month the rate is the new peg over the euro's price that month
+  - L365 a revaluation lowers the held rate
+  - L370 outside a peg repeg() does nothing
+- **L378 6. the break under a euro peg: a euro peg with no vault breaks for want of one, at the held rate's gap**
+  - L384 fixture: a euro peg with no vault, revalued to 0.8 of itself so the hold must sell dollars it has not got, quiet (no chance of doubt)
+  - L387 the peg broke that month
+  - L388 ...for want of the vault
+  - L389 ...the regime is Float after it
+  - L390 ...and the anchor is still the euro, kept when the regime is left
+  - L393 fixture: the shadow was the weaker side of the held rate (
+  - L395 the rate it lands at is the shadow times exp(OVERSHOOT x the gap against the held rate):
+- **L403 7. the dial ties to the anchor's rate: a bare DebtManager, tied to the euro, to the US$, and not at all**
+  - L417 fixture: the US's rate is 4%, the euro area's 2% and the yen's 0.1%
+  - L419 tied with the euro the anchor, tieMoney() is EUR
+  - L420 ...tieRate() is the euro area's rate
+  - L422 ...a spread of half a point is kept
+  - L423 ...and tiedRate(0) is the euro area's rate plus the spread, inside the dial's bounds
+  - L425 ...which is not the US's rate plus the spread
+  - L427 ...and the decision names the euro's rate: \"
+  - L430 a spread of 100 points is clamped to the dial's ceiling over the euro area's rate
+  - L432 ...and a spread under it to the floor over the euro area's rate
+  - L436 moved to the yen, tieRate() is the yen's rate
+  - L439 tied with the US$ the anchor, tieMoney() is USD
+  - L440 ...tieRate() is worldRate() to the bit
+  - L441 ...tiedRate(0) is the old expression: the US's rate plus the spread, inside the bounds, to the bit
+  - L445 ...and the decision reads as it did: \"
+  - L447 ...a spread of 100 points is clamped over the US's rate
+  - L453 with the autopilot aiming at the currency under a euro peg, tiedRate(gap) is the euro area's rate plus the gap's quarter point
+  - L455 ...and currencyRate(), a band's aim, stays on the US's rate
+  - L459 untied, tieMoney() is null
+  - L460 ...and tieRate() is the US's rate
+  - L463 a manager nobody handed a source is untied, and tieMoney() is null
+  - L464 ...with tieRate() the US's rate
+  - L466 tied with no money source, it is still null and the US's
+  - L467 ...and tieRate() the US's rate
+- **L475 8. the save: slot 148 is the anchor; a restored euro peg plays the same, and a save without the slot reads the US$**
+  - L480 fixture: a euro peg that has dealt for eight months and carries a support (
+  - L482 the array runs to slot 148, the peg's anchor (WN4b), and gold's three after it (
+  - L483 slot 148 is the anchor's index, the euro's
+  - L484 slot 147 is still the hold's support
+  - L485 slot 76 is still the peg, now D$ per euro
+  - L489 restored, the anchor is the euro
+  - L490 ...the peg per euro is the saved one
+  - L491 ...and so is the rate held
+  - L492 ...and every slot reads back to the bit
+  - L496 fixture: both held the peg the next month
+  - L497 the next month, with the same rates and trade, the rate is the unsaved twin's
+  - L498 ...the deal
+  - L499 ...the support
+  - L500 ...the gap
+  - L501 ...and the shadow
+  - L505 a save cut to 148 slots, as WN4 wrote it, restores the US$ as the anchor, the peg still held
+  - L510 fixture: that save has no rate for the euro
+  - L511 a save whose slot 148 is the euro but whose euro rate is 0 restores the US$: a money with no rate cannot anchor a peg
+  - L513 fixture: the saved peg is D$ per euro,
+  - L515 ...the fallback keeps the peg: still a peg, on the US$
+  - L516 ...its held rate is the loaded rate, not the euro figure
+  - L517 ...and the peg per US$ is that rate
+  - L519 fixture: that peg held the next month
+  - L520 ...and held the loaded rate, as a US$ peg of that rate does
+  - L525 an anchor outside the eight reads the US$
+  - L528 ...and so does one that is not a number
+  - L530 reset() puts the anchor back on the US$
+  - L532 restoring a shorter save over a euro peg starts from the US$ (restore() resets first)
+- **L547 9. in a city (the full file): a trading town pegged to the euro holds the peg per euro, ties its dial to the euro area and says so**
+  - L556 fixture: the town has played until the eight have rates, on the US$ for its anchor and Lean
+  - L560 fixture: pegged to the euro at the day's cross, the peg per euro the rate times the euro's price
+  - L564 the decision log names the euro: \"
+  - L566 fixture: the dial is on the Inflation aim, so a tied dial is the anchor's rate plus the spread, and the euro area's rate is not the US's
+  - L584 three months on, the peg held (not broken)
+  - L585 each month the rate is the peg per euro over the euro's US$ price
+  - L586 ...the euro's price is the world's rate for it
+  - L587 ...the dial is the euro area's rate plus the spread, which is what tiedRate() gives
+  - L588 ...and tieRate() is the euro area's rate and tieMoney() EUR
+  - L594 a devaluation in the euro's money is logged in it: \"
+  - L598 moving the anchor under a peg re-pegs at the day's cross and says so: \"
+  - L600 ...the held rate did not move on the switch
+  - L603 ...and the next month's rate is the peg per pound over the pound's price
+  - L604 ...with the dial on the pound's rate as the month began with it
+- **L613 10. the review's two low notes: the hold's support is the held rate's log over the shadow in every held month; the dial's gap is read at ...**
+  - L628 fixture: a quiet euro peg on a deep vault held all
+  - L629 fixture: the hold's support took both signs and was never zero for want of work (
+  - L630 note 1: in every held month the support is the log of the held rate over the shadow to 1e-9 (worst
+  - L632 ...and it is as wide as the gap the hold paid for, inside the euro's whole swing (ln(1.06/.94)), the widest being
+  - L635 fixture: still a held peg for the dial's month
+  - L640 note 2: the month's rates handed, the shadow is still the last reprice's
+  - L641 ...and the dial's gap is that shadow over the held rate at the NEW euro: the peg per euro over
+  - L643 ...so a euro that rose a tenth moved the gap's ratio by a tenth
+  - L645 ...and the gap the reprice then measures is against that same held rate, with the shadow the reprice found
 
 ## PlanCheck.java - 224 labelled assertions
 
@@ -20956,7 +20922,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L896 a lever the study dates to a month prints it (the unemployment insurance act's month), one it dates to a year prints the year
   - L900 a city whose opening a find has moved is shown its own date, and told history's and the find where the card says \"then\"
 
-## PolicyPreviewCheck.java - 149 labelled assertions
+## PolicyPreviewCheck.java - 104 labelled assertions
 
 > The Policy tab's previews (0.7.36): PolicyPreview and the reads it is made
 > of, held to the month's own books in a played city.
@@ -20972,165 +20938,119 @@ _(this harness does not label its checks through a helper - it prints its findin
 > advice, not a model change, so nothing in the default playtest reaches it:
 > ...
 
-- **L264 1. the copy is every dial, detached: it clamps as the city's does and records nothing**
-  - L274 fixture: the three income bases have parted and an offset of every kind is set
-  - L280 the copy's every dial is the city's: the policy array, slot for slot
-  - L287 ...every sector's three offsets
-  - L288 ...and the wage a pension is struck on
-  - L298 a profit rate past the stop is held at MAX_INCOME_TAX on the copy, as the city's setter holds it
-  - L300 ...a property rate under nothing at nothing, an offset at MAX_OFFSET
-  - L302 moving the copy's dials moved none of the city's
-  - L304 ...and wrote nothing in the city's decision log (
-  - L306 a pension at another rate is that rate of the same wage base, held to MAX_REPLACEMENT
-  - L337 fixture: sectors paid profit tax (
-  - L339 each sector's profit tax is its booked tax - the SectorBooks month and its statement's
-  - L340 ...its sales tax its net remittance (a refund negative)
-  - L341 ...its property tax the month's own charge on its roll as it stands (getPropertyTaxFor());
-  - L349 each band's wage tax is its staffed payroll at its rate
-  - L350 ...and the bands sum to the month's wage tax
-  - L351 the take's profit and sales lines sum to the sectors' and the bank's
-  - L354 fixture: the wage bill carries a contribution and an EI premium
-  - L356 the contribution at the city's rate off the wage bill is the month's
-  - L357 ...the EI premium
-  - L358 ...and the health premium
-  - L359 fixture: the city pays pensions (
-  - L360 the pensions at the city's pension are the month's
-  - L362 the EI bill at the city's benefit rate is the pool's (getBenefitsPaid())
-  - L365 fixture: a pensioner household has something to spend
-  - L367 a pensioner household at the city's pension has what its ledger says (M11 at no move)
-  - L372 the compression at the share the central bank holds is the curve's own, at every term
-  - L375 the ceiling at the dial's months is the ceiling
-  - L377 the floor at today's setting, in today's money, is cashMinimumWage()
-  - L380 the budget under a copy of the city's own policy moves by nothing
-  - L382 ...and THE BUDGET's before is last month's balance
-- **L395 7. a dial at zero previews something: the contribution, the pension, the premium, the benefit (B9)**
-  - L408 fixture: the four dials at zero, and the month collected and paid nothing on them (
-  - L417 the contribution put back previews the wage bill at its rate
-  - L420 ...the pension put back, today's seniors at it
-  - L422 ...the EI premium put back
-  - L423 ...and the benefit put back, the pool at it
-  - L424 ...and a pensioner household would have more than it has
-- **L437 6. applied, the preview is the model: the same dials, the same take, and a month on the bills it struck**
-  - L454 fixture: the bank made a profit to be taxed on, and the pool has claimants
-  - L469 the same dials set on the city read as the copy did, slot for slot
-  - L472 ...and the city's setters wrote the decisions the copy's did not (
-  - L475 the take struck on the copy is the take struck on the city after, on the same books, to the cent
-  - L480 a month on, the EI bill the treasury paid at the top of it is the one benefitsAt() previewed (B11)
-  - L482 ...and the bank's profit tax charged there is the one bankTaxUnder() previewed, at retail's new rate (B5)
-  - L484 ...and each payroll line is struck on the month's own bill at the new dials: the contribution
-  - L486 ...the two premiums
-  - L488 ...and the pensions
-- **L495 3. the budget is last month's balance plus each line's move**
-  - L504 fixture: every tax a point up moves the take (
-  - L505 a tax-only set moves the budget by the take's move, exactly
-  - L508 ...and THE BUDGET after is the balance plus it
-  - L513 a pension five points up moves it down by the pensions' move (
-  - L518 fixture: the clinics bill treatment (
-  - L520 the clinic's fee a founding fee up moves it by the fees at one, at full service on both sides (B13)
-  - L525 an EI premium half a point up moves it by half a point of the wage bill
-  - L527 the city's share of tuition moved alone moves it by the tuition the city would waive
-  - L535 fixture: the drivers bought petrol at the pump last month (
-  - L538 at the city's own dial the duty previewed is the month's, to the bit (none at the default)
-  - L543 a duty of 21.5 cents a litre moves the budget by the litres at it as charged, the expected price level in it
-  - L546 ...and a litre at the pump by exactly the duty
-- **L554 4. the savers' rate, the compression, the ceiling, the floor**
-  - L559 fixture: the city has a bank with depositors
-  - L560 the savers' rate the bank would choose rises with the dial
-  - L562 ...a step of the way from what it pays toward what its funding asks, never past it
-  - L565 at the dial in force the preview's real rate subtracts what savers expect, as the month does
-  - L570 fixture: the central bank has a trailing revenue to cap the advances on
-  - L571 the ceiling at twelve months is twelve months of it
-  - L573 ...held to MAX_ADVANCES_CEILING, and nothing under none
-  - L575 the compression holding nothing is nothing; at FULL_COMPRESSION_SHARE and past it, the whole premium at QE_COMPRESSION
-  - L582 the floor in founding money comes back from its cash figure
-  - L616 every job's target is its own or the floor in today's money, whichever is more - the floor is in the max and nowhere else - and none is under the floor
-  - L623 fixture: the lowest rungs sit under college and up on the ladder, and the staged floor is past the floor in force
-  - L640 fixture: there are people in the lowest rungs, and in college and up
-  - L641 the floor moves the posts filled in the jobs whose wage is under it (
-  - L643 ...their pay a month at the floor in force and at the staged one are the hand sums, and it rises
-  - L645 ...and the city's whole wage bill moves by the same money, no one else's pay moving: billThen - billNow = payThen - payNow
-  - L650 a floor past the dearest job moves every post filled, as PopulationManager.getJobsFilled() counts them
-  - L657 fixture: the floor in force and the one staged under it are both under every target of a job with posts (the cheapest is
-  - L660 a floor moved under every target moves no one, and the wage bill not at all
-  - L664 the city's own payroll at the floor in force is the payroll the city pays
-  - L665 ...and a floor that reaches none of the staff's jobs moves it by nothing
-  - L681 fixture: a floor past the dearest job lifts the teachers' and the nurses' pay (by
-  - L682 ...and the city's own payroll rises by those staff's posts filled times their move, the hand sum through getCategoryPayroll at the two target arrays
-  - L690 fixture: living alone costs something in this city (
-  - L692 the floor's job cover is what a full-time job at it takes home over what living alone costs (
-- **L722 the minimum-wage page (WS1)**
-  - L731 fixture: the floor in force is the default share of the going rate, and no tie or nudge has moved it
-  - L735 against the going rate: the going rate, the floor, the staged floor and the unskilled wage are the market's own, in today's money
-  - L738 ...and each over the going rate (the default floor is
-  - L741 the zones' edges are the market's: under MIN_MULTIPLE the floor never binds, over 1.0 it always does, and the gauge reaches 1.5
-  - L745 the default floor is in the glut zone, and so is the floor staged at it
-  - L769 a floor under NEVER_UNDER changes no wage, in a glut of hands or at par; one over ALWAYS_OVER lifts the unskilled wage in both
-  - L771 ...and one between them lifts the unskilled wage in a glut of hands and not at par: the glut zone
-  - L775 against the average wage: it is the Rankings' wage bill over the posts filled, the floor's and the staged floor's share of it
-  - L778 ...and the low bands' share is the posts filled in the two lowest wage bands over the posts filled
-  - L786 the nations with a minimum-wage-to-average-wage figure are the world file's 33, lowest first: the hand count and the view's list agree
-  - L794 ...each with its id, name and ratio from the file
-  - L795 the lowest is the United States and the highest Costa Rica, and Canada is named too
-  - L804 the middle band runs from the nation at the 10th percentile to the one at the 90th (nearest rank
-  - L810 a full-time floor job: the take-home is the floor less the lowest band's payslip share, and rent, food and fees are the households' own
-  - L813 ...their sum is what living alone costs, what is left is the take-home less it, and the cover is the floor job cover
-  - L826 who is near it: the workers paid the floor and near it are the population's own, by band, and their totals are the sums
-  - L828 ...the posts filled are posts x fill rate summed over the jobs (within a person of getJobsFilled()), and paid + near + everyone else is all of them
-  - L831 the default floor pays nobody, so the words name the unskilled wage and write the money with the screen's writer, not their own
-  - L836 the tie is the market's own, and entering the average wage now would hold the floor's share of it, held to the tie's range
-  - L842 with nothing staged the floor moves no one: no job is marked, nobody lifted, no pay to average, the payroll unmoved
-  - L846 a floor staged under the one in force moves no one either, and its share is its own
-  - L852 fixture: a floor staged at 1.2 of the going rate reads 1.2 of it, in the always zone, with the floor in force still in the glut zone
-  - L874 per job: the posts, the posts filled, the wage and both targets are the model's own, in JobType order
-  - L875 fixture: the floor staged 20% over the going rate lifts some jobs and leaves some over it (
-  - L876 a job is marked moved exactly when its two targets differ
-  - L877 every job under the staged floor is lifted to it, and every job over it is unchanged
-  - L878 the preview is floorMoveAt()'s: the workers lifted are the posts filled in the moved jobs, and their share, their average pay at the two targets and the payr...
-  - L883 ...the payroll the page reads before and after is floorMoveAt()'s two bills, and the move is their difference
-  - L887 fixture: the played city has a job with no posts, and one with posts
-  - L890 a job with no posts reads noPosts with nothing filled, and its words are \"
-  - L894 the joined market: the played city's lowest band is its own market, so there are no joined words and no shared wage
-  - L911 fixture: with the unskilled out of the supply and the spare above too few for their posts (
-  - L914 ...so the words name the diploma holders in the unskilled posts and the one wage both pay, which is the unskilled wage
-  - L932 fixture: applied, the floor is paid to workers in the twin once a month has run (
-  - L934 applied, the words count the workers paid the floor:
-  - L937 ...and staging that floor again moves no one: it is the floor in force, so no job is marked
-  - L950 fixture: with the floor just under the cheapest skilled job's wage, some are paid it and some are a little over it (
-  - L952 ...and paid + near + everyone else is still all of the posts filled
-  - L957 ...the page's shares are each count over the posts filled, and a band's line is its paid and near together
-  - L965 fixture: a floor at twice the average wage reads over it, and entering the average wage would hold its share at the top of the tie's range
-  - L967 a floor over the middle band's top reads high, and the words give the low bands' share of the posts and send the reader to the gauge against unskilled work
-  - L973 fixture: the dial's bottom is under the tie's lowest share of the average wage, which is what entering the average wage would then hold
-  - L975 a floor under the middle band's top reads nothing extra
-  - L982 fixture: a new city has nobody employed
-  - L983 with nobody employed the shares of the average wage and of the posts are NaN, the entering share is the default, and nobody is lifted or averaged
-- **L992 8. the fund's withdrawal: next month's due, and a year on earning nothing**
-  - L998 fixture: a fund of cash alone, three steps a month, its year-end dial at nothing
-  - L1004 at the withdrawal in force the preview's due is next month's
-  - L1017 a year on, earning nothing, is the value x (1 - rate)^12 - what twelve of its withdrawals leave
-- **L1023 5. after a load the take at the city's own policy is the saved month's**
-  - L1033 loaded, the take is the one struck before the save: profit, sales, wage and property
-  - L1036 ...the bank's next bill
-  - L1037 ...the contribution off the wage bill
-  - L1038 ...and the EI bill on the pool
-- **L1043 9. zoning's before and after: staged on a copy, applied, the preview is the model**
-  - L1048 fixture: the city's ground holds forest, and it has no zone and no law
-  - L1051 at the city's own zoning a sector's zone is nothing, and the tax moves by nothing
-  - L1059 the copy is detached: the city holds no zone and keeps no forest, and its decisions are untouched
-  - L1066 applied, the zone holds what the preview said, at the size it said
-  - L1069 ...what that ground would fetch at the going price, and the price given up selling it at the zone's
-  - L1072 ...the forest's three kinds, the wood kept and the wood that may be cut, and the ground free for anyone
-  - L1091 fixture: three diners stand in the zone, so the zone gives relief
-  - L1092 un-zoning previews the property tax rising by the relief, and applied it does
-- **L1109 10. the port dues: last month's tonnes at each kind's due, times the dial (FR4)**
-  - L1128 fixture: a berth stands and tonnes crossed it, the treasury took dues at the default dial, and a kind has a berth to charge on only if one stands
-  - L1136 fixture: the twin ran the same month at the dial 2 and is alike but for it - the same tonnes, the same default due, the same crew quote - and paid dues
-  - L1139 at the city's own dial the dues previewed are the month's, to the bit: Freight's, the treasury's and the accounts'
-  - L1145 at the dial 2 the dues previewed are twice the month's, and the twin that ran the month at 2 paid them, to the cent
-  - L1148 at the dial 0 they are none, and the budget falls by the month's dues
-  - L1150 at 2 the budget rises by them, the dues' move alone, and a set that moves no dial moves it by nothing
-  - L1155 a tonne's handling at the city's dial is the division's quote, to the bit; at 2 it is dearer by the kind's default due, and the twin billed at 2 quotes it
-  - L1164 the copy's dial clamps as the city's: past the top is the top, below none is none, and the city's own dial stays where it was
+- **L263 1. the copy is every dial, detached: it clamps as the city's does and records nothing**
+  - L273 fixture: the three income bases have parted and an offset of every kind is set
+  - L279 the copy's every dial is the city's: the policy array, slot for slot
+  - L286 ...every sector's three offsets
+  - L287 ...and the wage a pension is struck on
+  - L297 a profit rate past the stop is held at MAX_INCOME_TAX on the copy, as the city's setter holds it
+  - L299 ...a property rate under nothing at nothing, an offset at MAX_OFFSET
+  - L301 moving the copy's dials moved none of the city's
+  - L303 ...and wrote nothing in the city's decision log (
+  - L305 a pension at another rate is that rate of the same wage base, held to MAX_REPLACEMENT
+  - L336 fixture: sectors paid profit tax (
+  - L338 each sector's profit tax is its booked tax - the SectorBooks month and its statement's
+  - L339 ...its sales tax its net remittance (a refund negative)
+  - L340 ...its property tax the month's own charge on its roll as it stands (getPropertyTaxFor());
+  - L348 each band's wage tax is its staffed payroll at its rate
+  - L349 ...and the bands sum to the month's wage tax
+  - L350 the take's profit and sales lines sum to the sectors' and the bank's
+  - L353 fixture: the wage bill carries a contribution and an EI premium
+  - L355 the contribution at the city's rate off the wage bill is the month's
+  - L356 ...the EI premium
+  - L357 ...and the health premium
+  - L358 fixture: the city pays pensions (
+  - L359 the pensions at the city's pension are the month's
+  - L361 the EI bill at the city's benefit rate is the pool's (getBenefitsPaid())
+  - L364 fixture: a pensioner household has something to spend
+  - L366 a pensioner household at the city's pension has what its ledger says (M11 at no move)
+  - L371 the compression at the share the central bank holds is the curve's own, at every term
+  - L374 the ceiling at the dial's months is the ceiling
+  - L376 the floor at today's setting, in today's money, is cashMinimumWage()
+  - L379 the budget under a copy of the city's own policy moves by nothing
+  - L381 ...and THE BUDGET's before is last month's balance
+- **L394 7. a dial at zero previews something: the contribution, the pension, the premium, the benefit (B9)**
+  - L407 fixture: the four dials at zero, and the month collected and paid nothing on them (
+  - L416 the contribution put back previews the wage bill at its rate
+  - L419 ...the pension put back, today's seniors at it
+  - L421 ...the EI premium put back
+  - L422 ...and the benefit put back, the pool at it
+  - L423 ...and a pensioner household would have more than it has
+- **L436 6. applied, the preview is the model: the same dials, the same take, and a month on the bills it struck**
+  - L453 fixture: the bank made a profit to be taxed on, and the pool has claimants
+  - L468 the same dials set on the city read as the copy did, slot for slot
+  - L471 ...and the city's setters wrote the decisions the copy's did not (
+  - L474 the take struck on the copy is the take struck on the city after, on the same books, to the cent
+  - L479 a month on, the EI bill the treasury paid at the top of it is the one benefitsAt() previewed (B11)
+  - L481 ...and the bank's profit tax charged there is the one bankTaxUnder() previewed, at retail's new rate (B5)
+  - L483 ...and each payroll line is struck on the month's own bill at the new dials: the contribution
+  - L485 ...the two premiums
+  - L487 ...and the pensions
+- **L494 3. the budget is last month's balance plus each line's move**
+  - L503 fixture: every tax a point up moves the take (
+  - L504 a tax-only set moves the budget by the take's move, exactly
+  - L507 ...and THE BUDGET after is the balance plus it
+  - L512 a pension five points up moves it down by the pensions' move (
+  - L517 fixture: the clinics bill treatment (
+  - L519 the clinic's fee a founding fee up moves it by the fees at one, at full service on both sides (B13)
+  - L524 an EI premium half a point up moves it by half a point of the wage bill
+  - L526 the city's share of tuition moved alone moves it by the tuition the city would waive
+  - L534 fixture: the drivers bought petrol at the pump last month (
+  - L537 at the city's own dial the duty previewed is the month's, to the bit (none at the default)
+  - L542 a duty of 21.5 cents a litre moves the budget by the litres at it as charged, the expected price level in it
+  - L545 ...and a litre at the pump by exactly the duty
+- **L553 4. the savers' rate, the compression, the ceiling, the floor**
+  - L558 fixture: the city has a bank with depositors
+  - L559 the savers' rate the bank would choose rises with the dial
+  - L561 ...a step of the way from what it pays toward what its funding asks, never past it
+  - L564 at the dial in force the preview's real rate subtracts what savers expect, as the month does
+  - L569 fixture: the central bank has a trailing revenue to cap the advances on
+  - L570 the ceiling at twelve months is twelve months of it
+  - L572 ...held to MAX_ADVANCES_CEILING, and nothing under none
+  - L574 the compression holding nothing is nothing; at FULL_COMPRESSION_SHARE and past it, the whole premium at QE_COMPRESSION
+  - L581 the floor in founding money comes back from its cash figure
+  - L615 every job's target is its own or the floor in today's money, whichever is more - the floor is in the max and nowhere else - and none is under the floor
+  - L622 fixture: the lowest rungs sit under college and up on the ladder, and the staged floor is past the floor in force
+  - L639 fixture: there are people in the lowest rungs, and in college and up
+  - L640 the floor moves the posts filled in the jobs whose wage is under it (
+  - L642 ...their pay a month at the floor in force and at the staged one are the hand sums, and it rises
+  - L644 ...and the city's whole wage bill moves by the same money, no one else's pay moving: billThen - billNow = payThen - payNow
+  - L649 a floor past the dearest job moves every post filled, as PopulationManager.getJobsFilled() counts them
+  - L656 fixture: the floor in force and the one staged under it are both under every target of a job with posts (the cheapest is
+  - L659 a floor moved under every target moves no one, and the wage bill not at all
+  - L663 the city's own payroll at the floor in force is the payroll the city pays
+  - L664 ...and a floor that reaches none of the staff's jobs moves it by nothing
+  - L680 fixture: a floor past the dearest job lifts the teachers' and the nurses' pay (by
+  - L681 ...and the city's own payroll rises by those staff's posts filled times their move, the hand sum through getCategoryPayroll at the two target arrays
+  - L689 fixture: living alone costs something in this city (
+  - L691 the floor's job cover is what a full-time job at it takes home over what living alone costs (
+- **L698 8. the fund's withdrawal: next month's due, and a year on earning nothing**
+  - L704 fixture: a fund of cash alone, three steps a month, its year-end dial at nothing
+  - L710 at the withdrawal in force the preview's due is next month's
+  - L723 a year on, earning nothing, is the value x (1 - rate)^12 - what twelve of its withdrawals leave
+- **L729 5. after a load the take at the city's own policy is the saved month's**
+  - L739 loaded, the take is the one struck before the save: profit, sales, wage and property
+  - L742 ...the bank's next bill
+  - L743 ...the contribution off the wage bill
+  - L744 ...and the EI bill on the pool
+- **L749 9. zoning's before and after: staged on a copy, applied, the preview is the model**
+  - L754 fixture: the city's ground holds forest, and it has no zone and no law
+  - L757 at the city's own zoning a sector's zone is nothing, and the tax moves by nothing
+  - L765 the copy is detached: the city holds no zone and keeps no forest, and its decisions are untouched
+  - L772 applied, the zone holds what the preview said, at the size it said
+  - L775 ...what that ground would fetch at the going price, and the price given up selling it at the zone's
+  - L778 ...the forest's three kinds, the wood kept and the wood that may be cut, and the ground free for anyone
+  - L797 fixture: three diners stand in the zone, so the zone gives relief
+  - L798 un-zoning previews the property tax rising by the relief, and applied it does
+- **L815 10. the port dues: last month's tonnes at each kind's due, times the dial (FR4)**
+  - L834 fixture: a berth stands and tonnes crossed it, the treasury took dues at the default dial, and a kind has a berth to charge on only if one stands
+  - L842 fixture: the twin ran the same month at the dial 2 and is alike but for it - the same tonnes, the same default due, the same crew quote - and paid dues
+  - L845 at the city's own dial the dues previewed are the month's, to the bit: Freight's, the treasury's and the accounts'
+  - L851 at the dial 2 the dues previewed are twice the month's, and the twin that ran the month at 2 paid them, to the cent
+  - L854 at the dial 0 they are none, and the budget falls by the month's dues
+  - L856 at 2 the budget rises by them, the dues' move alone, and a set that moves no dial moves it by nothing
+  - L861 a tonne's handling at the city's dial is the division's quote, to the bit; at 2 it is dearer by the kind's default due, and the twin billed at 2 quotes it
+  - L870 the copy's dial clamps as the city's: past the top is the top, below none is none, and the city's own dial stays where it was
 
 ## PopulationCheck.java - 140 labelled assertions
 
@@ -24488,7 +24408,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1302 a run plot over fresh water is a bridge and never a tunnel, whatever relief the plot carries
   - L1308 ...and this tile has no run on steep ground, so it has no viaduct and no tunnel: the bridges are over water alone
 
-## SaveFileCheck.java - 698 labelled assertions
+## SaveFileCheck.java - 699 labelled assertions
 
 > Verifies where saves go and how they are written.
 > 
@@ -25186,50 +25106,51 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L3707 ...and what it saves after both refusals is what it saved before them, key for key
 - **L3792 the world market and the trade by partner cross a save; a format-47 save is refused (WN3)**
   - L3794 fixture: the twelve-nation world file is beside the classes
-  - L3834 the month's record of trade by good is the month's fills and draws, every month of the fixture and every good, to the unit
-  - L3835 ...and it holds what GoodsMarket's own tally does not: draws made before the clearing, which the clearing wipes from the tally (
-  - L3838 fixture: with the file named, the city built a market and solved the year it is in (
-  - L3842 fixture: it tallied its trade by partner, and one year turned into the history (
-  - L3845 fixture: the city traded with the world's nations this month or this year (so the round trip has something to carry):
-  - L3848 saved
-  - L3850 the save writes the market's year, its prices and scales, and the trade by partner
-  - L3855 fixture: the city built the world's moneys with the market, in the city's month
-  - L3860 the save writes the moneys' state (worldMoneys), as many numbers as WorldMoneys.toSaveArray() gives (
-  - L3864 fixture: the city built the policy rates with the moneys, in the city's month
-  - L3868 the save writes the policy rates' state (policyRates), as many numbers as PolicyRates.toSaveArray() gives (
-  - L3870 fixture: the city's price of money is the US's policy rate (
-  - L3872 ...and the foreign accounts' array runs to slot 104, the world's (95-104)
-  - L3875 ...and to slot 148, the vault's (105-141), what it earned (142-146, XR4), the hold's support (147, XR5) and the peg's anchor (148, WN4b):
-  - L3876 fixture: the vault holds euros and pounds beside its dollars on a chosen mix, the eight have moved against each other under it, and the dollars are slot 22
-  - L3880 fixture: the vault earned this month and since founding, each money's rate on its own balance (slots 142-146: the month's US$
-  - L3885 ...and the history writes each finished year's table by partner and good (1)
-  - L3893 ...and the history writes the eight policy rates (policyUSD ... policyCHF) a month each, as many points as the euro's series
-  - L3899 a load builds the market and restores its year
-  - L3902 ...its mill prices and supply scales bit for bit
-  - L3909 ...restored and not solved again: no sweeps in the loaded market (
-  - L3912 a load restores the world's moneys in the month they were saved in, the very same state to the bit
-  - L3914 ...and the D$ with its world as it was: every slot of the foreign accounts, 95-104 among them, to the bit
-  - L3917 a load restores the policy rates in the month they were saved in, to the bit, and hands the city the US's rate as it was
-  - L3920 ...and the history's policy series as they were
-  - L3937 ...and the vault in eight as it was: the eight balances and their rates, the mix, the chosen and the trade shares, the month's cross move and its driver, and...
-  - L3938 ...the trade by partner, the month and the year to date, as it was
-  - L3939 ...the finished years in the history
-  - L3941 ...so the map's feed is last month's trade at once: its month, its lanes and its year to date
-  - L3954 ...and every good's market stands at the band it was struck at (
-  - L3957 a loaded city whose saved year is this year solves nothing: the live city's month and the loaded one's print no solve
-  - L3959 the month after runs the same in both: the moneys, the D$'s rate and its world's line to the bit
-  - L3964 ...and the policy rates and the city's price of money to the bit (the US's rate
-  - L3968 the month after runs the same in both: the cash to the cent and the trade by partner
-  - L3981 a save of format 47 is no longer readable: the floor is past it (WN3: it has no solved world and no trade by partner)
-  - L3994 a save with no world moneys loads, and they are caught up from the first January to the saved month (
-  - L3996 ...with the very cycle and risk-off the saved city had: they are a function of the seed and the month
-  - L4005 a save with no policy rates loads, and they are rebuilt from the first January to the saved month: the very state the saved city had, to the bit (a function ...
-  - L4020 fixture: with no world file the city has no market and no partner record
-  - L4022 ...no moneys either, and its D$ has no world (WN4)
-  - L4024 saved
-  - L4026 ...and its save writes none of the new keys, in the markets or beside them
-  - L4030 ...no policy rates, and its price of money is the constant (XR4)
-  - L4034 ...every market on the goods' literals
+  - L3837 the month's record of trade by good is the month's fills and draws, every month of the fixture and every good, to the unit
+  - L3838 ...and it holds what GoodsMarket's own tally does not: draws made before the clearing, which the clearing wipes from the tally (
+  - L3841 fixture: with the file named, the city built a market and solved the year it is in (
+  - L3845 fixture: it tallied its trade by partner, and one year turned into the history (
+  - L3848 fixture: the city traded with the world's nations this month or this year (so the round trip has something to carry):
+  - L3851 saved
+  - L3853 the save writes the market's year, its prices and scales, and the trade by partner
+  - L3858 fixture: the city built the world's moneys with the market, in the city's month
+  - L3863 the save writes the moneys' state (worldMoneys), as many numbers as WorldMoneys.toSaveArray() gives (
+  - L3867 fixture: the city built the policy rates with the moneys, in the city's month
+  - L3871 the save writes the policy rates' state (policyRates), as many numbers as PolicyRates.toSaveArray() gives (
+  - L3873 fixture: the city's price of money is the US's policy rate (
+  - L3875 ...and the foreign accounts' array runs to slot 104, the world's (95-104)
+  - L3878 ...and to slot 148, the vault's (105-141), what it earned (142-146, XR4), the hold's support (147, XR5), the peg's anchor (148, WN4b) and gold's balance, pri...
+  - L3879 fixture: the vault holds gold, bought by name, at a price, with a share of the chosen mix, and slots 149-151 are its balance, its price and that share (
+  - L3883 fixture: the vault holds euros and pounds beside its dollars on a chosen mix, the eight have moved against each other under it, and the dollars are slot 22
+  - L3887 fixture: the vault earned this month and since founding, each money's rate on its own balance (slots 142-146: the month's US$
+  - L3892 ...and the history writes each finished year's table by partner and good (1)
+  - L3900 ...and the history writes the eight policy rates (policyUSD ... policyCHF) a month each, as many points as the euro's series
+  - L3906 a load builds the market and restores its year
+  - L3909 ...its mill prices and supply scales bit for bit
+  - L3916 ...restored and not solved again: no sweeps in the loaded market (
+  - L3919 a load restores the world's moneys in the month they were saved in, the very same state to the bit
+  - L3921 ...and the D$ with its world as it was: every slot of the foreign accounts, 95-104 among them, to the bit
+  - L3924 a load restores the policy rates in the month they were saved in, to the bit, and hands the city the US's rate as it was
+  - L3927 ...and the history's policy series as they were
+  - L3944 ...and the vault in eight as it was: the eight balances and their rates, gold's balance and price, the mix, the chosen and the trade shares, the month's cros...
+  - L3945 ...the trade by partner, the month and the year to date, as it was
+  - L3946 ...the finished years in the history
+  - L3948 ...so the map's feed is last month's trade at once: its month, its lanes and its year to date
+  - L3961 ...and every good's market stands at the band it was struck at (
+  - L3964 a loaded city whose saved year is this year solves nothing: the live city's month and the loaded one's print no solve
+  - L3966 the month after runs the same in both: the moneys, the D$'s rate and its world's line to the bit
+  - L3971 ...and the policy rates and the city's price of money to the bit (the US's rate
+  - L3975 the month after runs the same in both: the cash to the cent and the trade by partner
+  - L3988 a save of format 47 is no longer readable: the floor is past it (WN3: it has no solved world and no trade by partner)
+  - L4001 a save with no world moneys loads, and they are caught up from the first January to the saved month (
+  - L4003 ...with the very cycle and risk-off the saved city had: they are a function of the seed and the month
+  - L4012 a save with no policy rates loads, and they are rebuilt from the first January to the saved month: the very state the saved city had, to the bit (a function ...
+  - L4027 fixture: with no world file the city has no market and no partner record
+  - L4029 ...no moneys either, and its D$ has no world (WN4)
+  - L4031 saved
+  - L4033 ...and its save writes none of the new keys, in the markets or beside them
+  - L4037 ...no policy rates, and its price of money is the constant (XR4)
+  - L4041 ...every market on the goods' literals
 
 ## SaveSlotCheck.java - 202 labelled assertions
 
@@ -27247,11 +27168,12 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L459 a van is the world's at 68.135: 72 less 5 t of fabricated steel at .665 and 0.6 t of machinery at .9
   - L464 ...so the van plant makes of a van over the parts in it what it did, to the cent
 
-## VaultMoneysCheck.java - 147 labelled assertions
+## VaultMoneysCheck.java - 223 labelled assertions
 
 > The vault in eight moneys (batch WN4, slice C; spec-nations 5.2-5.4): ForeignAccounts keeps a balance in each of the eight the IMF's
 > COFER names, takes a dollar in by the reserve mix and gives one up from the largest holding, revalues across the moneys when the
-> eight move against each other, and carries all of it in its save - while a city that never touches the mix plays as it did.
+> eight move against each other, and carries all of it in its save - while a city that never touches the mix plays as it did. And, from
+> GD2 (spec-gold-money 4.2), gold the ninth: XAU, at the end of the vault's moneys, which only the player's choice puts anything in.
 > 
 > WHY. The vault was one figure, reservesUsd, changed in seven places, each with its own clamp (the defence empties it by one expression,
 > the treasury's sale by another, the land office by a third). Splitting it into eight balances could silently change any of them for the
@@ -27260,163 +27182,243 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > What this has to prove:
 >   1. ALL US$ IS THE OLD VAULT: a ForeignAccounts on the default mix, driven through a treasury buy, a defence sale, an edge buy, a
->      treasury sale, a land payment from the vault, a revaluation and a sale of everything, holds only US$ and its getReservesUsd() is, to
 > ...
 
-- **L124 1. all US$ is the old vault: every site's arithmetic on the US$ balance is what it was on the one field, to the bit**
-  - L126 fixture: the default mix is all US$, the whole of it in the first money
-  - L136 a treasury purchase adds local / rate to the dollars
-  - L142 fixture: the peg holds at 1.6 on balanced trade, the vault having bought the lift to it (
-  - L146 ...and again at the peg's rate
-  - L149 ...a purchase named \"USD\" is the same arithmetic (the founders' dollars are bought so)
-  - L158 fixture: the peg is revalued to 1.3 in a deficit month and the peg's vault sold the lift (sold
-  - L161 a defence sale takes the dollars sold off the dollars
-  - L166 fixture: the month is a surplus and the peg's vault bought the lift (
-  - L168 an edge buy adds the dollars bought
-  - L172 the revaluation is the dollars times the rate's move since the vault was last valued
-  - L179 a partial treasury sale returns the old clamp's figure
-  - L180 ...and takes sold / rate off the dollars
-  - L186 land paid from the vault returns the dollars it took
-  - L187 ...and takes them off the dollars
-  - L188 through all of it the vault held only US$, in the first balance
-  - L193 a land bill bigger than the vault spends all it holds
-  - L194 ...and empties it exactly
-  - L199 a vault bought again holds local / rate
-  - L202 a sale of everything raises what the dollars fetch at the rate
-  - L203 ...and leaves nothing, not even a division's rounding
-  - L208 an empty vault revalued after the currency fell books the old expression's -0.0
-  - L221 rates that move under an all-US$ vault leave the cross move at 0
-  - L222 ...with no money to name as the driver
-  - L223 ...and the revaluation the old expression's, with no cross term
-- **L238 2. a buy goes in by the mix: the world's, the chosen, the trade's; a money with no rate takes nothing**
-  - L250 under WORLD_MIX a purchase of 1,000 puts COFER_SHARES' share of its US$ into each money, in the money's own units
-  - L251 ...so the vault is worth the 1,000 that was bought
-  - L252 ...and the euro holds 20.6 /
-  - L261 under CHOSEN the player's shares:
-  - L262 ...and a money the player gave nothing holds nothing
-  - L271 under MATCH_TRADE the trade shares handed, normalised (3, 2, 1, 0, 4 of 10)
-  - L272 ...Game's hand is read back as shares that sum to 1
-  - L276 MATCH_TRADE with no trade handed buys all US$
-  - L286 a yen with no rate holds nothing, whatever the mix says
-  - L287 ...and the US$ takes the yen's share: its own and the yen's
-  - L288 ...the rest as the mix says
-  - L289 ...so the shares in force still sum to 1
-  - L293 no rate handed to any money (no world file) buys all US$ under any mix
-  - L298 a money whose rate is not above zero this month has none
-  - L303 chosen shares: a negative or NaN share reads 0 and the rest are scaled to 1 (0, 1/2, 0, 1/2)
-  - L306 ...all zero means all US$
-  - L308 ...a five-point step on the euro takes five points from the US$ (all it had)
-  - L311 ...a step on a money keeps the eight at 100% (
-  - L317 the founders' dollars, bought into \"USD\", are dollars even under the world's mix
-  - L318 ...and nothing else
-  - L321 a purchase named EUR puts all of it into euros, in euros
-  - L322 ...under the default mix, and no other money holds anything
-  - L328 a purchase named for a money with no rate this month goes to the US$
-  - L332 ...and one named for a code that is none of the eight goes by the mix
-  - L345 fixture: a surplus month on the peg, the edge bought dollars (
-  - L346 the vault rose by the edge's dollars
-  - L347 ...the euro's share of them went into euros, in euros
-  - L348 ...and the yen's likewise
-- **L365 3. a sale comes from the largest holding, then the next; a named sale from the named money alone**
-  - L367 fixture: 50,000 in euros, 30,000 in pounds and 20,000 in Canadian dollars is a vault of 100,000
-  - L370 a sale of 40,000 sells 40,000
-  - L371 ...taking all 40,000 from the largest, the euros (10,000 left)
-  - L372 ...and nothing from the pounds
-  - L373 ...nor the Canadian dollars
-  - L379 a sale of 60,000 sells 60,000
-  - L380 ...taking all 50,000 of the euros
-  - L381 ...and 10,000 from the next, the pounds (20,000 left)
-  - L382 ...none from the Canadian dollars
-  - L386 a sale of everything returns the whole vault
-  - L387 ...and empties all three balances exactly
-  - L394 a sale named for the Canadian dollars sells what was asked
-  - L395 ...out of the Canadian dollars (5,000 left)
-  - L396 ...and neither the euros, the largest, nor the pounds gave up a unit
-  - L398 asked for more than it holds, the named sale is clamped at what the money holds
-  - L399 ...and empties it exactly
-  - L400 ...with the others still untouched
-  - L402 a sale named for a money it holds none of returns 0
-  - L403 ...and moves nothing
-  - L405 a code that is none of the eight sells from the largest, as the unnamed sale does
-  - L406 ...the euros (40,000 left)
-  - L407 sellableReserves(code) is what that money alone fetches at the rate
-  - L419 holdings of equal worth: the earlier in the eight's order, the euro, gives first
-  - L420 ...and the pound keeps its 10,000
-  - L436 fixture: the peg's vault sold the lift to a revalued peg in a deficit month (
-  - L437 the defence sold from the euros, the largest
-  - L438 ...and the pounds gave up nothing
-  - L444 land paid from the vault takes the dollars asked
-  - L445 ...from the largest, the euros (38,000 left)
-  - L446 ...and not from the pounds
-  - L449 a bill bigger than the whole vault spends all of it
-  - L450 ...and empties every balance exactly
-- **L458 4. the cross revaluation: the eight moving against each other is a revaluation, booked in local money exactly**
-  - L465 fixture: 100 euros at 1.10 US$ the euro, bought with D$220 at the rate of 2
-  - L467 a month with nothing moved books no cross move
-  - L472 the euro moved to 1.00: the cross move is -10
-  - L474 ...the driver is the euro
-  - L475 ...its move against the dollar is -9.1%
-  - L476 ...so the vault is worth 100 US$ now, not 110
-  - L480 a purchase of 50 more euros in the month, at the new rate, leaves the cross move at -10
-  - L481 ...and the vault is worth 150
-  - L485 revalueVault() books reservesUsd x (rate - last rate) + cross x last rate
-  - L486 ...cleared: the cross move is still -10 to read, and booked
-  - L488 a second revaluation in the same month books no cross move again (the move at the rate alone: none)
-  - L501 V1 r1 - (V1 - cross) r0: the whole month's move in local money
-  - L505 a hand in which nothing moved starts a new month at a cross move of 0
-  - L506 ...with no driver
-  - L521 a euro up 10% (1,000 euros) and a yen down 1% (10,000 yen): the cross move is the sum of the two
-  - L523 ...the driver is the one that moved the vault the most in US$ (the
-- **L532 5. MATCH_TRADE maps each partner's money to the eight (the full file)**
-  - L565 fixture: most of the nations named are in the file (
-  - L569 the whole world's trade, weighted, maps to shares that sum to 1
-  - L572 ...the dollar the largest of them (the free floats and the dollar's pegs,
-  - L575 a trade of nothing maps to all zero, which the vault reads as all US$
-  - L580 ...and a purchase under MATCH_TRADE with that buys all US$
-- **L589 6. the save: the eight balances, their rates, the mix and the cross move ride the array**
-  - L606 fixture: a vault in four moneys with a cross move this month and a driver
-  - L612 the array runs to slot 148, the vault's (105-141), what it earned (142-146), the hold's support (147) and the peg's anchor (148, WN4b) (
-  - L613 slot 22 is still the vault's dollars, the total
-  - L614 ...and slot 19 its worth at home
-  - L617 slots 105-112 are the eight balances and 113-120 their US$ per unit (1 for the dollar)
-  - L618 slot 121 is the mix's ordinal
-  - L619 slots 122-129 are the chosen shares and 130-137 the trade's
-  - L621 slot 138 is the month's cross move
-  - L622 slot 139 says it is booked
-  - L623 slot 140 is the driver's index
-  - L624 slot 141 its move against the dollar
-  - L628 restored, every slot reads back to the bit
-  - L632 ...holdings, their US$ worth and which have a rate: the same
-  - L633 ...the vault's dollars
-  - L634 ...the mix, the chosen shares, the trade shares and the shares in force
-  - L636 ...the cross move read for the page
-  - L637 ...and its driver
-  - L648 the next month revalues the same, to the bit
-  - L649 ...with the same cross move
-  - L650 ...the same driver, and the same holdings
-  - L653 ...and a purchase by the chosen mix goes the same way in both
-  - L663 a save between the hand and the revaluation says the move is still to book (slot 139)
-  - L670 ...and the restored vault books it, as the unsaved one does
-  - L676 a save that has no slot 105 on reads its slot 22 into the US$ balance
-  - L677 ...nothing in any other money, the default mix, no cross move
-  - L679 ...and only the dollar has a rate until Game hands the rest
-  - L686 restoring over a vault that held euros leaves none of them, and the default mix
-  - L688 reset() empties all eight, and sets the default mix and the US$ alone rated
-- **L696 7. in a city (the full file): Game hands the eight their rates; a city that never touches the mix holds only US$**
-  - L703 fixture: before its first month the city has no moneys and only the dollar has a rate
-  - L706 fixture: three months on, the city has the world's moneys in its month
-  - L713 the first month handed all eight their rates
-  - L714 ...each the US$ per unit, 1 / the moneys' rate of the month
-  - L715 a city that has not touched the mix holds only US$, with no cross move and no driver
-  - L721 the city's trade by money was handed (the town traded with partners:
-  - L729 a purchase of euros spends the cash it was asked
-  - L730 ...and puts spend / rate US$ of it in euros, in euros
-  - L731 ...the other balances unchanged (still only the US$ and the euros)
-  - L737 a purchase by the world's mix puts something in each of the eight
-  - L740 selling the euros by name raises what they fetch, and no other balance is touched
-  - L741 ...leaving none
-  - L747 fixture: the vault held seven moneys through the month, and they moved against each other
-  - L748 the month's revaluation in local money is the dollars at the rate's move plus the cross move at the last rate
+- **L169 1. all US$ is the old vault: every site's arithmetic on the US$ balance is what it was on the one field, to the bit**
+  - L171 fixture: the default mix is all US$, the whole of it in the first money
+  - L181 a treasury purchase adds local / rate to the dollars
+  - L187 fixture: the peg holds at 1.6 on balanced trade, the vault having bought the lift to it (
+  - L191 ...and again at the peg's rate
+  - L194 ...a purchase named \"USD\" is the same arithmetic (the founders' dollars are bought so)
+  - L203 fixture: the peg is revalued to 1.3 in a deficit month and the peg's vault sold the lift (sold
+  - L206 a defence sale takes the dollars sold off the dollars
+  - L211 fixture: the month is a surplus and the peg's vault bought the lift (
+  - L213 an edge buy adds the dollars bought
+  - L217 the revaluation is the dollars times the rate's move since the vault was last valued
+  - L224 a partial treasury sale returns the old clamp's figure
+  - L225 ...and takes sold / rate off the dollars
+  - L231 land paid from the vault returns the dollars it took
+  - L232 ...and takes them off the dollars
+  - L233 through all of it the vault held only US$, in the first balance
+  - L238 a land bill bigger than the vault spends all it holds
+  - L239 ...and empties it exactly
+  - L244 a vault bought again holds local / rate
+  - L247 a sale of everything raises what the dollars fetch at the rate
+  - L248 ...and leaves nothing, not even a division's rounding
+  - L253 an empty vault revalued after the currency fell books the old expression's -0.0
+  - L266 rates that move under an all-US$ vault leave the cross move at 0
+  - L267 ...with no money to name as the driver
+  - L268 ...and the revaluation the old expression's, with no cross term
+- **L283 2. a buy goes in by the mix: the world's, the chosen, the trade's; a money with no rate takes nothing**
+  - L295 under WORLD_MIX a purchase of 1,000 puts COFER_SHARES' share of its US$ into each money, in the money's own units
+  - L296 ...so the vault is worth the 1,000 that was bought
+  - L297 ...and the euro holds 20.6 /
+  - L306 under CHOSEN the player's shares:
+  - L307 ...and a money the player gave nothing holds nothing
+  - L316 under MATCH_TRADE the trade shares handed, normalised (3, 2, 1, 0, 4 of 10)
+  - L317 ...Game's hand is read back as shares that sum to 1
+  - L321 MATCH_TRADE with no trade handed buys all US$
+  - L331 a yen with no rate holds nothing, whatever the mix says
+  - L332 ...and the US$ takes the yen's share: its own and the yen's
+  - L333 ...the rest as the mix says
+  - L334 ...so the shares in force still sum to 1
+  - L338 no rate handed to any money (no world file) buys all US$ under any mix
+  - L343 a money whose rate is not above zero this month has none
+  - L348 chosen shares: a negative or NaN share reads 0 and the rest are scaled to 1 (0, 1/2, 0, 1/2)
+  - L351 ...all zero means all US$
+  - L353 ...a five-point step on the euro takes five points from the US$ (all it had)
+  - L356 ...a step on a money keeps the eight at 100% (
+  - L362 the founders' dollars, bought into \"USD\", are dollars even under the world's mix
+  - L363 ...and nothing else
+  - L366 a purchase named EUR puts all of it into euros, in euros
+  - L367 ...under the default mix, and no other money holds anything
+  - L373 a purchase named for a money with no rate this month goes to the US$
+  - L377 ...and one named for a code that is none of the eight goes by the mix
+  - L390 fixture: a surplus month on the peg, the edge bought dollars (
+  - L391 the vault rose by the edge's dollars
+  - L392 ...the euro's share of them went into euros, in euros
+  - L393 ...and the yen's likewise
+- **L410 3. a sale comes from the largest holding, then the next; a named sale from the named money alone**
+  - L412 fixture: 50,000 in euros, 30,000 in pounds and 20,000 in Canadian dollars is a vault of 100,000
+  - L415 a sale of 40,000 sells 40,000
+  - L416 ...taking all 40,000 from the largest, the euros (10,000 left)
+  - L417 ...and nothing from the pounds
+  - L418 ...nor the Canadian dollars
+  - L424 a sale of 60,000 sells 60,000
+  - L425 ...taking all 50,000 of the euros
+  - L426 ...and 10,000 from the next, the pounds (20,000 left)
+  - L427 ...none from the Canadian dollars
+  - L431 a sale of everything returns the whole vault
+  - L432 ...and empties all three balances exactly
+  - L439 a sale named for the Canadian dollars sells what was asked
+  - L440 ...out of the Canadian dollars (5,000 left)
+  - L441 ...and neither the euros, the largest, nor the pounds gave up a unit
+  - L443 asked for more than it holds, the named sale is clamped at what the money holds
+  - L444 ...and empties it exactly
+  - L445 ...with the others still untouched
+  - L447 a sale named for a money it holds none of returns 0
+  - L448 ...and moves nothing
+  - L450 a code that is none of the eight sells from the largest, as the unnamed sale does
+  - L451 ...the euros (40,000 left)
+  - L452 sellableReserves(code) is what that money alone fetches at the rate
+  - L464 holdings of equal worth: the earlier in the eight's order, the euro, gives first
+  - L465 ...and the pound keeps its 10,000
+  - L481 fixture: the peg's vault sold the lift to a revalued peg in a deficit month (
+  - L482 the defence sold from the euros, the largest
+  - L483 ...and the pounds gave up nothing
+  - L489 land paid from the vault takes the dollars asked
+  - L490 ...from the largest, the euros (38,000 left)
+  - L491 ...and not from the pounds
+  - L494 a bill bigger than the whole vault spends all of it
+  - L495 ...and empties every balance exactly
+- **L503 4. the cross revaluation: the eight moving against each other is a revaluation, booked in local money exactly**
+  - L510 fixture: 100 euros at 1.10 US$ the euro, bought with D$220 at the rate of 2
+  - L512 a month with nothing moved books no cross move
+  - L517 the euro moved to 1.00: the cross move is -10
+  - L519 ...the driver is the euro
+  - L520 ...its move against the dollar is -9.1%
+  - L521 ...so the vault is worth 100 US$ now, not 110
+  - L525 a purchase of 50 more euros in the month, at the new rate, leaves the cross move at -10
+  - L526 ...and the vault is worth 150
+  - L530 revalueVault() books reservesUsd x (rate - last rate) + cross x last rate
+  - L531 ...cleared: the cross move is still -10 to read, and booked
+  - L533 a second revaluation in the same month books no cross move again (the move at the rate alone: none)
+  - L546 V1 r1 - (V1 - cross) r0: the whole month's move in local money
+  - L550 a hand in which nothing moved starts a new month at a cross move of 0
+  - L551 ...with no driver
+  - L566 a euro up 10% (1,000 euros) and a yen down 1% (10,000 yen): the cross move is the sum of the two
+  - L568 ...the driver is the one that moved the vault the most in US$ (the
+- **L577 5. MATCH_TRADE maps each partner's money to the eight (the full file)**
+  - L610 fixture: most of the nations named are in the file (
+  - L614 the whole world's trade, weighted, maps to shares that sum to 1
+  - L617 ...the dollar the largest of them (the free floats and the dollar's pegs,
+  - L620 a trade of nothing maps to all zero, which the vault reads as all US$
+  - L625 ...and a purchase under MATCH_TRADE with that buys all US$
+- **L634 6. the save: the eight balances, their rates, the mix and the cross move ride the array**
+  - L651 fixture: a vault in four moneys with a cross move this month and a driver
+  - L657 the array runs to slot 148, the vault's (105-141), what it earned (142-146), the hold's support (147) and the peg's anchor (148, WN4b) (
+  - L658 slot 22 is still the vault's dollars, the total
+  - L659 ...and slot 19 its worth at home
+  - L662 slots 105-112 are the eight balances and 113-120 their US$ per unit (1 for the dollar)
+  - L663 slot 121 is the mix's ordinal
+  - L664 slots 122-129 are the chosen shares and 130-137 the trade's
+  - L666 slot 138 is the month's cross move
+  - L667 slot 139 says it is booked
+  - L668 slot 140 is the driver's index
+  - L669 slot 141 its move against the dollar
+  - L673 restored, every slot reads back to the bit
+  - L677 ...holdings, their US$ worth and which have a rate: the same
+  - L678 ...the vault's dollars
+  - L679 ...the mix, the chosen shares, the trade shares and the shares in force
+  - L681 ...the cross move read for the page
+  - L682 ...and its driver
+  - L693 the next month revalues the same, to the bit
+  - L694 ...with the same cross move
+  - L695 ...the same driver, and the same holdings
+  - L698 ...and a purchase by the chosen mix goes the same way in both
+  - L708 a save between the hand and the revaluation says the move is still to book (slot 139)
+  - L715 ...and the restored vault books it, as the unsaved one does
+  - L721 a save that has no slot 105 on reads its slot 22 into the US$ balance
+  - L722 ...nothing in any other money, the default mix, no cross move
+  - L724 ...and only the dollar has a rate until Game hands the rest
+  - L731 restoring over a vault that held euros leaves none of them, and the default mix
+  - L733 reset() empties all eight, and sets the default mix and the US$ alone rated
+- **L741 7. in a city (the full file): Game hands the eight their rates; a city that never touches the mix holds only US$**
+  - L748 fixture: before its first month the city has no moneys and only the dollar has a rate
+  - L751 fixture: three months on, the city has the world's moneys in its month
+  - L758 the first month handed all eight their rates
+  - L759 ...each the US$ per unit, 1 / the moneys' rate of the month
+  - L760 a city that has not touched the mix holds only US$, with no cross move and no driver
+  - L766 the city's trade by money was handed (the town traded with partners:
+  - L774 a purchase of euros spends the cash it was asked
+  - L775 ...and puts spend / rate US$ of it in euros, in euros
+  - L776 ...the other balances unchanged (still only the US$ and the euros; no gold)
+  - L782 a purchase by the world's mix puts something in each of the eight, and nothing in gold, which no COFER mix holds
+  - L785 selling the euros by name raises what they fetch, and no other balance is touched
+  - L786 ...leaving none
+  - L792 fixture: the vault held seven moneys through the month, and they moved against each other
+  - L793 the month's revaluation in local money is the dollars at the rate's move plus the cross move at the last rate
+- **L804 8. gold, the ninth: a purchase into \"XAU\" holds its US$ over the price; the world's mix and the trade's put nothing in it; a chosen sha...**
+  - L806 fixture: the vault keeps
+  - L810 ...with a name, a plural and a mark of its own (\"XAU \", as the franc's is \"CHF \"), and COFER's shares still the eight's
+  - L815 fixture: gold has a rate, its price an ounce, and the vault holds none
+  - L818 a purchase of 1,000 into \"XAU\" holds 1,000 over the price, in ounces
+  - L819 ...worth, at the price, the 1,000 it cost: getHoldingUsd is the ounces times the price
+  - L820 ...and getReservesUsd includes it: the 1,000 in dollars and the 1,000 in gold
+  - L821 ...and nothing else was bought: the dollars are what they were and the euro holds none
+  - L825 under the default mix (ALL_USD) a purchase is dollars alone: gold, with a rate, holds nothing
+  - L831 under WORLD_MIX a purchase puts nothing in gold, though gold has a rate (COFER counts no gold)
+  - L832 ...the eight take the whole 1,000
+  - L838 under MATCH_TRADE (the eight's trade shares, as Game hands them: no nation trades in gold) a purchase puts nothing in gold
+  - L840 ...the eight take the whole 1,000
+  - L850 under CHOSEN a 30% share of gold puts 30% of a purchase in gold: 300 over the price, in ounces
+  - L851 ...the dollars their 60% and the euros their 10%, in euros
+  - L853 ...the chosen shares, gold's among them, sum to 1
+  - L855 a five-point step on gold moves its share to 35%
+  - L856 ...the others give the points in proportion, so the shares still sum to 1
+  - L859 fixture: gold was never handed a price (an array of the eight hands none): no rate, no price
+  - L861 a purchase into \"XAU\" with no gold price this month goes to the US$
+  - L862 ...and gold holds nothing
+  - L868 a gold price that is no number takes gold's rate away, so a chosen share of it buys nothing in gold
+  - L869 ...the dollars take gold's share with their own (60% and 30%)
+- **L877 9. gold earns nothing: a rate at every index, gold's included, leaves its balance as it was, and the yield is struck on the others**
+  - L887 a finite rate (6%) handed at every index, gold's too, leaves gold's balance exactly as it was
+  - L888 ...while the dollars earned a twelfth of it
+  - L889 ...and the euros theirs, in euros
+  - L890 the month's interest is the dollars' and the euros' alone: 2 x 1,000 x 6% / 12
+  - L891 the yield is struck on the earning balances, gold left out: the 6% they earned, not the 4% of all three
+  - L892 gold is never the money that earned most
+  - L898 a vault of gold alone, at a rate of 6% at every index, holds the ounces it held
+  - L899 ...it earned nothing: no interest, no driver, no yield
+  - L903 ...and a rate of -50% at every index takes none of it either
+- **L911 10. gold is revalued as the others are: a new price moves the cross revaluation by ounces x the change; a named sale of it comes from gol...**
+  - L919 a new gold price handed (the statute's 1900 par to Proclamation 2072's) moves the cross revaluation by ounces x (new - old), the euro unmoved
+  - L922 ...gold moved most, so the driver's code is \"XAU\" and its index gold's
+  - L923 ...its move against the US$ is the price's own, new over old less one (a rise is +)
+  - L924 ...and the vault is worth the gold at the new price and the euros at theirs
+  - L934 gold up 0.1% and the euro down 10%: the cross move is both moves, summed
+  - L936 ...and the driver is the euro, which moved the more in US$: gold is the driver only when it is the money that moved most
+  - L944 a named sale of half of gold's worth raises that
+  - L945 ...from gold alone: half its ounces go
+  - L946 ...the dollars and the euros untouched
+  - L947 a named sale of more than gold holds raises what it held: the other half
+  - L948 ...clamped at what gold holds, leaving none
+  - L949 ...with the dollars and the euros still untouched
+  - L950 a named sale of gold when the vault holds none raises nothing
+  - L956 an unnamed sale takes from the largest holding by worth, gold included: 2,000 off gold's 5,000
+  - L957 ...and none from the dollars
+- **L965 11. the save with gold: slots 149-151 are its balance, its price and its chosen share; a save without them holds no gold; gold anchors no...**
+  - L979 fixture: a vault in four moneys, gold among them, at a price that has moved, with a chosen mix of the eight and none of it in gold
+  - L987 an array cut to
+  - L992 ...and the eight's balances and rates as they were
+  - L993 ...the chosen shares as they were, to the bit
+  - L995 ...and the next month's hand gives it a gold rate, with still no gold held
+  - L1000 the array runs to slot 151, gold's three after the peg's anchor in 148 (
+  - L1001 slot 149 is gold's balance, in thousands of ounces
+  - L1002 slot 150 is gold's price, US$ an ounce
+  - L1003 slot 151 is gold's chosen share
+  - L1004 ...which is a share of 30%
+  - L1007 restored, every slot reads back to the bit
+  - L1008 ...gold's balance, price and chosen share the same to the bit, and the rate there
+  - L1010 ...the vault's worth, gold's among it
+  - L1011 ...and the shares in force, gold's 30% among them
+  - L1013 the next month's gold price revalues both the same, to the bit
+  - L1019 a saved gold balance with no price to value it at reads empty, and has no rate, as the eight's do
+  - L1023 setPegAnchor(GOLD) is refused, gold though it has a rate: the anchor stays the US$
+  - L1025 ...while the euro, with a rate, can still anchor one
+  - L1030 a saved slot 148 of
+- **L1039 12. gold in a city (the full file): Game hands the vault gold's price at the month the moneys stand in; a default city holds none; the de...**
+  - L1046 fixture: before its first month the city has no world moneys, so gold has no rate and no move
+  - L1048 the city's gold price is the nations' GoldPrice, and a month before the calendar's first has none
+  - L1062 fixture: the moneys stood in the game's month (index
+  - L1063 after each month the vault has a gold rate
+  - L1064 ...which is new GoldPrice(nations).usdPerOunce(that month), to the bit (US$
+  - L1065 ...and Game's move for gold is that price over last month's, less one
+  - L1066 a default city (ALL_USD) holds no gold through its months
+  - L1067 the debt offers no paper in \"XAU\": the city's paper is written in the eight
+  - L1071 a purchase of gold by name spends the cash it was asked
+  - L1072 ...and puts spend / rate / price in ounces in the vault
+  - L1073 ...and no other balance beyond the US$ (the city holds US$ and gold)
 
 ## WageLadderCheck.java - 63 labelled assertions
 

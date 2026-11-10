@@ -61,8 +61,8 @@ public class PegAnchorCheck {
     /** The cross rates the sections hand: US$ per unit of the US$, euro, yen, pound, yuan, Canadian and Australian dollar and franc (VaultMoneysCheck's). */
     static final double[] R = {1, 1.10, 0.0070, 1.27, 0.14, 0.73, 0.65, 1.12};
 
-    /** The length of the foreign accounts' array with the peg's anchor in slot 148 (WN4b). */
-    static final int SLOTS = 149;
+    /** The length of the foreign accounts' array: the peg's anchor in slot 148 (WN4b), then gold's balance, price and chosen share in 149-151 (GD2). */
+    static final int SLOTS = 152;
 
     static void assertTrue(String label, boolean ok) {
         if (!ok) fails++;
@@ -102,7 +102,7 @@ public class PegAnchorCheck {
 
     /** The eight's rates in month m, every one moving (a sine each, out of step with the others). */
     static double[] moving(int m) {
-        double[] r = new double[ForeignAccounts.MONEYS];
+        double[] r = new double[R.length];   // the eight: gold is not handed here
         r[0] = 1;
         for (int k = 1; k < r.length; k++) r[k] = R[k] * (1 + .06 * Math.sin(1.3 * m + k));
         return r;
@@ -309,10 +309,20 @@ public class PegAnchorCheck {
         partial.setPegAnchor(2);
         assertTrue("fixture: the yen has no rate this month", !partial.hasRate(2) && partial.hasRate(1));
         assertTrue("a money with no rate this month is refused", partial.getPegAnchor() == 0);
-        for (int k : new int[] {-1, ForeignAccounts.MONEYS, 99}) partial.setPegAnchor(k);
-        assertTrue("an index outside 0 to 7 is refused", partial.getPegAnchor() == 0);
+        for (int k : new int[] {-1, ForeignAccounts.GOLD, ForeignAccounts.MONEYS, 99}) partial.setPegAnchor(k);
+        assertTrue("an index outside 0 to 7 is refused, and so is gold's (index " + ForeignAccounts.GOLD + ")", partial.getPegAnchor() == 0);
         partial.setPegAnchor(ForeignAccounts.moneyIndex("XXX"));
         assertTrue("...and so is a code that is none of the eight (moneyIndex() reads -1)", partial.getPegAnchor() == 0 && ForeignAccounts.moneyIndex("XXX") == -1);
+        // Gold with a rate this month is refused all the same: it is not one of the eight, and anchors no peg (GD2).
+        double[] goldRated = Arrays.copyOf(R, ForeignAccounts.MONEYS);
+        goldRated[ForeignAccounts.GOLD] = GoldPrice.PAR_1900;
+        ForeignAccounts withGold = CurrencyRegimeCheck.book(TRADE, TRADE, DEEP, 0, LEAN);
+        withGold.setMoneyRates(goldRated);
+        withGold.setPegAnchor(ForeignAccounts.GOLD);
+        assertTrue("fixture: gold has a rate this month, and so has the euro", withGold.hasRate(ForeignAccounts.GOLD) && withGold.hasRate(1));
+        assertTrue("gold anchors no peg: setPegAnchor(GOLD) is refused even with a rate for it, and the anchor stays the US$", withGold.getPegAnchor() == 0);
+        withGold.setPegAnchor(ForeignAccounts.moneyIndex("XAU"));
+        assertTrue("...and so is the code \"XAU\" (moneyIndex() reads the ninth, which is no anchor)", withGold.getPegAnchor() == 0 && ForeignAccounts.moneyIndex("XAU") == ForeignAccounts.GOLD);
 
         // Outside a peg.
         ForeignAccounts lean = CurrencyRegimeCheck.book(TRADE, TRADE, DEEP, 0, LEAN);
@@ -469,7 +479,7 @@ public class PegAnchorCheck {
         double[] saved = fx.toSaveArray();
         assertTrue("fixture: a euro peg that has dealt for eight months and carries a support (" + String.format("%.4f", fx.getHoldFelt()) + "), held",
                 fx.getRegime() == PEG && fx.getPegAnchor() == 1 && fx.getHoldFelt() != 0 && fx.getDefenceUsdLifetime() > 0);
-        assertTrue("the array runs to slot 148, the peg's anchor (" + saved.length + " slots)", saved.length == SLOTS);
+        assertTrue("the array runs to slot 148, the peg's anchor (WN4b), and gold's three after it (" + saved.length + " slots)", saved.length == SLOTS);
         same("slot 148 is the anchor's index, the euro's", saved[148], 1);
         same("slot 147 is still the hold's support", saved[147], fx.getHoldFelt());
         same("slot 76 is still the peg, now D$ per euro", saved[76], fx.getPegPerAnchor());
