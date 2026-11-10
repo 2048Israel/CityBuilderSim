@@ -308,7 +308,12 @@ public final class PolicyPreview {
         return out;
     }
 
-    /** The floor's own move at a staged real floor: see FloorMove. The jobs whose target at it parts from their target at the floor in force by over 1e-9 (relative) are the ones it moves. */
+    /** Whether a job's target at a staged floor (`then`) parts from its target at the floor in force (`now`) by over 1e-9, relative: the one rule floorMoveAt() counts a job as moved by, and FloorView marks it by (WS1). */
+    static boolean floorMoves(double now, double then) {
+        return Math.abs(then - now) > 1e-9 * Math.max(Math.abs(then), Math.abs(now));
+    }
+
+    /** The floor's own move at a staged real floor: see FloorMove. The jobs whose target at it parts from their target at the floor in force (floorMoves()) are the ones it moves. */
     public static FloorMove floorMoveAt(Game g, double floor) {
         double[] now = targetsAt(g, g.getLabourMarket().getMinimumWage());
         double[] then = targetsAt(g, floor);
@@ -319,7 +324,7 @@ public final class PolicyPreview {
             double filled = posts[i] * fill[i];
             billNow += filled * now[i];
             billThen += filled * then[i];
-            if (Math.abs(then[i] - now[i]) > 1e-9 * Math.max(Math.abs(then[i]), Math.abs(now[i]))) {
+            if (floorMoves(now[i], then[i])) {
                 workers += filled;
                 payNow += filled * now[i];
                 payThen += filled * then[i];
