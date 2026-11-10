@@ -7,7 +7,8 @@ import java.util.Arrays;
 /**
  * The vault in eight moneys (batch WN4, slice C; spec-nations 5.2-5.4): ForeignAccounts keeps a balance in each of the eight the IMF's
  * COFER names, takes a dollar in by the reserve mix and gives one up from the largest holding, revalues across the moneys when the
- * eight move against each other, and carries all of it in its save - while a city that never touches the mix plays as it did.
+ * eight move against each other, and carries all of it in its save - while a city that never touches the mix plays as it did. And, from
+ * GD2 (spec-gold-money 4.2), gold the ninth: XAU, at the end of the vault's moneys, which only the player's choice puts anything in.
  *
  * WHY. The vault was one figure, reservesUsd, changed in seven places, each with its own clamp (the defence empties it by one expression,
  * the treasury's sale by another, the land office by a third). Splitting it into eight balances could silently change any of them for the
@@ -34,6 +35,19 @@ import java.util.Arrays;
  *   7. IN A CITY (the full file only): the first month hands the eight their rates (US$ per unit is 1 / the moneys' rate) and a city that
  *      never touches the mix holds only US$ with no cross move; a purchase of euros and one by the world's mix put balances where they
  *      say; and the month's revaluation in local money is the vault's dollars at the rate's move plus the cross move at the last rate.
+ *   8. GOLD, THE NINTH (GD2): a purchase into "XAU" at a handed price holds its US$ over the price, getHoldingUsd is that times the price and
+ *      getReservesUsd includes it; WORLD_MIX (COFER counts no gold) and MATCH_TRADE (no nation trades in it) put nothing in it, nor does the
+ *      default mix; CHOSEN with a gold share puts that share in it; with no gold price this month a purchase into "XAU" goes to the US$.
+ *   9. GOLD EARNS NOTHING: earnVaultInterest with a finite rate at every index, gold's included, leaves its balance as it was, and the
+ *      yield is struck on the balances that earned, gold left out.
+ *  10. GOLD IS REVALUED: a new price handed moves getLastVaultCrossUsd() by ounces x (new - old), and the driver is "XAU" when gold moved
+ *      most (the euro when it moved more); a named sale of gold comes from gold alone and clamps at what gold holds; an unnamed sale
+ *      takes the largest holding, gold when it is.
+ *  11. THE SAVE, WITH GOLD: restore(toSaveArray()) gives back gold's balance, price and chosen share to the bit (slots 149-151); an array
+ *      cut to 149 (a save from before GD2) loads with no gold and no gold rate, the eight's balances, rates and chosen shares as they
+ *      were; gold cannot anchor a peg (setPegAnchor(GOLD) is refused; a saved slot 148 of 8 reads the US$).
+ *  12. GOLD IN A CITY (the full file only): after a month the vault's gold price is GoldPrice's for the month the moneys stand in, with a
+ *      rate; a default city holds no gold through its months; the debt offers no paper in "XAU"; a named purchase of gold holds ounces.
  *
  * Every fixture causes its condition: a settled currency on a peg that the hold has to sell for (the peg revalued under the rate it
  * stands at, so the lift is a sale: the defence sells) or buy for (devalued, or a surplus: the edge buys), holdings built by named
@@ -49,8 +63,12 @@ public class VaultMoneysCheck {
     /** The cross rates the sections hand: US$ per unit of the US$, euro, yen, pound, yuan, Canadian and Australian dollar and franc. */
     static final double[] R = {1, 1.10, 0.0070, 1.27, 0.14, 0.73, 0.65, 1.12};
 
-    /** The length of the foreign accounts' array: slots 0 to 141 and, after them, what the vault earned (142-146, XR4; InterestAbroadCheck's section 7 asserts them), the hold's support (147, XR5; CurrencyRegimeCheck 10) and the peg's anchor (148, WN4b; PegAnchorCheck 8). */
-    static final int SLOTS = 149;
+    /** The length of the foreign accounts' array: slots 0 to 141 and, after them, what the vault earned (142-146, XR4; InterestAbroadCheck's section 7 asserts them), the hold's support (147, XR5; CurrencyRegimeCheck 10), the peg's anchor (148, WN4b; PegAnchorCheck 8) and gold's balance, price and chosen share (149-151, GD2; section 11). */
+    static final int SLOTS = 152;
+
+    /** Gold's index in the vault (ForeignAccounts.GOLD), and the two prices the gold sections hand it, US$ an ounce: the 1900 statute's par and Proclamation 2072's (GoldPrice). */
+    static final int GOLD = ForeignAccounts.GOLD;
+    static final double OLD_PRICE = GoldPrice.PAR_1900, NEW_PRICE = GoldPrice.PAR_1934;
 
     static final ForeignAccounts.Mix ALL_USD = ForeignAccounts.Mix.ALL_USD, MATCH_TRADE = ForeignAccounts.Mix.MATCH_TRADE,
             WORLD_MIX = ForeignAccounts.Mix.WORLD_MIX, CHOSEN = ForeignAccounts.Mix.CHOSEN;
@@ -76,7 +94,7 @@ public class VaultMoneysCheck {
 
     static boolean sameArray(double[] a, double[] b) { return a != null && b != null && Arrays.equals(a, b); }
 
-    /** What the vault holds beyond the US$, in the eight's own units, added up: 0 only if it holds nothing but dollars. */
+    /** What the vault holds beyond the US$, in each money's own units, added up (gold's too): 0 only if it holds nothing but dollars. */
     static double beyondTheDollar(ForeignAccounts fx) {
         double sum = 0;
         for (int k = 1; k < ForeignAccounts.MONEYS; k++) sum += fx.getHolding(k);
@@ -88,6 +106,28 @@ public class VaultMoneysCheck {
         double sum = 0;
         for (double v : ForeignAccounts.COFER_SHARES) sum += v;
         return sum;
+    }
+
+    /** The shares of the default mix: all in the US$, the vault's nine long. */
+    static double[] allUsd() {
+        double[] w = new double[ForeignAccounts.MONEYS];
+        w[0] = 1;
+        return w;
+    }
+
+    /** The cross rates R with gold's price an ounce as the ninth entry. */
+    static double[] withGold(double usdAnOunce) {
+        double[] r = Arrays.copyOf(R, ForeignAccounts.MONEYS);
+        r[GOLD] = usdAnOunce;
+        return r;
+    }
+
+    /** An empty vault, a D$ a US$, handed the eight's rates and gold at the 1900 price. */
+    static ForeignAccounts ratedWithGold() {
+        ForeignAccounts fx = new ForeignAccounts();
+        fx.pinRate(1.0);
+        fx.setMoneyRates(withGold(OLD_PRICE));
+        return fx;
     }
 
     /** A settled currency on a peg at its own rate, no vault, no seed (so no doubt can break it): the fixture a month's deficit sells from and a month's surplus buys into. */
@@ -111,6 +151,11 @@ public class VaultMoneysCheck {
         theMapping();
         theSave();
         inACity();
+        goldTheNinth();
+        goldEarnsNothing();
+        goldIsRevalued();
+        theSaveWithGold();
+        goldInACity();
         out.printf("%nVaultMoneysCheck took %.1f s%n", (System.nanoTime() - start) / 1e9);
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -124,7 +169,7 @@ public class VaultMoneysCheck {
         out.println("--- 1. all US$ is the old vault: every site's arithmetic on the US$ balance is what it was on the one field, to the bit ---");
         ForeignAccounts fx = peg();
         assertTrue("fixture: the default mix is all US$, the whole of it in the first money", fx.getReserveMix() == ALL_USD
-                && Arrays.equals(fx.mixShares(), new double[] {1, 0, 0, 0, 0, 0, 0, 0}));
+                && Arrays.equals(fx.mixShares(), allUsd()));
         double old = 0;   // the old field, driven by the old source's expressions at each site
         double lastRate = ForeignAccounts.OPENING_RATE;
 
@@ -243,7 +288,7 @@ public class VaultMoneysCheck {
         world.setReserveMix(WORLD_MIX);
         world.buyReserves(usd);
         boolean each = true;
-        for (int k = 0; k < ForeignAccounts.MONEYS; k++) {
+        for (int k = 0; k < ForeignAccounts.COFER_SHARES.length; k++) {
             double want = usd * ForeignAccounts.COFER_SHARES[k] / total / R[k];
             each &= Math.abs(world.getHolding(k) - want) <= 1e-12 * want;
         }
@@ -257,7 +302,7 @@ public class VaultMoneysCheck {
         chose.setChosenShares(mine);
         chose.buyReserves(usd);
         each = true;
-        for (int k = 0; k < ForeignAccounts.MONEYS; k++) each &= Math.abs(chose.getHolding(k) - usd * mine[k] / R[k]) <= 1e-12 * Math.max(1, usd * mine[k] / R[k]);
+        for (int k = 0; k < mine.length; k++) each &= Math.abs(chose.getHolding(k) - usd * mine[k] / R[k]) <= 1e-12 * Math.max(1, usd * mine[k] / R[k]);
         assertTrue("under CHOSEN the player's shares: " + Arrays.toString(mine), each);
         assertTrue("...and a money the player gave nothing holds nothing", chose.getHolding(2) == 0 && chose.getHolding(5) == 0 && chose.getHolding(7) == 0);
 
@@ -267,7 +312,7 @@ public class VaultMoneysCheck {
         trade.setReserveMix(MATCH_TRADE);
         trade.buyReserves(usd);
         each = true;
-        for (int k = 0; k < ForeignAccounts.MONEYS; k++) each &= Math.abs(trade.getHolding(k) - usd * handed[k] / 10 / R[k]) <= 1e-12 * Math.max(1, usd * handed[k] / 10 / R[k]);
+        for (int k = 0; k < handed.length; k++) each &= Math.abs(trade.getHolding(k) - usd * handed[k] / 10 / R[k]) <= 1e-12 * Math.max(1, usd * handed[k] / 10 / R[k]);
         assertTrue("under MATCH_TRADE the trade shares handed, normalised (3, 2, 1, 0, 4 of 10)", each);
         assertTrue("...Game's hand is read back as shares that sum to 1", Math.abs(Arrays.stream(trade.getTradeShares()).sum() - 1) < 1e-12);
         ForeignAccounts none = rated();
@@ -301,9 +346,9 @@ public class VaultMoneysCheck {
         ForeignAccounts clean = rated();
         clean.setChosenShares(new double[] {-1, 2, Double.NaN, 2, 0, 0, 0, 0});
         assertTrue("chosen shares: a negative or NaN share reads 0 and the rest are scaled to 1 (0, 1/2, 0, 1/2)",
-                Arrays.equals(clean.getChosenShares(), new double[] {0, .5, 0, .5, 0, 0, 0, 0}));
+                Arrays.equals(clean.getChosenShares(), new double[] {0, .5, 0, .5, 0, 0, 0, 0, 0}));
         clean.setChosenShares(new double[8]);
-        assertTrue("...all zero means all US$", Arrays.equals(clean.getChosenShares(), new double[] {1, 0, 0, 0, 0, 0, 0, 0}));
+        assertTrue("...all zero means all US$", Arrays.equals(clean.getChosenShares(), allUsd()));
         clean.shiftChosen(1, .05);
         assertTrue("...a five-point step on the euro takes five points from the US$ (all it had)", Math.abs(clean.getChosenShares()[1] - .05) < 1e-15
                 && Math.abs(clean.getChosenShares()[0] - .95) < 1e-15);
@@ -613,7 +658,7 @@ public class VaultMoneysCheck {
         same("slot 22 is still the vault's dollars, the total", saved[22], a.getReservesUsd());
         same("...and slot 19 its worth at home", saved[19], a.getReserves());
         boolean eight = true;
-        for (int k = 0; k < ForeignAccounts.MONEYS; k++) eight &= saved[105 + k] == a.getHolding(k) && saved[113 + k] == (k == 0 ? 1 : a.getMoneyUsd(k) > 0 ? a.getMoneyUsd(k) : 0);
+        for (int k = 0; k < WorldMoneys.EIGHT.size(); k++) eight &= saved[105 + k] == a.getHolding(k) && saved[113 + k] == (k == 0 ? 1 : a.getMoneyUsd(k) > 0 ? a.getMoneyUsd(k) : 0);
         assertTrue("slots 105-112 are the eight balances and 113-120 their US$ per unit (1 for the dollar)", eight);
         same("slot 121 is the mix's ordinal", saved[121], CHOSEN.ordinal());
         assertTrue("slots 122-129 are the chosen shares and 130-137 the trade's", Math.abs(saved[122] - .4) < 1e-12 && Math.abs(saved[123] - .3) < 1e-12
@@ -675,7 +720,7 @@ public class VaultMoneysCheck {
         e.restore(older);
         same("a save that has no slot 105 on reads its slot 22 into the US$ balance", e.getHolding(0), saved[22]);
         assertTrue("...nothing in any other money, the default mix, no cross move", beyondTheDollar(e) == 0 && e.getReserveMix() == ALL_USD
-                && e.getLastVaultCrossUsd() == 0 && Arrays.equals(e.mixShares(), new double[] {1, 0, 0, 0, 0, 0, 0, 0}));
+                && e.getLastVaultCrossUsd() == 0 && Arrays.equals(e.mixShares(), allUsd()));
         assertTrue("...and only the dollar has a rate until Game hands the rest", e.hasRate(0) && !e.hasRate(1));
 
         // A restore starts from nothing: a vault that held euros comes back without them.
@@ -706,7 +751,7 @@ public class VaultMoneysCheck {
         assertTrue("fixture: three months on, the city has the world's moneys in its month", moneys != null && moneys.month() == WorldMoneys.monthIndex(g.getMonth()));
         if (moneys == null) return;
         boolean rated = true, cross = true;
-        for (int k = 0; k < ForeignAccounts.MONEYS; k++) {
+        for (int k = 0; k < WorldMoneys.EIGHT.size(); k++) {
             rated &= fx.hasRate(k);
             cross &= Math.abs(fx.getMoneyUsd(k) * moneys.rate(WorldMoneys.EIGHT.get(k)) - 1) < 1e-12;
         }
@@ -728,13 +773,13 @@ public class VaultMoneysCheck {
         double got = g.buyForeignCurrency(spend, "EUR");
         near("a purchase of euros spends the cash it was asked", got, spend, 1e-12);
         near("...and puts spend / rate US$ of it in euros, in euros", fx.getHolding(1) - eurBefore, spend / fx.getRate() / fx.getMoneyUsd(1), 1e-9);
-        assertTrue("...the other balances unchanged (still only the US$ and the euros)", fx.getHolding(0) > 0 && fx.getHolding(2) + fx.getHolding(3) + fx.getHolding(4) + fx.getHolding(5)
-                + fx.getHolding(6) + fx.getHolding(7) == 0);
+        assertTrue("...the other balances unchanged (still only the US$ and the euros; no gold)", fx.getHolding(0) > 0 && fx.getHolding(2) + fx.getHolding(3) + fx.getHolding(4) + fx.getHolding(5)
+                + fx.getHolding(6) + fx.getHolding(7) + fx.getHolding(GOLD) == 0);
         fx.setReserveMix(WORLD_MIX);
         g.buyForeignCurrency(spend);
         boolean everyOne = true;
-        for (int k = 0; k < ForeignAccounts.MONEYS; k++) everyOne &= fx.getHolding(k) > 0;
-        assertTrue("a purchase by the world's mix puts something in each of the eight", everyOne);
+        for (int k = 0; k < WorldMoneys.EIGHT.size(); k++) everyOne &= fx.getHolding(k) > 0;
+        assertTrue("a purchase by the world's mix puts something in each of the eight, and nothing in gold, which no COFER mix holds", everyOne && fx.getHolding(GOLD) == 0);
         double usdSold = fx.getHoldingUsd(1);
         double sold = g.sellForeignCurrency(1e12, "EUR");
         near("selling the euros by name raises what they fetch, and no other balance is touched", sold, usdSold * fx.getRate(), 1e-9);
@@ -749,5 +794,282 @@ public class VaultMoneysCheck {
                 v1 * (fx.getRate() - rateBefore) + crossMove * rateBefore, 1e-9);
         out.printf("   the cross move %+,.3f, driven by %s (%+.2f%% against the dollar); the revaluation in local money %+,.3f%n", crossMove,
                 fx.getLastVaultCrossDriver().code(), 100 * fx.getLastVaultCrossDriver().move(), fx.getLastVaultRevaluation());
+    }
+
+    /* =====================================================================
+       8. GOLD, THE NINTH
+       ===================================================================== */
+
+    static void goldTheNinth() {
+        out.println("--- 8. gold, the ninth: a purchase into \"XAU\" holds its US$ over the price; the world's mix and the trade's put nothing in it; a chosen share does ---");
+        final double usd = 1_000, price = OLD_PRICE;
+        assertTrue("fixture: the vault keeps " + ForeignAccounts.MONEYS + " moneys, the eight and gold last, gold's code \"XAU\" (ISO 4217's troy ounce)",
+                ForeignAccounts.MONEYS == WorldMoneys.EIGHT.size() + 1 && GOLD == WorldMoneys.EIGHT.size() && ForeignAccounts.CODES.size() == ForeignAccounts.MONEYS
+                        && ForeignAccounts.CODES.subList(0, GOLD).equals(WorldMoneys.EIGHT) && "XAU".equals(ForeignAccounts.codeOf(GOLD)) && ForeignAccounts.moneyIndex("XAU") == GOLD
+                        && ForeignAccounts.codeOf(-1) == null && ForeignAccounts.codeOf(ForeignAccounts.MONEYS) == null && ForeignAccounts.moneyIndex(null) == -1);
+        assertTrue("...with a name, a plural and a mark of its own (\"XAU \", as the franc's is \"CHF \"), and COFER's shares still the eight's",
+                ForeignAccounts.MONEY_NAME.length == ForeignAccounts.MONEYS && ForeignAccounts.MONEY_PLURAL.length == ForeignAccounts.MONEYS && ForeignAccounts.MONEY_MARK.length == ForeignAccounts.MONEYS
+                        && "XAU ".equals(ForeignAccounts.MONEY_MARK[GOLD]) && ForeignAccounts.COFER_SHARES.length == WorldMoneys.EIGHT.size());
+
+        ForeignAccounts fx = ratedWithGold();
+        assertTrue("fixture: gold has a rate, its price an ounce, and the vault holds none", fx.hasRate(GOLD) && fx.getMoneyUsd(GOLD) == price && fx.getHolding(GOLD) == 0);
+        fx.buyReserves(usd, "USD");
+        fx.buyReserves(usd, "XAU");
+        near("a purchase of 1,000 into \"XAU\" holds 1,000 over the price, in ounces", fx.getHolding(GOLD), usd / price, 1e-12);
+        near("...worth, at the price, the 1,000 it cost: getHoldingUsd is the ounces times the price", fx.getHoldingUsd(GOLD), fx.getHolding(GOLD) * price, 1e-12);
+        near("...and getReservesUsd includes it: the 1,000 in dollars and the 1,000 in gold", fx.getReservesUsd(), 2 * usd, 1e-12);
+        assertTrue("...and nothing else was bought: the dollars are what they were and the euro holds none", fx.getHolding(0) == usd && beyondTheDollar(fx) == fx.getHolding(GOLD));
+
+        ForeignAccounts dollars = ratedWithGold();
+        dollars.buyReserves(usd);
+        assertTrue("under the default mix (ALL_USD) a purchase is dollars alone: gold, with a rate, holds nothing", dollars.getReserveMix() == ALL_USD && dollars.hasRate(GOLD)
+                && dollars.getHolding(0) == usd && beyondTheDollar(dollars) == 0 && Arrays.equals(dollars.mixShares(), allUsd()));
+
+        ForeignAccounts world = ratedWithGold();
+        world.setReserveMix(WORLD_MIX);
+        world.buyReserves(usd);
+        assertTrue("under WORLD_MIX a purchase puts nothing in gold, though gold has a rate (COFER counts no gold)", world.hasRate(GOLD) && world.getHolding(GOLD) == 0 && world.mixShares()[GOLD] == 0);
+        near("...the eight take the whole 1,000", world.getReservesUsd(), usd, 1e-12);
+
+        ForeignAccounts trade = ratedWithGold();
+        trade.setTradeShares(new double[] {3, 2, 1, 0, 4, 0, 0, 0});
+        trade.setReserveMix(MATCH_TRADE);
+        trade.buyReserves(usd);
+        assertTrue("under MATCH_TRADE (the eight's trade shares, as Game hands them: no nation trades in gold) a purchase puts nothing in gold", trade.hasRate(GOLD) && trade.getHolding(GOLD) == 0
+                && trade.mixShares()[GOLD] == 0);
+        near("...the eight take the whole 1,000", trade.getReservesUsd(), usd, 1e-12);
+
+        ForeignAccounts chose = ratedWithGold();
+        double[] mine = new double[ForeignAccounts.MONEYS];
+        mine[0] = .60;
+        mine[1] = .10;
+        mine[GOLD] = .30;
+        chose.setReserveMix(CHOSEN);
+        chose.setChosenShares(mine);
+        chose.buyReserves(usd);
+        near("under CHOSEN a 30% share of gold puts 30% of a purchase in gold: 300 over the price, in ounces", chose.getHolding(GOLD), usd * mine[GOLD] / price, 1e-12);
+        assertTrue("...the dollars their 60% and the euros their 10%, in euros",
+                Math.abs(chose.getHolding(0) - usd * mine[0]) <= 1e-12 * usd && Math.abs(chose.getHolding(1) - usd * mine[1] / R[1]) <= 1e-12 * usd);
+        near("...the chosen shares, gold's among them, sum to 1", Arrays.stream(chose.getChosenShares()).sum(), 1, 1e-12);
+        chose.shiftChosen(GOLD, .05);
+        near("a five-point step on gold moves its share to 35%", chose.getChosenShares()[GOLD], mine[GOLD] + .05, 1e-12);
+        near("...the others give the points in proportion, so the shares still sum to 1", Arrays.stream(chose.getChosenShares()).sum(), 1, 1e-12);
+
+        ForeignAccounts never = rated();
+        assertTrue("fixture: gold was never handed a price (an array of the eight hands none): no rate, no price", !never.hasRate(GOLD) && Double.isNaN(never.getMoneyUsd(GOLD)));
+        never.buyReserves(usd, "XAU");
+        same("a purchase into \"XAU\" with no gold price this month goes to the US$", never.getHolding(0), usd);
+        assertTrue("...and gold holds nothing", never.getHolding(GOLD) == 0);
+        ForeignAccounts lapsed = ratedWithGold();
+        lapsed.setMoneyRates(withGold(Double.NaN));
+        lapsed.setReserveMix(CHOSEN);
+        lapsed.setChosenShares(mine);
+        lapsed.buyReserves(usd);
+        assertTrue("a gold price that is no number takes gold's rate away, so a chosen share of it buys nothing in gold", !lapsed.hasRate(GOLD) && lapsed.getHolding(GOLD) == 0);
+        near("...the dollars take gold's share with their own (60% and 30%)", lapsed.getHolding(0), usd * (mine[0] + mine[GOLD]), 1e-12);
+    }
+
+    /* =====================================================================
+       9. GOLD EARNS NOTHING
+       ===================================================================== */
+
+    static void goldEarnsNothing() {
+        out.println("--- 9. gold earns nothing: a rate at every index, gold's included, leaves its balance as it was, and the yield is struck on the others ---");
+        final double usd = 1_000, annual = .06;
+        ForeignAccounts fx = ratedWithGold();
+        fx.buyReserves(usd, "USD");
+        fx.buyReserves(usd, "EUR");
+        fx.buyReserves(usd, "XAU");
+        double ounces = fx.getHolding(GOLD), dollars = fx.getHolding(0), euros = fx.getHolding(1);
+        double[] everyone = new double[ForeignAccounts.MONEYS];
+        Arrays.fill(everyone, annual);
+        fx.earnVaultInterest(everyone);
+        same("a finite rate (6%) handed at every index, gold's too, leaves gold's balance exactly as it was", fx.getHolding(GOLD), ounces);
+        near("...while the dollars earned a twelfth of it", fx.getHolding(0), dollars * (1 + annual / 12), 1e-12);
+        near("...and the euros theirs, in euros", fx.getHolding(1), euros * (1 + annual / 12), 1e-12);
+        near("the month's interest is the dollars' and the euros' alone: 2 x 1,000 x 6% / 12", fx.getVaultInterestUsd(), 2 * usd * annual / 12, 1e-12);
+        near("the yield is struck on the earning balances, gold left out: the 6% they earned, not the 4% of all three", fx.getVaultYield(), annual, 1e-12);
+        assertTrue("gold is never the money that earned most", fx.getVaultInterestDriver() != GOLD);
+
+        ForeignAccounts alone = ratedWithGold();
+        alone.buyReserves(usd, "XAU");
+        double held = alone.getHolding(GOLD);
+        alone.earnVaultInterest(everyone);
+        same("a vault of gold alone, at a rate of 6% at every index, holds the ounces it held", alone.getHolding(GOLD), held);
+        assertTrue("...it earned nothing: no interest, no driver, no yield", alone.getVaultInterestUsd() == 0 && alone.getVaultInterestDriver() == -1 && alone.getVaultYield() == 0);
+        double[] below = new double[ForeignAccounts.MONEYS];
+        Arrays.fill(below, -.5);
+        alone.earnVaultInterest(below);
+        same("...and a rate of -50% at every index takes none of it either", alone.getHolding(GOLD), held);
+    }
+
+    /* =====================================================================
+       10. GOLD IS REVALUED
+       ===================================================================== */
+
+    static void goldIsRevalued() {
+        out.println("--- 10. gold is revalued as the others are: a new price moves the cross revaluation by ounces x the change; a named sale of it comes from gold alone ---");
+        final double usd = 1_000;
+        ForeignAccounts fx = ratedWithGold();
+        fx.buyReserves(usd, "XAU");
+        fx.buyReserves(usd, "EUR");
+        fx.revalueVault();
+        double ounces = fx.getHolding(GOLD);
+        fx.setMoneyRates(withGold(NEW_PRICE));
+        near("a new gold price handed (the statute's 1900 par to Proclamation 2072's) moves the cross revaluation by ounces x (new - old), the euro unmoved",
+                fx.getLastVaultCrossUsd(), ounces * (NEW_PRICE - OLD_PRICE), 1e-12);
+        ForeignAccounts.CrossDriver driver = fx.getLastVaultCrossDriver();
+        assertTrue("...gold moved most, so the driver's code is \"XAU\" and its index gold's", driver != null && "XAU".equals(driver.code()) && driver.index() == GOLD);
+        near("...its move against the US$ is the price's own, new over old less one (a rise is +)", driver == null ? 0 : driver.move(), NEW_PRICE / OLD_PRICE - 1, 1e-12);
+        near("...and the vault is worth the gold at the new price and the euros at theirs", fx.getReservesUsd(), ounces * NEW_PRICE + fx.getHolding(1) * R[1], 1e-12);
+
+        ForeignAccounts euroFirst = ratedWithGold();
+        euroFirst.buyReserves(usd, "XAU");
+        euroFirst.buyReserves(usd, "EUR");
+        euroFirst.revalueVault();
+        double euros = euroFirst.getHolding(1), gold = euroFirst.getHolding(GOLD);
+        double[] mixed = withGold(OLD_PRICE * 1.001);
+        mixed[1] = R[1] * .9;
+        euroFirst.setMoneyRates(mixed);
+        near("gold up 0.1% and the euro down 10%: the cross move is both moves, summed", euroFirst.getLastVaultCrossUsd(), gold * (mixed[GOLD] - OLD_PRICE) + euros * (mixed[1] - R[1]), 1e-12);
+        driver = euroFirst.getLastVaultCrossDriver();
+        assertTrue("...and the driver is the euro, which moved the more in US$: gold is the driver only when it is the money that moved most", driver != null && "EUR".equals(driver.code()) && driver.index() == 1);
+
+        ForeignAccounts sale = ratedWithGold();
+        sale.buyReserves(usd, "USD");
+        sale.buyReserves(usd, "EUR");
+        sale.buyReserves(usd, "XAU");
+        double dollarsHeld = sale.getHolding(0), eurosHeld = sale.getHolding(1), goldHeld = sale.getHolding(GOLD);
+        double half = .5 * sale.getHoldingUsd(GOLD) * sale.getRate();
+        near("a named sale of half of gold's worth raises that", sale.sellReserves(half, "XAU"), half, 1e-12);
+        near("...from gold alone: half its ounces go", sale.getHolding(GOLD), goldHeld / 2, 1e-12);
+        assertTrue("...the dollars and the euros untouched", sale.getHolding(0) == dollarsHeld && sale.getHolding(1) == eurosHeld);
+        near("a named sale of more than gold holds raises what it held: the other half", sale.sellReserves(1e12, "XAU"), half, 1e-9);
+        same("...clamped at what gold holds, leaving none", sale.getHolding(GOLD), 0);
+        assertTrue("...with the dollars and the euros still untouched", sale.getHolding(0) == dollarsHeld && sale.getHolding(1) == eurosHeld);
+        same("a named sale of gold when the vault holds none raises nothing", sale.sellReserves(usd, "XAU"), 0);
+
+        ForeignAccounts largest = ratedWithGold();
+        largest.buyReserves(usd, "USD");
+        largest.buyReserves(5 * usd, "XAU");
+        largest.sellReserves(2 * usd * largest.getRate());
+        near("an unnamed sale takes from the largest holding by worth, gold included: 2,000 off gold's 5,000", largest.getHoldingUsd(GOLD), 3 * usd, 1e-12);
+        same("...and none from the dollars", largest.getHolding(0), usd);
+    }
+
+    /* =====================================================================
+       11. THE SAVE, WITH GOLD
+       ===================================================================== */
+
+    static void theSaveWithGold() {
+        out.println("--- 11. the save with gold: slots 149-151 are its balance, its price and its chosen share; a save without them holds no gold; gold anchors no peg ---");
+        ForeignAccounts a = ratedWithGold();
+        a.buyReserves(10_000, "USD");
+        a.buyReserves(8_000, "EUR");
+        a.buyReserves(6_000, "GBP");
+        a.buyReserves(5_000, "XAU");
+        a.revalueVault();
+        a.setReserveMix(CHOSEN);
+        a.setChosenShares(new double[] {.4, .3, 0, .3, 0, 0, 0, 0});
+        double[] month2 = withGold(NEW_PRICE);
+        month2[1] = 1.04;
+        a.setMoneyRates(month2);
+        a.pinRate(1.2);
+        a.revalueVault();
+        assertTrue("fixture: a vault in four moneys, gold among them, at a price that has moved, with a chosen mix of the eight and none of it in gold",
+                a.getHolding(GOLD) > 0 && a.getMoneyUsd(GOLD) == NEW_PRICE && a.getLastVaultCrossDriver() != null && a.getChosenShares()[GOLD] == 0);
+
+        // A save from before GD2: the array cut where it ended (slot 148, the peg's anchor).
+        double[] full = a.toSaveArray();
+        double[] chosenWas = a.getChosenShares();
+        ForeignAccounts old = new ForeignAccounts();
+        old.restore(Arrays.copyOf(full, SLOTS - 3));
+        assertTrue("an array cut to " + (SLOTS - 3) + " slots, as it was before gold, loads with no gold, no gold rate and a chosen share of 0",
+                old.getHolding(GOLD) == 0 && !old.hasRate(GOLD) && Double.isNaN(old.getMoneyUsd(GOLD)) && old.getChosenShares()[GOLD] == 0);
+        boolean eight = true;
+        for (int k = 0; k < WorldMoneys.EIGHT.size(); k++)
+            eight &= Double.compare(old.getHolding(k), a.getHolding(k)) == 0 && old.hasRate(k) == a.hasRate(k) && Double.compare(old.getMoneyUsd(k), a.getMoneyUsd(k)) == 0;
+        assertTrue("...and the eight's balances and rates as they were", eight);
+        assertTrue("...the chosen shares as they were, to the bit", Arrays.equals(old.getChosenShares(), chosenWas));
+        old.setMoneyRates(month2);
+        assertTrue("...and the next month's hand gives it a gold rate, with still no gold held", old.hasRate(GOLD) && old.getMoneyUsd(GOLD) == NEW_PRICE && old.getHolding(GOLD) == 0);
+
+        // The array with gold.
+        a.setChosenShares(new double[] {.3, .2, 0, .2, 0, 0, 0, 0, .3});
+        double[] saved = a.toSaveArray();
+        assertTrue("the array runs to slot 151, gold's three after the peg's anchor in 148 (" + saved.length + " slots)", saved.length == SLOTS);
+        same("slot 149 is gold's balance, in thousands of ounces", saved[149], a.getHolding(GOLD));
+        same("slot 150 is gold's price, US$ an ounce", saved[150], NEW_PRICE);
+        same("slot 151 is gold's chosen share", saved[151], a.getChosenShares()[GOLD]);
+        assertTrue("...which is a share of 30%", Math.abs(saved[151] - .3) < 1e-12);
+        ForeignAccounts b = new ForeignAccounts();
+        b.restore(saved);
+        assertTrue("restored, every slot reads back to the bit", sameArray(b.toSaveArray(), saved));
+        assertTrue("...gold's balance, price and chosen share the same to the bit, and the rate there", Double.compare(b.getHolding(GOLD), a.getHolding(GOLD)) == 0
+                && Double.compare(b.getMoneyUsd(GOLD), a.getMoneyUsd(GOLD)) == 0 && Double.compare(b.getChosenShares()[GOLD], a.getChosenShares()[GOLD]) == 0 && b.hasRate(GOLD));
+        same("...the vault's worth, gold's among it", b.getReservesUsd(), a.getReservesUsd());
+        assertTrue("...and the shares in force, gold's 30% among them", sameArray(b.mixShares(), a.mixShares()) && b.mixShares()[GOLD] > 0);
+        for (ForeignAccounts fx : new ForeignAccounts[] {a, b}) fx.setMoneyRates(withGold(OLD_PRICE));
+        same("the next month's gold price revalues both the same, to the bit", b.getLastVaultCrossUsd(), a.getLastVaultCrossUsd());
+
+        double[] unpriced = saved.clone();
+        unpriced[150] = 0;
+        ForeignAccounts empty = new ForeignAccounts();
+        empty.restore(unpriced);
+        assertTrue("a saved gold balance with no price to value it at reads empty, and has no rate, as the eight's do", empty.getHolding(GOLD) == 0 && !empty.hasRate(GOLD));
+
+        // Gold anchors no peg.
+        a.setPegAnchor(GOLD);
+        assertTrue("setPegAnchor(GOLD) is refused, gold though it has a rate: the anchor stays the US$", a.hasRate(GOLD) && a.getPegAnchor() == 0);
+        a.setPegAnchor(1);
+        assertTrue("...while the euro, with a rate, can still anchor one", a.getPegAnchor() == 1);
+        double[] goldAnchor = saved.clone();
+        goldAnchor[148] = GOLD;
+        ForeignAccounts g148 = new ForeignAccounts();
+        g148.restore(goldAnchor);
+        assertTrue("a saved slot 148 of " + GOLD + ", gold's index, reads the US$: the anchor is one of the eight, though gold's price and balance load", g148.getPegAnchor() == 0
+                && g148.hasRate(GOLD) && Double.compare(g148.getHolding(GOLD), a.getHolding(GOLD)) == 0);
+    }
+
+    /* =====================================================================
+       12. GOLD IN A CITY
+       ===================================================================== */
+
+    static void goldInACity() {
+        out.println("--- 12. gold in a city (the full file): Game hands the vault gold's price at the month the moneys stand in; a default city holds none; the debt writes no paper in it ---");
+        if (WorldData.locate() == null) {
+            out.println("  world-1.bin not named (-D" + WorldData.PROPERTY + "=<path>) nor at " + WorldData.DATA_FILE + ": the city's section did not run");
+            return;
+        }
+        Game g = WorldMoneysCheck.town("vault-moneys-gold-city");
+        ForeignAccounts fx = g.getForeignAccounts();
+        assertTrue("fixture: before its first month the city has no world moneys, so gold has no rate and no move", g.getWorldMoneys() == null && !fx.hasRate(GOLD) && Double.isNaN(g.getGoldMove()));
+        GoldPrice price = new GoldPrice(g.getNations());
+        assertTrue("the city's gold price is the nations' GoldPrice, and a month before the calendar's first has none", Double.compare(g.goldUsdPerOunce(0), price.usdPerOunce(0)) == 0
+                && Double.isNaN(g.goldUsdPerOunce(-1)));
+        boolean month = true, rated = true, priced = true, none = true, moved = true;
+        int last = -1;
+        for (int m = 1; m <= 3; m++) {
+            WorldMoneysCheck.play(g);
+            int at = g.getWorldMoneys().month();   // the month the moneys stand in: WorldMoneys.monthIndex of the game's month, GoldPrice's own index
+            last = at;
+            month &= at == WorldMoneys.monthIndex(g.getMonth());
+            rated &= fx.hasRate(GOLD);
+            priced &= Double.compare(fx.getMoneyUsd(GOLD), price.usdPerOunce(at)) == 0;
+            none &= fx.getHolding(GOLD) == 0;
+            moved &= at < 1 || Double.compare(g.getGoldMove(), price.usdPerOunce(at) / price.usdPerOunce(at - 1) - 1) == 0;
+        }
+        assertTrue("fixture: the moneys stood in the game's month (index " + last + ") each month", month);
+        assertTrue("after each month the vault has a gold rate", rated);
+        assertTrue("...which is new GoldPrice(nations).usdPerOunce(that month), to the bit (US$" + String.format("%.4f", fx.getMoneyUsd(GOLD)) + " an ounce)", priced);
+        assertTrue("...and Game's move for gold is that price over last month's, less one", moved);
+        assertTrue("a default city (ALL_USD) holds no gold through its months", fx.getReserveMix() == ALL_USD && none && fx.getReservesUsd() > 0);
+        assertTrue("the debt offers no paper in \"XAU\": the city's paper is written in the eight", !g.getDebtManager().offers("XAU") && g.getDebtManager().offers("EUR"));
+
+        double spend = Math.min(60_000, g.getCash() / 10);
+        double got = g.buyForeignCurrency(spend, "XAU");
+        near("a purchase of gold by name spends the cash it was asked", got, spend, 1e-12);
+        near("...and puts spend / rate / price in ounces in the vault", fx.getHolding(GOLD), spend / fx.getRate() / fx.getMoneyUsd(GOLD), 1e-9);
+        assertTrue("...and no other balance beyond the US$ (the city holds US$ and gold)", fx.getHolding(0) > 0 && beyondTheDollar(fx) == fx.getHolding(GOLD));
     }
 }

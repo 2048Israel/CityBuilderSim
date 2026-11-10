@@ -23,7 +23,7 @@
 
 **Uses:** [Nations](Nations.md) (18), [PriceLevel](PriceLevel.md) (2), [WorldMoneys](WorldMoneys.md) (1)
 
-**Used by (1):** [GoldPriceCheck](GoldPriceCheck.md)
+**Used by (4):** [Game](Game.md), [GoldPriceCheck](GoldPriceCheck.md), [PegAnchorCheck](PegAnchorCheck.md), [VaultMoneysCheck](VaultMoneysCheck.md)
 
 ## Sections
 

@@ -1,4 +1,4 @@
-# PegAnchorCheck.java - 638 lines · 22 methods · 5 constants · harnesses
+# PegAnchorCheck.java - 648 lines · 22 methods · 5 constants · harnesses
 
 `ham/citybuildersim/PegAnchorCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
@@ -43,7 +43,7 @@
 > anchor to move), a deficit trade where the hold has to sell, a vault of none where it cannot, a quiet market (seed 0) where a chance
 > break would blur the arithmetic, and a seeded one where the claim is the very absence of a difference.
 
-**Uses:** [ForeignAccounts](ForeignAccounts.md) (43), [DebtManager](DebtManager.md) (24), [CurrencyRegimeCheck](CurrencyRegimeCheck.md) (16), [DecisionLog](DecisionLog.md) (6), [InterestAbroadCheck](InterestAbroadCheck.md) (4), [WorldData](WorldData.md) (3), [Game](Game.md) (2)
+**Uses:** [ForeignAccounts](ForeignAccounts.md) (52), [DebtManager](DebtManager.md) (24), [CurrencyRegimeCheck](CurrencyRegimeCheck.md) (17), [DecisionLog](DecisionLog.md) (6), [InterestAbroadCheck](InterestAbroadCheck.md) (4), [WorldData](WorldData.md) (3), [Game](Game.md) (2), [GoldPrice](GoldPrice.md) (1)
 
 ## Sections
 
@@ -53,12 +53,12 @@
 | 194 | 2. THE HELD RATE IS THE PEG OVER THE ANCHOR'S US$ PRICE |
 | 227 | 3. THE SHADOW'S GAP IS AGAINST THE HELD RATE |
 | 271 | 4. CHOOSING THE ANCHOR |
-| 334 | 5. A DEVALUATION IN THE ANCHOR'S MONEY |
-| 363 | 6. THE BREAK UNDER A EURO PEG |
-| 388 | 7. THE DIAL TIES TO THE ANCHOR'S RATE |
-| 460 | 8. THE SAVE |
-| 525 | 9. IN A CITY |
-| 598 | 10. THE REVIEW'S TWO LOW NOTES (WN4c) |
+| 344 | 5. A DEVALUATION IN THE ANCHOR'S MONEY |
+| 373 | 6. THE BREAK UNDER A EURO PEG |
+| 398 | 7. THE DIAL TIES TO THE ANCHOR'S RATE |
+| 470 | 8. THE SAVE |
+| 535 | 9. IN A CITY |
+| 608 | 10. THE REVIEW'S TWO LOW NOTES (WN4c) |
 
 ## Constants
 
@@ -68,7 +68,7 @@
 | 57 | `PegAnchorCheck.LEAN` | `ForeignAccounts.Regime.LEAN, PEG = ForeignAccounts.Regime.PEG, FLOAT = Foreig...` |  |
 | 59 | `PegAnchorCheck.TRADE` | `CurrencyRegimeCheck.TRADE, DEEP = CurrencyRegimeCheck.DEEP` |  |
 | 62 | `PegAnchorCheck.R` | `{ 1, 1.10, 0.0070, 1.27, 0.14, 0.73, 0.65, 1.12 }` | The cross rates the sections hand: US$ per unit of the US$, euro, yen, pound, yuan, Canadian and Australian dollar and franc (VaultMoneysCheck's). |
-| 65 | `PegAnchorCheck.SLOTS` | `149` | The length of the foreign accounts' array with the peg's anchor in slot 148 (WN4b). |
+| 65 | `PegAnchorCheck.SLOTS` | `152` | The length of the foreign accounts' array: the peg's anchor in slot 148 (WN4b), then gold's balance, price and chosen share in 149-151 (GD2). |
 
 ## Fields (state)
 
@@ -80,7 +80,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 52 | 587 | **type** `public class PegAnchorCheck` | The peg's anchor (batch WN4b; ForeignAccounts, THE REGIMES, THE PEG'S ANCHOR): the D$ can be pegged to any of the eight moneys, not only the US$. |
+| 52 | 597 | **type** `public class PegAnchorCheck` | The peg's anchor (batch WN4b; ForeignAccounts, THE REGIMES, THE PEG'S ANCHOR): the D$ can be pegged to any of the eight moneys, not only the US$. |
 | 67 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 73 | 5 | `static void same(String label, double actual, double expected)` | Equal to the bit (and so a -0.0 is not a 0.0). |
 | 80 | 5 | `static void close(String label, double actual, double expected, double tol)` | Equal within a share of the expected. |
@@ -111,46 +111,46 @@
 |---:|---:|---|---|
 | 231 | 39 | `static void theShadowsGapIsAgainstTheHeldRate()` |  |
 
-### 4. CHOOSING THE ANCHOR (lines 271-333)
+### 4. CHOOSING THE ANCHOR (lines 271-343)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 275 | 58 | `static void choosingTheAnchor()` |  |
+| 275 | 68 | `static void choosingTheAnchor()` |  |
 
-### 5. A DEVALUATION IN THE ANCHOR'S MONEY (lines 334-362)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 338 | 24 | `static void aDevaluationInTheAnchorsMoney()` |  |
-
-### 6. THE BREAK UNDER A EURO PEG (lines 363-387)
+### 5. A DEVALUATION IN THE ANCHOR'S MONEY (lines 344-372)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 367 | 20 | `static void theBreakUnderAEuroPeg()` |  |
+| 348 | 24 | `static void aDevaluationInTheAnchorsMoney()` |  |
 
-### 7. THE DIAL TIES TO THE ANCHOR'S RATE (lines 388-459)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 392 | 67 | `static void theDialTiesToTheAnchorsRate()` |  |
-
-### 8. THE SAVE (lines 460-524)
+### 6. THE BREAK UNDER A EURO PEG (lines 373-397)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 464 | 60 | `static void theSave()` |  |
+| 377 | 20 | `static void theBreakUnderAEuroPeg()` |  |
 
-### 9. IN A CITY (lines 525-597)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 530 | 5 | `static List<String> currencyLines(Game g)` | The decision log's currency lines, oldest first. |
-| 536 | 61 | `static void inACity()` |  |
-
-### 10. THE REVIEW'S TWO LOW NOTES (WN4c) (lines 598-638)
+### 7. THE DIAL TIES TO THE ANCHOR'S RATE (lines 398-469)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 602 | 36 | `static void theReviewsLowNotes()` |  |
+| 402 | 67 | `static void theDialTiesToTheAnchorsRate()` |  |
+
+### 8. THE SAVE (lines 470-534)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 474 | 60 | `static void theSave()` |  |
+
+### 9. IN A CITY (lines 535-607)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 540 | 5 | `static List<String> currencyLines(Game g)` | The decision log's currency lines, oldest first. |
+| 546 | 61 | `static void inACity()` |  |
+
+### 10. THE REVIEW'S TWO LOW NOTES (WN4c) (lines 608-648)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 612 | 36 | `static void theReviewsLowNotes()` |  |
 
