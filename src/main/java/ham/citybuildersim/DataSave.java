@@ -46,6 +46,8 @@ public class DataSave implements Cloneable {
     private String currencyCode;
     private String currencySymbol;
     private String currencyQualified;
+    /** Whether the money's sign follows the figure (FM1); a save without the key reads false, the sign before. */
+    private Boolean currencySignAfter;
     private Double foundingCash;
     private Double foundingReserveUsd;
 
@@ -679,6 +681,7 @@ public class DataSave implements Cloneable {
         currencyCode = c.code();
         currencySymbol = c.symbol();
         currencyQualified = c.qualifiedSymbol();
+        currencySignAfter = c.signAfter();
         foundingCash = f.getCash();
         foundingReserveUsd = f.getReserveUsd();
         worldSeed = f.getWorldSeed();
@@ -713,7 +716,8 @@ public class DataSave implements Cloneable {
                 currencyPlural != null ? currencyPlural : was.plural(),
                 currencyCode != null ? currencyCode : was.code(),
                 currencySymbol != null ? currencySymbol : was.symbol(),
-                currencyQualified != null ? currencyQualified : was.qualifiedSymbol());
+                currencyQualified != null ? currencyQualified : was.qualifiedSymbol(),
+                currencySignAfter != null && currencySignAfter);
         String name = cityName != null ? cityName : old.getCityName();
         double cash = foundingCash != null ? foundingCash : old.getCash();
         Founding f = new Founding(name, money, cash,

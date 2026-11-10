@@ -175,7 +175,10 @@ public class UserInterface extends Application {
      */
     public UserInterface() { }
 
-    public UserInterface(Game game) { this.game = game; }
+    public UserInterface(Game game) {
+        this.game = game;
+        if (game != null) Currency.use(game.getCurrency());   // FM1: the static formatters write this city's sign
+    }
 
     private Stage stage;
     VBox rootMenu;
@@ -566,6 +569,7 @@ public class UserInterface extends Application {
     public void start(Stage primaryStage) {
         this.stage = primaryStage;
         if (game == null) game = new Game();
+        Currency.use(game.getCurrency());   // FM1: the window writes the money of the city it shows
 
         // IBM Plex, before anything is styled (0.7.21): every style built from
         // here on reads the families it loaded. See Fonts.
@@ -3911,6 +3915,7 @@ public class UserInterface extends Application {
     private void loadSlot(int slot) {
 
         game.loadGameSave(slot);
+        Currency.use(game.getCurrency());   // FM1: the loaded city's sign (a failed load leaves the one shown)
 
         String failure = game.getLoadFailure();
         if (failure != null) {
@@ -4008,6 +4013,7 @@ public class UserInterface extends Application {
     /** The founding screen's last step: found the city as chosen, and open it. */
     void foundCity(Founding choices) {
         game.newGame(choices);
+        Currency.use(game.getCurrency());   // FM1: the founded city's sign
         anotherCity();
         openCity();
     }

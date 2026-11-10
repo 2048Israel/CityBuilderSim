@@ -53,11 +53,35 @@ import java.text.Normalizer;
  * must be exactly three letters A-Z and never the foreign one (codeProblem()).
  * The plural is the name with an "s" unless it already ends in one - English
  * has irregular plurals this cannot know, and the player can type the name so
- * the plural reads ("crown" gives "crowns"); the symbol stays "$"; the
- * qualified symbol is the typed name's first letter and "$".
+ * the plural reads ("crown" gives "crowns"); the symbol stays "$" unless a
+ * sign is typed too (FM1, below); the qualified symbol is the typed name's
+ * first letter and "$".
  *
  * THE FOREIGN MONEY IS NOT A CHOICE. It stays the US dollar, US$, USD, as a
  * static: the world holds exactly one other money and no city renames it.
+ *
+ * ==================== THE SIGN AND ITS PLACE (FM1) ====================
+ *
+ * Jerus, 2026-11-02: his Rotterdam typed "fRotterdam Guilder" for the sign,
+ * because the only way to a sign other than "$" was to name the money and
+ * have its first letter put in front of "$". So the sign is its own field
+ * now, with its own place: typed("Krona", "KRO", "kr", true) is written
+ * "2.6M kr", a "$" before is written "$2.6M" exactly as it always was, and
+ * "€" after is "2.6M€". write() is the ONE writer of the sign for every
+ * figure of the city's money; nothing else in the game puts a "$" on a
+ * number. A space is written only where the character beside the number is a
+ * letter ("CHF 2.6M", "2.6M kr", "R$2.6M"), and a minus is never moved by
+ * write(): the caller keeps it outside, as "-$5" always was.
+ *
+ * WHERE A FOREIGN FIGURE IS IN SIGHT the qualified sign is written instead
+ * (qualifiedFor()): the city's initial and the sign where the sign is one the
+ * vault's moneys also use ("$", "¥", "€", "C$" - D$, T¥), the sign alone where
+ * it is the city's own ("kr", "zł", "R$").
+ *
+ * THE ONE STATIC (writing()): ui/Money and Formats are static and cannot hold a
+ * city, so they write the sign of the money the game last founded or loaded
+ * (use()). It holds only how money is written, never what it is called, so the
+ * leak warned of above costs a harness that sets a sign at most its sign.
  *
  * @author Jerus
  */
@@ -79,10 +103,11 @@ public final class Currency {
     /* ------------------------------------------------------------ the rules */
 
     /**
-     * Written alone, where nothing foreign is in sight: "$" for every city,
-     * derived or typed. Every screen writes local money through the one money
-     * formatter with this sign in it, and a player who names their money the
-     * crown has renamed the money, not how a price tag is printed.
+     * Written alone, where nothing foreign is in sight: "$" for a city that
+     * has not typed a sign of its own (typed(name, code, sign, after)). Every
+     * screen writes local money through the one money formatter, which writes
+     * the city's sign, and a player who names their money the crown has
+     * renamed the money, not how a price tag is printed.
      */
     public static final String SYMBOL = "$";
 
@@ -97,6 +122,9 @@ public final class Currency {
 
     /** The longest name a player may type for their money: a line on the trade tab's rate, not a policy. */
     public static final int MAX_NAME_LENGTH = 32;
+
+    /** The longest sign a player may type for their money, in characters: "kr", "zł", "CHF", "T¥" fit, and a figure beside it still reads on a narrow column. */
+    public static final int MAX_SIGN_LENGTH = 3;
 
     /* ------------------------------------------------------------ the one a city had before 0.7.10 */
 
@@ -114,13 +142,39 @@ public final class Currency {
 
     private final String name, plural, code, symbol, qualifiedSymbol;
 
-    /** A currency exactly as given - the load path's door, which reads back what was saved without judging it. */
+    /** Whether the sign is written after the figure ("2.6M kr") rather than before it ("$2.6M"). */
+    private final boolean signAfter;
+
+    /**
+     * WHICH MONEY THE STATIC FORMATTERS WRITE. ui/Money is static and Formats a
+     * singleton, so neither can hold a city; the window shows one city at a
+     * time, and the game sets this (use()) when a city is founded or loaded and
+     * the window binds it. It holds only how money is WRITTEN - the sign and its
+     * place - and never the name, so the leak this class warns of above costs a
+     * harness that sets a sign at most its sign: everything that names the money
+     * is still read through the game.
+     */
+    private static volatile Currency writing = DANZIK;
+
+    /** The money the static formatters are writing now: "$" before until a city says otherwise. */
+    public static Currency writing() { return writing; }
+
+    /** The city whose money the static formatters write from here (null: the Danzik dollar). */
+    public static void use(Currency c) { writing = c == null ? DANZIK : c; }
+
+    /** A currency exactly as given, its sign before the figure - the load path's door, which reads back what was saved without judging it. */
     public Currency(String name, String plural, String code, String symbol, String qualifiedSymbol) {
+        this(name, plural, code, symbol, qualifiedSymbol, false);
+    }
+
+    /** A currency exactly as given, its sign before the figure or after it. */
+    public Currency(String name, String plural, String code, String symbol, String qualifiedSymbol, boolean signAfter) {
         this.name = name;
         this.plural = plural;
         this.code = code;
         this.symbol = symbol;
         this.qualifiedSymbol = qualifiedSymbol;
+        this.signAfter = signAfter;
     }
 
     /** "Arden dollar". */
@@ -133,12 +187,83 @@ public final class Currency {
     public String symbol()          { return symbol; }
     /** "A$" - written where a foreign figure is on the same line. */
     public String qualifiedSymbol() { return qualifiedSymbol; }
+    /** Whether the sign follows the figure ("2.6M kr") rather than leads it ("$2.6M"). */
+    public boolean signAfter()      { return signAfter; }
+
+    /**
+     * An already formatted number with this money's sign put around it: before,
+     * sign + separator + number; after, number + separator + sign. The separator
+     * is one plain space where the character of the sign that touches the number
+     * is a letter, else nothing: "$2.6M", "CHF 2.6M", "R$2.6M", "2.6M kr",
+     * "2.6M€", "2.6M T¥".
+     *
+     * A MINUS IS NEVER MOVED. write("-5") is "$-5", which is what
+     * String.format("$%,.0f", -5.0) printed, and the trace is compared byte for
+     * byte; a caller that wants "-$5" keeps the minus outside: "-" + write("5").
+     */
+    public String write(String number) { return place(symbol, number); }
+
+    /** The same with the qualified sign, where a foreign figure is in sight. */
+    public String writeQualified(String number) { return place(qualifiedSymbol, number); }
 
     /** Local money, on a screen with no foreign figure on it. */
-    public String local(String amount) { return symbol + amount; }
+    public String local(String amount) { return write(amount); }
 
     /** Local money, on a screen that also shows dollars. */
-    public String qualified(String amount) { return qualifiedSymbol + amount; }
+    public String qualified(String amount) { return writeQualified(amount); }
+
+    private String place(String sign, String number) {
+        return signAfter ? number + gap(sign) + sign : sign + gap(sign) + number;
+    }
+
+    /** The space between a sign and the figure beside it: one where the sign's letter touches the number. */
+    private String gap(String sign) {
+        if (sign.isEmpty()) return "";
+        int touching = signAfter ? sign.codePointAt(0) : sign.codePointBefore(sign.length());
+        return Character.isLetter(touching) ? " " : "";
+    }
+
+    /**
+     * A figure this money wrote with its sign, rewritten with its qualified sign
+     * in its place: "$5" is "D$5", "-$5" is "-D$5", "5¥" is "5 T¥", "5 kr" stays
+     * "5 kr". Every figure of the text is rewritten, as the replace of the "$"
+     * this stands for was; the text unchanged where the sign is not found.
+     */
+    public String qualify(String written) {
+        if (symbol.isEmpty() || qualifiedSymbol.isEmpty()) return written;
+        String was = signAfter ? gap(symbol) + symbol : symbol + gap(symbol);
+        String now = signAfter ? gap(qualifiedSymbol) + qualifiedSymbol : qualifiedSymbol + gap(qualifiedSymbol);
+        return was.equals(now) ? written : written.replace(was, now);
+    }
+
+    /**
+     * A figure written in writing()'s money, rewritten in a foreign money's mark,
+     * which always goes BEFORE the figure with no space added (the marks carry
+     * their own: ForeignAccounts.MONEY_MARK has "CHF " and "XAU "). The foreign
+     * money is written the same whatever the city's sign is.
+     *
+     * A sign before: the mark takes the sign's place, so a minus outside it stays
+     * outside - "-$5" is "-US$5", "$-5" is "US$-5" - which is what ui/Money's
+     * marked() always did. A sign after: the sign and its space are taken off
+     * the figure and the mark goes before the figure's first digit, after any
+     * "+", "-" or "−" - "-5 kr" is "-US$5", "2.6M kr a month" is "US$2.6M a
+     * month". No sign found: the mark and the text.
+     */
+    public static String marked(String mark, String written) {
+        return writing.markedIn(mark, written);
+    }
+
+    private String markedIn(String mark, String written) {
+        String bare = symbol.isEmpty() ? "" : signAfter ? gap(symbol) + symbol : symbol + gap(symbol);
+        int at = bare.isEmpty() ? -1 : written.indexOf(bare);
+        if (at < 0) return mark + written;
+        if (!signAfter) return written.substring(0, at) + mark + written.substring(at + bare.length());
+        String figure = written.substring(0, at) + written.substring(at + bare.length());
+        int start = at;   // back over the figure's own token: digits, separators, the unit letter, a leading sign
+        while (start > 0 && !Character.isWhitespace(figure.charAt(start - 1))) start--;
+        while (start < at && "+-−".indexOf(figure.charAt(start)) >= 0) start++;
+        return figure.substring(0, start) + mark + figure.substring(start);
+    }
 
     /** "Arden dollars per USD", as the exchange rate's unit. */
     public String rateUnit() { return plural + " per " + FOREIGN_CODE; }
@@ -156,7 +281,7 @@ public final class Currency {
     public static Currency fromCityName(String city) {
         String c = city == null ? "" : city.trim();
         return new Currency(c + " " + DERIVED_NOUN, c + " " + DERIVED_NOUN + "s",
-                deriveCode(c), SYMBOL, initial(c) + SYMBOL);
+                deriveCode(c), SYMBOL, qualifiedFor(c, SYMBOL));
     }
 
     /**
@@ -213,16 +338,64 @@ public final class Currency {
     /* ------------------------------------------------------------ typed by hand */
 
     /**
-     * The money as the player named it, or null when either half does not
-     * pass (nameProblem(), codeProblem()). The code is taken upper-cased, so
-     * "ard" is ARD; nothing else about it is changed.
+     * The money as the player named it, with the "$" before the figure, or null
+     * when either half does not pass (nameProblem(), codeProblem()). The code is
+     * taken upper-cased, so "ard" is ARD; nothing else about it is changed.
      */
     public static Currency typed(String name, String code) {
-        if (nameProblem(name) != null || codeProblem(code) != null) return null;
+        return typed(name, code, SYMBOL, false);
+    }
+
+    /**
+     * The money as the player named it and signed it, or null when any of the
+     * three does not pass (nameProblem(), codeProblem(), signProblem()). The sign
+     * is taken trimmed; its qualified form is qualifiedFor(); `after` puts it
+     * after the figure.
+     */
+    public static Currency typed(String name, String code, String sign, boolean after) {
+        if (nameProblem(name) != null || codeProblem(code) != null || signProblem(sign) != null) return null;
         String n = name.trim();
+        String s = sign.trim();
         String plural = n.toLowerCase(java.util.Locale.ROOT).endsWith("s") ? n : n + "s";
         return new Currency(n, plural, code.trim().toUpperCase(java.util.Locale.ROOT),
-                SYMBOL, initial(n) + SYMBOL);
+                s, qualifiedFor(n, s), after);
+    }
+
+    /**
+     * Why a typed sign will not do, in the player's words, or null when it will:
+     * at least one and at most MAX_SIGN_LENGTH characters once trimmed, none of
+     * them a digit, a space or one of + - − . , (those are the figure's, and a
+     * sign holding one would be read as part of the number), and never
+     * FOREIGN_SYMBOL - the world's money is not the city's to sign.
+     */
+    public static String signProblem(String sign) {
+        String s = sign == null ? "" : sign.trim();
+        if (s.isEmpty()) return "Type the sign the money is written with, such as $, kr or €.";
+        if (s.codePointCount(0, s.length()) > MAX_SIGN_LENGTH) return "A currency's sign can be at most " + MAX_SIGN_LENGTH + " characters.";
+        if (s.codePoints().anyMatch(cp -> Character.isDigit(cp) || Character.isWhitespace(cp) || Character.isSpaceChar(cp) || "+-−.,".indexOf(cp) >= 0)) {
+            return "A currency's sign cannot hold a digit, a space, or any of + - − . , because the figure is written beside it.";
+        }
+        if (s.equals(FOREIGN_SYMBOL)) return FOREIGN_SYMBOL + " is the world's money; the city's needs its own sign.";
+        return null;
+    }
+
+    /**
+     * Whether a sign is also one the vault's moneys are written with, so a figure
+     * in it is ambiguous the moment a foreign one is in sight: "$", or a sign
+     * that is, or ends, one of ForeignAccounts.MONEY_MARK trimmed ("¥" ends
+     * "CN¥", "$" ends "US$" and "C$"). "kr", "zł", "Kč", "Fr", "R$" and "₹" are
+     * nobody else's and stand alone.
+     */
+    public static boolean needsLetter(String sign) {
+        if (sign == null || sign.isEmpty()) return false;
+        if (sign.equals(SYMBOL)) return true;
+        for (String mark : ForeignAccounts.MONEY_MARK) if (mark.trim().endsWith(sign)) return true;
+        return false;
+    }
+
+    /** The sign a figure is written with where a foreign figure is in sight: the money's first letter before it where needsLetter() says so (D$, T¥), else the sign alone. */
+    public static String qualifiedFor(String name, String sign) {
+        return needsLetter(sign) ? initial(name) + sign : sign;
     }
 
     /** Why a typed name will not do, in the player's words, or null when it will. */
@@ -252,11 +425,11 @@ public final class Currency {
     public boolean equals(Object o) {
         if (!(o instanceof Currency c)) return false;
         return name.equals(c.name) && plural.equals(c.plural) && code.equals(c.code)
-                && symbol.equals(c.symbol) && qualifiedSymbol.equals(c.qualifiedSymbol);
+                && symbol.equals(c.symbol) && qualifiedSymbol.equals(c.qualifiedSymbol) && signAfter == c.signAfter;
     }
 
     @Override
-    public int hashCode() { return java.util.Objects.hash(name, plural, code, symbol, qualifiedSymbol); }
+    public int hashCode() { return java.util.Objects.hash(name, plural, code, symbol, qualifiedSymbol, signAfter); }
 
     @Override
     public String toString() { return describe(); }

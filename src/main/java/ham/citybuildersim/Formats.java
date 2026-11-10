@@ -34,13 +34,13 @@ public final class Formats {
      */
     public static final double WHOLE_DOLLARS_MOST = 0x1p53;
 
-    /** A field in thousands, as dollars: 0.12 is "$120.00"; past WHOLE_DOLLARS_MOST, amount()'s "$1,300.0Q". */
+    /** A field in thousands, as dollars: 0.12 is "$120.00"; past WHOLE_DOLLARS_MOST, amount()'s "$1,300.0Q". The sign is the city's (Currency.writing()), the "$" before the figure unless it chose otherwise (FM1). */
     public String cash(double thousands) {
         if (!Double.isFinite(thousands)) return "—";
         double dollars = thousands * 1000;
         if (Math.abs(dollars) >= WHOLE_DOLLARS_MOST) return amount(thousands);
-        if (Math.abs(dollars) >= 1_000_000) return "$" + whole.format(Math.round(dollars));
-        return "$" + money.format(dollars);
+        if (Math.abs(dollars) >= 1_000_000) return Currency.writing().write(whole.format(Math.round(dollars)));
+        return Currency.writing().write(money.format(dollars));
     }
 
     /**
@@ -67,12 +67,13 @@ public final class Formats {
         if (!Double.isFinite(thousands)) return "—";
         double dollars = thousands * 1000;
         double a = Math.abs(dollars);
-        if (a >= 1e15) return sign(dollars, a / 1e15, 1) + String.format("$%,.1fQ", a / 1e15);
-        if (a >= 1e12) return sign(dollars, a / 1e12, 1) + String.format("$%.1fT", a / 1e12);
-        if (a >= 1e9)  return sign(dollars, a / 1e9, 1) + String.format("$%.1fB", a / 1e9);
-        if (a >= 1e6)  return sign(dollars, a / 1e6, 1) + String.format("$%.1fM", a / 1e6);
-        if (a >= 1_000) return sign(dollars, a, 0) + "$" + whole.format(Math.round(a));
-        return sign(dollars, a, 2) + "$" + money.format(a);
+        Currency w = Currency.writing();
+        if (a >= 1e15) return sign(dollars, a / 1e15, 1) + w.write(String.format("%,.1fQ", a / 1e15));
+        if (a >= 1e12) return sign(dollars, a / 1e12, 1) + w.write(String.format("%.1fT", a / 1e12));
+        if (a >= 1e9)  return sign(dollars, a / 1e9, 1) + w.write(String.format("%.1fB", a / 1e9));
+        if (a >= 1e6)  return sign(dollars, a / 1e6, 1) + w.write(String.format("%.1fM", a / 1e6));
+        if (a >= 1_000) return sign(dollars, a, 0) + w.write(whole.format(Math.round(a)));
+        return sign(dollars, a, 2) + w.write(money.format(a));
     }
 
     /** "-" for a negative that still reads as something at `decimals` places, "" otherwise. */

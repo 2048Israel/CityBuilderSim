@@ -660,6 +660,7 @@ public class Game {
         foreign.forgetDealing();
         // ...and the record of it, which nothing changes after this line.
         this.founding = founding;
+        Currency.use(founding.getCurrency());   // FM1: the static formatters write this city's sign (Currency.writing())
         // ...and an Insane city's ground, owed abroad (0.7.14).
         if (founding.getPreset() == Founding.Preset.INSANE) foundTheLandBond();
         this.population = 0;
@@ -2333,16 +2334,15 @@ public class Game {
     private void noteTheWorldMoneys(double rateBeforeReprice) {
         if (worldMoneys == null) return;
         if (worldRiskOffStarted) {
-            GameLog.note(String.format("Money ran to safety abroad this month: the yen %+.1f%%, the franc %+.1f%%, the Australian dollar %+.1f%% against the US$, and the D$ %+.1f%%.",
-                    100 * worldRiskOffMoves[0], 100 * worldRiskOffMoves[1], 100 * worldRiskOffMoves[2],
+            GameLog.note(String.format("Money ran to safety abroad this month: the yen %+.1f%%, the franc %+.1f%%, the Australian dollar %+.1f%% against the US$, and the %s %+.1f%%.",
+                    100 * worldRiskOffMoves[0], 100 * worldRiskOffMoves[1], 100 * worldRiskOffMoves[2], getCurrency().qualifiedSymbol(),
                     100 * valueMove(rateBeforeReprice, foreign.getRate())));
             worldRiskOffStarted = false;
         }
         // ...and the money that ran home in it (XR4): the hot money that left and the carry that was repaid, this month's, while the risk-off is felt (the figures are in thousands, so a cent is 1e-5).
         double ranHome = hotMoney.getRiskOffDeparted(), repaid = hotMoney.getCarryRiskRepaid();
         if ((ranHome > 1e-5 || repaid > 1e-5) && worldRiskOffLevel() >= CapitalFlows.RISK_OFF_FELT) {
-            String here = getCurrency().qualifiedSymbol();
-            GameLog.note(String.format("Money ran home: %s%,.1fM of hot money left and %s%,.1fM of the carry was repaid.", here, ranHome / 1000, here, repaid / 1000));
+            GameLog.note(String.format("Money ran home: %s of hot money left and %s of the carry was repaid.", hereK("%,.1fM", ranHome / 1000), hereK("%,.1fM", repaid / 1000)));
         }
         for (String line : worldPegBreaks) GameLog.note(line);
         worldPegBreaks.clear();
@@ -3173,7 +3173,6 @@ public class Game {
         }
         // The plot's size in square kilometres since 0.7.13, as the office shows it (under a hundredth of one in square metres since 0.7.68).
         String area = LandManager.areaWords(parcel.getSizeSqFt());
-        String here = getCurrency().qualifiedSymbol();
         /*
          * IN THE SCREENS' MONEY SINCE 0.7.26 (Formats.amount(), rate()): it
          * printed the model's thousands with a "k" stuck on and every digit
@@ -3181,9 +3180,9 @@ public class Game {
          * whose cards said "US$101.8M" and "D$72.0M" for the same plot.
          */
         if (paidFromVault <= 0) {
-            lastLandReceipt = String.format("Bought %s for %s, converting %s of cash at %s%s"
-                    + " to the dollar.", area, usdWords(usd), localWords(here, convertedLocal),
-                    here, Formats.INSTANCE.rate(rate));
+            lastLandReceipt = String.format("Bought %s for %s, converting %s of cash at %s"
+                    + " to the dollar.", area, usdWords(usd), localWords(convertedLocal),
+                    getCurrency().writeQualified(Formats.INSTANCE.rate(rate)));
         } else if (converted <= 0) {
             lastLandReceipt = String.format("Bought %s for %s out of the vault, which holds"
                     + " %s now. No cash moved.", area, usdWords(usd), usdWords(foreign.getReservesUsd()));
@@ -3191,7 +3190,7 @@ public class Game {
             lastLandReceipt = String.format("Bought %s for %s. The vault held only %s,"
                     + " so that went and the other %s was converted from %s of cash.",
                     area, usdWords(usd), usdWords(paidFromVault), usdWords(converted),
-                    localWords(here, convertedLocal));
+                    localWords(convertedLocal));
         }
         // ...and (WN5) who it was bought from where it was not the host's alone: "Sold by United States (62%, US$1.3M) and Canada (38%, C$1.1M)."
         String by = soldByWords(sold);
@@ -3388,17 +3387,17 @@ public class Game {
         if (code == null || !(rate > 0) || !Double.isFinite(rate)) return usdWords(s.usd());
         int k = ForeignAccounts.moneyIndex(code);
         String mark = k >= 0 ? ForeignAccounts.MONEY_MARK[k] : code + " ";
-        return Formats.INSTANCE.amount(s.usd() * rate).replace("$", mark);
+        return Currency.marked(mark, Formats.INSTANCE.amount(s.usd() * rate));
     }
 
     /** Thousands of US dollars as the screens write them: "US$101.8M" (Formats.amount() with the dollar's mark). */
     private static String usdWords(double thousands) {
-        return Formats.INSTANCE.amount(thousands).replace("$", Currency.FOREIGN_SYMBOL);
+        return Currency.marked(Currency.FOREIGN_SYMBOL, Formats.INSTANCE.amount(thousands));
     }
 
     /** ...and thousands of local money, with its own mark: "D$72.0M". */
-    private static String localWords(String here, double thousands) {
-        return Formats.INSTANCE.amount(thousands).replace("$", here);
+    private String localWords(double thousands) {
+        return getCurrency().qualify(Formats.INSTANCE.amount(thousands));
     }
 
     /**
@@ -5319,12 +5318,21 @@ public class Game {
         decisions.record(DecisionLog.BANK, "Bank rescued for its shares: " + DecisionLog.money(amount)
                 + (fund.getRescueMode() == TreasuryFund.RescueMode.AUTOMATIC ? " (automatic)" : ""));
 
-        String here = getCurrency().qualifiedSymbol();
         GameLog.note(String.format("The bank failed. The city took all its shares; the old owners lost everything"
-                        + " (%s%,.0fk at the last price). The city put in %s%,.0fk: %s%,.0fk from its cash and"
-                        + " %s%,.0fk advanced by the central bank.",
-                here, r.ownersLost(), here, amount, here, fromCash, here, r.advanced));
+                        + " (%s at the last price). The city put in %s: %s from its cash and"
+                        + " %s advanced by the central bank.",
+                hereK("%,.0fk", r.ownersLost()), hereK("%,.0fk", amount), hereK("%,.0fk", fromCash), hereK("%,.0fk", r.advanced)));
         return amount;
+    }
+
+    /** A figure of the city's money as the log writes it where a foreign one may be in sight: the format given the number, in the city's qualified sign - hereK("%,.0fk", 12) is "D$12k" (FM1). */
+    private String hereK(String format, double figure) {
+        return getCurrency().writeQualified(String.format(format, figure));
+    }
+
+    /** ...and in the city's own sign where no foreign figure is in sight: cityK("%,.0fk", 12) is "$12k" (FM1). */
+    private String cityK(String format, double figure) {
+        return getCurrency().write(String.format(format, figure));
     }
 
     /** The city's last resolution, or null if it has never resolved the bank. */
@@ -5351,9 +5359,8 @@ public class Game {
         }
         if (bank.wantsPreferred() && fund.mayOffer(month) && bank.preferredOfferSize() > 0) {
             fund.noteOffered(month);
-            String here = getCurrency().qualifiedSymbol();
-            GameLog.note(String.format("The bank is under its minimum capital and asks the city to buy %s%,.0fk"
-                    + " of preferred shares.", here, bank.preferredOfferSize()));
+            GameLog.note(String.format("The bank is under its minimum capital and asks the city to buy %s"
+                    + " of preferred shares.", hereK("%,.0fk", bank.preferredOfferSize())));
         }
     }
 
@@ -5395,10 +5402,9 @@ public class Game {
         fund.noteAccepted(month, size);
         fund.getLedger().preferred("bought", size, 0, month);
         decisions.record(DecisionLog.BANK, "Bought " + DecisionLog.money(size) + " of the bank's preferred shares");
-        String here = getCurrency().qualifiedSymbol();
-        GameLog.note(String.format("The city bought %s%,.0fk of the bank's preferred shares, %.0f%% a year for five"
-                        + " years then %.0f%%, with warrants on %,.0f of its shares at %s%,.3fk.",
-                here, size, Bank.PREFERRED_RATE * 100, Bank.PREFERRED_STEP_RATE * 100, warrants, here, price));
+        GameLog.note(String.format("The city bought %s of the bank's preferred shares, %.0f%% a year for five"
+                        + " years then %.0f%%, with warrants on %,.0f of its shares at %s.",
+                hereK("%,.0fk", size), Bank.PREFERRED_RATE * 100, Bank.PREFERRED_STEP_RATE * 100, warrants, hereK("%,.3fk", price)));
         return true;
     }
 
@@ -5438,10 +5444,9 @@ public class Game {
         if (redeemed[1] > 0) fund.getLedger().preferred("redeemed", redeemed[1], 0, month);
         if (warrants > 0) fund.getLedger().warrants("bought back", warrants, 0, month);
         if (redeemed[1] > 0 || warrants > 0) {
-            String here = getCurrency().qualifiedSymbol();
-            GameLog.note(String.format("The bank repaid the city: %s%,.0fk of preferred at par, %s%,.0fk of its unpaid"
-                            + " dividends and %s%,.0fk for the warrants; %s%,.0fk of it raised by selling new shares.",
-                    here, redeemed[1], here, redeemed[0], here, warrants, here, bank.getRepaymentRaisedThisMonth()));
+            GameLog.note(String.format("The bank repaid the city: %s of preferred at par, %s of its unpaid"
+                            + " dividends and %s for the warrants; %s of it raised by selling new shares.",
+                    hereK("%,.0fk", redeemed[1]), hereK("%,.0fk", redeemed[0]), hereK("%,.0fk", warrants), hereK("%,.0fk", bank.getRepaymentRaisedThisMonth())));
         }
         double shares = bank.exerciseExpiredWarrants(price);
         if (shares > 0) {
@@ -5689,12 +5694,11 @@ public class Game {
         rollover.noteFundTook(month, in[0]);
         if (total > 0) treasuryJournal.record("Paid into the fund (the dial)", -total);
         fund.getLedger().flow(FundLedger.PAY_IN, total, false, month);
-        String here = getCurrency().qualifiedSymbol();
         GameLog.note(year > 0
-                ? String.format("THE FUND, year end: %.0f%% of the year's surplus of %s%,.0fk - %s%,.0fk from the surplus"
-                        + " and %s%,.0fk from the treasury's cash - paid in.", fund.getDial() * 100, here, year,
-                        here, in[0], here, in[1])
-                : String.format("THE FUND, year end: the year ran a deficit of %s%,.0fk, and saves nothing.", here, -year));
+                ? String.format("THE FUND, year end: %.0f%% of the year's surplus of %s - %s from the surplus"
+                        + " and %s from the treasury's cash - paid in.", fund.getDial() * 100, hereK("%,.0fk", year),
+                        hereK("%,.0fk", in[0]), hereK("%,.0fk", in[1]))
+                : String.format("THE FUND, year end: the year ran a deficit of %s, and saves nothing.", hereK("%,.0fk", -year)));
     }
 
     /* ------------------------------ the hand ------------------------------ */
@@ -5708,7 +5712,7 @@ public class Game {
         fund.getLedger().flow(FundLedger.PAY_IN, moved, true, month);
         treasuryJournal.record("Paid into the fund", -moved);
         decisions.record(DecisionLog.FUND, "Paid " + DecisionLog.money(moved) + " into the fund");
-        GameLog.note(String.format("The city paid %s%,.0fk into its fund.", getCurrency().qualifiedSymbol(), moved));
+        GameLog.note(String.format("The city paid %s into its fund.", hereK("%,.0fk", moved)));
         return moved;
     }
 
@@ -5721,7 +5725,7 @@ public class Game {
         fund.getLedger().flow(FundLedger.DRAW_OUT, moved, true, month);
         treasuryJournal.record("Drawn from the fund", moved);
         decisions.record(DecisionLog.FUND, "Drew " + DecisionLog.money(moved) + " from the fund");
-        GameLog.note(String.format("The city drew %s%,.0fk from its fund.", getCurrency().qualifiedSymbol(), moved));
+        GameLog.note(String.format("The city drew %s from its fund.", hereK("%,.0fk", moved)));
         return moved;
     }
 
@@ -5910,7 +5914,7 @@ public class Game {
         String what = k < 0 ? null : ForeignAccounts.MONEY_PLURAL[k];
         decisions.record(DecisionLog.CURRENCY, what != null ? "Bought " + what + " for " + DecisionLog.money(spend)
                 : "Bought reserves for " + DecisionLog.money(spend) + foreign.getReserveMix().inWords);
-        GameLog.note(String.format("The city bought $%,.0fk of %s.", spend, what != null ? what : "foreign currency"));
+        GameLog.note(String.format("The city bought %s of %s.", cityK("%,.0fk", spend), what != null ? what : "foreign currency"));
         return spend;
     }
 
@@ -5939,7 +5943,7 @@ public class Game {
         int k = ForeignAccounts.moneyIndex(code);
         String what = k < 0 ? null : ForeignAccounts.MONEY_PLURAL[k];
         decisions.record(DecisionLog.CURRENCY, (what != null ? "Sold " + what : "Sold reserves") + " for " + DecisionLog.money(sold));
-        GameLog.note(String.format("The city sold $%,.0fk of its %s.", sold, what != null ? what : "reserves"));
+        GameLog.note(String.format("The city sold %s of its %s.", cityK("%,.0fk", sold), what != null ? what : "reserves"));
         return sold;
     }
 
@@ -5963,7 +5967,7 @@ public class Game {
         ForeignAccounts.Regime now = foreign.getRegime();
         if (now != was) {
             if (now == ForeignAccounts.Regime.GOLD) {
-                decisions.record(DecisionLog.CURRENCY, String.format("Currency regime to Gold at D$%.4f an ounce", foreign.getMintPrice()));
+                decisions.record(DecisionLog.CURRENCY, "Currency regime to Gold at " + hereK("%.4f", foreign.getMintPrice()) + " an ounce");
                 if (debtManager.getAim() != DebtManager.Aim.GOLD) debtManager.setAim(DebtManager.Aim.GOLD);
             } else {
                 decisions.record(DecisionLog.CURRENCY, "Currency regime to " + foreign.regimeWords());
@@ -5977,7 +5981,7 @@ public class Game {
         double was = foreign.getMintPrice();
         foreign.setMintPrice(price);
         if (DecisionLog.moved(was, foreign.getMintPrice())) {
-            decisions.record(DecisionLog.CURRENCY, String.format("Mint price to D$%.4f an ounce", foreign.getMintPrice()));
+            decisions.record(DecisionLog.CURRENCY, "Mint price to " + hereK("%.4f", foreign.getMintPrice()) + " an ounce");
         }
     }
 
@@ -5993,8 +5997,8 @@ public class Game {
             return;
         }
         foreign.answerGoldEvent(choice);
-        decisions.record(DecisionLog.CURRENCY, String.format(choice == ForeignAccounts.GoldChoice.STAY ? "Stayed on gold at D$%.4f an ounce"
-                : "Moved the mint price with the dollar, to D$%.4f an ounce", foreign.getMintPrice()));
+        decisions.record(DecisionLog.CURRENCY, (choice == ForeignAccounts.GoldChoice.STAY ? "Stayed on gold at "
+                : "Moved the mint price with the dollar, to ") + hereK("%.4f", foreign.getMintPrice()) + " an ounce");
     }
 
     /** The gold cover: the vault's gold at the mint price over M0 (ForeignAccounts.goldCover()); infinite with gold and no M0, 0 without gold. */
@@ -6014,8 +6018,8 @@ public class Game {
         double was = foreign.getPegPerAnchor();
         foreign.repeg(rate);
         if (DecisionLog.moved(was, foreign.getPegPerAnchor())) {
-            decisions.record(DecisionLog.CURRENCY, String.format("%s the peg to %.4f D$ per %s",
-                    foreign.getPegPerAnchor() > was ? "Devalued" : "Revalued", foreign.getPegPerAnchor(), anchorMark()));
+            decisions.record(DecisionLog.CURRENCY, String.format("%s the peg to %.4f %s per %s",
+                    foreign.getPegPerAnchor() > was ? "Devalued" : "Revalued", foreign.getPegPerAnchor(), getCurrency().qualifiedSymbol(), anchorMark()));
         }
     }
 
@@ -6037,8 +6041,8 @@ public class Game {
         if (foreign.getPegAnchor() != was) {
             k = foreign.getPegAnchor();
             if (foreign.getRegime() == ForeignAccounts.Regime.PEG) {
-                decisions.record(DecisionLog.CURRENCY, String.format("Re-pegged the D$ to %s at %.4f D$ per %s",
-                        ForeignAccounts.MONEY_NAME[k], foreign.getPegPerAnchor(), anchorMark()));
+                decisions.record(DecisionLog.CURRENCY, String.format("Re-pegged the %s to %s at %.4f %s per %s",
+                        getCurrency().qualifiedSymbol(), ForeignAccounts.MONEY_NAME[k], foreign.getPegPerAnchor(), getCurrency().qualifiedSymbol(), anchorMark()));
             } else {
                 decisions.record(DecisionLog.CURRENCY, "The peg's anchor to " + ForeignAccounts.MONEY_NAME[k]);
             }
@@ -6051,8 +6055,8 @@ public class Game {
         foreign.setBand(centre, slopeAYear, width);
         if (DecisionLog.moved(c, foreign.getBandCentre()) || DecisionLog.moved(s, foreign.getBandSlope())
                 || DecisionLog.moved(w, foreign.getBandWidth())) {
-            decisions.record(DecisionLog.CURRENCY, String.format("Band to %.4f D$ per US$, %s either side, crawling %s a year",
-                    foreign.getBandCentre(), DecisionLog.pct(foreign.getBandWidth()), DecisionLog.pct(foreign.getBandSlope())));
+            decisions.record(DecisionLog.CURRENCY, String.format("Band to %.4f %s per US$, %s either side, crawling %s a year",
+                    foreign.getBandCentre(), getCurrency().qualifiedSymbol(), DecisionLog.pct(foreign.getBandWidth()), DecisionLog.pct(foreign.getBandSlope())));
         }
     }
 
@@ -6483,8 +6487,8 @@ public class Game {
         int n = Math.min(wanted, standing - 1);
         if (branch == null || n <= 0) return;
         String owner = getSectors().retail().key();
-        String why = String.format("its customers' fees of $%,.1fk a branch do not cover the $%,.1fk a branch past the first costs",
-                bank.feesPerBranch(), bank.laterBranchCost());
+        String why = String.format("its customers' fees of %s a branch do not cover the %s a branch past the first costs",
+                cityK("%,.1fk", bank.feesPerBranch()), cityK("%,.1fk", bank.laterBranchCost()));
         int closed = retire(new BusinessInvestment.Decision(owner, branch, n, why, true),
                 sectorInvestor(owner), false);
         if (closed > 0) {
@@ -6541,12 +6545,12 @@ public class Game {
                 String.format("Sold %,d %s - %s%s%s",
                         scrapped, decision.template.getName(), decision.reason,
                         proceeds > 0
-                                ? String.format(" (plot back to the city for $%s)",
-                                        formatter.format(proceeds))
+                                ? String.format(" (plot back to the city for %s)",
+                                        getCurrency().write(formatter.format(proceeds)))
                                 : " (plot abandoned - the city could not pay)",
                         material > 0
-                                ? String.format(" (its material to the builders for $%s)",
-                                        formatter.format(material))
+                                ? String.format(" (its material to the builders for %s)",
+                                        getCurrency().write(formatter.format(material)))
                                 : ""));
 
         // The sector screen carries the reasoning; this is so the loss shows up
@@ -7755,11 +7759,11 @@ public class Game {
     public static String financingWords(BusinessDebtManager.Plan plan) {
         if (plan == null) return "";
         if (plan.hasBond()) {
-            String bond = String.format(" - issued $%,.0fk of %d-year bonds at %.2f%%", plan.bondFace(),
+            String bond = String.format(" - issued %s of %d-year bonds at %.2f%%", Currency.writing().write(String.format("%,.0fk", plan.bondFace())),
                     CorporateBond.TERM_MONTHS / 12, plan.coupon() * 100);
             if (plan.loan() > 0) {
-                return bond + String.format(" and borrowed $%,.0fk from the bank at %.2f%%",
-                        plan.loan(), plan.loanRate() * 100);
+                return bond + String.format(" and borrowed %s from the bank at %.2f%%",
+                        Currency.writing().write(String.format("%,.0fk", plan.loan())), plan.loanRate() * 100);
             }
             return plan.allIn() < plan.loanAllIn() - 1e-9
                     ? bond + String.format(" - cheaper than the bank's %.2f%%", plan.loanRate() * 100)
@@ -9506,8 +9510,8 @@ public class Game {
         placeDemolition(q, "City", 0);
         decisions.record(DecisionLog.CONSTRUCTION, "Demolished " + n + " " + t.getName()
                 + " for " + DecisionLog.money(q.price().total));
-        GameLog.note(String.format("The city ordered %d %s demolished, for $%,.0fk.", n, t.getName(),
-                q.price().total));
+        GameLog.note(String.format("The city ordered %d %s demolished, for %s.", n, t.getName(),
+                cityK("%,.0fk", q.price().total)));
         return true;
     }
 
@@ -9539,13 +9543,13 @@ public class Game {
         e.businessLoss = q.businessLoss();
         e.months = q.replacementMonths();
         buildingManager.getControl().recordExpropriation(e);
-        lastInvestment.put(q.sector(), String.format("Sold %,d %s to the city by compulsory purchase, for $%s",
-                n, t.getName(), formatter.format(q.compensation())));
+        lastInvestment.put(q.sector(), String.format("Sold %,d %s to the city by compulsory purchase, for %s",
+                n, t.getName(), getCurrency().write(formatter.format(q.compensation()))));
         placeDemolition(q.demolition(), q.sector(), q.ground());
         decisions.record(DecisionLog.CONSTRUCTION, "Bought out " + n + " " + t.getName() + " from " + q.sector()
                 + " for " + DecisionLog.money(q.compensation()) + ", to demolish");
-        GameLog.note(String.format("The city bought %d %s from %s for $%,.0fk and ordered them demolished.",
-                n, t.getName(), q.sector(), q.compensation()));
+        GameLog.note(String.format("The city bought %d %s from %s for %s and ordered them demolished.",
+                n, t.getName(), q.sector(), cityK("%,.0fk", q.compensation())));
         return true;
     }
 
@@ -9726,8 +9730,8 @@ public class Game {
         cityCapitalSpending += q.total;
         getSectors().construction().bill(q.total, pointsLeft);
         decisions.record(DecisionLog.CONSTRUCTION, "Restarted " + t.getName() + " for " + DecisionLog.money(q.total));
-        GameLog.note(String.format("The city restarted %d %s, for $%,.0fk.", shell.buildings, t.getName(),
-                q.total));
+        GameLog.note(String.format("The city restarted %d %s, for %s.", shell.buildings, t.getName(),
+                cityK("%,.0fk", q.total)));
         return true;
     }
 
@@ -9823,7 +9827,7 @@ public class Game {
         buildingManager.getControl().addPaving(n, ahead, month);
         decisions.record(DecisionLog.CONSTRUCTION, "Paved " + n + " " + from.getName()
                 + (n == 1 ? "" : "s") + " for " + DecisionLog.money(q.total));
-        GameLog.note(String.format("The city ordered %d %s paved, for $%,.0fk.", n, from.getName(), q.total));
+        GameLog.note(String.format("The city ordered %d %s paved, for %s.", n, from.getName(), cityK("%,.0fk", q.total)));
         return true;
     }
 
@@ -9961,8 +9965,8 @@ public class Game {
             builders.cancelOrder(back, r.points(), r.servedFirst() ? 0 : r.points());
             r.shell().month = month;
             r.shell().refunded += back;
-            GameLog.note(String.format("The city's %d %s stopped: $%,.0fk back, the shell kept.", r.buildings(),
-                    r.building(), back));
+            GameLog.note(String.format("The city's %d %s stopped: %s back, the shell kept.", r.buildings(),
+                    r.building(), cityK("%,.0fk", back)));
         }
 
         // D. The demolitions finished: the material sold to the builders by
@@ -9991,8 +9995,8 @@ public class Game {
             landManager.release(d.landSqFt, d.from, groundUse(buildingManager.getTemplate(d.templateId)));
             // ...a sea terminal's units no longer hold their island's ground (ET5).
             if (Ports.isPort(buildingManager.getTemplate(d.templateId))) landManager.getLandmasses().demolished(d.id);
-            GameLog.note(String.format("Demolished %d %s: %,.0f units of material to the builders for $%,.0fk, %s freed.",
-                    d.buildings, d.building, bought, paid, LandManager.areaWords(d.landSqFt)));
+            GameLog.note(String.format("Demolished %d %s: %,.0f units of material to the builders for %s, %s freed.",
+                    d.buildings, d.building, bought, cityK("%,.0fk", paid), LandManager.areaWords(d.landSqFt)));
         }
 
         // F. The pavings that opened (0.7.70): their gravel roads were retired
@@ -10182,7 +10186,7 @@ public class Game {
             }
 
             System.out.println(quantity + " " + selected.getName()
-                    + " construction started. $" + totalCost + " cash used");
+                    + " construction started. " + getCurrency().write(String.valueOf(totalCost)) + " cash used");
         } else {
             // buildStack() only calls this once the price is covered, so this
             // branch is unreachable. It used to fall into quickIssueDebt(), a
@@ -10190,9 +10194,9 @@ public class Game {
             // allocation; the JavaFX path offers the note BEFORE building, on
             // Build's funding page (BuildScreen.showBuildFunding()). Loud
             // rather than silent if that ever changes.
-            throw new IllegalStateException("processBuildOrder() called with $"
-                    + formatter.format(totalCost) + " due and $"
-                    + formatter.format(cash) + " on hand");
+            throw new IllegalStateException("processBuildOrder() called with "
+                    + getCurrency().write(formatter.format(totalCost)) + " due and "
+                    + getCurrency().write(formatter.format(cash)) + " on hand");
         }
     }
 
@@ -12189,8 +12193,8 @@ public class Game {
         debtManager.markForeignDefault();
         debtManager.updateInterest();
         GameLog.note(String.format(
-                "THE CITY HAS DEFAULTED ON ITS FOREIGN DEBT - $%,.0fk repudiated (%s). "
-                + "No lender abroad will touch it for five years.", written, because));
+                "THE CITY HAS DEFAULTED ON ITS FOREIGN DEBT - %s repudiated (%s). "
+                + "No lender abroad will touch it for five years.", cityK("%,.0fk", written), because));
         return written;
     }
 
@@ -12517,9 +12521,9 @@ public class Game {
         foreign.takeForeignDebt(debtManager.getForeignPrincipalUsd(), foreign.getRate());
 
         debtManager.updateInterest();
-        // The US$'s words as they were; another money's named with its mark ("€1.2M"), the amount without the $ DecisionLog.money() writes.
+        // The US$'s words as they were; another money's named with its mark ("€1.2M"), in place of the city's sign DecisionLog.money() writes (Currency.marked()).
         String face = DecisionLog.money(quote.faceValue());
-        String written = k == 0 ? "US" + face : ForeignAccounts.MONEY_MARK[k] + (face.startsWith("$") ? face.substring(1) : face);
+        String written = Currency.marked(k == 0 ? Currency.FOREIGN_SYMBOL : ForeignAccounts.MONEY_MARK[k], face);
         decisions.record(DecisionLog.BORROWING, "Borrowed " + written + " abroad: "
                 + ("Note".equals(type) ? duration + "-month note" : duration + "-year term bond")
                 + (holdAsReserves ? ", held as reserves" : ""));
@@ -12938,14 +12942,13 @@ public class Game {
         centralBankTender = plan.centralBankPar();
         if (!(plan.due() > 0)) return;
 
-        String here = getCurrency().qualifiedSymbol();
-        GameLog.note(String.format("THE ROLLOVER, %s: %s%,.0fk falls due next month; last year's surplus"
-                        + " nets %s%,.0fk of it; %s%,.0fk to roll.%s", Rollover.words(plan.mode()),
-                here, plan.due(), here, plan.netted(), here, plan.toRoll(),
-                plan.centralBankDue() > 0 ? String.format(" The central bank holds %s%,.0fk of it: the surplus"
-                        + " pays %s%,.0fk of that, it rolls %s%,.0fk at issue, and %s%,.0fk runs off past its dial.",
-                        here, plan.centralBankDue(), here, plan.centralBankNetted(), here, plan.centralBankPar(),
-                        here, plan.centralBankRunsOff()) : ""));
+        GameLog.note(String.format("THE ROLLOVER, %s: %s falls due next month; last year's surplus"
+                        + " nets %s of it; %s to roll.%s", Rollover.words(plan.mode()),
+                hereK("%,.0fk", plan.due()), hereK("%,.0fk", plan.netted()), hereK("%,.0fk", plan.toRoll()),
+                plan.centralBankDue() > 0 ? String.format(" The central bank holds %s of it: the surplus"
+                        + " pays %s of that, it rolls %s at issue, and %s runs off past its dial.",
+                        hereK("%,.0fk", plan.centralBankDue()), hereK("%,.0fk", plan.centralBankNetted()), hereK("%,.0fk", plan.centralBankPar()),
+                        hereK("%,.0fk", plan.centralBankRunsOff())) : ""));
         double raised = 0, faced = 0;
         int issued = 0, atHome = 0;
         // Each issue sold at auction, for the notes below (D29) and the skip's report.
@@ -12968,13 +12971,13 @@ public class Game {
                 issued++;
                 atHome += issue.atHomeForDollars();
             }
-            GameLog.note(String.format("  rolled %s%,.0fk into %s, %s: %s%,.0fk of face raised %s%,.0fk. %s",
-                    here, issue.cash(), issue.paper(), issue.why(plan.mode()), here, face, here, brought,
+            GameLog.note(String.format("  rolled %s into %s, %s: %s of face raised %s. %s",
+                    hereK("%,.0fk", issue.cash()), issue.paper(), issue.why(plan.mode()), hereK("%,.0fk", face), hereK("%,.0fk", brought),
                     booked.replace('\n', ' ')));
         }
         if (plan.issues().isEmpty() && plan.toRoll() > 0) {
-            GameLog.note(String.format("  nothing issued: %s%,.0fk is under the smallest deal worth arranging"
-                    + " (%s%,.0fk), and is paid out of cash.", here, plan.toRoll(), here, minimumIssueSize()));
+            GameLog.note(String.format("  nothing issued: %s is under the smallest deal worth arranging"
+                    + " (%s), and is paid out of cash.", hereK("%,.0fk", plan.toRoll()), hereK("%,.0fk", minimumIssueSize())));
         }
         noteRolloverSales(sales, plan);
         rollover.record(month, plan.due(), plan.netted(), faced, raised, issued, atHome);
@@ -13043,7 +13046,6 @@ public class Game {
      */
     private void noteRolloverSales(java.util.List<RolloverSale> sales, Rollover.Plan plan) {
         if (sales.isEmpty()) return;
-        String here = getCurrency().qualifiedSymbol();
         String maturity = CityCalendar.monthName(month + 1) + "'s maturity";
         // What the maturity is paid from, past the sales: the cash the treasury held when the rollover was struck, less the
         // surplus it nets of the same maturity (the proceeds pay the rest, so what they did not raise is the cash's to pay,
@@ -13059,16 +13061,16 @@ public class Game {
                 cashLeft -= fromCash;
                 fromAdvances = shortfall - fromCash;
                 String where = fromAdvances > 0
-                        ? String.format("%s%,.0fk of %s was paid by the central bank's advances", here, fromAdvances, maturity)
-                        : String.format("%s%,.0fk of %s was paid from the treasury's cash", here, shortfall, maturity);
-                String note = String.format("The rollover's %s sale covered %s%,.0fk of the %s%,.0fk it needed, at its cap"
-                        + " of %.2f%%; %s.", name, here, s.brought(), here, s.issue().cash(), r.ceiling() * 100, where);
+                        ? String.format("%s of %s was paid by the central bank's advances", hereK("%,.0fk", fromAdvances), maturity)
+                        : String.format("%s of %s was paid from the treasury's cash", hereK("%,.0fk", shortfall), maturity);
+                String note = String.format("The rollover's %s sale covered %s of the %s it needed, at its cap"
+                        + " of %.2f%%; %s.", name, hereK("%,.0fk", s.brought()), hereK("%,.0fk", s.issue().cash()), r.ceiling() * 100, where);
                 rolloverShortNotes.add(note);
                 GameLog.note("  " + note);
             } else if (r.tail() > Auction.MAX_TAIL + 1e-9) {
                 String note = String.format("The rollover's %s sale cleared at %.2f%%, a tail of %.0f basis points over fair"
-                        + " (%s%,.0fk of face), with its cap set to %s: past the %.0f basis points the default cap takes.",
-                        name, r.stop() * 100, r.tail() * 10_000, here, r.sold(), CapSetting.words(rollover.getCap()),
+                        + " (%s of face), with its cap set to %s: past the %.0f basis points the default cap takes.",
+                        name, r.stop() * 100, r.tail() * 10_000, hereK("%,.0fk", r.sold()), CapSetting.words(rollover.getCap()),
                         Auction.MAX_TAIL * 10_000);
                 rolloverTailNotes.add(note);
                 GameLog.note("  " + note);
@@ -13911,9 +13913,9 @@ public class Game {
          */
         if (foreign.brokeThisMonth()) {
             expectations.pegBroke();
-            GameLog.note(String.format(onGoldBeforeReprice ? "The D$ came off gold, by %s: the D$ went from %.4f to %.4f per US$ (%+.1f%%)."
-                            : "The peg broke, by %s: the D$ went from %.4f to %.4f per US$ (%+.1f%%).",
-                    foreign.getLastBreakCause().words, rateBeforeReprice, foreign.getRate(),
+            GameLog.note(String.format(onGoldBeforeReprice ? "The %2$s came off gold, by %1$s: the %2$s went from %3$.4f to %4$.4f per US$ (%5$+.1f%%)."
+                            : "The peg broke, by %1$s: the %2$s went from %3$.4f to %4$.4f per US$ (%5$+.1f%%).",
+                    foreign.getLastBreakCause().words, getCurrency().qualifiedSymbol(), rateBeforeReprice, foreign.getRate(),
                     100 * (foreign.getRate() / rateBeforeReprice - 1)));
             if (onGoldBeforeReprice) debtManager.dropGoldAim();
         }
@@ -18738,17 +18740,16 @@ public class Game {
         // the discount moved with no cash behind it, which is its gain or loss on the paper.
         // Since BK2 this books nothing: the bank's own discount does not move (the central bank's face carries its own).
         restrikeBankDiscount(bankUnearnedBefore, bankFaceBefore, 0);
-        String here = getCurrency().qualifiedSymbol();
         if (took < par * (1 - 1e-12)) {
-            GameLog.note(String.format("The central bank's %s%,.0fk falling due runs off: nothing was issued"
-                    + " to add it on to.", here, par - took));
+            GameLog.note(String.format("The central bank's %s falling due runs off: nothing was issued"
+                    + " to add it on to.", hereK("%,.0fk", par - took)));
         }
         if (!(paid > 0)) return;
         cash += paid;
         treasuryRaisedSoFar += paid;
         debtManager.updateInterest();
-        GameLog.note(String.format("The central bank rolled %s%,.0fk of its own falling due into new paper"
-                + " at issue, paying the treasury %s%,.0fk.", here, took, here, paid));
+        GameLog.note(String.format("The central bank rolled %s of its own falling due into new paper"
+                + " at issue, paying the treasury %s.", hereK("%,.0fk", took), hereK("%,.0fk", paid)));
     }
 
     /* ----------------------- a buyback's holders outside the pools ----------------------- */
@@ -20756,6 +20757,7 @@ public class Game {
              * D$2.5B and US$1B - see DataSave.getFounding().
              */
             founding = loaded.getFounding(world.getMeanInflation());
+            Currency.use(founding.getCurrency());   // FM1: the static formatters write the loaded city's sign
             // ...and the wage ladder it was founded on (R0d), before the saved floor and wages are read against its bounds: the ladder, not the figures.
             layTheLadder(false);
             // ...and the homes' lamp and stove shares of the year (R0e), from the month and the founding just read back; the shares are not saved.
