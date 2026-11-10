@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**191 harness files, 22,448 labelled assertions.** AllChecks runs 191 of them.
+**191 harness files, 22,457 labelled assertions.** AllChecks runs 191 of them.
 
 ## Which harnesses read which class
 
@@ -22023,7 +22023,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1904 with the works gone no plan draws a siding:
   - L1905 ...no tile carries a plot of one, and no route runs to one (
 
-## RankingsCheck.java - 199 labelled assertions
+## RankingsCheck.java - 208 labelled assertions
 
 > The Rankings board held to what it promises (batch LB2; the project's spec-leaderboards.md 3, 4, 6 and 9):
 > Rankings' pivot and display, its two boards, its ranking, its sentence and lock, and CityMeasures' reading
@@ -22039,225 +22039,235 @@ _(this harness does not label its checks through a helper - it prints its findin
 > its figures are held to the history's own reader times the named factor.
 > ...
 
-  - L215 the file -D
-- **L275 1. the pivot's identities**
-  - L289 the city's figure in its own money is X under this month's rate and PPP, and X at founding's prices under Constant (a wage's, X)
-  - L290 the live city has the five money measures (
-  - L308 Money never reorders: a board's rows and ranks are the same in the city's money, game US$ and real US$, on both boards, at every Convert
-  - L310 and the boards have rows to be the same (
-  - L313 display: the city's money is US$ over the bridge x the game dollar's price level x the rate; at PPP x parity; at Constant x the founding rate
-  - L316 display: game US$ is US$ over the bridge x the price level, and at Constant x 1; real US$ as is
-- **L327 2. at founding a game US$ is the bridge's worth of real US$**
-  - L328 a fresh city's game dollar price level is 1, and its founding rate is the rate it opens at (
-  - L351 at founding every row's real US$ is the bridge (
-  - L352 the live city's game dollar has inflated (
-  - L353 and once it has inflated, the game US$ differs from the real US$ on every board of every money measure
-- **L371 3. Constant holds a steady real figure while its rate moves**
-  - L386 the same figures at a dearer game dollar and a weaker rate are the same US$ of 2015 under Constant, and in the city's money its real figure
-  - L387 ...and are not under this month's rate or PPP, which move with the rate and the price level
-- **L395 4. Your world's rows equal Nations' figures for the month**
-  - L397 the file carries exactly ten measures for Your world:
-  - L405 Your world ranks exactly the ten D15 names and has no rows for the other 60; with no Nations it ranks none
-  - L457 Your world
-  - L458 Your world
-  - L459 Your world
-  - L460 Your world
-  - L461 Your world
+  - L221 the file -D
+- **L283 1. the pivot's identities**
+  - L297 the city's figure in its own money is X under this month's rate and PPP, and X at founding's prices under Constant (a wage's, X)
+  - L298 the live city has the five money measures (
+  - L316 Money never reorders: a board's rows and ranks are the same in the city's money, game US$ and real US$, on both boards, at every Convert
+  - L318 and the boards have rows to be the same (
+  - L321 display: the city's money is US$ over the bridge x the game dollar's price level x the rate; at PPP x parity; at Constant x the founding rate
+  - L324 display: game US$ is US$ over the bridge x the price level, and at Constant x 1; real US$ as is
+- **L335 2. at founding a game US$ is the bridge's worth of real US$**
+  - L336 a fresh city's game dollar price level is 1, and its founding rate is the rate it opens at (
+  - L359 at founding every row's real US$ is the bridge (
+  - L360 the live city's game dollar has inflated (
+  - L361 and once it has inflated, the game US$ differs from the real US$ on every board of every money measure
+- **L379 3. Constant holds a steady real figure while its rate moves**
+  - L394 the same figures at a dearer game dollar and a weaker rate are the same US$ of 2015 under Constant, and in the city's money its real figure
+  - L395 ...and are not under this month's rate or PPP, which move with the rate and the price level
+- **L403 4. Your world's rows equal Nations' figures for the month**
+  - L405 the file carries exactly ten measures for Your world:
+  - L413 Your world ranks exactly the ten D15 names and has no rows for the other 60; with no Nations it ranks none
+  - L465 Your world
+  - L466 Your world
   - L467 Your world
-  - L474 Your world
-  - L492 Your world
-  - L493 Your world
-- **L504 5. lower is better ranks ascending**
-  - L522 a DOWN measure's first row has the least value and the rows ascend (unemployment, deaths, debt, ...)
-  - L523 an UP measure's first row has the most and the rows descend (GDP, life expectancy, ...)
-  - L524 a NONE measure ranks largest first, like an UP (inflation, investment, ...)
-  - L525 on the real file:
-  - L527 unemployment, which is lower-is-better, has the city ranked by its value among the nations (rank
-- **L536 6. ties share a rank**
-  - L565 a tie in the middle (France, Germany, Italy at 80.25): one rank for the group, the next skips two, and the board is the same twice
-- **L575 7. a place with no figure is off, never 0**
-  - L598 a place without a figure of a measure is not a row (
-  - L599 and a place with one is a row of exactly its value, year and mark: the rows are the figures
-  - L600 every row's value is a finite number: none is NaN
-  - L603 a published 0 is a row and a missing figure is not: oil has
-  - L612 a copy of the file with one nation's GDP removed loses exactly that row (
-  - L621 a city with no figure for a measure is off its board (you
-  - L633 a measure nothing real publishes (D10) has the city alone, and realFigures false (
-  - L640 a published measure's table counts its rows with a mark (not the city) and the estimates among them
-- **L648 8. the real rows' pivot**
-  - L649 the CPI-U's 2015 over 2025 is the file's us_prices_2015_over_2025 (
-  - L653 a 2025 figure at this month's rate is its value times CPI-U 2015 over 2025: the US (
-  - L655 a city region's 2021 figure is its value times CPI-U 2015 over 2021: Tokyo (
-  - L678 every place's GDP and GDP per person at this month's rate: its value times CPI-U 2015 over its year's
-  - L679 under Constant GDP and GDP per person are the file's .k figure as it is, with its year
-  - L680 under PPP they are the file's .ppp figure times CPI-U 2015 over its year's
-  - L681 a row carries its figure's mark and source
-  - L706 household spending converts by gdp.k and gdp.ppp over gdp of the same place; a wage by gdp.ppp over gdp, and is this month's figure under Constant
-- **L714 9. around you and your size**
-  - L737 around the city
-  - L749 your size: the places within ten times the city's
-  - L751 ...and every one is within the factor of the city's people, in rank order
-  - L755 a city off the board has no size to match: yourSize is empty
-- **L763 10. the city's measures from History**
-  - L769 every figure is a measure of the file, with a way of being made, and is finite
-  - L771 it has every measure a city of its age has (
-  - L772 growth_10y needs 132 monthly months, which a city of
-  - L773 only gdp, gdp_pp and hh_spend_pp have a figure at founding's prices
-  - L780 gdp is the history's last 12 months times THOUSANDS (
-  - L781 ...and at founding's prices the same months each over that month's price index
-  - L782 gdp per person is that over the people now (
-  - L783 people are the history's last population
-  - L785 household spending per person is a year of consumption times THOUSANDS over the people
-  - L787 price level is parity over fx, and fx against parity its inverse (
-  - L788 the investment share is a year of investment over a year of output:
-  - L789 the debt share is the last month's debt over a year of output
-  - L791 the average wage is the book's wage bill over posts filled, times 12 and THOUSANDS (
-  - L792 the minimum wage is the floor in today's money times 12 and THOUSANDS, and the Kaitz index the one over the other (
-  - L794 inflation is the price index over its reading twelve months before
-  - L795 unemployment is the book's, over the labour force:
-  - L799 old-age dependency is seniors and elders over adults, from the city's bands
-  - L801 area is the city's dry ground, the real file's land area (
-  - L803 reserves in months of imports is the vault in dollars over a month of imports at each month's rate:
-  - L809 the six bands' deaths add up to the deaths series over a year, to its rounding (
-  - L810 the death rate is the six bands' dead over the people, not the rounded series (
-  - L812 life expectancy is finite and between 20 and 120 (
-  - L819 the life table: a flat hazard m, in every band, gives a life expectancy of 1 over m
-  - L821 ...and with no one dying in the open band there is no life expectancy (NaN), not infinity
-  - L827 a city of six months: a year of output is the six months scaled by 12 over 6, times THOUSANDS, and says so
-  - L829 ...and inflation (13 months), real growth (24), 10-year growth and life expectancy (12 months) are absent, not 0
-  - L831 an empty history has no figures
-  - L836 a history with folded years (
-- **L856 11. the lock and the sentence**
-  - L859 Prices is locked under real US$
-  - L860 ...under Constant
-  - L861 ...on a measure that is not money (
-  - L862 ...and with no saved city on the board: always in LB2
-  - L863 it is open for money in the city's or the game's money at this month's rate or PPP once a saved city is on the board (LB3's seam)
-  - L870 with no saved city Prices is locked for every measure and setting; with one, locked exactly under real US$, Constant, or a measure that is not money
-  - L875 the opening sentence names real US dollars, 2015 prices, this month's rate, 2025, the city and its month
-  - L879 Your world in the city's money under Constant names the money, founding's prices, the constant rate and the path
-  - L882 game US dollars are of the city's month, and PPP is said:
-  - L884 a wage under Constant says it has no constant series and is at this month's rate; GDP under Constant does not
-  - L887 a measure that is not money drops the money clause and names its unit:
-  - L889 the Random path is named too
-  - L890 a measure with a constant series says so: gdp, gdp_pp and hh_spend_pp, and no wage
-- **L1011 12. reading the slots**
-  - L1012 fixture: the live city was saved in slots 1, 2 and 3 with a history each, and slot 3 is after a reform by
-  - L1032 a read writes nothing: every file's bytes and modified time are as they were, none added and none removed
-  - L1036 the cities on the board are slots 1 and 2, in slot order:
-  - L1037 slot 0, the autosave, holds a good save and is left out: not on the board, not counted
-  - L1038 the empty slots (3, 4 and 10) are off the board and not counted as left out
-  - L1040 a save from an older build (format
-  - L1042 a save that cannot be read and a history that cannot be read are two damaged
-  - L1043 a save with no history file is off and counted
-  - L1044 a first read parses every save in slots 1 to
-  - L1049 a saved city's row is id saved:1, kind SAVED, the city's name, its year, mark 0, source
-  - L1052 ...and it is the city as its history left it: its month is the history's last (
-  - L1058 a second refresh with nothing changed reads no slot and reuses every one (reads
-  - L1061 slot 2 saved since is the only slot read again (reads
-  - L1063 a slot deleted is gone from the next snapshot, and counted nowhere
-- **L1077 13. Prices moves only saved rows, never under real US$**
-  - L1082 fixture: the young save's price level differs from the active city's, and the old save, of the active city's month, has the same
-  - L1122 Prices per year against static moves no row that is not a saved city's: value and shown the same, on both boards, in the city's money and the game's, at this...
-  - L1123 ...and the boards had both saved cities to move (money measures)
-  - L1124 ...it moves the saved city whose game dollar is dearer or cheaper than this city's
-  - L1125 ...and does not move the one whose price level is this city's
-  - L1126 in game US$ a saved city per year is its own year's dollars (X over its rate), static its real dollars (X over rate over its price level) times this city's l...
-  - L1144 under real US$, under Constant, and for a measure that is not money, Prices changes nothing: the whole table the same, every row, rank, value and figure shown
-  - L1145 ...with saved cities on those boards to have moved (GDP and people)
-  - L1165 a static board is one order, with the saved cities in it, in the city's money, game US$ and real US$
-  - L1169 with a saved city on the board Prices is open for money in the city's money at this month's rate
-  - L1171 with no saved city on the board the sentence is the board's alone
-  - L1176 per year it adds that the saved cities are in their own year's dollars, as last saved
-  - L1177 static at an age it adds that they are at this city's prices of its year, at its age
-  - L1180 under real US$, which Prices cannot move, it names no prices: just the saved cities as last saved
-  - L1182 a measure that is not money names none either, at an age too
-  - L1184 an age is said as years and months: 50 months is 4 years 2 months, 12 is 1 year, 13 is 1 year 1 month, 7 is 7 months
-  - L1192 the drawer opens a saved city by its row id: its GDP line is its row on each board, mark 0, source
-  - L1194 ...and with no saved cities handed over, the same id opens nothing: a line of NaN each
-- **L1203 14. a reform leaves every rank**
-  - L1207 fixture: slot 3 is slot 2's city in a money a
-  - L1239 the same city saved before and after the reform has the same rank in every measure and every Settings combination, on both boards, beside the city before and...
-  - L1240 ...and the same value, and the same figure shown, to a relative 1e-9
-  - L1241 ...and where one has no row, so has the other (no figure of that measure)
-  - L1242 ...and side by side on one board, beside the live city they were saved from, the two copies share one rank (Rankings.TIE: the reform leaves noise in the last...
-  - L1243 ...the money measures among them (
-- **L1251 15. at your age**
-  - L1253 fixture: the age (
-  - L1256 at that age the cities on the board are slots 2 and 3, and slot 1 is no row
-  - L1257 slot 1 is listed as stopped, with its name and its last month (stopped at
-  - L1260 ...and the board has no row for it, with slots 2 and 3 on it
-  - L1264 fixture: slot 2's history file holds the age as a month, with a year behind it
-  - L1267 slot 2 at the age has CityMeasures.at of its history file at that month (
-  - L1272 ...its GDP is the history's GDP over the twelve months to the age, times THOUSANDS (
-  - L1273 ...its rate, parity and the game dollar's price level are the history file's fxRate, fxParity and usPrices at that month
-  - L1276 ...and the measures that need the land and the bands are absent, never guessed
-  - L1279 at its last saved month it is the whole history's last month (
-  - L1282 ...its area is the live city's at the month it was saved (
-  - L1285 the reform reaches the saved history: slot 3 at the age has a rate a
-  - L1288 a city still on the board at the month its history ends is not stopped, one past it is: at
-  - L1290 at an age none has reached, there are no rows and every city is stopped, at its own last month, in slot order
-  - L1292 at an age before the history began there is no row either, and no city has stopped
-- **L1300 16. the rank over the years**
-  - L1306 fixture: the history is all months (nothing folded) and holds at least three Decembers
-  - L1314 fixture: the measures the real world still publishes, read from the file (
-  - L1340 ...of which the city has a figure in some December for
-  - L1341 the rank line has one point for each December the city has a figure for, oldest first, and a point for every December where the city has a figure in all of them
-  - L1342 each point is the board's own rank for the city at that December, among as many places (Real world 2025 and the city)
-  - L1343 ...a rank from 1 to the places ranked, among the real places that publish the measure (a wage is published for fewer places than output is)
-  - L1347 a measure LC1 took out (real_rate, its source
-  - L1352 Your world's settings give the same points: the line is against Real world 2025 only
-  - L1353 saved cities would change the places ranked (the board with them has more rows), and the point leaves them out
-  - L1355 a measure that needs the land has no point, since the history does not keep it: area and density
-  - L1362 a measure the city had no figure for in its first Decembers starts when it has one:
-  - L1368 under Constant the line is the board's Constant rank at each December: the last of
-  - L1370 a history of nothing, or none, has no points
-  - L1372 the city at a December is the history's: its rate, parity and price level at that month, its month and year the calendar's
-- **L1382 17. the slim history equals the full one**
-  - L1409 a slot's slim history has the full one's axis
-  - L1410 CityMeasures.of over it is the full history's, figure for figure
-  - L1411 ...and so is CityMeasures.at of it at every month of the history
-  - L1412 it keeps only the series the measures read and the pivot's three, each as the file has it, under a third of the series the file has
-  - L1413 each kept series that is not empty is a HistorySave.PackedDoubles or PackedLongs: held as primitives, not boxed
-  - L1415 every series CityMeasures reads is a series a history has, and the pivot's fxRate, fxParity and usPrices are kept
-  - L1428 usPrices is the world economy's price level, to the digit, at the end of each month played (
-  - L1430 ...and it has an entry for every month of the history (
-  - L1436 the reform divides the rate's whole history by
-- **L1445 18. CityMeasures.at**
-  - L1449 at the history's last month it is of(), figure for figure (
-  - L1450 at the first month it was asked (
-  - L1452 a month the history never reached has no figures, nor month 0 or a negative one, nor a null history
-  - L1455 a younger month has fewer measures than an older: inflation needs 13 months, so none in the history's twelfth month (
-  - L1462 Extras.UNKNOWN leaves out exactly what needs the land and the bands (
-  - L1465 ...and its minimum wage is the history's floor lifted by the price index, times 12 and THOUSANDS (
-  - L1472 fixture: three years of the history are folded (
-  - L1473 a month in a folded year has no figures (months 12 and 36), nor does the month before the fold ends
-  - L1474 the first month after the fold is read as a month: a year of output scaled from the one month it has, 12 times the month
-  - L1476 a month in the folded history's middle has the figures of that month, a year of output 12 of the month; its last month is of()
-  - L1478 valueAt reads a series at a month and is NaN where the history has no such month or series
-- **L1495 19. the city in play, as saved**
-  - L1498 the city in play is its name and its world seed: Played.of(game) carries
-  - L1502 fixture: the save the copies are made from holds the city's name and its seed (
-  - L1514 fixture: all five copies are cities on the board, in slots 1 to 5, and none is left out (
-  - L1517 a slot copied from the city's own saves (same name, same seed) is marked in play: slots 1 and 2 (
-  - L1518 ...and none is marked when there is no city in play (Played.NONE)
-  - L1519 ...and the last-saved list leaves none out, marked or not: every slot is a row, in slot order
-  - L1521 a copy with the seed one higher, one with no seed and one with another name are each not marked: a save with no seed never matches
-  - L1527 fixture: at slot 1's last month (
-  - L1528 at your age the city in play, as saved, is not a row, and the seed one higher, the seed removed and the other name each stay in one: slots 3, 4 and 5 (
-  - L1532 fixture: the city in play is older than every copy's last month (month
-  - L1535 a copy whose last month is before the city's month is listed as stopped when no city is in play (
-  - L1536 ...and a slot that is the city in play is not listed as stopped: slots 3, 4 and 5 alone are (
-- **L1562 20. the packed read of a saved history**
-  - L1572 fixture: the kept series
-  - L1583 readKept over it equals slim(KEPT) of the whole parse, series by series (equal both ways, the same hash)
-  - L1585 a null entry is kept where it was,
-  - L1589 a Double series is a PackedDoubles and a Long series a PackedLongs
-  - L1591 a kept series the JSON has as null (
-  - L1592 a series that is not kept (
-  - L1593 foldedMonths is trimmed to month's size as slim trims it (
-  - L1606 a packed list is read only: add and set on it throw UnsupportedOperationException
-  - L1607 an empty document reads as no history, as Gson does
+  - L468 Your world
+  - L469 Your world
+  - L475 Your world
+  - L482 Your world
+  - L500 Your world
+  - L501 Your world
+- **L512 5. lower is better ranks ascending**
+  - L530 a DOWN measure's first row has the least value and the rows ascend (unemployment, deaths, debt, ...)
+  - L531 an UP measure's first row has the most and the rows descend (GDP, life expectancy, ...)
+  - L532 a NONE measure ranks largest first, like an UP (inflation, investment, ...)
+  - L533 on the real file:
+  - L535 unemployment, which is lower-is-better, has the city ranked by its value among the nations (rank
+- **L544 6. ties share a rank**
+  - L573 a tie in the middle (France, Germany, Italy at 80.25): one rank for the group, the next skips two, and the board is the same twice
+- **L583 7. a place with no figure is off, never 0**
+  - L606 a place without a figure of a measure is not a row (
+  - L607 and a place with one is a row of exactly its value, year and mark: the rows are the figures
+  - L608 every row's value is a finite number: none is NaN
+  - L611 a published 0 is a row and a missing figure is not: oil has
+  - L620 a copy of the file with one nation's GDP removed loses exactly that row (
+  - L629 a city with no figure for a measure is off its board (you
+  - L641 a measure nothing real publishes (D10) has the city alone, and realFigures false (
+  - L648 a published measure's table counts its rows with a mark (not the city) and the estimates among them
+- **L656 8. the real rows' pivot**
+  - L657 the CPI-U's 2015 over 2025 is the file's us_prices_2015_over_2025 (
+  - L661 a 2025 figure at this month's rate is its value times CPI-U 2015 over 2025: the US (
+  - L663 a city region's 2021 figure is its value times CPI-U 2015 over 2021: Tokyo (
+  - L686 every place's GDP and GDP per person at this month's rate: its value times CPI-U 2015 over its year's
+  - L687 under Constant GDP and GDP per person are the file's .k figure as it is, with its year
+  - L688 under PPP they are the file's .ppp figure times CPI-U 2015 over its year's
+  - L689 a row carries its figure's mark and source
+  - L714 household spending converts by gdp.k and gdp.ppp over gdp of the same place; a wage by gdp.ppp over gdp, and is this month's figure under Constant
+- **L722 9. around you and your size**
+  - L745 around the city
+  - L757 your size: the places within ten times the city's
+  - L759 ...and every one is within the factor of the city's people, in rank order
+  - L763 a city off the board has no size to match: yourSize is empty
+- **L771 10. the city's measures from History**
+  - L777 every figure is a measure of the file, with a way of being made, and is finite
+  - L779 it has every measure a city of its age has (
+  - L780 growth_10y needs 132 monthly months, which a city of
+  - L781 only gdp, gdp_pp and hh_spend_pp have a figure at founding's prices
+  - L788 gdp is the history's last 12 months times THOUSANDS (
+  - L789 ...and at founding's prices the same months each over that month's price index
+  - L790 gdp per person is that over the people now (
+  - L791 people are the history's last population
+  - L793 household spending per person is a year of consumption times THOUSANDS over the people
+  - L795 price level is parity over fx, and fx against parity its inverse (
+  - L796 the investment share is a year of investment over a year of output:
+  - L797 the debt share is the last month's debt over a year of output
+  - L799 the average wage is the book's wage bill over posts filled, times 12 and THOUSANDS (
+  - L800 the minimum wage is the floor in today's money times 12 and THOUSANDS, and the Kaitz index the one over the other (
+  - L802 inflation is the price index over its reading twelve months before
+  - L803 unemployment is the book's, over the labour force:
+  - L807 old-age dependency is seniors and elders over adults, from the city's bands
+  - L809 area is the city's dry ground, the real file's land area (
+  - L811 reserves in months of imports is the vault in dollars over a month of imports at each month's rate:
+  - L817 the six bands' deaths add up to the deaths series over a year, to its rounding (
+  - L818 the death rate is the six bands' dead over the people, not the rounded series (
+  - L820 life expectancy is finite and between 20 and 120 (
+  - L827 the life table: a flat hazard m, in every band, gives a life expectancy of 1 over m
+  - L829 ...and with no one dying in the open band there is no life expectancy (NaN), not infinity
+  - L835 a city of six months: a year of output is the six months scaled by 12 over 6, times THOUSANDS, and says so
+  - L837 ...and inflation (13 months), real growth (24), 10-year growth and life expectancy (12 months) are absent, not 0
+  - L839 an empty history has no figures
+  - L844 a history with folded years (
+- **L864 11. the lock and the sentence**
+  - L867 Prices is locked under real US$
+  - L868 ...under Constant
+  - L869 ...on a measure that is not money (
+  - L870 ...and with no saved city on the board: always in LB2
+  - L871 it is open for money in the city's or the game's money at this month's rate or PPP once a saved city is on the board (LB3's seam)
+  - L878 with no saved city Prices is locked for every measure and setting; with one, locked exactly under real US$, Constant, or a measure that is not money
+  - L883 the opening sentence names real US dollars, 2015 prices, this month's rate, 2025, the city and its month
+  - L887 Your world in the city's money under Constant names the money, founding's prices, the constant rate and the path
+  - L890 game US dollars are of the city's month, and PPP is said:
+  - L892 a wage under Constant says it has no constant series and is at this month's rate; GDP under Constant does not
+  - L895 a measure that is not money drops the money clause and names its unit:
+  - L897 the Random path is named too
+  - L898 a measure with a constant series says so: gdp, gdp_pp and hh_spend_pp, and no wage
+- **L1019 12. reading the slots**
+  - L1020 fixture: the live city was saved in slots 1, 2 and 3 with a history each, and slot 3 is after a reform by
+  - L1040 a read writes nothing: every file's bytes and modified time are as they were, none added and none removed
+  - L1044 the cities on the board are slots 1 and 2, in slot order:
+  - L1045 slot 0, the autosave, holds a good save and is left out: not on the board, not counted
+  - L1046 the empty slots (3, 4 and 10) are off the board and not counted as left out
+  - L1048 a save from an older build (format
+  - L1050 a save that cannot be read and a history that cannot be read are two damaged
+  - L1051 a save with no history file is off and counted
+  - L1052 a first read parses every save in slots 1 to
+  - L1057 a saved city's row is id saved:1, kind SAVED, the city's name, its year, mark 0, source
+  - L1060 ...and it is the city as its history left it: its month is the history's last (
+  - L1066 a second refresh with nothing changed reads no slot and reuses every one (reads
+  - L1069 slot 2 saved since is the only slot read again (reads
+  - L1071 a slot deleted is gone from the next snapshot, and counted nowhere
+- **L1085 13. Prices moves only saved rows, never under real US$**
+  - L1090 fixture: the young save's price level differs from the active city's, and the old save, of the active city's month, has the same
+  - L1130 Prices per year against static moves no row that is not a saved city's: value and shown the same, on both boards, in the city's money and the game's, at this...
+  - L1131 ...and the boards had both saved cities to move (money measures)
+  - L1132 ...it moves the saved city whose game dollar is dearer or cheaper than this city's
+  - L1133 ...and does not move the one whose price level is this city's
+  - L1134 in game US$ a saved city per year is its own year's dollars (X over its rate), static its real dollars (X over rate over its price level) times this city's l...
+  - L1152 under real US$, under Constant, and for a measure that is not money, Prices changes nothing: the whole table the same, every row, rank, value and figure shown
+  - L1153 ...with saved cities on those boards to have moved (GDP and people)
+  - L1173 a static board is one order, with the saved cities in it, in the city's money, game US$ and real US$
+  - L1177 with a saved city on the board Prices is open for money in the city's money at this month's rate
+  - L1179 with no saved city on the board the sentence is the board's alone
+  - L1184 per year it adds that the saved cities are in their own year's dollars, as last saved
+  - L1185 static at an age it adds that they are at this city's prices of its year, at its age
+  - L1188 under real US$, which Prices cannot move, it names no prices: just the saved cities as last saved
+  - L1190 a measure that is not money names none either, at an age too
+  - L1192 an age is said as years and months: 50 months is 4 years 2 months, 12 is 1 year, 13 is 1 year 1 month, 7 is 7 months
+  - L1200 the drawer opens a saved city by its row id: its GDP line is its row on each board, mark 0, source
+  - L1202 ...and with no saved cities handed over, the same id opens nothing: a line of NaN each
+- **L1211 14. a reform leaves every rank**
+  - L1215 fixture: slot 3 is slot 2's city in a money a
+  - L1247 the same city saved before and after the reform has the same rank in every measure and every Settings combination, on both boards, beside the city before and...
+  - L1248 ...and the same value, and the same figure shown, to a relative 1e-9
+  - L1249 ...and where one has no row, so has the other (no figure of that measure)
+  - L1250 ...and side by side on one board, beside the live city they were saved from, the two copies share one rank (Rankings.TIE: the reform leaves noise in the last...
+  - L1251 ...the money measures among them (
+- **L1259 15. at your age**
+  - L1261 fixture: the age (
+  - L1264 at that age the cities on the board are slots 2 and 3, and slot 1 is no row
+  - L1265 slot 1 is listed as stopped, with its name and its last month (stopped at
+  - L1268 ...and the board has no row for it, with slots 2 and 3 on it
+  - L1272 fixture: slot 2's history file holds the age as a month, with a year behind it
+  - L1275 slot 2 at the age has CityMeasures.at of its history file at that month (
+  - L1280 ...its GDP is the history's GDP over the twelve months to the age, times THOUSANDS (
+  - L1281 ...its rate, parity and the game dollar's price level are the history file's fxRate, fxParity and usPrices at that month
+  - L1284 ...and the measures that need the land and the bands are absent, never guessed
+  - L1287 at its last saved month it is the whole history's last month (
+  - L1290 ...its area is the live city's at the month it was saved (
+  - L1293 the reform reaches the saved history: slot 3 at the age has a rate a
+  - L1296 a city still on the board at the month its history ends is not stopped, one past it is: at
+  - L1298 at an age none has reached, there are no rows and every city is stopped, at its own last month, in slot order
+  - L1300 at an age before the history began there is no row either, and no city has stopped
+- **L1308 16. the rank over the years**
+  - L1314 fixture: the history is all months (nothing folded) and holds at least three Decembers
+  - L1322 fixture: the measures the real world still publishes, read from the file (
+  - L1348 ...of which the city has a figure in some December for
+  - L1349 the rank line has one point for each December the city has a figure for, oldest first, and a point for every December where the city has a figure in all of them
+  - L1350 each point is the board's own rank for the city at that December, among as many places (Real world 2025 and the city)
+  - L1351 ...a rank from 1 to the places ranked, among the real places that publish the measure (a wage is published for fewer places than output is)
+  - L1355 a measure LC1 took out (real_rate, its source
+  - L1360 Your world's settings give the same points: the line is against Real world 2025 only
+  - L1361 saved cities would change the places ranked (the board with them has more rows), and the point leaves them out
+  - L1363 a measure that needs the land has no point, since the history does not keep it: area and density
+  - L1370 a measure the city had no figure for in its first Decembers starts when it has one:
+  - L1376 under Constant the line is the board's Constant rank at each December: the last of
+  - L1378 a history of nothing, or none, has no points
+  - L1380 the city at a December is the history's: its rate, parity and price level at that month, its month and year the calendar's
+- **L1390 17. the slim history equals the full one**
+  - L1417 a slot's slim history has the full one's axis
+  - L1418 CityMeasures.of over it is the full history's, figure for figure
+  - L1419 ...and so is CityMeasures.at of it at every month of the history
+  - L1420 it keeps only the series the measures read and the pivot's three, each as the file has it, under a third of the series the file has
+  - L1421 each kept series that is not empty is a HistorySave.PackedDoubles or PackedLongs: held as primitives, not boxed
+  - L1423 every series CityMeasures reads is a series a history has, and the pivot's fxRate, fxParity and usPrices are kept
+  - L1436 usPrices is the world economy's price level, to the digit, at the end of each month played (
+  - L1438 ...and it has an entry for every month of the history (
+  - L1444 the reform divides the rate's whole history by
+- **L1453 18. CityMeasures.at**
+  - L1457 at the history's last month it is of(), figure for figure (
+  - L1458 at the first month it was asked (
+  - L1460 a month the history never reached has no figures, nor month 0 or a negative one, nor a null history
+  - L1463 a younger month has fewer measures than an older: inflation needs 13 months, so none in the history's twelfth month (
+  - L1470 Extras.UNKNOWN leaves out exactly what needs the land and the bands (
+  - L1473 ...and its minimum wage is the history's floor lifted by the price index, times 12 and THOUSANDS (
+  - L1480 fixture: three years of the history are folded (
+  - L1481 a month in a folded year has no figures (months 12 and 36), nor does the month before the fold ends
+  - L1482 the first month after the fold is read as a month: a year of output scaled from the one month it has, 12 times the month
+  - L1484 a month in the folded history's middle has the figures of that month, a year of output 12 of the month; its last month is of()
+  - L1486 valueAt reads a series at a month and is NaN where the history has no such month or series
+- **L1503 19. the city in play, as saved**
+  - L1506 the city in play is its name, its world seed and its founding cash: Played.of(game) carries
+  - L1510 fixture: the save the copies are made from holds the city's name, its seed and its founding cash (
+  - L1525 fixture: all seven copies are cities on the board, in slots 1 to 7, and none is left out (
+  - L1528 a slot copied from the city's own saves (same name, same seed, same founding cash) is marked in play: slots 1 and 2 (
+  - L1529 ...and none is marked when there is no city in play (Played.NONE)
+  - L1530 ...and the last-saved list leaves none out, marked or not: every slot is a row, in slot order
+  - L1532 a copy with the seed one higher, one with no seed and one with another name are each not marked: a save with no seed never matches
+  - L1534 a re-found (slot 6: the same name and the same seed as slot 1, other founding cash) is not marked, and neither is a save that carries no founding cash (slot ...
+  - L1540 fixture: at slot 1's last month (
+  - L1541 at your age the city in play, as saved, is not a row, and the seed one higher, the seed removed, the other name, the other founding cash and the cash removed...
+  - L1545 fixture: the city in play is older than every copy's last month (month
+  - L1548 a copy whose last month is before the city's month is listed as stopped when no city is in play (
+  - L1549 ...and a slot that is the city in play is not listed as stopped: slots 3 to 7 alone are (
+- **L1575 20. the packed read of a saved history**
+  - L1585 fixture: the kept series
+  - L1596 readKept over it equals slim(KEPT) of the whole parse, series by series (equal both ways, the same hash)
+  - L1598 a null entry is kept where it was,
+  - L1602 a Double series is a PackedDoubles and a Long series a PackedLongs
+  - L1604 a kept series the JSON has as null (
+  - L1605 a series that is not kept (
+  - L1606 foldedMonths is trimmed to month's size as slim trims it (
+  - L1619 a packed list is read only: add and set on it throw UnsupportedOperationException
+  - L1620 an empty document reads as no history, as Gson does
+- **L1636 21. the stamp follows each file of a slot**
+  - L1646 fixture: the slot is read once and is the founded city (
+  - L1647 nothing moved: the next refresh reads no slot and keeps the very same city
+  - L1655 the save alone, its size moved and its time not: the slot is read again and the row has the new header's name (reads
+  - L1661 the save alone, its time moved and its size not: the slot is read again and the row has the new name (reads
+  - L1663 ...and then nothing moved: no slot is read
+  - L1668 the history alone: the slot is read again and the row ends at the longer history's last month (
+  - L1686 a save that lands before its history is read (
+  - L1688 ...and the row ends as the finished slot reads: its name (
 
 ## ReadPathCheck.java - 39 labelled assertions
 

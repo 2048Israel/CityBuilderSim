@@ -39,6 +39,13 @@ public class SaveHeader {
      */
     private Long worldSeed;
 
+    /**
+     * What the city was founded with (DataSave's key of that name, set once at the founding and never changed; LB5): with the name and the seed, the founding
+     * a slot shares with the city in play, so that a re-found on the same name and world is not taken for the city it replaced. Null on a save that has none,
+     * which never matches. Read from the save as it is: nothing is added to the file.
+     */
+    private Double foundingCash;
+
     /*
      * What the Rankings board reads of a saved city beside its history (LB3, SavedCities): the money's name, the world's
      * prices, the money's unit, and the land and the people by age band as they stood at the last save. Raw, as saved: the
@@ -62,6 +69,8 @@ public class SaveHeader {
     public long getSavedAt()       { return savedAt; }
     /** The world's seed as saved, or null on a save that does not carry it (LB4: such a slot is never the city in play). */
     public Long getWorldSeed()     { return worldSeed; }
+    /** The cash the city was founded with as saved, or null on a save that does not carry it (LB5: such a slot is never the city in play). */
+    public Double getFoundingCash() { return foundingCash; }
 
     /** The city's money in the plural ("Arden dollars"), or null on a save that does not carry it. */
     public String getCurrencyPlural() { return currencyPlural; }
