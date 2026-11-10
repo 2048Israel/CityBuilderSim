@@ -66,7 +66,7 @@
 
 **Uses:** [World](World.md) (193), [Landmasses](Landmasses.md) (186), [LandmassView](LandmassView.md) (149), [Game](Game.md) (107), [CityMap](CityMap.md) (53), [BuildingsTemplate](BuildingsTemplate.md) (49), [LandParcel](LandParcel.md) (44), [LandManager](LandManager.md) (43), [Resource](Resource.md) (42), [LongPlaytest](LongPlaytest.md) (42), [LandMap](LandMap.md) (30), [CityLand](CityLand.md) (25), [EarthData](EarthData.md) (17), [Founding](Founding.md) (16), [LandMarket](LandMarket.md) (16), [AutoBuilder](AutoBuilder.md) (14), [Ports](Ports.md) (13), [TilePainter](TilePainter.md) (11), [CityShore](CityShore.md) (11), [Deposit](Deposit.md) (10), [GridOffers](GridOffers.md) (10), [BuildCard](BuildCard.md) (10), [EarthTerrain](EarthTerrain.md) (9), [GameFiles](GameFiles.md) (8), [ConstructionControl](ConstructionControl.md) (8), [ZoningView](ZoningView.md) (8), [EarthSite](EarthSite.md) (6), [EarthCheck](EarthCheck.md) (5), [Notice](Notice.md) (5), [LandGrid](LandGrid.md) (4)... and 14 more
 
-**Used by (4):** [BridgeCheck](BridgeCheck.md), [IslandLinkCheck](IslandLinkCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
+**Used by (5):** [BridgeCheck](BridgeCheck.md), [IslandLinkCheck](IslandLinkCheck.md), [IslandRailCheck](IslandRailCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
 ## Sections
 

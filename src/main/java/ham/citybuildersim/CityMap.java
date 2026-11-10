@@ -6461,7 +6461,18 @@ public final class CityMap {
     /** How many tiles from the founding site's tile the home piece is looked for, ring by ring, when its own tile is not land (CL5). */
     static final int PIECE_HOME_REACH = 8;
 
-    /** The city's ground in pieces (CL5): what CityRuns.layTo() is handed so that a net is laid on every piece of ground the city builds on. */
+    /**
+     * How many tiles round a sea terminal's box the piece it stands on is sought, ring by ring (RI1; ET5's "a linked island's hub at its port"): 2 - the
+     * box is blocked from the pieces with its clear verge and quay, so the nearest labelled land lies just past them.
+     */
+    static final int PIECE_PORT_REACH = 2;
+
+    /**
+     * The city's ground in pieces (CL5): what CityRuns.layTo() is handed so that a net is laid on every piece of ground the city builds on.
+     * RI1 (ET5's "a linked island's hub at its port"): a piece that holds a berthed sea terminal's shore has that terminal for its anchor() - where its
+     * nets start from - and its hub() is the highway line crossing nearest it; the home piece, and a piece with no terminal, start from the founding
+     * site. A net already opened keeps its hub (CityRuns saves them): only a piece opened from now on starts at its port.
+     */
     final class MapPieces implements CityRuns.Pieces {
         private final Map<Long, byte[]> terrain = new HashMap<>();
         private final Map<Long, int[]> labels = new HashMap<>();
@@ -6494,6 +6505,9 @@ public final class CityMap {
         private long[] tilesOf = new long[0];
         private long[][] hubs = new long[0][];
         private boolean[] hubDone = new boolean[0];
+        /** (RI1) Each piece's port anchor {x, y}, the middle of the box of the first berthed terminal on its shore (null for none: the home piece's, any piece's with no port), worked out at the first ask after the pieces were. */
+        private long[][] anchors = new long[0][];
+        private boolean anchorsDone;
         private long buildId;
 
         private long weighedBuild = Long.MIN_VALUE;
@@ -6529,6 +6543,10 @@ public final class CityMap {
             return weights[p];
         }
 
+        /**
+         * Piece p's hub: the highway line crossing on its dry ground nearest its anchor - since RI1 (ET5's "a linked island's hub at its port") the
+         * piece's port when it has one, else the founding site (the home piece, and an island no terminal of the city stands on).
+         */
         @Override public long[] hub(int p) {
             ensure();
             if (p < 0 || p >= count) return null;
@@ -6537,6 +6555,50 @@ public final class CityMap {
                 hubDone[p] = true;
             }
             return hubs[p];
+        }
+
+        /**
+         * (RI1) Where piece p's nets start from - ET5's "a linked island's hub at its port": the middle of the box of the first berthed sea terminal
+         * (the oldest) on the piece's shore; the piece's hub() where it has none, and always for the home piece, which starts at the founding site.
+         */
+        @Override public long[] anchor(int p) {
+            long[] a = portOf(p);
+            return a != null ? a : hub(p);
+        }
+
+        /** The port anchor of piece p, null where it has none. */
+        private long[] portOf(int p) {
+            ensure();
+            if (p < 1 || p >= count) return null;
+            if (!anchorsDone) {
+                anchorsDone = true;
+                for (CityShore.Work w : shore.works()) {
+                    if (!w.berthed()) continue;
+                    int q = pieceOfWork(w);
+                    if (q >= 1 && anchors[q] == null) anchors[q] = new long[] { w.x0() + w.w() / 2, w.y0() + w.h() / 2 };
+                }
+            }
+            return anchors[p];
+        }
+
+        /**
+         * The piece a work on the shore stands on: the piece of the nearest labelled land tile to its box, sought in rings of tiles round it out to
+         * PIECE_PORT_REACH (the ring, then the northern, then the western); -1 where there is none. Its own tiles are blocked from the pieces
+         * (indexShore()), so it takes its neighbour's.
+         */
+        private int pieceOfWork(CityShore.Work w) {
+            long bx0 = Math.floorDiv(w.x0(), World.TILE), by0 = Math.floorDiv(w.y0(), World.TILE);
+            long bx1 = Math.floorDiv(w.x0() + w.w() - 1, World.TILE), by1 = Math.floorDiv(w.y0() + w.h() - 1, World.TILE);
+            for (int r = 0; r <= PIECE_PORT_REACH; r++) {
+                for (long ty = by0 - r; ty <= by1 + r; ty++) {
+                    for (long tx = bx0 - r; tx <= bx1 + r; tx++) {
+                        if (r > 0 && tx > bx0 - r && tx < bx1 + r && ty > by0 - r && ty < by1 + r) continue;
+                        int l = labAt(tx, ty);
+                        if (l >= 0) return pieceOfLabel[l];
+                    }
+                }
+            }
+            return -1;
         }
 
         /** The land tiles piece p holds. */
@@ -6787,7 +6849,10 @@ public final class CityMap {
             }
             hubs = new long[count][];
             hubDone = new boolean[count];
+            anchors = new long[count][];
+            anchorsDone = false;
             nearestKey = null;
+            refTx = refTy = null;
             weights = new long[count];
             weightsValid = false;
         }
@@ -6795,13 +6860,22 @@ public final class CityMap {
         // ----- a piece's hub -----
 
         /**
-         * The first tile of piece p, nearest the founding site's tile (ties: the northern, then the western), whose highway line crossing is owned dry
-         * ground by the runs' own ground; null when none is. Every piece's nearest tile is found in one pass over the land (the first ask after the
-         * ground moves); only when a piece's nearest tile has a wet crossing are its tiles sorted.
+         * The first tile of piece p, nearest the piece's reference tile (ties: the northern, then the western), whose highway line crossing is owned dry
+         * ground by the runs' own ground; null when none is. The reference tile is the founding site's, except (RI1; ET5's "a linked island's hub at its
+         * port") for a piece with a berthed terminal on its shore, whose is the terminal's (portOf()). Every piece's nearest tile is found in one pass
+         * over the land (the first ask after the ground moves); only when a piece's nearest tile has a wet crossing are its tiles sorted.
          */
         private long[] findHub(int p) {
             if (tilesOf[p] <= 0 || tilesOf[p] > Integer.MAX_VALUE) return null;
             if (nearestKey == null) {
+                // RI1: each piece's reference tile - its port's, else the founding site's.
+                refTx = new long[count];
+                refTy = new long[count];
+                for (int q = 0; q < count; q++) {
+                    long[] a = portOf(q);
+                    refTx[q] = Math.floorDiv(a != null ? a[0] : siteX, World.TILE);
+                    refTy[q] = Math.floorDiv(a != null ? a[1] : siteY, World.TILE);
+                }
                 nearestKey = new long[count];
                 Arrays.fill(nearestKey, Long.MAX_VALUE);
                 eachTile(-1, (k, q) -> { if (k < nearestKey[q]) nearestKey[q] = k; });
@@ -6819,14 +6893,15 @@ public final class CityMap {
             return null;
         }
 
-        /** Each piece's nearest tile's key, once found: nearest the site's tile first, then the northern, then the western; Long.MAX_VALUE for a piece with no tile. */
+        /** Each piece's nearest tile's key, once found: nearest its reference tile first, then the northern, then the western; Long.MAX_VALUE for a piece with no tile. */
         private long[] nearestKey;
+        /** Each piece's reference tile (RI1), found with nearestKey: its port's tile, else the founding site's. */
+        private long[] refTx, refTy;
 
         private interface TileSink { void at(long key, int piece); }
 
-        /** Gives the sink each land tile's hub key (squared distance from the founding site's tile << 30 | row << 15 | column: tile coordinates are under 2^15, the world being 23,552 tiles a side, the squared distance under 2^31) and piece; of piece `only`'s tiles alone unless it is -1. */
+        /** Gives the sink each land tile's hub key (squared distance from its piece's reference tile << 30 | row << 15 | column: tile coordinates are under 2^15, the world being 23,552 tiles a side, the squared distance under 2^31) and piece; of piece `only`'s tiles alone unless it is -1. */
         private void eachTile(int only, TileSink sink) {
-            long stx = Math.floorDiv(siteX, World.TILE), sty = Math.floorDiv(siteY, World.TILE);
             for (Map.Entry<Long, int[]> e : labels.entrySet()) {
                 long cx = e.getKey() & 0xffffffffL, cy = e.getKey() >>> 32;
                 int[] c = e.getValue();
@@ -6835,7 +6910,7 @@ public final class CityMap {
                     int q = pieceOfLabel[c[i]];
                     if (only >= 0 && q != only) continue;
                     long tx = (cx << PIECE_CHUNK_SHIFT) | (i & PIECE_CHUNK_MASK), ty = (cy << PIECE_CHUNK_SHIFT) | (i >> PIECE_CHUNK_SHIFT);
-                    long dx = tx - stx, dy = ty - sty;
+                    long dx = tx - refTx[q], dy = ty - refTy[q];
                     sink.at(((dx * dx + dy * dy) << 30) | (ty << 15) | tx, q);
                 }
             }

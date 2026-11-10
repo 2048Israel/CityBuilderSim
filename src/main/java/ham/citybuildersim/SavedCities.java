@@ -18,7 +18,7 @@ import java.util.Set;
  * it never writes a file. A snapshot is immutable, so the screen reads one on a worker thread (refresh) and hands it to the clock's thread.
  *
  * THE CITY IN PLAY (LB4). A city loaded from slot 3 is also slot 3 on disk: the same name, the city as it was last saved. Compared at the active city's age
- * it would nearly tie with itself, so a slot whose founding (name and world seed) is the city in play's (Played) is marked inPlay in now() and left out of
+ * it would nearly tie with itself, so a slot whose founding (name, world seed and founding cash) is the city in play's (Played) is marked inPlay in now() and left out of
  * at() and stoppedAt(). A caller that has no city in play passes Played.NONE, which matches nothing.
  *
  * WHY. Each save is its own world: its own money (its last reform may have lopped zeros off it), its own rate, parity and price level, its own history.
@@ -50,21 +50,24 @@ public final class SavedCities {
     }
 
     /**
-     * The city in play, by its founding: its name and its world seed (LB4). A saved slot is that city when both are the slot header's; NONE matches nothing.
-     * A header with no seed (an old save: DataSave.getFounding derives one at load, the header cannot) never matches.
+     * The city in play, by its founding: its name, its world seed (LB4) and the cash it was founded with (LB5). A saved slot is that city when all three are
+     * the slot header's; NONE matches nothing. A header with no seed (an old save: DataSave.getFounding derives one at load, the header cannot) or no founding
+     * cash never matches. WHY the cash (LB4's review): two cities founded on one name and one seed (a re-found, a second try) both read as "this city, as
+     * saved"; the founding cash is the founding detail the save already holds and the founding screen lets the player change.
      */
-    public record Played(String name, long seed) {
+    public record Played(String name, long seed, double foundingCash) {
         /** No city in play: matches no slot. */
-        public static final Played NONE = new Played(null, 0L);
+        public static final Played NONE = new Played(null, 0L, 0.0);
 
         /** The game's city, by its founding. */
         public static Played of(Game g) {
-            return new Played(g.getCityName(), g.getWorldSeed());
+            return new Played(g.getCityName(), g.getWorldSeed(), g.getFoundingCash());
         }
 
-        /** True when this is a city in play and a slot with this name and this seed (null: the header has none) is its founding's. */
-        boolean matches(String slotName, Long slotSeed) {
-            return this != NONE && name != null && slotName != null && name.equals(slotName) && slotSeed != null && slotSeed == seed;
+        /** True when this is a city in play and a slot with this name, this seed and this founding cash (null: the header has none) is its founding's. */
+        boolean matches(String slotName, Long slotSeed, Double slotCash) {
+            return this != NONE && name != null && slotName != null && name.equals(slotName)
+                    && slotSeed != null && slotSeed == seed && slotCash != null && slotCash == foundingCash;
         }
     }
 
@@ -86,7 +89,12 @@ public final class SavedCities {
     record Stamp(Path save, long saveSize, long saveTime, long historySize, long historyTime) { }
 
     /** What a readable slot keeps: the city as its last save has it, the slim history behind it, and what an earlier month needs of the header. */
-    private record Holding(String name, Long worldSeed, String currency, double foundingRate, HistorySave history, int lastMonth, Rankings.City now) { }
+    private record Holding(String name, Long worldSeed, Double foundingCash, String currency, double foundingRate, HistorySave history, int lastMonth, Rankings.City now) {
+        /** True when this slot's founding is the city in play's (LB5: name, seed and founding cash). */
+        boolean isTheCityIn(Played played) {
+            return played.matches(name, worldSeed, foundingCash);
+        }
+    }
 
     /** One slot as read: its stamp, and either the city it keeps, or why it is left off, or neither (an empty slot). */
     private record Entry(int slot, Stamp stamp, Holding kept, Why left) { }
@@ -138,6 +146,11 @@ public final class SavedCities {
         return slot - FIRST_SLOT < entries.size() ? entries.get(slot - FIRST_SLOT) : null;
     }
 
+    /**
+     * Both files of a slot as the disk has them now. The header the row reads first is not a file of its own (SaveHeader parses the save itself), so the
+     * save's size and time are the header's, and the history's are the history's: a file landing alone moves the stamp (RankingsCheck 21, LB5). Taken BEFORE
+     * the slot is read, so that a file landing during the read leaves the entry's stamp behind the disk's and the next refresh reads the slot again.
+     */
     private static Stamp stampOf(GameFiles files, int slot) {
         Path save = files.saveFile(slot), history = files.historyFile(slot);
         return new Stamp(save, sizeOf(save), timeOf(save), sizeOf(history), timeOf(history));
@@ -209,7 +222,7 @@ public final class SavedCities {
             world.restore(header.getWorldEconomy());
             now = new Rankings.City(now.name(), now.currency(), now.month(), now.year(), now.fx(), now.parity(), world.getPriceLevel(), now.foundingRate(), now.figures());
         }
-        return new Entry(slot, stamp, new Holding(name, header.getWorldSeed(), currency, foundingRate, slim, last, now), null);
+        return new Entry(slot, stamp, new Holding(name, header.getWorldSeed(), header.getFoundingCash(), currency, foundingRate, slim, last, now), null);
     }
 
     private static Entry left(int slot, Stamp stamp, Why why) {
@@ -236,7 +249,7 @@ public final class SavedCities {
         List<Rankings.Saved> out = new ArrayList<>();
         for (Entry e : entries) {
             if (e.kept() == null) continue;
-            out.add(new Rankings.Saved(e.slot(), e.kept().now(), played.matches(e.kept().name(), e.kept().worldSeed())));
+            out.add(new Rankings.Saved(e.slot(), e.kept().now(), e.kept().isTheCityIn(played)));
         }
         return out;
     }
@@ -251,7 +264,7 @@ public final class SavedCities {
         for (Entry e : entries) {
             if (e.kept() == null) continue;
             Holding k = e.kept();
-            if (played.matches(k.name(), k.worldSeed())) continue;
+            if (k.isTheCityIn(played)) continue;
             Rankings.City c = Rankings.cityAt(k.name(), k.currency(), k.foundingRate(), k.history(), CityMeasures.Extras.UNKNOWN, month);
             if (c != null) out.add(new Rankings.Saved(e.slot(), c));
         }
@@ -263,7 +276,7 @@ public final class SavedCities {
         List<Stopped> out = new ArrayList<>();
         for (Entry e : entries) {
             Holding k = e.kept();
-            if (k != null && k.lastMonth() < month && !played.matches(k.name(), k.worldSeed())) out.add(new Stopped(e.slot(), k.name(), k.lastMonth()));
+            if (k != null && k.lastMonth() < month && !k.isTheCityIn(played)) out.add(new Stopped(e.slot(), k.name(), k.lastMonth()));
         }
         return out;
     }

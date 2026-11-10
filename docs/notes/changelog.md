@@ -18,6 +18,84 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.76 — LB5, the city in play is matched on its founding cash too — 2026-11-09, ready, see docs/queue/LB5-notes.md
+LB4's review follow-ups. `SavedCities.Played` took a saved slot for the city in play on its name and world seed alone,
+so a re-found on the same name and world (a second try) was marked "this city, as saved" beside the city it replaced;
+it now compares the founding cash as well, read by `SaveHeader` from the `foundingCash` key every save already holds
+(nothing is added to the save; a save without the key never matches). RankingsCheck 19 gains a re-found and a save with
+no founding cash, neither marked. The review's second note, that a slot's stamp misses the header, is not a gap: the
+header is the save file parsed, so its size and time are in the stamp already; RankingsCheck 21 proves each file alone,
+and a save landing before its history, moves the stamp and the row follows. The window the note describes (the new
+header over the old history until the history lands) is SaveWriter's order and stays, as LB5-B. The third, `placeSaved`
+per redraw, was not taken (it is behind the cache check; nothing to measure). The default trace is main's: no ensemble.
+
+### 0.9.75 — GW0, the staffing gate and growth, a study — 2026-11-09, ready, see docs/queue/GW0-notes.md
+The wages study's question (3.4, C2): why the game's own city cannot go much under 10% out of work
+(docs/studies/spec-staffing-gate.md; the kit and tables in docs/studies/staffing-gate/). A business orders a
+building only when the workers spare today could fill 80% of its posts. So in seeds 0-3's first 40 years about 15
+single-building orders a month fail on the spare alone (the steel and copper works, the pulp and paper mills, the
+Machine Works, the Contact Centre), while the village waits with a fifth of its workers jobless. A gate that also
+counts the workers migration would bring for the posts within a year (no new saved field) halves the young city's
+out of work over 16 AUTO2 seeds (12.0% to 6.3%) and grows it (+58% at m240, +112% at m1,200). With WG2's aim the
+grown city runs 8.3% (6.1% from m1,200) and is larger at every month; WG2's aim alone costs the young city 42% at
+m240. A lower share, a 6- or 24-month draw and no share test were measured and not recommended. Four calls, each
+with a recommendation; GW1's row is in the note. No model change; the trace is main's.
+
+### 0.9.74 — CU1, Copper Refining's margin, a study — 2026-11-09, ready, see docs/queue/CU1-notes.md
+A study, no model change. LS1 found Copper Refining buying its input at 52% of its sales and keeping 35%. The sector is
+Rod Mills on imported cathode, exporting rod (276 by m2400 and 1,679 by m3996 in LS1's city; 363-446 by m2400 on seeds
+1-3 of main, 251 on the Historical path; no smelter in any run), and its books are the world's rod standing 2.6 over
+its literal ratio to cathode by 2100: each good is solved alone, the mean mill price is held to the path, and the city
+buys from the cheapest maker (DR Congo's cathode) and sells to the best buyer. A real smelter, refinery or rod mill
+buys 67-86% of its sales (USGS, the Economic Census): the literals are right and the played world leaves them. A
+prototype that re-anchors a series' followers on its own good at the city's site, wire and cable as rod plus
+fabrication, ends the mills on four seeds, keeps the people and halves GDP a head on the three that had them. The note
+is docs/studies/spec-copper-margin.md, its probes and tables in docs/studies/copper-margin/. Queued: CU2 (the batch
+that sets the margin), WP1 (a study), DS1 (a look). Seven calls, each with a recommendation. No trace moves.
+
+### 0.9.73 — RI1, rail on islands — 2026-11-09, ready, see docs/queue/RI1-notes.md
+Every linked piece of the city's ground now grows its own railway, as CL5 gave each its highways (Jerus ticked "Rail
+on islands", 2026-10-31; CL5-C's call 1). A piece's rail hub is the railway crossing nearest its anchor, and an island
+linked by a port has its berthed terminal for its anchor, so both its nets start at the port (ET5's "a linked island's
+hub at its port"); home and a bridge-linked island keep the founding site's side. Track is dealt by built weight as
+the highways are; a new yard goes first to an island railway with none, on its own line nearest its hub, and that
+line grows to its edges as a station's does; sidings leave from an island's line. The first yard and the freight
+station stay home, and no train is routed to an island yard (ET6-C's rail bridge row stands). Unlinked ground gets
+none. IslandRailCheck (new, nine sections) on synthetic ground and the Rotterdam fixture; renders in docs/queue/RI1/.
+Nothing in the model reads the map: the playtest's trace is byte-identical, no ensemble, no format change.
+
+### 0.9.72 — R6, the near-future research catalogue, a study — 2026-11-09, ready, see docs/queue/R6-notes.md
+The first half of R6 (Q2, 2026-10-18): what today's pilots and public roadmaps give the research catalogue after
+2025 (docs/studies/research-near-future.md; the gatherers' fact sheets in docs/studies/research-near-future/). Eight
+rows stand on a builder's date and a measured effect, all engineering or medicine: the driverless truck (May 2025),
+sulphide heap leaching (Nov 2025), enhanced geothermal (Sep 2026) and the mRNA flu vaccine (Aug 2026) are already
+history; the small modular reactor, the hundred-hour battery and the personalised cancer vaccine (2027) and
+hydrogen-reduced iron (2028) are projections, each with its window. The evidence ends about 2030, not 2060; the
+catalogue has no row for 1996-2024, where about 45 things belong; carbon capture at a cement works and the carbon
+border tax pay only where carbon is priced, and the game prices none; every plant date traced had slipped by one to
+four years. Eight calls, each with a recommendation. No model change and no row in research.json; the trace is main's.
+
+### 0.9.71 — BR2, Steam's store art — 2026-11-09, ready, see docs/queue/BR2-notes.md
+Steam's nine pictures are in `branding/steam/`, drawn by the new `tools/branding/make_steam.py` from our own art
+(Jerus, 2026-10-31: "From our art (AI)"), at the sizes Steamworks' asset pages give (read today): the header, small,
+main and vertical capsules (920 x 430, 462 x 174, 1232 x 706, 748 x 896), the library's capsule (600 x 900), header
+(920 x 430), hero (3840 x 1240, no text, as Steam asks) and logo (1280 x 720, a transparent PNG), and the page
+background (1438 x 810). The picture is the icon's "towers as a chart" drawn wide: lit towers under a rising chart line
+with ringed dots, the title art in the sky above on a scrim, the name the only text; the name reads at the small
+capsule's two generated sizes (184 x 69, 120 x 45). Seeded, so a rerun gives the same files. `BrandingCheck` section 5
+holds the folder to Steamworks' list and the tool to the same names and sizes. No game code, so the trace cannot move:
+no ensemble. The Steamworks verification, the upload and the store page stay Jerus's.
+
+### 0.9.70 — WN4c, a peg whose anchor lost its price keeps the loaded rate — 2026-11-09, ready, see docs/queue/WN4c-notes.md
+WN4b's review follow-up. A save whose peg is anchored to a money the save no longer has a US$ price for (the euro's
+rate gone) falls back to the US$, as before, but its peg had kept the saved D$ per euro, which the US$ peg then held as
+D$ per US$ (1.1000 held where the city stood at 1.0523); the fallback now holds the loaded rate, as the peg's own
+month would have struck it (PegAnchorCheck 8, red before the fix). The review's two low notes were looked at and
+neither is wrong: in a held month the hold's support is exactly the log of the held rate over the shadow, so it needs no
+clamp, and the dial reads the gap against this month's anchor price, the held rate the reprice then measures against
+(both pinned in PegAnchorCheck 10). Nothing in a played city reaches the fallback, so the default trace cannot move:
+no ensemble.
+
 ### 0.9.69 — AL1, automatic building links the city's islands — 2026-11-09, ready, see docs/queue/AL1-notes.md
 Automatic building now links ground the city owns across the water (Jerus, 2026-10-31: "autobuild will build bridges
 and ports if sees that land is low and there is something unliked"). When a month's order lacks linked ground and an

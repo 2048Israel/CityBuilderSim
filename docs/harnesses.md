@@ -2,7 +2,7 @@
 
 Generated 2026-11-09 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**190 harness files, 22,346 labelled assertions.** AllChecks runs 190 of them.
+**191 harness files, 22,457 labelled assertions.** AllChecks runs 191 of them.
 
 ## Which harnesses read which class
 
@@ -40,7 +40,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BuildingType](map/BuildingType.md) | BooksCheck, BridgeCheck, BuildAdviceCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, ForestryCheck, HaulageCheck, HouseholdCheck, HydroCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, JunctionCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PlanCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, RailDrawCheck, RecipeCheck, ResearchCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, TruckRouteCheck, WoodProductsCheck |
 | [BuildingVisual](map/BuildingVisual.md) | BridgeMapCheck, ChildcareCheck, CrossingCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, IslandNetCheck, JunctionCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, PortCheck, RailDrawCheck, RunWorksCheck, SlopeCheck, TruckRouteCheck |
 | [BuildingsStacks](map/BuildingsStacks.md) | BuildCardCheck, BuildersFirstCheck, ChildcareCheck, ConstructionControlCheck, DeathCareFirstCheck, DiscoveryCheck, EquipmentCheck, FittingCheck, InvestCheck, KeptCheck, LandmassCheck, LongPlaytest, RecipeCheck, RefineryCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, WellCheck, ZoningViewCheck |
-| [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DiscoveryCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GatewayCheck, GdpCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HousingCheck, HydroCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, TradeCostCheck, TreasuryCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DiscoveryCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GatewayCheck, GdpCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HousingCheck, HydroCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, TradeCostCheck, TreasuryCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessDebt](map/BusinessDebt.md) | BankCheck, CreditCheck, LongPlaytest, MortgageCheck |
 | [BusinessDebtManager](map/BusinessDebtManager.md) | AuctionCheck, BankCheck, BondCheck, BooksCheck, BuildCardCheck, CreditCheck, FittingCheck, FundLedgerCheck, InvestCheck, LongPlaytest, MoneyCheck, MortgageCheck, OrderSearchCheck, ReadPathCheck, RefineryCheck, SaveFileCheck, SupplierCreditCheck, WantedPostsCheck |
 | [BusinessInvestment](map/BusinessInvestment.md) | AgricultureCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, DiscoveryCheck, EquipmentCheck, FittingCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, HaulageCheck, HousingCheck, IndustryViewCheck, InvestCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MortgageCheck, OilCheck, OrderSearchCheck, PolicyCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ResearchCheck, RestaurantsCheck, RunWorksCheck, ScaleCheck, WantedPostsCheck, WellCheck, WoodProductsCheck, ZoningCheck, ZoningViewCheck |
@@ -63,12 +63,12 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CityBasket](map/CityBasket.md) | **none** |
 | [CityBuilderSim](map/CityBuilderSim.md) | **none** |
 | [CityCalendar](map/CityCalendar.md) | ArrivalMixCheck, AuctionCheck, BasketYearCheck, CalendarCheck, CausesOfDeathCheck, ChartCheck, DebtExchangeCheck, DenominationCheck, EquipmentCheck, ForeignDebtCheck, FundCheck, KeptCheck, LandNationsCheck, OilViewCheck, PolicyDatesCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, RecipeCheck, ReplayCheck, ResearchCheck, SaveFileCheck, WorldMoneysCheck, YearBookCheck |
-| [CityLand](map/CityLand.md) | AutoBuildCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, HydroCheck, IslandNetCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, QuarryingCheck, ReadPathCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SlopeCheck, WaterCheck, WorldCheck |
-| [CityMap](map/CityMap.md) | BridgeCheck, BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck |
+| [CityLand](map/CityLand.md) | AutoBuildCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, HydroCheck, IslandNetCheck, IslandRailCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, QuarryingCheck, ReadPathCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SlopeCheck, WaterCheck, WorldCheck |
+| [CityMap](map/CityMap.md) | BridgeCheck, BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, IslandRailCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck |
 | [CityMeasures](map/CityMeasures.md) | RankingsCheck |
 | [CityNeeds](map/CityNeeds.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ChildcareCheck, LandCheck, LongPlaytest, PlaytestFixCheck, PolicyPreviewCheck, ReadPathCheck, RoadCheck, WaterCheck, ZoningViewCheck |
-| [CityRuns](map/CityRuns.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, TruckRouteCheck |
-| [CityShore](map/CityShore.md) | LandmassCheck, MapCheck, PortCheck, RailDrawCheck, TruckRouteCheck |
+| [CityRuns](map/CityRuns.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, IslandRailCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, TruckRouteCheck |
+| [CityShore](map/CityShore.md) | IslandRailCheck, LandmassCheck, MapCheck, PortCheck, RailDrawCheck, TruckRouteCheck |
 | [ClockPace](map/ClockPace.md) | ClockCheck, KeptCheck |
 | [CoalMining](map/CoalMining.md) | BuildCardCheck, BuildingDataCheck, CoalMiningCheck, IndustryViewCheck, LandCheck |
 | [CodeMap](map/CodeMap.md) | **none** |
@@ -93,10 +93,10 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Dials](map/Dials.md) | ResearchPreviewCheck |
 | [DistrictPicture](map/DistrictPicture.md) | MapCheck |
 | [DistrictPlan](map/DistrictPlan.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, JunctionCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, RunWorksCheck, SlopeCheck, TruckRouteCheck |
-| [EarthData](map/EarthData.md) | BridgeCheck, EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, GatewayCheck, GlobeCheck, HydroCheck, IslandLinkCheck, LandCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, NewGameCheck, PartnerCallsCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, SlopeCheck, WorldDataCheck |
+| [EarthData](map/EarthData.md) | BridgeCheck, EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, GatewayCheck, GlobeCheck, HydroCheck, IslandLinkCheck, IslandRailCheck, LandCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, NewGameCheck, PartnerCallsCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, SlopeCheck, WorldDataCheck |
 | [EarthProj](map/EarthProj.md) | EarthCheck, EarthDepositsCheck, EarthTerrainCheck, GlobeCheck, LandNationsCheck, LandmassCheck, MapCheck, PartnerCallsCheck, PartnersCheck |
 | [EarthSite](map/EarthSite.md) | BridgeCheck, CopperRefiningCheck, DeterminismCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, HydroCheck, LandCheck, LandNationsCheck, LandmassCheck, LongPlaytest, NewGameCheck, PartnersCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, SlopeCheck |
-| [EarthTerrain](map/EarthTerrain.md) | BridgeCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, GatewayCheck, GlobeCheck, IslandLinkCheck, LandCheck, LandmassCheck, MapCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SlopeCheck |
+| [EarthTerrain](map/EarthTerrain.md) | BridgeCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, GatewayCheck, GlobeCheck, IslandLinkCheck, IslandRailCheck, LandCheck, LandmassCheck, MapCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SlopeCheck |
 | [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BuildCardCheck, CapitalFlowCheck, CreditCheck, CrimeCheck, DebtExchangeCheck, DiscoveryCheck, EducationCheck, GdpCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, KeptCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, RailDepotCheck, ReadPathCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, WellCheck, ZoningCheck, ZoningViewCheck |
 | [Education](map/Education.md) | EducationCheck, ExpectationsCheck, LongPlaytest, PriceLevelCheck |
 | [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, DiscoveryCheck, EducationCheck, ExpectationsCheck, KeptCheck, LongPlaytest, PriceLevelCheck, ReadPathCheck, ResearchViewCheck, ScaleCheck |
@@ -117,7 +117,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ForeignAccounts](map/ForeignAccounts.md) | CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, CurrencyRegimeCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, ExchangeRateCheck, ExpectationsCheck, ForeignCheck, ForeignDebtCheck, HoldersCheck, InterestAbroadCheck, InterventionCheck, KeptCheck, LabourCheck, LandCheck, LandNationsCheck, LongPlaytest, MonetaryCheck, NewGameCheck, OilCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldMoneysCheck |
 | [Forestry](map/Forestry.md) | BuildCardCheck, BuildingDataCheck, ForestryCheck, IndustryViewCheck, WoodProductsCheck, ZoningCheck |
 | [Formats](map/Formats.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, CarCheck, FoodProcessingCheck, LandCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck, SectorFlowCheck, TradeCostCheck, WellCheck, ZoningCheck |
-| [Founding](map/Founding.md) | ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BasketYearCheck, BondCheck, BridgeCheck, BridgeMapCheck, BuildAdviceCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, DeathCareFirstCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ExchangeRateCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, GatewayCheck, GdpCheck, GridCheck, GroceryCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HydroCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, IslandNetCheck, JunctionCheck, KeptCheck, LandCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OutsideCheck, PartnerCallsCheck, PartnersCheck, PassThroughCheck, PlanCheck, PolicyDatesCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDrawCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchViewCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WageLadderCheck, WellCheck, WorldCheck, WorldMoneysCheck, ZoningCheck, ZoningViewCheck |
+| [Founding](map/Founding.md) | ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BasketYearCheck, BondCheck, BridgeCheck, BridgeMapCheck, BuildAdviceCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, DeathCareFirstCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ExchangeRateCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, GatewayCheck, GdpCheck, GridCheck, GroceryCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HydroCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, IslandNetCheck, IslandRailCheck, JunctionCheck, KeptCheck, LandCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OutsideCheck, PartnerCallsCheck, PartnersCheck, PassThroughCheck, PlanCheck, PolicyDatesCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDrawCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchViewCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WageLadderCheck, WellCheck, WorldCheck, WorldMoneysCheck, ZoningCheck, ZoningViewCheck |
 | [FoundingName](map/FoundingName.md) | NewGameCheck |
 | [FoundingScreen](map/FoundingScreen.md) | **none** |
 | [Freight](map/Freight.md) | BuildCardCheck, EquipmentCheck, FittingCheck, Forms1900Check, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, LandlordPortCheck, LongPlaytest, MapCheck, OilCheck, PortCheck, RailCheck, RailDepotCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, TradeBandCheck, TruckCheck, TruckRouteCheck, WorldDataCheck |
@@ -126,7 +126,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [FundLedger](map/FundLedger.md) | FundLedgerCheck, LongPlaytest, ReadPathCheck, SaveFileCheck, ShortSellingCheck |
 | [FundScreen](map/FundScreen.md) | **none** |
 | [FundView](map/FundView.md) | FundCheck, FundLedgerCheck, LongPlaytest, ReadPathCheck, ShortSellingCheck |
-| [Game](map/Game.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DebtMoneysCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, TruckRouteCheck, VanCheck, VaultMoneysCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [Game](map/Game.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DebtMoneysCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, TruckRouteCheck, VanCheck, VaultMoneysCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [GameFiles](map/GameFiles.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DenominationCheck, DeterminismCheck, DiscoveryCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, IslandLinkCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PartnersCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, TruckRouteCheck, VanCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [GameLog](map/GameLog.md) | RobustnessCheck |
 | [GamePrefs](map/GamePrefs.md) | TruckCheck |
@@ -167,6 +167,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [InterimLoan](map/InterimLoan.md) | CreditCheck, LongPlaytest |
 | [Investor](map/Investor.md) | CreditCheck |
 | [IslandChip](map/IslandChip.md) | **none** |
+| [IslandRailRenders](map/IslandRailRenders.md) | **none** |
 | [JavaScan](map/JavaScan.md) | **none** |
 | [JobType](map/JobType.md) | AgricultureCheck, ArrivalMixCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, BusinessServicesCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, DiscoveryCheck, EducationCheck, EquipmentCheck, FoodProcessingCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FundCheck, HaulageCheck, HealthCheck, HouseholdCheck, HousingCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, ResearchPreviewCheck, RestaurantsCheck, ScaleCheck, SectorStatementCheck, WageLadderCheck, WantedPostsCheck, WellCheck, WoodProductsCheck |
 | [Kept](map/Kept.md) | **none** |
@@ -187,7 +188,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [LandSellersView](map/LandSellersView.md) | LandNationsCheck |
 | [LandTable](map/LandTable.md) | LandNationsCheck |
 | [LandmassView](map/LandmassView.md) | LandmassCheck, LongPlaytest, ReadPathCheck |
-| [Landmasses](map/Landmasses.md) | BridgeCheck, BuildAdviceCheck, CapitalFlowCheck, FittingCheck, IslandLinkCheck, LandmassCheck, LongPlaytest, NewGameCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
+| [Landmasses](map/Landmasses.md) | BridgeCheck, BuildAdviceCheck, CapitalFlowCheck, FittingCheck, IslandLinkCheck, IslandRailCheck, LandmassCheck, LongPlaytest, NewGameCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
 | [LegacyLand](map/LegacyLand.md) | ConversionCheck, GridCheck, LandCheck, MiningCheck, OilCheck |
 | [Levers](map/Levers.md) | **none** |
 | [LongTermBond](map/LongTermBond.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CentralBankCheck, CreditCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, FundCheck, HoldersCheck, KeptCheck, LongPlaytest, NewGameCheck, ReadPathCheck, RestructureCheck, TreasuryCheck |
@@ -230,7 +231,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [PartnersView](map/PartnersView.md) | PartnersCheck |
 | [PayTier](map/PayTier.md) | AgricultureCheck, ArrivalMixCheck, BankCheck, BondCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, DiscoveryCheck, EducationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MarketCheck, MaterialsCheck, MiningCheck, OutsideCheck, PopulationCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, ShortSellingCheck, TradeCostCheck, WageLadderCheck, WoodProductsCheck |
 | [PeopleScreen](map/PeopleScreen.md) | **none** |
-| [Pieces](map/Pieces.md) | IslandNetCheck, ResearchViewCheck |
+| [Pieces](map/Pieces.md) | IslandNetCheck, IslandRailCheck, ResearchViewCheck |
 | [PolicyDates](map/PolicyDates.md) | DiscoveryCheck, EquipmentCheck, ForestryCheck, KeptCheck, LandmassCheck, PolicyDatesCheck, RecipeCheck, ResearchCheck, ResearchPreviewCheck, ResearchViewCheck, WageLadderCheck, ZoningViewCheck |
 | [PolicyPreview](map/PolicyPreview.md) | CentralBankCheck, DiscoveryCheck, GroceryCheck, KeptCheck, PolicyPreviewCheck, ReadPathCheck, ZoningViewCheck |
 | [PolicyRates](map/PolicyRates.md) | DebtMoneysCheck, GlobeCheck, InterestAbroadCheck, PartnersCheck, ReadPathCheck, SaveFileCheck |
@@ -343,7 +344,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Where](map/Where.md) | KeptCheck |
 | [WoodProducts](map/WoodProducts.md) | BuildCardCheck, BuildingDataCheck, GdpCheck, IndustryViewCheck, WoodProductsCheck |
 | [WorkingHousehold](map/WorkingHousehold.md) | DenominationCheck, HoldersCheck, HouseholdCheck |
-| [World](map/World.md) | BridgeCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, CrossingCheck, EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, FittingCheck, ForestryCheck, GatewayCheck, GlobeCheck, GridCheck, HydroCheck, InterestAbroadCheck, IslandLinkCheck, IslandNetCheck, JunctionCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, MiningCheck, NewGameCheck, OilCheck, PartnerCallsCheck, PlanCheck, PortCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck, WaterCheck, WellCheck, WorldCheck, ZoningCheck |
+| [World](map/World.md) | BridgeCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, CrossingCheck, EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, FittingCheck, ForestryCheck, GatewayCheck, GlobeCheck, GridCheck, HydroCheck, InterestAbroadCheck, IslandLinkCheck, IslandNetCheck, IslandRailCheck, JunctionCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, MiningCheck, NewGameCheck, OilCheck, PartnerCallsCheck, PlanCheck, PortCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck, WaterCheck, WellCheck, WorldCheck, ZoningCheck |
 | [WorldData](map/WorldData.md) | DenominationCheck, DeterminismCheck, GlobeCheck, InterestAbroadCheck, LandNationsCheck, MapCheck, NationsCheck, PartnerCallsCheck, PartnersCheck, PegAnchorCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldDataCheck, WorldMarketCheck, WorldMeasuresCheck, WorldMoneysCheck |
 | [WorldEconomy](map/WorldEconomy.md) | CentralBankCheck, FundCheck, LongPlaytest, MonetaryCheck, NewGameCheck, RealDollarCheck, SaveFileCheck, SkipReportCheck |
 | [WorldMarket](map/WorldMarket.md) | DenominationCheck, GlobeCheck, InterestAbroadCheck, PartnerCallsCheck, PartnersCheck, PriceLevelCheck, ReadPathCheck, SaveFileCheck, WorldMarketCheck, WorldMoneysCheck |
@@ -1965,10 +1966,11 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L291 ...nor expensed again the month after
   - L294 ...and the reloaded one expenses the same next month
 
-## BrandingCheck.java - 10 labelled assertions
+## BrandingCheck.java - 13 labelled assertions
 
 > The game's icon is in the jar at every size it is given, the exe's .ico carries the sizes it
-> should, and the store's title art is drawn to the start screen's proportions (BR1).
+> should, the store's title art is drawn to the start screen's proportions (BR1), and Steam's art
+> is there at the sizes Steamworks asks for (BR2).
 > 
 > WHY THIS EXISTS. The window's icon (ui/Branding.dress) is loaded from the classpath and a size
 > that is missing is only a log line, never an error, so a regeneration by
@@ -1978,23 +1980,26 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 > and for the store pages by tools/branding/make_title.py, from proportions each keeps: a change
 > to one would leave the store's logo unlike the game's. No JavaFX is needed: files are read as
 > bytes and text.
-> 
 > ...
 
-- **L77 BrandingCheck: the icon at every size, the exe's .ico, and the store's title art drawn as the start screen's (BR1)**
-- **L88 the .ico carries its sizes**
-  - L94 it is an icon file (reserved 0, type 1)
-  - L103 entry
-  - L105 entry
-  - L110 it lists exactly Branding.ICO_SIZES
-- **L113 the exe is built with it, and the drawing is kept**
-  - L122 Build EXE.bat passes --icon
-  - L125 the file it passes exists
-  - L126 and is the classpath's icon.ico
-- **L134 the title art is the start screen's**
-  - L147 make_title.py's
-  - L151 make_title.py names the widths it writes
-  - L153 branding/title.svg is there, the font inside it
+- **L84 BrandingCheck: the icon at every size, the exe's .ico, and the store's title art drawn as the start screen's (BR1), Steam's art at Steamw...**
+- **L95 the .ico carries its sizes**
+  - L101 it is an icon file (reserved 0, type 1)
+  - L110 entry
+  - L112 entry
+  - L117 it lists exactly Branding.ICO_SIZES
+- **L120 the exe is built with it, and the drawing is kept**
+  - L129 Build EXE.bat passes --icon
+  - L132 the file it passes exists
+  - L133 and is the classpath's icon.ico
+- **L141 the title art is the start screen's**
+  - L154 make_title.py's
+  - L158 make_title.py names the widths it writes
+  - L160 branding/title.svg is there, the font inside it
+- **L172 Steam's art is there, at Steamworks' sizes**
+  - L201 make_steam.py draws
+  - L209 branding/steam/ holds those nine and nothing else
+  - L213 and make_steam.py draws exactly nine
 
 ## BridgeCheck.java - 107 labelled assertions
 
@@ -14488,6 +14493,116 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L789 on the city of billions a purchase is an update of the map's pieces, not another flood
   - L790 ...and the update takes no more than MapCheck's RECONCILE_MS (
 
+## IslandRailCheck.java - 84 labelled assertions
+
+> The railway has a piece of its own on each piece of the city's ground the water parts, its track dealt by built weight and its yards on the
+> islands (RI1).
+> 
+> WHAT THIS HAS TO PROVE (the sections below are numbered to match):
+> 
+>   1. EACH LINKED ISLAND HAS A RAILWAY HUB AND TRACK OF ITS OWN. A home square and two islands (A, B) parted by sea, a Pieces of three,
+>      and a dry square C the runs' ground does not own (an unlinked island: not owned, so in no piece). With CityRuns.islandRail off the
+>      islands have highways and the railway is one piece with no track off home (the premise: the fault); on, each island has a rail hub -
+>      a railway line crossing (RAIL_AT mod CELL in both coordinates) on its own dry ground, the nearest to the piece's anchor - and track
+>      from it, every rail plot is on owned dry ground, and C has none.
+> 
+>   2. THE TRACK IS DEALT BY WEIGHT AS THE HIGHWAYS ARE. With no yards each island's track is the floor of the model's track times its weight
+> ...
+
+- **L232 1. each linked island has a railway hub and track of its own**
+  - L238 fixture (premise): with islandRail off the islands have highways, a net of their own each
+  - L240 ...and the railway is one piece with track at home and none on either island
+  - L246 islandRail on: the railway has three pieces, a hub for each island
+  - L252 island
+  - L256 ...the nearest to the piece's anchor:
+  - L258 ...with track of its own, all on the island, counted as the piece's
+  - L260 the home piece's railway is on the home square, counted as the piece's
+  - L261 every rail plot is on owned dry ground: the plots counted are the plots inside the ground and none is on salt
+  - L263 the unowned dry square C has no rail, and the runs have no piece for it
+  - L264 the highways were laid too, and rail runs on none of them (nothing is both)
+- **L269 2. the track is dealt by weight as the highways are**
+  - L279 with no yards each island's track is its floor share of the model's, by the rule's own formula
+  - L280 ...and the home piece has the rest, so all the model's track is laid (trackSurplus is 0)
+  - L281 ...no island's line was grown to its edges: with no yard it stops at its share
+  - L289 fixture (premise): at the drifted weights the shares are not what is laid (A
+  - L293 the weights drift (3:2:1 to 1:4:4) and the railway is laid again for the same track: nothing moves (the signature is the same)
+  - L295 ...each piece has what it had, though its share is more or less now
+  - L303 more track (
+  - L304 ...what was laid is kept: every arm is a prefix of what it is now
+  - L311 less track (
+  - L313 ...from the newest end: every arm that is left is a prefix of what it was
+  - L316 ...each island's hub plot is still laid (the piece's last plot to go)
+  - L319 with no track at all the railway is taken back to nothing and reset: no plot, no piece, not started
+  - L321 ...and laid again from nothing: the islands open afresh, each with its share
+- **L326 3. yards**
+  - L340 the model asks 3 yards and all 3 are laid (yardsShort is 0)
+  - L342 yard 0 is at home, on the first spot in the nearest-a-mine order
+  - L349 yard
+  - L359 ...the nearest its hub of the YARD_LONG boxes on the island's track (
+  - L361 ...island
+  - L372 fixture (premise): the yard nearest the main line's end is not the home yard but one on an island
+  - L374 freightStation() is the home yard all the same
+  - L375 wayTo() of an island's yard is null: no train runs to it
+  - L376 ...the home yard's way is not
+  - L381 laid again for the same inputs, the yards stand where they were and nothing moves
+  - L399 fixture (premise): with a mine on island A beside its line, the first box that fits in the nearest-a-mine order is on A
+  - L401 ...yard 0 is home's all the same: the first box of home's in that order
+  - L402 ...and it is the freight station
+- **L423 4. sidings**
+  - L432 fixture (premise): with islandRail off A has no line and the works is no nearer a line than the sea parts it: it gets no siding
+  - L437 with it on, the works gets a siding
+  - L440 ...from A's line: it starts on a plot of an arm of A's piece
+  - L452 ...every plot of it on A's dry ground
+  - L453 ...and it ends at the works
+  - L454 the ways are the net's: the siding is an arm of the SIDING corridor, after the pieces' arms
+  - L456 the home piece has no siding (no works near it)
+- **L461 5. a purchase joining an island to home freezes its railway**
+  - L474 the month a purchase joins A to home, with the same track: nothing moves (the signature is the same)
+  - L478 as the track grows, every arm laid before is a prefix of the arm after
+  - L479 A's railway, the younger net on the home piece's ground, is frozen: its plots are what they were
+  - L487 ...every arm of it exactly as it was
+  - L493 home goes on growing: past what it held, to its share less the frozen net's
+  - L494 B is dealt on by its piece's weight (the map's second piece now): its share of the new track
+  - L495 the model's track is all laid
+- **L500 6. one piece is the railway as it was**
+  - L518 fixture: a railway with a yard, a siding and track on the home square, and none on the islands (the ground is one piece)
+  - L520 islandRail on and off: the same signature()
+  - L523 ...the same rail plots, yards and sidings
+- **L529 7. the sidecar keeps every piece's railway**
+  - L541 fixture: a railway on three pieces with 3 yards and a siding
+  - L547 written and read at FORMAT
+  - L550 ...the railway's pieces kept: their hubs and their counts
+  - L556 ...the corridors' pieces and roles (the ways' placeholders 2 and 3, then each island's two spines)
+  - L562 ...and they fill a box alike
+  - L565 the runs read back, laid again for the same inputs, move nothing: the signature, the yards and the siding are what they were
+  - L569 the sidecar is written and read:
+- **L851 8. a linked island's hub at its port: the island's piece has the terminal for its anchor, and both nets start at the port**
+  - L854 fixture: an island square with a shore, a second parcel of the island apart from it, a square of home's open coast and a dry square beside the founding site,...
+  - L859 the island's terminal and then home's are ordered, the island is linked (the books), and the island's piece has weight, a highway hub and a railway hub within
+  - L867 the island's piece and the far parcel's are two pieces, neither home's
+  - L875 the island has a berthed terminal on its shore
+  - L879 the island's anchor() is the terminal's box middle {x0 + w/2, y0 + h/2} =
+  - L887 the island's hub() is the highway line crossing on its tiles nearest the terminal's tile (a loop over the piece's tiles)
+  - L888 fixture (premise): the crossing nearest the founding site on the piece was another, and farther from the terminal
+  - L890 ...so the highway hub is nearer the terminal than the old rule's (
+  - L894 the highway net has a piece on the island and its hub is hub() (a net opened after the link starts at the port)
+  - L899 the railway has a piece on the island and its hub is a railway line crossing (both coordinates RAIL_AT mod CELL) on the island's piece
+  - L901 ...the nearest to the terminal of the island's crossings (a loop over the piece's tiles)
+  - L902 fixture (premise): the crossing nearest the old anchor, the highway hub the founding site chose, was farther from the terminal
+  - L904 ...so the railway hub is nearer the terminal than the old anchor's would have been
+  - L907 the railway has track on the island's own ground: the piece's plots are counted, all inside the island's square
+  - L911 the model has
+  - L915 a piece with no terminal (the island's far parcel) has hub() nearest the founding site, the old rule, and anchor() is its hub
+  - L917 the home piece's anchor() is its hub(): piece 0 starts from the founding site always
+  - L925 fixture: the open coast's square is a piece of its own, and the terminal at home stands on its shore
+  - L929 ...so its anchor() is that terminal's box middle and its hub() the highway crossing nearest it, as the island's
+- **L935 9. no port, no anchor; unlinked, nothing: before the link no piece holds the island, no plot of the runs lies on it**
+  - L938 fixture: the squares were found
+  - L941 fixture (premise): the terminal stands on the island and links nothing: the books have it unlinked, and the city has track laid (the premise: a railway to be...
+  - L942 no piece of ground holds the island's squares: the pieces the map has are home's ground
+  - L943 no plot of the runs lies on the island (a loop over its squares): no rail, no highway
+  - L944 the home piece's anchor() is its hub() (piece 0 starts from the founding site always)
+
 ## JunctionCheck.java - 170 labelled assertions
 
 > Proves that the junctions and interchanges of spec-freight 4.6 are drawn
@@ -19906,7 +20021,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L718 ...and the reading is the struck rate over the D$, less one (
   - L737 every month, the gap the line reads at a month's end is the one the next strike closes PASS_THROUGH of, in logs (off in
 
-## PegAnchorCheck.java - 129 labelled assertions
+## PegAnchorCheck.java - 144 labelled assertions
 
 > The peg's anchor (batch WN4b; ForeignAccounts, THE REGIMES, THE PEG'S ANCHOR): the D$ can be pegged to any of the eight moneys, not
 > only the US$. The peg is kept in the anchor's money (D$ per unit of it); the rate the hold keeps, D$ per US$, is the peg over the anchor's
@@ -19922,144 +20037,160 @@ _(this harness does not label its checks through a helper - it prints its findin
 >   1. A US$ ANCHOR IS THE PEG AS IT WAS: a new ForeignAccounts's anchor is the US$, and two seeded US$ pegs on a deficit trade and a deep
 > ...
 
-- **L146 1. a US$ anchor is the peg as it was: the eight's moves do not reach it, to the bit**
-  - L148 a new ForeignAccounts's anchor is the US$: index 0, code USD
-  - L153 fixture: two seeded pegs to the US$ on a deficit trade (exports .8 of imports) and a deep vault, struck at the same rate
-  - L177 fixture: the eight really moved (the euro took
-  - L180 the rate is the same every month, to the bit
-  - L181 ...the hold's sale
-  - L182 ...the strong edge's purchase
-  - L183 ...the hold's support
-  - L184 ...the shadow's gap from the peg
-  - L185 ...and the shadow
-  - L186 getPegRate() is getPegPerAnchor() exactly, in both, and the same in both
-- **L194 2. the held rate is the peg over the anchor's US$ price: the D$ per euro is the peg, the D$ per US$ moves with the euro**
-  - L197 fixture: pegged to the euro on a deep vault and a balanced trade, quiet, at today's rate in euros (the rate times the euro's US$ price)
-  - L213 every month for two years the peg held and was never broken
-  - L214 each month the rate is the peg per euro over the euro's US$ price that month, to 1e-12
-  - L215 ...getPegPerAnchor() never moved
-  - L216 ...so the D$ per euro (the rate times the euro's price) is the peg every month
-  - L217 ...while the D$ per US$ took
-  - L218 ...and the hold dealt, US$
-  - L219 getPegRate() is the rate held now: the peg per euro over the euro's last price
-- **L227 3. the shadow's gap is against the held rate: a euro that rises takes the D$ off the shadow, and the hold pays for it**
-  - L233 fixture: two quiet twins on the same deficit trade and a deep vault, one pegged to the US$ at r, one to the euro at r x
-  - L241 fixture: the US$ twin's hold sold dollars that month (US$
-  - L242 a month at the same euro deals the same in both: the rate, the sale and the support to the bit
-  - L248 fixture: both held a peg that month, and the euro rose
-  - L250 the shadow is the D$'s own rule and does not follow the euro: the same in both to the bit
-  - L251 the euro twin's gap is the US$ twin's plus ln(1.1)
-  - L252 currencyGap() is the shadow over the held rate less one, the US$ twin's
-  - L253 ...and the euro twin's, where the held rate is the one the euro put it at
-  - L254 the euro twin holds the D$ a tenth stronger against the US$: its rate is the US$ twin's over 1.1
-  - L255 ...and that costs the vault: the euro twin sold more (US$
-  - L257 the euro twin's support is the log of the held rate over the shadow: the hold's own identity
-  - L259 ...and the US$ twin's likewise
-  - L261 breakLanding() reads the held rate: the shadow plus the overshoot of its gap from it
-  - L263 rateAfterDeal() under the peg is the held rate
-- **L271 4. choosing the anchor: the held rate does not move on the switch, a money with no rate is refused, outside a peg the setting is kept**
-  - L277 fixture: a US$ peg at p =
-  - L279 under a US$ peg the words are \"Peg to the US dollar\"
-  - L281 setPegAnchor(1) makes the euro the anchor
-  - L282 ...the held rate does not move on the switch: getPegRate() is p
-  - L283 ...the peg is struck again at the day's cross: getPegPerAnchor() is p times the euro's price
-  - L284 ...the words name the euro
-  - L287 fixture: the euro moved and the peg held
-  - L288 the next month the rate follows the euro: the peg per euro over the new price
-  - L291 back to the US$, the held rate is where it stood
-  - L292 ...and the peg is that rate, D$ per US$
-  - L294 choosing the anchor it already has changes nothing
-  - L299 a ForeignAccounts never handed rates refuses the euro: the anchor stays the US$
-  - L305 fixture: the yen has no rate this month
-  - L306 a money with no rate this month is refused
-  - L308 an index outside 0 to 7 is refused
-  - L310 ...and so is a code that is none of the eight (moneyIndex() reads -1)
-  - L317 outside a peg (Lean), setPegAnchor(3) keeps the setting and does not move the rate or the regime
-  - L319 ...and under Lean the words are the regime's own
-  - L321 entering the peg pegs at the day's rate in pounds: getPegPerAnchor() is the rate times the pound's price
-  - L322 ...so the rate held is the rate of the day
-  - L323 ...and the words are \"Peg to the pound\"
-  - L325 leaving the peg keeps the anchor
-  - L326 the Peg regime's own words no longer name a money
-- **L334 5. a devaluation in the anchor's money: repeg() is D$ per euro, the held rate is that over the euro's price**
-  - L338 fixture: a euro peg, held
-  - L341 repeg(x) sets the peg per euro to x
-  - L342 ...and the held rate to x over the euro's price
-  - L343 ...a higher x is a higher held rate (a weaker D$)
-  - L346 fixture: the peg held through the month
-  - L347 the next month the rate is the new peg over the euro's price that month
-  - L350 a revaluation lowers the held rate
-  - L355 outside a peg repeg() does nothing
-- **L363 6. the break under a euro peg: a euro peg with no vault breaks for want of one, at the held rate's gap**
-  - L369 fixture: a euro peg with no vault, revalued to 0.8 of itself so the hold must sell dollars it has not got, quiet (no chance of doubt)
-  - L372 the peg broke that month
-  - L373 ...for want of the vault
-  - L374 ...the regime is Float after it
-  - L375 ...and the anchor is still the euro, kept when the regime is left
-  - L378 fixture: the shadow was the weaker side of the held rate (
-  - L380 the rate it lands at is the shadow times exp(OVERSHOOT x the gap against the held rate):
-- **L388 7. the dial ties to the anchor's rate: a bare DebtManager, tied to the euro, to the US$, and not at all**
-  - L402 fixture: the US's rate is 4%, the euro area's 2% and the yen's 0.1%
-  - L404 tied with the euro the anchor, tieMoney() is EUR
-  - L405 ...tieRate() is the euro area's rate
-  - L407 ...a spread of half a point is kept
-  - L408 ...and tiedRate(0) is the euro area's rate plus the spread, inside the dial's bounds
-  - L410 ...which is not the US's rate plus the spread
-  - L412 ...and the decision names the euro's rate: \"
-  - L415 a spread of 100 points is clamped to the dial's ceiling over the euro area's rate
-  - L417 ...and a spread under it to the floor over the euro area's rate
-  - L421 moved to the yen, tieRate() is the yen's rate
-  - L424 tied with the US$ the anchor, tieMoney() is USD
-  - L425 ...tieRate() is worldRate() to the bit
-  - L426 ...tiedRate(0) is the old expression: the US's rate plus the spread, inside the bounds, to the bit
-  - L430 ...and the decision reads as it did: \"
-  - L432 ...a spread of 100 points is clamped over the US's rate
-  - L438 with the autopilot aiming at the currency under a euro peg, tiedRate(gap) is the euro area's rate plus the gap's quarter point
-  - L440 ...and currencyRate(), a band's aim, stays on the US's rate
-  - L444 untied, tieMoney() is null
-  - L445 ...and tieRate() is the US's rate
-  - L448 a manager nobody handed a source is untied, and tieMoney() is null
-  - L449 ...with tieRate() the US's rate
-  - L451 tied with no money source, it is still null and the US's
-  - L452 ...and tieRate() the US's rate
-- **L460 8. the save: slot 148 is the anchor; a restored euro peg plays the same, and a save without the slot reads the US$**
-  - L465 fixture: a euro peg that has dealt for eight months and carries a support (
-  - L467 the array runs to slot 148, the peg's anchor (
-  - L468 slot 148 is the anchor's index, the euro's
-  - L469 slot 147 is still the hold's support
-  - L470 slot 76 is still the peg, now D$ per euro
-  - L474 restored, the anchor is the euro
-  - L475 ...the peg per euro is the saved one
-  - L476 ...and so is the rate held
-  - L477 ...and every slot reads back to the bit
-  - L481 fixture: both held the peg the next month
-  - L482 the next month, with the same rates and trade, the rate is the unsaved twin's
-  - L483 ...the deal
-  - L484 ...the support
-  - L485 ...the gap
-  - L486 ...and the shadow
-  - L490 a save cut to 148 slots, as WN4 wrote it, restores the US$ as the anchor, the peg still held
-  - L495 fixture: that save has no rate for the euro
-  - L496 a save whose slot 148 is the euro but whose euro rate is 0 restores the US$: a money with no rate cannot anchor a peg
-  - L501 an anchor outside the eight reads the US$
-  - L504 ...and so does one that is not a number
-  - L506 reset() puts the anchor back on the US$
-  - L508 restoring a shorter save over a euro peg starts from the US$ (restore() resets first)
-- **L523 9. in a city (the full file): a trading town pegged to the euro holds the peg per euro, ties its dial to the euro area and says so**
-  - L532 fixture: the town has played until the eight have rates, on the US$ for its anchor and Lean
-  - L536 fixture: pegged to the euro at the day's cross, the peg per euro the rate times the euro's price
-  - L540 the decision log names the euro: \"
-  - L542 fixture: the dial is on the Inflation aim, so a tied dial is the anchor's rate plus the spread, and the euro area's rate is not the US's
-  - L560 three months on, the peg held (not broken)
-  - L561 each month the rate is the peg per euro over the euro's US$ price
-  - L562 ...the euro's price is the world's rate for it
-  - L563 ...the dial is the euro area's rate plus the spread, which is what tiedRate() gives
-  - L564 ...and tieRate() is the euro area's rate and tieMoney() EUR
-  - L570 a devaluation in the euro's money is logged in it: \"
-  - L574 moving the anchor under a peg re-pegs at the day's cross and says so: \"
-  - L576 ...the held rate did not move on the switch
-  - L579 ...and the next month's rate is the peg per pound over the pound's price
-  - L580 ...with the dial on the pound's rate as the month began with it
+- **L151 1. a US$ anchor is the peg as it was: the eight's moves do not reach it, to the bit**
+  - L153 a new ForeignAccounts's anchor is the US$: index 0, code USD
+  - L158 fixture: two seeded pegs to the US$ on a deficit trade (exports .8 of imports) and a deep vault, struck at the same rate
+  - L182 fixture: the eight really moved (the euro took
+  - L185 the rate is the same every month, to the bit
+  - L186 ...the hold's sale
+  - L187 ...the strong edge's purchase
+  - L188 ...the hold's support
+  - L189 ...the shadow's gap from the peg
+  - L190 ...and the shadow
+  - L191 getPegRate() is getPegPerAnchor() exactly, in both, and the same in both
+- **L199 2. the held rate is the peg over the anchor's US$ price: the D$ per euro is the peg, the D$ per US$ moves with the euro**
+  - L202 fixture: pegged to the euro on a deep vault and a balanced trade, quiet, at today's rate in euros (the rate times the euro's US$ price)
+  - L218 every month for two years the peg held and was never broken
+  - L219 each month the rate is the peg per euro over the euro's US$ price that month, to 1e-12
+  - L220 ...getPegPerAnchor() never moved
+  - L221 ...so the D$ per euro (the rate times the euro's price) is the peg every month
+  - L222 ...while the D$ per US$ took
+  - L223 ...and the hold dealt, US$
+  - L224 getPegRate() is the rate held now: the peg per euro over the euro's last price
+- **L232 3. the shadow's gap is against the held rate: a euro that rises takes the D$ off the shadow, and the hold pays for it**
+  - L238 fixture: two quiet twins on the same deficit trade and a deep vault, one pegged to the US$ at r, one to the euro at r x
+  - L246 fixture: the US$ twin's hold sold dollars that month (US$
+  - L247 a month at the same euro deals the same in both: the rate, the sale and the support to the bit
+  - L253 fixture: both held a peg that month, and the euro rose
+  - L255 the shadow is the D$'s own rule and does not follow the euro: the same in both to the bit
+  - L256 the euro twin's gap is the US$ twin's plus ln(1.1)
+  - L257 currencyGap() is the shadow over the held rate less one, the US$ twin's
+  - L258 ...and the euro twin's, where the held rate is the one the euro put it at
+  - L259 the euro twin holds the D$ a tenth stronger against the US$: its rate is the US$ twin's over 1.1
+  - L260 ...and that costs the vault: the euro twin sold more (US$
+  - L262 the euro twin's support is the log of the held rate over the shadow: the hold's own identity
+  - L264 ...and the US$ twin's likewise
+  - L266 breakLanding() reads the held rate: the shadow plus the overshoot of its gap from it
+  - L268 rateAfterDeal() under the peg is the held rate
+- **L276 4. choosing the anchor: the held rate does not move on the switch, a money with no rate is refused, outside a peg the setting is kept**
+  - L282 fixture: a US$ peg at p =
+  - L284 under a US$ peg the words are \"Peg to the US dollar\"
+  - L286 setPegAnchor(1) makes the euro the anchor
+  - L287 ...the held rate does not move on the switch: getPegRate() is p
+  - L288 ...the peg is struck again at the day's cross: getPegPerAnchor() is p times the euro's price
+  - L289 ...the words name the euro
+  - L292 fixture: the euro moved and the peg held
+  - L293 the next month the rate follows the euro: the peg per euro over the new price
+  - L296 back to the US$, the held rate is where it stood
+  - L297 ...and the peg is that rate, D$ per US$
+  - L299 choosing the anchor it already has changes nothing
+  - L304 a ForeignAccounts never handed rates refuses the euro: the anchor stays the US$
+  - L310 fixture: the yen has no rate this month
+  - L311 a money with no rate this month is refused
+  - L313 an index outside 0 to 7 is refused
+  - L315 ...and so is a code that is none of the eight (moneyIndex() reads -1)
+  - L322 outside a peg (Lean), setPegAnchor(3) keeps the setting and does not move the rate or the regime
+  - L324 ...and under Lean the words are the regime's own
+  - L326 entering the peg pegs at the day's rate in pounds: getPegPerAnchor() is the rate times the pound's price
+  - L327 ...so the rate held is the rate of the day
+  - L328 ...and the words are \"Peg to the pound\"
+  - L330 leaving the peg keeps the anchor
+  - L331 the Peg regime's own words no longer name a money
+- **L339 5. a devaluation in the anchor's money: repeg() is D$ per euro, the held rate is that over the euro's price**
+  - L343 fixture: a euro peg, held
+  - L346 repeg(x) sets the peg per euro to x
+  - L347 ...and the held rate to x over the euro's price
+  - L348 ...a higher x is a higher held rate (a weaker D$)
+  - L351 fixture: the peg held through the month
+  - L352 the next month the rate is the new peg over the euro's price that month
+  - L355 a revaluation lowers the held rate
+  - L360 outside a peg repeg() does nothing
+- **L368 6. the break under a euro peg: a euro peg with no vault breaks for want of one, at the held rate's gap**
+  - L374 fixture: a euro peg with no vault, revalued to 0.8 of itself so the hold must sell dollars it has not got, quiet (no chance of doubt)
+  - L377 the peg broke that month
+  - L378 ...for want of the vault
+  - L379 ...the regime is Float after it
+  - L380 ...and the anchor is still the euro, kept when the regime is left
+  - L383 fixture: the shadow was the weaker side of the held rate (
+  - L385 the rate it lands at is the shadow times exp(OVERSHOOT x the gap against the held rate):
+- **L393 7. the dial ties to the anchor's rate: a bare DebtManager, tied to the euro, to the US$, and not at all**
+  - L407 fixture: the US's rate is 4%, the euro area's 2% and the yen's 0.1%
+  - L409 tied with the euro the anchor, tieMoney() is EUR
+  - L410 ...tieRate() is the euro area's rate
+  - L412 ...a spread of half a point is kept
+  - L413 ...and tiedRate(0) is the euro area's rate plus the spread, inside the dial's bounds
+  - L415 ...which is not the US's rate plus the spread
+  - L417 ...and the decision names the euro's rate: \"
+  - L420 a spread of 100 points is clamped to the dial's ceiling over the euro area's rate
+  - L422 ...and a spread under it to the floor over the euro area's rate
+  - L426 moved to the yen, tieRate() is the yen's rate
+  - L429 tied with the US$ the anchor, tieMoney() is USD
+  - L430 ...tieRate() is worldRate() to the bit
+  - L431 ...tiedRate(0) is the old expression: the US's rate plus the spread, inside the bounds, to the bit
+  - L435 ...and the decision reads as it did: \"
+  - L437 ...a spread of 100 points is clamped over the US's rate
+  - L443 with the autopilot aiming at the currency under a euro peg, tiedRate(gap) is the euro area's rate plus the gap's quarter point
+  - L445 ...and currencyRate(), a band's aim, stays on the US's rate
+  - L449 untied, tieMoney() is null
+  - L450 ...and tieRate() is the US's rate
+  - L453 a manager nobody handed a source is untied, and tieMoney() is null
+  - L454 ...with tieRate() the US's rate
+  - L456 tied with no money source, it is still null and the US's
+  - L457 ...and tieRate() the US's rate
+- **L465 8. the save: slot 148 is the anchor; a restored euro peg plays the same, and a save without the slot reads the US$**
+  - L470 fixture: a euro peg that has dealt for eight months and carries a support (
+  - L472 the array runs to slot 148, the peg's anchor (
+  - L473 slot 148 is the anchor's index, the euro's
+  - L474 slot 147 is still the hold's support
+  - L475 slot 76 is still the peg, now D$ per euro
+  - L479 restored, the anchor is the euro
+  - L480 ...the peg per euro is the saved one
+  - L481 ...and so is the rate held
+  - L482 ...and every slot reads back to the bit
+  - L486 fixture: both held the peg the next month
+  - L487 the next month, with the same rates and trade, the rate is the unsaved twin's
+  - L488 ...the deal
+  - L489 ...the support
+  - L490 ...the gap
+  - L491 ...and the shadow
+  - L495 a save cut to 148 slots, as WN4 wrote it, restores the US$ as the anchor, the peg still held
+  - L500 fixture: that save has no rate for the euro
+  - L501 a save whose slot 148 is the euro but whose euro rate is 0 restores the US$: a money with no rate cannot anchor a peg
+  - L503 fixture: the saved peg is D$ per euro,
+  - L505 ...the fallback keeps the peg: still a peg, on the US$
+  - L506 ...its held rate is the loaded rate, not the euro figure
+  - L507 ...and the peg per US$ is that rate
+  - L509 fixture: that peg held the next month
+  - L510 ...and held the loaded rate, as a US$ peg of that rate does
+  - L515 an anchor outside the eight reads the US$
+  - L518 ...and so does one that is not a number
+  - L520 reset() puts the anchor back on the US$
+  - L522 restoring a shorter save over a euro peg starts from the US$ (restore() resets first)
+- **L537 9. in a city (the full file): a trading town pegged to the euro holds the peg per euro, ties its dial to the euro area and says so**
+  - L546 fixture: the town has played until the eight have rates, on the US$ for its anchor and Lean
+  - L550 fixture: pegged to the euro at the day's cross, the peg per euro the rate times the euro's price
+  - L554 the decision log names the euro: \"
+  - L556 fixture: the dial is on the Inflation aim, so a tied dial is the anchor's rate plus the spread, and the euro area's rate is not the US's
+  - L574 three months on, the peg held (not broken)
+  - L575 each month the rate is the peg per euro over the euro's US$ price
+  - L576 ...the euro's price is the world's rate for it
+  - L577 ...the dial is the euro area's rate plus the spread, which is what tiedRate() gives
+  - L578 ...and tieRate() is the euro area's rate and tieMoney() EUR
+  - L584 a devaluation in the euro's money is logged in it: \"
+  - L588 moving the anchor under a peg re-pegs at the day's cross and says so: \"
+  - L590 ...the held rate did not move on the switch
+  - L593 ...and the next month's rate is the peg per pound over the pound's price
+  - L594 ...with the dial on the pound's rate as the month began with it
+- **L603 10. the review's two low notes: the hold's support is the held rate's log over the shadow in every held month; the dial's gap is read at ...**
+  - L618 fixture: a quiet euro peg on a deep vault held all
+  - L619 fixture: the hold's support took both signs and was never zero for want of work (
+  - L620 note 1: in every held month the support is the log of the held rate over the shadow to 1e-9 (worst
+  - L622 ...and it is as wide as the gap the hold paid for, inside the euro's whole swing (ln(1.06/.94)), the widest being
+  - L625 fixture: still a held peg for the dial's month
+  - L630 note 2: the month's rates handed, the shadow is still the last reprice's
+  - L631 ...and the dial's gap is that shadow over the held rate at the NEW euro: the peg per euro over
+  - L633 ...so a euro that rose a tenth moved the gap's ratio by a tenth
+  - L635 ...and the gap the reprice then measures is against that same held rate, with the shadow the reprice found
 
 ## PlanCheck.java - 224 labelled assertions
 
@@ -21892,7 +22023,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1904 with the works gone no plan draws a siding:
   - L1905 ...no tile carries a plot of one, and no route runs to one (
 
-## RankingsCheck.java - 199 labelled assertions
+## RankingsCheck.java - 208 labelled assertions
 
 > The Rankings board held to what it promises (batch LB2; the project's spec-leaderboards.md 3, 4, 6 and 9):
 > Rankings' pivot and display, its two boards, its ranking, its sentence and lock, and CityMeasures' reading
@@ -21908,225 +22039,235 @@ _(this harness does not label its checks through a helper - it prints its findin
 > its figures are held to the history's own reader times the named factor.
 > ...
 
-  - L215 the file -D
-- **L275 1. the pivot's identities**
-  - L289 the city's figure in its own money is X under this month's rate and PPP, and X at founding's prices under Constant (a wage's, X)
-  - L290 the live city has the five money measures (
-  - L308 Money never reorders: a board's rows and ranks are the same in the city's money, game US$ and real US$, on both boards, at every Convert
-  - L310 and the boards have rows to be the same (
-  - L313 display: the city's money is US$ over the bridge x the game dollar's price level x the rate; at PPP x parity; at Constant x the founding rate
-  - L316 display: game US$ is US$ over the bridge x the price level, and at Constant x 1; real US$ as is
-- **L327 2. at founding a game US$ is the bridge's worth of real US$**
-  - L328 a fresh city's game dollar price level is 1, and its founding rate is the rate it opens at (
-  - L351 at founding every row's real US$ is the bridge (
-  - L352 the live city's game dollar has inflated (
-  - L353 and once it has inflated, the game US$ differs from the real US$ on every board of every money measure
-- **L371 3. Constant holds a steady real figure while its rate moves**
-  - L386 the same figures at a dearer game dollar and a weaker rate are the same US$ of 2015 under Constant, and in the city's money its real figure
-  - L387 ...and are not under this month's rate or PPP, which move with the rate and the price level
-- **L395 4. Your world's rows equal Nations' figures for the month**
-  - L397 the file carries exactly ten measures for Your world:
-  - L405 Your world ranks exactly the ten D15 names and has no rows for the other 60; with no Nations it ranks none
-  - L457 Your world
-  - L458 Your world
-  - L459 Your world
-  - L460 Your world
-  - L461 Your world
+  - L221 the file -D
+- **L283 1. the pivot's identities**
+  - L297 the city's figure in its own money is X under this month's rate and PPP, and X at founding's prices under Constant (a wage's, X)
+  - L298 the live city has the five money measures (
+  - L316 Money never reorders: a board's rows and ranks are the same in the city's money, game US$ and real US$, on both boards, at every Convert
+  - L318 and the boards have rows to be the same (
+  - L321 display: the city's money is US$ over the bridge x the game dollar's price level x the rate; at PPP x parity; at Constant x the founding rate
+  - L324 display: game US$ is US$ over the bridge x the price level, and at Constant x 1; real US$ as is
+- **L335 2. at founding a game US$ is the bridge's worth of real US$**
+  - L336 a fresh city's game dollar price level is 1, and its founding rate is the rate it opens at (
+  - L359 at founding every row's real US$ is the bridge (
+  - L360 the live city's game dollar has inflated (
+  - L361 and once it has inflated, the game US$ differs from the real US$ on every board of every money measure
+- **L379 3. Constant holds a steady real figure while its rate moves**
+  - L394 the same figures at a dearer game dollar and a weaker rate are the same US$ of 2015 under Constant, and in the city's money its real figure
+  - L395 ...and are not under this month's rate or PPP, which move with the rate and the price level
+- **L403 4. Your world's rows equal Nations' figures for the month**
+  - L405 the file carries exactly ten measures for Your world:
+  - L413 Your world ranks exactly the ten D15 names and has no rows for the other 60; with no Nations it ranks none
+  - L465 Your world
+  - L466 Your world
   - L467 Your world
-  - L474 Your world
-  - L492 Your world
-  - L493 Your world
-- **L504 5. lower is better ranks ascending**
-  - L522 a DOWN measure's first row has the least value and the rows ascend (unemployment, deaths, debt, ...)
-  - L523 an UP measure's first row has the most and the rows descend (GDP, life expectancy, ...)
-  - L524 a NONE measure ranks largest first, like an UP (inflation, investment, ...)
-  - L525 on the real file:
-  - L527 unemployment, which is lower-is-better, has the city ranked by its value among the nations (rank
-- **L536 6. ties share a rank**
-  - L565 a tie in the middle (France, Germany, Italy at 80.25): one rank for the group, the next skips two, and the board is the same twice
-- **L575 7. a place with no figure is off, never 0**
-  - L598 a place without a figure of a measure is not a row (
-  - L599 and a place with one is a row of exactly its value, year and mark: the rows are the figures
-  - L600 every row's value is a finite number: none is NaN
-  - L603 a published 0 is a row and a missing figure is not: oil has
-  - L612 a copy of the file with one nation's GDP removed loses exactly that row (
-  - L621 a city with no figure for a measure is off its board (you
-  - L633 a measure nothing real publishes (D10) has the city alone, and realFigures false (
-  - L640 a published measure's table counts its rows with a mark (not the city) and the estimates among them
-- **L648 8. the real rows' pivot**
-  - L649 the CPI-U's 2015 over 2025 is the file's us_prices_2015_over_2025 (
-  - L653 a 2025 figure at this month's rate is its value times CPI-U 2015 over 2025: the US (
-  - L655 a city region's 2021 figure is its value times CPI-U 2015 over 2021: Tokyo (
-  - L678 every place's GDP and GDP per person at this month's rate: its value times CPI-U 2015 over its year's
-  - L679 under Constant GDP and GDP per person are the file's .k figure as it is, with its year
-  - L680 under PPP they are the file's .ppp figure times CPI-U 2015 over its year's
-  - L681 a row carries its figure's mark and source
-  - L706 household spending converts by gdp.k and gdp.ppp over gdp of the same place; a wage by gdp.ppp over gdp, and is this month's figure under Constant
-- **L714 9. around you and your size**
-  - L737 around the city
-  - L749 your size: the places within ten times the city's
-  - L751 ...and every one is within the factor of the city's people, in rank order
-  - L755 a city off the board has no size to match: yourSize is empty
-- **L763 10. the city's measures from History**
-  - L769 every figure is a measure of the file, with a way of being made, and is finite
-  - L771 it has every measure a city of its age has (
-  - L772 growth_10y needs 132 monthly months, which a city of
-  - L773 only gdp, gdp_pp and hh_spend_pp have a figure at founding's prices
-  - L780 gdp is the history's last 12 months times THOUSANDS (
-  - L781 ...and at founding's prices the same months each over that month's price index
-  - L782 gdp per person is that over the people now (
-  - L783 people are the history's last population
-  - L785 household spending per person is a year of consumption times THOUSANDS over the people
-  - L787 price level is parity over fx, and fx against parity its inverse (
-  - L788 the investment share is a year of investment over a year of output:
-  - L789 the debt share is the last month's debt over a year of output
-  - L791 the average wage is the book's wage bill over posts filled, times 12 and THOUSANDS (
-  - L792 the minimum wage is the floor in today's money times 12 and THOUSANDS, and the Kaitz index the one over the other (
-  - L794 inflation is the price index over its reading twelve months before
-  - L795 unemployment is the book's, over the labour force:
-  - L799 old-age dependency is seniors and elders over adults, from the city's bands
-  - L801 area is the city's dry ground, the real file's land area (
-  - L803 reserves in months of imports is the vault in dollars over a month of imports at each month's rate:
-  - L809 the six bands' deaths add up to the deaths series over a year, to its rounding (
-  - L810 the death rate is the six bands' dead over the people, not the rounded series (
-  - L812 life expectancy is finite and between 20 and 120 (
-  - L819 the life table: a flat hazard m, in every band, gives a life expectancy of 1 over m
-  - L821 ...and with no one dying in the open band there is no life expectancy (NaN), not infinity
-  - L827 a city of six months: a year of output is the six months scaled by 12 over 6, times THOUSANDS, and says so
-  - L829 ...and inflation (13 months), real growth (24), 10-year growth and life expectancy (12 months) are absent, not 0
-  - L831 an empty history has no figures
-  - L836 a history with folded years (
-- **L856 11. the lock and the sentence**
-  - L859 Prices is locked under real US$
-  - L860 ...under Constant
-  - L861 ...on a measure that is not money (
-  - L862 ...and with no saved city on the board: always in LB2
-  - L863 it is open for money in the city's or the game's money at this month's rate or PPP once a saved city is on the board (LB3's seam)
-  - L870 with no saved city Prices is locked for every measure and setting; with one, locked exactly under real US$, Constant, or a measure that is not money
-  - L875 the opening sentence names real US dollars, 2015 prices, this month's rate, 2025, the city and its month
-  - L879 Your world in the city's money under Constant names the money, founding's prices, the constant rate and the path
-  - L882 game US dollars are of the city's month, and PPP is said:
-  - L884 a wage under Constant says it has no constant series and is at this month's rate; GDP under Constant does not
-  - L887 a measure that is not money drops the money clause and names its unit:
-  - L889 the Random path is named too
-  - L890 a measure with a constant series says so: gdp, gdp_pp and hh_spend_pp, and no wage
-- **L1011 12. reading the slots**
-  - L1012 fixture: the live city was saved in slots 1, 2 and 3 with a history each, and slot 3 is after a reform by
-  - L1032 a read writes nothing: every file's bytes and modified time are as they were, none added and none removed
-  - L1036 the cities on the board are slots 1 and 2, in slot order:
-  - L1037 slot 0, the autosave, holds a good save and is left out: not on the board, not counted
-  - L1038 the empty slots (3, 4 and 10) are off the board and not counted as left out
-  - L1040 a save from an older build (format
-  - L1042 a save that cannot be read and a history that cannot be read are two damaged
-  - L1043 a save with no history file is off and counted
-  - L1044 a first read parses every save in slots 1 to
-  - L1049 a saved city's row is id saved:1, kind SAVED, the city's name, its year, mark 0, source
-  - L1052 ...and it is the city as its history left it: its month is the history's last (
-  - L1058 a second refresh with nothing changed reads no slot and reuses every one (reads
-  - L1061 slot 2 saved since is the only slot read again (reads
-  - L1063 a slot deleted is gone from the next snapshot, and counted nowhere
-- **L1077 13. Prices moves only saved rows, never under real US$**
-  - L1082 fixture: the young save's price level differs from the active city's, and the old save, of the active city's month, has the same
-  - L1122 Prices per year against static moves no row that is not a saved city's: value and shown the same, on both boards, in the city's money and the game's, at this...
-  - L1123 ...and the boards had both saved cities to move (money measures)
-  - L1124 ...it moves the saved city whose game dollar is dearer or cheaper than this city's
-  - L1125 ...and does not move the one whose price level is this city's
-  - L1126 in game US$ a saved city per year is its own year's dollars (X over its rate), static its real dollars (X over rate over its price level) times this city's l...
-  - L1144 under real US$, under Constant, and for a measure that is not money, Prices changes nothing: the whole table the same, every row, rank, value and figure shown
-  - L1145 ...with saved cities on those boards to have moved (GDP and people)
-  - L1165 a static board is one order, with the saved cities in it, in the city's money, game US$ and real US$
-  - L1169 with a saved city on the board Prices is open for money in the city's money at this month's rate
-  - L1171 with no saved city on the board the sentence is the board's alone
-  - L1176 per year it adds that the saved cities are in their own year's dollars, as last saved
-  - L1177 static at an age it adds that they are at this city's prices of its year, at its age
-  - L1180 under real US$, which Prices cannot move, it names no prices: just the saved cities as last saved
-  - L1182 a measure that is not money names none either, at an age too
-  - L1184 an age is said as years and months: 50 months is 4 years 2 months, 12 is 1 year, 13 is 1 year 1 month, 7 is 7 months
-  - L1192 the drawer opens a saved city by its row id: its GDP line is its row on each board, mark 0, source
-  - L1194 ...and with no saved cities handed over, the same id opens nothing: a line of NaN each
-- **L1203 14. a reform leaves every rank**
-  - L1207 fixture: slot 3 is slot 2's city in a money a
-  - L1239 the same city saved before and after the reform has the same rank in every measure and every Settings combination, on both boards, beside the city before and...
-  - L1240 ...and the same value, and the same figure shown, to a relative 1e-9
-  - L1241 ...and where one has no row, so has the other (no figure of that measure)
-  - L1242 ...and side by side on one board, beside the live city they were saved from, the two copies share one rank (Rankings.TIE: the reform leaves noise in the last...
-  - L1243 ...the money measures among them (
-- **L1251 15. at your age**
-  - L1253 fixture: the age (
-  - L1256 at that age the cities on the board are slots 2 and 3, and slot 1 is no row
-  - L1257 slot 1 is listed as stopped, with its name and its last month (stopped at
-  - L1260 ...and the board has no row for it, with slots 2 and 3 on it
-  - L1264 fixture: slot 2's history file holds the age as a month, with a year behind it
-  - L1267 slot 2 at the age has CityMeasures.at of its history file at that month (
-  - L1272 ...its GDP is the history's GDP over the twelve months to the age, times THOUSANDS (
-  - L1273 ...its rate, parity and the game dollar's price level are the history file's fxRate, fxParity and usPrices at that month
-  - L1276 ...and the measures that need the land and the bands are absent, never guessed
-  - L1279 at its last saved month it is the whole history's last month (
-  - L1282 ...its area is the live city's at the month it was saved (
-  - L1285 the reform reaches the saved history: slot 3 at the age has a rate a
-  - L1288 a city still on the board at the month its history ends is not stopped, one past it is: at
-  - L1290 at an age none has reached, there are no rows and every city is stopped, at its own last month, in slot order
-  - L1292 at an age before the history began there is no row either, and no city has stopped
-- **L1300 16. the rank over the years**
-  - L1306 fixture: the history is all months (nothing folded) and holds at least three Decembers
-  - L1314 fixture: the measures the real world still publishes, read from the file (
-  - L1340 ...of which the city has a figure in some December for
-  - L1341 the rank line has one point for each December the city has a figure for, oldest first, and a point for every December where the city has a figure in all of them
-  - L1342 each point is the board's own rank for the city at that December, among as many places (Real world 2025 and the city)
-  - L1343 ...a rank from 1 to the places ranked, among the real places that publish the measure (a wage is published for fewer places than output is)
-  - L1347 a measure LC1 took out (real_rate, its source
-  - L1352 Your world's settings give the same points: the line is against Real world 2025 only
-  - L1353 saved cities would change the places ranked (the board with them has more rows), and the point leaves them out
-  - L1355 a measure that needs the land has no point, since the history does not keep it: area and density
-  - L1362 a measure the city had no figure for in its first Decembers starts when it has one:
-  - L1368 under Constant the line is the board's Constant rank at each December: the last of
-  - L1370 a history of nothing, or none, has no points
-  - L1372 the city at a December is the history's: its rate, parity and price level at that month, its month and year the calendar's
-- **L1382 17. the slim history equals the full one**
-  - L1409 a slot's slim history has the full one's axis
-  - L1410 CityMeasures.of over it is the full history's, figure for figure
-  - L1411 ...and so is CityMeasures.at of it at every month of the history
-  - L1412 it keeps only the series the measures read and the pivot's three, each as the file has it, under a third of the series the file has
-  - L1413 each kept series that is not empty is a HistorySave.PackedDoubles or PackedLongs: held as primitives, not boxed
-  - L1415 every series CityMeasures reads is a series a history has, and the pivot's fxRate, fxParity and usPrices are kept
-  - L1428 usPrices is the world economy's price level, to the digit, at the end of each month played (
-  - L1430 ...and it has an entry for every month of the history (
-  - L1436 the reform divides the rate's whole history by
-- **L1445 18. CityMeasures.at**
-  - L1449 at the history's last month it is of(), figure for figure (
-  - L1450 at the first month it was asked (
-  - L1452 a month the history never reached has no figures, nor month 0 or a negative one, nor a null history
-  - L1455 a younger month has fewer measures than an older: inflation needs 13 months, so none in the history's twelfth month (
-  - L1462 Extras.UNKNOWN leaves out exactly what needs the land and the bands (
-  - L1465 ...and its minimum wage is the history's floor lifted by the price index, times 12 and THOUSANDS (
-  - L1472 fixture: three years of the history are folded (
-  - L1473 a month in a folded year has no figures (months 12 and 36), nor does the month before the fold ends
-  - L1474 the first month after the fold is read as a month: a year of output scaled from the one month it has, 12 times the month
-  - L1476 a month in the folded history's middle has the figures of that month, a year of output 12 of the month; its last month is of()
-  - L1478 valueAt reads a series at a month and is NaN where the history has no such month or series
-- **L1495 19. the city in play, as saved**
-  - L1498 the city in play is its name and its world seed: Played.of(game) carries
-  - L1502 fixture: the save the copies are made from holds the city's name and its seed (
-  - L1514 fixture: all five copies are cities on the board, in slots 1 to 5, and none is left out (
-  - L1517 a slot copied from the city's own saves (same name, same seed) is marked in play: slots 1 and 2 (
-  - L1518 ...and none is marked when there is no city in play (Played.NONE)
-  - L1519 ...and the last-saved list leaves none out, marked or not: every slot is a row, in slot order
-  - L1521 a copy with the seed one higher, one with no seed and one with another name are each not marked: a save with no seed never matches
-  - L1527 fixture: at slot 1's last month (
-  - L1528 at your age the city in play, as saved, is not a row, and the seed one higher, the seed removed and the other name each stay in one: slots 3, 4 and 5 (
-  - L1532 fixture: the city in play is older than every copy's last month (month
-  - L1535 a copy whose last month is before the city's month is listed as stopped when no city is in play (
-  - L1536 ...and a slot that is the city in play is not listed as stopped: slots 3, 4 and 5 alone are (
-- **L1562 20. the packed read of a saved history**
-  - L1572 fixture: the kept series
-  - L1583 readKept over it equals slim(KEPT) of the whole parse, series by series (equal both ways, the same hash)
-  - L1585 a null entry is kept where it was,
-  - L1589 a Double series is a PackedDoubles and a Long series a PackedLongs
-  - L1591 a kept series the JSON has as null (
-  - L1592 a series that is not kept (
-  - L1593 foldedMonths is trimmed to month's size as slim trims it (
-  - L1606 a packed list is read only: add and set on it throw UnsupportedOperationException
-  - L1607 an empty document reads as no history, as Gson does
+  - L468 Your world
+  - L469 Your world
+  - L475 Your world
+  - L482 Your world
+  - L500 Your world
+  - L501 Your world
+- **L512 5. lower is better ranks ascending**
+  - L530 a DOWN measure's first row has the least value and the rows ascend (unemployment, deaths, debt, ...)
+  - L531 an UP measure's first row has the most and the rows descend (GDP, life expectancy, ...)
+  - L532 a NONE measure ranks largest first, like an UP (inflation, investment, ...)
+  - L533 on the real file:
+  - L535 unemployment, which is lower-is-better, has the city ranked by its value among the nations (rank
+- **L544 6. ties share a rank**
+  - L573 a tie in the middle (France, Germany, Italy at 80.25): one rank for the group, the next skips two, and the board is the same twice
+- **L583 7. a place with no figure is off, never 0**
+  - L606 a place without a figure of a measure is not a row (
+  - L607 and a place with one is a row of exactly its value, year and mark: the rows are the figures
+  - L608 every row's value is a finite number: none is NaN
+  - L611 a published 0 is a row and a missing figure is not: oil has
+  - L620 a copy of the file with one nation's GDP removed loses exactly that row (
+  - L629 a city with no figure for a measure is off its board (you
+  - L641 a measure nothing real publishes (D10) has the city alone, and realFigures false (
+  - L648 a published measure's table counts its rows with a mark (not the city) and the estimates among them
+- **L656 8. the real rows' pivot**
+  - L657 the CPI-U's 2015 over 2025 is the file's us_prices_2015_over_2025 (
+  - L661 a 2025 figure at this month's rate is its value times CPI-U 2015 over 2025: the US (
+  - L663 a city region's 2021 figure is its value times CPI-U 2015 over 2021: Tokyo (
+  - L686 every place's GDP and GDP per person at this month's rate: its value times CPI-U 2015 over its year's
+  - L687 under Constant GDP and GDP per person are the file's .k figure as it is, with its year
+  - L688 under PPP they are the file's .ppp figure times CPI-U 2015 over its year's
+  - L689 a row carries its figure's mark and source
+  - L714 household spending converts by gdp.k and gdp.ppp over gdp of the same place; a wage by gdp.ppp over gdp, and is this month's figure under Constant
+- **L722 9. around you and your size**
+  - L745 around the city
+  - L757 your size: the places within ten times the city's
+  - L759 ...and every one is within the factor of the city's people, in rank order
+  - L763 a city off the board has no size to match: yourSize is empty
+- **L771 10. the city's measures from History**
+  - L777 every figure is a measure of the file, with a way of being made, and is finite
+  - L779 it has every measure a city of its age has (
+  - L780 growth_10y needs 132 monthly months, which a city of
+  - L781 only gdp, gdp_pp and hh_spend_pp have a figure at founding's prices
+  - L788 gdp is the history's last 12 months times THOUSANDS (
+  - L789 ...and at founding's prices the same months each over that month's price index
+  - L790 gdp per person is that over the people now (
+  - L791 people are the history's last population
+  - L793 household spending per person is a year of consumption times THOUSANDS over the people
+  - L795 price level is parity over fx, and fx against parity its inverse (
+  - L796 the investment share is a year of investment over a year of output:
+  - L797 the debt share is the last month's debt over a year of output
+  - L799 the average wage is the book's wage bill over posts filled, times 12 and THOUSANDS (
+  - L800 the minimum wage is the floor in today's money times 12 and THOUSANDS, and the Kaitz index the one over the other (
+  - L802 inflation is the price index over its reading twelve months before
+  - L803 unemployment is the book's, over the labour force:
+  - L807 old-age dependency is seniors and elders over adults, from the city's bands
+  - L809 area is the city's dry ground, the real file's land area (
+  - L811 reserves in months of imports is the vault in dollars over a month of imports at each month's rate:
+  - L817 the six bands' deaths add up to the deaths series over a year, to its rounding (
+  - L818 the death rate is the six bands' dead over the people, not the rounded series (
+  - L820 life expectancy is finite and between 20 and 120 (
+  - L827 the life table: a flat hazard m, in every band, gives a life expectancy of 1 over m
+  - L829 ...and with no one dying in the open band there is no life expectancy (NaN), not infinity
+  - L835 a city of six months: a year of output is the six months scaled by 12 over 6, times THOUSANDS, and says so
+  - L837 ...and inflation (13 months), real growth (24), 10-year growth and life expectancy (12 months) are absent, not 0
+  - L839 an empty history has no figures
+  - L844 a history with folded years (
+- **L864 11. the lock and the sentence**
+  - L867 Prices is locked under real US$
+  - L868 ...under Constant
+  - L869 ...on a measure that is not money (
+  - L870 ...and with no saved city on the board: always in LB2
+  - L871 it is open for money in the city's or the game's money at this month's rate or PPP once a saved city is on the board (LB3's seam)
+  - L878 with no saved city Prices is locked for every measure and setting; with one, locked exactly under real US$, Constant, or a measure that is not money
+  - L883 the opening sentence names real US dollars, 2015 prices, this month's rate, 2025, the city and its month
+  - L887 Your world in the city's money under Constant names the money, founding's prices, the constant rate and the path
+  - L890 game US dollars are of the city's month, and PPP is said:
+  - L892 a wage under Constant says it has no constant series and is at this month's rate; GDP under Constant does not
+  - L895 a measure that is not money drops the money clause and names its unit:
+  - L897 the Random path is named too
+  - L898 a measure with a constant series says so: gdp, gdp_pp and hh_spend_pp, and no wage
+- **L1019 12. reading the slots**
+  - L1020 fixture: the live city was saved in slots 1, 2 and 3 with a history each, and slot 3 is after a reform by
+  - L1040 a read writes nothing: every file's bytes and modified time are as they were, none added and none removed
+  - L1044 the cities on the board are slots 1 and 2, in slot order:
+  - L1045 slot 0, the autosave, holds a good save and is left out: not on the board, not counted
+  - L1046 the empty slots (3, 4 and 10) are off the board and not counted as left out
+  - L1048 a save from an older build (format
+  - L1050 a save that cannot be read and a history that cannot be read are two damaged
+  - L1051 a save with no history file is off and counted
+  - L1052 a first read parses every save in slots 1 to
+  - L1057 a saved city's row is id saved:1, kind SAVED, the city's name, its year, mark 0, source
+  - L1060 ...and it is the city as its history left it: its month is the history's last (
+  - L1066 a second refresh with nothing changed reads no slot and reuses every one (reads
+  - L1069 slot 2 saved since is the only slot read again (reads
+  - L1071 a slot deleted is gone from the next snapshot, and counted nowhere
+- **L1085 13. Prices moves only saved rows, never under real US$**
+  - L1090 fixture: the young save's price level differs from the active city's, and the old save, of the active city's month, has the same
+  - L1130 Prices per year against static moves no row that is not a saved city's: value and shown the same, on both boards, in the city's money and the game's, at this...
+  - L1131 ...and the boards had both saved cities to move (money measures)
+  - L1132 ...it moves the saved city whose game dollar is dearer or cheaper than this city's
+  - L1133 ...and does not move the one whose price level is this city's
+  - L1134 in game US$ a saved city per year is its own year's dollars (X over its rate), static its real dollars (X over rate over its price level) times this city's l...
+  - L1152 under real US$, under Constant, and for a measure that is not money, Prices changes nothing: the whole table the same, every row, rank, value and figure shown
+  - L1153 ...with saved cities on those boards to have moved (GDP and people)
+  - L1173 a static board is one order, with the saved cities in it, in the city's money, game US$ and real US$
+  - L1177 with a saved city on the board Prices is open for money in the city's money at this month's rate
+  - L1179 with no saved city on the board the sentence is the board's alone
+  - L1184 per year it adds that the saved cities are in their own year's dollars, as last saved
+  - L1185 static at an age it adds that they are at this city's prices of its year, at its age
+  - L1188 under real US$, which Prices cannot move, it names no prices: just the saved cities as last saved
+  - L1190 a measure that is not money names none either, at an age too
+  - L1192 an age is said as years and months: 50 months is 4 years 2 months, 12 is 1 year, 13 is 1 year 1 month, 7 is 7 months
+  - L1200 the drawer opens a saved city by its row id: its GDP line is its row on each board, mark 0, source
+  - L1202 ...and with no saved cities handed over, the same id opens nothing: a line of NaN each
+- **L1211 14. a reform leaves every rank**
+  - L1215 fixture: slot 3 is slot 2's city in a money a
+  - L1247 the same city saved before and after the reform has the same rank in every measure and every Settings combination, on both boards, beside the city before and...
+  - L1248 ...and the same value, and the same figure shown, to a relative 1e-9
+  - L1249 ...and where one has no row, so has the other (no figure of that measure)
+  - L1250 ...and side by side on one board, beside the live city they were saved from, the two copies share one rank (Rankings.TIE: the reform leaves noise in the last...
+  - L1251 ...the money measures among them (
+- **L1259 15. at your age**
+  - L1261 fixture: the age (
+  - L1264 at that age the cities on the board are slots 2 and 3, and slot 1 is no row
+  - L1265 slot 1 is listed as stopped, with its name and its last month (stopped at
+  - L1268 ...and the board has no row for it, with slots 2 and 3 on it
+  - L1272 fixture: slot 2's history file holds the age as a month, with a year behind it
+  - L1275 slot 2 at the age has CityMeasures.at of its history file at that month (
+  - L1280 ...its GDP is the history's GDP over the twelve months to the age, times THOUSANDS (
+  - L1281 ...its rate, parity and the game dollar's price level are the history file's fxRate, fxParity and usPrices at that month
+  - L1284 ...and the measures that need the land and the bands are absent, never guessed
+  - L1287 at its last saved month it is the whole history's last month (
+  - L1290 ...its area is the live city's at the month it was saved (
+  - L1293 the reform reaches the saved history: slot 3 at the age has a rate a
+  - L1296 a city still on the board at the month its history ends is not stopped, one past it is: at
+  - L1298 at an age none has reached, there are no rows and every city is stopped, at its own last month, in slot order
+  - L1300 at an age before the history began there is no row either, and no city has stopped
+- **L1308 16. the rank over the years**
+  - L1314 fixture: the history is all months (nothing folded) and holds at least three Decembers
+  - L1322 fixture: the measures the real world still publishes, read from the file (
+  - L1348 ...of which the city has a figure in some December for
+  - L1349 the rank line has one point for each December the city has a figure for, oldest first, and a point for every December where the city has a figure in all of them
+  - L1350 each point is the board's own rank for the city at that December, among as many places (Real world 2025 and the city)
+  - L1351 ...a rank from 1 to the places ranked, among the real places that publish the measure (a wage is published for fewer places than output is)
+  - L1355 a measure LC1 took out (real_rate, its source
+  - L1360 Your world's settings give the same points: the line is against Real world 2025 only
+  - L1361 saved cities would change the places ranked (the board with them has more rows), and the point leaves them out
+  - L1363 a measure that needs the land has no point, since the history does not keep it: area and density
+  - L1370 a measure the city had no figure for in its first Decembers starts when it has one:
+  - L1376 under Constant the line is the board's Constant rank at each December: the last of
+  - L1378 a history of nothing, or none, has no points
+  - L1380 the city at a December is the history's: its rate, parity and price level at that month, its month and year the calendar's
+- **L1390 17. the slim history equals the full one**
+  - L1417 a slot's slim history has the full one's axis
+  - L1418 CityMeasures.of over it is the full history's, figure for figure
+  - L1419 ...and so is CityMeasures.at of it at every month of the history
+  - L1420 it keeps only the series the measures read and the pivot's three, each as the file has it, under a third of the series the file has
+  - L1421 each kept series that is not empty is a HistorySave.PackedDoubles or PackedLongs: held as primitives, not boxed
+  - L1423 every series CityMeasures reads is a series a history has, and the pivot's fxRate, fxParity and usPrices are kept
+  - L1436 usPrices is the world economy's price level, to the digit, at the end of each month played (
+  - L1438 ...and it has an entry for every month of the history (
+  - L1444 the reform divides the rate's whole history by
+- **L1453 18. CityMeasures.at**
+  - L1457 at the history's last month it is of(), figure for figure (
+  - L1458 at the first month it was asked (
+  - L1460 a month the history never reached has no figures, nor month 0 or a negative one, nor a null history
+  - L1463 a younger month has fewer measures than an older: inflation needs 13 months, so none in the history's twelfth month (
+  - L1470 Extras.UNKNOWN leaves out exactly what needs the land and the bands (
+  - L1473 ...and its minimum wage is the history's floor lifted by the price index, times 12 and THOUSANDS (
+  - L1480 fixture: three years of the history are folded (
+  - L1481 a month in a folded year has no figures (months 12 and 36), nor does the month before the fold ends
+  - L1482 the first month after the fold is read as a month: a year of output scaled from the one month it has, 12 times the month
+  - L1484 a month in the folded history's middle has the figures of that month, a year of output 12 of the month; its last month is of()
+  - L1486 valueAt reads a series at a month and is NaN where the history has no such month or series
+- **L1503 19. the city in play, as saved**
+  - L1506 the city in play is its name, its world seed and its founding cash: Played.of(game) carries
+  - L1510 fixture: the save the copies are made from holds the city's name, its seed and its founding cash (
+  - L1525 fixture: all seven copies are cities on the board, in slots 1 to 7, and none is left out (
+  - L1528 a slot copied from the city's own saves (same name, same seed, same founding cash) is marked in play: slots 1 and 2 (
+  - L1529 ...and none is marked when there is no city in play (Played.NONE)
+  - L1530 ...and the last-saved list leaves none out, marked or not: every slot is a row, in slot order
+  - L1532 a copy with the seed one higher, one with no seed and one with another name are each not marked: a save with no seed never matches
+  - L1534 a re-found (slot 6: the same name and the same seed as slot 1, other founding cash) is not marked, and neither is a save that carries no founding cash (slot ...
+  - L1540 fixture: at slot 1's last month (
+  - L1541 at your age the city in play, as saved, is not a row, and the seed one higher, the seed removed, the other name, the other founding cash and the cash removed...
+  - L1545 fixture: the city in play is older than every copy's last month (month
+  - L1548 a copy whose last month is before the city's month is listed as stopped when no city is in play (
+  - L1549 ...and a slot that is the city in play is not listed as stopped: slots 3 to 7 alone are (
+- **L1575 20. the packed read of a saved history**
+  - L1585 fixture: the kept series
+  - L1596 readKept over it equals slim(KEPT) of the whole parse, series by series (equal both ways, the same hash)
+  - L1598 a null entry is kept where it was,
+  - L1602 a Double series is a PackedDoubles and a Long series a PackedLongs
+  - L1604 a kept series the JSON has as null (
+  - L1605 a series that is not kept (
+  - L1606 foldedMonths is trimmed to month's size as slim trims it (
+  - L1619 a packed list is read only: add and set on it throw UnsupportedOperationException
+  - L1620 an empty document reads as no history, as Gson does
+- **L1636 21. the stamp follows each file of a slot**
+  - L1646 fixture: the slot is read once and is the founded city (
+  - L1647 nothing moved: the next refresh reads no slot and keeps the very same city
+  - L1655 the save alone, its size moved and its time not: the slot is read again and the row has the new header's name (reads
+  - L1661 the save alone, its time moved and its size not: the slot is read again and the row has the new name (reads
+  - L1663 ...and then nothing moved: no slot is read
+  - L1668 the history alone: the slot is read again and the row ends at the longer history's last month (
+  - L1686 a save that lands before its history is read (
+  - L1688 ...and the row ends as the finished slot reads: its name (
 
 ## ReadPathCheck.java - 39 labelled assertions
 

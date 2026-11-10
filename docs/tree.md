@@ -737,6 +737,11 @@ adds its line here, not in `CLAUDE.md`.
                                    corridor by a link that searches its way over the dry ground, and every
                                    piece of ground the water parts that holds buildings grows its own net
                                    (CityMap's pieces), the sidecar FORMAT 12 - IslandNetCheck holds it;
+                                   (batch RI1) the railway too has a piece on each of them, its track
+                                   dealt by the same weights from a rail hub nearest the piece's anchor,
+                                   a new yard to a piece that has none, its sidings and branches from the
+                                   island's line, the freight station and the trains staying home -
+                                   IslandRailCheck holds it;
                                    (batch ET6) a long bridge the model builds is handed to the map
                                    (CityMap.bridgePicture()) and laid whole as a fixed path of its kind -
                                    the highways', the railway's, or a road bridge's ground kept clear as a
@@ -930,7 +935,7 @@ adds its line here, not in `CLAUDE.md`.
                                    -Dplaytest.budget=N prints the treasury's month line by line; since
                                    0.8.14 (batch CL3) its layout watch: how many boxes the map moved
                                    between month pairs, and where industry and the homes stand
-        tools/                     the index generators, the two look-up tools, Stale (the prose check), Names (a branch's names checked, RV1), ManualToMarkdown (the manual into docs/) and LandTable (world/land-2024.json from tools/world/land.tsv, WN5); nothing in the game uses them
+        tools/                     the index generators, the two look-up tools, Stale (the prose check), Names (a branch's names checked, RV1), ManualToMarkdown (the manual into docs/), LandTable (world/land-2024.json from tools/world/land.tsv, WN5) and IslandRailRenders (RI1-C: IslandRailCheck's linked island and its railway drawn, docs/queue/RI1/); nothing in the game uses them
     src/main/resources/buildings.json    the balance file (ids permanent); consumption.json the basket;
                                          research.json the research catalogue (R2; codes permanent);
                                          fonts/ the eight IBM Plex files and their licence, OFL.txt (0.7.21);
@@ -978,11 +983,13 @@ adds its line here, not in `CLAUDE.md`.
                                          concepts each, "towers as a chart" and "the ledger's total"):
                                          make_icons.py writes the two SVGs, the PNGs and icon.ico into
                                          src/main/resources/icons/, make_title.py the store's title art into
-                                         branding/, pngio.py renders with Edge or Chrome headless and reads and
+                                         branding/, make_steam.py Steam's nine pictures into branding/steam/ (BR2),
+                                         pngio.py renders with Edge or Chrome headless and reads and
                                          writes PNGs (Python, standard library only)
     branding/                            the game's store art (BR1): title.svg with its font inside and its PNGs
                                          600, 1200 and 2400 wide (tools/branding/make_title.py), the itch.io cover,
-                                         and README.md - the name, what is where, how to remake it, the releases
+                                         steam/ (BR2: the capsules, hero, logo and background at Steamworks' sizes,
+                                         make_steam.py), and README.md - the name, what is where, how to remake it, the releases
     tools/jvms.ps1                       counts the other batches' JVMs and the game's processes on the PC, for
                                          Batch check.bat, which times soft while either runs, and deepseek/agent.py
                                          (TM1; GP1 took out TM2's -Quiet wait, SP1 batch-check.sh's soft-run line)
