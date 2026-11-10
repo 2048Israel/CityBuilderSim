@@ -170,6 +170,37 @@ Nova Scotia's minimum wage ($17.00 an hour from 1 October 2026)
   Used for: where a new city's minimum wage starts, $17.00 over $20.00 of the unskilled rung
   Source:  https://novascotia.ca/lae/employmentrights/minimumwage.asp
 
+The out-of-work verdict's cities (the game's code: PeopleScreen, UserInterface; WG2, 2026-11-10)
+
+Not part of world-1.bin: the figures are in the game's code. The header's OUT OF WORK tip names six big cities' yearly
+unemployment rates and the crisis of 2013, so the verdict (green 3% to 7%, red past 12%) has something to be read against.
+
+Labour Force Survey (Tokyo Metropolitan Government), 2025 annual
+  Credit:  Source: Tokyo Metropolitan Government, Labour Force Survey (2025 annual, released 2026-03-26)
+  Licence: Public Data License 1.0, compatible with CC BY 4.0
+  Used for: the out-of-work tip's cities (Tokyo 2.4%)
+
+Local Area Unemployment Statistics (US Bureau of Labor Statistics), New York City 2024
+  Credit:  Source: US Bureau of Labor Statistics, Local Area Unemployment Statistics, New York City, 2024
+  Licence: Public domain (a US government work; https://www.bls.gov/opub/copyright-information.htm)
+  Used for: the out-of-work tip's cities (New York 5.0%)
+
+Series YCNI (UK Office for National Statistics), London 2024
+  Credit:  Contains public sector information licensed under the Open Government Licence v3.0.
+  Licence: Open Government Licence v3.0
+  Used for: the out-of-work tip's cities (London 5.5%)
+
+Table 14-10-0461-01 (Statistics Canada), Halifax and Toronto 2024
+  Credit:  Source: Statistics Canada, table 14-10-0461-01. This does not constitute an endorsement by Statistics Canada
+           of this product.
+  Licence: Statistics Canada Open Licence (https://www.statcan.gc.ca/en/terms-conditions/open-licence)
+  Used for: the out-of-work tip's cities (Halifax 5.5%, Toronto 8.0%)
+
+Regional and annual unemployment (Eurostat: lfst_r_lfu3rt, une_rt_a)
+  Credit:  Source: Eurostat, lfst_r_lfu3rt (the Comunidad de Madrid, 2024 and 2013) and une_rt_a (Spain, 2013)
+  Licence: CC BY 4.0, the European Commission's reuse policy (https://ec.europa.eu/eurostat/en/help/copyright-notice)
+  Used for: the out-of-work tip's cities (Madrid 9.0%, and 19.8% and Spain 26.1% in 2013)
+
 land-2024: the nations' land prices (WN5, 2026-11-01)
 
 land-2024.json (src/main/resources/world/) is each nation's land a hectare in US dollars of 2024: 25 published

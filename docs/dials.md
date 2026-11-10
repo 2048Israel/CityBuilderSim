@@ -4935,33 +4935,33 @@ Generated 2026-11-10 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 111 | `PeopleScreen.OUT_OF_WORK_SHORT` | `.03` | Under this share out of work, nobody is spare: amber, "jobs going unfilled". |
-| 114 | `PeopleScreen.OUT_OF_WORK_HIGH` | `.15` | Over this, high: amber. |
-| 117 | `PeopleScreen.OUT_OF_WORK_FAR` | `.25` | Over this, far too many adults with nothing to do: red. |
-| 127 | `PeopleScreen.GOING_SHORT_WARN` | `.01` | Over this share of the city eating less than a basket, GOING SHORT is amber; the dashboard's HUNGRY reads it too (0.7.27). |
-| 130 | `PeopleScreen.GOING_SHORT_BAD` | `.10` | ...and over this, red. |
-| 256 | `PeopleScreen.COUNT_MILLIS` | `600` | How long the headcount counts and the month's bars grow when a month lands (Jerus's "fun": the number moves). |
-| 280 | `PeopleScreen.STILL_FAKED` | `"What this model does not do yet:\n" + "· Nobody has an age.Each band holds a mean, so ...` | What the model does not do yet: the four lines of the old page's eight that are still true (0.7.27). |
-| 521 | `PeopleScreen.BORN` | `Palette.PEOPLE_LIGHT, MOVED_IN = Palette.PEOPLE` | The born and the arrived: the people teal's light step and the teal. |
-| 528 | `PeopleScreen.DIED_OF_AGE` | `Palette.PEOPLE_DARK, DIED_OF_ILLNESS = Palette.BUSINESS, DIED_KILLED = Palette.BUILDING...` | The dead by cause: of age the dark teal, of illness the violet, the killed the pink, the aged out a light blue, and since R0b the causes of 1900 (typhoid, TB, childbirth and the rest) CATEGORIES' s... |
-| 532 | `PeopleScreen.LEFT_WORK` | `Palette.PEOPLE_DARK, LEFT_BROKE = Palette.MONEY, LEFT_CRIME = Palette.BUILDING` | The leavers by why: for want of work the dark teal, broke the blue, driven out by crime the pink. |
-| 920 | `PeopleScreen.CARD` | `"-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.RAISED + ";" + " -fx-backg...` | The Build card ground every card on both pages stands on. |
-| 1064 | `PeopleScreen.PYRAMID_HALF` | `200` | How wide half of the widest band is drawn, at most. |
-| 1397 | `PeopleScreen.WHY_INFO` | `"The city draws people the way Migration strikes it each month: every post " + "support...` | WHY PEOPLE COME's (i): what the bridge is. |
-| 1774 | `PeopleScreen.TILE_MIN` | `56` | The narrowest a tile is drawn; anything smaller folds into "+n more". |
-| 1869 | `PeopleScreen.Strip.UNUSED` | `" "` | What the "+n more" label says while nothing folds: a space, never nothing (PT1-M4). |
-| 1940 | `PeopleScreen.Strip.TILE_TALL` | `62` | How tall a strip is. |
-| 2124 | `PeopleScreen.OUTSIDE_INFO` | `"Families are built from the adults who work, and their children." + "Everybody else is...` | OUTSIDE THE FAMILIES' (i): who they are, the old page's words. |
-| 2401 | `PeopleScreen.LADDER_INFO` | `"open = posts this band can be put into(licensed posts are on the " + "chips under the ...` | The ladder's (i): the old legend. |
-| 2890 | `PeopleScreen.IN_DOLLARS` | `"Every figure on this page is in dollars, not the thousands the rest of the " + "game c...` | The page's (i): what its money is counted in. |
-| 2895 | `PeopleScreen.PAID_IN_ORDER` | `"The order is fixed: the payslip first, then rent, then the fees, and " + "the shop tak...` | The order a household pays in, and what happens when it comes up short: the verdict's (i). |
-| 3099 | `PeopleScreen.BESIDE` | `1200` | The narrowest page that sets the open cell's books beside the grid; under it they stack. |
-| 3461 | `PeopleScreen.CARS_INFO` | `"Bought out of savings past the same cushion a share is, so income " + "decides who can...` | The cars' (i): the old note. |
-| 3533 | `PeopleScreen.BAR_ROOM` | `new javafx.geometry.Insets(8, 0, 0, 0)` | The room over the flow bar in a cell's statement: one object (KP2b), set where it is not that already (Pieces.vMargin). |
-| 3536 | `PeopleScreen.TIER_COL` | `88` | How wide a tier column is. |
-| 3537 | `PeopleScreen.SHAPE_COL` | `168` |  |
-| 3544 | `PeopleScreen.MATRIX_COLUMNS` | `"people.matrixColumns"` | The key a matrix grid keeps its columns under - the household's name, then the six tiers - made once in the grid's life (KP2b) and added to it at each draw as one list. |
-| 3721 | `PeopleScreen.BELOW_THE_RULE` | `"Below the rule: the retired, on a pension and no wage; the out of work, " + "on EI for...` | The section captions' (i): who is below the rule, and what their one cell says. |
+| 122 | `PeopleScreen.OUT_OF_WORK_SHORT` | `.03` | Under this share out of work, nobody is spare: amber, "jobs going unfilled". |
+| 125 | `PeopleScreen.OUT_OF_WORK_HIGH` | `.07` | Over this share out of work, high: amber (Toronto runs 8.0% and Madrid 9.0%, the high end of the big rich-country cities). |
+| 128 | `PeopleScreen.OUT_OF_WORK_FAR` | `Migration.ARRIVALS_STOP_OUT_OF_WORK` | Over this, a city in trouble: red, and the share at which nobody moves here for work (Migration.ARRIVALS_STOP_OUT_OF_WORK). |
+| 138 | `PeopleScreen.GOING_SHORT_WARN` | `.01` | Over this share of the city eating less than a basket, GOING SHORT is amber; the dashboard's HUNGRY reads it too (0.7.27). |
+| 141 | `PeopleScreen.GOING_SHORT_BAD` | `.10` | ...and over this, red. |
+| 267 | `PeopleScreen.COUNT_MILLIS` | `600` | How long the headcount counts and the month's bars grow when a month lands (Jerus's "fun": the number moves). |
+| 291 | `PeopleScreen.STILL_FAKED` | `"What this model does not do yet:\n" + "· Nobody has an age.Each band holds a mean, so ...` | What the model does not do yet: the four lines of the old page's eight that are still true (0.7.27). |
+| 532 | `PeopleScreen.BORN` | `Palette.PEOPLE_LIGHT, MOVED_IN = Palette.PEOPLE` | The born and the arrived: the people teal's light step and the teal. |
+| 539 | `PeopleScreen.DIED_OF_AGE` | `Palette.PEOPLE_DARK, DIED_OF_ILLNESS = Palette.BUSINESS, DIED_KILLED = Palette.BUILDING...` | The dead by cause: of age the dark teal, of illness the violet, the killed the pink, the aged out a light blue, and since R0b the causes of 1900 (typhoid, TB, childbirth and the rest) CATEGORIES' s... |
+| 543 | `PeopleScreen.LEFT_WORK` | `Palette.PEOPLE_DARK, LEFT_BROKE = Palette.MONEY, LEFT_CRIME = Palette.BUILDING` | The leavers by why: for want of work the dark teal, broke the blue, driven out by crime the pink. |
+| 965 | `PeopleScreen.CARD` | `"-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.RAISED + ";" + " -fx-backg...` | The Build card ground every card on both pages stands on. |
+| 1109 | `PeopleScreen.PYRAMID_HALF` | `200` | How wide half of the widest band is drawn, at most. |
+| 1442 | `PeopleScreen.WHY_INFO` | `"The city draws people the way Migration strikes it each month: every post " + "support...` | WHY PEOPLE COME's (i): what the bridge is. |
+| 1835 | `PeopleScreen.TILE_MIN` | `56` | The narrowest a tile is drawn; anything smaller folds into "+n more". |
+| 1930 | `PeopleScreen.Strip.UNUSED` | `" "` | What the "+n more" label says while nothing folds: a space, never nothing (PT1-M4). |
+| 2001 | `PeopleScreen.Strip.TILE_TALL` | `62` | How tall a strip is. |
+| 2185 | `PeopleScreen.OUTSIDE_INFO` | `"Families are built from the adults who work, and their children." + "Everybody else is...` | OUTSIDE THE FAMILIES' (i): who they are, the old page's words. |
+| 2462 | `PeopleScreen.LADDER_INFO` | `"open = posts this band can be put into(licensed posts are on the " + "chips under the ...` | The ladder's (i): the old legend. |
+| 2951 | `PeopleScreen.IN_DOLLARS` | `"Every figure on this page is in dollars, not the thousands the rest of the " + "game c...` | The page's (i): what its money is counted in. |
+| 2956 | `PeopleScreen.PAID_IN_ORDER` | `"The order is fixed: the payslip first, then rent, then the fees, and " + "the shop tak...` | The order a household pays in, and what happens when it comes up short: the verdict's (i). |
+| 3160 | `PeopleScreen.BESIDE` | `1200` | The narrowest page that sets the open cell's books beside the grid; under it they stack. |
+| 3522 | `PeopleScreen.CARS_INFO` | `"Bought out of savings past the same cushion a share is, so income " + "decides who can...` | The cars' (i): the old note. |
+| 3594 | `PeopleScreen.BAR_ROOM` | `new javafx.geometry.Insets(8, 0, 0, 0)` | The room over the flow bar in a cell's statement: one object (KP2b), set where it is not that already (Pieces.vMargin). |
+| 3597 | `PeopleScreen.TIER_COL` | `88` | How wide a tier column is. |
+| 3598 | `PeopleScreen.SHAPE_COL` | `168` |  |
+| 3605 | `PeopleScreen.MATRIX_COLUMNS` | `"people.matrixColumns"` | The key a matrix grid keeps its columns under - the household's name, then the six tiers - made once in the grid's life (KP2b) and added to it at each draw as one list. |
+| 3782 | `PeopleScreen.BELOW_THE_RULE` | `"Below the rule: the retired, on a pension and no wage; the out of work, " + "on EI for...` | The section captions' (i): who is below the rule, and what their one cell says. |
 
 ### Pieces.java ([map](map/Pieces.md))
 
@@ -5338,21 +5338,21 @@ Generated 2026-11-10 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1274 | `ServicesScreen.BURIAL_INFO` | `"A household that can save a plot's price over ten years chooses burial; " + "the ones ...` | The burial choice (the death care page's note). |
 | 1384 | `ServicesScreen.LONG_SICK_INFO` | `String.format("Everybody sick this month, by how long they have been ill: the left bar ...` | The long sick's (i): who can die of it, at what chance by age (the elders' too, which the old note left out). |
 | 1393 | `ServicesScreen.RECOVERY_INFO` | `String.format("The share of the sick who get better in a month: %.0f%% with no general ...` | What care cures, in words. |
-| 1642 | `ServicesScreen.PLOTS_INFO` | `"Plots are consumed permanently — the land never comes back, and a cemetery " + "cannot...` | Plots are permanent (the ground's note). |
-| 1646 | `ServicesScreen.CREMATORIA_INFO` | `"A rate rather than a stock, and it needs almost no land — which makes it " + "the answ...` | The crematoria's note. |
-| 2002 | `ServicesScreen.DIPLOMA_INFO` | `"Teens age out at a steady rate and the ones who were in school leave with " + "a diplo...` | The diplomas' (i): the teens' note, and what the figure is (and is not). |
-| 2010 | `ServicesScreen.LADDER_INFO` | `String.format("The ladder serves the minimum of its three stages, not the average — the...` | The basic ladder's notes: the minimum of three, and the four-and-three split. |
-| 2018 | `ServicesScreen.PROFESSIONS_INFO` | `"A band row on the People screen can say the city has eight hundred " + "graduates and ...` | The professions page's sentence. |
-| 2247 | `ServicesScreen.GATES_INFO` | `String.format("The funnel is why that many and not more.Who could enrol holds the level...` | The gates' (i): why that many and not more, as the old page said it under its five lines. |
-| 2259 | `ServicesScreen.COULD_ENROL` | `"Who holds the level this course takes, in the workforce - and for a " + "professional ...` | Who could enrol, in words (the old page's note). |
-| 2263 | `ServicesScreen.RETURN_INFO_PREFIX` | `"How much better off somebody is for doing it - 0 means not worth it.\n\n"` | The wage return's (i) opens on this, then says what the return is measured against (returnNote()). |
-| 2636 | `ServicesScreen.POWER_INFO` | `"Power is counted in kilowatts, a rate - the screens wrote watts until " + "0.7.28, a t...` | The power row's (i): the unit, the staff discount, one workforce, who is billed. |
-| 2646 | `ServicesScreen.BROWNOUT_INFO` | `"Every industrial and commercial building's output is cut in proportion " + "— a browno...` | A brownout's (i), as the grid's old alert said it. |
-| 2651 | `ServicesScreen.WATER_INFO` | `"Water is counted in units of 10,000 gallons a month.The people draw " + "their own(res...` | The water row's (i). |
-| 2852 | `ServicesScreen.CAUSES_INFO` | `"Every adult at liberty is counted once, at the heaviest reason they have.The" + " last...` | The causes' (i). |
-| 2858 | `ServicesScreen.STOLEN_INFO` | `"What is stolen goes to the offenders' households.The killings are next" + " month's de...` | What is stolen, and the injured (the old "what it did" note). |
-| 2862 | `ServicesScreen.CAUGHT_INFO` | `"Anybody caught with no staffed cell free stays on the street and keeps" + " offending....` | Anybody caught with no cell (the prisons' note). |
-| 2867 | `ServicesScreen.OFFICERS_INFO` | `crime -> String.format("%s officers per 100,000 people.Canada has %s; full coverage is ...` | The officers against Canada, and the founding constabulary. |
+| 1643 | `ServicesScreen.PLOTS_INFO` | `"Plots are consumed permanently — the land never comes back, and a cemetery " + "cannot...` | Plots are permanent (the ground's note). |
+| 1647 | `ServicesScreen.CREMATORIA_INFO` | `"A rate rather than a stock, and it needs almost no land — which makes it " + "the answ...` | The crematoria's note. |
+| 2003 | `ServicesScreen.DIPLOMA_INFO` | `"Teens age out at a steady rate and the ones who were in school leave with " + "a diplo...` | The diplomas' (i): the teens' note, and what the figure is (and is not). |
+| 2011 | `ServicesScreen.LADDER_INFO` | `String.format("The ladder serves the minimum of its three stages, not the average — the...` | The basic ladder's notes: the minimum of three, and the four-and-three split. |
+| 2019 | `ServicesScreen.PROFESSIONS_INFO` | `"A band row on the People screen can say the city has eight hundred " + "graduates and ...` | The professions page's sentence. |
+| 2248 | `ServicesScreen.GATES_INFO` | `String.format("The funnel is why that many and not more.Who could enrol holds the level...` | The gates' (i): why that many and not more, as the old page said it under its five lines. |
+| 2260 | `ServicesScreen.COULD_ENROL` | `"Who holds the level this course takes, in the workforce - and for a " + "professional ...` | Who could enrol, in words (the old page's note). |
+| 2264 | `ServicesScreen.RETURN_INFO_PREFIX` | `"How much better off somebody is for doing it - 0 means not worth it.\n\n"` | The wage return's (i) opens on this, then says what the return is measured against (returnNote()). |
+| 2637 | `ServicesScreen.POWER_INFO` | `"Power is counted in kilowatts, a rate - the screens wrote watts until " + "0.7.28, a t...` | The power row's (i): the unit, the staff discount, one workforce, who is billed. |
+| 2647 | `ServicesScreen.BROWNOUT_INFO` | `"Every industrial and commercial building's output is cut in proportion " + "— a browno...` | A brownout's (i), as the grid's old alert said it. |
+| 2652 | `ServicesScreen.WATER_INFO` | `"Water is counted in units of 10,000 gallons a month.The people draw " + "their own(res...` | The water row's (i). |
+| 2853 | `ServicesScreen.CAUSES_INFO` | `"Every adult at liberty is counted once, at the heaviest reason they have.The" + " last...` | The causes' (i). |
+| 2859 | `ServicesScreen.STOLEN_INFO` | `"What is stolen goes to the offenders' households.The killings are next" + " month's de...` | What is stolen, and the injured (the old "what it did" note). |
+| 2863 | `ServicesScreen.CAUGHT_INFO` | `"Anybody caught with no staffed cell free stays on the street and keeps" + " offending....` | Anybody caught with no cell (the prisons' note). |
+| 2868 | `ServicesScreen.OFFICERS_INFO` | `crime -> String.format("%s officers per 100,000 people.Canada has %s; full coverage is ...` | The officers against Canada, and the founding constabulary. |
 
 ### SignFont.java ([map](map/SignFont.md))
 
@@ -5534,30 +5534,30 @@ Generated 2026-11-10 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 2020 | `UserInterface.TILE_FIGURE` | `15` | The size of a tile's figure (0.7.24: 15, so the money block and five tiles fit a 1,280 window whole; it was 17). |
 | 2022 | `UserInterface.TILE_LABEL` | `10.5` | The size of a tile's label, and of the money block's. |
 | 2024 | `UserInterface.TILE_CHANGE` | `10.5` | The size of a tile's change line (0.7.24; it was 11). |
-| 2498 | `UserInterface.MONEY_FIGURE` | `28` | The cash in the money block: the mockups' 28 px. |
-| 3236 | `UserInterface.BACKDROP_BLOCK` | `"#121c28"` | The building blocks' fill and edge, and an unlit window, on the backdrop: the skyline's own darks, under the panels' ground. |
-| 3237 | `UserInterface.BACKDROP_EDGE` | `"#1d2b3c"` |  |
-| 3238 | `UserInterface.BACKDROP_WINDOW` | `"#22344a"` |  |
-| 3241 | `UserInterface.FOUNDING_DIM` | `.72` | How dark the founding screen dims the backdrop under its panel: the mockups' 0.72. |
-| 3244 | `UserInterface.MENU_CITIES` | `3` | Up to this many of the cities saved last, as cards at the menu's bottom right. |
-| 3591 | `UserInterface.MENU_LEFT` | `96` | How far in from the window's left the menu's column and version sit. |
-| 3594 | `UserInterface.MENU_BUTTON` | `360` | The menu's buttons' width, as the mockups draw them. |
-| 3685 | `UserInterface.CITY_CARD` | `250` | A city card's width, as the mockups draw it. |
-| 3734 | `UserInterface.SAVED_AT` | `java.time.format.DateTimeFormatter.ofPattern("d MMM HH:mm")` |  |
-| 4310 | `UserInterface.TIP_WIDTH` | `420` | The width a tooltip's text wraps at, unless it asked for its own. |
-| 4557 | `UserInterface.PAGE_FOOT` | `24` | Room left under the end of every scrolled page: a margin, since nothing floats over the stage's foot (0.7.21; it was 90, the dome's 74 and a margin). |
-| 4627 | `UserInterface.SCROLLED_CHROME` | `"scrolled.chrome"` | The key in a scroller's properties for the chrome its height is bound to (scrolled()). |
-| 5268 | `UserInterface.CONSTRUCTION_TAB` | `44` | How wide the construction panel's tab is. |
-| 5590 | `UserInterface.PANEL_TEXT` | `256` | How wide the construction panel's lines wrap: the panel less its padding. |
-| 5747 | `UserInterface.RAIL_WIDTH` | `Palette.RAIL` | The rail's width: an icon over its name, as the mockups draw it (0.7.21; it was 46). |
-| 5750 | `UserInterface.RAIL_BUTTON` | `54` | A rail button's height, and the least it may shrink to on a short window. |
-| 5751 | `UserInterface.RAIL_BUTTON_MIN` | `40` |  |
-| 5754 | `UserInterface.RAIL_ICON` | `20` | How big a rail icon is drawn: its 24-unit grid at 20 pixels. |
-| 6243 | `UserInterface.INBOX_WIDTH` | `530` | See refreshInbox: sized to the notice bodies, not to the corner. |
-| 6596 | `UserInterface.TOAST_SECONDS` | `8` | How long a toast stays before it fades, in seconds. |
-| 6599 | `UserInterface.TOAST_MAX` | `3` | How many toasts at once. |
-| 6602 | `UserInterface.TOAST_WIDTH` | `340` | How wide a toast's text wraps. |
-| 6823 | `UserInterface.SPEED_MIN_WIDTH` | `34` | The least the reading is wide, in pixels: the width it held before UP7, so that at pace it sits where it did. |
+| 2505 | `UserInterface.MONEY_FIGURE` | `28` | The cash in the money block: the mockups' 28 px. |
+| 3243 | `UserInterface.BACKDROP_BLOCK` | `"#121c28"` | The building blocks' fill and edge, and an unlit window, on the backdrop: the skyline's own darks, under the panels' ground. |
+| 3244 | `UserInterface.BACKDROP_EDGE` | `"#1d2b3c"` |  |
+| 3245 | `UserInterface.BACKDROP_WINDOW` | `"#22344a"` |  |
+| 3248 | `UserInterface.FOUNDING_DIM` | `.72` | How dark the founding screen dims the backdrop under its panel: the mockups' 0.72. |
+| 3251 | `UserInterface.MENU_CITIES` | `3` | Up to this many of the cities saved last, as cards at the menu's bottom right. |
+| 3598 | `UserInterface.MENU_LEFT` | `96` | How far in from the window's left the menu's column and version sit. |
+| 3601 | `UserInterface.MENU_BUTTON` | `360` | The menu's buttons' width, as the mockups draw them. |
+| 3692 | `UserInterface.CITY_CARD` | `250` | A city card's width, as the mockups draw it. |
+| 3741 | `UserInterface.SAVED_AT` | `java.time.format.DateTimeFormatter.ofPattern("d MMM HH:mm")` |  |
+| 4317 | `UserInterface.TIP_WIDTH` | `420` | The width a tooltip's text wraps at, unless it asked for its own. |
+| 4564 | `UserInterface.PAGE_FOOT` | `24` | Room left under the end of every scrolled page: a margin, since nothing floats over the stage's foot (0.7.21; it was 90, the dome's 74 and a margin). |
+| 4634 | `UserInterface.SCROLLED_CHROME` | `"scrolled.chrome"` | The key in a scroller's properties for the chrome its height is bound to (scrolled()). |
+| 5275 | `UserInterface.CONSTRUCTION_TAB` | `44` | How wide the construction panel's tab is. |
+| 5597 | `UserInterface.PANEL_TEXT` | `256` | How wide the construction panel's lines wrap: the panel less its padding. |
+| 5754 | `UserInterface.RAIL_WIDTH` | `Palette.RAIL` | The rail's width: an icon over its name, as the mockups draw it (0.7.21; it was 46). |
+| 5757 | `UserInterface.RAIL_BUTTON` | `54` | A rail button's height, and the least it may shrink to on a short window. |
+| 5758 | `UserInterface.RAIL_BUTTON_MIN` | `40` |  |
+| 5761 | `UserInterface.RAIL_ICON` | `20` | How big a rail icon is drawn: its 24-unit grid at 20 pixels. |
+| 6250 | `UserInterface.INBOX_WIDTH` | `530` | See refreshInbox: sized to the notice bodies, not to the corner. |
+| 6603 | `UserInterface.TOAST_SECONDS` | `8` | How long a toast stays before it fades, in seconds. |
+| 6606 | `UserInterface.TOAST_MAX` | `3` | How many toasts at once. |
+| 6609 | `UserInterface.TOAST_WIDTH` | `340` | How wide a toast's text wraps. |
+| 6830 | `UserInterface.SPEED_MIN_WIDTH` | `34` | The least the reading is wide, in pixels: the width it held before UP7, so that at pace it sits where it did. |
 
 ### VaultTable.java ([map](map/VaultTable.md))
 

@@ -5205,8 +5205,8 @@ final class BuildScreen {
                 out.add(String.format("Cares for %s seniors a month when fully staffed.",
                         formatter.format(cap)));
                 out.add(String.format("Cuts senior deaths, stops seniors falling ill twice"
-                        + " as often as everybody else, and full coverage draws %.0f%%"
-                        + " more people to the city.", Migration.SENIOR_CARE_PULL * 100));
+                        + " as often as everybody else, and full coverage lifts the"
+                        + " homes' draw by %.0f%%.", Migration.SENIOR_CARE_PULL * 100));
                 break;
 
             case BURIAL:
@@ -5534,8 +5534,8 @@ final class BuildScreen {
                         + " %.0f%%) and how fast the sick get better - the long sick can die.",
                         Health.UNTREATED_RATE * 100, Health.WELL_SERVED_RATE * 100);
             case SENIOR:
-                return String.format("Cuts senior deaths, and draws up to %.0f%% more people"
-                        + " to the city.", Migration.SENIOR_CARE_PULL * 100);
+                return String.format("Cuts senior deaths, and lifts the homes' draw by up to"
+                        + " %.0f%%.", Migration.SENIOR_CARE_PULL * 100);
             case BURIAL:
                 return "Plots are consumed forever and the land never comes back."
                         + " Turns a profit.";

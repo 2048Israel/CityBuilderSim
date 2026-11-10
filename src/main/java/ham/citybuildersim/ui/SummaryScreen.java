@@ -1078,7 +1078,7 @@ final class SummaryScreen {
                             statLine("Unemployed",
                                     String.format("%,d  (%.0f%%)", people.getUnemployed(),
                                             people.getUnemploymentRate() * 100),
-                                    people.getUnemploymentRate() > .15 ? PANEL_WARN : null));
+                                    people.getUnemploymentRate() > PeopleScreen.OUT_OF_WORK_HIGH ? PANEL_WARN : null));
 
                     b.getChildren().add(panelNote("by skill — workers / open posts / pay"));
 

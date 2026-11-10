@@ -23,6 +23,18 @@ The ladder's rungs are Job Bank's Nova Scotia occupation medians at 173 hours a 
 | Employment and Social Development Canada, Job Bank, "Wages" (Nova Scotia occupation medians; dataset adad580f-76b0-4502-bd05-20c125de9116) | Open Government Licence - Canada | https://open.canada.ca/en/open-government-licence-canada | yes: any lawful purpose, commercial too | "Contains information licensed under the Open Government Licence - Canada." |
 | Nova Scotia's minimum wage, $17.00 an hour from 1 October 2026 (the province's Labour Standards page) | a rate fixed in regulation: a fact | https://novascotia.ca/lae/employmentrights/minimumwage.asp | yes | none |
 
+### The out-of-work verdict's cities: `PeopleScreen` and `UserInterface` (in the code; WG2, 2026-11-10)
+
+The header's OUT OF WORK tip names six big cities' yearly unemployment rates beside the verdict (Tokyo 2.4% for 2025; New York 5.0%, London 5.5%, Halifax 5.5%, Toronto 8.0% and Madrid 9.0% for 2024) and the crisis of 2013 (the Comunidad de Madrid 19.8%, Spain 26.1%), typed in the code and in no data file (`docs/studies/spec-wages.md`, S4 and section 8); their credits are in `tools/world/ATTRIBUTION.txt`, which the Credits page shows.
+
+| source | licence | read at | commercial | attribution it asks |
+|---|---|---|---|---|
+| Tokyo Metropolitan Government, Labour Force Survey (2025 annual, release of 2026-03-26) | Public Data License 1.0, compatible with CC BY 4.0 | the study recorded no page address | yes | the source credited: the Tokyo Metropolitan Government |
+| US Bureau of Labor Statistics, Local Area Unemployment Statistics (New York City, 2024) | public domain (a US government work) | https://www.bls.gov/opub/copyright-information.htm | yes | none required; the source is credited anyway |
+| UK Office for National Statistics, series YCNI (London, 2024) | Open Government Licence v3.0 | the study recorded no page address | yes | "Contains public sector information licensed under the Open Government Licence v3.0." |
+| Statistics Canada, table 14-10-0461-01 (Halifax and Toronto, 2024) | Statistics Canada Open Licence | https://www.statcan.gc.ca/en/terms-conditions/open-licence | yes | "Source: Statistics Canada, table 14-10-0461-01", and that this does not constitute an endorsement by Statistics Canada |
+| Eurostat, `lfst_r_lfu3rt` (the Comunidad de Madrid, 2024 and 2013) and `une_rt_a` (Spain, 2013) | CC BY 4.0, the Commission's reuse policy | https://ec.europa.eu/eurostat/en/help/copyright-notice | yes | Eurostat as the source |
+
 ### The Rankings: `src/main/resources/world/world-2025.json` (in the jar)
 
 | source | licence | read at | commercial | attribution it asks |

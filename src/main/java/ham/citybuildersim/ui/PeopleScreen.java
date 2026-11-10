@@ -105,16 +105,27 @@ final class PeopleScreen {
      * shortage, which is a watch, not a failure - it was red until 0.7.21,
      * the colour of a city in trouble, and "Out of work 0.0%" in a city that
      * cannot staff its jobs read as the opposite of what it was.
+     *
+     * THE HONEST LABEL (WG2, {next}, 2026-11-10). Jerus asked for it with
+     * the wages study's call C2 (2026-11-02, "Cut the excess, honest label
+     * (Recommended)"): green was 3% to 15% and red began at 25%, so a city
+     * at 14% read green and one at 21% only amber, where the big
+     * rich-country cities the tile is read against sit at 2.4% (Tokyo) to
+     * 9% (Madrid). Green is now 3% to 7%, amber to 12%, red past it, and the
+     * red is where migration stops sending people for work
+     * (Migration.ARRIVALS_STOP_OUT_OF_WORK): a city the game will not feed
+     * newcomers to is a city the screen calls in trouble. The header's tip
+     * names the cities beside the number (docs/studies/wages/mockup.html).
      */
 
     /** Under this share out of work, nobody is spare: amber, "jobs going unfilled". */
     static final double OUT_OF_WORK_SHORT = .03;
 
-    /** Over this, high: amber. */
-    static final double OUT_OF_WORK_HIGH = .15;
+    /** Over this share out of work, high: amber (Toronto runs 8.0% and Madrid 9.0%, the high end of the big rich-country cities). */
+    static final double OUT_OF_WORK_HIGH = .07;
 
-    /** Over this, far too many adults with nothing to do: red. */
-    static final double OUT_OF_WORK_FAR = .25;
+    /** Over this, a city in trouble: red, and the share at which nobody moves here for work (Migration.ARRIVALS_STOP_OUT_OF_WORK). */
+    static final double OUT_OF_WORK_FAR = Migration.ARRIVALS_STOP_OUT_OF_WORK;
 
     /** The out-of-work rate's verdict: red far too high, amber high or short of hands, green between. */
     static String outOfWorkTone(double jobless) {
@@ -569,19 +580,25 @@ final class PeopleScreen {
     /* ------------------------------ why they come ------------------------------ */
 
     /**
-     * The draw as Migration struck it: the jobs' half and the homes' half,
-     * the three pulls, the target, and the city against it, with the old
-     * page's why sentence - its first sentence on the card, the whole behind
-     * the (i).
+     * The draw as Migration struck it: the jobs' half and its pull (the rent's
+     * and the crime's, never above 1), the homes' half and its pulls (senior
+     * care, the rent, the crime), the target, and the city against it, with
+     * the old page's why sentence - its first sentence on the card, the whole
+     * behind the (i). Since WG2 the pulls no longer multiply the two halves
+     * together: senior care lifts the homes' half only.
      */
-    record Bridge(double jobs, double perJob, double jobDraw, double homesFor, double homeDraw,
-                  double beforePulls, double senior, double rent, double crime, double draws,
+    record Bridge(double jobs, double perJob, double jobDraw, double jobsPull, double homesFor, double homeDraw,
+                  double homesPull, double senior, double rent, double crime, double draws,
                   double living, double crowding, String why, String whyWhole, String tone, String word) { }
 
     Bridge bridge() {
         Migration m = ui.game.getMigration();
         double target = m.getLastTarget();
-        long population = ui.game.getPopulationManager().getPopulation();
+        PopulationManager pm = ui.game.getPopulationManager();
+        long population = pm.getPopulation();
+        // WG2: today's out-of-work share, which the next month's arrivals take their brake from.
+        double outOfWork = pm.getUnemploymentRate();
+        double brake = Migration.arrivalBrake(outOfWork);
         String why, tone, word;
         if (m.getLastCrowding() <= 0) {
             why = "Nobody else can fit. Every flatshare and every doubled-up household "
@@ -595,10 +612,38 @@ final class PeopleScreen {
                     + "jobs are still pulling.", m.getLastCrowding() * 100);
             tone = Palette.WARN;
             word = "tight";
-        } else if (m.getLastDepartures() > 0) {
+        } else if (m.getLastDepartures() > 0 && m.getLastDecliningShare() > 0) {
             why = String.format("People are leaving. %.0f%% of the city's payroll sits in "
                     + "trades that have been shrinking for a year or have stopped paying "
                     + "altogether.", m.getLastDecliningShare() * 100);
+            tone = Palette.BAD;
+            word = "leaving";
+        } else if (target > population && brake < 1) {
+            // WG2: the brake on arrivals, read off today's out-of-work share as next month's arrivals will read it.
+            // It comes before the plain "leaving": past the healthy rate the jobless drift away every month, so
+            // the departures are the brake's other half, not news of their own.
+            String drift = m.getLastDepartures() > 0
+                    ? " Meanwhile the jobless over it drift away." : "";
+            why = brake <= 0
+                ? String.format("Nobody is moving here for work while %.1f%% of the labour force is out of "
+                    + "work, past the %.0f%% at which newcomers stay away. Arrivals pick up again as it "
+                    + "falls back toward the healthy %.0f%%.%s", outOfWork * 100,
+                    Migration.ARRIVALS_STOP_OUT_OF_WORK * 100, Migration.HEALTHY_OUT_OF_WORK * 100, drift)
+                : String.format("Arrivals are running at %.0f%% of the draw's pace while %.1f%% of the "
+                    + "labour force is out of work, past the healthy %.0f%%. They slow further as it "
+                    + "climbs, stop at %.0f%%, and quicken as it falls back.%s", brake * 100, outOfWork * 100,
+                    Migration.HEALTHY_OUT_OF_WORK * 100, Migration.ARRIVALS_STOP_OUT_OF_WORK * 100, drift);
+            tone = Palette.WARN;
+            word = brake <= 0 ? "stalled" : "slowing";
+        } else if (m.getLastDepartures() > 0) {
+            // WG2: the jobless past the healthy rate leave too, whatever the trades are doing.
+            why = outOfWork > Migration.HEALTHY_OUT_OF_WORK
+                ? String.format("People are leaving, though no trade has been shrinking for a year: with "
+                    + "%.1f%% of the labour force out of work, past the healthy %.0f%%, the jobless over it "
+                    + "drift away, as do those that crime or empty pockets send.", outOfWork * 100,
+                    Migration.HEALTHY_OUT_OF_WORK * 100)
+                : "People are leaving, though no trade has been shrinking for a year: crime or empty "
+                    + "pockets are sending them.";
             tone = Palette.BAD;
             word = "leaving";
         } else if (target > population) {
@@ -607,14 +652,14 @@ final class PeopleScreen {
             tone = Palette.GOOD;
             word = "growing";
         } else {
-            why = "The city is about the size its jobs and housing support. Nobody is "
-                + "leaving — a shortage of work is unemployment, not an exodus, until a "
-                + "whole trade has been dying for a year.";
+            why = String.format("The city is about the size its jobs and housing support. Nobody is "
+                + "leaving: at no more than the healthy %.0f%% out of work the jobless stay for the next "
+                + "opening.", Migration.HEALTHY_OUT_OF_WORK * 100);
             tone = Palette.TEXT_MUTED;
             word = "settled";
         }
-        return new Bridge(m.getLastJobs(), m.getLastResidentsPerJob(), m.getLastJobDraw(), m.getLastHomeCapacity(),
-                m.getLastHomeDraw(), m.getLastDrawBeforePulls(), m.getLastSeniorPull(),
+        return new Bridge(m.getLastJobs(), m.getLastResidentsPerJob(), m.getLastJobDraw(), m.getLastJobsPull(),
+                m.getLastHomeCapacity(), m.getLastHomeDraw(), m.getLastHomesPull(), m.getLastSeniorPull(),
                 m.getLastAffordabilityPull(), m.getLastCrimePull(), target, population, m.getLastCrowding(),
                 firstSentence(why), why, tone, word);
     }
@@ -710,7 +755,7 @@ final class PeopleScreen {
                     ? String.format("Infant deaths ×%.3f, illness ×%.2f, births ×%.2f.",
                             Healthcare.mortalityFactor(AgeBand.BABY, cover, .5, 0),
                             1 + Sickness.EXTRA_SICKNESS * (1 - cover), Healthcare.birthFactor(cover))
-                    : String.format("Senior deaths ×%.2f, illness ×%.2f, +%.0f%% on the city's draw.",
+                    : String.format("Senior deaths ×%.2f, illness ×%.2f, +%.0f%% on the homes' draw.",
                             Healthcare.mortalityFactor(AgeBand.SENIOR, 0, .5, cover),
                             1 + Sickness.EXTRA_SICKNESS * (1 - cover),
                             (Migration.seniorCarePull(cover) - 1) * 100);
@@ -1396,10 +1441,14 @@ final class PeopleScreen {
     /** WHY PEOPLE COME's (i): what the bridge is. */
     static final String WHY_INFO = "The city draws people the way Migration strikes it each month: every post "
             + "supports a number of residents - its worker and the household behind them - and the homes "
-            + "comfortably hold their people; jobs weigh three parts to the homes' one. Good senior care, dear "
-            + "rent and crime then multiply that. Arrivals close part of the gap between the draw and the city "
-            + "each month, slowed as housing runs out; people leave only when a trade has been dying for a year, "
-            + "a band is pinned with people to spare, they go broke, or crime drives them out.";
+            + "comfortably hold their people; jobs weigh three parts to the homes' one. Dear rent and crime cut "
+            + "both halves, and nothing raises the jobs' draw; good senior care lifts the homes' draw only. "
+            + "Arrivals close part of the gap between the draw and the city each month, "
+            + "slowed as housing runs out and as more than "
+            + String.format("%.0f%%", Migration.HEALTHY_OUT_OF_WORK * 100) + " of the labour force is out of "
+            + "work, and stopped at " + String.format("%.0f%%", Migration.ARRIVALS_STOP_OUT_OF_WORK * 100)
+            + "; people leave when a trade has been dying for a year, a band is pinned with people to spare, "
+            + "they go broke, crime drives them out, or the jobless over the healthy rate drift away.";
 
     /** One box of the bridge: a caption over a figure, and what a click on it does. */
     VBox bridgeBox(String caption, String value, String under, String tone, Runnable go, String tip) {
@@ -1441,10 +1490,19 @@ final class PeopleScreen {
         javafx.scene.layout.FlowPane boxes = Kept.flow(Palette.GAP, Palette.GAP);
         boxes.setAlignment(Pos.CENTER_LEFT);
         boxes.setRowValignment(javafx.geometry.VPos.CENTER);
+        // WG2: the jobs' draw has one pull, the rent's and the crime's together and never above 1; the homes' draw has
+        // three, senior care among them. The chip of the first and the flow of the second are each a tip of their own.
+        Label jobsPull = chip("rent and crime " + times(b.jobsPull()), Palette.TEXT_LABEL);
+        Kept.tip(jobsPull, "What the rent and the crime make of the jobs' draw, never above ×1: a dear or an unsafe "
+                + "city draws fewer people for its jobs, and nothing draws more. Senior care does not lift it.", 250);
         javafx.scene.layout.FlowPane pulls = Kept.flow(Palette.GAP_TIGHT, Palette.GAP_TIGHT);
-        pulls.getChildren().addAll(chip("senior care " + times(b.senior()), Palette.TEXT_LABEL),
+        Label seniorChip = chip("senior care " + times(b.senior()), Palette.TEXT_LABEL);
+        Kept.tip(seniorChip, "Good senior care lifts the homes' draw only - a quarter of what brings people here - "
+                + "and not the jobs'.", 250);
+        pulls.getChildren().addAll(seniorChip,
                 chip("rent " + times(b.rent()), Palette.TEXT_LABEL),
                 chip("crime " + times(b.crime()), Palette.TEXT_LABEL));
+        Kept.tip(pulls, "The three together: " + times(b.homesPull()) + " on the homes' draw.", 250);
         pulls.setPrefWrapLength(150);
         pulls.setMaxWidth(Region.USE_PREF_SIZE);
         boxes.getChildren().addAll(
@@ -1452,7 +1510,10 @@ final class PeopleScreen {
                         people(b.jobDraw()), null, Palette.TEXT_HEAD, () -> scrollTo(workCard),
                         "Every post supports its worker and the household behind them: "
                                 + String.format("%.2f", b.perJob()) + " people a post at this city's ages, "
-                                + "weighted three parts in four. Click for the Work card."),
+                                + "weighted three parts in four. Senior care no longer lifts this half: it "
+                                + "lifts the homes' draw only. Click for the Work card."),
+                op("×"),
+                jobsPull,
                 op("+"),
                 // PT1: the box said "homes for 634" beside the tile "SPARE HOMES 0": 634 is people (the jobs box beside it
                 // is in people too), the tile counts homes.
@@ -1460,13 +1521,13 @@ final class PeopleScreen {
                         Palette.TEXT_HEAD, () -> ui.buildScreen.openCategory(BuildAdvice.HOMES),
                         "The people the city's homes comfortably hold - people, not homes - weighted one part in "
                                 + "four. Click for Build › Homes."),
-                op("="),
-                bridgeBox("jobs and homes", people(b.beforePulls()), null, Palette.TEXT_LABEL, null, null),
                 op("×"),
                 pulls,
                 op("="),
                 bridgeBox("a city this good draws", people(b.draws()), null, Palette.TEXT_HEAD, null,
-                        "The month's target, which arrivals chase."));
+                        "The month's target, which arrivals chase - slowed when more than "
+                                + String.format("%.0f%%", Migration.HEALTHY_OUT_OF_WORK * 100)
+                                + " of the labour force is out of work."));
         HBox.setHgrow(boxes, Priority.ALWAYS);
         boxes.setMinWidth(0);
         boxes.setPrefWrapLength(720);

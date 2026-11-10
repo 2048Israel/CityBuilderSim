@@ -29,8 +29,31 @@ A model batch: Opus, with Sonnet slices for the code.
   `Migration.ARRIVALS_STOP_OUT_OF_WORK`), the header's tip with what migration does at 6% and 12% and the cities
   beside it (spec-wages S4, the mockup's wording). SummaryScreen's unemployed line read a bare `.15`; it reads the
   dial now.
-- The People screen's draw card drew `(jobs + homes) x the pulls`; it draws each half with its own pulls.
-- Senior care's words ("draws 30% more people to the city") say the homes' draw.
+- The People screen's draw card drew `(jobs + homes) x the pulls`; it draws each half with its own pulls (the
+  "jobs and homes" box went: nothing else read `getLastDrawBeforePulls()` on the screen). Its why-sentence gains
+  "slowing" and "stalled" (the brake under 1, and at 0), put before the plain "leaving": past 6% the jobless drift
+  away every month, so a "leaving" first would have hidden the brake in every month it bites. "Leaving" keeps its
+  own place when a trade is dying; with none dying it names the drift (or crime and empty pockets under 6%), and
+  "settled" no longer says a shortage of work sends nobody away. Its (i) says what the pulls do now.
+- Senior care's words ("draws 30% more people to the city") say the homes' draw: Inbox, BuildScreen (two),
+  PeopleScreen's care line, ServicesScreen's line, scale and info, Healthcare's comment.
+- The six cities' sources: `docs/studies/licences.md` (a subsection under 1) and `tools/world/ATTRIBUTION.txt` (a
+  block). The OGL's and Statistics Canada's credit lines are those licences' own stated forms; the study recorded
+  no page address for Tokyo's or the ONS's figure, and the rows say so.
+
+### The fixtures the brake moved
+
+- **StaffingDrawCheck**: its village was every adult out of work, so the brake read 0 and 22 assertions drew
+  nothing. `seat()` now employs a no-diploma base so the village sits at or under 6% (asserted, `drawIsClear`), with
+  the spare share unchanged; sections 8-9 multiply by the brake; section 10 is new (the pull rule: senior care
+  draws the same to the bit; the brake: whole, the middle, past the stop nothing and the order refused).
+- **HealthCheck 9** restated: caring minus plain is `HOME_WEIGHT x homes x SENIOR_CARE_PULL` (.30), the other pulls
+  premised at 1. Its shelf section (L448) lost its premise: WG2's played city is smaller (1,655 people against
+  2,094), so the shops' hands no longer bound; the fixture now stocks the shelf x10, so the condition is caused,
+  not inherited.
+- **PopulationCheck**'s WG2 section (three parts, each fixture causing it); its slack premise held as written.
+- Not covered by a fixture: the leavers' fallback to the band shares when no band has a surplus over its posts
+  (unemployment past 6% with no band over its posts is a contradiction the model should not reach).
 
 ## 3. The young city, measured first
 

@@ -338,8 +338,8 @@ public class Healthcare {
      *
      * Nothing stops a ninety-year-old eventually, so senior care buys comfort
      * and a little time rather than a different outcome: 4.5%/yr becomes 6.1%
-     * untreated and 3.3% served. What senior care is really FOR is the draw it
-     * gives the city - see Migration.SENIOR_CARE_PULL.
+     * untreated and 3.3% served. What senior care is really FOR is the homes' draw
+     * it gives the city (the jobs' is not lifted, WG2) - see Migration.SENIOR_CARE_PULL.
      */
     public static final double SENIOR_SWING = 1.35;
 

@@ -4,7 +4,7 @@ Generated 2026-11-10 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 556 files, 610,588 lines, 26,606 methods, 5,870 constants. `GameVersion.VERSION` is "0.9.89", `SAVE_FORMAT` 51.
+**The tree:** 556 files, 610,657 lines, 26,606 methods, 5,870 constants. `GameVersion.VERSION` is "0.9.89", `SAVE_FORMAT` 51.
 
 ## model (255 files)
 
@@ -334,7 +334,7 @@ Generated 2026-11-10 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [Money.java](Money.md) | 411 | 36 | Every figure the interface prints as money, in one place. | 32 |
 | [Palette.java](Palette.md) | 741 | 27 | Every colour, size and spacing this game is allowed to use, in one place. | 41 |
 | [PartnersPage.java](PartnersPage.md) | 1,182 | 59 | Trade &gt; Partners (WN6; docs/studies/spec-nations.md 8, board 2) and a nation's page behind it: who the city trades with, nation by nation; for a... | 1 |
-| [PeopleScreen.java](PeopleScreen.md) | 4,732 | 167 | The People tab and its second page, Household money. | 4 |
+| [PeopleScreen.java](PeopleScreen.md) | 4,793 | 167 | The People tab and its second page, Household money. | 4 |
 | [Pieces.java](Pieces.md) | 6,664 | 302 | The small pieces of text and layout every screen is made from: a sentence, an alert, a sub-heading, a grid and its cells, a chip strip, a vitals ba... | 26 |
 | [PolicyScreen.java](PolicyScreen.md) | 6,541 | 332 | The Policy tab: every number the city sets for itself - the taxes, the wage floor, the price of money and the promises - each a dial with what it w... | 12 |
 | [RankingsScreen.java](RankingsScreen.md) | 1,778 | 81 | The Rankings tab: the active city on a board of the real world's nations and city regions (or of the nations of its own world), measure by measure,... | 2 |
@@ -345,7 +345,7 @@ Generated 2026-11-10 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [ReplayMoveProbe.java](ReplayMoveProbe.md) | 876 | 32 | What a replay's camera moves show unpainted, measured: it opens the real window full screen on a recorded city in replay mode, runs the seven moves... | 1 |
 | [ResearchScreen.java](ResearchScreen.md) | 1,199 | 73 | Policy › Research (R5, slice B1; R3b, slice B): the sixth Policy area, drawn in Policy's own style - three pages: the Overview (who is at research ... | 3 |
 | [SectorScreen.java](SectorScreen.md) | 7,221 | 291 | The sector economy: every business in the city as a card, and each one's five pages - what goes in and what comes out, the income statement with la... | 8 |
-| [ServicesScreen.java](ServicesScreen.md) | 3,452 | 134 | The services tab: the four systems the city runs for its people - health, education, utilities and safety - each opening on an Overview whose one p... | 5 |
+| [ServicesScreen.java](ServicesScreen.md) | 3,453 | 134 | The services tab: the four systems the city runs for its people - health, education, utilities and safety - each opening on an Overview whose one p... | 5 |
 | [SignFont.java](SignFont.md) | 71 | 4 | Which signs for the city's money the interface's own faces can draw. | 2 |
 | [Statement.java](Statement.md) | 517 | 25 | The rows a statement is built from: a head, a line, a note, a total, a disclosure that opens, and the two-column book the sector pages and the bank... | 30 |
 | [StatementView.java](StatementView.md) | 646 | 39 | A formal statement on the page (0.7.74): SectorStatements' rows set as an accountant sets them - a title block, the columns (note, this month, last... | 3 |
@@ -354,7 +354,7 @@ Generated 2026-11-10 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [ToastRoom.java](ToastRoom.md) | 113 | 5 | The corner a toast stands in, given up by the page (TS1): while a toast shows, the page's foot takes a bottom padding as tall as the toasts and the... | 2 |
 | [TradeScreen.java](TradeScreen.md) | 4,001 | 167 | The Trade & the world tab: how the city stands against the world this month - what it sells and buys abroad, the month's balance of payments, what ... | 7 |
 | [UiProbe.java](UiProbe.md) | 804 | 25 | What the window costs the JavaFX thread as a city ages, measured: it grows the playtest's city to the months it is given, opens the real window on ... | 0 |
-| [UserInterface.java](UserInterface.md) | 7,414 | 247 | The window: the stage and its theme, the header - the clock and the speed, the money block, five headline tiles, the "Needs you" chip, the rating a... | 42 |
+| [UserInterface.java](UserInterface.md) | 7,421 | 247 | The window: the stage and its theme, the header - the clock and the speed, the money block, five headline tiles, the "Needs you" chip, the rating a... | 42 |
 | [VaultTable.java](VaultTable.md) | 238 | 13 | The vault in eight moneys and gold (WN6, GD2; docs/studies/spec-nations.md 8, board 3): the first card of Trade &gt; The reserves where the vault h... | 1 |
 | [ZoningScreen.java](ZoningScreen.md) | 1,135 | 71 | Policy › Zoning (0.7.109, batch Z2): the fifth Policy area - the city's ground and its zones on one page, a sector's zone on its own page of dial c... | 3 |
 
