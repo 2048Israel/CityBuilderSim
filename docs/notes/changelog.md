@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.73 — RI1, rail on islands — 2026-11-09, ready, see docs/queue/RI1-notes.md
+Every linked piece of the city's ground now grows its own railway, as CL5 gave each its highways (Jerus ticked "Rail
+on islands", 2026-10-31; CL5-C's call 1). A piece's rail hub is the railway crossing nearest its anchor, and an island
+linked by a port has its berthed terminal for its anchor, so both its nets start at the port (ET5's "a linked island's
+hub at its port"); home and a bridge-linked island keep the founding site's side. Track is dealt by built weight as
+the highways are; a new yard goes first to an island railway with none, on its own line nearest its hub, and that
+line grows to its edges as a station's does; sidings leave from an island's line. The first yard and the freight
+station stay home, and no train is routed to an island yard (ET6-C's rail bridge row stands). Unlinked ground gets
+none. IslandRailCheck (new, nine sections) on synthetic ground and the Rotterdam fixture; renders in docs/queue/RI1/.
+Nothing in the model reads the map: the playtest's trace is byte-identical, no ensemble, no format change.
+
 ### 0.9.72 — R6, the near-future research catalogue, a study — 2026-11-09, ready, see docs/queue/R6-notes.md
 The first half of R6 (Q2, 2026-10-18): what today's pilots and public roadmaps give the research catalogue after
 2025 (docs/studies/research-near-future.md; the gatherers' fact sheets in docs/studies/research-near-future/). Eight

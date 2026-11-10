@@ -80,7 +80,17 @@ import java.util.PriorityQueue;
  *             pieces by their built weight, the home piece (the founding
  *             site's) first, each piece's share grown and taken back from its
  *             newest end as the one net's was. Nothing laid moves: two pieces
- *             a purchase joins keep their nets, and the younger is frozen;
+ *             a purchase joins keep their nets, and the younger is frozen.
+ *             (RI1; CL5-C's call 1, "the railway on other islands: its own
+ *             track and yards from each piece's hub") The railway has a piece
+ *             of its own on each piece too, once its home line has started
+ *             (islandRail): its hub the railway line crossing nearest the
+ *             piece's anchor (Pieces.anchor()), its four spine arms the only
+ *             track it grows - no corridor, no link - the model's track dealt
+ *             by the same weights, a new yard to a piece that has none, the
+ *             sidings and branches leaving the island's line as the home
+ *             line's. The freight station and the trains stay on the home
+ *             piece: no train runs to an island's yard (wayTo() is null);
  *   DRAWN    a diagonal is laid as a staircase so the run stays joined, and
  *             drawn smooth; a highway is elevated - streets pass beneath, the
  *             railway bridges over it, it passes over a mine standing on its
@@ -256,8 +266,10 @@ public final class CityRuns {
         int pieceOf(long x, long y);
         /** Piece p's built weight (the map: the buildings drawn on it); 0 for none. */
         long weight(int p);
-        /** Piece p's hub {x, y}: a highway line crossing (both coordinates HIGHWAY_AT mod CELL) on its dry ground, nearest the founding site; null for none. */
+        /** Piece p's hub {x, y}: a highway line crossing (both coordinates HIGHWAY_AT mod CELL) on its dry ground, nearest its anchor (the map's: the island's port, RI1, else the founding site); null for none. */
         long[] hub(int p);
+        /** (RI1) Where piece p's nets start from: its hub unless the map says otherwise. The railway's hub on the piece is the railway line crossing nearest it (layRail()). */
+        default long[] anchor(int p) { return hub(p); }
     }
 
     /** The city as one piece (what a caller with no pieces passes): the founding site's net alone, as before CL5. */
@@ -281,6 +293,12 @@ public final class CityRuns {
      * net whose arms stop short of APART opens no corridor).
      */
     static boolean linkArms = true;
+
+    /**
+     * Whether the railway grows on each piece of the city's ground the water parts, as the highways do (RI1; CL5-C's call 1, "the railway on other
+     * islands: its own track and yards from each piece's hub"): true; a harness turns it off to show the railway is the home piece's alone without it.
+     */
+    static boolean islandRail = true;
 
     /**
      * The most plots a link's search visits (CL5, linkWay()): 1 << 21, about 2 million, the net's own plots among them - its visited
@@ -1126,19 +1144,9 @@ public final class CityRuns {
      * row first, its arms east and west, then the column's south and north.
      */
     static boolean start(Net n, Ground g, long ax, long ay, int gateway) {
-        long x0 = ax - Math.floorMod(ax - n.at, CELL), y0 = ay - Math.floorMod(ay - n.at, CELL);
-        long bx = 0, by = 0;
-        double best = Double.MAX_VALUE;
-        boolean found = false;
-        for (int j = -HUB_REACH; j <= HUB_REACH; j++) {
-            for (int i = -HUB_REACH; i <= HUB_REACH; i++) {
-                long x = x0 + (long) i * CELL, y = y0 + (long) j * CELL;
-                double d = (double) (x - ax) * (x - ax) + (double) (y - ay) * (y - ay);
-                if (d >= best || !dry(g.at(x, y, -1))) continue;
-                best = d; bx = x; by = y; found = true;
-            }
-        }
-        if (!found) return false;
+        long[] hub = crossingNear(n.at, g, ax, ay, null, 0);
+        if (hub == null) return false;
+        long bx = hub[0], by = hub[1];
         n.reset();
         n.started = true;
         n.hubX = bx;
@@ -1173,6 +1181,27 @@ public final class CityRuns {
         }
         n.interchanges.add(new Interchange(bx, by, 0));
         return true;
+    }
+
+    /**
+     * The line crossing nearest (ax, ay), {x, y}: both coordinates `at` mod CELL, on the city's dry ground, within HUB_REACH cells, the first in
+     * the row-by-row search on a tie (start()'s search); with `pieces` (RI1) only a crossing on map piece m. Null where none is.
+     */
+    static long[] crossingNear(int at, Ground g, long ax, long ay, Pieces pieces, int m) {
+        long x0 = ax - Math.floorMod(ax - at, CELL), y0 = ay - Math.floorMod(ay - at, CELL);
+        long bx = 0, by = 0;
+        double best = Double.MAX_VALUE;
+        boolean found = false;
+        for (int j = -HUB_REACH; j <= HUB_REACH; j++) {
+            for (int i = -HUB_REACH; i <= HUB_REACH; i++) {
+                long x = x0 + (long) i * CELL, y = y0 + (long) j * CELL;
+                double d = (double) (x - ax) * (x - ax) + (double) (y - ay) * (y - ay);
+                if (d >= best || !dry(g.at(x, y, -1))) continue;
+                if (pieces != null && pieces.pieceOf(x, y) != m) continue;
+                best = d; bx = x; by = y; found = true;
+            }
+        }
+        return found ? new long[] { bx, by } : null;
     }
 
     /** The spine's arm toward the gateway: -1 when there is none or the net has not started; else the index of the arm of corridor 0 or 1 whose home heading's angle (heading h is h * 45 degrees, x = cos, y = sin, as DX/DY) is nearest the bearing, the lower index on a tie. */
@@ -1247,6 +1276,11 @@ public final class CityRuns {
         long guard = 50 * (target - count(n, p)) + 1000;
         while (count(n, p) < target && guard-- > 0) {
             if (live.isEmpty()) {
+                // (RI1) A piece of the railway grows its four spine arms and no more: no corridor, no link, as the home piece's main line grows none.
+                if (n.kind == RAILWAY && p >= 1) {
+                    setStuck(n, p, ver);
+                    break;
+                }
                 if (newCorridor(n, g, p)) {
                     for (int i = n.arms.size() - 2; i < n.arms.size(); i++) live.add(i);
                 } else if (linkArms && n.kind == HIGHWAYS && openLink(n, other, g, p)) {
@@ -1306,7 +1340,8 @@ public final class CityRuns {
      * and the net is its hub alone. True when it laid any.
      */
     static boolean growMainLine(Net n, Net other, long target, Ground g, long ax, long ay, int gateway) {
-        if (target <= n.plots) return false;
+        // (RI1) The home piece's plots (count()): with the railway on other pieces too, the net's own are the whole railway's. With one piece they are equal.
+        if (target <= count(n, 0)) return false;
         if (!n.started && !start(n, g, ax, ay, gateway)) return false;
         long before = n.plots;
         if (!n.hubLaid) {
@@ -1316,22 +1351,22 @@ public final class CityRuns {
             if (!was) { n.plots++; credit(n, 0, 1); }
         }
         long ver = g.version();
-        if (n.stuckAt == ver || n.plots >= target) return n.plots != before;
+        if (n.stuckAt == ver || count(n, 0) >= target) return n.plots != before;
         int[] why = new int[1];
-        long guard = 50 * (target - n.plots) + 1000;
+        long guard = 50 * (target - count(n, 0)) + 1000;
         boolean ended = false;
         for (int i : spineOrder(n, gateArm(n, gateway))) {
             Arm a = n.arms.get(i);
             if (a.joined) { ended = true; break; }
             if (a.waitAt != ver) {
                 int r = STEPPED;
-                while (n.plots < target && guard-- > 0 && (r = step(n, other, i, a, g, target, why)) == STEPPED) { /* on */ }
+                while (count(n, 0) < target && guard-- > 0 && (r = step(n, other, i, a, g, target, why)) == STEPPED) { /* on */ }
                 if (r == WAITS) a.waitAt = ver;
-                if (n.plots >= target || r == HELD || guard <= 0) return n.plots != before;
+                if (count(n, 0) >= target || r == HELD || guard <= 0) return n.plots != before;
             }
             if (a.stoppedBy != SEA) { ended = true; break; }
         }
-        if (ended || n.plots < target) n.stuckAt = ver;
+        if (ended || count(n, 0) < target) n.stuckAt = ver;
         return n.plots != before;
     }
 
@@ -2410,7 +2445,7 @@ public final class CityRuns {
         java.util.Set<Long> seen = new java.util.HashSet<>();
         List<long[]> cell = new ArrayList<>(2);
         for (Arm a : rail.arms) {
-            if (a.corridor >= SIDING) continue;
+            if (a.corridor == SIDING) continue;   // (RI1) the railway pieces' spines, past the ways' placeholders, are lines for a yard
             for (int s = 0; s < a.segs; s++) {
                 int hd = a.segHead[s], dx = DX[hd], dy = DY[hd];
                 if (dx != 0 && dy != 0) continue;
@@ -2600,6 +2635,14 @@ public final class CityRuns {
     /** layRail()'s last stamp, and whether it has one: everything it reads, so it lays nothing twice for the same inputs. */
     private long railStamp;
     private boolean railStampSet;
+    /**
+     * (RI1) Each map piece whose rail hub search found no crossing: {the ground's version, the anchor's x, y} it was searched at; it is not
+     * searched again till one of them moves. WHY: the stamp moves whenever the model's track does, every month in a growing city, and in
+     * MapCheck's square city at 5B (550 pieces, 334 with a railway) the pieces without one searched afresh took the month from 2 ms to 100
+     * (its budget 5).
+     * Not saved: a loaded city searches once.
+     */
+    private long[][] railMiss = new long[0][];
 
     /**
      * What one layRail() run builds on demand and its steps share: the bulk
@@ -2675,6 +2718,29 @@ public final class CityRuns {
             tiersSorted.put(key, sorted);
             return null;
         }
+
+        /**
+         * (RI1) The first yard's box with the railway on more than one piece: nearestMineSpot()'s order, but the first that fits on home's ground
+         * (map piece 0) before any on an island's line; an island's only where home's track has room for none. WHY: the islands' spines are
+         * yard lines since RI1 (spotsOnTrack()), and a mine on an island beside its line would otherwise take home's first yard, the freight
+         * station's. The search's place is left as it was.
+         */
+        long[] homeFirstSpot(int w, int h, Ground g, Pieces pieces) {
+            long key = ((long) w << 32) ^ h;
+            List<long[]> list = spots.computeIfAbsent(key, k -> new ArrayList<>());
+            List<List<long[]>> tiers = spotTiers.computeIfAbsent(key, k -> spotsOnTrack(w, h));
+            int sorted = tiersSorted.getOrDefault(key, 0);
+            while (sorted < tiers.size()) list.addAll(nearestMineFirst(tiers.get(sorted++), mines));
+            tiersSorted.put(key, sorted);
+            long[] island = null;
+            for (int i = spotAt.getOrDefault(key, 0); i < list.size(); i++) {
+                long[] s = list.get(i);
+                if (!yardFits(s, g, mines, yards)) continue;
+                if (pieces.pieceOf(s[0] + s[2] / 2, s[1] + s[3] / 2) == 0) return s;
+                if (island == null) island = s;
+            }
+            return island;
+        }
     }
 
     /**
@@ -2684,37 +2750,60 @@ public final class CityRuns {
      * the model's track plots, or - with a station standing - to the city's
      * edge whatever the track, FX5), the first yard, the sidings, then the
      * branches and the further yards, each out of what the track plots leave.
+     * (RI1) With the city's ground in pieces and islandRail on, the railway has
+     * its own track on each piece but the home piece that holds buildings, from a
+     * hub of its own (openRailPieces()), the model's track dealt between the
+     * pieces as the highways are (layPieces()), and a new yard goes first to a
+     * piece that has none (islandYardSpot()).
      * Pure in its inputs; skipped when the
      * stamp of them is the last run's.
      */
     private void layRail(long trackPlots, List<int[]> sizes, int spurs, Ground g, long rx, long ry,
-                         List<long[]> mines, List<long[]> works) {
-        long stamp = railStampOf(trackPlots, sizes, spurs, g, rx, ry, mines, works);
+                         List<long[]> mines, List<long[]> works, Pieces pieces) {
+        long stamp = railStampOf(trackPlots, sizes, spurs, g, rx, ry, mines, works, pieces);
         // (MF1) An idle yard whose time is up is taken up this month, though nothing the stamp holds has moved.
         if (railStampSet && stamp == railStamp && !idleExpired()) return;
         dropWays();
         keepYards(sizes);
+        // (RI1) The railway's other pieces open now, right after the ways are off, so a piece's arms always come before the run's way arms in rail.arms.
+        if (islandRail && pieces.count() > 1 && (trackPlots > 0 || !sizes.isEmpty())) openRailPieces(g, pieces, rx, ry);
         // A station stands on the main line whatever track the model has (a yard is no track): the line is grown till it waits at the city's ground.
         // (MF1) A yard idle stands on it as a station does: the line is held as it is (never taken back, never grown) while one stands.
         boolean idle = !idleSince.isEmpty();
-        long lineTo = !sizes.isEmpty() ? Math.max(trackPlots, rail.plots + MAIN_LINE_REACH) : idle ? Math.max(trackPlots, rail.plots) : trackPlots;
-        if (lineTo < rail.plots) trim(rail, lineTo, gateway);
-        else growMainLine(rail, highways, lineTo, g, rx, ry, gateway);
+        Deal deal = null;
+        if (rail.pieceHubs.size() <= 1) {
+            long lineTo = !sizes.isEmpty() ? Math.max(trackPlots, rail.plots + MAIN_LINE_REACH) : idle ? Math.max(trackPlots, rail.plots) : trackPlots;
+            if (lineTo < rail.plots) trim(rail, lineTo, gateway);
+            else growMainLine(rail, highways, lineTo, g, rx, ry, gateway);
+        } else {
+            deal = layPieces(trackPlots, sizes, idle, g, rx, ry, pieces);
+        }
         if (!sizes.isEmpty() && !rail.started) start(rail, g, rx, ry, gateway);
         if (trackPlots == 0 && sizes.isEmpty() && yards.isEmpty() && rail.plots == 0 && rail.started) rail.reset();
         long[] budget = { Math.max(0, trackPlots - rail.plots) };
         if (rail.started) {
             Ctx ctx = new Ctx(mines, works);
             if (!sizes.isEmpty() && yards.isEmpty()) {
-                long[] first = ctx.nearestMineSpot(sizes.get(0)[0], sizes.get(0)[1], g);
+                long[] first = deal == null ? ctx.nearestMineSpot(sizes.get(0)[0], sizes.get(0)[1], g) : ctx.homeFirstSpot(sizes.get(0)[0], sizes.get(0)[1], g, pieces);
                 if (first != null) addYard(first, sizes.get(0));
             }
             laySidings(spurs, ctx, g, budget);
             // A yard laid beside a group of works has a branch to be laid with the rest; with no works there is no such yard
             // (and a city of thousands of yards does not weigh every one each month).
+            // (RI1) A new yard goes first to the first piece of the railway that has none, on its own track nearest its hub; with no box there, beside the works as before.
+            java.util.Set<Integer> passed = new java.util.HashSet<>();
+            boolean[] on = deal == null ? null : piecesWithYards(pieces);
             for (int i = ctx.works.isEmpty() ? yards.size() : 1; i < sizes.size() && !yards.isEmpty(); i++) {
-                if (i < yards.size()) reachYard(yards.get(i), g, ctx, budget);
-                else if (!placeFurther(sizes.get(i), g, ctx, budget)) break;
+                if (i < yards.size()) {
+                    reachYard(yards.get(i), g, ctx, budget);
+                    continue;
+                }
+                long[] isle = deal == null ? null : islandYardSpot(sizes.get(i), deal, pieces, on, passed, g, ctx);
+                if (isle != null) {
+                    addYard(isle, sizes.get(i));
+                    ctx.yardLaid(isle);
+                } else if (!placeFurther(sizes.get(i), g, ctx, budget)) break;
+                if (on != null) markYard(on, pieces, yards.get(yards.size() - 1));
             }
             // (MF1) ...and an idle yard keeps the branch it had.
             if (!ctx.works.isEmpty()) for (int i = Math.max(1, yardsActive()); i < yards.size(); i++) reachYard(yards.get(i), g, ctx, budget);
@@ -2724,8 +2813,149 @@ public final class CityRuns {
         railStampSet = true;
     }
 
-    /** A hash of everything layRail() reads: the track plots, the yards' sizes, the spurs, the ground's version, the gateway, the hub's seed, the mines and works, and the highways laid. */
-    private long railStampOf(long trackPlots, List<int[]> sizes, int spurs, Ground g, long rx, long ry, List<long[]> mines, List<long[]> works) {
+    /**
+     * (RI1) Opens the railway on each map piece but the home piece that has weight and no rail net's hub on it yet (as openPieces() finds that
+     * for the highways): its RAIL HUB is the railway line crossing nearest pieces.anchor(m), within HUB_REACH cells, on dry ground of the piece
+     * itself; a piece with none has no railway this run. The home line has started first (a railway with track or yards starts at once, so the
+     * pieces are found the run it does, not the month after). The placeholder corridors of the ways come first (wayCorridors()), so a piece's
+     * two SPINE corridors come at 4 and after, and dropWays() keeps them.
+     */
+    private void openRailPieces(Ground g, Pieces pieces, long rx, long ry) {
+        if (!rail.started && !start(rail, g, rx, ry, gateway)) return;
+        boolean[] held = new boolean[pieces.count()];
+        for (int j = 0; j < rail.pieceHubs.size(); j++) {
+            long[] hj = hubOf(rail, j);
+            int mj = pieces.pieceOf(hj[0], hj[1]);
+            if (mj >= 0 && mj < held.length) held[mj] = true;
+        }
+        if (railMiss.length != held.length) railMiss = new long[held.length][];
+        for (int m = 1; m < held.length; m++) {
+            if (held[m] || pieces.weight(m) <= 0) continue;
+            long[] anchor = pieces.anchor(m);
+            if (anchor == null) continue;
+            long[] miss = railMiss[m];
+            if (miss != null && miss[0] == g.version() && miss[1] == anchor[0] && miss[2] == anchor[1]) continue;
+            long[] h = crossingNear(RAIL_AT, g, anchor[0], anchor[1], pieces, m);
+            if (h == null) {
+                railMiss[m] = new long[] { g.version(), anchor[0], anchor[1] };
+                continue;
+            }
+            wayCorridors();
+            openPiece(rail, h[0], h[1]);
+            held[m] = true;
+        }
+    }
+
+    /**
+     * (RI1) The railway's lines on its pieces (the net has more than the home piece), the model's track dealt between them as layHighways() deals
+     * the highways (deal(): owners, frozen nets, shares by built weight, the home piece the rest). The home line's target is as it was with one
+     * piece, on its own count and share: with yards asked, its count and MAIN_LINE_REACH if that is more than its share; held while a yard stands
+     * idle; else its share. An island piece's is its share, but where a yard stands on its map piece or this run deals it one (yardedPieces()),
+     * its count and MAIN_LINE_REACH if more: grown to its edges as a station's line is at home (FX5). A share only steers where plots go, as
+     * CL5 has it ("nothing is taken back unless the model's total falls"): (b) plots are taken back, from the piece furthest above its
+     * target and to its target at the least, only while the track the model's share of (the lines but those a yard holds to the edge) is more
+     * than the model's; (a) no piece is grown past what is left of the model's track, a line a yard holds excepted. So a month whose weights
+     * moved and whose track did not moves nothing. A net that is not its map piece's owner is frozen, its target what it has. An island's
+     * four spine arms grow evenly (growPiece()), no corridor, no link. Returns the deal, for the yards.
+     */
+    private Deal layPieces(long trackPlots, List<int[]> sizes, boolean idle, Ground g, long rx, long ry, Pieces pieces) {
+        int np = rail.pieceHubs.size();
+        Deal d = deal(rail, trackPlots, pieces);
+        boolean[] yarded = yardedPieces(d, sizes, pieces);
+        long[] target = new long[np];
+        boolean[] held = new boolean[np];
+        for (int j = 0; j < np; j++) {
+            if (!d.owner[j]) { target[j] = count(rail, j); continue; }
+            if (j == 0) {
+                held[0] = !sizes.isEmpty() || idle;
+                target[0] = !sizes.isEmpty() ? Math.max(d.tgt[0], count(rail, 0) + MAIN_LINE_REACH) : idle ? Math.max(d.tgt[0], count(rail, 0)) : d.tgt[0];
+            } else {
+                held[j] = yarded[j];
+                target[j] = held[j] ? Math.max(d.tgt[j], count(rail, j) + MAIN_LINE_REACH) : d.tgt[j];
+            }
+        }
+        // The plots the model's track is spent on: the lines but those a yard holds to the edge.
+        long used = rail.plots;
+        for (int j = 0; j < np; j++) if (held[j]) used -= count(rail, j);
+        while (used > trackPlots) {
+            int far = -1;
+            long most = 0;
+            for (int j = 0; j < np; j++) {
+                long over = count(rail, j) - target[j];
+                if (d.owner[j] && !held[j] && over > most) { most = over; far = j; }
+            }
+            if (far < 0) break;
+            long before = rail.plots;
+            trimPiece(rail, far, Math.max(target[far], count(rail, far) - (used - trackPlots)), gateway);
+            if (rail.plots == before) break;
+            used -= before - rail.plots;
+        }
+        for (int j = 0; j < np; j++) {
+            if (!d.owner[j] || count(rail, j) >= target[j]) continue;
+            long want = held[j] ? target[j] : Math.min(target[j], count(rail, j) + Math.max(0, trackPlots - used));
+            if (want <= count(rail, j)) continue;
+            long before = rail.plots;
+            if (j == 0) growMainLine(rail, highways, want, g, rx, ry, gateway);
+            else growPiece(rail, highways, j, want, g, rx, ry, gateway);
+            if (!held[j]) used += rail.plots - before;
+        }
+        return d;
+    }
+
+    /** The map pieces a yard stands on, by the yard box's middle (RI1). */
+    private boolean[] piecesWithYards(Pieces pieces) {
+        boolean[] on = new boolean[Math.max(0, pieces.count())];
+        for (long[] y : yards) markYard(on, pieces, y);
+        return on;
+    }
+
+    /** ...a yard laid: its map piece has one. */
+    private static void markYard(boolean[] on, Pieces pieces, long[] y) {
+        int m = pieces.pieceOf(y[0] + y[2] / 2, y[1] + y[3] / 2);
+        if (m >= 0 && m < on.length) on[m] = true;
+    }
+
+    /**
+     * (RI1) Whether each piece of the railway holds a yard on its map piece or is dealt a new one this run: the walk islandYardSpot() takes, worked
+     * out before the lines grow. The yards still to be laid are the model's sizes past those laid (the first yard is the home piece's); each goes
+     * to the first piece of the railway, in order, that is its map piece's owner and has none.
+     */
+    private boolean[] yardedPieces(Deal d, List<int[]> sizes, Pieces pieces) {
+        int np = d.owner.length;
+        boolean[] out = new boolean[np];
+        boolean[] on = piecesWithYards(pieces);
+        int fresh = Math.max(0, sizes.size() - Math.max(yards.size(), sizes.isEmpty() ? 0 : 1));
+        for (int j = 1; j < np; j++) {
+            if (!d.owner[j] || d.mp[j] < 0) continue;
+            if (d.mp[j] < on.length && on[d.mp[j]]) out[j] = true;
+            else if (fresh > 0) { out[j] = true; fresh--; }
+        }
+        return out;
+    }
+
+    /**
+     * (RI1) The box for a new yard of `size` on the first piece of the railway, in order, whose map piece holds no yard: the first box of
+     * yardSpotsNear() the piece's hub whose middle lies on that map piece and that yardFree() allows. Null with none, and then that piece is
+     * passed over for the rest of the run (`passed`) and the yard goes beside the works as before.
+     */
+    private long[] islandYardSpot(int[] size, Deal d, Pieces pieces, boolean[] on, java.util.Set<Integer> passed, Ground g, Ctx ctx) {
+        for (int j = 1; j < d.owner.length; j++) {
+            if (!d.owner[j] || d.mp[j] < 0 || passed.contains(j) || (d.mp[j] < on.length && on[d.mp[j]])) continue;
+            long[] hub = hubOf(rail, j);
+            for (long[] s : yardSpotsNear(size[0], size[1], hub[0], hub[1])) {
+                if (pieces.pieceOf(s[0] + s[2] / 2, s[1] + s[3] / 2) == d.mp[j] && yardFree(s, g, ctx)) return s;
+            }
+            passed.add(j);
+            return null;
+        }
+        return null;
+    }
+
+    /**
+     * A hash of everything layRail() reads: the track plots, the yards' sizes, the spurs, the ground's version, the gateway, the hub's seed, the mines and works, and the highways laid.
+     * (RI1) With the railway started and islandRail on also the city's pieces: their count and which have weight - not the weights, which drift every month and would lay the ways afresh every month - and the railway's own pieces' hubs.
+     */
+    private long railStampOf(long trackPlots, List<int[]> sizes, int spurs, Ground g, long rx, long ry, List<long[]> mines, List<long[]> works, Pieces pieces) {
         long h = World.mix(0x5241494CL ^ trackPlots);
         h = World.mix(h ^ spurs ^ ((long) gateway << 32) ^ g.version() * 31 ^ rx * 0x9E3779B97F4A7C15L ^ ry);
         for (int[] s : sizes) h = World.mix(h ^ ((long) s[0] << 20) ^ s[1]);
@@ -2735,6 +2965,12 @@ public final class CityRuns {
         for (long[] w : works) h = h * 0x100000001B3L ^ (w[0] * 37 + w[1] ^ 0x57);
         h = World.mix(h ^ highways.plots ^ (highways.started ? highways.hubX * 31 + highways.hubY : 7));
         for (Arm a : highways.arms) h = World.mix(h ^ a.steps ^ ((long) a.head << 40) ^ (a.x << 20) ^ a.y);
+        if (islandRail && rail.started) {
+            int count = pieces.count();
+            h = World.mix(h ^ 0x49534C45L ^ count);
+            for (int j = 1; j < rail.pieceHubs.size(); j++) h = World.mix(h ^ rail.pieceHubs.get(j)[0] * 0x9E3779B97F4A7C15L ^ rail.pieceHubs.get(j)[1] ^ ((long) j << 56));
+            for (int m = 1; m < count; m++) if (pieces.weight(m) > 0) h = World.mix(h ^ m);
+        }
         return h;
     }
 
@@ -2743,21 +2979,29 @@ public final class CityRuns {
      * BRANCH and SIDING corridors and any corridor past the spine's (a net
      * grown before FR7 has them as dead ends), and then the spine's arms
      * past the main line's last (cleanSpine()). Files the rest again and
-     * counts its plots.
+     * counts its plots. (RI1) The corridors of the railway's other pieces
+     * stay, with their arms, and are never renumbered: the dead ends and the
+     * placeholders go only while the net's last corridor is no piece's SPINE.
      */
     private void dropWays() {
         boolean any = false;
         for (int i = rail.arms.size() - 1; i >= 0; i--) {
-            if (rail.arms.get(i).corridor >= BRANCH) { sawArm(rail, rail.arms.get(i)); rail.arms.remove(i); any = true; }
+            int c = rail.arms.get(i).corridor;
+            if (c == BRANCH || c == SIDING || (c > SIDING && !pieceSpine(rail, c))) { sawArm(rail, rail.arms.get(i)); rail.arms.remove(i); any = true; }
         }
-        while (rail.corridors.size() > 2) { rail.corridors.remove(rail.corridors.size() - 1); any = true; }
-        if (rail.interchanges.removeIf(c -> c.corridor() >= BRANCH)) any = true;
+        while (rail.corridors.size() > 2 && !pieceSpine(rail, rail.corridors.size() - 1)) { rail.corridors.remove(rail.corridors.size() - 1); any = true; }
+        if (rail.interchanges.removeIf(c -> c.corridor() == BRANCH || c.corridor() == SIDING || (c.corridor() > SIDING && !pieceSpine(rail, c.corridor())))) any = true;
         any |= cleanSpine();
         if (!any) return;
         rebuildBuckets(rail);
         rail.plots = countPlots(rail);
-        rail.piecePlots[0] = rail.plots;
+        recountPieces(rail);
         rail.stuckAt = Long.MIN_VALUE;
+    }
+
+    /** Whether corridor ci is the SPINE of a piece but the home piece (RI1: the railway's pieces' corridors, which dropWays() keeps). */
+    static boolean pieceSpine(Net n, int ci) {
+        return ci >= 2 && ci < n.corridors.size() && corridorRole(n.corridors.get(ci)) == SPINE && corridorPiece(n.corridors.get(ci)) >= 1;
     }
 
     /**
@@ -3101,11 +3345,11 @@ public final class CityRuns {
     /** The most works laySidings() tries in one run: 200. */
     static final int SIDING_TRIES = 200;
 
-    /** The plots of the main line a siding or a branch may leave from, {x, y, axis (0 east-west, 1 north-south)}: the spine's arms past their start plots, on a stretch running straight east-west or north-south, and not inside a yard. */
+    /** The plots of the main line a siding or a branch may leave from, {x, y, axis (0 east-west, 1 north-south)}: the spine's arms past their start plots - (RI1) and those of every other piece of the railway - on a stretch running straight east-west or north-south, and not inside a yard. */
     private List<long[]> linePlots() {
         List<long[]> out = new ArrayList<>();
         for (Arm a : rail.arms) {
-            if (a.corridor > 1) continue;
+            if (!isSpine(rail, a.corridor)) continue;   // (RI1) the spines of the railway's other pieces too, not the ways' corridors
             for (int s = 0; s < a.segs; s++) {
                 int h = a.segHead[s], dx = DX[h], dy = DY[h];
                 if (dx != 0 && dy != 0) continue;
@@ -3250,7 +3494,7 @@ public final class CityRuns {
     private double distanceToNet(double x, double y) {
         double best = rail.hubLaid ? Math.hypot(x - rail.hubX, y - rail.hubY) : Double.MAX_VALUE;
         for (Arm a : rail.arms) {
-            if (a.corridor >= SIDING) continue;
+            if (a.corridor == SIDING) continue;
             for (int s = 0; s < a.segs; s++) {
                 double x0 = a.segX[s], y0 = a.segY[s], x1 = x0 + (double) DX[a.segHead[s]] * a.segSteps[s], y1 = y0 + (double) DY[a.segHead[s]] * a.segSteps[s];
                 double vx = x1 - x0, vy = y1 - y0, len2 = vx * vx + vy * vy;
@@ -3479,6 +3723,13 @@ public final class CityRuns {
         // (MF1) An idle yard is no freight station: the trains come to the yards the model asks for.
         for (int yi = 0; yi < yardsActive(); yi++) {
             long[] y = yards.get(yi);
+            // (RI1) The trains and the station stay home: a yard on another piece of the railway is no freight station, and no train runs to it (wayTo() is null).
+            if (rail.pieces() > 1) {
+                long[] at = anchorInYard(y);
+                int[] loc = at == null ? null : locate(rail, at[0], at[1]);
+                // Its track's chain back to the home hub (a branch off an island's line is a placeholder corridor of piece 0, and reaches no hub).
+                if (loc == null || chain(rail, loc[0], loc[1]) == null) continue;
+            }
             double cx = y[0] + y[2] / 2.0, cy = y[1] + y[3] / 2.0;
             double d = (cx - bx) * (cx - bx) + (cy - by) * (cy - by);
             if (d < bestD) { bestD = d; best = y; }
@@ -3865,14 +4116,18 @@ public final class CityRuns {
     /**
      * ...with the city's ground in pieces (CL5; ONE_PIECE for none): the
      * highways are dealt between the pieces that hold buildings, each
-     * with a net of its own from its own hub (layHighways()). The railway is
-     * the home piece's alone, as before.
+     * with a net of its own from its own hub (layHighways()). (RI1) So is the
+     * railway, once its home line has started (islandRail; CL5-C's call 1): on
+     * each piece but the home piece that holds buildings it has its own track
+     * from a railway line crossing nearest the piece's anchor, dealt by the
+     * same weights, and its own yard where the model asks for one (layRail());
+     * the freight station and the trains' ways stay with the home piece.
      */
     public boolean layTo(long highwayPlots, long trackPlots, List<int[]> yardSizes, int spurs, Ground g,
                          long fx, long fy, long rx, long ry, List<long[]> mines, List<long[]> works, Pieces pieces) {
         long v0 = signature();
         layHighways(highwayPlots, g, fx, fy, pieces);
-        layRail(trackPlots, yardSizes, spurs, g, rx, ry, mines, works);
+        layRail(trackPlots, yardSizes, spurs, g, rx, ry, mines, works, pieces);
         if (highwayPlots == 0 && highways.plots == 0 && highways.started) highways.reset();
         bindReserves(g);
         highwayShort = Math.max(0, highwayPlots - highways.plots);
@@ -3915,6 +4170,54 @@ public final class CityRuns {
             return;
         }
         long ver = g.version();
+        Deal deal = deal(n, plots, pieces);
+        boolean[] owner = deal.owner;
+        long[] tgt = deal.tgt;
+        if (n.plots < plots) {
+            // (a) each owner below its target grown to it, then the rest to the owners the ground has not stopped, in order.
+            for (int j = 0; j < np && n.plots < plots; j++) {
+                if (owner[j] && count(n, j) < tgt[j]) growPiece(n, rail, j, Math.min(tgt[j], count(n, j) + plots - n.plots), g, fx, fy, gateway);
+            }
+            for (int j = 0; j < np && n.plots < plots; j++) {
+                if (!owner[j] || stuckAt(n, j) == ver) continue;
+                growPiece(n, rail, j, count(n, j) + plots - n.plots, g, fx, fy, gateway);
+            }
+        } else if (n.plots > plots) {
+            // (b) taken back from the owner furthest above its target, to its target at the least; then from the last net back.
+            while (n.plots > plots) {
+                int far = -1;
+                long most = 0;
+                for (int j = 0; j < np; j++) {
+                    long over = count(n, j) - tgt[j];
+                    if (owner[j] && over > most) { most = over; far = j; }
+                }
+                if (far < 0) break;
+                long before = n.plots;
+                trimPiece(n, far, Math.max(tgt[far], count(n, far) - (n.plots - plots)), gateway);
+                if (n.plots == before) break;
+            }
+            for (int j = np - 1; j >= 0 && n.plots > plots; j--) {
+                if (count(n, j) > 0) trimPiece(n, j, Math.max(0, count(n, j) - (n.plots - plots)), gateway);
+            }
+        }
+    }
+
+    /** A net's `plots` dealt between its pieces (deal()): each piece's map piece, whether it owns it, and its target. */
+    private static final class Deal {
+        /** The map piece each net's hub lies on (-1 - j for a hub on none), whether the net is its map piece's owner, and its target in plots. */
+        int[] mp;
+        boolean[] owner;
+        long[] tgt;
+    }
+
+    /**
+     * (CL5; RI1 lifted it out of layHighways() for layRail() to deal the railway as the highways are) Net n's `plots` dealt between its pieces:
+     * each map piece's OWNER is the oldest net whose hub lies on it, and a net that is not its piece's owner (two pieces a purchase joined) is
+     * frozen, its target what it has. The shares: by built weight (the home piece counted at least 1), each owned piece floor(plots * weight /
+     * total), the home piece the rest; an owner's target is its share less what its piece's frozen nets hold.
+     */
+    private static Deal deal(Net n, long plots, Pieces pieces) {
+        int np = n.pieceHubs.size();
         // The map piece each net's hub lies on, and the owner of each map piece: the oldest net on it.
         int[] mp = new int[np];
         boolean[] owner = new boolean[np];
@@ -3956,33 +4259,11 @@ public final class CityRuns {
             // What a piece's frozen nets hold comes off its owner's target.
             for (int i = 0; i < np; i++) if (!owner[i]) { int o = first[mp[i]]; tgt[o] = Math.max(0, tgt[o] - count(n, i)); }
         }
-        if (n.plots < plots) {
-            // (a) each owner below its target grown to it, then the rest to the owners the ground has not stopped, in order.
-            for (int j = 0; j < np && n.plots < plots; j++) {
-                if (owner[j] && count(n, j) < tgt[j]) growPiece(n, rail, j, Math.min(tgt[j], count(n, j) + plots - n.plots), g, fx, fy, gateway);
-            }
-            for (int j = 0; j < np && n.plots < plots; j++) {
-                if (!owner[j] || stuckAt(n, j) == ver) continue;
-                growPiece(n, rail, j, count(n, j) + plots - n.plots, g, fx, fy, gateway);
-            }
-        } else if (n.plots > plots) {
-            // (b) taken back from the owner furthest above its target, to its target at the least; then from the last net back.
-            while (n.plots > plots) {
-                int far = -1;
-                long most = 0;
-                for (int j = 0; j < np; j++) {
-                    long over = count(n, j) - tgt[j];
-                    if (owner[j] && over > most) { most = over; far = j; }
-                }
-                if (far < 0) break;
-                long before = n.plots;
-                trimPiece(n, far, Math.max(tgt[far], count(n, far) - (n.plots - plots)), gateway);
-                if (n.plots == before) break;
-            }
-            for (int j = np - 1; j >= 0 && n.plots > plots; j--) {
-                if (count(n, j) > 0) trimPiece(n, j, Math.max(0, count(n, j) - (n.plots - plots)), gateway);
-            }
-        }
+        Deal d = new Deal();
+        d.mp = mp;
+        d.owner = owner;
+        d.tgt = tgt;
+        return d;
     }
 
     /**
