@@ -9,5 +9,6 @@ replay" (24, TR1-M). Each text was checked against main and brought up to 0.9.76
 save format at 51, and on the Rankings 47 of 70 measures with real figures and a founding dollar worth 28.4 of
 2015's. The masthead keeps its date (0.8.11); a footer line says what this edition added. Docs only: no model
 change, no ensemble.
+The six manual rows it carries (FC1-M, WN6-M, WN5-M, EP1-M, TR1-M, LB3-M) leave Pending in the orchestrator's queue commit.
 ## pending
 | ME1-S | The manual's shared link shows a pinned earlier version, not this edition ({next}): Jerus shares Version 22 from the page's Share menu when he has looked | Only the page's owner can change what the link shows | docs/queue/ME1-notes.md §4 |
