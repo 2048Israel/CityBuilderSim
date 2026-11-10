@@ -11,10 +11,27 @@ import java.util.Locale;
  * ST3's probe (2026-11-09): a town played by a scripted list of builds, no advisor, on ScaleCheck section 6's setup (the causes
  * of death held off, the goods' literals, the rate pinned), one line a month: what section 6 asks of its fixture month.
  *
- * Usage: ST3Probe <months> ; the plan in -Dst3.plan="every@from-to:Name*qty;..." (to optional), schools by
- * LongPlaytest.ensureSchools() every -Dst3.schools months (0 = never). Columns: month, people, a year before, places, homes,
- * households, posts, unemployment, rent burden, pull, unskilled wage, family rent, free sq ft, cash, homes the month built
- * (not the plan's).
+ * Usage: ST3Probe <months> [-D options]; each one is off or empty unless set:
+ *   -Dst3.plan="every@from-to:Name*qty;..."  the scripted builds (the range's end is optional)
+ *   -Dst3.schools=N       LongPlaytest.ensureSchools() every N months (0 = never)
+ *   -Dst3.subsidy         the construction sector's auto-subsidy on
+ *   -Dst3.bare            without the founding's 40 Houses, 3 Convenience Stores and 2 Mixed Farms
+ *   -Dst3.ground          LongPlaytest.keepGroundAhead() every st3.groundEvery months (default 1)
+ *   -Dst3.groundEvery=N   the months between those
+ *   -Dst3.utilities       the power plant (st3.power) and a Water Treatment Plant when their ratio is under 1 and none is on site
+ *   -Dst3.power=Name      the power plant utilities builds (default Wind Farm)
+ *   -Dst3.services        a Paved Road, Walk-in Clinic, Construction Depot and Convenience Store, each on its own need and none on site
+ *   -Dst3.skip=a,b        names (parts of them) services leaves out
+ *   -Dst3.homes=X         with X over 0, a st3.home whenever the household places are under X a person (services only)
+ *   -Dst3.home=Name       the building st3.homes builds (default Low-Rise Apartments)
+ *   -Dst3.pressure=X      with X over 0, a Low-Rise Apartments whenever the landlords' family pressure passes X (services only)
+ *   -Dst3.ptax=R          the property tax rate, a year (unset: the founding's)
+ *   -Dst3.advisor         the playtest's rhythm from month 12: LongPlaytest.advise() and ensureSchools(), its looks logged in brackets
+ * ScaleCheck.ownTown()'s plan is -Dst3.subsidy=true -Dst3.ground=true -Dst3.utilities=true -Dst3.services=true
+ * -Dst3.ptax=0.04 -Dst3.pressure=1.0 (to the month; the probe's months match ScaleCheck's town line for line).
+ * Columns: month, people, a year before, places, homes, households, posts, unemployment, rent burden, pull, unskilled wage,
+ * family rent, free sq ft, cash, homes the month built (not the plan's), the energy, water and road ratios, the health
+ * baseline rate, fpressure (the landlords' family pressure), and what was built that month.
  */
 public class ST3Probe {
 

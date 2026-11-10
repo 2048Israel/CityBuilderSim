@@ -343,7 +343,8 @@ public class OrderSearchCheck {
     /**
      * The default playtest's city (LongPlaytest.main's seed 0): its founding
      * by hand, then its rhythm to `months` (playtestRhythm()), all of it told
-     * to `quiet`. ScaleCheck grows its free copies' city here too.
+     * to `quiet`. InvestCheck and ShortSellingCheck grow their city here too
+     * (ScaleCheck did until ST3, which gave it a town of its own plan).
      */
     static void playtestCity(Game g, int months, PrintStream quiet) {
         PrintStream was = LongPlaytest.out, real = System.out;

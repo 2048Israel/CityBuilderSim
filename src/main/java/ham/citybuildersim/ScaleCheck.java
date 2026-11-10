@@ -69,8 +69,8 @@ import java.util.regex.Pattern;
  *      history records what the screens show;
  *   5. a save gives every one of those figures back, and the city it loads
  *      plays its next month as the one that was saved;
- *   6. a growing city - the playtest's at FREE_FIXTURE_MONTHS, after its
- *      player's look then (0.7.58), with ground free for a home - copied to 5
+ *   6. a growing city - this check's own town (ownTown(), ST3) at
+ *      FREE_FIXTURE_MONTHS, with ground free for a home - copied to 5
  *      and to 10 billion with its sectors free, so they order: every month
  *      whole and adding up, money conserved to RELATIVE_RESIDUAL of what
  *      moved from the first month, the city's books agreeing within
@@ -122,236 +122,41 @@ public class ScaleCheck {
     static final double[] FREE_PEOPLE = { 5e9, 1e10 };
 
     /**
-     * The month the playtest's city is copied at for section 6. The founded
-     * city above is shrinking at month 120, and copied with its sectors free
-     * none of them ordered anything; the playtest's city at 400 months is
-     * growing, and its copies order: at 5 billion an order sized from
-     * 2,147,483,647 needed and one of 280 million judged on its interest.
+     * The month section 6's town, of this check's own plan (ownTown(), ST3), is copied at: a growing town, with ground free
+     * for a home and its own rents pricing no migrant out in the FREE_MONTHS after it.
      *
-     * ...AFTER ITS PLAYER'S LOOK AT THAT MONTH (0.7.58, lookAt()). Since
-     * 0.7.58 the playtest's player buys a building's shortfall of ground and
-     * no more (Game.bestOffer(), A SHORTFALL IS MET WITH GROUND), so between
-     * its looks the city stands full: at month 400, mid-way through one of
-     * the rhythm's long skips, it had 1,470 sq ft free, no room for a home at
-     * any price (0.7.57's had 19,920), and the 10 billion copy built
-     * nothing. "It builds" is a test of what ground costs a copy, so the
-     * copy is of the city its player has just looked at - who buys room to
-     * grow when the city is full, as at every stop of the run.
+     * WHY NOT THE PLAYTEST'S TOWN. Section 6 used to copy it, after its player's look, and its month was re-picked
+     * thirteen times since 0.7.62 (the last 718, 717 and 488) by batches that moved the trace, each pick a draw (EP1: a
+     * 5e-18 debt hair parts two price levels); LD2, RT1 and RE2 found no month at all. ST2 found why: the playtest's small
+     * years price migrants out, and its calm years are too big for the million.
      *
-     * ...AT 410 SINCE 0.7.62, WHERE ITS OWN RENTS PRICE NOBODY OUT. The rents'
-     * pull is compared month for month, and a copy cannot follow the city
-     * into a squeeze its own growth makes: the copies took no arrivals
-     * (until FW9, WHAT IT STILL LOSES, below - the founding care and police
-     * were one city's), so when the city's homes fill faster than its landlords
-     * build, its pull drops and theirs stays at 1. 0.7.55 to 0.7.61's town at
-     * 400 never squeezed in the six months read; batch K's (the drivers'
-     * fuel at the world's price level moved the run from month 26) is in its
-     * take-off at 400, 955 people in 265 homes, and squeezed in three of the
-     * six (the pull .921, .962, .989). Scanned (scratch-k scanF): the six
-     * months after 410 and after 425 are clear and every assertion holds;
-     * after 405, 415 and 420 the city squeezes. The fixture says it now
-     * (Original.calm()): a city whose own rents bind is not one a copy that
-     * cannot grow can be read against.
+     * ST3'S TOWN: the playtest's founding and player settings, the property tax at OWN_PROPERTY_TAX (.04; the founding's is
+     * .015), the construction subsidy, 40 Houses, 3 Convenience Stores and 2 Mixed Farms; then each month keepAhead() and one
+     * month played, no advisor. keepAhead() is LongPlaytest.keepGroundAhead(), then one of a Wind Farm, Water Treatment Plant,
+     * Paved Road, Walk-in Clinic, Construction Depot, Convenience Store, and Low-Rise Apartments when the landlords' family
+     * pressure passes OWN_PRESSURE (1.0), each when its own need is on and none is on site.
      *
-     * ...AT 550 SINCE 0.7.64, BY THE SAME PREMISE. Batch L's player buys its
-     * iron a whole field at a time and no longer buys a deposit as a move
-     * (LongPlaytest.ironWhenNeeded()), and the first ring's offers hold no
-     * ore, so the village buys other ground (the playtest moves from month
-     * 32): its town takes off later - 846 people at 410 where batch K's had
-     * 1,042, 1,734 at 500 where K's had 4,305 - and after every month
-     * scanned from 400 to 530 its rents squeeze in the six months read, or
-     * its copies order nothing judged on its interest (batch L's scratch,
-     * scale/: 400 to 440 squeeze; 490 to 530 order nothing, 490 and 520
-     * squeezing as well). After 535 to 570 the city is calm, growing, with
-     * ground free for a home, and its copies order and build: the middle of
-     * that, 550 (2,711 people at 555).
+     * The property tax, because before 1916 (month 192) it is the one tax open (PolicyDates: the profit tax 1916, the income
+     * tax 1917). Without it the treasury stood at 100 to 400 through the small years, so section 9's cash line (a share of the
+     * city's cash) missed by 1.5% to 60%, and the ground ran out (keepGroundAhead() buys from a share of the cash: free ground
+     * fell to 7,271 sq ft at 135 and 4,345 at 180). At 4% the treasury is 600 to 4,000 in those years.
      *
-     * ...AT 450 SINCE 0.7.67, BY THE SAME PREMISE. On the block grid (batch
-     * M3) a new city owns 1.7% more ground and its first offers are 120 m
-     * blocks, so the playtest moves from month 1 and its town grows sooner:
-     * 4,629 people at 560 where batch L's had about 2,700 at 555. Scanned
-     * (scratch-m3/scale, ScaleCheck with the month changed, every assertion
-     * read): from 535 to 570 the copies order nothing sized from a million
-     * needed; 490 to 530 the same; 400 to 440 one fixture or another fails
-     * at most months (passing at 405, 410, 413 and 425); after 445 to 453
-     * the city is calm, growing, with ground free for a home, and its copies
-     * order - every assertion holds at 445, 446, 447, 449, 450, 451, 452
-     * and 453, while at 448 the copies built no more homes than they began
-     * with. 450, in that run: 4,370 people at 455.
+     * The apartments, because BuildingsStacks' quantity is an int. Housed in Houses (0.2 a person), the ten-billion copy's
+     * House stack nears 2^31 and that copy stalled (its orders 1) or failed to load. With them the town had 140 Houses and
+     * 37 Low-Rises at month 220, against 698 Houses without.
      *
-     * ...AT 545 SINCE 0.7.67'S BATCH M3b, BY THE SAME PREMISE. The player
-     * prices its room to grow from the ground-ahead line, orders no more
-     * transit than its riders fill and buys an iron field only when its
-     * mines pay it back (LongPlaytest.roomToGrow(), fieldEarnings()), so its
-     * town builds power and roads where it bought ground: 15,608 people at
-     * 550. Scanned (scratch-m3b/scale, ScaleCheck with the month changed,
-     * every assertion read): after 400 to 420 the copies built no more homes
-     * than they began with; 445 had no ground free for a home; at 455 to
-     * 460 and 480 to 525 the copies ordered nothing sized from a million
-     * needed, and 570 to 600 the same; 430, 440 and 470 pass alone; every
-     * assertion holds at each month scanned from 527 to 565 (527, 530, 533,
-     * 535, 537, 540, 543, 545, 547, 550, 553, 555, 557, 560, 563, 565). 545
-     * is the middle of that.
+     * 175, FROM THE SCAN (ScaleCheck itself, one month a run, with the scratch tools ST3Probe and ST3Track in
+     * docs/queue/ST3/): months 110-158 every third, 160-200 every fourth, and every month 164-195. Every line holds at
+     * 164-168, 170-180 and 187-196: 26 of the 33 months from 164 to 196, 5,821 to 8,089 people. The misses: 169 (section
+     * 9's prices, past .004); 181-186 (both copies' largest order one building: their landlords placed no mortgage order,
+     * where at 179 they ordered 2.5 million homes); 160 and 200 (the town's own rents price migrants out). Before 160,
+     * section 9's savings miss at 122-143 because the town buys whole cars (at 122 the city's households took 13 cars where
+     * the copy's took 22.9 per K, and the copy traded used cars where the city traded none: a granule of the model, not
+     * this check's), and the copies' largest order is under a million at 134, 143, 155 and 158. At factor 1
+     * (-Dcbs.priceLevel=1) the town is the same month for month, and 170, 175 and 180 hold every line. 175 is the middle
+     * of 170-180.
      *
-     * ...AT 595 SINCE 0.7.103, BY THE SAME PREMISE. Each road kind's own
-     * repairs (Jerus's A11; BuildingsTemplate, A ROAD'S OWN REPAIRS) and the
-     * test player's roads ordered by need (LongPlaytest.roadsByNeed()) move
-     * its town: at 545 the larger copy built no more homes than it began
-     * with. Scanned (scratch-p4/scan2, ScaleCheck with the month changed,
-     * every assertion read): every assertion holds at 500, 580, 583, 585,
-     * 587, 590, 593, 595, 597, 600, 605, 610 and 620; at every month scanned
-     * from 510 to 575, and at 615, the larger copy built no more homes than
-     * it began with. 595 is the middle of 580 to 610: 4,303 people at 600.
-     *
-     * ...AT 635 SINCE 0.7.120 (batch I3), BY THE SAME PREMISE. Iron and steel
-     * at the world's prices (the cars a household buys 6% cheaper from the
-     * first, the test player's furnaces paying nothing it would build) move
-     * its town: at 595, and at 560, 580, 600 and 610, its own rents priced
-     * migrants out in the six months read. Scanned (scratch-i3/probe, ScaleCheck
-     * with the month changed, every assertion read): every assertion holds at
-     * 495, 500, 625, 628, 630, 633, 635, 637, 640, 643 and 645; at 490, 505,
-     * 510, 520, 540, 620, 650, 660, 680 and 700 a copy's rents pulled
-     * migrants otherwise than the city's, or the copies built no more homes
-     * than they began with. 635 is the middle of 625 to 645: 5,213 people at
-     * 640.
-     *
-     * ...AT 600 SINCE 0.7.139 (batch CC1), BY THE SAME PREMISE. Childcare at
-     * real demand (CareType's weights) charges the founding village's fees
-     * on fewer places and moves its town from month 4: at 635 the larger
-     * copy built no more homes than it began with. Scanned (scratch-cc1/
-     * probe3, ScaleCheck with the month changed, every assertion read):
-     * every assertion holds at 500, 510, 520, 540, 580, 595, 600, 605 and
-     * 610; at 505, 525, 530, 535, 545, 560, 590, 620, 625 and 635 the copies
-     * built no more homes than they began with (at 505 and 535 a copy's rents
-     * pulled migrants otherwise as well), and at 515 the city's own rents
-     * priced migrants out. 600 is the middle of 595 to 610: 3,877 people at
-     * 605.
-     *
-     * ...AT 622 SINCE 0.8.19 (batch XR1), BY THE SAME PREMISE. The D$ floats
-     * (ForeignAccounts, THE FLOAT) and the playtest's city, left to it, is in
-     * spiral by month 600: its money reads 1e18 and more where main's read 1e11,
-     * past what the history keeps (cents in a long, 9.2e16), so the history
-     * and the audit could not be held to the cent. The rate is held where the
-     * founding leaves it (section 6 below), which brings the money back to
-     * main's size and the lines of the history and the rents back; the
-     * town is another one, and the copies built no more homes than they began
-     * with at 560 to 620 and at 625 to 660. Scanned (a scratch scan,
-     * ScaleCheck with the month changed, every assertion read): every
-     * assertion holds at 621, 622, 623 and 624; at 560, 580, 600, 610, 615,
-     * 618, 619, 620 and 625 the copies built no more homes than they began with
-     * (at 560 and 625 a copy's rents pulled migrants otherwise as well), and at
-     * 630, 650 and 660 the city's own rents priced migrants out (at 640 a
-     * copy's rents pulled migrants otherwise). 622 is the middle
-     * of 621 to 624, a narrow window: 2,388 people at 627.
-     *
-     * ...AT 807 SINCE 0.8.37 (batch PT1-M4), BY THE SAME PREMISE. The works
-     * department that built for nobody is retired and the city founds with a
-     * Builders' Yard, and the playtest's town is another one again: 4,947
-     * people at 627 where 0.8.36's had 2,388. Traced month by month (a scratch
-     * trace of OrderSearchCheck.playtestCity()'s rhythm, the months played one
-     * at a time), its own rents price migrants out in 749 of the 750 months
-     * from 51 to 800 (the affordability pull .82 on average, the rent burden
-     * .37 against the .30 target), where 0.8.36's town was calm in 141 of
-     * them, in runs like 616 to 630 - which is where 622 sat. The squeeze is
-     * this town's usual state in both (a town grows until its rents bind and
-     * the pull holds it there; Migration.affordabilityPull()), and a calm
-     * month is a dip under the yardstick that the new town's homes did not
-     * make until about 790. Scanned (a scratch scan, ScaleCheck's section 6
-     * with the month changed, every assertion read): every assertion holds at
-     * each month from 792 to 822, at 824 to 830 and at 844 to 853; at 786 to
-     * 791 the first month's pull is .990 to .999, and at 823, 831 to 843 and
-     * 854 to 860 the free copies ordered nothing "sized from more than a
-     * million needed, and judged on its interest". 807 is the middle of 792
-     * to 822, a window of 31 months: 5,319 people at 812.
-     *
-     * ...AND SC1 (2026-10-27) READ IT AGAIN ON 0.8.57 and moved nothing: the red the batch was queued for, the ten-billion copy's
-     * "...and it builds" (FR7's finding, at 600: a city with a thousand spare places builds no home in six months), was mended by
-     * the two rescans above, and every assertion holds at 807, "it builds" of both copies among them. What the batch added is the
-     * landlords' orders in the log (Lender): how many the lender passed, held for the down payment and declined, the city's and
-     * the copy's, printed and not asserted.
-     *
-     * ...AT 1124 SINCE EM1 (2026-10-29), BY THE SAME PREMISE. A share has one value and the households sell on it, so the playtest's
-     * town is another one again: 3,000 to 4,000 people from 500 to 1,070 (3,151 at 605, 3,681 at 805) where 0.8.62's had 5,335 at 812,
-     * and it takes off at 1,075 (4,151 at 1,085, 6,442 at 1,125, 8,279 at 1,205). Scanned (ScaleCheck with the month changed, every
-     * assertion read; every month from 500 to 1,000 and from 1,085 to 1,215, every twentieth from 1,020 to 1,080 and from 1,220 to
-     * 2,500): before 1,100 no month holds them all, the fewest misses being three at 843, one of the few calm ones, where the
-     * 1,000-times copy lists Heavy Industry, Materials and Copper Refining (660, 36 and 149 shares per K) that the city has not
-     * founded, and parts from it in people, prices and unemployment. From 1,100 the copy and the city list the same companies and
-     * the rents are calm, and what is left is the tracking bounds, set in a town that wandered less: every assertion holds at
-     * 1,120, 1,121, 1,124, 1,125 and 1,128, and at the months about them one tracking figure alone misses (GDP at 1,122, .26
-     * against .14; prices at 1,119, 4.11e-3 against 4.00e-3) or the copies build no home (1,126, 1,127). 1,124 is the middle of
-     * 1,120 to 1,128: 6,442 people at 1,125. This window is five months of nine, not 31 in a row.
-     *
-     * ...AND HD2 (2026-10-30) FOUND NO MONTH. With the coupon on the businesses' dollars abroad a line of their profit and kept
-     * abroad, the town is EM1's to two people at 301 and parts at 731, where the playtest's player builds two police stations where
-     * EM1's built roads and clinics; their running costs spend the treasury (937k at 900 against 2.2M) and the build that took the
-     * town off at 1,075 never comes: 2,600 to 4,100 people to 1,100, 2,009 at 2,499. Scanned (sections 6 to 9 with the month
-     * changed, every growing window from 306 to 1,965, every third month and every month about the best): no month holds them all,
-     * the fewest misses two (474 to 476, 482, 838). Left at 1,124 and red (docs/queue/HD2-notes.md, HD2-S): the next batch that
-     * moves the town rescans it, and if no town grows, section 6 wants one that grows by its own plan, not by one look of the advisor.
-     *
-     * ...AND EM2 (2026-10-30) FOUND NONE EITHER, nor a town that grows by the attentive player's plan. On EM2's quote the town is
-     * HD2's: two police stations at 731, its homes 4,920 from 600 on, its treasury dry from 1,125, 2,033 people at 2,500. Scanned
-     * (sections 6 to 9, every month from 306 to 478): the fewest misses two, at 474 to 476, the affordability pull and GDP's
-     * tracking, as HD2 found. The attentive player (a look every 12 months at most, eight moves; LongPlaytest's) grows the same
-     * town to 8,672 people by 500, its homes 12,120 from 500 on, its treasury under nothing from 100; scanned every second month
-     * from 300 to 756, it misses three at best (456: people, cash and unemployment out of their tracking bounds), and the
-     * copy's cash leaves its 0.0125 in every month scanned. Left at 1,124 and red (docs/queue/EM2-notes.md, section 5).
-     *
-     * ...AT 718 SINCE ST2 (2026-11-01), A DRAW AND NOT A BAND. On LD1's and IC1's model, with EP1's 1900 start, the town grows at
-     * the factor (PriceLevel.FACTOR): 3,600 people at 200, 9,100 at 520, a boom from 715 to 28,000 at 905, then a bust (21,000
-     * at 1,000; at 1,124 it had 14,576 and was shrinking). Scanned (docs/queue/ST2/: one trunk and a copy loaded at each month,
-     * every fifth to 1,300 and every tenth to 2,400; then each month near the best in a JVM of its own, the town read live as
-     * this check reads it): no band holds every assertion. Of 710 to 726, every line holds at 717, 718 and 722 alone; the
-     * others miss section 9's people and unemployment, or the ten-billion copy orders nothing from a million needed. The
-     * smaller years (150 to 530, under 9,000 people) price migrants out on their own rents in nearly every month. The boom
-     * from 795 to 905 is calm, growing and building, and misses "the free copy ordered" in both copies: a copy's largest
-     * order there is about one building per K, and K is 180,000 to 310,000. 718 holds (9,439 people at 723); at today's prices
-     * (-Dcbs.priceLevel=1) it fails main's "...and it builds" alone. A month, not a window: the next batch that moves the
-     * trace may leave it red. ST3 (docs/queue/ST3.md) is the fix that ends the re-picking: a town of this check's own
-     * plan, calm and growing and small enough that K reaches a million.
-     *
-     * ...AT 717 SINCE FC1 (2026-11-02), A DRAW AGAIN. On FC1's model (the builders' scarcity price and the foreign contractor: a new
-     * town's founding queue is long, so its orders carry a premium near the ceiling) the playtest's town is another one, and 718 misses
-     * two lines: the ten-billion copy's largest order needs 332,922, not a million, and section 9's unemployment is 3.58e-2 off against
-     * .033. Scanned (ScaleCheck with the month changed, every assertion read: 600 to 700 every tenth, 710 to 725 nearly every month,
-     * 730 to 820 every fifteenth): every line holds at 716 and 717 alone; the others miss one to six, most often section 9's people
-     * (1.6e-2 to 3.5e-2 against .015), unemployment (3.9e-2 to 6.9e-2) and prices, and "the free copy ordered" in one or both copies.
-     * 717 is the one with room: 9,517 people at 722, the ten-billion copy's largest order 5.6 million needed, people tracked to
-     * 2.0e-3, unemployment to 1.0e-2 (716's is 3.0e-2 against .033). A month, not a window, and ST3 is still the fix.
-     *
-     * ...AND LD2 (2026-11-03) FOUND NO MONTH. On LD2's wage (the refused posts priced against the supply the posts that exist give)
-     * the town stalls, and ST2's scanner, every month from 600 to 1,300 and every tenth to 2,500, found none that holds every line:
-     * the fewest misses three (681; 730, 735, 760, 762, 1,073: both copies' "it builds", and the copy's cash). So this check plays
-     * FC1's town, LD2's wage off (main()), at 717 as above, until ST3.
-     *
-     * ...AT 488 SINCE BA1 + R0 (2026-11-05), WITH THE LEVERS SHUT. On BA1's path (no cap on a business's building orders, the builders'
-     * queue priced) merged with R0 (a 1900 city on Canada's policy dates) and with the builders-first test no longer counting a depot on
-     * site twice (4f66f5fd), 717 prices migrants out and its copies build no home. The town's own rents bind (at 700: the affordability
-     * pull .80, the rent burden .376 against .30), and the pull is 1 in 58 of its first 700 months, in a run of seven only before month 64
-     * and at 197 to 198. Scanned with the levers opened (R0's line, below), every month from 20 to 1,100 and the calm windows after (1,034
-     * to 1,482), by ST2Scan's loaded copies: the fewest misses are one (166 and 167, held by ScaleCheck itself: section 9's CASH, 9.7e-2
-     * against .0125 - the ten-billion-times copy's bank closes 970 of its 1,000 branches in month 1 where the city's one cannot, "never the
-     * first", and their sale is 8% of a treasury of 1,121 a K against 1,027) and two (192: cash and savings the same way). With the levers
-     * SHUT (history's dates, as the playtest plays) the loaded copies are not the live city (531 read no miss there and has 8 here; 562 read
-     * none and has 2), so each candidate they offered was run in ScaleCheck itself: of 51 months run, every line holds at 480, 484, 487,
-     * 488 and 489 alone. 488 is the middle of 487 to 489. A month, not a window; ST3 is still the fix.
-     *
-     * ...AND RT1 (2026-11-05) FOUND NO MONTH. With a farm and a food plant counted in money (Agriculture.unitsOf(),
-     * FoodProcessing.unitsOf()) the spare-capacity rule sells one of the village's two Mixed Farms at month 19, and the town is
-     * another one: 2,400 people at its best, 1,925 at 492 against 7,159 with main's unitsOf(). Scanned in ScaleCheck itself, 307
-     * months (every month 138 to 163 and 320 to 372, the calm windows to 2,346, every tenth to 1,340, every thirtieth to 2,480):
-     * none holds every line; the fewest misses are one, at 336 (section 9's cash, 2.84e-2 against .0125). Left at 488 and red,
-     * passed by name at RT1's gate; ST3 is the fix.
-     *
-     * ...AND RE2 (2026-11-08) FOUND NO MONTH, AND THE MISS IS THE BANK'S. With the landlords' posts (2 DIPLOMA a Studio and a
-     * Low-Rise) the town at 488 passes section 6's fixture and misses section 9's people (1.69e-2), cash (1.57e-2) and prices
-     * (4.78e-3). Not the posts': the landlords' posts (14 against 14,000), fill, payroll, rent billed and floor scale K-fold to
-     * 0.2%. In month 1 the copy's bank closes 975 of its 1,000 branches where the city's one is never the last
-     * (branchesTheFeesCover()), and the plots sold back to the treasury are 24,944 of its 27,551 a K short, the cash line; the
-     * 12,125 jobs they took part the people and the prices after. Scanned in ScaleCheck itself, 29 months from 455 to 525: none
-     * holds every line, the cash misses in all (1.29e-2 at best, 483), the fewest misses two (480: cash and savings; 515: the
-     * growing fixture and cash). Left at 488 and red; ST3 is the fix, with the branches held in both copies as the sectors are.
+     * The picks' history is in git and in docs/queue/ST2-notes.md and docs/queue/RE2-notes.md.
      */
     static final int FREE_FIXTURE_MONTHS = 175;
 
@@ -435,13 +240,13 @@ public class ScaleCheck {
         try { r.run(); } finally { System.setOut(real); }
     }
 
-    /** The plan's property tax, a year (ST3): the one tax open before 1916. */
+    /** The property tax rate, a year, that section 6's town sets in place of the founding's .015 (ST3). */
     static final double OWN_PROPERTY_TAX = .04;
 
-    /** The landlords' family pressure past which the plan builds Low-Rise Apartments (ST3). */
+    /** The landlords' family pressure past which section 6's town builds Low-Rise Apartments (ST3). */
     static final double OWN_PRESSURE = 1.0;
 
-    /** Section 6's town to its month (ST3): founded as the playtest's, then played a month at a time by OWN_TOWN's plan. */
+    /** Section 6's town to its month (ST3): founded as the playtest's, then played a month at a time by keepAhead()'s plan. */
     static void ownTown(Game g, int months) {
         PrintStream was = LongPlaytest.out, real = System.out;
         LongPlaytest.out = quiet;
@@ -469,7 +274,7 @@ public class ScaleCheck {
         }
     }
 
-    /** One month of OWN_TOWN's plan: the ground, then each service whose own need is on and none on site, one at a time. */
+    /** One month of the plan (ST3): the ground, then each service, and the apartments, whose own need is on and none on site. */
     static void keepAhead(Game g) {
         BuildingManager b = g.getBuildingManager();
         long people = g.getPopulationManager().getPopulation();
@@ -489,10 +294,6 @@ public class ScaleCheck {
 
     public static void main(String[] args) throws Exception {
         Locale.setDefault(Locale.CANADA);
-        // LD2's wage off for the whole JVM (WantedPosts.carryKeptOut; LD2's notes 6), as FREE_FIXTURE_MONTHS says: on LD2's
-        // model the playtest's town stalls (3,000 to 5,300 people, its homes 1,658 from month 400, its treasury under nothing
-        // from 750), and of 821 months scanned (600 to 1,300, then every tenth to 2,500) none holds every line - both copies'
-        // "it builds" fail in every month past 830. ST3 gives this check a town of its own plan and turns LD2 back on here.
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
         Path root = TempDirs.create("scalecheck");
@@ -661,8 +462,8 @@ public class ScaleCheck {
         same("...and the same people out of work", backPeople.getUnemployed(), people.getUnemployed());
 
         /* ============== 6. the sectors free, at 5 and 10 billion ============== */
-        out.println("\n--- a growing city to copy with its sectors free: the playtest's, at month " + FREE_FIXTURE_MONTHS
-                + " and its player's look ---");
+        out.println("\n--- a growing city to copy with its sectors free: this check's own town, at month " + FREE_FIXTURE_MONTHS
+                + " ---");
         GameFiles grown = new GameFiles(root.resolve("grown"), root.resolve("grown-no-legacy"));
         Game city = new Game(grown, LongPlaytest.founding());
         // R0b call 7: the causes of 1900 held off, before a month, in this city and in every copy loaded from its save (free(), tracks()).
@@ -671,21 +472,16 @@ public class ScaleCheck {
         // K = 1 and K = 1,000 copies parted by 3.17e-2 in their people (0.015 allowed), 5.35e-3 in their prices (0.004) and 6.5e-2 in
         // their unemployment (0.033) by month 6.
         city.holdCausesOfDeathOff();
-        // THE LEVERS ARE SHUT AGAIN HERE (BA1, 2026-11-05; R0 opened them): R0 found the playtest's town founded in 1900, with its income taxes,
-        // wage floor and the rest shut for 16 to 20 years, not growing at month 722 on main's path (4,500 people in 6,042 household places, no home built
-        // in the six months read). On BA1's path with the levers opened no month from 20 to 2,400 holds every line (the fewest misses one, at 166 and
-        // 167: the copy's cash, which the bank's closed branches take 8% of in a treasury so small - see FREE_FIXTURE_MONTHS), and with them shut the
-        // town grows, is calm and builds at 487 to 489, where this section is read. The fixture's premise, a GROWING city to copy, is the same
-        // and is still asserted below ("the city is growing", "ground free for a home", "its own rents price no migrant out").
+        // THE LEVERS STAY SHUT (BA1, 2026-11-05): the policy levers keep history's dates (shut until 1916-1920) as the playtest plays, and the
+        // plan's town grows with them shut, its treasury carried by the property tax (FREE_FIXTURE_MONTHS). The premise, a GROWING city to copy,
+        // is still asserted below ("the city is growing", "ground free for a home", "its own rents price no migrant out").
         // WN3: the city, and every copy read against it below (free(), tracks()), play on the goods' literals, as the game did before the
         // world market: a copy K times over is read against its city to a percent, and on the world's band it cannot track it - the
         // band is struck from a city's own exports and imports against the world's (a big seller depresses its own floor), so a copy
-        // of a million times the exports trades at another band than the town it copies, by design. On the literals the premise,
-        // that a copy is its city K times over, holds as it did (FREE_FIXTURE_MONTHS, 807); on the world's band the town stalls at
-        // 3,000 to 3,800 people from month 300 on and its own rents price migrants out in every month scanned from 420 to 900.
+        // of a million times the exports trades at another band than the town it copies, by design.
         city.playOnLiterals();
         // XR1 (2026-10-21): this check measures counts, sums and copies at size, not the currency. Under THE FLOAT the
-        // playtest's city is in spiral by month 600 and its money reads 1e18 and more (main's 1e11), past the history's
+        // playtest's city was in spiral by month 600 and its money read 1e18 and more (main's 1e11), past the history's
         // cents (a long: 9.2e16), so the history and the audit cannot be held "to the cent"; the rate is held at the
         // founding's from the first month.
         city.getForeignAccounts().pinRate(city.getForeignAccounts().getRate());
@@ -696,7 +492,7 @@ public class ScaleCheck {
         assertTrue("fixture: the city is growing - more people than a year before",
                 popGrown > city.getHistorySave().getPopulation().get(city.getHistorySave().months() - 13));
         BuildingsTemplate home = city.getBuildingManager().getTemplateByName("House");
-        out.printf("      %,.0f sq ft free after its player's look%n", city.getLandManager().getAvailableSqFt());
+        out.printf("      %,.0f sq ft free at that month%n", city.getLandManager().getAvailableSqFt());
         assertTrue("fixture: ...with ground free for a home", home != null
                 && city.getLandManager().getAvailableSqFt() >= home.getLandSqFt());
         // ...and its own next FREE_MONTHS, which the copies are read against (0.7.55).
@@ -976,9 +772,12 @@ public class ScaleCheck {
      * the scaler copies a city: so both copies hold every sector
      * (BusinessInvestment.holdSector(), which holds a sector's orders and the
      * whole buildings it retires), as sections 2 to 5 do. What is under way at
-     * the load is built in both, and the bank's branches (planBank(), apart
-     * from the sectors) stay free. The TRACK_ dials are FW9's, measured with
-     * the sectors free, and stay.
+     * the load is built in both. The bank's branches are held in both copies as
+     * the sectors are (BusinessInvestment.holdBranches(), ST3; planBank() and
+     * the bank's retirement respect it): RE2 found the 1,000-times copy's bank
+     * closing 975 of its 1,000 branches in month 1, where the city's one never
+     * closes. The TRACK_ dials are FW9's, measured with the sectors free, and
+     * stay.
      *
      * AND THE SITES EMPTY AT THE LOAD (BA1, 2026-11-04). BA1 took the caps off
      * a sector's construction orders, so the grown city is saved with much on
@@ -1171,7 +970,7 @@ public class ScaleCheck {
     static final double AFFORDABILITY_WITHIN = .01;
 
     /**
-     * THE CITY THE COPIES ARE READ AGAINST (0.7.55): the playtest's town at
+     * THE CITY THE COPIES ARE READ AGAINST (0.7.55): the town at
      * FREE_FIXTURE_MONTHS, played its own FREE_MONTHS after it was saved -
      * its ground as its first month struck it, its affordability pull each
      * month, the homes it built and its people.
