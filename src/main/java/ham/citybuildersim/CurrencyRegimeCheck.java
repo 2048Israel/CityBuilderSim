@@ -333,7 +333,29 @@ public class CurrencyRegimeCheck {
 
     /** Plays this many months of a town, narration sent nowhere. */
     static void play(Game g, int months) {
-        for (int m = 0; m < months; m++) quietly(() -> g.simulateMonths(1));
+        for (int m = 0; m < months; m++) {
+            if (bandHeld) placeInBand(g);
+            quietly(() -> g.simulateMonths(1));
+        }
+    }
+
+    /**
+     * GW1: whether play() puts the town's smoothed inflation on the target before each month (placeInBand()). Set by pegTown(climbing) once the town is pegged and
+     * cleared by section 3 when its twin is found; the credibility fixture is the only user.
+     */
+    static boolean bandHeld;
+
+    /**
+     * ...the gain branch placed directly: the smoothed inflation, which Expectations.takeMonth() then moves a twelfth of the way to the month's yoy (ADAPT_MONTHS), so
+     * the month's miss is a twelfth of the town's own and inside TOLERANCE while the index reads within 12 points of the target. On GW1's path the peg town is a young
+     * town in a supply transient that does not stay in the band for any run of months: the index read -9% at month 41, -10% at 44, +10% at 108, and the smoothed
+     * inflation (1% either side of the 2% target is the band) passed through it only at months 40, 108-110, 128-132, 208 and 262-266 of 296 played.
+     */
+    static void placeInBand(Game g) {
+        Expectations e = g.getExpectations();
+        double[] saved = e.toSaveArray();
+        saved[1] = g.getDebtManager().getInflationTarget();
+        e.restore(saved);
     }
 
     public static void main(String[] args) throws Exception {
@@ -636,15 +658,29 @@ public class CurrencyRegimeCheck {
         return pegTown(label, climbing, depots, false);
     }
 
+    /** The month the climbing town was pegged and the smoothed inflation it read then (GW1: the log's figures). */
+    static int pegMonth;
+    static double pegSmoothed;
+
     /** ...with the causes of 1900 held off from the first month where asked (R0b call 7: see savedMidPeg()). */
     static Game pegTown(String label, boolean climbing, int depots, boolean causesHeldOff) {
         Game g = town(label, steady(), depots, causesHeldOff);
         play(g, 36);
         if (climbing) {
+            bandHeld = false;
             double target = g.getDebtManager().getInflationTarget();
-            for (int past = 0; past < CLIMB_LOOK_MONTHS && Math.abs(g.getExpectations().getSmoothedInflation() - target) > Expectations.TOLERANCE; past++) {
+            // GW1: in the band means a price rate READ and the smoothed miss inside TOLERANCE. Until the basket gives a rate the smoothed inflation is the target
+            // itself, so the wait was vacuous at month 36 and the town was pegged before its first readings: on GW1's path they fell (the index read -9% at month 41,
+            // the smoothed inflation -4.8% by month 56), the credibility fell with them from 0.83 to 0.33, and none of 400 seeds met section 3's twin.
+            for (int past = 0; past < CLIMB_LOOK_MONTHS && !(g.getPriceIndex().hasRate()
+                    && Math.abs(g.getExpectations().getSmoothedInflation() - target) <= Expectations.TOLERANCE); past++) {
                 play(g, 1);
             }
+            pegMonth = g.getMonth();
+            pegSmoothed = g.getExpectations().getSmoothedInflation();
+            // ...and it does not stay there: pegged at month 40 (smoothed 1.15%), the credibility had fallen to 0.688 by the break two months after the revaluation (month 50),
+            // the twin that held read 0.6697 against 0.6880 before, and the gain branch was not the month's. The band is held from here on (placeInBand()).
+            bandHeld = true;
         }
         ForeignAccounts fx = g.getForeignAccounts();
         double bill = PEG_VAULT_MONTHS * fx.monthlyImports();
@@ -855,6 +891,9 @@ public class CurrencyRegimeCheck {
                 k = months;
             }
         }
+        bandHeld = false;
+        out.printf("   credibility fixture: pegged at month %d (smoothed inflation %.4f, target band +-%.2f), seed %d, break %d months after the revaluation%n",
+                pegMonth, pegSmoothed, Expectations.TOLERANCE, creditSeed, k);
         assertTrue("fixture: the doubt city's peg broke within " + k + " months of the revaluation", a.getForeignAccounts().brokeThisMonth());
         if (a.getForeignAccounts().brokeThisMonth()) {
             double afterA = a.getExpectations().getCredibility();

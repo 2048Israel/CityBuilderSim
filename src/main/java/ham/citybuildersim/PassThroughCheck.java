@@ -361,6 +361,14 @@ public class PassThroughCheck {
         out.println("\n--- 3. a step in the D$ reaches the goods at PASS_THROUGH a month ---");
 
         Game steady = load(city), weak = load(city);
+        // GW1: no sector orders a building in either twin for the 36 months. The twins are to part by the pinned D$ and nothing else (month(): "nothing built or
+        // decided by anyone"), but the staffing gate counts the workers a building's own posts would draw (Sector.GATE_DRAW_MONTHS), so the businesses order on
+        // the month's costs and the twins' orders part: the twins' price index parted by 20.3% of the step at 12 months, 63.5% at 24 and 7.0% at 36, the groceries
+        // component by 73.7% of it at 12 months where the goods' D$ had reached 28.7% - a shelf that moved with a building one twin ordered and the other did not.
+        // Held, the index parts by 8.5%, 12.2% and 28.4% of the step at 12, 24 and 36 months and the groceries component by 8.9% at 12 (the goods' D$ 28.7%).
+        for (Game twin : new Game[] {steady, weak}) {
+            for (Sector sector : twin.getSectors().all()) twin.getBusinessInvestment().holdSector(sector.key());
+        }
         EconomyManager steadyEm = steady.getEconomyManager(), weakEm = weak.getEconomyManager();
         assertTrue("fixture: the twins are one city before the pin: one month, one struck rate, one price index, to the bit",
                 steady.getMonth() == weak.getMonth() && Double.compare(steadyEm.getStruckRate(), weakEm.getStruckRate()) == 0
