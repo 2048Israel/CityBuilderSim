@@ -765,20 +765,20 @@ public class DebtManager {
     private final boolean[] offered = newOffered();
 
     private static double[] newMoneyUsd() {
-        double[] u = new double[ForeignAccounts.MONEYS];
+        double[] u = new double[WorldMoneys.EIGHT.size()];
         java.util.Arrays.fill(u, Double.NaN);
         u[0] = 1;
         return u;
     }
 
     private static double[] newMoneyRates() {
-        double[] r = new double[ForeignAccounts.MONEYS];
+        double[] r = new double[WorldMoneys.EIGHT.size()];
         java.util.Arrays.fill(r, WORLD_BASE_RATE);
         return r;
     }
 
     private static boolean[] newOffered() {
-        boolean[] o = new boolean[ForeignAccounts.MONEYS];
+        boolean[] o = new boolean[WorldMoneys.EIGHT.size()];
         o[0] = true;
         return o;
     }
@@ -793,10 +793,11 @@ public class DebtManager {
      * money other than the US$, a finite rate above zero is taken and the money is offered; a NaN or a rate not above zero means no rate this
      * month - it is not offered, and the last good rate is kept (paper already on the books is still valued at it). Null changes nothing.
      * NOT told to the pieces: they learn their new rate at the month's close (revalueForeign()), so the cross's move is a booked exchange gain.
+     * The city's paper is written in the eight only, never gold: a longer array (the vault's nine) reads its first eight.
      */
     public void setMoneyUsd(double[] usdPerUnit) {
         if (usdPerUnit == null) return;
-        for (int k = 1; k < ForeignAccounts.MONEYS && k < usdPerUnit.length; k++) {
+        for (int k = 1; k < WorldMoneys.EIGHT.size() && k < usdPerUnit.length; k++) {
             double now = usdPerUnit[k];
             if (now > 0 && Double.isFinite(now)) {
                 moneyUsd[k] = now;
@@ -810,7 +811,7 @@ public class DebtManager {
     /** Hands each of the eight's world rate - its central bank's policy rate - as a fraction a year, from index 1 (the US$'s stays on setWorldRate()); a rate that is no number reads WORLD_BASE_RATE. Null changes nothing. */
     public void setMoneyRates(double[] annual) {
         if (annual == null) return;
-        for (int k = 1; k < ForeignAccounts.MONEYS && k < annual.length; k++) {
+        for (int k = 1; k < WorldMoneys.EIGHT.size() && k < annual.length; k++) {
             moneyRate[k] = Double.isFinite(annual[k]) ? annual[k] : WORLD_BASE_RATE;
         }
     }

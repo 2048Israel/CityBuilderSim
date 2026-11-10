@@ -3814,8 +3814,11 @@ public class SaveFileCheck {
                     if (m == 9) {
                         city.buyForeignCurrency(40_000, "EUR");
                         city.buyForeignCurrency(25_000, "GBP");
+                        // GD2: ...and gold, the ninth, bought by name and given a share of the chosen mix, so slots 149-151 carry something too. The euros and the pounds took the cash the town had, so its price is added first.
+                        city.setCashForTest(city.getCash() + 15_000);
+                        city.buyForeignCurrency(15_000, "XAU");
                         city.getForeignAccounts().setReserveMix(ForeignAccounts.Mix.CHOSEN);
-                        city.getForeignAccounts().setChosenShares(new double[] {.5, .3, 0, .2, 0, 0, 0, 0});
+                        city.getForeignAccounts().setChosenShares(new double[] {.4, .25, 0, .2, 0, 0, 0, 0, .15});
                     }
                     city.simulateMonths(1);
                     PartnerTrade seen = city.partnerTradeForTest();
@@ -3872,7 +3875,11 @@ public class SaveFileCheck {
             assertTrue("...and the foreign accounts' array runs to slot 104, the world's (95-104)", savedFx.length >= 105);
             // WN4, the vault in eight (slots 105-141): euros and pounds beside the dollars, the mix, the chosen shares, the eight's rates and the month's cross move.
             ForeignAccounts savedAccounts = city.getForeignAccounts();
-            assertTrue("...and to slot 148, the vault's (105-141), what it earned (142-146, XR4), the hold's support (147, XR5) and the peg's anchor (148, WN4b): " + savedFx.length + " slots", savedFx.length == 149 && savedFx[148] == savedAccounts.getPegAnchor());
+            assertTrue("...and to slot 148, the vault's (105-141), what it earned (142-146, XR4), the hold's support (147, XR5), the peg's anchor (148, WN4b) and gold's balance, price and chosen share (149-151, GD2): " + savedFx.length + " slots", savedFx.length == 152 && savedFx[148] == savedAccounts.getPegAnchor());
+            assertTrue("fixture: the vault holds gold, bought by name, at a price, with a share of the chosen mix, and slots 149-151 are its balance, its price and that share (" + savedFx[149] + " thousand ounces at US$" + savedFx[150] + ", a share of " + savedFx[151] + ")",
+                    savedAccounts.getHolding(ForeignAccounts.GOLD) > 0 && savedAccounts.hasRate(ForeignAccounts.GOLD) && savedAccounts.getChosenShares()[ForeignAccounts.GOLD] > 0
+                            && savedFx[149] == savedAccounts.getHolding(ForeignAccounts.GOLD) && savedFx[150] == savedAccounts.getMoneyUsd(ForeignAccounts.GOLD)
+                            && savedFx[151] == savedAccounts.getChosenShares()[ForeignAccounts.GOLD]);
             assertTrue("fixture: the vault holds euros and pounds beside its dollars on a chosen mix, the eight have moved against each other under it, and the dollars are slot 22",
                     savedAccounts.getHolding(1) > 0 && savedAccounts.getHolding(3) > 0 && savedAccounts.getHolding(0) > 0 && savedAccounts.getReserveMix() == ForeignAccounts.Mix.CHOSEN
                             && savedAccounts.getLastVaultCrossUsd() != 0 && savedFx[22] == savedAccounts.getReservesUsd() && savedFx[105 + 1] == savedAccounts.getHolding(1)
@@ -3934,7 +3941,7 @@ public class SaveFileCheck {
                 vaultBack &= Double.compare(backAccounts.getHolding(k), savedAccounts.getHolding(k)) == 0 && backAccounts.hasRate(k) == savedAccounts.hasRate(k)
                         && Double.compare(backAccounts.getMoneyUsd(k), savedAccounts.getMoneyUsd(k)) == 0;
             }
-            assertTrue("...and the vault in eight as it was: the eight balances and their rates, the mix, the chosen and the trade shares, the month's cross move and its driver, and what it earned (the month's, the lifetime, the driver, the yield)", vaultBack);
+            assertTrue("...and the vault in eight as it was: the eight balances and their rates, gold's balance and price, the mix, the chosen and the trade shares, the month's cross move and its driver, and what it earned (the month's, the lifetime, the driver, the yield)", vaultBack);
             assertEquals("...the trade by partner, the month and the year to date, as it was", gson.toJson(backRecord.toState()), gson.toJson(record.toState()));
             assertEquals("...the finished years in the history", gson.toJson(backRecord.history()), gson.toJson(record.history()));
             PartnerTrade.Snapshot backSnap = loaded.getPartnerTrade();
