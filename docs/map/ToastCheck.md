@@ -1,6 +1,6 @@
 # ToastCheck.java - 388 lines · 16 methods · 7 constants · harnesses
 
-`ham/citybuildersim/ToastCheck.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ToastCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > A toast stays out of the page's way (TS1): while a toast shows, the page's foot takes a bottom padding as
 > tall as the toasts, the scroll's pixel offset is kept as the toast comes and goes, and the last control of a

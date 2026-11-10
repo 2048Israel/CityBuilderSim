@@ -1,6 +1,6 @@
 # GovernmentScreen.java - 2,703 lines · 113 methods · 45 constants · interface
 
-`ham/citybuildersim/ui/GovernmentScreen.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/GovernmentScreen.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > The government tab: where the city's money came from and went, the road
 > from what it EARNED through the budget's SURPLUS to what the cash BANKED,
@@ -25,7 +25,7 @@
 > behind an (i). The rail opens showGovernmentMenu(); open() is every other
 > door in.
 
-**Uses:** [Palette](Palette.md) (211), [Kept](Kept.md) (139), [Icons](Icons.md) (55), [NationalAccounts](NationalAccounts.md) (33), [CityNeeds](CityNeeds.md) (24), [CareType](CareType.md) (16), [EconomyManager](EconomyManager.md) (12), [HistoryScreen](HistoryScreen.md) (8), [HouseholdAccounts](HouseholdAccounts.md) (7), [EducationType](EducationType.md) (6), [TimeChart](TimeChart.md) (5), [HistorySave](HistorySave.md) (4), [BuildScreen](BuildScreen.md) (4), [FinancesScreen](FinancesScreen.md) (3), [ServicesScreen](ServicesScreen.md) (3), [TreasuryJournal](TreasuryJournal.md) (3), [TaxPolicy](TaxPolicy.md) (3), [Sector](Sector.md) (3), [DebtManager](DebtManager.md) (3), [UserInterface](UserInterface.md) (2), [PolicyScreen](PolicyScreen.md) (2), [CentralBank](CentralBank.md) (2), [TreasuryLine](TreasuryLine.md) (2), [TreasuryFund](TreasuryFund.md) (2), [BuildingManager](BuildingManager.md) (2), [SummaryScreen](SummaryScreen.md) (1), [PolicyPreview](PolicyPreview.md) (1), [CityCalendar](CityCalendar.md) (1), [SectorBooks](SectorBooks.md) (1), [Healthcare](Healthcare.md) (1)... and 9 more
+**Uses:** [Palette](Palette.md) (211), [Kept](Kept.md) (139), [Icons](Icons.md) (55), [NationalAccounts](NationalAccounts.md) (33), [Money](Money.md) (30), [CityNeeds](CityNeeds.md) (24), [CareType](CareType.md) (16), [EconomyManager](EconomyManager.md) (12), [HistoryScreen](HistoryScreen.md) (8), [HouseholdAccounts](HouseholdAccounts.md) (7), [EducationType](EducationType.md) (6), [TimeChart](TimeChart.md) (5), [HistorySave](HistorySave.md) (4), [BuildScreen](BuildScreen.md) (4), [FinancesScreen](FinancesScreen.md) (3), [ServicesScreen](ServicesScreen.md) (3), [TreasuryJournal](TreasuryJournal.md) (3), [TaxPolicy](TaxPolicy.md) (3), [Sector](Sector.md) (3), [DebtManager](DebtManager.md) (3), [UserInterface](UserInterface.md) (2), [PolicyScreen](PolicyScreen.md) (2), [CentralBank](CentralBank.md) (2), [TreasuryLine](TreasuryLine.md) (2), [TreasuryFund](TreasuryFund.md) (2), [BuildingManager](BuildingManager.md) (2), [SummaryScreen](SummaryScreen.md) (1), [PolicyPreview](PolicyPreview.md) (1), [CityCalendar](CityCalendar.md) (1), [SectorBooks](SectorBooks.md) (1)... and 10 more
 
 **Used by (3):** [FinancesScreen](FinancesScreen.md), [KeptBench](KeptBench.md), [UserInterface](UserInterface.md)
 

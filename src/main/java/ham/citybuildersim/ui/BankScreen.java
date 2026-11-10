@@ -2338,7 +2338,7 @@ final class BankScreen {
     static String moved(double now, double then, boolean known) {
         if (!known) return "";
         double d = now - then;
-        if (Math.abs(d) < .5) return "";
+        if (Money.nothing(d)) return "";
         return (d > 0 ? "▲ " : "▼ ") + money(Math.abs(d));
     }
 

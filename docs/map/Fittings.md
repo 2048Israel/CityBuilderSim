@@ -1,6 +1,6 @@
 # Fittings.java - 124 lines · 13 methods · 0 constants · model
 
-`ham/citybuildersim/Fittings.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Fittings.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > The fittings on site: pieces of equipment ordered for a standing building and not yet worked, first ordered first worked.
 > 

@@ -1,6 +1,6 @@
 # MainLineCheck.java - 1,743 lines · 56 methods · 4 constants · harnesses
 
-`ham/citybuildersim/MainLineCheck.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MainLineCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > The main line is the railway's run from its gateway to the freight station,
 > the yard nearest the gate arm's end, and it is drawn double where the city

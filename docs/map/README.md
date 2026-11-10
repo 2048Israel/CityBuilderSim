@@ -1,10 +1,10 @@
 # The code map
 
-Generated 2026-11-09 by `ham.citybuildersim.tools.CodeMap` - do not edit; regenerate with `Regenerate maps.bat` (or `Maps`).
+Generated 2026-11-10 by `ham.citybuildersim.tools.CodeMap` - do not edit; regenerate with `Regenerate maps.bat` (or `Maps`).
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 543 files, 599,354 lines, 26,046 methods, 5,698 constants. `GameVersion.VERSION` is "0.9.77", `SAVE_FORMAT` 51.
+**The tree:** 543 files, 599,365 lines, 26,048 methods, 5,699 constants. `GameVersion.VERSION` is "0.9.77", `SAVE_FORMAT` 51.
 
 ## model (250 files)
 
@@ -180,7 +180,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [PopulationManager.java](PopulationManager.md) | 1,263 | 64 | The working population: the workforce by skill band, the city's posts and their wages by job type, and who fills which post (fillByBand()). | 33 |
 | [Ports.java](Ports.md) | 762 | 56 | The city's ports: the berths its sea terminals stand, the share of each kind of cargo they take off the lorries and the railway, and the tonnes tha... | 54 |
 | [PriceIndex.java](PriceIndex.md) | 781 | 37 | What a month costs a household, against what it cost at founding. | 21 |
-| [PriceLevel.java](PriceLevel.md) | 81 | 5 | The price level a city is founded at, 1900's: the US consumer price index of the calendar's first year over its 2025, and the series it is read fro... | 104 |
+| [PriceLevel.java](PriceLevel.md) | 81 | 5 | The price level a city is founded at, 1900's: the US consumer price index of the calendar's first year over its 2025, and the series it is read fro... | 105 |
 | [PrisonerHousehold.java](PrisonerHousehold.md) | 79 | 17 | Adults serving a sentence, as one ledger: the prisoners' ledger. | 5 |
 | [Rankings.java](Rankings.md) | 736 | 39 | The Rankings board as the screen draws it: a measure's table of ranked places, the active city among the real world's 196 nations and 62 city regio... | 6 |
 | [RealDollar.java](RealDollar.md) | 137 | 9 | The real US dollar, constant 2015 dollars, and what the city's money is against it (WN4, D29): the D$ per real US$, the city's real GDP in it, and ... | 6 |
@@ -326,7 +326,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [Levers.java](Levers.md) | 166 | 4 | The pieces a policy lever is drawn with: the dial card (dialCard(), 0.7.36) - the dial on a card with what it does beside it, which every dial on t... | 3 |
 | [MapView.java](MapView.md) | 6,084 | 259 | The city map on screen: one Canvas the land office shows small, 600 x 400, and Expand lays over the window to pan and zoom, drawn from the model's ... | 6 |
 | [MiniMap.java](MiniMap.md) | 471 | 20 | The minimap: a stamp of the city at the foot of the rail, above Menu, on screen from every tab; while the pointer is on it a preview beside it, 288... | 1 |
-| [Money.java](Money.md) | 385 | 30 | Every figure the interface prints as money, in one place. | 23 |
+| [Money.java](Money.md) | 396 | 32 | Every figure the interface prints as money, in one place. | 28 |
 | [Palette.java](Palette.md) | 741 | 27 | Every colour, size and spacing this game is allowed to use, in one place. | 40 |
 | [PartnersPage.java](PartnersPage.md) | 1,173 | 56 | Trade &gt; Partners (WN6; docs/studies/spec-nations.md 8, board 2) and a nation's page behind it: who the city trades with, nation by nation; for a... | 1 |
 | [PeopleScreen.java](PeopleScreen.md) | 4,732 | 167 | The People tab and its second page, Household money. | 4 |

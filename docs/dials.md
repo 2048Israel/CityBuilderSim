@@ -1,8 +1,8 @@
 # The dials
 
-Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-11-10 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**5,698 constants in 543 files.**
+**5,699 constants in 543 files.**
 
 ## model (2714 constants)
 
@@ -1503,7 +1503,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 36 | `FundView.STALE_MONTHS` | `3` | A share's quote that is its last trade (Exchange.quoteIsLastTrade(): no bid or ask rests that sets or bounds it, EM2), older than this many months, is called stale on every page that shows it (the ... |
 | 39 | `FundView.MIN_RECORDED_PRICE` | `.01 * PriceLevel.FACTOR` | The least a price per founding share, as the history records it to four places, can be and still carry three significant figures: a move off less is not shown (the spec's B6 - a consolidated share ... |
-| 42 | `FundView.FOLD_UNDER` | `1` | A holding worth less than this, money, is folded into "and N more" on the Portfolio page: a thousand dollars. |
+| 42 | `FundView.FOLD_UNDER` | `1 * PriceLevel.FACTOR` | A holding worth less than this, money, is folded into "and N more" on the Portfolio page: a thousand of today's (2025's) dollars, priced at the founding's level (times PriceLevel.FACTOR: EP2). |
 | 45 | `FundView.MOVE_MONTHS` | `12` | The months a hit's sparkline and its move cover: a year. |
 | 48 | `FundView.SHARE` | `"share", RESCUE = "rescue", BOND = "bond", PREFERRED = "preferred", WARRANTS = "warrants"` | What a holding is. |
 | 51 | `FundView.CLOSED` | `"closed"` | A search hit that is a lot the fund closed on a bond no longer on any book: found only when named (the spec's D1). |
@@ -4042,7 +4042,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 77 | `WoodProducts.PAPER_MILL` | `137` | The Paper Mill's (0.7.140): 5,500 t of paper a month from 5,775 t of pulp and 850,000 litres of fuel oil. |
 | 80 | `WoodProducts.PELLET_MILL` | `138` | The Wood Pellet Mill's (0.7.140): 6,000 t of pellets a month from 13,200 m3 of residues. |
 
-## interface (1181 constants)
+## interface (1182 constants)
 
 ### BankScreen.java ([map](map/BankScreen.md))
 
@@ -4723,6 +4723,7 @@ Generated 2026-11-09 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 49 | `Money.formatter` | `withoutNegativeZero(NumberFormat.getNumberInstance(Locale.CANADA))` | Thousands separators, Canadian style; every figure below goes through it. |
+| 223 | `Money.NOTHING` | `.5 * PriceLevel.FACTOR` | A money figure under this either way, thousands, is too small for a line or a word of its own on a screen: half a thousand of today's (2025's) dollars, priced at the founding's level (times PriceLe... |
 
 ### Palette.java ([map](map/Palette.md))
 

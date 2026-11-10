@@ -1,6 +1,6 @@
 # ReplayCamera.java - 390 lines · 46 methods · 5 constants · interface
 
-`ham/citybuildersim/ui/ReplayCamera.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/ReplayCamera.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > The replay's camera (TR1, 2026-10-31): the two marked views and the glide between them, the fly out to the whole Earth and back,
 > the load of a move before it runs (CM1), and the smooth hand with its drift - the state of every camera move, frame by frame. The

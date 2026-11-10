@@ -1,6 +1,6 @@
 # BuildersShort.java - 145 lines · 10 methods · 7 constants · model
 
-`ham/citybuildersim/BuildersShort.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildersShort.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > The builders short (FC1): what an order pays a point of work as the builders run out of points for the sites - a
 > premium that rises with the months of work queued at the pace the builders leave the sites - and when a foreign

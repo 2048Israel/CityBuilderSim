@@ -1,6 +1,6 @@
 # ReplayCity.java - 144 lines · 15 methods · 1 constants · model
 
-`ham/citybuildersim/ReplayCity.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ReplayCity.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > The throwaway copy of a recorded city that replay shows (TR1, 2026-10-31): a Game of its own, in a scratch folder, that loads
 > any recorded month and is marked a replay copy (Game.markReplayCopy) so that it never records, and the recording and the

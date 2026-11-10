@@ -2390,14 +2390,14 @@ public class UserInterface extends Application {
                 + " rates.", signedTight(income, false)));
         java.util.List<String> adds = new java.util.ArrayList<>();
         for (TreasuryJournal.Entry e : game.getEarnedToBudget()) {
-            if (Math.abs(e.amount()) >= .5) adds.add(e.label().toLowerCase() + " " + signedTight(e.amount(), false));
+            if (Money.something(e.amount())) adds.add(e.label().toLowerCase() + " " + signedTight(e.amount(), false));
         }
         double dials = game.getEarnedResidual();
         why.append(String.format("%n%nSURPLUS %s: the budget. %s.%s",
                 signedTight(game.getEconomyManager().getNationalAccounts().getBalance(), false),
                 adds.isEmpty() ? "It has nothing EARNED leaves out this month"
                         : "It adds what EARNED leaves out - " + String.join(", ", adds),
-                Math.abs(dials) >= .5 ? String.format(" A dial moved since the last press moves EARNED and not"
+                Money.something(dials) ? String.format(" A dial moved since the last press moves EARNED and not"
                         + " the budget: %s.", signedTight(dials, false)) : ""));
         if (!Double.isNaN(moved)) {
             why.append(String.format("%n%nBANKED %s: what the balance actually did this month - your land,"
@@ -2459,7 +2459,7 @@ public class UserInterface extends Application {
 
         Label month = Kept.label(signedTight(income, false) + " earned a month");
         month.setStyle(Fonts.sansSemiBold() + " -fx-font-size: 11.5px; -fx-text-fill: "
-                + (Math.abs(income) < .5 ? Palette.TEXT_MUTED : income > 0 ? Palette.GOOD : Palette.BAD) + ";");
+                + (Money.nothing(income) ? Palette.TEXT_MUTED : income > 0 ? Palette.GOOD : Palette.BAD) + ";");
         month.setMinWidth(Region.USE_PREF_SIZE);
 
         // Packed close: the 28 px figure's own line height carries the air, and the

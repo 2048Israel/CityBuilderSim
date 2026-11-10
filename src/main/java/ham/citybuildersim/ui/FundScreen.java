@@ -2312,7 +2312,7 @@ final class FundScreen {
                 g.surplusThisYearSoFar() < 0 ? Palette.WARN : null));
         // CD7: the surplus above leaves out the D$'s move on the foreign debt (it moved no cash), so the budget's own surplus can differ from it by that.
         double exchange = g.debtExchangeThisYearSoFar();
-        if (Math.abs(exchange) >= .5) {
+        if (Money.something(exchange)) {
             card.getChildren().add(Kept.scope("exchange", () -> muted("the D$'s move on the foreign debt, " + signed(g, exchange) + ", left out: it moved no cash")));
         }
         card.getChildren().add(cardLine("...kept for the fund from the rollover", d(g, g.fundReservation()), null));

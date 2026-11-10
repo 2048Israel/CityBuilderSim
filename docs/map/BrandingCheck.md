@@ -1,6 +1,6 @@
 # BrandingCheck.java - 219 lines · 5 methods · 0 constants · harnesses
 
-`ham/citybuildersim/BrandingCheck.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BrandingCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > The game's icon is in the jar at every size it is given, the exe's .ico carries the sizes it
 > should, the store's title art is drawn to the start screen's proportions (BR1), and Steam's art

@@ -1,6 +1,6 @@
 # FundScreen.java - 2,580 lines · 99 methods · 24 constants · interface
 
-`ham/citybuildersim/ui/FundScreen.java` - generated 2026-11-09 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/FundScreen.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
 > The city's fund on the Finances tab, as a brokerage (0.7.39): its Portfolio - what it is worth, what it has made and on what, every holding with its average cost and P&L - a Search of the shares and bonds it can buy, a page a security with the order ticket beside the fund's position in it, its Activity, and its Rules & cash.
 > 
@@ -31,7 +31,7 @@
 > and an arrow; nothing else here is: a price, its move, a yield and every
 > chart line are in ink or their area's colour.
 
-**Uses:** [Palette](Palette.md) (234), [Kept](Kept.md) (208), [FundView](FundView.md) (100), [Game](Game.md) (61), [FundLedger](FundLedger.md) (61), [TreasuryFund](TreasuryFund.md) (58), [Icons](Icons.md) (19), [Equity](Equity.md) (19), [TimeChart](TimeChart.md) (19), [ChartModel](ChartModel.md) (16), [OrderBook](OrderBook.md) (12), [FinancesScreen](FinancesScreen.md) (9), [CityCalendar](CityCalendar.md) (8), [CorporateBond](CorporateBond.md) (7), [HistoryScreen](HistoryScreen.md) (7), [Pieces](Pieces.md) (7), [HistorySave](HistorySave.md) (5), [Bank](Bank.md) (4), [PolicyPreview](PolicyPreview.md) (4), [UserInterface](UserInterface.md) (2), [SectorScreen](SectorScreen.md) (2), [DecisionLog](DecisionLog.md) (2), [Levers](Levers.md) (2), [Exchange](Exchange.md) (1), [DebtManager](DebtManager.md) (1), [BondMarket](BondMarket.md) (1), [BankScreen](BankScreen.md) (1), [BuildScreen](BuildScreen.md) (1), [Ladder](Ladder.md) (1)
+**Uses:** [Palette](Palette.md) (234), [Kept](Kept.md) (208), [FundView](FundView.md) (100), [Game](Game.md) (61), [FundLedger](FundLedger.md) (61), [TreasuryFund](TreasuryFund.md) (58), [Icons](Icons.md) (19), [Equity](Equity.md) (19), [TimeChart](TimeChart.md) (19), [ChartModel](ChartModel.md) (16), [OrderBook](OrderBook.md) (12), [FinancesScreen](FinancesScreen.md) (9), [CityCalendar](CityCalendar.md) (8), [CorporateBond](CorporateBond.md) (7), [HistoryScreen](HistoryScreen.md) (7), [Pieces](Pieces.md) (7), [HistorySave](HistorySave.md) (5), [Bank](Bank.md) (4), [PolicyPreview](PolicyPreview.md) (4), [UserInterface](UserInterface.md) (2), [SectorScreen](SectorScreen.md) (2), [DecisionLog](DecisionLog.md) (2), [Levers](Levers.md) (2), [Exchange](Exchange.md) (1), [DebtManager](DebtManager.md) (1), [BondMarket](BondMarket.md) (1), [BankScreen](BankScreen.md) (1), [BuildScreen](BuildScreen.md) (1), [Money](Money.md) (1), [Ladder](Ladder.md) (1)
 
 **Used by (3):** [FinancesScreen](FinancesScreen.md), [KeptBench](KeptBench.md), [SectorScreen](SectorScreen.md)
 
