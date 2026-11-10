@@ -385,6 +385,15 @@ public class HealthCheck {
          */
         ham.citybuildersim.sectors.Retail shops = well.getSectors().retail();
         /*
+         * THE SHELF IS STOCKED, so the shops' hands are what binds (WG2, {next}). The sick rate cuts what the shops CAN hand
+         * over, which shows only where the shelf holds more than that. The played city used to give it for free: at month 36 it
+         * had 2,094 people and a shelf over its shops' reach. Under WG2's brake on arrivals (Migration.arrivalBrake()) the
+         * same city has 1,655 and a shelf its shops could empty, and the premise below failed. So the fixture causes it: every
+         * pantry is put at SHELF_STOCK times what the city left there, before the full-health sale and before it is saved.
+         */
+        final double SHELF_STOCK = 10;
+        for (Good sg : ham.citybuildersim.sectors.Retail.SHELF) shops.setPantry(sg, shops.getPantry(sg) * SHELF_STOCK);
+        /*
          * THIRTEEN PANTRIES TO PUT BACK, NOT ONE. The shelf was a single good
          * until 2026-09-15 and this saved it with one getter. It is thirteen
          * kilogram figures now, and restoring only one would let the second
@@ -792,9 +801,23 @@ public class HealthCheck {
         caring.monthlyNet(4000, 2000, 9000, 3000, homes, .55, 1);
         System.out.printf("  a city of 4,000 wants to be %,.0f people, or %,.0f with senior care%n",
                 plain.getLastTarget(), caring.getLastTarget());
-        check("senior care raises the target by exactly the pull",
-                caring.getLastTarget(),
-                plain.getLastTarget() * Migration.seniorCarePull(1), 1e-6);
+        /*
+         * RESTATED, WG2 (spec-wages section 3.4, Jerus's call C2(a), 2026-11-02: "Cut the excess, honest label (Recommended)"). This asserted
+         * that senior care multiplies the whole target by the pull, which is the rule Jerus changed: the pulls lift the homes' draw only, so
+         * a city with full senior care aims at no more workers a post (his cities sat at a fifth out of work on it). Senior care raises the
+         * target by the homes' half of the draw times the pull, and by nothing on the jobs' half. Both cities have neither dear rent nor
+         * crime, so the rent and crime pulls read 1 in each and the difference is the senior care's alone.
+         */
+        assertTrue("fixture: both cities have the rent and crime pulls at 1, so only senior care differs between them",
+                plain.getLastAffordabilityPull() == 1 && caring.getLastAffordabilityPull() == 1
+                        && plain.getLastCrimePull() == 1 && caring.getLastCrimePull() == 1
+                        && plain.getLastSeniorPull() == 1 && caring.getLastSeniorPull() == Migration.seniorCarePull(1));
+        check("senior care raises the target by the homes' draw x the pull: the homes' weight x their capacity x SENIOR_CARE_PULL",
+                caring.getLastTarget() - plain.getLastTarget(),
+                Migration.HOME_WEIGHT * plain.getLastHomeCapacity() * Migration.SENIOR_CARE_PULL, 1e-9);
+        check("...and what is left of the caring target, the jobs' half, is the plain city's jobs' draw: senior care adds nothing to it",
+                caring.getLastTarget() - Migration.HOME_WEIGHT * caring.getLastHomeCapacity() * Migration.seniorCarePull(1),
+                plain.getLastJobDraw(), 1e-9);
 
         /* ================= 10. and somebody pays for all of it ================= */
         System.out.println("\n--- the city's books ---");

@@ -1,4 +1,4 @@
-# HealthCheck.java - 1,769 lines · 6 methods · 0 constants · harnesses
+# HealthCheck.java - 1,792 lines · 6 methods · 0 constants · harnesses
 
 `ham/citybuildersim/HealthCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
@@ -36,7 +36,7 @@
 > the households' statement, and fees 0 with a premium serves the same people
 > as fees 1x without one; (16) both dials survive a save and a reform.
 
-**Uses:** [Healthcare](Healthcare.md) (97), [CareType](CareType.md) (94), [Health](Health.md) (47), [AgeBand](AgeBand.md) (41), [TaxPolicy](TaxPolicy.md) (24), [Game](Game.md) (22), [PopulationCohorts](PopulationCohorts.md) (16), [PriceLevel](PriceLevel.md) (11), [BuildingManager](BuildingManager.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (7), [Migration](Migration.md) (7), [Good](Good.md) (5), [JobType](JobType.md) (5), [Household](Household.md) (5), [TimeSkipReport](TimeSkipReport.md) (4), [HouseholdBalance](HouseholdBalance.md) (4), [EconomyManager](EconomyManager.md) (3), [GameFiles](GameFiles.md) (2), [Retail](Retail.md) (2), [Founding](Founding.md) (2), [FamilyModel](FamilyModel.md) (2), [PayTier](PayTier.md) (2), [NationalAccounts](NationalAccounts.md) (2), [TempDirs](TempDirs.md) (1), [PopulationManager](PopulationManager.md) (1), [LandManager](LandManager.md) (1), [FamilyStructure](FamilyStructure.md) (1), [Sectors](Sectors.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1), [Freight](Freight.md) (1)... and 1 more
+**Uses:** [Healthcare](Healthcare.md) (97), [CareType](CareType.md) (94), [Health](Health.md) (47), [AgeBand](AgeBand.md) (41), [TaxPolicy](TaxPolicy.md) (24), [Game](Game.md) (22), [PopulationCohorts](PopulationCohorts.md) (16), [Migration](Migration.md) (11), [PriceLevel](PriceLevel.md) (11), [BuildingManager](BuildingManager.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (7), [Good](Good.md) (6), [JobType](JobType.md) (5), [Household](Household.md) (5), [TimeSkipReport](TimeSkipReport.md) (4), [HouseholdBalance](HouseholdBalance.md) (4), [EconomyManager](EconomyManager.md) (3), [Retail](Retail.md) (3), [GameFiles](GameFiles.md) (2), [Founding](Founding.md) (2), [FamilyModel](FamilyModel.md) (2), [PayTier](PayTier.md) (2), [NationalAccounts](NationalAccounts.md) (2), [TempDirs](TempDirs.md) (1), [PopulationManager](PopulationManager.md) (1), [LandManager](LandManager.md) (1), [FamilyStructure](FamilyStructure.md) (1), [Sectors](Sectors.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1), [Freight](Freight.md) (1)... and 1 more
 
 ## Sections
 
@@ -47,17 +47,17 @@
 | 215 | · 3. outbreaks actually happen |
 | 299 | · 4. the same month rolls the same way |
 | 339 | · 5. THE POINT: output falls, nobody does |
-| 552 | · 6. an unstaffed hospital treats nobody |
-| 592 | · 7. what care does to mortality |
-| 707 | · 8. death care |
-| 778 | · 9. senior care draws people in |
-| 799 | · 10. and somebody pays for all of it |
-| 943 | · 11. a skip cannot hide an epidemic |
-| 980 | · 12. the fee has a dial, and the funerals do not |
-| 1090 | · 13. who can afford the clinic |
-| 1530 | · 14. the unchanged case, at zero tolerance |
-| 1569 | · 15. the premium |
-| 1658 | · 16. both dials survive a save, and a reform |
+| 561 | · 6. an unstaffed hospital treats nobody |
+| 601 | · 7. what care does to mortality |
+| 716 | · 8. death care |
+| 787 | · 9. senior care draws people in |
+| 822 | · 10. and somebody pays for all of it |
+| 966 | · 11. a skip cannot hide an epidemic |
+| 1003 | · 12. the fee has a dial, and the funerals do not |
+| 1113 | · 13. who can afford the clinic |
+| 1553 | · 14. the unchanged case, at zero tolerance |
+| 1592 | · 15. the premium |
+| 1681 | · 16. both dials survive a save, and a reform |
 
 ## Fields (state)
 
@@ -69,11 +69,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 41 | 1729 | **type** `public class HealthCheck` | Sickness: what it moves, and - much more importantly - what it does not. |
+| 41 | 1752 | **type** `public class HealthCheck` | Sickness: what it moves, and - much more importantly - what it does not. |
 | 45 | 6 | `static void check(String label, double actual, double expected, double tol)` |  |
 | 52 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 57 | 1664 | `public static void main(String[] args) throws Exception` |  |
-| 1723 | 9 | `static void stock(Game g)` | A city with enough in it that the sectors have something to lose. |
-| 1750 | 11 | `static void trucksKeepUp(Game town)` | THE TRUCKS KEPT AHEAD OF THE PLANT, SO THE FEE IS THE ONLY DIFFERENCE BETWEEN THE TWINS (FR2, 2026-10-18). |
-| 1762 | 7 | `static void cleanUp(Path root)` |  |
+| 57 | 1687 | `public static void main(String[] args) throws Exception` |  |
+| 1746 | 9 | `static void stock(Game g)` | A city with enough in it that the sectors have something to lose. |
+| 1773 | 11 | `static void trucksKeepUp(Game town)` | THE TRUCKS KEPT AHEAD OF THE PLANT, SO THE FEE IS THE ONLY DIFFERENCE BETWEEN THE TWINS (FR2, 2026-10-18). |
+| 1785 | 7 | `static void cleanUp(Path root)` |  |
 

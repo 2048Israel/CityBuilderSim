@@ -34,6 +34,12 @@ package ham.citybuildersim;
  * just arrive into a shortage. Which is what actually happens, and what the
  * flatshare model in FamilyModel was built to absorb.
  *
+ * Since WG2 the pulls lift the HOMES' draw only. Senior care, cheap rents and
+ * a safe city change how many people the city's homes draw; the jobs' draw is
+ * cut by a dear or an unsafe city and never raised by anything, and arrivals
+ * slow as the city's out-of-work share passes HEALTHY_OUT_OF_WORK and stop at
+ * ARRIVALS_STOP_OUT_OF_WORK (see MIGRATION AIMS AT A HEALTHY SLACK).
+ *
  * Housing gets a say twice, and the second is the interesting one: it also
  * DAMPS. A crowded city keeps attracting people, more slowly, until there is
  * physically nowhere left to put them - and that point is asked of FamilyModel
@@ -46,6 +52,12 @@ package ham.citybuildersim;
  * a solid year or has stopped paying anything at all - which means a bust takes
  * a year to start and then years to play out, and a bad month is just a bad
  * month. That asymmetry is the point of the twelve-month gate.
+ *
+ * One push has joined it since WG2, and it is the unemployment the paragraph
+ * above says is no exodus: the jobless past HEALTHY_OUT_OF_WORK of the labour
+ * force leave too, at SURPLUS_DEPARTURE_RATE a month and whatever their wage,
+ * a drift and no evacuation: a fiftieth of the excess over the healthy rate a
+ * month, while arrivals have slowed to meet it.
  */
 public class Migration {
 
@@ -110,12 +122,20 @@ public class Migration {
        rational play was to hope your city stayed young - which is not a game,
        it is a wait.
 
-       So senior care buys something. At full coverage the city is 30% more
-       attractive to everybody, not just to the old: places that look after
-       their parents are places people are willing to raise children. It is a
-       multiplier on the TARGET rather than on the arrival rate, because the
-       claim is about how big a city these conditions support, not how fast it
-       fills - the same distinction JOB_WEIGHT and ARRIVAL_RATE already make.
+       So senior care buys something. At full coverage the city's homes draw
+       30% more people, not just old ones: places that look after their
+       parents are places people are willing to raise children. It is a
+       multiplier on the homes' half of the TARGET rather than on the arrival
+       rate, because the claim is about how big a city these conditions
+       support, not how fast it fills - the same distinction JOB_WEIGHT and
+       ARRIVAL_RATE already make.
+
+       IT WAS A MULTIPLIER ON THE WHOLE TARGET until WG2, and that is why it
+       changed: it raised the jobs' draw too, so a city with full senior care
+       aimed at 1.46 workers a post and sat at a fifth of its people out of
+       work. A place people want to settle is not a place with more jobs; the
+       jobs' draw is no longer raised by it (see MIGRATION AIMS AT A HEALTHY
+       SLACK, below).
        =================================================================== */
 
     /** How much more attractive full senior coverage makes the city. */
@@ -362,6 +382,80 @@ public class Migration {
     /** Consecutive months of falling wages before a tier's people give up. */
     public static final int DECLINE_MONTHS = 12;
 
+    /* =====================================================================
+       MIGRATION AIMS AT A HEALTHY SLACK (WG2, {next}, 2026-11-10)
+       ---------------------------------------------------------------------
+       Jerus, 2026-11-02, asked how to cut the 21% his cities sit at (the
+       wages study's call C2): "Cut the excess, honest label (Recommended)".
+
+       WHY. His eight oldest cities ran 17.7% to 21.8% out of work, and the
+       cause was the target itself, not the wages. Senior care's pull
+       multiplied the WHOLE target, the jobs' draw with it: at full coverage a
+       city aimed at 1.125 x 1.30 = 1.46 workers a post from its jobs alone
+       and got the homes' quarter on top. The playtest reproduced it - the same
+       city with senior care held at its full pull went from 12% out of work to
+       30%. A pull that is meant to say "this is a place to settle" was making
+       a place where nobody could find work (docs/studies/spec-wages.md, 2.4).
+
+       So the rule has three parts (3.4, parts 1 to 3):
+
+         1. THE PULLS LIFT THE HOMES' DRAW ONLY. Senior care, cheap rents and
+            safety change how many people the city's homes draw. The jobs'
+            draw is cut by a dear or an unsafe city and never raised by
+            anything: jobsPull() is the rent's and the crime's, capped at 1;
+            homesPull() adds the senior care.
+         2. ARRIVALS SLOW PAST A HEALTHY RATE. Full at or under
+            HEALTHY_OUT_OF_WORK, none at or over ARRIVALS_STOP_OUT_OF_WORK, a
+            straight line between (arrivalBrake()).
+         3. THE JOBLESS PAST THE HEALTHY RATE LEAVE. Those over it, of the
+            labour force, go at SURPLUS_DEPARTURE_RATE a month whatever their
+            wage, less those the pinned bands already sent. Until now only a
+            pinned band's surplus left, so under a real minimum wage that pins
+            nobody, nobody left for want of work.
+
+       A fourth part was measured and LEFT OUT: that the posts the staffing
+       gate refused should draw people as posts do. With parts 2 and 3 it kept
+       unemployment at 9.9% and every seed was still 30% to 75% smaller at month
+       480; the refused posts are few while there are spare workers to staff
+       them, which is most months. TARGET_LABOUR_SLACK stays .125.
+
+       THE GATE'S DRAW READS THE SAME RULE (the staffing-gate study, GW0-C
+       C4a, 2026-11-09). drawFor() counts the workers an order's posts would
+       bring within a year with the jobs' pull of this section and cuts them by
+       the brake after the room, as the month's arrivals are cut; a gate that
+       counted workers migration would no longer send would let a business
+       order what the city will not staff.
+       ===================================================================== */
+
+    /** The share of the labour force out of work that migration aims at: arrivals slow past it and the jobless over it leave (the middle of big rich-country cities, Tokyo 2.4% to Madrid 9%). */
+    public static final double HEALTHY_OUT_OF_WORK = .06;
+
+    /** The out-of-work share past which nobody moves here for work: twice the healthy rate, where the People screen's verdict turns red. */
+    public static final double ARRIVALS_STOP_OUT_OF_WORK = .12;
+
+    /**
+     * What the pulls leave of the jobs' draw: the rent's and the crime's, never above 1.
+     * Senior care is not here - it lifts the homes' draw only (homesPull()).
+     */
+    public static double jobsPull(double affordability, double crime) {
+        return Math.min(1, affordability * crime);
+    }
+
+    /** What the pulls make of the homes' draw: senior care, the rent and the crime, multiplied. */
+    public static double homesPull(double senior, double affordability, double crime) {
+        return senior * affordability * crime;
+    }
+
+    /**
+     * The share of the arrivals that still come, given the share of the labour force out of work:
+     * 1 at and under HEALTHY_OUT_OF_WORK, 0 at and past ARRIVALS_STOP_OUT_OF_WORK, a straight line between. NaN reads as 1.
+     */
+    public static double arrivalBrake(double outOfWork) {
+        if (Double.isNaN(outOfWork)) return 1;
+        double f = (ARRIVALS_STOP_OUT_OF_WORK - outOfWork) / (ARRIVALS_STOP_OUT_OF_WORK - HEALTHY_OUT_OF_WORK);
+        return Math.max(0, Math.min(1, f));
+    }
+
     /* ------------------------------ what it carries ------------------------------ */
 
     private static final int TIERS = PayTier.values().length;
@@ -451,7 +545,7 @@ public class Migration {
     /* ------------------------------- reading ------------------------------- */
 
     public double getLastTarget()         { return lastTarget; }
-    /** What senior care multiplied the target by. 1 when there is none. */
+    /** What senior care multiplied the homes' draw by (since WG2 the jobs' draw is not lifted by it). 1 when there is none. */
     public double getLastSeniorPull()     { return lastSeniorPull; }
     public double getLastArrivals()       { return lastArrivals; }
     public double[] getLastArrivalMix()   { return lastArrivalMix; }
@@ -471,10 +565,14 @@ public class Migration {
     public double getLastHomeCapacity()   { return lastHomeCapacity; }
     /** The jobs' half of the draw: the posts, times the residents each supports, at JOB_WEIGHT. */
     public double getLastJobDraw()        { return lastJobDraw; }
-    /** ...and the homes', at HOME_WEIGHT. The two, times the three pulls, are getLastTarget(). */
+    /** ...and the homes', at HOME_WEIGHT. The jobs' half times getLastJobsPull(), the homes' times getLastHomesPull(), are getLastTarget(). */
     public double getLastHomeDraw()       { return lastHomeDraw; }
-    /** The two halves together: the draw before senior care, the rent and crime multiply it. */
+    /** The two halves together: the draw before the pulls (senior care, the rent and crime) multiply it. */
     public double getLastDrawBeforePulls() { return lastJobDraw + lastHomeDraw; }
+    /** What the pulls left of the jobs' draw: the rent's and the crime's, never above 1, from the last pulls. */
+    public double getLastJobsPull()       { return jobsPull(lastAffordabilityPull, lastCrimePull); }
+    /** What the pulls made of the homes' draw: senior care, the rent and the crime, from the last pulls. */
+    public double getLastHomesPull()      { return homesPull(lastSeniorPull, lastAffordabilityPull, lastCrimePull); }
     /** The leavers the work pushed out - a dying trade, a band pinned with people to spare; with the crime's and the broke, the month's departures. */
     public double getLastWorkDepartures() { return lastWorkDepartures; }
 
@@ -826,8 +924,9 @@ public class Migration {
         lastSeniorPull = seniorCarePull(seniorCoverage);
         lastAffordabilityPull = affordabilityPull(rentBurden);
         lastCrimePull = crimePull(crimeVsCanada);
-        lastTarget = (JOB_WEIGHT * jobTarget + HOME_WEIGHT * homeTarget)
-                * lastSeniorPull * lastAffordabilityPull * lastCrimePull;
+        // WG2: the pulls lift the homes' draw only; the jobs' draw is cut by a dear or unsafe city, never raised (see the banner above).
+        lastTarget = JOB_WEIGHT * jobTarget * jobsPull(lastAffordabilityPull, lastCrimePull)
+                + HOME_WEIGHT * homeTarget * homesPull(lastSeniorPull, lastAffordabilityPull, lastCrimePull);
         lastArrivals = 0;
         lastDepartures = 0;
         lastCrimeDepartures = 0;
@@ -928,6 +1027,19 @@ public class Migration {
         double net = monthlyNet(population, totalJobs, householdCapacity, homes,
                 families, adultShare, seniorCoverage);
 
+        /*
+         * THE BRAKE (WG2). Arrivals slow as the city's own out-of-work share
+         * passes HEALTHY_OUT_OF_WORK and stop at ARRIVALS_STOP_OUT_OF_WORK:
+         * people come for the chance of a job. Before composeArrivals(), which
+         * splits lastArrivals by band, so the mix is of the braked arrivals.
+         * The forms with no people are not braked.
+         */
+        if (people != null) {
+            double f = arrivalBrake(people.getUnemploymentRate());
+            net -= lastArrivals * (1 - f);
+            lastArrivals *= f;
+        }
+
         composeArrivals(market, people);
 
         if (market == null || people == null) return net;
@@ -956,6 +1068,35 @@ public class Migration {
                     * SURPLUS_DEPARTURE_RATE * band.mobility();
             lastDepartureMix[band.ordinal()] += leaving;
             pushed += leaving;
+        }
+
+        /*
+         * AND THE JOBLESS PAST THE HEALTHY RATE (WG2). Those over
+         * HEALTHY_OUT_OF_WORK of the labour force go at SURPLUS_DEPARTURE_RATE,
+         * whatever their wage - so no mobility weight, and none of the pinned
+         * band's wait for a floor - less those the pinned bands just sent.
+         * The labour force, not the workforce: getUnemploymentRate() is the
+         * unemployed over the labour force, and the students are not looking.
+         * They go from the bands that have a surplus, on each band's share of
+         * it, so the graduates and the labourers who are out of work are the
+         * ones who leave; with no band in surplus, on the population's share.
+         */
+        double over = Math.max(0, people.getUnemployed() - HEALTHY_OUT_OF_WORK * people.getLabourForce());
+        double more = Math.max(0, over * SURPLUS_DEPARTURE_RATE - pushed);
+        if (more > 0) {
+            double[] surplus = new double[lastDepartureMix.length];
+            double surplusTotal = 0;
+            for (WageBand band : WageBand.values()) {
+                surplus[band.ordinal()] = people.surplusInBand(band);
+                surplusTotal += surplus[band.ordinal()];
+            }
+            double[] spread = surplusTotal > 0 ? surplus : people.getBandShare();
+            double spreadTotal = 0;
+            for (double s : spread) spreadTotal += s;
+            for (WageBand band : WageBand.values()) {
+                lastDepartureMix[band.ordinal()] += spreadTotal > 0 ? more * spread[band.ordinal()] / spreadTotal : 0;
+            }
+            pushed += more;
         }
         double surplusPushed = pushed;
 
@@ -1234,8 +1375,8 @@ public class Migration {
      * gate (Sector.staffing(), GW1).
      *
      * WHAT IT COUNTS: only the part of migration's gap that the order itself makes positive, and no more than the doors have room for.
-     * The posts raise the target by {@code delta} = JOB_WEIGHT x posts x last month's residents a job x the pulls on the jobs' draw
-     * (senior care, rent and crime), as monthlyNet() builds lastTarget. monthlyNet() brings people only while the target stands above
+     * The posts raise the target by {@code delta} = JOB_WEIGHT x posts x last month's residents a job x jobsPull() (the pulls on
+     * the jobs' draw: rent and crime, never above 1, never senior care), as monthlyNet() builds lastTarget. monthlyNet() brings people only while the target stands above
      * the population, so the gap now is {@code gapNow} = lastTarget - population, and the order's part of it is
      * max(0, gapNow + delta) - max(0, gapNow): nothing where the population stands above the target even with the order, all of the
      * delta where the gap was already positive, and what rises above zero where the delta takes the gap from negative to positive. A
@@ -1244,8 +1385,12 @@ public class Migration {
      * own arrivals) when the city has a census to place them against (lastRoom is NaN with none). The city's workers per resident
      * (getWorkforceForSave() / getPopulation()) turn people into workers. They split by band as composeArrivals() splits a month's
      * arrivals, with the order's posts added to each band's open posts, and the licences to the university band. Every figure it reads
-     * is last month's and saved (LAST_SCALARS, lastRoom with them), so a loaded city's draw is its twin's. WG2 (queued) will cut it by
-     * its brake as it cuts arrivals (spec-staffing-gate §5, C4).
+     * is last month's and saved (LAST_SCALARS, lastRoom with them), so a loaded city's draw is its twin's.
+     *
+     * THE PULL RULE AND THE BRAKE (WG2). The jobs' pull is jobsPull(), as lastTarget has it since WG2: senior care lifts the homes' draw only, so it no
+     * longer raises the workers an order's posts would draw. And the people drawn are cut by arrivalBrake() of the city's out-of-work share, after the
+     * room, as monthlyNet() cuts the month's arrivals: whole at or under HEALTHY_OUT_OF_WORK, nothing at or past ARRIVALS_STOP_OUT_OF_WORK, a straight
+     * line between. A city migration would stop sending people to is not counted as sending them to an order (spec-staffing-gate, C4a).
      *
      * WHY, what it counted before: JOB_WEIGHT x posts x residents a job x the pulls x the closing share, whatever the gap and the room.
      * That overstated the draw wherever migration would not bring the people: it counted when lastTarget stood at or below the
@@ -1278,7 +1423,7 @@ public class Migration {
         long pop = people.getPopulation();
         if (posts <= 0 || pop <= 0) return out;
 
-        double jobPull = lastSeniorPull * lastAffordabilityPull * lastCrimePull;
+        double jobPull = jobsPull(lastAffordabilityPull, lastCrimePull);
         double delta = JOB_WEIGHT * posts * lastResidentsPerJob * jobPull;
         double gapNow = lastTarget - pop;
         double orderGap = Math.max(0, gapNow + delta) - Math.max(0, gapNow);
@@ -1286,6 +1431,7 @@ public class Migration {
         double close = 1 - Math.pow(1 - monthly, window);
         double drawnPeople = orderGap * close;
         if (!Double.isNaN(lastRoom)) drawnPeople = Math.min(drawnPeople, Math.max(0, lastRoom - lastArrivals));
+        drawnPeople *= arrivalBrake(people.getUnemploymentRate());   // the brake after the room, as the month's arrivals take it
         double workers = drawnPeople * people.getWorkforceForSave() / (double) pop;
 
         double[] postsNow = people.staffablePostsByBand();

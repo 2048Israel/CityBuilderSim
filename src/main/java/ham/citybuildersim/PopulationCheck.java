@@ -67,6 +67,20 @@ public class PopulationCheck {
         return mig.getLastArrivals();
     }
 
+    /**
+     * A population manager whose labour force is this many adults and whose posts are all unskilled ones, as many as leave this share of
+     * them out of work (to a person): so its getUnemploymentRate() is the share asked for, and the whole surplus is in one band.
+     */
+    static PopulationManager cityOutOfWork(long adults, double share) {
+        PopulationManager pm = new PopulationManager();
+        pm.setWagesPerType();
+        long[] posts = new long[JobType.values().length];
+        posts[JobType.NO_DIPLOMA.ordinal()] = Math.round(adults * (1 - share));
+        pm.updateJobs(posts);
+        pm.applyPopulation(Math.round(adults / ADULT_MIX), adults);
+        return pm;
+    }
+
     static void assertTrue(String label, boolean ok) {
         if (!ok) fails++;
         System.out.printf("%-58s %s%n", label, ok ? "OK" : "FAIL");
@@ -857,6 +871,145 @@ public class PopulationCheck {
                 + " month; one down 69%% sheds %.1f%%%n",
                 slipped.decliningPressure() * Migration.DEPARTURE_RATE * 100,
                 dying.decliningPressure() * Migration.DEPARTURE_RATE * 100);
+
+        /* ---- migration aims at a healthy slack (WG2) ---- */
+        System.out.println("\n--- migration aims at a healthy slack (WG2) ---");
+        {
+            /*
+             * Jerus, 2026-11-02 (the wages study's call C2, option a): "Cut the excess, honest label (Recommended)". His cities sat at 17.7%
+             * to 21.8% out of work because senior care's pull multiplied the jobs' draw too (docs/studies/spec-wages.md 2.4, 3.4). Three
+             * parts, each with the fixture that causes its condition.
+             */
+            long wgCapacity = 8000;
+            long wgJobs = 6000;
+            long wgHomes = 999_999;
+
+            // ---- 1. the pulls lift the homes' draw only ----
+            System.out.println("   1. the pulls lift the homes' draw only");
+            Migration wgNoJobs = new Migration();
+            wgNoJobs.monthlyNet(0, 0, wgCapacity, wgHomes, roomy, ADULT_MIX, 1);
+            System.out.printf("   full senior care, no jobs: target %,.1f; the homes' draw %,.1f times the pull %.2f%n",
+                    wgNoJobs.getLastTarget(), wgNoJobs.getLastHomeDraw(), wgNoJobs.getLastSeniorPull());
+            assertTrue("fixture: a city with full senior care, no jobs, and neither dear rent nor crime",
+                    wgNoJobs.getLastJobs() == 0 && wgNoJobs.getLastSeniorPull() == Migration.seniorCarePull(1)
+                            && wgNoJobs.getLastAffordabilityPull() == 1 && wgNoJobs.getLastCrimePull() == 1);
+            check("with no jobs the target is the homes' weight x the capacity x the senior care pull",
+                    wgNoJobs.getLastTarget(), Migration.HOME_WEIGHT * wgCapacity * Migration.seniorCarePull(1), 1e-9);
+
+            Migration wgPlain = new Migration(), wgCaring = new Migration();
+            wgPlain.monthlyNet(5000, wgJobs, wgCapacity, wgHomes, roomy, ADULT_MIX, 0);
+            wgCaring.monthlyNet(5000, wgJobs, wgCapacity, wgHomes, roomy, ADULT_MIX, 1);
+            System.out.printf("   %,d posts, the same city with no senior care and with all of it: target %,.1f and %,.1f%n",
+                    wgJobs, wgPlain.getLastTarget(), wgCaring.getLastTarget());
+            assertTrue("fixture: the city has jobs, and the two differ only in senior care coverage",
+                    wgPlain.getLastJobDraw() > 0 && wgPlain.getLastJobDraw() == wgCaring.getLastJobDraw()
+                            && wgPlain.getLastSeniorPull() == 1 && wgCaring.getLastSeniorPull() == Migration.seniorCarePull(1));
+            check("without senior care the target is the two draws, unlifted",
+                    wgPlain.getLastTarget(), wgPlain.getLastDrawBeforePulls(), 1e-9);
+            check("full senior care adds the homes' weight x the capacity x SENIOR_CARE_PULL and nothing to the jobs' draw",
+                    wgCaring.getLastTarget() - wgPlain.getLastTarget(),
+                    Migration.HOME_WEIGHT * wgCapacity * Migration.SENIOR_CARE_PULL, 1e-9);
+            check("...the jobs' pull reads 1 with it", wgCaring.getLastJobsPull(), 1, 1e-12);
+            check("...and the homes' pull reads the senior care pull", wgCaring.getLastHomesPull(), Migration.seniorCarePull(1), 1e-12);
+
+            double wgDearBurden = 2 * ham.citybuildersim.sectors.RealEstate.TARGET_RENT_BURDEN;
+            Migration wgDear = new Migration();
+            wgDear.setRentBurden(wgDearBurden);
+            wgDear.monthlyNet(5000, wgJobs, 0, wgHomes, roomy, ADULT_MIX, 1);
+            System.out.printf("   a dear city (rent burden %.2f) with full senior care and no homes: affordability pull %.3f,"
+                            + " the jobs' draw %,.1f becomes a target of %,.1f%n",
+                    wgDearBurden, wgDear.getLastAffordabilityPull(), wgDear.getLastJobDraw(), wgDear.getLastTarget());
+            assertTrue("fixture: rent is dear enough to cut the pull, and there are no homes to draw",
+                    wgDear.getLastAffordabilityPull() < 1 && wgDear.getLastHomeDraw() == 0 && wgDear.getLastJobDraw() > 0);
+            check("a dear city's target is the jobs' draw x the affordability pull, senior care adding nothing to it",
+                    wgDear.getLastTarget(), wgDear.getLastJobDraw() * Migration.affordabilityPull(wgDearBurden), 1e-9);
+            assertTrue("...and the jobs' pull never exceeds 1", wgDear.getLastJobsPull() <= 1
+                    && wgCaring.getLastJobsPull() <= 1 && wgPlain.getLastJobsPull() <= 1);
+            assertTrue("...nor does it at inputs over 1", Migration.jobsPull(1.5, 1.5) == 1 && Migration.jobsPull(1, 2) == 1);
+
+            Migration wgUnsafe = new Migration();
+            wgUnsafe.setCrimeVsCanada(2);
+            wgUnsafe.monthlyNet(5000, wgJobs, 0, wgHomes, roomy, ADULT_MIX, 1);
+            assertTrue("fixture: crime at twice Canada's cuts the pull", wgUnsafe.getLastCrimePull() < 1);
+            check("an unsafe city's jobs draw is cut by the crime pull, as a dear one's by the rent",
+                    wgUnsafe.getLastTarget(), wgUnsafe.getLastJobDraw() * Migration.crimePull(2), 1e-9);
+
+            // ---- 2. arrivals slow past the healthy rate and stop at twice it ----
+            System.out.println("   2. arrivals slow past the healthy rate and stop at twice it");
+            double wgMiddle = (Migration.HEALTHY_OUT_OF_WORK + Migration.ARRIVALS_STOP_OUT_OF_WORK) / 2;
+            check("the brake is whole at the healthy rate", Migration.arrivalBrake(Migration.HEALTHY_OUT_OF_WORK), 1, 1e-12);
+            check("...none at the stop", Migration.arrivalBrake(Migration.ARRIVALS_STOP_OUT_OF_WORK), 0, 1e-12);
+            check("...half way between the two it is a half", Migration.arrivalBrake(wgMiddle), .5, 1e-12);
+            assertTrue("...whole under the healthy rate, none past the stop, and a rate nobody can read brakes nothing",
+                    Migration.arrivalBrake(0) == 1 && Migration.arrivalBrake(2 * Migration.ARRIVALS_STOP_OUT_OF_WORK) == 0
+                            && Migration.arrivalBrake(Double.NaN) == 1);
+
+            long wgAdults = 10_000;
+            double[] wgShares = { Migration.HEALTHY_OUT_OF_WORK - .01, wgMiddle, Migration.ARRIVALS_STOP_OUT_OF_WORK + .04 };
+            String[] wgNames = { "under the healthy rate", "half way between the dials", "past the stop" };
+            for (int i = 0; i < wgShares.length; i++) {
+                PopulationManager wgPeople = cityOutOfWork(wgAdults, wgShares[i]);
+                double wgRate = wgPeople.getUnemploymentRate();
+                Migration wgBraked = new Migration(), wgTwin = new Migration();
+                wgBraked.monthlyNet(wgPeople.getPopulation(), wgJobs * 2, wgCapacity * 2, wgHomes, roomy, ADULT_MIX, 0,
+                        new LabourMarket(), wgPeople);
+                wgTwin.monthlyNet(wgPeople.getPopulation(), wgJobs * 2, wgCapacity * 2, wgHomes, roomy, ADULT_MIX, 0);
+                double wgMixed = 0;
+                for (double a : wgBraked.getLastArrivalMix()) wgMixed += a;
+                System.out.printf("   %s: out of work %.4f (%,d of %,.0f); brake %.3f; arrivals %,.2f unbraked, %,.2f braked%n",
+                        wgNames[i], wgRate, wgPeople.getUnemployed(), wgPeople.getLabourForce(),
+                        Migration.arrivalBrake(wgRate), wgTwin.getLastArrivals(), wgBraked.getLastArrivals());
+                assertTrue("fixture: the unbraked city draws people (target over its population, room and crowding at 1)",
+                        wgTwin.getLastArrivals() > 0 && wgTwin.getLastCrowding() == 1);
+                assertTrue("fixture: the rate is " + wgNames[i], i == 0 ? wgRate <= Migration.HEALTHY_OUT_OF_WORK
+                        : i == 1 ? wgRate > Migration.HEALTHY_OUT_OF_WORK && wgRate < Migration.ARRIVALS_STOP_OUT_OF_WORK
+                        : wgRate >= Migration.ARRIVALS_STOP_OUT_OF_WORK);
+                check("arrivals " + wgNames[i] + " are the unbraked arrivals x the brake at the rate it reads",
+                        wgBraked.getLastArrivals(), wgTwin.getLastArrivals() * Migration.arrivalBrake(wgRate), 1e-9);
+                check("...and the mix by band is of the braked arrivals", wgMixed, wgBraked.getLastArrivals(), 1e-6);
+            }
+            PopulationManager wgPast = cityOutOfWork(wgAdults, Migration.ARRIVALS_STOP_OUT_OF_WORK + .04);
+            Migration wgStopped = new Migration();
+            wgStopped.monthlyNet(wgPast.getPopulation(), wgJobs * 2, wgCapacity * 2, wgHomes, roomy, ADULT_MIX, 0,
+                    new LabourMarket(), wgPast);
+            check("past the stop nobody arrives, however many jobs are going", wgStopped.getLastArrivals(), 0, 1e-9);
+
+            // ---- 3. the jobless past the healthy rate leave ----
+            System.out.println("   3. the jobless past the healthy rate leave");
+            double[] wgLeaveShares = { .03, Migration.HEALTHY_OUT_OF_WORK, wgMiddle, .20 };
+            for (double share : wgLeaveShares) {
+                PopulationManager wgJobless = cityOutOfWork(wgAdults, share);
+                LabourMarket wgMarket = new LabourMarket();
+                Migration wgLeavers = new Migration();
+                wgLeavers.monthlyNet(wgJobless.getPopulation(), wgJobs * 2, wgCapacity * 2, wgHomes, roomy, ADULT_MIX, 0,
+                        wgMarket, wgJobless);
+                boolean wgAnyPinned = false;
+                for (WageBand band : WageBand.values()) wgAnyPinned |= wgMarket.isPinned(band);
+                double wgOver = Math.max(0, wgJobless.getUnemployed() - Migration.HEALTHY_OUT_OF_WORK * wgJobless.getLabourForce());
+                double wgMixSum = 0;
+                for (double d : wgLeavers.getLastDepartureMix()) wgMixSum += d;
+                System.out.printf("   out of work %.4f (%,d of %,.0f; %,.1f over the healthy rate): %,.3f leave for want of work,"
+                                + " %,.3f in all%n",
+                        wgJobless.getUnemploymentRate(), wgJobless.getUnemployed(), wgJobless.getLabourForce(), wgOver,
+                        wgLeavers.getLastWorkDepartures(), wgLeavers.getLastDepartures());
+                assertTrue("fixture: no band is pinned and no tier is declining, so only the rate can send anybody",
+                        !wgAnyPinned && wgLeavers.getLastDecliningShare() == 0);
+                check("those over the healthy rate of the labour force leave at the surplus rate, whatever their wage",
+                        wgLeavers.getLastWorkDepartures(),
+                        wgOver * Migration.SURPLUS_DEPARTURE_RATE, 1e-9);
+                check("...and they are all the month's departures (no crime, no bankruptcy, no dying trade)",
+                        wgLeavers.getLastDepartures(), wgLeavers.getLastWorkDepartures(), 1e-9);
+                check("...and the departure mix sums to the departures", wgMixSum, wgLeavers.getLastDepartures(), 1e-9);
+                if (share > Migration.HEALTHY_OUT_OF_WORK + 1e-9) {
+                    assertTrue("a city past the healthy rate loses people for want of work", wgLeavers.getLastWorkDepartures() > 0);
+                    check("...from the band that is out of work at its own level",
+                            wgLeavers.getLastDepartureMix()[WageBand.NONE.ordinal()], wgLeavers.getLastDepartures(), 1e-9);
+                } else {
+                    check("a city at or under the healthy rate loses nobody for want of work",
+                            wgLeavers.getLastWorkDepartures(), 0, 1e-9);
+                }
+            }
+        }
 
         /* ---- and the whole thing, played ---- */
         System.out.println("\n--- a city, played ---");
