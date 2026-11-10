@@ -1,4 +1,4 @@
-# Migration.java - 1,434 lines · 59 methods · 16 constants · model
+# Migration.java - 1,438 lines · 59 methods · 16 constants · model
 
 `ham/citybuildersim/Migration.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
@@ -88,8 +88,8 @@
 | 360 | `Migration.DEPARTURE_RATE` | `.05` |  |
 | 363 | `Migration.DECLINE_MONTHS` | `12` | Consecutive months of falling wages before a tier's people give up. |
 | 367 | `Migration.TIERS` | `PayTier.values().length` |  |
-| 1340 | `Migration.HISTORY_SLOTS` | `TIERS * DECLINE_MONTHS + TIERS + 1` | The wage history, its streaks and the months recorded: the array before 0.7.27. |
-| 1343 | `Migration.LAST_SCALARS` | `17` | The month's scalars that follow it, in toSaveArray()'s order. |
+| 1343 | `Migration.HISTORY_SLOTS` | `TIERS * DECLINE_MONTHS + TIERS + 1` | The wage history, its streaks and the months recorded: the array before 0.7.27. |
+| 1346 | `Migration.LAST_SCALARS` | `17` | The month's scalars that follow it, in toSaveArray()'s order; the last of them is lastRoom (GW1), and a save from before it has one fewer. |
 
 ## Fields (state)
 
@@ -130,7 +130,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 50 | 1385 | **type** `public class Migration` | Why people move to this city, and the much narrower question of why they leave. |
+| 50 | 1389 | **type** `public class Migration` | Why people move to this city, and the much narrower question of why they leave. |
 
 ### the dials (lines 52-53)
 
@@ -238,12 +238,12 @@
 | 1099 | 132 | `private void composeArrivals(LabourMarket market, PopulationManager people)` | Splits this month's arrivals across the skill bands. |
 | 1272 | 47 | `public double[] drawFor(double[] wanted, LabourMarket market, PopulationManager people, int window, ArrivalMix.Point mix)` | The workers per wage band migration would bring for an order's posts within {@code window} months of its opening, for the staffing gate (Sector.staffing(), GW1). |
 
-### saving (lines 1320-1434)
+### saving (lines 1320-1438)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1346 | 3 | `private static int lastSlots()` | ...then the arrival mix and the departure mix by band, and the licences by job. |
-| 1350 | 20 | `public double[] toSaveArray()` |  |
-| 1371 | 35 | `public void restore(double[] saved)` |  |
-| 1407 | 27 | `public void reset()` |  |
+| 1349 | 3 | `private static int lastSlots()` | ...then the arrival mix and the departure mix by band, and the licences by job. |
+| 1353 | 20 | `public double[] toSaveArray()` |  |
+| 1374 | 36 | `public void restore(double[] saved)` |  |
+| 1411 | 27 | `public void reset()` |  |
 

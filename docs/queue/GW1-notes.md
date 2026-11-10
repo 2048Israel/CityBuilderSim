@@ -28,9 +28,12 @@ Sonnet slices for the code.
   city had 7,738 posts against a labour force of 6,326 at month 60.
 - **The share stays at 80% and the band test is untouched** (a band nobody here can fill and no migrant comes for).
 - **One saved figure more: `lastRoom`**, the 17th of migration's last-month scalars (`LAST_SCALARS`, saved since
-  0.7.27), written -1 for "no census" since DataSave's Gson cannot write NaN. A save from before GW1 has the old
-  length, and `Migration.restore()` refuses its array whole, as it always has: the city loads without migration's
-  history, which is incomplete rather than wrong, so there is no format bump. The
+  0.7.27), written -1 for "no census" since DataSave's Gson cannot write NaN. A save from before GW1 has sixteen,
+  and `Migration.restore()` reads them and the mixes with the room NaN, which `drawFor()` reads as no cap: the
+  tolerant read WG1, GD2, GD3 and WS1 use for an appended field, not conversion code, so there is no format bump.
+  GW1's first version refused such an array whole, and its history, streaks, months recorded and month reset on
+  load without a word (the gate's review); SaveFileCheck's migration section now cuts a saved array to the sixteen
+  and asserts every other slot back as saved. The
   year's arrival mix of a 1900 city is passed in (`ArrivalMix.at(game.getMonth())`) rather than read from
   `Migration.yearMix`, which Game pushes only at the month's migration step (after the planners) and never saves:
   read from the field, a loaded 1900 city's first planners would have read none and parted from its twin
@@ -249,7 +252,8 @@ on the first draw against 4 unsnapped (0.9.55 had 15), 2 now.
 **A3 in one seed.** AUTO2-2 is a small town (20,500 people at month 600, 17% out of work). Between months 610 and 620
 its unemployment went from 19% to 48% and the policy rate from 7% to 0, and a year's prices then read below -10% for
 12 months (months 621-632, -17% at the worst), A3's limit, while its people fell to 17,871 by month 645. Main's worst
-seed was 7, the first GW1 ensemble's 11. Not read further here; queued (`AQ1`).
+seed was 7, the first GW1 ensemble's 11. Not read further here; queued (`AQ1`). WG2's brake on the draw, next in
+lane B, is the first place to look: the bust takes unemployment from 19% to 48%.
 
 **PriceLevelCheck's twins** failed "pop" and "workforce the same to the person" on the first draw (they parted at month
 105). On the fixed draw PriceLevelCheck is green.

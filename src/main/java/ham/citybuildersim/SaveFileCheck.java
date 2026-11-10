@@ -2279,6 +2279,32 @@ public class SaveFileCheck {
         unknown.restore(java.util.Arrays.copyOf(migrationNow, wageHistory + 1));
         assertTrue("...and a length it does not know is refused whole",
                 !unknown.hasFullHistory() && unknown.getLastTarget() == 0);
+        /*
+         * ...AND ONE FROM BEFORE THE ROOM LOADS ALL ELSE (GW1). GW1 appended
+         * lastRoom, the doors last month left free, to the month's scalars; a
+         * save written before it has sixteen. It was refused whole, and its
+         * wage history, streaks, months recorded and month reset on load
+         * without a word. It reads the sixteen and the mixes, the room NaN
+         * ("no census", which drawFor() reads as no cap).
+         */
+        int roomSlot = wageHistory + Migration.LAST_SCALARS - 1;
+        assertTrue("fixture: the city's migration saved a room, the doors counted",
+                Double.isFinite(drew.getLastRoom()) && drew.getLastRoom() >= 0 && migrationNow[roomSlot] == drew.getLastRoom());
+        assertTrue("fixture: ...and months of wage history, and a draw", migrationNow[wageHistory - 1] > 0 && drew.getLastTarget() != 0);
+        double[] beforeRoom = new double[migrationNow.length - 1];
+        System.arraycopy(migrationNow, 0, beforeRoom, 0, roomSlot);
+        System.arraycopy(migrationNow, roomSlot + 1, beforeRoom, roomSlot, beforeRoom.length - roomSlot);
+        Migration format16 = new Migration();
+        format16.restore(beforeRoom);
+        boolean history16 = format16.hasFullHistory() == drew.hasFullHistory();
+        for (PayTier tier : PayTier.values()) history16 &= format16.getDecliningStreak(tier) == drew.getDecliningStreak(tier);
+        assertTrue("a migration array from before the room loads its wage history and its streaks", history16);
+        same("...and the month's draw", format16.getLastTarget(), drew.getLastTarget());
+        assertTrue("...with no room read: NaN, no census", Double.isNaN(format16.getLastRoom()));
+        double[] roomless = migrationNow.clone();
+        roomless[roomSlot] = -1;
+        assertTrue("...and every other slot as it was saved, the months recorded and the mixes with them",
+                java.util.Arrays.equals(format16.toSaveArray(), roomless));
         double[] pyramidNow = died.toSaveArray();
         PopulationCohorts olderPyramid = new PopulationCohorts();
         olderPyramid.restore(PopulationCohorts.saveBands(),

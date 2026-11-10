@@ -1332,15 +1332,18 @@ public class Migration {
      * the target, the pulls, the crowding, the arrivals and the room, so a
      * loaded city's gate is its twin's only because they ride the save. A
      * save from before them is the history alone and loads with
-     * the month at its defaults, as it always did; any other length is
-     * refused whole.
+     * the month at its defaults, as it always did. One from before the room
+     * (GW1 appended lastRoom, the seventeenth scalar) has sixteen: it reads
+     * them and the mixes, the room NaN ("no census", which drawFor() reads
+     * as no cap), so its history, streaks and month are not lost on load.
+     * Any other length is refused whole.
      */
 
     /** The wage history, its streaks and the months recorded: the array before 0.7.27. */
     private static final int HISTORY_SLOTS = TIERS * DECLINE_MONTHS + TIERS + 1;
 
-    /** The month's scalars that follow it, in toSaveArray()'s order. */
-    private static final int LAST_SCALARS = 17;
+    /** The month's scalars that follow it, in toSaveArray()'s order; the last of them is lastRoom (GW1), and a save from before it has one fewer. */
+    static final int LAST_SCALARS = 17;
 
     /** ...then the arrival mix and the departure mix by band, and the licences by job. */
     private static int lastSlots() {
@@ -1370,7 +1373,8 @@ public class Migration {
 
     public void restore(double[] saved) {
         if (saved == null) return;
-        boolean withMonth = saved.length == HISTORY_SLOTS + lastSlots();
+        boolean beforeRoom = saved.length == HISTORY_SLOTS + lastSlots() - 1;   // written before GW1 appended lastRoom
+        boolean withMonth = beforeRoom || saved.length == HISTORY_SLOTS + lastSlots();
         if (!withMonth && saved.length != HISTORY_SLOTS) {
             return;   // refused whole rather than half-read
         }
@@ -1397,7 +1401,7 @@ public class Migration {
         lastHomeCapacity      = saved[i++];
         lastJobDraw           = saved[i++];
         lastHomeDraw          = saved[i++];
-        double room           = saved[i++];
+        double room           = beforeRoom ? -1 : saved[i++];
         lastRoom              = room < 0 ? Double.NaN : room;   // a room is never below 0, so the -1 written for NaN reads back as NaN
         for (int b = 0; b < lastArrivalMix.length; b++) lastArrivalMix[b] = saved[i++];
         for (int b = 0; b < lastDepartureMix.length; b++) lastDepartureMix[b] = saved[i++];
