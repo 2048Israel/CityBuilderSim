@@ -48,8 +48,9 @@ import java.util.Set;
  *      is skipped; a lever the map does not name keeps history's month; a saved policy state comes back as saved into a policy that has only
  *      heard month 1, and is held again only when the month says so; a restore and a reset empty what the policy held, so a rate they put
  *      back is never overwritten by a later opening; a reset policy is back on history's dates.
- *  10. THE MINIMUM WAGE'S FLOOR (R0, call 12). The dial is also the wage ladder's anchor, so it is not zeroed: before the law the floor binds
- *      no wage (a glut takes the unskilled wage under the figure, to the band's own bottom) while the anchor and every base wage stand; the
+ *  10. THE MINIMUM WAGE'S FLOOR (R0, call 12). The dial was also the wage ladder's anchor, so it was not zeroed (since WG1, 2026-11-10 the
+ *      going rate anchors it): before the law the floor binds
+ *      no wage (a glut takes the unskilled wage under the going rate, to the band's own bottom) while the anchor and every base wage stand; the
  *      player's dial and its nudge, through Game, are refused in month 1 and taken from the opening month; a load pushes the month to the
  *      labour market; the inbox raises the opening notice once; a city saved the month before the wage tax opens, read back and told the
  *      next month, opens it at the founding rate (the load tells the month after the restore, not before).
@@ -682,8 +683,11 @@ public class PolicyDatesCheck {
         for (int m = 0; m < 200; m++) { bound.advanceMonth(gluttedPosts, gluttedSupply); unbound.advanceMonth(gluttedPosts, gluttedSupply); }
         check("with the law, an unskilled glut is held at the floor",
                 bound.getWage(JobType.NO_DIPLOMA) >= bound.cashMinimumWage() - 1e-9 && bound.isPinned(WageBand.NONE));
-        check("...without it the same glut takes the wage to the bottom of the band's own range, under the figure that anchors the ladder",
-                unbound.getWage(JobType.NO_DIPLOMA) < unbound.cashMinimumWage() * .75
+        // WG1 (2026-11-10): the figure that anchors the ladder is the going rate, and the floor is a share of it (it was the anchor until then):
+        // the glut's wage is the band's own bottom, under the going rate and under the floor the law would have held it at.
+        check("...without it the same glut takes the wage to the bottom of the band's own range, well under the going rate that anchors the ladder (3/4 of it, as before WG1) and under the floor",
+                unbound.getWage(JobType.NO_DIPLOMA) < unbound.cashMinimumWage()
+                        && unbound.getWage(JobType.NO_DIPLOMA) < unbound.cashGoingRate() * .75
                         && unbound.getWage(JobType.NO_DIPLOMA) >= unbound.baseWage(JobType.NO_DIPLOMA) * LabourMarket.MIN_MULTIPLE - 1e-9);
         boolean anchored = unbound.cashMinimumWage() == bound.cashMinimumWage() && unbound.getMinimumWage() == bound.getMinimumWage();
         for (JobType job : JobType.values()) anchored &= unbound.baseWage(job) == bound.baseWage(job) && unbound.baseWage(job) > 0;

@@ -141,7 +141,9 @@ public class WageLadderCheck {
         check("every job's ratio on today's ladder is LabourMarket.ratioOf(), with no tolerance", ratios);
         check("...and the expression PayTier's figures gave before this class existed", independent);
         check("every rung on today's ladder is PayTier's own figure, with no tolerance", rungs);
-        check("today's anchor is the default minimum wage", Double.compare(WageLadder.TODAY.anchor(), LabourMarket.DEFAULT_MINIMUM_WAGE) == 0);
+        // WG1 (2026-11-10): the anchor is the going rate, and the default minimum wage is a share of it - it was the anchor itself until then.
+        check("today's anchor is the going rate, and the default minimum wage the default share of it", Double.compare(WageLadder.TODAY.anchor(), LabourMarket.GOING_RATE) == 0
+                && Double.compare(LabourMarket.DEFAULT_MINIMUM_WAGE, WageLadder.TODAY.anchor() * LabourMarket.DEFAULT_FLOOR_SHARE) == 0);
 
         Game g = found("wage-ladder-default", DEFAULT);
         LabourMarket market = g.getLabourMarket();
@@ -188,7 +190,9 @@ public class WageLadderCheck {
 
         check("the city is founded the 1900 way, and its market and population manager are on 1901's ladder", old.foundedUnfitted()
                 && market.getLadder() == ladder && people.getLadder() == ladder);
-        check("its minimum wage is the 1901 anchor, to the bit", Double.compare(market.getMinimumWage(), anchor) == 0, market.getMinimumWage() + " vs " + anchor);
+        check("its going rate is the 1901 anchor, and its minimum wage the default share of it, to the bit",
+                Double.compare(market.getGoingRate(), anchor) == 0 && Double.compare(market.getMinimumWage(), anchor * LabourMarket.DEFAULT_FLOOR_SHARE) == 0,
+                market.getMinimumWage() + " vs " + anchor * LabourMarket.DEFAULT_FLOOR_SHARE);
         boolean marketWages = true, peopleWages = true;
         String firstWrong = null;
         for (JobType job : JobType.values()) {
@@ -240,8 +244,9 @@ public class WageLadderCheck {
 
         LabourMarket tight = new LabourMarket();
         tight.foundOn(WageLadder.Y1901);
-        check("a bare market founded on 1901's ladder: its ratios, its floor at the anchor, every wage on its base", tight.getLadder() == WageLadder.Y1901
-                && Double.compare(tight.getMinimumWage(), WageLadder.Y1901.anchor()) == 0);
+        check("a bare market founded on 1901's ladder: its ratios, its going rate at the anchor and its floor the default share of it, every wage on its base", tight.getLadder() == WageLadder.Y1901
+                && Double.compare(tight.getGoingRate(), WageLadder.Y1901.anchor()) == 0
+                && Double.compare(tight.getMinimumWage(), WageLadder.Y1901.anchor() * LabourMarket.DEFAULT_FLOOR_SHARE) == 0);
         boolean onBase = true, ratiosHold = true;
         for (JobType job : JobType.values()) {
             onBase &= Double.compare(tight.getWage(job), tight.baseWage(job)) == 0;

@@ -162,6 +162,41 @@ public class PopulationManager {
         return Math.round(filled);
     }
 
+    /**
+     * The average wage (WG1): the wage bill over the posts filled, the Rankings' definition (YearBook.averageWage()); 0 with nobody employed.
+     * What a floor tied to the average wage is struck on (LabourMarket.followAverageWage()).
+     */
+    public double getAverageWage(){
+        long filled = getJobsFilled();
+        return filled > 0 ? getTotalWage() / filled : 0;
+    }
+
+    /**
+     * The posts filled that the floor is what pays (WG1), by WageBand.ordinal(): the posts filled of each job type m.isPaidTheFloor(job),
+     * counted as getJobsFilled() counts them.
+     */
+    public double[] workersPaidTheFloor(LabourMarket m){
+        return filledWhere(m, true);
+    }
+
+    /** ...and the posts filled that are paid a little over it (m.isNearTheFloor(job)), by WageBand.ordinal(). */
+    public double[] workersNearTheFloor(LabourMarket m){
+        return filledWhere(m, false);
+    }
+
+    private double[] filledWhere(LabourMarket m, boolean paid){
+        double[] out = new double[WageBand.values().length];
+        double[] fillRate = getJobFillRate();
+        for(JobType job : JobType.values()) {
+            int i = job.ordinal();
+            if(i >= jobs.length) continue;
+            if(paid ? m.isPaidTheFloor(job) : m.isNearTheFloor(job)) {
+                out[WageBand.of(job).ordinal()] += jobs[i] * fillRate[i];
+            }
+        }
+        return out;
+    }
+
     public double getTotalWage(){
         double totalWage = 0;
         double[] fillRate = getJobFillRate().clone();

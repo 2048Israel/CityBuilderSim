@@ -154,6 +154,22 @@ Consumer Price Index for All Urban Consumers, CPI-U (US Bureau of Labor Statisti
   Licence: Public domain (a US government work)
   Used for: the US's prices 2015-2025, which turn a year's US$ into 2015 dollars
 
+The wage ladder and the minimum wage (the game's code: PayTier, LabourMarket; WG1, 2026-11-10)
+
+Not part of world-1.bin: the figures are in the game's code. The ladder's rungs are occupation medians at 173 hours a
+month; the minimum wage starts at 0.85 of the unskilled rung, Nova Scotia's legal minimum over the labourer's median.
+
+Wages (Employment and Social Development Canada, Job Bank), Nova Scotia occupation medians
+  Credit:  Contains information licensed under the Open Government Licence - Canada.
+  Licence: Open Government Licence - Canada (https://open.canada.ca/en/open-government-licence-canada)
+  Used for: every rung of the wage ladder (PayTier), from the material-handling labourer's $20.00 an hour up
+  Source:  https://open.canada.ca/data/en/dataset/adad580f-76b0-4502-bd05-20c125de9116
+
+Nova Scotia's minimum wage ($17.00 an hour from 1 October 2026)
+  Credit:  none required: a rate fixed in regulation is a fact
+  Used for: where a new city's minimum wage starts, $17.00 over $20.00 of the unskilled rung
+  Source:  https://novascotia.ca/lae/employmentrights/minimumwage.asp
+
 land-2024: the nations' land prices (WN5, 2026-11-01)
 
 land-2024.json (src/main/resources/world/) is each nation's land a hectare in US dollars of 2024: 25 published

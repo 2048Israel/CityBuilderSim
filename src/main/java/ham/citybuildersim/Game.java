@@ -1572,13 +1572,21 @@ public class Game {
     }
 
     /**
-     * The player's hand on the minimum-wage dial (R0): refused until the lever opens (1918 on history's dates), because the dial is also the
-     * wage ladder's anchor and a floor of zero would zero every wage. Returns whether it was taken. LabourMarket's own setter is for
-     * founding and the harnesses and is not gated; the Policy screen comes through here.
+     * The player's hand on the minimum-wage dial (R0): refused until the lever opens (1918 on history's dates), because the law does not exist
+     * yet (WG1: it was also the wage ladder's anchor, and a floor of zero would have zeroed every wage; the going rate is the anchor now).
+     * Returns whether it was taken. LabourMarket's own setter is for founding and the harnesses and is not gated; the Policy screen comes
+     * through here.
      */
     public boolean setMinimumWage(double value) {
         if (!isLeverOpen(PolicyDates.Lever.MINIMUM_WAGE)) return false;
         labourMarket.setMinimumWage(value);
+        return true;
+    }
+
+    /** What the floor is tied to (WG1): refused with the dial, because the law does not exist yet. Returns whether it was taken. */
+    public boolean setFloorTie(LabourMarket.FloorTie tie, double share) {
+        if (!isLeverOpen(PolicyDates.Lever.MINIMUM_WAGE)) return false;
+        labourMarket.setFloorTie(tie, share);
         return true;
     }
 
@@ -14033,6 +14041,9 @@ public class Game {
         } else {
             labourMarket.updateCostOfLiving(priceIndex.getIndex());
         }
+        // The floor's tie to the average wage (WG1) is struck once a month from last month's wages, before repriceLabour() walks them.
+        // A floor tied to prices or to nothing ignores the word; the market keeps the figure for the dial to read the share off.
+        labourMarket.followAverageWage(populationManager.getAverageWage());
         /*
          * ...AND THE FLOOR HOLDS ITS WORTH. The minimum wage is a standard of
          * living now, so the cash figure is restruck from the index every month

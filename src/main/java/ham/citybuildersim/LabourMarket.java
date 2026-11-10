@@ -17,7 +17,7 @@ package ham.citybuildersim;
  *
  * THE MODEL
  *
- *     base   = minimumWage x ratio[type] x costOfLiving
+ *     base   = goingRate x ratio[type] x costOfLiving
  *     tight  = posts / qualified workers
  *     target = base x clamp(tight ^ ELASTICITY, MIN_MULTIPLE, MAX_MULTIPLE)
  *     wage  += (target - wage) x ADJUST_RATE
@@ -25,13 +25,18 @@ package ham.citybuildersim;
  *
  * Four things in there are load-bearing and none of them is the exponent.
  *
- * THE MINIMUM WAGE IS THE BASE. Jerus: "make the base a modifiable min wage".
- * It is not merely a floor under the lowest band - the whole ladder is a
- * multiple of it, so raising it lifts every wage in the city and the player has
- * one dial that moves the entire labour cost of the economy. The multiples are
- * READ OFF PayTier rather than invented (see ratioOf), which gives the property
- * that matters: at the default minimum wage this market pays exactly what the
- * game paid before it existed. Every balance measurement already taken survives.
+ * THE GOING RATE IS THE BASE (WG1, 2026-11-10). It was "THE MINIMUM WAGE IS THE
+ * BASE" from the day this class was written - Jerus: "make the base a modifiable
+ * min wage" - and the whole ladder was a multiple of the floor, so raising the
+ * floor lifted every wage in the city and 94% of workers were paid exactly the
+ * floor (spec-wages 2.2). Jerus, 2026-11-02: "yes a real minimum wage". The
+ * ladder is now anchored on the GOING RATE: what an unskilled post pays where
+ * there are exactly enough workers, ladder.anchor(), in founding money and
+ * lifted by the cost of living as every base is. The multiples are still READ
+ * OFF PayTier rather than invented (see ratioOf), which still gives the
+ * property that matters: at the going rate this market pays exactly what the
+ * game paid before it existed, so every balance measurement already taken
+ * survives. The floor is not the anchor; it starts at DEFAULT_FLOOR_SHARE of it.
  *
  * IT IS CLAMPED. A purely relative price has no absolute level, and one
  * unfilled post in a city with no doctors is infinite scarcity. Same reasoning
@@ -44,12 +49,22 @@ package ham.citybuildersim;
  *
  * AND THE FLOOR IS A POLICY, WHICH IS THE INTERESTING PART. Without one:
  * unemployment drives wages down, low wages drive people out, a smaller city
- * needs fewer workers, and it spirals. The minimum wage stops that - and
- * because the unskilled base IS the minimum wage, an unskilled surplus cannot
- * be priced away at all. The adjustment has to happen in QUANTITY instead, which
- * is exactly what a binding minimum wage does in the real world and exactly
- * what Migration's surplus departures now model. The player sets the number and
- * lives with which of the two costs they would rather pay.
+ * needs fewer workers, and it spirals. The minimum wage stops that. Until WG1
+ * (2026-11-10) the unskilled base WAS the minimum wage, so an unskilled surplus
+ * could not be priced away at all; the floor is now a real minimum, a figure of
+ * its own that only lifts the wages UNDER it (wage = max(wage, cash floor)), and
+ * the unskilled wage can fall to the floor and no further. A floor over what the
+ * market would pay still turns a price adjustment into a QUANTITY one: the
+ * surplus cannot be priced away, so it is unemployed or it leaves, which is
+ * exactly what a binding minimum wage does in the real world and exactly what
+ * Migration's surplus departures model. The player sets the number and lives
+ * with which of the two costs they would rather pay.
+ *
+ * THE FLOOR'S TIE (WG1). The floor is set in founding money and lifted by the
+ * cost of living (PRICES, the default and the only rule before WG1); or struck
+ * each month as a share of the average wage (AVERAGE_WAGE, the OECD's way of
+ * reading a minimum, spec-wages 3.2); or fixed as a cash figure that inflation
+ * wears down (NOTHING). The tie is saved with the market.
  */
 public class LabourMarket {
 
@@ -68,13 +83,34 @@ public class LabourMarket {
        =================================================================== */
 
     /**
-     * Where the minimum wage starts, and therefore what the whole ladder is
-     * anchored to on month one.
-     *
-     * Deliberately the unskilled PayTier wage, so a new city's payroll is
-     * penny-identical to what it was before this class existed.
+     * The going rate on today's ladder, in founding money, for a reader with no city: what an unskilled post pays where there are exactly enough
+     * workers, and what the ladder is anchored on (a city's market reads getGoingRate(), its own ladder's anchor()).
      */
-    public static final double DEFAULT_MINIMUM_WAGE = PayTier.UNSKILLED.getMonthlyWage();
+    public static final double GOING_RATE = PayTier.UNSKILLED.getMonthlyWage();
+
+    /**
+     * Where a new city's floor starts, as a share of the going rate: Nova Scotia's legal minimum, $17.00 an hour since 1 October 2026, over the
+     * material-handling labourer's Job Bank median, $20.00, which the unskilled rung is (spec-wages C1, Jerus 2026-11-02: "0.85, Nova Scotia's").
+     */
+    public static final double DEFAULT_FLOOR_SHARE = .85;
+
+    /**
+     * Where the minimum wage starts on today's ladder. It is no longer what the ladder is anchored to (WG1, 2026-11-10: the going rate is), so a
+     * new city's payroll is still penny-identical to what it was before this class existed, and its floor sits under the unskilled wage.
+     */
+    public static final double DEFAULT_MINIMUM_WAGE = GOING_RATE * DEFAULT_FLOOR_SHARE;
+
+    /** How far above the floor a wage counts as near it: the reach the spillover evidence gives the next few dollars, an estimate (spec-wages 3.6). */
+    public static final double NEAR_FLOOR = .10;
+
+    /** The floor's share of the average wage when it is tied to it: the middle of the OECD's 37-55% (28 of the 33 nations in the world file), an estimate (spec-wages 3.2). */
+    public static final double DEFAULT_TIE_SHARE = .45;
+
+    /** The lowest share of the average wage a tie to it can ask. */
+    public static final double MIN_TIE_SHARE = .20;
+
+    /** The highest share of the average wage a tie to it can ask: a floor at the average wage is the most. */
+    public static final double MAX_TIE_SHARE = 1.0;
 
     /* =====================================================================
        THE BOUNDS ARE MULTIPLES OF THE GOING WAGE, NOT DOLLAR FIGURES.
@@ -127,6 +163,19 @@ public class LabourMarket {
     private double minSettable = MIN_SETTABLE;
     private double maxSettable = MAX_SETTABLE;
 
+    /**
+     * The going rate in the market's current unit (founding money): the ladder's anchor, what every base is a multiple of. Kept exactly as
+     * minSettable is - the ladder's at setLadder(), re-seeded at a unit by seedConstants(), carried across a reform by redenominate() - and
+     * never saved: the city says its ladder, and the unit is the city's.
+     */
+    private double goingRate = GOING_RATE;
+
+    /** The going rate, in founding money at the market's current unit: what an unskilled post pays where there are exactly enough workers. */
+    public double getGoingRate() { return goingRate; }
+
+    /** The going rate in TODAY's money: the founding figure lifted by the cost of living, as every base is. */
+    public double cashGoingRate() { return goingRate * costOfLiving; }
+
     public double getMinSettable() { return minSettable; }
     public double getMaxSettable() { return maxSettable; }
 
@@ -148,6 +197,7 @@ public class LabourMarket {
         ladder = l == null ? WageLadder.TODAY : l;
         minSettable = lowestSettable();
         maxSettable = highestSettable();
+        goingRate = ladder.anchor();
     }
 
     /** The dial's bounds on this market's ladder at the founding unit: the constants on today's, multiples of the 1901 anchor on 1901's. */
@@ -155,12 +205,13 @@ public class LabourMarket {
     private double highestSettable() { return ladder.isHistorical() ? ladder.anchor() * MAX_SETTABLE_MULTIPLE : MAX_SETTABLE; }
 
     /**
-     * A city founded on a ladder (R0d): its bounds, its minimum wage at the ladder's anchor - the field, not setMinimumWage(), which would log a
-     * decision nobody made - and every wage on its base. Founding only; a load restores the floor and the wages and calls setLadder().
+     * A city founded on a ladder (R0d): its bounds, its minimum wage at DEFAULT_FLOOR_SHARE of the ladder's anchor (WG1; the anchor itself until
+     * then) - the field, not setMinimumWage(), which would log a decision nobody made - and every wage on its base. Founding only; a load
+     * restores the floor and the wages and calls setLadder().
      */
     public void foundOn(WageLadder l) {
         setLadder(l);
-        minimumWage = ladder.anchor();
+        minimumWage = ladder.anchor() * DEFAULT_FLOOR_SHARE;
         resetToBase();
     }
 
@@ -168,11 +219,11 @@ public class LabourMarket {
 
     /**
      * Whether the minimum wage is law yet (R0): false in a city before the date Canada first had one (PolicyDates, MINIMUM_WAGE, 1918),
-     * and then the floor binds no wage - the max() in advanceMonth() and isPinned()'s floor are skipped. Only that. The dial is also the
-     * wage ladder's ANCHOR (baseWage() is minimumWage x ratio x costOfLiving for every job), so it is not zeroed and the base wages, the
-     * curve and everything else stand: before 1918 the wages find their own levels above and below the figure that anchors them. Game pushes
-     * it with the policy's month (the lever's opening month is the city's, and a law find may move it); true for a labour market no
-     * city holds, which behaves as it always did. Never saved: the city says.
+     * and then the floor binds no wage - the max() in advanceMonth() and isPinned()'s floor are skipped. Only that. The floor is not the
+     * ladder's anchor (WG1, 2026-11-10: baseWage() is goingRate x ratio x costOfLiving; until then the dial WAS the anchor, so it could not
+     * be zeroed), so the base wages, the curve and everything else stand: before 1918 the wages find their own levels above and below the
+     * going rate. Game pushes it with the policy's month (the lever's opening month is the city's, and a law find may move it); true for a
+     * labour market no city holds, which behaves as it always did. Never saved: the city says.
      */
     private boolean floorBinding = true;
 
@@ -311,8 +362,8 @@ public class LabourMarket {
      * definition" of the wage ladder and says so in its own comment; a second
      * table of multiples here would be right the day it was written and wrong
      * the first time somebody rebalanced a tier. Deriving it also gives the
-     * neutrality property: minimumWage x ratio reproduces PayTier exactly when
-     * the dial is at its default.
+     * neutrality property: goingRate x ratio reproduces PayTier exactly (WG1,
+     * 2026-11-10; until then it was minimumWage x ratio at the dial's default).
      *
      * TODAY'S LADDER (R0d): for a reader with no city. A city's market reads
      * ratio(job), which is its own ladder's: this one, the expression
@@ -422,8 +473,15 @@ public class LabourMarket {
      */
     public void updateCostOfLiving(double priceIndex) {
         if (priceIndex <= 0) return;
+        double cash = cashMinimumWage();
         livingTarget = 1 + (priceIndex - 1) * COST_OF_LIVING_PASS_THROUGH;
         costOfLiving += (livingTarget - costOfLiving) * DRIFT_PER_MONTH;
+        holdTheCashFloor(cash);
+    }
+
+    /** A floor tied to nothing (WG1) is a cash figure: after the cost of living moves, the real floor is whatever keeps `cash` its cash. */
+    private void holdTheCashFloor(double cash) {
+        if (floorTie == FloorTie.NOTHING) minimumWage = clamp(floorForCash(cash), minSettable, maxSettable);
     }
 
     /* ----------------- HALF WHAT PEOPLE EXPECT, HALF THE CHASE (0.7.42) -----------------
@@ -463,9 +521,11 @@ public class LabourMarket {
      */
     public void updateCostOfLiving(double priceIndex, double expectedMonthly) {
         if (priceIndex <= 0 || !(costOfLiving > 0)) return;
+        double cash = cashMinimumWage();
         livingTarget = 1 + (priceIndex - 1) * COST_OF_LIVING_PASS_THROUGH;
         costOfLiving *= Math.pow(1 + expectedMonthly, EXPECTED_SHARE)
                 * Math.pow(livingTarget / costOfLiving, (1 - EXPECTED_SHARE) * DRIFT_PER_MONTH);
+        holdTheCashFloor(cash);
     }
 
     /** What wages have been lifted by, chasing the cost of living. */
@@ -498,14 +558,17 @@ public class LabourMarket {
          * where every wage in the game learns about prices and the fixtures all
          * measure wages.
          *
-         * The right end is that minimumWage was ALREADY real. It is multiplied
-         * by costOfLiving here, so a floor of 0.80 in founding money is already
+         * The right end is that the base was ALREADY real. It is multiplied
+         * by costOfLiving here, so a figure of 0.80 in founding money is already
          * worth 0.80 in founding money whatever prices do - the only place it
          * was nominal was the hard clamp in advanceMonth(), which is one line
          * and is now indexed too. Nothing else had to change, and the player's
          * ± % sits on top of a floor that was real all along.
+         *
+         * (WG1, 2026-11-10: the figure multiplied here is the going rate, not
+         * the floor; the floor's own indexation is cashMinimumWage(), once.)
          */
-        return minimumWage * ratio(job) * costOfLiving;
+        return goingRate * ratio(job) * costOfLiving;
     }
 
     /* ===================================================================
@@ -577,15 +640,17 @@ public class LabourMarket {
             wage[i] += (target - wage[i]) * ADJUST_RATE;
 
             // Nobody is paid under the minimum, whatever the band's own floor
-            // works out to. For the unskilled band the two are the same number,
-            // which is why an unskilled surplus cannot be priced away at all.
+            // works out to. The unskilled band's own floor is .70 of the going
+            // rate, so a floor over that (the default is .85 of it) is where an
+            // unskilled surplus cannot be priced away any further (WG1; until
+            // then the floor was the unskilled base itself).
             /*
              * INDEXED, because this is the one place the floor was nominal.
              * baseWage() multiplies the floor by costOfLiving, so the floor is
              * real everywhere else; a bare `minimumWage` here is a legislated
              * minimum that inflation quietly removes. See cashMinimumWage().
              */
-            // ...from the date the law exists (R0): before it nobody is bound to pay the figure that anchors the ladder.
+            // ...from the date the law exists (R0): before it nobody is bound to pay the floor.
             if (floorBinding) wage[i] = Math.max(wage[i], cashMinimumWage());
         }
     }
@@ -613,6 +678,30 @@ public class LabourMarket {
             return wage[job.ordinal()] <= floor * (1 + PINNED_TOLERANCE);
         }
         return false;
+    }
+
+    /**
+     * Whether the floor is what this job is paid (WG1): the law exists and the wage is within PINNED_TOLERANCE of the cash floor, at or under
+     * it times (1 + PINNED_TOLERANCE). The floor was every unskilled wage's base until WG1, so the Wages page had no one to count.
+     */
+    public boolean isPaidTheFloor(JobType job) {
+        return floorBinding && wage[job.ordinal()] <= cashMinimumWage() * (1 + PINNED_TOLERANCE);
+    }
+
+    /** Whether any job of the band is paid the floor (see isPaidTheFloor(JobType)). */
+    public boolean isPaidTheFloor(WageBand band) {
+        for (JobType job : JobType.values()) {
+            if (WageBand.of(job) == band && isPaidTheFloor(job)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Whether this job is paid a little over the floor (WG1): the law exists, the job is not paid the floor, and its wage is at or under the
+     * cash floor times (1 + NEAR_FLOOR) - the wages a rise in the floor is likely to reach next (spec-wages 3.6).
+     */
+    public boolean isNearTheFloor(JobType job) {
+        return floorBinding && !isPaidTheFloor(job) && wage[job.ordinal()] <= cashMinimumWage() * (1 + NEAR_FLOOR);
     }
 
     /** Puts every wage back on its base. New game, and the load fallback. */
@@ -743,12 +832,16 @@ public class LabourMarket {
     }
 
     /**
-     * Moves the dial. Every wage in the city re-anchors to the new floor.
+     * Moves the dial. The wages under the new floor are lifted to it (WG1,
+     * 2026-11-10; until then every wage in the city re-anchored to the new floor,
+     * because the floor was the ladder's anchor): it is only a floor now, and
+     * the going rate every base is a multiple of does not move.
      *
-     * The existing wages are NOT rescaled here. They walk to their new targets
-     * at ADJUST_RATE like everything else, so a minimum wage rise arrives over a
-     * year rather than on the turn it is signed - which is both truer and the
-     * only version a player can see happening.
+     * The existing wages are NOT rescaled here. A wage over the floor walks to
+     * its target at ADJUST_RATE like everything else, and one under it is held
+     * at it by the next month's max(), so the floor binds from the next month.
+     * Under a tie to the average wage the share moves to match, so the one dial
+     * works under every tie.
      *
      * TAKES THE REAL FLOOR, IN FOUNDING MONEY, and stores it as given, held to
      * the settable bounds: the same figure getMinimumWage() reads, and what
@@ -763,6 +856,9 @@ public class LabourMarket {
     public void setMinimumWage(double value) {
         double was = minimumWage;
         minimumWage = clamp(value, minSettable, maxSettable);
+        if (floorTie == FloorTie.AVERAGE_WAGE && Double.isFinite(lastAverageWage) && lastAverageWage > 0) {
+            tieShare = clamp(cashAt(minimumWage) / lastAverageWage, MIN_TIE_SHARE, MAX_TIE_SHARE);
+        }
         if (DecisionLog.moved(was, minimumWage)) {
             decided(DecisionLog.PROMISE, "Wage floor to " + DecisionLog.money(minimumWage) + " a month");
         }
@@ -787,17 +883,21 @@ public class LabourMarket {
 
     /**
      * Where a job's wage heads with the real floor at `floor`: advanceMonth()'s
-     * target - its base at that floor times this month's band and licence
-     * multiples, held to MAX_MULTIPLE - and never under the floor in today's
-     * money at that setting. What the wage walks to "once wages have walked
-     * there", at ADJUST_RATE a month; at today's floor it is today's target,
-     * which the wage itself may not have reached. Pure.
+     * target - its base times this month's band and licence multiples, held to
+     * MAX_MULTIPLE - and never under the floor in today's money at that setting
+     * (once the law exists: advanceMonth() holds the wage by the same test).
+     * What the wage walks to "once wages have walked there", at ADJUST_RATE a
+     * month; at today's floor it is today's target, which the wage itself may
+     * not have reached. The base is the going rate's, whatever the floor (WG1,
+     * 2026-11-10; the floor was the base until then): the floor is only in the
+     * max(). Pure.
      */
     public double targetWageAt(JobType job, double floor) {
-        double base = floor * ratio(job) * costOfLiving;
+        double base = goingRate * ratio(job) * costOfLiving;
         double combined = Math.min(MAX_MULTIPLE,
                 bandMultiple[WageBand.of(job).ordinal()] * licenceMultiple[job.ordinal()]);
-        return Math.max(base * combined, cashAt(floor));
+        double target = base * combined;
+        return floorBinding ? Math.max(target, cashAt(floor)) : target;
     }
 
     /** The best-paid job somebody in this band can hold (0.7.36; the Policy tab's own until then): what a course's fee is weighed against. */
@@ -815,6 +915,74 @@ public class LabourMarket {
     }
 
     /* ===================================================================
+       THE FLOOR'S TIE (WG1, 2026-11-10; spec-wages 3.2)
+
+       What the floor keeps pace with, when nothing is moving it by hand:
+         PRICES        the real floor holds as prices move - cashMinimumWage()
+                       lifts it by the cost of living. The rule before WG1.
+         AVERAGE_WAGE  the real floor is struck each month as a share of last
+                       month's average wage (followAverageWage()).
+         NOTHING       a cash figure: the real floor falls as prices rise and
+                       rises as they fall, so inflation wears it down.
+       =================================================================== */
+
+    /** What the floor keeps pace with. */
+    public enum FloorTie {
+        PRICES("prices"), AVERAGE_WAGE("the average wage"), NOTHING("nothing");
+
+        private final String label;
+        FloorTie(String label) { this.label = label; }
+
+        /** The tie in words, as the Policy tab and the decision log name it. */
+        public String label() { return label; }
+    }
+
+    private FloorTie floorTie = FloorTie.PRICES;
+
+    /** The floor's share of the average wage when it is tied to it (AVERAGE_WAGE); kept, unused, under another tie. */
+    private double tieShare = DEFAULT_TIE_SHARE;
+
+    /** The average wage the tie last read, in today's money. Never saved: Game says it every month before the wages are walked. */
+    private transient double lastAverageWage;
+
+    /** What the floor keeps pace with. */
+    public FloorTie getFloorTie() { return floorTie; }
+
+    /** The floor's share of the average wage when it is tied to it. */
+    public double getTieShare() { return tieShare; }
+
+    /**
+     * Ties the floor (WG1): the tie, and its share of the average wage (held to MIN_TIE_SHARE..MAX_TIE_SHARE; the share means something under
+     * AVERAGE_WAGE only). A null tie reads PRICES. It does not move the floor itself this month - the tie strikes it as the month turns
+     * (followAverageWage(), updateCostOfLiving()). Logs one decision when either moved.
+     */
+    public void setFloorTie(FloorTie tie, double share) {
+        FloorTie t = tie == null ? FloorTie.PRICES : tie;
+        double s = clamp(share, MIN_TIE_SHARE, MAX_TIE_SHARE);
+        boolean moved = t != floorTie || DecisionLog.moved(tieShare, s);
+        floorTie = t;
+        tieShare = s;
+        if (!moved) return;
+        switch (t) {
+            case AVERAGE_WAGE -> decided(DecisionLog.PROMISE, "Wage floor tied to the average wage at " + DecisionLog.pct(tieShare));
+            case NOTHING -> decided(DecisionLog.PROMISE, "Wage floor tied to nothing: a cash figure");
+            default -> decided(DecisionLog.PROMISE, "Wage floor tied to prices");
+        }
+    }
+
+    /**
+     * Game's monthly word on the average wage (WG1), the wage bill over the posts filled, before the wages are walked. Stored for
+     * setMinimumWage(); and under AVERAGE_WAGE, when the average is finite and above nothing, the real floor is struck at tieShare of it,
+     * held to the settable bounds (a floor the tie would take outside them is held at the bound).
+     */
+    public void followAverageWage(double averageWage) {
+        lastAverageWage = averageWage;
+        if (floorTie == FloorTie.AVERAGE_WAGE && Double.isFinite(averageWage) && averageWage > 0) {
+            minimumWage = clamp(floorForCash(tieShare * averageWage), minSettable, maxSettable);
+        }
+    }
+
+    /* ===================================================================
        SAVE AND RESTORE
 
        A flow cannot be reconstructed from the state a month ended in, and
@@ -826,7 +994,7 @@ public class LabourMarket {
 
     public double[] state() {
         int bands = WageBand.values().length;
-        double[] out = new double[wage.length + 3 + diagnosticsLength()];
+        double[] out = new double[wage.length + 3 + diagnosticsLength() + 2];
         out[0] = minimumWage;
         System.arraycopy(wage, 0, out, 1, wage.length);
         // The real floor and the player's nudge, appended so an older save
@@ -848,6 +1016,9 @@ public class LabourMarket {
         System.arraycopy(bandMultiple, 0, out, i, bands);        i += bands;
         System.arraycopy(licenceMultiple, 0, out, i, wage.length); i += wage.length;
         out[i] = livingTarget;
+        // The floor's tie and its share (WG1), appended after the diagnostics: an older array restores PRICES at the default share.
+        out[i + 1] = floorTie.ordinal();
+        out[i + 2] = tieShare;
         return out;
     }
 
@@ -889,6 +1060,17 @@ public class LabourMarket {
             System.arraycopy(saved, i, licenceMultiple, 0, wage.length); i += wage.length;
             if (saved[i] > 0) livingTarget = saved[i];
         }
+        // The floor's tie and its share (WG1), when the save carries them; PRICES at the default share otherwise.
+        if (saved.length >= wage.length + 3 + diagnosticsLength() + 2) {
+            int at = wage.length + 3 + diagnosticsLength();
+            FloorTie[] ties = FloorTie.values();
+            int ordinal = (int) Math.round(saved[at]);
+            floorTie = ordinal >= 0 && ordinal < ties.length ? ties[ordinal] : FloorTie.PRICES;
+            tieShare = Double.isFinite(saved[at + 1]) ? clamp(saved[at + 1], MIN_TIE_SHARE, MAX_TIE_SHARE) : DEFAULT_TIE_SHARE;
+        } else {
+            floorTie = FloorTie.PRICES;
+            tieShare = DEFAULT_TIE_SHARE;
+        }
     }
 
     /**
@@ -900,6 +1082,7 @@ public class LabourMarket {
      */
     public void redenominate(double scale) {
         minimumWage *= scale;
+        goingRate *= scale;
         minSettable *= scale;
         maxSettable *= scale;
         for (int i = 0; i < wage.length; i++) wage[i] *= scale;
@@ -910,6 +1093,7 @@ public class LabourMarket {
     public void seedConstants(double unit) {
         minSettable = lowestSettable() / unit;
         maxSettable = highestSettable() / unit;
+        goingRate = ladder.anchor() / unit;
     }
 
 }
