@@ -1233,20 +1233,41 @@ public class Migration {
      * The workers per wage band migration would bring for an order's posts within {@code window} months of its opening, for the staffing
      * gate (Sector.staffing(), GW1).
      *
-     * The posts raise the target by the jobs' draw: JOB_WEIGHT x posts x last month's residents a job x the pulls on the jobs' draw
-     * (senior care, rent and crime), as monthlyNet() builds lastTarget. A gap closes at ARRIVAL_RATE x last month's crowding a month, so
-     * {@code window} months close 1 - (1 - that)^window of it. The city's workers per resident (getWorkforceForSave() / getPopulation())
-     * turn people into workers. They split by band as composeArrivals() splits a month's arrivals, with the order's posts added to each
-     * band's open posts, and the licences to the university band. Every figure it reads is last month's and saved (LAST_SCALARS), so a
-     * loaded city's draw is its twin's. WG2 (queued) will cut it by its brake as it cuts arrivals (spec-staffing-gate §5, C4).
+     * WHAT IT COUNTS: only the part of migration's gap that the order itself makes positive, and no more than the doors have room for.
+     * The posts raise the target by {@code delta} = JOB_WEIGHT x posts x last month's residents a job x the pulls on the jobs' draw
+     * (senior care, rent and crime), as monthlyNet() builds lastTarget. monthlyNet() brings people only while the target stands above
+     * the population, so the gap now is {@code gapNow} = lastTarget - population, and the order's part of it is
+     * max(0, gapNow + delta) - max(0, gapNow): nothing where the population stands above the target even with the order, all of the
+     * delta where the gap was already positive, and what rises above zero where the delta takes the gap from negative to positive. A
+     * gap closes at ARRIVAL_RATE x last month's crowding a month, so {@code window} months close 1 - (1 - that)^window of it. The people
+     * so drawn are cut to the room monthlyNet() puts on arrivals (lastRoom less lastArrivals: the doors last month left free after its
+     * own arrivals) when the city has a census to place them against (lastRoom is NaN with none). The city's workers per resident
+     * (getWorkforceForSave() / getPopulation()) turn people into workers. They split by band as composeArrivals() splits a month's
+     * arrivals, with the order's posts added to each band's open posts, and the licences to the university band. Every figure it reads
+     * is last month's and saved (LAST_SCALARS, lastRoom with them), so a loaded city's draw is its twin's. WG2 (queued) will cut it by
+     * its brake as it cuts arrivals (spec-staffing-gate §5, C4).
+     *
+     * WHY, what it counted before: JOB_WEIGHT x posts x residents a job x the pulls x the closing share, whatever the gap and the room.
+     * That overstated the draw wherever migration would not bring the people: it counted when lastTarget stood at or below the
+     * population, where monthlyNet() brings nobody (YearBookCheck's city had 7,738 posts against a labour force of 6,326 at month 60,
+     * and every order's whole addition was still counted), and it ignored the room that monthlyNet() caps arrivals at.
+     *
+     * NO BAND PREMIUM IS READ, and WHY. composeArrivals() pulls every band but the diploma band by reach(market.bandPremium(band)), and
+     * the band premium is priced on the posts the gate REFUSED (Game.repriceLabour(), WantedPosts.pricedOn, LD1). Read here, a refused
+     * order's own posts would raise the wage that draws the workers that let it pass: a loop, and it breaks repriceLabour()'s own word
+     * that the gate's test "still read only the posts that exist". So the gate counts the draw at the going wage: a band's pull here is
+     * 1 for the diploma band and 0 for every other (the 1900 mix's ordinary() arrivals, who come at the going rate, stay). The licences'
+     * weights on the university band are as composeArrivals() has them, since WantedPosts does not price licences.
      *
      * {@code mix} is the year's, passed in and not read from yearMix: Game pushes yearMix only at the month's migration step, which runs
      * after the planners, and never saves it, so a loaded 1900 city's first planners would read null and its gate would part from its
      * twin's. Null is the default founding's model, as in composeArrivals(). It is a pure read: no field of Migration is written.
      *
      * @param wanted the order's posts per band
+     * @param market the labour market, read for the professions' licence premiums only (null reads the going rate)
      * @param mix    the year's arrival mix, or null in a city founded the default way
-     * @return the workers drawn per band, all zeros where nothing is drawn (no people, window or posts, or an empty city)
+     * @return the workers drawn per band, all zeros where nothing is drawn (no people, window or posts, an empty city, a population at
+     *         or above the target with the order's delta, or no room)
      */
     public double[] drawFor(double[] wanted, LabourMarket market, PopulationManager people, int window, ArrivalMix.Point mix) {
         int n = WageBand.values().length;
@@ -1258,10 +1279,14 @@ public class Migration {
         if (posts <= 0 || pop <= 0) return out;
 
         double jobPull = lastSeniorPull * lastAffordabilityPull * lastCrimePull;
-        double drawn = JOB_WEIGHT * posts * lastResidentsPerJob * jobPull;
+        double delta = JOB_WEIGHT * posts * lastResidentsPerJob * jobPull;
+        double gapNow = lastTarget - pop;
+        double orderGap = Math.max(0, gapNow + delta) - Math.max(0, gapNow);
         double monthly = Math.max(0, Math.min(1, ARRIVAL_RATE * lastCrowding));
         double close = 1 - Math.pow(1 - monthly, window);
-        double workers = drawn * close * people.getWorkforceForSave() / (double) pop;
+        double drawnPeople = orderGap * close;
+        if (!Double.isNaN(lastRoom)) drawnPeople = Math.min(drawnPeople, Math.max(0, lastRoom - lastArrivals));
+        double workers = drawnPeople * people.getWorkforceForSave() / (double) pop;
 
         double[] postsNow = people.staffablePostsByBand();
         double[] here = people.supplyByBand();
@@ -1271,7 +1296,7 @@ public class Migration {
             int b = band.ordinal();
             double open = (postsNow == null ? 0 : postsNow[b]) + (b < wanted.length ? Math.max(0, wanted[b]) : 0);
             double opportunity = opportunity(open, here == null ? 0 : here[b]);
-            double pull = band == WageBand.DIPLOMA ? 1 : reach(market == null ? 1 : market.bandPremium(band));
+            double pull = band == WageBand.DIPLOMA ? 1 : 0;   // no band premium: the gate counts the draw at the going wage
             weight[b] = !admits(band) ? 0 : mix == null
                     ? band.arrivalCeiling() * pull * opportunity
                     : (mix.ordinary(band) + mix.ceiling(band) * pull) * opportunity;
@@ -1303,7 +1328,10 @@ public class Migration {
      * figures go on the end: the draw and its parts, the pulls, the flows
      * and who made them up, the mixes and the licences. None of them is
      * read by the next month, which strikes each afresh; they are for the
-     * screen. A save from before them is the history alone and loads with
+     * screen, and (GW1) for the staffing gate's draw, drawFor(), which reads
+     * the target, the pulls, the crowding, the arrivals and the room, so a
+     * loaded city's gate is its twin's only because they ride the save. A
+     * save from before them is the history alone and loads with
      * the month at its defaults, as it always did; any other length is
      * refused whole.
      */
@@ -1312,7 +1340,7 @@ public class Migration {
     private static final int HISTORY_SLOTS = TIERS * DECLINE_MONTHS + TIERS + 1;
 
     /** The month's scalars that follow it, in toSaveArray()'s order. */
-    private static final int LAST_SCALARS = 16;
+    private static final int LAST_SCALARS = 17;
 
     /** ...then the arrival mix and the departure mix by band, and the licences by job. */
     private static int lastSlots() {
@@ -1331,7 +1359,8 @@ public class Migration {
             lastTarget, lastArrivals, lastDepartures, lastCrowding, lastDecliningShare,
             lastSeniorPull, lastResidentsPerJob, lastAffordabilityPull, lastCrimePull,
             lastCrimeDepartures, lastBankruptcyPush, lastWorkDepartures,
-            lastJobs, lastHomeCapacity, lastJobDraw, lastHomeDraw };
+            lastJobs, lastHomeCapacity, lastJobDraw, lastHomeDraw,
+            Double.isNaN(lastRoom) ? -1 : lastRoom };   // NaN (no census) is written -1: DataSave's Gson cannot write it
         for (double v : last) out[i++] = v;
         for (double v : lastArrivalMix) out[i++] = v;
         for (double v : lastDepartureMix) out[i++] = v;
@@ -1368,6 +1397,8 @@ public class Migration {
         lastHomeCapacity      = saved[i++];
         lastJobDraw           = saved[i++];
         lastHomeDraw          = saved[i++];
+        double room           = saved[i++];
+        lastRoom              = room < 0 ? Double.NaN : room;   // a room is never below 0, so the -1 written for NaN reads back as NaN
         for (int b = 0; b < lastArrivalMix.length; b++) lastArrivalMix[b] = saved[i++];
         for (int b = 0; b < lastDepartureMix.length; b++) lastDepartureMix[b] = saved[i++];
         for (int j = 0; j < lastArrivalLicences.length; j++) lastArrivalLicences[j] = saved[i++];

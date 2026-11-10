@@ -1960,6 +1960,12 @@ public class InvestCheck {
         BuildingsTemplate store = template(g, "Convenience Store");
         PopulationManager people = g.getPopulationManager();
         month(g);
+        // GW1: the gate counts a year's draw (Sector.GATE_DRAW_MONTHS), which would pass a second store on the arrivals a year brings; a city
+        // with no room draws nobody, so what a store on site changes, who is spare, is the whole of the test. Months are played until the
+        // city reads no room (WantedPostsCheck.noRoom()'s loop, which is on that harness's own print streams).
+        for (int months = 0; months < 6 && g.getMigration().getLastCrowding() > 0; months++) month(g);
+        assertTrue("fixture: the city has no room (crowding 0), so migration brings nobody for the gate's year and the draw is nothing",
+                g.getMigration().getLastCrowding() == 0);
         // Workers for one store and not two: three spare unskilled hands against a store's two posts, four with a diploma against its three.
         long none = (long) Math.ceil(people.staffablePostsByBand()[WageBand.NONE.ordinal()]);
         long diploma = (long) Math.ceil(people.staffablePostsByBand()[WageBand.DIPLOMA.ordinal()]);
@@ -1980,9 +1986,6 @@ public class InvestCheck {
                         && spare[WageBand.DIPLOMA.ordinal()] < 2 * store.getJobs(JobType.DIPLOMA));
         assertTrue("fixture: nothing of the shops' is on site", bm.getUnderConstructionBySector(shops.key()) == 0);
         assertTrue("with nothing of its own on site, a store passes the staffing test", shops.staffing(store).passes());
-        // GW1: the gate counts a year's draw (Sector.GATE_DRAW_MONTHS), so a second store passes on the arrivals a year brings; what a store
-        // on site changes is who is spare, so this rule is read on the spare workers alone (shareNow), as the gate read them before.
-        assertTrue("...and the spare workers alone (shareNow) cover it: MIN_STAFFABLE_TO_ORDER of its posts", shops.staffing(store).shareNow >= Sector.MIN_STAFFABLE_TO_ORDER);
         // Another sector's building on site is not the shops' to staff.
         bm.addStack(template(g, "Diner"), 1, false);
         assertTrue("...a Diner on site (another sector's) does not touch the shops' test", shops.staffing(store).passes());
@@ -1990,8 +1993,7 @@ public class InvestCheck {
         bm.addStack(store, 1, false);
         Sector.Staffing second = shops.staffing(store);
         double[] afterOne = second.spare();
-        assertTrue("with a store of its own on site, the workers it will need are not spare: the second store fails the test on the spare workers alone (shareNow)",
-                second.shareNow < Sector.MIN_STAFFABLE_TO_ORDER);
+        assertTrue("with a store of its own on site, the workers it will need are not spare: the second store fails the test", !second.passes());
         // The diploma band's spare falls by the store's diploma posts; the unskilled band's by its own posts and by the diploma
         // posts too, since the workers a diploma post takes are the ones that would have come down the ladder to fill an unskilled one.
         assertTrue("...by the posts on site, band by band: the diploma band's spare falls by a store's diploma posts, the unskilled band's by its own and what came down to it",
