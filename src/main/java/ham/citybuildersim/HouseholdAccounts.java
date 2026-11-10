@@ -884,6 +884,11 @@ public class HouseholdAccounts {
 
     public double getRowDoors(int row) { return rowDoors[row]; }
 
+    /** What living alone costs a person a month: a home's rent, a basket and the fees (livingAlonePressure()'s figure, and the one the floor's job cover, PolicyPreview.floorJobCover(), is set against). */
+    public double costOfLivingAlone() {
+        return rentPerHousehold() + shoppingPerHead() + feesPerHead();
+    }
+
     /**
      * How badly a single adult in each tier cannot afford to live alone, 0-1.
      *
@@ -908,7 +913,7 @@ public class HouseholdAccounts {
         double[] out = new double[PayTier.values().length];
         if (families == null) return out;
 
-        double costOfLivingAlone = rentPerHousehold() + shoppingPerHead() + feesPerHead();
+        double costOfLivingAlone = costOfLivingAlone();
         if (costOfLivingAlone <= 0) return out;
 
         for (PayTier tier : PayTier.values()) {

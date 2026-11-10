@@ -2365,8 +2365,8 @@ final class PeopleScreen {
                                 Palette.SIZE_LABEL, Palette.TEXT_MUTED))),
                 details("posts", "every post in the city",
                         Kept.scope("posts table", () -> jobTable(pm.getJobs(), pm.getJobVacancy(), pm.getJobFillRate(), pm.getWagesPerType()))),
-                words(String.format("Minimum wage %s a month; every wage in the city is a multiple of it.%s",
-                        cash(market.cashMinimumWage()), wantedNote(ui.game.getWantedPosts())),
+                words(String.format("Minimum wage %s a month; unskilled work goes for %s at the going rate.%s",
+                        cash(market.cashMinimumWage()), cash(market.cashGoingRate()), wantedNote(ui.game.getWantedPosts())),
                         Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
         return c;
     }

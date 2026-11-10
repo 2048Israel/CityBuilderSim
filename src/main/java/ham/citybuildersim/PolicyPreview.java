@@ -291,16 +291,58 @@ public final class PolicyPreview {
     }
 
     /**
-     * The factor every wage heads for with the real floor at `floor` (M6):
-     * a job's target is its base at the floor times multiples that do not
-     * move with it, and never under the floor in today's money, both in
-     * proportion to the floor - so every target moves by the floor's own
-     * ratio. "Once wages have walked there", about a year at ADJUST_RATE.
+     * What a real floor at `floor` does to the wages, once they have walked there (about a year at ADJUST_RATE), WG1: the floor lifts only the wages under it
+     * (LabourMarket.targetWageAt() has it only in its max()), so it moves the job types whose target at it differs from their target at the floor in force and
+     * nobody else - the going rate, the ratios, the band and licence multiples and the cost of living are all outside it. `workers` is the posts filled in
+     * those jobs (posts x fill, as PopulationManager.getJobsFilled() counts them, unrounded), `payNow`/`payThen` their monthly pay at the two targets (sums,
+     * not averages), and `billNow`/`billThen` the city's whole wage bill at every job's two targets, the posts filled.
      */
-    public static double wageMoveAt(Game g, double floor) {
+    public record FloorMove(double workers, double payNow, double payThen, double billNow, double billThen) { }
+
+    /** Every job's target wage at a real floor, by JobType ordinal: LabourMarket.targetWageAt(), the figure the wages walk to. */
+    private static double[] targetsAt(Game g, double floor) {
         LabourMarket m = g.getLabourMarket();
-        double now = m.targetWageAt(JobType.NO_DIPLOMA, m.getMinimumWage());
-        return now > 0 ? m.targetWageAt(JobType.NO_DIPLOMA, floor) / now : 1;
+        JobType[] jobs = JobType.values();
+        double[] out = new double[jobs.length];
+        for (JobType job : jobs) out[job.ordinal()] = m.targetWageAt(job, floor);
+        return out;
+    }
+
+    /** The floor's own move at a staged real floor: see FloorMove. The jobs whose target at it parts from their target at the floor in force by over 1e-9 (relative) are the ones it moves. */
+    public static FloorMove floorMoveAt(Game g, double floor) {
+        double[] now = targetsAt(g, g.getLabourMarket().getMinimumWage());
+        double[] then = targetsAt(g, floor);
+        long[] posts = g.getPopulationManager().getJobs();
+        double[] fill = g.getPopulationManager().getJobFillRate();
+        double workers = 0, payNow = 0, payThen = 0, billNow = 0, billThen = 0;
+        for (int i = 0; i < now.length && i < posts.length; i++) {
+            double filled = posts[i] * fill[i];
+            billNow += filled * now[i];
+            billThen += filled * then[i];
+            if (Math.abs(then[i] - now[i]) > 1e-9 * Math.max(Math.abs(then[i]), Math.abs(now[i]))) {
+                workers += filled;
+                payNow += filled * now[i];
+                payThen += filled * then[i];
+            }
+        }
+        return new FloorMove(workers, payNow, payThen, billNow, billThen);
+    }
+
+    /** The city's whole wage bill once wages have walked to a real floor at `floor`, over what it is at the floor in force: FloorMove.billThen() over billNow(), 1 when there is no bill. */
+    public static double wageBillMoveAt(Game g, double floor) {
+        FloorMove move = floorMoveAt(g, floor);
+        return move.billNow() > 0 ? move.billThen() / move.billNow() : 1;
+    }
+
+    /**
+     * What a full-time job at the floor takes home over what living alone costs (WG1): the cash floor less the payslip's share at the lowest band (the wage tax and
+     * the three premiums, TaxPolicy.payslipShare()) over HouseholdAccounts.costOfLivingAlone(). Under 1 the floor alone does not carry a person; 0 when living alone costs nothing.
+     */
+    public static double floorJobCover(Game g) {
+        double cost = g.getHouseholds().costOfLivingAlone();
+        if (cost <= 0) return 0;
+        double takeHome = g.getLabourMarket().cashMinimumWage() * (1 - g.getEconomyManager().getTaxPolicy().payslipShare(WageBand.values()[0]));
+        return takeHome / cost;
     }
 
     /**
@@ -312,9 +354,31 @@ public final class PolicyPreview {
         return g.getEducation().getPayroll() + g.getHealthcare().getPayroll() + g.getEconomyManager().getResearchPayroll();
     }
 
-    /** What the city's own staff - teachers, doctors and nurses, and the research posts its grants buy (R3b) - would cost a month with every wage moved by wageMoveAt(): today's posts, paid at the targets of the new floor. */
+    /**
+     * What the city's own staff - teachers, doctors and nurses, and the research posts its grants buy (R3b) - would cost a month once wages have walked to a real
+     * floor at `floor` (WG1): cityPayroll() plus what the staff's pay moves by, job by job - the three sums the month makes (BuildingManager.getCategoryPayroll() for
+     * EDUCATION and HEALTHCARE as Game's care and schools steps call it, Research.payroll() for each field with posts as settleResearchBill() does) taken at every job's
+     * target at `floor`, less the same at every job's target at the floor in force. So at the floor in force it is cityPayroll() exactly, and a floor that reaches none
+     * of the staff's jobs (it lifts only the wages under it) moves it by nothing.
+     */
     public static double cityPayrollAt(Game g, double floor) {
-        return cityPayroll(g) * wageMoveAt(g, floor);
+        double[] now = targetsAt(g, g.getLabourMarket().getMinimumWage());
+        double[] then = targetsAt(g, floor);
+        return cityPayroll(g) + (staffPay(g, then) - staffPay(g, now));
+    }
+
+    /** The city's staff's pay a month at `wage` a job type: the schools', the care's and the research posts', today's posts, at the fills the month's own sums use. */
+    private static double staffPay(Game g, double[] wage) {
+        double[] fill = g.getPopulationManager().getJobFillRate();
+        double[] researchFill = g.getResearchFill();
+        if (researchFill == null) researchFill = fill;
+        double pay = g.getBuildingManager().getCategoryPayroll(BuildingType.EDUCATION, wage, fill)
+                + g.getBuildingManager().getCategoryPayroll(BuildingType.HEALTHCARE, wage, fill);
+        for (ResearchCatalog.Field f : ResearchCatalog.Field.values()) {
+            int posts = g.getResearch().posts(f);
+            if (posts > 0) pay += Research.payroll(f, posts, wage, researchFill);
+        }
+        return pay;
     }
 
     /* =====================================================================
