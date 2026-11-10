@@ -836,6 +836,19 @@ public class PopulationManager {
                 for (int b = 0; b < out.length; b++) if (b != none) out[b] *= k;
             }
         }
+
+        /*
+         * ...AND THE OWNER FAMILIES (BO1). "No job, lives of dividends" (Jerus,
+         * 2026-11-02): their adults are outside the families and outside the
+         * supply, taken off every band in proportion - an owner is of no
+         * particular skill - and never below zero.
+         */
+        if (owners > 0) {
+            double all = 0;
+            for (double v : out) all += v;
+            double k = all > 0 ? Math.max(0, 1 - owners / all) : 0;
+            for (int b = 0; b < out.length; b++) out[b] *= k;
+        }
         return out;
     }
 
@@ -843,6 +856,11 @@ public class PopulationManager {
     private double imprisoned;
     public void setImprisoned(double adults) { this.imprisoned = Math.max(0, adults); }
     public double getImprisoned() { return imprisoned; }
+
+    /** Adults of the owner families (two a company, BO1), who take no job; set from the line each month. */
+    private double owners;
+    public void setOwners(double adults) { this.owners = Math.max(0, adults); }
+    public double getOwners() { return owners; }
 
     /** Adults studying full time, by band, set from Education each month. */
     private double[] studying;
@@ -1162,7 +1180,8 @@ public class PopulationManager {
      */
     public double getLabourForce() {
         // ...and less the prisoners, since 2026-09-11 (night). See workforceByBand().
-        return Math.max(0, workforce - getStudyingTotal() - imprisoned);
+        // ...and less the owner families' adults, who take no job (BO1).
+        return Math.max(0, workforce - getStudyingTotal() - imprisoned - owners);
     }
 
     /** Unemployed as a share of everyone who could work, 0-1. */
@@ -1264,6 +1283,7 @@ public class PopulationManager {
         totalJobs = 0;
         workforce = 0;
         imprisoned = 0;
+        owners = 0;
     }
     
     private static final NumberFormat formatter = NumberFormat.getNumberInstance(Locale.CANADA);

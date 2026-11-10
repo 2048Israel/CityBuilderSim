@@ -538,6 +538,8 @@ public class HouseholdAccounts {
     public static final int ORPHANS = Household.ORPHAN_ROW;
     /** ...and the prisoners, since 2026-09-11 (night). */
     public static final int PRISONERS = Household.PRISON_ROW;
+    /** ...and the owner families, one two-adult household a company that has listed (BO1). */
+    public static final int OWNERS = Household.OWNER_ROW;
     private static final int ROWS = Household.ROWS;
 
     /** The rows a save from before 2026-09-11 carries: the tiers and the retired. */
@@ -1337,6 +1339,7 @@ public class HouseholdAccounts {
         if (row == STUDENTS)   return "Full-time students";
         if (row == ORPHANS)    return "Orphans";
         if (row == PRISONERS)  return "In prison";
+        if (row == OWNERS)     return "Owner families";
         return PayTier.values()[row].getLabel();
     }
 

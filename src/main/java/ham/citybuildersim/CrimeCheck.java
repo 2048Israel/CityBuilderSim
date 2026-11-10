@@ -296,7 +296,8 @@ public class CrimeCheck {
         check("a theft takes from the households' savings what it says it took", hb.totalSavings(), saved - taken, 1e-6);
         double[] weight = new double[hb.cellCount()];
         weight[0] = 1;
-        weight[hb.cellCount() - 2] = 3;
+        // The cell before the prisoners' (the last but one until BO1 put the owners' after it).
+        weight[hb.cells().indexOf(hb.prisoners()) - 1] = 3;
         hb.creditByWeight(taken, weight);
         check("...and handing it to the offenders puts every dollar back", hb.totalSavings(), saved, 1e-6);
 
