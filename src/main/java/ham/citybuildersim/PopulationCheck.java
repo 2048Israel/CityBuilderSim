@@ -1112,6 +1112,14 @@ public class PopulationCheck {
             b.addStack(b.getTemplateByName("House"), 200, true);
             b.addStack(b.getTemplateByName("Convenience Store"), 8, true);
             b.addStack(b.getTemplateByName("Construction Depot"), 2, true);
+            // GW1: the landlords hold, so the homes stay the two hundred Houses placed above ("a city with 200 houses and eight shops
+            // standing on day one") and the target the ratio names is that city's. The staffing gate now counts the workers migration
+            // would bring (Migration.drawFor()), the businesses order earlier, and the landlords built 1,510 homes in the decade (2,810
+            // at month 120, the merge base's 2,246): the unpulled target stood at 1,854 and the city at 1,457, 78.6% of it, at the model's
+            // own target (1,442) under the rents' pull of .778 - it had filled, to 1,819 at month 67 (96% of 1,885), and the rents priced it back
+            // (the pull .58 to .78 from month 73 to 121). The merge base's city at 1,543 stood over its smaller target (1,499).
+            // Held: 1,138 people at month 120, 94.7% of the unpulled target (876 + 325), the doors the limit (room 33).
+            g.getBusinessInvestment().holdSector(Sectors.REAL_ESTATE);
             g.simulateMonths(months);
         } finally {
             System.setOut(out);
