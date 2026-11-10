@@ -709,7 +709,7 @@ final class FinancesScreen {
                   + (advanced > 0 ? d(advanced) + " advanced" : "")
                 : null;
 
-        String owedNote = principal < .5 ? "nothing owed"
+        String owedNote = principal < Money.NOTHING ? "nothing owed"
                 : annual > 0 ? String.format("%.0f%% %s", principal / annual * 100, ofAnnualGdp(na))
                 : "no output to compare";
 
@@ -1320,7 +1320,7 @@ final class FinancesScreen {
         for (int y = 0; y < ladder.years().size(); y++) {
             DebtManager.Rung r = ladder.years().get(y);
             boolean heaviest = y == ladder.heaviest() && r.owed() > 0;
-            boolean say = r.total() >= .5 && (y == 0 || heaviest || r.total() >= peak * .25);
+            boolean say = r.total() >= Money.NOTHING && (y == 0 || heaviest || r.total() >= peak * .25);
             boolean wall = heaviest && revenueYear > 0 && r.owed() > revenueYear * CityNeeds.YEAR_WALL;
             String sub = y == 0 && r.fromMonth() >= 0 && CityCalendar.monthOfYear(r.fromMonth()) != 1
                     ? CityCalendar.shortMonthName(r.fromMonth()) + "–" + CityCalendar.shortMonthName(r.toMonth()) : null;
@@ -1379,14 +1379,14 @@ final class FinancesScreen {
         s.append(" · ").append(d(r.owed()));
         boolean first = true;
         for (int k = 0; k < 3; k++) {
-            if (r.byKind()[k] < .5) continue;
+            if (r.byKind()[k] < Money.NOTHING) continue;
             s.append(first ? ": " : ", ").append(KIND_NAMES[k].toLowerCase()).append(' ').append(d(r.byKind()[k]));
-            if (r.abroadByKind()[k] >= .5) s.append(", ").append(d(r.abroadByKind()[k])).append(" of it abroad");
+            if (r.abroadByKind()[k] >= Money.NOTHING) s.append(", ").append(d(r.abroadByKind()[k])).append(" of it abroad");
             first = false;
         }
         if (first) s.append(": nothing owed falls in it");
-        if (revenueYear > 0 && r.owed() >= .5) s.append(" · ").append(pc(r.owed() / revenueYear)).append(" of a year's take");
-        if (extraName != null && r.proposed() >= .5) s.append(" · ").append(extraName).append(' ').append(d(r.proposed()));
+        if (revenueYear > 0 && r.owed() >= Money.NOTHING) s.append(" · ").append(pc(r.owed() / revenueYear)).append(" of a year's take");
+        if (extraName != null && r.proposed() >= Money.NOTHING) s.append(" · ").append(extraName).append(' ').append(d(r.proposed()));
         return s.toString();
     }
 
@@ -1495,10 +1495,10 @@ final class FinancesScreen {
     String fellDueWords() {
         Game g = ui.game;
         Rollover r = g.getRollover();
-        if (r.getLastMonth() == g.getMonth() - 1 && r.getLastDue() >= .5) {
+        if (r.getLastMonth() == g.getMonth() - 1 && r.getLastDue() >= Money.NOTHING) {
             return d(r.getLastDue()) + " fell due · " + (r.getLastRaised() > 0 ? "rolled" : "paid ✓");
         }
-        if (g.hasTreasuryMonth() && g.getTreasuryRepaid() >= .5) {
+        if (g.hasTreasuryMonth() && g.getTreasuryRepaid() >= Money.NOTHING) {
             return d(g.getTreasuryRepaid()) + " fell due · paid ✓";
         }
         return null;
@@ -1681,7 +1681,7 @@ final class FinancesScreen {
         if (r.getLastMonth() < 0) return null;
         return String.format("Last, falling due in %s: %s, %s netted from the surplus, %s.",
                 CityCalendar.format(r.getLastMonth() + 1), d(r.getLastDue()), d(r.getLastNetted()),
-                r.getLastIssued() >= .5 ? d(r.getLastIssued()) + " of new paper raised " + d(r.getLastRaised())
+                r.getLastIssued() >= Money.NOTHING ? d(r.getLastIssued()) + " of new paper raised " + d(r.getLastRaised())
                         : "nothing re-borrowed");
     }
 
@@ -1797,11 +1797,11 @@ final class FinancesScreen {
         double fundValue = g.fundValue();
         return List.of(
                 new AreaCard("The position", pct2(g.getInterestRate()),
-                        "rated " + g.getCreditRating() + " · " + (principal < .5 ? "nothing owed"
+                        "rated " + g.getCreditRating() + " · " + (principal < Money.NOTHING ? "nothing owed"
                                 : annual > 0 ? pc(principal / annual) + " of GDP" : d(principal) + " owed"),
                         Palette.TEXT_LABEL, null),
                 new AreaCard("The book", pieces == 0 ? "nothing" : pieces + (pieces == 1 ? " piece" : " pieces"),
-                        coupon >= .5 ? d(coupon) + " coupon a month in cash"
+                        coupon >= Money.NOTHING ? d(coupon) + " coupon a month in cash"
                                 : pieces > 0 ? "no coupon: bills pay at maturity" : "nothing outstanding",
                         Palette.TEXT_LABEL, null),
                 new AreaCard("Borrow", pct2(g.getInterestRate()),
@@ -2194,29 +2194,29 @@ final class FinancesScreen {
         card.getChildren().add(cardLine("Interest on the city's paper", d(na.getInterestExpense()), null));
         card.getChildren().add(cardLine("...the coupon paid", d(na.getInterestPaidInCash()), Palette.TEXT_LABEL));
         // Kept (KP5): what comes and goes is a scope each.
-        if (Math.abs(na.getInterestNotCash()) >= .5) {
+        if (Money.something(na.getInterestNotCash())) {
             card.getChildren().add(Kept.scope("not cash", () -> cardLine(na.getInterestNotCash() > 0 ? "...the discount wearing off (no cash)"
                     : "...less the premium wearing off (no cash)", d(na.getInterestNotCash()), Palette.TEXT_LABEL)));
         }
         // The linked bonds' indexation (CD5): an expense beside the interest and not part of it, mostly not cash.
-        if (Math.abs(na.getInflationUplift()) >= .5) {
+        if (Money.something(na.getInflationUplift())) {
             card.getChildren().add(Kept.scope("uplift", () -> cardLine("Inflation uplift on linked bonds", d(na.getInflationUplift()), null, UPLIFT_INFO)));
-            if (na.getUpliftPaidInCash() >= .5) {
+            if (na.getUpliftPaidInCash() >= Money.NOTHING) {
                 card.getChildren().add(Kept.scope("uplift cash", () -> cardLine("...paid in cash at maturity (earlier months' too)", d(na.getUpliftPaidInCash()), Palette.TEXT_LABEL)));
             }
         }
         double repaid = g.hasTreasuryMonth() ? g.getTreasuryRepaid() : 0;
         card.getChildren().add(cardLine("Principal that fell due last month", d(repaid), null));
-        if (r.getLastMonth() == g.getMonth() - 1 && r.getLastDue() >= .5) {
+        if (r.getLastMonth() == g.getMonth() - 1 && r.getLastDue() >= Money.NOTHING) {
             card.getChildren().add(Kept.scope("rolled", () -> segmentBar(List.of(
                             seg(r.getLastNetted(), Palette.MONEY, "netted from last year's surplus " + d(r.getLastNetted())),
                             seg(r.getLastRaised(), Palette.MONEY_LIGHT, "re-borrowed as new paper " + d(r.getLastRaised()))),
                     r.getLastDue(), null, 0, 10)));
             card.getChildren().add(Kept.scope("rolled words", () -> line(String.format("%s fell due: %s paid from last year's surplus, %s.",
-                    d(r.getLastDue()), d(r.getLastNetted()), r.getLastRaised() >= .5
+                    d(r.getLastDue()), d(r.getLastNetted()), r.getLastRaised() >= Money.NOTHING
                             ? d(r.getLastRaised()) + " re-borrowed (" + d(r.getLastIssued()) + " of new face)"
                             : "none re-borrowed"))));
-        } else if (repaid >= .5) {
+        } else if (repaid >= Money.NOTHING) {
             card.getChildren().add(Kept.scope("repaid", () -> line(d(repaid) + " of principal fell due and was repaid; the rollover did not run on it.")));
         } else {
             card.getChildren().add(Kept.scope("none fell", () -> line("No principal fell due last month.")));
@@ -3677,11 +3677,11 @@ final class FinancesScreen {
         double gain = q.gainOnCarrying();
         double stopped = hl.couponStopped();
         double again = hl.costAgain();
-        String stops = stopped >= .5 ? "It stops " + d(stopped) + " a month of coupon; "
+        String stops = stopped >= Money.NOTHING ? "It stops " + d(stopped) + " a month of coupon; "
                 : "It has no coupon to stop - a bill's interest is the discount wearing off; ";
         return stops + d(q.paid()) + " borrowed again at today's " + termWords(hl.months()) + " rate, "
                 + pct2(hl.rate()) + ", would cost " + d(again) + " a month."
-                + (stopped >= .5 && Math.abs(again - stopped) >= .5
+                + (stopped >= Money.NOTHING && Money.something(again - stopped)
                 ? " So it books " + (gain >= 0 ? "a gain" : "a loss") + " and "
                         + (again > stopped ? "raises" : "lowers") + " the city's interest by "
                         + d(Math.abs(again - stopped)) + " a month." : "");
@@ -3719,7 +3719,7 @@ final class FinancesScreen {
         String yieldNote = linker ? "real yield today" : floater ? "yield today, as the market expects" : "yield today";
         String yieldNow = linker ? pct2(l.realYield()) : pct2(l.yield());
         page.getChildren().add(Kept.scope("figures", () -> figureStrip(new String[][] {
-                {"COUPON", lineCoupon(l), coupon >= .5 ? d(coupon) + " a month" : "none: the discount wears off as interest"},
+                {"COUPON", lineCoupon(l), coupon >= Money.NOTHING ? d(coupon) + " a month" : "none: the discount wears off as interest"},
                 {"ISSUE YIELD", pct2(l.bookedRate()) + (linker ? " real" : ""), "the effective rate the books charge"},
                 {"PRICE · YIELD", String.format("%.2f", l.pricePer100()) + " · " + yieldNow, "per 100 of face · " + yieldNote},
                 {"WORTH TODAY", d(l.worth()), "on today's curve"},
@@ -3738,8 +3738,8 @@ final class FinancesScreen {
                         + " since the sale)", INDEXED_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 560));
                 terms.getChildren().add(line("uplift last month " + d(linked.getLastUplift()) + " · repays " + d(linked.owedAtMaturity())
                         + " at today's index"
-                        + (linked.getUpliftDue() >= .5 ? " · next month pays the uplift, " + d(linked.getUpliftDue()) + ", with the face" : "")));
-            } else if (coupon < .5) {
+                        + (linked.getUpliftDue() >= Money.NOTHING ? " · next month pays the uplift, " + d(linked.getUpliftDue()) + ", with the face" : "")));
+            } else if (coupon < Money.NOTHING) {
                 terms.getChildren().add(Kept.scope("no coupon", () -> noteLine("no coupon - the discount wears off as interest", NOTE_INFO, 560)));
             }
             terms.getChildren().add(linker
@@ -3788,7 +3788,7 @@ final class FinancesScreen {
             Buyback.Result whole = g.quoteBuyback(debt, g.buybackOfferable(debt), Double.NaN);
             boolean taken = whole.takenFace() > 0 && whole.paid() > 0;
             double against = l.vsFace();
-            String againstWords = Math.abs(against) < .5 ? "at its face" : against > 0 ? d(against) + " under face" : "a premium of " + d(-against);
+            String againstWords = Money.nothing(against) ? "at its face" : against > 0 ? d(against) + " under face" : "a premium of " + d(-against);
             VBox card = Kept.column(8, caption("IF YOU CLOSED IT TODAY", LINE_CLOSE_INFO),
                     cardLine("Worth today · the fair price", d(l.worth()), null),
                     cardLine("Carried · what the books hold it at", d(l.carried()), null),
@@ -3883,7 +3883,7 @@ final class FinancesScreen {
             return card;
         }
         boolean repaid = false;
-        for (Debt.BooksMonth b : ahead) repaid |= b.repaid() >= .5;
+        for (Debt.BooksMonth b : ahead) repaid |= b.repaid() >= Money.NOTHING;
         final boolean withRepaid = repaid;
         card.getChildren().add(Kept.scope(repaid ? "table with repaid" : "table", () -> booksTable(ahead, month, withRepaid)));
         return card;
@@ -3930,7 +3930,7 @@ final class FinancesScreen {
                 {"the world", Palette.BUILDING_DARK, debt.worldPrincipal(), l.world()}};
         for (Object[] w : who) {
             // A holder with nothing of it is no line (a share that rounds to nothing is none).
-            if ((double) w[2] < .5) continue;
+            if ((double) w[2] < Money.NOTHING) continue;
             card.getChildren().add(Kept.scope(w[0], () -> holderLine((String) w[0], (String) w[1], d((double) w[2]) + " · " + pc((double) w[3]))));
         }
         if (debt.centralBankPrincipal() > 0) {
@@ -4652,7 +4652,7 @@ final class FinancesScreen {
             head.setAlignment(Pos.CENTER_LEFT);
             double coupon = debt.getMonthlyCoupon();
             Node facts = muted(String.format("%s owed · %s carried · %s · worth today %s · %.3f for each 100", d(principal),
-                    d(debt.getCarryingValue()), coupon >= .5 ? d(coupon) + " a month of coupon" : "no coupon",
+                    d(debt.getCarryingValue()), coupon >= Money.NOTHING ? d(coupon) + " a month of coupon" : "no coupon",
                     d(g.fairValueOf(debt)), ledger.priceOfPar(debt)));
             Node held = holdersBar(debt);
             Node central = Kept.scope("central", () -> debt.isForeign()
@@ -4812,7 +4812,7 @@ final class FinancesScreen {
             double gain = q.gainOnCarrying();
             VBox journal = Kept.scope("journal", () -> card(caption("THE JOURNAL", null, hint("what the first of them books")),
                     cardLine("Dr  City paper payable", d(q.takenFace()), null),
-                    sideways > .5 ? cardLine("Dr  Unamortised premium", d(sideways), null)
+                    sideways > Money.NOTHING ? cardLine("Dr  Unamortised premium", d(sideways), null)
                                   : cardLine("Cr  Unamortised discount", d(Math.max(0, -sideways)), null),
                     cardLine("Cr  Cash", d(q.paid()), null),
                     gain >= 0 ? cardLine("Cr  Gain on debt retired", d(gain), null)
@@ -6696,7 +6696,7 @@ final class FinancesScreen {
             String share = all > 0 ? " · " + pc(held[i] / all) : "";
             parts.add(seg(held[i], BOND_HOLDER_COLOURS[i], BOND_HOLDERS[i] + " " + d(held[i]) + share));
             // Kept (KP5): a holder that holds nothing has no entry, so each entry is a scope keyed by who it is.
-            if (key && held[i] >= .5) k.getChildren().add(Kept.scope("holder:" + at, () -> keySwatch(BOND_HOLDER_COLOURS[at],
+            if (key && held[i] >= Money.NOTHING) k.getChildren().add(Kept.scope("holder:" + at, () -> keySwatch(BOND_HOLDER_COLOURS[at],
                     BOND_HOLDERS[at] + " " + d(held[at]) + share)));
         }
         Region bar = segmentBar(parts, 0, null, 0, band);

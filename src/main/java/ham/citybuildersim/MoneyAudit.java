@@ -65,6 +65,15 @@ public final class MoneyAudit {
         public final String detail;
 
         /**
+         * The figures behind detail's lines, as the model recorded them (EP2):
+         * label to amount, in the order the lines were struck, a label struck
+         * twice keeping its first amount, and nothing for an amount of zero
+         * (detail prints none either). detail rounds each to two places, a step
+         * of $10 at the factor; a harness that wants a figure reads it here.
+         */
+        public final java.util.Map<String, Double> figures;
+
+        /**
          * The pools as this month's strike found them, and as it left them.
          *
          * Kept so that the bottom of the month can check the pools against
@@ -171,6 +180,13 @@ public final class MoneyAudit {
         Result(int month, double before, double after, double inflows, double outflows,
                double residual, String detail, double[] foreign,
                double[] poolsAtOpen, double[] poolsAtClose) {
+            this(month, before, after, inflows, outflows, residual, detail, foreign, poolsAtOpen, poolsAtClose, null);
+        }
+
+        Result(int month, double before, double after, double inflows, double outflows,
+               double residual, String detail, double[] foreign,
+               double[] poolsAtOpen, double[] poolsAtClose, java.util.Map<String, Double> figures) {
+            this.figures = figures == null ? java.util.Map.of() : java.util.Collections.unmodifiableMap(new java.util.LinkedHashMap<>(figures));
             this.poolsAtOpen  = poolsAtOpen  == null ? null : poolsAtOpen.clone();
             this.poolsAtClose = poolsAtClose == null ? null : poolsAtClose.clone();
             this.month = month;
@@ -192,6 +208,12 @@ public final class MoneyAudit {
             this.valuationOut = foreign[7];
             this.moneyIn  = foreign.length > 10 ? foreign[10] : 0;
             this.moneyOut = foreign.length > 11 ? foreign[11] : 0;
+        }
+
+        /** The figure detail printed for this label, unrounded; 0 when no such line was struck (EP2). */
+        public double figure(String label) {
+            Double v = figures.get(label);
+            return v == null ? 0 : v;
         }
 
         /** What crossed the edge this month, both ways: the size the residual is read against (MoneyAudit.tolerance(), 0.7.54). */
@@ -501,8 +523,12 @@ public final class MoneyAudit {
     /** As above, and with the opening pools the result can say which pool moved unexplained. */
     static Result strike(Game g, double before, double[] poolsBefore, double interestDue) {
         StringBuilder detail = new StringBuilder();
+        java.util.Map<String, Double> figures = new java.util.LinkedHashMap<>();
         java.util.function.BiConsumer<String, Double> note = (label, amount) -> {
-            if (amount != 0) detail.append(String.format("      %-36s %,14.2f%n", label, amount));
+            if (amount != 0) {
+                detail.append(String.format("      %-36s %,14.2f%n", label, amount));
+                figures.putIfAbsent(label, amount);
+            }
         };
         /*
          * Two recorders rather than one, so the DIRECTION is stated at the call
@@ -1298,7 +1324,7 @@ public final class MoneyAudit {
         }
         double residual = (after - before) - (in - out);
         return new Result(g.getMonth(), before, after, in, out, residual, detail.toString(), foreign,
-                poolsBefore, poolsAfter);
+                poolsBefore, poolsAfter, figures);
     }
 
     /** What the Scrap Yards' struck statements bought of the households' old steel (0.7.123; OldMetal): their input billed by Trade.HOUSEHOLDS, which nothing else is. */

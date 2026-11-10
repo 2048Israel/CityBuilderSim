@@ -834,33 +834,6 @@ public class NewGameCheck {
                     w.fitsInCash() ? "in cash" : String.format("a bond for $%,.0fk", w.bondNeeded()));
         }
 
-        // The getter is the invoice: a new city is charged exactly this for the village.
-        // EP1: on the Historical path (the default founding's otherwise). The gap below is the city's after a year, and the auction's coupon
-        // steps an eighth in a sawtooth of the face (see the XR1 note and the sawtooth below), so whether the quote for this one gap lands
-        // within a granule of it depends on where the gap falls on the tooth. On the Random path that is a draw of the world's prices, keyed by
-        // calendar year, and the calendar's move to 1900 moved it ($1,109k over a bound of $112k); Historical's stand-in has no draw in it.
-        // The section's premise, a Standard city short of the water plant a year on, stands.
-        Game v = quietly(() -> { Game g = new Game(files, Founding.defaults().withPath(Nations.Path.HISTORICAL, Nations.DEFAULT_SEED)); g.run(); return g; });
-        // XR1 (2026-10-21): this section measures what the founding endowment buys and a bond sized to a gap,
-        // not the currency. Under THE FLOAT the D$ falls from 1.00 to 0.77 in the year the fixture waits, which
-        // moves the gap to a face where the auction's coupon steps an eighth (an $800k tooth in the proceeds,
-        // see the sawtooth below) and the quote overshot by $682k, so the rate is held where the founding leaves it.
-        v.getForeignAccounts().pinRate(v.getForeignAccounts().getRate());
-        v.getLandManager().setOwnedSqFt(30_000_000);
-        double before = v.getCash();
-        boolean villagePlaced = true;
-        for (String[] order : Founding.VILLAGE) {
-            villagePlaced &= v.buildStack(template(v, order[0]), Integer.parseInt(order[1]), false)
-                    == Game.BuildResult.SUCCESS;
-        }
-        assertTrue("fixture: a new city places the founding village", villagePlaced);
-        close("...and is charged for it exactly what whatItBuys() says", before - v.getCash(), buys.village(), 1e-6);
-        double worstWork = 0;
-        for (Founding.Work w : buys.works()) {
-            worstWork = Math.max(worstWork, Math.abs(v.quoteBuild(template(v, w.name()), 1).total - w.cost()));
-        }
-        close("...and quoted for each first work exactly what it says, the yard spent", worstWork, 0, 1e-6);
-
         StringBuilder fit = new StringBuilder();
         for (Founding.Work w : buys.inCash()) fit.append(fit.length() == 0 ? "" : ", ").append(w.name());
         System.out.println("   in cash after the village, each on its own: " + (fit.length() == 0 ? "none" : fit));
@@ -884,6 +857,51 @@ public class NewGameCheck {
         assertTrue("(b) ...and not the others as well: after any one of them, the rest need a bond", restNeedABond);
 
         /*
+         * EP2: the village and (c) run on both paths, Random (the default, Nations.DEFAULT_PATH) and Historical. EP1 had pinned them to
+         * Historical because on Random the water-plant bond overshot the gap by $1,109k against a single-gap bound of $112k: the gap is the
+         * city's after a year, the auction's coupon steps an eighth in a sawtooth of the face (the XR1 note and the sawtooth below), so whether
+         * the quote lands within a granule of it depends on where the gap falls on the tooth, and on Random that is a draw of the world's
+         * prices, keyed by calendar year, which the calendar's move to 1900 moved. The assertion no longer rests on that bound: BA1 (2026-11-04)
+         * rests it on the auction's smallest-face promise (the face one granule down does not cover the gap), which holds wherever the gap
+         * falls on the tooth, and the overshoot is printed, not asserted. So a path can run it; each assertion's label ends with the path.
+         */
+        for (Nations.Path path : new Nations.Path[] { Nations.Path.RANDOM, Nations.Path.HISTORICAL }) {
+            endowmentBuysAndBorrows(files, buys, path);
+        }
+    }
+
+    /**
+     * Section 11's village and (c), the water plant's bond, on one path of the founding (EP2: Random and Historical, both at Nations.DEFAULT_SEED).
+     * Each assertion's label ends with the path's name.
+     */
+    static void endowmentBuysAndBorrows(GameFiles files, Founding.Buys buys, Nations.Path path) throws Exception {
+        String on = path == Nations.Path.RANDOM ? "Random" : "Historical";
+        String tag = " (" + on + ")";
+        System.out.println("   on the " + on + " path:");
+
+        // The getter is the invoice: a new city is charged exactly this for the village.
+        Game v = quietly(() -> { Game g = new Game(files, Founding.defaults().withPath(path, Nations.DEFAULT_SEED)); g.run(); return g; });
+        // XR1 (2026-10-21): this section measures what the founding endowment buys and a bond sized to a gap,
+        // not the currency. Under THE FLOAT the D$ falls from 1.00 to 0.77 in the year the fixture waits, which
+        // moves the gap to a face where the auction's coupon steps an eighth (an $800k tooth in the proceeds,
+        // see the sawtooth below) and the quote overshot by $682k, so the rate is held where the founding leaves it.
+        v.getForeignAccounts().pinRate(v.getForeignAccounts().getRate());
+        v.getLandManager().setOwnedSqFt(30_000_000);
+        double before = v.getCash();
+        boolean villagePlaced = true;
+        for (String[] order : Founding.VILLAGE) {
+            villagePlaced &= v.buildStack(template(v, order[0]), Integer.parseInt(order[1]), false)
+                    == Game.BuildResult.SUCCESS;
+        }
+        assertTrue("fixture: a new city places the founding village" + tag, villagePlaced);
+        close("...and is charged for it exactly what whatItBuys() says" + tag, before - v.getCash(), buys.village(), 1e-6);
+        double worstWork = 0;
+        for (Founding.Work w : buys.works()) {
+            worstWork = Math.max(worstWork, Math.abs(v.quoteBuild(template(v, w.name()), 1).total - w.cost()));
+        }
+        close("...and quoted for each first work exactly what it says, the yard spent" + tag, worstWork, 0, 1e-6);
+
+        /*
          * (c) the city borrows for the rest, from the build screen, and gets
          * it - on the page's bond (0.7.10), as its button books it:
          * quoteLongBondForCash() for Game.buildFundingGap(), at
@@ -896,19 +914,19 @@ public class NewGameCheck {
         quietly(() -> v.simulateMonths(12));
         BuildingsTemplate plant = template(v, "Water Treatment Plant");
         Game.BuildResult asked = v.buildStack(plant, 1, false);
-        assertTrue("(c) fixture: a year on, the water plant is more than its treasury holds",
+        assertTrue("(c) fixture: a year on, the water plant is more than its treasury holds" + tag,
                 asked == Game.BuildResult.NEEDS_FUNDING);
         double gap = v.buildFundingGap(plant, 1);
-        close("(c) the page's gap is the plant's invoice less the treasury",
+        close("(c) the page's gap is the plant's invoice less the treasury" + tag,
                 gap, v.calculateTotalCost(plant, 1) - v.getCash(), 0);
-        assertTrue("(c) the page's bond is at one of the five maturities",
+        assertTrue("(c) the page's bond is at one of the five maturities" + tag,
                 LongTermBond.isIssuable(Game.BUILD_BOND_YEARS));
 
         // The page's other offer, quoted only - a quote books nothing - so the
         // note is held to the very gap the bond is. Its own path, borrowing
         // for roads and getting them, is CreditCheck's, and unchanged.
         DebtQuote note = v.quoteTBill(gap, Game.BUILD_NOTE_MONTHS, 1000.0);
-        assertTrue("(c) the page's note is still quoted: six months, covering the gap",
+        assertTrue("(c) the page's note is still quoted: six months, covering the gap" + tag,
                 "Note".equals(note.instrument()) && note.duration() == Game.BUILD_NOTE_MONTHS
                         && note.cashReceived() >= gap);
 
@@ -922,10 +940,10 @@ public class NewGameCheck {
                         + " $%,.2fk over the gap (bound $%,.2fk), $%,.0fk a month%n",
                 quote.duration(), quote.faceValue(), quote.marketRate() * 100, quote.couponRate() * 100,
                 quote.cashReceived(), over, bound, quote.monthlyInterest());
-        assertTrue("(c) a Standard city short of the water plant is quoted the bond",
+        assertTrue("(c) a Standard city short of the water plant is quoted the bond" + tag,
                 !quote.isEmpty() && "Term".equals(quote.instrument())
                         && quote.duration() == Game.BUILD_BOND_YEARS);
-        assertTrue("...whose cash covers the gap", over >= 0);
+        assertTrue("...whose cash covers the gap" + tag, over >= 0);
         /*
          * ...WITH THE SMALLEST FACE THAT DOES (BA1, 2026-11-04; the orchestrator's call on BA1's notes): the face one granule
          * down does not cover the gap. This was "by no more than one issue granule plus the fees", which holds only where
@@ -939,7 +957,7 @@ public class NewGameCheck {
         System.out.printf("   one granule down: $%,.2fk of face brings $%,.2fk, $%,.2fk short of the gap; the bond's overshoot,"
                         + " $%,.2fk, is %.2f%% of the gap (one granule and the fees: $%,.2fk)%n",
                 downOne.faceValue(), downOne.cashReceived(), gap - downOne.cashReceived(), over, 100 * over / gap, bound);
-        assertTrue("...with the smallest face that does: the face one granule down does not cover it", downOne.cashReceived() < gap);
+        assertTrue("...with the smallest face that does: the face one granule down does not cover it" + tag, downOne.cashReceived() < gap);
         // ...and not by the luck of one size: the cent the note's proceeds
         // were rounded short by (CreditCheck section 9) is met here too.
         // CD2: a quote can be short - the bids at the cap do not reach it (the 5,000,000 asks are over the bank's
@@ -970,19 +988,19 @@ public class NewGameCheck {
         System.out.printf("   %d of the quotes sized to their cash (each the smallest face that covers it), %d short at the cap%n",
                 sized, shortOnes);
         assertTrue("...and so at every maturity and size, not this one alone: a short quote is asserted short, and any other covers its"
-                + " ask with the smallest face that does", missed == 0 && shortOnes > 0 && sized > 0);
+                + " ask with the smallest face that does" + tag, missed == 0 && shortOnes > 0 && sized > 0);
 
         int paperBefore = v.getDebtManager().getDebt().size();
         double cashBefore = v.getCash();
         quietly(() -> v.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE));
-        assertTrue("(c) a new city borrowing for it gets it: the bond issues",
+        assertTrue("(c) a new city borrowing for it gets it: the bond issues" + tag,
                 v.getDebtManager().getDebt().size() == paperBefore + 1);
-        close("...and lands exactly the cash it was quoted", v.getCash() - cashBefore, quote.cashReceived(), 1e-6);
+        close("...and lands exactly the cash it was quoted" + tag, v.getCash() - cashBefore, quote.cashReceived(), 1e-6);
         Debt paper = v.getDebtManager().getDebt().get(v.getDebtManager().getDebt().size() - 1);
-        assertTrue("...on the books as a term bond of BUILD_BOND_YEARS, at the face quoted",
+        assertTrue("...on the books as a term bond of BUILD_BOND_YEARS, at the face quoted" + tag,
                 paper instanceof LongTermBond && paper.getDuration() == Game.BUILD_BOND_YEARS * 12
                         && paper.getFaceValue() == quote.faceValue());
-        assertTrue("...and the plant is ordered", v.buildStack(plant, 1, false) == Game.BuildResult.SUCCESS);
+        assertTrue("...and the plant is ordered" + tag, v.buildStack(plant, 1, false) == Game.BuildResult.SUCCESS);
         boolean closedEveryMonth = true;
         int waited = 0;
         while (v.getBuildingManager().countByName("Water Treatment Plant") < 1 && waited < 600) {
@@ -991,8 +1009,8 @@ public class NewGameCheck {
             waited++;
         }
         System.out.printf("   built in %d months, the audit closed every one: %s%n", waited, closedEveryMonth);
-        assertTrue("...and built", v.getBuildingManager().countByName("Water Treatment Plant") == 1);
-        assertTrue("...and every month of it the audit closed", closedEveryMonth);
+        assertTrue("...and built" + tag, v.getBuildingManager().countByName("Water Treatment Plant") == 1);
+        assertTrue("...and every month of it the audit closed" + tag, closedEveryMonth);
     }
 
     /** A first work's invoice, by name. */

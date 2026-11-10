@@ -61,7 +61,7 @@ Generated 2026-11-10 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 39. **L13170** `salvageThisMonth.clear();`
 40. **L13171** `salvageBySector.clear();`
 41. **L13172** `salvageUsedThisMonth = 0;`
-42. **L13173** `double[] poolsBefore = MoneyAudit.pools(this);` → [MoneyAudit.pools](map/MoneyAudit.md) (L322)
+42. **L13173** `double[] poolsBefore = MoneyAudit.pools(this);` → [MoneyAudit.pools](map/MoneyAudit.md) (L344)
 43. **L13174** `double pooledBefore = 0;`
 44. **L13175** `for (double p : poolsBefore) pooledBefore += p;`
 45. **L13176** `double interestDue = economyManager.getInterestAccrued();` → [EconomyManager.getInterestAccrued](map/EconomyManager.md) (L2118)
@@ -195,7 +195,7 @@ Generated 2026-11-10 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 131. **L13697** `bank.setForeignDeposits(hotMoney.getStock());` → [Bank.setForeignDeposits](map/Bank.md) (L1672), [CapitalFlows.getStock](map/CapitalFlows.md) (L634)
 132. **L13699** `worldPaperLeavesWithTheMoney(hotBefore);` → [Game.worldPaperLeavesWithTheMoney](map/Game.md) (L17904)  
    _...and the city's paper the world holds leaves with it (CD2, slice 5): sold to the bank's desk, inside the window._
-133. **L13701** `lastMoneyAudit = MoneyAudit.strike(this, pooledBefore, poolsBefore, interestDue);` → [MoneyAudit.strike](map/MoneyAudit.md) (L497)
+133. **L13701** `lastMoneyAudit = MoneyAudit.strike(this, pooledBefore, poolsBefore, interestDue);` → [MoneyAudit.strike](map/MoneyAudit.md) (L519)
 134. **L13704** `ownersWipedAbroadThisMonth = 0;`  
    _Declared (0.7.14): the valuation a resolution wiped off the world's shares is a month's, whether the month's or a press's before it._
 135. **L13714** `foreign.takeMonth(lastMoneyAudit, economyManager.getMonthGdp());` → [ForeignAccounts.takeMonth](map/ForeignAccounts.md) (L2227), [EconomyManager.getMonthGdp](map/EconomyManager.md) (L2480)  
@@ -235,7 +235,7 @@ Generated 2026-11-10 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 157. **L13861** `dataSave.setCash(cash);` → [DataSave.setCash](map/DataSave.md) (L951)
 158. **L13895** `postAuditDrift = 0;`  
    _================================================================= NOTHING AFTER THE AUDIT MAY MOVE A POOL._
-159. **L13896** `if (lastMoneyAudit != null && lastMoneyAudit.poolsAtClose != null) {` → [MoneyAudit.pools](map/MoneyAudit.md) (L322)
+159. **L13896** `if (lastMoneyAudit != null && lastMoneyAudit.poolsAtClose != null) {` → [MoneyAudit.pools](map/MoneyAudit.md) (L344)
 160. **L13915** `printEndOfTurn();` → [Game.printEndOfTurn](map/Game.md) (L18991)
 161. **L13917** `deferBorrowingCosts();` → [Game.deferBorrowingCosts](map/Game.md) (L3622)  
    _What each business's borrowing cost it up front this month, deferred to be expensed (0.7.102, A16)._

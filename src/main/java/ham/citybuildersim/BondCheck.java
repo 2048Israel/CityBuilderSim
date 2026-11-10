@@ -100,11 +100,14 @@ public class BondCheck {
         out.printf("%-92s %s  %,.9f against %,.9f%n", label, ok ? "OK" : "FAIL", actual, expected);
     }
 
-    /** An audit line against the figure it declares: the audit's detail is written to the cent. */
+    /**
+     * An audit line against the figure it declares, within the model's cent. Until EP2 the line was read from the audit's printed detail, two places of
+     * thousands (a step of $10 at the factor), so this held half a step and a billionth; the line is now the figure the audit recorded (line()), unrounded.
+     */
     static void cents(String label, double line, double figure) {
-        boolean ok = Math.abs(line - figure) <= .005 + 1e-9;
+        boolean ok = Math.abs(line - figure) <= MoneyAudit.CENT;
         if (!ok) fails++;
-        out.printf("%-92s %s  %,.2f against %,.4f%n", label, ok ? "OK" : "FAIL", line, figure);
+        out.printf("%-92s %s  %,.6f against %,.6f%n", label, ok ? "OK" : "FAIL", line, figure);
     }
 
     static void quietly(Runnable r) {
@@ -167,15 +170,9 @@ public class BondCheck {
         return r != null && (Math.abs(r.residual) <= MoneyAudit.CENT || r.relative() <= 1e-7);
     }
 
-    /** One line of a month's audit, by its label: what MoneyAudit declared under it, 0 when it declared nothing. */
+    /** One line of a month's audit, by its label: what MoneyAudit declared under it, as it recorded it (EP2: Result.figure()), 0 when it declared nothing. */
     static double line(MoneyAudit.Result r, String label) {
-        for (String l : r.detail.split("\n")) {
-            String t = l.trim();
-            if (!t.startsWith(label + " ")) continue;
-            String rest = t.substring(label.length()).trim();
-            try { return Double.parseDouble(rest.replace(",", "")); } catch (NumberFormatException e) { return Double.NaN; }
-        }
-        return 0;
+        return r.figure(label);
     }
 
     public static void main(String[] args) throws Exception {

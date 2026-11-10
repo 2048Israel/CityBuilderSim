@@ -1249,26 +1249,17 @@ public class HoldersCheck {
         return Math.abs(book - paper) <= 1e-9 * Math.max(1, paper);
     }
 
-    /** One line of the month's audit by its label, to the cent: 0 when the month has none. */
+    /** One line of the month's audit by its label, as the model recorded it (EP2: the figure itself, not the printed detail's two places): 0 when the month has none. */
     static double auditLine(MoneyAudit.Result r, String label) {
-        for (String line : r.detail.split("\n")) {
-            String t = line.trim();
-            if (!t.startsWith(label + " ")) continue;
-            try {
-                return Double.parseDouble(t.substring(label.length()).trim().replace(",", ""));
-            } catch (NumberFormatException e) {
-                return Double.NaN;
-            }
-        }
-        return 0;
+        return r.figure(label);
     }
 
     /**
-     * The audit's tolerance for a figure read to the cent: auditLine() reads a figure back from the audit's printed detail, which prints thousands to two
-     * places (MoneyAudit, "%,14.2f"), a step of 0.01 whatever the price level, so half a step and a hair is the reading's rounding and not a money
-     * tolerance: it stays .0051 at the factor (EP1's gate review scaled it by the factor, and four assertions failed on the printed 0.06 for 0.0575).
+     * The audit's tolerance for a figure read from it: the model's own cent, MoneyAudit.CENT (EP2). Until EP2 auditLine() parsed the figure back from the
+     * audit's printed detail, which prints thousands to two places, a step of $10 at the factor, so this was .0051, half a step and a hair, the reading's
+     * rounding; the reading no longer rounds (MoneyAudit.Result.figures), so what is left is the money's cent.
      */
-    static final double CENT = .0051;
+    static final double CENT = MoneyAudit.CENT;
 
     static void theWorld() throws Exception {
         out.println("\n--- 11. the world is a holder: it buys from abroad, is paid abroad, leaves with its money, and the books agree ---");

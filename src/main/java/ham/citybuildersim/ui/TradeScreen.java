@@ -2894,8 +2894,8 @@ final class TradeScreen {
     String interventionSentence() {
         ForeignAccounts fx = ui.game.getForeignAccounts();
         List<String> did = new ArrayList<>();
-        if (fx.getBoughtThisMonth() >= .5) did.add("the treasury bought dollars with " + d(fx.getBoughtThisMonth()));
-        if (fx.getSoldThisMonth() >= .5) did.add("the treasury sold dollars for " + d(fx.getSoldThisMonth()));
+        if (fx.getBoughtThisMonth() >= Money.NOTHING) did.add("the treasury bought dollars with " + d(fx.getBoughtThisMonth()));
+        if (fx.getSoldThisMonth() >= Money.NOTHING) did.add("the treasury sold dollars for " + d(fx.getSoldThisMonth()));
         if (fx.getDefenceUsd() >= .005) did.add("the central bank sold " + usd(fx.getDefenceUsd()) + " defending the " + sym());
         double felt = Math.expm1(fx.getInterventionFelt());
         boolean still = Math.abs(felt) >= .0005;
@@ -3615,7 +3615,7 @@ final class TradeScreen {
         double total = Math.abs(fx.yearsOfOutputWith(piece));
         if (total <= ForeignAccounts.INTERVENTION_LINEAR) return null;
         String kind = tradeBuying ? "purchase" : "sale";
-        boolean before = Math.abs(fx.getDealtSinceReprice()) >= .5;
+        boolean before = Money.something(fx.getDealtSinceReprice());
         String size = total >= 1 ? String.format("%.1f years", total) : String.format("%.0f%% of a year", total * 100);
         String title = before ? String.format("This %s takes the month's dealing to %s of the city's output", kind, size)
                 : String.format("This %s is %s of the city's output", kind, size);

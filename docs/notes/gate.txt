@@ -1,19 +1,13 @@
-# gate of Merge batch/ST3: scaleCheck section 6 gets a town of its own plan: calm, growing and small enough that K reaches a million (a free copy's largest order is about one building per K), held over a band of months at the factor and at factor 1, so FREE_FIXTURE_MONTHS stops being re-picked (ST2: no band on EP1+IC1+LD1, 718 a draw); the premise and the million unmoved, no model change, 0.9.78
+# gate of Merge batch/EP2: the figures a screen hides or folds under a threshold, at 1900's price level: `TradeLanes.MIN_LANE` = 300 (TradeLanes.java:37, 'D$0.3M a month in the city's money': a 1900 city's partner needs 38.6x the real trade for a lane or an arrow, so a young city draws none for decades), `FundView.FOLD_UNDER` = 1, the `>= .5`-thousand cut-offs in GovernmentScreen and FinancesScreen and `ui/Money.java:248` printing $0 under .5; each at the factor, or the money format's places moved; and NewGameCheck (c) (NewGameCheck.java:842): on Random the water-plant bond overshot the gap by $1,109k against a $112k bound, so the single-gap bound is dropped or rested on the smallest-face promise, 0.9.80
 # date: 2026-11-10
 # earth-2.bin: named
 # nightly: 2026-11-09 01:39 0.9.58 08f58a5f 4,000 months: OK in 118 s
-# suite: 191 harnesses run in 1301s: 187 passed, 4 failed
-# timing: 17 harnesses run in 1104s: 13 passed, 4 failed; its red lines were judged side by side with main's, below
-# timing red not the batch's (paired): EarthTerrainCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): EarthTerrainCheck | the Earth screen: 198 tiles at Rotterdam's site - ground, plans, paint and raster - in no more than MapCheck.SCREEN_MS FAIL  89.8 ms (0.453 a tile), 17,690 buildings; the first time, its plans made, 1373 ms; the square city 121 districts a side, laid in 40594 ms; the screen 3% sea, 4% fresh   [main 49.2 ms, batch 47.8 ms (-2.7%), budget 80 ms: within 15% of main's]
-# timing red not the batch's (paired): EarthTerrainCheck | 1 FAILED   [the harness's own count of the timing reds above]
+# suite: 191 harnesses run in 1100s: 187 passed, 4 failed
+# timing: 17 harnesses run in 843s: 14 passed, 3 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 35.2 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 35.9 ms, batch 31.6 ms (-12.2%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 29.7 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 31.6 ms (gate.txt, today), batch 29.7 ms (-5.8%), budget 25 ms: main over the budget too, no round]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# figure	SaveSlotCheck	the median due month, 35.2 ms, holds the clock at most CLOCK_MS (25 ms)	31.5514	25	ms	FAIL	1	1
-# figure	MapCheck	a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month	21.1396	19	ms	FAIL	1	1
-# timing red passed on Jerus's word, over main's by more than 15% or not a timing red (always, if checks were not caused by its own code, then it should always pass): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [over main's by more than 15%: main 18.3 ms, batch 21.1 ms (+15.2%), budget 19 ms]
-# timing red passed on Jerus's word, over main's by more than 15% or not a timing red (always, if checks were not caused by its own code, then it should always pass): MapCheck | 5 FAILED   [the harness's own count, with a red above that is not a timing red that passes]
+# figure	SaveSlotCheck	the median due month, 29.7 ms, holds the clock at most CLOCK_MS (25 ms)	29.717	25	ms	FAIL	1	1
 PriceLevelCheck | exit 1
 PriceLevelCheck | FAIL cash (nominal) month 101: 8.317811325 at the factor over the factor, 68.38253344 at today's prices (0.000751 apart)
 PriceLevelCheck | FAIL gdp.month (nominal) month 103: 20121.84632 at the factor over the factor, 20122.48474 at today's prices (1.95e-05 apart)
