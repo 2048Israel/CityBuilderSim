@@ -34,7 +34,7 @@
 
 **Uses:** [Nations](Nations.md) (17), [WorldData](WorldData.md) (13), [EarthProj](EarthProj.md) (9), [GlobeFrame](GlobeFrame.md) (8), [TradeLanes](TradeLanes.md) (3), [World](World.md) (2), [PolicyRates](PolicyRates.md) (2), [MapFrame](MapFrame.md) (1)
 
-**Used by (9):** [GlobeCheck](GlobeCheck.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PartnersCheck](PartnersCheck.md), [PartnersPage](PartnersPage.md), [PartnersView](PartnersView.md), [TradeLanes](TradeLanes.md), [UserInterface](UserInterface.md)
+**Used by (10):** [GlobeCheck](GlobeCheck.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PartnersCheck](PartnersCheck.md), [PartnersPage](PartnersPage.md), [PartnersView](PartnersView.md), [PriceLevelCheck](PriceLevelCheck.md), [TradeLanes](TradeLanes.md), [UserInterface](UserInterface.md)
 
 ## Sections
 
