@@ -1,4 +1,4 @@
-# HealthCheck.java - 1,792 lines · 6 methods · 0 constants · harnesses
+# HealthCheck.java - 1,795 lines · 6 methods · 0 constants · harnesses
 
 `ham/citybuildersim/HealthCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
@@ -47,17 +47,17 @@
 | 215 | · 3. outbreaks actually happen |
 | 299 | · 4. the same month rolls the same way |
 | 339 | · 5. THE POINT: output falls, nobody does |
-| 561 | · 6. an unstaffed hospital treats nobody |
-| 601 | · 7. what care does to mortality |
-| 716 | · 8. death care |
-| 787 | · 9. senior care draws people in |
-| 822 | · 10. and somebody pays for all of it |
-| 966 | · 11. a skip cannot hide an epidemic |
-| 1003 | · 12. the fee has a dial, and the funerals do not |
-| 1113 | · 13. who can afford the clinic |
-| 1553 | · 14. the unchanged case, at zero tolerance |
-| 1592 | · 15. the premium |
-| 1681 | · 16. both dials survive a save, and a reform |
+| 564 | · 6. an unstaffed hospital treats nobody |
+| 604 | · 7. what care does to mortality |
+| 719 | · 8. death care |
+| 790 | · 9. senior care draws people in |
+| 825 | · 10. and somebody pays for all of it |
+| 969 | · 11. a skip cannot hide an epidemic |
+| 1006 | · 12. the fee has a dial, and the funerals do not |
+| 1116 | · 13. who can afford the clinic |
+| 1556 | · 14. the unchanged case, at zero tolerance |
+| 1595 | · 15. the premium |
+| 1684 | · 16. both dials survive a save, and a reform |
 
 ## Fields (state)
 
@@ -69,11 +69,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 41 | 1752 | **type** `public class HealthCheck` | Sickness: what it moves, and - much more importantly - what it does not. |
+| 41 | 1755 | **type** `public class HealthCheck` | Sickness: what it moves, and - much more importantly - what it does not. |
 | 45 | 6 | `static void check(String label, double actual, double expected, double tol)` |  |
 | 52 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 57 | 1687 | `public static void main(String[] args) throws Exception` |  |
-| 1746 | 9 | `static void stock(Game g)` | A city with enough in it that the sectors have something to lose. |
-| 1773 | 11 | `static void trucksKeepUp(Game town)` | THE TRUCKS KEPT AHEAD OF THE PLANT, SO THE FEE IS THE ONLY DIFFERENCE BETWEEN THE TWINS (FR2, 2026-10-18). |
-| 1785 | 7 | `static void cleanUp(Path root)` |  |
+| 57 | 1690 | `public static void main(String[] args) throws Exception` |  |
+| 1749 | 9 | `static void stock(Game g)` | A city with enough in it that the sectors have something to lose. |
+| 1776 | 11 | `static void trucksKeepUp(Game town)` | THE TRUCKS KEPT AHEAD OF THE PLANT, SO THE FEE IS THE ONLY DIFFERENCE BETWEEN THE TWINS (FR2, 2026-10-18). |
+| 1788 | 7 | `static void cleanUp(Path root)` |  |
 

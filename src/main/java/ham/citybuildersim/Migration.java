@@ -404,10 +404,12 @@ public class Migration {
             draw is cut by a dear or an unsafe city and never raised by
             anything: jobsPull() is the rent's and the crime's, capped at 1;
             homesPull() adds the senior care.
-         2. ARRIVALS SLOW PAST A HEALTHY RATE. Full at or under
-            HEALTHY_OUT_OF_WORK, none at or over ARRIVALS_STOP_OUT_OF_WORK, a
-            straight line between (arrivalBrake()).
-         3. THE JOBLESS PAST THE HEALTHY RATE LEAVE. Those over it, of the
+         2. ARRIVALS SLOW PAST A HEALTHY RATE, from BRAKE_FROM_MONTH. Full at
+            or under HEALTHY_OUT_OF_WORK, none at or over
+            ARRIVALS_STOP_OUT_OF_WORK, a straight line between
+            (arrivalBrake(), arrivalBrakeNow()).
+         3. THE JOBLESS PAST THE HEALTHY RATE LEAVE, from BRAKE_FROM_MONTH.
+            Those over it, of the
             labour force, go at SURPLUS_DEPARTURE_RATE a month whatever their
             wage, less those the pinned bands already sent. Until now only a
             pinned band's surplus left, so under a real minimum wage that pins
@@ -425,6 +427,25 @@ public class Migration {
        the brake after the room, as the month's arrivals are cut; a gate that
        counted workers migration would no longer send would let a business
        order what the city will not staff.
+
+       NOT IN THE CITY'S FIRST TWENTY YEARS (BRAKE_FROM_MONTH). As first
+       written the brake and the drift acted from month 1, and the young city
+       paid for it, measured on the ensemble's 16 AUTO2 cities against GW1's
+       (medians): 0.36x GW1's people at month 120 and 0.29x at month 240,
+       smaller in every seed through month 480, and 10.6% out of work in
+       months 24 to 240 against GW1's 6.0%. A village of a few hundred swings
+       from 0% to 48% out of work as each works opens (seed 0: 36%, 0%, 32%,
+       48%, 0% in months 12 to 48), and a brake read off that stops arrivals
+       in the very months the city grows in. The wages study named the
+       fallback (a brake that starts later, or from 8% to 16%) and both were
+       run: 8% to 16% did not help (0.31x at month 240, 10.2% out of work from
+       month 600). Brake and drift from month 240 did: 0.76x at month 120,
+       0.68x at month 240, 5.4% out of work young, and the grown city at 8.9%
+       (months 240 to 600) and 8.6% (from 600) against GW1's 12.9% and 10.7%,
+       the final city 1.00x. The gap left in the young city is part 1's:
+       senior care no longer lifts the jobs' draw, which Jerus accepted
+       ("smaller in its young decades"). The city's age is this Migration's
+       months recorded (recordWages()'s count, saved with it).
        ===================================================================== */
 
     /** The share of the labour force out of work that migration aims at: arrivals slow past it and the jobless over it leave (the middle of big rich-country cities, Tokyo 2.4% to Madrid 9%). */
@@ -432,6 +453,9 @@ public class Migration {
 
     /** The out-of-work share past which nobody moves here for work: twice the healthy rate, where the People screen's verdict turns red. */
     public static final double ARRIVALS_STOP_OUT_OF_WORK = .12;
+
+    /** The city's age in months (this Migration's months recorded) before which arrivals are not braked and the jobless are not sent away, because a young city's out-of-work share swings with every works that opens. */
+    public static final int BRAKE_FROM_MONTH = 240;
 
     /**
      * What the pulls leave of the jobs' draw: the rent's and the crime's, never above 1.
@@ -454,6 +478,16 @@ public class Migration {
         if (Double.isNaN(outOfWork)) return 1;
         double f = (ARRIVALS_STOP_OUT_OF_WORK - outOfWork) / (ARRIVALS_STOP_OUT_OF_WORK - HEALTHY_OUT_OF_WORK);
         return Math.max(0, Math.min(1, f));
+    }
+
+    /** True once this Migration has recorded BRAKE_FROM_MONTH months: the city is old enough for the brake and the drift to act. */
+    public boolean brakeApplies() {
+        return monthsRecorded >= BRAKE_FROM_MONTH;
+    }
+
+    /** The share of the arrivals that still come now: arrivalBrake() of the out-of-work share once brakeApplies(), else 1. */
+    public double arrivalBrakeNow(double outOfWork) {
+        return brakeApplies() ? arrivalBrake(outOfWork) : 1;
     }
 
     /* ------------------------------ what it carries ------------------------------ */
@@ -1032,10 +1066,11 @@ public class Migration {
          * passes HEALTHY_OUT_OF_WORK and stop at ARRIVALS_STOP_OUT_OF_WORK:
          * people come for the chance of a job. Before composeArrivals(), which
          * splits lastArrivals by band, so the mix is of the braked arrivals.
-         * The forms with no people are not braked.
+         * The forms with no people are not braked, nor is a city younger
+         * than BRAKE_FROM_MONTH months (arrivalBrakeNow()).
          */
         if (people != null) {
-            double f = arrivalBrake(people.getUnemploymentRate());
+            double f = arrivalBrakeNow(people.getUnemploymentRate());
             net -= lastArrivals * (1 - f);
             lastArrivals *= f;
         }
@@ -1080,10 +1115,11 @@ public class Migration {
          * They go from the bands that have a surplus, on each band's share of
          * it, so the graduates and the labourers who are out of work are the
          * ones who leave; with no band in surplus, on the population's share.
+         * Not in a city younger than BRAKE_FROM_MONTH months: brakeApplies().
          */
         double over = Math.max(0, people.getUnemployed() - HEALTHY_OUT_OF_WORK * people.getLabourForce());
         double more = Math.max(0, over * SURPLUS_DEPARTURE_RATE - pushed);
-        if (more > 0) {
+        if (brakeApplies() && more > 0) {
             double[] surplus = new double[lastDepartureMix.length];
             double surplusTotal = 0;
             for (WageBand band : WageBand.values()) {
@@ -1388,9 +1424,9 @@ public class Migration {
      * is last month's and saved (LAST_SCALARS, lastRoom with them), so a loaded city's draw is its twin's.
      *
      * THE PULL RULE AND THE BRAKE (WG2). The jobs' pull is jobsPull(), as lastTarget has it since WG2: senior care lifts the homes' draw only, so it no
-     * longer raises the workers an order's posts would draw. And the people drawn are cut by arrivalBrake() of the city's out-of-work share, after the
+     * longer raises the workers an order's posts would draw. And the people drawn are cut by arrivalBrakeNow() of the city's out-of-work share, after the
      * room, as monthlyNet() cuts the month's arrivals: whole at or under HEALTHY_OUT_OF_WORK, nothing at or past ARRIVALS_STOP_OUT_OF_WORK, a straight
-     * line between. A city migration would stop sending people to is not counted as sending them to an order (spec-staffing-gate, C4a).
+     * line between, and whole whatever the share before BRAKE_FROM_MONTH, so the gate's draw is unbraked in a young city as its arrivals are. A city migration would stop sending people to is not counted as sending them to an order (spec-staffing-gate, C4a).
      *
      * WHY, what it counted before: JOB_WEIGHT x posts x residents a job x the pulls x the closing share, whatever the gap and the room.
      * That overstated the draw wherever migration would not bring the people: it counted when lastTarget stood at or below the
@@ -1431,7 +1467,7 @@ public class Migration {
         double close = 1 - Math.pow(1 - monthly, window);
         double drawnPeople = orderGap * close;
         if (!Double.isNaN(lastRoom)) drawnPeople = Math.min(drawnPeople, Math.max(0, lastRoom - lastArrivals));
-        drawnPeople *= arrivalBrake(people.getUnemploymentRate());   // the brake after the room, as the month's arrivals take it
+        drawnPeople *= arrivalBrakeNow(people.getUnemploymentRate());   // the brake after the room, as the month's arrivals take it (none in a young city)
         double workers = drawnPeople * people.getWorkforceForSave() / (double) pop;
 
         double[] postsNow = people.staffablePostsByBand();

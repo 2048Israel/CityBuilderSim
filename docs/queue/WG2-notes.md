@@ -57,4 +57,36 @@ A model batch: Opus, with Sonnet slices for the code.
 
 ## 3. The young city, measured first
 
-(to come)
+The ensemble's 16 AUTO2 cities (`tools/ensemble/ensemble.sh`, 2,400 months each), each seed's people over GW1's
+on the same seed (main's run, `docs/ensemble/0.9.89.md`'s CSVs), medians, with the seeds smaller than their twin;
+the share out of work as the seeds' mean over the span, medians. Variants as uncommitted prototypes of slice A's
+`Migration`, switched by properties, on a copy of its classes.
+
+| variant | people m120 | m240 | m480 | m1,200 | m2,400 | out of work m24-240 | m240-600 | from m600 |
+|---|---|---|---|---|---|---|---|---|
+| GW1 (main) | 1 | 1 | 1 | 1 | 1 | 6.0% | 12.9% | 10.7% |
+| **WG2 as first written** | 0.36 (16 smaller) | 0.29 (16) | 0.40 (16) | 0.68 (12) | 0.96 (10) | 10.6% | 8.4% | 8.5% |
+| parts 2-3 without part 1 (to read the cause) | 0.47 (16) | 0.49 (16) | 0.78 (14) | 1.05 (6) | 1.14 (4) | 10.3% | 8.4% | 8.3% |
+| the brake from 8% to 16% | 0.37 (16) | 0.31 (16) | 0.61 (15) | 0.84 (11) | 1.00 (8) | 10.7% | 9.0% | 10.2% |
+| **the brake and the drift from month 240** | 0.76 (15) | 0.68 (15) | 0.79 (14) | 0.88 (9) | 1.00 (7) | 5.4% | 8.9% | 8.6% |
+
+- **As first written the young city paid**, as the wages study feared and the gate study (GW0-C C4a: "with the draw
+  first WG2's aim costs the young city nothing") did not: 0.29x at month 240, and more of it out of work, not less
+  (10.6% against 6.0%). A village of a few hundred swings from 0% to 48% out of work as each works opens and the
+  next waits (seed 0, months 12-48: 36%, 0%, 32%, 48%, 0%); a brake read off the month's own share stops arrivals
+  in every spike, and the gate's draw, braked with it, stops counting the workers who would come.
+- **Why the gate study saw no cost.** Its `d12aim` was `wages.brake=.06/.12,wages.leave=true` on the 12-month draw
+  (`docs/studies/staffing-gate/out.md`, row 19): parts 2-3, not part 1. Without part 1 here the young city is still
+  0.49x at month 240, so part 1 is not the whole difference. One difference left between the two is that GW1's
+  shipped draw caps an order's people at the room migration has left (`lastRoom`), which the prototype did not;
+  it is not shown to be the cause. Not chased further: the fallback the wages study named first answers it.
+- **The call (a recommendation taken, spec-wages section 6: "a brake that starts later (from month 240, or from 8%
+  to 16%) is the first thing WG2 tries").** 8%-16% does nothing for the young city (its spikes pass any stop) and
+  leaves the grown one at 10.2%. From month 240 the young city keeps 0.76x and 0.68x, is *less* out of work than
+  GW1's (5.4%), and the grown city takes the whole of the cut (8.9% and 8.6% against 12.9% and 10.7%), the final
+  city level. `Migration.BRAKE_FROM_MONTH` (240), on the months `recordWages()` counts (saved: no new field).
+- **What is left of the young city's gap is part 1**, by construction: before month 240 nothing else of WG2 acts.
+  Senior care no longer lifts the jobs' draw (x1.30 in a village with its care home), which C2(a) accepted:
+  "smaller in its young decades".
+- AQ1's seed (AUTO2-2, GW1: 50.1% out of work in months 560-700, a 12-month deflation spell ending at month 632):
+  14.0% and 7 months as first written; 12.2% and 3 months from month 240. A3 passes in every seed in both.

@@ -1,4 +1,4 @@
-# Migration.java - 1,584 lines · 64 methods · 18 constants · model
+# Migration.java - 1,620 lines · 66 methods · 19 constants · model
 
 `ham/citybuildersim/Migration.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
@@ -75,13 +75,13 @@
 | 247 | AND A CITY NOBODY CAN AFFORD TO LIVE IN IS A CITY PEOPLE DO NOT MOVE TO |
 | 328 | AND A CITY WITH MORE CRIME THAN IT SHOULD HAVE (2026-09-11) |
 | 385 | MIGRATION AIMS AT A HEALTHY SLACK (WG2, {next}, 2026-11-10) |
-| 459 | · what it carries |
-| 545 | · reading |
-| 606 | A REFORM IS A CHANGE OF UNITS, AND THE STREAK IS TWELVE MONTHS LONG |
-| 651 | · recording |
-| 663 | IN REAL TERMS, OR EVERY DEFLATION IS AN EXODUS |
-| 793 | · deciding |
-| 1466 | · saving |
+| 493 | · what it carries |
+| 579 | · reading |
+| 640 | A REFORM IS A CHANGE OF UNITS, AND THE STREAK IS TWELVE MONTHS LONG |
+| 685 | · recording |
+| 697 | IN REAL TERMS, OR EVERY DEFLATION IS AN EXODUS |
+| 827 | · deciding |
+| 1502 | · saving |
 
 ## Constants
 
@@ -100,11 +100,12 @@
 | 379 | `Migration.ARRIVAL_RATE` | `.15` | How much of the gap closes each month. |
 | 380 | `Migration.DEPARTURE_RATE` | `.05` |  |
 | 383 | `Migration.DECLINE_MONTHS` | `12` | Consecutive months of falling wages before a tier's people give up. |
-| 431 | `Migration.HEALTHY_OUT_OF_WORK` | `.06` | The share of the labour force out of work that migration aims at: arrivals slow past it and the jobless over it leave (the middle of big rich-country cities, Tokyo 2.4% to Madrid 9%). |
-| 434 | `Migration.ARRIVALS_STOP_OUT_OF_WORK` | `.12` | The out-of-work share past which nobody moves here for work: twice the healthy rate, where the People screen's verdict turns red. |
-| 461 | `Migration.TIERS` | `PayTier.values().length` |  |
-| 1489 | `Migration.HISTORY_SLOTS` | `TIERS * DECLINE_MONTHS + TIERS + 1` | The wage history, its streaks and the months recorded: the array before 0.7.27. |
-| 1492 | `Migration.LAST_SCALARS` | `17` | The month's scalars that follow it, in toSaveArray()'s order; the last of them is lastRoom (GW1), and a save from before it has one fewer. |
+| 452 | `Migration.HEALTHY_OUT_OF_WORK` | `.06` | The share of the labour force out of work that migration aims at: arrivals slow past it and the jobless over it leave (the middle of big rich-country cities, Tokyo 2.4% to Madrid 9%). |
+| 455 | `Migration.ARRIVALS_STOP_OUT_OF_WORK` | `.12` | The out-of-work share past which nobody moves here for work: twice the healthy rate, where the People screen's verdict turns red. |
+| 458 | `Migration.BRAKE_FROM_MONTH` | `240` | The city's age in months (this Migration's months recorded) before which arrivals are not braked and the jobless are not sent away, because a young city's out-of-work share swings with every works that opens. |
+| 495 | `Migration.TIERS` | `PayTier.values().length` |  |
+| 1525 | `Migration.HISTORY_SLOTS` | `TIERS * DECLINE_MONTHS + TIERS + 1` | The wage history, its streaks and the months recorded: the array before 0.7.27. |
+| 1528 | `Migration.LAST_SCALARS` | `17` | The month's scalars that follow it, in toSaveArray()'s order; the last of them is lastRoom (GW1), and a save from before it has one fewer. |
 
 ## Fields (state)
 
@@ -115,37 +116,37 @@
 | 362 | `private double crimeVsCanada` | Crime's rate against Canada's, last month's. |
 | 365 | `private double lastCrimePull` |  |
 | 366 | `private double lastCrimeDepartures` |  |
-| 473 | `private final double[][] history` | A rolling year of each tier's wage bill, oldest at index 0. |
-| 474 | `private final int[] decliningStreak` |  |
-| 475 | `private int monthsRecorded` |  |
-| 479 | `private double[] lastArrivalMix` | The skills of the people who moved in this month, by band. |
-| 489 | `private final double[] lastOpportunity` | Each band's chance of work at its own level, as last computed. |
-| 506 | `private double[] lastArrivalLicences` | ...and which of them already hold a professional licence. |
-| 517 | `private double[] lastDepartureMix` | ...and of the ones who left, which is NOT the same shape. |
-| 519 | `private double lastTarget` |  |
-| 520 | `private double lastArrivals` |  |
-| 521 | `private double lastDepartures` |  |
-| 522 | `private double lastCrowding` |  |
-| 523 | `private double lastDecliningShare` |  |
-| 524 | `private double lastSeniorPull` |  |
-| 525 | `private double lastResidentsPerJob` |  |
-| 528 | `private double lastRoom` | The people the placement had room for, the month's bound on arrivals (0.7.17); NaN with no census. |
-| 539 | `private double lastJobs` | THE BRIDGE AND THE LEAVERS, KEPT (0.7.27). |
-| 540 | `private double lastHomeCapacity` |  |
-| 541 | `private double lastJobDraw` |  |
-| 542 | `private double lastHomeDraw` |  |
-| 543 | `private double lastWorkDepartures` |  |
-| 884 | `private long[] doors` | The door census this month's migration is asked against (0.7.17): the homes standing, by size. |
-| 1003 | `private double bankruptcyPush` | Households the balance sheet discharged this month, whose people are leaving because they are broke. |
-| 1011 | `private double lastBankruptcyPush` |  |
-| 1188 | `private final boolean[] closed` | Bands a harness has closed to arrivals, by ordinal; see holdArrivals(). |
-| 1219 | `private ArrivalMix.Point yearMix` | The year's skill mix this month's arrivals are drawn from (R0d slice 2), or null: null in every city but one founded the 1900 way, whose Game sets it each month from ArrivalMix.at(), and so null is the model composeAr... |
+| 507 | `private final double[][] history` | A rolling year of each tier's wage bill, oldest at index 0. |
+| 508 | `private final int[] decliningStreak` |  |
+| 509 | `private int monthsRecorded` |  |
+| 513 | `private double[] lastArrivalMix` | The skills of the people who moved in this month, by band. |
+| 523 | `private final double[] lastOpportunity` | Each band's chance of work at its own level, as last computed. |
+| 540 | `private double[] lastArrivalLicences` | ...and which of them already hold a professional licence. |
+| 551 | `private double[] lastDepartureMix` | ...and of the ones who left, which is NOT the same shape. |
+| 553 | `private double lastTarget` |  |
+| 554 | `private double lastArrivals` |  |
+| 555 | `private double lastDepartures` |  |
+| 556 | `private double lastCrowding` |  |
+| 557 | `private double lastDecliningShare` |  |
+| 558 | `private double lastSeniorPull` |  |
+| 559 | `private double lastResidentsPerJob` |  |
+| 562 | `private double lastRoom` | The people the placement had room for, the month's bound on arrivals (0.7.17); NaN with no census. |
+| 573 | `private double lastJobs` | THE BRIDGE AND THE LEAVERS, KEPT (0.7.27). |
+| 574 | `private double lastHomeCapacity` |  |
+| 575 | `private double lastJobDraw` |  |
+| 576 | `private double lastHomeDraw` |  |
+| 577 | `private double lastWorkDepartures` |  |
+| 918 | `private long[] doors` | The door census this month's migration is asked against (0.7.17): the homes standing, by size. |
+| 1037 | `private double bankruptcyPush` | Households the balance sheet discharged this month, whose people are leaving because they are broke. |
+| 1045 | `private double lastBankruptcyPush` |  |
+| 1224 | `private final boolean[] closed` | Bands a harness has closed to arrivals, by ordinal; see holdArrivals(). |
+| 1255 | `private ArrivalMix.Point yearMix` | The year's skill mix this month's arrivals are drawn from (R0d slice 2), or null: null in every city but one founded the 1900 way, whose Game sets it each month from ArrivalMix.at(), and so null is the model composeAr... |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 62 | 1523 | **type** `public class Migration` | Why people move to this city, and the much narrower question of why they leave. |
+| 62 | 1559 | **type** `public class Migration` | Why people move to this city, and the much narrower question of why they leave. |
 
 ### the dials (lines 64-65)
 
@@ -181,94 +182,96 @@
 | 367 | 1 | `public double getLastCrimePull()` |  |
 | 368 | 1 | `public double getLastCrimeDepartures()` |  |
 
-### MIGRATION AIMS AT A HEALTHY SLACK (WG2, {next}, 2026-11-10) (lines 385-458)
+### MIGRATION AIMS AT A HEALTHY SLACK (WG2, {next}, 2026-11-10) (lines 385-492)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 440 | 3 | `public static double jobsPull(double affordability, double crime)` | What the pulls leave of the jobs' draw: the rent's and the crime's, never above 1. |
-| 445 | 3 | `public static double homesPull(double senior, double affordability, double crime)` | What the pulls make of the homes' draw: senior care, the rent and the crime, multiplied. |
-| 453 | 5 | `public static double arrivalBrake(double outOfWork)` | The share of the arrivals that still come, given the share of the labour force out of work: 1 at and under HEALTHY_OUT_OF_WORK, 0 at and past ARRIVALS_STOP_OUT_OF_WORK, a straight line between. |
+| 464 | 3 | `public static double jobsPull(double affordability, double crime)` | What the pulls leave of the jobs' draw: the rent's and the crime's, never above 1. |
+| 469 | 3 | `public static double homesPull(double senior, double affordability, double crime)` | What the pulls make of the homes' draw: senior care, the rent and the crime, multiplied. |
+| 477 | 5 | `public static double arrivalBrake(double outOfWork)` | The share of the arrivals that still come, given the share of the labour force out of work: 1 at and under HEALTHY_OUT_OF_WORK, 0 at and past ARRIVALS_STOP_OUT_OF_WORK, a straight line between. |
+| 484 | 3 | `public boolean brakeApplies()` | True once this Migration has recorded BRAKE_FROM_MONTH months: the city is old enough for the brake and the drift to act. |
+| 489 | 3 | `public double arrivalBrakeNow(double outOfWork)` | The share of the arrivals that still come now: arrivalBrake() of the out-of-work share once brakeApplies(), else 1. |
 
-### what it carries (lines 459-544)
+### what it carries (lines 493-578)
 
-### reading (lines 545-605)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 547 | 1 | `public double getLastTarget()` |  |
-| 549 | 1 | `public double getLastSeniorPull()` | What senior care multiplied the homes' draw by (since WG2 the jobs' draw is not lifted by it). |
-| 550 | 1 | `public double getLastArrivals()` |  |
-| 551 | 1 | `public double[] getLastArrivalMix()` |  |
-| 552 | 1 | `public double[] getLastOpportunity()` |  |
-| 553 | 1 | `public double[] getLastArrivalLicences()` |  |
-| 554 | 1 | `public double[] getLastDepartureMix()` |  |
-| 555 | 1 | `public double getLastDepartures()` |  |
-| 556 | 1 | `public double getLastCrowding()` |  |
-| 558 | 1 | `public double getLastRoom()` | People the placement had room for this month, which arrivals may not exceed; NaN when it was not asked. |
-| 559 | 1 | `public double getLastDecliningShare()` |  |
-| 560 | 1 | `public double getLastResidentsPerJob()` |  |
-| 561 | 1 | `public double getLastNet()` |  |
-| 563 | 1 | `public double getLastJobs()` | The posts the month's draw was struck on (0.7.27). |
-| 565 | 1 | `public double getLastHomeCapacity()` | ...and the people the city's homes comfortably hold. |
-| 567 | 1 | `public double getLastJobDraw()` | The jobs' half of the draw: the posts, times the residents each supports, at JOB_WEIGHT. |
-| 569 | 1 | `public double getLastHomeDraw()` | ...and the homes', at HOME_WEIGHT. |
-| 571 | 1 | `public double getLastDrawBeforePulls()` | The two halves together: the draw before the pulls (senior care, the rent and crime) multiply it. |
-| 573 | 1 | `public double getLastJobsPull()` | What the pulls left of the jobs' draw: the rent's and the crime's, never above 1, from the last pulls. |
-| 575 | 1 | `public double getLastHomesPull()` | What the pulls made of the homes' draw: senior care, the rent and the crime, from the last pulls. |
-| 577 | 1 | `public double getLastWorkDepartures()` | The leavers the work pushed out - a dying trade, a band pinned with people to spare; with the crime's and the broke, the month's departures. |
-| 579 | 3 | `public int getDecliningStreak(PayTier tier)` |  |
-| 584 | 3 | `public boolean hasFullHistory()` | True once there is a full year of history to judge a streak against. |
-| 596 | 6 | `public boolean isDeclining(PayTier tier)` | True if this tier's people are entitled to leave. |
-| 603 | 1 | `private double newest(int t)` |  |
-| 604 | 1 | `private double oldest(int t)` |  |
-
-### A REFORM IS A CHANGE OF UNITS, AND THE STREAK IS TWELVE MONTHS LONG (lines 606-650)
+### reading (lines 579-639)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 644 | 6 | `public void redenominate(double scale)` | Scales the wage history so a reformed city reads its own past correctly. |
+| 581 | 1 | `public double getLastTarget()` |  |
+| 583 | 1 | `public double getLastSeniorPull()` | What senior care multiplied the homes' draw by (since WG2 the jobs' draw is not lifted by it). |
+| 584 | 1 | `public double getLastArrivals()` |  |
+| 585 | 1 | `public double[] getLastArrivalMix()` |  |
+| 586 | 1 | `public double[] getLastOpportunity()` |  |
+| 587 | 1 | `public double[] getLastArrivalLicences()` |  |
+| 588 | 1 | `public double[] getLastDepartureMix()` |  |
+| 589 | 1 | `public double getLastDepartures()` |  |
+| 590 | 1 | `public double getLastCrowding()` |  |
+| 592 | 1 | `public double getLastRoom()` | People the placement had room for this month, which arrivals may not exceed; NaN when it was not asked. |
+| 593 | 1 | `public double getLastDecliningShare()` |  |
+| 594 | 1 | `public double getLastResidentsPerJob()` |  |
+| 595 | 1 | `public double getLastNet()` |  |
+| 597 | 1 | `public double getLastJobs()` | The posts the month's draw was struck on (0.7.27). |
+| 599 | 1 | `public double getLastHomeCapacity()` | ...and the people the city's homes comfortably hold. |
+| 601 | 1 | `public double getLastJobDraw()` | The jobs' half of the draw: the posts, times the residents each supports, at JOB_WEIGHT. |
+| 603 | 1 | `public double getLastHomeDraw()` | ...and the homes', at HOME_WEIGHT. |
+| 605 | 1 | `public double getLastDrawBeforePulls()` | The two halves together: the draw before the pulls (senior care, the rent and crime) multiply it. |
+| 607 | 1 | `public double getLastJobsPull()` | What the pulls left of the jobs' draw: the rent's and the crime's, never above 1, from the last pulls. |
+| 609 | 1 | `public double getLastHomesPull()` | What the pulls made of the homes' draw: senior care, the rent and the crime, from the last pulls. |
+| 611 | 1 | `public double getLastWorkDepartures()` | The leavers the work pushed out - a dying trade, a band pinned with people to spare; with the crime's and the broke, the month's departures. |
+| 613 | 3 | `public int getDecliningStreak(PayTier tier)` |  |
+| 618 | 3 | `public boolean hasFullHistory()` | True once there is a full year of history to judge a streak against. |
+| 630 | 6 | `public boolean isDeclining(PayTier tier)` | True if this tier's people are entitled to leave. |
+| 637 | 1 | `private double newest(int t)` |  |
+| 638 | 1 | `private double oldest(int t)` |  |
 
-### recording (lines 651-662)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 659 | 3 | `public void recordWages(double[] wagePerTier)` | Files this month's wage bill per tier and updates every streak. |
-
-### IN REAL TERMS, OR EVERY DEFLATION IS AN EXODUS (lines 663-792)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 704 | 23 | `public void recordWages(double[] wagePerTier, double priceLevel)` | whose index has not based yet, which is also what every fixture that calls the one-argument form gets |
-| 740 | 13 | `public double decliningShare()` | How much of the city's payroll sits in tiers whose people may leave. |
-| 762 | 7 | `public double severity(PayTier tier)` | How far a tier has fallen over the year, 0 to 1. |
-| 779 | 13 | `public double decliningPressure()` | The share of the city's payroll that has actually been destroyed, as opposed to merely sitting in a tier that qualifies. |
-
-### deciding (lines 793-1465)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 829 | 3 | `public double crowdingFactor(long homes, FamilyModel families)` | How crowded the city is, as a multiplier on arrivals: 1 is room to spare, 0 is physically full. |
-| 837 | 40 | `public double crowdingFactor(long homes, FamilyModel families, FamilyModel.Room room)` | The same, read against the room the placement has left (the Game's path), or against last month's placement when that is null. |
-| 886 | 3 | `public void setDoors(long[] homesBySize)` |  |
-| 899 | 5 | `public double monthlyNet(long population, long totalJobs, long householdCapacity, long homes, FamilyModel families, double adul...` | The month's net migration: positive is people arriving. |
-| 912 | 81 | `public double monthlyNet(long population, long totalJobs, long householdCapacity, long homes, FamilyModel families, double adul...` | The same, with the draw good senior care adds. |
-| 1005 | 3 | `public void setBankruptcyDepartures(double people)` |  |
-| 1009 | 1 | `public double getLastBankruptcyDepartures()` |  |
-| 1022 | 152 | `public double monthlyNet(long population, long totalJobs, long householdCapacity, long homes, FamilyModel families, double adul...` | The same month, with a labour market behind it. |
-| 1182 | 4 | `public static double opportunity(double open, double queue)` | A band's chance of work at its own level, as a multiplier on its pull. |
-| 1199 | 3 | `public void holdArrivals(WageBand band)` | Harnesses only: nobody of this band arrives for the rest of the run, whatever it is paid - the way BusinessInvestment.holdSector() holds a sector out of the investment loop. |
-| 1210 | 3 | `public boolean admits(WageBand band)` | Whether any migrant can come for this band at all (0.7.18): it has an arrival ceiling above zero and no harness has closed it. |
-| 1222 | 1 | `public void setYearMix(ArrivalMix.Point mix)` | Game, each month of a city founded the 1900 way: the mix of skills the month's arrivals are drawn from (ArrivalMix.at()); null for any other city. |
-| 1225 | 1 | `public ArrivalMix.Point getYearMix()` | The year's skill mix set for this month, or null where the arrivals are drawn from today's ceilings alone. |
-| 1240 | 132 | `private void composeArrivals(LabourMarket market, PopulationManager people)` | Splits this month's arrivals across the skill bands. |
-| 1417 | 48 | `public double[] drawFor(double[] wanted, LabourMarket market, PopulationManager people, int window, ArrivalMix.Point mix)` | The workers per wage band migration would bring for an order's posts within {@code window} months of its opening, for the staffing gate (Sector.staffing(), GW1). |
-
-### saving (lines 1466-1584)
+### A REFORM IS A CHANGE OF UNITS, AND THE STREAK IS TWELVE MONTHS LONG (lines 640-684)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1495 | 3 | `private static int lastSlots()` | ...then the arrival mix and the departure mix by band, and the licences by job. |
-| 1499 | 20 | `public double[] toSaveArray()` |  |
-| 1520 | 36 | `public void restore(double[] saved)` |  |
-| 1557 | 27 | `public void reset()` |  |
+| 678 | 6 | `public void redenominate(double scale)` | Scales the wage history so a reformed city reads its own past correctly. |
+
+### recording (lines 685-696)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 693 | 3 | `public void recordWages(double[] wagePerTier)` | Files this month's wage bill per tier and updates every streak. |
+
+### IN REAL TERMS, OR EVERY DEFLATION IS AN EXODUS (lines 697-826)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 738 | 23 | `public void recordWages(double[] wagePerTier, double priceLevel)` | whose index has not based yet, which is also what every fixture that calls the one-argument form gets |
+| 774 | 13 | `public double decliningShare()` | How much of the city's payroll sits in tiers whose people may leave. |
+| 796 | 7 | `public double severity(PayTier tier)` | How far a tier has fallen over the year, 0 to 1. |
+| 813 | 13 | `public double decliningPressure()` | The share of the city's payroll that has actually been destroyed, as opposed to merely sitting in a tier that qualifies. |
+
+### deciding (lines 827-1501)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 863 | 3 | `public double crowdingFactor(long homes, FamilyModel families)` | How crowded the city is, as a multiplier on arrivals: 1 is room to spare, 0 is physically full. |
+| 871 | 40 | `public double crowdingFactor(long homes, FamilyModel families, FamilyModel.Room room)` | The same, read against the room the placement has left (the Game's path), or against last month's placement when that is null. |
+| 920 | 3 | `public void setDoors(long[] homesBySize)` |  |
+| 933 | 5 | `public double monthlyNet(long population, long totalJobs, long householdCapacity, long homes, FamilyModel families, double adul...` | The month's net migration: positive is people arriving. |
+| 946 | 81 | `public double monthlyNet(long population, long totalJobs, long householdCapacity, long homes, FamilyModel families, double adul...` | The same, with the draw good senior care adds. |
+| 1039 | 3 | `public void setBankruptcyDepartures(double people)` |  |
+| 1043 | 1 | `public double getLastBankruptcyDepartures()` |  |
+| 1056 | 154 | `public double monthlyNet(long population, long totalJobs, long householdCapacity, long homes, FamilyModel families, double adul...` | The same month, with a labour market behind it. |
+| 1218 | 4 | `public static double opportunity(double open, double queue)` | A band's chance of work at its own level, as a multiplier on its pull. |
+| 1235 | 3 | `public void holdArrivals(WageBand band)` | Harnesses only: nobody of this band arrives for the rest of the run, whatever it is paid - the way BusinessInvestment.holdSector() holds a sector out of the investment loop. |
+| 1246 | 3 | `public boolean admits(WageBand band)` | Whether any migrant can come for this band at all (0.7.18): it has an arrival ceiling above zero and no harness has closed it. |
+| 1258 | 1 | `public void setYearMix(ArrivalMix.Point mix)` | Game, each month of a city founded the 1900 way: the mix of skills the month's arrivals are drawn from (ArrivalMix.at()); null for any other city. |
+| 1261 | 1 | `public ArrivalMix.Point getYearMix()` | The year's skill mix set for this month, or null where the arrivals are drawn from today's ceilings alone. |
+| 1276 | 132 | `private void composeArrivals(LabourMarket market, PopulationManager people)` | Splits this month's arrivals across the skill bands. |
+| 1453 | 48 | `public double[] drawFor(double[] wanted, LabourMarket market, PopulationManager people, int window, ArrivalMix.Point mix)` | The workers per wage band migration would bring for an order's posts within {@code window} months of its opening, for the staffing gate (Sector.staffing(), GW1). |
+
+### saving (lines 1502-1620)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1531 | 3 | `private static int lastSlots()` | ...then the arrival mix and the departure mix by band, and the licences by job. |
+| 1535 | 20 | `public double[] toSaveArray()` |  |
+| 1556 | 36 | `public void restore(double[] saved)` |  |
+| 1593 | 27 | `public void reset()` |  |
 

@@ -598,7 +598,7 @@ final class PeopleScreen {
         long population = pm.getPopulation();
         // WG2: today's out-of-work share, which the next month's arrivals take their brake from.
         double outOfWork = pm.getUnemploymentRate();
-        double brake = Migration.arrivalBrake(outOfWork);
+        double brake = m.arrivalBrakeNow(outOfWork);
         String why, tone, word;
         if (m.getLastCrowding() <= 0) {
             why = "Nobody else can fit. Every flatshare and every doubled-up household "
@@ -1444,11 +1444,12 @@ final class PeopleScreen {
             + "comfortably hold their people; jobs weigh three parts to the homes' one. Dear rent and crime cut "
             + "both halves, and nothing raises the jobs' draw; good senior care lifts the homes' draw only. "
             + "Arrivals close part of the gap between the draw and the city each month, "
-            + "slowed as housing runs out and as more than "
+            + "slowed as housing runs out; people leave when a trade has been dying for a year, a band is pinned "
+            + "with people to spare, they go broke, or crime drives them out. Once the city is "
+            + Migration.BRAKE_FROM_MONTH / 12 + " years old, arrivals are also slowed as more than "
             + String.format("%.0f%%", Migration.HEALTHY_OUT_OF_WORK * 100) + " of the labour force is out of "
-            + "work, and stopped at " + String.format("%.0f%%", Migration.ARRIVALS_STOP_OUT_OF_WORK * 100)
-            + "; people leave when a trade has been dying for a year, a band is pinned with people to spare, "
-            + "they go broke, crime drives them out, or the jobless over the healthy rate drift away.";
+            + "work and stopped at " + String.format("%.0f%%", Migration.ARRIVALS_STOP_OUT_OF_WORK * 100)
+            + ", and the jobless over the healthy rate drift away.";
 
     /** One box of the bridge: a caption over a figure, and what a click on it does. */
     VBox bridgeBox(String caption, String value, String under, String tone, Runnable go, String tip) {

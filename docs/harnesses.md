@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**198 harness files, 23,339 labelled assertions.** AllChecks runs 198 of them.
+**198 harness files, 23,356 labelled assertions.** AllChecks runs 198 of them.
 
 ## Which harnesses read which class
 
@@ -12141,218 +12141,218 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L336 a save from before sickness is refused too, not read at an offset
 - **L339 5. THE POINT: output falls, nobody does**
   - L374 a city with no clinics is already ill
-  - L418 fixture: the shops sold something at full health
-  - L428 the workforce is unchanged
-  - L429 the population is unchanged
-  - L430 the wage bill is unchanged
-  - L431 the employer still pays the full payroll
-  - L457 fixture: the shelf held more than the shops could hand over at full health
-  - L459 ...and the shops can hand over fewer baskets by exactly the sick rate
-  - L463 ...and hand over what was wanted at the price or what they could, whichever is less
-  - L467 the mills run slower by the same share
-  - L483 the sites were not moved by the economy's ratio
-  - L495 beds for everybody speeds the sites up
-  - L499 ...by exactly the difference in the sick rate
-- **L503 a city, played and reloaded**
-  - L527 clinics gave the city some coverage
-  - L528 ...so it is healthier than an untreated one
-  - L530 ...but not perfectly healthy
-  - L537 the sick rate came back
-  - L539 ...and the outbreak with it
-  - L541 ...and the coverage the month was priced at
-  - L550 and the sectors were told about it on the load path
-  - L557 ...including the statement it struck under it
-- **L561 6. an unstaffed hospital treats nobody**
-  - L576 fully staffed, a hospital treats its whole capacity
-  - L583 with nobody at all, only the founding doctor is left
-  - L594 ...and losing only its doctors costs it exactly their share of the posts
-- **L601 7. what care does to mortality**
-  - L611 half-covered is exactly today's rate:
-  - L615 no childcare at all
-  - L617 childcare for everybody
-  - L626 no general care at all leaves the adults' rate alone
-  - L628 ...and so does general care for everybody
-  - L630 ...and the teenagers' the same
-  - L632 no senior care at all
-  - L639 children are the drastic ones
-  - L641 ...and seniors are the gentlest
-  - L645 general care does not also treat babies
-  - L647 ...nor seniors
-  - L653 
-  - L658 no childcare, no bonus
-  - L659 childcare for everybody doubles it
-  - L680 ...and the pyramid gets that many more babies
-  - L701 a city with childcare loses far fewer infants
-  - L703 ...and has far more of them
-  - L711 a cared-for city keeps more of its babies
-  - L713 ...and more of its seniors
-- **L716 8. death care**
-  - L724 with savings and plots, everybody is buried
-  - L725 ...and nobody is cremated
-  - L726 ...and the plots are gone for good
-  - L727 ...and the city collected the burial fee
-  - L733 with no savings, everybody is cremated
-  - L734 ...and the ground is untouched
-  - L735 ...which is the cheaper funeral
-  - L741 a full cemetery sends the rest to the oven
-  - L742 ...which takes them
-  - L743 ...and nobody is left waiting
-  - L747 a busy crematorium sends the rest to the ground
-  - L749 ...even though nobody could afford a plot
-  - L750 ...and nobody is left waiting
-  - L755 with neither, they all wait
-  - L756 ...and nothing was collected
-  - L760 a new cemetery clears the backlog and the month together
-  - L762 ...leaving nobody
-  - L767 a city that never builds one stops counting after two years
-- **L771 and it makes people ill**
-  - L778 leaving them where they fell costs output
-  - L779 ...by the weight it claims
-  - L784 however many there are, it is capped
-- **L787 9. senior care draws people in**
-  - L790 no senior care, no bonus
-  - L791 full coverage, the full draw
-  - L811 fixture: both cities have the rent and crime pulls at 1, so only senior care differs between them
-  - L815 senior care raises the target by the homes' draw x the pull: the homes' weight x their capacity x SENIOR_CARE_PULL
-  - L818 ...and what is left of the caring target, the jobs' half, is the plain city's jobs' draw: senior care adds nothing to it
-- **L822 10. and somebody pays for all of it**
-  - L886 the service costs something
-  - L887 ...most of which is wages
-  - L903 ...and it is a NET DEFICIT business, per the spec
-  - L905 ...with fees nowhere near funding it
-  - L908 the treasury is billed for it
-  - L910 ...and it is on the city's expenditure list
-  - L912 ...and the fees are on its revenue list
-  - L920 and the households paid exactly what the city collected a month ago
-  - L922 ...which is not the same as this month's, so the test means something
-  - L929 ...and the seven tiers add back up to it
-  - L933 healthcare is counted as government output
-  - L944 a bigger bill is a smaller surplus, penny for penny
-  - L956 the graves came back
-  - L958 ...and the backlog
-  - L960 ...and the bill the city was paying
-  - L963 a save from before healthcare had books is refused whole
-- **L966 11. a skip cannot hide an epidemic**
-- **L974 a skip reports what it lived through**
-  - L990 the skip noticed the epidemics
-  - L991 ...and counted every month of them
-  - L993 ...and kept the worst month, which the endpoints cannot show
-  - L995 an untreated city is below full every single month
-  - L1000 a healthy month reports no outbreak
-  - L1001 ...and nothing left unburied
-- **L1003 12. the fee has a dial, and the funerals do not**
-- **L1012 the price at the door: the fee scale**
-  - L1016 the scale multiplies general care's fee
-  - L1018 ...and childcare's
-  - L1020 ...and senior care's
-  - L1022 ...and NOT the burial fee
-  - L1023 ...nor the cremation fee
-  - L1024 the founding fee is still the founding fee, unscaled
-  - L1027 the dial stops at its ceiling
-  - L1029 ...and at nothing
-  - L1031 a new city charges the founding fee
-  - L1033 ...and no premium
-  - L1035 the policy clamps the scale to the same ceiling
-  - L1038 ...and the premium to its own
-  - L1052 at 0 nobody pays for treatment
-  - L1053 ...and everybody is still treated
-  - L1054 ...and the funerals still charge
-  - L1055 ...so the fees are the funerals alone
-  - L1056 ...and nobody was priced out by a fee of nothing
-  - L1068 the break-even scale is the gross cost over the fees at 1x
-  - L1069 ...and this ward's is inside the dial
-  - L1072 at the break-even scale the fees meet the gross cost
-  - L1074 ...and the net cost is nothing
-  - L1077 below it the service loses money
-  - L1078 ...half the fees, at half the scale
-  - L1081 above it, it is a business
-  - L1082 ...and the recovery rate says so
-  - L1091 fixture: the city's break-even is inside the dial
-  - L1096 the policy's scale reached the service
-  - L1097 at the city's break-even the fees at full service are within a month's drift of the cost
-  - L1102 ...at half of it the service loses money
-  - L1103 ...by about half the cost
-- **L1113 13. who can afford the clinic**
-- **L1126 who can afford the clinic**
-  - L1138 a household with room pays its whole care bill
-  - L1140 ...and skips nothing
-  - L1144 ...and so does one whose room is exactly the bill
-  - L1152 a household short of a basket pays only what fits after eating
-  - L1154 ...which is the share of its people the clinic will see
-  - L1155 ...and the rest of the bill is what it eats instead
-  - L1157 ...so the bill it does pay leaves the basket whole
-  - L1163 a household with nothing pays nothing
-  - L1164 ...and none of its people are served
-  - L1165 ...whatever the fee
-  - L1167 ...and with a fee of nothing it is served in full
-  - L1176 a household that skipped last month's bill is judged on the full one
-  - L1181 ...and settles where it pays what it can, month after month
-  - L1184 ...rather than swinging between served and starving
-  - L1431 fixture: the poor city has somebody at the eat-less step
-  - L1433 fixture: at the dial's top the fee priced somebody out
-  - L1435 at a high fee a poor city serves a smaller share of its people than at the founding fee
-  - L1463 fixture: the same clinics in every twin, a place for more people than any of them holds
-  - L1465 fixture: so the beds are not what differs: at the dial's top they take no larger a share by more than the fee turns away
-  - L1467 ...and the coverage the month reads, what the fee leaves of the beds, is lower at the dial's top
-  - L1469 ...and its baseline sick rate, which coverage sets, is higher for it
-  - L1491 ...and it buries more of its people over the run
-  - L1492 ...its old first, whom a fee on senior care turns away
-  - L1493 with the fee at nothing the same city is served in full, every month
-  - L1495 ...every kind of care
-  - L1501 ...and the households who skipped a bill ate with it: over the last year the dear city is no hungrier than the free one by more than the price of care
-  - L1507 
-  - L1509 ...and the served are the offered times the share who could pay
-  - L1517 the treatment fees are charged on the people treated
-  - L1534 ...which is less than the same beds would raise at full service, in every month the fee turned somebody away
-  - L1547 the buildings' upkeep is the same at a dear fee as at the founding fee, in founding money
-  - L1550 ...and the service still costs money to run
-- **L1553 14. the unchanged case, at zero tolerance**
-- **L1565 the unchanged case, at zero tolerance**
-  - L1578 in a city that can pay, every household paid its whole care bill
-  - L1580 
-  - L1582 ...and the served are the offered, exactly
-  - L1585 ...and the fees charged are the fees at full service, exactly
-  - L1587 ...and the households were billed exactly what the city collected a month ago, as before
-  - L1589 ...and nobody was priced out
-  - L1590 ...and no bill was skipped
-- **L1592 15. the premium**
-- **L1600 the premium**
-  - L1608 the premium raises exactly the rate times the wage bill
-  - L1610 fixture: which is money
-  - L1611 ...on the same base as the EI premium
-  - L1613 ...and it is on the government's revenue list
-  - L1616 ...inside the revenue total
-  - L1620 ...and reaches the treasury's cash, penny for penny
-  - L1628 the households' statement shows the premium the city collected a month ago
-  - L1634 ...and the rows add back up to it
-  - L1635 ...off the wages, so the retired pay none
-  - L1637 ...and it comes off take-home, like the EI premium
-  - L1643 the money audit saw it as a household-to-treasury flow
-  - L1670 
-  - L1673 the insured city charged no treatment fee
-  - L1674 ...and the fee-funded one did
-  - L1675 the insured city's wage earners paid a premium
-  - L1677 ...and the fee-funded city's paid none
-  - L1678 the gross cost is the same either way: a ward is paid for whether or not its patients are
-- **L1681 16. both dials survive a save, and a reform**
-  - L1691 the fee scale came back
-  - L1692 ...and the premium
-  - L1693 ...and the service charges at the reloaded scale
-  - L1694 ...and the full-service bill the next strike reads came back
-  - L1702 a save from before the dials is still read
-  - L1703 ...at the founding fee
-  - L1704 ...with no premium
-  - L1707 ...and so is the service's state from before the full-service bill
-  - L1709 ...which reads the bill it charged as the bill at full service
-  - L1711 ...and a coverage of 1 until a month strikes it
-  - L1716 ...and the state from before the coverages were kept
-  - L1717 ...which reads the full bill at 1x it carried
-  - L1718 the reloaded service kept the coverage the month read
-  - L1720 ...which is the figure the sick rate read, not the beds
-  - L1727 a currency reform leaves the fee scale alone
-  - L1728 ...and the premium
-  - L1732 ...and the service's scale
-  - L1733 ...while its fees move with the money
+  - L421 fixture: the shops sold something at full health
+  - L431 the workforce is unchanged
+  - L432 the population is unchanged
+  - L433 the wage bill is unchanged
+  - L434 the employer still pays the full payroll
+  - L460 fixture: the shelf held more than the shops could hand over at full health
+  - L462 ...and the shops can hand over fewer baskets by exactly the sick rate
+  - L466 ...and hand over what was wanted at the price or what they could, whichever is less
+  - L470 the mills run slower by the same share
+  - L486 the sites were not moved by the economy's ratio
+  - L498 beds for everybody speeds the sites up
+  - L502 ...by exactly the difference in the sick rate
+- **L506 a city, played and reloaded**
+  - L530 clinics gave the city some coverage
+  - L531 ...so it is healthier than an untreated one
+  - L533 ...but not perfectly healthy
+  - L540 the sick rate came back
+  - L542 ...and the outbreak with it
+  - L544 ...and the coverage the month was priced at
+  - L553 and the sectors were told about it on the load path
+  - L560 ...including the statement it struck under it
+- **L564 6. an unstaffed hospital treats nobody**
+  - L579 fully staffed, a hospital treats its whole capacity
+  - L586 with nobody at all, only the founding doctor is left
+  - L597 ...and losing only its doctors costs it exactly their share of the posts
+- **L604 7. what care does to mortality**
+  - L614 half-covered is exactly today's rate:
+  - L618 no childcare at all
+  - L620 childcare for everybody
+  - L629 no general care at all leaves the adults' rate alone
+  - L631 ...and so does general care for everybody
+  - L633 ...and the teenagers' the same
+  - L635 no senior care at all
+  - L642 children are the drastic ones
+  - L644 ...and seniors are the gentlest
+  - L648 general care does not also treat babies
+  - L650 ...nor seniors
+  - L656 
+  - L661 no childcare, no bonus
+  - L662 childcare for everybody doubles it
+  - L683 ...and the pyramid gets that many more babies
+  - L704 a city with childcare loses far fewer infants
+  - L706 ...and has far more of them
+  - L714 a cared-for city keeps more of its babies
+  - L716 ...and more of its seniors
+- **L719 8. death care**
+  - L727 with savings and plots, everybody is buried
+  - L728 ...and nobody is cremated
+  - L729 ...and the plots are gone for good
+  - L730 ...and the city collected the burial fee
+  - L736 with no savings, everybody is cremated
+  - L737 ...and the ground is untouched
+  - L738 ...which is the cheaper funeral
+  - L744 a full cemetery sends the rest to the oven
+  - L745 ...which takes them
+  - L746 ...and nobody is left waiting
+  - L750 a busy crematorium sends the rest to the ground
+  - L752 ...even though nobody could afford a plot
+  - L753 ...and nobody is left waiting
+  - L758 with neither, they all wait
+  - L759 ...and nothing was collected
+  - L763 a new cemetery clears the backlog and the month together
+  - L765 ...leaving nobody
+  - L770 a city that never builds one stops counting after two years
+- **L774 and it makes people ill**
+  - L781 leaving them where they fell costs output
+  - L782 ...by the weight it claims
+  - L787 however many there are, it is capped
+- **L790 9. senior care draws people in**
+  - L793 no senior care, no bonus
+  - L794 full coverage, the full draw
+  - L814 fixture: both cities have the rent and crime pulls at 1, so only senior care differs between them
+  - L818 senior care raises the target by the homes' draw x the pull: the homes' weight x their capacity x SENIOR_CARE_PULL
+  - L821 ...and what is left of the caring target, the jobs' half, is the plain city's jobs' draw: senior care adds nothing to it
+- **L825 10. and somebody pays for all of it**
+  - L889 the service costs something
+  - L890 ...most of which is wages
+  - L906 ...and it is a NET DEFICIT business, per the spec
+  - L908 ...with fees nowhere near funding it
+  - L911 the treasury is billed for it
+  - L913 ...and it is on the city's expenditure list
+  - L915 ...and the fees are on its revenue list
+  - L923 and the households paid exactly what the city collected a month ago
+  - L925 ...which is not the same as this month's, so the test means something
+  - L932 ...and the seven tiers add back up to it
+  - L936 healthcare is counted as government output
+  - L947 a bigger bill is a smaller surplus, penny for penny
+  - L959 the graves came back
+  - L961 ...and the backlog
+  - L963 ...and the bill the city was paying
+  - L966 a save from before healthcare had books is refused whole
+- **L969 11. a skip cannot hide an epidemic**
+- **L977 a skip reports what it lived through**
+  - L993 the skip noticed the epidemics
+  - L994 ...and counted every month of them
+  - L996 ...and kept the worst month, which the endpoints cannot show
+  - L998 an untreated city is below full every single month
+  - L1003 a healthy month reports no outbreak
+  - L1004 ...and nothing left unburied
+- **L1006 12. the fee has a dial, and the funerals do not**
+- **L1015 the price at the door: the fee scale**
+  - L1019 the scale multiplies general care's fee
+  - L1021 ...and childcare's
+  - L1023 ...and senior care's
+  - L1025 ...and NOT the burial fee
+  - L1026 ...nor the cremation fee
+  - L1027 the founding fee is still the founding fee, unscaled
+  - L1030 the dial stops at its ceiling
+  - L1032 ...and at nothing
+  - L1034 a new city charges the founding fee
+  - L1036 ...and no premium
+  - L1038 the policy clamps the scale to the same ceiling
+  - L1041 ...and the premium to its own
+  - L1055 at 0 nobody pays for treatment
+  - L1056 ...and everybody is still treated
+  - L1057 ...and the funerals still charge
+  - L1058 ...so the fees are the funerals alone
+  - L1059 ...and nobody was priced out by a fee of nothing
+  - L1071 the break-even scale is the gross cost over the fees at 1x
+  - L1072 ...and this ward's is inside the dial
+  - L1075 at the break-even scale the fees meet the gross cost
+  - L1077 ...and the net cost is nothing
+  - L1080 below it the service loses money
+  - L1081 ...half the fees, at half the scale
+  - L1084 above it, it is a business
+  - L1085 ...and the recovery rate says so
+  - L1094 fixture: the city's break-even is inside the dial
+  - L1099 the policy's scale reached the service
+  - L1100 at the city's break-even the fees at full service are within a month's drift of the cost
+  - L1105 ...at half of it the service loses money
+  - L1106 ...by about half the cost
+- **L1116 13. who can afford the clinic**
+- **L1129 who can afford the clinic**
+  - L1141 a household with room pays its whole care bill
+  - L1143 ...and skips nothing
+  - L1147 ...and so does one whose room is exactly the bill
+  - L1155 a household short of a basket pays only what fits after eating
+  - L1157 ...which is the share of its people the clinic will see
+  - L1158 ...and the rest of the bill is what it eats instead
+  - L1160 ...so the bill it does pay leaves the basket whole
+  - L1166 a household with nothing pays nothing
+  - L1167 ...and none of its people are served
+  - L1168 ...whatever the fee
+  - L1170 ...and with a fee of nothing it is served in full
+  - L1179 a household that skipped last month's bill is judged on the full one
+  - L1184 ...and settles where it pays what it can, month after month
+  - L1187 ...rather than swinging between served and starving
+  - L1434 fixture: the poor city has somebody at the eat-less step
+  - L1436 fixture: at the dial's top the fee priced somebody out
+  - L1438 at a high fee a poor city serves a smaller share of its people than at the founding fee
+  - L1466 fixture: the same clinics in every twin, a place for more people than any of them holds
+  - L1468 fixture: so the beds are not what differs: at the dial's top they take no larger a share by more than the fee turns away
+  - L1470 ...and the coverage the month reads, what the fee leaves of the beds, is lower at the dial's top
+  - L1472 ...and its baseline sick rate, which coverage sets, is higher for it
+  - L1494 ...and it buries more of its people over the run
+  - L1495 ...its old first, whom a fee on senior care turns away
+  - L1496 with the fee at nothing the same city is served in full, every month
+  - L1498 ...every kind of care
+  - L1504 ...and the households who skipped a bill ate with it: over the last year the dear city is no hungrier than the free one by more than the price of care
+  - L1510 
+  - L1512 ...and the served are the offered times the share who could pay
+  - L1520 the treatment fees are charged on the people treated
+  - L1537 ...which is less than the same beds would raise at full service, in every month the fee turned somebody away
+  - L1550 the buildings' upkeep is the same at a dear fee as at the founding fee, in founding money
+  - L1553 ...and the service still costs money to run
+- **L1556 14. the unchanged case, at zero tolerance**
+- **L1568 the unchanged case, at zero tolerance**
+  - L1581 in a city that can pay, every household paid its whole care bill
+  - L1583 
+  - L1585 ...and the served are the offered, exactly
+  - L1588 ...and the fees charged are the fees at full service, exactly
+  - L1590 ...and the households were billed exactly what the city collected a month ago, as before
+  - L1592 ...and nobody was priced out
+  - L1593 ...and no bill was skipped
+- **L1595 15. the premium**
+- **L1603 the premium**
+  - L1611 the premium raises exactly the rate times the wage bill
+  - L1613 fixture: which is money
+  - L1614 ...on the same base as the EI premium
+  - L1616 ...and it is on the government's revenue list
+  - L1619 ...inside the revenue total
+  - L1623 ...and reaches the treasury's cash, penny for penny
+  - L1631 the households' statement shows the premium the city collected a month ago
+  - L1637 ...and the rows add back up to it
+  - L1638 ...off the wages, so the retired pay none
+  - L1640 ...and it comes off take-home, like the EI premium
+  - L1646 the money audit saw it as a household-to-treasury flow
+  - L1673 
+  - L1676 the insured city charged no treatment fee
+  - L1677 ...and the fee-funded one did
+  - L1678 the insured city's wage earners paid a premium
+  - L1680 ...and the fee-funded city's paid none
+  - L1681 the gross cost is the same either way: a ward is paid for whether or not its patients are
+- **L1684 16. both dials survive a save, and a reform**
+  - L1694 the fee scale came back
+  - L1695 ...and the premium
+  - L1696 ...and the service charges at the reloaded scale
+  - L1697 ...and the full-service bill the next strike reads came back
+  - L1705 a save from before the dials is still read
+  - L1706 ...at the founding fee
+  - L1707 ...with no premium
+  - L1710 ...and so is the service's state from before the full-service bill
+  - L1712 ...which reads the bill it charged as the bill at full service
+  - L1714 ...and a coverage of 1 until a month strikes it
+  - L1719 ...and the state from before the coverages were kept
+  - L1720 ...which reads the full bill at 1x it carried
+  - L1721 the reloaded service kept the coverage the month read
+  - L1723 ...which is the figure the sick rate read, not the beds
+  - L1730 a currency reform leaves the fee scale alone
+  - L1731 ...and the premium
+  - L1735 ...and the service's scale
+  - L1736 ...while its fees move with the money
 
 ## HistoryCheck.java - 97 labelled assertions
 
@@ -21435,7 +21435,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1170 a tonne's handling at the city's dial is the division's quote, to the bit; at 2 it is dearer by the kind's default due, and the twin billed at 2 quotes it
   - L1179 the copy's dial clamps as the city's: past the top is the top, below none is none, and the city's own dial stays where it was
 
-## PopulationCheck.java - 169 labelled assertions
+## PopulationCheck.java - 181 labelled assertions
 
 > The demographics: do they hold together, and do they move the city the way
 > they were told to?
@@ -21451,193 +21451,205 @@ _(this harness does not label its checks through a helper - it prints its findin
 > they are the four things Jerus actually asked for:
 > ...
 
-- **L93 1. the bands**
-  - L96 babies span six years
-  - L97 children seven
-  - L98 teens five
-  - L99 adults fifty-two
-  - L100 seniors fifteen
-  - L101 elders thirty-five
-  - L105 and together, one hundred and twenty years
-  - L113 the bands meet exactly - nobody falls between them
-  - L114 only adults work
-- **L117 2. ageing conserves people**
-  - L131 the first arrivals seed the pyramid
-  - L145 a new city is mostly of working age
-  - L147 ...and is not founded by pensioners
-  - L149 ...but has some, since people do retire
-  - L169 twenty years of ageing conserves every person
-  - L171 babies are born
-  - L172 ...and seniors die
-  - L173 every band is populated
-  - L192 the smear is the expected ~37%, not something worse
-- **L195 2b. mortality, and the trap in the arithmetic**
-  - L211 
-  - L222 a catastrophic rate is capped, not obeyed
-  - L224 ...and so is a nonsensical one
-  - L226 a negative rate kills nobody
-  - L229 children are the safest band
-  - L232 seniors die far more than adults
-  - L234 ...but not absurdly - a senior is not doomed
-  - L260 a seventy-year-old has a realistic time left
-  - L280 most of the city is of working age
-  - L282 seniors are a realistic share, not half the city
-  - L284 the dependency ratio is plausible
-- **L287 3. pay tiers and families**
-  - L292 eleven job types, six distinct wages
-  - L294 every job maps to a tier
-  - L306 PopulationManager pays exactly what PayTier says
-  - L316 households were formed
-  - L317 seniors got their own households
-  - L320 families with dependants exist
-  - L327 most households are unskilled, as most jobs are
-  - L329 no household sits in a tier with no jobs
-  - L335 almost nobody is left unhoused
-  - L352 a real share of adults live alone
-  - L354 ...but living alone is not the whole city
-  - L364 households are a plausible size
-  - L371 rebuilding is deterministic
-- **L373 3b. homes, and the squeeze**
-  - L397 a house is one home
-  - L398 a studio block is many small flats
-  - L400 a low-rise flat is bigger than a studio and smaller than a house
-  - L402 only the studio refuses a child
-  - L404 every block houses what its flats add up to
-  - L420 a studio is the cheapest home in the game
-  - L441 with room to spare, nobody shares
-  - L443 ...and nobody doubles up
-  - L450 singles start sharing when homes run short
-  - L459 families double up as the last resort
-  - L461 and nobody is homeless even then
-  - L465 a crowded city reports fewer homes needed than households
-  - L471 no homes at all does not throw or invent shares
-- **L474 4. AND NOW IT DRIVES THE CITY**
-  - L507 at a 50% workforce this is still exactly Jerus's 2.25
-  - L509 a city with more adults needs fewer residents per job
-  - L511 ...and an ageing one needs more
-  - L513 an absurd age structure cannot demand an absurd city
-  - L530 a city at target has the slack it was designed for
-  - L540 with a home each, nothing damps arrivals
-  - L542 at the crowding floor, arrivals stop dead
-  - L544 ...but just above it they have not
-  - L546 half way down, they are damped but not stopped
-- **L550 a door a family cannot enter is not room**
-  - L590 the same doors as studios are a HIGHER floor, not the same one
-  - L604 a city of studios is past its floor there and takes nobody
-  - L606 ...where the same households behind family doors still have room
-  - L629 fixture: too few doors, and studios at that, really does leave
-  - L635 a city whose placement has no room left takes nobody: the bound
-  - L637 ...and the damper, at the same point
-  - L639 ...so the month's arrivals are none, however many jobs are going
-- **L642 limited, not switched off (0.7.17)**
-  - L658 fixture: households doubled up, and nobody with nowhere
-  - L667 the room is the smaller of every door and the valve, and what the households with a child can take
-  - L669 ...in people at the arrivals' own people to a household
-  - L672 a city with households doubled up and room left still takes people
-  - L673 ...as many as the placement has room for, when the jobs would bring more
-  - L675 ...which is fewer than the damper alone would have let in
-  - L696 a door each, every household behind one: nothing damps
-  - L697 ...the same count of doors that leaves families doubled up damps arrivals
-  - L711 a full city with jobs still attracts people
-  - L723 jobs pull harder than housing
-  - L724 but housing still pulls on its own
-- **L727 what pushes people out**
-  - L737 a city with too few jobs sheds nobody while wages hold
-  - L739 ...because no tier is in decline
-  - L749 eleven months of decline is not yet enough
-  - L759 a full year of decline finally moves people out
-  - L760 and they leave slower than they arrived
-- **L763 DECLINING IN WHAT IT BUYS, NOT IN WHAT IT SAYS (2026-09-08)**
-- **L784 a tier declines when its pay buys less, not when it counts less**
-  - L796 two years of falling PRICES is not two years of decline
-  - L798 ...so nobody is pushed out of a city that is merely cheaper
-  - L814 fixture: the cash bill really did rise the whole way
-  - L816 ...and a tier losing its real pay is in decline anyway
-  - L818 ...so the people in it are entitled to go
-  - L825 a tier that stops paying entirely counts as declining
-  - L841 a growing city still loses people to a trade that is dying
-  - L843 ...while gaining more than it loses
-  - L867 a trade that merely slipped costs the city almost nobody
-- **L876 migration aims at a healthy slack (WG2)**
-  - L893 fixture: a city with full senior care, no jobs, and neither dear rent nor crime
-  - L896 with no jobs the target is the homes' weight x the capacity x the senior care pull
-  - L904 fixture: the city has jobs, and the two differ only in senior care coverage
-  - L907 without senior care the target is the two draws, unlifted
-  - L909 full senior care adds the homes' weight x the capacity x SENIOR_CARE_PULL and nothing to the jobs' draw
-  - L912 ...the jobs' pull reads 1 with it
-  - L913 ...and the homes' pull reads the senior care pull
-  - L922 fixture: rent is dear enough to cut the pull, and there are no homes to draw
-  - L924 a dear city's target is the jobs' draw x the affordability pull, senior care adding nothing to it
-  - L926 ...and the jobs' pull never exceeds 1
-  - L928 ...nor does it at inputs over 1
-  - L933 fixture: crime at twice Canada's cuts the pull
-  - L934 an unsafe city's jobs draw is cut by the crime pull, as a dear one's by the rent
-  - L940 the brake is whole at the healthy rate
-  - L941 ...none at the stop
-  - L942 ...half way between the two it is a half
-  - L943 ...whole under the healthy rate, none past the stop, and a rate nobody can read brakes nothing
-  - L962 fixture: the unbraked city draws people (target over its population, room and crowding at 1)
-  - L964 fixture: the rate is
-  - L967 arrivals
-  - L969 ...and the mix by band is of the braked arrivals
-  - L975 past the stop nobody arrives, however many jobs are going
-  - L995 fixture: no band is pinned and no tier is declining, so only the rate can send anybody
-  - L997 those over the healthy rate of the labour force leave at the surplus rate, whatever their wage
-  - L1000 ...and they are all the month's departures (no crime, no bankruptcy, no dying trade)
-  - L1002 ...and the departure mix sums to the departures
-  - L1004 a city past the healthy rate loses people for want of work
-  - L1005 ...from the band that is out of work at its own level
-  - L1008 a city at or under the healthy rate loses nobody for want of work
-- **L1015 a city, played**
-  - L1055 a city does not fill in a single month
-  - L1057 ...but it does fill, given a decade
-  - L1111 ...and does not run away entirely
-  - L1115 ...because a city past its target stops pulling people in
-  - L1137 the workforce is the city's adults, within a month's growth
-  - L1168 ...and the share is the pyramid's, not a constant
-- **L1172 5. and it survives a save**
-  - L1193 the city has a pyramid
-  - L1199 the pyramid came back
-  - L1200 ...and the households with it
-  - L1203 
-  - L1225 a declining streak survives a save
-  - L1230 ...and a malformed one is refused, not half-read
-  - L1240 a malformed pyramid is refused, not half-read
-- **L1318 the pyramid survives a band being added**
-  - L1326 the names travel beside the pyramid
-  - L1332 restored by name:
-  - L1334 and the births beside it
-  - L1335 and the deaths
-  - L1354 order does not matter:
-  - L1374 an unknown band shifts nothing:
-  - L1376 ...and the births are still the births
-  - L1377 ...and the stranger is not in the pyramid
-  - L1387 the legacy format is five bands, in writing
-  - L1393 a nameless save puts babies in BABY
-  - L1394 ...and seniors in SENIOR
-  - L1395 ...and reads births after the fifth
-  - L1396 ...and deaths after that
-  - L1397 ...and nobody else is in the city
-  - L1412 a save from before the names carries none
-  - L1416 a real old save: its adults are its adults
-  - L1418 ...its seniors are its seniors
-  - L1420 ...last month's births are births, not a band
-  - L1422 ...and the city is the size it was saved at
-  - L1430 a malformed named pyramid is refused too
-- **L1459 the families and the sick ring survive it too**
-- **L1468 families**
-  - L1470 the fixture actually has families to save
-  - L1475 the families round-trip by name
-  - L1485 a today-save read as five bands and thirteen shapes is refused whole
-  - L1509 ...and a band from the future shifts nothing behind it
-  - L1514 a malformed family array is refused whole
-- **L1516 the ring**
-  - L1519 the ring restores by name
-  - L1520 ...and round-trips
-  - L1529 a today-ring read as five bands is refused whole
-  - L1541 a five-band ring from before the names still loads
-  - L1542 ...and it put somebody in the ring
-  - L1545 a ring is refused whole when the width does not match its names
+- **L105 1. the bands**
+  - L108 babies span six years
+  - L109 children seven
+  - L110 teens five
+  - L111 adults fifty-two
+  - L112 seniors fifteen
+  - L113 elders thirty-five
+  - L117 and together, one hundred and twenty years
+  - L125 the bands meet exactly - nobody falls between them
+  - L126 only adults work
+- **L129 2. ageing conserves people**
+  - L143 the first arrivals seed the pyramid
+  - L157 a new city is mostly of working age
+  - L159 ...and is not founded by pensioners
+  - L161 ...but has some, since people do retire
+  - L181 twenty years of ageing conserves every person
+  - L183 babies are born
+  - L184 ...and seniors die
+  - L185 every band is populated
+  - L204 the smear is the expected ~37%, not something worse
+- **L207 2b. mortality, and the trap in the arithmetic**
+  - L223 
+  - L234 a catastrophic rate is capped, not obeyed
+  - L236 ...and so is a nonsensical one
+  - L238 a negative rate kills nobody
+  - L241 children are the safest band
+  - L244 seniors die far more than adults
+  - L246 ...but not absurdly - a senior is not doomed
+  - L272 a seventy-year-old has a realistic time left
+  - L292 most of the city is of working age
+  - L294 seniors are a realistic share, not half the city
+  - L296 the dependency ratio is plausible
+- **L299 3. pay tiers and families**
+  - L304 eleven job types, six distinct wages
+  - L306 every job maps to a tier
+  - L318 PopulationManager pays exactly what PayTier says
+  - L328 households were formed
+  - L329 seniors got their own households
+  - L332 families with dependants exist
+  - L339 most households are unskilled, as most jobs are
+  - L341 no household sits in a tier with no jobs
+  - L347 almost nobody is left unhoused
+  - L364 a real share of adults live alone
+  - L366 ...but living alone is not the whole city
+  - L376 households are a plausible size
+  - L383 rebuilding is deterministic
+- **L385 3b. homes, and the squeeze**
+  - L409 a house is one home
+  - L410 a studio block is many small flats
+  - L412 a low-rise flat is bigger than a studio and smaller than a house
+  - L414 only the studio refuses a child
+  - L416 every block houses what its flats add up to
+  - L432 a studio is the cheapest home in the game
+  - L453 with room to spare, nobody shares
+  - L455 ...and nobody doubles up
+  - L462 singles start sharing when homes run short
+  - L471 families double up as the last resort
+  - L473 and nobody is homeless even then
+  - L477 a crowded city reports fewer homes needed than households
+  - L483 no homes at all does not throw or invent shares
+- **L486 4. AND NOW IT DRIVES THE CITY**
+  - L519 at a 50% workforce this is still exactly Jerus's 2.25
+  - L521 a city with more adults needs fewer residents per job
+  - L523 ...and an ageing one needs more
+  - L525 an absurd age structure cannot demand an absurd city
+  - L542 a city at target has the slack it was designed for
+  - L552 with a home each, nothing damps arrivals
+  - L554 at the crowding floor, arrivals stop dead
+  - L556 ...but just above it they have not
+  - L558 half way down, they are damped but not stopped
+- **L562 a door a family cannot enter is not room**
+  - L602 the same doors as studios are a HIGHER floor, not the same one
+  - L616 a city of studios is past its floor there and takes nobody
+  - L618 ...where the same households behind family doors still have room
+  - L641 fixture: too few doors, and studios at that, really does leave
+  - L647 a city whose placement has no room left takes nobody: the bound
+  - L649 ...and the damper, at the same point
+  - L651 ...so the month's arrivals are none, however many jobs are going
+- **L654 limited, not switched off (0.7.17)**
+  - L670 fixture: households doubled up, and nobody with nowhere
+  - L679 the room is the smaller of every door and the valve, and what the households with a child can take
+  - L681 ...in people at the arrivals' own people to a household
+  - L684 a city with households doubled up and room left still takes people
+  - L685 ...as many as the placement has room for, when the jobs would bring more
+  - L687 ...which is fewer than the damper alone would have let in
+  - L708 a door each, every household behind one: nothing damps
+  - L709 ...the same count of doors that leaves families doubled up damps arrivals
+  - L723 a full city with jobs still attracts people
+  - L735 jobs pull harder than housing
+  - L736 but housing still pulls on its own
+- **L739 what pushes people out**
+  - L749 a city with too few jobs sheds nobody while wages hold
+  - L751 ...because no tier is in decline
+  - L761 eleven months of decline is not yet enough
+  - L771 a full year of decline finally moves people out
+  - L772 and they leave slower than they arrived
+- **L775 DECLINING IN WHAT IT BUYS, NOT IN WHAT IT SAYS (2026-09-08)**
+- **L796 a tier declines when its pay buys less, not when it counts less**
+  - L808 two years of falling PRICES is not two years of decline
+  - L810 ...so nobody is pushed out of a city that is merely cheaper
+  - L826 fixture: the cash bill really did rise the whole way
+  - L828 ...and a tier losing its real pay is in decline anyway
+  - L830 ...so the people in it are entitled to go
+  - L837 a tier that stops paying entirely counts as declining
+  - L853 a growing city still loses people to a trade that is dying
+  - L855 ...while gaining more than it loses
+  - L879 a trade that merely slipped costs the city almost nobody
+- **L888 migration aims at a healthy slack (WG2)**
+  - L905 fixture: a city with full senior care, no jobs, and neither dear rent nor crime
+  - L908 with no jobs the target is the homes' weight x the capacity x the senior care pull
+  - L916 fixture: the city has jobs, and the two differ only in senior care coverage
+  - L919 without senior care the target is the two draws, unlifted
+  - L921 full senior care adds the homes' weight x the capacity x SENIOR_CARE_PULL and nothing to the jobs' draw
+  - L924 ...the jobs' pull reads 1 with it
+  - L925 ...and the homes' pull reads the senior care pull
+  - L934 fixture: rent is dear enough to cut the pull, and there are no homes to draw
+  - L936 a dear city's target is the jobs' draw x the affordability pull, senior care adding nothing to it
+  - L938 ...and the jobs' pull never exceeds 1
+  - L940 ...nor does it at inputs over 1
+  - L945 fixture: crime at twice Canada's cuts the pull
+  - L946 an unsafe city's jobs draw is cut by the crime pull, as a dear one's by the rent
+  - L952 the brake is whole at the healthy rate
+  - L953 ...none at the stop
+  - L954 ...half way between the two it is a half
+  - L955 ...whole under the healthy rate, none past the stop, and a rate nobody can read brakes nothing
+  - L964 fixture: a city one month short of BRAKE_FROM_MONTH is still young
+  - L966 ...and at BRAKE_FROM_MONTH months the brake applies
+  - L967 ...a young city's brake is whole at the stop
+  - L968 ...an old city's is the pure brake at the stop
+  - L969 ...and half way between the dials, a half
+  - L978 fixture: the braked city has recorded BRAKE_FROM_MONTH months, so the brake applies
+  - L987 fixture: the unbraked city draws people (target over its population, room and crowding at 1)
+  - L989 fixture: the rate is
+  - L992 arrivals
+  - L994 ...and the mix by band is of the braked arrivals
+  - L1000 past the stop nobody arrives, however many jobs are going
+  - L1009 fixture: the young city is past the stop with no months recorded, and its unbraked twin draws people
+  - L1012 a city younger than BRAKE_FROM_MONTH is not braked past the stop: its arrivals are its unbraked twin's, whole
+  - L1022 fixture: the city has recorded BRAKE_FROM_MONTH months, so the jobless over the healthy rate can be sent away
+  - L1035 fixture: no band is pinned and no tier is declining, so only the rate can send anybody
+  - L1037 those over the healthy rate of the labour force leave at the surplus rate, whatever their wage
+  - L1040 ...and they are all the month's departures (no crime, no bankruptcy, no dying trade)
+  - L1042 ...and the departure mix sums to the departures
+  - L1044 a city past the healthy rate loses people for want of work
+  - L1045 ...from the band that is out of work at its own level
+  - L1048 a city at or under the healthy rate loses nobody for want of work
+  - L1068 fixture: the young city is well past the healthy rate, with no months recorded, no band pinned and no tier declining
+  - L1070 a city younger than BRAKE_FROM_MONTH sends nobody away for want of work, however far past the healthy rate
+  - L1072 ...its departures are the twin's, the extra leavers none
+- **L1076 a city, played**
+  - L1116 a city does not fill in a single month
+  - L1118 ...but it does fill, given a decade
+  - L1172 ...and does not run away entirely
+  - L1176 ...because a city past its target stops pulling people in
+  - L1198 the workforce is the city's adults, within a month's growth
+  - L1229 ...and the share is the pyramid's, not a constant
+- **L1233 5. and it survives a save**
+  - L1254 the city has a pyramid
+  - L1260 the pyramid came back
+  - L1261 ...and the households with it
+  - L1264 
+  - L1286 a declining streak survives a save
+  - L1291 ...and a malformed one is refused, not half-read
+  - L1301 a malformed pyramid is refused, not half-read
+- **L1379 the pyramid survives a band being added**
+  - L1387 the names travel beside the pyramid
+  - L1393 restored by name:
+  - L1395 and the births beside it
+  - L1396 and the deaths
+  - L1415 order does not matter:
+  - L1435 an unknown band shifts nothing:
+  - L1437 ...and the births are still the births
+  - L1438 ...and the stranger is not in the pyramid
+  - L1448 the legacy format is five bands, in writing
+  - L1454 a nameless save puts babies in BABY
+  - L1455 ...and seniors in SENIOR
+  - L1456 ...and reads births after the fifth
+  - L1457 ...and deaths after that
+  - L1458 ...and nobody else is in the city
+  - L1473 a save from before the names carries none
+  - L1477 a real old save: its adults are its adults
+  - L1479 ...its seniors are its seniors
+  - L1481 ...last month's births are births, not a band
+  - L1483 ...and the city is the size it was saved at
+  - L1491 a malformed named pyramid is refused too
+- **L1520 the families and the sick ring survive it too**
+- **L1529 families**
+  - L1531 the fixture actually has families to save
+  - L1536 the families round-trip by name
+  - L1546 a today-save read as five bands and thirteen shapes is refused whole
+  - L1570 ...and a band from the future shifts nothing behind it
+  - L1575 a malformed family array is refused whole
+- **L1577 the ring**
+  - L1580 the ring restores by name
+  - L1581 ...and round-trips
+  - L1590 a today-ring read as five bands is refused whole
+  - L1602 a five-band ring from before the names still loads
+  - L1603 ...and it put somebody in the ring
+  - L1606 a ring is refused whole when the width does not match its names
 
 ## PortCheck.java - 170 labelled assertions
 
@@ -26554,7 +26566,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L912 ...and no building stands on it: buildings and the runs off the steep never exceed the flat and foothill, the works' and the runs' parts on the steep alone, ...
   - L915 ...the points billed for preparation are what the foothill prepared comes to (an instant build prepares without charge, so never more)
 
-## StaffingDrawCheck.java - 135 labelled assertions
+## StaffingDrawCheck.java - 140 labelled assertions
 
 > The harness for GW1's staffing gate that counts the draw: a business orders a building only when the city could staff
 > Sector.MIN_STAFFABLE_TO_ORDER of its posts, and since GW1 that count is the spare workers and the workers migration would bring for
@@ -26570,151 +26582,156 @@ _(this harness does not label its checks through a helper - it prints its findin
 > (max(0, gap + the order's addition to the target) - max(0, gap), the gap being the target less the population), closed over the
 > ...
 
-  - L304 fixture (
-- **L395 1. a village with room: the draw passes what the spare does not**
-  - L402 fixture: the sawmill's posts are mostly unskilled and diploma
-  - L407 fixture: a month with room was struck: crowding and the senior, rent and crime pulls all read 1
-  - L413 fixture: a workforce was found whose spare workers fill
-  - L419 fixture: the spare workers alone fall short of
-  - L420 fixture: there are spare workers, so the order is not the draw's alone
-  - L423 fixture: the gap is positive without the order: migration's target stands over the village's people
-  - L424 fixture: the room does not bind: the doors left after last month's arrivals take more than the order's draw
-  - L426 with the draw the share reaches
-  - L427 ...so the order passes
-  - L428 ...with no band nobody can fill
-  - L429 the draw brings workers
-  - L430 the drawn workers are the formula's from the getters: the order's addition (the gap is positive, so all of it), closed, in workers
-  - L432 ...and the same from the gap's positive part, within the room
-- **L440 2. a city with no room: the draw refuses what the spare refuses**
-  - L464 fixture: Migration's crowding reads 0, from the households and the doors
-  - L465 fixture: a workforce was found whose spare workers fill
-  - L466 fixture: the spare workers alone fall short of
-  - L467 fixture: the same works passed in the village with room
-  - L468 every band's drawn workers are 0
-  - L469 ...as the formula has it
-  - L470 the share is the spare's alone, exactly
-  - L471 a works the spare refuses is refused
-- **L484 3. the pulls turn the draw down**
-  - L497 fixture: a month with room and no pull: crowding 1 and the pulls' product 1
-  - L498 fixture: the order passes on the draw, as in section 1
-  - L499 fixture: the draw is the formula's
-  - L509 fixture: dear rent cut the affordability pull
-  - L510 fixture: nothing else moved: crowding, residents a job, the senior and crime pulls
-  - L512 the drawn total moved by exactly the ratio of the pull products (rent)
-  - L513 ...and is the formula's
-  - L514 ...and the share fell with it, or stayed
-  - L525 fixture: crime cut the crime pull and rent's is back to 1
-  - L526 fixture: nothing else moved: crowding and residents a job
-  - L528 the drawn total moved by exactly the ratio of the pull products (crime)
-  - L529 ...and is the formula's
-  - L539 fixture: the affordability pull is below the dear month's
-  - L540 the draw is the formula's at the ruinous rent
-  - L541 the spare is the same, so the order that passed on the draw is refused when the pull turns it down
-- **L548 4. the Shared Services Centre in a town without its bands is still refused**
-  - L565 fixture: the town has no college and no university workers
-  - L567 fixture: the graduate bands are at the going rate: the pull of neither is anything
-  - L569 fixture: nobody, or under one worker, is drawn to the college or university band
-  - L570 fixture: the draw is workers enough for the centre's diploma posts
-  - L571 the draw raises the centre's share above the spare's alone
-  - L572 the centre's share is under
-  - L573 ...no more than its diploma posts', for the graduate posts get nobody
-  - L574 ...so the centre is refused
-  - L575 ...by the share, not the band test: migrants are admitted to every band, so no band is one nobody can fill
-  - L605 fixture: the sawmill has university posts and nobody here holds a degree
-  - L607 fixture: a profession's licence has a premium to draw by
-  - L609 fixture: with university arrivals open the draw brings university workers, through the licences, and no band is one nobody can fill
-  - L615 held closed, the band draws nobody
-  - L616 ...and with no spare, nobody above and no migrants, the university band is the one nobody can fill
-  - L617 ...and the order is refused for it
-  - L630 fixture: the works has college posts
-  - L646 fixture: the college wage was at the going rate and is now over it
-  - L647 fixture: no other band's premium moved with it, and no profession's licence
-  - L650 fixture: the draw is workers, so the comparison is not of zeros
-  - L651 the college wage bid up draws the gate the same workers, band by band, to the bit: the gate does not read the premium
-  - L653 ...and none of them to the college band, whose posts the premium would have drawn graduates to
-  - L654 ...and the share is the same, to the bit
-- **L660 5. the hold's words name both counts**
-  - L671 fixture: a refused order whose two counts round apart
-  - L674 the words say what the city could staff now: \"could staff
-  - L676 ...and with the draw: \"and
-  - L678 ...and what the gate wants
-  - L683 fixture: the order the city with no room refused rounds to one count
-  - L684 where the draw is nothing the words say \"now or with
-  - L686 ...with the one count: \"could staff
-  - L687 ...and not the two
-- **L693 6. a loaded city's gate is its twin's**
-  - L697 fixture (
-  - L702 fixture (
-  - L707 fixture (
+  - L312 fixture (
+- **L403 1. a village with room: the draw passes what the spare does not**
+  - L410 fixture: the sawmill's posts are mostly unskilled and diploma
+  - L415 fixture: a month with room was struck: crowding and the senior, rent and crime pulls all read 1
+  - L421 fixture: a workforce was found whose spare workers fill
+  - L427 fixture: the spare workers alone fall short of
+  - L428 fixture: there are spare workers, so the order is not the draw's alone
+  - L431 fixture: the gap is positive without the order: migration's target stands over the village's people
+  - L432 fixture: the room does not bind: the doors left after last month's arrivals take more than the order's draw
+  - L434 with the draw the share reaches
+  - L435 ...so the order passes
+  - L436 ...with no band nobody can fill
+  - L437 the draw brings workers
+  - L438 the drawn workers are the formula's from the getters: the order's addition (the gap is positive, so all of it), closed, in workers
+  - L440 ...and the same from the gap's positive part, within the room
+- **L448 2. a city with no room: the draw refuses what the spare refuses**
+  - L472 fixture: Migration's crowding reads 0, from the households and the doors
+  - L473 fixture: a workforce was found whose spare workers fill
+  - L474 fixture: the spare workers alone fall short of
+  - L475 fixture: the same works passed in the village with room
+  - L476 every band's drawn workers are 0
+  - L477 ...as the formula has it
+  - L478 the share is the spare's alone, exactly
+  - L479 a works the spare refuses is refused
+- **L492 3. the pulls turn the draw down**
+  - L505 fixture: a month with room and no pull: crowding 1 and the pulls' product 1
+  - L506 fixture: the order passes on the draw, as in section 1
+  - L507 fixture: the draw is the formula's
+  - L517 fixture: dear rent cut the affordability pull
+  - L518 fixture: nothing else moved: crowding, residents a job, the senior and crime pulls
+  - L520 the drawn total moved by exactly the ratio of the pull products (rent)
+  - L521 ...and is the formula's
+  - L522 ...and the share fell with it, or stayed
+  - L533 fixture: crime cut the crime pull and rent's is back to 1
+  - L534 fixture: nothing else moved: crowding and residents a job
+  - L536 the drawn total moved by exactly the ratio of the pull products (crime)
+  - L537 ...and is the formula's
+  - L547 fixture: the affordability pull is below the dear month's
+  - L548 the draw is the formula's at the ruinous rent
+  - L549 the spare is the same, so the order that passed on the draw is refused when the pull turns it down
+- **L556 4. the Shared Services Centre in a town without its bands is still refused**
+  - L573 fixture: the town has no college and no university workers
+  - L575 fixture: the graduate bands are at the going rate: the pull of neither is anything
+  - L577 fixture: nobody, or under one worker, is drawn to the college or university band
+  - L578 fixture: the draw is workers enough for the centre's diploma posts
+  - L579 the draw raises the centre's share above the spare's alone
+  - L580 the centre's share is under
+  - L581 ...no more than its diploma posts', for the graduate posts get nobody
+  - L582 ...so the centre is refused
+  - L583 ...by the share, not the band test: migrants are admitted to every band, so no band is one nobody can fill
+  - L613 fixture: the sawmill has university posts and nobody here holds a degree
+  - L615 fixture: a profession's licence has a premium to draw by
+  - L617 fixture: with university arrivals open the draw brings university workers, through the licences, and no band is one nobody can fill
+  - L623 held closed, the band draws nobody
+  - L624 ...and with no spare, nobody above and no migrants, the university band is the one nobody can fill
+  - L625 ...and the order is refused for it
+  - L638 fixture: the works has college posts
+  - L654 fixture: the college wage was at the going rate and is now over it
+  - L655 fixture: no other band's premium moved with it, and no profession's licence
+  - L658 fixture: the draw is workers, so the comparison is not of zeros
+  - L659 the college wage bid up draws the gate the same workers, band by band, to the bit: the gate does not read the premium
+  - L661 ...and none of them to the college band, whose posts the premium would have drawn graduates to
+  - L662 ...and the share is the same, to the bit
+- **L668 5. the hold's words name both counts**
+  - L679 fixture: a refused order whose two counts round apart
+  - L682 the words say what the city could staff now: \"could staff
+  - L684 ...and with the draw: \"and
+  - L686 ...and what the gate wants
+  - L691 fixture: the order the city with no room refused rounds to one count
+  - L692 where the draw is nothing the words say \"now or with
+  - L694 ...with the one count: \"could staff
+  - L695 ...and not the two
+- **L701 6. a loaded city's gate is its twin's**
+  - L705 fixture (
   - L710 fixture (
-  - L713 fixture (
-  - L726 fixture (
-  - L731 fixture (
-  - L732 ...and the gate draws on the year's
-  - L740 fixture (
-  - L742 the twin's last month's room is the original's, to the bit (
-  - L766 questions were asked (
-  - L767 fixture (
-  - L768 the twin's share, share now and drawn workers are the original's, to the bit, for every sector and template (
-  - L775 fixture: the reader that is to be given \"no census\" holds a room now
-  - L787 fixture: a month with room has a room that is a number over 0
-  - L788 the room a month struck rides the array and is read back to the bit
-  - L790 ...and a room of nothing (fixture: placed) is read back as nothing, not as the lack of a census
-  - L792 fixture: a Migration with no census holds no room figure, and its array has no NaN in it for the save to refuse
-  - L794 ...and read back by a Migration that held a room it is no census again
-- **L800 7. how often the draw opens an order in a played city**
-  - L823 fixture: the played city was asked questions
-  - L824 the draw opened at least one ask
-  - L825 none opened in a month of no room
-  - L840 fixture: the last month struck reads no room
-  - L841 fixture: there are asks the spare refuses in it
-  - L842 none of them is opened by the draw in a month of no room
-- **L851 8. the gap's positive part: only what the order makes positive is drawn**
-  - L875 fixture: a played city reached a month its population stands over migration's target, with orders on both sides of the gap
-  - L877 fixture: the brake lets some through that month (the city is out of work under the stop), so the bridge's draw is not nothing for that
-  - L894 fixture: the gap is under 0 and each of these orders adds less than it is short: the population stands over the target even with the order
-  - L896 fixture: the crowding is over 0, so it is the gap and not the doors that leaves the draw nothing
-  - L897 fixture: the count before the gap was read (the addition closed over the window) was over nothing for each of them
-  - L898 the draw is nothing, to the bit, in every band, for every one of them
-  - L899 ...as the formula has it
-  - L900 ...so the share is the spare's alone, to the bit
-  - L909 fixture: the order's addition takes the gap from negative to positive
-  - L910 fixture: the room does not bind: the doors left after last month's arrivals take more than the positive part's draw
-  - L912 fixture: the crowding is over 0
-  - L913 the draw is the positive part of the gap, closed over the window, cut by the brake, in workers
-  - L915 ...the formula's
-  - L916 ...and it is less than the whole addition's, which the count before drew whatever the gap
-- **L923 9. within the room: no more than the doors last month left free**
-  - L941 fixture: a played city reached a month with a census, doors left over 0, and orders on both sides of them
-  - L946 fixture: last month's room is a number, and what its arrivals left of it is over 0 and fewer than the order's uncapped draw
-  - L948 fixture: the gap is positive, so it is the room and not the gap that is short
-  - L949 fixture: the city has a workforce, so people turn to workers
-  - L952 fixture: the order draws workers
-  - L953 the draw, as people before the workforce share, is the room left, last month's room less its arrivals, cut by the brake
-  - L955 ...the formula's, in workers
-  - L956 ...and less than the uncapped draw's
-  - L957 an order whose draw is under the room left is not cut by it: it draws the uncapped figure, cut by the brake
-  - L967 fixture: no month was struck, so last month's room is no number
-  - L968 fixture: the order's addition takes the gap from negative to positive
-  - L969 with no census the draw is uncut: the positive part's, closed, in workers
-- **L981 10. the brake and the pull rule turn the draw down as they turn arrivals**
-  - L1003 fixture: the second month has all the senior care pull and the first none
-  - L1004 fixture: the gap is positive both ways, so the order's whole addition is drawn in each
-  - L1005 fixture: senior care lifted the target by the homes' draw x SENIOR_CARE_PULL, as the model has it
-  - L1007 fixture: the draw is workers, so the comparison is not of zeros
-  - L1008 full senior care draws the same workers as none, band by band, to the bit: it lifts the homes' draw and not the jobs'
-  - L1035 fixture: the first village is out of work under the healthy rate (
-  - L1037 fixture: the second is between the healthy rate and the stop
-  - L1039 fixture: the third is past the stop (
-  - L1040 fixture: the same spare workers in each, so the spare share is the same
-  - L1042 fixture: the unbraked draw is workers in the third village (the gap is positive and the room does not bind), so the brake is what makes it nothing
-  - L1044 under the healthy rate the draw is the unbraked draw, whole
-  - L1045 between the dials the draw is the unbraked draw x the brake at the rate it reads
-  - L1046 ...which is less than the healthy village's, and more than nothing
-  - L1047 past the stop the draw is nothing, to the bit, in every band
-  - L1048 ...so the share is the spare's alone, to the bit
-  - L1049 the order the healthy village passed on the draw
-  - L1050 ...is refused past the stop, where the spare is what it was
+  - L715 fixture (
+  - L718 fixture (
+  - L721 fixture (
+  - L734 fixture (
+  - L739 fixture (
+  - L740 ...and the gate draws on the year's
+  - L748 fixture (
+  - L750 the twin's last month's room is the original's, to the bit (
+  - L774 questions were asked (
+  - L775 fixture (
+  - L776 the twin's share, share now and drawn workers are the original's, to the bit, for every sector and template (
+  - L783 fixture: the reader that is to be given \"no census\" holds a room now
+  - L795 fixture: a month with room has a room that is a number over 0
+  - L796 the room a month struck rides the array and is read back to the bit
+  - L798 ...and a room of nothing (fixture: placed) is read back as nothing, not as the lack of a census
+  - L800 fixture: a Migration with no census holds no room figure, and its array has no NaN in it for the save to refuse
+  - L802 ...and read back by a Migration that held a room it is no census again
+- **L808 7. how often the draw opens an order in a played city**
+  - L831 fixture: the played city was asked questions
+  - L832 the draw opened at least one ask
+  - L833 none opened in a month of no room
+  - L848 fixture: the last month struck reads no room
+  - L849 fixture: there are asks the spare refuses in it
+  - L850 none of them is opened by the draw in a month of no room
+- **L859 8. the gap's positive part: only what the order makes positive is drawn**
+  - L883 fixture: a played city reached a month its population stands over migration's target, with orders on both sides of the gap
+  - L885 fixture: the brake lets some through that month (the city is out of work under the stop), so the bridge's draw is not nothing for that
+  - L902 fixture: the gap is under 0 and each of these orders adds less than it is short: the population stands over the target even with the order
+  - L904 fixture: the crowding is over 0, so it is the gap and not the doors that leaves the draw nothing
+  - L905 fixture: the count before the gap was read (the addition closed over the window) was over nothing for each of them
+  - L906 the draw is nothing, to the bit, in every band, for every one of them
+  - L907 ...as the formula has it
+  - L908 ...so the share is the spare's alone, to the bit
+  - L917 fixture: the order's addition takes the gap from negative to positive
+  - L918 fixture: the room does not bind: the doors left after last month's arrivals take more than the positive part's draw
+  - L920 fixture: the crowding is over 0
+  - L921 the draw is the positive part of the gap, closed over the window, cut by the brake, in workers
+  - L923 ...the formula's
+  - L924 ...and it is less than the whole addition's, which the count before drew whatever the gap
+- **L931 9. within the room: no more than the doors last month left free**
+  - L949 fixture: a played city reached a month with a census, doors left over 0, and orders on both sides of them
+  - L954 fixture: last month's room is a number, and what its arrivals left of it is over 0 and fewer than the order's uncapped draw
+  - L956 fixture: the gap is positive, so it is the room and not the gap that is short
+  - L957 fixture: the city has a workforce, so people turn to workers
+  - L960 fixture: the order draws workers
+  - L961 the draw, as people before the workforce share, is the room left, last month's room less its arrivals, cut by the brake
+  - L963 ...the formula's, in workers
+  - L964 ...and less than the uncapped draw's
+  - L965 an order whose draw is under the room left is not cut by it: it draws the uncapped figure, cut by the brake
+  - L975 fixture: no month was struck, so last month's room is no number
+  - L976 fixture: the order's addition takes the gap from negative to positive
+  - L977 with no census the draw is uncut: the positive part's, closed, in workers
+- **L989 10. the brake and the pull rule turn the draw down as they turn arrivals**
+  - L993 fixture: the brake village has recorded BRAKE_FROM_MONTH months, so its brake acts
+  - L1013 fixture: the second month has all the senior care pull and the first none
+  - L1014 fixture: the gap is positive both ways, so the order's whole addition is drawn in each
+  - L1015 fixture: senior care lifted the target by the homes' draw x SENIOR_CARE_PULL, as the model has it
+  - L1017 fixture: the draw is workers, so the comparison is not of zeros
+  - L1018 full senior care draws the same workers as none, band by band, to the bit: it lifts the homes' draw and not the jobs'
+  - L1045 fixture: the first village is out of work under the healthy rate (
+  - L1047 fixture: the second is between the healthy rate and the stop
+  - L1049 fixture: the third is past the stop (
+  - L1050 fixture: the same spare workers in each, so the spare share is the same
+  - L1052 fixture: the unbraked draw is workers in the third village (the gap is positive and the room does not bind), so the brake is what makes it nothing
+  - L1054 under the healthy rate the draw is the unbraked draw, whole
+  - L1055 between the dials the draw is the unbraked draw x the brake at the rate it reads
+  - L1056 ...which is less than the healthy village's, and more than nothing
+  - L1057 past the stop the draw is nothing, to the bit, in every band
+  - L1058 ...so the share is the spare's alone, to the bit
+  - L1059 the order the healthy village passed on the draw
+  - L1060 ...is refused past the stop, where the spare is what it was
+  - L1078 fixture: the young village has no months recorded and is out of work past the stop, with the same spare as the old one's
+  - L1080 fixture: the unbraked draw is workers there (the gap is positive and the room does not bind)
+  - L1082 a village younger than BRAKE_FROM_MONTH, past the stop, draws the unbraked draw, whole
+  - L1083 ...and the order it passes on that draw is not refused for want of the brake
 
 ## StaleCheck.java - 22 labelled assertions
 

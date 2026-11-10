@@ -387,9 +387,12 @@ public class HealthCheck {
         /*
          * THE SHELF IS STOCKED, so the shops' hands are what binds (WG2, {next}). The sick rate cuts what the shops CAN hand
          * over, which shows only where the shelf holds more than that. The played city used to give it for free: at month 36 it
-         * had 2,094 people and a shelf over its shops' reach. Under WG2's brake on arrivals (Migration.arrivalBrake()) the
-         * same city has 1,655 and a shelf its shops could empty, and the premise below failed. So the fixture causes it: every
-         * pantry is put at SHELF_STOCK times what the city left there, before the full-health sale and before it is saved.
+         * had 2,094 people and a shelf over its shops' reach. The brake on arrivals (Migration.arrivalBrake()) does not act at
+         * month 36, under Migration.BRAKE_FROM_MONTH, and the same city has 1,872 (1,655 when the brake acted from month 1, and
+         * then a shelf its shops could empty and the premise below failed). WG2's part 1, senior care no longer lifting the jobs'
+         * draw, is only 29 of the 222 people fewer than 2,094 (the city is 1,901 with the jobs' draw lifted by it as before); the
+         * rest was not measured here. So the fixture causes the shelf whatever the city's size: every pantry is put at
+         * SHELF_STOCK times what the city left there, before the full-health sale and before it is saved.
          */
         final double SHELF_STOCK = 10;
         for (Good sg : ham.citybuildersim.sectors.Retail.SHELF) shops.setPantry(sg, shops.getPantry(sg) * SHELF_STOCK);

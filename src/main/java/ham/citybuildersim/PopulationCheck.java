@@ -81,6 +81,18 @@ public class PopulationCheck {
         return pm;
     }
 
+    /**
+     * A Migration that has recorded Migration.BRAKE_FROM_MONTH months of the same steady wage (one tier pays, the rest pay nothing, as the
+     * pushes section has it), so no tier is declining and no one leaves for it: an old city, on which brakeApplies() is true (WG2).
+     */
+    static Migration oldMigration() {
+        Migration mig = new Migration();
+        double[] steady = new double[PayTier.values().length];
+        steady[PayTier.UNSKILLED.ordinal()] = 1000;
+        for (int m = 0; m < Migration.BRAKE_FROM_MONTH; m++) mig.recordWages(steady);
+        return mig;
+    }
+
     static void assertTrue(String label, boolean ok) {
         if (!ok) fails++;
         System.out.printf("%-58s %s%n", label, ok ? "OK" : "FAIL");
@@ -944,13 +956,26 @@ public class PopulationCheck {
                     Migration.arrivalBrake(0) == 1 && Migration.arrivalBrake(2 * Migration.ARRIVALS_STOP_OUT_OF_WORK) == 0
                             && Migration.arrivalBrake(Double.NaN) == 1);
 
+            // The brake acts from BRAKE_FROM_MONTH: the city's age is the months its Migration has recorded.
+            Migration wgAlmost = new Migration();
+            double[] wgSteady = new double[PayTier.values().length];
+            wgSteady[PayTier.UNSKILLED.ordinal()] = 1000;
+            for (int m = 0; m < Migration.BRAKE_FROM_MONTH - 1; m++) wgAlmost.recordWages(wgSteady);
+            assertTrue("fixture: a city one month short of BRAKE_FROM_MONTH is still young", !wgAlmost.brakeApplies());
+            wgAlmost.recordWages(wgSteady);
+            assertTrue("...and at BRAKE_FROM_MONTH months the brake applies", wgAlmost.brakeApplies());
+            check("...a young city's brake is whole at the stop", new Migration().arrivalBrakeNow(Migration.ARRIVALS_STOP_OUT_OF_WORK), 1, 1e-12);
+            check("...an old city's is the pure brake at the stop", wgAlmost.arrivalBrakeNow(Migration.ARRIVALS_STOP_OUT_OF_WORK), 0, 1e-12);
+            check("...and half way between the dials, a half", wgAlmost.arrivalBrakeNow(wgMiddle), .5, 1e-12);
+
             long wgAdults = 10_000;
             double[] wgShares = { Migration.HEALTHY_OUT_OF_WORK - .01, wgMiddle, Migration.ARRIVALS_STOP_OUT_OF_WORK + .04 };
             String[] wgNames = { "under the healthy rate", "half way between the dials", "past the stop" };
             for (int i = 0; i < wgShares.length; i++) {
                 PopulationManager wgPeople = cityOutOfWork(wgAdults, wgShares[i]);
                 double wgRate = wgPeople.getUnemploymentRate();
-                Migration wgBraked = new Migration(), wgTwin = new Migration();
+                Migration wgBraked = oldMigration(), wgTwin = new Migration();
+                assertTrue("fixture: the braked city has recorded BRAKE_FROM_MONTH months, so the brake applies", wgBraked.brakeApplies());
                 wgBraked.monthlyNet(wgPeople.getPopulation(), wgJobs * 2, wgCapacity * 2, wgHomes, roomy, ADULT_MIX, 0,
                         new LabourMarket(), wgPeople);
                 wgTwin.monthlyNet(wgPeople.getPopulation(), wgJobs * 2, wgCapacity * 2, wgHomes, roomy, ADULT_MIX, 0);
@@ -969,10 +994,23 @@ public class PopulationCheck {
                 check("...and the mix by band is of the braked arrivals", wgMixed, wgBraked.getLastArrivals(), 1e-6);
             }
             PopulationManager wgPast = cityOutOfWork(wgAdults, Migration.ARRIVALS_STOP_OUT_OF_WORK + .04);
-            Migration wgStopped = new Migration();
+            Migration wgStopped = oldMigration();
             wgStopped.monthlyNet(wgPast.getPopulation(), wgJobs * 2, wgCapacity * 2, wgHomes, roomy, ADULT_MIX, 0,
                     new LabourMarket(), wgPast);
             check("past the stop nobody arrives, however many jobs are going", wgStopped.getLastArrivals(), 0, 1e-9);
+
+            // A young city is not braked: the same people, past the stop, with no months recorded.
+            Migration wgYoung = new Migration(), wgYoungTwin = new Migration();
+            wgYoung.monthlyNet(wgPast.getPopulation(), wgJobs * 2, wgCapacity * 2, wgHomes, roomy, ADULT_MIX, 0,
+                    new LabourMarket(), wgPast);
+            wgYoungTwin.monthlyNet(wgPast.getPopulation(), wgJobs * 2, wgCapacity * 2, wgHomes, roomy, ADULT_MIX, 0);
+            System.out.printf("   past the stop with no months recorded: arrivals %,.2f against the twin's %,.2f%n",
+                    wgYoung.getLastArrivals(), wgYoungTwin.getLastArrivals());
+            assertTrue("fixture: the young city is past the stop with no months recorded, and its unbraked twin draws people",
+                    !wgYoung.brakeApplies() && wgPast.getUnemploymentRate() >= Migration.ARRIVALS_STOP_OUT_OF_WORK
+                            && wgYoungTwin.getLastArrivals() > 0);
+            check("a city younger than BRAKE_FROM_MONTH is not braked past the stop: its arrivals are its unbraked twin's, whole",
+                    wgYoung.getLastArrivals(), wgYoungTwin.getLastArrivals(), 1e-9);
 
             // ---- 3. the jobless past the healthy rate leave ----
             System.out.println("   3. the jobless past the healthy rate leave");
@@ -980,7 +1018,9 @@ public class PopulationCheck {
             for (double share : wgLeaveShares) {
                 PopulationManager wgJobless = cityOutOfWork(wgAdults, share);
                 LabourMarket wgMarket = new LabourMarket();
-                Migration wgLeavers = new Migration();
+                Migration wgLeavers = oldMigration();
+                assertTrue("fixture: the city has recorded BRAKE_FROM_MONTH months, so the jobless over the healthy rate can be sent away",
+                        wgLeavers.brakeApplies());
                 wgLeavers.monthlyNet(wgJobless.getPopulation(), wgJobs * 2, wgCapacity * 2, wgHomes, roomy, ADULT_MIX, 0,
                         wgMarket, wgJobless);
                 boolean wgAnyPinned = false;
@@ -1009,6 +1049,27 @@ public class PopulationCheck {
                             wgLeavers.getLastWorkDepartures(), 0, 1e-9);
                 }
             }
+
+            // A young city sends nobody away for the rate: the same people, well past the healthy rate, with no months recorded.
+            double wgYoungShare = .20;
+            PopulationManager wgYoungJobless = cityOutOfWork(wgAdults, wgYoungShare);
+            LabourMarket wgYoungMarket = new LabourMarket();
+            Migration wgYoungLeavers = new Migration(), wgYoungTwin2 = new Migration();
+            wgYoungLeavers.monthlyNet(wgYoungJobless.getPopulation(), wgJobs * 2, wgCapacity * 2, wgHomes, roomy, ADULT_MIX, 0,
+                    wgYoungMarket, wgYoungJobless);
+            wgYoungTwin2.monthlyNet(wgYoungJobless.getPopulation(), wgJobs * 2, wgCapacity * 2, wgHomes, roomy, ADULT_MIX, 0);
+            boolean wgYoungPinned = false;
+            for (WageBand band : WageBand.values()) wgYoungPinned |= wgYoungMarket.isPinned(band);
+            double wgYoungOver = Math.max(0, wgYoungJobless.getUnemployed() - Migration.HEALTHY_OUT_OF_WORK * wgYoungJobless.getLabourForce());
+            System.out.printf("   out of work %.4f with no months recorded (%,.1f over the healthy rate): %,.3f leave for want of work,"
+                            + " %,.3f in all, against the twin's %,.3f%n",
+                    wgYoungJobless.getUnemploymentRate(), wgYoungOver, wgYoungLeavers.getLastWorkDepartures(),
+                    wgYoungLeavers.getLastDepartures(), wgYoungTwin2.getLastDepartures());
+            assertTrue("fixture: the young city is well past the healthy rate, with no months recorded, no band pinned and no tier declining",
+                    !wgYoungLeavers.brakeApplies() && wgYoungOver > 0 && !wgYoungPinned && wgYoungLeavers.getLastDecliningShare() == 0);
+            check("a city younger than BRAKE_FROM_MONTH sends nobody away for want of work, however far past the healthy rate",
+                    wgYoungLeavers.getLastWorkDepartures(), 0, 1e-9);
+            check("...its departures are the twin's, the extra leavers none", wgYoungLeavers.getLastDepartures(), wgYoungTwin2.getLastDepartures(), 1e-9);
         }
 
         /* ---- and the whole thing, played ---- */

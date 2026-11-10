@@ -41,8 +41,9 @@ import java.util.function.Predicate;
  *      bit; where the order takes the gap from negative to positive, it is that positive part's, and less than the whole addition's.
  *   9. Within the room: where the doors last month left free are fewer than the draw would be, the draw is the room left.
  *  10. The brake and the pull rule of WG2 turn the draw down as they turn arrivals: full senior care draws the same workers as none, to
- *      the bit; the draw is the unbraked draw x Migration.arrivalBrake() of the village's out-of-work share; and past
- *      Migration.ARRIVALS_STOP_OUT_OF_WORK it is nothing, and the order the village passed is refused.
+ *      the bit; the draw is the unbraked draw x Migration.arrivalBrake() of the village's out-of-work share, the brake acting from
+ *      Migration.BRAKE_FROM_MONTH (the villages are that old); and past Migration.ARRIVALS_STOP_OUT_OF_WORK it is nothing, and the
+ *      order the village passed is refused. A village younger than BRAKE_FROM_MONTH draws the unbraked draw whole, past the stop too.
  */
 public class StaffingDrawCheck {
 
@@ -293,7 +294,14 @@ public class StaffingDrawCheck {
 
     /** The share of the arrivals migration's brake lets through in this city now: 1 at and under the healthy out-of-work rate, 0 at and past the stop (WG2). */
     static double brake(Game g) {
-        return Migration.arrivalBrake(g.getPopulationManager().getUnemploymentRate());
+        return g.getMigration().arrivalBrakeNow(g.getPopulationManager().getUnemploymentRate());
+    }
+
+    /** Makes this Migration an old city's: Migration.BRAKE_FROM_MONTH months of the same steady wage recorded, so its brake acts and no tier declines (WG2). */
+    static void makeOld(Migration mig) {
+        double[] steady = new double[PayTier.values().length];
+        steady[PayTier.UNSKILLED.ordinal()] = 1000;
+        for (int m = 0; m < Migration.BRAKE_FROM_MONTH; m++) mig.recordWages(steady);
     }
 
     /**
@@ -981,6 +989,8 @@ public class StaffingDrawCheck {
         System.out.println("\n--- 10. the brake and the pull rule turn the draw down as they turn arrivals ---");
         Game g = city(root, "brake");
         Migration mig = g.getMigration();
+        makeOld(mig);
+        assertTrue("fixture: the brake village has recorded BRAKE_FROM_MONTH months, so its brake acts", mig.brakeApplies());
         PopulationManager people = g.getPopulationManager();
         BuildingsTemplate sawmill = template(g, "Sawmill");
         Sector owner = BuildCard.ownerOf(g, sawmill);
@@ -1048,5 +1058,29 @@ public class StaffingDrawCheck {
         assertTrue("...so the share is the spare's alone, to the bit", Double.doubleToLongBits(stopped.share) == Double.doubleToLongBits(stopped.shareNow));
         assertTrue("the order the healthy village passed on the draw", healthy.passes() && healthy.shareNow < Sector.MIN_STAFFABLE_TO_ORDER);
         assertTrue("...is refused past the stop, where the spare is what it was", !stopped.passes());
+
+        /*
+         * (c) A YOUNG VILLAGE IS NOT BRAKED. The same order, month and spare workers in a village with no months recorded, out of work past
+         * the stop: the brake is not read (Migration.BRAKE_FROM_MONTH), so it draws the unbraked draw, whole, and passes on it.
+         */
+        Game young = city(root, "brake-young");
+        Migration youngMig = young.getMigration();
+        PopulationManager youngPeople = young.getPopulationManager();
+        BuildingsTemplate youngSawmill = template(young, "Sawmill");
+        Sector youngOwner = BuildCard.ownerOf(young, youngSawmill);
+        roomMonth(youngMig);
+        seatOutOfWork(youngPeople, workers, Migration.ARRIVALS_STOP_OUT_OF_WORK + .04);
+        double rateYoung = youngPeople.getUnemploymentRate();
+        Sector.Staffing youngStaffing = youngOwner.staffing(youngSawmill);
+        double drawnYoung = sum(youngStaffing.drawn()), unbrakedYoung = unbraked(young, youngSawmill);
+        System.out.printf("   out of work %.4f with no months recorded: brake now %.3f, %.2f workers drawn of %.2f unbraked, %s with the draw%n",
+                rateYoung, youngMig.arrivalBrakeNow(rateYoung), drawnYoung, unbrakedYoung, pct(youngStaffing.share));
+        assertTrue("fixture: the young village has no months recorded and is out of work past the stop, with the same spare as the old one's",
+                !youngMig.brakeApplies() && rateYoung >= Migration.ARRIVALS_STOP_OUT_OF_WORK && youngStaffing.shareNow == stopped.shareNow);
+        assertTrue("fixture: the unbraked draw is workers there (the gap is positive and the room does not bind)",
+                unbrakedYoung > 0 && gapNow(young) > 0 && roomLeft(youngMig) > uncappedPeople(young, posts(youngSawmill)));
+        near("a village younger than BRAKE_FROM_MONTH, past the stop, draws the unbraked draw, whole", drawnYoung, unbrakedYoung);
+        assertTrue("...and the order it passes on that draw is not refused for want of the brake",
+                youngStaffing.passes() && youngStaffing.shareNow < Sector.MIN_STAFFABLE_TO_ORDER);
     }
 }
