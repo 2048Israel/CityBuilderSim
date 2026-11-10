@@ -31,6 +31,8 @@ import java.util.Locale;
  *      not as a household under its cushion, and not a company at the floor.
  *   7. A YEAR AT THE FLOOR SENDS THE FAMILY BACK: OWNER_BROKE_MONTHS running,
  *      a month off the floor starting the count again; a failed company at once.
+ *      A family reserved for a company that never lists is let go once the
+ *      owner cell holds families.
  *   8. THE LEAVING FAMILY TAKES ITS MONEY, NOT THE SHARES: the line's total of
  *      each company is what it was, the savings and money abroad go to the
  *      cell that grew.
@@ -367,6 +369,9 @@ public class OwnerCheck {
 
     /* ============ 7. a year at the floor sends the family back ============ */
 
+    /** Every company in issue, for the fixtures whose families were reserved by a grant alone: the floor is all they are tallied on. */
+    static final java.util.function.IntPredicate ALL_LISTED = c -> true;
+
     static void sendsBack(int IND, int RETAIL) {
         System.out.println("\n--- a year at the floor sends the family back ---");
         int broke = OwnerHousehold.OWNER_BROKE_MONTHS;
@@ -375,24 +380,24 @@ public class OwnerCheck {
         hb.grantFounders(IND, 100);
         hb.grantFounders(RETAIL, 100);
         check("fixture: two companies have a family", hb.ownerFamilies() == 2 && hb.hasOwnerFamily(IND) && hb.hasOwnerFamily(RETAIL));
-        for (int m = 1; m < broke; m++) hb.tallyOwnersAtFloor(c -> c == IND);
+        for (int m = 1; m < broke; m++) hb.tallyOwnersAtFloor(c -> c == IND, ALL_LISTED);
         check("after OWNER_BROKE_MONTHS - 1 months at the floor the family is still there",
                 hb.hasOwnerFamily(IND) && hb.ownerFamilies() == 2 && hb.ownerLineForSave().get(Equity.COMPANIES[IND]) == broke - 1);
-        hb.tallyOwnersAtFloor(c -> c == IND);
+        hb.tallyOwnersAtFloor(c -> c == IND, ALL_LISTED);
         check("after OWNER_BROKE_MONTHS it is gone: the line is down one", !hb.hasOwnerFamily(IND) && hb.ownerFamilies() == 1);
         check("...a company off the floor keeps its family, and its months stay nothing", hb.hasOwnerFamily(RETAIL) && hb.ownerLineForSave().get(Equity.COMPANIES[RETAIL]) == 0);
-        hb.tallyOwnersAtFloor(c -> c == IND);
+        hb.tallyOwnersAtFloor(c -> c == IND, ALL_LISTED);
         check("...and a family that has left is not counted again", hb.ownerFamilies() == 1 && !hb.hasOwnerFamily(IND));
 
         HouseholdBalance run = town(true);
         run.grantFounders(IND, 100);
-        for (int m = 1; m < broke; m++) run.tallyOwnersAtFloor(c -> c == IND);
-        run.tallyOwnersAtFloor(c -> false);
+        for (int m = 1; m < broke; m++) run.tallyOwnersAtFloor(c -> c == IND, ALL_LISTED);
+        run.tallyOwnersAtFloor(c -> false, ALL_LISTED);
         check("a month off the floor at OWNER_BROKE_MONTHS - 1 starts the run again",
                 run.hasOwnerFamily(IND) && run.ownerLineForSave().get(Equity.COMPANIES[IND]) == 0);
-        for (int m = 1; m < broke; m++) run.tallyOwnersAtFloor(c -> c == IND);
+        for (int m = 1; m < broke; m++) run.tallyOwnersAtFloor(c -> c == IND, ALL_LISTED);
         check("...it then takes a full OWNER_BROKE_MONTHS more: OWNER_BROKE_MONTHS - 1 are not enough", run.hasOwnerFamily(IND));
-        run.tallyOwnersAtFloor(c -> c == IND);
+        run.tallyOwnersAtFloor(c -> c == IND, ALL_LISTED);
         check("...and the OWNER_BROKE_MONTHS-th sends it back", !run.hasOwnerFamily(IND) && run.ownerFamilies() == 0);
 
         HouseholdBalance bank = town(true);
@@ -409,12 +414,31 @@ public class OwnerCheck {
         java.util.Map<String, Integer> line = new java.util.LinkedHashMap<>();
         line.put(Equity.COMPANIES[IND], broke - 1);
         off.restoreOwnerLine(line);
-        for (int m = 0; m < 3 * broke; m++) off.tallyOwnersAtFloor(c -> true);
+        for (int m = 0; m < 3 * broke; m++) off.tallyOwnersAtFloor(c -> true, ALL_LISTED);
         check("with the line off nothing moves: a family on the books keeps its months however long the floor",
                 !off.isOwnerLine() && off.hasOwnerFamily(IND) && off.ownerLineForSave().get(Equity.COMPANIES[IND]) == broke - 1);
         HouseholdBalance none = town(false);
-        none.tallyOwnersAtFloor(c -> true);
+        none.tallyOwnersAtFloor(c -> true, ALL_LISTED);
         check("...and a line off with no family keeps none", none.ownerFamilies() == 0);
+
+        // A family reserved for a company that never lists (the stranger's review, 2026-11-10): waiting while the cell is empty, let go once it is not.
+        owners[0] = 0;
+        HouseholdBalance wait = town(true);
+        check("fixture: the owner cell is empty, so a grant reserves the family and issues nothing", !wait.grantFounders(IND, 100) && wait.owners().isEmpty());
+        for (int m = 0; m < broke; m++) wait.tallyOwnersAtFloor(c -> true, c -> false);
+        check("a company not in issue waits for its family while the cell is empty, and no floor is counted",
+                wait.hasOwnerFamily(IND) && wait.ownerLineForSave().get(Equity.COMPANIES[IND]) == 0);
+        HouseholdBalance lists = town(true);
+        lists.grantFounders(IND, 100);
+        owners[0] = wait.ownerFamilies();
+        month(wait);
+        month(lists);
+        check("fixture: the census formed the family, so the cell holds one", !wait.owners().isEmpty() && !lists.owners().isEmpty());
+        check("...the company that lists into it now keeps its family", lists.grantFounders(IND, 100));
+        lists.tallyOwnersAtFloor(c -> false, c -> c == IND);
+        check("...and its months at the floor are nothing", lists.hasOwnerFamily(IND) && lists.ownerLineForSave().get(Equity.COMPANIES[IND]) == 0);
+        wait.tallyOwnersAtFloor(c -> false, c -> false);
+        check("the company still not in issue once its family is there lets the family go", !wait.hasOwnerFamily(IND) && wait.ownerFamilies() == 0);
     }
 
     /* ============ 8. the leaving family takes its money, not the shares ============ */

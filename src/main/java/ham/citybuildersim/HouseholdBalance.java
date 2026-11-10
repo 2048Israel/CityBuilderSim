@@ -807,12 +807,24 @@ public class HouseholdBalance {
      * OwnerHousehold.OWNER_BROKE_MONTHS the family leaves the line; a month
      * off the floor starts the count again. The family is dropped here and the
      * census, next month, takes its two adults out of the owner cell: see
-     * followThePeople(). Nothing with the line off.
+     * followThePeople(). A company not in issue (the predicate listed) is
+     * not at any floor: it is waiting for its family, which the census
+     * forms while the owner cell is empty; once the cell holds families and
+     * the company has still not listed, the listing was not retried and the
+     * family it reserved is let go (the stranger's review, 2026-11-10: it
+     * sat out of the labour force for a year at a floor it never had).
+     * Nothing with the line off.
      */
-    public void tallyOwnersAtFloor(java.util.function.IntPredicate atFloor) {
+    public void tallyOwnersAtFloor(java.util.function.IntPredicate atFloor, java.util.function.IntPredicate listed) {
         if (!ownerLine) return;
         for (int c = 0; c < ownerFloorMonths.length; c++) {
             if (ownerFloorMonths[c] < 0) continue;
+            if (!listed.test(c)) {
+                if (owners().isEmpty()) continue;
+                ownerFloorMonths[c] = -1;
+                System.out.println("The family reserved to own " + Equity.COMPANIES[c] + " rejoins the working population: the company did not list once its family was there.");
+                continue;
+            }
             if (!atFloor.test(c)) {
                 ownerFloorMonths[c] = 0;
                 continue;

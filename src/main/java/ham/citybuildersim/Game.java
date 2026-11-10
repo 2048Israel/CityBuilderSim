@@ -4875,7 +4875,8 @@ public class Game {
         exchange.takeMonth(equity, householdBalance, bank, exchangeCompanies, book,
                 DebtManager.WORLD_BASE_RATE, bank.depositRate(), month, fundBondsValue(), debtManager.householdBookYield());
         // ...a company at the exchange's floor a year running sends its owner family back to the working pool (BO1): this month's fair values, the census next month.
-        householdBalance.tallyOwnersAtFloor(exchange::atFloor);
+        // A family reserved for a company that is still not in issue once the owner cell holds families is let go the same way.
+        householdBalance.tallyOwnersAtFloor(exchange::atFloor, c -> equity.getShares(c) > 0);
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
             double k = exchange.getSplit(c);
             if (k > 1) GameLog.note(String.format("%s split its shares %,.0f for one.", Equity.COMPANIES[c], k));

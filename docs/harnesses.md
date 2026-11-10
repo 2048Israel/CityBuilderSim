@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**198 harness files, 23,275 labelled assertions.** AllChecks runs 198 of them.
+**198 harness files, 23,281 labelled assertions.** AllChecks runs 198 of them.
 
 ## Which harnesses read which class
 
@@ -20205,7 +20205,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L698 fixture: somebody finished that month
   - L700 a temporary directory for the save:
 
-## OwnerCheck.java - 122 labelled assertions
+## OwnerCheck.java - 128 labelled assertions
 
 > The owner families (BO1): one two-adult household per company that has
 > listed and not gone broke, holding the company's founding stake alone.
@@ -20221,138 +20221,144 @@ _(this harness does not label its checks through a helper - it prints its findin
 >   2. THE LINE ON, NO OWNER HOUSEHOLD YET: the listing waits (listIfUnlisted
 > ...
 
-- **L102 1. the line off: today's grant**
-  - L109 fixture: the line was never switched on
-  - L110 a company with equity and no owners lists
-  - L111 the founders' shares are all in the households' hands
-  - L112 ...and the register issued exactly them
-  - L115 a couple holds twice a single adult's stake: by grown-ups, as before
-  - L116 ...and every non-empty cell holds some
-  - L117 ...and the owner cell, empty, holds none
-  - L118 ...and no family was reserved
-- **L121 2. the line on, no owner household yet: the listing waits**
-  - L127 fixture: the line is on and the owner cell is empty
-  - L128 a company with equity does not list: its family does not exist yet
-  - L129 ...the register has no shares in issue
-  - L130 ...and no household holds any
-  - L131 ...but its family is reserved: the census forms it next month
-  - L135 an offering by a company with a book and no owners raises nothing
-  - L136 ...opens no offering and issues no share
-  - L138 ...and reserves its family too
-- **L141 3. the line on, with households: the founders' shares to the owners alone**
-  - L148 fixture: the census formed the families the grant reserved
-  - L149 a company that waited for its family lists
-  - L150 the owners' stake times their households is the founders' shares
-  - L154 every other cell holds none of the company
-  - L155 the households hold what the register issued
-  - L156 ...which is the founders' shares, and nothing was raised
-  - L158 the owner cell is its own row, after the prisoners
-  - L161 ...and the rows an older save carries are pinned: ten before the prisons, eleven before the owners (section 10 reads them)
-  - L164 ...two adults, no wage, no job to split an income by
-  - L166 ...which keeps its bonds and money abroad but not the households' share trading
-  - L168 ...and every other cell trades shares by the households' rules
-  - L170 ...the books name the row
-  - L174 the line for the save names the companies with a family, in company order
-  - L182 a line restored keeps its families and its months at the floor, and skips a key it has no company for
-  - L185 a save from before BO1 restores an empty line
-- **L188 4. everyone else still buys**
-  - L198 fixture: the owner cell is the richest and would qualify by the households' rules but for the line
-  - L201 an offering is taken up
-  - L202 the owner cell buys nothing: its shares unchanged
-  - L203 ...and its savings unchanged, richest as it is
-  - L204 an ordinary cell with savings past the cushion buys: the couples
-  - L206 ...and the single adults
-  - L207 ...and the money paid is the money taken
-- **L211 5. the owners take no job**
-  - L227 the families count the owner families: two adults each
-  - L229 ...they are outside the families, with the outside adults
-  - L230 ...so the families hold the adult cohort less them
-  - L234 with prisoners and the out of work, all three are outside the families
-  - L235 ...and the families hold the rest
-  - L239 more owner adults than the adults left are clamped to what is left
-  - L240 ...the adult cohort is still the families' and the outside's together
-  - L245 the four-argument form is the owner adults at nothing
-  - L257 fixture: a labour force larger than the owners' adults
-  - L258 the labour force is lower by exactly the owners' adults
-  - L259 ...and so is the workforce by band, taken off every band in proportion
-  - L261 more owners than the labour force leaves it at zero, never below
-  - L262 ...and no band below zero
-- **L317 the line sells a twentieth a year**
-  - L319 a month's sale, twelve times over, is a year's: (1 - OWNER_SELL_A_MONTH)^12 = 1 - OWNER_SELL_A_YEAR
-  - L321 ...and a month's is a twelfth of a year's and a little more (the compounding), not a twelfth
-  - L325 fixture: the exchange is open, the company is above its floor and has not traded
-  - L326 fixture: the owner cell holds every founders' share
-  - L327 fixture: ...and the register has issued no other
-  - L328 fixture: the owner cell is under its cushion and has a take-home, so an ordinary cell would sell
-  - L330 after one month the line has offered OWNER_SELL_A_MONTH of its holding at the price (no trade yet: fair value)
-  - L332 ...that many shares rest on the book as the owner cell's ask
-  - L334 ...as a price-taker: its ask at the market, which is fair value before a trade, not a price of its own
-  - L336 the owner cell posts nothing as a household, though it is under its cushion
-  - L338 ...nor by the households' rules anywhere else: no rebalancing and no sale on value counted
-  - L340 ...and the seller class is its own: the other classes posted nothing of it
-  - L344 control: a working cell with shares in the same state (under its cushion, a take-home) does post as a household
-  - L346 ...and the owner cell offers just what it did without it
-  - L350 fixture: the company is at the exchange's floor (minFair over its fair value)
-  - L351 the line is holding it still and offers none of a company at the floor
-  - L352 ...nothing is posted by the owners
-  - L353 ...and nothing rests as its ask
-  - L357 the owners' offered and filled go through the save and back: appended to the life array, after the value sold
-  - L364 ...and a save from before reads them as nothing
-- **L371 a year at the floor sends the family back**
-  - L377 fixture: two companies have a family
-  - L379 after OWNER_BROKE_MONTHS - 1 months at the floor the family is still there
-  - L382 after OWNER_BROKE_MONTHS it is gone: the line is down one
-  - L383 ...a company off the floor keeps its family, and its months stay nothing
-  - L385 ...and a family that has left is not counted again
-  - L391 a month off the floor at OWNER_BROKE_MONTHS - 1 starts the run again
-  - L394 ...it then takes a full OWNER_BROKE_MONTHS more: OWNER_BROKE_MONTHS - 1 are not enough
-  - L396 ...and the OWNER_BROKE_MONTHS-th sends it back
-  - L402 a company that fails takes its family back at once: no month at the floor needed
-  - L406 ...a company with no family has none to send back, and the others are not touched
-  - L413 with the line off nothing moves: a family on the books keeps its months however long the floor
-  - L417 ...and a line off with no family keeps none
-- **L443 the leaving family takes its money, not the shares**
-  - L448 fixture: the line is three families now, the couples a household more, and the twin's are as they were
-  - L451 fixture: the owner cell was not emptied, which is a cell that shrinks and stays
-  - L452 the line's total of the first company is what it was
-  - L453 ...and of the second
-  - L454 ...each family left holds a third more of the first: 200 x 4 / 3
-  - L455 ...and of the second: 100 x 4 / 3
-  - L456 the twin's owners hold what they did
-  - L457 the couples' shares are theirs alone: the stakes of the family that left did not pass to them (the total, 101 households)
-  - L459 ...and none of the second company, which they never held
-  - L460 no share left the city with the family
-  - L461 ...the households hold, all together, the first company's shares as before
-  - L463 each family left has the savings each had: the leaver took the average
-  - L464 ...and the money abroad
-  - L466 fixture: the savings a family had are the owner cell's per-household figure
-  - L467 the couples, a household more, hold the leaver's savings besides their own (total against the twin's)
-  - L469 ...and its money abroad
-  - L480 when the last family goes the cell is empty and holds nothing
-  - L481 ...its stake passed to the households, which hold what they and the line held (today's rule for a cell that empties)
-- **L497 a real city: one family per listed company**
-  - L550 the city played the run
-  - L551 the line formed families: a company listed
-  - L552 every month, the line's count is the companies that have a family
-  - L553 from the first month the owner cell is not empty, the owners hold no real stake (under CRUMB of the shares) in a company without a family, unless it was drop...
-  - L555 the owner families' adults are out of the labour force: it is lower by exactly the census's owner adults, every month
-  - L557 ...the family model holds out the same adults, and the cell holds the families the census before it counted (the households step first)
-  - L558 the owners hold a positive stake in every company whose family exists and is in issue
-  - L559 the owners offered something at the market in the run, and what they sold never exceeded what they offered
-  - L562 every family that left said why, once, in the game's log
-- **L698 a save from before the owner families loads its rows**
-  - L713 fixture: a 0.9.88 statement is the scalars and twenty row arrays of eleven rows (
-  - L715 the statement from before the owner families is read, not refused
-  - L716 ...every figure where the save put it, and the owners' row empty
-  - L717 ...the households' fuel, the last scalar
-  - L718 ...the prisoners' fuel, the last row the save carries in its last array
-  - L719 ...and the owners' wages none
-  - L729 the row array from before the owner families: the delivered share comes back
-  - L730 ...and the hungry at full shelves
-  - L731 ...the prisoners' savings from their own row
-  - L732 ...and their subsistence, seven blocks on: the save's rows, not today's
-  - L733 ...and the owners' cell empty
-  - L738 ...the shape from before the hunger's halves, eleven rows, read the same way
+- **L104 1. the line off: today's grant**
+  - L111 fixture: the line was never switched on
+  - L112 a company with equity and no owners lists
+  - L113 the founders' shares are all in the households' hands
+  - L114 ...and the register issued exactly them
+  - L117 a couple holds twice a single adult's stake: by grown-ups, as before
+  - L118 ...and every non-empty cell holds some
+  - L119 ...and the owner cell, empty, holds none
+  - L120 ...and no family was reserved
+- **L123 2. the line on, no owner household yet: the listing waits**
+  - L129 fixture: the line is on and the owner cell is empty
+  - L130 a company with equity does not list: its family does not exist yet
+  - L131 ...the register has no shares in issue
+  - L132 ...and no household holds any
+  - L133 ...but its family is reserved: the census forms it next month
+  - L137 an offering by a company with a book and no owners raises nothing
+  - L138 ...opens no offering and issues no share
+  - L140 ...and reserves its family too
+- **L143 3. the line on, with households: the founders' shares to the owners alone**
+  - L150 fixture: the census formed the families the grant reserved
+  - L151 a company that waited for its family lists
+  - L152 the owners' stake times their households is the founders' shares
+  - L156 every other cell holds none of the company
+  - L157 the households hold what the register issued
+  - L158 ...which is the founders' shares, and nothing was raised
+  - L160 the owner cell is its own row, after the prisoners
+  - L163 ...and the rows an older save carries are pinned: ten before the prisons, eleven before the owners (section 10 reads them)
+  - L166 ...two adults, no wage, no job to split an income by
+  - L168 ...which keeps its bonds and money abroad but not the households' share trading
+  - L170 ...and every other cell trades shares by the households' rules
+  - L172 ...the books name the row
+  - L176 the line for the save names the companies with a family, in company order
+  - L184 a line restored keeps its families and its months at the floor, and skips a key it has no company for
+  - L187 a save from before BO1 restores an empty line
+- **L190 4. everyone else still buys**
+  - L200 fixture: the owner cell is the richest and would qualify by the households' rules but for the line
+  - L203 an offering is taken up
+  - L204 the owner cell buys nothing: its shares unchanged
+  - L205 ...and its savings unchanged, richest as it is
+  - L206 an ordinary cell with savings past the cushion buys: the couples
+  - L208 ...and the single adults
+  - L209 ...and the money paid is the money taken
+- **L213 5. the owners take no job**
+  - L229 the families count the owner families: two adults each
+  - L231 ...they are outside the families, with the outside adults
+  - L232 ...so the families hold the adult cohort less them
+  - L236 with prisoners and the out of work, all three are outside the families
+  - L237 ...and the families hold the rest
+  - L241 more owner adults than the adults left are clamped to what is left
+  - L242 ...the adult cohort is still the families' and the outside's together
+  - L247 the four-argument form is the owner adults at nothing
+  - L259 fixture: a labour force larger than the owners' adults
+  - L260 the labour force is lower by exactly the owners' adults
+  - L261 ...and so is the workforce by band, taken off every band in proportion
+  - L263 more owners than the labour force leaves it at zero, never below
+  - L264 ...and no band below zero
+- **L319 the line sells a twentieth a year**
+  - L321 a month's sale, twelve times over, is a year's: (1 - OWNER_SELL_A_MONTH)^12 = 1 - OWNER_SELL_A_YEAR
+  - L323 ...and a month's is a twelfth of a year's and a little more (the compounding), not a twelfth
+  - L327 fixture: the exchange is open, the company is above its floor and has not traded
+  - L328 fixture: the owner cell holds every founders' share
+  - L329 fixture: ...and the register has issued no other
+  - L330 fixture: the owner cell is under its cushion and has a take-home, so an ordinary cell would sell
+  - L332 after one month the line has offered OWNER_SELL_A_MONTH of its holding at the price (no trade yet: fair value)
+  - L334 ...that many shares rest on the book as the owner cell's ask
+  - L336 ...as a price-taker: its ask at the market, which is fair value before a trade, not a price of its own
+  - L338 the owner cell posts nothing as a household, though it is under its cushion
+  - L340 ...nor by the households' rules anywhere else: no rebalancing and no sale on value counted
+  - L342 ...and the seller class is its own: the other classes posted nothing of it
+  - L346 control: a working cell with shares in the same state (under its cushion, a take-home) does post as a household
+  - L348 ...and the owner cell offers just what it did without it
+  - L352 fixture: the company is at the exchange's floor (minFair over its fair value)
+  - L353 the line is holding it still and offers none of a company at the floor
+  - L354 ...nothing is posted by the owners
+  - L355 ...and nothing rests as its ask
+  - L359 the owners' offered and filled go through the save and back: appended to the life array, after the value sold
+  - L366 ...and a save from before reads them as nothing
+- **L376 a year at the floor sends the family back**
+  - L382 fixture: two companies have a family
+  - L384 after OWNER_BROKE_MONTHS - 1 months at the floor the family is still there
+  - L387 after OWNER_BROKE_MONTHS it is gone: the line is down one
+  - L388 ...a company off the floor keeps its family, and its months stay nothing
+  - L390 ...and a family that has left is not counted again
+  - L396 a month off the floor at OWNER_BROKE_MONTHS - 1 starts the run again
+  - L399 ...it then takes a full OWNER_BROKE_MONTHS more: OWNER_BROKE_MONTHS - 1 are not enough
+  - L401 ...and the OWNER_BROKE_MONTHS-th sends it back
+  - L407 a company that fails takes its family back at once: no month at the floor needed
+  - L411 ...a company with no family has none to send back, and the others are not touched
+  - L418 with the line off nothing moves: a family on the books keeps its months however long the floor
+  - L422 ...and a line off with no family keeps none
+  - L427 fixture: the owner cell is empty, so a grant reserves the family and issues nothing
+  - L429 a company not in issue waits for its family while the cell is empty, and no floor is counted
+  - L436 fixture: the census formed the family, so the cell holds one
+  - L437 ...the company that lists into it now keeps its family
+  - L439 ...and its months at the floor are nothing
+  - L441 the company still not in issue once its family is there lets the family go
+- **L467 the leaving family takes its money, not the shares**
+  - L472 fixture: the line is three families now, the couples a household more, and the twin's are as they were
+  - L475 fixture: the owner cell was not emptied, which is a cell that shrinks and stays
+  - L476 the line's total of the first company is what it was
+  - L477 ...and of the second
+  - L478 ...each family left holds a third more of the first: 200 x 4 / 3
+  - L479 ...and of the second: 100 x 4 / 3
+  - L480 the twin's owners hold what they did
+  - L481 the couples' shares are theirs alone: the stakes of the family that left did not pass to them (the total, 101 households)
+  - L483 ...and none of the second company, which they never held
+  - L484 no share left the city with the family
+  - L485 ...the households hold, all together, the first company's shares as before
+  - L487 each family left has the savings each had: the leaver took the average
+  - L488 ...and the money abroad
+  - L490 fixture: the savings a family had are the owner cell's per-household figure
+  - L491 the couples, a household more, hold the leaver's savings besides their own (total against the twin's)
+  - L493 ...and its money abroad
+  - L504 when the last family goes the cell is empty and holds nothing
+  - L505 ...its stake passed to the households, which hold what they and the line held (today's rule for a cell that empties)
+- **L521 a real city: one family per listed company**
+  - L574 the city played the run
+  - L575 the line formed families: a company listed
+  - L576 every month, the line's count is the companies that have a family
+  - L577 from the first month the owner cell is not empty, the owners hold no real stake (under CRUMB of the shares) in a company without a family, unless it was drop...
+  - L579 the owner families' adults are out of the labour force: it is lower by exactly the census's owner adults, every month
+  - L581 ...the family model holds out the same adults, and the cell holds the families the census before it counted (the households step first)
+  - L582 the owners hold a positive stake in every company whose family exists and is in issue
+  - L583 the owners offered something at the market in the run, and what they sold never exceeded what they offered
+  - L586 every family that left said why, once, in the game's log
+- **L722 a save from before the owner families loads its rows**
+  - L737 fixture: a 0.9.88 statement is the scalars and twenty row arrays of eleven rows (
+  - L739 the statement from before the owner families is read, not refused
+  - L740 ...every figure where the save put it, and the owners' row empty
+  - L741 ...the households' fuel, the last scalar
+  - L742 ...the prisoners' fuel, the last row the save carries in its last array
+  - L743 ...and the owners' wages none
+  - L753 the row array from before the owner families: the delivered share comes back
+  - L754 ...and the hungry at full shelves
+  - L755 ...the prisoners' savings from their own row
+  - L756 ...and their subsistence, seven blocks on: the save's rows, not today's
+  - L757 ...and the owners' cell empty
+  - L762 ...the shape from before the hunger's halves, eleven rows, read the same way
 
 ## PartnerCallsCheck.java - 90 labelled assertions
 
