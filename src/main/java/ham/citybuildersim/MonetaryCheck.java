@@ -843,7 +843,7 @@ public class MonetaryCheck {
     /** How far the groceries component of the price index may move in a month and still be settled, a fraction: a point. */
     static final double SETTLED_STEP = .01;
 
-    /** How many months running the shelf must have moved no more than SETTLED_STEP for the town to count as settled: a year (six months settled it at month 53, the rows 12.17 / 9.27 / 8.20 / 7.85% in order, but the month-late rows differed by 0.109 / 0.092 / 0.156 points against 0.100: the town was still building; a year, month 59: 14.02 / 9.26 / 7.40 / 7.47%, late rows 0.028 / 0.042 / 0.077). */
+    /** How many months running the shelf must have moved no more than SETTLED_STEP for the town to count as settled: a year (six months settled it at month 53, the rows 12.17 / 9.27 / 8.20 / 7.85% in order, but the month-late rows differed by 0.109 / 0.092 / 0.156 points against 0.100: the town was still building; a year, month 59: 14.02 / 9.26 / 7.40 / 7.47%, late rows 0.028 / 0.042 / 0.077; on the draw of the batch's last commit the year settles the shelf only at month 46, 21 months of run-on, 503 people, rows 22.95 / 20.68 / 17.90 / 16.19% and late rows 0.000 / 0.275 / 0.369 / 0.189 points against 0.100 - the count is not what moves them, and with every sector held through the window they are 0.000 / 0.255 / 0.331 / 0.123, so the businesses' orders are not either). */
     static final int SETTLED_MONTHS = 12;
 
     /** The most months the founding is played on to settle, so a town that never does is read as it stands. */
