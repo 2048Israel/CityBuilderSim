@@ -849,7 +849,7 @@ public class InterestAbroadCheck {
 
         // The save: the month's and the lifetime ride the array at slots 142 to 146; a save without them reads nothing earned.
         double[] saved = fx.toSaveArray();
-        assertTrue("the array runs to slot 151, gold's chosen share (GD2), after the peg's anchor in 148 (WN4b) (" + saved.length + " slots)", saved.length == 152);
+        assertTrue("the array runs to slot 155, the mint (152-155, GD3) after gold's chosen share (151, GD2) and the peg's anchor in 148 (WN4b) (" + saved.length + " slots)", saved.length == 156);
         assertTrue("slots 142-146 are the month's interest, the lifetime, the driver, its US$ and the base the yield is struck on",
                 same(saved[142], fx.getVaultInterestUsd()) && same(saved[143], fx.getVaultInterestUsdLifetime()) && saved[144] == fx.getVaultInterestDriver()
                         && same(saved[145], fx.getVaultInterestDriverUsd()) && saved[146] > 0);

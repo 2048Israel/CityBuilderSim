@@ -3848,6 +3848,7 @@ final class PolicyScreen {
             case LEAN -> "The vault sells dollars against a fall: the city's way until now, and the default.";
             case BAND -> "Free inside a band you set. The vault holds its edges.";
             case PEG -> "Held at one rate. The vault pays what holding it takes.";
+            case GOLD -> "Worth a weight of gold. The vault holds the rate inside the gold points; the gold covers the notes.";   // GD3 slice 1 stopgap: slice 3 writes the screen
         };
     }
 
@@ -3880,6 +3881,7 @@ final class PolicyScreen {
             case PEG -> "Pegged at " + curRate(fx.getPegPerAnchor()) + " per " + anchorMark(fx.getPegAnchor())
                     + (fx.getPegAnchor() == 0 ? "" : ", " + curRate(fx.getPegRate()) + " per " + Currency.FOREIGN_SYMBOL + " this month")
                     + ": the vault pays what holding it takes.";
+            case GOLD -> "On gold at " + curRate(fx.getMintPrice()) + " an ounce, held inside the gold points.";   // GD3 slice 1 stopgap
         };
     }
 
@@ -3895,6 +3897,7 @@ final class PolicyScreen {
             case PEG -> "Entering the peg pegs the " + sym() + " at today's rate, " + curRate(rateIn(fx, stagedAnchor(fx))) + " per "
                     + anchorMark(stagedAnchor(fx)) + ". The vault then pays what holding it takes, until paying would take it "
                     + "under " + curMonths(ForeignAccounts.VAULT_FLOOR) + " of imports.";
+            case GOLD -> "Entering gold strikes the mint price at today's rate times gold's price.";   // GD3 slice 1 stopgap
         };
     }
 
@@ -3936,6 +3939,7 @@ final class PolicyScreen {
             case PEG -> stagedAnchor(fx) == 0 ? "Peg the " + sym() + " at " + curRate(fx.getRate())
                     : "Peg the " + sym() + " to " + ForeignAccounts.MONEY_NAME[stagedAnchor(fx)] + " at "
                     + curRate(rateIn(fx, stagedAnchor(fx))) + " per " + anchorMark(stagedAnchor(fx));
+            case GOLD -> "Put the " + sym() + " on gold";   // GD3 slice 1 stopgap
         };
     }
 
@@ -4382,6 +4386,7 @@ final class PolicyScreen {
                     + ", plus " + pointsOf(DebtManager.CURRENCY_WEIGHT) + " for each 1% the " + sym() + " sits past its target.";
             case MIX -> "The inflation rule plus that: " + pointsOf(DebtManager.CURRENCY_WEIGHT)
                     + " for each 1% the " + sym() + " sits past its target.";
+            case GOLD -> "The dial defends the gold: the US's rate plus up to " + pointsOf(DebtManager.GOLD_DEFENCE) + " as the cover thins.";   // GD3 slice 1 stopgap
         };
     }
 

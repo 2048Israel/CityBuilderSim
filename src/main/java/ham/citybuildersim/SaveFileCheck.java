@@ -3875,7 +3875,7 @@ public class SaveFileCheck {
             assertTrue("...and the foreign accounts' array runs to slot 104, the world's (95-104)", savedFx.length >= 105);
             // WN4, the vault in eight (slots 105-141): euros and pounds beside the dollars, the mix, the chosen shares, the eight's rates and the month's cross move.
             ForeignAccounts savedAccounts = city.getForeignAccounts();
-            assertTrue("...and to slot 148, the vault's (105-141), what it earned (142-146, XR4), the hold's support (147, XR5), the peg's anchor (148, WN4b) and gold's balance, price and chosen share (149-151, GD2): " + savedFx.length + " slots", savedFx.length == 152 && savedFx[148] == savedAccounts.getPegAnchor());
+            assertTrue("...and to slot 148, the vault's (105-141), what it earned (142-146, XR4), the hold's support (147, XR5), the peg's anchor (148, WN4b), gold's balance, price and chosen share (149-151, GD2) and the mint's price, rate, following and open event (152-155, GD3): " + savedFx.length + " slots", savedFx.length == 156 && savedFx[148] == savedAccounts.getPegAnchor());
             assertTrue("fixture: the vault holds gold, bought by name, at a price, with a share of the chosen mix, and slots 149-151 are its balance, its price and that share (" + savedFx[149] + " thousand ounces at US$" + savedFx[150] + ", a share of " + savedFx[151] + ")",
                     savedAccounts.getHolding(ForeignAccounts.GOLD) > 0 && savedAccounts.hasRate(ForeignAccounts.GOLD) && savedAccounts.getChosenShares()[ForeignAccounts.GOLD] > 0
                             && savedFx[149] == savedAccounts.getHolding(ForeignAccounts.GOLD) && savedFx[150] == savedAccounts.getMoneyUsd(ForeignAccounts.GOLD)

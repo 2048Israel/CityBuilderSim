@@ -1170,6 +1170,8 @@ final class TradeScreen {
             case PEG -> "Held at a peg of " + sym() + fxRate(fx.getPegRate())
                     + (fx.getPegAnchor() == 0 ? "" : " per " + Currency.FOREIGN_SYMBOL + " this month, " + sym() + fxRate(fx.getPegPerAnchor())
                             + " per " + PolicyScreen.anchorMark(fx.getPegAnchor()));
+            // GD3 slice 1's stopgap so the switch covers Gold; slice 3 (the screens) writes the real line.
+            case GOLD -> "On gold at " + sym() + fxRate(fx.getMintPrice()) + " an ounce";
         };
     }
 
