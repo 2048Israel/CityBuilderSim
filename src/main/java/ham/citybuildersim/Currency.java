@@ -162,6 +162,17 @@ public final class Currency {
     /** The city whose money the static formatters write from here (null: the Danzik dollar). */
     public static void use(Currency c) { writing = c == null ? DANZIK : c; }
 
+    /** Runs a drawing with the static formatters writing c's money, and puts back the money they were writing, also when the drawing throws. */
+    public static <T> T using(Currency c, java.util.function.Supplier<T> draw) {
+        Currency was = writing;
+        use(c);
+        try {
+            return draw.get();
+        } finally {
+            writing = was;
+        }
+    }
+
     /** A currency exactly as given, its sign before the figure - the load path's door, which reads back what was saved without judging it. */
     public Currency(String name, String plural, String code, String symbol, String qualifiedSymbol) {
         this(name, plural, code, symbol, qualifiedSymbol, false);

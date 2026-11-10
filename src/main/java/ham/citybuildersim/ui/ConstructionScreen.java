@@ -1080,7 +1080,7 @@ final class ConstructionScreen {
     private HBox rulesLine() {
         return infoLine("The city's own come down; a business's is bought first.",
                 "DEMOLITION. A site of 5% of the building's construction points - Detroit's average demolition of "
-                + "July 2015, $14,855 (SIGTARP, 2017), over the average new home of 2015, $289,415 (NAHB) - "
+                + "July 2015, US$14,855 (SIGTARP, 2017), over the average new home of 2015, US$289,415 (NAHB) - "
                 + "priced as any order: the work at the builders' rate today, no material, and the tax. The building "
                 + "closes as the month starts: its staff are let go, its households move into the homes that "
                 + "stand (crowded, or unhoused, never deleted), its service goes. When the work is done the "

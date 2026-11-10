@@ -3707,7 +3707,7 @@ final class TradeScreen {
      * The names on the exchange's chips, and the mark each money's amounts carry (WN4), in ForeignAccounts' order: WorldMoneys.EIGHT's, then
      * gold's (GD2, the ninth: its mark is ounces, which ownMoney writes after the figure).
      */
-    static final String[] MONEY_CHIP = {"US$", "Euro", "Yen", "Pound", "Yuan", "Canadian $", "Australian $", "Franc", "Gold"};
+    static final String[] MONEY_CHIP = {"US$", "Euro", "Yen", "Pound", "Yuan", "C$", "A$", "Franc", "Gold"};
     static final String[] MONEY_MARK = {"US$", "€", "¥", "£", "CN¥", "C$", "A$", "CHF ", "XAU "};
 
     /**

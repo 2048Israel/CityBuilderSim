@@ -1386,7 +1386,7 @@ public class ForeignAccounts {
 
     /** The three dates of the US$'s own gold history that open a decision for a city on Gold (GD3; GoldPrice's months): saved by ordinal (slot 155), NONE when none is open. */
     public enum GoldEvent {
-        NONE("none"), LEFT_1933("The US$ leaves gold (April 1933)"), PAR_1934("The US$ back on gold at $35 (February 1934)"),
+        NONE("none"), LEFT_1933("The US$ leaves gold (April 1933)"), PAR_1934("The US$ back on gold at US$35 (February 1934)"),
         WINDOW_1971("The US$'s gold window closes (August 1971)");
         public final String words;
         GoldEvent(String words) { this.words = words; }

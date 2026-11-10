@@ -1,6 +1,7 @@
 package ham.citybuildersim;
 
 import ham.citybuildersim.ui.Money;
+import ham.citybuildersim.ui.SignFont;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -37,6 +38,10 @@ import java.util.List;
  *   5. signProblem() and typed().
  *   6. The save keeps the sign and its place, and a load sets what the static
  *      formatters write.
+ *   7. The founding row offers only the signs the interface's font draws
+ *      (ui/SignFont; the run says which candidates it dropped), a city founded
+ *      with a typed "kr"-after money writes it, and Currency.using() puts back
+ *      the money it found, also when its drawing throws.
  */
 public class MoneySignCheck {
 
@@ -346,5 +351,47 @@ public class MoneySignCheck {
         DataSave older = new com.google.gson.Gson().fromJson("{\"currencyName\":\"Krona\",\"currencyPlural\":\"Kronas\",\"currencyCode\":\"KRO\","
                 + "\"currencySymbol\":\"$\",\"currencyQualified\":\"K$\"}", DataSave.class);
         check("a save from before FM1 has no place on file and reads before", !older.getFounding(.02).getCurrency().signAfter() && older.getFounding(.02).getCurrency().symbol().equals("$"));
+
+        /* ---------------------------------------------------------------- 7 */
+        System.out.println("\n--- 7. the founding row offers the signs the font draws; a founded city writes its sign; using() puts the money back ---");
+        List<String> offered = SignFont.offered();
+        List<String> dropped = new ArrayList<>(SignFont.CANDIDATES);
+        dropped.removeAll(offered);
+        System.out.println("  the font drops " + (dropped.isEmpty() ? "none" : dropped + "") + " of its " + SignFont.CANDIDATES.size() + " candidates");
+        check("fixture: the font can refuse a sign - a Chinese character and a money bag are not in Plex",
+                !SignFont.draws("中") && !SignFont.draws("💰") && SignFont.draws("kr"));
+        check("every sign the founding row offers is one the font draws", !offered.isEmpty() && offered.stream().allMatch(SignFont::draws), offered.toString());
+        check("every candidate it dropped is one the font refuses", dropped.stream().noneMatch(SignFont::draws), dropped.toString());
+        List<String> kept = new ArrayList<>(SignFont.CANDIDATES);
+        kept.retainAll(offered);
+        check("...the offered ones are the candidates in their own order", kept.equals(offered));
+        check("\"$\", \"€\", \"£\", \"¥\" and \"kr\" are offered", offered.containsAll(List.of("$", "€", "£", "¥", "kr")), offered.toString());
+
+        Currency krFounded = krona();
+        GameFiles founded = GameFiles.scratch("moneysigncheck-founded");
+        try {
+            Currency.use(Currency.DANZIK);
+            Founding withKr = Founding.custom("Nordby", 62_500, 12_500, .02).withCurrency(krFounded);
+            Game city = quietly(() -> { Game g = new Game(founded, withKr); g.run(); return g; });
+            check("a city founded with a typed \"kr\"-after money has its place", city.getCurrency().signAfter() && city.getCurrency().symbol().equals("kr"));
+            check("...and the static formatters write that money once it is founded", Currency.writing().equals(city.getCurrency()) && Money.money(5).equals("5,000 kr"));
+        } finally {
+            Currency.use(Currency.DANZIK);
+        }
+
+        Currency inside = Currency.using(krFounded, Currency::writing);
+        check("using() draws in the money it is given", inside.equals(krFounded));
+        check("...and restores the one it found", Currency.writing().equals(Currency.DANZIK));
+        Currency.use(krFounded);
+        String drawn = Currency.using(Currency.DANZIK, () -> Money.money(5));
+        check("...whichever that was: a drawing of the \"$\" inside a krona's window", drawn.equals("$5,000") && Currency.writing().equals(krFounded));
+        boolean thrown = false;
+        try {
+            Currency.using(Currency.DANZIK, () -> { throw new IllegalStateException("the drawing failed"); });
+        } catch (IllegalStateException e) {
+            thrown = true;
+        }
+        check("...also when the drawing throws, and the throw is the caller's", thrown && Currency.writing().equals(krFounded));
+        Currency.use(Currency.DANZIK);
     }
 }
