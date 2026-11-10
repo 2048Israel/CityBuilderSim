@@ -10,15 +10,27 @@ Sonnet slices for the code.
 - **Beside each band's spare workers, the gate counts the workers migration would bring for the order's own posts
   within `Sector.GATE_DRAW_MONTHS` (12) months** (`Migration.drawFor()`). The posts raise migration's target by the
   jobs' draw (`JOB_WEIGHT` x the posts x last month's residents a job x the senior, rent and crime pulls, as
-  `monthlyNet()` builds the target); a gap closes at `ARRIVAL_RATE` x last month's crowding a month, so a year
-  closes 1 - (1 - that)^12 of it; the city's workers per resident turn people into workers; they split by band as
-  `composeArrivals()` splits a month's arrivals, with the order's posts added to each band's open posts.
+  `monthlyNet()` builds the target). Only the part of the gap the order makes positive is counted
+  (max(0, gap + addition) - max(0, gap), the gap being the target less the people), since `monthlyNet()` brings
+  nobody while the people stand over the target. A gap closes at `ARRIVAL_RATE` x last month's crowding a month,
+  so a year closes 1 - (1 - that)^12 of it. The people so drawn are cut to the doors last month left free after its
+  own arrivals (`lastRoom` less `lastArrivals`), the room `monthlyNet()` caps arrivals at. The city's workers per
+  resident turn people into workers, and they split by band as `composeArrivals()` splits a month's arrivals, with
+  the order's posts added to each band's open posts.
+- **At the going wage.** The draw reads no band premium: it lands in the diploma band, and in the university band
+  only through the professions' licences. A band's premium is priced on the posts the gate refused (LD1,
+  `WantedPosts.pricedOn`), so read here it let a refused order's own posts raise the wage that drew the workers
+  that passed it (the review's loop; WantedPostsCheck 7 had to put the wage back at its base to repeat a hold).
 - **Each band takes its spare first, then the drawn workers carried down from its own band and the bands above.** A
-  drawn worker may take a post at or below their band, never above. At the going wage the draw lands in the
-  diploma band (graduate bands draw only on a premium, `reach()`), so a building whose graduate posts are more
+  drawn worker may take a post at or below their band, never above, so a building whose graduate posts are more
   than a fifth is still refused for them.
+- **GW1's first draw** counted every order's whole addition, whatever the gap and the room: YearBookCheck's
+  city had 7,738 posts against a labour force of 6,326 at month 60.
 - **The share stays at 80% and the band test is untouched** (a band nobody here can fill and no migrant comes for).
-- **No new saved field.** The draw reads migration's last-month scalars, saved since 0.7.27 (`LAST_SCALARS`). The
+- **One saved figure more: `lastRoom`**, the 17th of migration's last-month scalars (`LAST_SCALARS`, saved since
+  0.7.27), written -1 for "no census" since DataSave's Gson cannot write NaN. A save from before GW1 has the old
+  length, and `Migration.restore()` refuses its array whole, as it always has: the city loads without migration's
+  history, which is incomplete rather than wrong, so there is no format bump. The
   year's arrival mix of a 1900 city is passed in (`ArrivalMix.at(game.getMonth())`) rather than read from
   `Migration.yearMix`, which Game pushes only at the month's migration step (after the planners) and never saves:
   read from the field, a loaded 1900 city's first planners would have read none and parted from its twin
@@ -57,12 +69,18 @@ Sonnet slices for the code.
 3. The pulls (main's stand-in for WG2's brake, which will add its section): rent at twice the target halves the
    draw, crime cuts it by its pull, and at ten times the rent the order that passed on the draw is refused.
 4. The Shared Services Centre in a town with no graduates: 17% now, 30% with the draw (its diploma posts' share
-   exactly), refused by the share; with university arrivals held closed, the band test refuses as before.
+   exactly), refused by the share; with university arrivals held closed, the band test refuses as before. The
+   college wage bid up (reach 0.33) draws the gate the same workers to the bit: the gate reads no band premium.
 5. The words name both counts, and one where the draw is nothing.
 6. A loaded city's gate is its twin's, to the bit, for a default city and one founded the 1900 way (whose twin's
-   Migration holds no year's mix).
-7. A played village, 120 months: of 12,240 asks the draw opened 6,745, the spare alone passed 2,599 and 2,896
+   Migration holds no year's mix), with orders cut to the room left among them; the room rides the save, NaN too.
+7. A played village, 120 months: of 12,240 asks the draw opened 5,721, the spare alone passed 1,737 and 4,782
    were refused; in a month of no room it opens none.
+8. The gap's positive part: a 1900 city at month 19 stands 31 people over migration's target; 38 of its 102 orders
+   add less than that and draw nothing to the bit, and the Hydrocracker's 35.5 draws only the 4.4 it makes
+   positive (1.86 workers, where its whole addition would have drawn 14.88).
+9. Within the room: an order whose uncapped draw is more than the doors last month left free (622.7 of room, 220.8
+   taken by its arrivals) draws the 401.9 left, an order under it is not cut, and a city with no census is not cut.
 
 ## 4. The harnesses that named the gate
 
@@ -71,9 +89,12 @@ Run on the gate alone (slice A), nine of the 25 harnesses that read the gate wen
 assertion moved:
 
 - **WantedPostsCheck** caused its holds in a village with room, where the draw now opens them: they are caused in a
-  city with no room (`noRoom()`, crowding 0), where the gate is the spare's to the bit. Its reprice section asserts on
-  `shareNow`, the spare it is about, and that the draw moves the college band. Its repeat hold is a real one again.
-- **InvestCheck** (BA1's spare rule) asserts on `shareNow`, the spare the rule reads.
+  city with no room (`noRoom()`, crowding 0), where the gate is the spare's to the bit. Its reprice claim is main's,
+  caused there too, and it holds in a city with room as well (the share 0.7977 before and after the reprice, to the
+  bit, while the college premium moves from 1.0000 to 1.0090): the gate reads no band premium. Its repeat hold is
+  main's section 7 again. GW1's first version asserted on `shareNow` instead, which hid the loop (§1).
+- **InvestCheck** (BA1's "the second store fails the test") keeps main's claims, caused in a city with no room. The
+  first version of GW1 asserted on `shareNow`.
 - **BuildCardCheck 6** causes the card's staffing gate on a Shared Services Centre (210 of 300 posts graduate, which the
   draw does not bring) instead of a Rail Terminal the draw now staffs.
 - **RefineryCheck** holds every sector but Refining, as its fixture held the ones it named before the draw let the rest
@@ -103,9 +124,14 @@ same way, each fixture was made to cause its condition on the draw's path, with 
   fell 20-28% as the food came ahead of the people, and the window measured that, not the dial. Six settled months
   (month 53) gave the ladder but failed the month-late rows (0.109 against the 0.100 allowance, the town still
   building and its mortgages fixed at the hold month); twelve were taken with both seen, and both are in the
-  `SETTLED_MONTHS` comment. **CurrencyRegimeCheck** waits for a price rate read before it pegs, then holds the peg
-  town's smoothed inflation on the target (`placeInBand()`): on this path the young town's inflation passes through
-  the band in five short spells of 296 months, so no wait gives its credibility fixture a run of months.
+  `SETTLED_MONTHS` comment. **CurrencyRegimeCheck** waits for a price rate read before it pegs, and pegs its climbing
+  town in the one run of months its own path keeps in the band: a probe of the same town (`climbMonth()`) finds months
+  100-111, the only run of 200 played long enough for the eight months the doubt's money gathers and the three after
+  the revaluation a break can use (`DOUBT_CRAWL_MONTHS`, `BREAK_LOOK_MONTHS`). The young town's groceries swing as
+  migration brings it from 2,500 to 5,500 people (0.69 of their base at month 56, 0.92 at 80), so its smoothed
+  inflation passes through the band in short spells. The window is narrow: of nine seeds pegged at 100, two break in
+  it. GW1's first version held the smoothed inflation on the target before each month; the review found that an
+  overwrite of the model, and it is gone.
 - **BondCheck** 7c runs on a city of its own with Construction held (it borrowed in the young town). **FloatLinkCheck**
   hands the driven index over at the linkers' base (prices fell 3.9% after they were sold). **GdpCheck** hands the
   town back the cost of the sheds it places. **HoldersCheck** waits for the savers' rate to stand under the bond's
@@ -124,6 +150,21 @@ same way, each fixture was made to cause its condition on the draw's path, with 
 - **MapCheck** 2c and 2h cut their blocks from the founded ground, and its land-office claims are read on a map the
   city fits at the opening zoom. **HomeRailCheck** plays the railway's share on to fractional (60 months, not 12).
 
+Run on the draw the review asked for (49c2d522), eight more went red, read the same way:
+
+- **CentralBankCheck 20** and **BuybackCheck**'s played city hold every sector: their subject is the paper, and the
+  businesses' earlier borrowing took the treasury's surplus (D$-18.8k at month 72 against a slice of D$5.2k; held,
+  D$81.5k) and stood the savers' rate over the callable line's clearing yield (6.64% against 6.584%, so the
+  households bid nothing and the bank took D$10,322k of 10,328k; held, 12.816% over 6.60%, the households 16,347k).
+- **ScaleCheck** reads its free fixture at month 191, not 175, where the town stood on a plateau (10,538 people, no
+  arrivals, no apartment ordered). The copy and the city still draw in proportion (at K = 1,000,000 the draw
+  62,635,761 against 62,806,220; the room 5.041e9 against 5.075e9). Of months 189-200, 191 and 196 hold every line.
+- **PopulationCheck**'s decade holds the landlords: they built 1,510 homes, and the claim's target counts the homes but
+  not the rents' pull, which priced the filled city (1,819 at month 67) back to 1,457. Held, 1,138 against 1,201.
+- **EducationCheck** 1-2 hold every sector: the bare city grew to 87,053 (main's 40,781), its licensed doctors
+  arriving with the people (1.449 graduates to one licensed, the claim's 1.5). Held, it stays the fixture's city.
+- **CurrencyRegimeCheck**, above.
+
 **Red, and not GW1's to mend.** Each is a fault of main's that GW1's path is the first to reach, or a class main
 already records, and each claim fails while its fixture holds:
 
@@ -135,69 +176,84 @@ already records, and each claim fails while its fixture holds:
   (`REFORMING_EACH_MONTH`, .01) kept 99% of last month's households, which already held every adult, so the
   leftover children waited months for an adult free to take them. On main the wave never ended inside the two
   years, so the claim never saw its end. Queued (`OX1`).
-- **HealthCheck**, "a dear fee buries more of its people" and "its old first" (deaths 15.60 against 15.59 a year
-  per 1,000; the old 101.07 against 101.02): the beds' fixture, main's recorded red, now holds, and these claims run
-  for the first time on a city they can be read on. The fixture's drain zeroes savings and shuts credit, so a cell
-  can spend its income after rent and a basket and nothing more (`Household.affordCare`). Every cell either clears
-  fifteen times the bill or cannot clear one: coverage 85.69% against 85.57%. The claims then compare noise, the
-  twins' size and age (the dear twin is 4 points less hungry, and no code path explains it). Queued
-  (`HX1`): a drain that leaves cells between one bill and fifteen, and a fixture line that the dear fee
-  turns away a material share.
-- **PlanCheck**, T junctions only in an estate cell: a shore street (`DistrictPlan.shore()`, `ROLE_SHORE`) crosses
-  an estate cell's east-west line at frame plot (71,48), estate cell 10 of district (0,0), month 121, a + where only
-  Ts may be. MapCheck 1's city shows the same. Queued (`PQ1`).
-- **SlopeCheck**, "a building on the map moved": in district (-1,0), months 610-611, a purchase of 384 plots took
-  the wall way from 1 try and 13 clear to 0 and 0, and 10 boxes moved. This is DM2's class, whose row names
-  SlopeCheck 9's jump after a land purchase.
-- **MapCheck**, "a yard that goes moves none of the buildings": main's recorded line, with new numbers (2,560
-  boxes, 144 moved). DM2's class.
-- **PriceLevelCheck**: main's recorded class (BS1: the corporate issue search stops within 1e-9). Its lines are new:
-  the twin parts from month 105, with 239 lines failing against main's 356.
-- **KeptCheck**: main's recorded lines; only the counts in them moved.
+- **HealthCheck**, "its old first" (the old die at 101.39 against 101.37 a year per 1,000) and "the households who
+  skipped a bill ate with it" (the dear city 5.9 points hungrier: -9.4 priced out of a basket, 15.3 short on the
+  shelf): the beds' fixture, main's recorded red, now holds, and these claims run for the first time on a city they can
+  be read on. The fixture's drain zeroes savings and shuts credit, so a cell can spend its income after rent and a
+  basket and nothing more (`Household.affordCare`); every cell either clears fifteen times the bill or cannot clear
+  one (coverage 85.69% against 85.57% on the first draw). The claims then compare the twins' noise, their size and
+  their shelves. Queued (`HX1`): a drain that leaves cells between one bill and fifteen, and a fixture line that the
+  dear fee turns away a material share.
+- **MapCheck**: main's recorded lines (a yard laid across a district's buildings, and the layout watch beside it),
+  with new numbers (53 of 590 boxes under the yard, 60 gone), and "the highways reaching a street" (86 lie across, 87
+  gone), the same class: DM2's.
+- **PlanCheck**, **SlopeCheck** and **PriceLevelCheck** went red on the first draw (a shore street crossing an estate
+  cell's line at month 121; a purchase of 384 plots moving 10 boxes at months 610-611; the twins parting at month
+  105). On the reviewed draw all three are green, so no row is queued for them.
+- **KeptCheck**, "the BuybackLadder on Close it now: no month draws it again with nothing changed in it": in months 2
+  and 6, with nothing typed, the quote is the same (most to pay 98.5, fair 100.0, taken 0) but the holders' faces
+  drift by about 1e-8 (18,935 of 1.3265e12). `FinancesScreen.drawsAlike()` (ui/FinancesScreen.java:4950) compares the
+  ladder and `takenFace` bit for bit, so the drift redraws a picture drawn to four decimals. A fault of the screen's,
+  queued (`KL1`). Main's recorded KeptCheck lines do not show on this tree.
 
 ## 5. Measured
 
-The 80-run ensemble on 99429bf8 (the snapped share), `docs/ensemble/GW1.md`, against main's newest baseline
-(`docs/ensemble/0.9.83.md`): 24 of 25 criteria pass, as 25 of 26 did on main. A2 fails as it fails on main, H2 is
-vacuous (below), H1 is retired (Jerus, CD1).
+The 80-run ensemble on 49c2d522 (the draw of §1), `docs/ensemble/GW1.md`, against main's newest baseline
+(`docs/ensemble/0.9.83.md`): 24 of 26 criteria pass, against main's 25 of 26. A2 fails as it fails on main, A3 fails
+in one seed (below), H1 is retired (Jerus, CD1). The third column is GW1's first ensemble (99429bf8: the snapped share
+and the first draw, which counted the whole of migration's gap at the band's premium):
 
-| measure (median [min to max]) | 0.9.83 | GW1 |
-|---|---|---|
-| AUTO2 inflation m240-end, a year (A1) | 2.23% | 2.06% |
-| AUTO2 young city, inflation m240-600 | 3.39% | 2.52% |
-| AUTO2 founding m120-240, longest spell of yoy > 10% | 9 months | 8 months |
-| AUTO2 longest spell of yoy > 10% from m240 (A2, < 12 in every seed) | 11 [6 to 16] | 15 [0 to 30] |
-| AUTO2 founding m120-240, months of yoy < -10% | 0 | 1 [0 to 19] |
-| AUTO2 final population | 581,556 | 737,604 |
-| ZERO_SLACK final population | 389,740 | 539,172 |
-| SHOCK final population | 29,630 | 56,563 |
-| HIGH final population | 13,722 | 24,096 |
-| ZERO_SLACK unemployment in the window: run; twin | 7.12%; 7.84% | 4.04%; 4.40% |
+| measure (median [min to max]) | 0.9.83 | GW1 | GW1 first |
+|---|---|---|---|
+| AUTO2 inflation m240-end, a year (A1) | 2.23% | 2.08% | 2.06% |
+| AUTO2 young city, inflation m240-600 | 3.39% | 2.74% | 2.52% |
+| AUTO2 founding m120-240, longest spell of yoy > 10% | 9 [0 to 28] | 13 [0 to 27] | 8 |
+| AUTO2 founding m120-240, longest spell of yoy < -10% | 0 [0 to 0] | 0 [0 to 5] | 1 [0 to 19] |
+| A2: longest spell of yoy > 10% from m240 (< 12 in every seed) | 11 [6 to 16] | 10 [7 to 24] | 15 [0 to 30] |
+| A3: longest spell of yoy < -10% from m240 (< 12 in every seed) | 0 [0 to 7] | 1 [0 to 12] | 4 [0 to 11] |
+| H2: ZERO_HOT m342-402 minus its twin (median at most +1%) | 0.66% | 0.13%, 15/16 | vacuous |
+| AUTO2 bank, months under `CAPITAL_RATIO` to m600 | | 2 [0 to 21] | 17 |
+| AUTO2 final population | 581,556 | 618,792 | 737,604 |
+| ZERO_SLACK final population | 389,740 | 409,599 | 539,172 |
+| ZERO_HOT final population | 9,262 | 12,898 | |
+| SHOCK final population | 29,630 | 34,660 | 56,563 |
+| HIGH final population | 13,722 | 14,570 | 24,096 |
+| ZERO_SLACK unemployment in the window: run; twin | 7.12%; 7.84% | 6.30%; 7.29% | 4.04%; 4.40% |
 
-The study's case holds: cities that stalled for want of the hands a building would bring now build it, grow faster
-(a quarter larger at the end under AUTO2, three quarters under HIGH) and carry less unemployment, and the young city's
-inflation is lower. Two things are worse or gone. **A2**, main's own red, is longer: the median city's worst spell of
-inflation over 10% after month 240 is 15 months against 11, the worst seed's 30 against 16 (the first GW1 run, on
-the unsnapped share, measured 11 [2 to 17], so part of it is the seeds' spread). **H2 is vacuous**: the ZERO_HOT
-city at 0% no longer runs hot in its second half (its excess over the twin -0.14% against 4.69% on main), so there
-is no burst for the autopilot's return to stop; H1, the premise that it ran hot, was retired on CD1. The first run
-(c3ca14fb, before the snap) scored 25 of 26 with A2 its one red; the snap moved paths wherever a held Construction
-order had tied, so the ensemble was run again.
+The study's case holds, at a smaller size than the first draw claimed: cities that stalled for want of the hands a
+building would bring now build it, end 6% larger under AUTO2 and ZERO_SLACK, carry less unemployment, and the young
+city's inflation is lower. The first draw's three costs are gone: H2 is no longer vacuous, the founding has no long
+deflation, and A2's median is under main's (its worst seed, 24, is longer).
 
-HousingCheck shows the same thing as ZERO_HOT from the other side: a city whose people left under a 15% dial now
-stays and grows under it (384 people at month 121, 569 at 169).
+**What the first ensemble's costs came from** (the gate's review). H2 going vacuous, the founding's deflation and
+A2's longer spells came with the tie rule, the snapped share against the unsnapped, not with the draw: the unsnapped
+run (c3ca14fb) had none of them (25 of 26, A2 11 [2 to 17]). In a city with no spare, every template at or below the
+diploma band shares drawn/posts (about 0.60), so the refused templates tie. `Sector.staffing()` (Sector.java:679),
+with the strict `>` at `Construction.java:796` and `BusinessInvestment.java:923`, gives every hold to the first
+template, and WantedPosts then prices it. Snapped, the tie is exact; unsnapped, float noise broke it. The snap is
+kept (the twins need it, §1) and the tie rule is queued (`TQ1`); the young towns that borrowed ahead of their people
+and defaulted, which six fixtures worked around (§4: BankCheck 19, HoldersCheck, SaveFileCheck, CurveCheck,
+PolicyPreviewCheck, BondCheck 7c), are queued as `DQ1`: the bank's months under `CAPITAL_RATIO` to m600 measured 17
+on the first draw against 4 unsnapped (0.9.55 had 15), 2 now.
 
-The founding now has spells of deflation (the median seed has a month of a year's prices down more than 10%, the
-worst 19 months), as MonetaryCheck's and CurveCheck's foundings show: the businesses build ahead of the people, the supply
-comes first and the shelves fall to it.
+**A3 in one seed.** AUTO2-2 is a small town (20,500 people at month 600, 17% out of work). Between months 610 and 620
+its unemployment went from 19% to 48% and the policy rate from 7% to 0, and a year's prices then read below -10% for
+12 months (months 621-632, -17% at the worst), A3's limit, while its people fell to 17,871 by month 645. Main's worst
+seed was 7, the first GW1 ensemble's 11. Not read further here; queued (`AQ1`).
+
+**PriceLevelCheck's twins** failed "pop" and "workforce the same to the person" on the first draw (they parted at month
+105). On the fixed draw PriceLevelCheck is green.
+
+HousingCheck shows the draw from the other side: a city whose people left under a 15% dial now stays and grows under
+it (384 people at month 121, 569 at 169).
 
 ## 6. Not done
 
 - **WG2's brake.** StaffingDrawCheck 3 tests the pulls main has; WG2 adds its brake's section, and its row says the
   brake and its pull rule apply to `drawFor()` as they apply to the month's arrivals.
-- **A2 and H2.** GW1 lengthens A2's spells and leaves H2 nothing to test (section 5). Neither is mended here: A2 is
-  main's red, and whether ZERO_HOT should still run hot is a question for the criteria, not the gate.
+- **A2 and A3.** A2 is main's red; A3's one seed is queued (`AQ1`). The tie rule (`TQ1`) and the young towns'
+  borrowing (`DQ1`) are queued, not mended: neither is the gate's.
 - **Not measured:** the draw with WantedPosts' pricing of the refused posts (LD1) turned off, through which the
   twins' tie travelled before the snap.
-- **The reds above** go to their rows: DM2 (SlopeCheck, MapCheck), BS1 (PriceLevelCheck), and the rows this batch
-  queues (its ship file).
+- **The reds above** go to their rows: DM2 (MapCheck) and the rows this batch queues (its ship file: OX1, HX1, KL1,
+  and the measured TQ1, DQ1, AQ1, HZ1).
