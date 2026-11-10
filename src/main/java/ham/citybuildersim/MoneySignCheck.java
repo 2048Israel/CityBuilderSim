@@ -266,6 +266,13 @@ public class MoneySignCheck {
                     Money.marked("US$", "-5 kr").equals("-US$5") && Money.marked("US$", "2.6M kr a month").equals("US$2.6M a month"));
             check("...a mark that carries its own space keeps it: \"CHF 2.6M\"; no sign found, the mark and the text",
                     Money.marked("CHF ", "2.6M kr").equals("CHF 2.6M") && Money.marked("US$", "—").equals("US$—"));
+            check("the city's own sign as the mark (the screens' marked(sym(), shown)) keeps its place: \"2.6M kr\", not \"kr2.6M\"",
+                    Money.marked("kr", "2.6M kr").equals("2.6M kr") && Money.marked("kr", "-5 kr").equals("-5 kr"));
+            Currency yenAfter = Currency.typed("Tokyo yen", "TOK", "¥", true);
+            Currency.use(yenAfter);
+            check("...and its qualified sign after: a yen after, \"2.6M¥\" marked \"T¥\" is \"2.6M T¥\"; \"US$\" still goes in front",
+                    yenAfter != null && Money.marked("T¥", "2.6M¥").equals("2.6M T¥") && Money.marked("US$", "2.6M¥").equals("US$2.6M"));
+            Currency.use(kr);
             check("isZero(money(0)) is true and isZero(money(5)) false", Money.isZero(Money.money(0)) && !Money.isZero(Money.money(5)));
             check("write(), ours() and sign() speak for the city: \"12 kr\", \"kr\", \"kr\"",
                     Money.write("12").equals("12 kr") && Money.ours().equals("kr") && Money.sign().equals("kr"));

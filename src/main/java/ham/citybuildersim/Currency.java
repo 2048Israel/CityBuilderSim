@@ -248,6 +248,13 @@ public final class Currency {
      * the figure and the mark goes before the figure's first digit, after any
      * "+", "-" or "−" - "-5 kr" is "-US$5", "2.6M kr a month" is "US$2.6M a
      * month". No sign found: the mark and the text.
+     *
+     * THE CITY'S OWN MARK STAYS IN ITS PLACE (FM1, slice C's finding): the
+     * screens mark local figures with the qualified sign the same way
+     * ("marked(sym(), shown)"), which with a sign after put it in front,
+     * "kr2.4M". So with a sign after, the city's qualified or bare sign as
+     * the mark is qualify()'s or the figure as written; with a sign before
+     * nothing changes.
      */
     public static String marked(String mark, String written) {
         return writing.markedIn(mark, written);
@@ -256,6 +263,10 @@ public final class Currency {
     private String markedIn(String mark, String written) {
         String bare = symbol.isEmpty() ? "" : signAfter ? gap(symbol) + symbol : symbol + gap(symbol);
         int at = bare.isEmpty() ? -1 : written.indexOf(bare);
+        if (signAfter && at >= 0 && mark != null) {
+            if (mark.trim().equals(qualifiedSymbol)) return qualify(written);
+            if (mark.trim().equals(symbol)) return written;
+        }
         if (at < 0) return mark + written;
         if (!signAfter) return written.substring(0, at) + mark + written.substring(at + bare.length());
         String figure = written.substring(0, at) + written.substring(at + bare.length());
