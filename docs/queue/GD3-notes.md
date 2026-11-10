@@ -226,3 +226,26 @@ as it did: no format bump. The five length checks read 156; VaultMoneysCheck's
     founders' vault into gold for the 40% cover, not all of it.
   - The 1933 notice states the game's fixed path for gold (US$20.67 to US$35
     over ten months, `GoldPrice.official`), since that is what the city meets.
+
+## 5. The gate's timing red, run 1: the machine's
+
+- **What stopped it**: "the kept month on the construction page is within
+  KEPT_CONSTRUCTION_MS (4.0 ms)", main 2.06, 1.94 and 1.89 ms against the
+  batch's 1.99, 6.00 and 7.44.
+- **Every figure moved with it.** In the batch's second round every KeptCheck
+  timing rose two to four times: the fund's Activity read 685 ms where the
+  other five rounds read 147-231, and the Sectors list 23.7 ms against
+  6.4-12.5. Main's third round swung too (the Sectors list 11.9 ms, Retail's
+  Operations 10.5, the policy rate page 6.1). The batch's first round matched
+  main's to the tenth.
+- **GD3 cannot reach it.** Section 43 runs before section 77, the currency
+  loop this batch changed, on a city still on Lean, and no GD3 code is on the
+  construction page.
+- **Eight alternating warm runs of KeptCheck alone**: main f9d92fdd against
+  the branch merged with it, in the order main, batch, batch, main, twice,
+  each stopped after section 43.
+  - main: 3.6, 3.6, 3.8, 3.5 ms
+  - the batch: 3.6, 3.5, 3.5, 3.7 ms
+  - built new: 14.3-19.7 ms on both sides
+  Both sides read above the gate's 2 ms here, outside its timing run; side
+  by side they are the same. Noise, so nothing was mended.
