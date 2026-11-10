@@ -81,6 +81,17 @@ Each nation's land a hectare in US$ of 2024, read on 2026-11-01: 25 published (`
 | Statistics Canada, table 32-10-0047-01 (farm land and buildings, 2024) | Statistics Canada Open Licence | https://www.statcan.gc.ca/en/terms-conditions/open-licence | yes | "Adapted from Statistics Canada, table 32-10-0047-01"; no endorsement by Statistics Canada |
 | Federal Reserve, G.5A (the euro's and the Canadian dollar's 2024 averages) | public domain (a US government work) | https://www.federalreserve.gov/disclaimer.htm | yes | none required |
 
+### Gold's price: `src/main/resources/gold-usd-annual.csv` (in the jar; GD1, 2026-11-10)
+
+Gold's price a year 1971-2025, the sources' figures as printed (55 lines); `GoldPrice` reads it, with the statutes' prices before it and its own rule after. Read on 2026-11-10.
+
+| source | licence | read at | commercial | attribution it asks |
+|---|---|---|---|---|
+| USGS, Data Series 140, Gold statistics (`ds140-gold-2022.xlsx`): unit value a metric ton, 1971-2022 | public domain (the page's Sources/Usage) | https://www.usgs.gov/media/files/gold-historical-statistics-data-series-140 | yes | none required; credited in `tools/world/ATTRIBUTION.txt` |
+| USGS, Mineral Commodity Summaries 2026 data release (`MCS2026_Commodities_Data.csv`): gold's price a troy ounce, 2023-2025 | CC0 1.0 (the release's rights statement) | https://doi.org/10.5066/P1WKQ63T | yes | none required; credited as above |
+| the Gold Standard Act 1900, the Gold Reserve Act and Proclamation 2072 of 1934 | US federal law, public domain | (the statutes) | yes | none |
+| the World Bank's monthly gold price (the Pink Sheet) | CC BY 4.0 on its face, but the series is the LBMA's fix to May 2025 and a vendor's spot after | the world file's table above (catalogue entry 0038238) | **not shipped** | only `GoldPrice.SIGMA`, the 4.749% a month measured from it, ships, as a dial |
+
 ### Not data, but shipped
 
 | what | licence | commercial | what it asks |
