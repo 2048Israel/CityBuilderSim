@@ -66,7 +66,7 @@
 
 **Uses:** [ForeignAccounts](ForeignAccounts.md) (179), [Game](Game.md) (56), [DebtManager](DebtManager.md) (34), [CapitalFlows](CapitalFlows.md) (29), [Expectations](Expectations.md) (14), [CurrencyCheck](CurrencyCheck.md) (11), [ExchangeRateCheck](ExchangeRateCheck.md) (11), [Founding](Founding.md) (10), [ForeignCheck](ForeignCheck.md) (8), [CentralBank](CentralBank.md) (7), [YieldCurve](YieldCurve.md) (5), [MoneyAudit](MoneyAudit.md) (3), [Nations](Nations.md) (2), [PriceLevel](PriceLevel.md) (2), [GameFiles](GameFiles.md) (1), [WantedPosts](WantedPosts.md) (1), [TreasuryJournal](TreasuryJournal.md) (1), [FloatLinkCheck](FloatLinkCheck.md) (1)
 
-**Used by (3):** [InterventionCheck](InterventionCheck.md), [PegAnchorCheck](PegAnchorCheck.md), [VaultMoneysCheck](VaultMoneysCheck.md)
+**Used by (5):** [GoldStandardCheck](GoldStandardCheck.md), [InterventionCheck](InterventionCheck.md), [PegAnchorCheck](PegAnchorCheck.md), [SaveFileCheck](SaveFileCheck.md), [VaultMoneysCheck](VaultMoneysCheck.md)
 
 ## Sections
 

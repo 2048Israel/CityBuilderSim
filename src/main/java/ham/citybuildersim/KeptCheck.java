@@ -5729,7 +5729,7 @@ public class KeptCheck {
             });
             List<Choice> money = new ArrayList<>();
             money.add(policyPage("Money", "The currency"));
-            money.add(stage(regime + ": the regime staged", "xr:regime", (regime.ordinal() + 1) % 4));
+            money.add(stage(regime + ": the regime staged", "xr:regime", (regime.ordinal() + 1) % ForeignAccounts.Regime.values().length));   // the next regime, Gold's note too (GD3)
             money.add(stage("...the peg staged", "xr:peg", 1.4));
             money.add(choice("...the band staged", b -> {
                 b.policyStage("xr:centre", 1.4);
