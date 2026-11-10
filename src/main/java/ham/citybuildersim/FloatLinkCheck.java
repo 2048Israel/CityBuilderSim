@@ -1142,7 +1142,13 @@ public class FloatLinkCheck {
         Books b = new Books();
         b.prevBank = sPrevBank;
         double[] growth = { 1.01, 1.01, 1.01, 1.01, 1.01, 1.00, 0.98, 0.98, 0.98, 1.015, 1.015 };
-        Index idx = new Index(dm.priceIndexLevel(), growth);
+        /* The index handed over at the level the linkers were sold at (GW1). The three linkers were sold at 1.13027 (month 63) and the live index
+           fell to 1.08659 by this section (month 70, a ratio of 0.9682: this town's prices fell 3.9% in the seven months of sections 2 and 3 on
+           the path the staffing gate's draw gives it), so the driven path below, which ends 1.9% over where it starts, ended the ratios at 0.9797
+           and the linkers owed no indexation for the last line to find ("it is something"). Handed over at the base, the first press books the
+           ratio's catch-up from 0.9682 to 1 like any other month, and the path ends at 1.019. */
+        double handedOver = Math.max(dm.priceIndexLevel(), linkers.get(0).getBaseIndex());
+        Index idx = new Index(handedOver, growth);
         dm.setPriceIndexSource(idx);
         quietly(() -> dm.takeTheDial(.03));
         double upliftTotal = 0;

@@ -879,6 +879,10 @@ public class GdpCheck {
             double plantWorth = plant.stocks(Good.MATERIALS) * town.getMarkets().get(Good.MATERIALS).getLocalPrice();
             bakeries = (int) Math.ceil(2 * Math.max(gdpThen, 0) / bakeryWorth);
             plants = (int) Math.ceil(2 * Math.max(gdpThen, 0) / plantWorth);
+            /* The treasury handed back what the sheds cost (GW1). The 36 months leave it at 18,575 where the fixture was written against more:
+               the 14 bakeries ask 6,884 and the 10 plants 11,797, 18,681 in all, so the plants came back NEEDS_FUNDING, none stood, their sheds held
+               0 units of material and nothing was written off. The ground and the buildings are the fixture's; the money they cost is not what it tests. */
+            town.setCashForTest(Founding.WEALTHY_CASH);
             town.buildStack(bakery, bakeries, true);
             town.buildStack(plant, plants, true);
             for (Good g : shelf) if (bakers.isMaker(g)) bakers.setStock(g, bakers.getStockCapacity(g));

@@ -426,6 +426,14 @@ public class HoldersCheck {
         /* ================= 6. the save ================= */
         out.println("\n--- 6. save and reload, and every holding is where it was ---");
         ledger.setPolicyRate(ledger.getPolicyRate() - .04);
+        /* ...AND THE SAVERS' RATE BELOW THE BOND'S, BEFORE THE SALE (GW1). The households bid only on the spread over the deposit rate
+           (HOUSEHOLD_PAPER_APPETITE a unit of it), and the deposit rate follows the dial down a month behind. On GW1's path (the staffing gate
+           counts the workers an order's posts would draw, Sector.GATE_DRAW_MONTHS) the savers' rate stood at 4.37% at the cut against the 30-year
+           bond's fair yield of 3.03%, and a month on at 3.25% against 3.02%; sold then, the bond's 3.08% stood under the 3.16% the savers were
+           paid at the settle, the households bid nothing and held $0.0k of it (the bank $195k, the central bank $17k). The savers' rate is down
+           to 3.08% by the third month (3.39% fair), so the city goes on, a month at a time, to the first one in which the sale pays over it
+           - the condition the line below asserts. */
+        for (int wait = 0; wait < 12 && ledger.fairYield(Auction.Kind.BOND, 360, ask) <= bank.depositRate(); wait++) play(city);
         quietly(() -> city.handleLongBondLogic(ask, 30, 100 * PriceLevel.FACTOR));
         play(city);                                        // the settle: households take theirs
         play(city);                                        // and the central bank buys at the top of the next
@@ -1469,7 +1477,20 @@ public class HoldersCheck {
         final Debt bond6 = newPiece(ledger, had);
         assertTrue("fixture: the treasury sold a thirty-year bond", bond6 != null);
         had = new java.util.ArrayList<>(ledger.getDebt());
-        quietly(() -> city.handleLongBondLogic(ask, 2, 100 * PriceLevel.FACTOR));
+        /* ...THE TWO-YEAR BOND SIZED TO ITS BIDDERS (GW1). Sold on top of the thirty-year bond in the same month, the two-year was a short
+           sale the treasury refused (Game.isTinySale): at the ask of 1335.6 the bids at the ceiling were households 0 (the thirty-year bond
+           had their whole spare, 781.8 of 862.4 in savings, unsettled), firms 32.3, world 16.5, bank 0 - 48.7 against the 50.6 the smallest
+           deal worth arranging, "Nothing issued", and no piece for the fixture. On the path this was written against the bids covered more of it.
+           So the ask is halved, at most eight times, until the auction covers it - what the section is about is the principal at maturity, not
+           the size of the issue. */
+        double sized = ask;
+        for (int k = 0; k < 8; k++) {
+            Auction.Result probe = city.quoteLongBond(sized, 2, 100 * PriceLevel.FACTOR).auction();
+            if (!probe.shortSale()) break;
+            sized = probe.sold() / 2;
+        }
+        final double ask2 = sized;
+        quietly(() -> city.handleLongBondLogic(ask2, 2, 100 * PriceLevel.FACTOR));
         final Debt bond3 = newPiece(ledger, had);
         assertTrue("fixture: the treasury sold a two-year bond", bond3 != null);
         play(city);
@@ -1731,10 +1752,15 @@ public class HoldersCheck {
 
     /** The reopening, done the same way to the city and to its twin: the rates up four points and the same line sold again, to be settled the next month. */
     static Reopened reopen(Game city, Debt line) {
+        return reopen(city, line, .04);
+    }
+
+    /** ...the rates up by this much (the policy rate, as a fraction). */
+    static Reopened reopen(Game city, Debt line, double rise) {
         DebtManager ledger = city.getDebtManager();
         double faceBefore = line.getOustandingPrincipal(), perFaceBefore = line.getDiscountLeft() / faceBefore;
         double heldBefore = line.householdPrincipal();
-        ledger.setPolicyRate(ledger.getPolicyRate() + .04);
+        ledger.setPolicyRate(ledger.getPolicyRate() + rise);
         city.strikeTheCurve();
         final double ask2 = Math.max(100 * PriceLevel.FACTOR, city.getHouseholdBalance().spareForPaper() * .2);
         int pieces = ledger.getDebt().size();
@@ -1838,7 +1864,10 @@ public class HoldersCheck {
         /* ---- the same line, reopened at another price ---- */
         out.println("   -- the rates up four points, the same line reopened and settled the next month, in the city and in its twin");
         double hhPerFaceBefore = perFace(line, Debt.Holder.HOUSEHOLDS);
-        Reopened re = reopen(city, line), reTwin = reopen(twin, twinFix.line());
+        /* The rates up SIX points here, not four (GW1): at four the line's discount per unit of face moved 0.0103 to 0.0201, .0098 where the fixture below asks
+           over .01 for a clearly different price; the twin is reopened the same, so the two cities still differ in nothing but the re-strike. */
+        final double rise = .06;
+        Reopened re = reopen(city, line, rise), reTwin = reopen(twin, twinFix.line(), rise);
         assertTrue("fixture: the second sale reopened the same line, and the households held part of it going in",
                 re.sameLine() && re.faceAfter() > re.faceBefore() + 1e-6 && re.heldBefore() > 0);
         assertTrue("fixture: ...the households' own discount is something to keep: it is on the line before the reopening", hhPerFaceBefore > 0);
