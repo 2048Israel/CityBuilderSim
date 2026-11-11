@@ -16,7 +16,7 @@ PW1's core ships here. **PW5 and PW8 go under Pending** in the ship file:
 - The south of the equator's season flip (spec 2.2) waits for PW3: nothing in the tree hands the dispatch the city's
   latitude yet. Every city reads the northern calendar.
 
-## 1. The design (as built in slices A-E)
+## 1. The design (as built in slices A-F)
 
 - **The month**: `PowerDispatch` (new, pure) cuts it in three load blocks (base 50% of hours at 0.904 of the mean,
   shoulder 40% at 1.07, peak 10% at 1.20), each in a windy and a calm half. In each half-block: the works' surplus
@@ -40,8 +40,24 @@ PW1's core ships here. **PW5 and PW8 go under Pending** in the ship file:
   average, the demand `PLAN_PEAK` (1.20 / 0.95) of the mean; with yellow at 0.75 about 12% over July's peak block.
   Without it the advisor's wind cities brown out in every calm half-block. `unit()`, `built()`, `figure()` and
   `supplyDemand()` carry it, so the Build ring's power reads firm supply over the peak's draw (the advice's own
-  figure), and a Wind Farm's card its firm kW. The NEEDS YOU row (`CityNeeds`) still reads the offered average over
-  the draw: two questions, two figures, left for PW6 (the power screen) to word.
+  figure), and a Wind Farm's card its firm kW. The NEEDS YOU row (`CityNeeds`) reads the same pair, worded "81% served
+  at the calm peak" (`CityNeeds.AT_THE_CALM_PEAK`). On the average it read a city of wind farms clear while its calm
+  half-blocks were half served, and the Build screen's cards, which the rows drive, never offered power (slice F).
+- **The playtest's player buys power as the advice says** (`LongPlaytest.powerByNeed()`), as it buys roads: the advice's
+  card and the next in its ranking, each valued at the output lost at the month's ratio or at the peak's share
+  served, whichever is larger. Before, it offered a Wind Farm and a Coal Power Plant by one throttle at the same value, the
+  wind farm listed first: on 1395e06c its city built 103 Wind Farms and no coal by month 2,400, and from month 960 was
+  short in 2-3 calm half-blocks in 164 of 240 sampled months, its energy at the cap.
+- **The fuel at the margin** (`Game`, the fuel price source): the import price if the city imports the coal, the
+  export netback if it exports it, its own market's price if its own mines sell it, else the import price.
+  `SpreadPlanner.cityValue()`, the refiners' first unit's worth, priced a city's coal at D$1.82 a tonne (the export
+  netback of a good it trades none of) while its plant would import at about D$75.
+
+- **The screen** (Services, the power statement and the utility's books): the three prices and the energy's a MWh,
+  "Still at founding" until a month clears, the coal burned, the wind and the works' surplus turned away and the load
+  not served (in how many of the six half-blocks), each line only when there is some; the books carry the power
+  bought, the fuel at home and abroad and the upkeep abroad, and the net is the model's `getElectricityIncome()`. The
+  build card's power sold reads "at the works' price". The power screen of its own (the blocks, the series) is PW6's.
 
 - **The founding grid** (`BASE_GRID_KW`, 10,000 kW, "for nothing", spec 1.2) stays free: a fuelled row at marginal 0. A town
   it covers clears at an energy price of 0 and pays the wires alone; its works' surplus is paid nothing. Three fixtures
