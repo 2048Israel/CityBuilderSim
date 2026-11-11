@@ -299,8 +299,21 @@ public final class LandParcel {
     /** Whether it is mostly sea: more than MOSTLY_SEA of its area. Listed, never the best value. */
     public boolean isMostlySea()   { return km2[CityLand.SEA] > MOSTLY_SEA * km2[CityLand.TOTAL]; }
 
-    /** Its side and place as the office names them: "North 3", the place counted 1 to 6. */
-    public String where()          { return CityLand.sideName(side) + " " + (place + 1); }
+    /**
+     * The number of the offer in a side's place, on the map and in the land office: one to each place across the city
+     * (LM1, 2026-11-11), the sides in their order - north, east, south, west - and each side's places left to right
+     * facing out, so North's are 1 to 6, East's 7 to 12, South's 13 to 18 and West's 19 to 24.
+     *
+     * WHY: until LM1 the map wrote each offer's place on its side, 1 to 6, so every number stood on the map four times;
+     * on Jerus's Stockholm city, whose offers lay in clumps along a strip, no number named one offer.
+     */
+    public static int number(int side, int place) { return side * GridOffers.PLACES + place + 1; }
+
+    /** ...this offer's: number(side, place). */
+    public int number()            { return number(side, place); }
+
+    /** Its side and number as the office names them: "South 15" (number()). */
+    public String where()          { return CityLand.sideName(side) + " " + number(); }
 
     /**
      * What the treasury pays for it in local money at this rate - local money

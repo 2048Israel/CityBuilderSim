@@ -236,6 +236,12 @@ import static ham.citybuildersim.ui.Pieces.*;
  * its card beside the point, and the legend folds to its head line. The map is
  * built once on WORKER and nothing is drawn or read of it while a chip is off.
  * The trade routes are WN3's: its chip comes with its lanes.
+ *
+ * THE DEPOSITS (LM1; Jerus, 2026-11-02: "that makes it super hard to find resources"). At FAR - the zoom a player scouts round his city at - one
+ * icon a deposit in view, at its centre plot: a disc in the resource's colour with its mark (DepositMarks), found for a box twice the view and
+ * kept until the view leaves it, thinned to one an icon's square each frame, none past DepositMarks.ICON_CELLS_MOST cells across. L1 and L2 keep
+ * their dots about the city's ground; L0 its tiles' shading. The head's Resources chip (GamePrefs.resourcesOnMap, on by default, on every world)
+ * turns the icons and the dots off together.
  */
 final class MapView {
 
@@ -390,6 +396,9 @@ final class MapView {
     /** The deposits the far views mark, and the land they were found for. */
     private List<Deposit> fields = List.of();
     private long fieldsFor = Long.MIN_VALUE;
+
+    /** ...and (LM1) those the FAR view's icons are drawn from: found for a box twice the view and kept until the view leaves it (DepositMarks.Search), thinned each frame. */
+    private final DepositMarks.Search farFields = new DepositMarks.Search();
 
     /* ----------------------------- what the player is doing ----------------------------- */
 
@@ -632,6 +641,7 @@ final class MapView {
         picturesWanted.clear();
         fields = List.of();
         fieldsFor = Long.MIN_VALUE;
+        farFields.forget();
         edge = new double[4][0];
         ownedIn.clear();
         labelAt.clear();
@@ -1961,7 +1971,11 @@ final class MapView {
             gc.setLineDashes((double[]) null);
         }
         int level = f.level();
-        if (level == MapFrame.L1 || level == MapFrame.L2) deposits(gc, f, land, market);
+        // (LM1) The deposits, with the Resources chip on: the dots about the city at the middle views, an icon a deposit in view at FAR.
+        if (ui.prefs.isResourcesOnMap()) {
+            if (level == MapFrame.L1 || level == MapFrame.L2) deposits(gc, f, land, market);
+            else if (level == MapFrame.FAR) depositIcons(gc, f, land, market);
+        }
         placeLabels(gc, f, land, listing);
         scaleBar(gc, f);
     }
@@ -2303,7 +2317,7 @@ final class MapView {
 
     /** The fields in and about the city's land and offers, each a dot in its resource's colour, sized by its sites - the far views' deposits (spec-land 2.6). */
     private void deposits(GraphicsContext gc, MapFrame f, CityLand land, LandMarket market) {
-        long key = land.purchases().size() * 31L + land.stamp() + market.getNextOfferId();
+        long key = landKey(land, market);
         if (key != fieldsFor) {
             fieldsFor = key;
             double r = LandMap.offersReach(land, market) + 1;
@@ -2326,6 +2340,43 @@ final class MapView {
             gc.setLineWidth(1);
             gc.strokeOval(x - r, y - r, 2 * r, 2 * r);
         }
+    }
+
+    /** What the land's deposits are found again by (deposits(), depositIcons()): its purchases, its stamp and the next offer's number - any of which moving makes the fields in and about it a new list. */
+    private static long landKey(CityLand land, LandMarket market) {
+        return land.purchases().size() * 31L + land.stamp() + market.getNextOfferId();
+    }
+
+    /** An icon's edge, the dots' dark (11, 17, 24) at 0.85, and the mark written dark on a light colour: the same, whole. */
+    private static final Color ICON_EDGE = Color.rgb(11, 17, 24, 0.85), ICON_DARK_INK = Color.rgb(11, 17, 24);
+
+    /**
+     * (LM1) The far view's deposits: an icon DepositMarks.ICON_PX across at each deposit in view's centre plot, in its resource's colour, edged dark like the
+     * dots, with its mark in the caption font - dark on a light colour, white on a dark one (DepositMarks.darkInk()). The deposits are found for a
+     * box twice the view's (farFields) and thinned to one an ICON_PX square, the one with the most sites, here every frame; none past
+     * DepositMarks.ICON_CELLS_MOST cells across.
+     */
+    private void depositIcons(GraphicsContext gc, MapFrame f, CityLand land, LandMarket market) {
+        List<Deposit> shown = DepositMarks.thin(farFields.forView(land, landKey(land, market), f), f);
+        if (shown.isEmpty()) return;
+        double r = DepositMarks.ICON_PX / 2.0;
+        gc.setFont(Palette.Fonts.monoFont(Palette.SIZE_CAPTION));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.CENTER);
+        gc.setLineWidth(1);
+        for (Deposit d : shown) {
+            Resource kind = d.kind();
+            double x = f.screenX(d.x() + 0.5), y = f.screenY(d.y() + 0.5);
+            gc.setFill(colour(0xff000000 | kind.colour()));
+            gc.fillOval(x - r, y - r, 2 * r, 2 * r);
+            gc.setStroke(ICON_EDGE);
+            gc.strokeOval(x - r, y - r, 2 * r, 2 * r);
+            gc.setFill(DepositMarks.darkInk(kind) ? ICON_DARK_INK : Color.WHITE);
+            gc.fillText(DepositMarks.mark(kind), x, y);
+        }
+        gc.setFont(Palette.Fonts.monoFont(Palette.SIZE_BODY));
+        gc.setTextAlign(TextAlignment.LEFT);
+        gc.setTextBaseline(VPos.BASELINE);
     }
 
     /** The scale bar at the bottom left: the longest of 1, 2 or 5 times a power of ten metres in MapFrame.SCALE_BAR_PX, its length in words. */
@@ -4209,6 +4260,11 @@ final class MapView {
     /** ...and the Borders chip's. */
     static final String BORDERS_TIP = "The nations' borders, dashed white, at the far views; up close only where one crosses the city's ground.";
 
+    /** ...and the Resources chip's (LM1): what it shows, on every world, and how wide the map may be for it. */
+    static final String RESOURCES_TIP = "The deposits: zoomed out, an icon at each one in its resource's colour with its mark (Fe iron, O oil, St stone, C coal, Cu copper, U uranium);"
+            + " closer in, a dot a field about the city's ground and offers. Past " + DepositMarks.ICON_CELLS_MOST + " world cells across ("
+            + String.format("%,.0f", DepositMarks.ICON_CELLS_MOST * (double) World.CELL * World.PLOT_M / 1000) + " km) the map is too wide for them.";
+
     /** ...and the Trade routes chip's (WN3). */
     static String tradeTip() {
         return "This month's trade as routes from the city: violet what we sell, sand what we buy, the width by money, none for a partner under "
@@ -4320,7 +4376,7 @@ final class MapView {
     private TradeLanes.Arrows arrows;
 
     /** The head's chips and their group, and what they were last styled for. */
-    private Label nationsChip, bordersChip, tradeChip;
+    private Label nationsChip, bordersChip, tradeChip, resourcesChip;
     private HBox nationsGroup;
     private String chipsFor;
 
@@ -4526,23 +4582,31 @@ final class MapView {
     }
 
     /**
-     * The chips shown only on an Earth world whose nations' map is built, and lit as the settings stand (each frame of the head). On a generated
-     * world the group shows the Trade routes chip alone, and only while the feed names a stand-in place (WN3): its partners are the arrows.
+     * The chips of the head, lit as the settings stand (each frame of the head). Resources (LM1) shows on every world, a generated one too, so the
+     * group always shows; Nations and Borders only on an Earth world whose nations' map is built; Trade routes there, and on a generated world
+     * only while the feed names a stand-in place (WN3): its partners are the arrows.
      */
     private void syncChips() {
         if (nationsGroup == null) return;
         boolean built = nationsMap() != null, arrowsOnly = !built && standsIn();
-        showIf(nationsGroup, built || arrowsOnly);
+        showIf(nationsGroup, true);
         showIf(nationsChip, built);
+        showIf(tradeChip, built || arrowsOnly);
         showIf(bordersChip, built);
-        if (!built && !arrowsOnly) return;
-        boolean n = ui.prefs.isNationsOnMap(), t = ui.prefs.isTradeRoutesOnMap(), b = ui.prefs.isBordersOnMap();
-        String key = n + "|" + t + "|" + b + "|" + built;
+        showIf(resourcesChip, true);
+        boolean n = ui.prefs.isNationsOnMap(), t = ui.prefs.isTradeRoutesOnMap(), b = ui.prefs.isBordersOnMap(), r = ui.prefs.isResourcesOnMap();
+        String key = n + "|" + t + "|" + b + "|" + r + "|" + built;
         if (key.equals(chipsFor)) return;
         chipsFor = key;
         styleChip(nationsChip, n);
         styleChip(tradeChip, t);
         styleChip(bordersChip, b);
+        styleChip(resourcesChip, r);
+    }
+
+    private void flipResources() {
+        ui.prefs.setResourcesOnMap(!ui.prefs.isResourcesOnMap());
+        layersFlipped();
     }
 
     private void flipNations() {
@@ -5138,7 +5202,8 @@ final class MapView {
         nationsChip = layerChip("Nations", NATIONS_TIP, this::flipNations);
         tradeChip = layerChip("Trade routes", tradeTip(), this::flipTrade);
         bordersChip = layerChip("Borders", BORDERS_TIP, this::flipBorders);
-        nationsGroup = new HBox(Palette.GAP_TIGHT, nationsChip, tradeChip, bordersChip);
+        resourcesChip = layerChip("Resources", RESOURCES_TIP, this::flipResources);
+        nationsGroup = new HBox(Palette.GAP_TIGHT, nationsChip, tradeChip, bordersChip, resourcesChip);
         nationsGroup.setAlignment(Pos.CENTER_LEFT);
         nationsGroup.setMinWidth(Region.USE_PREF_SIZE);
         // The board's .grp: a hairline either side, 4 px between the chips (top, right, bottom, left).

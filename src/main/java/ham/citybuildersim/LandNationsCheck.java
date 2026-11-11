@@ -85,8 +85,12 @@ public class LandNationsCheck {
     /** The seeds the Random paths are drawn from. */
     static final long SEED_A = 20261101L, SEED_B = 20261102L;
 
-    /** Where the cities stand: Windsor on the Detroit River (Canada), Detroit across it (the United States), Halifax (Canada, the reference), the Strait of Gibraltar. */
-    static final double WINDSOR_LAT = 42.30, WINDSOR_LON = -83.03, DETROIT_LAT = 42.335, DETROIT_LON = -83.045;
+    /**
+     * Where the cities stand: Windsor on the Detroit River (Canada), Detroit across it (the United States), Halifax (Canada, the reference), the Strait of
+     * Gibraltar. Windsor's is downtown on the bank since LM1 (2026-11-11), where 2 of the founding's offers cross the river: at 42.30, -83.03, 2 km inland, they
+     * crossed only because A24's founding ran its water 83 blocks along the river, and LM1's one patch of it left none crossing there.
+     */
+    static final double WINDSOR_LAT = 42.315, WINDSOR_LON = -83.04, DETROIT_LAT = 42.335, DETROIT_LON = -83.045;
     static final double HALIFAX_LAT = 44.64, HALIFAX_LON = -63.57, GIBRALTAR_LAT = 36.14, GIBRALTAR_LON = -5.35;
 
     /** A hectare in acres: the unit the USDA and Statistics Canada give their prices in (tools.LandTable converts by the same figure). */
