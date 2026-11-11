@@ -43,6 +43,20 @@ package ham.citybuildersim;
  * the city collecting a tax - are deliberately not listed. They cancel if both
  * sides booked the same number, and show up as residual if they did not.
  *
+ * THE HOUSEHOLDS' IDENTITY (HL1, 2026-11-11)
+ *
+ * The households are still outside the pools, but their savings are now
+ * reconciled against the DOMESTIC lines each month, a second strike beside the
+ * first (Households, householdsHeld()): the change in what they hold is what
+ * the pools paid them, less what they paid the pools, and the residual is money
+ * a household gained or lost that no line names. So a DOMESTIC line must be a
+ * household's - a line with no counterparty is not one, and is Scope.BOOK, as
+ * the write-offs' pools-side halves are - and a payment to a household, or from
+ * one to the world, has a line on each side, a pair, as the bonds' have. It is
+ * struck and kept (Game.getLastHouseholdsAudit()) but not yet asserted: some
+ * bills are still paid to nobody, and their residual is what the next slice
+ * mends.
+ *
  * Struck by Game.nextMonth() every month, always, because it costs a few
  * hundred getter reads; asserted by LongPlaytest and MoneyCheck, and its
  * central bank lines by CentralBankCheck.
@@ -118,6 +132,13 @@ public final class MoneyAudit {
         /** ...and money paid back to it, which it destroyed: repayments, and the window's and the advances' interest. */
         public final double moneyOut;
 
+        /* ---- and the part of it that crossed to or from a household (HL1, 2026-11-11) ---- */
+
+        /** The sum of every DOMESTIC debit ("- ...") the strike recorded: what the pools paid households this month. */
+        public final double toHouseholds;
+        /** The sum of every DOMESTIC credit ("+ ...") the strike recorded: what households paid the pools this month. */
+        public final double fromHouseholds;
+
         /** What the month did to M0, as the audit saw it cross the edge. CentralBankCheck holds it to the bank's own ledger. */
         public double moneyMade()        { return moneyIn - moneyOut; }
 
@@ -186,6 +207,15 @@ public final class MoneyAudit {
         Result(int month, double before, double after, double inflows, double outflows,
                double residual, String detail, double[] foreign,
                double[] poolsAtOpen, double[] poolsAtClose, java.util.Map<String, Double> figures) {
+            this(month, before, after, inflows, outflows, residual, detail, foreign, poolsAtOpen, poolsAtClose, figures, 0, 0);
+        }
+
+        Result(int month, double before, double after, double inflows, double outflows,
+               double residual, String detail, double[] foreign,
+               double[] poolsAtOpen, double[] poolsAtClose, java.util.Map<String, Double> figures,
+               double toHouseholds, double fromHouseholds) {
+            this.toHouseholds = toHouseholds;
+            this.fromHouseholds = fromHouseholds;
             this.figures = figures == null ? java.util.Map.of() : java.util.Collections.unmodifiableMap(new java.util.LinkedHashMap<>(figures));
             this.poolsAtOpen  = poolsAtOpen  == null ? null : poolsAtOpen.clone();
             this.poolsAtClose = poolsAtClose == null ? null : poolsAtClose.clone();
@@ -231,6 +261,74 @@ public final class MoneyAudit {
             return String.format("m%d pooled %,.2f -> %,.2f  in %,.2f  out %,.2f  residual %,.2f (%.4f%%)",
                     month, before, after, inflows, outflows, residual, relative() * 100);
         }
+    }
+
+    /**
+     * One month's strike of the HOUSEHOLDS' identity (HL1, 2026-11-11), the second
+     * the audit makes, beside the pools':
+     *
+     *     held(after) - held(before)  ==  toHouseholds - fromHouseholds
+     *
+     * where held is householdsHeld(), and the two sums are the pools' own DOMESTIC
+     * lines, as Result recorded them. The residual is money a household gained or
+     * lost that no line names. Immutable, like Result.
+     */
+    public static final class Households {
+        public static final Households NONE = new Households(0, 0, 0, 0, 0);
+
+        public final int month;
+        /** The households' savings as householdsHeld() read them at the top of the month. */
+        public final double before;
+        /** ...and at the strike. */
+        public final double after;
+        /** What the pools paid households this month: Result.toHouseholds. */
+        public final double toHouseholds;
+        /** What households paid the pools this month: Result.fromHouseholds. */
+        public final double fromHouseholds;
+        /** (after - before) - (toHouseholds - fromHouseholds). Zero when no household gained or lost a dollar no line names. */
+        public final double residual;
+
+        Households(int month, double before, double after, double toHouseholds, double fromHouseholds) {
+            this.month = month;
+            this.before = before;
+            this.after = after;
+            this.toHouseholds = toHouseholds;
+            this.fromHouseholds = fromHouseholds;
+            this.residual = (after - before) - (toHouseholds - fromHouseholds);
+        }
+
+        /** What crossed between the pools and the households this month, both ways: the size the residual is read against. */
+        public double moved() {
+            return toHouseholds + fromHouseholds;
+        }
+
+        /** Residual as a share of what moved, as Result.relative() reads the pools' (what moved is held to at least 1, so a month nothing moved in reads 0, not noise). */
+        public double relative() {
+            return Math.abs(residual) / Math.max(1, moved());
+        }
+
+        @Override public String toString() {
+            return String.format("m%d households %,.2f -> %,.2f  to %,.2f  from %,.2f  residual %,.2f (%.4f%%)",
+                    month, before, after, toHouseholds, fromHouseholds, residual, relative() * 100);
+        }
+    }
+
+    /**
+     * The households' savings, as the identity above reads them (HL1, 2026-11-11):
+     * HouseholdBalance's total LESS what a buyback between two presses has already
+     * paid them and the next month has not yet declared - the same timing difference
+     * pools() carries on the treasury's side (getBuybackUnsettled()), seen from the
+     * other: the press credits their savings at once (Game.repurchaseDebt()), the
+     * window declares it leaving the pools at the next month's strike, so without
+     * this the opening figure would already hold money the month is about to count.
+     */
+    public static double householdsHeld(Game g) {
+        return g.getHouseholdBalance().totalSavings() - g.getBuybackToHouseholdsUnsettled();
+    }
+
+    /** Strikes the households' identity for the month: householdsHeld() now, against the opening figure, and the sums the pools' strike recorded. */
+    static Households households(Game g, double before, Result pools) {
+        return new Households(g.getMonth(), before, householdsHeld(g), pools.toHouseholds, pools.fromHouseholds);
     }
 
     private MoneyAudit() {}
@@ -312,8 +410,17 @@ public final class MoneyAudit {
      *               own because the month's MONEY in less out is the change in
      *               M0, and CentralBankCheck holds the audit to that. See
      *               CentralBank.
+     *
+     *   BOOK      - (HL1, 2026-11-11) a line with no cash behind it and nobody on
+     *               its other side: the pools' half of a write-off whose other
+     *               half is VALUATION, listed so the identity sums. It was
+     *               DOMESTIC until the households' identity (see the class
+     *               comment) began to read every DOMESTIC line as a household's,
+     *               and a write-off is nobody's. It is recorded exactly as
+     *               DOMESTIC is for the balance of payments, so domesticIn()
+     *               and domesticOut() do not move.
      */
-    public enum Scope { DOMESTIC, TRADE, INCOME, FINANCIAL, VALUATION, RESERVE, MONEY }
+    public enum Scope { DOMESTIC, TRADE, INCOME, FINANCIAL, VALUATION, RESERVE, MONEY, BOOK }
 
     /** Label, amount and scope, for one line of the month. */
     private interface Tagged {
@@ -536,9 +643,12 @@ public final class MoneyAudit {
          * become an outflow the way a single tagged helper could.
          */
         double[] foreign = new double[12];
+        // HL1 (2026-11-11): what the DOMESTIC lines paid households and took of them, for Households' identity.
+        double[] household = new double[2];
         Tagged credit = (label, amount, scope) -> {
             note.accept(label, amount);
             switch (scope) {
+                case DOMESTIC  -> household[1] += amount;
                 case TRADE     -> foreign[0] += amount;
                 case INCOME    -> foreign[2] += amount;
                 case FINANCIAL -> foreign[4] += amount;
@@ -552,6 +662,7 @@ public final class MoneyAudit {
         Tagged debit = (label, amount, scope) -> {
             note.accept(label, amount);
             switch (scope) {
+                case DOMESTIC  -> household[0] += amount;
                 case TRADE     -> foreign[1] += amount;
                 case INCOME    -> foreign[3] += amount;
                 case FINANCIAL -> foreign[5] += amount;
@@ -757,6 +868,17 @@ public final class MoneyAudit {
         in += credit.apply("+ households BroughtHome", g.getHouseholdBalance().getBroughtHome(), Scope.FINANCIAL);
         in += credit.apply("+ households SavedFromAbroad", g.getHouseholdBalance().getSentAbroad(), Scope.DOMESTIC);
         /*
+         * MIGRATION'S MONEY (HL1, 2026-11-11), two more pairs of the same kind. What the month's
+         * newcomers brought as their opening buffer (OPENING_BUFFER_MONTHS) is money from abroad into
+         * their savings: FINANCIAL in here, DOMESTIC out ("- households ArrivedWith (into their
+         * savings)") below. What the leavers took with them is the other way: out of their savings,
+         * DOMESTIC in ("+ households LeftWith (from their savings)"), FINANCIAL out below. The
+         * pools see neither pair; the households' identity does, and the balance of payments now
+         * carries migrants' transfers, as a real one does (spec-wealth 3.4, item 4).
+         */
+        in += credit.apply("+ households ArrivedWith", g.getHouseholdBalance().getArrivedWith(), Scope.FINANCIAL);
+        in += credit.apply("+ households LeftWith (from their savings)", g.getHouseholdBalance().getTakenAway(), Scope.DOMESTIC);
+        /*
          * THE CARS THE HOUSEHOLDS BOUGHT FROM ABROAD (2026-09-16).
          *
          * The first thing a household has ever imported. The domestic half of
@@ -805,6 +927,17 @@ public final class MoneyAudit {
         // its pool, or the world's, a financial inflow like the desk's.
         in += credit.apply("+ fund SharesSoldToHouseholds", g.getExchange().getFundSoldToHouseholds(), Scope.DOMESTIC);
         in += credit.apply("+ fund SharesSoldAbroad", g.getExchange().getFundSoldAbroad(), Scope.FINANCIAL);
+        /*
+         * ...and the two trades that pass between the households and the world, outside the pools on
+         * both sides, as the bonds' do (HL1, 2026-11-11): shares the households bought of the world,
+         * of an emigrant on the way out and of the world's short (Exchange's abroadSells && cellBuys),
+         * paid out of their savings and abroad; shares they sold the world (cellSells && worldBuys),
+         * paid into their savings. A pair each, so the pools' residual is unmoved - and the
+         * balance of payments, and the households' identity, now see them. The emigrants' sales to the
+         * desk, the fund and the companies are the FINANCIAL lines above and below already.
+         */
+        in += credit.apply("+ equity HouseholdsBoughtAbroad (from their savings)", g.getExchange().getHouseholdsBoughtAbroad(), Scope.DOMESTIC);
+        in += credit.apply("+ equity HouseholdsSoldAbroad", g.getExchange().getHouseholdsSoldAbroad(), Scope.FINANCIAL);
         /*
          * THE WORLD'S SHORT (EM2). Two payments it makes that no pool's cash
          * shows, each income from outside, and both owed to the city's holders
@@ -1072,7 +1205,8 @@ public final class MoneyAudit {
         out += debit.apply("- bonds PrincipalAbroad", bm.getPrincipalAbroad(), Scope.FINANCIAL);
         out += debit.apply("- bonds HouseholdsSoldAbroad (into their savings)", bm.getHouseholdsSoldAbroad(), Scope.DOMESTIC);
         out += debit.apply("- bonds HouseholdsBoughtAbroad", bm.getHouseholdsBoughtAbroad(), Scope.FINANCIAL);
-        out += debit.apply("- bonds WrittenOffAbroad (no cash)", bm.getWorldWrittenOff(), Scope.DOMESTIC);
+        // BOOK, not DOMESTIC (HL1, 2026-11-11): no household is paid, so the households' identity must not read it as one's.
+        out += debit.apply("- bonds WrittenOffAbroad (no cash)", bm.getWorldWrittenOff(), Scope.BOOK);
         /*
          * WHAT THE BANK PAYS FOR MONEY IT DID NOT HAVE, since 2026-09-07.
          *
@@ -1145,6 +1279,9 @@ public final class MoneyAudit {
         }
         // The households' three, the other way round. See the credits.
         out += debit.apply("- households InvestedAbroad", g.getHouseholdBalance().getSentAbroad(), Scope.FINANCIAL);
+        // ...and migration's two (HL1, 2026-11-11): the newcomers' buffer into their savings, the leavers' savings abroad. See the credits.
+        out += debit.apply("- households ArrivedWith (into their savings)", g.getHouseholdBalance().getArrivedWith(), Scope.DOMESTIC);
+        out += debit.apply("- households LeftWith", g.getHouseholdBalance().getTakenAway(), Scope.FINANCIAL);
         // ...and the cars they bought from the world. See the credit's note.
         out += debit.apply("- households CarImports",
                 g.getHouseholdCarImports(), Scope.TRADE);
@@ -1204,9 +1341,13 @@ public final class MoneyAudit {
         // ...and the city's fund buying (0.7.14), the same two ways.
         out += debit.apply("- fund SharesBoughtFromHouseholds", g.getExchange().getFundBoughtFromHouseholds(), Scope.DOMESTIC);
         out += debit.apply("- fund SharesBoughtFromAbroad", g.getExchange().getFundBoughtAbroad(), Scope.FINANCIAL);
+        // ...and the households' two with the world, the other legs of the pairs above (HL1, 2026-11-11).
+        out += debit.apply("- equity HouseholdsBoughtAbroad", g.getExchange().getHouseholdsBoughtAbroad(), Scope.FINANCIAL);
+        out += debit.apply("- equity HouseholdsSoldAbroad (into their savings)", g.getExchange().getHouseholdsSoldAbroad(), Scope.DOMESTIC);
         // ...and the world's shares wiped out at a resolution (0.7.14): the
         // other half of the pair above, no cash.
-        out += debit.apply("- bank OwnersWipedAbroad (no cash)", g.getOwnersWipedAbroadThisMonth(), Scope.DOMESTIC);
+        // BOOK, not DOMESTIC, for the reason "- bonds WrittenOffAbroad" gives (HL1, 2026-11-11).
+        out += debit.apply("- bank OwnersWipedAbroad (no cash)", g.getOwnersWipedAbroadThisMonth(), Scope.BOOK);
         out += debit.apply("- equity BuybackToHouseholds", g.getExchange().getBuybackToHouseholds(), Scope.DOMESTIC);
         out += debit.apply("- equity BuybackAbroad", g.getExchange().getBuybackAbroad(), Scope.FINANCIAL);
         out += debit.apply("- treasury BoughtReserves",
@@ -1324,7 +1465,7 @@ public final class MoneyAudit {
         }
         double residual = (after - before) - (in - out);
         return new Result(g.getMonth(), before, after, in, out, residual, detail.toString(), foreign,
-                poolsBefore, poolsAfter, figures);
+                poolsBefore, poolsAfter, figures, household[0], household[1]);
     }
 
     /** What the Scrap Yards' struck statements bought of the households' old steel (0.7.123; OldMetal): their input billed by Trade.HOUSEHOLDS, which nothing else is. */

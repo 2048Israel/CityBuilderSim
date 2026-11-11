@@ -13304,6 +13304,7 @@ public class Game {
         salvageBySector.clear();
         salvageUsedThisMonth = 0;
         double[] poolsBefore = MoneyAudit.pools(this);
+        double householdsBefore = MoneyAudit.householdsHeld(this);
         double pooledBefore = 0;
         for (double p : poolsBefore) pooledBefore += p;
         double interestDue = economyManager.getInterestAccrued();
@@ -13838,6 +13839,7 @@ public class Game {
         worldPaperLeavesWithTheMoney(hotBefore);
 
         lastMoneyAudit = MoneyAudit.strike(this, pooledBefore, poolsBefore, interestDue);
+        lastHouseholdsAudit = MoneyAudit.households(this, householdsBefore, lastMoneyAudit);
         // Declared (0.7.14): the valuation a resolution wiped off the world's
         // shares is a month's, whether the month's or a press's before it.
         ownersWipedAbroadThisMonth = 0;
@@ -18792,6 +18794,9 @@ public class Game {
         return buybackToHouseholdsUnsettled + buybackAbroadUnsettled + centralBank.getRedemptionDue();
     }
 
+    /** ...and the households' part of it, which the press has already credited to their savings (MoneyAudit.householdsHeld(), HL1). */
+    public double getBuybackToHouseholdsUnsettled() { return buybackToHouseholdsUnsettled; }
+
     public double getBuybackToHouseholds() { return buybackToHouseholds; }
     public double getBuybackAbroad()       { return buybackAbroad; }
 
@@ -19116,6 +19121,9 @@ public class Game {
     /** Last month's money-conservation residual. See MoneyAudit. */
     private MoneyAudit.Result lastMoneyAudit = MoneyAudit.Result.NONE;
 
+    /** Last month's households' identity, struck beside the pools' (HL1, 2026-11-11). See MoneyAudit.Households. */
+    private MoneyAudit.Households lastHouseholdsAudit = MoneyAudit.Households.NONE;
+
     /**
      * How much moved after the audit struck, which must be nothing.
      *
@@ -19134,6 +19142,7 @@ public class Game {
 
     public double getPostAuditDriftWorst() { return postAuditDriftWorst; }
     public MoneyAudit.Result getLastMoneyAudit() { return lastMoneyAudit; }
+    public MoneyAudit.Households getLastHouseholdsAudit() { return lastHouseholdsAudit; }
     public void InterestExpense(double amount){
         economyManager.updateInterestExpense(amount);
         cityInterestPaid += amount;

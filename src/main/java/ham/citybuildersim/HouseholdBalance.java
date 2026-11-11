@@ -668,6 +668,8 @@ public class HouseholdBalance {
     private double lastEvicted;
     private double lastStudentDebtTakenAway;
     private double lastTakenAway;
+    /** What the month's newcomers brought as their opening buffer (OPENING_BUFFER_MONTHS): money from abroad into the savings. Not saved (HL1). */
+    private double lastArrivedWith;
     private double graduating;
     private double lastGraduated;
     private double lastDepositInterest;
@@ -954,6 +956,7 @@ public class HouseholdBalance {
         lastLeaving = 0;
         lastEvicted = 0;
         lastTakenAway = 0;
+        lastArrivedWith = 0;
         lastAbroadTakenAway = 0;
         lastCareSkipped = 0;
         java.util.Arrays.fill(lastSharesTakenAway, 0);
@@ -1753,6 +1756,8 @@ public class HouseholdBalance {
             double received = (rowMoved[r] > 0 ? rowPool[r] * fromRow / rowMoved[r] : 0)
                     + (cityMoved > 0 ? cityPool * fromCity / cityMoved : 0);
             double brought = arrival == null ? 0 : newcomers * arrival[i];
+            // Non-zero only for the savings stock (HL1): the month's opening buffers, summed for the audit's "+ households ArrivedWith".
+            lastArrivedWith += brought;
 
             /*
              * AND THE POSITION IS CLAMPED ON THE WAY IN (2026-09-16).
@@ -3884,6 +3889,9 @@ public class HouseholdBalance {
     /** Savings that left the city with the households that left. Not a loss to anybody here. */
     public double getTakenAway()       { return lastTakenAway; }
 
+    /** What the month's newcomers brought as their opening buffer (OPENING_BUFFER_MONTHS): money from abroad into the savings. */
+    public double getArrivedWith()     { return lastArrivedWith; }
+
     /** Households discharged this month, and the share of them leaving the city. */
     public double getBankrupt(int row) { return sumRow(row, Household::bankrupt); }
     public double getLeavingCity()     { return lastLeaving; }
@@ -4848,6 +4856,7 @@ public class HouseholdBalance {
         lastEvicted = 0;
         lastStudentDebtTakenAway = 0;
         lastTakenAway = 0;
+        lastArrivedWith = 0;
         graduating = 0;
         lastGraduated = 0;
         lastAbroadTakenAway = 0;
@@ -4880,6 +4889,7 @@ public class HouseholdBalance {
         minMove *= scale;
         lastWrittenOff *= scale;
         lastTakenAway *= scale;
+        lastArrivedWith *= scale;
         lastStudentDebtTakenAway *= scale;
         lastBondsTakenAway *= scale;
         localPerUsd *= scale;
