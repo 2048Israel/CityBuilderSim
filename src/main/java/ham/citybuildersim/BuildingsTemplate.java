@@ -1231,6 +1231,56 @@ public class BuildingsTemplate {
 
     public boolean isHydro() { return hydro; }
 
+    /* ===== THE POWER ROWS (PW1; spec-electricity 2.3, 2.5) ===== */
+
+    /** A power station's nameplate, kW: what it can put out in an hour, past its average (production1). Absent: its production1 (buildings.json "nameplate"). */
+    private double nameplate;
+
+    /** The good a fuelled station burns, by its Good name ("THERMAL_COAL"); blank for one that burns none (buildings.json "fuel"). */
+    private String fuel = "";
+
+    /** A fuelled station's heat rate, Btu of fuel a kWh, as the sources state it (buildings.json "heatRate"). */
+    private double heatRate;
+
+    /** A station's variable upkeep, US$ a MWh at today's level (buildings.json "variableUpkeep"). */
+    private double variableUpkeep;
+
+    /** What kind of weather-bound output a station makes: "wind" for the Wind Farm, blank for the rest (buildings.json "variable"). */
+    private String variable = "";
+
+    public BuildingsTemplate setNameplate(double kw) { this.nameplate = kw; return this; }
+    public BuildingsTemplate setFuel(String good) { this.fuel = good == null ? "" : good; return this; }
+    public BuildingsTemplate setHeatRate(double btuPerKwh) { this.heatRate = btuPerKwh; return this; }
+    public BuildingsTemplate setVariableUpkeep(double usdPerMwh) { this.variableUpkeep = usdPerMwh; return this; }
+    public BuildingsTemplate setVariable(String kind) { this.variable = kind == null ? "" : kind; return this; }
+
+    /** The station's nameplate, kW: the row's, or with none its production1. */
+    public double getNameplate() { return nameplate > 0 ? nameplate : getProduction1(); }
+
+    /** The good the station burns; null when it burns none or names one the game does not have. */
+    public Good getFuel() {
+        if (fuel == null || fuel.isBlank()) return null;
+        try {
+            return Good.valueOf(fuel.trim());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    public double getHeatRate() { return heatRate; }
+
+    public double getVariableUpkeep() { return variableUpkeep; }
+
+    /** Whether this station's output is the wind's, shaped by the weather (PowerDispatch.windAt()). */
+    public boolean isWind() { return "wind".equals(variable); }
+
+    /** Units of fuel the station burns a kWh: its heat rate over the fuel's heat content; 0 with no fuel, no heat rate or no heat content. */
+    public double fuelPerKwh() {
+        double content = PowerDispatch.heatContentMJ(getFuel());
+        if (!(heatRate > 0) || !(content > 0)) return 0;
+        return heatRate * PowerDispatch.MJ_PER_BTU / content;
+    }
+
     private BridgeWorks.Kind bridge;
 
     /**

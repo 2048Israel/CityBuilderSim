@@ -504,6 +504,10 @@
    "constructionPoints": 120000,
    "constructionMaterials": 19848,
    "production1": 280000,
+   "nameplate": 325000,
+   "fuel": "THERMAL_COAL",
+   "heatRate": 8490,
+   "variableUpkeep": 9.37,
    "electricity": 15,
    "water": 400,
    "jobs": {
@@ -524,6 +528,8 @@
    "constructionPoints": 1800,
    "constructionMaterials": 431,
    "production1": 8100,
+   "nameplate": 20000,
+   "variable": "wind",
    "electricity": 1,
    "water": 0,
    "jobs": {
@@ -4408,6 +4414,8 @@
    "constructionPoints": 2450,
    "constructionMaterials": 406,
    "production1": 4560,
+   "nameplate": 10000,
+   "variableUpkeep": 1.71,
    "electricity": 20,
    "water": 0,
    "jobs": {

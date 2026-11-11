@@ -1,8 +1,11 @@
 package ham.citybuildersim;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.function.DoubleConsumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntConsumer;
+import java.util.function.IntSupplier;
 import java.util.function.ToDoubleFunction;
 
 public class ServicesManager {
@@ -86,6 +89,15 @@ public class ServicesManager {
                 BuildingType.ELECTRICITY,
                 utilitiesHandler::setWattsProduction,
                 BuildingsTemplate::getProduction1);
+
+        // ...and the plants themselves, each with its count, for the month's merit order (PW1; UtilitiesHandler, THE MERIT ORDER).
+        Map<BuildingsTemplate, Integer> plants = new LinkedHashMap<>();
+        for (BuildingsTemplate t : buildingManager.getTemplates()) {
+            if (t.getCategory() != BuildingType.ELECTRICITY) continue;
+            int n = buildingManager.getQuantity(t.getId());
+            if (n > 0) plants.put(t, n);
+        }
+        utilitiesHandler.setPlants(plants);
 
         // ...every building's draw past the power it makes itself, and what the works make past their
         // own draws, sold to the grid (0.7.112, batch I2; UtilitiesHandler, THE POWER THE WORKS MAKE):
@@ -331,6 +343,21 @@ public class ServicesManager {
 
     public double getPricePerWatt() {
         return utilitiesHandler.getPricerPerWatt();
+    }
+
+    /** The city's price of a fuel the plants burn (PW1); null: the world's. Passed to the utility's merit order. */
+    public void setFuelPrice(ToDoubleFunction<Good> cityPrice) {
+        utilitiesHandler.setFuelPrice(cityPrice);
+    }
+
+    /** City money per world thousand, for the plants' upkeep (PW1); null: PriceLevel.FACTOR. */
+    public void setExchangeRate(DoubleSupplier rate) {
+        utilitiesHandler.setExchangeRate(rate);
+    }
+
+    /** The calendar month, 1 to 12, for the season of the month's load (PW1); null: none. */
+    public void setCalendarMonth(IntSupplier month) {
+        utilitiesHandler.setCalendarMonth(month);
     }
 
     public double getPricePerWaterUnit() {
