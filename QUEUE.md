@@ -111,6 +111,7 @@ stuff".
 | LM1-R | MapCheck S4's share check checks nothing on main or on LM1: main's second block had no plot in an open cell, LM1's arrivals all stay in the open cells. Done means the fixture plays until arrivals reach the closed cells and the share is asserted | [LM1 notes](docs/queue/LM1-notes.md) |
 | PW1-R | PW1's review follow-ups (after PW1): the bills struck on the year's mean kWh while the dispatch serves the season's; the planner pricing Heavy Industry's power at the commerce price and own generation at the industry price; powerBooks with no SaveFileCheck line; lows | [PW1-R](docs/queue/PW1-R.md) |
 | HL1-R | HL1's review lows (after HL1): Business Services' kept share a cliff at one seat; ScaleCheck's month 165 holding in 7 of 36 months | [HL1-R](docs/queue/HL1-R.md) |
+| GF1 | The gate fails safe, the first step of the workflow redesign (Jerus, 2026-11-11: "Yes, that split"; Codex builds it): a stopped or interrupted check can never publish (0.9.94 is LM1's older commit, shipped after its gate was stopped, its hard timing unjudged: `ship.sh` read the suite step's exit status again); each stage's result fresh; a branch that moved or lost its ship file during the gate does not ship; a hung harness timed out (CD9's gate hung 62 minutes); every unnamed red line kept (WG2's 97 were printed as 12); the gate's launcher in the repo, returning `ship.sh`'s own status and keeping every run's log; `AGENTS.md` says what Codex is. Changes nothing a gate checks or lets through | [GF1](docs/queue/GF1.md) |
 
 ## Pending
 
