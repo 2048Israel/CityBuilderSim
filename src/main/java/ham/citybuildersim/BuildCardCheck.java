@@ -1285,7 +1285,9 @@ public class BuildCardCheck {
             servedRows++;
             if (n.level() > 0) listedRows++;
             double want = switch (n.kind()) {
-                case POWER -> u.getPowerServed();
+                // PW1: the POWER row read the handler's average (getPowerServed(), production over consumption); it reads the advice's pair, the firm
+                // supply over the calm peak's draw (BuildAdvice.served()), as the cards do.
+                case POWER -> BuildAdvice.served(g, BuildAdvice.Measure.of(BuildAdvice.Kind.POWER), java.util.Map.of());
                 case WATER -> u.getWaterServed();
                 case ROADS -> road.getServed();
                 case CARE -> CityNeeds.careServed(g, n.care(), g.getCohorts(), g.getPopulationManager().getJobFillRate());

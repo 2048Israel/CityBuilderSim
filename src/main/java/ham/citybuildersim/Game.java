@@ -467,7 +467,16 @@ public class Game {
         freshRights = 0;
         servicesManager.setFreshCapSource(this::getFreshCap);
         // ...and the merit order buys its fuel at the city's price, pays its upkeep abroad at the exchange rate, and has a season by the calendar month (PW1; UtilitiesHandler, THE MERIT ORDER).
-        servicesManager.setFuelPrice(g -> getMarkets() == null ? g.worldImportPrice() : ham.citybuildersim.sectors.SpreadPlanner.cityValue(getMarkets().get(g)));
+        // ...at the margin: cityValue() is the refiners' first unit's worth (the export netback for a good the city trades none of, D$1.82 a tonne of coal
+        // in a city with no coal trade), but the plants burn one more unit than the city makes: brought in if it imports, else what it would have shipped,
+        // else what its own sells for at home, else what it must import.
+        servicesManager.setFuelPrice(g -> {
+            GoodsMarket m = getMarkets() == null ? null : getMarkets().get(g);
+            if (m == null) return g.worldImportPrice();
+            double v = m.getImported() > 0 ? m.netImportPrice() : m.getExported() > 0 ? m.netExportPrice()
+                    : m.getSupply() > 0 ? m.getLocalPrice() : m.netImportPrice();
+            return Double.isFinite(v) ? v : g.worldImportPrice();
+        });
         servicesManager.setExchangeRate(() -> getMarkets() == null ? PriceLevel.FACTOR : getMarkets().getExchangeRate());
         servicesManager.setCalendarMonth(() -> CityCalendar.monthOfYear(getMonth()));
         // ...and the grid is not sized for the power a factory turns with steam on site (R0c; ServicesManager.setSteamShareSource()).

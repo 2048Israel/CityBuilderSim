@@ -92,6 +92,11 @@ import java.util.Set;
  *      draw (PLAN_PEAK) over the firm supply, and Wind Farms whose average
  *      is the shortfall leave it short where a Coal Power Plant of that
  *      average does more.
+ *  15. THE POWER ROW IS READ ON THE CALM PEAK (PW1): a city of Wind Farms
+ *      whose average covers its draw and whose calm peak does not has its
+ *      NEEDS YOU POWER row listed (the firm supply over the peak's draw, the
+ *      advice's own pair) and is offered a power card; with the Coal Power
+ *      Plants added that clear the figure, neither.
  *
  * Every fixture causes its condition.
  */
@@ -246,6 +251,7 @@ public class BuildAdviceCheck {
         thePricedOut(g);
         aBerthPaysBack(root);
         powerForTheCalmPeak(g);
+        powerRowOnTheCalmPeak(g);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -1567,6 +1573,96 @@ public class BuildAdviceCheck {
         assertTrue(String.format("...and %d Coal Power Plant(s), their average no less, take off more: %,.0f kW short against %,.0f, %.3f of an average kW against %.3f",
                 plants, afterCoal, afterWind, coalPerKw, windPerKw),
                 plants * coal.getProduction1() >= windFarms * wind.getProduction1() && afterCoal < afterWind && coalPerKw > windPerKw);
+    }
+
+    /** How many times its production the powered city draws before the Wind Farms are added (section 15): short on the average, so the wind is what clears it. */
+    static final double SHORT_ON_THE_AVERAGE = 1.3;
+
+    /**
+     * 15. (PW1) The NEEDS YOU row for power was listed on the average (consumption over production, a wind farm at its
+     * average): a city of Wind Farms was clear on it while its calm half-blocks were half served, and the Build screen's
+     * cards, which the rows drive, never offered it power. It is listed on the pair the advice plans by now.
+     */
+    static void powerRowOnTheCalmPeak(Game fixture) {
+        out.println("\n--- 15. the NEEDS YOU power row is read on the calm peak (PW1): wind farms that cover the average and not the peak are listed and advised ---");
+        Game g = twin(fixture);
+        BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
+        BuildingsTemplate wind = template(g, "Wind Farm"), coal = template(g, "Coal Power Plant");
+        UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
+        Map<BuildingsTemplate, Integer> none = new LinkedHashMap<>();
+        builtAndRead(g, power, none);
+
+        // The fixture, first the draw: the played city has power to spare (it draws a fortieth of its production), so homes are added until the draw is
+        // 1.3 times the production - short on the average - and then Wind Farms, whose average is what the old row read.
+        BuildingsTemplate house = template(g, "House");
+        double c0 = u.getConsumption(), p0 = u.getProduction();
+        builtAndRead(g, power, Map.of(house, 1));
+        double perHouse = u.getConsumption() - c0;
+        int homes = perHouse > 0 ? (int) Math.ceil((SHORT_ON_THE_AVERAGE * p0 - c0) / perHouse) - 1 : 0;
+        if (homes > 0) builtAndRead(g, power, Map.of(house, homes));
+        assertTrue(String.format("fixture: the homes (%d) put the draw over the production: %.3f of it", homes + 1, u.getConsumption() / u.getProduction()),
+                perHouse > 0 && u.getConsumption() / u.getProduction() >= CityNeeds.NETWORK_RED);
+
+        // ...Wind Farms until the average covers the draw (consumption over production under NETWORK_YELLOW), the first batch
+        // sized on the average they add (an underestimate, the posts they open pulling the utilities' fill down), then one at a time.
+        int windFarms = 0;
+        double perFarm = wind.getProduction1() * u.getAverageUtilityFill();
+        int batch = Math.max(0, (int) Math.floor((u.getConsumption() / CityNeeds.NETWORK_YELLOW - u.getProduction()) / perFarm) - 2);
+        for (int guard = 0; guard < 600 && u.getConsumption() / u.getProduction() >= CityNeeds.NETWORK_YELLOW; guard++) {
+            int n = windFarms == 0 && batch > 0 ? batch : 1;
+            builtAndRead(g, power, Map.of(wind, n));
+            windFarms += n;
+        }
+        double average = u.getConsumption() / u.getProduction();
+        double figure = BuildAdvice.figure(g, power, none);
+        out.printf("      %d Wind Farms added: consumption over production %.3f, the advice's power figure %.3f%n", windFarms, average, figure);
+        assertTrue("fixture: wind farms stand (" + g.getBuildingManager().getQuantity(wind.getId()) + ") and the AVERAGE covers the draw: consumption over production "
+                + String.format("%.3f", average) + " under NETWORK_YELLOW", windFarms > 0 && average < CityNeeds.NETWORK_YELLOW);
+        assertTrue("fixture: ...and the CALM PEAK does not: the advice's power figure " + String.format("%.3f", figure) + " is over NETWORK_YELLOW",
+                figure > CityNeeds.NETWORK_YELLOW);
+
+        // (a) the row: listed, on the advice's own pair, in the calm peak's words.
+        List<CityNeeds.Need> all = CityNeeds.measure(g, CityNeeds.PLAIN);
+        CityNeeds.Need row = powerRow(all);
+        double[] sd = BuildAdvice.supplyDemand(g, power, none);
+        assertTrue("(a) NEEDS YOU lists the POWER row, though the average is clear", row != null && CityNeeds.biting(all).contains(row));
+        assertTrue("...on the firm supply against the peak's draw (supplyDemand()), not production against consumption",
+                row != null && row.a() == sd[0] && row.b() == sd[1] && row.a() < u.getProduction());
+        assertTrue("...read as served at the calm peak: \"" + (row == null ? null : row.reading()) + "\"",
+                row != null && row.reading().equals(CityNeeds.servedPct(CityNeeds.servedShare(sd[0], sd[1])) + " " + CityNeeds.SERVED + CityNeeds.AT_THE_CALM_PEAK));
+
+        // (b) the card: the Build screen offers power (the cards are driven by the rows).
+        BuildAdvice.Suggestion card = powerCard(BuildAdvice.suggest(g, all));
+        assertTrue("(b) the advice offers a power card: " + (card == null ? "none" : card.count() + " x " + card.template().getName()),
+                card != null && card.template().getCategory() == BuildingType.ELECTRICITY && card.count() >= 1);
+
+        // (c) the Coal Power Plants that clear the figure: neither the row nor the card.
+        int plants = 0;
+        for (int guard = 0; guard < 200 && BuildAdvice.figure(g, power, none) >= CityNeeds.NETWORK_YELLOW; guard++) {
+            builtAndRead(g, power, Map.of(coal, 1));
+            plants++;
+        }
+        double clear = BuildAdvice.figure(g, power, none);
+        out.printf("      %d Coal Power Plants added: the advice's power figure %.3f%n", plants, clear);
+        assertTrue("fixture: the Coal Power Plants (" + plants + ") bring the figure under NETWORK_YELLOW: " + String.format("%.3f", clear),
+                plants > 0 && clear < CityNeeds.NETWORK_YELLOW);
+        all = CityNeeds.measure(g, CityNeeds.PLAIN);
+        row = powerRow(all);
+        assertTrue("(c) with the figure clear the POWER row is not listed" + (row == null ? "" : " (" + row.reading() + ")"),
+                row == null || !CityNeeds.biting(all).contains(row));
+        assertTrue("...and the advice offers no power card", powerCard(BuildAdvice.suggest(g, all)) == null);
+    }
+
+    /** The NEEDS YOU POWER row of a measure, or null when the city draws nothing. */
+    static CityNeeds.Need powerRow(List<CityNeeds.Need> all) {
+        for (CityNeeds.Need n : all) if (n.kind() == CityNeeds.Kind.POWER) return n;
+        return null;
+    }
+
+    /** The card among the suggestions that is for power, or null. */
+    static BuildAdvice.Suggestion powerCard(List<BuildAdvice.Suggestion> advice) {
+        for (BuildAdvice.Suggestion s : advice) if (s.measure().kind() == BuildAdvice.Kind.POWER) return s;
+        return null;
     }
 
     /** Begins the city's Ports month and tells it `tonnes` of iron ore (dry bulk) crossed the boundary inbound, none by sea. */
