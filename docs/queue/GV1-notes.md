@@ -67,7 +67,7 @@ The January player changes the default trace, as its two-year harness
 demonstrates with two actual tax moves across a scratch save/load. The
 required ensemble is running on the final production model at bf20a92b;
 the snapshot's dirty files are harnesses, registrations, notes and maps.
-The final `./batch-check.sh --pick` exited 0: eleven of 200 registered
+The pre-score `./batch-check.sh --pick` exited 0: eleven of 200 registered
 harnesses passed in 132 seconds, maps regenerated, zero firm Stale
 findings. Selected: DiscoveryCheck, EnsembleCheck, GovernmentPlayerCheck,
 GovernmentViewCheck, InboxCheck, LandmassCheck, LongPlaytest,
@@ -76,6 +76,9 @@ checks the timing machinery; no full suite or `--timing` run was made.
 WealthRun's standalone source also compiled against the completed model.
 The review's synchronization flag is the weak per-city review map's lock;
 this batch starts no threads. Source whitespace and LF checks passed.
+After storing the ensemble score, the final `--pick` again exited 0:
+all eleven selected harnesses passed in 70 seconds, zero firm Stale
+findings, and regeneration left no generated map changes.
 
 The premium fixture initially assumed 1.01 times face was short of the
 whole quote; it was not. It now restores the deliberately stale market
@@ -84,6 +87,40 @@ price and the larger of face and the quoted quarter. In the passing run:
 whole 1006.631, quarter 251.658, face 1000, cash 1003.316. Both original
 assertions stand: the premise occurs and advice offers an affordable part.
 Only the fixture changed after the ensemble snapshot, not production code.
+
+## The ensemble, and GV1-E left for review
+
+`docs/ensemble/GV1.md` is the complete score and summary: all 80 runs
+finished, none missing or short, 12.9 minutes, 20 of 26 criteria passed
+against main's 0.9.89 score of 24/26. Every policy's money audit and
+playtest-finding criterion passed; no run reported an accounting finding.
+AUTO2 A1 passed (median inflation 2.64%, 13/16 seeds in band), and every
+AUTO2 seed reached 40,000 people. Main's A2 and A3 remain red and worsen:
+inflation spells reach 55 months and deflation spells 17.
+
+Four criteria newly fail, and are not restated:
+
+| criterion | this batch | main / requirement |
+|---|---|---|
+| ZERO_HOT H2, recovery after restoring autopilot | 10/16 seeds below their zero-rate excess; median -0.14 points versus twin | at least 12/16; main 15/16 |
+| AUTO2 T2, median final population | 268,306 | at least 75% of main's 618,792 |
+| ZERO_SLACK T2 | 173,386 | at least 75% of main's 409,599 |
+| SHOCK T2 | 23,388 | at least 75% of main's 34,660 |
+
+**Recommendation taken:** keep the requested rule, preserve these findings
+and leave calibration as GV1-E in Pending for the gate/Jerus to review.
+Do not alter an ensemble threshold or quietly substitute the old player's
+taxes. This is a material economic regression, not an all-green ensemble.
+A separate review of the rule against section 3.2 found no caller or
+algorithm mismatch. Compared with section 2.7's prototype, the specified
+stock now includes marked holdings and the vault less debt, EI also rises,
+the poor-side withdrawal steps down instead of resetting to Norway's rule,
+and January gates apply before the move. Its older measured city sizes are
+therefore not a reproduction target. The score alone does not identify
+which channel caused the smaller towns. A calibration study should read
+the wealth band, each lever family and its recipient flows by year,
+especially the three failing policies, before choosing a change. No
+calibration or unrelated household, migration or monetary fix is included.
 
 Review caught the zero-coupon/yield distinction and the premium-price
 partial-buyback case; neither weakens the existing dealing rules. The
