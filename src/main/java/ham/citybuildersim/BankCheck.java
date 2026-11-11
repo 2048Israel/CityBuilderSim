@@ -1487,6 +1487,17 @@ public class BankCheck {
              */
             books.getBusinessInvestment().holdSector(Sectors.FREIGHT);
             /*
+             * WG2, {next}, 2026-11-10: ...AND A FLEET PAID FOR (a hold keeps a sector from building, not from buying its trucks). Freight
+             * buys its trucks out of its revenue and its lender's credit (FR2, the funded Freight further down), and on WG2's town, whose
+             * Migration brings a different population, held out and with no order under construction it still borrows: $41k owed on
+             * assets of $41k in month 26 (leverage 1.00), $460k by month 55 on its cash of $1k to $75k, and $164k on $139k at the save
+             * (1.18) against main's 0.04. Its book alone struck the allowance on the month and on the quarter $0.70k apart, against the
+             * $0.33k (a hundredth of the $33.11k allowance) the fixture below allows. It borrows for want of cash, so the cause is cash:
+             * a stock of it, set through the economy's own call as Retail's and Industry's are after the town's two years, so the fleet
+             * is paid for out of it and Freight owes nothing here ($0 owed against assets of $3,126k at the save).
+             */
+            books.getEconomyManager().setSectorCash(Sectors.FREIGHT, 100_000 * PriceLevel.FACTOR);
+            /*
              * ...AND COPPER REFINING (IC1), for the same premise. An idle builder's laid-off crews are spare for the staffing gate
              * (IC1), so the gate lets a refinery through that it held on main: it owes the bank $40k by month 120 and $86k by month 128 and
              * writes it down ($38k in month 129, $89k in month 141, the last of it), and the bank, which stands on $1M of capital
@@ -1921,6 +1932,10 @@ public class BankCheck {
                 livedCredit.getAssets(Sectors.MATERIALS) <= 0 || livedCredit.getLeverage(Sectors.MATERIALS) <= .17);
         assertTrue("fixture: Luxury Retail, held out of building since round 5, owes nothing",
                 livedCredit.getPrincipal(Sectors.LUXURY_RETAIL) == 0);
+        out.printf("   Freight, held out and given the cash for its fleet, owes $%,.2fk against assets of $%,.2fk%n",
+                livedCredit.getPrincipal(Sectors.FREIGHT), livedCredit.getAssets(Sectors.FREIGHT));
+        assertTrue("fixture: Freight, held out of building and given the cash for its fleet, owes nothing",
+                livedCredit.getPrincipal(Sectors.FREIGHT) == 0);
         assertTrue("fixture: so every book reads alike on a month and on a quarter, within a hundredth of the allowance",
                 readingsApart <= .01 * livedBank.getAllowance());
         BusinessDebtManager creditAtLoad = old077.getEconomyManager().getBusinessDebtManager();

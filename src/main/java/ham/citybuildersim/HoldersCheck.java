@@ -1579,6 +1579,18 @@ public class HoldersCheck {
 
         /* ---- it leaves with its money ---- */
         out.println("   -- the money leaves and the paper goes with it, to the bank's desk");
+        /*
+         * WG2, {next}, 2026-11-10: THE PAPER THAT LEAVES STANDS AT OR UNDER FACE, THE RULE'S TARGET A POINT UP. The claim below is that the
+         * desk pays a market price for the paper that leaves, at or under face (the arithmetic allows two hundredths over), which presumes
+         * a market where the paper stands at or under its face, the curve at or over the coupon the line was struck at. On main at month 90
+         * (inflation +0.86%) the line's yield is 3.90% and its value 1.017 of face (the desk paid 1.019, inside the two hundredths); on
+         * WG2's path the city's prices have fallen 3.19% over the year and the market looks for the rule to ease, so the yield is 3.58%,
+         * the value 1.051 of face and the desk paid 1.067, over them. The dial itself prices only the next DRIFT_MONTHS (6) of a
+         * nineteen-year line, so what moves its yield is the rule: the inflation target a point up (3.00% for the 2.00% the city plays
+         * at; the player's dial on the monetary page) puts the rule's intercept up with it and the expected inflation to 2.56%, and the
+         * line at 0.956 of face. The claims are as they were; the fixture below asserts the value.
+         */
+        ledger.setInflationTarget(ledger.getInflationTarget() + .01);
         // Cause a departure: the stock well past what the spread would keep, so it leaves at DEPARTURE_SPEED of the excess.
         play(city);
         double[] arr = hot.toSaveArray();
@@ -1587,6 +1599,9 @@ public class HoldersCheck {
         double stockBefore = hot.getStock(), paperBeforeLeaving = hot.getPaper();
         assertTrue("fixture: the world holds paper going into the month", paperBeforeLeaving > 0);
         double soldBefore = hot.getLifetimePaperSold(), bookBefore = bank.getCityBook(), principalNow = city.getPrincipalToWorld();
+        java.util.List<Debt> departing = new java.util.ArrayList<>();
+        java.util.List<Double> departingWorld = new java.util.ArrayList<>();
+        for (Debt d : ledger.getDebt()) if (d.worldPrincipal() > 0) { departing.add(d); departingWorld.add(d.worldPrincipal()); }
         MoneyAudit.Result leavingMonth = play(city);
         double goneFace = paperBeforeLeaving - city.getPrincipalToWorld() - hot.getPaper();
         assertTrue("fixture: the stock was over its target, so money left, and nobody panicked", hot.getDeparted() > 0 && !hot.isStopped());
@@ -1596,6 +1611,16 @@ public class HoldersCheck {
                 paperBeforeLeaving);
         assertTrue("part of the paper left with the money", goneFace > 0);
         close("...the departure over the world's whole position, of the face", goneFace, wantFace, 1e-3 * Math.max(1, wantFace));
+        double leftWorth = 0, leftFace = 0;
+        for (int i = 0; i < departing.size(); i++) {
+            Debt d = departing.get(i);
+            leftWorth += ledger.marketValue(d) / d.getOustandingPrincipal() * departingWorld.get(i);
+            leftFace += departingWorld.get(i);
+        }
+        out.printf("   the paper that left is worth %.4f of its face on the curve; the desk paid %.4f%n", leftWorth / leftFace,
+                city.getPaperBoughtFromWorld() / goneFace);
+        assertTrue("fixture: the paper that left stands at or under its face on the city's curve, by the model's own valuation of it",
+                leftFace > 0 && leftWorth <= leftFace);
         assertTrue("...sold to the bank's desk at a market price, below or at face",
                 city.getPaperBoughtFromWorld() > 0 && city.getPaperBoughtFromWorld() <= goneFace * 1.02);
         near("...which is what the world was paid, remembered", hot.getLifetimePaperSold() - soldBefore, city.getPaperBoughtFromWorld());
