@@ -138,6 +138,17 @@ before 0.9.93) for its energy ratio alone. Money is the city's, in the founding'
   against 15.72 deaths a year per 1,000; main 15.67 against 15.68: the fee twins differ by hundredths, HX1 and RN1-F),
   and KeptCheck's "the BuybackLadder on Close it now: no month draws it again with nothing changed in it (1)" (KL1: the
   ladder compared bit for bit; on PW1's path KeptCheck's city has paper to close, so the section is reached at all).
+- **CallCheck section 4's sale found no bank** (PW1's path, the gate's run 1 on 0.9.94; the fixture restated). The two
+  years before the sale ran the town's Manufacturing, on 1.9 of cash, into a 5,750 loan for a second Wire & Cable Works
+  at month 90; it defaulted two months on and the bank failed (equity -1,013, in resolution), so at the sale its room
+  was 0 (24,539 on main) and both quotes stopped short at the cap's tail, the households alone taking 259 of 1,492. The
+  firms now build nothing new over those two years and the bank's standing is asserted before the sale: green on PW1
+  (room 40,928) and on 0.9.94 (33,261). A bank that lends a sector with 1.9 of cash 5,750 at once and fails on it two
+  months on is main's lending, not this batch's; not queued, a note for whoever takes the bank next.
+- **PlanCheck 17 on PW1's path is PX1's class**: "every district as the map draws it keeps every check" fails in
+  MapCheck 1's city at month 121, district (0, 0), on the + floor (the closest + 5 plots from another, `LATTICE` 8),
+  with 14 streets along a cut drawn as curves - PX1's city, month, district and case (CL4's curves), which 0.9.94 shows
+  in PlanCheck 6. PX1's done-means should add PlanCheck 17 green on PW1's path.
 
 ## 4. The calls (★), each taken as recommended
 
@@ -162,6 +173,7 @@ before 0.9.93) for its energy ratio alone. Money is the city's, in the founding'
 - **Premises restated, not loosened**: `BuildCardCheck` (power served read through `BuildAdvice.served()`), and three
   fixtures whose town the free founding grid would cover at a price of 0 - `MoneyCheck`, `MaterialsCheck`'s power town,
   `WoodProductsCheck` 4 - raise the homes' draw so the coal plant is the margin. `ScaleCheck`: the scaler scales
-  `powerBooks`, and `FREE_FIXTURE_MONTHS` is 177 (§3, the scan).
+  `powerBooks`, and `FREE_FIXTURE_MONTHS` is 177 (§3, the scan). `CallCheck` 4: the firms held over its two years and
+  the bank's standing asserted before the sale (§3).
 - **Not done here**: the write-up for the project (`claude/<title>.md`; this batch changes how the game plays). This
   session has no way to write to the project; sections 1-4 are its matter.
