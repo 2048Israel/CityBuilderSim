@@ -3385,12 +3385,17 @@ public class LongPlaytest {
              * it buys roads (powerByNeed(), the roads' way since 0.7.103): the
              * advice's card for power and then the next in its ranking, each a move
              * of its own, nothing when what is on site keeps power ahead. The value is
-             * the output lost at the month's ratio or at the calm peak's share the
-             * firm supply serves (BuildAdvice.served()), whichever is larger: a city
-             * of wind farms is clear on the average and half served at the peak.
+             * the output at risk: the month's ratio short, or the share of the calm
+             * peak's draw the firm supply leaves uncovered at the advice's own yellow
+             * line (1 - BuildAdvice.served() x CityNeeds.NETWORK_YELLOW), whichever
+             * is larger - so it orders when the advice does, a coal plant's build
+             * ahead of the shortage. Valued at the shortage alone (1 - served), it
+             * ordered only once a block was short: 66 of 240 sampled months short,
+             * the energy at $3,530 a MWh at month 1,803.
              */
             BuildAdvice.Measure powerM = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
-            double powerGain = gdp * Math.max(1 - g.getEnergyRatio(), 1 - BuildAdvice.served(g, powerM, java.util.Map.of()));
+            double powerGain = gdp * Math.max(1 - g.getEnergyRatio(),
+                    1 - BuildAdvice.served(g, powerM, java.util.Map.of()) * CityNeeds.NETWORK_YELLOW);
             for (BuildAdvice.Suggestion s : powerByNeed(g, powerM, g.getLandManager().getAvailableSqFt())) {
                 String name = s.template().getName();
                 int n = s.count();

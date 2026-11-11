@@ -75,3 +75,15 @@ PW1's core ships here. **PW5 and PW8 go under Pending** in the ship file:
   6 plots, at month 1205. Clean main (0a5b74ef) shows the same at month 2105 (district 11, 2 plots), once the probe follows
   ReloadCheck past its last checkpoint. PW1 changes the probe city's builds, so the fault shows at 1205. The probe is in
   the orchestrator's notes folder, `PW1-map-rail-after-load/`. A fix batch is queued in the ship file.
+- **The plants' upkeep was read in today's dollars** (found measuring the default run, fixed here): `buildings.json`'s
+  US$9.37 a MWh went into the dispatch over 1e6 times the market's exchange rate, without `PriceLevel.FACTOR`, so it was
+  38.6 times too dear: $523 a MWh at month 1,206 against $22 of coal, nine-tenths of the coal plant's marginal and of the
+  energy price. It is struck as a good's world price is now (x FACTOR), and the exchange rate (which carries the world's
+  price level, `GoodsMarket.setExchangeRate`) makes it the month's city money. PowerPriceCheck's premise had copied the
+  code's own formula; it checks the row's upkeep against FACTOR first now.
+- **AuctionCheck section 10's flat-price premise is false on main too** (slice G's trace). The fixture holds the
+  builders' order multiplier at 1 but not their wages, which rise 1.8% a month (wage index 1.1326 to 1.1533, months
+  39-40, the same on both trees), so each ask's cost drifts 0.4-0.6% a month. The "a granule's top-up" assertion passes on
+  the rounding remainder each ask holds after its first whole-granule sale: on main two top-ups against a bound of three;
+  on PW1 three, exactly the bound (the cheaper power bill moves the Paved Road 0.1%). It was red on PW1 while the upkeep
+  was too dear (the Health Centre's top-up two granules). A fix is queued in the ship file; the bound is not loosened here.
