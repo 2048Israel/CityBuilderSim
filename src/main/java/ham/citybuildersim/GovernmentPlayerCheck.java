@@ -185,6 +185,20 @@ public final class GovernmentPlayerCheck {
         };
     }
 
+    private static void fixtureRunnerKeepsPolicy() {
+        out.println("--- borrowed fixture months retain the supplied policy across January ---");
+        Game g = LongPlaytest.probeCity(GameFiles.scratch("government-fixture-policy"), null);
+        g.getEconomyManager().getTaxPolicy().openAll();
+        g.setCashForTest(1e12);
+        rates(g, .25, .10, .50, .65, 0);
+        int before = g.getMonth();
+        LongPlaytest.run(g, 12);
+        check("the fixture crosses a January with measurable wealth above the band",
+                CityCalendar.yearOf(g.getMonth()) > CityCalendar.yearOf(before)
+                        && GovernmentView.of(g).wealthYears() > GovernmentView.RICH_MIN);
+        levers(g, .25, .10, .50, .65, 0);
+    }
+
     private static void skipsAndReload() throws Exception {
         out.println("--- actual skips cross each January once, and a loaded January is not replayed ---");
         GameFiles files = GameFiles.scratch("government-player-play");
@@ -197,7 +211,7 @@ public final class GovernmentPlayerCheck {
         LongPlaytest.villageBuild(g, "Convenience Store", 3);
         LongPlaytest.villageBuild(g, "Mixed Farm", 2);
         int changes = 0;
-        LongPlaytest.run(g, 12);
+        LongPlaytest.runPlayer(g, 12);
         same("the first twelve-month skip finishes in January", g.getMonth(), 13);
         check("the played city really is above the band", GovernmentView.of(g).wealthYears() > GovernmentView.RICH_MIN);
         if (Math.abs(g.getEconomyManager().getTaxPolicy().getProfitTaxRate() - (.25 - GovernmentPlayer.PROFIT_STEP)) < 1e-10) changes++;
@@ -207,9 +221,9 @@ public final class GovernmentPlayerCheck {
         loaded.loadGameSave(10);
         double saved = loaded.getEconomyManager().getTaxPolicy().getProfitTaxRate();
         same("the loaded January retains its policy", saved, .25 - GovernmentPlayer.PROFIT_STEP);
-        LongPlaytest.run(loaded, 1);
+        LongPlaytest.runPlayer(loaded, 1);
         same("resuming a loaded January runs February without another annual move", loaded.getEconomyManager().getTaxPolicy().getProfitTaxRate(), saved);
-        LongPlaytest.run(loaded, 11);
+        LongPlaytest.runPlayer(loaded, 11);
         same("the second skip reaches the next January", loaded.getMonth(), 25);
         if (Math.abs(loaded.getEconomyManager().getTaxPolicy().getProfitTaxRate() - (saved - GovernmentPlayer.PROFIT_STEP)) < 1e-10) changes++;
         same("two actual annual tax moves over two played years", changes, 2);
@@ -223,6 +237,7 @@ public final class GovernmentPlayerCheck {
                 directionsAndCaps();
                 calendarAndBoundaries();
                 historicalGates();
+                fixtureRunnerKeepsPolicy();
                 skipsAndReload();
             } finally {
                 System.setOut(out);

@@ -33,7 +33,7 @@ and merges it. Nothing here changes a live player's policy automatically.
   read baseline. Crossing settles it and raises one unread notice; the
   live baseline survives the two-year cull. No save-format change.
 - GV2 is the player's rule only, shared through `GovernmentPlayer` and
-  `LongPlaytest.run` by the playtest, ensemble and WealthRun. The scripted
+  `LongPlaytest.runPlayer` by the playtest, ensemble and WealthRun. The scripted
   income/property-tax moves and WealthRun's separate prototype are removed.
 - Recommendation taken: act after each successfully completed January.
   The prototype's December modulo preceded January's newly opening policy
@@ -132,3 +132,48 @@ For the screen check: Government > Overview, the wealth line and its
 component tooltip; partial-year and no-revenue text; the three doors,
 including a discount bill and paper with the central bank holding a share.
 The figures must update in place without moving the scroll.
+
+## Second gate send-back, fixture runner (2026-11-10)
+
+MapCheck, KeptCheck and FoodProcessingCheck were run on detached main
+cd7aac62 and the submitted GV1 model. Main exited 3. GV1 exited 4 and
+reproduced all five assertions sent back, plus two further Map assertions
+and four further Kept assertions. The added January rule ran inside the
+borrowed fixture runner, changing the policy supplied by those harnesses.
+Its split profit/sales cuts broke FoodProcessingCheck's restore premise;
+its tax cuts and fund withdrawal also changed the Map and Kept cities.
+The advice's TaxPolicy copies remain detached.
+
+The shared monthly loop now has an explicit `runPlayer` entry point used
+by LongPlaytest's actual player, Ensemble and WealthRun. Their January
+decision stays after the same completed month. Borrowed `run` calls keep
+their supplied policy. GovernmentPlayerCheck now exercises both paths,
+including a rich fixture crossing January with every lever unchanged.
+The three sent-back harnesses retain every premise and assertion.
+
+The complete 2,400-month AUTO2 seed-0 CSV is byte-identical before and
+after the fix and to the accepted ensemble's stored CSV. All three SHA-256
+hashes are `8398d0928c88049cb2674216738e4a94258b4fde8edf6942a22c03c81fc641fd`.
+The automated players retain the accepted January rule and model path,
+so the accepted 20/26 ensemble and GV1-E still apply. The 80-run ensemble
+was not rerun. WealthRun's standalone driver compiled successfully.
+
+The final named run of MapCheck, KeptCheck, FoodProcessingCheck,
+InboxCheck, GovernmentViewCheck and GovernmentPlayerCheck exited 3.
+All GV1-only failures passed. A direct comparison found the same three
+Map assertions, one Kept assertion and zero FoodProcessing assertions red
+on main and the fixed branch. Maps regenerated and Stale had zero firm
+findings. The comparison logs are preserved under
+`target/gv1-sendback-trace/`, alongside the before/after trace CSVs.
+The final `./batch-check.sh --pick` exited 0, with all eleven selected
+harnesses passing in 132 seconds, maps regenerated and zero firm Stale
+findings.
+
+The following exact assertion lines were red on main cd7aac62.
+
+```text
+MapCheck | a yard laid across a district's buildings moves off it the boxes under it and no others: 53 of the plan before's 590 boxes lie under the yard and the railway, and 60 are not in the plan after (each of the rest stands where it stood) FAIL
+MapCheck | ...and the layout watch (LongPlaytest, as the map draws the district) counts them apart and flags none: 53 boxes left a district in the yard's month because a run laid in it lies across them, 7 are counted as moved FAIL
+MapCheck | the highways reaching a street: a reserve that appears in a district already built moves off it the boxes it lies across or beside the highways laid with it and no others: 86 of the plan before's 590 boxes lie across, 87 are not in the plan after FAIL
+KeptCheck | the BuybackLadder on Close it now: no month draws it again with nothing changed in it (2) FAIL
+```

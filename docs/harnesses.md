@@ -2,7 +2,7 @@
 
 Generated 2026-11-10 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**201 harness files, 23,526 labelled assertions.** AllChecks runs 201 of them.
+**201 harness files, 23,527 labelled assertions.** AllChecks runs 201 of them.
 
 ## Which harnesses read which class
 
@@ -62,7 +62,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ChipRender](map/ChipRender.md) | **none** |
 | [CityBasket](map/CityBasket.md) | **none** |
 | [CityBuilderSim](map/CityBuilderSim.md) | **none** |
-| [CityCalendar](map/CityCalendar.md) | ArrivalMixCheck, AuctionCheck, BasketYearCheck, CalendarCheck, CausesOfDeathCheck, ChartCheck, DebtExchangeCheck, DenominationCheck, EquipmentCheck, ForeignDebtCheck, FundCheck, KeptCheck, LandNationsCheck, OilViewCheck, PolicyDatesCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, RecipeCheck, ReplayCheck, ResearchCheck, SaveFileCheck, WorldMoneysCheck, YearBookCheck |
+| [CityCalendar](map/CityCalendar.md) | ArrivalMixCheck, AuctionCheck, BasketYearCheck, CalendarCheck, CausesOfDeathCheck, ChartCheck, DebtExchangeCheck, DenominationCheck, EquipmentCheck, ForeignDebtCheck, FundCheck, GovernmentPlayerCheck, KeptCheck, LandNationsCheck, OilViewCheck, PolicyDatesCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, RecipeCheck, ReplayCheck, ResearchCheck, SaveFileCheck, WorldMoneysCheck, YearBookCheck |
 | [CityLand](map/CityLand.md) | AutoBuildCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, HydroCheck, IslandNetCheck, IslandRailCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, QuarryingCheck, ReadPathCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SlopeCheck, WaterCheck, WorldCheck |
 | [CityMap](map/CityMap.md) | BridgeCheck, BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, IslandRailCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck |
 | [CityMeasures](map/CityMeasures.md) | RankingsCheck |
@@ -11765,7 +11765,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L850 a new town: Lean, the aim Inflation, no mint price, no event, not tied
   - L853 24 months on: no gold in the vault, no gold event, no mint price, nothing dealt in gold, still Lean and untied
 
-## GovernmentPlayerCheck.java - 33 labelled assertions
+## GovernmentPlayerCheck.java - 34 labelled assertions
 
 > The test player's annual wealth policy: both directions, boundaries, caps, historical dates and the actual skip/reload path.
 > 
@@ -11800,16 +11800,18 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L146 zero annual revenue does nothing
   - L150 a later measurable January can act
 - **L154 historical setters stay closed and newly opened January levers can move**
-- **L189 actual skips cross each January once, and a loaded January is not replayed**
-  - L201 the first twelve-month skip finishes in January
-  - L202 the played city really is above the band
-  - L204 one annual tax move inside the first long skip
-  - L205 the scratch January save succeeds
-  - L209 the loaded January retains its policy
-  - L211 resuming a loaded January runs February without another annual move
-  - L213 the second skip reaches the next January
-  - L215 two actual annual tax moves over two played years
-  - L216 an immediate repeated review after the skip does nothing
+- **L189 borrowed fixture months retain the supplied policy across January**
+  - L196 the fixture crosses a January with measurable wealth above the band
+- **L203 actual skips cross each January once, and a loaded January is not replayed**
+  - L215 the first twelve-month skip finishes in January
+  - L216 the played city really is above the band
+  - L218 one annual tax move inside the first long skip
+  - L219 the scratch January save succeeds
+  - L223 the loaded January retains its policy
+  - L225 resuming a loaded January runs February without another annual move
+  - L227 the second skip reaches the next January
+  - L229 two actual annual tax moves over two played years
+  - L230 an immediate repeated review after the skip does nothing
 
 ## GovernmentViewCheck.java - 56 labelled assertions
 
@@ -17473,13 +17475,13 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L3250 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
 - **L3305 AND EVERYTHING THAT IS A PURCHASE.**
 - **L3651 AND THE BEST OF THEM WINS.**
-- **L6170 founding: a few months at a time, by hand**
-- **L6267 then the real rhythm**
-- **L6400 the report**
-- **L6423 ==**
-- **L6520 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
-- **L7768 what the advisor tried, and what happened**
-- **L7774 findings**
+- **L6183 founding: a few months at a time, by hand**
+- **L6280 then the real rhythm**
+- **L6413 the report**
+- **L6436 ==**
+- **L6533 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
+- **L7781 what the advisor tried, and what happened**
+- **L7787 findings**
 
 ## MainLineCheck.java - 160 labelled assertions
 

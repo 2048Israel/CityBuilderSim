@@ -1,4 +1,4 @@
-# GovernmentPlayerCheck.java - 234 lines · 14 methods · 1 constants · harnesses
+# GovernmentPlayerCheck.java - 249 lines · 15 methods · 1 constants · harnesses
 
 `ham/citybuildersim/GovernmentPlayerCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
 
@@ -8,7 +8,7 @@
 > could cross years without ever reviewing policy. The fixtures cause each balance directly; the last section plays through two actual
 > Januaries, saving and loading between them, and counts how often taxes really move. Every city and its slot 10 live in scratch data.
 
-**Uses:** [GovernmentPlayer](GovernmentPlayer.md) (45), [GovernmentView](GovernmentView.md) (24), [Game](Game.md) (18), [TaxPolicy](TaxPolicy.md) (13), [PolicyDates](PolicyDates.md) (8), [LongPlaytest](LongPlaytest.md) (6), [GameFiles](GameFiles.md) (3), [TreasuryFund](TreasuryFund.md) (3), [HistorySave](HistorySave.md) (2)
+**Uses:** [GovernmentPlayer](GovernmentPlayer.md) (45), [GovernmentView](GovernmentView.md) (26), [Game](Game.md) (19), [TaxPolicy](TaxPolicy.md) (13), [PolicyDates](PolicyDates.md) (8), [LongPlaytest](LongPlaytest.md) (8), [GameFiles](GameFiles.md) (4), [TreasuryFund](TreasuryFund.md) (3), [HistorySave](HistorySave.md) (2), [CityCalendar](CityCalendar.md) (2)
 
 ## Constants
 
@@ -26,7 +26,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 14 | 221 | **type** `public final class GovernmentPlayerCheck` | The test player's annual wealth policy: both directions, boundaries, caps, historical dates and the actual skip/reload path. |
+| 14 | 236 | **type** `public final class GovernmentPlayerCheck` | The test player's annual wealth policy: both directions, boundaries, caps, historical dates and the actual skip/reload path. |
 | 18 | 4 | `private static void check(String label, boolean ok)` |  |
 | 23 | 5 | `private static void same(String label, double actual, double expected)` |  |
 | 29 | 5 | `private static Game city(String label, boolean open)` |  |
@@ -39,6 +39,7 @@
 | 117 | 35 | `private static void calendarAndBoundaries() throws Exception` |  |
 | 153 | 23 | `private static void historicalGates() throws Exception` |  |
 | 177 | 10 | `private static double rate(Game g, PolicyDates.Lever lever)` |  |
-| 188 | 30 | `private static void skipsAndReload() throws Exception` |  |
-| 219 | 15 | `public static void main(String[] args) throws Exception` |  |
+| 188 | 13 | `private static void fixtureRunnerKeepsPolicy()` |  |
+| 202 | 30 | `private static void skipsAndReload() throws Exception` |  |
+| 233 | 16 | `public static void main(String[] args) throws Exception` |  |
 

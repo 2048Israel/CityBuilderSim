@@ -261,7 +261,7 @@ public class Ensemble {
         int flagsBefore = Adapter.findingCount();
         List<String> namesBefore = new ArrayList<>(Adapter.findingNames());
         // System.out is already the quiet stream (foundAndPlay); progress goes to `real`.
-        LongPlaytest.run(g, 1);
+        LongPlaytest.runPlayer(g, 1);
         if (g.getMonth() == before) stuck = true;
         StringBuilder names = new StringBuilder();
         for (String n : Adapter.findingNames()) {

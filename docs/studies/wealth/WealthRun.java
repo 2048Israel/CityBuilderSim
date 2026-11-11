@@ -88,7 +88,7 @@ public class WealthRun {
         double cashBefore = g.getCash();
         double hhBefore = households(hb);
         int before = g.getMonth();
-        LongPlaytest.run(g, 1);
+        LongPlaytest.runPlayer(g, 1);
         if (g.getMonth() == before) { stuck = true; return; }
 
         MoneyAudit.Result a = g.getLastMoneyAudit();
@@ -342,7 +342,7 @@ public class WealthRun {
 
     static void run(Game g, int months) {
         for (int i = 0; i < months && !stuck && g.getMonth() < endMonth; i++) {
-            // LongPlaytest.run owns the same GovernmentPlayer move as the ensemble; no separate study rule can move it twice.
+            // LongPlaytest.runPlayer owns the same GovernmentPlayer move as the ensemble; no separate study rule can move it twice.
             step(g);
         }
     }

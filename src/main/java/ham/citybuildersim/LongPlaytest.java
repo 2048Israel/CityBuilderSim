@@ -5479,6 +5479,19 @@ public class LongPlaytest {
     }
 
     static void run(Game g, int months) {
+        run(g, months, false);
+    }
+
+    /**
+     * The automated player's months, with its January wealth decision (GV1).
+     * Harnesses borrow run() to advance their own fixtures and keep the policy
+     * they supplied. The playtest, ensemble and WealthRun opt in here.
+     */
+    static void runPlayer(Game g, int months) {
+        run(g, months, true);
+    }
+
+    private static void run(Game g, int months, boolean playGovernmentPolicy) {
         for (int i = 0; i < months; i++) {
 
             int before = g.getMonth();
@@ -5496,7 +5509,7 @@ public class LongPlaytest {
             breadOpening = g.getSectors().industry().getStock(Good.BREAD);
             g.simulateMonths(1);
             // The player's annual move sees every completed January, including one crossed inside a long skip (GV1/GV2).
-            if (g.getMonth() > before) GovernmentPlayer.step(g);
+            if (playGovernmentPolicy && g.getMonth() > before) GovernmentPlayer.step(g);
             if (g.hasCityMap()) {
                 mapMonths++;
                 /*
@@ -6251,14 +6264,14 @@ public class LongPlaytest {
              * afford and roughly what it would do.
              */
             villageBuild(g, "Mixed Farm", 2);
-            run(g, 3 + (seed / 4) % 3);
+            runPlayer(g, 3 + (seed / 4) % 3);
             villageBuild(g, "House", 20 + (seed / 12) % 3);
-            run(g, 4);
+            runPlayer(g, 4);
             villageBuild(g, "Convenience Store", 2);
             villageBuild(g, "Construction Depot", 1);
-            run(g, 5);
+            runPlayer(g, 5);
             advise(g);
-            run(g, 6);
+            runPlayer(g, 6);
             ensureSchools(g);
             childcareWhenNeeded(g);
 
@@ -6287,7 +6300,7 @@ public class LongPlaytest {
                 // the note on ATTENTIVE above; without the flag this is the
                 // same unbounded skip it always was.
                 skip = Math.min(skip, longestSkip());
-                run(g, Math.min(skip, TARGET_MONTHS - g.getMonth()));
+                runPlayer(g, Math.min(skip, TARGET_MONTHS - g.getMonth()));
                 ensureSchools(g);
                 childcareWhenNeeded(g);
 
@@ -6295,9 +6308,9 @@ public class LongPlaytest {
                 // months watching what that did - the way anyone plays.
                 for (int move = 0; move < movesPerLook(); move++) {
                     if (advise(g) == null) break;
-                    run(g, 1);
+                    runPlayer(g, 1);
                 }
-                run(g, 2);
+                runPlayer(g, 2);
 
                 /*
                  * ...AND IT BORROWS ABROAD NOW AND AGAIN.
