@@ -133,7 +133,7 @@
 | 301 | `public double borrowed` | What the funding page's bond brought for it; 0 out of the cash. |
 | 302 | `public boolean paving` |  |
 | 303 | `public String why` |  |
-| 305 | `public double landSqFt` | The ground it bought for the order (0.7.77): its dry square feet, its price in local money at the day's rate, and the offers' places ("West 3, North 1"); 0 and null for none. |
+| 305 | `public double landSqFt` | The ground it bought for the order (0.7.77): its dry square feet, its price in local money at the day's rate, and the offers' names ("West 21, North 1", LandParcel.where()); 0 and null for none. |
 | 306 | `public double landCost` |  |
 | 307 | `public String landWhere` |  |
 | 347 | `private final List<Entry> log` |  |

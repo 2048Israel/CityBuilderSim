@@ -1,4 +1,4 @@
-# CityLand.java - 1,312 lines · 95 methods · 27 constants · model
+# CityLand.java - 1,345 lines · 96 methods · 29 constants · model
 
 `ham/citybuildersim/CityLand.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
@@ -66,7 +66,7 @@
 
 **Uses:** [World](World.md) (106), [Deposit](Deposit.md) (32), [Resource](Resource.md) (31), [GridConversion](GridConversion.md) (29), [LandGrid](LandGrid.md) (19), [LandParcel](LandParcel.md) (14), [LegacyLand](LegacyLand.md) (2)
 
-**Used by (59):** [AutoBuildCheck](AutoBuildCheck.md), [BridgeGround](BridgeGround.md), [BridgeMapCheck](BridgeMapCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [CityMap](CityMap.md), [CoalMiningCheck](CoalMiningCheck.md), [ConversionCheck](ConversionCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [ForestryCheck](ForestryCheck.md), [Founding](Founding.md), [FundCheck](FundCheck.md), [Game](Game.md), [GlobeFrame](GlobeFrame.md), [GridCheck](GridCheck.md), [GridConversion](GridConversion.md), [GridOffers](GridOffers.md), [HarbourRenders](HarbourRenders.md), [HydroCheck](HydroCheck.md), [HydroSites](HydroSites.md), [IslandNetCheck](IslandNetCheck.md), [IslandRailCheck](IslandRailCheck.md), [LandCheck](LandCheck.md), [LandClassCheck](LandClassCheck.md), [LandClassView](LandClassView.md), [LandConversion](LandConversion.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LandMarket](LandMarket.md), [LandNationsCheck](LandNationsCheck.md), [LandParcel](LandParcel.md), [LandScreen](LandScreen.md), [LandSellers](LandSellers.md), [LandmassCheck](LandmassCheck.md), [Landmasses](Landmasses.md), [LegacyLand](LegacyLand.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [MaterialsCheck](MaterialsCheck.md), [MiniMapFrame](MiniMapFrame.md), [MiningCheck](MiningCheck.md), [NewGameCheck](NewGameCheck.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [PortCheck](PortCheck.md), [QuarryingCheck](QuarryingCheck.md), [ReadPathCheck](ReadPathCheck.md), [RunRenders](RunRenders.md), [RunWorksCheck](RunWorksCheck.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md), [SlopeCheck](SlopeCheck.md), [SlopeRenders](SlopeRenders.md), [WaterCheck](WaterCheck.md), [WorldCheck](WorldCheck.md)
+**Used by (60):** [AutoBuildCheck](AutoBuildCheck.md), [BridgeGround](BridgeGround.md), [BridgeMapCheck](BridgeMapCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [CityMap](CityMap.md), [CoalMiningCheck](CoalMiningCheck.md), [ConversionCheck](ConversionCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [DepositMarks](DepositMarks.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [ForestryCheck](ForestryCheck.md), [Founding](Founding.md), [FundCheck](FundCheck.md), [Game](Game.md), [GlobeFrame](GlobeFrame.md), [GridCheck](GridCheck.md), [GridConversion](GridConversion.md), [GridOffers](GridOffers.md), [HarbourRenders](HarbourRenders.md), [HydroCheck](HydroCheck.md), [HydroSites](HydroSites.md), [IslandNetCheck](IslandNetCheck.md), [IslandRailCheck](IslandRailCheck.md), [LandCheck](LandCheck.md), [LandClassCheck](LandClassCheck.md), [LandClassView](LandClassView.md), [LandConversion](LandConversion.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LandMarket](LandMarket.md), [LandNationsCheck](LandNationsCheck.md), [LandParcel](LandParcel.md), [LandScreen](LandScreen.md), [LandSellers](LandSellers.md), [LandmassCheck](LandmassCheck.md), [Landmasses](Landmasses.md), [LegacyLand](LegacyLand.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [MaterialsCheck](MaterialsCheck.md), [MiniMapFrame](MiniMapFrame.md), [MiningCheck](MiningCheck.md), [NewGameCheck](NewGameCheck.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [PortCheck](PortCheck.md), [QuarryingCheck](QuarryingCheck.md), [ReadPathCheck](ReadPathCheck.md), [RunRenders](RunRenders.md), [RunWorksCheck](RunWorksCheck.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md), [SlopeCheck](SlopeCheck.md), [SlopeRenders](SlopeRenders.md), [WaterCheck](WaterCheck.md), [WorldCheck](WorldCheck.md)
 
 ## Sections
 
@@ -74,12 +74,12 @@
 |---:|---|
 | 127 | THE STATE |
 | 173 | FOUNDING: A NEW CITY'S CENTRE OF WHOLE BLOCKS |
-| 396 | A CENTRE CONVERTED OR DRAWN AGAIN (LandConversion, GridConversion) |
-| 496 | WHAT IT IS |
-| 644 | THE FIELDS ON A PIECE OF GROUND (spec-land star 12; spec-grid 2.6) |
-| 864 | · the ground by type (0.7.110, batch I1; docs/studies/spec-materials.md 2.4) |
-| 987 | THE GROUND AN OFFER HOLDS: EXACT AT EVERY SIZE (spec-grid star 8) |
-| 1143 | SAVE AND RESTORE (DataSave's landCentre, landCentreRects, landHoldings, |
+| 429 | A CENTRE CONVERTED OR DRAWN AGAIN (LandConversion, GridConversion) |
+| 529 | WHAT IT IS |
+| 677 | THE FIELDS ON A PIECE OF GROUND (spec-land star 12; spec-grid 2.6) |
+| 897 | · the ground by type (0.7.110, batch I1; docs/studies/spec-materials.md 2.4) |
+| 1020 | THE GROUND AN OFFER HOLDS: EXACT AT EVERY SIZE (spec-grid star 8) |
+| 1176 | SAVE AND RESTORE (DataSave's landCentre, landCentreRects, landHoldings, |
 
 ## Constants
 
@@ -101,17 +101,19 @@
 | 119 | `CityLand.RELIEF_SHALLOW` | `World.RELIEFS` | ...and its shallow sea (World.SHALLOW), a part of its SEA. |
 | 122 | `CityLand.RELIEF_AREAS` | `World.RELIEFS + 1` | How many figures a relief record keeps: flat, foothill, steep, very steep and shallow sea, 5 - the width of landCentreRelief and of a row of landHoldingsRelief and landOffersRelief. |
 | 125 | `CityLand.CENTRE` | `0` | The centre's holding on the grid: 0; the k-th purchase is holding k. |
-| 219 | `CityLand.FRESH_REACH` | `(long) Math.ceil(World.RIVER_LAKE_NEAR + World.RIVER_LAKE_SPAN + World.LAKE_R...` | How far the founding takes blocks for its fresh water, in plots from the site, L-infinity: the founding lake's far shore at the most (World.RIVER_LAKE_NEAR + RIVER_LAKE_SPAN + LAKE_R_MIN + LAKE_R_SPAN, 107 plots, 3.2 ... |
-| 567 | `CityLand.NEW_FIELDS_FORMAT` | `36` | The first save format whose land says which holdings hold the old world's fields (oldWorldHoldings()): 36. |
-| 691 | `CityLand.EVERY_PLOT` | `(x, y) -> true` | The test that passes every plot: fieldsOn(...) without a filter is this one (WN5: LandSellers asks for one seller's fields at a time). |
-| 938 | `CityLand.CELLS_KEPT` | `256` | How many cells' fields are kept: 256 - the nine round a site for every resource, and the cells a large holding reaches. |
-| 940 | `CityLand.CELLS` | `new LinkedHashMap<>(64, 0.75f, true) { @ Override protected boolean removeEld...` |  |
-| 1005 | `CityLand.TILE_COUNTS_KEPT` | `65_536` | Tiles' counts kept, by world and tile: 65,536 (a few megabytes) - the whole tiles an offer's count reads, which the next city on the same world's ground, or the same city drawn again, reads again. |
-| 1008 | `CityLand.PARALLEL_TILES` | `2_048` | A rectangle of this many tiles or more is counted over the machine's cores: 2,048 (about an eighth of a second's reading on one core). |
-| 1012 | `CityLand.TILE_COUNTS` | `new LinkedHashMap<>(1024, 0.75f, true) { @ Override protected boolean removeE...` |  |
-| 1022 | `CityLand.WIDE` | `World.CLASSES + RELIEF_AREAS` | How wide a count of plots is (ET1): World.CLASSES plots by class, then RELIEF_AREAS more - the dry plots by relief (World.dry() classes, FLAT to VERY_STEEP) and the shallow sea's (SHALLOW), counted in the same pass. |
-| 1165 | `CityLand.CENTRE_FIELDS` | `AREAS + 2 * KINDS + 3 + 2` | How wide the centre's record is: 24 (spec-grid 3, M3; 25 with a half-side before, format 31). |
-| 1168 | `CityLand.RECT_FIELDS` | `4` | How wide a centre rectangle's record is: x0, y0, x1, y1 - its plots, half-open. |
+| 239 | `CityLand.FRESH_REACH` | `(long) Math.ceil(World.RIVER_LAKE_NEAR + World.RIVER_LAKE_SPAN + World.LAKE_R...` | How far the founding takes blocks for its fresh water, in plots from the site, L-infinity: the founding lake's far shore at the most (World.RIVER_LAKE_NEAR + RIVER_LAKE_SPAN + LAKE_R_MIN + LAKE_R_SPAN, 107 plots, 3.2 ... |
+| 243 | `CityLand.FRESH_PATCH` | `3` | The founding's water is one patch within this many blocks of the block it starts from, L-infinity (a 7 x 7 square, 840 m at the default level), so it is never a strip along a river (LM1, Jerus's Stockholm city). |
+| 295 | `CityLand.NEARER` | `java.util.Comparator.comparingDouble(Block : : near).thenComparingLong(Block ...` | The order the founding's blocks come in: the nearer the lake's centre, then north first, then west first. |
+| 600 | `CityLand.NEW_FIELDS_FORMAT` | `36` | The first save format whose land says which holdings hold the old world's fields (oldWorldHoldings()): 36. |
+| 724 | `CityLand.EVERY_PLOT` | `(x, y) -> true` | The test that passes every plot: fieldsOn(...) without a filter is this one (WN5: LandSellers asks for one seller's fields at a time). |
+| 971 | `CityLand.CELLS_KEPT` | `256` | How many cells' fields are kept: 256 - the nine round a site for every resource, and the cells a large holding reaches. |
+| 973 | `CityLand.CELLS` | `new LinkedHashMap<>(64, 0.75f, true) { @ Override protected boolean removeEld...` |  |
+| 1038 | `CityLand.TILE_COUNTS_KEPT` | `65_536` | Tiles' counts kept, by world and tile: 65,536 (a few megabytes) - the whole tiles an offer's count reads, which the next city on the same world's ground, or the same city drawn again, reads again. |
+| 1041 | `CityLand.PARALLEL_TILES` | `2_048` | A rectangle of this many tiles or more is counted over the machine's cores: 2,048 (about an eighth of a second's reading on one core). |
+| 1045 | `CityLand.TILE_COUNTS` | `new LinkedHashMap<>(1024, 0.75f, true) { @ Override protected boolean removeE...` |  |
+| 1055 | `CityLand.WIDE` | `World.CLASSES + RELIEF_AREAS` | How wide a count of plots is (ET1): World.CLASSES plots by class, then RELIEF_AREAS more - the dry plots by relief (World.dry() classes, FLAT to VERY_STEEP) and the shallow sea's (SHALLOW), counted in the same pass. |
+| 1198 | `CityLand.CENTRE_FIELDS` | `AREAS + 2 * KINDS + 3 + 2` | How wide the centre's record is: 24 (spec-grid 3, M3; 25 with a half-side before, format 31). |
+| 1201 | `CityLand.RECT_FIELDS` | `4` | How wide a centre rectangle's record is: x0, y0, x1, y1 - its plots, half-open. |
 
 ## Fields (state)
 
@@ -142,7 +144,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 74 | 1239 | **type** `public final class CityLand` | The city's land on the world: whole blocks of a grid lined up with the world - the centre it was founded or converted with, and every purchase since, each a rectangle of blocks - and what all of it holds: its area dry... |
+| 74 | 1272 | **type** `public final class CityLand` | The city's land on the world: whole blocks of a grid lined up with the world - the centre it was founded or converted with, and every purchase since, each a rectangle of blocks - and what all of it holds: its area dry... |
 
 ### THE STATE (lines 127-172)
 
@@ -152,138 +154,140 @@
 | 164 | 1 | **type** `record FieldKey(int kind, int cell, int index)` | A field by its kind, the world cell it was drawn in and its index there. |
 | 166 | 6 | `private CityLand(World.Key key, long siteX, long siteY)` |  |
 
-### FOUNDING: A NEW CITY'S CENTRE OF WHOLE BLOCKS (lines 173-395)
+### FOUNDING: A NEW CITY'S CENTRE OF WHOLE BLOCKS (lines 173-428)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 188 | 3 | `public static CityLand found(World world, long x, long y, double dryKm2)` | A city's land at founding (spec-grid 2.1, 3): round the site (x, y), L-infinity rings of whole blocks of the level dryKm2 makes (LandGrid.levelFor() of its plots) round the site's block - each ring's north row west to... |
-| 223 | 24 | `public static CityLand found(World world, long x, long y, double dryKm2, double freshKm2)` | A city's land at founding with at least freshKm2 of lake and river in its centre as well (0.7.106): the rings, then the lake - see above. |
-| 249 | 66 | `private void takeFresh(World world, int level, long x, long y, double freshKm2)` | The founding's water (0.7.106): blocks of `level` added to the centre from the founding lake until its fresh plots reach freshKm2 rounded up to a whole plot - see ...AND THE FRESH WATER ONE PLANT NEEDS. |
-| 317 | 3 | `private static boolean within(long bx, long by, long sbx, long sby, long reach, long last)` | Whether block (bx, by) is on the world and within `reach` blocks of the site's, L-infinity. |
-| 322 | 3 | `private static double fromLake(long bx, long by, long b, double lx, double ly)` | How far block (bx, by)'s middle lies from the lake's centre (lx, ly), in plots. |
-| 327 | 1 | `private static long blockKey(long bx, long by)` | A block's key: its column in the high half, its row in the low. |
-| 330 | 6 | `private static boolean before(double near, long by, long bx, double otherNear, long other)` | Whether a block (near, by, bx) comes before another's key at `otherNear`: the nearer, then north first, then west first. |
-| 338 | 18 | `private static long freshPlots(World world, Map<Long, byte[]> tiles, Map<Long, Long> fresh, long k, long b)` | The fresh plots of block k, `b` plots a side, read a tile at a time and kept. |
-| 358 | 15 | `private static long dryPlots(World world, byte[] t, long x0, long y0, long b)` | The dry plots of a square of `b` plots at (x0, y0), read a tile at a time. |
-| 375 | 20 | `private void drawnBooks(World world)` | The centre's books from its plots drawn (GridConversion.drawnClasses()), and every field whose centre plot is on it, whole. |
+| 189 | 3 | `public static CityLand found(World world, long x, long y, double dryKm2)` | A city's land at founding (spec-grid 2.1, 3): round the site (x, y), L-infinity rings of whole blocks of the level dryKm2 makes (LandGrid.levelFor() of its plots) round the site's block - each ring's north row west to... |
+| 246 | 24 | `public static CityLand found(World world, long x, long y, double dryKm2, double freshKm2)` | A city's land at founding with at least freshKm2 of lake and river in its centre as well (0.7.106): the rings, then the water as one patch (LM1) - see above. |
+| 272 | 16 | `private void takeFresh(World world, int level, long x, long y, double freshKm2)` | The founding's water (0.7.106, one patch since LM1): blocks of `level` added to the centre from the founding lake until its fresh plots reach freshKm2 rounded up to a whole plot - see ...AND THE FRESH WATER ONE PLANT ... |
+| 290 | 3 | **type** `private record Block(long bx, long by, double near, long fresh)` | A block with its distance from the lake's centre and its fresh plots, for freshPatch(). |
+| 291 | 1 | `long key()` _(in CityLand.Block)_ |  |
+| 311 | 45 | `static List<Long> freshPatch(java.util.function.LongBinaryOperator freshOf, java.util.Set<Long> owned, long sbx, long sby, long...` | The founding's water as one patch (LM1; see ...AND THE FRESH WATER ONE PLANT NEEDS): the keys of the blocks it takes, in the order taken. |
+| 358 | 3 | `private static boolean within(long bx, long by, long sbx, long sby, long reach, long last)` | Whether block (bx, by) is on the world and within `reach` blocks of the site's, L-infinity. |
+| 363 | 3 | `private static double fromLake(long bx, long by, long b, double lx, double ly)` | How far block (bx, by)'s middle lies from the lake's centre (lx, ly), in plots. |
+| 368 | 1 | `static long blockKey(long bx, long by)` | A block's key: its column in the high half, its row in the low. |
+| 371 | 18 | `private static long freshPlots(World world, Map<Long, byte[]> tiles, Map<Long, Long> fresh, long k, long b)` | The fresh plots of block k, `b` plots a side, read a tile at a time and kept. |
+| 391 | 15 | `private static long dryPlots(World world, byte[] t, long x0, long y0, long b)` | The dry plots of a square of `b` plots at (x0, y0), read a tile at a time. |
+| 408 | 20 | `private void drawnBooks(World world)` | The centre's books from its plots drawn (GridConversion.drawnClasses()), and every field whose centre plot is on it, whole. |
 
-### A CENTRE CONVERTED OR DRAWN AGAIN (LandConversion, GridConversion) (lines 396-495)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 401 | 8 | `static CityLand converted(long seed, GridConversion.Result r, double[][] history)` | A city's land whose centre is a converted holding (spec-grid 2.6): its blocks, books, sites, amounts, legacy field and part fields; nothing bought since; `history` the save's purchase records, kept as they were. |
-| 411 | 4 | `void redraw(GridConversion.Result r)` | Draws the centre again from a conversion's result round the same site - a restatement - and folds every purchase into it: the same object, so the map and the office bound to it see the land drawn again (centreStamp()). |
-| 416 | 21 | `private void take(GridConversion.Result r)` |  |
-| 438 | 4 | `private void addPart(GridConversion.PartField p)` |  |
-| 444 | 5 | `void setPurchaseRelief(int k, double[] relief)` | Sets one purchase's ground by relief by fiat (ET1): the k-th, from 0, its offer kept but for RELIEF_AREAS figures in square kilometres - a fixture's hills; a row of another width reads it flat, as a save's does. |
-| 451 | 5 | `void setCentreRelief(double[] relief)` | Sets the centre's ground by relief by fiat (ET1): a fixture's hills - RELIEF_AREAS figures in square kilometres, ignored when of another width. |
-| 458 | 5 | `void setCentre(Resource r, int sites, double amount)` | Sets what the centre holds of one resource - a restatement keeping the city's, or a fixture's ore (LandManager.restoreSites()). |
-| 465 | 9 | `private void recount()` | Adds the totals up again, in acquisition order. |
-| 475 | 8 | `private void add(LandParcel o)` |  |
-| 490 | 5 | `public void extend(LandParcel offer, int month, double paidLocal)` | Buys an offer: its rectangle's plots no holding owns are claimed for the next holding (LandGrid.fill()), and the purchase is kept, after every one before it. |
-
-### WHAT IT IS (lines 496-643)
+### A CENTRE CONVERTED OR DRAWN AGAIN (LandConversion, GridConversion) (lines 429-528)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 501 | 1 | `public long seed()` | The seed of the world it lies on. |
-| 503 | 1 | `public World.Key key()` | The key of the world it lies on (0.7.115): World.of(key()) is its ground. |
-| 506 | 1 | `public long siteX()` | The founding site, as a plot: east from the world's west edge... |
-| 509 | 1 | `public long siteY()` | ...and south from its north edge. |
-| 512 | 1 | `public LandGrid grid()` | The ground on the grid: which holding owns each plot. |
-| 515 | 1 | `public int level()` | The city's block level: LandGrid.levelFor() of every plot it owns (spec-grid star 2). |
-| 518 | 1 | `public List<LandGrid.Fill> centreRects()` | The centre's blocks, as rectangles for holding 0, in the order drawn. |
-| 521 | 1 | `public double centreKm2(int area)` | One of the centre's areas, in square kilometres (TOTAL, DRY, FRESH, SEA or FOREST). |
-| 524 | 1 | `public double centreReliefKm2(int relief)` | The centre's dry ground by relief, or its shallow sea, in square kilometres (RELIEF_FLAT, RELIEF_FOOTHILL, RELIEF_STEEP, RELIEF_VERY_STEEP; RELIEF_SHALLOW): the four reliefs add up to centreKm2(DRY). |
-| 527 | 1 | `public int centreSites(Resource r)` | The centre's sites of a resource. |
-| 530 | 1 | `public double centreAmount(Resource r)` | The centre's amount of a resource, in its unit. |
-| 533 | 1 | `public long legacyX()` | A converted centre's legacy iron field: its plot east, -1 when there is none... |
-| 536 | 1 | `public long legacyY()` | ...south... |
-| 539 | 1 | `public int legacySites()` | ...and its sites. |
-| 542 | 1 | `public List<Purchase> purchases()` | The purchases, in the order they were made. |
-| 545 | 1 | `public List<GridConversion.PartField> partFields()` | The fields the city holds only part of, a converted 0.7.58-0.7.63 save's (spec-grid 2.6). |
-| 556 | 1 | `public int oldWorldHoldings()` | THE OLD WORLD'S GROUND (0.7.99, batch W1): how many holdings - the centre, then the purchases after it in the order made - hold the fields the world had to 0.7.98 (World.legacyFieldsInCell()). |
-| 559 | 1 | `public boolean onOldWorld(int holding)` | Whether a holding (0 the centre, k the k-th purchase; -1 none) holds the old world's fields. |
-| 562 | 3 | `void setOldWorldHoldings(int holdings)` | Sets how many holdings hold the old world's fields, 0 to every holding the city has: a load's (Game). |
-| 570 | 1 | `public double[][] convertedHistory()` | A converted city's purchase records as its save had them (LegacyLand's 28-wide rows), kept as history; null for a city founded on the grid. |
-| 573 | 1 | `public double totalKm2(int area)` | One of the whole city's areas, centre and purchases, in square kilometres. |
-| 576 | 1 | `public double totalReliefKm2(int relief)` | ...and one of the whole city's reliefs, or its shallow sea: the four reliefs add up to totalKm2(DRY). |
-| 579 | 1 | `public long totalSites(Resource r)` | The whole city's sites of a resource. |
-| 582 | 1 | `public double totalAmount(Resource r)` | The whole city's amount of a resource, as listed: O, what conservation counts the city's (spec-land 2.1). |
-| 585 | 1 | `public long purchasedSites(Resource r)` | What the purchases alone hold of a resource's sites. |
-| 588 | 5 | `public double purchasedAmount(Resource r)` | ...and of its amount. |
-| 595 | 6 | `public double[] amountsInOrder(Resource r)` | What each holding listed of a resource, in acquisition order: the centre first, then each purchase - the order it is worked out in. |
-| 603 | 6 | `public long[] sitesInOrder(Resource r)` | ...and each holding's sites of it, in the same order (0.7.79). |
-| 611 | 1 | `public static String sideName(int side)` | A side's name: North, East, South or West. |
-| 614 | 1 | `public int holdingOf(long x, long y)` | The holding owning plot (x, y): 0 the centre, k the k-th purchase, -1 none. |
-| 617 | 1 | `public boolean ownsPlot(long x, long y)` | Whether the city owns a plot. |
-| 620 | 3 | `public boolean owns(double dx, double dy)` | Whether the city owns the point (dx, dy) from the site plot's centre: the plot it lies in. |
-| 625 | 5 | `public long centreStamp()` | The stamp of the centre's blocks: what a map tells a restatement by (CityMap.syncLand()). |
-| 632 | 1 | `public long stamp()` | The stamp of all its ground: the centre's blocks, then every purchase's rectangle, in order (the sidecar's land stamp, spec-grid 2.4). |
-| 635 | 8 | `public long stamp(int n)` | ...of the centre and its first n purchases: the ground a map has measured when it has seen n of them. |
+| 434 | 8 | `static CityLand converted(long seed, GridConversion.Result r, double[][] history)` | A city's land whose centre is a converted holding (spec-grid 2.6): its blocks, books, sites, amounts, legacy field and part fields; nothing bought since; `history` the save's purchase records, kept as they were. |
+| 444 | 4 | `void redraw(GridConversion.Result r)` | Draws the centre again from a conversion's result round the same site - a restatement - and folds every purchase into it: the same object, so the map and the office bound to it see the land drawn again (centreStamp()). |
+| 449 | 21 | `private void take(GridConversion.Result r)` |  |
+| 471 | 4 | `private void addPart(GridConversion.PartField p)` |  |
+| 477 | 5 | `void setPurchaseRelief(int k, double[] relief)` | Sets one purchase's ground by relief by fiat (ET1): the k-th, from 0, its offer kept but for RELIEF_AREAS figures in square kilometres - a fixture's hills; a row of another width reads it flat, as a save's does. |
+| 484 | 5 | `void setCentreRelief(double[] relief)` | Sets the centre's ground by relief by fiat (ET1): a fixture's hills - RELIEF_AREAS figures in square kilometres, ignored when of another width. |
+| 491 | 5 | `void setCentre(Resource r, int sites, double amount)` | Sets what the centre holds of one resource - a restatement keeping the city's, or a fixture's ore (LandManager.restoreSites()). |
+| 498 | 9 | `private void recount()` | Adds the totals up again, in acquisition order. |
+| 508 | 8 | `private void add(LandParcel o)` |  |
+| 523 | 5 | `public void extend(LandParcel offer, int month, double paidLocal)` | Buys an offer: its rectangle's plots no holding owns are claimed for the next holding (LandGrid.fill()), and the purchase is kept, after every one before it. |
 
-### THE FIELDS ON A PIECE OF GROUND (spec-land star 12; spec-grid 2.6) (lines 644-863)
+### WHAT IT IS (lines 529-676)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 649 | 1 | `public boolean isPart(Deposit d)` | Whether a field is one the city holds only part of. |
-| 652 | 3 | `GridConversion.PartField partOf(Deposit d)` | The part field record of a field, or null when the city does not hold it in part. |
-| 663 | 9 | `public int siteHolding(Deposit d, int k)` | The holding a field's k-th site is the city's by, or -1: a whole field's holding is the one whose ground holds its centre plot; a part field's site is the converted centre's when the save held it, else the holding who... |
-| 680 | 3 | `void fieldsOn(long x0, long y0, long x1, long y1, int[] sites, double[] amounts)` | What the plots of [x0, x1) x [y0, y1) no holding owns hold of the fields (spec-land star 12): every field whose centre plot is one of them, whole, and each site there of a field the city holds in part (its share, Depo... |
-| 686 | 3 | **type** `interface PlotTest` | A test of one plot, by its plot coordinates: fieldsOn()'s filter, for the fields whose centre or site plot is one the test passes. |
-| 687 | 1 | `boolean passes(long x, long y)` _(in CityLand.PlotTest)_ |  |
-| 697 | 27 | `void fieldsOn(long x0, long y0, long x1, long y1, PlotTest keep, int[] sites, double[] amounts)` | ...of the fields whose centre plot passes `keep` (a whole field), and the part field's sites whose plot passes it - fieldsOn()'s own arithmetic with a filter (WN5: the land office splits an offer's fields by the natio... |
-| 735 | 29 | `public void fieldsOnByType(long x0, long y0, long x1, long y1, Resource r, long[] sites, double[] amounts)` | ...and fieldsOn()'s twin by type (0.7.142, batch I13; I1's note): what the plots of [x0, x1) x [y0, y1) no holding owns hold of one resource's fields, split by each field's type (Deposit.type()) in Resource.typesOf()'... |
-| 773 | 30 | `public java.util.List<int[]> fieldSitesOn(LandParcel p, Resource r)` | ...and field by field (0.7.142): each field of a resource an offer's ground holds, by fieldsOn()'s rules and in its order - {its type's index in Resource.typesOf(), its sites there} - a whole field all its sites, a fi... |
-| 805 | 7 | `public long[] sitesOnByType(LandParcel p, Resource r)` | ...an offer's (0.7.142): its rectangle's sites of each of a resource's types, in Resource.typesOf()'s order. |
-| 814 | 1 | **type** `public record Held(Deposit field, int sites, double amount)` | A field the city holds, and how much of it: every site and all its amount of a whole field, the sites a holding has of a part field. |
-| 827 | 36 | `public List<List<Held>> heldFields(Resource r)` | The fields of a resource the city holds, holding by holding in acquisition order - the centre first, then each purchase (0.7.79, batch O3): each whole field in the holding whose ground holds its centre plot (in the wo... |
+| 534 | 1 | `public long seed()` | The seed of the world it lies on. |
+| 536 | 1 | `public World.Key key()` | The key of the world it lies on (0.7.115): World.of(key()) is its ground. |
+| 539 | 1 | `public long siteX()` | The founding site, as a plot: east from the world's west edge... |
+| 542 | 1 | `public long siteY()` | ...and south from its north edge. |
+| 545 | 1 | `public LandGrid grid()` | The ground on the grid: which holding owns each plot. |
+| 548 | 1 | `public int level()` | The city's block level: LandGrid.levelFor() of every plot it owns (spec-grid star 2). |
+| 551 | 1 | `public List<LandGrid.Fill> centreRects()` | The centre's blocks, as rectangles for holding 0, in the order drawn. |
+| 554 | 1 | `public double centreKm2(int area)` | One of the centre's areas, in square kilometres (TOTAL, DRY, FRESH, SEA or FOREST). |
+| 557 | 1 | `public double centreReliefKm2(int relief)` | The centre's dry ground by relief, or its shallow sea, in square kilometres (RELIEF_FLAT, RELIEF_FOOTHILL, RELIEF_STEEP, RELIEF_VERY_STEEP; RELIEF_SHALLOW): the four reliefs add up to centreKm2(DRY). |
+| 560 | 1 | `public int centreSites(Resource r)` | The centre's sites of a resource. |
+| 563 | 1 | `public double centreAmount(Resource r)` | The centre's amount of a resource, in its unit. |
+| 566 | 1 | `public long legacyX()` | A converted centre's legacy iron field: its plot east, -1 when there is none... |
+| 569 | 1 | `public long legacyY()` | ...south... |
+| 572 | 1 | `public int legacySites()` | ...and its sites. |
+| 575 | 1 | `public List<Purchase> purchases()` | The purchases, in the order they were made. |
+| 578 | 1 | `public List<GridConversion.PartField> partFields()` | The fields the city holds only part of, a converted 0.7.58-0.7.63 save's (spec-grid 2.6). |
+| 589 | 1 | `public int oldWorldHoldings()` | THE OLD WORLD'S GROUND (0.7.99, batch W1): how many holdings - the centre, then the purchases after it in the order made - hold the fields the world had to 0.7.98 (World.legacyFieldsInCell()). |
+| 592 | 1 | `public boolean onOldWorld(int holding)` | Whether a holding (0 the centre, k the k-th purchase; -1 none) holds the old world's fields. |
+| 595 | 3 | `void setOldWorldHoldings(int holdings)` | Sets how many holdings hold the old world's fields, 0 to every holding the city has: a load's (Game). |
+| 603 | 1 | `public double[][] convertedHistory()` | A converted city's purchase records as its save had them (LegacyLand's 28-wide rows), kept as history; null for a city founded on the grid. |
+| 606 | 1 | `public double totalKm2(int area)` | One of the whole city's areas, centre and purchases, in square kilometres. |
+| 609 | 1 | `public double totalReliefKm2(int relief)` | ...and one of the whole city's reliefs, or its shallow sea: the four reliefs add up to totalKm2(DRY). |
+| 612 | 1 | `public long totalSites(Resource r)` | The whole city's sites of a resource. |
+| 615 | 1 | `public double totalAmount(Resource r)` | The whole city's amount of a resource, as listed: O, what conservation counts the city's (spec-land 2.1). |
+| 618 | 1 | `public long purchasedSites(Resource r)` | What the purchases alone hold of a resource's sites. |
+| 621 | 5 | `public double purchasedAmount(Resource r)` | ...and of its amount. |
+| 628 | 6 | `public double[] amountsInOrder(Resource r)` | What each holding listed of a resource, in acquisition order: the centre first, then each purchase - the order it is worked out in. |
+| 636 | 6 | `public long[] sitesInOrder(Resource r)` | ...and each holding's sites of it, in the same order (0.7.79). |
+| 644 | 1 | `public static String sideName(int side)` | A side's name: North, East, South or West. |
+| 647 | 1 | `public int holdingOf(long x, long y)` | The holding owning plot (x, y): 0 the centre, k the k-th purchase, -1 none. |
+| 650 | 1 | `public boolean ownsPlot(long x, long y)` | Whether the city owns a plot. |
+| 653 | 3 | `public boolean owns(double dx, double dy)` | Whether the city owns the point (dx, dy) from the site plot's centre: the plot it lies in. |
+| 658 | 5 | `public long centreStamp()` | The stamp of the centre's blocks: what a map tells a restatement by (CityMap.syncLand()). |
+| 665 | 1 | `public long stamp()` | The stamp of all its ground: the centre's blocks, then every purchase's rectangle, in order (the sidecar's land stamp, spec-grid 2.4). |
+| 668 | 8 | `public long stamp(int n)` | ...of the centre and its first n purchases: the ground a map has measured when it has seen n of them. |
 
-### the ground by type (0.7.110, batch I1; docs/studies/spec-materials.md 2.4) (lines 864-986)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 872 | 1 | **type** `public record Piece(int holding, Deposit field, Deposit.FieldType type, int sites, double amount)` | A piece of a resource's ground as a holding listed it, of one type: a field it holds (`field`), or with `field` null what it listed past its fields - ground by fiat (setCentre()), or a converted centre's legacy field ... |
-| 885 | 24 | `public List<Piece> typedPieces(Resource r)` | The city's ground of a resource piece by piece, in the order it is worked out (0.7.110): each holding in acquisition order, its fields as heldFields() lists them, each as far as what the holding listed goes (sites and... |
-| 911 | 6 | `public long[] sitesByType(Resource r)` | The city's sites of a resource by type, in Resource.typesOf()'s order (0.7.110): its pieces' (typedPieces()), so they add up to totalSites(r) exactly. |
-| 919 | 4 | `static Deposit fieldOf(World world, GridConversion.PartField p)` | The world's field a part field record names, or null: the old world's (a part field is a 0.7.58-0.7.63 save's, converted). |
-| 925 | 9 | `static int[] cellsUnder(double bx0, double by0, double bx1, double by1)` | The world cells under a box of plots, clipped to the world, row by row. |
-| 935 | 1 | **type** `private record CellKey(World.Key world, int cell, Resource kind, boolean legacy)` |  |
-| 947 | 3 | `static List<Deposit> fields(World world, int cell, Resource r)` | A cell's fields of a resource (World.fieldsInCell()), kept: drawing them places every field again, and the offers of one city ask for the same few cells. |
-| 952 | 3 | `static List<Deposit> legacyFields(World world, int cell, Resource r)` | ...and the old world's (World.legacyFieldsInCell(), to 0.7.98), kept the same way: what an older save's ground holds, and its conversion reads. |
-| 956 | 10 | `private static List<Deposit> kept(World world, int cell, Resource r, boolean legacy)` |  |
-| 977 | 9 | `public List<Deposit> fieldsIn(int cell, Resource r)` | A cell's fields of a resource as this city sees them (0.7.99, batch W1): the world's (fields()), but on ground held under the old world - the holdings an older save brought with it, oldWorldHoldings() - the fields tha... |
-
-### THE GROUND AN OFFER HOLDS: EXACT AT EVERY SIZE (spec-grid star 8) (lines 987-1142)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1010 | 1 | **type** `private record TileKey(World.Key world, long tx, long ty)` |  |
-| 1029 | 6 | `static void tally(byte[] t, byte[] r, int at, long[] cls, long[] relief, int from)` | Counts one plot: its class into `cls`, then - on dry ground - its relief into relief[from + relief], or - on the shallow sea - into relief[from + RELIEF_SHALLOW]. |
-| 1037 | 14 | `static long[] tileCounts(World world, long tx, long ty)` | A whole tile's plots by World's classes, and its dry ground by relief and shallow sea after them (WIDE), kept. |
-| 1053 | 3 | `public double[] groundOf(long x0, long y0, long x1, long y1)` | The five areas, in square kilometres, of the plots of [x0, x1) x [y0, y1) no holding owns, each counted by its class. |
-| 1058 | 1 | **type** `public record Ground(double[] km2, double[] relief)` | What a rectangle's unowned plots hold: the five areas (groundOf()) and the dry ground by relief with the shallow sea (RELIEF_FLAT to RELIEF_SHALLOW), in square kilometres, counted plot by plot in one pass. |
-| 1061 | 4 | `public Ground groundWithRelief(long x0, long y0, long x1, long y1)` | The five areas and the relief of the plots of [x0, x1) x [y0, y1) no holding owns (ET1, spec-earth2-terrain 3.3): groundOf() and what it splits, from the same plots. |
-| 1067 | 5 | `static double[] reliefKm2(long[] counts, int from)` | A count's relief plots from index `from` on (RELIEF_AREAS of them), in square kilometres. |
-| 1074 | 3 | `long[] unownedClasses(long x0, long y0, long x1, long y1)` | ...as plots by World's classes (GRASS, FOREST, FRESH, SALT, SAND, and on Earth since 0.7.127 ICE and DESERT and since ET1 SHALLOW), World.CLASSES of them. |
-| 1079 | 26 | `long[] unownedCounts(long x0, long y0, long x1, long y1)` | ...and the same count with the dry ground's relief and the shallow sea after the classes (WIDE of them, ET1). |
-| 1107 | 35 | `private long[] rowClasses(World world, long ty, long tx0, long tx1, long x0, long y0, long x1, long y1)` | One row of tiles' unowned plots of the rectangle, by class and by relief (WIDE). |
-
-### SAVE AND RESTORE (DataSave's landCentre, landCentreRects, landHoldings, (lines 1143-1312)
+### THE FIELDS ON A PIECE OF GROUND (spec-land star 12; spec-grid 2.6) (lines 677-896)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1150 | 13 | `public double[] centreState()` | The centre's record: its five areas, its sites and amounts, the legacy field's plot and sites, and the site's plot - CENTRE_FIELDS doubles. |
-| 1171 | 8 | `public double[][] centreRectsState()` | The centre's blocks, a record each: {x0, y0, x1, y1}. |
-| 1181 | 8 | `public double[][] holdingsState()` | The purchases, one record each in the order they were made (LandParcel.purchaseRow(), 31 wide). |
-| 1195 | 1 | `public double[] centreReliefState()` | The centre's dry ground by relief and its shallow sea (ET1, spec-earth2-terrain 3.3), RELIEF_AREAS km2 in the order RELIEF_FLAT to RELIEF_SHALLOW: DataSave's landCentreRelief, a key of its own beside landCentre (a wid... |
-| 1198 | 5 | `public double[][] holdingsReliefState()` | The purchases' relief, a record each in the order they were made (LandParcel.reliefRow(), RELIEF_AREAS wide): landHoldingsRelief, parallel to holdingsState(). |
-| 1205 | 13 | `public double[][] partFieldsState()` | The fields held in part, a record each: {kind, cell, index, then each owned site's index}. |
-| 1220 | 1 | `public double[][] convertedState()` | A converted city's purchase history (convertedHistory()), or null. |
-| 1230 | 4 | `public static CityLand restore(long seed, double[] centre, double[][] rects, double[][] holdings, double[][] partRows, double[]...` | A city's land as saved (format 32): its centre's record (CENTRE_FIELDS wide), its blocks, its holdings, its part fields and its history. |
-| 1236 | 4 | `public static CityLand restore(World.Key key, double[] centre, double[][] rects, double[][] holdings, double[][] partRows, doub...` | ...on the world a key names (0.7.115): since 0.7.121 an Earth city's, its save's kind, spot and data (Founding.getWorldKey()). |
-| 1247 | 42 | `public static CityLand restore(World.Key key, double[] centre, double[][] rects, double[][] holdings, double[][] partRows, doub...` | ...with the ground by relief a save kept beside them (ET1, spec-earth2-terrain 3.3; DataSave's landCentreRelief and landHoldingsRelief): the centre's RELIEF_AREAS figures, and a row of them for each row of `holdings`,... |
-| 1291 | 6 | `public CityLand copy()` | A copy, field for field: restore() of its own records and its old world's holdings - what the map's draft is drawn on (Game.MapDraft). |
-| 1299 | 7 | `public boolean same(CityLand o)` | Whether two cities' land is the same, field for field. |
-| 1307 | 5 | `private static double[][] deepCopy(double[][] rows)` |  |
+| 682 | 1 | `public boolean isPart(Deposit d)` | Whether a field is one the city holds only part of. |
+| 685 | 3 | `GridConversion.PartField partOf(Deposit d)` | The part field record of a field, or null when the city does not hold it in part. |
+| 696 | 9 | `public int siteHolding(Deposit d, int k)` | The holding a field's k-th site is the city's by, or -1: a whole field's holding is the one whose ground holds its centre plot; a part field's site is the converted centre's when the save held it, else the holding who... |
+| 713 | 3 | `void fieldsOn(long x0, long y0, long x1, long y1, int[] sites, double[] amounts)` | What the plots of [x0, x1) x [y0, y1) no holding owns hold of the fields (spec-land star 12): every field whose centre plot is one of them, whole, and each site there of a field the city holds in part (its share, Depo... |
+| 719 | 3 | **type** `interface PlotTest` | A test of one plot, by its plot coordinates: fieldsOn()'s filter, for the fields whose centre or site plot is one the test passes. |
+| 720 | 1 | `boolean passes(long x, long y)` _(in CityLand.PlotTest)_ |  |
+| 730 | 27 | `void fieldsOn(long x0, long y0, long x1, long y1, PlotTest keep, int[] sites, double[] amounts)` | ...of the fields whose centre plot passes `keep` (a whole field), and the part field's sites whose plot passes it - fieldsOn()'s own arithmetic with a filter (WN5: the land office splits an offer's fields by the natio... |
+| 768 | 29 | `public void fieldsOnByType(long x0, long y0, long x1, long y1, Resource r, long[] sites, double[] amounts)` | ...and fieldsOn()'s twin by type (0.7.142, batch I13; I1's note): what the plots of [x0, x1) x [y0, y1) no holding owns hold of one resource's fields, split by each field's type (Deposit.type()) in Resource.typesOf()'... |
+| 806 | 30 | `public java.util.List<int[]> fieldSitesOn(LandParcel p, Resource r)` | ...and field by field (0.7.142): each field of a resource an offer's ground holds, by fieldsOn()'s rules and in its order - {its type's index in Resource.typesOf(), its sites there} - a whole field all its sites, a fi... |
+| 838 | 7 | `public long[] sitesOnByType(LandParcel p, Resource r)` | ...an offer's (0.7.142): its rectangle's sites of each of a resource's types, in Resource.typesOf()'s order. |
+| 847 | 1 | **type** `public record Held(Deposit field, int sites, double amount)` | A field the city holds, and how much of it: every site and all its amount of a whole field, the sites a holding has of a part field. |
+| 860 | 36 | `public List<List<Held>> heldFields(Resource r)` | The fields of a resource the city holds, holding by holding in acquisition order - the centre first, then each purchase (0.7.79, batch O3): each whole field in the holding whose ground holds its centre plot (in the wo... |
+
+### the ground by type (0.7.110, batch I1; docs/studies/spec-materials.md 2.4) (lines 897-1019)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 905 | 1 | **type** `public record Piece(int holding, Deposit field, Deposit.FieldType type, int sites, double amount)` | A piece of a resource's ground as a holding listed it, of one type: a field it holds (`field`), or with `field` null what it listed past its fields - ground by fiat (setCentre()), or a converted centre's legacy field ... |
+| 918 | 24 | `public List<Piece> typedPieces(Resource r)` | The city's ground of a resource piece by piece, in the order it is worked out (0.7.110): each holding in acquisition order, its fields as heldFields() lists them, each as far as what the holding listed goes (sites and... |
+| 944 | 6 | `public long[] sitesByType(Resource r)` | The city's sites of a resource by type, in Resource.typesOf()'s order (0.7.110): its pieces' (typedPieces()), so they add up to totalSites(r) exactly. |
+| 952 | 4 | `static Deposit fieldOf(World world, GridConversion.PartField p)` | The world's field a part field record names, or null: the old world's (a part field is a 0.7.58-0.7.63 save's, converted). |
+| 958 | 9 | `static int[] cellsUnder(double bx0, double by0, double bx1, double by1)` | The world cells under a box of plots, clipped to the world, row by row. |
+| 968 | 1 | **type** `private record CellKey(World.Key world, int cell, Resource kind, boolean legacy)` |  |
+| 980 | 3 | `static List<Deposit> fields(World world, int cell, Resource r)` | A cell's fields of a resource (World.fieldsInCell()), kept: drawing them places every field again, and the offers of one city ask for the same few cells. |
+| 985 | 3 | `static List<Deposit> legacyFields(World world, int cell, Resource r)` | ...and the old world's (World.legacyFieldsInCell(), to 0.7.98), kept the same way: what an older save's ground holds, and its conversion reads. |
+| 989 | 10 | `private static List<Deposit> kept(World world, int cell, Resource r, boolean legacy)` |  |
+| 1010 | 9 | `public List<Deposit> fieldsIn(int cell, Resource r)` | A cell's fields of a resource as this city sees them (0.7.99, batch W1): the world's (fields()), but on ground held under the old world - the holdings an older save brought with it, oldWorldHoldings() - the fields tha... |
+
+### THE GROUND AN OFFER HOLDS: EXACT AT EVERY SIZE (spec-grid star 8) (lines 1020-1175)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1043 | 1 | **type** `private record TileKey(World.Key world, long tx, long ty)` |  |
+| 1062 | 6 | `static void tally(byte[] t, byte[] r, int at, long[] cls, long[] relief, int from)` | Counts one plot: its class into `cls`, then - on dry ground - its relief into relief[from + relief], or - on the shallow sea - into relief[from + RELIEF_SHALLOW]. |
+| 1070 | 14 | `static long[] tileCounts(World world, long tx, long ty)` | A whole tile's plots by World's classes, and its dry ground by relief and shallow sea after them (WIDE), kept. |
+| 1086 | 3 | `public double[] groundOf(long x0, long y0, long x1, long y1)` | The five areas, in square kilometres, of the plots of [x0, x1) x [y0, y1) no holding owns, each counted by its class. |
+| 1091 | 1 | **type** `public record Ground(double[] km2, double[] relief)` | What a rectangle's unowned plots hold: the five areas (groundOf()) and the dry ground by relief with the shallow sea (RELIEF_FLAT to RELIEF_SHALLOW), in square kilometres, counted plot by plot in one pass. |
+| 1094 | 4 | `public Ground groundWithRelief(long x0, long y0, long x1, long y1)` | The five areas and the relief of the plots of [x0, x1) x [y0, y1) no holding owns (ET1, spec-earth2-terrain 3.3): groundOf() and what it splits, from the same plots. |
+| 1100 | 5 | `static double[] reliefKm2(long[] counts, int from)` | A count's relief plots from index `from` on (RELIEF_AREAS of them), in square kilometres. |
+| 1107 | 3 | `long[] unownedClasses(long x0, long y0, long x1, long y1)` | ...as plots by World's classes (GRASS, FOREST, FRESH, SALT, SAND, and on Earth since 0.7.127 ICE and DESERT and since ET1 SHALLOW), World.CLASSES of them. |
+| 1112 | 26 | `long[] unownedCounts(long x0, long y0, long x1, long y1)` | ...and the same count with the dry ground's relief and the shallow sea after the classes (WIDE of them, ET1). |
+| 1140 | 35 | `private long[] rowClasses(World world, long ty, long tx0, long tx1, long x0, long y0, long x1, long y1)` | One row of tiles' unowned plots of the rectangle, by class and by relief (WIDE). |
+
+### SAVE AND RESTORE (DataSave's landCentre, landCentreRects, landHoldings, (lines 1176-1345)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1183 | 13 | `public double[] centreState()` | The centre's record: its five areas, its sites and amounts, the legacy field's plot and sites, and the site's plot - CENTRE_FIELDS doubles. |
+| 1204 | 8 | `public double[][] centreRectsState()` | The centre's blocks, a record each: {x0, y0, x1, y1}. |
+| 1214 | 8 | `public double[][] holdingsState()` | The purchases, one record each in the order they were made (LandParcel.purchaseRow(), 31 wide). |
+| 1228 | 1 | `public double[] centreReliefState()` | The centre's dry ground by relief and its shallow sea (ET1, spec-earth2-terrain 3.3), RELIEF_AREAS km2 in the order RELIEF_FLAT to RELIEF_SHALLOW: DataSave's landCentreRelief, a key of its own beside landCentre (a wid... |
+| 1231 | 5 | `public double[][] holdingsReliefState()` | The purchases' relief, a record each in the order they were made (LandParcel.reliefRow(), RELIEF_AREAS wide): landHoldingsRelief, parallel to holdingsState(). |
+| 1238 | 13 | `public double[][] partFieldsState()` | The fields held in part, a record each: {kind, cell, index, then each owned site's index}. |
+| 1253 | 1 | `public double[][] convertedState()` | A converted city's purchase history (convertedHistory()), or null. |
+| 1263 | 4 | `public static CityLand restore(long seed, double[] centre, double[][] rects, double[][] holdings, double[][] partRows, double[]...` | A city's land as saved (format 32): its centre's record (CENTRE_FIELDS wide), its blocks, its holdings, its part fields and its history. |
+| 1269 | 4 | `public static CityLand restore(World.Key key, double[] centre, double[][] rects, double[][] holdings, double[][] partRows, doub...` | ...on the world a key names (0.7.115): since 0.7.121 an Earth city's, its save's kind, spot and data (Founding.getWorldKey()). |
+| 1280 | 42 | `public static CityLand restore(World.Key key, double[] centre, double[][] rects, double[][] holdings, double[][] partRows, doub...` | ...with the ground by relief a save kept beside them (ET1, spec-earth2-terrain 3.3; DataSave's landCentreRelief and landHoldingsRelief): the centre's RELIEF_AREAS figures, and a row of them for each row of `holdings`,... |
+| 1324 | 6 | `public CityLand copy()` | A copy, field for field: restore() of its own records and its old world's holdings - what the map's draft is drawn on (Game.MapDraft). |
+| 1332 | 7 | `public boolean same(CityLand o)` | Whether two cities' land is the same, field for field. |
+| 1340 | 5 | `private static double[][] deepCopy(double[][] rows)` |  |
 
