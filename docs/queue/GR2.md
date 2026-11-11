@@ -92,3 +92,15 @@ The self-tests pass. On this branch merged with main the whole suite, by
 anywhere: every red of main's is in `gate.txt` or the file. A real
 `tools/gate.sh --dry-run` of this branch passes with no names on its command
 line. One in, one out (`CLAUDE.md`), the count in the notes. The ship file last.
+
+## How it reaches main
+
+No gate run (Jerus, 2026-11-11: "these three batches shouldnt need a gate no?
+sure a fresh session"). The dry run above, by the launcher in a fresh clone, is
+the full run: its notes say where its kept log is and which two commits it was
+of (the branch's and main's). A fresh Claude session, the gatekeeper for GF1,
+GR1 and GR2, reviews the diff against this brief, runs the self-tests and
+`./batch-check.sh --fast` on the merge, and merges it untagged; a fault comes
+back as a numbered list. The ship file is a process batch's (a `## changelog`
+block headed as CX2's was, "no tag (process)", and no `{next}`), pushed last.
+Cut from main once GR1 is on it.

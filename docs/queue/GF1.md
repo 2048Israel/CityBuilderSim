@@ -97,3 +97,16 @@ the launcher's stop, leaves nothing committed and returns non-zero. One in, one
 out (`CLAUDE.md`): where this makes text untrue (`ship.sh`'s header, "The gate"
 4-7 and "On the PC" in `docs/orchestrator.md`), shorten that text and give the
 count in the notes. The ship file last.
+
+## How it reaches main
+
+No gate run (Jerus, 2026-11-11: "these three batches shouldnt need a gate no?
+sure a fresh session"). The dry run above, by the launcher in a fresh clone, is
+the full run: its notes say where its kept log is and which two commits it was
+of (the branch's and main's). A fresh Claude session, the gatekeeper for GF1,
+GR1 and GR2, reviews the diff against this brief, runs the self-tests and
+`./batch-check.sh --fast` on the merge, and merges it untagged; a fault comes
+back as a numbered list. The ship file is a process batch's (a `## changelog`
+block headed as CX2's was, "no tag (process)", and no `{next}`), pushed last.
+Built on main as it is; the next two are each cut from main after the one before
+is on it (his answer on chains: "After it ships").
