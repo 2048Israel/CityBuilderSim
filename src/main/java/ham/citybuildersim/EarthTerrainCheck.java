@@ -62,7 +62,9 @@ import java.util.Random;
  *   8. THE GAME STANDS ON IT: each window's founding site, the snap's, passes
  *      the founding's test 1 within SNAP_PLOTS of the spot; the land a city is
  *      founded with there (LandManager.foundingLand()) holds its dry ground
- *      and, beside a river, its fresh water; a screen of MapCheck's
+ *      and, beside a river, its fresh water - Paris, with a river and no lake
+ *      in reach, since LM1 the river's best patch, one patch within
+ *      CityLand.FRESH_PATCH of its first block; a screen of MapCheck's
  *      SCREEN_TILES on Rotterdam, of a square city at the 5B copy's density,
  *      paints and rasters in no more than MapCheck.SCREEN_MS.
  *   9. THE FULL FILE, when named: the cells pass in no more than
@@ -178,6 +180,14 @@ import java.util.Random;
  *      cell at every dry plot's blend point, and for a dry plot on a cell with
  *      no land the nearest land cell's (LandmassCheck holds the rule itself).
  *
+ * ...and since LM1 (2026-11-11; Jerus's city 7.8 km west-northwest of Stockholm):
+ *  19. THE FOUNDING'S WATER AT STOCKHOLM, on the full file when it is named:
+ *      the city's dry rings are one piece, its water at most one more inside
+ *      the square of 2 * CityLand.FRESH_PATCH + 1 blocks round its first block,
+ *      the centre holds LandManager.FOUNDING_FRESH_KM2, and the whole centre
+ *      spans fewer blocks than the strip A24 founded there (113 blocks in a
+ *      box of 37 by 32) and a box of less than half its size.
+ *
  * Every fixture causes its condition: the windows hold coasts (Rotterdam,
  * Perth), rivers (the Maas and the Seine), small lakes, lakes of 10 km2 and
  * more (Rotterdam's delta), beaches (Perth) and the date line (Fiji); the
@@ -290,6 +300,7 @@ public class EarthTerrainCheck {
         pieces(windows, data);
         stands(three, id);
         EarthData file = full(spots.get("Rotterdam"));
+        stockholm(file);
         classes(data);
         spots(data, id, spots);
         byClass(World.of(World.Key.earth(SEED, spots.get("Perth").lat(), spots.get("Perth").lon(), id)), "the fixture, Perth's world");
@@ -778,14 +789,110 @@ public class EarthTerrainCheck {
             CityLand land = LandManager.foundingLand(key);
             double ms = (System.nanoTime() - t0) / 1e6;
             boolean dry = land.centreKm2(CityLand.DRY) >= dryKm2 && land.key().equals(key) && land.siteX() == sx && land.siteY() == sy;
-            boolean freshWanted = !s.name().equals("Perth");
+            boolean freshWanted = !s.name().equals("Perth"), riverOnly = s.name().equals(RIVER_ONLY_SPOT);
             boolean fresh = land.centreKm2(CityLand.FRESH) >= LandManager.FOUNDING_FRESH_KM2;
-            report(s.name() + ": the land a city is founded with there holds its dry ground" + (freshWanted ? " and, beside its river, its fresh water" : ""),
-                    dry && (!freshWanted || fresh),
+            report(s.name() + ": the land a city is founded with there holds its dry ground" + (freshWanted && !riverOnly ? " and, beside its river, its fresh water" : ""),
+                    dry && (!freshWanted || riverOnly || fresh),
                     String.format("%.3f km2 dry for %.3f, %.3f km2 fresh for %.3f, %.3f sea, %d blocks; %.0f ms", land.centreKm2(CityLand.DRY), dryKm2,
                             land.centreKm2(CityLand.FRESH), LandManager.FOUNDING_FRESH_KM2, land.centreKm2(CityLand.SEA), land.centreRects().size(), ms));
+            if (riverOnly) riverOnlyPatch(s, w, land, dryKm2);
         }
         screen(spots.get(0), id);
+    }
+
+    /** The fixture's spot with a river and no lake within the founding's reach, the Seine at Paris: since LM1 its water is the river's best patch, less than a plant needs. */
+    static final String RIVER_ONLY_SPOT = "Paris";
+
+    /** The blocks a city's centre took from index `from` to `to` (CityLand.blockKey()s), in the order taken. */
+    static List<Long> blocksOf(CityLand land, int from, int to) {
+        List<Long> keys = new ArrayList<>();
+        for (int i = from; i < to; i++) {
+            LandGrid.Fill f = land.centreRects().get(i);
+            keys.add(CityLand.blockKey(f.x0() >> land.level(), f.y0() >> land.level()));
+        }
+        return keys;
+    }
+
+    /** The fresh plots of every block within CityLand.FRESH_REACH of the site that the rings do not hold, counted plot by plot on the world apart from the model, by CityLand.blockKey(). */
+    static Map<Long, Long> freshBeyondRings(World w, CityLand rings) {
+        long b = 1L << rings.level(), last = World.SIDE / b - 1, reach = (CityLand.FRESH_REACH + b - 1) / b;
+        long sbx = Math.floorDiv(rings.siteX(), b), sby = Math.floorDiv(rings.siteY(), b);
+        java.util.Set<Long> owned = new java.util.HashSet<>(blocksOf(rings, 0, rings.centreRects().size()));
+        Map<Long, Long> fresh = new LinkedHashMap<>();
+        for (long by = Math.max(0, sby - reach); by <= Math.min(last, sby + reach); by++) {
+            for (long bx = Math.max(0, sbx - reach); bx <= Math.min(last, sbx + reach); bx++) {
+                long k = CityLand.blockKey(bx, by), n = 0;
+                if (owned.contains(k)) continue;
+                for (long y = by * b; y < by * b + b; y++) for (long x = bx * b; x < bx * b + b; x++) if (w.terrainAt(x, y) == World.FRESH) n++;
+                if (n > 0) fresh.put(k, n);
+            }
+        }
+        return fresh;
+    }
+
+    /** A river and no lake in reach (LM1): the founding's water is one patch within FRESH_PATCH of its first block and holds what the river's best patch holds, less than FOUNDING_FRESH_KM2. */
+    static void riverOnlyPatch(Spot s, World w, CityLand land, double dryKm2) {
+        CityLand rings = CityLand.found(w, land.siteX(), land.siteY(), dryKm2);
+        int n = rings.centreRects().size();
+        List<Long> water = blocksOf(land, n, land.centreRects().size());
+        Map<Long, Long> fresh = freshBeyondRings(w, rings);
+        long held = LandCheck.freshOn(water, fresh), best = LandCheck.bestSquareHolds(fresh, CityLand.FRESH_PATCH);
+        report(s.name() + ": a river and no lake in reach - its water is one patch within FRESH_PATCH of its first block, holding what the river's best patch holds",
+                land.centreRects().subList(0, n).equals(rings.centreRects()) && !water.isEmpty() && LandCheck.onePiece(water)
+                        && LandCheck.inSquareOfFirst(water, CityLand.FRESH_PATCH) && held == best,
+                String.format("%d blocks holding %d fresh plots (%.4f km2); the best patch of the river holds %d, in %d blocks of river within reach",
+                        water.size(), held, held * World.KM2_PER_PLOT, best, fresh.size()));
+        report("...less than FOUNDING_FRESH_KM2, so the patch stopped it and not the target",
+                land.centreKm2(CityLand.FRESH) < LandManager.FOUNDING_FRESH_KM2,
+                String.format("%.4f km2 fresh in the centre for %.4f", land.centreKm2(CityLand.FRESH), LandManager.FOUNDING_FRESH_KM2));
+    }
+
+    /**
+     * Jerus's Stockholm city (LM1, 2026-11-11): 7.8 km from Stockholm (59.3293 N, 18.0686 E) at bearing 288 degrees,
+     * west-northwest, where A24's founding took a strip along a river between two lakes.
+     */
+    static final Spot STOCKHOLM_CITY = new Spot("Stockholm 7.8 km at 288 degrees",
+            59.3293 + 7.8 * StrictMath.cos(StrictMath.toRadians(288)) / 111.32,
+            18.0686 + 7.8 * StrictMath.sin(StrictMath.toRadians(288)) / (111.32 * StrictMath.cos(StrictMath.toRadians(59.3293))));
+
+    /** The strip A24's founding took at STOCKHOLM_CITY on the full file, measured before LM1: 113 blocks in a box of 37 blocks across by 32 down. */
+    static final long OLD_STRIP_BLOCKS = 113, OLD_STRIP_ACROSS = 37, OLD_STRIP_DOWN = 32;
+
+    /** Section 19, on the full file: Jerus's Stockholm city founds with its water in one patch and no strip. */
+    static void stockholm(EarthData file) {
+        out.println("\n--- 19. the full file, when it is named: the founding's water at Jerus's Stockholm city is one patch, not a strip ---");
+        if (file == null) {
+            out.println("earth-2.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": Jerus's Stockholm city was not founded");
+            return;
+        }
+        World.Key key = World.Key.earth(SEED, STOCKHOLM_CITY.lat(), STOCKHOLM_CITY.lon(), EarthTerrain.use(file));
+        World w = World.of(key);
+        double dryKm2 = LandManager.km2(LandManager.STARTING_SQ_FT);
+        long t0 = System.nanoTime();
+        CityLand land = LandManager.foundingLand(key);
+        double ms = (System.nanoTime() - t0) / 1e6;
+        CityLand rings = CityLand.found(w, land.siteX(), land.siteY(), dryKm2);
+        int n = rings.centreRects().size(), all = land.centreRects().size();
+        List<Long> dry = blocksOf(land, 0, n), water = blocksOf(land, n, all);
+        long minX = Long.MAX_VALUE, minY = Long.MAX_VALUE, maxX = Long.MIN_VALUE, maxY = Long.MIN_VALUE;
+        for (long k : blocksOf(land, 0, all)) {
+            minX = Math.min(minX, k >> 32);
+            maxX = Math.max(maxX, k >> 32);
+            minY = Math.min(minY, (int) k);
+            maxY = Math.max(maxY, (int) k);
+        }
+        long across = maxX - minX + 1, down = maxY - minY + 1;
+        report(STOCKHOLM_CITY.name() + ": the dry rings are the centre's first blocks, in one piece",
+                land.centreRects().subList(0, n).equals(rings.centreRects()) && LandCheck.onePiece(dry),
+                String.format("%d blocks of dry rings at plot (%d, %d), %.3f dry km2 for %.3f", n, land.siteX(), land.siteY(), rings.centreKm2(CityLand.DRY), dryKm2));
+        report("...the water is at most one more piece, inside the square of 2 * FRESH_PATCH + 1 blocks round its first block",
+                water.isEmpty() || LandCheck.onePiece(water) && LandCheck.inSquareOfFirst(water, CityLand.FRESH_PATCH),
+                String.format("%d blocks of water", water.size()));
+        report("...the centre holds FOUNDING_FRESH_KM2", land.centreKm2(CityLand.FRESH) >= LandManager.FOUNDING_FRESH_KM2,
+                String.format("%.4f km2 fresh for %.4f; %.0f ms", land.centreKm2(CityLand.FRESH), LandManager.FOUNDING_FRESH_KM2, ms));
+        report("...the whole centre spans fewer blocks than the strip it was, and its box less than half the strip's",
+                all < OLD_STRIP_BLOCKS && 2 * across * down < OLD_STRIP_ACROSS * OLD_STRIP_DOWN,
+                String.format("%d blocks in a box of %d across by %d down; the strip %d blocks in %d by %d", all, across, down, OLD_STRIP_BLOCKS, OLD_STRIP_ACROSS, OLD_STRIP_DOWN));
     }
 
     static boolean dryPlot(World w, long x, long y) {
