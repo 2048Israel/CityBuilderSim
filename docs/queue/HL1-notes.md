@@ -5,6 +5,14 @@ books closed and asserted, D what the ensemble then found), each coded by a Sonn
 E is the fixtures the new path moved; F and G are two findings of the stranger's review, sent back
 before the gate ("The review's three findings", below).
 
+**Where it stands (2026-11-11, the queue stopped by Jerus: "Stop now", main's 72917eb4).** The
+review's three findings are done, the checks and the ensemble are below, and main is merged in
+(72917eb4). Only the ship file is not on the tip: it is the batch's "ready", and the queue was stopped
+before it went on. It is written, in 66f565b4 (`git show 66f565b4:docs/queue/HL1-ship.md >
+docs/queue/HL1-ship.md`, commit, push last). To take it up again: merge main (LM1-D is ahead of HL1
+and widens the founding's water: if the default city founds differently, play AUTO2's 16 runs again
+and the 80 only if they moved), `--pick`, the ship file last.
+
 ## What it was, measured on main before any fix (e6bb1787, 0.9.92)
 
 The study's driver (`docs/studies/wealth/WealthRun.java`, seed 0, months 240-900): the households' gap
