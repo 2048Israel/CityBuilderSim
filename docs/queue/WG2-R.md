@@ -1,0 +1,9 @@
+# WG2-R: WG2's review follow-ups
+
+The stranger's review at WG2's gate (Opus, xhigh, 2026-11-11) said SHIP, with no blocker, and left these.
+
+1. **Should add.** No reload line in `SaveFileCheck` (near line 2284) asserts `Migration.brakeApplies()` or `getLastJobsPull()`, and `hasFullHistory()` tests only 12 months or more, so a load that read month 239 as 240 would pass. Add a reload at month 239 and at 240 that asserts both against the twin's.
+2. **Low.** `PeopleScreen.java:601`: the "slowing / stalled" word reads the brake from today's out-of-work share, not the brake last month applied (there is no `getLastBrake()`), so in the month the share crosses 6% or 12% the word can disagree with `getLastArrivals()`. Between 6% and 7% the tile stays green while arrivals already slow. Fix: save and show the brake applied (`getLastBrake()`), and decide whether green should end at 6%.
+3. **Low, with RT3.** Notes section 8 ruled WG2 out of the long city's fall by turning the drift off alone, not the brake. Before RT3 calls the fault main's, rerun KeptCheck's city (months 2391-2416) with the brake off as well.
+4. **Low.** The drift counts its excess in labour-force adults but takes people, households included, so about 2% times the adult share of the excess leaves a month, not the "fiftieth of the excess" the notes say (the pinned-band push already works this way). Fix the notes' wording, or count in people.
+5. **Low.** `HealthCheck.java:818` restated one claim ("raises the target by exactly the pull"), which Jerus's call C2(a) allows, while the ship file said no claim moved. `ScaleCheck.java:187` (month 191 to 172) and `FundCheck.java:217` (saved at month 74) each pick a month that passes, ScaleCheck missing at 8 of the 31 months scanned and FundCheck passing at 74 alone of 74-80: fragile, worth a fixture that causes the condition at any month.
