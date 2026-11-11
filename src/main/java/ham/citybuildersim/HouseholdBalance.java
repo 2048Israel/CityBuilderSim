@@ -77,11 +77,17 @@ import java.util.function.ToDoubleFunction;
  *
  * ==================== WHAT IT IS NOT ====================
  *
- * Not part of the money audit. Households have never been one of MoneyAudit's
- * pools - wages leaving the city's businesses leave the audited system, and rent
- * and shopping arrive back into it - so savings and household debt sit outside
- * the identity by construction, exactly as they did when they were invisible.
- * What changes is that they are now written down.
+ * Still outside the POOLS, and reconciled against them since HL1 (2026-11-11).
+ * Households have never been one of MoneyAudit's pools - wages leaving the
+ * city's businesses leave the audited system, and rent and shopping arrive back
+ * into it - so savings and household debt sit outside the pools' identity by
+ * construction, exactly as they did when they were invisible. What changes is
+ * that they are now written down, and that MoneyAudit.Households strikes a
+ * second identity beside the pools': the change in what the households hold is
+ * what the pools paid them less what they paid the pools. The lines of this
+ * class that no pool answers (getUnfunded(), getUnsettledIncome() and the
+ * rest, getCensusStranded(), getCensusCreated()) are that identity's OWN terms:
+ * open faults the audit names and measures, and a later batch mends.
  */
 public class HouseholdBalance {
 
@@ -664,12 +670,33 @@ public class HouseholdBalance {
     /* ------------------------------- the month ------------------------------- */
 
     private double lastWrittenOff;
+    /** What the month's bankrupt households' savings repaid the bank before the rest of their debt was written off (HL1; Household.discharge()), in total: part of totalRepaid(). */
+    private double lastSeized;
     private double lastLeaving;
     private double lastEvicted;
     private double lastStudentDebtTakenAway;
     private double lastTakenAway;
     /** What the month's newcomers brought as their opening buffer (OPENING_BUFFER_MONTHS): money from abroad into the savings. Not saved (HL1). */
     private double lastArrivedWith;
+    /*
+     * THE HOUSEHOLDS' OWN LINES (HL1, 2026-11-11): money the households' own settling made or lost with no pool on the other side. Each
+     * is a fault in the model that the households' identity (MoneyAudit.Households) NAMES and measures, and a later batch mends; none is
+     * mended by being measured. Reset with the month, scaled with the others, not saved.
+     */
+    /** Bills the sellers booked in full and a household could not fund (Household.settle, unfunded), summed over the households: money the shops were paid that no savings held. */
+    private double lastUnfunded;
+    /** Income the rows were handed that went to a cell too small to settle (isEmpty()): the row's take-home less what the settled cells were given. */
+    private double lastUnsettledIncome;
+    /** ...the fees the row was billed for treatment and tuition that no settled cell was charged. */
+    private double lastUnsettledFees;
+    /** ...the row's shopping that no settled cell paid: the sellers booked the sale, the cell that was to pay it was skipped. */
+    private double lastUnsettledShopping;
+    /** ...the rent of the cells too small to settle: the landlords booked it, no household was charged it. */
+    private double lastUnsettledRent;
+    /** Savings left in a pool nobody is handed: a shrinking cell with no grown-ups releases its savings to a stock group that has none to claim them (moveStock, the savings stock only). */
+    private double lastCensusStranded;
+    /** Savings a growing cell with no grown-ups keeps per household on more households: money made by the census (moveStock, the savings stock only). */
+    private double lastCensusCreated;
     private double graduating;
     private double lastGraduated;
     private double lastDepositInterest;
@@ -953,10 +980,18 @@ public class HouseholdBalance {
         totalPeople = 0;
         hungryAtFullShelves = 0;
         lastWrittenOff = 0;
+        lastSeized = 0;
         lastLeaving = 0;
         lastEvicted = 0;
         lastTakenAway = 0;
         lastArrivedWith = 0;
+        lastUnfunded = 0;
+        lastUnsettledIncome = 0;
+        lastUnsettledFees = 0;
+        lastUnsettledShopping = 0;
+        lastUnsettledRent = 0;
+        lastCensusStranded = 0;
+        lastCensusCreated = 0;
         lastAbroadTakenAway = 0;
         lastCareSkipped = 0;
         java.util.Arrays.fill(lastSharesTakenAway, 0);
@@ -1100,11 +1135,15 @@ public class HouseholdBalance {
 
         /* ---- and every household's month ---- */
         plannedSpend = 0;
+        // HL1 (2026-11-11): what the rows were handed, to set against what the cells that settled were (the difference is the cells too small to settle).
+        double settledIncome = 0, settledFees = 0, settledShopping = 0;
         for (int i = 0; i < cells.length; i++) {
             Household c = cells[i];
             if (c.isEmpty()) {
                 // Too few to strike - the position stands, carried for the
                 // month the cell fills, and the working is blank.
+                // ...and its share of the rent is the landlords' sale, charged to nobody (HL1: UnsettledRent).
+                lastUnsettledRent += rentPerHousehold * Math.max(0, rentShares.applyAsDouble(c)) * c.households;
                 c.clearWorking();
                 continue;
             }
@@ -1121,6 +1160,11 @@ public class HouseholdBalance {
             c.settle(disposablePer[i], rentDue, feesDue, spentPer,
                     foodPricePerHead, riskFreeAnnual, liquidity, localPerUsd);
             c.accountFee = accountDue;
+            // HL1 (2026-11-11): the bills a household could not fund (the sellers booked them in full), and what this cell was handed of the rows' totals.
+            lastUnfunded += c.unfunded * c.households;
+            settledIncome += disposablePer[i] * c.households;
+            settledFees += feesPer[i] * c.households;
+            settledShopping += spentPer * c.households;
 
             /*
              * EVICTION (2026-09-11). Jerus: once EI is over and the savings are
@@ -1137,6 +1181,7 @@ public class HouseholdBalance {
             }
 
             lastWrittenOff += c.discharge();
+            lastSeized += c.seizedSavings * c.households;
             lastLeaving += c.bankrupt * LEAVE_ON_BANKRUPTCY;
 
             // The food assistance voucher, on the month just settled, before
@@ -1158,6 +1203,18 @@ public class HouseholdBalance {
             c.affordCare(careFullPer[i], careBilledPer[i]);
             lastCareSkipped += c.careSkipped * c.households;
         }
+        /*
+         * WHAT THE ROWS WERE HANDED THAT NO CELL TOOK (HL1, 2026-11-11). The
+         * pools paid the rows' take-home and billed their fees and their
+         * shopping in full; a cell too small to settle (isEmpty()) was still
+         * given a share by the splits, and a row with no weight hands nothing
+         * to anybody. The difference is money the households' books never
+         * saw - measured here, not mended (HL2). The account fee is not in it:
+         * it is charged and booked for settled cells alike.
+         */
+        lastUnsettledIncome += sumOfRows(rowDisposable) - settledIncome;
+        lastUnsettledFees += sumOfRows(rowFees) - settledFees;
+        lastUnsettledShopping += sumOfRows(rowShopping) - settledShopping;
 
         /*
          * AND THE MONTH'S INVESTMENT INCOME IS SPENT ONCE (2026-09-17).
@@ -1198,6 +1255,13 @@ public class HouseholdBalance {
         if (rows == null || (rows.length != ROWS_BEFORE_OUTSIDE
                 && rows.length != Household.ROWS_BEFORE_PRISON && rows.length != Household.ROWS_BEFORE_OWNER)) return rows;
         return java.util.Arrays.copyOf(rows, ROWS);
+    }
+
+    /** The sum of a row array, nothing for no array (HL1: what the rows were handed, against what the cells took). */
+    private static double sumOfRows(double[] rows) {
+        double sum = 0;
+        if (rows != null) for (double r : rows) sum += r;
+        return sum;
     }
 
     /** Who lives in each cell now, in cell order. */
@@ -1726,6 +1790,8 @@ public class HouseholdBalance {
         for (int r = 0; r < ROWS; r++) {
             double moved = Math.min(rowLoss[r], rowGain[r]);
             rowMoved[r] = moved;
+            // Non-zero only for the savings stock (HL1): a group that shrank with no grown-ups to release it leaves its savings in a pool nobody is handed.
+            if (arrival != null && rowLoss[r] <= 0) lastCensusStranded += rowPool[r];
             if (rowLoss[r] > 0) {
                 double kept = Math.min(1, moved / rowLoss[r]);
                 cityPool += rowPool[r] * (1 - kept);
@@ -1745,7 +1811,11 @@ public class HouseholdBalance {
         /* ---- and hand it out ---- */
         for (int i = 0; i < n; i++) {
             Household c = cells[i];
-            if (delta[i] <= 0 || c.grownUps() <= 0) continue;
+            if (delta[i] <= 0 || c.grownUps() <= 0) {
+                // A growing cell with no grown-ups claims nothing and keeps its per-household savings on more households (HL1: CensusCreated, the savings stock only).
+                if (arrival != null && delta[i] > 0) lastCensusCreated += stock.get(c) * delta[i];
+                continue;
+            }
             int r = c.stockGroup();
             double weight = delta[i] * c.grownUps();
             double fromRow = rowGain[r] > 0 ? Math.min(weight, weight * rowMoved[r] / rowGain[r]) : 0;
@@ -3886,11 +3956,35 @@ public class HouseholdBalance {
     /** Written off this month, which is the bank's loss. */
     public double getWrittenOff()      { return lastWrittenOff; }
 
+    /** What the month's bankrupt households' savings repaid the bank with, before the rest was written off (HL1): already in totalRepaid(). */
+    public double getSeizedAtBankruptcy() { return lastSeized; }
+
     /** Savings that left the city with the households that left. Not a loss to anybody here. */
     public double getTakenAway()       { return lastTakenAway; }
 
     /** What the month's newcomers brought as their opening buffer (OPENING_BUFFER_MONTHS): money from abroad into the savings. */
     public double getArrivedWith()     { return lastArrivedWith; }
+
+    /** Bills the sellers booked in full and the households could not fund, this month, summed over the households (HL1: an open fault, named for HL2). */
+    public double getUnfunded()          { return lastUnfunded; }
+
+    /** Income the month's rows were handed that went to cells too small to settle (HL1: an open fault, named for HL2). */
+    public double getUnsettledIncome()   { return lastUnsettledIncome; }
+
+    /** Fees the month's rows were billed that no settled cell was charged (HL1: an open fault, named for HL2). */
+    public double getUnsettledFees()     { return lastUnsettledFees; }
+
+    /** Shopping the month's rows were billed for that no settled cell paid (HL1: an open fault, named for HL2). */
+    public double getUnsettledShopping() { return lastUnsettledShopping; }
+
+    /** Rent of the cells too small to settle, which the landlords booked and no household was charged (HL1: an open fault, named for HL2). */
+    public double getUnsettledRent()     { return lastUnsettledRent; }
+
+    /** Savings the census left in a pool nobody is handed (HL1: an open fault, named for HL2). */
+    public double getCensusStranded()    { return lastCensusStranded; }
+
+    /** Savings the census made, a growing cell with no grown-ups keeping its per-household savings on more households (HL1: an open fault, named for HL2). */
+    public double getCensusCreated()     { return lastCensusCreated; }
 
     /** Households discharged this month, and the share of them leaving the city. */
     public double getBankrupt(int row) { return sumRow(row, Household::bankrupt); }
@@ -4852,11 +4946,19 @@ public class HouseholdBalance {
         java.util.Arrays.fill(ownerFloorMonths, -1);
         java.util.Arrays.fill(lastSharesTakenAway, 0);
         lastWrittenOff = 0;
+        lastSeized = 0;
         lastLeaving = 0;
         lastEvicted = 0;
         lastStudentDebtTakenAway = 0;
         lastTakenAway = 0;
         lastArrivedWith = 0;
+        lastUnfunded = 0;
+        lastUnsettledIncome = 0;
+        lastUnsettledFees = 0;
+        lastUnsettledShopping = 0;
+        lastUnsettledRent = 0;
+        lastCensusStranded = 0;
+        lastCensusCreated = 0;
         graduating = 0;
         lastGraduated = 0;
         lastAbroadTakenAway = 0;
@@ -4888,8 +4990,16 @@ public class HouseholdBalance {
     public void redenominate(double scale) {
         minMove *= scale;
         lastWrittenOff *= scale;
+        lastSeized *= scale;
         lastTakenAway *= scale;
         lastArrivedWith *= scale;
+        lastUnfunded *= scale;
+        lastUnsettledIncome *= scale;
+        lastUnsettledFees *= scale;
+        lastUnsettledShopping *= scale;
+        lastUnsettledRent *= scale;
+        lastCensusStranded *= scale;
+        lastCensusCreated *= scale;
         lastStudentDebtTakenAway *= scale;
         lastBondsTakenAway *= scale;
         localPerUsd *= scale;

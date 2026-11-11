@@ -1367,6 +1367,22 @@ public class LongPlaytest {
         }
 
         /*
+         * ...AND SO IS THE HOUSEHOLDS' (HL1, 2026-11-11). The pools' strike above
+         * cannot see a household: it holds what the shops, the payrolls and the
+         * bank paid it and what it paid back, and the second strike beside it
+         * (MoneyAudit.Households) sets the change in what they hold against exactly
+         * those DOMESTIC lines, less the households' own named lines. A residual
+         * is a household that gained or lost money no line names: a bill paid to
+         * nobody, a payment received from nowhere, or a line the pools declare
+         * that the households never felt. The same tolerance as the pools': a
+         * cent, or a part in ten million of what moved.
+         */
+        MoneyAudit.Households hh = g.getLastHouseholdsAudit();
+        if (Math.abs(hh.residual) > MoneyAudit.CENT && hh.relative() > 1e-7) {
+            flag(month, "the households' money was not conserved", hh.toString() + "\n" + hh.detail);
+        }
+
+        /*
          * ...AND THE MONEY THE CENTRAL BANK MADE IS THE MONEY THE AUDIT SAW
          * (0.7.0). Three figures that must be one, every month: the audit's
          * MONEY lines in less out, the central bank's own issued less retired,

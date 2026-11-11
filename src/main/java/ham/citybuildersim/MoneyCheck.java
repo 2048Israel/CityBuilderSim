@@ -46,16 +46,49 @@ public class MoneyCheck {
     static double worstDrift = 0;
     static String worstDriftPool = "";
 
+    /** The households' own lines (HL1), by the label MoneyAudit.households() notes them under. */
+    static final String[] OWN_LINES = {
+            "+ households Unfunded", "- households UnsettledIncome", "+ households UnsettledRent", "+ households UnsettledFees",
+            "+ households UnsettledShopping", "- households CensusStranded", "+ households CensusCreated",
+            "+ households PublicWagesRestruck" };
+
+    /** The households' identity (HL1) over one play(): the months struck, the worst, the ones that did not close, and how often each own line fired. */
+    static final class HouseholdsRun {
+        int months = 0, breaches = 0, seizedMonths = 0;
+        /** What the bankrupt's savings repaid the bank with over the run (HouseholdBalance.getSeizedAtBankruptcy()). */
+        double seized = 0;
+        MoneyAudit.Households worst = MoneyAudit.Households.NONE, firstBreach = null;
+        final java.util.Map<String, Integer> fired = new java.util.LinkedHashMap<>();
+    }
+    static HouseholdsRun lastRun = new HouseholdsRun();
+
+    /** The households' identity closes by the test the pools' does (LongPlaytest.audit()): a cent, or a part in ten million of what moved. */
+    static boolean householdsClose(MoneyAudit.Households h) {
+        return !(Math.abs(h.residual) > MoneyAudit.CENT && h.relative() > 1e-7);
+    }
+
     /** Runs `months` and returns the worst relative residual seen, printing the worst month. */
     static MoneyAudit.Result play(String label, Game g, int months, boolean verbose) {
         MoneyAudit.Result worst = MoneyAudit.Result.NONE;
         double worstRel = -1;
         worstDrift = 0;
         worstDriftPool = "";
+        HouseholdsRun run = lastRun = new HouseholdsRun();
         for (int i = 0; i < months; i++) {
             final Game gg = g;
             quietly(() -> gg.simulateMonths(1));
             MoneyAudit.Result r = g.getLastMoneyAudit();
+            MoneyAudit.Households hh = g.getLastHouseholdsAudit();
+            run.months++;
+            if (Math.abs(hh.residual) > Math.abs(run.worst.residual)) run.worst = hh;
+            if (!householdsClose(hh)) {
+                run.breaches++;
+                if (run.firstBreach == null) run.firstBreach = hh;
+            }
+            double seizedNow = g.getHouseholdBalance().getSeizedAtBankruptcy();
+            if (seizedNow > MoneyAudit.CENT) { run.seizedMonths++; run.seized += seizedNow; }
+            // Fired: more than a cent, so the rounding of a sum of sums is not counted as a mechanic.
+            for (String own : OWN_LINES) if (Math.abs(hh.figure(own)) > MoneyAudit.CENT) run.fired.merge(own, 1, Integer::sum);
             if (verbose) System.out.println("   " + r);
             if (r.relative() > worstRel) { worstRel = r.relative(); worst = r; }
             if (Math.abs(g.getPostAuditDrift()) > Math.abs(worstDrift)) {
@@ -169,6 +202,8 @@ public class MoneyCheck {
         g.buildStack(t(g, "Bus Network"), 3, false);
 
         worst = play("with mines, mills, a cemetery, a college and a bus, 240 months", g, 240, verbose);
+        // ...the longest this file plays: the households' books over it are section 13's.
+        HouseholdsRun industrialRun = lastRun;
         assertTrue("an industrial city conserves money to within 0.01% of what moved",
                 worst.relative() < 1e-4);
         assertTrue("...and it really did carry passengers, so the fare was really charged",
@@ -678,6 +713,57 @@ public class MoneyCheck {
                 bare.getSectors().businessServices().getSeats() <= 0 && bareParts != null && bareParts > 0
                         && bareSupplies != null && Math.abs(bareSupplies - bareParts) <= MoneyAudit.CENT
                         && bare.getLastMoneyAudit().relative() < 1e-4);
+
+        /* ==================== 13. the households' books close ==================== */
+        System.out.println("--- the households' books close (HL1) ---");
+        /*
+         * HL1 (2026-11-11): the change in what the households hold, month on month, is what the pools paid them less what they paid the pools
+         * (MoneyAudit.Households), plus the households' own lines: faults of the model that the audit names and measures (HL2 mends them).
+         * The city is the industrial one above, the longest this file plays, its 240 months struck one by one by play().
+         */
+        System.out.printf("   %d months struck; the worst residual %,.6f (%s)%n",
+                industrialRun.months, industrialRun.worst.residual, industrialRun.worst);
+        assertTrue("fixture: the longest city this file plays gave at least 24 months to read",
+                industrialRun.months >= 24);
+        assertTrue("every month's households' identity closes by the pools' own test (a cent, or a part in ten million of what moved)"
+                        + (industrialRun.firstBreach == null ? "" : ": first to fail " + industrialRun.firstBreach),
+                industrialRun.breaches == 0);
+        // The count: how often each own line fired, in months of more than a cent. A mechanic no run exercises has no test.
+        StringBuilder counts = new StringBuilder();
+        for (String own : OWN_LINES) counts.append(String.format("%n   %-36s %4d of %d months", own, industrialRun.fired.getOrDefault(own, 0), industrialRun.months));
+        System.out.println("   the households' own lines fired:" + counts);
+        System.out.printf("   a bankrupt's savings repaid the bank in %d of %d months, %,.2f in all (BankCheck causes one)%n",
+                industrialRun.seizedMonths, industrialRun.months, industrialRun.seized);
+        assertTrue("the books closed WITH their own lines, not for want of them: bills went unfunded and income went unsettled in this run",
+                industrialRun.fired.getOrDefault("+ households Unfunded", 0) > 0
+                        && industrialRun.fired.getOrDefault("- households UnsettledIncome", 0) > 0);
+
+        /* ==================== 14. a cent that vanishes from a household is seen ==================== */
+        System.out.println("--- and a cent that vanishes from a household is seen (HL1's premise) ---");
+        /*
+         * The identity is only worth asserting if it can fail. A played city (the one above with no seats at Business Services) has
+         * 1% of its households' savings taken out of the cells between two presses with no line, X. The game's own strike read its opening
+         * figure AFTER the theft and so closes; a strike from the figure read BEFORE it has to show -X: the savings' interest on the smaller
+         * balance is a DOMESTIC line (the deposit interest, struck from the cells at the sync), so it moves with the theft by a line, not
+         * by a residual.
+         */
+        HouseholdBalance books = bare.getHouseholdBalance();
+        double allSavings = books.totalSavings();
+        double stolen = Math.max(.01 * allSavings, 100 * MoneyAudit.CENT);
+        assertTrue("fixture: the city holds savings enough that 1% of them is a hundred cents or more",
+                allSavings > 0 && stolen <= allSavings);
+        double heldBefore = MoneyAudit.householdsHeld(bare);
+        // Taken from every cell alike, per household: the cells' savings are averages, so the cells' total falls by exactly `stolen`.
+        for (Household cell : books.cellsForMarket()) cell.savings *= 1 - stolen / allSavings;
+        assertTrue("the theft took what it was meant to: the savings fell by X, to the cent",
+                Math.abs(allSavings - books.totalSavings() - stolen) <= MoneyAudit.CENT);
+        quietly(() -> bare.simulateMonths(1));
+        MoneyAudit.Households games = bare.getLastHouseholdsAudit();
+        MoneyAudit.Households mine = MoneyAudit.households(bare, heldBefore, bare.getLastMoneyAudit());
+        System.out.printf("   X %,.2f; the game's strike (opened after the theft) %s%n   a strike opened before it: %s%n", stolen, games, mine);
+        assertTrue("the game's own strike, whose opening figure was read after the theft, closes", householdsClose(games));
+        assertTrue("...and a strike from the figure read BEFORE the theft shows -X, to the cent",
+                Math.abs(mine.residual + stolen) <= MoneyAudit.CENT);
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
