@@ -5309,8 +5309,14 @@ public class MapCheck {
                 if (!land.ownsPlot(ax0 + side / 2, ay0 + side / 2)) onFree++;
             }
         }
+        // LM1: one number to each place across the city - no number twice, though a place recurs on every side.
+        java.util.Set<Integer> numbers = new java.util.HashSet<>(), places = new java.util.HashSet<>();
+        boolean placeTwice = false;
         for (LandParcel o : listing) {
-            placeWords &= LandMap.placeLabel(o).equals(String.valueOf(o.getPlace() + 1)) && o.where().endsWith(" " + LandMap.placeLabel(o));
+            placeWords &= LandMap.placeLabel(o).equals(String.valueOf(o.number())) && o.number() == LandParcel.number(o.getSide(), o.getPlace())
+                    && o.number() >= 1 && o.number() <= LandMarket.OFFERS && o.where().endsWith(" " + LandMap.placeLabel(o));
+            placeWords &= numbers.add(o.number());
+            placeTwice |= !places.add(o.getPlace());
             double[] b = small.onScreen(o.getX0(), o.getY0(), o.getX1(), o.getY1());
             if (b == null) continue;
             shown++;
@@ -5328,8 +5334,9 @@ public class MapCheck {
         check("an offer's number stands on its whole rectangle when all of it is free, else in its block with the most free ground - on a"
                 + " free plot where that block is wholly free, else on the freest square in it that still holds a number",
                 freest && allFree > 0 && freeBlocks > 0 && onFree == freeBlocks);
-        check("the opening zoom numbers every offer it shows whole by its place, 1 to 6, as its row and its name read it",
-                whole2 > 0 && placeWords);
+        check("the opening zoom numbers every offer it shows whole by its number, one to each place across the city (1 to OFFERS), as its"
+                + " row and its name read it, and no number stands twice though a side's place recurs on another side",
+                whole2 > 0 && placeWords && placeTwice);
     }
 
     /** The level of the offer the overlay's clip is tried on, zoomed in as far as the view goes: 9, blocks of 15.36 km - an offer of 2 x 4 of them is over three views across even at the expanded size, which 0.7.61's corners' test dropped; a city of about 3,000 km2 of dry ground is at level 9 (spec-grid 2.1's table). */
