@@ -1,4 +1,4 @@
-# DebtExchangeCheck.java - 750 lines · 23 methods · 9 constants · harnesses
+# DebtExchangeCheck.java - 752 lines · 23 methods · 9 constants · harnesses
 
 `ham/citybuildersim/DebtExchangeCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
@@ -65,7 +65,7 @@
 | 529 | · 10. the rule alone |
 | 572 | · 11. the student grant on a surplus share reads the cash |
 | 649 | · 12. ...and a buyback below book |
-| 698 | · 13. EARNED carries the coupons abroad (CD9, CD7-E) |
+| 700 | · 13. EARNED carries the coupons abroad (CD9, CD7-E) |
 
 ## Constants
 
@@ -95,7 +95,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 54 | 697 | **type** `public class DebtExchangeCheck` | The exchange gain (loss) on the city's foreign-currency debt (CD7, spec-city-debt.md section 5): each dollar piece carried in US$ and read in D$ at the rate it was last valued at, so a month in which the D$ moves move... |
+| 54 | 699 | **type** `public class DebtExchangeCheck` | The exchange gain (loss) on the city's foreign-currency debt (CD7, spec-city-debt.md section 5): each dollar piece carried in US$ and read in D$ at the rate it was last valued at, so a month in which the D$ moves move... |
 | 87 | 5 | `static void check(String label, boolean ok)` |  |
 | 94 | 3 | `static void near(String label, double actual, double expected)` | Two figures of the books that must agree to the tolerance MoneyAudit gives at their size, the figures printed on a failure. |
 | 98 | 10 | `static void near(String label, double actual, double expected, double tolerance)` |  |
@@ -117,7 +117,7 @@
 | 231 | 16 | **type** `static final class Month` | What a month's press left that the sections read afterwards. |
 | 235 | 11 | `Month(Game g, double rateBefore, List<Debt> abroad, double[] ownBefore, List<Debt> home, double[] homeBefore)` _(in DebtExchangeCheck.Month)_ |  |
 | 249 | 9 | `static Month move(Game g, double factorOfTheRate)` | Moves the D$ by this factor of its rate before the press (pinned, so the reprice leaves it where it is) and presses. |
-| 259 | 472 | `public static void main(String[] args)` |  |
-| 733 | 10 | `static void accountsAlone()` | The government account's setter alone: a figure that is no number reads nothing, a number is kept. |
-| 745 | 5 | `static String quote(Game g, String type, double usd, int years)` | Sells dollar paper through the game's own door: returns what it said. |
+| 259 | 474 | `public static void main(String[] args)` |  |
+| 735 | 10 | `static void accountsAlone()` | The government account's setter alone: a figure that is no number reads nothing, a number is kept. |
+| 747 | 5 | `static String quote(Game g, String type, double usd, int years)` | Sells dollar paper through the game's own door: returns what it said. |
 

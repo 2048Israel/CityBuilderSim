@@ -1,4 +1,4 @@
-# BusinessServices.java - 333 lines · 11 methods · 2 constants · sectors
+# BusinessServices.java - 363 lines · 13 methods · 3 constants · sectors
 
 `ham/citybuildersim/sectors/BusinessServices.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
@@ -61,56 +61,60 @@
 > AND THE CITY'S OWN UPKEEP IS BOUGHT OF IT (HL1, 2026-11-11): the treasury's
 > care, school, research, safety and transit upkeep and the bank's operating
 > cost are work billed to this sector, which imports the share of it a sector
-> of its kind imports (sellUpkeep(), UPKEEP_IMPORTED).
+> of its kind imports (sellUpkeep() for the services', sellBankUpkeep() for
+> ... (1 more lines in the source)
 
 **Uses:** [Good](Good.md) (12), [BusinessInvestment](BusinessInvestment.md) (7), [Game](Game.md) (4), [JobType](JobType.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (2), [Formats](Formats.md) (2), [SectorStatements](SectorStatements.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1)
 
-**Used by (6):** [BusinessServicesCheck](BusinessServicesCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [MoneyCheck](MoneyCheck.md), [PrizeCheck](PrizeCheck.md), [Sectors](Sectors.md)
+**Used by (8):** [BusinessServicesCheck](BusinessServicesCheck.md), [EconomyManager](EconomyManager.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [LongPlaytest](LongPlaytest.md), [MoneyCheck](MoneyCheck.md), [PrizeCheck](PrizeCheck.md), [Sectors](Sectors.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 124 | · plan |
-| 255 | THE CITY'S UPKEEP (HL1, 2026-11-11) |
-| 288 | · the screen |
+| 125 | · plan |
+| 256 | THE CITY'S UPKEEP (HL1, 2026-11-11) |
+| 318 | · the screen |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 276 | `BusinessServices.UPKEEP_IMPORTED` | `0.75` | The share of the upkeep it sells the city's services and the bank that it buys abroad (HL1; measured 2026-11-11 on seeds 0 and 1, months 240-900: the grocers import 0.75-0.78 of their inputs, the restaurants 0.73-0.77... |
-| 279 | `BusinessServices.UPKEEP_SUPPLIES` | `"Upkeep supplies"` | The upkeep's name on its input line. |
+| 290 | `BusinessServices.UPKEEP_IMPORTED` | `0.75` | The share of the upkeep it sells the city's services and the bank that it buys abroad (HL1; measured 2026-11-11 on seeds 0 and 1, months 240-900: the grocers import 0.75-0.78 of their inputs, the restaurants 0.73-0.77... |
+| 293 | `BusinessServices.UPKEEP_SUPPLIES` | `"Upkeep supplies"` | The upkeep's name on its input line. |
+| 299 | `BusinessServices.BANK_UPKEEP_SUPPLIES` | `"Bank upkeep supplies"` | The bank's part of the upkeep on an input line of its own, because the national accounts keep it out of their imports: the bank's output is in no term of GDP (HL1, 2026-11-11, the review's finding). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 76 | 258 | **type** `public final class BusinessServices extends Sector` | Somebody else's work, done here, paid for from outside. |
-| 78 | 11 | `public BusinessServices()` |  |
-| 91 | 5 | `public double getSeats()` | Seats of every kind, staffed or not - the sector in one number. |
-| 104 | 3 | `public double priceOfSeat(Good g)` | What a seat-month of each kind fetches in the city's own money. |
-| 115 | 8 | `public double payrollShare()` | Payroll as a share of revenue, at the wages the city is paying now. |
+| 77 | 287 | **type** `public final class BusinessServices extends Sector` | Somebody else's work, done here, paid for from outside. |
+| 79 | 11 | `public BusinessServices()` |  |
+| 92 | 5 | `public double getSeats()` | Seats of every kind, staffed or not - the sector in one number. |
+| 105 | 3 | `public double priceOfSeat(Good g)` | What a seat-month of each kind fetches in the city's own money. |
+| 116 | 8 | `public double payrollShare()` | Payroll as a share of revenue, at the wages the city is paying now. |
 
-### plan (lines 124-254)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 150 | 71 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Overridden for the same reason Mining and Heavy Industry override it: the generic planner forecasts from LOCAL demand, and BusinessInvestment says so in its own header - "the world is not demand". |
-| 228 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with no stock: it shrinks on distress, not on a demand reading. |
-| 235 | 4 | `private double licencesOnSite(JobType licence, Game game)` | The licences of one kind this sector's practices on site will ask for when they open (BA1, 2026-11-02): each one's licensed posts at the share Game.licencesNeededFor() holds the first of a kind to. |
-| 244 | 10 | `private static String licenceLabel(JobType job)` | A licence, in words, without reaching into the UI for it - a sector must not depend on the screen that draws it. |
-
-### THE CITY'S UPKEEP (HL1, 2026-11-11) (lines 255-287)
+### plan (lines 125-255)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 282 | 5 | `public void sellUpkeep(double bill)` | Upkeep the city's services or the bank have paid, billed to this sector this month: other revenue now, the imported share its input. |
+| 151 | 71 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Overridden for the same reason Mining and Heavy Industry override it: the generic planner forecasts from LOCAL demand, and BusinessInvestment says so in its own header - "the world is not demand". |
+| 229 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with no stock: it shrinks on distress, not on a demand reading. |
+| 236 | 4 | `private double licencesOnSite(JobType licence, Game game)` | The licences of one kind this sector's practices on site will ask for when they open (BA1, 2026-11-02): each one's licensed posts at the share Game.licencesNeededFor() holds the first of a kind to. |
+| 245 | 10 | `private static String licenceLabel(JobType job)` | A licence, in words, without reaching into the UI for it - a sector must not depend on the screen that draws it. |
 
-### the screen (lines 288-333)
+### THE CITY'S UPKEEP (HL1, 2026-11-11) (lines 256-317)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 291 | 38 | `public List<Line> ownLines(Game game)` |  |
-| 332 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a service, read by its revenue a worker. |
+| 302 | 3 | `public void sellUpkeep(double bill)` | Upkeep the city's five services have paid (care, schools, research, safety, transit), billed to this sector this month: other revenue now, the imported share its input. |
+| 307 | 3 | `public void sellBankUpkeep(double bill)` | What the bank paid to run this month, billed to this sector: other revenue now, the imported share its input on BANK_UPKEEP_SUPPLIES. |
+| 312 | 5 | `private void sellUpkeepOn(String line, double bill)` | The one body of both: the whole bill is other revenue, the imported share of it is booked as an imported service on the line called {@code line}. |
+
+### the screen (lines 318-363)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 321 | 38 | `public List<Line> ownLines(Game game)` |  |
+| 362 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a service, read by its revenue a worker. |
 

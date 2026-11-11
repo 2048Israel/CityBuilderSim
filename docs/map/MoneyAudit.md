@@ -1,4 +1,4 @@
-# MoneyAudit.java - 1,656 lines · 42 methods · 7 constants · model
+# MoneyAudit.java - 1,662 lines · 42 methods · 8 constants · model
 
 `ham/citybuildersim/MoneyAudit.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
@@ -66,26 +66,26 @@
 
 **Uses:** [Sector](Sector.md) (13), [Sectors](Sectors.md) (11), [Game](Game.md) (8), [Trade](Trade.md) (4), [EconomyManager](EconomyManager.md) (2), [SupplierCredit](SupplierCredit.md) (2), [Equity](Equity.md) (2), [OldMetal](OldMetal.md) (2), [PopulationManager](PopulationManager.md) (1), [HouseholdBalance](HouseholdBalance.md) (1), [PriceLevel](PriceLevel.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1), [Healthcare](Healthcare.md) (1), [Education](Education.md) (1), [BondMarket](BondMarket.md) (1), [CentralBank](CentralBank.md) (1)
 
-**Used by (62):** [AuctionCheck](AuctionCheck.md), [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [BuildersFirstCheck](BuildersFirstCheck.md), [BuybackCheck](BuybackCheck.md), [CallCheck](CallCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CarryTradeCheck](CarryTradeCheck.md), [CausesOfDeathCheck](CausesOfDeathCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [CentralBankCheck](CentralBankCheck.md), [CoalMiningCheck](CoalMiningCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConstructionTrapCheck](ConstructionTrapCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [CreditCheck](CreditCheck.md), [CurrencyCheck](CurrencyCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [DeathCareFirstCheck](DeathCareFirstCheck.md), [DebtExchangeCheck](DebtExchangeCheck.md), [DebtMoneysCheck](DebtMoneysCheck.md), [DiscoveryCheck](DiscoveryCheck.md), [EducationCheck](EducationCheck.md), [ExchangeCheck](ExchangeCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [FittingCheck](FittingCheck.md), [FloatLinkCheck](FloatLinkCheck.md), [ForeignAccounts](ForeignAccounts.md), [ForeignCheck](ForeignCheck.md), [ForeignDebtCheck](ForeignDebtCheck.md), [ForestryCheck](ForestryCheck.md), [Forms1900Check](Forms1900Check.md), [FoundingYardCheck](FoundingYardCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [GroceryCheck](GroceryCheck.md), [HistoryCheck](HistoryCheck.md), [HoldersCheck](HoldersCheck.md), [InterestAbroadCheck](InterestAbroadCheck.md), [InvestCheck](InvestCheck.md), [LandCheck](LandCheck.md), [LongPlaytest](LongPlaytest.md), [MaterialsCheck](MaterialsCheck.md), [MoneyCheck](MoneyCheck.md), [MortgageCheck](MortgageCheck.md), [NewGameCheck](NewGameCheck.md), [OilCheck](OilCheck.md), [OutsideCheck](OutsideCheck.md), [PortCheck](PortCheck.md), [PrizeCheck](PrizeCheck.md), [QuarryingCheck](QuarryingCheck.md), [RefineryCheck](RefineryCheck.md), [RoadCheck](RoadCheck.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md), [ShortSellingCheck](ShortSellingCheck.md), [SkipReportCheck](SkipReportCheck.md), [SlopeCheck](SlopeCheck.md), [SupplierCreditCheck](SupplierCreditCheck.md), [TreasuryCheck](TreasuryCheck.md), [WoodProductsCheck](WoodProductsCheck.md)
+**Used by (63):** [AuctionCheck](AuctionCheck.md), [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [BuildersFirstCheck](BuildersFirstCheck.md), [BuybackCheck](BuybackCheck.md), [CallCheck](CallCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CarryTradeCheck](CarryTradeCheck.md), [CausesOfDeathCheck](CausesOfDeathCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [CentralBankCheck](CentralBankCheck.md), [CoalMiningCheck](CoalMiningCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConstructionTrapCheck](ConstructionTrapCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [CreditCheck](CreditCheck.md), [CurrencyCheck](CurrencyCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [DeathCareFirstCheck](DeathCareFirstCheck.md), [DebtExchangeCheck](DebtExchangeCheck.md), [DebtMoneysCheck](DebtMoneysCheck.md), [DiscoveryCheck](DiscoveryCheck.md), [EducationCheck](EducationCheck.md), [ExchangeCheck](ExchangeCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [FittingCheck](FittingCheck.md), [FloatLinkCheck](FloatLinkCheck.md), [ForeignAccounts](ForeignAccounts.md), [ForeignCheck](ForeignCheck.md), [ForeignDebtCheck](ForeignDebtCheck.md), [ForestryCheck](ForestryCheck.md), [Forms1900Check](Forms1900Check.md), [FoundingYardCheck](FoundingYardCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [GroceryCheck](GroceryCheck.md), [HistoryCheck](HistoryCheck.md), [HoldersCheck](HoldersCheck.md), [InterestAbroadCheck](InterestAbroadCheck.md), [InvestCheck](InvestCheck.md), [LandCheck](LandCheck.md), [LongPlaytest](LongPlaytest.md), [MaterialsCheck](MaterialsCheck.md), [MoneyCheck](MoneyCheck.md), [MortgageCheck](MortgageCheck.md), [NewGameCheck](NewGameCheck.md), [OilCheck](OilCheck.md), [OutsideCheck](OutsideCheck.md), [PortCheck](PortCheck.md), [PrizeCheck](PrizeCheck.md), [QuarryingCheck](QuarryingCheck.md), [RefineryCheck](RefineryCheck.md), [RoadCheck](RoadCheck.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md), [ShortSellingCheck](ShortSellingCheck.md), [SkipReportCheck](SkipReportCheck.md), [SlopeCheck](SlopeCheck.md), [SupplierCreditCheck](SupplierCreditCheck.md), [TreasuryCheck](TreasuryCheck.md), [WoodProductsCheck](WoodProductsCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 674 | HOW CLOSE IS CLOSE ENOUGH, AT ANY SIZE (0.7.54) |
+| 680 | HOW CLOSE IS CLOSE ENOUGH, AT ANY SIZE (0.7.54) |
 
 ## Enum constants
 
 | line | constant | says |
 |---:|---|---|
-| 577 | `MoneyAudit.Scope.DOMESTIC` |  |
-| 577 | `MoneyAudit.Scope.TRADE` |  |
-| 577 | `MoneyAudit.Scope.INCOME` |  |
-| 577 | `MoneyAudit.Scope.FINANCIAL` |  |
-| 577 | `MoneyAudit.Scope.VALUATION` |  |
-| 577 | `MoneyAudit.Scope.RESERVE` |  |
-| 577 | `MoneyAudit.Scope.MONEY` |  |
-| 577 | `MoneyAudit.Scope.BOOK` |  |
+| 583 | `MoneyAudit.Scope.DOMESTIC` |  |
+| 583 | `MoneyAudit.Scope.TRADE` |  |
+| 583 | `MoneyAudit.Scope.INCOME` |  |
+| 583 | `MoneyAudit.Scope.FINANCIAL` |  |
+| 583 | `MoneyAudit.Scope.VALUATION` |  |
+| 583 | `MoneyAudit.Scope.RESERVE` |  |
+| 583 | `MoneyAudit.Scope.MONEY` |  |
+| 583 | `MoneyAudit.Scope.BOOK` |  |
 
 ## Constants
 
@@ -94,10 +94,11 @@
 | 99 | `MoneyAudit.Result.NONE` | `new Result(0, 0, 0, 0, 0, 0)` |  |
 | 310 | `MoneyAudit.Households.NONE` | `new Households(0, 0, 0, 0, 0, 0, "", null)` |  |
 | 439 | `MoneyAudit.PUBLIC_PAYROLLS` | `{ "- bank Payroll", "- utilities UtilityPayroll", "- care Payroll", "- school...` | The strike's own labels for the public payrolls, whose sum the live public wages are set against (households()). |
-| 592 | `MoneyAudit.POOL_NAMES` | `poolNames()` | The pools, by name: the city, every sector in the registry's order, the builders' order book, the bank, and since 0.7.14 the city's fund (on the end, so every other pool keeps its place). |
-| 731 | `MoneyAudit.CENT` | `.01 * PriceLevel.FACTOR` | A harness's cent: 0.01 of a unit of a thousand dollars at today's prices, times PriceLevel.FACTOR - the least a money comparison has allowed, priced at the founding's level (EP1, the ship gate's review: the cent staye... |
-| 734 | `MoneyAudit.RELATIVE_TOLERANCE` | `1e-12` | ...and the share of the figures compared that their own rounding is allowed past it: a part in a trillion. |
-| 747 | `MoneyAudit.ULP_STEPS` | `64` | ...and the least a floor allows, in a double's steps at the size of the figures compared (0.7.64; 8 in 0.7.63): the most an identity held to a floor under a cent was measured to miss by, in steps of the figures it is ... |
+| 444 | `MoneyAudit.OWN_LINES` | `{ "+ households Unfunded", "- households UnsettledIncome", "+ households Unse...` | The households' nine own lines (HL1) by the label households() notes them under, in the order it adds them; the first character is the sign each enters the own sum with. |
+| 598 | `MoneyAudit.POOL_NAMES` | `poolNames()` | The pools, by name: the city, every sector in the registry's order, the builders' order book, the bank, and since 0.7.14 the city's fund (on the end, so every other pool keeps its place). |
+| 737 | `MoneyAudit.CENT` | `.01 * PriceLevel.FACTOR` | A harness's cent: 0.01 of a unit of a thousand dollars at today's prices, times PriceLevel.FACTOR - the least a money comparison has allowed, priced at the founding's level (EP1, the ship gate's review: the cent staye... |
+| 740 | `MoneyAudit.RELATIVE_TOLERANCE` | `1e-12` | ...and the share of the figures compared that their own rounding is allowed past it: a part in a trillion. |
+| 753 | `MoneyAudit.ULP_STEPS` | `64` | ...and the least a floor allows, in a double's steps at the size of the figures compared (0.7.64; 8 in 0.7.63): the most an identity held to a floor under a cent was measured to miss by, in steps of the figures it is ... |
 
 ## Fields (state)
 
@@ -141,7 +142,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 95 | 1562 | **type** `public final class MoneyAudit` | Where the money went this month, and whether it all went somewhere. |
+| 95 | 1568 | **type** `public final class MoneyAudit` | Where the money went this month, and whether it all went somewhere. |
 | 98 | 198 | **type** `public static final class Result` | One month's strike. |
 | 174 | 1 | `public double moneyMade()` _(in MoneyAudit.Result)_ | What the month did to M0, as the audit saw it cross the edge. |
 | 177 | 1 | `public double tradeBalance()` _(in MoneyAudit.Result)_ | Exports less imports. |
@@ -173,24 +174,24 @@
 | 380 | 3 | `public static double householdsHeld(Game g)` | The households' savings, as the identity above reads them (HL1, 2026-11-11): HouseholdBalance's total LESS what a buyback between two presses has already paid them and the next month has not yet declared - the same ti... |
 | 394 | 36 | `static double householdsInTransit(Game g)` | What the pools have paid, or been paid, that the households' savings have not yet felt (HL1, 2026-11-11), signed as it adds to what they hold: the pools pay or are credited in ONE press, and the households are handed ... |
 | 432 | 5 | `private static double publicWages(Game g)` | The public wages as the households are handed them live: everyone's wages less the sectors' own payrolls, what is left being the bank's, utilities', care's, schools', research's, safety's and transit's. |
-| 447 | 31 | `static Households households(Game g, double before, Result pools)` | Strikes the households' identity for the month: householdsHeld() now, against the opening figure, the sums the pools' strike recorded, and the households' OWN lines (HL1): faults of the model's, named and measured her... |
-| 480 | 7 | `private static double ownLine(StringBuilder detail, java.util.Map<String, Double> figures, String label, double amount, int sign)` | One own line: noted as Result.detail's lines are when it is not zero, and its share of the own sum returned (sign 1 adds the amount, -1 takes it off). |
-| 488 | 1 | `private MoneyAudit()` |  |
-| 577 | 1 | **type** `public enum Scope` | WHICH SIDE OF WHICH BOUNDARY A FLOW CROSSES. |
-| 580 | 3 | **type** `private interface Tagged` | Label, amount and scope, for one line of the month. |
-| 581 | 1 | `double apply(String label, double amount, Scope scope)` _(in MoneyAudit.Tagged)_ |  |
-| 594 | 9 | `private static String[] poolNames()` |  |
-| 605 | 68 | `public static double[] pools(Game g)` | The pools, in POOL_NAMES order. |
+| 453 | 31 | `static Households households(Game g, double before, Result pools)` | Strikes the households' identity for the month: householdsHeld() now, against the opening figure, the sums the pools' strike recorded, and the households' OWN lines (HL1): faults of the model's, named and measured her... |
+| 486 | 7 | `private static double ownLine(StringBuilder detail, java.util.Map<String, Double> figures, String label, double amount, int sign)` | One own line: noted as Result.detail's lines are when it is not zero, and its share of the own sum returned (sign 1 adds the amount, -1 takes it off). |
+| 494 | 1 | `private MoneyAudit()` |  |
+| 583 | 1 | **type** `public enum Scope` | WHICH SIDE OF WHICH BOUNDARY A FLOW CROSSES. |
+| 586 | 3 | **type** `private interface Tagged` | Label, amount and scope, for one line of the month. |
+| 587 | 1 | `double apply(String label, double amount, Scope scope)` _(in MoneyAudit.Tagged)_ |  |
+| 600 | 9 | `private static String[] poolNames()` |  |
+| 611 | 68 | `public static double[] pools(Game g)` | The pools, in POOL_NAMES order. |
 
-### HOW CLOSE IS CLOSE ENOUGH, AT ANY SIZE (0.7.54) (lines 674-1656)
+### HOW CLOSE IS CLOSE ENOUGH, AT ANY SIZE (0.7.54) (lines 680-1662)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 750 | 3 | `public static double tolerance(double scale)` | How far two money figures of about this size may miss and still agree: CENT, or RELATIVE_TOLERANCE of the size, whichever is more. |
-| 761 | 6 | `public static double tolerance(double floor, double scale)` | ...for a comparison held to a floor of its own: the floor while RELATIVE_TOLERANCE of the size is under a cent, and past that the larger of the two - and since 0.7.63 the floor never under ULP_STEPS of a double's step... |
-| 773 | 5 | `public static double pooled(Game g)` | Every dollar in the pools: the city's, its businesses', the builders' order book, and the bank's - plus what it owes the window, less what it owes for the city's paper - and the city's fund's (0.7.14). |
-| 787 | 3 | `static Result strike(Game g, double before, double interestDue)` | Strikes the month. |
-| 792 | 847 | `static Result strike(Game g, double before, double[] poolsBefore, double interestDue)` | As above, and with the opening pools the result can say which pool moved unexplained. |
-| 1641 | 8 | `static double oldMetalBoughtOfHouseholds(Sectors sectors)` | What the Scrap Yards' struck statements bought of the households' old steel (0.7.123; OldMetal): their input billed by Trade.HOUSEHOLDS, which nothing else is. |
-| 1651 | 5 | `static double oldMetalInTransit(Sectors sectors)` | What the yards have bought of the households and paid into their savings (HouseholdBalance.creditScrappedCars()) that their books have not struck yet: in the savings, not yet out of the pools. |
+| 756 | 3 | `public static double tolerance(double scale)` | How far two money figures of about this size may miss and still agree: CENT, or RELATIVE_TOLERANCE of the size, whichever is more. |
+| 767 | 6 | `public static double tolerance(double floor, double scale)` | ...for a comparison held to a floor of its own: the floor while RELATIVE_TOLERANCE of the size is under a cent, and past that the larger of the two - and since 0.7.63 the floor never under ULP_STEPS of a double's step... |
+| 779 | 5 | `public static double pooled(Game g)` | Every dollar in the pools: the city's, its businesses', the builders' order book, and the bank's - plus what it owes the window, less what it owes for the city's paper - and the city's fund's (0.7.14). |
+| 793 | 3 | `static Result strike(Game g, double before, double interestDue)` | Strikes the month. |
+| 798 | 847 | `static Result strike(Game g, double before, double[] poolsBefore, double interestDue)` | As above, and with the opening pools the result can say which pool moved unexplained. |
+| 1647 | 8 | `static double oldMetalBoughtOfHouseholds(Sectors sectors)` | What the Scrap Yards' struck statements bought of the households' old steel (0.7.123; OldMetal): their input billed by Trade.HOUSEHOLDS, which nothing else is. |
+| 1657 | 5 | `static double oldMetalInTransit(Sectors sectors)` | What the yards have bought of the households and paid into their savings (HouseholdBalance.creditScrappedCars()) that their books have not struck yet: in the savings, not yet out of the pools. |
 
