@@ -1414,6 +1414,17 @@ public class AuctionCheck {
         AutoBuilder ab = a.getAutoBuilder();
         ab.setOn(true, null);
         ab.setCap(Cap.tail(0), null);
+        /*
+         * WG2, {next}, 2026-11-10: THE BUILDER'S MARGIN IS SET TO .30, SO THE ASK FOR GENERAL CARE IS FOR THE COMMUNITY HEALTH CENTRE AGAIN. The WITHDRAWN
+         * section below needs the town's General care ask to be for a Community Health Centre with money raised. WG2's pulls leave this town 3,904 people
+         * against 4,361 and its health posts less filled (what one Walk-in Clinic serves, 1,393 against 1,500; one Community Health Centre, 6,816 against
+         * 7,625), and the advice's first card for General care is three Walk-in Clinics (0.9106 a unit served over their life) ahead of one Centre
+         * (0.9157, 0.6% dearer), where main's was the Centre (0.7969 against 0.8294). The ask opened for the clinics, an issue of D$243k that raised nothing
+         * after the streets' sale took the buyers' money (main's Centre ask, an issue of D$507k, raised D$86k). The margin the builder keeps past
+         * today's demand (AutoBuilder.DEFAULT_SLACK, .15) sizes the order: from .25 up the Centre is the cheaper per unit served (.30: 0.9048
+         * against the clinics' 0.9106), so the fixture sets the player's slider to .30 and the ask is the Centre's.
+         */
+        ab.setSlack(.30, null);
         assertTrue("automatic building's cap is its own: set to fair, the rollover's stays at fair plus a point",
                 CapSetting.same(ab.getCap(), Cap.tail(0)) && CapSetting.same(a.getRolloverCap(), Cap.DEFAULT));
 

@@ -626,6 +626,17 @@ public class FittingCheck {
                         && fitting.reason.contains(String.format("%.2f%% a month", rich.earningsOnCost() * 100)), fitting.reason);
 
         // Ranked with the building, both ways, from the getters the choice reads.
+        /*
+         * WG2, {next}, 2026-11-10: BREAD'S PRICE IS MOVED HERE TOO, TO WHERE A BAKERY EARNS HALF WHAT THE DRIVE DOES. WG2's pulls (Migration.jobsPull(),
+         * homesPull()) put this village on another path, and the investors' estimate of a Bakery over the cost of one stood at 0.00154 a month on main
+         * (the GW1 note below) and stands at -0.0020577 now, under nothing, while the drive at three times the break-even earns 0.0186495: the fixture
+         * below needs a Bakery that earns something, and less than the fitting. Bread's price is moved (the way GW1's is below, world prices) to where
+         * the Bakery's score is half the drive's at three times; the move below then goes on from that price to its own target, which is dearer.
+         */
+        boolean breadFirst = breadForBakeryScore(g, plans, key, t, rich.earningsOnCost() / 2);
+        check("fixture: bread's price moves until a Bakery earns on its cost half of what the drive earns at three times the break-even",
+                breadFirst && Math.abs(plans.estimatedMonthlyProfit(key, t) / plans.getCostOf(t, 1) - rich.earningsOnCost() / 2) <= 1e-6 * rich.earningsOnCost(),
+                plans.estimatedMonthlyProfit(key, t) / plans.getCostOf(t, 1) + " vs " + rich.earningsOnCost());
         double buildScore = plans.estimatedMonthlyProfit(key, t) / plans.getCostOf(t, 1);
         check("fixture: at three times the break-even the fitting earns more on its cost than a Bakery would (the investors' estimate over its cost of one)",
                 buildScore > 0 && rich.earningsOnCost() > buildScore, rich.earningsOnCost() + " vs " + buildScore);
