@@ -418,6 +418,29 @@ public class HouseholdBalance {
     private int studentIndex;
     private final int[] orphanIndex = new int[AgeBand.values().length];
     private int prisonerIndex;
+    private int ownerIndex;
+
+    /**
+     * True when a listing company's founders' shares go to the owner families
+     * (BO1) and not to every household. OFF by default, so a bare fixture
+     * keeps today's grant by grown-ups (the households study: "With no owner
+     * household (a bare fixture), today's rule"); Game switches it on.
+     */
+    private boolean ownerLine;
+
+    /**
+     * Per company: -1 when it has no owner family; 0 or more when it has one,
+     * and then the number is the months its fair value has sat at the
+     * exchange's floor (the family gives up after OwnerHousehold.OWNER_BROKE_MONTHS).
+     * Indexed like Equity.COMPANIES. Saved: see ownerLineForSave().
+     */
+    private final int[] ownerFloorMonths = newOwnerLine();
+
+    private static int[] newOwnerLine() {
+        int[] line = new int[Equity.COMPANIES.length];
+        java.util.Arrays.fill(line, -1);
+        return line;
+    }
 
     /**
      * How many households are in each cell the family matrix does not hold -
@@ -688,6 +711,9 @@ public class HouseholdBalance {
         // ...and the prisoners' ledger, last, so every cell before it keeps its place.
         prisonerIndex = built.size();
         built.add(new PrisonerHousehold());
+        // ...and the owner families after them (BO1), the same reason.
+        ownerIndex = built.size();
+        built.add(new OwnerHousehold());
         cells = built.toArray(new Household[0]);
         view = java.util.Collections.unmodifiableList(java.util.Arrays.asList(cells));
         carsToReplace = new double[cells.length];
@@ -730,6 +756,98 @@ public class HouseholdBalance {
 
     /** The prisoners' ledger. */
     public PrisonerHousehold prisoners() { return (PrisonerHousehold) cells[prisonerIndex]; }
+
+    /** The owner families' ledger: one two-adult household per company with a family. */
+    public OwnerHousehold owners() { return (OwnerHousehold) cells[ownerIndex]; }
+
+    /** Switches the owner line on or off (BO1); see ownerLine. Game switches it on. */
+    public void setOwnerLine(boolean on) { ownerLine = on; }
+
+    public boolean isOwnerLine() { return ownerLine; }
+
+    /** How many companies have an owner family. */
+    public int ownerFamilies() {
+        int n = 0;
+        for (int m : ownerFloorMonths) if (m >= 0) n++;
+        return n;
+    }
+
+    /** True when this company (Equity.COMPANIES index) has an owner family. */
+    public boolean hasOwnerFamily(int company) { return ownerFloorMonths[company] >= 0; }
+
+    /** The line's state for the save: company key to months at the floor, only the companies with a family, in company order. */
+    public java.util.Map<String, Integer> ownerLineForSave() {
+        java.util.Map<String, Integer> line = new java.util.LinkedHashMap<>();
+        for (int c = 0; c < ownerFloorMonths.length; c++) {
+            if (ownerFloorMonths[c] >= 0) line.put(Equity.COMPANIES[c], ownerFloorMonths[c]);
+        }
+        return line;
+    }
+
+    /** Restores the line from a save; null or a missing key means no family, an unknown key is skipped. */
+    public void restoreOwnerLine(java.util.Map<String, Integer> line) {
+        java.util.Arrays.fill(ownerFloorMonths, -1);
+        if (line == null) return;
+        for (java.util.Map.Entry<String, Integer> e : line.entrySet()) {
+            if (e.getKey() == null || e.getValue() == null) continue;
+            for (int c = 0; c < Equity.COMPANIES.length; c++) {
+                if (Equity.COMPANIES[c].equals(e.getKey())) {
+                    ownerFloorMonths[c] = Math.max(0, e.getValue());
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * A YEAR AT THE FLOOR SENDS A FAMILY BACK (BO1; Jerus, 2026-11-02: "if
+     * sector goes broke he just joins the regular pop pool"). Once a month,
+     * for each company with a family: its fair value at the exchange's floor
+     * (the predicate: Exchange.atFloor) is one more month at it, and at
+     * OwnerHousehold.OWNER_BROKE_MONTHS the family leaves the line; a month
+     * off the floor starts the count again. The family is dropped here and the
+     * census, next month, takes its two adults out of the owner cell: see
+     * followThePeople(). A company not in issue (the predicate listed) is
+     * not at any floor: it is waiting for its family, which the census
+     * forms while the owner cell is empty; once the cell holds families and
+     * the company has still not listed, the listing was not retried and the
+     * family it reserved is let go (the stranger's review, 2026-11-10: it
+     * sat out of the labour force for a year at a floor it never had).
+     * Nothing with the line off.
+     */
+    public void tallyOwnersAtFloor(java.util.function.IntPredicate atFloor, java.util.function.IntPredicate listed) {
+        if (!ownerLine) return;
+        for (int c = 0; c < ownerFloorMonths.length; c++) {
+            if (ownerFloorMonths[c] < 0) continue;
+            if (!listed.test(c)) {
+                if (owners().isEmpty()) continue;
+                ownerFloorMonths[c] = -1;
+                System.out.println("The family reserved to own " + Equity.COMPANIES[c] + " rejoins the working population: the company did not list once its family was there.");
+                continue;
+            }
+            if (!atFloor.test(c)) {
+                ownerFloorMonths[c] = 0;
+                continue;
+            }
+            ownerFloorMonths[c]++;
+            if (ownerFloorMonths[c] >= OwnerHousehold.OWNER_BROKE_MONTHS) {
+                ownerFloorMonths[c] = -1;
+                System.out.println("The owner family of " + Equity.COMPANIES[c] + " rejoins the working population: the company's fair value sat at the exchange's floor for "
+                        + OwnerHousehold.OWNER_BROKE_MONTHS + " months running.");
+            }
+        }
+    }
+
+    /**
+     * A company whose equity was taken (a failed bank's resolution) has
+     * nothing left to own: its family leaves the line at once, for the working
+     * population (BO1). No family, nothing to do.
+     */
+    public void ownerCompanyFailed(int company) {
+        if (ownerFloorMonths[company] < 0) return;
+        ownerFloorMonths[company] = -1;
+        System.out.println("The owner family of " + Equity.COMPANIES[company] + " rejoins the working population: the company failed and its equity was taken (a bank's resolution).");
+    }
 
     /** Every cell, in the fixed order. Read-only. */
     public java.util.List<Household> cells() { return view; }
@@ -1070,11 +1188,12 @@ public class HouseholdBalance {
     /**
      * A seven-row array - the tiers and the retired, from a caller written
      * before the people outside the families had rows - padded with empty
-     * rows. Nobody is in them unless the outside census says so.
+     * rows (or a ten-row one from before the prisons, an eleven-row one from
+     * before the owner families). Nobody is in them unless the outside census says so.
      */
     private static double[] padRows(double[] rows) {
         if (rows == null || (rows.length != ROWS_BEFORE_OUTSIDE
-                && rows.length != Household.ROWS_BEFORE_PRISON)) return rows;
+                && rows.length != Household.ROWS_BEFORE_PRISON && rows.length != Household.ROWS_BEFORE_OWNER)) return rows;
         return java.util.Arrays.copyOf(rows, ROWS);
     }
 
@@ -1295,10 +1414,33 @@ public class HouseholdBalance {
         for (int i = 0; i < n; i++) before[i] = cells[i].households;
         double[] beforeLoans = carryGraduatesLoans(before);
 
+        /*
+         * A FAMILY LEAVING THE OWNER LINE TAKES NO SHARES (BO1): its company
+         * is broke and its shares worthless, and the other stakes stay with
+         * the families whose companies live. So while the owner cell shrinks
+         * and stays a cell, the share stocks move as if it had not (its
+         * households "before" are what they are now: no delta, nothing
+         * released into the pool), and afterwards its per-household stake is
+         * raised by before / now, so the line's total of each company is what
+         * it was. Everything else the leaver takes at the cell's average, as
+         * anyone does. A cell that empties is today's rule for all of it.
+         */
+        double[] beforeShares = before;
+        boolean ownersLeave = fresh[ownerIndex] < before[ownerIndex] && fresh[ownerIndex] >= EMPTY_CELL;
+        if (ownersLeave) {
+            beforeShares = before.clone();
+            beforeShares[ownerIndex] = fresh[ownerIndex];
+        }
+
         double[] left = new double[stocks.size()];
         for (int k = 0; k < stocks.size(); k++) {
             boolean loans = k == loanSlot;
-            left[k] = moveStock(stocks.get(k), fresh, loans ? beforeLoans : before, k == 0 ? buffer : null);
+            boolean shares = k >= 2 && k < 2 + Equity.COMPANIES.length;
+            left[k] = moveStock(stocks.get(k), fresh, loans ? beforeLoans : shares ? beforeShares : before, k == 0 ? buffer : null);
+        }
+        if (ownersLeave) {
+            double keep = before[ownerIndex] / fresh[ownerIndex];
+            for (int k = 0; k < Equity.COMPANIES.length; k++) cells[ownerIndex].shares[k] *= keep;
         }
         // Each cell's bonds total, from the bonds that moved (round 2).
         if (bondStockIds.length > 0) for (Household c : cells) c.recountBonds();
@@ -4013,6 +4155,8 @@ public class HouseholdBalance {
         for (int i = 0; i < cells.length; i++) {
             Household c = cells[i];
             if (c.isEmpty() || !c.canInvest() || owes(c) || c.lockout > 0 || c.isGoingShort()) continue;
+            // The owner line takes no offering (BO1): its stakes dilute.
+            if (!c.tradesShares()) continue;
             double cushion = SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
             double excess = c.savings - cushion;
             if (excess <= 0) continue;
@@ -4043,16 +4187,36 @@ public class HouseholdBalance {
      * goes to the city's households, by grown-ups: the founders own what
      * they founded. Nothing is paid; net worth rises by what was always
      * theirs and was never written down. See Equity.offer().
+     *
+     * BO1: with the owner line on, they go to the OWNER FAMILIES alone - one
+     * cell, each family an equal part of every founding stake - and not to
+     * every household. The company's family is reserved here (its place in the
+     * line), and when the owner cell is still empty nothing is credited and
+     * the answer is false: the census forms the family next month, and the
+     * caller waits (the grant runs at Game.payDividends, after the month's
+     * census). The family's own household dilutes the stake equally once it
+     * arrives, followThePeople conserving the cell's total.
+     *
+     * @return true when the founders' shares were issued (or there was
+     *         nothing to issue); false when the company waits for its family
      */
-    public void grantFounders(int company, double shares) {
-        if (!(shares > 0)) return;
+    public boolean grantFounders(int company, double shares) {
+        if (!(shares > 0)) return true;
+        if (ownerLine) {
+            if (ownerFloorMonths[company] < 0) ownerFloorMonths[company] = 0;
+            Household o = owners();
+            if (o.isEmpty()) return false;
+            o.shares[company] += shares / o.households;
+            return true;
+        }
         double weight = 0;
         for (Household c : cells) if (!c.isEmpty()) weight += c.households * c.grownUps();
-        if (weight <= 0) return;
+        if (weight <= 0) return true;
         for (Household c : cells) {
             if (c.isEmpty()) continue;
             c.shares[company] += shares * c.grownUps() / weight;
         }
+        return true;
     }
 
     /**
@@ -4585,8 +4749,11 @@ public class HouseholdBalance {
      *               hunger after the working), ROWS*8+3 from a build with the
      *               row working, or ROWS*3 from
      *               one before the household counts and the working were
-     *               appended. A short array restores what it carries and
-     *               leaves the rest to the rebuild.
+     *               appended; each of the three with eleven rows too, from
+     *               before the owner families (BO1), or with ten or seven
+     *               from before the prisons or the people outside. A short
+     *               array restores what it carries and leaves the rest to
+     *               the rebuild.
      * @param census the household counts to seed the cells with, or null to
      *               leave them empty for the plan to fill - see Game's load
      *               path, which restores once before the family model is back
@@ -4603,11 +4770,16 @@ public class HouseholdBalance {
         int rows;
         boolean current;
         int beforePrison = Household.ROWS_BEFORE_PRISON;
+        int beforeOwner = Household.ROWS_BEFORE_OWNER;
         // ...and since 0.7.27 the two halves of the hunger after the working.
-        boolean halves = saved.length == ROWS * 8 + 5;
-        if (halves)                                           { rows = ROWS; current = true; }
+        boolean halves = saved.length == ROWS * 8 + 5 || saved.length == beforeOwner * 8 + 5;
+        if (saved.length == ROWS * 8 + 5)                     { rows = ROWS; current = true; }
         else if (saved.length == ROWS * 8 + 3)                { rows = ROWS; current = true; }
         else if (saved.length == ROWS * 3)                    { rows = ROWS; current = false; }
+        // ...or from before the owner families had a row (BO1): every 0.9.88 save, one row short, the owners' empty.
+        else if (saved.length == beforeOwner * 8 + 5)         { rows = beforeOwner; current = true; }
+        else if (saved.length == beforeOwner * 8 + 3)         { rows = beforeOwner; current = true; }
+        else if (saved.length == beforeOwner * 3)             { rows = beforeOwner; current = false; }
         // ...or from the day before the prisons, with no prisoners' row.
         else if (saved.length == beforePrison * 8 + 3)        { rows = beforePrison; current = true; }
         else if (saved.length == beforePrison * 3)            { rows = beforePrison; current = false; }
@@ -4668,6 +4840,8 @@ public class HouseholdBalance {
 
     public void reset() {
         for (Household c : cells) c.clearAll();
+        // A new city has no owner families yet (BO1); the line stays on or off as Game set it.
+        java.util.Arrays.fill(ownerFloorMonths, -1);
         java.util.Arrays.fill(lastSharesTakenAway, 0);
         lastWrittenOff = 0;
         lastLeaving = 0;

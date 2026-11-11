@@ -4139,6 +4139,9 @@ public class Game {
         rowHomes[HouseholdAccounts.ORPHANS]     = families.getOrphansTotal();
         rowPeople[HouseholdAccounts.PRISONERS]  = crime.prisoners();
         rowHomes[HouseholdAccounts.PRISONERS]   = crime.prisoners();
+        // ...and the owner families: two adults to a home, a company each (BO1).
+        rowPeople[HouseholdAccounts.OWNERS]     = householdBalance.owners().people();
+        rowHomes[HouseholdAccounts.OWNERS]      = householdBalance.owners().households();
         households.setOutsideMoney(economyManager.getEiPremiums(),
                 economyManager.getEiBenefits(), economyManager.getStudentGrants(),
                 // ...and the health premium, off the same payslips (2026-09-19).
@@ -4871,6 +4874,9 @@ public class Game {
         }
         exchange.takeMonth(equity, householdBalance, bank, exchangeCompanies, book,
                 DebtManager.WORLD_BASE_RATE, bank.depositRate(), month, fundBondsValue(), debtManager.householdBookYield());
+        // ...a company at the exchange's floor a year running sends its owner family back to the working pool (BO1): this month's fair values, the census next month.
+        // A family reserved for a company that is still not in issue once the owner cell holds families is let go the same way.
+        householdBalance.tallyOwnersAtFloor(exchange::atFloor, c -> equity.getShares(c) > 0);
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
             double k = exchange.getSplit(c);
             if (k > 1) GameLog.note(String.format("%s split its shares %,.0f for one.", Equity.COMPANIES[c], k));
@@ -5281,6 +5287,8 @@ public class Game {
         double[] cancelled = bank.cancelPreferred();
         bank.wipeOwners();
         double households = householdBalance.surrenderShares(Equity.BANK);
+        // ...and the bank's owner family, with nothing left to own, rejoins the working pool (BO1).
+        householdBalance.ownerCompanyFailed(Equity.BANK);
         double shortfall = Math.max(0, -bank.equity());
         double exit = bank.resolutionExitEquity();
         double amount = shortfall + exit;
@@ -15308,6 +15316,8 @@ public class Game {
         unemployment.imprison(crime.getPressure() > 0
                 ? crime.getAdmitted() * Math.min(1, causes.poolWeighted() / crime.getPressure()) : 0);
         populationManager.setImprisoned(crime.prisoners());
+        // The owner families take no job (BO1): two adults a company with a family.
+        populationManager.setOwners(2.0 * householdBalance.ownerFamilies());
         offending.steal(this, offenderWeight);
 
         double outOfWork = populationManager.getUnemployed();
@@ -15326,7 +15336,9 @@ public class Game {
          * their dependants with them, and before 2026-09-15 they did not, which
          * is why a city that built universities filled its orphan section.
          */
-        families.rebuild(cohorts, jobsByTier, crime.prisoners(), outOfWork + studying);
+        // ...and the owner families: two adults a company with a family, outside the families too (BO1).
+        families.rebuild(cohorts, jobsByTier, crime.prisoners(), outOfWork + studying,
+                2.0 * householdBalance.ownerFamilies());
         families.setSeekers(unemployment.getHoused(), studying);
         // The student body above is last month's education step, and so are
         // the ones who finished: they leave it with their loans at this
@@ -15792,6 +15804,8 @@ public class Game {
         householdBalance.setRentShares(this::rentShareOf);
         householdBalance.setHousedShares(this::housedShareOf);
         householdBalance.setOutsideDependants(this::outsideDependantsOf);
+        // The owner line (BO1) runs in a city by its dial; off, and in a bare fixture, the founders' grant is by grown-ups.
+        householdBalance.setOwnerLine(OwnerHousehold.IN_CITIES);
     }
 
     /** How many households are in a cell the family matrix does not hold. */
@@ -15806,6 +15820,7 @@ public class Game {
         }
         if (c instanceof PrisonerHousehold) return crime.prisoners();
         if (families == null) return 0;
+        if (c instanceof OwnerHousehold) return families.getOwnerFamilies();
         if (c instanceof StudentHousehold) return families.getSeekers(FamilyModel.Seeker.STUDENT);
         if (c instanceof OrphanHousehold o) return families.getOrphans(o.band());
         return 0;
@@ -16996,6 +17011,8 @@ public class Game {
         dataSave.setHouseholdBalance(householdBalance.toSaveArray());
         dataSave.setHouseholdCells(householdBalance.cellKeys(),
                 householdBalance.toCellSaveArray());
+        // ...and the owner line: which companies have a family, and its months at the floor (BO1).
+        dataSave.setOwnerFamilies(householdBalance.ownerLineForSave());
         // ...and the graduates the next census carries the loans of (0.7.63).
         dataSave.setHouseholdGraduates(householdBalance.graduatesToSave());
         dataSave.setBankCash(bank.getCash());
@@ -17154,6 +17171,7 @@ public class Game {
         dataSave.setShapeNames(FamilyModel.saveShapes());
         dataSave.setCohorts(cohorts.toSaveArray());
         dataSave.setFamilies(families.toSaveArray());
+        dataSave.setOwnerAdults(families.getOwnerAdults());
         dataSave.setMigration(migration.toSaveArray());
         dataSave.setUnemployment(unemployment.toSaveArray());
         dataSave.setSickness(sickness.getState());
@@ -20658,6 +20676,8 @@ public class Game {
             householdBalance.restore(loaded.getHouseholdBalance());
             householdBalance.restoreCells(loaded.getHouseholdCellKeys(),
                     loaded.getHouseholdCells(), loaded.getEquityKeys());
+            // The owner line (BO1): which companies have a family, and their months at the floor; null on an older save.
+            householdBalance.restoreOwnerLine(loaded.getOwnerFamilies());
             bank.setCash(loaded.getBankCash());
             bank.setBranchesCapitalised(loaded.getBankBranchesCapitalised());
             bank.setProfitLastMonth(loaded.getBankProfitLastMonth());
@@ -21552,6 +21572,11 @@ public class Game {
             // more workers than the live one until its first month.
             if (!crime.restore(restoredFlows.getCrime())) crime.reset();
             populationManager.setImprisoned(crime.prisoners());
+            // ...and the owner families, who take no job, as the census of the month the save was struck in
+            // counted them: saved apart (DataSave.getOwnerAdults), since the line may have gained or lost a
+            // family after the census.
+            families.restoreOwnerAdults(restoredFlows.getOwnerAdults());
+            populationManager.setOwners(families.getOwnerAdults());
             health.restore(restoredFlows.getHealth());
             // ...and the causes of death of 1900 (R0b): a save from before has
             // none, which starts them with nobody dead of them.
@@ -21847,6 +21872,7 @@ public class Game {
             householdBalance.restore(restoredFlows.getHouseholdBalance(), families::get);
             householdBalance.restoreCells(restoredFlows.getHouseholdCellKeys(),
                     restoredFlows.getHouseholdCells(), restoredFlows.getEquityKeys());
+            householdBalance.restoreOwnerLine(restoredFlows.getOwnerFamilies());
             // ...and each cell's own bonds with them, for the same reason: the
             // rebuild's census folds a cell it reads under half a household
             // into the rest, bonds and all, and the cell arrays above put
@@ -21879,6 +21905,8 @@ public class Game {
              */
             families.restore(restoredFlows.getBandNames(), restoredFlows.getShapeNames(),
                     restoredFlows.getFamilies());
+            // ...and the owner adults again: this restore clears them like the rest (BO1).
+            families.restoreOwnerAdults(restoredFlows.getOwnerAdults());
         }
 
         /*

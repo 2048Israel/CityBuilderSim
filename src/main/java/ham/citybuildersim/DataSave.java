@@ -1568,6 +1568,26 @@ public class DataSave implements Cloneable {
     private double[] householdCells;
 
     /**
+     * The owner line (BO1): the companies that have an owner family, each with
+     * its months at the exchange's floor, keyed by Equity.COMPANIES name. Saved
+     * because a family's existence and its run of months at the floor cannot be
+     * re-derived from the month's state: the cell holds the shares, not who
+     * they were founded by or how long the company has been worth nothing.
+     * Null on a save from before BO1, which loads an empty line: the founders'
+     * shares stay where they were, incomplete, not wrong (no SAVE_FORMAT bump).
+     */
+    private java.util.Map<String, Integer> ownerFamilies;
+
+    /**
+     * The owner families' adults as the month's census counted them (BO1):
+     * FamilyModel's, out of the labour force. Saved because the line can gain
+     * a family after the census (a listing at the month's dividends) and lose
+     * one (a year at the floor), so the line at the save is not the census's
+     * count. Null on a save from before BO1: none.
+     */
+    private Double ownerAdults;
+
+    /**
      * The bank's cash.
      *
      * A STOCK, and one of MoneyAudit's pools since 2026-09-07, so a save that
@@ -1631,6 +1651,11 @@ public class DataSave implements Cloneable {
     }
     public String[] getHouseholdCellKeys() { return householdCellKeys; }
     public double[] getHouseholdCells()    { return householdCells; }
+
+    public void setOwnerFamilies(java.util.Map<String, Integer> line) { this.ownerFamilies = line; }
+    public java.util.Map<String, Integer> getOwnerFamilies()          { return ownerFamilies; }
+    public void setOwnerAdults(double adults) { this.ownerAdults = adults; }
+    public double getOwnerAdults()            { return ownerAdults == null ? 0 : ownerAdults; }
 
     public void setBankCash(double cash) { this.bankCash = cash; }
     public double getBankCash()          { return bankCash; }
