@@ -477,7 +477,8 @@ public class Game {
                     : m.getSupply() > 0 ? m.getLocalPrice() : m.netImportPrice();
             return Double.isFinite(v) ? v : g.worldImportPrice();
         });
-        servicesManager.setExchangeRate(() -> getMarkets() == null ? PriceLevel.FACTOR : getMarkets().getExchangeRate());
+        servicesManager.setExchangeRate(() -> getMarkets() == null ? 1 : getMarkets().getExchangeRate());
+        servicesManager.setWorldPriceLevel(() -> world == null ? 1 : world.getPriceLevel());
         servicesManager.setCalendarMonth(() -> CityCalendar.monthOfYear(getMonth()));
         // ...and the grid is not sized for the power a factory turns with steam on site (R0c; ServicesManager.setSteamShareSource()).
         servicesManager.setSteamShareSource(key -> {

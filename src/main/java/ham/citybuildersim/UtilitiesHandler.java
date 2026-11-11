@@ -486,9 +486,9 @@ public class UtilitiesHandler {
     /** The power plants standing and how many of each (ServicesManager); null until handed in. */
     private Map<BuildingsTemplate, Integer> plants;
 
-    /** Where the month's fuel price, the exchange rate and the calendar month come from; null for a bare fixture (the world's price, FACTOR, no season). */
+    /** Where the month's fuel price, the exchange rate, the world's price level and the calendar month come from; null for a bare fixture (the world's price, at par, the founding's level, no season). */
     private ToDoubleFunction<Good> fuelPriceSource;
-    private DoubleSupplier exchangeRateSource;
+    private DoubleSupplier exchangeRateSource, worldLevelSource;
     private IntSupplier calendarMonth;
 
     /** The month last dispatched, and the rows it ran. */
@@ -509,8 +509,11 @@ public class UtilitiesHandler {
     /** The city's price of a unit of a fuel; null: the world's price (which already carries PriceLevel.FACTOR). */
     public void setFuelPrice(ToDoubleFunction<Good> cityPrice) { this.fuelPriceSource = cityPrice; }
 
-    /** City money per world thousand; null: PriceLevel.FACTOR. */
+    /** City money per world thousand (Markets.getExchangeRate()); null: 1, at par. */
     public void setExchangeRate(DoubleSupplier rate) { this.exchangeRateSource = rate; }
+
+    /** The world's prices against the founding's (WorldEconomy.getPriceLevel()), which the plants' upkeep follows as the fuel's world price does; null: 1. */
+    public void setWorldPriceLevel(DoubleSupplier level) { this.worldLevelSource = level; }
 
     /** The calendar month, 1 to 12, for the season; null: no season. */
     public void setCalendarMonth(IntSupplier month) { this.calendarMonth = month; }
@@ -520,7 +523,12 @@ public class UtilitiesHandler {
     }
 
     private double exchangeRate() {
-        return exchangeRateSource != null ? exchangeRateSource.getAsDouble() : PriceLevel.FACTOR;
+        return exchangeRateSource != null ? exchangeRateSource.getAsDouble() : 1;
+    }
+
+    private double worldLevel() {
+        double level = worldLevelSource != null ? worldLevelSource.getAsDouble() : 1;
+        return level > 0 && Double.isFinite(level) ? level : 1;
     }
 
     /** Re-seeds the money constants at a given unit: the dial over the unit, as Bank.seedConstants() does (the later slice calls it from Game.restrikeMoneyConstants()). */
@@ -755,7 +763,10 @@ public class UtilitiesHandler {
                 BuildingsTemplate t = e.getKey();
                 int n = e.getValue() == null ? 0 : e.getValue();
                 if (n <= 0) continue;
-                double kw = t.getProduction1() * n * fill, upkeep = t.getVariableUpkeep() / 1e6, perKwh = t.fuelPerKwh();
+                // The upkeep is US$ a MWh at today's level (buildings.json): over 1e6 thousands a kWh, times FACTOR the founding's dollars,
+                // times the world's price level since then the month's world money, as the fuel's world price is; the exchange rate then makes
+                // it city money. PW1: read as today's dollars it was 38.6 times too dear at the founding, nine-tenths of a coal plant's marginal.
+                double kw = t.getProduction1() * n * fill, upkeep = t.getVariableUpkeep() / 1e6 * PriceLevel.FACTOR * worldLevel(), perKwh = t.fuelPerKwh();
                 if (t.isHydro()) {
                     // A station's month is its water (its production1 over the month), levelled under its nameplate and its staffing.
                     double average = t.getProduction1() * n * (fill > 0 ? 1 : 0);
