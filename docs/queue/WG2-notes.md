@@ -231,3 +231,60 @@ caused by WG2's code:
     the months it counts.
   - HoldersCheck tills every paper holder in the coupon month, and sizes its first sale at .15 of the
     households' spare.
+- **Slice G, its second commit** (250cc204):
+  - BankCheck gives held Freight the cash for its fleet. Freight had bought trucks on credit, owing 164 on assets
+    of 139 at the save, and its book alone parted the month's and the quarter's allowances by $0.70k against
+    $0.33k. The fixture now asserts that Freight owes nothing.
+  - HoldersCheck's departure month comes after the inflation target is raised a point. The paper that leaves then
+    stands at or under face on the city's curve: 0.956, where WG2's deflating town had it at 1.051. This is
+    asserted before the desk-sale claim.
+- **KeptCheck** keeps two red lines, and both are passed by name. Neither is in WG2's screen code:
+  - `a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL`, at 86.5%. The
+    Float 5 page's ladder card remakes 40 nodes each month. This is KS1's class.
+  - `the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL`.
+    The hidden RATE wording (`UserInterface.java` `HeadlineTile.layoutChildren`) keeps its managed bounds, and
+    `KeptBench.sign()` skips only nodes that are both hidden and unmanaged. This is KF1, folded into KS1's row.
+
+## 8. KeptCheck's city collapses at month 2404: the cause is not WG2's drift
+
+KeptCheck's section 61 plays 25 plain months, m2391-2416. In them, its city loses its jobs and then its people.
+
+| month | people | posts | out of work |
+|---|---|---|---|
+| 2404 | 298,371 | 167,443 | 12% |
+| 2420 | 272,724 | 33,678 | 81% |
+| 2450 | 150,206 | 9,521 | 90% |
+| 2550 | 41,427 | 7,112 | 75% |
+| 2640 | 24,532 | 14,324 | 11% |
+| 3200 | 111,733 | 65,194 | 10% |
+
+- **The jobs go first.** BusinessInvestment's retirement winds down a sector that has been at a loss for 6
+  months: `RETIREMENT_LOSS_MONTHS` 6, `RETIREMENT_SLACK` .25 and `MAX_RETIREMENT_FRACTION` .25, a quarter of it a
+  month. The sectors that fall:
+  - Retail, a third of the city's workers, loses 7e12 a month. It goes from 101k workers to 1.2k.
+  - Real Estate goes from 41k to 4.3k, and Construction from 21.6k to 9.9k.
+- **On main's path** the shock is smaller. Construction goes from 26k to 8k and out of work reaches 35-49%, but
+  Retail stays at 43k and the people stay.
+- **The fault is main's, and WG2 only shows it.** WG2's own path makes Retail a third of the city. The
+  retirement's row is queued in the ship file.
+- **The drift is not the cause.** Slice H ran the city with the drift turned off from month 2400. The posts do
+  not come back: 167k at m2404, 34k at m2420 and 9.5k at m2450, as in the base. The people fall to 23,479 at
+  m2636, against the base's 24,295 at m2638. Over m2412-2640, 203,878 people leave against 673 arrivals, and the
+  drift's share of the departures is 1.8%. Main's older leavers, the pinned bands' surplus and the declining
+  trades, carry the departures. WG2's brake stops the arrivals past 12% out of work, as it was specified to.
+- **The call** was the orchestrator's: take the 24-month low of the out-of-work share for the drift only if
+  turning the drift off brought the posts back. It did not, so the model is unchanged.
+- **The 4,000-month LongPlaytest** (4bfc2075; the model since then is the same) passes the audit: "Nothing.
+  Every month passed the audit and every reload matched", exit 0. Main 0.9.90 ends on DM2's class instead: a
+  building on the map moved at m3006, 15 Studio Apartments in district (-4,1), exit 1. The people at the
+  checkpoints nearest the asked months:
+
+| checkpoint (main / WG2) | main 0.9.90 | WG2 |
+|---|---|---|
+| m616 / m618 | 28,651 | 21,281 |
+| m1320 / m1322 | 208,984 | 219,737 |
+| m2024 / m2026 | 445,025 | 552,327 |
+| m2500 / m2527 | 695,179 | 792,095 |
+| m3296 / m3298 | 1,124,586 | 1,132,868 |
+| m3537 / m3539 | 1,351,077 | 985,007 |
+| m4000 / m4002 | 1,533,142 | 1,104,653 |
