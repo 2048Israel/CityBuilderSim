@@ -203,3 +203,31 @@ caused by WG2's code:
   WORK tip's format string and its arguments (dials, read on the thread that drew it before). Nothing in it
   touches threading, money or saves.
 - Saves: no new field (the brake's age is `monthsRecorded`, saved already) and no format bump.
+
+## 7. The gate sent it back: the merge with 0.9.90 and the whole suite
+
+- **What the gate found.** The gate's suite found reds that `--pick` never ran. `Migration` is read across the model,
+  so its readers were left to the gate (LongPlaytest stood in for them). The whole suite on the merge with 0.9.90
+  (BO1) showed 97 NEW red lines in 16 harnesses. Each was red on WG2 before the merge too (66414b3f), and each is
+  green on main, so all are WG2's. They are part 1's smaller towns once more.
+- **Slice E** (42e438d5):
+  - `ChildcareCheck.town()` stands five Construction Depots. The depots' posts filled 70.8% against 82.8%, the
+    builders had no site output (main's 54), and the automatic builder ordered nothing. That one change mended
+    AutoBuildCheck (41 lines), HydroCheck and IslandLinkCheck.
+  - ConstructionControlCheck's city stands on 380 Houses: it had 393.2 households against 400 homes, where main
+    has 403.1.
+- **Slice F** (0d601bed):
+  - AuctionCheck's builder keeps a margin of .30, the player's slider. At .15, three Walk-in Clinics led the
+    Health Centre by 0.6% a unit served.
+  - FittingCheck moves bread's price, as GW1's move does. A Bakery earned -0.0020577 on its cost, against main's
+    0.00154.
+  - ResearchViewCheck's expected value rounds once, from the unrounded bill and the prize. This was a harness
+    rounding slip, shown by a prize that is not a whole number of cents: 9.27 against the series' 9.28.
+- **Slice H** (4bfc2075): PriceLevelCheck's twins run to month 82, by its header's tie rule. Manufacturing's cash
+  parts at month 83 in every pair nudged by 1e-12.
+- **Slice G** (7eed73be):
+  - CentralBankCheck plays until the price index has its year. The town first shops at month 62, not 31.
+  - FundCheck saves at month 74, past the bank's consolidation and split of months 72-73. It asserts no split in
+    the months it counts.
+  - HoldersCheck tills every paper holder in the coupon month, and sizes its first sale at .15 of the
+    households' spare.
