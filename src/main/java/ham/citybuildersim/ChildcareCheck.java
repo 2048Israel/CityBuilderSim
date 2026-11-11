@@ -157,6 +157,15 @@ public class ChildcareCheck {
             // Its callers (AutoBuildCheck, AuctionCheck, HydroCheck) need a town whose automatic builder orders in its months; on history's
             // dates (R0) a 1900 town has no income taxes or wage floor to 1916-1920 and its builder ordered nothing in 24 months, so
             // every lever is opened and the defaults put back, before a month (call 17's class).
+            // WG2, {next}, 2026-11-10: five Construction Depots, not four. Senior care no longer lifts the jobs' draw (Migration.jobsPull())
+            // and this town has it from the founding (two Home Care Services), so it drew fewer people for its jobs from month 1: 3,902 at the
+            // end of its three years against 4,361, 2,307 workers against 2,582. The depots' posts filled 70.8% instead of 82.8%, their output
+            // at every post fell from 398 to 342 and the repairs of the town's buildings take 343.7, so the builders had no site output
+            // (Game.getBuildingOutputAtEveryPost() 0, main's 54): the advice held every order "for the builders" and the automatic builder
+            // ordered nothing in 24 months (main's three in its first pass). A fifth depot (capacity 2,160 against 1,760) puts the output at
+            // every post at 418 and the site output at 74, the builders the callers need. Measured with HydroCheck, AutoBuildCheck, AuctionCheck
+            // and ChildcareCheck: the first two pass, ChildcareCheck passes; AuctionCheck's two lines at "twenty Health Centres stand" fail
+            // as on the town of four depots (WG2's, not this one's).
             g.getEconomyManager().getTaxPolicy().reset();
             g.getEconomyManager().getTaxPolicy().openAll();
             g.setCashForTest(Founding.WEALTHY_CASH);
@@ -169,7 +178,7 @@ public class ChildcareCheck {
                         { "Commercial Bank", "1" }, { "Convenience Store", "10" }, { "House", "900" },
                         { "Elementary School", "1" }, { "Middle School", "1" }, { "High School", "1" },
                         { "Community College", "1" }, { "University", "1" }, { "Medical School", "4" },
-                        { "Construction Depot", "4" }, { "Paved Road", "1" }, { "Police Station", "2" },
+                        { "Construction Depot", "5" }, { "Paved Road", "1" }, { "Police Station", "2" },
                         { "Home Care Service", "2" } }) {
                     g.buildStack(template(g, w[0]), Integer.parseInt(w[1]), true);
                 }

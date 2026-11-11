@@ -146,8 +146,12 @@ public class ConstructionControlCheck {
     static Game city(Path root, String name) {
         GameFiles files = new GameFiles(root.resolve(name), root.resolve(name + "-no-legacy"));
         Game g = new Game(files);
-        // R0b call 7: the causes of 1900 held off, before a month. Section 7 needs the households to outnumber the 400 homes the town stands on
-        // (36 months of growth), sized on today's deaths; on 1900's causes it stood at 395.6 households.
+        // R0b call 7: the causes of 1900 held off, before a month. Section 7 needs the households to outnumber the homes the town stands on
+        // (36 months of growth), sized on today's deaths; on 1900's causes it stood at 395.6 households against 400 homes.
+        // WG2, {next}, 2026-11-10: senior care no longer lifts the jobs' draw (Migration.jobsPull()), and this town has senior care from the
+        // founding, so its target is lower from month 1 (1,660 against 1,914 people) and the 36 months end at 393.2 households, not main's 403.1 -
+        // under its 400 homes. Households barely follow the homes here (the draw is mostly the jobs'): 390.3 on 380 Houses, 389.7 on 360. So the
+        // town stands on 380 Houses (homes 380, as the House is one home), the households outnumbering them by 10 as section 7's premise says.
         g.holdCausesOfDeathOff();
         quietly(() -> {
             g.run();
@@ -158,7 +162,7 @@ public class ConstructionControlCheck {
             for (Sector s : g.getSectors().all()) g.getBusinessInvestment().holdSector(s.key());
             for (String[] w : new String[][] {
                     { "Industrial Bakery", "3" }, { "Coal Power Plant", "1" }, { "Water Treatment Plant", "1" },
-                    { "Commercial Bank", "1" }, { "Convenience Store", "6" }, { "House", "400" },
+                    { "Commercial Bank", "1" }, { "Convenience Store", "6" }, { "House", "380" },
                     { "Elementary School", "3" }, { "Walk-in Clinic", "2" }, { "Construction Depot", "4" },
                     { "Paved Road", "4" } }) {
                 g.buildStack(template(g, w[0]), Integer.parseInt(w[1]), true);
