@@ -3017,12 +3017,14 @@ public class SaveFileCheck {
                 drawn.getFundWithdrawal() == drawing.getFundWithdrawal()
                         && drawn.getFund().getWithdrawalSteps() == TreasuryFund.MAX_WITHDRAWAL_STEPS
                         && drawn.getFund().getToRaise() == drawing.getFund().getToRaise()
-                        && drawn.getFund().getTransferPaidLate() == drawing.getFund().getTransferPaidLate());
+                        && drawn.getFund().getTransferPaidLate() == drawing.getFund().getTransferPaidLate()
+                        && drawn.getFund().getTransferFromIdle() == drawing.getFund().getTransferFromIdle()
+                        && drawn.getFund().getTransfersFromIdle() == drawing.getFund().getTransfersFromIdle());
         com.google.gson.JsonObject undialled = com.google.gson.JsonParser
                 .parseString(Files.readString(fundCity.getGameFiles().saveFile(9))).getAsJsonObject();
         com.google.gson.JsonObject undialledFund = undialled.getAsJsonObject("fund");
         assertTrue("fixture: the save carries the dial and the month's two new slots",
-                undialledFund.has("withdrawalSteps") && undialledFund.getAsJsonArray("month").size() == 10);   // ...ten since LF1's lending fee
+                undialledFund.has("withdrawalSteps") && undialledFund.getAsJsonArray("month").size() == 11);   // ...ten since LF1's lending fee, eleven since RB1's idle part
         undialledFund.remove("withdrawalSteps");
         com.google.gson.JsonArray sevenSlots = new com.google.gson.JsonArray();
         for (int i = 0; i < 7; i++) sevenSlots.add(undialledFund.getAsJsonArray("month").get(i));
