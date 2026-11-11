@@ -415,6 +415,12 @@ import java.util.Map;
  *  23. (batch MF2) A RAIL DEPOT LEAVING THE DISTRICT THAT STANDS THE YARD: 20's city, a second depot in the yard's district with works placed
  *      between and after the two, then one depot leaves: its own box goes and no other box moves or is new (main's playtest, m2396, district (-3,-2):
  *      the plan squared the yard's depot away as the newest, so the departure made the older one the yard's and the boxes after it moved).
+ *  LM1. (batch LM1) THE DEPOSITS ZOOMED OUT: on the played city, a frame at the cut-off of FAR (one notch closer is not FAR; its scale bar reads 2 km) over a box
+ *      of two kinds of resource: every deposit LandMap.fieldsIn finds is drawn or shares its ICON_PX square with a larger one that is drawn; the thinning's
+ *      rules (larger kept, the earlier on a tie, one off the screen left out) and a drag changing none of it; a distinct mark for every resource in fields,
+ *      written dark or white by contrast; no deposit past ICON_CELLS_MOST cells across; a search kept while the view stays in its box and made again
+ *      on leaving it, a new key or a scale past RESCALE_MOST; the pass within ICON_PASS_MS (the Canvas drawing timed where a toolkit comes up);
+ *      GamePrefs' resourcesOnMap on by default.
  *
  * Since 0.7.99 (batch W1, fewer and bigger deposits, in clusters) the
  * default world's site has no iron within ten kilometres, nor its dry place's
@@ -575,6 +581,7 @@ public class MapCheck {
         boughtInsideBuiltDistrict();
         aStoreLeaves();
         aDepotLeavesTheYardsDistrict();
+        depositsZoomedOut(city);
         fullCopy(sq);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -14828,5 +14835,376 @@ public class MapCheck {
                 + m.runs().yards().size() + " laid)", stands.count(c.depot) == 1 && m.yardsOf(stands, c.depot) == 1 && m.runs().yards().size() == 1 && c.reconciled);
         check("a Rail Depot leaving takes its own box out of the plan and no other box moves or is new (" + gone + " gone of " + before.boxes.size() + ", " + goneDepots
                 + " of them a Rail Depot; " + added + " new)", gone == 1 && goneDepots == 1 && added == 0);
+    }
+
+    /* =====================================================================
+       LM1. THE DEPOSITS ZOOMED OUT (batch LM1, 2026-11-11)
+       ===================================================================== */
+
+    /*
+     * WHY (Jerus, 2026-11-02: "i know its for optimization... but that makes it super hard to find resources"): the land office's map drew a dot a field in and
+     * about the city at L1 and L2, the tiles' shading at L0 and, at FAR (an L2 view holding more than MapFrame.NEAR_TILES_MOST tiles: a 2 km scale bar of about
+     * 70 px on the expanded map's 1,345 x 806), nothing - the zoom a player scouts round his city at. DepositMarks gives the far view an icon a deposit, found for a
+     * box twice the view and thinned to one an ICON_PX square, with a mark a resource. The fixture is the frame the other way round from the complaint: the zoom just
+     * past the cut-off, where the deposits vanished, at a place near the city where the box holds more than one kind.
+     */
+
+    /** The most the pass of finding and thinning the deposits of one frame may take, in ms (LM1): about 10 times the median measured when it was written, 0.011 ms on the PC, the cells' lists kept (CityLand.CELLS); the pass over cells not yet made, and the wider frame's, are printed beside it. */
+    static final double ICON_PASS_MS = 0.1;
+
+    /** The step the fixture walks the scale down by from L1's, to the first FAR: a hundredth. */
+    static final double CUT_OFF_STEP = 1.01;
+
+    /** How far from the city the fixture looks for a box of two kinds, in half-views each way: 6. */
+    static final int LM_SCAN_HALF_VIEWS = 6;
+
+    /** The kinds of resource the fixture's box holds at least: 2 (where the world has them). */
+    static final int LM_KINDS_MIN = 2;
+
+    /** The wide frame the thinning is held on, in world cells across: 4 - the top of a city's scouting zoom (DepositMarks.ICON_CELLS_MOST's note: one to four). */
+    static final int LM_WIDE_CELLS = 4;
+
+    /** Passes timed for a median: 15. */
+    static final int LM_PASS_RUNS = 15;
+
+    /** The pan the second frame is moved by, in views: a quarter - inside the box a search covers (a half view each side of the view when DepositMarks.SEARCH_TIMES is 2). */
+    static final double LM_PAN_VIEWS = 0.25;
+
+    /** The mark's dark ink, as MapView writes it on a light colour: 0x0b1118. */
+    static final int LM_DARK_INK = 0x0b1118;
+
+    /** A frame of MapTiles.DESIGN_W x DESIGN_H looking at (x, y) at the first scale, walked down from L1_FROM by CUT_OFF_STEP, at which level() is FAR. */
+    static MapFrame atCutOff(double x, double y) {
+        MapFrame f = new MapFrame(MapTiles.DESIGN_W, MapTiles.DESIGN_H);
+        double s = MapFrame.L1_FROM;
+        f.set(x, y, s);
+        while (f.level() != MapFrame.FAR && s > f.leastScale()) {
+            s /= CUT_OFF_STEP;
+            f.set(x, y, s);
+        }
+        return f;
+    }
+
+    /** What a frame shows of the plane, as {x0, y0, x1, y1} in plots. */
+    static double[] viewBox(MapFrame f) {
+        return new double[] { f.plotX(0), f.plotY(0), f.plotX(f.width()), f.plotY(f.height()) };
+    }
+
+    /** Every deposit of every resource in fields in a box of plots, LandMap.fieldsIn() resource by resource - the model's own answer, for DepositMarks to be held against. */
+    static List<Deposit> depositsIn(CityLand land, double[] box) {
+        List<Deposit> all = new ArrayList<>();
+        for (Resource r : Resource.values()) if (r.inFields()) all.addAll(LandMap.fieldsIn(land, r, box[0], box[1], box[2], box[3], Integer.MAX_VALUE));
+        return all;
+    }
+
+    /** How many of each resource a list holds, in Resource's order: "Iron ore 27, Oil 1". */
+    static String countsOf(List<Deposit> ds) {
+        StringBuilder sb = new StringBuilder();
+        for (Resource r : Resource.values()) {
+            long n = ds.stream().filter(d -> d.kind() == r).count();
+            if (n > 0) sb.append(sb.length() > 0 ? ", " : "").append(r.label()).append(' ').append(n);
+        }
+        return sb.length() == 0 ? "none" : sb.toString();
+    }
+
+    /** How many kinds of resource a list holds. */
+    static long kindsOf(List<Deposit> ds) {
+        return ds.stream().map(Deposit::kind).distinct().count();
+    }
+
+    /** The relative luminance of 0xRRGGBB (WCAG 2): the sRGB channels linear, weighted. */
+    static double wcagLuminance(int rgb) {
+        double lin[] = new double[3];
+        for (int i = 0; i < 3; i++) {
+            double c = ((rgb >> (16 - 8 * i)) & 0xff) / 255.0;
+            lin[i] = c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+        }
+        return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
+    }
+
+    /** The contrast of two colours (WCAG 2): the lighter's luminance + 0.05 over the darker's. */
+    static double wcagContrast(int a, int b) {
+        double la = wcagLuminance(a), lb = wcagLuminance(b);
+        return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+    }
+
+    /** Whether every deposit of `found` is in `drawn`, or lies in the thinning's square (DepositMarks.squareOf()) of one drawn with at least its sites and no further than ICON_PX pixels from it on each axis. */
+    static boolean allDrawnOrCovered(List<Deposit> found, List<Deposit> drawn, MapFrame f) {
+        for (Deposit d : found) {
+            if (drawn.contains(d)) continue;
+            boolean covered = false;
+            for (Deposit s : drawn) {
+                if (DepositMarks.squareOf(s, f) != DepositMarks.squareOf(d, f) || s.sites() < d.sites()) continue;
+                if (Math.abs(f.screenX(s.x() + 0.5) - f.screenX(d.x() + 0.5)) < DepositMarks.ICON_PX
+                        && Math.abs(f.screenY(s.y() + 0.5) - f.screenY(d.y() + 0.5)) < DepositMarks.ICON_PX) covered = true;
+            }
+            if (!covered) return false;
+        }
+        return true;
+    }
+
+    /** Whether no two of the deposits drawn share a thinning square. */
+    static boolean oneASquare(List<Deposit> drawn, MapFrame f) {
+        java.util.Set<Long> squares = new java.util.HashSet<>();
+        for (Deposit d : drawn) if (!squares.add(DepositMarks.squareOf(d, f))) return false;
+        return true;
+    }
+
+    /** A deposit of a made-up field at a plot, for the thinning's rules. */
+    static Deposit field(long x, long y, int sites) {
+        return new Deposit(Resource.IRON, 0, 0, x, y, sites, 1);
+    }
+
+    static void depositsZoomedOut(Game g) {
+        out.println("\n--- LM1: the deposits zoomed out ---");
+        CityLand land = g.getCityLand();
+        LandMarket market = g.getLandManager().getMarket();
+        long key = land.purchases().size() * 31L + land.stamp() + market.getNextOfferId();      // MapView.landKey()
+        double cx = land.siteX() + 0.5, cy = land.siteY() + 0.5;
+
+        // ----- the frame at the cut-off, near the city, over a box of more than one kind -----
+        MapFrame f = null;
+        double[] box = null;
+        List<Deposit> inBox = List.of();
+        int ringAt = -1;
+        MapFrame at = atCutOff(cx, cy);
+        for (int ring = 0; ring <= LM_SCAN_HALF_VIEWS && f == null; ring++) {
+            for (int j = -ring; j <= ring && f == null; j++) {
+                for (int i = -ring; i <= ring && f == null; i++) {
+                    if (Math.max(Math.abs(i), Math.abs(j)) != ring) continue;
+                    MapFrame moved = atCutOff(cx + i * (at.width() / at.scale()) / 2, cy + j * (at.height() / at.scale()) / 2);
+                    double[] b = viewBox(moved);
+                    List<Deposit> found = depositsIn(land, b);
+                    if (moved.level() == MapFrame.FAR && kindsOf(found) >= LM_KINDS_MIN) {
+                        f = moved;
+                        box = b;
+                        inBox = found;
+                        ringAt = ring;
+                    }
+                }
+            }
+        }
+        if (f == null) {
+            check("fixture: a view at the cut-off within " + LM_SCAN_HALF_VIEWS + " half-views of the city holds deposits of " + LM_KINDS_MIN + " kinds of resource", false);
+            return;
+        }
+        double[] bar = f.scaleBar(MapFrame.SCALE_BAR_PX);
+        MapFrame closer = new MapFrame(f.width(), f.height());
+        closer.set(f.centreX(), f.centreY(), f.scale() * MapFrame.ZOOM_STEP);
+        out.printf("      the frame: %,.0f x %,.0f px at %.3f px a plot, %.1f cells across, the scale bar %s in %.1f px, %d tiles in view (a notch closer, %d at L%d), %d half-views from the city%n",
+                f.width(), f.height(), f.scale(), (box[2] - box[0]) / World.CELL, MapFrame.scaleWords(bar[0]), bar[1], f.tilesInView(), closer.tilesInView(), closer.level(), ringAt);
+        check("fixture: the frame is at the cut-off - its level() is FAR (more than " + MapFrame.NEAR_TILES_MOST + " tiles), the frame one notch (" + MapFrame.ZOOM_STEP
+                + ") closer is not, and its scale bar reads 2 km", f.level() == MapFrame.FAR && closer.level() != MapFrame.FAR && bar[0] == 2000);
+        check("fixture: the frame's box holds deposits, of " + kindsOf(inBox) + " kinds of resource (" + countsOf(inBox) + ")", !inBox.isEmpty() && kindsOf(inBox) >= LM_KINDS_MIN);
+
+        // ----- what is drawn -----
+        DepositMarks.Search search = new DepositMarks.Search();
+        List<Deposit> found = search.forView(land, key, f);
+        List<Deposit> drawn = DepositMarks.thin(found, f);
+        out.printf("      LandMap.fieldsIn finds %d in the frame's box (%s); drawn %d (%s)%n", inBox.size(), countsOf(inBox), drawn.size(), countsOf(drawn));
+        check("every deposit LandMap.fieldsIn finds in the frame's box is drawn, or shares its " + DepositMarks.ICON_PX + " px square with a larger one that is drawn ("
+                + inBox.size() + " found, " + drawn.size() + " drawn)", allDrawnOrCovered(inBox, drawn, f) && drawn.size() <= inBox.size() && !drawn.isEmpty());
+        check("...no two icons share a square, and every icon is of a deposit the search found", oneASquare(drawn, f) && found.containsAll(drawn));
+
+        // ----- the thinning's rules, on fields made for it -----
+        MapFrame unit = new MapFrame(MapTiles.DESIGN_W, MapTiles.DESIGN_H);
+        long ux = 30_000L * DepositMarks.ICON_PX, uy = 20_000L * DepositMarks.ICON_PX;
+        unit.set(ux, uy, 1);
+        Deposit small = field(ux + 1, uy + 1, 4), big = field(ux + DepositMarks.ICON_PX - 2, uy + DepositMarks.ICON_PX - 2, 9);
+        Deposit next = field(ux + DepositMarks.ICON_PX + 1, uy + 1, 1), gone = field(ux + 2L * MapTiles.DESIGN_W, uy, 99);
+        Deposit tieFirst = field(ux + 3L * DepositMarks.ICON_PX + 1, uy + 1, 5), tieLater = field(ux + 4L * DepositMarks.ICON_PX - 2, uy + 1, 5);
+        List<Deposit> made = DepositMarks.thin(List.of(small, big, next, gone, tieFirst, tieLater), unit);
+        check("two fields in one square keep the one with more sites, whichever comes first; the next square keeps its own; a field off the screen is not drawn",
+                made.contains(big) && !made.contains(small) && made.contains(next) && !made.contains(gone) && DepositMarks.squareOf(small, unit) == DepositMarks.squareOf(big, unit)
+                        && DepositMarks.squareOf(next, unit) != DepositMarks.squareOf(big, unit));
+        check("...and two of equal sites in one square keep the earlier of the list", made.contains(tieFirst) && !made.contains(tieLater)
+                && DepositMarks.squareOf(tieFirst, unit) == DepositMarks.squareOf(tieLater, unit) && made.size() == 3
+                && DepositMarks.thin(List.of(tieLater, tieFirst), unit).equals(List.of(tieLater)));
+
+        // ----- a far zoom-out never piles the icons -----
+        MapFrame wide = new MapFrame(MapTiles.DESIGN_W, MapTiles.DESIGN_H);
+        wide.set(cx, cy, wide.width() / (LM_WIDE_CELLS * (double) World.CELL));
+        double[] wideBox = viewBox(wide);
+        List<Deposit> wideBoxFound = depositsIn(land, wideBox);
+        DepositMarks.Search wideSearch = new DepositMarks.Search();
+        List<Deposit> wideDrawn = DepositMarks.thin(wideSearch.forView(land, key, wide), wide);
+        long squares = (long) (Math.ceil(wide.width() / DepositMarks.ICON_PX) + 1) * (long) (Math.ceil(wide.height() / DepositMarks.ICON_PX) + 1);
+        out.printf("      %d cells across (%.4f px a plot, level %d): %d deposits in the box, %d drawn (%s), of %,d squares on the screen%n",
+                LM_WIDE_CELLS, wide.scale(), wide.level(), wideBoxFound.size(), wideDrawn.size(), countsOf(wideDrawn), squares);
+        check("fixture: a view " + LM_WIDE_CELLS + " cells across holds more deposits than icons are drawn for it (" + wideBoxFound.size() + " in the box, " + wideDrawn.size() + " drawn)",
+                wide.level() == MapFrame.FAR && wideDrawn.size() < wideBoxFound.size() && wideDrawn.size() > 1);
+        check("...every deposit in its box is drawn or covered by a larger one in its square, one icon to a square, and none more than squares are on the screen",
+                allDrawnOrCovered(wideBoxFound, wideDrawn, wide) && oneASquare(wideDrawn, wide) && wideDrawn.size() <= squares);
+        // The squares lie on the ground: the deposits a drag keeps are the same ones.
+        MapFrame dragged = new MapFrame(wide.width(), wide.height());
+        dragged.set(wide.centreX(), wide.centreY(), wide.scale());
+        dragged.pan(DepositMarks.ICON_PX / 2.0 - 1, DepositMarks.ICON_PX / 3.0);
+        List<Deposit> found4 = wideSearch.forView(land, key, wide);
+        List<Deposit> keptBefore = DepositMarks.thin(found4, wide), keptAfter = DepositMarks.thin(found4, dragged);
+        int inside = 0, differ = 0;
+        for (Deposit d : found4) {
+            double x = wide.screenX(d.x() + 0.5), y = wide.screenY(d.y() + 0.5), m = 2.0 * DepositMarks.ICON_PX;
+            if (x < m || y < m || x > wide.width() - m || y > wide.height() - m) continue;
+            inside++;
+            if (keptBefore.contains(d) != keptAfter.contains(d)) differ++;
+        }
+        check("a drag of a few pixels keeps the same deposits drawn: of " + inside + " well inside the screen, " + differ + " are drawn in one frame and not the other", inside > 0 && differ == 0);
+
+        // ----- the marks -----
+        java.util.Set<String> marks = new java.util.HashSet<>();
+        int withFields = 0;
+        boolean readable = true;
+        for (Resource r : Resource.values()) {
+            if (!r.inFields()) continue;
+            withFields++;
+            marks.add(DepositMarks.mark(r));
+            int ink = DepositMarks.darkInk(r) ? LM_DARK_INK : 0xffffff, other = DepositMarks.darkInk(r) ? 0xffffff : LM_DARK_INK;
+            readable &= wcagContrast(ink, r.colour()) >= wcagContrast(other, r.colour());
+        }
+        StringBuilder words = new StringBuilder();
+        for (Resource r : Resource.values()) if (r.inFields()) words.append(words.length() > 0 ? ", " : "").append(r.label()).append(" \"").append(DepositMarks.mark(r)).append('"');
+        out.println("      the marks: " + words);
+        check("every resource in fields has a mark of its own, none empty (" + withFields + " resources, " + marks.size() + " marks), and forest, which has no fields, none",
+                marks.size() == withFields && !marks.contains("") && DepositMarks.mark(Resource.FOREST).isEmpty());
+        check("...written dark on a light colour and white on a dark one: each resource's ink has at least the contrast of the other against its colour", readable);
+
+        // ----- past ICON_CELLS_MOST cells across, nothing -----
+        MapFrame inside16 = new MapFrame(MapTiles.DESIGN_W, MapTiles.DESIGN_H), past16 = new MapFrame(MapTiles.DESIGN_W, MapTiles.DESIGN_H);
+        inside16.set(cx, cy, inside16.width() / ((DepositMarks.ICON_CELLS_MOST - 0.5) * World.CELL));
+        past16.set(cx, cy, past16.width() / ((DepositMarks.ICON_CELLS_MOST + 0.5) * World.CELL));
+        double[] inBoxWide = viewBox(inside16), pastBoxWide = viewBox(past16);
+        List<Deposit> insideList = DepositMarks.inBox(land, inBoxWide[0], inBoxWide[1], inBoxWide[2], inBoxWide[3]);
+        List<Deposit> pastList = DepositMarks.inBox(land, pastBoxWide[0], pastBoxWide[1], pastBoxWide[2], pastBoxWide[3]);
+        DepositMarks.Search pastSearch = new DepositMarks.Search();
+        List<Deposit> pastView = pastSearch.forView(land, key, past16);
+        out.printf("      %.1f cells across: %d deposits found (at most %d of each resource); %.1f cells across: %d, a search by the view %d (%d searches)%n",
+                (inBoxWide[2] - inBoxWide[0]) / World.CELL, insideList.size(), DepositMarks.DEPOSITS_MOST, (pastBoxWide[2] - pastBoxWide[0]) / World.CELL, pastList.size(), pastView.size(), pastSearch.searches());
+        check("fixture: a box just inside " + DepositMarks.ICON_CELLS_MOST + " cells across holds deposits (" + insideList.size() + ") and is not too wide, one just past is",
+                !insideList.isEmpty() && !DepositMarks.tooWide(inside16) && DepositMarks.tooWide(past16));
+        check("past " + DepositMarks.ICON_CELLS_MOST + " world cells across the list is empty - the box's, and the view's, which searches nothing",
+                pastList.isEmpty() && pastView.isEmpty() && pastSearch.searches() == 0 && DepositMarks.thin(pastView, past16).isEmpty());
+
+        // ----- the search is kept while the view stays in its box -----
+        DepositMarks.Search kept = new DepositMarks.Search();
+        List<Deposit> first = kept.forView(land, key, f);
+        double viewW = f.width() / f.scale(), viewH = f.height() / f.scale();
+        MapFrame panned = new MapFrame(f.width(), f.height());
+        panned.set(f.centreX() + LM_PAN_VIEWS * viewW, f.centreY() - LM_PAN_VIEWS * viewH, f.scale());
+        List<Deposit> second = kept.forView(land, key, panned);
+        int afterPan = kept.searches();
+        MapFrame away = new MapFrame(f.width(), f.height());
+        away.set(f.centreX() + DepositMarks.SEARCH_TIMES * viewW, f.centreY(), f.scale());
+        kept.forView(land, key, away);
+        int afterLeaving = kept.searches();
+        kept.forView(land, key, away);
+        int afterStaying = kept.searches();
+        kept.forView(land, key + 1, away);
+        int afterKey = kept.searches();
+        MapFrame nearer = new MapFrame(f.width(), f.height()), farther = new MapFrame(f.width(), f.height());
+        nearer.set(away.centreX(), away.centreY(), away.scale() * DepositMarks.RESCALE_MOST * 0.98);
+        kept.forView(land, key + 1, nearer);
+        int afterNearer = kept.searches();
+        farther.set(away.centreX(), away.centreY(), away.scale() * DepositMarks.RESCALE_MOST * 1.02);
+        kept.forView(land, key + 1, farther);
+        int afterRescale = kept.searches();
+        check("a view panned a quarter of its size inside the searched box does not search again (" + afterPan + " search; the same list)", first == second && afterPan == 1 && !first.isEmpty());
+        check("...one that leaves the box searches (" + afterLeaving + "), then not again while it stays (" + afterStaying + ")", afterLeaving == 2 && afterStaying == 2);
+        check("...a new land key searches (" + afterKey + "), a scale within " + DepositMarks.RESCALE_MOST + "x of the search's does not (" + afterNearer + "), past it does (" + afterRescale + ")",
+                afterKey == 3 && afterNearer == 3 && afterRescale == 4);
+
+        // ----- the time -----
+        double[] pass = new double[LM_PASS_RUNS], held = new double[LM_PASS_RUNS];
+        DepositMarks.Search timed = new DepositMarks.Search();
+        int drawnTimed = 0;
+        for (int i = 0; i < LM_PASS_RUNS; i++) {
+            DepositMarks.Search s = new DepositMarks.Search();
+            long t0 = monthClock();
+            drawnTimed = DepositMarks.thin(s.forView(land, key, f), f).size();
+            pass[i] = (monthClock() - t0) / 1e6;
+        }
+        timed.forView(land, key, f);
+        for (int i = 0; i < LM_PASS_RUNS; i++) {
+            long t0 = monthClock();
+            DepositMarks.thin(timed.forView(land, key, panned), panned);
+            held[i] = (monthClock() - t0) / 1e6;
+        }
+        double passMs = medianAfter(pass, 0), heldMs = medianAfter(held, 0);
+        out.printf("      the pass, finding and thinning, for the frame: median %.3f ms of %d (first %.3f, worst %.3f), %d drawn, on " + (CPU_TIMED ? "the main thread's CPU" : "the wall clock")
+                + "; a frame panned inside the box, thinning alone: median %.3f ms, %d search%n", passMs, LM_PASS_RUNS, pass[0], Arrays.stream(pass).max().orElse(0), drawnTimed, heldMs, timed.searches());
+        // ...beside it, printed: a first pass over ground this section has not asked the world for (cells whose lists are made now), and the wider frame's.
+        MapFrame cold = atCutOff(cx + 10.0 * World.CELL, cy);
+        long c0 = monthClock();
+        int coldDrawn = DepositMarks.thin(new DepositMarks.Search().forView(land, key, cold), cold).size();
+        double coldMs = (monthClock() - c0) / 1e6;
+        long w0 = monthClock();
+        int wideAgain = DepositMarks.thin(new DepositMarks.Search().forView(land, key, wide), wide).size();
+        double wideMs = (monthClock() - w0) / 1e6;
+        out.printf("      for comparison, not judged: the pass over cells it has not asked for, 10 cells east: %.3f ms (%d drawn); the %d-cell frame's, cells kept: %.3f ms (%d drawn)%n",
+                coldMs, coldDrawn, LM_WIDE_CELLS, wideMs, wideAgain);
+        check("finding and thinning the frame's deposits takes a median of " + String.format("%.3f", passMs) + " ms, within ICON_PASS_MS (" + ICON_PASS_MS + ")", Timing.within(passMs, ICON_PASS_MS));
+        check("...a second frame panned inside the searched box does not search again, and thins in a median of " + String.format("%.3f", heldMs) + " ms, within ICON_PASS_MS",
+                timed.searches() == 1 && Timing.within(heldMs, ICON_PASS_MS));
+
+        // ----- the icons on a Canvas, where there is a toolkit -----
+        String why = KeptCheck.startJavaFx();
+        if (why != null) {
+            out.println("      drawing the icons onto a Canvas: skipped - " + why);
+        } else {
+            try {
+                final List<Deposit> toDraw = drawn;
+                final MapFrame inFrame = f;
+                double[] canvasMs = KeptCheck.fx(() -> IconCanvas.times(toDraw, inFrame, LM_PASS_RUNS));
+                out.printf("      drawing the %d icons onto a %,.0f x %,.0f Canvas: median %.3f ms of %d to record the draw, %.3f ms with the canvas rendered (a snapshot)%n",
+                        toDraw.size(), f.width(), f.height(), canvasMs[0], LM_PASS_RUNS, canvasMs[1]);
+            } catch (Exception e) {
+                out.println("      drawing the icons onto a Canvas: skipped - " + e);
+            }
+        }
+
+        // ----- the preference -----
+        GamePrefs prefs = new GamePrefs();
+        boolean dflt = prefs.isResourcesOnMap();
+        prefs.setResourcesOnMap(false);
+        boolean off = !prefs.isResourcesOnMap();
+        prefs.setResourcesOnMap(true);
+        check("a new GamePrefs reads resourcesOnMap on, and its setter flips it off and on again", dflt && off && prefs.isResourcesOnMap());
+    }
+
+    /** The icons drawn onto a Canvas as ui/MapView.depositIcons() draws them (the disc, its edge, the mark), for the time of it; JavaFX is touched only here, so a JVM without it never loads this. */
+    static final class IconCanvas {
+        /** The median, in ms, of `runs` draws of the icons onto a fresh Canvas: {recording the draw, the draw and a snapshot of the canvas}. Run on the FX thread. */
+        static double[] times(List<Deposit> shown, MapFrame f, int runs) {
+            javafx.scene.canvas.Canvas canvas = new javafx.scene.canvas.Canvas(f.width(), f.height());
+            javafx.scene.canvas.GraphicsContext gc = canvas.getGraphicsContext2D();
+            javafx.scene.text.Font font = javafx.scene.text.Font.font("Monospaced", 9);
+            double[] record = new double[runs], full = new double[runs];
+            for (int i = 0; i < runs; i++) {
+                long t0 = System.nanoTime();
+                gc.clearRect(0, 0, f.width(), f.height());
+                draw(gc, font, shown, f);
+                record[i] = (System.nanoTime() - t0) / 1e6;
+                canvas.snapshot(null, null);
+                full[i] = (System.nanoTime() - t0) / 1e6;
+            }
+            return new double[] { medianAfter(record, 0), medianAfter(full, 0) };
+        }
+
+        static void draw(javafx.scene.canvas.GraphicsContext gc, javafx.scene.text.Font font, List<Deposit> shown, MapFrame f) {
+            double r = DepositMarks.ICON_PX / 2.0;
+            gc.setFont(font);
+            gc.setTextAlign(javafx.scene.text.TextAlignment.CENTER);
+            gc.setTextBaseline(javafx.geometry.VPos.CENTER);
+            gc.setLineWidth(1);
+            for (Deposit d : shown) {
+                Resource kind = d.kind();
+                double x = f.screenX(d.x() + 0.5), y = f.screenY(d.y() + 0.5);
+                gc.setFill(javafx.scene.paint.Color.web(String.format("#%06x", kind.colour())));
+                gc.fillOval(x - r, y - r, 2 * r, 2 * r);
+                gc.setStroke(javafx.scene.paint.Color.rgb(11, 17, 24, 0.85));
+                gc.strokeOval(x - r, y - r, 2 * r, 2 * r);
+                gc.setFill(DepositMarks.darkInk(kind) ? javafx.scene.paint.Color.web(String.format("#%06x", LM_DARK_INK)) : javafx.scene.paint.Color.WHITE);
+                gc.fillText(DepositMarks.mark(kind), x, y);
+            }
+        }
     }
 }

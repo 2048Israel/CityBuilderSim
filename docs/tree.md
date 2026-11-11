@@ -731,6 +731,12 @@ adds its line here, not in `CLAUDE.md`.
                                    the far nodes (MapTiles.nodePixels()) from the district pictures, and
                                    what a click opens the expanded map on; pure - ui/MiniMap draws it,
                                    MapCheck 12 holds it
+        DepositMarks.java          the deposits the land office's map marks zoomed far out (batch LM1,
+                                   2026-11-11; Jerus: "super hard to find resources"): each resource's
+                                   mark, the deposits found for a box twice the view and kept until it
+                                   leaves it, thinned to the one with most sites in each ICON_PX square,
+                                   none past ICON_CELLS_MOST cells across; pure - ui/MapView draws the
+                                   icons, MapCheck LM1 holds it
         CityRuns.java              the city's highways and railway (0.7.89): laid city-wide, month by
                                    month, on corridors from the founding site's lines - straight by
                                    preference, never moved, the newest end taken first - with the
