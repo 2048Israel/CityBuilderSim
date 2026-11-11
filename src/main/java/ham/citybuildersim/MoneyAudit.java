@@ -440,6 +440,12 @@ public final class MoneyAudit {
             "- bank Payroll", "- utilities UtilityPayroll", "- care Payroll", "- schools Payroll",
             "- research Payroll", "- safety Payroll", "- transit Wages" };
 
+    /** The households' nine own lines (HL1) by the label households() notes them under, in the order it adds them; the first character is the sign each enters the own sum with. */
+    public static final String[] OWN_LINES = {
+            "+ households Unfunded", "- households UnsettledIncome", "+ households UnsettledRent", "+ households UnsettledFees",
+            "+ households UnsettledShopping", "- households CensusStranded", "+ households CensusCreated",
+            "- households BondFaceOrphaned", "+ households PublicWagesRestruck" };
+
     /**
      * Strikes the households' identity for the month: householdsHeld() now, against the opening figure, the sums the pools' strike
      * recorded, and the households' OWN lines (HL1): faults of the model's, named and measured here and mended later (HL2).

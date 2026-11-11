@@ -1264,6 +1264,122 @@ public class LongPlaytest {
     /** Months the utility had draw nobody is invoiced for - the premise of the electricity law. */
     static int unbilledMonths = 0;
 
+    /* ===== THE HOUSEHOLDS' OWN LINES, OVER THE RUN (HL1, 2026-11-11) =====
+
+       The households' identity (MoneyAudit.households()) is struck every month and audit() flags its residual, but the residual is
+       what is left AFTER nine own lines, each a fault of the model's that HL2 will mend, and it cannot see them. Two of the nine
+       cancel by construction: PublicWagesRestruck is the live public wages less the struck payrolls, and householdsInTransit() adds
+       the same live figure back; BondFaceOrphaned likewise for the bonds. However large either grows the residual stays at nought,
+       and nothing bounded any of the nine. So each is summed over the run, printed as a table, and held to a bound on its MEAN
+       MONTHLY SHARE: the month's absolute amount over what moved between the pools and the households that month (floored at 1,
+       as Households.relative() reads it), averaged over the months struck. Not the run's total over the run's total moved: what
+       moved is nominal and the last years' prices swamp the sum (5.3e14 in the nightly's 4,000 months against 5.7e11 in the gate's
+       2,400, so every line's total share read 1,000 times smaller), and a line could grow a hundredfold in the first thousand
+       months and stay under a bound set on the total. The mean weighs every month alike.
+
+       The rule for the bounds: three times the larger of the mean monthly shares the gate's run (2,400 months) and the nightly's
+       (4,000) measured on 2026-11-11, rounded UP to one significant figure; a line that did not fire in either run is held to
+       OWN_BOUND_UNFIRED. A bound is never set from a guess: it is the run's own figure with room for the months the run did not play.
+
+       HL2 takes the lines to nought and deletes all of this.
+       ================================================================== */
+
+    /** The part in ten million the identity itself allows (audit()'s 1e-7 of what moved), the bound of a line that fired in neither run it was set from. */
+    static final double OWN_BOUND_UNFIRED = 1e-7;
+    /** Unfunded: a mean monthly share of 2.77e-3 of what moved in the gate's run (2,400 months; 1.66e-3 in the nightly's 4,000), three times the larger rounded up. */
+    static final double OWN_BOUND_UNFUNDED = 9e-3;
+    /** UnsettledIncome: a mean monthly share of 1.53e-3 of what moved in the gate's run (2,400 months; 9.19e-4 in the nightly's 4,000), three times the larger rounded up. */
+    static final double OWN_BOUND_UNSETTLED_INCOME = 5e-3;
+    /** UnsettledRent: a mean monthly share of 1.45e-4 of what moved in the gate's run (2,400 months; 8.69e-5 in the nightly's 4,000), three times the larger rounded up. */
+    static final double OWN_BOUND_UNSETTLED_RENT = 5e-4;
+    /** UnsettledFees: a mean monthly share of 7.77e-6 of what moved in the gate's run (2,400 months; 4.67e-6 in the nightly's 4,000), three times the larger rounded up. */
+    static final double OWN_BOUND_UNSETTLED_FEES = 3e-5;
+    /** UnsettledShopping: a mean monthly share of 2.06e-5 of what moved in the gate's run (2,400 months; 1.24e-5 in the nightly's 4,000), three times the larger rounded up. */
+    static final double OWN_BOUND_UNSETTLED_SHOPPING = 7e-5;
+    /** CensusStranded: a mean monthly share of 6.21e-8 of what moved in the gate's run (2,400 months; 3.73e-8 in the nightly's 4,000), three times the larger rounded up. */
+    static final double OWN_BOUND_CENSUS_STRANDED = 2e-7;
+    /** CensusCreated: a mean monthly share of 2.16e-8 of what moved in the gate's run (2,400 months; 1.29e-8 in the nightly's 4,000), three times the larger rounded up. */
+    static final double OWN_BOUND_CENSUS_CREATED = 7e-8;
+    /** BondFaceOrphaned: fired in neither run (no month over a cent in the gate's 2,400 months or the nightly's 4,000; the mean monthly share 1.4e-17 and 8.4e-18), so held to OWN_BOUND_UNFIRED. */
+    static final double OWN_BOUND_BOND_FACE_ORPHANED = OWN_BOUND_UNFIRED;
+    /** PublicWagesRestruck: a mean monthly share of 1.32e-4 of what moved in the gate's run (2,400 months; 7.95e-5 in the nightly's 4,000), three times the larger rounded up. */
+    static final double OWN_BOUND_PUBLIC_WAGES_RESTRUCK = 4e-4;
+    /** The nine bounds on the mean monthly share, in the order of MoneyAudit.OWN_LINES. */
+    static final double[] OWN_BOUNDS = {
+            OWN_BOUND_UNFUNDED, OWN_BOUND_UNSETTLED_INCOME, OWN_BOUND_UNSETTLED_RENT, OWN_BOUND_UNSETTLED_FEES,
+            OWN_BOUND_UNSETTLED_SHOPPING, OWN_BOUND_CENSUS_STRANDED, OWN_BOUND_CENSUS_CREATED,
+            OWN_BOUND_BOND_FACE_ORPHANED, OWN_BOUND_PUBLIC_WAGES_RESTRUCK };
+
+    /**
+     * Per own line, in MoneyAudit.OWN_LINES' order: the net sum as it enters own, the sum of absolute amounts, the sum over the months
+     * of the month's absolute amount over what moved that month (ownShare; over the months struck it is the mean monthly share the
+     * bound is set on), the months it fired, and its largest month.
+     */
+    static final double[] ownNet = new double[MoneyAudit.OWN_LINES.length], ownAbs = new double[MoneyAudit.OWN_LINES.length],
+            ownShare = new double[MoneyAudit.OWN_LINES.length], ownLargest = new double[MoneyAudit.OWN_LINES.length];
+    static final int[] ownFired = new int[MoneyAudit.OWN_LINES.length], ownLargestMonth = new int[MoneyAudit.OWN_LINES.length];
+    /** What moved between the pools and the households over the run (the sum of Households.moved()), and the months struck. */
+    static double ownMoved = 0;
+    static int ownMonths = 0;
+    /** The audit last summed, so a month audit() reads twice is summed once. */
+    static MoneyAudit.Households ownLast = MoneyAudit.Households.NONE;
+
+    /**
+     * Sums the month's nine own lines into the run's, and checks the nine are all of own: their signed figures add to hh.own to a
+     * cent or a part in a thousand million of what moved, else a tenth line was added to households() and not to OWN_LINES, and
+     * would escape every bound.
+     */
+    static void noteOwnLines(int month, MoneyAudit.Households hh) {
+        if (hh == MoneyAudit.Households.NONE || hh == ownLast) return;
+        ownLast = hh;
+        ownMonths++;
+        ownMoved += hh.moved();
+        double named = 0;
+        for (int i = 0; i < MoneyAudit.OWN_LINES.length; i++) {
+            String label = MoneyAudit.OWN_LINES[i];
+            double amount = hh.figure(label);
+            double signed = label.charAt(0) == '-' ? -amount : amount;
+            named += signed;
+            ownNet[i] += signed;
+            ownAbs[i] += Math.abs(amount);
+            ownShare[i] += Math.abs(amount) / Math.max(1, hh.moved());
+            if (Math.abs(amount) > MoneyAudit.CENT) ownFired[i]++;
+            if (Math.abs(amount) > Math.abs(ownLargest[i])) { ownLargest[i] = signed; ownLargestMonth[i] = month; }
+        }
+        double unnamed = hh.own - named;
+        if (Math.abs(unnamed) > Math.max(MoneyAudit.CENT, 1e-9 * hh.moved())) {
+            flag(month, "a households' own line the list does not name", hh.toString() + "\n" + hh.detail, Math.abs(unnamed));
+        }
+    }
+
+    /**
+     * The run's table of the households' own lines, one row each, and the finding for every line past its bound. Called once, at the
+     * end, before the findings are printed and counted; another driver can call it with its own stream.
+     */
+    static void ownLinesOverTheRun(PrintStream out, int endMonth) {
+        out.printf("  the households' own lines over the run (HL1): %,d month(s) struck, %,.0f moved between the pools and the households;"
+                + " net as it enters own, absolute sum, months fired, largest month, the absolute sum per million moved over the run,"
+                + " the mean monthly share per million (the month's amount over what moved that month, averaged over the months struck),"
+                + " and the bound on that mean per million:%n",
+                ownMonths, ownMoved);
+        if (OWN_BOUNDS.length != MoneyAudit.OWN_LINES.length) {
+            flag(endMonth, "the households' own lines and their bounds are not the same list",
+                    OWN_BOUNDS.length + " bounds for " + MoneyAudit.OWN_LINES.length + " lines");
+        }
+        for (int i = 0; i < MoneyAudit.OWN_LINES.length; i++) {
+            double total = ownMoved > 0 ? ownAbs[i] / ownMoved : 0;
+            double mean = ownMonths > 0 ? ownShare[i] / ownMonths : 0;
+            double bound = i < OWN_BOUNDS.length ? OWN_BOUNDS[i] : OWN_BOUND_UNFIRED;
+            String row = String.format("%-34s net %,16.2f  abs %,16.2f  fired %,5d of %,5d  largest %,16.2f (m%d)  run %9.3g ppm  mean month %9.3g ppm  bound %s ppm",
+                    MoneyAudit.OWN_LINES[i], ownNet[i], ownAbs[i], ownFired[i], ownMonths, ownLargest[i], ownLargestMonth[i],
+                    total * 1e6, mean * 1e6, bound >= Double.MAX_VALUE ? "none" : String.format("%.3g", bound * 1e6));
+            out.println("    " + row);
+            if (mean > bound) {
+                flag(endMonth, "the households' own line " + MoneyAudit.OWN_LINES[i] + " ran past its bound", row, mean / bound);
+            }
+        }
+    }
+
     static final String FOOD_BROKEN = "food was not conserved";
     static final String POWER_BROKEN = "the utility's electricity revenue is not what the sectors were charged";
     static final String WATER_BROKEN = "the water utility's revenue is not what the sectors were charged";
@@ -1381,6 +1497,8 @@ public class LongPlaytest {
         if (Math.abs(hh.residual) > MoneyAudit.CENT && hh.relative() > 1e-7) {
             flag(month, "the households' money was not conserved", hh.toString() + "\n" + hh.detail);
         }
+        // ...and the nine own lines the residual is read after, summed over the run and checked to be all of own (HL1, 2026-11-11).
+        noteOwnLines(month, hh);
 
         /*
          * ...AND THE MONEY THE CENTRAL BANK MADE IS THE MONEY THE AUDIT SAW
@@ -7794,6 +7912,8 @@ public class LongPlaytest {
                         + " electricity and water revenue %s the sectors' bills every month; unbilled draw in %,d month(s)%n",
                 breadMadeRun, breadSoldRun, foodMonths, foodMonths > 0 ? breadLow : 0, foodMonths > 0 ? breadHigh : 0,
                 findings.containsKey(POWER_BROKEN) || findings.containsKey(WATER_BROKEN) ? "did NOT match" : "matched", unbilledMonths);
+        // The households' own lines over the run (HL1, 2026-11-11): flagged here, above the place the findings are printed and counted.
+        ownLinesOverTheRun(out, endMonth);
 
         /*
          * CREDIT, BY SECTOR. The bank's line above says what it holds; this

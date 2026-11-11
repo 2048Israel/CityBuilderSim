@@ -47,10 +47,7 @@ public class MoneyCheck {
     static String worstDriftPool = "";
 
     /** The households' own lines (HL1), by the label MoneyAudit.households() notes them under. */
-    static final String[] OWN_LINES = {
-            "+ households Unfunded", "- households UnsettledIncome", "+ households UnsettledRent", "+ households UnsettledFees",
-            "+ households UnsettledShopping", "- households CensusStranded", "+ households CensusCreated",
-            "+ households PublicWagesRestruck", "- households BondFaceOrphaned" };
+    static final String[] OWN_LINES = MoneyAudit.OWN_LINES;
 
     /** The households' identity (HL1) over one play(): the months struck, the worst, the ones that did not close, and how often each own line fired. */
     static final class HouseholdsRun {
