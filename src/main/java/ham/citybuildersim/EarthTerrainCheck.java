@@ -63,8 +63,10 @@ import java.util.Random;
  *      the founding's test 1 within SNAP_PLOTS of the spot; the land a city is
  *      founded with there (LandManager.foundingLand()) holds its dry ground
  *      and, beside a river, its fresh water - Paris, with a river and no lake
- *      in reach, since LM1 the river's best patch, one patch within
- *      CityLand.FRESH_PATCH of its first block; a screen of MapCheck's
+ *      in reach, since LM1 one patch of the river within CityLand.FRESH_PATCH
+ *      of its first block, widened a block at a time to FRESH_PATCH_MOST where
+ *      that holds too little (the river's best there where even that is short
+ *      of the target); a screen of MapCheck's
  *      SCREEN_TILES on Rotterdam, of a square city at the 5B copy's density,
  *      paints and rasters in no more than MapCheck.SCREEN_MS.
  *   9. THE FULL FILE, when named: the cells pass in no more than
@@ -183,7 +185,9 @@ import java.util.Random;
  * ...and since LM1 (2026-11-11; Jerus's city 7.8 km west-northwest of Stockholm):
  *  19. THE FOUNDING'S WATER AT STOCKHOLM, on the full file when it is named:
  *      the city's dry rings are one piece, its water at most one more inside
- *      the square of 2 * CityLand.FRESH_PATCH + 1 blocks round its first block,
+ *      the square of 2 * CityLand.FRESH_PATCH + 1 blocks round its first block
+ *      (widened a block at a time to FRESH_PATCH_MOST where that holds too
+ *      little, which Stockholm's lakes do not need),
  *      the centre holds LandManager.FOUNDING_FRESH_KM2, and the whole centre
  *      spans fewer blocks than the strip A24 founded there (113 blocks in a
  *      box of 37 by 32) and a box of less than half its size.
@@ -800,7 +804,7 @@ public class EarthTerrainCheck {
         screen(spots.get(0), id);
     }
 
-    /** The fixture's spot with a river and no lake within the founding's reach, the Seine at Paris: since LM1 its water is the river's best patch, less than a plant needs. */
+    /** The fixture's spot with a river and no lake within the founding's reach, the Seine at Paris: since LM1 its water is one patch of the river, widened a block at a time to FRESH_PATCH_MOST where FRESH_PATCH holds too little, and the river's best there where that is less than a plant needs. */
     static final String RIVER_ONLY_SPOT = "Paris";
 
     /** The blocks a city's centre took from index `from` to `to` (CityLand.blockKey()s), in the order taken. */
@@ -830,21 +834,48 @@ public class EarthTerrainCheck {
         return fresh;
     }
 
-    /** A river and no lake in reach (LM1): the founding's water is one patch within FRESH_PATCH of its first block and holds what the river's best patch holds, less than FOUNDING_FRESH_KM2. */
+    /** The fresh plots the rings hold, counted plot by plot on the world apart from the model: the owned blocks' share of what the founding's water has to bring up to FOUNDING_FRESH_KM2. */
+    static long freshInRings(World w, CityLand rings) {
+        long n = 0;
+        for (LandGrid.Fill f : rings.centreRects()) {
+            for (long y = f.y0(); y < f.y1(); y++) for (long x = f.x0(); x < f.x1(); x++) if (w.terrainAt(x, y) == World.FRESH) n++;
+        }
+        return n;
+    }
+
+    /**
+     * A river and no lake in reach (LM1): the founding's water is one patch inside the square of 2 * r + 1 blocks round
+     * its first block, r the least half-side from FRESH_PATCH to FRESH_PATCH_MOST at which the river's best square and
+     * the rings' own water hold the target (worked out apart from the model), widened past FRESH_PATCH, and the centre
+     * holds FOUNDING_FRESH_KM2; where no square up to FRESH_PATCH_MOST holds it, the widest square's best patch, more
+     * than FRESH_PATCH's, and the centre holds less than FOUNDING_FRESH_KM2.
+     */
     static void riverOnlyPatch(Spot s, World w, CityLand land, double dryKm2) {
         CityLand rings = CityLand.found(w, land.siteX(), land.siteY(), dryKm2);
         int n = rings.centreRects().size();
         List<Long> water = blocksOf(land, n, land.centreRects().size());
         Map<Long, Long> fresh = freshBeyondRings(w, rings);
-        long held = LandCheck.freshOn(water, fresh), best = LandCheck.bestSquareHolds(fresh, CityLand.FRESH_PATCH);
-        report(s.name() + ": a river and no lake in reach - its water is one patch within FRESH_PATCH of its first block, holding what the river's best patch holds",
-                land.centreRects().subList(0, n).equals(rings.centreRects()) && !water.isEmpty() && LandCheck.onePiece(water)
-                        && LandCheck.inSquareOfFirst(water, CityLand.FRESH_PATCH) && held == best,
-                String.format("%d blocks holding %d fresh plots (%.4f km2); the best patch of the river holds %d, in %d blocks of river within reach",
-                        water.size(), held, held * World.KM2_PER_PLOT, best, fresh.size()));
-        report("...less than FOUNDING_FRESH_KM2, so the patch stopped it and not the target",
-                land.centreKm2(CityLand.FRESH) < LandManager.FOUNDING_FRESH_KM2,
-                String.format("%.4f km2 fresh in the centre for %.4f", land.centreKm2(CityLand.FRESH), LandManager.FOUNDING_FRESH_KM2));
+        long target = (long) Math.ceil(LandManager.FOUNDING_FRESH_KM2 / World.KM2_PER_PLOT - GridConversion.WHOLE_PLOT);
+        long have = freshInRings(w, rings), held = LandCheck.freshOn(water, fresh);
+        long near = LandCheck.bestSquareHolds(fresh, CityLand.FRESH_PATCH), most = LandCheck.bestSquareHolds(fresh, CityLand.FRESH_PATCH_MOST), r = 0;
+        for (long p = CityLand.FRESH_PATCH; p <= CityLand.FRESH_PATCH_MOST && r == 0; p++) if (have + LandCheck.bestSquareHolds(fresh, p) >= target) r = p;
+        boolean ringsKept = land.centreRects().subList(0, n).equals(rings.centreRects()) && !water.isEmpty() && LandCheck.onePiece(water);
+        String figures = String.format("%d blocks holding %d fresh plots (%.4f km2) after the rings' %d; the river's best square holds %d at FRESH_PATCH (%d) and %d at FRESH_PATCH_MOST (%d), in %d blocks of river within reach; the target %d; %s",
+                water.size(), held, held * World.KM2_PER_PLOT, have, near, CityLand.FRESH_PATCH, most, CityLand.FRESH_PATCH_MOST, fresh.size(), target,
+                r > 0 ? "the least half-side that holds it: " + r : "no half-side up to FRESH_PATCH_MOST holds it");
+        if (r > 0) {
+            report(s.name() + ": a river and no lake in reach - its water is one patch inside the square of 2 * r + 1 blocks round its first block, r the least half-side the river's best square holds the target in, over FRESH_PATCH",
+                    ringsKept && LandCheck.inSquareOfFirst(water, r) && r > CityLand.FRESH_PATCH, figures);
+            report("...the centre holds FOUNDING_FRESH_KM2, so the widened square brought it",
+                    land.centreKm2(CityLand.FRESH) >= LandManager.FOUNDING_FRESH_KM2,
+                    String.format("%.4f km2 fresh in the centre for %.4f", land.centreKm2(CityLand.FRESH), LandManager.FOUNDING_FRESH_KM2));
+        } else {
+            report(s.name() + ": a river and no lake in reach - no square up to FRESH_PATCH_MOST holds the target, so its water is one patch inside the square of 2 * FRESH_PATCH_MOST + 1 blocks round its first block, holding what the river's best square there holds, more than FRESH_PATCH's",
+                    ringsKept && LandCheck.inSquareOfFirst(water, CityLand.FRESH_PATCH_MOST) && held == most && most > near, figures);
+            report("...less than FOUNDING_FRESH_KM2, so the widest square stopped it and not the target",
+                    land.centreKm2(CityLand.FRESH) < LandManager.FOUNDING_FRESH_KM2,
+                    String.format("%.4f km2 fresh in the centre for %.4f", land.centreKm2(CityLand.FRESH), LandManager.FOUNDING_FRESH_KM2));
+        }
     }
 
     /**
