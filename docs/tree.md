@@ -276,6 +276,10 @@ adds its line here, not in `CLAUDE.md`.
                                    own (since 0.7.102 the sheet read at the month's close, and what borrowing
                                    cost up front expensed over each debt's life); pure - ui/StatementView
                                    draws it, SectorStatementCheck holds it
+        GovernmentView.java        the government's net financial wealth in years of recorded revenue, its band and
+                                   the three existing policy doors (GV1); GovernmentViewCheck holds the bridge and previews
+        GovernmentPlayer.java      the test player's January response to that band (GV1/GV2), shared by LongPlaytest,
+                                   the ensemble and WealthRun; never called by a live city; GovernmentPlayerCheck holds it
         PolicyPreview.java         what a staged set of the Policy tab's dials would do (0.7.36): the tax take
                                    under another policy line by line, and THE BUDGET before and after, each
                                    line its owner's read of a detached TaxPolicy.copy() - since 0.7.48
