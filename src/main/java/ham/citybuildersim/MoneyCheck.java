@@ -68,6 +68,41 @@ public class MoneyCheck {
         return worst;
     }
 
+    /** HL1's fixture: a played city with care, schools, police, a bus network and three bank branches (the bank's charter is exempt from its operating cost) put up for the last month and held, and Contact Centres if `office`. */
+    static Game upkeepCity(GameFiles files, boolean office) {
+        Game c = new Game(files);
+        quietly(() -> {
+            c.run();
+            c.setCashForTest(Founding.WEALTHY_CASH);
+            c.getLandManager().setOwnedSqFt(c.getLandManager().getOwnedSqFt() + 400_000_000L);
+            BuildingManager b = c.getBuildingManager();
+            b.addStack(b.getTemplateByName("House"), 400, true);
+            b.addStack(b.getTemplateByName("Low-Rise Apartments"), 4, true);
+            b.addStack(b.getTemplateByName("Small Grocery Store"), 4, true);
+            b.addStack(b.getTemplateByName("Coal Power Plant"), 1, true);
+            b.addStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
+            b.addStack(b.getTemplateByName("Paved Road"), 10, true);
+            b.addStack(b.getTemplateByName("Walk-in Clinic"), 2, true);
+            b.addStack(b.getTemplateByName("Elementary School"), 1, true);
+            b.addStack(b.getTemplateByName("Police Station"), 2, true);
+            // The catalogue gives no road, line or terminal an upkeep, so the transit bill's upkeep part is nothing in any city until one has: the bus is given one.
+            b.getTemplateByName("Bus Network").setUpkeep(b.getTemplateByName("Bus Network").getCashCost() * .001);
+            b.addStack(b.getTemplateByName("Bus Network"), 3, true);
+            if (office) b.addStack(b.getTemplateByName("Contact Centre"), 2, true);
+            c.simulateMonths(6);
+            // ...the branches last, and held: the branch rule closes a branch the fees do not cover (Bank.branchesToClose()), and a young city's do not.
+            c.getBusinessInvestment().holdBranches();
+            b.addStack(b.getTemplateByName("Commercial Bank"), 3, true);
+        });
+        return c;
+    }
+
+    /** The five upkeeps the treasury paid and the bank's operating cost, each off the getter the audit reads (Game.buyUpkeep()). */
+    static double upkeepBills(Game c) {
+        return c.getHealthcare().getUpkeep() + c.getEducation().getUpkeep() + c.getEconomyManager().getResearchCosts()
+                + c.getCrime().getUpkeep() + c.getEconomyManager().getTransitUpkeep() + c.getBank().getOperatingCost();
+    }
+
     public static void main(String[] args) {
         Locale.setDefault(Locale.CANADA);
         boolean verbose = args.length > 0 && args[0].equals("-v");
@@ -577,6 +612,72 @@ public class MoneyCheck {
         assertTrue("the books' interest less the amortisation is the coupons the month paid in cash, holder by holder, every month: the amortisation moved no pool",
                 worstCouponGap < MoneyAudit.tolerance(1e-6, paperCity.getCash()));
         assertTrue("...and it is the cash coupons the budget calls its cash interest", worstCashGap < MoneyAudit.tolerance(1e-6, paperCity.getCash()));
+
+        /* ==================== 12. the services' upkeep is bought of Business Services ==================== */
+        System.out.println("--- the services' upkeep is bought of Business Services (HL1) ---");
+        /*
+         * HL1 (2026-11-11): the care, schools, research, safety and transit upkeep and the bank's operating cost left the pools and reached
+         * nobody. They are Business Services' other revenue now, booked the moment the buyer pays (Sector.bookUpkeepSold()), struck and banked
+         * at its next strike, with the share a sector of its kind imports (BusinessServices.UPKEEP_IMPORTED) booked as an imported service.
+         * Between the press that pays and the press that strikes the money is in transit in the seller's pool (MoneyAudit.pools()).
+         */
+        GameFiles upkeepFiles = GameFiles.scratch("moneycheck-upkeep");
+        Game up = upkeepCity(upkeepFiles, true);
+        ham.citybuildersim.sectors.BusinessServices office = up.getSectors().businessServices();
+        quietly(() -> up.simulateMonths(1));
+        MoneyAudit.Result paidMonth = up.getLastMoneyAudit();
+        double bills = upkeepBills(up);
+        System.out.printf("   month paid: seats %.0f; care %.2f, schools %.2f, research %.2f, safety %.2f, transit %.2f of %.2f, bank %.2f; sold %.2f%n",
+                office.getSeats(), up.getHealthcare().getUpkeep(), up.getEducation().getUpkeep(), up.getEconomyManager().getResearchCosts(),
+                up.getCrime().getUpkeep(), up.getEconomyManager().getTransitUpkeep(), up.getEconomyManager().getTransitBill(),
+                up.getBank().getOperatingCost(), office.pending().upkeepSold);
+        assertTrue("fixture: a played city with a clinic, a school, a police station, a bus network, three bank branches and an office (seats > 0) paid upkeep on every line but the laboratories' (none stand: DiscoveryCheck's)",
+                office.getSeats() > 0 && up.getHealthcare().getUpkeep() > 0 && up.getCrime().getUpkeep() > 0
+                        && up.getEconomyManager().getTransitUpkeep() > 0 && up.getBank().getOperatingCost() > 0 && up.getEducation().getUpkeep() > 0);
+        assertTrue("the press the bills are paid, Business Services holds them in transit: its pending upkeepSold is the five upkeeps and the bank's operating cost",
+                bills > 0 && Math.abs(office.pending().upkeepSold - bills) <= MoneyAudit.CENT);
+        assertTrue("...and that month's audit closes, with no DOMESTIC care, schools, safety, bank or transit-bill line, each noted as a \"chk\" line instead",
+                paidMonth.relative() < 1e-4 && paidMonth.figure("- care Upkeep") == 0 && paidMonth.figure("- schools Upkeep") == 0
+                        && paidMonth.figure("- safety Upkeep") == 0 && paidMonth.figure("- bank Operating") == 0 && paidMonth.figure("- transit Bill") == 0
+                        && Math.abs(paidMonth.figure("chk - care Upkeep") - up.getHealthcare().getUpkeep()) <= MoneyAudit.CENT
+                        && Math.abs(paidMonth.figure("chk - safety Upkeep") - up.getCrime().getUpkeep()) <= MoneyAudit.CENT
+                        && Math.abs(paidMonth.figure("chk - bank Operating") - up.getBank().getOperatingCost()) <= MoneyAudit.CENT
+                        && Math.abs(paidMonth.figure("chk - transit Bill") - up.getEconomyManager().getTransitBill()) <= MoneyAudit.CENT
+                        && Math.abs(paidMonth.figure("- transit Wages") - up.getEconomyManager().getTransitWages()) <= MoneyAudit.CENT
+                        && up.getEconomyManager().getTransitWages() > 0);
+        // Saved between the two presses, reloaded below: the money in transit is in the file.
+        quietly(() -> up.saveGame(10));
+        quietly(() -> up.simulateMonths(1));
+        MoneyAudit.Result struckMonth = up.getLastMoneyAudit();
+        Sector.Statement officeBooks = office.statement();
+        Double upkeepPart = officeBooks.otherParts.get(Sector.UPKEEP_SOLD);
+        Double upkeepSupplies = officeBooks.otherInputs.get(ham.citybuildersim.sectors.BusinessServices.UPKEEP_SUPPLIES);
+        assertTrue("the next press, Business Services' statement names the upkeep it sold (Sector.UPKEEP_SOLD in its other revenue), to the cent",
+                upkeepPart != null && Math.abs(upkeepPart - bills) <= MoneyAudit.CENT);
+        assertTrue("...and imported the share a sector of its kind imports (BusinessServices.UPKEEP_IMPORTED) of it, as an input line of its own",
+                upkeepSupplies != null && Math.abs(upkeepSupplies - bills * ham.citybuildersim.sectors.BusinessServices.UPKEEP_IMPORTED) <= MoneyAudit.CENT);
+        assertTrue("...and that month's audit closes too, the imported share in its \"- Business Services Imports\" line",
+                struckMonth.relative() < 1e-4 && upkeepSupplies != null && struckMonth.figure("- Business Services Imports") >= upkeepSupplies);
+        Game upBack = new Game(upkeepFiles);
+        quietly(() -> { upBack.run(); upBack.loadGame(10); });
+        assertTrue("saved between the two presses and reloaded, the money in transit survives the save: the city holds the same upkeep sold",
+                upBack.getLoadFailure() == null
+                        && Math.abs(upBack.getSectors().businessServices().pending().upkeepSold - bills) <= MoneyAudit.CENT);
+        quietly(() -> upBack.simulateMonths(1));
+        Sector.Statement backBooks = upBack.getSectors().businessServices().statement();
+        assertTrue("...and the reloaded city's next audit closes, its statement naming the upkeep that was in transit",
+                upBack.getLastMoneyAudit().relative() < 1e-4 && backBooks.otherParts.get(Sector.UPKEEP_SOLD) != null
+                        && Math.abs(backBooks.otherParts.get(Sector.UPKEEP_SOLD) - bills) <= MoneyAudit.CENT);
+        // A city whose Business Services has no seats: nobody there to do the work, so all of it is bought abroad.
+        Game bare = upkeepCity(GameFiles.scratch("moneycheck-upkeep-bare"), false);
+        quietly(() -> bare.simulateMonths(2));
+        Sector.Statement bareBooks = bare.getSectors().businessServices().statement();
+        Double bareParts = bareBooks.otherParts.get(Sector.UPKEEP_SOLD);
+        Double bareSupplies = bareBooks.otherInputs.get(ham.citybuildersim.sectors.BusinessServices.UPKEEP_SUPPLIES);
+        assertTrue("a city whose Business Services has no seats imports all of the upkeep it sold: its input line is the whole sum",
+                bare.getSectors().businessServices().getSeats() <= 0 && bareParts != null && bareParts > 0
+                        && bareSupplies != null && Math.abs(bareSupplies - bareParts) <= MoneyAudit.CENT
+                        && bare.getLastMoneyAudit().relative() < 1e-4);
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);

@@ -2068,6 +2068,20 @@ public class EconomyManager {
         this.transitFares = Math.max(0, fares);
     }
     public double getTransitBill()  { return transitBill; }
+
+    /** The part of the transit bill that is upkeep (HL1): the infrastructure's and the ports', bought of Business Services; the rest is the crews' wages. */
+    private double transitUpkeep;
+
+    /** Sets the month's transit upkeep, clamped to [0, the bill] (HL1). */
+    public void setTransitUpkeep(double upkeep) {
+        this.transitUpkeep = Math.max(0, Math.min(transitBill, upkeep));
+    }
+
+    /** The transit bill's upkeep (HL1), never more than the bill. */
+    public double getTransitUpkeep() { return Math.min(transitBill, transitUpkeep); }
+
+    /** The transit bill's wages (HL1): what is left of the bill once the upkeep is taken out. */
+    public double getTransitWages()  { return transitBill - getTransitUpkeep(); }
     public double getTransitFares() { return transitFares; }
 
     /** Negative when the fare more than covers the wages, which a player can arrange. */
@@ -2666,6 +2680,7 @@ public class EconomyManager {
         // households.setTransitFares()), and in the old unit a reform by a
         // thousand billed every working row a thousand times its ride.
         transitBill *= scale;
+        transitUpkeep *= scale;
         transitFares *= scale;
         exchangeRate *= scale;
         struckRate *= scale;   // the D$ the goods are struck at is a rate in today's unit too (AN1)

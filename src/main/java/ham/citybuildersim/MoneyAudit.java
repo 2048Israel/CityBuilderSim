@@ -57,6 +57,14 @@ package ham.citybuildersim;
  * bills are still paid to nobody, and their residual is what the next slice
  * mends.
  *
+ * The city's upkeep was one of those bills: the care, schools, research,
+ * safety and transit upkeep and the bank's operating cost left a pool and
+ * reached no household. Since HL1 they are bought of Business Services
+ * (BusinessServices.sellUpkeep()), a pool paying a pool: noted, not declared,
+ * and in transit in the seller's pool from the buyer's payment until its next
+ * strike (pools(): its cash plus Ledger.upkeepSold), as the builders' order
+ * book is. The transit bill's wages stay a DOMESTIC debit ("- transit Wages").
+ *
  * Struck by Game.nextMonth() every month, always, because it costs a few
  * hundred getter reads; asserted by LongPlaytest and MoneyCheck, and its
  * central bank lines by CentralBankCheck.
@@ -464,7 +472,14 @@ public final class MoneyAudit {
          * See Game.buyBack() and Game.callLine().
          */
         pools[i++] = g.getCash() + g.getBuybackUnsettled();
-        for (Sector s : sectors.all()) pools[i++] = s.getCash();
+        /*
+         * ...AND THE UPKEEP BOUGHT OF BUSINESS SERVICES (HL1): the city's services
+         * and the bank pay it between two presses and the seller banks it at its
+         * next strike, so until then it is in transit, counted with the seller's
+         * pool as the builders' order book is below (Ledger.upkeepSold). Every
+         * sector's is read, though only Business Services is ever sold any.
+         */
+        for (Sector s : sectors.all()) pools[i++] = s.getCash() + s.pending().upkeepSold;
         pools[i++] = sectors.construction().getOrderBookForAudit();
         /*
          * THE BANK, since 2026-09-07. It holds the city's lending, so a loan
@@ -1076,10 +1091,12 @@ public final class MoneyAudit {
         /*
          * ...and its branches' operating cost (0.7.19): the template's upkeep,
          * inside the bank's upkeep beside its repairs. The repairs reach the
-         * builders, a pool; this leaves the audited system the way the city's
-         * own services' upkeep does ("- care Upkeep" below).
+         * builders, a pool; this is bought of Business Services since HL1, as
+         * the city's own services' upkeep is ("chk - care Upkeep" below): a pool
+         * paying a pool, noted and not declared. Until then it left the audited
+         * system to nobody.
          */
-        out += debit.apply("- bank Operating", g.getBank().getOperatingCost(), Scope.DOMESTIC);
+        note.accept("chk - bank Operating", g.getBank().getOperatingCost());
         /*
          * Interest paid to SAVERS, since the bank started paying for its
          * deposits, and it goes to three different places.
@@ -1109,11 +1126,15 @@ public final class MoneyAudit {
         out += debit.apply("- safety Payroll", g.getCrime().getPayroll(), Scope.DOMESTIC);
         /*
          * ...and transit's wages and upkeep (0.7.49, B9), which the treasury
-         * pays at the month's end: wages leave the audited system, like the
-         * schools' and the police's. Unpaid until then - the crews' wages
-         * reached the households and left no pool.
+         * pays at the month's end: the wages leave the pools to the households,
+         * like the schools' and the police's. Unpaid until then - the crews'
+         * wages reached the households and left no pool. The upkeep part of the
+         * bill (the infrastructure's and the ports') is bought of Business
+         * Services since HL1, a pool paying a pool: noted, as "chk - transit
+         * Bill" with the whole bill, and only the wages declared.
          */
-        out += debit.apply("- transit Bill", e.getTransitBill(), Scope.DOMESTIC);
+        note.accept("chk - transit Bill", e.getTransitBill());
+        out += debit.apply("- transit Wages", e.getTransitWages(), Scope.DOMESTIC);
         // Imports: every sector's purchases from the world, as its statement booked them - with the services
         // bought from the world that have no good behind them: the shuttle tankers' freight (0.7.91) and the
         // works' consumables (0.7.112, Sector.buyConsumables()), each in TRADE with the goods.
@@ -1377,11 +1398,13 @@ public final class MoneyAudit {
         // pools like EI. See HouseholdBalance.allocateGroceries().
         out += debit.apply("- treasury FoodAssistance", e.getFoodAssistance(), Scope.DOMESTIC);
         out += debit.apply("- treasury StudentLoansLent", g.getStudentLoansLent(), Scope.DOMESTIC);
-        out += debit.apply("- care Upkeep", care.getUpkeep(), Scope.DOMESTIC);
-        out += debit.apply("- schools Upkeep", schools.getUpkeep(), Scope.DOMESTIC);
-        // ...and the research laboratories' other costs (R3), which leave the audited system as the schools' upkeep does.
-        out += debit.apply("- research Costs", e.getResearchCosts(), Scope.DOMESTIC);
-        out += debit.apply("- safety Upkeep", g.getCrime().getUpkeep(), Scope.DOMESTIC);
+        // The services' upkeep (HL1): bought of Business Services, which holds it in transit until its next strike (pools()). A pool paying a
+        // pool, noted: it was a DOMESTIC debit, to a household that was never paid, before.
+        note.accept("chk - care Upkeep", care.getUpkeep());
+        note.accept("chk - schools Upkeep", schools.getUpkeep());
+        // ...and the research laboratories' other costs (R3), bought as the schools' upkeep is.
+        note.accept("chk - research Costs", e.getResearchCosts());
+        note.accept("chk - safety Upkeep", g.getCrime().getUpkeep());
         // What thieves took from the tills, to the offenders' households -
         // out of the pools like a wage. What they took from households never
         // entered them. See Crime.

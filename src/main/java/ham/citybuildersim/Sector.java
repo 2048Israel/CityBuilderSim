@@ -1832,6 +1832,11 @@ public abstract class Sector {
         /** The part of otherRevenue that is its old steel sold to the Scrap Yards (0.7.123, batch I4; sellOldMetal()), named apart at the strike. */
         public double oldMetalSold;
         /**
+         * The part of otherRevenue that is upkeep sold to the city's services and the bank (HL1; sellUpkeep()), named apart at the strike;
+         * its cash left the buyer's pool when it was booked and reaches this till at bank(), and MoneyAudit.pools() counts it in between.
+         */
+        public double upkeepSold;
+        /**
          * What it pays the city this month for a service the city sells and
          * no business does (FR3, payTheCity()): the port dues. In inputs and
          * named in otherInputs, so the opened cost line adds up; in no
@@ -1851,6 +1856,7 @@ public abstract class Sector {
         void clear() {
             localSales = exports = otherRevenue = imports = salesToHouseholds = paidEarlier = 0;
             oldMetalSold = 0;
+            upkeepSold = 0;
             paidToCity = 0;
             purchasesBySupplier.clear();
             capitalBySupplier.clear();
@@ -1871,6 +1877,7 @@ public abstract class Sector {
             localSales *= s; exports *= s; otherRevenue *= s; imports *= s; salesToHouseholds *= s;
             paidEarlier *= s;
             oldMetalSold *= s;
+            upkeepSold *= s;
             paidToCity *= s;
             purchasesBySupplier.replaceAll((k, v) -> v * s);
             capitalBySupplier.replaceAll((k, v) -> v * s);
@@ -2173,6 +2180,22 @@ public abstract class Sector {
         pending.oldMetalSold += amount;
     }
 
+    /** The name of the upkeep sold, in a statement's otherParts (HL1). */
+    public static final String UPKEEP_SOLD = "Upkeep work";
+
+    /**
+     * ...and upkeep sold (HL1; BusinessServices.sellUpkeep()): other revenue
+     * like any, named apart on the income statement as UPKEEP_SOLD whatever
+     * the sector calls the rest of its other revenue (strike()). The buyer's
+     * cash has already left its pool; this till gets it at bank(), and the
+     * audit counts it in between (MoneyAudit.pools()).
+     */
+    protected final void bookUpkeepSold(double amount) {
+        if (!(amount > 0) || !Double.isFinite(amount)) return;
+        pending.otherRevenue += amount;
+        pending.upkeepSold += amount;
+    }
+
     /**
      * ...and a price given back (0.7.19): the builders' refund of material
      * escalation to an owner whose material cost less when it was drawn than
@@ -2403,13 +2426,14 @@ public abstract class Sector {
         // ...and what it paid the city (FR3), added only when there is some: a zero added is not always nothing.
         if (pending.paidToCity != 0) s.inputs += pending.paidToCity;
         // LAST, because nameOtherRevenue() reads s.otherRevenue above it.
-        if (pending.oldMetalSold != 0) {
-            // ...its old steel sold named apart (0.7.123, sellOldMetal()): the
-            // sector names the rest, then the whole is put back.
-            s.otherRevenue = pending.otherRevenue - pending.oldMetalSold;
+        if (pending.oldMetalSold != 0 || pending.upkeepSold != 0) {
+            // ...its old steel sold named apart (0.7.123, sellOldMetal()) and its upkeep sold (HL1,
+            // sellUpkeep()): the sector names the rest, then the whole is put back.
+            s.otherRevenue = pending.otherRevenue - pending.oldMetalSold - pending.upkeepSold;
             s.otherParts = nameOtherRevenue();
             s.otherRevenue = pending.otherRevenue;
-            s.otherParts.merge(OldMetal.SOLD, pending.oldMetalSold, Double::sum);
+            if (pending.oldMetalSold != 0) s.otherParts.merge(OldMetal.SOLD, pending.oldMetalSold, Double::sum);
+            if (pending.upkeepSold != 0) s.otherParts.merge(UPKEEP_SOLD, pending.upkeepSold, Double::sum);
         } else {
             s.otherParts = nameOtherRevenue();
         }

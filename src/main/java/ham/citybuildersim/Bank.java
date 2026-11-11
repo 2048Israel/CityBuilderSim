@@ -3153,7 +3153,9 @@ public class Bank {
      * branch cost its payroll and its repairs and no more. Jerus's branch
      * rule is "maintenance and operating costs", so it is paid now, here,
      * as the city's own services pay their templates' upkeep: a real
-     * outflow, declared to the audit as "- bank Operating".
+     * outflow of the bank's cash, bought of Business Services since HL1
+     * (Game.nextMonth(); BusinessServices.sellUpkeep()) and noted to the
+     * audit as "chk - bank Operating", a pool paying a pool.
      *
      * @param repairs   the branches' repair bill, paid to the builders
      * @param operating their templates' operating cost, paid out of the city

@@ -67,6 +67,11 @@ import java.util.List;
  * $8.50-10.50 an hour where one steelworker went from $16 to $8.75, and then
  * shedding two thousand jobs to the Philippines and India inside a decade.
  * Boom and bleed, documented. See claude/business-services.md.
+ *
+ * AND THE CITY'S OWN UPKEEP IS BOUGHT OF IT (HL1, 2026-11-11): the treasury's
+ * care, school, research, safety and transit upkeep and the bank's operating
+ * cost are work billed to this sector, which imports the share of it a sector
+ * of its kind imports (sellUpkeep(), UPKEEP_IMPORTED).
  */
 public final class BusinessServices extends Sector {
 
@@ -245,6 +250,39 @@ public final class BusinessServices extends Sector {
             case UNIV_FINANCE      -> "finance licences";
             default                -> "licences";
         };
+    }
+
+    /* ===== THE CITY'S UPKEEP (HL1, 2026-11-11) =====================================
+
+       What the treasury pays for care, schools, research, safety and the
+       transit system's upkeep, and what the bank pays to run, left the audited
+       pools and reached nobody: 0.4-4.4% of GDP a year vanishing from the
+       households' books' other side, a bill with no seller. It is bought of
+       this sector now. The buyer pays exactly what it paid and when it paid it;
+       the whole bill is this sector's other revenue the moment it is paid (as
+       the old steel is the mills', sellOldMetal()), struck and banked at its
+       next strike like any revenue, and the share of it a sector of its kind
+       buys abroad (UPKEEP_IMPORTED) is booked as an imported service, so the
+       audit's imports, the national accounts and the balance of payments see
+       it with no line of their own. With no seats there is nobody here to do
+       the work and all of it is bought abroad. No extra payroll, no good, no
+       market: it is work billed.
+       ------------------------------------------------------------------- */
+
+    /**
+     * The share of the upkeep it sells the city's services and the bank that it buys abroad (HL1; measured 2026-11-11 on seeds 0 and 1,
+     * months 240-900: the grocers import 0.75-0.78 of their inputs, the restaurants 0.73-0.77, the builders 0.62-0.80).
+     */
+    public static final double UPKEEP_IMPORTED = 0.75;
+
+    /** The upkeep's name on its input line. */
+    public static final String UPKEEP_SUPPLIES = "Upkeep supplies";
+
+    /** Upkeep the city's services or the bank have paid, billed to this sector this month: other revenue now, the imported share its input. */
+    public void sellUpkeep(double bill) {
+        if (!(bill > 0) || !Double.isFinite(bill)) return;
+        bookUpkeepSold(bill);
+        bookImportedService(UPKEEP_SUPPLIES, bill * (getSeats() > 0 ? UPKEEP_IMPORTED : 1));
     }
 
     /* ------------------------------------------------------------ the screen */
