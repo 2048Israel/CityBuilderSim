@@ -990,6 +990,11 @@ public final class MoneyAudit {
         // ...and the strategic reserve's crude bought from the world (0.7.85), settled at the strike
         // beside the sectors' month; what it bought of the wells is a pool paying a pool, not listed.
         out += debit.apply("- city ReserveFill", g.getReserve().getSettledImports(), Scope.TRADE);
+        // ...and the utility's fuel (PW1; Game.buyPowerFuel()): the coal it bought from the world and the plants' variable
+        // upkeep, a service bought abroad like the works' consumables, each in TRADE with the goods; the coal it bought of the
+        // mines is a pool paying a pool (the treasury to Coal Mining's till), not listed.
+        out += debit.apply("- utilities FuelImports", utilities.getFuelImported(), Scope.TRADE);
+        out += debit.apply("- utilities PlantUpkeep", utilities.getUpkeepPaid(), Scope.TRADE);
         /*
          * ...and the steel in the households' scrapped cars, bought by the
          * Scrap Yards (0.7.123, batch I4; OldMetal): paid into their savings

@@ -790,12 +790,27 @@ public abstract class Sector {
     protected double energyRatio = 1, waterRatio = 1, roadRatio = 1, healthRatio = 1;
     protected double electricity, water;
     protected double pricePerWatt, pricePerWaterUnit;
+    /** The struck book's other two prices a kW a month (PW1, the merit order): Heavy Industry and Mining (the energy and the long wires), and what a works' surplus is paid. */
+    protected double pricePerWattIndustry, pricePerWattWorks;
+    /** The share, 0..1, of its billed draw that its Heavy Industry and Mining buildings take: billed at the industry price, the rest at the commerce price. Set by EconomyManager with the draw. */
+    protected double highVoltageShare;
 
     public void setEnergyRatio(double r)  { energyRatio = r; }
     public void setWaterRatio(double r)   { waterRatio = r; }
     public void setRoadRatio(double r)    { roadRatio = r; }
     public void setHealthRatio(double r)  { healthRatio = r; }
-    public void setPricePerWatt(double p)       { pricePerWatt = p; }
+    /** One price for all three (a fixture's, and the founding tariff): commerce, industry and the works' surplus. */
+    public void setPricePerWatt(double p)       { pricePerWatt = pricePerWattIndustry = pricePerWattWorks = p; }
+    /** The struck book's three prices a kW a month: commerce and light industry, Heavy Industry and Mining, and what a works' surplus is paid. */
+    public void setPowerPrices(double commerce, double industry, double works) {
+        pricePerWatt = commerce; pricePerWattIndustry = industry; pricePerWattWorks = works;
+    }
+    public void setHighVoltageShare(double share) { highVoltageShare = Double.isNaN(share) ? 0 : Math.max(0, Math.min(1, share)); }
+    public double getHighVoltageShare() { return highVoltageShare; }
+    /** What a planner values a building's power draw at: the industry price for a high-voltage class, the commerce price for the rest. */
+    public double powerPriceFor(BuildingsTemplate t) {
+        return BuildingsTemplate.isHighVoltage(t) ? pricePerWattIndustry : pricePerWatt;
+    }
     public void setPricePerWaterUnit(double p)  { pricePerWaterUnit = p; }
     /** Draw at nameplate, off its own buildings. Set by EconomyManager each month. */
     public void setElectricityConsumption(double kw)  {
@@ -825,7 +840,11 @@ public abstract class Sector {
     }
 
     /** Charged for what was DELIVERED, not asked for - the utility books the same slice. */
-    public double getElectricityCost() { return electricity * energyRatio * pricePerWatt; }
+    public double getElectricityCost() {
+        if (highVoltageShare <= 0) return electricity * energyRatio * pricePerWatt;
+        if (highVoltageShare >= 1) return electricity * energyRatio * pricePerWattIndustry;
+        return electricity * energyRatio * (pricePerWatt * (1 - highVoltageShare) + pricePerWattIndustry * highVoltageShare);
+    }
     public double getWaterCost()       { return water * waterRatio * pricePerWaterUnit; }
 
     /* -------------------------------------------------------------------
@@ -853,8 +872,8 @@ public abstract class Sector {
     /** kW its buildings make past their own draws (0 for every sector until a works makes power). */
     public double getPowerSurplus() { return powerSurplus; }
 
-    /** What the surplus sells for a month, at the tariff: nothing with none. */
-    public double getPowerSoldValue() { return powerSurplus > 0 ? powerSurplus * pricePerWatt : 0; }
+    /** What the surplus sells for a month, at the works' price (the struck book's): nothing with none. */
+    public double getPowerSoldValue() { return powerSurplus > 0 ? powerSurplus * pricePerWattWorks : 0; }
 
     /* ===== THE STEAM FORM (R0c, 2026-11-05; research-1900 section 4, [P2.26], [P2.27])
      *
@@ -3820,6 +3839,8 @@ public abstract class Sector {
         bondsPayable *= scale;
         for (int k = 0; k <= BORROWING_COST_MOST_MONTHS; k++) borrowingChargesLeft[k] *= scale;
         pricePerWatt *= scale;
+        pricePerWattIndustry *= scale;
+        pricePerWattWorks *= scale;
         pricePerWaterUnit *= scale;
         for (int i = 0; i < wages.length; i++) wages[i] *= scale;
         pending.scale(scale);

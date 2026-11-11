@@ -38,8 +38,24 @@ PW1's core ships here. **PW5 and PW8 go under Pending** in the ship file:
   PlantUpkeep`; the local coal is the treasury paying Coal Mining, pool to pool.
 - **The advice**: the build advice plans power against the calm peak: a Wind Farm counts `WIND_FIRM` (0.33) of its
   average, the demand `PLAN_PEAK` (1.20 / 0.95) of the mean; with yellow at 0.75 about 12% over July's peak block.
-  Without it the advisor's wind cities brown out in every calm half-block.
+  Without it the advisor's wind cities brown out in every calm half-block. `unit()`, `built()`, `figure()` and
+  `supplyDemand()` carry it, so the Build ring's power reads firm supply over the peak's draw (the advice's own
+  figure), and a Wind Farm's card its firm kW. The NEEDS YOU row (`CityNeeds`) still reads the offered average over
+  the draw: two questions, two figures, left for PW6 (the power screen) to word.
+
+- **The founding grid** (`BASE_GRID_KW`, 10,000 kW, "for nothing", spec 1.2) stays free: a fuelled row at marginal 0. A town
+  it covers clears at an energy price of 0 and pays the wires alone; its works' surplus is paid nothing. Three fixtures
+  (MoneyCheck, MaterialsCheck's power town, WoodProductsCheck 4) raise the homes' draw so the coal plant is the margin.
 
 ## 2. Measured
 
 (to come: the default run's prices, the coal bought, how often VOLL fires, the margin the plants earn, the works shed)
+
+## 3. Found on the way
+
+- **ReloadCheck's `.mapStamp` red is main's** (a fault in the map, not this batch's code). A month after a load, the
+  reloaded map lays rail on plots the live map leaves bare (kind 5, `TilePainter.RAIL`), with the same builds in both and
+  the two maps byte-equal at the load. There are no reserves and no mined sites in either city. On PW1 it is district 3,
+  6 plots, at month 1205. Clean main (0a5b74ef) shows the same at month 2105 (district 11, 2 plots), once the probe follows
+  ReloadCheck past its last checkpoint. PW1 changes the probe city's builds, so the fault shows at 1205. The probe is in
+  the orchestrator's notes folder, `PW1-map-rail-after-load/`. A fix batch is queued in the ship file.

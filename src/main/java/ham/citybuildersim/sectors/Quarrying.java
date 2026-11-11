@@ -337,7 +337,7 @@ public final class Quarrying extends ExtractionSector {
             if (limestone > home) made.merge(Good.AGGREGATE, limestone - home, Double::sum);
         }
         double rate = BusinessInvestment.operatingRateOf(getOperatingRate());
-        return plans.estimatedMakerProfit(this, t, made) - SpreadPlanner.ownCosts(t, rate, exchangeFactor(), pricePerWatt)
+        return plans.estimatedMakerProfit(this, t, made) - SpreadPlanner.ownCosts(t, rate, exchangeFactor(), powerPriceFor(t))
                 - freightRunning(t, rate);
     }
 

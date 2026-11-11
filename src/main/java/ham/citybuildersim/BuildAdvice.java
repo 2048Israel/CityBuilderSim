@@ -431,7 +431,8 @@ public final class BuildAdvice {
             case POWER:
                 // A hydro station adds power only while a slot of the city's river is free (HY1: Game.hydroSlotsFree()).
                 if (t.isHydro() && game.hydroSlotsFree(t) < 1) return 0;
-                return t.getProduction1() * staffing(t, fill);
+                // PW1, 2026-11-11: power is planned for the calm peak, so a wind farm adds its firm kW (PowerDispatch.WIND_FIRM of its average), not the average.
+                return t.getProduction1() * (t.isWind() ? PowerDispatch.WIND_FIRM : 1) * staffing(t, fill);
             case WATER: {
                 /*
                  * THE WATER UNIT (0.7.59, batch J2): a fresh plant adds no
@@ -468,7 +469,9 @@ public final class BuildAdvice {
     /** The same, fully staffed: what the building is built for. */
     public static double built(Game game, Measure m, BuildingsTemplate t) {
         switch (m.kind()) {
-            case POWER: case WATER: return t.getProduction1();
+            // PW1, 2026-11-11: a wind farm's firm kW, as unit() counts it (the card sets the one beside the other).
+            case POWER: return t.getProduction1() * (t.isWind() ? PowerDispatch.WIND_FIRM : 1);
+            case WATER: return t.getProduction1();
             case ROADS: case HIGHWAYS: return t.getCapacity();
             case TRANSIT:           return t.getTransitCapacity();
             case PORT:              return Ports.berthMonth(t);
@@ -559,6 +562,17 @@ public final class BuildAdvice {
                 for (int i = 0; i < je.length; i++) jobs += je[i] + jw[i];
                 double filled = u.getAverageUtilityFill() * jobs;
                 double base = power ? u.getBaseProduction() : u.getBaseWaterProduction();
+                // PW1, 2026-11-11: power is planned for the calm peak (spec-electricity 6, "the advice must be peak-aware"): the supply
+                // is the FIRM supply, the base less what wind does not deliver in its calmest half-block, and the demand is the peak
+                // block's draw with the grid's losses in (PowerDispatch.PLAN_PEAK). Water is as it was, to the bit.
+                double nonFirm = 0;
+                if (power) {
+                    for (BuildingsTemplate t : bm.getTemplates()) {
+                        if (t.getCategory() == BuildingType.ELECTRICITY && t.isWind()) {
+                            nonFirm += bm.getQuantity(t.getId()) * t.getProduction1() * (1 - PowerDispatch.WIND_FIRM);
+                        }
+                    }
+                }
                 // ...and water's two parts, the fresh held to the city's limit (0.7.59).
                 double fresh = u.getFreshNameplate(), desal = u.getDesalNameplate();
                 double demand = k * (power ? u.getConsumption() : u.getWaterConsumption());
@@ -567,6 +581,7 @@ public final class BuildAdvice {
                     int n = e.getValue();
                     if (t.getCategory() == (power ? BuildingType.ELECTRICITY : BuildingType.WATER)) {
                         base += n * t.getProduction1();
+                        if (power && t.isWind()) nonFirm += n * t.getProduction1() * (1 - PowerDispatch.WIND_FIRM);
                     }
                     if (t.isFreshWater()) fresh += n * t.getProduction1();
                     if (t.isSeaWater()) desal += n * t.getProduction1();
@@ -581,6 +596,10 @@ public final class BuildAdvice {
                     }
                 }
                 double average = jobs > 0 ? filled / jobs : 1;
+                if (power) {
+                    base -= nonFirm;
+                    demand *= PowerDispatch.PLAN_PEAK;
+                }
                 double supply = average == 0 ? (power ? 10000 : 8000) : base * average;
                 // Past the fresh water limit the fresh plants treat the cap (UtilitiesHandler,
                 // THE FRESH WATER LIMIT); short of it, the line above to the bit.
@@ -659,6 +678,9 @@ public final class BuildAdvice {
                     demand += e.getValue() * (m.kind() == Kind.POWER
                             ? e.getKey().getElectricityConsumption() : e.getKey().getWaterConsumption());
                 }
+                // PW1, 2026-11-11: figure() reads power against the peak block's draw, so the demand here is that draw and the supply
+                // is the firm supply it implies (shortfall() then reads peak draw / NETWORK_YELLOW less firm supply).
+                if (m.kind() == Kind.POWER) demand *= PowerDispatch.PLAN_PEAK;
                 return new double[] {load > 0 ? demand / load : 0, demand};
             }
             case ROADS: {
@@ -1546,7 +1568,7 @@ public final class BuildAdvice {
                 : t.repairsPerYear();
         double repairs = econ.withBuildersTax(bm.nonMaterialCost(t) + t.getConstructionMaterials() * materials)
                 * share / 12;
-        double utilities = t.getElectricityConsumption() * econ.getPricePerWatt()
+        double utilities = t.getElectricityConsumption() * econ.getPowerPriceFor(t)
                 + t.getWaterConsumption() * econ.getPricePerWaterUnit();
         double riders = roads(game, plus(site, t, 1)).getTransitRiders() - roads(game, site).getTransitRiders();
         double fares = riders * econ.getTaxPolicy().monthlyFare();

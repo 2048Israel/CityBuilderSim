@@ -326,6 +326,9 @@ public class MoneyCheck {
         big.setConsumables(.001 * big.getCashCost());
         works.setCashForTest(Founding.WEALTHY_CASH);
         works.getLandManager().setOwnedSqFt(works.getLandManager().getOwnedSqFt() + 400_000_000L);
+        // THE FIXTURE CAUSES IT (PW1): the merit order pays the works what their kWh clear at, and the founding grid (10,000 kW, free)
+        // clears a town of 400 homes at nothing. The homes draw 50 kW each, so the town outruns the grid and the coal plant is the margin.
+        t(works, "House").setElectricityConsumption(50);
         // ...standing from the first month (no builders in this town to put them up).
         quietly(() -> {
             works.buildStack(t(works, "House"), 400, true);

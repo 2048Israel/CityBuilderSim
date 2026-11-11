@@ -99,6 +99,13 @@ public class EconomyManager {
         cityCrudeImports = Double.isFinite(imports) ? Math.max(0, imports) : 0;
         cityCrudeExports = Double.isFinite(exports) ? Math.max(0, exports) : 0;
     }
+
+    /** What the utility bought across the edge this month, city money: the coal from the world and the plants' variable upkeep (PW1). Told by Game before updateNationalAccounts(). */
+    private double utilityImports;
+
+    public void setUtilityImports(double imports) {
+        utilityImports = Double.isFinite(imports) ? Math.max(0, imports) : 0;
+    }
     public void setWageDetail(double[] staffedPerType) {
         if (staffedPerType != null) this.staffedWagePerType = staffedPerType.clone();
     }
@@ -146,14 +153,31 @@ public class EconomyManager {
     /* ----------------------------- utilities ----------------------------- */
 
     private double pricePerWatt;
+    /** The struck book's other two prices (PW1): Heavy Industry and Mining, and what a works' surplus is paid. */
+    private double pricePerWattIndustry, pricePerWattWorks;
     private double pricePerWaterUnit;
 
     public double getPricePerWatt()      { return pricePerWatt; }
+    public double getIndustryPricePerWatt() { return pricePerWattIndustry; }
+    public double getWorksPricePerWatt() { return pricePerWattWorks; }
     public double getPricePerWaterUnit() { return pricePerWaterUnit; }
 
+    /** What a planner values a building's power draw at: the industry price for Heavy Industry and Mining, the commerce price for the rest. */
+    public double getPowerPriceFor(BuildingsTemplate t) {
+        return BuildingsTemplate.isHighVoltage(t) ? pricePerWattIndustry : pricePerWatt;
+    }
+
+    /** One price for all three (a fixture's): commerce, industry and the works' surplus. */
     public void setPricePerWatt(double price) {
-        pricePerWatt = price;
-        for (Sector s : sectors.all()) s.setPricePerWatt(price);
+        setPowerPrices(price, price, price);
+    }
+
+    /** The utility's struck book (PW1): what commerce and light industry pay, what Heavy Industry and Mining pay, what a works' surplus is paid; each city money a kW a month. */
+    public void setPowerPrices(double commerce, double industry, double works) {
+        pricePerWatt = commerce;
+        pricePerWattIndustry = industry;
+        pricePerWattWorks = works;
+        for (Sector s : sectors.all()) s.setPowerPrices(commerce, industry, works);
     }
 
     public void setPricePerWaterUnit(double price) {
@@ -217,6 +241,11 @@ public class EconomyManager {
                     t -> BuildingsTemplate.isBilledForUtilities(t) ? t.powerBought() : 0));
             s.setPowerSurplus(buildingManager.totalBySector(s.key(),
                     t -> BuildingsTemplate.isBilledForUtilities(t) ? t.powerSold() : 0));
+            // ...and the share of that draw its Heavy Industry and Mining buildings take at high voltage (PW1; Sector.getElectricityCost()).
+            double kw = buildingManager.totalBySector(s.key(), t -> BuildingsTemplate.isBilledForUtilities(t) ? t.powerBought() : 0);
+            double hvKw = buildingManager.totalBySector(s.key(),
+                    t -> BuildingsTemplate.isBilledForUtilities(t) && BuildingsTemplate.isHighVoltage(t) ? t.powerBought() : 0);
+            s.setHighVoltageShare(kw > 0 ? hvKw / kw : 0);
             s.setWaterConsumption(buildingManager.totalBySector(s.key(),
                     t -> BuildingsTemplate.isBilledForUtilities(t) ? t.getWaterConsumption() : 0));
         }
@@ -2273,6 +2302,8 @@ public class EconomyManager {
         // ...and the reserve's crude across the edge, as the strike settled it (0.7.85).
         if (cityCrudeExports > 0) exports += cityCrudeExports;
         if (cityCrudeImports > 0) rawImports += cityCrudeImports;
+        // ...and the coal the utility bought abroad and the upkeep it paid abroad (PW1; Game.buyPowerFuel()).
+        if (utilityImports > 0) rawImports += utilityImports;
         double foodImports = retail.statement().imports;
         double materialImports = construction.statement().imports;
 
@@ -2606,6 +2637,7 @@ public class EconomyManager {
         totalPropertyTax = 0;
         salesTax = 0;
         cityCrudeTonnes = cityCrudeImports = cityCrudeExports = 0;
+        utilityImports = 0;
         sectors.reset();
         markets.reset();
         salesTaxLedger.reset();
@@ -2641,6 +2673,7 @@ public class EconomyManager {
         foreignInterest *= scale;
         totalWage *= scale;
         cityCrudeImports *= scale;
+        utilityImports *= scale;
         cityCrudeExports *= scale;
         GDP *= scale;
         yearGDP *= scale;
@@ -2670,6 +2703,8 @@ public class EconomyManager {
         exchangeRate *= scale;
         struckRate *= scale;   // the D$ the goods are struck at is a rate in today's unit too (AN1)
         pricePerWatt *= scale;
+        pricePerWattIndustry *= scale;
+        pricePerWattWorks *= scale;
         pricePerWaterUnit *= scale;
         scaleArray(wageRates, scale);
         scaleArray(staffedWagePerType, scale);

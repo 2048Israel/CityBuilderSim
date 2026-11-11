@@ -322,7 +322,7 @@ public final class CoalMining extends ExtractionSector {
             else lost += lostValue(e.getKey(), -e.getValue(), plans);
         }
         double maker = plans.estimatedMakerProfit(this, t, gains) - lost * rate;
-        return maker - SpreadPlanner.ownCosts(t, rate, exchangeFactor(), pricePerWatt) - freightRunning(t, rate);
+        return maker - SpreadPlanner.ownCosts(t, rate, exchangeFactor(), powerPriceFor(t)) - freightRunning(t, rate);
     }
 
     /**

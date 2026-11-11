@@ -296,7 +296,7 @@ public final class Manufacturing extends Sector {
         if (t == null || t.getId() != WIRE_CABLE_WORKS || markets == null) return super.estimatedMonthlyProfit(t, plans);
         double maker = plans.estimatedMakerProfit(this, t);
         double rate = BusinessInvestment.operatingRateOf(getOperatingRate());
-        return maker - SpreadPlanner.ownCosts(t, rate, markets.getExchangeRate(), pricePerWatt)
+        return maker - SpreadPlanner.ownCosts(t, rate, markets.getExchangeRate(), powerPriceFor(t))
                 - ProcessingSector.freightRunning(t, SpreadPlanner.values(markets), rate, legPrice());
     }
 

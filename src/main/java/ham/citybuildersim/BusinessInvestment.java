@@ -1419,7 +1419,7 @@ public class BusinessInvestment {
             if (slot < rates.length) payroll += t.getJobs(type) * rates[slot];
         }
         return payroll
-                + t.getElectricityConsumption() * economyManager.getPricePerWatt()
+                + t.getElectricityConsumption() * economyManager.getPowerPriceFor(t)
                 + t.getWaterConsumption() * economyManager.getPricePerWaterUnit();
     }
 

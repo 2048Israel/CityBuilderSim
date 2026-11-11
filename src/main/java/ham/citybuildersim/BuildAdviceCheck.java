@@ -87,6 +87,11 @@ import java.util.Set;
  *      WORTH_A_BERTH / the port dues dial of its month (Ports.berthPaysBack()),
  *      the largest of the kind's terminals that pays back, and none at a dial
  *      of 0.
+ *  14. POWER IS PLANNED FOR THE CALM PEAK (PW1): a Wind Farm adds its
+ *      average x PowerDispatch.WIND_FIRM, power's figure is the peak block's
+ *      draw (PLAN_PEAK) over the firm supply, and Wind Farms whose average
+ *      is the shortfall leave it short where a Coal Power Plant of that
+ *      average does more.
  *
  * Every fixture causes its condition.
  */
@@ -240,6 +245,7 @@ public class BuildAdviceCheck {
         theRun(root, g, advice);
         thePricedOut(g);
         aBerthPaysBack(root);
+        powerForTheCalmPeak(g);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -637,7 +643,14 @@ public class BuildAdviceCheck {
         switch (m.kind()) {
             case POWER: {
                 UtilitiesHandler u = twin.getServicesManager().getUtilitiesHandler();
-                return u.getConsumption() / u.getProduction();
+                // PW1: the peak block's draw (PLAN_PEAK) over the production less what the standing wind does not deliver in its calmest half-block (WIND_FIRM).
+                double nonFirm = 0;
+                for (BuildingsTemplate t : bm.getTemplates()) {
+                    if (t.getCategory() == BuildingType.ELECTRICITY && t.isWind()) {
+                        nonFirm += bm.getQuantity(t.getId()) * t.getProduction1() * (1 - PowerDispatch.WIND_FIRM);
+                    }
+                }
+                return u.getConsumption() * PowerDispatch.PLAN_PEAK / (u.getProduction() - nonFirm * u.getAverageUtilityFill());
             }
             case WATER: {
                 UtilitiesHandler u = twin.getServicesManager().getUtilitiesHandler();
@@ -1488,6 +1501,72 @@ public class BuildAdviceCheck {
         s = ask(g, m);
         assertTrue("SL1, THE TRADE PAST IT: the same uncovered tonnes make the card ONE Bulk Terminal, which the Bulk Berths kept off the advice for ever",
                 s != null && s.template() == terminal && s.count() == 1);
+    }
+
+    static void powerForTheCalmPeak(Game fixture) {
+        out.println("\n--- 14. power is planned for the calm peak (PW1): a wind farm adds its firm kW, the figure is the peak's draw over the firm supply ---");
+        // The short city's twin (it stands staffed, with its Coal Power Plant), six Wind Farms standing in it and the month's services pass run.
+        Game g = twin(fixture);
+        Map<BuildingsTemplate, Integer> six = new LinkedHashMap<>();
+        six.put(template(g, "Wind Farm"), 6);
+        builtAndRead(g, BuildAdvice.Measure.of(BuildAdvice.Kind.POWER), six);
+        BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
+        BuildingsTemplate wind = template(g, "Wind Farm"), coal = template(g, "Coal Power Plant"), house = template(g, "House");
+        double[] fill = g.getPopulationManager().getJobFillRate();
+        double staffWind = BuildAdvice.staffing(wind, fill), staffCoal = BuildAdvice.staffing(coal, fill);
+        assertTrue("fixture: the Wind Farm is wind and the Coal Power Plant is not; both can be staffed; six of the one and a plant of the other stand",
+                wind.isWind() && !coal.isWind() && staffWind > 0 && staffCoal > 0
+                        && g.getBuildingManager().getQuantity(wind.getId()) >= 6 && g.getBuildingManager().getQuantity(coal.getId()) >= 1);
+
+        // (a) the unit: a wind farm's average x WIND_FIRM, a coal plant's all, each at its own staffing.
+        double perWind = BuildAdvice.unit(g, power, wind) / wind.getProduction1();
+        double perCoal = BuildAdvice.unit(g, power, coal) / coal.getProduction1();
+        close("(a) a Wind Farm's power unit per kW of its average is WIND_FIRM of a Coal Power Plant's, staffing aside",
+                perWind / perCoal, PowerDispatch.WIND_FIRM * staffWind / staffCoal, 1e-12);
+        close("...and built() (the card sets it beside unit()) counts the same firm kW, fully staffed",
+                BuildAdvice.built(g, power, wind) / wind.getProduction1(), PowerDispatch.WIND_FIRM, 1e-12);
+        bits("...a Coal Power Plant's built() is its whole average", BuildAdvice.built(g, power, coal), coal.getProduction1());
+
+        // (b) the figure: the peak block's draw over the firm supply, off the handler's own figures.
+        UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
+        Map<BuildingsTemplate, Integer> none = new LinkedHashMap<>();
+        int windStanding = g.getBuildingManager().getQuantity(wind.getId());
+        double firm = (u.getBaseProduction() - windStanding * wind.getProduction1() * (1 - PowerDispatch.WIND_FIRM)) * u.getAverageUtilityFill();
+        double figure = BuildAdvice.figure(g, power, none);
+        close("(b) power's figure is the draw x PLAN_PEAK over the firm supply (the base less the wind's non-firm part, at the utilities' fill)",
+                figure, u.getConsumption() * PowerDispatch.PLAN_PEAK / firm, 1e-9);
+        assertTrue("...which is more than the average's draw over its production, the wind standing counted at its average",
+                figure > u.getConsumption() / u.getProduction());
+        double[] sd = BuildAdvice.supplyDemand(g, power, none);
+        close("...and supplyDemand() is the firm supply against the peak's draw", sd[0], firm, 1e-9);
+        close("...the draw the peak's, losses in", sd[1], u.getConsumption() * PowerDispatch.PLAN_PEAK, 1e-9);
+
+        // (c) a shortfall of five wind farms' average, caused by homes added to the demand.
+        Map<BuildingsTemplate, Integer> short1 = new LinkedHashMap<>();
+        short1.put(house, 1);
+        double s0 = BuildAdvice.shortfall(g, power, none, BuildAdvice.NOW);
+        double perHouse = BuildAdvice.shortfall(g, power, short1, BuildAdvice.NOW) - s0;
+        int homes = (int) Math.ceil((5 * wind.getProduction1() - s0) / perHouse);
+        Map<BuildingsTemplate, Integer> city = new LinkedHashMap<>();
+        city.put(house, Math.max(1, homes));
+        double short0 = BuildAdvice.shortfall(g, power, city, BuildAdvice.NOW);
+        assertTrue("fixture: the homes added leave power short of at least five Wind Farms' average", perHouse > 0 && short0 >= 5 * wind.getProduction1() * .999);
+        int windFarms = (int) Math.ceil(short0 / wind.getProduction1());
+        Map<BuildingsTemplate, Integer> windOrder = new LinkedHashMap<>();
+        windOrder.put(wind, windFarms);
+        double afterWind = BuildAdvice.shortfall(g, power, BuildAdvice.plus(city, windOrder), BuildAdvice.NOW);
+        assertTrue(String.format("(c) %d Wind Farms whose average is the shortfall (%,.0f kW) do not clear it: %,.0f kW short still", windFarms, short0, afterWind),
+                windFarms * wind.getProduction1() >= short0 && afterWind > 0);
+        int plants = (int) Math.ceil(windFarms * wind.getProduction1() / coal.getProduction1());
+        Map<BuildingsTemplate, Integer> coalOrder = new LinkedHashMap<>();
+        coalOrder.put(coal, plants);
+        double afterCoal = BuildAdvice.shortfall(g, power, BuildAdvice.plus(city, coalOrder), BuildAdvice.NOW);
+        // ...one plant is more than the wind's average, so what each takes off is read per kW of its own average.
+        double windPerKw = (short0 - afterWind) / (windFarms * wind.getProduction1());
+        double coalPerKw = (short0 - afterCoal) / (plants * coal.getProduction1());
+        assertTrue(String.format("...and %d Coal Power Plant(s), their average no less, take off more: %,.0f kW short against %,.0f, %.3f of an average kW against %.3f",
+                plants, afterCoal, afterWind, coalPerKw, windPerKw),
+                plants * coal.getProduction1() >= windFarms * wind.getProduction1() && afterCoal < afterWind && coalPerKw > windPerKw);
     }
 
     /** Begins the city's Ports month and tells it `tonnes` of iron ore (dry bulk) crossed the boundary inbound, none by sea. */

@@ -208,6 +208,11 @@ public class SimulationEngine {
         // monthly path here and rebuildSimulationState() on load, or the two
         // disagree and a reloaded city taxes a different wage bill.
         economyManager.setWageDetail(populationManager.getStaffedWagePerType());
+        // The struck book (PW1): this month's ratio, the prices its bills strike at when the statements are struck at the top of next month,
+        // and the fuel the utility buys then. Never on the load path (a reload would re-strike it): Game.rebuildSimulationState() hands the saved book.
+        UtilitiesHandler utility = servicesManager.getUtilitiesHandler();
+        utility.strikePower();
+        economyManager.setPowerPrices(utility.getPricePerWatt(), utility.getIndustryPricePerWatt(), utility.getWorksPricePerWatt());
         economyManager.setEnergyRatio(servicesManager.getEnergyRatio());
         economyManager.setWaterRatio(servicesManager.getWaterRatio());
         /*

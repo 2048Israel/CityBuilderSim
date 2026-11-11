@@ -155,7 +155,7 @@ public final class EquipmentFit {
 
     /**
      * One building's gain a month from a piece, at the city's prices: the electric drive's from the coal's and the grid's price (the unit price the
-     * sectors are billed, EconomyManager.getPricePerWatt()), the motor truck's from Haulage's teams and trucks. The tractor's (FARM_HORSES) is NaN
+     * sectors are billed, EconomyManager.getPowerPriceFor(t)), the motor truck's from Haulage's teams and trucks. The tractor's (FARM_HORSES) is NaN
      * (so NOT_YET, never PAYS) until its petrol is written: its "since" is PE14, June 1917, and before that month no verdict reaches it. A piece that ends a form keeps its form's gain whether or not
      * it is also the template's recipe piece. A piece that ends NO form (R1c) is there to enable a recipe: its gain is the value of the best recipe
      * a fitted building of the template could run less that of the best an unfitted one could, at the city's prices (Recipes.gainOf()), and
@@ -165,7 +165,7 @@ public final class EquipmentFit {
         if (piece.getEnds() == null) return piece.getId().equals(t.recipePieceId()) ? Recipes.gainOf(game, t) : 0;
         switch (piece.getEnds()) {
             case STEAM:
-                return steamGain(t, cityPrice(game, Good.THERMAL_COAL), game.getEconomyManager().getPricePerWatt());
+                return steamGain(t, cityPrice(game, Good.THERMAL_COAL), game.getEconomyManager().getPowerPriceFor(t));
             case CART_HORSES: {
                 Haulage haulage = game.getSectors().freight().haulage();
                 return cartGain(t.getTruckRoom(), haulage.horseEstimate(), haulage.truckRunningEstimate());

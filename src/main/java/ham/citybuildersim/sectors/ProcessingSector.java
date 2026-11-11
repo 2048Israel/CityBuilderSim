@@ -153,9 +153,14 @@ public abstract class ProcessingSector extends Sector {
         return markets == null ? 1 : markets.getExchangeRate();
     }
 
-    /** What its works' power sells and buys at: the tariff, as it is billed. */
+    /** What its works' power buys at: the industry price of the struck book, as Heavy Industry is billed (every works of a processing sector is Heavy Industry: high voltage, the energy and the long wires, spec-electricity 2.6). */
     public double tariff() {
-        return pricePerWatt;
+        return pricePerWattIndustry;
+    }
+
+    /** What its works' surplus is paid: the struck book's price of a kW the works sold the grid (Sector.getPowerSoldValue()). */
+    public double worksTariff() {
+        return pricePerWattWorks;
     }
 
     /** What one of `t` would make less what it would use a month at `rate`, each valued as one more of it would change the city's trade (pure): made at Values.out(), used at Values.in(). */

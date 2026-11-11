@@ -175,6 +175,12 @@ public class DataSave implements Cloneable {
     private StrategicReserve.State reserve;
 
     /**
+     * The utility's struck book (PW1; UtilitiesHandler, THE MERIT ORDER): the prices this month's power is billed at, the ratio it served
+     * and the fuel bought at the next strike, and the month's fuel paid. Absent on an older save, which loads the founding book. No format bump.
+     */
+    private UtilitiesHandler.PowerState powerBooks;
+
+    /**
      * The city's ports (0.7.86, batch O9; Ports): each kind of cargo's share
      * of its tonnes at sea in force, whether it goes before the railway, the
      * class crude goes in, the road's two shares, and the month's tonnes by
@@ -1319,6 +1325,10 @@ public class DataSave implements Cloneable {
     public void setReserve(StrategicReserve.State state) { this.reserve = state; }
     /** Null on a save from before 0.7.85. */
     public StrategicReserve.State getReserve() { return reserve; }
+
+    public void setPowerBooks(UtilitiesHandler.PowerState state) { this.powerBooks = state; }
+    /** Null on a save from before PW1: the founding book. */
+    public UtilitiesHandler.PowerState getPowerBooks() { return powerBooks; }
 
     public void setZoning(Zoning.State state) { this.zoning = state; }
     /** Null on a save from before 0.7.107, or with nothing zoned, no law and no forest cleared. */

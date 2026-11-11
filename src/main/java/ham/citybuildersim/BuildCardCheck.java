@@ -1329,8 +1329,10 @@ public class BuildCardCheck {
                 + "supply over its demand, the arc that held to 0-1; the police, the cells and the dead are not served", measures);
         BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
         BuildAdvice.Measure roadM = BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS);
-        assertTrue("...power's ring is the grid's own figure (to 1e-9) and the road's the road's, to the bit; transit has no verdict",
-                Math.abs(BuildAdvice.served(g, power, Map.of()) / u.getPowerServed() - 1) < 1e-9
+        // PW1: power is planned for the calm peak, so its ring is the grid's own figure against the peak block's draw, losses in
+        // (PowerDispatch.PLAN_PEAK); this city has no wind, whose non-firm part (1 - WIND_FIRM) would come off the supply.
+        assertTrue("...power's ring is the grid's own figure at the peak's draw (to 1e-9) and the road's the road's, to the bit; transit has no verdict",
+                Math.abs(BuildAdvice.served(g, power, Map.of()) * PowerDispatch.PLAN_PEAK / u.getPowerServed() - 1) < 1e-9
                 && Double.doubleToLongBits(BuildAdvice.served(g, roadM, Map.of())) == Double.doubleToLongBits(road.getServed())
                 && BuildAdvice.verdict(g, BuildAdvice.Measure.of(BuildAdvice.Kind.TRANSIT), Map.of()).level() == -1
                 && Double.doubleToLongBits(BuildAdvice.served(g, BuildAdvice.Measure.of(BuildAdvice.Kind.TRANSIT), Map.of()))
@@ -1702,11 +1704,11 @@ public class BuildCardCheck {
         BuildingsTemplate furnace = bm.getTemplate(HeavyIndustry.BLAST_FURNACE), shop = bm.getTemplate(HeavyIndustry.OXYGEN_STEEL_SHOP),
                 pulp = bm.getTemplate(WoodProducts.PULP_MILL), yard = bm.getTemplate(HeavyIndustry.SCRAP_YARD);
         BuildCard.Power bf = BuildCard.power(g, furnace), os = BuildCard.power(g, shop), pm = BuildCard.power(g, pulp);
-        assertTrue(String.format("a Blast Furnace makes %,.0f kW of its own, draws %,d and sells the rest at the tariff: the"
-                + " template's (powerSold()) times Iron & Steel's tariff", furnace.getGen(), furnace.getElectricityConsumption()),
+        assertTrue(String.format("a Blast Furnace makes %,.0f kW of its own, draws %,d and sells the rest at the works' price: the"
+                + " template's (powerSold()) times Iron & Steel's worksTariff()", furnace.getGen(), furnace.getElectricityConsumption()),
                 bf != null && bf.gen() == furnace.getGen() && bf.draw() == furnace.getElectricityConsumption()
                 && bf.sold() == furnace.powerSold() && bf.sold() > 0 && bf.bought() == 0
-                && Double.doubleToLongBits(bf.soldValue()) == Double.doubleToLongBits(furnace.powerSold() * steel.tariff()));
+                && Double.doubleToLongBits(bf.soldValue()) == Double.doubleToLongBits(furnace.powerSold() * steel.worksTariff()));
         assertTrue("...an Oxygen Steel Shop makes less than it draws, and buys the rest; a Pulp Mill draws none and sells it all;"
                 + " a Scrap Yard makes none", os != null && os.sold() == 0 && os.bought() == shop.powerBought() && os.bought() > 0
                 && pm != null && pm.draw() == 0 && pm.sold() == pulp.getGen() && BuildCard.power(g, yard) == null);

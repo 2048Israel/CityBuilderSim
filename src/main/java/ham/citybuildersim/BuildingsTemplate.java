@@ -232,6 +232,14 @@ public class BuildingsTemplate {
         return t != null && t.isOwnedBySector() && t.getCategory() != BuildingType.RESIDENTIAL;
     }
 
+    /**
+     * Whether a building takes its power at high voltage (spec-electricity 2.6): Heavy Industry and Mining are the two classes
+     * that pay the energy and the long wires alone, not the street's, so the utility bills them at the industry price.
+     */
+    public static boolean isHighVoltage(BuildingsTemplate t) {
+        return t != null && (t.getCategory() == BuildingType.HEAVY_INDUSTRY || t.getCategory() == BuildingType.MINING);
+    }
+
     /** Units of a good this building makes a month at nameplate. Zero for a good it does not make. */
     public double makes(Good good) { return makes.getOrDefault(good, 0.0); }
 

@@ -466,6 +466,10 @@ public class Game {
         // city has no rights; a load sets its own (readTheSave()).
         freshRights = 0;
         servicesManager.setFreshCapSource(this::getFreshCap);
+        // ...and the merit order buys its fuel at the city's price, pays its upkeep abroad at the exchange rate, and has a season by the calendar month (PW1; UtilitiesHandler, THE MERIT ORDER).
+        servicesManager.setFuelPrice(g -> getMarkets() == null ? g.worldImportPrice() : ham.citybuildersim.sectors.SpreadPlanner.cityValue(getMarkets().get(g)));
+        servicesManager.setExchangeRate(() -> getMarkets() == null ? PriceLevel.FACTOR : getMarkets().getExchangeRate());
+        servicesManager.setCalendarMonth(() -> CityCalendar.monthOfYear(getMonth()));
         // ...and the grid is not sized for the power a factory turns with steam on site (R0c; ServicesManager.setSteamShareSource()).
         servicesManager.setSteamShareSource(key -> {
             Sector sector = economyManager.getSectors().byKey(key);
@@ -6176,6 +6180,28 @@ public class Game {
                         filling ? ", the fill cancelled" : "")
                 : "Strategic reserve: release stopped");
         return set;
+    }
+
+    /**
+     * The fuel the plants burned, bought (PW1; UtilitiesHandler, THE MERIT ORDER), at the top of the month beside the railway's diesel:
+     * the struck book's fuel by good, drawn from the market for the city (Markets.draw(): the sellers' stock first, booked on their rows
+     * before the strike banks their ledgers, and the rest from the world), and the plants' variable upkeep, bought abroad at the
+     * exchange rate. What came to is told to the utility every month (zeros when there is nothing), which pays it out of its takings in
+     * the month's servicesNet, inside the audit's window; the coal from the world and the upkeep are told to the national accounts as
+     * imports. The local coal is a pool paying a pool (the treasury to Coal Mining), the sellers' sales the draw booked.
+     */
+    private void buyPowerFuel() {
+        UtilitiesHandler utility = servicesManager.getUtilitiesHandler();
+        UtilitiesHandler.Book book = utility.getStruckBook();
+        double local = 0, imported = 0;
+        for (java.util.Map.Entry<String, Double> e : book.fuel.entrySet()) {
+            double units = e.getValue();
+            if (!(units > 0)) continue;
+            Markets.Draw d = getMarkets().draw(Good.valueOf(e.getKey()), null, Trade.CITY, units, getSectors());
+            local += d.localCost();
+            imported += d.importCost();
+        }
+        utility.setFuelPaid(local, imported, book.upkeepWorld * getMarkets().getExchangeRate());
     }
 
     /**
@@ -14285,6 +14311,9 @@ public class Game {
         // ...and the equipment the builders were paid to fit to standing buildings since the last strike banked its ledger (R1b): capital too, on the builders' side, once.
         if (construction.getFittingThisMonth() != 0) constructionWorkDone += construction.getFittingThisMonth();
 
+        // The coal the utility burned last month, bought from the market before the strike banks its sellers' ledgers (PW1; buyPowerFuel()).
+        buyPowerFuel();
+
         /*
          * EVERY SECTOR'S STATEMENT, STRUCK AND BANKED, and the month's VAT
          * settled from the same figures between the two halves. One loop,
@@ -14307,6 +14336,8 @@ public class Game {
 
         // The reserve's crude among the goods held, and what it bought and shipped among the trade (0.7.85).
         economyManager.setCityCrude(reserve.getTonnes(), reserve.getSettledImports(), reserve.getSettledExports());
+        // ...and the coal the utility bought from the world and the upkeep it paid abroad (PW1; buyPowerFuel()).
+        economyManager.setUtilityImports(servicesManager.getUtilitiesHandler().getFuelImported() + servicesManager.getUtilitiesHandler().getUpkeepPaid());
         economyManager.updateNationalAccounts(
                 constructionWorkDone,
                 /*
@@ -14768,7 +14799,8 @@ public class Game {
                 householdBalance.getFoodAssistancePaid()));
 
         servicesManager.updateServices();
-        economyManager.setPricePerWatt(servicesManager.getPricePerWatt());
+        economyManager.setPowerPrices(servicesManager.getUtilitiesHandler().getPricePerWatt(),
+                servicesManager.getUtilitiesHandler().getIndustryPricePerWatt(), servicesManager.getUtilitiesHandler().getWorksPricePerWatt());
         economyManager.setPricePerWaterUnit(servicesManager.getPricePerWaterUnit());
         
         if (Double.isFinite(tempCash)) {
@@ -16183,6 +16215,7 @@ public class Game {
         buildingManager.seedConstants(struck);
         buildingManager.setExpectedLevel(level);
         healthcare.seedConstants(struck);
+        servicesManager.getUtilitiesHandler().seedConstants(struck);
         education.seedConstants(struck);
         economyManager.getTaxPolicy().seedConstants(struck);
         economyManager.getTaxPolicy().setExpectedLevel(level);
@@ -16957,6 +16990,8 @@ public class Game {
         dataSave.setAutoBuild(autoBuilder.toState());
         // ...and the strategic reserve (0.7.85): its crude, its book, its levers and the month the next strike settles.
         dataSave.setReserve(reserve.toState());
+        // ...and the merit order's struck book, the prices this month's power is billed at and the fuel bought at the next strike, with the fuel paid (PW1; UtilitiesHandler, THE MERIT ORDER).
+        dataSave.setPowerBooks(servicesManager.getUtilitiesHandler().toPowerState());
         // ...and the old steel (0.7.123): arisen since the yards last bought, and their last month.
         dataSave.setOldMetal(oldMetal.state());
         // ...and the ports (0.7.86): the berths' shares in force and the month's sea tonnes.
@@ -20097,7 +20132,8 @@ public class Game {
     // The split behind that total, because the wage tax is banded now and a
     // single figure cannot be charged at four different rates.
     economyManager.setWageDetail(populationManager.getStaffedWagePerType());
-    economyManager.setEnergyRatio(servicesManager.getEnergyRatio());
+    // ...the struck book's ratio, as the month path hands the sectors (PW1; SimulationEngine.updateEconomy() strikes the book before it reads this).
+    economyManager.setEnergyRatio(servicesManager.getUtilitiesHandler().getStruckBook().ratio);
     economyManager.setWaterRatio(servicesManager.getWaterRatio());
     /*
      * The railway's share, before the road ratio reads it: a reloaded city has
@@ -20234,7 +20270,9 @@ public class Game {
 
     servicesManager.updateServices();
 
-    economyManager.setPricePerWatt(servicesManager.getPricePerWatt());
+    // ...at the struck book's three prices (PW1): the commerce, the industry and the works'.
+    economyManager.setPowerPrices(servicesManager.getUtilitiesHandler().getPricePerWatt(),
+            servicesManager.getUtilitiesHandler().getIndustryPricePerWatt(), servicesManager.getUtilitiesHandler().getWorksPricePerWatt());
     economyManager.setPricePerWaterUnit(servicesManager.getPricePerWaterUnit());
 
     // refreshEconPrices(), NOT finalEconUpdate() - the latter clears every
@@ -21226,6 +21264,8 @@ public class Game {
             autoBuilder.restore(loaded.getAutoBuild());
             // The strategic reserve (0.7.85): a save from before it has none, and loads empty.
             reserve.restore(loaded.getReserve());
+            // The merit order's struck book and the fuel it paid (PW1): a save from before it has none, and loads the founding book.
+            servicesManager.getUtilitiesHandler().restorePowerState(loaded.getPowerBooks());
             // The old steel (0.7.123): a save from before it has none, and loads with nothing thrown out.
             oldMetal.restore(loaded.getOldMetal());
             // The ports (0.7.86): a save from before them has none, and loads with nothing at sea.
@@ -22107,6 +22147,7 @@ public class Game {
         bank.seedConstants(unit);
         landManager.seedConstants(unit);
         healthcare.seedConstants(unit);
+        servicesManager.getUtilitiesHandler().seedConstants(unit);
         foreign.seedConstants(unit);
         economyManager.getTaxPolicy().seedConstants(unit);
         education.seedConstants(unit);
