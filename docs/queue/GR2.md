@@ -1,9 +1,11 @@
-# GR2 - main's known reds in the repository, and "ready" on the whole suite
+# GR2 - known reds in the repository, and what runs where
 
-Jerus, 2026-11-11, two decisions. Where the list of main's known reds lives:
+Jerus, 2026-11-11, four decisions. Where the list of main's known reds lives:
 "A file in the repo (Recommended)". When a batch runs every check before it
-says ready: "When it touches shared code (Recommended)". After GR1, on the same
-files.
+says ready: "When it touches shared code (Recommended)". Whether every batch
+that changes no game code skips the whole suite at the gate: "Yes, make it the
+rule". Whether the gate reuses a batch's own full run when main has not changed
+since: "Yes, reuse it (Recommended)". After GR1, on the same files.
 
 ## What the game wants
 
@@ -20,6 +22,10 @@ suite: `--pick` ran a median 32 of about 190 harnesses and leaves the twelve
 classes over `CBS_PICK_FANOUT` to the gate, so four gates in five days stopped
 on reds the batch had never run (WG2: 97 lines in 16 harnesses, and a send-back
 of 3 h 14 min).
+
+So the suite should run once for a batch, where its builder can act on it, and
+only where it can say something: all of it when game code changed, the
+harnesses changed when it did not.
 
 ## What to build
 
@@ -48,27 +54,43 @@ of 3 h 14 min).
 - **Who removes one.** `ship.sh`, before it judges: every line whose mending
   batch is the batch at the gate goes, so a fix is judged without the excuse it
   came to remove, and the merge deletes those lines.
-- **Naming without running again.** When a gate stopped only on lines that no
-  entry names, and since then main has gained nothing a harness reads (only
-  `.md` files outside `docs/ensemble/` and `known-reds.txt` itself: the
-  docs-only test `ship.sh` already has) and the branch is the same commit,
-  `tools/gate.sh --rejudge <id>` judges the kept suite log again against the
-  file as it now is, and goes on to the records, the commit, the tag and the
-  push. Anything else is a full run. The stopped run's clone and logs are kept
-  until then (GF1 keeps the logs).
 - **`tools/pick.sh`**: a changed class over the fan-out picks `ALL`, the whole
   suite, where it picked LongPlaytest and left the rest to the gate. A changed
   harness class picks every harness that names it as well as itself, not
   itself alone: 19 files call `LongPlaytest.run`, and `ChildcareCheck.town()`
   builds other harnesses' towns.
-- **Ready.** When the pick is `ALL`, the batch merges `origin/main` first and
-  runs the suite on that merge. Ready is exit 0 or 3 there, every other red
-  mended or entered in its `## known-reds`, and its notes say which commit of
-  main it was run against. Otherwise ready is the pick, as now. The gate still
-  runs the whole suite once on its own merge.
+- **What the gate runs.** `ship.sh` asks `tools/pick.sh` about the merge. When
+  the merge changes game code (a `.java` file under `src/main/java` that is not
+  a harness file, a resource, `pom.xml`) or the suite's own runner
+  (`AllChecks.java`, `Timing.java`, the suite's part of `batch-check.sh`), it
+  runs the whole suite, as now. When it changes neither (scripts, docs, tools,
+  harness files alone), it runs the compile, the harnesses the pick names (a
+  changed harness, its users, TimingCheck), the maps, Stale and the self-test
+  of each script the merge changes, and its `Gate:` line says so ("no game
+  code: N harnesses"). Such a gate leaves `gate.txt`'s recorded reds as they
+  were, as a docs-only gate does; step 5's "a partial suite never ships"
+  becomes this rule. A docs-only merge stays on `--fast`.
+- **A run already made.** The gate takes a kept run in place of its own when
+  all of this holds: the launcher made it in a fresh clone (a batch's
+  `tools/gate.sh --dry-run`, or the gate's own run that stopped), never a
+  session's working folder; its log names the branch's commit and main's, and
+  the branch is that commit still; main is that commit still, or has gained
+  only `.md` files outside `docs/ensemble/` and `known-reds.txt`; and it ran
+  what this gate would run. The gate then judges the kept log against the
+  known reds as they are now and goes on to the records, the commit, the tag
+  and the push, in about a minute, its `Gate:` line naming the run it took.
+  Anything else is a run of its own. This is also how a line is named after a
+  stop without a second run: add it to the file, and gate again.
+- **Ready.** When the pick is `ALL`, the run that counts is the launcher's:
+  the batch pushes its branch, runs `tools/gate.sh --dry-run <id>` (a fresh
+  clone, the merge with main, the whole suite) and is ready when that passes,
+  every other red mended or entered in its `## known-reds`. Its ship file,
+  pushed last, names the kept log, and the gate reuses it. Otherwise ready is
+  the pick, as now, and any batch may make the dry run to be gated in a
+  minute.
 - **The docs**: `docs/batch.md` 4, 5 and 8 and `docs/orchestrator.md`, "The
-  gate" 5, say this in fewer lines than they have; `CLAUDE.md`'s Checks bullet
-  names the file.
+  gate" 4-5 and 7, say this in fewer lines than they have; `CLAUDE.md`'s Checks
+  bullet names the file.
 
 Not in this batch: mending the fixtures the file lists (their own rows, the
 redesign's next step), and the ready record in MemWatch's state folder.
@@ -79,19 +101,22 @@ redesign's next step), and the ready record in MemWatch's state folder.
   passes only with a known line of its harness; the three callers give one
   verdict on the same log.
 - `tools/ship-selftest.sh`: a `## known-reds` section is filed; a batch that
-  mends a row is judged without that row's lines, and the merge drops them; a
-  re-judge after a stop ships when only the file changed, and refuses when main
-  gained a `.java` file or the branch moved.
+  mends a row is judged without that row's lines, and the merge drops them. A
+  merge of a harness file alone runs the pick and leaves `gate.txt`; one that
+  also changes a game class, or `AllChecks.java`, runs the whole suite. A kept
+  dry run of the same two commits ships without the checks running again; it
+  is refused when the branch moved, when main gained a `.java` file, when the
+  log is a stopped run's with reds still unnamed, and when it was not the
+  launcher's.
 - `tools/pick-selftest.sh`: a class over the fan-out gives `ALL`; a changed
   harness picks its users.
 
 ## Done means
 
 The self-tests pass. On this branch merged with main the whole suite, by
-`./batch-check.sh --pick` (which is `ALL` here), exits 3 with no `--red-line`
-anywhere: every red of main's is in `gate.txt` or the file. A real
-`tools/gate.sh --dry-run` of this branch passes with no names on its command
-line. One in, one out (`CLAUDE.md`), the count in the notes. The ship file last.
+`tools/gate.sh --dry-run` (the pick is `ALL` here), passes with no `--red-line`
+anywhere: every red of main's is in `gate.txt` or the file. One in, one out
+(`CLAUDE.md`), the count in the notes. The ship file last.
 
 ## How it reaches main
 

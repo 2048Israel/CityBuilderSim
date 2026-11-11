@@ -45,6 +45,18 @@ this brief is where his decisions on the workflow are kept, as he takes them.
   and then put them on opus xhigh". No gate run: a fresh Opus session reviews
   each against its brief and merges it untagged, on the self-tests and on the
   builder's full dry run in a fresh clone.
+- **What the gate runs.** Asked whether every batch that changes no game code
+  should skip the whole suite at the gate, not just those three: "Yes, make it
+  the rule". Scripts, docs, tools and harness-only repairs run the quick check,
+  the script self-tests and the harnesses they change with those that borrow
+  them; a change to the suite's runner still gets the whole suite (GR2).
+- **A run already made.** Asked whether the gate should reuse a batch's own
+  full run when main has not changed since: "Yes, reuse it (Recommended)". Only
+  a run made by the launcher in a fresh clone counts (GR2).
+- **The held three.** Asked when HL1, PW1 and LM1-D go to the gate: "Leave them
+  for now". They stay on their branches, ungated, until he says. A leftover
+  `batch/LM1` (its ship file on, three commits main lacks, pushed after 0.9.94
+  shipped) is held with them; its widening is on `batch/LM1-D`.
 - **Sessions.** Started and stopped by MemWatch, headless (`claude -p`,
   `codex exec`): "sessions decide, MemWatch dispatches". The ceiling on
   sessions at once is a setting of MemWatch's that he moves. (His MemWatch
@@ -52,8 +64,6 @@ this brief is where his decisions on the workflow are kept, as he takes them.
 
 ## Still his to decide
 
-- Whether the gate runs the whole suite for a batch that changes no game code,
-  and whether it may take a full run already made on the same two commits.
 - What the orchestrator becomes once MemWatch dispatches.
 - Who keeps the gate day to day, and the gate box's part when it arrives.
 - Which of `CLAUDE.md`'s standing rules stay as they are. He said in the
