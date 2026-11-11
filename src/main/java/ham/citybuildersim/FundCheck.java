@@ -899,10 +899,12 @@ public class FundCheck {
         check("...but a fund short of shares only for want of a seller sells nothing", TreasuryFund.bondsOver(10, 0, 90) == 0);
 
         // Over the limit without buying - a company's buyback retires shares under the fund -
-        // with its mix inside the band: it asks the excess over 10%, and only that.
+        // with its mix inside the band: it offers a tenth of the excess over 10% a month
+        // (LIMIT_SALE_SHARE, RB1), first of the month's posts, and only that.
         Game o = copy();
         Equity ro = o.getEquity();
         double over = .15 * ro.getShares(company);
+        double inIssueO = ro.getShares(company);
         double theirs = o.getHouseholdBalance().sharesHeld(company);
         check("fixture: the households can hand the fund 15% of the company", theirs >= over);
         double ko = 1 - over / theirs;
@@ -913,14 +915,30 @@ public class FundCheck {
         o.fundPayIn(lump2);
         check("fixture: its shares are inside the band, so it has no mix to sell for",
                 TreasuryFund.sharesOver(over * o.getExchange().price(company), 0, lump2) == 0);
+        int monthO = o.getMonth();
         play(o);
         double leftO = ro.getCityMarketShares(company);
         double askedO = o.getExchange().bookOf(company).resting(Exchange.FUND, OrderBook.Side.SELL);
-        out.printf("   the fund held 15%% of %s; after the step %.1f%%, and %.1f%% of it asked%n", Equity.COMPANIES[company],
-                leftO / ro.getShares(company) * 100, askedO / ro.getShares(company) * 100);
-        check("over 10% of a company, it asks what is over the limit at fair value", askedO > 0 || leftO < over);
-        close("...down to the limit and no further", leftO - askedO, TreasuryFund.OWNERSHIP_LIMIT * ro.getShares(company),
-                1e-6 * ro.getShares(company));
+        double offeredO = soldOrAsked(o, company, over);
+        final int listedO = company;
+        // ...what filled of it is on the fund's record at the price it filled at: the rule's rows for the company since the step began.
+        double filledUnits = 0, filledMoney = 0;
+        for (FundLedger.Activity a : o.getFund().getLedger().getActivity()) {
+            if (a.month >= monthO && !a.hand && FundLedger.SELL.equals(a.kind) && FundLedger.shareKey(Equity.COMPANIES[company]).equals(a.key)) {
+                filledUnits += a.units; filledMoney += a.money;
+            }
+        }
+        out.printf("   its record: %.4f shares sold for %.4f%n", filledUnits, filledMoney);
+        out.printf("   the fund held 15%% of %s; after the step %.4f%%, %.4f%% of it asked, %.4f%% sold or asked of %.4f%% expected; shares %,.0f then %,.0f%n",
+                Equity.COMPANIES[company], leftO / ro.getShares(company) * 100, askedO / ro.getShares(company) * 100,
+                offeredO / ro.getShares(company) * 100, TreasuryFund.limitSale(over, inIssueO) / ro.getShares(company) * 100,
+                inIssueO, ro.getShares(company));
+        close("over 10% of a company, it offers a tenth of the excess (LIMIT_SALE_SHARE) a month", offeredO,
+                TreasuryFund.limitSale(over, inIssueO), 1e-6 * inIssueO);
+        check("...at fair value", o.getExchange().bookOf(listedO).asks().stream()
+                .filter(a -> a.who().equals(Exchange.FUND)).allMatch(a -> Math.abs(a.price() - o.getExchange().fair(listedO)) < 1e-12)
+                && (filledUnits <= 0 || Math.abs(filledMoney / filledUnits / o.getExchange().fair(listedO) - 1) < 1e-9)
+                && (askedO > 0 || filledUnits > 0));
     }
 
     /* ================= 8b. the city's mark (0.7.48, C4) ================= */

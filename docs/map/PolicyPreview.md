@@ -1,4 +1,4 @@
-# PolicyPreview.java - 661 lines · 55 methods · 0 constants · model
+# PolicyPreview.java - 671 lines · 55 methods · 0 constants · model
 
 `ham/citybuildersim/PolicyPreview.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
@@ -54,7 +54,7 @@
 > fills; that arrives in the month's own books, and every card on the tab
 > says so behind its (i). Pure: it reads the city and changes nothing.
 
-**Uses:** [Game](Game.md) (41), [TaxPolicy](TaxPolicy.md) (17), [WageBand](WageBand.md) (8), [EconomyManager](EconomyManager.md) (8), [Ports](Ports.md) (6), [Sectors](Sectors.md) (6), [TreasuryFund](TreasuryFund.md) (6), [Zoning](Zoning.md) (5), [DebtManager](DebtManager.md) (5), [Freight](Freight.md) (4), [JobType](JobType.md) (4), [Sector](Sector.md) (3), [Healthcare](Healthcare.md) (3), [LandManager](LandManager.md) (3), [HouseholdBalance](HouseholdBalance.md) (2), [Retail](Retail.md) (2), [PortDivision](PortDivision.md) (2), [LabourMarket](LabourMarket.md) (2), [BuildingType](BuildingType.md) (2), [ResearchCatalog](ResearchCatalog.md) (2), [Unemployment](Unemployment.md) (1), [Research](Research.md) (1), [EducationType](EducationType.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1), [Resource](Resource.md) (1), [PriceIndex](PriceIndex.md) (1)
+**Uses:** [Game](Game.md) (41), [TaxPolicy](TaxPolicy.md) (17), [TreasuryFund](TreasuryFund.md) (10), [WageBand](WageBand.md) (8), [EconomyManager](EconomyManager.md) (8), [Ports](Ports.md) (6), [Sectors](Sectors.md) (6), [Zoning](Zoning.md) (5), [DebtManager](DebtManager.md) (5), [Freight](Freight.md) (4), [JobType](JobType.md) (4), [Sector](Sector.md) (3), [Healthcare](Healthcare.md) (3), [LandManager](LandManager.md) (3), [HouseholdBalance](HouseholdBalance.md) (2), [Retail](Retail.md) (2), [PortDivision](PortDivision.md) (2), [LabourMarket](LabourMarket.md) (2), [BuildingType](BuildingType.md) (2), [ResearchCatalog](ResearchCatalog.md) (2), [Unemployment](Unemployment.md) (1), [Research](Research.md) (1), [EducationType](EducationType.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1), [Resource](Resource.md) (1), [PriceIndex](PriceIndex.md) (1)
 
 **Used by (17):** [CentralBankCheck](CentralBankCheck.md), [DiscoveryCheck](DiscoveryCheck.md), [FloorView](FloorView.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [GovernmentView](GovernmentView.md), [GovernmentViewCheck](GovernmentViewCheck.md), [GroceryCheck](GroceryCheck.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [ZoningScreen](ZoningScreen.md), [ZoningView](ZoningView.md), [ZoningViewCheck](ZoningViewCheck.md)
 
@@ -69,14 +69,14 @@
 | 279 | THE POLICY RATE, THE FLOOR AND THE PENSIONER |
 | 389 | THE PROMISES, THE CLINIC AND THE SCHOOLS |
 | 535 | THE FUND'S WITHDRAWAL (0.7.48, C2) |
-| 569 | ZONING (0.7.107, batch Z1; the project's spec-zoning.md 4) |
-| 639 | THE RULE'S STRICTNESS (0.7.52) |
+| 579 | ZONING (0.7.107, batch Z1; the project's spec-zoning.md 4) |
+| 649 | THE RULE'S STRICTNESS (0.7.52) |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 602 | **type** `public final class PolicyPreview` | What a staged set of the Policy tab's dials would do, by the model's own arithmetic (0.7.36): the tax take under another policy, line by line, and THE BUDGET before and after it - advice, not a model change. |
+| 60 | 612 | **type** `public final class PolicyPreview` | What a staged set of the Policy tab's dials would do, by the model's own arithmetic (0.7.36): the tax take under another policy, line by line, and THE BUDGET before and after it - advice, not a model change. |
 | 62 | 1 | `private PolicyPreview()` |  |
 
 ### THE TAX TAKE UNDER A POLICY (M2) (lines 64-117)
@@ -162,27 +162,27 @@
 | 513 | 5 | `public static double pensionCoverageUnder(Game g, TaxPolicy p)` | ...and what the contributions cover of the pensions under it - getPensionCoverage()'s rule; 1 with nothing owed. |
 | 529 | 5 | `public static double pensionerHasUnder(Game g, TaxPolicy after)` | What one pensioner household would have to spend under `after` (M11): the retired row, whose income is the pension bill, with the bill moved by what the dial's move would change it by at today's seniors - HouseholdBal... |
 
-### THE FUND'S WITHDRAWAL (0.7.48, C2) (lines 535-568)
+### THE FUND'S WITHDRAWAL (0.7.48, C2) (lines 535-578)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 546 | 1 | **type** `public record Withdrawal(double due, double fromCash, double toSell, double unpaid, double yearOn)` | What the fund's withdrawal would pay the treasury next month at a dial of the caller's, on the fund as it stands: the due; what its cash would pay of it; the rest - over the default sold from its market book (toSell),... |
-| 557 | 11 | `public static Withdrawal fundWithdrawalAt(Game g, double rate)` | ...struck as TreasuryFund.payTransfer() strikes it: the due at the rate's whole steps on Game.fundValue() (TreasuryFund.withdrawalAt() - Game.fundTransferDue() at the dial in force, to the bit); its cash after what la... |
+| 560 | 18 | `public static Withdrawal fundWithdrawalAt(Game g, double rate)` | ...struck as TreasuryFund.payTransfer() strikes it: the due at the rate's whole steps on Game.fundValue() and the idle cash (Game.fundIdleCash(), RB1) - TreasuryFund.dueAt(), which is Game.fundTransferDue() at the dia... |
 
-### ZONING (0.7.107, batch Z1; the project's spec-zoning.md 4) (lines 569-638)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 593 | 2 | **type** `public record ZoneAt(String sector, double sizeSqFt, double usedSqFt, double heldSqFt, double priceShare, d...` | One zone under a zoning, on the land as it stands: its size and what its sector has built in it, square feet; what it holds of the free ground; its price share; the held ground at the going price; the price given up s... |
-| 597 | 14 | `public static ZoneAt zoneAt(Game g, Zoning z, String sector)` | ...struck from LandManager.heldUnder() and the roll's rule: the relief is the zone's built ground (never more than the sector stands on) at the roll's price less the zone's, on the share the roll carries, at the secto... |
-| 613 | 6 | `public static double zoningTaxChange(Game g, Zoning after)` | What a staged zoning would change in the property tax a month: every zone's relief at the city's own zoning less at the staged one's. |
-| 627 | 2 | **type** `public record ForestAt(double protectedSqFt, double workingSqFt, double openSqFt, double freeForAnyone, dou...` | The forest law under a zoning, on the land as it stands: the protected, working and open forest and the ground free for anyone, square feet; the wood it keeps standing for ever and the wood that may be cut, cubic metr... |
-| 631 | 7 | `public static ForestAt forestAt(Game g, Zoning z)` | ...struck by LandManager.groundUnder(). |
-
-### THE RULE'S STRICTNESS (0.7.52) (lines 639-661)
+### ZONING (0.7.107, batch Z1; the project's spec-zoning.md 4) (lines 579-648)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 651 | 1 | **type** `public record RuleAt(DebtManager.Strictness step, String aims, double onTarget, double advised)` | What the rule would do at one step of the strictness dial, at the city's target: the step; what it aims at, in words (DebtManager.aimWords(): "aims under 2.0%, at 1.0%", "acts only past 4.0% (or under 2.0%)"); the rat... |
-| 654 | 7 | `public static RuleAt ruleAt(Game g, DebtManager.Strictness step)` | ...struck by DebtManager.ruleRate() and advisedPolicyRate() at that step; at the step in force, the rule's own to the bit. |
+| 603 | 2 | **type** `public record ZoneAt(String sector, double sizeSqFt, double usedSqFt, double heldSqFt, double priceShare, d...` | One zone under a zoning, on the land as it stands: its size and what its sector has built in it, square feet; what it holds of the free ground; its price share; the held ground at the going price; the price given up s... |
+| 607 | 14 | `public static ZoneAt zoneAt(Game g, Zoning z, String sector)` | ...struck from LandManager.heldUnder() and the roll's rule: the relief is the zone's built ground (never more than the sector stands on) at the roll's price less the zone's, on the share the roll carries, at the secto... |
+| 623 | 6 | `public static double zoningTaxChange(Game g, Zoning after)` | What a staged zoning would change in the property tax a month: every zone's relief at the city's own zoning less at the staged one's. |
+| 637 | 2 | **type** `public record ForestAt(double protectedSqFt, double workingSqFt, double openSqFt, double freeForAnyone, dou...` | The forest law under a zoning, on the land as it stands: the protected, working and open forest and the ground free for anyone, square feet; the wood it keeps standing for ever and the wood that may be cut, cubic metr... |
+| 641 | 7 | `public static ForestAt forestAt(Game g, Zoning z)` | ...struck by LandManager.groundUnder(). |
+
+### THE RULE'S STRICTNESS (0.7.52) (lines 649-671)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 661 | 1 | **type** `public record RuleAt(DebtManager.Strictness step, String aims, double onTarget, double advised)` | What the rule would do at one step of the strictness dial, at the city's target: the step; what it aims at, in words (DebtManager.aimWords(): "aims under 2.0%, at 1.0%", "acts only past 4.0% (or under 2.0%)"); the rat... |
+| 664 | 7 | `public static RuleAt ruleAt(Game g, DebtManager.Strictness step)` | ...struck by DebtManager.ruleRate() and advisedPolicyRate() at that step; at the step in force, the rule's own to the bit. |
 

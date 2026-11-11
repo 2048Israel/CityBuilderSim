@@ -1,4 +1,4 @@
-# FundCheck.java - 1,417 lines · 26 methods · 0 constants · harnesses
+# FundCheck.java - 1,435 lines · 26 methods · 0 constants · harnesses
 
 `ham/citybuildersim/FundCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      at the step, pro rata - since 0.7.102 asked at the desk's bid (A21),
 > ... (20 more lines in the source)
 
-**Uses:** [TreasuryFund](TreasuryFund.md) (70), [Equity](Equity.md) (67), [Game](Game.md) (62), [Bank](Bank.md) (44), [Exchange](Exchange.md) (35), [OrderBook](OrderBook.md) (28), [PriceLevel](PriceLevel.md) (17), [Founding](Founding.md) (17), [Household](Household.md) (10), [MoneyAudit](MoneyAudit.md) (7), [GameFiles](GameFiles.md) (5), [LongTermBond](LongTermBond.md) (5), [CityLand](CityLand.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [LandMarket](LandMarket.md) (4), [Sectors](Sectors.md) (3), [CorporateBond](CorporateBond.md) (3), [BondMarket](BondMarket.md) (3), [LandManager](LandManager.md) (3), [TreasuryLine](TreasuryLine.md) (3), [CentralBank](CentralBank.md) (2), [JobType](JobType.md) (2), [FundView](FundView.md) (2), [WorldEconomy](WorldEconomy.md) (2), [Debt](Debt.md) (2), [DebtQuote](DebtQuote.md) (2), [TreasuryJournal](TreasuryJournal.md) (1), [CityCalendar](CityCalendar.md) (1), [DecisionLog](DecisionLog.md) (1), [NationalAccounts](NationalAccounts.md) (1)
+**Uses:** [TreasuryFund](TreasuryFund.md) (71), [Equity](Equity.md) (68), [Game](Game.md) (62), [Bank](Bank.md) (44), [Exchange](Exchange.md) (36), [OrderBook](OrderBook.md) (28), [PriceLevel](PriceLevel.md) (17), [Founding](Founding.md) (17), [Household](Household.md) (10), [MoneyAudit](MoneyAudit.md) (7), [GameFiles](GameFiles.md) (5), [LongTermBond](LongTermBond.md) (5), [CityLand](CityLand.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [LandMarket](LandMarket.md) (4), [Sectors](Sectors.md) (3), [FundLedger](FundLedger.md) (3), [CorporateBond](CorporateBond.md) (3), [BondMarket](BondMarket.md) (3), [LandManager](LandManager.md) (3), [TreasuryLine](TreasuryLine.md) (3), [CentralBank](CentralBank.md) (2), [JobType](JobType.md) (2), [FundView](FundView.md) (2), [WorldEconomy](WorldEconomy.md) (2), [Debt](Debt.md) (2), [DebtQuote](DebtQuote.md) (2), [TreasuryJournal](TreasuryJournal.md) (1), [CityCalendar](CityCalendar.md) (1), [DecisionLog](DecisionLog.md) (1)... and 1 more
 
 **Used by (1):** [FundLedgerCheck](FundLedgerCheck.md)
 
@@ -80,13 +80,13 @@
 | 714 | 6. the offer |
 | 778 | 7. the dial |
 | 820 | 8. the rule |
-| 926 | 8b. the city's mark (0.7.48, C4) |
-| 986 | 9. the transfer |
-| 1010 | 9b. the withdrawal dial (0.7.48, C1) |
-| 1186 | 10. the hand |
-| 1226 | 11. the save |
-| 1281 | 12. Insane |
-| 1345 | 13. Insane, never borrowing (0.7.15) |
+| 944 | 8b. the city's mark (0.7.48, C4) |
+| 1004 | 9. the transfer |
+| 1028 | 9b. the withdrawal dial (0.7.48, C1) |
+| 1204 | 10. the hand |
+| 1244 | 11. the save |
+| 1299 | 12. Insane |
+| 1363 | 13. Insane, never borrowing (0.7.15) |
 
 ## Fields (state)
 
@@ -101,7 +101,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 90 | 1328 | **type** `public class FundCheck` | Proves the city's fund, the bank's rescue for its shares, the preferred a standing bank asks for, and the Insane founding (0.7.14). |
+| 90 | 1346 | **type** `public class FundCheck` | Proves the city's fund, the bank's rescue for its shares, the preferred a standing bank asks for, and the Insane founding (0.7.14). |
 | 96 | 4 | `static void check(String label, boolean ok)` |  |
 | 101 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 111 | 4 | `static void quietly(Runnable r)` |  |
@@ -149,53 +149,53 @@
 |---:|---:|---|---|
 | 780 | 39 | `static void theDial()` |  |
 
-### 8. the rule (lines 820-925)
+### 8. the rule (lines 820-943)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 822 | 103 | `static void theRule()` |  |
+| 822 | 121 | `static void theRule()` |  |
 
-### 8b. the city's mark (0.7.48, C4) (lines 926-985)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 928 | 57 | `static void theStaleMark()` |  |
-
-### 9. the transfer (lines 986-1009)
+### 8b. the city's mark (0.7.48, C4) (lines 944-1003)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 988 | 21 | `static void theTransfer()` |  |
+| 946 | 57 | `static void theStaleMark()` |  |
 
-### 9b. the withdrawal dial (0.7.48, C1) (lines 1010-1185)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1020 | 19 | `static int[] holdTwoAndARescueBook(Game g)` | A FUND HOLDING TWO COMPANIES ON ITS MARKET BOOK AND A RESCUE BOOK SIX TIMES THAT, WITH NO CASH: each company's households hand it 5% of the company (a fixture of a holding, not a trade, as section 8's band) and the ba... |
-| 1041 | 3 | `static double soldOrAsked(Game g, int c, double before)` | What the rule has on a company's book or sold off it since `before` shares: the step's sale, filled or resting. |
-| 1045 | 140 | `static void theWithdrawal()` |  |
-
-### 10. the hand (lines 1186-1225)
+### 9. the transfer (lines 1004-1027)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1188 | 37 | `static void theHand()` |  |
+| 1006 | 21 | `static void theTransfer()` |  |
 
-### 11. the save (lines 1226-1280)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1228 | 52 | `static void theSave()` |  |
-
-### 12. Insane (lines 1281-1344)
+### 9b. the withdrawal dial (0.7.48, C1) (lines 1028-1203)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1283 | 61 | `static void insane()` |  |
+| 1038 | 19 | `static int[] holdTwoAndARescueBook(Game g)` | A FUND HOLDING TWO COMPANIES ON ITS MARKET BOOK AND A RESCUE BOOK SIX TIMES THAT, WITH NO CASH: each company's households hand it 5% of the company (a fixture of a holding, not a trade, as section 8's band) and the ba... |
+| 1059 | 3 | `static double soldOrAsked(Game g, int c, double before)` | What the rule has on a company's book or sold off it since `before` shares: the step's sale, filled or resting. |
+| 1063 | 140 | `static void theWithdrawal()` |  |
 
-### 13. Insane, never borrowing (0.7.15) (lines 1345-1417)
+### 10. the hand (lines 1204-1243)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1355 | 62 | `static void insaneOnAdvances()` | Jerus, asked whether play should work before the city borrows: "Play works from day one. |
+| 1206 | 37 | `static void theHand()` |  |
+
+### 11. the save (lines 1244-1298)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1246 | 52 | `static void theSave()` |  |
+
+### 12. Insane (lines 1299-1362)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1301 | 61 | `static void insane()` |  |
+
+### 13. Insane, never borrowing (0.7.15) (lines 1363-1435)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1373 | 62 | `static void insaneOnAdvances()` | Jerus, asked whether play should work before the city borrows: "Play works from day one. |
 

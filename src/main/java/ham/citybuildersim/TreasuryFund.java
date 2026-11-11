@@ -81,11 +81,19 @@ import java.util.List;
  *   ask, fair value plus RULE_PREMIUM (0.7.48, C3), a bond at its value -
  *   and takes only what is offered; what does not fit waits as cash. Outside the band
  *   (REBALANCE_OVER, REBALANCE_UNDER) it sells the overweight side at fair
- *   value, the desk's own rule for an excess.
+ *   value, the desk's own rule for an excess. The limit is read on the
+ *   holding too: the companies' buybacks retire shares under the fund and
+ *   lift it past the limit, and past it a tenth of the excess
+ *   (LIMIT_SALE_SHARE) is offered a month at fair value, posted before the
+ *   buybacks bid (RB1, Exchange.postFundOverLimit()) so one cannot outrun it.
  *
- *   MONEY OUT: the withdrawal dial's share of its whole value a month, to
- *   the budget as a revenue line - by default TRANSFER_RATE a year, a
- *   twelfth a month, Norway's fiscal rule - and at or under the default from
+ *   MONEY OUT: the withdrawal dial's share of its value a month, to the
+ *   budget as a revenue line - by default TRANSFER_RATE a year, a twelfth a
+ *   month, Norway's fiscal rule - taken on what is invested; the idle cash,
+ *   what its rule cannot invest under its caps and its mix (idleCash()), is
+ *   taken at the larger of the dial and IDLE_TRANSFER_SHARE, so a fund that
+ *   cannot spend its cash does not pile it up (RB1); at a dial of nothing
+ *   nothing is paid. At or under the default from
  *   its cash only; what the cash cannot cover is not paid that month. Over the default the dial
  *   spends the fund: what its cash cannot cover is sold from its market book
  *   and paid at the next month's top, and the rule buys nothing meanwhile
@@ -134,6 +142,12 @@ public final class TreasuryFund {
 
     /** The most of any one company's shares the rule holds: 10%, the GPFG mandate's "may not be invested in more than 10 per cent of the voting shares in an individual company" (14 May 2018). The bank's shares bought on the market count; the rescue book does not. */
     public static final double OWNERSHIP_LIMIT = .10;
+
+    /** The share of a market-book holding's excess over OWNERSHIP_LIMIT the rule offers a month, ahead of the companies' buybacks (RB1): a tenth (★est., spec-wealth 3.3), fast enough that a buyback cannot outrun it and slow enough to stay inside the book's band. */
+    public static final double LIMIT_SALE_SHARE = .10;
+
+    /** The share of the fund's idle cash - what its rule cannot invest under its caps and its mix - transferred to the budget a month (RB1): a 24th, two years (★est., spec-wealth 3.3), so it is never a jolt. */
+    public static final double IDLE_TRANSFER_SHARE = 1.0 / 24;
 
     /** Norway's fiscal rule, a year of the fund's whole value: 3% - transfers follow the fund's expected real return, 3% since 2017 (regjeringen.no). What it pays the budget at the default withdrawal, and the withdrawal dial's step a twelfth of it, since 0.7.48 (C1). */
     public static final double TRANSFER_RATE = .03;
@@ -338,6 +352,8 @@ public final class TreasuryFund {
     // Over the fund's life, for the page and the playtest.
     private double paidInFromSurplus, paidInFromCash, handPaidIn, handDrawnOut;
     private double transfersPaid, transfersShort;
+    // ...and how much of the transfers were due on the idle cash (RB1).
+    private double transfersFromIdle;
     private double dividendsMarket, dividendsRescue, coupons, principal, bondFaceLost;
     // The lending fee the world paid it for the shares its market book lent a short (EM2; LF1: a counter of its own, and a row).
     private double lendingFees;
@@ -349,6 +365,8 @@ public final class TreasuryFund {
     // went out, which the Fund page reads after the month has closed - and so
     // saved with it (State.month), since a reloaded city cannot rebuild a flow.
     private double transferDue, transferPaid;
+    // ...and the part of the due that was struck on the idle cash (RB1, idlePartAt()).
+    private double transferFromIdle;
     private double monthDividends, monthCoupons, monthPrincipal, monthBought, monthSold, monthLendingFees;
     // Over the default withdrawal (C1): what the month's cash could not cover,
     // sold from the market book at the step and paid at the next month's top -
@@ -489,6 +507,86 @@ public final class TreasuryFund {
         return value > 0 ? stepsFor(share) * WITHDRAWAL_STEP * value : 0;
     }
 
+    /* ----- the limit on the holding (RB1) ----- */
+
+    /**
+     * What the rule offers of a market-book holding a month (RB1): a tenth
+     * (LIMIT_SALE_SHARE) of what `held` is over OWNERSHIP_LIMIT of the
+     * `inIssue` shares - the companies' buybacks retire shares under the
+     * fund and lift it past the limit - and nothing from a holding or a
+     * company that is nothing, or one inside the limit.
+     */
+    public static double limitSale(double held, double inIssue) {
+        return held > 0 && inIssue > 0 ? LIMIT_SALE_SHARE * Math.max(0, held - OWNERSHIP_LIMIT * inIssue) : 0;
+    }
+
+    /* ----- the idle cash (RB1) ----- */
+
+    /** A figure that is a positive number, else 0: a NaN or a negative is nothing here. */
+    private static double plus(double x) {
+        return x > 0 ? x : 0;
+    }
+
+    /**
+     * The fund's idle cash (RB1): the cash its rule cannot invest under its
+     * caps and its mix, which would otherwise pile up (the probe: past the
+     * 10% limit on every company the rule had nowhere to put it). `cash`
+     * less the hand's reserve is what is free; the mix is read as the rule
+     * reads it, shares and bonds at the market book and the whole cash
+     * (shareGap(), bondGap()); the room is the money the rule's bids could
+     * still take under OWNERSHIP_LIMIT (Exchange.fundShareRoom()) and the
+     * bonds on the books (BondMarket.fundBondRoom()). What the gaps could
+     * take, each held to its room, is investable; the rest of the free cash
+     * is idle. A room that is not a number reads as unlimited, so a fund
+     * that cannot tell is never found idle on it.
+     */
+    public static double idleCash(double cash, double reserve, double shares, double bonds,
+                                  double shareRoom, double bondRoom) {
+        double free = cash - plus(reserve);
+        if (!(free > 0)) return 0;
+        double s = plus(shares), b = plus(bonds);
+        double v = s + b + plus(cash);
+        double shareGap = Math.max(0, EQUITY_WEIGHT * v - s);
+        double bondGap = Math.max(0, (1 - EQUITY_WEIGHT) * v - b);
+        double investable = Math.min(shareGap, Double.isNaN(shareRoom) ? Double.POSITIVE_INFINITY : plus(shareRoom))
+                + Math.min(bondGap, Double.isNaN(bondRoom) ? Double.POSITIVE_INFINITY : plus(bondRoom));
+        return Math.max(0, free - investable);
+    }
+
+    /** The idle cash as the due reads it: held to 0 and the fund's value, a figure that is not a number nothing. */
+    private static double idleIn(double value, double idle) {
+        return idle > 0 ? Math.min(idle, value) : 0;
+    }
+
+    /**
+     * A month's transfer on a fund of this value and this much idle cash at
+     * `steps` of the dial (RB1): the dial's share of what is invested, and
+     * the larger of the dial and IDLE_TRANSFER_SHARE of the idle cash. At a
+     * dial of nothing, or on a fund of nothing, nothing - the player's dial
+     * at nothing withdraws nothing, idle or not. With no idle cash it is
+     * `(steps * WITHDRAWAL_STEP) * value`, withdrawalOn() and withdrawalAt()
+     * to the bit.
+     */
+    public static double dueAt(int steps, double value, double idle) {
+        if (!(value > 0) || steps <= 0) return 0;
+        double w = steps * WITHDRAWAL_STEP;
+        double i = idleIn(value, idle);
+        if (!(i > 0)) return w * value;
+        return w * (value - i) + Math.max(w, IDLE_TRANSFER_SHARE) * i;
+    }
+
+    /** ...and the part of that due struck on the idle cash: 0 at a dial of nothing, or with none idle. */
+    public static double idlePartAt(int steps, double value, double idle) {
+        if (!(value > 0) || steps <= 0) return 0;
+        double i = idleIn(value, idle);
+        return i > 0 ? Math.max(steps * WITHDRAWAL_STEP, IDLE_TRANSFER_SHARE) * i : 0;
+    }
+
+    /** A month's transfer on a fund of this value and idle cash at the dial in force: dueAt(). */
+    public double dueOn(double value, double idle) {
+        return dueAt(withdrawalSteps, value, idle);
+    }
+
     /** True while the dial is over Norway's rule: what its cash cannot cover is sold from the market book to pay, and the rule buys nothing (a fund drawn past its expected return is being spent). */
     public boolean sellsToPay()            { return withdrawalSteps > DEFAULT_WITHDRAWAL_STEPS; }
 
@@ -499,10 +597,14 @@ public final class TreasuryFund {
     public double getTransferPaidLate()    { return transferPaidLate; }
 
     /**
-     * Pays the month's transfer on a fund worth `value` and returns what was
-     * paid. At or under the default withdrawal from its cash only - "the
-     * rule never sells to pay it" - and what the cash could not cover is
-     * simply not paid, and counted (getTransferShort()).
+     * Pays the month's transfer on a fund worth `value`, `idle` of it cash its
+     * rule cannot invest (idleCash()), and returns what was paid. The due is
+     * the dial's share of what is invested and the larger of the dial and
+     * IDLE_TRANSFER_SHARE of the idle cash (dueOn(), RB1), and at a dial of
+     * nothing nothing; the part struck on the idle cash is noted
+     * (getTransferFromIdle()). At or under the default withdrawal from its
+     * cash only - "the rule never sells to pay it" - and what the cash could
+     * not cover is simply not paid, and counted (getTransferShort()).
      *
      * OVER THE DEFAULT (0.7.48, C1) the dial spends the fund: last month's
      * toRaise is paid first, from its cash - what the step sold came in as
@@ -514,7 +616,7 @@ public final class TreasuryFund {
      * up. At or under the default toRaise is always 0 and the first branch
      * never runs, so the arithmetic is 0.7.47's to the bit.
      */
-    double payTransfer(double value, int year) {
+    double payTransfer(double value, double idle, int year) {
         if (year != transferYear) {
             transferYear = year;
             transfersThisYear = 0;
@@ -532,7 +634,9 @@ public final class TreasuryFund {
             toRaise = 0;
         }
         transferPaidLate = late;
-        transferDue = withdrawalOn(value);
+        transferDue = dueOn(value, idle);
+        transferFromIdle = idlePartAt(withdrawalSteps, value, idle);
+        transfersFromIdle += transferFromIdle;
         transferPaid = Math.max(0, Math.min(transferDue, cash));
         cash -= transferPaid;
         transfersThisYear += transferPaid;
@@ -542,6 +646,17 @@ public final class TreasuryFund {
         if (sellsToPay()) toRaise = transferDue - transferPaid;
         return late > 0 ? transferPaid + late : transferPaid;
     }
+
+    /** The same with no idle cash: the dial's share of the whole value (fixtures; the city's step passes the idle cash). */
+    double payTransfer(double value, int year) {
+        return payTransfer(value, 0, year);
+    }
+
+    /** The part of this month's due struck on the idle cash (RB1): 0 with none idle, or at a dial of nothing. */
+    public double getTransferFromIdle()     { return transferFromIdle; }
+
+    /** ...and over the fund's life. */
+    public double getTransfersFromIdle()    { return transfersFromIdle; }
 
     /** This month's transfer as due, and as paid. */
     public double getTransferDue()          { return transferDue; }
@@ -626,7 +741,7 @@ public final class TreasuryFund {
 
     /** Clears the month's working. The top of the month. */
     void startMonth() {
-        transferDue = transferPaid = transferPaidLate = 0;
+        transferDue = transferPaid = transferPaidLate = transferFromIdle = 0;
         monthDividends = monthCoupons = monthPrincipal = monthBought = monthSold = monthLendingFees = 0;
     }
 
@@ -940,7 +1055,7 @@ public final class TreasuryFund {
         int lastPayInMonth, transferYear;
         double lastPayInYearSurplus, lastPayInFromSurplus, lastPayInFromCash, transfersThisYear, transferShortThisYear;
         double[] life;
-        /** The month just closed: its transfer due and paid, and what came in and went out; slots 7 and 8 (0.7.48) what it sells for to pay next month, and what this month paid late. */
+        /** The month just closed: its transfer due and paid, and what came in and went out; slots 7 and 8 (0.7.48) what it sells for to pay next month, and what this month paid late; slot 9 the lending fees (LF1); slot 10 the part of the due struck on the idle cash (RB1). The life counters end with the transfers due on the idle cash (RB1). */
         double[] month;
 
         /**
@@ -993,9 +1108,9 @@ public final class TreasuryFund {
         s.life = new double[] { paidInFromSurplus, paidInFromCash, handPaidIn, handDrawnOut,
                 transfersPaid, transfersShort, dividendsMarket, dividendsRescue, coupons, principal, bondFaceLost,
                 preferredBought, preferredDividends, preferredRedeemed, warrantsBoughtBack, warrantSharesTaken,
-                sharesBought, sharesSold, bondsBought, bondsSold, rescueSold, lendingFees };
+                sharesBought, sharesSold, bondsBought, bondsSold, rescueSold, lendingFees, transfersFromIdle };
         s.month = new double[] { transferDue, transferPaid, monthDividends, monthCoupons, monthPrincipal,
-                monthBought, monthSold, toRaise, transferPaidLate, monthLendingFees };
+                monthBought, monthSold, toRaise, transferPaidLate, monthLendingFees, transferFromIdle };
         return s;
     }
 
@@ -1047,6 +1162,8 @@ public final class TreasuryFund {
             sharesBought = l[i++]; sharesSold = l[i++]; bondsBought = l[i++]; bondsSold = l[i++]; rescueSold = l[i++];
             // ...the lending fees (LF1): a longer array than an older save's has one more, and an older one reads none.
             if (l.length >= 22) lendingFees = l[i];
+            // ...the transfers due on the idle cash (RB1): one more at the end, and an older save reads none.
+            if (l.length >= 23 && Double.isFinite(l[22])) transfersFromIdle = l[22];
         }
         double[] m = s.month;
         if (m != null && m.length >= 7) {
@@ -1058,6 +1175,8 @@ public final class TreasuryFund {
             toRaise = Double.isFinite(m[7]) ? Math.max(0, m[7]) : 0;
             transferPaidLate = Double.isFinite(m[8]) ? m[8] : 0;
             if (m.length >= 10 && Double.isFinite(m[9])) monthLendingFees = m[9];
+            // ...and the part of the month's due struck on the idle cash (RB1): slot 10, 0 in an older save.
+            if (m.length >= 11 && Double.isFinite(m[10])) transferFromIdle = m[10];
         }
     }
 
@@ -1082,7 +1201,7 @@ public final class TreasuryFund {
         transferYear = -1;
         transfersThisYear = transferShortThisYear = 0;
         paidInFromSurplus = paidInFromCash = handPaidIn = handDrawnOut = 0;
-        transfersPaid = transfersShort = 0;
+        transfersPaid = transfersShort = transfersFromIdle = 0;
         dividendsMarket = dividendsRescue = coupons = principal = bondFaceLost = 0;
         preferredBought = preferredDividends = preferredRedeemed = warrantsBoughtBack = warrantSharesTaken = 0;
         sharesBought = sharesSold = bondsBought = bondsSold = rescueSold = lendingFees = 0;
@@ -1112,11 +1231,11 @@ public final class TreasuryFund {
         lastPayInYearSurplus *= scale; lastPayInFromSurplus *= scale; lastPayInFromCash *= scale;
         transfersThisYear *= scale; transferShortThisYear *= scale;
         paidInFromSurplus *= scale; paidInFromCash *= scale; handPaidIn *= scale; handDrawnOut *= scale;
-        transfersPaid *= scale; transfersShort *= scale;
+        transfersPaid *= scale; transfersShort *= scale; transfersFromIdle *= scale;
         dividendsMarket *= scale; dividendsRescue *= scale; coupons *= scale; principal *= scale; bondFaceLost *= scale;
         preferredBought *= scale; preferredDividends *= scale; preferredRedeemed *= scale; warrantsBoughtBack *= scale;
         sharesBought *= scale; sharesSold *= scale; bondsBought *= scale; bondsSold *= scale; rescueSold *= scale;
-        transferDue *= scale; transferPaid *= scale; toRaise *= scale; transferPaidLate *= scale;
+        transferDue *= scale; transferPaid *= scale; toRaise *= scale; transferPaidLate *= scale; transferFromIdle *= scale;
         monthDividends *= scale; monthCoupons *= scale; monthPrincipal *= scale; monthBought *= scale; monthSold *= scale; monthLendingFees *= scale;
         lendingFees *= scale;
     }
