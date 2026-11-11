@@ -307,7 +307,7 @@ public final class IndustryView {
      * @param drawn     what they draw (getPowerDrawn())
      * @param bought    what they draw from the grid past what they make (getGridDraw())
      * @param sold      what they make past their draws, sold to the grid (getPowerSurplus())
-     * @param soldValue ...and what it sells for a month at the tariff (getPowerSoldValue())
+     * @param soldValue ...and what it sells for a month at the works' price (getPowerSoldValue())
      */
     public record Power(double made, double drawn, double bought, double sold, double soldValue) {
         /** Whether its works make any power. */

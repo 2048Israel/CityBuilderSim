@@ -2157,13 +2157,13 @@ final class BuildScreen {
         return s.toString();
     }
 
-    /** Its own power: "makes 60,000 kW of its own power: its 51,400 kW draw, and 8,600 kW sold to the grid, $X a month at the tariff". */
+    /** Its own power: "makes 60,000 kW of its own power: its 51,400 kW draw, and 8,600 kW sold to the grid, $X a month at the works' price". */
     static String powerWords(BuildCard.Power p) {
         String made = "makes " + formatter.format(Math.round(p.gen())) + " kW of its own power: ";
         if (p.sold() > 0) {
             return made + (p.draw() > 0 ? "its " + formatter.format(p.draw()) + " kW draw, and " : "")
                     + formatter.format(Math.round(p.sold())) + " kW sold to the grid"
-                    + (Double.isFinite(p.soldValue()) ? ", " + money(p.soldValue()) + " a month at the tariff" : "");
+                    + (Double.isFinite(p.soldValue()) ? ", " + money(p.soldValue()) + " a month at the works' price" : "");
         }
         return made + "it buys " + formatter.format(Math.round(p.bought())) + " kW of its " + formatter.format(p.draw()) + " kW draw";
     }
