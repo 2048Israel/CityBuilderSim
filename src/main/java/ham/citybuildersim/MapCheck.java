@@ -1338,8 +1338,12 @@ public class MapCheck {
                 on4[1], on4[0], on4[3], on4[2], off4[1], off4[0], off4[3], off4[2], p4.buildings, count4, p4off.buildings);
         out.println("      the plan places every house of the full district (S3) with the streets on: " + (p3.buildings == count3) + ", off: " + (p3off.buildings == count3)
                 + "; at S4: " + (p4.buildings == count4) + " on, " + (p4off.buildings == count4) + " off");
-        boolean open4 = on4[0] > 0;
-        if (!open4) out.println("      the second block has no dry interior plot in a cell open at S3 (" + on4[0] + "): no check of its share");
+        // (LM1) ...and the share tells the two ways apart only once the arrivals reach the closed cells: while the open cells hold them all, both ways build there alone and
+        // both hold the share (LM1's founding on this world: 60 houses, all on the open cells' 217 plots either way; main's second block had no plot in an open cell).
+        boolean open4 = on4[0] > 0 && on4[3] + off4[3] > 0;
+        if (on4[0] == 0) out.println("      the second block has no dry interior plot in a cell open at S3 (" + on4[0] + "): no check of its share");
+        else if (!open4) out.println("      the second block's arrivals are all in the cells open at S3, either way (" + on4[1] + " and " + off4[1] + " of " + on4[0]
+                + ", none of the closed cells' " + on4[2] + "): no check of its share");
 
         check("fixture: the founding site's district found, and the land's blocks smaller than a district, so a bought block fits in one",
                 d != null && frame != null && blocks < World.DISTRICT && h.reconciled);
